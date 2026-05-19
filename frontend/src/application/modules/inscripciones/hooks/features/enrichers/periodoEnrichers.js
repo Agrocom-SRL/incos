@@ -65,11 +65,11 @@ export const enrichInfoPeriodoParalelosField = (field, context = {}) => {
       tipoAdmision === 'NUEVO'
         ? 'Estudiante nuevo: se inscriben todas las materias del primer año (ya seleccionadas). En el siguiente paso elija el paralelo (turno).'
         : tipoAdmision === 'ANTIGUO'
-          ? 'Estudiante antiguo: marque uno o más periodos y las materias que cursará. En el siguiente paso elija el paralelo por periodo.'
+          ? 'Estudiante antiguo: marque uno o más periodos y las materias que cursará. Luego elija el paralelo y, al final del asistente, las notas del historial previo de periodos anteriores.'
           : tipoAdmision === 'TRASPASO'
-            ? 'Estudiante en traspaso: los periodos ya cursados en el ITT de origen aparecen deshabilitados; registre sus notas en la tabla de historial previo (convalidado). Marque los periodos que cursará aquí y las materias correspondientes.'
+            ? 'Estudiante en traspaso: los periodos ya cursados en el ITT de origen aparecen deshabilitados; registrará sus notas en el paso «Historial previo» (al final del asistente). Marque los periodos que cursará aquí y las materias correspondientes.'
             : tipoAdmision === 'TRANSITABILIDAD'
-              ? 'Transitabilidad: el primer año se registra como convalidado en historial previo (notas abajo). Marque el periodo en que inscribe y las materias que cursará en esta gestión.'
+              ? 'Transitabilidad: el primer año se registrará como convalidado en el paso «Historial previo». Marque el periodo en que inscribe y las materias que cursará en esta gestión.'
               : 'Marque uno o más periodos y las materias que cursará. En el siguiente paso elija el paralelo por periodo.';
     return { ...field, description };
   }

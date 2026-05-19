@@ -19,6 +19,7 @@
 
 import { useMemo } from 'react';
 import { createInscripcionNuevaWizardSteps } from '@inscripciones/config';
+import { requiereHistorialPrevio } from '@application-inscripciones/utils/historialPrevioHelpers';
 
 /**
  * Hook para obtener todos los datos específicos de la página de inscripción nueva
@@ -28,7 +29,7 @@ import { createInscripcionNuevaWizardSteps } from '@inscripciones/config';
  * @returns {Object} Objeto con todos los datos de la página
  */
 export const useInscripcionNuevaPageData = (options = {}) => {
-    const { mode = 'nuevo' } = options;
+    const { mode = 'nuevo', tipoAdmision = null } = options;
 
     // Título de la página (puede ser dinámico según parámetros)
     const pageTitle = useMemo(() => {
@@ -48,8 +49,8 @@ export const useInscripcionNuevaPageData = (options = {}) => {
 
     // Configuración de steps del wizard
     const wizardSteps = useMemo(() => {
-        return createInscripcionNuevaWizardSteps();
-    }, []);
+        return createInscripcionNuevaWizardSteps(requiereHistorialPrevio(tipoAdmision));
+    }, [tipoAdmision]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo

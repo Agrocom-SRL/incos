@@ -129,6 +129,29 @@ export class InscripcionRepository extends IInscripcionRepository {
   }
 
   /**
+   * Reemplaza historial_previo de una inscripción.
+   * PUT /v1/inscripciones/:id/historial-previo
+   *
+   * @param {string|number} id
+   * @param {{ prior_history: Array }} data
+   */
+  async guardarHistorialPrevio(id, data) {
+    try {
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return { success: false, error: 'ID de la inscripción es requerido' };
+      }
+      if (!data?.prior_history || !Array.isArray(data.prior_history)) {
+        return { success: false, error: 'prior_history es requerido' };
+      }
+
+      const response = await apiClient.put(INSCRIPCIONES_ENDPOINTS.HISTORIAL_PREVIO(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar historial previo');
+    }
+  }
+
+  /**
    * Elimina una inscripción (soft delete)
    * DELETE /v1/inscripciones/:id
    * 

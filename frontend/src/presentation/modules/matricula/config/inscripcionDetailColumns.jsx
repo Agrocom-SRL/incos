@@ -5,6 +5,13 @@
 import { Tag } from 'antd';
 import { getSubjectStatusColor } from '@application-inscripciones/utils/inscripcionDetailHelpers';
 
+const historialEstadoTag = (estado) => {
+  const e = String(estado ?? '').toUpperCase();
+  const color = e === 'CONVALIDADO' ? 'gold' : e === 'APROBADO' ? 'success' : 'default';
+  const label = e === 'CONVALIDADO' ? 'Convalidado' : e === 'APROBADO' ? 'Aprobado' : estado || '—';
+  return estado ? <Tag color={color}>{label}</Tag> : '—';
+};
+
 export const createMateriasInscritasColumns = () => [
   {
     title: 'Sigla',
@@ -57,11 +64,12 @@ export const createMateriasInscritasColumns = () => [
 
 export const createHistorialPrevioColumns = () => [
   {
-    title: 'Periodo',
-    key: 'periodo',
-    width: 140,
+    title: 'Gestión académica',
+    key: 'gestionAcademica',
+    width: 150,
     render: (_, row) =>
       row.periodoNombre ??
+      row.periodName ??
       row.periodo?.nombre ??
       (row.periodoNumero != null ? `Periodo ${row.periodoNumero}` : '—'),
   },
@@ -82,19 +90,19 @@ export const createHistorialPrevioColumns = () => [
     dataIndex: 'estado',
     key: 'estado',
     width: 130,
-    render: (estado) => {
-      const e = String(estado ?? '').toUpperCase();
-      const color = e === 'CONVALIDADO' ? 'cyan' : e === 'APROBADO' ? 'success' : 'default';
-      return estado ? <Tag color={color}>{estado}</Tag> : '—';
-    },
+    render: (estado, row) => historialEstadoTag(estado ?? row.status),
   },
   {
     title: 'Nota',
     key: 'nota',
-    width: 80,
+    width: 90,
     render: (_, row) => {
+      const estado = String(row.estado ?? row.status ?? '').toUpperCase();
+      if (estado === 'CONVALIDADO') {
+        return <span style={{ color: 'var(--ant-color-text-secondary)' }}>—</span>;
+      }
       const nota = row.notaFinal ?? row.finalGrade ?? row.final_grade;
-      return nota != null ? Number(nota) : '—';
+      return nota != null && nota !== '' ? Number(nota) : '—';
     },
   },
 ];

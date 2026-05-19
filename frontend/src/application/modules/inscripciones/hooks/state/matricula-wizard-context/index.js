@@ -29,7 +29,7 @@ export const useMatriculaWizardContext = (mode = 'nuevo', options = {}) => {
   });
 
   const enrichment = useMatriculaWizardEnrichment({
-    wizardSteps: catalogos.pageData.wizardSteps,
+    tipoAdmision: catalogos.tipoAdmision,
     ...catalogos,
     selectedMateriaIdsByPeriod: materiasSelection.selectedMateriaIdsByPeriod,
     handleToggleMaterias: materiasSelection.handleToggleMaterias,
@@ -39,6 +39,7 @@ export const useMatriculaWizardContext = (mode = 'nuevo', options = {}) => {
     () => ({
       ...catalogos.pageData,
       wizardSteps: enrichment.enrichedWizardSteps,
+      wizardStepMeta: enrichment.wizardStepMeta,
       ...formHandlers,
       onSelectCarrera: enrichment.handleSelectCarrera,
       periodosData: {

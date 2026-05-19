@@ -1,3 +1,5 @@
+import { resolveInscripcionApiUserMessage } from '@application-inscripciones/utils/inscripcionApiErrors';
+
 /**
  * Helper para manejar respuestas y errores del API
  * 
@@ -135,10 +137,12 @@ export function handleErrorResponse(error, defaultMessage = 'Error en la petici√
         ? appendValidationDetailsToMessage(errorMessage, errorData)
         : errorMessage;
 
+    const { message: safeMessage } = resolveInscripcionApiUserMessage(withDetails, errorData);
+
     // Retornar objeto con error como string y opcionalmente el objeto completo para casos especiales
     return {
       success: false,
-      error: withDetails,
+      error: safeMessage,
       errorDetails: typeof errorData === 'object' ? errorData : null, // Objeto completo opcional
     };
   }

@@ -7,7 +7,7 @@ import {
   TIPOS_INSCRIPCION,
   ESTADOS_MATERIA_INSCRITA,
 } from '../../../domain/constants/inscripciones.constants.js';
-import { ESTADOS_HISTORIAL_PREVIO_VALUES } from '../../../domain/constants/evaluaciones.constants.js';
+import { parsePriorHistoryItem } from './priorHistoryItemValidation.js';
 
 /**
  * Use Case: CreateEnrollmentUseCase
@@ -948,25 +948,7 @@ export class CreateEnrollmentUseCase {
     const enrollmentId = enrollment.id;
 
     for (const item of priorHistory) {
-      const materiaId = Number(item.materiaId ?? item.materia_id);
-      const periodId = Number(item.periodId ?? item.period_id);
-      const finalGrade = Number(item.finalGrade ?? item.final_grade ?? item.nota_final);
-      const status = String(item.status ?? item.estado ?? 'APROBADO').toUpperCase();
-
-      if (!materiaId || !periodId) {
-        throw new ValidationError('Cada fila de historial previo requiere materia_id y period_id');
-      }
-      if (Number.isNaN(finalGrade) || finalGrade < 0 || finalGrade > 100) {
-        throw new ValidationError('La nota del historial previo debe estar entre 0 y 100');
-      }
-      if (finalGrade < 61) {
-        throw new ValidationError('La nota mínima de aprobación en historial previo es 61');
-      }
-      if (!ESTADOS_HISTORIAL_PREVIO_VALUES.includes(status)) {
-        throw new ValidationError(
-          `Estado de historial previo inválido. Valores: ${ESTADOS_HISTORIAL_PREVIO_VALUES.join(', ')}`
-        );
-      }
+      const { materiaId, periodId, finalGrade, status } = parsePriorHistoryItem(item);
 
       const planSubjectsResult = await this.planSubjectRepository.findAll(
         { studyPlanId, periodId, subjectId: materiaId },

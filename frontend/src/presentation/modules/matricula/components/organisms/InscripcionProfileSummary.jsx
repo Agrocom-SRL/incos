@@ -32,7 +32,7 @@ const InscripcionProfileSummary = ({
       <Tooltip
         title={
           historialEstadoInfo?.text === 'Historial pendiente'
-            ? 'Completar historial previo y editar'
+            ? 'Completar historial de notas y editar'
             : 'Editar inscripción'
         }
       >

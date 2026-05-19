@@ -1,38 +1,35 @@
 /**
- * Sección del paso Periodo y materias: notas de materias ya concluidas (historial_previo).
+ * Tabla editable de historial de notas (historial_previo).
  */
 
 import React from 'react';
-import { Alert, InputNumber, Table, Tag, Typography } from 'antd';
-
-const statusTag = (status) => {
-  if (status === 'CONVALIDADO') {
-    return <Tag color="gold">Convalidado</Tag>;
-  }
-  return <Tag color="green">Aprobado</Tag>;
-};
+import { InputNumber, Segmented, Table, Typography } from 'antd';
+import '@inscripciones/theme/historial-notas.css';
 
 const HistorialPrevioNotasSection = ({
   rows = [],
   loading = false,
-  tipoAdmision = null,
   onGradeChange,
+  onStatusChange,
   readOnly = false,
+  invalidGradeKeys = null,
 }) => {
   if (!rows.length) return null;
 
-  const tipo = String(tipoAdmision ?? '').toUpperCase();
-  const description =
-    tipo === 'TRASPASO' || tipo === 'TRANSITABILIDAD'
-      ? 'Ingrese la nota de cada materia ya cursada o convalidada en el instituto de origen. Se registrarán en el historial previo como CONVALIDADO.'
-      : 'Ingrese la nota de cada materia de periodos anteriores al que inscribe en esta gestión. Se registrarán en el historial previo como APROBADO.';
+  const invalidSet =
+    invalidGradeKeys instanceof Set
+      ? invalidGradeKeys
+      : Array.isArray(invalidGradeKeys)
+        ? new Set(invalidGradeKeys)
+        : null;
 
   const columns = [
     {
-      title: 'Periodo',
-      dataIndex: 'periodName',
-      key: 'periodName',
-      width: 140,
+      title: 'Gestión académica',
+      dataIndex: 'gestionAcademica',
+      key: 'gestionAcademica',
+      width: 150,
+      render: (v, record) => v || record.periodName || '—',
     },
     {
       title: 'Sigla',
@@ -48,45 +45,64 @@ const HistorialPrevioNotasSection = ({
     },
     {
       title: 'Estado',
-      dataIndex: 'status',
       key: 'status',
-      width: 130,
-      render: (s) => statusTag(s),
+      width: 220,
+      render: (_, record) =>
+        readOnly ? (
+          record.status === 'CONVALIDADO' ? 'Convalidado' : 'Aprobado'
+        ) : (
+          <Segmented
+            size="small"
+            className={`historial-estado-segmented historial-estado-segmented--${
+              record.status === 'CONVALIDADO' ? 'convalidado' : 'aprobado'
+            }`}
+            value={record.status}
+            options={[
+              { label: 'Aprobado', value: 'APROBADO' },
+              { label: 'Convalidado', value: 'CONVALIDADO' },
+            ]}
+            onChange={(val) => onStatusChange?.(record.key, val)}
+          />
+        ),
     },
     {
       title: 'Nota final',
       key: 'nota',
       width: 120,
-      render: (_, record) =>
-        readOnly ? (
-          record.nota ?? '—'
-        ) : (
+      render: (_, record) => {
+        if (record.status === 'CONVALIDADO') {
+          return (
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              No aplica
+            </Typography.Text>
+          );
+        }
+        if (readOnly) {
+          return record.nota ?? '—';
+        }
+        const hasError = invalidSet?.has(record.key);
+        return (
           <InputNumber
-            min={0}
-            max={100}
-            step={1}
-            precision={0}
+            step={0.01}
+            precision={2}
             value={record.nota ?? undefined}
             onChange={(val) => onGradeChange?.(record.key, val)}
-            placeholder="0–100"
+            placeholder="Nota"
+            status={hasError ? 'error' : undefined}
+            className={hasError ? 'historial-nota-input--error' : undefined}
             style={{ width: '100%' }}
           />
-        ),
+        );
+      },
     },
   ];
 
   return (
-    <div className="step2-historial-previo" style={{ marginBottom: 24 }}>
-      <Alert
-        type="warning"
-        showIcon
-        title="Materias concluidas (historial previo)"
-        description={description}
-        style={{ marginBottom: 16, borderRadius: 8 }}
-      />
-      <Typography.Title level={5} style={{ marginBottom: 12 }}>
-        Notas de materias ya concluidas ({rows.length})
-      </Typography.Title>
+    <div className="step-historial-notas-table">
+      <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
+        Indique si cada materia fue <strong>aprobada</strong> (con nota) o{' '}
+        <strong>convalidada</strong> (sin nota).
+      </Typography.Paragraph>
       <Table
         size="small"
         rowKey="key"
@@ -94,7 +110,7 @@ const HistorialPrevioNotasSection = ({
         dataSource={rows}
         loading={loading}
         pagination={false}
-        scroll={{ x: 640 }}
+        scroll={{ x: 760 }}
       />
     </div>
   );

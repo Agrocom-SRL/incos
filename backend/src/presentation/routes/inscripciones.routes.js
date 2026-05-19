@@ -2,7 +2,11 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
-import { createEnrollmentValidator, updateEnrollmentValidator } from '../validators/inscripciones/index.js';
+import {
+  createEnrollmentValidator,
+  updateEnrollmentValidator,
+  updateEnrollmentPriorHistoryValidator,
+} from '../validators/inscripciones/index.js';
 
 /**
  * Construye el router del módulo Inscripciones
@@ -101,6 +105,18 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
         idValidator,
         validateRequest,
         (req, res, next) => controllers.deleteEnrollmentController.handle(req, res, next)
+    );
+
+    /**
+     * PUT /api/v1/inscripciones/:id/historial-previo
+     * Reemplaza historial_previo (notas de materias concluidas al inscribir)
+     */
+    router.put(
+        '/:id/historial-previo',
+        ...editarInscripcion,
+        updateEnrollmentPriorHistoryValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateEnrollmentPriorHistoryController.handle(req, res, next)
     );
 
     /**

@@ -20,7 +20,7 @@
 
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { ESTADOS_MATERIA_INSCRITA } from '../../../domain/constants/inscripciones.constants.js';
-import { ESTADOS_HISTORIAL_PREVIO_VALUES } from '../../../domain/constants/evaluaciones.constants.js';
+import { parsePriorHistoryItem } from './priorHistoryItemValidation.js';
 import { EnrollmentMapper, EnrollmentSubjectMapper } from '../../mappers/inscripciones/index.js';
 
 export class UpdateEnrollmentUseCase {
@@ -438,25 +438,7 @@ export class UpdateEnrollmentUseCase {
     }
 
     for (const item of priorHistory) {
-      const materiaId = Number(item.materiaId ?? item.materia_id);
-      const periodId = Number(item.periodId ?? item.period_id);
-      const finalGrade = Number(item.finalGrade ?? item.final_grade ?? item.nota_final);
-      const status = String(item.status ?? item.estado ?? 'APROBADO').toUpperCase();
-
-      if (!materiaId || !periodId) {
-        throw new ValidationError('Cada fila de historial previo requiere materia_id y period_id');
-      }
-      if (Number.isNaN(finalGrade) || finalGrade < 0 || finalGrade > 100) {
-        throw new ValidationError('La nota del historial previo debe estar entre 0 y 100');
-      }
-      if (finalGrade < 61) {
-        throw new ValidationError('La nota mínima de aprobación en historial previo es 61');
-      }
-      if (!ESTADOS_HISTORIAL_PREVIO_VALUES.includes(status)) {
-        throw new ValidationError(
-          `Estado de historial previo inválido. Valores: ${ESTADOS_HISTORIAL_PREVIO_VALUES.join(', ')}`
-        );
-      }
+      const { materiaId, periodId, finalGrade, status } = parsePriorHistoryItem(item);
 
       const planSubjectsResult = await this.planSubjectRepository.findAll(
         { studyPlanId, periodId, subjectId: materiaId },
@@ -484,5 +466,38 @@ export class UpdateEnrollmentUseCase {
       enrollmentId,
       count: priorHistory.length,
     });
+  }
+
+  /**
+   * Actualiza solo historial_previo de una inscripción (PUT dedicado).
+   * @param {number} enrollmentId
+   * @param {Array} priorHistory - Filas { materiaId, periodId, finalGrade, status }
+   */
+  async executePriorHistoryOnly(enrollmentId, priorHistory) {
+    this.logger.info('[Inscripciones] Actualización de historial previo', { enrollmentId });
+
+    if (!Array.isArray(priorHistory)) {
+      throw new ValidationError('prior_history debe ser un arreglo');
+    }
+
+    const enrollment = await this.enrollmentRepository.findById(enrollmentId);
+    if (!enrollment) {
+      throw new NotFoundError(`Inscripción con ID ${enrollmentId}`);
+    }
+
+    const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
+    const academicDataId = enrollmentPlain.academicDataId ?? enrollmentPlain.studentAcademicData_id;
+    const managementId = enrollmentPlain.managementId ?? enrollmentPlain.management_id;
+    const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
+    const management = await this.managementRepository.findById(managementId);
+    const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+      studentAcademicData,
+      management
+    );
+
+    await this._replacePriorEnrollmentHistory(enrollmentId, priorHistory, managementPlan);
+
+    const updated = await this.enrollmentRepository.findById(enrollmentId);
+    return EnrollmentMapper.entityToPresentation(updated);
   }
 }

@@ -14,10 +14,14 @@ import { useInscripcionNuevaHistorialPrevio } from '../../features/useInscripcio
 import { computeConcludedPeriods } from '@application-inscripciones/utils/historialPrevioHelpers';
 
 export const useMatriculaWizardCatalogos = (mode, { studentId, editData }) => {
-  const pageData = useInscripcionNuevaPageData({ mode });
   const studentSearch = useInscripcionNuevaStudentSearch({
     studentId: studentId || editData?.studentId,
   });
+
+  const tipoAdmision =
+    editData?.tipoAdmision ?? studentSearch?.selectedStudent?.tipoAdmision ?? null;
+
+  const pageData = useInscripcionNuevaPageData({ mode, tipoAdmision });
 
   const initialCarreraId = useMemo(() => {
     if (editData?.carreraId) return editData.carreraId;
@@ -41,8 +45,6 @@ export const useMatriculaWizardCatalogos = (mode, { studentId, editData }) => {
     return carrerasData.selectedCarrera?.id;
   }, [editData?.carreraId, studentSearch.selectedStudent, carrerasData.selectedCarrera]);
 
-  const tipoAdmision =
-    editData?.tipoAdmision ?? studentSearch?.selectedStudent?.tipoAdmision ?? null;
   const anioCursadoTraspaso =
     tipoAdmision === 'TRASPASO'
       ? (editData?.traspasoAnioCursado ?? studentSearch?.selectedStudent?.traspasoAnioCursado ?? null)
@@ -119,6 +121,7 @@ export const useMatriculaWizardCatalogos = (mode, { studentId, editData }) => {
 
   return {
     pageData,
+    tipoAdmision,
     studentSearch,
     carrerasData,
     carreraIdForParalelos,

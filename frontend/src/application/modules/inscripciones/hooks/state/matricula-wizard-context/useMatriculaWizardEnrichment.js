@@ -4,11 +4,14 @@
 
 import { useMemo, useCallback } from 'react';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
+import { createInscripcionNuevaWizardSteps } from '@inscripciones/config';
+import { requiereHistorialPrevio } from '@application-inscripciones/utils/historialPrevioHelpers';
+import { resolveMatriculaWizardStepMeta } from '@application-inscripciones/utils/matriculaWizardStepConfig';
 import { matriculaWizardEnrichers } from '../../features/enrichers/wizardEnrichers';
 import { step0EnrichmentStrategy } from './step0EnrichmentStrategy';
 
 export const useMatriculaWizardEnrichment = ({
-  wizardSteps,
+  tipoAdmision = null,
   studentSearch,
   carrerasData,
   periodosData,
@@ -159,8 +162,18 @@ export const useMatriculaWizardEnrichment = ({
     ],
   );
 
+  const wizardStepsBase = useMemo(
+    () => createInscripcionNuevaWizardSteps(requiereHistorialPrevio(tipoAdmision)),
+    [tipoAdmision],
+  );
+
+  const wizardStepMeta = useMemo(
+    () => resolveMatriculaWizardStepMeta(tipoAdmision),
+    [tipoAdmision],
+  );
+
   const enrichedWizardSteps = useEnrichWizardSteps(
-    wizardSteps,
+    wizardStepsBase,
     matriculaWizardEnrichers,
     enrichContext,
     step0EnrichmentStrategy,
@@ -170,5 +183,6 @@ export const useMatriculaWizardEnrichment = ({
     handleSelectCarrera,
     handleSelectParalelo,
     enrichedWizardSteps,
+    wizardStepMeta,
   };
 };

@@ -192,6 +192,8 @@ export const INSCRIPCIONES_ENDPOINTS = {
   ...createCRUDEndpoints('/inscripciones'),
   // Endpoint específico para generar formulario de inscripción (se usará desde el módulo de inscripciones)
   GENERATE_FORMULARIO: (studentId) => `${API_BASE}/inscripciones/${studentId}/generar-formulario`,
+  HISTORIAL_PREVIO: (inscripcionId) =>
+    `${API_BASE}/inscripciones/${encodeURIComponent(String(inscripcionId))}/historial-previo`,
 };
 
 // ============================================

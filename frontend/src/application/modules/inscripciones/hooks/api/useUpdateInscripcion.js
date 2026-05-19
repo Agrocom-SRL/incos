@@ -59,7 +59,10 @@ export const useUpdateInscripcion = () => {
         const errorMessage = typeof result.error === 'object' && result.error?.message ? result.error.message : result.error || 'Error al actualizar inscripción';
         optimizedSetErrorRef.current(errorMessage);
         if (result.validationErrors) optimizedSetValidationErrorsRef.current(result.validationErrors);
-        return result;
+        return {
+          ...result,
+          errorDetails: result.errorDetails ?? null,
+        };
       }
 
       optimizedSetErrorRef.current(null);

@@ -15,7 +15,15 @@
 import { INSCRIPCIONES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, DeleteEnrollmentUseCase, GenerateFormularioInscripcionUseCase, UpdateEnrollmentUseCase } from '../../../../application/use-cases/inscripciones/index.js';
-import { ListEnrollmentsController, CreateEnrollmentController, GetEnrollmentByIdController, DeleteEnrollmentController, GenerateFormularioInscripcionController, UpdateEnrollmentController } from '../../../../presentation/controllers/inscripciones/index.js';
+import {
+  ListEnrollmentsController,
+  CreateEnrollmentController,
+  GetEnrollmentByIdController,
+  DeleteEnrollmentController,
+  GenerateFormularioInscripcionController,
+  UpdateEnrollmentController,
+  UpdateEnrollmentPriorHistoryController,
+} from '../../../../presentation/controllers/inscripciones/index.js';
 import { buildInscripcionesRouter } from '../../../../presentation/routes/inscripciones.routes.js';
 
 /**
@@ -105,6 +113,7 @@ export function registerInscripcionesResource(container) {
                 priorEnrollmentHistoryRepository: c.resolve(
                   REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
                 ),
+                periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -231,6 +240,17 @@ export function registerInscripcionesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.updateEnrollmentPriorHistoryController,
+        (c) =>
+            new UpdateEnrollmentPriorHistoryController({
+                updateEnrollmentUseCase: c.resolve(INSCRIPCIONES_TOKENS.updateEnrollmentUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -245,6 +265,9 @@ export function registerInscripcionesResource(container) {
                 deleteEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.deleteEnrollmentController),
                 generateFormularioInscripcionController: c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionController),
                 updateEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.updateEnrollmentController),
+                updateEnrollmentPriorHistoryController: c.resolve(
+                  INSCRIPCIONES_TOKENS.updateEnrollmentPriorHistoryController
+                ),
             };
 
             const middlewares = {

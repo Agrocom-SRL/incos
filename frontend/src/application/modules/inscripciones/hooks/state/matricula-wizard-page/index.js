@@ -28,6 +28,8 @@ export const useMatriculaWizardPage = () => {
     inscripcionResult,
     paymentRequiredStudentId,
     clearPaymentRequiredDialog,
+    materiasStepInvalid,
+    setMateriasStepInvalid,
     studentSearch,
     carrerasData,
     periodosData,
@@ -38,6 +40,7 @@ export const useMatriculaWizardPage = () => {
     onSelectParalelo,
     historialPrevioData,
     onSelectCarrera,
+    wizardStepMeta,
   } = context;
 
   const navigation = useMatriculaWizardPageNavigation({
@@ -53,6 +56,7 @@ export const useMatriculaWizardPage = () => {
     studentSearch,
     carrerasData,
     form,
+    wizardStepMeta,
   });
 
   const validation = useMatriculaWizardPageWizardValidation({
@@ -62,6 +66,7 @@ export const useMatriculaWizardPage = () => {
     selectedMateriaIdsByPeriod,
     paralelosData,
     historialPrevioData,
+    wizardStepMeta,
   });
 
   return {
@@ -76,6 +81,8 @@ export const useMatriculaWizardPage = () => {
     handleSave,
     paymentRequiredStudentId,
     clearPaymentRequiredDialog,
+    materiasStepInvalid,
+    setMateriasStepInvalid,
     studentSearch,
     carrerasData,
     periodosData,
@@ -88,6 +95,7 @@ export const useMatriculaWizardPage = () => {
     onSelectCarrera,
     isNuevoEstudiante,
     isTraspasoOrTransitabilidad,
+    wizardStepMeta,
     ...navigation,
     ...wizardInit,
     ...validation,

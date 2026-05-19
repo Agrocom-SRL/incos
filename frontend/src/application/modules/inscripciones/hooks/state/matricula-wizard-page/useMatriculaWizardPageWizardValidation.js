@@ -12,13 +12,20 @@ export const useMatriculaWizardPageWizardValidation = ({
   selectedMateriaIdsByPeriod,
   paralelosData,
   historialPrevioData,
+  wizardStepMeta,
 }) => {
   const { message } = App.useApp();
+  const stepNumbers = wizardStepMeta?.stepNumbers ?? {
+    carrera: 2,
+    periodo: 3,
+    paralelo: 4,
+    historial: null,
+  };
 
   const handleValidateBeforeNext = useCallback(
     (stepNumber, formInstance) => {
       return new Promise((resolve, reject) => {
-        if (stepNumber === 2) {
+        if (stepNumber === stepNumbers.carrera) {
           const carreraId =
             formInstance?.getFieldValue('carrera') ?? carrerasData?.selectedCarrera?.id;
           if (!carreraId) {
@@ -30,7 +37,7 @@ export const useMatriculaWizardPageWizardValidation = ({
           return;
         }
 
-        if (stepNumber === 3) {
+        if (stepNumber === stepNumbers.periodo) {
           const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
           if (!selectedPeriodIds.length) {
             message.error('Por favor seleccione al menos un periodo académico antes de continuar.');
@@ -55,24 +62,11 @@ export const useMatriculaWizardPageWizardValidation = ({
               return;
             }
           }
-
-          if (historialPrevioData?.hasRows && historialPrevioData?.validate) {
-            const histValidation = historialPrevioData.validate();
-            if (!histValidation.valid) {
-              const msg =
-                histValidation.missing > 0
-                  ? `Complete la nota de las ${histValidation.missing} materia(s) ya concluida(s) (historial previo).`
-                  : histValidation.invalid[0]?.reason || 'Revise las notas del historial previo.';
-              message.error(msg);
-              reject(new Error('Historial previo incompleto'));
-              return;
-            }
-          }
           resolve();
           return;
         }
 
-        if (stepNumber === 4) {
+        if (stepNumber === stepNumbers.paralelo) {
           const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
           const selectedParalelosByPeriod = paralelosData?.selectedParalelosByPeriod ?? {};
           const paralelosLoading = paralelosData?.loading ?? false;
@@ -114,10 +108,28 @@ export const useMatriculaWizardPageWizardValidation = ({
           return;
         }
 
+        if (stepNumbers.historial != null && stepNumber === stepNumbers.historial) {
+          if (historialPrevioData?.hasRows && historialPrevioData?.validate) {
+            const histValidation = historialPrevioData.validate();
+            if (!histValidation.valid) {
+              const msg =
+                histValidation.missing > 0
+                  ? `Complete la nota de las ${histValidation.missing} materia(s) ya concluida(s) (historial previo).`
+                  : histValidation.invalid[0]?.reason || 'Revise las notas del historial previo.';
+              message.error(msg);
+              reject(new Error('Historial previo incompleto'));
+              return;
+            }
+          }
+          resolve();
+          return;
+        }
+
         resolve();
       });
     },
     [
+      stepNumbers,
       carrerasData?.selectedCarrera,
       periodosData,
       selectedMateriaIdsByPeriod,

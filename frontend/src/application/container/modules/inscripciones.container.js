@@ -12,6 +12,7 @@ import {
   ObtenerInscripcionPorIdUseCase,
   ObtenerTodasInscripcionesUseCase,
   EliminarInscripcionUseCase,
+  GuardarHistorialPrevioInscripcionUseCase,
 } from '@useCases/inscripciones';
 
 // Repositorio principal
@@ -45,6 +46,10 @@ export function registerInscripcionesModule(factory) {
 
   factory.eliminarInscripcion = () => {
     return new EliminarInscripcionUseCase({ inscripcionRepository });
+  };
+
+  factory.guardarHistorialPrevioInscripcion = () => {
+    return new GuardarHistorialPrevioInscripcionUseCase(inscripcionRepository);
   };
 
   return factory;

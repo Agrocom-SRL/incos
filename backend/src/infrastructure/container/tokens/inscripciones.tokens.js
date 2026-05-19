@@ -12,6 +12,7 @@ export const INSCRIPCIONES_TOKENS = {
     // VALIDATORS
     createEnrollmentValidator: 'inscripciones.createEnrollmentValidator',
     updateEnrollmentValidator: 'inscripciones.updateEnrollmentValidator',
+    updateEnrollmentPriorHistoryValidator: 'inscripciones.updateEnrollmentPriorHistoryValidator',
 
     // USE CASES
     listEnrollmentsUseCase: 'inscripciones.listEnrollmentsUseCase',
@@ -30,6 +31,7 @@ export const INSCRIPCIONES_TOKENS = {
     generateFormularioInscripcionController: 'inscripciones.generateFormularioInscripcionController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
     updateEnrollmentController: 'inscripciones.updateEnrollmentController',
+    updateEnrollmentPriorHistoryController: 'inscripciones.updateEnrollmentPriorHistoryController',
 
     // ROUTERS
     inscripcionesRouter: 'inscripciones.inscripcionesRouter',

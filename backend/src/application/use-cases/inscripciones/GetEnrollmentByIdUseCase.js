@@ -67,6 +67,7 @@ export class GetEnrollmentByIdUseCase {
     parallelRepository,
     studentDocumentRepository,
     priorEnrollmentHistoryRepository,
+    periodRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -87,6 +88,7 @@ export class GetEnrollmentByIdUseCase {
     this.parallelRepository = parallelRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
+    this.periodRepository = periodRepository;
     this.logger = logger;
   }
 
@@ -755,6 +757,7 @@ export class GetEnrollmentByIdUseCase {
       let materiaNombre = null;
       let materiaSigla = null;
       let periodName = null;
+      let periodNumero = null;
 
       const asignaturaPlanId = plain.curriculumSubjectId ?? plain.asignaturaPlanId;
       if (asignaturaPlanId && this.planSubjectRepository) {
@@ -763,6 +766,7 @@ export class GetEnrollmentByIdUseCase {
           const ps = planSubject?.toPlainObject ? planSubject.toPlainObject() : planSubject;
           if (ps) {
             periodId = ps.periodId ?? ps.periodoId ?? null;
+            periodNumero = ps.periodNumber ?? ps.periodoNumero ?? null;
             materiaId = ps.subjectId ?? ps.materiaId ?? null;
             if (materiaId && this.subjectRepository) {
               const subject = await this.subjectRepository.findById(materiaId);
@@ -770,7 +774,20 @@ export class GetEnrollmentByIdUseCase {
               materiaNombre = sp?.name ?? sp?.nombre ?? null;
               materiaSigla = sp?.acronym ?? sp?.sigla ?? null;
             }
-            if (periodId) {
+            if (periodId && this.periodRepository) {
+              try {
+                const periodEntity = await this.periodRepository.findById(periodId);
+                const periodPlain = periodEntity?.toPlainObject
+                  ? periodEntity.toPlainObject()
+                  : periodEntity;
+                periodName =
+                  periodPlain?.name ??
+                  periodPlain?.nombre ??
+                  `Periodo ${ps.periodNumber ?? ps.periodoNumero ?? periodId}`;
+              } catch {
+                periodName = `Periodo ${ps.periodNumber ?? ps.periodoNumero ?? periodId}`;
+              }
+            } else if (periodId) {
               periodName = `Periodo ${ps.periodNumber ?? ps.periodoNumero ?? periodId}`;
             }
           }
@@ -790,6 +807,8 @@ export class GetEnrollmentByIdUseCase {
           materiaNombre,
           materiaSigla,
           periodName,
+          periodoNombre: periodName,
+          periodoNumero: periodNumero,
         })
       );
     }

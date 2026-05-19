@@ -22,11 +22,20 @@ USE instituto_incos;
 DROP VIEW IF EXISTS vista_dashboard_docentes_conflictos_detalle;
 
 CREATE VIEW vista_dashboard_docentes_conflictos_detalle AS
-SELECT docente_id, docente_nombre, detalle_linea
-  FROM vista_base_dashboard_detalle_conflicto_docente_horario
+SELECT
+  docente_id,
+  docente_nombre COLLATE utf8mb4_unicode_ci AS docente_nombre,
+  detalle_linea COLLATE utf8mb4_unicode_ci AS detalle_linea
+FROM vista_base_dashboard_detalle_conflicto_docente_horario
 UNION ALL
-SELECT docente_id, docente_nombre, detalle_linea
-  FROM vista_base_dashboard_detalle_conflicto_docente_aula
+SELECT
+  docente_id,
+  docente_nombre COLLATE utf8mb4_unicode_ci,
+  detalle_linea COLLATE utf8mb4_unicode_ci
+FROM vista_base_dashboard_detalle_conflicto_docente_aula
 UNION ALL
-SELECT docente_id, docente_nombre, detalle_linea
-  FROM vista_base_dashboard_detalle_conflicto_docente_duplicado;
+SELECT
+  docente_id,
+  docente_nombre COLLATE utf8mb4_unicode_ci,
+  detalle_linea COLLATE utf8mb4_unicode_ci
+FROM vista_base_dashboard_detalle_conflicto_docente_duplicado;
