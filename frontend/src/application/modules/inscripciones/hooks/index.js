@@ -46,7 +46,7 @@ export { useDeleteInscripcion } from './api/useDeleteInscripcion';
 // ============================================
 // Exporta directamente desde los archivos (sin index.js intermedios)
 export { useInscripcionNuevaPageData } from './features/useInscripcionNuevaPageData';
-export { useInscripcionNuevaFormHandlers } from './features/useInscripcionNuevaFormHandlers';
+export { useMatriculaWizardFormHandlers } from './features/matricula-wizard-form';
 export { useInscripcionNuevaStudentSearch } from './features/useInscripcionNuevaStudentSearch';
 export { useInscripcionNuevaCarreras } from './features/useInscripcionNuevaCarreras';
 export { useInscripcionNuevaPeriodos } from './features/useInscripcionNuevaPeriodos';

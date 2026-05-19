@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useInscripcionNuevaFormHandlers } from '../../features/useInscripcionNuevaFormHandlers';
+import { useMatriculaWizardFormHandlers } from '../../features/matricula-wizard-form';
 import { useMatriculaWizardCatalogos } from './useMatriculaWizardCatalogos';
 import { useMatriculaWizardMateriasSelection } from './useMatriculaWizardMateriasSelection';
 import { useMatriculaWizardEnrichment } from './useMatriculaWizardEnrichment';
@@ -14,7 +14,7 @@ export const useMatriculaWizardContext = (mode = 'nuevo', options = {}) => {
   const catalogos = useMatriculaWizardCatalogos(mode, { studentId, editData });
   const materiasSelection = useMatriculaWizardMateriasSelection(editData);
 
-  const formHandlers = useInscripcionNuevaFormHandlers(mode, {
+  const formHandlers = useMatriculaWizardFormHandlers(mode, {
     selectedStudent: catalogos.studentSearch.selectedStudent,
     selectedParalelo: catalogos.paralelosData.selectedParalelo,
     selectedPeriod: catalogos.periodosData.selectedPeriod,

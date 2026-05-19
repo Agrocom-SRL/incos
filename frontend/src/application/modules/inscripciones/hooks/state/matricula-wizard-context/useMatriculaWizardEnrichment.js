@@ -4,22 +4,8 @@
 
 import { useMemo, useCallback } from 'react';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
-import { studentEnrichers } from '../../features/enrichers/studentEnrichers';
-import { periodoEnrichers } from '../../features/enrichers/periodoEnrichers';
-import { carreraEnrichers } from '../../features/enrichers/carreraEnrichers';
-import { paraleloEnrichers } from '../../features/enrichers/paraleloEnrichers';
-import { materiaEnrichers } from '../../features/enrichers/materiaEnrichers';
-import { horarioEnrichers } from '../../features/enrichers/horarioEnrichers';
+import { matriculaWizardEnrichers } from '../../features/enrichers/wizardEnrichers';
 import { step0EnrichmentStrategy } from './step0EnrichmentStrategy';
-
-const allEnrichers = [
-  ...studentEnrichers,
-  ...periodoEnrichers,
-  ...carreraEnrichers,
-  ...paraleloEnrichers,
-  ...materiaEnrichers,
-  ...horarioEnrichers,
-];
 
 export const useMatriculaWizardEnrichment = ({
   wizardSteps,
@@ -175,7 +161,7 @@ export const useMatriculaWizardEnrichment = ({
 
   const enrichedWizardSteps = useEnrichWizardSteps(
     wizardSteps,
-    allEnrichers,
+    matriculaWizardEnrichers,
     enrichContext,
     step0EnrichmentStrategy,
   );
