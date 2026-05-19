@@ -87,20 +87,39 @@ function SidebarSection({ icon, label, children, defaultOpen, collapsed }) {
 }
 
 /**
- * @param {{ collapsed?: boolean }} props
+ * @param {{ collapsed?: boolean, isMobile?: boolean, mobileOpen?: boolean, onNavigate?: () => void }} props
  */
-const MatriculaV2Sidebar = ({ collapsed = false }) => {
+const MatriculaV2Sidebar = ({
+  collapsed = false,
+  isMobile = false,
+  mobileOpen = false,
+  onNavigate,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const width = collapsed ? 76 : 252;
+  const width = isMobile ? 260 : collapsed ? 76 : 252;
   const isMatriculas =
     location.pathname === '/matricula/listar-v2' || location.pathname === '/matricula/listar';
 
+  const nav = (path) => () => {
+    navigate(path);
+    onNavigate?.();
+  };
+
+  const sidebarClass = [
+    'matricula-v2-sidebar',
+    isMobile ? 'matricula-v2-sidebar--mobile' : '',
+    isMobile && mobileOpen ? 'matricula-v2-sidebar--mobile-open' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <aside
-      className="matricula-v2-sidebar"
+      className={sidebarClass}
       style={{ width }}
       aria-label="Navegación principal"
+      aria-hidden={isMobile && !mobileOpen}
     >
       <div className="matricula-v2-sidebar__logo">
         {collapsed ? (
@@ -116,7 +135,7 @@ const MatriculaV2Sidebar = ({ collapsed = false }) => {
           icon={<DashboardOutlined />}
           label="Dashboard"
           collapsed={collapsed}
-          onClick={() => navigate('/dashboard')}
+          onClick={nav('/dashboard')}
         />
         <SidebarSection icon={<IdcardOutlined />} label="Matrícula" defaultOpen collapsed={collapsed}>
           <SidebarItem
@@ -125,14 +144,14 @@ const MatriculaV2Sidebar = ({ collapsed = false }) => {
             sub
             active={isMatriculas}
             collapsed={collapsed}
-            onClick={() => navigate('/matricula/listar-v2')}
+            onClick={nav('/matricula/listar-v2')}
           />
           <SidebarItem
             icon={<UserAddOutlined />}
             label="Nueva inscripción"
             sub
             collapsed={collapsed}
-            onClick={() => navigate('/matricula/nueva')}
+            onClick={nav('/matricula/nueva')}
           />
         </SidebarSection>
         <SidebarSection icon={<ReadOutlined />} label="Académico" collapsed={collapsed}>

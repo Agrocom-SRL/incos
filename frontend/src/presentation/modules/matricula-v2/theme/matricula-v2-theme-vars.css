@@ -63,6 +63,10 @@
   --nav-item-active-bar: #0d7a3d;
   --nav-item-active-shadow: 0 1px 4px rgba(8, 80, 42, 0.12);
 
+  --tooltip-bg: #0a5028;
+  --tooltip-fg: #f0f5f2;
+  --tooltip-border: #2a8d57;
+
   color-scheme: light;
 }
 
@@ -125,6 +129,10 @@
   --nav-item-active-border: #2e9d68;
   --nav-item-active-bar: #4fb37e;
   --nav-item-active-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+
+  --tooltip-bg: #1a5239;
+  --tooltip-fg: #e8f0ea;
+  --tooltip-border: #2e9d68;
 
   color-scheme: dark;
 }

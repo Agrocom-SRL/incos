@@ -7,6 +7,7 @@ import { ConfigProvider, theme as antTheme } from 'antd';
 import esES from 'antd/locale/es_ES';
 import MatriculaV2Sidebar from '../components/MatriculaV2Sidebar';
 import MatriculaV2TopBar from '../components/MatriculaV2TopBar';
+import { useMobileNav } from '../hooks/useMobileNav';
 import { MatriculaV2ThemeProvider, useTheme } from '../hooks/useTheme';
 import '../theme/matricula-v2-theme-vars.css';
 import '../theme/matricula-v2.css';
@@ -14,6 +15,15 @@ import '../theme/matricula-v2.css';
 function MatriculaV2Shell() {
   const [collapsed, setCollapsed] = useState(false);
   const { theme } = useTheme();
+  const { isMobile, navOpen, closeNav, toggleNav } = useMobileNav();
+
+  const handleMenuClick = () => {
+    if (isMobile) toggleNav();
+    else setCollapsed((c) => !c);
+  };
+
+  const tooltipBg = theme === 'dark' ? '#1a5239' : '#0a5028';
+  const tooltipFg = theme === 'dark' ? '#e8f0ea' : '#f0f5f2';
 
   return (
     <ConfigProvider
@@ -45,13 +55,32 @@ function MatriculaV2Shell() {
           Dropdown: {
             colorBgElevated: theme === 'dark' ? '#102019' : '#fafcfb',
           },
+          Tooltip: {
+            colorBgSpotlight: tooltipBg,
+            colorTextLightSolid: tooltipFg,
+            borderRadius: 8,
+            fontSize: 12,
+          },
         },
       }}
     >
-      <div className="matricula-v2-app">
-        <MatriculaV2Sidebar collapsed={collapsed} />
+      <div className={`matricula-v2-app${isMobile ? ' matricula-v2-app--mobile' : ''}`}>
+        {isMobile && navOpen ? (
+          <button
+            type="button"
+            className="matricula-v2-sidebar-backdrop"
+            onClick={closeNav}
+            aria-label="Cerrar menú"
+          />
+        ) : null}
+        <MatriculaV2Sidebar
+          collapsed={isMobile ? false : collapsed}
+          isMobile={isMobile}
+          mobileOpen={navOpen}
+          onNavigate={closeNav}
+        />
         <div className="matricula-v2-app__main">
-          <MatriculaV2TopBar onMenuClick={() => setCollapsed((c) => !c)} />
+          <MatriculaV2TopBar onMenuClick={handleMenuClick} />
           <div className="matricula-v2-app__content">
             <Outlet />
           </div>
@@ -59,7 +88,7 @@ function MatriculaV2Shell() {
       </div>
     </ConfigProvider>
   );
-}
+};
 
 const MatriculaV2Layout = () => (
   <MatriculaV2ThemeProvider>

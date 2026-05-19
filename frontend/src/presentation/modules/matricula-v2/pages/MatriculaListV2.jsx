@@ -4,16 +4,9 @@
 import { useMemo } from 'react';
 import {
   ClockCircleFilled,
-  DeleteOutlined,
   DownloadOutlined,
-  EditOutlined,
-  EyeOutlined,
-  FileTextOutlined,
   HomeOutlined,
-  MailOutlined,
-  MoreOutlined,
   PlusOutlined,
-  PrinterOutlined,
   RiseOutlined,
   TeamOutlined,
   UserAddOutlined,
@@ -22,24 +15,21 @@ import {
   Alert,
   Breadcrumb,
   Button,
-  Dropdown,
   Pagination,
   Select,
   Space,
   Spin,
   Table,
-  Tag,
-  Tooltip,
 } from 'antd';
 import CareerChip from '../components/CareerChip';
 import FilterToolbar from '../components/FilterToolbar';
 import KpiCard from '../components/KpiCard';
-import StatusPill from '../components/StatusPill';
+import MatriculaTableRowDetails from '../components/MatriculaTableRowDetails';
 import StudentCard from '../components/StudentCard';
-import StudentCell from '../components/StudentCell';
-import StudentDrawer from '../components/StudentDrawer';
+import { useCompactTableLayout } from '../hooks/useCompactTableLayout';
 import { useMatriculaListV2 } from '../hooks/useMatriculaListV2';
-import { mv2DropdownPopupProps, mv2SelectPopupProps } from '../theme/popupClass';
+import { buildMatriculaTableColumns } from '../utils/buildMatriculaTableColumns';
+import { mv2SelectPopupProps } from '../theme/popupClass';
 
 const MatriculaListV2 = () => {
   const {
@@ -64,8 +54,6 @@ const MatriculaListV2 = () => {
     setHistoryFilter,
     selectedRowKeys,
     setSelectedRowKeys,
-    drawerStudent,
-    setDrawerStudent,
     page,
     setPage,
     pageSize,
@@ -90,160 +78,26 @@ const MatriculaListV2 = () => {
     handleExportLista,
   } = useMatriculaListV2();
 
-  const columns = useMemo(
-    () => [
-      {
-        title: 'Estudiante',
-        key: 'student',
-        width: 320,
-        render: (_, r) => <StudentCell student={r} />,
-      },
-      {
-        title: 'Carrera',
-        key: 'career',
-        width: 220,
-        render: (_, r) => (
-          <div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: 13,
-                fontWeight: 600,
-                color: 'var(--text)',
-              }}
-            >
-              <span style={{ width: 4, height: 18, borderRadius: 2, background: r.career.color }} />
-              {r.career.name}
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-soft)', marginTop: 4, marginLeft: 12 }}>
-              {r.semestre}° semestre · {r.materias} materias
-            </div>
-          </div>
-        ),
-      },
-      {
-        title: 'Tipo',
-        key: 'tipo',
-        width: 110,
-        render: (_, r) => (
-          <Tag
-            style={{
-              margin: 0,
-              borderRadius: 999,
-              padding: '1px 10px',
-              background: r.isAntiguo ? 'var(--pill-warn-bg)' : 'var(--pill-ok-bg)',
-              color: r.isAntiguo ? 'var(--pill-warn-fg)' : 'var(--pill-ok-fg)',
-              border: 'none',
-              fontWeight: 600,
-              fontSize: 11,
-            }}
-          >
-            {r.tipo}
-          </Tag>
-        ),
-      },
-      {
-        title: 'Historial',
-        key: 'history',
-        width: 180,
-        render: (_, r) => <StatusPill statusKey={r.historial} label={r.historyState?.label} />,
-      },
-      {
-        title: 'Pago',
-        key: 'pago',
-        width: 110,
-        render: (_, r) => (
-          <span
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color:
-                r.estadoPago === 'Al día'
-                  ? 'var(--success)'
-                  : r.estadoPago === 'Pendiente'
-                    ? 'var(--danger)'
-                    : 'var(--info)',
-            }}
-          >
-            {r.estadoPago}
-          </span>
-        ),
-      },
-      {
-        title: 'Gestión',
-        key: 'fecha',
-        width: 130,
-        render: (_, r) => (
-          <div style={{ fontSize: 13, color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>
-            <div style={{ fontWeight: 600 }}>{r.gestion}</div>
-            <div style={{ fontSize: 11, color: 'var(--text-soft)' }}>{r.fechaMatricula}</div>
-          </div>
-        ),
-      },
-      {
-        title: '',
-        key: 'actions',
-        width: 100,
-        align: 'right',
-        render: (_, r) => (
-          <Space size={2} onClick={(e) => e.stopPropagation()}>
-            <Tooltip title="Ver detalle">
-              <Button
-                type="text"
-                size="small"
-                className="matricula-v2-action-icon--info"
-                icon={<EyeOutlined />}
-                onClick={() => setDrawerStudent(r)}
-              />
-            </Tooltip>
-            <Tooltip title="Editar">
-              <Button
-                type="text"
-                size="small"
-                className="matricula-v2-action-icon--warning"
-                icon={<EditOutlined />}
-                onClick={() => handleEdit(r)}
-              />
-            </Tooltip>
-            <Dropdown
-              {...mv2DropdownPopupProps}
-              menu={{
-                items: [
-                  {
-                    key: 'print',
-                    icon: <PrinterOutlined style={{ color: 'var(--info)' }} />,
-                    label: 'Imprimir comprobante',
-                  },
-                  {
-                    key: 'mail',
-                    icon: <MailOutlined style={{ color: 'var(--info)' }} />,
-                    label: 'Enviar correo',
-                  },
-                  {
-                    key: 'doc',
-                    icon: <FileTextOutlined style={{ color: 'var(--info)' }} />,
-                    label: 'Generar reporte',
-                  },
-                  { type: 'divider' },
-                  { key: 'del', icon: <DeleteOutlined />, label: 'Eliminar', danger: true },
-                ],
-              }}
-            >
-              <Button
-                type="text"
-                size="small"
-                className="matricula-v2-action-icon--muted"
-                icon={<MoreOutlined />}
-              />
-            </Dropdown>
-          </Space>
-        ),
-      },
-    ],
-    [handleEdit, setDrawerStudent],
+  const compactTable = useCompactTableLayout();
+  const { fullColumns, compactColumns } = useMemo(
+    () => buildMatriculaTableColumns({ handleView, handleEdit }, { menuOnly: compactTable }),
+    [handleEdit, handleView, compactTable],
   );
+  const tableColumns = compactTable ? compactColumns : fullColumns;
+
+  const tableExpandable = useMemo(
+    () =>
+      compactTable
+        ? {
+            expandedRowRender: (record) => <MatriculaTableRowDetails record={record} />,
+            rowExpandable: () => true,
+            expandRowByClick: false,
+            columnWidth: 44,
+          }
+        : undefined,
+    [compactTable],
+  );
+
 
   return (
     <div className="matricula-v2-root">
@@ -264,14 +118,14 @@ const MatriculaListV2 = () => {
             ),
         }))}
       />
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20, marginBottom: 22, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 240 }}>
+      <div className="matricula-v2-page-header-row">
+        <div className="matricula-v2-page-header-main">
           <h1 className="matricula-v2-page-title">Lista de Inscripciones</h1>
           <p className="matricula-v2-page-subtitle">
             {gestionLabel} · Administra las matrículas de estudiantes activos del instituto.
           </p>
         </div>
-        <Space wrap>
+        <Space wrap className="matricula-v2-page-header-actions">
           {puedeExportarLista ? (
             <>
               <Select
@@ -413,35 +267,50 @@ const MatriculaListV2 = () => {
         />
       </div>
 
-      <div className="matricula-v2-table-wrap">
+      <div
+        className={`matricula-v2-table-wrap${compactTable ? ' matricula-v2-table-wrap--compact' : ''}`}
+      >
         <Spin spinning={loading} tip="Cargando inscripciones...">
           <div>
             {viewMode === 'table' ? (
-              <Table
-                rowKey="id"
-                columns={columns}
-                dataSource={paged}
-                pagination={false}
-                size="middle"
-                rowSelection={{
-                  selectedRowKeys,
-                  onChange: setSelectedRowKeys,
-                }}
-                onRow={(r) => ({
-                  onClick: (e) => {
-                    if (e.target.closest('button, .ant-checkbox-wrapper, .ant-dropdown')) return;
-                    setDrawerStudent(r);
-                  },
-                  style: { cursor: 'pointer' },
-                })}
-              />
+              <div
+                className={`matricula-v2-table-scroll${compactTable ? '' : ' matricula-v2-table-scroll--wide'}`}
+              >
+                <Table
+                  rowKey="id"
+                  columns={tableColumns}
+                  dataSource={paged}
+                  pagination={false}
+                  size="middle"
+                  tableLayout={compactTable ? 'auto' : 'fixed'}
+                  expandable={tableExpandable}
+                  scroll={compactTable ? undefined : { x: 900 }}
+                  rowSelection={{
+                    selectedRowKeys,
+                    onChange: setSelectedRowKeys,
+                  }}
+                  onRow={(r) => ({
+                    onClick: (e) => {
+                      if (
+                        e.target.closest(
+                          'button, .ant-checkbox-wrapper, .ant-dropdown, .ant-table-row-expand-icon',
+                        )
+                      ) {
+                        return;
+                      }
+                      handleView(r);
+                    },
+                    style: { cursor: 'pointer' },
+                  })}
+                />
+              </div>
             ) : (
               <div className="matricula-v2-grid">
                 {paged.map((s) => (
                   <StudentCard
                     key={s.id}
                     student={s}
-                    onOpen={() => setDrawerStudent(s)}
+                    onOpen={() => handleView(s)}
                     onEdit={() => handleEdit(s)}
                   />
                 ))}
@@ -474,14 +343,6 @@ const MatriculaListV2 = () => {
         </div>
       </div>
 
-      <StudentDrawer
-        student={drawerStudent}
-        open={!!drawerStudent}
-        onClose={() => setDrawerStudent(null)}
-        onEdit={() => {
-          if (drawerStudent) handleEdit(drawerStudent);
-        }}
-      />
     </div>
   );
 };

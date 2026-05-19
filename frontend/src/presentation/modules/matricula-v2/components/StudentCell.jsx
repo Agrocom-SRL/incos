@@ -8,7 +8,7 @@ const StudentCell = ({ student, showAvatar = true }) => {
   const av = avatarFor(student.fullName);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div className="matricula-v2-student-cell" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
       {showAvatar ? (
         <div
           style={{
@@ -29,22 +29,13 @@ const StudentCell = ({ student, showAvatar = true }) => {
           {av.initials}
         </div>
       ) : null}
-      <div style={{ minWidth: 0 }}>
+      <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>
           {student.fullName}
         </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: 'var(--text-soft)',
-            marginTop: 2,
-            display: 'flex',
-            gap: 12,
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
+        <div className="matricula-v2-student-cell__meta">
           <span>#{student.codigo}</span>
-          <span>CI {student.ci}</span>
+          <span className="matricula-v2-student-cell__ci">CI {student.ci}</span>
         </div>
       </div>
     </div>

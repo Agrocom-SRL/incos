@@ -33,7 +33,6 @@ export const useMatriculaListV2 = () => {
   const [tipoFilter, setTipoFilter] = useState('todos');
   const [historyFilter, setHistoryFilter] = useState(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [drawerStudent, setDrawerStudent] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [viewMode, setViewMode] = useState('table');
@@ -164,8 +163,6 @@ export const useMatriculaListV2 = () => {
     setHistoryFilter,
     selectedRowKeys,
     setSelectedRowKeys,
-    drawerStudent,
-    setDrawerStudent,
     page,
     setPage,
     pageSize,
