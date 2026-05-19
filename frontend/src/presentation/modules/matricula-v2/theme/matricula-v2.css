@@ -103,15 +103,15 @@
 }
 
 .matricula-v2-sidebar__logo {
-  padding: 18px 20px;
+  padding: 10px 8px;
   border-bottom: 1px solid var(--divider);
   display: flex;
   align-items: center;
-  min-height: 76px;
+  min-height: 56px;
 }
 
 .matricula-v2-sidebar__logo-img {
-  height: 44px;
+  height: 84px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
@@ -119,13 +119,13 @@
 }
 
 .matricula-v2-sidebar__logo-icon {
-  width: 44px;
+  width: 64px;
   height: 44px;
   border-radius: 10px;
   background: var(--brand-700);
   color: white;
   font-weight: 800;
-  font-size: 16px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,7 +241,7 @@
 
 /* --- TopBar --- */
 .matricula-v2-topbar {
-  height: 64px;
+  height: 65px;
   background: var(--surface-chrome);
   border-bottom: 1px solid var(--border);
   display: flex;

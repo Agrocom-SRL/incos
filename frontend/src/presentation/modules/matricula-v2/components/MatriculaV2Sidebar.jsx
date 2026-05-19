@@ -123,7 +123,7 @@ const MatriculaV2Sidebar = ({
     >
       <div className="matricula-v2-sidebar__logo">
         {collapsed ? (
-          <div className="matricula-v2-sidebar__logo-icon">IT</div>
+          <div className="matricula-v2-sidebar__logo-icon">INCOS</div>
         ) : (
           <img src={logoHorizontal} alt="INCOS Santa Cruz" className="matricula-v2-sidebar__logo-img" />
         )}
