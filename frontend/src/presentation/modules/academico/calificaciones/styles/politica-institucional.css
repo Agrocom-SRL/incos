@@ -1,0 +1,112 @@
+.cal-politica__contexto {
+  margin: 0 0 16px;
+  font-size: 15px;
+  color: var(--cuaderno-texto-medio, #6b7280);
+}
+
+.cal-politica__alert {
+  margin-bottom: 20px;
+}
+
+.cal-politica__card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+}
+
+.cal-politica__card-desc {
+  margin: 0 0 14px !important;
+  font-size: 13px;
+}
+
+.cal-politica__cuota-row,
+.cal-politica__bimestres-row {
+  display: grid;
+  gap: 12px;
+}
+
+.cal-politica__cuota-row {
+  grid-template-columns: 1fr 1fr;
+}
+
+.cal-politica__bimestres-row {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 768px) {
+  .cal-politica__bimestres-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.cal-politica__hint {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.cal-politica__hint--ok-full {
+  background: var(--cuaderno-verde-tenue, #e8f5ec);
+  color: var(--cuaderno-verde-oscuro, #196b45);
+  border: 1px solid var(--cuaderno-verde-medio, #6db088);
+}
+
+.cal-politica__hint--warn {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  color: #92400e;
+}
+
+.cal-politica__final-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--cuaderno-borde-suave, #f0f0f0);
+}
+
+.cal-politica__final-row:last-child {
+  border-bottom: none;
+}
+
+.cal-politica__final-label {
+  font-weight: 500;
+}
+
+.cal-politica__politica-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.cal-politica__politica-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid var(--cuaderno-borde-suave, #f0f0f0);
+  border-radius: 8px;
+  margin: 0;
+  width: 100%;
+}
+
+.cal-politica__politica-option.ant-radio-wrapper-checked {
+  border-color: var(--cuaderno-verde-medio, #6db088);
+  background: var(--cuaderno-verde-tenue, #e8f5ec);
+}
+
+.cal-politica__politica-label {
+  font-weight: 500;
+}
+
+.cal-politica__politica-desc {
+  display: block;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.cal-politica__actions {
+  margin-top: 8px;
+  padding-bottom: 24px;
+}

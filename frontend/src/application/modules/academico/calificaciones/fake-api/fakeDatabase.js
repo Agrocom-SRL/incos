@@ -65,14 +65,170 @@ const TIPOS_EVALUACION = [
   { id: 7, codigo: 'ACTIVIDAD_EXTRACURRICULAR', nombre: 'Actividad extracurricular', ambito: 'BIMESTRE' },
 ];
 
+const EVALUACIONES_FINALES_INSTITUCIONALES = [
+  {
+    codigo: 'PROYECTO_FINAL_ANUAL',
+    nombre: 'Proyecto integrador',
+    habilitadaInstitucional: true,
+  },
+  {
+    codigo: 'EXAMEN_FINAL_ANUAL',
+    nombre: 'Examen final anual',
+    habilitadaInstitucional: true,
+  },
+  {
+    codigo: 'FERIA_PRODUCTIVA',
+    nombre: 'Feria productiva',
+    habilitadaInstitucional: false,
+  },
+];
+
 const createInitialDatabase = () => ({
   tiposEvaluacion: TIPOS_EVALUACION,
+  configuracionInstitucional: {
+    gestionId: 1,
+    gestionNombre: '2025',
+    cuotaTeorico: 30,
+    cuotaPractico: 70,
+    pesosBimestres: [25, 25, 25, 25],
+    evaluacionesFinalesDisponibles: EVALUACIONES_FINALES_INSTITUCIONALES.map((t) => ({
+      ...t,
+    })),
+    politicaAsistenciaDefault: {
+      politica: 'NO_AFECTA',
+      pesoAsistencia: null,
+      minimoAsistencia: 75,
+      notaReprobada: 51,
+    },
+    ultimaModificacion: {
+      updatedAt: '2025-01-15T10:00:00.000Z',
+      updatedByNombre: 'Coordinación Académica',
+      resumen: 'Configuración inicial de la gestión 2025',
+    },
+    historial: [],
+  },
+  ajustesCurso: {
+    'asig-101': {
+      usarCuotaInstitucional: false,
+      teoricoOverride: 20,
+      practicoOverride: 80,
+      evaluacionesFinales: [
+        { codigo: 'PROYECTO_FINAL_ANUAL', activo: true, peso: 15 },
+        { codigo: 'EXAMEN_FINAL_ANUAL', activo: false, peso: null },
+        { codigo: 'FERIA_PRODUCTIVA', activo: false, peso: null },
+      ],
+      politicaAsistencia: 'COMPUTA_NOTA',
+      pesoAsistencia: 10,
+      minimoAsistencia: null,
+      notaReprobada: null,
+      historial: [
+        {
+          updatedAt: '2025-03-10T14:30:00.000Z',
+          updatedBy: 1,
+          updatedByNombre: 'María Fernández López',
+          resumen: 'Cuota 20/80 y asistencia como componente (10%)',
+        },
+      ],
+    },
+  },
+  tablero: {
+    gestion: { id: 1, nombre: '2025' },
+    bimestreVigente: 2,
+    gestionIniciada: true,
+    bimestres: [
+      {
+        numero: 1,
+        estado: 'CERRADO',
+        fechaInicio: '2025-02-03',
+        fechaCierre: '2025-04-18',
+        matriculasTransicionadas: 486,
+      },
+      {
+        numero: 2,
+        estado: 'EN_CURSO',
+        fechaInicio: '2025-04-21',
+        fechaCierre: null,
+        matriculasTransicionadas: null,
+      },
+      {
+        numero: 3,
+        estado: 'BLOQUEADO',
+        fechaInicio: null,
+        fechaCierre: null,
+        matriculasTransicionadas: null,
+      },
+      {
+        numero: 4,
+        estado: 'BLOQUEADO',
+        fechaInicio: null,
+        fechaCierre: null,
+        matriculasTransicionadas: null,
+      },
+    ],
+    metricas: {
+      cursosCompletos: 14,
+      cursosConPendientes: 4,
+      cursosTotal: 18,
+      planesSinDefinir: 3,
+      notasFaltantes: 127,
+      docentesActivos: 16,
+    },
+  },
   docenteActual: {
     id: 1,
     nombre: 'María Fernández López',
     gestionVigente: '2025',
     bimestreVigente: 2,
   },
+  adminActual: {
+    id: 99,
+    nombre: 'Coordinación Académica',
+  },
+  docentesCatalog: [
+    {
+      id: 1,
+      nombre: 'María Fernández López',
+      especialidad: 'Sistemas Informáticos',
+      gestionVigente: '2025',
+      bimestreVigente: 2,
+    },
+    {
+      id: 2,
+      nombre: 'Juan Carlos Pérez Ruiz',
+      especialidad: 'Contaduría General',
+      gestionVigente: '2025',
+      bimestreVigente: 2,
+    },
+    {
+      id: 3,
+      nombre: 'Ana Lucía Torres Vega',
+      especialidad: 'Administración de Empresas',
+      gestionVigente: '2025',
+      bimestreVigente: 2,
+    },
+    {
+      id: 4,
+      nombre: 'Roberto Choque Mamani',
+      especialidad: 'Sistemas Informáticos',
+      gestionVigente: '2025',
+      bimestreVigente: 2,
+    },
+  ],
+  docenteCursosMap: {
+    1: ['asig-101', 'asig-102', 'asig-103', 'asig-104'],
+    2: ['asig-102', 'asig-104'],
+    3: ['asig-101', 'asig-103'],
+    4: ['asig-103'],
+  },
+  impersonacion: {
+    activa: false,
+    docenteId: null,
+    docenteNombre: null,
+    adminId: null,
+    adminNombre: null,
+    iniciadaEn: null,
+  },
+  auditoriaAdmin: [],
   cursos: [
     {
       id: 'asig-101',

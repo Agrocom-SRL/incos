@@ -1,33 +1,51 @@
 /**
- * Calificaciones — pantalla de inicio: cursos del docente (título visible: "Mis cursos").
+ * Calificaciones — cursos del docente (propio o elegido por coordinación).
  */
 
 import { Alert, Button } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { useCalificacionesCursos } from '@application-academico/calificaciones/hooks/useCalificacionesCursos.js';
+import { useMisCursosCalificaciones } from '@application-academico/calificaciones/hooks/useMisCursosCalificaciones.js';
+import {
+  CALIFICACIONES_PATH,
+  CALIFICACIONES_TABLERO_PATH,
+} from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import CalificacionesAcciones, {
+  AccionTableroGestion,
+  AccionVolverCoordinacion,
+} from '../components/CalificacionesAcciones.jsx';
+import ImpersonacionBanner from '../components/ImpersonacionBanner.jsx';
 import CursoCard from '../components/CursoCard.jsx';
 import CalificacionesCursosSkeleton from '../components/CalificacionesCursosSkeleton.jsx';
 import '../styles/calificaciones.css';
 
-const CalificacionesCursosPage = () => {
+const MisCursosPage = () => {
   const {
     titulo,
     subtitulo,
     contextoLinea,
     cursos,
+    impersonacion,
+    esVistaCoordinacion,
     isLoading,
     error,
     refetch,
     breadcrumbItems,
     cuadernoPath,
-  } = useCalificacionesCursos();
+  } = useMisCursosCalificaciones();
 
   const header = <PageHeader title={titulo} breadcrumbItems={breadcrumbItems} />;
 
   return (
     <PageTemplate header={header} sidebar={null}>
       <div className="cal-calificaciones-inicio sd">
+        <CalificacionesAcciones className="cal-acciones--end">
+          {esVistaCoordinacion ? <AccionVolverCoordinacion to={CALIFICACIONES_PATH} /> : null}
+          <AccionTableroGestion to={CALIFICACIONES_TABLERO_PATH} />
+        </CalificacionesAcciones>
+
+        <ImpersonacionBanner impersonacion={impersonacion} />
+
         {!isLoading && subtitulo ? (
           <p className="cal-calificaciones-inicio__subtitulo">{subtitulo}</p>
         ) : null}
@@ -35,7 +53,7 @@ const CalificacionesCursosPage = () => {
           <p className="cal-calificaciones-inicio__contexto">{contextoLinea}</p>
         ) : null}
 
-        {isLoading ? <CalificacionesCursosSkeleton count={4} /> : null}
+        {isLoading ? <CalificacionesCursosSkeleton count={esVistaCoordinacion ? 3 : 4} /> : null}
 
         {error ? (
           <Alert
@@ -58,9 +76,21 @@ const CalificacionesCursosPage = () => {
             ))}
           </div>
         ) : null}
+
+        {!isLoading && !error && cursos?.length === 0 ? (
+          <Alert
+            type="info"
+            showIcon
+            message={
+              esVistaCoordinacion
+                ? 'Este docente no tiene cursos asignados en la gestión.'
+                : 'No tenés cursos asignados en la gestión vigente.'
+            }
+          />
+        ) : null}
       </div>
     </PageTemplate>
   );
 };
 
-export default CalificacionesCursosPage;
+export default MisCursosPage;

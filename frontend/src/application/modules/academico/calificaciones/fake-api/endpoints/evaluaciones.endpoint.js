@@ -3,6 +3,7 @@
  */
 
 import { fakeDatabase, notaKey } from '../fakeDatabase.js';
+import { registrarAuditoriaSiImpersona } from '../impersonacionAudit.js';
 
 export function actualizarNota({ cursoId, estudianteId, evaluacionId, valor }) {
   const cuaderno = fakeDatabase.cuadernos[cursoId];
@@ -22,11 +23,21 @@ export function actualizarNota({ cursoId, estudianteId, evaluacionId, valor }) {
 
   const actualizadoEn = new Date().toISOString();
 
+  registrarAuditoriaSiImpersona('ACTUALIZAR_NOTA', {
+    cursoId,
+    estudianteId,
+    evaluacionId,
+    valor,
+  });
+
   return {
     id: evaluacionId,
     estudianteId,
     valor: valor == null || valor === '' ? null : valor,
     actualizadoEn,
+    actualizadoPor: fakeDatabase.impersonacion.activa
+      ? fakeDatabase.impersonacion.adminNombre
+      : fakeDatabase.docenteActual.nombre,
   };
 }
 
@@ -62,6 +73,8 @@ export function crearEvaluacion({
 
   cuaderno.evaluaciones[bimestreNum].push(nueva);
 
+  registrarAuditoriaSiImpersona('CREAR_EVALUACION', { cursoId, bimestre: bimestreNum, evaluacionId: nueva.id });
+
   return { ...nueva };
 }
 
@@ -92,6 +105,8 @@ export function editarEvaluacion({ cursoId, bimestre, evaluacionId, cambios }) {
         : lista[idx].tipoEvaluacionId,
   };
 
+  registrarAuditoriaSiImpersona('EDITAR_EVALUACION', { cursoId, evaluacionId, cambios });
+
   return { ...lista[idx] };
 }
 
@@ -121,6 +136,8 @@ export function eliminarEvaluacion({ cursoId, bimestre, evaluacionId }) {
       deletedNotasCount += 1;
     }
   });
+
+  registrarAuditoriaSiImpersona('ELIMINAR_EVALUACION', { cursoId, evaluacionId });
 
   return { deletedEvaluacionId: evaluacionId, deletedNotasCount };
 }

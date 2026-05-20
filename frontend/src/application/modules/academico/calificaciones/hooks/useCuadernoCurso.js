@@ -6,15 +6,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
 import { calificacionesFakeApi } from '../fake-api/index.js';
-import { CALIFICACIONES_PATH } from '../utils/calificacionesPaths.js';
+import { docenteCursosPath } from '../utils/calificacionesPaths.js';
 
 export const useCuadernoCurso = () => {
-  const { cursoId } = useParams();
+  const { cursoId, docenteId } = useParams();
+  const esVistaAdmin = Boolean(docenteId); // cuaderno siempre vía docente/:docenteId/curso/:cursoId
   const [cuaderno, setCuaderno] = useState(null);
   const [bimestreActivo, setBimestreActivoState] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefetching, setIsRefetching] = useState(false);
   const [error, setError] = useState(null);
+  const [impersonacion, setImpersonacion] = useState(null);
 
   const cargar = useCallback(
     async (bimestre, { conservarCuaderno = false } = {}) => {
@@ -50,9 +52,18 @@ export const useCuadernoCurso = () => {
       setError(null);
       setCuaderno(null);
       try {
-        const cursosData = await calificacionesFakeApi.obtenerCalificacionesCursos();
-        const bimestreVigente = cursosData.docente.bimestreVigente;
-        if (cancelled) return;
+        let bimestreVigente;
+        if (esVistaAdmin) {
+          const adminCtx = await calificacionesFakeApi.activarImpersonacion({ docenteId });
+          if (cancelled) return;
+          setImpersonacion(adminCtx.impersonacion);
+          bimestreVigente = adminCtx.docente.bimestreVigente;
+        } else {
+          const cursosData = await calificacionesFakeApi.obtenerCalificacionesCursos();
+          bimestreVigente = cursosData.docente.bimestreVigente;
+          if (cancelled) return;
+          setImpersonacion(null);
+        }
         setBimestreActivoState(bimestreVigente);
         const data = await calificacionesFakeApi.obtenerCuaderno({
           cursoId,
@@ -73,7 +84,7 @@ export const useCuadernoCurso = () => {
     return () => {
       cancelled = true;
     };
-  }, [cursoId]);
+  }, [cursoId, docenteId, esVistaAdmin]);
 
   const setBimestreActivo = useCallback(
     (numero) => {
@@ -225,13 +236,11 @@ export const useCuadernoCurso = () => {
     [cursoId, bimestreActivo, cuaderno, quitarEvaluacionLocal],
   );
 
-  const breadcrumbItems = useMemo(
-    () =>
-      cuaderno
-        ? createBreadcrumbItems('ACA-CAL-CUADERNO', 'ACA-CAL', cuaderno.curso.materia)
-        : createBreadcrumbItems('ACA-CAL-CUADERNO', 'ACA-CAL', null),
-    [cuaderno?.curso.materia],
-  );
+  const breadcrumbItems = useMemo(() => {
+    const routeKey = esVistaAdmin ? 'ACA-CAL-DOCENTES-CUADERNO' : 'ACA-CAL-CUADERNO';
+    const titulo = cuaderno?.curso.materia ?? null;
+    return createBreadcrumbItems(routeKey, 'ACA-CAL', titulo);
+  }, [cuaderno?.curso.materia, esVistaAdmin]);
 
   const subtituloCurso = cuaderno
     ? [
@@ -257,8 +266,11 @@ export const useCuadernoCurso = () => {
     refetch,
     breadcrumbItems,
     subtituloCurso,
-    volverPath: CALIFICACIONES_PATH,
+    volverPath: docenteCursosPath(docenteId),
     cursoId,
+    docenteId,
+    esVistaAdmin,
+    impersonacion,
     crearEvaluacion,
     editarEvaluacion,
     eliminarEvaluacion,

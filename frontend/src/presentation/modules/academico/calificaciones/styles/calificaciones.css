@@ -37,6 +37,46 @@
   color: var(--cuaderno-texto-medio);
 }
 
+/* —— Acciones contextuales por pantalla —— */
+.cal-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.cal-acciones--end {
+  justify-content: flex-end;
+}
+
+/* —— Impersonación (vista admin) —— */
+.cal-impersonacion-banner {
+  margin-bottom: 16px;
+  border: 1px solid #fcd34d !important;
+  background: #fffbeb !important;
+}
+
+.cal-impersonacion-banner .ant-alert-message {
+  color: #92400e;
+}
+
+.cal-docentes-admin__contexto {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--cuaderno-texto-medio, #6b7280);
+}
+
+.cal-docentes-admin__busqueda {
+  max-width: 360px;
+  margin-bottom: 16px;
+}
+
+.cal-docentes-admin__table .ant-table-thead > tr > th {
+  background: var(--cuaderno-verde-tenue, #e8f5ec) !important;
+}
+
 .cal-calificaciones-inicio__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -729,6 +769,166 @@
     opacity: 0;
     transform: translateX(-8px);
   }
+}
+
+/* —— Drawer ajustes del curso —— */
+.cal-ajustes-drawer__override-alert {
+  margin-bottom: 16px;
+}
+
+.cal-ajustes-drawer__section-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+.cal-ajustes-drawer__section-desc {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--cuaderno-texto-medio);
+  line-height: 1.45;
+}
+
+.cal-ajustes-drawer__cuota-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.cal-ajustes-drawer__final-item {
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--cuaderno-borde-suave);
+  border-radius: 8px;
+  background: var(--cuaderno-fondo);
+}
+
+.cal-ajustes-drawer__final-item--disabled {
+  opacity: 0.55;
+}
+
+.cal-ajustes-drawer__final-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.cal-ajustes-drawer__final-label {
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal-ajustes-drawer__info-icon {
+  color: var(--cuaderno-texto-tenue);
+  font-size: 14px;
+}
+
+.cal-ajustes-drawer__hint-extra {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.cal-ajustes-drawer__politica-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.cal-ajustes-drawer__politica-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid var(--cuaderno-borde-suave);
+  border-radius: 8px;
+  margin: 0;
+  width: 100%;
+}
+
+.cal-ajustes-drawer__politica-option.ant-radio-wrapper-checked {
+  border-color: var(--cuaderno-verde-medio);
+  background: var(--cuaderno-verde-tenue);
+}
+
+.cal-ajustes-drawer__politica-label {
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+.cal-ajustes-drawer__politica-desc {
+  display: block;
+  font-size: 12px;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.cal-ajustes-drawer__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+/* —— Drawer vista previa —— */
+.cal-preview-drawer__alert {
+  margin-bottom: 12px;
+}
+
+.cal-preview-drawer__resumen {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-preview-drawer__table .ant-table-thead > tr > th {
+  background: var(--cuaderno-verde-tenue) !important;
+  color: var(--cuaderno-verde-oscuro);
+  font-weight: 600;
+}
+
+.cal-preview__celda {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.cal-preview__celda--bimestre {
+  color: var(--cuaderno-verde-oscuro);
+  font-weight: 600;
+}
+
+.cal-preview__celda--reprobado {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.cal-preview__celda--incompleta {
+  color: var(--cuaderno-texto-tenue);
+}
+
+.cal-preview__tag {
+  margin: 0;
+}
+
+.cal-preview-drawer__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.cal-preview-drawer__nota-pie {
+  font-size: 12px;
+  max-width: 320px;
+  line-height: 1.4;
 }
 
 @media (max-width: 1279px) {

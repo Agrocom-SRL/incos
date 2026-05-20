@@ -27,10 +27,28 @@ El ítem de menú del dominio Académico es **Calificaciones** (`ACA-CAL`). Las 
 
 | Ruta | Pantalla | Notas |
 |------|----------|--------|
-| `/academico/calificaciones` | Inicio del módulo — cards de cursos del docente | Título de página: "Mis cursos" (saludo al docente); menú lateral: "Calificaciones" |
-| `/academico/calificaciones/:cursoId` | Cuaderno del curso — grilla de notas | `cursoId` = id de `asignaciones_docentes` |
+| `/academico/calificaciones` | Entrada del módulo | **Coordinación** (`academico.calificacion.coordinacion`): vista general de docentes. **Docente** (`mis_cursos`): redirección a `/docente/:id`. Menú: `ingreso`. |
+| `/academico/calificaciones/docente/:docenteId` | Mis cursos | Misma pantalla `MisCursosPage` (coordinación o docente). Permiso `mis_cursos`. |
+| `/academico/calificaciones/docente/:docenteId/curso/:cursoId` | Cuaderno de notas | Permiso `cuaderno`. Banner de impersonación en vista coordinación. |
+| `/academico/calificaciones/politica` | Política institucional (Nivel 1) | `academico.calificacion.politica` (LISTAR / EDITAR). Botón en lista docentes. |
+| `/academico/calificaciones/tablero` | Tablero de coordinación (Nivel 2) | `academico.calificacion.tablero` (LISTAR / EDITAR). Botón desde mis cursos. |
 
-Rutas **obsoletas** (Fase 0, ya no aplican): flujo con `/academico/calificaciones/docente/:id/...` y pantalla de elegir docente. También se descartó `/mis-cursos` como path temporal de desarrollo.
+Rutas **obsoletas** (Fase 0): `/academico/calificaciones/:cursoId` (cuaderno sin docente en URL), `/mis-cursos`, pantallas plan/notas duplicadas bajo paths viejos.
+
+### Permisos (seed 54, IDs 15–20 y 102–105)
+
+| Código | Uso en UI |
+|--------|-----------|
+| `academico.calificacion.ingreso` (15) | Ítem menú Académico → Calificaciones |
+| `academico.calificacion.coordinacion` (16) | Vista general — docentes con cursos (`CoordinacionCalificacionesPage`) |
+| `academico.calificacion.mis_cursos` (17) | `MisCursosPage` — cursos del docente |
+| `academico.calificacion.cuaderno` (18) | `CuadernoPage` |
+| `academico.calificacion.politica` (19) | `/politica` — Nivel 1 |
+| `academico.calificacion.tablero` (20) | `/tablero` — Nivel 2 |
+| `academico.calificacion.registrar.*` (21-23) | Crear evaluaciones / notas en cuaderno |
+| `academico.calificacion.modificar` (24) | Editar notas ya cargadas |
+
+**Roles típicos:** RECTOR, DIR_ACADEMICO y SEC_ACADEMICA tienen ingreso + docentes + política + tablero + cuaderno. DOCENTE: ingreso + curso + registrar + modificar (sin docentes, política ni tablero). ESTUDIANTE: ingreso + curso (solo lectura propia, cuando aplique).
 
 ---
 
@@ -125,7 +143,7 @@ Drawer lateral que muestra cómo se calcularía cada nota con lo cargado hasta a
 Pantalla administrativa de control del año.
 
 **Rutas nuevas:**
-- `/academico/tablero` — vista del año con los 4 bimestres y su estado.
+- `/academico/calificaciones/tablero` — vista del año con los 4 bimestres y su estado (página del módulo Calificaciones, no un submódulo aparte).
 
 **Funcionalidades:**
 - Iniciar Bimestre 1 (transición masiva `INSCRITO → CURSANDO` en `matriculas_materia` de la gestión).
@@ -199,3 +217,23 @@ Cada prompt debe respetar esta estructura para que el agente trabaje sin ambigü
 ```
 
 Este loop permite que el plan se adapte a la realidad del código que va emergiendo, sin que ninguna fase termine ciega.
+
+---
+
+## Estado de avance (actualizado en desarrollo)
+
+| Fase | Estado | Notas |
+|------|--------|--------|
+| 0 — Limpieza | ✅ | Rutas obsoletas eliminadas |
+| 1 — Esqueleto cuaderno | ✅ | `/academico/calificaciones` + `/:cursoId` |
+| 1.5 — Identidad visual | ✅ | Tokens INCOS en `calificaciones.css` |
+| 2 — Grilla + auto-guardado | ✅ | Fake API + `NotasGrid` |
+| 2.5 — Drawer evaluaciones | ✅ | Crear / editar / eliminar columnas |
+| 3 — Ajustes del curso | ✅ | Drawer cuota, finales, asistencia (`AjustesCursoDrawer`) |
+| 4 — Vista previa notas | ✅ | `VistaPreviaDrawer` + `calcularVistaPrevia.js` |
+| 5 — Tablero coordinación | ✅ | `/academico/calificaciones/tablero` |
+| 6 — Vista admin (impersonación) | ✅ | Entrada `/academico/calificaciones` → elegir docente → mis cursos → cuaderno |
+| 7 — Política institucional | ✅ | `/academico/calificaciones/politica` |
+| 2-bis — Backend real | ⏳ | Reemplazar fake API manteniendo contratos |
+
+**Siguiente prompt sugerido:** Fase 2-bis — reemplazar fake API por backend real (mismos contratos en `*.endpoint.js`). Reorganizar rutas/menús si hace falta.

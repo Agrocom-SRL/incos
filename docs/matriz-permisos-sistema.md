@@ -236,13 +236,18 @@ Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 Raíz `/academico`: dashboard pendiente (`UnderConstruction`).
 
 ### ACA - Calificaciones (detalle rutas)
-Permisos: `academico.calificacion.*` — `ruta_sidebar` en seed: `/academico/calificaciones`
+Permisos: `academico.calificacion.*` — menú: `/academico/calificaciones` (IDs 15–20 operación cuaderno; 102–105 coordinación)
 
-| Accion | Descripcion | Roles |
-|---|---|---|
-| VER | Ver notas/curso | ADM, REC, DIRA, SECA, DOC, EST (solo propio) |
-| CREAR | Registrar parcial/practico/recuperatorio | ADM, REC, DIRA, SECA, DOC |
-| EDITAR | Modificar calificaciones | ADM, REC, DIRA, SECA, DOC |
+| Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
+|---|---|---|---|
+| `academico.calificacion.ingreso` | LISTAR | Ítem menú Calificaciones | REC, DIRA, SECA, DOC, EST |
+| `academico.calificacion.coordinacion` | LISTAR | Vista general docentes | REC, DIRA, SECA |
+| `academico.calificacion.mis_cursos` | LISTAR, DETALLE | Mis cursos del docente | REC, DIRA, SECA, DOC, EST (lectura) |
+| `academico.calificacion.cuaderno` | LISTAR | Cuaderno de notas | REC, DIRA, SECA, DOC |
+| `academico.calificacion.politica` | LISTAR, EDITAR | `/academico/calificaciones/politica` | REC, DIRA, SECA |
+| `academico.calificacion.tablero` | LISTAR, EDITAR | `/academico/calificaciones/tablero` | REC, DIRA, SECA |
+| `academico.calificacion.registrar.*` | CREAR | Evaluaciones y notas en cuaderno | REC, DIRA, SECA, DOC |
+| `academico.calificacion.modificar` | EDITAR | Corregir notas cargadas | REC, DIRA, SECA, DOC |
 
 ### ACA - Nivelaciones, Trazabilidad, Historial, Licencias
 Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.historial.*`, `academico.licencia.*`

@@ -14,6 +14,9 @@ import NotasGrid from '../components/NotasGrid.jsx';
 import CuadernoFooter from '../components/CuadernoFooter.jsx';
 import CuadernoSkeleton from '../components/CuadernoSkeleton.jsx';
 import EvaluacionDrawer from '../components/EvaluacionDrawer.jsx';
+import AjustesCursoDrawer from '../components/AjustesCursoDrawer.jsx';
+import VistaPreviaDrawer from '../components/VistaPreviaDrawer.jsx';
+import ImpersonacionBanner from '../components/ImpersonacionBanner.jsx';
 import '../styles/calificaciones.css';
 
 const CuadernoPage = () => {
@@ -35,8 +38,11 @@ const CuadernoPage = () => {
     crearEvaluacion,
     editarEvaluacion,
     eliminarEvaluacion,
+    impersonacion,
   } = useCuadernoCurso();
 
+  const [ajustesAbierto, setAjustesAbierto] = useState(false);
+  const [vistaPreviaAbierta, setVistaPreviaAbierta] = useState(false);
   const [drawerAbierto, setDrawerAbierto] = useState(false);
   const [drawerModo, setDrawerModo] = useState('crear');
   const [evaluacionEditar, setEvaluacionEditar] = useState(null);
@@ -115,7 +121,14 @@ const CuadernoPage = () => {
     <PageTemplate header={header} sidebar={null}>
       <CuadernoAutosaveProvider>
         <div className="cal-cuaderno sd">
-          <CuadernoHeader materia={curso.materia} subtitulo={subtituloCurso} />
+          <ImpersonacionBanner impersonacion={impersonacion} />
+
+          <CuadernoHeader
+            materia={curso.materia}
+            subtitulo={subtituloCurso}
+            onAjustes={() => setAjustesAbierto(true)}
+            onVistaPrevia={() => setVistaPreviaAbierta(true)}
+          />
 
           <BimestreTabs
             bimestres={bimestres}
@@ -137,6 +150,21 @@ const CuadernoPage = () => {
             />
             <CuadernoFooter />
           </div>
+
+          <AjustesCursoDrawer
+            abierto={ajustesAbierto}
+            cursoId={cursoId}
+            onCerrar={() => setAjustesAbierto(false)}
+          />
+
+          <VistaPreviaDrawer
+            abierto={vistaPreviaAbierta}
+            cursoId={cursoId}
+            bimestre={bimestreActivo}
+            estudiantes={estudiantes}
+            evaluaciones={evaluaciones}
+            onCerrar={() => setVistaPreviaAbierta(false)}
+          />
 
           <EvaluacionDrawer
             abierto={drawerAbierto}
