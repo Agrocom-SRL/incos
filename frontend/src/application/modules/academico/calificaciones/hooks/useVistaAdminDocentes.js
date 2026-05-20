@@ -13,7 +13,6 @@ const PRELIM_LIMIT = 15;
 
 export const useVistaAdminDocentes = () => {
   const [gestionVigente, setGestionVigente] = useState(null);
-  const [bimestreVigente, setBimestreVigente] = useState(null);
   const [docentes, setDocentes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,18 +38,15 @@ export const useVistaAdminDocentes = () => {
       if (!result?.success) {
         setDocentes([]);
         setGestionVigente(null);
-        setBimestreVigente(null);
         setError(result?.error || 'No se pudo cargar el listado');
         return;
       }
 
       setGestionVigente(result.data?.gestionVigente ?? null);
-      setBimestreVigente(result.data?.bimestreVigente ?? null);
       setDocentes(Array.isArray(result.data?.docentes) ? result.data.docentes : []);
     } catch (err) {
       setDocentes([]);
       setGestionVigente(null);
-      setBimestreVigente(null);
       setError(err?.message || 'Error al cargar');
     } finally {
       setIsLoading(false);
@@ -75,7 +71,6 @@ export const useVistaAdminDocentes = () => {
   return {
     docentes,
     gestionVigente,
-    bimestreVigente,
     isLoading,
     error,
     refetch: cargar,

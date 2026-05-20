@@ -77,6 +77,110 @@
   background: var(--cuaderno-verde-tenue, #e8f5ec) !important;
 }
 
+/* —— Coordinación: celdas con icono —— */
+.cal-coord-celda {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cal-coord-celda__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 16px;
+  color: var(--cuaderno-verde-oscuro, #196b45);
+}
+
+.cal-coord-celda__contenido {
+  min-width: 0;
+  flex: 1;
+}
+
+.cal-coordinacion-table .ant-table-tbody > tr > td {
+  vertical-align: top;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+/* Carreras apiladas con viñeta y pill por color de carrera */
+.cal-coord-celda--carreras {
+  align-items: flex-start;
+}
+
+.cal-coord-carreras-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.cal-coord-carreras-list__item {
+  position: relative;
+  padding-left: 14px;
+  margin-bottom: 8px;
+}
+
+.cal-coord-carreras-list__item:last-child {
+  margin-bottom: 0;
+}
+
+.cal-coord-carreras-list__item::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--cuaderno-texto-medio, #6b7280);
+}
+
+.cal-coord-carrera-pill {
+  display: block;
+  padding: 6px 10px 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* Métricas: materias, cursos, estudiantes en columna */
+.cal-coord-metricas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cal-coord-metricas-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cal-coord-metricas-list__icon {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--cuaderno-verde-oscuro, #196b45);
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.cal-coord-metricas-list__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+
+.cal-coord-metricas-list__label {
+  font-size: 12px !important;
+}
+
 .cal-calificaciones-inicio__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

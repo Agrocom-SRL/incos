@@ -39,9 +39,12 @@ export class CalificacionRepository {
           v.docente_id,
           v.docente_nombre,
           v.docente_especialidad,
-          v.cantidad_cursos
+          v.cantidad_cursos,
+          v.cantidad_materias,
+          v.cantidad_estudiantes,
+          v.carreras_detalle
         FROM vista_calificacion_coordinacion_docentes v
-        ORDER BY v.cantidad_cursos DESC, v.docente_nombre ASC
+        ORDER BY v.cantidad_estudiantes DESC, v.cantidad_cursos DESC, v.docente_nombre ASC
         LIMIT ?
         `,
         { replacements: [lim], type: sequelize.QueryTypes.SELECT }
@@ -61,16 +64,20 @@ export class CalificacionRepository {
         v.docente_id,
         v.docente_nombre,
         v.docente_especialidad,
-        v.cantidad_cursos
+        v.cantidad_cursos,
+        v.cantidad_materias,
+        v.cantidad_estudiantes,
+        v.carreras_detalle
       FROM vista_calificacion_coordinacion_docentes v
       WHERE (
         COALESCE(v.docente_nombre, '') LIKE ?
         OR COALESCE(v.docente_especialidad, '') LIKE ?
+        OR COALESCE(v.carreras_detalle, '') LIKE ?
       )
-      ORDER BY v.cantidad_cursos DESC, v.docente_nombre ASC
+      ORDER BY v.cantidad_estudiantes DESC, v.cantidad_cursos DESC, v.docente_nombre ASC
       LIMIT ?
       `,
-      { replacements: [term, term, lim], type: sequelize.QueryTypes.SELECT }
+      { replacements: [term, term, term, lim], type: sequelize.QueryTypes.SELECT }
     );
   }
 }

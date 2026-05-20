@@ -7,8 +7,9 @@ import { Link } from 'react-router-dom';
 import {
   ArrowLeftOutlined,
   DashboardOutlined,
-  FileTextOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
+import { ActionButton } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 
@@ -29,13 +30,21 @@ export const AccionVolverCoordinacion = ({ to }) => (
 /** @deprecated Usar AccionVolverCoordinacion */
 export const AccionVolverDocentes = AccionVolverCoordinacion;
 
-export const AccionPoliticaInstitucional = ({ to }) => (
-  <PermisoGuard codigo={CALIFICACIONES_PERMISOS.politica} accion="LISTAR">
-    <Link to={to}>
-      <Button icon={<FileTextOutlined />}>Política institucional</Button>
-    </Link>
-  </PermisoGuard>
+/** Configuración / política de notas (header de coordinación y pantallas relacionadas). */
+export const AccionConfiguracionNotas = ({ onClick }) => (
+  <ActionButton
+    permiso={CALIFICACIONES_PERMISOS.politica}
+    accion="LISTAR"
+    variant="outline"
+    icon={<SettingOutlined />}
+    onClick={onClick}
+  >
+    Configuración de notas
+  </ActionButton>
 );
+
+/** @deprecated Usar AccionConfiguracionNotas */
+export const AccionPoliticaInstitucional = AccionConfiguracionNotas;
 
 export const AccionTableroGestion = ({ to }) => (
   <PermisoGuard codigo={CALIFICACIONES_PERMISOS.tablero} accion="LISTAR">

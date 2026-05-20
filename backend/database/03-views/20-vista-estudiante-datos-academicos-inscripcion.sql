@@ -62,6 +62,7 @@ SELECT
   vpi.carrera_id,
   vpi.carrera_nombre,
   vpi.carrera_codigo,
+  vpi.carrera_color_hex,
   vpi.periodo_id,
   vpi.periodo_numero,
   vpi.periodo_nombre,

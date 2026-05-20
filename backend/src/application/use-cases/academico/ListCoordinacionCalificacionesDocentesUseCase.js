@@ -17,7 +17,7 @@ export class ListCoordinacionCalificacionesDocentesUseCase {
 
   /**
    * @param {{ q?: string, limit?: number, preliminar?: boolean }} input
-   * @returns {Promise<{ gestionVigente: string|null, bimestreVigente: number|null, docentes: Array }>}
+   * @returns {Promise<{ gestionVigente: string|null, docentes: Array }>}
    */
   async execute({ q, limit = 50, preliminar = false }) {
     const ctx = await this.calificacionRepository.obtenerContextoVigente();
@@ -27,6 +27,18 @@ export class ListCoordinacionCalificacionesDocentesUseCase {
         : ctx?.gestion_anio != null
           ? String(ctx.gestion_anio)
           : null;
+
+    const mapCarreras = (raw) =>
+      String(raw ?? '')
+        .split('|||')
+        .map((chunk) => {
+          const partes = chunk.split(':::');
+          const nombre = (partes[0] ?? '').trim();
+          if (!nombre) return null;
+          const colorHex = (partes[1] ?? '').trim() || null;
+          return { nombre, colorHex };
+        })
+        .filter(Boolean);
 
     let rows;
     if (preliminar) {
@@ -45,11 +57,13 @@ export class ListCoordinacionCalificacionesDocentesUseCase {
       nombre: row.docente_nombre ?? '',
       especialidad: row.docente_especialidad ?? null,
       cantidadCursos: Number(row.cantidad_cursos ?? 0),
+      cantidadMaterias: Number(row.cantidad_materias ?? 0),
+      cantidadEstudiantes: Number(row.cantidad_estudiantes ?? 0),
+      carreras: mapCarreras(row.carreras_detalle),
     }));
 
     return {
       gestionVigente,
-      bimestreVigente: ctx?.bimestre_vigente ?? null,
       docentes,
     };
   }
