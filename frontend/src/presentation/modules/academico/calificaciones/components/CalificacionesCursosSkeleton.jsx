@@ -1,11 +1,11 @@
 /**
- * Skeleton de cards en Mis cursos.
+ * Skeleton de cards en la pantalla de inicio de Calificaciones.
  */
 
 import { Skeleton } from 'antd';
 
-const MisCursosSkeleton = ({ count = 4 }) => (
-  <div className="cal-mis-cursos__grid">
+const CalificacionesCursosSkeleton = ({ count = 4 }) => (
+  <div className="cal-calificaciones-inicio__grid">
     {Array.from({ length: count }).map((_, i) => (
       <article key={i} className="cal-curso-card cal-curso-card--skeleton">
         <Skeleton active paragraph={{ rows: 3 }} title={{ width: '70%' }} />
@@ -15,4 +15,4 @@ const MisCursosSkeleton = ({ count = 4 }) => (
   </div>
 );
 
-export default MisCursosSkeleton;
+export default CalificacionesCursosSkeleton;

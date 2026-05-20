@@ -24,20 +24,20 @@
   --bimestre-futuro-opacity: 0.55;
 }
 
-/* —— Mis cursos (sin cambios funcionales; tokens alineados) —— */
-.cal-mis-cursos__subtitulo {
+/* —— Calificaciones · pantalla de inicio (cursos del docente) —— */
+.cal-calificaciones-inicio__subtitulo {
   margin: 0 0 4px;
   font-size: 15px;
   color: var(--cuaderno-texto-medio, #4b5563);
 }
 
-.cal-mis-cursos__contexto {
+.cal-calificaciones-inicio__contexto {
   margin: 0 0 20px;
   font-size: 14px;
   color: var(--cuaderno-texto-medio);
 }
 
-.cal-mis-cursos__grid {
+.cal-calificaciones-inicio__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--spacing-md, 16px);
@@ -581,6 +581,154 @@
   text-align: right;
   max-width: 420px;
   line-height: 1.4;
+}
+
+/* —— Drawer evaluaciones —— */
+.cal-eval-drawer .ant-drawer-footer {
+  border-top: 1px solid var(--cuaderno-borde-suave);
+  padding: 12px 24px;
+}
+
+.cal-eval-drawer__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.cal-eval-drawer__footer-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.cal-eval-drawer__btn-primary.ant-btn-primary {
+  background: var(--cuaderno-verde-oscuro) !important;
+  border-color: var(--cuaderno-verde-oscuro) !important;
+}
+
+.cal-eval-drawer__btn-primary.ant-btn-primary:hover {
+  background: var(--cuaderno-verde-acento) !important;
+  border-color: var(--cuaderno-verde-acento) !important;
+}
+
+.cal-eval-drawer__peso-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  margin: -8px 0 16px;
+}
+
+.cal-eval-drawer__peso-hint--ok {
+  background: var(--cuaderno-verde-tenue);
+  color: var(--cuaderno-verde-oscuro);
+  border: 1px solid rgba(109, 176, 136, 0.35);
+}
+
+.cal-eval-drawer__peso-hint--ok-full {
+  background: var(--cuaderno-verde-tenue);
+  color: var(--cuaderno-verde-oscuro);
+  border: 1px solid var(--cuaderno-verde-medio);
+}
+
+.cal-eval-drawer__peso-hint--warn {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  color: #92400e;
+}
+
+.cal-eval-drawer__peso-icon {
+  margin-top: 2px;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+/* —— Cabeceras de columna clickeables —— */
+.cal-notas-grid__col-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: var(--cuaderno-verde-acento);
+}
+
+.cal-notas-grid__col-head--clickable {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.cal-notas-grid__col-head--clickable:hover {
+  background: var(--cuaderno-fondo);
+}
+
+.cal-notas-grid__col-head--clickable:hover .cal-notas-grid__col-edit-icon {
+  opacity: 1;
+}
+
+.cal-notas-grid__col-edit-icon {
+  font-size: 12px;
+  opacity: 0;
+  color: var(--cuaderno-texto-medio);
+  transition: opacity 0.15s ease;
+}
+
+.cal-notas-grid__add-header--clickable {
+  cursor: pointer;
+  border: none;
+  background: var(--cuaderno-fondo);
+  border-radius: 6px;
+  padding: 4px 10px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.cal-notas-grid__add-header--clickable:hover {
+  background: var(--cuaderno-verde-tenue);
+  color: var(--cuaderno-verde-oscuro);
+}
+
+/* —— Animación columnas —— */
+.cal-col--enter {
+  animation: cal-col-fade-in 0.3s ease forwards;
+}
+
+.cal-col--leave {
+  animation: cal-col-fade-out 0.25s ease forwards;
+  opacity: 0;
+}
+
+@keyframes cal-col-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cal-col-fade-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
 }
 
 @media (max-width: 1279px) {

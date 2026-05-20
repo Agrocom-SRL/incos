@@ -1,25 +1,27 @@
 // src/presentation/modules/academico/calificaciones/routes.jsx
 /**
- * Calificaciones — flujo docente (cuaderno).
+ * Calificaciones (ítem de menú ACA).
  *
- * /mis-cursos — cursos del docente logueado
- * /mis-cursos/:cursoId — cuaderno del curso
+ * /academico/calificaciones — cursos del docente (título de página: "Mis cursos")
+ * /academico/calificaciones/:cursoId — cuaderno del curso
  */
 
 import { lazy } from 'react';
 
-const MisCursosConnector = lazy(() => import('./connectors/MisCursosConnector.jsx'));
+const CalificacionesCursosConnector = lazy(
+  () => import('./connectors/CalificacionesCursosConnector.jsx'),
+);
 const CuadernoConnector = lazy(() => import('./connectors/CuadernoConnector.jsx'));
 
 export const calificacionesRoutes = [
   {
-    path: '/mis-cursos',
-    element: <MisCursosConnector />,
+    path: '/academico/calificaciones',
+    element: <CalificacionesCursosConnector />,
     key: 'ACA-CAL',
     permiso: 'academico.calificacion.curso',
     accion: 'LISTAR',
     menu: {
-      label: 'Mis cursos',
+      label: 'Calificaciones',
       module: 'ACA',
       parent: 'ACA',
       order: 1,
@@ -27,7 +29,7 @@ export const calificacionesRoutes = [
     },
   },
   {
-    path: '/mis-cursos/:cursoId',
+    path: '/academico/calificaciones/:cursoId',
     element: <CuadernoConnector />,
     key: 'ACA-CAL-CUADERNO',
     permiso: 'academico.calificacion.curso',

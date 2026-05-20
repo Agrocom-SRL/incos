@@ -21,6 +21,19 @@ Estos principios son **invariantes** de todo el módulo. Cualquier decisión dur
 
 ---
 
+## Rutas del módulo (convención vigente)
+
+El ítem de menú del dominio Académico es **Calificaciones** (`ACA-CAL`). Las URLs viven bajo `/academico/calificaciones`:
+
+| Ruta | Pantalla | Notas |
+|------|----------|--------|
+| `/academico/calificaciones` | Inicio del módulo — cards de cursos del docente | Título de página: "Mis cursos" (saludo al docente); menú lateral: "Calificaciones" |
+| `/academico/calificaciones/:cursoId` | Cuaderno del curso — grilla de notas | `cursoId` = id de `asignaciones_docentes` |
+
+Rutas **obsoletas** (Fase 0, ya no aplican): flujo con `/academico/calificaciones/docente/:id/...` y pantalla de elegir docente. También se descartó `/mis-cursos` como path temporal de desarrollo.
+
+---
+
 ## Arquitectura de 3 niveles
 
 ```
@@ -73,8 +86,8 @@ Eliminar páginas obsoletas y dejar solo los componentes reutilizables.
 Construir las dos pantallas base del flujo docente sin lógica de carga real.
 
 **Rutas nuevas:**
-- `/mis-cursos` — Pantalla A: cards de cursos del docente.
-- `/mis-cursos/:cursoId` — Pantalla B: cuaderno con tabs de bimestres y grilla vacía.
+- `/academico/calificaciones` — Pantalla A: cards de cursos del docente (título visible "Mis cursos").
+- `/academico/calificaciones/:cursoId` — Pantalla B: cuaderno con tabs de bimestres y grilla vacía.
 
 **Entrega:** UI navegable con datos mockeados o endpoints stub. Validación visual con coordinación antes de seguir.
 
@@ -124,7 +137,7 @@ Permite a coordinación entrar al cuaderno de cualquier docente.
 
 **Rutas nuevas:**
 - `/academico/docentes` — lista de docentes (rediseño de la pantalla 1 actual).
-- `/academico/docentes/:id` — vista de cursos del docente (similar a `/mis-cursos` pero con banner).
+- `/academico/docentes/:id` — vista de cursos del docente (similar a `/academico/calificaciones` pero con banner).
 - `/academico/docentes/:id/curso/:cursoId` — cuaderno con banner amarillo "Estás viendo el cuaderno de [Nombre]".
 
 **Funcionalidades:**

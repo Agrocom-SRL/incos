@@ -1,7 +1,7 @@
 /**
- * Rutas del flujo docente (cuaderno).
+ * Rutas del módulo Calificaciones (ítem Académico · ACA-CAL).
  */
 
-export const MIS_CURSOS_PATH = '/mis-cursos';
+export const CALIFICACIONES_PATH = '/academico/calificaciones';
 
-export const cuadernoCursoPath = (cursoId) => `/mis-cursos/${cursoId}`;
+export const cuadernoCursoPath = (cursoId) => `/academico/calificaciones/${cursoId}`;

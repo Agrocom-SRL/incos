@@ -1,5 +1,5 @@
 /**
- * Simula GET /api/mis-cursos
+ * Simula GET /api/academico/calificaciones (cursos del docente logueado)
  */
 
 import { fakeDatabase } from '../fakeDatabase.js';
@@ -31,7 +31,7 @@ const buildBadge = (curso, bimestreVigente) => {
   return { ...base, texto: base.texto ?? 'Sin evaluaciones' };
 };
 
-export function obtenerMisCursos() {
+export function obtenerCalificacionesCursos() {
   const { docenteActual, cursos } = fakeDatabase;
   const bimestreVigente = docenteActual.bimestreVigente;
 

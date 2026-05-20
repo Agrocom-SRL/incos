@@ -1,16 +1,16 @@
 /**
- * Pantalla A — Mis cursos del docente.
+ * Calificaciones — pantalla de inicio: cursos del docente (título visible: "Mis cursos").
  */
 
 import { Alert, Button } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { useMisCursos } from '@application-academico/calificaciones/hooks/useMisCursos.js';
+import { useCalificacionesCursos } from '@application-academico/calificaciones/hooks/useCalificacionesCursos.js';
 import CursoCard from '../components/CursoCard.jsx';
-import MisCursosSkeleton from '../components/MisCursosSkeleton.jsx';
+import CalificacionesCursosSkeleton from '../components/CalificacionesCursosSkeleton.jsx';
 import '../styles/calificaciones.css';
 
-const MisCursosPage = () => {
+const CalificacionesCursosPage = () => {
   const {
     titulo,
     subtitulo,
@@ -21,21 +21,21 @@ const MisCursosPage = () => {
     refetch,
     breadcrumbItems,
     cuadernoPath,
-  } = useMisCursos();
+  } = useCalificacionesCursos();
 
   const header = <PageHeader title={titulo} breadcrumbItems={breadcrumbItems} />;
 
   return (
     <PageTemplate header={header} sidebar={null}>
-      <div className="cal-mis-cursos sd">
+      <div className="cal-calificaciones-inicio sd">
         {!isLoading && subtitulo ? (
-          <p className="cal-mis-cursos__subtitulo">{subtitulo}</p>
+          <p className="cal-calificaciones-inicio__subtitulo">{subtitulo}</p>
         ) : null}
         {!isLoading && contextoLinea ? (
-          <p className="cal-mis-cursos__contexto">{contextoLinea}</p>
+          <p className="cal-calificaciones-inicio__contexto">{contextoLinea}</p>
         ) : null}
 
-        {isLoading ? <MisCursosSkeleton count={4} /> : null}
+        {isLoading ? <CalificacionesCursosSkeleton count={4} /> : null}
 
         {error ? (
           <Alert
@@ -52,7 +52,7 @@ const MisCursosPage = () => {
         ) : null}
 
         {!isLoading && cursos?.length ? (
-          <div className="cal-mis-cursos__grid">
+          <div className="cal-calificaciones-inicio__grid">
             {cursos.map((curso) => (
               <CursoCard key={curso.id} curso={curso} cuadernoPath={cuadernoPath} />
             ))}
@@ -63,4 +63,4 @@ const MisCursosPage = () => {
   );
 };
 
-export default MisCursosPage;
+export default CalificacionesCursosPage;

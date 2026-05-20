@@ -55,7 +55,18 @@ const buildNotasBimestre2 = () => ({
   'est-15::eval-3': 77,
 });
 
+const TIPOS_EVALUACION = [
+  { id: 1, codigo: 'EXAMEN_PARCIAL', nombre: 'Examen parcial', ambito: 'BIMESTRE' },
+  { id: 2, codigo: 'PRACTICO', nombre: 'Práctico', ambito: 'BIMESTRE' },
+  { id: 3, codigo: 'PROYECTO', nombre: 'Proyecto', ambito: 'BIMESTRE' },
+  { id: 4, codigo: 'EXPOSICION', nombre: 'Exposición', ambito: 'BIMESTRE' },
+  { id: 5, codigo: 'TALLER', nombre: 'Taller', ambito: 'BIMESTRE' },
+  { id: 6, codigo: 'CUESTIONARIO', nombre: 'Cuestionario', ambito: 'BIMESTRE' },
+  { id: 7, codigo: 'ACTIVIDAD_EXTRACURRICULAR', nombre: 'Actividad extracurricular', ambito: 'BIMESTRE' },
+];
+
 const createInitialDatabase = () => ({
+  tiposEvaluacion: TIPOS_EVALUACION,
   docenteActual: {
     id: 1,
     nombre: 'María Fernández López',
@@ -114,11 +125,37 @@ const createInitialDatabase = () => ({
       ],
       estudiantes: ESTUDIANTES_ASIG_101,
       evaluaciones: {
-        1: [{ id: 'eval-b1-1', nombre: 'Evaluación integradora', componente: 'TEORICO', peso: 100 }],
+        1: [
+          {
+            id: 'eval-b1-1',
+            nombre: 'Evaluación integradora',
+            tipoEvaluacionId: 1,
+            componente: 'TEORICO',
+            peso: 100,
+          },
+        ],
         2: [
-          { id: 'eval-1', nombre: 'Examen parcial', componente: 'TEORICO', peso: 60 },
-          { id: 'eval-2', nombre: 'Trabajo práctico', componente: 'PRACTICO', peso: 50 },
-          { id: 'eval-3', nombre: 'Cuestionario', componente: 'PRACTICO', peso: 50 },
+          {
+            id: 'eval-1',
+            nombre: 'Examen parcial',
+            tipoEvaluacionId: 1,
+            componente: 'TEORICO',
+            peso: 60,
+          },
+          {
+            id: 'eval-2',
+            nombre: 'Trabajo práctico',
+            tipoEvaluacionId: 2,
+            componente: 'PRACTICO',
+            peso: 50,
+          },
+          {
+            id: 'eval-3',
+            nombre: 'Cuestionario',
+            tipoEvaluacionId: 6,
+            componente: 'PRACTICO',
+            peso: 50,
+          },
         ],
         3: [],
         4: [],
@@ -146,10 +183,30 @@ const createInitialDatabase = () => ({
         { id: 'est-b8', nombre: 'Karina Flores Rojas', orden: 8 },
       ],
       evaluaciones: {
-        1: [{ id: 'eval-b2-b1', nombre: 'Parcial teórico', componente: 'TEORICO', peso: 100 }],
+        1: [
+          {
+            id: 'eval-b2-b1',
+            nombre: 'Parcial teórico',
+            tipoEvaluacionId: 1,
+            componente: 'TEORICO',
+            peso: 100,
+          },
+        ],
         2: [
-          { id: 'eval-b2-1', nombre: 'Modelo ER', componente: 'PRACTICO', peso: 50 },
-          { id: 'eval-b2-2', nombre: 'Consultas SQL', componente: 'PRACTICO', peso: 50 },
+          {
+            id: 'eval-b2-1',
+            nombre: 'Modelo ER',
+            tipoEvaluacionId: 3,
+            componente: 'PRACTICO',
+            peso: 50,
+          },
+          {
+            id: 'eval-b2-2',
+            nombre: 'Consultas SQL',
+            tipoEvaluacionId: 6,
+            componente: 'PRACTICO',
+            peso: 50,
+          },
         ],
         3: [],
         4: [],
@@ -183,8 +240,24 @@ const createInitialDatabase = () => ({
         { id: 'est-r6', nombre: 'Raúl Vega', orden: 6 },
       ],
       evaluaciones: {
-        1: [{ id: 'eval-r-b1', nombre: 'Laboratorio 1', componente: 'PRACTICO', peso: 100 }],
-        2: [{ id: 'eval-r-b2', nombre: 'Examen bimestral', componente: 'TEORICO', peso: 100 }],
+        1: [
+          {
+            id: 'eval-r-b1',
+            nombre: 'Laboratorio 1',
+            tipoEvaluacionId: 5,
+            componente: 'PRACTICO',
+            peso: 100,
+          },
+        ],
+        2: [
+          {
+            id: 'eval-r-b2',
+            nombre: 'Examen bimestral',
+            tipoEvaluacionId: 1,
+            componente: 'TEORICO',
+            peso: 100,
+          },
+        ],
         3: [],
         4: [],
       },
@@ -216,10 +289,30 @@ const createInitialDatabase = () => ({
         orden: i + 1,
       })),
       evaluaciones: {
-        1: [{ id: 'eval-e-b1', nombre: 'Ensayo', componente: 'TEORICO', peso: 100 }],
+        1: [
+          {
+            id: 'eval-e-b1',
+            nombre: 'Ensayo',
+            tipoEvaluacionId: 1,
+            componente: 'TEORICO',
+            peso: 100,
+          },
+        ],
         2: [
-          { id: 'eval-e-1', nombre: 'Debate', componente: 'PRACTICO', peso: 50 },
-          { id: 'eval-e-2', nombre: 'Caso práctico', componente: 'PRACTICO', peso: 50 },
+          {
+            id: 'eval-e-1',
+            nombre: 'Debate',
+            tipoEvaluacionId: 4,
+            componente: 'PRACTICO',
+            peso: 50,
+          },
+          {
+            id: 'eval-e-2',
+            nombre: 'Caso práctico',
+            tipoEvaluacionId: 3,
+            componente: 'PRACTICO',
+            peso: 50,
+          },
         ],
         3: [],
         4: [],

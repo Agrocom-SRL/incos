@@ -17,7 +17,8 @@ Capa que simula el backend en memoria para validar la UX del cuaderno docente an
 | `fakeDatabase.js` | Estado mutable en memoria |
 | `endpoints/cursos.endpoint.js` | Listado de cursos del docente |
 | `endpoints/cuaderno.endpoint.js` | Cuaderno por curso y bimestre |
-| `endpoints/evaluaciones.endpoint.js` | Actualización de una nota |
+| `endpoints/evaluaciones.endpoint.js` | Notas y CRUD de evaluaciones bimestrales |
+| `endpoints/tiposEvaluacion.endpoint.js` | Catálogo de tipos (ámbito BIMESTRE) |
 | `index.js` | Facade `calificacionesFakeApi` usada por los hooks |
 
 ## Cómo reemplazar por backend real (Fase 2-bis)
@@ -25,7 +26,7 @@ Capa que simula el backend en memoria para validar la UX del cuaderno docente an
 1. Mantener las **mismas firmas** en cada `*.endpoint.js` (mismos parámetros y forma del objeto de respuesta).
 2. Sustituir el cuerpo de cada función por `fetch` / cliente HTTP del proyecto.
 3. En `index.js`, opcionalmente bifurcar: `import { calificacionesFakeApi } from './fake-api'` vs `import { calificacionesApi } from './api'`.
-4. **No modificar** `useMisCursos`, `useCuadernoCurso`, `useNotaAutosave` ni los componentes de presentation.
+4. **No modificar** `useCalificacionesCursos`, `useCuadernoCurso`, `useNotaAutosave` ni los componentes de presentation.
 
 ## Ajustes para QA
 

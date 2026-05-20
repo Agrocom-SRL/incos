@@ -1,5 +1,5 @@
 /**
- * Pantalla Mis cursos — datos vía fake API.
+ * Pantalla de inicio del módulo Calificaciones (lista de cursos del docente).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -15,7 +15,7 @@ const getResumenCursos = (cursos) => {
   };
 };
 
-export const useMisCursos = () => {
+export const useCalificacionesCursos = () => {
   const [cursos, setCursos] = useState(null);
   const [docente, setDocente] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +25,7 @@ export const useMisCursos = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await calificacionesFakeApi.obtenerMisCursos();
+      const data = await calificacionesFakeApi.obtenerCalificacionesCursos();
       setDocente(data.docente);
       setCursos(data.cursos);
     } catch (err) {
@@ -42,7 +42,7 @@ export const useMisCursos = () => {
   }, [cargar]);
 
   const breadcrumbItems = useMemo(
-    () => createBreadcrumbItems('ACA-CAL', 'ACA-CAL', 'Mis cursos'),
+    () => createBreadcrumbItems('ACA-CAL', 'ACA-CAL', 'Calificaciones'),
     [],
   );
 

@@ -2,7 +2,7 @@
  * Grilla estudiantes × evaluaciones del cuaderno.
  */
 
-import { PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Spin, Table } from 'antd';
 import NotaCell from './NotaCell.jsx';
 
@@ -12,7 +12,60 @@ const NotasGrid = ({
   evaluaciones = [],
   soloLectura = true,
   isRefetching = false,
+  onAgregarEvaluacion,
+  onEditarEvaluacion,
+  enteringColumnIds = [],
+  removingColumnId = null,
 }) => {
+  const mostrarColumnaAgregar = !soloLectura;
+
+  const columnasEval = evaluaciones.map((ev) => {
+    const colClass = [
+      'cal-notas-grid__col-eval',
+      enteringColumnIds.includes(ev.id) ? 'cal-col--enter' : '',
+      removingColumnId === ev.id ? 'cal-col--leave' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return {
+      title: (
+        <button
+          type="button"
+          className={[
+            'cal-notas-grid__col-head',
+            !soloLectura ? 'cal-notas-grid__col-head--clickable' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          onClick={() => !soloLectura && onEditarEvaluacion?.(ev)}
+          disabled={soloLectura}
+          aria-label={soloLectura ? ev.nombre : `Editar evaluación ${ev.nombre}`}
+        >
+          <span className="cal-notas-grid__col-head-text">{ev.nombre}</span>
+          {!soloLectura ? (
+            <EditOutlined className="cal-notas-grid__col-edit-icon" aria-hidden />
+          ) : null}
+        </button>
+      ),
+      key: ev.id,
+      width: '18%',
+      align: 'center',
+      className: colClass,
+      onHeaderCell: () => ({ className: colClass }),
+      onCell: () => ({ className: colClass }),
+      render: (_, row) => (
+        <NotaCell
+          cursoId={cursoId}
+          estudianteId={row.id}
+          evaluacionId={ev.id}
+          valorInicial={row.notas?.[ev.id]}
+          soloLectura={soloLectura}
+        />
+      ),
+    };
+  });
+
   const columns = [
     {
       title: 'Estudiante',
@@ -28,42 +81,28 @@ const NotasGrid = ({
         </span>
       ),
     },
-    ...evaluaciones.map((ev) => ({
-      title: ev.nombre,
-      key: ev.id,
-      width: '18%',
-      align: 'center',
-      className: 'cal-notas-grid__col-eval',
-      render: (_, row) => (
-        <NotaCell
-          cursoId={cursoId}
-          estudianteId={row.id}
-          evaluacionId={ev.id}
-          valorInicial={row.notas?.[ev.id]}
-          soloLectura={soloLectura}
-        />
-      ),
-    })),
-    {
-      title: (
-        <span className="cal-notas-grid__add-header">
-          <PlusOutlined aria-hidden />
-        </span>
-      ),
-      key: 'agregar',
-      width: 72,
-      align: 'center',
-      className: 'cal-notas-grid__col-add',
-      render: () => (
-        <Button
-          type="text"
-          icon={<PlusOutlined />}
-          disabled
-          aria-label="Agregar evaluación"
-          className="cal-notas-grid__add-btn"
-        />
-      ),
-    },
+    ...columnasEval,
+    ...(mostrarColumnaAgregar
+      ? [
+          {
+            title: (
+              <button
+                type="button"
+                className="cal-notas-grid__add-header cal-notas-grid__add-header--clickable"
+                onClick={onAgregarEvaluacion}
+                aria-label="Agregar evaluación"
+              >
+                <PlusOutlined aria-hidden />
+              </button>
+            ),
+            key: 'agregar',
+            width: 72,
+            align: 'center',
+            className: 'cal-notas-grid__col-add',
+            render: () => null,
+          },
+        ]
+      : []),
   ];
 
   return (

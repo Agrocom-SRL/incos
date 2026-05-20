@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
 import { calificacionesFakeApi } from '../fake-api/index.js';
-import { MIS_CURSOS_PATH } from '../utils/calificacionesPaths.js';
+import { CALIFICACIONES_PATH } from '../utils/calificacionesPaths.js';
 
 export const useCuadernoCurso = () => {
   const { cursoId } = useParams();
@@ -50,7 +50,7 @@ export const useCuadernoCurso = () => {
       setError(null);
       setCuaderno(null);
       try {
-        const cursosData = await calificacionesFakeApi.obtenerMisCursos();
+        const cursosData = await calificacionesFakeApi.obtenerCalificacionesCursos();
         const bimestreVigente = cursosData.docente.bimestreVigente;
         if (cancelled) return;
         setBimestreActivoState(bimestreVigente);
@@ -89,6 +89,142 @@ export const useCuadernoCurso = () => {
     if (bimestreActivo != null) cargar(bimestreActivo);
   }, [bimestreActivo, cargar]);
 
+  const agregarEvaluacionLocal = useCallback((evaluacion) => {
+    setCuaderno((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        evaluaciones: [...prev.evaluaciones, evaluacion],
+        estudiantes: prev.estudiantes.map((est) => ({
+          ...est,
+          notas: { ...est.notas, [evaluacion.id]: null },
+        })),
+      };
+    });
+  }, []);
+
+  const actualizarEvaluacionLocal = useCallback((evaluacionActualizada) => {
+    setCuaderno((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        evaluaciones: prev.evaluaciones.map((e) =>
+          e.id === evaluacionActualizada.id ? evaluacionActualizada : e,
+        ),
+      };
+    });
+  }, []);
+
+  const quitarEvaluacionLocal = useCallback((evaluacionId) => {
+    setCuaderno((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        evaluaciones: prev.evaluaciones.filter((e) => e.id !== evaluacionId),
+        estudiantes: prev.estudiantes.map((est) => {
+          const notas = { ...est.notas };
+          delete notas[evaluacionId];
+          return { ...est, notas };
+        }),
+      };
+    });
+  }, []);
+
+  const crearEvaluacion = useCallback(
+    async (datos) => {
+      const bimestre = bimestreActivo ?? cuaderno?.bimestreActivo;
+      const snapshot = cuaderno;
+      const tempId = `eval-opt-${Date.now()}`;
+      const optimista = {
+        id: tempId,
+        nombre: datos.nombre,
+        tipoEvaluacionId: datos.tipoEvaluacionId,
+        componente: datos.componente,
+        peso: datos.peso,
+        fecha: datos.fecha ?? null,
+      };
+
+      agregarEvaluacionLocal(optimista);
+
+      try {
+        const creada = await calificacionesFakeApi.crearEvaluacion({
+          cursoId,
+          bimestre,
+          ...datos,
+        });
+
+        setCuaderno((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            evaluaciones: prev.evaluaciones.map((e) => (e.id === tempId ? creada : e)),
+            estudiantes: prev.estudiantes.map((est) => {
+              const notas = { ...est.notas };
+              if (Object.prototype.hasOwnProperty.call(notas, tempId)) {
+                delete notas[tempId];
+                notas[creada.id] = null;
+              }
+              return { ...est, notas };
+            }),
+          };
+        });
+
+        return creada;
+      } catch (err) {
+        setCuaderno(snapshot);
+        throw err;
+      }
+    },
+    [cursoId, bimestreActivo, cuaderno, agregarEvaluacionLocal],
+  );
+
+  const editarEvaluacion = useCallback(
+    async (evaluacionId, cambios) => {
+      const bimestre = bimestreActivo ?? cuaderno?.bimestreActivo;
+      const snapshot = cuaderno;
+      const anterior = cuaderno?.evaluaciones?.find((e) => e.id === evaluacionId);
+
+      if (anterior) {
+        actualizarEvaluacionLocal({ ...anterior, ...cambios });
+      }
+
+      try {
+        const actualizada = await calificacionesFakeApi.editarEvaluacion({
+          cursoId,
+          bimestre,
+          evaluacionId,
+          cambios,
+        });
+        actualizarEvaluacionLocal(actualizada);
+        return actualizada;
+      } catch (err) {
+        setCuaderno(snapshot);
+        throw err;
+      }
+    },
+    [cursoId, bimestreActivo, cuaderno, actualizarEvaluacionLocal],
+  );
+
+  const eliminarEvaluacion = useCallback(
+    async (evaluacionId) => {
+      const bimestre = bimestreActivo ?? cuaderno?.bimestreActivo;
+      const snapshot = cuaderno;
+
+      try {
+        await calificacionesFakeApi.eliminarEvaluacion({
+          cursoId,
+          bimestre,
+          evaluacionId,
+        });
+        quitarEvaluacionLocal(evaluacionId);
+      } catch (err) {
+        setCuaderno(snapshot);
+        throw err;
+      }
+    },
+    [cursoId, bimestreActivo, cuaderno, quitarEvaluacionLocal],
+  );
+
   const breadcrumbItems = useMemo(
     () =>
       cuaderno
@@ -121,7 +257,10 @@ export const useCuadernoCurso = () => {
     refetch,
     breadcrumbItems,
     subtituloCurso,
-    volverPath: MIS_CURSOS_PATH,
+    volverPath: CALIFICACIONES_PATH,
     cursoId,
+    crearEvaluacion,
+    editarEvaluacion,
+    eliminarEvaluacion,
   };
 };

@@ -2,6 +2,7 @@
  * Pantalla B — Cuaderno del curso (grilla de notas).
  */
 
+import { useCallback, useState } from 'react';
 import { Alert, Button } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -12,6 +13,7 @@ import BimestreTabs from '../components/BimestreTabs.jsx';
 import NotasGrid from '../components/NotasGrid.jsx';
 import CuadernoFooter from '../components/CuadernoFooter.jsx';
 import CuadernoSkeleton from '../components/CuadernoSkeleton.jsx';
+import EvaluacionDrawer from '../components/EvaluacionDrawer.jsx';
 import '../styles/calificaciones.css';
 
 const CuadernoPage = () => {
@@ -30,7 +32,52 @@ const CuadernoPage = () => {
     breadcrumbItems,
     subtituloCurso,
     cursoId,
+    crearEvaluacion,
+    editarEvaluacion,
+    eliminarEvaluacion,
   } = useCuadernoCurso();
+
+  const [drawerAbierto, setDrawerAbierto] = useState(false);
+  const [drawerModo, setDrawerModo] = useState('crear');
+  const [evaluacionEditar, setEvaluacionEditar] = useState(null);
+  const [enteringColumnIds, setEnteringColumnIds] = useState([]);
+  const [removingColumnId, setRemovingColumnId] = useState(null);
+
+  const abrirCrear = useCallback(() => {
+    setDrawerModo('crear');
+    setEvaluacionEditar(null);
+    setDrawerAbierto(true);
+  }, []);
+
+  const abrirEditar = useCallback((ev) => {
+    setDrawerModo('editar');
+    setEvaluacionEditar(ev);
+    setDrawerAbierto(true);
+  }, []);
+
+  const cerrarDrawer = useCallback(() => {
+    setDrawerAbierto(false);
+    setEvaluacionEditar(null);
+  }, []);
+
+  const handleGuardado = useCallback((evaluacion) => {
+    setEnteringColumnIds((prev) => [...prev, evaluacion.id]);
+    window.setTimeout(() => {
+      setEnteringColumnIds((prev) => prev.filter((id) => id !== evaluacion.id));
+    }, 300);
+  }, []);
+
+  const handleEliminado = useCallback(
+    async (evaluacionId) => {
+      setRemovingColumnId(evaluacionId);
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 250);
+      });
+      await eliminarEvaluacion(evaluacionId);
+      setRemovingColumnId(null);
+    },
+    [eliminarEvaluacion],
+  );
 
   const header = (
     <PageHeader
@@ -83,9 +130,28 @@ const CuadernoPage = () => {
               evaluaciones={evaluaciones}
               soloLectura={!modoEdicion}
               isRefetching={isRefetching}
+              onAgregarEvaluacion={modoEdicion ? abrirCrear : undefined}
+              onEditarEvaluacion={modoEdicion ? abrirEditar : undefined}
+              enteringColumnIds={enteringColumnIds}
+              removingColumnId={removingColumnId}
             />
             <CuadernoFooter />
           </div>
+
+          <EvaluacionDrawer
+            abierto={drawerAbierto}
+            modo={drawerModo}
+            evaluacion={evaluacionEditar}
+            cursoId={cursoId}
+            bimestre={bimestreActivo}
+            evaluacionesActuales={evaluaciones}
+            estudiantes={estudiantes}
+            onCerrar={cerrarDrawer}
+            onGuardado={handleGuardado}
+            onEliminado={handleEliminado}
+            crearEvaluacion={crearEvaluacion}
+            editarEvaluacion={editarEvaluacion}
+          />
         </div>
       </CuadernoAutosaveProvider>
     </PageTemplate>
