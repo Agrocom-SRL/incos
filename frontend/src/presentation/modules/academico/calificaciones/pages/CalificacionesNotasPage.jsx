@@ -2,12 +2,15 @@
  * Registro de notas por curso y bimestre.
  */
 
-import { Alert, Segmented, Spin } from 'antd';
+import { Spin } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton } from '@atoms';
 import { useCalificacionesNotasContext } from '@application-academico/calificaciones/hooks/context/useCalificacionesNotasContext';
+import CalificacionesAlertStrip from '../components/molecules/CalificacionesAlertStrip.jsx';
+import CalificacionesBimestreTabs from '../components/molecules/CalificacionesBimestreTabs.jsx';
+import CalificacionesCursoProfile from '../components/organisms/CalificacionesCursoProfile.jsx';
 import RegistroNotasGrid from '../components/organisms/RegistroNotasGrid.jsx';
 import '../styles/calificaciones.css';
 
@@ -39,7 +42,7 @@ const CalificacionesNotasPage = () => {
       actions={
         <>
           <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-            <ArrowLeftOutlined /> Cursos
+            <ArrowLeftOutlined /> Volver a cursos
           </button>
           <ActionButton
             permiso="academico.calificacion.periodo"
@@ -65,69 +68,67 @@ const CalificacionesNotasPage = () => {
   );
 
   return (
-    <PageTemplate header={header}>
-      {curso ? (
-        <div className="cal-curso-resumen">
-          <span>
-            <strong>{curso.materia}</strong>
-          </span>
-          <span>
-            Paralelo {curso.paralelo}
-            {curso.turnoParalelo ? ` · ${curso.turnoParalelo}` : ''}
-          </span>
-          <span>{curso.gestion}</span>
-        </div>
-      ) : null}
+    <PageTemplate header={header} sidebar={null}>
+      <div className="sd">
+        <CalificacionesCursoProfile curso={curso} planListo={planListo} />
 
-      {!planListo ? (
-        <Alert
-          type="warning"
-          showIcon
-          message="Plan de calificaciones pendiente"
-          description="Estás usando evaluaciones de demostración. Configurá el plan para alinear tipos, pesos y fechas con tu cronograma."
-          action={
-            <ActionButton
-              permiso="academico.calificacion.periodo"
-              accion="CREAR"
-              size="small"
-              onClick={handleIrPlan}
-            >
-              Configurar plan
-            </ActionButton>
-          }
-          style={{ marginBottom: 16 }}
+        <CalificacionesAlertStrip
+          items={[
+            !planListo
+              ? {
+                  key: 'plan',
+                  type: 'warning',
+                  title: 'Plan de calificaciones pendiente',
+                  description:
+                    'Estás usando evaluaciones de demostración. Configurá el plan para alinear tipos, pesos y fechas con tu cronograma.',
+                  action: (
+                    <ActionButton
+                      permiso="academico.calificacion.periodo"
+                      accion="CREAR"
+                      size="small"
+                      onClick={handleIrPlan}
+                    >
+                      Configurar plan
+                    </ActionButton>
+                  ),
+                }
+              : null,
+            {
+              key: 'demo',
+              type: 'info',
+              title: 'Datos de demostración',
+              description:
+                'Los estudiantes mostrados son de ejemplo hasta conectar matriculas_materia por asignación docente. Las notas se guardan en borrador local.',
+            },
+            error
+              ? {
+                  key: 'err',
+                  type: 'warning',
+                  title: 'Atención',
+                  description: String(error),
+                }
+              : null,
+          ]}
         />
-      ) : null}
 
-      <Alert
-        type="info"
-        showIcon
-        message="Datos de demostración"
-        description="Los estudiantes mostrados son de ejemplo hasta conectar matriculas_materia por asignación docente. Las notas se guardan en borrador local."
-        style={{ marginBottom: 16 }}
-      />
-
-      {error ? <Alert type="error" showIcon message={String(error)} style={{ marginBottom: 16 }} /> : null}
-
-      <div className="cal-notas-toolbar">
-        <Segmented
+        <CalificacionesBimestreTabs
+          bimestres={bimestres}
           value={bimestreActivo}
-          options={bimestres.map((b) => ({ value: b, label: `Bim. ${b}` }))}
           onChange={handleCambiarBimestre}
         />
-      </div>
 
-      {loading ? (
-        <Spin size="large" style={{ display: 'block', margin: '3rem auto' }} />
-      ) : (
-        <RegistroNotasGrid
-          estudiantes={estudiantes}
-          evaluacionesColumnas={evaluacionesColumnas}
-          getNota={getNota}
-          onNotaChange={handleNotaChange}
-          cuotas={cuotas}
-        />
-      )}
+        {loading ? (
+          <Spin size="large" style={{ display: 'block', margin: '3rem auto' }} />
+        ) : (
+          <RegistroNotasGrid
+            estudiantes={estudiantes}
+            evaluacionesColumnas={evaluacionesColumnas}
+            getNota={getNota}
+            onNotaChange={handleNotaChange}
+            cuotas={cuotas}
+          />
+        )}
+      </div>
     </PageTemplate>
   );
 };

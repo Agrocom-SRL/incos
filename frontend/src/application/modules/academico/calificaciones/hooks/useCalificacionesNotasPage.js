@@ -14,6 +14,11 @@ import {
   saveNotasBorrador,
 } from '../utils/planCalificacionesStorage.js';
 import { resolveDocenteIdFromUsuario } from '../utils/resolveDocenteId.js';
+import {
+  calificacionesCursosPath,
+  calificacionesPlanPath,
+  CALIFICACIONES_SELECCION_PATH,
+} from '../utils/calificacionesPaths.js';
 
 /** Estudiantes de demostración hasta exista API matriculas_materia por asignación. */
 const ESTUDIANTES_DEMO = [
@@ -29,12 +34,15 @@ function notaKey(matriculaId, evaluacionId) {
 }
 
 export const useCalificacionesNotasPage = () => {
-  const { asignacionId: asignacionIdParam } = useParams();
+  const { asignacionId: asignacionIdParam, docenteId: docenteIdParam } = useParams();
   const asignacionId = Number(asignacionIdParam);
+  const docenteId = Number(docenteIdParam);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { usuario } = useAuthContext();
-  const docenteId = resolveDocenteIdFromUsuario(usuario);
+  const docenteIdFromUser = resolveDocenteIdFromUsuario(usuario);
+  const esDocente = Boolean(docenteIdFromUser);
+  const docenteIdValido = Number.isFinite(docenteId) && docenteId > 0;
 
   const bimestreFromUrl = Number(searchParams.get('bimestre')) || 1;
   const [bimestreActivo, setBimestreActivo] = useState(
@@ -46,8 +54,8 @@ export const useCalificacionesNotasPage = () => {
   const { docente, loading, error, getDocenteById } = useGetDocenteById();
 
   useEffect(() => {
-    if (docenteId) getDocenteById(docenteId);
-  }, [docenteId, getDocenteById]);
+    if (docenteIdValido) getDocenteById(docenteId);
+  }, [docenteId, docenteIdValido, getDocenteById]);
 
   useEffect(() => {
     if (Number.isFinite(asignacionId) && asignacionId > 0) {
@@ -62,7 +70,19 @@ export const useCalificacionesNotasPage = () => {
 
   const curso = useMemo(() => {
     const list = docente?.assignments ?? [];
-    return list.find((a) => Number(a.id) === asignacionId) ?? null;
+    const a = list.find((x) => Number(x.id) === asignacionId);
+    if (!a) return null;
+    return {
+      materia: a.materia,
+      siglaMateria: a.siglaMateria,
+      paralelo: a.paralelo,
+      turnoParalelo: a.turnoParalelo,
+      gestion: a.gestion,
+      cursoCodigo: a.cursoCodigo,
+      cargaHorariaSemanal: a.cargaHorariaSemanal,
+      cursoColorHex: a.cursoColorHex,
+      carreraColorHex: a.carreraColorHex,
+    };
   }, [docente, asignacionId]);
 
   const evaluacionesColumnas = useMemo(() => {
@@ -77,10 +97,17 @@ export const useCalificacionesNotasPage = () => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Calificaciones', href: '/academico/calificaciones' },
+      {
+        title: 'Calificaciones',
+        href: esDocente ? undefined : CALIFICACIONES_SELECCION_PATH,
+      },
+      {
+        title: docente?.profile?.nombreCompleto || 'Cursos',
+        href: docenteIdValido ? calificacionesCursosPath(docenteId) : undefined,
+      },
       { title: curso?.materia || 'Registrar notas' },
     ],
-    [curso?.materia],
+    [curso?.materia, docente?.profile?.nombreCompleto, docenteId, docenteIdValido, esDocente],
   );
 
   const handleCambiarBimestre = useCallback(
@@ -121,14 +148,16 @@ export const useCalificacionesNotasPage = () => {
   }, [asignacionId, notas]);
 
   const handleIrPlan = useCallback(() => {
-    navigate(`/academico/calificaciones/curso/${asignacionId}/plan`, {
+    if (!docenteIdValido) return;
+    navigate(calificacionesPlanPath(docenteId, asignacionId), {
       state: { menuSidebarKey: 'ACA-CAL' },
     });
-  }, [navigate, asignacionId]);
+  }, [navigate, asignacionId, docenteId, docenteIdValido]);
 
   const handleVolver = useCallback(() => {
-    navigate('/academico/calificaciones', { state: { menuSidebarKey: 'ACA-CAL' } });
-  }, [navigate]);
+    if (!docenteIdValido) return;
+    navigate(calificacionesCursosPath(docenteId), { state: { menuSidebarKey: 'ACA-CAL' } });
+  }, [navigate, docenteId, docenteIdValido]);
 
   return {
     asignacionId,

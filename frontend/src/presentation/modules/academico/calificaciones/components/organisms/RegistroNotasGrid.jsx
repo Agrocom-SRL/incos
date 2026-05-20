@@ -3,7 +3,8 @@
  */
 
 import { InputNumber, Table, Tag, Typography } from 'antd';
-import { FormCard } from '@atoms';
+import { TableOutlined } from '@ant-design/icons';
+import CalificacionesSectionCard from '../molecules/CalificacionesSectionCard.jsx';
 
 const { Text } = Typography;
 
@@ -57,18 +58,21 @@ const RegistroNotasGrid = ({
   ];
 
   return (
-    <FormCard
+    <CalificacionesSectionCard
       title="Notas por evaluación"
+      icon={<TableOutlined />}
+      variant="resumen"
+      bodyClassName="cal-section__body--block"
       extra={
-        <span>
-          <Tag>Teórico {cuotas?.teorico ?? 30}</Tag>
-          <Tag>Práctico {cuotas?.practico ?? 70}</Tag>
-        </span>
+        <div className="cal-cuotas-tags">
+          <Tag color="green">Teórico {cuotas?.teorico ?? 30} pts</Tag>
+          <Tag color="blue">Práctico {cuotas?.practico ?? 70} pts</Tag>
+        </div>
       }
     >
-      <p className="cal-cursos-intro">
-        Cada nota se guarda en evaluaciones (bimestre_matricula). Al cerrar el bimestre se calculan
-        nota_teorico, nota_practico y nota_bimestre en bimestres_matricula.
+      <p className="cal-flow-lede">
+        Cada nota se guarda en evaluaciones (bimestre_matricula). Al cerrar el bimestre se calculan nota_teorico,
+        nota_practico y nota_bimestre en bimestres_matricula.
       </p>
       <div className="cal-notas-grid-wrap cal-notas-grid">
         <Table
@@ -81,7 +85,7 @@ const RegistroNotasGrid = ({
           dataSource={estudiantes}
         />
       </div>
-    </FormCard>
+    </CalificacionesSectionCard>
   );
 };
 

@@ -1,13 +1,47 @@
-/* Calificaciones — cursos por paralelo y registro de notas */
+/* Calificaciones — complementa .sd (detail-page.css en index) y wizard-selection-cards */
 
-.cal-cursos-intro {
-  margin-bottom: 1rem;
-  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+.cal-flow-lede {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-500, rgba(0, 0, 0, 0.55));
   max-width: 52rem;
 }
 
+.cal-section {
+  margin-top: 0;
+}
+
+.cal-section + .cal-section,
+.cal-bimestre-shell + .cal-section,
+.cal-alert-strip + .cal-section {
+  margin-top: 16px;
+}
+
+.cal-section__body--block {
+  display: block !important;
+  padding: 20px !important;
+}
+
+.cal-section__body--flush {
+  padding: 0 !important;
+}
+
+/* —— Perfil curso (avatar con color de materia) —— */
+.cal-curso-profile__avatar {
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+/* —— Paralelo + grid de cursos —— */
 .cal-paralelo-block {
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
+}
+
+.cal-paralelo-block:last-child {
+  margin-bottom: 0;
 }
 
 .cal-paralelo-head {
@@ -15,102 +49,271 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.5rem 1rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(25, 107, 69, 0.12);
 }
 
 .cal-paralelo-title {
   margin: 0;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-dark, #134d32);
 }
 
 .cal-paralelo-meta {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary, rgba(0, 0, 0, 0.55));
+  font-size: 0.8125rem;
+  color: var(--text-500, rgba(0, 0, 0, 0.55));
 }
 
-.cal-curso-card {
-  cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+/* Tarjetas de curso (estilo wizard-selection-cards) */
+.cal-cursos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md, 16px);
+  width: 100%;
 }
 
-.cal-curso-card:hover {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
+.cal-curso-pick {
+  position: relative;
+  border: 2px solid var(--color-border, #e8e8e8);
+  border-radius: var(--border-radius-lg, 12px);
+  background: var(--color-bg-container, #fff);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  overflow: hidden;
+  cursor: default;
 }
 
-.cal-curso-card__actions {
+.cal-curso-pick--ready {
+  border-color: var(--wizard-card-accent, var(--color-primary, #196b45));
+  background: var(--wizard-card-accent-bg, #e8f5ec);
+}
+
+.cal-curso-pick--ready .wizard-selection-cards__icon-wrap {
+  background-color: var(--wizard-card-accent, var(--color-primary, #196b45));
+}
+
+.cal-curso-pick--ready .wizard-selection-cards__icon {
+  color: #fff;
+}
+
+.cal-curso-pick:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cal-curso-pick .wizard-selection-cards__inner {
+  padding: 18px 18px 14px;
+  align-items: flex-start;
+}
+
+.cal-curso-pick__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.cal-curso-pick__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f0f0f0;
+  color: #595959;
+}
+
+.cal-curso-pick__chip--sigla {
+  background: rgba(25, 107, 69, 0.12);
+  color: var(--primary-dark, #134d32);
+}
+
+.cal-curso-pick__chip--ok {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.cal-curso-pick__chip--warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.cal-curso-pick__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 18px 16px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 4px;
+  padding-top: 12px;
 }
 
-.cal-curso-card__badge {
-  margin-top: 0.35rem;
+/* —— Alert strip —— */
+.cal-alert-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
+.cal-alert-strip__item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid transparent;
+  background: var(--surface, #fff);
+}
+
+.cal-alert-strip__item--info {
+  border-color: rgba(59, 130, 246, 0.25);
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.cal-alert-strip__item--warning {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: linear-gradient(135deg, #fffbeb 0%, #fefce8 100%);
+}
+
+.cal-alert-strip__item--success {
+  border-color: rgba(25, 107, 69, 0.25);
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+}
+
+.cal-alert-strip__icon {
+  font-size: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.cal-alert-strip__item--info .cal-alert-strip__icon {
+  color: #2563eb;
+}
+
+.cal-alert-strip__item--warning .cal-alert-strip__icon {
+  color: #d97706;
+}
+
+.cal-alert-strip__item--success .cal-alert-strip__icon {
+  color: var(--primary, #196b45);
+}
+
+.cal-alert-strip__content strong {
+  display: block;
+  font-size: 13px;
+  color: var(--text-800, #1f2937);
+  margin-bottom: 4px;
+}
+
+.cal-alert-strip__content p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-500, #6b7280);
+}
+
+.cal-alert-strip__action {
+  margin-top: 8px;
+}
+
+/* —— Bimestre tabs —— */
+.cal-bimestre-shell {
+  margin-bottom: 0;
+}
+
+.cal-bimestre-shell .ant-tabs-content-holder {
+  display: none;
+}
+
+/* —— Plan —— */
 .cal-plan-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
 }
 
 .cal-plan-cuotas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.25rem;
+  align-items: end;
 }
 
-.cal-plan-cuotas .ant-form-item {
-  margin-bottom: 0;
-  min-width: 140px;
+.cal-plan-cuota-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cal-plan-cuota-field .sd-field__label,
+.cal-plan-cuota-field label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-500, #6b7280);
 }
 
 .cal-peso-hint {
   font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .cal-peso-hint--ok {
-  color: var(--ant-color-success, #52c41a);
+  color: var(--primary, #196b45);
 }
 
 .cal-peso-hint--warn {
-  color: var(--ant-color-warning, #faad14);
+  color: #d97706;
 }
 
-.cal-notas-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+.cal-plan-table-wrap .ant-table-thead > tr > th {
+  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ec 100%) !important;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
+/* —— Notas —— */
 .cal-notas-grid-wrap {
   overflow-x: auto;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+.cal-notas-grid .ant-table-thead > tr > th {
+  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ec 100%) !important;
 }
 
 .cal-notas-grid .ant-table-cell {
-  padding: 6px 8px !important;
+  padding: 8px 10px !important;
 }
 
 .cal-notas-input {
   width: 72px;
 }
 
-.cal-curso-resumen {
+.cal-cuotas-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 1.5rem;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
-  margin-bottom: 1rem;
+  gap: 8px;
 }
 
-.cal-curso-resumen strong {
-  color: inherit;
+.cal-cuotas-tags .ant-tag {
+  margin: 0;
+  border-radius: 6px;
   font-weight: 600;
+}
+
+/* Selección docente (tabla) */
+.cal-sel-table .ant-table-thead > tr > th {
+  padding: 18px 20px !important;
+  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ec 100%) !important;
+}
+
+.cal-sel-table .ant-table-tbody > tr > td {
+  padding: 14px 20px !important;
 }

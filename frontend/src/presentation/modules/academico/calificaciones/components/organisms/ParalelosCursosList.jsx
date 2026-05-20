@@ -1,5 +1,5 @@
 /**
- * Lista de paralelos con grid de cursos (vista principal de calificaciones).
+ * Lista de paralelos con grid de cursos (tarjetas institucionales).
  */
 
 import { Empty } from 'antd';
@@ -18,7 +18,7 @@ const ParalelosCursosList = ({ grupos = [], onRegistrarNotas, onConfigurarPlan }
   }
 
   return (
-    <div className="da-carga">
+    <div className="cal-paralelos-list">
       {grupos.map((grupo, idx) => {
         const carreraColor = sanitizeDocenteColorHex(grupo.carreraColorHex);
         return (
@@ -34,9 +34,10 @@ const ParalelosCursosList = ({ grupos = [], onRegistrarNotas, onConfigurarPlan }
               </h3>
               <span className="cal-paralelo-meta">
                 {[grupo.carrera, grupo.gestion].filter(Boolean).join(' · ')}
+                {grupo.cursos?.length ? ` · ${grupo.cursos.length} curso(s)` : ''}
               </span>
             </div>
-            <div className="da-carga__materias-grid">
+            <div className="cal-cursos-grid">
               {grupo.cursos.map((curso) => (
                 <CursoCalificacionCard
                   key={curso.asignacionId}

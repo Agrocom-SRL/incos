@@ -7,6 +7,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGetDocenteById } from '@application-docentes/hooks/api';
 import { useAuthContext } from '@application-auth';
 import {
+  calificacionesCursosPath,
+  calificacionesNotasPath,
+  CALIFICACIONES_SELECCION_PATH,
+} from '../utils/calificacionesPaths.js';
+import { resolveDocenteIdFromUsuario } from '../utils/resolveDocenteId.js';
+import {
   BIMESTRES,
   COMPONENTES_EVALUACION,
   createEvaluacionDraft,
@@ -18,14 +24,15 @@ import {
   loadPlanCalificaciones,
   savePlanCalificaciones,
 } from '../utils/planCalificacionesStorage.js';
-import { resolveDocenteIdFromUsuario } from '../utils/resolveDocenteId.js';
-
 export const useCalificacionesPlanPage = () => {
-  const { asignacionId: asignacionIdParam } = useParams();
+  const { asignacionId: asignacionIdParam, docenteId: docenteIdParam } = useParams();
   const asignacionId = Number(asignacionIdParam);
+  const docenteId = Number(docenteIdParam);
   const navigate = useNavigate();
   const { usuario } = useAuthContext();
-  const docenteId = resolveDocenteIdFromUsuario(usuario);
+  const docenteIdFromUser = resolveDocenteIdFromUsuario(usuario);
+  const esDocente = Boolean(docenteIdFromUser);
+  const docenteIdValido = Number.isFinite(docenteId) && docenteId > 0;
 
   const { docente, loading, error, getDocenteById } = useGetDocenteById();
   const [plan, setPlan] = useState(() => createPlanVacio());
@@ -33,8 +40,8 @@ export const useCalificacionesPlanPage = () => {
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-    if (docenteId) getDocenteById(docenteId);
-  }, [docenteId, getDocenteById]);
+    if (docenteIdValido) getDocenteById(docenteId);
+  }, [docenteId, docenteIdValido, getDocenteById]);
 
   useEffect(() => {
     if (Number.isFinite(asignacionId) && asignacionId > 0) {
@@ -44,16 +51,35 @@ export const useCalificacionesPlanPage = () => {
 
   const curso = useMemo(() => {
     const list = docente?.assignments ?? [];
-    return list.find((a) => Number(a.id) === asignacionId) ?? null;
+    const a = list.find((x) => Number(x.id) === asignacionId);
+    if (!a) return null;
+    return {
+      materia: a.materia,
+      siglaMateria: a.siglaMateria,
+      paralelo: a.paralelo,
+      turnoParalelo: a.turnoParalelo,
+      gestion: a.gestion,
+      cursoCodigo: a.cursoCodigo,
+      cargaHorariaSemanal: a.cargaHorariaSemanal,
+      cursoColorHex: a.cursoColorHex,
+      carreraColorHex: a.carreraColorHex,
+    };
   }, [docente, asignacionId]);
 
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Calificaciones', href: '/academico/calificaciones' },
+      {
+        title: 'Calificaciones',
+        href: esDocente ? undefined : CALIFICACIONES_SELECCION_PATH,
+      },
+      {
+        title: docente?.profile?.nombreCompleto || 'Cursos',
+        href: docenteIdValido ? calificacionesCursosPath(docenteId) : undefined,
+      },
       { title: curso?.materia || 'Plan de calificaciones' },
     ],
-    [curso?.materia],
+    [curso?.materia, docente?.profile?.nombreCompleto, docenteId, docenteIdValido, esDocente],
   );
 
   const evaluacionesBimestre = plan.evaluacionesPorBimestre?.[bimestreActivo] ?? [];
@@ -149,14 +175,16 @@ export const useCalificacionesPlanPage = () => {
   }, [asignacionId, plan]);
 
   const handleIrNotas = useCallback(() => {
-    navigate(`/academico/calificaciones/curso/${asignacionId}/notas`, {
+    if (!docenteIdValido) return;
+    navigate(calificacionesNotasPath(docenteId, asignacionId), {
       state: { menuSidebarKey: 'ACA-CAL' },
     });
-  }, [navigate, asignacionId]);
+  }, [navigate, asignacionId, docenteId, docenteIdValido]);
 
   const handleVolver = useCallback(() => {
-    navigate('/academico/calificaciones', { state: { menuSidebarKey: 'ACA-CAL' } });
-  }, [navigate]);
+    if (!docenteIdValido) return;
+    navigate(calificacionesCursosPath(docenteId), { state: { menuSidebarKey: 'ACA-CAL' } });
+  }, [navigate, docenteId, docenteIdValido]);
 
   const planValido =
     sumaPesosTeorico === 100 &&

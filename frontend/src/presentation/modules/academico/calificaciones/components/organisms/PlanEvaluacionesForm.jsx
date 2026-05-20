@@ -3,10 +3,11 @@
  */
 
 import { DatePicker, Input, InputNumber, Select, Table, Typography } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, PercentageOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ActionButton } from '@atoms';
-import { FormCard } from '@atoms';
+import CalificacionesBimestreTabs from '../molecules/CalificacionesBimestreTabs.jsx';
+import CalificacionesSectionCard from '../molecules/CalificacionesSectionCard.jsx';
 
 const { Text } = Typography;
 
@@ -117,62 +118,75 @@ const PlanEvaluacionesForm = ({
   ];
 
   const pesoHint = (suma, label) => (
-    <Text
-      className={`cal-peso-hint ${suma === 100 ? 'cal-peso-hint--ok' : 'cal-peso-hint--warn'}`}
-    >
+    <Text className={`cal-peso-hint ${suma === 100 ? 'cal-peso-hint--ok' : 'cal-peso-hint--warn'}`}>
       {label}: {suma}% / 100%
     </Text>
   );
 
   return (
     <>
-      <FormCard title="Reparto teórico / práctico (boletín)" className="cal-plan-section">
-        <p className="cal-cursos-intro">
-          Cuotas institucionales por bimestre (tabla configuracion_evaluacion). La suma debe ser 100.
+      <CalificacionesSectionCard
+        title="Reparto teórico / práctico"
+        icon={<PercentageOutlined />}
+        variant="cabecera"
+        bodyClassName="cal-section__body--block"
+      >
+        <p className="cal-flow-lede">
+          Cuotas institucionales por bimestre (tabla configuracion_evaluacion). La suma teórico + práctico debe
+          ser 100 puntos.
         </p>
         <div className="cal-plan-cuotas">
-          <div>
-            <Text type="secondary">Teórico</Text>
+          <div className="cal-plan-cuota-field">
+            <label htmlFor="cal-cuota-teorico">Teórico</label>
             <InputNumber
+              id="cal-cuota-teorico"
               min={0}
               max={100}
               value={plan.cuotas?.teorico}
               addonAfter="pts"
               onChange={(v) => onCuotaChange('teorico', v)}
+              style={{ width: '100%' }}
             />
           </div>
-          <div>
-            <Text type="secondary">Práctico</Text>
+          <div className="cal-plan-cuota-field">
+            <label htmlFor="cal-cuota-practico">Práctico</label>
             <InputNumber
+              id="cal-cuota-practico"
               min={0}
               max={100}
               value={plan.cuotas?.practico}
               addonAfter="pts"
               onChange={(v) => onCuotaChange('practico', v)}
+              style={{ width: '100%' }}
             />
           </div>
         </div>
-      </FormCard>
+      </CalificacionesSectionCard>
 
-      <FormCard title="Evaluaciones por bimestre" className="cal-plan-section">
-        <Select
-          value={bimestreActivo}
-          style={{ width: 160, marginBottom: 12 }}
-          options={bimestres.map((b) => ({ value: b, label: `Bimestre ${b}` }))}
-          onChange={setBimestreActivo}
-        />
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: 12 }}>
-          {pesoHint(sumaPesosTeorico, 'Pesos teórico')}
-          {pesoHint(sumaPesosPractico, 'Pesos práctico')}
+      <CalificacionesBimestreTabs bimestres={bimestres} value={bimestreActivo} onChange={setBimestreActivo} />
+
+      <CalificacionesSectionCard
+        title={`Evaluaciones — bimestre ${bimestreActivo}`}
+        icon={<UnorderedListOutlined />}
+        variant="resumen"
+        bodyClassName="cal-section__body--block"
+        extra={
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+            {pesoHint(sumaPesosTeorico, 'Teórico')}
+            {pesoHint(sumaPesosPractico, 'Práctico')}
+          </div>
+        }
+      >
+        <div className="cal-plan-table-wrap">
+          <Table
+            size="small"
+            pagination={false}
+            rowKey="id"
+            columns={columns}
+            dataSource={evaluacionesBimestre}
+            locale={{ emptyText: 'Agregá al menos una evaluación para este bimestre' }}
+          />
         </div>
-        <Table
-          size="small"
-          pagination={false}
-          rowKey="id"
-          columns={columns}
-          dataSource={evaluacionesBimestre}
-          locale={{ emptyText: 'Agregá al menos una evaluación para este bimestre' }}
-        />
         <ActionButton
           permiso="academico.calificacion.periodo"
           accion="CREAR"
@@ -183,7 +197,7 @@ const PlanEvaluacionesForm = ({
         >
           Agregar evaluación
         </ActionButton>
-      </FormCard>
+      </CalificacionesSectionCard>
     </>
   );
 };

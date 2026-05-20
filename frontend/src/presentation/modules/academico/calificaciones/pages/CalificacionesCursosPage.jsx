@@ -1,99 +1,97 @@
 /**
- * Entrada del módulo: cursos del docente agrupados por paralelo (sin índice intermedio).
+ * Cursos del docente agrupados por paralelo (tras elegir docente).
  */
 
-import { Alert, InputNumber, Spin, Typography } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import { Alert, Spin } from 'antd';
+import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton } from '@atoms';
 import { useCalificacionesCursosContext } from '@application-academico/calificaciones/hooks/context/useCalificacionesCursosContext';
+import CalificacionesDocenteProfile from '../components/organisms/CalificacionesDocenteProfile.jsx';
+import CalificacionesSectionCard from '../components/molecules/CalificacionesSectionCard.jsx';
 import ParalelosCursosList from '../components/organisms/ParalelosCursosList.jsx';
-import '@presentation/styles/pages/detail-page.css';
 import '../styles/calificaciones.css';
-
-const { Paragraph } = Typography;
+import '@presentation/styles/components/molecules/wizard-selection-cards.css';
 
 const CalificacionesCursosPage = () => {
   const {
     loading,
     error,
     esDocente,
-    necesitaSeleccionDocente,
+    docenteIdValido,
     docenteNombre,
+    docenteTitulo,
+    resumenDocente,
     gruposParalelo,
     breadcrumbItems,
     handleAbrirCurso,
-    setDocenteIdOverride,
+    handleVolverSeleccion,
     refetch,
   } = useCalificacionesCursosContext();
 
   const header = (
     <PageHeader
-      title="Mis cursos — Calificaciones"
+      title={esDocente ? 'Mis cursos — Calificaciones' : 'Calificaciones por docente'}
       breadcrumbItems={breadcrumbItems}
       actions={
-        <ActionButton
-          permiso="academico.calificacion.curso"
-          accion="LISTAR"
-          icon={<ReloadOutlined />}
-          onClick={() => refetch?.()}
-          disabled={loading}
-        >
-          Actualizar
-        </ActionButton>
+        <>
+          {!esDocente ? (
+            <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolverSeleccion}>
+              <ArrowLeftOutlined /> Elegir docente
+            </button>
+          ) : null}
+          <ActionButton
+            permiso="academico.calificacion.curso"
+            accion="LISTAR"
+            icon={<ReloadOutlined />}
+            onClick={() => refetch?.()}
+            disabled={loading || !docenteIdValido}
+          >
+            Actualizar
+          </ActionButton>
+        </>
       }
     />
   );
 
   return (
-    <PageTemplate header={header}>
-      <Paragraph className="cal-cursos-intro">
-        Elegí un curso de tu paralelo para registrar notas. Si aún no definiste el plan de
-        evaluaciones (tipos, pesos y fechas), podés configurarlo antes desde la misma tarjeta.
-      </Paragraph>
+    <PageTemplate header={header} sidebar={null}>
+      <div className="sd">
+        {docenteNombre ? (
+          <CalificacionesDocenteProfile
+            nombreCompleto={docenteNombre}
+            subtitulo={docenteTitulo || 'Docente con asignación vigente'}
+            totalCursos={resumenDocente?.totalCursos}
+            totalParalelos={resumenDocente?.totalParalelos}
+            planesListos={resumenDocente?.planesListos}
+            planesPendientes={resumenDocente?.planesPendientes}
+          />
+        ) : null}
 
-      {necesitaSeleccionDocente ? (
-        <Alert
-          type="info"
-          showIcon
-          message="Vista administrativa"
-          description={
-            <span>
-              Ingresá el ID del docente para ver sus cursos asignados (cuenta sin vínculo DOCENTE).
-              <div style={{ marginTop: 12, maxWidth: 200 }}>
-                <InputNumber
-                  min={1}
-                  placeholder="docente_id"
-                  style={{ width: '100%' }}
-                  onChange={(v) => v && setDocenteIdOverride(Number(v))}
-                />
-              </div>
-            </span>
-          }
-          style={{ marginBottom: 16 }}
-        />
-      ) : null}
+        <p className="cal-flow-lede">
+          Elegí un curso para registrar notas o configurar el plan de evaluaciones (tipos, ponderación y fechas por
+          bimestre). Los cursos con plan listo se resaltan en verde.
+        </p>
 
-      {esDocente && docenteNombre ? (
-        <Paragraph type="secondary" style={{ marginTop: 0 }}>
-          Docente: {docenteNombre}
-        </Paragraph>
-      ) : null}
+        {error ? <Alert type="error" showIcon message={String(error)} style={{ marginBottom: 0 }} /> : null}
 
-      {error ? (
-        <Alert type="error" showIcon message={String(error)} style={{ marginBottom: 16 }} />
-      ) : null}
-
-      {loading ? (
-        <Spin size="large" style={{ display: 'block', margin: '3rem auto' }} />
-      ) : (
-        <ParalelosCursosList
-          grupos={gruposParalelo}
-          onRegistrarNotas={(id) => handleAbrirCurso(id, { irPlan: false })}
-          onConfigurarPlan={(id) => handleAbrirCurso(id, { irPlan: true })}
-        />
-      )}
+        <CalificacionesSectionCard
+          title="Paralelos y materias"
+          variant="cabecera"
+          bodyClassName="cal-section__body--block"
+        >
+          {loading ? (
+            <Spin size="large" style={{ display: 'block', margin: '3rem auto' }} />
+          ) : (
+            <ParalelosCursosList
+              grupos={gruposParalelo}
+              onRegistrarNotas={(id) => handleAbrirCurso(id, { irPlan: false })}
+              onConfigurarPlan={(id) => handleAbrirCurso(id, { irPlan: true })}
+            />
+          )}
+        </CalificacionesSectionCard>
+      </div>
     </PageTemplate>
   );
 };

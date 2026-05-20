@@ -1,69 +1,52 @@
 /**
- * Tarjeta de curso clickeable para entrar al registro de notas o al plan.
+ * Tarjeta de curso (estilo wizard-selection-cards + acciones).
  */
 
-import { Tag } from 'antd';
-import { EditOutlined, FormOutlined, TeamOutlined } from '@ant-design/icons';
+import { BookOutlined, EditOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionButton } from '@atoms';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 
-const CursoCalificacionCard = ({
-  curso,
-  onRegistrarNotas,
-  onConfigurarPlan,
-}) => {
-  const accent = sanitizeDocenteColorHex(curso.cursoColorHex) || sanitizeDocenteColorHex(curso.carreraColorHex);
+const ACCENT_DEFAULT = { color: '#196b45', bg: '#e8f5ec' };
+
+const CursoCalificacionCard = ({ curso, onRegistrarNotas, onConfigurarPlan }) => {
+  const accentHex = sanitizeDocenteColorHex(curso.cursoColorHex) || sanitizeDocenteColorHex(curso.carreraColorHex);
+  const accent = accentHex
+    ? { color: accentHex, bg: `${accentHex}18` }
+    : ACCENT_DEFAULT;
+  const listo = Boolean(curso.planListo);
 
   return (
     <article
-      className="da-carga__card cal-curso-card"
-      style={accent ? { borderLeft: `4px solid ${accent}` } : undefined}
-      onClick={() => onRegistrarNotas?.(curso.asignacionId)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onRegistrarNotas?.(curso.asignacionId);
-        }
+      className={`cal-curso-pick wizard-selection-cards__radio${listo ? ' cal-curso-pick--ready' : ''}`}
+      style={{
+        '--wizard-card-accent': accent.color,
+        '--wizard-card-accent-bg': accent.bg,
       }}
-      role="button"
-      tabIndex={0}
-      aria-label={`Registrar notas de ${curso.materia}`}
     >
-      <div className="da-carga__card-head">
-        <span
-          className="da-carga__sigla"
-          aria-hidden
-          style={
-            accent
-              ? { background: accent, boxShadow: `0 2px 8px ${accent}66` }
-              : undefined
-          }
-        >
-          {(curso.siglaMateria || '—').slice(0, 6)}
-        </span>
-        <div>
-          <p className="da-carga__materia-name">{curso.materia || '—'}</p>
-          {curso.periodoMateriaPlan ? (
-            <span className="cal-paralelo-meta">{curso.periodoMateriaPlan}</span>
-          ) : null}
+      <div className="wizard-selection-cards__inner">
+        <div className="wizard-selection-cards__icon-wrap">
+          <BookOutlined className="wizard-selection-cards__icon" />
+        </div>
+        <div className="wizard-selection-cards__body">
+          <div className="wizard-selection-cards__label">{curso.materia || '—'}</div>
+          <div className="cal-curso-pick__chips">
+            {curso.siglaMateria ? (
+              <span className="cal-curso-pick__chip cal-curso-pick__chip--sigla">{curso.siglaMateria}</span>
+            ) : null}
+            <span className={`cal-curso-pick__chip ${listo ? 'cal-curso-pick__chip--ok' : 'cal-curso-pick__chip--warn'}`}>
+              {listo ? 'Plan listo' : 'Plan pendiente'}
+            </span>
+          </div>
+          <div className="daa-cursos-card__meta" style={{ marginTop: 8 }}>
+            {curso.cursoCodigo ? <div>Código: {curso.cursoCodigo}</div> : null}
+            {curso.cargaHorariaSemanal != null ? (
+              <div>{curso.cargaHorariaSemanal} h/semana</div>
+            ) : null}
+            {curso.periodoMateriaPlan ? <div>{curso.periodoMateriaPlan}</div> : null}
+          </div>
         </div>
       </div>
-      <div className="cal-curso-card__badge">
-        <Tag color={curso.planListo ? 'success' : 'warning'}>
-          {curso.planListo ? 'Plan listo' : 'Plan pendiente'}
-        </Tag>
-      </div>
-      <div className="da-carga__meta">
-        <div className="da-carga__row">
-          <span className="da-carga__row-label">Código curso</span>
-          <span className="da-carga__row-val">{curso.cursoCodigo || '—'}</span>
-        </div>
-        <div className="da-carga__row">
-          <span className="da-carga__row-label">Horas / sem.</span>
-          <span className="da-carga__row-val">{curso.cargaHorariaSemanal ?? '—'}</span>
-        </div>
-      </div>
-      <div className="cal-curso-card__actions" onClick={(e) => e.stopPropagation()}>
+      <div className="cal-curso-pick__actions">
         <ActionButton
           permiso="academico.calificacion.registrar.parcial"
           accion="CREAR"
@@ -82,7 +65,7 @@ const CursoCalificacionCard = ({
           icon={<EditOutlined />}
           onClick={() => onConfigurarPlan?.(curso.asignacionId)}
         >
-          Plan de calificaciones
+          Plan
         </ActionButton>
       </div>
     </article>
