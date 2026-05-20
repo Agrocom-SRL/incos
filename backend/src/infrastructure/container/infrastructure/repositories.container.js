@@ -121,6 +121,7 @@ import { EvaluationConfigurationRepository } from '../../repositories/Evaluation
 import { SubjectEnrollmentBimesterRepository } from '../../repositories/SubjectEnrollmentBimesterRepository.js';
 import { BimesterEvaluationRepository } from '../../repositories/BimesterEvaluationRepository.js';
 import { FinalEvaluationRepository } from '../../repositories/FinalEvaluationRepository.js';
+import { CalificacionRepository } from '../../repositories/CalificacionRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
@@ -261,6 +262,7 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository, SubjectEnrollmentBimesterRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationRepository, BimesterEvaluationRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.finalEvaluationRepository, FinalEvaluationRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.calificacionRepository, CalificacionRepository);
 
     // ============================================
     // NIVELACIONES

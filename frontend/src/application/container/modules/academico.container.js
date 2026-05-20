@@ -26,9 +26,11 @@ import {
 } from '@useCases/academico/paralelos';
 import { ActualizarCursoOfertaUseCase, EliminarCursoOfertaUseCase } from '@useCases/academico/cursos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
+import { ListCoordinacionDocentesUseCase } from '@useCases/academico/calificaciones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import CursoRepository from '@infrastructure/repositories/CursoRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
+import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository';
 
 /**
  * Registra los Use Cases del módulo académico
@@ -101,6 +103,10 @@ export function registerAcademicoModule(factory) {
   // Registrar Use Cases de Gestiones
   factory.obtenerTodasGestiones = () => {
     return new GetTodasGestionesUseCase(gestionRepository);
+  };
+
+  factory.listarCoordinacionCalificacionesDocentes = () => {
+    return new ListCoordinacionDocentesUseCase(CalificacionRepository);
   };
 
   return factory;

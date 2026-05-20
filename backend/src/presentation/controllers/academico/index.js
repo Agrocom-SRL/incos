@@ -19,4 +19,4 @@ export { GetHorariosPublicacionPlanesController } from './paralelos/get-horarios
 // CONTROLLERS IMPLEMENTADOS - GESTIONES
 // ============================================
 export { ListGestionesController } from './gestiones/list.controller.js';
-// TODO: Agregar otros controllers cuando se implementen sus endpoints
+export { ListCoordinacionCalificacionesDocentesController } from './calificaciones/list-coordinacion-docentes.controller.js';

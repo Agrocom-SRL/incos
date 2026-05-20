@@ -39,6 +39,7 @@ router.get('/', (req, res) => {
             paralelos: '/api/v1/paralelos',
             cursos: '/api/v1/cursos',
             gestiones: '/api/v1/gestiones',
+            calificaciones: '/api/v1/calificaciones',
             // Módulo: Geográficos
             paises: '/api/v1/paises',
             departamentos: '/api/v1/departamentos',
@@ -107,6 +108,7 @@ router.use('/materias', container.resolve(CONFIGURACION_TOKENS.materiasRouter));
 router.use('/paralelos', container.resolve(ACADEMICO_TOKENS.paralelosRouter));
 router.use('/cursos', container.resolve(ACADEMICO_TOKENS.cursosRouter));
 router.use('/gestiones', container.resolve(ACADEMICO_TOKENS.gestionesRouter));
+router.use('/calificaciones', container.resolve(ACADEMICO_TOKENS.calificacionesRouter));
 
 // ============================================
 // 4. MÓDULO: GEOGRÁFICOS

@@ -2,8 +2,7 @@
  * Vista general de coordinación — docentes con cursos en la gestión vigente.
  */
 
-import { Alert, Button, Input, Table } from 'antd';
-import { useMemo, useState } from 'react';
+import { Alert, Button, Input, Table, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -17,21 +16,24 @@ import CalificacionesAcciones, {
 } from '../components/CalificacionesAcciones.jsx';
 import '../styles/calificaciones.css';
 
+const { Text } = Typography;
+
 const CoordinacionCalificacionesPage = () => {
   const navigate = useNavigate();
-  const [busqueda, setBusqueda] = useState('');
-  const { docentes, gestionVigente, bimestreVigente, isLoading, error, refetch, breadcrumbItems } =
-    useVistaAdminDocentes();
-
-  const filtrados = useMemo(() => {
-    const q = busqueda.trim().toLowerCase();
-    if (!q) return docentes;
-    return docentes.filter(
-      (d) =>
-        d.nombre.toLowerCase().includes(q) ||
-        d.especialidad?.toLowerCase().includes(q),
-    );
-  }, [docentes, busqueda]);
+  const {
+    docentes,
+    gestionVigente,
+    bimestreVigente,
+    isLoading,
+    error,
+    refetch,
+    breadcrumbItems,
+    busquedaInput,
+    setBusquedaInput,
+    esBusquedaActiva,
+    busquedaMinChars,
+    prelimLimit,
+  } = useVistaAdminDocentes();
 
   const columnas = [
     {
@@ -44,6 +46,7 @@ const CoordinacionCalificacionesPage = () => {
       title: 'Especialidad',
       dataIndex: 'especialidad',
       key: 'especialidad',
+      render: (v) => v ?? '—',
     },
     {
       title: 'Cursos',
@@ -68,6 +71,9 @@ const CoordinacionCalificacionesPage = () => {
     <PageHeader title="Coordinación de calificaciones" breadcrumbItems={breadcrumbItems} />
   );
 
+  const contextoGestion = gestionVigente ?? '—';
+  const contextoBimestre = bimestreVigente != null ? String(bimestreVigente) : '—';
+
   return (
     <PageTemplate header={header} sidebar={null}>
       <div className="cal-docentes-admin sd">
@@ -75,42 +81,78 @@ const CoordinacionCalificacionesPage = () => {
           <AccionPoliticaInstitucional to={POLITICA_INSTITUCIONAL_PATH} />
         </CalificacionesAcciones>
 
-        <p className="cal-docentes-admin__contexto">
-          Gestión <strong>{gestionVigente}</strong> · Bimestre vigente <strong>{bimestreVigente}</strong>
-          {' — '}
-          Elegí un docente para revisar sus cursos y abrir el cuaderno de notas.
-        </p>
-
-        <Input.Search
-          placeholder="Buscar por nombre o especialidad"
-          allowClear
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="cal-docentes-admin__busqueda"
+        <Alert
+          type="info"
+          showIcon
+          title="Coordinación"
+          description={
+            <p style={{ margin: 0 }}>
+              Gestión <strong>{contextoGestion}</strong> · Bimestre vigente <strong>{contextoBimestre}</strong>
+              {' — '}
+              Docentes con cursos que tienen estudiantes matriculados (inscritos o cursando). Elegí un docente para
+              revisar sus cursos y abrir el cuaderno de notas.
+            </p>
+          }
+          style={{ marginBottom: 16 }}
         />
 
-        {error ? (
-          <Alert
-            type="error"
-            showIcon
-            message="No se pudo cargar el listado"
-            action={
-              <Button size="small" onClick={refetch}>
-                Reintentar
-              </Button>
-            }
-            style={{ marginBottom: 16 }}
-          />
-        ) : null}
+        <div className="sd-card">
+          <div className="sd-card__head sd-card__head--cabecera">
+            <span className="sd-card__title">Docentes</span>
+          </div>
+          <div className="sd-card__body" style={{ display: 'block', padding: '16px 20px' }}>
+            <Input.Search
+              allowClear
+              placeholder="Nombre o especialidad del docente…"
+              value={busquedaInput}
+              onChange={(e) => setBusquedaInput(e.target.value)}
+              loading={isLoading}
+              className="cal-docentes-admin__busqueda"
+              style={{ maxWidth: 480, marginBottom: 12 }}
+            />
 
-        <Table
-          rowKey="id"
-          loading={isLoading}
-          columns={columnas}
-          dataSource={filtrados}
-          pagination={{ pageSize: 8, hideOnSinglePage: true }}
-          className="cal-docentes-admin__table"
-        />
+            {error ? (
+              <Alert
+                type="error"
+                showIcon
+                message="No se pudo cargar el listado"
+                description={String(error)}
+                action={
+                  <Button size="small" onClick={refetch}>
+                    Reintentar
+                  </Button>
+                }
+                style={{ marginBottom: 12 }}
+              />
+            ) : null}
+
+            <Text type="secondary" style={{ display: 'block', marginBottom: 12, fontSize: 13 }}>
+              {esBusquedaActiva
+                ? `Búsqueda por nombre o especialidad. Escriba menos de ${busquedaMinChars} caracteres para volver a la muestra inicial.`
+                : `Muestra de hasta ${prelimLimit} docentes con más cursos activos. Escriba al menos ${busquedaMinChars} caracteres para buscar en todo el listado.`}
+            </Text>
+
+            <Table
+              rowKey="id"
+              loading={isLoading}
+              columns={columnas}
+              dataSource={docentes}
+              pagination={
+                esBusquedaActiva
+                  ? { pageSize: 10, showSizeChanger: true, hideOnSinglePage: true }
+                  : { pageSize: prelimLimit, hideOnSinglePage: true }
+              }
+              className="cal-docentes-admin__table"
+              locale={{
+                emptyText: error
+                  ? String(error)
+                  : isLoading
+                    ? 'Cargando…'
+                    : 'Sin docentes con cursos matriculados en la gestión vigente.',
+              }}
+            />
+          </div>
+        </div>
       </div>
     </PageTemplate>
   );

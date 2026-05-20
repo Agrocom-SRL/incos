@@ -170,6 +170,13 @@ export const AULAS_HORARIOS_ENDPOINTS = {
 export const GESTIONES_ENDPOINTS = createCRUDEndpoints('/gestiones');
 
 // ============================================
+// MÓDULO: CALIFICACIONES (Académico)
+// ============================================
+export const CALIFICACIONES_ENDPOINTS = {
+  COORDINACION_DOCENTES: `${API_BASE}/calificaciones/coordinacion/docentes`,
+};
+
+// ============================================
 // MÓDULO: GEOGRÁFICOS
 // ============================================
 export const PAISES_ENDPOINTS = createCRUDEndpoints('/paises');

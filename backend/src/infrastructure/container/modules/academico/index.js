@@ -16,6 +16,7 @@
 import { registerParalelosResource } from './paralelos.container.js';
 import { registerGestionesResource } from './gestiones.container.js';
 import { registerCursosResource } from './cursos.container.js';
+import { registerCalificacionesResource } from './calificaciones.container.js';
 
 /**
  * Registra el módulo completo de Académico en el contenedor
@@ -28,6 +29,7 @@ export function registerAcademicoModule(container) {
     registerParalelosResource(container);
     registerGestionesResource(container);
     registerCursosResource(container);
+    registerCalificacionesResource(container);
 
     return container;
 }
