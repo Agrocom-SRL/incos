@@ -79,6 +79,8 @@ const renderNumber = (field, disabled, readOnly) => (
     min={field.min}
     max={field.max}
     step={field.step ?? 1}
+    precision={field.precision}
+    addonAfter={field.addonAfter}
   />
 );
 

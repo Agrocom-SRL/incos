@@ -1,112 +1,210 @@
-.cal-politica__contexto {
-  margin: 0 0 16px;
-  font-size: 15px;
-  color: var(--cuaderno-texto-medio, #6b7280);
+.cal-politica-page {
+  padding: 0 0 32px;
+  width: 100%;
 }
 
-.cal-politica__alert {
-  margin-bottom: 20px;
+/* —— Resumen tipo pagos —— */
+.cal-politica-resumen-card {
+  margin-bottom: 0;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
 }
 
-.cal-politica__card {
+.cal-politica-resumen__titulo {
+  font-size: 18px;
+  font-weight: 700;
+  color: #262626;
   margin-bottom: 16px;
-  border-radius: 12px;
 }
 
-.cal-politica__card-desc {
-  margin: 0 0 14px !important;
+.cal-politica-resumen__fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+.cal-politica-resumen__fila--gestion {
+  margin-bottom: 8px;
+}
+
+.cal-politica-resumen__label {
+  color: #595959;
+}
+
+.cal-politica-resumen__valor {
+  font-weight: 500;
+  color: #262626;
+  text-align: right;
+}
+
+.cal-politica-resumen__subtitulo {
+  display: block;
   font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary, #196b45);
+  margin: 4px 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
-.cal-politica__cuota-row,
-.cal-politica__bimestres-row {
-  display: grid;
-  gap: 12px;
+.cal-politica-resumen__divider {
+  border-top: 1px solid #e8e8e8;
+  margin: 16px 0;
 }
 
-.cal-politica__cuota-row {
-  grid-template-columns: 1fr 1fr;
+.cal-politica-resumen__divider--light {
+  margin: 12px 0;
 }
 
-.cal-politica__bimestres-row {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-@media (max-width: 768px) {
-  .cal-politica__bimestres-row {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.cal-politica__hint {
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 13px;
+.cal-politica-resumen__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 8px;
+  font-size: 12px;
 }
 
-.cal-politica__hint--ok-full {
+/* —— Paneles de edición —— */
+.cal-politica-panel-card {
+  margin-bottom: 0 !important;
+  border-radius: 12px !important;
+}
+
+.cal-politica-panel-card__desc {
+  margin: 0 0 20px !important;
+  font-size: 13px;
+}
+
+.cal-politica__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* —— Sliders —— */
+.cal-politica-slider__head {
+  margin-bottom: 4px;
+}
+
+.cal-politica-slider__label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.cal-politica-slider__valor {
+  font-size: 16px;
+}
+
+.cal-politica-slider .ant-slider {
+  margin: 8px 6px 16px;
+}
+
+/* —— Asistencia (tarjetas) —— */
+.cal-politica-asistencia-radio .ant-form-item-control-input {
+  min-height: auto;
+}
+
+.cal-politica-asistencia-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.cal-politica-asistencia-option {
+  width: 100% !important;
+  height: auto !important;
+  padding: 16px !important;
+  border-radius: 12px !important;
+  text-align: left;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.cal-politica-asistencia-option::before {
+  display: none;
+}
+
+.cal-politica-asistencia-campos {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 10px;
   background: var(--cuaderno-verde-tenue, #e8f5ec);
-  color: var(--cuaderno-verde-oscuro, #196b45);
   border: 1px solid var(--cuaderno-verde-medio, #6db088);
 }
 
-.cal-politica__hint--warn {
-  background: #fef3c7;
-  border: 1px solid #fbbf24;
-  color: #92400e;
+.cal-politica-asistencia-campos--reprobacion {
+  background: #fff7e6;
+  border-color: #ffd591;
 }
 
-.cal-politica__final-row {
+.cal-politica-asistencia-campos__titulo {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+/* —— Evaluaciones finales —— */
+.cal-politica-finales-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.cal-politica-final-card {
+  padding: 14px 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cal-politica-final-card:hover {
+  border-color: var(--cuaderno-verde-medio, #6db088);
+  box-shadow: 0 2px 8px rgba(25, 107, 69, 0.08);
+}
+
+.cal-politica-final-card__icon {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--cuaderno-borde-suave, #f0f0f0);
-}
-
-.cal-politica__final-row:last-child {
-  border-bottom: none;
-}
-
-.cal-politica__final-label {
-  font-weight: 500;
-}
-
-.cal-politica__politica-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.cal-politica__politica-option {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 10px 12px;
-  border: 1px solid var(--cuaderno-borde-suave, #f0f0f0);
-  border-radius: 8px;
-  margin: 0;
-  width: 100%;
-}
-
-.cal-politica__politica-option.ant-radio-wrapper-checked {
-  border-color: var(--cuaderno-verde-medio, #6db088);
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   background: var(--cuaderno-verde-tenue, #e8f5ec);
+  color: var(--color-primary, #196b45);
+  font-size: 18px;
 }
 
-.cal-politica__politica-label {
-  font-weight: 500;
-}
-
-.cal-politica__politica-desc {
+.cal-politica-final-card__nombre {
   display: block;
-  font-size: 12px;
-  margin-top: 2px;
+}
+
+.cal-politica-final-card__codigo {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.cal-politica-anterior-card {
+  margin-bottom: 0;
 }
 
 .cal-politica__actions {
   margin-top: 8px;
-  padding-bottom: 24px;
+  padding-bottom: 8px;
+}
+
+/* Form.Item sin label extra en sliders */
+.cal-politica-asistencia-campos .form-field,
+.cal-politica-panel-card .form-field {
+  margin-bottom: 0;
+}
+
+.cal-politica-panel-card .ant-form-item {
+  margin-bottom: 0;
 }

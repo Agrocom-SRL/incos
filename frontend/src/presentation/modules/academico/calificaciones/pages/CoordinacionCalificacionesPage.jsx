@@ -160,7 +160,7 @@ const CoordinacionCalificacionesPage = () => {
               <Alert
                 type="info"
                 showIcon
-                message="Coordinación de calificaciones"
+                title="Coordinación de calificaciones"
                 description={
                   <span>
                     Periodo lectivo <strong>{periodoLabel}</strong>. Docentes con cursos que tienen
@@ -174,7 +174,7 @@ const CoordinacionCalificacionesPage = () => {
                 <Alert
                   type="error"
                   showIcon
-                  message="No se pudo cargar el listado"
+                  title="No se pudo cargar el listado"
                   description={String(error)}
                   action={
                     <Button size="small" onClick={refetch}>

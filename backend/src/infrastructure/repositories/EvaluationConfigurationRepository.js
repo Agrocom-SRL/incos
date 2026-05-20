@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 import { IConfiguracionEvaluacionRepository } from '../../domain/interfaces/repositories/IConfiguracionEvaluacionRepository.js';
 import { ConfiguracionEvaluacion as ConfiguracionEvaluacionModel } from '../database/models/configuracion_evaluacion.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { EvaluationConfigurationMapper } from '../mappers/EvaluationConfigurationMapper.js';
 
@@ -57,6 +58,36 @@ export class EvaluationConfigurationRepository extends BaseRepository {
 
     getCollectionName() {
         return 'evaluationConfigurations';
+    }
+
+    /**
+     * Fila activa de configuracion_evaluacion para una gestión (con auditoría).
+     * @param {number} gestionId
+     * @returns {Promise<Object|null>}
+     */
+    async findActiveRowByGestionId(gestionId) {
+        const rows = await sequelize.query(
+            `
+      SELECT
+        ce.id,
+        ce.gestion_id,
+        ce.cuota_teorico,
+        ce.cuota_practico,
+        ce.descripcion,
+        ce.updated_at,
+        ce.updated_by,
+        u.username AS updated_by_username
+      FROM configuracion_evaluacion ce
+      LEFT JOIN usuarios u ON u.id = ce.updated_by AND u.deleted_at IS NULL
+      WHERE ce.gestion_id = ?
+        AND ce.activo = TRUE
+        AND ce.deleted_at IS NULL
+      ORDER BY ce.id DESC
+      LIMIT 1
+      `,
+            { replacements: [gestionId], type: sequelize.QueryTypes.SELECT }
+        );
+        return rows[0] ?? null;
     }
 }
 

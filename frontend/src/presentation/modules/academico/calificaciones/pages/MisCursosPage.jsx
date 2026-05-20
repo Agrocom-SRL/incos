@@ -59,7 +59,7 @@ const MisCursosPage = () => {
           <Alert
             type="error"
             showIcon
-            message="No se pudieron cargar los cursos"
+            title="No se pudieron cargar los cursos"
             action={
               <Button size="small" onClick={refetch}>
                 Reintentar

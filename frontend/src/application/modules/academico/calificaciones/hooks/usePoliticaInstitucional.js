@@ -1,17 +1,15 @@
 /**
- * Política institucional de la gestión (Nivel 1).
+ * Política institucional de la gestión (Nivel 1) — API backend.
  */
 
-import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { calificacionesFakeApi } from '../fake-api/index.js';
 
 export const usePoliticaInstitucional = () => {
-  const { gestionId: gestionIdParam } = useParams();
-  const gestionId = gestionIdParam ?? '1';
-
   const [politica, setPolitica] = useState(null);
+  const [politicaGestionAnterior, setPoliticaGestionAnterior] = useState(null);
+  const [gestionVigente, setGestionVigente] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -20,15 +18,28 @@ export const usePoliticaInstitucional = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await calificacionesFakeApi.obtenerPoliticaInstitucional({ gestionId });
-      setPolitica(data);
+      const uc = useCasesFactory.obtenerPoliticaInstitucional();
+      const result = await uc.ejecutar();
+      if (!result?.success) {
+        setPolitica(null);
+        setPoliticaGestionAnterior(null);
+        setGestionVigente(null);
+        setError(result?.error || 'No se pudo cargar la configuración');
+        return;
+      }
+      const data = result.data ?? {};
+      setPolitica(data.politica ?? null);
+      setPoliticaGestionAnterior(data.politicaGestionAnterior ?? null);
+      setGestionVigente(data.gestionVigente ?? data.politica?.gestionNombre ?? null);
     } catch (err) {
-      setError(err);
       setPolitica(null);
+      setPoliticaGestionAnterior(null);
+      setGestionVigente(null);
+      setError(err?.message || 'Error al cargar');
     } finally {
       setIsLoading(false);
     }
-  }, [gestionId]);
+  }, []);
 
   useEffect(() => {
     cargar();
@@ -39,31 +50,39 @@ export const usePoliticaInstitucional = () => {
       setIsSaving(true);
       setError(null);
       try {
-        const data = await calificacionesFakeApi.guardarPoliticaInstitucional({
-          gestionId,
-          cambios,
-        });
-        setPolitica(data);
-        return data;
+        const uc = useCasesFactory.guardarPoliticaInstitucional();
+        const result = await uc.ejecutar(cambios);
+        if (!result?.success) {
+          const err = new Error(result?.error || 'No se pudo guardar');
+          setError(err.message);
+          throw err;
+        }
+        const data = result.data ?? {};
+        if (data.politica) {
+          setPolitica(data.politica);
+        } else {
+          await cargar();
+        }
+        return data.politica;
       } catch (err) {
-        setError(err);
+        setError(err?.message || 'Error al guardar');
         throw err;
       } finally {
         setIsSaving(false);
       }
     },
-    [gestionId],
+    [cargar],
   );
 
-  const breadcrumbItems = createBreadcrumbItems(
-    'ACA-CAL-POLITICA',
-    'ACA-CAL',
-    'Política institucional',
+  const breadcrumbItems = useMemo(
+    () => createBreadcrumbItems('ACA-CAL-POLITICA', 'ACA-CAL', 'Configuración de notas'),
+    [],
   );
 
   return {
     politica,
-    gestionId,
+    politicaGestionAnterior,
+    gestionVigente,
     isLoading,
     isSaving,
     error,

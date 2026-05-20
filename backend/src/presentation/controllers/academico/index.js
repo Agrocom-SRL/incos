@@ -20,3 +20,5 @@ export { GetHorariosPublicacionPlanesController } from './paralelos/get-horarios
 // ============================================
 export { ListGestionesController } from './gestiones/list.controller.js';
 export { ListCoordinacionCalificacionesDocentesController } from './calificaciones/list-coordinacion-docentes.controller.js';
+export { GetPoliticaInstitucionalController } from './calificaciones/get-politica-institucional.controller.js';
+export { SavePoliticaInstitucionalController } from './calificaciones/save-politica-institucional.controller.js';

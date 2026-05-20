@@ -126,7 +126,7 @@ const VistaPreviaDrawer = ({
         <Alert
           type="warning"
           showIcon
-          message="No se cargó la cuota del curso; se usa 30/70 por defecto."
+          title="No se cargó la cuota del curso; se usa 30/70 por defecto."
           className="cal-preview-drawer__alert"
         />
       ) : null}
@@ -146,7 +146,7 @@ const VistaPreviaDrawer = ({
         <Alert
           type="success"
           showIcon
-          message="Los pesos de cada componente suman 100%."
+          title="Los pesos de cada componente suman 100%."
           className="cal-preview-drawer__alert"
         />
       ) : null}

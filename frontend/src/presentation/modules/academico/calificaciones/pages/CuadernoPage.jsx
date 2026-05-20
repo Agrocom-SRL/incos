@@ -106,7 +106,7 @@ const CuadernoPage = () => {
         <Alert
           type="error"
           showIcon
-          message="No se pudo cargar el cuaderno"
+          title="No se pudo cargar el cuaderno"
           action={
             <Button size="small" onClick={refetch}>
               Reintentar

@@ -116,7 +116,7 @@ const TableroGestionPage = () => {
           <Alert
             type="error"
             showIcon
-            message="No se pudo cargar el tablero"
+            title="No se pudo cargar el tablero"
             action={
               <Button size="small" onClick={refetch}>
                 Reintentar

@@ -80,4 +80,26 @@ export class CalificacionRepository {
       { replacements: [term, term, term, lim], type: sequelize.QueryTypes.SELECT }
     );
   }
+
+  /**
+   * Gestión académica inmediatamente anterior (por año).
+   * @param {number} gestionAnio
+   * @returns {Promise<{ id, anio, nombre }|null>}
+   */
+  async obtenerGestionAnteriorPorAnio(gestionAnio) {
+    const rows = await sequelize.query(
+      `
+      SELECT g.id, g.anio, g.nombre
+      FROM gestiones g
+      WHERE g.activo = TRUE
+        AND g.deleted_at IS NULL
+        AND g.anio < ?
+      ORDER BY g.anio DESC, g.id DESC
+      LIMIT 1
+      `,
+      { replacements: [gestionAnio], type: sequelize.QueryTypes.SELECT }
+    );
+    return rows[0] ?? null;
+  }
+
 }

@@ -170,7 +170,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
           type="info"
           showIcon
           className="cal-ajustes-drawer__override-alert"
-          message="Este curso tiene configuración distinta a la institucional"
+          title="Este curso tiene configuración distinta a la institucional"
           description={
             <>
               Última modificación por <strong>{ultima.updatedByNombre}</strong> el{' '}

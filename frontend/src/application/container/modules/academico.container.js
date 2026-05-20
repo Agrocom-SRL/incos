@@ -26,7 +26,11 @@ import {
 } from '@useCases/academico/paralelos';
 import { ActualizarCursoOfertaUseCase, EliminarCursoOfertaUseCase } from '@useCases/academico/cursos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
-import { ListCoordinacionDocentesUseCase } from '@useCases/academico/calificaciones';
+import {
+  GuardarPoliticaInstitucionalUseCase,
+  ListCoordinacionDocentesUseCase,
+  ObtenerPoliticaInstitucionalUseCase,
+} from '@useCases/academico/calificaciones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import CursoRepository from '@infrastructure/repositories/CursoRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
@@ -107,6 +111,14 @@ export function registerAcademicoModule(factory) {
 
   factory.listarCoordinacionCalificacionesDocentes = () => {
     return new ListCoordinacionDocentesUseCase(CalificacionRepository);
+  };
+
+  factory.obtenerPoliticaInstitucional = () => {
+    return new ObtenerPoliticaInstitucionalUseCase(CalificacionRepository);
+  };
+
+  factory.guardarPoliticaInstitucional = () => {
+    return new GuardarPoliticaInstitucionalUseCase(CalificacionRepository);
   };
 
   return factory;

@@ -76,7 +76,7 @@ const CerrarBimestreModal = ({
             <Alert
               type="error"
               showIcon
-              message="No se puede cerrar hasta resolver:"
+              title="No se puede cerrar hasta resolver:"
               style={{ marginBottom: 12 }}
             />
           ) : null}
@@ -93,7 +93,7 @@ const CerrarBimestreModal = ({
             <Alert
               type="warning"
               showIcon
-              message="Advertencias (podés cerrar igual si no hay bloqueos):"
+              title="Advertencias (podés cerrar igual si no hay bloqueos):"
               style={{ marginBottom: 8 }}
             />
           ) : null}
@@ -109,7 +109,7 @@ const CerrarBimestreModal = ({
             <Alert
               type="success"
               showIcon
-              message="La gestión cumple las validaciones para el cierre."
+              title="La gestión cumple las validaciones para el cierre."
             />
           ) : null}
         </>
