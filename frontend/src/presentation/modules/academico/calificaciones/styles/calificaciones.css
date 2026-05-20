@@ -1,319 +1,590 @@
-/* Calificaciones — complementa .sd (detail-page.css en index) y wizard-selection-cards */
+/* Calificaciones — tokens locales del cuaderno (mapean variables globales del proyecto) */
+.cal-cuaderno,
+.cal-cuaderno-hoja,
+.cal-bimestre-tabs {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: var(--color-primary, #196b45);
+  --cuaderno-verde-acento: var(--primary-dark, #134d32);
 
-.cal-flow-lede {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text-500, rgba(0, 0, 0, 0.55));
-  max-width: 52rem;
+  --cuaderno-papel: var(--color-bg-container, #ffffff);
+  --cuaderno-fondo: #fafafa;
+  --cuaderno-borde-suave: #f0f0f0;
+  --cuaderno-borde: #e5e7eb;
+  --cuaderno-borde-puntos: #d1d5db;
+  --cuaderno-texto-tenue: #9ca3af;
+  --cuaderno-texto-medio: var(--text-500, #6b7280);
+  --cuaderno-texto-fuerte: var(--text-800, #1f2937);
+
+  --bimestre-vigente-bg: var(--cuaderno-verde-tenue);
+  --bimestre-vigente-border: var(--cuaderno-verde-medio);
+  --bimestre-vigente-text: var(--cuaderno-verde-oscuro);
+  --bimestre-anterior-text: var(--cuaderno-texto-medio);
+  --bimestre-futuro-text: #cbd5e1;
+  --bimestre-futuro-opacity: 0.55;
 }
 
-.cal-section {
-  margin-top: 0;
-}
-
-.cal-section + .cal-section,
-.cal-bimestre-shell + .cal-section,
-.cal-alert-strip + .cal-section {
-  margin-top: 16px;
-}
-
-.cal-section__body--block {
-  display: block !important;
-  padding: 20px !important;
-}
-
-.cal-section__body--flush {
-  padding: 0 !important;
-}
-
-/* —— Perfil curso (avatar con color de materia) —— */
-.cal-curso-profile__avatar {
-  color: #fff;
-  font-weight: 700;
+/* —— Mis cursos (sin cambios funcionales; tokens alineados) —— */
+.cal-mis-cursos__subtitulo {
+  margin: 0 0 4px;
   font-size: 15px;
-  letter-spacing: 0.04em;
+  color: var(--cuaderno-texto-medio, #4b5563);
 }
 
-/* —— Paralelo + grid de cursos —— */
-.cal-paralelo-block {
-  margin-bottom: 1.75rem;
+.cal-mis-cursos__contexto {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--cuaderno-texto-medio);
 }
 
-.cal-paralelo-block:last-child {
-  margin-bottom: 0;
-}
-
-.cal-paralelo-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem 1rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.65rem;
-  border-bottom: 1px solid rgba(25, 107, 69, 0.12);
-}
-
-.cal-paralelo-title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--primary-dark, #134d32);
-}
-
-.cal-paralelo-meta {
-  font-size: 0.8125rem;
-  color: var(--text-500, rgba(0, 0, 0, 0.55));
-}
-
-/* Tarjetas de curso (estilo wizard-selection-cards) */
-.cal-cursos-grid {
+.cal-mis-cursos__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--spacing-md, 16px);
-  width: 100%;
 }
 
-.cal-curso-pick {
-  position: relative;
-  border: 2px solid var(--color-border, #e8e8e8);
+.cal-curso-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--color-border, #e8e8e8);
   border-radius: var(--border-radius-lg, 12px);
-  background: var(--color-bg-container, #fff);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-  overflow: hidden;
-  cursor: default;
+  background: var(--cuaderno-papel);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-.cal-curso-pick--ready {
-  border-color: var(--wizard-card-accent, var(--color-primary, #196b45));
-  background: var(--wizard-card-accent-bg, #e8f5ec);
-}
-
-.cal-curso-pick--ready .wizard-selection-cards__icon-wrap {
-  background-color: var(--wizard-card-accent, var(--color-primary, #196b45));
-}
-
-.cal-curso-pick--ready .wizard-selection-cards__icon {
-  color: #fff;
-}
-
-.cal-curso-pick:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-
-.cal-curso-pick .wizard-selection-cards__inner {
-  padding: 18px 18px 14px;
+.cal-curso-card__head {
+  display: flex;
+  gap: 12px;
   align-items: flex-start;
 }
 
-.cal-curso-pick__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.cal-curso-pick__chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  background: #f0f0f0;
-  color: #595959;
-}
-
-.cal-curso-pick__chip--sigla {
-  background: rgba(25, 107, 69, 0.12);
-  color: var(--primary-dark, #134d32);
-}
-
-.cal-curso-pick__chip--ok {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.cal-curso-pick__chip--warn {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.cal-curso-pick__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 18px 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  margin-top: 4px;
-  padding-top: 12px;
-}
-
-/* —— Alert strip —— */
-.cal-alert-strip {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.cal-alert-strip__item {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: var(--radius-md, 10px);
-  border: 1px solid transparent;
-  background: var(--surface, #fff);
-}
-
-.cal-alert-strip__item--info {
-  border-color: rgba(59, 130, 246, 0.25);
-  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
-}
-
-.cal-alert-strip__item--warning {
-  border-color: rgba(245, 158, 11, 0.35);
-  background: linear-gradient(135deg, #fffbeb 0%, #fefce8 100%);
-}
-
-.cal-alert-strip__item--success {
-  border-color: rgba(25, 107, 69, 0.25);
-  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
-}
-
-.cal-alert-strip__icon {
-  font-size: 18px;
+.cal-curso-card__icon {
+  font-size: 22px;
+  color: var(--cuaderno-verde-oscuro);
   margin-top: 2px;
-  flex-shrink: 0;
 }
 
-.cal-alert-strip__item--info .cal-alert-strip__icon {
-  color: #2563eb;
+.cal-curso-card__materia {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  line-height: 1.35;
 }
 
-.cal-alert-strip__item--warning .cal-alert-strip__icon {
-  color: #d97706;
+.cal-curso-card__badge {
+  margin: 0;
 }
 
-.cal-alert-strip__item--success .cal-alert-strip__icon {
-  color: var(--primary, #196b45);
-}
-
-.cal-alert-strip__content strong {
-  display: block;
-  font-size: 13px;
-  color: var(--text-800, #1f2937);
-  margin-bottom: 4px;
-}
-
-.cal-alert-strip__content p {
+.cal-curso-card__meta {
   margin: 0;
   font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-500, #6b7280);
+  color: var(--cuaderno-texto-medio);
 }
 
-.cal-alert-strip__action {
+.cal-curso-card__pendientes {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-warning, #d97706);
+  font-weight: 500;
+}
+
+.cal-curso-card__action {
   margin-top: 8px;
 }
 
-/* —— Bimestre tabs —— */
-.cal-bimestre-shell {
-  margin-bottom: 0;
+.cal-curso-card--skeleton {
+  pointer-events: none;
 }
 
-.cal-bimestre-shell .ant-tabs-content-holder {
+/* PageHeader solo breadcrumb en cuaderno */
+.cal-cuaderno-page-header.page-header > .ant-flex:nth-child(2) {
   display: none;
 }
 
-/* —— Plan —— */
-.cal-plan-section {
-  margin-bottom: 0;
-}
-
-.cal-plan-cuotas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1.25rem;
-  align-items: end;
-}
-
-.cal-plan-cuota-field {
+/* —— Cuaderno: layout general —— */
+.cal-cuaderno {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
 }
 
-.cal-plan-cuota-field .sd-field__label,
-.cal-plan-cuota-field label {
-  font-size: 11px;
+/* —— Header del curso —— */
+.cal-cuaderno-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px 20px;
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+  border-bottom: 2px solid var(--cuaderno-verde-medio);
+  position: relative;
+}
+
+.cal-cuaderno-header__text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.cal-cuaderno-header__title {
+  margin: 0;
+  font-size: 1.5rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-500, #6b7280);
+  line-height: 1.25;
+  color: var(--cuaderno-verde-acento);
+  letter-spacing: -0.01em;
 }
 
-.cal-peso-hint {
-  font-size: 0.8125rem;
+.cal-cuaderno-header__subtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-cuaderno-header__actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* —— Tabs bimestre (pestañas índice) —— */
+.cal-bimestre-tabs {
+  margin-top: 16px;
+  margin-bottom: 0;
+  position: relative;
+}
+
+.cal-bimestre-tabs__track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 0 2px;
+}
+
+.cal-bimestre-tabs__rule {
+  height: 1px;
+  background: var(--cuaderno-borde);
+  margin-top: -1px;
+  position: relative;
+  z-index: 0;
+}
+
+.cal-bimestre-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px 10px;
+  margin-bottom: 0;
+  border: 1px solid var(--cuaderno-borde);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: var(--cuaderno-fondo);
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: pointer;
+  color: var(--bimestre-anterior-text);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.cal-bimestre-tabs__tab--anterior {
+  background: transparent;
+  border-color: transparent;
+  color: var(--bimestre-anterior-text);
+}
+
+.cal-bimestre-tabs__tab--anterior .cal-bimestre-tabs__icon {
+  opacity: 0.5;
+  color: var(--cuaderno-texto-tenue);
+}
+
+.cal-bimestre-tabs__tab--anterior:hover:not(:disabled) {
+  background: var(--cuaderno-fondo);
+  border-color: var(--cuaderno-borde-suave);
+  color: var(--cuaderno-texto-fuerte);
+}
+
+.cal-bimestre-tabs__tab--anterior:hover:not(:disabled) .cal-bimestre-tabs__icon {
+  opacity: 0.75;
+}
+
+.cal-bimestre-tabs__tab--vigente {
+  color: var(--bimestre-vigente-text);
+  border-color: var(--bimestre-vigente-border);
+  background: var(--bimestre-vigente-bg);
   font-weight: 600;
 }
 
-.cal-peso-hint--ok {
-  color: var(--primary, #196b45);
+.cal-bimestre-tabs__tab--active {
+  z-index: 2;
+  margin-bottom: -1px;
 }
 
-.cal-peso-hint--warn {
-  color: #d97706;
+.cal-bimestre-tabs__tab--anterior.cal-bimestre-tabs__tab--active {
+  background: var(--cuaderno-papel);
+  border-color: var(--cuaderno-borde);
+  border-bottom: 1px solid var(--cuaderno-papel);
 }
 
-.cal-plan-table-wrap .ant-table-thead > tr > th {
-  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ec 100%) !important;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.cal-bimestre-tabs__tab--vigente.cal-bimestre-tabs__tab--active {
+  border-bottom: 1px solid var(--bimestre-vigente-bg);
+  box-shadow: 0 -2px 0 var(--bimestre-vigente-border);
 }
 
-/* —— Notas —— */
+.cal-bimestre-tabs__tab--futuro {
+  color: var(--bimestre-futuro-text);
+  opacity: var(--bimestre-futuro-opacity);
+  cursor: not-allowed;
+  background: transparent;
+  border-color: transparent;
+}
+
+.cal-bimestre-tabs__tab--futuro:disabled {
+  pointer-events: none;
+}
+
+.cal-bimestre-tabs__tab--futuro .cal-bimestre-tabs__icon {
+  color: var(--cuaderno-borde-puntos);
+}
+
+.cal-bimestre-tabs__vigente {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--cuaderno-verde-oscuro);
+  color: #fff;
+  line-height: 1.3;
+}
+
+/* —— Hoja del cuaderno (grilla + pie) —— */
+.cal-cuaderno-hoja {
+  margin-top: 0;
+  background: var(--cuaderno-papel);
+  border: 1px solid var(--cuaderno-borde);
+  border-radius: 0 10px 10px 10px;
+  box-shadow:
+    0 1px 2px rgba(25, 107, 69, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
 .cal-notas-grid-wrap {
+  position: relative;
   overflow-x: auto;
-  border-radius: var(--radius-md, 10px);
-  border: 1px solid var(--border, #e5e7eb);
+}
+
+/* —— Grilla notas —— */
+.cal-notas-grid.ant-table-wrapper .ant-table {
+  background: transparent;
 }
 
 .cal-notas-grid .ant-table-thead > tr > th {
-  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ec 100%) !important;
+  background: var(--cuaderno-fondo) !important;
+  border-bottom: 1px solid var(--cuaderno-verde-medio) !important;
+  color: var(--cuaderno-verde-acento) !important;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 12px !important;
+  letter-spacing: 0.02em;
 }
 
-.cal-notas-grid .ant-table-cell {
-  padding: 8px 10px !important;
+.cal-notas-grid .ant-table-tbody > tr > td {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid var(--cuaderno-borde-suave) !important;
+  vertical-align: middle !important;
 }
 
-.cal-notas-input {
-  width: 72px;
+.cal-notas-grid .ant-table-tbody > tr:hover > td {
+  background: var(--cuaderno-fondo) !important;
 }
 
-.cal-cuotas-tags {
+.cal-notas-grid .ant-table-tbody > tr:last-child > td {
+  border-bottom: none !important;
+}
+
+.cal-notas-grid__estudiante {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cal-notas-grid__margen {
+  flex-shrink: 0;
+  width: 2px;
+  align-self: stretch;
+  min-height: 18px;
+  border-radius: 1px;
+  background: rgba(109, 176, 136, 0.45);
+}
+
+.cal-notas-grid__nombre {
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.cal-notas-grid__col-eval {
+  text-align: center;
+}
+
+.cal-notas-grid__col-add {
+  background: var(--cuaderno-fondo) !important;
+}
+
+.cal-notas-grid__add-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cuaderno-texto-tenue);
+  font-size: 14px;
+  opacity: 0.65;
+}
+
+.cal-notas-grid__add-btn {
+  color: var(--cuaderno-texto-tenue) !important;
+  opacity: 0.5;
+}
+
+.cal-notas-grid__add-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* —— Celdas de nota —— */
+.cal-nota-cell {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.cal-nota-cell--empty {
+  min-width: 80px;
+  height: 32px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px dashed var(--cuaderno-borde-puntos);
+  border-radius: 6px;
+  color: var(--cuaderno-texto-tenue);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-nota-cell--filled {
+  min-width: 80px;
+}
+
+.cal-nota-cell__input {
+  width: 80px !important;
+}
+
+.cal-nota-cell__input.ant-input-number {
+  border: 1px solid var(--cuaderno-borde);
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+.cal-nota-cell__input .ant-input-number-input {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  background: #f9f9f9;
+  height: 30px;
+  padding: 0 8px;
+}
+
+.cal-nota-cell__input.ant-input-number-disabled {
+  background: #f9f9f9;
+  border-color: var(--cuaderno-borde);
+}
+
+.cal-nota-cell__input.ant-input-number-disabled .ant-input-number-input {
+  color: var(--cuaderno-texto-fuerte);
+  cursor: not-allowed;
+}
+
+.cal-nota-cell--editable {
+  position: relative;
+  gap: 4px;
+}
+
+.cal-nota-cell--editable-empty .cal-nota-cell__input.ant-input-number {
+  background: transparent;
+  border: 1px dashed var(--cuaderno-borde-puntos);
+}
+
+.cal-nota-cell--editable-empty .cal-nota-cell__input .ant-input-number-input {
+  background: transparent;
+}
+
+.cal-nota-cell--pendiente .cal-nota-cell__input.ant-input-number {
+  border-color: #9ca3af;
+}
+
+.cal-nota-cell--guardando .cal-nota-cell__input.ant-input-number {
+  border-color: var(--cuaderno-verde-medio);
+}
+
+.cal-nota-cell--guardado .cal-nota-cell__input.ant-input-number {
+  animation: cal-nota-guardado-flash 0.2s ease;
+  border-color: var(--cuaderno-verde-oscuro);
+  box-shadow: 0 0 0 2px rgba(25, 107, 69, 0.15);
+}
+
+@keyframes cal-nota-guardado-flash {
+  0% {
+    box-shadow: 0 0 0 3px rgba(25, 107, 69, 0.28);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(25, 107, 69, 0.15);
+  }
+}
+
+.cal-nota-cell--error .cal-nota-cell__input.ant-input-number {
+  border-color: #ef4444;
+}
+
+.cal-nota-cell__spinner {
+  font-size: 12px;
+  color: var(--cuaderno-verde-medio);
+}
+
+.cal-nota-cell__error-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.cal-nota-cell__error-btn:hover {
+  color: #dc2626;
+}
+
+.cal-nota-cell--readonly .cal-nota-cell__readonly-valor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: 32px;
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  background: #f9f9f9;
+  border: 1px solid var(--cuaderno-borde);
+  border-radius: 6px;
+}
+
+.cal-notas-grid-wrap--loading .cal-notas-grid {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.cal-notas-grid__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.cal-cuaderno-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cal-cuaderno-skeleton__tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cal-cuaderno-skeleton__hoja {
+  padding: 20px;
+}
+
+.cal-cuaderno-footer__guardado--activo {
+  color: var(--cuaderno-verde-oscuro);
+  font-weight: 500;
+}
+
+.cal-cuaderno-footer__guardado--neutro {
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-cuaderno-footer__guardado--error {
+  color: #dc2626;
+  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.cal-cuaderno-footer__icon--error {
+  color: #ef4444;
+}
+
+/* —— Footer integrado en la hoja —— */
+.cal-cuaderno-footer {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 10px 16px 12px;
+  font-size: 12px;
+  border-top: 1px solid var(--cuaderno-borde-suave);
+  background: var(--cuaderno-fondo);
 }
 
-.cal-cuotas-tags .ant-tag {
-  margin: 0;
-  border-radius: 6px;
-  font-weight: 600;
+.cal-cuaderno-footer__guardado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cuaderno-verde-oscuro);
+  font-size: 13px;
 }
 
-/* Selección docente (tabla) */
-.cal-sel-table .ant-table-thead > tr > th {
-  padding: 18px 20px !important;
-  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ec 100%) !important;
+.cal-cuaderno-footer__icon {
+  font-size: 16px;
+  color: var(--cuaderno-verde-medio);
 }
 
-.cal-sel-table .ant-table-tbody > tr > td {
-  padding: 14px 20px !important;
+.cal-cuaderno-footer__nota {
+  color: var(--cuaderno-texto-medio);
+  font-size: 12px;
+  text-align: right;
+  max-width: 420px;
+  line-height: 1.4;
+}
+
+@media (max-width: 1279px) {
+  .cal-cuaderno-header__title {
+    font-size: 1.35rem;
+  }
 }

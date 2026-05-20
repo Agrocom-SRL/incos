@@ -1,31 +1,25 @@
 // src/presentation/modules/academico/calificaciones/routes.jsx
 /**
- * Calificaciones (ítem de menú ACA).
+ * Calificaciones — flujo docente (cuaderno).
  *
- * /academico/calificaciones → elegir docente (admin) o redirección (cuenta DOCENTE)
- * /academico/calificaciones/docente/:docenteId/cursos → cursos por paralelo
- * /academico/calificaciones/docente/:docenteId/curso/:asignacionId/plan → plan de evaluaciones
- * /academico/calificaciones/docente/:docenteId/curso/:asignacionId/notas → registro de notas
+ * /mis-cursos — cursos del docente logueado
+ * /mis-cursos/:cursoId — cuaderno del curso
  */
 
 import { lazy } from 'react';
 
-const CalificacionesSeleccionDocenteConnector = lazy(
-  () => import('./connectors/SeleccionDocenteConnector.jsx'),
-);
-const CalificacionesCursosConnector = lazy(() => import('./connectors/CursosConnector.jsx'));
-const CalificacionesPlanConnector = lazy(() => import('./connectors/PlanConnector.jsx'));
-const CalificacionesNotasConnector = lazy(() => import('./connectors/NotasConnector.jsx'));
+const MisCursosConnector = lazy(() => import('./connectors/MisCursosConnector.jsx'));
+const CuadernoConnector = lazy(() => import('./connectors/CuadernoConnector.jsx'));
 
 export const calificacionesRoutes = [
   {
-    path: '/academico/calificaciones',
-    element: <CalificacionesSeleccionDocenteConnector />,
+    path: '/mis-cursos',
+    element: <MisCursosConnector />,
     key: 'ACA-CAL',
     permiso: 'academico.calificacion.curso',
     accion: 'LISTAR',
     menu: {
-      label: 'Calificaciones',
+      label: 'Mis cursos',
       module: 'ACA',
       parent: 'ACA',
       order: 1,
@@ -33,31 +27,13 @@ export const calificacionesRoutes = [
     },
   },
   {
-    path: '/academico/calificaciones/docente/:docenteId/cursos',
-    element: <CalificacionesCursosConnector />,
-    key: 'ACA-CAL-CURSOS',
+    path: '/mis-cursos/:cursoId',
+    element: <CuadernoConnector />,
+    key: 'ACA-CAL-CUADERNO',
     permiso: 'academico.calificacion.curso',
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'ACA-CAL',
-  },
-  {
-    path: '/academico/calificaciones/docente/:docenteId/curso/:asignacionId/plan',
-    element: <CalificacionesPlanConnector />,
-    key: 'ACA-CAL-PLAN',
-    permiso: 'academico.calificacion.periodo',
-    accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'ACA-CAL-CURSOS',
-  },
-  {
-    path: '/academico/calificaciones/docente/:docenteId/curso/:asignacionId/notas',
-    element: <CalificacionesNotasConnector />,
-    key: 'ACA-CAL-NOTAS',
-    permiso: 'academico.calificacion.registrar.parcial',
-    accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'ACA-CAL-CURSOS',
   },
 ];
 

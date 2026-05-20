@@ -185,6 +185,7 @@ export const menuIconMap = {
 
     // Académico — Calificaciones
     'ACA-CAL': CheckCircleOutlined,
+    'ACA-CAL-CUADERNO': EditOutlined,
     'ACA-CAL-PLAN': FileTextOutlined,
     'ACA-CAL-NOTAS': EditOutlined,
     'ACA-CAL-REGISTRAR': EditOutlined,

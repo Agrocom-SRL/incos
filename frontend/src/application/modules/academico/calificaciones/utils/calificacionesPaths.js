@@ -1,17 +1,7 @@
 /**
- * Rutas del flujo de calificaciones (selección → cursos → plan / notas).
+ * Rutas del flujo docente (cuaderno).
  */
 
-export const CALIFICACIONES_SELECCION_PATH = '/academico/calificaciones';
+export const MIS_CURSOS_PATH = '/mis-cursos';
 
-export function calificacionesCursosPath(docenteId) {
-  return `/academico/calificaciones/docente/${docenteId}/cursos`;
-}
-
-export function calificacionesPlanPath(docenteId, asignacionId) {
-  return `/academico/calificaciones/docente/${docenteId}/curso/${asignacionId}/plan`;
-}
-
-export function calificacionesNotasPath(docenteId, asignacionId) {
-  return `/academico/calificaciones/docente/${docenteId}/curso/${asignacionId}/notas`;
-}
+export const cuadernoCursoPath = (cursoId) => `/mis-cursos/${cursoId}`;
