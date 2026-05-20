@@ -62,7 +62,6 @@ const GRUPO_UI_LABELS = {
   cfg_complementario: 'Datos complementarios',
   cfg_convenios: 'Convenios',
   cfg_historial: 'Historial actividades',
-  cfg_catalogos: 'Catálogos de referencia',
   rep_avance: 'Avance académico',
   rep_asistencia: 'Asistencia',
   rep_desercion: 'Deserción',

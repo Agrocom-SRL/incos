@@ -3,7 +3,10 @@ import {
   NotFoundError,
   UnprocessableEntityError,
 } from '../../../domain/errors/AppError.js';
-import { ACCIONES_PERMISOS_VALUES } from '../../../domain/constants/usuarios.constants.js';
+import {
+  ACCIONES_PERMISOS_VALUES,
+  PERMISO_CATALOGO_REFERENCIA_ID,
+} from '../../../domain/constants/usuarios.constants.js';
 
 export class ActualizarPermisosRolUseCase {
   /**
@@ -39,12 +42,16 @@ export class ActualizarPermisosRolUseCase {
       throw new NotFoundError('Rol');
     }
 
-    const asignaciones = Array.isArray(body.asignaciones) ? body.asignaciones : null;
-    if (asignaciones === null) {
+    const asignacionesRaw = Array.isArray(body.asignaciones) ? body.asignaciones : null;
+    if (asignacionesRaw === null) {
       throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
         { field: 'asignaciones', message: 'asignaciones debe ser un array' },
       ]);
     }
+
+    const asignaciones = asignacionesRaw.filter(
+      (row) => Number(row?.permiso_id) !== PERMISO_CATALOGO_REFERENCIA_ID
+    );
 
     const seen = new Set();
     for (let i = 0; i < asignaciones.length; i++) {

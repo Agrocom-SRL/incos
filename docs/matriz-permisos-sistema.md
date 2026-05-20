@@ -9,7 +9,7 @@ El usuario **admin** inicial (`57-seed-usuarios-admin.sql`) tiene `rol_id = 1`. 
 
 En **RolPermisosPage**, la grilla usa `vista_grilla_roles_permisos_agrupada`: para `rol_id = 1` el backend marca como asignadas todas las acciones validas del catalogo (misma fuente que login), no las filas vacias de `roles_permisos`.
 
-Tras cambiar `ruta_sidebar` o `grupo_ui` en el seeder **54**, en BD existente ejecutar `58-migrate-permisos-rutas-grupos.sql` y recrear la vista **33** (`DROP VIEW` + script `33-vista-grilla-roles-permisos-agrupada.sql`).
+Tras cambiar `ruta_sidebar` o `grupo_ui` en el seeder **54**, en BD ya existente conviene re-seed de permisos o `UPDATE` manual; en instalación nueva basta con los seeders **53–57** y las vistas **32–33**.
 
 ## Criterio canon para nuevas funciones (ABM limpio + seguridad)
 
@@ -363,9 +363,13 @@ Los controladores de seguridad deben mantener reglas de negocio extra (p. ej. in
 
 ### Catálogos de referencia (`sistema.catalogo.referencia`, permiso_id **101**, acción **LISTAR**)
 
-**No es una pantalla del menú.** `grupo_ui = cfg_catalogos` y `ruta_sidebar` describe las APIs (no `/configuracion/academico`). Autoriza los `GET` de listas usadas en combos de formularios en Matrícula, Docentes, Pagos, etc.
+**Permiso técnico (transparente para Seguridad).** No tiene `grupo_ui` ni `ruta_sidebar`: **no aparece** en `RolPermisosPage` / `PermisosDominioPicker`. No se guarda en `roles_permisos` (55).
 
-Middleware compartido: `listarCatalogoReferencia` (`authenticate` + `verificarPermiso`). Seeds: `54-seed-permisos.sql`, `56-seed-permiso-acciones.sql`, `55-seed-roles-permisos.sql` (roles **2–8** con LISTAR; rol **1** via catálogo `permiso_acciones`).
+**Quién lo tiene:** cualquier usuario autenticado con `rol_id` asignado (`AuthRepository.tienePermiso` devuelve true para LISTAR). Así un rol con “crear estudiante” no queda sin combos de país, idioma, método de pago, etc.
+
+**Bloquear datos concretos** (una carrera inactiva, un idioma dado) es configuración de negocio en CFG o estado `activo` en tablas, no este toggle.
+
+Middleware: `listarCatalogoReferencia` (`authenticate` + `verificarPermiso`). Catálogo en `permiso_acciones` (56) para validar que la acción existe en el sistema.
 
 | Archivo | GET |
 |---------|-----|

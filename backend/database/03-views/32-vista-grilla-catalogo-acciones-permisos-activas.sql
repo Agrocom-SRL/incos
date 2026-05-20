@@ -6,7 +6,7 @@
 -- (evita SQL embebido en repositorios y centraliza reglas de vigencia)
 --
 -- Diferencia respecto a vista_catalogo_acciones_permisos_activas:
---   - Exige p.grupo_ui IS NOT NULL (agrupación UI)
+--   - Exige p.grupo_ui IS NOT NULL (excluye permisos técnicos p. ej. sistema.catalogo.referencia)
 --
 -- Relaciones según schemas:
 -- - permiso_acciones.permiso_id → permisos.id

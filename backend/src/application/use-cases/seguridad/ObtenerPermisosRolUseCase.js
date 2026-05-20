@@ -1,5 +1,9 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { PERMISO_CATALOGO_REFERENCIA_ID } from '../../../domain/constants/usuarios.constants.js';
 import { agruparPermisosRolPorDominio } from './permisos-agrupar.helper.js';
+
+const sinPermisosTecnicos = (rows) =>
+  rows.filter((row) => Number(row.permiso_id) !== PERMISO_CATALOGO_REFERENCIA_ID);
 
 export class ObtenerPermisosRolUseCase {
   /**
@@ -20,9 +24,10 @@ export class ObtenerPermisosRolUseCase {
       throw new NotFoundError('Rol');
     }
 
-    const flat = Number(rolId) === 1
+    const flatRaw = Number(rolId) === 1
       ? await this.permissionRepository.findAllAccionesValidasFlat()
       : await this.rolePermissionRepository.findFlatByRolId(rolId);
+    const flat = sinPermisosTecnicos(flatRaw);
 
     return {
       rol: {

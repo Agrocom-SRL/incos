@@ -1,4 +1,5 @@
 import { sequelize } from '../database/sequelize.js';
+import { esPermisoCatalogoReferencia } from '../../domain/constants/usuarios.constants.js';
 
 /**
  * Repositorio de autenticación y permisos.
@@ -127,6 +128,11 @@ export class AuthRepository {
     const userRow = userRows[0];
     if (!userRow) {
       return false;
+    }
+
+    // Infraestructura: catálogos de combos para formularios; no se asigna por rol en Seguridad
+    if (esPermisoCatalogoReferencia(codigoPermiso, accion)) {
+      return userRow.rol_id != null;
     }
 
     if (Number(userRow.rol_id) === 1) {

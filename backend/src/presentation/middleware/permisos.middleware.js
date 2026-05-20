@@ -63,7 +63,7 @@ export function verificarPermisoCualquiera(pares) {
 
 /**
  * Listados de catálogo de referencia (país, ubicación, tipos, métodos de pago, etc.).
- * Permiso `sistema.catalogo.referencia` (id 101) + LISTAR — debe existir en `permiso_acciones` y en `roles_permisos` para cada rol operativo (ADMIN_SISTEMA lo hereda del catálogo).
+ * Permiso `sistema.catalogo.referencia` (id 101) + LISTAR — infraestructura; AuthRepository lo concede a cualquier usuario con rol (no se asigna en roles_permisos ni en la grilla Seguridad).
  */
 export const listarCatalogoReferencia = [
   authenticate,

@@ -141,7 +141,8 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (98, 'institucional.horario.armado',     'Gestión de horarios: armado operativo de bloques',     'INSTITUCIONAL', 'INST', 'inst_horarios_armado', '/institucional/horarios/armado',         TRUE),
 (99, 'institucional.horario.conflictos', 'Gestión de horarios: revisión y resolución de conflictos (UI en armado)', 'INSTITUCIONAL', 'INST', 'inst_horarios_armado', '/institucional/horarios/armado', TRUE),
 (100, 'institucional.horario.publicacion', 'Gestión de horarios: publicación de horarios vigentes', 'INSTITUCIONAL', 'INST', 'inst_horarios_publicacion', '/institucional/horarios/publicacion',    TRUE),
-(101, 'sistema.catalogo.referencia', 'Catálogos de referencia: APIs transversales para combos (ubicación, tipos, bancos, etc.)', 'CONFIGURACION', 'CFG', 'cfg_catalogos', '(sin menú) API /api/v1: paises, provincias, municipios, idiomas, documentacion, metodos-pago, bancos, dashboard', TRUE);
+-- Infraestructura (grupo_ui NULL): no aparece en grilla Seguridad; AuthRepository concede LISTAR a todo usuario con rol
+(101, 'sistema.catalogo.referencia', 'Catálogos de referencia: APIs transversales para combos (ubicación, tipos, bancos, etc.)', 'SISTEMA', 'SYS', NULL, NULL, TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 

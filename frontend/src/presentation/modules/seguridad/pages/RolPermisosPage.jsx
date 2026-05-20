@@ -105,7 +105,7 @@ export default function RolPermisosPage() {
                   type="info"
                   showIcon
                   title="Rol protegido"
-                  description="Los permisos del Administrador del Sistema no pueden modificarse desde el panel. Las casillas marcadas reflejan el catálogo completo de permiso_acciones (seeder 56), no roles_permisos (55). Tras cambiar rutas en el seeder 54, ejecute 58-migrate-permisos-rutas-grupos.sql o re-seed y recree la vista 33 en la base de datos."
+                  description="Los permisos del Administrador del Sistema no pueden modificarse desde el panel. Las casillas reflejan el catálogo permiso_acciones (acciones de pantallas y flujos). Los catálogos de combos en formularios (países, idiomas, etc.) no se listan aquí: se conceden automáticamente a cualquier usuario con rol."
                 />
               ) : null}
 
