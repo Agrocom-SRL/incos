@@ -5,7 +5,11 @@ Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por
 
 ## ADMIN_SISTEMA (rol_id = 1)
 
-El usuario **admin** inicial (`57-seed-usuarios-admin.sql`) tiene `rol_id = 1`. No tiene filas en `roles_permisos`; los permisos efectivos salen del catalogo `permiso_acciones` via `AuthRepository` / vista `vista_catalogo_acciones_permisos_activas` (toda combinacion valida en seeds).
+El usuario **admin** inicial (`57-seed-usuarios-admin.sql`) tiene `rol_id = 1`. No tiene filas en `roles_permisos` (seeder **55**); los permisos efectivos salen del catalogo **56** (`permiso_acciones`) via `AuthRepository` / `vista_catalogo_acciones_permisos_activas`.
+
+En **RolPermisosPage**, la grilla usa `vista_grilla_roles_permisos_agrupada`: para `rol_id = 1` el backend marca como asignadas todas las acciones validas del catalogo (misma fuente que login), no las filas vacias de `roles_permisos`.
+
+Tras cambiar `ruta_sidebar` o `grupo_ui` en el seeder **54**, en BD existente ejecutar `58-migrate-permisos-rutas-grupos.sql` y recrear la vista **33** (`DROP VIEW` + script `33-vista-grilla-roles-permisos-agrupada.sql`).
 
 ## Criterio canon para nuevas funciones (ABM limpio + seguridad)
 
@@ -216,8 +220,23 @@ Endpoint(s): `GET/POST/DELETE /pagos-aportes`, `GET /pagos-aportes/:id/recibo`
 | ELIMINAR | Eliminar cuota de pago | DELETE | ADM, REC (si aplica) |
 | EXPORTAR | Descargar recibo | GET `/recibo` | ADM, REC, DIRM |
 
-### ACA - Calificaciones (`/academico/calificaciones/...`)
-Permisos: `academico.calificacion.*` (rutas legacy `/calificaciones/*` redirigen vía `academico/routes.jsx`)
+### ACA - Académico (`/academico/*`)
+Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
+
+| Menú | Ruta canónica | Permisos (grupo) |
+|------|---------------|------------------|
+| Calificaciones | `/academico/calificaciones` | `academico.calificacion.*` |
+| Nivelaciones | `/academico/nivelaciones/listar` | `academico.nivelacion.*` |
+| Traspasos | `/academico/traspasos/listar` | `academico.trazabilidad.traspaso.*` |
+| Transitabilidad | `/academico/transitabilidad/listar` | `academico.trazabilidad.transitabilidad.*` |
+| Historial | `/academico/historial/academico` | `academico.historial.*` |
+| Licencias estudiantiles | `/academico/licencias/listar` | `academico.licencia.*` |
+| Avance académico | `/academico/avance` | `academico.avance` |
+
+Raíz `/academico`: dashboard pendiente (`UnderConstruction`).
+
+### ACA - Calificaciones (detalle rutas)
+Permisos: `academico.calificacion.*` — `ruta_sidebar` en seed: `/academico/calificaciones`
 
 | Accion | Descripcion | Roles |
 |---|---|---|
@@ -344,6 +363,8 @@ Los controladores de seguridad deben mantener reglas de negocio extra (p. ej. in
 
 ### Catálogos de referencia (`sistema.catalogo.referencia`, permiso_id **101**, acción **LISTAR**)
 
+**No es una pantalla del menú.** `grupo_ui = cfg_catalogos` y `ruta_sidebar` describe las APIs (no `/configuracion/academico`). Autoriza los `GET` de listas usadas en combos de formularios en Matrícula, Docentes, Pagos, etc.
+
 Middleware compartido: `listarCatalogoReferencia` (`authenticate` + `verificarPermiso`). Seeds: `54-seed-permisos.sql`, `56-seed-permiso-acciones.sql`, `55-seed-roles-permisos.sql` (roles **2–8** con LISTAR; rol **1** via catálogo `permiso_acciones`).
 
 | Archivo | GET |
@@ -369,3 +390,15 @@ Middleware compartido: `listarCatalogoReferencia` (`authenticate` + `verificarPe
 - Existen `EXPORTAR` reales en estudiantes (excel) y pagos (recibo PDF).
 - `ADMIN_SISTEMA` debe ser inmutable en SEG; se protegio en backend y UI.
 - `PUT /api/v1/paralelos/:id/schedule` exige `institucional.horario.armado` + EDITAR (alineado con pantalla armado).
+
+### RBAC en UI (`ActionButton` / `TableActions`)
+
+- `TableActions` sin objeto `permisos` **no muestra** ver/editar/eliminar (fail-closed en `cumplePermisoRef`).
+- Tablas con permisos: estudiantes, docentes, becas, pagos, inscripciones (matrícula), roles (seguridad).
+- Botones de cabecera y filas en becas, horarios (aulas/armado/publicar), docentes (asignaciones), pagos (registrar), calificaciones y matrícula inscripciones usan `ActionButton` con el permiso+acción del seed.
+
+### Grilla de roles (`grupo_ui` vs rutas)
+
+- Una fila en `PermisosDominioPicker` = un `grupo_ui` (no una fila por cada permiso con distinta `ruta_sidebar`).
+- Horarios por etapa: `inst_horarios` (tablero), `inst_horarios_plantilla`, `inst_horarios_armado` (incluye conflictos, perm. 99), `inst_horarios_publicacion`.
+- Varias rutas del mismo grupo se muestran concatenadas en la columna de ruta (` · `).

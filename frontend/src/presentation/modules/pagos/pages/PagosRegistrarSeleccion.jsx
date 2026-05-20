@@ -18,7 +18,7 @@ import {
 import dayjs from 'dayjs';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { Button, ActionButton } from '@atoms';
 import { useCasesFactory } from '@container';
 
 const { Text } = Typography;
@@ -243,9 +243,15 @@ const PagosRegistrarSeleccion = () => {
           const cub = r?.aporteRegistro?.aporteTotalmenteCubierto;
           if (cub) return null;
           return (
-            <Button variant="primary" size="small" onClick={() => irARegistrar(sid)}>
+            <ActionButton
+              permiso="finanzas.pago.registrar"
+              accion="CREAR"
+              variant="primary"
+              size="small"
+              onClick={() => irARegistrar(sid)}
+            >
               Registrar pago
-            </Button>
+            </ActionButton>
           );
         },
       },

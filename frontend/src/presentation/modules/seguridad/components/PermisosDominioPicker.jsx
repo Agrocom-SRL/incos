@@ -52,13 +52,17 @@ const GRUPO_UI_LABELS = {
   inst_gestion: 'Gestión actual',
   inst_cronograma: 'Cronogramas',
   inst_oferta: 'Oferta académica',
-  inst_horarios: 'Horarios',
+  inst_horarios: 'Horarios · tablero',
+  inst_horarios_plantilla: 'Horarios · plantilla',
+  inst_horarios_armado: 'Horarios · armado y conflictos',
+  inst_horarios_publicacion: 'Horarios · publicación',
   inst_pasadas: 'Gestiones pasadas',
   cfg_academico: 'Config. académica',
   cfg_documentacion: 'Config. documentación',
   cfg_complementario: 'Datos complementarios',
   cfg_convenios: 'Convenios',
   cfg_historial: 'Historial actividades',
+  cfg_catalogos: 'Catálogos de referencia',
   rep_avance: 'Avance académico',
   rep_asistencia: 'Asistencia',
   rep_desercion: 'Deserción',
@@ -150,7 +154,7 @@ export default function PermisosDominioPicker({
           </thead>
           <tbody>
             {grupos.map((grupo) => (
-              <tr key={grupo.grupoUi}>
+              <tr key={`${grupo.grupoUi}:${grupo.rutaSidebar || ''}`}>
                 <td className="seg-grilla-v2__td-func">
                   <div className="seg-grilla__grupo-titulo">{labelGrupoUi(grupo.grupoUi)}</div>
                   <div className="seg-grilla__grupo-ruta">{grupo.rutaSidebar || '—'}</div>

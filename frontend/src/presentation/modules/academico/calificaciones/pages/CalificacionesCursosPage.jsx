@@ -6,7 +6,7 @@ import { Alert, InputNumber, Spin, Typography } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { useCalificacionesCursosContext } from '@application-academico/calificaciones/hooks/context/useCalificacionesCursosContext';
 import ParalelosCursosList from '../components/organisms/ParalelosCursosList.jsx';
 import '@presentation/styles/pages/detail-page.css';
@@ -33,9 +33,15 @@ const CalificacionesCursosPage = () => {
       title="Mis cursos — Calificaciones"
       breadcrumbItems={breadcrumbItems}
       actions={
-        <Button icon={<ReloadOutlined />} onClick={() => refetch?.()} disabled={loading}>
+        <ActionButton
+          permiso="academico.calificacion.curso"
+          accion="LISTAR"
+          icon={<ReloadOutlined />}
+          onClick={() => refetch?.()}
+          disabled={loading}
+        >
           Actualizar
-        </Button>
+        </ActionButton>
       }
     />
   );

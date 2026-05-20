@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppstoreOutlined, RightOutlined, TeamOutlined, TableOutlined, WarningOutlined } from '@ant-design/icons';
-import { Button, Card, Flex, Modal, Table, Tag, Typography } from 'antd';
+import { Card, Flex, Modal, Table, Tag, Typography } from 'antd';
+import { ActionButton, Button } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows, typography, gradients } from '@theme/tokens';
 import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
@@ -447,8 +448,10 @@ const HorariosGestionSidebarResumen = ({
                                     scroll={{ x: 'max-content' }}
                                 />
                                 <Flex vertical gap={8}>
-                                    <Button
-                                        type="primary"
+                                    <ActionButton
+                                        permiso="institucional.horario.armado"
+                                        accion="EDITAR"
+                                        variant="primary"
                                         size="large"
                                         block
                                         disabled={!aulasDiaFiltro}
@@ -461,7 +464,7 @@ const HorariosGestionSidebarResumen = ({
                                         }}
                                     >
                                         Completar en aulas — {aulasDiaFiltro || '…'}
-                                    </Button>
+                                    </ActionButton>
                                     <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
                                         Se abre la vista de aulas con el día seleccionado y la edición habilitada.
                                     </Text>
@@ -517,8 +520,10 @@ const HorariosGestionSidebarResumen = ({
                                             </Text>
                                             <Text strong>{row.materiaLabel}</Text>
                                         </Flex>
-                                        <Button
-                                            type="primary"
+                                        <ActionButton
+                                            permiso="institucional.horario.armado"
+                                            accion="EDITAR"
+                                            variant="primary"
                                             icon={<TeamOutlined />}
                                             style={{ flexShrink: 0 }}
                                             onClick={() => {
@@ -529,7 +534,7 @@ const HorariosGestionSidebarResumen = ({
                                             }}
                                         >
                                             Asignar docente
-                                        </Button>
+                                        </ActionButton>
                                     </Flex>
                                 ))}
                             </Flex>
@@ -593,8 +598,10 @@ const HorariosGestionSidebarResumen = ({
                                                     </Text>
                                                 )}
                                             </Flex>
-                                            <Button
-                                                type="primary"
+                                            <ActionButton
+                                                permiso="docentes.ver"
+                                                accion="DETALLE"
+                                                variant="primary"
                                                 style={{ flexShrink: 0 }}
                                                 disabled={d.docenteId == null}
                                                 onClick={() => {
@@ -604,7 +611,7 @@ const HorariosGestionSidebarResumen = ({
                                                 }}
                                             >
                                                 Ver calendario semanal
-                                            </Button>
+                                            </ActionButton>
                                         </Flex>
                                     );
                                 })}

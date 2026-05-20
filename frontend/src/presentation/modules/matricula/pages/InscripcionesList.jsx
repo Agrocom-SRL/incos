@@ -8,7 +8,7 @@ import { Button as AntButton, Col, Row, Select, Space, Tag, Typography } from 'a
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { Button, ActionButton } from '@atoms';
 import { useMatriculaListPage } from '@application-inscripciones/hooks';
 
 const InscripcionesList = () => {
@@ -104,9 +104,15 @@ const InscripcionesList = () => {
                   </Button>
                 </>
               ) : null}
-              <Button variant="primary" icon={<PlusOutlined />} onClick={handleNuevaInscripcion}>
+              <ActionButton
+                permiso="matricula.inscribir"
+                accion="CREAR"
+                variant="primary"
+                icon={<PlusOutlined />}
+                onClick={handleNuevaInscripcion}
+              >
                 Nueva Inscripción
-              </Button>
+              </ActionButton>
             </Space>
           }
         />

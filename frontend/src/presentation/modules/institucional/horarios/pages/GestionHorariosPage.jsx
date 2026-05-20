@@ -3,7 +3,7 @@ import { AppstoreOutlined, TableOutlined } from '@ant-design/icons';
 import { Alert, Card, Flex, Spin, Tabs } from 'antd';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button, ActionButton } from '@atoms';
+import { ActionButton } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosContext } from '@application-institucional/horarios';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
@@ -97,9 +97,14 @@ const GestionHorariosPage = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
-                            <Button variant="warning" onClick={onVerHorariosAulas}>
+                            <ActionButton
+                                permiso="institucional.horario.armado"
+                                accion="LISTAR"
+                                variant="warning"
+                                onClick={onVerHorariosAulas}
+                            >
                                 Horarios en aulas
-                            </Button>
+                            </ActionButton>
                             <ActionButton
                                 permiso="institucional.horario.publicacion"
                                 accion="EDITAR"

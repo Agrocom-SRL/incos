@@ -4,6 +4,7 @@
 
 import { Empty } from 'antd';
 import { ApartmentOutlined, BookOutlined } from '@ant-design/icons';
+import { ActionButton } from '@atoms';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import DocenteAssignmentCard from '@docentes/components/molecules/DocenteAssignmentCard';
 import { sanitizeDocenteColorHex, docenteCarreraTitleStyles } from '@docentes/components/atoms/DocenteColorBar';
@@ -64,15 +65,27 @@ const DocenteAssignmentsSection = ({
 
   const cardExtra =
     showManageButtonInCard && canManageAssignments ? (
-      <button type="button" className="sd-btn sd-btn--primary" onClick={onAsignarMaterias}>
-        <ApartmentOutlined /> Gestionar asignaciones
-      </button>
+      <ActionButton
+        permiso="docentes.asignar"
+        accion="CREAR"
+        variant="primary"
+        icon={<ApartmentOutlined />}
+        onClick={onAsignarMaterias}
+      >
+        Gestionar asignaciones
+      </ActionButton>
     ) : null;
 
   const emptyExtra = canManageAssignments ? (
-    <button type="button" className="sd-btn sd-btn--primary" onClick={onAsignarMaterias}>
-      <ApartmentOutlined /> Asignar materias y paralelos
-    </button>
+    <ActionButton
+      permiso="docentes.asignar"
+      accion="CREAR"
+      variant="primary"
+      icon={<ApartmentOutlined />}
+      onClick={onAsignarMaterias}
+    >
+      Asignar materias y paralelos
+    </ActionButton>
   ) : null;
 
   return (

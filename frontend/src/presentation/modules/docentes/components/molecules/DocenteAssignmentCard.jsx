@@ -4,7 +4,7 @@
 
 import { Tag } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 
 const vigenteColor = (v) => (v ? 'success' : 'default');
@@ -49,7 +49,9 @@ const DocenteAssignmentCard = ({ assignment: a, showActions = false, onEdit = nu
         {showActions && (onEdit || onDelete) ? (
           <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 6 }}>
             {onEdit ? (
-              <Button
+              <ActionButton
+                permiso="docentes.asignar"
+                accion="EDITAR"
                 size="small"
                 variant="warning"
                 icon={<EditOutlined />}
@@ -58,7 +60,9 @@ const DocenteAssignmentCard = ({ assignment: a, showActions = false, onEdit = nu
               />
             ) : null}
             {onDelete ? (
-              <Button
+              <ActionButton
+                permiso="docentes.asignar"
+                accion="ELIMINAR"
                 size="small"
                 variant="error"
                 icon={<DeleteOutlined />}

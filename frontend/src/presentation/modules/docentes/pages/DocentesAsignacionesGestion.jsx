@@ -8,7 +8,7 @@ import { Alert, Space, Spin, Tabs } from 'antd';
 import { ArrowLeftOutlined, ApartmentOutlined, BookOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button, Card } from '@atoms';
+import { Button, Card, ActionButton } from '@atoms';
 import { useDocentesAsignacionesGestionContext } from '@application-docentes/hooks';
 import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAssignmentsSection';
 import DocenteSchedulesSection from '@docentes/components/organisms/DocenteSchedulesSection';
@@ -99,11 +99,15 @@ const DocentesAsignacionesGestion = () => {
               <Button variant="default" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
                 Volver
               </Button>
-              {puedeAsignarMaterias ? (
-                <Button variant="primary" icon={<ApartmentOutlined />} onClick={handleIrWizardAsignacion}>
-                  Nueva asignación
-                </Button>
-              ) : null}
+              <ActionButton
+                permiso="docentes.asignar"
+                accion="CREAR"
+                variant="primary"
+                icon={<ApartmentOutlined />}
+                onClick={handleIrWizardAsignacion}
+              >
+                Nueva asignación
+              </ActionButton>
             </Space>
           }
         />

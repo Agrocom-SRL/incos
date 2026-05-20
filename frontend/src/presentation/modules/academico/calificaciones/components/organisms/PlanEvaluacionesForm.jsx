@@ -5,7 +5,7 @@
 import { DatePicker, Input, InputNumber, Select, Table, Typography } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { FormCard } from '@atoms';
 
 const { Text } = Typography;
@@ -103,7 +103,9 @@ const PlanEvaluacionesForm = ({
       key: 'acc',
       width: 48,
       render: (_, row) => (
-        <Button
+        <ActionButton
+          permiso="academico.calificacion.modificar"
+          accion="EDITAR"
           type="text"
           variant="error"
           icon={<DeleteOutlined />}
@@ -171,14 +173,16 @@ const PlanEvaluacionesForm = ({
           dataSource={evaluacionesBimestre}
           locale={{ emptyText: 'Agregá al menos una evaluación para este bimestre' }}
         />
-        <Button
+        <ActionButton
+          permiso="academico.calificacion.periodo"
+          accion="CREAR"
           type="dashed"
           icon={<PlusOutlined />}
           onClick={onAgregarEvaluacion}
           style={{ marginTop: 12 }}
         >
           Agregar evaluación
-        </Button>
+        </ActionButton>
       </FormCard>
     </>
   );

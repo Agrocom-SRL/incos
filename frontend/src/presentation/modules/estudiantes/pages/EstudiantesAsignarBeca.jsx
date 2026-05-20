@@ -33,6 +33,7 @@ const EstudiantesAsignarBeca = () => {
 
   // Obtener studentId del estado de navegación
   const studentId = location.state?.studentId || null;
+  const editBecaAsignada = location.state?.editBecaAsignada || null;
 
   // Obtener datos del estudiante
   const studentDetailContext = useStudentDetailContext();
@@ -148,6 +149,7 @@ const EstudiantesAsignarBeca = () => {
               onFinish={handleFinish}
               onCancel={handleVolver}
               disabled={!becasDescuentosData.selectedBecaDescuento || loadingStudent || loadingAsignar}
+              isEditMode={Boolean(editBecaAsignada?.id)}
             />
           </Form>
         )}

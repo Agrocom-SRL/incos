@@ -6,7 +6,7 @@ import { Alert, Segmented, Spin } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { useCalificacionesNotasContext } from '@application-academico/calificaciones/hooks/context/useCalificacionesNotasContext';
 import RegistroNotasGrid from '../components/organisms/RegistroNotasGrid.jsx';
 import '../styles/calificaciones.css';
@@ -41,12 +41,24 @@ const CalificacionesNotasPage = () => {
           <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
             <ArrowLeftOutlined /> Cursos
           </button>
-          <Button icon={<SettingOutlined />} onClick={handleIrPlan}>
+          <ActionButton
+            permiso="academico.calificacion.periodo"
+            accion="CREAR"
+            icon={<SettingOutlined />}
+            onClick={handleIrPlan}
+          >
             Plan de calificaciones
-          </Button>
-          <Button type="primary" icon={<SaveOutlined />} loading={guardando} onClick={handleGuardar}>
+          </ActionButton>
+          <ActionButton
+            permiso="academico.calificacion.registrar.parcial"
+            accion="CREAR"
+            type="primary"
+            icon={<SaveOutlined />}
+            loading={guardando}
+            onClick={handleGuardar}
+          >
             Guardar borrador
-          </Button>
+          </ActionButton>
         </>
       }
     />
@@ -74,9 +86,14 @@ const CalificacionesNotasPage = () => {
           message="Plan de calificaciones pendiente"
           description="Estás usando evaluaciones de demostración. Configurá el plan para alinear tipos, pesos y fechas con tu cronograma."
           action={
-            <Button size="small" onClick={handleIrPlan}>
+            <ActionButton
+              permiso="academico.calificacion.periodo"
+              accion="CREAR"
+              size="small"
+              onClick={handleIrPlan}
+            >
               Configurar plan
-            </Button>
+            </ActionButton>
           }
           style={{ marginBottom: 16 }}
         />

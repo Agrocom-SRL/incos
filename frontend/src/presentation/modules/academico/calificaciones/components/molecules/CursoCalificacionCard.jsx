@@ -4,7 +4,7 @@
 
 import { Tag } from 'antd';
 import { EditOutlined, FormOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 
 const CursoCalificacionCard = ({
@@ -64,22 +64,26 @@ const CursoCalificacionCard = ({
         </div>
       </div>
       <div className="cal-curso-card__actions" onClick={(e) => e.stopPropagation()}>
-        <Button
+        <ActionButton
+          permiso="academico.calificacion.registrar.parcial"
+          accion="CREAR"
           type="primary"
           size="small"
           icon={<FormOutlined />}
           onClick={() => onRegistrarNotas?.(curso.asignacionId)}
         >
           Registrar notas
-        </Button>
-        <Button
+        </ActionButton>
+        <ActionButton
+          permiso="academico.calificacion.periodo"
+          accion="CREAR"
           size="small"
           buttonStyle="outlined"
           icon={<EditOutlined />}
           onClick={() => onConfigurarPlan?.(curso.asignacionId)}
         >
           Plan de calificaciones
-        </Button>
+        </ActionButton>
       </div>
     </article>
   );

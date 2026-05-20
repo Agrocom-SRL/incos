@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Button as AntButton, Col, Flex, Row, Tabs, message } from 'antd';
-import { Button, FieldSelect } from '@atoms';
+import { Alert, Col, Flex, Row, Tabs, message } from 'antd';
+import { ActionButton, Button, FieldSelect } from '@atoms';
 import { allColors, typography } from '@theme/tokens';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAcciones } from '@application/modules/shared/hooks/useAcciones';
@@ -296,9 +296,15 @@ const GestionHorariosAulasAsignarSection = ({
         </Col>
         <Col>
           {esModoEdicion ? null : (
-            <AntButton type="primary" icon={<PlusOutlined />} onClick={handleHabilitarEdicion} disabled={!puedeEditar}>
+            <ActionButton
+              permiso="institucional.horario.armado"
+              accion="EDITAR"
+              variant="primary"
+              icon={<PlusOutlined />}
+              onClick={handleHabilitarEdicion}
+            >
               Habilitar edición
-            </AntButton>
+            </ActionButton>
           )}
         </Col>
       </Row>
@@ -397,9 +403,16 @@ const GestionHorariosAulasAsignarSection = ({
           <Button variant="default" onClick={handleCancelarEdicion} disabled={patchLoading || savingDraft}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={handleGuardarEdicion} disabled={patchLoading || savingDraft} loading={patchLoading || savingDraft}>
+          <ActionButton
+            permiso="institucional.horario.armado"
+            accion="EDITAR"
+            variant="primary"
+            onClick={handleGuardarEdicion}
+            disabled={patchLoading || savingDraft}
+            loading={patchLoading || savingDraft}
+          >
             Guardar cambios
-          </Button>
+          </ActionButton>
         </Flex>
       ) : null}
     </div>

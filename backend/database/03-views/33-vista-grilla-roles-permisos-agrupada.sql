@@ -1,6 +1,6 @@
 -- ============================================
 -- VISTA GRILLA: vista_grilla_roles_permisos_agrupada
--- Grilla consolidada por rol + dominio + grupo_ui
+-- Grilla consolidada por rol + dominio + grupo_ui (una fila por ítem de menú / grupo_ui)
 --
 -- Propósito: Entregar al backend una estructura estable para
 -- el panel de seguridad sin lógica SQL compleja en repositorio.
@@ -25,7 +25,7 @@ SELECT
   r.id AS rol_id,
   v.dominio,
   v.grupo_ui,
-  v.ruta_sidebar,
+  GROUP_CONCAT(DISTINCT v.ruta_sidebar ORDER BY v.permiso_id SEPARATOR ' · ') AS ruta_sidebar,
   GROUP_CONCAT(DISTINCT v.codigo ORDER BY v.permiso_id SEPARATOR ',') AS codigos,
   GROUP_CONCAT(DISTINCT v.accion ORDER BY v.accion SEPARATOR ',') AS acciones_validas,
   GROUP_CONCAT(
@@ -45,5 +45,4 @@ WHERE r.activo = TRUE
 GROUP BY
   r.id,
   v.dominio,
-  v.grupo_ui,
-  v.ruta_sidebar;
+  v.grupo_ui;

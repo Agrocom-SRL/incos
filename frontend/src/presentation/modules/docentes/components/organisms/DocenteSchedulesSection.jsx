@@ -4,7 +4,7 @@
 
 import { Empty } from 'antd';
 import { ApartmentOutlined, ScheduleOutlined } from '@ant-design/icons';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 
 const countBloques = (courseSchedules) =>
@@ -21,9 +21,15 @@ const DocenteSchedulesSection = ({
 
   const emptyExtra =
     puedeAsignarMaterias && typeof onAsignarMaterias === 'function' ? (
-      <Button variant="primary" icon={<ApartmentOutlined />} onClick={onAsignarMaterias}>
+      <ActionButton
+        permiso="docentes.asignar"
+        accion="CREAR"
+        variant="primary"
+        icon={<ApartmentOutlined />}
+        onClick={onAsignarMaterias}
+      >
         Asignar materias y paralelos
-      </Button>
+      </ActionButton>
     ) : null;
 
   return (

@@ -16,7 +16,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { useBecasListContext } from '@application-estudiantes/hooks';
 import { createBecasTableColumns } from '@estudiantes/config';
 
@@ -70,13 +70,15 @@ const BecasList = () => {
                     title="Lista de Becas"
                     breadcrumbItems={breadcrumbItems}
                     actions={
-                        <Button
+                        <ActionButton
+                            permiso="matricula.beca.asignar"
+                            accion="CREAR"
                             variant="primary"
                             icon={<PlusOutlined />}
                             onClick={handleNuevaBeca}
                         >
                             Nueva Asignación de Beca
-                        </Button>
+                        </ActionButton>
                     }
                 />
             }

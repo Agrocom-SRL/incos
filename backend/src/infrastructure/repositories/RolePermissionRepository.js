@@ -156,6 +156,7 @@ export class RolePermissionRepository extends BaseRepository {
    * Combina acciones validas del catalogo vs acciones asignadas al rol.
    */
   async findPermisosParaGrilla(rolId, dominio) {
+    const esAdminSistema = Number(rolId) === 1;
     const rows = await sequelize.query(
       `
       SELECT
@@ -175,15 +176,20 @@ export class RolePermissionRepository extends BaseRepository {
       }
     );
 
-    return rows.map((r) => ({
-      grupoUi: r.grupo_ui,
-      rutaSidebar: r.ruta_sidebar,
-      codigos: r.codigos ? r.codigos.split(',') : [],
-      accionesValidas: r.acciones_validas ? r.acciones_validas.split(',') : [],
-      accionesAsignadas: r.acciones_asignadas
+    return rows.map((r) => {
+      const accionesValidas = r.acciones_validas ? r.acciones_validas.split(',') : [];
+      const accionesAsignadasRaw = r.acciones_asignadas
         ? r.acciones_asignadas.split(',').filter(Boolean)
-        : [],
-    }));
+        : [];
+      return {
+        grupoUi: r.grupo_ui,
+        rutaSidebar: r.ruta_sidebar || null,
+        codigos: r.codigos ? r.codigos.split(',') : [],
+        accionesValidas,
+        // ADMIN_SISTEMA: sin filas en roles_permisos; la grilla refleja todo el catálogo (56)
+        accionesAsignadas: esAdminSistema ? accionesValidas : accionesAsignadasRaw,
+      };
+    });
   }
 
   /**

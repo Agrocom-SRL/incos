@@ -6,7 +6,7 @@ import { Alert, Spin, Typography } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, FormOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { useCalificacionesPlanContext } from '@application-academico/calificaciones/hooks/context/useCalificacionesPlanContext';
 import PlanEvaluacionesForm from '../components/organisms/PlanEvaluacionesForm.jsx';
 import '../styles/calificaciones.css';
@@ -49,17 +49,25 @@ const CalificacionesPlanPage = () => {
           <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
             <ArrowLeftOutlined /> Cursos
           </button>
-          <Button
+          <ActionButton
+            permiso="academico.calificacion.periodo"
+            accion="CREAR"
             icon={<SaveOutlined />}
             loading={guardando}
             onClick={handleGuardarPlan}
             disabled={!planValido}
           >
             Guardar plan
-          </Button>
-          <Button type="primary" icon={<FormOutlined />} onClick={handleIrNotas}>
+          </ActionButton>
+          <ActionButton
+            permiso="academico.calificacion.registrar.parcial"
+            accion="CREAR"
+            type="primary"
+            icon={<FormOutlined />}
+            onClick={handleIrNotas}
+          >
             Ir a registrar notas
-          </Button>
+          </ActionButton>
         </>
       }
     />
