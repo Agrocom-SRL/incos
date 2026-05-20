@@ -208,11 +208,11 @@
             "@configuracion/*": [
                 "./src/presentation/modules/configuracion/*"
             ],
-            "@calificaciones": [
-                "./src/presentation/modules/calificaciones"
+            "@academico": [
+                "./src/presentation/modules/academico"
             ],
-            "@calificaciones/*": [
-                "./src/presentation/modules/calificaciones/*"
+            "@academico/*": [
+                "./src/presentation/modules/academico/*"
             ],
             "@docentes": [
                 "./src/presentation/modules/docentes"
@@ -227,10 +227,10 @@
                 "./src/presentation/modules/institucional/*"
             ],
             "@historial": [
-                "./src/presentation/modules/historial"
+                "./src/presentation/modules/academico/historial"
             ],
             "@historial/*": [
-                "./src/presentation/modules/historial/*"
+                "./src/presentation/modules/academico/historial/*"
             ],
             "@matricula": [
                 "./src/presentation/modules/matricula"
@@ -245,10 +245,10 @@
                 "./src/presentation/modules/matricula/*"
             ],
             "@nivelaciones": [
-                "./src/presentation/modules/nivelaciones"
+                "./src/presentation/modules/academico/nivelaciones"
             ],
             "@nivelaciones/*": [
-                "./src/presentation/modules/nivelaciones/*"
+                "./src/presentation/modules/academico/nivelaciones/*"
             ],
             "@pagos": [
                 "./src/presentation/modules/pagos"
@@ -269,10 +269,10 @@
                 "./src/presentation/modules/supervision/*"
             ],
             "@trazabilidad": [
-                "./src/presentation/modules/trazabilidad"
+                "./src/presentation/modules/academico/traspasos"
             ],
             "@trazabilidad/*": [
-                "./src/presentation/modules/trazabilidad/*"
+                "./src/presentation/modules/academico/traspasos/*"
             ],
             "@usuarios": [
                 "./src/presentation/modules/usuarios"

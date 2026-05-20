@@ -18,14 +18,11 @@ import { dashboardRoutes } from './dashboard/routes.jsx';
 import { dominiosRoutes } from './dominios/routes.jsx';
 import { estudiantesRoutes } from '@estudiantes/routes';
 import { matriculaRoutes } from './matricula/routes.jsx';
-import { trazabilidad } from './trazabilidad/routes.jsx';
-import { calificacionesRoutes } from './calificaciones/routes.jsx';
-import { nivelacionesRoutes } from './nivelaciones/routes.jsx';
+import { academicoRoutes } from './academico/routes.jsx';
 import { docentesRoutes } from './docentes/routes.jsx';
 import { institucionalRoutes } from './institucional/routes.jsx';
 import { supervisionRoutes } from './supervision/routes.jsx';
 import { pagosRoutes } from './pagos/routes.jsx';
-import { historialRoutes } from './historial/routes.jsx';
 import { reportesRoutes } from './reportes/routes.jsx';
 import { configuracionRoutes } from './configuracion/routes.jsx';
 import { usuariosRoutes } from './usuarios/routes.jsx';
@@ -41,14 +38,11 @@ export const getAllRoutes = () => {
         ...dominiosRoutes,
         ...estudiantesRoutes,
         ...matriculaRoutes,
-        ...trazabilidad,
-        ...calificacionesRoutes,
-        ...nivelacionesRoutes,
+        ...academicoRoutes,
         ...docentesRoutes,
         ...institucionalRoutes,
         ...supervisionRoutes,
         ...pagosRoutes,
-        ...historialRoutes,
         ...reportesRoutes,
         ...configuracionRoutes,
         ...usuariosRoutes,

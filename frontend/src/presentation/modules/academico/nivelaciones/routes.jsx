@@ -1,13 +1,13 @@
-// src/presentation/modules/nivelaciones/routes.jsx
+// src/presentation/modules/academico/nivelaciones/routes.jsx
 /**
- * Rutas del módulo de Nivelaciones (dominio Académico).
+ * Nivelaciones (ítem de menú ACA).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const nivelacionesRoutes = [
   {
-    path: '/nivelaciones/listar',
+    path: '/academico/nivelaciones/listar',
     element: <UnderConstruction />,
     key: 'ACA-NIV',
     permiso: 'academico.nivelacion.ver',
@@ -21,7 +21,7 @@ export const nivelacionesRoutes = [
     },
   },
   {
-    path: '/nivelaciones/inscribir',
+    path: '/academico/nivelaciones/inscribir',
     element: <UnderConstruction />,
     key: 'ACA-NIV-INSCRIBIR',
     permiso: 'academico.nivelacion.inscribir',
@@ -30,7 +30,7 @@ export const nivelacionesRoutes = [
     breadcrumbParent: 'ACA-NIV',
   },
   {
-    path: '/nivelaciones/aprobar',
+    path: '/academico/nivelaciones/aprobar',
     element: <UnderConstruction />,
     key: 'ACA-NIV-APROBAR',
     permiso: 'academico.nivelacion.aprobar',

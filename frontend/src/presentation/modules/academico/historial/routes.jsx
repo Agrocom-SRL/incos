@@ -1,13 +1,13 @@
-// src/presentation/modules/historial/routes.jsx
+// src/presentation/modules/academico/historial/routes.jsx
 /**
- * Rutas del módulo de Historial (dominio Académico).
+ * Historial académico (ítem de menú ACA).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const historialRoutes = [
   {
-    path: '/historial/academico',
+    path: '/academico/historial/academico',
     element: <UnderConstruction />,
     key: 'ACA-HIS',
     permiso: 'academico.historial.academico',
@@ -21,7 +21,7 @@ export const historialRoutes = [
     },
   },
   {
-    path: '/historial/folio',
+    path: '/academico/historial/folio',
     element: <UnderConstruction />,
     key: 'ACA-HIS-FOLIO',
     permiso: 'academico.historial.folio',
@@ -30,27 +30,13 @@ export const historialRoutes = [
     breadcrumbParent: 'ACA-HIS',
   },
   {
-    path: '/historial/validar',
+    path: '/academico/historial/validar',
     element: <UnderConstruction />,
     key: 'ACA-HIS-VALIDAR',
     permiso: 'academico.historial.validar',
     accion: 'APROBAR',
     menu: null,
     breadcrumbParent: 'ACA-HIS',
-  },
-  {
-    path: '/academico/avance',
-    element: <UnderConstruction />,
-    key: 'ACA-AVANCE',
-    permiso: 'academico.avance',
-    accion: 'LISTAR',
-    menu: {
-      label: 'Avance académico',
-      module: 'ACA',
-      parent: 'ACA',
-      order: 6,
-      labelByRole: { ESTUDIANTE: 'Mi avance' },
-    },
   },
 ];
 

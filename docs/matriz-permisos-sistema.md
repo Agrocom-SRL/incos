@@ -216,8 +216,8 @@ Endpoint(s): `GET/POST/DELETE /pagos-aportes`, `GET /pagos-aportes/:id/recibo`
 | ELIMINAR | Eliminar cuota de pago | DELETE | ADM, REC (si aplica) |
 | EXPORTAR | Descargar recibo | GET `/recibo` | ADM, REC, DIRM |
 
-### ACA - Calificaciones (`/calificaciones/...`)
-Permisos: `academico.calificacion.*`
+### ACA - Calificaciones (`/academico/calificaciones/...`)
+Permisos: `academico.calificacion.*` (rutas legacy `/calificaciones/*` redirigen vía `academico/routes.jsx`)
 
 | Accion | Descripcion | Roles |
 |---|---|---|

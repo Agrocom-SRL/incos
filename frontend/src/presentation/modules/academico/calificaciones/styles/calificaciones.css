@@ -1,0 +1,116 @@
+/* Calificaciones — cursos por paralelo y registro de notas */
+
+.cal-cursos-intro {
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+  max-width: 52rem;
+}
+
+.cal-paralelo-block {
+  margin-bottom: 2rem;
+}
+
+.cal-paralelo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.cal-paralelo-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.cal-paralelo-meta {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.55));
+}
+
+.cal-curso-card {
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.cal-curso-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.cal-curso-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.cal-curso-card__badge {
+  margin-top: 0.35rem;
+}
+
+.cal-plan-section {
+  margin-bottom: 1.5rem;
+}
+
+.cal-plan-cuotas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.cal-plan-cuotas .ant-form-item {
+  margin-bottom: 0;
+  min-width: 140px;
+}
+
+.cal-peso-hint {
+  font-size: 0.8125rem;
+}
+
+.cal-peso-hint--ok {
+  color: var(--ant-color-success, #52c41a);
+}
+
+.cal-peso-hint--warn {
+  color: var(--ant-color-warning, #faad14);
+}
+
+.cal-notas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.cal-notas-grid-wrap {
+  overflow-x: auto;
+}
+
+.cal-notas-grid .ant-table-cell {
+  padding: 6px 8px !important;
+}
+
+.cal-notas-input {
+  width: 72px;
+}
+
+.cal-curso-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+  margin-bottom: 1rem;
+}
+
+.cal-curso-resumen strong {
+  color: inherit;
+  font-weight: 600;
+}
