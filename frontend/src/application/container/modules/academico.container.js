@@ -27,6 +27,8 @@ import {
 import { ActualizarCursoOfertaUseCase, EliminarCursoOfertaUseCase } from '@useCases/academico/cursos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
 import {
+  GetPoliticaCatalogoUseCase,
+  GetTiposEvaluacionUseCase,
   GuardarPoliticaInstitucionalUseCase,
   ListCoordinacionDocentesUseCase,
   ObtenerPoliticaInstitucionalUseCase,
@@ -35,6 +37,7 @@ import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository'
 import CursoRepository from '@infrastructure/repositories/CursoRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository';
+import TipoEvaluacionRepository from '@infrastructure/repositories/TipoEvaluacionRepository';
 
 /**
  * Registra los Use Cases del módulo académico
@@ -119,6 +122,14 @@ export function registerAcademicoModule(factory) {
 
   factory.guardarPoliticaInstitucional = () => {
     return new GuardarPoliticaInstitucionalUseCase(CalificacionRepository);
+  };
+
+  factory.obtenerTiposEvaluacion = () => {
+    return new GetTiposEvaluacionUseCase(TipoEvaluacionRepository);
+  };
+
+  factory.obtenerPoliticaCatalogo = () => {
+    return new GetPoliticaCatalogoUseCase(CalificacionRepository);
   };
 
   return factory;

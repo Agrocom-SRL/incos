@@ -130,36 +130,29 @@ COMMENT='Catálogo de tipos de evaluación reutilizable entre gestiones. ámbito
 
 -- ============================================
 -- TABLA: configuracion_evaluacion
--- Configuración institucional de componentes teórico y práctico por gestión
+-- Configuración de evaluación y notas por gestión (patrón clave-valor)
 -- ============================================
--- Par con tipos_evaluacion (catálogo = QUÉ tipos existen; esta tabla = CÓMO
--- se reparte la nota por gestión). Mismo patrón que configuracion_aportes en pagos.
+-- Par con tipos_evaluacion (catálogo = QUÉ tipos existen; esta tabla = política
+-- institucional y parámetros por gestión). Mismo patrón que configuracion_sistema.
 --
--- Define la cuota institucional para los componentes oficiales del boletín:
--- TEÓRICO + PRÁCTICO = 100 puntos por bimestre. Típicamente 30/70 en INCOS.
+-- Clave principal: POLITICA_INSTITUCIONAL — documento JSON (tipo JSON) con:
+--   ponderación teórico/práctico, bimestres, reglas de evaluaciones finales,
+--   asistencia, nota mínima de aprobación, etc.
 --
--- Una sola configuración por gestión vale como DEFAULT para todas las carreras.
--- Si una materia específica necesita un split distinto (ej. taller 20/80), se
--- sobreescribe en asignaciones_docentes (campos cuota_teorico_override y
--- cuota_practico_override agregados vía ALTER en schema de asignaciones).
---
--- USO: Al cerrar un bimestre, las evaluaciones componente=TEORICO se promedian
--- ponderado y el resultado se reescala a cuota_teorico (ej. si promedio 80
--- sobre 100, con cuota 30 → 80 * 30 / 100 = 24). Lo mismo para práctico.
--- nota_bimestre = nota_teorico + nota_practico.
+-- vigente = TRUE marca la fila activa para esa gestión y clave (solo una vigente).
+-- Override por materia sigue en asignaciones_docentes (cuota_teorico_override).
 
 CREATE TABLE configuracion_evaluacion (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    gestion_id INT NULL COMMENT 'Gestión a la que aplica (referencia a gestiones)',
 
-    -- Alcance
-    gestion_id INT NULL COMMENT 'Gestión a la que aplica esta configuración (referencia a gestiones)',
+    clave VARCHAR(100) NOT NULL COMMENT 'Identificador de configuración. Ej: POLITICA_INSTITUCIONAL',
+    valor TEXT NOT NULL COMMENT 'Valor serializado (JSON para política institucional)',
+    tipo ENUM('STRING','NUMBER','BOOLEAN','JSON','DATE') DEFAULT 'JSON' COMMENT 'Tipo para deserialización',
 
-    -- Cuota institucional
-    cuota_teorico DECIMAL(5,2) NOT NULL DEFAULT 30 COMMENT 'Cuota del componente teórico sobre 100 puntos (ej: 30). Suma con cuota_practico debe dar 100 (validación de aplicación).',
-    cuota_practico DECIMAL(5,2) NOT NULL DEFAULT 70 COMMENT 'Cuota del componente práctico sobre 100 puntos (ej: 70). Suma con cuota_teorico debe dar 100 (validación de aplicación).',
+    vigente BOOLEAN DEFAULT FALSE COMMENT 'TRUE = configuración activa para esta gestión y clave',
 
-    -- Observaciones
-    descripcion TEXT COMMENT 'Descripción de la configuración o motivo de un cambio',
+    descripcion TEXT NULL COMMENT 'Descripción legible de la configuración',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -170,18 +163,16 @@ CREATE TABLE configuracion_evaluacion (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
-    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
-    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
-
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
 
-    -- Índices para optimización
-    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+    INDEX idx_gestion_id (gestion_id),
+    INDEX idx_clave (clave),
+    INDEX idx_gestion_clave_vigente (gestion_id, clave, vigente, activo, deleted_at),
+    INDEX idx_activo (activo),
+    INDEX idx_deleted_at (deleted_at)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Configuración institucional del reparto teórico/práctico (default 30/70) por gestión. Aplica a todas las materias salvo override en asignaciones_docentes.';
+COMMENT='Configuración de evaluación por gestión (clave-valor). Política institucional en POLITICA_INSTITUCIONAL.';
 
 -- ============================================
 -- TABLA: bimestres_matricula

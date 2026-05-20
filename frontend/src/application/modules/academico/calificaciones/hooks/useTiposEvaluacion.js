@@ -1,66 +1,48 @@
 /**
- * Catálogo de tipos de evaluación (cache a nivel de módulo).
+ * Catálogo de tipos de evaluación (API GET /calificaciones/tipos-evaluacion).
  */
 
-import { useEffect, useState } from 'react';
-import { calificacionesFakeApi } from '../fake-api/index.js';
+import { useCallback, useEffect, useState } from 'react';
+import { useCasesFactory } from '@container';
 
-let tiposCache = null;
-let tiposPromise = null;
+const cacheByAmbito = new Map();
 
-const loadTipos = async () => {
-  if (tiposCache) return tiposCache;
-  if (!tiposPromise) {
-    tiposPromise = calificacionesFakeApi
-      .obtenerTiposEvaluacion({ ambito: 'BIMESTRE' })
-      .then((data) => {
-        tiposCache = data;
-        return data;
-      })
-      .catch((err) => {
-        tiposPromise = null;
-        throw err;
-      });
-  }
-  return tiposPromise;
-};
-
-export const useTiposEvaluacion = () => {
-  const [tipos, setTipos] = useState(tiposCache);
-  const [isLoading, setIsLoading] = useState(!tiposCache);
+export const useTiposEvaluacion = ({ ambito = 'BIMESTRE' } = {}) => {
+  const [tipos, setTipos] = useState(() => cacheByAmbito.get(ambito) ?? null);
+  const [isLoading, setIsLoading] = useState(!cacheByAmbito.has(ambito));
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const cargar = useCallback(async () => {
+    if (cacheByAmbito.has(ambito)) {
+      setTipos(cacheByAmbito.get(ambito));
+      setIsLoading(false);
+      return;
+    }
 
-    const run = async () => {
-      if (tiposCache) {
-        setTipos(tiposCache);
-        setIsLoading(false);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const uc = useCasesFactory.obtenerTiposEvaluacion();
+      const result = await uc.ejecutar({ params: { ambito, limite: 100 } });
+      if (!result?.success) {
+        setTipos([]);
+        setError(result?.error || 'No se pudo cargar tipos de evaluación');
         return;
       }
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await loadTipos();
-        if (!cancelled) {
-          setTipos(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err);
-          setTipos(null);
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    };
+      const data = result.data ?? [];
+      cacheByAmbito.set(ambito, data);
+      setTipos(data);
+    } catch (err) {
+      setError(err?.message || 'Error al cargar tipos');
+      setTipos([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [ambito]);
 
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
-  return { tipos: tipos ?? [], isLoading, error };
+  return { tipos: tipos ?? [], isLoading, error, refetch: cargar };
 };

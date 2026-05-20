@@ -1,13 +1,22 @@
 /**
- * Payload extendido de política institucional en configuracion_evaluacion.descripcion (JSON).
- * Las cuotas viven en columnas cuota_teorico / cuota_practico (schema 13-evaluaciones).
+ * Documento JSON de política institucional (configuracion_evaluacion.valor, tipo JSON).
  */
 
-export const POLITICA_PAYLOAD_VERSION = 1;
+export const POLITICA_PAYLOAD_VERSION = 2;
+export const POLITICA_PAYLOAD_VERSION_LEGACY = 1;
 
-export const DEFAULT_POLITICA_EXTRA = {
+export const ALCANCES_EVALUACION_FINAL = [
+  'GESTION',
+  'CARRERA',
+  'PERIODO',
+  'CARRERA_PERIODO',
+];
+
+export const DEFAULT_POLITICA_DOCUMENTO = {
+  cuotaTeorico: 30,
+  cuotaPractico: 70,
   pesosBimestres: [25, 25, 25, 25],
-  evaluacionesFinalesHabilitadas: {},
+  evaluacionesFinalesReglas: [],
   notaMinimaAprobacion: 61,
   politicaAsistenciaDefault: {
     politica: 'NO_AFECTA',
@@ -17,43 +26,100 @@ export const DEFAULT_POLITICA_EXTRA = {
   },
 };
 
-export function serializePoliticaPayload(extra) {
-  return JSON.stringify({
+function migrateReglasDesdeFlags(parsed, tiposFinales = []) {
+  const flags = parsed?.evaluacionesFinalesHabilitadas;
+  if (!flags || typeof flags !== 'object') return [];
+  const nombres = Object.fromEntries((tiposFinales ?? []).map((t) => [t.codigo, t.nombre]));
+  return Object.entries(flags)
+    .filter(([, hab]) => hab === true)
+    .map(([codigo]) => ({
+      id: `legacy-${codigo}`,
+      tipoEvaluacionCodigo: codigo,
+      tipoEvaluacionNombre: nombres[codigo] ?? codigo,
+      ponderacion: 0,
+      alcance: 'GESTION',
+      carreraId: null,
+      carreraNombre: null,
+      periodoId: null,
+      periodoNombre: null,
+    }));
+};
+
+export function buildPoliticaValorDocumento(mapped) {
+  return {
     v: POLITICA_PAYLOAD_VERSION,
-    pesosBimestres: extra.pesosBimestres ?? DEFAULT_POLITICA_EXTRA.pesosBimestres,
-    evaluacionesFinalesHabilitadas:
-      extra.evaluacionesFinalesHabilitadas ?? DEFAULT_POLITICA_EXTRA.evaluacionesFinalesHabilitadas,
+    cuotaTeorico: mapped.cuotaTeorico ?? DEFAULT_POLITICA_DOCUMENTO.cuotaTeorico,
+    cuotaPractico: mapped.cuotaPractico ?? DEFAULT_POLITICA_DOCUMENTO.cuotaPractico,
+    pesosBimestres: mapped.pesosBimestres ?? DEFAULT_POLITICA_DOCUMENTO.pesosBimestres,
+    evaluacionesFinalesReglas:
+      mapped.evaluacionesFinalesReglas ?? DEFAULT_POLITICA_DOCUMENTO.evaluacionesFinalesReglas,
     notaMinimaAprobacion:
-      extra.notaMinimaAprobacion ?? DEFAULT_POLITICA_EXTRA.notaMinimaAprobacion,
+      mapped.notaMinimaAprobacion ?? DEFAULT_POLITICA_DOCUMENTO.notaMinimaAprobacion,
     politicaAsistenciaDefault: {
-      ...DEFAULT_POLITICA_EXTRA.politicaAsistenciaDefault,
-      ...(extra.politicaAsistenciaDefault ?? {}),
+      ...DEFAULT_POLITICA_DOCUMENTO.politicaAsistenciaDefault,
+      ...(mapped.politicaAsistenciaDefault ?? {}),
     },
-  });
+  };
 }
 
-export function parsePoliticaPayload(descripcion) {
-  if (!descripcion || typeof descripcion !== 'string') return null;
-  const trimmed = descripcion.trim();
-  if (!trimmed.startsWith('{')) return null;
+export function serializePoliticaValor(documento) {
+  return JSON.stringify(buildPoliticaValorDocumento(documento));
+}
+
+/** @deprecated usar serializePoliticaValor */
+export function serializePoliticaPayload(extra) {
+  return serializePoliticaValor(extra);
+}
+
+export function parsePoliticaValor(valor) {
+  if (!valor) return null;
+  const raw = typeof valor === 'string' ? valor.trim() : valor;
+  if (typeof raw === 'object' && raw !== null) return raw;
+  if (typeof raw !== 'string' || !raw.startsWith('{')) return null;
   try {
-    const parsed = JSON.parse(trimmed);
-    if (parsed?.v !== POLITICA_PAYLOAD_VERSION) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed?.v !== POLITICA_PAYLOAD_VERSION &&
+      parsed?.v !== POLITICA_PAYLOAD_VERSION_LEGACY
+    ) {
+      return null;
+    }
     return parsed;
   } catch {
     return null;
   }
 }
 
-export function mergePoliticaExtra(parsed) {
-  const base = { ...DEFAULT_POLITICA_EXTRA };
+/** Compat: filas antiguas guardaban JSON en descripcion */
+export function parsePoliticaFromRow(row) {
+  if (!row) return null;
+  const fromValor = parsePoliticaValor(row.valor);
+  if (fromValor) return fromValor;
+  return parsePoliticaValor(row.descripcion);
+}
+
+export function mergePoliticaExtra(parsed, tiposFinales = []) {
+  const base = { ...DEFAULT_POLITICA_DOCUMENTO };
   if (!parsed) return base;
+
+  let evaluacionesFinalesReglas = base.evaluacionesFinalesReglas;
+  if (Array.isArray(parsed.evaluacionesFinalesReglas)) {
+    evaluacionesFinalesReglas = parsed.evaluacionesFinalesReglas;
+  } else if (parsed.v === POLITICA_PAYLOAD_VERSION_LEGACY) {
+    evaluacionesFinalesReglas = migrateReglasDesdeFlags(parsed, tiposFinales);
+  }
+
   return {
+    cuotaTeorico:
+      parsed.cuotaTeorico != null
+        ? Number(parsed.cuotaTeorico)
+        : base.cuotaTeorico,
+    cuotaPractico:
+      parsed.cuotaPractico != null
+        ? Number(parsed.cuotaPractico)
+        : base.cuotaPractico,
     pesosBimestres: Array.isArray(parsed.pesosBimestres) ? parsed.pesosBimestres : base.pesosBimestres,
-    evaluacionesFinalesHabilitadas:
-      parsed.evaluacionesFinalesHabilitadas && typeof parsed.evaluacionesFinalesHabilitadas === 'object'
-        ? parsed.evaluacionesFinalesHabilitadas
-        : base.evaluacionesFinalesHabilitadas,
+    evaluacionesFinalesReglas,
     notaMinimaAprobacion:
       parsed.notaMinimaAprobacion != null
         ? Number(parsed.notaMinimaAprobacion)

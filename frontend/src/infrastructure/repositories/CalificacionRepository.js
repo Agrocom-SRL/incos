@@ -51,6 +51,25 @@ class CalificacionRepository {
   }
 
   /**
+   * GET /v1/calificaciones/politica/catalogo
+   */
+  async obtenerPoliticaCatalogo() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.POLITICA_CATALOGO);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data?.catalogo ?? responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar catálogo de política');
+    }
+  }
+
+  /**
    * GET /v1/calificaciones/politica
    * @returns {Promise<{success: boolean, data?: object, error?: string}>}
    */

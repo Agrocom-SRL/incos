@@ -1,14 +1,15 @@
 /**
- * Resumen tipo recibo (estilo pagos) de la ponderación y política vigente.
+ * Resumen de política: vista en vivo (gestión vigente) o referencia de gestión anterior con botón copiar.
  */
 
 import { Tag, Typography } from 'antd';
-import { CheckCircleOutlined, HistoryOutlined } from '@ant-design/icons';
-import { Card } from '@atoms';
+import { CheckCircleOutlined, CopyOutlined, HistoryOutlined } from '@ant-design/icons';
+import { Button, Card } from '@atoms';
 import { POLITICAS_ASISTENCIA } from '@application-academico/calificaciones/utils/politicasAsistencia.js';
 import { sumaPesos } from '@application-academico/calificaciones/utils/politicaPorcentajeUtils.js';
+import { describeAlcanceRegla } from '@application-academico/calificaciones/utils/evaluacionesFinalesReglas.js';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 const etiquetaAsistencia = (codigo) =>
   POLITICAS_ASISTENCIA.find((p) => p.value === codigo)?.label ?? codigo ?? '—';
@@ -24,30 +25,66 @@ const FilaResumen = ({ label, value, valueStyle, labelStyle }) => (
   </div>
 );
 
+/** Arma props de resumen a partir del objeto política (misma forma que guarda el API). */
+export const buildResumenDesdePolitica = (politica, { carreras = [], periodos = [] } = {}) => {
+  if (!politica) return null;
+  const cuotaTeorico = Number(politica.cuotaTeorico) || 0;
+  const cuotaPractico = Number(politica.cuotaPractico) || 0;
+  const pesosBimestres = politica.pesosBimestres ?? [25, 25, 25, 25];
+  const sumaCuota = cuotaTeorico + cuotaPractico;
+  const sumaBimestres = sumaPesos(pesosBimestres);
+
+  return {
+    gestionNombre: politica.gestionNombre,
+    configurada: Boolean(politica.configurada),
+    cuotaTeorico,
+    cuotaPractico,
+    pesosBimestres,
+    evaluacionesFinalesReglas: politica.evaluacionesFinalesReglas ?? [],
+    politicaAsistenciaDefault: politica.politicaAsistenciaDefault ?? {},
+    notaMinimaAprobacion: politica.notaMinimaAprobacion ?? 61,
+    ultimaModificacion: politica.ultimaModificacion ?? null,
+    sumaCuota,
+    sumaBimestres,
+    carreras,
+    periodos,
+  };
+};
+
 const PoliticaConfiguracionResumenCard = ({
+  variant = 'vigente',
+  gestionVigenteNombre,
   gestionNombre,
   configurada,
   cuotaTeorico,
   cuotaPractico,
   pesosBimestres,
-  evaluacionesFinalesDisponibles,
+  evaluacionesFinalesReglas,
   politicaAsistenciaDefault,
   notaMinimaAprobacion,
   ultimaModificacion,
   sumaCuota,
   sumaBimestres,
+  carreras = [],
+  periodos = [],
+  onUsarConfiguracion,
+  usarConfiguracionDisabled = false,
 }) => {
-  const finalesActivas = (evaluacionesFinalesDisponibles ?? []).filter(
-    (e) => e.habilitadaInstitucional,
-  );
+  const esReferenciaAnterior = variant === 'anterior';
+  const reglas = evaluacionesFinalesReglas ?? [];
   const cuotaOk = Math.abs(sumaCuota - 100) <= 0.01;
   const bimOk = Math.abs(sumaBimestres - 100) <= 0.01;
   const pad = politicaAsistenciaDefault ?? {};
 
   return (
-    <Card className="cal-politica-resumen-card" styles={{ body: { padding: '24px' } }}>
-      <FlexResumenHeader
+    <Card
+      className={`cal-politica-resumen-card${esReferenciaAnterior ? ' cal-politica-resumen-card--anterior' : ''}`}
+      styles={{ body: { padding: '24px' } }}
+    >
+      <ResumenHeader
+        esReferenciaAnterior={esReferenciaAnterior}
         gestionNombre={gestionNombre}
+        gestionVigenteNombre={gestionVigenteNombre}
         configurada={configurada}
         ultimaModificacion={ultimaModificacion}
       />
@@ -55,18 +92,18 @@ const PoliticaConfiguracionResumenCard = ({
       <div className="cal-politica-resumen__divider" />
 
       <FilaResumen
-        label="Cuota teórico / práctico (bimestre)"
+        label="Ponderación teórico / práctico (gestión)"
         value={`${Number(cuotaTeorico).toFixed(1)}% · ${Number(cuotaPractico).toFixed(1)}%`}
       />
       <FilaResumen
-        label="Suma cuota"
+        label="Suma ponderación"
         value={`${sumaCuota.toFixed(1)}% / 100%`}
         valueStyle={{ color: cuotaOk ? '#196b45' : '#d97706', fontWeight: 600 }}
       />
 
       <div className="cal-politica-resumen__divider cal-politica-resumen__divider--light" />
 
-      <Text className="cal-politica-resumen__subtitulo">Peso en nota anual</Text>
+      <Text className="cal-politica-resumen__subtitulo">Ponderación en nota anual</Text>
       {[1, 2, 3, 4].map((n, i) => (
         <FilaResumen
           key={n}
@@ -80,23 +117,31 @@ const PoliticaConfiguracionResumenCard = ({
         valueStyle={{ color: bimOk ? '#196b45' : '#d97706', fontWeight: 600 }}
       />
 
-      {finalesActivas.length > 0 ? (
+      {reglas.length > 0 ? (
         <>
           <div className="cal-politica-resumen__divider cal-politica-resumen__divider--light" />
-          <Text className="cal-politica-resumen__subtitulo">Evaluaciones finales (catálogo)</Text>
-          {finalesActivas.map((e) => (
-            <FilaResumen key={e.codigo} label={e.nombre} value="Habilitada" valueStyle={{ color: '#196b45' }} />
+          <Text className="cal-politica-resumen__subtitulo">Evaluaciones finales</Text>
+          {reglas.map((r) => (
+            <FilaResumen
+              key={r.id ?? r.tipoEvaluacionCodigo}
+              label={r.tipoEvaluacionNombre ?? r.tipoEvaluacionCodigo}
+              value={`${Number(r.ponderacion ?? 0).toFixed(1)}% · ${describeAlcanceRegla(r, {
+                carreras,
+                periodos,
+              })}`}
+              valueStyle={{ color: '#196b45', fontSize: 13 }}
+            />
           ))}
         </>
       ) : null}
 
       <div className="cal-politica-resumen__divider cal-politica-resumen__divider--light" />
 
-      <Text className="cal-politica-resumen__subtitulo">Asistencia (default)</Text>
+      <Text className="cal-politica-resumen__subtitulo">Asistencia</Text>
       <FilaResumen label="Modo" value={etiquetaAsistencia(pad.politica)} />
       {pad.politica === 'COMPUTA_NOTA' ? (
         <FilaResumen
-          label="Peso en nota práctica"
+          label="Peso en nota final"
           value={`${Number(pad.pesoAsistencia ?? 0).toFixed(1)}%`}
           labelStyle={{ color: '#52c41a' }}
         />
@@ -124,19 +169,49 @@ const PoliticaConfiguracionResumenCard = ({
       />
       <FilaResumen
         label="Escala de calificación"
-        value="100 puntos (bimestres + finales según curso)"
+        value="100 puntos (bimestres + finales según alcance)"
         valueStyle={{ color: '#595959', fontSize: 14 }}
       />
+
+      {esReferenciaAnterior && onUsarConfiguracion ? (
+        <Button
+          variant="primary"
+          buttonStyle="outlined"
+          icon={<CopyOutlined />}
+          onClick={onUsarConfiguracion}
+          disabled={usarConfiguracionDisabled}
+          className="cal-politica-resumen__btn-copiar"
+          block
+        >
+          Usar la misma configuración
+        </Button>
+      ) : null}
     </Card>
   );
 };
 
-const FlexResumenHeader = ({ gestionNombre, configurada, ultimaModificacion }) => (
+const ResumenHeader = ({
+  esReferenciaAnterior,
+  gestionNombre,
+  gestionVigenteNombre,
+  configurada,
+  ultimaModificacion,
+}) => (
   <div>
-    <div className="cal-politica-resumen__titulo">Detalle de la configuración</div>
+    <div className="cal-politica-resumen__titulo">
+      {esReferenciaAnterior ? 'Configuración de la gestión anterior' : 'Detalle de la configuración'}
+    </div>
+    {esReferenciaAnterior ? (
+      <Paragraph type="secondary" className="cal-politica-resumen__desc-anterior">
+        Gestión <Text strong>{gestionNombre}</Text>. Podés aplicar los mismos valores al formulario de{' '}
+        <Text strong>{gestionVigenteNombre}</Text>; después debés guardar para persistirlos.
+      </Paragraph>
+    ) : null}
     <div className="cal-politica-resumen__fila cal-politica-resumen__fila--gestion">
-      <Text>Gestión {gestionNombre}</Text>
-      {configurada ? (
+      <Text>{gestionNombre}</Text>
+      {esReferenciaAnterior ? (
+        <Tag color="processing">Gestión anterior</Tag>
+      ) : configurada ? (
         <Tag icon={<CheckCircleOutlined />} color="success">
           Guardada
         </Tag>
@@ -144,7 +219,7 @@ const FlexResumenHeader = ({ gestionNombre, configurada, ultimaModificacion }) =
         <Tag color="warning">Borrador (sin guardar)</Tag>
       )}
     </div>
-    {ultimaModificacion?.updatedAt ? (
+    {!esReferenciaAnterior && ultimaModificacion?.updatedAt ? (
       <div className="cal-politica-resumen__meta">
         <HistoryOutlined />
         <Text type="secondary">

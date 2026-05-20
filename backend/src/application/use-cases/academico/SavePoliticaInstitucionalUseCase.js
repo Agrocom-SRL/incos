@@ -2,7 +2,7 @@ import {
   mapPoliticaFromRequestBody,
   mapPoliticaInstitucionalResponse,
 } from '../../mappers/politicaInstitucionalMapper.js';
-import { serializePoliticaPayload } from '../../utils/politicaInstitucionalPayload.js';
+import { buildPoliticaValorDocumento } from '../../utils/politicaInstitucionalPayload.js';
 
 export class SavePoliticaInstitucionalUseCase {
   /**
@@ -55,50 +55,24 @@ export class SavePoliticaInstitucionalUseCase {
 
     const sumaCuota = mapped.cuotaTeorico + mapped.cuotaPractico;
     if (Math.abs(sumaCuota - 100) > 0.01) {
-      const err = new Error('La cuota teórico + práctico debe sumar 100%');
+      const err = new Error('La ponderación teórico + práctico debe sumar 100%');
       err.statusCode = 400;
       throw err;
     }
 
     const sumaBimestres = mapped.pesosBimestres.reduce((acc, p) => acc + p, 0);
     if (Math.abs(sumaBimestres - 100) > 0.01) {
-      const err = new Error('Los pesos de los 4 bimestres deben sumar 100%');
+      const err = new Error('La ponderación de los 4 bimestres debe sumar 100%');
       err.statusCode = 400;
       throw err;
     }
 
-    const descripcion = serializePoliticaPayload({
-      pesosBimestres: mapped.pesosBimestres,
-      evaluacionesFinalesHabilitadas: mapped.evaluacionesFinalesHabilitadas,
-      notaMinimaAprobacion: mapped.notaMinimaAprobacion,
-      politicaAsistenciaDefault: mapped.politicaAsistenciaDefault,
-    });
-
-    const existente = await this.evaluationConfigurationRepository.findActiveRowByGestionId(
-      gestionId
+    const documento = buildPoliticaValorDocumento(mapped);
+    await this.evaluationConfigurationRepository.upsertPoliticaVigente(
+      gestionId,
+      documento,
+      userId
     );
-
-    if (existente?.id) {
-      await this.evaluationConfigurationRepository.update(
-        existente.id,
-        {
-          theoryQuota: mapped.cuotaTeorico,
-          practiceQuota: mapped.cuotaPractico,
-          description: descripcion,
-        },
-        userId
-      );
-    } else {
-      await this.evaluationConfigurationRepository.create(
-        {
-          managementId: gestionId,
-          theoryQuota: mapped.cuotaTeorico,
-          practiceQuota: mapped.cuotaPractico,
-          description: descripcion,
-        },
-        userId
-      );
-    }
 
     const row = await this.evaluationConfigurationRepository.findActiveRowByGestionId(gestionId);
     const gestion = {

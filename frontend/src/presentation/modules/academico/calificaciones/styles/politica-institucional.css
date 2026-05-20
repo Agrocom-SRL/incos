@@ -10,6 +10,20 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
 }
 
+.cal-politica-resumen-card--anterior {
+  border: 1px solid var(--cuaderno-verde-medio, #6db088);
+}
+
+.cal-politica-resumen__desc-anterior {
+  margin: 0 0 16px !important;
+  font-size: 13px;
+  max-width: 720px;
+}
+
+.cal-politica-resumen__btn-copiar {
+  margin-top: 20px;
+}
+
 .cal-politica-resumen__titulo {
   font-size: 18px;
   font-weight: 700;
@@ -207,4 +221,70 @@
 
 .cal-politica-panel-card .ant-form-item {
   margin-bottom: 0;
+}
+
+.cal-politica-ponderacion-hint {
+  font-size: 12px;
+  margin-top: -4px;
+}
+
+/* —— Reglas evaluaciones finales —— */
+.cal-politica-finales-reglas-card {
+  margin-top: 0;
+}
+
+.cal-politica-finales-reglas__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cal-politica-finales-reglas__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.cal-politica-finales-reglas__agregar {
+  margin-top: 4px;
+}
+
+.cal-politica-finales-reglas__empty {
+  margin: 8px 0 16px;
+}
+
+.cal-politica-final-modal__alcance {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.cal-politica-final-modal__alcance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start !important;
+  height: auto !important;
+  padding: 10px 12px !important;
+  border-radius: 8px !important;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.cal-politica-final-modal__alcance-label {
+  font-weight: 600;
+}
+
+.cal-politica-final-modal__alcance-desc {
+  display: block;
+  font-size: 12px;
+  color: #8c8c8c;
+  font-weight: 400;
+  margin-top: 2px;
 }

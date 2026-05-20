@@ -11,29 +11,39 @@ export const ConfiguracionEvaluacion = sequelize.define(
             type: DataTypes.INTEGER,
             field: 'gestion_id',
             allowNull: true,
-            comment: 'Gestión a la que aplica la configuración teórico/práctico.',
+            comment: 'Gestión a la que aplica la configuración.',
         },
 
-        cuotaTeorico: {
-            type: DataTypes.DECIMAL(5, 2),
-            field: 'cuota_teorico',
+        clave: {
+            type: DataTypes.STRING(100),
             allowNull: false,
-            defaultValue: 30,
-            comment: 'Cuota del componente teórico sobre 100 puntos.',
+            comment: 'Clave de configuración (ej: POLITICA_INSTITUCIONAL).',
         },
 
-        cuotaPractico: {
-            type: DataTypes.DECIMAL(5, 2),
-            field: 'cuota_practico',
+        valor: {
+            type: DataTypes.TEXT,
             allowNull: false,
-            defaultValue: 70,
-            comment: 'Cuota del componente práctico sobre 100 puntos.',
+            comment: 'Valor serializado (JSON para política institucional).',
+        },
+
+        tipo: {
+            type: DataTypes.ENUM('STRING', 'NUMBER', 'BOOLEAN', 'JSON', 'DATE'),
+            allowNull: false,
+            defaultValue: 'JSON',
+            comment: 'Tipo de dato del valor.',
+        },
+
+        vigente: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+            comment: 'TRUE = configuración activa para la gestión y clave.',
         },
 
         descripcion: {
             type: DataTypes.TEXT,
             allowNull: true,
-            comment: 'Descripción o motivo del cambio de configuración.',
+            comment: 'Descripción legible de la configuración.',
         },
     },
     {

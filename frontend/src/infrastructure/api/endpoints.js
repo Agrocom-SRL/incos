@@ -174,7 +174,9 @@ export const GESTIONES_ENDPOINTS = createCRUDEndpoints('/gestiones');
 // ============================================
 export const CALIFICACIONES_ENDPOINTS = {
   COORDINACION_DOCENTES: `${API_BASE}/calificaciones/coordinacion/docentes`,
+  TIPOS_EVALUACION: `${API_BASE}/calificaciones/tipos-evaluacion`,
   POLITICA: `${API_BASE}/calificaciones/politica`,
+  POLITICA_CATALOGO: `${API_BASE}/calificaciones/politica/catalogo`,
 };
 
 // ============================================

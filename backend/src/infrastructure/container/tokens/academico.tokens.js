@@ -22,6 +22,8 @@ export const ACADEMICO_TOKENS = {
     getHorariosPublicacionPlanesUseCase: 'academico.getHorariosPublicacionPlanesUseCase',
     listCoordinacionCalificacionesDocentesUseCase: 'academico.listCoordinacionCalificacionesDocentesUseCase',
     getPoliticaInstitucionalUseCase: 'academico.getPoliticaInstitucionalUseCase',
+    getPoliticaCatalogoUseCase: 'academico.getPoliticaCatalogoUseCase',
+    listTiposEvaluacionUseCase: 'academico.listTiposEvaluacionUseCase',
     savePoliticaInstitucionalUseCase: 'academico.savePoliticaInstitucionalUseCase',
 
     // CONTROLLERS
@@ -38,6 +40,8 @@ export const ACADEMICO_TOKENS = {
     getHorariosPublicacionPlanesController: 'academico.getHorariosPublicacionPlanesController',
     listCoordinacionCalificacionesDocentesController: 'academico.listCoordinacionCalificacionesDocentesController',
     getPoliticaInstitucionalController: 'academico.getPoliticaInstitucionalController',
+    getPoliticaCatalogoController: 'academico.getPoliticaCatalogoController',
+    listTiposEvaluacionController: 'academico.listTiposEvaluacionController',
     savePoliticaInstitucionalController: 'academico.savePoliticaInstitucionalController',
 
     updateCursoOfertaUseCase: 'academico.updateCursoOfertaUseCase',

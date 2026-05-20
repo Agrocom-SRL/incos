@@ -12,6 +12,8 @@ const PoliticaPorcentajeSlider = ({
   onChange,
   disabled = false,
   color = 'var(--color-primary, #196b45)',
+  min = 0,
+  max = 100,
 }) => (
   <div className="cal-politica-slider">
     <Flex justify="space-between" align="center" className="cal-politica-slider__head">
@@ -21,8 +23,8 @@ const PoliticaPorcentajeSlider = ({
       </Text>
     </Flex>
     <Slider
-      min={0}
-      max={100}
+      min={min}
+      max={max}
       step={0.5}
       value={Number(value) || 0}
       onChange={onChange}

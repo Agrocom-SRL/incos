@@ -4,6 +4,8 @@ import { ConfiguracionEvaluacion as ConfiguracionEvaluacionModel } from '../data
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { EvaluationConfigurationMapper } from '../mappers/EvaluationConfigurationMapper.js';
+import { CLAVE_POLITICA_INSTITUCIONAL } from '../../application/utils/politicaInstitucionalClaves.js';
+import { serializePoliticaValor } from '../../application/utils/politicaInstitucionalPayload.js';
 
 /**
  * @implements {IConfiguracionEvaluacionRepository}
@@ -30,18 +32,18 @@ export class EvaluationConfigurationRepository extends BaseRepository {
             where.gestionId = filters.managementId;
         }
 
-        if (filters.theoryQuota !== undefined) {
-            where.cuotaTeorico = filters.theoryQuota;
+        if (filters.key) {
+            where.clave = filters.key;
         }
-        if (filters.practiceQuota !== undefined) {
-            where.cuotaPractico = filters.practiceQuota;
+        if (filters.isCurrent !== undefined) {
+            where.vigente = filters.isCurrent;
         }
 
         return where;
     }
 
     getSearchFields() {
-        return ['descripcion'];
+        return ['clave', 'descripcion'];
     }
 
     getDefaultSort() {
@@ -61,7 +63,7 @@ export class EvaluationConfigurationRepository extends BaseRepository {
     }
 
     /**
-     * Fila activa de configuracion_evaluacion para una gestión (con auditoría).
+     * Política institucional vigente para una gestión (con auditoría).
      * @param {number} gestionId
      * @returns {Promise<Object|null>}
      */
@@ -71,8 +73,10 @@ export class EvaluationConfigurationRepository extends BaseRepository {
       SELECT
         ce.id,
         ce.gestion_id,
-        ce.cuota_teorico,
-        ce.cuota_practico,
+        ce.clave,
+        ce.valor,
+        ce.tipo,
+        ce.vigente,
         ce.descripcion,
         ce.updated_at,
         ce.updated_by,
@@ -80,14 +84,71 @@ export class EvaluationConfigurationRepository extends BaseRepository {
       FROM configuracion_evaluacion ce
       LEFT JOIN usuarios u ON u.id = ce.updated_by AND u.deleted_at IS NULL
       WHERE ce.gestion_id = ?
+        AND ce.clave = ?
+        AND ce.vigente = TRUE
         AND ce.activo = TRUE
         AND ce.deleted_at IS NULL
       ORDER BY ce.id DESC
       LIMIT 1
       `,
-            { replacements: [gestionId], type: sequelize.QueryTypes.SELECT }
+            {
+                replacements: [gestionId, CLAVE_POLITICA_INSTITUCIONAL],
+                type: sequelize.QueryTypes.SELECT,
+            }
         );
         return rows[0] ?? null;
+    }
+
+    /**
+     * Crea o actualiza la política institucional vigente de una gestión.
+     * @param {number} gestionId
+     * @param {Object} documento - objeto política (se serializa a JSON)
+     * @param {number|null} userId
+     */
+    async upsertPoliticaVigente(gestionId, documento, userId = null) {
+        const valor = serializePoliticaValor(documento);
+        const existente = await this.findActiveRowByGestionId(gestionId);
+
+        await sequelize.query(
+            `
+      UPDATE configuracion_evaluacion
+      SET vigente = FALSE, updated_at = NOW(), updated_by = ?
+      WHERE gestion_id = ? AND clave = ? AND vigente = TRUE AND deleted_at IS NULL
+      `,
+            {
+                replacements: [userId, gestionId, CLAVE_POLITICA_INSTITUCIONAL],
+                type: sequelize.QueryTypes.UPDATE,
+            }
+        );
+
+        if (existente?.id) {
+            await this.update(
+                existente.id,
+                {
+                    value: valor,
+                    valueType: 'JSON',
+                    isCurrent: true,
+                    description:
+                        existente.descripcion ??
+                        'Política institucional de evaluación y notas',
+                },
+                userId
+            );
+            return existente.id;
+        }
+
+        const created = await this.create(
+            {
+                managementId: gestionId,
+                key: CLAVE_POLITICA_INSTITUCIONAL,
+                value: valor,
+                valueType: 'JSON',
+                isCurrent: true,
+                description: 'Política institucional de evaluación y notas',
+            },
+            userId
+        );
+        return created?.id;
     }
 }
 

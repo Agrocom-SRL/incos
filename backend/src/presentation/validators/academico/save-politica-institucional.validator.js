@@ -1,6 +1,7 @@
 import { body } from 'express-validator';
 
 const POLITICAS_VALIDAS = ['NO_AFECTA', 'COMPUTA_NOTA', 'CAUSA_REPROBACION'];
+const ALCANCES_VALIDOS = ['GESTION', 'CARRERA', 'PERIODO', 'CARRERA_PERIODO'];
 
 export const savePoliticaInstitucionalValidator = [
   body('cuotaTeorico').isFloat({ min: 0, max: 100 }).withMessage('cuotaTeorico inválida'),
@@ -8,10 +9,13 @@ export const savePoliticaInstitucionalValidator = [
   body('pesosBimestres')
     .isArray({ min: 4, max: 4 })
     .withMessage('pesosBimestres debe tener 4 elementos'),
-  body('pesosBimestres.*').isFloat({ min: 0, max: 100 }).withMessage('peso bimestral inválido'),
-  body('evaluacionesFinalesDisponibles').optional().isArray(),
-  body('evaluacionesFinalesDisponibles.*.codigo').optional().isString(),
-  body('evaluacionesFinalesDisponibles.*.habilitadaInstitucional').optional().isBoolean(),
+  body('pesosBimestres.*').isFloat({ min: 0, max: 100 }).withMessage('ponderación bimestral inválida'),
+  body('evaluacionesFinalesReglas').optional().isArray(),
+  body('evaluacionesFinalesReglas.*.tipoEvaluacionCodigo').optional().isString(),
+  body('evaluacionesFinalesReglas.*.ponderacion').optional().isFloat({ min: 0.01, max: 100 }),
+  body('evaluacionesFinalesReglas.*.alcance').optional().isIn(ALCANCES_VALIDOS),
+  body('evaluacionesFinalesReglas.*.carreraId').optional({ nullable: true }).isInt(),
+  body('evaluacionesFinalesReglas.*.periodoId').optional({ nullable: true }).isInt(),
   body('politicaAsistenciaDefault.politica')
     .isIn(POLITICAS_VALIDAS)
     .withMessage('política de asistencia inválida'),

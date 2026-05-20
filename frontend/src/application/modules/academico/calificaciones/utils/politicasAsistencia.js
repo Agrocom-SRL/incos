@@ -8,7 +8,7 @@ export const POLITICAS_ASISTENCIA = [
   },
   {
     value: 'COMPUTA_NOTA',
-    label: 'Aporta puntos al práctico',
+    label: 'Aporta a la nota final',
     descripcion: 'Un porcentaje de la nota final proviene del cumplimiento de asistencia.',
   },
   {

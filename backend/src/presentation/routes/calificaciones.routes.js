@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import {
+  listTiposEvaluacionValidator,
   savePoliticaInstitucionalValidator,
   searchCoordinacionDocentesValidator,
 } from '../validators/academico/index.js';
@@ -47,8 +48,30 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   );
 
   /**
+   * GET /api/v1/calificaciones/tipos-evaluacion
+   * Catálogo tipos_evaluacion (query: ambito=BIMESTRE|MATERIA_COMPLETA, pagina, limite, busqueda).
+   */
+  router.get(
+    '/tipos-evaluacion',
+    ...politicaListar,
+    listTiposEvaluacionValidator,
+    validateRequest,
+    (req, res, next) => controllers.listTiposEvaluacionController.handle(req, res, next)
+  );
+
+  /**
+   * GET /api/v1/calificaciones/politica/catalogo
+   * Carreras y periodos del plan para reglas de evaluaciones finales.
+   */
+  router.get(
+    '/politica/catalogo',
+    ...politicaListar,
+    (req, res, next) => controllers.getPoliticaCatalogoController.handle(req, res, next)
+  );
+
+  /**
    * GET /api/v1/calificaciones/politica
-   * Configuración institucional de notas (gestión vigente).
+   * Configuración institucional de notas (gestión vigente, configuracion_evaluacion).
    */
   router.get(
     '/politica',

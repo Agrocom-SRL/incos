@@ -11,14 +11,16 @@ import { PageHeader } from '@molecules';
 import { Button as AtomButton } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { usePoliticaInstitucional } from '@application-academico/calificaciones/hooks/usePoliticaInstitucional.js';
+import { usePoliticaCatalogo } from '@application-academico/calificaciones/hooks/usePoliticaCatalogo.js';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import { CALIFICACIONES_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import { sumaPesos } from '@application-academico/calificaciones/utils/politicaPorcentajeUtils.js';
-import PoliticaEvaluacionesFinalesSection from '../components/PoliticaEvaluacionesFinalesSection.jsx';
-import PoliticaGestionAnteriorCard from '../components/PoliticaGestionAnteriorCard.jsx';
-import PoliticaConfiguracionResumenCard from '../components/PoliticaConfiguracionResumenCard.jsx';
-import PoliticaCuotaSliders from '../components/PoliticaCuotaSliders.jsx';
-import PoliticaBimestresSliders from '../components/PoliticaBimestresSliders.jsx';
+import PoliticaConfiguracionResumenCard, {
+  buildResumenDesdePolitica,
+} from '../components/PoliticaConfiguracionResumenCard.jsx';
+import PoliticaPonderacionTeoricoPractico from '../components/PoliticaPonderacionTeoricoPractico.jsx';
+import PoliticaPonderacionBimestres from '../components/PoliticaPonderacionBimestres.jsx';
+import PoliticaEvaluacionesFinalesReglasSection from '../components/PoliticaEvaluacionesFinalesReglasSection.jsx';
 import PoliticaAsistenciaPanel from '../components/PoliticaAsistenciaPanel.jsx';
 import PoliticaPorcentajeSlider from '../components/PoliticaPorcentajeSlider.jsx';
 import { Card } from '@atoms';
@@ -29,25 +31,46 @@ import '../styles/politica-institucional.css';
 const PoliticaInstitucionalPage = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [copiadaDesdeAnterior, setCopiadaDesdeAnterior] = useState(false);
   const {
     politica,
     politicaGestionAnterior,
     gestionVigente,
-    isLoading,
+    isLoading: isLoadingPolitica,
     isSaving,
-    error,
-    refetch,
+    error: errorPolitica,
+    refetch: refetchPolitica,
     guardar,
     breadcrumbItems,
   } = usePoliticaInstitucional();
+  const {
+    catalogo,
+    isLoading: isLoadingCatalogo,
+    error: errorCatalogo,
+    refetch: refetchCatalogo,
+  } = usePoliticaCatalogo();
   const [errorGuardado, setErrorGuardado] = useState(null);
+
+  const isLoading = isLoadingPolitica || isLoadingCatalogo;
+  const error = errorPolitica || errorCatalogo;
+  const refetch = () => {
+    refetchPolitica();
+    refetchCatalogo();
+  };
 
   const cuotaTeorico = Form.useWatch('cuotaTeorico', form);
   const cuotaPractico = Form.useWatch('cuotaPractico', form);
   const pesosBimestres = Form.useWatch('pesosBimestres', form) ?? [];
   const notaMinimaAprobacion = Form.useWatch('notaMinimaAprobacion', form);
-  const evaluacionesWatch = Form.useWatch('evaluacionesFinalesDisponibles', form);
+  const reglasFinalesWatch = Form.useWatch('evaluacionesFinalesReglas', form);
   const asistenciaWatch = Form.useWatch('politicaAsistenciaDefault', form);
+
+  const tiposEvaluacion = catalogo?.tiposEvaluacionFinales ?? [];
+  const carrerasCatalogo = catalogo?.carreras ?? [];
+  const periodosCatalogo = catalogo?.periodosPlan ?? [];
+
+  const mostrarResumenAnterior =
+    Boolean(politica && !politica.configurada && politicaGestionAnterior?.configurada && !copiadaDesdeAnterior);
 
   const aplicarPoliticaAlFormulario = useCallback(
     (origen) => {
@@ -55,11 +78,12 @@ const PoliticaInstitucionalPage = () => {
       form.setFieldsValue({
         cuotaTeorico: origen.cuotaTeorico,
         cuotaPractico: origen.cuotaPractico,
-        pesosBimestres: [...(origen.pesosBimestres ?? [])],
-        evaluacionesFinalesDisponibles: (origen.evaluacionesFinalesDisponibles ?? []).map((e) => ({
-          ...e,
+        pesosBimestres: [...(origen.pesosBimestres ?? [25, 25, 25, 25])],
+        evaluacionesFinalesReglas: (origen.evaluacionesFinalesReglas ?? []).map((r) => ({
+          ...r,
+          id: r.id ?? `regla-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         })),
-        politicaAsistenciaDefault: { ...origen.politicaAsistenciaDefault },
+        politicaAsistenciaDefault: { ...(origen.politicaAsistenciaDefault ?? { politica: 'NO_AFECTA' }) },
         notaMinimaAprobacion: origen.notaMinimaAprobacion ?? 61,
       });
     },
@@ -69,93 +93,114 @@ const PoliticaInstitucionalPage = () => {
   useEffect(() => {
     if (!politica) return;
     setErrorGuardado(null);
+    setCopiadaDesdeAnterior(false);
     aplicarPoliticaAlFormulario(politica);
   }, [politica, aplicarPoliticaAlFormulario]);
 
   const sumaCuota = (Number(cuotaTeorico) || 0) + (Number(cuotaPractico) || 0);
   const sumaBimestres = sumaPesos(pesosBimestres);
 
-  const valoresVista = useMemo(
-    () => ({
+  const resumenVigente = useMemo(() => {
+    const base = {
       gestionNombre: gestionVigente ?? politica?.gestionNombre,
       configurada: politica?.configurada,
       cuotaTeorico: cuotaTeorico ?? politica?.cuotaTeorico,
       cuotaPractico: cuotaPractico ?? politica?.cuotaPractico,
       pesosBimestres: pesosBimestres?.length ? pesosBimestres : politica?.pesosBimestres,
-      evaluacionesFinalesDisponibles:
-        evaluacionesWatch ?? politica?.evaluacionesFinalesDisponibles,
+      evaluacionesFinalesReglas:
+        reglasFinalesWatch ?? politica?.evaluacionesFinalesReglas ?? [],
       politicaAsistenciaDefault: asistenciaWatch ?? politica?.politicaAsistenciaDefault,
       notaMinimaAprobacion: notaMinimaAprobacion ?? politica?.notaMinimaAprobacion ?? 61,
       ultimaModificacion: politica?.ultimaModificacion,
       sumaCuota,
       sumaBimestres,
-    }),
-    [
-      gestionVigente,
-      politica,
-      cuotaTeorico,
-      cuotaPractico,
-      pesosBimestres,
-      evaluacionesWatch,
-      asistenciaWatch,
-      notaMinimaAprobacion,
-      sumaCuota,
-      sumaBimestres,
-    ],
+    };
+    return buildResumenDesdePolitica(base, {
+      carreras: carrerasCatalogo,
+      periodos: periodosCatalogo,
+    });
+  }, [
+    gestionVigente,
+    politica,
+    cuotaTeorico,
+    cuotaPractico,
+    pesosBimestres,
+    reglasFinalesWatch,
+    asistenciaWatch,
+    notaMinimaAprobacion,
+    sumaCuota,
+    sumaBimestres,
+    carrerasCatalogo,
+    periodosCatalogo,
+  ]);
+
+  const resumenAnterior = useMemo(
+    () =>
+      buildResumenDesdePolitica(politicaGestionAnterior, {
+        carreras: carrerasCatalogo,
+        periodos: periodosCatalogo,
+      }),
+    [politicaGestionAnterior, carrerasCatalogo, periodosCatalogo],
   );
 
-  const construirPayload = useCallback(
-    (values) => ({
-      cuotaTeorico: values.cuotaTeorico,
-      cuotaPractico: values.cuotaPractico,
-      pesosBimestres: values.pesosBimestres,
-      notaMinimaAprobacion: values.notaMinimaAprobacion,
-      evaluacionesFinalesDisponibles: (values.evaluacionesFinalesDisponibles ?? []).map(
-        (e, i) => ({
-          codigo: politica?.evaluacionesFinalesDisponibles?.[i]?.codigo ?? e.codigo,
-          nombre: politica?.evaluacionesFinalesDisponibles?.[i]?.nombre ?? e.nombre,
-          habilitadaInstitucional: Boolean(e.habilitadaInstitucional),
-        }),
-      ),
-      politicaAsistenciaDefault: {
-        politica: values.politicaAsistenciaDefault.politica,
-        pesoAsistencia:
-          values.politicaAsistenciaDefault.politica === 'COMPUTA_NOTA'
-            ? values.politicaAsistenciaDefault.pesoAsistencia
-            : null,
-        minimoAsistencia:
-          values.politicaAsistenciaDefault.politica === 'CAUSA_REPROBACION'
-            ? values.politicaAsistenciaDefault.minimoAsistencia
-            : null,
-        notaReprobada:
-          values.politicaAsistenciaDefault.politica === 'CAUSA_REPROBACION'
-            ? values.politicaAsistenciaDefault.notaReprobada
-            : null,
-      },
-    }),
-    [politica],
-  );
+  const construirPayload = useCallback((values) => ({
+    cuotaTeorico: values.cuotaTeorico,
+    cuotaPractico: values.cuotaPractico,
+    pesosBimestres: values.pesosBimestres,
+    notaMinimaAprobacion: values.notaMinimaAprobacion,
+    evaluacionesFinalesReglas: (values.evaluacionesFinalesReglas ?? []).map((r) => ({
+      id: r.id,
+      tipoEvaluacionCodigo: r.tipoEvaluacionCodigo,
+      tipoEvaluacionNombre: r.tipoEvaluacionNombre,
+      ponderacion: r.ponderacion,
+      alcance: r.alcance,
+      carreraId: r.carreraId ?? null,
+      carreraNombre: r.carreraNombre ?? null,
+      periodoId: r.periodoId ?? null,
+      periodoNombre: r.periodoNombre ?? null,
+    })),
+    politicaAsistenciaDefault: {
+      politica: values.politicaAsistenciaDefault.politica,
+      pesoAsistencia:
+        values.politicaAsistenciaDefault.politica === 'COMPUTA_NOTA'
+          ? values.politicaAsistenciaDefault.pesoAsistencia
+          : null,
+      minimoAsistencia:
+        values.politicaAsistenciaDefault.politica === 'CAUSA_REPROBACION'
+          ? values.politicaAsistenciaDefault.minimoAsistencia
+          : null,
+      notaReprobada:
+        values.politicaAsistenciaDefault.politica === 'CAUSA_REPROBACION'
+          ? values.politicaAsistenciaDefault.notaReprobada
+          : null,
+    },
+  }), []);
 
   const handleGuardar = async () => {
     try {
       const values = await form.validateFields();
       if (Math.abs(sumaCuota - 100) > 0.01) {
-        notification.warning({ message: 'La cuota teórico + práctico debe sumar 100%' });
+        notification.warning({
+          message: 'La ponderación teórico + práctico debe sumar 100%',
+        });
         return;
       }
       if (Math.abs(sumaBimestres - 100) > 0.01) {
-        notification.warning({ message: 'Los pesos de los 4 bimestres deben sumar 100%' });
+        notification.warning({
+          message: 'La ponderación de los 4 bimestres debe sumar 100%',
+        });
         return;
       }
       setErrorGuardado(null);
       await guardar(construirPayload(values));
+      setCopiadaDesdeAnterior(false);
       notification.success({
         message: 'Configuración guardada',
         description: 'Los cursos sin override heredarán estos valores.',
       });
     } catch (err) {
       if (err?.errorFields) return;
-      setErrorGuardado('No se pudo guardar. Reintentar.');
+      setErrorGuardado(err?.message || 'No se pudo guardar. Reintentar.');
     }
   };
 
@@ -166,9 +211,10 @@ const PoliticaInstitucionalPage = () => {
   const handleUsarGestionAnterior = useCallback(() => {
     if (!politicaGestionAnterior) return;
     aplicarPoliticaAlFormulario(politicaGestionAnterior);
+    setCopiadaDesdeAnterior(true);
     notification.info({
       message: 'Valores aplicados',
-      description: `Se copió la configuración de la gestión ${politicaGestionAnterior.gestionNombre}. Revisá y guardá para confirmar.`,
+      description: `Se copió la configuración de ${politicaGestionAnterior.gestionNombre}. Revisá el formulario y guardá para la gestión vigente.`,
     });
   }, [aplicarPoliticaAlFormulario, politicaGestionAnterior]);
 
@@ -204,13 +250,17 @@ const PoliticaInstitucionalPage = () => {
 
             {politica ? (
               <>
-                <PoliticaGestionAnteriorCard
-                  politicaAnterior={politicaGestionAnterior}
-                  onUsarConfiguracion={handleUsarGestionAnterior}
-                  disabled={isLoading || isSaving}
-                />
-
-                <PoliticaConfiguracionResumenCard {...valoresVista} />
+                {mostrarResumenAnterior && resumenAnterior ? (
+                  <PoliticaConfiguracionResumenCard
+                    variant="anterior"
+                    gestionVigenteNombre={gestionVigente ?? politica.gestionNombre}
+                    {...resumenAnterior}
+                    onUsarConfiguracion={handleUsarGestionAnterior}
+                    usarConfiguracionDisabled={isLoading || isSaving}
+                  />
+                ) : resumenVigente ? (
+                  <PoliticaConfiguracionResumenCard variant="vigente" {...resumenVigente} />
+                ) : null}
 
                 <Alert
                   type="info"
@@ -221,39 +271,24 @@ const PoliticaInstitucionalPage = () => {
 
                 <Form form={form} layout="vertical" className="cal-politica__form">
                   <Card
-                    title="Cuota teórico / práctico (por bimestre)"
+                    title="Ponderación teórico / práctico (gestión)"
                     className="cal-politica-panel-card"
                     headerColor="primary"
                     variant="outlined"
                     shadow={false}
                   >
-                    <PoliticaCuotaSliders
-                      teorico={cuotaTeorico}
-                      practico={cuotaPractico}
-                      disabled={isSaving}
-                      onChange={({ cuotaTeorico: t, cuotaPractico: p }) =>
-                        form.setFieldsValue({ cuotaTeorico: t, cuotaPractico: p })
-                      }
-                    />
+                    <PoliticaPonderacionTeoricoPractico form={form} disabled={isSaving} />
                   </Card>
 
                   <Card
-                    title="Peso de cada bimestre en la nota anual"
+                    title="Ponderación de cada bimestre en la nota anual"
                     className="cal-politica-panel-card"
                     headerColor="primary"
                     variant="outlined"
                     shadow={false}
                   >
-                    <PoliticaBimestresSliders
-                      pesos={pesosBimestres}
-                      disabled={isSaving}
-                      onChange={(next) => form.setFieldValue('pesosBimestres', next)}
-                    />
+                    <PoliticaPonderacionBimestres form={form} disabled={isSaving} />
                   </Card>
-
-                  <PoliticaEvaluacionesFinalesSection
-                    tipos={politica.evaluacionesFinalesDisponibles}
-                  />
 
                   <PoliticaAsistenciaPanel form={form} disabled={isSaving} />
 
@@ -276,6 +311,15 @@ const PoliticaInstitucionalPage = () => {
                       />
                     </Form.Item>
                   </Card>
+
+                  <PoliticaEvaluacionesFinalesReglasSection
+                    form={form}
+                    tiposEvaluacion={tiposEvaluacion}
+                    carreras={carrerasCatalogo}
+                    periodos={periodosCatalogo}
+                    catalogoLoading={isLoadingCatalogo}
+                    disabled={isSaving}
+                  />
 
                   <Flex className="cal-politica__actions">
                     <PermisoGuard

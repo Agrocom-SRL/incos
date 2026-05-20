@@ -1,6 +1,4 @@
-import {
-  mapPoliticaInstitucionalResponse,
-} from '../../mappers/politicaInstitucionalMapper.js';
+import { mapPoliticaInstitucionalResponse } from '../../mappers/politicaInstitucionalMapper.js';
 
 export class GetPoliticaInstitucionalUseCase {
   /**
@@ -56,7 +54,7 @@ export class GetPoliticaInstitucionalUseCase {
     const tiposFinales = await this.listarTiposFinales();
 
     const rowActual = await this.evaluationConfigurationRepository.findActiveRowByGestionId(
-      gestion.id
+      gestion.id,
     );
     const politica = mapPoliticaInstitucionalResponse({
       gestion,
@@ -69,7 +67,7 @@ export class GetPoliticaInstitucionalUseCase {
     const gestionAnt = await this.calificacionRepository.obtenerGestionAnteriorPorAnio(gestion.anio);
     if (gestionAnt?.id) {
       const rowAnt = await this.evaluationConfigurationRepository.findActiveRowByGestionId(
-        gestionAnt.id
+        gestionAnt.id,
       );
       if (rowAnt?.id) {
         politicaGestionAnterior = mapPoliticaInstitucionalResponse({
@@ -89,6 +87,7 @@ export class GetPoliticaInstitucionalUseCase {
       gestionId: gestion.id,
       configurada: politica.configurada,
       tieneAnterior: Boolean(politicaGestionAnterior),
+      reglasFinales: politica.evaluacionesFinalesReglas?.length ?? 0,
     });
 
     return {

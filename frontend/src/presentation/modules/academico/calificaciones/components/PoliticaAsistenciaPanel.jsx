@@ -28,7 +28,7 @@ const PoliticaAsistenciaPanel = ({ form, disabled = false }) => {
 
   return (
     <Card
-      title="Política de asistencia (default)"
+      title="Política de asistencia"
       className="cal-politica-panel-card"
       headerColor="primary"
       variant="outlined"
@@ -78,7 +78,7 @@ const PoliticaAsistenciaPanel = ({ form, disabled = false }) => {
 
       {politica === 'COMPUTA_NOTA' ? (
         <div className="cal-politica-asistencia-campos">
-          <Text className="cal-politica-asistencia-campos__titulo">Parámetros — aporta al práctico</Text>
+          <Text className="cal-politica-asistencia-campos__titulo">Parámetros — aporta a la nota final</Text>
           <Form.Item
             name={['politicaAsistenciaDefault', 'pesoAsistencia']}
             rules={[{ required: true, message: 'Indicá el peso' }]}

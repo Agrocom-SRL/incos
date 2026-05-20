@@ -6,9 +6,13 @@ import { ACADEMICO_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../t
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListCoordinacionCalificacionesDocentesUseCase } from '../../../../application/use-cases/academico/ListCoordinacionCalificacionesDocentesUseCase.js';
 import { GetPoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/GetPoliticaInstitucionalUseCase.js';
+import { GetPoliticaCatalogoUseCase } from '../../../../application/use-cases/academico/GetPoliticaCatalogoUseCase.js';
+import { ListTiposEvaluacionUseCase } from '../../../../application/use-cases/academico/ListTiposEvaluacionUseCase.js';
 import { SavePoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/SavePoliticaInstitucionalUseCase.js';
 import { ListCoordinacionCalificacionesDocentesController } from '../../../../presentation/controllers/academico/calificaciones/list-coordinacion-docentes.controller.js';
 import { GetPoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-institucional.controller.js';
+import { GetPoliticaCatalogoController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-catalogo.controller.js';
+import { ListTiposEvaluacionController } from '../../../../presentation/controllers/academico/calificaciones/list-tipos-evaluacion.controller.js';
 import { SavePoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/save-politica-institucional.controller.js';
 import { buildCalificacionesRouter } from '../../../../presentation/routes/calificaciones.routes.js';
 
@@ -39,6 +43,27 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getPoliticaCatalogoUseCase,
+    (c) =>
+      new GetPoliticaCatalogoUseCase({
+        careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+        periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.listTiposEvaluacionUseCase,
+    (c) =>
+      new ListTiposEvaluacionUseCase({
+        evaluationTypeRepository: c.resolve(REPOSITORIOS_TOKENS.evaluationTypeRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.savePoliticaInstitucionalUseCase,
     (c) =>
       new SavePoliticaInstitucionalUseCase({
@@ -57,6 +82,28 @@ export function registerCalificacionesResource(container) {
     (c) =>
       new GetPoliticaInstitucionalController({
         getPoliticaInstitucionalUseCase: c.resolve(ACADEMICO_TOKENS.getPoliticaInstitucionalUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getPoliticaCatalogoController,
+    (c) =>
+      new GetPoliticaCatalogoController({
+        getPoliticaCatalogoUseCase: c.resolve(ACADEMICO_TOKENS.getPoliticaCatalogoUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.listTiposEvaluacionController,
+    (c) =>
+      new ListTiposEvaluacionController({
+        listTiposEvaluacionUseCase: c.resolve(ACADEMICO_TOKENS.listTiposEvaluacionUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       })
@@ -94,6 +141,8 @@ export function registerCalificacionesResource(container) {
       getPoliticaInstitucionalController: c.resolve(
         ACADEMICO_TOKENS.getPoliticaInstitucionalController
       ),
+      getPoliticaCatalogoController: c.resolve(ACADEMICO_TOKENS.getPoliticaCatalogoController),
+      listTiposEvaluacionController: c.resolve(ACADEMICO_TOKENS.listTiposEvaluacionController),
       savePoliticaInstitucionalController: c.resolve(
         ACADEMICO_TOKENS.savePoliticaInstitucionalController
       ),
