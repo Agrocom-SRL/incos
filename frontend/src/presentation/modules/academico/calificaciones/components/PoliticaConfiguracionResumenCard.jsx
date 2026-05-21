@@ -141,7 +141,7 @@ const PoliticaConfiguracionResumenCard = ({
       <FilaResumen label="Modo" value={etiquetaAsistencia(pad.politica)} />
       {pad.politica === 'COMPUTA_NOTA' ? (
         <FilaResumen
-          label="Peso en nota final"
+          label="Ponderación en nota final"
           value={`${Number(pad.pesoAsistencia ?? 0).toFixed(1)}%`}
           labelStyle={{ color: '#52c41a' }}
         />
@@ -183,7 +183,7 @@ const PoliticaConfiguracionResumenCard = ({
           className="cal-politica-resumen__btn-copiar"
           block
         >
-          Usar la misma configuración
+          Copiar y guardar configuración
         </Button>
       ) : null}
     </Card>
@@ -203,8 +203,8 @@ const ResumenHeader = ({
     </div>
     {esReferenciaAnterior ? (
       <Paragraph type="secondary" className="cal-politica-resumen__desc-anterior">
-        Gestión <Text strong>{gestionNombre}</Text>. Podés aplicar los mismos valores al formulario de{' '}
-        <Text strong>{gestionVigenteNombre}</Text>; después debés guardar para persistirlos.
+        Referencia de <Text strong>{gestionNombre}</Text>. Podés copiar y guardar la misma configuración
+        en <Text strong>{gestionVigenteNombre}</Text> con un solo clic.
       </Paragraph>
     ) : null}
     <div className="cal-politica-resumen__fila cal-politica-resumen__fila--gestion">

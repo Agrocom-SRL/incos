@@ -16,10 +16,12 @@ const PoliticaPonderacionTeoricoPractico = ({ form, disabled = false }) => {
   const practico = Form.useWatch('cuotaPractico', form) ?? 70;
 
   const aplicarPar = (campo, valor) => {
-    const [t, p] =
-      campo === 'cuotaTeorico'
-        ? ajustarParComplementario(teorico, valor)
-        : ajustarParComplementario(practico, valor);
+    if (campo === 'cuotaTeorico') {
+      const [t, p] = ajustarParComplementario(teorico, valor);
+      form.setFieldsValue({ cuotaTeorico: t, cuotaPractico: p });
+      return;
+    }
+    const [p, t] = ajustarParComplementario(practico, valor);
     form.setFieldsValue({ cuotaTeorico: t, cuotaPractico: p });
   };
 

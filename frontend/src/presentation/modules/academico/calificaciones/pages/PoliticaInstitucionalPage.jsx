@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Flex, Form, Spin, notification } from 'antd';
+import { Alert, App, Button, Flex, Form, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -30,8 +30,8 @@ import '../styles/politica-institucional.css';
 
 const PoliticaInstitucionalPage = () => {
   const navigate = useNavigate();
+  const { message, notification } = App.useApp();
   const [form] = Form.useForm();
-  const [copiadaDesdeAnterior, setCopiadaDesdeAnterior] = useState(false);
   const {
     politica,
     politicaGestionAnterior,
@@ -69,8 +69,9 @@ const PoliticaInstitucionalPage = () => {
   const carrerasCatalogo = catalogo?.carreras ?? [];
   const periodosCatalogo = catalogo?.periodosPlan ?? [];
 
-  const mostrarResumenAnterior =
-    Boolean(politica && !politica.configurada && politicaGestionAnterior?.configurada && !copiadaDesdeAnterior);
+  const mostrarResumenAnterior = Boolean(
+    politica && !politica.configurada && politicaGestionAnterior?.configurada,
+  );
 
   const aplicarPoliticaAlFormulario = useCallback(
     (origen) => {
@@ -93,7 +94,6 @@ const PoliticaInstitucionalPage = () => {
   useEffect(() => {
     if (!politica) return;
     setErrorGuardado(null);
-    setCopiadaDesdeAnterior(false);
     aplicarPoliticaAlFormulario(politica);
   }, [politica, aplicarPoliticaAlFormulario]);
 
@@ -143,59 +143,50 @@ const PoliticaInstitucionalPage = () => {
     [politicaGestionAnterior, carrerasCatalogo, periodosCatalogo],
   );
 
-  const construirPayload = useCallback((values) => ({
-    cuotaTeorico: values.cuotaTeorico,
-    cuotaPractico: values.cuotaPractico,
-    pesosBimestres: values.pesosBimestres,
-    notaMinimaAprobacion: values.notaMinimaAprobacion,
-    evaluacionesFinalesReglas: (values.evaluacionesFinalesReglas ?? []).map((r) => ({
-      id: r.id,
-      tipoEvaluacionCodigo: r.tipoEvaluacionCodigo,
-      tipoEvaluacionNombre: r.tipoEvaluacionNombre,
-      ponderacion: r.ponderacion,
-      alcance: r.alcance,
-      carreraId: r.carreraId ?? null,
-      carreraNombre: r.carreraNombre ?? null,
-      periodoId: r.periodoId ?? null,
-      periodoNombre: r.periodoNombre ?? null,
-    })),
-    politicaAsistenciaDefault: {
-      politica: values.politicaAsistenciaDefault.politica,
-      pesoAsistencia:
-        values.politicaAsistenciaDefault.politica === 'COMPUTA_NOTA'
-          ? values.politicaAsistenciaDefault.pesoAsistencia
-          : null,
-      minimoAsistencia:
-        values.politicaAsistenciaDefault.politica === 'CAUSA_REPROBACION'
-          ? values.politicaAsistenciaDefault.minimoAsistencia
-          : null,
-      notaReprobada:
-        values.politicaAsistenciaDefault.politica === 'CAUSA_REPROBACION'
-          ? values.politicaAsistenciaDefault.notaReprobada
-          : null,
-    },
-  }), []);
+  const construirPayload = useCallback((values) => {
+    const pad = values.politicaAsistenciaDefault ?? { politica: 'NO_AFECTA' };
+    const codigoAsistencia = pad.politica ?? 'NO_AFECTA';
+    return {
+      cuotaTeorico: values.cuotaTeorico,
+      cuotaPractico: values.cuotaPractico,
+      pesosBimestres: values.pesosBimestres,
+      notaMinimaAprobacion: values.notaMinimaAprobacion,
+      evaluacionesFinalesReglas: (values.evaluacionesFinalesReglas ?? []).map((r) => ({
+        id: r.id,
+        tipoEvaluacionCodigo: r.tipoEvaluacionCodigo,
+        tipoEvaluacionNombre: r.tipoEvaluacionNombre,
+        ponderacion: r.ponderacion,
+        alcance: r.alcance,
+        carreraId: r.carreraId ?? null,
+        carreraNombre: r.carreraNombre ?? null,
+        periodoId: r.periodoId ?? null,
+        periodoNombre: r.periodoNombre ?? null,
+      })),
+      politicaAsistenciaDefault: {
+        politica: codigoAsistencia,
+        pesoAsistencia: codigoAsistencia === 'COMPUTA_NOTA' ? pad.pesoAsistencia : null,
+        minimoAsistencia:
+          codigoAsistencia === 'CAUSA_REPROBACION' ? pad.minimoAsistencia : null,
+        notaReprobada: codigoAsistencia === 'CAUSA_REPROBACION' ? pad.notaReprobada : null,
+      },
+    };
+  }, []);
 
   const handleGuardar = async () => {
     try {
       const values = await form.validateFields();
       if (Math.abs(sumaCuota - 100) > 0.01) {
-        notification.warning({
-          message: 'La ponderación teórico + práctico debe sumar 100%',
-        });
+        message.warning('La ponderación teórico + práctico debe sumar 100%');
         return;
       }
       if (Math.abs(sumaBimestres - 100) > 0.01) {
-        notification.warning({
-          message: 'La ponderación de los 4 bimestres debe sumar 100%',
-        });
+        message.warning('La ponderación de los 4 bimestres debe sumar 100%');
         return;
       }
       setErrorGuardado(null);
       await guardar(construirPayload(values));
-      setCopiadaDesdeAnterior(false);
       notification.success({
-        message: 'Configuración guardada',
+        title: 'Configuración guardada',
         description: 'Los cursos sin override heredarán estos valores.',
       });
     } catch (err) {
@@ -208,15 +199,30 @@ const PoliticaInstitucionalPage = () => {
     navigate(CALIFICACIONES_PATH);
   }, [navigate]);
 
-  const handleUsarGestionAnterior = useCallback(() => {
-    if (!politicaGestionAnterior) return;
-    aplicarPoliticaAlFormulario(politicaGestionAnterior);
-    setCopiadaDesdeAnterior(true);
-    notification.info({
-      message: 'Valores aplicados',
-      description: `Se copió la configuración de ${politicaGestionAnterior.gestionNombre}. Revisá el formulario y guardá para la gestión vigente.`,
-    });
-  }, [aplicarPoliticaAlFormulario, politicaGestionAnterior]);
+  const handleUsarGestionAnterior = useCallback(async () => {
+    if (!politicaGestionAnterior || isSaving) return;
+    try {
+      setErrorGuardado(null);
+      const guardada = await guardar(construirPayload(politicaGestionAnterior));
+      if (guardada) {
+        aplicarPoliticaAlFormulario(guardada);
+      }
+      notification.success({
+        title: 'Configuración copiada y guardada',
+        description: `Se aplicó la configuración de ${politicaGestionAnterior.gestionNombre} a ${gestionVigente ?? politica?.gestionNombre}.`,
+      });
+    } catch (err) {
+      setErrorGuardado(err?.message || 'No se pudo copiar la configuración. Reintentar.');
+    }
+  }, [
+    politicaGestionAnterior,
+    isSaving,
+    guardar,
+    construirPayload,
+    aplicarPoliticaAlFormulario,
+    gestionVigente,
+    politica?.gestionNombre,
+  ]);
 
   return (
     <PageTemplate
@@ -261,13 +267,6 @@ const PoliticaInstitucionalPage = () => {
                 ) : resumenVigente ? (
                   <PoliticaConfiguracionResumenCard variant="vigente" {...resumenVigente} />
                 ) : null}
-
-                <Alert
-                  type="info"
-                  showIcon
-                  title="Nivel 1 — Política institucional"
-                  description="Define los defaults de toda la gestión. Los docentes pueden hacer override por curso en Ajustes del curso."
-                />
 
                 <Form form={form} layout="vertical" className="cal-politica__form">
                   <Card

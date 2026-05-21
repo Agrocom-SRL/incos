@@ -16,6 +16,15 @@ export class IConfiguracionEvaluacionRepository extends IRepository {
   }
 
   /**
+   * Última fila de política de una gestión (aunque vigente=FALSE), para referencia histórica.
+   * @param {number} gestionId
+   * @returns {Promise<Object|null>}
+   */
+  async findPoliticaRowByGestionId(gestionId) {
+    throw new Error('Method findPoliticaRowByGestionId must be implemented');
+  }
+
+  /**
    * @param {number} gestionId
    * @param {Object} documento
    * @param {number|null} userId

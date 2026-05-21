@@ -7,8 +7,10 @@ import { Form, Modal, Select, Radio, Typography } from 'antd';
 import PoliticaPorcentajeSlider from './PoliticaPorcentajeSlider.jsx';
 import {
   ALCANCE_EVALUACION_FINAL,
-  ALCANCE_EVALUACION_FINAL_OPCIONES,
+  ALCANCE_EVALUACION_FINAL_OPCIONES_MODAL,
+  dedupePeriodosPlan,
   nuevaReglaEvaluacionFinal,
+  periodoIdParaSelector,
 } from '@application-academico/calificaciones/utils/evaluacionesFinalesReglas.js';
 
 const { Paragraph } = Typography;
@@ -24,16 +26,25 @@ const PoliticaEvaluacionFinalModal = ({
 }) => {
   const [form] = Form.useForm();
   const alcance = Form.useWatch('alcance', form);
+  const periodosAnioPlan = dedupePeriodosPlan(periodos);
 
   useEffect(() => {
     if (!open) return;
     if (reglaEditar) {
+      let alcanceGuardado = reglaEditar.alcance ?? ALCANCE_EVALUACION_FINAL.GESTION;
+      if (alcanceGuardado === ALCANCE_EVALUACION_FINAL.CARRERA_PERIODO) {
+        alcanceGuardado = reglaEditar.carreraId
+          ? ALCANCE_EVALUACION_FINAL.CARRERA
+          : reglaEditar.periodoId
+            ? ALCANCE_EVALUACION_FINAL.PERIODO
+            : ALCANCE_EVALUACION_FINAL.GESTION;
+      }
       form.setFieldsValue({
         tipoEvaluacionCodigo: reglaEditar.tipoEvaluacionCodigo,
         ponderacion: reglaEditar.ponderacion ?? 10,
-        alcance: reglaEditar.alcance ?? ALCANCE_EVALUACION_FINAL.GESTION,
+        alcance: alcanceGuardado,
         carreraId: reglaEditar.carreraId ?? undefined,
-        periodoId: reglaEditar.periodoId ?? undefined,
+        periodoId: periodoIdParaSelector(reglaEditar.periodoId, periodos),
       });
       return;
     }
@@ -48,7 +59,7 @@ const PoliticaEvaluacionFinalModal = ({
     const values = await form.validateFields();
     const tipo = tiposEvaluacion.find((t) => t.codigo === values.tipoEvaluacionCodigo);
     const carrera = carreras.find((c) => c.id === values.carreraId);
-    const periodo = periodos.find((p) => p.id === values.periodoId);
+    const periodo = periodosAnioPlan.find((p) => p.id === values.periodoId);
 
     const base = reglaEditar
       ? { ...reglaEditar }
@@ -100,7 +111,7 @@ const PoliticaEvaluacionFinalModal = ({
     >
       <Paragraph type="secondary" style={{ marginBottom: 16 }}>
         Definí el tipo de evaluación, su ponderación sobre la nota final de la materia y el
-        alcance (toda la gestión, una carrera, un periodo o ambos).
+        alcance (toda la gestión, una carrera o un año del plan). El detalle por curso lo define el docente.
       </Paragraph>
 
       <Form form={form} layout="vertical">
@@ -135,10 +146,9 @@ const PoliticaEvaluacionFinalModal = ({
           rules={[{ required: true, message: 'Seleccioná el alcance' }]}
         >
           <Radio.Group className="cal-politica-final-modal__alcance">
-            {ALCANCE_EVALUACION_FINAL_OPCIONES.map((o) => (
+            {ALCANCE_EVALUACION_FINAL_OPCIONES_MODAL.map((o) => (
               <Radio key={o.value} value={o.value} className="cal-politica-final-modal__alcance-item">
-                <span className="cal-politica-final-modal__alcance-label">{o.label}</span>
-                <span className="cal-politica-final-modal__alcance-desc">{o.descripcion}</span>
+                {o.label}
               </Radio>
             ))}
           </Radio.Group>
@@ -170,7 +180,7 @@ const PoliticaEvaluacionFinalModal = ({
           >
             <Select
               placeholder="Ej. Primer año, Segundo año"
-              options={periodos.map((p) => ({
+              options={periodosAnioPlan.map((p) => ({
                 value: p.id,
                 label: p.nombre,
               }))}

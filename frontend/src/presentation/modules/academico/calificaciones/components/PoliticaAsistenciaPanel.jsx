@@ -22,9 +22,39 @@ const COLORES = {
   CAUSA_REPROBACION: { color: '#cf1322', bg: '#fff1f0' },
 };
 
+const PESO_ASISTENCIA_SUGERIDO = 10;
+
 const PoliticaAsistenciaPanel = ({ form, disabled = false }) => {
   const pad = Form.useWatch('politicaAsistenciaDefault', form) ?? {};
   const politica = pad.politica;
+
+  const handlePoliticaChange = (e) => {
+    const next = e.target.value;
+    const actual = form.getFieldValue('politicaAsistenciaDefault') ?? {};
+    const patch = { ...actual, politica: next };
+
+    if (next === 'COMPUTA_NOTA') {
+      if (patch.pesoAsistencia == null || patch.pesoAsistencia === '') {
+        patch.pesoAsistencia = PESO_ASISTENCIA_SUGERIDO;
+      }
+      patch.minimoAsistencia = null;
+      patch.notaReprobada = null;
+    } else if (next === 'CAUSA_REPROBACION') {
+      patch.pesoAsistencia = null;
+      if (patch.minimoAsistencia == null || patch.minimoAsistencia === '') {
+        patch.minimoAsistencia = 75;
+      }
+      if (patch.notaReprobada == null || patch.notaReprobada === '') {
+        patch.notaReprobada = 51;
+      }
+    } else {
+      patch.pesoAsistencia = null;
+      patch.minimoAsistencia = null;
+      patch.notaReprobada = null;
+    }
+
+    form.setFieldsValue({ politicaAsistenciaDefault: patch });
+  };
 
   return (
     <Card
@@ -44,7 +74,7 @@ const PoliticaAsistenciaPanel = ({ form, disabled = false }) => {
         rules={[{ required: true, message: 'Seleccioná una política' }]}
         className="cal-politica-asistencia-radio"
       >
-        <Radio.Group disabled={disabled} style={{ width: '100%' }}>
+        <Radio.Group disabled={disabled} style={{ width: '100%' }} onChange={handlePoliticaChange}>
           <div className="cal-politica-asistencia-grid">
             {POLITICAS_ASISTENCIA.map((p) => {
               const Icon = ICONOS[p.value] ?? TeamOutlined;

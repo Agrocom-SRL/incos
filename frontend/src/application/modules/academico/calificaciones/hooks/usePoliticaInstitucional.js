@@ -60,9 +60,8 @@ export const usePoliticaInstitucional = () => {
         const data = result.data ?? {};
         if (data.politica) {
           setPolitica(data.politica);
-        } else {
-          await cargar();
         }
+        await cargar();
         return data.politica;
       } catch (err) {
         setError(err?.message || 'Error al guardar');

@@ -100,6 +100,42 @@ export class EvaluationConfigurationRepository extends BaseRepository {
     }
 
     /**
+     * Última política guardada de una gestión (incluye filas con vigente=FALSE).
+     * @param {number} gestionId
+     * @returns {Promise<Object|null>}
+     */
+    async findPoliticaRowByGestionId(gestionId) {
+        const rows = await sequelize.query(
+            `
+      SELECT
+        ce.id,
+        ce.gestion_id,
+        ce.clave,
+        ce.valor,
+        ce.tipo,
+        ce.vigente,
+        ce.descripcion,
+        ce.updated_at,
+        ce.updated_by,
+        u.username AS updated_by_username
+      FROM configuracion_evaluacion ce
+      LEFT JOIN usuarios u ON u.id = ce.updated_by AND u.deleted_at IS NULL
+      WHERE ce.gestion_id = ?
+        AND ce.clave = ?
+        AND ce.activo = TRUE
+        AND ce.deleted_at IS NULL
+      ORDER BY ce.id DESC
+      LIMIT 1
+      `,
+            {
+                replacements: [gestionId, CLAVE_POLITICA_INSTITUCIONAL],
+                type: sequelize.QueryTypes.SELECT,
+            }
+        );
+        return rows[0] ?? null;
+    }
+
+    /**
      * Crea o actualiza la política institucional vigente de una gestión.
      * @param {number} gestionId
      * @param {Object} documento - objeto política (se serializa a JSON)
@@ -107,7 +143,24 @@ export class EvaluationConfigurationRepository extends BaseRepository {
      */
     async upsertPoliticaVigente(gestionId, documento, userId = null) {
         const valor = serializePoliticaValor(documento);
-        const existente = await this.findActiveRowByGestionId(gestionId);
+        const activa = await this.findActiveRowByGestionId(gestionId);
+        const filaGestion =
+            activa ?? (await this.findPoliticaRowByGestionId(gestionId));
+
+        await sequelize.query(
+            `
+      UPDATE configuracion_evaluacion
+      SET vigente = FALSE, updated_at = NOW(), updated_by = ?
+      WHERE clave = ?
+        AND gestion_id != ?
+        AND vigente = TRUE
+        AND deleted_at IS NULL
+      `,
+            {
+                replacements: [userId, CLAVE_POLITICA_INSTITUCIONAL, gestionId],
+                type: sequelize.QueryTypes.UPDATE,
+            }
+        );
 
         await sequelize.query(
             `
@@ -121,20 +174,20 @@ export class EvaluationConfigurationRepository extends BaseRepository {
             }
         );
 
-        if (existente?.id) {
+        if (filaGestion?.id) {
             await this.update(
-                existente.id,
+                filaGestion.id,
                 {
                     value: valor,
                     valueType: 'JSON',
                     isCurrent: true,
                     description:
-                        existente.descripcion ??
+                        filaGestion.descripcion ??
                         'Política institucional de evaluación y notas',
                 },
                 userId
             );
-            return existente.id;
+            return filaGestion.id;
         }
 
         const created = await this.create(

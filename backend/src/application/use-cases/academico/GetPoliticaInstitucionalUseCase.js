@@ -66,7 +66,7 @@ export class GetPoliticaInstitucionalUseCase {
     let politicaGestionAnterior = null;
     const gestionAnt = await this.calificacionRepository.obtenerGestionAnteriorPorAnio(gestion.anio);
     if (gestionAnt?.id) {
-      const rowAnt = await this.evaluationConfigurationRepository.findActiveRowByGestionId(
+      const rowAnt = await this.evaluationConfigurationRepository.findPoliticaRowByGestionId(
         gestionAnt.id,
       );
       if (rowAnt?.id) {

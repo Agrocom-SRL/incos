@@ -11,6 +11,9 @@ import PoliticaEvaluacionFinalModal from './PoliticaEvaluacionFinalModal.jsx';
 
 const { Paragraph, Text } = Typography;
 
+/** Registra el array en Ant Form sin UI (evita warning de Form.Item sin control). */
+const ReglasFinalesFormHolder = ({ value: _value, onChange: _onChange }) => null;
+
 const PoliticaEvaluacionesFinalesReglasSection = ({
   form,
   tiposEvaluacion = [],
@@ -56,6 +59,8 @@ const PoliticaEvaluacionesFinalesReglasSection = ({
     form.setFieldValue('evaluacionesFinalesReglas', actuales);
   };
 
+  const agregarDisabled = disabled || catalogoLoading || tiposEvaluacion.length === 0;
+
   return (
     <Card
       title="Evaluaciones finales habilitadas"
@@ -63,6 +68,17 @@ const PoliticaEvaluacionesFinalesReglasSection = ({
       headerColor="primary"
       variant="outlined"
       shadow={false}
+      extra={
+        <button
+          type="button"
+          className="sd-btn sd-btn--warn"
+          onClick={abrirAgregar}
+          disabled={agregarDisabled}
+          aria-busy={catalogoLoading}
+        >
+          <PlusOutlined /> Agregar evaluación final
+        </button>
+      }
     >
       <Paragraph type="secondary" className="cal-politica-panel-card__desc">
         Configurá qué tipos de evaluación final aplican en esta gestión y con qué ponderación
@@ -70,7 +86,9 @@ const PoliticaEvaluacionesFinalesReglasSection = ({
         (ej. 1º año examen, 2º feria anual, 3º proyecto final).
       </Paragraph>
 
-      <Form.Item name="evaluacionesFinalesReglas" hidden initialValue={[]} />
+      <Form.Item name="evaluacionesFinalesReglas" initialValue={[]} hidden>
+        <ReglasFinalesFormHolder />
+      </Form.Item>
 
       {reglas.length === 0 ? (
         <Empty
@@ -110,18 +128,6 @@ const PoliticaEvaluacionesFinalesReglasSection = ({
           ))}
         </div>
       )}
-
-      <Button
-        type="dashed"
-        icon={<PlusOutlined />}
-        onClick={abrirAgregar}
-        disabled={disabled || catalogoLoading || tiposEvaluacion.length === 0}
-        loading={catalogoLoading}
-        block
-        className="cal-politica-finales-reglas__agregar"
-      >
-        Agregar evaluación final
-      </Button>
 
       <PoliticaEvaluacionFinalModal
         open={modalOpen}
