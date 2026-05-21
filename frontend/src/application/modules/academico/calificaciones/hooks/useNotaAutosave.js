@@ -1,9 +1,9 @@
 /**
  * Auto-guardado de una celda de nota (debounce + optimistic UI).
+ * Persistencia pendiente de endpoint de cuaderno en backend.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { calificacionesPendingApi as calificacionesFakeApi } from '../api/calificacionesPendingApi.js';
 
 const DEBOUNCE_MS = 1500;
 const GUARDADO_IDLE_MS = 2000;
@@ -59,37 +59,10 @@ export const useNotaAutosave = ({
     [],
   );
 
-  const persist = useCallback(
-    async (valueToSave) => {
-      const reqId = ++requestIdRef.current;
-      setEstado('guardando');
-
-      try {
-        await calificacionesFakeApi.actualizarNota({
-          cursoId,
-          estudianteId,
-          evaluacionId,
-          valor: valueToSave,
-        });
-
-        if (reqId !== requestIdRef.current) return;
-
-        lastSavedRef.current = valueToSave;
-        setEstado('guardado');
-
-        if (guardadoIdleRef.current) clearTimeout(guardadoIdleRef.current);
-        guardadoIdleRef.current = setTimeout(() => {
-          if (reqId === requestIdRef.current) {
-            setEstado('idle');
-          }
-        }, GUARDADO_IDLE_MS);
-      } catch {
-        if (reqId !== requestIdRef.current) return;
-        setEstado('error');
-      }
-    },
-    [cursoId, estudianteId, evaluacionId],
-  );
+  const persist = useCallback(async () => {
+    const reqId = ++requestIdRef.current;
+    setEstado('error');
+  }, []);
 
   const scheduleSave = useCallback(
     (value) => {

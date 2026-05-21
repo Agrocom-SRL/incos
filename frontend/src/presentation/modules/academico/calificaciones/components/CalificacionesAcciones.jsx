@@ -2,8 +2,7 @@
  * Barra de acciones contextuales (sin subnav global).
  */
 
-import { Button } from 'antd';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeftOutlined,
   DashboardOutlined,
@@ -17,15 +16,20 @@ const CalificacionesAcciones = ({ children, className = '' }) => (
   <div className={['cal-acciones', className].filter(Boolean).join(' ')}>{children}</div>
 );
 
-export const AccionVolverCoordinacion = ({ to }) => (
-  <PermisoGuard codigo={CALIFICACIONES_PERMISOS.coordinacion} accion="LISTAR">
-    <Link to={to}>
-      <Button type="text" icon={<ArrowLeftOutlined />}>
+export const AccionVolverCoordinacion = ({ to }) => {
+  const navigate = useNavigate();
+  return (
+    <PermisoGuard codigo={CALIFICACIONES_PERMISOS.coordinacion} accion="LISTAR">
+      <ActionButton
+        variant="outline"
+        icon={<ArrowLeftOutlined />}
+        onClick={() => navigate(to)}
+      >
         Volver a coordinación
-      </Button>
-    </Link>
-  </PermisoGuard>
-);
+      </ActionButton>
+    </PermisoGuard>
+  );
+};
 
 /** @deprecated Usar AccionVolverCoordinacion */
 export const AccionVolverDocentes = AccionVolverCoordinacion;
@@ -46,12 +50,19 @@ export const AccionConfiguracionNotas = ({ onClick }) => (
 /** @deprecated Usar AccionConfiguracionNotas */
 export const AccionPoliticaInstitucional = AccionConfiguracionNotas;
 
-export const AccionTableroGestion = ({ to }) => (
-  <PermisoGuard codigo={CALIFICACIONES_PERMISOS.tablero} accion="LISTAR">
-    <Link to={to}>
-      <Button icon={<DashboardOutlined />}>Tablero de gestión</Button>
-    </Link>
-  </PermisoGuard>
-);
+export const AccionTableroGestion = ({ to }) => {
+  const navigate = useNavigate();
+  return (
+    <PermisoGuard codigo={CALIFICACIONES_PERMISOS.tablero} accion="LISTAR">
+      <ActionButton
+        variant="outline"
+        icon={<DashboardOutlined />}
+        onClick={() => navigate(to)}
+      >
+        Tablero de gestión
+      </ActionButton>
+    </PermisoGuard>
+  );
+};
 
 export default CalificacionesAcciones;

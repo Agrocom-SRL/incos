@@ -1,39 +1,129 @@
 /**
- * Card de curso en la pantalla Mis cursos.
+ * Card de curso en Mis cursos — datos académicos y progreso por bimestre (calendario).
  */
 
-import { Tag, Button } from 'antd';
-import { BookOutlined } from '@ant-design/icons';
+import { Card, Tag, Button, Progress, Tooltip, Typography } from 'antd';
+import {
+  BookOutlined,
+  TeamOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
 
-const BADGE_COLOR = {
-  'sin-evaluaciones': 'warning',
-  'en-curso': 'processing',
-  cerrado: 'success',
+const ESTADO_BIMESTRE_COLOR = {
+  abierto: 'processing',
+  cerrado: 'default',
+  futuro: 'default',
 };
 
-const CursoCard = ({ curso, cuadernoPath }) => {
+const CursoCardBimestre = ({ bimestre, esVigente }) => {
+  const { numero, estado, progreso, aprobados, reprobados } = bimestre;
+
+  return (
+    <div
+      className={[
+        'cal-curso-card__bimestre',
+        esVigente ? 'cal-curso-card__bimestre--vigente' : '',
+        estado?.tipo === 'futuro' ? 'cal-curso-card__bimestre--futuro' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <div className="cal-curso-card__bimestre-head">
+        <span className="cal-curso-card__bimestre-num">B{numero}</span>
+        <Tag
+          color={ESTADO_BIMESTRE_COLOR[estado?.tipo] ?? 'default'}
+          className="cal-curso-card__bimestre-estado"
+        >
+          {estado?.etiqueta ?? '—'}
+        </Tag>
+      </div>
+      <Tooltip title={`${progreso}% de estudiantes con nota registrada`}>
+        <Progress
+          percent={progreso}
+          size="small"
+          showInfo={false}
+          strokeColor={esVigente ? 'var(--color-primary, #196b45)' : undefined}
+        />
+      </Tooltip>
+      <div className="cal-curso-card__bimestre-stats">
+        <span title="Aprobados">
+          <CheckCircleOutlined className="cal-curso-card__stat-icon--ok" />
+          {aprobados}
+        </span>
+        <span title="Reprobados">
+          <CloseCircleOutlined className="cal-curso-card__stat-icon--no" />
+          {reprobados}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const CursoCard = ({ curso, cuadernoPath, bimestreVigente = null }) => {
   const navigate = useNavigate();
 
   return (
-    <article className="cal-curso-card">
+    <Card className="cal-curso-card" {...calificacionesSectionCardProps}>
       <div className="cal-curso-card__head">
         <BookOutlined className="cal-curso-card__icon" aria-hidden />
         <div className="cal-curso-card__titles">
-          <h3 className="cal-curso-card__materia">{curso.materia}</h3>
-          <Tag color={BADGE_COLOR[curso.badge?.tipo] ?? 'default'} className="cal-curso-card__badge">
-            {curso.badge?.texto ?? 'En curso'}
-          </Tag>
+          <Typography.Paragraph
+            className="cal-curso-card__materia"
+            ellipsis={{ rows: 2, tooltip: curso.materia }}
+          >
+            {curso.materia}
+          </Typography.Paragraph>
+          {curso.carrera ? (
+            <span
+              className="cal-curso-card__carrera-pill"
+              style={{
+                borderColor: curso.carreraColor,
+                color: curso.carreraColor,
+              }}
+            >
+              {curso.carrera}
+            </span>
+          ) : null}
         </div>
       </div>
 
-      <p className="cal-curso-card__meta">
-        Paralelo {curso.paralelo} · {curso.turno} · {curso.horasSemana} h/semana
-      </p>
-      <p className="cal-curso-card__meta">{curso.estudiantes} estudiantes</p>
+      <dl className="cal-curso-card__meta-grid">
+        <div className="cal-curso-card__meta-item">
+          <dt>Paralelo</dt>
+          <dd>{curso.paralelo || '—'}</dd>
+        </div>
+        <div className="cal-curso-card__meta-item">
+          <dt>Turno</dt>
+          <dd>{curso.turno || '—'}</dd>
+        </div>
+        <div className="cal-curso-card__meta-item">
+          <dt>Periodo</dt>
+          <dd>{curso.periodo || '—'}</dd>
+        </div>
+        <div className="cal-curso-card__meta-item">
+          <dt>
+            <TeamOutlined /> Estudiantes
+          </dt>
+          <dd>{curso.estudiantes ?? 0}</dd>
+        </div>
+      </dl>
 
-      {curso.notasPendientes != null ? (
-        <p className="cal-curso-card__pendientes">{curso.notasPendientes} notas pendientes</p>
+      {curso.bimestres?.length ? (
+        <div className="cal-curso-card__bimestres">
+          <p className="cal-curso-card__bimestres-title">Progreso por bimestre</p>
+          <div className="cal-curso-card__bimestres-grid">
+            {curso.bimestres.map((b) => (
+              <CursoCardBimestre
+                key={b.numero}
+                bimestre={b}
+                esVigente={Number(b.numero) === Number(bimestreVigente)}
+              />
+            ))}
+          </div>
+        </div>
       ) : null}
 
       <Button
@@ -44,7 +134,7 @@ const CursoCard = ({ curso, cuadernoPath }) => {
       >
         Abrir cuaderno
       </Button>
-    </article>
+    </Card>
   );
 };
 

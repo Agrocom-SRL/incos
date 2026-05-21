@@ -1,71 +1,36 @@
 /**
- * Tablero de coordinación — carga, iniciar gestión y cerrar bimestre.
+ * Tablero de coordinación — pendiente de endpoint backend (sin fake-api).
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { calificacionesPendingApi as calificacionesFakeApi } from '../api/calificacionesPendingApi.js';
+
+const MENSAJE =
+  'El tablero de gestión se conectará al backend en la siguiente fase (Fase 2-bis).';
 
 export const useTableroGestion = () => {
   const [tablero, setTablero] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAccionando, setIsAccionando] = useState(false);
-  const [error, setError] = useState(null);
-
-  const cargar = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await calificacionesFakeApi.obtenerTablero();
-      setTablero(data);
-    } catch (err) {
-      setError(err);
-      setTablero(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const [error, setError] = useState(MENSAJE);
 
   useEffect(() => {
-    cargar();
-  }, [cargar]);
+    setIsLoading(false);
+    setTablero(null);
+    setError(MENSAJE);
+  }, []);
 
   const iniciarGestion = useCallback(async () => {
-    setIsAccionando(true);
-    setError(null);
-    try {
-      const res = await calificacionesFakeApi.iniciarBimestre1();
-      setTablero(res.tablero);
-      return res;
-    } catch (err) {
-      setError(err);
-      throw err;
-    } finally {
-      setIsAccionando(false);
-    }
+    throw new Error(MENSAJE);
   }, []);
 
-  const validarCierre = useCallback(async (numero) => {
-    return calificacionesFakeApi.validarCierreBimestre({ numero });
+  const validarCierre = useCallback(async () => {
+    throw new Error(MENSAJE);
   }, []);
 
-  const cerrarBimestre = useCallback(
-    async (numero) => {
-      setIsAccionando(true);
-      setError(null);
-      try {
-        const res = await calificacionesFakeApi.cerrarBimestre({ numero });
-        setTablero(res.tablero);
-        return res;
-      } catch (err) {
-        setError(err);
-        throw err;
-      } finally {
-        setIsAccionando(false);
-      }
-    },
-    [],
-  );
+  const cerrarBimestre = useCallback(async () => {
+    throw new Error(MENSAJE);
+  }, []);
 
   const breadcrumbItems = createBreadcrumbItems('ACA-CAL-TABLERO', 'ACA-CAL', null);
 
@@ -74,7 +39,7 @@ export const useTableroGestion = () => {
     isLoading,
     isAccionando,
     error,
-    refetch: cargar,
+    refetch: () => setError(MENSAJE),
     iniciarGestion,
     validarCierre,
     cerrarBimestre,

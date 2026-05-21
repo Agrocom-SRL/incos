@@ -4,10 +4,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '@application-auth';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
 import { docenteCuadernoPath } from '../utils/calificacionesPaths.js';
+
+const formatGestionLabel = (nombre) => {
+  if (!nombre) return '';
+  const s = String(nombre).trim();
+  if (/^gesti[oó]n/i.test(s)) return s;
+  return `Gestión ${s}`;
+};
 
 const getResumenCursos = (cursos) => {
   const paralelos = new Set(cursos.map((c) => c.paralelo));
@@ -19,7 +25,6 @@ const getResumenCursos = (cursos) => {
 
 export const useMisCursosCalificaciones = () => {
   const { docenteId: docenteIdParam } = useParams();
-  const { usuario } = useAuth();
   const esVistaCoordinacion = Boolean(docenteIdParam);
 
   const [cursos, setCursos] = useState(null);
@@ -59,20 +64,6 @@ export const useMisCursosCalificaciones = () => {
     cargar();
   }, [cargar]);
 
-  const impersonacion = useMemo(() => {
-    if (!esVistaCoordinacion || !docente) return null;
-    const adminNombre =
-      usuario?.username ||
-      [usuario?.nombres, usuario?.apellidos].filter(Boolean).join(' ').trim() ||
-      'Coordinación';
-    return {
-      activa: true,
-      docenteId: docente.id,
-      docenteNombre: docente.nombre,
-      adminNombre,
-    };
-  }, [esVistaCoordinacion, docente, usuario]);
-
   const breadcrumbItems = useMemo(() => {
     if (esVistaCoordinacion && docente) {
       return createBreadcrumbItems('ACA-CAL-DOCENTE-CURSOS', 'ACA-CAL', 'Mis cursos');
@@ -91,11 +82,20 @@ export const useMisCursosCalificaciones = () => {
       ? `Buen día, ${docente.nombre}`
       : 'Mis cursos';
 
+  const gestionLabel = formatGestionLabel(docente?.gestionVigente);
+  const bimestreLabel =
+    docente?.periodoLectivoEnCurso ?? docente?.bimestreNombre ?? null;
+
   const subtitulo = docente
     ? esVistaCoordinacion
-      ? `${docente.nombre} · Gestión ${docente.gestionVigente} · Bimestre ${docente.bimestreVigente}`
-      : `Gestión ${docente.gestionVigente} · Bimestre ${docente.bimestreVigente} vigente`
+      ? `Cursos de ${docente.nombre}${gestionLabel ? ` · ${gestionLabel}` : ''}`
+      : gestionLabel || ''
     : '';
+
+  const periodoLectivoLabel =
+    bimestreLabel && gestionLabel
+      ? `${bimestreLabel} (${gestionLabel})`
+      : bimestreLabel || gestionLabel || '';
 
   const contextoLinea = cursos
     ? esVistaCoordinacion
@@ -111,12 +111,12 @@ export const useMisCursosCalificaciones = () => {
     contextoLinea,
     cursos,
     docente,
-    impersonacion,
     esVistaCoordinacion,
     isLoading,
     error,
     refetch: cargar,
     breadcrumbItems,
+    periodoLectivoLabel,
     cuadernoPath: (cursoId) =>
       docenteId ? docenteCuadernoPath(docenteId, cursoId) : '#',
   };

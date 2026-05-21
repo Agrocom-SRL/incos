@@ -26,6 +26,9 @@ export function registerCalificacionesResource(container) {
       new ListCursosCalificacionesUseCase({
         calificacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );

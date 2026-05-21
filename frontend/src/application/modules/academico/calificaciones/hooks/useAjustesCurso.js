@@ -1,9 +1,11 @@
 /**
- * Ajustes del curso — carga y guardado vía fake API.
+ * Ajustes del curso — pendiente de endpoint backend (sin fake-api).
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { calificacionesPendingApi as calificacionesFakeApi } from '../api/calificacionesPendingApi.js';
+
+const MENSAJE =
+  'Los ajustes del curso se conectarán al backend junto con el cuaderno (Fase 2-bis).';
 
 export const useAjustesCurso = (cursoId, abierto) => {
   const [datos, setDatos] = useState(null);
@@ -11,53 +13,25 @@ export const useAjustesCurso = (cursoId, abierto) => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  const cargar = useCallback(async () => {
-    if (!cursoId) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await calificacionesFakeApi.obtenerAjustesCurso({ cursoId });
-      setDatos(data);
-    } catch (err) {
-      setError(err);
-      setDatos(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [cursoId]);
-
   useEffect(() => {
-    if (abierto && cursoId) cargar();
-  }, [abierto, cursoId, cargar]);
+    if (!abierto || !cursoId) return;
+    setIsLoading(true);
+    setError(MENSAJE);
+    setDatos(null);
+    setIsLoading(false);
+  }, [abierto, cursoId]);
 
-  const guardar = useCallback(
-    async (cambios) => {
-      if (!cursoId) return null;
-      setIsSaving(true);
-      setError(null);
-      try {
-        const data = await calificacionesFakeApi.guardarAjustesCurso({
-          cursoId,
-          cambios,
-        });
-        setDatos(data);
-        return data;
-      } catch (err) {
-        setError(err);
-        throw err;
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [cursoId],
-  );
+  const guardar = useCallback(async () => {
+    setError(MENSAJE);
+    throw new Error(MENSAJE);
+  }, []);
 
   return {
     datos,
     isLoading,
     isSaving,
     error,
-    recargar: cargar,
+    recargar: () => setError(MENSAJE),
     guardar,
   };
 };

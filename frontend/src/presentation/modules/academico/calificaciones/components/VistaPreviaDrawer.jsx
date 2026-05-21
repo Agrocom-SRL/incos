@@ -18,7 +18,7 @@ const VistaPreviaDrawer = ({
   evaluaciones = [],
   onCerrar,
 }) => {
-  const { filas, validacionPesos, cuota, resumen, isLoading, error } =
+  const { filas, validacionPesos, cuota, resumen, isLoading, error, notaMinimaAprobacion } =
     useVistaPreviaNotas({
       cursoId,
       abierto,
@@ -83,7 +83,7 @@ const VistaPreviaDrawer = ({
           );
         }
         const clase =
-          valor != null && valor < 51
+          valor != null && valor < notaMinimaAprobacion
             ? 'cal-preview__celda cal-preview__celda--reprobado'
             : 'cal-preview__celda cal-preview__celda--bimestre';
         return <span className={clase}>{formatearNota(valor)}</span>;

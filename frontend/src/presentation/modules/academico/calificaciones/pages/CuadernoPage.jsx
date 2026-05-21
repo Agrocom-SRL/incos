@@ -3,7 +3,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { Alert, Button } from 'antd';
+import { Alert, Button, Card, Spin } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useCuadernoCurso } from '@application-academico/calificaciones/hooks/useCuadernoCurso.js';
@@ -16,7 +16,8 @@ import CuadernoSkeleton from '../components/CuadernoSkeleton.jsx';
 import EvaluacionDrawer from '../components/EvaluacionDrawer.jsx';
 import AjustesCursoDrawer from '../components/AjustesCursoDrawer.jsx';
 import VistaPreviaDrawer from '../components/VistaPreviaDrawer.jsx';
-import ImpersonacionBanner from '../components/ImpersonacionBanner.jsx';
+import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
+import '@presentation/styles/pages/detail-page.css';
 import '../styles/calificaciones.css';
 
 const CuadernoPage = () => {
@@ -38,7 +39,6 @@ const CuadernoPage = () => {
     crearEvaluacion,
     editarEvaluacion,
     eliminarEvaluacion,
-    impersonacion,
   } = useCuadernoCurso();
 
   const [ajustesAbierto, setAjustesAbierto] = useState(false);
@@ -86,10 +86,7 @@ const CuadernoPage = () => {
   );
 
   const header = (
-    <PageHeader
-      breadcrumbItems={breadcrumbItems}
-      className="cal-cuaderno-page-header"
-    />
+    <PageHeader breadcrumbItems={breadcrumbItems} className="cal-cuaderno-page-header" />
   );
 
   if (isLoading && !curso) {
@@ -119,69 +116,75 @@ const CuadernoPage = () => {
 
   return (
     <PageTemplate header={header} sidebar={null}>
-      <CuadernoAutosaveProvider>
-        <div className="cal-cuaderno sd">
-          <ImpersonacionBanner impersonacion={impersonacion} />
+      <Spin spinning={isLoading}>
+        <CuadernoAutosaveProvider>
+          <div className="cal-cuaderno sd">
+            {error && curso ? (
+              <Alert type="info" showIcon message={error} style={{ marginBottom: 16 }} />
+            ) : null}
 
-          <CuadernoHeader
-            materia={curso.materia}
-            subtitulo={subtituloCurso}
-            onAjustes={() => setAjustesAbierto(true)}
-            onVistaPrevia={() => setVistaPreviaAbierta(true)}
-          />
+            <CuadernoHeader
+              materia={curso?.materia}
+              subtitulo={subtituloCurso}
+              onAjustes={() => setAjustesAbierto(true)}
+              onVistaPrevia={() => setVistaPreviaAbierta(true)}
+            />
 
-          <BimestreTabs
-            bimestres={bimestres}
-            bimestreActivo={bimestreActivo}
-            onChange={setBimestreActivo}
-          />
+            <BimestreTabs
+              bimestres={bimestres}
+              bimestreActivo={bimestreActivo}
+              onChange={setBimestreActivo}
+            />
 
-          <div className="cal-cuaderno-hoja">
-            <NotasGrid
+            <Card className="cal-cuaderno-hoja-card" {...calificacionesSectionCardProps}>
+              <div className="cal-cuaderno-hoja">
+                <NotasGrid
+                  cursoId={cursoId}
+                  estudiantes={estudiantes}
+                  evaluaciones={evaluaciones}
+                  soloLectura={!modoEdicion}
+                  isRefetching={isRefetching}
+                  onAgregarEvaluacion={modoEdicion ? abrirCrear : undefined}
+                  onEditarEvaluacion={modoEdicion ? abrirEditar : undefined}
+                  enteringColumnIds={enteringColumnIds}
+                  removingColumnId={removingColumnId}
+                />
+                <CuadernoFooter />
+              </div>
+            </Card>
+
+            <AjustesCursoDrawer
+              abierto={ajustesAbierto}
               cursoId={cursoId}
+              onCerrar={() => setAjustesAbierto(false)}
+            />
+
+            <VistaPreviaDrawer
+              abierto={vistaPreviaAbierta}
+              cursoId={cursoId}
+              bimestre={bimestreActivo}
               estudiantes={estudiantes}
               evaluaciones={evaluaciones}
-              soloLectura={!modoEdicion}
-              isRefetching={isRefetching}
-              onAgregarEvaluacion={modoEdicion ? abrirCrear : undefined}
-              onEditarEvaluacion={modoEdicion ? abrirEditar : undefined}
-              enteringColumnIds={enteringColumnIds}
-              removingColumnId={removingColumnId}
+              onCerrar={() => setVistaPreviaAbierta(false)}
             />
-            <CuadernoFooter />
+
+            <EvaluacionDrawer
+              abierto={drawerAbierto}
+              modo={drawerModo}
+              evaluacion={evaluacionEditar}
+              cursoId={cursoId}
+              bimestre={bimestreActivo}
+              evaluacionesActuales={evaluaciones}
+              estudiantes={estudiantes}
+              onCerrar={cerrarDrawer}
+              onGuardado={handleGuardado}
+              onEliminado={handleEliminado}
+              crearEvaluacion={crearEvaluacion}
+              editarEvaluacion={editarEvaluacion}
+            />
           </div>
-
-          <AjustesCursoDrawer
-            abierto={ajustesAbierto}
-            cursoId={cursoId}
-            onCerrar={() => setAjustesAbierto(false)}
-          />
-
-          <VistaPreviaDrawer
-            abierto={vistaPreviaAbierta}
-            cursoId={cursoId}
-            bimestre={bimestreActivo}
-            estudiantes={estudiantes}
-            evaluaciones={evaluaciones}
-            onCerrar={() => setVistaPreviaAbierta(false)}
-          />
-
-          <EvaluacionDrawer
-            abierto={drawerAbierto}
-            modo={drawerModo}
-            evaluacion={evaluacionEditar}
-            cursoId={cursoId}
-            bimestre={bimestreActivo}
-            evaluacionesActuales={evaluaciones}
-            estudiantes={estudiantes}
-            onCerrar={cerrarDrawer}
-            onGuardado={handleGuardado}
-            onEliminado={handleEliminado}
-            crearEvaluacion={crearEvaluacion}
-            editarEvaluacion={editarEvaluacion}
-          />
-        </div>
-      </CuadernoAutosaveProvider>
+        </CuadernoAutosaveProvider>
+      </Spin>
     </PageTemplate>
   );
 };
