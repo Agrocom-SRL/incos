@@ -256,7 +256,7 @@ const ConsolidadoGrid = ({
       title: 'Nota final',
       dataIndex: 'notaFinal',
       key: 'notaFinal',
-      width: 92,
+      width: 102,
       align: 'center',
       className: 'cal-consolidado-grid__col-final',
       onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-est' }),
@@ -275,7 +275,7 @@ const ConsolidadoGrid = ({
       title: 'Observación',
       dataIndex: 'observacion',
       key: 'observacion',
-      width: 116,
+      width: 126,
       align: 'center',
       onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-est' }),
       render: (obs, row) => {

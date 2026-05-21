@@ -1013,22 +1013,197 @@
 }
 
 /* —— Drawer ajustes del curso —— */
+.cal-ajustes-drawer {
+  --cal-ajustes-drawer-bg: #d8ebe3;
+  --cal-ajustes-drawer-bg-footer: #c8e2d5;
+  --cal-ajustes-drawer-header: #0f6e56;
+  --ant-color-bg-elevated: var(--cal-ajustes-drawer-bg);
+}
+
+.cal-ajustes-drawer .ant-drawer-section {
+  background: var(--cal-ajustes-drawer-bg) !important;
+}
+
+.cal-ajustes-drawer .ant-drawer-header {
+  background: var(--cal-ajustes-drawer-header) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.cal-ajustes-drawer .ant-drawer-header .ant-drawer-title {
+  color: #fff;
+}
+
+.cal-ajustes-drawer .ant-drawer-close {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.cal-ajustes-drawer .ant-drawer-close:hover {
+  color: #fff;
+}
+
+.cal-ajustes-drawer .ant-drawer-body {
+  background: transparent;
+}
+
+.cal-ajustes-drawer .ant-drawer-footer {
+  background: var(--cal-ajustes-drawer-bg-footer) !important;
+  border-top-color: #a8cfb8 !important;
+}
+
+.cal-ajustes-drawer__btn-guardar.ant-btn-primary:not(:disabled) {
+  background: #0f6e56 !important;
+  border-color: #0f6e56 !important;
+  color: #fff !important;
+  box-shadow: none;
+}
+
+.cal-ajustes-drawer__btn-guardar.ant-btn-primary:not(:disabled):hover {
+  background: #134d32 !important;
+  border-color: #134d32 !important;
+  color: #fff !important;
+}
+
+.cal-ajustes-drawer__btn-guardar.ant-btn-primary:disabled {
+  background: #9cb8ad !important;
+  border-color: #9cb8ad !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.cal-ajustes-drawer .cal-politica-asistencia-radio .ant-form-item-control-input {
+  min-height: auto;
+}
+
+.cal-ajustes-drawer .cal-politica-asistencia-grid,
+.cal-ajustes-drawer__politica-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.cal-ajustes-drawer .cal-politica-asistencia-option {
+  width: 100% !important;
+  height: auto !important;
+  padding: 12px 14px !important;
+  border-radius: 10px !important;
+  text-align: left;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.cal-ajustes-drawer .cal-politica-asistencia-option::before {
+  display: none;
+}
+
 .cal-ajustes-drawer__override-alert {
   margin-bottom: 16px;
 }
 
-.cal-ajustes-drawer__section-title {
-  margin: 0 0 6px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--cuaderno-texto-fuerte);
+.cal-ajustes-seccion__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cal-ajustes-seccion__icon {
+  font-size: 16px;
+  color: var(--color-text-secondary, #8c8c8c);
+  flex-shrink: 0;
+}
+
+.cal-ajustes-seccion__titulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary, #8c8c8c);
+  line-height: 1.3;
+}
+
+.cal-ajustes-seccion__body {
+  min-width: 0;
+}
+
+.cal-ajustes-seccion--destacada {
+  animation: cal-ajustes-seccion-pulse 1s ease-out forwards;
+}
+
+@keyframes cal-ajustes-seccion-pulse {
+  0% {
+    box-shadow: 0 0 0 1px rgba(15, 110, 86, 0.55);
+    border-color: rgba(15, 110, 86, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 1px transparent;
+    border-color: inherit;
+  }
+}
+
+.cal-estado-eval-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.cal-estado-eval-chip__icon {
+  font-size: 10px;
+}
+
+.cal-estado-eval-chip--aplica {
+  background: #e8f5ec;
+  color: #0f6e56;
+}
+
+.cal-estado-eval-chip--no-aplica {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.cal-estado-eval-chip--compact {
+  font-size: 10px;
+  padding: 1px 7px;
 }
 
 .cal-ajustes-drawer__section-desc {
-  margin: 0 0 14px;
-  font-size: 13px;
+  margin: 0 0 10px;
+  font-size: 12px;
   color: var(--cuaderno-texto-medio);
-  line-height: 1.45;
+  line-height: 1.4;
+}
+
+.cal-ajustes-drawer__override-zona {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cal-ajustes-drawer__override-card {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 0.5px solid #d1d5db;
+  background: #ffffff;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.cal-ajustes-drawer__override-card .cal-ajustes-seccion__header {
+  margin-bottom: 8px;
+}
+
+.cal-ajustes-drawer__switch-item {
+  margin-bottom: 8px;
+}
+
+.cal-ajustes-drawer__switch.ant-switch {
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .cal-ajustes-drawer__cuota-row {
@@ -1038,30 +1213,55 @@
 }
 
 .cal-ajustes-drawer__final-item {
-  padding: 12px 14px;
-  margin-bottom: 10px;
-  border: 1px solid var(--cuaderno-borde-suave);
-  border-radius: 8px;
-  background: var(--cuaderno-fondo);
+  padding: 8px 0;
+  border-bottom: 0.5px solid #e5e7eb;
+}
+
+.cal-ajustes-drawer__final-item:last-child {
+  border-bottom: none;
 }
 
 .cal-ajustes-drawer__final-item--disabled {
   opacity: 0.55;
 }
 
-.cal-ajustes-drawer__final-head {
+.cal-ajustes-drawer__final-line1 {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
 }
 
-.cal-ajustes-drawer__final-label {
-  font-weight: 500;
+.cal-ajustes-drawer__final-line1-end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cal-ajustes-drawer__final-nombre {
+  font-weight: 600;
+  font-size: 13px;
   color: var(--cuaderno-texto-fuerte);
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.cal-ajustes-drawer__final-meta {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  line-height: 1.35;
+}
+
+.cal-ajustes-drawer__final-peso {
+  margin-bottom: 0 !important;
+}
+
+.cal-ajustes-drawer__final-peso .ant-form-item-label {
+  padding-bottom: 2px;
 }
 
 .cal-ajustes-drawer__info-icon {
@@ -1075,46 +1275,29 @@
   font-size: 12px;
 }
 
-.cal-ajustes-drawer__politica-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.cal-ajustes-drawer__politica-option {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 10px 12px;
-  border: 1px solid var(--cuaderno-borde-suave);
-  border-radius: 8px;
-  margin: 0;
-  width: 100%;
-}
-
-.cal-ajustes-drawer__politica-option.ant-radio-wrapper-checked {
-  border-color: var(--cuaderno-verde-medio);
-  background: var(--cuaderno-verde-tenue);
-}
-
-.cal-ajustes-drawer__politica-label {
-  font-weight: 500;
-  color: var(--cuaderno-texto-fuerte);
-}
-
-.cal-ajustes-drawer__politica-desc {
-  display: block;
-  font-size: 12px;
-  margin-top: 2px;
-  line-height: 1.4;
-}
-
 .cal-ajustes-drawer__footer {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   width: 100%;
+}
+
+.cal-ajustes-drawer__footer-count {
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  flex: 1;
+  min-width: 0;
+}
+
+.cal-ajustes-drawer__footer-count--empty {
+  visibility: hidden;
+}
+
+.cal-ajustes-drawer__footer-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .cal-ajustes-drawer__divider-override {
@@ -1122,56 +1305,83 @@
 }
 
 .cal-ajustes-drawer__override-hint {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .cal-ajustes-inst__intro {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+}
+
+.cal-ajustes-inst__zona {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .cal-ajustes-inst__bloque {
-  margin-bottom: 16px;
+  margin-bottom: 0;
   padding: 12px 14px;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 0.5px solid #e8eaed;
   border-radius: 10px;
-  background: #fafafa;
+  background: #f8f9fa;
 }
 
-.cal-ajustes-inst__bloque-titulo {
-  margin: 0 0 10px;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-700, #374151);
+.cal-ajustes-inst__bloque .cal-ajustes-seccion__header {
+  margin-bottom: 8px;
 }
 
 .cal-ajustes-inst__fila {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 6px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 5px 0;
 }
 
-.cal-ajustes-inst__fila:last-child {
-  border-bottom: none;
+.cal-ajustes-inst__fila + .cal-ajustes-inst__fila {
+  border-top: 0.5px solid #eceef0;
 }
 
 .cal-ajustes-inst__label {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-secondary, #8c8c8c);
   flex-shrink: 0;
+}
+
+.cal-ajustes-inst__valor-wrap {
+  text-align: right;
+  min-width: 0;
 }
 
 .cal-ajustes-inst__valor {
   font-size: 13px;
   font-weight: 500;
-  text-align: right;
+  color: var(--color-text, #262626);
+}
+
+.cal-ajustes-inst__bimestre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.cal-ajustes-inst__bimestre-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #fff;
+  border: 0.5px solid #e5e7eb;
+  color: var(--color-text, #262626);
 }
 
 .cal-ajustes-inst__hint {
-  margin: 0 0 10px !important;
+  margin: 0 0 8px !important;
   font-size: 12px !important;
+  line-height: 1.35 !important;
 }
 
 .cal-ajustes-inst__reglas {
@@ -1181,26 +1391,34 @@
 }
 
 .cal-ajustes-inst__regla {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+  border-bottom: 0.5px solid #e5e7eb;
 }
 
 .cal-ajustes-inst__regla:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 
-.cal-ajustes-inst__regla-head {
+.cal-ajustes-inst__regla-line1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+.cal-ajustes-inst__regla-nombre {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text, #262626);
 }
 
 .cal-ajustes-inst__regla-meta {
+  margin: 0;
   font-size: 12px;
-  display: block;
+  color: var(--cuaderno-texto-medio);
+  line-height: 1.35;
 }
 
 /* —— Registro académico (consolidado) —— */
@@ -1274,13 +1492,13 @@
 }
 
 .cal-consolidado-grid .ant-table-thead > tr > th.cal-consolidado-grid__th-sub {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .cal-consolidado-grid .ant-table-thead > tr > th.cal-consolidado-grid__th-est {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 500;
   background: var(--cuaderno-verde-oscuro) !important;
   color: #fff !important;
 }
@@ -1349,14 +1567,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
 }
 
 .cal-consolidado-grid__bim-titulo {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .cal-consolidado-grid__bim-icon-link {

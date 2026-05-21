@@ -127,7 +127,7 @@ const CursoCard = ({ curso, cursoPath, bimestreVigente = null }) => {
         </div>
       ) : null}
 
-      <Button variant="info" onClick={() => navigate(cursoPath(curso.id))}>
+      <Button variant="success" onClick={() => navigate(cursoPath(curso.id))}>
         Abrir curso
       </Button>
     </Card>

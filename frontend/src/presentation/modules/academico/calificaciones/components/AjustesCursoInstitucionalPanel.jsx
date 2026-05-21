@@ -2,25 +2,33 @@
  * Resumen de la política institucional vigente (referencia antes del override del curso).
  */
 
-import { Alert, Tag, Typography } from 'antd';
+import { Alert, Typography } from 'antd';
+import {
+  CalendarOutlined,
+  CheckSquareOutlined,
+  FlagOutlined,
+  PieChartOutlined,
+} from '@ant-design/icons';
 import {
   describeAlcanceRegla,
   etiquetaAlcanceEvaluacionFinal,
 } from '@application-academico/calificaciones/utils/evaluacionesFinalesReglas.js';
 import { reglaAplicaAlCurso } from '@application-academico/calificaciones/utils/reglaAplicaAlCurso.js';
 import { POLITICAS_ASISTENCIA } from '@application-academico/calificaciones/utils/politicasAsistencia.js';
+import EstadoEvaluacionChip from './ajustes/EstadoEvaluacionChip.jsx';
+import SeccionAjustes from './ajustes/SeccionAjustes.jsx';
 
 const { Text, Paragraph } = Typography;
 
 const etiquetaAsistencia = (codigo) =>
   POLITICAS_ASISTENCIA.find((p) => p.value === codigo)?.label ?? codigo ?? '—';
 
-const Fila = ({ label, value }) => (
+const FilaKV = ({ label, value, children }) => (
   <div className="cal-ajustes-inst__fila">
-    <Text type="secondary" className="cal-ajustes-inst__label">
-      {label}
-    </Text>
-    <Text className="cal-ajustes-inst__valor">{value}</Text>
+    <span className="cal-ajustes-inst__label">{label}</span>
+    <div className="cal-ajustes-inst__valor-wrap">
+      {children ?? <span className="cal-ajustes-inst__valor">{value}</span>}
+    </div>
   </div>
 );
 
@@ -62,61 +70,77 @@ const AjustesCursoInstitucionalPanel = ({ institucional, curso, gestionVigente }
         />
       ) : null}
 
-      <div className="cal-ajustes-inst__bloque">
-        <h4 className="cal-ajustes-inst__bloque-titulo">Ponderación teórico / práctico</h4>
-        <Fila
-          label="Institución"
-          value={`${institucional.cuotaTeorico ?? 30}% teórico · ${institucional.cuotaPractico ?? 70}% práctico`}
-        />
-      </div>
+      <div className="cal-ajustes-inst__zona">
+        <SeccionAjustes
+          icon={PieChartOutlined}
+          titulo="Ponderación teórico / práctico"
+          className="cal-ajustes-inst__bloque"
+        >
+          <FilaKV
+            label="Institución"
+            value={`${institucional.cuotaTeorico ?? 30}% teórico · ${institucional.cuotaPractico ?? 70}% práctico`}
+          />
+        </SeccionAjustes>
 
-      <div className="cal-ajustes-inst__bloque">
-        <h4 className="cal-ajustes-inst__bloque-titulo">Ponderación por bimestre (nota anual)</h4>
-        <Fila
-          label="Distribución"
-          value={pesosBim.map((p, i) => `B${i + 1}: ${p}%`).join(' · ')}
-        />
-      </div>
+        <SeccionAjustes
+          icon={CalendarOutlined}
+          titulo="Ponderación por bimestre (nota anual)"
+          className="cal-ajustes-inst__bloque"
+        >
+          <FilaKV label="Distribución">
+            <div className="cal-ajustes-inst__bimestre-chips">
+              {pesosBim.map((p, i) => (
+                <span key={`b${i + 1}`} className="cal-ajustes-inst__bimestre-chip">
+                  B{i + 1}: {p}%
+                </span>
+              ))}
+            </div>
+          </FilaKV>
+        </SeccionAjustes>
 
-      <div className="cal-ajustes-inst__bloque">
-        <h4 className="cal-ajustes-inst__bloque-titulo">Evaluaciones finales habilitadas</h4>
-        <Paragraph type="secondary" className="cal-ajustes-inst__hint">
-          Cada regla puede aplicar a toda la gestión, a una carrera o a un periodo (año del plan).
-          Para este curso ({curso?.materiaNombre ?? '—'}) se marca si la regla institucional aplica.
-        </Paragraph>
-        {reglas.length === 0 ? (
-          <Text type="secondary">Sin reglas de evaluaciones finales en la gestión.</Text>
-        ) : (
-          <ul className="cal-ajustes-inst__reglas">
-            {reglas.map((r) => {
-              const aplica = reglaAplicaAlCurso(r, cursoCtx);
-              return (
-                <li key={r.id ?? r.tipoEvaluacionCodigo} className="cal-ajustes-inst__regla">
-                  <div className="cal-ajustes-inst__regla-head">
-                    <Text strong>{r.tipoEvaluacionNombre}</Text>
-                    <Tag color={aplica ? 'success' : 'default'}>
-                      {aplica ? 'Aplica a este curso' : 'No aplica a este curso'}
-                    </Tag>
-                  </div>
-                  <Text type="secondary" className="cal-ajustes-inst__regla-meta">
-                    Ponderación {r.ponderacion}% ·{' '}
-                    {etiquetaAlcanceEvaluacionFinal(r.alcance)} —{' '}
-                    {describeAlcanceRegla(r)}
-                  </Text>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+        <SeccionAjustes
+          icon={FlagOutlined}
+          titulo="Evaluaciones finales habilitadas"
+          className="cal-ajustes-inst__bloque"
+        >
+          <Paragraph type="secondary" className="cal-ajustes-inst__hint">
+            Cada regla puede aplicar a toda la gestión, a una carrera o a un periodo (año del plan).
+            Para este curso ({curso?.materiaNombre ?? '—'}) se marca si la regla institucional aplica.
+          </Paragraph>
+          {reglas.length === 0 ? (
+            <Text type="secondary">Sin reglas de evaluaciones finales en la gestión.</Text>
+          ) : (
+            <ul className="cal-ajustes-inst__reglas">
+              {reglas.map((r) => {
+                const aplica = reglaAplicaAlCurso(r, cursoCtx);
+                return (
+                  <li key={r.id ?? r.tipoEvaluacionCodigo} className="cal-ajustes-inst__regla">
+                    <div className="cal-ajustes-inst__regla-line1">
+                      <span className="cal-ajustes-inst__regla-nombre">{r.tipoEvaluacionNombre}</span>
+                      <EstadoEvaluacionChip aplica={aplica} />
+                    </div>
+                    <p className="cal-ajustes-inst__regla-meta">
+                      Ponderación {r.ponderacion}% · {etiquetaAlcanceEvaluacionFinal(r.alcance)} —{' '}
+                      {describeAlcanceRegla(r)}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </SeccionAjustes>
 
-      <div className="cal-ajustes-inst__bloque">
-        <h4 className="cal-ajustes-inst__bloque-titulo">Asistencia y aprobación</h4>
-        <Fila label="Asistencia (default)" value={etiquetaAsistencia(pad.politica)} />
-        <Fila
-          label="Nota mínima de aprobación"
-          value={String(institucional.notaMinimaAprobacion ?? 61)}
-        />
+        <SeccionAjustes
+          icon={CheckSquareOutlined}
+          titulo="Asistencia y aprobación"
+          className="cal-ajustes-inst__bloque"
+        >
+          <FilaKV label="Asistencia (default)" value={etiquetaAsistencia(pad.politica)} />
+          <FilaKV
+            label="Nota mínima de aprobación"
+            value={String(institucional.notaMinimaAprobacion ?? 61)}
+          />
+        </SeccionAjustes>
       </div>
     </section>
   );
