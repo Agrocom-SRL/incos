@@ -24,6 +24,10 @@ import { GetGestionBimestresController } from '../../../../presentation/controll
 import { IniciarGestionAcademicaController } from '../../../../presentation/controllers/academico/calificaciones/iniciar-gestion-academica.controller.js';
 import { ValidarCierreBimestreController } from '../../../../presentation/controllers/academico/calificaciones/validar-cierre-bimestre.controller.js';
 import { CerrarBimestreGestionController } from '../../../../presentation/controllers/academico/calificaciones/cerrar-bimestre-gestion.controller.js';
+import { GetAjustesCursoUseCase } from '../../../../application/use-cases/academico/GetAjustesCursoUseCase.js';
+import { SaveAjustesCursoUseCase } from '../../../../application/use-cases/academico/SaveAjustesCursoUseCase.js';
+import { GetAjustesCursoController } from '../../../../presentation/controllers/academico/calificaciones/get-ajustes-curso.controller.js';
+import { SaveAjustesCursoController } from '../../../../presentation/controllers/academico/calificaciones/save-ajustes-curso.controller.js';
 import { buildCalificacionesRouter } from '../../../../presentation/routes/calificaciones.routes.js';
 
 export function registerCalificacionesResource(container) {
@@ -197,6 +201,48 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getAjustesCursoUseCase,
+    (c) =>
+      new GetAjustesCursoUseCase({
+        ajustesCursoRepository: c.resolve(REPOSITORIOS_TOKENS.ajustesCursoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.saveAjustesCursoUseCase,
+    (c) =>
+      new SaveAjustesCursoUseCase({
+        ajustesCursoRepository: c.resolve(REPOSITORIOS_TOKENS.ajustesCursoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getAjustesCursoController,
+    (c) =>
+      new GetAjustesCursoController({
+        getAjustesCursoUseCase: c.resolve(ACADEMICO_TOKENS.getAjustesCursoUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.saveAjustesCursoController,
+    (c) =>
+      new SaveAjustesCursoController({
+        saveAjustesCursoUseCase: c.resolve(ACADEMICO_TOKENS.saveAjustesCursoUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.getGestionBimestresController,
     (c) =>
       new GetGestionBimestresController({
@@ -274,6 +320,8 @@ export function registerCalificacionesResource(container) {
       ),
       validarCierreBimestreController: c.resolve(ACADEMICO_TOKENS.validarCierreBimestreController),
       cerrarBimestreGestionController: c.resolve(ACADEMICO_TOKENS.cerrarBimestreGestionController),
+      getAjustesCursoController: c.resolve(ACADEMICO_TOKENS.getAjustesCursoController),
+      saveAjustesCursoController: c.resolve(ACADEMICO_TOKENS.saveAjustesCursoController),
     };
     const middlewares = {
       validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),

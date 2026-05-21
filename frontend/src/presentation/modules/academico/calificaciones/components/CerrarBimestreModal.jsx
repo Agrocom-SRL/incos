@@ -89,6 +89,29 @@ const CerrarBimestreModal = ({
             />
           ) : null}
 
+          {validacion.cursosConNotasFaltantes?.length > 0 ? (
+            <>
+              <Alert
+                type="warning"
+                showIcon
+                title="Cursos con notas pendientes"
+                style={{ marginBottom: 8 }}
+              />
+              <List
+                size="small"
+                dataSource={validacion.cursosConNotasFaltantes}
+                renderItem={(c) => (
+                  <List.Item>
+                    <strong>{c.materia}</strong>
+                    {c.docente ? ` · ${c.docente}` : ''}
+                    {c.paralelo ? ` · ${c.paralelo}` : ''} — {c.cantidadFaltantes} faltante(s)
+                  </List.Item>
+                )}
+                style={{ marginBottom: 16 }}
+              />
+            </>
+          ) : null}
+
           {validacion.advertencias?.length > 0 ? (
             <Alert
               type="warning"

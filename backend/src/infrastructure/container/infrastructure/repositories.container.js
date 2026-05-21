@@ -127,6 +127,7 @@ import { CalificacionRepository } from '../../repositories/CalificacionRepositor
 import { CalificacionContextoRepository } from '../../repositories/CalificacionContextoRepository.js';
 import { CalificacionCoordinacionRepository } from '../../repositories/CalificacionCoordinacionRepository.js';
 import { GestionBimestresRepository } from '../../repositories/GestionBimestresRepository.js';
+import { AjustesCursoRepository } from '../../repositories/AjustesCursoRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
@@ -280,6 +281,7 @@ export function registerRepositoriesModule(container) {
       CalificacionCoordinacionRepository,
     );
     registerRepository(container, REPOSITORIOS_TOKENS.gestionBimestresRepository, GestionBimestresRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.ajustesCursoRepository, AjustesCursoRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.calificacionRepository, CalificacionRepository);
 
     // ============================================

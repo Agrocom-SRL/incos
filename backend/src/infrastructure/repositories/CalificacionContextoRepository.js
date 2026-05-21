@@ -8,9 +8,21 @@ export class CalificacionContextoRepository {
    * @returns {Promise<{ gestion_id, gestion_anio, gestion_nombre, bimestre_vigente, bimestre_nombre }|null>}
    */
   async obtenerContextoVigente() {
-    const rows = await sequelize.query(`SELECT * FROM vista_calificacion_contexto_vigente`, {
-      type: sequelize.QueryTypes.SELECT,
-    });
+    const rows = await sequelize.query(
+      `
+      SELECT
+        v.gestion_id,
+        v.gestion_anio,
+        v.gestion_nombre,
+        v.bimestre_vigente,
+        v.bimestre_nombre,
+        g.codigo AS gestion_codigo,
+        g.vigente AS gestion_vigente
+      FROM vista_calificacion_contexto_vigente v
+      INNER JOIN gestiones g ON g.id = v.gestion_id AND g.deleted_at IS NULL
+      `,
+      { type: sequelize.QueryTypes.SELECT },
+    );
     return rows[0] ?? null;
   }
 

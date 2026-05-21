@@ -6,6 +6,38 @@ import { useCallback, useEffect, useState } from 'react';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
 
+const mapEstadoUi = (estadoApi) => {
+  const map = { vigente: 'EN_CURSO', cerrado: 'CERRADO', futuro: 'BLOQUEADO' };
+  return map[estadoApi] ?? 'BLOQUEADO';
+};
+
+/** Adapta payload API bloque 5 al shape que consumen las tarjetas actuales. */
+const mapTableroResponse = (data) => {
+  if (!data) return null;
+  const vigente = data.bimestres?.find((b) => b.estado === 'vigente');
+  const g = data.metricasGlobales ?? {};
+  return {
+    gestion: data.gestion,
+    gestionIniciada: data.gestionIniciada,
+    bimestreVigente: data.bimestreVigente,
+    metricas: {
+      cursosTotal: g.totalCursos ?? 0,
+      cursosCompletos: vigente?.metricas?.cursosConPlanCompleto ?? 0,
+      planesSinDefinir: Math.max(
+        0,
+        (vigente?.metricas?.cursosTotal ?? 0) - (vigente?.metricas?.cursosConPlanCompleto ?? 0),
+      ),
+      notasFaltantes: vigente?.metricas?.cursosConNotasFaltantes ?? 0,
+      docentesActivos: g.totalDocentes ?? 0,
+    },
+    bimestres: (data.bimestres ?? []).map((b) => ({
+      ...b,
+      estado: mapEstadoUi(b.estado),
+      fechaCierre: b.estado === 'cerrado' ? b.fechaFin : null,
+    })),
+  };
+};
+
 const mapError = (err, fallback) => {
   const e = new Error(err?.response?.data?.error || err?.message || fallback);
   e.code = err?.response?.data?.code || err?.code;
@@ -31,7 +63,7 @@ export const useGestionBimestres = () => {
         setError(res.error || 'No se pudo cargar la gestión de bimestres');
         return;
       }
-      setTablero(res.data ?? null);
+      setTablero(mapTableroResponse(res.data));
     } catch (err) {
       setTablero(null);
       setError(err?.message || 'No se pudo cargar la gestión de bimestres');

@@ -1,7 +1,7 @@
 /**
  * Rutas del módulo Calificaciones (ítem Académico · ACA-CAL).
  *
- * Flujo: Calificaciones → docentes → mis cursos (por docente) → cuaderno.
+ * Flujo: Calificaciones → docentes → mis cursos (por docente) → consolidado → cuaderno / finales / nivelación.
  * Páginas aparte: política institucional, gestión de bimestres.
  */
 
@@ -12,14 +12,17 @@ export const POLITICA_INSTITUCIONAL_PATH = '/academico/calificaciones/politica';
 export const CALIFICACIONES_GESTION_BIMESTRES_PATH =
   '/academico/calificaciones/gestion-bimestres';
 
-/** @deprecated Usar CALIFICACIONES_GESTION_BIMESTRES_PATH */
-export const CALIFICACIONES_TABLERO_PATH = CALIFICACIONES_GESTION_BIMESTRES_PATH;
-
 export const docenteCursosPath = (docenteId) =>
   `/academico/calificaciones/docente/${docenteId}`;
 
-export const docenteCuadernoPath = (docenteId, cursoId) =>
-  `/academico/calificaciones/docente/${docenteId}/curso/${cursoId}`;
+export const consolidadoCursoPath = (docenteId, asignacionId) =>
+  `/academico/calificaciones/docente/${docenteId}/curso/${asignacionId}`;
 
-/** @deprecated Usar docenteCuadernoPath(docenteId, cursoId) */
-export const cuadernoCursoPath = docenteCuadernoPath;
+export const cuadernoBimestrePath = (docenteId, asignacionId, bimestre) =>
+  `${consolidadoCursoPath(docenteId, asignacionId)}/bimestre/${bimestre}`;
+
+export const cursoFinalesPath = (docenteId, asignacionId) =>
+  `${consolidadoCursoPath(docenteId, asignacionId)}/finales`;
+
+export const cursoNivelacionPath = (docenteId, asignacionId) =>
+  `${consolidadoCursoPath(docenteId, asignacionId)}/nivelacion`;

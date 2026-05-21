@@ -66,6 +66,14 @@ const GestionBimestresPage = () => {
       try {
         const res = await cerrarBimestre(numero);
         setCerrarNumero(null);
+        if (res?.preparacion) {
+          notification.info({
+            message: res.mensaje || 'Funcionalidad en preparación',
+            description:
+              'El cierre masivo con cálculo de notas se habilitará en la próxima fase.',
+          });
+          return;
+        }
         notification.success({
           message: `Bimestre ${numero} cerrado`,
           description: res.bimestreSiguiente

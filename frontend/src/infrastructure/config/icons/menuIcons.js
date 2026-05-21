@@ -187,7 +187,6 @@ export const menuIconMap = {
     'ACA-CAL': CheckCircleOutlined,
     'ACA-CAL-POLITICA': FileTextOutlined,
     'ACA-CAL-GESTION-BIMESTRES': DashboardOutlined,
-    'ACA-CAL-TABLERO-REDIRECT': DashboardOutlined,
     'ACA-CAL-DOCENTE-CURSOS': TeamOutlined,
     'ACA-CAL-DOCENTES-CUADERNO': EditOutlined,
     'ACA-CAL-CUADERNO': EditOutlined,

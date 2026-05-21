@@ -19,7 +19,8 @@ const bimestresPorDefecto = (vigente) =>
   });
 
 export const useCuadernoCurso = () => {
-  const { cursoId, docenteId } = useParams();
+  const { cursoId, asignacionId, docenteId, n: bimestreRuta } = useParams();
+  const cursoIdResolved = asignacionId ?? cursoId;
   const esVistaAdmin = Boolean(docenteId);
 
   const [cuaderno, setCuaderno] = useState(null);
@@ -42,7 +43,7 @@ export const useCuadernoCurso = () => {
     const data = result.data ?? {};
     const docente = data.docente ?? null;
     const cursos = Array.isArray(data.cursos) ? data.cursos : [];
-    const cursoList = cursos.find((c) => String(c.id) === String(cursoId));
+    const cursoList = cursos.find((c) => String(c.id) === String(cursoIdResolved));
 
     if (!docente || !cursoList) {
       const err = new Error('CURSO_NOT_FOUND');
@@ -51,7 +52,7 @@ export const useCuadernoCurso = () => {
     }
 
     return { docente, cursoList };
-  }, [cursoId, docenteId, esVistaAdmin]);
+  }, [cursoIdResolved, docenteId, esVistaAdmin]);
 
   const armarCuadernoVacio = useCallback((docente, cursoList, bimestreActivoNum) => {
     const bimestreVigente = Number(docente.bimestreVigente) || 1;
@@ -105,7 +106,14 @@ export const useCuadernoCurso = () => {
     return () => {
       cancelled = true;
     };
-  }, [cursoId, docenteId, esVistaAdmin, cargarContexto, armarCuadernoVacio]);
+  }, [cursoIdResolved, docenteId, esVistaAdmin, cargarContexto, armarCuadernoVacio]);
+
+  useEffect(() => {
+    if (bimestreRuta != null) {
+      const n = Number(bimestreRuta);
+      if (n >= 1 && n <= 4) setBimestreActivoState(n);
+    }
+  }, [bimestreRuta]);
 
   const setBimestreActivo = useCallback((numero) => {
     const vigente = docenteCtx?.bimestreVigente ?? 1;
@@ -166,7 +174,7 @@ export const useCuadernoCurso = () => {
     breadcrumbItems,
     subtituloCurso,
     volverPath: docenteCursosPath(docenteId),
-    cursoId,
+    cursoId: cursoIdResolved,
     docenteId,
     esVistaAdmin,
     crearEvaluacion: operacionNoDisponible,

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { docenteCuadernoPath } from '../utils/calificacionesPaths.js';
+import { consolidadoCursoPath } from '../utils/calificacionesPaths.js';
 
 const formatGestionLabel = (nombre) => {
   if (!nombre) return '';
@@ -118,6 +118,6 @@ export const useMisCursosCalificaciones = () => {
     breadcrumbItems,
     periodoLectivoLabel,
     cuadernoPath: (cursoId) =>
-      docenteId ? docenteCuadernoPath(docenteId, cursoId) : '#',
+      docenteId ? consolidadoCursoPath(docenteId, cursoId) : '#',
   };
 };

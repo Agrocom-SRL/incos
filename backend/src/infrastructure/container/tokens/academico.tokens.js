@@ -30,6 +30,8 @@ export const ACADEMICO_TOKENS = {
     iniciarGestionAcademicaUseCase: 'academico.iniciarGestionAcademicaUseCase',
     validarCierreBimestreUseCase: 'academico.validarCierreBimestreUseCase',
     cerrarBimestreGestionUseCase: 'academico.cerrarBimestreGestionUseCase',
+    getAjustesCursoUseCase: 'academico.getAjustesCursoUseCase',
+    saveAjustesCursoUseCase: 'academico.saveAjustesCursoUseCase',
 
     // CONTROLLERS
     listParalelosController: 'academico.listParalelosController',
@@ -53,6 +55,8 @@ export const ACADEMICO_TOKENS = {
     iniciarGestionAcademicaController: 'academico.iniciarGestionAcademicaController',
     validarCierreBimestreController: 'academico.validarCierreBimestreController',
     cerrarBimestreGestionController: 'academico.cerrarBimestreGestionController',
+    getAjustesCursoController: 'academico.getAjustesCursoController',
+    saveAjustesCursoController: 'academico.saveAjustesCursoController',
 
     updateCursoOfertaUseCase: 'academico.updateCursoOfertaUseCase',
     deleteCursoOfertaUseCase: 'academico.deleteCursoOfertaUseCase',

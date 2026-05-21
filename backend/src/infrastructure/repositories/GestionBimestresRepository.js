@@ -147,20 +147,33 @@ export class GestionBimestresRepository {
 
     await sequelize.query(
       `
-      UPDATE bimestres_matricula bm
-      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+      INSERT INTO bimestres_matricula (
+        matricula_materia_id, bimestre, estado, created_by, updated_by, activo
+      )
+      SELECT
+        mm.id,
+        nums.n,
+        CASE WHEN nums.n = 1 THEN 'EN_CURSO' ELSE 'PENDIENTE' END,
+        ?,
+        ?,
+        TRUE
+      FROM matriculas_materia mm
       INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
       INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-      SET bm.estado = 'EN_CURSO',
-          bm.updated_by = ?,
-          bm.updated_at = NOW()
-      WHERE gp.gestion_id = ?
-        AND bm.bimestre = 1
-        AND mm.estado = 'CURSANDO'
+      CROSS JOIN (
+        SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+      ) nums
+      LEFT JOIN bimestres_matricula bm
+        ON bm.matricula_materia_id = mm.id
+        AND bm.bimestre = nums.n
         AND bm.deleted_at IS NULL
-        AND bm.activo = TRUE
+      WHERE gp.gestion_id = ?
+        AND mm.estado = 'CURSANDO'
+        AND mm.deleted_at IS NULL
+        AND mm.activo = TRUE
+        AND bm.id IS NULL
       `,
-      { replacements: [userId, gestionId] },
+      { replacements: [userId, userId, gestionId] },
     );
 
     return {
@@ -203,17 +216,56 @@ export class GestionBimestresRepository {
       { replacements: [gestionId, n], type: sequelize.QueryTypes.SELECT },
     );
 
-    const faltantes = Number(pendientes[0]?.total ?? 0);
-    if (faltantes > 0) {
-      advertencias.push(
-        `${faltantes} matrícula(s) sin nota de bimestre cerrada (se cerrará igual si no hay bloqueos).`,
+    const cursosRows = await sequelize.query(
+      `
+      SELECT
+        ad.id AS asignacion_id,
+        m.nombre AS materia,
+        CONCAT_WS(' ', d.nombres, d.apellido_paterno, d.apellido_materno) AS docente_nombre,
+        p.nombre AS paralelo,
+        COUNT(DISTINCT bm.id) AS faltantes
+      FROM bimestres_matricula bm
+      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
+      INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
+      INNER JOIN cursos c ON c.id = ad.curso_id
+      INNER JOIN materias m ON m.id = c.materia_id
+      LEFT JOIN paralelos p ON p.id = c.paralelo_id
+      LEFT JOIN docentes d ON d.id = ad.docente_id
+      WHERE gp.gestion_id = ?
+        AND bm.bimestre = ?
+        AND mm.estado = 'CURSANDO'
+        AND bm.estado = 'EN_CURSO'
+        AND bm.nota_bimestre IS NULL
+        AND bm.nota_habilitacion IS NULL
+        AND bm.deleted_at IS NULL
+      GROUP BY ad.id, m.nombre, d.nombres, d.apellido_paterno, p.nombre
+      HAVING faltantes > 0
+      ORDER BY faltantes DESC, materia ASC
+      LIMIT 50
+      `,
+      { replacements: [gestionId, n], type: sequelize.QueryTypes.SELECT },
+    );
+
+    const cursosConNotasFaltantes = cursosRows.map((r) => ({
+      asignacionId: Number(r.asignacion_id),
+      materia: r.materia,
+      docente: r.docente_nombre,
+      paralelo: r.paralelo,
+      cantidadFaltantes: Number(r.faltantes),
+    }));
+
+    if (cursosConNotasFaltantes.length > 0) {
+      bloqueos.push(
+        `${cursosConNotasFaltantes.length} curso(s) con notas de bimestre sin cerrar impiden el cierre.`,
       );
     }
 
     return {
       puedeCerrar: bloqueos.length === 0,
       bloqueos,
-      advertencias,
+      advertencias: [],
+      cursosConNotasFaltantes,
     };
   }
 
@@ -231,45 +283,84 @@ export class GestionBimestresRepository {
       throw err;
     }
 
-    await sequelize.query(
+    // TODO: cierre masivo con cálculo de nota_teorico/practico/bimestre desde evaluaciones (sprint siguiente)
+    return {
+      preparacion: true,
+      mensaje: 'Funcionalidad en preparación',
+      bimestre: n,
+      bimestreSiguiente: n < 4 ? n + 1 : null,
+    };
+  }
+
+  async _metricasPorBimestre(gestionId) {
+    const rows = await sequelize.query(
       `
-      UPDATE bimestres_matricula bm
+      SELECT
+        bm.bimestre,
+        COUNT(DISTINCT ad.id) AS cursos_total,
+        COUNT(DISTINCT CASE
+          WHEN ev.cantidad_evaluaciones > 0 THEN ad.id
+        END) AS cursos_plan_completo,
+        COUNT(DISTINCT CASE
+          WHEN bm.nota_bimestre IS NULL AND bm.nota_habilitacion IS NULL AND bm.estado = 'EN_CURSO'
+          THEN ad.id
+        END) AS cursos_notas_faltantes
+      FROM bimestres_matricula bm
       INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
       INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
       INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-      SET bm.estado = 'CERRADO',
-          bm.updated_by = ?,
-          bm.updated_at = NOW()
+      LEFT JOIN vista_base_calificacion_evaluaciones_curso_bimestre ev
+        ON ev.asignacion_docente_id = ad.id
+        AND ev.gestion_id = gp.gestion_id
+        AND ev.bimestre = bm.bimestre
       WHERE gp.gestion_id = ?
-        AND bm.bimestre = ?
-        AND bm.estado = 'EN_CURSO'
+        AND mm.estado IN ('INSCRITO', 'CURSANDO')
+        AND mm.deleted_at IS NULL
         AND bm.deleted_at IS NULL
+      GROUP BY bm.bimestre
       `,
-      { replacements: [userId, gestionId, n] },
+      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
     );
-
-    const siguiente = n < 4 ? n + 1 : null;
-    if (siguiente != null) {
-      await sequelize.query(
-        `
-        UPDATE bimestres_matricula bm
-        INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-        INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-        INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-        SET bm.estado = 'EN_CURSO',
-            bm.updated_by = ?,
-            bm.updated_at = NOW()
-        WHERE gp.gestion_id = ?
-          AND bm.bimestre = ?
-          AND mm.estado = 'CURSANDO'
-          AND bm.estado = 'PENDIENTE'
-          AND bm.deleted_at IS NULL
-        `,
-        { replacements: [userId, gestionId, siguiente] },
-      );
+    const map = new Map();
+    for (const r of rows) {
+      map.set(Number(r.bimestre), {
+        cursosTotal: Number(r.cursos_total ?? 0),
+        cursosConPlanCompleto: Number(r.cursos_plan_completo ?? 0),
+        cursosConNotasFaltantes: Number(r.cursos_notas_faltantes ?? 0),
+      });
     }
+    return map;
+  }
 
-    return { bimestreSiguiente: siguiente };
+  async _metricasGlobales(gestionId) {
+    const [row] = await sequelize.query(
+      `
+      SELECT
+        COUNT(DISTINCT fila.asignacion_docente_id) AS total_cursos,
+        COUNT(DISTINCT fila.docente_id) AS total_docentes,
+        COUNT(DISTINCT fila.estudiante_id) AS total_estudiantes
+      FROM vista_base_calificacion_coordinacion_fila fila
+      WHERE fila.gestion_id = ?
+      `,
+      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+    );
+    return {
+      totalCursos: Number(row?.total_cursos ?? 0),
+      totalDocentes: Number(row?.total_docentes ?? 0),
+      totalEstudiantes: Number(row?.total_estudiantes ?? 0),
+    };
+  }
+
+  _mapEstadoUi(numero, inst, calEstado, bimestreVigente, gestionIniciada) {
+    if (inst === 'CERRADO' || calEstado === 'cerrado') return 'cerrado';
+    if (numero === bimestreVigente && inst === 'EN_CURSO') return 'vigente';
+    if (!gestionIniciada && numero === 1) return 'futuro';
+    if (numero > 1) {
+      const prevCerrado = inst === 'PENDIENTE';
+      if (prevCerrado && calEstado === 'futuro') return 'futuro';
+    }
+    if (calEstado === 'futuro') return 'futuro';
+    return 'futuro';
   }
 
   /** Payload para GET /calificaciones/gestion-bimestres */
@@ -280,34 +371,42 @@ export class GestionBimestresRepository {
     }
 
     const gestionId = Number(ctx.gestion_id);
-    const [periodos, gestionIniciada, estadosMap, metricas] = await Promise.all([
-      this.contexto.obtenerPeriodosBimestresGestion(gestionId),
-      this.gestionAcademicaIniciada(gestionId),
-      this.estadosInstitucionalesBimestres(gestionId),
-      this.obtenerMetricasGestionBimestres(gestionId),
-    ]);
+    const [periodos, gestionIniciada, estadosMap, metricasGlobales, metricasBim] =
+      await Promise.all([
+        this.contexto.obtenerPeriodosBimestresGestion(gestionId),
+        this.gestionAcademicaIniciada(gestionId),
+        this.estadosInstitucionalesBimestres(gestionId),
+        this._metricasGlobales(gestionId),
+        this._metricasPorBimestre(gestionId),
+      ]);
 
     const bimestreVigente = ctx.bimestre_vigente != null ? Number(ctx.bimestre_vigente) : null;
 
     const bimestres = (periodos ?? []).map((pa) => {
       const numero = Number(pa.numero_orden);
-      let estado = 'BLOQUEADO';
       const inst = estadosMap.get(numero);
-      if (inst === 'CERRADO') estado = 'CERRADO';
-      else if (inst === 'EN_CURSO') estado = 'EN_CURSO';
-      else if (numero === 1 && !gestionIniciada) estado = 'BLOQUEADO';
-      else if (numero > 1) {
-        const prev = estadosMap.get(numero - 1);
-        if (prev === 'CERRADO' && inst === 'PENDIENTE') estado = 'BLOQUEADO';
-      }
+      const calEstado = pa.estado_calendario;
+      const estado = this._mapEstadoUi(
+        numero,
+        inst,
+        calEstado,
+        bimestreVigente,
+        gestionIniciada,
+      );
+      const metricas = metricasBim.get(numero) ?? {
+        cursosTotal: 0,
+        cursosConPlanCompleto: 0,
+        cursosConNotasFaltantes: 0,
+      };
 
       return {
         numero,
+        codigo: `B${numero}`,
         nombre: pa.nombre,
         fechaInicio: pa.fecha_inicio,
         fechaFin: pa.fecha_fin,
         estado,
-        fechaCierre: estado === 'CERRADO' ? pa.fecha_fin : null,
+        metricas,
         matriculasTransicionadas:
           numero === 1 && gestionIniciada ? undefined : numero === 1 ? null : undefined,
       };
@@ -331,12 +430,14 @@ export class GestionBimestresRepository {
     return {
       gestion: {
         id: gestionId,
+        codigo: ctx.gestion_codigo ?? String(gestionId),
         nombre: ctx.gestion_nombre,
         anio: ctx.gestion_anio,
+        vigente: Boolean(ctx.gestion_vigente),
       },
       gestionIniciada,
       bimestreVigente,
-      metricas,
+      metricasGlobales,
       bimestres,
     };
   }

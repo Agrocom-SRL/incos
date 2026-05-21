@@ -8,7 +8,6 @@
  */
 
 import { lazy } from 'react';
-import { Navigate } from 'react-router-dom';
 
 const PoliticaInstitucionalConnector = lazy(
   () => import('./connectors/PoliticaInstitucionalConnector.jsx'),
@@ -21,6 +20,12 @@ const CalificacionesEntradaConnector = lazy(
 );
 const MisCursosConnector = lazy(() => import('./connectors/MisCursosConnector.jsx'));
 const CuadernoConnector = lazy(() => import('./connectors/CuadernoConnector.jsx'));
+const EvaluacionesFinalesPlaceholderConnector = lazy(
+  () => import('./connectors/EvaluacionesFinalesPlaceholderConnector.jsx'),
+);
+const NivelacionPlaceholderConnector = lazy(
+  () => import('./connectors/NivelacionPlaceholderConnector.jsx'),
+);
 
 export const calificacionesRoutes = [
   {
@@ -42,18 +47,36 @@ export const calificacionesRoutes = [
     breadcrumbParent: 'ACA-CAL',
   },
   {
-    path: '/academico/calificaciones/tablero',
-    element: <Navigate to="/academico/calificaciones/gestion-bimestres" replace />,
-    key: 'ACA-CAL-TABLERO-REDIRECT',
-    permiso: 'academico.calificacion.gestion_bimestres',
+    path: '/academico/calificaciones/docente/:docenteId/curso/:asignacionId/finales',
+    element: <EvaluacionesFinalesPlaceholderConnector />,
+    key: 'ACA-CAL-CURSO-FINALES',
+    permiso: 'academico.calificacion.cuaderno',
     accion: 'LISTAR',
     menu: null,
-    breadcrumbParent: 'ACA-CAL',
+    breadcrumbParent: 'ACA-CAL-CUADERNO',
   },
   {
-    path: '/academico/calificaciones/docente/:docenteId/curso/:cursoId',
+    path: '/academico/calificaciones/docente/:docenteId/curso/:asignacionId/nivelacion',
+    element: <NivelacionPlaceholderConnector />,
+    key: 'ACA-CAL-CURSO-NIVELACION',
+    permiso: 'academico.calificacion.cuaderno',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'ACA-CAL-CUADERNO',
+  },
+  {
+    path: '/academico/calificaciones/docente/:docenteId/curso/:asignacionId/bimestre/:n',
     element: <CuadernoConnector />,
     key: 'ACA-CAL-CUADERNO',
+    permiso: 'academico.calificacion.cuaderno',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'ACA-CAL-CUADERNO',
+  },
+  {
+    path: '/academico/calificaciones/docente/:docenteId/curso/:asignacionId',
+    element: <CuadernoConnector />,
+    key: 'ACA-CAL-CONSOLIDADO',
     permiso: 'academico.calificacion.cuaderno',
     accion: 'LISTAR',
     menu: null,

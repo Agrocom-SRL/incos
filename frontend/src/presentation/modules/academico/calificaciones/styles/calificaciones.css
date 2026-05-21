@@ -1117,6 +1117,28 @@
   width: 100%;
 }
 
+/* —— Placeholder finales / nivelación —— */
+.cal-curso-placeholder {
+  max-width: 520px;
+  margin: 48px auto;
+  border-radius: var(--incos-radius-lg, 12px);
+}
+
+.cal-curso-placeholder__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 24px 16px;
+}
+
+.cal-curso-placeholder__icon {
+  font-size: 48px;
+  color: var(--incos-color-primary, #1677ff);
+  opacity: 0.85;
+}
+
 /* —— Drawer vista previa —— */
 .cal-preview-drawer__alert {
   margin-bottom: 12px;

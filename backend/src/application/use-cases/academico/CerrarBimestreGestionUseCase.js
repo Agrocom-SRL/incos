@@ -15,7 +15,11 @@ export class CerrarBimestreGestionUseCase {
         numeroBimestre,
         userId,
       );
-      this.logger.info('[Calificaciones] Bimestre cerrado', { numeroBimestre, ...result });
+      if (result?.preparacion) {
+        this.logger.info('[Calificaciones] Cierre en preparación', { numeroBimestre });
+      } else {
+        this.logger.info('[Calificaciones] Bimestre cerrado', { numeroBimestre, ...result });
+      }
       return result;
     } catch (error) {
       if (error.code === 'CIERRE_BLOQUEADO') {

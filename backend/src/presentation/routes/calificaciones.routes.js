@@ -124,6 +124,19 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     verificarPermiso('academico.calificacion.gestion_bimestres', 'EDITAR'),
   ];
 
+  const cuadernoListar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.cuaderno', 'LISTAR'),
+  ];
+
+  const cuadernoEditar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.cuaderno', 'LISTAR'),
+  ];
+
+  const registrarCierre = (controllerKey) => (req, res, next) =>
+    controllers[controllerKey].handle(req, res, next);
+
   router.get(
     '/gestion-bimestres',
     ...gestionBimestresListar,
@@ -145,7 +158,31 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   router.post(
     '/gestion-bimestres/bimestre/:numero/cerrar',
     ...gestionBimestresEditar,
-    (req, res, next) => controllers.cerrarBimestreGestionController.handle(req, res, next),
+    registrarCierre('cerrarBimestreGestionController'),
+  );
+
+  router.post(
+    '/gestion-bimestres/:numero/cerrar',
+    ...gestionBimestresEditar,
+    registrarCierre('cerrarBimestreGestionController'),
+  );
+
+  router.get(
+    '/gestion-bimestres/:numero/validar-cierre',
+    ...gestionBimestresListar,
+    (req, res, next) => controllers.validarCierreBimestreController.handle(req, res, next),
+  );
+
+  router.get(
+    '/asignaciones/:asignacionId/ajustes',
+    ...cuadernoListar,
+    (req, res, next) => controllers.getAjustesCursoController.handle(req, res, next),
+  );
+
+  router.put(
+    '/asignaciones/:asignacionId/ajustes',
+    ...cuadernoEditar,
+    (req, res, next) => controllers.saveAjustesCursoController.handle(req, res, next),
   );
 
   return router;
