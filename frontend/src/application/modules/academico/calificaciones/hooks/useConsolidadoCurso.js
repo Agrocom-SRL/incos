@@ -7,8 +7,6 @@ import { useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
 import { MIS_CURSOS_PATH } from '../utils/calificacionesPaths.js';
-import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
-
 const BIMESTRE_TITULOS = [
   'Primer bimestre',
   'Segundo bimestre',
@@ -18,7 +16,6 @@ const BIMESTRE_TITULOS = [
 
 export const useConsolidadoCurso = () => {
   const { asignacionId } = useParams();
-  const { esVistaCoordinacion } = useCalificacionesVistaContext();
 
   const [curso, setCurso] = useState(null);
   const [docente, setDocente] = useState(null);
@@ -67,20 +64,13 @@ export const useConsolidadoCurso = () => {
     [curso?.materia],
   );
 
-  const subtituloCurso = curso
-    ? [
-        curso.carrera,
-        curso.periodo ? `Régimen ${curso.periodo}` : null,
-        curso.paralelo ? `Paralelo ${curso.paralelo}` : null,
-        curso.turno,
-      ]
-        .filter(Boolean)
-        .join(' · ')
-    : '';
+  const subtituloCurso = curso?.carrera ?? '';
 
   const profileStats = useMemo(
     () => [
+      { label: 'Docente', value: docente?.nombre ?? '—' },
       { label: 'Gestión', value: docente?.gestionVigente ?? '—' },
+      { label: 'Periodo', value: curso?.periodo ?? '—' },
       { label: 'Paralelo', value: curso?.paralelo ?? '—' },
       { label: 'Estudiantes', value: String(curso?.estudiantes ?? estudiantes.length) },
       { label: 'Turno', value: curso?.turno ?? '—' },
@@ -88,19 +78,12 @@ export const useConsolidadoCurso = () => {
     [curso, docente, estudiantes.length],
   );
 
-  const bimestresEditables = useMemo(() => {
-    const map = new Map(
-      (bimestresCalendario ?? []).map((b) => [Number(b.numero), Boolean(b.editable)]),
-    );
-    return BIMESTRE_TITULOS.map((_, i) => map.get(i + 1) ?? false);
-  }, [bimestresCalendario]);
-
   return {
     curso,
     docente,
     estudiantes,
     bimestreTitulos: BIMESTRE_TITULOS,
-    bimestresEditables,
+    bimestresCalendario,
     bimestreVigente,
     notaMinimaAprobacion,
     profileStats,
@@ -111,6 +94,5 @@ export const useConsolidadoCurso = () => {
     breadcrumbItems,
     volverPath: MIS_CURSOS_PATH,
     asignacionId,
-    esVistaCoordinacion,
   };
 };

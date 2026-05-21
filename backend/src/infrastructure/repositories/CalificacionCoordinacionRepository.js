@@ -189,9 +189,9 @@ export class CalificacionCoordinacionRepository {
         TRIM(
           CONCAT_WS(
             ' ',
+            est.nombres,
             est.apellido_paterno,
-            est.apellido_materno,
-            est.nombres
+            est.apellido_materno
           )
         ) AS nombre_completo,
         mm.id AS matricula_materia_id,
@@ -236,9 +236,9 @@ export class CalificacionCoordinacionRepository {
         AND mm.deleted_at IS NULL
         AND mm.activo = TRUE
       ORDER BY
+        est.nombres ASC,
         est.apellido_paterno ASC,
         est.apellido_materno ASC,
-        est.nombres ASC,
         bm.bimestre ASC
       `,
       { replacements: [asignacionId], type: sequelize.QueryTypes.SELECT },

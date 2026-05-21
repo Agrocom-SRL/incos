@@ -2,7 +2,7 @@
  * Registro académico de notas del curso — vista consolidada de solo lectura.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, Flex, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -10,11 +10,11 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows } from '@theme/tokens';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { useConsolidadoCurso } from '@application-academico/calificaciones/hooks/useConsolidadoCurso.js';
 import { cuadernoBimestrePath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import CursoProfileHeader from '../components/CursoProfileHeader.jsx';
 import ConsolidadoGrid from '../components/ConsolidadoGrid.jsx';
+import AjustesCursoDrawer from '../components/AjustesCursoDrawer.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/calificaciones.css';
 
@@ -32,12 +32,14 @@ const sectionCardProps = {
 
 const ConsolidadoPage = () => {
   const navigate = useNavigate();
+  const [ajustesAbierto, setAjustesAbierto] = useState(false);
   const {
     curso,
     docente,
     estudiantes,
     bimestreTitulos,
-    bimestresEditables,
+    bimestresCalendario,
+    bimestreVigente,
     notaMinimaAprobacion,
     profileStats,
     subtituloCurso,
@@ -47,7 +49,6 @@ const ConsolidadoPage = () => {
     breadcrumbItems,
     volverPath,
     asignacionId,
-    esVistaCoordinacion,
   } = useConsolidadoCurso();
 
   const handleAbrirCuaderno = useCallback(
@@ -76,11 +77,9 @@ const ConsolidadoPage = () => {
             actions={headerActions}
           />
         </PageHeaderArea>
-        <DashboardPageShell>
-          <MainContent>
-            <Spin tip="Cargando registro académico…" />
-          </MainContent>
-        </DashboardPageShell>
+        <MainContent>
+          <Spin tip="Cargando registro académico…" />
+        </MainContent>
       </Flex>
     );
   }
@@ -95,21 +94,19 @@ const ConsolidadoPage = () => {
             actions={headerActions}
           />
         </PageHeaderArea>
-        <DashboardPageShell>
-          <MainContent>
-            <Alert
-              type="error"
-              showIcon
-              title="No se pudo cargar el registro académico"
-              description={typeof error === 'string' ? error : String(error)}
-              action={
-                <Button size="small" onClick={refetch}>
-                  Reintentar
-                </Button>
-              }
-            />
-          </MainContent>
-        </DashboardPageShell>
+        <MainContent>
+          <Alert
+            type="error"
+            showIcon
+            title="No se pudo cargar el registro académico"
+            description={typeof error === 'string' ? error : String(error)}
+            action={
+              <Button size="small" onClick={refetch}>
+                Reintentar
+              </Button>
+            }
+          />
+        </MainContent>
       </Flex>
     );
   }
@@ -126,37 +123,39 @@ const ConsolidadoPage = () => {
 
       <MainContent>
         <Flex vertical gap={allSpacing.marginLG} className="sd cal-consolidado">
-          {esVistaCoordinacion && docente?.nombre ? (
-            <Alert
-              type="info"
-              showIcon
-              message={`Vista coordinación · ${docente.nombre}`}
-            />
-          ) : null}
-
           <CursoProfileHeader
             materia={curso?.materia}
+            sigla={curso?.materiaSigla}
             subtitulo={subtituloCurso}
             carreraColor={curso?.carreraColor}
             stats={profileStats}
             pill={
               docente?.bimestreVigente
-                ? `Bimestre vigente ${docente.bimestreVigente}`
+                ? `Bimestre ${docente.bimestreVigente}`
                 : null
             }
+            onAjustes={() => setAjustesAbierto(true)}
+            ajustesDisabled={!asignacionId}
           />
 
           <Card className="cal-consolidado__hoja" {...sectionCardProps}>
             <ConsolidadoGrid
               estudiantes={estudiantes}
               bimestreTitulos={bimestreTitulos}
-              bimestresEditables={bimestresEditables}
+              bimestresCalendario={bimestresCalendario}
+              bimestreVigente={bimestreVigente}
               notaMinimaAprobacion={notaMinimaAprobacion}
               onAbrirCuaderno={handleAbrirCuaderno}
             />
           </Card>
         </Flex>
       </MainContent>
+
+      <AjustesCursoDrawer
+        abierto={ajustesAbierto}
+        cursoId={asignacionId}
+        onCerrar={() => setAjustesAbierto(false)}
+      />
     </Flex>
   );
 };

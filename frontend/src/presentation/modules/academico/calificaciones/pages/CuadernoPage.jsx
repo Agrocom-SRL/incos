@@ -100,7 +100,9 @@ const CuadernoPage = () => {
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate(volverPath)}
             aria-label="Volver al registro académico"
-          />
+          >
+            Volver al registro
+          </BackButton>
         </Flex>
       }
     />

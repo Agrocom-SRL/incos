@@ -117,14 +117,65 @@ export class AjustesCursoRepository {
     const politica = await this._politicaInstitucional(gestionId);
     const { extra, auditoria } = await this._filaAjustesJson(gestionId, asignacionId);
 
+    const cursoRows = await sequelize.query(
+      `
+      SELECT carrera_nombre, asignatura_periodo_nombre, materia_nombre
+      FROM vista_calificacion_cursos_docente
+      WHERE asignacion_docente_id = ?
+      LIMIT 1
+      `,
+      { replacements: [asignacionId], type: sequelize.QueryTypes.SELECT },
+    );
+    const cursoCtx = {
+      carreraNombre: cursoRows[0]?.carrera_nombre ?? null,
+      periodoNombre: cursoRows[0]?.asignatura_periodo_nombre ?? null,
+      materiaNombre: cursoRows[0]?.materia_nombre ?? null,
+    };
+
+    const norm = (s) =>
+      String(s ?? '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '');
+
+    const reglaAplica = (r) => {
+      const alcance = r.alcance ?? 'GESTION';
+      if (alcance === 'GESTION') return true;
+      if (alcance === 'CARRERA') {
+        if (!r.carreraNombre && r.carreraId == null) return true;
+        return norm(r.carreraNombre) === norm(cursoCtx.carreraNombre);
+      }
+      if (alcance === 'PERIODO') {
+        if (!r.periodoNombre && r.periodoId == null) return true;
+        return norm(r.periodoNombre) === norm(cursoCtx.periodoNombre);
+      }
+      if (alcance === 'CARRERA_PERIODO') {
+        const okC =
+          !r.carreraNombre && r.carreraId == null
+            ? true
+            : norm(r.carreraNombre) === norm(cursoCtx.carreraNombre);
+        const okP =
+          !r.periodoNombre && r.periodoId == null
+            ? true
+            : norm(r.periodoNombre) === norm(cursoCtx.periodoNombre);
+        return okC && okP;
+      }
+      return true;
+    };
+
     const usarCuotaInstitucional =
       ad.teorico_override == null && ad.practico_override == null;
 
-    const finalesInst = (politica.evaluacionesFinalesReglas ?? []).map((r) => ({
+    const reglasInst = politica.evaluacionesFinalesReglas ?? [];
+    const finalesInst = reglasInst.map((r) => ({
       codigo: r.tipoEvaluacionCodigo,
       nombre: r.tipoEvaluacionNombre,
-      habilitadaInstitucional: true,
-      pesoInstitucional: r.ponderacion,
+      habilitadaInstitucional: reglaAplica(r),
+      ponderacionInstitucional: r.ponderacion,
+      alcance: r.alcance ?? 'GESTION',
+      carreraNombre: r.carreraNombre ?? null,
+      periodoNombre: r.periodoNombre ?? null,
     }));
 
     const overridesFinales = extra.evaluacionesFinales ?? {};
@@ -133,7 +184,7 @@ export class AjustesCursoRepository {
         overridesFinales[t.codigo]?.habilitada !== undefined
           ? Boolean(overridesFinales[t.codigo].habilitada)
           : true;
-      const peso = overridesFinales[t.codigo]?.peso ?? t.pesoInstitucional;
+      const peso = overridesFinales[t.codigo]?.peso ?? t.ponderacionInstitucional;
       return {
         codigo: t.codigo,
         nombre: t.nombre,
@@ -146,12 +197,18 @@ export class AjustesCursoRepository {
     return {
       asignacionId: Number(asignacionId),
       gestionId,
+      gestionVigente: politica.gestionNombre ?? null,
+      curso: cursoCtx,
       institucional: {
+        configurada: Boolean(politica.configurada),
         cuotaTeorico: politica.cuotaTeorico,
         cuotaPractico: politica.cuotaPractico,
+        pesosBimestres: politica.pesosBimestres ?? [25, 25, 25, 25],
+        evaluacionesFinalesReglas: reglasInst,
         evaluacionesFinalesDisponibles: finalesInst,
         politicaAsistenciaDefault: politica.politicaAsistenciaDefault,
         notaMinimaAprobacion: politica.notaMinimaAprobacion,
+        ultimaModificacion: politica.ultimaModificacion ?? null,
       },
       ajustes: {
         usarCuotaInstitucional,

@@ -18,6 +18,7 @@ const agruparEstudiantes = (filas, notaMinima) => {
     if (!map.has(id)) {
       map.set(id, {
         id,
+        codigo: row.codigo_estudiante ?? '',
         cedula: row.cedula ?? '',
         nombre: row.nombre_completo ?? '',
         matriculaMateriaId: row.matricula_materia_id,
@@ -64,6 +65,7 @@ const agruparEstudiantes = (filas, notaMinima) => {
     return {
       nro: index + 1,
       id: est.id,
+      codigo: est.codigo,
       cedula: est.cedula,
       nombre: est.nombre,
       bimestres,

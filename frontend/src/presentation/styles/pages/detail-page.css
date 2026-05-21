@@ -104,6 +104,22 @@
   transform: scale(0.96);
 }
 
+.sd-profile__edit-btn--info {
+  background: linear-gradient(145deg, #69b1ff 0%, #1677ff 100%);
+  box-shadow: 0 4px 14px rgba(22, 119, 255, 0.45), 0 2px 6px rgba(9, 88, 217, 0.25);
+  animation: none;
+}
+
+.sd-profile__edit-btn--info:hover {
+  box-shadow: 0 6px 20px rgba(22, 119, 255, 0.5), 0 3px 8px rgba(9, 88, 217, 0.3);
+}
+
+.sd-profile__edit-btn--info:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .sd-profile__identity {
   display: flex;
   align-items: center;

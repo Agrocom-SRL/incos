@@ -19,6 +19,7 @@ import {
 } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { useAjustesCurso } from '@application-academico/calificaciones/hooks/useAjustesCurso.js';
+import AjustesCursoInstitucionalPanel from './AjustesCursoInstitucionalPanel.jsx';
 
 const { Text } = Typography;
 
@@ -157,8 +158,8 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
 
   return (
     <Drawer
-      title="Ajustes del curso"
-      width={520}
+      title="Ajustes de este curso"
+      width={560}
       open={abierto}
       onClose={handleCerrar}
       destroyOnClose
@@ -202,19 +203,31 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
         <Skeleton active paragraph={{ rows: 10 }} />
       ) : datos ? (
         <Form form={form} layout="vertical" className="cal-ajustes-drawer__form">
+          <AjustesCursoInstitucionalPanel
+            institucional={inst}
+            curso={datos.curso}
+            gestionVigente={datos.gestionVigente}
+          />
+
+          <Divider className="cal-ajustes-drawer__divider-override" />
+
+          <Alert
+            type="warning"
+            showIcon
+            className="cal-ajustes-drawer__override-hint"
+            message="Override del curso"
+            description="Los cambios siguientes aplican solo a esta asignación docente. La política institucional de la gestión no se modifica."
+          />
+
           <section className="cal-ajustes-drawer__section">
-            <h3 className="cal-ajustes-drawer__section-title">Cuota teórico / práctico</h3>
-            <p className="cal-ajustes-drawer__section-desc">
-              Institución (gestión {datos.gestionVigente ?? '2025'}):{' '}
-              <strong>
-                {inst.cuotaTeorico}% teórico · {inst.cuotaPractico}% práctico
-              </strong>
-            </p>
+            <h3 className="cal-ajustes-drawer__section-title">
+              Ponderación teórico / práctico (este curso)
+            </h3>
 
             <Form.Item
               name="usarCuotaInstitucional"
               valuePropName="checked"
-              label="Usar cuota institucional"
+              label="Usar ponderación institucional"
             >
               <Switch />
             </Form.Item>
@@ -244,7 +257,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
                 sumaCuota === 100 ? 'cal-eval-drawer__peso-hint--ok-full' : 'cal-eval-drawer__peso-hint--warn',
               ].join(' ')}
             >
-              Suma de cuota: {sumaCuota}% / 100%
+              Suma de ponderación: {sumaCuota}% / 100%
               {sumaCuota !== 100 ? ' — debe ser exactamente 100% para cerrar bimestres.' : ''}
             </div>
           </section>
@@ -252,9 +265,12 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
           <Divider />
 
           <section className="cal-ajustes-drawer__section">
-            <h3 className="cal-ajustes-drawer__section-title">Evaluaciones finales</h3>
+            <h3 className="cal-ajustes-drawer__section-title">
+              Evaluaciones finales (este curso)
+            </h3>
             <p className="cal-ajustes-drawer__section-desc">
-              Cubren toda la materia (no un bimestre). Solo los tipos habilitados por la institución.
+              Cubren toda la materia (no un bimestre). Solo podés activar tipos que la institución
+              habilitó para este curso según carrera y periodo.
             </p>
 
             <Form.List name="evaluacionesFinales">
@@ -293,9 +309,9 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
                       {habilitada && activo ? (
                         <Form.Item
                           name={[field.name, 'peso']}
-                          label="Peso en nota anual"
+                          label="Ponderación sobre la nota anual"
                           rules={[
-                            { required: true, message: 'Ingresá el peso' },
+                            { required: true, message: 'Indicá la ponderación' },
                             {
                               validator: (_, v) =>
                                 v > 0 && v <= 100
@@ -321,7 +337,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
 
             {sumaFinales > 0 ? (
               <div className="cal-eval-drawer__peso-hint cal-eval-drawer__peso-hint--ok">
-                Suma de evaluaciones finales activas: {sumaFinales}%
+                Suma de ponderación (evaluaciones finales activas): {sumaFinales}%
                 <Text type="secondary" className="cal-ajustes-drawer__hint-extra">
                   {' '}
                   (se combina con los 4 bimestres al calcular la nota anual)
@@ -333,9 +349,11 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
           <Divider />
 
           <section className="cal-ajustes-drawer__section">
-            <h3 className="cal-ajustes-drawer__section-title">Política de asistencia</h3>
+            <h3 className="cal-ajustes-drawer__section-title">
+              Política de asistencia (este curso)
+            </h3>
             <p className="cal-ajustes-drawer__section-desc">
-              Default institucional:{' '}
+              Institución (gestión {datos.gestionVigente ?? '—'}):{' '}
               <strong>
                 {POLITICAS_ASISTENCIA.find(
                   (p) => p.value === inst.politicaAsistenciaDefault.politica,
@@ -359,8 +377,8 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
             {politicaWatch === 'COMPUTA_NOTA' ? (
               <Form.Item
                 name="pesoAsistencia"
-                label="Peso de asistencia en la nota"
-                rules={[{ required: true, message: 'Ingresá el peso' }]}
+                label="Ponderación de asistencia en la nota"
+                rules={[{ required: true, message: 'Indicá la ponderación' }]}
               >
                 <InputNumber
                   min={0.01}

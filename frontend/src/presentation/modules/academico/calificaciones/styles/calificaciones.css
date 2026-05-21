@@ -1117,6 +1117,92 @@
   width: 100%;
 }
 
+.cal-ajustes-drawer__divider-override {
+  margin: 20px 0 16px;
+}
+
+.cal-ajustes-drawer__override-hint {
+  margin-bottom: 20px;
+}
+
+.cal-ajustes-inst__intro {
+  margin-bottom: 16px;
+}
+
+.cal-ajustes-inst__bloque {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.cal-ajustes-inst__bloque-titulo {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-700, #374151);
+}
+
+.cal-ajustes-inst__fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cal-ajustes-inst__fila:last-child {
+  border-bottom: none;
+}
+
+.cal-ajustes-inst__label {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.cal-ajustes-inst__valor {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.cal-ajustes-inst__hint {
+  margin: 0 0 10px !important;
+  font-size: 12px !important;
+}
+
+.cal-ajustes-inst__reglas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cal-ajustes-inst__regla {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.cal-ajustes-inst__regla:last-child {
+  border-bottom: none;
+}
+
+.cal-ajustes-inst__regla-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.cal-ajustes-inst__regla-meta {
+  font-size: 12px;
+  display: block;
+}
+
 /* —— Registro académico (consolidado) —— */
 .cal-consolidado {
   --cuaderno-verde-tenue: #e8f5ec;
@@ -1131,35 +1217,214 @@
   font-weight: 700;
 }
 
-.cal-consolidado-grid__bim-head {
+.cal-curso-profile__avatar--sigla {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  padding: 6px 4px;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.cal-curso-profile__bimestre-pill {
+  background: #e8f5e9;
+  color: #196b45;
+  border-color: rgba(25, 107, 69, 0.35);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+
+.cal-curso-profile__config-btn {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  z-index: 1;
+}
+
+.cal-curso-profile__config-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cal-consolidado-grid-wrap {
+  padding: 8px 0 4px;
+}
+
+.cal-consolidado-grid__leyenda-estados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 10px 16px 12px;
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.cal-consolidado-grid__leyenda-estados span {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+}
+
+.cal-consolidado-grid .ant-table-thead > tr > th {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cal-consolidado-grid .ant-table-thead > tr > th.cal-consolidado-grid__th-sub {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cal-consolidado-grid .ant-table-thead > tr > th.cal-consolidado-grid__th-est {
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+}
+
+.cal-consolidado-grid__th-bim {
+  padding: 0 !important;
+  vertical-align: top !important;
+}
+
+.cal-consolidado-grid__th-bim--cerrado {
+  background: #4a7c59 !important;
+}
+
+.cal-consolidado-grid__th-bim--en_curso {
+  background: #b8e0c8 !important;
+}
+
+.cal-consolidado-grid__th-bim--pendiente {
+  background: var(--cuaderno-verde-oscuro) !important;
+  opacity: 0.92;
+}
+
+.cal-consolidado-grid__bim-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: 4px;
-  min-height: 28px;
-  position: relative;
+  min-height: 88px;
+  padding: 10px 10px 8px;
+  text-align: left;
+}
+
+.cal-consolidado-grid__bim-head--clickable {
+  cursor: pointer;
+}
+
+.cal-consolidado-grid__bim-head--clickable:hover {
+  filter: brightness(1.05);
+}
+
+.cal-consolidado-grid__bim-head--locked {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.cal-consolidado-grid__th-bim--cerrado .cal-consolidado-grid__bim-head {
+  color: #fff;
+}
+
+.cal-consolidado-grid__th-bim--en_curso .cal-consolidado-grid__bim-head {
+  color: #134d32;
+}
+
+.cal-consolidado-grid__th-bim--pendiente .cal-consolidado-grid__bim-head {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.cal-consolidado-grid__bim-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.cal-consolidado-grid__bim-titulo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .cal-consolidado-grid__bim-titulo {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cal-consolidado-grid__bim-icon-link {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.cal-consolidado-grid__bim-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+.cal-consolidado-grid__bim-dot--inline {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.cal-consolidado-grid__bim-badge {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff;
+  color: #196b45;
+}
+
+.cal-consolidado-grid__bim-estado-label {
   font-size: 11px;
-  line-height: 1.2;
+  font-weight: 600;
+  opacity: 0.9;
 }
 
-.cal-consolidado-grid__bim-edit {
-  opacity: 0;
-  transition: opacity 0.15s ease;
+.cal-consolidado-grid__bim-cta.ant-btn-primary {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  height: 28px;
+  background: var(--cuaderno-verde-oscuro) !important;
+  border-color: var(--cuaderno-verde-oscuro) !important;
+}
+
+.cal-consolidado-grid__bim-cta-link {
+  align-self: flex-start;
+  padding: 0 !important;
+  height: auto !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+.cal-consolidado-grid__th-bim--cerrado .cal-consolidado-grid__bim-cta-link {
   color: #fff !important;
-  padding: 0 4px !important;
-  height: 24px !important;
 }
 
-.cal-consolidado-grid__bim-head:hover .cal-consolidado-grid__bim-edit,
-.cal-consolidado-grid__bim-edit:focus-visible {
-  opacity: 1;
+.cal-consolidado-grid__th-bim--en_curso .cal-consolidado-grid__bim-cta-link {
+  color: var(--cuaderno-verde-oscuro) !important;
 }
 
-.cal-consolidado-grid .ant-table-thead > tr > th:hover .cal-consolidado-grid__bim-edit {
-  opacity: 1;
+.cal-consolidado-grid__col-bim-activo {
+  background: #eaf3de;
+}
+
+.cal-consolidado-grid__celda-activa {
+  background: #eaf3de !important;
 }
 
 .cal-consolidado-header {
@@ -1244,9 +1509,6 @@
 }
 
 .cal-consolidado-grid .ant-table-thead > tr > th {
-  background: var(--cuaderno-verde-oscuro) !important;
-  color: #fff !important;
-  font-weight: 600;
   text-align: center;
   padding: 8px 6px !important;
   white-space: nowrap;
@@ -1254,6 +1516,17 @@
 
 .cal-consolidado-grid .ant-table-thead > tr:first-child > th {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cal-consolidado-grid .ant-table-thead > tr:last-child > th.cal-consolidado-grid__th-sub {
+  background: rgba(25, 107, 69, 0.88) !important;
+  color: #fff !important;
+}
+
+.cal-consolidado-grid .ant-table-thead > tr:last-child > th.cal-consolidado-grid__th-sub.cal-consolidado-grid__col-bim-activo,
+.cal-consolidado-grid .ant-table-thead > tr:last-child > th.cal-consolidado-grid__col-bim-activo {
+  background: #9fd4b0 !important;
+  color: #134d32 !important;
 }
 
 .cal-consolidado-grid .ant-table-tbody > tr > td {
@@ -1270,7 +1543,7 @@
   text-transform: uppercase;
 }
 
-.cal-consolidado-grid__col-cedula {
+.cal-consolidado-grid__col-codigo {
   font-variant-numeric: tabular-nums;
 }
 

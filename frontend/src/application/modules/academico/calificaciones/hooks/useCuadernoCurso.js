@@ -140,10 +140,15 @@ export const useCuadernoCurso = () => {
     throw new Error(CUADERNO_API_PENDIENTE);
   }, []);
 
+  const bimestreVigente = Number(docenteCtx?.bimestreVigente ?? cuaderno?.bimestreVigente) || 1;
+
   const breadcrumbItems = useMemo(() => {
-    const titulo = cuaderno?.curso?.materia ?? null;
+    const materia = cuaderno?.curso?.materia ?? null;
+    const n = bimestreActivo ?? bimestreVigente;
+    const titulo =
+      materia && n ? `Cuaderno · Bimestre ${n}` : materia;
     return createBreadcrumbItems('ACA-CAL-CUADERNO', 'ACA-CAL', titulo);
-  }, [cuaderno?.curso?.materia]);
+  }, [cuaderno?.curso?.materia, bimestreActivo, bimestreVigente]);
 
   const subtituloCurso = cuaderno
     ? [
@@ -155,8 +160,6 @@ export const useCuadernoCurso = () => {
         .filter(Boolean)
         .join(' · ')
     : '';
-
-  const bimestreVigente = Number(docenteCtx?.bimestreVigente ?? cuaderno?.bimestreVigente) || 1;
 
   return {
     curso: cuaderno?.curso ?? null,
