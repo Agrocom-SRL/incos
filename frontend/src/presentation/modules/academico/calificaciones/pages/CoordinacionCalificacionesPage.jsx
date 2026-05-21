@@ -121,7 +121,6 @@ const CoordinacionCalificacionesPage = () => {
             permiso={CALIFICACIONES_PERMISOS.coordinacion}
             accion="LISTAR"
             variant="primary"
-            size="small"
             onClick={() => navigate(docenteCursosPath(row.id))}
           >
             Ver cursos

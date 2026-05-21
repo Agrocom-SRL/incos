@@ -2,12 +2,14 @@
  * Calificaciones — cursos del docente (propio o elegido por coordinación).
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
+import { useAuth } from '@application-auth';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, Flex, Spin, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useMisCursosCalificaciones } from '@application-academico/calificaciones/hooks/useMisCursosCalificaciones.js';
 import {
@@ -25,6 +27,12 @@ const { Text } = Typography;
 
 const MisCursosPage = () => {
   const navigate = useNavigate();
+  const { refreshMe } = useAuth();
+
+  useEffect(() => {
+    refreshMe();
+  }, [refreshMe]);
+
   const {
     titulo,
     subtitulo,
@@ -46,9 +54,7 @@ const MisCursosPage = () => {
 
   const headerActions = (
     <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end" align="center">
-      <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-        <ArrowLeftOutlined /> Volver
-      </button>
+      <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />
       <AccionTableroGestion to={CALIFICACIONES_TABLERO_PATH} />
     </Flex>
   );

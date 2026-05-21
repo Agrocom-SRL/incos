@@ -67,7 +67,7 @@ export default function UsuarioDetailPage() {
           <PageHeader
             title={`Usuario ${usuario.username}`}
             breadcrumbItems={breadcrumbItems}
-            actions={<Button variant="default" onClick={goToUsuariosList}>Volver</Button>}
+            actions={<Button variant="back" onClick={goToUsuariosList}>Volver</Button>}
           />
         }
       >

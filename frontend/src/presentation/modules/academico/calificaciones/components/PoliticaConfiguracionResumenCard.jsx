@@ -176,7 +176,6 @@ const PoliticaConfiguracionResumenCard = ({
       {esReferenciaAnterior && onUsarConfiguracion ? (
         <Button
           variant="primary"
-          buttonStyle="outlined"
           icon={<CopyOutlined />}
           onClick={onUsarConfiguracion}
           disabled={usarConfiguracionDisabled}

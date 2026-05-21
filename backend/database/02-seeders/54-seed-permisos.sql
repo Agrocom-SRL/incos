@@ -4,12 +4,11 @@
 -- Archivo: backend/database/02-seeders/54-seed-permisos.sql
 --
 -- Orden: por módulo (MAT → ACA → DOC → FIN → INST → CFG → REP → SEG → SYS).
--- Calificaciones (ACA): un permiso por pantalla/ruta en routes.jsx.
---   15 ingreso (menú) · 16 coordinación (vista general docentes)
---   17 mis cursos · 18 cuaderno · 19 política · 20 tablero
---   21-24 operación en cuaderno (parcial, práctico, recuperatorio, modificar)
+-- Calificaciones (ACA): un permiso por pantalla (grupo_ui único = una fila en grilla Seguridad, como Horarios).
+--   15 ingreso · 16 coordinación · 17 mis cursos · 106 registro acumulado · 18 cuaderno
+--   19 política · 20 tablero · 21-24 operaciones en cuaderno
 --
--- [TOTAL] 105 permisos
+-- [TOTAL] 106 permisos
 -- Ejecutar después de: 53-seed-roles.sql
 -- Ejecutar antes de:   56-seed-permiso-acciones.sql, 55-seed-roles-permisos.sql
 -- ============================================
@@ -36,17 +35,17 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (13, 'matricula.pasantia.aprobar',   'Pasantías estudiantiles: aprobar',             'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
 (14, 'matricula.pasantia.evaluar',   'Pasantías estudiantiles: evaluación final',    'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
 
--- ── ACADÉMICO · Calificaciones (ACA) — alineado con calificaciones/routes.jsx ─
-(15, 'academico.calificacion.ingreso',        'Calificaciones: ítem del menú Académico',                         'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones', TRUE),
-(16, 'academico.calificacion.coordinacion',   'Calificaciones: vista general — docentes y cursos de la gestión', 'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones', TRUE),
-(17, 'academico.calificacion.mis_cursos',     'Calificaciones: mis cursos del docente',                          'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones/docente/:docenteId', TRUE),
-(18, 'academico.calificacion.cuaderno',       'Calificaciones: cuaderno de notas del curso',                     'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
-(19, 'academico.calificacion.politica',       'Calificaciones: política institucional (Nivel 1)',                'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones/politica', TRUE),
-(20, 'academico.calificacion.tablero',        'Calificaciones: tablero de coordinación del año (Nivel 2)',       'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones/tablero', TRUE),
-(21, 'academico.calificacion.registrar.parcial',      'Calificaciones · cuaderno: registrar nota de parciales',   'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
-(22, 'academico.calificacion.registrar.practico',     'Calificaciones · cuaderno: registrar notas de prácticos',  'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
-(23, 'academico.calificacion.registrar.recuperatorio','Calificaciones · cuaderno: registrar recuperatorio',        'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
-(24, 'academico.calificacion.modificar',              'Calificaciones · cuaderno: modificar notas cargadas',      'ACADEMICO', 'ACA', 'aca_calificaciones', '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
+-- ── ACADÉMICO · Calificaciones (ACA) — grupo_ui único por fila en grilla (como inst_horarios_*) ─
+(15, 'academico.calificacion.ingreso',        'Calificaciones · menú Académico',                              'ACADEMICO', 'ACA', 'aca_cal_ingreso',        '/academico/calificaciones', TRUE),
+(16, 'academico.calificacion.coordinacion',   'Calificaciones · coordinación docentes',                       'ACADEMICO', 'ACA', 'aca_cal_coordinacion',   '/academico/calificaciones', TRUE),
+(17, 'academico.calificacion.mis_cursos',     'Calificaciones · mis cursos',                                  'ACADEMICO', 'ACA', 'aca_cal_mis_cursos',     '/academico/calificaciones/docente/:docenteId', TRUE),
+(18, 'academico.calificacion.cuaderno',       'Calificaciones · cuaderno de evaluaciones',                    'ACADEMICO', 'ACA', 'aca_cal_cuaderno',       '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
+(19, 'academico.calificacion.politica',       'Calificaciones · política institucional',                      'ACADEMICO', 'ACA', 'aca_cal_politica',       '/academico/calificaciones/politica', TRUE),
+(20, 'academico.calificacion.tablero',        'Calificaciones · tablero de gestión',                          'ACADEMICO', 'ACA', 'aca_cal_tablero',        '/academico/calificaciones/tablero', TRUE),
+(21, 'academico.calificacion.registrar.parcial',      'Calificaciones · cuaderno · notas parciales',            'ACADEMICO', 'ACA', 'aca_cal_cuaderno_parcial', '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
+(22, 'academico.calificacion.registrar.practico',     'Calificaciones · cuaderno · notas prácticas',           'ACADEMICO', 'ACA', 'aca_cal_cuaderno_practico','/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
+(23, 'academico.calificacion.registrar.recuperatorio','Calificaciones · cuaderno · recuperatorio',           'ACADEMICO', 'ACA', 'aca_cal_cuaderno_recup',  '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
+(24, 'academico.calificacion.modificar',              'Calificaciones · cuaderno · modificar notas',           'ACADEMICO', 'ACA', 'aca_cal_cuaderno_modificar','/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
 
 -- ── ACADÉMICO · resto ───────────────────────────────────────────────────────
 (25, 'academico.nivelacion.ver',       'Nivelaciones: listar y ver',                 'ACADEMICO', 'ACA', 'aca_nivelaciones',    '/academico/nivelaciones/listar', TRUE),
@@ -142,12 +141,15 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (103, 'seguridad.usuario.administrar','Usuarios: listar, ver y administrar',           'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
 (104, 'seguridad.rol.gestionar',      'Roles y permisos: ver y administrar',           'SEGURIDAD', 'SEG', 'seg_roles',    '/seguridad/roles',    TRUE),
 
+-- ── ACADÉMICO · Calificaciones — registro acumulado (pantalla previa al cuaderno; ruta futura) ─
+(106, 'academico.calificacion.registro', 'Calificaciones · registro de notas (bimestres / asistencia / final)', 'ACADEMICO', 'ACA', 'aca_cal_registro', '/academico/calificaciones/docente/:docenteId/curso/:cursoId/registro', TRUE),
+
 -- ── SISTEMA (SYS) ───────────────────────────────────────────────────────────
 (105, 'sistema.catalogo.referencia', 'Catálogos de referencia: APIs transversales para combos (ubicación, tipos, bancos, etc.)', 'SISTEMA', 'SYS', NULL, NULL, TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Verificación post-insert:
--- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 105
+-- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 106
 -- SELECT COUNT(*) FROM permisos WHERE grupo_ui IS NULL AND activo = 1;   -- 1 (105)
 -- SELECT id, codigo FROM permisos WHERE modulo = 'ACA' AND codigo LIKE 'academico.calificacion%' ORDER BY id;

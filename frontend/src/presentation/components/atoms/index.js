@@ -3,7 +3,7 @@ export { default as Logo } from './Logo';
 export { default as IconButton } from './IconButton';
 export { default as Avatar } from './Avatar';
 export { default as MenuItem } from './MenuItem';
-export { default as Button } from './Button';
+export { default as Button, BackButton } from './Button';
 export { default as Heading } from './Heading';
 export { default as FormCard } from './FormCard';
 export { default as Text } from './Text';

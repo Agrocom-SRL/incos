@@ -21,7 +21,7 @@ export const AccionVolverCoordinacion = ({ to }) => {
   return (
     <PermisoGuard codigo={CALIFICACIONES_PERMISOS.coordinacion} accion="LISTAR">
       <ActionButton
-        variant="outline"
+        variant="back"
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate(to)}
       >
@@ -39,7 +39,7 @@ export const AccionConfiguracionNotas = ({ onClick }) => (
   <ActionButton
     permiso={CALIFICACIONES_PERMISOS.politica}
     accion="LISTAR"
-    variant="outline"
+    variant="primary"
     icon={<SettingOutlined />}
     onClick={onClick}
   >
@@ -53,15 +53,15 @@ export const AccionPoliticaInstitucional = AccionConfiguracionNotas;
 export const AccionTableroGestion = ({ to }) => {
   const navigate = useNavigate();
   return (
-    <PermisoGuard codigo={CALIFICACIONES_PERMISOS.tablero} accion="LISTAR">
-      <ActionButton
-        variant="outline"
-        icon={<DashboardOutlined />}
-        onClick={() => navigate(to)}
-      >
-        Tablero de gestión
-      </ActionButton>
-    </PermisoGuard>
+    <ActionButton
+      permiso={CALIFICACIONES_PERMISOS.tablero}
+      accion="LISTAR"
+      variant="primary"
+      icon={<DashboardOutlined />}
+      onClick={() => navigate(to)}
+    >
+      Tablero de gestión
+    </ActionButton>
   );
 };
 

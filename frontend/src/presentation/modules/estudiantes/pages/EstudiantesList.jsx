@@ -94,8 +94,7 @@ const EstudiantesList = () => {
                             <ActionButton
                                 permiso="matricula.admision.ver"
                                 accion="EXPORTAR"
-                                variant="success"
-                                buttonStyle="filled"
+                                variant="info"
                                 icon={<FileExcelOutlined />}
                                 loading={exportingExcel}
                                 onClick={handleExportarEstadisticaInscritos}

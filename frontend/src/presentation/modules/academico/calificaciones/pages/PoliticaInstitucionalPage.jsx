@@ -8,7 +8,7 @@ import { Alert, App, Button, Flex, Form, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button as AtomButton } from '@atoms';
+import { BackButton, Button as AtomButton } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { usePoliticaInstitucional } from '@application-academico/calificaciones/hooks/usePoliticaInstitucional.js';
 import { usePoliticaCatalogo } from '@application-academico/calificaciones/hooks/usePoliticaCatalogo.js';
@@ -231,9 +231,7 @@ const PoliticaInstitucionalPage = () => {
           title="Configuración de notas"
           breadcrumbItems={breadcrumbItems}
           actions={
-            <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-              <ArrowLeftOutlined /> Volver
-            </button>
+            <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />
           }
         />
       }
@@ -332,7 +330,6 @@ const PoliticaInstitucionalPage = () => {
                     >
                       <AtomButton
                         variant="primary"
-                        size="large"
                         loading={isSaving}
                         onClick={handleGuardar}
                       >

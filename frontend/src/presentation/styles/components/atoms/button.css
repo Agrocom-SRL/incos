@@ -1,188 +1,147 @@
 /* ============================================================================
-   BUTTON (Componente Atómico)
-   ============================================================================
-   Estilos principalmente para layout y posicionamiento
-   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
-   
-   Ant Design aplica automáticamente:
-   - colorPrimary (desde theme.components.Button.colorPrimary)
-   - borderRadius (desde theme.components.Button.borderRadius)
-   - controlHeight (desde theme.components.Button.controlHeight según el prop 'size')
-   
-   Variantes semánticas:
-   - info: Azul (para acciones de información)
-   - success: Verde (para acciones de éxito)
-   - warning: Amarillo (para acciones de advertencia)
-   - error: Rojo (para acciones destructivas)
-   
-   Estilos:
-   - filled: Botón con fondo de color
-   - outlined: Botón con borde de color y fondo transparente
+   BUTTON (átomo) — alineado con EstudiantesDetail (.sd-btn)
+   Tokens globales para que los botones funcionen fuera del contenedor .sd
    ============================================================================ */
 
-.button {
-  /* Layout y posicionamiento */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-base);
+:root {
+  --sd-primary: #196b45;
+  --sd-primary-dark: #134d32;
+  --sd-text-700: #374151;
+  --sd-text-500: #6b7280;
+  --sd-text-900: #111827;
+  --sd-border: #e5e7eb;
+  --sd-border-outline: #082032;
+  --sd-radius-md: 10px;
+  --sd-radius-lg: 14px;
+  --sd-shadow-focus: 0 0 0 3px rgba(25, 107, 69, 0.15);
 }
 
-/* Variantes semánticas - Filled (con fondo) */
-/* Nota: Usamos .ant-btn-default porque los botones semánticos siempre usan type='default' */
-/* Colores estáticos basados en Material Design - Colores invertidos (hover más claro) */
-/* Info: Azul Material Design */
-.button--info.button--filled.ant-btn-default {
-  background-color: #1976D2 !important; /* Blue 700 - más oscuro en estado normal */
-  border-color: #1976D2 !important;
-  color: #FFFFFF !important; /* Texto blanco */
+/* Ant Design: reset para no pisar .sd-btn */
+.ant-btn.sd-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: auto !important;
+  min-height: unset !important;
+  padding: 10px 24px !important;
+  border-radius: var(--sd-radius-md) !important;
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s !important;
+  box-shadow: none;
 }
 
-.button--info.button--filled.ant-btn-default:hover {
-  background-color: #2196F3 !important; /* Blue 500 - más claro en hover */
-  border-color: #2196F3 !important;
-  color: #FFFFFF !important;
+.ant-btn.sd-btn:not(.sd-btn--outline) {
+  border: none !important;
 }
 
-.button--info.button--filled.ant-btn-default:active,
-.button--info.button--filled.ant-btn-default:focus {
-  background-color: #2196F3 !important; /* Blue 500 */
-  border-color: #2196F3 !important;
-  color: #FFFFFF !important;
+.ant-btn.sd-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
-/* Success: Verde Material Design */
-.button--success.button--filled.ant-btn-default {
-  background-color: #388E3C !important; /* Green 700 - más oscuro en estado normal */
-  border-color: #388E3C !important;
-  color: #FFFFFF !important; /* Texto blanco */
+.ant-btn.sd-btn:focus-visible {
+  outline: none !important;
+  box-shadow: var(--sd-shadow-focus) !important;
 }
 
-.button--success.button--filled.ant-btn-default:hover {
-  background-color: #4CAF50 !important; /* Green 500 - más claro en hover */
-  border-color: #4CAF50 !important;
-  color: #FFFFFF !important;
+.ant-btn.sd-btn--sm {
+  padding: 6px 12px !important;
+  font-size: 13px !important;
 }
 
-.button--success.button--filled.ant-btn-default:active,
-.button--success.button--filled.ant-btn-default:focus {
-  background-color: #4CAF50 !important; /* Green 500 */
-  border-color: #4CAF50 !important;
-  color: #FFFFFF !important;
+.ant-btn.sd-btn--primary {
+  background: var(--sd-primary, var(--primary, #196b45)) !important;
+  border-color: var(--sd-primary, var(--primary, #196b45)) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(25, 107, 69, 0.3) !important;
 }
 
-/* Warning: Naranja/Amber Material Design */
-.button--warning.button--filled.ant-btn-default {
-  background-color: #F57C00 !important; /* Orange 700 - más oscuro en estado normal */
-  border-color: #F57C00 !important;
-  color: #FFFFFF !important; /* Texto negro para mejor contraste con fondo naranja */
+.ant-btn.sd-btn--primary:hover:not(:disabled) {
+  background: var(--sd-primary-dark, var(--primary-dark, #134d32)) !important;
+  border-color: var(--sd-primary-dark, var(--primary-dark, #134d32)) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(25, 107, 69, 0.35) !important;
 }
 
-.button--warning.button--filled.ant-btn-default:hover {
-  background-color: #FF9800 !important; /* Orange 500 - más claro en hover */
-  border-color: #FF9800 !important;
-  color: #FFFFFF !important; /* Texto negro */
+.ant-btn.sd-btn--danger {
+  background: #e41c24 !important;
+  border-color: #e41c24 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(228, 28, 36, 0.25) !important;
 }
 
-.button--warning.button--filled.ant-btn-default:active,
-.button--warning.button--filled.ant-btn-default:focus {
-  background-color: #FF9800 !important; /* Orange 500 */
-  border-color: #FF9800 !important;
-  color: #FFFFFF !important; /* Texto negro */
+.ant-btn.sd-btn--danger:hover:not(:disabled) {
+  background: #c01019 !important;
+  border-color: #c01019 !important;
+  color: #fff !important;
 }
 
-/* Error: Rojo Material Design */
-.button--error.button--filled.ant-btn-default {
-  background-color: #D32F2F !important; /* Red 700 - más oscuro en estado normal */
-  border-color: #D32F2F !important;
-  color: #FFFFFF !important; /* Texto blanco */
+.ant-btn.sd-btn--warn {
+  background: #f59e0b !important;
+  border-color: #f59e0b !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25) !important;
 }
 
-.button--error.button--filled.ant-btn-default:hover {
-  background-color: #F44336 !important; /* Red 500 - más claro en hover */
-  border-color: #F44336 !important;
-  color: #FFFFFF !important;
+.ant-btn.sd-btn--warn:hover:not(:disabled) {
+  background: #d97706 !important;
+  border-color: #d97706 !important;
+  color: #fff !important;
 }
 
-.button--error.button--filled.ant-btn-default:active,
-.button--error.button--filled.ant-btn-default:focus {
-  background-color: #F44336 !important; /* Red 500 */
-  border-color: #F44336 !important;
-  color: #FFFFFF !important;
+.ant-btn.sd-btn--outline {
+  background: transparent !important;
+  color: var(--sd-text-700, var(--text-700, #374151)) !important;
+  border: 1px solid var(--sd-border-outline, var(--border, #082032)) !important;
+  border-radius: var(--sd-radius-lg, var(--radius-lg, 14px)) !important;
+  box-shadow: none !important;
 }
 
-/* Variantes semánticas - Outlined (solo borde) */
-/* Nota: Excluimos .button--filled para que no choque con los estilos filled */
-/* Colores estáticos basados en Material Design */
-.button--info.ant-btn-default:not(.button--filled) {
-  border-color: #2196F3 !important; /* Blue 500 */
-  color: #2196F3 !important;
-  background-color: transparent !important;
+.ant-btn.sd-btn--outline:hover:not(:disabled) {
+  background: #f3f4f6 !important;
+  border-color: var(--sd-text-500, var(--text-500, #6b7280)) !important;
+  color: var(--sd-text-900, var(--text-900, #111827)) !important;
 }
 
-.button--info.ant-btn-default:not(.button--filled):hover,
-.button--info.ant-btn-default:not(.button--filled):active,
-.button--info.ant-btn-default:not(.button--filled):focus {
-  border-color: #1976D2 !important; /* Blue 700 */
-  color: #1976D2 !important;
-  background-color: rgba(33, 150, 243, 0.1) !important; /* Blue 500 con opacidad */
+/* Ver / exportar / detalle (info) */
+.ant-btn.sd-btn--info {
+  background: #1976d2 !important;
+  border-color: #1976d2 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.28) !important;
 }
 
-.button--success.ant-btn-default:not(.button--filled) {
-  border-color: #4CAF50 !important; /* Green 500 */
-  color: #4CAF50 !important;
-  background-color: transparent !important;
+.ant-btn.sd-btn--info:hover:not(:disabled) {
+  background: #1565c0 !important;
+  border-color: #1565c0 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.35) !important;
 }
 
-.button--success.ant-btn-default:not(.button--filled):hover,
-.button--success.ant-btn-default:not(.button--filled):active,
-.button--success.ant-btn-default:not(.button--filled):focus {
-  border-color: #388E3C !important; /* Green 700 */
-  color: #388E3C !important;
-  background-color: rgba(76, 175, 80, 0.1) !important; /* Green 500 con opacidad */
+.ant-btn.sd-btn--declaracion {
+  background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35) !important;
 }
 
-.button--warning.ant-btn-default:not(.button--filled) {
-  border-color: #FF9800 !important; /* Orange 500 */
-  color: #FF9800 !important;
-  background-color: transparent !important;
+.ant-btn.sd-btn--declaracion:hover:not(:disabled) {
+  background: linear-gradient(145deg, #1d4ed8 0%, #1e40af 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
 }
 
-.button--warning.ant-btn-default:not(.button--filled):hover,
-.button--warning.ant-btn-default:not(.button--filled):active,
-.button--warning.ant-btn-default:not(.button--filled):focus {
-  border-color: #F57C00 !important; /* Orange 700 */
-  color: #F57C00 !important;
-  background-color: rgba(255, 152, 0, 0.1) !important; /* Orange 500 con opacidad */
+.ant-btn.sd-btn:disabled,
+.ant-btn.sd-btn.ant-btn-disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
-.button--error.ant-btn-default:not(.button--filled) {
-  border-color: #F44336 !important; /* Red 500 */
-  color: #F44336 !important;
-  background-color: transparent !important;
+.ant-btn.sd-btn .ant-btn-icon,
+.ant-btn.sd-btn .anticon {
+  line-height: 1;
 }
-
-.button--error.ant-btn-default:not(.button--filled):hover,
-.button--error.ant-btn-default:not(.button--filled):active,
-.button--error.ant-btn-default:not(.button--filled):focus {
-  border-color: #D32F2F !important; /* Red 700 */
-  color: #D32F2F !important;
-  background-color: rgba(244, 67, 54, 0.1) !important; /* Red 500 con opacidad */
-}
-
-/* Disabled para todas las variantes semánticas */
-/* Colores Material Design con opacidad reducida */
-.button--info.ant-btn:disabled,
-.button--success.ant-btn:disabled,
-.button--warning.ant-btn:disabled,
-.button--error.ant-btn:disabled {
-  background-color: rgba(0, 0, 0, 0.12) !important; /* Gris Material Design para disabled */
-  border-color: rgba(0, 0, 0, 0.12) !important;
-  color: rgba(0, 0, 0, 0.26) !important; /* Texto gris para disabled */
-  opacity: 1; /* Mantener opacidad 1 ya que usamos rgba */
-  cursor: not-allowed;
-}
-
-/* Nota: Las alturas (height) ya las aplica Ant Design automáticamente
-   según el prop 'size' y theme.components.Button.controlHeight
-   Solo mantenemos estas clases si necesitamos override específico */

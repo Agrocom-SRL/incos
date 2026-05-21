@@ -2,7 +2,8 @@
  * Card de curso en Mis cursos — datos académicos y progreso por bimestre (calendario).
  */
 
-import { Card, Tag, Button, Progress, Tooltip, Typography } from 'antd';
+import { Card, Tag, Progress, Tooltip, Typography } from 'antd';
+import { Button } from '@atoms';
 import {
   BookOutlined,
   TeamOutlined,
@@ -127,9 +128,7 @@ const CursoCard = ({ curso, cuadernoPath, bimestreVigente = null }) => {
       ) : null}
 
       <Button
-        type="primary"
-        block
-        className="cal-curso-card__action"
+        variant="info"
         onClick={() => navigate(cuadernoPath(curso.id))}
       >
         Abrir cuaderno

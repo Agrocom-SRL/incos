@@ -390,6 +390,17 @@
   color: var(--text-900, #111827);
 }
 
+.sd-btn--info {
+  background: #1976d2;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.28);
+}
+
+.sd-btn--info:hover {
+  background: #1565c0;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.35);
+}
+
 .sd-btn--declaracion {
   background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 100%);
   color: #fff;

@@ -74,6 +74,25 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
+  const refreshMe = useCallback(async () => {
+    const token = localStorage.getItem('incos_token');
+    if (!token) return false;
+
+    const res = await apiCall(AUTH_ENDPOINTS.ME);
+    if (!res?.ok) return false;
+
+    const json = await res.json();
+    setState((prev) => ({
+      ...prev,
+      usuario: json.data?.usuario ?? prev.usuario,
+      permisos: json.data?.permisos ?? prev.permisos,
+      token,
+      isAuthenticated: true,
+      isLoading: false,
+    }));
+    return true;
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await apiCall(AUTH_ENDPOINTS.LOGOUT, { method: 'POST' });
@@ -99,9 +118,10 @@ export const AuthProvider = ({ children }) => {
       ...state,
       login,
       logout,
+      refreshMe,
       hasPermiso,
     }),
-    [state, login, logout, hasPermiso]
+    [state, login, logout, refreshMe, hasPermiso]
   );
 
   return (

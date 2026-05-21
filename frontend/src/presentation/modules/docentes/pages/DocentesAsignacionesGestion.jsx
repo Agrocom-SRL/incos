@@ -96,7 +96,7 @@ const DocentesAsignacionesGestion = () => {
           breadcrumbItems={breadcrumbItems}
           actions={
             <Space>
-              <Button variant="default" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+              <Button variant="back" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
                 Volver
               </Button>
               <ActionButton

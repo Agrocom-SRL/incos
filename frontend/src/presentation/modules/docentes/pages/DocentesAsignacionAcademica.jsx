@@ -190,7 +190,7 @@ const DocentesAsignacionAcademica = () => {
             title="Asignación académica"
             breadcrumbItems={breadcrumbItems}
             actions={
-              <Button variant="default" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+              <Button variant="back" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
                 Volver
               </Button>
             }

@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Button, Empty, Flex, Form, Tag, Typography } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { Card } from '@atoms';
+import { Card, Button as AtomButton, IconButton } from '@atoms';
 import { describeAlcanceRegla } from '@application-academico/calificaciones/utils/evaluacionesFinalesReglas.js';
 import PoliticaEvaluacionFinalModal from './PoliticaEvaluacionFinalModal.jsx';
 
@@ -69,15 +69,14 @@ const PoliticaEvaluacionesFinalesReglasSection = ({
       variant="outlined"
       shadow={false}
       extra={
-        <button
-          type="button"
-          className="sd-btn sd-btn--warn"
+        <AtomButton
+          variant="warning"
           onClick={abrirAgregar}
           disabled={agregarDisabled}
           aria-busy={catalogoLoading}
         >
           <PlusOutlined /> Agregar evaluación final
-        </button>
+        </AtomButton>
       }
     >
       <Paragraph type="secondary" className="cal-politica-panel-card__desc">
@@ -108,20 +107,19 @@ const PoliticaEvaluacionesFinalesReglasSection = ({
                 </Flex>
               </Flex>
               <Flex gap={8}>
-                <Button
-                  type="text"
+                <IconButton
                   icon={<EditOutlined />}
                   onClick={() => abrirEditar(regla, index)}
                   disabled={disabled}
                   aria-label="Editar"
+                  variant="warning"
                 />
-                <Button
-                  type="text"
-                  danger
+                <IconButton
                   icon={<DeleteOutlined />}
+                  variant="error"
                   onClick={() => eliminar(index)}
                   disabled={disabled}
-                  aria-label="Eliminar"
+                  aria-label="Eliminar evaluación final"
                 />
               </Flex>
             </div>

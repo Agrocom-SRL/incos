@@ -83,7 +83,7 @@ export default function UsuarioCreatePage() {
             title={isEditMode ? 'Editar Usuario' : 'Nuevo Usuario'}
             breadcrumbItems={breadcrumbItems}
             actions={
-              <Button variant="default" icon={<ArrowLeftOutlined />} onClick={goToUsuariosList}>
+              <Button variant="back" icon={<ArrowLeftOutlined />} onClick={goToUsuariosList}>
                 Volver
               </Button>
             }
