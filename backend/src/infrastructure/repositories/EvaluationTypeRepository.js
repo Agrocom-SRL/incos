@@ -34,9 +34,6 @@ export class EvaluationTypeRepository extends BaseRepository {
         if (filters.isRecovery !== undefined) {
             where.esRecuperatorio = filters.isRecovery;
         }
-        if (filters.allowsMultipleAttempts !== undefined) {
-            where.permiteMultiplesIntentos = filters.allowsMultipleAttempts;
-        }
 
         return where;
     }

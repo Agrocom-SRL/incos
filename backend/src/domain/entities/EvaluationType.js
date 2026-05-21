@@ -24,14 +24,16 @@ export class EvaluationType extends BaseEntity {
         if (data.hasOwnProperty('isRecovery')) {
             this.isRecovery = data.isRecovery;
         }
-        if (data.hasOwnProperty('allowsMultipleAttempts')) {
-            this.allowsMultipleAttempts = data.allowsMultipleAttempts;
-        }
     }
 
     isValidScope() {
         if (!this.scope) return false;
         return AMBITOS_TIPO_EVALUACION_VALUES.includes(this.scope);
+    }
+
+    /** Los reintentos se registran en evaluaciones_*_notas.intento, no en el catálogo. */
+    allowsMultipleAttempts() {
+        return Boolean(this.isRecovery);
     }
 
     toPlainObject() {
@@ -42,9 +44,6 @@ export class EvaluationType extends BaseEntity {
         if (this.hasOwnProperty('description')) plainObject.description = this.description;
         if (this.hasOwnProperty('scope')) plainObject.scope = this.scope;
         if (this.hasOwnProperty('isRecovery')) plainObject.isRecovery = this.isRecovery;
-        if (this.hasOwnProperty('allowsMultipleAttempts')) {
-            plainObject.allowsMultipleAttempts = this.allowsMultipleAttempts;
-        }
 
         return plainObject;
     }

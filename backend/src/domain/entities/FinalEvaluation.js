@@ -2,14 +2,15 @@ import { BaseEntity } from './BaseEntity.js';
 
 /**
  * Domain Entity: FinalEvaluation
- * Evaluación de materia completa (tabla evaluaciones_finales).
+ * Columna de evaluación anual del curso (tabla evaluaciones_finales).
+ * Las notas por estudiante viven en FinalEvaluationGrade (evaluaciones_finales_notas).
  */
 export class FinalEvaluation extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('subjectEnrollmentId')) {
-            this.subjectEnrollmentId = data.subjectEnrollmentId;
+        if (data.hasOwnProperty('teacherAssignmentId')) {
+            this.teacherAssignmentId = data.teacherAssignmentId;
         }
         if (data.hasOwnProperty('evaluationTypeId')) {
             this.evaluationTypeId = data.evaluationTypeId;
@@ -20,9 +21,6 @@ export class FinalEvaluation extends BaseEntity {
         if (data.hasOwnProperty('description')) {
             this.description = data.description;
         }
-        if (data.hasOwnProperty('grade')) {
-            this.grade = data.grade;
-        }
         if (data.hasOwnProperty('weight')) {
             this.weight = data.weight;
         }
@@ -32,22 +30,13 @@ export class FinalEvaluation extends BaseEntity {
         if (data.hasOwnProperty('gradesClosed')) {
             this.gradesClosed = data.gradesClosed;
         }
-        if (data.hasOwnProperty('gradesClosedAt')) {
-            this.gradesClosedAt = data.gradesClosedAt;
-        }
-        if (data.hasOwnProperty('closedBy')) {
-            this.closedBy = data.closedBy;
-        }
-        if (data.hasOwnProperty('observations')) {
-            this.observations = data.observations;
-        }
     }
 
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('subjectEnrollmentId')) {
-            plainObject.subjectEnrollmentId = this.subjectEnrollmentId;
+        if (this.hasOwnProperty('teacherAssignmentId')) {
+            plainObject.teacherAssignmentId = this.teacherAssignmentId;
         }
         if (this.hasOwnProperty('evaluationTypeId')) {
             plainObject.evaluationTypeId = this.evaluationTypeId;
@@ -56,15 +45,9 @@ export class FinalEvaluation extends BaseEntity {
             plainObject.evaluationName = this.evaluationName;
         }
         if (this.hasOwnProperty('description')) plainObject.description = this.description;
-        if (this.hasOwnProperty('grade')) plainObject.grade = this.grade;
         if (this.hasOwnProperty('weight')) plainObject.weight = this.weight;
         if (this.hasOwnProperty('date')) plainObject.date = this.date;
         if (this.hasOwnProperty('gradesClosed')) plainObject.gradesClosed = this.gradesClosed;
-        if (this.hasOwnProperty('gradesClosedAt')) {
-            plainObject.gradesClosedAt = this.gradesClosedAt;
-        }
-        if (this.hasOwnProperty('closedBy')) plainObject.closedBy = this.closedBy;
-        if (this.hasOwnProperty('observations')) plainObject.observations = this.observations;
 
         return plainObject;
     }

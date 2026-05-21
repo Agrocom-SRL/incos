@@ -109,7 +109,9 @@ export { ITipoEvaluacionRepository } from './ITipoEvaluacionRepository.js';
 export { IConfiguracionEvaluacionRepository } from './IConfiguracionEvaluacionRepository.js';
 export { IBimestreMatriculaRepository } from './IBimestreMatriculaRepository.js';
 export { IEvaluacionRepository } from './IEvaluacionRepository.js';
+export { IEvaluacionNotaRepository } from './IEvaluacionNotaRepository.js';
 export { IEvaluacionFinalRepository } from './IEvaluacionFinalRepository.js';
+export { IEvaluacionFinalNotaRepository } from './IEvaluacionFinalNotaRepository.js';
 
 // ============================================
 // NIVELACIONES

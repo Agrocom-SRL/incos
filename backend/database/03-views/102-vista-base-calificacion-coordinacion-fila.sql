@@ -6,9 +6,9 @@
 --   - vista_estudiante_inscripcion_actual (20): 03→04→18→19→01
 --   - vista_base_docente_ficha (50): filtro docente activo
 --
--- Consumida por: vista_calificacion_coordinacion_docentes (102)
+-- Consumida por: vista_calificacion_coordinacion_docentes (104), vista_calificacion_cursos_docente (108)
 --
--- Orden de despliegue: 01, 03, 04, 18, 19, 20, 50; luego 104; luego 102.
+-- Orden de despliegue: 01, 03, 04, 18, 19, 20, 50; luego 103; luego 102 → 104, 108.
 -- ============================================
 
 USE instituto_incos;

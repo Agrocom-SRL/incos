@@ -148,6 +148,84 @@ class CalificacionRepository {
       return handleErrorResponse(error, 'Error al guardar la configuración de notas');
     }
   }
+
+  /** GET /v1/calificaciones/gestion-bimestres */
+  async obtenerGestionBimestres() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.GESTION_BIMESTRES);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar la gestión de bimestres');
+    }
+  }
+
+  /** POST /v1/calificaciones/gestion-bimestres/iniciar */
+  async iniciarGestionAcademica() {
+    try {
+      const response = await apiClient.post(CALIFICACIONES_ENDPOINTS.GESTION_BIMESTRES_INICIAR);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return {
+          success: false,
+          error: responseData.error,
+          code: responseData.code,
+        };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      const mapped = handleErrorResponse(error, 'Error al iniciar la gestión académica');
+      if (error?.response?.data?.code) mapped.code = error.response.data.code;
+      return mapped;
+    }
+  }
+
+  /** GET /v1/calificaciones/gestion-bimestres/bimestre/:n/validar-cierre */
+  async validarCierreBimestre(numero) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.GESTION_BIMESTRES_VALIDAR_CIERRE(numero),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al validar el cierre del bimestre');
+    }
+  }
+
+  /** POST /v1/calificaciones/gestion-bimestres/bimestre/:n/cerrar */
+  async cerrarBimestreGestion(numero) {
+    try {
+      const response = await apiClient.post(
+        CALIFICACIONES_ENDPOINTS.GESTION_BIMESTRES_CERRAR(numero),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return {
+          success: false,
+          error: responseData.error,
+          code: responseData.code,
+        };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      const mapped = handleErrorResponse(error, 'Error al cerrar el bimestre');
+      if (error?.response?.data?.code) mapped.code = error.response.data.code;
+      if (error?.response?.data?.data?.validacion) {
+        mapped.validacion = error.response.data.data.validacion;
+      }
+      return mapped;
+    }
+  }
 }
 
 export default new CalificacionRepository();

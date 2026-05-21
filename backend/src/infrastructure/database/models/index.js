@@ -103,7 +103,9 @@ export { TipoEvaluacion } from './tipo_evaluacion.js';
 export { ConfiguracionEvaluacion } from './configuracion_evaluacion.js';
 export { BimestreMatricula } from './bimestre_matricula.js';
 export { Evaluacion } from './evaluacion.js';
+export { EvaluacionNota } from './evaluacion_nota.js';
 export { EvaluacionFinal } from './evaluacion_final.js';
+export { EvaluacionFinalNota } from './evaluacion_final_nota.js';
 
 // ============================================
 // NIVELACIONES

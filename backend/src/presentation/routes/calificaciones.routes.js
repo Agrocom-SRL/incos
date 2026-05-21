@@ -114,5 +114,39 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.savePoliticaInstitucionalController.handle(req, res, next)
   );
 
+  const gestionBimestresListar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.gestion_bimestres', 'LISTAR'),
+  ];
+
+  const gestionBimestresEditar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.gestion_bimestres', 'EDITAR'),
+  ];
+
+  router.get(
+    '/gestion-bimestres',
+    ...gestionBimestresListar,
+    (req, res, next) => controllers.getGestionBimestresController.handle(req, res, next),
+  );
+
+  router.post(
+    '/gestion-bimestres/iniciar',
+    ...gestionBimestresEditar,
+    (req, res, next) => controllers.iniciarGestionAcademicaController.handle(req, res, next),
+  );
+
+  router.get(
+    '/gestion-bimestres/bimestre/:numero/validar-cierre',
+    ...gestionBimestresListar,
+    (req, res, next) => controllers.validarCierreBimestreController.handle(req, res, next),
+  );
+
+  router.post(
+    '/gestion-bimestres/bimestre/:numero/cerrar',
+    ...gestionBimestresEditar,
+    (req, res, next) => controllers.cerrarBimestreGestionController.handle(req, res, next),
+  );
+
   return router;
 }

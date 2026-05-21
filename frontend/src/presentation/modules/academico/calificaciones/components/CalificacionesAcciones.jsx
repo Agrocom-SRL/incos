@@ -31,9 +31,6 @@ export const AccionVolverCoordinacion = ({ to }) => {
   );
 };
 
-/** @deprecated Usar AccionVolverCoordinacion */
-export const AccionVolverDocentes = AccionVolverCoordinacion;
-
 /** Configuración / política de notas (header de coordinación y pantallas relacionadas). */
 export const AccionConfiguracionNotas = ({ onClick }) => (
   <ActionButton
@@ -50,19 +47,22 @@ export const AccionConfiguracionNotas = ({ onClick }) => (
 /** @deprecated Usar AccionConfiguracionNotas */
 export const AccionPoliticaInstitucional = AccionConfiguracionNotas;
 
-export const AccionTableroGestion = ({ to }) => {
+export const AccionGestionBimestres = ({ to }) => {
   const navigate = useNavigate();
   return (
     <ActionButton
-      permiso={CALIFICACIONES_PERMISOS.tablero}
+      permiso={CALIFICACIONES_PERMISOS.gestionBimestres}
       accion="LISTAR"
       variant="primary"
       icon={<DashboardOutlined />}
       onClick={() => navigate(to)}
     >
-      Tablero de gestión
+      Gestión de bimestres
     </ActionButton>
   );
 };
+
+/** @deprecated Usar AccionGestionBimestres */
+export const AccionTableroGestion = AccionGestionBimestres;
 
 export default CalificacionesAcciones;

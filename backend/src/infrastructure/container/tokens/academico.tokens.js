@@ -26,6 +26,10 @@ export const ACADEMICO_TOKENS = {
     getPoliticaCatalogoUseCase: 'academico.getPoliticaCatalogoUseCase',
     listTiposEvaluacionUseCase: 'academico.listTiposEvaluacionUseCase',
     savePoliticaInstitucionalUseCase: 'academico.savePoliticaInstitucionalUseCase',
+    getGestionBimestresUseCase: 'academico.getGestionBimestresUseCase',
+    iniciarGestionAcademicaUseCase: 'academico.iniciarGestionAcademicaUseCase',
+    validarCierreBimestreUseCase: 'academico.validarCierreBimestreUseCase',
+    cerrarBimestreGestionUseCase: 'academico.cerrarBimestreGestionUseCase',
 
     // CONTROLLERS
     listParalelosController: 'academico.listParalelosController',
@@ -45,6 +49,10 @@ export const ACADEMICO_TOKENS = {
     getPoliticaCatalogoController: 'academico.getPoliticaCatalogoController',
     listTiposEvaluacionController: 'academico.listTiposEvaluacionController',
     savePoliticaInstitucionalController: 'academico.savePoliticaInstitucionalController',
+    getGestionBimestresController: 'academico.getGestionBimestresController',
+    iniciarGestionAcademicaController: 'academico.iniciarGestionAcademicaController',
+    validarCierreBimestreController: 'academico.validarCierreBimestreController',
+    cerrarBimestreGestionController: 'academico.cerrarBimestreGestionController',
 
     updateCursoOfertaUseCase: 'academico.updateCursoOfertaUseCase',
     deleteCursoOfertaUseCase: 'academico.deleteCursoOfertaUseCase',

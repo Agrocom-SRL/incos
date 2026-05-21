@@ -3,7 +3,7 @@
 -- Agregación por docente para coordinación de calificaciones (gestión vigente).
 --
 -- Reutiliza:
---   - vista_base_calificacion_coordinacion_fila (104): detalle por matrícula + docente
+--   - vista_base_calificacion_coordinacion_fila (102): detalle por matrícula + docente
 --   - vista_base_docente_ficha (50): nombre y especialidad del docente
 --
 -- Métricas:
@@ -12,7 +12,7 @@
 --
 -- El repositorio aplica LIKE y LIMIT sobre esta vista.
 --
--- Orden de despliegue: 01, 03, 04, 18, 19, 20, 50 → 104 → 102 (y 103 contexto aparte).
+-- Orden de despliegue: 103 → 102 → 104 (y 105–109 para otros endpoints de CalificacionRepository).
 -- ============================================
 
 USE instituto_incos;

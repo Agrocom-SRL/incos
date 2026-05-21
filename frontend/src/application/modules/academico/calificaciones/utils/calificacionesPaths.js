@@ -2,14 +2,18 @@
  * Rutas del módulo Calificaciones (ítem Académico · ACA-CAL).
  *
  * Flujo: Calificaciones → docentes → mis cursos (por docente) → cuaderno.
- * Páginas aparte: política institucional, tablero de gestión.
+ * Páginas aparte: política institucional, gestión de bimestres.
  */
 
 export const CALIFICACIONES_PATH = '/academico/calificaciones';
 
 export const POLITICA_INSTITUCIONAL_PATH = '/academico/calificaciones/politica';
 
-export const CALIFICACIONES_TABLERO_PATH = '/academico/calificaciones/tablero';
+export const CALIFICACIONES_GESTION_BIMESTRES_PATH =
+  '/academico/calificaciones/gestion-bimestres';
+
+/** @deprecated Usar CALIFICACIONES_GESTION_BIMESTRES_PATH */
+export const CALIFICACIONES_TABLERO_PATH = CALIFICACIONES_GESTION_BIMESTRES_PATH;
 
 export const docenteCursosPath = (docenteId) =>
   `/academico/calificaciones/docente/${docenteId}`;

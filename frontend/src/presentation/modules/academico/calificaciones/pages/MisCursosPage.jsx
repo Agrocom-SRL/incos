@@ -14,9 +14,9 @@ import { allSpacing } from '@theme/tokens';
 import { useMisCursosCalificaciones } from '@application-academico/calificaciones/hooks/useMisCursosCalificaciones.js';
 import {
   CALIFICACIONES_PATH,
-  CALIFICACIONES_TABLERO_PATH,
+  CALIFICACIONES_GESTION_BIMESTRES_PATH,
 } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
-import { AccionTableroGestion } from '../components/CalificacionesAcciones.jsx';
+import { AccionGestionBimestres } from '../components/CalificacionesAcciones.jsx';
 import CursoCard from '../components/CursoCard.jsx';
 import CalificacionesCursosSkeleton from '../components/CalificacionesCursosSkeleton.jsx';
 import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
@@ -55,7 +55,7 @@ const MisCursosPage = () => {
   const headerActions = (
     <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end" align="center">
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />
-      <AccionTableroGestion to={CALIFICACIONES_TABLERO_PATH} />
+      <AccionGestionBimestres to={CALIFICACIONES_GESTION_BIMESTRES_PATH} />
     </Flex>
   );
 

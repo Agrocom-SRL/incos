@@ -180,6 +180,12 @@ export const CALIFICACIONES_ENDPOINTS = {
   TIPOS_EVALUACION: `${API_BASE}/calificaciones/tipos-evaluacion`,
   POLITICA: `${API_BASE}/calificaciones/politica`,
   POLITICA_CATALOGO: `${API_BASE}/calificaciones/politica/catalogo`,
+  GESTION_BIMESTRES: `${API_BASE}/calificaciones/gestion-bimestres`,
+  GESTION_BIMESTRES_INICIAR: `${API_BASE}/calificaciones/gestion-bimestres/iniciar`,
+  GESTION_BIMESTRES_VALIDAR_CIERRE: (numero) =>
+    `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/validar-cierre`,
+  GESTION_BIMESTRES_CERRAR: (numero) =>
+    `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/cerrar`,
 };
 
 // ============================================

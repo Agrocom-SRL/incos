@@ -120,8 +120,13 @@ import { EvaluationTypeRepository } from '../../repositories/EvaluationTypeRepos
 import { EvaluationConfigurationRepository } from '../../repositories/EvaluationConfigurationRepository.js';
 import { SubjectEnrollmentBimesterRepository } from '../../repositories/SubjectEnrollmentBimesterRepository.js';
 import { BimesterEvaluationRepository } from '../../repositories/BimesterEvaluationRepository.js';
+import { BimesterEvaluationGradeRepository } from '../../repositories/BimesterEvaluationGradeRepository.js';
 import { FinalEvaluationRepository } from '../../repositories/FinalEvaluationRepository.js';
+import { FinalEvaluationGradeRepository } from '../../repositories/FinalEvaluationGradeRepository.js';
 import { CalificacionRepository } from '../../repositories/CalificacionRepository.js';
+import { CalificacionContextoRepository } from '../../repositories/CalificacionContextoRepository.js';
+import { CalificacionCoordinacionRepository } from '../../repositories/CalificacionCoordinacionRepository.js';
+import { GestionBimestresRepository } from '../../repositories/GestionBimestresRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
@@ -261,7 +266,20 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.evaluationConfigurationRepository, EvaluationConfigurationRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository, SubjectEnrollmentBimesterRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationRepository, BimesterEvaluationRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository, BimesterEvaluationGradeRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.finalEvaluationRepository, FinalEvaluationRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.finalEvaluationGradeRepository, FinalEvaluationGradeRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.calificacionContextoRepository,
+      CalificacionContextoRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+      CalificacionCoordinacionRepository,
+    );
+    registerRepository(container, REPOSITORIOS_TOKENS.gestionBimestresRepository, GestionBimestresRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.calificacionRepository, CalificacionRepository);
 
     // ============================================

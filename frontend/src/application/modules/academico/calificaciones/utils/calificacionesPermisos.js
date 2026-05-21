@@ -1,5 +1,5 @@
 /**
- * Códigos de permiso · Calificaciones (seed 54, IDs 15-24, 106).
+ * Códigos de permiso · Calificaciones (seed 54, IDs 15-24).
  * Un permiso por pantalla en routes.jsx (grupo_ui único en grilla Seguridad).
  */
 
@@ -10,14 +10,12 @@ export const CALIFICACIONES_PERMISOS = {
   coordinacion: 'academico.calificacion.coordinacion',
   /** Mis cursos (docente propio o tras elegir docente) */
   misCursos: 'academico.calificacion.mis_cursos',
-  /** Registro acumulado por bimestre (pantalla previa al cuaderno) */
-  registro: 'academico.calificacion.registro',
   /** Cuaderno de evaluaciones por bimestre */
   cuaderno: 'academico.calificacion.cuaderno',
   /** Política institucional (Nivel 1) */
   politica: 'academico.calificacion.politica',
-  /** Tablero de gestión (Nivel 2) */
-  tablero: 'academico.calificacion.tablero',
+  /** Gestión de bimestres (coordinación, Nivel 2) */
+  gestionBimestres: 'academico.calificacion.gestion_bimestres',
   registrarParcial: 'academico.calificacion.registrar.parcial',
   registrarPractico: 'academico.calificacion.registrar.practico',
   registrarRecuperatorio: 'academico.calificacion.registrar.recuperatorio',

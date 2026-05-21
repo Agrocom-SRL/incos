@@ -4,15 +4,18 @@
  *
  * Permiso ≈ pantalla (seed 54, IDs 15-24):
  *   15 ingreso · 16 coordinación · 17 mis_cursos · 18 cuaderno
- *   19 política · 20 tablero · 21-24 operación cuaderno
+ *   19 política · 20 gestión_bimestres · 21-24 operación cuaderno
  */
 
 import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const PoliticaInstitucionalConnector = lazy(
   () => import('./connectors/PoliticaInstitucionalConnector.jsx'),
 );
-const TableroConnector = lazy(() => import('./connectors/TableroConnector.jsx'));
+const GestionBimestresConnector = lazy(
+  () => import('./connectors/GestionBimestresConnector.jsx'),
+);
 const CalificacionesEntradaConnector = lazy(
   () => import('./connectors/CalificacionesEntradaConnector.jsx'),
 );
@@ -30,10 +33,19 @@ export const calificacionesRoutes = [
     breadcrumbParent: 'ACA-CAL',
   },
   {
+    path: '/academico/calificaciones/gestion-bimestres',
+    element: <GestionBimestresConnector />,
+    key: 'ACA-CAL-GESTION-BIMESTRES',
+    permiso: 'academico.calificacion.gestion_bimestres',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'ACA-CAL',
+  },
+  {
     path: '/academico/calificaciones/tablero',
-    element: <TableroConnector />,
-    key: 'ACA-CAL-TABLERO',
-    permiso: 'academico.calificacion.tablero',
+    element: <Navigate to="/academico/calificaciones/gestion-bimestres" replace />,
+    key: 'ACA-CAL-TABLERO-REDIRECT',
+    permiso: 'academico.calificacion.gestion_bimestres',
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'ACA-CAL',

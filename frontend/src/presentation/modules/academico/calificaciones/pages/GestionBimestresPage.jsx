@@ -1,23 +1,23 @@
 /**
- * Tablero de coordinación — control de bimestres (Nivel 2).
+ * Gestión de bimestres — control institucional del año (coordinación).
  */
 
 import { useCallback, useState } from 'react';
 import { Alert, Button, Modal, Typography, notification } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { useTableroGestion } from '@application-academico/calificaciones/hooks/useTableroGestion.js';
+import { useGestionBimestres } from '@application-academico/calificaciones/hooks/useGestionBimestres.js';
 import CalificacionesAcciones, { AccionVolverCoordinacion } from '../components/CalificacionesAcciones.jsx';
 import { CALIFICACIONES_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import TableroMetricas from '../components/TableroMetricas.jsx';
 import BimestreGestionCard from '../components/BimestreGestionCard.jsx';
 import CerrarBimestreModal from '../components/CerrarBimestreModal.jsx';
 import '../styles/calificaciones.css';
-import '../styles/tablero.css';
+import '../styles/gestion-bimestres.css';
 
 const { Paragraph, Title } = Typography;
 
-const TableroGestionPage = () => {
+const GestionBimestresPage = () => {
   const {
     tablero,
     isLoading,
@@ -28,7 +28,7 @@ const TableroGestionPage = () => {
     validarCierre,
     cerrarBimestre,
     breadcrumbItems,
-  } = useTableroGestion();
+  } = useGestionBimestres();
 
   const [cerrarNumero, setCerrarNumero] = useState(null);
 
@@ -48,7 +48,7 @@ const TableroGestionPage = () => {
           const res = await iniciarGestion();
           notification.success({
             message: 'Gestión iniciada',
-            description: `${res.matriculasInscritoACursando} matrículas actualizadas a CURSANDO.`,
+            description: `${res.matriculasInscritoACursando ?? 0} matrículas actualizadas a CURSANDO.`,
           });
         } catch (err) {
           if (err?.code === 'GESTION_YA_INICIADA') {
@@ -88,7 +88,7 @@ const TableroGestionPage = () => {
 
   const header = (
     <PageHeader
-      title="Tablero de gestión"
+      title="Gestión de bimestres"
       breadcrumbItems={breadcrumbItems}
       className="tablero-page-header"
     />
@@ -106,9 +106,7 @@ const TableroGestionPage = () => {
         {tablero ? (
           <Paragraph className="tablero-gestion__contexto">
             Gestión <strong>{tablero.gestion.nombre}</strong>
-            {tablero.bimestreVigente
-              ? ` · Bimestre vigente: ${tablero.bimestreVigente}`
-              : ''}
+            {tablero.bimestreVigente ? ` · Bimestre vigente: ${tablero.bimestreVigente}` : ''}
           </Paragraph>
         ) : null}
 
@@ -116,7 +114,7 @@ const TableroGestionPage = () => {
           <Alert
             type="error"
             showIcon
-            title="No se pudo cargar el tablero"
+            title="No se pudo cargar la gestión de bimestres"
             action={
               <Button size="small" onClick={refetch}>
                 Reintentar
@@ -155,7 +153,7 @@ const TableroGestionPage = () => {
         ) : null}
 
         {isLoading ? (
-          <div className="tablero-gestion__loading">Cargando tablero…</div>
+          <div className="tablero-gestion__loading">Cargando gestión de bimestres…</div>
         ) : null}
 
         <CerrarBimestreModal
@@ -171,4 +169,4 @@ const TableroGestionPage = () => {
   );
 };
 
-export default TableroGestionPage;
+export default GestionBimestresPage;

@@ -104,7 +104,9 @@ export { EvaluationType } from './EvaluationType.js';
 export { EvaluationConfiguration } from './EvaluationConfiguration.js';
 export { SubjectEnrollmentBimester } from './SubjectEnrollmentBimester.js';
 export { BimesterEvaluation } from './BimesterEvaluation.js';
+export { BimesterEvaluationGrade } from './BimesterEvaluationGrade.js';
 export { FinalEvaluation } from './FinalEvaluation.js';
+export { FinalEvaluationGrade } from './FinalEvaluationGrade.js';
 
 // ============================================
 // NIVELACIONES

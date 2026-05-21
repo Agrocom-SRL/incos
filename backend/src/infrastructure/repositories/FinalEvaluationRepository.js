@@ -20,13 +20,13 @@ export class FinalEvaluationRepository extends BaseRepository {
         const where = {};
 
         if (
-            filters.subjectEnrollmentIds &&
-            Array.isArray(filters.subjectEnrollmentIds) &&
-            filters.subjectEnrollmentIds.length > 0
+            filters.teacherAssignmentIds &&
+            Array.isArray(filters.teacherAssignmentIds) &&
+            filters.teacherAssignmentIds.length > 0
         ) {
-            where.matriculaMateriaId = { [Op.in]: filters.subjectEnrollmentIds };
-        } else if (filters.subjectEnrollmentId) {
-            where.matriculaMateriaId = filters.subjectEnrollmentId;
+            where.asignacionDocenteId = { [Op.in]: filters.teacherAssignmentIds };
+        } else if (filters.teacherAssignmentId) {
+            where.asignacionDocenteId = filters.teacherAssignmentId;
         }
 
         if (
@@ -47,7 +47,7 @@ export class FinalEvaluationRepository extends BaseRepository {
     }
 
     getSearchFields() {
-        return ['nombreEvaluacion', 'descripcion', 'observaciones'];
+        return ['nombreEvaluacion', 'descripcion'];
     }
 
     getDefaultSort() {

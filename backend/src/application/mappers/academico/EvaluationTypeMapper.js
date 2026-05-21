@@ -12,7 +12,7 @@ export function entityToPresentation(evaluationType) {
     descripcion: evaluationType.description ?? null,
     ambito: evaluationType.scope,
     esRecuperatorio: Boolean(evaluationType.isRecovery),
-    permiteMultiplesIntentos: Boolean(evaluationType.allowsMultipleAttempts),
+    permiteMultiplesIntentos: evaluationType.allowsMultipleAttempts?.() ?? false,
     activo: evaluationType.active,
   };
 }

@@ -84,7 +84,9 @@ export { EvaluationTypeMapper } from './EvaluationTypeMapper.js';
 export { EvaluationConfigurationMapper } from './EvaluationConfigurationMapper.js';
 export { SubjectEnrollmentBimesterMapper } from './SubjectEnrollmentBimesterMapper.js';
 export { BimesterEvaluationMapper } from './BimesterEvaluationMapper.js';
+export { BimesterEvaluationGradeMapper } from './BimesterEvaluationGradeMapper.js';
 export { FinalEvaluationMapper } from './FinalEvaluationMapper.js';
+export { FinalEvaluationGradeMapper } from './FinalEvaluationGradeMapper.js';
 
 // ============================================
 // NIVELACIONES

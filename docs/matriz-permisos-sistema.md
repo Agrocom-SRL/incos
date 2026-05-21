@@ -245,7 +245,7 @@ Permisos: `academico.calificacion.*` — menú: `/academico/calificaciones` (IDs
 | `academico.calificacion.mis_cursos` | LISTAR, DETALLE | Mis cursos del docente | REC, DIRA, SECA, DOC, EST (lectura) |
 | `academico.calificacion.cuaderno` | LISTAR | Cuaderno de notas | REC, DIRA, SECA, DOC |
 | `academico.calificacion.politica` | LISTAR, EDITAR | `/academico/calificaciones/politica` | REC, DIRA, SECA |
-| `academico.calificacion.tablero` | LISTAR, EDITAR | `/academico/calificaciones/tablero` | REC, DIRA, SECA |
+| `academico.calificacion.gestion_bimestres` | LISTAR, EDITAR | `/academico/calificaciones/gestion-bimestres` | REC, DIRA, SECA |
 | `academico.calificacion.registrar.*` | CREAR | Evaluaciones y notas en cuaderno | REC, DIRA, SECA, DOC |
 | `academico.calificacion.modificar` | EDITAR | Corregir notas cargadas | REC, DIRA, SECA, DOC |
 

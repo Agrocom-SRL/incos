@@ -10,12 +10,20 @@ import { GetPoliticaInstitucionalUseCase } from '../../../../application/use-cas
 import { GetPoliticaCatalogoUseCase } from '../../../../application/use-cases/academico/GetPoliticaCatalogoUseCase.js';
 import { ListTiposEvaluacionUseCase } from '../../../../application/use-cases/academico/ListTiposEvaluacionUseCase.js';
 import { SavePoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/SavePoliticaInstitucionalUseCase.js';
+import { GetGestionBimestresUseCase } from '../../../../application/use-cases/academico/GetGestionBimestresUseCase.js';
+import { IniciarGestionAcademicaUseCase } from '../../../../application/use-cases/academico/IniciarGestionAcademicaUseCase.js';
+import { ValidarCierreBimestreUseCase } from '../../../../application/use-cases/academico/ValidarCierreBimestreUseCase.js';
+import { CerrarBimestreGestionUseCase } from '../../../../application/use-cases/academico/CerrarBimestreGestionUseCase.js';
 import { ListCoordinacionCalificacionesDocentesController } from '../../../../presentation/controllers/academico/calificaciones/list-coordinacion-docentes.controller.js';
 import { ListCursosCalificacionesController } from '../../../../presentation/controllers/academico/calificaciones/list-cursos-calificaciones.controller.js';
 import { GetPoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-institucional.controller.js';
 import { GetPoliticaCatalogoController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-catalogo.controller.js';
 import { ListTiposEvaluacionController } from '../../../../presentation/controllers/academico/calificaciones/list-tipos-evaluacion.controller.js';
 import { SavePoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/save-politica-institucional.controller.js';
+import { GetGestionBimestresController } from '../../../../presentation/controllers/academico/calificaciones/get-gestion-bimestres.controller.js';
+import { IniciarGestionAcademicaController } from '../../../../presentation/controllers/academico/calificaciones/iniciar-gestion-academica.controller.js';
+import { ValidarCierreBimestreController } from '../../../../presentation/controllers/academico/calificaciones/validar-cierre-bimestre.controller.js';
+import { CerrarBimestreGestionController } from '../../../../presentation/controllers/academico/calificaciones/cerrar-bimestre-gestion.controller.js';
 import { buildCalificacionesRouter } from '../../../../presentation/routes/calificaciones.routes.js';
 
 export function registerCalificacionesResource(container) {
@@ -149,6 +157,90 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getGestionBimestresUseCase,
+    (c) =>
+      new GetGestionBimestresUseCase({
+        gestionBimestresRepository: c.resolve(REPOSITORIOS_TOKENS.gestionBimestresRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.iniciarGestionAcademicaUseCase,
+    (c) =>
+      new IniciarGestionAcademicaUseCase({
+        gestionBimestresRepository: c.resolve(REPOSITORIOS_TOKENS.gestionBimestresRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.validarCierreBimestreUseCase,
+    (c) =>
+      new ValidarCierreBimestreUseCase({
+        gestionBimestresRepository: c.resolve(REPOSITORIOS_TOKENS.gestionBimestresRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.cerrarBimestreGestionUseCase,
+    (c) =>
+      new CerrarBimestreGestionUseCase({
+        gestionBimestresRepository: c.resolve(REPOSITORIOS_TOKENS.gestionBimestresRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getGestionBimestresController,
+    (c) =>
+      new GetGestionBimestresController({
+        getGestionBimestresUseCase: c.resolve(ACADEMICO_TOKENS.getGestionBimestresUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.iniciarGestionAcademicaController,
+    (c) =>
+      new IniciarGestionAcademicaController({
+        iniciarGestionAcademicaUseCase: c.resolve(ACADEMICO_TOKENS.iniciarGestionAcademicaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.validarCierreBimestreController,
+    (c) =>
+      new ValidarCierreBimestreController({
+        validarCierreBimestreUseCase: c.resolve(ACADEMICO_TOKENS.validarCierreBimestreUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.cerrarBimestreGestionController,
+    (c) =>
+      new CerrarBimestreGestionController({
+        cerrarBimestreGestionUseCase: c.resolve(ACADEMICO_TOKENS.cerrarBimestreGestionUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController,
     (c) =>
       new ListCoordinacionCalificacionesDocentesController({
@@ -176,6 +268,12 @@ export function registerCalificacionesResource(container) {
       savePoliticaInstitucionalController: c.resolve(
         ACADEMICO_TOKENS.savePoliticaInstitucionalController
       ),
+      getGestionBimestresController: c.resolve(ACADEMICO_TOKENS.getGestionBimestresController),
+      iniciarGestionAcademicaController: c.resolve(
+        ACADEMICO_TOKENS.iniciarGestionAcademicaController
+      ),
+      validarCierreBimestreController: c.resolve(ACADEMICO_TOKENS.validarCierreBimestreController),
+      cerrarBimestreGestionController: c.resolve(ACADEMICO_TOKENS.cerrarBimestreGestionController),
     };
     const middlewares = {
       validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),

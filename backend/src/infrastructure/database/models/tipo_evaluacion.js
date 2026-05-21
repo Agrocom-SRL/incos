@@ -40,14 +40,6 @@ export const TipoEvaluacion = sequelize.define(
             defaultValue: false,
             comment: 'TRUE si reemplaza la nota original.',
         },
-
-        permiteMultiplesIntentos: {
-            type: DataTypes.BOOLEAN,
-            field: 'permite_multiples_intentos',
-            allowNull: true,
-            defaultValue: false,
-            comment: 'TRUE si permite múltiples intentos.',
-        },
     },
     {
         ...baseModelOptions,

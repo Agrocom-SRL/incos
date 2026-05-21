@@ -7,11 +7,11 @@ export const EvaluacionFinal = sequelize.define(
     {
         ...baseModelFields,
 
-        matriculaMateriaId: {
+        asignacionDocenteId: {
             type: DataTypes.INTEGER,
-            field: 'matricula_materia_id',
+            field: 'asignacion_docente_id',
             allowNull: true,
-            comment: 'Matrícula padre (evaluación de materia completa).',
+            comment: 'Curso al que pertenece esta evaluación final.',
         },
 
         tipoEvaluacionId: {
@@ -34,12 +34,6 @@ export const EvaluacionFinal = sequelize.define(
             comment: 'Descripción o consigna.',
         },
 
-        nota: {
-            type: DataTypes.DECIMAL(5, 2),
-            allowNull: true,
-            comment: 'Nota obtenida (0-100).',
-        },
-
         peso: {
             type: DataTypes.DECIMAL(5, 2),
             allowNull: true,
@@ -50,7 +44,7 @@ export const EvaluacionFinal = sequelize.define(
         fecha: {
             type: DataTypes.DATEONLY,
             allowNull: true,
-            comment: 'Fecha en que se rindió o entregó.',
+            comment: 'Fecha en que se rinde o entrega.',
         },
 
         notasCerradas: {
@@ -58,27 +52,7 @@ export const EvaluacionFinal = sequelize.define(
             field: 'notas_cerradas',
             allowNull: true,
             defaultValue: false,
-            comment: 'TRUE cuando la nota está cerrada.',
-        },
-
-        fechaCierreNotas: {
-            type: DataTypes.DATEONLY,
-            field: 'fecha_cierre_notas',
-            allowNull: true,
-            comment: 'Fecha de cierre de la nota.',
-        },
-
-        cerradasPor: {
-            type: DataTypes.INTEGER,
-            field: 'cerradas_por',
-            allowNull: true,
-            comment: 'Usuario que cerró la nota.',
-        },
-
-        observaciones: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-            comment: 'Observaciones específicas.',
+            comment: 'TRUE cuando las notas de esta evaluación final están cerradas.',
         },
     },
     {
