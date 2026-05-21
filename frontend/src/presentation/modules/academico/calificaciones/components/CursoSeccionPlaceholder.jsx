@@ -5,11 +5,11 @@
 import { Button, Card, Typography } from 'antd';
 import { FileSearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { consolidadoCursoPath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import { notasCursoPath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 
 const { Paragraph, Title } = Typography;
 
-const CursoSeccionPlaceholder = ({ docenteId, asignacionId, titulo, descripcion }) => {
+const CursoSeccionPlaceholder = ({ asignacionId, titulo, descripcion }) => {
   const navigate = useNavigate();
 
   return (
@@ -20,7 +20,7 @@ const CursoSeccionPlaceholder = ({ docenteId, asignacionId, titulo, descripcion 
         <Paragraph type="secondary">
           {descripcion ?? 'Esta sección estará disponible en una próxima fase.'}
         </Paragraph>
-        <Button type="primary" onClick={() => navigate(consolidadoCursoPath(docenteId, asignacionId))}>
+        <Button type="primary" onClick={() => navigate(notasCursoPath(asignacionId))}>
           ← Volver al curso
         </Button>
       </div>

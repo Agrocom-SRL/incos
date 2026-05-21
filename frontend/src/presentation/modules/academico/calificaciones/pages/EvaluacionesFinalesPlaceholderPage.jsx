@@ -6,8 +6,8 @@ import CursoSeccionPlaceholder from '../components/CursoSeccionPlaceholder.jsx';
 import '../styles/calificaciones.css';
 
 const EvaluacionesFinalesPlaceholderPage = () => {
-  const { docenteId, asignacionId } = useParams();
-  const breadcrumbItems = createBreadcrumbItems('ACA-CAL-CUADERNO', 'ACA-CAL', 'Evaluaciones finales');
+  const { asignacionId } = useParams();
+  const breadcrumbItems = createBreadcrumbItems('ACA-CAL-CURSO-FINALES', 'ACA-CAL', 'Evaluaciones finales');
 
   return (
     <PageTemplate
@@ -16,11 +16,7 @@ const EvaluacionesFinalesPlaceholderPage = () => {
       }
       sidebar={null}
     >
-      <CursoSeccionPlaceholder
-        docenteId={docenteId}
-        asignacionId={asignacionId}
-        titulo="Evaluaciones finales"
-      />
+      <CursoSeccionPlaceholder asignacionId={asignacionId} titulo="Evaluaciones finales" />
     </PageTemplate>
   );
 };

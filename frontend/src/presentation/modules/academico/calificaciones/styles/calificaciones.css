@@ -1117,6 +1117,185 @@
   width: 100%;
 }
 
+/* —— Registro académico (consolidado) —— */
+.cal-consolidado {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: var(--color-primary, #196b45);
+  --cuaderno-texto-medio: var(--text-500, #6b7280);
+  --cuaderno-texto-fuerte: var(--text-800, #1f2937);
+}
+
+.cal-curso-profile__avatar {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.cal-consolidado-grid__bim-head {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 28px;
+  position: relative;
+}
+
+.cal-consolidado-grid__bim-titulo {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.cal-consolidado-grid__bim-edit {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  color: #fff !important;
+  padding: 0 4px !important;
+  height: 24px !important;
+}
+
+.cal-consolidado-grid__bim-head:hover .cal-consolidado-grid__bim-edit,
+.cal-consolidado-grid__bim-edit:focus-visible {
+  opacity: 1;
+}
+
+.cal-consolidado-grid .ant-table-thead > tr > th:hover .cal-consolidado-grid__bim-edit {
+  opacity: 1;
+}
+
+.cal-consolidado-header {
+  margin-bottom: 20px;
+}
+
+.cal-consolidado-header__titulo-block {
+  margin-bottom: 16px;
+}
+
+.cal-consolidado-header__sistema {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.cal-consolidado-header__titulo {
+  margin: 0 0 4px !important;
+  color: var(--cuaderno-verde-oscuro) !important;
+}
+
+.cal-consolidado-header__subtitulo {
+  display: block;
+  font-size: 14px;
+}
+
+.cal-consolidado-header__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+  padding: 16px;
+  background: var(--cuaderno-verde-tenue);
+  border: 1px solid var(--cuaderno-verde-medio);
+  border-radius: var(--incos-radius-lg, 12px);
+}
+
+.cal-consolidado-header__meta-item {
+  margin: 0;
+  min-width: 0;
+}
+
+.cal-consolidado-header__meta-item dt {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-consolidado-header__meta-item dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+.cal-consolidado__leyenda {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--cuaderno-texto-medio);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cal-consolidado__hoja .ant-card-body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.cal-consolidado-grid-wrap {
+  overflow-x: auto;
+}
+
+.cal-consolidado-grid.ant-table-wrapper .ant-table {
+  font-size: 12px;
+}
+
+.cal-consolidado-grid .ant-table-thead > tr > th {
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 6px !important;
+  white-space: nowrap;
+}
+
+.cal-consolidado-grid .ant-table-thead > tr:first-child > th {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cal-consolidado-grid .ant-table-tbody > tr > td {
+  padding: 6px 8px !important;
+  vertical-align: middle;
+}
+
+.cal-consolidado-grid .ant-table-tbody > tr:nth-child(even) > td {
+  background: #fafafa;
+}
+
+.cal-consolidado-grid__col-nombre {
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.cal-consolidado-grid__col-cedula {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-consolidado-grid__col-num,
+.cal-consolidado-grid__col-suma,
+.cal-consolidado-grid__col-final {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.cal-consolidado-grid__col-suma {
+  font-weight: 600;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-consolidado-grid__nota {
+  display: inline-block;
+  min-width: 1.5em;
+}
+
+.cal-consolidado-grid__obs {
+  margin: 0;
+  font-size: 11px;
+}
+
 /* —— Placeholder finales / nivelación —— */
 .cal-curso-placeholder {
   max-width: 520px;

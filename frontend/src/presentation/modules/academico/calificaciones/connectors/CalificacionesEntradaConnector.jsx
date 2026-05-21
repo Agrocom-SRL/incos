@@ -8,7 +8,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@application-auth';
 import { useCasesFactory } from '@container';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
-import { docenteCursosPath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import { MIS_CURSOS_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import CoordinacionCalificacionesPage from '../pages/CoordinacionCalificacionesPage.jsx';
 
 const DocenteMisCursosRedirect = () => {
@@ -21,8 +21,8 @@ const DocenteMisCursosRedirect = () => {
       try {
         const uc = useCasesFactory.listarMisCursosCalificaciones();
         const result = await uc.ejecutar();
-        if (!cancelled && result?.success && result.data?.docente?.id) {
-          navigate(docenteCursosPath(result.data.docente.id), { replace: true });
+        if (!cancelled && result?.success) {
+          navigate(MIS_CURSOS_PATH, { replace: true });
           return;
         }
         if (!cancelled) {

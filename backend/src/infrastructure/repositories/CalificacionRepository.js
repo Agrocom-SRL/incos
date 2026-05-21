@@ -43,4 +43,12 @@ export class CalificacionRepository {
       notaMinimaAprobacion,
     );
   }
+
+  obtenerCursoPorAsignacion(asignacionId) {
+    return this._coordinacion.obtenerCursoPorAsignacion(asignacionId);
+  }
+
+  listarEstudiantesRegistroNotas(asignacionId) {
+    return this._coordinacion.listarEstudiantesRegistroNotas(asignacionId);
+  }
 }

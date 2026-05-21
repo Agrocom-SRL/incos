@@ -33,6 +33,7 @@ import {
   ListCoordinacionDocentesUseCase,
   ListMisCursosUseCase,
   ObtenerPoliticaInstitucionalUseCase,
+  ObtenerRegistroNotasCursoUseCase,
 } from '@useCases/academico/calificaciones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import CursoRepository from '@infrastructure/repositories/CursoRepository';
@@ -119,6 +120,10 @@ export function registerAcademicoModule(factory) {
 
   factory.listarMisCursosCalificaciones = () => {
     return new ListMisCursosUseCase(CalificacionRepository);
+  };
+
+  factory.obtenerRegistroNotasCurso = () => {
+    return new ObtenerRegistroNotasCursoUseCase(CalificacionRepository);
   };
 
   factory.obtenerPoliticaInstitucional = () => {

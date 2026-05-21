@@ -3,10 +3,10 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { consolidadoCursoPath } from '../utils/calificacionesPaths.js';
+import { notasCursoPath } from '../utils/calificacionesPaths.js';
+import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
 
 const formatGestionLabel = (nombre) => {
   if (!nombre) return '';
@@ -24,8 +24,8 @@ const getResumenCursos = (cursos) => {
 };
 
 export const useMisCursosCalificaciones = () => {
-  const { docenteId: docenteIdParam } = useParams();
-  const esVistaCoordinacion = Boolean(docenteIdParam);
+  const { docenteIdCoordinacion, docenteNombreCoordinacion, esVistaCoordinacion } =
+    useCalificacionesVistaContext();
 
   const [cursos, setCursos] = useState(null);
   const [docente, setDocente] = useState(null);
@@ -38,7 +38,7 @@ export const useMisCursosCalificaciones = () => {
     try {
       const uc = useCasesFactory.listarMisCursosCalificaciones();
       const result = esVistaCoordinacion
-        ? await uc.ejecutar({ docenteId: docenteIdParam })
+        ? await uc.ejecutar({ docenteId: docenteIdCoordinacion })
         : await uc.ejecutar();
 
       if (!result?.success) {
@@ -58,7 +58,7 @@ export const useMisCursosCalificaciones = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [docenteIdParam, esVistaCoordinacion]);
+  }, [docenteIdCoordinacion, esVistaCoordinacion]);
 
   useEffect(() => {
     cargar();
@@ -66,7 +66,7 @@ export const useMisCursosCalificaciones = () => {
 
   const breadcrumbItems = useMemo(() => {
     if (esVistaCoordinacion && docente) {
-      return createBreadcrumbItems('ACA-CAL-DOCENTE-CURSOS', 'ACA-CAL', 'Mis cursos');
+      return createBreadcrumbItems('ACA-CAL-MIS-CURSOS', 'ACA-CAL', 'Mis cursos');
     }
     return createBreadcrumbItems('ACA-CAL', 'ACA-CAL', 'Mis cursos');
   }, [esVistaCoordinacion, docente]);
@@ -103,7 +103,7 @@ export const useMisCursosCalificaciones = () => {
       : `${resumen.totalCursos} cursos activos · ${resumen.totalParalelos} paralelos`
     : '';
 
-  const docenteId = docente?.id ?? docenteIdParam;
+  const docenteId = docente?.id ?? docenteIdCoordinacion;
 
   return {
     titulo,
@@ -117,7 +117,7 @@ export const useMisCursosCalificaciones = () => {
     refetch: cargar,
     breadcrumbItems,
     periodoLectivoLabel,
-    cuadernoPath: (cursoId) =>
-      docenteId ? consolidadoCursoPath(docenteId, cursoId) : '#',
+    docenteNombreCoordinacion,
+    cursoPath: (cursoId) => (cursoId ? notasCursoPath(cursoId) : '#'),
   };
 };

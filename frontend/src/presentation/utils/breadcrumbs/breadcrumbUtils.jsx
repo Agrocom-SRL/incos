@@ -13,7 +13,7 @@ const buildBreadcrumbChain = (allRoutes, key, routeKey, breadcrumbItems, current
   }
 
   if (key !== routeKey || currentTitle === null) {
-    const title = route.menu?.label || route.path;
+    const title = route.breadcrumbLabel || route.menu?.label || route.path;
     const item = route.element ? { href: route.path, title } : { title };
     breadcrumbItems.push(item);
   }
@@ -51,7 +51,7 @@ export const createBreadcrumbItems = (
   } else if (currentRoute.key !== rootKey) {
     const rootRoute = allRoutes.find(r => r.key === rootKey);
     if (rootRoute) {
-      const title = rootRoute.menu?.label || rootRoute.path;
+      const title = rootRoute.breadcrumbLabel || rootRoute.menu?.label || rootRoute.path;
       breadcrumbItems.push(
         rootRoute.element ? { href: rootRoute.path, title } : { title }
       );
@@ -61,7 +61,7 @@ export const createBreadcrumbItems = (
   if (currentTitle) {
     breadcrumbItems.push({ title: currentTitle });
   } else {
-    const title = currentRoute.menu?.label || currentRoute.path;
+    const title = currentRoute.breadcrumbLabel || currentRoute.menu?.label || currentRoute.path;
     breadcrumbItems.push(
       currentRoute.element ? { href: currentRoute.path, title } : { title }
     );

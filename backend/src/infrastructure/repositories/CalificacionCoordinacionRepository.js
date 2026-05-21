@@ -153,4 +153,95 @@ export class CalificacionCoordinacionRepository {
       },
     );
   }
+
+  /** @param {number} asignacionId */
+  async obtenerCursoPorAsignacion(asignacionId) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        docente_id,
+        asignacion_docente_id,
+        materia_nombre,
+        materia_sigla,
+        carrera_nombre,
+        carrera_color_hex,
+        paralelo_nombre,
+        paralelo_turno,
+        asignatura_periodo_nombre,
+        cantidad_estudiantes
+      FROM vista_calificacion_cursos_docente
+      WHERE asignacion_docente_id = ?
+      LIMIT 1
+      `,
+      { replacements: [asignacionId], type: sequelize.QueryTypes.SELECT },
+    );
+    return rows[0] ?? null;
+  }
+
+  /** @param {number} asignacionId */
+  async listarEstudiantesRegistroNotas(asignacionId) {
+    return sequelize.query(
+      `
+      SELECT
+        est.id AS estudiante_id,
+        est.codigo_estudiante AS codigo_estudiante,
+        est.ci AS cedula,
+        TRIM(
+          CONCAT_WS(
+            ' ',
+            est.apellido_paterno,
+            est.apellido_materno,
+            est.nombres
+          )
+        ) AS nombre_completo,
+        mm.id AS matricula_materia_id,
+        mm.nota_final,
+        bm.bimestre,
+        bm.nota_teorico,
+        bm.nota_practico,
+        bm.nota_bimestre,
+        bm.nota_habilitacion,
+        bm.estado AS estado_bimestre
+      FROM matriculas_materia mm
+      INNER JOIN inscripciones ins
+        ON ins.id = mm.inscripcion_id
+        AND ins.deleted_at IS NULL
+        AND ins.activo = TRUE
+      INNER JOIN estudiantes_datos_academicos eda
+        ON eda.id = ins.datos_academicos_id
+        AND eda.deleted_at IS NULL
+        AND eda.activo = TRUE
+      INNER JOIN estudiantes est
+        ON est.id = eda.estudiante_id
+        AND est.deleted_at IS NULL
+        AND est.activo = TRUE
+      INNER JOIN asignaciones_docentes ad
+        ON ad.id = mm.asignacion_docente_id
+        AND ad.deleted_at IS NULL
+        AND ad.activo = TRUE
+      INNER JOIN gestiones_planes gp
+        ON gp.id = ad.gestion_plan_id
+        AND gp.deleted_at IS NULL
+      INNER JOIN gestiones g
+        ON g.id = gp.gestion_id
+        AND g.vigente = TRUE
+        AND g.activo = TRUE
+        AND g.deleted_at IS NULL
+      LEFT JOIN bimestres_matricula bm
+        ON bm.matricula_materia_id = mm.id
+        AND bm.deleted_at IS NULL
+        AND bm.activo = TRUE
+      WHERE mm.asignacion_docente_id = ?
+        AND mm.estado IN ('INSCRITO', 'CURSANDO')
+        AND mm.deleted_at IS NULL
+        AND mm.activo = TRUE
+      ORDER BY
+        est.apellido_paterno ASC,
+        est.apellido_materno ASC,
+        est.nombres ASC,
+        bm.bimestre ASC
+      `,
+      { replacements: [asignacionId], type: sequelize.QueryTypes.SELECT },
+    );
+  }
 }

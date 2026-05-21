@@ -12,11 +12,7 @@ import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useMisCursosCalificaciones } from '@application-academico/calificaciones/hooks/useMisCursosCalificaciones.js';
-import {
-  CALIFICACIONES_PATH,
-  CALIFICACIONES_GESTION_BIMESTRES_PATH,
-} from '@application-academico/calificaciones/utils/calificacionesPaths.js';
-import { AccionGestionBimestres } from '../components/CalificacionesAcciones.jsx';
+import { CALIFICACIONES_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import CursoCard from '../components/CursoCard.jsx';
 import CalificacionesCursosSkeleton from '../components/CalificacionesCursosSkeleton.jsx';
 import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
@@ -44,7 +40,7 @@ const MisCursosPage = () => {
     error,
     refetch,
     breadcrumbItems,
-    cuadernoPath,
+    cursoPath,
     periodoLectivoLabel,
   } = useMisCursosCalificaciones();
 
@@ -55,7 +51,6 @@ const MisCursosPage = () => {
   const headerActions = (
     <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end" align="center">
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />
-      <AccionGestionBimestres to={CALIFICACIONES_GESTION_BIMESTRES_PATH} />
     </Flex>
   );
 
@@ -135,7 +130,7 @@ const MisCursosPage = () => {
                       <CursoCard
                         key={curso.id}
                         curso={curso}
-                        cuadernoPath={cuadernoPath}
+                        cursoPath={cursoPath}
                         bimestreVigente={docente?.bimestreVigente}
                       />
                     ))}

@@ -4,3 +4,4 @@ export { ObtenerPoliticaInstitucionalUseCase } from './ObtenerPoliticaInstitucio
 export { GuardarPoliticaInstitucionalUseCase } from './GuardarPoliticaInstitucionalUseCase.js';
 export { GetTiposEvaluacionUseCase } from './GetTiposEvaluacionUseCase.js';
 export { GetPoliticaCatalogoUseCase } from './GetPoliticaCatalogoUseCase.js';
+export { ObtenerRegistroNotasCursoUseCase } from './ObtenerRegistroNotasCursoUseCase.js';

@@ -63,7 +63,7 @@ const CursoCardBimestre = ({ bimestre, esVigente }) => {
   );
 };
 
-const CursoCard = ({ curso, cuadernoPath, bimestreVigente = null }) => {
+const CursoCard = ({ curso, cursoPath, bimestreVigente = null }) => {
   const navigate = useNavigate();
 
   return (
@@ -127,11 +127,8 @@ const CursoCard = ({ curso, cuadernoPath, bimestreVigente = null }) => {
         </div>
       ) : null}
 
-      <Button
-        variant="info"
-        onClick={() => navigate(cuadernoPath(curso.id))}
-      >
-        Abrir cuaderno
+      <Button variant="info" onClick={() => navigate(cursoPath(curso.id))}>
+        Abrir curso
       </Button>
     </Card>
   );

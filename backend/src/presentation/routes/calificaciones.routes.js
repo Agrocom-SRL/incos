@@ -174,6 +174,12 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   );
 
   router.get(
+    '/asignaciones/:asignacionId/notas',
+    ...cuadernoListar,
+    (req, res, next) => controllers.getRegistroNotasCursoController.handle(req, res, next),
+  );
+
+  router.get(
     '/asignaciones/:asignacionId/ajustes',
     ...cuadernoListar,
     (req, res, next) => controllers.getAjustesCursoController.handle(req, res, next),

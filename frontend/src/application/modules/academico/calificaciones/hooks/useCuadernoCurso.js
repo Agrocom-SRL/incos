@@ -6,7 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { docenteCursosPath } from '../utils/calificacionesPaths.js';
+import { MIS_CURSOS_PATH, notasCursoPath } from '../utils/calificacionesPaths.js';
+import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
 
 const CUADERNO_API_PENDIENTE =
   'El cuaderno de notas aún no está conectado al backend. Mis cursos y política ya usan API real.';
@@ -19,9 +20,9 @@ const bimestresPorDefecto = (vigente) =>
   });
 
 export const useCuadernoCurso = () => {
-  const { cursoId, asignacionId, docenteId, n: bimestreRuta } = useParams();
-  const cursoIdResolved = asignacionId ?? cursoId;
-  const esVistaAdmin = Boolean(docenteId);
+  const { asignacionId, n: bimestreRuta } = useParams();
+  const cursoIdResolved = asignacionId;
+  const { docenteIdCoordinacion, esVistaCoordinacion } = useCalificacionesVistaContext();
 
   const [cuaderno, setCuaderno] = useState(null);
   const [bimestreActivo, setBimestreActivoState] = useState(null);
@@ -32,8 +33,8 @@ export const useCuadernoCurso = () => {
 
   const cargarContexto = useCallback(async () => {
     const uc = useCasesFactory.listarMisCursosCalificaciones();
-    const result = esVistaAdmin
-      ? await uc.ejecutar({ docenteId })
+    const result = esVistaCoordinacion
+      ? await uc.ejecutar({ docenteId: docenteIdCoordinacion })
       : await uc.ejecutar();
 
     if (!result?.success) {
@@ -52,7 +53,7 @@ export const useCuadernoCurso = () => {
     }
 
     return { docente, cursoList };
-  }, [cursoIdResolved, docenteId, esVistaAdmin]);
+  }, [cursoIdResolved, docenteIdCoordinacion, esVistaCoordinacion]);
 
   const armarCuadernoVacio = useCallback((docente, cursoList, bimestreActivoNum) => {
     const bimestreVigente = Number(docente.bimestreVigente) || 1;
@@ -106,7 +107,7 @@ export const useCuadernoCurso = () => {
     return () => {
       cancelled = true;
     };
-  }, [cursoIdResolved, docenteId, esVistaAdmin, cargarContexto, armarCuadernoVacio]);
+  }, [cursoIdResolved, docenteIdCoordinacion, esVistaCoordinacion, cargarContexto, armarCuadernoVacio]);
 
   useEffect(() => {
     if (bimestreRuta != null) {
@@ -140,10 +141,9 @@ export const useCuadernoCurso = () => {
   }, []);
 
   const breadcrumbItems = useMemo(() => {
-    const routeKey = esVistaAdmin ? 'ACA-CAL-DOCENTES-CUADERNO' : 'ACA-CAL-CUADERNO';
     const titulo = cuaderno?.curso?.materia ?? null;
-    return createBreadcrumbItems(routeKey, 'ACA-CAL', titulo);
-  }, [cuaderno?.curso?.materia, esVistaAdmin]);
+    return createBreadcrumbItems('ACA-CAL-CUADERNO', 'ACA-CAL', titulo);
+  }, [cuaderno?.curso?.materia]);
 
   const subtituloCurso = cuaderno
     ? [
@@ -173,10 +173,9 @@ export const useCuadernoCurso = () => {
     refetch,
     breadcrumbItems,
     subtituloCurso,
-    volverPath: docenteCursosPath(docenteId),
+    volverPath: cursoIdResolved ? notasCursoPath(cursoIdResolved) : MIS_CURSOS_PATH,
     cursoId: cursoIdResolved,
-    docenteId,
-    esVistaAdmin,
+    esVistaCoordinacion,
     crearEvaluacion: operacionNoDisponible,
     editarEvaluacion: operacionNoDisponible,
     eliminarEvaluacion: operacionNoDisponible,

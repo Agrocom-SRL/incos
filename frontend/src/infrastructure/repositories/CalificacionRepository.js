@@ -149,6 +149,23 @@ class CalificacionRepository {
     }
   }
 
+  /** GET /v1/calificaciones/asignaciones/:asignacionId/notas */
+  async obtenerRegistroNotas(asignacionId) {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.REGISTRO_NOTAS(asignacionId));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el registro de notas');
+    }
+  }
+
   /** GET /v1/calificaciones/gestion-bimestres */
   async obtenerGestionBimestres() {
     try {

@@ -22,7 +22,7 @@ import { allSpacing, allColors, componentConfig, shadows } from '@theme/tokens';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { useVistaAdminDocentes } from '@application-academico/calificaciones/hooks/useVistaAdminDocentes.js';
 import {
-  docenteCursosPath,
+  MIS_CURSOS_PATH,
   POLITICA_INSTITUCIONAL_PATH,
 } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
@@ -121,7 +121,11 @@ const CoordinacionCalificacionesPage = () => {
             permiso={CALIFICACIONES_PERMISOS.coordinacion}
             accion="LISTAR"
             variant="primary"
-            onClick={() => navigate(docenteCursosPath(row.id))}
+            onClick={() =>
+              navigate(MIS_CURSOS_PATH, {
+                state: { docenteId: row.id, docenteNombre: row.nombre },
+              })
+            }
           >
             Ver cursos
           </ActionButton>

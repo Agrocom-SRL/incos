@@ -26,8 +26,10 @@ import { ValidarCierreBimestreController } from '../../../../presentation/contro
 import { CerrarBimestreGestionController } from '../../../../presentation/controllers/academico/calificaciones/cerrar-bimestre-gestion.controller.js';
 import { GetAjustesCursoUseCase } from '../../../../application/use-cases/academico/GetAjustesCursoUseCase.js';
 import { SaveAjustesCursoUseCase } from '../../../../application/use-cases/academico/SaveAjustesCursoUseCase.js';
+import { GetRegistroNotasCursoUseCase } from '../../../../application/use-cases/academico/GetRegistroNotasCursoUseCase.js';
 import { GetAjustesCursoController } from '../../../../presentation/controllers/academico/calificaciones/get-ajustes-curso.controller.js';
 import { SaveAjustesCursoController } from '../../../../presentation/controllers/academico/calificaciones/save-ajustes-curso.controller.js';
+import { GetRegistroNotasCursoController } from '../../../../presentation/controllers/academico/calificaciones/get-registro-notas-curso.controller.js';
 import { buildCalificacionesRouter } from '../../../../presentation/routes/calificaciones.routes.js';
 
 export function registerCalificacionesResource(container) {
@@ -211,6 +213,21 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getRegistroNotasCursoUseCase,
+    (c) =>
+      new GetRegistroNotasCursoUseCase({
+        calificacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
+        ),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.saveAjustesCursoUseCase,
     (c) =>
       new SaveAjustesCursoUseCase({
@@ -287,6 +304,17 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getRegistroNotasCursoController,
+    (c) =>
+      new GetRegistroNotasCursoController({
+        getRegistroNotasCursoUseCase: c.resolve(ACADEMICO_TOKENS.getRegistroNotasCursoUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController,
     (c) =>
       new ListCoordinacionCalificacionesDocentesController({
@@ -322,6 +350,7 @@ export function registerCalificacionesResource(container) {
       cerrarBimestreGestionController: c.resolve(ACADEMICO_TOKENS.cerrarBimestreGestionController),
       getAjustesCursoController: c.resolve(ACADEMICO_TOKENS.getAjustesCursoController),
       saveAjustesCursoController: c.resolve(ACADEMICO_TOKENS.saveAjustesCursoController),
+      getRegistroNotasCursoController: c.resolve(ACADEMICO_TOKENS.getRegistroNotasCursoController),
     };
     const middlewares = {
       validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),

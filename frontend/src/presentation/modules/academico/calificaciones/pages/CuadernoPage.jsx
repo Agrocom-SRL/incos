@@ -3,9 +3,12 @@
  */
 
 import { useCallback, useState } from 'react';
-import { Alert, Button, Card, Spin } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { Alert, Button, Card, Flex, Spin } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { BackButton } from '@atoms';
 import { useCuadernoCurso } from '@application-academico/calificaciones/hooks/useCuadernoCurso.js';
 import { CuadernoAutosaveProvider } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
 import CuadernoHeader from '../components/CuadernoHeader.jsx';
@@ -21,6 +24,7 @@ import '@presentation/styles/pages/detail-page.css';
 import '../styles/calificaciones.css';
 
 const CuadernoPage = () => {
+  const navigate = useNavigate();
   const {
     curso,
     evaluaciones,
@@ -36,6 +40,7 @@ const CuadernoPage = () => {
     breadcrumbItems,
     subtituloCurso,
     cursoId,
+    volverPath,
     crearEvaluacion,
     editarEvaluacion,
     eliminarEvaluacion,
@@ -86,7 +91,19 @@ const CuadernoPage = () => {
   );
 
   const header = (
-    <PageHeader breadcrumbItems={breadcrumbItems} className="cal-cuaderno-page-header" />
+    <PageHeader
+      breadcrumbItems={breadcrumbItems}
+      className="cal-cuaderno-page-header"
+      actions={
+        <Flex justify="flex-end">
+          <BackButton
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(volverPath)}
+            aria-label="Volver al registro académico"
+          />
+        </Flex>
+      }
+    />
   );
 
   if (isLoading && !curso) {
