@@ -5,11 +5,13 @@
 import { ACADEMICO_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListCoordinacionCalificacionesDocentesUseCase } from '../../../../application/use-cases/academico/ListCoordinacionCalificacionesDocentesUseCase.js';
+import { ListCursosCalificacionesUseCase } from '../../../../application/use-cases/academico/ListCursosCalificacionesUseCase.js';
 import { GetPoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/GetPoliticaInstitucionalUseCase.js';
 import { GetPoliticaCatalogoUseCase } from '../../../../application/use-cases/academico/GetPoliticaCatalogoUseCase.js';
 import { ListTiposEvaluacionUseCase } from '../../../../application/use-cases/academico/ListTiposEvaluacionUseCase.js';
 import { SavePoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/SavePoliticaInstitucionalUseCase.js';
 import { ListCoordinacionCalificacionesDocentesController } from '../../../../presentation/controllers/academico/calificaciones/list-coordinacion-docentes.controller.js';
+import { ListCursosCalificacionesController } from '../../../../presentation/controllers/academico/calificaciones/list-cursos-calificaciones.controller.js';
 import { GetPoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-institucional.controller.js';
 import { GetPoliticaCatalogoController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-catalogo.controller.js';
 import { ListTiposEvaluacionController } from '../../../../presentation/controllers/academico/calificaciones/list-tipos-evaluacion.controller.js';
@@ -17,6 +19,17 @@ import { SavePoliticaInstitucionalController } from '../../../../presentation/co
 import { buildCalificacionesRouter } from '../../../../presentation/routes/calificaciones.routes.js';
 
 export function registerCalificacionesResource(container) {
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.listCursosCalificacionesUseCase,
+    (c) =>
+      new ListCursosCalificacionesUseCase({
+        calificacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
   registerComponent(
     container,
     ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesUseCase,
@@ -122,6 +135,17 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.listCursosCalificacionesController,
+    (c) =>
+      new ListCursosCalificacionesController({
+        listCursosCalificacionesUseCase: c.resolve(ACADEMICO_TOKENS.listCursosCalificacionesUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController,
     (c) =>
       new ListCoordinacionCalificacionesDocentesController({
@@ -135,6 +159,9 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(container, ACADEMICO_TOKENS.calificacionesRouter, (c) => {
     const controllers = {
+      listCursosCalificacionesController: c.resolve(
+        ACADEMICO_TOKENS.listCursosCalificacionesController
+      ),
       listCoordinacionCalificacionesDocentesController: c.resolve(
         ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController
       ),

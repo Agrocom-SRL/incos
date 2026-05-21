@@ -5,8 +5,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { calificacionesFakeApi } from '../fake-api/index.js';
-
 const BUSQUEDA_DEBOUNCE_MS = 400;
 const BUSQUEDA_MIN_CHARS = 2;
 const PRELIM_LIMIT = 15;
@@ -52,10 +50,6 @@ export const useVistaAdminDocentes = () => {
       setIsLoading(false);
     }
   }, [busquedaDebounced]);
-
-  useEffect(() => {
-    calificacionesFakeApi.desactivarImpersonacion().catch(() => {});
-  }, []);
 
   useEffect(() => {
     cargar();

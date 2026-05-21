@@ -93,6 +93,46 @@ class CalificacionRepository {
    * PUT /v1/calificaciones/politica
    * @param {Object} cambios
    */
+  /**
+   * GET /v1/calificaciones/mis-cursos
+   */
+  async listarMisCursos() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.MIS_CURSOS);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar tus cursos');
+    }
+  }
+
+  /**
+   * GET /v1/calificaciones/coordinacion/docentes/:docenteId/cursos
+   */
+  async listarCursosDocenteCoordinacion(docenteId) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.COORDINACION_DOCENTE_CURSOS(docenteId),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar los cursos del docente');
+    }
+  }
+
   async guardarPoliticaInstitucional(cambios) {
     try {
       const response = await apiClient.put(CALIFICACIONES_ENDPOINTS.POLITICA, cambios);

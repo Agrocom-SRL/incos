@@ -3,7 +3,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { calificacionesFakeApi } from '../fake-api/index.js';
+import { calificacionesPendingApi as calificacionesFakeApi } from '../api/calificacionesPendingApi.js';
 
 const DEBOUNCE_MS = 1500;
 const GUARDADO_IDLE_MS = 2000;

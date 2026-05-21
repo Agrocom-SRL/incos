@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { calificacionesFakeApi } from '../fake-api/index.js';
+import { calificacionesPendingApi as calificacionesFakeApi } from '../api/calificacionesPendingApi.js';
 import { calcularVistaPrevia } from '../utils/calcularVistaPrevia.js';
 
 export const useVistaPreviaNotas = ({

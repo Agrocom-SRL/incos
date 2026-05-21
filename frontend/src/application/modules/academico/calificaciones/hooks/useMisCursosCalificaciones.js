@@ -1,11 +1,12 @@
 /**
- * Mis cursos — docente logueado (sin :docenteId) o coordinación (con :docenteId + impersonación).
+ * Mis cursos — docente logueado (sin :docenteId) o coordinación (con :docenteId).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '@application-auth';
+import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { calificacionesFakeApi } from '../fake-api/index.js';
 import { docenteCuadernoPath } from '../utils/calificacionesPaths.js';
 
 const getResumenCursos = (cursos) => {
@@ -18,11 +19,11 @@ const getResumenCursos = (cursos) => {
 
 export const useMisCursosCalificaciones = () => {
   const { docenteId: docenteIdParam } = useParams();
+  const { usuario } = useAuth();
   const esVistaCoordinacion = Boolean(docenteIdParam);
 
   const [cursos, setCursos] = useState(null);
   const [docente, setDocente] = useState(null);
-  const [impersonacion, setImpersonacion] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -30,24 +31,25 @@ export const useMisCursosCalificaciones = () => {
     setIsLoading(true);
     setError(null);
     try {
-      if (esVistaCoordinacion) {
-        const data = await calificacionesFakeApi.obtenerCursosDocenteAdmin({
-          docenteId: docenteIdParam,
-        });
-        setDocente(data.docente);
-        setCursos(data.cursos);
-        setImpersonacion(data.impersonacion);
-      } else {
-        const data = await calificacionesFakeApi.obtenerCalificacionesCursos();
-        setDocente(data.docente);
-        setCursos(data.cursos);
-        setImpersonacion(null);
+      const uc = useCasesFactory.listarMisCursosCalificaciones();
+      const result = esVistaCoordinacion
+        ? await uc.ejecutar({ docenteId: docenteIdParam })
+        : await uc.ejecutar();
+
+      if (!result?.success) {
+        setDocente(null);
+        setCursos(null);
+        setError(result?.error || 'No se pudieron cargar los cursos');
+        return;
       }
+
+      const data = result.data ?? {};
+      setDocente(data.docente ?? null);
+      setCursos(Array.isArray(data.cursos) ? data.cursos : []);
     } catch (err) {
-      setError(err);
+      setError(err?.message || 'No se pudieron cargar los cursos');
       setCursos(null);
       setDocente(null);
-      setImpersonacion(null);
     } finally {
       setIsLoading(false);
     }
@@ -55,19 +57,28 @@ export const useMisCursosCalificaciones = () => {
 
   useEffect(() => {
     cargar();
-    return () => {
-      if (esVistaCoordinacion) {
-        calificacionesFakeApi.desactivarImpersonacion().catch(() => {});
-      }
+  }, [cargar]);
+
+  const impersonacion = useMemo(() => {
+    if (!esVistaCoordinacion || !docente) return null;
+    const adminNombre =
+      usuario?.username ||
+      [usuario?.nombres, usuario?.apellidos].filter(Boolean).join(' ').trim() ||
+      'Coordinación';
+    return {
+      activa: true,
+      docenteId: docente.id,
+      docenteNombre: docente.nombre,
+      adminNombre,
     };
-  }, [cargar, esVistaCoordinacion]);
+  }, [esVistaCoordinacion, docente, usuario]);
 
   const breadcrumbItems = useMemo(() => {
     if (esVistaCoordinacion && docente) {
       return createBreadcrumbItems('ACA-CAL-DOCENTE-CURSOS', 'ACA-CAL', 'Mis cursos');
     }
     return createBreadcrumbItems('ACA-CAL', 'ACA-CAL', 'Mis cursos');
-  }, [esVistaCoordinacion, docente?.nombre]);
+  }, [esVistaCoordinacion, docente]);
 
   const resumen = useMemo(
     () => (cursos ? getResumenCursos(cursos) : { totalCursos: 0, totalParalelos: 0 }),

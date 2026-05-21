@@ -21,8 +21,8 @@ const CursoCard = ({ curso, cuadernoPath }) => {
         <BookOutlined className="cal-curso-card__icon" aria-hidden />
         <div className="cal-curso-card__titles">
           <h3 className="cal-curso-card__materia">{curso.materia}</h3>
-          <Tag color={BADGE_COLOR[curso.badge.tipo] ?? 'default'} className="cal-curso-card__badge">
-            {curso.badge.texto}
+          <Tag color={BADGE_COLOR[curso.badge?.tipo] ?? 'default'} className="cal-curso-card__badge">
+            {curso.badge?.texto ?? 'En curso'}
           </Tag>
         </div>
       </div>

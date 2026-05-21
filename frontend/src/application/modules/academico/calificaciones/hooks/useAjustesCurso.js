@@ -3,7 +3,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { calificacionesFakeApi } from '../fake-api/index.js';
+import { calificacionesPendingApi as calificacionesFakeApi } from '../api/calificacionesPendingApi.js';
 
 export const useAjustesCurso = (cursoId, abierto) => {
   const [datos, setDatos] = useState(null);

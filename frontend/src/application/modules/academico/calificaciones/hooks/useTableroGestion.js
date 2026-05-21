@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { calificacionesFakeApi } from '../fake-api/index.js';
+import { calificacionesPendingApi as calificacionesFakeApi } from '../api/calificacionesPendingApi.js';
 
 export const useTableroGestion = () => {
   const [tablero, setTablero] = useState(null);

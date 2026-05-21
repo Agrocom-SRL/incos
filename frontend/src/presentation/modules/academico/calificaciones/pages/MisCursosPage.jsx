@@ -60,6 +60,7 @@ const MisCursosPage = () => {
             type="error"
             showIcon
             title="No se pudieron cargar los cursos"
+            description={typeof error === 'string' ? error : String(error)}
             action={
               <Button size="small" onClick={refetch}>
                 Reintentar

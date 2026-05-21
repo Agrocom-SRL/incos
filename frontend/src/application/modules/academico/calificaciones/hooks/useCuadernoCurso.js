@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { calificacionesFakeApi } from '../fake-api/index.js';
+import { calificacionesPendingApi as calificacionesFakeApi } from '../api/calificacionesPendingApi.js';
 import { docenteCursosPath } from '../utils/calificacionesPaths.js';
 
 export const useCuadernoCurso = () => {

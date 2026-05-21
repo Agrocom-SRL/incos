@@ -31,6 +31,7 @@ import {
   GetTiposEvaluacionUseCase,
   GuardarPoliticaInstitucionalUseCase,
   ListCoordinacionDocentesUseCase,
+  ListMisCursosUseCase,
   ObtenerPoliticaInstitucionalUseCase,
 } from '@useCases/academico/calificaciones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
@@ -114,6 +115,10 @@ export function registerAcademicoModule(factory) {
 
   factory.listarCoordinacionCalificacionesDocentes = () => {
     return new ListCoordinacionDocentesUseCase(CalificacionRepository);
+  };
+
+  factory.listarMisCursosCalificaciones = () => {
+    return new ListMisCursosUseCase(CalificacionRepository);
   };
 
   factory.obtenerPoliticaInstitucional = () => {

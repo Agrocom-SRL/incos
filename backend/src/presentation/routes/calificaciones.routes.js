@@ -47,6 +47,30 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.listCoordinacionCalificacionesDocentesController.handle(req, res, next)
   );
 
+  const misCursosListar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.mis_cursos', 'LISTAR'),
+  ];
+
+  /**
+   * GET /api/v1/calificaciones/mis-cursos
+   * Cursos del docente vinculado al usuario logueado (gestión vigente).
+   */
+  router.get(
+    '/mis-cursos',
+    ...misCursosListar,
+    (req, res, next) => controllers.listCursosCalificacionesController.handle(req, res, next),
+  );
+
+  /**
+   * GET /api/v1/calificaciones/coordinacion/docentes/:docenteId/cursos
+   */
+  router.get(
+    '/coordinacion/docentes/:docenteId/cursos',
+    ...coordinacionListar,
+    (req, res, next) => controllers.listCursosCalificacionesController.handle(req, res, next),
+  );
+
   /**
    * GET /api/v1/calificaciones/tipos-evaluacion
    * Catálogo tipos_evaluacion (query: ambito=BIMESTRE|MATERIA_COMPLETA, pagina, limite, busqueda).
