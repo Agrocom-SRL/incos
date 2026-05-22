@@ -1,17 +1,14 @@
 /**
- * Celda de nota con auto-guardado (debounce) y registro para guardado por lote del bimestre.
+ * Celda de nota — cambios en memoria hasta Guardar notas del bimestre.
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { InputNumber, Spin, Tooltip } from 'antd';
-import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
+import { InputNumber } from 'antd';
 import { useNotaAutosave } from '@application-academico/calificaciones/hooks/useNotaAutosave.js';
 import { useCuadernoAutosaveRegistry } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
 import { parseNotaInput } from '@application-academico/calificaciones/utils/parseNotaInput.js';
 
 const NotaCell = ({
-  cursoId,
-  bimestre,
   estudianteId,
   evaluacionId,
   valorInicial,
@@ -23,28 +20,16 @@ const NotaCell = ({
   );
   const { registerCell, unregisterCell } = useCuadernoAutosaveRegistry();
 
-  const {
-    valor,
-    estado,
-    setValor,
-    reintentar,
-    guardarAhora,
-    necesitaGuardar,
-    obtenerPayload,
-    marcarGuardado,
-  } = useNotaAutosave({
-    cursoId,
-    bimestre,
-    estudianteId,
-    evaluacionId,
-    valorInicial,
-  });
+  const { valor, estado, setValor, necesitaGuardar, obtenerPayload, marcarGuardado } =
+    useNotaAutosave({
+      estudianteId,
+      evaluacionId,
+      valorInicial,
+    });
 
   useEffect(() => {
     registerCell(cellKey, {
       estado,
-      reintentar,
-      guardarAhora,
       necesitaGuardar,
       obtenerPayload,
       marcarGuardado,
@@ -55,8 +40,6 @@ const NotaCell = ({
   }, [
     cellKey,
     estado,
-    reintentar,
-    guardarAhora,
     necesitaGuardar,
     obtenerPayload,
     marcarGuardado,
@@ -76,7 +59,7 @@ const NotaCell = ({
   );
 
   const vacio = valor == null || valor === '';
-  const estadoClass = soloLectura ? 'idle' : estado;
+  const pendiente = estado === 'pendiente';
 
   if (soloLectura && vacio) {
     return (
@@ -101,7 +84,7 @@ const NotaCell = ({
         'cal-nota-cell--filled',
         'cal-nota-cell--editable',
         vacio ? 'cal-nota-cell--editable-empty' : '',
-        `cal-nota-cell--${estadoClass}`,
+        pendiente ? 'cal-nota-cell--pendiente' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -117,21 +100,6 @@ const NotaCell = ({
         onChange={handleChange}
         aria-label={vacio ? 'Nota sin cargar' : `Nota ${valor}`}
       />
-      {estado === 'guardando' ? (
-        <LoadingOutlined className="cal-nota-cell__spinner" spin aria-hidden />
-      ) : null}
-      {estado === 'error' ? (
-        <Tooltip title="Error al guardar. Click para reintentar.">
-          <button
-            type="button"
-            className="cal-nota-cell__error-btn"
-            onClick={reintentar}
-            aria-label="Reintentar guardado"
-          >
-            <ExclamationCircleOutlined />
-          </button>
-        </Tooltip>
-      ) : null}
     </span>
   );
 };

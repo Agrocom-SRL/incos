@@ -1168,6 +1168,11 @@
   color: var(--cuaderno-texto-medio);
 }
 
+.cal-cuaderno-footer__guardado--pendiente {
+  color: var(--cuaderno-texto-fuerte);
+  font-weight: 500;
+}
+
 .cal-cuaderno-footer__guardado--error {
   color: #dc2626;
   font-weight: 500;
@@ -2351,6 +2356,12 @@
 .cal-consolidado-grid__obs {
   margin: 0;
   font-size: 11px;
+}
+
+.cal-consolidado-grid__obs.ant-tag-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
 }
 
 /* —— Drawer vista previa —— */

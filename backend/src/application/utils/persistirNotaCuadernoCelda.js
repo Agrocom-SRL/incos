@@ -44,10 +44,11 @@ export async function persistirNotaCuadernoCelda({
     );
   }
 
-  const bimestreMatriculaId = await cuadernoRepository.obtenerBimestreMatriculaId(
+  const bimestreMatriculaId = await cuadernoRepository.asegurarBimestreMatriculaId(
     Number(asignacionId),
     estudianteId,
     bimestreNum,
+    usuarioId,
   );
   if (!bimestreMatriculaId) {
     throw new NotFoundError('Matrícula del estudiante en este curso y bimestre');

@@ -4,7 +4,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Flex, Modal, Spin, notification } from 'antd';
+import { Alert, App, Button, Card, Flex, Modal, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -51,12 +51,14 @@ const CuadernoGrilla = ({
   enteringColumnIds,
   removingColumnId,
 }) => {
+  const { notification } = App.useApp();
   const {
     collectNotasParaGuardar,
     marcarNotasGuardadasEnLote,
     setGuardandoBimestre,
     guardandoBimestre,
     resetEvaluacionRegistro,
+    hayCambiosPendientes,
   } = useCuadernoAutosaveRegistry();
   const soloLectura = !modoEdicion;
 
@@ -131,7 +133,7 @@ const CuadernoGrilla = ({
       }
       marcarNotasGuardadasEnLote(res.data?.notas ?? []);
       notification.success({
-        message: 'Notas guardadas',
+        title: 'Notas guardadas',
         description:
           notas.length > 0
             ? `Se guardaron ${res.data?.notasGuardadas ?? notas.length} nota(s) y se recalculó el bimestre y la nota final.`
@@ -140,7 +142,7 @@ const CuadernoGrilla = ({
       await onRefetchCuaderno?.();
     } catch (err) {
       notification.error({
-        message: 'Error al guardar',
+        title: 'Error al guardar',
         description: typeof err?.message === 'string' ? err.message : 'Reintentá en unos segundos.',
       });
     } finally {
@@ -153,6 +155,7 @@ const CuadernoGrilla = ({
     marcarNotasGuardadasEnLote,
     onRefetchCuaderno,
     setGuardandoBimestre,
+    notification,
   ]);
 
   return (
@@ -169,6 +172,7 @@ const CuadernoGrilla = ({
       onEliminarEvaluacion={modoEdicion ? handleEliminar : undefined}
       onGuardarBimestre={modoEdicion ? handleGuardarBimestre : undefined}
       guardandoBimestre={guardandoBimestre}
+      mostrarGuardar={modoEdicion && hayCambiosPendientes}
       enteringColumnIds={enteringColumnIds}
       removingColumnId={removingColumnId}
     />

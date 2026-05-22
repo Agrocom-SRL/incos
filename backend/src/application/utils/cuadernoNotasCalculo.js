@@ -25,6 +25,32 @@ export const calcularNotaComponente = (filas, componente, cuota) => {
 };
 
 /**
+ * Promedio ponderado del componente sobre 100 (sin aplicar cuota teórica/práctica).
+ */
+export const calcularPromedioComponenteSinCuota = (filas, componente) => {
+  const delComponente = (filas ?? []).filter(
+    (f) => f.componente === componente && f.nota != null && Number.isFinite(Number(f.nota)),
+  );
+  if (delComponente.length === 0) return null;
+
+  const sumaPeso = delComponente.reduce((acc, f) => acc + Number(f.peso || 0), 0);
+  if (sumaPeso <= 0) return null;
+
+  const ponderada =
+    delComponente.reduce((acc, f) => acc + Number(f.nota) * Number(f.peso || 0), 0) / sumaPeso;
+
+  return redondear(ponderada);
+};
+
+/**
+ * Convierte nota en cuota (ej. 25 sobre cuota 30) a promedio sobre 100 para el registro.
+ */
+export const notaCuotaAPromedio100 = (notaCuota, cuota) => {
+  if (notaCuota == null || cuota == null || Number(cuota) <= 0) return null;
+  return redondear((Number(notaCuota) / Number(cuota)) * 100);
+};
+
+/**
  * @param {number|null} teorico
  * @param {number|null} practico
  */

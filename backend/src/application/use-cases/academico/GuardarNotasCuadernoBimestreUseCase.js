@@ -47,6 +47,12 @@ export class GuardarNotasCuadernoBimestreUseCase {
       );
     }
 
+    await this.cuadernoRepository.asegurarBimestresMatriculaCurso(
+      Number(asignacionId),
+      bimestreVigente,
+      usuarioId,
+    );
+
     const guardadas = [];
     for (const item of notasEntrada) {
       const estudianteId = Number(item?.estudianteId);

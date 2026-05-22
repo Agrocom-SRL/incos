@@ -14,11 +14,17 @@ import { Dropdown, Table, Tooltip } from 'antd';
 import { Button } from '@atoms';
 import NotaCell from './NotaCell.jsx';
 
-const BimestreGrupoHead = ({ titulo, soloLectura, onGuardarBimestre, guardandoBimestre }) => (
+const BimestreGrupoHead = ({
+  titulo,
+  soloLectura,
+  onGuardarBimestre,
+  guardandoBimestre,
+  mostrarGuardar,
+}) => (
   <div className="cal-notas-grid__bim-head cal-notas-grid__bim-head--activo">
     <span className="cal-notas-grid__bim-titulo-row">
       <span className="cal-notas-grid__bim-titulo">{titulo}</span>
-      {!soloLectura && onGuardarBimestre ? (
+      {!soloLectura && onGuardarBimestre && mostrarGuardar ? (
         <Tooltip title="Guardar notas en la base de datos y recalcular bimestre y nota final">
           <Button
             variant="warning"
@@ -136,6 +142,7 @@ const NotasGrid = ({
   onEliminarEvaluacion,
   onGuardarBimestre,
   guardandoBimestre = false,
+  mostrarGuardar = false,
   enteringColumnIds = [],
   removingColumnId = null,
 }) => {
@@ -171,8 +178,6 @@ const NotasGrid = ({
       onCell: () => ({ className: colClass }),
       render: (_, row) => (
         <NotaCell
-          cursoId={cursoId}
-          bimestre={bimestre}
           estudianteId={row.id}
           evaluacionId={ev.id}
           valorInicial={row.notas?.[ev.id]}
@@ -232,6 +237,7 @@ const NotasGrid = ({
         soloLectura={soloLectura}
         onGuardarBimestre={onGuardarBimestre}
         guardandoBimestre={guardandoBimestre}
+        mostrarGuardar={mostrarGuardar}
       />
     ),
     className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo',

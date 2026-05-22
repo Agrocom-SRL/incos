@@ -1,40 +1,33 @@
 /**
- * Pie del cuaderno: estado agregado de auto-guardado.
+ * Pie del cuaderno: cambios locales hasta Guardar notas.
  */
 
-import { Button, Tag, Tooltip } from 'antd';
-import { CloudOutlined, LoadingOutlined, WarningOutlined } from '@ant-design/icons';
+import { CloudOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useCuadernoFooterState } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
 
-const CuadernoFooter = ({
-  evaluacionesApiPendiente = false,
-  evaluacionesApiMensaje = '',
-}) => {
+const CuadernoFooter = () => {
   const footerState = useCuadernoFooterState();
 
   let mensajeIzq = null;
   let icono = <CloudOutlined className="cal-cuaderno-footer__icon" aria-hidden />;
   let claseGuardado = 'cal-cuaderno-footer__guardado';
 
-  if (footerState.tipo === 'error') {
-    icono = <WarningOutlined className="cal-cuaderno-footer__icon cal-cuaderno-footer__icon--error" aria-hidden />;
-    claseGuardado = 'cal-cuaderno-footer__guardado cal-cuaderno-footer__guardado--error';
-    mensajeIzq = (
-      <>
-        {icono}
-        Error al guardar {footerState.cantidad} nota{footerState.cantidad > 1 ? 's' : ''}. Revisar.
-        <Button type="link" size="small" onClick={footerState.reintentarTodas}>
-          Reintentar todas
-        </Button>
-      </>
-    );
-  } else if (footerState.tipo === 'guardando') {
+  if (footerState.tipo === 'guardando') {
     icono = <LoadingOutlined className="cal-cuaderno-footer__icon" spin aria-hidden />;
     claseGuardado = 'cal-cuaderno-footer__guardado cal-cuaderno-footer__guardado--activo';
     mensajeIzq = (
       <>
         {icono}
-        Guardando cambios…
+        Guardando notas…
+      </>
+    );
+  } else if (footerState.tipo === 'pendiente') {
+    claseGuardado = 'cal-cuaderno-footer__guardado cal-cuaderno-footer__guardado--pendiente';
+    mensajeIzq = (
+      <>
+        {icono}
+        {footerState.cantidad} cambio{footerState.cantidad > 1 ? 's' : ''} sin guardar — usá Guardar
+        notas
       </>
     );
   } else if (footerState.tipo === 'guardado') {
@@ -42,7 +35,7 @@ const CuadernoFooter = ({
     mensajeIzq = (
       <>
         {icono}
-        Guardado automático · hace {footerState.haceSeg} seg
+        Notas guardadas · hace {footerState.haceSeg} seg
       </>
     );
   } else {
@@ -50,23 +43,14 @@ const CuadernoFooter = ({
     mensajeIzq = (
       <>
         {icono}
-        Sin cambios sin guardar
+        Sin cambios pendientes
       </>
     );
   }
 
   return (
     <footer className="cal-cuaderno-footer">
-      <span className={claseGuardado}>
-        {mensajeIzq}
-        {evaluacionesApiPendiente && evaluacionesApiMensaje ? (
-          <Tooltip title={evaluacionesApiMensaje}>
-            <Tag className="cal-cuaderno-footer__dev-tag" bordered={false}>
-              Evaluaciones: API pendiente
-            </Tag>
-          </Tooltip>
-        ) : null}
-      </span>
+      <span className={claseGuardado}>{mensajeIzq}</span>
       <span className="cal-cuaderno-footer__nota">
         El cierre del bimestre lo realiza Coordinación Académica
       </span>

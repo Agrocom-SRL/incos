@@ -314,15 +314,15 @@ const ConsolidadoGrid = ({
       width: 126,
       align: 'center',
       onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-est' }),
-      render: (obs, row) => {
-        const aprobado =
-          row.notaFinal != null && row.notaFinal >= notaMinimaAprobacion;
+      render: (obs) => {
+        const etiqueta = obs ?? '—';
+        const normalizada = String(obs ?? '').toUpperCase();
+        let color;
+        if (normalizada === 'APROBADO') color = 'success';
+        else if (normalizada === 'REPROBADO') color = 'error';
         return (
-          <Tag
-            color={aprobado ? 'success' : 'warning'}
-            className="cal-consolidado-grid__obs"
-          >
-            {obs ?? '—'}
+          <Tag color={color} className="cal-consolidado-grid__obs">
+            {etiqueta}
           </Tag>
         );
       },

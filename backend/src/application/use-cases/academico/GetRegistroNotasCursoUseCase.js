@@ -1,17 +1,17 @@
 import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
 import { parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
+import {
+  calcularNotaBimestre,
+  notaCuotaAPromedio100,
+} from '../../utils/cuadernoNotasCalculo.js';
+import { obtenerCuotasCursoDesdeAjustes } from '../../utils/obtenerCuotasCursoDesdeAjustes.js';
 
 const BIMESTRES_TOTAL = 4;
 
-const redondear = (v) => (v == null ? null : Math.round(Number(v)));
+const redondear = (v) => (v == null ? null : Math.round(Number(v) * 100) / 100);
 
-const sumaBimestre = (teorico, practico, notaBimestre) => {
-  if (notaBimestre != null) return redondear(notaBimestre);
-  if (teorico == null && practico == null) return null;
-  return redondear((Number(teorico) || 0) + (Number(practico) || 0));
-};
-
-const agruparEstudiantes = (filas, notaMinima) => {
+const agruparEstudiantes = (filas, notaMinima, cuotas) => {
+  const { cuotaTeorico, cuotaPractico } = cuotas;
   const map = new Map();
   for (const row of filas) {
     const id = Number(row.estudiante_id);
@@ -30,14 +30,24 @@ const agruparEstudiantes = (filas, notaMinima) => {
     const est = map.get(id);
     const num = Number(row.bimestre);
     if (!Number.isFinite(num) || num < 1 || num > 4) continue;
-    const teorico = redondear(row.nota_teorico);
-    const practico = redondear(row.nota_practico);
-    const notaCerrada = redondear(row.nota_habilitacion ?? row.nota_bimestre);
+
+    const teoricoCuota = redondear(row.nota_teorico);
+    const practicoCuota = redondear(row.nota_practico);
+    const notaBimestre = redondear(row.nota_bimestre);
+    const notaHabilitacion = redondear(row.nota_habilitacion);
+
+    const suma =
+      notaHabilitacion != null
+        ? notaHabilitacion
+        : notaBimestre != null
+          ? notaBimestre
+          : calcularNotaBimestre(teoricoCuota, practicoCuota);
+
     est.bimestresPorNumero.set(num, {
       numero: num,
-      teorico,
-      practico,
-      suma: sumaBimestre(teorico, practico, notaCerrada),
+      teorico: notaCuotaAPromedio100(teoricoCuota, cuotaTeorico),
+      practico: notaCuotaAPromedio100(practicoCuota, cuotaPractico),
+      suma,
       estado: row.estado_bimestre ?? null,
     });
   }
@@ -84,12 +94,14 @@ export class GetRegistroNotasCursoUseCase {
     calificacionRepository,
     teacherRepository,
     evaluationConfigurationRepository,
+    ajustesCursoRepository,
     authRepository,
     logger,
   }) {
     this.calificacionRepository = calificacionRepository;
     this.teacherRepository = teacherRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
+    this.ajustesCursoRepository = ajustesCursoRepository;
     this.authRepository = authRepository;
     this.logger = logger;
   }
@@ -140,13 +152,16 @@ export class GetRegistroNotasCursoUseCase {
     const politicaParsed = parsePoliticaFromRow(politicaRow) ?? {};
     const notaMinimaAprobacion = Number(politicaParsed.notaMinimaAprobacion) || 61;
 
+    const ajustes = await this.ajustesCursoRepository.obtenerAjustes(asignacionIdNum);
+    const cuotas = obtenerCuotasCursoDesdeAjustes(ajustes);
+
     const [docenteRow, filasEstudiantes, periodosCalendario] = await Promise.all([
       this.calificacionRepository.obtenerDocenteCalificaciones(docenteIdAsignacion),
       this.calificacionRepository.listarEstudiantesRegistroNotas(asignacionIdNum),
       this.calificacionRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id),
     ]);
 
-    const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion);
+    const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion, cuotas);
 
     const bimestreVigente = Number(ctx.bimestre_vigente) || null;
     const periodosPorNumero = new Map(

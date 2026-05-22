@@ -235,6 +235,7 @@ export function registerCalificacionesResource(container) {
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
         ),
+        ajustesCursoRepository: c.resolve(REPOSITORIOS_TOKENS.ajustesCursoRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       }),

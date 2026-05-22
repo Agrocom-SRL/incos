@@ -13,5 +13,12 @@ export const obtenerCuotasCursoDesdeAjustes = (ajustes) => {
   const pesosBimestres = Array.isArray(inst.pesosBimestres)
     ? inst.pesosBimestres.map((p) => Number(p) || 0)
     : [25, 25, 25, 25];
-  return { cuotaTeorico, cuotaPractico, pesosBimestres };
+  const evaluacionesFinales = (ajustes?.ajustes?.evaluacionesFinales ?? [])
+    .filter((e) => e?.habilitada !== false && e?.activo !== false && Number(e?.peso) > 0)
+    .map((e) => ({
+      codigo: e.codigo,
+      peso: Number(e.peso),
+    }));
+
+  return { cuotaTeorico, cuotaPractico, pesosBimestres, evaluacionesFinales };
 };

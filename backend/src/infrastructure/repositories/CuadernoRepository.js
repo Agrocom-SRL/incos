@@ -155,9 +155,7 @@ export class CuadernoRepository {
       FROM bimestres_matricula bm
       INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
         AND mm.deleted_at IS NULL AND mm.activo = TRUE
-      INNER JOIN asignacion_docente ad ON ad.materia_id = mm.materia_id
-        AND ad.paralelo_id = mm.paralelo_id
-        AND ad.gestion_id = mm.gestion_id
+      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
         AND ad.deleted_at IS NULL AND ad.activo = TRUE
       INNER JOIN inscripciones ins ON ins.id = mm.inscripcion_id
         AND ins.deleted_at IS NULL AND ins.activo = TRUE
@@ -165,7 +163,7 @@ export class CuadernoRepository {
         AND eda.deleted_at IS NULL AND eda.activo = TRUE
       INNER JOIN estudiantes est ON est.id = eda.estudiante_id
         AND est.deleted_at IS NULL AND est.activo = TRUE
-      WHERE ad.id = ?
+      WHERE mm.asignacion_docente_id = ?
         AND est.id = ?
         AND bm.bimestre = ?
         AND bm.deleted_at IS NULL AND bm.activo = TRUE
@@ -177,6 +175,97 @@ export class CuadernoRepository {
       },
     );
     return rows[0]?.id != null ? Number(rows[0].id) : null;
+  }
+
+  /**
+   * Crea la fila en bimestres_matricula si el estudiante está matriculado pero aún no tiene el bimestre.
+   */
+  async asegurarBimestreMatriculaId(asignacionId, estudianteId, bimestreNum, usuarioId) {
+    const existente = await this.obtenerBimestreMatriculaId(
+      asignacionId,
+      estudianteId,
+      bimestreNum,
+    );
+    if (existente) return existente;
+
+    const mmRows = await sequelize.query(
+      `
+      SELECT mm.id AS matricula_materia_id
+      FROM matriculas_materia mm
+      INNER JOIN inscripciones ins ON ins.id = mm.inscripcion_id
+        AND ins.deleted_at IS NULL AND ins.activo = TRUE
+      INNER JOIN estudiantes_datos_academicos eda ON eda.id = ins.datos_academicos_id
+        AND eda.deleted_at IS NULL AND eda.activo = TRUE
+      INNER JOIN estudiantes est ON est.id = eda.estudiante_id
+        AND est.deleted_at IS NULL AND est.activo = TRUE
+      WHERE mm.asignacion_docente_id = ?
+        AND est.id = ?
+        AND mm.estado IN ('INSCRITO', 'CURSANDO')
+        AND mm.deleted_at IS NULL
+        AND mm.activo = TRUE
+      LIMIT 1
+      `,
+      {
+        replacements: [asignacionId, estudianteId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+
+    const matriculaMateriaId = mmRows[0]?.matricula_materia_id;
+    if (!matriculaMateriaId) return null;
+
+    const insert = await sequelize.query(
+      `
+      INSERT INTO bimestres_matricula (
+        matricula_materia_id, bimestre, estado, activo, created_by, updated_by
+      )
+      VALUES (?, ?, 'EN_CURSO', TRUE, ?, ?)
+      `,
+      {
+        replacements: [matriculaMateriaId, bimestreNum, usuarioId, usuarioId],
+        type: sequelize.QueryTypes.INSERT,
+      },
+    );
+
+    const nuevoId = Number(Array.isArray(insert) ? insert[0] : insert);
+    return Number.isFinite(nuevoId) && nuevoId > 0 ? nuevoId : null;
+  }
+
+  /**
+   * Asegura las 4 filas de bimestre por cada matrícula activa del curso (idempotente).
+   */
+  async asegurarBimestresMatriculaCurso(asignacionId, bimestreVigenteNum, usuarioId) {
+    await sequelize.query(
+      `
+      INSERT INTO bimestres_matricula (
+        matricula_materia_id, bimestre, estado, activo, created_by, updated_by
+      )
+      SELECT
+        mm.id,
+        nums.n,
+        CASE WHEN nums.n = ? THEN 'EN_CURSO' ELSE 'PENDIENTE' END,
+        TRUE,
+        ?,
+        ?
+      FROM matriculas_materia mm
+      CROSS JOIN (
+        SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+      ) nums
+      LEFT JOIN bimestres_matricula bm
+        ON bm.matricula_materia_id = mm.id
+        AND bm.bimestre = nums.n
+        AND bm.deleted_at IS NULL
+      WHERE mm.asignacion_docente_id = ?
+        AND mm.estado IN ('INSCRITO', 'CURSANDO')
+        AND mm.deleted_at IS NULL
+        AND mm.activo = TRUE
+        AND bm.id IS NULL
+      `,
+      {
+        replacements: [bimestreVigenteNum, usuarioId, usuarioId, asignacionId],
+        type: sequelize.QueryTypes.INSERT,
+      },
+    );
   }
 
   async buscarNotaCelda(evaluacionId, bimestreMatriculaId) {
@@ -284,10 +373,7 @@ export class CuadernoRepository {
       INNER JOIN matriculas_materia mm
         ON mm.id = bm.matricula_materia_id
         AND mm.deleted_at IS NULL AND mm.activo = TRUE
-      INNER JOIN asignacion_docente ad
-        ON ad.materia_id = mm.materia_id
-        AND ad.paralelo_id = mm.paralelo_id
-        AND ad.gestion_id = mm.gestion_id
+      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
         AND ad.deleted_at IS NULL AND ad.activo = TRUE
       LEFT JOIN evaluaciones_notas en
         ON en.bimestre_matricula_id = bm.id
@@ -299,7 +385,7 @@ export class CuadernoRepository {
         AND e.deleted_at IS NULL
         AND e.activo = TRUE
         AND e.asignacion_docente_id = ad.id
-      WHERE ad.id = ?
+      WHERE mm.asignacion_docente_id = ?
         AND bm.bimestre = ?
         AND bm.deleted_at IS NULL
         AND bm.activo = TRUE
@@ -325,11 +411,9 @@ export class CuadernoRepository {
       FROM bimestres_matricula bm
       INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
         AND mm.deleted_at IS NULL AND mm.activo = TRUE
-      INNER JOIN asignacion_docente ad ON ad.materia_id = mm.materia_id
-        AND ad.paralelo_id = mm.paralelo_id
-        AND ad.gestion_id = mm.gestion_id
+      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
         AND ad.deleted_at IS NULL AND ad.activo = TRUE
-      WHERE ad.id = ?
+      WHERE mm.asignacion_docente_id = ?
         AND bm.bimestre = ?
         AND bm.deleted_at IS NULL
         AND bm.activo = TRUE
@@ -371,7 +455,7 @@ export class CuadernoRepository {
         bm.nota_bimestre,
         bm.nota_habilitacion
       FROM matriculas_materia mm
-      INNER JOIN asignacion_docente ad ON ad.id = mm.asignacion_docente_id
+      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
         AND ad.deleted_at IS NULL AND ad.activo = TRUE
       LEFT JOIN bimestres_matricula bm ON bm.matricula_materia_id = mm.id
         AND bm.deleted_at IS NULL AND bm.activo = TRUE

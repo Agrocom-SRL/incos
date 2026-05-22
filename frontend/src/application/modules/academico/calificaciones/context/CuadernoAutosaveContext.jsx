@@ -1,5 +1,5 @@
 /**
- * Registro agregado de estados de auto-guardado por celda (footer del cuaderno).
+ * Registro agregado de cambios locales del cuaderno (persistencia al pulsar Guardar notas).
  */
 
 import {
@@ -28,9 +28,6 @@ export const CuadernoAutosaveProvider = ({ children }) => {
       ...snapshot,
       cellKey,
     });
-    if (snapshot.estado === 'guardado') {
-      setLastGuardadoAt(Date.now());
-    }
     bump();
   }, []);
 
@@ -79,26 +76,20 @@ export const CuadernoAutosaveProvider = ({ children }) => {
     return () => clearInterval(id);
   }, []);
 
+  const hayCambiosPendientes = useMemo(() => {
+    return [...cellsRef.current.values()].some((c) => c.necesitaGuardar?.());
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tick al editar celdas
+  }, [tick]);
+
   const footerState = useMemo(() => {
     if (guardandoBimestre) {
       return { tipo: 'guardando' };
     }
 
-    const cells = [...cellsRef.current.values()];
-    const conError = cells.filter((c) => c.estado === 'error');
+    const pendientes = [...cellsRef.current.values()].filter((c) => c.necesitaGuardar?.());
 
-    if (conError.length > 0) {
-      return {
-        tipo: 'error',
-        cantidad: conError.length,
-        reintentarTodas: () => {
-          conError.forEach((c) => c.reintentar?.());
-        },
-      };
-    }
-
-    if (cells.some((c) => c.estado === 'pendiente' || c.estado === 'guardando')) {
-      return { tipo: 'guardando' };
+    if (pendientes.length > 0) {
+      return { tipo: 'pendiente', cantidad: pendientes.length };
     }
 
     if (lastGuardadoAt && Date.now() - lastGuardadoAt < GUARDADO_VISIBLE_MS) {
@@ -120,6 +111,7 @@ export const CuadernoAutosaveProvider = ({ children }) => {
       collectNotasParaGuardar,
       marcarNotasGuardadasEnLote,
       resetEvaluacionRegistro,
+      hayCambiosPendientes,
     }),
     [
       registerCell,
@@ -129,6 +121,7 @@ export const CuadernoAutosaveProvider = ({ children }) => {
       collectNotasParaGuardar,
       marcarNotasGuardadasEnLote,
       resetEvaluacionRegistro,
+      hayCambiosPendientes,
     ],
   );
 
