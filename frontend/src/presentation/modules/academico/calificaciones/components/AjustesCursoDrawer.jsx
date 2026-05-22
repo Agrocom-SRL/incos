@@ -34,6 +34,14 @@ import { useAjustesCurso } from '@application-academico/calificaciones/hooks/use
 import AjustesCursoInstitucionalPanel from './AjustesCursoInstitucionalPanel.jsx';
 import SeccionAjustes from './ajustes/SeccionAjustes.jsx';
 import {
+  CALIFICACIONES_DRAWER_Z_INDEX,
+  calificacionesDrawerClassNames,
+  calificacionesDrawerRootClassName,
+  calificacionesDrawerSectionClassName,
+  calificacionesDrawerStyles,
+  calificacionesDrawerTarjetaClassName,
+} from '../utils/calificacionesDrawerLayout.js';
+import {
   contarOverridesActivos,
   snapshotValoresAjustes,
   valoresFormularioDesdeDatos,
@@ -335,7 +343,11 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar, onGuardado }) => {
       onClose={handleCerrar}
       destroyOnClose
       footer={footer}
-      className="cal-ajustes-drawer cal-eval-drawer"
+      rootClassName={calificacionesDrawerRootClassName}
+      className={calificacionesDrawerSectionClassName}
+      classNames={calificacionesDrawerClassNames}
+      zIndex={CALIFICACIONES_DRAWER_Z_INDEX}
+      styles={calificacionesDrawerStyles()}
     >
       {datos?.tieneOverrides && ultima ? (
         <Alert
@@ -395,7 +407,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar, onGuardado }) => {
               icon={PieChartOutlined}
               titulo="Ponderación teórico / práctico (este curso)"
               destacada={seccionDestacada === 'cuota'}
-              className="cal-ajustes-drawer__override-card"
+              className={calificacionesDrawerTarjetaClassName}
             >
               <Form.Item
                 name="usarCuotaInstitucional"
@@ -442,7 +454,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar, onGuardado }) => {
               icon={FlagOutlined}
               titulo="Evaluaciones finales (este curso)"
               destacada={seccionDestacada === 'finales'}
-              className="cal-ajustes-drawer__override-card"
+              className={calificacionesDrawerTarjetaClassName}
             >
               <p className="cal-ajustes-drawer__section-desc">
                 Cubren toda la materia (no un bimestre). Solo podés activar tipos que la institución
@@ -543,7 +555,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar, onGuardado }) => {
               icon={CheckSquareOutlined}
               titulo="Política de asistencia (este curso)"
               destacada={seccionDestacada === 'asistencia'}
-              className="cal-ajustes-drawer__override-card"
+              className={calificacionesDrawerTarjetaClassName}
             >
               <p className="cal-ajustes-drawer__section-desc">
                 Institución (gestión {datos.gestionVigente ?? '—'}):{' '}

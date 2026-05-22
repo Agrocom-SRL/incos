@@ -15,6 +15,7 @@ import {
 } from '@application-academico/calificaciones/utils/evaluacionesFinalesReglas.js';
 import { reglaAplicaAlCurso } from '@application-academico/calificaciones/utils/reglaAplicaAlCurso.js';
 import { POLITICAS_ASISTENCIA } from '@application-academico/calificaciones/utils/politicasAsistencia.js';
+import { calificacionesDrawerTarjetaClassName } from '../utils/calificacionesDrawerLayout.js';
 import EstadoEvaluacionChip from './ajustes/EstadoEvaluacionChip.jsx';
 import SeccionAjustes from './ajustes/SeccionAjustes.jsx';
 
@@ -74,7 +75,7 @@ const AjustesCursoInstitucionalPanel = ({ institucional, curso, gestionVigente }
         <SeccionAjustes
           icon={PieChartOutlined}
           titulo="Ponderación teórico / práctico"
-          className="cal-ajustes-inst__bloque"
+          className={calificacionesDrawerTarjetaClassName}
         >
           <FilaKV
             label="Institución"
@@ -85,7 +86,7 @@ const AjustesCursoInstitucionalPanel = ({ institucional, curso, gestionVigente }
         <SeccionAjustes
           icon={CalendarOutlined}
           titulo="Ponderación por bimestre (nota anual)"
-          className="cal-ajustes-inst__bloque"
+          className={calificacionesDrawerTarjetaClassName}
         >
           <FilaKV label="Distribución">
             <div className="cal-ajustes-inst__bimestre-chips">
@@ -101,7 +102,7 @@ const AjustesCursoInstitucionalPanel = ({ institucional, curso, gestionVigente }
         <SeccionAjustes
           icon={FlagOutlined}
           titulo="Evaluaciones finales habilitadas"
-          className="cal-ajustes-inst__bloque"
+          className={calificacionesDrawerTarjetaClassName}
         >
           <Paragraph type="secondary" className="cal-ajustes-inst__hint">
             Cada regla puede aplicar a toda la gestión, a una carrera o a un periodo (año del plan).
@@ -133,7 +134,7 @@ const AjustesCursoInstitucionalPanel = ({ institucional, curso, gestionVigente }
         <SeccionAjustes
           icon={CheckSquareOutlined}
           titulo="Asistencia y aprobación"
-          className="cal-ajustes-inst__bloque"
+          className={calificacionesDrawerTarjetaClassName}
         >
           <FilaKV label="Asistencia (default)" value={etiquetaAsistencia(pad.politica)} />
           <FilaKV

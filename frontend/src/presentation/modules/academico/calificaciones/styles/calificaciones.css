@@ -1103,26 +1103,24 @@
   line-height: 1.4;
 }
 
-/* —— Drawer evaluaciones (por encima del header fijo del sistema: --z-fixed + 1 ≈ 1031) —— */
-.cal-ajustes-drawer.ant-drawer {
-  z-index: 1100;
+/* —— Drawers calificaciones (Ant Design 6: rootClassName → .ant-drawer; className → .ant-drawer-section) —— */
+.ant-drawer.cal-ajustes-drawer > .ant-drawer-content-wrapper {
+  top: 0 !important;
+  bottom: 0 !important;
+  height: auto !important;
+  max-height: none !important;
 }
 
-.cal-ajustes-drawer .ant-drawer-content-wrapper {
-  top: var(--header-height, 64px) !important;
-  height: calc(100vh - var(--header-height, 64px)) !important;
-  max-height: calc(100vh - var(--header-height, 64px)) !important;
-}
-
-.cal-ajustes-drawer .ant-drawer-content {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-section,
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__section {
   display: flex;
   flex-direction: column;
-  height: 100% !important;
-  max-height: 100% !important;
+  height: 100%;
+  max-height: 100%;
 }
 
-.cal-ajustes-drawer .ant-drawer-header,
-.cal-ajustes-drawer .ant-drawer-footer {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-header,
+.ant-drawer.cal-ajustes-drawer .ant-drawer-footer {
   flex-shrink: 0;
 }
 
@@ -1306,54 +1304,60 @@
   border-start-start-radius: none !important;
 }
 
-/* —— Drawer ajustes del curso —— */
-.cal-ajustes-drawer {
-  --cal-ajustes-drawer-bg: #d8ebe3;
+/* —— Tokens y panel interno (ajustes curso + evaluación cuaderno) —— */
+.ant-drawer.cal-ajustes-drawer {
+  z-index: 1100 !important;
+  --cal-ajustes-drawer-bg: var(--cuaderno-fondo, #fafafa);
   --cal-ajustes-drawer-bg-footer: #032d1b;
   --cal-ajustes-drawer-header: #15201d;
-  --ant-color-bg-elevated: #011805a2;
+  --cal-ajustes-drawer-pad-x: 24px;
+  --cal-ajustes-drawer-pad-y: 16px;
 }
 
-.cal-ajustes-drawer .ant-drawer-section {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
-  background: var(--cal-ajustes-drawer-bg) !important;
-}
-
-.cal-ajustes-drawer .ant-drawer-header {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-header {
   background: var(--cal-ajustes-drawer-header) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
 }
 
-.cal-ajustes-drawer .ant-drawer-header .ant-drawer-title {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-header .ant-drawer-title {
   color: #fff;
 }
 
-.cal-ajustes-drawer .ant-drawer-close {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-close {
   color: rgba(255, 255, 255, 0.88);
 }
 
-.cal-ajustes-drawer .ant-drawer-close:hover {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-close:hover {
   color: #fff;
 }
 
-.cal-ajustes-drawer .ant-drawer-body {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
-  padding: 0 !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin-bottom: var(--cal-ajustes-drawer-pad-y) !important;
+  padding: var(--cal-ajustes-drawer-pad-y) var(--cal-ajustes-drawer-pad-x) !important;
   background: var(--cal-ajustes-drawer-bg) !important;
 }
 
-.cal-ajustes-drawer .ant-drawer-footer {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .cal-ajustes-drawer__form,
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .cal-eval-drawer__form {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-footer {
   background: var(--cal-ajustes-drawer-bg-footer) !important;
   border-top-color: #a8cfb8 !important;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .ant-skeleton,
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .ant-alert {
+  flex-shrink: 0;
 }
 
 .cal-consolidado-page__spin-nest {
@@ -1371,42 +1375,31 @@
 
 .cal-eval-drawer__alert {
   flex-shrink: 0;
-  margin: 12px 16px 0;
+  margin: 0 0 12px;
 }
 
 .cal-eval-drawer__form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+  width: 100%;
 }
 
-.cal-eval-drawer__bloques {
-  flex: 1 1 auto;
+.cal-eval-drawer__bloques,
+.cal-ajustes-drawer__override-zona,
+.cal-ajustes-inst__zona {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px 20px;
-  min-height: 0;
-  height: 100%;
-  overflow-y: auto;
+  width: 100%;
 }
 
-.cal-eval-drawer__bloque {
-  flex: 1 1 0;
+.cal-ajustes-drawer__form {
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  gap: 16px;
+  width: 100%;
 }
 
-.cal-eval-drawer__bloque .cal-ajustes-seccion__body {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-.cal-eval-drawer__form .cal-ajustes-seccion {
+.cal-eval-drawer__form .cal-ajustes-seccion,
+.cal-ajustes-drawer__form .cal-ajustes-seccion {
   margin-bottom: 0;
 }
 
@@ -1437,19 +1430,19 @@
   color: rgba(255, 255, 255, 0.92) !important;
 }
 
-.cal-ajustes-drawer .cal-politica-asistencia-radio .ant-form-item-control-input {
+.ant-drawer.cal-ajustes-drawer .cal-politica-asistencia-radio .ant-form-item-control-input {
   min-height: auto;
 }
 
-.cal-ajustes-drawer .cal-politica-asistencia-grid,
-.cal-ajustes-drawer__politica-grid {
+.ant-drawer.cal-ajustes-drawer .cal-politica-asistencia-grid,
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__politica-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
   width: 100%;
 }
 
-.cal-ajustes-drawer .cal-politica-asistencia-option {
+.ant-drawer.cal-ajustes-drawer .cal-politica-asistencia-option {
   width: 100% !important;
   height: auto !important;
   padding: 12px 14px !important;
@@ -1459,12 +1452,12 @@
   line-height: 1.4;
 }
 
-.cal-ajustes-drawer .cal-politica-asistencia-option::before {
+.ant-drawer.cal-ajustes-drawer .cal-politica-asistencia-option::before {
   display: none;
 }
 
 .cal-ajustes-drawer__override-alert {
-  margin-bottom: 16px;
+  margin: 0 0 16px;
 }
 
 .cal-ajustes-seccion__header {
@@ -1548,22 +1541,26 @@
   line-height: 1.4;
 }
 
-.cal-ajustes-drawer__override-zona {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.cal-ajustes-drawer__override-card {
-  padding: 12px 14px;
+/* Tarjeta unificada (drawer evaluación + drawer ajustes) */
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__override-card {
+  padding: 14px 16px;
   border-radius: 10px;
-  border: 0.5px solid #d1d5db;
+  border: 1px solid var(--cuaderno-borde, #e5e7eb);
   background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.cal-ajustes-drawer__override-card .cal-ajustes-seccion__header {
-  margin-bottom: 8px;
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__override-card .cal-ajustes-seccion__header {
+  margin-bottom: 10px;
+}
+
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__override-card .cal-ajustes-seccion__titulo {
+  color: var(--cuaderno-texto-fuerte, #1f2937);
+}
+
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__override-card .cal-ajustes-seccion__icon {
+  color: var(--cuaderno-verde-oscuro, #196b45);
 }
 
 .cal-ajustes-drawer__switch-item {
@@ -1677,25 +1674,7 @@
 }
 
 .cal-ajustes-inst__intro {
-  margin-bottom: 12px;
-}
-
-.cal-ajustes-inst__zona {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.cal-ajustes-inst__bloque {
   margin-bottom: 0;
-  padding: 12px 14px;
-  border: 0.5px solid #e8eaed;
-  border-radius: 10px;
-  background: #f8f9fa;
-}
-
-.cal-ajustes-inst__bloque .cal-ajustes-seccion__header {
-  margin-bottom: 8px;
 }
 
 .cal-ajustes-inst__fila {

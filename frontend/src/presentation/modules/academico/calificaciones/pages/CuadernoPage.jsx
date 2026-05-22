@@ -299,22 +299,22 @@ const CuadernoPage = () => {
             </Flex>
           </CuadernoAutosaveProvider>
         </Spin>
-
-        <EvaluacionDrawer
-          abierto={drawerAbierto}
-          modo={drawerModo}
-          evaluacion={evaluacionEditar}
-          cursoId={cursoId}
-          bimestre={bimestreActivo}
-          evaluacionesActuales={evaluaciones}
-          estudiantes={estudiantes}
-          onCerrar={cerrarDrawer}
-          onGuardado={handleGuardado}
-          onEliminado={handleEliminado}
-          crearEvaluacion={crearEvaluacion}
-          editarEvaluacion={editarEvaluacion}
-        />
       </MainContent>
+
+      <EvaluacionDrawer
+        abierto={drawerAbierto}
+        modo={drawerModo}
+        evaluacion={evaluacionEditar}
+        cursoId={cursoId}
+        bimestre={bimestreActivo}
+        evaluacionesActuales={evaluaciones}
+        estudiantes={estudiantes}
+        onCerrar={cerrarDrawer}
+        onGuardado={handleGuardado}
+        onEliminado={handleEliminado}
+        crearEvaluacion={crearEvaluacion}
+        editarEvaluacion={editarEvaluacion}
+      />
     </Flex>
   );
 };

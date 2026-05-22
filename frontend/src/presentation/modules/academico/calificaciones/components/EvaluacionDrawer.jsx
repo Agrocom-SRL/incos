@@ -31,6 +31,14 @@ import {
   contarNotasCargadas,
 } from '@application-academico/calificaciones/utils/pesoEvaluaciones.js';
 import SeccionAjustes from './ajustes/SeccionAjustes.jsx';
+import {
+  CALIFICACIONES_DRAWER_Z_INDEX,
+  calificacionesDrawerClassNames,
+  calificacionesDrawerRootClassName,
+  calificacionesDrawerSectionClassName,
+  calificacionesDrawerStyles,
+  calificacionesDrawerTarjetaClassName,
+} from '../utils/calificacionesDrawerLayout.js';
 
 const COMPONENTES = [
   { label: 'Teórico', value: 'TEORICO' },
@@ -243,29 +251,11 @@ const EvaluacionDrawer = ({
       onClose={handleCerrar}
       destroyOnClose
       footer={footer}
-      className="cal-ajustes-drawer cal-eval-drawer"
-      zIndex={1100}
-      styles={{
-        wrapper: {
-          top: 'var(--header-height, 64px)',
-          height: 'calc(100vh - var(--header-height, 64px))',
-          maxHeight: 'calc(100vh - var(--header-height, 64px))',
-        },
-        content: {
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-        },
-        body: {
-          flex: 1,
-          padding: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          minHeight: 0,
-        },
-        footer: { flexShrink: 0 },
-      }}
+      rootClassName={calificacionesDrawerRootClassName}
+      className={`${calificacionesDrawerSectionClassName} cal-eval-drawer`}
+      classNames={calificacionesDrawerClassNames}
+      zIndex={CALIFICACIONES_DRAWER_Z_INDEX}
+      styles={calificacionesDrawerStyles()}
     >
       {errorGuardado ? (
         <Alert
@@ -286,7 +276,7 @@ const EvaluacionDrawer = ({
           <SeccionAjustes
             icon={TagsOutlined}
             titulo="Identificación"
-            className="cal-ajustes-drawer__override-card cal-eval-drawer__bloque"
+            className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
               Definí el tipo institucional y el nombre con el que aparecerá la columna en el
@@ -322,7 +312,7 @@ const EvaluacionDrawer = ({
           <SeccionAjustes
             icon={PieChartOutlined}
             titulo="Componente y ponderación"
-            className="cal-ajustes-drawer__override-card cal-eval-drawer__bloque"
+            className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
               Indicá si la evaluación suma al componente teórico o práctico y qué porcentaje
@@ -374,7 +364,7 @@ const EvaluacionDrawer = ({
           <SeccionAjustes
             icon={CalendarOutlined}
             titulo="Programación"
-            className="cal-ajustes-drawer__override-card cal-eval-drawer__bloque"
+            className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
               Fecha prevista de la evaluación (opcional). Sirve como referencia en el cuaderno; no
