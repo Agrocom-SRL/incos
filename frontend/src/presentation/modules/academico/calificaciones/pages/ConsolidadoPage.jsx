@@ -78,7 +78,9 @@ const ConsolidadoPage = () => {
           />
         </PageHeaderArea>
         <MainContent>
-          <Spin tip="Cargando registro académico…" />
+          <Spin tip="Cargando registro académico…" spinning>
+            <div className="cal-consolidado-page__spin-nest" aria-hidden />
+          </Spin>
         </MainContent>
       </Flex>
     );
@@ -155,6 +157,7 @@ const ConsolidadoPage = () => {
         abierto={ajustesAbierto}
         cursoId={asignacionId}
         onCerrar={() => setAjustesAbierto(false)}
+        onGuardado={refetch}
       />
     </Flex>
   );

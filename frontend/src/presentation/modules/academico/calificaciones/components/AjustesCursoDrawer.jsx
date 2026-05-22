@@ -2,18 +2,20 @@
  * Drawer de ajustes del curso (cuota, evaluaciones finales, asistencia).
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Button,
   Divider,
   Drawer,
   Form,
+  Input,
   InputNumber,
   notification,
   Flex,
   Radio,
   Skeleton,
+  Space,
   Switch,
   Tooltip,
   Typography,
@@ -34,9 +36,23 @@ import SeccionAjustes from './ajustes/SeccionAjustes.jsx';
 import {
   contarOverridesActivos,
   snapshotValoresAjustes,
+  valoresFormularioDesdeDatos,
+  valoresPersistidosDesdeDatos,
 } from './ajustes/contarOverridesAjustes.js';
 
 const { Text, Paragraph } = Typography;
+
+/** InputNumber con sufijo % (Ant Design deprecó addonAfter). */
+const InputPorcentaje = forwardRef((props, ref) => {
+  const { style, ...rest } = props;
+  return (
+    <Space.Compact block className="cal-ajustes-drawer__input-pct">
+      <InputNumber ref={ref} {...rest} style={{ width: '100%', ...style }} />
+      <Input className="cal-ajustes-drawer__input-pct-suffix" value="%" disabled tabIndex={-1} />
+    </Space.Compact>
+  );
+});
+InputPorcentaje.displayName = 'InputPorcentaje';
 
 const ICONOS_POLITICA = {
   NO_AFECTA: TeamOutlined,
@@ -49,6 +65,10 @@ const COLORES_POLITICA = {
   COMPUTA_NOTA: { color: '#196b45', bg: '#e8f5ec' },
   CAUSA_REPROBACION: { color: '#cf1322', bg: '#fff1f0' },
 };
+
+const PESO_ASISTENCIA_SUGERIDO = 10;
+const MINIMO_ASISTENCIA_SUGERIDO = 75;
+const NOTA_REPROBADA_SUGERIDA = 51;
 
 const POLITICAS_ASISTENCIA = [
   {
@@ -80,7 +100,7 @@ const FinalEstadoChip = ({ activo }) => (
   </span>
 );
 
-const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
+const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar, onGuardado }) => {
   const [form] = Form.useForm();
   const { datos, isLoading, isSaving, error, recargar, guardar } = useAjustesCurso(
     cursoId,
@@ -113,18 +133,9 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
     if (!abierto || !datos?.ajustes) return;
 
     setErrorGuardado(null);
-    const values = {
-      usarCuotaInstitucional: datos.ajustes.usarCuotaInstitucional,
-      teoricoOverride: datos.ajustes.teoricoOverride ?? datos.institucional.cuotaTeorico,
-      practicoOverride: datos.ajustes.practicoOverride ?? datos.institucional.cuotaPractico,
-      evaluacionesFinales: datos.ajustes.evaluacionesFinales,
-      politicaAsistencia: datos.ajustes.politicaAsistencia,
-      pesoAsistencia: datos.ajustes.pesoAsistencia,
-      minimoAsistencia: datos.ajustes.minimoAsistencia,
-      notaReprobada: datos.ajustes.notaReprobada,
-    };
+    const values = valoresFormularioDesdeDatos(datos);
     form.setFieldsValue(values);
-    snapshotInicialRef.current = snapshotValoresAjustes(values);
+    snapshotInicialRef.current = snapshotValoresAjustes(valoresPersistidosDesdeDatos(datos));
     prevUsarCuotaRef.current = datos.ajustes.usarCuotaInstitucional;
     prevFinalesRef.current = JSON.stringify(
       (datos.ajustes.evaluacionesFinales ?? []).map((e) => ({
@@ -214,6 +225,31 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
     if (!isSaving) onCerrar();
   };
 
+  const handlePoliticaChange = (e) => {
+    const next = e.target.value;
+    const patch = { politicaAsistencia: next };
+    if (next === 'COMPUTA_NOTA') {
+      if (form.getFieldValue('pesoAsistencia') == null) {
+        patch.pesoAsistencia = PESO_ASISTENCIA_SUGERIDO;
+      }
+      patch.minimoAsistencia = null;
+      patch.notaReprobada = null;
+    } else if (next === 'CAUSA_REPROBACION') {
+      patch.pesoAsistencia = null;
+      if (form.getFieldValue('minimoAsistencia') == null) {
+        patch.minimoAsistencia = MINIMO_ASISTENCIA_SUGERIDO;
+      }
+      if (form.getFieldValue('notaReprobada') == null) {
+        patch.notaReprobada = NOTA_REPROBADA_SUGERIDA;
+      }
+    } else {
+      patch.pesoAsistencia = null;
+      patch.minimoAsistencia = null;
+      patch.notaReprobada = null;
+    }
+    form.setFieldsValue(patch);
+  };
+
   const construirPayload = (values) => ({
     usarCuotaInstitucional: values.usarCuotaInstitucional,
     teoricoOverride: values.usarCuotaInstitucional ? null : values.teoricoOverride,
@@ -245,11 +281,15 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
       }
 
       setErrorGuardado(null);
-      await guardar(construirPayload(values));
+      const guardados = await guardar(construirPayload(values));
+      snapshotInicialRef.current = snapshotValoresAjustes(
+        valoresPersistidosDesdeDatos(guardados) ?? construirPayload(values),
+      );
       notification.success({
         message: 'Ajustes guardados',
-        description: 'Coordinación puede ver los cambios respecto a la política institucional.',
+        description: 'La configuración de este curso quedó actualizada respecto a la política institucional.',
       });
+      onGuardado?.(guardados);
       onCerrar();
     } catch (err) {
       if (err?.errorFields) return;
@@ -285,12 +325,12 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
   );
 
   const inst = datos?.institucional;
-  const ultima = datos?.ultimaModificacion;
+  const ultima = datos?.ultimaModificacion ?? datos?.auditoria;
 
   return (
     <Drawer
       title="Ajustes de este curso"
-      width={560}
+      size={560}
       open={abierto}
       onClose={handleCerrar}
       destroyOnClose
@@ -346,7 +386,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
             type="warning"
             showIcon
             className="cal-ajustes-drawer__override-hint"
-            message="Override del curso"
+            title="Ajuste particular del curso"
             description="Los cambios siguientes aplican solo a esta asignación docente. La política institucional de la gestión no se modifica."
           />
 
@@ -373,26 +413,14 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
                     label="Teórico"
                     rules={[{ required: true, message: 'Requerido' }]}
                   >
-                    <InputNumber
-                      min={0}
-                      max={100}
-                      precision={2}
-                      addonAfter="%"
-                      style={{ width: '100%' }}
-                    />
+                    <InputPorcentaje min={0} max={100} precision={2} />
                   </Form.Item>
                   <Form.Item
                     name="practicoOverride"
                     label="Práctico"
                     rules={[{ required: true, message: 'Requerido' }]}
                   >
-                    <InputNumber
-                      min={0}
-                      max={100}
-                      precision={2}
-                      addonAfter="%"
-                      style={{ width: '100%' }}
-                    />
+                    <InputPorcentaje min={0} max={100} precision={2} />
                   </Form.Item>
                 </div>
               ) : null}
@@ -491,13 +519,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
                               },
                             ]}
                           >
-                            <InputNumber
-                              min={0.01}
-                              max={100}
-                              precision={2}
-                              addonAfter="%"
-                              style={{ width: '100%' }}
-                            />
+                            <InputPorcentaje min={0.01} max={100} precision={2} />
                           </Form.Item>
                         ) : null}
                       </div>
@@ -537,7 +559,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
                 rules={[{ required: true }]}
                 className="cal-politica-asistencia-radio"
               >
-                <Radio.Group style={{ width: '100%' }}>
+                <Radio.Group style={{ width: '100%' }} onChange={handlePoliticaChange}>
                   <div className="cal-politica-asistencia-grid cal-ajustes-drawer__politica-grid">
                     {POLITICAS_ASISTENCIA.map((p) => {
                       const Icon = ICONOS_POLITICA[p.value] ?? TeamOutlined;
@@ -578,13 +600,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
                   label="Ponderación de asistencia en la nota"
                   rules={[{ required: true, message: 'Indicá la ponderación' }]}
                 >
-                  <InputNumber
-                    min={0.01}
-                    max={100}
-                    precision={2}
-                    addonAfter="%"
-                    style={{ width: '100%' }}
-                  />
+                  <InputPorcentaje min={0.01} max={100} precision={2} />
                 </Form.Item>
               ) : null}
 
@@ -595,13 +611,7 @@ const AjustesCursoDrawer = ({ abierto, cursoId, onCerrar }) => {
                     label="Asistencia mínima exigida"
                     rules={[{ required: true, message: 'Requerido' }]}
                   >
-                    <InputNumber
-                      min={0}
-                      max={100}
-                      precision={2}
-                      addonAfter="%"
-                      style={{ width: '100%' }}
-                    />
+                    <InputPorcentaje min={0} max={100} precision={2} />
                   </Form.Item>
                   <Form.Item
                     name="notaReprobada"

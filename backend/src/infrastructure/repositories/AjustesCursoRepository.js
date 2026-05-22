@@ -194,6 +194,20 @@ export class AjustesCursoRepository {
       };
     });
 
+    const pad = politica.politicaAsistenciaDefault ?? {};
+    const politicaInst = pad.politica ?? 'NO_AFECTA';
+    const politicaCurso = ad.politica_asistencia ?? 'NO_AFECTA';
+    const politicaDistinta = politicaCurso !== politicaInst;
+
+    const finalesConOverride = Object.entries(overridesFinales).some(([codigo, o]) => {
+      if (o?.habilitada === false) return true;
+      const instTipo = finalesInst.find((t) => t.codigo === codigo);
+      if (!instTipo || o?.peso == null) return false;
+      return (
+        Math.abs(Number(o.peso) - Number(instTipo.ponderacionInstitucional)) > 0.009
+      );
+    });
+
     return {
       asignacionId: Number(asignacionId),
       gestionId,
@@ -215,7 +229,7 @@ export class AjustesCursoRepository {
         teoricoOverride: ad.teorico_override != null ? Number(ad.teorico_override) : null,
         practicoOverride: ad.practico_override != null ? Number(ad.practico_override) : null,
         evaluacionesFinales,
-        politicaAsistencia: ad.politica_asistencia ?? 'NO_AFECTA',
+        politicaAsistencia: politicaCurso,
         pesoAsistencia: ad.peso_asistencia != null ? Number(ad.peso_asistencia) : null,
         minimoAsistencia: ad.minimo_asistencia != null ? Number(ad.minimo_asistencia) : null,
         notaReprobada: ad.nota_reprobada != null ? Number(ad.nota_reprobada) : null,
@@ -223,9 +237,11 @@ export class AjustesCursoRepository {
       },
       tieneOverrides:
         !usarCuotaInstitucional ||
-        Boolean(extra.nivelacionVisible) ||
-        Object.values(overridesFinales).some((o) => o?.habilitada === false),
+        politicaDistinta ||
+        finalesConOverride ||
+        Boolean(extra.nivelacionVisible),
       auditoria,
+      ultimaModificacion: auditoria,
     };
   }
 

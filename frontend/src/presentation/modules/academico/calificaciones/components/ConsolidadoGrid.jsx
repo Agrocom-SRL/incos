@@ -3,116 +3,136 @@
  */
 
 import {
-  CheckCircleOutlined,
-  ExportOutlined,
-  LockOutlined,
   BookOutlined,
+  CheckCircleOutlined,
+  EyeOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { Button, Table, Tag, Tooltip } from 'antd';
 import {
   ESTADO_BIMESTRE_HEADER,
-  etiquetaEstadoBimestre,
   resolverEstadoBimestreHeader,
   tooltipAbrirCuaderno,
 } from '@application-academico/calificaciones/utils/bimestreConsolidadoUtils.js';
+
+const ETIQUETA_ESTADO = {
+  [ESTADO_BIMESTRE_HEADER.CERRADO]: 'CERRADO',
+  [ESTADO_BIMESTRE_HEADER.EN_CURSO]: 'EN CURSO',
+  [ESTADO_BIMESTRE_HEADER.PENDIENTE]: 'PENDIENTE',
+};
 
 const celdaNota = (valor) => (
   <span className="cal-consolidado-grid__nota">{valor != null ? valor : '—'}</span>
 );
 
-const celdaVacia = (row, indice) => {
-  const b = row.bimestres?.[indice];
-  return b?.teorico == null && b?.practico == null && b?.suma == null;
-};
+const LeyendaEstados = () => (
+  <div className="cal-consolidado-grid__leyenda-card" role="note" aria-label="Leyenda de estados de bimestre">
+    <div className="cal-consolidado-grid__leyenda-item">
+      <span className="cal-consolidado-grid__leyenda-muestra cal-consolidado-grid__leyenda-muestra--cerrado">
+        <CheckCircleOutlined aria-hidden />
+      </span>
+      <span>
+        <strong>Cerrado</strong> — abrir cuaderno para consulta o carga
+      </span>
+    </div>
+    <div className="cal-consolidado-grid__leyenda-item">
+      <span className="cal-consolidado-grid__leyenda-muestra cal-consolidado-grid__leyenda-muestra--en-curso">
+        <span className="cal-consolidado-grid__bim-dot" aria-hidden />
+      </span>
+      <span>
+        <strong>En curso</strong> — registrar notas del bimestre vigente
+      </span>
+    </div>
+    <div className="cal-consolidado-grid__leyenda-item">
+      <span className="cal-consolidado-grid__leyenda-muestra cal-consolidado-grid__leyenda-muestra--pendiente">
+        <LockOutlined aria-hidden />
+      </span>
+      <span>
+        <strong>Pendiente</strong> — bloqueado por calendario académico
+      </span>
+    </div>
+  </div>
+);
 
 const TituloBimestre = ({ titulo, numero, estadoCalendario, bimestreVigente, onAbrirCuaderno }) => {
   const estado = resolverEstadoBimestreHeader(numero, bimestreVigente, estadoCalendario);
-  const bloqueado = estado === ESTADO_BIMESTRE_HEADER.PENDIENTE;
+  const cerrado = estado === ESTADO_BIMESTRE_HEADER.CERRADO;
   const enCurso = estado === ESTADO_BIMESTRE_HEADER.EN_CURSO;
+  const pendiente = estado === ESTADO_BIMESTRE_HEADER.PENDIENTE;
 
-  const handleClick = () => {
-    if (!bloqueado && onAbrirCuaderno) onAbrirCuaderno(numero);
+  const iconoEstado = cerrado ? (
+    <CheckCircleOutlined className="cal-consolidado-grid__bim-icon-estado" aria-hidden />
+  ) : pendiente ? (
+    <LockOutlined className="cal-consolidado-grid__bim-icon-estado" aria-hidden />
+  ) : (
+    <span className="cal-consolidado-grid__bim-dot" aria-hidden />
+  );
+
+  const abrir = () => {
+    if (!pendiente && onAbrirCuaderno) onAbrirCuaderno(numero);
   };
 
-  const iconoEstado =
-    estado === ESTADO_BIMESTRE_HEADER.CERRADO ? (
-      <CheckCircleOutlined aria-hidden />
-    ) : estado === ESTADO_BIMESTRE_HEADER.PENDIENTE ? (
-      <LockOutlined aria-hidden />
-    ) : (
-      <span className="cal-consolidado-grid__bim-dot" aria-hidden />
+  let accion = null;
+  if (cerrado) {
+    accion = (
+      <Button
+        size="small"
+        className="cal-consolidado-grid__bim-btn cal-consolidado-grid__bim-btn--cerrado"
+        icon={<EyeOutlined />}
+        onClick={(e) => {
+          e.stopPropagation();
+          abrir();
+        }}
+      >
+        Ver cuaderno
+      </Button>
     );
-
-  const contenido = (
-    <div
-      className={[
-        'cal-consolidado-grid__bim-head',
-        `cal-consolidado-grid__bim-head--${estado}`,
-        bloqueado ? 'cal-consolidado-grid__bim-head--locked' : 'cal-consolidado-grid__bim-head--clickable',
-      ].join(' ')}
-      onClick={bloqueado ? undefined : handleClick}
-      onKeyDown={(e) => {
-        if (bloqueado) return;
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
-      role={bloqueado ? undefined : 'button'}
-      tabIndex={bloqueado ? undefined : 0}
-    >
-      <div className="cal-consolidado-grid__bim-top">
-        <span className="cal-consolidado-grid__bim-titulo-row">
-          {iconoEstado}
-          <span className="cal-consolidado-grid__bim-titulo">{titulo}</span>
-        </span>
-        {!bloqueado ? (
-          <ExportOutlined className="cal-consolidado-grid__bim-icon-link" aria-hidden />
-        ) : null}
-      </div>
-
-      {enCurso ? (
-        <span className="cal-consolidado-grid__bim-badge">EN CURSO</span>
-      ) : (
-        <span className="cal-consolidado-grid__bim-estado-label">
-          {etiquetaEstadoBimestre(estado)}
-        </span>
-      )}
-
-      {!bloqueado ? (
-        enCurso ? (
-          <Button
-            type="primary"
-            size="small"
-            className="cal-consolidado-grid__bim-cta"
-            icon={<BookOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-              onAbrirCuaderno?.(numero);
-            }}
-          >
-            Abrir cuaderno
-          </Button>
-        ) : (
-          <Button
-            type="link"
-            size="small"
-            className="cal-consolidado-grid__bim-cta-link"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAbrirCuaderno?.(numero);
-            }}
-          >
-            Ver cuaderno
-          </Button>
-        )
-      ) : null}
-    </div>
-  );
+  } else if (enCurso) {
+    accion = (
+      <Button
+        size="small"
+        className="cal-consolidado-grid__bim-btn cal-consolidado-grid__bim-btn--en-curso"
+        icon={<BookOutlined />}
+        onClick={(e) => {
+          e.stopPropagation();
+          abrir();
+        }}
+      >
+        Abrir cuaderno
+      </Button>
+    );
+  } else {
+    accion = (
+      <Button
+        size="small"
+        disabled
+        className="cal-consolidado-grid__bim-btn cal-consolidado-grid__bim-btn--pendiente"
+        icon={<LockOutlined />}
+      >
+        Ver cuaderno
+      </Button>
+    );
+  }
 
   return (
     <Tooltip title={tooltipAbrirCuaderno(numero, estado)} placement="top">
-      {contenido}
+      <div className={['cal-consolidado-grid__bim-head', `cal-consolidado-grid__bim-head--${estado}`].join(' ')}>
+        <div className="cal-consolidado-grid__bim-top">
+          <span className="cal-consolidado-grid__bim-titulo-row">
+            {iconoEstado}
+            <span className="cal-consolidado-grid__bim-titulo">{titulo}</span>
+          </span>
+        </div>
+        <span
+          className={[
+            'cal-consolidado-grid__bim-estado-tag',
+            `cal-consolidado-grid__bim-estado-tag--${estado}`,
+          ].join(' ')}
+        >
+          {ETIQUETA_ESTADO[estado]}
+        </span>
+        <div className="cal-consolidado-grid__bim-action">{accion}</div>
+      </div>
     </Tooltip>
   );
 };
@@ -124,25 +144,40 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
     meta?.estadoCalendario,
   );
   const enCurso = estadoUi === ESTADO_BIMESTRE_HEADER.EN_CURSO;
+  const pendiente = estadoUi === ESTADO_BIMESTRE_HEADER.PENDIENTE;
 
-  const headerClass = `cal-consolidado-grid__th-bim cal-consolidado-grid__th-bim--${estadoUi}`;
+  const thBimClass = [
+    'cal-consolidado-grid__th-bim',
+    `cal-consolidado-grid__th-bim--${estadoUi}`,
+    enCurso ? 'cal-consolidado-grid__col-bim-activo' : '',
+    pendiente ? 'cal-consolidado-grid__col-bim-pendiente' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
-  const subColClass = (suffix) =>
+  const thSubClass = [
+    'cal-consolidado-grid__th-sub',
+    `cal-consolidado-grid__th-sub--${estadoUi}`,
+    enCurso ? 'cal-consolidado-grid__col-bim-activo' : '',
+    pendiente ? 'cal-consolidado-grid__col-bim-pendiente' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const tdBimClass = (suffix = '') =>
     [
       'cal-consolidado-grid__col-num',
       enCurso ? 'cal-consolidado-grid__col-bim-activo' : '',
+      pendiente ? 'cal-consolidado-grid__col-bim-pendiente' : '',
+      enCurso ? 'cal-consolidado-grid__celda-activa' : '',
       suffix === 'suma' ? 'cal-consolidado-grid__col-suma' : '',
+      enCurso && suffix === 'suma' ? 'cal-consolidado-grid__col-suma--activa' : '',
     ]
       .filter(Boolean)
       .join(' ');
 
-  const onCellBim = (_, row) => ({
-    className: [
-      enCurso && celdaVacia(row, indice) ? 'cal-consolidado-grid__celda-activa' : '',
-      subColClass(''),
-    ]
-      .filter(Boolean)
-      .join(' '),
+  const onCellBim = (suffix = '') => () => ({
+    className: tdBimClass(suffix),
   });
 
   return {
@@ -157,19 +192,16 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
     ),
     key: `bim-${indice}`,
     align: 'center',
-    className: headerClass,
-    onHeaderCell: () => ({
-      className: headerClass,
-    }),
+    onHeaderCell: () => ({ className: thBimClass }),
     children: [
       {
         title: 'Teórico',
         key: `bim-${indice}-t`,
         width: 76,
         align: 'center',
-        className: subColClass(''),
-        onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-sub' }),
-        onCell: onCellBim,
+        className: tdBimClass('teorico'),
+        onHeaderCell: () => ({ className: thSubClass }),
+        onCell: onCellBim('teorico'),
         render: (_, row) => celdaNota(row.bimestres?.[indice]?.teorico),
       },
       {
@@ -177,9 +209,9 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
         key: `bim-${indice}-p`,
         width: 76,
         align: 'center',
-        className: subColClass(''),
-        onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-sub' }),
-        onCell: onCellBim,
+        className: tdBimClass('practico'),
+        onHeaderCell: () => ({ className: thSubClass }),
+        onCell: onCellBim('practico'),
         render: (_, row) => celdaNota(row.bimestres?.[indice]?.practico),
       },
       {
@@ -187,9 +219,9 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
         key: `bim-${indice}-s`,
         width: 76,
         align: 'center',
-        className: subColClass('suma'),
-        onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-sub' }),
-        onCell: onCellBim,
+        className: tdBimClass('suma'),
+        onHeaderCell: () => ({ className: thSubClass }),
+        onCell: onCellBim('suma'),
         render: (_, row) => celdaNota(row.bimestres?.[indice]?.suma),
       },
     ],
@@ -230,7 +262,9 @@ const ConsolidadoGrid = ({
           key: 'codigo',
           width: 108,
           className: 'cal-consolidado-grid__col-codigo',
-          onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-sub' }),
+          onHeaderCell: () => ({
+            className: 'cal-consolidado-grid__th-sub cal-consolidado-grid__th-sub-est',
+          }),
         },
         {
           title: 'Nombres y apellidos',
@@ -239,7 +273,9 @@ const ConsolidadoGrid = ({
           width: 220,
           ellipsis: true,
           className: 'cal-consolidado-grid__col-nombre',
-          onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-sub' }),
+          onHeaderCell: () => ({
+            className: 'cal-consolidado-grid__th-sub cal-consolidado-grid__th-sub-est',
+          }),
         },
       ],
     },
@@ -256,7 +292,7 @@ const ConsolidadoGrid = ({
       title: 'Nota final',
       dataIndex: 'notaFinal',
       key: 'notaFinal',
-      width: 102,
+      width: 112,
       align: 'center',
       className: 'cal-consolidado-grid__col-final',
       onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-est' }),
@@ -295,20 +331,10 @@ const ConsolidadoGrid = ({
 
   return (
     <div className="cal-consolidado-grid-wrap">
-      <div className="cal-consolidado-grid__leyenda-estados">
-        <span>
-          <CheckCircleOutlined /> Cerrado — abrir cuaderno para consulta o carga
-        </span>
-        <span>
-          <span className="cal-consolidado-grid__bim-dot cal-consolidado-grid__bim-dot--inline" /> En
-          curso — registrar notas
-        </span>
-        <span>
-          <LockOutlined /> Pendiente — bloqueado por calendario
-        </span>
-      </div>
+      <LeyendaEstados />
       <Table
         className="cal-consolidado-grid"
+        tableLayout="fixed"
         columns={columns}
         dataSource={estudiantes}
         rowKey="nro"

@@ -176,6 +176,7 @@ const CuadernoPage = () => {
               abierto={ajustesAbierto}
               cursoId={cursoId}
               onCerrar={() => setAjustesAbierto(false)}
+              onGuardado={refetch}
             />
 
             <VistaPreviaDrawer

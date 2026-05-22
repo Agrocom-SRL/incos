@@ -49,7 +49,7 @@ const AjustesCursoInstitucionalPanel = ({ institucional, curso, gestionVigente }
         type="info"
         showIcon
         className="cal-ajustes-inst__intro"
-        message="Configuración institucional (solo lectura)"
+        title="Configuración institucional (solo lectura)"
         description={
           <>
             Valores definidos por coordinación para la gestión{' '}
@@ -65,7 +65,7 @@ const AjustesCursoInstitucionalPanel = ({ institucional, curso, gestionVigente }
           type="warning"
           showIcon
           style={{ marginBottom: 12 }}
-          message="La gestión vigente aún no tiene política institucional guardada"
+          title="La gestión vigente aún no tiene política institucional guardada"
           description="Hasta que coordinación configure las notas, los cursos usan valores por defecto."
         />
       ) : null}
