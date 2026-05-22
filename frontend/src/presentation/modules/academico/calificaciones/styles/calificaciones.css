@@ -1761,13 +1761,14 @@
 
 .cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__col-bim-activo,
 .cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-bim-activo {
-  border-left: 1px solid var(--cuaderno-verde-acento) !important;
-  border-right: 1px solid var(--cuaderno-verde-acento) !important;
+  border-left: 1px solid var(--cuaderno-verde-oscuro) !important;
+  border-right: 1px solid var(--cuaderno-verde-oscuro) !important;
 }
 
 .cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__col-bim-pendiente,
 .cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-bim-pendiente {
-  opacity: 0.7;
+  opacity: 0.75;
+  border-right: 1px solid var(--text-400) !important;
 }
 
 .cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__celda-activa {

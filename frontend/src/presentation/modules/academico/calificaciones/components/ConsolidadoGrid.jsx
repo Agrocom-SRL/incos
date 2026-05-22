@@ -197,7 +197,7 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
       {
         title: 'Teórico',
         key: `bim-${indice}-t`,
-        width: 76,
+        width: 86,
         align: 'center',
         className: tdBimClass('teorico'),
         onHeaderCell: () => ({ className: thSubClass }),
@@ -207,7 +207,7 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
       {
         title: 'Práctico',
         key: `bim-${indice}-p`,
-        width: 76,
+        width: 86,
         align: 'center',
         className: tdBimClass('practico'),
         onHeaderCell: () => ({ className: thSubClass }),
@@ -217,7 +217,7 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
       {
         title: 'Suma',
         key: `bim-${indice}-s`,
-        width: 76,
+        width: 86,
         align: 'center',
         className: tdBimClass('suma'),
         onHeaderCell: () => ({ className: thSubClass }),
@@ -270,7 +270,7 @@ const ConsolidadoGrid = ({
           title: 'Nombres y apellidos',
           dataIndex: 'nombre',
           key: 'nombre',
-          width: 220,
+          width: 310,
           ellipsis: true,
           className: 'cal-consolidado-grid__col-nombre',
           onHeaderCell: () => ({
