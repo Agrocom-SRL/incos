@@ -196,6 +196,12 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/evaluaciones`,
   CUADERNO_EVALUACION: (asignacionId, bimestre, evaluacionId) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/evaluaciones/${evaluacionId}`,
+  CUADERNO_EVALUACION_NOTAS: (asignacionId, bimestre, evaluacionId) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/evaluaciones/${evaluacionId}/notas`,
+  CUADERNO_NOTA: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/notas`,
+  CUADERNO_GUARDAR: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/guardar`,
 };
 
 // ============================================

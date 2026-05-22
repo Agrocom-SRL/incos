@@ -1,13 +1,12 @@
 /**
- * Auto-guardado de una celda de nota (debounce + caché local hasta API cuaderno).
+ * Auto-guardado de una celda de nota (debounce + API cuaderno).
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { saveNotaCache } from '../utils/cuadernoLocalCache.js';
+import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 
 const DEBOUNCE_MS = 1500;
 const GUARDADO_OK_MS = 2000;
-const FAKE_LATENCY_MS = 450;
 
 const valoresIguales = (a, b) => {
   if (a == null && b == null) return true;
@@ -59,16 +58,27 @@ export const useNotaAutosave = ({
     async (value) => {
       const reqId = ++requestIdRef.current;
       setEstado('guardando');
-      await new Promise((r) => {
-        setTimeout(r, FAKE_LATENCY_MS);
-      });
-      if (reqId !== requestIdRef.current) return;
+
+      if (!cursoId || !bimestre) {
+        if (reqId === requestIdRef.current) setEstado('error');
+        return;
+      }
 
       try {
-        if (cursoId && bimestre) {
-          saveNotaCache(cursoId, bimestre, estudianteId, evaluacionId, value);
+        const result = await CalificacionRepository.guardarNotaCuaderno(cursoId, bimestre, {
+          estudianteId,
+          evaluacionId,
+          nota: value,
+        });
+        if (reqId !== requestIdRef.current) return;
+
+        if (!result.success) {
+          setEstado('error');
+          return;
         }
-        lastSavedRef.current = value;
+
+        const guardada = result.data?.nota ?? value;
+        lastSavedRef.current = guardada ?? null;
         setEstado('guardado');
         setTimeout(() => {
           if (reqId === requestIdRef.current) setEstado('idle');
@@ -118,8 +128,41 @@ export const useNotaAutosave = ({
       debounceRef.current = null;
     }
     requestIdRef.current += 1;
+    if (valoresIguales(valorRef.current, lastSavedRef.current)) {
+      setEstado('idle');
+      return Promise.resolve();
+    }
     return persist(valorRef.current);
   }, [persist]);
 
-  return { valor, estado, setValor, reintentar, guardarAhora };
+  const necesitaGuardar = useCallback(
+    () => !valoresIguales(valorRef.current, lastSavedRef.current),
+    [],
+  );
+
+  const obtenerPayload = useCallback(
+    () => ({
+      estudianteId,
+      evaluacionId,
+      nota: valorRef.current,
+    }),
+    [estudianteId, evaluacionId],
+  );
+
+  const marcarGuardado = useCallback((notaPersistida) => {
+    const guardada = notaPersistida !== undefined ? notaPersistida : valorRef.current;
+    lastSavedRef.current = guardada ?? null;
+    setEstado('idle');
+  }, []);
+
+  return {
+    valor,
+    estado,
+    setValor,
+    reintentar,
+    guardarAhora,
+    necesitaGuardar,
+    obtenerPayload,
+    marcarGuardado,
+  };
 };

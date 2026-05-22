@@ -4,13 +4,15 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Flex, Modal, Spin } from 'antd';
+import { Alert, Button, Card, Flex, Modal, Spin, notification } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useCuadernoCurso } from '@application-academico/calificaciones/hooks/useCuadernoCurso.js';
+import { contarNotasCargadas } from '@application-academico/calificaciones/utils/pesoEvaluaciones.js';
+import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { useCalificacionesVistaContext } from '@application-academico/calificaciones/hooks/useCalificacionesVistaContext.js';
 import {
   CuadernoAutosaveProvider,
@@ -44,38 +46,114 @@ const CuadernoGrilla = ({
   onAbrirCrear,
   onAbrirEditar,
   resetearNotasEvaluacion,
+  onEliminadoColumna,
+  onRefetchCuaderno,
   enteringColumnIds,
   removingColumnId,
 }) => {
-  const { guardarEvaluacion, resetEvaluacionRegistro } = useCuadernoAutosaveRegistry();
+  const {
+    collectNotasParaGuardar,
+    marcarNotasGuardadasEnLote,
+    setGuardandoBimestre,
+    guardandoBimestre,
+    resetEvaluacionRegistro,
+  } = useCuadernoAutosaveRegistry();
   const soloLectura = !modoEdicion;
 
   const handleReset = useCallback(
-    (evaluacionId) => {
-      const ev = evaluaciones.find((e) => e.id === evaluacionId);
+    (ev) => {
+      const notasCount = contarNotasCargadas(estudiantes, ev.id);
       Modal.confirm({
         title: 'Restablecer notas',
         okText: 'Restablecer',
         okType: 'danger',
         cancelText: 'Cancelar',
-        content: (
-          <span>
-            ¿Borrar todas las notas cargadas en <strong>{ev?.nombre ?? 'esta evaluación'}</strong>?
-          </span>
-        ),
-        onOk: () => {
-          resetEvaluacionRegistro(evaluacionId);
-          resetearNotasEvaluacion(evaluacionId);
+        content:
+          notasCount > 0 ? (
+            <span>
+              ¿Borrar las <strong>{notasCount}</strong> notas cargadas en{' '}
+              <strong>{ev.nombre}</strong>? Se recalcularán los componentes del bimestre.
+            </span>
+          ) : (
+            <span>
+              No hay notas cargadas en <strong>{ev.nombre}</strong>. ¿Continuar igualmente?
+            </span>
+          ),
+        onOk: async () => {
+          await resetearNotasEvaluacion(ev.id);
+          resetEvaluacionRegistro(ev.id);
         },
       });
     },
-    [evaluaciones, resetEvaluacionRegistro, resetearNotasEvaluacion],
+    [estudiantes, resetEvaluacionRegistro, resetearNotasEvaluacion],
   );
 
-  const handleGuardar = useCallback(
-    (evaluacionId) => guardarEvaluacion(evaluacionId),
-    [guardarEvaluacion],
+  const handleEliminar = useCallback(
+    (ev) => {
+      const notasCount = contarNotasCargadas(estudiantes, ev.id);
+      Modal.confirm({
+        title: 'Eliminar evaluación',
+        okText: 'Eliminar',
+        okType: 'danger',
+        cancelText: 'Cancelar',
+        content:
+          notasCount > 0 ? (
+            <span>
+              ¿Eliminar <strong>{ev.nombre}</strong>? Se borrarán <strong>{notasCount}</strong>{' '}
+              notas y se recalcularán los componentes del bimestre. Esta acción no se puede deshacer.
+            </span>
+          ) : (
+            <span>
+              ¿Eliminar la evaluación <strong>{ev.nombre}</strong>? Esta acción no se puede
+              deshacer.
+            </span>
+          ),
+        onOk: async () => {
+          resetEvaluacionRegistro(ev.id);
+          await onEliminadoColumna(ev.id);
+        },
+      });
+    },
+    [estudiantes, resetEvaluacionRegistro, onEliminadoColumna],
   );
+
+  const handleGuardarBimestre = useCallback(async () => {
+    const notas = collectNotasParaGuardar();
+    setGuardandoBimestre(true);
+    try {
+      const res = await CalificacionRepository.guardarNotasCuadernoBimestre(
+        cursoId,
+        bimestreActivo,
+        notas,
+      );
+      if (!res?.success) {
+        throw new Error(res?.error || 'No se pudieron guardar las notas');
+      }
+      marcarNotasGuardadasEnLote(res.data?.notas ?? []);
+      notification.success({
+        message: 'Notas guardadas',
+        description:
+          notas.length > 0
+            ? `Se guardaron ${res.data?.notasGuardadas ?? notas.length} nota(s) y se recalculó el bimestre y la nota final.`
+            : 'Se recalculó el bimestre y la nota final del curso.',
+      });
+      await onRefetchCuaderno?.();
+    } catch (err) {
+      notification.error({
+        message: 'Error al guardar',
+        description: typeof err?.message === 'string' ? err.message : 'Reintentá en unos segundos.',
+      });
+    } finally {
+      setGuardandoBimestre(false);
+    }
+  }, [
+    bimestreActivo,
+    collectNotasParaGuardar,
+    cursoId,
+    marcarNotasGuardadasEnLote,
+    onRefetchCuaderno,
+    setGuardandoBimestre,
+  ]);
 
   return (
     <NotasGrid
@@ -87,8 +165,10 @@ const CuadernoGrilla = ({
       soloLectura={soloLectura}
       onAgregarEvaluacion={onAbrirCrear}
       onEditarEvaluacion={modoEdicion ? onAbrirEditar : undefined}
-      onResetEvaluacion={handleReset}
-      onGuardarEvaluacion={handleGuardar}
+      onResetEvaluacion={modoEdicion ? handleReset : undefined}
+      onEliminarEvaluacion={modoEdicion ? handleEliminar : undefined}
+      onGuardarBimestre={modoEdicion ? handleGuardarBimestre : undefined}
+      guardandoBimestre={guardandoBimestre}
       enteringColumnIds={enteringColumnIds}
       removingColumnId={removingColumnId}
     />
@@ -237,6 +317,8 @@ const CuadernoPage = () => {
           onAbrirCrear={abrirCrear}
           onAbrirEditar={modoEdicion ? abrirEditar : undefined}
           resetearNotasEvaluacion={resetearNotasEvaluacion}
+          onEliminadoColumna={handleEliminado}
+          onRefetchCuaderno={refetch}
           enteringColumnIds={enteringColumnIds}
           removingColumnId={removingColumnId}
         />

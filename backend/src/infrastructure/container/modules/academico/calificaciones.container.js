@@ -34,10 +34,16 @@ import { GetCuadernoBimestreUseCase } from '../../../../application/use-cases/ac
 import { CreateEvaluacionCuadernoUseCase } from '../../../../application/use-cases/academico/CreateEvaluacionCuadernoUseCase.js';
 import { UpdateEvaluacionCuadernoUseCase } from '../../../../application/use-cases/academico/UpdateEvaluacionCuadernoUseCase.js';
 import { DeleteEvaluacionCuadernoUseCase } from '../../../../application/use-cases/academico/DeleteEvaluacionCuadernoUseCase.js';
+import { UpsertNotaCuadernoUseCase } from '../../../../application/use-cases/academico/UpsertNotaCuadernoUseCase.js';
+import { ResetNotasEvaluacionCuadernoUseCase } from '../../../../application/use-cases/academico/ResetNotasEvaluacionCuadernoUseCase.js';
+import { GuardarNotasCuadernoBimestreUseCase } from '../../../../application/use-cases/academico/GuardarNotasCuadernoBimestreUseCase.js';
 import { GetCuadernoBimestreController } from '../../../../presentation/controllers/academico/calificaciones/get-cuaderno-bimestre.controller.js';
 import { CreateEvaluacionCuadernoController } from '../../../../presentation/controllers/academico/calificaciones/create-evaluacion-cuaderno.controller.js';
 import { UpdateEvaluacionCuadernoController } from '../../../../presentation/controllers/academico/calificaciones/update-evaluacion-cuaderno.controller.js';
 import { DeleteEvaluacionCuadernoController } from '../../../../presentation/controllers/academico/calificaciones/delete-evaluacion-cuaderno.controller.js';
+import { UpsertNotaCuadernoController } from '../../../../presentation/controllers/academico/calificaciones/upsert-nota-cuaderno.controller.js';
+import { ResetNotasEvaluacionCuadernoController } from '../../../../presentation/controllers/academico/calificaciones/reset-notas-evaluacion-cuaderno.controller.js';
+import { GuardarNotasCuadernoBimestreController } from '../../../../presentation/controllers/academico/calificaciones/guardar-notas-cuaderno-bimestre.controller.js';
 import { buildCalificacionesRouter } from '../../../../presentation/routes/calificaciones.routes.js';
 
 export function registerCalificacionesResource(container) {
@@ -371,7 +377,49 @@ export function registerCalificacionesResource(container) {
       new DeleteEvaluacionCuadernoUseCase({
         calificacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        ajustesCursoRepository: c.resolve(REPOSITORIOS_TOKENS.ajustesCursoRepository),
         bimesterEvaluationRepository: c.resolve(REPOSITORIOS_TOKENS.bimesterEvaluationRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.resetNotasEvaluacionCuadernoUseCase,
+    (c) =>
+      new ResetNotasEvaluacionCuadernoUseCase({
+        calificacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionRepository),
+        cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        ajustesCursoRepository: c.resolve(REPOSITORIOS_TOKENS.ajustesCursoRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.guardarNotasCuadernoBimestreUseCase,
+    (c) =>
+      new GuardarNotasCuadernoBimestreUseCase({
+        calificacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionRepository),
+        cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        ajustesCursoRepository: c.resolve(REPOSITORIOS_TOKENS.ajustesCursoRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.upsertNotaCuadernoUseCase,
+    (c) =>
+      new UpsertNotaCuadernoUseCase({
+        calificacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionRepository),
+        cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -424,6 +472,43 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.upsertNotaCuadernoController,
+    (c) =>
+      new UpsertNotaCuadernoController({
+        upsertNotaCuadernoUseCase: c.resolve(ACADEMICO_TOKENS.upsertNotaCuadernoUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.resetNotasEvaluacionCuadernoController,
+    (c) =>
+      new ResetNotasEvaluacionCuadernoController({
+        resetNotasEvaluacionCuadernoUseCase: c.resolve(
+          ACADEMICO_TOKENS.resetNotasEvaluacionCuadernoUseCase,
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.guardarNotasCuadernoBimestreController,
+    (c) =>
+      new GuardarNotasCuadernoBimestreController({
+        guardarNotasCuadernoBimestreUseCase: c.resolve(
+          ACADEMICO_TOKENS.guardarNotasCuadernoBimestreUseCase,
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController,
     (c) =>
       new ListCoordinacionCalificacionesDocentesController({
@@ -469,6 +554,13 @@ export function registerCalificacionesResource(container) {
       ),
       deleteEvaluacionCuadernoController: c.resolve(
         ACADEMICO_TOKENS.deleteEvaluacionCuadernoController,
+      ),
+      upsertNotaCuadernoController: c.resolve(ACADEMICO_TOKENS.upsertNotaCuadernoController),
+      resetNotasEvaluacionCuadernoController: c.resolve(
+        ACADEMICO_TOKENS.resetNotasEvaluacionCuadernoController,
+      ),
+      guardarNotasCuadernoBimestreController: c.resolve(
+        ACADEMICO_TOKENS.guardarNotasCuadernoBimestreController,
       ),
     };
     const middlewares = {

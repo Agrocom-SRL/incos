@@ -142,6 +142,292 @@ export class CuadernoRepository {
     );
     return rows[0] ?? null;
   }
+
+  /**
+   * @param {number} asignacionId
+   * @param {number} estudianteId
+   * @param {number} bimestreNum
+   */
+  async obtenerBimestreMatriculaId(asignacionId, estudianteId, bimestreNum) {
+    const rows = await sequelize.query(
+      `
+      SELECT bm.id
+      FROM bimestres_matricula bm
+      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+        AND mm.deleted_at IS NULL AND mm.activo = TRUE
+      INNER JOIN asignacion_docente ad ON ad.materia_id = mm.materia_id
+        AND ad.paralelo_id = mm.paralelo_id
+        AND ad.gestion_id = mm.gestion_id
+        AND ad.deleted_at IS NULL AND ad.activo = TRUE
+      INNER JOIN inscripciones ins ON ins.id = mm.inscripcion_id
+        AND ins.deleted_at IS NULL AND ins.activo = TRUE
+      INNER JOIN estudiantes_datos_academicos eda ON eda.id = ins.datos_academicos_id
+        AND eda.deleted_at IS NULL AND eda.activo = TRUE
+      INNER JOIN estudiantes est ON est.id = eda.estudiante_id
+        AND est.deleted_at IS NULL AND est.activo = TRUE
+      WHERE ad.id = ?
+        AND est.id = ?
+        AND bm.bimestre = ?
+        AND bm.deleted_at IS NULL AND bm.activo = TRUE
+      LIMIT 1
+      `,
+      {
+        replacements: [asignacionId, estudianteId, bimestreNum],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+    return rows[0]?.id != null ? Number(rows[0].id) : null;
+  }
+
+  async buscarNotaCelda(evaluacionId, bimestreMatriculaId) {
+    const rows = await sequelize.query(
+      `
+      SELECT id, nota
+      FROM evaluaciones_notas
+      WHERE evaluacion_id = ?
+        AND bimestre_matricula_id = ?
+        AND deleted_at IS NULL
+        AND activo = TRUE
+      LIMIT 1
+      `,
+      {
+        replacements: [evaluacionId, bimestreMatriculaId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+    return rows[0] ?? null;
+  }
+
+  /**
+   * @param {{ evaluacionId: number, bimestreMatriculaId: number, nota: number, usuarioId: number }} params
+   */
+  async upsertNotaCelda({ evaluacionId, bimestreMatriculaId, nota, usuarioId }) {
+    const existente = await this.buscarNotaCelda(evaluacionId, bimestreMatriculaId);
+    if (existente?.id) {
+      await sequelize.query(
+        `
+        UPDATE evaluaciones_notas
+        SET nota = ?, updated_by = ?, updated_at = NOW(), activo = TRUE, deleted_at = NULL, deleted_by = NULL
+        WHERE id = ?
+        `,
+        {
+          replacements: [nota, usuarioId, existente.id],
+          type: sequelize.QueryTypes.UPDATE,
+        },
+      );
+      const rows = await sequelize.query(
+        `SELECT nota FROM evaluaciones_notas WHERE id = ? LIMIT 1`,
+        {
+          replacements: [existente.id],
+          type: sequelize.QueryTypes.SELECT,
+        },
+      );
+      return { id: Number(existente.id), nota: rows[0]?.nota ?? nota };
+    }
+
+    const insert = await sequelize.query(
+      `
+      INSERT INTO evaluaciones_notas (evaluacion_id, bimestre_matricula_id, nota, intento, activo, created_by, updated_by)
+      VALUES (?, ?, ?, 1, TRUE, ?, ?)
+      `,
+      {
+        replacements: [evaluacionId, bimestreMatriculaId, nota, usuarioId, usuarioId],
+        type: sequelize.QueryTypes.INSERT,
+      },
+    );
+    return { id: Number(insert), nota };
+  }
+
+  async eliminarNotaCelda(evaluacionId, bimestreMatriculaId, usuarioId) {
+    const existente = await this.buscarNotaCelda(evaluacionId, bimestreMatriculaId);
+    if (!existente?.id) return;
+    await sequelize.query(
+      `
+      UPDATE evaluaciones_notas
+      SET deleted_at = NOW(), deleted_by = ?, activo = FALSE, updated_by = ?, updated_at = NOW()
+      WHERE id = ? AND deleted_at IS NULL
+      `,
+      {
+        replacements: [usuarioId, usuarioId, existente.id],
+        type: sequelize.QueryTypes.UPDATE,
+      },
+    );
+  }
+
+  async softEliminarNotasPorEvaluacion(evaluacionId, usuarioId) {
+    await sequelize.query(
+      `
+      UPDATE evaluaciones_notas
+      SET deleted_at = NOW(), deleted_by = ?, activo = FALSE, updated_by = ?, updated_at = NOW()
+      WHERE evaluacion_id = ?
+        AND deleted_at IS NULL
+      `,
+      {
+        replacements: [usuarioId, usuarioId, evaluacionId],
+        type: sequelize.QueryTypes.UPDATE,
+      },
+    );
+  }
+
+  /**
+   * Filas activas para recalcular componentes del bimestre (todas las evaluaciones del curso).
+   */
+  async listarFilasCalculoBimestre(asignacionId, bimestreNumero) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        bm.id AS bimestre_matricula_id,
+        e.componente,
+        e.peso,
+        en.nota
+      FROM bimestres_matricula bm
+      INNER JOIN matriculas_materia mm
+        ON mm.id = bm.matricula_materia_id
+        AND mm.deleted_at IS NULL AND mm.activo = TRUE
+      INNER JOIN asignacion_docente ad
+        ON ad.materia_id = mm.materia_id
+        AND ad.paralelo_id = mm.paralelo_id
+        AND ad.gestion_id = mm.gestion_id
+        AND ad.deleted_at IS NULL AND ad.activo = TRUE
+      LEFT JOIN evaluaciones_notas en
+        ON en.bimestre_matricula_id = bm.id
+        AND en.deleted_at IS NULL
+        AND en.activo = TRUE
+        AND en.nota IS NOT NULL
+      LEFT JOIN evaluaciones e
+        ON e.id = en.evaluacion_id
+        AND e.deleted_at IS NULL
+        AND e.activo = TRUE
+        AND e.asignacion_docente_id = ad.id
+      WHERE ad.id = ?
+        AND bm.bimestre = ?
+        AND bm.deleted_at IS NULL
+        AND bm.activo = TRUE
+      `,
+      {
+        replacements: [asignacionId, bimestreNumero],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+
+    return rows.map((r) => ({
+      bimestreMatriculaId: Number(r.bimestre_matricula_id),
+      componente: r.componente,
+      peso: r.peso != null ? Number(r.peso) : null,
+      nota: r.nota != null ? Number(r.nota) : null,
+    }));
+  }
+
+  async listarBimestresMatriculaIdsCurso(asignacionId, bimestreNumero) {
+    const rows = await sequelize.query(
+      `
+      SELECT bm.id
+      FROM bimestres_matricula bm
+      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+        AND mm.deleted_at IS NULL AND mm.activo = TRUE
+      INNER JOIN asignacion_docente ad ON ad.materia_id = mm.materia_id
+        AND ad.paralelo_id = mm.paralelo_id
+        AND ad.gestion_id = mm.gestion_id
+        AND ad.deleted_at IS NULL AND ad.activo = TRUE
+      WHERE ad.id = ?
+        AND bm.bimestre = ?
+        AND bm.deleted_at IS NULL
+        AND bm.activo = TRUE
+      `,
+      {
+        replacements: [asignacionId, bimestreNumero],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+    return rows.map((r) => Number(r.id));
+  }
+
+  async actualizarComponentesBimestreMatricula(bimestreMatriculaId, { teorico, practico, bimestre }, usuarioId) {
+    await sequelize.query(
+      `
+      UPDATE bimestres_matricula
+      SET
+        nota_teorico = ?,
+        nota_practico = ?,
+        nota_bimestre = ?,
+        updated_by = ?,
+        updated_at = NOW()
+      WHERE id = ?
+        AND deleted_at IS NULL
+      `,
+      {
+        replacements: [teorico, practico, bimestre, usuarioId, bimestreMatriculaId],
+        type: sequelize.QueryTypes.UPDATE,
+      },
+    );
+  }
+
+  async listarResumenNotasPorMatricula(asignacionId) {
+    return sequelize.query(
+      `
+      SELECT
+        mm.id AS matricula_materia_id,
+        bm.bimestre,
+        bm.nota_bimestre,
+        bm.nota_habilitacion
+      FROM matriculas_materia mm
+      INNER JOIN asignacion_docente ad ON ad.id = mm.asignacion_docente_id
+        AND ad.deleted_at IS NULL AND ad.activo = TRUE
+      LEFT JOIN bimestres_matricula bm ON bm.matricula_materia_id = mm.id
+        AND bm.deleted_at IS NULL AND bm.activo = TRUE
+      WHERE mm.asignacion_docente_id = ?
+        AND mm.estado IN ('INSCRITO', 'CURSANDO')
+        AND mm.deleted_at IS NULL
+        AND mm.activo = TRUE
+      `,
+      {
+        replacements: [asignacionId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+  }
+
+  async listarNotasEvaluacionesFinalesPorAsignacion(asignacionId) {
+    return sequelize.query(
+      `
+      SELECT
+        mm.id AS matricula_materia_id,
+        ef.peso,
+        efn.nota
+      FROM evaluaciones_finales_notas efn
+      INNER JOIN evaluaciones_finales ef
+        ON ef.id = efn.evaluacion_final_id
+        AND ef.deleted_at IS NULL
+        AND ef.activo = TRUE
+        AND ef.asignacion_docente_id = ?
+      INNER JOIN matriculas_materia mm
+        ON mm.id = efn.matricula_materia_id
+        AND mm.deleted_at IS NULL
+        AND mm.activo = TRUE
+      WHERE efn.deleted_at IS NULL
+        AND efn.activo = TRUE
+        AND efn.nota IS NOT NULL
+      `,
+      {
+        replacements: [asignacionId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+  }
+
+  async actualizarNotaFinalMatricula(matriculaMateriaId, notaFinal, usuarioId) {
+    await sequelize.query(
+      `
+      UPDATE matriculas_materia
+      SET nota_final = ?, updated_by = ?, updated_at = NOW()
+      WHERE id = ? AND deleted_at IS NULL
+      `,
+      {
+        replacements: [notaFinal, usuarioId, matriculaMateriaId],
+        type: sequelize.QueryTypes.UPDATE,
+      },
+    );
+  }
 }
 
 export default CuadernoRepository;

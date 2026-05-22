@@ -36,3 +36,38 @@ export const deleteEvaluacionCuadernoValidator = [
   bimestreParam,
   param('evaluacionId').isInt({ min: 1 }),
 ];
+
+export const guardarNotasCuadernoBimestreValidator = [
+  asignacionParam,
+  bimestreParam,
+  body('notas').optional().isArray().withMessage('notas debe ser un arreglo'),
+  body('notas.*.estudianteId').optional().isInt({ min: 1 }),
+  body('notas.*.evaluacionId').optional().isInt({ min: 1 }),
+  body('notas.*.nota')
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (value === null || value === '') return true;
+      const n = Number(value);
+      if (!Number.isFinite(n) || n < 0 || n > 100) {
+        throw new Error('La nota debe estar entre 0 y 100');
+      }
+      return true;
+    }),
+];
+
+export const upsertNotaCuadernoValidator = [
+  asignacionParam,
+  bimestreParam,
+  body('estudianteId').isInt({ min: 1 }).withMessage('Estudiante requerido'),
+  body('evaluacionId').isInt({ min: 1 }).withMessage('Evaluación requerida'),
+  body('nota')
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (value === null || value === '') return true;
+      const n = Number(value);
+      if (!Number.isFinite(n) || n < 0 || n > 100) {
+        throw new Error('La nota debe estar entre 0 y 100');
+      }
+      return true;
+    }),
+];

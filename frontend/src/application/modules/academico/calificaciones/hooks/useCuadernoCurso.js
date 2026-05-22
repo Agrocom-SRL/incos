@@ -260,7 +260,15 @@ export const useCuadernoCurso = () => {
   );
 
   const resetearNotasEvaluacion = useCallback(
-    (evaluacionId) => {
+    async (evaluacionId) => {
+      const res = await CalificacionRepository.resetearNotasEvaluacionCuaderno(
+        cursoIdResolved,
+        bimestreActivoResolved,
+        evaluacionId,
+      );
+      if (!res?.success) {
+        throw new Error(res?.error || 'No se pudieron restablecer las notas');
+      }
       clearNotasEvaluacionCache(cursoIdResolved, bimestreActivoResolved, evaluacionId);
       setCuaderno((prev) => {
         if (!prev) return prev;

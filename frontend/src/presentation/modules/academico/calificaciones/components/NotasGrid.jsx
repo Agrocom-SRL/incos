@@ -2,14 +2,39 @@
  * Grilla del cuaderno — estilo cabecera consolidado (verde oscuro) + bimestre agrupado.
  */
 
-import { EditOutlined, PlusOutlined, RedoOutlined, SaveOutlined } from '@ant-design/icons';
-import { Button, Table, Tooltip } from 'antd';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  RedoOutlined,
+  SaveOutlined,
+} from '@ant-design/icons';
+import { Dropdown, Table, Tooltip } from 'antd';
+import { Button } from '@atoms';
 import NotaCell from './NotaCell.jsx';
 
-const BimestreGrupoHead = ({ titulo }) => (
+const BimestreGrupoHead = ({ titulo, soloLectura, onGuardarBimestre, guardandoBimestre }) => (
   <div className="cal-notas-grid__bim-head cal-notas-grid__bim-head--activo">
     <span className="cal-notas-grid__bim-titulo-row">
       <span className="cal-notas-grid__bim-titulo">{titulo}</span>
+      {!soloLectura && onGuardarBimestre ? (
+        <Tooltip title="Guardar notas en la base de datos y recalcular bimestre y nota final">
+          <Button
+            variant="warning"
+            size="small"
+            icon={<SaveOutlined />}
+            loading={guardandoBimestre}
+            disabled={guardandoBimestre}
+            onClick={(e) => {
+              e.stopPropagation();
+              onGuardarBimestre();
+            }}
+          >
+            Guardar notas
+          </Button>
+        </Tooltip>
+      ) : null}
     </span>
   </div>
 );
@@ -19,54 +44,67 @@ const EvaluacionColumnHead = ({
   soloLectura,
   onEditarEvaluacion,
   onResetEvaluacion,
-  onGuardarEvaluacion,
-}) => (
-  <div className="cal-notas-grid__eval-head">
-    <button
-      type="button"
-      className={[
-        'cal-notas-grid__col-head',
-        !soloLectura ? 'cal-notas-grid__col-head--clickable' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      onClick={() => !soloLectura && onEditarEvaluacion?.(ev)}
-      disabled={soloLectura}
-      aria-label={soloLectura ? ev.nombre : `Editar evaluación ${ev.nombre}`}
-    >
-      <span className="cal-notas-grid__col-head-text">{ev.nombre}</span>
-      {!soloLectura ? <EditOutlined className="cal-notas-grid__col-edit-icon" aria-hidden /> : null}
-    </button>
-    <div className="cal-notas-grid__col-actions">
-      <Tooltip title="Restablecer todas las notas de esta evaluación">
-        <Button
-          type="text"
-          size="small"
-          icon={<RedoOutlined />}
-          aria-label="Restablecer notas"
-          disabled={soloLectura}
-          onClick={(e) => {
-            e.stopPropagation();
-            onResetEvaluacion?.(ev.id);
-          }}
-        />
-      </Tooltip>
-      <Tooltip title="Guardar cambios pendientes de esta evaluación">
-        <Button
-          type="text"
-          size="small"
-          icon={<SaveOutlined />}
-          aria-label="Guardar cambios"
-          disabled={soloLectura}
-          onClick={(e) => {
-            e.stopPropagation();
-            onGuardarEvaluacion?.(ev.id);
-          }}
-        />
-      </Tooltip>
+  onEliminarEvaluacion,
+}) => {
+  if (soloLectura) {
+    return (
+      <div className="cal-notas-grid__eval-head">
+        <span className="cal-notas-grid__col-head-text">{ev.nombre}</span>
+      </div>
+    );
+  }
+
+  const menuItems = [
+    {
+      key: 'editar',
+      label: 'Editar evaluación',
+      icon: <EditOutlined />,
+    },
+    {
+      key: 'reset',
+      label: 'Restablecer notas',
+      icon: <RedoOutlined />,
+      danger: true,
+    },
+    {
+      key: 'eliminar',
+      label: 'Eliminar evaluación',
+      icon: <DeleteOutlined />,
+      danger: true,
+    },
+  ];
+
+  const onMenuClick = ({ key, domEvent }) => {
+    domEvent?.stopPropagation();
+    if (key === 'editar') onEditarEvaluacion?.(ev);
+    if (key === 'reset') onResetEvaluacion?.(ev);
+    if (key === 'eliminar') onEliminarEvaluacion?.(ev);
+  };
+
+  return (
+    <div className="cal-notas-grid__eval-head">
+      <div className="cal-notas-grid__eval-head-row">
+        <span className="cal-notas-grid__col-head-text" title={ev.nombre}>
+          {ev.nombre}
+        </span>
+        <Dropdown
+          menu={{ items: menuItems, onClick: onMenuClick }}
+          trigger={['click']}
+          placement="bottomRight"
+        >
+          <button
+            type="button"
+            className="cal-notas-grid__eval-menu-btn"
+            aria-label={`Opciones de ${ev.nombre}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreOutlined aria-hidden />
+          </button>
+        </Dropdown>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const renderEstudiante = (nombre, row) => (
   <span className="cal-notas-grid__estudiante">
@@ -81,7 +119,8 @@ const renderEstudiante = (nombre, row) => (
 /** Anchos fijos de identificación; el resto del ancho va al grupo bimestre. */
 const ANCHO_COL_NRO = 44;
 const ANCHO_COL_ESTUDIANTE = 300;
-const ANCHO_COL_EVAL = 148;
+const ANCHO_COL_EVAL = 160;
+const ANCHO_COL_EVAL_MAX = 200;
 const ANCHO_COL_AGREGAR = 56;
 
 const NotasGrid = ({
@@ -94,12 +133,15 @@ const NotasGrid = ({
   onAgregarEvaluacion,
   onEditarEvaluacion,
   onResetEvaluacion,
-  onGuardarEvaluacion,
+  onEliminarEvaluacion,
+  onGuardarBimestre,
+  guardandoBimestre = false,
   enteringColumnIds = [],
   removingColumnId = null,
 }) => {
   const thEst = () => ({ className: 'cal-notas-grid__th-est' });
-  const thSub = () => ({ className: 'cal-notas-grid__th-sub' });
+  const thSubEval = () => ({ className: 'cal-notas-grid__th-sub cal-notas-grid__th-sub--eval' });
+  const thSubHint = () => ({ className: 'cal-notas-grid__th-sub cal-notas-grid__th-sub--hint' });
   const fijarColumnaEstudiante = evaluaciones.length >= 4;
 
   const columnasEval = evaluaciones.map((ev) => {
@@ -118,14 +160,14 @@ const NotasGrid = ({
           soloLectura={soloLectura}
           onEditarEvaluacion={onEditarEvaluacion}
           onResetEvaluacion={onResetEvaluacion}
-          onGuardarEvaluacion={onGuardarEvaluacion}
+          onEliminarEvaluacion={onEliminarEvaluacion}
         />
       ),
       key: ev.id,
       width: ANCHO_COL_EVAL,
       align: 'center',
       className: colClass,
-      onHeaderCell: thSub,
+      onHeaderCell: thSubEval,
       onCell: () => ({ className: colClass }),
       render: (_, row) => (
         <NotaCell
@@ -156,26 +198,48 @@ const NotasGrid = ({
     width: ANCHO_COL_AGREGAR,
     align: 'center',
     className: 'cal-notas-grid__col-add',
-    onHeaderCell: thSub,
+    onHeaderCell: thSubEval,
     onCell: () => ({ className: 'cal-notas-grid__col-add' }),
     render: () => null,
   };
 
-  /** Absorbe el ancho sobrante dentro del grupo bimestre (evita que “Estudiante” se estire). */
   const columnaEspacioBimestre = {
     title: null,
     key: 'bim-espacio',
     className: 'cal-notas-grid__col-bim-espacio',
-    onHeaderCell: thSub,
+    onHeaderCell: thSubHint,
     onCell: () => ({ className: 'cal-notas-grid__col-bim-espacio' }),
     render: () => null,
   };
 
+  const columnaHintAgregar = {
+    title: (
+      <span className="cal-notas-grid__hint-agregar">
+        Presioná <PlusOutlined aria-hidden /> para agregar evaluaciones
+      </span>
+    ),
+    key: 'hint-agregar',
+    className: 'cal-notas-grid__col-hint',
+    onHeaderCell: thSubHint,
+    onCell: () => ({ className: 'cal-notas-grid__col-hint' }),
+    render: () => null,
+  };
+
   const grupoBimestre = {
-    title: <BimestreGrupoHead titulo={bimestreTitulo} />,
+    title: (
+      <BimestreGrupoHead
+        titulo={bimestreTitulo}
+        soloLectura={soloLectura}
+        onGuardarBimestre={onGuardarBimestre}
+        guardandoBimestre={guardandoBimestre}
+      />
+    ),
     className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo',
     onHeaderCell: () => ({ className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo' }),
-    children: [...columnasEval, columnaEspacioBimestre, columnaAgregar],
+    children:
+      evaluaciones.length > 0
+        ? [...columnasEval, columnaEspacioBimestre, columnaAgregar]
+        : [columnaHintAgregar, columnaAgregar],
   };
 
   const columns = [
@@ -211,7 +275,10 @@ const NotasGrid = ({
   const requiereScroll = anchoMinimoTabla > 720;
 
   return (
-    <div className="cal-notas-grid-wrap">
+    <div
+      className="cal-notas-grid-wrap"
+      style={{ '--cal-col-eval-max': `${ANCHO_COL_EVAL_MAX}px` }}
+    >
       <Table
         className="cal-notas-grid cal-notas-grid--consolidado-style"
         columns={columns}

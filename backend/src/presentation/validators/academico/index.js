@@ -15,4 +15,6 @@ export {
   createEvaluacionCuadernoValidator,
   updateEvaluacionCuadernoValidator,
   deleteEvaluacionCuadernoValidator,
+  upsertNotaCuadernoValidator,
+  guardarNotasCuadernoBimestreValidator,
 } from './cuaderno-evaluacion.validator.js';

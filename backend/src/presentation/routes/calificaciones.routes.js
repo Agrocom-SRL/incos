@@ -9,6 +9,8 @@ import {
   createEvaluacionCuadernoValidator,
   updateEvaluacionCuadernoValidator,
   deleteEvaluacionCuadernoValidator,
+  upsertNotaCuadernoValidator,
+  guardarNotasCuadernoBimestreValidator,
 } from '../validators/academico/index.js';
 
 /**
@@ -225,6 +227,31 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     deleteEvaluacionCuadernoValidator,
     validateRequest,
     (req, res, next) => controllers.deleteEvaluacionCuadernoController.handle(req, res, next),
+  );
+
+  router.put(
+    '/asignaciones/:asignacionId/cuaderno/:bimestre/notas',
+    ...cuadernoEditar,
+    upsertNotaCuadernoValidator,
+    validateRequest,
+    (req, res, next) => controllers.upsertNotaCuadernoController.handle(req, res, next),
+  );
+
+  router.post(
+    '/asignaciones/:asignacionId/cuaderno/:bimestre/guardar',
+    ...cuadernoEditar,
+    guardarNotasCuadernoBimestreValidator,
+    validateRequest,
+    (req, res, next) => controllers.guardarNotasCuadernoBimestreController.handle(req, res, next),
+  );
+
+  router.delete(
+    '/asignaciones/:asignacionId/cuaderno/:bimestre/evaluaciones/:evaluacionId/notas',
+    ...cuadernoEditar,
+    deleteEvaluacionCuadernoValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.resetNotasEvaluacionCuadernoController.handle(req, res, next),
   );
 
   return router;

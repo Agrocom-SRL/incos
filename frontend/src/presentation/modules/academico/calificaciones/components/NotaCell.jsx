@@ -1,5 +1,5 @@
 /**
- * Celda de nota con auto-guardado simulado (fake API).
+ * Celda de nota con auto-guardado (debounce) y registro para guardado por lote del bimestre.
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
@@ -23,7 +23,16 @@ const NotaCell = ({
   );
   const { registerCell, unregisterCell } = useCuadernoAutosaveRegistry();
 
-  const { valor, estado, setValor, reintentar, guardarAhora } = useNotaAutosave({
+  const {
+    valor,
+    estado,
+    setValor,
+    reintentar,
+    guardarAhora,
+    necesitaGuardar,
+    obtenerPayload,
+    marcarGuardado,
+  } = useNotaAutosave({
     cursoId,
     bimestre,
     estudianteId,
@@ -36,11 +45,26 @@ const NotaCell = ({
       estado,
       reintentar,
       guardarAhora,
+      necesitaGuardar,
+      obtenerPayload,
+      marcarGuardado,
       evaluacionId,
       estudianteId,
     });
     return () => unregisterCell(cellKey);
-  }, [cellKey, estado, reintentar, guardarAhora, evaluacionId, estudianteId, registerCell, unregisterCell]);
+  }, [
+    cellKey,
+    estado,
+    reintentar,
+    guardarAhora,
+    necesitaGuardar,
+    obtenerPayload,
+    marcarGuardado,
+    evaluacionId,
+    estudianteId,
+    registerCell,
+    unregisterCell,
+  ]);
 
   const handleChange = useCallback(
     (raw) => {

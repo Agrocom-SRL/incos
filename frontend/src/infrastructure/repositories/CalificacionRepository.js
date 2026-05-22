@@ -305,6 +305,58 @@ class CalificacionRepository {
     }
   }
 
+  /**
+   * POST guardar lote + recalcular bimestre y nota_final.
+   * @param {Array<{ estudianteId: number, evaluacionId: number, nota: number|null }>} notas
+   */
+  async guardarNotasCuadernoBimestre(asignacionId, bimestre, notas = []) {
+    try {
+      const response = await apiClient.post(
+        CALIFICACIONES_ENDPOINTS.CUADERNO_GUARDAR(asignacionId, bimestre),
+        { notas },
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar las notas del cuaderno');
+    }
+  }
+
+  /** PUT celda del cuaderno (carga perezosa en evaluaciones_notas). */
+  async guardarNotaCuaderno(asignacionId, bimestre, payload) {
+    try {
+      const response = await apiClient.put(
+        CALIFICACIONES_ENDPOINTS.CUADERNO_NOTA(asignacionId, bimestre),
+        payload,
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data?.nota ?? responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar la nota');
+    }
+  }
+
+  async resetearNotasEvaluacionCuaderno(asignacionId, bimestre, evaluacionId) {
+    try {
+      const response = await apiClient.delete(
+        CALIFICACIONES_ENDPOINTS.CUADERNO_EVALUACION_NOTAS(asignacionId, bimestre, evaluacionId),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al restablecer las notas');
+    }
+  }
+
   async eliminarEvaluacionCuaderno(asignacionId, bimestre, evaluacionId) {
     try {
       const response = await apiClient.delete(

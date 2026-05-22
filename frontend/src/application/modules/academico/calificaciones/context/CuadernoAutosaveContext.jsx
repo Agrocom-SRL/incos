@@ -20,6 +20,7 @@ const GUARDADO_VISIBLE_MS = 30_000;
 export const CuadernoAutosaveProvider = ({ children }) => {
   const cellsRef = useRef(new Map());
   const [lastGuardadoAt, setLastGuardadoAt] = useState(null);
+  const [guardandoBimestre, setGuardandoBimestre] = useState(false);
   const [tick, bump] = useReducer((n) => n + 1, 0);
 
   const registerCell = useCallback((cellKey, snapshot) => {
@@ -33,11 +34,29 @@ export const CuadernoAutosaveProvider = ({ children }) => {
     bump();
   }, []);
 
-  const guardarEvaluacion = useCallback(async (evaluacionId) => {
-    const cells = [...cellsRef.current.values()].filter(
-      (c) => c.evaluacionId === evaluacionId && c.guardarAhora,
+  const collectNotasParaGuardar = useCallback(() => {
+    return [...cellsRef.current.values()]
+      .filter((c) => typeof c.obtenerPayload === 'function' && c.necesitaGuardar?.())
+      .map((c) => c.obtenerPayload());
+  }, []);
+
+  const marcarNotasGuardadasEnLote = useCallback((notasRespuesta = []) => {
+    const mapa = new Map(
+      (notasRespuesta ?? []).map((n) => [
+        `${n.estudianteId}::${n.evaluacionId}`,
+        n.nota ?? null,
+      ]),
     );
-    await Promise.all(cells.map((c) => c.guardarAhora()));
+
+    for (const cell of cellsRef.current.values()) {
+      const key = `${cell.estudianteId}::${cell.evaluacionId}`;
+      if (mapa.has(key)) {
+        cell.marcarGuardado?.(mapa.get(key));
+      } else if (!cell.necesitaGuardar?.()) {
+        cell.marcarGuardado?.();
+      }
+    }
+    setLastGuardadoAt(Date.now());
     bump();
   }, []);
 
@@ -61,6 +80,10 @@ export const CuadernoAutosaveProvider = ({ children }) => {
   }, []);
 
   const footerState = useMemo(() => {
+    if (guardandoBimestre) {
+      return { tipo: 'guardando' };
+    }
+
     const cells = [...cellsRef.current.values()];
     const conError = cells.filter((c) => c.estado === 'error');
 
@@ -85,11 +108,28 @@ export const CuadernoAutosaveProvider = ({ children }) => {
 
     return { tipo: 'sin-cambios' };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- tick refresca "hace X seg"
-  }, [tick, lastGuardadoAt]);
+  }, [tick, lastGuardadoAt, guardandoBimestre]);
 
   const value = useMemo(
-    () => ({ registerCell, unregisterCell, footerState, guardarEvaluacion, resetEvaluacionRegistro }),
-    [registerCell, unregisterCell, footerState, guardarEvaluacion, resetEvaluacionRegistro],
+    () => ({
+      registerCell,
+      unregisterCell,
+      footerState,
+      guardandoBimestre,
+      setGuardandoBimestre,
+      collectNotasParaGuardar,
+      marcarNotasGuardadasEnLote,
+      resetEvaluacionRegistro,
+    }),
+    [
+      registerCell,
+      unregisterCell,
+      footerState,
+      guardandoBimestre,
+      collectNotasParaGuardar,
+      marcarNotasGuardadasEnLote,
+      resetEvaluacionRegistro,
+    ],
   );
 
   return (

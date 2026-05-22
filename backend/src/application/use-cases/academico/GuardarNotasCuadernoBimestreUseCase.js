@@ -1,0 +1,108 @@
+import { ForbiddenError, ValidationError } from '../../../domain/errors/AppError.js';
+import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
+import { obtenerCuotasCursoDesdeAjustes } from '../../utils/obtenerCuotasCursoDesdeAjustes.js';
+import { persistirNotaCuadernoCelda } from '../../utils/persistirNotaCuadernoCelda.js';
+import { recalcularNotasBimestreCurso } from '../../utils/recalcularNotasBimestreCurso.js';
+import { recalcularNotaFinalMatriculaCurso } from '../../utils/recalcularNotaFinalMatriculaCurso.js';
+
+/**
+ * Guarda notas del cuaderno (lote) y recalcula bimestre + nota_final.
+ */
+export class GuardarNotasCuadernoBimestreUseCase {
+  constructor({
+    calificacionRepository,
+    cuadernoRepository,
+    ajustesCursoRepository,
+    teacherRepository,
+    authRepository,
+    logger,
+  }) {
+    this.calificacionRepository = calificacionRepository;
+    this.cuadernoRepository = cuadernoRepository;
+    this.ajustesCursoRepository = ajustesCursoRepository;
+    this.teacherRepository = teacherRepository;
+    this.authRepository = authRepository;
+    this.logger = logger;
+  }
+
+  async execute({ usuarioId, asignacionId, bimestre, body }) {
+    const bimestreNum = Number(bimestre);
+    if (!Number.isFinite(bimestreNum) || bimestreNum < 1 || bimestreNum > 4) {
+      throw new ValidationError('Bimestre inválido');
+    }
+
+    const notasEntrada = Array.isArray(body?.notas) ? body.notas : [];
+
+    const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
+      calificacionRepository: this.calificacionRepository,
+      teacherRepository: this.teacherRepository,
+      authRepository: this.authRepository,
+      usuarioId,
+      asignacionId,
+    });
+
+    if (bimestreNum !== bimestreVigente) {
+      throw new ForbiddenError(
+        'Solo podés guardar notas en el bimestre vigente de la gestión.',
+      );
+    }
+
+    const guardadas = [];
+    for (const item of notasEntrada) {
+      const estudianteId = Number(item?.estudianteId);
+      const evaluacionId = Number(item?.evaluacionId);
+      if (!Number.isFinite(estudianteId) || estudianteId < 1) {
+        throw new ValidationError('Estudiante inválido en el lote');
+      }
+      if (!Number.isFinite(evaluacionId) || evaluacionId < 1) {
+        throw new ValidationError('Evaluación inválida en el lote');
+      }
+
+      const dto = await persistirNotaCuadernoCelda({
+        cuadernoRepository: this.cuadernoRepository,
+        asignacionId: Number(asignacionId),
+        bimestreNum,
+        gestionId,
+        estudianteId,
+        evaluacionId,
+        notaRaw: item?.nota,
+        usuarioId,
+      });
+      guardadas.push(dto);
+    }
+
+    const ajustes = await this.ajustesCursoRepository.obtenerAjustes(Number(asignacionId));
+    const { cuotaTeorico, cuotaPractico, pesosBimestres } = obtenerCuotasCursoDesdeAjustes(ajustes);
+
+    const recalculoBimestre = await recalcularNotasBimestreCurso({
+      cuadernoRepository: this.cuadernoRepository,
+      asignacionId: Number(asignacionId),
+      bimestreNumero: bimestreNum,
+      cuotaTeorico,
+      cuotaPractico,
+      usuarioId,
+    });
+
+    const recalculoFinal = await recalcularNotaFinalMatriculaCurso({
+      cuadernoRepository: this.cuadernoRepository,
+      asignacionId: Number(asignacionId),
+      pesosBimestres,
+      usuarioId,
+    });
+
+    this.logger.info('[Calificaciones] Cuaderno guardado y recalculado', {
+      asignacionId,
+      bimestre: bimestreNum,
+      notasGuardadas: guardadas.length,
+      ...recalculoBimestre,
+      ...recalculoFinal,
+    });
+
+    return {
+      notas: guardadas,
+      notasGuardadas: guardadas.length,
+      ...recalculoBimestre,
+      ...recalculoFinal,
+    };
+  }
+}
