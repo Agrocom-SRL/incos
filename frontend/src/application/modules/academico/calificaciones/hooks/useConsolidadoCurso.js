@@ -5,14 +5,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
-import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
+import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
 import { MIS_CURSOS_PATH } from '../utils/calificacionesPaths.js';
-const BIMESTRE_TITULOS = [
-  'Primer bimestre',
-  'Segundo bimestre',
-  'Tercer bimestre',
-  'Cuarto bimestre',
-];
+import { BIMESTRE_TITULOS } from '../utils/bimestreTitulos.js';
 
 export const useConsolidadoCurso = () => {
   const { asignacionId } = useParams();
@@ -60,22 +55,11 @@ export const useConsolidadoCurso = () => {
   const notaMinimaAprobacion = Number(docente?.notaMinimaAprobacion) || 61;
 
   const breadcrumbItems = useMemo(
-    () => createBreadcrumbItems('ACA-CAL-NOTAS', 'ACA-CAL', curso?.materia ?? null),
-    [curso?.materia],
-  );
-
-  const subtituloCurso = curso?.carrera ?? '';
-
-  const profileStats = useMemo(
-    () => [
-      { label: 'Docente', value: docente?.nombre ?? '—' },
-      { label: 'Gestión', value: docente?.gestionVigente ?? '—' },
-      { label: 'Periodo', value: curso?.periodo ?? '—' },
-      { label: 'Paralelo', value: curso?.paralelo ?? '—' },
-      { label: 'Estudiantes', value: String(curso?.estudiantes ?? estudiantes.length) },
-      { label: 'Turno', value: curso?.turno ?? '—' },
-    ],
-    [curso, docente, estudiantes.length],
+    () =>
+      createCalificacionesBreadcrumbItems('ACA-CAL-NOTAS', 'ACA-CAL', curso?.materia ?? null, {
+        asignacionId,
+      }),
+    [curso?.materia, asignacionId],
   );
 
   return {
@@ -86,8 +70,7 @@ export const useConsolidadoCurso = () => {
     bimestresCalendario,
     bimestreVigente,
     notaMinimaAprobacion,
-    profileStats,
-    subtituloCurso,
+    subtituloCurso: curso?.carrera ?? '',
     isLoading,
     error,
     refetch: cargar,

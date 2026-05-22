@@ -2,11 +2,14 @@
  * Pie del cuaderno: estado agregado de auto-guardado.
  */
 
-import { Button } from 'antd';
+import { Button, Tag, Tooltip } from 'antd';
 import { CloudOutlined, LoadingOutlined, WarningOutlined } from '@ant-design/icons';
 import { useCuadernoFooterState } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
 
-const CuadernoFooter = () => {
+const CuadernoFooter = ({
+  evaluacionesApiPendiente = false,
+  evaluacionesApiMensaje = '',
+}) => {
   const footerState = useCuadernoFooterState();
 
   let mensajeIzq = null;
@@ -54,7 +57,16 @@ const CuadernoFooter = () => {
 
   return (
     <footer className="cal-cuaderno-footer">
-      <span className={claseGuardado}>{mensajeIzq}</span>
+      <span className={claseGuardado}>
+        {mensajeIzq}
+        {evaluacionesApiPendiente && evaluacionesApiMensaje ? (
+          <Tooltip title={evaluacionesApiMensaje}>
+            <Tag className="cal-cuaderno-footer__dev-tag" bordered={false}>
+              Evaluaciones: API pendiente
+            </Tag>
+          </Tooltip>
+        ) : null}
+      </span>
       <span className="cal-cuaderno-footer__nota">
         El cierre del bimestre lo realiza Coordinación Académica
       </span>

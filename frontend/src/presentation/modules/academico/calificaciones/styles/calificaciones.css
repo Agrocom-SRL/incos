@@ -1,7 +1,6 @@
 /* Calificaciones — tokens locales del cuaderno (mapean variables globales del proyecto) */
 .cal-cuaderno,
-.cal-cuaderno-hoja,
-.cal-bimestre-tabs {
+.cal-cuaderno-hoja {
   --cuaderno-verde-tenue: #e8f5ec;
   --cuaderno-verde-medio: #6db088;
   --cuaderno-verde-oscuro: var(--color-primary, #196b45);
@@ -374,11 +373,6 @@
   padding: 18px;
 }
 
-/* PageHeader solo breadcrumb en cuaderno */
-.cal-cuaderno-page-header.page-header>.ant-flex:nth-child(2) {
-  display: none;
-}
-
 /* —— Cuaderno: layout general —— */
 .cal-cuaderno {
   display: flex;
@@ -386,164 +380,182 @@
   gap: 0;
 }
 
-/* —— Header del curso —— */
-.cal-cuaderno-header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px 20px;
-  padding-bottom: 14px;
-  margin-bottom: 4px;
-  border-bottom: 2px solid var(--cuaderno-verde-medio);
-  position: relative;
-}
-
-.cal-cuaderno-header__text {
-  flex: 1;
-  min-width: 200px;
-}
-
-.cal-cuaderno-header__title {
-  margin: 0;
-  font-size: 1.5rem;
+/* —— Cuaderno: título en PageHeader (mismo patrón que Registro / Mis cursos) —— */
+.cal-cuaderno-page-title {
+  color: var(--cuaderno-verde-oscuro, #196b45);
   font-weight: 700;
-  line-height: 1.25;
-  color: var(--cuaderno-verde-acento);
-  letter-spacing: -0.01em;
 }
 
-.cal-cuaderno-header__subtitle {
-  margin: 6px 0 0;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--cuaderno-texto-medio);
-}
-
-.cal-cuaderno-header__actions {
-  display: flex;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-/* —— Tabs bimestre (pestañas índice) —— */
-.cal-bimestre-tabs {
-  margin-top: 16px;
-  margin-bottom: 0;
-  position: relative;
-}
-
-.cal-bimestre-tabs__track {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 6px;
-  padding: 0 2px;
-}
-
-.cal-bimestre-tabs__rule {
-  height: 1px;
-  background: var(--cuaderno-borde);
-  margin-top: -1px;
-  position: relative;
-  z-index: 0;
-}
-
-.cal-bimestre-tabs__tab {
+.cal-cuaderno-bimestre-pager {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 14px 10px;
-  margin-bottom: 0;
+  gap: 4px;
+}
+
+.cal-cuaderno-bimestre-pager__btn {
+  border-color: var(--cuaderno-borde) !important;
+  color: var(--cuaderno-verde-oscuro) !important;
+}
+
+.cal-cuaderno-bimestre-pager__btn:disabled {
+  opacity: 0.4;
+}
+
+.cal-cuaderno-coord-tag {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #fcd34d;
+  background: #fffbeb !important;
+  color: #92400e !important;
+}
+
+/* —— Cuaderno: ficha de contexto (estilo registro RITT) —— */
+.cal-cuaderno-contexto {
+  border-bottom: 1px solid var(--cuaderno-borde);
+  background: var(--cuaderno-fondo);
+}
+
+.cal-cuaderno-contexto__grid,
+.cal-cuaderno-contexto__barra {
+  display: grid;
+  gap: 0;
+}
+
+.cal-cuaderno-contexto__grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.cal-cuaderno-contexto__barra {
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  border-top: 1px solid var(--cuaderno-borde);
+}
+
+.cal-cuaderno-contexto__celda {
+  display: grid;
+  grid-template-columns: minmax(88px, auto) 1fr;
   border: 1px solid var(--cuaderno-borde);
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  background: var(--cuaderno-fondo);
-  font-size: 13px;
-  line-height: 1.2;
-  cursor: pointer;
-  color: var(--bimestre-anterior-text);
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-  position: relative;
-  z-index: 1;
+  margin: -0.5px;
+  min-height: 34px;
 }
 
-.cal-bimestre-tabs__tab--anterior {
-  background: transparent;
-  border-color: transparent;
-  color: var(--bimestre-anterior-text);
+.cal-cuaderno-contexto__celda--wide {
+  grid-column: span 2;
 }
 
-.cal-bimestre-tabs__tab--anterior .cal-bimestre-tabs__icon {
-  opacity: 0.5;
-  color: var(--cuaderno-texto-tenue);
+.cal-cuaderno-contexto__label {
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--cuaderno-verde-oscuro);
+  color: #fff;
+  display: flex;
+  align-items: center;
 }
 
-.cal-bimestre-tabs__tab--anterior:hover:not(:disabled) {
-  background: var(--cuaderno-fondo);
-  border-color: var(--cuaderno-borde-suave);
+.cal-cuaderno-contexto__value {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--cuaderno-papel);
   color: var(--cuaderno-texto-fuerte);
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
-.cal-bimestre-tabs__tab--anterior:hover:not(:disabled) .cal-bimestre-tabs__icon {
-  opacity: 0.75;
+@media (max-width: 900px) {
+
+  .cal-cuaderno-contexto__grid,
+  .cal-cuaderno-contexto__barra {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cal-cuaderno-contexto__celda--wide {
+    grid-column: span 1;
+  }
 }
 
-.cal-bimestre-tabs__tab--vigente {
-  color: var(--bimestre-vigente-text);
-  border-color: var(--bimestre-vigente-border);
-  background: var(--bimestre-vigente-bg);
+/* —— Separador ficha / grilla —— */
+.cal-cuaderno-separador {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--cuaderno-borde-suave);
+  border-bottom: 1px solid var(--cuaderno-borde-suave);
+  background: var(--cuaderno-fondo);
+}
+
+.cal-cuaderno-separador__titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cuaderno-verde-oscuro);
+  letter-spacing: 0.02em;
+}
+
+.cal-cuaderno-separador__desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cuaderno-texto-medio);
+  max-width: 72ch;
+}
+
+.cal-notas-grid__eval-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cal-notas-grid__col-actions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.cal-notas-grid__col-actions .ant-btn {
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-notas-grid__col-actions .ant-btn:not(:disabled):hover {
+  color: var(--cuaderno-verde-acento);
+  background: var(--cuaderno-verde-tenue);
+}
+
+.cal-notas-grid__col-nro {
+  font-variant-numeric: tabular-nums;
+  color: var(--cuaderno-texto-medio);
   font-weight: 600;
 }
 
-.cal-bimestre-tabs__tab--active {
-  z-index: 2;
-  margin-bottom: -1px;
+.cal-notas-grid__codigo-solo {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+  font-variant-numeric: tabular-nums;
 }
 
-.cal-bimestre-tabs__tab--anterior.cal-bimestre-tabs__tab--active {
-  background: var(--cuaderno-papel);
-  border-color: var(--cuaderno-borde);
-  border-bottom: 1px solid var(--cuaderno-papel);
+.cal-notas-grid__nombre-solo {
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  font-size: 13px;
 }
 
-.cal-bimestre-tabs__tab--vigente.cal-bimestre-tabs__tab--active {
-  border-bottom: 1px solid var(--bimestre-vigente-bg);
-  box-shadow: 0 -2px 0 var(--bimestre-vigente-border);
+.cal-notas-grid__col-sin-eval,
+.cal-notas-grid__celda-vacia {
+  color: var(--cuaderno-texto-tenue);
+  font-size: 12px;
 }
 
-.cal-bimestre-tabs__tab--futuro {
-  color: var(--bimestre-futuro-text);
-  opacity: var(--bimestre-futuro-opacity);
-  cursor: not-allowed;
-  background: transparent;
-  border-color: transparent;
-}
-
-.cal-bimestre-tabs__tab--futuro:disabled {
-  pointer-events: none;
-}
-
-.cal-bimestre-tabs__tab--futuro .cal-bimestre-tabs__icon {
-  color: var(--cuaderno-borde-puntos);
-}
-
-.cal-bimestre-tabs__vigente {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: lowercase;
-  padding: 2px 7px;
-  border-radius: 10px;
-  background: var(--cuaderno-verde-oscuro);
-  color: #fff;
-  line-height: 1.3;
+.cal-notas-grid__sin-evals {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 11px;
 }
 
 /* —— Hoja del cuaderno (grilla + pie) —— */
@@ -574,7 +586,7 @@
   background: transparent;
 }
 
-.cal-notas-grid .ant-table-thead>tr>th {
+.cal-notas-grid:not(.cal-notas-grid--consolidado-style) .ant-table-thead>tr>th {
   background: var(--cuaderno-fondo) !important;
   border-bottom: 1px solid var(--cuaderno-verde-medio) !important;
   color: var(--cuaderno-verde-acento) !important;
@@ -582,6 +594,78 @@
   font-weight: 600;
   padding: 10px 12px !important;
   letter-spacing: 0.02em;
+}
+
+/* Cabecera cuaderno alineada al registro consolidado (verde oscuro) */
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-est {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 8px 6px !important;
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-sub {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 8px !important;
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  vertical-align: top !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-bim {
+  padding: 0 !important;
+  vertical-align: top !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-bim--activo {
+  background: var(--cuaderno-verde-acento) !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 0 2px var(--cuaderno-verde-medio);
+}
+
+.cal-notas-grid__bim-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-height: 52px;
+  padding: 8px 10px 10px;
+  text-align: left;
+}
+
+.cal-notas-grid__bim-head--activo {
+  color: #fff;
+  background: var(--cuaderno-verde-oscuro);
+}
+
+.cal-notas-grid__bim-titulo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.cal-notas-grid__bim-titulo {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cal-notas-grid__th-sub-text {
+  font-size: 11px;
+  font-weight: 500;
+  font-style: italic;
+  opacity: 0.9;
 }
 
 .cal-notas-grid .ant-table-tbody>tr>td {
@@ -607,11 +691,25 @@
 
 .cal-notas-grid__margen {
   flex-shrink: 0;
-  width: 2px;
+  width: 3px;
   align-self: stretch;
-  min-height: 18px;
-  border-radius: 1px;
-  background: rgba(109, 176, 136, 0.45);
+  min-height: 28px;
+  border-radius: 2px;
+  background: var(--cuaderno-verde-acento);
+}
+
+.cal-notas-grid__estudiante-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cal-notas-grid__codigo {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+  font-variant-numeric: tabular-nums;
 }
 
 .cal-notas-grid__nombre {
@@ -633,9 +731,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--cuaderno-texto-tenue);
-  font-size: 14px;
-  opacity: 0.65;
+  font-size: 16px;
+  width: 100%;
+  height: 100%;
+  min-height: 28px;
+}
+
+.cal-notas-grid--consolidado-style .cal-notas-grid__add-header {
+  color: #fff;
+  opacity: 1;
 }
 
 .cal-notas-grid__add-btn {
@@ -944,6 +1048,19 @@
   color: var(--cuaderno-verde-acento);
 }
 
+.cal-notas-grid--consolidado-style .cal-notas-grid__col-head {
+  color: #fff;
+}
+
+.cal-notas-grid--consolidado-style .cal-notas-grid__col-actions .ant-btn {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.cal-notas-grid--consolidado-style .cal-notas-grid__col-actions .ant-btn:not(:disabled):hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .cal-notas-grid__col-head--clickable {
   cursor: pointer;
   border-radius: 4px;
@@ -952,6 +1069,10 @@
 
 .cal-notas-grid__col-head--clickable:hover {
   background: var(--cuaderno-fondo);
+}
+
+.cal-notas-grid--consolidado-style .cal-notas-grid__col-head--clickable:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .cal-notas-grid__col-head--clickable:hover .cal-notas-grid__col-edit-icon {
@@ -965,10 +1086,14 @@
   transition: opacity 0.15s ease;
 }
 
+.cal-notas-grid--consolidado-style .cal-notas-grid__col-edit-icon {
+  color: rgba(255, 255, 255, 0.75);
+}
+
 .cal-notas-grid__add-header--clickable {
   cursor: pointer;
   border: none;
-  background: var(--cuaderno-fondo);
+  background: transparent;
   border-radius: 6px;
   padding: 4px 10px;
   transition:
@@ -976,9 +1101,14 @@
     color 0.15s ease;
 }
 
-.cal-notas-grid__add-header--clickable:hover {
-  background: var(--cuaderno-verde-tenue);
-  color: var(--cuaderno-verde-oscuro);
+.cal-notas-grid--consolidado-style .cal-notas-grid__add-header--clickable:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.cal-notas-grid__add-header--clickable:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
 }
 
 /* —— Animación columnas —— */
@@ -1471,16 +1601,38 @@
   font-weight: 600;
 }
 
-.cal-curso-profile__config-btn {
+.cal-curso-profile__toolbar {
   position: absolute;
   top: 20px;
   right: 28px;
-  z-index: 1;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: min(100% - 56px, 520px);
+}
+
+.cal-curso-profile__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-curso-profile__config-btn {
+  position: static;
+  flex-shrink: 0;
 }
 
 .cal-curso-profile__config-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.cal-cuaderno-vista-previa-btn {
+  white-space: nowrap;
 }
 
 .ant-table-wrapper .ant-table-container table>thead>tr:first-child>*:first-child {
@@ -1897,28 +2049,6 @@
 .cal-consolidado-grid__obs {
   margin: 0;
   font-size: 11px;
-}
-
-/* —— Placeholder finales / nivelación —— */
-.cal-curso-placeholder {
-  max-width: 520px;
-  margin: 48px auto;
-  border-radius: var(--incos-radius-lg, 12px);
-}
-
-.cal-curso-placeholder__inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-  padding: 24px 16px;
-}
-
-.cal-curso-placeholder__icon {
-  font-size: 48px;
-  color: var(--incos-color-primary, #1677ff);
-  opacity: 0.85;
 }
 
 /* —— Drawer vista previa —— */

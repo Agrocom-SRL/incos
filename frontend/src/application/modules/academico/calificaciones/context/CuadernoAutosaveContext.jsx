@@ -23,9 +23,29 @@ export const CuadernoAutosaveProvider = ({ children }) => {
   const [tick, bump] = useReducer((n) => n + 1, 0);
 
   const registerCell = useCallback((cellKey, snapshot) => {
-    cellsRef.current.set(cellKey, snapshot);
+    cellsRef.current.set(cellKey, {
+      ...snapshot,
+      cellKey,
+    });
     if (snapshot.estado === 'guardado') {
       setLastGuardadoAt(Date.now());
+    }
+    bump();
+  }, []);
+
+  const guardarEvaluacion = useCallback(async (evaluacionId) => {
+    const cells = [...cellsRef.current.values()].filter(
+      (c) => c.evaluacionId === evaluacionId && c.guardarAhora,
+    );
+    await Promise.all(cells.map((c) => c.guardarAhora()));
+    bump();
+  }, []);
+
+  const resetEvaluacionRegistro = useCallback((evaluacionId) => {
+    for (const [key, cell] of cellsRef.current.entries()) {
+      if (cell.evaluacionId === evaluacionId) {
+        cellsRef.current.delete(key);
+      }
     }
     bump();
   }, []);
@@ -68,8 +88,8 @@ export const CuadernoAutosaveProvider = ({ children }) => {
   }, [tick, lastGuardadoAt]);
 
   const value = useMemo(
-    () => ({ registerCell, unregisterCell, footerState }),
-    [registerCell, unregisterCell, footerState],
+    () => ({ registerCell, unregisterCell, footerState, guardarEvaluacion, resetEvaluacionRegistro }),
+    [registerCell, unregisterCell, footerState, guardarEvaluacion, resetEvaluacionRegistro],
   );
 
   return (

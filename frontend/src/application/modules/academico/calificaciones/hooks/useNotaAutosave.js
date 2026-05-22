@@ -1,12 +1,13 @@
 /**
- * Auto-guardado de una celda de nota (debounce + optimistic UI).
- * Persistencia pendiente de endpoint de cuaderno en backend.
+ * Auto-guardado de una celda de nota (debounce + caché local hasta API cuaderno).
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { saveNotaCache } from '../utils/cuadernoLocalCache.js';
 
 const DEBOUNCE_MS = 1500;
-const GUARDADO_IDLE_MS = 2000;
+const GUARDADO_OK_MS = 2000;
+const FAKE_LATENCY_MS = 450;
 
 const valoresIguales = (a, b) => {
   if (a == null && b == null) return true;
@@ -16,6 +17,7 @@ const valoresIguales = (a, b) => {
 
 export const useNotaAutosave = ({
   cursoId,
+  bimestre,
   estudianteId,
   evaluacionId,
   valorInicial,
@@ -25,7 +27,6 @@ export const useNotaAutosave = ({
   const [estado, setEstado] = useState('idle');
 
   const debounceRef = useRef(null);
-  const guardadoIdleRef = useRef(null);
   const requestIdRef = useRef(0);
   const lastSavedRef = useRef(valorInicial ?? null);
   const valorRef = useRef(valorInicial ?? null);
@@ -41,11 +42,7 @@ export const useNotaAutosave = ({
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
-    if (guardadoIdleRef.current) {
-      clearTimeout(guardadoIdleRef.current);
-      guardadoIdleRef.current = null;
-    }
-  }, [valorInicial, estudianteId, evaluacionId, cursoId]);
+  }, [valorInicial, estudianteId, evaluacionId, cursoId, bimestre]);
 
   useEffect(() => {
     onEstadoChange?.(estado);
@@ -54,15 +51,34 @@ export const useNotaAutosave = ({
   useEffect(
     () => () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (guardadoIdleRef.current) clearTimeout(guardadoIdleRef.current);
     },
     [],
   );
 
-  const persist = useCallback(async () => {
-    const reqId = ++requestIdRef.current;
-    setEstado('error');
-  }, []);
+  const persist = useCallback(
+    async (value) => {
+      const reqId = ++requestIdRef.current;
+      setEstado('guardando');
+      await new Promise((r) => {
+        setTimeout(r, FAKE_LATENCY_MS);
+      });
+      if (reqId !== requestIdRef.current) return;
+
+      try {
+        if (cursoId && bimestre) {
+          saveNotaCache(cursoId, bimestre, estudianteId, evaluacionId, value);
+        }
+        lastSavedRef.current = value;
+        setEstado('guardado');
+        setTimeout(() => {
+          if (reqId === requestIdRef.current) setEstado('idle');
+        }, GUARDADO_OK_MS);
+      } catch {
+        if (reqId === requestIdRef.current) setEstado('error');
+      }
+    },
+    [cursoId, bimestre, estudianteId, evaluacionId],
+  );
 
   const scheduleSave = useCallback(
     (value) => {
@@ -86,12 +102,6 @@ export const useNotaAutosave = ({
       valorRef.current = nuevoValor;
       setValorState(nuevoValor);
       setEstado('pendiente');
-
-      if (guardadoIdleRef.current) {
-        clearTimeout(guardadoIdleRef.current);
-        guardadoIdleRef.current = null;
-      }
-
       scheduleSave(nuevoValor);
     },
     [scheduleSave],
@@ -102,5 +112,14 @@ export const useNotaAutosave = ({
     persist(valorRef.current);
   }, [persist]);
 
-  return { valor, estado, setValor, reintentar };
+  const guardarAhora = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+    requestIdRef.current += 1;
+    return persist(valorRef.current);
+  }, [persist]);
+
+  return { valor, estado, setValor, reintentar, guardarAhora };
 };

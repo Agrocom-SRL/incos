@@ -11,6 +11,7 @@ import { parseNotaInput } from '@application-academico/calificaciones/utils/pars
 
 const NotaCell = ({
   cursoId,
+  bimestre,
   estudianteId,
   evaluacionId,
   valorInicial,
@@ -22,17 +23,24 @@ const NotaCell = ({
   );
   const { registerCell, unregisterCell } = useCuadernoAutosaveRegistry();
 
-  const { valor, estado, setValor, reintentar } = useNotaAutosave({
+  const { valor, estado, setValor, reintentar, guardarAhora } = useNotaAutosave({
     cursoId,
+    bimestre,
     estudianteId,
     evaluacionId,
     valorInicial,
   });
 
   useEffect(() => {
-    registerCell(cellKey, { estado, reintentar });
+    registerCell(cellKey, {
+      estado,
+      reintentar,
+      guardarAhora,
+      evaluacionId,
+      estudianteId,
+    });
     return () => unregisterCell(cellKey);
-  }, [cellKey, estado, reintentar, registerCell, unregisterCell]);
+  }, [cellKey, estado, reintentar, guardarAhora, evaluacionId, estudianteId, registerCell, unregisterCell]);
 
   const handleChange = useCallback(
     (raw) => {

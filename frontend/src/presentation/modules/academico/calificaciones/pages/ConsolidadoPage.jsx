@@ -12,7 +12,7 @@ import { BackButton } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows } from '@theme/tokens';
 import { useConsolidadoCurso } from '@application-academico/calificaciones/hooks/useConsolidadoCurso.js';
 import { cuadernoBimestrePath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
-import CursoProfileHeader from '../components/CursoProfileHeader.jsx';
+import CursoHeaderCard from '../components/CursoHeaderCard.jsx';
 import ConsolidadoGrid from '../components/ConsolidadoGrid.jsx';
 import AjustesCursoDrawer from '../components/AjustesCursoDrawer.jsx';
 import '@presentation/styles/pages/detail-page.css';
@@ -41,8 +41,6 @@ const ConsolidadoPage = () => {
     bimestresCalendario,
     bimestreVigente,
     notaMinimaAprobacion,
-    profileStats,
-    subtituloCurso,
     isLoading,
     error,
     refetch,
@@ -125,19 +123,13 @@ const ConsolidadoPage = () => {
 
       <MainContent>
         <Flex vertical gap={allSpacing.marginLG} className="sd cal-consolidado">
-          <CursoProfileHeader
-            materia={curso?.materia}
-            sigla={curso?.materiaSigla}
-            subtitulo={subtituloCurso}
-            carreraColor={curso?.carreraColor}
-            stats={profileStats}
-            pill={
-              docente?.bimestreVigente
-                ? `Bimestre ${docente.bimestreVigente}`
-                : null
-            }
-            onAjustes={() => setAjustesAbierto(true)}
-            ajustesDisabled={!asignacionId}
+          <CursoHeaderCard
+            curso={curso}
+            docente={docente}
+            bimestreActual={docente?.bimestreVigente ?? null}
+            estudiantesCount={estudiantes.length}
+            onConfiguracion={() => setAjustesAbierto(true)}
+            configuracionDisabled={!asignacionId}
           />
 
           <Card className="cal-consolidado__hoja" {...sectionCardProps}>

@@ -1,53 +1,126 @@
 /**
- * Pantalla B — Cuaderno del curso (grilla de notas).
+ * Pantalla B — Cuaderno del curso (grilla de notas del bimestre activo).
  */
 
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Flex, Spin } from 'antd';
+import { Alert, Button, Card, Flex, Modal, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { PageTemplate } from '@templates';
+import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
+import { allSpacing } from '@theme/tokens';
 import { useCuadernoCurso } from '@application-academico/calificaciones/hooks/useCuadernoCurso.js';
-import { CuadernoAutosaveProvider } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
-import CuadernoHeader from '../components/CuadernoHeader.jsx';
-import BimestreTabs from '../components/BimestreTabs.jsx';
+import { useCalificacionesVistaContext } from '@application-academico/calificaciones/hooks/useCalificacionesVistaContext.js';
+import {
+  CuadernoAutosaveProvider,
+  useCuadernoAutosaveRegistry,
+} from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
+import CuadernoBimestrePager from '../components/CuadernoBimestrePager.jsx';
+import CuadernoContextoPanel from '../components/CuadernoContextoPanel.jsx';
+import CuadernoGrillaSeparador from '../components/CuadernoGrillaSeparador.jsx';
 import NotasGrid from '../components/NotasGrid.jsx';
 import CuadernoFooter from '../components/CuadernoFooter.jsx';
 import CuadernoSkeleton from '../components/CuadernoSkeleton.jsx';
 import EvaluacionDrawer from '../components/EvaluacionDrawer.jsx';
-import AjustesCursoDrawer from '../components/AjustesCursoDrawer.jsx';
-import VistaPreviaDrawer from '../components/VistaPreviaDrawer.jsx';
 import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/calificaciones.css';
 
+const hojaCardProps = {
+  ...calificacionesSectionCardProps,
+  styles: {
+    body: { padding: 0 },
+  },
+};
+
+const CuadernoGrilla = ({
+  cursoId,
+  bimestreActivo,
+  bimestreTitulo,
+  evaluaciones,
+  estudiantes,
+  modoEdicion,
+  onAbrirCrear,
+  onAbrirEditar,
+  resetearNotasEvaluacion,
+  enteringColumnIds,
+  removingColumnId,
+}) => {
+  const { guardarEvaluacion, resetEvaluacionRegistro } = useCuadernoAutosaveRegistry();
+  const soloLectura = !modoEdicion;
+
+  const handleReset = useCallback(
+    (evaluacionId) => {
+      const ev = evaluaciones.find((e) => e.id === evaluacionId);
+      Modal.confirm({
+        title: 'Restablecer notas',
+        okText: 'Restablecer',
+        okType: 'danger',
+        cancelText: 'Cancelar',
+        content: (
+          <span>
+            ¿Borrar todas las notas cargadas en <strong>{ev?.nombre ?? 'esta evaluación'}</strong>?
+          </span>
+        ),
+        onOk: () => {
+          resetEvaluacionRegistro(evaluacionId);
+          resetearNotasEvaluacion(evaluacionId);
+        },
+      });
+    },
+    [evaluaciones, resetEvaluacionRegistro, resetearNotasEvaluacion],
+  );
+
+  const handleGuardar = useCallback(
+    (evaluacionId) => guardarEvaluacion(evaluacionId),
+    [guardarEvaluacion],
+  );
+
+  return (
+    <NotasGrid
+      cursoId={cursoId}
+      bimestre={bimestreActivo}
+      bimestreTitulo={bimestreTitulo}
+      estudiantes={estudiantes}
+      evaluaciones={evaluaciones}
+      soloLectura={soloLectura}
+      onAgregarEvaluacion={onAbrirCrear}
+      onEditarEvaluacion={modoEdicion ? onAbrirEditar : undefined}
+      onResetEvaluacion={handleReset}
+      onGuardarEvaluacion={handleGuardar}
+      enteringColumnIds={enteringColumnIds}
+      removingColumnId={removingColumnId}
+    />
+  );
+};
+
 const CuadernoPage = () => {
   const navigate = useNavigate();
+  const { docenteNombreCoordinacion } = useCalificacionesVistaContext();
   const {
     curso,
+    docente,
     evaluaciones,
     estudiantes,
-    bimestres,
     bimestreActivo,
+    bimestreVigente,
+    bimestreTitulo,
     modoEdicion,
-    setBimestreActivo,
     isLoading,
-    isRefetching,
     error,
     refetch,
     breadcrumbItems,
-    subtituloCurso,
+    tituloPagina,
     cursoId,
     volverPath,
+    esVistaCoordinacion,
     crearEvaluacion,
     editarEvaluacion,
     eliminarEvaluacion,
+    resetearNotasEvaluacion,
   } = useCuadernoCurso();
 
-  const [ajustesAbierto, setAjustesAbierto] = useState(false);
-  const [vistaPreviaAbierta, setVistaPreviaAbierta] = useState(false);
   const [drawerAbierto, setDrawerAbierto] = useState(false);
   const [drawerModo, setDrawerModo] = useState('crear');
   const [evaluacionEditar, setEvaluacionEditar] = useState(null);
@@ -90,122 +163,132 @@ const CuadernoPage = () => {
     [eliminarEvaluacion],
   );
 
-  const header = (
+  const tituloHeader = (
+    <Flex align="center" wrap="wrap" gap={8} className="cal-cuaderno-page-title">
+      <CuadernoBimestrePager
+        asignacionId={cursoId}
+        bimestreActivo={bimestreActivo}
+        bimestreVigente={bimestreVigente}
+      />
+      <span>{tituloPagina}</span>
+    </Flex>
+  );
+
+  const pageHeader = (
     <PageHeader
+      title={tituloHeader}
       breadcrumbItems={breadcrumbItems}
-      className="cal-cuaderno-page-header"
       actions={
-        <Flex justify="flex-end">
-          <BackButton
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(volverPath)}
-            aria-label="Volver al registro académico"
-          >
-            Volver al registro
-          </BackButton>
-        </Flex>
+        <BackButton
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate(volverPath)}
+          aria-label="Volver al registro académico"
+        >
+          Volver
+        </BackButton>
       }
     />
   );
 
-  if (isLoading && !curso) {
+  const cuerpo = (
+    <Card className="cal-cuaderno-hoja-card" {...hojaCardProps}>
+      <div className="cal-cuaderno-hoja">
+        <CuadernoContextoPanel
+          curso={curso}
+          docente={docente}
+          bimestreTitulo={bimestreTitulo}
+          esVistaCoordinacion={esVistaCoordinacion}
+          docenteNombre={docenteNombreCoordinacion}
+        />
+        <CuadernoGrillaSeparador bimestreTitulo={bimestreTitulo} />
+        <CuadernoGrilla
+          cursoId={cursoId}
+          bimestreActivo={bimestreActivo}
+          bimestreTitulo={bimestreTitulo}
+          evaluaciones={evaluaciones}
+          estudiantes={estudiantes}
+          modoEdicion={modoEdicion}
+          onAbrirCrear={abrirCrear}
+          onAbrirEditar={modoEdicion ? abrirEditar : undefined}
+          resetearNotasEvaluacion={resetearNotasEvaluacion}
+          enteringColumnIds={enteringColumnIds}
+          removingColumnId={removingColumnId}
+        />
+        <CuadernoFooter />
+      </div>
+    </Card>
+  );
+
+  if (isLoading && estudiantes.length === 0) {
     return (
-      <PageTemplate header={header} sidebar={null}>
-        <CuadernoSkeleton />
-      </PageTemplate>
+      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+        <PageHeaderArea>{pageHeader}</PageHeaderArea>
+        <MainContent>
+          <CuadernoSkeleton />
+        </MainContent>
+      </Flex>
     );
   }
 
-  if (error && !curso) {
+  if (error && estudiantes.length === 0) {
     return (
-      <PageTemplate header={header} sidebar={null}>
-        <Alert
-          type="error"
-          showIcon
-          title="No se pudo cargar el cuaderno"
-          action={
-            <Button size="small" onClick={refetch}>
-              Reintentar
-            </Button>
-          }
-        />
-      </PageTemplate>
+      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+        <PageHeaderArea>{pageHeader}</PageHeaderArea>
+        <MainContent>
+          <Alert
+            type="error"
+            showIcon
+            title="No se pudo cargar el cuaderno"
+            description={typeof error === 'string' ? error : String(error)}
+            action={
+              <Button size="small" onClick={refetch}>
+                Reintentar
+              </Button>
+            }
+          />
+        </MainContent>
+      </Flex>
     );
   }
 
   return (
-    <PageTemplate header={header} sidebar={null}>
-      <Spin spinning={isLoading}>
-        <CuadernoAutosaveProvider>
-          <div className="cal-cuaderno sd">
-            {error && curso ? (
-              <Alert type="info" showIcon message={error} style={{ marginBottom: 16 }} />
-            ) : null}
+    <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+      <PageHeaderArea>{pageHeader}</PageHeaderArea>
 
-            <CuadernoHeader
-              materia={curso?.materia}
-              subtitulo={subtituloCurso}
-              onAjustes={() => setAjustesAbierto(true)}
-              onVistaPrevia={() => setVistaPreviaAbierta(true)}
-            />
-
-            <BimestreTabs
-              bimestres={bimestres}
-              bimestreActivo={bimestreActivo}
-              onChange={setBimestreActivo}
-            />
-
-            <Card className="cal-cuaderno-hoja-card" {...calificacionesSectionCardProps}>
-              <div className="cal-cuaderno-hoja">
-                <NotasGrid
-                  cursoId={cursoId}
-                  estudiantes={estudiantes}
-                  evaluaciones={evaluaciones}
-                  soloLectura={!modoEdicion}
-                  isRefetching={isRefetching}
-                  onAgregarEvaluacion={modoEdicion ? abrirCrear : undefined}
-                  onEditarEvaluacion={modoEdicion ? abrirEditar : undefined}
-                  enteringColumnIds={enteringColumnIds}
-                  removingColumnId={removingColumnId}
+      <MainContent>
+        <Spin spinning={isLoading} tip="Cargando cuaderno…">
+          <CuadernoAutosaveProvider>
+            <Flex vertical gap={allSpacing.marginLG} className="sd cal-cuaderno">
+              {error ? (
+                <Alert
+                  type="error"
+                  showIcon
+                  title="Error al actualizar el cuaderno"
+                  description={typeof error === 'string' ? error : String(error)}
                 />
-                <CuadernoFooter />
-              </div>
-            </Card>
+              ) : null}
 
-            <AjustesCursoDrawer
-              abierto={ajustesAbierto}
-              cursoId={cursoId}
-              onCerrar={() => setAjustesAbierto(false)}
-              onGuardado={refetch}
-            />
+              {cuerpo}
 
-            <VistaPreviaDrawer
-              abierto={vistaPreviaAbierta}
-              cursoId={cursoId}
-              bimestre={bimestreActivo}
-              estudiantes={estudiantes}
-              evaluaciones={evaluaciones}
-              onCerrar={() => setVistaPreviaAbierta(false)}
-            />
-
-            <EvaluacionDrawer
-              abierto={drawerAbierto}
-              modo={drawerModo}
-              evaluacion={evaluacionEditar}
-              cursoId={cursoId}
-              bimestre={bimestreActivo}
-              evaluacionesActuales={evaluaciones}
-              estudiantes={estudiantes}
-              onCerrar={cerrarDrawer}
-              onGuardado={handleGuardado}
-              onEliminado={handleEliminado}
-              crearEvaluacion={crearEvaluacion}
-              editarEvaluacion={editarEvaluacion}
-            />
-          </div>
-        </CuadernoAutosaveProvider>
-      </Spin>
-    </PageTemplate>
+              <EvaluacionDrawer
+                abierto={drawerAbierto}
+                modo={drawerModo}
+                evaluacion={evaluacionEditar}
+                cursoId={cursoId}
+                bimestre={bimestreActivo}
+                evaluacionesActuales={evaluaciones}
+                estudiantes={estudiantes}
+                onCerrar={cerrarDrawer}
+                onGuardado={handleGuardado}
+                onEliminado={handleEliminado}
+                crearEvaluacion={crearEvaluacion}
+                editarEvaluacion={editarEvaluacion}
+              />
+            </Flex>
+          </CuadernoAutosaveProvider>
+        </Spin>
+      </MainContent>
+    </Flex>
   );
 };
 

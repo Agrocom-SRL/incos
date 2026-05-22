@@ -17,22 +17,12 @@ import {
 const PoliticaInstitucionalConnector = lazy(
   () => import('./connectors/PoliticaInstitucionalConnector.jsx'),
 );
-const GestionBimestresConnector = lazy(
-  () => import('./connectors/GestionBimestresConnector.jsx'),
-);
 const CalificacionesEntradaConnector = lazy(
   () => import('./connectors/CalificacionesEntradaConnector.jsx'),
 );
 const MisCursosConnector = lazy(() => import('./connectors/MisCursosConnector.jsx'));
 const ConsolidadoConnector = lazy(() => import('./connectors/ConsolidadoConnector.jsx'));
 const CuadernoConnector = lazy(() => import('./connectors/CuadernoConnector.jsx'));
-const EvaluacionesFinalesPlaceholderConnector = lazy(
-  () => import('./connectors/EvaluacionesFinalesPlaceholderConnector.jsx'),
-);
-const NivelacionPlaceholderConnector = lazy(
-  () => import('./connectors/NivelacionPlaceholderConnector.jsx'),
-);
-
 /** Redirecciones legacy → rutas nuevas (docenteId en state). */
 const RedirectDocenteCursos = () => {
   const { docenteId } = useParams();
@@ -76,33 +66,6 @@ export const calificacionesRoutes = [
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'ACA-CAL',
-  },
-  {
-    path: '/academico/calificaciones/gestion-bimestres',
-    element: <GestionBimestresConnector />,
-    key: 'ACA-CAL-GESTION-BIMESTRES',
-    permiso: 'academico.calificacion.gestion_bimestres',
-    accion: 'LISTAR',
-    menu: null,
-    breadcrumbParent: 'ACA-CAL',
-  },
-  {
-    path: '/academico/calificaciones/mis-cursos/:asignacionId/finales',
-    element: <EvaluacionesFinalesPlaceholderConnector />,
-    key: 'ACA-CAL-CURSO-FINALES',
-    permiso: 'academico.calificacion.cuaderno',
-    accion: 'LISTAR',
-    menu: null,
-    breadcrumbParent: 'ACA-CAL-NOTAS',
-  },
-  {
-    path: '/academico/calificaciones/mis-cursos/:asignacionId/nivelacion',
-    element: <NivelacionPlaceholderConnector />,
-    key: 'ACA-CAL-CURSO-NIVELACION',
-    permiso: 'academico.calificacion.cuaderno',
-    accion: 'LISTAR',
-    menu: null,
-    breadcrumbParent: 'ACA-CAL-NOTAS',
   },
   {
     path: '/academico/calificaciones/mis-cursos/:asignacionId/cuaderno/:n',

@@ -13,23 +13,30 @@ const CursoProfileHeader = ({
   pill,
   onAjustes,
   ajustesDisabled = false,
+  acciones = null,
 }) => {
   const avatarText = (sigla ?? '').trim().toUpperCase() || null;
   const usarSigla = Boolean(avatarText);
+  const toolbarVisible = Boolean(onAjustes || acciones);
 
   return (
     <div className="sd-profile cal-curso-profile">
-      {onAjustes ? (
-        <button
-          type="button"
-          className="sd-btn sd-btn--info cal-curso-profile__config-btn"
-          onClick={onAjustes}
-          disabled={ajustesDisabled}
-          aria-label="Configuración del curso"
-        >
-          <SettingOutlined aria-hidden />
-          Configuración
-        </button>
+      {toolbarVisible ? (
+        <div className="cal-curso-profile__toolbar">
+          {acciones ? <div className="cal-curso-profile__acciones">{acciones}</div> : null}
+          {onAjustes ? (
+            <button
+              type="button"
+              className="sd-btn sd-btn--info cal-curso-profile__config-btn"
+              onClick={onAjustes}
+              disabled={ajustesDisabled}
+              aria-label="Configuración del curso"
+            >
+              <SettingOutlined aria-hidden />
+              Configuración
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="sd-profile__identity">

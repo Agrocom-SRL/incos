@@ -3,11 +3,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowLeftOutlined,
-  DashboardOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+import { ArrowLeftOutlined, SettingOutlined } from '@ant-design/icons';
 import { ActionButton } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
@@ -46,23 +42,5 @@ export const AccionConfiguracionNotas = ({ onClick }) => (
 
 /** @deprecated Usar AccionConfiguracionNotas */
 export const AccionPoliticaInstitucional = AccionConfiguracionNotas;
-
-export const AccionGestionBimestres = ({ to }) => {
-  const navigate = useNavigate();
-  return (
-    <ActionButton
-      permiso={CALIFICACIONES_PERMISOS.gestionBimestres}
-      accion="LISTAR"
-      variant="primary"
-      icon={<DashboardOutlined />}
-      onClick={() => navigate(to)}
-    >
-      Gestión de bimestres
-    </ActionButton>
-  );
-};
-
-/** @deprecated Usar AccionGestionBimestres */
-export const AccionTableroGestion = AccionGestionBimestres;
 
 export default CalificacionesAcciones;
