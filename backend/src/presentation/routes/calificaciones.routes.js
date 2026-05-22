@@ -5,6 +5,10 @@ import {
   listTiposEvaluacionValidator,
   savePoliticaInstitucionalValidator,
   searchCoordinacionDocentesValidator,
+  getCuadernoBimestreValidator,
+  createEvaluacionCuadernoValidator,
+  updateEvaluacionCuadernoValidator,
+  deleteEvaluacionCuadernoValidator,
 } from '../validators/academico/index.js';
 
 /**
@@ -189,6 +193,38 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     '/asignaciones/:asignacionId/ajustes',
     ...cuadernoEditar,
     (req, res, next) => controllers.saveAjustesCursoController.handle(req, res, next),
+  );
+
+  router.get(
+    '/asignaciones/:asignacionId/cuaderno/:bimestre',
+    ...cuadernoListar,
+    getCuadernoBimestreValidator,
+    validateRequest,
+    (req, res, next) => controllers.getCuadernoBimestreController.handle(req, res, next),
+  );
+
+  router.post(
+    '/asignaciones/:asignacionId/cuaderno/:bimestre/evaluaciones',
+    ...cuadernoEditar,
+    createEvaluacionCuadernoValidator,
+    validateRequest,
+    (req, res, next) => controllers.createEvaluacionCuadernoController.handle(req, res, next),
+  );
+
+  router.put(
+    '/asignaciones/:asignacionId/cuaderno/:bimestre/evaluaciones/:evaluacionId',
+    ...cuadernoEditar,
+    updateEvaluacionCuadernoValidator,
+    validateRequest,
+    (req, res, next) => controllers.updateEvaluacionCuadernoController.handle(req, res, next),
+  );
+
+  router.delete(
+    '/asignaciones/:asignacionId/cuaderno/:bimestre/evaluaciones/:evaluacionId',
+    ...cuadernoEditar,
+    deleteEvaluacionCuadernoValidator,
+    validateRequest,
+    (req, res, next) => controllers.deleteEvaluacionCuadernoController.handle(req, res, next),
   );
 
   return router;

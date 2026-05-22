@@ -2,7 +2,7 @@
  * Pantalla B — Cuaderno del curso (grilla de notas del bimestre activo).
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, Flex, Modal, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -121,6 +121,7 @@ const CuadernoPage = () => {
     resetearNotasEvaluacion,
   } = useCuadernoCurso();
 
+  const [busquedaEstudiante, setBusquedaEstudiante] = useState('');
   const [drawerAbierto, setDrawerAbierto] = useState(false);
   const [drawerModo, setDrawerModo] = useState('crear');
   const [evaluacionEditar, setEvaluacionEditar] = useState(null);
@@ -150,6 +151,17 @@ const CuadernoPage = () => {
       setEnteringColumnIds((prev) => prev.filter((id) => id !== evaluacion.id));
     }, 300);
   }, []);
+
+  const estudiantesFiltrados = useMemo(() => {
+    const q = busquedaEstudiante.trim().toLowerCase();
+    if (!q) return estudiantes;
+    return estudiantes.filter((e) => {
+      const nombre = (e.nombre ?? '').toLowerCase();
+      const codigo = (e.codigo ?? '').toLowerCase();
+      const nro = String(e.nro ?? '');
+      return nombre.includes(q) || codigo.includes(q) || nro.includes(q);
+    });
+  }, [estudiantes, busquedaEstudiante]);
 
   const handleEliminado = useCallback(
     async (evaluacionId) => {
@@ -190,23 +202,37 @@ const CuadernoPage = () => {
     />
   );
 
-  const cuerpo = (
+  const cardContexto = (
+    <Card className="cal-cuaderno-contexto-card" {...calificacionesSectionCardProps}>
+      <CuadernoContextoPanel
+        curso={curso}
+        docente={docente}
+        bimestreTitulo={bimestreTitulo}
+        bimestreActivo={bimestreActivo}
+        bimestreVigente={bimestreVigente}
+        modoEdicion={modoEdicion}
+        esVistaCoordinacion={esVistaCoordinacion}
+        docenteNombre={docenteNombreCoordinacion}
+      />
+    </Card>
+  );
+
+  const cardGrilla = (
     <Card className="cal-cuaderno-hoja-card" {...hojaCardProps}>
       <div className="cal-cuaderno-hoja">
-        <CuadernoContextoPanel
-          curso={curso}
-          docente={docente}
+        <CuadernoGrillaSeparador
           bimestreTitulo={bimestreTitulo}
-          esVistaCoordinacion={esVistaCoordinacion}
-          docenteNombre={docenteNombreCoordinacion}
+          busqueda={busquedaEstudiante}
+          onBusquedaChange={setBusquedaEstudiante}
+          totalEstudiantes={estudiantes.length}
+          filtrados={estudiantesFiltrados.length}
         />
-        <CuadernoGrillaSeparador bimestreTitulo={bimestreTitulo} />
         <CuadernoGrilla
           cursoId={cursoId}
           bimestreActivo={bimestreActivo}
           bimestreTitulo={bimestreTitulo}
           evaluaciones={evaluaciones}
-          estudiantes={estudiantes}
+          estudiantes={estudiantesFiltrados}
           modoEdicion={modoEdicion}
           onAbrirCrear={abrirCrear}
           onAbrirEditar={modoEdicion ? abrirEditar : undefined}
@@ -268,25 +294,26 @@ const CuadernoPage = () => {
                 />
               ) : null}
 
-              {cuerpo}
-
-              <EvaluacionDrawer
-                abierto={drawerAbierto}
-                modo={drawerModo}
-                evaluacion={evaluacionEditar}
-                cursoId={cursoId}
-                bimestre={bimestreActivo}
-                evaluacionesActuales={evaluaciones}
-                estudiantes={estudiantes}
-                onCerrar={cerrarDrawer}
-                onGuardado={handleGuardado}
-                onEliminado={handleEliminado}
-                crearEvaluacion={crearEvaluacion}
-                editarEvaluacion={editarEvaluacion}
-              />
+              {cardContexto}
+              {cardGrilla}
             </Flex>
           </CuadernoAutosaveProvider>
         </Spin>
+
+        <EvaluacionDrawer
+          abierto={drawerAbierto}
+          modo={drawerModo}
+          evaluacion={evaluacionEditar}
+          cursoId={cursoId}
+          bimestre={bimestreActivo}
+          evaluacionesActuales={evaluaciones}
+          estudiantes={estudiantes}
+          onCerrar={cerrarDrawer}
+          onGuardado={handleGuardado}
+          onEliminado={handleEliminado}
+          crearEvaluacion={crearEvaluacion}
+          editarEvaluacion={editarEvaluacion}
+        />
       </MainContent>
     </Flex>
   );

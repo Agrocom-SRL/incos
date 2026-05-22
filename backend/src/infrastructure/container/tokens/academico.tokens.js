@@ -33,6 +33,10 @@ export const ACADEMICO_TOKENS = {
     getAjustesCursoUseCase: 'academico.getAjustesCursoUseCase',
     saveAjustesCursoUseCase: 'academico.saveAjustesCursoUseCase',
     getRegistroNotasCursoUseCase: 'academico.getRegistroNotasCursoUseCase',
+    getCuadernoBimestreUseCase: 'academico.getCuadernoBimestreUseCase',
+    createEvaluacionCuadernoUseCase: 'academico.createEvaluacionCuadernoUseCase',
+    updateEvaluacionCuadernoUseCase: 'academico.updateEvaluacionCuadernoUseCase',
+    deleteEvaluacionCuadernoUseCase: 'academico.deleteEvaluacionCuadernoUseCase',
 
     // CONTROLLERS
     listParalelosController: 'academico.listParalelosController',
@@ -59,6 +63,10 @@ export const ACADEMICO_TOKENS = {
     getAjustesCursoController: 'academico.getAjustesCursoController',
     saveAjustesCursoController: 'academico.saveAjustesCursoController',
     getRegistroNotasCursoController: 'academico.getRegistroNotasCursoController',
+    getCuadernoBimestreController: 'academico.getCuadernoBimestreController',
+    createEvaluacionCuadernoController: 'academico.createEvaluacionCuadernoController',
+    updateEvaluacionCuadernoController: 'academico.updateEvaluacionCuadernoController',
+    deleteEvaluacionCuadernoController: 'academico.deleteEvaluacionCuadernoController',
 
     updateCursoOfertaUseCase: 'academico.updateCursoOfertaUseCase',
     deleteCursoOfertaUseCase: 'academico.deleteCursoOfertaUseCase',

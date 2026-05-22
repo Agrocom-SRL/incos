@@ -412,53 +412,61 @@
 
 /* —— Cuaderno: ficha de contexto (estilo registro RITT) —— */
 .cal-cuaderno-contexto {
-  border-bottom: 1px solid var(--cuaderno-borde);
   background: var(--cuaderno-fondo);
 }
 
-.cal-cuaderno-contexto__grid,
-.cal-cuaderno-contexto__barra {
+.cal-cuaderno-contexto__filas {
+  display: flex;
+  flex-direction: column;
+}
+
+.cal-cuaderno-contexto__fila {
   display: grid;
   gap: 0;
-}
-
-.cal-cuaderno-contexto__grid {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.cal-cuaderno-contexto__barra {
-  grid-template-columns: 2fr 1fr 1fr 1fr;
   border-top: 1px solid var(--cuaderno-borde);
+}
+
+.cal-cuaderno-contexto__fila:first-child {
+  border-top: none;
+}
+
+.cal-cuaderno-contexto__fila--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.cal-cuaderno-contexto__fila--2 {
+  grid-template-columns: 2fr 1fr;
 }
 
 .cal-cuaderno-contexto__celda {
   display: grid;
-  grid-template-columns: minmax(88px, auto) 1fr;
+  grid-template-columns: 160px 1fr;
   border: 1px solid var(--cuaderno-borde);
   margin: -0.5px;
-  min-height: 34px;
+  min-height: 38px;
 }
 
-.cal-cuaderno-contexto__celda--wide {
-  grid-column: span 2;
+.cal-cuaderno-contexto__celda--compact {
+  grid-template-columns: 160px auto;
 }
 
 .cal-cuaderno-contexto__label {
-  padding: 6px 10px;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   background: var(--cuaderno-verde-oscuro);
   color: #fff;
   display: flex;
+  text-align: center;
+  justify-content: center;
   align-items: center;
 }
 
 .cal-cuaderno-contexto__value {
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: 400;
   background: var(--cuaderno-papel);
   color: var(--cuaderno-texto-fuerte);
   display: flex;
@@ -468,39 +476,99 @@
 
 @media (max-width: 900px) {
 
-  .cal-cuaderno-contexto__grid,
-  .cal-cuaderno-contexto__barra {
+  .cal-cuaderno-contexto__fila--3,
+  .cal-cuaderno-contexto__fila--2 {
     grid-template-columns: 1fr 1fr;
   }
 
-  .cal-cuaderno-contexto__celda--wide {
-    grid-column: span 1;
-  }
 }
 
-/* —— Separador ficha / grilla —— */
+/* —— Card contexto / card grilla —— */
+.cal-cuaderno-contexto-card {
+  overflow: hidden;
+}
+
+.cal-cuaderno-contexto-card>.ant-card-body {
+  padding: 0 !important;
+}
+
+.cal-cuaderno-buscar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.cal-cuaderno-buscar__input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.cal-cuaderno-buscar__icon {
+  color: var(--cuaderno-texto-tenue);
+}
+
+.cal-cuaderno-buscar__contador {
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  white-space: nowrap;
+}
+
+/* —— Separador ficha / grilla (50% texto · 50% buscador) —— */
 .cal-cuaderno-separador {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  border-top: 2px solid var(--cuaderno-verde-medio);
+  border-bottom: 1px solid var(--cuaderno-borde-suave);
+  background: var(--cuaderno-verde-tenue);
+}
+
+.cal-cuaderno-separador__texto {
+  flex: 1 1 50%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 14px 20px;
-  border-top: 1px solid var(--cuaderno-borde-suave);
-  border-bottom: 1px solid var(--cuaderno-borde-suave);
-  background: var(--cuaderno-fondo);
+}
+
+.cal-cuaderno-separador__buscar {
+  flex: 1 1 50%;
+  max-width: 50%;
+  justify-content: flex-end;
+}
+
+.cal-cuaderno-separador__buscar .cal-cuaderno-buscar__input {
+  max-width: none;
 }
 
 .cal-cuaderno-separador__titulo {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--cuaderno-verde-oscuro);
   letter-spacing: 0.02em;
 }
 
 .cal-cuaderno-separador__desc {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.45;
   color: var(--cuaderno-texto-medio);
-  max-width: 72ch;
+}
+
+@media (max-width: 768px) {
+  .cal-cuaderno-separador {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .cal-cuaderno-separador__buscar {
+    max-width: none;
+    justify-content: stretch;
+  }
 }
 
 .cal-notas-grid__eval-head {
@@ -528,6 +596,7 @@
 }
 
 .cal-notas-grid__col-nro {
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--cuaderno-texto-medio);
   font-weight: 600;
@@ -546,10 +615,22 @@
   font-size: 13px;
 }
 
-.cal-notas-grid__col-sin-eval,
+.cal-notas-grid__col-sin-eval {
+  text-align: center !important;
+}
+
+.cal-notas-grid__col-sin-eval .cal-notas-grid__th-sub-text {
+  display: block;
+  text-align: center;
+}
+
 .cal-notas-grid__celda-vacia {
+  display: block;
+  width: 100%;
+  text-align: center;
   color: var(--cuaderno-texto-tenue);
   font-size: 12px;
+  font-style: italic;
 }
 
 .cal-notas-grid__sin-evals {
@@ -584,6 +665,43 @@
 /* —— Grilla notas —— */
 .cal-notas-grid.ant-table-wrapper .ant-table {
   background: transparent;
+}
+
+.cal-notas-grid.ant-table-wrapper .ant-table {
+  width: 100% !important;
+}
+
+.cal-notas-grid.ant-table-wrapper .ant-table table {
+  table-layout: fixed;
+  width: 100% !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.cal-notas-grid__col-nro,
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-nro {
+  width: 44px !important;
+  max-width: 44px !important;
+  min-width: 44px !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.cal-notas-grid__col-estudiante,
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-estudiante {
+  width: 200px !important;
+  max-width: 220px !important;
+  min-width: 160px !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.cal-notas-grid__col-bim-espacio,
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-bim-espacio {
+  width: auto !important;
+  min-width: 32px;
+  padding: 0 !important;
+  background: var(--cuaderno-papel) !important;
+  border-bottom: 1px solid var(--cuaderno-borde-suave) !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-bim-espacio {
+  background: var(--cuaderno-verde-oscuro) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 .cal-notas-grid:not(.cal-notas-grid--consolidado-style) .ant-table-thead>tr>th {
@@ -627,19 +745,20 @@
 }
 
 .cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-bim--activo {
-  background: var(--cuaderno-verde-acento) !important;
+  background: var(--cuaderno-verde-oscuro) !important;
   color: #fff !important;
-  box-shadow: inset 0 0 0 2px var(--cuaderno-verde-medio);
+  box-shadow: inset 0 -3px 0 var(--cuaderno-verde-medio);
 }
 
 .cal-notas-grid__bim-head {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
   gap: 4px;
-  min-height: 52px;
-  padding: 8px 10px 10px;
-  text-align: left;
+  min-height: 44px;
+  padding: 8px 10px;
+  text-align: center;
 }
 
 .cal-notas-grid__bim-head--activo {
@@ -650,15 +769,21 @@
 .cal-notas-grid__bim-titulo-row {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 700;
   line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .cal-notas-grid__bim-titulo {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: uppercase;
+  letter-spacing: inherit;
 }
 
 .cal-notas-grid__th-sub-text {
@@ -669,7 +794,7 @@
 }
 
 .cal-notas-grid .ant-table-tbody>tr>td {
-  padding: 10px 12px !important;
+  padding: 8px 12px !important;
   border-bottom: 1px solid var(--cuaderno-borde-suave) !important;
   vertical-align: middle !important;
 }
@@ -685,13 +810,13 @@
 .cal-notas-grid__estudiante {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
 .cal-notas-grid__margen {
   flex-shrink: 0;
-  width: 3px;
+  width: 2px;
   align-self: stretch;
   min-height: 28px;
   border-radius: 2px;
@@ -706,7 +831,7 @@
 }
 
 .cal-notas-grid__codigo {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--cuaderno-texto-medio);
   font-variant-numeric: tabular-nums;
@@ -717,14 +842,22 @@
   color: var(--cuaderno-texto-fuerte);
   font-size: 13px;
   line-height: 1.35;
+  text-transform: none;
 }
 
 .cal-notas-grid__col-eval {
   text-align: center;
 }
 
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-add {
+  background: var(--cuaderno-verde-oscuro) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  vertical-align: middle !important;
+}
+
 .cal-notas-grid__col-add {
   background: var(--cuaderno-fondo) !important;
+  text-align: center !important;
 }
 
 .cal-notas-grid__add-header {
@@ -738,8 +871,9 @@
 }
 
 .cal-notas-grid--consolidado-style .cal-notas-grid__add-header {
+  font-size: 18px;
   color: #fff;
-  opacity: 1;
+  opacity: 0.9;
 }
 
 .cal-notas-grid__add-btn {
@@ -969,7 +1103,29 @@
   line-height: 1.4;
 }
 
-/* —— Drawer evaluaciones —— */
+/* —— Drawer evaluaciones (por encima del header fijo del sistema: --z-fixed + 1 ≈ 1031) —— */
+.cal-ajustes-drawer.ant-drawer {
+  z-index: 1100;
+}
+
+.cal-ajustes-drawer .ant-drawer-content-wrapper {
+  top: var(--header-height, 64px) !important;
+  height: calc(100vh - var(--header-height, 64px)) !important;
+  max-height: calc(100vh - var(--header-height, 64px)) !important;
+}
+
+.cal-ajustes-drawer .ant-drawer-content {
+  display: flex;
+  flex-direction: column;
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+.cal-ajustes-drawer .ant-drawer-header,
+.cal-ajustes-drawer .ant-drawer-footer {
+  flex-shrink: 0;
+}
+
 .cal-eval-drawer .ant-drawer-footer {
   border-top: 1px solid var(--cuaderno-borde-suave);
   padding: 12px 24px;
@@ -1104,6 +1260,7 @@
 .cal-notas-grid--consolidado-style .cal-notas-grid__add-header--clickable:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
+  opacity: 1;
 }
 
 .cal-notas-grid__add-header--clickable:disabled {
@@ -1145,6 +1302,10 @@
   }
 }
 
+.ant-table-container table>thead>tr:first-child>*:first-child {
+  border-start-start-radius: none !important;
+}
+
 /* —— Drawer ajustes del curso —— */
 .cal-ajustes-drawer {
   --cal-ajustes-drawer-bg: #d8ebe3;
@@ -1154,6 +1315,11 @@
 }
 
 .cal-ajustes-drawer .ant-drawer-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
   background: var(--cal-ajustes-drawer-bg) !important;
 }
 
@@ -1176,7 +1342,13 @@
 }
 
 .cal-ajustes-drawer .ant-drawer-body {
-  background: transparent;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 !important;
+  background: var(--cal-ajustes-drawer-bg) !important;
 }
 
 .cal-ajustes-drawer .ant-drawer-footer {
@@ -1195,6 +1367,55 @@
   color: var(--cuaderno-texto-medio, #6b7280) !important;
   background: #fafafa !important;
   pointer-events: none;
+}
+
+.cal-eval-drawer__alert {
+  flex-shrink: 0;
+  margin: 12px 16px 0;
+}
+
+.cal-eval-drawer__form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cal-eval-drawer__bloques {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.cal-eval-drawer__bloque {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cal-eval-drawer__bloque .cal-ajustes-seccion__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.cal-eval-drawer__form .cal-ajustes-seccion {
+  margin-bottom: 0;
+}
+
+.cal-eval-drawer__segmented.ant-segmented {
+  width: 100%;
+}
+
+.cal-eval-drawer__seccion .cal-eval-drawer__peso-hint {
+  margin-bottom: 16px;
 }
 
 .cal-ajustes-drawer__btn-guardar.ant-btn-primary:not(:disabled) {

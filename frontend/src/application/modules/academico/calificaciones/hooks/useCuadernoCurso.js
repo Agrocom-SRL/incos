@@ -1,18 +1,19 @@
 /**
- * Cuaderno por curso — estudiantes desde registro académico; evaluaciones/notas en caché local (Fase 2-bis).
+ * Cuaderno por curso — estudiantes desde registro; evaluaciones/notas desde API.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
+import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
 import { tituloBimestre, BIMESTRE_TITULOS } from '../utils/bimestreTitulos.js';
 import {
   aplicarNotasCacheAEstudiantes,
   clearNotasEvaluacionCache,
-  loadEvaluacionesCache,
   saveEvaluacionesCache,
 } from '../utils/cuadernoLocalCache.js';
+import { mergeNotasEnEstudiantes } from '../utils/mergeNotasCuaderno.js';
 import { MIS_CURSOS_PATH, notasCursoPath } from '../utils/calificacionesPaths.js';
 import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
 
@@ -40,17 +41,33 @@ export const useCuadernoCurso = () => {
     return n >= 1 && n <= 4 ? n : null;
   }, [bimestreRuta]);
 
-  const aplicarBimestre = useCallback(
-    (ctx, bimestreNum) => {
+  const construirEstadoBimestre = useCallback(
+    async (ctx, bimestreNum) => {
       const { docente, cursoList, estudiantesBase } = ctx;
       const bimestreVigente = Number(docente.bimestreVigente) || 1;
-      const activo = Math.min(Math.max(bimestreNum, 1), bimestreVigente);
-      const evaluaciones = loadEvaluacionesCache(cursoIdResolved, activo);
-      const estudiantes = aplicarNotasCacheAEstudiantes(
-        estudiantesBase,
+      const activo = Math.min(Math.max(bimestreNum, 1), 4);
+
+      let evaluaciones = [];
+      let estudiantes = estudiantesBase.map((e) => ({ ...e, notas: {} }));
+
+      const resCuaderno = await CalificacionRepository.obtenerCuadernoBimestre(
         cursoIdResolved,
         activo,
       );
+
+      if (resCuaderno?.success) {
+        evaluaciones = resCuaderno.data?.evaluaciones ?? [];
+        estudiantes = mergeNotasEnEstudiantes(estudiantesBase, resCuaderno.data?.notas ?? []);
+        saveEvaluacionesCache(cursoIdResolved, activo, evaluaciones);
+      } else {
+        const cacheErr = resCuaderno?.error;
+        if (cacheErr) {
+          throw new Error(cacheErr);
+        }
+      }
+
+      estudiantes = aplicarNotasCacheAEstudiantes(estudiantes, cursoIdResolved, activo);
+
       return {
         curso: {
           id: cursoList.id,
@@ -124,7 +141,8 @@ export const useCuadernoCurso = () => {
 
         const bimestreVigente = Number(docente.bimestreVigente) || 1;
         const activoInicial = bimestreDesdeUrl ?? bimestreVigente;
-        setCuaderno(aplicarBimestre(ctx, activoInicial));
+        const estado = await construirEstadoBimestre(ctx, activoInicial);
+        if (!cancelled) setCuaderno(estado);
       } catch (err) {
         if (!cancelled) {
           setError(err?.message || err);
@@ -140,17 +158,26 @@ export const useCuadernoCurso = () => {
     return () => {
       cancelled = true;
     };
-  }, [
-    cursoIdResolved,
-    docenteIdCoordinacion,
-    esVistaCoordinacion,
-    aplicarBimestre,
-  ]);
+  }, [cursoIdResolved, docenteIdCoordinacion, esVistaCoordinacion, construirEstadoBimestre]);
 
   useEffect(() => {
     if (!base || bimestreDesdeUrl == null || isLoading) return;
-    setCuaderno(aplicarBimestre(base, bimestreDesdeUrl));
-  }, [bimestreDesdeUrl, base, isLoading, aplicarBimestre]);
+    let cancelled = false;
+
+    const syncBimestre = async () => {
+      try {
+        const estado = await construirEstadoBimestre(base, bimestreDesdeUrl);
+        if (!cancelled) setCuaderno(estado);
+      } catch (err) {
+        if (!cancelled) setError(err?.message || err);
+      }
+    };
+
+    syncBimestre();
+    return () => {
+      cancelled = true;
+    };
+  }, [bimestreDesdeUrl, base, isLoading, construirEstadoBimestre]);
 
   const bimestreVigente = Number(base?.docente?.bimestreVigente ?? cuaderno?.bimestreVigente) || 1;
   const bimestreActivoResolved =
@@ -166,32 +193,54 @@ export const useCuadernoCurso = () => {
 
   const crearEvaluacion = useCallback(
     async (payload) => {
-      const nueva = {
-        id: `ev-${Date.now()}`,
-        ...payload,
-        bimestre: bimestreActivoResolved,
-      };
+      const res = await CalificacionRepository.crearEvaluacionCuaderno(
+        cursoIdResolved,
+        bimestreActivoResolved,
+        payload,
+      );
+      if (!res?.success) {
+        throw new Error(res?.error || 'No se pudo crear la evaluación');
+      }
+      const nueva = res.data?.evaluacion ?? res.data;
       const actuales = cuaderno?.evaluaciones ?? [];
       persistirEvaluaciones([...actuales, nueva]);
       return nueva;
     },
-    [cuaderno?.evaluaciones, bimestreActivoResolved, persistirEvaluaciones],
+    [cuaderno?.evaluaciones, bimestreActivoResolved, cursoIdResolved, persistirEvaluaciones],
   );
 
   const editarEvaluacion = useCallback(
     async (evaluacionId, payload) => {
+      const res = await CalificacionRepository.editarEvaluacionCuaderno(
+        cursoIdResolved,
+        bimestreActivoResolved,
+        evaluacionId,
+        payload,
+      );
+      if (!res?.success) {
+        throw new Error(res?.error || 'No se pudo actualizar la evaluación');
+      }
+      const actualizada = res.data?.evaluacion ?? res.data;
       const actuales = cuaderno?.evaluaciones ?? [];
       const siguientes = actuales.map((ev) =>
-        ev.id === evaluacionId ? { ...ev, ...payload } : ev,
+        ev.id === evaluacionId ? { ...ev, ...actualizada } : ev,
       );
       persistirEvaluaciones(siguientes);
       return siguientes.find((ev) => ev.id === evaluacionId);
     },
-    [cuaderno?.evaluaciones, persistirEvaluaciones],
+    [cuaderno?.evaluaciones, bimestreActivoResolved, cursoIdResolved, persistirEvaluaciones],
   );
 
   const eliminarEvaluacion = useCallback(
     async (evaluacionId) => {
+      const res = await CalificacionRepository.eliminarEvaluacionCuaderno(
+        cursoIdResolved,
+        bimestreActivoResolved,
+        evaluacionId,
+      );
+      if (!res?.success) {
+        throw new Error(res?.error || 'No se pudo eliminar la evaluación');
+      }
       clearNotasEvaluacionCache(cursoIdResolved, bimestreActivoResolved, evaluacionId);
       const actuales = cuaderno?.evaluaciones ?? [];
       persistirEvaluaciones(actuales.filter((ev) => ev.id !== evaluacionId));
@@ -229,42 +278,18 @@ export const useCuadernoCurso = () => {
   );
 
   const refetch = useCallback(async () => {
+    if (!base) return;
     setIsLoading(true);
     setError(null);
     try {
-      const ucCursos = useCasesFactory.listarMisCursosCalificaciones();
-      const resCursos = esVistaCoordinacion
-        ? await ucCursos.ejecutar({ docenteId: docenteIdCoordinacion })
-        : await ucCursos.ejecutar();
-      if (!resCursos?.success) throw new Error(resCursos?.error);
-
-      const docente = resCursos.data?.docente;
-      const cursoList = (resCursos.data?.cursos ?? []).find(
-        (c) => String(c.id) === String(cursoIdResolved),
-      );
-      const ucRegistro = useCasesFactory.obtenerRegistroNotasCurso();
-      const resRegistro = await ucRegistro.ejecutar(cursoIdResolved);
-      if (!resRegistro?.success) throw new Error(resRegistro?.error);
-
-      const ctx = {
-        docente,
-        cursoList: { ...cursoList, periodo: cursoList?.periodo ?? resRegistro.data?.curso?.periodo },
-        estudiantesBase: mapEstudiantesRegistro(resRegistro.data?.estudiantes),
-      };
-      setBase(ctx);
-      setCuaderno(aplicarBimestre(ctx, bimestreActivoResolved));
+      const estado = await construirEstadoBimestre(base, bimestreActivoResolved);
+      setCuaderno(estado);
     } catch (err) {
       setError(err?.message || err);
     } finally {
       setIsLoading(false);
     }
-  }, [
-    aplicarBimestre,
-    bimestreActivoResolved,
-    cursoIdResolved,
-    docenteIdCoordinacion,
-    esVistaCoordinacion,
-  ]);
+  }, [base, bimestreActivoResolved, construirEstadoBimestre]);
 
   const breadcrumbItems = useMemo(() => {
     const n = bimestreActivoResolved;

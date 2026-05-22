@@ -257,6 +257,69 @@ class CalificacionRepository {
     }
   }
 
+  /** GET cuaderno del bimestre (evaluaciones + notas cargadas). */
+  async obtenerCuadernoBimestre(asignacionId, bimestre) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.CUADERNO_BIMESTRE(asignacionId, bimestre),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el cuaderno');
+    }
+  }
+
+  async crearEvaluacionCuaderno(asignacionId, bimestre, payload) {
+    try {
+      const response = await apiClient.post(
+        CALIFICACIONES_ENDPOINTS.CUADERNO_EVALUACIONES(asignacionId, bimestre),
+        payload,
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear la evaluación');
+    }
+  }
+
+  async editarEvaluacionCuaderno(asignacionId, bimestre, evaluacionId, payload) {
+    try {
+      const response = await apiClient.put(
+        CALIFICACIONES_ENDPOINTS.CUADERNO_EVALUACION(asignacionId, bimestre, evaluacionId),
+        payload,
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar la evaluación');
+    }
+  }
+
+  async eliminarEvaluacionCuaderno(asignacionId, bimestre, evaluacionId) {
+    try {
+      const response = await apiClient.delete(
+        CALIFICACIONES_ENDPOINTS.CUADERNO_EVALUACION(asignacionId, bimestre, evaluacionId),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la evaluación');
+    }
+  }
+
   async guardarAjustesCurso(asignacionId, payload) {
     try {
       const response = await apiClient.put(

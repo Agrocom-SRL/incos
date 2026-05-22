@@ -78,6 +78,12 @@ const renderEstudiante = (nombre, row) => (
   </span>
 );
 
+/** Anchos fijos de identificación; el resto del ancho va al grupo bimestre. */
+const ANCHO_COL_NRO = 44;
+const ANCHO_COL_ESTUDIANTE = 300;
+const ANCHO_COL_EVAL = 148;
+const ANCHO_COL_AGREGAR = 56;
+
 const NotasGrid = ({
   cursoId,
   bimestre,
@@ -94,6 +100,7 @@ const NotasGrid = ({
 }) => {
   const thEst = () => ({ className: 'cal-notas-grid__th-est' });
   const thSub = () => ({ className: 'cal-notas-grid__th-sub' });
+  const fijarColumnaEstudiante = evaluaciones.length >= 4;
 
   const columnasEval = evaluaciones.map((ev) => {
     const colClass = [
@@ -115,7 +122,7 @@ const NotasGrid = ({
         />
       ),
       key: ev.id,
-      width: 148,
+      width: ANCHO_COL_EVAL,
       align: 'center',
       className: colClass,
       onHeaderCell: thSub,
@@ -133,23 +140,42 @@ const NotasGrid = ({
     };
   });
 
+  const columnaAgregar = {
+    title: (
+      <button
+        type="button"
+        className="cal-notas-grid__add-header cal-notas-grid__add-header--clickable"
+        onClick={onAgregarEvaluacion}
+        disabled={!onAgregarEvaluacion}
+        aria-label="Agregar evaluación"
+      >
+        <PlusOutlined aria-hidden />
+      </button>
+    ),
+    key: 'agregar',
+    width: ANCHO_COL_AGREGAR,
+    align: 'center',
+    className: 'cal-notas-grid__col-add',
+    onHeaderCell: thSub,
+    onCell: () => ({ className: 'cal-notas-grid__col-add' }),
+    render: () => null,
+  };
+
+  /** Absorbe el ancho sobrante dentro del grupo bimestre (evita que “Estudiante” se estire). */
+  const columnaEspacioBimestre = {
+    title: null,
+    key: 'bim-espacio',
+    className: 'cal-notas-grid__col-bim-espacio',
+    onHeaderCell: thSub,
+    onCell: () => ({ className: 'cal-notas-grid__col-bim-espacio' }),
+    render: () => null,
+  };
+
   const grupoBimestre = {
     title: <BimestreGrupoHead titulo={bimestreTitulo} />,
     className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo',
     onHeaderCell: () => ({ className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo' }),
-    children:
-      columnasEval.length > 0
-        ? columnasEval
-        : [
-            {
-              title: <span className="cal-notas-grid__th-sub-text">Sin evaluaciones</span>,
-              key: 'sin-eval',
-              width: 220,
-              className: 'cal-notas-grid__col-sin-eval',
-              onHeaderCell: thSub,
-              render: () => <span className="cal-notas-grid__celda-vacia">—</span>,
-            },
-          ],
+    children: [...columnasEval, columnaEspacioBimestre, columnaAgregar],
   };
 
   const columns = [
@@ -157,7 +183,7 @@ const NotasGrid = ({
       title: 'Nro',
       dataIndex: 'nro',
       key: 'nro',
-      width: 52,
+      width: ANCHO_COL_NRO,
       fixed: 'left',
       align: 'center',
       className: 'cal-notas-grid__col-nro',
@@ -168,36 +194,21 @@ const NotasGrid = ({
       title: 'Estudiante',
       dataIndex: 'nombre',
       key: 'estudiante',
-      width: 280,
-      fixed: 'left',
+      width: ANCHO_COL_ESTUDIANTE,
+      ...(fijarColumnaEstudiante ? { fixed: 'left' } : {}),
       ellipsis: true,
       className: 'cal-notas-grid__col-estudiante',
       onHeaderCell: thEst,
       render: renderEstudiante,
     },
     grupoBimestre,
-    {
-      title: (
-        <button
-          type="button"
-          className="cal-notas-grid__add-header cal-notas-grid__add-header--clickable"
-          onClick={onAgregarEvaluacion}
-          disabled={!onAgregarEvaluacion}
-          aria-label="Agregar evaluación"
-        >
-          <PlusOutlined aria-hidden />
-        </button>
-      ),
-      key: 'agregar',
-      width: 56,
-      fixed: 'right',
-      align: 'center',
-      className: 'cal-notas-grid__col-add',
-      onHeaderCell: thEst,
-      onCell: () => ({ className: 'cal-notas-grid__col-add' }),
-      render: () => null,
-    },
   ];
+
+  const anchoFijoIzquierda = ANCHO_COL_NRO + ANCHO_COL_ESTUDIANTE;
+  const anchoMinimoBimestre =
+    evaluaciones.length * ANCHO_COL_EVAL + ANCHO_COL_AGREGAR + 80;
+  const anchoMinimoTabla = anchoFijoIzquierda + anchoMinimoBimestre;
+  const requiereScroll = anchoMinimoTabla > 720;
 
   return (
     <div className="cal-notas-grid-wrap">
@@ -208,7 +219,8 @@ const NotasGrid = ({
         pagination={false}
         size="small"
         bordered
-        scroll={{ x: 'max-content' }}
+        tableLayout="fixed"
+        scroll={requiereScroll ? { x: anchoMinimoTabla } : undefined}
         locale={{ emptyText: 'Sin estudiantes matriculados en el curso' }}
       />
     </div>
