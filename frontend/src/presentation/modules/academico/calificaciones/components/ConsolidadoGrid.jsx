@@ -247,13 +247,13 @@ const ConsolidadoGrid = ({
       key: 'nro',
       width: 52,
       align: 'center',
-      fixed: 'left',
       className: 'cal-consolidado-grid__col-nro',
       onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-est' }),
     },
     {
       title: 'Estudiante',
       key: 'estudiante',
+      fixed: 'left',
       onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-est' }),
       children: [
         {
