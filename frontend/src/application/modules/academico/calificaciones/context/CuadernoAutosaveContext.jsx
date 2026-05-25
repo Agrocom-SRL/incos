@@ -1,5 +1,6 @@
 /**
  * Registro agregado de cambios locales del cuaderno (persistencia al pulsar Guardar notas).
+ * Registry y footer en contextos separados para no re-renderizar celdas cada 5 s.
  */
 
 import {
@@ -13,7 +14,8 @@ import {
   useState,
 } from 'react';
 
-const CuadernoAutosaveContext = createContext(null);
+const CuadernoRegistryContext = createContext(null);
+const CuadernoFooterContext = createContext(null);
 
 const GUARDADO_VISIBLE_MS = 30_000;
 
@@ -21,14 +23,23 @@ export const CuadernoAutosaveProvider = ({ children }) => {
   const cellsRef = useRef(new Map());
   const [lastGuardadoAt, setLastGuardadoAt] = useState(null);
   const [guardandoBimestre, setGuardandoBimestre] = useState(false);
-  const [tick, bump] = useReducer((n) => n + 1, 0);
+  const [registryTick, bumpRegistry] = useReducer((n) => n + 1, 0);
+  const [footerClockTick, setFooterClockTick] = useState(0);
 
   const registerCell = useCallback((cellKey, snapshot) => {
+    const prev = cellsRef.current.get(cellKey);
+    const pendienteAhora = Boolean(snapshot.necesitaGuardar?.());
+    const pendienteAntes = Boolean(prev?.necesitaGuardar?.());
+    const estadoCambio = prev?.estado !== snapshot.estado;
+
     cellsRef.current.set(cellKey, {
       ...snapshot,
       cellKey,
     });
-    bump();
+
+    if (!prev || pendienteAhora !== pendienteAntes || estadoCambio) {
+      bumpRegistry();
+    }
   }, []);
 
   const collectNotasParaGuardar = useCallback(() => {
@@ -54,32 +65,35 @@ export const CuadernoAutosaveProvider = ({ children }) => {
       }
     }
     setLastGuardadoAt(Date.now());
-    bump();
+    bumpRegistry();
   }, []);
 
   const resetEvaluacionRegistro = useCallback((evaluacionId) => {
+    let huboCambio = false;
     for (const [key, cell] of cellsRef.current.entries()) {
       if (cell.evaluacionId === evaluacionId) {
         cellsRef.current.delete(key);
+        huboCambio = true;
       }
     }
-    bump();
+    if (huboCambio) bumpRegistry();
   }, []);
 
   const unregisterCell = useCallback((cellKey) => {
+    if (!cellsRef.current.has(cellKey)) return;
     cellsRef.current.delete(cellKey);
-    bump();
+    bumpRegistry();
   }, []);
 
   useEffect(() => {
-    const id = setInterval(() => bump(), 5000);
+    const id = setInterval(() => setFooterClockTick((n) => n + 1), 5000);
     return () => clearInterval(id);
   }, []);
 
   const hayCambiosPendientes = useMemo(() => {
     return [...cellsRef.current.values()].some((c) => c.necesitaGuardar?.());
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- tick al editar celdas
-  }, [tick]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- registryTick al editar celdas
+  }, [registryTick]);
 
   const footerState = useMemo(() => {
     if (guardandoBimestre) {
@@ -98,14 +112,12 @@ export const CuadernoAutosaveProvider = ({ children }) => {
     }
 
     return { tipo: 'sin-cambios' };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- tick refresca "hace X seg"
-  }, [tick, lastGuardadoAt, guardandoBimestre]);
+  }, [footerClockTick, registryTick, lastGuardadoAt, guardandoBimestre]);
 
-  const value = useMemo(
+  const registryValue = useMemo(
     () => ({
       registerCell,
       unregisterCell,
-      footerState,
       guardandoBimestre,
       setGuardandoBimestre,
       collectNotasParaGuardar,
@@ -116,7 +128,6 @@ export const CuadernoAutosaveProvider = ({ children }) => {
     [
       registerCell,
       unregisterCell,
-      footerState,
       guardandoBimestre,
       collectNotasParaGuardar,
       marcarNotasGuardadasEnLote,
@@ -126,12 +137,14 @@ export const CuadernoAutosaveProvider = ({ children }) => {
   );
 
   return (
-    <CuadernoAutosaveContext.Provider value={value}>{children}</CuadernoAutosaveContext.Provider>
+    <CuadernoRegistryContext.Provider value={registryValue}>
+      <CuadernoFooterContext.Provider value={footerState}>{children}</CuadernoFooterContext.Provider>
+    </CuadernoRegistryContext.Provider>
   );
 };
 
 export const useCuadernoAutosaveRegistry = () => {
-  const ctx = useContext(CuadernoAutosaveContext);
+  const ctx = useContext(CuadernoRegistryContext);
   if (!ctx) {
     throw new Error('useCuadernoAutosaveRegistry debe usarse dentro de CuadernoAutosaveProvider');
   }
@@ -139,6 +152,9 @@ export const useCuadernoAutosaveRegistry = () => {
 };
 
 export const useCuadernoFooterState = () => {
-  const { footerState } = useCuadernoAutosaveRegistry();
+  const footerState = useContext(CuadernoFooterContext);
+  if (footerState == null) {
+    throw new Error('useCuadernoFooterState debe usarse dentro de CuadernoAutosaveProvider');
+  }
   return footerState;
 };

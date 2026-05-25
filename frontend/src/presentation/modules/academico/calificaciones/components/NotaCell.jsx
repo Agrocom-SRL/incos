@@ -2,7 +2,7 @@
  * Celda de nota — cambios en memoria hasta Guardar notas del bimestre.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo } from 'react';
 import { InputNumber } from 'antd';
 import { useNotaAutosave } from '@application-academico/calificaciones/hooks/useNotaAutosave.js';
 import { useCuadernoAutosaveRegistry } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
@@ -126,4 +126,4 @@ const NotaCell = ({
   );
 };
 
-export default NotaCell;
+export default memo(NotaCell);

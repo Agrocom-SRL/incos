@@ -45,6 +45,14 @@ const BimestreGrupoHead = ({
   </div>
 );
 
+const EvaluacionTitulo = ({ nombre }) => (
+  <Tooltip title={nombre} placement="top">
+    <div className="cal-notas-grid__col-head-tooltip">
+      <span className="cal-notas-grid__col-head-text">{nombre}</span>
+    </div>
+  </Tooltip>
+);
+
 const EvaluacionColumnHead = ({
   ev,
   soloLectura,
@@ -55,7 +63,7 @@ const EvaluacionColumnHead = ({
   if (soloLectura) {
     return (
       <div className="cal-notas-grid__eval-head">
-        <span className="cal-notas-grid__col-head-text">{ev.nombre}</span>
+        <EvaluacionTitulo nombre={ev.nombre} />
         {ev.puntos != null ? (
           <span className="cal-notas-grid__col-ponderacion">{ev.puntos} pts</span>
         ) : null}
@@ -93,9 +101,7 @@ const EvaluacionColumnHead = ({
   return (
     <div className="cal-notas-grid__eval-head">
       <div className="cal-notas-grid__eval-head-row">
-        <span className="cal-notas-grid__col-head-text" title={ev.nombre}>
-          {ev.nombre}
-        </span>
+        <EvaluacionTitulo nombre={ev.nombre} />
         <Dropdown
           menu={{ items: menuItems, onClick: onMenuClick }}
           trigger={['click']}

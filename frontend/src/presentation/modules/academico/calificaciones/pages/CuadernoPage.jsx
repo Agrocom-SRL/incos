@@ -410,22 +410,24 @@ const CuadernoPage = () => {
         </Spin>
       </MainContent>
 
-      <EvaluacionDrawer
-        abierto={drawerAbierto}
-        modo={drawerModo}
-        evaluacion={evaluacionEditar}
-        cursoId={cursoId}
-        bimestre={bimestreActivo}
-        evaluacionesActuales={evaluaciones}
-        estudiantes={estudiantes}
-        onCerrar={cerrarDrawer}
-        onGuardado={handleGuardado}
-        onEliminado={handleEliminado}
-        crearEvaluacion={crearEvaluacion}
-        editarEvaluacion={editarEvaluacion}
-        cuotaTeorico={cuotaTeorico}
-        cuotaPractico={cuotaPractico}
-      />
+      {drawerAbierto ? (
+        <EvaluacionDrawer
+          abierto
+          modo={drawerModo}
+          evaluacion={evaluacionEditar}
+          cursoId={cursoId}
+          bimestre={bimestreActivo}
+          evaluacionesActuales={evaluaciones}
+          estudiantes={estudiantes}
+          onCerrar={cerrarDrawer}
+          onGuardado={handleGuardado}
+          onEliminado={handleEliminado}
+          crearEvaluacion={crearEvaluacion}
+          editarEvaluacion={editarEvaluacion}
+          cuotaTeorico={cuotaTeorico}
+          cuotaPractico={cuotaPractico}
+        />
+      ) : null}
     </Flex>
   );
 };

@@ -1,6 +1,8 @@
 /* Calificaciones — tokens locales del cuaderno (mapean variables globales del proyecto) */
 .cal-cuaderno,
-.cal-cuaderno-hoja {
+.cal-cuaderno-hoja,
+/* Drawer en portal (fuera de .cal-cuaderno): necesita los mismos tokens */
+.ant-drawer.cal-ajustes-drawer {
   --cuaderno-verde-tenue: #e8f5ec;
   --cuaderno-verde-medio: #6db088;
   --cuaderno-verde-oscuro: var(--color-primary, #196b45);
@@ -576,7 +578,8 @@
   flex-direction: column;
   align-items: stretch;
   min-width: 0;
-  max-width: var(--cal-col-eval-max, 130px);
+  width: 100%;
+  max-width: 100%;
   margin-inline: auto;
 }
 
@@ -590,16 +593,31 @@
   box-sizing: border-box;
 }
 
-.cal-notas-grid__eval-head .cal-notas-grid__col-head-text {
+.cal-notas-grid__eval-head .cal-notas-grid__col-head-tooltip,
+.cal-notas-grid__eval-head .ant-tooltip-open {
   flex: 1;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  display: block;
   white-space: normal;
+}
+
+.cal-notas-grid__eval-head .cal-notas-grid__col-head-text {
+  display: -webkit-box;
+  width: 100%;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
   word-break: break-word;
   text-align: left;
   line-height: 1.35;
   font-weight: 600;
   font-size: 14px;
   color: #fff;
+  cursor: default;
 }
 
 .cal-notas-grid__col-ponderacion {
@@ -768,10 +786,19 @@
   border-bottom: 1px solid var(--cuaderno-borde-suave) !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-sub--eval {
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-sub--eval,
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-eval {
   background: var(--cuaderno-verde-acento) !important;
   color: #fff !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
+  white-space: normal !important;
+  overflow: visible;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-sub--eval .ant-table-cell,
+.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-eval .ant-table-cell {
+  white-space: normal !important;
+  overflow: visible;
 }
 
 .cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-bim-espacio,
@@ -1294,6 +1321,18 @@
   border-color: var(--cuaderno-verde-acento) !important;
 }
 
+.ant-drawer.cal-ajustes-drawer .cal-eval-drawer__btn-eliminar.ant-btn-variant-outlined {
+  color: #fecaca !important;
+  border-color: #f87171 !important;
+  background: var(--ant-color-error-active) !important;
+}
+
+.ant-drawer.cal-ajustes-drawer .cal-eval-drawer__btn-eliminar.ant-btn-variant-outlined:hover {
+  color: #fff !important;
+  border-color: #ef4444 !important;
+  background: var(--ant-color-error) !important;
+}
+
 .cal-eval-drawer__segmented.ant-segmented {
   padding: 4px;
   background: var(--ant-color-fill-tertiary, #f0f0f0);
@@ -1322,7 +1361,11 @@
 
 .cal-eval-drawer__puntos-item,
 .cal-eval-drawer__puntos-item .ant-form-item-control-input,
-.cal-eval-drawer__puntos-item .ant-form-item-control-input-content {
+.cal-eval-drawer__puntos-item .ant-form-item-control-input-content,
+.cal-eval-drawer__puntos-field,
+.cal-eval-drawer__puntos-field .ant-form-item-row,
+.cal-eval-drawer__puntos-field .ant-form-item-control-input,
+.cal-eval-drawer__puntos-field .ant-form-item-control-input-content {
   width: 100%;
 }
 
@@ -1363,7 +1406,7 @@
   border-radius: 10px;
   margin: 0 0 4px;
   border: 1px solid rgba(109, 176, 136, 0.35);
-  background: var(--cuaderno-verde-tenue);
+  background: var(--cuaderno-verde-tenue) !important;
 }
 
 .cal-eval-drawer__cuota--warn {
@@ -1397,29 +1440,60 @@
   font-variant-numeric: tabular-nums;
 }
 
-.cal-eval-drawer__cuota-track {
+.cal-eval-drawer__cuota-hint {
   display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cuaderno-texto-medio, #6b7280);
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(109, 176, 136, 0.25);
+}
+
+.cal-eval-drawer__cuota-hint .anticon {
+  margin-top: 2px;
+  color: var(--cuaderno-verde-medio);
+  flex-shrink: 0;
+}
+
+.cal-eval-drawer__cuota-hint strong {
+  color: var(--cuaderno-verde-oscuro);
+  font-weight: 700;
+}
+
+.cal-eval-drawer__cuota-track {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
   width: 100%;
-  height: 10px;
+  height: 12px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.85);
   box-shadow: inset 0 0 0 1px rgba(25, 107, 69, 0.12);
 }
 
 .cal-eval-drawer__cuota-fill {
   display: block;
   height: 100%;
+  flex: 0 0 auto;
+  flex-shrink: 0;
   min-width: 0;
-  transition: width 0.2s ease;
+  transition: width 0.25s ease;
 }
 
 .cal-eval-drawer__cuota-fill--otras {
-  background: var(--cuaderno-verde-medio);
+  background: var(--cuaderno-verde-medio, #6db088);
 }
 
 .cal-eval-drawer__cuota-fill--esta {
-  background: var(--cuaderno-verde-oscuro);
+  background: var(--cuaderno-verde-oscuro, #196b45);
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.35);
 }
 
 .cal-eval-drawer__cuota-fill--exceso {

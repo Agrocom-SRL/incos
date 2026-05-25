@@ -2,7 +2,7 @@
  * Drawer crear / editar actividad del bimestre — estilo cal-ajustes-drawer.
  */
 
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Button,
@@ -21,6 +21,7 @@ import {
   CalendarOutlined,
   CheckOutlined,
   DeleteOutlined,
+  InfoCircleOutlined,
   PieChartOutlined,
   TagsOutlined,
 } from '@ant-design/icons';
@@ -45,22 +46,6 @@ const COMPONENTES = [
   { label: 'Práctico', value: 'PRACTICO' },
 ];
 
-const PuntosInput = ({ max, value, onChange, ...rest }) => (
-  <Space.Compact block className="cal-eval-drawer__puntos-compact">
-    <InputNumber
-      {...rest}
-      value={value}
-      onChange={onChange}
-      min={1}
-      max={max > 0 ? max : undefined}
-      precision={0}
-      step={1}
-      className="cal-eval-drawer__puntos-input"
-    />
-    <span className="cal-eval-drawer__puntos-suffix">pts</span>
-  </Space.Compact>
-);
-
 const CuotaActividadProgress = memo(({
   componente,
   cuotaComponente,
@@ -70,14 +55,19 @@ const CuotaActividadProgress = memo(({
   const etiqueta = componente === 'PRACTICO' ? 'Práctico' : 'Teórico';
   const cuota = Math.max(1, Math.round(Number(cuotaComponente) || 1));
   const sumaOtras = Math.max(0, Math.round(Number(sumaOtrasActividades) || 0));
-  const puntosEsta = Math.max(0, Math.round(Number(puntosActividad) || 0));
+
+  const puntosRaw = Number(puntosActividad);
+  const puntosEsta = Number.isFinite(puntosRaw) && puntosRaw > 0 ? puntosRaw : 0;
+
   const sumaTotal = sumaOtras + puntosEsta;
   const maxParaEsta = Math.max(0, cuota - sumaOtras);
   const restanteEsta = Math.max(0, maxParaEsta - puntosEsta);
   const excede = sumaTotal > cuota;
 
-  const pctOtras = Math.min(100, (sumaOtras / cuota) * 100);
-  const pctEsta = Math.min(100 - pctOtras, (puntosEsta / cuota) * 100);
+  const pctOtras = Math.min(100, Math.max(0, (sumaOtras / cuota) * 100));
+  const pctEsta = excede
+    ? Math.max(0, 100 - pctOtras)
+    : Math.min(100, Math.max(0, (puntosEsta / cuota) * 100));
   const pctExceso = excede ? Math.min(100, ((sumaTotal - cuota) / cuota) * 100) : 0;
 
   const estado = excede ? 'warn' : sumaTotal === cuota ? 'ok-full' : 'ok';
@@ -87,7 +77,7 @@ const CuotaActividadProgress = memo(({
       <div className="cal-eval-drawer__cuota-header">
         <span className="cal-eval-drawer__cuota-titulo">Componente {etiqueta}</span>
         <span className="cal-eval-drawer__cuota-total">
-          <strong>{sumaTotal}</strong> / {cuota} pts
+          <strong>{Math.round(sumaTotal)}</strong> / {cuota} pts
         </span>
       </div>
 
@@ -96,7 +86,7 @@ const CuotaActividadProgress = memo(({
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={cuota}
-        aria-valuenow={Math.min(sumaTotal, cuota)}
+        aria-valuenow={Math.min(Math.round(sumaTotal), cuota)}
         aria-label={`Puntos asignados en el componente ${etiqueta}`}
       >
         <span
@@ -119,7 +109,10 @@ const CuotaActividadProgress = memo(({
         {excede ? (
           <>
             Superás la cuota del componente {etiqueta} por{' '}
-            <strong className="cal-eval-drawer__cuota-restante">{sumaTotal - cuota} pts</strong>.
+            <strong className="cal-eval-drawer__cuota-restante">
+              {Math.round(sumaTotal - cuota)} pts
+            </strong>
+            .
           </>
         ) : estado === 'ok-full' ? (
           <>
@@ -133,7 +126,9 @@ const CuotaActividadProgress = memo(({
               <>
                 {' '}
                 · te quedan{' '}
-                <strong className="cal-eval-drawer__cuota-restante">{restanteEsta} pts</strong>
+                <strong className="cal-eval-drawer__cuota-restante">
+                  {Math.round(restanteEsta)} pts
+                </strong>
               </>
             ) : null}
             .
@@ -145,6 +140,210 @@ const CuotaActividadProgress = memo(({
 });
 
 CuotaActividadProgress.displayName = 'CuotaActividadProgress';
+
+const cuotaParaComponente = (componente, cuotaTeorico, cuotaPractico) =>
+  componente === 'PRACTICO' ? Number(cuotaPractico) || 70 : Number(cuotaTeorico) || 30;
+
+const ComponenteCuotaHint = memo(
+  ({ form, cuotaTeorico, cuotaPractico, evaluacionesActuales, evaluacionIdExcluir }) => {
+    const componenteActivo = Form.useWatch('componente', form) ?? 'TEORICO';
+    const cuotaComponente = cuotaParaComponente(componenteActivo, cuotaTeorico, cuotaPractico);
+    const sumaOtrasActividades = calcularSumaPuntosComponente(
+      evaluacionesActuales,
+      componenteActivo,
+      0,
+      evaluacionIdExcluir,
+    );
+
+    return (
+      <p className="cal-eval-drawer__cuota-hint">
+        <InfoCircleOutlined aria-hidden />
+        <span>
+          Suma de otras actividades ya creadas: <strong>{sumaOtrasActividades} pts</strong> · cuota
+          total: <strong>{cuotaComponente} pts</strong>
+        </span>
+      </p>
+    );
+  },
+);
+
+ComponenteCuotaHint.displayName = 'ComponenteCuotaHint';
+
+const EvaluacionPuntosField = memo(
+  ({ form, cuotaTeorico, cuotaPractico, evaluacionesActuales, evaluacionIdExcluir }) => {
+    const componenteActivo = Form.useWatch('componente', form) ?? 'TEORICO';
+    const puntosWatch = Form.useWatch('puntos', form);
+    const puntosActuales = Number(puntosWatch ?? 0) || 0;
+    const cuotaComponente = cuotaParaComponente(componenteActivo, cuotaTeorico, cuotaPractico);
+    const sumaOtrasActividades = calcularSumaPuntosComponente(
+      evaluacionesActuales,
+      componenteActivo,
+      0,
+      evaluacionIdExcluir,
+    );
+    const excedeCuotaInput =
+      puntosActuales > 0 && sumaOtrasActividades + puntosActuales > cuotaComponente;
+
+    return (
+      <div className="cal-eval-drawer__puntos-item">
+        <Form.Item
+          label="Calificación de la evaluación"
+          required
+          className="cal-eval-drawer__puntos-field"
+        >
+          <Space.Compact block className="cal-eval-drawer__puntos-compact">
+            <Form.Item
+              name="puntos"
+              noStyle
+              validateTrigger={['onSubmit']}
+              rules={[{ required: true, message: 'Ingresá los puntos' }]}
+            >
+              <InputNumber
+                min={1}
+                precision={0}
+                step={1}
+                className="cal-eval-drawer__puntos-input"
+                status={excedeCuotaInput ? 'error' : undefined}
+              />
+            </Form.Item>
+            <span className="cal-eval-drawer__puntos-suffix">pts</span>
+          </Space.Compact>
+        </Form.Item>
+      </div>
+    );
+  },
+);
+
+EvaluacionPuntosField.displayName = 'EvaluacionPuntosField';
+
+const CuotaProgressWatcher = memo(
+  ({
+    form,
+    cuotaTeorico,
+    cuotaPractico,
+    evaluacionesActuales,
+    evaluacionIdExcluir,
+    onExcedeChange,
+  }) => {
+    const componenteActivo = Form.useWatch('componente', form) ?? 'TEORICO';
+    const puntosWatch = Form.useWatch('puntos', form);
+    const puntosActuales = Number(puntosWatch ?? 0) || 0;
+    const cuotaComponente = cuotaParaComponente(componenteActivo, cuotaTeorico, cuotaPractico);
+    const sumaOtrasActividades = calcularSumaPuntosComponente(
+      evaluacionesActuales,
+      componenteActivo,
+      0,
+      evaluacionIdExcluir,
+    );
+    const excede =
+      puntosActuales > 0 && sumaOtrasActividades + puntosActuales > cuotaComponente;
+
+    useEffect(() => {
+      onExcedeChange(excede);
+    }, [excede, onExcedeChange]);
+
+    return (
+      <CuotaActividadProgress
+        componente={componenteActivo}
+        cuotaComponente={cuotaComponente}
+        sumaOtrasActividades={sumaOtrasActividades}
+        puntosActividad={puntosActuales}
+      />
+    );
+  },
+);
+
+CuotaProgressWatcher.displayName = 'CuotaProgressWatcher';
+
+const ComponenteEvaluacionesFields = memo(
+  ({
+    form,
+    cuotaTeorico,
+    cuotaPractico,
+    evaluacionesActuales,
+    evaluacionIdExcluir,
+    onExcedeChange,
+  }) => (
+    <>
+      <Form.Item
+        name="componente"
+        label="Componente"
+        rules={[{ required: true, message: 'Seleccioná un componente' }]}
+      >
+        <Segmented options={COMPONENTES} block className="cal-eval-drawer__segmented" />
+      </Form.Item>
+
+      <ComponenteCuotaHint
+        form={form}
+        cuotaTeorico={cuotaTeorico}
+        cuotaPractico={cuotaPractico}
+        evaluacionesActuales={evaluacionesActuales}
+        evaluacionIdExcluir={evaluacionIdExcluir}
+      />
+
+      <EvaluacionPuntosField
+        form={form}
+        cuotaTeorico={cuotaTeorico}
+        cuotaPractico={cuotaPractico}
+        evaluacionesActuales={evaluacionesActuales}
+        evaluacionIdExcluir={evaluacionIdExcluir}
+      />
+
+      <CuotaProgressWatcher
+        form={form}
+        cuotaTeorico={cuotaTeorico}
+        cuotaPractico={cuotaPractico}
+        evaluacionesActuales={evaluacionesActuales}
+        evaluacionIdExcluir={evaluacionIdExcluir}
+        onExcedeChange={onExcedeChange}
+      />
+    </>
+  ),
+);
+
+ComponenteEvaluacionesFields.displayName = 'ComponenteEvaluacionesFields';
+
+const EvaluacionDrawerFooter = ({
+  esEditar,
+  guardando,
+  eliminando,
+  excedeCuota,
+  onCerrar,
+  onGuardar,
+  onEliminar,
+}) => (
+  <div className="cal-ajustes-drawer__footer cal-eval-drawer__footer">
+    {esEditar ? (
+      <Button
+        variant="outlined"
+        color="danger"
+        icon={<DeleteOutlined />}
+        onClick={onEliminar}
+        loading={eliminando}
+        disabled={guardando}
+        className="cal-eval-drawer__btn-eliminar"
+      >
+        Eliminar
+      </Button>
+    ) : (
+      <span className="cal-ajustes-drawer__footer-count cal-ajustes-drawer__footer-count--empty" />
+    )}
+    <div className="cal-ajustes-drawer__footer-actions cal-eval-drawer__footer-actions">
+      <Button onClick={onCerrar} disabled={guardando || eliminando}>
+        Cancelar
+      </Button>
+      <Button
+        type="primary"
+        className="cal-ajustes-drawer__btn-guardar cal-eval-drawer__btn-primary"
+        loading={guardando}
+        disabled={eliminando || excedeCuota}
+        onClick={onGuardar}
+      >
+        {esEditar ? 'Guardar cambios' : 'Agregar actividad'}
+      </Button>
+    </div>
+  </div>
+);
 
 const EvaluacionDrawer = ({
   abierto,
@@ -167,54 +366,52 @@ const EvaluacionDrawer = ({
   const [guardando, setGuardando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState(null);
+  const [excedeCuota, setExcedeCuota] = useState(false);
 
-  const [componenteWatch, puntosWatch] = Form.useWatch(['componente', 'puntos'], form) ?? [];
   const esEditar = modo === 'editar';
-  const componenteActivo = componenteWatch ?? 'TEORICO';
-  const componentePrevRef = useRef(componenteActivo);
+  const componentePrevRef = useRef('TEORICO');
+  const evaluacionIdExcluir = esEditar ? evaluacion?.id : null;
+
+  const handleExcedeChange = useCallback((excede) => {
+    setExcedeCuota((prev) => (prev === excede ? prev : excede));
+  }, []);
 
   useEffect(() => {
     if (!abierto) return;
 
     setErrorGuardado(null);
+    setExcedeCuota(false);
     if (esEditar && evaluacion) {
-      form.setFieldsValue({
+      const valores = {
         tipoEvaluacionId: evaluacion.tipoEvaluacionId,
         nombre: evaluacion.nombre,
         componente: evaluacion.componente,
-        puntos: evaluacion.puntos,
+        puntos: Number(evaluacion.puntos) || undefined,
         fecha: evaluacion.fecha ? dayjs(evaluacion.fecha) : dayjs(),
-      });
+      };
+      form.setFieldsValue(valores);
+      componentePrevRef.current = evaluacion.componente ?? 'TEORICO';
     } else {
       form.resetFields();
-      form.setFieldsValue({
+      const valores = {
         componente: 'TEORICO',
         fecha: dayjs(),
-      });
+      };
+      form.setFieldsValue(valores);
+      componentePrevRef.current = 'TEORICO';
     }
-    componentePrevRef.current =
-      esEditar && evaluacion?.componente ? evaluacion.componente : 'TEORICO';
+    setExcedeCuota(false);
   }, [abierto, esEditar, evaluacion, form]);
 
-  const cuotaComponente =
-    componenteActivo === 'PRACTICO' ? Number(cuotaPractico) || 70 : Number(cuotaTeorico) || 30;
-
-  const sumaOtrasActividades = calcularSumaPuntosComponente(
-    evaluacionesActuales,
-    componenteActivo,
-    0,
-    esEditar ? evaluacion?.id : null,
-  );
-
-  const puntosActuales = Math.round(Number(puntosWatch || 0));
-  const sumaTotalComponente = sumaOtrasActividades + puntosActuales;
-  const maxPuntosEstaActividad = Math.max(0, cuotaComponente - sumaOtrasActividades);
-
-  useEffect(() => {
-    if (!abierto || componentePrevRef.current === componenteActivo) return;
-    componentePrevRef.current = componenteActivo;
-    form.setFields([{ name: 'puntos', errors: [] }]);
-  }, [abierto, componenteActivo, form]);
+  const handleValuesChange = (changed) => {
+    if ('componente' in changed) {
+      const next = changed.componente ?? 'TEORICO';
+      if (componentePrevRef.current !== next) {
+        componentePrevRef.current = next;
+        form.setFields([{ name: 'puntos', errors: [] }]);
+      }
+    }
+  };
 
   const handleCerrar = () => {
     if (!guardando && !eliminando) onCerrar();
@@ -243,9 +440,7 @@ const EvaluacionDrawer = ({
       const puntos = Number(values.puntos);
 
       if (!Number.isInteger(puntos) || puntos < 1) {
-        form.setFields([
-          { name: 'puntos', errors: ['Los puntos deben ser un entero ≥ 1'] },
-        ]);
+        form.setFields([{ name: 'puntos', errors: ['Los puntos deben ser un entero ≥ 1'] }]);
         return;
       }
       if (puntos > maxAlGuardar) {
@@ -326,38 +521,6 @@ const EvaluacionDrawer = ({
 
   const tituloDrawer = esEditar ? 'Editar actividad' : 'Agregar actividad';
 
-  const footer = (
-    <div className="cal-ajustes-drawer__footer cal-eval-drawer__footer">
-      {esEditar ? (
-        <Button
-          danger
-          icon={<DeleteOutlined />}
-          onClick={confirmarEliminar}
-          loading={eliminando}
-          disabled={guardando}
-        >
-          Eliminar
-        </Button>
-      ) : (
-        <span className="cal-ajustes-drawer__footer-count cal-ajustes-drawer__footer-count--empty" />
-      )}
-      <div className="cal-ajustes-drawer__footer-actions cal-eval-drawer__footer-actions">
-        <Button onClick={handleCerrar} disabled={guardando || eliminando}>
-          Cancelar
-        </Button>
-        <Button
-          type="primary"
-          className="cal-ajustes-drawer__btn-guardar cal-eval-drawer__btn-primary"
-          loading={guardando}
-          disabled={eliminando || sumaTotalComponente > cuotaComponente}
-          onClick={handleGuardar}
-        >
-          {esEditar ? 'Guardar cambios' : 'Agregar actividad'}
-        </Button>
-      </div>
-    </div>
-  );
-
   return (
     <Drawer
       title={tituloDrawer}
@@ -365,7 +528,17 @@ const EvaluacionDrawer = ({
       open={abierto}
       onClose={handleCerrar}
       destroyOnClose
-      footer={footer}
+      footer={
+        <EvaluacionDrawerFooter
+          esEditar={esEditar}
+          guardando={guardando}
+          eliminando={eliminando}
+          excedeCuota={excedeCuota}
+          onCerrar={handleCerrar}
+          onGuardar={handleGuardar}
+          onEliminar={confirmarEliminar}
+        />
+      }
       rootClassName={calificacionesDrawerRootClassName}
       className={`${calificacionesDrawerSectionClassName} cal-eval-drawer`}
       classNames={calificacionesDrawerClassNames}
@@ -386,7 +559,12 @@ const EvaluacionDrawer = ({
         />
       ) : null}
 
-      <Form form={form} layout="vertical" className="cal-ajustes-drawer__form cal-eval-drawer__form">
+      <Form
+        form={form}
+        layout="vertical"
+        className="cal-ajustes-drawer__form cal-eval-drawer__form"
+        onValuesChange={handleValuesChange}
+      >
         <div className="cal-eval-drawer__bloques">
           <SeccionAjustes
             icon={TagsOutlined}
@@ -440,29 +618,13 @@ const EvaluacionDrawer = ({
               actividades de cada componente no debe superar su cuota.
             </p>
 
-            <Form.Item
-              name="componente"
-              label="Componente"
-              rules={[{ required: true, message: 'Seleccioná un componente' }]}
-            >
-              <Segmented options={COMPONENTES} block className="cal-eval-drawer__segmented" />
-            </Form.Item>
-
-            <Form.Item
-              name="puntos"
-              label="Calificación de la evaluación"
-              className="cal-eval-drawer__puntos-item"
-              validateTrigger={['onSubmit']}
-              rules={[{ required: true, message: 'Ingresá los puntos' }]}
-            >
-              <PuntosInput max={maxPuntosEstaActividad} />
-            </Form.Item>
-
-            <CuotaActividadProgress
-              componente={componenteActivo}
-              cuotaComponente={cuotaComponente}
-              sumaOtrasActividades={sumaOtrasActividades}
-              puntosActividad={puntosActuales}
+            <ComponenteEvaluacionesFields
+              form={form}
+              cuotaTeorico={cuotaTeorico}
+              cuotaPractico={cuotaPractico}
+              evaluacionesActuales={evaluacionesActuales}
+              evaluacionIdExcluir={evaluacionIdExcluir}
+              onExcedeChange={handleExcedeChange}
             />
           </SeccionAjustes>
 
