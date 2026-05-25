@@ -54,15 +54,17 @@ const NotaCell = ({
 
   const handleChange = useCallback(
     (raw) => {
-      const parsed = parseNotaInput(raw, max);
+      const parsed = parseNotaInput(raw);
       if (parsed === undefined && raw != null && raw !== '') return;
       setValor(parsed);
     },
-    [setValor, max],
+    [setValor],
   );
 
   const vacio = valor == null || valor === '';
   const pendiente = estado === 'pendiente';
+  const excedeMaximo =
+    !vacio && Number.isFinite(Number(valor)) && Math.round(Number(valor)) > max;
 
   if (soloLectura && vacio) {
     return (
@@ -74,7 +76,16 @@ const NotaCell = ({
 
   if (soloLectura) {
     return (
-      <span className="cal-nota-cell cal-nota-cell--filled cal-nota-cell--readonly">
+      <span
+        className={[
+          'cal-nota-cell',
+          'cal-nota-cell--filled',
+          'cal-nota-cell--readonly',
+          excedeMaximo ? 'cal-nota-cell--error' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <span className="cal-nota-cell__readonly-valor">{valor}</span>
       </span>
     );
@@ -88,6 +99,7 @@ const NotaCell = ({
         'cal-nota-cell--editable',
         vacio ? 'cal-nota-cell--editable-empty' : '',
         pendiente ? 'cal-nota-cell--pendiente' : '',
+        excedeMaximo ? 'cal-nota-cell--error' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -95,13 +107,20 @@ const NotaCell = ({
       <InputNumber
         className="cal-nota-cell__input"
         min={0}
-        max={max}
         precision={0}
         step={1}
         controls={false}
         value={vacio ? null : valor}
         onChange={handleChange}
-        aria-label={vacio ? 'Puntos sin cargar' : `${valor} de ${max} puntos`}
+        status={excedeMaximo ? 'error' : undefined}
+        aria-label={
+          excedeMaximo
+            ? `${valor} puntos: supera el máximo de ${max} para esta actividad`
+            : vacio
+              ? 'Puntos sin cargar'
+              : `${valor} de ${max} puntos`
+        }
+        aria-invalid={excedeMaximo || undefined}
       />
     </span>
   );

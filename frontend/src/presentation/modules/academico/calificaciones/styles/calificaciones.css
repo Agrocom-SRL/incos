@@ -576,7 +576,7 @@
   flex-direction: column;
   align-items: stretch;
   min-width: 0;
-  max-width: var(--cal-col-eval-max, 200px);
+  max-width: var(--cal-col-eval-max, 130px);
   margin-inline: auto;
 }
 
@@ -600,6 +600,19 @@
   font-weight: 600;
   font-size: 14px;
   color: #fff;
+}
+
+.cal-notas-grid__col-ponderacion {
+  display: block;
+  width: 100%;
+  padding: 0 6px 6px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.02em;
 }
 
 .cal-notas-grid__eval-menu-btn {
@@ -628,7 +641,7 @@
 }
 
 .cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-eval {
-  max-width: var(--cal-col-eval-max, 230px);
+  max-width: var(--cal-col-eval-max, 280px);
 }
 
 .cal-notas-grid__col-actions {
@@ -881,14 +894,14 @@
   font-size: 12px;
   font-weight: 500;
   font-style: italic;
-  color: var(--cuaderno-verde-acento);
+  color: #fff;
   line-height: 1.35;
   text-align: center;
 }
 
 .cal-notas-grid__hint-agregar .anticon {
   font-size: 13px;
-  color: var(--cuaderno-verde-medio);
+  color: #fff;
 }
 
 .cal-notas-grid__th-sub-text {
@@ -955,9 +968,10 @@
 }
 
 .cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-add {
-  background: var(--cuaderno-verde-oscuro) !important;
+  background: var(--cuaderno-verde-acento) !important;
   border-color: rgba(255, 255, 255, 0.2) !important;
   vertical-align: middle !important;
+  border-left: 1px solid var(--cuaderno-verde-tenue) !important;
 }
 
 .cal-notas-grid__col-add {
@@ -1087,8 +1101,20 @@
   }
 }
 
-.cal-nota-cell--error .cal-nota-cell__input.ant-input-number {
+.cal-nota-cell--error .cal-nota-cell__input.ant-input-number,
+.cal-nota-cell--error.cal-nota-cell--readonly .cal-nota-cell__readonly-valor {
   border-color: #ef4444;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.cal-nota-cell--error .cal-nota-cell__input.ant-input-number {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18);
+}
+
+.cal-nota-cell--error .cal-nota-cell__input .ant-input-number-input {
+  color: #b91c1c;
+  font-weight: 600;
 }
 
 .cal-nota-cell__spinner {
@@ -1268,37 +1294,156 @@
   border-color: var(--cuaderno-verde-acento) !important;
 }
 
-.cal-eval-drawer__peso-hint {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 8px;
+.cal-eval-drawer__segmented.ant-segmented {
+  padding: 4px;
+  background: var(--ant-color-fill-tertiary, #f0f0f0);
+  border-radius: 10px;
+}
+
+.cal-eval-drawer__segmented .ant-segmented-item {
+  flex: 1;
+  border-radius: 8px !important;
+  font-weight: 600;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cal-eval-drawer__segmented .ant-segmented-item-selected {
+  background: var(--cuaderno-verde-oscuro, var(--color-primary, #196b45)) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(25, 107, 69, 0.28);
+}
+
+.cal-eval-drawer__segmented .ant-segmented-item-selected .ant-segmented-item-label {
+  color: #fff !important;
+}
+
+.cal-eval-drawer__puntos-item,
+.cal-eval-drawer__puntos-item .ant-form-item-control-input,
+.cal-eval-drawer__puntos-item .ant-form-item-control-input-content {
+  width: 100%;
+}
+
+.cal-eval-drawer__puntos-compact {
+  width: 100%;
+}
+
+.cal-eval-drawer__puntos-compact .cal-eval-drawer__puntos-input.ant-input-number {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.cal-eval-drawer__puntos-compact .cal-eval-drawer__puntos-input .ant-input-number-input {
+  width: 100%;
+}
+
+.cal-eval-drawer__puntos-suffix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 0 12px;
   font-size: 13px;
-  line-height: 1.45;
-  margin: -8px 0 16px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio, #6b7280);
+  background: #fafafa;
+  border: 1px solid var(--cuaderno-borde, #d9d9d9);
+  border-inline-start: none;
+  border-radius: 0 6px 6px 0;
 }
 
-.cal-eval-drawer__peso-hint--ok {
-  background: var(--cuaderno-verde-tenue);
-  color: var(--cuaderno-verde-oscuro);
+.cal-eval-drawer__cuota {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin: 0 0 4px;
   border: 1px solid rgba(109, 176, 136, 0.35);
-}
-
-.cal-eval-drawer__peso-hint--ok-full {
   background: var(--cuaderno-verde-tenue);
-  color: var(--cuaderno-verde-oscuro);
-  border: 1px solid var(--cuaderno-verde-medio);
 }
 
-.cal-eval-drawer__peso-hint--warn {
+.cal-eval-drawer__cuota--warn {
   background: #fef3c7;
-  border: 1px solid #fbbf24;
+  border-color: #fbbf24;
+}
+
+.cal-eval-drawer__cuota--ok-full {
+  border-color: var(--cuaderno-verde-medio);
+}
+
+.cal-eval-drawer__cuota-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-header,
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-meta {
   color: #92400e;
 }
 
-.cal-eval-drawer__peso-icon {
-  margin-top: 2px;
+.cal-eval-drawer__cuota-titulo {
+  font-weight: 600;
+}
+
+.cal-eval-drawer__cuota-total {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-eval-drawer__cuota-track {
+  display: flex;
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(25, 107, 69, 0.12);
+}
+
+.cal-eval-drawer__cuota-fill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  transition: width 0.2s ease;
+}
+
+.cal-eval-drawer__cuota-fill--otras {
+  background: var(--cuaderno-verde-medio);
+}
+
+.cal-eval-drawer__cuota-fill--esta {
+  background: var(--cuaderno-verde-oscuro);
+}
+
+.cal-eval-drawer__cuota-fill--exceso {
+  background: #ef4444;
+}
+
+.cal-eval-drawer__cuota-meta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-eval-drawer__cuota-restante {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-restante {
+  color: #b91c1c;
+}
+
+.cal-eval-drawer__cuota-icon {
+  margin-right: 6px;
   color: var(--cuaderno-verde-oscuro);
 }
 
@@ -1512,10 +1657,6 @@
 
 .cal-eval-drawer__segmented.ant-segmented {
   width: 100%;
-}
-
-.cal-eval-drawer__seccion .cal-eval-drawer__peso-hint {
-  margin-bottom: 16px;
 }
 
 .cal-ajustes-drawer__btn-guardar.ant-btn-primary:not(:disabled) {

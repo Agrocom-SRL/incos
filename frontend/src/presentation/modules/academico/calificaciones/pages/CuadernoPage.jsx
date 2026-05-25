@@ -95,20 +95,20 @@ const CuadernoGrilla = ({
     (ev) => {
       const notasCount = contarNotasCargadas(estudiantes, ev.id);
       Modal.confirm({
-        title: 'Eliminar evaluación',
+        title: 'Eliminar actividad',
         okText: 'Eliminar',
         okType: 'danger',
         cancelText: 'Cancelar',
         content:
           notasCount > 0 ? (
             <span>
-              ¿Eliminar <strong>{ev.nombre}</strong>? Se borrarán <strong>{notasCount}</strong>{' '}
-              notas y se recalcularán los componentes del bimestre. Esta acción no se puede deshacer.
+              ¿Eliminar la actividad <strong>{ev.nombre}</strong>? Se borrarán{' '}
+              <strong>{notasCount}</strong> notas y se recalcularán los componentes del bimestre.
+              Esta acción no se puede deshacer.
             </span>
           ) : (
             <span>
-              ¿Eliminar la evaluación <strong>{ev.nombre}</strong>? Esta acción no se puede
-              deshacer.
+              ¿Eliminar la actividad <strong>{ev.nombre}</strong>? Esta acción no se puede deshacer.
             </span>
           ),
         onOk: async () => {
@@ -122,6 +122,24 @@ const CuadernoGrilla = ({
 
   const handleGuardarBimestre = useCallback(async () => {
     const notas = collectNotasParaGuardar();
+    const maxPorEvaluacion = new Map(
+      evaluaciones.map((ev) => [ev.id, Math.round(Number(ev.puntos) || 100)]),
+    );
+    const hayNotasFueraDeRango = notas.some((n) => {
+      if (n.nota == null || n.nota === '') return false;
+      const max = maxPorEvaluacion.get(n.evaluacionId) ?? 100;
+      return Math.round(Number(n.nota)) > max;
+    });
+
+    if (hayNotasFueraDeRango) {
+      notification.error({
+        title: 'Notas fuera de rango',
+        description:
+          'Hay puntos que superan la calificación asignada a una actividad. Corregí las celdas en rojo antes de guardar.',
+      });
+      return;
+    }
+
     setGuardandoBimestre(true);
     try {
       const res = await CalificacionRepository.guardarNotasCuadernoBimestre(
@@ -153,6 +171,7 @@ const CuadernoGrilla = ({
     bimestreActivo,
     collectNotasParaGuardar,
     cursoId,
+    evaluaciones,
     marcarNotasGuardadasEnLote,
     onRefetchCuaderno,
     setGuardandoBimestre,

@@ -1,15 +1,14 @@
 /**
- * Drawer crear / editar evaluación del bimestre — estilo cal-ajustes-drawer.
+ * Drawer crear / editar actividad del bimestre — estilo cal-ajustes-drawer.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Button,
   DatePicker,
   Drawer,
   Form,
-  Input,
   InputNumber,
   Modal,
   notification,
@@ -17,6 +16,7 @@ import {
   Select,
   Space,
 } from 'antd';
+import { FieldTextarea } from '@atoms';
 import {
   CalendarOutlined,
   CheckOutlined,
@@ -45,6 +45,107 @@ const COMPONENTES = [
   { label: 'Práctico', value: 'PRACTICO' },
 ];
 
+const PuntosInput = ({ max, value, onChange, ...rest }) => (
+  <Space.Compact block className="cal-eval-drawer__puntos-compact">
+    <InputNumber
+      {...rest}
+      value={value}
+      onChange={onChange}
+      min={1}
+      max={max > 0 ? max : undefined}
+      precision={0}
+      step={1}
+      className="cal-eval-drawer__puntos-input"
+    />
+    <span className="cal-eval-drawer__puntos-suffix">pts</span>
+  </Space.Compact>
+);
+
+const CuotaActividadProgress = memo(({
+  componente,
+  cuotaComponente,
+  sumaOtrasActividades,
+  puntosActividad,
+}) => {
+  const etiqueta = componente === 'PRACTICO' ? 'Práctico' : 'Teórico';
+  const cuota = Math.max(1, Math.round(Number(cuotaComponente) || 1));
+  const sumaOtras = Math.max(0, Math.round(Number(sumaOtrasActividades) || 0));
+  const puntosEsta = Math.max(0, Math.round(Number(puntosActividad) || 0));
+  const sumaTotal = sumaOtras + puntosEsta;
+  const maxParaEsta = Math.max(0, cuota - sumaOtras);
+  const restanteEsta = Math.max(0, maxParaEsta - puntosEsta);
+  const excede = sumaTotal > cuota;
+
+  const pctOtras = Math.min(100, (sumaOtras / cuota) * 100);
+  const pctEsta = Math.min(100 - pctOtras, (puntosEsta / cuota) * 100);
+  const pctExceso = excede ? Math.min(100, ((sumaTotal - cuota) / cuota) * 100) : 0;
+
+  const estado = excede ? 'warn' : sumaTotal === cuota ? 'ok-full' : 'ok';
+
+  return (
+    <div className={`cal-eval-drawer__cuota cal-eval-drawer__cuota--${estado}`}>
+      <div className="cal-eval-drawer__cuota-header">
+        <span className="cal-eval-drawer__cuota-titulo">Componente {etiqueta}</span>
+        <span className="cal-eval-drawer__cuota-total">
+          <strong>{sumaTotal}</strong> / {cuota} pts
+        </span>
+      </div>
+
+      <div
+        className="cal-eval-drawer__cuota-track"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={cuota}
+        aria-valuenow={Math.min(sumaTotal, cuota)}
+        aria-label={`Puntos asignados en el componente ${etiqueta}`}
+      >
+        <span
+          className="cal-eval-drawer__cuota-fill cal-eval-drawer__cuota-fill--otras"
+          style={{ width: `${pctOtras}%` }}
+        />
+        <span
+          className="cal-eval-drawer__cuota-fill cal-eval-drawer__cuota-fill--esta"
+          style={{ width: `${pctEsta}%` }}
+        />
+        {excede ? (
+          <span
+            className="cal-eval-drawer__cuota-fill cal-eval-drawer__cuota-fill--exceso"
+            style={{ width: `${pctExceso}%` }}
+          />
+        ) : null}
+      </div>
+
+      <p className="cal-eval-drawer__cuota-meta">
+        {excede ? (
+          <>
+            Superás la cuota del componente {etiqueta} por{' '}
+            <strong className="cal-eval-drawer__cuota-restante">{sumaTotal - cuota} pts</strong>.
+          </>
+        ) : estado === 'ok-full' ? (
+          <>
+            <CheckOutlined className="cal-eval-drawer__cuota-icon" aria-hidden />
+            Cuota del componente {etiqueta} completa ({cuota} pts).
+          </>
+        ) : (
+          <>
+            Podés asignar hasta <strong>{maxParaEsta} pts</strong> en esta evaluación
+            {restanteEsta > 0 ? (
+              <>
+                {' '}
+                · te quedan{' '}
+                <strong className="cal-eval-drawer__cuota-restante">{restanteEsta} pts</strong>
+              </>
+            ) : null}
+            .
+          </>
+        )}
+      </p>
+    </div>
+  );
+});
+
+CuotaActividadProgress.displayName = 'CuotaActividadProgress';
+
 const EvaluacionDrawer = ({
   abierto,
   modo,
@@ -67,9 +168,10 @@ const EvaluacionDrawer = ({
   const [eliminando, setEliminando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState(null);
 
-  const componenteWatch = Form.useWatch('componente', form);
-  const puntosWatch = Form.useWatch('puntos', form);
+  const [componenteWatch, puntosWatch] = Form.useWatch(['componente', 'puntos'], form) ?? [];
   const esEditar = modo === 'editar';
+  const componenteActivo = componenteWatch ?? 'TEORICO';
+  const componentePrevRef = useRef(componenteActivo);
 
   useEffect(() => {
     if (!abierto) return;
@@ -81,50 +183,38 @@ const EvaluacionDrawer = ({
         nombre: evaluacion.nombre,
         componente: evaluacion.componente,
         puntos: evaluacion.puntos,
-        fecha: evaluacion.fecha ? dayjs(evaluacion.fecha) : null,
+        fecha: evaluacion.fecha ? dayjs(evaluacion.fecha) : dayjs(),
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ componente: 'TEORICO' });
+      form.setFieldsValue({
+        componente: 'TEORICO',
+        fecha: dayjs(),
+      });
     }
+    componentePrevRef.current =
+      esEditar && evaluacion?.componente ? evaluacion.componente : 'TEORICO';
   }, [abierto, esEditar, evaluacion, form]);
 
   const cuotaComponente =
-    componenteWatch === 'PRACTICO' ? Number(cuotaPractico) || 70 : Number(cuotaTeorico) || 30;
+    componenteActivo === 'PRACTICO' ? Number(cuotaPractico) || 70 : Number(cuotaTeorico) || 30;
 
-  const sumaPuntos = useMemo(
-    () =>
-      calcularSumaPuntosComponente(
-        evaluacionesActuales,
-        componenteWatch ?? 'TEORICO',
-        puntosWatch ?? 0,
-        esEditar ? evaluacion?.id : null,
-      ),
-    [evaluacionesActuales, componenteWatch, puntosWatch, esEditar, evaluacion?.id],
+  const sumaOtrasActividades = calcularSumaPuntosComponente(
+    evaluacionesActuales,
+    componenteActivo,
+    0,
+    esEditar ? evaluacion?.id : null,
   );
 
-  const bloquePuntos = useMemo(() => {
-    const etiqueta = componenteWatch === 'PRACTICO' ? 'Práctico' : 'Teórico';
-    if (sumaPuntos > cuotaComponente) {
-      return {
-        tipo: 'warn',
-        texto: `Suma actual: ${sumaPuntos} / ${cuotaComponente} pts — supera la cuota del componente ${etiqueta}.`,
-        etiqueta,
-      };
-    }
-    if (sumaPuntos === cuotaComponente) {
-      return {
-        tipo: 'ok-full',
-        texto: `Suma actual: ${sumaPuntos} / ${cuotaComponente} pts — completo`,
-        etiqueta,
-      };
-    }
-    return {
-      tipo: 'ok',
-      texto: `Suma actual del componente ${etiqueta}: ${sumaPuntos} / ${cuotaComponente} pts`,
-      etiqueta,
-    };
-  }, [sumaPuntos, componenteWatch, cuotaComponente]);
+  const puntosActuales = Math.round(Number(puntosWatch || 0));
+  const sumaTotalComponente = sumaOtrasActividades + puntosActuales;
+  const maxPuntosEstaActividad = Math.max(0, cuotaComponente - sumaOtrasActividades);
+
+  useEffect(() => {
+    if (!abierto || componentePrevRef.current === componenteActivo) return;
+    componentePrevRef.current = componenteActivo;
+    form.setFields([{ name: 'puntos', errors: [] }]);
+  }, [abierto, componenteActivo, form]);
 
   const handleCerrar = () => {
     if (!guardando && !eliminando) onCerrar();
@@ -141,18 +231,49 @@ const EvaluacionDrawer = ({
   const handleGuardar = async () => {
     try {
       const values = await form.validateFields();
+      const cuotaAlGuardar =
+        values.componente === 'PRACTICO' ? Number(cuotaPractico) || 70 : Number(cuotaTeorico) || 30;
+      const sumaOtrasAlGuardar = calcularSumaPuntosComponente(
+        evaluacionesActuales,
+        values.componente,
+        0,
+        esEditar ? evaluacion?.id : null,
+      );
+      const maxAlGuardar = Math.max(0, cuotaAlGuardar - sumaOtrasAlGuardar);
+      const puntos = Number(values.puntos);
+
+      if (!Number.isInteger(puntos) || puntos < 1) {
+        form.setFields([
+          { name: 'puntos', errors: ['Los puntos deben ser un entero ≥ 1'] },
+        ]);
+        return;
+      }
+      if (puntos > maxAlGuardar) {
+        form.setFields([
+          {
+            name: 'puntos',
+            errors: [
+              maxAlGuardar > 0
+                ? `Máximo ${maxAlGuardar} pts disponibles en este componente`
+                : 'No quedan puntos disponibles en este componente',
+            ],
+          },
+        ]);
+        return;
+      }
+
       setGuardando(true);
       setErrorGuardado(null);
       const payload = construirPayload(values);
 
       if (esEditar) {
         const actualizada = await editarEvaluacion(evaluacion.id, payload);
-        notification.success({ message: 'Evaluación actualizada' });
+        notification.success({ message: 'Actividad actualizada' });
         onGuardado(actualizada);
         onCerrar();
       } else {
         const creada = await crearEvaluacion(payload);
-        notification.success({ message: 'Evaluación creada' });
+        notification.success({ message: 'Actividad creada' });
         onGuardado(creada);
         onCerrar();
       }
@@ -171,26 +292,26 @@ const EvaluacionDrawer = ({
     const nombre = evaluacion.nombre;
 
     Modal.confirm({
-      title: 'Eliminar evaluación',
+      title: 'Eliminar actividad',
       okText: 'Eliminar',
       okType: 'danger',
       cancelText: 'Cancelar',
       content:
         notasCount > 0 ? (
           <span>
-            ¿Eliminar la evaluación <strong>{nombre}</strong>? Se perderán{' '}
+            ¿Eliminar la actividad <strong>{nombre}</strong>? Se perderán{' '}
             <strong>{notasCount} notas</strong> ya cargadas. Esta acción no se puede deshacer.
           </span>
         ) : (
           <span>
-            ¿Eliminar la evaluación <strong>{nombre}</strong>? Esta acción no se puede deshacer.
+            ¿Eliminar la actividad <strong>{nombre}</strong>? Esta acción no se puede deshacer.
           </span>
         ),
       onOk: async () => {
         setEliminando(true);
         try {
           await onEliminado(evaluacion.id);
-          notification.success({ message: 'Evaluación eliminada' });
+          notification.success({ message: 'Actividad eliminada' });
           onCerrar();
         } catch (err) {
           setErrorGuardado(
@@ -203,7 +324,7 @@ const EvaluacionDrawer = ({
     });
   };
 
-  const tituloDrawer = esEditar ? 'Editar evaluación' : 'Agregar evaluación';
+  const tituloDrawer = esEditar ? 'Editar actividad' : 'Agregar actividad';
 
   const footer = (
     <div className="cal-ajustes-drawer__footer cal-eval-drawer__footer">
@@ -228,10 +349,10 @@ const EvaluacionDrawer = ({
           type="primary"
           className="cal-ajustes-drawer__btn-guardar cal-eval-drawer__btn-primary"
           loading={guardando}
-          disabled={eliminando}
+          disabled={eliminando || sumaTotalComponente > cuotaComponente}
           onClick={handleGuardar}
         >
-          {esEditar ? 'Guardar cambios' : 'Agregar evaluación'}
+          {esEditar ? 'Guardar cambios' : 'Agregar actividad'}
         </Button>
       </div>
     </div>
@@ -280,7 +401,7 @@ const EvaluacionDrawer = ({
 
             <Form.Item
               name="tipoEvaluacionId"
-              label="Tipo de evaluación"
+              label="Tipo de actividad"
               rules={[{ required: true, message: 'Seleccioná un tipo' }]}
             >
               <Select
@@ -299,13 +420,18 @@ const EvaluacionDrawer = ({
                 { max: 200, message: 'Máximo 200 caracteres' },
               ]}
             >
-              <Input placeholder="Ej. Parcial Tema 3, Proyecto web final…" maxLength={200} />
+              <FieldTextarea
+                rows={2}
+                minRows={2}
+                placeholder="Ej. Parcial Tema 3, Proyecto web final…"
+                maxLength={200}
+              />
             </Form.Item>
           </SeccionAjustes>
 
           <SeccionAjustes
             icon={PieChartOutlined}
-            titulo="Componente y puntos"
+            titulo="Componente y evaluaciones"
             className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
@@ -324,46 +450,20 @@ const EvaluacionDrawer = ({
 
             <Form.Item
               name="puntos"
-              label="Puntos de la actividad"
-              rules={[
-                { required: true, message: 'Ingresá los puntos' },
-                {
-                  validator: (_, value) => {
-                    const n = Number(value);
-                    if (value == null || !Number.isInteger(n) || n < 1) {
-                      return Promise.reject(new Error('Los puntos deben ser un entero ≥ 1'));
-                    }
-                    if (n > cuotaComponente) {
-                      return Promise.reject(
-                        new Error(`Máximo ${cuotaComponente} pts para este componente`),
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
+              label="Calificación de la evaluación"
+              className="cal-eval-drawer__puntos-item"
+              validateTrigger={['onSubmit']}
+              rules={[{ required: true, message: 'Ingresá los puntos' }]}
             >
-              <InputNumber
-                min={1}
-                max={cuotaComponente}
-                precision={0}
-                step={1}
-                style={{ width: '100%' }}
-                addonAfter="pts"
-              />
+              <PuntosInput max={maxPuntosEstaActividad} />
             </Form.Item>
 
-            <div
-              className={[
-                'cal-eval-drawer__peso-hint',
-                `cal-eval-drawer__peso-hint--${bloquePuntos.tipo}`,
-              ].join(' ')}
-            >
-              {bloquePuntos.tipo === 'ok-full' ? (
-                <CheckOutlined className="cal-eval-drawer__peso-icon" aria-hidden />
-              ) : null}
-              <span>{bloquePuntos.texto}</span>
-            </div>
+            <CuotaActividadProgress
+              componente={componenteActivo}
+              cuotaComponente={cuotaComponente}
+              sumaOtrasActividades={sumaOtrasActividades}
+              puntosActividad={puntosActuales}
+            />
           </SeccionAjustes>
 
           <SeccionAjustes
@@ -372,15 +472,15 @@ const EvaluacionDrawer = ({
             className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
-              Fecha prevista de la evaluación (opcional). Sirve como referencia en el cuaderno; no
+              Fecha prevista de la actividad (opcional). Sirve como referencia en el cuaderno; no
               bloquea la carga de notas.
             </p>
 
-            <Form.Item name="fecha" label="Fecha de la evaluación">
+            <Form.Item name="fecha" label="Fecha de la actividad">
               <DatePicker
                 style={{ width: '100%' }}
                 format="DD/MM/YYYY"
-                placeholder="Cuándo se rendirá esta evaluación"
+                placeholder="Cuándo se realizará esta actividad"
               />
             </Form.Item>
           </SeccionAjustes>

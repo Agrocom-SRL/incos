@@ -56,6 +56,9 @@ const EvaluacionColumnHead = ({
     return (
       <div className="cal-notas-grid__eval-head">
         <span className="cal-notas-grid__col-head-text">{ev.nombre}</span>
+        {ev.puntos != null ? (
+          <span className="cal-notas-grid__col-ponderacion">{ev.puntos} pts</span>
+        ) : null}
       </div>
     );
   }
@@ -63,7 +66,7 @@ const EvaluacionColumnHead = ({
   const menuItems = [
     {
       key: 'editar',
-      label: 'Editar evaluación',
+      label: 'Editar actividad',
       icon: <EditOutlined />,
     },
     {
@@ -74,7 +77,7 @@ const EvaluacionColumnHead = ({
     },
     {
       key: 'eliminar',
-      label: 'Eliminar evaluación',
+      label: 'Eliminar actividad',
       icon: <DeleteOutlined />,
       danger: true,
     },
@@ -92,9 +95,6 @@ const EvaluacionColumnHead = ({
       <div className="cal-notas-grid__eval-head-row">
         <span className="cal-notas-grid__col-head-text" title={ev.nombre}>
           {ev.nombre}
-          {ev.puntos != null ? (
-            <span className="cal-notas-grid__col-puntos"> ({ev.puntos} pts)</span>
-          ) : null}
         </span>
         <Dropdown
           menu={{ items: menuItems, onClick: onMenuClick }}
@@ -111,6 +111,9 @@ const EvaluacionColumnHead = ({
           </button>
         </Dropdown>
       </div>
+      {ev.puntos != null ? (
+        <span className="cal-notas-grid__col-ponderacion">{ev.puntos} pts</span>
+      ) : null}
     </div>
   );
 };
@@ -129,7 +132,7 @@ const renderEstudiante = (nombre, row) => (
 const ANCHO_COL_NRO = 44;
 const ANCHO_COL_ESTUDIANTE = 300;
 const ANCHO_COL_EVAL = 160;
-const ANCHO_COL_EVAL_MAX = 200;
+const ANCHO_COL_EVAL_MAX = 240;
 const ANCHO_COL_AGREGAR = 56;
 
 const NotasGrid = ({
@@ -198,7 +201,7 @@ const NotasGrid = ({
         className="cal-notas-grid__add-header cal-notas-grid__add-header--clickable"
         onClick={onAgregarEvaluacion}
         disabled={!onAgregarEvaluacion}
-        aria-label="Agregar evaluación"
+        aria-label="Agregar actividad"
       >
         <PlusOutlined aria-hidden />
       </button>
@@ -224,7 +227,7 @@ const NotasGrid = ({
   const columnaHintAgregar = {
     title: (
       <span className="cal-notas-grid__hint-agregar">
-        Presioná <PlusOutlined aria-hidden /> para agregar evaluaciones
+        Presioná <PlusOutlined aria-hidden /> para agregar actividades
       </span>
     ),
     key: 'hint-agregar',

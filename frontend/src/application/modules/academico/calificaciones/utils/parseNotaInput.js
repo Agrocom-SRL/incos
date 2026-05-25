@@ -1,12 +1,11 @@
 /**
- * Valida y normaliza puntos obtenidos en una celda (entero 0..maxPuntos).
+ * Normaliza puntos de una celda (entero ≥ 0). El tope por actividad se valida en la UI.
  * undefined = entrada inválida (ignorar).
  */
 
-export const parseNotaInput = (raw, maxPuntos = 100) => {
+export const parseNotaInput = (raw) => {
   if (raw === null || raw === undefined || raw === '') return null;
   const n = Number(raw);
-  const max = Math.round(Number(maxPuntos));
-  if (Number.isNaN(n) || !Number.isInteger(n) || n < 0 || n > max) return undefined;
+  if (Number.isNaN(n) || !Number.isInteger(n) || n < 0) return undefined;
   return n;
 };
