@@ -359,6 +359,37 @@ class CalificacionRepository {
     }
   }
 
+  async obtenerBimestreConsolidado(asignacionId, bimestre) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.BIMESTRE_CONSOLIDADO(asignacionId, bimestre),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el consolidado del bimestre');
+    }
+  }
+
+  async guardarBimestreConsolidado(asignacionId, bimestre, filas = []) {
+    try {
+      const response = await apiClient.post(
+        CALIFICACIONES_ENDPOINTS.BIMESTRE_CONSOLIDADO(asignacionId, bimestre),
+        { filas },
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar el consolidado del bimestre');
+    }
+  }
+
 }
 
 export default new CalificacionRepository();

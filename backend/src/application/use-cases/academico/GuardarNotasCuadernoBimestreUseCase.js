@@ -10,14 +10,16 @@ import { recalcularNotaFinalMatriculaCurso } from '../../utils/recalcularNotaFin
  */
 export class GuardarNotasCuadernoBimestreUseCase {
   constructor({
-    calificacionRepository,
+    calificacionCoordinacionRepository,
+    calificacionContextoRepository,
     cuadernoRepository,
     evaluationConfigurationRepository,
     teacherRepository,
     authRepository,
     logger,
   }) {
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
@@ -34,7 +36,8 @@ export class GuardarNotasCuadernoBimestreUseCase {
     const notasEntrada = Array.isArray(body?.notas) ? body.notas : [];
 
     const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
-      calificacionRepository: this.calificacionRepository,
+      calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       authRepository: this.authRepository,
       usuarioId,
@@ -78,7 +81,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
     }
 
     const { cuotaTeorico, cuotaPractico, pesosBimestres } = await cargarCuotasPoliticaGestion({
-      calificacionRepository: this.calificacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       evaluationConfigurationRepository: this.evaluationConfigurationRepository,
       gestionId,
     });

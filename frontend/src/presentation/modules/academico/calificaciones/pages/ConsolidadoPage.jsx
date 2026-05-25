@@ -11,7 +11,14 @@ import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows } from '@theme/tokens';
 import { useConsolidadoCurso } from '@application-academico/calificaciones/hooks/useConsolidadoCurso.js';
-import { cuadernoBimestrePath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import {
+  bimestreConsolidadoPath,
+  cuadernoBimestrePath,
+} from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import {
+  ESTADO_BIMESTRE_HEADER,
+  resolverEstadoBimestreHeader,
+} from '@application-academico/calificaciones/utils/bimestreConsolidadoUtils.js';
 import CursoHeaderCard from '../components/CursoHeaderCard.jsx';
 import ConsolidadoGrid from '../components/ConsolidadoGrid.jsx';
 import '@presentation/styles/pages/detail-page.css';
@@ -36,7 +43,7 @@ const ConsolidadoPage = () => {
     docente,
     estudiantes,
     bimestreTitulos,
-    bimestresCalendario,
+    bimestresCalendario = [],
     bimestreVigente,
     notaMinimaAprobacion,
     isLoading,
@@ -50,9 +57,21 @@ const ConsolidadoPage = () => {
   const handleAbrirCuaderno = useCallback(
     (bimestre) => {
       if (!asignacionId) return;
+      const meta = bimestresCalendario.find(
+        (b) => Number(b.numero ?? b.numeroOrden ?? b.numero_orden) === Number(bimestre),
+      );
+      const estado = resolverEstadoBimestreHeader(
+        bimestre,
+        bimestreVigente,
+        meta?.estadoCalendario ?? meta?.estado_calendario,
+      );
+      if (estado === ESTADO_BIMESTRE_HEADER.CERRADO) {
+        navigate(bimestreConsolidadoPath(asignacionId, bimestre));
+        return;
+      }
       navigate(cuadernoBimestrePath(asignacionId, bimestre));
     },
-    [navigate, asignacionId],
+    [navigate, asignacionId, bimestreVigente, bimestresCalendario],
   );
 
   const headerActions = (

@@ -12,22 +12,24 @@ export class SavePoliticaInstitucionalUseCase {
    * @param {Object} deps.logger
    */
   constructor({
-    calificacionRepository,
+    calificacionContextoRepository,
     evaluationConfigurationRepository,
     logger,
   }) {
-    if (!calificacionRepository) throw new Error('calificacionRepository es requerido');
+    if (!calificacionContextoRepository) {
+      throw new Error('calificacionContextoRepository es requerido');
+    }
     if (!evaluationConfigurationRepository) {
       throw new Error('evaluationConfigurationRepository es requerido');
     }
     if (!logger) throw new Error('logger es requerido');
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.logger = logger;
   }
 
   async execute(body, userId = null) {
-    const ctx = await this.calificacionRepository.obtenerContextoVigente();
+    const ctx = await this.calificacionContextoRepository.obtenerContextoVigente();
     if (!ctx?.gestion_id) {
       const err = new Error('No hay gestión académica vigente configurada');
       err.statusCode = 404;

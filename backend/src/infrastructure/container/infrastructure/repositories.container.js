@@ -19,7 +19,7 @@
  */
 
 import { REPOSITORIOS_TOKENS } from '../tokens/index.js';
-import { registerRepository } from '../utils/container.helpers.js';
+import { registerRepository, registerComponent } from '../utils/container.helpers.js';
 
 // ============================================
 // CATÁLOGOS GEOGRÁFICOS
@@ -121,7 +121,6 @@ import { EvaluationConfigurationRepository } from '../../repositories/Evaluation
 import { SubjectEnrollmentBimesterRepository } from '../../repositories/SubjectEnrollmentBimesterRepository.js';
 import { BimesterEvaluationRepository } from '../../repositories/BimesterEvaluationRepository.js';
 import { BimesterEvaluationGradeRepository } from '../../repositories/BimesterEvaluationGradeRepository.js';
-import { CalificacionRepository } from '../../repositories/CalificacionRepository.js';
 import { CuadernoRepository } from '../../repositories/CuadernoRepository.js';
 import { CalificacionContextoRepository } from '../../repositories/CalificacionContextoRepository.js';
 import { CalificacionCoordinacionRepository } from '../../repositories/CalificacionCoordinacionRepository.js';
@@ -276,8 +275,16 @@ export function registerRepositoriesModule(container) {
       REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
       CalificacionCoordinacionRepository,
     );
-    registerRepository(container, REPOSITORIOS_TOKENS.gestionBimestresRepository, GestionBimestresRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.calificacionRepository, CalificacionRepository);
+    registerComponent(
+      container,
+      REPOSITORIOS_TOKENS.gestionBimestresRepository,
+      (c) =>
+        new GestionBimestresRepository({
+          calificacionContextoRepository: c.resolve(
+            REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          ),
+        }),
+    );
     registerRepository(container, REPOSITORIOS_TOKENS.cuadernoRepository, CuadernoRepository);
 
     // ============================================

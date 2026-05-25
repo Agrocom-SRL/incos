@@ -16,13 +16,13 @@ export function obtenerCuotasDesdePolitica(politicaExtra) {
  * Carga la política vigente de una gestión y devuelve cuotas para cálculo de notas.
  */
 export async function cargarCuotasPoliticaGestion({
-  calificacionRepository,
+  calificacionContextoRepository,
   evaluationConfigurationRepository,
   gestionId,
 }) {
   let gid = gestionId;
   if (!gid) {
-    const ctx = await calificacionRepository.obtenerContextoVigente();
+    const ctx = await calificacionContextoRepository.obtenerContextoVigente();
     gid = ctx?.gestion_id;
   }
   const row = gid

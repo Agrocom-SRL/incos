@@ -56,7 +56,7 @@ const CeldaConIcono = ({ icon, children }) => (
   </div>
 );
 
-const CoordinacionCalificacionesPage = () => {
+const CoordinacionPage = () => {
   const navigate = useNavigate();
   const {
     docentes,
@@ -237,4 +237,4 @@ const CoordinacionCalificacionesPage = () => {
   );
 };
 
-export default CoordinacionCalificacionesPage;
+export default CoordinacionPage;

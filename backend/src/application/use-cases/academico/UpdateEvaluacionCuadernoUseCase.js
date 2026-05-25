@@ -10,7 +10,8 @@ import { validarPuntosActividadEnCuota } from '../../utils/validarPuntosEvaluaci
 
 export class UpdateEvaluacionCuadernoUseCase {
   constructor({
-    calificacionRepository,
+    calificacionCoordinacionRepository,
+    calificacionContextoRepository,
     cuadernoRepository,
     bimesterEvaluationRepository,
     evaluationTypeRepository,
@@ -19,7 +20,8 @@ export class UpdateEvaluacionCuadernoUseCase {
     authRepository,
     logger,
   }) {
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
     this.evaluationTypeRepository = evaluationTypeRepository;
@@ -34,7 +36,8 @@ export class UpdateEvaluacionCuadernoUseCase {
     const evalId = Number(evaluacionId);
 
     const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
-      calificacionRepository: this.calificacionRepository,
+      calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       authRepository: this.authRepository,
       usuarioId,
@@ -83,10 +86,10 @@ export class UpdateEvaluacionCuadernoUseCase {
 
     if (body?.puntos != null || body?.componente != null) {
       const cuotas = await cargarCuotasPoliticaGestion({
-        calificacionRepository: this.calificacionRepository,
-        evaluationConfigurationRepository: this.evaluationConfigurationRepository,
-        gestionId,
-      });
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+      gestionId,
+    });
 
       const existentes = await this.cuadernoRepository.listarEvaluaciones(
         Number(asignacionId),

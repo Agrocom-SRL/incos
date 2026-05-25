@@ -51,17 +51,35 @@ export const BimestreMatricula = sequelize.define(
         },
 
         notaHabilitacion: {
+            type: DataTypes.VIRTUAL,
+            get() {
+                const teo = this.getDataValue('habilitacionTeorico');
+                const pra = this.getDataValue('habilitacionPractico');
+                if (teo == null && pra == null) return null;
+                return (Number(teo) || 0) + (Number(pra) || 0);
+            },
+            comment: 'Compatibilidad: suma de habilitaciones por componente.',
+        },
+
+        habilitacionTeorico: {
             type: DataTypes.DECIMAL(5, 2),
-            field: 'nota_habilitacion',
+            field: 'habilitacion_teorico',
             allowNull: true,
-            comment: 'Nota de habilitación bimestral si aplica.',
+            comment: 'Puntos de habilitación teórica.',
+        },
+
+        habilitacionPractico: {
+            type: DataTypes.DECIMAL(5, 2),
+            field: 'habilitacion_practico',
+            allowNull: true,
+            comment: 'Puntos de habilitación práctica.',
         },
 
         fechaHabilitacion: {
             type: DataTypes.DATEONLY,
             field: 'fecha_habilitacion',
             allowNull: true,
-            comment: 'Fecha de la habilitación bimestral.',
+            comment: 'Fecha del primer acto administrativo de habilitación.',
         },
 
         estado: {

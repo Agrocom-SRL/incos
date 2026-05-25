@@ -32,24 +32,9 @@ export class GestionBimestresRepository {
   async estadosInstitucionalesBimestres(gestionId) {
     const rows = await sequelize.query(
       `
-      SELECT
-        bm.bimestre,
-        CASE
-          WHEN COUNT(*) = SUM(CASE WHEN bm.estado = 'CERRADO' THEN 1 ELSE 0 END) THEN 'CERRADO'
-          WHEN SUM(CASE WHEN bm.estado = 'EN_CURSO' THEN 1 ELSE 0 END) > 0 THEN 'EN_CURSO'
-          ELSE 'PENDIENTE'
-        END AS estado_institucional
-      FROM bimestres_matricula bm
-      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-      INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-      WHERE gp.gestion_id = ?
-        AND mm.estado IN ('INSCRITO', 'CURSANDO')
-        AND mm.deleted_at IS NULL
-        AND mm.activo = TRUE
-        AND bm.deleted_at IS NULL
-        AND bm.activo = TRUE
-      GROUP BY bm.bimestre
+      SELECT bimestre, estado_institucional
+      FROM vista_base_gestion_bimestre_estado_institucional
+      WHERE gestion_id = ?
       `,
       { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
     );
@@ -81,17 +66,8 @@ export class GestionBimestresRepository {
           ) AS docentes_activos,
           (
             SELECT COUNT(*)
-            FROM bimestres_matricula bm
-            INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-            INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-            INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-            WHERE gp.gestion_id = ?
-              AND mm.estado = 'CURSANDO'
-              AND bm.estado = 'EN_CURSO'
-              AND bm.nota_bimestre IS NULL
-              AND bm.nota_habilitacion IS NULL
-              AND bm.deleted_at IS NULL
-              AND bm.activo = TRUE
+            FROM vista_base_gestion_bimestre_cierre_pendiente v
+            WHERE v.gestion_id = ?
           ) AS notas_faltantes
         `,
         { replacements: [gestionId, gestionId], type: sequelize.QueryTypes.SELECT },
@@ -201,17 +177,9 @@ export class GestionBimestresRepository {
     const pendientes = await sequelize.query(
       `
       SELECT COUNT(*) AS total
-      FROM bimestres_matricula bm
-      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-      INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-      WHERE gp.gestion_id = ?
-        AND bm.bimestre = ?
-        AND mm.estado = 'CURSANDO'
-        AND bm.estado = 'EN_CURSO'
-        AND bm.nota_bimestre IS NULL
-        AND bm.nota_habilitacion IS NULL
-        AND bm.deleted_at IS NULL
+      FROM vista_base_gestion_bimestre_cierre_pendiente
+      WHERE gestion_id = ?
+        AND bimestre = ?
       `,
       { replacements: [gestionId, n], type: sequelize.QueryTypes.SELECT },
     );
@@ -219,27 +187,15 @@ export class GestionBimestresRepository {
     const cursosRows = await sequelize.query(
       `
       SELECT
-        ad.id AS asignacion_id,
-        m.nombre AS materia,
-        CONCAT_WS(' ', d.nombres, d.apellido_paterno, d.apellido_materno) AS docente_nombre,
-        p.nombre AS paralelo,
-        COUNT(DISTINCT bm.id) AS faltantes
-      FROM bimestres_matricula bm
-      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-      INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-      INNER JOIN cursos c ON c.id = ad.curso_id
-      INNER JOIN materias m ON m.id = c.materia_id
-      LEFT JOIN paralelos p ON p.id = c.paralelo_id
-      LEFT JOIN docentes d ON d.id = ad.docente_id
-      WHERE gp.gestion_id = ?
-        AND bm.bimestre = ?
-        AND mm.estado = 'CURSANDO'
-        AND bm.estado = 'EN_CURSO'
-        AND bm.nota_bimestre IS NULL
-        AND bm.nota_habilitacion IS NULL
-        AND bm.deleted_at IS NULL
-      GROUP BY ad.id, m.nombre, d.nombres, d.apellido_paterno, p.nombre
+        asignacion_id,
+        materia,
+        docente_nombre,
+        paralelo,
+        COUNT(*) AS faltantes
+      FROM vista_base_gestion_bimestre_cierre_pendiente
+      WHERE gestion_id = ?
+        AND bimestre = ?
+      GROUP BY asignacion_id, materia, docente_nombre, paralelo
       HAVING faltantes > 0
       ORDER BY faltantes DESC, materia ASC
       LIMIT 50
@@ -296,28 +252,12 @@ export class GestionBimestresRepository {
     const rows = await sequelize.query(
       `
       SELECT
-        bm.bimestre,
-        COUNT(DISTINCT ad.id) AS cursos_total,
-        COUNT(DISTINCT CASE
-          WHEN ev.cantidad_evaluaciones > 0 THEN ad.id
-        END) AS cursos_plan_completo,
-        COUNT(DISTINCT CASE
-          WHEN bm.nota_bimestre IS NULL AND bm.nota_habilitacion IS NULL AND bm.estado = 'EN_CURSO'
-          THEN ad.id
-        END) AS cursos_notas_faltantes
-      FROM bimestres_matricula bm
-      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-      INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-      LEFT JOIN vista_base_calificacion_evaluaciones_curso_bimestre ev
-        ON ev.asignacion_docente_id = ad.id
-        AND ev.gestion_id = gp.gestion_id
-        AND ev.bimestre = bm.bimestre
-      WHERE gp.gestion_id = ?
-        AND mm.estado IN ('INSCRITO', 'CURSANDO')
-        AND mm.deleted_at IS NULL
-        AND bm.deleted_at IS NULL
-      GROUP BY bm.bimestre
+        bimestre,
+        cursos_total,
+        cursos_plan_completo,
+        cursos_notas_faltantes
+      FROM vista_base_gestion_metricas_bimestre
+      WHERE gestion_id = ?
       `,
       { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
     );

@@ -9,7 +9,7 @@ import { useAuth } from '@application-auth';
 import { useCasesFactory } from '@container';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import { MIS_CURSOS_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
-import CoordinacionCalificacionesPage from '../pages/CoordinacionCalificacionesPage.jsx';
+import CoordinacionPage from '../pages/CoordinacionPage.jsx';
 
 const DocenteMisCursosRedirect = () => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const CalificacionesEntradaConnector = () => {
   const { hasPermiso } = useAuth();
 
   if (hasPermiso(CALIFICACIONES_PERMISOS.coordinacion, 'LISTAR')) {
-    return <CoordinacionCalificacionesPage />;
+    return <CoordinacionPage />;
   }
 
   if (hasPermiso(CALIFICACIONES_PERMISOS.misCursos, 'LISTAR')) {

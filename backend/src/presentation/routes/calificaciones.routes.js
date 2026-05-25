@@ -11,6 +11,8 @@ import {
   deleteEvaluacionCuadernoValidator,
   upsertNotaCuadernoValidator,
   guardarNotasCuadernoBimestreValidator,
+  getBimestreConsolidadoValidator,
+  guardarBimestreConsolidadoValidator,
 } from '../validators/academico/index.js';
 
 /**
@@ -191,6 +193,22 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     getCuadernoBimestreValidator,
     validateRequest,
     (req, res, next) => controllers.getCuadernoBimestreController.handle(req, res, next),
+  );
+
+  router.get(
+    '/asignaciones/:asignacionId/bimestre/:bimestre/consolidado',
+    ...cuadernoListar,
+    getBimestreConsolidadoValidator,
+    validateRequest,
+    (req, res, next) => controllers.getBimestreConsolidadoController.handle(req, res, next),
+  );
+
+  router.post(
+    '/asignaciones/:asignacionId/bimestre/:bimestre/consolidado',
+    ...cuadernoEditar,
+    guardarBimestreConsolidadoValidator,
+    validateRequest,
+    (req, res, next) => controllers.guardarBimestreConsolidadoController.handle(req, res, next),
   );
 
   router.post(

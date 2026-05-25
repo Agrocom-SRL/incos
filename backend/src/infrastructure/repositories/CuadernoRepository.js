@@ -39,22 +39,20 @@ export class CuadernoRepository {
     return sequelize.query(
       `
       SELECT
-        e.id,
-        e.tipo_evaluacion_id,
-        e.componente,
-        e.nombre_evaluacion,
-        e.puntos,
-        e.fecha,
-        e.notas_cerradas,
-        e.activo,
-        e.created_at,
-        e.updated_at
-      FROM evaluaciones e
-      WHERE e.asignacion_docente_id = ?
-        AND e.periodo_academico_id = ?
-        AND e.deleted_at IS NULL
-        AND e.activo = TRUE
-      ORDER BY e.id ASC
+        id,
+        tipo_evaluacion_id,
+        componente,
+        nombre_evaluacion,
+        puntos,
+        fecha,
+        notas_cerradas,
+        activo,
+        created_at,
+        updated_at
+      FROM vista_base_cuaderno_evaluacion_columna
+      WHERE asignacion_docente_id = ?
+        AND periodo_academico_id = ?
+      ORDER BY id ASC
       `,
       {
         replacements: [asignacionId, periodoAcademicoId],
@@ -70,42 +68,16 @@ export class CuadernoRepository {
     return sequelize.query(
       `
       SELECT
-        est.id AS estudiante_id,
-        en.evaluacion_id,
-        en.nota
-      FROM evaluaciones_notas en
-      INNER JOIN evaluaciones ev
-        ON ev.id = en.evaluacion_id
-        AND ev.deleted_at IS NULL
-        AND ev.activo = TRUE
-      INNER JOIN bimestres_matricula bm
-        ON bm.id = en.bimestre_matricula_id
-        AND bm.deleted_at IS NULL
-        AND bm.activo = TRUE
-        AND bm.bimestre = ?
-      INNER JOIN matriculas_materia mm
-        ON mm.id = bm.matricula_materia_id
-        AND mm.deleted_at IS NULL
-        AND mm.activo = TRUE
-      INNER JOIN inscripciones ins
-        ON ins.id = mm.inscripcion_id
-        AND ins.deleted_at IS NULL
-        AND ins.activo = TRUE
-      INNER JOIN estudiantes_datos_academicos eda
-        ON eda.id = ins.datos_academicos_id
-        AND eda.deleted_at IS NULL
-        AND eda.activo = TRUE
-      INNER JOIN estudiantes est
-        ON est.id = eda.estudiante_id
-        AND est.deleted_at IS NULL
-        AND est.activo = TRUE
-      WHERE ev.asignacion_docente_id = ?
-        AND en.deleted_at IS NULL
-        AND en.activo = TRUE
-        AND en.nota IS NOT NULL
+        estudiante_id,
+        evaluacion_id,
+        nota
+      FROM vista_base_cuaderno_nota_celda
+      WHERE asignacion_docente_id = ?
+        AND bimestre = ?
+        AND nota IS NOT NULL
       `,
       {
-        replacements: [bimestreNumero, asignacionId],
+        replacements: [asignacionId, bimestreNumero],
         type: sequelize.QueryTypes.SELECT,
       },
     );
@@ -151,22 +123,11 @@ export class CuadernoRepository {
   async obtenerBimestreMatriculaId(asignacionId, estudianteId, bimestreNum) {
     const rows = await sequelize.query(
       `
-      SELECT bm.id
-      FROM bimestres_matricula bm
-      INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-        AND mm.deleted_at IS NULL AND mm.activo = TRUE
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-        AND ad.deleted_at IS NULL AND ad.activo = TRUE
-      INNER JOIN inscripciones ins ON ins.id = mm.inscripcion_id
-        AND ins.deleted_at IS NULL AND ins.activo = TRUE
-      INNER JOIN estudiantes_datos_academicos eda ON eda.id = ins.datos_academicos_id
-        AND eda.deleted_at IS NULL AND eda.activo = TRUE
-      INNER JOIN estudiantes est ON est.id = eda.estudiante_id
-        AND est.deleted_at IS NULL AND est.activo = TRUE
-      WHERE mm.asignacion_docente_id = ?
-        AND est.id = ?
-        AND bm.bimestre = ?
-        AND bm.deleted_at IS NULL AND bm.activo = TRUE
+      SELECT bimestre_matricula_id AS id
+      FROM vista_base_cuaderno_estudiante_bimestre_matricula
+      WHERE asignacion_docente_id = ?
+        AND estudiante_id = ?
+        AND bimestre = ?
       LIMIT 1
       `,
       {
@@ -366,25 +327,19 @@ export class CuadernoRepository {
       `
       SELECT
         bm.id AS bimestre_matricula_id,
-        e.componente,
-        e.puntos,
-        en.nota
+        nc.componente,
+        nc.puntos_maximos AS puntos,
+        nc.nota
       FROM bimestres_matricula bm
       INNER JOIN matriculas_materia mm
         ON mm.id = bm.matricula_materia_id
         AND mm.deleted_at IS NULL AND mm.activo = TRUE
       INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
         AND ad.deleted_at IS NULL AND ad.activo = TRUE
-      LEFT JOIN evaluaciones_notas en
-        ON en.bimestre_matricula_id = bm.id
-        AND en.deleted_at IS NULL
-        AND en.activo = TRUE
-        AND en.nota IS NOT NULL
-      LEFT JOIN evaluaciones e
-        ON e.id = en.evaluacion_id
-        AND e.deleted_at IS NULL
-        AND e.activo = TRUE
-        AND e.asignacion_docente_id = ad.id
+      LEFT JOIN vista_base_cuaderno_nota_celda nc
+        ON nc.bimestre_matricula_id = bm.id
+        AND nc.asignacion_docente_id = ad.id
+        AND nc.nota IS NOT NULL
       WHERE mm.asignacion_docente_id = ?
         AND bm.bimestre = ?
         AND bm.deleted_at IS NULL
@@ -402,6 +357,52 @@ export class CuadernoRepository {
       puntos: r.puntos != null ? Number(r.puntos) : null,
       nota: r.nota != null ? Number(r.nota) : null,
     }));
+  }
+
+  async listarEstudiantesResumenBimestre(asignacionId, bimestreNumero) {
+    return sequelize.query(
+      `
+      SELECT
+        emc.estudiante_id,
+        emc.codigo,
+        emc.nombre,
+        bm.id AS bimestre_matricula_id,
+        bm.nota_teorico,
+        bm.nota_practico,
+        bm.nota_bimestre,
+        bm.estado AS estado_bimestre
+      FROM vista_base_calificacion_estudiante_matricula_curso emc
+      LEFT JOIN bimestres_matricula bm
+        ON bm.matricula_materia_id = emc.matricula_materia_id
+        AND bm.bimestre = ?
+        AND bm.deleted_at IS NULL
+        AND bm.activo = TRUE
+      WHERE emc.asignacion_docente_id = ?
+      ORDER BY emc.codigo ASC, emc.estudiante_id ASC
+      `,
+      {
+        replacements: [bimestreNumero, asignacionId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+  }
+
+  async listarTodasNotasBimestreCuaderno(asignacionId, bimestreNumero) {
+    return sequelize.query(
+      `
+      SELECT
+        estudiante_id,
+        evaluacion_id,
+        nota
+      FROM vista_base_cuaderno_nota_celda
+      WHERE asignacion_docente_id = ?
+        AND bimestre = ?
+      `,
+      {
+        replacements: [asignacionId, bimestreNumero],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
   }
 
   async listarBimestresMatriculaIdsCurso(asignacionId, bimestreNumero) {
@@ -450,19 +451,13 @@ export class CuadernoRepository {
     return sequelize.query(
       `
       SELECT
-        mm.id AS matricula_materia_id,
-        bm.bimestre,
-        bm.nota_bimestre,
-        bm.nota_habilitacion
-      FROM matriculas_materia mm
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-        AND ad.deleted_at IS NULL AND ad.activo = TRUE
-      LEFT JOIN bimestres_matricula bm ON bm.matricula_materia_id = mm.id
-        AND bm.deleted_at IS NULL AND bm.activo = TRUE
-      WHERE mm.asignacion_docente_id = ?
-        AND mm.estado IN ('INSCRITO', 'CURSANDO')
-        AND mm.deleted_at IS NULL
-        AND mm.activo = TRUE
+        matricula_materia_id,
+        bimestre,
+        nota_bimestre,
+        habilitacion_teorico,
+        habilitacion_practico
+      FROM vista_base_cuaderno_resumen_estudiante_bimestre
+      WHERE asignacion_docente_id = ?
       `,
       {
         replacements: [asignacionId],

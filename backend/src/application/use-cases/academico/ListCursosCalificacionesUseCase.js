@@ -86,18 +86,25 @@ export class ListCursosCalificacionesUseCase {
    * @param {Object} deps.logger
    */
   constructor({
-    calificacionRepository,
+    calificacionContextoRepository,
+    calificacionCoordinacionRepository,
     teacherRepository,
     evaluationConfigurationRepository,
     logger,
   }) {
-    if (!calificacionRepository) throw new Error('calificacionRepository es requerido');
+    if (!calificacionContextoRepository) {
+      throw new Error('calificacionContextoRepository es requerido');
+    }
+    if (!calificacionCoordinacionRepository) {
+      throw new Error('calificacionCoordinacionRepository es requerido');
+    }
     if (!teacherRepository) throw new Error('teacherRepository es requerido');
     if (!evaluationConfigurationRepository) {
       throw new Error('evaluationConfigurationRepository es requerido');
     }
     if (!logger) throw new Error('logger es requerido');
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.teacherRepository = teacherRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.logger = logger;
@@ -107,7 +114,7 @@ export class ListCursosCalificacionesUseCase {
    * @param {{ usuarioId: number, docenteId?: number|null }} input
    */
   async execute({ usuarioId, docenteId: docenteIdInput = null }) {
-    const ctx = await this.calificacionRepository.obtenerContextoVigente();
+    const ctx = await this.calificacionContextoRepository.obtenerContextoVigente();
     if (!ctx?.gestion_id) {
       const err = new Error('No hay gestión académica vigente configurada');
       err.statusCode = 404;
@@ -142,7 +149,8 @@ export class ListCursosCalificacionesUseCase {
       }
     }
 
-    const docenteRow = await this.calificacionRepository.obtenerDocenteCalificaciones(docenteId);
+    const docenteRow =
+      await this.calificacionCoordinacionRepository.obtenerDocenteCalificaciones(docenteId);
     if (!docenteRow) {
       throw new NotFoundError('Docente');
     }
@@ -154,12 +162,12 @@ export class ListCursosCalificacionesUseCase {
     const notaMinimaAprobacion = Number(politicaParsed.notaMinimaAprobacion) || 61;
 
     const [filas, resumenBimestres, periodosCalendario] = await Promise.all([
-      this.calificacionRepository.listarCursosPorDocente(docenteId),
-      this.calificacionRepository.listarResumenBimestresCursosPorDocente(
+      this.calificacionCoordinacionRepository.listarCursosPorDocente(docenteId),
+      this.calificacionCoordinacionRepository.listarResumenBimestresCursosPorDocente(
         docenteId,
         notaMinimaAprobacion,
       ),
-      this.calificacionRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id),
+      this.calificacionContextoRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id),
     ]);
 
     const resumenMap = agruparResumenBimestres(resumenBimestres);

@@ -3,24 +3,25 @@
  */
 
 export class ListCoordinacionCalificacionesDocentesUseCase {
-  /**
-   * @param {Object} params
-   * @param {import('../../../infrastructure/repositories/CalificacionRepository.js').CalificacionRepository} params.calificacionRepository
-   * @param {Object} params.logger
-   */
-  constructor({ calificacionRepository, logger }) {
-    if (!calificacionRepository) throw new Error('calificacionRepository es requerido');
+  constructor({
+    calificacionContextoRepository,
+    calificacionCoordinacionRepository,
+    logger,
+  }) {
+    if (!calificacionContextoRepository) {
+      throw new Error('calificacionContextoRepository es requerido');
+    }
+    if (!calificacionCoordinacionRepository) {
+      throw new Error('calificacionCoordinacionRepository es requerido');
+    }
     if (!logger) throw new Error('logger es requerido');
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.logger = logger;
   }
 
-  /**
-   * @param {{ q?: string, limit?: number, preliminar?: boolean }} input
-   * @returns {Promise<{ gestionVigente: string|null, docentes: Array }>}
-   */
   async execute({ q, limit = 50, preliminar = false }) {
-    const ctx = await this.calificacionRepository.obtenerContextoVigente();
+    const ctx = await this.calificacionContextoRepository.obtenerContextoVigente();
     const gestionVigente =
       ctx?.gestion_nombre != null
         ? String(ctx.gestion_nombre)
@@ -42,13 +43,22 @@ export class ListCoordinacionCalificacionesDocentesUseCase {
 
     let rows;
     if (preliminar) {
-      rows = await this.calificacionRepository.listarDocentesCoordinacion({ preliminar: true, limit });
+      rows = await this.calificacionCoordinacionRepository.listarDocentesCoordinacion({
+        preliminar: true,
+        limit,
+      });
     } else {
       const term = String(q ?? '').trim();
       if (term.length < 2) {
-        rows = await this.calificacionRepository.listarDocentesCoordinacion({ preliminar: true, limit });
+        rows = await this.calificacionCoordinacionRepository.listarDocentesCoordinacion({
+          preliminar: true,
+          limit,
+        });
       } else {
-        rows = await this.calificacionRepository.listarDocentesCoordinacion({ q: term, limit });
+        rows = await this.calificacionCoordinacionRepository.listarDocentesCoordinacion({
+          q: term,
+          limit,
+        });
       }
     }
 

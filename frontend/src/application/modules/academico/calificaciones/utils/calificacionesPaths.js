@@ -20,5 +20,9 @@ export const notasCursoPath = (asignacionId) =>
 export const cuadernoBimestrePath = (asignacionId, bimestre) =>
   `${MIS_CURSOS_PATH}/${asignacionId}/cuaderno/${bimestre}`;
 
+/** Bimestre cerrado — resumen teórico / práctico / total (solo lectura + edición admin). */
+export const bimestreConsolidadoPath = (asignacionId, bimestre) =>
+  `${MIS_CURSOS_PATH}/${asignacionId}/bimestre/${bimestre}/consolidado`;
+
 export const cursoNivelacionPath = (asignacionId) =>
   `${MIS_CURSOS_PATH}/${asignacionId}/nivelacion`;

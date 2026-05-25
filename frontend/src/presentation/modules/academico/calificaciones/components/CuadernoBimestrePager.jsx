@@ -5,7 +5,10 @@
 import { Button, Tooltip } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { cuadernoBimestrePath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import {
+  bimestreConsolidadoPath,
+  cuadernoBimestrePath,
+} from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 
 const TOOLTIP_SIGUIENTE_BLOQUEADO =
   'El bimestre siguiente aún no está habilitado en el calendario académico.';
@@ -20,6 +23,10 @@ const CuadernoBimestrePager = ({ asignacionId, bimestreActivo, bimestreVigente }
 
   const irA = (destino) => {
     if (!asignacionId || destino < 1 || destino > 4) return;
+    if (destino < vigente) {
+      navigate(bimestreConsolidadoPath(asignacionId, destino));
+      return;
+    }
     navigate(cuadernoBimestrePath(asignacionId, destino));
   };
 

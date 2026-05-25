@@ -181,63 +181,22 @@ export class CalificacionCoordinacionRepository {
     return sequelize.query(
       `
       SELECT
-        est.id AS estudiante_id,
-        est.codigo_estudiante AS codigo_estudiante,
-        est.ci AS cedula,
-        TRIM(
-          CONCAT_WS(
-            ' ',
-            est.nombres,
-            est.apellido_paterno,
-            est.apellido_materno
-          )
-        ) AS nombre_completo,
-        mm.id AS matricula_materia_id,
-        mm.nota_final,
-        bm.bimestre,
-        bm.nota_teorico,
-        bm.nota_practico,
-        bm.nota_bimestre,
-        bm.nota_habilitacion,
-        bm.estado AS estado_bimestre
-      FROM matriculas_materia mm
-      INNER JOIN inscripciones ins
-        ON ins.id = mm.inscripcion_id
-        AND ins.deleted_at IS NULL
-        AND ins.activo = TRUE
-      INNER JOIN estudiantes_datos_academicos eda
-        ON eda.id = ins.datos_academicos_id
-        AND eda.deleted_at IS NULL
-        AND eda.activo = TRUE
-      INNER JOIN estudiantes est
-        ON est.id = eda.estudiante_id
-        AND est.deleted_at IS NULL
-        AND est.activo = TRUE
-      INNER JOIN asignaciones_docentes ad
-        ON ad.id = mm.asignacion_docente_id
-        AND ad.deleted_at IS NULL
-        AND ad.activo = TRUE
-      INNER JOIN gestiones_planes gp
-        ON gp.id = ad.gestion_plan_id
-        AND gp.deleted_at IS NULL
-      INNER JOIN gestiones g
-        ON g.id = gp.gestion_id
-        AND g.vigente = TRUE
-        AND g.activo = TRUE
-        AND g.deleted_at IS NULL
-      LEFT JOIN bimestres_matricula bm
-        ON bm.matricula_materia_id = mm.id
-        AND bm.deleted_at IS NULL
-        AND bm.activo = TRUE
-      WHERE mm.asignacion_docente_id = ?
-        AND mm.estado IN ('INSCRITO', 'CURSANDO')
-        AND mm.deleted_at IS NULL
-        AND mm.activo = TRUE
-      ORDER BY
-        est.nombres ASC,
-        est.apellido_paterno ASC,
-        est.apellido_materno ASC,
-        bm.bimestre ASC
+        estudiante_id,
+        codigo_estudiante,
+        cedula,
+        nombre_completo,
+        matricula_materia_id,
+        nota_final,
+        bimestre,
+        nota_teorico,
+        nota_practico,
+        nota_bimestre,
+        habilitacion_teorico,
+        habilitacion_practico,
+        estado_bimestre
+      FROM vista_base_calificacion_registro_notas_curso
+      WHERE asignacion_docente_id = ?
+      ORDER BY nombre_completo ASC, bimestre ASC
       `,
       { replacements: [asignacionId], type: sequelize.QueryTypes.SELECT },
     );

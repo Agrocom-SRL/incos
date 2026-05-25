@@ -29,19 +29,20 @@ const agruparEstudiantes = (filas, notaMinima) => {
     const teoricoCuota = redondear(row.nota_teorico);
     const practicoCuota = redondear(row.nota_practico);
     const notaBimestre = redondear(row.nota_bimestre);
-    const notaHabilitacion = redondear(row.nota_habilitacion);
+    const habTeorico = redondear(row.habilitacion_teorico);
+    const habPractico = redondear(row.habilitacion_practico);
 
+    const teoEfectivo = habTeorico ?? teoricoCuota;
+    const praEfectivo = habPractico ?? practicoCuota;
     const suma =
-      notaHabilitacion != null
-        ? notaHabilitacion
-        : notaBimestre != null
-          ? notaBimestre
-          : calcularNotaBimestre(teoricoCuota, practicoCuota);
+      notaBimestre != null
+        ? notaBimestre
+        : calcularNotaBimestre(teoEfectivo, praEfectivo);
 
     est.bimestresPorNumero.set(num, {
       numero: num,
-      teorico: teoricoCuota,
-      practico: practicoCuota,
+      teorico: teoEfectivo ?? teoricoCuota,
+      practico: praEfectivo ?? practicoCuota,
       suma,
       estado: row.estado_bimestre ?? null,
     });
@@ -86,13 +87,15 @@ const agruparEstudiantes = (filas, notaMinima) => {
  */
 export class GetRegistroNotasCursoUseCase {
   constructor({
-    calificacionRepository,
+    calificacionContextoRepository,
+    calificacionCoordinacionRepository,
     teacherRepository,
     evaluationConfigurationRepository,
     authRepository,
     logger,
   }) {
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.teacherRepository = teacherRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.authRepository = authRepository;
@@ -108,7 +111,8 @@ export class GetRegistroNotasCursoUseCase {
       throw new NotFoundError('Asignación');
     }
 
-    const cursoRow = await this.calificacionRepository.obtenerCursoPorAsignacion(asignacionIdNum);
+    const cursoRow =
+      await this.calificacionCoordinacionRepository.obtenerCursoPorAsignacion(asignacionIdNum);
     if (!cursoRow) {
       throw new NotFoundError('Curso');
     }
@@ -132,7 +136,7 @@ export class GetRegistroNotasCursoUseCase {
       }
     }
 
-    const ctx = await this.calificacionRepository.obtenerContextoVigente();
+    const ctx = await this.calificacionContextoRepository.obtenerContextoVigente();
     if (!ctx?.gestion_id) {
       const err = new Error('No hay gestión académica vigente configurada');
       err.statusCode = 404;
@@ -146,9 +150,9 @@ export class GetRegistroNotasCursoUseCase {
     const notaMinimaAprobacion = Number(politicaParsed.notaMinimaAprobacion) || 61;
 
     const [docenteRow, filasEstudiantes, periodosCalendario] = await Promise.all([
-      this.calificacionRepository.obtenerDocenteCalificaciones(docenteIdAsignacion),
-      this.calificacionRepository.listarEstudiantesRegistroNotas(asignacionIdNum),
-      this.calificacionRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id),
+      this.calificacionCoordinacionRepository.obtenerDocenteCalificaciones(docenteIdAsignacion),
+      this.calificacionCoordinacionRepository.listarEstudiantesRegistroNotas(asignacionIdNum),
+      this.calificacionContextoRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id),
     ]);
 
     const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion);

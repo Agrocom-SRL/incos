@@ -2651,3 +2651,70 @@
     font-size: 1.35rem;
   }
 }
+
+/* —— Bimestre consolidado (cerrado) —— */
+.cal-bimestre-consolidado-page {
+  --cuaderno-verde-1: #e8f5e9;
+  --cuaderno-verde-2: #c8e6c9;
+  --cuaderno-verde-3: #a5d6a7;
+  --cuaderno-verde-4: #81c784;
+  --cuaderno-verde-5: #66bb6a;
+  --cuaderno-verde-6: #4caf50;
+  --cuaderno-verde-7: #43a047;
+  --cuaderno-verde-8: #388e3c;
+  --cuaderno-texto-tenue: rgba(0, 0, 0, 0.45);
+}
+
+.cal-bimestre-consolidado-toolbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border, #f0f0f0);
+  background: var(--color-fill-quaternary, #fafafa);
+}
+
+.cal-bimestre-consolidado-toolbar__label {
+  font-size: 13px;
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+}
+
+.cal-bimestre-consolidado__bim-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 8px;
+}
+
+.cal-bimestre-consolidado__bim-titulo {
+  font-weight: 600;
+}
+
+.cal-bimestre-consolidado__bim-info {
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  font-size: 14px;
+}
+
+.cal-bimestre-consolidado__modo-tag {
+  margin: 0;
+  font-size: 11px;
+}
+
+.cal-bimestre-consolidado__total {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-bimestre-consolidado-leyenda {
+  margin: 0;
+  padding: 10px 16px 14px;
+  font-size: 12px;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  border-top: 1px solid var(--color-border-secondary, #f0f0f0);
+}
+
+.cal-bimestre-consolidado-wrap .cal-bimestre-consolidado__col-total {
+  background: var(--color-fill-quaternary, #fafafa);
+}

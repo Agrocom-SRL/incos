@@ -11,13 +11,15 @@ import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
  */
 export class GetCuadernoBimestreUseCase {
   constructor({
-    calificacionRepository,
+    calificacionCoordinacionRepository,
+    calificacionContextoRepository,
     cuadernoRepository,
     teacherRepository,
     authRepository,
     logger,
   }) {
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.teacherRepository = teacherRepository;
     this.authRepository = authRepository;
@@ -31,7 +33,8 @@ export class GetCuadernoBimestreUseCase {
     }
 
     const { gestionId } = await assertCuadernoCursoAccess({
-      calificacionRepository: this.calificacionRepository,
+      calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       authRepository: this.authRepository,
       usuarioId,

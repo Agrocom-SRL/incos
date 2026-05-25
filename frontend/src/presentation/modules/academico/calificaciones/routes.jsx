@@ -23,6 +23,9 @@ const CalificacionesEntradaConnector = lazy(
 const MisCursosConnector = lazy(() => import('./connectors/MisCursosConnector.jsx'));
 const ConsolidadoConnector = lazy(() => import('./connectors/ConsolidadoConnector.jsx'));
 const CuadernoConnector = lazy(() => import('./connectors/CuadernoConnector.jsx'));
+const BimestreConsolidadoConnector = lazy(
+  () => import('./connectors/BimestreConsolidadoConnector.jsx'),
+);
 /** Redirecciones legacy → rutas nuevas (docenteId en state). */
 const RedirectDocenteCursos = () => {
   const { docenteId } = useParams();
@@ -72,6 +75,16 @@ export const calificacionesRoutes = [
     element: <CuadernoConnector />,
     key: 'ACA-CAL-CUADERNO',
     breadcrumbLabel: 'Cuaderno',
+    permiso: 'academico.calificacion.cuaderno',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'ACA-CAL-NOTAS',
+  },
+  {
+    path: '/academico/calificaciones/mis-cursos/:asignacionId/bimestre/:n/consolidado',
+    element: <BimestreConsolidadoConnector />,
+    key: 'ACA-CAL-BIM-CONSOLIDADO',
+    breadcrumbLabel: 'Consolidado bimestre',
     permiso: 'academico.calificacion.cuaderno',
     accion: 'LISTAR',
     menu: null,

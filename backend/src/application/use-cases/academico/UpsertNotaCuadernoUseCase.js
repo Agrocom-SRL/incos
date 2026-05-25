@@ -10,13 +10,15 @@ import { persistirNotaCuadernoCelda } from '../../utils/persistirNotaCuadernoCel
  */
 export class UpsertNotaCuadernoUseCase {
   constructor({
-    calificacionRepository,
+    calificacionCoordinacionRepository,
+    calificacionContextoRepository,
     cuadernoRepository,
     teacherRepository,
     authRepository,
     logger,
   }) {
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.teacherRepository = teacherRepository;
     this.authRepository = authRepository;
@@ -39,7 +41,8 @@ export class UpsertNotaCuadernoUseCase {
     }
 
     const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
-      calificacionRepository: this.calificacionRepository,
+      calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       authRepository: this.authRepository,
       usuarioId,

@@ -162,6 +162,7 @@ const NotasGrid = ({
   const thSubEval = () => ({ className: 'cal-notas-grid__th-sub cal-notas-grid__th-sub--eval' });
   const thSubHint = () => ({ className: 'cal-notas-grid__th-sub cal-notas-grid__th-sub--hint' });
   const fijarColumnaEstudiante = evaluaciones.length >= 4;
+  const permitirAgregar = Boolean(onAgregarEvaluacion) && !soloLectura;
 
   const columnasEval = evaluaciones.map((ev) => {
     const colClass = [
@@ -255,10 +256,13 @@ const NotasGrid = ({
     ),
     className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo',
     onHeaderCell: () => ({ className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo' }),
-    children:
-      evaluaciones.length > 0
+    children: permitirAgregar
+      ? evaluaciones.length > 0
         ? [...columnasEval, columnaEspacioBimestre, columnaAgregar]
-        : [columnaHintAgregar, columnaAgregar],
+        : [columnaHintAgregar, columnaAgregar]
+      : evaluaciones.length > 0
+        ? columnasEval
+        : [],
   };
 
   const columns = [
@@ -289,7 +293,9 @@ const NotasGrid = ({
 
   const anchoFijoIzquierda = ANCHO_COL_NRO + ANCHO_COL_ESTUDIANTE;
   const anchoMinimoBimestre =
-    evaluaciones.length * ANCHO_COL_EVAL + ANCHO_COL_AGREGAR + 80;
+    evaluaciones.length * ANCHO_COL_EVAL +
+    (permitirAgregar ? ANCHO_COL_AGREGAR : 0) +
+    80;
   const anchoMinimoTabla = anchoFijoIzquierda + anchoMinimoBimestre;
   const requiereScroll = anchoMinimoTabla > 720;
 

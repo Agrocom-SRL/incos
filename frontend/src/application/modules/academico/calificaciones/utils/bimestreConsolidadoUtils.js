@@ -50,7 +50,7 @@ export const tooltipAbrirCuaderno = (numero, estado) => {
     return 'Bimestre aún no habilitado en el calendario académico';
   }
   if (estado === ESTADO_BIMESTRE_HEADER.CERRADO) {
-    return `Abrir cuaderno del bimestre ${numero} (consulta y carga de evaluaciones)`;
+    return `Ver consolidado del bimestre ${numero} (práctico, teórico y total)`;
   }
   return `Abrir cuaderno del bimestre ${numero} para registrar notas`;
 };

@@ -32,7 +32,7 @@ const LeyendaEstados = () => (
         <CheckCircleOutlined aria-hidden />
       </span>
       <span>
-        <strong>Cerrado</strong> — abrir cuaderno para consulta o carga
+        <strong>Cerrado</strong> — ver consolidado del bimestre (práctico, teórico, total)
       </span>
     </div>
     <div className="cal-consolidado-grid__leyenda-item">
@@ -84,7 +84,7 @@ const TituloBimestre = ({ titulo, numero, estadoCalendario, bimestreVigente, onA
           abrir();
         }}
       >
-        Ver cuaderno
+        Ver consolidado
       </Button>
     );
   } else if (enCurso) {

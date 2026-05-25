@@ -14,7 +14,8 @@ import { validarPuntosActividadEnCuota } from '../../utils/validarPuntosEvaluaci
  */
 export class CreateEvaluacionCuadernoUseCase {
   constructor({
-    calificacionRepository,
+    calificacionCoordinacionRepository,
+    calificacionContextoRepository,
     cuadernoRepository,
     bimesterEvaluationRepository,
     evaluationTypeRepository,
@@ -23,7 +24,8 @@ export class CreateEvaluacionCuadernoUseCase {
     authRepository,
     logger,
   }) {
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
     this.evaluationTypeRepository = evaluationTypeRepository;
@@ -40,7 +42,8 @@ export class CreateEvaluacionCuadernoUseCase {
     }
 
     const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
-      calificacionRepository: this.calificacionRepository,
+      calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       authRepository: this.authRepository,
       usuarioId,
@@ -81,7 +84,7 @@ export class CreateEvaluacionCuadernoUseCase {
     }
 
     const cuotas = await cargarCuotasPoliticaGestion({
-      calificacionRepository: this.calificacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       evaluationConfigurationRepository: this.evaluationConfigurationRepository,
       gestionId,
     });

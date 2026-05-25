@@ -200,6 +200,8 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/notas`,
   CUADERNO_GUARDAR: (asignacionId, bimestre) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/guardar`,
+  BIMESTRE_CONSOLIDADO: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/consolidado`,
 };
 
 // ============================================

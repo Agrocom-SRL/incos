@@ -6,7 +6,8 @@ import { recalcularNotaFinalMatriculaCurso } from '../../utils/recalcularNotaFin
 
 export class DeleteEvaluacionCuadernoUseCase {
   constructor({
-    calificacionRepository,
+    calificacionCoordinacionRepository,
+    calificacionContextoRepository,
     cuadernoRepository,
     evaluationConfigurationRepository,
     bimesterEvaluationRepository,
@@ -14,7 +15,8 @@ export class DeleteEvaluacionCuadernoUseCase {
     authRepository,
     logger,
   }) {
-    this.calificacionRepository = calificacionRepository;
+    this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
@@ -27,7 +29,8 @@ export class DeleteEvaluacionCuadernoUseCase {
     const bimestreNum = Number(bimestre);
 
     const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
-      calificacionRepository: this.calificacionRepository,
+      calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       authRepository: this.authRepository,
       usuarioId,
@@ -52,7 +55,7 @@ export class DeleteEvaluacionCuadernoUseCase {
     await this.cuadernoRepository.softEliminarNotasPorEvaluacion(Number(evaluacionId), usuarioId);
 
     const { cuotaTeorico, cuotaPractico, pesosBimestres } = await cargarCuotasPoliticaGestion({
-      calificacionRepository: this.calificacionRepository,
+      calificacionContextoRepository: this.calificacionContextoRepository,
       evaluationConfigurationRepository: this.evaluationConfigurationRepository,
       gestionId,
     });

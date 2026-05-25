@@ -2,10 +2,11 @@ import { ForbiddenError, NotFoundError } from '../../domain/errors/AppError.js';
 
 /**
  * Verifica acceso al cuaderno de una asignación (docente del curso o coordinación).
- * @returns {Promise<{ cursoRow: object, ctx: object, bimestreVigente: number }>}
+ * @returns {Promise<{ cursoRow: object, ctx: object, bimestreVigente: number, gestionId: number }>}
  */
 export async function assertCuadernoCursoAccess({
-  calificacionRepository,
+  calificacionCoordinacionRepository,
+  calificacionContextoRepository,
   teacherRepository,
   authRepository,
   usuarioId,
@@ -16,7 +17,8 @@ export async function assertCuadernoCursoAccess({
     throw new NotFoundError('Asignación');
   }
 
-  const cursoRow = await calificacionRepository.obtenerCursoPorAsignacion(asignacionIdNum);
+  const cursoRow =
+    await calificacionCoordinacionRepository.obtenerCursoPorAsignacion(asignacionIdNum);
   if (!cursoRow) {
     throw new NotFoundError('Curso');
   }
@@ -40,7 +42,7 @@ export async function assertCuadernoCursoAccess({
     }
   }
 
-  const ctx = await calificacionRepository.obtenerContextoVigente();
+  const ctx = await calificacionContextoRepository.obtenerContextoVigente();
   if (!ctx?.gestion_id) {
     const err = new Error('No hay gestión académica vigente configurada');
     err.statusCode = 404;
