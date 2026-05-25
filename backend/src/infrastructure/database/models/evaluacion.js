@@ -49,11 +49,11 @@ export const Evaluacion = sequelize.define(
             comment: 'Descripción o consigna.',
         },
 
-        peso: {
-            type: DataTypes.DECIMAL(5, 2),
+        puntos: {
+            type: DataTypes.SMALLINT.UNSIGNED,
             allowNull: true,
             defaultValue: 1,
-            comment: 'Peso relativo dentro de su componente.',
+            comment: 'Puntos máximos de la actividad (entero). La celda admite 0..puntos.',
         },
 
         fecha: {

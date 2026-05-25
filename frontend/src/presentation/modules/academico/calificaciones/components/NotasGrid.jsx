@@ -92,6 +92,9 @@ const EvaluacionColumnHead = ({
       <div className="cal-notas-grid__eval-head-row">
         <span className="cal-notas-grid__col-head-text" title={ev.nombre}>
           {ev.nombre}
+          {ev.puntos != null ? (
+            <span className="cal-notas-grid__col-puntos"> ({ev.puntos} pts)</span>
+          ) : null}
         </span>
         <Dropdown
           menu={{ items: menuItems, onClick: onMenuClick }}
@@ -180,6 +183,7 @@ const NotasGrid = ({
         <NotaCell
           estudianteId={row.id}
           evaluacionId={ev.id}
+          puntosMaximos={ev.puntos}
           valorInicial={row.notas?.[ev.id]}
           soloLectura={soloLectura}
         />

@@ -6,6 +6,8 @@ import {
 import { BimesterEvaluation } from '../../../domain/entities/BimesterEvaluation.js';
 import { mapEvaluacionEntityToDto } from '../../mappers/cuadernoEvaluacionMapper.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
+import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
+import { validarPuntosActividadEnCuota } from '../../utils/validarPuntosEvaluacion.js';
 
 /**
  * POST evaluación del cuaderno bimestral.
@@ -16,6 +18,7 @@ export class CreateEvaluacionCuadernoUseCase {
     cuadernoRepository,
     bimesterEvaluationRepository,
     evaluationTypeRepository,
+    evaluationConfigurationRepository,
     teacherRepository,
     authRepository,
     logger,
@@ -24,6 +27,7 @@ export class CreateEvaluacionCuadernoUseCase {
     this.cuadernoRepository = cuadernoRepository;
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
     this.evaluationTypeRepository = evaluationTypeRepository;
+    this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
     this.authRepository = authRepository;
     this.logger = logger;
@@ -76,10 +80,27 @@ export class CreateEvaluacionCuadernoUseCase {
       throw new ValidationError('Componente inválido');
     }
 
-    const peso = Number(body?.peso);
-    if (!Number.isFinite(peso) || peso <= 0 || peso > 100) {
-      throw new ValidationError('Peso inválido (debe ser entre 0.01 y 100)');
-    }
+    const cuotas = await cargarCuotasPoliticaGestion({
+      calificacionRepository: this.calificacionRepository,
+      evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+      gestionId,
+    });
+
+    const existentes = await this.cuadernoRepository.listarEvaluaciones(
+      Number(asignacionId),
+      periodoId,
+    );
+
+    const puntos = validarPuntosActividadEnCuota({
+      evaluaciones: existentes.map((e) => ({
+        id: e.id,
+        componente: e.componente,
+        puntos: e.puntos,
+      })),
+      componente,
+      puntos: body?.puntos,
+      cuotas,
+    });
 
     const entity = new BimesterEvaluation({
       teacherAssignmentId: Number(asignacionId),
@@ -87,7 +108,7 @@ export class CreateEvaluacionCuadernoUseCase {
       evaluationTypeId: tipoId,
       component: componente,
       evaluationName: nombre,
-      weight: peso,
+      points: puntos,
       date: body?.fecha ?? null,
       gradesClosed: false,
     });

@@ -1,18 +1,18 @@
 /**
- * Suma de pesos por componente para el drawer de evaluaciones.
+ * Suma de puntos por componente para el drawer de actividades del cuaderno.
  */
 
-export const calcularSumaPesosComponente = (
+export const calcularSumaPuntosComponente = (
   evaluaciones,
   componente,
-  pesoFormulario = 0,
+  puntosFormulario = 0,
   evaluacionIdExcluir = null,
 ) => {
   const sumaExistente = (evaluaciones ?? [])
     .filter((e) => e.componente === componente && e.id !== evaluacionIdExcluir)
-    .reduce((acc, e) => acc + Number(e.peso || 0), 0);
+    .reduce((acc, e) => acc + Math.round(Number(e.puntos || 0)), 0);
 
-  return Math.round((sumaExistente + Number(pesoFormulario || 0)) * 100) / 100;
+  return sumaExistente + Math.round(Number(puntosFormulario || 0));
 };
 
 export const contarNotasCargadas = (estudiantes, evaluacionId) =>

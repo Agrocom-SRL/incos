@@ -1,17 +1,12 @@
 import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
-import { mergePoliticaExtra, parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
-import {
-  calcularNotaBimestre,
-  notaCuotaAPromedio100,
-} from '../../utils/cuadernoNotasCalculo.js';
-import { obtenerCuotasDesdePolitica } from '../../utils/obtenerCuotasDesdePolitica.js';
+import { parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
+import { calcularNotaBimestre } from '../../utils/cuadernoNotasCalculo.js';
 
 const BIMESTRES_TOTAL = 4;
 
 const redondear = (v) => (v == null ? null : Math.round(Number(v) * 100) / 100);
 
-const agruparEstudiantes = (filas, notaMinima, cuotas) => {
-  const { cuotaTeorico, cuotaPractico } = cuotas;
+const agruparEstudiantes = (filas, notaMinima) => {
   const map = new Map();
   for (const row of filas) {
     const id = Number(row.estudiante_id);
@@ -45,8 +40,8 @@ const agruparEstudiantes = (filas, notaMinima, cuotas) => {
 
     est.bimestresPorNumero.set(num, {
       numero: num,
-      teorico: notaCuotaAPromedio100(teoricoCuota, cuotaTeorico),
-      practico: notaCuotaAPromedio100(practicoCuota, cuotaPractico),
+      teorico: teoricoCuota,
+      practico: practicoCuota,
       suma,
       estado: row.estado_bimestre ?? null,
     });
@@ -150,17 +145,13 @@ export class GetRegistroNotasCursoUseCase {
     const politicaParsed = parsePoliticaFromRow(politicaRow) ?? {};
     const notaMinimaAprobacion = Number(politicaParsed.notaMinimaAprobacion) || 61;
 
-    const cuotas = obtenerCuotasDesdePolitica(
-      mergePoliticaExtra(parsePoliticaFromRow(politicaRow)),
-    );
-
     const [docenteRow, filasEstudiantes, periodosCalendario] = await Promise.all([
       this.calificacionRepository.obtenerDocenteCalificaciones(docenteIdAsignacion),
       this.calificacionRepository.listarEstudiantesRegistroNotas(asignacionIdNum),
       this.calificacionRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id),
     ]);
 
-    const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion, cuotas);
+    const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion);
 
     const bimestreVigente = Number(ctx.bimestre_vigente) || null;
     const periodosPorNumero = new Map(

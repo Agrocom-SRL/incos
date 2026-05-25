@@ -11,9 +11,12 @@ import { parseNotaInput } from '@application-academico/calificaciones/utils/pars
 const NotaCell = ({
   estudianteId,
   evaluacionId,
+  puntosMaximos = 100,
   valorInicial,
   soloLectura = false,
 }) => {
+  const max = Math.round(Number(puntosMaximos) || 100);
+
   const cellKey = useMemo(
     () => `${estudianteId}::${evaluacionId}`,
     [estudianteId, evaluacionId],
@@ -51,11 +54,11 @@ const NotaCell = ({
 
   const handleChange = useCallback(
     (raw) => {
-      const parsed = parseNotaInput(raw);
+      const parsed = parseNotaInput(raw, max);
       if (parsed === undefined && raw != null && raw !== '') return;
       setValor(parsed);
     },
-    [setValor],
+    [setValor, max],
   );
 
   const vacio = valor == null || valor === '';
@@ -92,13 +95,13 @@ const NotaCell = ({
       <InputNumber
         className="cal-nota-cell__input"
         min={0}
-        max={100}
-        precision={2}
-        step={0.5}
+        max={max}
+        precision={0}
+        step={1}
         controls={false}
         value={vacio ? null : valor}
         onChange={handleChange}
-        aria-label={vacio ? 'Nota sin cargar' : `Nota ${valor}`}
+        aria-label={vacio ? 'Puntos sin cargar' : `${valor} de ${max} puntos`}
       />
     </span>
   );

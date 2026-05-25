@@ -18,13 +18,6 @@ export async function persistirNotaCuadernoCelda({
   if (nota === '' || nota === undefined) {
     nota = null;
   }
-  if (nota != null) {
-    const n = Number(nota);
-    if (!Number.isFinite(n) || n < 0 || n > 100) {
-      throw new ValidationError('La nota debe estar entre 0 y 100');
-    }
-    nota = Math.round(n * 100) / 100;
-  }
 
   const evaluacion = await cuadernoRepository.obtenerEvaluacionDeAsignacion(
     evaluacionId,
@@ -35,6 +28,21 @@ export async function persistirNotaCuadernoCelda({
   }
   if (evaluacion.notas_cerradas) {
     throw new ForbiddenError('Las notas de esta evaluación están cerradas.');
+  }
+
+  const puntosMax = Math.round(Number(evaluacion.puntos));
+  if (!Number.isFinite(puntosMax) || puntosMax < 1) {
+    throw new ValidationError('La actividad no tiene puntos configurados');
+  }
+
+  if (nota != null) {
+    const n = Number(nota);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0 || n > puntosMax) {
+      throw new ValidationError(
+        `La nota debe ser un entero entre 0 y ${puntosMax} (puntos de la actividad)`,
+      );
+    }
+    nota = n;
   }
 
   const periodoId = await cuadernoRepository.obtenerPeriodoAcademicoId(gestionId, bimestreNum);

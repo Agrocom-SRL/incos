@@ -5,6 +5,8 @@ import {
 } from '../../../domain/errors/AppError.js';
 import { mapEvaluacionEntityToDto } from '../../mappers/cuadernoEvaluacionMapper.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
+import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
+import { validarPuntosActividadEnCuota } from '../../utils/validarPuntosEvaluacion.js';
 
 export class UpdateEvaluacionCuadernoUseCase {
   constructor({
@@ -12,6 +14,7 @@ export class UpdateEvaluacionCuadernoUseCase {
     cuadernoRepository,
     bimesterEvaluationRepository,
     evaluationTypeRepository,
+    evaluationConfigurationRepository,
     teacherRepository,
     authRepository,
     logger,
@@ -20,6 +23,7 @@ export class UpdateEvaluacionCuadernoUseCase {
     this.cuadernoRepository = cuadernoRepository;
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
     this.evaluationTypeRepository = evaluationTypeRepository;
+    this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
     this.authRepository = authRepository;
     this.logger = logger;
@@ -29,7 +33,7 @@ export class UpdateEvaluacionCuadernoUseCase {
     const bimestreNum = Number(bimestre);
     const evalId = Number(evaluacionId);
 
-    const { bimestreVigente } = await assertCuadernoCursoAccess({
+    const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
       calificacionRepository: this.calificacionRepository,
       teacherRepository: this.teacherRepository,
       authRepository: this.authRepository,
@@ -70,15 +74,36 @@ export class UpdateEvaluacionCuadernoUseCase {
       }
       patch.component = body.componente;
     }
-    if (body?.peso != null) {
-      const peso = Number(body.peso);
-      if (!Number.isFinite(peso) || peso <= 0 || peso > 100) {
-        throw new ValidationError('Peso inválido');
-      }
-      patch.weight = peso;
-    }
     if ('fecha' in (body ?? {})) {
       patch.date = body.fecha ?? null;
+    }
+
+    const componenteFinal = patch.component ?? existente.componente;
+    const puntosEntrada = body?.puntos != null ? body.puntos : existente.puntos;
+
+    if (body?.puntos != null || body?.componente != null) {
+      const cuotas = await cargarCuotasPoliticaGestion({
+        calificacionRepository: this.calificacionRepository,
+        evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+        gestionId,
+      });
+
+      const existentes = await this.cuadernoRepository.listarEvaluaciones(
+        Number(asignacionId),
+        existente.periodo_academico_id,
+      );
+
+      patch.points = validarPuntosActividadEnCuota({
+        evaluaciones: existentes.map((e) => ({
+          id: e.id,
+          componente: e.componente,
+          puntos: e.puntos,
+        })),
+        componente: componenteFinal,
+        puntos: puntosEntrada,
+        evaluacionIdExcluir: evalId,
+        cuotas,
+      });
     }
 
     const updated = await this.bimesterEvaluationRepository.update(evalId, patch, usuarioId);

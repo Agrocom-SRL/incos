@@ -85,7 +85,7 @@ const PoliticaConfiguracionResumenCard = ({
 
       <FilaResumen
         label="Ponderación teórico / práctico (gestión)"
-        value={`${Number(cuotaTeorico).toFixed(1)}% · ${Number(cuotaPractico).toFixed(1)}%`}
+        value={`${Number(cuotaTeorico)} pts teórico · ${Number(cuotaPractico)} pts práctico`}
       />
       <FilaResumen
         label="Suma ponderación"

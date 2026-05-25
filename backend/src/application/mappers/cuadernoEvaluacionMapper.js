@@ -9,7 +9,7 @@ export const mapEvaluacionEntityToDto = (entity) => {
     tipoEvaluacionId: p.evaluationTypeId ?? null,
     nombre: p.evaluationName ?? '',
     componente: p.component ?? 'PRACTICO',
-    peso: p.weight != null ? Number(p.weight) : null,
+    puntos: p.points != null ? Number(p.points) : null,
     fecha: p.date ?? null,
     notasCerradas: Boolean(p.gradesClosed),
   };

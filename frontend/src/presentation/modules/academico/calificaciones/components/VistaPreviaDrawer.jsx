@@ -8,7 +8,7 @@ import { useVistaPreviaNotas } from '@application-academico/calificaciones/hooks
 
 const { Text } = Typography;
 
-const formatearNota = (valor) => (valor == null ? '—' : valor.toFixed(1));
+const formatearNota = (valor) => (valor == null ? '—' : String(Math.round(Number(valor))));
 
 const VistaPreviaDrawer = ({
   abierto,
@@ -18,7 +18,7 @@ const VistaPreviaDrawer = ({
   evaluaciones = [],
   onCerrar,
 }) => {
-  const { filas, validacionPesos, cuota, resumen, isLoading, error, notaMinimaAprobacion } =
+  const { filas, validacionPuntos, cuota, resumen, isLoading, error, notaMinimaAprobacion } =
     useVistaPreviaNotas({
       cursoId,
       abierto,
@@ -117,8 +117,8 @@ const VistaPreviaDrawer = ({
           type="info"
           showIcon
           className="cal-preview-drawer__alert"
-          message={`Cuota del curso: ${cuota.teorico}% teórico · ${cuota.practico}% práctico`}
-          description="Distinta a la institucional (30/70). Configurada en Ajustes del curso."
+          message={`Cuota institucional: ${cuota.teorico} pts teórico · ${cuota.practico} pts práctico`}
+          description="Distribución de los 100 puntos del bimestre según política institucional."
         />
       ) : null}
 
@@ -131,7 +131,7 @@ const VistaPreviaDrawer = ({
         />
       ) : null}
 
-      {validacionPesos.alertas.map((msg) => (
+      {validacionPuntos.alertas.map((msg) => (
         <Alert
           key={msg}
           type="warning"
@@ -141,12 +141,12 @@ const VistaPreviaDrawer = ({
         />
       ))}
 
-      {validacionPesos.pesosListos &&
-      (validacionPesos.tieneTeorico || validacionPesos.tienePractico) ? (
+      {validacionPuntos.puntosListos &&
+      (validacionPuntos.tieneTeorico || validacionPuntos.tienePractico) ? (
         <Alert
           type="success"
           showIcon
-          title="Los pesos de cada componente suman 100%."
+          title="Los puntos de cada componente completan la cuota del bimestre."
           className="cal-preview-drawer__alert"
         />
       ) : null}

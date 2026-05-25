@@ -21,14 +21,25 @@ const campoPorcentaje = (overrides) => ({
   ...overrides,
 });
 
-/** Cuota teórico / práctico por bimestre */
+const campoPuntosBimestre = (overrides) => ({
+  type: 'number',
+  min: 0,
+  max: 100,
+  step: 1,
+  precision: 0,
+  addonAfter: 'pts',
+  required: true,
+  ...overrides,
+});
+
+/** Cuota de puntos teórico / práctico por bimestre (suma 100) */
 export const createPoliticaCuotaFields = () => [
-  campoPorcentaje({
+  campoPuntosBimestre({
     name: 'cuotaTeorico',
     label: 'Teórico',
     span: 12,
   }),
-  campoPorcentaje({
+  campoPuntosBimestre({
     name: 'cuotaPractico',
     label: 'Práctico',
     span: 12,

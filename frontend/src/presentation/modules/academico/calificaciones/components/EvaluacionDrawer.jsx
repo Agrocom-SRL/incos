@@ -2,7 +2,7 @@
  * Drawer crear / editar evaluación del bimestre — estilo cal-ajustes-drawer.
  */
 
-import { forwardRef, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Button,
@@ -27,9 +27,9 @@ import {
 import dayjs from 'dayjs';
 import { useTiposEvaluacion } from '@application-academico/calificaciones/hooks/useTiposEvaluacion.js';
 import {
-  calcularSumaPesosComponente,
+  calcularSumaPuntosComponente,
   contarNotasCargadas,
-} from '@application-academico/calificaciones/utils/pesoEvaluaciones.js';
+} from '@application-academico/calificaciones/utils/puntosEvaluaciones.js';
 import SeccionAjustes from './ajustes/SeccionAjustes.jsx';
 import {
   CALIFICACIONES_DRAWER_Z_INDEX,
@@ -45,17 +45,6 @@ const COMPONENTES = [
   { label: 'Práctico', value: 'PRACTICO' },
 ];
 
-const InputPorcentaje = forwardRef((props, ref) => {
-  const { style, ...rest } = props;
-  return (
-    <Space.Compact block className="cal-ajustes-drawer__input-pct">
-      <InputNumber ref={ref} {...rest} style={{ width: '100%', ...style }} />
-      <Input className="cal-ajustes-drawer__input-pct-suffix" value="%" disabled tabIndex={-1} />
-    </Space.Compact>
-  );
-});
-InputPorcentaje.displayName = 'InputPorcentaje';
-
 const EvaluacionDrawer = ({
   abierto,
   modo,
@@ -64,6 +53,8 @@ const EvaluacionDrawer = ({
   bimestre,
   evaluacionesActuales = [],
   estudiantes = [],
+  cuotaTeorico = 30,
+  cuotaPractico = 70,
   onCerrar,
   onGuardado,
   onEliminado,
@@ -77,7 +68,7 @@ const EvaluacionDrawer = ({
   const [errorGuardado, setErrorGuardado] = useState(null);
 
   const componenteWatch = Form.useWatch('componente', form);
-  const pesoWatch = Form.useWatch('peso', form);
+  const puntosWatch = Form.useWatch('puntos', form);
   const esEditar = modo === 'editar';
 
   useEffect(() => {
@@ -89,7 +80,7 @@ const EvaluacionDrawer = ({
         tipoEvaluacionId: evaluacion.tipoEvaluacionId,
         nombre: evaluacion.nombre,
         componente: evaluacion.componente,
-        peso: evaluacion.peso,
+        puntos: evaluacion.puntos,
         fecha: evaluacion.fecha ? dayjs(evaluacion.fecha) : null,
       });
     } else {
@@ -98,39 +89,42 @@ const EvaluacionDrawer = ({
     }
   }, [abierto, esEditar, evaluacion, form]);
 
-  const sumaPesos = useMemo(
+  const cuotaComponente =
+    componenteWatch === 'PRACTICO' ? Number(cuotaPractico) || 70 : Number(cuotaTeorico) || 30;
+
+  const sumaPuntos = useMemo(
     () =>
-      calcularSumaPesosComponente(
+      calcularSumaPuntosComponente(
         evaluacionesActuales,
         componenteWatch ?? 'TEORICO',
-        pesoWatch ?? 0,
+        puntosWatch ?? 0,
         esEditar ? evaluacion?.id : null,
       ),
-    [evaluacionesActuales, componenteWatch, pesoWatch, esEditar, evaluacion?.id],
+    [evaluacionesActuales, componenteWatch, puntosWatch, esEditar, evaluacion?.id],
   );
 
-  const bloquePesos = useMemo(() => {
+  const bloquePuntos = useMemo(() => {
     const etiqueta = componenteWatch === 'PRACTICO' ? 'Práctico' : 'Teórico';
-    if (sumaPesos > 100) {
+    if (sumaPuntos > cuotaComponente) {
       return {
         tipo: 'warn',
-        texto: `Suma actual: ${sumaPesos}% / 100% — supera el límite. El bimestre solo puede cerrarse con suma exacta de 100%.`,
+        texto: `Suma actual: ${sumaPuntos} / ${cuotaComponente} pts — supera la cuota del componente ${etiqueta}.`,
         etiqueta,
       };
     }
-    if (sumaPesos === 100) {
+    if (sumaPuntos === cuotaComponente) {
       return {
         tipo: 'ok-full',
-        texto: 'Suma actual: 100% / 100% — completo',
+        texto: `Suma actual: ${sumaPuntos} / ${cuotaComponente} pts — completo`,
         etiqueta,
       };
     }
     return {
       tipo: 'ok',
-      texto: `Suma actual del componente ${etiqueta}: ${sumaPesos}% / 100%`,
+      texto: `Suma actual del componente ${etiqueta}: ${sumaPuntos} / ${cuotaComponente} pts`,
       etiqueta,
     };
-  }, [sumaPesos, componenteWatch]);
+  }, [sumaPuntos, componenteWatch, cuotaComponente]);
 
   const handleCerrar = () => {
     if (!guardando && !eliminando) onCerrar();
@@ -140,7 +134,7 @@ const EvaluacionDrawer = ({
     tipoEvaluacionId: values.tipoEvaluacionId,
     nombre: values.nombre?.trim(),
     componente: values.componente,
-    peso: values.peso,
+    puntos: values.puntos,
     fecha: values.fecha ? values.fecha.format('YYYY-MM-DD') : null,
   });
 
@@ -311,12 +305,13 @@ const EvaluacionDrawer = ({
 
           <SeccionAjustes
             icon={PieChartOutlined}
-            titulo="Componente y ponderación"
+            titulo="Componente y puntos"
             className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
-              Indicá si la evaluación suma al componente teórico o práctico y qué porcentaje
-              representa dentro de ese componente al cerrar el bimestre.
+              Indicá si la actividad suma al bloque teórico ({cuotaTeorico} pts) o práctico (
+              {cuotaPractico} pts) del bimestre, y cuántos puntos aporta esta columna. La suma de
+              actividades de cada componente no debe superar su cuota.
             </p>
 
             <Form.Item
@@ -328,36 +323,46 @@ const EvaluacionDrawer = ({
             </Form.Item>
 
             <Form.Item
-              name="peso"
-              label="Peso dentro del componente"
+              name="puntos"
+              label="Puntos de la actividad"
               rules={[
-                { required: true, message: 'Ingresá el peso' },
+                { required: true, message: 'Ingresá los puntos' },
                 {
                   validator: (_, value) => {
-                    if (value == null || value <= 0) {
-                      return Promise.reject(new Error('El peso debe ser mayor a 0'));
+                    const n = Number(value);
+                    if (value == null || !Number.isInteger(n) || n < 1) {
+                      return Promise.reject(new Error('Los puntos deben ser un entero ≥ 1'));
                     }
-                    if (value > 100) {
-                      return Promise.reject(new Error('Máximo 100%'));
+                    if (n > cuotaComponente) {
+                      return Promise.reject(
+                        new Error(`Máximo ${cuotaComponente} pts para este componente`),
+                      );
                     }
                     return Promise.resolve();
                   },
                 },
               ]}
             >
-              <InputPorcentaje min={0.01} max={100} precision={2} step={0.5} />
+              <InputNumber
+                min={1}
+                max={cuotaComponente}
+                precision={0}
+                step={1}
+                style={{ width: '100%' }}
+                addonAfter="pts"
+              />
             </Form.Item>
 
             <div
               className={[
                 'cal-eval-drawer__peso-hint',
-                `cal-eval-drawer__peso-hint--${bloquePesos.tipo}`,
+                `cal-eval-drawer__peso-hint--${bloquePuntos.tipo}`,
               ].join(' ')}
             >
-              {bloquePesos.tipo === 'ok-full' ? (
+              {bloquePuntos.tipo === 'ok-full' ? (
                 <CheckOutlined className="cal-eval-drawer__peso-icon" aria-hidden />
               ) : null}
-              <span>{bloquePesos.texto}</span>
+              <span>{bloquePuntos.texto}</span>
             </div>
           </SeccionAjustes>
 

@@ -301,6 +301,9 @@ export function registerCalificacionesResource(container) {
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         bimesterEvaluationRepository: c.resolve(REPOSITORIOS_TOKENS.bimesterEvaluationRepository),
         evaluationTypeRepository: c.resolve(REPOSITORIOS_TOKENS.evaluationTypeRepository),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
+        ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -316,6 +319,9 @@ export function registerCalificacionesResource(container) {
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         bimesterEvaluationRepository: c.resolve(REPOSITORIOS_TOKENS.bimesterEvaluationRepository),
         evaluationTypeRepository: c.resolve(REPOSITORIOS_TOKENS.evaluationTypeRepository),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
+        ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),

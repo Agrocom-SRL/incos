@@ -12,7 +12,7 @@
 --
 -- REFACTOR 3FN (cambio respecto al schema anterior):
 --   El esquema original mezclaba en `evaluaciones` dos entidades distintas: la
---   COLUMNA del cuaderno (nombre, peso, componente, tipo, fecha) y la NOTA
+--   COLUMNA del cuaderno (nombre, puntos, componente, tipo, fecha) y la NOTA
 --   individual de cada estudiante. Esto generaba redundancia: 35 estudiantes
 --   en un curso = 35 filas con metadatos duplicados de la misma evaluación.
 --
@@ -63,7 +63,7 @@
 --      └── evaluaciones (N columnas del cuaderno por curso × bimestre)
 --             ├── periodo_academico_id → bimestre del calendario
 --             ├── componente: TEORICO o PRACTICO
---             ├── nombre, peso, tipo, fecha (UNA fila, no N)
+--             ├── nombre, puntos, tipo, fecha (UNA fila, no N)
 --             └── 1:N → evaluaciones_notas
 --
 -- CARGA PEREZOSA DE CELDAS:
@@ -82,9 +82,11 @@
 --     cuotas teórico/práctico, pesos de bimestres, nota mínima, asistencia default.
 --   - Solo administración define y modifica esa política (POLITICA_INSTITUCIONAL).
 --   - Los docentes no parametrizan cuotas, pesos ni asistencia por curso.
---   - Las evaluaciones componente=TEORICO se promedian ponderado y se reescalan a
---     la cuota_teorico; lo mismo para práctico
---   - nota_bimestre = nota_teorico + nota_practico (≤ 100)
+--   - Cada actividad (evaluaciones) tiene puntos fijos (puntos) que suman a la cuota
+--     del componente (teórico 30, práctico 70 por defecto en POLITICA_INSTITUCIONAL)
+--   - Cada celda (evaluaciones_notas.nota) guarda puntos obtenidos (entero 0..puntos)
+--   - nota_teorico / nota_practico = SUMA de puntos obtenidos por actividad del componente
+--   - nota_bimestre = nota_teorico + nota_practico (≤ 100 puntos)
 --
 -- HABILITACIÓN vs RECUPERATORIO:
 --   - Habilitación bimestral: campo nota_habilitacion en bimestres_matricula.
@@ -233,9 +235,9 @@ COMMENT='Configuración global de evaluación por gestión (clave-valor). Polít
 --   Las evaluaciones (columnas) se vinculan al período del calendario.
 --   Las notas (celdas) se vinculan al bimestre operativo del estudiante.
 --
--- COMPONENTES OFICIALES:
---   - nota_teorico: componente teórico (sobre cuota_teorico, ej. 30)
---   - nota_practico: componente práctico (sobre cuota_practico, ej. 70)
+-- COMPONENTES OFICIALES (puntos del bimestre, 0-100 total):
+--   - nota_teorico: suma de puntos obtenidos en actividades TEORICO (máx. cuota_teorico, ej. 30)
+--   - nota_practico: suma de puntos obtenidos en actividades PRACTICO (máx. cuota_practico, ej. 70)
 --   - nota_bimestre: nota_teorico + nota_practico (≤ 100)
 --
 -- HABILITACIÓN BIMESTRAL:
@@ -258,9 +260,9 @@ CREATE TABLE bimestres_matricula (
 
     -- Componentes oficiales del boletín
     nota_teorico DECIMAL(5,2) NULL 
-        COMMENT 'Nota del componente teórico (sobre cuota_teorico, típicamente ≤30). Calculada como SUMA(nota×peso) de evaluaciones_notas con componente=TEORICO, reescalada a la cuota',
+        COMMENT 'Puntos obtenidos en el componente teórico (0..cuota_teorico, ej. ≤30). SUMA de evaluaciones_notas.nota en actividades TEORICO',
     nota_practico DECIMAL(5,2) NULL 
-        COMMENT 'Nota del componente práctico (sobre cuota_practico, típicamente ≤70). Mismo cálculo que teórico',
+        COMMENT 'Puntos obtenidos en el componente práctico (0..cuota_practico, ej. ≤70). SUMA de evaluaciones_notas.nota en actividades PRACTICO',
     nota_bimestre DECIMAL(5,2) NULL 
         COMMENT 'Nota cerrada del bimestre (0-100). Suma de nota_teorico + nota_practico',
 
@@ -321,10 +323,11 @@ COMMENT='Bimestre operativo de una matrícula. Contiene los componentes oficiale
 --   - periodos_academicos.gestion_id debe coincidir con la gestión del curso
 --     (asignaciones_docentes → gestion_plan → gestion)
 --
--- COMPONENTE Y PESO:
---   componente indica si la columna contribuye a nota_teorico o nota_practico
---   del boletín oficial. peso es relativo dentro del componente (los pesos
---   del mismo componente se proporcionan al cerrar el bimestre).
+-- COMPONENTE Y PUNTOS:
+--   componente indica si la actividad suma a nota_teorico o nota_practico.
+--   puntos es el máximo de puntos que aporta la actividad al bimestre (entero).
+--   La suma de puntos de actividades del mismo componente no debe superar la cuota
+--   institucional (cuota_teorico / cuota_practico en POLITICA_INSTITUCIONAL).
 --
 -- RECUPERACIÓN: columnas del cuaderno de un curso × bimestre × gestión:
 --   SELECT e.*
@@ -357,9 +360,9 @@ CREATE TABLE evaluaciones (
     descripcion TEXT 
         COMMENT 'Descripción o consigna de la evaluación',
 
-    -- Ponderación
-    peso DECIMAL(5,2) NULL DEFAULT 1 
-        COMMENT 'Peso relativo dentro de su componente (TEORICO o PRACTICO). Los pesos del mismo componente se proporcionan al cerrar el bimestre',
+    -- Puntos de la actividad (máximo alcanzable en esta columna)
+    puntos SMALLINT UNSIGNED NULL DEFAULT 1 
+        COMMENT 'Puntos que aporta esta actividad al bimestre (entero). La celda admite 0..puntos. La suma por componente no debe superar cuota_teorico o cuota_practico',
     fecha DATE NULL 
         COMMENT 'Fecha en que se rindió la evaluación',
 
@@ -419,7 +422,7 @@ COMMENT='Columna del cuaderno docente (entidad lógica). Una fila por evaluació
 -- ACCESO TÍPICO:
 --   - Grilla completa del cuaderno: LEFT JOIN bimestres_matricula × evaluaciones
 --   - Cálculo de nota_teorico/practico del estudiante en su bimestre:
---     SELECT en.nota, e.peso
+--     SELECT en.nota, e.puntos
 --     FROM evaluaciones_notas en
 --     JOIN evaluaciones e ON e.id = en.evaluacion_id
 --     WHERE en.bimestre_matricula_id = ?
@@ -437,8 +440,8 @@ CREATE TABLE evaluaciones_notas (
         COMMENT 'Estudiante en su bimestre operativo (referencia a bimestres_matricula). Eje vertical de la grilla',
 
     -- Calificación
-    nota DECIMAL(5,2) NULL 
-        COMMENT 'Nota obtenida (0-100). Se interpreta sobre 100 y luego se reescala a la cuota del componente al cerrar el bimestre',
+    nota SMALLINT UNSIGNED NULL 
+        COMMENT 'Puntos obtenidos en esta actividad (entero 0..evaluaciones.puntos). Suma directa al componente del bimestre',
     intento INT DEFAULT 1 
         COMMENT 'Número de intento (1 regular; >1 para retomas autorizadas si tipo permite múltiples intentos)',
 

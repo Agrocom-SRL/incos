@@ -8,6 +8,17 @@ const asignacionParam = param('asignacionId')
   .isInt({ min: 1 })
   .withMessage('Asignación inválida');
 
+const puntosEnteros = (field) =>
+  body(field)
+    .custom((value) => {
+      const n = Number(value);
+      if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1 || n > 100) {
+        throw new Error('Los puntos deben ser un entero entre 1 y 100');
+      }
+      return true;
+    })
+    .withMessage('Puntos inválidos');
+
 export const getCuadernoBimestreValidator = [asignacionParam, bimestreParam];
 
 export const createEvaluacionCuadernoValidator = [
@@ -16,7 +27,7 @@ export const createEvaluacionCuadernoValidator = [
   body('tipoEvaluacionId').isInt({ min: 1 }).withMessage('Tipo requerido'),
   body('nombre').trim().notEmpty().isLength({ max: 255 }).withMessage('Nombre requerido'),
   body('componente').isIn(['TEORICO', 'PRACTICO']).withMessage('Componente inválido'),
-  body('peso').isFloat({ min: 0.01, max: 100 }).withMessage('Peso inválido'),
+  puntosEnteros('puntos'),
   body('fecha').optional({ nullable: true }).isISO8601().withMessage('Fecha inválida'),
 ];
 
@@ -27,7 +38,13 @@ export const updateEvaluacionCuadernoValidator = [
   body('tipoEvaluacionId').optional().isInt({ min: 1 }),
   body('nombre').optional().trim().notEmpty().isLength({ max: 255 }),
   body('componente').optional().isIn(['TEORICO', 'PRACTICO']),
-  body('peso').optional().isFloat({ min: 0.01, max: 100 }),
+  body('puntos').optional().custom((value) => {
+    const n = Number(value);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1 || n > 100) {
+      throw new Error('Los puntos deben ser un entero entre 1 y 100');
+    }
+    return true;
+  }),
   body('fecha').optional({ nullable: true }).isISO8601(),
 ];
 
@@ -37,22 +54,22 @@ export const deleteEvaluacionCuadernoValidator = [
   param('evaluacionId').isInt({ min: 1 }),
 ];
 
+const validarNotaCelda = (value) => {
+  if (value === null || value === '') return true;
+  const n = Number(value);
+  if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0) {
+    throw new Error('La nota debe ser un entero mayor o igual a 0');
+  }
+  return true;
+};
+
 export const guardarNotasCuadernoBimestreValidator = [
   asignacionParam,
   bimestreParam,
   body('notas').optional().isArray().withMessage('notas debe ser un arreglo'),
   body('notas.*.estudianteId').optional().isInt({ min: 1 }),
   body('notas.*.evaluacionId').optional().isInt({ min: 1 }),
-  body('notas.*.nota')
-    .optional({ nullable: true })
-    .custom((value) => {
-      if (value === null || value === '') return true;
-      const n = Number(value);
-      if (!Number.isFinite(n) || n < 0 || n > 100) {
-        throw new Error('La nota debe estar entre 0 y 100');
-      }
-      return true;
-    }),
+  body('notas.*.nota').optional({ nullable: true }).custom(validarNotaCelda),
 ];
 
 export const upsertNotaCuadernoValidator = [
@@ -60,14 +77,5 @@ export const upsertNotaCuadernoValidator = [
   bimestreParam,
   body('estudianteId').isInt({ min: 1 }).withMessage('Estudiante requerido'),
   body('evaluacionId').isInt({ min: 1 }).withMessage('Evaluación requerida'),
-  body('nota')
-    .optional({ nullable: true })
-    .custom((value) => {
-      if (value === null || value === '') return true;
-      const n = Number(value);
-      if (!Number.isFinite(n) || n < 0 || n > 100) {
-        throw new Error('La nota debe estar entre 0 y 100');
-      }
-      return true;
-    }),
+  body('nota').optional({ nullable: true }).custom(validarNotaCelda),
 ];

@@ -11,7 +11,8 @@ import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useCuadernoCurso } from '@application-academico/calificaciones/hooks/useCuadernoCurso.js';
-import { contarNotasCargadas } from '@application-academico/calificaciones/utils/pesoEvaluaciones.js';
+import { contarNotasCargadas } from '@application-academico/calificaciones/utils/puntosEvaluaciones.js';
+import { usePoliticaInstitucional } from '@application-academico/calificaciones/hooks/usePoliticaInstitucional.js';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { useCalificacionesVistaContext } from '@application-academico/calificaciones/hooks/useCalificacionesVistaContext.js';
 import {
@@ -182,6 +183,9 @@ const CuadernoGrilla = ({
 const CuadernoPage = () => {
   const navigate = useNavigate();
   const { docenteNombreCoordinacion } = useCalificacionesVistaContext();
+  const { politica } = usePoliticaInstitucional();
+  const cuotaTeorico = Number(politica?.cuotaTeorico) || 30;
+  const cuotaPractico = Number(politica?.cuotaPractico) || 70;
   const {
     curso,
     docente,
@@ -400,6 +404,8 @@ const CuadernoPage = () => {
         onEliminado={handleEliminado}
         crearEvaluacion={crearEvaluacion}
         editarEvaluacion={editarEvaluacion}
+        cuotaTeorico={cuotaTeorico}
+        cuotaPractico={cuotaPractico}
       />
     </Flex>
   );

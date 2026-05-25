@@ -63,7 +63,7 @@ const PoliticaInstitucionalSidebarResumen = ({ politica, gestionVigente }) => {
             <Descriptions column={1} size="small" colon={false}>
               <Descriptions.Item label="Cuota teórico / práctico">
                 <Text>
-                  {politica.cuotaTeorico}% / {politica.cuotaPractico}%
+                  {politica.cuotaTeorico} / {politica.cuotaPractico} pts
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Pesos bimestrales">

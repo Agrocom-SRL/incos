@@ -1,5 +1,5 @@
 /**
- * Ponderación teórico / práctico (gestión completa, suma 100%).
+ * Distribución de puntos teórico / práctico por bimestre (suma 100 pts).
  */
 
 import { Form, Flex, Typography, InputNumber } from 'antd';
@@ -49,7 +49,8 @@ const PoliticaPonderacionTeoricoPractico = ({ form, disabled = false }) => {
           color={COLOR_PRACTICO}
         />
         <Text type="secondary" className="cal-politica-ponderacion-hint">
-          Al mover un control, el otro se ajusta para mantener 100% en la gestión.
+          Al mover un control, el otro se ajusta para mantener 100 puntos por bimestre (teórico +
+          práctico).
         </Text>
       </Flex>
     </>

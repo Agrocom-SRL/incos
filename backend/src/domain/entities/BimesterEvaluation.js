@@ -28,8 +28,8 @@ export class BimesterEvaluation extends BaseEntity {
         if (data.hasOwnProperty('description')) {
             this.description = data.description;
         }
-        if (data.hasOwnProperty('weight')) {
-            this.weight = data.weight;
+        if (data.hasOwnProperty('points')) {
+            this.points = data.points;
         }
         if (data.hasOwnProperty('date')) {
             this.date = data.date;
@@ -61,7 +61,7 @@ export class BimesterEvaluation extends BaseEntity {
             plainObject.evaluationName = this.evaluationName;
         }
         if (this.hasOwnProperty('description')) plainObject.description = this.description;
-        if (this.hasOwnProperty('weight')) plainObject.weight = this.weight;
+        if (this.hasOwnProperty('points')) plainObject.points = this.points;
         if (this.hasOwnProperty('date')) plainObject.date = this.date;
         if (this.hasOwnProperty('gradesClosed')) plainObject.gradesClosed = this.gradesClosed;
 

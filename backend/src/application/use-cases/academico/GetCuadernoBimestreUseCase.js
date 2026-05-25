@@ -60,7 +60,7 @@ export class GetCuadernoBimestreUseCase {
           evaluationTypeId: row.tipo_evaluacion_id,
           component: row.componente,
           evaluationName: row.nombre_evaluacion,
-          weight: row.peso,
+          points: row.puntos,
           date: row.fecha,
           gradesClosed: Boolean(row.notas_cerradas),
         }),

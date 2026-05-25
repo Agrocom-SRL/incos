@@ -1,70 +1,31 @@
 /**
  * Cálculo de nota_teorico / nota_practico / nota_final desde evaluaciones_notas.
+ * Modelo por puntos: cada celda aporta puntos enteros; el componente es la suma.
  */
 
 const redondear = (v) => (v == null ? null : Math.round(Number(v) * 100) / 100);
 
 /**
- * @param {Array<{ componente: string, peso: number, nota: number }>} filas
+ * Suma de puntos obtenidos en actividades de un componente (0..cuota).
+ *
+ * @param {Array<{ componente: string, nota: number }>} filas
  * @param {'TEORICO'|'PRACTICO'} componente
- * @param {number} cuota
  */
-export const calcularNotaComponente = (filas, componente, cuota) => {
+export const calcularNotaComponente = (filas, componente) => {
   const delComponente = (filas ?? []).filter(
     (f) => f.componente === componente && f.nota != null && Number.isFinite(Number(f.nota)),
   );
   if (delComponente.length === 0) return null;
 
-  const sumaPeso = delComponente.reduce((acc, f) => acc + Number(f.peso || 0), 0);
-  if (sumaPeso <= 0) return null;
-
-  const ponderada =
-    delComponente.reduce((acc, f) => acc + Number(f.nota) * Number(f.peso || 0), 0) / sumaPeso;
-
-  return redondear((ponderada * Number(cuota)) / 100);
+  const suma = delComponente.reduce((acc, f) => acc + Math.round(Number(f.nota)), 0);
+  return suma;
 };
 
 /**
- * Promedio ponderado del componente sobre 100 (sin aplicar cuota teórica/práctica).
- */
-export const calcularPromedioComponenteSinCuota = (filas, componente) => {
-  const delComponente = (filas ?? []).filter(
-    (f) => f.componente === componente && f.nota != null && Number.isFinite(Number(f.nota)),
-  );
-  if (delComponente.length === 0) return null;
-
-  const sumaPeso = delComponente.reduce((acc, f) => acc + Number(f.peso || 0), 0);
-  if (sumaPeso <= 0) return null;
-
-  const ponderada =
-    delComponente.reduce((acc, f) => acc + Number(f.nota) * Number(f.peso || 0), 0) / sumaPeso;
-
-  return redondear(ponderada);
-};
-
-/**
- * Convierte nota en cuota (ej. 25 sobre cuota 30) a promedio sobre 100 para el registro.
- */
-export const notaCuotaAPromedio100 = (notaCuota, cuota) => {
-  if (notaCuota == null || cuota == null || Number(cuota) <= 0) return null;
-  return redondear((Number(notaCuota) / Number(cuota)) * 100);
-};
-
-/**
- * @param {number|null} teorico
- * @param {number|null} practico
- */
-export const calcularNotaBimestre = (teorico, practico) => {
-  if (teorico == null && practico == null) return null;
-  return redondear((Number(teorico) || 0) + (Number(practico) || 0));
-};
-
-/**
- * @param {Array<{ bimestreMatriculaId: number, componente: string, peso: number, nota: number }>} filas
- * @param {{ cuotaTeorico: number, cuotaPractico: number }} cuotas
+ * @param {Array<{ bimestreMatriculaId: number, componente: string, nota: number }>} filas
  * @returns {Map<number, { teorico: number|null, practico: number|null, bimestre: number|null }>}
  */
-export const agruparYCalcularPorBimestreMatricula = (filas, cuotas) => {
+export const agruparYCalcularPorBimestreMatricula = (filas) => {
   const porBm = new Map();
   for (const row of filas ?? []) {
     const id = Number(row.bimestreMatriculaId);
@@ -75,8 +36,8 @@ export const agruparYCalcularPorBimestreMatricula = (filas, cuotas) => {
 
   const resultado = new Map();
   for (const [bmId, grupo] of porBm.entries()) {
-    const teorico = calcularNotaComponente(grupo, 'TEORICO', cuotas.cuotaTeorico);
-    const practico = calcularNotaComponente(grupo, 'PRACTICO', cuotas.cuotaPractico);
+    const teorico = calcularNotaComponente(grupo, 'TEORICO');
+    const practico = calcularNotaComponente(grupo, 'PRACTICO');
     resultado.set(bmId, {
       teorico,
       practico,
@@ -84,6 +45,15 @@ export const agruparYCalcularPorBimestreMatricula = (filas, cuotas) => {
     });
   }
   return resultado;
+};
+
+/**
+ * @param {number|null} teorico
+ * @param {number|null} practico
+ */
+export const calcularNotaBimestre = (teorico, practico) => {
+  if (teorico == null && practico == null) return null;
+  return redondear((Number(teorico) || 0) + (Number(practico) || 0));
 };
 
 /**
@@ -100,7 +70,7 @@ export const notaEfectivaBimestre = (row) => {
  * nota_final = Σ(nota_bimestre × peso_bimestre) / Σ(peso) — solo los 4 bimestres.
  *
  * @param {Array<{ numero: number, nota: number|null }>} bimestres
- * @param {number[]} pesosBimestres — 4 ponderaciones institucionales
+ * @param {number[]} pesosBimestres — 4 ponderaciones institucionales (% del año)
  */
 export const calcularNotaFinalPonderada = (bimestres, pesosBimestres) => {
   let suma = 0;

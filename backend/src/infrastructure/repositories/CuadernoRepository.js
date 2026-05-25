@@ -43,7 +43,7 @@ export class CuadernoRepository {
         e.tipo_evaluacion_id,
         e.componente,
         e.nombre_evaluacion,
-        e.peso,
+        e.puntos,
         e.fecha,
         e.notas_cerradas,
         e.activo,
@@ -125,7 +125,7 @@ export class CuadernoRepository {
         e.tipo_evaluacion_id,
         e.componente,
         e.nombre_evaluacion,
-        e.peso,
+        e.puntos,
         e.fecha,
         e.notas_cerradas
       FROM evaluaciones e
@@ -367,7 +367,7 @@ export class CuadernoRepository {
       SELECT
         bm.id AS bimestre_matricula_id,
         e.componente,
-        e.peso,
+        e.puntos,
         en.nota
       FROM bimestres_matricula bm
       INNER JOIN matriculas_materia mm
@@ -399,7 +399,7 @@ export class CuadernoRepository {
     return rows.map((r) => ({
       bimestreMatriculaId: Number(r.bimestre_matricula_id),
       componente: r.componente,
-      peso: r.peso != null ? Number(r.peso) : null,
+      puntos: r.puntos != null ? Number(r.puntos) : null,
       nota: r.nota != null ? Number(r.nota) : null,
     }));
   }

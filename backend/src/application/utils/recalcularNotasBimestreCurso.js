@@ -15,10 +15,7 @@ export async function recalcularNotasBimestreCurso({
     Number(asignacionId),
     bimestreNumero,
   );
-  const calculados = agruparYCalcularPorBimestreMatricula(filas, {
-    cuotaTeorico,
-    cuotaPractico,
-  });
+  const calculados = agruparYCalcularPorBimestreMatricula(filas);
 
   const todosBm = await cuadernoRepository.listarBimestresMatriculaIdsCurso(
     Number(asignacionId),

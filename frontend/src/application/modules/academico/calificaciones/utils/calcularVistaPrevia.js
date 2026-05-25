@@ -1,51 +1,54 @@
 /**
  * Cálculo en vivo de nota teórico / práctico / bimestre (vista previa, sin persistir).
- * Alineado al modelo: promedio ponderado 0–100 por componente, reescala a cuota.
+ * Modelo por puntos: suma directa de puntos obtenidos por actividad.
  */
 
-import { calcularSumaPesosComponente } from './pesoEvaluaciones.js';
+import { calcularSumaPuntosComponente } from './puntosEvaluaciones.js';
 
 const redondear = (n) => Math.round(n * 100) / 100;
 
-export const validarPesosBimestre = (evaluaciones = []) => {
-  const sumaTeorico = calcularSumaPesosComponente(evaluaciones, 'TEORICO', 0);
-  const sumaPractico = calcularSumaPesosComponente(evaluaciones, 'PRACTICO', 0);
+export const validarPuntosBimestre = (evaluaciones = [], cuota = { teorico: 30, practico: 70 }) => {
+  const cuotaTeorico = Number(cuota.teorico) || 30;
+  const cuotaPractico = Number(cuota.practico) || 70;
+
+  const sumaTeorico = calcularSumaPuntosComponente(evaluaciones, 'TEORICO', 0);
+  const sumaPractico = calcularSumaPuntosComponente(evaluaciones, 'PRACTICO', 0);
   const evTeorico = evaluaciones.filter((e) => e.componente === 'TEORICO');
   const evPractico = evaluaciones.filter((e) => e.componente === 'PRACTICO');
 
-  const mensaje = (componente, suma, tieneEvals) => {
+  const mensaje = (componente, suma, cuotaMax, tieneEvals) => {
     if (!tieneEvals) return null;
-    if (suma === 100) return null;
-    if (suma > 100) {
-      return `El componente ${componente} suma ${suma}% (supera 100%). Editá los pesos en las columnas del cuaderno.`;
+    if (suma === cuotaMax) return null;
+    if (suma > cuotaMax) {
+      return `El componente ${componente} suma ${suma} pts (supera ${cuotaMax} pts). Ajustá los puntos de las actividades.`;
     }
-    return `El componente ${componente} suma ${suma}% de 100%. Agregá evaluaciones o ajustá pesos antes del cierre.`;
+    return `El componente ${componente} suma ${suma} de ${cuotaMax} pts. Agregá actividades o completá la distribución antes del cierre.`;
   };
 
   return {
     sumaTeorico,
     sumaPractico,
-    teoricoCompleto: evTeorico.length === 0 || sumaTeorico === 100,
-    practicoCompleto: evPractico.length === 0 || sumaPractico === 100,
+    teoricoCompleto: evTeorico.length === 0 || sumaTeorico === cuotaTeorico,
+    practicoCompleto: evPractico.length === 0 || sumaPractico === cuotaPractico,
     tieneTeorico: evTeorico.length > 0,
     tienePractico: evPractico.length > 0,
     alertas: [
-      mensaje('Teórico', sumaTeorico, evTeorico.length > 0),
-      mensaje('Práctico', sumaPractico, evPractico.length > 0),
+      mensaje('Teórico', sumaTeorico, cuotaTeorico, evTeorico.length > 0),
+      mensaje('Práctico', sumaPractico, cuotaPractico, evPractico.length > 0),
     ].filter(Boolean),
-    pesosListos:
-      (evTeorico.length === 0 || sumaTeorico === 100) &&
-      (evPractico.length === 0 || sumaPractico === 100),
+    puntosListos:
+      (evTeorico.length === 0 || sumaTeorico === cuotaTeorico) &&
+      (evPractico.length === 0 || sumaPractico === cuotaPractico),
   };
 };
 
-const promedioPonderadoComponente = (estudiante, evaluacionesComponente) => {
+const sumaPuntosComponente = (estudiante, evaluacionesComponente) => {
   if (evaluacionesComponente.length === 0) {
-    return { promedio: null, incompleto: false, faltantes: 0 };
+    return { puntos: null, incompleto: false, faltantes: 0 };
   }
 
   let faltantes = 0;
-  let sumaPonderada = 0;
+  let suma = 0;
 
   for (const ev of evaluacionesComponente) {
     const raw = estudiante.notas?.[ev.id];
@@ -53,31 +56,25 @@ const promedioPonderadoComponente = (estudiante, evaluacionesComponente) => {
       faltantes += 1;
       continue;
     }
-    sumaPonderada += Number(raw) * Number(ev.peso || 0);
+    suma += Math.round(Number(raw));
   }
 
   if (faltantes > 0) {
-    return { promedio: null, incompleto: true, faltantes };
+    return { puntos: null, incompleto: true, faltantes };
   }
 
-  return { promedio: redondear(sumaPonderada / 100), incompleto: false, faltantes: 0 };
+  return { puntos: suma, incompleto: false, faltantes: 0 };
 };
 
-export const calcularFilaEstudiante = (estudiante, evaluaciones, cuota) => {
+export const calcularFilaEstudiante = (estudiante, evaluaciones) => {
   const evTeorico = evaluaciones.filter((e) => e.componente === 'TEORICO');
   const evPractico = evaluaciones.filter((e) => e.componente === 'PRACTICO');
 
-  const resTeorico = promedioPonderadoComponente(estudiante, evTeorico);
-  const resPractico = promedioPonderadoComponente(estudiante, evPractico);
+  const resTeorico = sumaPuntosComponente(estudiante, evTeorico);
+  const resPractico = sumaPuntosComponente(estudiante, evPractico);
 
-  const notaTeorico =
-    resTeorico.promedio != null
-      ? redondear((resTeorico.promedio * cuota.teorico) / 100)
-      : null;
-  const notaPractico =
-    resPractico.promedio != null
-      ? redondear((resPractico.promedio * cuota.practico) / 100)
-      : null;
+  const notaTeorico = resTeorico.puntos;
+  const notaPractico = resPractico.puntos;
 
   const notaBimestre =
     notaTeorico != null && notaPractico != null
@@ -98,17 +95,15 @@ export const calcularFilaEstudiante = (estudiante, evaluaciones, cuota) => {
 };
 
 export const calcularVistaPrevia = ({ estudiantes = [], evaluaciones = [], cuota }) => {
-  const validacionPesos = validarPesosBimestre(evaluaciones);
-  const filas = estudiantes.map((est) =>
-    calcularFilaEstudiante(est, evaluaciones, cuota),
-  );
+  const validacionPuntos = validarPuntosBimestre(evaluaciones, cuota);
+  const filas = estudiantes.map((est) => calcularFilaEstudiante(est, evaluaciones));
 
   const conFaltantes = filas.filter((f) => f.incompleto).length;
   const calculables = filas.filter((f) => f.notaBimestre != null).length;
 
   return {
     filas,
-    validacionPesos,
+    validacionPuntos,
     cuota,
     resumen: {
       total: filas.length,

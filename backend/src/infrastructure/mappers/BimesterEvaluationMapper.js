@@ -14,7 +14,7 @@ export class BimesterEvaluationMapper {
         if ('componente' in d) specific.component = d.componente;
         if ('nombreEvaluacion' in d) specific.evaluationName = d.nombreEvaluacion;
         if ('descripcion' in d) specific.description = d.descripcion;
-        if ('peso' in d) specific.weight = num(d.peso);
+        if ('puntos' in d) specific.points = num(d.puntos);
         if ('fecha' in d) specific.date = d.fecha;
         if ('notasCerradas' in d) specific.gradesClosed = Boolean(d.notasCerradas);
         return new BimesterEvaluation(BaseMapper.combineBaseAndSpecificFields(model, specific));
@@ -29,7 +29,7 @@ export class BimesterEvaluationMapper {
             componente: data.component ?? 'PRACTICO',
             nombreEvaluacion: data.evaluationName ?? null,
             descripcion: data.description ?? null,
-            peso: data.weight ?? 1,
+            puntos: data.points ?? 1,
             fecha: data.date ?? null,
             notasCerradas: data.gradesClosed ?? false,
         };
@@ -46,7 +46,7 @@ export class BimesterEvaluationMapper {
         if ('component' in data) update.componente = data.component;
         if ('evaluationName' in data) update.nombreEvaluacion = data.evaluationName ?? null;
         if ('description' in data) update.descripcion = data.description ?? null;
-        if ('weight' in data) update.peso = data.weight;
+        if ('points' in data) update.puntos = data.points;
         if ('date' in data) update.fecha = data.date ?? null;
         if ('gradesClosed' in data) update.notasCerradas = data.gradesClosed;
         Object.assign(update, BaseMapper.baseFieldsToModelForUpdate(entity));
