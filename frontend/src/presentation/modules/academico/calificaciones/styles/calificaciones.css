@@ -1410,12 +1410,12 @@
 }
 
 .cal-eval-drawer__cuota--warn {
-  background: #fef3c7;
-  border-color: #fbbf24;
+  background: #fef3c7 !important;
+  border-color: #fbbf24 !important;
 }
 
 .cal-eval-drawer__cuota--ok-full {
-  border-color: var(--cuaderno-verde-medio);
+  border-color: var(--cuaderno-verde-medio) !important;
 }
 
 .cal-eval-drawer__cuota-header {
@@ -1428,8 +1428,15 @@
 }
 
 .cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-header,
-.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-meta {
-  color: #92400e;
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-meta,
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-titulo,
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-total {
+  color: #92400e !important;
+}
+
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-track {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.45);
 }
 
 .cal-eval-drawer__cuota-titulo {
@@ -1507,13 +1514,18 @@
   color: var(--cuaderno-verde-oscuro);
 }
 
+.cal-eval-drawer__cuota-disponible {
+  color: var(--cuaderno-verde-oscuro, #196b45);
+  font-weight: 700;
+}
+
 .cal-eval-drawer__cuota-restante {
   color: #dc2626;
   font-weight: 700;
 }
 
 .cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-restante {
-  color: #b91c1c;
+  color: #b91c1c !important;
 }
 
 .cal-eval-drawer__cuota-icon {

@@ -41,9 +41,11 @@ import {
   calificacionesDrawerTarjetaClassName,
 } from '../utils/calificacionesDrawerLayout.js';
 
+const COMPONENTE_DEFAULT = 'PRACTICO';
+
 const COMPONENTES = [
-  { label: 'Teórico', value: 'TEORICO' },
   { label: 'Práctico', value: 'PRACTICO' },
+  { label: 'Teórico', value: 'TEORICO' },
 ];
 
 const CuotaActividadProgress = memo(({
@@ -64,11 +66,25 @@ const CuotaActividadProgress = memo(({
   const restanteEsta = Math.max(0, maxParaEsta - puntosEsta);
   const excede = sumaTotal > cuota;
 
-  const pctOtras = Math.min(100, Math.max(0, (sumaOtras / cuota) * 100));
-  const pctEsta = excede
-    ? Math.max(0, 100 - pctOtras)
-    : Math.min(100, Math.max(0, (puntosEsta / cuota) * 100));
-  const pctExceso = excede ? Math.min(100, ((sumaTotal - cuota) / cuota) * 100) : 0;
+  let pctOtras;
+  let pctEsta;
+  let pctExceso;
+
+  if (excede) {
+    const excesoPts = sumaTotal - cuota;
+    const estaEnCuota = Math.min(puntosEsta, Math.max(0, cuota - sumaOtras));
+    pctOtras = (sumaOtras / sumaTotal) * 100;
+    pctEsta = (estaEnCuota / sumaTotal) * 100;
+    pctExceso = (excesoPts / sumaTotal) * 100;
+  } else {
+    pctOtras = (sumaOtras / cuota) * 100;
+    pctEsta = (puntosEsta / cuota) * 100;
+    pctExceso = 0;
+  }
+
+  pctOtras = Math.min(100, Math.max(0, pctOtras));
+  pctEsta = Math.min(100, Math.max(0, pctEsta));
+  pctExceso = Math.min(100, Math.max(0, pctExceso));
 
   const estado = excede ? 'warn' : sumaTotal === cuota ? 'ok-full' : 'ok';
 
@@ -126,7 +142,7 @@ const CuotaActividadProgress = memo(({
               <>
                 {' '}
                 · te quedan{' '}
-                <strong className="cal-eval-drawer__cuota-restante">
+                <strong className="cal-eval-drawer__cuota-disponible">
                   {Math.round(restanteEsta)} pts
                 </strong>
               </>
@@ -146,7 +162,7 @@ const cuotaParaComponente = (componente, cuotaTeorico, cuotaPractico) =>
 
 const ComponenteCuotaHint = memo(
   ({ form, cuotaTeorico, cuotaPractico, evaluacionesActuales, evaluacionIdExcluir }) => {
-    const componenteActivo = Form.useWatch('componente', form) ?? 'TEORICO';
+    const componenteActivo = Form.useWatch('componente', form) ?? COMPONENTE_DEFAULT;
     const cuotaComponente = cuotaParaComponente(componenteActivo, cuotaTeorico, cuotaPractico);
     const sumaOtrasActividades = calcularSumaPuntosComponente(
       evaluacionesActuales,
@@ -171,7 +187,7 @@ ComponenteCuotaHint.displayName = 'ComponenteCuotaHint';
 
 const EvaluacionPuntosField = memo(
   ({ form, cuotaTeorico, cuotaPractico, evaluacionesActuales, evaluacionIdExcluir }) => {
-    const componenteActivo = Form.useWatch('componente', form) ?? 'TEORICO';
+    const componenteActivo = Form.useWatch('componente', form) ?? COMPONENTE_DEFAULT;
     const puntosWatch = Form.useWatch('puntos', form);
     const puntosActuales = Number(puntosWatch ?? 0) || 0;
     const cuotaComponente = cuotaParaComponente(componenteActivo, cuotaTeorico, cuotaPractico);
@@ -225,7 +241,7 @@ const CuotaProgressWatcher = memo(
     evaluacionIdExcluir,
     onExcedeChange,
   }) => {
-    const componenteActivo = Form.useWatch('componente', form) ?? 'TEORICO';
+    const componenteActivo = Form.useWatch('componente', form) ?? COMPONENTE_DEFAULT;
     const puntosWatch = Form.useWatch('puntos', form);
     const puntosActuales = Number(puntosWatch ?? 0) || 0;
     const cuotaComponente = cuotaParaComponente(componenteActivo, cuotaTeorico, cuotaPractico);
@@ -369,7 +385,7 @@ const EvaluacionDrawer = ({
   const [excedeCuota, setExcedeCuota] = useState(false);
 
   const esEditar = modo === 'editar';
-  const componentePrevRef = useRef('TEORICO');
+  const componentePrevRef = useRef(COMPONENTE_DEFAULT);
   const evaluacionIdExcluir = esEditar ? evaluacion?.id : null;
 
   const handleExcedeChange = useCallback((excede) => {
@@ -390,22 +406,22 @@ const EvaluacionDrawer = ({
         fecha: evaluacion.fecha ? dayjs(evaluacion.fecha) : dayjs(),
       };
       form.setFieldsValue(valores);
-      componentePrevRef.current = evaluacion.componente ?? 'TEORICO';
+      componentePrevRef.current = evaluacion.componente ?? COMPONENTE_DEFAULT;
     } else {
       form.resetFields();
       const valores = {
-        componente: 'TEORICO',
+        componente: COMPONENTE_DEFAULT,
         fecha: dayjs(),
       };
       form.setFieldsValue(valores);
-      componentePrevRef.current = 'TEORICO';
+      componentePrevRef.current = COMPONENTE_DEFAULT;
     }
     setExcedeCuota(false);
   }, [abierto, esEditar, evaluacion, form]);
 
   const handleValuesChange = (changed) => {
     if ('componente' in changed) {
-      const next = changed.componente ?? 'TEORICO';
+      const next = changed.componente ?? COMPONENTE_DEFAULT;
       if (componentePrevRef.current !== next) {
         componentePrevRef.current = next;
         form.setFields([{ name: 'puntos', errors: [] }]);
@@ -613,8 +629,8 @@ const EvaluacionDrawer = ({
             className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
-              Indicá si la actividad suma al bloque teórico ({cuotaTeorico} pts) o práctico (
-              {cuotaPractico} pts) del bimestre, y cuántos puntos aporta esta columna. La suma de
+              Indicá si la actividad suma al bloque práctico ({cuotaPractico} pts) o teórico (
+              {cuotaTeorico} pts) del bimestre, y cuántos puntos aporta esta columna. La suma de
               actividades de cada componente no debe superar su cuota.
             </p>
 
