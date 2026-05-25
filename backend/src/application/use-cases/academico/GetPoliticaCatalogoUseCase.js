@@ -3,7 +3,6 @@ import { unwrapRepositoryList } from '../../utils/repositoryResultUtils.js';
 
 /**
  * Catálogo para la pantalla de política institucional (carreras, periodos del plan).
- * Los tipos de evaluación final se listan en GET /calificaciones/tipos-evaluacion?ambito=MATERIA_COMPLETA
  */
 export class GetPoliticaCatalogoUseCase {
   constructor({ careerRepository, periodRepository, logger }) {
@@ -28,7 +27,6 @@ export class GetPoliticaCatalogoUseCase {
     );
 
     const catalogo = mapCatalogoPolitica({
-      tiposFinales: [],
       carreras,
       periodos: periodosOrdenados,
     });

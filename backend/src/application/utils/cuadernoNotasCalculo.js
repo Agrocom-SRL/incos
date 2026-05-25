@@ -97,13 +97,12 @@ export const notaEfectivaBimestre = (row) => {
 };
 
 /**
- * nota_final = Σ(nota × peso) / Σ(peso) — bimestres + evaluaciones finales con nota.
+ * nota_final = Σ(nota_bimestre × peso_bimestre) / Σ(peso) — solo los 4 bimestres.
  *
  * @param {Array<{ numero: number, nota: number|null }>} bimestres
- * @param {number[]} pesosBimestres — 4 ponderaciones
- * @param {Array<{ nota: number|null, peso: number }>} [evaluacionesFinales]
+ * @param {number[]} pesosBimestres — 4 ponderaciones institucionales
  */
-export const calcularNotaFinalPonderada = (bimestres, pesosBimestres, evaluacionesFinales = []) => {
+export const calcularNotaFinalPonderada = (bimestres, pesosBimestres) => {
   let suma = 0;
   let pesoTotal = 0;
 
@@ -113,15 +112,6 @@ export const calcularNotaFinalPonderada = (bimestres, pesosBimestres, evaluacion
     const peso = Number(pesos[i]) || 0;
     const fila = (bimestres ?? []).find((b) => Number(b.numero) === numero);
     const nota = fila?.nota != null ? Number(fila.nota) : null;
-    if (nota != null && peso > 0) {
-      suma += nota * peso;
-      pesoTotal += peso;
-    }
-  }
-
-  for (const ef of evaluacionesFinales ?? []) {
-    const nota = ef.nota != null ? Number(ef.nota) : null;
-    const peso = Number(ef.peso) || 0;
     if (nota != null && peso > 0) {
       suma += nota * peso;
       pesoTotal += peso;

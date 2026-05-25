@@ -30,8 +30,6 @@ SELECT
   MAX(adc.paralelo_turno) AS paralelo_turno,
   MAX(adc.asignatura_periodo_nombre) AS asignatura_periodo_nombre,
   COALESCE(MAX(adc.horas_plan), MAX(adc.carga_horaria), 0) AS horas_semanales,
-  ad.teorico_override,
-  ad.practico_override,
   COUNT(DISTINCT fila.estudiante_id) AS cantidad_estudiantes,
   COALESCE(MAX(ev.cantidad_evaluaciones), 0) AS cantidad_evaluaciones_bimestre
 FROM vista_base_calificacion_coordinacion_fila fila
@@ -50,6 +48,4 @@ LEFT JOIN vista_base_calificacion_evaluaciones_curso_bimestre ev
 GROUP BY
   fila.docente_id,
   fila.asignacion_docente_id,
-  fila.gestion_id,
-  ad.teorico_override,
-  ad.practico_override;
+  fila.gestion_id;

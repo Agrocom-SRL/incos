@@ -471,34 +471,6 @@ export class CuadernoRepository {
     );
   }
 
-  async listarNotasEvaluacionesFinalesPorAsignacion(asignacionId) {
-    return sequelize.query(
-      `
-      SELECT
-        mm.id AS matricula_materia_id,
-        ef.peso,
-        efn.nota
-      FROM evaluaciones_finales_notas efn
-      INNER JOIN evaluaciones_finales ef
-        ON ef.id = efn.evaluacion_final_id
-        AND ef.deleted_at IS NULL
-        AND ef.activo = TRUE
-        AND ef.asignacion_docente_id = ?
-      INNER JOIN matriculas_materia mm
-        ON mm.id = efn.matricula_materia_id
-        AND mm.deleted_at IS NULL
-        AND mm.activo = TRUE
-      WHERE efn.deleted_at IS NULL
-        AND efn.activo = TRUE
-        AND efn.nota IS NOT NULL
-      `,
-      {
-        replacements: [asignacionId],
-        type: sequelize.QueryTypes.SELECT,
-      },
-    );
-  }
-
   async actualizarNotaFinalMatricula(matriculaMateriaId, notaFinal, usuarioId) {
     await sequelize.query(
       `

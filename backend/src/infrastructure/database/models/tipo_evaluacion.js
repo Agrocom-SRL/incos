@@ -1,7 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { AMBITOS_TIPO_EVALUACION_VALUES } from '../../../domain/constants/evaluaciones.constants.js';
 
 export const TipoEvaluacion = sequelize.define(
     'TipoEvaluacion',
@@ -24,13 +23,6 @@ export const TipoEvaluacion = sequelize.define(
             type: DataTypes.TEXT,
             allowNull: true,
             comment: 'Descripción del tipo y cuándo se aplica.',
-        },
-
-        ambito: {
-            type: DataTypes.ENUM(...AMBITOS_TIPO_EVALUACION_VALUES),
-            allowNull: true,
-            defaultValue: 'BIMESTRE',
-            comment: 'BIMESTRE o MATERIA_COMPLETA.',
         },
 
         esRecuperatorio: {

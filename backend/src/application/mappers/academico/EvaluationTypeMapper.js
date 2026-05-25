@@ -10,7 +10,6 @@ export function entityToPresentation(evaluationType) {
     codigo: evaluationType.code,
     nombre: evaluationType.name,
     descripcion: evaluationType.description ?? null,
-    ambito: evaluationType.scope,
     esRecuperatorio: Boolean(evaluationType.isRecovery),
     permiteMultiplesIntentos: evaluationType.allowsMultipleAttempts?.() ?? false,
     activo: evaluationType.active,

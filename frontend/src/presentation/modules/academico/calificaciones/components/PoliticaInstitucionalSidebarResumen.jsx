@@ -33,10 +33,6 @@ const PoliticaInstitucionalSidebarResumen = ({ politica, gestionVigente }) => {
     );
   }
 
-  const finalesActivas = (politica.evaluacionesFinalesDisponibles ?? []).filter(
-    (e) => e.habilitadaInstitucional,
-  );
-
   return (
     <Flex vertical gap="middle" style={{ width: '100%', minWidth: 0 }}>
       <Card {...cardProps} className="cal-politica-sidebar-card">
@@ -80,16 +76,8 @@ const PoliticaInstitucionalSidebarResumen = ({ politica, gestionVigente }) => {
               <Descriptions.Item label="Asistencia (default)">
                 <Text>{etiquetaAsistencia(politica.politicaAsistenciaDefault?.politica)}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Evaluaciones finales">
-                {finalesActivas.length ? (
-                  <Flex vertical gap={4}>
-                    {finalesActivas.map((e) => (
-                      <Text key={e.codigo}>{e.nombre}</Text>
-                    ))}
-                  </Flex>
-                ) : (
-                  <Text type="secondary">Ninguna habilitada</Text>
-                )}
+              <Descriptions.Item label="Nota anual">
+                <Text type="secondary">Suma ponderada de los 4 bimestres</Text>
               </Descriptions.Item>
             </Descriptions>
 

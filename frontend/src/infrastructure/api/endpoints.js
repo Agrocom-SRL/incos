@@ -186,8 +186,6 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/validar-cierre`,
   GESTION_BIMESTRES_CERRAR: (numero) =>
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/cerrar`,
-  AJUSTES_CURSO: (asignacionId) =>
-    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/ajustes`,
   REGISTRO_NOTAS: (asignacionId) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/notas`,
   CUADERNO_BIMESTRE: (asignacionId, bimestre) =>

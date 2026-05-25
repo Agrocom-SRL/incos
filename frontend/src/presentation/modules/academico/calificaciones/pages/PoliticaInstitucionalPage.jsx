@@ -11,7 +11,6 @@ import { PageHeader } from '@molecules';
 import { BackButton, Button as AtomButton } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { usePoliticaInstitucional } from '@application-academico/calificaciones/hooks/usePoliticaInstitucional.js';
-import { usePoliticaCatalogo } from '@application-academico/calificaciones/hooks/usePoliticaCatalogo.js';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import { CALIFICACIONES_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import { sumaPesos } from '@application-academico/calificaciones/utils/politicaPorcentajeUtils.js';
@@ -20,7 +19,6 @@ import PoliticaConfiguracionResumenCard, {
 } from '../components/PoliticaConfiguracionResumenCard.jsx';
 import PoliticaPonderacionTeoricoPractico from '../components/PoliticaPonderacionTeoricoPractico.jsx';
 import PoliticaPonderacionBimestres from '../components/PoliticaPonderacionBimestres.jsx';
-import PoliticaEvaluacionesFinalesReglasSection from '../components/PoliticaEvaluacionesFinalesReglasSection.jsx';
 import PoliticaAsistenciaPanel from '../components/PoliticaAsistenciaPanel.jsx';
 import PoliticaPorcentajeSlider from '../components/PoliticaPorcentajeSlider.jsx';
 import { Card } from '@atoms';
@@ -43,31 +41,13 @@ const PoliticaInstitucionalPage = () => {
     guardar,
     breadcrumbItems,
   } = usePoliticaInstitucional();
-  const {
-    catalogo,
-    isLoading: isLoadingCatalogo,
-    error: errorCatalogo,
-    refetch: refetchCatalogo,
-  } = usePoliticaCatalogo();
   const [errorGuardado, setErrorGuardado] = useState(null);
-
-  const isLoading = isLoadingPolitica || isLoadingCatalogo;
-  const error = errorPolitica || errorCatalogo;
-  const refetch = () => {
-    refetchPolitica();
-    refetchCatalogo();
-  };
 
   const cuotaTeorico = Form.useWatch('cuotaTeorico', form);
   const cuotaPractico = Form.useWatch('cuotaPractico', form);
   const pesosBimestres = Form.useWatch('pesosBimestres', form) ?? [];
   const notaMinimaAprobacion = Form.useWatch('notaMinimaAprobacion', form);
-  const reglasFinalesWatch = Form.useWatch('evaluacionesFinalesReglas', form);
   const asistenciaWatch = Form.useWatch('politicaAsistenciaDefault', form);
-
-  const tiposEvaluacion = catalogo?.tiposEvaluacionFinales ?? [];
-  const carrerasCatalogo = catalogo?.carreras ?? [];
-  const periodosCatalogo = catalogo?.periodosPlan ?? [];
 
   const mostrarResumenAnterior = Boolean(
     politica && !politica.configurada && politicaGestionAnterior?.configurada,
@@ -80,10 +60,6 @@ const PoliticaInstitucionalPage = () => {
         cuotaTeorico: origen.cuotaTeorico,
         cuotaPractico: origen.cuotaPractico,
         pesosBimestres: [...(origen.pesosBimestres ?? [25, 25, 25, 25])],
-        evaluacionesFinalesReglas: (origen.evaluacionesFinalesReglas ?? []).map((r) => ({
-          ...r,
-          id: r.id ?? `regla-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        })),
         politicaAsistenciaDefault: { ...(origen.politicaAsistenciaDefault ?? { politica: 'NO_AFECTA' }) },
         notaMinimaAprobacion: origen.notaMinimaAprobacion ?? 61,
       });
@@ -107,40 +83,28 @@ const PoliticaInstitucionalPage = () => {
       cuotaTeorico: cuotaTeorico ?? politica?.cuotaTeorico,
       cuotaPractico: cuotaPractico ?? politica?.cuotaPractico,
       pesosBimestres: pesosBimestres?.length ? pesosBimestres : politica?.pesosBimestres,
-      evaluacionesFinalesReglas:
-        reglasFinalesWatch ?? politica?.evaluacionesFinalesReglas ?? [],
       politicaAsistenciaDefault: asistenciaWatch ?? politica?.politicaAsistenciaDefault,
       notaMinimaAprobacion: notaMinimaAprobacion ?? politica?.notaMinimaAprobacion ?? 61,
       ultimaModificacion: politica?.ultimaModificacion,
       sumaCuota,
       sumaBimestres,
     };
-    return buildResumenDesdePolitica(base, {
-      carreras: carrerasCatalogo,
-      periodos: periodosCatalogo,
-    });
+    return buildResumenDesdePolitica(base);
   }, [
     gestionVigente,
     politica,
     cuotaTeorico,
     cuotaPractico,
     pesosBimestres,
-    reglasFinalesWatch,
     asistenciaWatch,
     notaMinimaAprobacion,
     sumaCuota,
     sumaBimestres,
-    carrerasCatalogo,
-    periodosCatalogo,
   ]);
 
   const resumenAnterior = useMemo(
-    () =>
-      buildResumenDesdePolitica(politicaGestionAnterior, {
-        carreras: carrerasCatalogo,
-        periodos: periodosCatalogo,
-      }),
-    [politicaGestionAnterior, carrerasCatalogo, periodosCatalogo],
+    () => buildResumenDesdePolitica(politicaGestionAnterior),
+    [politicaGestionAnterior],
   );
 
   const construirPayload = useCallback((values) => {
@@ -151,17 +115,6 @@ const PoliticaInstitucionalPage = () => {
       cuotaPractico: values.cuotaPractico,
       pesosBimestres: values.pesosBimestres,
       notaMinimaAprobacion: values.notaMinimaAprobacion,
-      evaluacionesFinalesReglas: (values.evaluacionesFinalesReglas ?? []).map((r) => ({
-        id: r.id,
-        tipoEvaluacionCodigo: r.tipoEvaluacionCodigo,
-        tipoEvaluacionNombre: r.tipoEvaluacionNombre,
-        ponderacion: r.ponderacion,
-        alcance: r.alcance,
-        carreraId: r.carreraId ?? null,
-        carreraNombre: r.carreraNombre ?? null,
-        periodoId: r.periodoId ?? null,
-        periodoNombre: r.periodoNombre ?? null,
-      })),
       politicaAsistenciaDefault: {
         politica: codigoAsistencia,
         pesoAsistencia: codigoAsistencia === 'COMPUTA_NOTA' ? pad.pesoAsistencia : null,
@@ -237,15 +190,15 @@ const PoliticaInstitucionalPage = () => {
       }
     >
       <div className="cal-politica-page">
-        <Spin spinning={isLoading} tip="Cargando configuración…">
+        <Spin spinning={isLoadingPolitica} tip="Cargando configuración…">
           <Flex vertical gap="large" style={{ width: '100%' }}>
-            {error || errorGuardado ? (
+            {errorPolitica || errorGuardado ? (
               <Alert
                 type="error"
                 showIcon
-                message={errorGuardado ?? error ?? 'No se pudo cargar la configuración'}
+                message={errorGuardado ?? errorPolitica ?? 'No se pudo cargar la configuración'}
                 action={
-                  <Button size="small" onClick={refetch}>
+                  <Button size="small" onClick={refetchPolitica}>
                     Reintentar
                   </Button>
                 }
@@ -260,7 +213,7 @@ const PoliticaInstitucionalPage = () => {
                     gestionVigenteNombre={gestionVigente ?? politica.gestionNombre}
                     {...resumenAnterior}
                     onUsarConfiguracion={handleUsarGestionAnterior}
-                    usarConfiguracionDisabled={isLoading || isSaving}
+                    usarConfiguracionDisabled={isLoadingPolitica || isSaving}
                   />
                 ) : resumenVigente ? (
                   <PoliticaConfiguracionResumenCard variant="vigente" {...resumenVigente} />
@@ -308,15 +261,6 @@ const PoliticaInstitucionalPage = () => {
                       />
                     </Form.Item>
                   </Card>
-
-                  <PoliticaEvaluacionesFinalesReglasSection
-                    form={form}
-                    tiposEvaluacion={tiposEvaluacion}
-                    carreras={carrerasCatalogo}
-                    periodos={periodosCatalogo}
-                    catalogoLoading={isLoadingCatalogo}
-                    disabled={isSaving}
-                  />
 
                   <Flex className="cal-politica__actions">
                     <PermisoGuard

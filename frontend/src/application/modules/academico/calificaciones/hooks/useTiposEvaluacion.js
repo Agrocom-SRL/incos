@@ -1,20 +1,20 @@
 /**
- * Catálogo de tipos de evaluación (API GET /calificaciones/tipos-evaluacion).
+ * Catálogo de tipos de evaluación bimestrales (API GET /calificaciones/tipos-evaluacion).
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import { useCasesFactory } from '@container';
 
-const cacheByAmbito = new Map();
+let cacheTipos = null;
 
-export const useTiposEvaluacion = ({ ambito = 'BIMESTRE' } = {}) => {
-  const [tipos, setTipos] = useState(() => cacheByAmbito.get(ambito) ?? null);
-  const [isLoading, setIsLoading] = useState(!cacheByAmbito.has(ambito));
+export const useTiposEvaluacion = () => {
+  const [tipos, setTipos] = useState(() => cacheTipos ?? null);
+  const [isLoading, setIsLoading] = useState(cacheTipos == null);
   const [error, setError] = useState(null);
 
   const cargar = useCallback(async () => {
-    if (cacheByAmbito.has(ambito)) {
-      setTipos(cacheByAmbito.get(ambito));
+    if (cacheTipos) {
+      setTipos(cacheTipos);
       setIsLoading(false);
       return;
     }
@@ -23,14 +23,14 @@ export const useTiposEvaluacion = ({ ambito = 'BIMESTRE' } = {}) => {
     setError(null);
     try {
       const uc = useCasesFactory.obtenerTiposEvaluacion();
-      const result = await uc.ejecutar({ params: { ambito, limite: 100 } });
+      const result = await uc.ejecutar({ params: { limite: 100 } });
       if (!result?.success) {
         setTipos([]);
         setError(result?.error || 'No se pudo cargar tipos de evaluación');
         return;
       }
       const data = result.data ?? [];
-      cacheByAmbito.set(ambito, data);
+      cacheTipos = data;
       setTipos(data);
     } catch (err) {
       setError(err?.message || 'Error al cargar tipos');
@@ -38,7 +38,7 @@ export const useTiposEvaluacion = ({ ambito = 'BIMESTRE' } = {}) => {
     } finally {
       setIsLoading(false);
     }
-  }, [ambito]);
+  }, []);
 
   useEffect(() => {
     cargar();

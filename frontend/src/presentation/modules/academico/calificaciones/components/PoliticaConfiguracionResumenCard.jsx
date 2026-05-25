@@ -7,7 +7,6 @@ import { CheckCircleOutlined, CopyOutlined, HistoryOutlined } from '@ant-design/
 import { Button, Card } from '@atoms';
 import { POLITICAS_ASISTENCIA } from '@application-academico/calificaciones/utils/politicasAsistencia.js';
 import { sumaPesos } from '@application-academico/calificaciones/utils/politicaPorcentajeUtils.js';
-import { describeAlcanceRegla } from '@application-academico/calificaciones/utils/evaluacionesFinalesReglas.js';
 
 const { Text, Paragraph } = Typography;
 
@@ -26,13 +25,13 @@ const FilaResumen = ({ label, value, valueStyle, labelStyle }) => (
 );
 
 /** Arma props de resumen a partir del objeto política (misma forma que guarda el API). */
-export const buildResumenDesdePolitica = (politica, { carreras = [], periodos = [] } = {}) => {
+export const buildResumenDesdePolitica = (politica) => {
   if (!politica) return null;
   const cuotaTeorico = Number(politica.cuotaTeorico) || 0;
   const cuotaPractico = Number(politica.cuotaPractico) || 0;
   const pesosBimestres = politica.pesosBimestres ?? [25, 25, 25, 25];
-  const sumaCuota = cuotaTeorico + cuotaPractico;
-  const sumaBimestres = sumaPesos(pesosBimestres);
+  const sumaCuota = politica.sumaCuota ?? cuotaTeorico + cuotaPractico;
+  const sumaBimestres = politica.sumaBimestres ?? sumaPesos(pesosBimestres);
 
   return {
     gestionNombre: politica.gestionNombre,
@@ -40,14 +39,11 @@ export const buildResumenDesdePolitica = (politica, { carreras = [], periodos = 
     cuotaTeorico,
     cuotaPractico,
     pesosBimestres,
-    evaluacionesFinalesReglas: politica.evaluacionesFinalesReglas ?? [],
     politicaAsistenciaDefault: politica.politicaAsistenciaDefault ?? {},
     notaMinimaAprobacion: politica.notaMinimaAprobacion ?? 61,
     ultimaModificacion: politica.ultimaModificacion ?? null,
     sumaCuota,
     sumaBimestres,
-    carreras,
-    periodos,
   };
 };
 
@@ -59,19 +55,15 @@ const PoliticaConfiguracionResumenCard = ({
   cuotaTeorico,
   cuotaPractico,
   pesosBimestres,
-  evaluacionesFinalesReglas,
   politicaAsistenciaDefault,
   notaMinimaAprobacion,
   ultimaModificacion,
   sumaCuota,
   sumaBimestres,
-  carreras = [],
-  periodos = [],
   onUsarConfiguracion,
   usarConfiguracionDisabled = false,
 }) => {
   const esReferenciaAnterior = variant === 'anterior';
-  const reglas = evaluacionesFinalesReglas ?? [];
   const cuotaOk = Math.abs(sumaCuota - 100) <= 0.01;
   const bimOk = Math.abs(sumaBimestres - 100) <= 0.01;
   const pad = politicaAsistenciaDefault ?? {};
@@ -117,24 +109,6 @@ const PoliticaConfiguracionResumenCard = ({
         valueStyle={{ color: bimOk ? '#196b45' : '#d97706', fontWeight: 600 }}
       />
 
-      {reglas.length > 0 ? (
-        <>
-          <div className="cal-politica-resumen__divider cal-politica-resumen__divider--light" />
-          <Text className="cal-politica-resumen__subtitulo">Evaluaciones finales</Text>
-          {reglas.map((r) => (
-            <FilaResumen
-              key={r.id ?? r.tipoEvaluacionCodigo}
-              label={r.tipoEvaluacionNombre ?? r.tipoEvaluacionCodigo}
-              value={`${Number(r.ponderacion ?? 0).toFixed(1)}% · ${describeAlcanceRegla(r, {
-                carreras,
-                periodos,
-              })}`}
-              valueStyle={{ color: '#196b45', fontSize: 13 }}
-            />
-          ))}
-        </>
-      ) : null}
-
       <div className="cal-politica-resumen__divider cal-politica-resumen__divider--light" />
 
       <Text className="cal-politica-resumen__subtitulo">Asistencia</Text>
@@ -169,7 +143,7 @@ const PoliticaConfiguracionResumenCard = ({
       />
       <FilaResumen
         label="Escala de calificación"
-        value="100 puntos (bimestres + finales según alcance)"
+        value="100 puntos (suma ponderada de los 4 bimestres)"
         valueStyle={{ color: '#595959', fontSize: 14 }}
       />
 

@@ -197,7 +197,7 @@ COMMENT='Materias aprobadas cargadas al inscribir, ancladas a inscripcion_id. Pa
 -- periodo regular como las atrasadas (re-cursadas): todas son matrículas normales.
 --
 -- ANCLA DE DOMINIO "materia cursada": de aquí cuelgan bimestres_matricula,
--- evaluaciones_finales, asistencias, nivelaciones e historial_matricula. Ninguno
+-- asistencias, nivelaciones e historial_matricula. Ninguno
 -- de esos hijos repite estudiante_id (se deriva por inscripcion).
 --
 -- asignacion_docente_id apunta al curso específico (paralelo + materia + docente)
@@ -208,7 +208,7 @@ COMMENT='Materias aprobadas cargadas al inscribir, ancladas a inscripcion_id. Pa
 --
 -- SIMPLIFICACIÓN DE NOTAS (refactor por 3FN):
 -- Esta tabla guarda SOLO nota_final como caché del cálculo regular ponderado
--- (4 bimestres + N evaluaciones_finales). Los casos excepcionales viven en
+-- (suma de los 4 bimestres según pesos institucionales). Los casos excepcionales viven en
 -- historial_matricula con dos modalidades:
 --   - Casos administrativos (ABANDONO/RETIRADO/ARTICULO_18) → nota directamente
 --     en historial_matricula.nota_resultante con nota_forzada=TRUE

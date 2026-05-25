@@ -2,7 +2,7 @@
  * Registro académico de notas del curso — vista consolidada de solo lectura.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, Flex, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -14,7 +14,6 @@ import { useConsolidadoCurso } from '@application-academico/calificaciones/hooks
 import { cuadernoBimestrePath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import CursoHeaderCard from '../components/CursoHeaderCard.jsx';
 import ConsolidadoGrid from '../components/ConsolidadoGrid.jsx';
-import AjustesCursoDrawer from '../components/AjustesCursoDrawer.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/calificaciones.css';
 
@@ -32,7 +31,6 @@ const sectionCardProps = {
 
 const ConsolidadoPage = () => {
   const navigate = useNavigate();
-  const [ajustesAbierto, setAjustesAbierto] = useState(false);
   const {
     curso,
     docente,
@@ -128,8 +126,6 @@ const ConsolidadoPage = () => {
             docente={docente}
             bimestreActual={docente?.bimestreVigente ?? null}
             estudiantesCount={estudiantes.length}
-            onConfiguracion={() => setAjustesAbierto(true)}
-            configuracionDisabled={!asignacionId}
           />
 
           <Card className="cal-consolidado__hoja" {...sectionCardProps}>
@@ -144,13 +140,6 @@ const ConsolidadoPage = () => {
           </Card>
         </Flex>
       </MainContent>
-
-      <AjustesCursoDrawer
-        abierto={ajustesAbierto}
-        cursoId={asignacionId}
-        onCerrar={() => setAjustesAbierto(false)}
-        onGuardado={refetch}
-      />
     </Flex>
   );
 };

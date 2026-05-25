@@ -91,8 +91,6 @@ export class CalificacionCoordinacionRepository {
         paralelo_turno,
         asignatura_periodo_nombre,
         horas_semanales,
-        teorico_override,
-        practico_override,
         cantidad_estudiantes,
         cantidad_evaluaciones_bimestre
       FROM vista_calificacion_cursos_docente

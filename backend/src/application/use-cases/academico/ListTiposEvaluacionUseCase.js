@@ -21,14 +21,6 @@ export class ListTiposEvaluacionUseCase extends BaseListUseCase {
   }
 
   buildSpecificFilters(queryParams = {}, baseFilters = {}) {
-    const filters = { ...baseFilters };
-
-    if (queryParams.ambito) {
-      filters.scopes = [String(queryParams.ambito).trim()];
-    } else if (queryParams.scope) {
-      filters.scopes = [String(queryParams.scope).trim()];
-    }
-
-    return filters;
+    return { ...baseFilters };
   }
 }

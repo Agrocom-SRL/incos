@@ -89,14 +89,11 @@ export const REPOSITORIOS_TOKENS = {
     subjectEnrollmentBimesterRepository: 'subjectEnrollmentBimesterRepository',
     bimesterEvaluationRepository: 'bimesterEvaluationRepository',
     bimesterEvaluationGradeRepository: 'bimesterEvaluationGradeRepository',
-    finalEvaluationRepository: 'finalEvaluationRepository',
-    finalEvaluationGradeRepository: 'finalEvaluationGradeRepository',
     calificacionRepository: 'calificacionRepository',
     cuadernoRepository: 'cuadernoRepository',
     calificacionContextoRepository: 'calificacionContextoRepository',
     calificacionCoordinacionRepository: 'calificacionCoordinacionRepository',
     gestionBimestresRepository: 'gestionBimestresRepository',
-    ajustesCursoRepository: 'ajustesCursoRepository',
 
     // NIVELACIONES
     levelingRepository: 'levelingRepository',

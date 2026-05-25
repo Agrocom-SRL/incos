@@ -301,12 +301,9 @@ COMMENT='Calendario académico: instancias de actividades con fechas específica
 -- Preserva historial de asignaciones por gestión para auditoría.
 -- El plan habilitado (gestiones_planes) garantiza coherencia entre curso y plan.
 --
--- Integra directamente:
--- - Política de asistencia
--- - Peso de asistencia
--- - Mínimo de asistencia
--- - Nota por reprobación de asistencia
--- - Override teórico/práctico por asignación docente
+-- La política de notas (cuotas, pesos de bimestres, asistencia, nota mínima) vive
+-- solo en configuracion_evaluacion (POLITICA_INSTITUCIONAL por gestión).
+-- Esta tabla vincula curso, plan habilitado y docente; no parametriza notas.
 --
 -- Reglas mantenidas:
 -- - Todas las FKs permiten NULL
@@ -325,30 +322,6 @@ CREATE TABLE asignaciones_docentes (
 
     -- Carga horaria
     carga_horaria INT NULL COMMENT 'Horas de docencia por semana en este curso (hereda de asignaturas_plan.horas_semanales si NULL)',
-
-    -- Overrides económicos/académicos por docente/asignación
-    teorico_override DECIMAL(5,2) NULL
-        COMMENT 'Override de la cuota teórica institucional. NULL = usar la configuración de la gestión desde configuracion_evaluacion.',
-
-    practico_override DECIMAL(5,2) NULL
-        COMMENT 'Override de la cuota práctica institucional. NULL = usar la configuración de la gestión desde configuracion_evaluacion.',
-
-    -- Política de asistencia definida para esta asignación docente
-    politica_asistencia ENUM(
-        'NO_AFECTA',
-        'COMPUTA_NOTA',
-        'CAUSA_REPROBACION'
-    ) DEFAULT 'NO_AFECTA'
-        COMMENT 'Política del docente sobre asistencia: NO_AFECTA no influye en la nota; COMPUTA_NOTA es componente de la nota; CAUSA_REPROBACION reprueba si baja del mínimo.',
-
-    peso_asistencia DECIMAL(5,2) NULL
-        COMMENT 'Peso de la asistencia en la nota_final (0-100). Solo aplica si politica_asistencia = COMPUTA_NOTA.',
-
-    minimo_asistencia DECIMAL(5,2) NULL
-        COMMENT 'Porcentaje mínimo de asistencia exigido (0-100). Solo aplica si politica_asistencia = CAUSA_REPROBACION.',
-
-    nota_reprobada DECIMAL(5,2) NULL
-        COMMENT 'Nota final asignada al estudiante si reprueba por asistencia. Solo aplica si politica_asistencia = CAUSA_REPROBACION.',
 
     -- Estado de la asignación
     fecha_asignacion DATE NULL COMMENT 'Fecha en que se asignó el docente',
@@ -379,8 +352,7 @@ CREATE TABLE asignaciones_docentes (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_gestion_plan_curso (gestion_plan_id, curso_id, deleted_at) COMMENT 'Búsqueda por plan y curso',
     INDEX idx_gestion_plan_docente (gestion_plan_id, docente_id, vigente, deleted_at) COMMENT 'Carga horaria del docente por gestión',
-    INDEX idx_curso_vigente (curso_id, vigente, deleted_at) COMMENT 'Asignaciones vigentes por curso',
-    INDEX idx_politica_asistencia (politica_asistencia) COMMENT 'Filtrado por política de asistencia'
+    INDEX idx_curso_vigente (curso_id, vigente, deleted_at) COMMENT 'Asignaciones vigentes por curso'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Asignación de docentes a cursos por plan habilitado. Vincula curso + plan_habilitado + docente. Preserva historial para auditoría académica. El docente puede ser NULL (pendiente).';

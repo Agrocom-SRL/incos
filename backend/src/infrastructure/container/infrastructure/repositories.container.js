@@ -121,14 +121,11 @@ import { EvaluationConfigurationRepository } from '../../repositories/Evaluation
 import { SubjectEnrollmentBimesterRepository } from '../../repositories/SubjectEnrollmentBimesterRepository.js';
 import { BimesterEvaluationRepository } from '../../repositories/BimesterEvaluationRepository.js';
 import { BimesterEvaluationGradeRepository } from '../../repositories/BimesterEvaluationGradeRepository.js';
-import { FinalEvaluationRepository } from '../../repositories/FinalEvaluationRepository.js';
-import { FinalEvaluationGradeRepository } from '../../repositories/FinalEvaluationGradeRepository.js';
 import { CalificacionRepository } from '../../repositories/CalificacionRepository.js';
 import { CuadernoRepository } from '../../repositories/CuadernoRepository.js';
 import { CalificacionContextoRepository } from '../../repositories/CalificacionContextoRepository.js';
 import { CalificacionCoordinacionRepository } from '../../repositories/CalificacionCoordinacionRepository.js';
 import { GestionBimestresRepository } from '../../repositories/GestionBimestresRepository.js';
-import { AjustesCursoRepository } from '../../repositories/AjustesCursoRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
@@ -269,8 +266,6 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository, SubjectEnrollmentBimesterRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationRepository, BimesterEvaluationRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository, BimesterEvaluationGradeRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.finalEvaluationRepository, FinalEvaluationRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.finalEvaluationGradeRepository, FinalEvaluationGradeRepository);
     registerRepository(
       container,
       REPOSITORIOS_TOKENS.calificacionContextoRepository,
@@ -282,7 +277,6 @@ export function registerRepositoriesModule(container) {
       CalificacionCoordinacionRepository,
     );
     registerRepository(container, REPOSITORIOS_TOKENS.gestionBimestresRepository, GestionBimestresRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.ajustesCursoRepository, AjustesCursoRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.calificacionRepository, CalificacionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.cuadernoRepository, CuadernoRepository);
 

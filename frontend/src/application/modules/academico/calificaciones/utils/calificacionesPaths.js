@@ -20,8 +20,5 @@ export const notasCursoPath = (asignacionId) =>
 export const cuadernoBimestrePath = (asignacionId, bimestre) =>
   `${MIS_CURSOS_PATH}/${asignacionId}/cuaderno/${bimestre}`;
 
-export const cursoFinalesPath = (asignacionId) =>
-  `${MIS_CURSOS_PATH}/${asignacionId}/finales`;
-
 export const cursoNivelacionPath = (asignacionId) =>
   `${MIS_CURSOS_PATH}/${asignacionId}/nivelacion`;

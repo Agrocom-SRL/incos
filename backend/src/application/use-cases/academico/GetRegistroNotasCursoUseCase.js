@@ -1,10 +1,10 @@
 import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
-import { parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
+import { mergePoliticaExtra, parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
 import {
   calcularNotaBimestre,
   notaCuotaAPromedio100,
 } from '../../utils/cuadernoNotasCalculo.js';
-import { obtenerCuotasCursoDesdeAjustes } from '../../utils/obtenerCuotasCursoDesdeAjustes.js';
+import { obtenerCuotasDesdePolitica } from '../../utils/obtenerCuotasDesdePolitica.js';
 
 const BIMESTRES_TOTAL = 4;
 
@@ -94,14 +94,12 @@ export class GetRegistroNotasCursoUseCase {
     calificacionRepository,
     teacherRepository,
     evaluationConfigurationRepository,
-    ajustesCursoRepository,
     authRepository,
     logger,
   }) {
     this.calificacionRepository = calificacionRepository;
     this.teacherRepository = teacherRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
-    this.ajustesCursoRepository = ajustesCursoRepository;
     this.authRepository = authRepository;
     this.logger = logger;
   }
@@ -152,8 +150,9 @@ export class GetRegistroNotasCursoUseCase {
     const politicaParsed = parsePoliticaFromRow(politicaRow) ?? {};
     const notaMinimaAprobacion = Number(politicaParsed.notaMinimaAprobacion) || 61;
 
-    const ajustes = await this.ajustesCursoRepository.obtenerAjustes(asignacionIdNum);
-    const cuotas = obtenerCuotasCursoDesdeAjustes(ajustes);
+    const cuotas = obtenerCuotasDesdePolitica(
+      mergePoliticaExtra(parsePoliticaFromRow(politicaRow)),
+    );
 
     const [docenteRow, filasEstudiantes, periodosCalendario] = await Promise.all([
       this.calificacionRepository.obtenerDocenteCalificaciones(docenteIdAsignacion),

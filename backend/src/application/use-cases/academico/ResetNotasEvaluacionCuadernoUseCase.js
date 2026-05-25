@@ -1,6 +1,6 @@
 import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
-import { obtenerCuotasCursoDesdeAjustes } from '../../utils/obtenerCuotasCursoDesdeAjustes.js';
+import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { recalcularNotasBimestreCurso } from '../../utils/recalcularNotasBimestreCurso.js';
 import { recalcularNotaFinalMatriculaCurso } from '../../utils/recalcularNotaFinalMatriculaCurso.js';
 
@@ -8,14 +8,14 @@ export class ResetNotasEvaluacionCuadernoUseCase {
   constructor({
     calificacionRepository,
     cuadernoRepository,
-    ajustesCursoRepository,
+    evaluationConfigurationRepository,
     teacherRepository,
     authRepository,
     logger,
   }) {
     this.calificacionRepository = calificacionRepository;
     this.cuadernoRepository = cuadernoRepository;
-    this.ajustesCursoRepository = ajustesCursoRepository;
+    this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
     this.authRepository = authRepository;
     this.logger = logger;
@@ -25,7 +25,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
     const bimestreNum = Number(bimestre);
     const evalId = Number(evaluacionId);
 
-    const { bimestreVigente } = await assertCuadernoCursoAccess({
+    const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
       calificacionRepository: this.calificacionRepository,
       teacherRepository: this.teacherRepository,
       authRepository: this.authRepository,
@@ -50,8 +50,11 @@ export class ResetNotasEvaluacionCuadernoUseCase {
 
     await this.cuadernoRepository.softEliminarNotasPorEvaluacion(evalId, usuarioId);
 
-    const ajustes = await this.ajustesCursoRepository.obtenerAjustes(Number(asignacionId));
-    const { cuotaTeorico, cuotaPractico, pesosBimestres } = obtenerCuotasCursoDesdeAjustes(ajustes);
+    const { cuotaTeorico, cuotaPractico, pesosBimestres } = await cargarCuotasPoliticaGestion({
+      calificacionRepository: this.calificacionRepository,
+      evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+      gestionId,
+    });
 
     const recalculo = await recalcularNotasBimestreCurso({
       cuadernoRepository: this.cuadernoRepository,

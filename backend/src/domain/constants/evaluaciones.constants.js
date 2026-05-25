@@ -2,13 +2,6 @@
  * Constantes del dominio relacionadas con Evaluaciones
  */
 
-export const AMBITOS_TIPO_EVALUACION = {
-    BIMESTRE: 'BIMESTRE',
-    MATERIA_COMPLETA: 'MATERIA_COMPLETA',
-};
-
-export const AMBITOS_TIPO_EVALUACION_VALUES = Object.values(AMBITOS_TIPO_EVALUACION);
-
 export const COMPONENTES_EVALUACION = {
     TEORICO: 'TEORICO',
     PRACTICO: 'PRACTICO',

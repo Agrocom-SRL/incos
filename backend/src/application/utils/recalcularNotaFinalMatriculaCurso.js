@@ -13,9 +13,6 @@ export async function recalcularNotaFinalMatriculaCurso({
   usuarioId,
 }) {
   const filas = await cuadernoRepository.listarResumenNotasPorMatricula(Number(asignacionId));
-  const notasFinales = await cuadernoRepository.listarNotasEvaluacionesFinalesPorAsignacion(
-    Number(asignacionId),
-  );
 
   const porMatricula = new Map();
   for (const row of filas) {
@@ -32,23 +29,9 @@ export async function recalcularNotaFinalMatriculaCurso({
     }
   }
 
-  const finalesPorMm = new Map();
-  for (const row of notasFinales) {
-    const mmId = Number(row.matricula_materia_id);
-    if (!finalesPorMm.has(mmId)) finalesPorMm.set(mmId, []);
-    finalesPorMm.get(mmId).push({
-      nota: row.nota != null ? Number(row.nota) : null,
-      peso: Number(row.peso) || 0,
-    });
-  }
-
   let actualizados = 0;
   for (const { mmId, bimestres } of porMatricula.values()) {
-    const notaFinal = calcularNotaFinalPonderada(
-      bimestres,
-      pesosBimestres,
-      finalesPorMm.get(mmId) ?? [],
-    );
+    const notaFinal = calcularNotaFinalPonderada(bimestres, pesosBimestres);
     await cuadernoRepository.actualizarNotaFinalMatricula(mmId, notaFinal, usuarioId);
     actualizados += 1;
   }

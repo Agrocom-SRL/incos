@@ -1,10 +1,9 @@
 -- ============================================
 -- MÓDULO DE EVALUACIONES (PARTE 2 de 5) — Refactor 3FN
 -- Sistema de Gestión Académica - Instituto INCOS
--- 7 Tablas: tipos_evaluacion, configuracion_evaluacion,
+-- 5 Tablas: tipos_evaluacion, configuracion_evaluacion,
 --           bimestres_matricula,
---           evaluaciones, evaluaciones_notas,
---           evaluaciones_finales, evaluaciones_finales_notas
+--           evaluaciones, evaluaciones_notas
 -- ============================================
 --
 -- Este archivo modela el SISTEMA DE NOTAS Y EVALUACIONES de la gestión vigente.
@@ -20,7 +19,11 @@
 --   El refactor separa cada entidad en su tabla:
 --     evaluaciones        → columna del cuaderno (1 fila por evaluación lógica)
 --     evaluaciones_notas  → celda estudiante × evaluación (carga perezosa)
---   La misma separación se aplica a evaluaciones_finales.
+--
+-- NOTA FINAL DE LA MATERIA:
+--   Solo suma ponderada de los 4 bimestres (pesos en POLITICA_INSTITUCIONAL).
+--   No hay examen único, proyecto final ni evaluación anual que se sume al promedio.
+--   Los casos excepcionales (recuperatorio, nivelación) viven en 16-nivelaciones.sql.
 --
 -- DECISIÓN DE VINCULACIÓN AL BIMESTRE:
 --   `evaluaciones` se vincula al período académico (BIMESTRE) vía
@@ -53,21 +56,15 @@
 --      │      └── evaluaciones_notas (N celdas, una por evaluación con nota cargada)
 --      │             └── evaluacion_id → evaluaciones (columna del cuaderno)
 --      │
---      └── evaluaciones_finales_notas
---             └── evaluacion_final_id → evaluaciones_finales (columna anual)
+--      └── nota_final (caché) = Σ nota_bimestre × peso_bimestre / Σ peso
 --
 --   asignaciones_docentes
 --      │
---      ├── evaluaciones (N columnas del cuaderno por curso × bimestre)
---      │      ├── periodo_academico_id → bimestre del calendario
---      │      ├── componente: TEORICO o PRACTICO
---      │      ├── nombre, peso, tipo, fecha (UNA fila, no N)
---      │      └── 1:N → evaluaciones_notas
---      │
---      └── evaluaciones_finales (N columnas anuales del curso)
---             ├── gestion_id → gestión a la que aplica
---             ├── nombre, peso, tipo, fecha
---             └── 1:N → evaluaciones_finales_notas
+--      └── evaluaciones (N columnas del cuaderno por curso × bimestre)
+--             ├── periodo_academico_id → bimestre del calendario
+--             ├── componente: TEORICO o PRACTICO
+--             ├── nombre, peso, tipo, fecha (UNA fila, no N)
+--             └── 1:N → evaluaciones_notas
 --
 -- CARGA PEREZOSA DE CELDAS:
 --   Al crear una columna nueva en el cuaderno NO se pre-crean filas en
@@ -80,9 +77,11 @@
 --     evaluaciones.periodo_academico.numero_orden == bimestres_matricula.bimestre
 --   Sin esta validación, una nota podría apuntar a un bimestre "equivocado".
 --
--- CONFIGURACIÓN TEÓRICO / PRÁCTICO:
---   - Default institucional por gestión en configuracion_evaluacion (típicamente 30/70)
---   - Override por asignacion_docente (teorico_override / practico_override)
+-- CONFIGURACIÓN TEÓRICO / PRÁCTICO Y NOTA ANUAL:
+--   - Política institucional por gestión en configuracion_evaluacion (POLITICA_INSTITUCIONAL):
+--     cuotas teórico/práctico, pesos de bimestres, nota mínima, asistencia default.
+--   - Solo administración define y modifica esa política (POLITICA_INSTITUCIONAL).
+--   - Los docentes no parametrizan cuotas, pesos ni asistencia por curso.
 --   - Las evaluaciones componente=TEORICO se promedian ponderado y se reescalan a
 --     la cuota_teorico; lo mismo para práctico
 --   - nota_bimestre = nota_teorico + nota_practico (≤ 100)
@@ -108,8 +107,6 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS evaluaciones_finales_notas;
-DROP TABLE IF EXISTS evaluaciones_finales;
 DROP TABLE IF EXISTS evaluaciones_notas;
 DROP TABLE IF EXISTS evaluaciones;
 DROP TABLE IF EXISTS bimestres_matricula;
@@ -122,29 +119,26 @@ DROP TABLE IF EXISTS tipos_evaluacion;
 
 -- ============================================
 -- TABLA: tipos_evaluacion
--- Catálogo de tipos de evaluación
+-- Catálogo de tipos de evaluación (bimestrales)
 -- ============================================
--- Catálogo reutilizable entre gestiones. ambito distingue evaluaciones de
--- bimestre (van a `evaluaciones`) vs evaluaciones de materia completa (van
--- a `evaluaciones_finales`).
+-- Catálogo reutilizable entre gestiones. Todos los tipos aplican dentro de un
+-- bimestre y se usan en la tabla `evaluaciones`.
 --
--- Tipos típicos según práctica docente en INCOS:
---   BIMESTRE:        EXAMEN_PARCIAL, PRACTICO, PROYECTO, EXPOSICION, TALLER,
---                    ACTIVIDAD_EXTRACURRICULAR, HABILITACION
---   MATERIA_COMPLETA: PROYECTO_FINAL_ANUAL, EXAMEN_FINAL_ANUAL,
---                     RECUPERATORIO_ANUAL, PRUEBA_EXCEPCIONAL
+-- Tipos típicos (catálogo en 58-seed-tipos-evaluacion.sql), p. ej.:
+--   Práctico: PRACTICA, EJERCICIO, EVALUACION_APLICACION, TALLER, LABORATORIO…
+--   Teórico: CUESTIONARIO, CONCEPTUAL, CONTROL_LECTURA, PRUEBA_OBJETIVA…
+--   Recuperación: HABILITACION (es_recuperatorio=TRUE)
+-- El componente TEORICO|PRACTICO de cada columna se define en evaluaciones, no aquí.
 
 CREATE TABLE tipos_evaluacion (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     -- Identificación
-    codigo VARCHAR(40) NOT NULL COMMENT 'Código del tipo (ej: EXAMEN_PARCIAL, PROYECTO_FINAL_ANUAL)',
-    nombre VARCHAR(100) NOT NULL COMMENT 'Nombre descriptivo (ej: Examen Parcial, Proyecto Final Anual)',
+    codigo VARCHAR(40) NOT NULL COMMENT 'Código del tipo (ej: EXAMEN_PARCIAL, PROYECTO)',
+    nombre VARCHAR(100) NOT NULL COMMENT 'Nombre descriptivo (ej: Examen Parcial, Proyecto)',
     descripcion TEXT COMMENT 'Descripción del tipo y cuándo se aplica',
 
     -- Comportamiento del tipo
-    ambito ENUM('BIMESTRE', 'MATERIA_COMPLETA') DEFAULT 'BIMESTRE' 
-        COMMENT 'BIMESTRE (vive dentro de un bimestre, va a evaluaciones); MATERIA_COMPLETA (cubre toda la materia, va a evaluaciones_finales)',
     es_recuperatorio BOOLEAN DEFAULT FALSE 
         COMMENT 'TRUE si es evaluación de recuperación (reemplaza nota original). FALSE si se promedia normalmente',
 
@@ -161,13 +155,12 @@ CREATE TABLE tipos_evaluacion (
 
     -- Índices
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
-    INDEX idx_ambito (ambito) COMMENT 'Filtrado por ámbito de aplicación',
     INDEX idx_es_recuperatorio (es_recuperatorio) COMMENT 'Filtrado por tipo recuperatorio',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Catálogo de tipos de evaluación reutilizable entre gestiones. ambito distingue evaluaciones de bimestre vs evaluaciones de materia completa.';
+COMMENT='Catálogo de tipos de evaluación bimestrales reutilizable entre gestiones.';
 
 -- ============================================
 -- TABLA: configuracion_evaluacion
@@ -177,12 +170,10 @@ COMMENT='Catálogo de tipos de evaluación reutilizable entre gestiones. ambito 
 -- almacena la política institucional y parámetros por gestión.
 --
 -- Clave principal: POLITICA_INSTITUCIONAL — documento JSON con ponderación
--- teórico/práctico, pesos de bimestres, reglas de evaluaciones finales,
--- política de asistencia, nota mínima de aprobación, etc.
+-- teórico/práctico, pesos de bimestres, política de asistencia, nota mínima
+-- de aprobación, etc. Solo administración crea y modifica estas filas.
 --
--- Override por curso (cuotas, asistencia, banderas locales del docente) en
--- asignaciones_docentes y/o en filas adicionales de esta tabla con clave
--- AJUSTES_CURSO_{asignacionId}.
+-- Solo la clave POLITICA_INSTITUCIONAL por gestión; sin overrides por curso/docente.
 
 CREATE TABLE configuracion_evaluacion (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -191,7 +182,7 @@ CREATE TABLE configuracion_evaluacion (
     gestion_id INT NULL COMMENT 'Gestión a la que aplica (referencia a gestiones)',
 
     -- Identificación y valor
-    clave VARCHAR(100) NOT NULL COMMENT 'Identificador (ej: POLITICA_INSTITUCIONAL, AJUSTES_CURSO_42)',
+    clave VARCHAR(100) NOT NULL COMMENT 'Identificador (ej: POLITICA_INSTITUCIONAL)',
     valor TEXT NOT NULL COMMENT 'Valor serializado (JSON para política institucional)',
     tipo ENUM('STRING','NUMBER','BOOLEAN','JSON','DATE') DEFAULT 'JSON' 
         COMMENT 'Tipo para deserialización',
@@ -222,7 +213,7 @@ CREATE TABLE configuracion_evaluacion (
     INDEX idx_deleted_at (deleted_at)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Configuración de evaluación por gestión (clave-valor). Política institucional en POLITICA_INSTITUCIONAL; overrides por curso en AJUSTES_CURSO_{asignacionId}.';
+COMMENT='Configuración global de evaluación por gestión (clave-valor). Política de notas en POLITICA_INSTITUCIONAL.';
 
 -- ============================================
 -- TABLA: bimestres_matricula
@@ -329,7 +320,6 @@ COMMENT='Bimestre operativo de una matrícula. Contiene los componentes oficiale
 --   - periodos_academicos.division debe ser 'BIMESTRE'
 --   - periodos_academicos.gestion_id debe coincidir con la gestión del curso
 --     (asignaciones_docentes → gestion_plan → gestion)
---   - tipos_evaluacion.ambito debe ser 'BIMESTRE'
 --
 -- COMPONENTE Y PESO:
 --   componente indica si la columna contribuye a nota_teorico o nota_practico
@@ -355,7 +345,7 @@ CREATE TABLE evaluaciones (
     periodo_academico_id INT NULL 
         COMMENT 'Bimestre del calendario académico (referencia a periodos_academicos con division=BIMESTRE). De aquí derivan gestión y número de bimestre',
     tipo_evaluacion_id INT NULL 
-        COMMENT 'Tipo de evaluación (referencia a tipos_evaluacion). Debe tener ambito=BIMESTRE',
+        COMMENT 'Tipo de evaluación (referencia a tipos_evaluacion)',
 
     -- Mapeo al boletín oficial
     componente ENUM('TEORICO', 'PRACTICO') NOT NULL DEFAULT 'PRACTICO' 
@@ -477,151 +467,6 @@ CREATE TABLE evaluaciones_notas (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Celda del cuaderno: nota de un estudiante en una evaluación específica. Carga perezosa: se inserta al cargar primera nota.';
-
--- ============================================
--- TABLA: evaluaciones_finales
--- Columna de evaluación final del curso (entidad lógica)
--- ============================================
--- Representa UNA evaluación que cubre toda la materia (no un bimestre):
--- proyecto integrador anual, examen final anual, participación en feria,
--- recuperatorio anual, prueba excepcional.
---
--- DIFERENCIA con evaluaciones (bimestrales):
---   evaluaciones      → pertenece a un bimestre (periodo_academico_id)
---   evaluaciones_finales → pertenece a toda la gestión (gestion_id)
---   El peso de finales aplica a la nota_final completa, no a un bimestre.
---
--- VINCULACIÓN AL CURSO Y A LA GESTIÓN:
---   - asignacion_docente_id: el curso
---   - gestion_id: la gestión a la que aplica
---   Esta gestión debe coincidir con la del curso (asignaciones_docentes →
---   gestion_plan → gestion), validación de aplicación.
---
--- VALIDACIÓN DE APLICACIÓN:
---   - tipos_evaluacion.ambito debe ser 'MATERIA_COMPLETA'
---   - gestion_id == gestión del asignacion_docente_id
---
--- CÁLCULO DE NOTA FINAL:
---   nota_final = (Σ nota_bimestre × peso_bimestre + Σ nota_final × peso_eval_final)
---              ────────────────────────────────────────────────────────────────────
---                        Σ peso_bimestre + Σ peso_eval_final
---
--- EJEMPLO:
---   Bimestres 1-4: peso 20 cada uno (total 80)
---   Proyecto final anual: peso 20
---   Total ponderado: 100, distribuido entre 5 elementos
-
-CREATE TABLE evaluaciones_finales (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-
-    -- Relaciones principales
-    asignacion_docente_id INT NULL 
-        COMMENT 'Curso al que pertenece esta evaluación final (referencia a asignaciones_docentes)',
-    tipo_evaluacion_id INT NULL 
-        COMMENT 'Tipo de evaluación (referencia a tipos_evaluacion). Debe tener ambito=MATERIA_COMPLETA',
-
-    -- Identificación
-    nombre_evaluacion VARCHAR(200) 
-        COMMENT 'Nombre descriptivo (ej: Proyecto Integrador Web, Examen Final Anual, Feria de Innovación)',
-    descripcion TEXT 
-        COMMENT 'Descripción o consigna detallada',
-
-    -- Ponderación
-    peso DECIMAL(5,2) NULL DEFAULT 1 
-        COMMENT 'Peso en el cálculo de nota_final, en escala comparable a peso_bimestre',
-    fecha DATE NULL 
-        COMMENT 'Fecha en que se rinde/entrega',
-
-    -- Control de cierre
-    notas_cerradas BOOLEAN DEFAULT FALSE 
-        COMMENT 'TRUE cuando las notas de esta evaluación final están cerradas',
-
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
-
-    -- Foreign Keys
-    FOREIGN KEY (asignacion_docente_id) REFERENCES asignaciones_docentes(id) ON DELETE SET NULL,
-    FOREIGN KEY (tipo_evaluacion_id) REFERENCES tipos_evaluacion(id) ON DELETE SET NULL,
-
-    -- Índices
-    INDEX idx_asignacion_docente_id (asignacion_docente_id),
-    INDEX idx_tipo_evaluacion_id (tipo_evaluacion_id),
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_asignacion_gestion (asignacion_docente_id, activo, deleted_at) 
-        COMMENT 'Evaluaciones finales de un curso en una gestión',
-    INDEX idx_asignacion_tipo (asignacion_docente_id, tipo_evaluacion_id, activo, deleted_at) 
-        COMMENT 'Evaluaciones finales de un tipo específico'
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Columna de evaluación final del curso (entidad lógica). Cubre toda la materia. Una fila por evaluación, pertenece al curso y a la gestión. Las notas por estudiante viven en evaluaciones_finales_notas.';
-
--- ============================================
--- TABLA: evaluaciones_finales_notas
--- Celda de evaluación final: nota de un estudiante en una evaluación anual
--- ============================================
--- Cada fila es la nota de un estudiante en una evaluación final del curso.
--- Carga perezosa: se inserta cuando el docente carga la primera nota.
---
--- COHERENCIA CURSO COLUMNA ↔ CURSO MATRÍCULA (validación de aplicación):
---   evaluaciones_finales.asignacion_docente_id == matriculas_materia.asignacion_docente_id
---   Sin esta validación, una nota podría apuntar a un curso equivocado.
---
--- ACCESO TÍPICO (cálculo de nota final del estudiante):
---   SELECT efn.nota, ef.peso
---   FROM evaluaciones_finales ef
---   LEFT JOIN evaluaciones_finales_notas efn 
---     ON efn.evaluacion_final_id = ef.id 
---     AND efn.matricula_materia_id = ?
---   WHERE ef.asignacion_docente_id = ?
---     AND ef.activo = TRUE AND ef.deleted_at IS NULL;
-
-CREATE TABLE evaluaciones_finales_notas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-
-    -- Relaciones principales
-    evaluacion_final_id INT NULL 
-        COMMENT 'Evaluación final del curso (referencia a evaluaciones_finales). Eje horizontal',
-    matricula_materia_id INT NULL 
-        COMMENT 'Matrícula del estudiante a la materia (referencia a matriculas_materia). Eje vertical. NO va a bimestre_matricula porque la nota es anual, no de un bimestre',
-
-    -- Calificación
-    nota DECIMAL(5,2) NULL 
-        COMMENT 'Nota obtenida (0-100). Se pondera junto con los bimestres para la nota_final',
-    intento INT DEFAULT 1 
-        COMMENT 'Número de intento (1 regular; >1 para retomas si tipo permite múltiples intentos)',
-
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
-
-    -- Foreign Keys
-    FOREIGN KEY (evaluacion_final_id) REFERENCES evaluaciones_finales(id) ON DELETE SET NULL,
-    FOREIGN KEY (matricula_materia_id) REFERENCES matriculas_materia(id) ON DELETE SET NULL,
-
-    -- Índices
-    INDEX idx_evaluacion_final_id (evaluacion_final_id),
-    INDEX idx_matricula_materia_id (matricula_materia_id),
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_evaluacion_matricula (evaluacion_final_id, matricula_materia_id, activo, deleted_at) 
-        COMMENT 'Acceso directo a la celda (evaluación final × estudiante)',
-    INDEX idx_matricula_activo (matricula_materia_id, activo, deleted_at) 
-        COMMENT 'Todas las notas finales de un estudiante en una materia (para cálculo de nota_final)'
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Celda de evaluación final: nota de un estudiante en una evaluación que cubre toda la materia. FK a matricula_materia (no a bimestre) porque la nota es anual. Carga perezosa.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

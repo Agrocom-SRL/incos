@@ -244,19 +244,6 @@ class CalificacionRepository {
     }
   }
 
-  async obtenerAjustesCurso(asignacionId) {
-    try {
-      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.AJUSTES_CURSO(asignacionId));
-      const responseData = response.data;
-      if (responseData.success === false) {
-        return { success: false, error: responseData.error };
-      }
-      return { success: true, data: responseData.data ?? {} };
-    } catch (error) {
-      return handleErrorResponse(error, 'Error al cargar ajustes del curso');
-    }
-  }
-
   /** GET cuaderno del bimestre (evaluaciones + notas cargadas). */
   async obtenerCuadernoBimestre(asignacionId, bimestre) {
     try {
@@ -372,21 +359,6 @@ class CalificacionRepository {
     }
   }
 
-  async guardarAjustesCurso(asignacionId, payload) {
-    try {
-      const response = await apiClient.put(
-        CALIFICACIONES_ENDPOINTS.AJUSTES_CURSO(asignacionId),
-        payload,
-      );
-      const responseData = response.data;
-      if (responseData.success === false) {
-        return { success: false, error: responseData.error };
-      }
-      return { success: true, data: responseData.data ?? {} };
-    } catch (error) {
-      return handleErrorResponse(error, 'Error al guardar ajustes del curso');
-    }
-  }
 }
 
 export default new CalificacionRepository();

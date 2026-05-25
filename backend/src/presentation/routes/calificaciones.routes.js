@@ -79,7 +79,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
 
   /**
    * GET /api/v1/calificaciones/tipos-evaluacion
-   * Catálogo tipos_evaluacion (query: ambito=BIMESTRE|MATERIA_COMPLETA, pagina, limite, busqueda).
+   * Catálogo tipos_evaluacion bimestrales (query: pagina, limite, busqueda).
    */
   router.get(
     '/tipos-evaluacion',
@@ -183,18 +183,6 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     '/asignaciones/:asignacionId/notas',
     ...cuadernoListar,
     (req, res, next) => controllers.getRegistroNotasCursoController.handle(req, res, next),
-  );
-
-  router.get(
-    '/asignaciones/:asignacionId/ajustes',
-    ...cuadernoListar,
-    (req, res, next) => controllers.getAjustesCursoController.handle(req, res, next),
-  );
-
-  router.put(
-    '/asignaciones/:asignacionId/ajustes',
-    ...cuadernoEditar,
-    (req, res, next) => controllers.saveAjustesCursoController.handle(req, res, next),
   );
 
   router.get(

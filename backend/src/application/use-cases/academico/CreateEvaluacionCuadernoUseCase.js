@@ -66,11 +66,6 @@ export class CreateEvaluacionCuadernoUseCase {
     if (!tipo) {
       throw new ValidationError('Tipo de evaluación no encontrado');
     }
-    const tipoPlain = tipo.toPlainObject?.() ?? tipo;
-    if (tipoPlain.scope !== 'BIMESTRE' && tipoPlain.ambito !== 'BIMESTRE') {
-      throw new ValidationError('El tipo debe ser de ámbito bimestre');
-    }
-
     const nombre = String(body?.nombre ?? '').trim();
     if (!nombre) {
       throw new ValidationError('Nombre descriptivo requerido');

@@ -8,8 +8,7 @@
 --   - asignaciones_docentes         (tabla recreada con columnas nuevas)
 --
 -- Columnas nuevas en destino (valores por defecto en migración):
---   teorico_override, practico_override          -> NULL
---   politica_asistencia                          -> 'NO_AFECTA'
+--   (política de notas solo en configuracion_evaluacion)
 --   peso_asistencia, minimo_asistencia,
 --   nota_reprobada                               -> NULL
 --
@@ -43,8 +42,6 @@ DELETE FROM asignaciones_docentes;
 --   id, gestion_plan_id, curso_id, docente_id, carga_horaria  -> se conservan
 --   vigente, motivo, fecha_asignacion                         -> se conservan
 --   auditoría y soft delete                                   -> se conservan
---   teorico_override, practico_override                       -> NULL
---   politica_asistencia                                       -> 'NO_AFECTA'
 --   peso_asistencia, minimo_asistencia, nota_reprobada        -> NULL
 -- ============================================
 
@@ -54,12 +51,6 @@ INSERT INTO asignaciones_docentes (
     curso_id,
     docente_id,
     carga_horaria,
-    teorico_override,
-    practico_override,
-    politica_asistencia,
-    peso_asistencia,
-    minimo_asistencia,
-    nota_reprobada,
     fecha_asignacion,
     motivo,
     vigente,
@@ -77,12 +68,6 @@ SELECT
     o.curso_id,
     o.docente_id,
     o.carga_horaria,
-    NULL AS teorico_override,
-    NULL AS practico_override,
-    'NO_AFECTA' AS politica_asistencia,
-    NULL AS peso_asistencia,
-    NULL AS minimo_asistencia,
-    NULL AS nota_reprobada,
     o.fecha_asignacion,
     o.motivo,
     COALESCE(o.vigente, 1) AS vigente,
@@ -156,13 +141,6 @@ GROUP BY vigente
 ORDER BY vigente;
 
 SELECT
-    politica_asistencia,
-    COUNT(*) AS total
-FROM asignaciones_docentes
-GROUP BY politica_asistencia
-ORDER BY politica_asistencia;
-
-SELECT
     'SIN_GESTION_PLAN_VALIDADA' AS validacion,
     COUNT(*) AS total
 FROM asignaciones_docentes ad
@@ -185,13 +163,6 @@ FROM asignaciones_docentes ad
 LEFT JOIN docentes d ON d.id = ad.docente_id
 WHERE ad.docente_id IS NOT NULL
   AND d.id IS NULL;
-
-SELECT
-    'CON_OVERRIDE_TEORICO_PRACTICO' AS validacion,
-    COUNT(*) AS total
-FROM asignaciones_docentes
-WHERE teorico_override IS NOT NULL
-   OR practico_override IS NOT NULL;
 
 SELECT
     'AUTO_INCREMENT_ACTUAL' AS validacion,

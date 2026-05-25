@@ -25,12 +25,6 @@ export class EvaluationTypeRepository extends BaseRepository {
         if (filters.name) {
             where.nombre = filters.name;
         }
-        if (filters.scope) {
-            where.ambito = filters.scope;
-        }
-        if (filters.scopes && Array.isArray(filters.scopes) && filters.scopes.length > 0) {
-            where.ambito = { [Op.in]: filters.scopes };
-        }
         if (filters.isRecovery !== undefined) {
             where.esRecuperatorio = filters.isRecovery;
         }
