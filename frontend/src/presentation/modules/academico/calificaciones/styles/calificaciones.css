@@ -1,6 +1,9 @@
 /* Calificaciones — tokens locales del cuaderno (mapean variables globales del proyecto) */
 .cal-cuaderno,
 .cal-cuaderno-hoja,
+.cal-consolidado,
+.cal-consolidado-grid-wrap,
+.cal-bimestre-consolidado-wrap,
 /* Drawer en portal (fuera de .cal-cuaderno): necesita los mismos tokens */
 .ant-drawer.cal-ajustes-drawer {
   --cuaderno-verde-tenue: #e8f5ec;
@@ -1071,14 +1074,15 @@
   border-bottom: none !important;
 }
 
-.cal-notas-grid__estudiante {
+/* Celda estudiante — compartida (cuaderno + consolidado) */
+.cal-celda-estudiante {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
 }
 
-.cal-notas-grid__margen {
+.cal-celda-estudiante__margen {
   flex-shrink: 0;
   width: 2px;
   align-self: stretch;
@@ -1087,21 +1091,21 @@
   background: var(--cuaderno-verde-acento);
 }
 
-.cal-notas-grid__estudiante-texto {
+.cal-celda-estudiante__texto {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
 
-.cal-notas-grid__codigo {
+.cal-celda-estudiante__codigo {
   font-size: 12px;
   font-weight: 600;
   color: var(--cuaderno-texto-medio);
   font-variant-numeric: tabular-nums;
 }
 
-.cal-notas-grid__nombre {
+.cal-celda-estudiante__nombre {
   font-weight: 500;
   color: var(--cuaderno-texto-fuerte);
   font-size: 13px;
@@ -2673,13 +2677,46 @@
   background: #fafafa;
 }
 
-.cal-consolidado-grid__col-nombre {
-  font-size: 14px;
-  text-transform: uppercase;
+.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__col-estudiante,
+.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-estudiante {
+  width: 300px !important;
+  min-width: 260px !important;
+  max-width: 320px !important;
+  vertical-align: middle !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
-.cal-consolidado-grid__col-codigo {
-  font-variant-numeric: tabular-nums;
+.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-estudiante .ant-table-cell-content {
+  overflow: visible !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+}
+
+.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-estudiante .cal-celda-estudiante {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Celda estudiante — cuaderno y consolidado bimestre (misma columna que NotasGrid) */
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.cal-notas-grid__col-estudiante,
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-estudiante {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  vertical-align: middle !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-estudiante .ant-table-cell-content {
+  overflow: visible !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+}
+
+.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-estudiante .cal-celda-estudiante {
+  width: 100%;
+  min-width: 0;
 }
 
 .cal-consolidado-grid__col-num,

@@ -11,6 +11,8 @@ import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useCuadernoCurso } from '@application-academico/calificaciones/hooks/useCuadernoCurso.js';
+import { useBimestrePagerTeclado } from '@application-academico/calificaciones/hooks/useBimestrePagerTeclado.js';
+import { useNavegacionBimestres } from '@application-academico/calificaciones/hooks/useNavegacionBimestres.js';
 import { contarNotasCargadas } from '@application-academico/calificaciones/utils/puntosEvaluaciones.js';
 import { usePoliticaInstitucional } from '@application-academico/calificaciones/hooks/usePoliticaInstitucional.js';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
@@ -236,6 +238,15 @@ const CuadernoPage = () => {
     eliminarEvaluacion,
     resetearNotasEvaluacion,
   } = useCuadernoCurso();
+
+  const navegacionBimestres = useNavegacionBimestres(cursoId, bimestreActivo, bimestreVigente);
+  useBimestrePagerTeclado({
+    habilitado: Boolean(cursoId) && !isLoading,
+    puedeAnterior: navegacionBimestres.puedeAnterior,
+    puedeSiguiente: navegacionBimestres.puedeSiguiente,
+    onAnterior: navegacionBimestres.irAnterior,
+    onSiguiente: navegacionBimestres.irSiguiente,
+  });
 
   const [busquedaEstudiante, setBusquedaEstudiante] = useState('');
   const [drawerAbierto, setDrawerAbierto] = useState(false);

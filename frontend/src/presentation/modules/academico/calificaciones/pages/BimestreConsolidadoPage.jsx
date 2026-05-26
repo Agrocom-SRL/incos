@@ -12,6 +12,8 @@ import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useAcciones } from '@application/modules/shared/hooks/useAcciones.js';
 import { useBimestreConsolidado } from '@application-academico/calificaciones/hooks/useBimestreConsolidado.js';
+import { useBimestrePagerTeclado } from '@application-academico/calificaciones/hooks/useBimestrePagerTeclado.js';
+import { useNavegacionBimestres } from '@application-academico/calificaciones/hooks/useNavegacionBimestres.js';
 import { useCalificacionesVistaContext } from '@application-academico/calificaciones/hooks/useCalificacionesVistaContext.js';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import CuadernoContextoPanel from '../components/CuadernoContextoPanel.jsx';
@@ -62,6 +64,15 @@ const BimestreConsolidadoPage = () => {
     esVistaCoordinacion,
     guardarConsolidado,
   } = useBimestreConsolidado();
+
+  const navegacionBimestres = useNavegacionBimestres(cursoId, bimestreActivo, bimestreVigente);
+  useBimestrePagerTeclado({
+    habilitado: Boolean(cursoId) && !isLoading,
+    puedeAnterior: navegacionBimestres.puedeAnterior,
+    puedeSiguiente: navegacionBimestres.puedeSiguiente,
+    onAnterior: navegacionBimestres.irAnterior,
+    onSiguiente: navegacionBimestres.irSiguiente,
+  });
 
   const [busquedaEstudiante, setBusquedaEstudiante] = useState('');
   const [modoAdmin, setModoAdmin] = useState(false);

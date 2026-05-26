@@ -4,40 +4,17 @@
 
 import { Button, Tooltip } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import {
-  bimestreConsolidadoPath,
-  cuadernoBimestrePath,
-} from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import { useNavegacionBimestres } from '@application-academico/calificaciones/hooks/useNavegacionBimestres.js';
 
 const TOOLTIP_SIGUIENTE_BLOQUEADO =
   'El bimestre siguiente aún no está habilitado en el calendario académico.';
 
 const BimestreConsolidadoBimestrePager = ({ asignacionId, bimestreActivo, bimestreVigente }) => {
-  const navigate = useNavigate();
-  const n = Number(bimestreActivo) || 1;
-  const vigente = Number(bimestreVigente) || 1;
-
-  const puedeAnterior = n > 1;
-  const puedeSiguiente = n < 4 && n < vigente;
-
-  const pathPara = (destino) => {
-    if (destino < vigente) {
-      return bimestreConsolidadoPath(asignacionId, destino);
-    }
-    return cuadernoBimestrePath(asignacionId, destino);
-  };
-
-  const irA = (destino) => {
-    if (!asignacionId || destino < 1 || destino > 4) return;
-    if (destino < vigente) {
-      navigate(bimestreConsolidadoPath(asignacionId, destino));
-      return;
-    }
-    if (destino === vigente) {
-      navigate(cuadernoBimestrePath(asignacionId, destino));
-    }
-  };
+  const { puedeAnterior, puedeSiguiente, irAnterior, irSiguiente } = useNavegacionBimestres(
+    asignacionId,
+    bimestreActivo,
+    bimestreVigente,
+  );
 
   const btnSiguiente = (
     <Button
@@ -47,9 +24,11 @@ const BimestreConsolidadoBimestrePager = ({ asignacionId, bimestreActivo, bimest
       icon={<RightOutlined />}
       disabled={!puedeSiguiente}
       aria-label={
-        n + 1 === vigente ? 'Ir al cuaderno del bimestre vigente' : 'Bimestre siguiente'
+        Number(bimestreActivo) + 1 === Number(bimestreVigente)
+          ? 'Ir al cuaderno del bimestre vigente'
+          : 'Bimestre siguiente'
       }
-      onClick={() => irA(n + 1)}
+      onClick={irSiguiente}
       className="cal-cuaderno-bimestre-pager__btn"
     />
   );
@@ -63,10 +42,10 @@ const BimestreConsolidadoBimestrePager = ({ asignacionId, bimestreActivo, bimest
         icon={<LeftOutlined />}
         disabled={!puedeAnterior}
         aria-label="Bimestre anterior"
-        onClick={() => navigate(pathPara(n - 1))}
+        onClick={irAnterior}
         className="cal-cuaderno-bimestre-pager__btn"
       />
-      {!puedeSiguiente && n < 4 ? (
+      {!puedeSiguiente && Number(bimestreActivo) < 4 ? (
         <Tooltip title={TOOLTIP_SIGUIENTE_BLOQUEADO}>{btnSiguiente}</Tooltip>
       ) : (
         btnSiguiente

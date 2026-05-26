@@ -13,6 +13,7 @@ import {
 import { Dropdown, Table, Tooltip } from 'antd';
 import { Button } from '@atoms';
 import NotaCell from './NotaCell.jsx';
+import CeldaEstudiante from './CeldaEstudiante.jsx';
 
 const BimestreGrupoHead = ({
   titulo,
@@ -130,18 +131,12 @@ const EvaluacionColumnHead = ({
 };
 
 const renderEstudiante = (nombre, row) => (
-  <span className="cal-notas-grid__estudiante">
-    <span className="cal-notas-grid__margen" aria-hidden />
-    <span className="cal-notas-grid__estudiante-texto">
-      {row.codigo ? <span className="cal-notas-grid__codigo">{row.codigo}</span> : null}
-      <span className="cal-notas-grid__nombre">{nombre}</span>
-    </span>
-  </span>
+  <CeldaEstudiante nombre={nombre} codigo={row.codigo} />
 );
 
 /** Anchos fijos de identificación; el resto del ancho va al grupo bimestre. */
-const ANCHO_COL_NRO = 44;
-const ANCHO_COL_ESTUDIANTE = 300;
+const ANCHO_COL_NRO = 64;
+const ANCHO_COL_ESTUDIANTE = 340;
 const ANCHO_COL_EVAL = 200;
 const ANCHO_COL_EVAL_MAX = 300;
 const ANCHO_COL_AGREGAR = 56;
@@ -292,9 +287,9 @@ const NotasGrid = ({
       key: 'estudiante',
       width: ANCHO_COL_ESTUDIANTE,
       ...(fijarColumnaEstudiante ? { fixed: 'left' } : {}),
-      ellipsis: true,
       className: 'cal-notas-grid__col-estudiante',
       onHeaderCell: thEst,
+      onCell: () => ({ className: 'cal-notas-grid__col-estudiante' }),
       render: renderEstudiante,
     },
     grupoBimestre,

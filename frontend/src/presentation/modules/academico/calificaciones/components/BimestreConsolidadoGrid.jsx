@@ -5,20 +5,15 @@
 import { Table, Tag, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import ComponenteNotaCell from './ComponenteNotaCell.jsx';
+import CeldaEstudiante from './CeldaEstudiante.jsx';
 
 const ANCHO_COL_NRO = 44;
 const ANCHO_COL_ESTUDIANTE = 300;
 const ANCHO_COL_COMP = 88;
 
-const renderEstudiante = (_, row) => {
-  const nombre = row.nombre ?? '—';
-  return (
-    <span className="cal-notas-grid__estudiante-texto">
-      {row.codigo ? <span className="cal-notas-grid__codigo">{row.codigo}</span> : null}
-      <span className="cal-notas-grid__nombre">{nombre}</span>
-    </span>
-  );
-};
+const renderEstudiante = (nombre, row) => (
+  <CeldaEstudiante nombre={nombre ?? '—'} codigo={row.codigo ?? row.codigoEstudiante} />
+);
 
 const puntosComponente = (editVal, rowVal) => {
   const v = editVal !== undefined ? editVal : rowVal;
@@ -170,9 +165,9 @@ const BimestreConsolidadoGrid = ({
       key: 'estudiante',
       width: ANCHO_COL_ESTUDIANTE,
       fixed: 'left',
-      ellipsis: true,
       className: 'cal-notas-grid__col-estudiante',
       onHeaderCell: thEst,
+      onCell: () => ({ className: 'cal-notas-grid__col-estudiante' }),
       render: renderEstudiante,
     },
     grupoBimestre,

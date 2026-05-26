@@ -10,11 +10,14 @@ import {
 } from '@ant-design/icons';
 import { Button, Table, Tag, Tooltip } from 'antd';
 import CeldaSumaConAjusteInfo from './CeldaSumaConAjusteInfo.jsx';
+import CeldaEstudiante from './CeldaEstudiante.jsx';
 import {
   ESTADO_BIMESTRE_HEADER,
   resolverEstadoBimestreHeader,
   tooltipAbrirCuaderno,
 } from '@application-academico/calificaciones/utils/bimestreConsolidadoUtils.js';
+
+const ANCHO_COL_ESTUDIANTE = 30;
 
 const ETIQUETA_ESTADO = {
   [ESTADO_BIMESTRE_HEADER.CERRADO]: 'CERRADO',
@@ -263,32 +266,16 @@ const ConsolidadoGrid = ({
     },
     {
       title: 'Estudiante',
+      dataIndex: 'nombre',
       key: 'estudiante',
+      width: ANCHO_COL_ESTUDIANTE,
       fixed: 'left',
+      className: 'cal-consolidado-grid__col-estudiante',
       onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-est' }),
-      children: [
-        {
-          title: 'Código',
-          dataIndex: 'codigo',
-          key: 'codigo',
-          width: 108,
-          className: 'cal-consolidado-grid__col-codigo',
-          onHeaderCell: () => ({
-            className: 'cal-consolidado-grid__th-sub cal-consolidado-grid__th-sub-est',
-          }),
-        },
-        {
-          title: 'Nombres y apellidos',
-          dataIndex: 'nombre',
-          key: 'nombre',
-          width: 310,
-          ellipsis: true,
-          className: 'cal-consolidado-grid__col-nombre',
-          onHeaderCell: () => ({
-            className: 'cal-consolidado-grid__th-sub cal-consolidado-grid__th-sub-est',
-          }),
-        },
-      ],
+      onCell: () => ({ className: 'cal-consolidado-grid__col-estudiante' }),
+      render: (nombre, row) => (
+        <CeldaEstudiante nombre={nombre} codigo={row.codigo ?? row.codigoEstudiante} />
+      ),
     },
     ...bimestreTitulos.map((titulo, i) =>
       colBimestre(
