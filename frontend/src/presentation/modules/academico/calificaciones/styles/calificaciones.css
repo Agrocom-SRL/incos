@@ -327,11 +327,31 @@
   color: var(--cuaderno-verde-oscuro);
 }
 
-.cal-curso-card__bimestre-estado {
-  margin: 0 !important;
-  font-size: 10px !important;
-  line-height: 16px !important;
-  padding: 0 4px !important;
+.cal-curso-card__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.cal-curso-card__dot--en-curso {
+  background: var(--color-primary, #196b45);
+}
+
+.cal-curso-card__dot--cerrado {
+  background: #f59e0b;
+}
+
+.cal-curso-card__dot--futuro {
+  background: #9ca3af;
+}
+
+.cal-curso-card__stat-pendientes {
+  font-size: 10px;
+  color: var(--color-warning, #d97706);
+  font-weight: 500;
 }
 
 .cal-curso-card__bimestre-stats {
@@ -2580,6 +2600,64 @@
   min-width: 1.5em;
 }
 
+.cal-celda-ajuste-info {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 20px 0 4px;
+  box-sizing: border-box;
+}
+
+.cal-celda-ajuste-info__valor {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-celda-ajuste-info__btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: #1677ff;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.cal-celda-ajuste-info__btn:hover {
+  color: #4096ff;
+}
+
+.cal-celda-ajuste-info__popover p {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.cal-celda-ajuste-info__popover p:last-child {
+  margin-bottom: 0;
+}
+
+.cal-consolidado-grid__leyenda-info-glyph {
+  color: #1677ff;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.cal-consolidado-grid__obs-parcial {
+  font-size: 12px;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  font-style: italic;
+}
+
 .cal-consolidado-grid__obs {
   margin: 0;
   font-size: 11px;
@@ -2705,6 +2783,11 @@
   justify-content: center;
   min-height: 32px;
   font-variant-numeric: tabular-nums;
+}
+
+.cal-bimestre-consolidado__total--vacio {
+  color: var(--color-text-quaternary, rgba(0, 0, 0, 0.25));
+  font-weight: 400;
 }
 
 .cal-bimestre-consolidado-leyenda {

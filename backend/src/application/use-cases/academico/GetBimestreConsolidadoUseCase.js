@@ -6,8 +6,17 @@ import {
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { calcularComponentesEstudiante } from '../../utils/calcularResumenBimestreConCeros.js';
+import { resolverComponentesBimestreConsolidado } from '../../utils/resolverComponentesBimestreConsolidado.js';
+import { calcularNotaBimestre } from '../../utils/cuadernoNotasCalculo.js';
 
 const redondear = (v) => (v == null ? null : Math.round(Number(v) * 100) / 100);
+
+const formatearFecha = (v) => {
+  if (v == null || v === '') return null;
+  const d = v instanceof Date ? v : new Date(v);
+  if (Number.isNaN(d.getTime())) return String(v);
+  return d.toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
 
 /**
  * GET bimestre consolidado (cerrado): resumen teórico / práctico / total por estudiante.
@@ -120,9 +129,20 @@ export class GetBimestreConsolidadoUseCase {
         estudianteId,
       );
 
-      const guardadoTeorico = redondear(row.nota_teorico);
-      const guardadoPractico = redondear(row.nota_practico);
-      const guardadoTotal = redondear(row.nota_bimestre);
+      const resuelto = resolverComponentesBimestreConsolidado({
+        habilitacionTeorico: row.habilitacion_teorico,
+        habilitacionPractico: row.habilitacion_practico,
+        notaTeorico: row.nota_teorico,
+        notaPractico: row.nota_practico,
+        notaBimestre: row.nota_bimestre,
+        calculado,
+      });
+
+      const sumaCalculada =
+        calcularNotaBimestre(resuelto.notaTeorico, resuelto.notaPractico) ??
+        calcularNotaBimestre(resuelto.calculadoTeorico, resuelto.calculadoPractico);
+      const tieneAjusteAdmin =
+        resuelto.habilitacionTeorico != null || resuelto.habilitacionPractico != null;
 
       return {
         id: estudianteId,
@@ -131,14 +151,29 @@ export class GetBimestreConsolidadoUseCase {
         nombre: row.nombre ?? '',
         bimestreMatriculaId:
           row.bimestre_matricula_id != null ? Number(row.bimestre_matricula_id) : null,
-        teorico: calculado.teorico,
-        practico: calculado.practico,
-        total: calculado.total,
-        guardadoTeorico,
-        guardadoPractico,
-        guardadoTotal,
+        teorico: resuelto.teorico,
+        practico: resuelto.practico,
+        total: resuelto.total,
+        totalCalculado: sumaCalculada,
+        tieneAjusteAdmin,
+        fechaHabilitacion: formatearFecha(row.fecha_habilitacion),
+        habilitacionTeorico: resuelto.habilitacionTeorico,
+        habilitacionPractico: resuelto.habilitacionPractico,
+        notaTeorico: resuelto.notaTeorico,
+        notaPractico: resuelto.notaPractico,
+        calculadoTeorico: resuelto.calculadoTeorico,
+        calculadoPractico: resuelto.calculadoPractico,
+        fuenteTeorico: resuelto.fuenteTeorico,
+        fuentePractico: resuelto.fuentePractico,
         estadoBimestre: row.estado_bimestre ?? null,
       };
+    });
+
+    estudiantes.sort((a, b) =>
+      String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', { sensitivity: 'base' }),
+    );
+    estudiantes.forEach((e, i) => {
+      e.nro = i + 1;
     });
 
     this.logger.info('[Calificaciones] Bimestre consolidado', {

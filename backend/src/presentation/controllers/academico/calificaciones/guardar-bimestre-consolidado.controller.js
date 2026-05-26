@@ -16,7 +16,7 @@ export class GuardarBimestreConsolidadoController {
       return this.responseFormatter._success(
         res,
         resultado,
-        { message: 'Notas consolidadas guardadas' },
+        { message: 'Habilitación bimestral guardada' },
         req,
       );
     } catch (error) {

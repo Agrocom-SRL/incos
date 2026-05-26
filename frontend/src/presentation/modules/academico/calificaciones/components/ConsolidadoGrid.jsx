@@ -6,9 +6,11 @@ import {
   BookOutlined,
   CheckCircleOutlined,
   EyeOutlined,
+  InfoCircleOutlined,
   LockOutlined,
 } from '@ant-design/icons';
 import { Button, Table, Tag, Tooltip } from 'antd';
+import CeldaSumaConAjusteInfo from './CeldaSumaConAjusteInfo.jsx';
 import {
   ESTADO_BIMESTRE_HEADER,
   resolverEstadoBimestreHeader,
@@ -25,8 +27,25 @@ const celdaNota = (valor) => (
   <span className="cal-consolidado-grid__nota">{valor != null ? valor : '—'}</span>
 );
 
+const celdaSumaBimestre = (bim) => (
+  <CeldaSumaConAjusteInfo
+    suma={bim?.suma}
+    tieneAjusteAdmin={bim?.tieneAjusteAdmin}
+    fechaHabilitacion={bim?.fechaHabilitacion}
+    sumaCalculada={bim?.sumaCalculada}
+    className="cal-consolidado-grid__celda-suma-wrap"
+  />
+);
+
 const LeyendaEstados = () => (
   <div className="cal-consolidado-grid__leyenda-card" role="note" aria-label="Leyenda de estados de bimestre">
+    <div className="cal-consolidado-grid__leyenda-item">
+      <InfoCircleOutlined className="cal-consolidado-grid__leyenda-info-glyph" aria-hidden />
+      <span>
+        En <strong>Suma</strong>, el icono info indica ajuste administrativo (fecha y nota del
+        cuaderno).
+      </span>
+    </div>
     <div className="cal-consolidado-grid__leyenda-item">
       <span className="cal-consolidado-grid__leyenda-muestra cal-consolidado-grid__leyenda-muestra--cerrado">
         <CheckCircleOutlined aria-hidden />
@@ -217,12 +236,12 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
       {
         title: 'Suma',
         key: `bim-${indice}-s`,
-        width: 86,
+        width: 96,
         align: 'center',
         className: tdBimClass('suma'),
         onHeaderCell: () => ({ className: thSubClass }),
         onCell: onCellBim('suma'),
-        render: (_, row) => celdaNota(row.bimestres?.[indice]?.suma),
+        render: (_, row) => celdaSumaBimestre(row.bimestres?.[indice]),
       },
     ],
   };
@@ -314,7 +333,14 @@ const ConsolidadoGrid = ({
       width: 126,
       align: 'center',
       onHeaderCell: () => ({ className: 'cal-consolidado-grid__th-est' }),
-      render: (obs) => {
+      render: (obs, row) => {
+        if (obs == null && row.notaFinal != null) {
+          return (
+            <span className="cal-consolidado-grid__obs-parcial" title="Gestión en curso">
+              En curso
+            </span>
+          );
+        }
         const etiqueta = obs ?? '—';
         const normalizada = String(obs ?? '').toUpperCase();
         let color;

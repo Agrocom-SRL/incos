@@ -108,3 +108,41 @@ export const calcularNotaFinalPonderada = (bimestres, pesosBimestres) => {
   if (pesoTotal <= 0) return null;
   return redondear(suma / pesoTotal);
 };
+
+/**
+ * Nota anual para registro académico: Σ(nota × peso) / Σ(pesos institucionales de los 4 bimestres).
+ * Bimestres sin nota no aportan al numerador; el divisor es siempre el 100 % del año.
+ */
+export const calcularNotaFinalGestion = (bimestres, pesosBimestres) => {
+  const pesos = Array.isArray(pesosBimestres) ? pesosBimestres : [];
+  let sumaPonderada = 0;
+  let pesoDivisor = 0;
+  let tieneAlgunaNota = false;
+
+  for (let i = 0; i < 4; i++) {
+    const numero = i + 1;
+    const peso = Number(pesos[i]) || 0;
+    pesoDivisor += peso;
+    const fila = (bimestres ?? []).find((b) => Number(b.numero) === numero);
+    const nota = fila?.nota != null && fila?.nota !== '' ? Number(fila.nota) : null;
+    if (nota != null && Number.isFinite(nota)) {
+      tieneAlgunaNota = true;
+      sumaPonderada += nota * peso;
+    }
+  }
+
+  if (!tieneAlgunaNota || pesoDivisor <= 0) {
+    return { notaFinal: null, gestionCompleta: false };
+  }
+
+  const gestionCompleta = (bimestres ?? []).every((b) => {
+    const n = Number(b.numero);
+    if (!Number.isFinite(n) || n < 1 || n > 4) return true;
+    return b.nota != null && b.nota !== '';
+  });
+
+  return {
+    notaFinal: redondear(sumaPonderada / pesoDivisor),
+    gestionCompleta,
+  };
+};

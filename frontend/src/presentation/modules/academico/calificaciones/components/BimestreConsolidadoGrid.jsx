@@ -5,6 +5,7 @@
 import { Table, Tag, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import ComponenteNotaCell from './ComponenteNotaCell.jsx';
+import CeldaSumaConAjusteInfo from './CeldaSumaConAjusteInfo.jsx';
 
 const ANCHO_COL_NRO = 44;
 const ANCHO_COL_ESTUDIANTE = 300;
@@ -20,8 +21,23 @@ const renderEstudiante = (_, row) => {
   );
 };
 
-const celdaTotal = (row) => {
+const puntosComponente = (editVal, rowVal) => {
+  const v = editVal !== undefined ? editVal : rowVal;
+  if (v == null || v === '') return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const componenteSinDato = (editVal, rowVal) => {
+  const v = editVal !== undefined ? editVal : rowVal;
+  return v == null || v === '' || !Number.isFinite(Number(v)) || Number(v) <= 0;
+};
+
+const celdaTotal = (row, { vacioSiCero = false } = {}) => {
   const t = row.total ?? 0;
+  if (vacioSiCero && t <= 0) {
+    return <span className="cal-bimestre-consolidado__total cal-bimestre-consolidado__total--vacio">—</span>;
+  }
   return (
     <span className="cal-bimestre-consolidado__total">
       <strong>{t}</strong>
@@ -62,7 +78,7 @@ const BimestreConsolidadoGrid = ({
     onHeaderCell: () => ({ className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo' }),
     children: [
       {
-        title: `Práctico (${cuotaPractico})`,
+        title: `Práctico (${cuotaPractico} pts)`,
         key: 'practico',
         width: ANCHO_COL_COMP,
         align: 'center',
@@ -84,7 +100,7 @@ const BimestreConsolidadoGrid = ({
         },
       },
       {
-        title: `Teórico (${cuotaTeorico})`,
+        title: `Teórico (${cuotaTeorico} pts)`,
         key: 'teorico',
         width: ANCHO_COL_COMP,
         align: 'center',
@@ -108,28 +124,37 @@ const BimestreConsolidadoGrid = ({
       {
         title: 'Total',
         key: 'total',
-        width: ANCHO_COL_COMP,
+        width: ANCHO_COL_COMP + 8,
         align: 'center',
         className: 'cal-bimestre-consolidado__col-total',
         onHeaderCell: thSub,
         onCell: () => ({ className: 'cal-bimestre-consolidado__col-total' }),
         render: (_, row) => {
-          if (!soloLectura && valoresEdit[row.id]) {
-            const p =
-              valoresEdit[row.id].practico !== undefined
-                ? valoresEdit[row.id].practico
-                : row.practico;
-            const t =
-              valoresEdit[row.id].teorico !== undefined
-                ? valoresEdit[row.id].teorico
-                : row.teorico;
+          if (!soloLectura) {
+            const edit = valoresEdit[row.id];
+            const sinPractico = componenteSinDato(edit?.practico, row.practico);
+            const sinTeorico = componenteSinDato(edit?.teorico, row.teorico);
+            if (sinPractico && sinTeorico) {
+              return celdaTotal(row, { vacioSiCero: true });
+            }
+            const p = puntosComponente(edit?.practico, row.practico);
+            const t = puntosComponente(edit?.teorico, row.teorico);
             const total =
-              Math.round((Number(p) || 0) * 100) / 100 +
-              Math.round((Number(t) || 0) * 100) / 100;
+              Math.round(p * 100) / 100 + Math.round(t * 100) / 100;
             return (
               <span className="cal-bimestre-consolidado__total">
                 <strong>{Math.round(total * 100) / 100}</strong>
               </span>
+            );
+          }
+          if (row.tieneAjusteAdmin) {
+            return (
+              <CeldaSumaConAjusteInfo
+                suma={row.total}
+                tieneAjusteAdmin
+                fechaHabilitacion={row.fechaHabilitacion}
+                sumaCalculada={row.totalCalculado}
+              />
             );
           }
           return celdaTotal(row);

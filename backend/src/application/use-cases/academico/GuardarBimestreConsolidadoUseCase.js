@@ -2,11 +2,13 @@ import { ForbiddenError, ValidationError } from '../../../domain/errors/AppError
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { recalcularNotaFinalMatriculaCurso } from '../../utils/recalcularNotaFinalMatriculaCurso.js';
+import { calcularNotaBimestreCerrada } from '../../utils/resolverComponentesBimestreConsolidado.js';
 
 const redondear = (v) => Math.round(Number(v) * 100) / 100;
 
 /**
- * Sobrescribe nota_teorico / nota_practico / nota_bimestre en bimestre cerrado (carga administrativa).
+ * Carga administrativa rápida en bimestre cerrado: persiste habilitacion_teorico / habilitacion_practico
+ * y recalcula nota_bimestre con componentes efectivos (habilitación reemplaza nota de cuaderno).
  */
 export class GuardarBimestreConsolidadoUseCase {
   constructor({
@@ -55,7 +57,7 @@ export class GuardarBimestreConsolidadoUseCase {
       );
     }
 
-    const { cuotaTeorico, cuotaPractico } = await cargarCuotasPoliticaGestion({
+    const { cuotaTeorico, cuotaPractico, pesosBimestres } = await cargarCuotasPoliticaGestion({
       calificacionContextoRepository: this.calificacionContextoRepository,
       evaluationConfigurationRepository: this.evaluationConfigurationRepository,
       gestionId,
@@ -73,10 +75,17 @@ export class GuardarBimestreConsolidadoUseCase {
       const estudianteId = Number(item?.estudianteId);
       if (!Number.isFinite(estudianteId) || estudianteId < 1) continue;
 
-      const teorico = item.teorico != null ? redondear(item.teorico) : 0;
-      const practico = item.practico != null ? redondear(item.practico) : 0;
+      const tieneTeorico = Object.prototype.hasOwnProperty.call(item, 'teorico');
+      const tienePractico = Object.prototype.hasOwnProperty.call(item, 'practico');
+      if (!tieneTeorico && !tienePractico) continue;
 
-      if (teorico < 0 || teorico > cuotaTeorico || practico < 0 || practico > cuotaPractico) {
+      const teoricoEntrada = tieneTeorico ? redondear(item.teorico) : undefined;
+      const practicoEntrada = tienePractico ? redondear(item.practico) : undefined;
+
+      if (
+        (teoricoEntrada != null && (teoricoEntrada < 0 || teoricoEntrada > cuotaTeorico)) ||
+        (practicoEntrada != null && (practicoEntrada < 0 || practicoEntrada > cuotaPractico))
+      ) {
         throw new ValidationError(
           `Puntos fuera de cuota (teórico ≤ ${cuotaTeorico}, práctico ≤ ${cuotaPractico}).`,
         );
@@ -90,28 +99,44 @@ export class GuardarBimestreConsolidadoUseCase {
       );
       if (!bmId) continue;
 
-      const notaBim = redondear(teorico + practico);
+      const actual = await this.cuadernoRepository.obtenerBimestreMatriculaPorId(bmId);
+      const habTeorico = tieneTeorico ? teoricoEntrada : actual?.habilitacion_teorico ?? null;
+      const habPractico = tienePractico ? practicoEntrada : actual?.habilitacion_practico ?? null;
 
-      await this.cuadernoRepository.actualizarComponentesBimestreMatricula(
+      const notaBim = calcularNotaBimestreCerrada({
+        habilitacionTeorico: habTeorico,
+        habilitacionPractico: habPractico,
+        notaTeorico: actual?.nota_teorico,
+        notaPractico: actual?.nota_practico,
+      });
+
+      await this.cuadernoRepository.actualizarHabilitacionBimestreMatricula(
         bmId,
-        { teorico, practico, bimestre: notaBim },
+        {
+          habilitacionTeorico: habTeorico,
+          habilitacionPractico: habPractico,
+          notaBimestre: notaBim,
+          fechaHabilitacion: new Date().toISOString().slice(0, 10),
+        },
         usuarioId,
       );
       guardadas += 1;
     }
 
-    await recalcularNotaFinalMatriculaCurso(
-      this.cuadernoRepository,
-      Number(asignacionId),
+    const recalculoFinal = await recalcularNotaFinalMatriculaCurso({
+      cuadernoRepository: this.cuadernoRepository,
+      asignacionId: Number(asignacionId),
+      pesosBimestres,
       usuarioId,
-    );
+    });
 
-    this.logger.info('[Calificaciones] Guardado bimestre consolidado', {
+    this.logger.info('[Calificaciones] Guardado habilitación bimestre consolidado', {
       asignacionId,
       bimestre: bimestreNum,
       guardadas,
+      ...recalculoFinal,
     });
 
-    return { guardadas };
+    return { guardadas, ...recalculoFinal };
   }
 }

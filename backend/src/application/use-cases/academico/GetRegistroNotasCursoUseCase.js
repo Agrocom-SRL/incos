@@ -1,12 +1,20 @@
 import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
 import { parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
-import { calcularNotaBimestre } from '../../utils/cuadernoNotasCalculo.js';
+import { calcularNotaBimestre, calcularNotaFinalGestion } from '../../utils/cuadernoNotasCalculo.js';
+import { obtenerCuotasDesdePolitica } from '../../utils/obtenerCuotasDesdePolitica.js';
 
 const BIMESTRES_TOTAL = 4;
 
 const redondear = (v) => (v == null ? null : Math.round(Number(v) * 100) / 100);
 
-const agruparEstudiantes = (filas, notaMinima) => {
+const formatearFecha = (v) => {
+  if (v == null || v === '') return null;
+  const d = v instanceof Date ? v : new Date(v);
+  if (Number.isNaN(d.getTime())) return String(v);
+  return d.toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
+
+const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
   const map = new Map();
   for (const row of filas) {
     const id = Number(row.estudiante_id);
@@ -34,21 +42,31 @@ const agruparEstudiantes = (filas, notaMinima) => {
 
     const teoEfectivo = habTeorico ?? teoricoCuota;
     const praEfectivo = habPractico ?? practicoCuota;
+    const sumaCalculada = calcularNotaBimestre(teoricoCuota, practicoCuota);
     const suma =
       notaBimestre != null
         ? notaBimestre
         : calcularNotaBimestre(teoEfectivo, praEfectivo);
+    const tieneAjusteAdmin = habTeorico != null || habPractico != null;
 
     est.bimestresPorNumero.set(num, {
       numero: num,
       teorico: teoEfectivo ?? teoricoCuota,
       practico: praEfectivo ?? practicoCuota,
       suma,
+      sumaCalculada,
+      tieneAjusteAdmin,
+      fechaHabilitacion: formatearFecha(row.fecha_habilitacion),
       estado: row.estado_bimestre ?? null,
     });
   }
 
-  return [...map.values()].map((est, index) => {
+  const lista = [...map.values()];
+  lista.sort((a, b) =>
+    String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', { sensitivity: 'base' }),
+  );
+
+  return lista.map((est, index) => {
     const bimestres = Array.from({ length: BIMESTRES_TOTAL }, (_, i) => {
       const numero = i + 1;
       return (
@@ -57,17 +75,24 @@ const agruparEstudiantes = (filas, notaMinima) => {
           teorico: null,
           practico: null,
           suma: null,
+          sumaCalculada: null,
+          tieneAjusteAdmin: false,
+          fechaHabilitacion: null,
           estado: null,
         }
       );
     });
-    const notaFinal = est.notaFinal;
+
+    const { notaFinal, gestionCompleta } = calcularNotaFinalGestion(
+      bimestres.map((b) => ({ numero: b.numero, nota: b.suma })),
+      pesosBimestres,
+    );
     const observacion =
-      notaFinal == null
-        ? null
-        : notaFinal >= notaMinima
+      gestionCompleta && notaFinal != null
+        ? notaFinal >= notaMinima
           ? 'APROBADO'
-          : 'REPROBADO';
+          : 'REPROBADO'
+        : null;
     return {
       nro: index + 1,
       id: est.id,
@@ -148,6 +173,7 @@ export class GetRegistroNotasCursoUseCase {
     );
     const politicaParsed = parsePoliticaFromRow(politicaRow) ?? {};
     const notaMinimaAprobacion = Number(politicaParsed.notaMinimaAprobacion) || 61;
+    const { pesosBimestres } = obtenerCuotasDesdePolitica(politicaParsed);
 
     const [docenteRow, filasEstudiantes, periodosCalendario] = await Promise.all([
       this.calificacionCoordinacionRepository.obtenerDocenteCalificaciones(docenteIdAsignacion),
@@ -155,7 +181,7 @@ export class GetRegistroNotasCursoUseCase {
       this.calificacionContextoRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id),
     ]);
 
-    const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion);
+    const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion, pesosBimestres);
 
     const bimestreVigente = Number(ctx.bimestre_vigente) || null;
     const periodosPorNumero = new Map(
@@ -190,6 +216,7 @@ export class GetRegistroNotasCursoUseCase {
         bimestreVigente,
         bimestreNombre: ctx.bimestre_nombre ?? null,
         notaMinimaAprobacion,
+        pesosBimestres,
       },
       curso: {
         id: asignacionIdNum,

@@ -4,7 +4,7 @@ import { parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.j
 const BIMESTRES_TOTAL = 4;
 
 const ETIQUETA_ESTADO_BIMESTRE = {
-  abierto: 'Abierto',
+  abierto: 'En curso',
   cerrado: 'Cerrado',
   futuro: 'Futuro',
 };
@@ -54,14 +54,24 @@ const armarBimestresCurso = (asignacionId, resumenMap, periodosMap, estudiantes)
 
   return numeros.map((numero) => {
     const row = porBimestre.get(numero);
-    const matriculas = Number(row?.matriculas ?? estudiantes) || 0;
+    const matriculas = Number(estudiantes) || Number(row?.matriculas ?? 0) || 0;
     const aprobados = Number(row?.aprobados ?? 0);
     const reprobados = Number(row?.reprobados ?? 0);
+    const pendientes = Number(row?.pendientes ?? 0);
+    const conRegistro = Number(row?.con_registro ?? 0);
     const evaluaciones = Number(row?.evaluaciones ?? 0);
-    const conNota = aprobados + reprobados;
     const estado = mapEstadoBimestreCalendario(numero, periodosMap);
+
     const progreso =
-      matriculas > 0 ? Math.min(100, Math.round((conNota / matriculas) * 100)) : 0;
+      matriculas > 0
+        ? Math.min(
+            100,
+            Math.round(
+              ((estado.tipo === 'abierto' ? conRegistro : aprobados + reprobados) / matriculas) *
+                100,
+            ),
+          )
+        : 0;
 
     return {
       numero,
@@ -69,6 +79,8 @@ const armarBimestresCurso = (asignacionId, resumenMap, periodosMap, estudiantes)
       evaluaciones,
       aprobados,
       reprobados,
+      pendientes,
+      conRegistro,
       progreso,
     };
   });

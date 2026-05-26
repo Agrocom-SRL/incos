@@ -2,7 +2,7 @@
  * Card de curso en Mis cursos — datos académicos y progreso por bimestre (calendario).
  */
 
-import { Card, Tag, Progress, Tooltip, Typography } from 'antd';
+import { Card, Progress, Tooltip, Typography } from 'antd';
 import { Button } from '@atoms';
 import {
   BookOutlined,
@@ -13,14 +13,16 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
 
-const ESTADO_BIMESTRE_COLOR = {
-  abierto: 'processing',
-  cerrado: 'default',
-  futuro: 'default',
+const ESTADO_BIMESTRE_DOT = {
+  abierto: 'cal-curso-card__dot--en-curso',
+  cerrado: 'cal-curso-card__dot--cerrado',
+  futuro: 'cal-curso-card__dot--futuro',
 };
 
 const CursoCardBimestre = ({ bimestre, esVigente }) => {
-  const { numero, estado, progreso, aprobados, reprobados } = bimestre;
+  const { numero, estado, progreso, aprobados, reprobados, pendientes } = bimestre;
+  const tipo = estado?.tipo ?? 'futuro';
+  const dotClass = ESTADO_BIMESTRE_DOT[tipo] ?? ESTADO_BIMESTRE_DOT.futuro;
 
   return (
     <div
@@ -34,14 +36,21 @@ const CursoCardBimestre = ({ bimestre, esVigente }) => {
     >
       <div className="cal-curso-card__bimestre-head">
         <span className="cal-curso-card__bimestre-num">B{numero}</span>
-        <Tag
-          color={ESTADO_BIMESTRE_COLOR[estado?.tipo] ?? 'default'}
-          className="cal-curso-card__bimestre-estado"
-        >
-          {estado?.etiqueta ?? '—'}
-        </Tag>
+        <Tooltip title={estado?.etiqueta ?? '—'}>
+          <span
+            className={['cal-curso-card__dot', dotClass].join(' ')}
+            role="img"
+            aria-label={estado?.etiqueta ?? 'Estado del bimestre'}
+          />
+        </Tooltip>
       </div>
-      <Tooltip title={`${progreso}% de estudiantes con nota registrada`}>
+      <Tooltip
+        title={
+          tipo === 'abierto'
+            ? `${progreso}% con al menos una nota en el cuaderno`
+            : `${progreso}% con nota efectiva registrada`
+        }
+      >
         <Progress
           percent={progreso}
           size="small"
@@ -50,14 +59,22 @@ const CursoCardBimestre = ({ bimestre, esVigente }) => {
         />
       </Tooltip>
       <div className="cal-curso-card__bimestre-stats">
-        <span title="Aprobados">
-          <CheckCircleOutlined className="cal-curso-card__stat-icon--ok" />
-          {aprobados}
-        </span>
-        <span title="Reprobados">
-          <CloseCircleOutlined className="cal-curso-card__stat-icon--no" />
-          {reprobados}
-        </span>
+        {tipo === 'abierto' ? (
+          <span title="Sin nota en cuaderno" className="cal-curso-card__stat-pendientes">
+            Pend. {pendientes ?? 0}
+          </span>
+        ) : (
+          <>
+            <span title="Aprobados">
+              <CheckCircleOutlined className="cal-curso-card__stat-icon--ok" />
+              {aprobados}
+            </span>
+            <span title="Reprobados">
+              <CloseCircleOutlined className="cal-curso-card__stat-icon--no" />
+              {reprobados}
+            </span>
+          </>
+        )}
       </div>
     </div>
   );

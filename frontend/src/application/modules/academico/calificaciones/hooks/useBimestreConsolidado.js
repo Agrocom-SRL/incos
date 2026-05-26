@@ -154,7 +154,15 @@ export const useBimestreConsolidado = () => {
   return {
     curso: base?.curso ?? null,
     docente: base?.docente ?? null,
-    estudiantes: consolidado?.estudiantes ?? [],
+    estudiantes: useMemo(() => {
+      const list = [...(consolidado?.estudiantes ?? [])];
+      list.sort((a, b) =>
+        String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', {
+          sensitivity: 'base',
+        }),
+      );
+      return list.map((e, i) => ({ ...e, nro: i + 1 }));
+    }, [consolidado?.estudiantes]),
     evaluaciones: consolidado?.evaluaciones ?? [],
     cuotaTeorico: consolidado?.cuotaTeorico ?? 30,
     cuotaPractico: consolidado?.cuotaPractico ?? 70,

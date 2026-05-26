@@ -370,6 +370,9 @@ export class CuadernoRepository {
         bm.nota_teorico,
         bm.nota_practico,
         bm.nota_bimestre,
+        bm.habilitacion_teorico,
+        bm.habilitacion_practico,
+        bm.fecha_habilitacion,
         bm.estado AS estado_bimestre
       FROM vista_base_calificacion_estudiante_matricula_curso emc
       LEFT JOIN bimestres_matricula bm
@@ -378,7 +381,7 @@ export class CuadernoRepository {
         AND bm.deleted_at IS NULL
         AND bm.activo = TRUE
       WHERE emc.asignacion_docente_id = ?
-      ORDER BY emc.codigo ASC, emc.estudiante_id ASC
+      ORDER BY emc.nombre ASC, emc.estudiante_id ASC
       `,
       {
         replacements: [bimestreNumero, asignacionId],
@@ -442,6 +445,65 @@ export class CuadernoRepository {
       `,
       {
         replacements: [teorico, practico, bimestre, usuarioId, bimestreMatriculaId],
+        type: sequelize.QueryTypes.UPDATE,
+      },
+    );
+  }
+
+  /** @param {number} bimestreMatriculaId */
+  async obtenerBimestreMatriculaPorId(bimestreMatriculaId) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        nota_teorico,
+        nota_practico,
+        nota_bimestre,
+        habilitacion_teorico,
+        habilitacion_practico,
+        fecha_habilitacion
+      FROM bimestres_matricula
+      WHERE id = ?
+        AND deleted_at IS NULL
+      LIMIT 1
+      `,
+      {
+        replacements: [bimestreMatriculaId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+    return rows[0] ?? null;
+  }
+
+  /**
+   * Carga administrativa rápida: habilitación por componente + nota_bimestre efectiva.
+   */
+  async actualizarHabilitacionBimestreMatricula(
+    bimestreMatriculaId,
+    { habilitacionTeorico, habilitacionPractico, notaBimestre, fechaHabilitacion },
+    usuarioId,
+  ) {
+    await sequelize.query(
+      `
+      UPDATE bimestres_matricula
+      SET
+        habilitacion_teorico = ?,
+        habilitacion_practico = ?,
+        nota_bimestre = ?,
+        fecha_habilitacion = COALESCE(?, fecha_habilitacion, CURDATE()),
+        updated_by = ?,
+        updated_at = NOW()
+      WHERE id = ?
+        AND deleted_at IS NULL
+      `,
+      {
+        replacements: [
+          habilitacionTeorico,
+          habilitacionPractico,
+          notaBimestre,
+          fechaHabilitacion ?? null,
+          usuarioId,
+          bimestreMatriculaId,
+        ],
         type: sequelize.QueryTypes.UPDATE,
       },
     );

@@ -1,5 +1,6 @@
 /**
- * Celda de componente bimestre (teórico / práctico) — lectura muestra 0 si no hay valor.
+ * Celda de componente bimestre (teórico / práctico).
+ * Lectura: 0 si no hay valor. Edición: vacío si no hay dato o es 0; rojo si supera la cuota.
  */
 
 import { memo, useCallback } from 'react';
@@ -15,7 +16,8 @@ const ComponenteNotaCell = ({
 }) => {
   const maximo = Math.round(Number(max) || 100);
   const num = valor == null || valor === '' ? null : Number(valor);
-  const excede = num != null && Number.isFinite(num) && Math.round(num) > maximo;
+  const excede =
+    num != null && Number.isFinite(num) && Math.round(num) > maximo;
 
   const handleChange = useCallback(
     (raw) => {
@@ -26,7 +28,11 @@ const ComponenteNotaCell = ({
     [onChange],
   );
 
-  const mostrar = soloLectura ? (num ?? 0) : num;
+  const mostrar = soloLectura
+    ? num ?? 0
+    : num != null && Number.isFinite(num) && num > 0
+      ? num
+      : null;
 
   if (soloLectura) {
     return (
@@ -62,7 +68,6 @@ const ComponenteNotaCell = ({
       <InputNumber
         className="cal-nota-cell__input"
         min={0}
-        max={maximo}
         precision={0}
         step={1}
         controls={false}

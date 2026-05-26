@@ -23,6 +23,7 @@ SELECT
   rb.nota_bimestre,
   rb.habilitacion_teorico,
   rb.habilitacion_practico,
+  rb.fecha_habilitacion,
   rb.estado_bimestre
 FROM vista_base_calificacion_estudiante_matricula_curso emc
 INNER JOIN matriculas_materia mm

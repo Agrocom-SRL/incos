@@ -96,14 +96,30 @@ const BimestreConsolidadoPage = () => {
       .map((e) => {
         const edit = valoresEdit[e.id];
         if (!edit) return null;
-        const teorico =
-          edit.teorico !== undefined ? normalizarComponente(edit.teorico) : e.teorico;
-        const practico =
-          edit.practico !== undefined ? normalizarComponente(edit.practico) : e.practico;
-        const origT = normalizarComponente(e.teorico);
-        const origP = normalizarComponente(e.practico);
-        if (teorico === origT && practico === origP) return null;
-        return { estudianteId: e.id, teorico, practico };
+        const patch = { estudianteId: e.id };
+        if (edit.teorico !== undefined) {
+          patch.teorico = normalizarComponente(edit.teorico);
+        }
+        if (edit.practico !== undefined) {
+          patch.practico = normalizarComponente(edit.practico);
+        }
+        if (patch.teorico === undefined && patch.practico === undefined) return null;
+
+        const origT =
+          e.habilitacionTeorico != null
+            ? normalizarComponente(e.habilitacionTeorico)
+            : normalizarComponente(e.notaTeorico ?? e.teorico);
+        const origP =
+          e.habilitacionPractico != null
+            ? normalizarComponente(e.habilitacionPractico)
+            : normalizarComponente(e.notaPractico ?? e.practico);
+        if (
+          (patch.teorico === undefined || patch.teorico === origT) &&
+          (patch.practico === undefined || patch.practico === origP)
+        ) {
+          return null;
+        }
+        return patch;
       })
       .filter(Boolean);
 
@@ -117,10 +133,8 @@ const BimestreConsolidadoPage = () => {
 
     const fueraDeRango = filas.some(
       (f) =>
-        f.teorico > cuotaTeorico ||
-        f.teorico < 0 ||
-        f.practico > cuotaPractico ||
-        f.practico < 0,
+        (f.teorico != null && (f.teorico > cuotaTeorico || f.teorico < 0)) ||
+        (f.practico != null && (f.practico > cuotaPractico || f.practico < 0)),
     );
     if (fueraDeRango) {
       notification.error({
@@ -136,7 +150,7 @@ const BimestreConsolidadoPage = () => {
       setValoresEdit({});
       notification.success({
         title: 'Consolidado guardado',
-        description: 'Se actualizaron los componentes del bimestre y la nota final del curso.',
+        description: 'Se registró la habilitación del bimestre y se actualizó la nota final del curso.',
       });
     } catch (err) {
       notification.error({
@@ -208,7 +222,7 @@ const BimestreConsolidadoPage = () => {
       <Flex align="center" gap={8}>
         <Switch checked={modoAdmin} onChange={handleToggleAdmin} aria-label="Modo edición administrativa" />
         <span className="cal-bimestre-consolidado-toolbar__label">
-          Edición administrativa (sobrescribe teórico y práctico)
+          Edición administrativa (registra habilitación teórico / práctico)
         </span>
       </Flex>
       {modoAdmin && hayCambios ? (
@@ -247,8 +261,9 @@ const BimestreConsolidadoPage = () => {
           evaluacionesCount={evaluaciones.length}
         />
         <p className="cal-bimestre-consolidado-leyenda" role="note">
-          Total = práctico + teórico (máx. {cuotaPractico + cuotaTeorico} pts). Los valores se calculan
-          sumando todas las actividades del bimestre; sin nota registrada se usa 0.
+          Se muestra habilitación si existe; si no, la nota bimestral del cuaderno. Al guardar en modo
+          administrativo se registran puntos de habilitación y se actualiza la nota cerrada del bimestre
+          (máx. {cuotaPractico + cuotaTeorico} pts = práctico + teórico).
         </p>
       </div>
     </Card>
