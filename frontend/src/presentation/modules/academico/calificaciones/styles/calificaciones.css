@@ -2646,6 +2646,65 @@
   margin-bottom: 0;
 }
 
+.cal-celda-ajuste-info__overlay .ant-popover-inner {
+  border-radius: 12px;
+}
+
+.cal-celda-ajuste-info__popover {
+  min-width: 240px;
+}
+
+.cal-celda-ajuste-info__popover-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cal-celda-ajuste-info__popover-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cal-celda-ajuste-info__popover-label {
+  font-size: 12px;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  white-space: nowrap;
+}
+
+.cal-celda-ajuste-info__popover-value {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text, rgba(0, 0, 0, 0.88));
+}
+
+.cal-celda-ajuste-info__popover-value--strong {
+  font-weight: 700;
+}
+
+.cal-celda-ajuste-info__popover-foot {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border-secondary, rgba(5, 5, 5, 0.06));
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cal-celda-ajuste-info__popover-foot-label {
+  font-size: 12px;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  white-space: nowrap;
+}
+
+.cal-celda-ajuste-info__popover-foot-value {
+  font-size: 12px;
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+  font-variant-numeric: tabular-nums;
+}
+
 .cal-consolidado-grid__leyenda-info-glyph {
   color: #1677ff;
   font-size: 14px;

@@ -13,20 +13,28 @@ const CeldaSumaConAjusteInfo = ({
   className = '',
 }) => {
   const valor = suma != null ? suma : '—';
+  const calculada = sumaCalculada != null ? sumaCalculada : '0';
+  const registrada = suma != null ? suma : '—';
 
   const popoverContent = (
     <div className="cal-celda-ajuste-info__popover">
-      <p>
-        <strong>Nota calculada (cuaderno):</strong>{' '}
-        {sumaCalculada != null ? sumaCalculada : '—'}
-      </p>
-      <p>
-        <strong>Nota registrada:</strong> {suma != null ? suma : '—'}
-      </p>
+      <div className="cal-celda-ajuste-info__popover-rows">
+        <div className="cal-celda-ajuste-info__popover-row">
+          <span className="cal-celda-ajuste-info__popover-label">Calculada (cuaderno)</span>
+          <span className="cal-celda-ajuste-info__popover-value">{calculada}</span>
+        </div>
+        <div className="cal-celda-ajuste-info__popover-row">
+          <span className="cal-celda-ajuste-info__popover-label">Registrada</span>
+          <span className="cal-celda-ajuste-info__popover-value cal-celda-ajuste-info__popover-value--strong">
+            {registrada}
+          </span>
+        </div>
+      </div>
       {fechaHabilitacion ? (
-        <p>
-          <strong>Fecha de habilitación:</strong> {fechaHabilitacion}
-        </p>
+        <div className="cal-celda-ajuste-info__popover-foot">
+          <span className="cal-celda-ajuste-info__popover-foot-label">Habilitación</span>
+          <span className="cal-celda-ajuste-info__popover-foot-value">{fechaHabilitacion}</span>
+        </div>
       ) : null}
     </div>
   );
@@ -38,8 +46,10 @@ const CeldaSumaConAjusteInfo = ({
         <Popover
           title="Ajuste administrativo"
           content={popoverContent}
-          trigger="click"
+          trigger={['hover', 'click']}
           placement="topRight"
+          overlayClassName="cal-celda-ajuste-info__overlay"
+          mouseEnterDelay={0.12}
         >
           <button
             type="button"

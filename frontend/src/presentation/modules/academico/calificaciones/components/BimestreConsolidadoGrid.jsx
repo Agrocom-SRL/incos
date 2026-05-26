@@ -5,7 +5,6 @@
 import { Table, Tag, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import ComponenteNotaCell from './ComponenteNotaCell.jsx';
-import CeldaSumaConAjusteInfo from './CeldaSumaConAjusteInfo.jsx';
 
 const ANCHO_COL_NRO = 44;
 const ANCHO_COL_ESTUDIANTE = 300;
@@ -145,16 +144,6 @@ const BimestreConsolidadoGrid = ({
               <span className="cal-bimestre-consolidado__total">
                 <strong>{Math.round(total * 100) / 100}</strong>
               </span>
-            );
-          }
-          if (row.tieneAjusteAdmin) {
-            return (
-              <CeldaSumaConAjusteInfo
-                suma={row.total}
-                tieneAjusteAdmin
-                fechaHabilitacion={row.fechaHabilitacion}
-                sumaCalculada={row.totalCalculado}
-              />
             );
           }
           return celdaTotal(row);
