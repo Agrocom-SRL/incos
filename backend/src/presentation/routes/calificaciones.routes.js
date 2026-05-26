@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import {
   listTiposEvaluacionValidator,
   savePoliticaInstitucionalValidator,
@@ -137,9 +137,35 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     verificarPermiso('academico.calificacion.cuaderno', 'LISTAR'),
   ];
 
-  const cuadernoEditar = [
+  // Operaciones del cuaderno (bimestre vigente)
+  const cuadernoEvaluacionesCrear = [
     authenticate,
-    verificarPermiso('academico.calificacion.cuaderno', 'LISTAR'),
+    verificarPermiso('academico.calificacion.cuaderno.evaluaciones', 'CREAR'),
+  ];
+  const cuadernoEvaluacionesEditar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.cuaderno.evaluaciones', 'EDITAR'),
+  ];
+  const cuadernoEvaluacionesEliminar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.cuaderno.evaluaciones', 'ELIMINAR'),
+  ];
+  const cuadernoNotasEditar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.cuaderno.notas', 'EDITAR'),
+  ];
+  const cuadernoGuardarEditar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.cuaderno.guardar', 'EDITAR'),
+  ];
+
+  /** Habilitación administrativa en bimestre cerrado (POST consolidado). */
+  const consolidadoAdminEditar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['academico.calificacion.gestion_bimestres', 'EDITAR'],
+      ['academico.calificacion.bimestre.ajuste_admin', 'EDITAR'],
+    ]),
   ];
 
   const registrarCierre = (controllerKey) => (req, res, next) =>
@@ -205,7 +231,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
 
   router.post(
     '/asignaciones/:asignacionId/bimestre/:bimestre/consolidado',
-    ...cuadernoEditar,
+    ...consolidadoAdminEditar,
     guardarBimestreConsolidadoValidator,
     validateRequest,
     (req, res, next) => controllers.guardarBimestreConsolidadoController.handle(req, res, next),
@@ -213,7 +239,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
 
   router.post(
     '/asignaciones/:asignacionId/cuaderno/:bimestre/evaluaciones',
-    ...cuadernoEditar,
+    ...cuadernoEvaluacionesCrear,
     createEvaluacionCuadernoValidator,
     validateRequest,
     (req, res, next) => controllers.createEvaluacionCuadernoController.handle(req, res, next),
@@ -221,7 +247,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
 
   router.put(
     '/asignaciones/:asignacionId/cuaderno/:bimestre/evaluaciones/:evaluacionId',
-    ...cuadernoEditar,
+    ...cuadernoEvaluacionesEditar,
     updateEvaluacionCuadernoValidator,
     validateRequest,
     (req, res, next) => controllers.updateEvaluacionCuadernoController.handle(req, res, next),
@@ -229,7 +255,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
 
   router.delete(
     '/asignaciones/:asignacionId/cuaderno/:bimestre/evaluaciones/:evaluacionId',
-    ...cuadernoEditar,
+    ...cuadernoEvaluacionesEliminar,
     deleteEvaluacionCuadernoValidator,
     validateRequest,
     (req, res, next) => controllers.deleteEvaluacionCuadernoController.handle(req, res, next),
@@ -237,7 +263,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
 
   router.put(
     '/asignaciones/:asignacionId/cuaderno/:bimestre/notas',
-    ...cuadernoEditar,
+    ...cuadernoNotasEditar,
     upsertNotaCuadernoValidator,
     validateRequest,
     (req, res, next) => controllers.upsertNotaCuadernoController.handle(req, res, next),
@@ -245,7 +271,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
 
   router.post(
     '/asignaciones/:asignacionId/cuaderno/:bimestre/guardar',
-    ...cuadernoEditar,
+    ...cuadernoGuardarEditar,
     guardarNotasCuadernoBimestreValidator,
     validateRequest,
     (req, res, next) => controllers.guardarNotasCuadernoBimestreController.handle(req, res, next),
@@ -253,7 +279,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
 
   router.delete(
     '/asignaciones/:asignacionId/cuaderno/:bimestre/evaluaciones/:evaluacionId/notas',
-    ...cuadernoEditar,
+    ...cuadernoEvaluacionesEliminar,
     deleteEvaluacionCuadernoValidator,
     validateRequest,
     (req, res, next) =>

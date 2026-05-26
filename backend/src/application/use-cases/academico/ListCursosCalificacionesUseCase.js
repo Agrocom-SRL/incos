@@ -248,6 +248,17 @@ export class ListCursosCalificacionesUseCase {
           ctx.bimestre_nombre ??
           null,
       },
+      bimestresCalendario: (periodosCalendario ?? []).map((p) => ({
+        numero: Number(p.numero_orden),
+        nombre: p.nombre ?? null,
+        fechaInicio: p.fecha_inicio ?? null,
+        fechaFin: p.fecha_fin ?? null,
+        estadoCalendario: p.estado_calendario ?? 'futuro',
+      })),
+      gestion: {
+        fechaInicio: ctx.gestion_fecha_inicio ?? null,
+        fechaFin: ctx.gestion_fecha_fin ?? null,
+      },
       cursos,
     };
   }

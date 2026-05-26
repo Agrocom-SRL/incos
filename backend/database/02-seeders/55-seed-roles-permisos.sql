@@ -2,6 +2,12 @@
 -- SEEDER: roles_permisos v3
 -- Renumeración alineada con 54-seed-permisos (por módulo, 1 permiso ≈ pantalla).
 -- Ejecutar despues de: 56-seed-permiso-acciones.sql
+--
+-- Calificaciones (15-24):
+--   DOCENTE (7): ingreso + mis_cursos + cuaderno lectura + mutaciones cuaderno (sin coordinación ni gestión bimestres).
+--   RECTOR (2), DIR_ACADEMICO (3), SEC_ACADEMICA (5): coordinación + política + gestión bimestres + ver cursos ajenos.
+--   ESTUDIANTE (8): solo ingreso al menú (vista alumno futura).
+--   ADMIN_SISTEMA (1): catálogo dinámico (sin filas aquí).
 -- ============================================
 
 USE instituto_incos;
@@ -25,11 +31,16 @@ INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo) VALUES
 -- ROL 6: SEC_ADMIN
 (6,1,'EXPORTAR',TRUE),(6,1,'LISTAR',TRUE),(6,10,'DETALLE',TRUE),(6,10,'EDITAR',TRUE),(6,10,'EXPORTAR',TRUE),(6,10,'LISTAR',TRUE),(6,60,'DETALLE',TRUE),(6,60,'EXPORTAR',TRUE),(6,60,'LISTAR',TRUE),(6,61,'CREAR',TRUE),(6,62,'EDITAR',TRUE),(6,63,'CREAR',TRUE),(6,63,'LISTAR',TRUE),
 
--- ROL 7: DOCENTE
-(7,15,'LISTAR',TRUE),(7,17,'DETALLE',TRUE),(7,17,'LISTAR',TRUE),(7,18,'LISTAR',TRUE),(7,20,'LISTAR',TRUE),(7,21,'CREAR',TRUE),(7,22,'CREAR',TRUE),(7,23,'CREAR',TRUE),(7,24,'EDITAR',TRUE),(7,39,'LISTAR',TRUE),(7,41,'LISTAR',TRUE),(7,56,'CREAR',TRUE),(7,57,'EDITAR',TRUE),
+-- ROL 7: DOCENTE — ingreso → mis cursos (sin coordinación ni gestión de bimestres)
+(7,15,'LISTAR',TRUE),(7,17,'DETALLE',TRUE),(7,17,'LISTAR',TRUE),
+(7,18,'LISTAR',TRUE),(7,18,'EXPORTAR',TRUE),(7,18,'GENERAR_PDF',TRUE),
+(7,21,'CREAR',TRUE),(7,21,'EDITAR',TRUE),(7,21,'ELIMINAR',TRUE),
+(7,22,'EDITAR',TRUE),
+(7,23,'EDITAR',TRUE),
+(7,39,'LISTAR',TRUE),(7,41,'LISTAR',TRUE),(7,56,'CREAR',TRUE),(7,57,'EDITAR',TRUE),
 
--- ROL 8: ESTUDIANTE
-(8,6,'DETALLE',TRUE),(8,6,'LISTAR',TRUE),(8,10,'LISTAR',TRUE),(8,11,'DETALLE',TRUE),(8,11,'LISTAR',TRUE),(8,12,'CREAR',TRUE),(8,15,'LISTAR',TRUE),(8,17,'LISTAR',TRUE),(8,18,'LISTAR',TRUE),(8,25,'LISTAR',TRUE),(8,39,'DETALLE',TRUE),(8,39,'LISTAR',TRUE),(8,41,'LISTAR',TRUE),(8,42,'LISTAR',TRUE),(8,43,'CREAR',TRUE);
+-- ROL 8: ESTUDIANTE — solo menú calificaciones (vista alumno pendiente; sin cuaderno docente)
+(8,6,'DETALLE',TRUE),(8,6,'LISTAR',TRUE),(8,10,'LISTAR',TRUE),(8,11,'DETALLE',TRUE),(8,11,'LISTAR',TRUE),(8,12,'CREAR',TRUE),(8,15,'LISTAR',TRUE),(8,25,'LISTAR',TRUE),(8,39,'DETALLE',TRUE),(8,39,'LISTAR',TRUE),(8,41,'LISTAR',TRUE),(8,42,'LISTAR',TRUE),(8,43,'CREAR',TRUE);
 
 -- permiso 105 (sistema.catalogo.referencia): sin filas — AuthRepository
 

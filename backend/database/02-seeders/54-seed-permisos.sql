@@ -4,9 +4,15 @@
 -- Archivo: backend/database/02-seeders/54-seed-permisos.sql
 --
 -- Orden: por módulo (MAT → ACA → DOC → FIN → INST → CFG → REP → SEG → SYS).
--- Calificaciones (ACA): un permiso por pantalla (grupo_ui único = una fila en grilla Seguridad, como Horarios).
---   15 ingreso · 16 coordinación · 17 mis cursos · 18 cuaderno
---   19 política · 20 gestión_bimestres · 21-24 operaciones en cuaderno
+-- Calificaciones (ACA): un permiso por pantalla (grupo_ui único = fila en grilla Seguridad).
+--   15 ingreso      → menú + CalificacionesEntradaConnector (LISTAR)
+--   16 coordinacion → CoordinacionPage; API coordinación; habilitación bimestre cerrado (LISTAR)
+--   17 mis_cursos   → MisCursosPage; docente propio o tras elegir docente en coordinación (LISTAR, DETALLE)
+--   18 cuaderno     → ConsolidadoPage, CuadernoPage, BimestreConsolidadoPage lectura (LISTAR)
+--   19 politica     → PoliticaInstitucionalPage (LISTAR, EDITAR)
+--   20 gestion_bimestres → cierre/inicio bimestres — solo coordinación (LISTAR, EDITAR)
+--   21-23           → operaciones del cuaderno (evaluaciones, notas, guardar bimestre vigente)
+--   24              → consolidado bimestre: ajuste administrativo (habilitación) en bimestre cerrado
 --
 -- [TOTAL] 105 permisos
 -- Ejecutar después de: 53-seed-roles.sql
@@ -38,14 +44,14 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 -- ── ACADÉMICO · Calificaciones (ACA) — grupo_ui único por fila en grilla (como inst_horarios_*) ─
 (15, 'academico.calificacion.ingreso',        'Calificaciones · menú Académico',                              'ACADEMICO', 'ACA', 'aca_cal_ingreso',        '/academico/calificaciones', TRUE),
 (16, 'academico.calificacion.coordinacion',   'Calificaciones · coordinación docentes',                       'ACADEMICO', 'ACA', 'aca_cal_coordinacion',   '/academico/calificaciones', TRUE),
-(17, 'academico.calificacion.mis_cursos',     'Calificaciones · mis cursos',                                  'ACADEMICO', 'ACA', 'aca_cal_mis_cursos',     '/academico/calificaciones/docente/:docenteId', TRUE),
-(18, 'academico.calificacion.cuaderno',       'Calificaciones · cuaderno de evaluaciones',                    'ACADEMICO', 'ACA', 'aca_cal_cuaderno',       '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
+(17, 'academico.calificacion.mis_cursos',     'Calificaciones · mis cursos',                                  'ACADEMICO', 'ACA', 'aca_cal_mis_cursos',     '/academico/calificaciones/mis-cursos', TRUE),
+(18, 'academico.calificacion.cuaderno',       'Calificaciones · cuaderno y registro de notas',                'ACADEMICO', 'ACA', 'aca_cal_cuaderno',       '/academico/calificaciones/mis-cursos/:asignacionId', TRUE),
 (19, 'academico.calificacion.politica',       'Calificaciones · política institucional',                      'ACADEMICO', 'ACA', 'aca_cal_politica',       '/academico/calificaciones/politica', TRUE),
 (20, 'academico.calificacion.gestion_bimestres', 'Calificaciones · gestión de bimestres',                      'ACADEMICO', 'ACA', 'aca_cal_gestion_anual', '/academico/calificaciones/gestion-bimestres', TRUE),
-(21, 'academico.calificacion.registrar.parcial',      'Calificaciones · cuaderno · notas parciales',            'ACADEMICO', 'ACA', 'aca_cal_cuaderno_parcial', '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
-(22, 'academico.calificacion.registrar.practico',     'Calificaciones · cuaderno · notas prácticas',           'ACADEMICO', 'ACA', 'aca_cal_cuaderno_practico','/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
-(23, 'academico.calificacion.registrar.recuperatorio','Calificaciones · cuaderno · recuperatorio',           'ACADEMICO', 'ACA', 'aca_cal_cuaderno_recup',  '/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
-(24, 'academico.calificacion.modificar',              'Calificaciones · cuaderno · modificar notas',           'ACADEMICO', 'ACA', 'aca_cal_cuaderno_modificar','/academico/calificaciones/docente/:docenteId/curso/:cursoId', TRUE),
+(21, 'academico.calificacion.cuaderno.evaluaciones',  'Calificaciones · cuaderno · gestionar evaluaciones',     'ACADEMICO', 'ACA', 'aca_cal_cuaderno_evals',   '/academico/calificaciones/mis-cursos/:asignacionId/cuaderno/:n', TRUE),
+(22, 'academico.calificacion.cuaderno.notas',         'Calificaciones · cuaderno · registrar/modificar notas',  'ACADEMICO', 'ACA', 'aca_cal_cuaderno_notas',   '/academico/calificaciones/mis-cursos/:asignacionId/cuaderno/:n', TRUE),
+(23, 'academico.calificacion.cuaderno.guardar',       'Calificaciones · cuaderno · guardar y recalcular bimestre', 'ACADEMICO', 'ACA', 'aca_cal_cuaderno_guardar','/academico/calificaciones/mis-cursos/:asignacionId/cuaderno/:n', TRUE),
+(24, 'academico.calificacion.bimestre.ajuste_admin',  'Calificaciones · bimestre cerrado · ajuste administrativo', 'ACADEMICO', 'ACA', 'aca_cal_bim_ajuste_admin', '/academico/calificaciones/mis-cursos/:asignacionId/bimestre/:n/consolidado', TRUE),
 
 -- ── ACADÉMICO · resto ───────────────────────────────────────────────────────
 (25, 'academico.nivelacion.ver',       'Nivelaciones: listar y ver',                 'ACADEMICO', 'ACA', 'aca_nivelaciones',    '/academico/nivelaciones/listar', TRUE),

@@ -246,8 +246,10 @@ Permisos: `academico.calificacion.*` — menú: `/academico/calificaciones` (IDs
 | `academico.calificacion.cuaderno` | LISTAR | Cuaderno de notas | REC, DIRA, SECA, DOC |
 | `academico.calificacion.politica` | LISTAR, EDITAR | `/academico/calificaciones/politica` | REC, DIRA, SECA |
 | `academico.calificacion.gestion_bimestres` | LISTAR, EDITAR | `/academico/calificaciones/gestion-bimestres` | REC, DIRA, SECA |
-| `academico.calificacion.registrar.*` | CREAR | Evaluaciones y notas en cuaderno | REC, DIRA, SECA, DOC |
-| `academico.calificacion.modificar` | EDITAR | Corregir notas cargadas | REC, DIRA, SECA, DOC |
+| `academico.calificacion.cuaderno.evaluaciones` | CREAR, EDITAR, ELIMINAR | Evaluaciones (columnas) del cuaderno | REC, DIRA, SECA, DOC |
+| `academico.calificacion.cuaderno.notas` | EDITAR | Notas (celdas) del cuaderno | REC, DIRA, SECA, DOC |
+| `academico.calificacion.cuaderno.guardar` | EDITAR | Guardar bimestre y recalcular componentes | REC, DIRA, SECA, DOC |
+| `academico.calificacion.bimestre.ajuste_admin` | EDITAR | Consolidado bimestre cerrado: habilitación / ajuste administrativo | REC, DIRA, SECA |
 
 ### ACA - Nivelaciones, Trazabilidad, Historial, Licencias
 Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.historial.*`, `academico.licencia.*`

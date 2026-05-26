@@ -193,6 +193,9 @@ export class GetRegistroNotasCursoUseCase {
       const tipo = p?.estado_calendario ?? 'futuro';
       return {
         numero,
+        nombre: p?.nombre ?? null,
+        fechaInicio: p?.fecha_inicio ?? null,
+        fechaFin: p?.fecha_fin ?? null,
         estadoCalendario: tipo,
         editable: tipo === 'abierto' && numero <= (bimestreVigente ?? numero),
       };
@@ -231,6 +234,10 @@ export class GetRegistroNotasCursoUseCase {
       },
       estudiantes,
       bimestresCalendario,
+      gestion: {
+        fechaInicio: ctx.gestion_fecha_inicio ?? null,
+        fechaFin: ctx.gestion_fecha_fin ?? null,
+      },
     };
   }
 }

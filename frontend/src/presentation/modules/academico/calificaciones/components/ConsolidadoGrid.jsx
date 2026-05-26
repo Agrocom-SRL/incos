@@ -6,7 +6,6 @@ import {
   BookOutlined,
   CheckCircleOutlined,
   EyeOutlined,
-  InfoCircleOutlined,
   LockOutlined,
 } from '@ant-design/icons';
 import { Button, Table, Tag, Tooltip } from 'antd';
@@ -39,13 +38,6 @@ const celdaSumaBimestre = (bim) => (
 
 const LeyendaEstados = () => (
   <div className="cal-consolidado-grid__leyenda-card" role="note" aria-label="Leyenda de estados de bimestre">
-    <div className="cal-consolidado-grid__leyenda-item">
-      <InfoCircleOutlined className="cal-consolidado-grid__leyenda-info-glyph" aria-hidden />
-      <span>
-        En <strong>Suma</strong>, el icono info indica ajuste administrativo (fecha y nota del
-        cuaderno).
-      </span>
-    </div>
     <div className="cal-consolidado-grid__leyenda-item">
       <span className="cal-consolidado-grid__leyenda-muestra cal-consolidado-grid__leyenda-muestra--cerrado">
         <CheckCircleOutlined aria-hidden />

@@ -17,7 +17,9 @@ export class CalificacionContextoRepository {
         v.bimestre_vigente,
         v.bimestre_nombre,
         g.codigo AS gestion_codigo,
-        g.vigente AS gestion_vigente
+        g.vigente AS gestion_vigente,
+        g.fecha_inicio AS gestion_fecha_inicio,
+        g.fecha_fin AS gestion_fecha_fin
       FROM vista_calificacion_contexto_vigente v
       INNER JOIN gestiones g ON g.id = v.gestion_id AND g.deleted_at IS NULL
       `,

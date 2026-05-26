@@ -43,7 +43,11 @@ const CuadernoGrilla = ({
   bimestreTitulo,
   evaluaciones,
   estudiantes,
-  modoEdicion,
+  puedeCrearEvaluacion,
+  puedeEditarEvaluacion,
+  puedeEliminarEvaluacion,
+  puedeEditarNotas,
+  puedeGuardarBimestre,
   onAbrirCrear,
   onAbrirEditar,
   resetearNotasEvaluacion,
@@ -61,15 +65,13 @@ const CuadernoGrilla = ({
     resetEvaluacionRegistro,
     hayCambiosPendientes,
   } = useCuadernoAutosaveRegistry();
-  const soloLectura = !modoEdicion;
-
   const handleReset = useCallback(
     (ev) => {
       const notasCount = contarNotasCargadas(estudiantes, ev.id);
       Modal.confirm({
         title: 'Restablecer notas',
         okText: 'Restablecer',
-        okType: 'danger',
+        okType: 'warning',
         cancelText: 'Cancelar',
         content:
           notasCount > 0 ? (
@@ -185,14 +187,14 @@ const CuadernoGrilla = ({
       bimestreTitulo={bimestreTitulo}
       estudiantes={estudiantes}
       evaluaciones={evaluaciones}
-      soloLectura={soloLectura}
-      onAgregarEvaluacion={onAbrirCrear}
-      onEditarEvaluacion={modoEdicion ? onAbrirEditar : undefined}
-      onResetEvaluacion={modoEdicion ? handleReset : undefined}
-      onEliminarEvaluacion={modoEdicion ? handleEliminar : undefined}
-      onGuardarBimestre={modoEdicion ? handleGuardarBimestre : undefined}
+      soloLecturaNotas={!puedeEditarNotas}
+      onAgregarEvaluacion={puedeCrearEvaluacion ? onAbrirCrear : undefined}
+      onEditarEvaluacion={puedeEditarEvaluacion ? onAbrirEditar : undefined}
+      onResetEvaluacion={puedeEditarEvaluacion ? handleReset : undefined}
+      onEliminarEvaluacion={puedeEliminarEvaluacion ? handleEliminar : undefined}
+      onGuardarBimestre={puedeGuardarBimestre ? handleGuardarBimestre : undefined}
       guardandoBimestre={guardandoBimestre}
-      mostrarGuardar={modoEdicion && hayCambiosPendientes}
+      mostrarGuardar={puedeGuardarBimestre && hayCambiosPendientes}
       enteringColumnIds={enteringColumnIds}
       removingColumnId={removingColumnId}
     />
@@ -213,7 +215,14 @@ const CuadernoPage = () => {
     bimestreActivo,
     bimestreVigente,
     bimestreTitulo,
+    periodoBimestreActivo,
+    gestionFechaFin,
     modoEdicion,
+    puedeCrearEvaluacion,
+    puedeEditarEvaluacion,
+    puedeEliminarEvaluacion,
+    puedeEditarNotas,
+    puedeGuardarBimestre,
     isLoading,
     error,
     refetch,
@@ -329,6 +338,11 @@ const CuadernoPage = () => {
       <div className="cal-cuaderno-hoja">
         <CuadernoGrillaSeparador
           bimestreTitulo={bimestreTitulo}
+          bimestreNum={bimestreActivo}
+          fechaInicio={periodoBimestreActivo?.fechaInicio ?? periodoBimestreActivo?.fecha_inicio}
+          fechaFin={periodoBimestreActivo?.fechaFin ?? periodoBimestreActivo?.fecha_fin}
+          gestionFechaFin={gestionFechaFin}
+          mostrarPlazo={bimestreActivo === bimestreVigente}
           busqueda={busquedaEstudiante}
           onBusquedaChange={setBusquedaEstudiante}
           totalEstudiantes={estudiantes.length}
@@ -340,9 +354,13 @@ const CuadernoPage = () => {
           bimestreTitulo={bimestreTitulo}
           evaluaciones={evaluaciones}
           estudiantes={estudiantesFiltrados}
-          modoEdicion={modoEdicion}
+          puedeCrearEvaluacion={puedeCrearEvaluacion}
+          puedeEditarEvaluacion={puedeEditarEvaluacion}
+          puedeEliminarEvaluacion={puedeEliminarEvaluacion}
+          puedeEditarNotas={puedeEditarNotas}
+          puedeGuardarBimestre={puedeGuardarBimestre}
           onAbrirCrear={abrirCrear}
-          onAbrirEditar={modoEdicion ? abrirEditar : undefined}
+          onAbrirEditar={abrirEditar}
           resetearNotasEvaluacion={resetearNotasEvaluacion}
           onEliminadoColumna={handleEliminado}
           onRefetchCuaderno={refetch}

@@ -187,6 +187,11 @@ export class GetBimestreConsolidadoUseCase {
       bimestre: bimestreNum,
       cerrado: true,
       estadoCalendario,
+      periodo: {
+        nombre: periodoMeta?.nombre ?? null,
+        fechaInicio: formatearFecha(periodoMeta?.fecha_inicio),
+        fechaFin: formatearFecha(periodoMeta?.fecha_fin),
+      },
       cuotaTeorico,
       cuotaPractico,
       evaluaciones: evaluacionesDto,

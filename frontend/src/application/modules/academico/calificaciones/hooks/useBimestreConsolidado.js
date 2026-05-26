@@ -169,6 +169,7 @@ export const useBimestreConsolidado = () => {
     bimestreActivo,
     bimestreVigente,
     bimestreTitulo,
+    periodoConsolidado: consolidado?.periodo ?? null,
     cerrado: consolidado?.cerrado ?? true,
     isLoading,
     error,

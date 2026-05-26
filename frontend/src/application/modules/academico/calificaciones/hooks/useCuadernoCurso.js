@@ -4,7 +4,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '@application-auth';
 import { useCasesFactory } from '@container';
+import { CALIFICACIONES_PERMISOS } from '../utils/calificacionesPermisos.js';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
 import { tituloBimestre, BIMESTRE_TITULOS } from '../utils/bimestreTitulos.js';
@@ -14,6 +16,10 @@ import {
   saveEvaluacionesCache,
 } from '../utils/cuadernoLocalCache.js';
 import { mergeNotasEnEstudiantes } from '../utils/mergeNotasCuaderno.js';
+import {
+  mapBimestresCalendario,
+  periodoCalendarioPorNumero,
+} from '../utils/bimestrePlazoUtils.js';
 import { MIS_CURSOS_PATH, notasCursoPath } from '../utils/calificacionesPaths.js';
 import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
 
@@ -29,10 +35,18 @@ const mapEstudiantesRegistro = (filas = []) =>
 export const useCuadernoCurso = () => {
   const { asignacionId, n: bimestreRuta } = useParams();
   const cursoIdResolved = asignacionId;
+  const { hasPermiso } = useAuth();
   const { docenteIdCoordinacion, esVistaCoordinacion } = useCalificacionesVistaContext();
+
+  const bimestreVigenteEditable = useCallback(
+    (cuadernoState) => Boolean(cuadernoState?.modoEdicion),
+    [],
+  );
 
   const [base, setBase] = useState(null);
   const [cuaderno, setCuaderno] = useState(null);
+  const [bimestresCalendario, setBimestresCalendario] = useState([]);
+  const [gestionFechas, setGestionFechas] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -113,6 +127,9 @@ export const useCuadernoCurso = () => {
         const data = resCursos.data ?? {};
         const docente = data.docente ?? null;
         const cursos = Array.isArray(data.cursos) ? data.cursos : [];
+        const calendarioFallback = mapBimestresCalendario(
+          data.bimestresCalendario ?? docente?.bimestresCalendario,
+        );
         const cursoList = cursos.find((c) => String(c.id) === String(cursoIdResolved));
 
         if (!docente || !cursoList) {
@@ -135,6 +152,19 @@ export const useCuadernoCurso = () => {
 
         const estudiantesBase = mapEstudiantesRegistro(resRegistro.data?.estudiantes);
         if (cancelled) return;
+
+        setBimestresCalendario(
+          mapBimestresCalendario(
+            resRegistro.data?.bimestresCalendario?.length
+              ? resRegistro.data.bimestresCalendario
+              : calendarioFallback,
+          ),
+        );
+        setGestionFechas(
+          resRegistro.data?.gestion?.fechaFin
+            ? resRegistro.data.gestion
+            : data.gestion ?? docente?.gestion ?? null,
+        );
 
         const ctx = { docente, cursoList: cursoMerged, estudiantesBase };
         setBase(ctx);
@@ -182,6 +212,11 @@ export const useCuadernoCurso = () => {
   const bimestreVigente = Number(base?.docente?.bimestreVigente ?? cuaderno?.bimestreVigente) || 1;
   const bimestreActivoResolved =
     cuaderno?.bimestreActivo ?? bimestreDesdeUrl ?? bimestreVigente;
+
+  const periodoBimestreActivo = useMemo(
+    () => periodoCalendarioPorNumero(bimestresCalendario, bimestreActivoResolved),
+    [bimestresCalendario, bimestreActivoResolved],
+  );
 
   const persistirEvaluaciones = useCallback(
     (evaluacionesLista) => {
@@ -312,6 +347,36 @@ export const useCuadernoCurso = () => {
     ? `Cuaderno · ${cuaderno.bimestreTitulo}`
     : `Cuaderno · Bimestre ${bimestreActivoResolved}`;
 
+  const vigenteEditable = bimestreVigenteEditable(cuaderno);
+
+  const puedeCrearEvaluacion = useMemo(
+    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, 'CREAR'),
+    [vigenteEditable, hasPermiso],
+  );
+  const puedeEditarEvaluacion = useMemo(
+    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, 'EDITAR'),
+    [vigenteEditable, hasPermiso],
+  );
+  const puedeEliminarEvaluacion = useMemo(
+    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, 'ELIMINAR'),
+    [vigenteEditable, hasPermiso],
+  );
+  const puedeEditarNotas = useMemo(
+    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoNotas, 'EDITAR'),
+    [vigenteEditable, hasPermiso],
+  );
+  const puedeGuardarBimestre = useMemo(
+    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoGuardar, 'EDITAR'),
+    [vigenteEditable, hasPermiso],
+  );
+
+  const modoEdicion =
+    puedeCrearEvaluacion ||
+    puedeEditarEvaluacion ||
+    puedeEliminarEvaluacion ||
+    puedeEditarNotas ||
+    puedeGuardarBimestre;
+
   return {
     curso: cuaderno?.curso ?? null,
     docente: cuaderno?.docente ?? base?.docente ?? null,
@@ -321,7 +386,14 @@ export const useCuadernoCurso = () => {
     bimestreTitulo: cuaderno?.bimestreTitulo ?? tituloBimestre(bimestreActivoResolved),
     bimestreVigente,
     bimestreActivo: bimestreActivoResolved,
-    modoEdicion: cuaderno?.modoEdicion ?? false,
+    periodoBimestreActivo,
+    gestionFechaFin: gestionFechas?.fechaFin ?? null,
+    modoEdicion,
+    puedeCrearEvaluacion,
+    puedeEditarEvaluacion,
+    puedeEliminarEvaluacion,
+    puedeEditarNotas,
+    puedeGuardarBimestre,
     isLoading,
     isRefetching: false,
     error,

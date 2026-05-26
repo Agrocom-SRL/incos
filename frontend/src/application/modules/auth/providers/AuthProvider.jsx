@@ -108,9 +108,9 @@ export const AuthProvider = ({ children }) => {
   const hasPermiso = useCallback(
     (codigo, accion) =>
       state.permisos.some(
-        (p) => p.codigo === codigo && p.acciones.includes(accion)
+        (p) => p.codigo === codigo && p.acciones.includes(accion),
       ),
-    [state.permisos]
+    [state.permisos],
   );
 
   const value = useMemo(
@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }) => {
       refreshMe,
       hasPermiso,
     }),
-    [state, login, logout, refreshMe, hasPermiso]
+    [state, login, logout, refreshMe, hasPermiso],
   );
 
   return (

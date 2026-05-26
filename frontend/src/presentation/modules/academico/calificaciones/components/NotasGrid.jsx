@@ -16,7 +16,6 @@ import NotaCell from './NotaCell.jsx';
 
 const BimestreGrupoHead = ({
   titulo,
-  soloLectura,
   onGuardarBimestre,
   guardandoBimestre,
   mostrarGuardar,
@@ -24,7 +23,7 @@ const BimestreGrupoHead = ({
   <div className="cal-notas-grid__bim-head cal-notas-grid__bim-head--activo">
     <span className="cal-notas-grid__bim-titulo-row">
       <span className="cal-notas-grid__bim-titulo">{titulo}</span>
-      {!soloLectura && onGuardarBimestre && mostrarGuardar ? (
+      {onGuardarBimestre && mostrarGuardar ? (
         <Tooltip title="Guardar notas en la base de datos y recalcular bimestre y nota final">
           <Button
             variant="warning"
@@ -55,12 +54,37 @@ const EvaluacionTitulo = ({ nombre }) => (
 
 const EvaluacionColumnHead = ({
   ev,
-  soloLectura,
   onEditarEvaluacion,
   onResetEvaluacion,
   onEliminarEvaluacion,
 }) => {
-  if (soloLectura) {
+  const menuItems = [
+    onEditarEvaluacion
+      ? {
+          key: 'editar',
+          label: 'Editar actividad',
+          icon: <EditOutlined />,
+        }
+      : null,
+    onResetEvaluacion
+      ? {
+          key: 'reset',
+          label: 'Restablecer notas',
+          icon: <RedoOutlined />,
+          className: 'cal-notas-grid__menu-item--warning',
+        }
+      : null,
+    onEliminarEvaluacion
+      ? {
+          key: 'eliminar',
+          label: 'Eliminar actividad',
+          icon: <DeleteOutlined />,
+          danger: true,
+        }
+      : null,
+  ].filter(Boolean);
+
+  if (menuItems.length === 0) {
     return (
       <div className="cal-notas-grid__eval-head">
         <EvaluacionTitulo nombre={ev.nombre} />
@@ -70,26 +94,6 @@ const EvaluacionColumnHead = ({
       </div>
     );
   }
-
-  const menuItems = [
-    {
-      key: 'editar',
-      label: 'Editar actividad',
-      icon: <EditOutlined />,
-    },
-    {
-      key: 'reset',
-      label: 'Restablecer notas',
-      icon: <RedoOutlined />,
-      danger: true,
-    },
-    {
-      key: 'eliminar',
-      label: 'Eliminar actividad',
-      icon: <DeleteOutlined />,
-      danger: true,
-    },
-  ];
 
   const onMenuClick = ({ key, domEvent }) => {
     domEvent?.stopPropagation();
@@ -148,6 +152,7 @@ const NotasGrid = ({
   estudiantes = [],
   evaluaciones = [],
   soloLectura = true,
+  soloLecturaNotas,
   onAgregarEvaluacion,
   onEditarEvaluacion,
   onResetEvaluacion,
@@ -162,7 +167,8 @@ const NotasGrid = ({
   const thSubEval = () => ({ className: 'cal-notas-grid__th-sub cal-notas-grid__th-sub--eval' });
   const thSubHint = () => ({ className: 'cal-notas-grid__th-sub cal-notas-grid__th-sub--hint' });
   const fijarColumnaEstudiante = evaluaciones.length >= 4;
-  const permitirAgregar = Boolean(onAgregarEvaluacion) && !soloLectura;
+  const lecturaNotas = soloLecturaNotas ?? soloLectura;
+  const permitirAgregar = Boolean(onAgregarEvaluacion);
 
   const columnasEval = evaluaciones.map((ev) => {
     const colClass = [
@@ -177,7 +183,6 @@ const NotasGrid = ({
       title: (
         <EvaluacionColumnHead
           ev={ev}
-          soloLectura={soloLectura}
           onEditarEvaluacion={onEditarEvaluacion}
           onResetEvaluacion={onResetEvaluacion}
           onEliminarEvaluacion={onEliminarEvaluacion}
@@ -195,7 +200,7 @@ const NotasGrid = ({
           evaluacionId={ev.id}
           puntosMaximos={ev.puntos}
           valorInicial={row.notas?.[ev.id]}
-          soloLectura={soloLectura}
+          soloLectura={lecturaNotas}
         />
       ),
     };
@@ -223,7 +228,11 @@ const NotasGrid = ({
   };
 
   const columnaEspacioBimestre = {
-    title: null,
+    title: permitirAgregar ? (
+      <span className="cal-notas-grid__hint-agregar">
+        Presioná <PlusOutlined aria-hidden /> para agregar actividades
+      </span>
+    ) : null,
     key: 'bim-espacio',
     className: 'cal-notas-grid__col-bim-espacio',
     onHeaderCell: thSubHint,
@@ -248,7 +257,6 @@ const NotasGrid = ({
     title: (
       <BimestreGrupoHead
         titulo={bimestreTitulo}
-        soloLectura={soloLectura}
         onGuardarBimestre={onGuardarBimestre}
         guardandoBimestre={guardandoBimestre}
         mostrarGuardar={mostrarGuardar}

@@ -10,8 +10,10 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
+import { useAcciones } from '@application/modules/shared/hooks/useAcciones.js';
 import { useBimestreConsolidado } from '@application-academico/calificaciones/hooks/useBimestreConsolidado.js';
 import { useCalificacionesVistaContext } from '@application-academico/calificaciones/hooks/useCalificacionesVistaContext.js';
+import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import CuadernoContextoPanel from '../components/CuadernoContextoPanel.jsx';
 import BimestreConsolidadoSeparador from '../components/BimestreConsolidadoSeparador.jsx';
 import BimestreConsolidadoGrid from '../components/BimestreConsolidadoGrid.jsx';
@@ -38,6 +40,8 @@ const BimestreConsolidadoPage = () => {
   const navigate = useNavigate();
   const { notification } = App.useApp();
   const { docenteNombreCoordinacion } = useCalificacionesVistaContext();
+  const ajusteAdmin = useAcciones(CALIFICACIONES_PERMISOS.bimestreAjusteAdmin);
+  const puedeEdicionAdmin = ajusteAdmin.puedeEditar;
   const {
     curso,
     docente,
@@ -48,6 +52,7 @@ const BimestreConsolidadoPage = () => {
     bimestreActivo,
     bimestreVigente,
     bimestreTitulo,
+    periodoConsolidado,
     isLoading,
     error,
     breadcrumbItems,
@@ -211,7 +216,7 @@ const BimestreConsolidadoPage = () => {
     </Card>
   );
 
-  const toolbarAdmin = (
+  const toolbarAdmin = puedeEdicionAdmin ? (
     <Flex
       align="center"
       justify="space-between"
@@ -236,7 +241,7 @@ const BimestreConsolidadoPage = () => {
         </Button>
       ) : null}
     </Flex>
-  );
+  ) : null;
 
   const cardGrilla = (
     <Card className="cal-cuaderno-hoja-card cal-bimestre-consolidado-card" {...hojaCardProps}>
@@ -244,11 +249,12 @@ const BimestreConsolidadoPage = () => {
         {toolbarAdmin}
         <BimestreConsolidadoSeparador
           bimestreTitulo={bimestreTitulo}
+          fechaInicio={periodoConsolidado?.fechaInicio}
+          fechaFin={periodoConsolidado?.fechaFin}
           busqueda={busquedaEstudiante}
           onBusquedaChange={setBusquedaEstudiante}
           totalEstudiantes={estudiantes.length}
           filtrados={estudiantesFiltrados.length}
-          evaluacionesCount={evaluaciones.length}
         />
         <BimestreConsolidadoGrid
           estudiantes={estudiantesFiltrados}
