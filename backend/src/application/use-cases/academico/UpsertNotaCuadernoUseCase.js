@@ -14,6 +14,7 @@ export class UpsertNotaCuadernoUseCase {
     calificacionContextoRepository,
     cuadernoRepository,
     teacherRepository,
+    userRepository,
     authRepository,
     logger,
   }) {
@@ -21,6 +22,7 @@ export class UpsertNotaCuadernoUseCase {
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.teacherRepository = teacherRepository;
+    this.userRepository = userRepository;
     this.authRepository = authRepository;
     this.logger = logger;
   }
@@ -44,6 +46,7 @@ export class UpsertNotaCuadernoUseCase {
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
+      userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
       asignacionId,

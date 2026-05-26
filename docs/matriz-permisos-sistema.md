@@ -46,6 +46,7 @@ Cuando **un mismo item de menu** (`permiso` de **ingreso**, accion **LISTAR**) a
 | Menu lateral | permiso **ingreso** (ej. id 15 `academico.calificacion.ingreso`) | Visibilidad del item en sidebar (`filterMenuByPermiso` + accion LISTAR) |
 | Pantallas hijas | permisos 16–24, rutas hijas en `routes.jsx` | Cada pantalla con `permiso` + `accion`; `PrivateRoute` bloquea URL directa |
 | Aterrizaje | `menu.landingStack` en la ruta de ingreso | Orden de preferencia al abrir el modulo (click menu o URL de ingreso) |
+| Modo de subpantallas | `viewStack` en la ruta raiz del modulo (misma key que menu) | API / UI segun permiso efectivo (`useRouteViewMode`) |
 
 ### Esquema `menu.landingStack`
 
@@ -72,6 +73,51 @@ Reglas:
 3. Con `redirectTo` → **Navigate** a la ruta hija (docente, estudiante, vista propia, etc.).
 4. **`labelByRole`** solo cambia texto del menu; **nunca** sustituye permisos ni paths.
 5. Controles de retorno (boton volver) usan **`hasPermiso(..., 'LISTAR')`** del permiso de coordinacion/admin, no comparacion de rol.
+
+### Esquema `viewStack` (subpantallas del modulo)
+
+Declarar **una vez** en la ruta del menu del modulo (propiedad de primer nivel en `routes.jsx`, no dentro de `menu`):
+
+```javascript
+import { MODULO_VIEW_STACK } from '@application-.../config/moduloViewStack.js';
+
+{
+  key: 'ACA-CAL',
+  path: '/academico/calificaciones',
+  menu: { /* ... */, landingStack: [ /* entrada */ ] },
+  viewStack: MODULO_VIEW_STACK,
+}
+```
+
+```javascript
+export const MODULO_VIEW_STACK = [
+  {
+    id: 'coordinacion',
+    permiso: 'academico.calificacion.coordinacion',
+    accion: 'LISTAR',
+    persistContext: { stateKey: 'docenteId', nameKey: 'docenteNombre' },
+  },
+  {
+    id: 'propio',
+    permiso: 'academico.calificacion.mis_cursos',
+    accion: 'LISTAR',
+  },
+];
+```
+
+Reglas:
+
+1. Misma prioridad por permisos que `landingStack` (no por rol).
+2. Entrada con `persistContext` solo activa si el usuario tiene ese permiso **y** hay `docenteId` en `location.state` o en `sessionStorage` (`incos:view-context:{moduleKey}`).
+3. Sin contexto persistido, cae al siguiente modo (ej. docente → `propio` + `GET /mis-cursos`).
+4. En hooks de datos: `const { isView, contextId } = useRouteViewMode('ACA-CAL-MIS-CURSOS')` — resuelve el `viewStack` del ancestro `ACA-CAL`.
+5. **No** crear hooks `useXxxVistaContext` por modulo salvo alias fino; la logica vive en `useRouteViewMode`.
+
+| Pieza | Ubicacion |
+|-------|-----------|
+| `resolveViewStack` | `infrastructure/navigation/utils/resolveViewStack.js` |
+| `findViewStackForRoute` | mismo archivo |
+| `useRouteViewMode` | `infrastructure/navigation/hooks/useRouteViewMode.js` |
 
 ### Componentes frontend (reutilizables)
 
@@ -109,10 +155,11 @@ const CalificacionesEntradaConnector = () => (
 1. **Seed 54**: permiso de **ingreso** (menu) + permisos por pantalla hija (IDs fijos).
 2. **Seed 56**: acciones validas por permiso.
 3. **Seed 55**: asignar a cada rol solo los permisos que le corresponden (docente **sin** coordinacion si no debe ver listado global).
-4. **`routes.jsx`**: ruta de ingreso con `permiso` ingreso; hijas con permisos propios; `landingStack` ordenado de mas administrativo a mas restringido/propio.
+4. **`routes.jsx`**: ruta de ingreso con `permiso` ingreso; hijas con permisos propios; `landingStack` + `viewStack` (archivo `config/*ViewStack.js` del modulo).
 5. **`ModuleEntryConnector`** + pagina inline para la vista admin/coordinacion.
-6. **UI**: ocultar acciones admin con `PermisoGuard` / `ActionButton`, no con `if (rol === 'DOCENTE')`.
-7. **Documentar** fila en esta matriz (permisos, landingStack, roles en seed 55).
+6. **Hooks de datos**: `useRouteViewMode(routeKey)` para elegir API segun `isView('coordinacion'|'propio')` y `contextId`.
+7. **UI**: ocultar acciones admin con `PermisoGuard` / `ActionButton`, no con `if (rol === 'DOCENTE')`.
+8. **Documentar** fila en esta matriz (permisos, stacks, roles en seed 55).
 
 Referencia implementada: **ACA · Calificaciones** (`ACA-CAL`, seeds 15–24, rol DOCENTE id 7 en seed 55).
 
@@ -321,13 +368,16 @@ Permisos: `academico.calificacion.*` — menu: `/academico/calificaciones` (IDs 
 
 **Aterrizaje (`landingStack` en `ACA-CAL`):** coordinacion (16) inline → mis cursos (17) redirect. Rol DOCENTE (7) solo tiene 15+17+18+21–23 en seed 55 → entra directo a mis cursos. Roles con 16 (RECTOR, DIR_ACADEMICO, SEC_ACADEMICA) ven coordinacion.
 
+**API mis cursos:** DOCENTE usa `GET /calificaciones/mis-cursos` (permiso 17). El backend resuelve el docente por `docentes.usuario_id` o, si falta, por `usuarios.referencia_id` + `tipo_referencia = DOCENTE` (y sincroniza `usuario_id` en docentes). Sin vínculo → 403 con mensaje de contacto a coordinación. Seeder demo: `60-seed-usuario-docente-demo.sql` (usuario `docente`, docente id=1). `GET /calificaciones/coordinacion/docentes/:id/cursos` exige permiso 16; el frontend solo lo llama si `hasPermiso(coordinacion)` y hay `docenteId` en contexto (ver `useCalificacionesVistaContext`).
+
 | Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
 |---|---|---|---|
 | `academico.calificacion.ingreso` | LISTAR | Item menu Calificaciones | REC, DIRA, SECA, DOC, EST |
 | `academico.calificacion.coordinacion` | LISTAR | Vista general docentes (inline en ingreso) | REC, DIRA, SECA |
 | `academico.calificacion.mis_cursos` | LISTAR, DETALLE | Mis cursos del docente (redirect desde ingreso si no hay 16) | REC, DIRA, SECA, DOC |
 | `academico.calificacion.cuaderno` | LISTAR | Cuaderno de notas | REC, DIRA, SECA, DOC |
-| `academico.calificacion.politica` | LISTAR, EDITAR | `/academico/calificaciones/politica` | REC, DIRA, SECA |
+| `academico.calificacion.politica` | EDITAR (pantalla); LISTAR en ruta de menú | `/academico/calificaciones/politica` (solo edición) | REC, DIRA, SECA |
+| `sistema.catalogo.referencia` | LISTAR | **API complemento:** `GET /calificaciones/politica`, `/politica/catalogo`, `/tipos-evaluacion` (cuaderno, drawer, vista previa). Cualquier usuario con rol; no aparece en grilla Seguridad | Todos con rol |
 | `academico.calificacion.gestion_bimestres` | LISTAR, EDITAR | `/academico/calificaciones/gestion-bimestres` | REC, DIRA, SECA |
 | `academico.calificacion.cuaderno.evaluaciones` | CREAR, EDITAR, ELIMINAR | Evaluaciones (columnas) del cuaderno | REC, DIRA, SECA, DOC |
 | `academico.calificacion.cuaderno.notas` | EDITAR | Notas (celdas) del cuaderno | REC, DIRA, SECA, DOC |
@@ -451,11 +501,13 @@ Los controladores de seguridad deben mantener reglas de negocio extra (p. ej. in
 - **Cursos oferta:** PATCH/DELETE `/cursos/:id` → EDITAR / ELIMINAR sobre `institucional.gestion.horarios`.
 - **Docentes:** listado/detalle/CRUD y asignaciones alineados con `docentes.ver`, `docentes.crear`, `docentes.editar`, `docentes.asignar` (POST asignacion curso con mismo stack que **EDITAR** en `docentes.asignar`, coherente con UI).
 
-### Catálogos de referencia (`sistema.catalogo.referencia`, permiso_id **101**, acción **LISTAR**)
+### Catálogos de referencia (`sistema.catalogo.referencia`, permiso_id **105**, acción **LISTAR**)
 
 **Permiso técnico (transparente para Seguridad).** No tiene `grupo_ui` ni `ruta_sidebar`: **no aparece** en `RolPermisosPage` / `PermisosDominioPicker`. No se guarda en `roles_permisos` (55).
 
 **Quién lo tiene:** cualquier usuario autenticado con `rol_id` asignado (`AuthRepository.tienePermiso` devuelve true para LISTAR). Así un rol con “crear estudiante” no queda sin combos de país, idioma, método de pago, etc.
+
+**Dónde se declara:** no hace falta un permiso por tabla en los schemas SQL (`02`, `03`, `11`, `13`, …). Las tablas son datos; la regla vive en **cada ruta GET** del backend con `listarCatalogoReferencia` (alias `complementoPaginaLectura`). No se monta middleware global en `routes/index.js`: cada router marca qué lectura es catálogo vs operación de módulo.
 
 **Bloquear datos concretos** (una carrera inactiva, un idioma dado) es configuración de negocio en CFG o estado `activo` en tablas, no este toggle.
 
@@ -476,6 +528,7 @@ Middleware: `listarCatalogoReferencia` (`authenticate` + `verificarPermiso`). Ca
 | `bancos-autorizados.routes.js` | `/api/v1/bancos-autorizados` |
 | `cuentas-pago.routes.js` | `/api/v1/cuentas-pago` |
 | `dashboard.routes.js` | `/api/v1/dashboard/resumen` |
+| `calificaciones.routes.js` | `/api/v1/calificaciones/politica`, `/politica/catalogo`, `/tipos-evaluacion` |
 
 ## Hallazgos de la auditoria
 

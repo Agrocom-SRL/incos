@@ -1,5 +1,6 @@
-import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
+import { resolveDocenteIdForUsuario } from '../../utils/resolveDocenteIdForUsuario.js';
 
 const BIMESTRES_TOTAL = 4;
 
@@ -101,6 +102,7 @@ export class ListCursosCalificacionesUseCase {
     calificacionContextoRepository,
     calificacionCoordinacionRepository,
     teacherRepository,
+    userRepository,
     evaluationConfigurationRepository,
     logger,
   }) {
@@ -111,6 +113,7 @@ export class ListCursosCalificacionesUseCase {
       throw new Error('calificacionCoordinacionRepository es requerido');
     }
     if (!teacherRepository) throw new Error('teacherRepository es requerido');
+    if (!userRepository) throw new Error('userRepository es requerido');
     if (!evaluationConfigurationRepository) {
       throw new Error('evaluationConfigurationRepository es requerido');
     }
@@ -118,6 +121,7 @@ export class ListCursosCalificacionesUseCase {
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.teacherRepository = teacherRepository;
+    this.userRepository = userRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.logger = logger;
   }
@@ -147,18 +151,11 @@ export class ListCursosCalificacionesUseCase {
     }
 
     if (docenteId == null) {
-      const teachers = await this.teacherRepository.findAll({ userId: usuarioId });
-      const teacher = teachers?.[0] ?? null;
-      if (!teacher) {
-        throw new ForbiddenError(
-          'Tu usuario no está vinculado a un docente. Contactá a coordinación académica.',
-        );
-      }
-      const plain = teacher.toPlainObject?.() ?? teacher;
-      docenteId = Number(plain.id ?? plain.docenteId);
-      if (!Number.isFinite(docenteId) || docenteId < 1) {
-        throw new ForbiddenError('No se pudo resolver el docente de la sesión.');
-      }
+      docenteId = await resolveDocenteIdForUsuario({
+        teacherRepository: this.teacherRepository,
+        userRepository: this.userRepository,
+        usuarioId,
+      });
     }
 
     const docenteRow =

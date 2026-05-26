@@ -11,6 +11,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
     cuadernoRepository,
     evaluationConfigurationRepository,
     teacherRepository,
+    userRepository,
     authRepository,
     logger,
   }) {
@@ -19,6 +20,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
     this.cuadernoRepository = cuadernoRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
+    this.userRepository = userRepository;
     this.authRepository = authRepository;
     this.logger = logger;
   }
@@ -31,6 +33,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
+      userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
       asignacionId,

@@ -17,6 +17,7 @@ export class UpdateEvaluacionCuadernoUseCase {
     evaluationTypeRepository,
     evaluationConfigurationRepository,
     teacherRepository,
+    userRepository,
     authRepository,
     logger,
   }) {
@@ -27,6 +28,7 @@ export class UpdateEvaluacionCuadernoUseCase {
     this.evaluationTypeRepository = evaluationTypeRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
+    this.userRepository = userRepository;
     this.authRepository = authRepository;
     this.logger = logger;
   }
@@ -39,6 +41,7 @@ export class UpdateEvaluacionCuadernoUseCase {
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
+      userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
       asignacionId,

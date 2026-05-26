@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.js';
 import { apiCall } from '@/infrastructure/http/apiClient.js';
 import { AUTH_ENDPOINTS } from '@api/endpoints.js';
+import { clearSessionNavigationState } from '@/infrastructure/navigation/utils/clearSessionNavigationState.js';
 
 const initialState = {
   usuario: null,
@@ -63,6 +64,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = useCallback((token, usuario, permisos) => {
+    clearSessionNavigationState();
     localStorage.setItem('incos_token', token);
     localStorage.setItem('incos_usuario', JSON.stringify(usuario));
     setState({
@@ -101,6 +103,7 @@ export const AuthProvider = ({ children }) => {
     }
     localStorage.removeItem('incos_token');
     localStorage.removeItem('incos_usuario');
+    clearSessionNavigationState();
     setState({ ...initialState, isLoading: false });
     navigate('/login', { replace: true });
   }, [navigate]);

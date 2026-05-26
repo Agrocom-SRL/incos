@@ -15,6 +15,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
     cuadernoRepository,
     evaluationConfigurationRepository,
     teacherRepository,
+    userRepository,
     authRepository,
     logger,
   }) {
@@ -23,6 +24,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
     this.cuadernoRepository = cuadernoRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
+    this.userRepository = userRepository;
     this.authRepository = authRepository;
     this.logger = logger;
   }
@@ -39,6 +41,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
+      userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
       asignacionId,

@@ -1,4 +1,5 @@
 import { ForbiddenError, NotFoundError } from '../../domain/errors/AppError.js';
+import { tryResolveDocenteIdForUsuario } from './resolveDocenteIdForUsuario.js';
 
 /**
  * Verifica acceso al cuaderno de una asignación (docente del curso o coordinación).
@@ -8,6 +9,7 @@ export async function assertCuadernoCursoAccess({
   calificacionCoordinacionRepository,
   calificacionContextoRepository,
   teacherRepository,
+  userRepository,
   authRepository,
   usuarioId,
   asignacionId,
@@ -24,10 +26,11 @@ export async function assertCuadernoCursoAccess({
   }
 
   const docenteIdAsignacion = Number(cursoRow.docente_id);
-  const teachers = await teacherRepository.findAll({ userId: usuarioId });
-  const teacher = teachers?.[0] ?? null;
-  const plain = teacher?.toPlainObject?.() ?? teacher;
-  const docenteSesion = Number(plain?.id ?? plain?.docenteId);
+  const docenteSesion = await tryResolveDocenteIdForUsuario({
+    teacherRepository,
+    userRepository,
+    usuarioId,
+  });
   const esDocenteDelCurso =
     Number.isFinite(docenteSesion) && docenteSesion === docenteIdAsignacion;
 

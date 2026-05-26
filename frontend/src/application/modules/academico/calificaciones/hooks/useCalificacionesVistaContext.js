@@ -1,52 +1,38 @@
 /**
- * Contexto de vista coordinación (docente impersonado sin :docenteId en la URL).
+ * Alias del módulo Calificaciones sobre useRouteViewMode (patrón global).
+ * @deprecated Preferir useRouteViewMode('ACA-CAL-…') en código nuevo.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
+import { useAuth } from '@application-auth';
+import { CALIFICACIONES_PERMISOS } from '../utils/calificacionesPermisos.js';
 
-const STORAGE_KEY = 'incos:calificaciones-docente-coordinacion';
-
-const leerStorage = () => {
-  try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
+/** Cualquier ruta hija de ACA-CAL resuelve el mismo viewStack del menú. */
+const CALIFICACIONES_ROUTE_KEY = 'ACA-CAL-MIS-CURSOS';
 
 export const useCalificacionesVistaContext = () => {
-  const location = useLocation();
-  const stateDocenteId = location.state?.docenteId ?? null;
-  const stateDocenteNombre = location.state?.docenteNombre ?? null;
+  const { hasPermiso } = useAuth();
+  const {
+    viewId,
+    contextId,
+    contextName,
+    limpiarContexto,
+    isView,
+  } = useRouteViewMode(CALIFICACIONES_ROUTE_KEY);
 
-  useEffect(() => {
-    if (stateDocenteId != null) {
-      sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          docenteId: stateDocenteId,
-          docenteNombre: stateDocenteNombre ?? null,
-        }),
-      );
-    }
-  }, [stateDocenteId, stateDocenteNombre]);
-
-  const stored = useMemo(() => leerStorage(), [stateDocenteId]);
-
-  const docenteIdCoordinacion = stateDocenteId ?? stored?.docenteId ?? null;
-  const docenteNombreCoordinacion = stateDocenteNombre ?? stored?.docenteNombre ?? null;
-  const esVistaCoordinacion = docenteIdCoordinacion != null;
-
-  const limpiarContextoCoordinacion = useCallback(() => {
-    sessionStorage.removeItem(STORAGE_KEY);
-  }, []);
+  const puedeCoordinacion = hasPermiso(
+    CALIFICACIONES_PERMISOS.coordinacion,
+    'LISTAR',
+  );
+  const esVistaCoordinacion = isView('coordinacion');
 
   return {
-    docenteIdCoordinacion,
-    docenteNombreCoordinacion,
+    docenteIdCoordinacion: contextId,
+    docenteNombreCoordinacion: contextName,
     esVistaCoordinacion,
-    limpiarContextoCoordinacion,
+    puedeCoordinacion,
+    viewId,
+    limpiarContextoCoordinacion: limpiarContexto,
+    limpiarContexto,
   };
 };

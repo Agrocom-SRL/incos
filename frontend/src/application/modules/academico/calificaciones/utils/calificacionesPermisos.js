@@ -3,6 +3,7 @@
  * Aterrizaje del menú: menu.landingStack en routes ACA-CAL (patrón global ModuleEntryConnector).
  *
  * Rol DOCENTE (7): 15, 17–18, 21–23 (sin 16 coordinación ni 20 gestión bimestres) — ver seed 55.
+ * Vista coordinación (sessionStorage docenteId) solo si tiene permiso 16; si no, GET mis-cursos.
  */
 
 export const CALIFICACIONES_PERMISOS = {

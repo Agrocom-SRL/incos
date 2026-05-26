@@ -28,6 +28,7 @@ export class GetBimestreConsolidadoUseCase {
     cuadernoRepository,
     evaluationConfigurationRepository,
     teacherRepository,
+    userRepository,
     authRepository,
     logger,
   }) {
@@ -36,6 +37,7 @@ export class GetBimestreConsolidadoUseCase {
     this.cuadernoRepository = cuadernoRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
+    this.userRepository = userRepository;
     this.authRepository = authRepository;
     this.logger = logger;
   }
@@ -50,6 +52,7 @@ export class GetBimestreConsolidadoUseCase {
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
+      userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
       asignacionId,

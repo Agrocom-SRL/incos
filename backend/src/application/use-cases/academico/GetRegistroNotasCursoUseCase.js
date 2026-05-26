@@ -1,5 +1,6 @@
 import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
 import { parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
+import { tryResolveDocenteIdForUsuario } from '../../utils/resolveDocenteIdForUsuario.js';
 import { calcularNotaBimestre, calcularNotaFinalGestion } from '../../utils/cuadernoNotasCalculo.js';
 import { obtenerCuotasDesdePolitica } from '../../utils/obtenerCuotasDesdePolitica.js';
 
@@ -115,6 +116,7 @@ export class GetRegistroNotasCursoUseCase {
     calificacionContextoRepository,
     calificacionCoordinacionRepository,
     teacherRepository,
+    userRepository,
     evaluationConfigurationRepository,
     authRepository,
     logger,
@@ -122,6 +124,7 @@ export class GetRegistroNotasCursoUseCase {
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.teacherRepository = teacherRepository;
+    this.userRepository = userRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.authRepository = authRepository;
     this.logger = logger;
@@ -143,10 +146,11 @@ export class GetRegistroNotasCursoUseCase {
     }
 
     const docenteIdAsignacion = Number(cursoRow.docente_id);
-    const teachers = await this.teacherRepository.findAll({ userId: usuarioId });
-    const teacher = teachers?.[0] ?? null;
-    const plain = teacher?.toPlainObject?.() ?? teacher;
-    const docenteSesion = Number(plain?.id ?? plain?.docenteId);
+    const docenteSesion = await tryResolveDocenteIdForUsuario({
+      teacherRepository: this.teacherRepository,
+      userRepository: this.userRepository,
+      usuarioId,
+    });
     const esDocenteDelCurso =
       Number.isFinite(docenteSesion) && docenteSesion === docenteIdAsignacion;
 

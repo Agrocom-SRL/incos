@@ -12,6 +12,7 @@ export class DeleteEvaluacionCuadernoUseCase {
     evaluationConfigurationRepository,
     bimesterEvaluationRepository,
     teacherRepository,
+    userRepository,
     authRepository,
     logger,
   }) {
@@ -21,6 +22,7 @@ export class DeleteEvaluacionCuadernoUseCase {
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
     this.teacherRepository = teacherRepository;
+    this.userRepository = userRepository;
     this.authRepository = authRepository;
     this.logger = logger;
   }
@@ -32,6 +34,7 @@ export class DeleteEvaluacionCuadernoUseCase {
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
+      userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
       asignacionId,

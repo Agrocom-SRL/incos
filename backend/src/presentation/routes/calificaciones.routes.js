@@ -1,6 +1,10 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
+import {
+  complementoPaginaLectura,
+  verificarPermiso,
+  verificarPermisoCualquiera,
+} from '../middleware/permisos.middleware.js';
 import {
   listTiposEvaluacionValidator,
   savePoliticaInstitucionalValidator,
@@ -32,10 +36,8 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     verificarPermiso('academico.calificacion.coordinacion', 'LISTAR'),
   ];
 
-  const politicaListar = [
-    authenticate,
-    verificarPermiso('academico.calificacion.politica', 'LISTAR'),
-  ];
+  /** Complemento cuaderno / drawer — mismo stack que catálogos globales (permiso 105). */
+  const complementoCalificacionesLectura = complementoPaginaLectura;
 
   const politicaEditar = [
     authenticate,
@@ -82,10 +84,11 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   /**
    * GET /api/v1/calificaciones/tipos-evaluacion
    * Catálogo tipos_evaluacion bimestrales (query: pagina, limite, busqueda).
+   * Complemento de UI: sistema.catalogo.referencia + LISTAR (no exige permiso 19).
    */
   router.get(
     '/tipos-evaluacion',
-    ...politicaListar,
+    ...complementoCalificacionesLectura,
     listTiposEvaluacionValidator,
     validateRequest,
     (req, res, next) => controllers.listTiposEvaluacionController.handle(req, res, next)
@@ -97,17 +100,18 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
    */
   router.get(
     '/politica/catalogo',
-    ...politicaListar,
+    ...complementoCalificacionesLectura,
     (req, res, next) => controllers.getPoliticaCatalogoController.handle(req, res, next)
   );
 
   /**
    * GET /api/v1/calificaciones/politica
    * Configuración institucional de notas (gestión vigente, configuracion_evaluacion).
+   * Complemento de cuaderno / vista previa: lectura vía catálogo de referencia.
    */
   router.get(
     '/politica',
-    ...politicaListar,
+    ...complementoCalificacionesLectura,
     (req, res, next) => controllers.getPoliticaInstitucionalController.handle(req, res, next)
   );
 
