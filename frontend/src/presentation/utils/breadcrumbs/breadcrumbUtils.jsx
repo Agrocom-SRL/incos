@@ -8,7 +8,9 @@ const buildBreadcrumbChain = (allRoutes, key, routeKey, breadcrumbItems, current
   const route = allRoutes.find(r => r.key === key);
   if (!route) return;
 
-  if (route.menu?.parent) {
+  if (route.breadcrumbParent) {
+    buildBreadcrumbChain(allRoutes, route.breadcrumbParent, routeKey, breadcrumbItems, currentTitle);
+  } else if (route.menu?.parent) {
     buildBreadcrumbChain(allRoutes, route.menu.parent, routeKey, breadcrumbItems, currentTitle);
   }
 

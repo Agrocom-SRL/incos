@@ -334,14 +334,17 @@ export const useCuadernoCurso = () => {
     }
   }, [base, bimestreActivoResolved, construirEstadoBimestre]);
 
+  const materiaCurso = cuaderno?.curso?.materia ?? base?.cursoList?.materia ?? null;
+
   const breadcrumbItems = useMemo(() => {
     const n = bimestreActivoResolved;
     const tituloCrumb = n ? `Cuaderno · Bimestre ${n}` : 'Cuaderno';
     return createCalificacionesBreadcrumbItems('ACA-CAL-CUADERNO', 'ACA-CAL', tituloCrumb, {
       asignacionId: cursoIdResolved,
       n,
+      materia: materiaCurso,
     });
-  }, [bimestreActivoResolved, cursoIdResolved]);
+  }, [bimestreActivoResolved, cursoIdResolved, materiaCurso]);
 
   const tituloPagina = cuaderno?.bimestreTitulo
     ? `Cuaderno · ${cuaderno.bimestreTitulo}`

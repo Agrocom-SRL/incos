@@ -118,13 +118,16 @@ export const useBimestreConsolidado = () => {
   const bimestreActivo = consolidado?.bimestre ?? bimestreNum ?? 1;
   const bimestreTitulo = tituloBimestre(bimestreActivo);
 
+  const materiaCurso = base?.curso?.materia ?? null;
+
   const breadcrumbItems = useMemo(
     () =>
       createCalificacionesBreadcrumbItems('ACA-CAL-BIM-CONSOLIDADO', 'ACA-CAL', tituloBimestre(bimestreActivo), {
         asignacionId,
         n: bimestreActivo,
+        materia: materiaCurso,
       }),
-    [bimestreActivo, asignacionId],
+    [bimestreActivo, asignacionId, materiaCurso],
   );
 
   const tituloPagina = `Consolidado · ${bimestreTitulo}`;

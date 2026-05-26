@@ -110,6 +110,7 @@ const EvaluacionColumnHead = ({
           menu={{ items: menuItems, onClick: onMenuClick }}
           trigger={['click']}
           placement="bottomRight"
+          classNames={{ root: 'cal-notas-grid__eval-menu-dropdown' }}
         >
           <button
             type="button"
@@ -141,8 +142,8 @@ const renderEstudiante = (nombre, row) => (
 /** Anchos fijos de identificación; el resto del ancho va al grupo bimestre. */
 const ANCHO_COL_NRO = 44;
 const ANCHO_COL_ESTUDIANTE = 300;
-const ANCHO_COL_EVAL = 160;
-const ANCHO_COL_EVAL_MAX = 240;
+const ANCHO_COL_EVAL = 200;
+const ANCHO_COL_EVAL_MAX = 300;
 const ANCHO_COL_AGREGAR = 56;
 
 const NotasGrid = ({
