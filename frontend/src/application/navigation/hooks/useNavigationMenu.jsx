@@ -28,6 +28,14 @@ import * as menuGenerator from '@navigation-services/menuGenerator';
 import { getEffectiveRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
 import MenuItem from '@atoms/MenuItem';
 import { useAuthContext } from '@application-auth';
+import { hasAnyPermiso } from '@navigation/utils/hasAnyPermiso.js';
+
+function itemPermitido(item, hasPermisoFn) {
+    const accion = item.accion ?? 'LISTAR';
+    if (item.permiso) return hasPermisoFn(item.permiso, accion);
+    if (item.permisoAny?.length) return hasAnyPermiso(item.permisoAny, hasPermisoFn, accion);
+    return true;
+}
 
 function filterMenuByPermiso(items, hasPermisoFn, userRole) {
     if (!items?.length) return [];
@@ -36,13 +44,10 @@ function filterMenuByPermiso(items, hasPermisoFn, userRole) {
         if (item.children?.length) {
           const children = filterMenuByPermiso(item.children, hasPermisoFn, userRole);
           if (children.length === 0) return null;
-          if (!item.permiso) return { ...item, children };
-          const accion = item.accion ?? 'LISTAR';
-          return hasPermisoFn(item.permiso, accion) ? { ...item, children } : null;
+          if (!itemPermitido(item, hasPermisoFn)) return null;
+          return { ...item, children };
         }
-        if (!item.permiso) return item;
-        const accion = item.accion ?? 'LISTAR';
-        if (!hasPermisoFn(item.permiso, accion)) return null;
+        if (!itemPermitido(item, hasPermisoFn)) return null;
         if (item.menu?.labelByRole?.[userRole]) {
           return { ...item, menu: { ...item.menu, label: item.menu.labelByRole[userRole] } };
         }

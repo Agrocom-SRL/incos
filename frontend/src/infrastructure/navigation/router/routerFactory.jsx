@@ -50,7 +50,11 @@ export const createAppRouter = () => {
                 ...protectedRoutes.map((route) => ({
                   path: route.path,
                   element: (
-                    <PrivateRoute permiso={route.permiso} accion={route.accion}>
+                    <PrivateRoute
+                      permiso={route.permiso}
+                      permisoAny={route.permisoAny}
+                      accion={route.accion}
+                    >
                       {route.element}
                     </PrivateRoute>
                   ),

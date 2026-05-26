@@ -399,7 +399,7 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 
 | Codigo (seed) | Acciones v2 (`permiso_acciones`) | Uso principal (UI) |
 |---|---|---|
-| `docentes.ver` (41) | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista) |
+| `docentes.ver` (45) | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista) |
 | `docentes.crear` (42) | CREAR | Alta `/docentes/registrar` |
 | `docentes.editar` (96) | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
 | `docentes.asignar` (43) | CREAR, EDITAR, ELIMINAR | Asignacion docente-curso (`/docentes/asignar`, API `POST /docentes/asignaciones/curso`, modal en armado paralelo) |
@@ -410,6 +410,8 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 | CREAR | Nuevo docente/licencias/fichas | ADM, REC, DIRA |
 | EDITAR | Ajustes supervision | ADM, REC, DIRA |
 | APROBAR | Licencias docentes | ADM, REC, DIRA |
+
+**Rol DOCENTE (7) — alcance propio (seed 55):** `docentes.licencia.ver` (48) LISTAR + `docentes.licencia.crear` (49) CREAR (menú Licencias docentes; sin `docentes.ver`). Pasantías docentes: (56) LISTAR + CREAR, (57) EDITAR (menú `/supervision/pasantias`; sin supervisión ni listado de plantilla).
 
 ### INST - Institucional (`/institucional/*`)
 Permisos: `institucional.*`

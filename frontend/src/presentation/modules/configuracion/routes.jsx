@@ -11,6 +11,26 @@
 import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
 
+/** Visible si el rol tiene al menos un permiso hijo de la sección (menú + URL). */
+const CFG_ACADEMICO_PERMISOS = [
+    'cfg.academico.carreras',
+    'cfg.academico.materias',
+    'cfg.academico.plan',
+    'cfg.academico.cursos',
+    'cfg.academico.turnos',
+];
+const CFG_DOCUMENTACION_PERMISOS = [
+    'cfg.documentacion.inscripcion',
+    'cfg.documentacion.becas',
+    'cfg.documentacion.pasantias',
+    'cfg.documentacion.traslado',
+];
+const CFG_COMPLEMENTARIO_PERMISOS = [
+    'cfg.complementario.discapacidad',
+    'cfg.complementario.apoderados',
+    'cfg.complementario.idiomas',
+];
+
 // Lazy loading de los connectors
 const CarrerasListConnector = lazy(() => import('./academico/carreras/connectors'));
 const MateriasListConnector = lazy(() => import('./academico/materias/connectors'));
@@ -30,7 +50,8 @@ export const configuracionRoutes = [
         element: <UnderConstruction />,
         key: 'CFG-ACADEMICO',
         permiso: null,
-        accion: null,
+        permisoAny: CFG_ACADEMICO_PERMISOS,
+        accion: 'LISTAR',
         menu: {
             label: 'Académico',
             module: 'CFG',
@@ -89,7 +110,8 @@ export const configuracionRoutes = [
         element: <UnderConstruction />,
         key: 'CFG-DOCUMENTACION',
         permiso: null,
-        accion: null,
+        permisoAny: CFG_DOCUMENTACION_PERMISOS,
+        accion: 'LISTAR',
         menu: {
             label: 'Documentación',
             module: 'CFG',
@@ -139,7 +161,8 @@ export const configuracionRoutes = [
         element: <UnderConstruction />,
         key: 'CFG-COMPLEMENTARIO',
         permiso: null,
-        accion: null,
+        permisoAny: CFG_COMPLEMENTARIO_PERMISOS,
+        accion: 'LISTAR',
         menu: {
             label: 'Datos Complementarios',
             module: 'CFG',

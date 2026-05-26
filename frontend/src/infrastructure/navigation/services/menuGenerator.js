@@ -38,6 +38,7 @@ const buildMenuHierarchy = (routes) => {
             ...(route.element && { path: route.path }),
             order: route.menu.order || 999, // Orden por defecto
             ...(route.permiso && { permiso: route.permiso }),
+            ...(route.permisoAny?.length && { permisoAny: route.permisoAny }),
             ...(route.accion != null && { accion: route.accion }),
             children: [],
         };
