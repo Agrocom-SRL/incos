@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { Spin } from 'antd';
 import { useAuth } from '@application-auth';
+import AccessDeniedRedirect from '@navigation/components/AccessDeniedRedirect.jsx';
 
 export function PrivateRoute({ permiso = null, accion = 'LISTAR', children = null }) {
   const { isAuthenticated, isLoading, hasPermiso } = useAuth();
@@ -25,7 +26,11 @@ export function PrivateRoute({ permiso = null, accion = 'LISTAR', children = nul
   }
 
   if (permiso && !hasPermiso(permiso, accion ?? 'LISTAR')) {
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <AccessDeniedRedirect
+        description="No tenés permiso para ver esta página."
+      />
+    );
   }
 
   if (children) {

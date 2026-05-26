@@ -25,7 +25,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as menuGenerator from '@navigation-services/menuGenerator';
-import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
+import { getEffectiveRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
 import MenuItem from '@atoms/MenuItem';
 import { useAuthContext } from '@application-auth';
 
@@ -132,7 +132,7 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
      */
     const handleDashboardClick = (clickedKey, info) => {
         setOpenKeys([]);
-        const route = getRouteFromMenuKey(clickedKey);
+        const route = getEffectiveRouteFromMenuKey(clickedKey, hasPermisoStable);
         if (route) {
             navigate(route);
         }
@@ -161,7 +161,7 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
      * @param {Object} info - Información del click
      */
     const navigateToMenuItem = (clickedKey, info) => {
-        const route = getRouteFromMenuKey(clickedKey);
+        const route = getEffectiveRouteFromMenuKey(clickedKey, hasPermisoStable);
         if (route) {
             navigate(route);
         }

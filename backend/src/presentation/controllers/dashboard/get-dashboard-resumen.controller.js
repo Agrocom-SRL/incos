@@ -2,7 +2,7 @@
  * GET /api/v1/dashboard/resumen
  * Datos agregados para la página principal (actividades, últimos docentes/estudiantes, conteos).
  *
- * Query opcional: limite_actividades (default 12), limite_ultimos_docentes, limite_ultimos_estudiantes (default 10).
+ * Query opcional: limite_actividades (12), limite_ultimos_docentes (10), limite_ultimos_estudiantes (10), limite_carreras (10).
  */
 export class GetDashboardResumenController {
   /**
@@ -31,11 +31,16 @@ export class GetDashboardResumenController {
       if (Number.isNaN(limiteUltimosEstudiantes) || limiteUltimosEstudiantes < 1) {
         limiteUltimosEstudiantes = 10;
       }
+      let limiteCarreras = parseInt(req.query.limite_carreras, 10);
+      if (Number.isNaN(limiteCarreras) || limiteCarreras < 1) {
+        limiteCarreras = 10;
+      }
 
       const data = await this.getDashboardResumenUseCase.execute({
         actividadesLimit: limiteActividades,
         ultimosDocentesLimit: limiteUltimosDocentes,
         ultimosEstudiantesLimit: limiteUltimosEstudiantes,
+        carrerasLimit: limiteCarreras,
       });
 
       return this.responseFormatter.retrieved(res, data, 'resumen del dashboard', 'actual', req);

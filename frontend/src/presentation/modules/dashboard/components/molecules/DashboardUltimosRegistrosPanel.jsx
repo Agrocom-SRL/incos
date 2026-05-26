@@ -8,6 +8,8 @@ import DashboardUltimosPersonasBlock from './DashboardUltimosPersonasBlock';
 const DashboardUltimosRegistrosPanel = ({
     ultimosDocentes,
     ultimosEstudiantes,
+    detalleDocentesInteractivo = true,
+    detalleEstudiantesInteractivo = true,
     onVerTodosDocentes,
     onVerTodosEstudiantes,
     onOverflowDocentes,
@@ -27,6 +29,7 @@ const DashboardUltimosRegistrosPanel = ({
                 <DashboardUltimosPersonasBlock
                     title="Últimos docentes"
                     people={ultimosDocentes}
+                    detalleInteractivo={detalleDocentesInteractivo}
                     onVerTodos={onVerTodosDocentes}
                     overflowTooltip="Ver más docentes"
                     onOverflowClick={onOverflowDocentes}
@@ -34,6 +37,7 @@ const DashboardUltimosRegistrosPanel = ({
                 <DashboardUltimosPersonasBlock
                     title="Últimos estudiantes"
                     people={ultimosEstudiantes}
+                    detalleInteractivo={detalleEstudiantesInteractivo}
                     onVerTodos={onVerTodosEstudiantes}
                     overflowTooltip="Ver más estudiantes"
                     onOverflowClick={onOverflowEstudiantes}

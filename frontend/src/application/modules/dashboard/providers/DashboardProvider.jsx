@@ -10,6 +10,9 @@ import { useDashboardData } from '@application-dashboard/hooks/useDashboardData'
 
 export const DashboardProvider = ({ children }) => {
   const {
+    puedeVerDetalleCarreras,
+    puedeVerDetalleDocentes,
+    puedeVerDetalleEstudiantes,
     carreras,
     ultimosDocentes,
     ultimosEstudiantes,
@@ -22,6 +25,9 @@ export const DashboardProvider = ({ children }) => {
 
   const value = useMemo(
     () => ({
+      puedeVerDetalleCarreras,
+      puedeVerDetalleDocentes,
+      puedeVerDetalleEstudiantes,
       carreras,
       ultimosDocentes,
       ultimosEstudiantes,
@@ -31,7 +37,19 @@ export const DashboardProvider = ({ children }) => {
       error,
       refetch,
     }),
-    [carreras, ultimosDocentes, ultimosEstudiantes, actividades, stats, loading, error, refetch]
+    [
+      puedeVerDetalleCarreras,
+      puedeVerDetalleDocentes,
+      puedeVerDetalleEstudiantes,
+      carreras,
+      ultimosDocentes,
+      ultimosEstudiantes,
+      actividades,
+      stats,
+      loading,
+      error,
+      refetch,
+    ]
   );
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;

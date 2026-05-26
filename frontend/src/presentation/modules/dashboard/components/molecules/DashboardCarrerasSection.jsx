@@ -7,7 +7,12 @@ const { Title } = Typography;
 /**
  * Molécula: panel “Nuestras carreras” con grid de tarjetas.
  */
-const DashboardCarrerasSection = ({ carreras, onVerTodas, onCarreraClick }) => {
+const DashboardCarrerasSection = ({
+    carreras,
+    onVerTodas,
+    onCarreraClick,
+    detalleInteractivo = true,
+}) => {
     return (
         <Card
             style={{
@@ -42,11 +47,20 @@ const DashboardCarrerasSection = ({ carreras, onVerTodas, onCarreraClick }) => {
                         Ver todas
                     </Typography.Link>
                 </Flex>
-                <Flex gap={allSpacing.marginLG} wrap="wrap">
-                    {carreras.map((carrera) => (
-                        <DashboardCarreraCard key={carrera.id} carrera={carrera} onSelect={onCarreraClick} />
-                    ))}
-                </Flex>
+                {carreras.length === 0 ? (
+                    <Typography.Text type="secondary">No hay carreras activas para mostrar.</Typography.Text>
+                ) : (
+                    <Flex gap={allSpacing.marginLG} wrap="wrap">
+                        {carreras.map((carrera) => (
+                            <DashboardCarreraCard
+                                key={carrera.id}
+                                carrera={carrera}
+                                interactive={detalleInteractivo}
+                                onSelect={onCarreraClick}
+                            />
+                        ))}
+                    </Flex>
+                )}
             </Flex>
         </Card>
     );

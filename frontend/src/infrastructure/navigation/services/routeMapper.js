@@ -30,6 +30,7 @@
 
 import { matchPath } from 'react-router-dom';
 import { getAllRoutes } from '@routes';
+import { resolveEffectiveMenuPath } from '../utils/resolveModuleLanding.js';
 
 /** Resaltar "Lista de Aportes" en rutas /pagos/* compartidas con el flujo de matrícula (vía location.state). */
 export const MENU_SIDEBAR_KEY_MAT_APORTES = 'MAT-APO-LISTA';
@@ -126,6 +127,22 @@ export const generateMenuKeyToRouteMap = () => {
 export const getRouteFromMenuKey = (menuKey) => {
     const map = generateMenuKeyToRouteMap();
     return map[menuKey] || null;
+};
+
+/**
+ * Ruta efectiva al navegar desde el sidebar: aplica menu.landingStack si existe.
+ *
+ * @param {string} menuKey
+ * @param {(codigo: string, accion: string) => boolean} hasPermiso
+ * @returns {string|null}
+ */
+export const getEffectiveRouteFromMenuKey = (menuKey, hasPermiso) => {
+    const allRoutes = getAllRoutes();
+    const route = allRoutes.find((r) => r.key === menuKey);
+    const entryPath = route?.path ?? getRouteFromMenuKey(menuKey);
+    if (!entryPath) return null;
+
+    return resolveEffectiveMenuPath(entryPath, route?.menu?.landingStack, hasPermiso);
 };
 
 /**

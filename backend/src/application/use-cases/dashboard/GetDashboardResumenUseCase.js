@@ -17,17 +17,20 @@ export class GetDashboardResumenUseCase {
    * @param {number} [options.actividadesLimit=12]
    * @param {number} [options.ultimosDocentesLimit=10]
    * @param {number} [options.ultimosEstudiantesLimit=10]
+   * @param {number} [options.carrerasLimit=10]
    */
   async execute(options = {}) {
     const actividadesLimit = options.actividadesLimit ?? 12;
     const ultimosDocentesLimit = options.ultimosDocentesLimit ?? 10;
     const ultimosEstudiantesLimit = options.ultimosEstudiantesLimit ?? 10;
+    const carrerasLimit = options.carrerasLimit ?? 10;
 
-    const [actividades, stats, ultimosDocentes, ultimosEstudiantes] = await Promise.all([
+    const [actividades, stats, ultimosDocentes, ultimosEstudiantes, carreras] = await Promise.all([
       this.dashboardRepository.findActividadesRecientes(actividadesLimit),
       this.dashboardRepository.countEstudiantesRegistradosHoyYMes(),
       this.dashboardRepository.findDocentesRecientes(ultimosDocentesLimit),
       this.dashboardRepository.findEstudiantesRecientes(ultimosEstudiantesLimit),
+      this.dashboardRepository.findCarrerasDestacadas(carrerasLimit),
     ]);
 
     this.logger.info('[Dashboard] Resumen generado', {
@@ -44,6 +47,7 @@ export class GetDashboardResumenUseCase {
       },
       ultimosDocentes,
       ultimosEstudiantes,
+      carreras,
     };
   }
 }

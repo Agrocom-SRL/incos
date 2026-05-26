@@ -1,5 +1,5 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-05-07
+## Ultima actualizacion: 2026-05-26
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
@@ -34,6 +34,87 @@ Todo alta/baja/modificacion (ABM) o nueva pantalla de un modulo debe cumplir est
    - no mostrar CTA de accion si el permiso/accion no existe o no esta asignado al rol.
 5. **Trazabilidad de navegacion**
    - cuando exista flujo multi-pantalla, propagar `returnListPath` y ruta de origen (`gestionReturnPath` o equivalente).
+
+## Entradas por permisos (patron global de aterrizaje)
+
+Cuando **un mismo item de menu** (`permiso` de **ingreso**, accion **LISTAR**) agrupa **varias pantallas** con permisos distintos (p. ej. coordinacion admin vs mis cursos del docente), la eleccion de pantalla **no depende del codigo de rol** (`DOCENTE`, `RECTOR`, …) sino de **que permisos hijos tiene el usuario** segun seed **55** y catalogo **56**.
+
+### Capas del modelo
+
+| Capa | Seed / artefacto | Responsabilidad |
+|------|------------------|-----------------|
+| Menu lateral | permiso **ingreso** (ej. id 15 `academico.calificacion.ingreso`) | Visibilidad del item en sidebar (`filterMenuByPermiso` + accion LISTAR) |
+| Pantallas hijas | permisos 16–24, rutas hijas en `routes.jsx` | Cada pantalla con `permiso` + `accion`; `PrivateRoute` bloquea URL directa |
+| Aterrizaje | `menu.landingStack` en la ruta de ingreso | Orden de preferencia al abrir el modulo (click menu o URL de ingreso) |
+
+### Esquema `menu.landingStack`
+
+Declarar en la ruta que tiene `menu` (fuente unica en `routes.jsx`):
+
+```javascript
+menu: {
+  label: 'Calificaciones',
+  module: 'ACA',
+  parent: 'ACA',
+  order: 1,
+  labelByRole: { ESTUDIANTE: 'Mis calificaciones' }, // solo etiqueta visible, no routing
+  landingStack: [
+    { permiso: 'academico.calificacion.coordinacion', accion: 'LISTAR' },
+    { permiso: 'academico.calificacion.mis_cursos', accion: 'LISTAR', redirectTo: '/academico/calificaciones/mis-cursos' },
+  ],
+},
+```
+
+Reglas:
+
+1. **Primera entrada cuyo par permiso+accion el usuario cumple gana** (misma regla en sidebar y en URL de ingreso).
+2. Sin `redirectTo` → render **inline** (vista en la ruta de ingreso).
+3. Con `redirectTo` → **Navigate** a la ruta hija (docente, estudiante, vista propia, etc.).
+4. **`labelByRole`** solo cambia texto del menu; **nunca** sustituye permisos ni paths.
+5. Controles de retorno (boton volver) usan **`hasPermiso(..., 'LISTAR')`** del permiso de coordinacion/admin, no comparacion de rol.
+
+### Componentes frontend (reutilizables)
+
+| Pieza | Ubicacion | Uso |
+|-------|-----------|-----|
+| `resolveModuleLanding` | `infrastructure/navigation/utils/resolveModuleLanding.js` | Logica pura: stack + hasPermiso → inline \| redirect |
+| `resolveEffectiveMenuPath` | mismo archivo | Path al hacer clic en sidebar |
+| `getEffectiveRouteFromMenuKey` | `infrastructure/navigation/services/routeMapper.js` | Lee `landingStack` del registry por `menuKey` |
+| `ModuleEntryConnector` | `infrastructure/navigation/components/ModuleEntryConnector.jsx` | Conector generico en `element` de la ruta de ingreso |
+| `AccessDeniedRedirect` + `notifyAccessDenied` | `infrastructure/navigation/components/AccessDeniedRedirect.jsx` | Notificacion Ant Design (`title` + `description`) y redirect; usado por `ModuleEntryConnector` y `PrivateRoute` |
+| Conector del modulo | ej. `CalificacionesEntradaConnector` | Wrapper minimo: `menuKey` + `inlineElement` (pagina admin/coordinacion) |
+
+**Dashboard (vista previa vs detalle):**
+
+| Dato en panel | API | Permiso middleware | Detalle / listado ABM |
+|---|---|---|---|
+| Carreras, docentes, estudiantes, actividades, conteos | `GET /dashboard/resumen` | `sistema.catalogo.referencia` + LISTAR (105) | Requiere permiso del modulo (`cfg.academico.carreras`, `docentes.ver`, `matricula.admision.ver`, etc.) |
+| ABM carreras | `GET /carreras` | `cfg.academico.carreras` + LISTAR | No usar en dashboard; solo administracion |
+
+Frontend: `useDashboardData` carga solo `/dashboard/resumen`. `useDashboardGuardedNavigate` muestra notificacion de acceso denegado si el usuario pulsa "Ver todas", tarjeta o actividad sin permiso de detalle (misma notificacion que `PrivateRoute`).
+
+Ejemplo conector del modulo:
+
+```jsx
+import ModuleEntryConnector from '@navigation/components/ModuleEntryConnector.jsx';
+import CoordinacionPage from '../pages/CoordinacionPage.jsx';
+
+const CalificacionesEntradaConnector = () => (
+  <ModuleEntryConnector menuKey="ACA-CAL" inlineElement={<CoordinacionPage />} />
+);
+```
+
+### Checklist al agregar un modulo con vistas distintas por perfil
+
+1. **Seed 54**: permiso de **ingreso** (menu) + permisos por pantalla hija (IDs fijos).
+2. **Seed 56**: acciones validas por permiso.
+3. **Seed 55**: asignar a cada rol solo los permisos que le corresponden (docente **sin** coordinacion si no debe ver listado global).
+4. **`routes.jsx`**: ruta de ingreso con `permiso` ingreso; hijas con permisos propios; `landingStack` ordenado de mas administrativo a mas restringido/propio.
+5. **`ModuleEntryConnector`** + pagina inline para la vista admin/coordinacion.
+6. **UI**: ocultar acciones admin con `PermisoGuard` / `ActionButton`, no con `if (rol === 'DOCENTE')`.
+7. **Documentar** fila en esta matriz (permisos, landingStack, roles en seed 55).
+
+Referencia implementada: **ACA · Calificaciones** (`ACA-CAL`, seeds 15–24, rol DOCENTE id 7 en seed 55).
 
 ## Resumen de roles
 
@@ -236,13 +317,15 @@ Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 Raíz `/academico`: dashboard pendiente (`UnderConstruction`).
 
 ### ACA - Calificaciones (detalle rutas)
-Permisos: `academico.calificacion.*` — menú: `/academico/calificaciones` (IDs 15–20 operación cuaderno; 102–105 coordinación)
+Permisos: `academico.calificacion.*` — menu: `/academico/calificaciones` (IDs 15–24)
+
+**Aterrizaje (`landingStack` en `ACA-CAL`):** coordinacion (16) inline → mis cursos (17) redirect. Rol DOCENTE (7) solo tiene 15+17+18+21–23 en seed 55 → entra directo a mis cursos. Roles con 16 (RECTOR, DIR_ACADEMICO, SEC_ACADEMICA) ven coordinacion.
 
 | Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
 |---|---|---|---|
-| `academico.calificacion.ingreso` | LISTAR | Ítem menú Calificaciones | REC, DIRA, SECA, DOC, EST |
-| `academico.calificacion.coordinacion` | LISTAR | Vista general docentes | REC, DIRA, SECA |
-| `academico.calificacion.mis_cursos` | LISTAR, DETALLE | Mis cursos del docente | REC, DIRA, SECA, DOC, EST (lectura) |
+| `academico.calificacion.ingreso` | LISTAR | Item menu Calificaciones | REC, DIRA, SECA, DOC, EST |
+| `academico.calificacion.coordinacion` | LISTAR | Vista general docentes (inline en ingreso) | REC, DIRA, SECA |
+| `academico.calificacion.mis_cursos` | LISTAR, DETALLE | Mis cursos del docente (redirect desde ingreso si no hay 16) | REC, DIRA, SECA, DOC |
 | `academico.calificacion.cuaderno` | LISTAR | Cuaderno de notas | REC, DIRA, SECA, DOC |
 | `academico.calificacion.politica` | LISTAR, EDITAR | `/academico/calificaciones/politica` | REC, DIRA, SECA |
 | `academico.calificacion.gestion_bimestres` | LISTAR, EDITAR | `/academico/calificaciones/gestion-bimestres` | REC, DIRA, SECA |

@@ -1,6 +1,7 @@
 /**
  * Hook: useDashboardData
- * Carga carreras (catálogo) y resumen del dashboard desde el API.
+ * Carga el resumen del dashboard (catálogo referencia — permiso 105).
+ * Carreras, docentes y estudiantes son solo lectura en panel; el detalle exige permisos de módulo.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -8,6 +9,12 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/es';
 import { useCasesFactory } from '@container';
+import { useAuth } from '@application-auth';
+
+/** Permiso seed 54 id 78 — ABM / listado administrativo de carreras. */
+export const PERMISO_CARRERAS_DETALLE = 'cfg.academico.carreras';
+export const PERMISO_DOCENTES_DETALLE = 'docentes.ver';
+export const PERMISO_ESTUDIANTES_DETALLE = 'matricula.admision.ver';
 
 dayjs.extend(relativeTime);
 dayjs.locale('es');
@@ -25,40 +32,23 @@ const mapCarreraToDashboard = (carreraBackend) => {
   if (!carreraBackend) {
     return null;
   }
+  const imagenRuta =
+    carreraBackend.imagenRuta ??
+    carreraBackend.imagen_ruta ??
+    null;
   const imageUrl =
     carreraBackend.imagenUrl ||
     carreraBackend.imageUrl ||
-    (carreraBackend.imagenRuta ? buildImageUrl(carreraBackend.imagenRuta) : null);
+    (imagenRuta ? buildImageUrl(imagenRuta) : null);
 
   return {
     id: carreraBackend.id,
     image: imageUrl,
     label: carreraBackend.nombre || carreraBackend.name || null,
     codigo: carreraBackend.codigo || null,
-    colorHex: carreraBackend.colorHex || carreraBackend.color_hex || '#1890ff',
+    colorHex:
+      carreraBackend.colorHex || carreraBackend.color_hex || '#1890ff',
   };
-};
-
-const mapCarrerasToDashboard = (carrerasBackend) => {
-  if (!carrerasBackend) {
-    return [];
-  }
-  if (typeof carrerasBackend === 'object' && !Array.isArray(carrerasBackend)) {
-    if (carrerasBackend.carreras && Array.isArray(carrerasBackend.carreras)) {
-      return carrerasBackend.carreras.map(mapCarreraToDashboard).filter(Boolean);
-    }
-    if (carrerasBackend.data && Array.isArray(carrerasBackend.data)) {
-      return carrerasBackend.data.map(mapCarreraToDashboard).filter(Boolean);
-    }
-    if (carrerasBackend.items && Array.isArray(carrerasBackend.items)) {
-      return carrerasBackend.items.map(mapCarreraToDashboard).filter(Boolean);
-    }
-    return [];
-  }
-  if (Array.isArray(carrerasBackend)) {
-    return carrerasBackend.map(mapCarreraToDashboard).filter(Boolean);
-  }
-  return [];
 };
 
 const mapActividad = (row) => {
@@ -95,6 +85,11 @@ const mapEstudiante = (row) => {
 };
 
 export const useDashboardData = () => {
+  const { hasPermiso } = useAuth();
+  const puedeVerDetalleCarreras = hasPermiso(PERMISO_CARRERAS_DETALLE, 'LISTAR');
+  const puedeVerDetalleDocentes = hasPermiso(PERMISO_DOCENTES_DETALLE, 'LISTAR');
+  const puedeVerDetalleEstudiantes = hasPermiso(PERMISO_ESTUDIANTES_DETALLE, 'LISTAR');
+
   const [carreras, setCarreras] = useState([]);
   const [ultimosDocentes, setUltimosDocentes] = useState([]);
   const [ultimosEstudiantes, setUltimosEstudiantes] = useState([]);
@@ -113,35 +108,34 @@ export const useDashboardData = () => {
     }
 
     try {
-      const obtenerTodasCarrerasUseCase = useCasesFactory.obtenerTodasCarreras();
       const obtenerDashboardResumen = useCasesFactory.obtenerDashboardResumen();
-
-      const [carrerasResult, resumenResult] = await Promise.all([
-        obtenerTodasCarrerasUseCase.ejecutar({
-          params: { pagina: 1, limite: 10 },
-        }),
-        obtenerDashboardResumen.ejecutar({
-          limite_actividades: 12,
-          limite_ultimos_docentes: 10,
-          limite_ultimos_estudiantes: 10,
-        }),
-      ]);
-
-      if (carrerasResult.success) {
-        setCarreras(mapCarrerasToDashboard(carrerasResult.data));
-      } else {
-        setCarreras([]);
-      }
+      const resumenResult = await obtenerDashboardResumen.ejecutar({
+        limite_actividades: 12,
+        limite_ultimos_docentes: 10,
+        limite_ultimos_estudiantes: 10,
+        limite_carreras: 10,
+      });
 
       if (resumenResult.success && resumenResult.data) {
         const d = resumenResult.data;
-        const acts = Array.isArray(d.actividades) ? d.actividades.map(mapActividad).filter(Boolean) : [];
+        const acts = Array.isArray(d.actividades)
+          ? d.actividades.map(mapActividad).filter(Boolean)
+          : [];
         setActividades(acts);
+        setCarreras(
+          Array.isArray(d.carreras)
+            ? d.carreras.map(mapCarreraToDashboard).filter(Boolean)
+            : [],
+        );
         setUltimosDocentes(
-          Array.isArray(d.ultimosDocentes) ? d.ultimosDocentes.map(mapDocente).filter(Boolean) : []
+          Array.isArray(d.ultimosDocentes)
+            ? d.ultimosDocentes.map(mapDocente).filter(Boolean)
+            : [],
         );
         setUltimosEstudiantes(
-          Array.isArray(d.ultimosEstudiantes) ? d.ultimosEstudiantes.map(mapEstudiante).filter(Boolean) : []
+          Array.isArray(d.ultimosEstudiantes)
+            ? d.ultimosEstudiantes.map(mapEstudiante).filter(Boolean)
+            : [],
         );
         const s = d.stats || {};
         setStats({
@@ -150,11 +144,16 @@ export const useDashboardData = () => {
         });
       } else {
         setActividades([]);
+        setCarreras([]);
         setUltimosDocentes([]);
         setUltimosEstudiantes([]);
         setStats({ todayOrders: 0, monthOrders: 0 });
         if (resumenResult.error) {
-          setError(typeof resumenResult.error === 'string' ? resumenResult.error : resumenResult.error?.message);
+          setError(
+            typeof resumenResult.error === 'string'
+              ? resumenResult.error
+              : resumenResult.error?.message,
+          );
         }
       }
     } catch (err) {
@@ -176,6 +175,9 @@ export const useDashboardData = () => {
   }, [fetchDashboardData]);
 
   return {
+    puedeVerDetalleCarreras,
+    puedeVerDetalleDocentes,
+    puedeVerDetalleEstudiantes,
     carreras,
     ultimosDocentes,
     ultimosEstudiantes,

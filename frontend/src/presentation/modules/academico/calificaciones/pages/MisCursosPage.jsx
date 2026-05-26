@@ -12,6 +12,7 @@ import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useMisCursosCalificaciones } from '@application-academico/calificaciones/hooks/useMisCursosCalificaciones.js';
+import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import { CALIFICACIONES_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import CursoCard from '../components/CursoCard.jsx';
 import CalificacionesCursosSkeleton from '../components/CalificacionesCursosSkeleton.jsx';
@@ -23,7 +24,11 @@ const { Text } = Typography;
 
 const MisCursosPage = () => {
   const navigate = useNavigate();
-  const { refreshMe } = useAuth();
+  const { refreshMe, hasPermiso } = useAuth();
+  const puedeVolverCoordinacion = hasPermiso(
+    CALIFICACIONES_PERMISOS.coordinacion,
+    'LISTAR',
+  );
 
   useEffect(() => {
     refreshMe();
@@ -48,11 +53,12 @@ const MisCursosPage = () => {
     navigate(CALIFICACIONES_PATH);
   }, [navigate]);
 
-  const headerActions = (
-    <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end" align="center">
-      <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />
-    </Flex>
-  );
+  const headerActions =
+    esVistaCoordinacion || puedeVolverCoordinacion ? (
+      <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end" align="center">
+        <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />
+      </Flex>
+    ) : null;
 
   const header = (
     <PageHeader title={titulo} breadcrumbItems={breadcrumbItems} actions={headerActions} />

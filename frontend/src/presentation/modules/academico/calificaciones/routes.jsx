@@ -13,6 +13,7 @@ import {
   MIS_CURSOS_PATH,
   notasCursoPath,
 } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 
 const PoliticaInstitucionalConnector = lazy(
   () => import('./connectors/PoliticaInstitucionalConnector.jsx'),
@@ -162,6 +163,21 @@ export const calificacionesRoutes = [
       parent: 'ACA',
       order: 1,
       labelByRole: { ESTUDIANTE: 'Mis calificaciones' },
+      /**
+       * Entrada por permisos (patrón global): primera coincidencia gana.
+       * Coordinación → vista admin; docente sin 16 → redirect mis cursos.
+       */
+      landingStack: [
+        {
+          permiso: CALIFICACIONES_PERMISOS.coordinacion,
+          accion: 'LISTAR',
+        },
+        {
+          permiso: CALIFICACIONES_PERMISOS.misCursos,
+          accion: 'LISTAR',
+          redirectTo: MIS_CURSOS_PATH,
+        },
+      ],
     },
   },
 ];

@@ -93,6 +93,34 @@ export class DashboardRepository {
    * @param {number} limit
    * @returns {Promise<Array<Record<string, unknown>>>}
    */
+  /**
+   * Carreras activas para vista previa del panel (solo lectura; sin ABM).
+   * Expuesto vía GET /dashboard/resumen bajo `sistema.catalogo.referencia`.
+   *
+   * @param {number} limit
+   * @returns {Promise<Array<Record<string, unknown>>>}
+   */
+  async findCarrerasDestacadas(limit = 10) {
+    const lim = Math.min(20, Math.max(1, parseInt(limit, 10) || 10));
+    const query = `
+      SELECT
+        id,
+        codigo,
+        nombre,
+        color_hex,
+        imagen_ruta
+      FROM carreras
+      WHERE deleted_at IS NULL
+        AND activo = TRUE
+      ORDER BY nombre ASC
+      LIMIT ?
+    `;
+    return sequelize.query(query, {
+      replacements: [lim],
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
+
   async findEstudiantesRecientes(limit = 10) {
     const lim = Math.min(30, Math.max(1, parseInt(limit, 10) || 10));
     const query = `

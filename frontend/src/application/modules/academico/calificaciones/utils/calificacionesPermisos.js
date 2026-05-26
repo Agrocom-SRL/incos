@@ -1,9 +1,8 @@
 /**
  * Códigos de permiso · Calificaciones (seed 54, IDs 15-24).
- * Un permiso por pantalla en routes.jsx (grupo_ui único en grilla Seguridad).
+ * Aterrizaje del menú: menu.landingStack en routes ACA-CAL (patrón global ModuleEntryConnector).
  *
- * Rol DOCENTE (7): 15 LISTAR, 17 LISTAR+DETALLE, 18 LISTAR, 21-24 CREAR/EDITAR (sin 16 ni 20).
- * Coordinación (16, 19, 20): RECTOR, DIR_ACADEMICO, SEC_ACADEMICA.
+ * Rol DOCENTE (7): 15, 17–18, 21–23 (sin 16 coordinación ni 20 gestión bimestres) — ver seed 55.
  */
 
 export const CALIFICACIONES_PERMISOS = {

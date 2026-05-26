@@ -6,21 +6,21 @@ const { Text } = Typography;
 /**
  * Molécula: tarjeta individual de carrera (dashboard).
  */
-const DashboardCarreraCard = ({ carrera, onSelect }) => {
+const DashboardCarreraCard = ({ carrera, onSelect, interactive = true }) => {
     const colorHex = carrera.colorHex || '#1890ff';
     const hasImage = Boolean(carrera.image);
 
     return (
         <Card
-            hoverable
+            hoverable={interactive}
             onClick={onSelect}
             style={{
                 backgroundColor: componentConfig.Card.colorBgContainer,
                 borderRadius: `${componentConfig.Card.borderRadius}px`,
                 boxShadow: componentConfig.Card.boxShadow,
                 border: `1px solid ${componentConfig.Card.colorBorder}`,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
+                cursor: onSelect ? 'pointer' : 'default',
+                transition: interactive ? 'all 0.3s ease' : undefined,
                 width: '100%',
                 maxWidth: '320px',
                 flex: '1 1 300px',
