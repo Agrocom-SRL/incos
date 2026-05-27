@@ -35,6 +35,10 @@ router.get('/', (req, res) => {
             // Módulo: Configuración
             carreras: '/api/v1/carreras',
             materias: '/api/v1/materias',
+            planesEstudios: '/api/v1/planes-estudios',
+            periodos: '/api/v1/periodos',
+            asignaturasPlan: '/api/v1/asignaturas-plan',
+            prerrequisitos: '/api/v1/prerrequisitos',
             // Módulo: Académico
             paralelos: '/api/v1/paralelos',
             cursos: '/api/v1/cursos',
@@ -101,6 +105,10 @@ router.use('/becas-descuentos', container.resolve(ESTUDIANTES_TOKENS.becasDescue
 // ============================================
 router.use('/carreras', container.resolve(CONFIGURACION_TOKENS.carrerasRouter));
 router.use('/materias', container.resolve(CONFIGURACION_TOKENS.materiasRouter));
+router.use('/planes-estudios', container.resolve(CONFIGURACION_TOKENS.planesEstudiosRouter));
+router.use('/periodos', container.resolve(CONFIGURACION_TOKENS.periodosRouter));
+router.use('/asignaturas-plan', container.resolve(CONFIGURACION_TOKENS.asignaturasPlanRouter));
+router.use('/prerrequisitos', container.resolve(CONFIGURACION_TOKENS.prerrequisitosRouter));
 
 // ============================================
 // 3. MÓDULO: ACADÉMICO

@@ -7,4 +7,8 @@
 
 export { CareerMapper } from './CareerMapper.js';
 export { SubjectMapper } from './SubjectMapper.js';
+export { StudyPlanMapper } from './StudyPlanMapper.js';
+export { PeriodMapper } from './PeriodMapper.js';
+export { PlanSubjectMapper } from './PlanSubjectMapper.js';
+export { PrerequisiteMapper } from './PrerequisiteMapper.js';
 

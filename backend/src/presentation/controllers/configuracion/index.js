@@ -2,15 +2,45 @@
 // CONTROLLERS IMPLEMENTADOS - CARRERAS
 // ============================================
 export { ListCarrerasController } from './carreras/list.controller.js';
-// TODO: Agregar otros controllers cuando se implementen sus endpoints
-// export { CreateCarreraController } from './carreras/create.controller.js';
-// export { GetCarreraByIdController } from './carreras/get-by-id.controller.js';
-// export { UpdateCarreraController } from './carreras/update.controller.js';
-// export { DeleteCarreraController } from './carreras/delete.controller.js';
+export { CreateCarreraController } from './carreras/create.controller.js';
+export { GetCarreraByIdController } from './carreras/get-by-id.controller.js';
+export { UpdateCarreraController } from './carreras/update.controller.js';
+export { DeleteCarreraController } from './carreras/delete.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - MATERIAS
 // ============================================
 export { ListMateriasController } from './materias/list.controller.js';
-// TODO: Agregar otros controllers cuando se implementen sus endpoints
+export { CreateMateriaController } from './materias/create.controller.js';
+export { GetMateriaByIdController } from './materias/get-by-id.controller.js';
+export { UpdateMateriaController } from './materias/update.controller.js';
+export { DeleteMateriaController } from './materias/delete.controller.js';
+
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - PLANES DE ESTUDIO (Sprint 1 CFG)
+// ============================================
+export { ListPlanesEstudiosController } from './planes-estudios/list.controller.js';
+export { GetPlanEstudiosByIdController } from './planes-estudios/get-by-id.controller.js';
+export { CreatePlanEstudiosController } from './planes-estudios/create.controller.js';
+export { UpdatePlanEstudiosController } from './planes-estudios/update.controller.js';
+export { MarcarPlanEstudiosVigenteController } from './planes-estudios/marcar-vigente.controller.js';
+export {
+    ListPeriodosByPlanController,
+    CreatePeriodoController,
+    UpdatePeriodoController,
+    DeletePeriodoController,
+} from './planes-estudios/periodos.controllers.js';
+export {
+    ListAsignaturasPlanByPlanController,
+    ListAsignaturasPlanByPeriodoController,
+    CreateAsignaturaPlanController,
+    UpdateAsignaturaPlanController,
+    DeleteAsignaturaPlanController,
+} from './planes-estudios/asignaturas.controllers.js';
+export {
+    ListPrerrequisitosByAsignaturaController,
+    ListEsPrerrequisitoDeController,
+    CreatePrerrequisitoController,
+    DeletePrerrequisitoController,
+} from './planes-estudios/prerrequisitos.controllers.js';
 

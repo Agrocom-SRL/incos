@@ -1,7 +1,11 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
-import { listValidator } from '../validators/common/index.js';
+import { idValidator, listValidator } from '../validators/common/index.js';
+import {
+    createCarreraValidator,
+    updateCarreraValidator,
+} from '../validators/configuracion/carreras.validator.js';
 
 /**
  * Construye el router del módulo Carreras
@@ -23,7 +27,11 @@ import { listValidator } from '../validators/common/index.js';
 export function buildCarrerasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const listarCarreras = [authenticate, verificarPermiso('cfg.academico.carreras', 'LISTAR')];
+    const listarCarreras = [authenticate, verificarPermiso('configuracion.carrera', 'LISTAR')];
+    const detalleCarreras = [authenticate, verificarPermiso('configuracion.carrera', 'DETALLE')];
+    const crearCarreras = [authenticate, verificarPermiso('configuracion.carrera', 'CREAR')];
+    const editarCarreras = [authenticate, verificarPermiso('configuracion.carrera', 'EDITAR')];
+    const eliminarCarreras = [authenticate, verificarPermiso('configuracion.carrera', 'ELIMINAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -48,39 +56,38 @@ export function buildCarrerasRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.listCarrerasController.handle(req, res, next)
     );
 
-    // ============================================
-    // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
-    // ============================================
+    router.post(
+        '/',
+        ...crearCarreras,
+        createCarreraValidator,
+        validateRequest,
+        (req, res, next) => controllers.createCarreraController.handle(req, res, next)
+    );
 
-    // POST / - Crear carrera
-    // router.post(
-    //     '/',
-    //     createCarreraValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.createCarreraController.handle(req, res, next)
-    // );
+    router.get(
+        '/:id',
+        ...detalleCarreras,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getCarreraByIdController.handle(req, res, next)
+    );
 
-    // GET /:id - Obtener carrera por ID
-    // router.get(
-    //     '/:id',
-    //     getCarreraByIdValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.getCarreraByIdController.handle(req, res, next)
-    // );
+    router.put(
+        '/:id',
+        ...editarCarreras,
+        idValidator,
+        updateCarreraValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateCarreraController.handle(req, res, next)
+    );
 
-    // PUT /:id - Actualizar carrera
-    // router.put(
-    //     '/:id',
-    //     updateCarreraValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.updateCarreraController.handle(req, res, next)
-    // );
-
-    // DELETE /:id - Eliminar carrera (soft delete)
-    // router.delete(
-    //     '/:id',
-    //     (req, res, next) => controllers.deleteCarreraController.handle(req, res, next)
-    // );
+    router.delete(
+        '/:id',
+        ...eliminarCarreras,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteCarreraController.handle(req, res, next)
+    );
 
     return router;
 }
