@@ -137,6 +137,14 @@ export const ESTUDIANTES_BECAS_ENDPOINTS = {
 // Académico
 export const CARRERAS_ENDPOINTS = createCRUDEndpoints('/carreras');
 export const MATERIAS_ENDPOINTS = createCRUDEndpoints('/materias');
+export const PLANES_ESTUDIOS_ENDPOINTS = {
+  ...createCRUDEndpoints('/planes-estudios'),
+  MATRIZ: (id) => `${API_BASE}/planes-estudios/${id}/matriz`,
+  VALIDAR: (id) => `${API_BASE}/planes-estudios/${id}/validar`,
+  MARCAR_VIGENTE: (id) => `${API_BASE}/planes-estudios/${id}/marcar-vigente`,
+  PERIODOS: (planId) => `${API_BASE}/planes-estudios/${planId}/periodos`,
+  ASIGNATURAS: (planId) => `${API_BASE}/planes-estudios/${planId}/asignaturas`,
+};
 
 // Complementario
 export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');

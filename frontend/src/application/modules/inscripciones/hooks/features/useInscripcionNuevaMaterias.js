@@ -22,7 +22,7 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { useMateriasApi } from '@application-configuracion/academico/materias/hooks/useMateriasApi';
+import { useMateriasApi } from '@application-configuracion/academico/hooks';
 
 /**
  * Hook para cargar y seleccionar materias en el contexto de inscripción nueva

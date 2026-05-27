@@ -144,7 +144,8 @@ export const menuIconMap = {
     'CFG-IDIOMAS': GlobalOutlined,
     'CFG-PAGOS': DollarOutlined,
     'CFG-CONVENIOS': BankOutlined,
-    // Historial de Actividades
+    // Actividades (catálogo CFG; antes historial-actividades)
+    'CFG-ACTIVIDADES': HistoryOutlined,
     'CFG-HISTORIAL-ACTIVIDADES': HistoryOutlined,
 
     // Matrícula (sidebar v1.2)

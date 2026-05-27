@@ -3,7 +3,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+import { useCarrerasApi } from '@application-configuracion/academico/hooks';
 import { useExportListaInscritosPorCarreraExcel } from '../../features/useExportListaInscritosPorCarreraExcel';
 import { useMessage } from '@application/utils';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';

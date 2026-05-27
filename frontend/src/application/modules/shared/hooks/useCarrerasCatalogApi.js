@@ -1,5 +1,5 @@
 import { createApiHook } from '@application/utils';
-import { mapCarrerasList } from '@application-configuracion/academico/carreras/mappers';
+import { mapCarrerasList } from '@application-configuracion/academico/mappers';
 
 export const useCarrerasCatalogApi = createApiHook({
   name: 'useCarrerasCatalogApi',

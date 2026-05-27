@@ -16,7 +16,7 @@ import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import { ActionButton, Button } from '@atoms';
 import { usePagosListContext, useExportListaAportesPorCarreraExcel } from '@application-pagos/hooks';
-import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+import { useCarrerasApi } from '@application-configuracion/academico/hooks';
 import { useMessage } from '@application/utils';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';
 import { createPagosTableColumns } from '@pagos/config';

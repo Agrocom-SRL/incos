@@ -21,7 +21,7 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+import { useCarrerasApi } from '@application-configuracion/academico/hooks';
 
 /**
  * Hook para cargar y seleccionar carreras en el contexto de inscripción nueva

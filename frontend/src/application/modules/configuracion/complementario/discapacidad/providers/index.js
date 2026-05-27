@@ -1,2 +1,0 @@
-export { DiscapacidadProvider } from './DiscapacidadProvider';
-

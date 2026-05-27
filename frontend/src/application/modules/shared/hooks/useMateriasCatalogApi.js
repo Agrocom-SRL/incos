@@ -1,5 +1,5 @@
 import { createApiHook, normalizeFieldToArray } from '@application/utils';
-import { mapMateriasList } from '@application-configuracion/academico/materias/mappers';
+import { mapMateriasList } from '@application-configuracion/academico/mappers';
 
 export const useMateriasCatalogApi = createApiHook({
   name: 'useMateriasCatalogApi',
