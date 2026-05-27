@@ -19,7 +19,7 @@ export const actividadesRoutes = [
     permiso: 'configuracion.historial-actividades',
     accion: 'LISTAR',
     menu: {
-      label: 'Actividades',
+      label: 'Historial de Actividades',
       module: 'CFG',
       parent: 'CFG',
       order: 5,
