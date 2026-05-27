@@ -5,13 +5,13 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  App,
   Button,
   DatePicker,
   Drawer,
   Form,
   InputNumber,
   Modal,
-  notification,
   Segmented,
   Select,
   Space,
@@ -377,6 +377,7 @@ const EvaluacionDrawer = ({
   crearEvaluacion,
   editarEvaluacion,
 }) => {
+  const { notification } = App.useApp();
   const [form] = Form.useForm();
   const { tipos, isLoading: tiposLoading } = useTiposEvaluacion();
   const [guardando, setGuardando] = useState(false);
@@ -479,12 +480,12 @@ const EvaluacionDrawer = ({
 
       if (esEditar) {
         const actualizada = await editarEvaluacion(evaluacion.id, payload);
-        notification.success({ message: 'Actividad actualizada' });
+        notification.success({ title: 'Actividad actualizada' });
         onGuardado(actualizada);
         onCerrar();
       } else {
         const creada = await crearEvaluacion(payload);
-        notification.success({ message: 'Actividad creada' });
+        notification.success({ title: 'Actividad creada' });
         onGuardado(creada);
         onCerrar();
       }
@@ -522,7 +523,7 @@ const EvaluacionDrawer = ({
         setEliminando(true);
         try {
           await onEliminado(evaluacion.id);
-          notification.success({ message: 'Actividad eliminada' });
+          notification.success({ title: 'Actividad eliminada' });
           onCerrar();
         } catch (err) {
           setErrorGuardado(
