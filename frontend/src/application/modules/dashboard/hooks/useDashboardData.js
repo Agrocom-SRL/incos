@@ -12,7 +12,7 @@ import { useCasesFactory } from '@container';
 import { useAuth } from '@application-auth';
 
 /** Permiso seed 54 id 78 — ABM / listado administrativo de carreras. */
-export const PERMISO_CARRERAS_DETALLE = 'cfg.academico.carreras';
+export const PERMISO_CARRERAS_DETALLE = 'configuracion.carrera';
 export const PERMISO_DOCENTES_DETALLE = 'docentes.ver';
 export const PERMISO_ESTUDIANTES_DETALLE = 'matricula.admision.ver';
 

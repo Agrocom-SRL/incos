@@ -23,6 +23,8 @@ export const CONFIGURACION_TOKENS = {
 
     listPlanesEstudiosUseCase: 'configuracion.listPlanesEstudiosUseCase',
     getPlanEstudiosByIdUseCase: 'configuracion.getPlanEstudiosByIdUseCase',
+    getPlanEstudiosMatrizUseCase: 'configuracion.getPlanEstudiosMatrizUseCase',
+    validarPlanEstudiosUseCase: 'configuracion.validarPlanEstudiosUseCase',
     createPlanEstudiosUseCase: 'configuracion.createPlanEstudiosUseCase',
     updatePlanEstudiosUseCase: 'configuracion.updatePlanEstudiosUseCase',
     marcarPlanEstudiosVigenteUseCase: 'configuracion.marcarPlanEstudiosVigenteUseCase',
@@ -58,6 +60,8 @@ export const CONFIGURACION_TOKENS = {
 
     listPlanesEstudiosController: 'configuracion.listPlanesEstudiosController',
     getPlanEstudiosByIdController: 'configuracion.getPlanEstudiosByIdController',
+    getPlanEstudiosMatrizController: 'configuracion.getPlanEstudiosMatrizController',
+    validarPlanEstudiosController: 'configuracion.validarPlanEstudiosController',
     createPlanEstudiosController: 'configuracion.createPlanEstudiosController',
     updatePlanEstudiosController: 'configuracion.updatePlanEstudiosController',
     marcarPlanEstudiosVigenteController: 'configuracion.marcarPlanEstudiosVigenteController',

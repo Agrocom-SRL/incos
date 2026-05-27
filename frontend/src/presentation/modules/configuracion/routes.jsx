@@ -11,29 +11,25 @@
 import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
 
-/** Visible si el rol tiene al menos un permiso hijo de la sección (menú + URL). */
+/** Visible si el rol tiene al menos un permiso hijo de la sección (menú + URL). Alineado con 54-seed-permisos.sql */
 const CFG_ACADEMICO_PERMISOS = [
-    'cfg.academico.carreras',
-    'cfg.academico.materias',
-    'cfg.academico.plan',
-    'cfg.academico.cursos',
-    'cfg.academico.turnos',
+    'configuracion.carrera',
+    'configuracion.materia',
+    'configuracion.plan-estudio',
+    'configuracion.plan-estudio.prerrequisitos',
 ];
 const CFG_DOCUMENTACION_PERMISOS = [
-    'cfg.documentacion.inscripcion',
-    'cfg.documentacion.becas',
-    'cfg.documentacion.pasantias',
-    'cfg.documentacion.traslado',
+    'configuracion.documentacion.inscripcion',
+    'configuracion.documentacion.becas',
+    'configuracion.documentacion.pasantias',
+    'configuracion.documentacion.traslado',
 ];
 const CFG_COMPLEMENTARIO_PERMISOS = [
-    'cfg.complementario.discapacidad',
-    'cfg.complementario.apoderados',
-    'cfg.complementario.idiomas',
+    'configuracion.complementario.discapacidad',
+    'configuracion.complementario.apoderados',
+    'configuracion.complementario.idiomas',
 ];
 
-// Lazy loading de los connectors
-const CarrerasListConnector = lazy(() => import('./academico/carreras/connectors'));
-const MateriasListConnector = lazy(() => import('./academico/materias/connectors'));
 const DiscapacidadesListConnector = lazy(() => import('./complementario/discapacidad/connectors'));
 
 export const configuracionRoutes = [
@@ -59,51 +55,6 @@ export const configuracionRoutes = [
             order: 1,
         },
     },
-    {
-        path: '/configuracion/academico/carreras',
-        element: <CarrerasListConnector />,
-        key: 'CFG-CARRERAS',
-        permiso: 'cfg.academico.carreras',
-        accion: 'LISTAR',
-        menu: null,
-        breadcrumbParent: 'CFG-ACADEMICO',
-    },
-    {
-        path: '/configuracion/academico/materias',
-        element: <MateriasListConnector />,
-        key: 'CFG-MATERIAS',
-        permiso: 'cfg.academico.materias',
-        accion: 'LISTAR',
-        menu: null,
-        breadcrumbParent: 'CFG-ACADEMICO',
-    },
-    {
-        path: '/configuracion/academico/plan-estudios',
-        element: <UnderConstruction />,
-        key: 'CFG-PLAN',
-        permiso: 'cfg.academico.plan',
-        accion: 'LISTAR',
-        menu: null,
-        breadcrumbParent: 'CFG-ACADEMICO',
-    },
-    {
-        path: '/configuracion/academico/cursos',
-        element: <UnderConstruction />,
-        key: 'CFG-CURSOS',
-        permiso: 'cfg.academico.cursos',
-        accion: 'LISTAR',
-        menu: null,
-        breadcrumbParent: 'CFG-ACADEMICO',
-    },
-    {
-        path: '/configuracion/academico/turnos',
-        element: <UnderConstruction />,
-        key: 'CFG-TURNOS',
-        permiso: 'cfg.academico.turnos',
-        accion: 'LISTAR',
-        menu: null,
-        breadcrumbParent: 'CFG-ACADEMICO',
-    },
     // Submenu: Documentación
     {
         path: '/configuracion/documentacion',
@@ -123,7 +74,7 @@ export const configuracionRoutes = [
         path: '/configuracion/documentacion/inscripcion',
         element: <UnderConstruction />,
         key: 'CFG-DOCUMENTACION-INSCRIPCION',
-        permiso: 'cfg.documentacion.inscripcion',
+        permiso: 'configuracion.documentacion.inscripcion',
         accion: 'LISTAR',
         menu: null,
         breadcrumbParent: 'CFG-DOCUMENTACION',
@@ -132,7 +83,7 @@ export const configuracionRoutes = [
         path: '/configuracion/documentacion/becas',
         element: <UnderConstruction />,
         key: 'CFG-DOCUMENTACION-BECAS',
-        permiso: 'cfg.documentacion.becas',
+        permiso: 'configuracion.documentacion.becas',
         accion: 'LISTAR',
         menu: null,
         breadcrumbParent: 'CFG-DOCUMENTACION',
@@ -141,7 +92,7 @@ export const configuracionRoutes = [
         path: '/configuracion/documentacion/pasantias',
         element: <UnderConstruction />,
         key: 'CFG-DOCUMENTACION-PASANTIAS',
-        permiso: 'cfg.documentacion.pasantias',
+        permiso: 'configuracion.documentacion.pasantias',
         accion: 'LISTAR',
         menu: null,
         breadcrumbParent: 'CFG-DOCUMENTACION',
@@ -150,7 +101,7 @@ export const configuracionRoutes = [
         path: '/configuracion/documentacion/traslado',
         element: <UnderConstruction />,
         key: 'CFG-DOCUMENTACION-TRASLADO',
-        permiso: 'cfg.documentacion.traslado',
+        permiso: 'configuracion.documentacion.traslado',
         accion: 'LISTAR',
         menu: null,
         breadcrumbParent: 'CFG-DOCUMENTACION',
@@ -174,7 +125,7 @@ export const configuracionRoutes = [
         path: '/configuracion/datos-complementarios/discapacidad',
         element: <DiscapacidadesListConnector />,
         key: 'CFG-DISCAPACIDAD',
-        permiso: 'cfg.complementario.discapacidad',
+        permiso: 'configuracion.complementario.discapacidad',
         accion: 'LISTAR',
         menu: null,
         breadcrumbParent: 'CFG-COMPLEMENTARIO',
@@ -183,7 +134,7 @@ export const configuracionRoutes = [
         path: '/configuracion/datos-complementarios/apoderados',
         element: <UnderConstruction />,
         key: 'CFG-APODERADOS',
-        permiso: 'cfg.complementario.apoderados',
+        permiso: 'configuracion.complementario.apoderados',
         accion: 'LISTAR',
         menu: null,
         breadcrumbParent: 'CFG-COMPLEMENTARIO',
@@ -192,7 +143,7 @@ export const configuracionRoutes = [
         path: '/configuracion/datos-complementarios/idiomas',
         element: <UnderConstruction />,
         key: 'CFG-IDIOMAS',
-        permiso: 'cfg.complementario.idiomas',
+        permiso: 'configuracion.complementario.idiomas',
         accion: 'LISTAR',
         menu: null,
         breadcrumbParent: 'CFG-COMPLEMENTARIO',
@@ -201,7 +152,7 @@ export const configuracionRoutes = [
         path: '/configuracion/convenios',
         element: <UnderConstruction />,
         key: 'CFG-CONVENIOS',
-        permiso: 'cfg.convenios.ver',
+        permiso: 'configuracion.convenios',
         accion: 'LISTAR',
         menu: {
             label: 'Empresas y Convenios',
@@ -214,7 +165,7 @@ export const configuracionRoutes = [
         path: '/configuracion/historial-actividades',
         element: <UnderConstruction />,
         key: 'CFG-HISTORIAL-ACTIVIDADES',
-        permiso: 'cfg.historial_actividades',
+        permiso: 'configuracion.historial-actividades',
         accion: 'LISTAR',
         menu: {
             label: 'Historial de Actividades',

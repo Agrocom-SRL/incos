@@ -14,7 +14,7 @@
 --   21-23           → operaciones del cuaderno (evaluaciones, notas, guardar bimestre vigente)
 --   24              → consolidado bimestre: ajuste administrativo (habilitación) en bimestre cerrado
 --
--- [TOTAL] 105 permisos
+-- [TOTAL] 106 permisos (sin cursos/turnos V1; académico 78-83)
 -- Ejecutar después de: 53-seed-roles.sql
 -- Ejecutar antes de:   56-seed-permiso-acciones.sql, 55-seed-roles-permisos.sql
 -- ============================================
@@ -114,45 +114,48 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (76, 'institucional.horario.conflictos', 'Gestión de horarios: revisión y resolución de conflictos (UI en armado)', 'INSTITUCIONAL', 'INST', 'inst_horarios_armado', '/institucional/horarios/armado', TRUE),
 (77, 'institucional.horario.publicacion', 'Gestión de horarios: publicación de horarios vigentes', 'INSTITUCIONAL', 'INST', 'inst_horarios_publicacion', '/institucional/horarios/publicacion',    TRUE),
 
--- ── CONFIGURACIÓN (CFG) ─────────────────────────────────────────────────────
-(78, 'cfg.academico.carreras', 'Config. académica: carreras',                         'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
-(79, 'cfg.academico.materias', 'Config. académica: materias',                         'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
-(80, 'cfg.academico.plan',     'Config. académica: plan de estudios',                 'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
-(81, 'cfg.academico.cursos',   'Config. académica: cursos/paralelos',                 'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
-(82, 'cfg.academico.turnos',   'Config. académica: turnos',                           'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
-(83, 'cfg.documentacion.inscripcion', 'Config. documentación: inscripción',           'CONFIGURACION', 'CFG', 'cfg_documentacion', '/configuracion/documentacion', TRUE),
-(84, 'cfg.documentacion.becas',       'Config. documentación: becas',                 'CONFIGURACION', 'CFG', 'cfg_documentacion', '/configuracion/documentacion', TRUE),
-(85, 'cfg.documentacion.pasantias',   'Config. documentación: pasantías',             'CONFIGURACION', 'CFG', 'cfg_documentacion', '/configuracion/documentacion', TRUE),
-(86, 'cfg.documentacion.traslado',    'Config. documentación: traslado',              'CONFIGURACION', 'CFG', 'cfg_documentacion', '/configuracion/documentacion', TRUE),
-(87, 'cfg.complementario.discapacidad', 'Datos complementarios: discapacidad',        'CONFIGURACION', 'CFG', 'cfg_complementario', '/configuracion/datos-complementarios', TRUE),
-(88, 'cfg.complementario.apoderados',   'Datos complementarios: apoderados',          'CONFIGURACION', 'CFG', 'cfg_complementario', '/configuracion/datos-complementarios', TRUE),
-(89, 'cfg.complementario.idiomas',      'Datos complementarios: idiomas',             'CONFIGURACION', 'CFG', 'cfg_complementario', '/configuracion/datos-complementarios', TRUE),
-(90, 'cfg.convenios.ver',    'Convenios: listar empresas e instituciones',            'CONFIGURACION', 'CFG', 'cfg_convenios', '/configuracion/convenios', TRUE),
-(91, 'cfg.convenios.crear',  'Convenios: registrar empresa/institución',              'CONFIGURACION', 'CFG', 'cfg_convenios', '/configuracion/convenios', TRUE),
-(92, 'cfg.convenios.editar', 'Convenios: editar empresa/institución',                 'CONFIGURACION', 'CFG', 'cfg_convenios', '/configuracion/convenios', TRUE),
-(93, 'cfg.pagos.gestionar', 'Config. de pagos: gestionar aranceles y cuotas',        'CONFIGURACION', 'CFG', 'cfg_pagos', '/pagos/configuracion', TRUE),
-(94, 'cfg.historial_actividades', 'Historial de actividades del sistema',             'CONFIGURACION', 'CFG', 'cfg_historial', '/configuracion/historial-actividades', TRUE),
+-- ── CONFIGURACIÓN (CFG) · códigos configuracion.* (menú /configuracion/...) ───
+-- Académico (78-83): tabs Carreras, Materias, Planes, Prerrequisitos (SPRINT_1 §6.2)
+(78, 'configuracion.carrera',                     'Académico: carreras',                 'CONFIGURACION', 'CFG', 'configuracion_academico_carrera',      '/configuracion/academico', TRUE),
+(79, 'configuracion.materia',                     'Académico: materias',                 'CONFIGURACION', 'CFG', 'configuracion_academico_materia',      '/configuracion/academico', TRUE),
+(80, 'configuracion.plan-estudio',                'Académico: planes de estudio',        'CONFIGURACION', 'CFG', 'configuracion_academico_plan',         '/configuracion/academico', TRUE),
+(81, 'configuracion.plan-estudio.periodos',       'Plan: periodos (años)',               'CONFIGURACION', 'CFG', 'configuracion_plan_periodos',          '/configuracion/academico', TRUE),
+(82, 'configuracion.plan-estudio.asignaturas',    'Plan: asignaturas por periodo',       'CONFIGURACION', 'CFG', 'configuracion_plan_asignaturas',       '/configuracion/academico', TRUE),
+(83, 'configuracion.plan-estudio.prerrequisitos', 'Académico: prerrequisitos',           'CONFIGURACION', 'CFG', 'configuracion_academico_prerrequisitos','/configuracion/academico', TRUE),
+-- Documentación (84-87)
+(84, 'configuracion.documentacion.inscripcion',   'Documentación: inscripción',          'CONFIGURACION', 'CFG', 'configuracion_documentacion',          '/configuracion/documentacion', TRUE),
+(85, 'configuracion.documentacion.becas',         'Documentación: becas',                'CONFIGURACION', 'CFG', 'configuracion_documentacion',          '/configuracion/documentacion', TRUE),
+(86, 'configuracion.documentacion.pasantias',     'Documentación: pasantías',            'CONFIGURACION', 'CFG', 'configuracion_documentacion',          '/configuracion/documentacion', TRUE),
+(87, 'configuracion.documentacion.traslado',      'Documentación: traslado',             'CONFIGURACION', 'CFG', 'configuracion_documentacion',          '/configuracion/documentacion', TRUE),
+-- Datos complementarios (88-90)
+(88, 'configuracion.complementario.discapacidad', 'Complementarios: discapacidad',       'CONFIGURACION', 'CFG', 'configuracion_complementario',         '/configuracion/datos-complementarios', TRUE),
+(89, 'configuracion.complementario.apoderados',   'Complementarios: apoderados',         'CONFIGURACION', 'CFG', 'configuracion_complementario',         '/configuracion/datos-complementarios', TRUE),
+(90, 'configuracion.complementario.idiomas',      'Complementarios: idiomas',            'CONFIGURACION', 'CFG', 'configuracion_complementario',         '/configuracion/datos-complementarios', TRUE),
+-- Convenios, pagos, historial (91-95)
+(91, 'configuracion.convenios',                   'Empresas y convenios',                'CONFIGURACION', 'CFG', 'configuracion_convenios',              '/configuracion/convenios', TRUE),
+(92, 'configuracion.pagos',                         'Configuración de pagos y aranceles',  'CONFIGURACION', 'CFG', 'configuracion_pagos',                  '/pagos/configuracion', TRUE),
+(93, 'configuracion.historial-actividades',       'Historial de actividades',            'CONFIGURACION', 'CFG', 'configuracion_historial',              '/configuracion/historial-actividades', TRUE),
 
 -- ── REPORTES (REP) ────────────────────────────────────────────────────────────
-(95, 'reportes.avance_academico',    'Reporte de avance académico',                   'REPORTES', 'REP', 'rep_avance',      '/reportes/avance-academico', TRUE),
-(96, 'reportes.asistencia',          'Reporte de asistencia',                         'REPORTES', 'REP', 'rep_asistencia',  '/reportes/asistencia',       TRUE),
-(97, 'reportes.desercion',           'Reporte de deserción',                          'REPORTES', 'REP', 'rep_desercion',   '/reportes/desercion',        TRUE),
-(98, 'reportes.solicitudes.general', 'Reporte general de solicitudes',                'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
-(99, 'reportes.solicitudes.becas',   'Reporte de solicitudes de becas',               'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
-(100, 'reportes.solicitudes.traspaso','Reporte de solicitudes de traspaso',            'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
-(101, 'reportes.solicitudes.pasantia','Reporte de solicitudes de pasantía',            'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
+(94, 'reportes.avance_academico',    'Reporte de avance académico',                   'REPORTES', 'REP', 'rep_avance',      '/reportes/avance-academico', TRUE),
+(95, 'reportes.asistencia',          'Reporte de asistencia',                         'REPORTES', 'REP', 'rep_asistencia',  '/reportes/asistencia',       TRUE),
+(96, 'reportes.desercion',           'Reporte de deserción',                          'REPORTES', 'REP', 'rep_desercion',   '/reportes/desercion',        TRUE),
+(97, 'reportes.solicitudes.general', 'Reporte general de solicitudes',                'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
+(98, 'reportes.solicitudes.becas',   'Reporte de solicitudes de becas',               'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
+(99, 'reportes.solicitudes.traspaso','Reporte de solicitudes de traspaso',            'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
+(100, 'reportes.solicitudes.pasantia','Reporte de solicitudes de pasantía',          'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
 
 -- ── SEGURIDAD (SEG) ───────────────────────────────────────────────────────────
-(102, 'seguridad.usuario.crear',      'Usuarios: crear nuevo usuario',                 'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
-(103, 'seguridad.usuario.administrar','Usuarios: listar, ver y administrar',           'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
-(104, 'seguridad.rol.gestionar',      'Roles y permisos: ver y administrar',           'SEGURIDAD', 'SEG', 'seg_roles',    '/seguridad/roles',    TRUE),
+(101, 'seguridad.usuario.crear',      'Usuarios: crear nuevo usuario',                 'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
+(102, 'seguridad.usuario.administrar','Usuarios: listar, ver y administrar',           'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
+(103, 'seguridad.rol.gestionar',      'Roles y permisos: ver y administrar',           'SEGURIDAD', 'SEG', 'seg_roles',    '/seguridad/roles',    TRUE),
 
 -- ── SISTEMA (SYS) ───────────────────────────────────────────────────────────
-(105, 'sistema.catalogo.referencia', 'Catálogos de referencia: APIs transversales para combos (ubicación, tipos, bancos, etc.)', 'SISTEMA', 'SYS', NULL, NULL, TRUE);
+(104, 'sistema.catalogo.referencia', 'Catálogos de referencia: APIs transversales para combos (ubicación, tipos, bancos, etc.)', 'SISTEMA', 'SYS', NULL, NULL, TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Verificación post-insert:
--- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 105
--- SELECT COUNT(*) FROM permisos WHERE grupo_ui IS NULL AND activo = 1;   -- 1 (105)
+-- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 106
+-- SELECT COUNT(*) FROM permisos WHERE grupo_ui IS NULL AND activo = 1;   -- 1 (104)
 -- SELECT id, codigo FROM permisos WHERE modulo = 'ACA' AND codigo LIKE 'academico.calificacion%' ORDER BY id;

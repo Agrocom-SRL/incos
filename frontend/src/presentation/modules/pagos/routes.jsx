@@ -116,7 +116,7 @@ export const pagosRoutes = [
     path: '/pagos/configuracion',
     element: <UnderConstruction />,
     key: 'CFG-PAGOS',
-    permiso: 'cfg.pagos.gestionar',
+    permiso: 'configuracion.pagos',
     accion: 'LISTAR',
     menu: {
       label: 'Config. de pagos',

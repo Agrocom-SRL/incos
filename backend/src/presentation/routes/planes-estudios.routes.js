@@ -38,6 +38,24 @@ export function buildPlanesEstudiosRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.getPlanEstudiosByIdController.handle(req, res, next)
   );
 
+  router.get(
+    '/:id/matriz',
+    authenticate,
+    verificarPermiso(permisoPlan, 'DETALLE'),
+    idValidator,
+    validateRequest,
+    (req, res, next) => controllers.getPlanEstudiosMatrizController.handle(req, res, next)
+  );
+
+  router.get(
+    '/:id/validar',
+    authenticate,
+    verificarPermiso(permisoPlan, 'DETALLE'),
+    idValidator,
+    validateRequest,
+    (req, res, next) => controllers.validarPlanEstudiosController.handle(req, res, next)
+  );
+
   router.post(
     '/',
     authenticate,

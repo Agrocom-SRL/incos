@@ -21,6 +21,8 @@ export { DeleteMateriaController } from './materias/delete.controller.js';
 // ============================================
 export { ListPlanesEstudiosController } from './planes-estudios/list.controller.js';
 export { GetPlanEstudiosByIdController } from './planes-estudios/get-by-id.controller.js';
+export { GetPlanEstudiosMatrizController } from './planes-estudios/matriz.controller.js';
+export { ValidarPlanEstudiosController } from './planes-estudios/validar.controller.js';
 export { CreatePlanEstudiosController } from './planes-estudios/create.controller.js';
 export { UpdatePlanEstudiosController } from './planes-estudios/update.controller.js';
 export { MarcarPlanEstudiosVigenteController } from './planes-estudios/marcar-vigente.controller.js';

@@ -7,6 +7,8 @@ import { buildPrerrequisitosRouter } from '../../../../presentation/routes/prerr
 
 import { ListPlanesEstudiosUseCase } from '../../../../application/use-cases/configuracion/ListPlanesEstudiosUseCase.js';
 import { GetPlanEstudiosByIdUseCase } from '../../../../application/use-cases/configuracion/GetPlanEstudiosByIdUseCase.js';
+import { GetPlanEstudiosMatrizUseCase } from '../../../../application/use-cases/configuracion/GetPlanEstudiosMatrizUseCase.js';
+import { ValidarPlanEstudiosUseCase } from '../../../../application/use-cases/configuracion/ValidarPlanEstudiosUseCase.js';
 import { CreatePlanEstudiosUseCase } from '../../../../application/use-cases/configuracion/CreatePlanEstudiosUseCase.js';
 import { UpdatePlanEstudiosUseCase } from '../../../../application/use-cases/configuracion/UpdatePlanEstudiosUseCase.js';
 import { MarcarPlanEstudiosVigenteUseCase } from '../../../../application/use-cases/configuracion/MarcarPlanEstudiosVigenteUseCase.js';
@@ -27,6 +29,8 @@ import { DeletePrerrequisitoUseCase } from '../../../../application/use-cases/co
 import {
   ListPlanesEstudiosController,
   GetPlanEstudiosByIdController,
+  GetPlanEstudiosMatrizController,
+  ValidarPlanEstudiosController,
   CreatePlanEstudiosController,
   UpdatePlanEstudiosController,
   MarcarPlanEstudiosVigenteController,
@@ -57,6 +61,22 @@ export function registerPlanesEstudiosResource(container) {
     periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
+    logger: c.resolve(SERVICIOS_TOKENS.logger),
+  }));
+
+  registerComponent(container, CONFIGURACION_TOKENS.getPlanEstudiosMatrizUseCase, (c) => new GetPlanEstudiosMatrizUseCase({
+    studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
+    careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+    periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+    planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+    subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+    logger: c.resolve(SERVICIOS_TOKENS.logger),
+  }));
+
+  registerComponent(container, CONFIGURACION_TOKENS.validarPlanEstudiosUseCase, (c) => new ValidarPlanEstudiosUseCase({
+    studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
+    periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+    planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }));
 
@@ -153,6 +173,18 @@ export function registerPlanesEstudiosResource(container) {
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
   }));
 
+  registerComponent(container, CONFIGURACION_TOKENS.getPlanEstudiosMatrizController, (c) => new GetPlanEstudiosMatrizController({
+    getPlanEstudiosMatrizUseCase: c.resolve(CONFIGURACION_TOKENS.getPlanEstudiosMatrizUseCase),
+    logger: c.resolve(SERVICIOS_TOKENS.logger),
+    responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+  }));
+
+  registerComponent(container, CONFIGURACION_TOKENS.validarPlanEstudiosController, (c) => new ValidarPlanEstudiosController({
+    validarPlanEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.validarPlanEstudiosUseCase),
+    logger: c.resolve(SERVICIOS_TOKENS.logger),
+    responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+  }));
+
   registerComponent(container, CONFIGURACION_TOKENS.createPlanEstudiosController, (c) => new CreatePlanEstudiosController({
     createPlanEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.createPlanEstudiosUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -244,6 +276,8 @@ export function registerPlanesEstudiosResource(container) {
     const controllers = {
       listPlanesEstudiosController: c.resolve(CONFIGURACION_TOKENS.listPlanesEstudiosController),
       getPlanEstudiosByIdController: c.resolve(CONFIGURACION_TOKENS.getPlanEstudiosByIdController),
+      getPlanEstudiosMatrizController: c.resolve(CONFIGURACION_TOKENS.getPlanEstudiosMatrizController),
+      validarPlanEstudiosController: c.resolve(CONFIGURACION_TOKENS.validarPlanEstudiosController),
       createPlanEstudiosController: c.resolve(CONFIGURACION_TOKENS.createPlanEstudiosController),
       updatePlanEstudiosController: c.resolve(CONFIGURACION_TOKENS.updatePlanEstudiosController),
       marcarPlanEstudiosVigenteController: c.resolve(CONFIGURACION_TOKENS.marcarPlanEstudiosVigenteController),
