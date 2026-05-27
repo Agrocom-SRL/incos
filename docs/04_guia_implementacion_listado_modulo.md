@@ -1,26 +1,42 @@
 # Documento 4 — Guía intermedia: implementar un listado de módulo
-## Patrón de referencia: lista de docentes (INCOS)
+## Patrones de referencia: docentes (ABM) · CFG académico (tabs) · institucional
 
-**Versión:** 1.0  
-**Fecha:** 2026-04-24  
+**Versión:** 1.2  
+**Fecha:** 2026-05-27  
 
 **Checklist compacto (una página):** `docs/04a_checklist_listado_una_pagina.md`  
 
 **Ficha / detalle por ID:** `docs/05_guia_implementacion_detalle_modulo.md` y `docs/05a_checklist_detalle_una_pagina.md`
+
+**Arquitectura frontend (menú, hooks):** `docs/06_arquitectura_modulos_frontend.md`  
+
+**Arquitectura backend (capas, DI, RBAC, respuestas API):** `docs/07_arquitectura_modulos_backend.md` — **obligatoria** para cualquier listado nuevo; esta guía detalla el paso a paso integrado frontend + backend.
 
 **Relación con otros documentos**
 
 - `docs/02_estructura_sidebar.md` — keys de menú, `permiso` / `accion` en rutas de presentación.
 - `docs/matriz-permisos-sistema.md` — vocabulario v2 de acciones (`LISTAR`, `DETALLE`, `CREAR`, etc.).
 - `docs/01_schema_datos.md` — modelo de datos; el modelo Sequelize debe coincidir con las columnas reales.
+- `docs/SPRINT_1.md` — catálogo plan de estudio (CFG académico).
 
 ---
 
 ## 1. Objetivo de esta guía
 
-Describir los **pasos ordenados** y los **artefactos** necesarios para incorporar un **listado básico** de un recurso del sistema (API paginada + pantalla con tabla, búsqueda y acciones mínimas), siguiendo la arquitectura ya usada en **admisión de estudiantes**, **becas** y el módulo de referencia **docentes** (`/docentes/listar`).
+Describir los **pasos ordenados** y los **artefactos** necesarios para incorporar un **listado básico** de un recurso del sistema (API paginada + pantalla con tabla, búsqueda y acciones mínimas).
 
 No sustituye el código: sirve como **checklist** y mapa de archivos para nuevas integraciones similares.
+
+### 1.1 Elegir patrón de referencia
+
+| Caso | Referencia principal | Listado en |
+|------|---------------------|------------|
+| Pantalla dedicada `/modulo/listar` | **Docentes** | `pages/*List.jsx` + provider + `hooks/features` o list context |
+| Tab dentro de menú con varios permisos | **CFG → Académico** | `hooks/features/use*List.js` + tab panel (`CarrerasList.jsx`) |
+| Listado embebido en wizard/flujo | **Inscripciones** | `hooks/features/` + estado del wizard |
+| Tabla en flujo institucional multi-paso | **INST → Horarios** | `hooks/state/` + datos de `hooks/api/` |
+
+Regla de carpetas: **un directorio por ítem de menú**, no por entidad; ver doc **06**.
 
 ---
 
@@ -33,48 +49,114 @@ No sustituye el código: sirve como **checklist** y mapa de archivos para nuevas
 
 ---
 
-## 3. Backend — pasos
+## 3. Backend — proceso completo
 
-### 3.1 Repositorio y modelo de datos
+Visión de capas y checklist de archivos: **`docs/07_arquitectura_modulos_backend.md`**.
 
-- Confirmar el **DDL** del recurso (p. ej. scripts en `backend/database/01-schemas/`).
-- Alinear **`backend/src/infrastructure/database/models/<recurso>.js`** con columnas reales (sin campos “fantasma”).
-- Si el listado usa **`BaseRepository.findAll`**, revisar **`getSearchFields()`**: lista de **nombres de atributo Sequelize** usados en `LIKE` para el query param `search` (incluir teléfonos, dirección, observaciones, etc., si aplica).
+### 3.0 Flujo resumido
 
-**Referencia:** `TeacherRepository.getSearchFields` y modelo `docente.js` alineado a `06-estructura-academica-parte2.sql`.
+```
+GET /api/v1/<recurso>?pagina&limite&busqueda
+  → routes (auth + verificarPermiso LISTAR + listValidator)
+  → List*Controller (BaseListController)
+  → List*UseCase (BaseListUseCase)
+  → *Repository.findAll → Sequelize model → MySQL
+  → *Mapper.entitiesToPresentation
+  → { success, data: { <dataFieldName>: [...] }, pagination }
+```
 
-### 3.2 Capa de aplicación (listado)
+### 3.1 Datos: DDL, modelo y repositorio
 
-- **Mapper de presentación** (opcional pero recomendado): en `backend/src/application/mappers/<dominio>/` mapear entidad → DTO enriquecido para la API (p. ej. `nombreCompleto`, `ciCompleto`).
-- **Caso de uso:** extender **`BaseListUseCase`** (`backend/src/application/use-cases/base/BaseListUseCase.js`) configurando:
-  - `repository`, `logger`, `moduleName`, `resourceName`,
-  - `collectionFieldName` = nombre de colección que devuelve `findAll` (p. ej. `teachers`),
-  - `dataFieldName` = clave en el objeto de respuesta del caso de uso (p. ej. `docentes`),
-  - `getMapper()` → clase con `entitiesToPresentation`.
+| Paso | Acción |
+|------|--------|
+| 1 | Confirmar **DDL** en `backend/database/01-schemas/`. |
+| 2 | Modelo **`infrastructure/database/models/<entidad>.js`** — solo columnas existentes (`activo`, `deleted_at` si aplica). |
+| 3 | Interfaz **`domain/interfaces/repositories/I*Repository.js`** (contrato dominio). |
+| 4 | **`infrastructure/repositories/*Repository.js`** extends `BaseRepository`: |
+| | — `getCollectionName()` → inglés plural (`careers`, `teachers`) |
+| | — `getSearchFields()` → atributos Sequelize para `busqueda` / `search` |
+| | — `findAll({ pagina, limite, busqueda, filtros, incluirInactivos })` |
+| 5 | Registrar repositorio en **`repositories.container.js`** (`REPOSITORIOS_TOKENS.*`). |
 
-**Referencia:** `ListTeachersUseCase.js`, `TeacherListMapper.js`.
+**Referencias:** `CareerRepository.js` + `carrera.js` (CFG); `TeacherRepository.js` + `docente.js` (docentes).
 
-### 3.3 Presentación HTTP
+### 3.2 Capa de aplicación
 
-- **Controller:** extender **`BaseListController`**, inyectar `useCase`, `logger`, `responseFormatter`, `resourceName`, `dataFieldName` (el mismo `dataFieldName` que en el caso de uso).
+| Paso | Acción |
+|------|--------|
+| 1 | **Mapper de presentación** en `application/mappers/<dominio>/` — método `entitiesToPresentation` / `entityToPresentation` (DTO para JSON: etiquetas, fechas ISO, campos compuestos). |
+| 2 | **`List*UseCase`** extends `BaseListUseCase` (`application/use-cases/base/BaseListUseCase.js`): |
+| | — `repository`, `logger`, `moduleName`, `resourceName` |
+| | — `collectionFieldName` (inglés, salida del repo) |
+| | — `dataFieldName` (español, clave en `data` de la API — **debe coincidir con frontend `dataKey`**) |
+| | — `getMapper()` → clase mapper |
 
-**Referencia:** `backend/src/presentation/controllers/docentes/list.controller.js`.
+**Referencias:** `ListTeachersUseCase.js` + `TeacherListMapper.js`; `ListCarrerasUseCase.js` + `CareerMapper.js`.
 
-### 3.4 Router Express
+### 3.3 Capa de presentación HTTP
 
-- Crear **`build<Modulo>Router`** en `backend/src/presentation/routes/<modulo>.routes.js`.
-- Ruta `GET '/'` con: `authenticate`, `verificarPermiso('<dominio>.<recurso>', 'LISTAR')`, `listValidator`, `validateRequest`, controller.
+| Paso | Acción |
+|------|--------|
+| 1 | **`List*Controller`** extends `BaseListController` — mismos `resourceName` y `dataFieldName` que el use case. |
+| 2 | Ubicación: `presentation/controllers/<dominio>/<recurso>/list.controller.js` o agrupado en `configuracion/carreras/`. |
+| 3 | **`build*Router`** en `presentation/routes/<recurso>.routes.js` — función factory que recibe `{ controllers, middlewares }`. |
+| 4 | Cadena `GET '/'`: `authenticate` → `verificarPermiso('<codigo>', 'LISTAR')` → `listValidator` → `validateRequest` → `controller.handle`. |
+| 5 | Validators de escritura (create/update) en `presentation/validators/<dominio>/` — el listado usa `listValidator` común. |
 
-**Referencia:** `docentes.routes.js`.
+**Referencias:** `list.controller.js` (docentes); `carreras.routes.js` + `carreras.validator.js` (CFG).
 
-### 3.5 Contenedor de inyección
+### 3.4 Inyección de dependencias y montaje API
 
-- **Tokens:** `backend/src/infrastructure/container/tokens/<modulo>.tokens.js` y export en `tokens/index.js`.
-- **Módulo:** `backend/src/infrastructure/container/modules/<modulo>/` — registrar use case, controller y factory del **router** (con `middlewares.validateRequest` desde `SERVICIOS_TOKENS.validateRequest`).
-- **Orquestación:** `register<Modulo>Module` en `backend/src/infrastructure/container/modules/index.js`.
-- **Montaje API:** `router.use('/<recurso>', container.resolve(...))` en `backend/src/presentation/routes/index.js` y entrada en el JSON de la ruta raíz `/`.
+| Paso | Acción |
+|------|--------|
+| 1 | Tokens en `infrastructure/container/tokens/<modulo>.tokens.js` (use cases, controllers, router). |
+| 2 | **`register*Resource(container)`** en `container/modules/<modulo>/<recurso>.container.js`: registra use cases → controllers → `build*Router`. |
+| 3 | **`register*Module`** en `container/modules/<modulo>/index.js` compone todos los recursos del dominio (ej. `registerConfiguracionModule` llama carreras + materias + planes). |
+| 4 | Invocar `register*Module` desde `container/modules/index.js` global. |
+| 5 | **`presentation/routes/index.js`:** `router.use('/carreras', container.resolve(CONFIGURACION_TOKENS.carrerasRouter))`. |
+| 6 | Documentar la ruta en el handler `GET /` raíz del API (lista de módulos disponibles). |
 
-**Referencia:** `docentes.container.js`, `DOCENTES_TOKENS`, `routes/index.js`.
+**Referencias:** `docentes.container.js`; `configuracion/carreras.container.js` + `configuracion/index.js`.
+
+### 3.5 Permisos y seeders (backend)
+
+| Paso | Acción |
+|------|--------|
+| 1 | Insertar permiso en **`54-seed-permisos.sql`** (`codigo`, `dominio`, `modulo`, `grupo_ui`, `ruta_sidebar`). |
+| 2 | Acciones en **`56-seed-permiso-acciones.sql`** — al menos `LISTAR` para listado. |
+| 3 | Filas en **`55-seed-roles-permisos.sql`** para roles operativos (RECTOR, DIR_ACADEMICO, …). |
+| 4 | El string en `verificarPermiso('...', 'LISTAR')` debe ser **idéntico** a `permisos.codigo`. |
+| 5 | Actualizar **`docs/matriz-permisos-sistema.md`** (tabla pantalla ↔ permiso ↔ endpoint). |
+
+Ejemplo CFG carreras: `verificarPermiso('configuracion.carrera', 'LISTAR')` — permiso id **78**.
+
+### 3.6 Contrato de respuesta y query params
+
+**Query (listValidator):** `pagina`, `limite`, `busqueda` (y `filtros` / `incluirInactivos` según repositorio).
+
+**Respuesta exitosa:**
+
+```json
+{
+  "success": true,
+  "data": { "docentes": [ /* o "carreras" */ ] },
+  "pagination": { "page": 1, "limit": 50, "total": 100, "totalPages": 2 }
+}
+```
+
+**Errores:** 401 sin token; 403 sin permiso; 422 validación; 500 si modelo/DDL desalineados.
+
+### 3.7 Variante: varios recursos, un menú frontend (CFG)
+
+El menú **Académico** es uno; el backend expone **varios routers**:
+
+| Recurso API | Permiso listado | Container |
+|-------------|-----------------|-----------|
+| `/api/v1/carreras` | `configuracion.carrera` | `carreras.container.js` |
+| `/api/v1/materias` | `configuracion.materia` | `materias.container.js` |
+| `/api/v1/planes-estudios` | `configuracion.plan-estudio` | `planes-estudios.container.js` |
+
+Cada uno repite §3.1–3.6 de forma independiente; el frontend unifica en `application/.../academico/hooks/api/`.
 
 ---
 
@@ -92,33 +174,41 @@ No sustituye el código: sirve como **checklist** y mapa de archivos para nuevas
 
 ### 4.2 Capa de aplicación (módulo vertical)
 
-- **Mapper de lista:** `frontend/src/application/modules/<modulo>/mappers/*ListMapper.js` — normalizar a campos usados por la tabla y por la **búsqueda** (incluir IDs, fechas serializadas, etc.).
-- **Hook API:** `createApiHook` en `hooks/api/use<Recurso>Api.js` con:
-  - `useCase: 'obtenerTodos<Recurso>'` registrado en el factory,
-  - `dataType: 'array'`, `mapper`, `dataKey`,
-  - **`autoFetch: true`** y **`autoFetchArgs: [{ params: { page: 1, limit: 10000 } }]`** para traer el conjunto completo que la UI filtra en cliente (mismo criterio que admisión/becas).
-- **Contextos:** `*Context.js` para datos globales del módulo y, si aplica, `*ListContext.js` solo para la feature lista.
-- **Providers:** provider “raíz” que llama al hook API; **ListProvider** que usa `useTableData` de `@molecules` con una función **`getSearchFields`** que liste **todos** los campos buscables (visibles y no visibles en columnas).
-- **Hooks:** `hooks/context/use*Context.js`, `hooks/index.js`.
-- **Registro en factory:** `frontend/src/application/container/modules/<modulo>.container.js` y `register<Modulo>Module` en `frontend/src/application/container/modules/index.js`.
+Organización de hooks (obligatoria en módulos nuevos — doc **06**):
 
-**Referencia:** carpeta `frontend/src/application/modules/docentes/`.
+| Carpeta | Archivo típico | Rol |
+|---------|----------------|-----|
+| `hooks/api/` | `useCarrerasApi.js` | `createApiHook`, fetch, mapper |
+| `hooks/features/` | `useCarrerasList.js` | api + `useTableData` + búsqueda del tab/listado |
+| `hooks/context/` | `useCarreraContext.js` | consumidor del Provider |
+| `hooks/state/` | `useDocenteDetail.js` | solo si el listado es parte de una **pantalla** con más lógica |
+
+- **Mapper de lista:** `mappers/*ListMapper.js` — campos de tabla y **búsqueda** (visibles y ocultos).
+- **Hook API:** `hooks/api/use<Recurso>Api.js` con `autoFetch: true`, `autoFetchArgs: [{ params: { page: 1, limit: 10000 } }]`.
+- **Provider:** `providers/*Provider.jsx` llama `use*List()` del feature y publica contexto (ej. `CarreraProvider` en CFG académico).
+- **Barrel:** `hooks/index.js` reexporta por tipo (como inscripciones).
+- **Catálogos compartidos:** `application/modules/shared/hooks/use*CatalogApi.js` importan mappers del módulo dueño (ej. carreras desde `@application-configuracion/academico/mappers`).
+- **Registro factory:** `application/container/modules/<modulo>.container.js`.
+
+**Referencias:**
+
+- ABM pantalla completa: `frontend/src/application/modules/docentes/`
+- Tab en menú: `frontend/src/application/modules/configuracion/academico/hooks/`
+- Complementarios (tab): `frontend/src/application/modules/configuracion/complementarios/hooks/`
 
 ### 4.2.1 Regla de arquitectura limpia (obligatoria en ABM)
 
-Para nuevos módulos o nuevas features dentro de un módulo existente, mantener esta separación mínima:
+- `presentation/modules/<menu>/pages/*` = solo UI.
+- `application/modules/<menu>/hooks/features/` = listados en tabs o tablas embebidas.
+- `application/modules/<menu>/hooks/state/` = orquestación de **pantalla** (no por entidad suelta).
+- `providers/` + `context/` + `connectors/` como en doc **06**.
 
-- `presentation/modules/<modulo>/pages/*` = solo UI (render, composición visual, wiring de props).
-- `application/modules/<modulo>/hooks/state/*` = orquestación de estado de pantalla (fetch, derivaciones, navegación, handlers).
-- `application/modules/<modulo>/providers/*` = inyección de hooks a contextos (sin lógica de negocio adicional).
-- `application/modules/<modulo>/context/*` = contratos de consumo entre app y presentación.
-- `presentation/modules/<modulo>/connectors/*` = ensamblaje final (Provider + Page).
-
-Regla práctica: si una página supera ~150-200 líneas por lógica no visual, extraerla a hook de estado.
+No crear `hooks/carreras/` ni `presentation/.../carreras/routes.jsx` si carreras es solo un tab de `/configuracion/academico`.
 
 ### 4.3 Alias y configuración del bundler
 
-- Añadir alias **`@application-<modulo>`** en `frontend/vite.config.js` y paths en `frontend/jsconfig.json` para imports estables.
+- Añadir alias por **dominio de menú** (ej. `@application-configuracion`, `@configuracion`) en `vite.config.js` y `jsconfig.json`.
+- Subrutas de import: `@application-configuracion/academico/hooks`, `@configuracion/academico/pages/...`.
 
 ### 4.4 Presentación
 
@@ -142,52 +232,123 @@ Si existe divergencia temporal por legado, documentarla explícitamente en `docs
 
 ---
 
-## 5. Lista de archivos de referencia (módulo docentes — listado)
+## 5. Listas de archivos de referencia
 
-### Backend
+### 5.1 Docentes — listado `/docentes/listar`
 
-| Área | Ruta |
-|------|------|
-| Caso de uso | `backend/src/application/use-cases/docentes/ListTeachersUseCase.js` |
-| Mapper API | `backend/src/application/mappers/docentes/TeacherListMapper.js` |
-| Controller | `backend/src/presentation/controllers/docentes/list.controller.js` |
-| Router | `backend/src/presentation/routes/docentes.routes.js` |
-| DI | `backend/src/infrastructure/container/modules/docentes/docentes.container.js`, `tokens/docentes.tokens.js` |
-| Repositorio | `backend/src/infrastructure/repositories/TeacherRepository.js` |
-| Modelo | `backend/src/infrastructure/database/models/docente.js` |
-
-### Frontend
+#### Backend
 
 | Área | Ruta |
 |------|------|
-| Dominio | `frontend/src/domain/repositories/IDocenteRepository.js`, `frontend/src/domain/useCases/docentes/*` |
-| Infra | `frontend/src/infrastructure/repositories/DocenteRepository.js`, `endpoints.js` |
-| Aplicación | `frontend/src/application/modules/docentes/**` |
-| Container | `frontend/src/application/container/modules/docentes.container.js` |
-| Presentación | `frontend/src/presentation/modules/docentes/pages/DocentesList.jsx`, `config/tableColumns.jsx`, `connectors/*`, `routes.jsx` |
+| DDL / modelo | `database/01-schemas/` (docentes), `models/docente.js` |
+| Repositorio | `infrastructure/repositories/TeacherRepository.js` |
+| Interfaz | `domain/interfaces/repositories/ITeacherRepository.js` |
+| Mapper API | `application/mappers/docentes/TeacherListMapper.js` |
+| Caso de uso | `application/use-cases/docentes/ListTeachersUseCase.js` |
+| Controller | `presentation/controllers/docentes/list.controller.js` |
+| Router | `presentation/routes/docentes.routes.js` |
+| Validators | `presentation/validators/docentes/` + `common/listValidator` |
+| DI | `container/modules/docentes/docentes.container.js`, `tokens/docentes.tokens.js` |
+| Montaje | `presentation/routes/index.js` → `/api/v1/docentes` |
+| Permiso | `docentes.ver` + `LISTAR` (seed 45) |
+
+#### Frontend
+
+| Área | Ruta |
+|------|------|
+| Dominio | `domain/repositories/IDocenteRepository.js`, `useCases/docentes/ObtenerTodosDocentesUseCase.js` |
+| Infra HTTP | `infrastructure/repositories/DocenteRepository.js`, `api/endpoints.js` |
+| Application | `application/modules/docentes/hooks/` (api + list/state) |
+| Container app | `application/container/modules/docentes.container.js` |
+| UI | `presentation/modules/docentes/pages/DocentesList.jsx`, `config/tableColumns.jsx`, connectors, `routes.jsx` |
+
+### 5.2 CFG — Carreras (tab `?tab=carreras`)
+
+#### Backend
+
+| Área | Ruta |
+|------|------|
+| Modelo | `infrastructure/database/models/carrera.js` |
+| Repositorio | `infrastructure/repositories/CareerRepository.js` |
+| Mapper API | `application/mappers/configuracion/CareerMapper.js` |
+| Caso de uso | `application/use-cases/configuracion/ListCarrerasUseCase.js` |
+| Controller | `presentation/controllers/configuracion/carreras/list.controller.js` |
+| Router | `presentation/routes/carreras.routes.js` |
+| Validators | `presentation/validators/configuracion/carreras.validator.js` |
+| DI | `container/modules/configuracion/carreras.container.js` |
+| Módulo | `container/modules/configuracion/index.js` → `registerConfiguracionModule` |
+| Permiso | `configuracion.carrera` + `LISTAR` (id 78) |
+
+#### Frontend
+
+| Área | Ruta |
+|------|------|
+| Hook API | `application/.../academico/hooks/api/useCarrerasApi.js` |
+| Hook feature | `application/.../academico/hooks/features/useCarrerasList.js` |
+| Provider | `application/.../academico/providers/CarreraProvider.jsx` |
+| UI tab | `presentation/.../academico/pages/CarrerasList.jsx` |
+| Columnas | `presentation/.../academico/config/carrerasTableColumns.jsx` |
+| Menú | `AcademicoConnector.jsx`, `routes.jsx` (`permisoAny`) |
+
+### 5.3 CFG — Materias (tab `?tab=materias`)
+
+Backend: `ListMateriasUseCase.js`, `materias.routes.js`, `materias.container.js`, permiso **`configuracion.materia`** (79).  
+Frontend: `useMateriasApi.js`, `useMateriasList.js`, `MateriaProvider.jsx`, `MateriasList.jsx` — misma estructura que §5.2.
+
+### 5.4 CFG — Planes (tab `?tab=planes`)
+
+Backend: `ListPlanesEstudiosUseCase.js`, `planes-estudios.routes.js`, permiso **`configuracion.plan-estudio`** (80).  
+Frontend: `usePlanesEstudiosApi.js`, `PlanesTabPanel.jsx`; detalle en guía **05** (`/plan/:planId`).
+
+### 5.5 CFG Complementarios — tab discapacidad
+
+Backend: router `/api/v1/discapacidad` (o recurso equivalente), permiso **`configuracion.complementario.discapacidad`** (88).  
+Frontend: `application/.../complementarios/hooks/` + `DiscapacidadesList.jsx`.
 
 ---
 
 ## 6. Checklist rápido (antes de dar por cerrado el listado)
 
+### Backend
+
+- [ ] ¿DDL = modelo Sequelize = columnas en `findAll`?
+- [ ] ¿`getSearchFields()` usa nombres de atributo del modelo?
+- [ ] ¿`List*UseCase` + `List*Controller` comparten `dataFieldName`?
+- [ ] ¿Router con `authenticate` + `verificarPermiso` + `listValidator`?
+- [ ] ¿Container + token + montaje en `routes/index.js`?
+- [ ] ¿Seeds 54/56/55 + matriz actualizados?
+- [ ] ¿`GET` lista con `limite` alto sin 500?
+
+### Frontend
+
 - [ ] ¿El `GET` lista sin error con muchos registros y `limit` máximo permitido por validator?
-- [ ] ¿`search` en backend cubre los campos que el negocio espera?
+- [ ] ¿`search` / búsqueda en cliente cubre todos los campos del mapper?
 - [ ] ¿El mapper del frontend incluye todos los campos que debe usar el buscador?
 - [ ] ¿Los permisos del middleware coinciden con `routes.jsx` y con la matriz/seed?
 - [ ] ¿Las rutas dinámicas no “secuestran” rutas estáticas (`/registrar`, `/listar`, etc.)?
 - [ ] ¿`TableActions` solo muestra eliminar si hay `deleteFn` o use case real?
 - [ ] ¿Conector exportado como `lazy` y envuelto por `Suspense` en el layout (patrón actual del proyecto)?
-- [ ] ¿La página quedó liviana (UI) y la lógica principal está en hook de estado + provider?
+- [ ] ¿La página quedó liviana (UI) y la lógica de listado está en `hooks/features` (o `state` si es pantalla completa)?
+- [ ] ¿La estructura respeta doc **06** (sin subcarpetas por entidad sin URL propia)?
 - [ ] ¿La acción de permiso coincide en `routes.jsx`, controles UI y `verificarPermiso` backend?
 
 ---
 
-## 7. Errores frecuentes vistos en integración tipo listado
+## 7. Errores frecuentes
 
-1. **Columnas del modelo Sequelize que no existen en MySQL** — error 500 en listado; revisar DDL vs `define()`.
-2. **Límite por defecto del API (50)** — la UI muestra “pocos” registros; para búsqueda global en cliente subir `limit` en la petición inicial (hasta el máximo validado en `listValidator`).
-3. **`getSearchFields` del repositorio** con nombres incorrectos (deben ser atributos del modelo, no nombres SQL con guiones bajos).
-4. **Permisos:** usar `DETALLE` para “ver ficha” en v2, no `VER` (ver `matriz-permisos-sistema.md` y comentarios en `TableActions.jsx`).
+### Backend
+
+1. **Columnas del modelo Sequelize que no existen en MySQL** — 500 en listado; revisar DDL vs `define()`.
+2. **`dataFieldName` distinto** entre use case, controller y `dataKey` del frontend — tabla vacía con 200 OK.
+3. **`getSearchFields`** con nombres SQL en lugar de atributos Sequelize.
+4. **Permiso del router ≠ seed 54** — 403 con rol que sí ve el menú.
+5. **Router no registrado** en container o `routes/index.js` — 404.
+
+### Frontend
+
+1. **Límite por defecto del API (50)** — subir `limit` en petición inicial (hasta máximo del `listValidator`).
+2. **Permisos:** `DETALLE` para ficha, no `VER` (v2).
+3. **Mapper frontend** sin campos usados por el buscador del tab.
 
 ---
 

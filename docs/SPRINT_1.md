@@ -4,9 +4,10 @@
 **Duración estimada:** 1-2 semanas
 **Pre-requisito:** Ninguno. Es el primer sprint.
 
-> **Nota de ruta:** las rutas frontend acordadas son `/configuracion/academico/...`
+> **Nota de ruta:** las rutas frontend canónicas son `/configuracion/academico/...`
 > (no `/configuracion-sistema/plan-estudio/...` como decía la primera versión).
-> Esto se alinea con la estructura ya existente del proyecto: `modules/configuracion/academico/`.
+> **Arquitectura de carpetas y hooks:** ver `docs/06_arquitectura_modulos_frontend.md`
+> (menú = directorio; hooks por tipo `api|context|features|state`, no por entidad/tab).
 
 ---
 
@@ -110,68 +111,68 @@ como deprecados — en V2 desaparecen porque `cursos` pasa a Institucional (Spri
 
 ## 6. Frontend
 
-### 6.1 Arquitectura de carpetas
+**Guía normativa:** `docs/06_arquitectura_modulos_frontend.md`  
+**Guías de listado/detalle:** `docs/04_*`, `docs/05_*` (patrón docentes para ABM; CFG usa tabs + `hooks/features`).
 
-Patrón: cada feature dentro de `academico/` tiene su propio `routes.jsx`. El `routes.jsx`
-padre solo hace spread de los hijos.
+### 6.1 Arquitectura de carpetas (implementada / objetivo)
+
+**Un directorio por ítem de menú**, no por entidad. Los tabs Carreras/Materias/Planes son **paneles** dentro de `AcademicoPage`, no submódulos con `routes.jsx` propios.
 
 ```
-frontend/src/presentation/modules/configuracion/
-├── routes.jsx                          # spread de submódulos
-├── academico/
-│   ├── routes.jsx                      # NUEVO — spread de las 4 features
-│   ├── pages/
-│   │   └── AcademicoPage.jsx           # layout con Tabs (Ant Design)
-│   ├── carreras/
-│   │   ├── routes.jsx
-│   │   ├── connectors/                 # llamadas a API (servicios)
-│   │   ├── pages/
-│   │   │   └── CarrerasPage.jsx
-│   │   └── components/
-│   │       ├── CarreraForm.jsx
-│   │       └── CarreraTable.jsx
-│   ├── materias/
-│   │   ├── routes.jsx
-│   │   ├── connectors/
-│   │   ├── pages/MateriasPage.jsx
-│   │   └── components/
-│   ├── plan-estudio/                   # vista matriz periodo × asignaturas
-│   │   ├── routes.jsx
-│   │   ├── connectors/
-│   │   ├── pages/
-│   │   │   ├── PlanesPage.jsx          # sidebar carreras + lista de planes
-│   │   │   └── PlanDetallePage.jsx     # matriz editable
-│   │   └── components/
-│   │       ├── MatrizPlan.jsx
-│   │       ├── PeriodoColumn.jsx
-│   │       └── AsignaturaCell.jsx
-│   └── prerrequisitos/
-│       ├── routes.jsx
-│       ├── connectors/
-│       ├── pages/PrerrequisitosPage.jsx
-│       └── components/
-│           └── PrerrequisitoEditor.jsx
-├── documentacion/
-├── complementario/
-└── ...
+frontend/src/
+├── application/modules/configuracion/
+│   ├── academico/                    # menú "Académico"
+│   │   ├── config/paths.js
+│   │   ├── hooks/
+│   │   │   ├── api/                  # useCarrerasApi, useMateriasApi, usePlanesEstudiosApi
+│   │   │   ├── context/
+│   │   │   ├── features/             # useCarrerasList, useMateriasList
+│   │   │   └── index.js
+│   │   ├── mappers/
+│   │   ├── context/ + providers/
+│   └── complementarios/              # menú "Datos complementarios"
+│       └── (misma forma hooks/api|context|features)
+│
+└── presentation/modules/configuracion/
+    ├── routes.jsx                    # spread: academico, complementarios, documentacion, …
+    ├── academico/
+    │   ├── routes.jsx                # /academico, /academico/plan/:planId, redirects legacy
+    │   ├── connectors/AcademicoConnector.jsx, PlanDetalleConnector.jsx
+    │   ├── config/academicoTabs.js, *TableColumns.jsx
+    │   └── pages/
+    │       ├── AcademicoPage.jsx
+    │       ├── CarrerasList.jsx, MateriasList.jsx, PlanesTabPanel.jsx
+    │       └── PlanDetallePage.jsx
+    └── complementarios/
+        └── (ComplementariosPage + tabs)
 ```
+
+**Eliminar / no reintroducir** (legacy pre-refactor):
+
+- `application/.../academico/carreras/`, `materias/`, `plan-estudio/` como árboles paralelos duplicados.
+- `presentation/.../academico/carreras/routes.jsx`, `materias/routes.jsx` como rutas de menú (solo redirects a `?tab=`).
+
+Alias Vite: `@application-configuracion`, `@configuracion`, `@application-configuracion-complementarios`, `@configuracion-complementarios`.
 
 ### 6.2 Pantalla con tabs
 
 Ruta raíz: `/configuracion/academico`
 
-Una sola página `AcademicoPage.jsx` con 4 tabs:
+`AcademicoPage.jsx` con **3 tabs** (prerrequisitos no es tab; viven en detalle del plan):
 
-| Tab | Permiso lectura | Componente |
-|---|---|---|
-| Carreras | `configuracion.carrera.LISTAR` | `<CarrerasPage />` |
-| Materias | `configuracion.materia.LISTAR` | `<MateriasPage />` |
-| Planes de Estudio | `configuracion.plan-estudio.LISTAR` | `<PlanesPage />` (con drill-down a `PlanDetallePage`) |
-| Prerrequisitos | `configuracion.plan-estudio.prerrequisitos.LISTAR` | `<PrerrequisitosPage />` |
+| Tab | Query `?tab=` | Permiso (`LISTAR`) | Componente |
+|---|---|---|---|
+| Plan de estudio | `planes` | `configuracion.plan-estudio` | `<PlanesTabPanel />` |
+| Carreras | `carreras` | `configuracion.carrera` | `<CarrerasList />` |
+| Materias | `materias` | `configuracion.materia` | `<MateriasList />` |
 
-Tabs filtrados por permiso: si el usuario no tiene un permiso, el tab no aparece.
+- Tabs filtrados por permiso; sin permisos → `Alert` de acceso denegado.
+- Entrada de menú: `permisoAny` sobre los tres permisos anteriores (`routes.jsx`).
+- `?tab=prerrequisitos` (legacy) redirige conceptualmente a tab planes.
+- Subruta transaccional: `/configuracion/academico/plan/:planId` → matriz + prerrequisitos (`DETALLE` en `configuracion.plan-estudio`).
+- Redirects: `/configuracion/academico/carreras|materias` → tab correspondiente.
 
-URL deep-linked: el tab activo se sincroniza con query string (`?tab=carreras`, `?tab=materias`, `?tab=planes`, `?tab=prerrequisitos`). Esto sigue el patrón de `aulas` que ya usa `?tab=resumen` y `?tab=asignar`.
+Patrón equivalente en **Complementarios:** `/configuracion/complementarios?tab=discapacidad|apoderados|idiomas` (permisos 88–90).
 
 ### 6.3 Tab Carreras
 
@@ -217,16 +218,27 @@ TOTAL       30 hrs ✓           30 hrs ✓           30 hrs ✓
 - Botón "Marcar vigente" (deshabilitado si ya lo es).
 - Botón "Editar plan" para metadatos (nombre, resolución ministerial, horas teóricas).
 
-### 6.6 Tab Prerrequisitos
+### 6.6 Prerrequisitos (dentro del detalle del plan)
 
-Ruta: `/configuracion/academico?tab=prerrequisitos`
+**No** es un tab del menú Académico. UI en `PlanDetallePage` (`/configuracion/academico/plan/:planId`).
 
-- Selector arriba: carrera → plan (default vigente).
-- Lista de asignaturas del plan agrupadas por periodo.
-- Al seleccionar una asignatura: panel lateral con sus prerrequisitos actuales + selector para agregar (filtrado a asignaturas del mismo plan de periodos anteriores).
-- Acción: clic en X para quitar prerrequisito; selector para agregar.
+- Permiso dedicado: `configuracion.plan-estudio.prerrequisitos` (CREAR/ELIMINAR en API).
+- Selector de asignatura + panel de prerrequisitos (misma pantalla que la matriz o sección asociada).
+- Reglas de negocio: §7.3.
 
-### 6.7 Estilos y patrón visual
+### 6.7 Application layer (hooks y providers)
+
+| Pieza | Ubicación | Rol |
+|-------|-----------|-----|
+| API | `hooks/api/use*Api.js` | `createApiHook`, `limit: 10000`, mapper en `mappers/` |
+| Listado tab | `hooks/features/use*List.js` | api + `useTableData` + campos de búsqueda |
+| Provider | `providers/*Provider.jsx` | `use*List()` → Context |
+| Consumo UI | `hooks/context/use*Context.js` | usado en `CarrerasList`, `MateriasList` |
+| Catálogo cross-módulo | `shared/hooks/useCarrerasCatalogApi.js` | importa mappers de `@application-configuracion/academico` |
+
+`AcademicoConnector` apila `CarreraProvider` + `MateriaProvider` y renderiza `AcademicoPage`.
+
+### 6.8 Estilos y patrón visual
 
 - **Ant Design** como librería base (ya en uso en el proyecto).
 - Tabs y tablas: variante densa (`size="small"` o `"middle"` según pantalla).
@@ -234,20 +246,17 @@ Ruta: `/configuracion/academico?tab=prerrequisitos`
 - Iconografía: `@ant-design/icons` ya disponible.
 - **Decidir patrón en consulta con el agente IA al arrancar el frontend:** revisar componentes ya construidos en `modules/academico/calificaciones/` para mantener consistencia (estructura de form, drawer, paginación, mensajería de error).
 
-### 6.8 Decisión sobre código legacy
+### 6.9 Limpieza de código legacy
 
-Carpetas existentes a evaluar:
+| Artefacto | Acción |
+|-----------|--------|
+| `academico/carreras/`, `academico/materias/` duplicados (application + presentation) | **Eliminar** tras migrar imports a `academico/pages` + `hooks/` consolidados |
+| `academico/cursos/`, `academico/turnos/` | **Eliminar** (V2 → Institucional Sprint 3) |
+| `complementario/discapacidad/` vs `complementarios/` | Quedarse solo en **`complementarios/`** |
+| `datos-complementarios/` (presentation) | Eliminar cuando no queden imports; redirects en `routes.jsx` |
+| Permisos `cfg.academico.*` en seeds | Ya reemplazados por `configuracion.*` (54–56) |
 
-- `frontend/src/presentation/modules/configuracion/academico/carreras/` — **mantener y refactorizar**. Si ya tiene CRUD funcional, adaptarlo a los endpoints nuevos del backend Tarea 1.
-- `frontend/src/presentation/modules/configuracion/academico/materias/` — **mantener y refactorizar**.
-- `frontend/src/presentation/modules/configuracion/academico/cursos/` (si existe) — **ELIMINAR**. En V2 desaparece.
-- `frontend/src/presentation/modules/configuracion/academico/turnos/` (si existe) — **ELIMINAR**. En V2 el turno vive en `paralelos_gestion`.
-
-El agente IA debe **inspeccionar primero** las carpetas existentes y decidir caso por caso:
-
-1. Si el componente actual mapea bien al nuevo endpoint → conservar y solo ajustar las llamadas/payloads.
-2. Si el componente no mapea (referencia a `cursos`, `cursos_horarios`, modelos viejos) → eliminar y rehacer.
-3. Si la carpeta no existe aún → crear desde cero siguiendo §6.1.
+Antes de cerrar Sprint 1: `grep` de `@configuracion/academico/carreras` y rutas huérfanas; build frontend sin warnings de alias rotos.
 
 ## 7. Reglas de validación (en aplicación)
 
@@ -273,29 +282,36 @@ Permisos exigidos en rutas: `configuracion.carrera`, `configuracion.materia`,
 `configuracion.plan-estudio`, `configuracion.plan-estudio.periodos`,
 `configuracion.plan-estudio.asignaturas`, `configuracion.plan-estudio.prerrequisitos`.
 
-### 8.2 Pendiente
+### 8.2 Frontend — refactor menú (parcial ✅)
+
+- [x] Consolidación `application/.../academico/` (hooks `api|context|features`, providers, mappers).
+- [x] `AcademicoPage` + tabs + `AcademicoConnector` + rutas con `permisoAny`.
+- [x] Listados Carreras/Materias en tabs (`CarrerasList`, `MateriasList`).
+- [x] Ruta `/configuracion/academico/plan/:planId` + `PlanDetalleConnector`.
+- [x] Complementarios: patrón tabs + discapacidad (listado).
+- [ ] Matriz editable + validador en vivo (depende T2–T3 backend).
+- [ ] Prerrequisitos completos en `PlanDetallePage`.
+- [ ] Limpieza física carpetas legacy `carreras/`, `materias/`, `complementario/`, `datos-complementarios/`.
+
+### 8.3 Pendiente backend y seeds
 
 - [ ] **Tarea 2:** `GET /planes-estudios/:id/matriz`
 - [ ] **Tarea 3:** `GET /planes-estudios/:id/validar`
-- [ ] **Tarea 4:** Seeder permisos `configuracion.*` (reemplaza códigos `cfg.academico.*` legacy)
-- [ ] **Tarea 5 (frontend):** Refactor estructura `academico/` con `routes.jsx` por feature + `AcademicoPage` con tabs
-- [ ] **Tarea 6 (frontend):** Tab Carreras y Tab Materias funcionando contra Tarea 1
-- [ ] **Tarea 7 (frontend):** Tab Planes con sidebar + lista + matriz editable
-- [ ] **Tarea 8 (frontend):** Tab Prerrequisitos
-- [ ] **Tarea 9 (frontend):** Auditar y eliminar/refactorizar carpetas legacy de `carreras/` y `materias/`
+- [x] **Tarea 4:** Seeders `configuracion.*` en 54–56 (verificar `ruta_sidebar` complementarios → `/configuracion/complementarios`)
 
 ## 9. Definition of Done
 
 - [x] Backend CRUD para los 6 grupos de endpoints.
 - [ ] Backend matriz y validador (Tareas 2-3).
-- [ ] Permisos sembrados con códigos `configuracion.*` reemplazando los `cfg.academico.*` legacy (Tarea 4).
-- [ ] Pantalla `AcademicoPage` con 4 tabs funcionales.
-- [ ] Tab Carreras: tabla + modal CRUD.
+- [x] Permisos sembrados `configuracion.*` (54–56); documentados en matriz § CFG.
+- [x] Arquitectura frontend documentada (`docs/06_arquitectura_modulos_frontend.md`) y aplicada en académico/complementarios.
+- [x] `AcademicoPage` con tabs (planes, carreras, materias) + permisos por tab.
+- [ ] Tab Carreras: tabla + modal CRUD completo.
 - [ ] Tab Materias: tabla + modal CRUD + filtros.
 - [ ] Tab Planes: sidebar + matriz editable + validador en vivo + marcar vigente.
-- [ ] Tab Prerrequisitos: selector de plan + lista por periodo + editor.
-- [ ] Código legacy de `carreras/` y `materias/` auditado y refactorizado o eliminado.
-- [ ] Prueba manual: desde cero, navegar a `/configuracion/academico`, recorrer los 4 tabs, crear una carrera nueva, una materia nueva, agregar al plan vigente, marcar otro plan como vigente, agregar un prerrequisito.
+- [ ] Prerrequisitos en `PlanDetallePage` (no tab suelto).
+- [ ] Carpetas legacy eliminadas (§6.9).
+- [ ] Prueba manual: `/configuracion/academico` (3 tabs) → plan detalle → CRUD carrera/materia → prerrequisito en plan.
 
 ---
 
@@ -306,7 +322,7 @@ Permisos exigidos en rutas: `configuracion.carrera`, `configuracion.materia`,
 > **Estado:** Tarea 1 completada. Se mantiene como referencia histórica.
 > Para continuar con Tareas 2-9, ver el prompt §10.2.
 
-### 10.2 Prompt activo — Tareas 2-4 backend + Tareas 5-10 frontend
+### 10.2 Prompt activo — Tareas 2-4 backend + culminación frontend Sprint 1
 
 Copiar y pegar al agente:
 
@@ -314,18 +330,22 @@ Copiar y pegar al agente:
 Contexto: Sistema académico INCOS (Node.js + React + MySQL + Sequelize + Ant Design).
 Sprint 1 del plan V2 en curso.
 
-Estado actual:
-- Backend Tarea 1 (CRUD de 6 recursos) ya terminada y funcionando. Endpoints en:
-  /api/v1/carreras, /materias, /planes-estudios, /periodos, /asignaturas-plan,
-  /prerrequisitos. RBAC aplicado con códigos configuracion.* aunque los permisos
-  todavía no están sembrados.
-- Frontend: existe estructura parcial en modules/configuracion/academico/ con
-  subcarpetas carreras/ y materias/ posiblemente legacy.
-- Seeders 10-15 cargados (carreras, planes, periodos, materias, asignaturas-plan,
-  prerrequisitos).
-- Schema V1 todavía vivo (cursos, cursos_horarios) pero V2 no se toca hasta Sprint 2.
+Documentación obligatoria antes de tocar código:
+- docs/06_arquitectura_modulos_frontend.md (carpetas = menú; hooks api|context|features|state)
+- docs/SPRINT_1.md §6–§9
+- docs/04_guia_implementacion_listado_modulo.md + docs/05_guia_implementacion_detalle_modulo.md
+- docs/matriz-permisos-sistema.md § CFG
 
-Trabajo pendiente del Sprint 1 (entrega en orden, espera aprobación entre cada uno).
+Estado actual:
+- Backend Tarea 1 (CRUD 6 recursos) terminada. RBAC configuracion.* en rutas.
+- Seeders 54–56 con permisos configuracion.* (78–83 académico).
+- Frontend refactorizado: application/.../configuracion/academico/ consolidado;
+  AcademicoPage (tabs planes|carreras|materias); PlanDetallePage en /plan/:planId;
+  complementarios/ con patrón tabs. Pendiente: eliminar carpetas legacy carreras/,
+  materias/, complementario/ duplicadas; matriz/validador backend; CRUD modales completos.
+- Seeders datos 10–15 cargados. Schema V1 vivo hasta Sprint 2.
+
+Trabajo pendiente (orden sugerido).
 
 == BACKEND (Tareas 2-4) ==
 
@@ -364,97 +384,18 @@ T4) Backend: actualizar seeders de permisos
     - 55-seed-roles-permisos.sql: ADMIN_SISTEMA recibe todas las acciones de todos
       los permisos nuevos.
 
-== FRONTEND ==
+== FRONTEND (culminación) ==
 
-ANTES DE EMPEZAR: inspecciona y reporta qué hay en estas rutas:
-- frontend/src/presentation/modules/configuracion/routes.jsx
-- frontend/src/presentation/modules/configuracion/academico/ (todos los hijos)
-- frontend/src/presentation/modules/academico/calificaciones/ (para ver patrón ya
-  validado por el equipo)
-- frontend/src/infrastructure/api/endpoints.js
-- frontend/src/presentation/components/ (componentes reutilizables)
-- Cualquier archivo con sistema de permisos en frontend (hook usePermisos, HOC, etc.)
+T5) Limpieza legacy §6.9: borrar carpetas duplicadas; grep imports rotos.
 
-Reporta y decide conmigo:
-A. ¿La carpeta carreras/ tiene CRUD funcional? ¿Qué endpoints consume? ¿Sigue el
-   patrón de calificaciones/?
-B. Lo mismo para materias/.
-C. ¿Existen cursos/ o turnos/? Propónme eliminarlas (decisión preconfirmada: SÍ).
-D. ¿Qué patrón de Form/Modal/Drawer/Tabla usa calificaciones/? Lo replicamos.
-E. ¿Cómo se valida permiso para mostrar/ocultar un botón? (componente PermissionGate,
-   hook useHasPermission, etc.)
+T6) Tab Carreras/Materias: modal CRUD, permisos CREAR/EDITAR/ELIMINAR, guía 04.
 
-Después de mi aprobación, ejecuta en orden:
+T7) Tab Planes + PlanDetallePage: consumir T2/T3; matriz editable; marcar vigente.
 
-T5) Frontend: refactor estructura academico/ según SPRINT_1.md §6.1.
-    - academico/routes.jsx que hace spread de routes de cada sub-feature.
-    - academico/pages/AcademicoPage.jsx con Tabs Ant Design.
-    - Sincronizar tab activo con query string ?tab=...
-    - Filtrar tabs por permisos del usuario (si no tiene LISTAR, el tab no aparece).
-    - Header de página con título "Configuración Académica" y breadcrumb.
+T8) Prerrequisitos en PlanDetallePage (permiso configuracion.plan-estudio.prerrequisitos).
 
-T6) Frontend: Tab Carreras (sub-feature carreras/).
-    - connectors/carrerasService.js consume /api/v1/carreras.
-    - pages/CarrerasPage.jsx con tabla + modal CRUD siguiendo patrón de calificaciones.
-    - components/CarreraForm.jsx (campos: codigo, nombre, area_formacion,
-      titulo_otorgado, color_hex con ColorPicker de antd, imagen_ruta con Upload).
-    - components/CarreraTable.jsx con columnas: código, nombre, área, color (chip),
-      thumbnail 32px, activo, acciones.
-    - Drawer al click en fila: detalle + lista de planes asociados + botón "Ir al
-      plan vigente" que navega al tab planes con ese plan abierto.
-    - Validación de permisos en botones: CREAR, EDITAR, ELIMINAR.
+Restricciones: respetar docs/06 (no crear hooks/carreras/ por entidad). Cero ALTER TABLE.
+RBAC en UI con hasPermiso / ActionButton / TableActions.
 
-T7) Frontend: Tab Materias (sub-feature materias/).
-    - Mismo patrón que T6.
-    - Filtros tipo (TEORICA/PRACTICA/TEORICA_PRACTICA) y clasificación.
-    - Búsqueda por nombre/sigla con debounce.
-
-T8) Frontend: Tab Planes de Estudio (sub-feature plan-estudio/).
-    - PlanesPage.jsx con sidebar izquierdo (240px) listando carreras + panel principal
-      con lista de planes de la carrera seleccionada (vigente arriba, históricos abajo).
-    - Cada plan: botón "Editar matriz" navega a /configuracion/academico/plan/:id.
-    - PlanDetallePage.jsx en ruta /configuracion/academico/plan/:id consume
-      /planes-estudios/:id/matriz para renderizar tabla periodo × asignaturas:
-      * Columnas: Periodo 1, Periodo 2, Periodo 3 (dinámico).
-      * Filas: asignaturas.
-      * Cada celda renderiza AsignaturaCell con sigla, nombre, horas editables inline,
-        modalidad (TRONCAL/ELECTIVA/REGULAR) como tag clickeable.
-      * Fila de TOTAL con horas asignadas vs esperadas. Badge verde si OK, rojo si no.
-      * Header: nombre del plan, RM, botón "Marcar vigente" (deshabilitado si ya lo es),
-        botón "Editar plan" (modal con metadatos).
-      * Botón "+" en cada periodo para agregar asignatura del plan (modal con selector
-        de materia + horas + modalidad).
-    - Validador en vivo: tras cada edición exitosa, refresca /matriz y /validar.
-
-T9) Frontend: Tab Prerrequisitos (sub-feature prerrequisitos/).
-    - Selector arriba: carrera > plan (default plan vigente).
-    - Lista de asignaturas agrupadas por periodo (collapse por periodo).
-    - Click en asignatura: panel lateral derecho con:
-      * Lista de prerrequisitos actuales (chip con X para quitar).
-      * Selector para agregar nuevo prerrequisito, filtrado a asignaturas del mismo
-        plan en periodos con numero < numero del periodo de la asignatura.
-
-T10) Frontend: limpieza.
-    - Eliminar configuracion/academico/cursos/ si existe.
-    - Eliminar configuracion/academico/turnos/ si existe.
-    - Actualizar configuracion/routes.jsx eliminando referencias.
-    - Si carreras/ o materias/ tenían código legacy que no se reutilizó, eliminarlo.
-
-Estilo y patrón:
-- Componentes Ant Design solamente.
-- Replicar patrones de modules/academico/calificaciones/ (consistencia visual).
-- Color carreras.color_hex como acento en headers del detalle de plan.
-- Tablas size="middle". Mensajería con notification de Ant Design.
-- Spinners de carga durante fetch.
-- Mensajes de error específicos según respuesta del backend.
-
-Restricciones:
-- Cero ALTER TABLE.
-- Validación crítica en backend; en frontend solo UX previa al POST.
-- Soft delete: frontend nunca muestra registros con deleted_at !== null.
-- Cada acción RBAC verificada antes de mostrar el botón correspondiente.
-- Cualquier duda sobre estilos o patrones: revisa modules/academico/calificaciones/
-  antes de inventar.
-
-Empieza con T2.
+Empieza con T2 (backend matriz) salvo que se pida solo frontend.
 ```

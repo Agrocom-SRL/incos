@@ -1,15 +1,23 @@
 # Documento 5 — Guía intermedia: implementar el detalle (ficha) de un registro
-## Patrón de referencia: ficha de docente (INCOS)
+## Patrones de referencia: docente (ficha) · plan de estudio (pantalla transaccional)
+
+**Versión:** 1.2  
+**Fecha:** 2026-05-27  
 
 **Checklist compacto (una página):** `docs/05a_checklist_detalle_una_pagina.md`  
 
-**Complementa:** `docs/04_guia_implementacion_listado_modulo.md` (listado suele enlazar a la ficha con `navigate` y `location.state`).
+**Complementa:** `docs/04_guia_implementacion_listado_modulo.md` (listado o tab enlaza al detalle).
+
+**Arquitectura frontend:** `docs/06_arquitectura_modulos_frontend.md`  
+
+**Arquitectura backend (detalle, bundle, DI, RBAC):** `docs/07_arquitectura_modulos_backend.md` — **obligatoria** junto con esta guía.
 
 **Relación con otros documentos**
 
 - `docs/02_estructura_sidebar.md` — keys de menú, `permiso` / `accion` en rutas de presentación.
 - `docs/matriz-permisos-sistema.md` — acción **`DETALLE`** para ver ficha (`GET /:id`), coherente con `TableActions` y middleware.
 - `docs/01_schema_datos.md` — modelo de datos; las **vistas SQL** de detalle deben reflejar columnas reales y joins necesarios.
+- `docs/SPRINT_1.md` — detalle de plan `/configuracion/academico/plan/:planId` (matriz + prerrequisitos).
 
 ---
 
@@ -17,7 +25,13 @@
 
 Describir los **pasos ordenados** y los **artefactos** para incorporar la **vista de detalle** de un recurso: una petición **`GET /api/v1/<recurso>/:id`**, respuesta enriquecida (perfil + colecciones relacionadas si aplica) y una **pantalla de ficha** con cabecera, pestañas o secciones, componentes reutilizables y estilos en `detail-page.css`.
 
-Patrón de referencia: **`/docentes/:id`** (`DocentesDetail`, contexto de detalle, asignaciones con colores de carrera/curso, horarios en tab aparte).
+Patrones de referencia:
+
+| Caso | Ruta | Referencia |
+|------|------|------------|
+| Ficha de entidad | `/docentes/:id` | `DocentesDetail`, `hooks/state/useDocenteDetail`, vistas SQL 50–52 |
+| Pantalla transaccional (no ficha simple) | `/configuracion/academico/plan/:planId` | `PlanDetallePage`, `PlanDetalleConnector`, permiso `configuracion.plan-estudio` + `DETALLE` |
+| Flujo institucional | `/institucional/horarios/...` | `hooks/state/useGestionHorarios*State` |
 
 ---
 
@@ -31,38 +45,97 @@ Patrón de referencia: **`/docentes/:id`** (`DocentesDetail`, contexto de detall
 
 ---
 
-## 3. Backend — pasos
+## 3. Backend — proceso completo
 
-### 3.1 Vistas o consultas de lectura
+Visión de capas: **`docs/07_arquitectura_modulos_backend.md`** §4 y §8.
 
-- Para fichas complejas, conviene **vistas en `backend/database/03-views/`** (una cabecera del registro, opcionalmente vistas para hijos) en lugar de exponer tablas internas crudas.
-- Referencia docente: `50-vista-base-docente-ficha.sql`, `51-vista-base-docente-asignaciones-curso.sql`, `52-vista-base-docente-curso-bloques-horario.sql` (incluyen `color_hex` de curso/carrera cuando la UI debe pintar sectores).
-- Tras crear o alterar vistas, **recrearlas en el entorno** para que el API devuelva las columnas nuevas.
+### 3.0 Flujo resumido
+
+```
+GET /api/v1/<recurso>/:id
+  → routes (auth + verificarPermiso DETALLE + idValidator)
+  → Get*ByIdController (BaseGetController)
+  → Get*ByIdUseCase.execute(id)
+  → Repository.findById | findDetailBundleBy*Id
+  → (opcional) vistas SQL 03-views
+  → Detail*Mapper → { success, data: { <dataFieldName>: { ... } } }
+```
+
+Si no existe registro principal → **`NotFoundError`** → 404 coherente.
+
+### 3.1 Lectura: vistas SQL vs modelo directo
+
+| Enfoque | Cuándo | Acción |
+|---------|--------|--------|
+| **Vistas SQL** | Ficha con muchos joins (docente + asignaciones + horarios) | Scripts en `database/03-views/`; recrear vistas en BD tras cada cambio |
+| **Modelo + repo** | Entidad simple o DTO armado en código | `findById` en `*Repository` sobre Sequelize |
+| **Híbrido** | Plan de estudio + matriz | `GetPlanEstudiosByIdUseCase` + endpoints `/matriz`, `/validar` |
+
+**Docente:** `50-vista-base-docente-ficha.sql`, `51-…-asignaciones-curso.sql`, `52-…-bloques-horario.sql`.
 
 ### 3.2 Repositorio
 
-- Método dedicado que devuelva un **objeto agregado** (p. ej. `{ teacher, assignments, schedules }`) usando `sequelize.query` contra vistas o joins controlados.
-- Referencia: `TeacherRepository.findDetailBundleByTeacherId`.
+- Método dedicado: `findDetailBundleByTeacherId(id)` o `findById(id)`.
+- Devuelve entidad de dominio o filas crudas para el mapper de aplicación.
+- No exponer lógica de presentación (formato fechas, labels) en el repositorio.
+
+**Referencias:** `TeacherRepository.findDetailBundleByTeacherId`; `CareerRepository` / plan repository para CFG.
 
 ### 3.3 Caso de uso y mapper de presentación
 
-- Caso de uso **`execute(id)`** que llame al repositorio; si el registro principal es `null`, lanzar **`NotFoundError`** con nombre de recurso.
-- **Mapper** (`TeacherDetailPresentationMapper`) que traduzca filas SQL → DTO estable (`profile`, `assignments`, `courseSchedules`, `access`), formatee fechas, concatene etiquetas y normalice valores auxiliares (p. ej. **`normalizeHex`** para colores de UI).
+| Paso | Acción |
+|------|--------|
+| 1 | **`Get*ByIdUseCase`** — `execute(id)` llama al repositorio. |
+| 2 | Si resultado principal es `null` → **`NotFoundError`** (`resourceName` legible). |
+| 3 | **`Detail*PresentationMapper`** — DTO estable: `profile`, colecciones hijas, campos calculados, `normalizeHex` para colores. |
+| 4 | `dataFieldName` acordado (`docente`, `plan`, `carrera`) — igual en controller y frontend `dataKey`. |
 
-### 3.4 Controlador HTTP
+**Referencias:** `GetTeacherDetailUseCase` + `TeacherDetailPresentationMapper.js`; `GetCarreraByIdUseCase` + `CareerMapper`; `GetPlanEstudiosByIdUseCase` + `StudyPlanMapper`.
 
-- Extender **`BaseGetController`**: inyectar `useCase`, `logger`, `responseFormatter`, `resourceName`, `dataFieldName` (clave del objeto dentro de `data` en la respuesta HTTP).
-- Referencia: `GetTeacherByIdController` → `getTeacherDetailUseCase`, `dataFieldName: 'docente'`.
+### 3.4 Controlador y router HTTP
 
-### 3.5 Router Express
+| Paso | Acción |
+|------|--------|
+| 1 | **`Get*ByIdController`** extends `BaseGetController` — inyecta use case, `responseFormatter`, `dataFieldName`. |
+| 2 | Router: **`GET /:id`** después de `GET /` y rutas fijas (`/matriz`, `/validar`, `/marcar-vigente`). |
+| 3 | Cadena: `authenticate` → `verificarPermiso(codigo, 'DETALLE')` → `idValidator` → `validateRequest` → controller. |
 
-- **`GET /:id`** **después** de `GET /` y de cualquier ruta estática bajo el mismo router, con la misma cadena de permisos que el negocio defina para ver ficha (`DETALLE`).
-- Referencia: `docentes.routes.js` (`idValidator` + `validateRequest`).
+**Referencias:** `get-by-id.controller.js` (docentes, carreras); `planes-estudios/get-by-id.controller.js`, `matriz.controller.js`, `validar.controller.js`.
 
-### 3.6 Contenedor de inyección
+### 3.5 Inyección de dependencias
 
-- Registrar caso de uso de detalle, controlador `get*ById`, y el router ya montado en `routes/index.js`.
-- Referencia: `docentes.container.js`, tokens en `docentes.tokens.js`.
+- Registrar `get*ByIdUseCase` y `get*ByIdController` en el mismo `*.container.js` del recurso.
+- El router del recurso ya debe estar registrado (mismo patrón que listado — doc **07** §5).
+- Tokens: `CONFIGURACION_TOKENS.getCarreraByIdUseCase`, etc.
+
+### 3.6 Permisos y endpoints especializados (CFG plan)
+
+| Endpoint | Permiso | Acción |
+|----------|---------|--------|
+| `GET /planes-estudios/:id` | `configuracion.plan-estudio` | DETALLE |
+| `GET /planes-estudios/:id/matriz` | `configuracion.plan-estudio` | DETALLE o LISTAR (según router) |
+| `GET /planes-estudios/:id/validar` | `configuracion.plan-estudio` | LISTAR |
+| Mutaciones periodos/asignaturas/prerrequisitos | `configuracion.plan-estudio.periodos` / `.asignaturas` / `.prerrequisitos` | CREAR, EDITAR, ELIMINAR |
+
+Documentar cada uno en **matriz** y en `SPRINT_1.md` §4.
+
+### 3.7 Contrato de respuesta detalle
+
+```json
+{
+  "success": true,
+  "data": {
+    "docente": {
+      "profile": { },
+      "assignments": [ ],
+      "courseSchedules": [ ]
+    }
+  }
+}
+```
+
+**404:** id inexistente o soft-deleted según reglas del repositorio.  
+**403:** permiso `DETALLE` no asignado al rol.
 
 ---
 
@@ -77,22 +150,17 @@ Patrón de referencia: **`/docentes/:id`** (`DocentesDetail`, contexto de detall
 
 ### 4.2 Capa de aplicación (módulo vertical)
 
-- **Mapper de detalle** (`mapDocenteDetailFromApi`): asegura forma estable del objeto que consumirá la UI (arrays por defecto, objetos anidados seguros).
-- **Hook API** con `createApiHook`: `dataType: 'object'`, `dataKey` acorde al backend (`docente`), `useCase: 'obtener*PorId'`, **`fetchName`** explícito (`getDocenteById`), validación mínima del id antes de llamar.
-- **Hook de estado** (`useDocenteDetail`): `useEffect` que dispara la carga cuando el id es válido; expone `profile`, colecciones, `breadcrumbItems`, `handleVolver`, `handleEditar`, lectura de `location.state` para `returnListPath`.
-- **Contexto** (`DocentesDetailContext`) + **Provider** (`DocentesDetailProvider`) que solo envuelve la página de ficha.
-- **Registro en factory** del caso de uso `obtener*PorId` en `*.container.js`.
+- **Mapper de detalle** en `mappers/` (forma estable para UI).
+- **Hook API** en `hooks/api/` (`dataType: 'object'`, `dataKey`, `fetchName`, validación de id).
+- **Hook de estado** en `hooks/state/use*Detail.js` o `use*PlanDetalle.js` para pantallas con `useParams`, breadcrumbs, `returnListPath`, tabs internos.
+- **Context + Provider** delgados; **Connector** en presentation recibe `id` de `useParams` si aplica.
+- Detalle que cuelga de un **menú con tabs**: subruta propia (`/plan/:planId`), no un cuarto tab de prerrequisitos.
+
+**CFG plan de estudio:** orquestación en `hooks/state/` (cuando se extraiga de `PlanDetallePage`); APIs de matriz/validar en `hooks/api/usePlanesEstudiosApi.js`.
 
 ### 4.2.1 Regla de arquitectura limpia (obligatoria en ABM)
 
-Para detalle/edición/gestión relacionadas al mismo recurso:
-
-- `pages/*` no debe contener lógica de carga ni reglas de navegación complejas.
-- La orquestación se concentra en `hooks/state/*` (ej. `use*Detail`, `use*Gestion`, `use*Form`).
-- `providers/*` deben permanecer delgados: crean valor de contexto y envuelven children.
-- `connectors/*` componen Provider + Page y son el punto de entrada en rutas.
-
-Objetivo: mantener SRP por capa y permitir migraciones incrementales sin romper rutas existentes.
+Ver doc **06**: `hooks/state/` por **pantalla**, no por entidad suelta; carpeta bajo el **ítem de menú** (`academico/`, no `academico/plan-estudio/hooks/` salvo que plan tenga menú propio en sidebar).
 
 ### 4.3 Presentación — página y layout
 
@@ -129,34 +197,79 @@ Así el botón `Volver` siempre respeta el punto de entrada real y evita perder 
 
 ---
 
-## 5. Lista de archivos de referencia (módulo docentes — detalle)
+## 5. Listas de archivos de referencia
 
-### Backend
+### 5.1 Docentes — ficha `/docentes/:id`
 
-| Área | Ruta |
-|------|------|
-| Vistas | `backend/database/03-views/50-vista-base-docente-ficha.sql`, `51-…-asignaciones-curso.sql`, `52-…-bloques-horario.sql` |
-| Repositorio | `backend/src/infrastructure/repositories/TeacherRepository.js` (`findDetailBundleByTeacherId`) |
-| Caso de uso | `backend/src/application/use-cases/docentes/GetTeacherDetailUseCase.js` |
-| Mapper API | `backend/src/application/mappers/docentes/TeacherDetailPresentationMapper.js` |
-| Controller | `backend/src/presentation/controllers/docentes/get-by-id.controller.js` |
-| Base | `backend/src/presentation/controllers/base/BaseGetController.js` |
-| Router | `backend/src/presentation/routes/docentes.routes.js` |
-| DI | `backend/src/infrastructure/container/modules/docentes/docentes.container.js` |
-
-### Frontend
+#### Backend
 
 | Área | Ruta |
 |------|------|
-| Dominio | `frontend/src/domain/useCases/docentes/ObtenerDocentePorIdUseCase.js`, `IDocenteRepository.js` |
-| Infra | `frontend/src/infrastructure/repositories/DocenteRepository.js` |
-| Aplicación | `frontend/src/application/modules/docentes/hooks/state/useDocenteDetail.js`, `hooks/api/useGetDocenteById.js`, `mappers/docenteDetailMapper.js`, `context/DocentesDetailContext.js`, `providers/DocentesDetailProvider.jsx` |
-| Presentación | `frontend/src/presentation/modules/docentes/pages/DocentesDetail.jsx`, `connectors/DocentesDetailConnector.jsx`, `components/**`, `styles/pages/detail-page.css` |
-| Rutas | `frontend/src/presentation/modules/docentes/routes.jsx` (entrada `/docentes/:id` **después** de `/docentes/:id/editar` si aplica, y siempre después de rutas estáticas como `/listar`) |
+| Vistas | `database/03-views/50-…`, `51-…`, `52-…` |
+| Repositorio | `TeacherRepository.findDetailBundleByTeacherId` |
+| Caso de uso | `GetTeacherDetailUseCase.js` |
+| Mapper | `TeacherDetailPresentationMapper.js` |
+| Controller | `presentation/controllers/docentes/get-by-id.controller.js` |
+| Router | `docentes.routes.js` — `GET /:id` + `DETALLE` |
+| DI | `docentes.container.js`, `DOCENTES_TOKENS` |
+| Permiso | `docentes.ver` + `DETALLE` |
+
+#### Frontend
+
+| Área | Ruta |
+|------|------|
+| Dominio | `ObtenerDocentePorIdUseCase.js`, `DocenteRepository.js` |
+| Application | `hooks/api/useGetDocenteById.js`, `hooks/state/useDocenteDetail.js`, mappers, providers |
+| UI | `DocentesDetail.jsx`, `DocentesDetailConnector.jsx`, `routes.jsx` |
+
+### 5.2 CFG — Carrera (detalle en drawer o futura ficha)
+
+| Área | Ruta |
+|------|------|
+| Use case | `GetCarreraByIdUseCase.js` |
+| Controller | `configuracion/carreras/get-by-id.controller.js` |
+| Router | `carreras.routes.js` — `GET /:id` |
+| Permiso | `configuracion.carrera` + `DETALLE` |
+
+### 5.3 CFG — Plan de estudio `/configuracion/academico/plan/:planId`
+
+#### Backend
+
+| Área | Ruta |
+|------|------|
+| Use cases | `GetPlanEstudiosByIdUseCase.js`, `GetPlanEstudiosMatrizUseCase.js`, `ValidarPlanEstudiosUseCase.js` |
+| Mappers | `StudyPlanMapper.js`, `PeriodMapper.js`, … |
+| Controllers | `planes-estudios/get-by-id.controller.js`, `matriz.controller.js`, `validar.controller.js` |
+| Sub-recursos | `periodos.controllers.js`, `asignaturas.controllers.js`, `prerrequisitos.controllers.js` |
+| Router | `presentation/routes/planes-estudios.routes.js` (orden: list → estáticos → `/:id`) |
+| DI | `planes-estudios.container.js` |
+| Permisos | `configuracion.plan-estudio` (80), `.periodos` (81), `.asignaturas` (82), `.prerrequisitos` (83) |
+
+#### Frontend
+
+| Área | Ruta |
+|------|------|
+| Rutas | `academico/routes.jsx` — `plan/:planId` **antes** de `ACADEMICO_BASE` |
+| Conector | `PlanDetalleConnector.jsx` |
+| Página | `PlanDetallePage.jsx` |
+| API | `hooks/api/usePlanesEstudiosApi.js` |
+| Permiso ruta | `configuracion.plan-estudio` + `DETALLE` |
+| Volver | `returnListPath` → `/configuracion/academico?tab=planes` |
 
 ---
 
 ## 6. Checklist rápido (antes de dar por cerrada la ficha)
+
+### Backend
+
+- [ ] ¿Vistas SQL desplegadas (si aplica) y mapper alineado a columnas?
+- [ ] ¿`Get*UseCase` lanza `NotFoundError` cuando corresponde?
+- [ ] ¿`GET /:id` con `DETALLE` y orden de rutas correcto?
+- [ ] ¿`dataFieldName` igual en use case, controller y frontend?
+- [ ] ¿Container registra use case + controller de detalle?
+- [ ] ¿Endpoints hijos (`/matriz`, prerrequisitos) con permiso propio en router?
+
+### Frontend
 
 - [ ] ¿`GET /:id` responde 404 coherente cuando el id no existe?
 - [ ] ¿El mapper backend no expone IDs internos innecesarios y sí etiquetas legibles?
@@ -170,13 +283,22 @@ Así el botón `Volver` siempre respeta el punto de entrada real y evita perder 
 
 ---
 
-## 7. Errores frecuentes vistos en integración tipo detalle
+## 7. Errores frecuentes
 
-1. **Orden de rutas en React Router** — `/:id` definido antes que `/listar` captura “listar” como id.
-2. **Columnas nuevas en vistas** no desplegadas en BD → el mapper recibe `undefined` y la UI muestra datos viejos o vacíos.
-3. **Permiso `VER` vs `DETALLE`** — en vocabulario v2 la ficha debe usar **`DETALLE`** (ver matriz de permisos).
-4. **Olvidar `dataKey` en `createApiHook`** — el objeto anidado no se extrae y el hook deja `data` en `null`.
-5. **Mezclar todo en una sola página** — dificulta pruebas y reutilización; extraer secciones a organismos como en docentes.
+### Backend
+
+1. **`GET /:id` antes que `/matriz` o `/validar`** — Express interpreta el segmento como id.
+2. **Vistas no recreadas** — columnas nuevas en `undefined`.
+3. **Bundle incompleto en repositorio** — ficha parcial sin hijos.
+4. **Permiso `DETALLE` ausente en 55** — 403 con menú visible por otro permiso del tab.
+
+### Frontend
+
+1. **Orden de rutas React** — `/:id` antes que `/listar`.
+2. **Permiso `VER` vs `DETALLE`** en rutas o `TableActions`.
+3. **`dataKey` incorrecto en `createApiHook`** — `data` null con 200 OK.
+4. **Lógica de carga en `pages/`** — mover a `hooks/state/`.
+5. **Página monolítica** — extraer organismos (docentes, plan).
 
 ---
 

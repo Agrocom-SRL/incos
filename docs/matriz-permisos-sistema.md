@@ -1,7 +1,9 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-05-26
+## Ultima actualizacion: 2026-05-27
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+**Arquitectura:** frontend `docs/06_arquitectura_modulos_frontend.md` · backend `docs/07_arquitectura_modulos_backend.md` · guías paso a paso `docs/04_*` y `docs/05_*`.
 
 ## ADMIN_SISTEMA (rol_id = 1)
 
@@ -15,9 +17,10 @@ Tras cambiar `ruta_sidebar` o `grupo_ui` en el seeder **54**, en BD ya existente
 
 Todo alta/baja/modificacion (ABM) o nueva pantalla de un modulo debe cumplir estas restricciones minimas:
 
-1. **Arquitectura limpia por capa**
+1. **Arquitectura limpia por capa** (detalle en `docs/06_arquitectura_modulos_frontend.md`)
+   - Carpetas alineadas al **menu lateral** (un directorio por item de menu).
    - `presentation/pages`: UI pura.
-   - `application/hooks/state`: logica de pantalla.
+   - `application/hooks/api|features|state`: API; listados en tabs (`features`); pantallas (`state`).
    - `application/providers`: inyeccion de contexto.
    - `presentation/connectors`: composicion Provider + Page.
 2. **Permisos coherentes extremo a extremo**
@@ -455,6 +458,49 @@ UI: botones de **Guardar plan / Añadir bloque** usan `ActionButton` con `instit
 #### Hook `useHorariosOfertaPermisos`
 
 CREAR/EDITAR/ELIMINAR de la tabla de cursos en armado acepta `institucional.gestion.horarios` **o** las mismas acciones sobre `institucional.horario.plantilla` si el rol las tiene en seed (p. ej. plantilla con CREAR).
+
+### CFG - Configuracion (`/configuracion/*`)
+
+**Arquitectura frontend:** `docs/06_arquitectura_modulos_frontend.md`. Seeds: ids **78–93** en `54-seed-permisos.sql`, acciones en **56**, asignacion roles en **55**.
+
+#### Académico — Plan de estudio (menu unico, tabs + subruta)
+
+| Ruta UI | Permiso (codigo) | ID | Acciones tipicas (56) | Uso |
+|---------|------------------|-----|----------------------|-----|
+| `/configuracion/academico` | Entrada: `permisoAny` 78–80 | — | LISTAR en cada tab visible | Menu "Academico"; tabs filtrados por permiso |
+| `?tab=planes` | `configuracion.plan-estudio` | 80 | LISTAR, DETALLE, CREAR, EDITAR, ACTIVAR | Tab planes |
+| `?tab=carreras` | `configuracion.carrera` | 78 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab carreras |
+| `?tab=materias` | `configuracion.materia` | 79 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab materias |
+| `/configuracion/academico/plan/:planId` | `configuracion.plan-estudio` | 80 | DETALLE (+ EDITAR matriz via 82) | Matriz del plan; prerrequisitos usan 83 |
+| (API periodos) | `configuracion.plan-estudio.periodos` | 81 | LISTAR, CREAR, EDITAR, ELIMINAR | Anios del plan |
+| (API asignaturas) | `configuracion.plan-estudio.asignaturas` | 82 | LISTAR, CREAR, EDITAR, ELIMINAR | Celdas matriz |
+| (API prerrequisitos) | `configuracion.plan-estudio.prerrequisitos` | 83 | LISTAR, DETALLE, CREAR, ELIMINAR | Editor en detalle de plan |
+
+Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requieren permiso distinto.
+
+**Roles (seed 55):** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio 78–83; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales documentados en 55.
+
+#### Datos complementarios (tabs)
+
+| Ruta UI canonica | Permiso | ID | Notas |
+|------------------|---------|-----|--------|
+| `/configuracion/complementarios` | `permisoAny` 88–90 | — | Menu "Datos complementarios" |
+| `?tab=discapacidad` | `configuracion.complementario.discapacidad` | 88 | Listado operativo |
+| `?tab=apoderados` | `configuracion.complementario.apoderados` | 89 | Placeholder / pendiente ABM |
+| `?tab=idiomas` | `configuracion.complementario.idiomas` | 90 | Placeholder / pendiente ABM |
+
+`ruta_sidebar` en seed 54 aun apunta `/configuracion/datos-complementarios`; la app redirige a `/configuracion/complementarios`. Alinear seed en proxima migracion de permisos.
+
+#### Otros items CFG (rutas separadas)
+
+| Menu | Ruta | Permisos (ids) |
+|------|------|----------------|
+| Documentacion | `/configuracion/documentacion` | 84–87 |
+| Convenios | `/configuracion/convenios` | 91 |
+| Historial actividades | `/configuracion/historial-actividades` | 93 |
+| Pagos config | `/pagos/configuracion` | 92 |
+
+Codigos legacy `cfg.academico.*` **no** deben usarse en codigo nuevo; fueron reemplazados por `configuracion.*`.
 
 ### REP - Reportes (`/reportes/*`)
 Permisos: `reportes.*`

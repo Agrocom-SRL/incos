@@ -1,8 +1,10 @@
 # Checklist de una página — nuevo detalle / ficha (INCOS)
 
 **Complemento de:** `docs/05_guia_implementacion_detalle_modulo.md`  
+**Arquitectura frontend:** `docs/06_arquitectura_modulos_frontend.md`  
+**Arquitectura backend:** `docs/07_arquitectura_modulos_backend.md`  
 
-Marca en orden. Si un ítem no aplica, táchalo y anota por qué.
+Marca en orden. Si un ítem no aplica, táchalo y anota por qué (ej. detalle embebido en modal sin `/:id`).
 
 ---
 
@@ -10,13 +12,16 @@ Marca en orden. Si un ítem no aplica, táchalo y anota por qué.
 
 | # | Tarea |
 |---|--------|
-| 1 | Vistas SQL o consultas de lectura alineadas al modelo de negocio (cabecera + hijos si aplica). |
-| 2 | Repositorio: método que arme el **bundle** o entidad enriquecida para el detalle. |
-| 3 | Caso de uso `execute(id)` + **NotFoundError** si no hay registro principal. |
-| 4 | Mapper de presentación: DTO estable (fechas, textos compuestos, hex/colores si la UI los usa). |
-| 5 | `Get*ByIdController` extends **`BaseGetController`** (`resourceName`, `dataFieldName`). |
-| 6 | `GET /:id` con `authenticate` + `verificarPermiso` + **`DETALLE`** + `idValidator` + `validateRequest`. |
-| 7 | Tokens + `*.container.js` + router ya montado en `routes/index.js`. |
+| 1 | Vistas `03-views/` recreadas en BD (si ficha compleja) o `findById` en repositorio. |
+| 2 | Repositorio: `findDetailBundle*` o equivalente (cabecera + hijos). |
+| 3 | `Get*ByIdUseCase.execute(id)` + **NotFoundError** si no hay registro. |
+| 4 | Mapper detalle: DTO estable (`profile`, colecciones, fechas, hex). |
+| 5 | `Get*ByIdController` (`BaseGetController`, `dataFieldName` = use case). |
+| 6 | `GET /:id` **después** de rutas estáticas (`/matriz`, …). |
+| 7 | Cadena: `authenticate` + `verificarPermiso` + **`DETALLE`** + `idValidator` + `validateRequest`. |
+| 8 | Registro en `*.container.js` + tokens; router montado en `routes/index.js`. |
+| 9 | Seeds 54/56/55 + fila en matriz para `DETALLE` y endpoints hijos. |
+| 10 | Prueba: 404 id inválido, 403 rol sin DETALLE, JSON con clave `dataFieldName` esperada. |
 
 ---
 
@@ -27,7 +32,7 @@ Marca en orden. Si un ítem no aplica, táchalo y anota por qué.
 | 1 | `I*Repository.obtenerPorId` + caso de uso dominio + repositorio HTTP + `BY_ID` en `endpoints.js`. |
 | 2 | `register*Module`: factory expone `obtener*PorId`. |
 | 3 | `createApiHook` con `dataType: 'object'`, `dataKey` = clave del payload API, `mapper` de detalle. |
-| 4 | Hook de estado (`use*Detail`) + `useEffect` por id válido + `breadcrumb` / navegación volver/editar. |
+| 4 | Hook de estado en `hooks/state/` (`use*Detail`) + carga por id + breadcrumb / volver / editar. |
 | 5 | `*DetailContext` + `*DetailProvider`; Connector recibe `id` de `useParams`. |
 | 6 | Página: `PageTemplate` / `PageHeader` / `Spin` / `Alert`; cabecera de ficha; `Tabs` o secciones. |
 | 7 | Secciones pesadas en **organismos**; tarjetas repetibles en **moléculas**; utilidades de color en **átomos**. |
