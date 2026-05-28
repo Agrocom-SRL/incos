@@ -30,7 +30,7 @@
 }
 
 .cfg-planes-carrera-item--active {
-  background: #e6f4ff;
+  background: var(--ant-color-primary-bg, #e6f4ff);
 }
 
 .cfg-planes-carrera-swatch {
@@ -42,5 +42,57 @@
 
 .cfg-planes-plan-item {
   padding: 12px 0 !important;
-  border-block-end: 1px solid #f0f0f0;
+  border-block-end: 1px solid var(--border, #f0f0f0);
+}
+
+.cfg-planes-tab__alert {
+  margin-bottom: 16px;
+}
+
+.cfg-planes-sidebar__title {
+  display: block;
+  padding: 8px 12px 4px;
+  font-size: 13px;
+}
+
+.cfg-planes-carrera-row {
+  width: 100%;
+}
+
+.cfg-planes-carrera-row__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.cfg-planes-carrera-row__codigo {
+  font-size: 13px;
+}
+
+.cfg-planes-carrera-row__nombre {
+  font-size: 12px;
+}
+
+.cfg-planes-carrera-row__tag {
+  margin: 0;
+  font-size: 11px;
+}
+
+.cfg-planes-main__toolbar {
+  margin-bottom: 16px;
+}
+
+.cfg-planes-main__heading {
+  margin: 0 !important;
+}
+
+.cfg-planes-main__subtitle {
+  font-size: 13px;
+}
+
+.cfg-planes-main__search {
+  max-width: 320px;
+}
+
+.cfg-planes-plan-item__meta {
+  font-size: 13px;
 }

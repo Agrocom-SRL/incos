@@ -15,6 +15,7 @@ import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { usePlanesEstudiosApi } from '../api/usePlanesEstudiosApi';
 
 const initialsFromCarrera = (c) => {
@@ -82,7 +83,7 @@ export const useCarreraDetallePage = () => {
   );
 
   const avatarInitials = useMemo(() => initialsFromCarrera(carrera), [carrera]);
-  const avatarColor = carrera?.colorHex || '#52c41a';
+  const avatarColor = sanitizeDocenteColorHex(carrera?.colorHex) ?? null;
 
   const breadcrumbItems = useMemo(
     () => [

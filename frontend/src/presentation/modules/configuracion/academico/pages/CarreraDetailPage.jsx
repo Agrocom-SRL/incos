@@ -1,24 +1,24 @@
 /**
- * Detalle de carrera — página completa (patrón A + Politica resumen card).
+ * Detalle de carrera — página completa (DetailInfoCard + sd-field).
  */
 
-import { Alert, Button, Flex, List, Spin, Tag, Typography } from 'antd';
-import { ArrowLeftOutlined, CheckCircleOutlined, EditOutlined, ReadOutlined } from '@ant-design/icons';
+import { Alert, Button, Flex, List, Spin, Tag } from 'antd';
+import {
+  ArrowLeftOutlined,
+  CheckCircleOutlined,
+  EditOutlined,
+  ReadOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
+import DetailField from '@docentes/components/atoms/DetailField';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { ActionButton, BackButton, Card } from '@atoms';
 import { useCarreraDetallePage } from '@application-configuracion/academico/hooks';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/academico-form-page.css';
-
-const { Text } = Typography;
-
-const FilaResumen = ({ label, value }) => (
-  <div className="cfg-academico-resumen__fila">
-    <Text className="cfg-academico-resumen__label">{label}</Text>
-    <Text className="cfg-academico-resumen__valor">{value ?? '—'}</Text>
-  </div>
-);
 
 const CarreraDetailPage = () => {
   const {
@@ -37,6 +37,8 @@ const CarreraDetailPage = () => {
     handleVerPlan,
     refetch,
   } = useCarreraDetallePage();
+
+  const accent = sanitizeDocenteColorHex(avatarColor) || undefined;
 
   if (isInvalidId) {
     return (
@@ -79,7 +81,7 @@ const CarreraDetailPage = () => {
     >
       <div className="cfg-academico-page">
         <Spin spinning={loading} tip="Cargando carrera…">
-          <Flex vertical gap="large" style={{ width: '100%' }}>
+          <Flex vertical gap="large" className="cfg-academico-page__stack">
             {error ? (
               <Alert
                 type="error"
@@ -96,33 +98,20 @@ const CarreraDetailPage = () => {
             {carrera ? (
               <>
                 <Card className="cfg-academico-resumen-card" styles={{ body: { padding: 24 } }}>
-                  <Flex justify="space-between" align="flex-start" wrap="wrap" gap={16}>
+                  <div className="cfg-academico-entity-header">
                     <Flex gap={16} align="center">
                       <div
-                        className="sd-profile__avatar"
-                        style={{
-                          width: 56,
-                          height: 56,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor: avatarColor,
-                          color: '#fff',
-                          fontWeight: 700,
-                          fontSize: 18,
-                        }}
+                        className="cfg-academico-entity-avatar"
+                        style={accent ? { backgroundColor: accent } : undefined}
                       >
                         {avatarInitials}
                       </div>
                       <div>
-                        <Text strong style={{ fontSize: 20, display: 'block' }}>
-                          {carrera.nombre}
-                        </Text>
-                        <Text type="secondary">
+                        <span className="cfg-academico-entity-title">{carrera.nombre}</span>
+                        <span className="cfg-academico-resumen__label" style={{ display: 'block' }}>
                           {carrera.codigo}
                           {carrera.areaFormacion ? ` · ${carrera.areaFormacion}` : ''}
-                        </Text>
+                        </span>
                       </div>
                     </Flex>
                     <Flex gap={8} align="center">
@@ -134,57 +123,44 @@ const CarreraDetailPage = () => {
                         <Tag color="default">Inactiva</Tag>
                       )}
                     </Flex>
-                  </Flex>
+                  </div>
                   {carrera.tituloOtorgado ? (
-                    <Text type="secondary" style={{ display: 'block', marginTop: 12 }}>
-                      {carrera.tituloOtorgado}
-                    </Text>
+                    <span className="cfg-academico-entity-tagline">{carrera.tituloOtorgado}</span>
                   ) : null}
                 </Card>
 
-                <Card
-                  title="Datos de la carrera"
-                  headerColor="primary"
-                  variant="outlined"
-                  shadow={false}
-                  className="cfg-academico-resumen-card"
-                >
-                  <FilaResumen label="Código" value={carrera.codigo} />
-                  <FilaResumen label="Área de formación" value={carrera.areaFormacion} />
-                  <FilaResumen label="Título otorgado" value={carrera.tituloOtorgado} />
-                  <FilaResumen
-                    label="Color"
-                    value={
-                      carrera.colorHex ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                          <span
-                            style={{
-                              width: 14,
-                              height: 14,
-                              borderRadius: 3,
-                              backgroundColor: carrera.colorHex,
-                              border: '1px solid rgba(0,0,0,0.1)',
-                            }}
-                          />
-                          {carrera.colorHex}
-                        </span>
-                      ) : (
-                        '—'
-                      )
-                    }
-                  />
-                  <FilaResumen label="Imagen" value={carrera.imagenRuta} />
+                <DetailInfoCard title="Datos de la carrera" icon={<TeamOutlined />} cols={1}>
+                  <DetailField label="Código">{carrera.codigo}</DetailField>
+                  <DetailField label="Área de formación">{carrera.areaFormacion}</DetailField>
+                  <DetailField label="Título otorgado">{carrera.tituloOtorgado}</DetailField>
+                  <DetailField label="Color">
+                    {carrera.colorHex ? (
+                      <span className="cfg-academico-color-chip">
+                        <span
+                          className="cfg-academico-color-chip__swatch"
+                          style={{
+                            backgroundColor:
+                              sanitizeDocenteColorHex(carrera.colorHex) || undefined,
+                          }}
+                        />
+                        {carrera.colorHex}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </DetailField>
+                  <DetailField label="Imagen">{carrera.imagenRuta}</DetailField>
                   {carrera.descripcion ? (
-                    <FilaResumen label="Descripción" value={carrera.descripcion} />
+                    <DetailField label="Descripción" span={2}>
+                      {carrera.descripcion}
+                    </DetailField>
                   ) : null}
-                </Card>
+                </DetailInfoCard>
 
-                <Card
+                <DetailInfoCard
                   title="Planes de estudio"
-                  headerColor="primary"
-                  variant="outlined"
-                  shadow={false}
-                  className="cfg-academico-resumen-card"
+                  icon={<ReadOutlined />}
+                  cols={1}
                   extra={
                     planVigente ? (
                       <ActionButton
@@ -223,7 +199,7 @@ const CarreraDetailPage = () => {
                               <>
                                 {plan.nombre_plan || `Plan #${plan.id}`}
                                 {plan.vigente ? (
-                                  <Tag color="success" style={{ marginLeft: 8 }}>
+                                  <Tag color="success" className="cfg-planes-tag-vigente">
                                     Vigente
                                   </Tag>
                                 ) : null}
@@ -235,7 +211,7 @@ const CarreraDetailPage = () => {
                       )}
                     />
                   </Spin>
-                </Card>
+                </DetailInfoCard>
               </>
             ) : null}
           </Flex>

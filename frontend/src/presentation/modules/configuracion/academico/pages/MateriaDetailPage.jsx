@@ -1,24 +1,17 @@
 /**
- * Detalle de materia — página completa.
+ * Detalle de materia — página completa (DetailInfoCard + sd-field).
  */
 
-import { Alert, Button, Flex, Spin, Tag, Typography } from 'antd';
-import { ArrowLeftOutlined, CheckCircleOutlined, EditOutlined } from '@ant-design/icons';
+import { Alert, Button, Flex, Spin, Tag } from 'antd';
+import { ArrowLeftOutlined, BookOutlined, CheckCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
+import DetailField from '@docentes/components/atoms/DetailField';
 import { ActionButton, BackButton, Card } from '@atoms';
 import { useMateriaDetallePage } from '@application-configuracion/academico/hooks';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/academico-form-page.css';
-
-const { Text } = Typography;
-
-const FilaResumen = ({ label, value }) => (
-  <div className="cfg-academico-resumen__fila">
-    <Text className="cfg-academico-resumen__label">{label}</Text>
-    <Text className="cfg-academico-resumen__valor">{value ?? '—'}</Text>
-  </div>
-);
 
 const MateriaDetailPage = () => {
   const {
@@ -75,7 +68,7 @@ const MateriaDetailPage = () => {
     >
       <div className="cfg-academico-page">
         <Spin spinning={loading} tip="Cargando materia…">
-          <Flex vertical gap="large" style={{ width: '100%' }}>
+          <Flex vertical gap="large" className="cfg-academico-page__stack">
             {error ? (
               <Alert
                 type="error"
@@ -92,14 +85,10 @@ const MateriaDetailPage = () => {
             {materia ? (
               <>
                 <Card className="cfg-academico-resumen-card" styles={{ body: { padding: 24 } }}>
-                  <Flex justify="space-between" align="flex-start" wrap="wrap" gap={16}>
+                  <div className="cfg-academico-entity-header">
                     <div>
-                      <Text strong style={{ fontSize: 20, display: 'block', fontFamily: 'monospace' }}>
-                        {materia.sigla}
-                      </Text>
-                      <Text strong style={{ fontSize: 18, display: 'block', marginTop: 4 }}>
-                        {materia.nombre}
-                      </Text>
+                      <span className="cfg-academico-entity-subtitle">{materia.sigla}</span>
+                      <span className="cfg-academico-entity-name">{materia.nombre}</span>
                     </div>
                     <Flex gap={8}>
                       {materia.tipo ? <Tag color={tipoTagColor}>{tipoLabel}</Tag> : null}
@@ -111,24 +100,20 @@ const MateriaDetailPage = () => {
                         <Tag color="default">Inactiva</Tag>
                       )}
                     </Flex>
-                  </Flex>
+                  </div>
                 </Card>
 
-                <Card
-                  title="Datos de la materia"
-                  headerColor="primary"
-                  variant="outlined"
-                  shadow={false}
-                  className="cfg-academico-resumen-card"
-                >
-                  <FilaResumen label="Sigla" value={materia.sigla} />
-                  <FilaResumen label="Nombre" value={materia.nombre} />
-                  <FilaResumen label="Tipo" value={tipoLabel} />
-                  <FilaResumen label="Clasificación" value={materia.clasificacion} />
+                <DetailInfoCard title="Datos de la materia" icon={<BookOutlined />} cols={1}>
+                  <DetailField label="Sigla">{materia.sigla}</DetailField>
+                  <DetailField label="Nombre">{materia.nombre}</DetailField>
+                  <DetailField label="Tipo">{tipoLabel}</DetailField>
+                  <DetailField label="Clasificación">{materia.clasificacion}</DetailField>
                   {materia.objetivos ? (
-                    <FilaResumen label="Objetivos" value={materia.objetivos} />
+                    <DetailField label="Objetivos" span={2}>
+                      {materia.objetivos}
+                    </DetailField>
                   ) : null}
-                </Card>
+                </DetailInfoCard>
               </>
             ) : null}
           </Flex>

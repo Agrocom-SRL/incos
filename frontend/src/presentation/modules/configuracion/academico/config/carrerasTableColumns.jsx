@@ -6,7 +6,9 @@ import {
   carreraDetallePath,
   carreraEditarPath,
 } from '@application-configuracion/academico/config/paths';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { TableActions, TableCell } from '@molecules';
+import '../styles/academico-form-page.css';
 
 export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) => {
   return [
@@ -15,26 +17,24 @@ export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) 
       dataIndex: 'codigo',
       fixed: 'left',
       ellipsis: true,
-      render: (codigo, record) => (
-        <TableCell strong textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}>
-          {record.colorHex ? (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 2,
-                  backgroundColor: record.colorHex,
-                  flexShrink: 0,
-                }}
-              />
-              {codigo}
-            </span>
-          ) : (
-            codigo
-          )}
-        </TableCell>
-      ),
+      render: (codigo, record) => {
+        const swatch = sanitizeDocenteColorHex(record.colorHex);
+        return (
+          <TableCell strong textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}>
+            {swatch ? (
+              <span className="cfg-academico-color-chip">
+                <span
+                  className="cfg-table-codigo-chip__dot"
+                  style={{ backgroundColor: swatch }}
+                />
+                {codigo}
+              </span>
+            ) : (
+              codigo
+            )}
+          </TableCell>
+        );
+      },
       sorter: (a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }),
       defaultSortOrder: 'ascend',
     },
