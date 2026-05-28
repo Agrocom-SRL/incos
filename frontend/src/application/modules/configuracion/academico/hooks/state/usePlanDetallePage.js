@@ -4,13 +4,18 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { PLANES_LIST_PATH } from '@application-configuracion/academico/config/paths';
+import {
+  resolveMenuSidebarKey,
+  resolveReturnListPath,
+} from '@application-configuracion/academico/config/academicoNavigation';
 import {
   buildAsignaturaCatalog,
   buildPlanMatrizRows,
 } from '@application-configuracion/academico/utils/buildPlanMatrizGrid';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { usePlanEstudiosDetalleApi } from '../api/usePlanEstudiosDetalleApi';
 
 const DEBOUNCE_MS = 500;
@@ -19,7 +24,15 @@ export const usePlanDetallePage = () => {
   const { planId: planIdParam } = useParams();
   const planId = Number(planIdParam);
   const navigate = useNavigate();
+  const location = useLocation();
   const { message } = App.useApp();
+
+  const returnListPath = resolveReturnListPath(location, PLANES_LIST_PATH);
+  const menuSidebarKey = resolveMenuSidebarKey(location);
+  const navState = useMemo(
+    () => ({ returnListPath, menuSidebarKey }),
+    [returnListPath, menuSidebarKey],
+  );
   const api = usePlanEstudiosDetalleApi();
   const saveTimersRef = useRef(new Map());
 
@@ -37,14 +50,15 @@ export const usePlanDetallePage = () => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
-      { title: 'Académico', href: PLANES_LIST_PATH },
+      { title: 'Académico', href: returnListPath },
       { title: planMeta?.nombre_plan || 'Detalle del plan' },
     ],
-    [planMeta?.nombre_plan],
+    [planMeta?.nombre_plan, returnListPath],
   );
 
   const carrera = planMeta?.carrera ?? null;
-  const carreraColor = carrera?.colorHex || '#52c41a';
+  const carreraColor =
+    sanitizeDocenteColorHex(carrera?.colorHex ?? carrera?.color_hex) ?? null;
 
   const matrizRows = useMemo(() => buildPlanMatrizRows(periodos), [periodos]);
   const asignaturaCatalog = useMemo(() => buildAsignaturaCatalog(periodos), [periodos]);
@@ -99,8 +113,11 @@ export const usePlanDetallePage = () => {
   }, [loadAll]);
 
   const handleVolver = useCallback(() => {
-    navigate(PLANES_LIST_PATH);
-  }, [navigate]);
+    navigate(
+      returnListPath,
+      menuSidebarKey != null ? { state: { menuSidebarKey } } : undefined,
+    );
+  }, [navigate, returnListPath, menuSidebarKey]);
 
   const handleMarcarVigente = useCallback(async () => {
     if (planMeta?.vigente) return;
@@ -198,6 +215,7 @@ export const usePlanDetallePage = () => {
     carrera,
     carreraColor,
     breadcrumbItems,
+    navState,
     handleVolver,
     handleMarcarVigente,
     marcarVigenteLoading: marcandoVigente,

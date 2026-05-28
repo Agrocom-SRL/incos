@@ -2,12 +2,15 @@
  * Tab «Planes de estudio» — sidebar carreras + lista de planes (SPRINT_1 §6.5).
  */
 
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Empty, Flex, Input, List, Spin, Tag, Typography } from 'antd';
+import { Alert, Button, Empty, Flex, Input, List, Spin, Tag, Typography, theme } from 'antd';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { EditOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useAuthContext } from '@application-auth';
 import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
 import { planDetallePath } from '@application-configuracion/academico/config/paths';
+import { planesListNavigationState } from '@application-configuracion/academico/config/academicoNavigation';
 import { Card, Text } from '@atoms';
 import '../styles/planes-tab.css';
 
@@ -15,6 +18,8 @@ const { Search } = Input;
 
 const PlanesTabPanel = () => {
   const navigate = useNavigate();
+  const { token } = theme.useToken();
+  const listNavState = useMemo(() => planesListNavigationState(), []);
   const { hasPermiso } = useAuthContext();
   const puedeDetalle = hasPermiso('configuracion.plan-estudio', 'DETALLE');
 
@@ -38,7 +43,7 @@ const PlanesTabPanel = () => {
         <Alert
           type="error"
           showIcon
-          style={{ marginBottom: 16 }}
+          className="cfg-planes-tab__alert"
           message={typeof error === 'string' ? error : 'Error al cargar planes'}
           action={
             <Button size="small" onClick={refetch}>
@@ -56,7 +61,7 @@ const PlanesTabPanel = () => {
             shadow={false}
             styles={{ body: { padding: 8 } }}
           >
-            <Text strong style={{ display: 'block', padding: '8px 12px 4px', fontSize: 13 }}>
+            <Text strong className="cfg-planes-sidebar__title">
               Carreras
             </Text>
             <List
@@ -66,27 +71,28 @@ const PlanesTabPanel = () => {
               renderItem={(c) => {
                 const activo = c.id === selectedCarreraId;
                 const vigente = vigentePlanPorCarrera.get(c.id);
-                const color = c.colorHex || c.color_hex || '#1677ff';
+                const swatchColor =
+                  sanitizeDocenteColorHex(c.colorHex ?? c.color_hex) || token.colorPrimary;
                 return (
                   <List.Item
                     className={`cfg-planes-carrera-item${activo ? ' cfg-planes-carrera-item--active' : ''}`}
                     onClick={() => setSelectedCarreraId(c.id)}
                   >
-                    <Flex align="center" gap={8} style={{ width: '100%' }}>
+                    <Flex align="center" gap={8} className="cfg-planes-carrera-row">
                       <span
                         className="cfg-planes-carrera-swatch"
-                        style={{ backgroundColor: color }}
+                        style={{ backgroundColor: swatchColor }}
                       />
-                      <Flex vertical style={{ flex: 1, minWidth: 0 }}>
-                        <Text strong ellipsis style={{ fontSize: 13 }}>
+                      <Flex vertical className="cfg-planes-carrera-row__text">
+                        <Text strong ellipsis className="cfg-planes-carrera-row__codigo">
                           {c.codigo}
                         </Text>
-                        <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
+                        <Text type="secondary" ellipsis className="cfg-planes-carrera-row__nombre">
                           {c.nombre}
                         </Text>
                       </Flex>
                       {vigente ? (
-                        <Tag color="success" style={{ margin: 0, fontSize: 11 }}>
+                        <Tag color="success" className="cfg-planes-carrera-row__tag">
                           Vigente
                         </Tag>
                       ) : null}
@@ -105,12 +111,12 @@ const PlanesTabPanel = () => {
           >
             {carreraSeleccionada ? (
               <>
-                <Flex justify="space-between" align="center" wrap="wrap" gap={8} style={{ marginBottom: 16 }}>
+                <Flex justify="space-between" align="center" wrap="wrap" gap={8} className="cfg-planes-main__toolbar">
                   <div>
-                    <Typography.Title level={5} style={{ margin: 0 }}>
+                    <Typography.Title level={5} className="cfg-planes-main__heading">
                       {carreraSeleccionada.nombre}
                     </Typography.Title>
-                    <Text type="secondary" style={{ fontSize: 13 }}>
+                    <Text type="secondary" className="cfg-planes-main__subtitle">
                       Planes de estudio — vigente arriba, históricos abajo
                     </Text>
                   </div>
@@ -119,7 +125,7 @@ const PlanesTabPanel = () => {
                     placeholder="Buscar plan o resolución…"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
-                    style={{ maxWidth: 320 }}
+                    className="cfg-planes-main__search"
                   />
                 </Flex>
 
@@ -139,7 +145,9 @@ const PlanesTabPanel = () => {
                                   type="primary"
                                   size="small"
                                   icon={<EditOutlined />}
-                                  onClick={() => navigate(planDetallePath(plan.id))}
+                                  onClick={() =>
+                                    navigate(planDetallePath(plan.id), { state: listNavState })
+                                  }
                                 >
                                   Editar matriz
                                 </Button>,
@@ -161,7 +169,7 @@ const PlanesTabPanel = () => {
                             </Flex>
                           }
                           description={
-                            <Flex gap={16} wrap="wrap" style={{ fontSize: 13 }}>
+                            <Flex gap={16} wrap="wrap" className="cfg-planes-plan-item__meta">
                               {plan.resolucion_ministerial ? (
                                 <span>{plan.resolucion_ministerial}</span>
                               ) : null}
