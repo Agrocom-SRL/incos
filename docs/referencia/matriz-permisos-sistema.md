@@ -3,7 +3,7 @@
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
-**Arquitectura:** frontend `docs/06_arquitectura_modulos_frontend.md` · backend `docs/07_arquitectura_modulos_backend.md` · guías paso a paso `docs/04_*` y `docs/05_*`.
+**Arquitectura:** frontend `.cursor/rules/incos-frontend-module.mdc` · backend `.cursor/rules/incos-backend-module.mdc` · guías `docs/guias/implementacion-*` y `checklist-*`.
 
 ## ADMIN_SISTEMA (rol_id = 1)
 
@@ -17,7 +17,7 @@ Tras cambiar `ruta_sidebar` o `grupo_ui` en el seeder **54**, en BD ya existente
 
 Todo alta/baja/modificacion (ABM) o nueva pantalla de un modulo debe cumplir estas restricciones minimas:
 
-1. **Arquitectura limpia por capa** (detalle en `docs/06_arquitectura_modulos_frontend.md`)
+1. **Arquitectura limpia por capa** (detalle en `.cursor/rules/incos-frontend-module.mdc`)
    - Carpetas alineadas al **menu lateral** (un directorio por item de menu).
    - `presentation/pages`: UI pura.
    - `application/hooks/api|features|state`: API; listados en tabs (`features`); pantallas (`state`).
@@ -461,7 +461,7 @@ CREAR/EDITAR/ELIMINAR de la tabla de cursos en armado acepta `institucional.gest
 
 ### CFG - Configuracion (`/configuracion/*`)
 
-**Arquitectura frontend:** `docs/06_arquitectura_modulos_frontend.md`. Seeds: ids **78–93** en `54-seed-permisos.sql`, acciones en **56**, asignacion roles en **55**.
+**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`. Seeds: ids **78–93** en `54-seed-permisos.sql`, acciones en **56**, asignacion roles en **55**.
 
 #### Académico — Plan de estudio (menu unico, tabs + subruta)
 

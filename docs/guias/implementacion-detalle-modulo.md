@@ -1,23 +1,23 @@
-# Documento 5 — Guía intermedia: implementar el detalle (ficha) de un registro
-## Patrones de referencia: docente (ficha) · plan de estudio (pantalla transaccional)
+# Guía — Implementar detalle / ficha de un registro
+
+Patrones de referencia: docente (ficha) · plan de estudio (pantalla transaccional)
 
 **Versión:** 1.2  
 **Fecha:** 2026-05-27  
 
-**Checklist compacto (una página):** `docs/05a_checklist_detalle_una_pagina.md`  
+**Checklist:** `docs/guias/checklist-detalle.md`  
 
-**Complementa:** `docs/04_guia_implementacion_listado_modulo.md` (listado o tab enlaza al detalle).
+**Complementa:** `docs/guias/implementacion-listado-modulo.md` (listado o tab enlaza al detalle).
 
-**Arquitectura frontend:** `docs/06_arquitectura_modulos_frontend.md`  
+**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`  
 
-**Arquitectura backend (detalle, bundle, DI, RBAC):** `docs/07_arquitectura_modulos_backend.md` — **obligatoria** junto con esta guía.
+**Arquitectura backend (detalle, bundle, DI, RBAC):** `.cursor/rules/incos-backend-module.mdc` — **obligatoria** junto con esta guía.
 
 **Relación con otros documentos**
 
 - `docs/02_estructura_sidebar.md` — keys de menú, `permiso` / `accion` en rutas de presentación.
-- `docs/matriz-permisos-sistema.md` — acción **`DETALLE`** para ver ficha (`GET /:id`), coherente con `TableActions` y middleware.
-- `docs/01_schema_datos.md` — modelo de datos; las **vistas SQL** de detalle deben reflejar columnas reales y joins necesarios.
-- `docs/SPRINT_1.md` — detalle de plan `/configuracion/academico/plan/:planId` (matriz + prerrequisitos).
+- `docs/referencia/matriz-permisos-sistema.md` — acción **`DETALLE`** para ver ficha (`GET /:id`), coherente con `TableActions` y middleware.
+- `docs/plan/SPRINT_1.md` — detalle de plan `/configuracion/academico/plan/:planId` (matriz + prerrequisitos), solo mientras aplique Plan V2.
 
 ---
 
@@ -47,7 +47,7 @@ Patrones de referencia:
 
 ## 3. Backend — proceso completo
 
-Visión de capas: **`docs/07_arquitectura_modulos_backend.md`** §4 y §8.
+Visión de capas: **`.cursor/rules/incos-backend-module.mdc`** §4 y §8.
 
 ### 3.0 Flujo resumido
 
@@ -105,7 +105,7 @@ Si no existe registro principal → **`NotFoundError`** → 404 coherente.
 ### 3.5 Inyección de dependencias
 
 - Registrar `get*ByIdUseCase` y `get*ByIdController` en el mismo `*.container.js` del recurso.
-- El router del recurso ya debe estar registrado (mismo patrón que listado — doc **07** §5).
+- El router del recurso ya debe estar registrado (mismo patrón que listado — `incos-backend-module` §6).
 - Tokens: `CONFIGURACION_TOKENS.getCarreraByIdUseCase`, etc.
 
 ### 3.6 Permisos y endpoints especializados (CFG plan)
@@ -160,7 +160,7 @@ Documentar cada uno en **matriz** y en `SPRINT_1.md` §4.
 
 ### 4.2.1 Regla de arquitectura limpia (obligatoria en ABM)
 
-Ver doc **06**: `hooks/state/` por **pantalla**, no por entidad suelta; carpeta bajo el **ítem de menú** (`academico/`, no `academico/plan-estudio/hooks/` salvo que plan tenga menú propio en sidebar).
+Ver `incos-frontend-module`: `hooks/state/` por **pantalla**, no por entidad suelta; carpeta bajo el **ítem de menú** (`academico/`, no `academico/plan-estudio/hooks/` salvo que plan tenga menú propio en sidebar).
 
 ### 4.3 Presentación — página y layout
 
@@ -310,4 +310,4 @@ Así el botón `Volver` siempre respeta el punto de entrada real y evita perder 
 
 ---
 
-*Fin del documento 5.*
+*Fin de la guía — detalle.*

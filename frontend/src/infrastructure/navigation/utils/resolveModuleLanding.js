@@ -1,7 +1,7 @@
 /**
  * Resuelve la pantalla de aterrizaje de un ítem de menú según permisos RBAC.
  *
- * Patrón global documentado en docs/matriz-permisos-sistema.md § Entradas por permisos.
+ * Patrón global documentado en docs/referencia/matriz-permisos-sistema.md § Entradas por permisos.
  * La prioridad la define el orden de `menu.landingStack` en routes.jsx (no el rol).
  *
  * @typedef {Object} LandingStackEntry

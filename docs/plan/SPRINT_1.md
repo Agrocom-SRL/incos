@@ -6,7 +6,7 @@
 
 > **Nota de ruta:** las rutas frontend canónicas son `/configuracion/academico/...`
 > (no `/configuracion-sistema/plan-estudio/...` como decía la primera versión).
-> **Arquitectura de carpetas y hooks:** ver `docs/06_arquitectura_modulos_frontend.md`
+> **Arquitectura de carpetas y hooks:** ver `.cursor/rules/incos-frontend-module.mdc`
 > (menú = directorio; hooks por tipo `api|context|features|state`, no por entidad/tab).
 
 ---
@@ -111,8 +111,8 @@ como deprecados — en V2 desaparecen porque `cursos` pasa a Institucional (Spri
 
 ## 6. Frontend
 
-**Guía normativa:** `docs/06_arquitectura_modulos_frontend.md`  
-**Guías de listado/detalle:** `docs/04_*`, `docs/05_*` (patrón docentes para ABM; CFG usa tabs + `hooks/features`).
+**Guía normativa:** `.cursor/rules/incos-frontend-module.mdc`  
+**Guías de listado/detalle:** `docs/guias/implementacion-listado-modulo.md`, `implementacion-detalle-modulo.md` (patrón docentes para ABM; CFG usa tabs + `hooks/features`).
 
 ### 6.1 Arquitectura de carpetas (implementada / objetivo)
 
@@ -305,7 +305,7 @@ Permisos exigidos en rutas: `configuracion.carrera`, `configuracion.materia`,
 - [x] Backend CRUD para los 6 grupos de endpoints.
 - [x] Backend matriz y validador (Tareas 2-3).
 - [x] Permisos sembrados `configuracion.*` (54–56); documentados en matriz § CFG.
-- [x] Arquitectura frontend documentada (`docs/06_arquitectura_modulos_frontend.md`) y aplicada en académico/complementarios.
+- [x] Arquitectura frontend documentada (`.cursor/rules/incos-frontend-module.mdc`) y aplicada en académico/complementarios.
 - [x] `AcademicoPage` con tabs (planes, carreras, materias) + permisos por tab.
 - [x] Tab Carreras: tabla + páginas CRUD/detalle completas.
 - [x] Tab Materias: tabla + páginas CRUD/detalle + filtros tipo/clasificación.
@@ -332,10 +332,10 @@ Contexto: Sistema académico INCOS (Node.js + React + MySQL + Sequelize + Ant De
 Sprint 1 del plan V2 en curso.
 
 Documentación obligatoria antes de tocar código:
-- docs/06_arquitectura_modulos_frontend.md (carpetas = menú; hooks api|context|features|state)
+- `.cursor/rules/incos-frontend-module.mdc` (carpetas = menú; hooks api|context|features|state)
 - docs/SPRINT_1.md §6–§9
-- docs/04_guia_implementacion_listado_modulo.md + docs/05_guia_implementacion_detalle_modulo.md
-- docs/matriz-permisos-sistema.md § CFG
+- docs/guias/implementacion-listado-modulo.md + implementacion-detalle-modulo.md
+- docs/referencia/matriz-permisos-sistema.md § CFG
 
 Estado actual:
 - Backend Tarea 1 (CRUD 6 recursos) terminada. RBAC configuracion.* en rutas.
@@ -395,7 +395,7 @@ T7) Tab Planes + PlanDetallePage: consumir T2/T3; matriz editable; marcar vigent
 
 T8) Prerrequisitos en PlanDetallePage (permiso configuracion.plan-estudio.prerrequisitos).
 
-Restricciones: respetar docs/06 (no crear hooks/carreras/ por entidad). Cero ALTER TABLE.
+Restricciones: respetar `incos-frontend-module` (no crear hooks/carreras/ por entidad). Cero ALTER TABLE.
 RBAC en UI con hasPermiso / ActionButton / TableActions.
 
 Empieza con T2 (backend matriz) salvo que se pida solo frontend.

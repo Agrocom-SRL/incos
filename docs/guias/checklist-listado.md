@@ -1,10 +1,10 @@
 # Checklist de una página — nuevo listado (INCOS)
 
-**Complemento de:** `docs/04_guia_implementacion_listado_modulo.md`  
-**Arquitectura frontend:** `docs/06_arquitectura_modulos_frontend.md`  
-**Arquitectura backend:** `docs/07_arquitectura_modulos_backend.md`  
+**Complemento de:** `docs/guias/implementacion-listado-modulo.md`  
+**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`  
+**Arquitectura backend:** `.cursor/rules/incos-backend-module.mdc`  
 
-**Detalle / ficha:** `docs/05a_checklist_detalle_una_pagina.md`
+**Detalle / ficha:** `docs/guias/checklist-detalle.md`
 
 Marca en orden. Si un ítem no aplica, táchalo y anota por qué (ej. listado solo en tab → omitir ruta `/listar` dedicada).
 

@@ -71,7 +71,7 @@ export function verificarPermisoCualquiera(pares) {
  * Usar en GET que alimentan combos, contexto de pantalla o vista previa,
  * aunque la pantalla de administración del recurso exija otro permiso de módulo.
  *
- * @see docs/matriz-permisos-sistema.md § Catálogos de referencia
+ * @see docs/referencia/matriz-permisos-sistema.md § Catálogos de referencia
  */
 export const listarCatalogoReferencia = [
   authenticate,

@@ -1,23 +1,23 @@
-# Documento 4 — Guía intermedia: implementar un listado de módulo
-## Patrones de referencia: docentes (ABM) · CFG académico (tabs) · institucional
+# Guía — Implementar listado de módulo
+
+Patrones de referencia: docentes (ABM) · CFG académico (tabs) · institucional
 
 **Versión:** 1.2  
 **Fecha:** 2026-05-27  
 
-**Checklist compacto (una página):** `docs/04a_checklist_listado_una_pagina.md`  
+**Checklist:** `docs/guias/checklist-listado.md`  
 
-**Ficha / detalle por ID:** `docs/05_guia_implementacion_detalle_modulo.md` y `docs/05a_checklist_detalle_una_pagina.md`
+**Detalle / ficha:** `docs/guias/implementacion-detalle-modulo.md` y `docs/guias/checklist-detalle.md`
 
-**Arquitectura frontend (menú, hooks):** `docs/06_arquitectura_modulos_frontend.md`  
+**Arquitectura frontend (menú, hooks):** `.cursor/rules/incos-frontend-module.mdc`  
 
-**Arquitectura backend (capas, DI, RBAC, respuestas API):** `docs/07_arquitectura_modulos_backend.md` — **obligatoria** para cualquier listado nuevo; esta guía detalla el paso a paso integrado frontend + backend.
+**Arquitectura backend (capas, DI, RBAC, respuestas API):** `.cursor/rules/incos-backend-module.mdc` — **obligatoria** para cualquier listado nuevo; esta guía detalla el paso a paso integrado frontend + backend.
 
 **Relación con otros documentos**
 
 - `docs/02_estructura_sidebar.md` — keys de menú, `permiso` / `accion` en rutas de presentación.
-- `docs/matriz-permisos-sistema.md` — vocabulario v2 de acciones (`LISTAR`, `DETALLE`, `CREAR`, etc.).
-- `docs/01_schema_datos.md` — modelo de datos; el modelo Sequelize debe coincidir con las columnas reales.
-- `docs/SPRINT_1.md` — catálogo plan de estudio (CFG académico).
+- `docs/referencia/matriz-permisos-sistema.md` — vocabulario v2 de acciones (`LISTAR`, `DETALLE`, `CREAR`, etc.).
+- `docs/plan/SPRINT_1.md` — catálogo plan de estudio (CFG académico), solo mientras aplique Plan V2.
 
 ---
 
@@ -36,7 +36,7 @@ No sustituye el código: sirve como **checklist** y mapa de archivos para nuevas
 | Listado embebido en wizard/flujo | **Inscripciones** | `hooks/features/` + estado del wizard |
 | Tabla en flujo institucional multi-paso | **INST → Horarios** | `hooks/state/` + datos de `hooks/api/` |
 
-Regla de carpetas: **un directorio por ítem de menú**, no por entidad; ver doc **06**.
+Regla de carpetas: **un directorio por ítem de menú**, no por entidad; ver `incos-frontend-module`.
 
 ---
 
@@ -51,7 +51,7 @@ Regla de carpetas: **un directorio por ítem de menú**, no por entidad; ver doc
 
 ## 3. Backend — proceso completo
 
-Visión de capas y checklist de archivos: **`docs/07_arquitectura_modulos_backend.md`**.
+Visión de capas y checklist de archivos: **`.cursor/rules/incos-backend-module.mdc`**.
 
 ### 3.0 Flujo resumido
 
@@ -126,7 +126,7 @@ GET /api/v1/<recurso>?pagina&limite&busqueda
 | 2 | Acciones en **`56-seed-permiso-acciones.sql`** — al menos `LISTAR` para listado. |
 | 3 | Filas en **`55-seed-roles-permisos.sql`** para roles operativos (RECTOR, DIR_ACADEMICO, …). |
 | 4 | El string en `verificarPermiso('...', 'LISTAR')` debe ser **idéntico** a `permisos.codigo`. |
-| 5 | Actualizar **`docs/matriz-permisos-sistema.md`** (tabla pantalla ↔ permiso ↔ endpoint). |
+| 5 | Actualizar **`docs/referencia/matriz-permisos-sistema.md`** (tabla pantalla ↔ permiso ↔ endpoint). |
 
 Ejemplo CFG carreras: `verificarPermiso('configuracion.carrera', 'LISTAR')` — permiso id **78**.
 
@@ -174,7 +174,7 @@ Cada uno repite §3.1–3.6 de forma independiente; el frontend unifica en `appl
 
 ### 4.2 Capa de aplicación (módulo vertical)
 
-Organización de hooks (obligatoria en módulos nuevos — doc **06**):
+Organización de hooks (obligatoria en módulos nuevos — `incos-frontend-module`):
 
 | Carpeta | Archivo típico | Rol |
 |---------|----------------|-----|
@@ -201,7 +201,7 @@ Organización de hooks (obligatoria en módulos nuevos — doc **06**):
 - `presentation/modules/<menu>/pages/*` = solo UI.
 - `application/modules/<menu>/hooks/features/` = listados en tabs o tablas embebidas.
 - `application/modules/<menu>/hooks/state/` = orquestación de **pantalla** (no por entidad suelta).
-- `providers/` + `context/` + `connectors/` como en doc **06**.
+- `providers/` + `context/` + `connectors/` como en `incos-frontend-module`.
 
 No crear `hooks/carreras/` ni `presentation/.../carreras/routes.jsx` si carreras es solo un tab de `/configuracion/academico`.
 
@@ -228,7 +228,7 @@ Cada nueva función de listado/acciones debe validar permisos en 3 capas al mism
 3. **Backend** (`verificarPermiso`): misma acción en endpoint real.
 
 No mezclar vocabulario antiguo (`VER`) con el esquema operativo del módulo cuando use `LISTAR` / `DETALLE` en frontend.
-Si existe divergencia temporal por legado, documentarla explícitamente en `docs/matriz-permisos-sistema.md` antes del merge.
+Si existe divergencia temporal por legado, documentarla explícitamente en `docs/referencia/matriz-permisos-sistema.md` antes del merge.
 
 ---
 
@@ -329,7 +329,7 @@ Frontend: `application/.../complementarios/hooks/` + `DiscapacidadesList.jsx`.
 - [ ] ¿`TableActions` solo muestra eliminar si hay `deleteFn` o use case real?
 - [ ] ¿Conector exportado como `lazy` y envuelto por `Suspense` en el layout (patrón actual del proyecto)?
 - [ ] ¿La página quedó liviana (UI) y la lógica de listado está en `hooks/features` (o `state` si es pantalla completa)?
-- [ ] ¿La estructura respeta doc **06** (sin subcarpetas por entidad sin URL propia)?
+- [ ] ¿La estructura respeta `incos-frontend-module` (sin subcarpetas por entidad sin URL propia)?
 - [ ] ¿La acción de permiso coincide en `routes.jsx`, controles UI y `verificarPermiso` backend?
 
 ---
@@ -360,4 +360,4 @@ Frontend: `application/.../complementarios/hooks/` + `DiscapacidadesList.jsx`.
 
 ---
 
-*Fin del documento 4.*
+*Fin de la guía — listado.*

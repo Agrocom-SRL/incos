@@ -2,7 +2,7 @@
 
 **Sistema:** Académico Instituto INCOS
 **Decisión:** Migración limpia. Datos legacy se descartan. Schema V1 (`cursos`, `cursos_horarios`) se elimina por completo.
-**Documentos:** Este archivo es el **maestro**. Cada sprint tiene su propio MD detallado en `SPRINT_1.md` … `SPRINT_5.md`.
+**Documentos:** Este archivo es el **maestro** (`docs/plan/`). Cada sprint: `SPRINT_1.md` … `SPRINT_5.md` en la misma carpeta. **Temporal:** eliminar `docs/plan/` al cerrar el refactor V2.
 
 ---
 
@@ -81,15 +81,15 @@ Cada sprint deja algo funcionando de punta a punta antes de continuar.
 
 ## 5. Arquitectura frontend (convenciones 2026)
 
-Antes de cerrar Sprint 1 o abrir pantallas nuevas en CFG/INST, leer **`docs/06_arquitectura_modulos_frontend.md`**.
+Antes de cerrar Sprint 1 o abrir pantallas nuevas en CFG/INST, leer **`.cursor/rules/incos-frontend-module.mdc`**.
 
 Resumen operativo:
 
 1. **Carpetas = ítems de menú** (`configuracion/academico`, `configuracion/complementarios`, `institucional/horarios`), no subcarpetas por entidad salvo ruta URL propia.
 2. **Application:** hooks solo en `api/`, `context/`, `features/` (tabs/listados) y `state/` (pantallas o wizards); providers delgados; mappers compartidos exportados para `shared/hooks` de catálogo.
 3. **Presentation:** `routes.jsx` + `connectors/` + `pages/` + `config/`; tabs con `?tab=` y permiso por tab; subrutas para flujos transaccionales (p. ej. `/configuracion/academico/plan/:planId`).
-4. **Permisos:** códigos `configuracion.*` en seeds **54–56**; coherencia con `routes.jsx` y `verificarPermiso` (ver `docs/matriz-permisos-sistema.md` § CFG).
-5. **Guías de implementación:** proceso integral listado/detalle → docs **04/05**; arquitectura frontend → **06**; arquitectura backend (capas, DI, RBAC) → **07**.
+4. **Permisos:** códigos `configuracion.*` en seeds **54–56**; coherencia con `routes.jsx` y `verificarPermiso` (ver `docs/referencia/matriz-permisos-sistema.md` § CFG).
+5. **Implementación:** listado/detalle → `docs/guias/`; arquitectura → `.cursor/rules/incos-*-module.mdc` y skill correspondiente.
 
 **Estado Sprint 1 (frontend, 2026-05-27):** refactor de menú Académico consolidado (tabs carreras/materias/planes + detalle de plan); Complementarios con mismo patrón (discapacidad operativa). Pendiente: matriz/validador backend, tabs planes/prerrequisitos completos, limpieza de carpetas legacy duplicadas.
 
@@ -148,4 +148,4 @@ Estos temas no se tocan en este refactor:
 
 ---
 
-**Estado del plan:** Aprobado. Sprint 1 en curso (backend CRUD listo; frontend CFG académico refactorizado según doc 06; ver `SPRINT_1.md` §8).
+**Estado del plan:** Aprobado. Sprint 1 en curso (backend CRUD listo; frontend CFG académico refactorizado según `incos-frontend-module`; ver `SPRINT_1.md` §8).

@@ -1,6 +1,6 @@
 /**
  * Navegación Calificaciones: landingStack (menú) + viewStack (subpantallas).
- * @see docs/matriz-permisos-sistema.md § landingStack / viewStack
+ * @see docs/referencia/matriz-permisos-sistema.md § landingStack / viewStack
  */
 
 import { MIS_CURSOS_PATH } from '../utils/calificacionesPaths.js';

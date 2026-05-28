@@ -1,0 +1,42 @@
+---
+description: Contexto raíz del proyecto INCOS y enrutador de reglas.
+alwaysApply: true
+---
+
+# Proyecto INCOS — contexto raíz
+
+Monorepo con `backend/` (Express + Sequelize + MySQL, Clean Architecture) y
+`frontend/` (React + Ant Design v5, Atomic Design). Objetivo del repo: UI
+homogénea y arquitectura por capas con SOLID. Principal deuda histórica: la
+interfaz inconsistente — tratar la consistencia visual como requisito, no extra.
+
+## Antes de empezar CUALQUIER tarea, identifica el área y aplica la regla:
+
+- **Componente, página, tabla, ficha, estilo, color, tipografía, `.css`** →
+  aplica `incos-ui-system`. Es la prioridad: la mayoría de bugs de este repo son
+  de UI inconsistente. Nunca uses `#hex` o `fontSize` literal; el theme de AntD
+  manda.
+- **Estructura de un módulo frontend, hooks, providers, connectors, rutas** →
+  `incos-frontend-module`. Carpetas por ítem de menú, no por entidad.
+- **Endpoint, repositorio, use case, controller, router, seeder** →
+  `incos-backend-module`. Capas con responsabilidad única.
+- **Permisos, rutas protegidas, `verificarPermiso`, `ActionButton`, seeds 54/55/56** →
+  `incos-rbac`. Misma acción en las 3 capas, vocabulario v2.
+
+## Principios que aplican a todo
+
+1. **Clean Architecture:** dependencias hacia adentro; negocio en use cases /
+   hooks de estado, no en controllers ni en `pages/`.
+2. **SOLID:** una responsabilidad por archivo/capa; extiende, no modifiques bases.
+3. **Atomic Design:** clasifica todo componente (átomo/molécula/organismo/template/página).
+4. **Una fuente de verdad de estilo:** el theme de Ant Design v5.
+5. **RBAC coherente:** la misma acción en ruta, UI y backend.
+
+## Reglas de proceso (lo que evita "pasos volando")
+
+- Al crear un listado o ficha completa, sigue el checklist de la regla
+  correspondiente **hasta el final**, incluyendo seeds y prueba con rol sin permiso.
+- Si una tarea cruza frontend y backend (lo normal), aplica AMBAS reglas de
+  módulo + `incos-rbac`, y verifica que `dataKey` (front) = `dataFieldName` (back).
+- Si dudas entre dos ubicaciones de carpeta o niveles atómicos, elige la que
+  ya use un módulo de referencia (Docentes para ABM, CFG Académico para tabs).
