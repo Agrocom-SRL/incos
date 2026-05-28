@@ -1,36 +1,44 @@
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 
-const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+const hexToRgba = (hex, alpha) => {
+  const normalized = hex.replace('#', '');
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
-const mix = (a, b, t) => Math.round(a + (b - a) * t);
+/** Oscurece un hex multiplicando cada canal por (1 - amount). */
+const hexDarken = (hex, amount) => {
+  const normalized = hex.replace('#', '');
+  const r = Math.round(parseInt(normalized.slice(0, 2), 16) * (1 - amount));
+  const g = Math.round(parseInt(normalized.slice(2, 4), 16) * (1 - amount));
+  const b = Math.round(parseInt(normalized.slice(4, 6), 16) * (1 - amount));
+  return `rgb(${r}, ${g}, ${b})`;
+};
 
 /**
- * Variables CSS — familia cromática única (bandas, filas y tablas).
+ * Variables CSS — color de carrera como identidad (cabeceras sólidas, cuerpo tintado).
  */
 export const buildPlanDocumentoThemeVars = (colorHex) => {
   const accent = sanitizeDocenteColorHex(colorHex) || '#196b45';
-  const hex = accent.replace('#', '');
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-
-  const bodyR = clamp(mix(r, 0, 0.58), 0, 255);
-  const bodyG = clamp(mix(g, 0, 0.58), 0, 255);
-  const bodyB = clamp(mix(b, 0, 0.58), 0, 255);
+  const darkened1 = hexDarken(accent, 0.15);
+  const darkened2 = hexDarken(accent, 0.24);
+  const darkened3 = hexDarken(accent, 0.35);
 
   return {
     '--cfg-plan-accent': accent,
     '--cfg-plan-accent-header': accent,
-    '--cfg-plan-accent-body': `rgb(${bodyR}, ${bodyG}, ${bodyB})`,
     '--cfg-plan-accent-on-dark': '#ffffff',
-    '--cfg-plan-accent-border': `rgba(${r}, ${g}, ${b}, 0.35)`,
-    '--cfg-plan-accent-soft-bg': `rgba(${r}, ${g}, ${b}, 0.12)`,
+    '--cfg-plan-accent-border': accent,
+    '--cfg-plan-accent-body': hexToRgba(accent, 0.06),
+    '--cfg-plan-accent-soft-bg': hexToRgba(accent, 0.12),
     '--cfg-plan-meta-band-1': accent,
-    '--cfg-plan-meta-band-2': `rgba(${r}, ${g}, ${b}, 0.82)`,
-    '--cfg-plan-meta-band-3': `rgba(${r}, ${g}, ${b}, 0.58)`,
-    '--cfg-plan-meta-band-4': `rgba(${r}, ${g}, ${b}, 0.32)`,
-    '--cfg-plan-row-stripe': `rgba(255, 255, 255, 0.1)`,
-    '--cfg-plan-th-sub': `rgba(${r}, ${g}, ${b}, 0.72)`,
+    '--cfg-plan-meta-band-2': darkened1,
+    '--cfg-plan-meta-band-3': darkened2,
+    '--cfg-plan-meta-band-4': darkened3,
+    '--cfg-plan-th-sub': hexToRgba(accent, 0.14),
+    '--cfg-plan-row-stripe': hexToRgba(accent, 0.07),
   };
 };
 
@@ -40,13 +48,9 @@ export const buildCarreraChipStyle = (colorHex, selected) => {
   if (!selected) {
     return { borderColor: '#e8e8e8', background: '#fff', accentColor: accent };
   }
-  const hex = accent.replace('#', '');
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
   return {
     borderColor: accent,
-    background: `rgba(${r}, ${g}, ${b}, 0.12)`,
+    background: hexToRgba(accent, 0.12),
     accentColor: accent,
   };
 };

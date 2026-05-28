@@ -59,14 +59,9 @@ const PlanEstudioDocumentoView = ({
 
   return (
     <div className="cfg-plan-doc" style={docStyle}>
-      <div className="cfg-plan-doc__banner">
-        <span className="cfg-plan-doc__banner-label">PLAN DE ESTUDIOS</span>
-        <span className="cfg-plan-doc__banner-resolucion">{resolucion}</span>
-      </div>
-
       <header className="cfg-plan-doc__header">
         <div className="cfg-plan-doc__header-col cfg-plan-doc__header-col--meta">
-          <p className="cfg-plan-doc__meta-band cfg-plan-doc__meta-band--1">PLAN DE ESTUDIOS</p>
+          <p className="cfg-plan-doc__meta-band cfg-plan-doc__meta-band--1">{resolucion}</p>
           <p className="cfg-plan-doc__meta-band cfg-plan-doc__meta-band--2">
             <span className="cfg-plan-doc__meta-k">ÁREA DE FORMACIÓN:</span> {area}
           </p>
