@@ -3,15 +3,9 @@
  */
 
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Empty, Table, Tag } from 'antd';
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  ReadOutlined,
-} from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, ReadOutlined } from '@ant-design/icons';
 import DetailInfoCard from '@molecules/DetailInfoCard';
-import { planDetallePath } from '@application-configuracion/academico/config/paths';
 
 const periodoLabel = (row) => {
   if (row.periodoNombre) return row.periodoNombre;
@@ -19,9 +13,7 @@ const periodoLabel = (row) => {
   return '—';
 };
 
-const MateriaDetailAsignaturasSection = ({ asignaturas = [], puedeVerPlan = false }) => {
-  const navigate = useNavigate();
-
+const MateriaDetailAsignaturasSection = ({ asignaturas = [] }) => {
   const columns = useMemo(
     () => [
       {
@@ -76,24 +68,8 @@ const MateriaDetailAsignaturasSection = ({ asignaturas = [], puedeVerPlan = fals
             <Tag icon={<CloseCircleOutlined />}>No</Tag>
           ),
       },
-      {
-        title: '',
-        key: 'accion',
-        width: 100,
-        align: 'right',
-        render: (_, record) =>
-          record.planEstudioId && puedeVerPlan ? (
-            <button
-              type="button"
-              className="sd-btn sd-btn--outline"
-              onClick={() => navigate(planDetallePath(record.planEstudioId))}
-            >
-              Matriz
-            </button>
-          ) : null,
-      },
     ],
-    [navigate, puedeVerPlan],
+    [],
   );
 
   return (

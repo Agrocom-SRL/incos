@@ -3,13 +3,9 @@
  */
 
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Flex, Spin } from 'antd';
-import { useAuthContext } from '@application-auth';
 import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
 import { usePlanesTabDocumento } from '@application-configuracion/academico/hooks/features/usePlanesTabDocumento';
-import { planDetallePath } from '@application-configuracion/academico/config/paths';
-import { planesListNavigationState } from '@application-configuracion/academico/config/academicoNavigation';
 import { buildPlanDocumentoThemeVars } from '@application-configuracion/academico/utils/planDocumentoTheme';
 import PlanesCarreraSidebar from '@configuracion/academico/components/organisms/PlanesCarreraSidebar';
 import PlanEstudioDocumentoView from '@configuracion/academico/components/organisms/PlanEstudioDocumentoView';
@@ -18,11 +14,6 @@ import '../styles/planes-tab.css';
 import '../styles/plan-documento.css';
 
 const PlanesTabPanel = ({ embedded = false }) => {
-  const navigate = useNavigate();
-  const listNavState = useMemo(() => planesListNavigationState(), []);
-  const { hasPermiso } = useAuthContext();
-  const puedeDetalle = hasPermiso('configuracion.plan-estudio', 'DETALLE');
-
   const {
     carreras,
     loading: loadingCatalog,
@@ -51,11 +42,6 @@ const PlanesTabPanel = ({ embedded = false }) => {
   );
 
   const error = catalogError || documentoError;
-
-  const handleEditarMatriz = () => {
-    if (!planId) return;
-    navigate(planDetallePath(planId), { state: listNavState });
-  };
 
   return (
     <div className={`cfg-planes-tab${embedded ? ' cfg-planes-tab--embedded' : ''}`}>
@@ -109,8 +95,6 @@ const PlanesTabPanel = ({ embedded = false }) => {
             prereqSiglaByAsignaturaId={prereqSiglaByAsignaturaId}
             themeVars={themeVars}
             loading={planId != null && loadingDocumento}
-            puedeEditar={puedeDetalle && Boolean(planId)}
-            onEditarMatriz={handleEditarMatriz}
           />
         ) : (
           <Flex align="center" justify="center" className="cfg-planes-main__placeholder">

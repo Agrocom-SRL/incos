@@ -11,9 +11,6 @@ export const CARRERAS_LIST_PATH = `${ACADEMICO_BASE}?tab=carreras`;
 export const MATERIAS_LIST_PATH = `${ACADEMICO_BASE}?tab=materias`;
 export const PLANES_LIST_PATH = `${ACADEMICO_BASE}?tab=planes`;
 
-export const planDetallePath = (planId) => `${ACADEMICO_BASE}/plan/${planId}`;
-export const planEditarPath = (planId) => `${ACADEMICO_BASE}/plan/${planId}/editar`;
-
 /** ABM y detalle carrera (páginas completas) */
 export const carreraNuevaPath = `${ACADEMICO_BASE}/carrera/nueva`;
 export const carreraDetallePath = (carreraId) => `${ACADEMICO_BASE}/carrera/${carreraId}`;

@@ -3,8 +3,7 @@
  */
 
 import { useMemo } from 'react';
-import { Button, Empty, Flex, Spin, Typography } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Empty, Flex, Spin, Typography } from 'antd';
 import { formatResolucionLabel } from '@application-configuracion/academico/utils/planDocumentoTheme';
 import {
   getMaxAsignaturasPorPeriodo,
@@ -21,8 +20,6 @@ const PlanEstudioDocumentoView = ({
   prereqSiglaByAsignaturaId,
   themeVars,
   loading = false,
-  puedeEditar = false,
-  onEditarMatriz,
 }) => {
   const maxFilas = useMemo(() => getMaxAsignaturasPorPeriodo(periodos), [periodos]);
 
@@ -154,14 +151,6 @@ const PlanEstudioDocumentoView = ({
           })}
         </div>
       )}
-
-      {puedeEditar && onEditarMatriz ? (
-        <Flex justify="flex-end" className="cfg-plan-doc__actions">
-          <Button type="primary" icon={<EditOutlined />} onClick={onEditarMatriz}>
-            Editar matriz
-          </Button>
-        </Flex>
-      ) : null}
     </div>
   );
 };

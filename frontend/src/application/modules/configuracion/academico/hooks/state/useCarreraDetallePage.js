@@ -6,11 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
 import { mapCarreraDetail } from '@application-configuracion/academico/mappers';
-import {
-  CARRERAS_LIST_PATH,
-  carreraEditarPath,
-  planDetallePath,
-} from '@application-configuracion/academico/config/paths';
+import { CARRERAS_LIST_PATH, carreraEditarPath } from '@application-configuracion/academico/config/paths';
 import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
@@ -111,13 +107,6 @@ export const useCarreraDetallePage = () => {
     navigate(carreraEditarPath(carrera.id), { state: navState });
   }, [carrera?.id, navigate, navState]);
 
-  const handleVerPlan = useCallback(
-    (planId) => {
-      navigate(planDetallePath(planId), { state: navState });
-    },
-    [navigate, navState],
-  );
-
   return {
     carrera,
     periodos,
@@ -131,7 +120,6 @@ export const useCarreraDetallePage = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
-    handleVerPlan,
     refetch: load,
   };
 };

@@ -18,6 +18,3 @@ export { useCarreraForm } from './state/useCarreraForm';
 export { useMateriaForm } from './state/useMateriaForm';
 export { useCarreraDetallePage } from './state/useCarreraDetallePage';
 export { useMateriaDetallePage } from './state/useMateriaDetallePage';
-export { usePlanDetallePage } from './state/usePlanDetallePage';
-export { usePlanPrerrequisitosPanel } from './state/usePlanPrerrequisitosPanel';
-export { usePlanForm } from './state/usePlanForm';

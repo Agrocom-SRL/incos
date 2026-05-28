@@ -2,7 +2,7 @@
  * Organismo: tab Información — detalle de carrera.
  */
 
-import { AppstoreOutlined, ReadOutlined, TeamOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, TeamOutlined } from '@ant-design/icons';
 import DetailField from '@atoms/DetailField';
 import DetailInfoCard from '@molecules/DetailInfoCard';
 import StatusPill from '@atoms/StatusPill';
@@ -11,12 +11,7 @@ import {
   getMateriaEstadoPillClass,
 } from '@application-configuracion/academico/config/materiaTipoPill';
 
-const CarreraDetailInformacionSection = ({
-  carrera,
-  planVigente,
-  puedeVerPlan,
-  onVerPlan,
-}) => {
+const CarreraDetailInformacionSection = ({ carrera, planVigente }) => {
   if (!carrera) return null;
 
   return (
@@ -43,11 +38,9 @@ const CarreraDetailInformacionSection = ({
           {carrera.descripcion}
         </DetailField>
       ) : null}
-      {planVigente && puedeVerPlan ? (
+      {planVigente ? (
         <DetailField label="Plan vigente" span={2}>
-          <button type="button" className="sd-btn sd-btn--outline" onClick={() => onVerPlan(planVigente.id)}>
-            <ReadOutlined /> {planVigente.nombre || 'Ver matriz del plan'}
-          </button>
+          {planVigente.nombre || '—'}
         </DetailField>
       ) : null}
     </DetailInfoCard>

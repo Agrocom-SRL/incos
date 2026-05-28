@@ -41,7 +41,6 @@ const MateriaDetailPage = () => {
   } = useMateriaDetallePage();
 
   const puedeEditar = hasPermiso('configuracion.materia', 'EDITAR');
-  const puedeVerPlan = hasPermiso('configuracion.plan-estudio', 'DETALLE');
   const asignaturas = materia?.asignaturas ?? [];
 
   const tabItems = useMemo(() => {
@@ -61,15 +60,12 @@ const MateriaDetailPage = () => {
         label: <DetailTabLabel icon={<ApartmentOutlined />}>Asignatura de materia</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
-            <MateriaDetailAsignaturasSection
-              asignaturas={asignaturas}
-              puedeVerPlan={puedeVerPlan}
-            />
+            <MateriaDetailAsignaturasSection asignaturas={asignaturas} />
           </div>
         ),
       },
     ];
-  }, [materia, tipoLabel, asignaturas, puedeVerPlan]);
+  }, [materia, tipoLabel, asignaturas]);
 
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
 

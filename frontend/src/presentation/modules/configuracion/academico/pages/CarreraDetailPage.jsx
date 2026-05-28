@@ -40,12 +40,10 @@ const CarreraDetailPage = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
-    handleVerPlan,
     refetch,
   } = useCarreraDetallePage();
 
   const puedeEditar = hasPermiso('configuracion.carrera', 'EDITAR');
-  const puedeVerPlan = hasPermiso('configuracion.plan-estudio', 'DETALLE');
   const puedeVerMateria = hasPermiso('configuracion.materia', 'DETALLE');
 
   const accent = sanitizeDocenteColorHex(avatarColor) || undefined;
@@ -60,12 +58,7 @@ const CarreraDetailPage = () => {
         label: <DetailTabLabel icon={<TeamOutlined />}>Información</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
-            <CarreraDetailInformacionSection
-              carrera={carrera}
-              planVigente={planVigente}
-              puedeVerPlan={puedeVerPlan}
-              onVerPlan={handleVerPlan}
-            />
+            <CarreraDetailInformacionSection carrera={carrera} planVigente={planVigente} />
           </div>
         ),
       },
@@ -79,7 +72,7 @@ const CarreraDetailPage = () => {
         ),
       },
     ];
-  }, [carrera, periodos, planVigente, puedeVerPlan, puedeVerMateria, handleVerPlan]);
+  }, [carrera, periodos, planVigente, puedeVerMateria]);
 
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
 
