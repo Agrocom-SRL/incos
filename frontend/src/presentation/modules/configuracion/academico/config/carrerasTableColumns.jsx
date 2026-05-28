@@ -2,17 +2,11 @@
  * Columnas de la tabla de carreras (tab Académico).
  */
 
-import { Tooltip } from 'antd';
-import { IconButton } from '@atoms';
-import { TableCell } from '@molecules';
-import { getDataTableAction } from '@config/icons';
+import { TableActions, TableCell } from '@molecules';
 import { carreraEditarPath } from '@application-configuracion/academico/config/paths';
 
+// Tabla de acciones con RBAC (TableActions) en lugar de IconButtons sueltos.
 export const createCarrerasTableColumns = (navigate) => {
-  const editAction = getDataTableAction('edit');
-  const viewAction = getDataTableAction('view');
-  const deleteAction = getDataTableAction('delete');
-
   return [
     {
       title: 'Código',
@@ -59,32 +53,23 @@ export const createCarrerasTableColumns = (navigate) => {
       width: 140,
       align: 'right',
       render: (_, record) => (
-        <TableCell actions align="right">
-          <Tooltip title={`${editAction.tooltip} carrera`}>
-            <IconButton
-              icon={<editAction.icon />}
-              variant={editAction.variant}
-              onClick={() => navigate(carreraEditarPath(record.id))}
-            />
-          </Tooltip>
-          <Tooltip title={`${viewAction.tooltip} carrera`}>
-            <IconButton
-              icon={<viewAction.icon />}
-              variant={viewAction.variant}
-              onClick={() => navigate(carreraEditarPath(record.id, { view: true }))}
-            />
-          </Tooltip>
-          <Tooltip title={`${deleteAction.tooltip} carrera`}>
-            <IconButton
-              icon={<deleteAction.icon />}
-              variant={deleteAction.variant}
-              onClick={() => {
-                // TODO: Implementar lógica de eliminación
-                console.log('Eliminar carrera:', record.id);
-              }}
-            />
-          </Tooltip>
-        </TableCell>
+        <TableActions
+          record={record}
+          navigate={navigate}
+          // TableActions solo muestra \"ver\" si viewPath existe; el handler real lo provee onView
+          viewPath="/:id"
+          onEdit={(r) => navigate(carreraEditarPath(r.id))}
+          onView={(r) => navigate(carreraEditarPath(r.id, { view: true }))}
+          // Mostrar icono (y habilitar confirmación) aunque el use case aún no exista en factory.
+          // Si no está implementado, TableActions lo muestra deshabilitado.
+          useCaseKey="eliminarCarrera"
+          permisos={{
+            ver: { codigo: 'configuracion.carrera', accion: 'DETALLE' },
+            editar: { codigo: 'configuracion.carrera', accion: 'EDITAR' },
+            // Eliminar queda oculto hasta que exista deleteFn/useCaseKey real
+            eliminar: { codigo: 'configuracion.carrera', accion: 'ELIMINAR' },
+          }}
+        />
       ),
     },
   ];

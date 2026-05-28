@@ -5,15 +5,29 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Alert, Button, Tabs } from 'antd';
+import { Alert, Card, Tabs } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useAuthContext } from '@application-auth';
+import { Button } from '@atoms';
 import { academicoTabPath } from '@application-configuracion/academico/config/paths';
 import { TAB_PLANES } from '@configuracion/academico/config/academicoTabs';
+import { allColors, componentConfig, shadows } from '@theme/tokens';
 
 const TAB_MATRIZ = 'matriz';
 const TAB_PRERREQUISITOS = 'prerrequisitos';
+
+const sectionCardProps = {
+  style: {
+    borderRadius: `${componentConfig.Card.borderRadiusLG}px`,
+    boxShadow: shadows.shadowElevation2,
+    border: `1px solid ${allColors.colorBorder}`,
+    backgroundColor: allColors.colorBgContainer,
+  },
+  styles: {
+    body: { padding: `${componentConfig.Card.paddingLG}px` },
+  },
+};
 
 const PlanDetallePage = () => {
   const { planId } = useParams();
@@ -98,7 +112,9 @@ const PlanDetallePage = () => {
           </Button>
         }
       />
-      <Tabs activeKey={activeKey} items={tabItems} onChange={onTabChange} />
+      <Card {...sectionCardProps}>
+        <Tabs activeKey={activeKey} items={tabItems} onChange={onTabChange} />
+      </Card>
     </PageTemplate>
   );
 };

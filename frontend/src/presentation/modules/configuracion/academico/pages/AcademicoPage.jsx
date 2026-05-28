@@ -7,14 +7,17 @@
 
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Alert, Tabs } from 'antd';
-import { PageTemplate } from '@templates';
+import { Alert, Card, Flex, Tabs } from 'antd';
+import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { useAuthContext } from '@application-auth';
 import PlanesTabPanel from './PlanesTabPanel';
 import CarrerasList from './CarrerasList';
 import MateriasList from './MateriasList';
 import { TAB_PLANES, TAB_CARRERAS, TAB_MATERIAS } from '@configuracion/academico/config/academicoTabs';
+import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
+import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import '@presentation/styles/pages/detail-page.css';
 
 const BREADCRUMB = [
   { title: 'Inicio', href: '/' },
@@ -65,17 +68,39 @@ const AcademicoPage = () => {
 
   if (!tabItems.length) {
     return (
-      <PageTemplate sidebar={null}>
-        <Alert type="warning" message="No tiene permisos para acceder al módulo académico." />
-      </PageTemplate>
+      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+        <PageHeaderArea>
+          <PageHeader title="Académico" breadcrumbItems={BREADCRUMB} />
+        </PageHeaderArea>
+        <DashboardPageShell>
+          <MainContent>
+            <Alert type="warning" showIcon message="No tiene permisos para acceder al módulo académico." />
+          </MainContent>
+        </DashboardPageShell>
+      </Flex>
     );
   }
 
   return (
-    <PageTemplate sidebar={null}>
-      <PageHeader title="Académico" breadcrumbItems={BREADCRUMB} />
-      <Tabs activeKey={activeKey} items={tabItems} onChange={onTabChange} />
-    </PageTemplate>
+    <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+      <PageHeaderArea>
+        <PageHeader title="Académico" breadcrumbItems={BREADCRUMB} />
+      </PageHeaderArea>
+      <DashboardPageShell>
+        <MainContent>
+          <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+            <div className="sd-tabs-shell">
+              <Tabs
+                className="sd-tabs"
+                activeKey={activeKey}
+                items={tabItems}
+                onChange={onTabChange}
+              />
+            </div>
+          </Flex>
+        </MainContent>
+      </DashboardPageShell>
+    </Flex>
   );
 };
 

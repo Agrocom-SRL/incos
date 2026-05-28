@@ -2,10 +2,7 @@
  * Columnas de la tabla de materias (tab Académico).
  */
 
-import { Tooltip } from 'antd';
-import { IconButton } from '@atoms';
-import { TableCell } from '@molecules';
-import { getDataTableAction } from '@config/icons';
+import { TableActions, TableCell } from '@molecules';
 import { materiaEditarPath } from '@application-configuracion/academico/config/paths';
 
 const getTipoTagColor = (tipo) => {
@@ -18,10 +15,6 @@ const getTipoTagColor = (tipo) => {
 };
 
 export const createMateriasTableColumns = (navigate) => {
-  const editAction = getDataTableAction('edit');
-  const viewAction = getDataTableAction('view');
-  const deleteAction = getDataTableAction('delete');
-
   return [
     {
       title: 'Sigla',
@@ -67,32 +60,19 @@ export const createMateriasTableColumns = (navigate) => {
       width: 140,
       align: 'right',
       render: (_, record) => (
-        <TableCell actions align="right">
-          <Tooltip title={`${editAction.tooltip} materia`}>
-            <IconButton
-              icon={<editAction.icon />}
-              variant={editAction.variant}
-              onClick={() => navigate(materiaEditarPath(record.id))}
-            />
-          </Tooltip>
-          <Tooltip title={`${viewAction.tooltip} materia`}>
-            <IconButton
-              icon={<viewAction.icon />}
-              variant={viewAction.variant}
-              onClick={() => navigate(materiaEditarPath(record.id, { view: true }))}
-            />
-          </Tooltip>
-          <Tooltip title={`${deleteAction.tooltip} materia`}>
-            <IconButton
-              icon={<deleteAction.icon />}
-              variant={deleteAction.variant}
-              onClick={() => {
-                // TODO: Implementar lógica de eliminación
-                console.log('Eliminar materia:', record.id);
-              }}
-            />
-          </Tooltip>
-        </TableCell>
+        <TableActions
+          record={record}
+          navigate={navigate}
+          viewPath="/:id"
+          onEdit={(r) => navigate(materiaEditarPath(r.id))}
+          onView={(r) => navigate(materiaEditarPath(r.id, { view: true }))}
+          useCaseKey="eliminarMateria"
+          permisos={{
+            ver: { codigo: 'configuracion.materia', accion: 'DETALLE' },
+            editar: { codigo: 'configuracion.materia', accion: 'EDITAR' },
+            eliminar: { codigo: 'configuracion.materia', accion: 'ELIMINAR' },
+          }}
+        />
       ),
     },
   ];

@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { TableListView } from '@organisms';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { useMateriaContext } from '@application-configuracion/academico/hooks';
 import { MATERIAS_REGISTRAR_PATH } from '@application-configuracion/academico/config/paths';
 import { createMateriasTableColumns } from '@configuracion/academico/config/materiasTableColumns';
@@ -33,6 +33,8 @@ const MateriasList = () => {
       searchPlaceholder="Buscar por código, nombre, nombre corto o tipo..."
       columns={tableColumns}
       rowKey={(record) => record.id || record.codigo || Math.random()}
+      searchColSpan={10}
+      searchStyle={{ maxWidth: 520 }}
       pagination={{
         pageSize: 10,
         showSizeChanger: true,
@@ -42,9 +44,15 @@ const MateriasList = () => {
       defaultSort={{ field: 'codigo', order: 'ascend' }}
       title="Materias"
       headerActions={
-        <Button variant="primary" icon={<PlusOutlined />} onClick={() => navigate(MATERIAS_REGISTRAR_PATH)}>
+        <ActionButton
+          permiso="configuracion.materia"
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(MATERIAS_REGISTRAR_PATH)}
+        >
           Nueva materia
-        </Button>
+        </ActionButton>
       }
       loadingTip="Cargando materias..."
     />

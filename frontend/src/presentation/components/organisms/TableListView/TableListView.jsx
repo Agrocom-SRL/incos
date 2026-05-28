@@ -28,7 +28,7 @@
 import React from 'react';
 import { Row, Col, Flex } from 'antd';
 import { DataTable } from '@molecules';
-import { Alert, Card, SearchBar, Spinner } from '@atoms';
+import { Alert, Card, SearchBar, Spinner, Text } from '@atoms';
 
 const TableListView = ({
     // Datos y estado
@@ -40,6 +40,8 @@ const TableListView = ({
     searchText = '',
     onSearchChange,
     searchPlaceholder = 'Buscar...',
+    searchColSpan = 8,
+    searchStyle,
 
     // Configuración de tabla
     columns = [],
@@ -54,6 +56,11 @@ const TableListView = ({
 
     // Loading personalizado
     loadingTip = 'Cargando...',
+
+    // Header interno (dentro del Card)
+    title,
+    headerActions,
+    cardProps,
 }) => {
     const isLoading = loading && data.length === 0;
 
@@ -115,10 +122,29 @@ const TableListView = ({
                         />
                     )}
 
-                    <Card variant="outlined">
-                        {/* SearchBar con span=8 alineado a la derecha */}
-                        <Row justify="end" className="table-list-view__search-row">
-                            <Col span={8}>
+                    <Card variant="outlined" {...(cardProps || {})}>
+                        {(title || headerActions) ? (
+                            <Flex
+                                align="center"
+                                justify="space-between"
+                                wrap="wrap"
+                                gap={8}
+                                style={{ marginBottom: 12 }}
+                            >
+                                {title ? (
+                                    <Text strong style={{ fontSize: 16 }}>
+                                        {title}
+                                    </Text>
+                                ) : (
+                                    <span />
+                                )}
+                                {headerActions ? <div>{headerActions}</div> : null}
+                            </Flex>
+                        ) : null}
+
+                        {/* SearchBar alineado a la derecha */}
+                        <Row justify="end" className="table-list-view__search-row" style={{ marginBottom: 12 }}>
+                            <Col span={searchColSpan} style={searchStyle}>
                                 <SearchBar
                                     placeholder={searchPlaceholder}
                                     value={searchText}
