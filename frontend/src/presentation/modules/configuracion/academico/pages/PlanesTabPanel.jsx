@@ -12,11 +12,12 @@ import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
 import { planDetallePath } from '@application-configuracion/academico/config/paths';
 import { planesListNavigationState } from '@application-configuracion/academico/config/academicoNavigation';
 import { Card, Text } from '@atoms';
+import ListPanelHeader from '@molecules/ListPanelHeader';
 import '../styles/planes-tab.css';
 
 const { Search } = Input;
 
-const PlanesTabPanel = () => {
+const PlanesTabPanel = ({ embedded = false }) => {
   const navigate = useNavigate();
   const { token } = theme.useToken();
   const listNavState = useMemo(() => planesListNavigationState(), []);
@@ -38,7 +39,7 @@ const PlanesTabPanel = () => {
   } = usePlanesTabPanel();
 
   return (
-    <div className="cfg-planes-tab">
+    <div className={`cfg-planes-tab${embedded ? ' cfg-planes-tab--embedded' : ''}`}>
       {error ? (
         <Alert
           type="error"
@@ -53,11 +54,13 @@ const PlanesTabPanel = () => {
         />
       ) : null}
 
+      <ListPanelHeader title="Planes de estudio" />
+
       <Spin spinning={loading} tip="Cargando planes de estudio…">
         <Flex className="cfg-planes-layout" gap={16} align="stretch">
           <Card
             className="cfg-planes-sidebar"
-            variant="outlined"
+            variant={embedded ? 'borderless' : 'outlined'}
             shadow={false}
             styles={{ body: { padding: 8 } }}
           >
@@ -105,9 +108,9 @@ const PlanesTabPanel = () => {
 
           <Card
             className="cfg-planes-main"
-            variant="outlined"
+            variant={embedded ? 'borderless' : 'outlined'}
             shadow={false}
-            styles={{ body: { padding: 16 } }}
+            styles={{ body: { padding: embedded ? '8px 0 0' : 16 } }}
           >
             {carreraSeleccionada ? (
               <>

@@ -1,41 +1,83 @@
 /**
- * Detalle de materia — página completa (DetailInfoCard + sd-field).
+ * Detalle de materia — orquestación UI (ficha sd-profile + tabs).
  */
 
-import { Alert, Button, Flex, Spin, Tag } from 'antd';
-import { ArrowLeftOutlined, BookOutlined, CheckCircleOutlined, EditOutlined } from '@ant-design/icons';
+import { useMemo } from 'react';
+import { Alert } from 'antd';
+import { BookOutlined, ApartmentOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
-import DetailField from '@docentes/components/atoms/DetailField';
-import { ActionButton, BackButton, Card } from '@atoms';
+import DetailTabLabel from '@molecules/DetailTabLabel';
+import StatusPill from '@atoms/StatusPill';
+import DetailProfileCard from '@organisms/DetailProfileCard';
+import DetailTabsPanel from '@organisms/DetailTabsPanel';
+import DetailPageShell from '@organisms/DetailPageShell';
+import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
+import { useAuthContext } from '@application-auth';
 import { useMateriaDetallePage } from '@application-configuracion/academico/hooks';
+import {
+  getMateriaClasificacionPillClass,
+  getMateriaTipoPillClass,
+} from '@application-configuracion/academico/config/materiaTipoPill';
+import MateriaDetailInformacionSection from '@configuracion/academico/components/organisms/MateriaDetailInformacionSection';
+import MateriaDetailAsignaturasSection from '@configuracion/academico/components/organisms/MateriaDetailAsignaturasSection';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/academico-form-page.css';
 
 const MateriaDetailPage = () => {
+  const { hasPermiso } = useAuthContext();
   const {
     materia,
     loading,
     error,
     isInvalidId,
     tipoLabel,
-    tipoTagColor,
+    avatarInitials,
+    cargaHorariaResumen,
     breadcrumbItems,
     handleVolver,
     handleEditar,
     refetch,
   } = useMateriaDetallePage();
 
+  const puedeEditar = hasPermiso('configuracion.materia', 'EDITAR');
+  const puedeVerPlan = hasPermiso('configuracion.plan-estudio', 'DETALLE');
+  const asignaturas = materia?.asignaturas ?? [];
+
+  const tabItems = useMemo(() => {
+    if (!materia) return [];
+    return [
+      {
+        key: 'informacion',
+        label: <DetailTabLabel icon={<BookOutlined />}>Información</DetailTabLabel>,
+        children: (
+          <div className="sd-tab-body">
+            <MateriaDetailInformacionSection materia={materia} tipoLabel={tipoLabel} />
+          </div>
+        ),
+      },
+      {
+        key: 'asignaturas',
+        label: <DetailTabLabel icon={<ApartmentOutlined />}>Asignatura de materia</DetailTabLabel>,
+        children: (
+          <div className="sd-tab-body">
+            <MateriaDetailAsignaturasSection
+              asignaturas={asignaturas}
+              puedeVerPlan={puedeVerPlan}
+            />
+          </div>
+        ),
+      },
+    ];
+  }, [materia, tipoLabel, asignaturas, puedeVerPlan]);
+
+  const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
+
   if (isInvalidId) {
     return (
       <PageTemplate
         header={
-          <PageHeader
-            title="Detalle de materia"
-            breadcrumbItems={breadcrumbItems}
-            actions={<BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />}
-          />
+          <PageHeader title="Detalle de materia" breadcrumbItems={breadcrumbItems} actions={headerActions} />
         }
       >
         <Alert type="error" showIcon message="Identificador de materia inválido" />
@@ -43,82 +85,64 @@ const MateriaDetailPage = () => {
     );
   }
 
+  const metaExtra = materia ? (
+    <>
+      <StatusPill label={tipoLabel} className={getMateriaTipoPillClass(materia.tipo)} />
+      {materia.clasificacion ? (
+        <StatusPill
+          label={materia.clasificacion}
+          className={getMateriaClasificacionPillClass()}
+        />
+      ) : null}
+    </>
+  ) : null;
+
   return (
     <PageTemplate
       header={
-        <PageHeader
-          title="Detalle de materia"
-          breadcrumbItems={breadcrumbItems}
-          actions={
-            <Flex gap={8}>
-              <ActionButton
-                permiso="configuracion.materia"
-                accion="EDITAR"
-                variant="default"
-                icon={<EditOutlined />}
-                onClick={handleEditar}
-              >
-                Editar
-              </ActionButton>
-              <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />
-            </Flex>
-          }
-        />
+        <PageHeader title="Detalle de materia" breadcrumbItems={breadcrumbItems} actions={headerActions} />
       }
     >
-      <div className="cfg-academico-page">
-        <Spin spinning={loading} tip="Cargando materia…">
-          <Flex vertical gap="large" className="cfg-academico-page__stack">
-            {error ? (
-              <Alert
-                type="error"
-                showIcon
-                message={error}
-                action={
-                  <Button size="small" onClick={refetch}>
-                    Reintentar
-                  </Button>
-                }
-              />
-            ) : null}
-
-            {materia ? (
-              <>
-                <Card className="cfg-academico-resumen-card" styles={{ body: { padding: 24 } }}>
-                  <div className="cfg-academico-entity-header">
-                    <div>
-                      <span className="cfg-academico-entity-subtitle">{materia.sigla}</span>
-                      <span className="cfg-academico-entity-name">{materia.nombre}</span>
-                    </div>
-                    <Flex gap={8}>
-                      {materia.tipo ? <Tag color={tipoTagColor}>{tipoLabel}</Tag> : null}
-                      {materia.activo !== false ? (
-                        <Tag icon={<CheckCircleOutlined />} color="success">
-                          Activa
-                        </Tag>
-                      ) : (
-                        <Tag color="default">Inactiva</Tag>
-                      )}
-                    </Flex>
-                  </div>
-                </Card>
-
-                <DetailInfoCard title="Datos de la materia" icon={<BookOutlined />} cols={1}>
-                  <DetailField label="Sigla">{materia.sigla}</DetailField>
-                  <DetailField label="Nombre">{materia.nombre}</DetailField>
-                  <DetailField label="Tipo">{tipoLabel}</DetailField>
-                  <DetailField label="Clasificación">{materia.clasificacion}</DetailField>
-                  {materia.objetivos ? (
-                    <DetailField label="Objetivos" span={2}>
-                      {materia.objetivos}
-                    </DetailField>
-                  ) : null}
-                </DetailInfoCard>
-              </>
-            ) : null}
-          </Flex>
-        </Spin>
-      </div>
+      <DetailPageShell
+        loading={loading}
+        loadingTip="Cargando materia…"
+        error={error}
+        onRetry={refetch}
+        showEmpty={!loading && !error && !materia}
+        emptyDescription="No se encontró la materia solicitada"
+      >
+        {materia ? (
+          <>
+            <DetailProfileCard
+              avatarInitials={avatarInitials}
+              avatarClassName="sd-profile__avatar sd-profile__avatar--default"
+              active={materia.activo !== false}
+              title={(materia.nombre || '—').toUpperCase()}
+              subtitle={
+                <>
+                  <BookOutlined /> {materia.sigla || '—'}
+                </>
+              }
+              metaExtra={metaExtra}
+              showEdit={puedeEditar}
+              onEdit={handleEditar}
+              editTooltip="Editar materia"
+              editAriaLabel="Editar materia"
+              stats={[
+                {
+                  label: 'Planes',
+                  value:
+                    new Set(asignaturas.map((u) => u.planEstudioId).filter(Boolean)).size || '—',
+                  primary: true,
+                },
+                { label: 'Asignaturas', value: asignaturas.length || '—' },
+                { label: 'Carga horaria', value: cargaHorariaResumen || '—' },
+              ]}
+            />
+            <DetailTabsPanel items={tabItems} defaultActiveKey="informacion" />
+          </>
+        ) : null}
+      </DetailPageShell>
     </PageTemplate>
   );
 };

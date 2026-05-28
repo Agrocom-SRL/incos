@@ -4,3 +4,7 @@ export { default as Header } from './Header';
 export { default as Sidebar, useSidebarState } from './Sidebar';
 export { default as TableListView } from './TableListView';
 export { default as TimetableCalendar } from './TimetableCalendar';
+export { default as DetailProfileCard } from './DetailProfileCard';
+export { default as DetailTabsPanel } from './DetailTabsPanel';
+export { default as DetailPageShell } from './DetailPageShell';
+export { default as DetailPageHeaderActions } from './DetailPageHeaderActions';

@@ -1,5 +1,5 @@
 /**
- * Detalle de carrera — página completa (patrón PoliticaInstitucional + sd-profile).
+ * Detalle de carrera — ficha sd-profile + tabs (información + materias por periodo).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -16,7 +16,6 @@ import {
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
-import { usePlanesEstudiosApi } from '../api/usePlanesEstudiosApi';
 
 const initialsFromCarrera = (c) => {
   const src = (c?.codigo || c?.nombre || '?').trim();
@@ -36,11 +35,6 @@ export const useCarreraDetallePage = () => {
   const [carrera, setCarrera] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const { planes, loading: loadingPlanes } = usePlanesEstudiosApi({
-    carreraId: isInvalidId ? undefined : carreraId,
-    autoFetch: !isInvalidId,
-  });
 
   const load = useCallback(async () => {
     if (isInvalidId) {
@@ -67,20 +61,25 @@ export const useCarreraDetallePage = () => {
     load();
   }, [load]);
 
-  const planesOrdenados = useMemo(() => {
-    const list = [...(planes || [])];
-    return list.sort((a, b) => {
-      const va = a.vigente ? 1 : 0;
-      const vb = b.vigente ? 1 : 0;
-      if (va !== vb) return vb - va;
-      return (a.nombre_plan || '').localeCompare(b.nombre_plan || '');
-    });
-  }, [planes]);
+  const periodos = carrera?.periodos ?? [];
 
-  const planVigente = useMemo(
-    () => planesOrdenados.find((p) => p.vigente) ?? null,
-    [planesOrdenados],
-  );
+  const totalMaterias = useMemo(() => {
+    const ids = new Set();
+    for (const p of periodos) {
+      for (const m of p.materias ?? []) {
+        if (m.materiaId) ids.add(m.materiaId);
+      }
+    }
+    return ids.size;
+  }, [periodos]);
+
+  const planVigente = useMemo(() => {
+    for (const p of periodos) {
+      const hit = (p.materias ?? []).find((m) => m.planVigente && m.planEstudioId);
+      if (hit) return { id: hit.planEstudioId, nombre: hit.planNombre };
+    }
+    return null;
+  }, [periodos]);
 
   const avatarInitials = useMemo(() => initialsFromCarrera(carrera), [carrera]);
   const avatarColor = sanitizeDocenteColorHex(carrera?.colorHex) ?? null;
@@ -90,10 +89,9 @@ export const useCarreraDetallePage = () => {
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
       { title: 'Académico', href: returnListPath },
-      { title: 'Carreras', href: returnListPath },
-      { title: carrera?.nombre || 'Detalle de carrera' },
+      { title: 'Carreras' },
     ],
-    [carrera?.nombre, returnListPath],
+    [returnListPath],
   );
 
   const navState = useMemo(
@@ -122,12 +120,12 @@ export const useCarreraDetallePage = () => {
 
   return {
     carrera,
+    periodos,
+    totalMaterias,
+    planVigente,
     loading,
     error,
     isInvalidId,
-    planes: planesOrdenados,
-    loadingPlanes,
-    planVigente,
     avatarInitials,
     avatarColor,
     breadcrumbItems,

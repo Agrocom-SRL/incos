@@ -1,18 +1,9 @@
 /**
- * DataTable - Componente molécula para tablas de datos
- * 
- * Single Responsibility: Renderizar una tabla de datos con configuración flexible
- * 
- * Atomic Design: Molecule
- * - Wrapper genérico de Table de Ant Design
- * - Recibe columnas y datos como props
- * - Reutilizable para cualquier tabla de datos
- * 
- * Los estilos de tema vienen automáticamente de Ant Design via ConfigProvider
- * CSS solo para layout y espaciado
+ * DataTable — tabla Ant Design con orden global en cliente y paginación controlada.
  */
 
 import { Table } from 'antd';
+import { useClientTableSort } from './hooks/useClientTableSort';
 
 const DataTable = ({
   dataSource = [],
@@ -22,36 +13,37 @@ const DataTable = ({
     defaultPageSize: 10,
     showSizeChanger: true,
     showQuickJumper: false,
-    showTotal: (total, range) =>
-      `Mostrando ${range[0]}-${range[1]} de ${total} registros`,
     pageSizeOptions: ['10', '20', '50', '100'],
-    locale: {
-      items_per_page: 'registros / página',
-    },
   },
   scroll,
   size = 'middle',
   rowKey = (record) => record.id || Math.random(),
   defaultSort,
   className = '',
+  onChange,
   ...props
 }) => {
   const tableClassName = className ? `data-table ${className}`.trim() : 'data-table';
-
-  // Si no se proporciona scroll, usar configuración por defecto que permite usar todo el ancho
   const defaultScroll = scroll || { x: 'max-content' };
+
+  const { sortedData, tableColumns, mergedPagination, handleTableChange } = useClientTableSort({
+    dataSource,
+    columns,
+    pagination,
+    defaultSort,
+  });
 
   return (
     <Table
       className={tableClassName}
-      columns={columns}
-      dataSource={dataSource}
+      columns={tableColumns}
+      dataSource={sortedData}
       rowKey={rowKey}
       loading={loading}
-      pagination={pagination}
+      pagination={mergedPagination}
       scroll={defaultScroll}
       size={size}
-      defaultSort={defaultSort}
+      onChange={(pag, filters, sorter) => handleTableChange(pag, filters, sorter, onChange)}
       tableLayout="fixed"
       {...props}
     />
@@ -59,4 +51,3 @@ const DataTable = ({
 };
 
 export default DataTable;
-

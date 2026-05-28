@@ -6,62 +6,76 @@ import {
   carreraDetallePath,
   carreraEditarPath,
 } from '@application-configuracion/academico/config/paths';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
-import { TableActions, TableCell } from '@molecules';
-import '../styles/academico-form-page.css';
+import IdentidadCelda from '@atoms/IdentidadCelda';
+import CarreraAreaDescripcionCell from '@configuracion/academico/components/atoms/CarreraAreaDescripcionCell';
+import CarreraTituloDotCell from '@configuracion/academico/components/atoms/CarreraTituloDotCell';
+import CarreraMetricasCell from '@configuracion/academico/components/atoms/CarreraMetricasCell';
+import { TableActions } from '@molecules';
 
 export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) => {
   return [
     {
-      title: 'Código',
-      dataIndex: 'codigo',
+      title: '#',
+      key: 'nro',
+      width: 56,
+      align: 'center',
+      render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
+    },
+    {
+      title: 'Carrera',
+      dataIndex: 'nombre',
       fixed: 'left',
       ellipsis: true,
-      render: (codigo, record) => {
-        const swatch = sanitizeDocenteColorHex(record.colorHex);
-        return (
-          <TableCell strong textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}>
-            {swatch ? (
-              <span className="cfg-academico-color-chip">
-                <span
-                  className="cfg-table-codigo-chip__dot"
-                  style={{ backgroundColor: swatch }}
-                />
-                {codigo}
-              </span>
-            ) : (
-              codigo
-            )}
-          </TableCell>
-        );
-      },
-      sorter: (a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }),
-      defaultSortOrder: 'ascend',
-    },
-    {
-      title: 'Nombre',
-      dataIndex: 'nombre',
-      ellipsis: true,
-      render: (nombre) => (
-        <TableCell strong fallback="Sin nombre">
-          {nombre}
-        </TableCell>
+      render: (_nombre, record) => (
+        <IdentidadCelda
+          codigo={record.codigo}
+          nombre={(record.nombre || 'Sin nombre').toUpperCase()}
+        />
       ),
-      sorter: (a, b) => (a.nombre || 'Sin nombre').localeCompare(b.nombre || 'Sin nombre'),
+      sorter: true,
+      sortCompare: (a, b) =>
+        (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }),
     },
     {
-      title: 'Área de Formación',
-      dataIndex: 'areaFormacion',
-      ellipsis: true,
-      render: (areaFormacion) => <TableCell>{areaFormacion || '-'}</TableCell>,
-      sorter: (a, b) => (a.areaFormacion || '').localeCompare(b.areaFormacion || ''),
+      title: 'Área y descripción',
+      key: 'areaDescripcion',
+      width: 280,
+      ellipsis: false,
+      render: (_, record) => (
+        <CarreraAreaDescripcionCell
+          areaFormacion={record.areaFormacion}
+          descripcion={record.descripcion}
+        />
+      ),
+      sorter: true,
+      sortCompare: (a, b) =>
+        (a.areaFormacion || '').localeCompare(b.areaFormacion || '', 'es', { sensitivity: 'base' }),
     },
     {
-      title: 'Título Otorgado',
+      title: 'Título otorgado',
       dataIndex: 'tituloOtorgado',
+      width: 220,
       ellipsis: true,
-      render: (tituloOtorgado) => <TableCell>{tituloOtorgado || '-'}</TableCell>,
-      sorter: (a, b) => (a.tituloOtorgado || '').localeCompare(b.tituloOtorgado || ''),
+      render: (titulo, record) => (
+        <CarreraTituloDotCell tituloOtorgado={titulo} colorHex={record.colorHex} />
+      ),
+      sorter: true,
+      sortCompare: (a, b) =>
+        (a.tituloOtorgado || '').localeCompare(b.tituloOtorgado || '', 'es', { sensitivity: 'base' }),
+    },
+    {
+      title: 'Carga académica',
+      key: 'resumen',
+      width: 160,
+      render: (_, record) => (
+        <CarreraMetricasCell
+          cantidadMaterias={record.cantidadMaterias ?? 0}
+          cantidadPeriodos={record.cantidadPeriodos ?? 0}
+        />
+      ),
+      sorter: true,
+      sortCompare: (a, b) =>
+        (Number(a.cantidadMaterias) || 0) - (Number(b.cantidadMaterias) || 0),
     },
     {
       title: 'Acciones',

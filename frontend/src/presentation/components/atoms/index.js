@@ -25,3 +25,6 @@ export { default as Badge } from './Badge';
 export { default as ListItem } from './ListItem';
 export { default as ActivityItem } from './ActivityItem';
 export { default as ActionButton } from './ActionButton';
+export { default as DetailField } from './DetailField';
+export { default as StatusPill } from './StatusPill';
+export { default as IdentidadCelda } from './IdentidadCelda';

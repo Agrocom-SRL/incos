@@ -2,6 +2,14 @@
   width: 100%;
 }
 
+.cfg-planes-tab--embedded {
+  gap: 16px;
+}
+
+.cfg-planes-tab--embedded .cfg-planes-tab__alert {
+  margin-bottom: 0;
+}
+
 .cfg-planes-layout {
   min-height: 360px;
 }

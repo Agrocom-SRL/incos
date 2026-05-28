@@ -68,7 +68,7 @@ export const useCarreraForm = (mode = 'create') => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo cargar la carrera');
       }
-      form.setFieldsValue(mapCarreraToFormValues(result.data));
+      form.setFieldsValue(mapCarreraToFormValues(result.data?.carrera ?? result.data));
     } catch (e) {
       setError(e?.message || 'Error al cargar la carrera');
     } finally {

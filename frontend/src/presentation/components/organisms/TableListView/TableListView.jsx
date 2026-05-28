@@ -61,6 +61,8 @@ const TableListView = ({
     title,
     headerActions,
     cardProps,
+    /** Sin Card externa — para tabs embebidos en workspace (CFG Académico). */
+    embedded = false,
 }) => {
     const isLoading = loading && data.length === 0;
 
@@ -97,6 +99,49 @@ const TableListView = ({
         showQuickJumper: false,
     };
 
+    const tableBlock = (
+        <>
+            {(title || headerActions) ? (
+                <Flex
+                    align="center"
+                    justify="space-between"
+                    wrap="wrap"
+                    gap={8}
+                    style={{ marginBottom: 12 }}
+                >
+                    {title ? (
+                        <Text strong style={{ fontSize: 16 }}>
+                            {title}
+                        </Text>
+                    ) : (
+                        <span />
+                    )}
+                    {headerActions ? <div>{headerActions}</div> : null}
+                </Flex>
+            ) : null}
+
+            <Row justify="end" className="table-list-view__search-row" style={{ marginBottom: 12 }}>
+                <Col span={searchColSpan} style={searchStyle}>
+                    <SearchBar
+                        placeholder={searchPlaceholder}
+                        value={searchText}
+                        onChange={onSearchChange}
+                    />
+                </Col>
+            </Row>
+
+            <DataTable
+                dataSource={data}
+                columns={columns}
+                loading={loading}
+                rowKey={rowKey}
+                pagination={finalPagination}
+                defaultSort={defaultSort}
+                className={tableClassName}
+            />
+        </>
+    );
+
     return (
         <>
             {/* Mostrar Spinner cuando está cargando inicialmente */}
@@ -122,47 +167,11 @@ const TableListView = ({
                         />
                     )}
 
-                    <Card variant="outlined" {...(cardProps || {})}>
-                        {(title || headerActions) ? (
-                            <Flex
-                                align="center"
-                                justify="space-between"
-                                wrap="wrap"
-                                gap={8}
-                                style={{ marginBottom: 12 }}
-                            >
-                                {title ? (
-                                    <Text strong style={{ fontSize: 16 }}>
-                                        {title}
-                                    </Text>
-                                ) : (
-                                    <span />
-                                )}
-                                {headerActions ? <div>{headerActions}</div> : null}
-                            </Flex>
-                        ) : null}
-
-                        {/* SearchBar alineado a la derecha */}
-                        <Row justify="end" className="table-list-view__search-row" style={{ marginBottom: 12 }}>
-                            <Col span={searchColSpan} style={searchStyle}>
-                                <SearchBar
-                                    placeholder={searchPlaceholder}
-                                    value={searchText}
-                                    onChange={onSearchChange}
-                                />
-                            </Col>
-                        </Row>
-
-                        <DataTable
-                            dataSource={data}
-                            columns={columns}
-                            loading={loading}
-                            rowKey={rowKey}
-                            pagination={finalPagination}
-                            defaultSort={defaultSort}
-                            className={tableClassName}
-                        />
-                    </Card>
+                    {embedded ? (
+                        <div className="table-list-view table-list-view--embedded">{tableBlock}</div>
+                    ) : (
+                        <Card variant="outlined" {...(cardProps || {})}>{tableBlock}</Card>
+                    )}
                 </>
             )}
         </>

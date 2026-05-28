@@ -1,5 +1,5 @@
 /**
- * Detalle de materia — página completa.
+ * Detalle de materia — ficha con perfil y tabs (información + asignaturas en planes).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -14,10 +14,12 @@ import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
-import {
-  TIPO_MATERIA_LABEL,
-  TIPO_MATERIA_TAG_COLOR,
-} from '@application-configuracion/academico/config/materiaFormConstants';
+import { getMateriaTipoLabel } from '@application-configuracion/academico/config/materiaTipoPill';
+
+const initialsFromMateria = (m) => {
+  const src = (m?.sigla || m?.nombre || '?').trim();
+  return src.slice(0, 2).toUpperCase();
+};
 
 export const useMateriaDetallePage = () => {
   const { id } = useParams();
@@ -59,23 +61,32 @@ export const useMateriaDetallePage = () => {
   }, [load]);
 
   const tipoLabel = useMemo(
-    () => TIPO_MATERIA_LABEL[materia?.tipo] ?? materia?.tipo,
+    () => getMateriaTipoLabel(materia?.tipo),
     [materia?.tipo],
   );
-  const tipoTagColor = useMemo(
-    () => TIPO_MATERIA_TAG_COLOR[materia?.tipo] ?? 'default',
-    [materia?.tipo],
-  );
+
+  const avatarInitials = useMemo(() => initialsFromMateria(materia), [materia]);
+
+  const asignaturas = materia?.asignaturas ?? [];
+
+  const cargaHorariaResumen = useMemo(() => {
+    const horas = asignaturas
+      .map((u) => Number(u.horasSemanales))
+      .filter((h) => Number.isFinite(h) && h > 0);
+    if (!horas.length) return null;
+    const unicas = [...new Set(horas)];
+    if (unicas.length === 1) return `${unicas[0]} h/sem`;
+    return `${Math.min(...horas)}–${Math.max(...horas)} h/sem`;
+  }, [asignaturas]);
 
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
       { title: 'Académico', href: returnListPath },
-      { title: 'Materias', href: returnListPath },
-      { title: materia?.nombre || 'Detalle de materia' },
+      { title: 'Materias' },
     ],
-    [materia?.nombre, returnListPath],
+    [returnListPath],
   );
 
   const handleVolver = useCallback(() => {
@@ -98,7 +109,8 @@ export const useMateriaDetallePage = () => {
     error,
     isInvalidId,
     tipoLabel,
-    tipoTagColor,
+    avatarInitials,
+    cargaHorariaResumen,
     breadcrumbItems,
     handleVolver,
     handleEditar,

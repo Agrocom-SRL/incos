@@ -29,6 +29,10 @@ export const carreraListMapper = (carreraBackend) => {
     colorHex: carreraBackend.colorHex,
     imagenRuta: carreraBackend.imagenRuta,
     activo: carreraBackend.activo !== false,
+    cantidadMaterias:
+      carreraBackend.cantidad_materias ?? carreraBackend.cantidadMaterias ?? 0,
+    cantidadPeriodos:
+      carreraBackend.cantidad_periodos ?? carreraBackend.cantidadPeriodos ?? 0,
   };
 };
 

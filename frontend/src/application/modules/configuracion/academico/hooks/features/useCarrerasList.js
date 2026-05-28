@@ -6,7 +6,13 @@ export const useCarrerasList = () => {
   const { carreras, loading, error, refetch } = useCarrerasApi();
 
   const getSearchFields = useMemo(
-    () => (carrera) => [carrera.nombre, carrera.codigo, carrera.tituloOtorgado],
+    () => (carrera) => [
+      carrera.nombre,
+      carrera.codigo,
+      carrera.tituloOtorgado,
+      carrera.areaFormacion,
+      carrera.descripcion,
+    ],
     [],
   );
 

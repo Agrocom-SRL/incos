@@ -67,7 +67,7 @@ export const useMateriaForm = (mode = 'create') => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo cargar la materia');
       }
-      form.setFieldsValue(mapMateriaToFormValues(result.data));
+      form.setFieldsValue(mapMateriaToFormValues(result.data?.materia ?? result.data));
     } catch (e) {
       setError(e?.message || 'Error al cargar la materia');
     } finally {

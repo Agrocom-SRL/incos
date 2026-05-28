@@ -6,49 +6,63 @@ import {
   materiaDetallePath,
   materiaEditarPath,
 } from '@application-configuracion/academico/config/paths';
-import { TIPO_MATERIA_TAG_COLOR } from '@application-configuracion/academico/config/materiaFormConstants';
-import { TableActions, TableCell } from '@molecules';
-
-const getTipoTagColor = (tipo) => TIPO_MATERIA_TAG_COLOR[tipo] || 'default';
+import {
+  getMateriaClasificacionPillClass,
+  getMateriaTipoLabel,
+  getMateriaTipoPillClass,
+} from '@application-configuracion/academico/config/materiaTipoPill';
+import IdentidadCelda from '@atoms/IdentidadCelda';
+import StatusPill from '@atoms/StatusPill';
+import { TableActions } from '@molecules';
 
 export const createMateriasTableColumns = ({ navigate, listNavState, refetch }) => {
   return [
     {
-      title: 'Sigla',
-      dataIndex: 'sigla',
-      fixed: 'left',
-      ellipsis: true,
-      render: (sigla) => (
-        <TableCell strong textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}>
-          {sigla}
-        </TableCell>
-      ),
-      sorter: (a, b) => (a.sigla || '').localeCompare(b.sigla || '', undefined, { numeric: true, sensitivity: 'base' }),
-      defaultSortOrder: 'ascend',
+      title: '#',
+      key: 'nro',
+      width: 56,
+      align: 'center',
+      render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
     },
     {
-      title: 'Nombre',
+      title: 'Materia',
       dataIndex: 'nombre',
+      fixed: 'left',
       ellipsis: true,
-      render: (nombre, record) => (
-        <TableCell
-          strong
-          fallback="Sin nombre"
-          tag={record.tipo}
-          tagColor={getTipoTagColor(record.tipo)}
-          orientation="vertical"
-        >
-          {nombre}
-        </TableCell>
+      render: (_nombre, record) => (
+        <IdentidadCelda
+          codigo={record.sigla}
+          nombre={(record.nombre || 'Sin nombre').toUpperCase()}
+        />
       ),
-      sorter: (a, b) => (a.nombre || 'Sin nombre').localeCompare(b.nombre || 'Sin nombre'),
+      sorter: true,
+      sortCompare: (a, b) =>
+        (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }),
+    },
+    {
+      title: 'Tipo',
+      dataIndex: 'tipo',
+      width: 160,
+      render: (tipo) => (
+        <StatusPill label={getMateriaTipoLabel(tipo)} className={getMateriaTipoPillClass(tipo)} />
+      ),
+      sorter: true,
+      sortCompare: (a, b) =>
+        getMateriaTipoLabel(a.tipo).localeCompare(getMateriaTipoLabel(b.tipo), 'es'),
     },
     {
       title: 'Clasificación',
       dataIndex: 'clasificacion',
       ellipsis: true,
-      render: (clasificacion) => <TableCell>{clasificacion || '-'}</TableCell>,
-      sorter: (a, b) => (a.clasificacion || '').localeCompare(b.clasificacion || ''),
+      render: (clasificacion) => (
+        <StatusPill
+          label={clasificacion || '—'}
+          className={getMateriaClasificacionPillClass()}
+        />
+      ),
+      sorter: true,
+      sortCompare: (a, b) =>
+        (a.clasificacion || '').localeCompare(b.clasificacion || '', 'es', { sensitivity: 'base' }),
     },
     {
       title: 'Acciones',

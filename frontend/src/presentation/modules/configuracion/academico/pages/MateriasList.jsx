@@ -4,20 +4,19 @@
 
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flex, Select } from 'antd';
+import { Flex } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
+import ListPanelHeader from '@molecules/ListPanelHeader';
 import { useMateriaContext } from '@application-configuracion/academico/hooks';
 import { materiaNuevaPath } from '@application-configuracion/academico/config/paths';
 import { materiasListNavigationState } from '@application-configuracion/academico/config/academicoNavigation';
-import {
-  CLASIFICACION_MATERIA_OPTIONS,
-  TIPOS_MATERIA_OPTIONS,
-} from '@application-configuracion/academico/config/materiaFormConstants';
 import { createMateriasTableColumns } from '@configuracion/academico/config/materiasTableColumns';
+import { allSpacing } from '@theme/tokens';
+import '../styles/academico-form-page.css';
 
-const MateriasList = () => {
+const MateriasList = ({ embedded = false }) => {
   const navigate = useNavigate();
   const listNavState = useMemo(() => materiasListNavigationState(), []);
 
@@ -28,19 +27,7 @@ const MateriasList = () => {
     searchText = '',
     setSearchText,
     refetch,
-    filterTipo,
-    setFilterTipo,
-    filterClasificacion,
-    setFilterClasificacion,
-    clasificacionesDisponibles,
   } = useMateriaContext();
-
-  const clasificacionOptions = useMemo(() => {
-    const fromData = clasificacionesDisponibles.map((c) => ({ value: c, label: c }));
-    const known = new Set(fromData.map((o) => o.value));
-    const extras = CLASIFICACION_MATERIA_OPTIONS.filter((o) => !known.has(o.value));
-    return [...fromData, ...extras];
-  }, [clasificacionesDisponibles]);
 
   const tableColumns = useMemo(
     () =>
@@ -52,65 +39,48 @@ const MateriasList = () => {
     [navigate, listNavState, refetch],
   );
 
-  const listFilters = (
-    <Flex gap={8} wrap="wrap" style={{ marginBottom: 12 }}>
-      <Select
-        allowClear
-        placeholder="Tipo"
-        style={{ minWidth: 160 }}
-        value={filterTipo}
-        onChange={setFilterTipo}
-        options={TIPOS_MATERIA_OPTIONS}
-      />
-      <Select
-        allowClear
-        placeholder="Clasificación"
-        style={{ minWidth: 200 }}
-        value={filterClasificacion}
-        onChange={setFilterClasificacion}
-        options={clasificacionOptions}
-        showSearch
-        optionFilterProp="label"
-      />
-    </Flex>
+  const nuevaMateriaAction = (
+    <ActionButton
+      permiso="configuracion.materia"
+      accion="CREAR"
+      variant="primary"
+      icon={<PlusOutlined />}
+      onClick={() => navigate(materiaNuevaPath, { state: listNavState })}
+    >
+      Nueva materia
+    </ActionButton>
   );
 
   return (
-    <>
-      {listFilters}
+    <Flex
+      vertical
+      gap={allSpacing.marginLG}
+      className={embedded ? 'cfg-academico-tab-content' : undefined}
+      style={{ width: '100%', minWidth: 0 }}
+    >
+      <ListPanelHeader title="Materias" actions={nuevaMateriaAction} />
+
       <TableListView
-      data={materias}
-      loading={loading}
-      error={error}
-      searchText={searchText}
-      onSearchChange={(e) => setSearchText(e.target.value)}
-      searchPlaceholder="Buscar por sigla, nombre o clasificación..."
-      columns={tableColumns}
-      rowKey={(record) => record.id || record.sigla}
-      searchColSpan={10}
-      searchStyle={{ maxWidth: 520 }}
-      pagination={{
-        pageSize: 10,
-        showSizeChanger: true,
-        showTotal: (total) => `Total: ${total} materias`,
-        pageSizeOptions: ['10', '20', '50', '100'],
-      }}
-      defaultSort={{ field: 'sigla', order: 'ascend' }}
-      title="Materias"
-      headerActions={
-        <ActionButton
-          permiso="configuracion.materia"
-          accion="CREAR"
-          variant="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate(materiaNuevaPath, { state: listNavState })}
-        >
-          Nueva materia
-        </ActionButton>
-      }
-      loadingTip="Cargando materias..."
-    />
-    </>
+        embedded={embedded}
+        data={materias}
+        loading={loading}
+        error={error}
+        searchText={searchText}
+        onSearchChange={(e) => setSearchText(e.target.value)}
+        searchPlaceholder="Buscar por sigla, nombre o clasificación..."
+        columns={tableColumns}
+        rowKey={(record) => record.id || record.sigla}
+        searchColSpan={10}
+        searchStyle={{ maxWidth: 520 }}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showTotal: (total) => `Total: ${total} materias`,
+          pageSizeOptions: ['10', '20', '50', '100'],
+        }}
+        loadingTip="Cargando materias..."
+      />
+    </Flex>
   );
 };
 
