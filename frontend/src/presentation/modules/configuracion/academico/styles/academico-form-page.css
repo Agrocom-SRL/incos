@@ -341,19 +341,8 @@
   min-width: 0;
 }
 
-.cfg-planes-tab--embedded .cfg-planes-sidebar,
-.cfg-planes-tab--embedded .cfg-planes-main {
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: var(--radius-md, 10px);
-  background: var(--surface, #fff);
-}
-
-.cfg-planes-tab--embedded .cfg-planes-sidebar {
-  background: var(--border-soft, #f9fafb);
-}
-
-.cfg-planes-tab--embedded .cfg-academico-tab-content>.ant-flex:first-child {
-  margin-bottom: 4px;
+.cfg-planes-tab--embedded .cfg-planes-document {
+  padding: 4px 0 0;
 }
 
 .cfg-planes-tab--embedded {
@@ -375,15 +364,6 @@
     padding-top: 20px;
   }
 
-  .cfg-planes-layout {
-    flex-direction: column;
-  }
-
-  .cfg-planes-sidebar {
-    width: 100% !important;
-    max-height: 220px;
-    overflow-y: auto;
-  }
 }
 
 /* Tabs Académico — contenido dentro del shell */

@@ -2,7 +2,7 @@
  * HTTP plan de estudios — matriz, validación, vigente, asignaturas y prerrequisitos.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import apiClient from '@api-client';
 import {
   ASIGNATURAS_PLAN_ENDPOINTS,
@@ -20,7 +20,11 @@ export const usePlanEstudiosDetalleApi = () => {
         return { success: false, error: result.error || 'No se pudo cargar el plan' };
       }
       const data = result.data ?? {};
-      return { success: true, data: data.plan_estudio ?? data };
+      return {
+        success: true,
+        data: data.plan_estudio ?? data,
+        prerrequisitos: data.prerrequisitos ?? [],
+      };
     } catch (error) {
       const fail = handleErrorResponse(error, 'Error al cargar el plan de estudios');
       return { success: false, error: fail.error };
@@ -153,16 +157,30 @@ export const usePlanEstudiosDetalleApi = () => {
     }
   }, []);
 
-  return {
-    fetchPlanById,
-    fetchMatriz,
-    fetchValidacion,
-    marcarVigente,
-    actualizarPlan,
-    actualizarAsignatura,
-    listarPrerrequisitos,
-    listarEsPrerrequisitoDe,
-    crearPrerrequisito,
-    eliminarPrerrequisito,
-  };
+  return useMemo(
+    () => ({
+      fetchPlanById,
+      fetchMatriz,
+      fetchValidacion,
+      marcarVigente,
+      actualizarPlan,
+      actualizarAsignatura,
+      listarPrerrequisitos,
+      listarEsPrerrequisitoDe,
+      crearPrerrequisito,
+      eliminarPrerrequisito,
+    }),
+    [
+      fetchPlanById,
+      fetchMatriz,
+      fetchValidacion,
+      marcarVigente,
+      actualizarPlan,
+      actualizarAsignatura,
+      listarPrerrequisitos,
+      listarEsPrerrequisitoDe,
+      crearPrerrequisito,
+      eliminarPrerrequisito,
+    ],
+  );
 };

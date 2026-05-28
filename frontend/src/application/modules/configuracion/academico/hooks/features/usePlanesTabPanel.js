@@ -1,11 +1,10 @@
 /**
- * Tab Planes — sidebar carreras + lista de planes filtrada (SPRINT_1 §6.5).
+ * Tab Planes — sidebar carreras + plan vigente por carrera (SPRINT_1 §6.5).
  */
 
 import { useEffect, useMemo, useState } from 'react';
 import { useCarrerasApi } from '../api/useCarrerasApi';
 import { usePlanesEstudiosApi } from '../api/usePlanesEstudiosApi';
-import { useTableData } from '@molecules';
 
 export const usePlanesTabPanel = () => {
   const { carreras = [], loading: loadingCarreras } = useCarrerasApi();
@@ -22,52 +21,46 @@ export const usePlanesTabPanel = () => {
 
   const planCarreraId = (p) => p.carrera_id ?? p.carreraId;
 
+  /** Solo planes vigentes por carrera (una entrada por carrera en el catálogo). */
   const vigentePlanPorCarrera = useMemo(() => {
     const map = new Map();
     for (const p of planes) {
-      if (p.vigente) {
-        map.set(planCarreraId(p), p);
-      }
+      const vigente = p.vigente === true || p.vigente === 1;
+      if (!vigente) continue;
+      map.set(planCarreraId(p), p);
     }
     return map;
   }, [planes]);
-
-  const planesDeCarrera = useMemo(() => {
-    if (!selectedCarreraId) return [];
-    return planes
-      .filter((p) => planCarreraId(p) === selectedCarreraId)
-      .sort((a, b) => {
-        const va = a.vigente ? 1 : 0;
-        const vb = b.vigente ? 1 : 0;
-        if (va !== vb) return vb - va;
-        return (a.nombre_plan || '').localeCompare(b.nombre_plan || '');
-      });
-  }, [planes, selectedCarreraId]);
-
-  const getSearchFields = useMemo(
-    () => (plan) => [plan.nombre_plan, plan.resolucion_ministerial].filter(Boolean),
-    [],
-  );
-
-  const { searchText, setSearchText, filteredData } = useTableData(planesDeCarrera, getSearchFields);
 
   const carreraSeleccionada = useMemo(
     () => carreras.find((c) => c.id === selectedCarreraId) ?? null,
     [carreras, selectedCarreraId],
   );
 
+  const planVigente = useMemo(() => {
+    if (!selectedCarreraId) return null;
+    return vigentePlanPorCarrera.get(selectedCarreraId) ?? null;
+  }, [selectedCarreraId, vigentePlanPorCarrera]);
+
+  const carrerasConPlan = useMemo(
+    () =>
+      carreras.map((c) => ({
+        ...c,
+        planVigente: vigentePlanPorCarrera.get(c.id) ?? null,
+      })),
+    [carreras, vigentePlanPorCarrera],
+  );
+
   return {
-    carreras,
+    carreras: carrerasConPlan,
     loadingCarreras,
     selectedCarreraId,
     setSelectedCarreraId,
     vigentePlanPorCarrera,
-    planesDeCarrera: filteredData,
+    planVigente,
     carreraSeleccionada,
     loading: loadingCarreras || loadingPlanes,
     error,
     refetch,
-    searchText,
-    setSearchText,
   };
 };

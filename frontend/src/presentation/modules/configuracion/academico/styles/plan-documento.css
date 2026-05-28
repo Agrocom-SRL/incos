@@ -1,0 +1,309 @@
+/**
+ * Documento de plan de estudios — tab Planes (paleta unificada por carrera).
+ */
+
+.cfg-plan-doc {
+  --cfg-plan-year-body-height: 520px;
+  --cfg-plan-col-codigo: 20%;
+  --cfg-plan-col-nombre: 45%;
+  --cfg-plan-col-horas: 15%;
+  --cfg-plan-col-prereq: 20%;
+  width: 100%;
+  min-width: 0;
+  color: var(--text-800, #1f2937);
+}
+
+.cfg-plan-doc__loading,
+.cfg-planes-main__placeholder {
+  min-height: 280px;
+}
+
+.cfg-plan-doc__banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 14px 18px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--cfg-plan-accent-border, var(--border, #e5e7eb));
+  border-radius: var(--radius-md, 10px);
+  margin-bottom: 12px;
+}
+
+.cfg-plan-doc__banner-label {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--cfg-plan-accent, var(--primary, #196b45));
+}
+
+.cfg-plan-doc__banner-resolucion {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  color: var(--cfg-plan-accent, var(--primary, #196b45));
+  text-align: right;
+}
+
+.cfg-plan-doc__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  margin-bottom: 16px;
+  border-radius: var(--radius-md, 10px);
+  overflow: hidden;
+  border: 1px solid var(--cfg-plan-accent-border, transparent);
+}
+
+.cfg-plan-doc__header-col--meta {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+.cfg-plan-doc__meta-band {
+  margin: 0;
+  padding: 10px 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--cfg-plan-accent-on-dark, #fff);
+  font-weight: 600;
+}
+
+.cfg-plan-doc__meta-band--1 {
+  background: var(--cfg-plan-meta-band-1, var(--cfg-plan-accent, #196b45));
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.cfg-plan-doc__meta-band--2 {
+  background: var(--cfg-plan-meta-band-2, var(--cfg-plan-accent, #196b45));
+}
+
+.cfg-plan-doc__meta-band--3 {
+  background: var(--cfg-plan-meta-band-3, var(--cfg-plan-accent, #196b45));
+}
+
+.cfg-plan-doc__meta-band--4 {
+  background: var(--cfg-plan-meta-band-4, var(--cfg-plan-accent, #196b45));
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cfg-plan-doc__meta-band--4,
+.cfg-plan-doc__meta-band--3 {
+  color: var(--text-800, #1f2937);
+}
+
+.cfg-plan-doc__meta-k {
+  font-weight: 700;
+}
+
+.cfg-plan-doc__header-col--carrera {
+  padding: 18px 20px;
+  margin: 0;
+  background: var(--cfg-plan-accent-header, var(--cfg-plan-accent, #196b45));
+  color: var(--cfg-plan-accent-on-dark, #fff);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cfg-plan-doc__carrera-label,
+.cfg-plan-doc__titulo-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  opacity: 0.92;
+}
+
+.cfg-plan-doc__carrera-nombre {
+  margin: 0 0 14px !important;
+  color: var(--cfg-plan-accent-on-dark, #fff) !important;
+  font-size: clamp(20px, 2.4vw, 28px) !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+
+.cfg-plan-doc__titulo-valor {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cfg-plan-doc__years {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.cfg-plan-doc__year {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md, 10px);
+  overflow: hidden;
+  border: 1px solid var(--cfg-plan-accent-border, rgba(0, 0, 0, 0.08));
+}
+
+.cfg-plan-doc__year-head {
+  flex-shrink: 0;
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--cfg-plan-accent-on-dark, #fff);
+  background: var(--cfg-plan-accent-header, var(--cfg-plan-accent, #196b45));
+}
+
+.cfg-plan-doc__year-body {
+  flex: 1;
+  min-height: var(--cfg-plan-year-body-height);
+  display: flex;
+  flex-direction: column;
+  background: var(--cfg-plan-accent-body, #134d32);
+}
+
+.cfg-plan-doc__table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+  color: var(--cfg-plan-accent-on-dark, #fff);
+}
+
+.cfg-plan-doc__col-codigo {
+  width: var(--cfg-plan-col-codigo);
+}
+
+.cfg-plan-doc__col-nombre {
+  width: var(--cfg-plan-col-nombre);
+}
+
+.cfg-plan-doc__col-horas {
+  width: var(--cfg-plan-col-horas);
+}
+
+.cfg-plan-doc__col-prereq {
+  width: var(--cfg-plan-col-prereq);
+}
+
+.cfg-plan-doc__table th,
+.cfg-plan-doc__table td {
+  padding: 8px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  vertical-align: middle;
+}
+
+.cfg-plan-doc__table thead th {
+  background: var(--cfg-plan-th-sub, rgba(0, 0, 0, 0.2));
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-align: center;
+  vertical-align: middle;
+  padding: 10px 4px;
+  line-height: 1.2;
+}
+
+.cfg-plan-doc__table tbody tr {
+  height: calc(var(--cfg-plan-year-body-height) / var(--cfg-plan-year-rows, 10));
+}
+
+.cfg-plan-doc__table tbody tr:nth-child(odd):not(.cfg-plan-doc__row--placeholder) {
+  background: var(--cfg-plan-row-stripe, rgba(255, 255, 255, 0.1));
+}
+
+.cfg-plan-doc__row--placeholder td {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.cfg-plan-doc__td-codigo,
+.cfg-plan-doc__td-horas,
+.cfg-plan-doc__td-prereq {
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.cfg-plan-doc__td-horas {
+  font-weight: 600;
+}
+
+.cfg-plan-doc__td-prereq {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cfg-plan-doc__td-nombre {
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 500;
+  word-break: break-word;
+  hyphens: auto;
+  padding-inline: 8px;
+}
+
+.cfg-plan-doc__td-nombre--md {
+  font-size: 13px;
+  line-height: 1.28;
+}
+
+.cfg-plan-doc__td-nombre--sm {
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.cfg-plan-doc__td-nombre--xs {
+  font-size: 11px;
+  line-height: 1.22;
+}
+
+.cfg-plan-doc__actions {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft, #f3f4f6);
+}
+
+.cfg-plan-doc__empty-matriz {
+  margin: 24px 0;
+}
+
+@media (max-width: 1200px) {
+  .cfg-plan-doc__years {
+    grid-template-columns: 1fr;
+  }
+
+  .cfg-plan-doc {
+    --cfg-plan-year-body-height: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cfg-plan-doc__header {
+    grid-template-columns: 1fr;
+  }
+
+  .cfg-plan-doc__banner-resolucion {
+    text-align: left;
+  }
+
+  .cfg-plan-doc {
+    --cfg-plan-year-body-height: 380px;
+    --cfg-plan-col-codigo: 22%;
+    --cfg-plan-col-nombre: 40%;
+    --cfg-plan-col-horas: 14%;
+    --cfg-plan-col-prereq: 24%;
+  }
+}

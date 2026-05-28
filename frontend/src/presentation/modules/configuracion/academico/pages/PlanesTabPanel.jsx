@@ -1,41 +1,61 @@
 /**
- * Tab «Planes de estudio» — sidebar carreras + lista de planes (SPRINT_1 §6.5).
+ * Tab «Planes de estudio» — selector horizontal + documento a ancho completo.
  */
 
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Empty, Flex, Input, Spin, Tag, Typography, theme } from 'antd';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
-import { EditOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Alert, Button, Flex, Spin } from 'antd';
 import { useAuthContext } from '@application-auth';
 import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
+import { usePlanesTabDocumento } from '@application-configuracion/academico/hooks/features/usePlanesTabDocumento';
 import { planDetallePath } from '@application-configuracion/academico/config/paths';
 import { planesListNavigationState } from '@application-configuracion/academico/config/academicoNavigation';
-import { Card, Text } from '@atoms';
+import { buildPlanDocumentoThemeVars } from '@application-configuracion/academico/utils/planDocumentoTheme';
+import PlanesCarreraSidebar from '@configuracion/academico/components/organisms/PlanesCarreraSidebar';
+import PlanEstudioDocumentoView from '@configuracion/academico/components/organisms/PlanEstudioDocumentoView';
+import { Text } from '@atoms';
 import '../styles/planes-tab.css';
-
-const { Search } = Input;
+import '../styles/plan-documento.css';
 
 const PlanesTabPanel = ({ embedded = false }) => {
   const navigate = useNavigate();
-  const { token } = theme.useToken();
   const listNavState = useMemo(() => planesListNavigationState(), []);
   const { hasPermiso } = useAuthContext();
   const puedeDetalle = hasPermiso('configuracion.plan-estudio', 'DETALLE');
 
   const {
     carreras,
-    loading,
-    error,
-    refetch,
+    loading: loadingCatalog,
+    error: catalogError,
+    refetch: refetchCatalog,
     selectedCarreraId,
     setSelectedCarreraId,
-    vigentePlanPorCarrera,
-    planesDeCarrera,
     carreraSeleccionada,
-    searchText,
-    setSearchText,
+    planVigente,
   } = usePlanesTabPanel();
+
+  const planId = planVigente?.id ?? null;
+
+  const {
+    periodos,
+    planMeta,
+    prereqSiglaByAsignaturaId,
+    loading: loadingDocumento,
+    error: documentoError,
+    refetch: refetchDocumento,
+  } = usePlanesTabDocumento(planId);
+
+  const themeVars = useMemo(
+    () => buildPlanDocumentoThemeVars(carreraSeleccionada?.colorHex),
+    [carreraSeleccionada?.colorHex],
+  );
+
+  const error = catalogError || documentoError;
+
+  const handleEditarMatriz = () => {
+    if (!planId) return;
+    navigate(planDetallePath(planId), { state: listNavState });
+  };
 
   return (
     <div className={`cfg-planes-tab${embedded ? ' cfg-planes-tab--embedded' : ''}`}>
@@ -44,156 +64,60 @@ const PlanesTabPanel = ({ embedded = false }) => {
           type="error"
           showIcon
           className="cfg-planes-tab__alert"
-          message={typeof error === 'string' ? error : 'Error al cargar planes'}
+          title={typeof error === 'string' ? error : 'Error al cargar planes'}
           action={
-            <Button size="small" onClick={refetch}>
+            <Button
+              size="small"
+              onClick={() => {
+                refetchCatalog();
+                refetchDocumento();
+              }}
+            >
               Reintentar
             </Button>
           }
         />
       ) : null}
 
-      <Spin spinning={loading} tip="Cargando planes de estudio…">
-        <Flex className="cfg-planes-layout" gap={16} align="stretch">
-          <Card
-            className="cfg-planes-sidebar"
-            variant={embedded ? 'borderless' : 'outlined'}
-            shadow={false}
-            styles={{ body: { padding: 8 } }}
-          >
-            <Text strong className="cfg-planes-sidebar__title">
-              Carreras
-            </Text>
-            {carreras.length === 0 ? (
-              <Text type="secondary" className="cfg-planes-carrera-list__empty">
-                Sin carreras
-              </Text>
-            ) : (
-              <ul className="cfg-planes-carrera-list" role="list">
-                {carreras.map((c) => {
-                  const activo = c.id === selectedCarreraId;
-                  const vigente = vigentePlanPorCarrera.get(c.id);
-                  const swatchColor =
-                    sanitizeDocenteColorHex(c.colorHex ?? c.color_hex) || token.colorPrimary;
-                  return (
-                    <li key={c.id}>
-                      <button
-                        type="button"
-                        className={`cfg-planes-carrera-item${activo ? ' cfg-planes-carrera-item--active' : ''}`}
-                        onClick={() => setSelectedCarreraId(c.id)}
-                      >
-                        <Flex align="center" gap={8} className="cfg-planes-carrera-row">
-                          <span
-                            className="cfg-planes-carrera-swatch"
-                            style={{ backgroundColor: swatchColor }}
-                            aria-hidden
-                          />
-                          <Flex vertical className="cfg-planes-carrera-row__text">
-                            <Text strong ellipsis className="cfg-planes-carrera-row__codigo">
-                              {c.codigo}
-                            </Text>
-                            <Text type="secondary" ellipsis className="cfg-planes-carrera-row__nombre">
-                              {c.nombre}
-                            </Text>
-                          </Flex>
-                          {vigente ? (
-                            <Tag color="success" className="cfg-planes-carrera-row__tag">
-                              Vigente
-                            </Tag>
-                          ) : null}
-                        </Flex>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </Card>
+      <div className="cfg-planes-selector-wrap">
+        <Text strong className="cfg-planes-selector-wrap__label">
+          Carrera
+        </Text>
+        {loadingCatalog ? (
+          <Flex justify="center" className="cfg-planes-carrera-list__empty">
+            <Spin size="small" />
+          </Flex>
+        ) : carreras.length === 0 ? (
+          <Text type="secondary" className="cfg-planes-carrera-list__empty">
+            Sin carreras
+          </Text>
+        ) : (
+          <PlanesCarreraSidebar
+            carreras={carreras}
+            selectedCarreraId={selectedCarreraId}
+            onSelectCarrera={setSelectedCarreraId}
+          />
+        )}
+      </div>
 
-          <Card
-            className="cfg-planes-main"
-            variant={embedded ? 'borderless' : 'outlined'}
-            shadow={false}
-            styles={{ body: { padding: embedded ? '8px 0 0' : 16 } }}
-          >
-            {carreraSeleccionada ? (
-              <>
-                <Flex justify="space-between" align="center" wrap="wrap" gap={8} className="cfg-planes-main__toolbar">
-                  <div>
-                    <Typography.Title level={5} className="cfg-planes-main__heading">
-                      {carreraSeleccionada.nombre}
-                    </Typography.Title>
-                    <Text type="secondary" className="cfg-planes-main__subtitle">
-                      Planes de estudio — vigente arriba, históricos abajo
-                    </Text>
-                  </div>
-                  <Search
-                    allowClear
-                    placeholder="Buscar plan o resolución…"
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    className="cfg-planes-main__search"
-                  />
-                </Flex>
-
-                {planesDeCarrera.length === 0 ? (
-                  <Empty description="No hay planes para esta carrera" />
-                ) : (
-                  <ul className="cfg-planes-plan-list" role="list">
-                    {planesDeCarrera.map((plan) => (
-                      <li key={plan.id} className="cfg-planes-plan-item">
-                        <div className="cfg-planes-plan-item__content">
-                          <Flex align="center" gap={8} wrap="wrap" className="cfg-planes-plan-item__title">
-                            <span>{plan.nombre_plan || `Plan #${plan.id}`}</span>
-                            {plan.vigente ? (
-                              <Tag icon={<CheckCircleOutlined />} color="success">
-                                Vigente
-                              </Tag>
-                            ) : (
-                              <Tag>Histórico</Tag>
-                            )}
-                          </Flex>
-                          <Flex gap={16} wrap="wrap" className="cfg-planes-plan-item__meta">
-                            {plan.resolucion_ministerial ? (
-                              <span>{plan.resolucion_ministerial}</span>
-                            ) : null}
-                            <span>
-                              <Text type="secondary">Horas/sem: </Text>
-                              <Text strong>{plan.horas_semana ?? '—'}</Text>
-                            </span>
-                            {plan.duracion_anios != null ? (
-                              <span>
-                                <Text type="secondary">Duración: </Text>
-                                {plan.duracion_anios} años
-                              </span>
-                            ) : null}
-                          </Flex>
-                        </div>
-                        {puedeDetalle ? (
-                          <div className="cfg-planes-plan-item__actions">
-                            <Button
-                              type="primary"
-                              size="small"
-                              icon={<EditOutlined />}
-                              onClick={() =>
-                                navigate(planDetallePath(plan.id), { state: listNavState })
-                              }
-                            >
-                              Editar matriz
-                            </Button>
-                          </div>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </>
-            ) : (
-              <Empty description="Seleccione una carrera" />
-            )}
-          </Card>
-        </Flex>
-      </Spin>
+      <div className="cfg-planes-document">
+        {carreraSeleccionada ? (
+          <PlanEstudioDocumentoView
+            carrera={carreraSeleccionada}
+            planMeta={planMeta ?? planVigente}
+            periodos={periodos}
+            prereqSiglaByAsignaturaId={prereqSiglaByAsignaturaId}
+            themeVars={themeVars}
+            loading={planId != null && loadingDocumento}
+            puedeEditar={puedeDetalle && Boolean(planId)}
+            onEditarMatriz={handleEditarMatriz}
+          />
+        ) : (
+          <Flex align="center" justify="center" className="cfg-planes-main__placeholder">
+            <Text type="secondary">Seleccione una carrera</Text>
+          </Flex>
+        )}
+      </div>
     </div>
   );
 };
