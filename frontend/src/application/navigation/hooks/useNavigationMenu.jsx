@@ -90,6 +90,24 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     }, [rawNavigationMenu, hasPermisoStable, isAuthenticated, usuario]);
 
     /**
+     * Ant Design Menu solo acepta key, label, icon, children, type, disabled, etc.
+     * permiso/permisoAny/accion son metadatos internos y no deben llegar al DOM.
+     */
+    const sanitizeMenuItemForAntd = (item) => {
+        const sanitized = {
+            key: item.key,
+            label: item.label,
+            ...(item.icon != null && { icon: item.icon }),
+            ...(item.type != null && { type: item.type }),
+            ...(item.disabled != null && { disabled: item.disabled }),
+        };
+        if (item.children?.length) {
+            sanitized.children = item.children.map(sanitizeMenuItemForAntd);
+        }
+        return sanitized;
+    };
+
+    /**
      * Función recursiva para mapear items y subitems con iconos
      * Prepara la estructura de datos para renderizar en la UI
      * 
@@ -108,8 +126,8 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
             if (item.children && item.children.length > 0) {
                 mappedItem.children = mapItemsWithIcons(item.children);
             }
-            
-            return mappedItem;
+
+            return sanitizeMenuItemForAntd(mappedItem);
         });
     };
 

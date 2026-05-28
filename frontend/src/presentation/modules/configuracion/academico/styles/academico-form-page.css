@@ -112,7 +112,7 @@
   flex-shrink: 0;
 }
 
-.cfg-academico-form-card .ant-form-item-label > label {
+.cfg-academico-form-card .ant-form-item-label>label {
   font-weight: 500;
 }
 
@@ -231,7 +231,8 @@
 }
 
 .cfg-academico-workspace__header {
-  padding: 24px 28px 0;
+  padding: 24px 28px 12px;
+  background: var(--border-soft, #f9fafb) !important;
 }
 
 .cfg-academico-workspace__title {
@@ -241,8 +242,7 @@
 }
 
 .cfg-academico-workspace__desc {
-  margin: 0 0 8px !important;
-  max-width: 640px;
+  margin: 8px 0 0 !important;
 }
 
 .cfg-academico-tabs-shell {
@@ -252,14 +252,78 @@
   background: transparent !important;
 }
 
-.cfg-academico-tabs-shell .ant-tabs-nav {
+/* Nav: línea separadora solo bajo tabs inactivos (el activo la tapa) */
+.cfg-academico-tabs-shell .sd-tabs.cfg-academico-workspace__tabs .ant-tabs-nav {
   padding: 0 28px !important;
   margin-bottom: 0 !important;
+  background: var(--border-soft, #f9fafb) !important;
+  border-bottom: 1px solid var(--border, #e5e7eb) !important;
 }
 
+.cfg-academico-tabs-shell .sd-tabs.cfg-academico-workspace__tabs .ant-tabs-nav::before {
+  border: none !important;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-nav-list {
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab {
+  margin: 8px 0 0 !important;
+  padding: 10px 16px !important;
+  border-radius: 10px 10px 0 0 !important;
+  border: 1px solid transparent !important;
+  border-bottom: none !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab:hover:not(.ant-tabs-tab-active) {
+  background: rgba(25, 107, 69, 0.06) !important;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab:hover:not(.ant-tabs-tab-active) .ant-tabs-tab-btn {
+  color: var(--primary, #196b45) !important;
+}
+
+/* Tab activo: mismo fondo que el contenido y tapa la línea del nav */
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active {
+  background: var(--surface, #fff) !important;
+  border-color: var(--border, #e5e7eb) !important;
+  border-bottom: 1px solid var(--surface, #fff) !important;
+  margin-bottom: -1px !important;
+  box-shadow: 0 -2px 8px rgba(25, 107, 69, 0.06) !important;
+  position: relative;
+  z-index: 2;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--primary-dark, #134d32) !important;
+  font-weight: 700 !important;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .sd-tab-label {
+  color: var(--primary-dark, #134d32);
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .sd-tab-label .anticon {
+  color: var(--primary, #196b45);
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab:active .ant-tabs-tab-btn {
+  transform: scale(0.98);
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-ink-bar {
+  display: none !important;
+}
+
+/* Sin borde superior: el tab activo ya cierra visualmente con el contenido */
 .cfg-academico-workspace__tabs.ant-tabs .ant-tabs-content-holder {
   background: var(--surface, #fff);
-  border-top: 1px solid var(--border-soft, #f3f4f6);
+  border-top: none !important;
+  position: relative;
+  z-index: 1;
 }
 
 .cfg-academico-tab-panel {
@@ -288,8 +352,7 @@
   background: var(--border-soft, #f9fafb);
 }
 
-.cfg-planes-tab--embedded .ListPanelHeader,
-.cfg-planes-tab--embedded .cfg-academico-tab-content > .ant-flex:first-child {
+.cfg-planes-tab--embedded .cfg-academico-tab-content>.ant-flex:first-child {
   margin-bottom: 4px;
 }
 
@@ -300,6 +363,7 @@
 }
 
 @media (max-width: 768px) {
+
   .cfg-academico-workspace__header,
   .cfg-academico-tabs-shell .ant-tabs-nav,
   .cfg-academico-tab-panel {
@@ -322,8 +386,8 @@
   }
 }
 
-/* Tabs Académico — contenido dentro del shell (legacy) */
-.cfg-academico-tabs-shell .ant-tabs-content-holder {
+/* Tabs Académico — contenido dentro del shell */
+.cfg-academico-tabs-shell .cfg-academico-workspace__tabs .ant-tabs-content-holder {
   background: var(--surface, #fff);
 }
 

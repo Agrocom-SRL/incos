@@ -460,10 +460,6 @@
   transition: color .15s !important;
 }
 
-.sd-tabs .ant-tabs-tab+.ant-tabs-tab {
-  margin-left: 28px !important;
-}
-
 .sd-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
   color: var(--primary) !important;
 }

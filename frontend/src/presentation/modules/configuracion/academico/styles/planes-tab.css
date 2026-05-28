@@ -26,11 +26,30 @@
   border-radius: 8px;
 }
 
+.cfg-planes-carrera-list,
+.cfg-planes-plan-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cfg-planes-carrera-list__empty {
+  display: block;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
 .cfg-planes-carrera-item {
+  display: block;
+  width: 100%;
   cursor: pointer;
   border-radius: 6px;
-  padding: 4px 8px !important;
-  border-block-end: none !important;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
 }
 
 .cfg-planes-carrera-item:hover {
@@ -49,8 +68,31 @@
 }
 
 .cfg-planes-plan-item {
-  padding: 12px 0 !important;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 0;
   border-block-end: 1px solid var(--border, #f0f0f0);
+}
+
+.cfg-planes-plan-item:last-child {
+  border-block-end: none;
+}
+
+.cfg-planes-plan-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.cfg-planes-plan-item__title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cfg-planes-plan-item__actions {
+  flex-shrink: 0;
 }
 
 .cfg-planes-tab__alert {

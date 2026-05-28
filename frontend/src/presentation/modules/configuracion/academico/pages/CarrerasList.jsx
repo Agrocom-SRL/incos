@@ -58,7 +58,9 @@ const CarrerasList = ({ embedded = false }) => {
       className={embedded ? 'cfg-academico-tab-content' : undefined}
       style={{ width: '100%', minWidth: 0 }}
     >
-      <ListPanelHeader title="Carreras" actions={nuevaCarreraAction} />
+      {!embedded ? (
+        <ListPanelHeader title="Carreras" actions={nuevaCarreraAction} />
+      ) : null}
 
       <TableListView
         embedded={embedded}

@@ -4,7 +4,7 @@
 
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Empty, Flex, Input, List, Spin, Tag, Typography, theme } from 'antd';
+import { Alert, Button, Empty, Flex, Input, Spin, Tag, Typography, theme } from 'antd';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { EditOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useAuthContext } from '@application-auth';
@@ -12,7 +12,6 @@ import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
 import { planDetallePath } from '@application-configuracion/academico/config/paths';
 import { planesListNavigationState } from '@application-configuracion/academico/config/academicoNavigation';
 import { Card, Text } from '@atoms';
-import ListPanelHeader from '@molecules/ListPanelHeader';
 import '../styles/planes-tab.css';
 
 const { Search } = Input;
@@ -54,8 +53,6 @@ const PlanesTabPanel = ({ embedded = false }) => {
         />
       ) : null}
 
-      <ListPanelHeader title="Planes de estudio" />
-
       <Spin spinning={loading} tip="Cargando planes de estudio…">
         <Flex className="cfg-planes-layout" gap={16} align="stretch">
           <Card
@@ -67,43 +64,50 @@ const PlanesTabPanel = ({ embedded = false }) => {
             <Text strong className="cfg-planes-sidebar__title">
               Carreras
             </Text>
-            <List
-              size="small"
-              dataSource={carreras}
-              locale={{ emptyText: 'Sin carreras' }}
-              renderItem={(c) => {
-                const activo = c.id === selectedCarreraId;
-                const vigente = vigentePlanPorCarrera.get(c.id);
-                const swatchColor =
-                  sanitizeDocenteColorHex(c.colorHex ?? c.color_hex) || token.colorPrimary;
-                return (
-                  <List.Item
-                    className={`cfg-planes-carrera-item${activo ? ' cfg-planes-carrera-item--active' : ''}`}
-                    onClick={() => setSelectedCarreraId(c.id)}
-                  >
-                    <Flex align="center" gap={8} className="cfg-planes-carrera-row">
-                      <span
-                        className="cfg-planes-carrera-swatch"
-                        style={{ backgroundColor: swatchColor }}
-                      />
-                      <Flex vertical className="cfg-planes-carrera-row__text">
-                        <Text strong ellipsis className="cfg-planes-carrera-row__codigo">
-                          {c.codigo}
-                        </Text>
-                        <Text type="secondary" ellipsis className="cfg-planes-carrera-row__nombre">
-                          {c.nombre}
-                        </Text>
-                      </Flex>
-                      {vigente ? (
-                        <Tag color="success" className="cfg-planes-carrera-row__tag">
-                          Vigente
-                        </Tag>
-                      ) : null}
-                    </Flex>
-                  </List.Item>
-                );
-              }}
-            />
+            {carreras.length === 0 ? (
+              <Text type="secondary" className="cfg-planes-carrera-list__empty">
+                Sin carreras
+              </Text>
+            ) : (
+              <ul className="cfg-planes-carrera-list" role="list">
+                {carreras.map((c) => {
+                  const activo = c.id === selectedCarreraId;
+                  const vigente = vigentePlanPorCarrera.get(c.id);
+                  const swatchColor =
+                    sanitizeDocenteColorHex(c.colorHex ?? c.color_hex) || token.colorPrimary;
+                  return (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        className={`cfg-planes-carrera-item${activo ? ' cfg-planes-carrera-item--active' : ''}`}
+                        onClick={() => setSelectedCarreraId(c.id)}
+                      >
+                        <Flex align="center" gap={8} className="cfg-planes-carrera-row">
+                          <span
+                            className="cfg-planes-carrera-swatch"
+                            style={{ backgroundColor: swatchColor }}
+                            aria-hidden
+                          />
+                          <Flex vertical className="cfg-planes-carrera-row__text">
+                            <Text strong ellipsis className="cfg-planes-carrera-row__codigo">
+                              {c.codigo}
+                            </Text>
+                            <Text type="secondary" ellipsis className="cfg-planes-carrera-row__nombre">
+                              {c.nombre}
+                            </Text>
+                          </Flex>
+                          {vigente ? (
+                            <Tag color="success" className="cfg-planes-carrera-row__tag">
+                              Vigente
+                            </Tag>
+                          ) : null}
+                        </Flex>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </Card>
 
           <Card
@@ -135,63 +139,53 @@ const PlanesTabPanel = ({ embedded = false }) => {
                 {planesDeCarrera.length === 0 ? (
                   <Empty description="No hay planes para esta carrera" />
                 ) : (
-                  <List
-                    dataSource={planesDeCarrera}
-                    renderItem={(plan) => (
-                      <List.Item
-                        className="cfg-planes-plan-item"
-                        actions={
-                          puedeDetalle
-                            ? [
-                                <Button
-                                  key="matriz"
-                                  type="primary"
-                                  size="small"
-                                  icon={<EditOutlined />}
-                                  onClick={() =>
-                                    navigate(planDetallePath(plan.id), { state: listNavState })
-                                  }
-                                >
-                                  Editar matriz
-                                </Button>,
-                              ]
-                            : undefined
-                        }
-                      >
-                        <List.Item.Meta
-                          title={
-                            <Flex align="center" gap={8} wrap="wrap">
-                              <span>{plan.nombre_plan || `Plan #${plan.id}`}</span>
-                              {plan.vigente ? (
-                                <Tag icon={<CheckCircleOutlined />} color="success">
-                                  Vigente
-                                </Tag>
-                              ) : (
-                                <Tag>Histórico</Tag>
-                              )}
-                            </Flex>
-                          }
-                          description={
-                            <Flex gap={16} wrap="wrap" className="cfg-planes-plan-item__meta">
-                              {plan.resolucion_ministerial ? (
-                                <span>{plan.resolucion_ministerial}</span>
-                              ) : null}
+                  <ul className="cfg-planes-plan-list" role="list">
+                    {planesDeCarrera.map((plan) => (
+                      <li key={plan.id} className="cfg-planes-plan-item">
+                        <div className="cfg-planes-plan-item__content">
+                          <Flex align="center" gap={8} wrap="wrap" className="cfg-planes-plan-item__title">
+                            <span>{plan.nombre_plan || `Plan #${plan.id}`}</span>
+                            {plan.vigente ? (
+                              <Tag icon={<CheckCircleOutlined />} color="success">
+                                Vigente
+                              </Tag>
+                            ) : (
+                              <Tag>Histórico</Tag>
+                            )}
+                          </Flex>
+                          <Flex gap={16} wrap="wrap" className="cfg-planes-plan-item__meta">
+                            {plan.resolucion_ministerial ? (
+                              <span>{plan.resolucion_ministerial}</span>
+                            ) : null}
+                            <span>
+                              <Text type="secondary">Horas/sem: </Text>
+                              <Text strong>{plan.horas_semana ?? '—'}</Text>
+                            </span>
+                            {plan.duracion_anios != null ? (
                               <span>
-                                <Text type="secondary">Horas/sem: </Text>
-                                <Text strong>{plan.horas_semana ?? '—'}</Text>
+                                <Text type="secondary">Duración: </Text>
+                                {plan.duracion_anios} años
                               </span>
-                              {plan.duracion_anios != null ? (
-                                <span>
-                                  <Text type="secondary">Duración: </Text>
-                                  {plan.duracion_anios} años
-                                </span>
-                              ) : null}
-                            </Flex>
-                          }
-                        />
-                      </List.Item>
-                    )}
-                  />
+                            ) : null}
+                          </Flex>
+                        </div>
+                        {puedeDetalle ? (
+                          <div className="cfg-planes-plan-item__actions">
+                            <Button
+                              type="primary"
+                              size="small"
+                              icon={<EditOutlined />}
+                              onClick={() =>
+                                navigate(planDetallePath(plan.id), { state: listNavState })
+                              }
+                            >
+                              Editar matriz
+                            </Button>
+                          </div>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </>
             ) : (

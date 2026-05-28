@@ -58,7 +58,9 @@ const MateriasList = ({ embedded = false }) => {
       className={embedded ? 'cfg-academico-tab-content' : undefined}
       style={{ width: '100%', minWidth: 0 }}
     >
-      <ListPanelHeader title="Materias" actions={nuevaMateriaAction} />
+      {!embedded ? (
+        <ListPanelHeader title="Materias" actions={nuevaMateriaAction} />
+      ) : null}
 
       <TableListView
         embedded={embedded}
