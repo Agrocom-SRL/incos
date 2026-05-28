@@ -1,6 +1,7 @@
-import { createApiHook } from '@application/utils';
-import { normalizeFieldToArray } from '@application/utils';
+import { createApiHook, normalizeFieldToArray } from '@application/utils';
 import { mapMateriasList } from '@application-configuracion/academico/mappers';
+
+const LIST_FETCH_PARAMS = { params: { page: 1, limit: 10000 } };
 
 export const useMateriasApi = createApiHook({
   name: 'useMateriasApi',
@@ -12,7 +13,7 @@ export const useMateriasApi = createApiHook({
   },
   initialLoading: false,
   autoFetch: true,
-  autoFetchArgs: {},
+  autoFetchArgs: [LIST_FETCH_PARAMS],
   dataKey: 'materias',
   errorMessage: 'Error al cargar las materias',
 });

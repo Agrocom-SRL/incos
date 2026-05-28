@@ -16,7 +16,11 @@ export function usePlanesEstudiosApi({ carreraId, autoFetch = true } = {}) {
     setLoading(true);
     setError(null);
     try {
-      const params = carreraId ? { carrera_id: carreraId } : {};
+      const params = {
+        page: 1,
+        limit: 10000,
+        ...(carreraId ? { carrera_id: carreraId } : {}),
+      };
       const response = await apiClient.get(PLANES_ESTUDIOS_ENDPOINTS.BASE, { params });
       const result = handleSuccessResponse(response);
       if (!result.success) {
