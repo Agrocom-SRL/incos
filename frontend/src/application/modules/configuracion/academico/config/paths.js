@@ -1,4 +1,4 @@
-/** Rutas CFG → Académico (tabs + formularios + detalle de plan). */
+/** Rutas CFG → Académico (tabs + ABM + detalle de plan). */
 
 export const ACADEMICO_BASE = '/configuracion/academico';
 
@@ -7,22 +7,24 @@ export const PLAN_ESTUDIO_BASE = ACADEMICO_BASE;
 
 export const academicoTabPath = (tab) => `${ACADEMICO_BASE}?tab=${tab}`;
 
+export const CARRERAS_LIST_PATH = `${ACADEMICO_BASE}?tab=carreras`;
+export const MATERIAS_LIST_PATH = `${ACADEMICO_BASE}?tab=materias`;
+export const PLANES_LIST_PATH = `${ACADEMICO_BASE}?tab=planes`;
+
 export const planDetallePath = (planId) => `${ACADEMICO_BASE}/plan/${planId}`;
+export const planEditarPath = (planId) => `${ACADEMICO_BASE}/plan/${planId}/editar`;
 
-export const CARRERAS_BASE = `${ACADEMICO_BASE}/carreras`;
-export const CARRERAS_REGISTRAR_PATH = `${CARRERAS_BASE}/registrar`;
+/** ABM y detalle carrera (páginas completas) */
+export const carreraNuevaPath = `${ACADEMICO_BASE}/carrera/nueva`;
+export const carreraDetallePath = (carreraId) => `${ACADEMICO_BASE}/carrera/${carreraId}`;
+export const carreraEditarPath = (carreraId) => `${ACADEMICO_BASE}/carrera/${carreraId}/editar`;
 
-export const carreraEditarPath = (carreraId, { view = false } = {}) => {
-  const params = new URLSearchParams({ carreraId: String(carreraId) });
-  if (view) params.set('view', 'true');
-  return `${CARRERAS_BASE}/editar?${params.toString()}`;
-};
+/** ABM y detalle materia */
+export const materiaNuevaPath = `${ACADEMICO_BASE}/materia/nueva`;
+export const materiaDetallePath = (materiaId) => `${ACADEMICO_BASE}/materia/${materiaId}`;
+export const materiaEditarPath = (materiaId) => `${ACADEMICO_BASE}/materia/${materiaId}/editar`;
 
-export const MATERIAS_BASE = `${ACADEMICO_BASE}/materias`;
-export const MATERIAS_REGISTRAR_PATH = `${MATERIAS_BASE}/registrar`;
-
-export const materiaEditarPath = (materiaId, { view = false } = {}) => {
-  const params = new URLSearchParams({ materiaId: String(materiaId) });
-  if (view) params.set('view', 'true');
-  return `${MATERIAS_BASE}/editar?${params.toString()}`;
-};
+/** @deprecated usar carreraNuevaPath */
+export const CARRERAS_REGISTRAR_PATH = carreraNuevaPath;
+/** @deprecated usar materiaNuevaPath */
+export const MATERIAS_REGISTRAR_PATH = materiaNuevaPath;

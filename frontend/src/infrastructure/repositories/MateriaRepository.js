@@ -46,6 +46,45 @@ export class MateriaRepository extends IMateriaRepository {
     }
   }
 
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(MATERIAS_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      if (result.success && result.data) {
+        result.data = result.data.materia ?? result.data;
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener la materia');
+    }
+  }
+
+  async crear(data) {
+    try {
+      const response = await apiClient.post(MATERIAS_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear materia');
+    }
+  }
+
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(MATERIAS_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar materia');
+    }
+  }
+
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(MATERIAS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar materia');
+    }
+  }
 }
 
 export default new MateriaRepository();

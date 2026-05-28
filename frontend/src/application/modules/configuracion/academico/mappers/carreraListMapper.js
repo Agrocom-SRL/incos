@@ -9,7 +9,7 @@
  * NOTA: El backend devuelve entidades Career con propiedades en español (camelCase):
  * - codigo, nombre, descripcion, areaFormacion, tituloOtorgado, colorHex, imagenRuta
  * 
- * Ubicación: application/modules/configuracion/academico/carreras/mappers
+ * Ubicación: application/modules/configuracion/academico/mappers
  * 
  * @param {Object} carreraBackend - Datos de la carrera desde el backend (en español)
  * @returns {Object} - Datos mapeados para la lista (en español/camelCase)
@@ -28,6 +28,7 @@ export const carreraListMapper = (carreraBackend) => {
     tituloOtorgado: carreraBackend.tituloOtorgado,
     colorHex: carreraBackend.colorHex,
     imagenRuta: carreraBackend.imagenRuta,
+    activo: carreraBackend.activo !== false,
   };
 };
 

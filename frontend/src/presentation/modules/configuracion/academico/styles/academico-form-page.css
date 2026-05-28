@@ -1,0 +1,46 @@
+/**
+ * Páginas de formulario/detalle CFG Académico — alineado con cal-politica-page.
+ * Referencia: politica-institucional.css
+ */
+
+.cfg-academico-page {
+  padding: 0 0 32px;
+  width: 100%;
+}
+
+.cfg-academico-page__actions {
+  margin-top: 8px;
+}
+
+.cfg-academico-resumen-card {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+.cfg-academico-resumen__fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: var(--font-size-base, 15px);
+}
+
+.cfg-academico-resumen__label {
+  color: #595959;
+  flex-shrink: 0;
+}
+
+.cfg-academico-resumen__valor {
+  font-weight: 500;
+  color: #262626;
+  text-align: right;
+}
+
+.cfg-academico-form-card .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.cfg-academico-form-card .ant-form-item-required::before {
+  color: #ff4d4f !important;
+}

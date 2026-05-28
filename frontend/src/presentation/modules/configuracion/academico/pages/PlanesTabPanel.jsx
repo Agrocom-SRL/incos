@@ -1,161 +1,195 @@
 /**
- * Tab «Planes de estudio» — listado de planes con acceso al detalle (matriz).
+ * Tab «Planes de estudio» — sidebar carreras + lista de planes (SPRINT_1 §6.5).
  */
 
-import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Tag } from 'antd';
+import { Alert, Button, Empty, Flex, Input, List, Spin, Tag, Typography } from 'antd';
+import { EditOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useAuthContext } from '@application-auth';
-import { TableListView } from '@organisms';
-import { Text } from '@atoms';
-import { TableActions, TableCell } from '@molecules';
-import { useTableData } from '@molecules';
-import { useCarrerasApi, usePlanesEstudiosApi } from '@application-configuracion/academico/hooks';
+import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
 import { planDetallePath } from '@application-configuracion/academico/config/paths';
+import { Card, Text } from '@atoms';
+import '../styles/planes-tab.css';
+
+const { Search } = Input;
 
 const PlanesTabPanel = () => {
   const navigate = useNavigate();
   const { hasPermiso } = useAuthContext();
-  const { carreras = [], loading: loadingCarreras } = useCarrerasApi();
-  const { planes, loading, error, refetch } = usePlanesEstudiosApi();
+  const puedeDetalle = hasPermiso('configuracion.plan-estudio', 'DETALLE');
 
-  const puedeGestionarPlan = hasPermiso('configuracion.plan-estudio', 'DETALLE');
-
-  const carreraPorId = useMemo(() => {
-    const map = new Map();
-    carreras.forEach((c) => map.set(c.id, c));
-    return map;
-  }, [carreras]);
-
-  const getSearchFields = useMemo(
-    () => (plan) => {
-      const carrera = carreraPorId.get(plan.carrera_id);
-      const carreraLabel = carrera ? `${carrera.codigo ?? ''} ${carrera.nombre ?? ''}`.trim() : '';
-      return [plan.nombre_plan, plan.resolucion_ministerial, carreraLabel].filter(Boolean);
-    },
-    [carreraPorId],
-  );
-
-  const { searchText, setSearchText, filteredData } = useTableData(planes || [], getSearchFields);
-
-  const columns = useMemo(() => [
-    {
-      title: 'Carrera',
-      key: 'carrera',
-      ellipsis: true,
-      render: (_, row) => {
-        const c = carreraPorId.get(row.carrera_id);
-        return (
-          <TableCell strong fallback="—">
-            {c ? `${c.codigo ?? ''} ${c.nombre ?? ''}`.trim() : row.carrera_id ?? '—'}
-          </TableCell>
-        );
-      },
-    },
-    {
-      title: 'Plan',
-      dataIndex: 'nombre_plan',
-      key: 'nombre_plan',
-      ellipsis: true,
-      render: (v) => (
-        <TableCell strong fallback="—">
-          {v}
-        </TableCell>
-      ),
-    },
-    {
-      title: 'Resolución',
-      dataIndex: 'resolucion_ministerial',
-      key: 'resolucion',
-      ellipsis: true,
-      render: (v) => (
-        <TableCell fallback="—">
-          <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-            {v || '—'}
-          </Text>
-        </TableCell>
-      ),
-    },
-    {
-      title: 'Vigente',
-      dataIndex: 'vigente',
-      key: 'vigente',
-      width: 100,
-      render: (v) => (
-        <Tag color={v ? 'green' : 'default'}>{v ? 'Vigente' : 'Histórico'}</Tag>
-      ),
-    },
-    {
-      title: 'Hrs/sem',
-      dataIndex: 'horas_semana',
-      key: 'horas_semana',
-      width: 90,
-      align: 'right',
-      render: (v) => <TableCell align="right">{v ?? '—'}</TableCell>,
-    },
-    {
-      title: '',
-      key: 'acciones',
-      width: 140,
-      align: 'right',
-      render: (_, row) =>
-        puedeGestionarPlan ? (
-          <TableActions
-            record={row}
-            navigate={navigate}
-            viewPath="/:id"
-            onView={(r) => navigate(planDetallePath(r.id))}
-            permisos={{
-              ver: { codigo: 'configuracion.plan-estudio', accion: 'DETALLE' },
-            }}
-          />
-        ) : null,
-    },
-  ], [carreraPorId, navigate, puedeGestionarPlan]);
+  const {
+    carreras,
+    loading,
+    error,
+    refetch,
+    selectedCarreraId,
+    setSelectedCarreraId,
+    vigentePlanPorCarrera,
+    planesDeCarrera,
+    carreraSeleccionada,
+    searchText,
+    setSearchText,
+  } = usePlanesTabPanel();
 
   return (
-    <>
-      <Alert
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-        message="Gestión por plan"
-        description="Seleccione un plan para editar la matriz por periodos, asignaturas y prerrequisitos en la vista de detalle."
-      />
-      {error && (
+    <div className="cfg-planes-tab">
+      {error ? (
         <Alert
           type="error"
-          message={typeof error === 'string' ? error : 'Ocurrió un error al cargar planes'}
+          showIcon
           style={{ marginBottom: 16 }}
+          message={typeof error === 'string' ? error : 'Error al cargar planes'}
           action={
-            <ActionButton
-              permiso="configuracion.plan-estudio"
-              accion="LISTAR"
-              variant="default"
-              size="small"
-              onClick={refetch}
-            >
+            <Button size="small" onClick={refetch}>
               Reintentar
-            </ActionButton>
+            </Button>
           }
         />
-      )}
-      <TableListView
-        data={filteredData}
-        loading={loading || loadingCarreras}
-        error={null}
-        searchText={searchText}
-        onSearchChange={(e) => setSearchText(e.target.value)}
-        searchPlaceholder="Buscar por plan, resolución o carrera..."
-        columns={columns}
-        rowKey={(record) => record.id}
-        searchColSpan={10}
-        searchStyle={{ maxWidth: 520 }}
-        pagination={{ pageSize: 20, showSizeChanger: true }}
-        title="Planes de estudio"
-        loadingTip="Cargando planes..."
-      />
-    </>
+      ) : null}
+
+      <Spin spinning={loading} tip="Cargando planes de estudio…">
+        <Flex className="cfg-planes-layout" gap={16} align="stretch">
+          <Card
+            className="cfg-planes-sidebar"
+            variant="outlined"
+            shadow={false}
+            styles={{ body: { padding: 8 } }}
+          >
+            <Text strong style={{ display: 'block', padding: '8px 12px 4px', fontSize: 13 }}>
+              Carreras
+            </Text>
+            <List
+              size="small"
+              dataSource={carreras}
+              locale={{ emptyText: 'Sin carreras' }}
+              renderItem={(c) => {
+                const activo = c.id === selectedCarreraId;
+                const vigente = vigentePlanPorCarrera.get(c.id);
+                const color = c.colorHex || c.color_hex || '#1677ff';
+                return (
+                  <List.Item
+                    className={`cfg-planes-carrera-item${activo ? ' cfg-planes-carrera-item--active' : ''}`}
+                    onClick={() => setSelectedCarreraId(c.id)}
+                  >
+                    <Flex align="center" gap={8} style={{ width: '100%' }}>
+                      <span
+                        className="cfg-planes-carrera-swatch"
+                        style={{ backgroundColor: color }}
+                      />
+                      <Flex vertical style={{ flex: 1, minWidth: 0 }}>
+                        <Text strong ellipsis style={{ fontSize: 13 }}>
+                          {c.codigo}
+                        </Text>
+                        <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
+                          {c.nombre}
+                        </Text>
+                      </Flex>
+                      {vigente ? (
+                        <Tag color="success" style={{ margin: 0, fontSize: 11 }}>
+                          Vigente
+                        </Tag>
+                      ) : null}
+                    </Flex>
+                  </List.Item>
+                );
+              }}
+            />
+          </Card>
+
+          <Card
+            className="cfg-planes-main"
+            variant="outlined"
+            shadow={false}
+            styles={{ body: { padding: 16 } }}
+          >
+            {carreraSeleccionada ? (
+              <>
+                <Flex justify="space-between" align="center" wrap="wrap" gap={8} style={{ marginBottom: 16 }}>
+                  <div>
+                    <Typography.Title level={5} style={{ margin: 0 }}>
+                      {carreraSeleccionada.nombre}
+                    </Typography.Title>
+                    <Text type="secondary" style={{ fontSize: 13 }}>
+                      Planes de estudio — vigente arriba, históricos abajo
+                    </Text>
+                  </div>
+                  <Search
+                    allowClear
+                    placeholder="Buscar plan o resolución…"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ maxWidth: 320 }}
+                  />
+                </Flex>
+
+                {planesDeCarrera.length === 0 ? (
+                  <Empty description="No hay planes para esta carrera" />
+                ) : (
+                  <List
+                    dataSource={planesDeCarrera}
+                    renderItem={(plan) => (
+                      <List.Item
+                        className="cfg-planes-plan-item"
+                        actions={
+                          puedeDetalle
+                            ? [
+                                <Button
+                                  key="matriz"
+                                  type="primary"
+                                  size="small"
+                                  icon={<EditOutlined />}
+                                  onClick={() => navigate(planDetallePath(plan.id))}
+                                >
+                                  Editar matriz
+                                </Button>,
+                              ]
+                            : undefined
+                        }
+                      >
+                        <List.Item.Meta
+                          title={
+                            <Flex align="center" gap={8} wrap="wrap">
+                              <span>{plan.nombre_plan || `Plan #${plan.id}`}</span>
+                              {plan.vigente ? (
+                                <Tag icon={<CheckCircleOutlined />} color="success">
+                                  Vigente
+                                </Tag>
+                              ) : (
+                                <Tag>Histórico</Tag>
+                              )}
+                            </Flex>
+                          }
+                          description={
+                            <Flex gap={16} wrap="wrap" style={{ fontSize: 13 }}>
+                              {plan.resolucion_ministerial ? (
+                                <span>{plan.resolucion_ministerial}</span>
+                              ) : null}
+                              <span>
+                                <Text type="secondary">Horas/sem: </Text>
+                                <Text strong>{plan.horas_semana ?? '—'}</Text>
+                              </span>
+                              {plan.duracion_anios != null ? (
+                                <span>
+                                  <Text type="secondary">Duración: </Text>
+                                  {plan.duracion_anios} años
+                                </span>
+                              ) : null}
+                            </Flex>
+                          }
+                        />
+                      </List.Item>
+                    )}
+                  />
+                )}
+              </>
+            ) : (
+              <Empty description="Seleccione una carrera" />
+            )}
+          </Card>
+        </Flex>
+      </Spin>
+    </div>
   );
 };
 

@@ -146,6 +146,18 @@ export const PLANES_ESTUDIOS_ENDPOINTS = {
   ASIGNATURAS: (planId) => `${API_BASE}/planes-estudios/${planId}/asignaturas`,
 };
 
+export const ASIGNATURAS_PLAN_ENDPOINTS = {
+  BASE: `${API_BASE}/asignaturas-plan`,
+  BY_ID: (id) => `${API_BASE}/asignaturas-plan/${id}`,
+  PRERREQUISITOS: (asignaturaId) => `${API_BASE}/asignaturas-plan/${asignaturaId}/prerrequisitos`,
+  ES_PRERREQUISITO_DE: (asignaturaId) => `${API_BASE}/asignaturas-plan/${asignaturaId}/es-prerrequisito-de`,
+};
+
+export const PRERREQUISITOS_ENDPOINTS = {
+  BASE: `${API_BASE}/prerrequisitos`,
+  BY_ID: (id) => `${API_BASE}/prerrequisitos/${id}`,
+};
+
 // Complementario
 export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 

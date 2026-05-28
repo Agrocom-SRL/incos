@@ -2,19 +2,16 @@
  * Columnas de la tabla de materias (tab Académico).
  */
 
+import {
+  materiaDetallePath,
+  materiaEditarPath,
+} from '@application-configuracion/academico/config/paths';
+import { TIPO_MATERIA_TAG_COLOR } from '@application-configuracion/academico/config/materiaFormConstants';
 import { TableActions, TableCell } from '@molecules';
-import { materiaEditarPath } from '@application-configuracion/academico/config/paths';
 
-const getTipoTagColor = (tipo) => {
-  const tipoMap = {
-    TEORICA: 'blue',
-    PRACTICA: 'success',
-    TEORICA_PRACTICA: 'info',
-  };
-  return tipoMap[tipo] || 'default';
-};
+const getTipoTagColor = (tipo) => TIPO_MATERIA_TAG_COLOR[tipo] || 'default';
 
-export const createMateriasTableColumns = (navigate) => {
+export const createMateriasTableColumns = ({ navigate, listNavState, refetch }) => {
   return [
     {
       title: 'Sigla',
@@ -64,9 +61,10 @@ export const createMateriasTableColumns = (navigate) => {
           record={record}
           navigate={navigate}
           viewPath="/:id"
-          onEdit={(r) => navigate(materiaEditarPath(r.id))}
-          onView={(r) => navigate(materiaEditarPath(r.id, { view: true }))}
+          onView={(r) => navigate(materiaDetallePath(r.id), { state: listNavState })}
+          onEdit={(r) => navigate(materiaEditarPath(r.id), { state: listNavState })}
           useCaseKey="eliminarMateria"
+          refetch={refetch}
           permisos={{
             ver: { codigo: 'configuracion.materia', accion: 'DETALLE' },
             editar: { codigo: 'configuracion.materia', accion: 'EDITAR' },

@@ -282,36 +282,37 @@ Permisos exigidos en rutas: `configuracion.carrera`, `configuracion.materia`,
 `configuracion.plan-estudio`, `configuracion.plan-estudio.periodos`,
 `configuracion.plan-estudio.asignaturas`, `configuracion.plan-estudio.prerrequisitos`.
 
-### 8.2 Frontend — refactor menú (parcial ✅)
+### 8.2 Frontend — refactor menú (casi completo ✅)
 
-- [x] Consolidación `application/.../academico/` (hooks `api|context|features`, providers, mappers).
+- [x] Consolidación `application/.../academico/` (hooks `api|context|features|state`, providers, mappers).
 - [x] `AcademicoPage` + tabs + `AcademicoConnector` + rutas con `permisoAny`.
-- [x] Listados Carreras/Materias en tabs (`CarrerasList`, `MateriasList`).
-- [x] Ruta `/configuracion/academico/plan/:planId` + `PlanDetalleConnector`.
+- [x] Listados Carreras/Materias en tabs; ABM en **páginas completas** (no drawer/modal).
+- [x] Rutas `/carrera/*`, `/materia/*`, `/plan/:planId`, `/plan/:planId/editar`.
+- [x] `PlanDetallePage`: matriz editable, validador en vivo, prerrequisitos, marcar vigente.
+- [x] Tab Planes: layout dos paneles (sidebar carreras + lista planes).
+- [x] Tab Materias: filtros tipo y clasificación.
 - [x] Complementarios: patrón tabs + discapacidad (listado).
-- [ ] Matriz editable + validador en vivo (depende T2–T3 backend).
-- [ ] Prerrequisitos completos en `PlanDetallePage`.
-- [ ] Limpieza física carpetas legacy `carreras/`, `materias/`, `complementario/`, `datos-complementarios/`.
+- [ ] Limpieza domain `complementario/` → `complementarios/` (opcional; redirects presentation OK).
 
-### 8.3 Pendiente backend y seeds
+### 8.3 Backend matriz/validar y seeds
 
-- [ ] **Tarea 2:** `GET /planes-estudios/:id/matriz`
-- [ ] **Tarea 3:** `GET /planes-estudios/:id/validar`
+- [x] **Tarea 2:** `GET /planes-estudios/:id/matriz`
+- [x] **Tarea 3:** `GET /planes-estudios/:id/validar`
 - [x] **Tarea 4:** Seeders `configuracion.*` en 54–56 (verificar `ruta_sidebar` complementarios → `/configuracion/complementarios`)
 
 ## 9. Definition of Done
 
 - [x] Backend CRUD para los 6 grupos de endpoints.
-- [ ] Backend matriz y validador (Tareas 2-3).
+- [x] Backend matriz y validador (Tareas 2-3).
 - [x] Permisos sembrados `configuracion.*` (54–56); documentados en matriz § CFG.
 - [x] Arquitectura frontend documentada (`docs/06_arquitectura_modulos_frontend.md`) y aplicada en académico/complementarios.
 - [x] `AcademicoPage` con tabs (planes, carreras, materias) + permisos por tab.
-- [ ] Tab Carreras: tabla + modal CRUD completo.
-- [ ] Tab Materias: tabla + modal CRUD + filtros.
-- [ ] Tab Planes: sidebar + matriz editable + validador en vivo + marcar vigente.
-- [ ] Prerrequisitos en `PlanDetallePage` (no tab suelto).
-- [ ] Carpetas legacy eliminadas (§6.9).
-- [ ] Prueba manual: `/configuracion/academico` (3 tabs) → plan detalle → CRUD carrera/materia → prerrequisito en plan.
+- [x] Tab Carreras: tabla + páginas CRUD/detalle completas.
+- [x] Tab Materias: tabla + páginas CRUD/detalle + filtros tipo/clasificación.
+- [x] Tab Planes: sidebar + lista por carrera; detalle con matriz, validador, marcar vigente, editar metadatos.
+- [x] Prerrequisitos en `PlanDetallePage` (no tab suelto).
+- [x] Presentation legacy `carreras/`, `materias/` eliminados; redirects `datos-complementarios` OK.
+- [ ] Prueba manual E2E: `/configuracion/academico` → plan detalle → CRUD carrera/materia → prerrequisito.
 
 ---
 

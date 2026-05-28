@@ -1,0 +1,46 @@
+.cfg-planes-tab {
+  width: 100%;
+}
+
+.cfg-planes-layout {
+  min-height: 360px;
+}
+
+.cfg-planes-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.cfg-planes-main {
+  flex: 1;
+  min-width: 0;
+  border-radius: 8px;
+}
+
+.cfg-planes-carrera-item {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px 8px !important;
+  border-block-end: none !important;
+}
+
+.cfg-planes-carrera-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.cfg-planes-carrera-item--active {
+  background: #e6f4ff;
+}
+
+.cfg-planes-carrera-swatch {
+  width: 10px;
+  height: 32px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.cfg-planes-plan-item {
+  padding: 12px 0 !important;
+  border-block-end: 1px solid #f0f0f0;
+}

@@ -2,20 +2,37 @@
  * Columnas de la tabla de carreras (tab Académico).
  */
 
+import {
+  carreraDetallePath,
+  carreraEditarPath,
+} from '@application-configuracion/academico/config/paths';
 import { TableActions, TableCell } from '@molecules';
-import { carreraEditarPath } from '@application-configuracion/academico/config/paths';
 
-// Tabla de acciones con RBAC (TableActions) en lugar de IconButtons sueltos.
-export const createCarrerasTableColumns = (navigate) => {
+export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) => {
   return [
     {
       title: 'Código',
       dataIndex: 'codigo',
       fixed: 'left',
       ellipsis: true,
-      render: (codigo) => (
+      render: (codigo, record) => (
         <TableCell strong textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}>
-          {codigo}
+          {record.colorHex ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  backgroundColor: record.colorHex,
+                  flexShrink: 0,
+                }}
+              />
+              {codigo}
+            </span>
+          ) : (
+            codigo
+          )}
         </TableCell>
       ),
       sorter: (a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }),
@@ -56,17 +73,14 @@ export const createCarrerasTableColumns = (navigate) => {
         <TableActions
           record={record}
           navigate={navigate}
-          // TableActions solo muestra \"ver\" si viewPath existe; el handler real lo provee onView
           viewPath="/:id"
-          onEdit={(r) => navigate(carreraEditarPath(r.id))}
-          onView={(r) => navigate(carreraEditarPath(r.id, { view: true }))}
-          // Mostrar icono (y habilitar confirmación) aunque el use case aún no exista en factory.
-          // Si no está implementado, TableActions lo muestra deshabilitado.
+          onView={(r) => navigate(carreraDetallePath(r.id), { state: listNavState })}
+          onEdit={(r) => navigate(carreraEditarPath(r.id), { state: listNavState })}
           useCaseKey="eliminarCarrera"
+          refetch={refetch}
           permisos={{
             ver: { codigo: 'configuracion.carrera', accion: 'DETALLE' },
             editar: { codigo: 'configuracion.carrera', accion: 'EDITAR' },
-            // Eliminar queda oculto hasta que exista deleteFn/useCaseKey real
             eliminar: { codigo: 'configuracion.carrera', accion: 'ELIMINAR' },
           }}
         />
