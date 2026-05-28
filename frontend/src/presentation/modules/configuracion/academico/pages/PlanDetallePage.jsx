@@ -48,6 +48,7 @@ const PlanDetallePage = () => {
     handleCellChange,
     refetch,
     planId,
+    navState,
     api,
   } = usePlanDetallePage();
 
@@ -55,9 +56,7 @@ const PlanDetallePage = () => {
   const puedeEditarAsignaturas = hasPermiso('configuracion.plan-estudio.asignaturas', 'EDITAR');
   const puedeActivar = hasPermiso('configuracion.plan-estudio', 'ACTIVAR');
   const puedeEditarPlan = hasPermiso('configuracion.plan-estudio', 'EDITAR');
-  const puedePrerrequisitos =
-    hasPermiso('configuracion.plan-estudio.prerrequisitos', 'LISTAR')
-    || hasPermiso('configuracion.plan-estudio.prerrequisitos', 'DETALLE');
+  const puedePrerrequisitos = hasPermiso('configuracion.plan-estudio.prerrequisitos', 'DETALLE');
 
   const tabItems = useMemo(() => {
     const items = [];
@@ -188,7 +187,7 @@ const PlanDetallePage = () => {
                       permiso="configuracion.plan-estudio"
                       accion="EDITAR"
                       variant="default"
-                      onClick={() => navigate(planEditarPath(planId))}
+                      onClick={() => navigate(planEditarPath(planId), { state: navState })}
                     >
                       Editar plan
                     </ActionButton>
