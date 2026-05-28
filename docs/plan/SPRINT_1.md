@@ -312,7 +312,28 @@ Permisos exigidos en rutas: `configuracion.carrera`, `configuracion.materia`,
 - [x] Tab Planes: sidebar + lista por carrera; detalle con matriz, validador, marcar vigente, editar metadatos.
 - [x] Prerrequisitos en `PlanDetallePage` (no tab suelto).
 - [x] Presentation legacy `carreras/`, `materias/` eliminados; redirects `datos-complementarios` OK.
-- [ ] Prueba manual E2E: `/configuracion/academico` → plan detalle → CRUD carrera/materia → prerrequisito.
+- [ ] Prueba manual E2E (checklist abajo).
+
+### 9.1 Checklist E2E manual — CFG Académico
+
+Marcar tras ejecutar en entorno con seeders 10–15 y 54–56 aplicados. Roles sugeridos: **ADMIN_SISTEMA (1)**, **RECTOR (2)**, **DIR_ACADEMICO (3)**, rol sin permisos 78–80.
+
+| # | Flujo | Rol con permiso | Rol sin permiso |
+|---|--------|-----------------|-----------------|
+| 1 | Menú **Configuración → Académico** visible | ≥1 de 78/79/80 con LISTAR | Sin ítem o sin tabs |
+| 2 | `?tab=planes` — sidebar carreras + lista planes | 80 LISTAR (+ DETALLE para matriz) | Tab oculto |
+| 3 | «Editar matriz» → `/plan/:id` — matriz y validador en vivo | 80 DETALLE, 82 EDITAR celdas | Sin botón o 403 API |
+| 4 | Marcar vigente | 80 ACTIVAR | CTA oculto / 403 |
+| 5 | Editar metadatos plan → guardar → volver | 80 EDITAR | Sin CTA |
+| 6 | Tab prerrequisitos — listar / crear / eliminar | 83 DETALLE (+ CREAR/ELIMINAR) | Tab oculto; GET no 403 con DETALLE |
+| 7 | Volver desde plan → `returnListPath` correcto (`?tab=planes` o `?tab=carreras` si vino de ficha carrera) | — | — |
+| 8 | `?tab=carreras` — listado completo (3 carreras) | 78 LISTAR | Tab oculto |
+| 9 | Nueva / editar / detalle / eliminar carrera | 78 CREAR/EDITAR/DETALLE/ELIMINAR | Sin CTA / 403 |
+| 10 | `?tab=materias` — listado (~69) + filtros tipo/clasificación | 79 LISTAR | Tab oculto |
+| 11 | Nueva / editar / detalle materia (RECTOR: DETALLE 79 en seed 55) | 79 CRUD según rol | Sin CTA / 403 |
+| 12 | DIR_ACADEMICO: abrir matriz plan (80 DETALLE en seed 55) | 3 con DETALLE 80 | 403 en `/plan/:id` |
+
+**Seeds a re-aplicar si la BD ya existía:** `(2,79,DETALLE)`, `(3,80,DETALLE)` en `55-seed-roles-permisos.sql`.
 
 ---
 

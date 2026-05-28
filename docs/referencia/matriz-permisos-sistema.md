@@ -478,7 +478,7 @@ CREAR/EDITAR/ELIMINAR de la tabla de cursos en armado acepta `institucional.gest
 
 Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requieren permiso distinto.
 
-**Roles (seed 55):** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio 78–83; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales documentados en 55.
+**Roles (seed 55):** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio 78–83; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales documentados en 55. **Nota:** RECTOR incluye `DETALLE` en 79 (materia); DIR_ACADEMICO incluye `DETALLE` en 80 (plan) para abrir matriz; edicion de celdas sigue requiriendo 82 `EDITAR`.
 
 #### Datos complementarios (tabs)
 

@@ -7,7 +7,8 @@ export class GetPlanEstudiosByIdController extends BaseGetController {
       logger,
       responseFormatter,
       resourceName: 'plan de estudios',
-      dataFieldName: 'data',
+      // Respuesta compuesta (plan_estudio + periodos + …): BaseGetController no envuelve si hay >1 clave
+      dataFieldName: 'plan_estudio',
     });
   }
 }
