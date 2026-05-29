@@ -422,7 +422,7 @@ Permisos: `institucional.*`
 Rutas simplificadas vigentes del modulo:
 - `/institucional/actual`
 - `/institucional/cronogramas`
-- `/institucional/oferta`
+- `/institucional/oferta-academica` (wizard oferta; redirect desde `/institucional/oferta`)
 - `/institucional/horarios`
 - `/institucional/pasadas`
 
@@ -440,6 +440,37 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 - `99` `institucional.horario.conflictos`
 - `100` `institucional.horario.publicacion`
 
+#### Oferta académica (Sprint 3)
+
+| Código (seed) | ID | Acciones (56) | UI |
+|---|---|---|---|
+| `institucional.oferta.gestion-plan` | 105 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 1–2 wizard: gestión vigente, habilitar plan |
+| `institucional.oferta.paralelo-gestion` | 106 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 3: paralelos_gestion, aula, turno, estado |
+| `institucional.oferta.cursos` | 107 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Generar/validar oferta_cursos, drawer manual |
+
+| Recurso API | Método | Permiso | Acción |
+|-------------|--------|---------|--------|
+| `/api/v1/gestiones` | GET | `institucional.gestion.actual` **o** `institucional.oferta.gestion-plan` | LISTAR | Wizard paso 1 (cualquiera de los dos) |
+| `/api/v1/gestiones/:id/marcar-vigente` | POST | `institucional.oferta.gestion-plan` | ACTIVAR |
+| `/api/v1/gestiones/:id/planes-habilitados` | GET | `institucional.oferta.gestion-plan` | LISTAR |
+| `/api/v1/gestiones-planes` | POST | `institucional.oferta.gestion-plan` | CREAR |
+| `/api/v1/gestiones-planes/:id/estado` | PUT | `institucional.oferta.gestion-plan` | EDITAR |
+| `/api/v1/gestiones-planes/:id/paralelos-gestion` | GET | `institucional.oferta.paralelo-gestion` | LISTAR |
+| `/api/v1/gestiones-planes/:id/generar-paralelos-gestion` | POST | `institucional.oferta.paralelo-gestion` | CREAR |
+| `/api/v1/paralelos-gestion/:id` | GET/PUT | `institucional.oferta.paralelo-gestion` | DETALLE / EDITAR |
+| `/api/v1/paralelos-gestion/:id/cambiar-turno` | PUT | `institucional.oferta.paralelo-gestion` | EDITAR |
+| `/api/v1/paralelos-gestion/:id/estado` | PUT | `institucional.oferta.paralelo-gestion` | EDITAR |
+| `/api/v1/paralelos-gestion/:id/oferta-cursos` | GET | `institucional.oferta.cursos` | LISTAR |
+| `/api/v1/paralelos-gestion/:id/generar-oferta` | POST | `institucional.oferta.cursos` | CREAR |
+| `/api/v1/paralelos-gestion/:id/validar-oferta` | GET | `institucional.oferta.cursos` | LISTAR |
+| `/api/v1/oferta-cursos` | POST | `institucional.oferta.cursos` | CREAR |
+| `/api/v1/oferta-cursos/:id` | DELETE | `institucional.oferta.cursos` | ELIMINAR |
+| `/api/v1/aulas/catalogo` | GET | `institucional.oferta.paralelo-gestion` | LISTAR |
+
+**Roles (55):** RECTOR (2) y SEC_ACADEMICA (5) operación completa; DIR_ACADEMICO (3) CREAR/EDITAR/LISTAR/DETALLE sin ACTIVAR masivo.
+
+Rutas retiradas del router (tabla `cursos` ya no existe): `GET/POST /paralelos/:id/cursos-oferta`, `POST /paralelos/:id/cursos`, `GET/PUT /paralelos/:id/schedule`, montaje `/api/v1/cursos`.
+
 #### APIs alineadas (backend)
 
 | Recurso | Metodo | Permiso | Accion | Notas |
@@ -447,10 +478,7 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 | `/api/v1/paralelos` | GET | `institucional.gestion.horarios` | LISTAR | Tablero / listado |
 | `/api/v1/paralelos/:id/schedule` | GET | `institucional.gestion.horarios` | LISTAR | Cargar plan |
 | `/api/v1/paralelos/:id/schedule` | PUT | `institucional.horario.armado` | EDITAR | Persistir bloques (misma regla que ruta armado) |
-| `/api/v1/paralelos/:id/cursos-oferta` | GET | `institucional.gestion.horarios` | LISTAR | Oferta del paralelo |
-| `/api/v1/paralelos/:id/cursos` | POST | `institucional.gestion.horarios` | CREAR | Alta curso en paralelo |
-| `/api/v1/cursos/:id` | PATCH | `institucional.gestion.horarios` | EDITAR | Editar curso oferta |
-| `/api/v1/cursos/:id` | DELETE | `institucional.gestion.horarios` | ELIMINAR | Baja curso oferta |
+| _(retiradas)_ `/paralelos/:id/cursos-oferta`, `/paralelos/:id/cursos`, `/cursos/:id` | — | — | — | Usar API oferta (tabla arriba) |
 | `/api/v1/docentes/asignaciones/curso` | POST | `docentes.asignar` | EDITAR | Asignar docente a curso (desde modal en armado) |
 
 UI: botones de **Guardar plan / Añadir bloque** usan `ActionButton` con `institucional.horario.armado` + EDITAR; **Asignar docente** usa `docentes.asignar` + EDITAR (listado en tab Cursos del paralelo).

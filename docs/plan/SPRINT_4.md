@@ -2,7 +2,23 @@
 
 **Documento padre:** `PLAN_V2_MAESTRO.md`
 **Duración estimada:** 1-2 semanas
-**Pre-requisito:** Sprint 3 cerrado (oferta de cursos generada en al menos un paralelo-gestión).
+**Pre-requisito:** Sprint 3 cerrado (oferta operativa por API/FE V2; **sin** código activo que use tabla `cursos`).  
+**Mapa de migración:** `MIGRACION_CODIGO_V2.md`
+
+---
+
+## 0. Alcance (código)
+
+| Incluido | Detalle |
+|----------|---------|
+| API asignación docente | §3 sobre `oferta_curso_id` |
+| **Migración docentes** | `AssignTeacherToCourse`, catálogos `cursos-disponibles` / `cursos-por-paralelo` → oferta |
+| **Migración MAT (lectura/alta)** | `CreateEnrollmentUseCase` enlaza `matriculas_materia.oferta_curso_id` |
+| **Calificaciones (listados)** | Repos/vistas que listan “cursos” del docente → oferta + asignatura_plan |
+| Vistas SQL | Grupo docente/asignación (~15 vistas) |
+| FE | Matriz asignación + dashboard carga + color picker |
+
+| No incluido (Sprint 5) | Armado grilla, `asignacion_horarios`, `PUT schedule` legacy |
 
 ---
 
@@ -20,6 +36,8 @@ Al final del sprint, todos los cursos ofertados tienen docente asignado, con car
 1. **API backend** para asignar docentes, consultar cargas y validar colores.
 2. **Permisos RBAC** correspondientes.
 3. **Frontend** con dos vistas: matriz de asignación por paralelo y dashboard de carga por docente.
+4. **Migración código:** módulo docentes e inscripciones sin `curso_id`; model `asignacion_docente` solo `oferta_curso_id`.
+5. **Vistas SQL** grupo docente/asignación reescritas; calificaciones listado docente sin JOIN a `cursos`.
 
 ## 3. Endpoints backend
 
@@ -173,7 +191,9 @@ Modal con:
 - [ ] Vista dashboard con cargas y colores.
 - [ ] Color picker funcional con validación de unicidad.
 - [ ] Validación de sobrecarga (warning + confirmación admin).
-- [ ] Test E2E manual: gestión con 3 paralelos → asignar 10 docentes → todos con color → ver dashboard de cargas → forzar sobrecarga de uno y validar warning.
+- [ ] **Código:** `CreateTeacherAssignment` / listados docente usan `oferta_curso_id`; inscripción crea matrículas contra oferta.
+- [ ] **Vistas:** grupo docente del mapa migración OK con seeders `31`–`39`.
+- [ ] Test E2E: paralelo con oferta → asignar docentes (seeders 31+) → dashboard carga → inscripción de prueba lee mismas ofertas.
 
 ---
 

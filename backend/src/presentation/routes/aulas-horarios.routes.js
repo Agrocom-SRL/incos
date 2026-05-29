@@ -17,8 +17,18 @@ export function buildAulasHorariosRouter({ controllers, middlewares }) {
   const router = express.Router();
   const { validateRequest } = middlewares;
 
+  const verCatalogoAulas = [
+    authenticate,
+    verificarPermiso('institucional.oferta.paralelo-gestion', 'LISTAR'),
+  ];
   const verHorarios = [authenticate, verificarPermiso('institucional.gestion.horarios', 'LISTAR')];
   const editarAula = [authenticate, verificarPermiso('institucional.horario.armado', 'EDITAR')];
+
+  router.get(
+    '/catalogo',
+    ...verCatalogoAulas,
+    (req, res, next) => controllers.listAulasCatalogController.handle(req, res, next)
+  );
 
   router.get(
     '/horarios',

@@ -66,7 +66,12 @@ export function registerGestionesResource(container) {
         (c) => {
             const controllers = {
                 listGestionesController: c.resolve(ACADEMICO_TOKENS.listGestionesController),
-                // TODO: Agregar otros controllers cuando se implementen sus rutas
+                marcarGestionVigenteController: c.resolve(
+                    ACADEMICO_TOKENS.marcarGestionVigenteController
+                ),
+                listPlanesHabilitadosByGestionController: c.resolve(
+                    ACADEMICO_TOKENS.listPlanesHabilitadosByGestionController
+                ),
             };
 
             const middlewares = {

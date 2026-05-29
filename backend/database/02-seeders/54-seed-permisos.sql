@@ -151,7 +151,12 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (103, 'seguridad.rol.gestionar',      'Roles y permisos: ver y administrar',           'SEGURIDAD', 'SEG', 'seg_roles',    '/seguridad/roles',    TRUE),
 
 -- ── SISTEMA (SYS) ───────────────────────────────────────────────────────────
-(104, 'sistema.catalogo.referencia', 'Catálogos de referencia: APIs transversales para combos (ubicación, tipos, bancos, etc.)', 'SISTEMA', 'SYS', NULL, NULL, TRUE);
+(104, 'sistema.catalogo.referencia', 'Catálogos de referencia: APIs transversales para combos (ubicación, tipos, bancos, etc.)', 'SISTEMA', 'SYS', NULL, NULL, TRUE),
+
+-- ── OFERTA ACADÉMICA V2 (Sprint 3) — wizard /institucional/oferta-academica ───
+(105, 'institucional.oferta.gestion-plan',      'Oferta: habilitar planes en gestión',           'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta-academica', TRUE),
+(106, 'institucional.oferta.paralelo-gestion',  'Oferta: paralelos de gestión',                  'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta-academica', TRUE),
+(107, 'institucional.oferta.cursos',             'Oferta: cursos ofertados por paralelo',         'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta-academica', TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 

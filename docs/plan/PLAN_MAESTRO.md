@@ -64,18 +64,25 @@ Diferencia esencial: `matriculas_materia.oferta_curso_id` queda **estable** dura
 
 ---
 
-## 4. Plan en 5 Sprints
+## 4. Plan en 5 Sprints (dos ejes: BD + código)
 
-Cada sprint deja algo funcionando de punta a punta antes de continuar.
+| Eje | Sprints | Qué se entrega |
+|-----|---------|----------------|
+| **Base de datos** | 1–2 | Catálogo + DDL/seeders V2 |
+| **Aplicación** | 3–5 | API, repos, vistas SQL, UI alineados a V2 |
 
-| Sprint | Foco | Documento |
-|---|---|---|
-| **1** | CFG → Catálogo Plan de Estudio (backend + frontend) | `SPRINT_1.md` |
-| **2** | Schema V2 — DDL nuevo, drop legacy | `SPRINT_2.md` |
-| **3** | INST → Oferta Académica (gestión + paralelos_gestion + oferta_cursos) | `SPRINT_3.md` |
-| **4** | INST → Horarios: Asignación docente + cargas + colores | `SPRINT_4.md` |
-| **5** | INST → Horarios: Armado de bloques + conflictos + publicación | `SPRINT_5.md` |
-| Bonus | MAT → Matrícula refactorizada (bloque + ajuste individual) | (después del 5) |
+Sprint 2 deja la BD **sin** `cursos` / `cursos_horarios`. Los sprints 3–5 **migran el código** que aún las referencia. Mapa detallado: `MIGRACION_CODIGO_V2.md`.
+
+| Sprint | Foco | Capa | Documento |
+|---|---|---|---|
+| **1** ✅ | CFG → Plan de Estudio (catálogo) | Código | `SPRINT_1.md` |
+| **2** ✅ | Schema V2 — DDL + seeders `27`–`48` | Solo BD | `SPRINT_2.md` |
+| **3** | INST → Oferta + **retiro V1** en paralelos/cursos | Código | `SPRINT_3.md` |
+| **4** | Asignación docente + **migración docentes / MAT / calif. (lectura)** | Código | `SPRINT_4.md` |
+| **5** | Bloques + conflictos + **vistas horarios + armado UI** | Código | `SPRINT_5.md` |
+| Bonus | MAT completo + evaluaciones edge cases | Código | (post-5) |
+
+Cada sprint de aplicación deja un **smoke E2E** contra seeders locales, no solo endpoints nuevos encima de legacy.
 
 ---
 
@@ -126,11 +133,13 @@ Basado en archivos institucionales 2026 que validamos:
 
 ---
 
-## 8. Fuera de alcance V2
+## 8. Fuera de alcance V2 (schema); en alcance (código mínimo)
 
-Estos temas no se tocan en este refactor:
+**Schema:** evaluaciones, asistencias, licencias, nivelaciones no cambian tablas propias.
 
-- Módulo de evaluaciones, asistencias, licencias, nivelaciones (siguen igual).
+**Código:** si un módulo **lee** `cursos` o `curso_id` (calificaciones, inscripciones, dashboard), se ajusta en Sprints 4–5 para leer `oferta_cursos` / `oferta_curso_id` o `asignatura_plan_id` según `MIGRACION_CODIGO_V2.md`.
+
+Temas que siguen sin rediseño de negocio:
 - Pagos, becas, documentos del estudiante.
 - Seguridad RBAC (se agregan permisos nuevos pero no se redefine).
 - Reportes históricos sobre gestiones cerradas.
@@ -148,4 +157,4 @@ Estos temas no se tocan en este refactor:
 
 ---
 
-**Estado del plan:** Aprobado. **Sprint 1 cerrado** (2026-05-29). **Sprint 2 en curso** — DDL V2 en `07a`/`07b` (módulos oferta y horarios); seeders `27`–`48`; aplicación manual: schemas → seeders → `03-views`.
+**Estado del plan:** Aprobado. **Sprint 1 cerrado** (2026-05-29). **Sprint 2 cerrado en BD local** (schemas + seeders `27`–`48`). **Sprint 3 en curso** — API oferta V2 (backend parcial); pendiente: retiro código V1, vistas grupo oferta, wizard FE. Ver `MIGRACION_CODIGO_V2.md`.

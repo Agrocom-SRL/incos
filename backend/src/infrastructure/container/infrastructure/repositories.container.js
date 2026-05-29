@@ -77,6 +77,8 @@ import { PlanSubjectRepository } from '../../repositories/PlanSubjectRepository.
 // ============================================
 import { ActivityRepository } from '../../repositories/ActivityRepository.js';
 import { ManagementPlanRepository } from '../../repositories/ManagementPlanRepository.js';
+import { ParallelManagementRepository } from '../../repositories/ParallelManagementRepository.js';
+import { CourseOfferRepository } from '../../repositories/CourseOfferRepository.js';
 import { AcademicPeriodRepository } from '../../repositories/AcademicPeriodRepository.js';
 import { CalendarActivityRepository } from '../../repositories/CalendarActivityRepository.js';
 
@@ -213,6 +215,8 @@ export function registerRepositoriesModule(container) {
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.activityRepository, ActivityRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.managementPlanRepository, ManagementPlanRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.parallelManagementRepository, ParallelManagementRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.courseOfferRepository, CourseOfferRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.academicPeriodRepository, AcademicPeriodRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.calendarActivityRepository, CalendarActivityRepository);
 

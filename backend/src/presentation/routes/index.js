@@ -41,8 +41,10 @@ router.get('/', (req, res) => {
             prerrequisitos: '/api/v1/prerrequisitos',
             // Módulo: Académico
             paralelos: '/api/v1/paralelos',
-            cursos: '/api/v1/cursos',
             gestiones: '/api/v1/gestiones',
+            gestionesPlanes: '/api/v1/gestiones-planes',
+            paralelosGestion: '/api/v1/paralelos-gestion',
+            ofertaCursos: '/api/v1/oferta-cursos',
             calificaciones: '/api/v1/calificaciones',
             // Módulo: Geográficos
             paises: '/api/v1/paises',
@@ -72,6 +74,7 @@ router.get('/', (req, res) => {
             docentesCursosPorParalelo: '/api/v1/docentes/cursos-por-paralelo?paraleloId=',
             docentesCursosDisponibles: '/api/v1/docentes/cursos-disponibles?gestionPlanId=',
             docentesCursoHorarios: '/api/v1/docentes/cursos/:cursoId/horarios',
+            aulasCatalogo: '/api/v1/aulas/catalogo',
             aulasHorarios: '/api/v1/aulas/horarios',
         },
     });
@@ -114,8 +117,10 @@ router.use('/prerrequisitos', container.resolve(CONFIGURACION_TOKENS.prerrequisi
 // 3. MÓDULO: ACADÉMICO
 // ============================================
 router.use('/paralelos', container.resolve(ACADEMICO_TOKENS.paralelosRouter));
-router.use('/cursos', container.resolve(ACADEMICO_TOKENS.cursosRouter));
 router.use('/gestiones', container.resolve(ACADEMICO_TOKENS.gestionesRouter));
+router.use('/gestiones-planes', container.resolve(ACADEMICO_TOKENS.gestionesPlanesRouter));
+router.use('/paralelos-gestion', container.resolve(ACADEMICO_TOKENS.paralelosGestionRouter));
+router.use('/oferta-cursos', container.resolve(ACADEMICO_TOKENS.ofertaCursosRouter));
 router.use('/calificaciones', container.resolve(ACADEMICO_TOKENS.calificacionesRouter));
 
 // ============================================

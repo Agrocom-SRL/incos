@@ -2,7 +2,22 @@
 
 **Documento padre:** `PLAN_V2_MAESTRO.md`
 **Duración estimada:** 2-3 semanas (es el más grande)
-**Pre-requisito:** Sprint 4 cerrado (todos los `oferta_cursos` con `asignacion_docente`).
+**Pre-requisito:** Sprint 4 cerrado (asignaciones docente sobre `oferta_curso_id`; seeders `31`–`39`).  
+**Mapa de migración:** `MIGRACION_CODIGO_V2.md`
+
+---
+
+## 0. Alcance (código)
+
+| Incluido | Detalle |
+|----------|---------|
+| API bloques | `asignacion_horarios` (reemplaza `cursos_horarios`) |
+| **Eliminar armado V1** | `PutParaleloScheduleUseCase`, `GetParaleloHorariosUseCase`, `CourseScheduleRepository` |
+| Motor conflictos + publicación | §3 |
+| `cambiar-turno-con-bloques` | Completa TODO del Sprint 3 |
+| Vistas SQL | Grupo bloques/conflictos/horarios (~25 vistas) |
+| FE | Grilla drag-and-drop, conflictos globales, publicar |
+| Dashboard horarios legacy | Migrar a grilla V2 o retirar pantallas que llaman `schedule` V1 |
 
 ---
 
@@ -22,6 +37,8 @@ Es el sprint más visual y más complejo. Recomendable dividir en dos sub-iterac
 2. **Frontend** con grilla drag-and-drop, validador de carga, parpadeo de conflictos.
 3. **Validador de publicación**: estado `OFERTADO → PUBLICADO`.
 4. **Endpoint de cambio de turno con re-mapeo** (completar el TODO de Sprint 3).
+5. **Migración código:** cero referencias a `cursos_horarios`; pantallas `institucional/horarios` consumen grilla V2.
+6. **Vistas SQL** grupo bloques/conflictos; calificaciones que JOIN horarios actualizadas.
 
 ## 3. Endpoints backend
 
@@ -201,7 +218,9 @@ Botón global "Publicar todos los OK".
 - [ ] Validador de cobertura en vivo.
 - [ ] Endpoint de cambio de turno con re-mapeo de bloques funcional.
 - [ ] Publicación con todas las pre-condiciones validadas.
-- [ ] Test E2E manual: paralelo PRIMERO A SIS-INF con 7 asignaciones → armar grilla completa (30 bloques) → forzar conflicto AULA y verlo parpadear → resolver → publicar.
+- [ ] **Código:** eliminados modelos/repos `curso_horario` del path activo; `models/curso.js` solo si ya no hay imports (checklist global §5 en `MIGRACION_CODIGO_V2.md`).
+- [ ] **Vistas:** horarios/conflictos alineadas a `asignacion_horarios`.
+- [ ] Test E2E: seeders `40`–`48` coherentes con grilla UI → publicar paralelo.
 
 ---
 

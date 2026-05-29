@@ -63,6 +63,8 @@ export { Horario } from './horario.js';
 export { Curso } from './curso.js';
 export { CursoHorario } from './curso_horario.js';
 export { AsignacionDocente } from './asignacion_docente.js';
+export { ParaleloGestion } from './paralelo_gestion.js';
+export { OfertaCurso } from './oferta_curso.js';
 
 // ============================================
 // ESTUDIANTES - PARTE 1

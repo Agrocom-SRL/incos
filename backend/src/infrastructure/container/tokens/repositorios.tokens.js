@@ -61,6 +61,8 @@ export const REPOSITORIOS_TOKENS = {
     courseRepository: 'courseRepository',
     courseScheduleRepository: 'courseScheduleRepository',
     managementPlanRepository: 'managementPlanRepository',
+    parallelManagementRepository: 'parallelManagementRepository',
+    courseOfferRepository: 'courseOfferRepository',
     teacherAssignmentRepository: 'teacherAssignmentRepository',
 
     // ESTUDIANTES

@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
-import { listValidator } from '../validators/common/index.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
+import { idValidator, listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Gestiones (Académico)
@@ -23,7 +23,14 @@ import { listValidator } from '../validators/common/index.js';
 export function buildGestionesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const listarGestiones = [authenticate, verificarPermiso('institucional.gestion.actual', 'LISTAR')];
+    const listarGestiones = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['institucional.gestion.actual', 'LISTAR'],
+            ['institucional.oferta.gestion-plan', 'LISTAR'],
+        ]),
+    ];
+    const permisoOfertaGestion = 'institucional.oferta.gestion-plan';
 
     // ============================================
     // CRUD BÁSICO
@@ -47,6 +54,24 @@ export function buildGestionesRouter({ controllers, middlewares }) {
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listGestionesController.handle(req, res, next)
+    );
+
+    router.post(
+        '/:id/marcar-vigente',
+        authenticate,
+        verificarPermiso(permisoOfertaGestion, 'ACTIVAR'),
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.marcarGestionVigenteController.handle(req, res, next)
+    );
+
+    router.get(
+        '/:id/planes-habilitados',
+        authenticate,
+        verificarPermiso(permisoOfertaGestion, 'LISTAR'),
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.listPlanesHabilitadosByGestionController.handle(req, res, next)
     );
 
     // ============================================

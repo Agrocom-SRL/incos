@@ -2,7 +2,22 @@
 
 **Documento padre:** `PLAN_V2_MAESTRO.md`
 **Duración estimada:** 1-2 semanas
-**Pre-requisito:** Sprint 2 cerrado (schema V2 desplegado).
+**Pre-requisito:** Sprint 2 cerrado (schema V2 + seeders `27`–`30` en BD local).  
+**Mapa de migración:** `MIGRACION_CODIGO_V2.md`
+
+---
+
+## 0. Alcance de este sprint (BD + código)
+
+| Capa | Incluido en Sprint 3 |
+|------|----------------------|
+| BD | Ya en Sprint 2 (`paralelos_gestion`, `oferta_cursos`) |
+| API nueva | Oferta académica (§3) |
+| **Código V1** | Retirar repos/rutas/use cases que usan `cursos` en el **camino oferta/paralelo** |
+| Vistas SQL | Grupo **oferta/paralelo** (~10 vistas, ver `MIGRACION_CODIGO_V2.md` §3.3) |
+| FE | Wizard `/institucional/oferta-academica` (solo API V2) |
+
+**No incluido aquí (Sprint 4–5):** asignación docente completa, bloques, calificaciones profundas, inscripción completa.
 
 ---
 
@@ -21,7 +36,9 @@ Al final del sprint la oferta del año está lista para asignar docentes (Sprint
 1. **API backend** para habilitar planes, generar paralelos-gestión y generar oferta de cursos.
 2. **Permisos RBAC** correspondientes.
 3. **Frontend** con flujo guiado de 3 pasos: gestión → habilitar plan → generar oferta.
-4. **Endpoint de cambio de turno** con migración de bloques (aunque en este sprint todavía no hay bloques, deja el endpoint listo para Sprint 5).
+4. **Endpoint de cambio de turno** con TODO de bloques (completar en Sprint 5).
+5. **Migración código V1 (oferta):** desmontar `/api/v1/cursos`, eliminar `CourseRepository` / `CourseScheduleRepository` del flujo activo, quitar o redirigir rutas paralelos `cursos-oferta` / `POST cursos` hacia API V2.
+6. **Vistas SQL** grupo oferta reescritas a `oferta_cursos` + `paralelos_gestion` (o excluidas del despliegue hasta estar listas).
 
 ## 3. Endpoints backend
 
@@ -134,11 +151,13 @@ Al click en una fila, se abre detalle:
 
 - [ ] Backend con endpoints de las secciones 3.1 a 3.4.
 - [ ] Permisos sembrados.
-- [ ] Pantalla wizard funcional para los 3 pasos.
+- [ ] Pantalla wizard funcional para los 3 pasos (sin llamadas a `/cursos` ni `cursos-oferta` V1).
 - [ ] Generación automática de paralelos-gestión y oferta de cursos funcionando.
 - [ ] Validador de cobertura visible.
 - [ ] Cambio de estado con validaciones.
-- [ ] Test E2E manual: gestión nueva → habilitar plan SIS-INF → generar 3 paralelos → asignar aulas → generar oferta → ver 7+8+8 cursos creados → pasar todos a OFERTADO.
+- [ ] **Código:** sin router `/api/v1/cursos` montado; sin use cases activos que INSERT/SELECT en tabla `cursos`.
+- [ ] **Vistas:** grupo oferta del mapa migración recreadas o no usadas por la app.
+- [ ] Test E2E manual: gestión → plan SIS → generar paralelos → aulas → generar oferta → validar conteos vs seeders `28`–`30` → OFERTADO.
 
 ---
 
@@ -152,35 +171,25 @@ Académica. Los Sprints 1 y 2 ya están cerrados, así que:
   ya existen. asignaciones_docentes apunta a oferta_curso_id.
 - docentes tiene color_hex, max_horas_semana, max_horas_mes.
 
-Tareas (entrega en orden, espera aprobación entre cada una):
+Tareas (entrega en orden; ver MIGRACION_CODIGO_V2.md):
 
-1) Backend: implementar endpoints sección 3 de SPRINT_3.md. Estructura por capas
-   (controller + service + repository). Validaciones en service. Sequelize ORM.
+1) Backend: endpoints §3 (oferta V2). Prioridad: generar-paralelos, generar-oferta, validar-oferta.
 
-   Endpoints clave a generar primero:
-   - POST /gestiones-planes/:id/generar-paralelos-gestion (idempotente)
-   - POST /paralelos-gestion/:id/generar-oferta (idempotente)
-   - GET /paralelos-gestion/:id/validar-oferta
+2) Backend: PUT cambiar-turno (solo campo; TODO bloques en Sprint 5).
 
-2) Backend: endpoint PUT /paralelos-gestion/:id/cambiar-turno con TODO comentado
-   para la futura migración de bloques (Sprint 5). Por ahora solo cambia el campo.
+3) Backend: permisos seeds 54/56/55 + matriz.
 
-3) Backend: permisos sembrados para institucional.oferta.gestion-plan,
-   institucional.oferta.paralelo-gestion, institucional.oferta.cursos con sus 6 acciones
-   típicas (LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR).
+4) Backend — migración V1 (oferta):
+   - Desmontar /api/v1/cursos y container cursos.
+   - Eliminar o deprecar use cases CreateParaleloCursoOferta, GetParaleloCursosOferta,
+     Update/DeleteCursoOferta; rutas paralelos asociadas → API V2.
+   - Quitar registros DI de CourseRepository / CourseScheduleRepository cuando no queden usos.
 
-4) Frontend: pantalla wizard /institucional/oferta-academica con stepper Ant Design
-   3 pasos (Gestión, Planes habilitados, Paralelos + Oferta).
-   - Paso 1: dropdown de gestiones + botón marcar vigente.
-   - Paso 2: lista de planes habilitados + modal "Habilitar plan".
-   - Paso 3: tabla de paralelos-gestión con edición inline de aula y turno,
-     botón "Generar oferta" por fila, badge de cobertura.
+5) Vistas SQL: reescribir grupo "oferta/paralelo" (02, 18, 71, 78, 75, 74…) a oferta_cursos.
 
-5) Frontend: drawer/modal de detalle de paralelo-gestión con:
-   - Datos read-only del paralelo maestro.
-   - Edición de aula, turno, cupos.
-   - Lista de oferta_cursos.
-   - Botón "Agregar curso manual".
+6) Frontend: wizard /institucional/oferta-academica (solo API V2) + drawer paralelo-gestión.
+
+7) Smoke: seeders 27→28 contra wizard; rol con/sin permiso oferta.
 
 Restricciones del proyecto:
 - Cero ALTER TABLE en este sprint (todo el schema está en Sprint 2).

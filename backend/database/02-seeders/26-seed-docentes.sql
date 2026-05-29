@@ -34,7 +34,7 @@ INSERT INTO docentes (id, ci, expedicion, nombres, apellido_paterno, apellido_ma
 (10, '12345013', 'SC', 'Rafael', 'Montero', NULL, '1985-07-24', 'MASCULINO', '70000013', 'Licenciado', 'CONTRATO', 'ACTIVO', '#049AE2'),
 (11, '12345014', 'SC', 'René', 'Roca', NULL, '1984-04-15', 'MASCULINO', '70000014', 'Licenciado', 'CONTRATO', 'ACTIVO', '#7C72FA'),
 (12, '12345015', 'SC', 'Georgina', 'Moron', NULL, '1986-08-22', 'FEMENINO', '70000015', 'Licenciada', 'CONTRATO', 'ACTIVO', '#ABCD9D'),
-(13, '12345016', 'SC', 'Puma', NULL, NULL, '1985-03-10', 'MASCULINO', '70000016', 'Licenciado', 'CONTRATO', 'ACTIVO', '#673929'),
+(13, '12345016', 'SC', 'Puma', '', NULL, '1985-03-10', 'MASCULINO', '70000016', 'Licenciado', 'CONTRATO', 'ACTIVO', '#673929'),
 (14, '12345017', 'SC', 'Jose Luiz', 'Uribe', NULL, '1987-11-30', 'MASCULINO', '70000017', 'Licenciado', 'CONTRATO', 'ACTIVO', '#C5EF6F'),
 (15, '12345018', 'SC', 'Paola', 'Mariaca', NULL, '1988-05-20', 'FEMENINO', '70000018', 'Licenciada', 'CONTRATO', 'ACTIVO', '#6C222A');
 
@@ -58,7 +58,7 @@ INSERT INTO docentes (id, ci, expedicion, nombres, apellido_paterno, apellido_ma
 
 -- DOCENTE ADICIONAL — Excel horarios 2026-02-18 (nombre en planilla; apellido pendiente)
 INSERT INTO docentes (id, ci, expedicion, nombres, apellido_paterno, apellido_materno, fecha_nacimiento, genero, celular, titulo_profesional, tipo_contrato, estado_laboral, color_hex) VALUES
-(31, '12345034', 'SC', 'Yessica', NULL, NULL, '1990-01-01', 'FEMENINO', '70000034', 'Licenciada', 'CONTRATO', 'ACTIVO', '#FF5722');
+(31, '12345034', 'SC', 'Yessica', '', NULL, '1990-01-01', 'FEMENINO', '70000034', 'Licenciada', 'CONTRATO', 'ACTIVO', '#FF5722');
 
 SET FOREIGN_KEY_CHECKS = 1;
 

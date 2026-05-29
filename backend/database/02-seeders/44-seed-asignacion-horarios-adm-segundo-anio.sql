@@ -10,7 +10,7 @@
 -- Horarios TARDE: 1-30 (LUNES: 1-6, MARTES: 7-12, MIERCOLES: 13-18, JUEVES: 19-24, VIERNES: 25-30)
 -- Horarios NOCHE: 31-55 (LUNES: 31-35, MARTES: 36-40, MIERCOLES: 41-45, JUEVES: 46-50, VIERNES: 51-55)
 -- Horarios SABADO: 56-60
--- Continuación desde último ID del seeder de Administración primer año: 210
+-- Bloques PK (asignacion_horarios.id): 211–270 (continúa desde seeder 43, id 210)
 
 USE instituto_incos;
 
@@ -19,7 +19,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- Fuente: Excel horarios oficial 2026-02-18
 -- Fuente: dump servidor 2026-05-29 — 60 bloques (oferta 52–67)
--- V2: asignacion_docente_id (= oferta_curso_id en gestión 2026)
+-- asignacion_docente_id = asignaciones_docentes.id (= oferta en gestión 2026)
 -- aula_id NULL = hereda aula base de paralelos_gestion; valor explícito = override admin
 
 -- asignacion_docente_id = 52

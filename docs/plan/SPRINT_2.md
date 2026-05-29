@@ -247,7 +247,7 @@ Tras ejecutar schemas + seeders en tu cliente MySQL:
 - [x] Seeders `27`–`48` reestructurados (sin `.legacy`, sin renombrar a archivo muerto).
 - [x] Sin scripts automáticos en `backend/scripts/` ni tests de integración de schema.
 - [ ] Aplicación manual en servidor verificada por el DBA (checklist §8).
-- [ ] Vistas `03-views/` que referencian `cursos` — pendiente Sprint 3+ o ajuste aparte.
+- [ ] Vistas `03-views/` que referencian `cursos` — migración por grupos en Sprints 3–5 (`MIGRACION_CODIGO_V2.md` §3.3).
 
 ---
 

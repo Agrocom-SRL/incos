@@ -1,0 +1,27 @@
+/**
+ * Constantes del dominio — Oferta Académica (V2)
+ */
+
+export const ESTADOS_PARALELO_GESTION = {
+  BORRADOR: 'BORRADOR',
+  OFERTADO: 'OFERTADO',
+  PUBLICADO: 'PUBLICADO',
+  CERRADO: 'CERRADO',
+};
+
+export const ESTADOS_PARALELO_GESTION_VALUES = Object.values(ESTADOS_PARALELO_GESTION);
+
+export const ESTADOS_OFERTA_CURSO = {
+  PROGRAMADA: 'PROGRAMADA',
+  ACTIVA: 'ACTIVA',
+  CERRADA: 'CERRADA',
+  CANCELADA: 'CANCELADA',
+};
+
+export const ESTADOS_OFERTA_CURSO_VALUES = Object.values(ESTADOS_OFERTA_CURSO);
+
+/** Estados en los que se permite cambiar el turno del paralelo-gestión */
+export const TURNOS_EDITABLES_PARALELO_GESTION = [
+  ESTADOS_PARALELO_GESTION.BORRADOR,
+  ESTADOS_PARALELO_GESTION.OFERTADO,
+];

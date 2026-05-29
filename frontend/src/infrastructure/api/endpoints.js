@@ -190,7 +190,35 @@ export const AULAS_HORARIOS_ENDPOINTS = {
   BLOQUES: `${API_BASE}/aulas/horarios`,
   PATCH_AULA: (cursoHorarioId) => `${API_BASE}/aulas/horarios/${cursoHorarioId}/aula`,
 };
-export const GESTIONES_ENDPOINTS = createCRUDEndpoints('/gestiones');
+export const GESTIONES_ENDPOINTS = {
+  ...createCRUDEndpoints('/gestiones'),
+  MARCAR_VIGENTE: (id) => `${API_BASE}/gestiones/${id}/marcar-vigente`,
+  PLANES_HABILITADOS: (id) => `${API_BASE}/gestiones/${id}/planes-habilitados`,
+};
+
+export const GESTIONES_PLANES_ENDPOINTS = {
+  BASE: `${API_BASE}/gestiones-planes`,
+  ESTADO: (id) => `${API_BASE}/gestiones-planes/${id}/estado`,
+  PARALELOS_GESTION: (id) => `${API_BASE}/gestiones-planes/${id}/paralelos-gestion`,
+  GENERAR_PARALELOS: (id) => `${API_BASE}/gestiones-planes/${id}/generar-paralelos-gestion`,
+};
+
+export const PARALELOS_GESTION_ENDPOINTS = {
+  BY_ID: (id) => `${API_BASE}/paralelos-gestion/${id}`,
+  ESTADO: (id) => `${API_BASE}/paralelos-gestion/${id}/estado`,
+  CAMBIAR_TURNO: (id) => `${API_BASE}/paralelos-gestion/${id}/cambiar-turno`,
+  OFERTA_CURSOS: (id) => `${API_BASE}/paralelos-gestion/${id}/oferta-cursos`,
+  GENERAR_OFERTA: (id) => `${API_BASE}/paralelos-gestion/${id}/generar-oferta`,
+  VALIDAR_OFERTA: (id) => `${API_BASE}/paralelos-gestion/${id}/validar-oferta`,
+};
+
+export const OFERTA_CURSOS_ENDPOINTS = {
+  BASE: `${API_BASE}/oferta-cursos`,
+  ESTADO: (id) => `${API_BASE}/oferta-cursos/${id}/estado`,
+  BY_ID: (id) => `${API_BASE}/oferta-cursos/${id}`,
+};
+
+export const AULAS_CATALOGO_ENDPOINT = `${API_BASE}/aulas/catalogo`;
 
 // ============================================
 // MÓDULO: CALIFICACIONES (Académico)
