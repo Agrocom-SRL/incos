@@ -11,7 +11,7 @@
 -- Pre-requisitos (ejecutar antes de este archivo):
 --   06-estructura-academica-parte2.sql  → docentes, horarios, aulas
 --   07-estructura-academica-parte3.sql  → gestiones_planes
---   07a-estructura-academica-oferta.sql → oferta_cursos
+--   08-estructura-academica-oferta.sql → oferta_cursos
 --
 -- Seeders: primero asignaciones_docentes (31–39), después asignacion_horarios (40–48)
 --
@@ -102,6 +102,9 @@ COMMENT='Asignación de docentes a oferta por plan habilitado. El docente puede 
 -- ============================================
 -- Cada bloque indica en qué horario y aula dicta el docente esa oferta.
 -- aula_id NULL = usa el aula base del paralelo_gestion padre.
+-- horario_id 56-60 (SÁBADO, turno NULL en catálogo): extensión opcional para cubrir
+-- carga_horaria cuando L-V del turno del paralelo no alcanza; TARDE y NOCHE comparten
+-- los mismos slots de sábado. Validación de turno aplica solo a L-V (horarios.turno).
 
 CREATE TABLE asignacion_horarios (
     id INT AUTO_INCREMENT PRIMARY KEY,

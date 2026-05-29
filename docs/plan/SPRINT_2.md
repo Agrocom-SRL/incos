@@ -202,14 +202,14 @@ Los cambios V2 están **integrados en los schemas base**, no en un archivo de mi
 |---|---|
 | `06-estructura-academica-parte2.sql` | docentes (+ color, máx. carga), paralelos, aulas, horarios |
 | `07-estructura-academica-parte3.sql` | gestiones, gestiones_planes, actividades, periodos, calendario |
-| `07a-estructura-academica-oferta.sql` | `paralelos_gestion` + `oferta_cursos` |
-| `07b-estructura-academica-horarios.sql` | `asignaciones_docentes` + `asignacion_horarios` |
-| `12-inscripciones.sql` | `matriculas_materia.oferta_curso_id` (requiere `07a`) |
-| `20-supervision-libros.sql` | `supervisiones_programadas.oferta_curso_id` |
+| `08-estructura-academica-oferta.sql` | `paralelos_gestion` + `oferta_cursos` |
+| `09-estructura-academica-horarios.sql` | `asignaciones_docentes` + `asignacion_horarios` |
+| `13-inscripciones.sql` | `matriculas_materia.oferta_curso_id` (requiere `08`) |
+| `22-supervision-libros.sql` | `supervisiones_programadas.oferta_curso_id` |
 
 **Orden de aplicación manual** (BD vacía o reconstruida):
 
-1. Schemas `01-schemas/` en orden: `01` … `07` → `07a` → `07b` → `08` … `23`.
+1. Schemas `01-schemas/` en orden numérico: `01` … `07` → `08` (oferta) → `09` (horarios) → `10` … `24`.
 2. Seeders `02-seeders/` en orden numérico (ver §7).
 3. Vistas `03-views/` al final.
 
@@ -259,9 +259,9 @@ La BD se reconstruye limpia. El usuario aplica SQL MANUALMENTE; no crear scripts
 automáticos ni tests de integración.
 
 Modificar directamente backend/database/01-schemas/:
-  - 06, 07, 07a (oferta: paralelos_gestion + oferta_cursos)
-  - 07b (horarios: asignaciones_docentes + asignacion_horarios)
-  - 12-inscripciones.sql, 20-supervision-libros.sql
+  - 06, 07, 08 (oferta: paralelos_gestion + oferta_cursos)
+  - 09 (horarios: asignaciones_docentes + asignacion_horarios)
+  - 13-inscripciones.sql, 22-supervision-libros.sql
 
 Reestructurar seeders 27-48 (orden = Sprint 3 → 4 → 5):
   - 27: paralelos_gestion (único archivo)

@@ -5,6 +5,12 @@
 -- ============================================
 -- IDs fijos: 1-60 (30 Tarde + 25 Noche + 5 Sábado)
 -- Nota: Se usa "HORARIO" en lugar de "BLOQUE" para mayor claridad
+--
+-- SÁBADO (ids 56-60): turno NULL — catálogo compartido TARDE/NOCHE.
+-- Cuando la semana L-V no alcanza para cubrir carga_horaria (periodos con más
+-- materias u horas), el paralelo extiende clases al sábado. No es conflicto de
+-- turno: el turno efectivo sigue en paralelos_gestion; el sábado son slots fijos
+-- adicionales. Si un paralelo usa sábado se ve en asignacion_horarios (horario_id 56-60).
 
 USE instituto_incos;
 
@@ -114,15 +120,17 @@ INSERT INTO horarios (id, nombre, dia, hora_inicio, hora_fin, turno, numero_bloq
 -- ============================================
 -- INSERTAR HORARIOS - SABADO
 -- Horarios de 45 minutos de 15:00 a 19:00
+-- turno NULL: bloques compartidos — extensión de carga horaria cuando L-V no alcanza
+-- (aplica a paralelos TARDE y NOCHE; no define turno del paralelo)
 -- IDs: 56-60
 -- ============================================
 
 INSERT INTO horarios (id, nombre, dia, hora_inicio, hora_fin, turno, numero_bloque, tipo_horario) VALUES
-(56, 'HORARIO 1 - SABADO', 'SABADO', '15:00:00', '15:45:00', 'TARDE', 1, 'CLASES'),
-(57, 'HORARIO 2 - SABADO', 'SABADO', '15:45:00', '16:30:00', 'TARDE', 2, 'CLASES'),
-(58, 'HORARIO 3 - SABADO', 'SABADO', '16:30:00', '17:15:00', 'TARDE', 3, 'CLASES'),
-(59, 'HORARIO 4 - SABADO', 'SABADO', '17:30:00', '18:15:00', 'TARDE', 4, 'CLASES'),
-(60, 'HORARIO 5 - SABADO', 'SABADO', '18:15:00', '19:00:00', 'TARDE', 5, 'CLASES');
+(56, 'HORARIO 1 - SABADO', 'SABADO', '15:00:00', '15:45:00', NULL, 1, 'CLASES'),
+(57, 'HORARIO 2 - SABADO', 'SABADO', '15:45:00', '16:30:00', NULL, 2, 'CLASES'),
+(58, 'HORARIO 3 - SABADO', 'SABADO', '16:30:00', '17:15:00', NULL, 3, 'CLASES'),
+(59, 'HORARIO 4 - SABADO', 'SABADO', '17:30:00', '18:15:00', NULL, 4, 'CLASES'),
+(60, 'HORARIO 5 - SABADO', 'SABADO', '18:15:00', '19:00:00', NULL, 5, 'CLASES');
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

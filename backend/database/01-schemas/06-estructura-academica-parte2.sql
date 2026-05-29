@@ -2,7 +2,7 @@
 -- ESTRUCTURA ACADÉMICA - PARTE 2
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 4 Tablas: docentes, paralelos, aulas, horarios
--- (V2: cursos/cursos_horarios eliminados → ver 07a y 07b)
+-- (V2: cursos/cursos_horarios eliminados → ver 08-oferta y 09-horarios)
 -- ============================================
 --
 -- RESTRICCIONES DE DISEÑO:

@@ -13,8 +13,8 @@
 --   06-estructura-academica-parte2.sql  → paralelos, aulas
 --   07-estructura-academica-parte3.sql  → gestiones_planes
 --
--- Siguiente archivo: 07b-estructura-academica-horarios.sql
--- Requerido por: 12-inscripciones.sql (matriculas_materia.oferta_curso_id)
+-- Siguiente archivo: 09-estructura-academica-horarios.sql
+-- Requerido por: 13-inscripciones.sql (matriculas_materia.oferta_curso_id)
 --
 -- RESTRICCIONES DE DISEÑO:
 --   - Todas las FKs permiten NULL

@@ -48,9 +48,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 (112, 3, 112, 25, 6, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE SEGUROS (oferta_curso_id = 113, asignatura_plan_id = 58) - 2 horas/semana
--- Docente: Lic. Willma Fernandez (docente_id = 26)
+-- Docente: Lic. Teodora Paraguayo (docente_id = 29)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(113, 3, 113, 26, 2, TRUE, '2026-01-19', TRUE);
+(113, 3, 113, 29, 2, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE SOCIEDADES (oferta_curso_id = 114, asignatura_plan_id = 57) - 4 horas/semana
 -- Docente: Lic. Teodora Paraguayo (docente_id = 29)

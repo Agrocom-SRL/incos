@@ -85,9 +85,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 (8, 1, 8, 3, 4, TRUE, '2026-01-19', TRUE);
 
 -- PROGRAMACIÓN I (oferta_curso_id = 9, asignatura_plan_id = 2)
--- Docente: Ing. Roxana Justiniano (docente_id = 2)
+-- Docente: Ing. Lily Arenas (docente_id = 6)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(9, 1, 9, 2, 8, TRUE, '2026-01-19', TRUE);
+(9, 1, 9, 6, 8, TRUE, '2026-01-19', TRUE);
 
 -- INGLÉS TÉCNICO (oferta_curso_id = 10, asignatura_plan_id = 3)
 -- Docente: Ing. Waly Vargas (docente_id = 4)
@@ -95,9 +95,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 (10, 1, 10, 4, 2, TRUE, '2026-01-19', TRUE);
 
 -- HARDWARE DE COMPUTADORAS (oferta_curso_id = 11, asignatura_plan_id = 4)
--- Docente: Ing. Ybeth Camacho (docente_id = 1)
+-- Docente: Ing. Lily Arenas (docente_id = 6)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(11, 1, 11, 1, 4, TRUE, '2026-01-19', TRUE);
+(11, 1, 11, 6, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE SISTEMAS OPERATIVOS (oferta_curso_id = 12, asignatura_plan_id = 5)
 -- Docente: Ing. Yesmani Fernandez (docente_id = 7)
@@ -128,8 +128,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 --   - Giovanna Fernandez: DPW-107 (1 curso)
 --
 -- PARALELO B (PRIMERO B - NOCHE): 7 asignaciones (IDs 8-14)
---   - Ybeth Camacho: HDC-104 (1 curso)
---   - Roxana Justiniano: PRG-102 (1 curso)
+--   - Lily Arenas: PRG-102, HDC-104 (2 cursos)
 --   - Magali Ticlla: MPI-101, OTM-106 (2 cursos)
 --   - Waly Vargas: INT-103 (1 curso)
 --   - Giovanna Fernandez: DPW-107 (1 curso)

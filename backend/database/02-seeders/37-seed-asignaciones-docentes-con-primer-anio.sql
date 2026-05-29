@@ -206,9 +206,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 (103, 3, 103, 12, 4, TRUE, '2026-01-19', TRUE);
 
 -- INFORMÁTICA CONTABLE (oferta_curso_id = 104, asignatura_plan_id = 48) - 4 horas/semana
--- Docente: Lic. Aurelio Hurtado (docente_id = 27)
+-- Docente: Lic. Franz Lujan (docente_id = 23)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(104, 3, 104, 27, 4, TRUE, '2026-01-19', TRUE);
+(104, 3, 104, 23, 4, TRUE, '2026-01-19', TRUE);
 
 -- ADMINISTRACIÓN GENERAL (oferta_curso_id = 105, asignatura_plan_id = 49) - 4 horas/semana
 -- Docente: Lic. Willma Fernandez (docente_id = 26)
@@ -221,9 +221,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 (106, 3, 106, 29, 2, TRUE, '2026-01-19', TRUE);
 
 -- ECONOMÍA GENERAL APLICADA (oferta_curso_id = 107, asignatura_plan_id = 51) - 2 horas/semana
--- Docente: Lic. Gonzalo Icuña (docente_id = 20)
+-- Docente: Lic. Patricia Rodriguez Cuellar (docente_id = 19)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(107, 3, 107, 20, 2, TRUE, '2026-01-19', TRUE);
+(107, 3, 107, 19, 2, TRUE, '2026-01-19', TRUE);
 
 -- DOCUMENTOS COMERCIALES Y MERCANTILES (oferta_curso_id = 108, asignatura_plan_id = 52) - 2 horas/semana
 -- Docente: Lic. Elias Sarzuri (docente_id = 28)
