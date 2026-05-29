@@ -10,7 +10,7 @@
 -- Oferta cursos: IDs 75-110 (1A: 75-83, 1B: 84-92, 1C: 93-101, 1D: 102-110)
 -- ============================================
 -- NOTA: Asignaciones basadas en el horario académico oficial 2026 (imágenes proporcionadas)
--- Docentes CON-GEN: IDs 16-30
+-- Docentes CON-GEN: IDs 16-31
 --  16: Hilda Barriga
 --  17: Sebastián Vargas
 --  18: Sonia Carrizales
@@ -24,6 +24,7 @@
 --  28: Elias Sarzuri
 --  29: Teodora Paraguayo
 --  30: José Antonio Vara
+--  31: Yessica (Excel 2026; apellido pendiente)
 -- Docentes compartidos:
 --  4: Waly Vargas (SIS-INF)
 --  12: Georgina Moron (ADM-EMP)
@@ -63,7 +64,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- ADMINISTRACIÓN GENERAL (oferta_curso_id = 78, asignatura_plan_id = 49) - 4 horas/semana
 -- Docente: Lic. Sonia Carrizales (docente_id = 18)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(78, 3, 78, 18, 4, TRUE, '2026-01-19', TRUE);
+(78, 3, 78, 25, 4, TRUE, '2026-01-19', TRUE);
 
 -- LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA (oferta_curso_id = 79, asignatura_plan_id = 50) - 2 horas/semana
 -- Docente: Téc. Patricia Rodriguez Cuellar (docente_id = 19)
@@ -88,7 +89,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- INGLÉS TÉCNICO (oferta_curso_id = 83, asignatura_plan_id = 54) - 2 horas/semana
 -- Docente: Ing. Waly Vargas (docente_id = 4) - Compartido con SIS-INF
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(83, 3, 83, 4, 2, TRUE, '2026-01-19', TRUE);
+(83, 3, 83, 20, 2, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - PRIMERO B (TARDE)
@@ -113,7 +114,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- ADMINISTRACIÓN GENERAL (oferta_curso_id = 87, asignatura_plan_id = 49) - 4 horas/semana
 -- Docente: Lic. Willma Fernandez (docente_id = 26)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(87, 3, 87, 26, 4, TRUE, '2026-01-19', TRUE);
+(87, 3, 87, 18, 4, TRUE, '2026-01-19', TRUE);
 
 -- LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA (oferta_curso_id = 88, asignatura_plan_id = 50) - 2 horas/semana
 -- Docente: Téc. Patricia Rodriguez Cuellar (docente_id = 19)
@@ -138,7 +139,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- INGLÉS TÉCNICO (oferta_curso_id = 92, asignatura_plan_id = 54) - 2 horas/semana
 -- Docente: Ing. Waly Vargas (docente_id = 4) - Compartido con SIS-INF
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(92, 3, 92, 4, 2, TRUE, '2026-01-19', TRUE);
+(92, 3, 92, 20, 2, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - PRIMERO C (NOCHE)
@@ -156,9 +157,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 (94, 3, 94, 12, 4, TRUE, '2026-01-19', TRUE);
 
 -- INFORMÁTICA CONTABLE (oferta_curso_id = 95, asignatura_plan_id = 48) - 4 horas/semana
--- Docente: Lic. Aurelio Hurtado (docente_id = 27)
+-- Docente: Lic. Yessica (docente_id = 31) — Excel 2026 CON 1°C
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(95, 3, 95, 27, 4, TRUE, '2026-01-19', TRUE);
+(95, 3, 95, 31, 4, TRUE, '2026-01-19', TRUE);
 
 -- ADMINISTRACIÓN GENERAL (oferta_curso_id = 96, asignatura_plan_id = 49) - 4 horas/semana
 -- Docente: Lic. Willma Fernandez (docente_id = 26)
@@ -196,9 +197,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- ============================================
 
 -- CONTABILIDAD I (oferta_curso_id = 102, asignatura_plan_id = 46) - 8 horas/semana
--- Docente: Lic. AURELIO HURTADO (docente_id = 27)
+-- Docente: Lic. Yessica (docente_id = 31) — Excel 2026 CON 1°D
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(102, 3, 102, 27, 8, TRUE, '2026-01-19', TRUE);
+(102, 3, 102, 31, 8, TRUE, '2026-01-19', TRUE);
 
 -- MATEMÁTICA FINANCIERA (oferta_curso_id = 103, asignatura_plan_id = 47) - 4 horas/semana
 -- Docente: Lic. Georgina Moron (docente_id = 12) - Compartido con ADM-EMP
@@ -269,7 +270,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- PARALELO C (PRIMERO C - NOCHE): 9 asignaciones (IDs 93-101)
 --   - José Antonio Vara (30): CONTABILIDAD I (1 curso, 8 horas)
 --   - Georgina Moron (12): MATEMÁTICA FINANCIERA (1 curso, 4 horas) - Compartido ADM-EMP
---   - Aurelio Hurtado (27): INFORMÁTICA CONTABLE (1 curso, 4 horas)
+--   - Yessica (31): INFORMÁTICA CONTABLE (1 curso, 4 horas)
 --   - Willma Fernandez (26): ADMINISTRACIÓN GENERAL (1 curso, 4 horas)
 --   - Teodora Paraguayo (29): LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA (1 curso, 2 horas)
 --   - Gonzalo Icuña (20): ECONOMÍA GENERAL APLICADA (1 curso, 2 horas)
@@ -278,8 +279,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 --   - Yesmani Fernandez (7): INGLÉS TÉCNICO (1 curso, 2 horas) - Compartido SIS-INF
 --
 -- PARALELO D (PRIMERO D - NOCHE): 9 asignaciones (IDs 102-110)
---   - Aurelio Hurtado (27): CONTABILIDAD I, INFORMÁTICA CONTABLE (2 cursos, 12 horas total)
+--   - Yessica (31): CONTABILIDAD I (1 curso, 8 horas)
 --   - Georgina Moron (12): MATEMÁTICA FINANCIERA (1 curso, 4 horas) - Compartido ADM-EMP
+--   - Franz Lujan (23): INFORMÁTICA CONTABLE (1 curso, 4 horas)
 --   - Willma Fernandez (26): ADMINISTRACIÓN GENERAL (1 curso, 4 horas)
 --   - Teodora Paraguayo (29): LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA (1 curso, 2 horas)
 --   - Gonzalo Icuña (20): ECONOMÍA GENERAL APLICADA (1 curso, 2 horas)

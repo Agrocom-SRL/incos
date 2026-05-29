@@ -64,7 +64,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- COMERCIO INTERNACIONAL (oferta_curso_id = 73, asignatura_plan_id = 44) - 4 horas/semana
 -- Docente: Lic. Vladimir Marca (docente_id = 8)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(73, 2, 73, 8, 4, TRUE, '2026-01-19', TRUE);
+(73, 2, 73, 9, 4, TRUE, '2026-01-19', TRUE);
 
 -- GESTIÓN ESTRATÉGICA (oferta_curso_id = 74, asignatura_plan_id = 45) - 4 horas/semana
 -- Docente: Lic. Sonia Carrizales (docente_id = 18)

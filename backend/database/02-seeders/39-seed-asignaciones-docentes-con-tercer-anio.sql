@@ -10,7 +10,7 @@
 -- Oferta cursos: IDs 125-140 (3A: 125-132, 3B: 133-140)
 -- ============================================
 -- NOTA: Asignaciones basadas en el horario académico oficial 2026 (imágenes proporcionadas)
--- Docentes CON-GEN: IDs 16-30
+-- Docentes CON-GEN: IDs 16-31
 --  17: Sebastián Vargas
 --  19: Patricia Rodriguez Cuellar
 --  20: Gonzalo Icuña
@@ -19,6 +19,7 @@
 --  27: Aurelio Hurtado
 --  28: Elias Sarzuri
 --  29: Teodora Paraguayo
+--  31: Yessica (Excel 2026; apellido pendiente)
 
 -- Sprint 4 — Asignación docente (ejecutar ANTES de 40–48 asignacion_horarios)
 -- Pre-requisitos: 28–30 seed-oferta-cursos-*, 26-seed-docentes
@@ -49,12 +50,12 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- CONTABILIDAD GUBERNAMENTAL (oferta_curso_id = 127, asignatura_plan_id = 64) - 4 horas/semana
 -- Docente: Lic. Sebastián Vargas (docente_id = 17)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(127, 3, 127, 17, 4, TRUE, '2026-01-19', TRUE);
+(127, 3, 127, 19, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD EXTRACTIVA (MINERA, PETROLERA Y FORESTAL) (oferta_curso_id = 128, asignatura_plan_id = 65) - 4 horas/semana
 -- Docente: Lic. Dory Robles (docente_id = 25)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(128, 3, 128, 25, 4, TRUE, '2026-01-19', TRUE);
+(128, 3, 128, 29, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE SERVICIOS (CONSTRUCCIÓN, HOTELERÍA Y TRANSPORTE) (oferta_curso_id = 129, asignatura_plan_id = 66) - 2 horas/semana
 -- Docente: Lic. Franz Lujan (docente_id = 23)
@@ -69,7 +70,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- ANÁLISIS E INTERPRETACIÓN DE ESTADOS FINANCIEROS (oferta_curso_id = 131, asignatura_plan_id = 68) - 4 horas/semana
 -- Docente: TEC. Patricia Rodriguez Cuellar (docente_id = 19)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(131, 3, 131, 19, 4, TRUE, '2026-01-19', TRUE);
+(131, 3, 131, 29, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE MODALIDAD DE GRADUACIÓN (oferta_curso_id = 132, asignatura_plan_id = 69) - 4 horas/semana
 -- Docente: Lic. Patricia Rodriguez (docente_id = 19)
@@ -97,9 +98,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 (135, 3, 135, 17, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD EXTRACTIVA (MINERA, PETROLERA Y FORESTAL) (oferta_curso_id = 136, asignatura_plan_id = 65) - 4 horas/semana
--- Docente: Lic. Teodora Paraguayo (docente_id = 29)
+-- Docente: Lic. Sebastián Vargas (docente_id = 17) — Excel 2026 3°B
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(136, 3, 136, 29, 4, TRUE, '2026-01-19', TRUE);
+(136, 3, 136, 17, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE SERVICIOS (CONSTRUCCIÓN, HOTELERÍA Y TRANSPORTE) (oferta_curso_id = 137, asignatura_plan_id = 66) - 2 horas/semana
 -- Docente: Lic. Elias Sarzuri (docente_id = 28)
@@ -112,9 +113,9 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 (138, 3, 138, 28, 4, TRUE, '2026-01-19', TRUE);
 
 -- ANÁLISIS E INTERPRETACIÓN DE ESTADOS FINANCIEROS (oferta_curso_id = 139, asignatura_plan_id = 68) - 4 horas/semana
--- Docente: Lic. Aurelio Hurtado (docente_id = 27)
+-- Docente: Lic. Yessica (docente_id = 31) — Excel 2026 CON 3°B
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(139, 3, 139, 27, 4, TRUE, '2026-01-19', TRUE);
+(139, 3, 139, 31, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE MODALIDAD DE GRADUACIÓN (oferta_curso_id = 140, asignatura_plan_id = 69) - 4 horas/semana
 -- Docente: Lic. Patricia Rodriguez (docente_id = 19)
@@ -136,9 +137,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 --
 -- PARALELO B (TERCERO B - NOCHE): 8 asignaciones (IDs 133-140)
 --   - Elias Sarzuri (28): CONTABILIDAD AGROPECUARIA, CONTABILIDAD DE SERVICIOS, GABINETE CONTABLE INFORMÁTICO (3 cursos, 10 horas total)
---   - Sebastián Vargas (17): CONTABILIDAD DE COSTOS II, CONTABILIDAD GUBERNAMENTAL (2 cursos, 8 horas total)
---   - Teodora Paraguayo (29): CONTABILIDAD EXTRACTIVA (1 curso, 4 horas)
---   - Aurelio Hurtado (27): ANÁLISIS E INTERPRETACIÓN DE ESTADOS FINANCIEROS (1 curso, 4 horas)
+--   - Sebastián Vargas (17): CONTABILIDAD DE COSTOS II, CONTABILIDAD GUBERNAMENTAL, CONTABILIDAD EXTRACTIVA (3 cursos)
+--   - Teodora Paraguayo (29): (sin cursos en 3°B Excel 2026)
+--   - Yessica (31): ANÁLISIS E INTERPRETACIÓN DE ESTADOS FINANCIEROS (1 curso, 4 horas)
 --   - Patricia Rodriguez (19): TALLER DE MODALIDAD DE GRADUACIÓN (1 curso, 4 horas)
 --
 -- TOTAL: 16 asignaciones (IDs 125-140)

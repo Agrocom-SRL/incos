@@ -57,7 +57,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- HARDWARE DE COMPUTADORAS (oferta_curso_id = 4, asignatura_plan_id = 4)
 -- Docente: Ing. Ybeth Camacho (docente_id = 1)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(4, 1, 4, 1, 4, TRUE, '2026-01-19', TRUE);
+(4, 1, 4, 6, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE SISTEMAS OPERATIVOS (oferta_curso_id = 5, asignatura_plan_id = 5)
 -- Docente: Ing. Ybeth Camacho (docente_id = 1)
@@ -67,12 +67,12 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- OFIMÁTICA Y TECNOLOGÍA MULTIMEDIA (oferta_curso_id = 6, asignatura_plan_id = 6)
 -- Docente: Ing. Waly Vargas (docente_id = 4)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(6, 1, 6, 4, 4, TRUE, '2026-01-19', TRUE);
+(6, 1, 6, 1, 4, TRUE, '2026-01-19', TRUE);
 
 -- DISEÑO Y PROGRAMACIÓN WEB I (oferta_curso_id = 7, asignatura_plan_id = 7)
 -- Docente: Ing. Giovanna Fernandez (docente_id = 5)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(7, 1, 7, 5, 4, TRUE, '2026-01-19', TRUE);
+(7, 1, 7, 7, 4, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - PRIMERO B (NOCHE)
@@ -97,17 +97,17 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- HARDWARE DE COMPUTADORAS (oferta_curso_id = 11, asignatura_plan_id = 4)
 -- Docente: Ing. Lily Arenas (docente_id = 6)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(11, 1, 11, 6, 4, TRUE, '2026-01-19', TRUE);
+(11, 1, 11, 1, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE SISTEMAS OPERATIVOS (oferta_curso_id = 12, asignatura_plan_id = 5)
 -- Docente: Ing. Yesmani Fernandez (docente_id = 7)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(12, 1, 12, 7, 4, TRUE, '2026-01-19', TRUE);
+(12, 1, 12, 3, 4, TRUE, '2026-01-19', TRUE);
 
 -- OFIMÁTICA Y TECNOLOGÍA MULTIMEDIA (oferta_curso_id = 13, asignatura_plan_id = 6)
 -- Docente: Ing. Magali Ticlla (docente_id = 3)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(13, 1, 13, 3, 4, TRUE, '2026-01-19', TRUE);
+(13, 1, 13, 1, 4, TRUE, '2026-01-19', TRUE);
 
 -- DISEÑO Y PROGRAMACIÓN WEB I (oferta_curso_id = 14, asignatura_plan_id = 7)
 -- Docente: Ing. Giovanna Fernandez (docente_id = 5)

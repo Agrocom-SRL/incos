@@ -32,7 +32,7 @@ INSERT INTO paralelos_gestion (id, gestion_plan_id, paralelo_id, aula_id, turno,
 
 INSERT INTO paralelos_gestion (id, gestion_plan_id, paralelo_id, aula_id, turno, estado, cupo_maximo, cupo_minimo, activo) VALUES
 (5, 2, 5, 3, 'TARDE', 'PUBLICADO', 35, 10, TRUE),   -- PRIMERO A → LAB-3
-(6, 2, 6, 13, 'NOCHE', 'PUBLICADO', 35, 10, TRUE),  -- PRIMERO B → AULA-7
+(6, 2, 6, 13, 'TARDE', 'PUBLICADO', 35, 10, TRUE),   -- PRIMERO B → AULA-7 (Excel 2026: TARDE)
 (7, 2, 7, 10, 'NOCHE', 'PUBLICADO', 35, 10, TRUE),  -- PRIMERO C → AULA-3
 (8, 2, 8, 11, 'TARDE', 'PUBLICADO', 35, 10, TRUE),  -- SEGUNDO A → AULA-4
 (9, 2, 9, 8, 'NOCHE', 'PUBLICADO', 35, 10, TRUE),   -- SEGUNDO B → AULA-1
@@ -50,7 +50,7 @@ INSERT INTO paralelos_gestion (id, gestion_plan_id, paralelo_id, aula_id, turno,
 (15, 3, 15, 8, 'TARDE', 'PUBLICADO', 35, 10, TRUE),   -- SEGUNDO A → AULA-1
 (16, 3, 16, 5, 'NOCHE', 'PUBLICADO', 35, 10, TRUE),   -- SEGUNDO B → AULA-6
 (17, 3, 17, 12, 'TARDE', 'PUBLICADO', 35, 10, TRUE),  -- TERCERO A → AULA-5
-(18, 3, 18, 6, 'TARDE', 'PUBLICADO', 35, 10, TRUE);   -- TERCERO B → AULA-8
+(18, 3, 18, 6, 'NOCHE', 'PUBLICADO', 35, 10, TRUE);   -- TERCERO B → AULA-8 (Excel 2026: NOCHE)
 
 SET FOREIGN_KEY_CHECKS = 1;
 

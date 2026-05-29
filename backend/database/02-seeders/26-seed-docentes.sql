@@ -3,7 +3,7 @@
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Datos iniciales: Docentes extraídos del horario académico 2026
 -- ============================================
--- Orden: SIS-INF (IDs 1-7), ADM-EMP (IDs 8-15), CON-GEN (IDs 16-30)
+-- Orden: SIS-INF (IDs 1-7), ADM-EMP (IDs 8-15), CON-GEN (IDs 16-31)
 -- IDs fijos para facilitar referencias consistentes
 -- color_hex: visualización en horarios (V2 — ya no vive en oferta_cursos)
 
@@ -56,6 +56,10 @@ INSERT INTO docentes (id, ci, expedicion, nombres, apellido_paterno, apellido_ma
 (29, '12345032', 'SC', 'Teodora', 'Paraguayo', NULL, '1986-04-14', 'FEMENINO', '70000032', 'Licenciada', 'CONTRATO', 'ACTIVO', '#BF71A1'),
 (30, '12345033', 'SC', 'José Antonio', 'Vara', NULL, '1982-12-03', 'MASCULINO', '70000033', 'Licenciado', 'CONTRATO', 'ACTIVO', '#FF97B8');
 
+-- DOCENTE ADICIONAL — Excel horarios 2026-02-18 (nombre en planilla; apellido pendiente)
+INSERT INTO docentes (id, ci, expedicion, nombres, apellido_paterno, apellido_materno, fecha_nacimiento, genero, celular, titulo_profesional, tipo_contrato, estado_laboral, color_hex) VALUES
+(31, '12345034', 'SC', 'Yessica', NULL, NULL, '1990-01-01', 'FEMENINO', '70000034', 'Licenciada', 'CONTRATO', 'ACTIVO', '#FF5722');
+
 SET FOREIGN_KEY_CHECKS = 1;
 
--- TOTAL: 30 docentes (Gestión 2026)
+-- TOTAL: 31 docentes (Gestión 2026)

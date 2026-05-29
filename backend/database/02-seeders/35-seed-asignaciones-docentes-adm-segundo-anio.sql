@@ -70,12 +70,12 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- ADMINISTRACIÓN DE COSTOS Y PRESUPUESTOS (oferta_curso_id = 58, asignatura_plan_id = 37) - 4 horas/semana
 -- Docente: Lic. Rafael Montero (docente_id = 10)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(58, 2, 58, 10, 4, TRUE, '2026-01-19', TRUE);
+(58, 2, 58, 15, 4, TRUE, '2026-01-19', TRUE);
 
 -- ECONOMÍA DE LA EMPRESA (oferta_curso_id = 59, asignatura_plan_id = 38) - 4 horas/semana
 -- Docente: Lic. Elio Honor Barriga (docente_id = 9)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(59, 2, 59, 9, 4, TRUE, '2026-01-19', TRUE);
+(59, 2, 59, 15, 4, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - SEGUNDO B (NOCHE)
@@ -95,27 +95,27 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- ADMINISTRACIÓN DE OPERACIONES (oferta_curso_id = 62, asignatura_plan_id = 33) - 4 horas/semana
 -- Docente: Lic. Paola Mariaca (docente_id = 15)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(62, 2, 62, 15, 4, TRUE, '2026-01-19', TRUE);
+(62, 2, 62, 14, 4, TRUE, '2026-01-19', TRUE);
 
 -- GESTIÓN DEL TALENTO HUMANO (oferta_curso_id = 63, asignatura_plan_id = 34) - 4 horas/semana
 -- Docente: Lic. Paola Mariaca (docente_id = 15)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(63, 2, 63, 15, 4, TRUE, '2026-01-19', TRUE);
+(63, 2, 63, 10, 4, TRUE, '2026-01-19', TRUE);
 
 -- ADMINISTRACIÓN FINANCIERA I (oferta_curso_id = 64, asignatura_plan_id = 35) - 4 horas/semana
 -- Docente: Lic. Jose Luiz Uribe (docente_id = 14)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(64, 2, 64, 14, 4, TRUE, '2026-01-19', TRUE);
+(64, 2, 64, 13, 4, TRUE, '2026-01-19', TRUE);
 
 -- PREPARACIÓN Y EVALUACIÓN DE PROYECTOS (oferta_curso_id = 65, asignatura_plan_id = 36) - 4 horas/semana
 -- Docente: Lic. PUMA (docente_id = 13)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(65, 2, 65, 13, 4, TRUE, '2026-01-19', TRUE);
+(65, 2, 65, 8, 4, TRUE, '2026-01-19', TRUE);
 
 -- ADMINISTRACIÓN DE COSTOS Y PRESUPUESTOS (oferta_curso_id = 66, asignatura_plan_id = 37) - 4 horas/semana
 -- Docente: Lic. Rafael Montero (docente_id = 10)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(66, 2, 66, 10, 4, TRUE, '2026-01-19', TRUE);
+(66, 2, 66, 13, 4, TRUE, '2026-01-19', TRUE);
 
 -- ECONOMÍA DE LA EMPRESA (oferta_curso_id = 67, asignatura_plan_id = 38) - 4 horas/semana
 -- Docente: Lic. Elio Honor Barriga (docente_id = 9)

@@ -74,7 +74,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- Docente: Ing. Ybeth Camacho (docente_id = 1)
 -- Nota: En la imagen aparece como "Ibeth Camacho", se asume que es Ybeth Camacho
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(30, 1, 30, 1, 4, TRUE, '2026-01-19', TRUE);
+(30, 1, 30, 4, 4, TRUE, '2026-01-19', TRUE);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

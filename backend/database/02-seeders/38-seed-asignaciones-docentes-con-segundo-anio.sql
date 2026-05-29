@@ -10,7 +10,7 @@
 -- Oferta cursos: IDs 111-124 (2A: 111-117, 2B: 118-124)
 -- ============================================
 -- NOTA: Asignaciones basadas en el horario académico oficial 2026 (imágenes proporcionadas)
--- Docentes CON-GEN: IDs 16-30
+-- Docentes CON-GEN: IDs 16-31
 --  16: Hilda Barriga
 --  20: Gonzalo Icuña
 --  21: Miguel Padilla
@@ -20,6 +20,7 @@
 --  28: Elias Sarzuri
 --  29: Teodora Paraguayo
 --  30: José Antonio Vara
+--  31: Yessica (Excel 2026; apellido pendiente)
 
 -- Sprint 4 — Asignación docente (ejecutar ANTES de 40–48 asignacion_horarios)
 -- Pre-requisitos: 28–30 seed-oferta-cursos-*, 26-seed-docentes
@@ -40,7 +41,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- SISTEMA TRIBUTARIO (oferta_curso_id = 111, asignatura_plan_id = 61) - 4 horas/semana
 -- Docente: Lic. Dory Robles (docente_id = 25)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(111, 3, 111, 25, 4, TRUE, '2026-01-19', TRUE);
+(111, 3, 111, 30, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE COSTOS I (oferta_curso_id = 112, asignatura_plan_id = 56) - 6 horas/semana
 -- Docente: Lic. Dory Robles (docente_id = 25)
@@ -50,12 +51,12 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- CONTABILIDAD DE SEGUROS (oferta_curso_id = 113, asignatura_plan_id = 58) - 2 horas/semana
 -- Docente: Lic. Teodora Paraguayo (docente_id = 29)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(113, 3, 113, 29, 2, TRUE, '2026-01-19', TRUE);
+(113, 3, 113, 20, 2, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE SOCIEDADES (oferta_curso_id = 114, asignatura_plan_id = 57) - 4 horas/semana
 -- Docente: Lic. Teodora Paraguayo (docente_id = 29)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(114, 3, 114, 29, 4, TRUE, '2026-01-19', TRUE);
+(114, 3, 114, 26, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD BANCARIA Y COOPERATIVA (oferta_curso_id = 115, asignatura_plan_id = 59) - 4 horas/semana
 -- Docente: Lic. Hilda Barriga (docente_id = 16)
@@ -70,7 +71,7 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- CONTABILIDAD II (oferta_curso_id = 117, asignatura_plan_id = 55) - 6 horas/semana
 -- Docente: Lic. José Antonio Vara (docente_id = 30)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(117, 3, 117, 30, 6, TRUE, '2026-01-19', TRUE);
+(117, 3, 117, 25, 6, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - SEGUNDO B (NOCHE)
@@ -90,12 +91,12 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente
 -- CONTABILIDAD DE SOCIEDADES (oferta_curso_id = 120, asignatura_plan_id = 57) - 4 horas/semana
 -- Docente: Lic. Gonzalo Icuña (docente_id = 20)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(120, 3, 120, 20, 4, TRUE, '2026-01-19', TRUE);
+(120, 3, 120, 26, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE SEGUROS (oferta_curso_id = 121, asignatura_plan_id = 58) - 2 horas/semana
--- Docente: Lic. Aurelio Hurtado (docente_id = 27)
+-- Docente: Lic. Yessica (docente_id = 31) — Excel 2026 CON 2°B
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(121, 3, 121, 27, 2, TRUE, '2026-01-19', TRUE);
+(121, 3, 121, 31, 2, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD BANCARIA Y COOPERATIVA (oferta_curso_id = 122, asignatura_plan_id = 59) - 4 horas/semana
 -- Docente: Lic. Willma Fernandez (docente_id = 26)
@@ -130,7 +131,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 --   - José Antonio Vara (30): CONTABILIDAD II (1 curso, 6 horas)
 --   - Miguel Padilla (21): CONTABILIDAD DE COSTOS I, EMPRENDIMIENTO PRODUCTIVO (2 cursos, 10 horas total)
 --   - Gonzalo Icuña (20): CONTABILIDAD DE SOCIEDADES (1 curso, 4 horas)
---   - Aurelio Hurtado (27): CONTABILIDAD DE SEGUROS (1 curso, 2 horas)
+--   - Yessica (31): CONTABILIDAD DE SEGUROS (1 curso, 2 horas)
 --   - Willma Fernandez (26): CONTABILIDAD BANCARIA Y COOPERATIVA (1 curso, 4 horas)
 --   - Elias Sarzuri (28): SISTEMA TRIBUTARIO (1 curso, 4 horas)
 --
