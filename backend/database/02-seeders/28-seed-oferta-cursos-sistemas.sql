@@ -1,5 +1,5 @@
 -- ============================================
--- SEEDER: oferta_cursos — SISTEMAS INFORMÁTICOS (V2)
+-- SEEDER: oferta_cursos — SISTEMAS INFORMÁTICOS
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Sprint 3 — Oferta Académica (paso 2: materias por paralelo-gestión)
 -- ============================================

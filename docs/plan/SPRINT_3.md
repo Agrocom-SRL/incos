@@ -15,7 +15,7 @@
 | API nueva | Oferta académica (§3) |
 | **Código V1** | Retirar repos/rutas/use cases que usan `cursos` en el **camino oferta/paralelo** |
 | Vistas SQL | Grupo **oferta/paralelo** (~10 vistas, ver `MIGRACION_CODIGO_V2.md` §3.3) |
-| FE | Wizard `/institucional/oferta-academica` (solo API V2) |
+| FE | Wizard `/institucional/oferta` (solo API V2) |
 
 **No incluido aquí (Sprint 4–5):** asignación docente completa, bloques, calificaciones profundas, inscripción completa.
 
@@ -97,7 +97,7 @@ Acciones aplicables: `LISTAR`, `DETALLE`, `CREAR`, `EDITAR`, `ELIMINAR`, `ACTIVA
 
 ## 5. Frontend
 
-Ruta raíz: `/institucional/oferta-academica`
+Ruta raíz: `/institucional/oferta` (redirect legacy desde `/institucional/oferta-academica`)
 
 ### 5.1 Pantalla principal: Wizard
 
@@ -149,15 +149,17 @@ Al click en una fila, se abre detalle:
 
 ## 7. Definition of Done
 
-- [ ] Backend con endpoints de las secciones 3.1 a 3.4.
-- [ ] Permisos sembrados.
-- [ ] Pantalla wizard funcional para los 3 pasos (sin llamadas a `/cursos` ni `cursos-oferta` V1).
-- [ ] Generación automática de paralelos-gestión y oferta de cursos funcionando.
-- [ ] Validador de cobertura visible.
-- [ ] Cambio de estado con validaciones.
-- [ ] **Código:** sin router `/api/v1/cursos` montado; sin use cases activos que INSERT/SELECT en tabla `cursos`.
-- [ ] **Vistas:** grupo oferta del mapa migración recreadas o no usadas por la app.
-- [ ] Test E2E manual: gestión → plan SIS → generar paralelos → aulas → generar oferta → validar conteos vs seeders `28`–`30` → OFERTADO.
+- [x] Backend con endpoints de las secciones 3.1 a 3.4.
+- [x] Permisos sembrados (54/56/55 + matriz).
+- [x] Pantalla wizard funcional para los 3 pasos (solo API V2; carpeta `institucional/oferta`).
+- [x] Generación automática de paralelos-gestión y oferta de cursos (código + seeders 27–30).
+- [x] Validador de cobertura visible.
+- [x] Cambio de estado con validaciones.
+- [x] **Código:** sin router `/api/v1/cursos`; use cases V1 oferta eliminados del DI.
+- [x] **Vistas:** grupo oferta (02, 18, 71, 74, 75, 78) sobre `oferta_cursos`.
+- [ ] **BD local ordenada:** vistas auth (27, 25) + grupo oferta desplegadas (`backend/database/README.md`).
+- [ ] Test E2E manual: gestión → plan SIS → paralelos → aulas → oferta → OFERTADO.
+- [ ] `CourseRepository` / modelos `curso.js` — **Sprint 4** (docentes, horarios, inscripciones).
 
 ---
 
@@ -187,7 +189,7 @@ Tareas (entrega en orden; ver MIGRACION_CODIGO_V2.md):
 
 5) Vistas SQL: reescribir grupo "oferta/paralelo" (02, 18, 71, 78, 75, 74…) a oferta_cursos.
 
-6) Frontend: wizard /institucional/oferta-academica (solo API V2) + drawer paralelo-gestión.
+6) Frontend: wizard /institucional/oferta (solo API V2) + drawer paralelo-gestión.
 
 7) Smoke: seeders 27→28 contra wizard; rol con/sin permiso oferta.
 

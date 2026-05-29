@@ -422,7 +422,7 @@ Permisos: `institucional.*`
 Rutas simplificadas vigentes del modulo:
 - `/institucional/actual`
 - `/institucional/cronogramas`
-- `/institucional/oferta-academica` (wizard oferta; redirect desde `/institucional/oferta`)
+- `/institucional/oferta` (wizard oferta; redirect desde `/institucional/oferta-academica`)
 - `/institucional/horarios`
 - `/institucional/pasadas`
 
@@ -464,6 +464,7 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 | `/api/v1/paralelos-gestion/:id/generar-oferta` | POST | `institucional.oferta.cursos` | CREAR |
 | `/api/v1/paralelos-gestion/:id/validar-oferta` | GET | `institucional.oferta.cursos` | LISTAR |
 | `/api/v1/oferta-cursos` | POST | `institucional.oferta.cursos` | CREAR |
+| `/api/v1/oferta-cursos/:id/estado` | PUT | `institucional.oferta.cursos` | EDITAR |
 | `/api/v1/oferta-cursos/:id` | DELETE | `institucional.oferta.cursos` | ELIMINAR |
 | `/api/v1/aulas/catalogo` | GET | `institucional.oferta.paralelo-gestion` | LISTAR |
 

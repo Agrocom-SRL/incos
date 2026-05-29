@@ -5,9 +5,9 @@
 --           actividades_calendario
 -- ============================================
 --
--- Oferta y horarios V2 (reemplazan cursos / cursos_horarios) continúan en:
---   07a-estructura-academica-oferta.sql    → paralelos_gestion, oferta_cursos
---   07b-estructura-academica-horarios.sql  → asignaciones_docentes, asignacion_horarios
+-- Oferta académica e horarios continúan en:
+--   08-estructura-academica-oferta.sql    → paralelos_gestion, oferta_cursos
+--   09-estructura-academica-horarios.sql  → asignaciones_docentes, asignacion_horarios
 --
 -- ORDEN DE EJECUCIÓN (schemas académicos):
 --   05-estructura-academica-parte1.sql

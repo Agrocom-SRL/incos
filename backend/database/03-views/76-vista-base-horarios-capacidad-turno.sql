@@ -1,6 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_horarios_capacidad_turno
--- Métricas de ocupación de bloques por turno.
+-- Métricas de ocupación de bloques por turno (asignacion_horarios).
 -- ============================================
 
 USE instituto_incos;
@@ -12,17 +12,17 @@ SELECT
     h.turno,
     COUNT(DISTINCT h.id) AS total_bloques_disponibles,
     COUNT(DISTINCT CASE
-        WHEN ch.id IS NOT NULL THEN CONCAT(ch.aula_id, '-', ch.horario_id)
+        WHEN ah.id IS NOT NULL THEN CONCAT(ah.aula_id, '-', ah.horario_id)
     END) AS bloques_ocupados,
     COUNT(DISTINCT CASE
-        WHEN ch.aula_id IS NOT NULL THEN ch.aula_id
+        WHEN ah.aula_id IS NOT NULL THEN ah.aula_id
     END) AS aulas_en_uso
 FROM horarios h
-LEFT JOIN cursos_horarios ch
-    ON ch.horario_id = h.id
-    AND ch.deleted_at IS NULL
-    AND ch.activo = TRUE
-    AND ch.aula_id IS NOT NULL
+LEFT JOIN asignacion_horarios ah
+    ON ah.horario_id = h.id
+    AND ah.deleted_at IS NULL
+    AND ah.activo = TRUE
+    AND ah.aula_id IS NOT NULL
 WHERE h.deleted_at IS NULL
   AND h.activo = TRUE
   AND h.tipo_horario = 'CLASES'

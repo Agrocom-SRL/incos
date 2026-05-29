@@ -5,7 +5,7 @@ import { idValidator } from '../validators/common/index.js';
 import {
   createOfertaCursoValidator,
   updateOfertaCursoEstadoValidator,
-} from '../validators/oferta/oferta-academica.validator.js';
+} from '../validators/oferta/oferta.validator.js';
 
 export function buildOfertaCursosRouter({ controllers, middlewares }) {
   const router = express.Router();

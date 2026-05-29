@@ -5,7 +5,7 @@
 -- ============================================
 -- Orden: SIS-INF (IDs 1-7), ADM-EMP (IDs 8-15), CON-GEN (IDs 16-31)
 -- IDs fijos para facilitar referencias consistentes
--- color_hex: visualización en horarios (V2 — ya no vive en oferta_cursos)
+-- color_hex: identidad visual en grilla de horarios (vive en docentes)
 
 USE instituto_incos;
 

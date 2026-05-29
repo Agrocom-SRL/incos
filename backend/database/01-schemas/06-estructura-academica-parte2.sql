@@ -2,7 +2,7 @@
 -- ESTRUCTURA ACADÉMICA - PARTE 2
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 4 Tablas: docentes, paralelos, aulas, horarios
--- (V2: cursos/cursos_horarios eliminados → ver 08-oferta y 09-horarios)
+-- (Oferta e horarios: ver 08-estructura-academica-oferta.sql y 09-estructura-academica-horarios.sql)
 -- ============================================
 --
 -- RESTRICCIONES DE DISEÑO:
@@ -23,7 +23,7 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Eliminar tablas (V1 cursos eliminados en V2)
+-- Eliminar tablas (recreación idempotente del schema)
 DROP TABLE IF EXISTS horarios;
 DROP TABLE IF EXISTS aulas;
 DROP TABLE IF EXISTS paralelos;
@@ -76,7 +76,7 @@ CREATE TABLE docentes (
     estado_laboral ENUM('ACTIVO', 'LICENCIA', 'RETIRADO', 'SUSPENDIDO') DEFAULT 'ACTIVO' COMMENT 'Estado laboral',
     observaciones TEXT COMMENT 'Observaciones adicionales',
 
-    -- V2: identidad visual y límites de carga (horarios / asignación docente)
+    -- Identidad visual y límites de carga (horarios / asignación docente)
     color_hex VARCHAR(7) NULL COMMENT 'Color exclusivo del docente para visualización en horarios.',
     max_horas_semana INT NULL DEFAULT 20 COMMENT 'Carga máxima semanal según contrato. Default 20 (data real 2026).',
     max_horas_mes INT NULL DEFAULT 80 COMMENT 'Carga máxima mensual según contrato. Default 80.',

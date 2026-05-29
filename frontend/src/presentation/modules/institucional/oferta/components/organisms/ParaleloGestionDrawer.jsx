@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Button,
   Descriptions,
   Drawer,
   Form,
@@ -22,6 +21,7 @@ const ParaleloGestionDrawer = ({
   paraleloId,
   detalle,
   ofertaCursos,
+  asignaturasFaltantes = [],
   aulas,
   onClose,
   onRefresh,
@@ -55,6 +55,15 @@ const ParaleloGestionDrawer = ({
       await onRefresh();
     }
   };
+
+  const opcionesAsignatura = asignaturasFaltantes.map((a) => ({
+    value: a.asignaturaPlanId,
+    label: a.materiaNombre
+      ? `${a.materiaCodigo ? `${a.materiaCodigo} — ` : ''}${a.materiaNombre}${
+          a.horasSemanales ? ` (${a.horasSemanales} h)` : ''
+        }`
+      : `Asignatura #${a.asignaturaPlanId}`,
+  }));
 
   return (
     <Drawer
@@ -112,9 +121,14 @@ const ParaleloGestionDrawer = ({
 
           <Space style={{ marginBottom: 12 }}>
             <Text strong>Oferta de cursos</Text>
-            <Button size="small" onClick={() => setManualOpen(true)}>
+            <ActionButton
+              permiso="institucional.oferta.cursos"
+              accion="CREAR"
+              size="small"
+              onClick={() => setManualOpen(true)}
+            >
               Agregar curso manual
-            </Button>
+            </ActionButton>
           </Space>
 
           <Table
@@ -136,7 +150,8 @@ const ParaleloGestionDrawer = ({
                     accion="ELIMINAR"
                     danger
                     size="small"
-                    onClick={async () => {
+                    onClick={async (e) => {
+                      e.stopPropagation();
                       const res = await eliminarOfertaCurso(row.id);
                       if (res?.success) await onRefresh();
                     }}
@@ -155,18 +170,36 @@ const ParaleloGestionDrawer = ({
             footer={null}
             destroyOnClose
           >
-            <Form layout="vertical" onFinish={onAgregarManual}>
-              <Form.Item
-                name="asignaturaPlanId"
-                label="ID asignatura_plan"
-                rules={[{ required: true, message: 'Requerido' }]}
-              >
-                <InputNumber style={{ width: '100%' }} min={1} />
-              </Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Agregar
-              </Button>
-            </Form>
+            {opcionesAsignatura.length === 0 ? (
+              <Text type="secondary">
+                No hay asignaturas faltantes según el validador. La oferta del periodo está completa o
+                aún no se generó.
+              </Text>
+            ) : (
+              <Form layout="vertical" onFinish={onAgregarManual}>
+                <Form.Item
+                  name="asignaturaPlanId"
+                  label="Asignatura del plan"
+                  rules={[{ required: true, message: 'Seleccione una asignatura' }]}
+                >
+                  <Select
+                    showSearch
+                    placeholder="Materia faltante en la oferta"
+                    optionFilterProp="label"
+                    options={opcionesAsignatura}
+                  />
+                </Form.Item>
+                <ActionButton
+                  permiso="institucional.oferta.cursos"
+                  accion="CREAR"
+                  type="primary"
+                  htmlType="submit"
+                  block
+                >
+                  Agregar
+                </ActionButton>
+              </Form>
+            )}
           </Modal>
         </>
       ) : null}

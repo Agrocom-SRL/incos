@@ -1,12 +1,12 @@
 -- ============================================
--- ESTRUCTURA ACADÉMICA - OFERTA (V2)
+-- ESTRUCTURA ACADÉMICA - OFERTA
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 2 Tablas: paralelos_gestion, oferta_cursos
 -- ============================================
 --
--- Módulo INST → Oferta Académica (Sprint 3 del plan V2).
--- Reemplaza la tabla legacy `cursos`. Una ejecución crea ambas tablas en orden
--- correcto de dependencias, sin riesgo de ejecutar una sin la otra.
+-- Módulo INST → Oferta Académica.
+-- paralelos_gestion + oferta_cursos: oferta por gestión y paralelo.
+-- Una ejecución crea ambas tablas en orden correcto de dependencias.
 --
 -- Pre-requisitos (ejecutar antes de este archivo):
 --   05-estructura-academica-parte1.sql  → asignaturas_plan, planes_estudios
@@ -96,7 +96,7 @@ COMMENT='Instancia de un paralelo en una gestión específica. Padre de oferta_c
 
 -- ============================================
 -- TABLA: oferta_cursos
--- Materia ofertada en un paralelo-gestión (reemplaza cursos V1)
+-- Materia ofertada en un paralelo de gestión
 -- ============================================
 -- Cada fila es una asignatura del plan ofertada en un paralelo concreto de la
 -- gestión. El color del docente y los cupos viven en docentes / paralelos_gestion,

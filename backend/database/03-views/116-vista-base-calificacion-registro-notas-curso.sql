@@ -31,7 +31,7 @@ INNER JOIN matriculas_materia mm
   AND mm.deleted_at IS NULL
   AND mm.activo = TRUE
 INNER JOIN asignaciones_docentes ad
-  ON ad.id = mm.asignacion_docente_id
+  ON ad.id = emc.asignacion_docente_id
   AND ad.deleted_at IS NULL
   AND ad.activo = TRUE
 INNER JOIN gestiones_planes gp

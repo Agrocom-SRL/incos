@@ -14,7 +14,7 @@
 --   21-23           → operaciones del cuaderno (evaluaciones, notas, guardar bimestre vigente)
 --   24              → consolidado bimestre: ajuste administrativo (habilitación) en bimestre cerrado
 --
--- [TOTAL] 106 permisos (sin cursos/turnos V1; académico 78-83)
+-- [TOTAL] 106 permisos (oferta académica por gestión 105-107; académico 78-83)
 -- Ejecutar después de: 53-seed-roles.sql
 -- Ejecutar antes de:   56-seed-permiso-acciones.sql, 55-seed-roles-permisos.sql
 -- ============================================
@@ -153,10 +153,10 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 -- ── SISTEMA (SYS) ───────────────────────────────────────────────────────────
 (104, 'sistema.catalogo.referencia', 'Catálogos de referencia: APIs transversales para combos (ubicación, tipos, bancos, etc.)', 'SISTEMA', 'SYS', NULL, NULL, TRUE),
 
--- ── OFERTA ACADÉMICA V2 (Sprint 3) — wizard /institucional/oferta-academica ───
-(105, 'institucional.oferta.gestion-plan',      'Oferta: habilitar planes en gestión',           'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta-academica', TRUE),
-(106, 'institucional.oferta.paralelo-gestion',  'Oferta: paralelos de gestión',                  'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta-academica', TRUE),
-(107, 'institucional.oferta.cursos',             'Oferta: cursos ofertados por paralelo',         'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta-academica', TRUE);
+-- ── OFERTA ACADÉMICA — wizard /institucional/oferta ───
+(105, 'institucional.oferta.gestion-plan',      'Oferta: habilitar planes en gestión',           'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta', TRUE),
+(106, 'institucional.oferta.paralelo-gestion',  'Oferta: paralelos de gestión',                  'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta', TRUE),
+(107, 'institucional.oferta.cursos',             'Oferta: cursos ofertados por paralelo',         'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta', TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 

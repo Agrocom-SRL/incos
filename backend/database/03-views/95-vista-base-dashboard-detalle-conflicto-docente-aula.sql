@@ -1,15 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_dashboard_detalle_conflicto_docente_aula
--- Una fila por asignación docente que presenta conflicto de aula
--- (misma aula ocupada en el mismo bloque horario por dos cursos distintos).
---
--- Devuelve: docente_id, docente_nombre, detalle_linea
--- Reutilizada por: vista_dashboard_docentes_conflictos_detalle (92)
---
--- Reutiliza:
---   vista_base_docente_asignacion_conflicto_aula (66),
---   asignaciones_docentes, docentes, cursos, cursos_horarios,
---   horarios, aulas, paralelos, asignaturas_plan, materias
+-- Detalle de conflicto de aula por docente.
 -- ============================================
 
 USE instituto_incos;
@@ -25,7 +16,7 @@ SELECT DISTINCT
     COALESCE(d.apellido_materno, '')
   )) AS docente_nombre,
   CONCAT(
-    COALESCE(NULLIF(TRIM(m.sigla), ''), m.nombre, c.codigo, '—'),
+    COALESCE(NULLIF(TRIM(m.sigla), ''), m.nombre, CONCAT('OC-', oc.id), '—'),
     ' · ',
     UPPER(COALESCE(h.dia, '')),
     ' ',
@@ -42,24 +33,27 @@ INNER JOIN asignaciones_docentes ad
 INNER JOIN docentes d
   ON d.id = ad.docente_id
   AND d.deleted_at IS NULL AND d.activo = TRUE
-INNER JOIN cursos c
-  ON c.id = ad.curso_id
-  AND c.deleted_at IS NULL AND c.activo = TRUE
-INNER JOIN cursos_horarios ch
-  ON ch.curso_id = c.id
-  AND ch.deleted_at IS NULL AND ch.activo = TRUE
-  AND ch.aula_id IS NOT NULL
+INNER JOIN oferta_cursos oc
+  ON oc.id = ad.oferta_curso_id
+  AND oc.deleted_at IS NULL AND oc.activo = TRUE
+INNER JOIN asignacion_horarios ah
+  ON ah.asignacion_docente_id = ad.id
+  AND ah.deleted_at IS NULL AND ah.activo = TRUE
+  AND ah.aula_id IS NOT NULL
 INNER JOIN horarios h
-  ON h.id = ch.horario_id
+  ON h.id = ah.horario_id
   AND h.deleted_at IS NULL AND h.activo = TRUE
 INNER JOIN aulas au
-  ON au.id = ch.aula_id
+  ON au.id = ah.aula_id
   AND au.deleted_at IS NULL AND au.activo = TRUE
+INNER JOIN paralelos_gestion pg
+  ON pg.id = oc.paralelo_gestion_id
+  AND pg.deleted_at IS NULL
 INNER JOIN paralelos p
-  ON p.id = c.paralelo_id
+  ON p.id = pg.paralelo_id
   AND p.deleted_at IS NULL AND p.activo = TRUE
 LEFT JOIN asignaturas_plan ap
-  ON ap.id = c.asignatura_plan_id
+  ON ap.id = oc.asignatura_plan_id
   AND ap.deleted_at IS NULL AND ap.activo = TRUE
 LEFT JOIN materias m
   ON m.id = ap.materia_id

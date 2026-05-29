@@ -1,15 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_bloques_horarios_cursos_contexto
--- Bloques reales de cursos_horarios con contexto académico
---
--- Propósito: Centralizar en una vista base toda la información de bloque
--- (curso/horario/aula/materia/paralelo/carrera/periodo/docente) para que otras
--- vistas solo compongan resultados sin repetir joins.
---
--- Reutiliza:
--- - cursos_horarios, cursos, horarios, paralelos, periodos, carreras,
---   asignaturas_plan, materias
--- - vista_base_docentes_vigentes_por_curso
+-- Bloques de asignacion_horarios con contexto académico.
 -- ============================================
 
 USE instituto_incos;
@@ -18,52 +9,63 @@ DROP VIEW IF EXISTS vista_base_bloques_horarios_cursos_contexto;
 
 CREATE VIEW vista_base_bloques_horarios_cursos_contexto AS
 SELECT
-  ch.id AS curso_horario_id,
-  c.id AS curso_id,
-  c.codigo AS curso_codigo,
-  c.color_hex AS curso_color_hex,
+  ah.id AS curso_horario_id,
+  oc.id AS curso_id,
+  CONCAT('OC-', oc.id) AS curso_codigo,
+  doc.color_hex AS curso_color_hex,
   h.id AS horario_id,
   h.dia AS dia,
   h.hora_inicio AS hora_inicio,
   h.hora_fin AS hora_fin,
   h.turno AS turno,
   h.numero_bloque AS numero_bloque,
-  ch.orden_secuencia AS orden_secuencia,
-  ch.aula_id AS aula_id,
+  ah.orden_secuencia AS orden_secuencia,
+  ah.aula_id AS aula_id,
   m.id AS materia_id,
   m.sigla AS materia_sigla,
   m.nombre AS materia_nombre,
   p.id AS paralelo_id,
   p.nombre AS paralelo_nombre,
-  p.turno AS paralelo_turno,
+  pg.turno AS paralelo_turno,
   per.nombre AS periodo_nombre,
   car.id AS carrera_id,
   car.nombre AS carrera_nombre,
   car.codigo AS carrera_codigo,
   car.color_hex AS carrera_color_hex,
   d.docente_nombre AS docente_nombre
-FROM cursos_horarios ch
-INNER JOIN cursos c ON c.id = ch.curso_id
-  AND c.deleted_at IS NULL
-  AND c.activo = 1
-INNER JOIN horarios h ON h.id = ch.horario_id
+FROM asignacion_horarios ah
+INNER JOIN asignaciones_docentes ad
+  ON ad.id = ah.asignacion_docente_id
+  AND ad.deleted_at IS NULL
+  AND ad.activo = TRUE
+INNER JOIN oferta_cursos oc
+  ON oc.id = ad.oferta_curso_id
+  AND oc.deleted_at IS NULL
+  AND oc.activo = TRUE
+INNER JOIN horarios h
+  ON h.id = ah.horario_id
   AND h.deleted_at IS NULL
-  AND h.activo = 1
-INNER JOIN paralelos p ON p.id = c.paralelo_id
+  AND h.activo = TRUE
+INNER JOIN paralelos_gestion pg
+  ON pg.id = oc.paralelo_gestion_id
+  AND pg.deleted_at IS NULL
+INNER JOIN paralelos p
+  ON p.id = pg.paralelo_id
   AND p.deleted_at IS NULL
-  AND p.activo = 1
+  AND p.activo = TRUE
 LEFT JOIN periodos per ON per.id = p.periodo_id
   AND per.deleted_at IS NULL
-  AND per.activo = 1
+  AND per.activo = TRUE
 LEFT JOIN carreras car ON car.id = p.carrera_id
   AND car.deleted_at IS NULL
-  AND car.activo = 1
-LEFT JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id
+  AND car.activo = TRUE
+INNER JOIN asignaturas_plan ap ON ap.id = oc.asignatura_plan_id
   AND ap.deleted_at IS NULL
-  AND ap.activo = 1
+  AND ap.activo = TRUE
 LEFT JOIN materias m ON m.id = ap.materia_id
   AND m.deleted_at IS NULL
-  AND m.activo = 1
-LEFT JOIN vista_base_docentes_vigentes_por_curso d ON d.curso_id = c.id
-WHERE ch.deleted_at IS NULL
-  AND ch.activo = 1;
+  AND m.activo = TRUE
+LEFT JOIN docentes doc ON doc.id = ad.docente_id AND doc.deleted_at IS NULL
+LEFT JOIN vista_base_docentes_vigentes_por_curso d ON d.curso_id = oc.id
+WHERE ah.deleted_at IS NULL
+  AND ah.activo = TRUE;

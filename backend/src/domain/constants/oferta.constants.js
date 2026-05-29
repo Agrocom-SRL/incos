@@ -1,5 +1,5 @@
 /**
- * Constantes del dominio — Oferta Académica (V2)
+ * Constantes del dominio — Oferta Académica
  */
 
 export const ESTADOS_PARALELO_GESTION = {

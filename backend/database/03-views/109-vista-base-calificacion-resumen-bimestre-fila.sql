@@ -14,7 +14,7 @@ DROP VIEW IF EXISTS vista_base_calificacion_resumen_bimestre_fila;
 CREATE VIEW vista_base_calificacion_resumen_bimestre_fila AS
 SELECT
   ad.docente_id,
-  mm.asignacion_docente_id,
+  ad.id AS asignacion_docente_id,
   gp.gestion_id,
   bm.bimestre,
   mm.id AS matricula_materia_id,
@@ -30,9 +30,10 @@ INNER JOIN bimestres_matricula bm
   AND bm.deleted_at IS NULL
   AND bm.activo = TRUE
 INNER JOIN asignaciones_docentes ad
-  ON ad.id = mm.asignacion_docente_id
+  ON ad.oferta_curso_id = mm.oferta_curso_id
   AND ad.deleted_at IS NULL
   AND ad.activo = TRUE
+  AND ad.vigente = TRUE
 INNER JOIN gestiones_planes gp
   ON gp.id = ad.gestion_plan_id
   AND gp.deleted_at IS NULL

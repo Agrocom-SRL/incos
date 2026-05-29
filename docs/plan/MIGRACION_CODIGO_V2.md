@@ -77,7 +77,7 @@ Regla: **no ejecutar** vistas V1 contra BD V2; o marcarlas `.legacy.sql` hasta r
 
 | Área | Acción | Sprint |
 |------|--------|--------|
-| Nuevo wizard | `/institucional/oferta-academica` solo API V2 | 3 |
+| Nuevo wizard | `/institucional/oferta` solo API V2 | 3 |
 | `CursoRepository`, hooks `useCursosDelParalelo*` | Sustituir por `OfertaCurso` / paralelo-gestión | 3–4 |
 | `institucional/horarios` (aulas, armado legacy) | Migrar a flujo oferta → docente → bloques | 4–5 |
 | Docentes asignación | Endpoints y labels “curso” → “oferta” | 4 |

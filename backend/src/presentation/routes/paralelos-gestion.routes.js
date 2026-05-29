@@ -6,7 +6,7 @@ import {
   updateParaleloGestionValidator,
   cambiarTurnoParaleloGestionValidator,
   updateParaleloGestionEstadoValidator,
-} from '../validators/oferta/oferta-academica.validator.js';
+} from '../validators/oferta/oferta.validator.js';
 
 export function buildParalelosGestionRouter({ controllers, middlewares }) {
   const router = express.Router();

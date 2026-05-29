@@ -38,7 +38,7 @@ import {
   CreateOfertaCursoController,
   UpdateOfertaCursoEstadoController,
   DeleteOfertaCursoController,
-} from '../../../../presentation/controllers/oferta/oferta-academica.controllers.js';
+} from '../../../../presentation/controllers/oferta/oferta.controllers.js';
 
 import { buildGestionesPlanesRouter } from '../../../../presentation/routes/gestiones-planes.routes.js';
 import { buildParalelosGestionRouter } from '../../../../presentation/routes/paralelos-gestion.routes.js';
@@ -338,7 +338,7 @@ function registerOfertaControllers(container) {
   );
 }
 
-export function registerOfertaAcademicaResource(container) {
+export function registerOfertaResource(container) {
   registerOfertaUseCases(container);
   registerOfertaControllers(container);
 

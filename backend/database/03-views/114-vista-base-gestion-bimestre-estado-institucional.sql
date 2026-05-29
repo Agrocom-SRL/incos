@@ -1,7 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_gestion_bimestre_estado_institucional
 -- Estado agregado por bimestre operativo en una gestión (PENDIENTE / EN_CURSO / CERRADO).
--- Orden de despliegue: 13-evaluaciones; después de 102.
 -- ============================================
 
 USE instituto_incos;
@@ -19,7 +18,11 @@ SELECT
   END AS estado_institucional
 FROM bimestres_matricula bm
 INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
+INNER JOIN asignaciones_docentes ad
+  ON ad.oferta_curso_id = mm.oferta_curso_id
+  AND ad.deleted_at IS NULL
+  AND ad.activo = TRUE
+  AND ad.vigente = TRUE
 INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
 WHERE gp.gestion_id IS NOT NULL
   AND mm.estado IN ('INSCRITO', 'CURSANDO')

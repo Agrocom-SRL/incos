@@ -1,5 +1,5 @@
 -- ============================================
--- SEEDER: oferta_cursos — CONTADURÍA GENERAL (V2)
+-- SEEDER: oferta_cursos — CONTADURÍA GENERAL
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Sprint 3 — Oferta Académica (paso 2: materias por paralelo-gestión)
 -- ============================================

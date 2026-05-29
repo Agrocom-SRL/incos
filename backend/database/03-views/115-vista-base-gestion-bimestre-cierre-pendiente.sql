@@ -1,7 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_gestion_bimestre_cierre_pendiente
 -- Filas de bimestre EN_CURSO sin nota_bimestre cerrada (validación de cierre institucional).
--- Orden de despliegue: 13-evaluaciones; después de 114.
 -- ============================================
 
 USE instituto_incos;
@@ -19,12 +18,17 @@ SELECT
   bm.id AS bimestre_matricula_id
 FROM bimestres_matricula bm
 INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
+INNER JOIN asignaciones_docentes ad
+  ON ad.oferta_curso_id = mm.oferta_curso_id
+  AND ad.deleted_at IS NULL
+  AND ad.activo = TRUE
+  AND ad.vigente = TRUE
 INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
-INNER JOIN cursos c ON c.id = ad.curso_id
-INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id
+INNER JOIN oferta_cursos oc ON oc.id = ad.oferta_curso_id AND oc.deleted_at IS NULL
+INNER JOIN asignaturas_plan ap ON ap.id = oc.asignatura_plan_id
 INNER JOIN materias m ON m.id = ap.materia_id
-LEFT JOIN paralelos p ON p.id = c.paralelo_id
+INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id AND pg.deleted_at IS NULL
+LEFT JOIN paralelos p ON p.id = pg.paralelo_id
 LEFT JOIN docentes d ON d.id = ad.docente_id
 WHERE mm.estado = 'CURSANDO'
   AND bm.estado = 'EN_CURSO'

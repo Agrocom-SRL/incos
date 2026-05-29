@@ -14,7 +14,7 @@ import {
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton } from '@atoms';
-import { useOfertaAcademicaWizardState } from '@application-institucional/oferta-academica';
+import { useOfertaAcademicaWizardState } from '@application-institucional/oferta';
 import ParaleloGestionDrawer from '../components/organisms/ParaleloGestionDrawer';
 
 const { Text } = Typography;
@@ -47,6 +47,7 @@ const OfertaAcademicaWizardPage = () => {
           style={{ width: 120 }}
           value={row.turno}
           options={w.TURNOS.map((t) => ({ value: t, label: t }))}
+          onClick={(e) => e.stopPropagation()}
           onChange={(val) => w.onCambiarTurno(row.id, val)}
           disabled={row.estado !== 'BORRADOR' && row.estado !== 'OFERTADO'}
         />
@@ -67,6 +68,7 @@ const OfertaAcademicaWizardPage = () => {
             value: a.id,
             label: a.codigo ? `${a.codigo} — ${a.nombre}` : a.nombre,
           }))}
+          onClick={(e) => e.stopPropagation()}
           onChange={(val) => w.onUpdateAula(row.id, val ?? null)}
         />
       ),
@@ -102,16 +104,42 @@ const OfertaAcademicaWizardPage = () => {
           row.estado === 'BORRADOR' && row.aulaId && v?.valido;
         return (
           <Space size="small" wrap>
-            <Button size="small" onClick={() => w.onGenerarOferta(row.id)}>
+            <ActionButton
+              permiso="institucional.oferta.cursos"
+              accion="CREAR"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                w.onGenerarOferta(row.id);
+              }}
+            >
               Generar oferta
-            </Button>
-            <Button size="small" type="link" onClick={() => w.openDrawer(row.id)}>
+            </ActionButton>
+            <ActionButton
+              permiso="institucional.oferta.paralelo-gestion"
+              accion="DETALLE"
+              size="small"
+              type="link"
+              onClick={(e) => {
+                e.stopPropagation();
+                w.openDrawer(row.id);
+              }}
+            >
               Detalle
-            </Button>
+            </ActionButton>
             {puedeOfertar ? (
-              <Button size="small" type="primary" onClick={() => w.onPasarOfertado(row.id)}>
+              <ActionButton
+                permiso="institucional.oferta.paralelo-gestion"
+                accion="EDITAR"
+                size="small"
+                type="primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  w.onPasarOfertado(row.id);
+                }}
+              >
                 → OFERTADO
-              </Button>
+              </ActionButton>
             ) : null}
           </Space>
         );
@@ -251,6 +279,10 @@ const OfertaAcademicaWizardPage = () => {
               columns={columnsParalelos}
               pagination={false}
               scroll={{ x: 960 }}
+              onRow={(row) => ({
+                onClick: () => w.openDrawer(row.id),
+                style: { cursor: 'pointer' },
+              })}
             />
           </Card>
         ) : null}
@@ -282,6 +314,7 @@ const OfertaAcademicaWizardPage = () => {
           paraleloId={w.drawerParaleloId}
           detalle={w.drawerDetalle}
           ofertaCursos={w.drawerOfertaCursos}
+          asignaturasFaltantes={w.validacionPorId[w.drawerParaleloId]?.faltantes ?? []}
           aulas={w.aulas}
           onClose={w.closeDrawer}
           onRefresh={async () => {

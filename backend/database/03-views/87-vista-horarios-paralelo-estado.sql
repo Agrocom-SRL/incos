@@ -7,7 +7,7 @@
 --
 --   sin_horarios:
 --     - cursos creados por debajo de asignaturas requeridas del plan, o
---     - curso sin ninguna fila activa en cursos_horarios (ver vista_base_horarios_paralelo_cursos), o
+--     - oferta sin ningún bloque activo en asignacion_horarios (ver vista_base_horarios_paralelo_cursos), o
 --     - solape de franja entre cursos del mismo paralelo (vista_base_horarios_paralelo_conflictos_solape_bloque)
 --
 --   sin_docentes:
@@ -17,7 +17,7 @@
 --       vista_base_docente_asignacion_conflicto_horario / vista_docente_resumen_conflictos.conflicto_horario)
 --
 --   sin_aulas:
---     - bloque en cursos_horarios activo sin aula_id (vista_base_horarios_paralelo_bloques_sin_aula), o
+--     - bloque en asignacion_horarios activo sin aula_id (vista_base_horarios_paralelo_bloques_sin_aula), o
 --     - cruce global mismo aula_id + horario_id en más de un curso (vista_base_horarios_paralelo_conflictos_aula;
 --       relacionado con ocupación de slot que también alimenta vista_base_docente_conflicto_aula a nivel docente)
 --

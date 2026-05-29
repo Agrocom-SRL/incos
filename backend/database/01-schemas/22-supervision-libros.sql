@@ -36,7 +36,7 @@ CREATE TABLE supervisiones_programadas (
     -- Relaciones
     docente_id INT NULL COMMENT 'Docente a supervisar (referencia a docentes)',
     materia_id INT NULL COMMENT 'Materia (referencia a materias)',
-    oferta_curso_id INT NULL COMMENT 'Oferta de curso supervisada (referencia a oferta_cursos, V2)',
+    oferta_curso_id INT NULL COMMENT 'Oferta de curso supervisada (referencia a oferta_cursos)',
     supervisor_id INT NULL COMMENT 'Usuario que supervisará (referencia a usuarios)',
     
     -- Programación

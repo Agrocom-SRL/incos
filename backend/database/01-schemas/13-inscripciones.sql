@@ -220,7 +220,7 @@ CREATE TABLE matriculas_materia (
 
     -- Relaciones principales
     inscripcion_id INT NULL COMMENT 'Inscripción a la gestión (referencia a inscripciones). Vía esta FK se derivan estudiante y gestión: NO se repiten en esta tabla ni en sus hijos.',
-    oferta_curso_id INT NULL COMMENT 'Oferta de curso que cursa el estudiante. Estable durante la gestión (reemplaza asignacion_docente_id V1).',
+    oferta_curso_id INT NULL COMMENT 'Oferta de curso que cursa el estudiante. Estable durante la gestión.',
     asignatura_plan_id INT NULL COMMENT 'Asignatura del plan (REDUNDANCIA CONTROLADA, documentada). Derivable por oferta → asignatura_plan; se mantiene como backup histórico.',
 
     -- Resumen académico (caché del cálculo regular)

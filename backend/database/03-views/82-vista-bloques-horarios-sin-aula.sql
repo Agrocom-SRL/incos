@@ -2,7 +2,7 @@
 -- VISTA: vista_bloques_horarios_sin_aula
 -- Bloques reales no asignados a aula
 --
--- Propósito: Exponer los bloques de cursos_horarios con aula pendiente
+-- Propósito: Exponer los bloques de asignacion_horarios con aula pendiente
 -- (`aula_id IS NULL`) para el panel izquierdo en la edición de aulas.
 --
 -- Reutiliza:

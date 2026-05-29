@@ -1,15 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_docente_carga_resumen
--- Carga académica agregada por docente.
---
--- Propósito:
--- - Exponer métricas base de carga para listados de docentes:
---   total_asignaciones, total_materias, total_paralelos.
---
--- Reutiliza:
--- - asignaciones_docentes
--- - cursos
--- - asignaturas_plan
+-- Carga académica agregada por docente (oferta_cursos).
 -- ============================================
 
 USE instituto_incos;
@@ -21,12 +12,17 @@ SELECT
   ad.docente_id,
   COUNT(DISTINCT ad.id) AS total_asignaciones,
   COUNT(DISTINCT ap.materia_id) AS total_materias,
-  COUNT(DISTINCT c.paralelo_id) AS total_paralelos
+  COUNT(DISTINCT pg.paralelo_id) AS total_paralelos
 FROM asignaciones_docentes ad
-INNER JOIN cursos c ON c.id = ad.curso_id
-  AND c.deleted_at IS NULL
-  AND c.activo = TRUE
-INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id
+INNER JOIN oferta_cursos oc
+  ON oc.id = ad.oferta_curso_id
+  AND oc.deleted_at IS NULL
+  AND oc.activo = TRUE
+INNER JOIN paralelos_gestion pg
+  ON pg.id = oc.paralelo_gestion_id
+  AND pg.deleted_at IS NULL
+INNER JOIN asignaturas_plan ap
+  ON ap.id = oc.asignatura_plan_id
   AND ap.deleted_at IS NULL
   AND ap.activo = TRUE
 WHERE ad.deleted_at IS NULL

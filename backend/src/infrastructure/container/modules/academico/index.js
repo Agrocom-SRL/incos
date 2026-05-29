@@ -14,7 +14,7 @@
  */
 
 import { registerParalelosResource } from './paralelos.container.js';
-import { registerOfertaAcademicaResource } from './oferta-academica.container.js';
+import { registerOfertaResource } from './oferta.container.js';
 import { registerGestionesResource } from './gestiones.container.js';
 import { registerCalificacionesResource } from './calificaciones.container.js';
 
@@ -27,7 +27,7 @@ import { registerCalificacionesResource } from './calificaciones.container.js';
 export function registerAcademicoModule(container) {
     // Registrar cada recurso individualmente
     registerParalelosResource(container);
-    registerOfertaAcademicaResource(container);
+    registerOfertaResource(container);
     registerGestionesResource(container);
     registerCalificacionesResource(container);
 

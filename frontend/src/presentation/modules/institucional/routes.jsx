@@ -17,7 +17,13 @@ const GestionHorariosConnector = lazy(() => import('./horarios/connectors'));
 const GestionHorariosArmadoConnector = lazy(() => import('./horarios/connectors/ArmadoConnector'));
 const GestionHorariosAulasConnector = lazy(() => import('./horarios/connectors/AulasConnector'));
 const GestionHorariosPublicacionConnector = lazy(() => import('./horarios/connectors/PublicacionConnector'));
-const OfertaAcademicaConnector = lazy(() => import('./oferta-academica/connectors/OfertaAcademicaConnector'));
+const OfertaAcademicaConnector = lazy(() => import('./oferta/connectors/OfertaAcademicaConnector'));
+
+const INST_OFERTA_ACADEMICA_PERMISOS = [
+    'institucional.oferta.gestion-plan',
+    'institucional.oferta.paralelo-gestion',
+    'institucional.oferta.cursos',
+];
 
 export const institucionalRoutes = [
     {
@@ -53,10 +59,10 @@ export const institucionalRoutes = [
         },
     },
     {
-        path: '/institucional/oferta-academica',
+        path: '/institucional/oferta',
         element: <OfertaAcademicaConnector />,
         key: 'INST-OFERTA-ACADEMICA',
-        permiso: 'institucional.oferta.gestion-plan',
+        permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
         accion: 'LISTAR',
         menu: {
             label: 'Oferta Académica',
@@ -66,8 +72,8 @@ export const institucionalRoutes = [
         },
     },
     {
-        path: '/institucional/oferta',
-        element: <Navigate to="/institucional/oferta-academica" replace />,
+        path: '/institucional/oferta-academica',
+        element: <Navigate to="/institucional/oferta" replace />,
         key: 'INST-OFERTA-LEGACY-REDIRECT',
         menu: null,
     },

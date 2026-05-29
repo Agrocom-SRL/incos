@@ -1,7 +1,7 @@
 -- ============================================
 -- SEEDER: asignaciones_docentes - CONTADURÍA GENERAL PRIMER AÑO
 -- Sistema de Gestión Académica - Instituto INCOS
--- Asignación de docentes a oferta_cursos (V2) - Gestión 2026 (VIGENTE)
+-- Asignación de docentes a oferta_cursos - Gestión 2026 (VIGENTE)
 -- ============================================
 -- Gestión 2026: gestion_id = 1 (vigente)
 -- Plan Contaduría General: gestion_plan_id = 3

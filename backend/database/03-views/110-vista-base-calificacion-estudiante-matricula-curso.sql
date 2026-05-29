@@ -1,9 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_calificacion_estudiante_matricula_curso
--- Estudiantes con matrícula activa por asignación docente (curso).
---
--- Reutilizada por: cuaderno (resumen bimestre), registro de notas.
--- Orden de despliegue: 12-inscripciones; después de 103.
+-- Estudiantes con matrícula activa por asignación docente vigente en la oferta.
 -- ============================================
 
 USE instituto_incos;
@@ -12,7 +9,7 @@ DROP VIEW IF EXISTS vista_base_calificacion_estudiante_matricula_curso;
 
 CREATE VIEW vista_base_calificacion_estudiante_matricula_curso AS
 SELECT
-  mm.asignacion_docente_id,
+  ad.id AS asignacion_docente_id,
   mm.id AS matricula_materia_id,
   est.id AS estudiante_id,
   est.codigo_estudiante AS codigo,
@@ -25,6 +22,11 @@ SELECT
     )
   ) AS nombre
 FROM matriculas_materia mm
+INNER JOIN asignaciones_docentes ad
+  ON ad.oferta_curso_id = mm.oferta_curso_id
+  AND ad.deleted_at IS NULL
+  AND ad.activo = TRUE
+  AND ad.vigente = TRUE
 INNER JOIN inscripciones ins
   ON ins.id = mm.inscripcion_id
   AND ins.deleted_at IS NULL

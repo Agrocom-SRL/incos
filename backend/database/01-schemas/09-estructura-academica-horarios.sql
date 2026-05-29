@@ -1,12 +1,12 @@
 -- ============================================
--- ESTRUCTURA ACADÉMICA - HORARIOS (V2)
+-- ESTRUCTURA ACADÉMICA - HORARIOS
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 2 Tablas: asignaciones_docentes, asignacion_horarios
 -- ============================================
 --
--- Módulo INST → Asignación docente + bloques horarios (Sprints 4 y 5 del plan V2).
--- Reemplaza `cursos_horarios` (V1). Los bloques cuelgan del docente asignado,
--- no del curso. Una ejecución crea ambas tablas en orden correcto.
+-- Módulo INST → Asignación docente + bloques horarios.
+-- asignacion_horarios: bloques cuelgan del docente asignado, no del curso aislado.
+-- Una ejecución crea ambas tablas en orden correcto.
 --
 -- Pre-requisitos (ejecutar antes de este archivo):
 --   06-estructura-academica-parte2.sql  → docentes, horarios, aulas
@@ -56,7 +56,7 @@ CREATE TABLE asignaciones_docentes (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     gestion_plan_id INT NULL COMMENT 'Plan habilitado en la gestión (gestiones_planes.id)',
-    oferta_curso_id INT NULL COMMENT 'Oferta de curso a la que se asigna el docente (reemplaza curso_id V1)',
+    oferta_curso_id INT NULL COMMENT 'Oferta de curso a la que se asigna el docente',
     docente_id INT NULL COMMENT 'Docente asignado (NULL = pendiente de asignación)',
 
     -- Carga horaria
@@ -98,7 +98,7 @@ COMMENT='Asignación de docentes a oferta por plan habilitado. El docente puede 
 
 -- ============================================
 -- TABLA: asignacion_horarios
--- Bloques horarios de una asignación docente (reemplaza cursos_horarios V1)
+-- Bloques horarios de una asignación docente
 -- ============================================
 -- Cada bloque indica en qué horario y aula dicta el docente esa oferta.
 -- aula_id NULL = usa el aula base del paralelo_gestion padre.
@@ -140,7 +140,7 @@ CREATE TABLE asignacion_horarios (
         COMMENT 'Orden de bloques por asignación'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Reemplaza cursos_horarios. Bloques que cuelgan de la asignación docente.';
+COMMENT='Bloques horarios que cuelgan de la asignación docente.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

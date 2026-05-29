@@ -266,7 +266,7 @@ INSERT INTO permiso_acciones (permiso_id, accion, activo) VALUES
 -- SISTEMA (104)
 (104,'LISTAR',TRUE),
 
--- OFERTA ACADÉMICA V2 (105-107)
+-- OFERTA ACADÉMICA (105-107)
 (105,'LISTAR',TRUE),
 (105,'DETALLE',TRUE),
 (105,'CREAR',TRUE),

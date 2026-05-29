@@ -1,7 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_gestion_metricas_bimestre
 -- Métricas agregadas por gestión × bimestre (plan de evaluaciones, notas pendientes).
--- Orden de despliegue: 107, 115; después de 114.
 -- ============================================
 
 USE instituto_incos;
@@ -21,7 +20,11 @@ SELECT
   END) AS cursos_notas_faltantes
 FROM bimestres_matricula bm
 INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
-INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
+INNER JOIN asignaciones_docentes ad
+  ON ad.oferta_curso_id = mm.oferta_curso_id
+  AND ad.deleted_at IS NULL
+  AND ad.activo = TRUE
+  AND ad.vigente = TRUE
 INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
 LEFT JOIN vista_base_calificacion_evaluaciones_curso_bimestre ev
   ON ev.asignacion_docente_id = ad.id

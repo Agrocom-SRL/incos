@@ -5,7 +5,7 @@ import { idValidator } from '../validators/common/index.js';
 import {
   createGestionPlanValidator,
   updateGestionPlanEstadoValidator,
-} from '../validators/oferta/oferta-academica.validator.js';
+} from '../validators/oferta/oferta.validator.js';
 
 export function buildGestionesPlanesRouter({ controllers, middlewares }) {
   const router = express.Router();

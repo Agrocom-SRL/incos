@@ -157,4 +157,4 @@ Temas que siguen sin rediseño de negocio:
 
 ---
 
-**Estado del plan:** Aprobado. **Sprint 1 cerrado** (2026-05-29). **Sprint 2 cerrado en BD local** (schemas + seeders `27`–`48`). **Sprint 3 en curso** — API oferta V2 (backend parcial); pendiente: retiro código V1, vistas grupo oferta, wizard FE. Ver `MIGRACION_CODIGO_V2.md`.
+**Estado del plan:** Aprobado. **Sprint 1 cerrado** (2026-05-29). **Sprint 2 cerrado en BD local** (schemas + seeders `27`–`48`). **Sprint 3 en curso** — código oferta V2 listo; pendiente: despliegue vistas auth + smoke E2E. **No iniciar Sprint 4** hasta cerrar DoD Sprint 3. Ver `backend/database/README.md` y `MIGRACION_CODIGO_V2.md`.

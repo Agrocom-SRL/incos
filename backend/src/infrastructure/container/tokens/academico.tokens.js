@@ -10,10 +10,6 @@
 export const ACADEMICO_TOKENS = {
     // USE CASES
     listParalelosUseCase: 'academico.listParalelosUseCase',
-    getParaleloHorariosUseCase: 'academico.getParaleloHorariosUseCase',
-    getParaleloCursosOfertaUseCase: 'academico.getParaleloCursosOfertaUseCase',
-    createParaleloCursoOfertaUseCase: 'academico.createParaleloCursoOfertaUseCase',
-    putParaleloScheduleUseCase: 'academico.putParaleloScheduleUseCase',
     listGestionesUseCase: 'academico.listGestionesUseCase',
     getParalelosEstadoDashboardUseCase: 'academico.getParalelosEstadoDashboardUseCase',
     getAsignaturasSinCursoDashboardUseCase: 'academico.getAsignaturasSinCursoDashboardUseCase',
@@ -43,10 +39,6 @@ export const ACADEMICO_TOKENS = {
 
     // CONTROLLERS
     listParalelosController: 'academico.listParalelosController',
-    getParaleloScheduleController: 'academico.getParaleloScheduleController',
-    getParaleloCursosOfertaController: 'academico.getParaleloCursosOfertaController',
-    postParaleloCursoController: 'academico.postParaleloCursoController',
-    putParaleloScheduleController: 'academico.putParaleloScheduleController',
     listGestionesController: 'academico.listGestionesController',
     getDashboardParalelosEstadoController: 'academico.getDashboardParalelosEstadoController',
     getDashboardAsignaturasSinCursoController: 'academico.getDashboardAsignaturasSinCursoController',
@@ -74,13 +66,6 @@ export const ACADEMICO_TOKENS = {
     getBimestreConsolidadoController: 'academico.getBimestreConsolidadoController',
     guardarBimestreConsolidadoController: 'academico.guardarBimestreConsolidadoController',
 
-    updateCursoOfertaUseCase: 'academico.updateCursoOfertaUseCase',
-    deleteCursoOfertaUseCase: 'academico.deleteCursoOfertaUseCase',
-
-    patchCursoOfertaController: 'academico.patchCursoOfertaController',
-    deleteCursoOfertaController: 'academico.deleteCursoOfertaController',
-
-    // OFERTA ACADÉMICA (Sprint 3 V2)
     marcarGestionVigenteUseCase: 'academico.marcarGestionVigenteUseCase',
     listPlanesHabilitadosByGestionUseCase: 'academico.listPlanesHabilitadosByGestionUseCase',
     createGestionPlanUseCase: 'academico.createGestionPlanUseCase',
@@ -121,6 +106,5 @@ export const ACADEMICO_TOKENS = {
     gestionesPlanesRouter: 'academico.gestionesPlanesRouter',
     paralelosGestionRouter: 'academico.paralelosGestionRouter',
     ofertaCursosRouter: 'academico.ofertaCursosRouter',
-    cursosRouter: 'academico.cursosRouter',
     calificacionesRouter: 'academico.calificacionesRouter',
 };

@@ -135,3 +135,23 @@ Orden router: estáticas (`/matriz`, `/marcar-vigente`) **antes** de `/:id`.
 5. Router/use case no registrado en container → 404/500.
 6. Vista SQL no recreada tras cambio de columnas → mapper con `undefined`.
 7. Permiso del router ≠ seed 54 → 403 con rol que sí ve el menú.
+
+## 10. Modelo de negocio — oferta académica e horarios
+
+INCOS sigue siendo la **primera versión del sistema**. Los cambios en tablas
+(`oferta_cursos`, `paralelos_gestion`, `asignacion_horarios`, etc.) son
+**evolución de la lógica de negocio del instituto**, no una migración “V1 → V2”.
+
+**No usar** en comentarios SQL/JS: `V1`, `V2`, `legacy`, “reemplaza tabla X”.
+**Usar** descripción del dominio:
+
+| Concepto | Tabla/columna | Notas |
+|----------|---------------|-------|
+| Oferta por gestión | `paralelos_gestion` + `oferta_cursos` | Materia ofertada en un paralelo de una gestión |
+| Matrícula estable | `matriculas_materia.oferta_curso_id` | Ancla al curso ofertado durante la gestión |
+| Docente ↔ oferta | `asignaciones_docentes.oferta_curso_id` | Una oferta puede tener docente asignado |
+| Bloques horario | `asignacion_horarios` | Cuelgan de `asignacion_docente_id`, no de un curso suelto |
+| Alias en vistas | `curso_id` | Alias de `oferta_cursos.id` para vistas/reportes dependientes |
+
+En headers de vistas (`03-views/`), schemas (`01-schemas/`) y seeders: bloque
+`-- Modelo de negocio:` cuando la vista dependa de esas relaciones.

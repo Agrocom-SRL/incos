@@ -1,5 +1,5 @@
 -- ============================================
--- SEEDER: paralelos_gestion — Gestión 2026 (V2)
+-- SEEDER: paralelos_gestion — Gestión 2026
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Sprint 3 — Oferta Académica (paso 1: instanciar paralelos en la gestión)
 -- ============================================
