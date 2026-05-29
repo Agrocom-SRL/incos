@@ -16,6 +16,7 @@ import {
   listCursosDisponiblesDocenteValidator,
   cursoIdParamValidator,
   getDocenteCargaGestionValidator,
+  putDocenteColorValidator,
 } from '../validators/docentes/index.js';
 
 /**
@@ -150,11 +151,34 @@ export function buildDocentesRouter({ controllers, middlewares }) {
   );
 
   router.get(
+    '/colores-en-uso',
+    ...docenteAsignar,
+    validateRequest,
+    (req, res, next) => controllers.getDocenteColoresEnUsoController.handle(req, res, next)
+  );
+
+  router.get(
+    '/colores-sugeridos',
+    ...docenteAsignar,
+    validateRequest,
+    (req, res, next) => controllers.getDocenteColoresSugeridosController.handle(req, res, next)
+  );
+
+  router.get(
     '/:id/carga-gestion',
     ...docenteAsignar,
     ...getDocenteCargaGestionValidator,
     validateRequest,
     (req, res, next) => controllers.getDocenteCargaGestionController.handle(req, res, next)
+  );
+
+  router.put(
+    '/:id/color',
+    ...docenteAsignar,
+    ...idValidator,
+    putDocenteColorValidator,
+    validateRequest,
+    (req, res, next) => controllers.updateDocenteColorController.handle(req, res, next)
   );
 
   router.put(

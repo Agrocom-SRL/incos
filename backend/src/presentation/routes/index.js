@@ -12,6 +12,7 @@ import {
     PAGOS_TOKENS,
     DASHBOARD_TOKENS,
     DOCENTES_TOKENS,
+    ASIGNACIONES_DOCENTES_TOKENS,
     AULAS_HORARIOS_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
@@ -163,6 +164,10 @@ router.use('/dashboard', container.resolve(DASHBOARD_TOKENS.dashboardRouter));
 // 9. MÓDULO: DOCENTES
 // ============================================
 router.use('/docentes', container.resolve(DOCENTES_TOKENS.docentesRouter));
+router.use(
+  '/asignaciones-docentes',
+  container.resolve(ASIGNACIONES_DOCENTES_TOKENS.asignacionesDocentesRouter)
+);
 router.use('/aulas', container.resolve(AULAS_HORARIOS_TOKENS.aulasHorariosRouter));
 
 // Para agregar un nuevo módulo:

@@ -1,131 +1,105 @@
 /**
- * PATCH /api/v1/docentes/asignaciones/:id — edición básica de asignación docente.
+ * PATCH/PUT — edición de asignación docente sobre oferta_curso.
  */
 
 import { NotFoundError, UnprocessableEntityError } from '../../../domain/errors/index.js';
 import { TeacherAssignment } from '../../../domain/entities/TeacherAssignment.js';
-import { TeacherAssignmentListMapper } from '../../mappers/docentes/TeacherAssignmentListMapper.js';
+import { normalizeDocenteColorHex } from '../../mappers/docentes/DocenteColorMapper.js';
+import { TeacherAssignmentPresentationMapper } from '../../mappers/docentes/TeacherAssignmentPresentationMapper.js';
 import { todayDateOnlyLocal, defaultWeeklyHoursFromPlan } from '../../utils/teacherAssignmentFieldDefaults.js';
+import { normalizeTeacherAssignmentBody } from '../../utils/teacherAssignmentPayload.js';
+import { resolveTeacherAssignmentOfferContext } from '../../utils/teacherAssignmentOfferContext.js';
 
 function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj || {}, key);
 }
 
 export class UpdateTeacherAssignmentUseCase {
-  /**
-   * @param {Object} deps
-   * @param {import('../../../infrastructure/repositories/TeacherAssignmentRepository.js').TeacherAssignmentRepository} deps.teacherAssignmentRepository
-   * @param {import('../../../infrastructure/repositories/TeacherRepository.js').TeacherRepository} deps.teacherRepository
-   * @param {import('../../../infrastructure/repositories/CourseRepository.js').CourseRepository} deps.courseRepository
-   * @param {import('../../../infrastructure/repositories/PlanSubjectRepository.js').PlanSubjectRepository} deps.planSubjectRepository
-   * @param {import('../../../infrastructure/repositories/ManagementPlanRepository.js').ManagementPlanRepository} deps.managementPlanRepository
-   * @param {Object} deps.logger
-   */
   constructor({
     teacherAssignmentRepository,
     teacherRepository,
-    courseRepository,
+    courseOfferRepository,
+    parallelManagementRepository,
     planSubjectRepository,
     managementPlanRepository,
     logger,
   }) {
     this.teacherAssignmentRepository = teacherAssignmentRepository;
     this.teacherRepository = teacherRepository;
-    this.courseRepository = courseRepository;
+    this.courseOfferRepository = courseOfferRepository;
+    this.parallelManagementRepository = parallelManagementRepository;
     this.planSubjectRepository = planSubjectRepository;
     this.managementPlanRepository = managementPlanRepository;
     this.logger = logger;
   }
 
-  /**
-   * @param {number} assignmentId
-   * @param {Object} body
-   * @param {number|null} userId
-   * @returns {Promise<{ asignacion: Object }>}
-   */
   async execute(assignmentId, body, userId = null) {
     const id = Number(assignmentId);
     if (!Number.isFinite(id) || id < 1) {
       throw new NotFoundError('Asignación docente');
     }
 
-    this.logger.info('[Docentes] Actualizar asignación docente', { assignmentId: id, userId });
+    this.logger.info('[AsignacionesDocentes] Actualizar asignación', { assignmentId: id, userId });
 
     const existing = await this.teacherAssignmentRepository.findById(id);
     if (!existing) {
       throw new NotFoundError('Asignación docente');
     }
 
+    const existingPlain = existing.toPlainObject ? existing.toPlainObject() : existing;
     const payload = body || {};
+    const normalized = normalizeTeacherAssignmentBody(payload);
     const updateData = {};
 
-    if (hasOwn(payload, 'docenteId')) {
-      if (payload.docenteId === null || payload.docenteId === '') {
-        updateData.teacherId = null;
-      } else {
-        const docenteId = Number(payload.docenteId);
-        if (!Number.isFinite(docenteId) || docenteId < 1) {
-          throw new UnprocessableEntityError('docenteId debe ser un entero positivo.', [
-            { field: 'docenteId', message: 'Inválido' },
-          ]);
-        }
-        const teacher = await this.teacherRepository.findById(docenteId);
-        if (!teacher) {
-          throw new NotFoundError('Docente');
-        }
-        updateData.teacherId = docenteId;
-      }
-    }
-
-    if (hasOwn(payload, 'cursoId')) {
-      const cursoId = Number(payload.cursoId);
-      if (!Number.isFinite(cursoId) || cursoId < 1) {
-        throw new UnprocessableEntityError('cursoId debe ser un entero positivo.', [
-          { field: 'cursoId', message: 'Inválido' },
+    if (hasOwn(payload, 'docenteId') || hasOwn(payload, 'docente_id')) {
+      const docenteId = normalized.teacherId;
+      if (!Number.isFinite(docenteId) || docenteId < 1) {
+        throw new UnprocessableEntityError('docente_id debe ser un entero positivo.', [
+          { field: 'docente_id', message: 'Inválido' },
         ]);
       }
-      const course = await this.courseRepository.findById(cursoId);
-      if (!course) {
-        throw new NotFoundError('Curso');
+      const teacher = await this.teacherRepository.findById(docenteId);
+      if (!teacher) {
+        throw new NotFoundError('Docente');
       }
-      const planSubjectId = course.planSubjectId;
-      if (planSubjectId == null) {
-        throw new UnprocessableEntityError('El curso no tiene asignatura de plan vinculada.', [
-          { field: 'cursoId', message: 'asignatura_plan_id es requerido para validar el plan' },
-        ]);
-      }
-      const planSubject = await this.planSubjectRepository.findById(planSubjectId);
-      if (!planSubject) {
-        throw new NotFoundError('Asignatura del plan');
-      }
-      const managementPlanId = existing.managementPlanId ?? null;
-      const managementPlan = managementPlanId
-        ? await this.managementPlanRepository.findById(managementPlanId)
-        : null;
-      const enabledPlanId = managementPlan?.studyPlanId ?? null;
-      const coursePlanId = planSubject.studyPlanId ?? null;
-      if (enabledPlanId == null || coursePlanId == null || enabledPlanId !== coursePlanId) {
+      const tp = teacher.toPlainObject ? teacher.toPlainObject() : teacher;
+      if (!normalizeDocenteColorHex(tp.colorHex)) {
         throw new UnprocessableEntityError(
-          'El curso no pertenece al mismo plan de estudios que el plan habilitado de la asignación.',
-          [
-            { field: 'cursoId', message: 'Incoherencia entre plan del curso y plan habilitado' },
-          ]
+          'El docente debe tener un color asignado.',
+          [{ field: 'docente_id', message: 'color_hex requerido' }],
+          { requiere_color: true }
         );
       }
-      // Permitir edición libre de curso en PATCH, incluso si ya existe otra asignación activa
-      // para el mismo curso en el mismo plan habilitado. Los conflictos acƒadémicos/horarios
-      // se reportan en una etapa posterior y no bloquean esta operación.
-      updateData.courseId = cursoId;
+      updateData.teacherId = docenteId;
     }
 
-    if (hasOwn(payload, 'cargaHoraria')) {
-      if (payload.cargaHoraria === null || payload.cargaHoraria === '') {
+    if (hasOwn(payload, 'ofertaCursoId') || hasOwn(payload, 'oferta_curso_id')) {
+      const offerCourseId = normalized.offerCourseId;
+      if (!Number.isFinite(offerCourseId) || offerCourseId < 1) {
+        throw new UnprocessableEntityError('oferta_curso_id debe ser un entero positivo.', [
+          { field: 'oferta_curso_id', message: 'Inválido' },
+        ]);
+      }
+      const managementPlanId = existingPlain.managementPlanId;
+      await resolveTeacherAssignmentOfferContext({
+        courseOfferRepository: this.courseOfferRepository,
+        parallelManagementRepository: this.parallelManagementRepository,
+        planSubjectRepository: this.planSubjectRepository,
+        managementPlanRepository: this.managementPlanRepository,
+        offerCourseId,
+        managementPlanId,
+      });
+      updateData.offerCourseId = offerCourseId;
+    }
+
+    if (hasOwn(payload, 'cargaHoraria') || hasOwn(payload, 'carga_horaria')) {
+      if (normalized.hours === null) {
         updateData.hours = null;
-      } else {
-        const hours = Number(payload.cargaHoraria);
+      } else if (normalized.hours !== undefined) {
+        const hours = Number(normalized.hours);
         if (!Number.isFinite(hours) || hours < 0 || hours > 200) {
-          throw new UnprocessableEntityError('cargaHoraria debe estar entre 0 y 200.', [
-            { field: 'cargaHoraria', message: 'Inválido' },
+          throw new UnprocessableEntityError('carga_horaria debe estar entre 0 y 200.', [
+            { field: 'carga_horaria', message: 'Inválido' },
           ]);
         }
         updateData.hours = Math.round(hours);
@@ -133,43 +107,42 @@ export class UpdateTeacherAssignmentUseCase {
     }
 
     if (hasOwn(payload, 'vigente')) {
-      const vigente =
-        payload.vigente === true ||
-        payload.vigente === 'true' ||
-        payload.vigente === 1 ||
-        payload.vigente === '1';
-      updateData.active = vigente;
+      updateData.active = normalized.active !== undefined ? normalized.active : true;
     }
 
     if (hasOwn(payload, 'motivo')) {
-      updateData.reason = payload.motivo == null || payload.motivo === '' ? null : String(payload.motivo).trim();
+      updateData.reason = normalized.reason ?? null;
     }
 
-    if (hasOwn(payload, 'fechaAsignacion')) {
-      updateData.assignmentDate =
-        payload.fechaAsignacion == null || payload.fechaAsignacion === '' ? null : payload.fechaAsignacion;
+    if (hasOwn(payload, 'fechaAsignacion') || hasOwn(payload, 'fecha_asignacion')) {
+      updateData.assignmentDate = normalized.assignmentDate ?? null;
     }
 
     if (updateData.teacherId !== undefined) {
-      const prev = existing.teacherId != null ? Number(existing.teacherId) : null;
+      const prev = existingPlain.teacherId != null ? Number(existingPlain.teacherId) : null;
       const next = updateData.teacherId != null ? Number(updateData.teacherId) : null;
       const docenteCambio = prev !== next;
-      if (docenteCambio && !hasOwn(payload, 'fechaAsignacion')) {
+      if (docenteCambio && !hasOwn(payload, 'fechaAsignacion') && !hasOwn(payload, 'fecha_asignacion')) {
         updateData.assignmentDate = todayDateOnlyLocal();
       }
       if (
         docenteCambio &&
         !hasOwn(payload, 'cargaHoraria') &&
-        (existing.hours == null || existing.hours === '')
+        !hasOwn(payload, 'carga_horaria') &&
+        (existingPlain.hours == null || existingPlain.hours === '')
       ) {
-        const courseRow = await this.courseRepository.findById(existing.courseId);
-        const planSubjectId = courseRow?.planSubjectId ?? null;
-        if (planSubjectId) {
-          const ps = await this.planSubjectRepository.findById(planSubjectId);
-          const ph = defaultWeeklyHoursFromPlan(ps?.weeklyHours);
-          if (ph != null) {
-            updateData.hours = ph;
-          }
+        const offerId = updateData.offerCourseId ?? existingPlain.offerCourseId;
+        if (offerId) {
+          const ctx = await resolveTeacherAssignmentOfferContext({
+            courseOfferRepository: this.courseOfferRepository,
+            parallelManagementRepository: this.parallelManagementRepository,
+            planSubjectRepository: this.planSubjectRepository,
+            managementPlanRepository: this.managementPlanRepository,
+            offerCourseId: offerId,
+            managementPlanId: existingPlain.managementPlanId,
+          });
+          const ph = defaultWeeklyHoursFromPlan(ctx.weeklyHours);
+          if (ph != null) updateData.hours = ph;
         }
       }
     }
@@ -180,18 +153,30 @@ export class UpdateTeacherAssignmentUseCase {
       ]);
     }
 
-    if (updateData.active === false && !hasOwn(updateData, 'reason')) {
+    if (updateData.active === false && updateData.reason === undefined) {
       updateData.reason = 'Baja manual de asignación';
     }
 
-    const updated = await this.teacherAssignmentRepository.update(id, new TeacherAssignment(updateData), userId);
+    const targetOfferId = updateData.offerCourseId ?? existingPlain.offerCourseId;
+    const willBeVigente = updateData.active !== false && existingPlain.active !== false;
+    if (willBeVigente && updateData.active === true && targetOfferId) {
+      await this.teacherAssignmentRepository.retireVigenteForOffer(targetOfferId, id, userId);
+    }
+
+    const updated = await this.teacherAssignmentRepository.update(
+      id,
+      new TeacherAssignment(updateData),
+      userId
+    );
     if (!updated) {
       throw new NotFoundError('Asignación docente');
     }
 
+    const enriched = await this.teacherAssignmentRepository.findEnrichedById(id);
     return {
-      asignacion: TeacherAssignmentListMapper.entityToPresentation(updated),
+      asignacion: enriched
+        ? TeacherAssignmentPresentationMapper.enrichedRowToLegacyPresentation(enriched)
+        : TeacherAssignmentPresentationMapper.entityToLegacyPresentation(updated),
     };
   }
 }
-

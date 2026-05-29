@@ -39,5 +39,12 @@ export const DOCENTES_TOKENS = {
   getDocentesConflictoBloquesController: 'docentes.getDocentesConflictoBloquesController',
   getDocenteCargaGestionUseCase: 'docentes.getDocenteCargaGestionUseCase',
   getDocenteCargaGestionController: 'docentes.getDocenteCargaGestionController',
+  updateDocenteColorUseCase: 'docentes.updateDocenteColorUseCase',
+  updateDocenteColorController: 'docentes.updateDocenteColorController',
+  getDocenteColoresEnUsoUseCase: 'docentes.getDocenteColoresEnUsoUseCase',
+  getDocenteColoresEnUsoController: 'docentes.getDocenteColoresEnUsoController',
+  getDocenteColoresSugeridosUseCase: 'docentes.getDocenteColoresSugeridosUseCase',
+  getDocenteColoresSugeridosController: 'docentes.getDocenteColoresSugeridosController',
+  getTeacherAssignmentByIdUseCase: 'docentes.getTeacherAssignmentByIdUseCase',
   docentesRouter: 'docentes.docentesRouter',
 };

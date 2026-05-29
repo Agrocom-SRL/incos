@@ -139,6 +139,12 @@ export const Docente = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    colorHex: {
+      type: DataTypes.STRING(7),
+      field: 'color_hex',
+      allowNull: true,
+      comment: 'Color exclusivo del docente para visualización en horarios.',
+    },
   },
   {
     ...baseModelOptions,

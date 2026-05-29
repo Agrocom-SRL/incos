@@ -278,5 +278,180 @@ export class TeacherAssignmentRepository extends BaseRepository {
       horas: Number(row.horas) || 0,
     }));
   }
+
+  /**
+   * Marca como no vigentes las asignaciones activas previas sobre la misma oferta.
+   * Las matrículas permanecen ancladas a oferta_curso_id (no se repuntan).
+   */
+  async retireVigenteForOffer(offerCourseId, exceptAssignmentId = null, userId = null) {
+    const offerId = Number(offerCourseId);
+    if (!Number.isFinite(offerId) || offerId < 1) return 0;
+
+    const result = await this.findAll({ offerCourseId: offerId, active: true }, null, null);
+    const list = result.teacherAssignments ?? [];
+    let retired = 0;
+
+    for (const assignment of list) {
+      const plain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
+      if (exceptAssignmentId != null && Number(plain.id) === Number(exceptAssignmentId)) continue;
+
+      await this.update(
+        plain.id,
+        {
+          active: false,
+          reason: 'Reemplazada por nueva asignación docente vigente',
+        },
+        userId
+      );
+      retired += 1;
+    }
+
+    return retired;
+  }
+
+  /**
+   * Listado enriquecido con oferta, materia, paralelo y docente.
+   */
+  async findEnriched(filters = {}, page = 1, limit = 50) {
+    const whereParts = ['ad.deleted_at IS NULL'];
+    const replacements = {};
+
+    if (filters.managementPlanId) {
+      whereParts.push('ad.gestion_plan_id = :managementPlanId');
+      replacements.managementPlanId = Number(filters.managementPlanId);
+    }
+    if (filters.offerCourseId) {
+      whereParts.push('ad.oferta_curso_id = :offerCourseId');
+      replacements.offerCourseId = Number(filters.offerCourseId);
+    }
+    if (filters.teacherId) {
+      whereParts.push('ad.docente_id = :teacherId');
+      replacements.teacherId = Number(filters.teacherId);
+    }
+    if (filters.parallelManagementId) {
+      whereParts.push('pg.id = :parallelManagementId');
+      replacements.parallelManagementId = Number(filters.parallelManagementId);
+    }
+    if (filters.vigente === true) {
+      whereParts.push('ad.vigente = TRUE');
+    } else if (filters.vigente === false) {
+      whereParts.push('ad.vigente = FALSE');
+    }
+    if (filters.recordActive !== false) {
+      whereParts.push('ad.activo = TRUE');
+    }
+
+    const whereSql = whereParts.join(' AND ');
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 50);
+    const offset = (pageNum - 1) * limitNum;
+
+    const baseFrom = `
+      FROM asignaciones_docentes ad
+      INNER JOIN oferta_cursos oc
+        ON oc.id = ad.oferta_curso_id AND oc.deleted_at IS NULL
+      INNER JOIN paralelos_gestion pg
+        ON pg.id = oc.paralelo_gestion_id AND pg.deleted_at IS NULL
+      INNER JOIN asignaturas_plan ap
+        ON ap.id = oc.asignatura_plan_id AND ap.deleted_at IS NULL
+      LEFT JOIN materias m
+        ON m.id = ap.materia_id AND m.deleted_at IS NULL
+      INNER JOIN paralelos p
+        ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
+      LEFT JOIN docentes doc
+        ON doc.id = ad.docente_id AND doc.deleted_at IS NULL
+      WHERE ${whereSql}
+    `;
+
+    const [countRows, rows] = await Promise.all([
+      sequelize.query(`SELECT COUNT(DISTINCT ad.id) AS total ${baseFrom}`, {
+        replacements,
+        type: QueryTypes.SELECT,
+      }),
+      sequelize.query(
+        `
+        SELECT
+          ad.id,
+          ad.gestion_plan_id,
+          ad.oferta_curso_id,
+          pg.id AS paralelo_gestion_id,
+          ad.docente_id,
+          ad.carga_horaria,
+          ad.vigente,
+          ad.motivo,
+          ad.fecha_asignacion,
+          ad.created_at,
+          ad.updated_at,
+          m.sigla AS materia_sigla,
+          m.nombre AS materia_nombre,
+          p.nombre AS paralelo_nombre,
+          doc.nombres AS docente_nombres,
+          doc.apellido_paterno AS docente_apellido_paterno,
+          doc.apellido_materno AS docente_apellido_materno,
+          doc.color_hex
+        ${baseFrom}
+        ORDER BY ad.id DESC
+        LIMIT :limit OFFSET :offset
+        `,
+        {
+          replacements: { ...replacements, limit: limitNum, offset },
+          type: QueryTypes.SELECT,
+        }
+      ),
+    ]);
+
+    const total = Number(countRows[0]?.total ?? 0) || 0;
+    return { rows, total, page: pageNum, limit: limitNum };
+  }
+
+  /**
+   * Detalle enriquecido de una asignación docente.
+   */
+  async findEnrichedById(id) {
+    const assignmentId = Number(id);
+    if (!Number.isFinite(assignmentId) || assignmentId < 1) return null;
+
+    const result = await sequelize.query(
+      `
+      SELECT
+        ad.id,
+        ad.gestion_plan_id,
+        ad.oferta_curso_id,
+        pg.id AS paralelo_gestion_id,
+        ad.docente_id,
+        ad.carga_horaria,
+        ad.vigente,
+        ad.motivo,
+        ad.fecha_asignacion,
+        ad.created_at,
+        ad.updated_at,
+        m.sigla AS materia_sigla,
+        m.nombre AS materia_nombre,
+        p.nombre AS paralelo_nombre,
+        doc.nombres AS docente_nombres,
+        doc.apellido_paterno AS docente_apellido_paterno,
+        doc.apellido_materno AS docente_apellido_materno,
+        doc.color_hex
+      FROM asignaciones_docentes ad
+      INNER JOIN oferta_cursos oc
+        ON oc.id = ad.oferta_curso_id AND oc.deleted_at IS NULL
+      INNER JOIN paralelos_gestion pg
+        ON pg.id = oc.paralelo_gestion_id AND pg.deleted_at IS NULL
+      INNER JOIN asignaturas_plan ap
+        ON ap.id = oc.asignatura_plan_id AND ap.deleted_at IS NULL
+      LEFT JOIN materias m
+        ON m.id = ap.materia_id AND m.deleted_at IS NULL
+      INNER JOIN paralelos p
+        ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
+      LEFT JOIN docentes doc
+        ON doc.id = ad.docente_id AND doc.deleted_at IS NULL
+      WHERE ad.id = :assignmentId AND ad.deleted_at IS NULL
+      LIMIT 1
+      `,
+      { replacements: { assignmentId }, type: QueryTypes.SELECT }
+    );
+
+    return result[0] ?? null;
+  }
 }
 

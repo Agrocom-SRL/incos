@@ -16,3 +16,6 @@ export { ListParalelosDocenteAsignacionController } from './list-paralelos-docen
 export { ListCursosPorParaleloDocenteController } from './list-cursos-paralelo-docente.controller.js';
 export { GetDocentesConflictoBloquesController } from './get-conflicto-bloques-curso.controller.js';
 export { GetDocenteCargaGestionController } from './get-carga-gestion.controller.js';
+export { UpdateDocenteColorController } from './put-docente-color.controller.js';
+export { GetDocenteColoresEnUsoController } from './get-colores-en-uso.controller.js';
+export { GetDocenteColoresSugeridosController } from './get-colores-sugeridos.controller.js';

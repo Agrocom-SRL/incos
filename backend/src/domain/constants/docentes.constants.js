@@ -143,3 +143,29 @@ export const DEFAULT_MAX_HORAS_MES_DOCENTE = 80;
 /** Equivalencia mensual usada al sumar horas semanales de asignaciones. */
 export const SEMANAS_EQUIVALENTES_MES_CARGA_DOCENTE = 4;
 
+/** Formato válido de color en horarios (#RRGGBB). */
+export const DOCENTE_COLOR_HEX_REGEX = /^#[0-9A-F]{6}$/i;
+
+/**
+ * Paleta institucional para asignación de color docente (16 tonos HSL distribuidos).
+ * Usada por GET colores-sugeridos y validación de unicidad.
+ */
+export const DOCENTE_COLOR_PALETTE = [
+  '#E6194B',
+  '#3CB44B',
+  '#FFE119',
+  '#4363D8',
+  '#F58231',
+  '#911EB4',
+  '#42D4F4',
+  '#F032E6',
+  '#BFEF45',
+  '#469990',
+  '#DCBEFF',
+  '#9A6324',
+  '#FABED4',
+  '#800000',
+  '#AAFFC3',
+  '#808080',
+];
+

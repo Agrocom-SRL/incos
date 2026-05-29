@@ -488,5 +488,73 @@ export class TeacherRepository extends BaseRepository {
       maxHorasMes: Number(row.max_horas_mes) || DEFAULT_MAX_HORAS_MES_DOCENTE,
     };
   }
+
+  /**
+   * Colores hex asignados a docentes activos (no eliminados).
+   * @returns {Promise<Array<{ docenteId: number, colorHex: string, docenteNombre: string }>>}
+   */
+  async findActiveColorAssignments() {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        id AS docenteId,
+        UPPER(TRIM(color_hex)) AS colorHex,
+        TRIM(CONCAT(
+          COALESCE(titulo_profesional, ''), ' ',
+          COALESCE(nombres, ''), ' ',
+          COALESCE(apellido_paterno, ''), ' ',
+          COALESCE(apellido_materno, '')
+        )) AS docenteNombre
+      FROM docentes
+      WHERE deleted_at IS NULL
+        AND activo = TRUE
+        AND color_hex IS NOT NULL
+        AND TRIM(color_hex) <> ''
+      ORDER BY id ASC
+      `,
+      { type: QueryTypes.SELECT }
+    );
+
+    return rows
+      .map((row) => ({
+        docenteId: Number(row.docenteId),
+        colorHex: String(row.colorHex || '').toUpperCase(),
+        docenteNombre: String(row.docenteNombre || '').replace(/\s+/g, ' ').trim() || null,
+      }))
+      .filter((row) => row.colorHex);
+  }
+
+  /**
+   * Docente activo distinto de excludeId que ya usa el color indicado.
+   * @param {string} colorHex - #RRGGBB normalizado
+   * @param {number|null} excludeTeacherId
+   */
+  async findActiveByColorHex(colorHex, excludeTeacherId = null) {
+    const normalized = String(colorHex || '').trim().toUpperCase();
+    if (!normalized) return null;
+
+    const replacements = { colorHex: normalized };
+    let excludeClause = '';
+    if (excludeTeacherId != null && Number.isFinite(Number(excludeTeacherId))) {
+      excludeClause = 'AND id <> :excludeTeacherId';
+      replacements.excludeTeacherId = Number(excludeTeacherId);
+    }
+
+    const rows = await sequelize.query(
+      `
+      SELECT id
+      FROM docentes
+      WHERE deleted_at IS NULL
+        AND activo = TRUE
+        AND UPPER(TRIM(color_hex)) = :colorHex
+        ${excludeClause}
+      LIMIT 1
+      `,
+      { replacements, type: QueryTypes.SELECT }
+    );
+
+    if (!rows[0]) return null;
+    return this.findById(Number(rows[0].id));
+  }
 }
 
