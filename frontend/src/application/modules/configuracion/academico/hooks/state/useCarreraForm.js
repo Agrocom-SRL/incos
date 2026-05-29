@@ -28,7 +28,7 @@ export const useCarreraForm = (mode = 'create') => {
   const carreraId = isEditMode ? Number(id) : null;
   const navigate = useNavigate();
   const location = useLocation();
-  const { message } = App.useApp();
+  const { notification } = App.useApp();
   const [form] = Form.useForm();
 
   const returnListPath = resolveReturnListPath(location, CARRERAS_LIST_PATH);
@@ -114,7 +114,9 @@ export const useCarreraForm = (mode = 'create') => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo guardar la carrera');
       }
-      message.success(isEditMode ? 'Carrera actualizada' : 'Carrera creada');
+      notification.success({
+        title: isEditMode ? 'Carrera actualizada' : 'Carrera creada',
+      });
       const raw = result.data?.carrera ?? result.data;
       const savedId = raw?.id ?? carreraId;
       if (savedId) {
@@ -131,12 +133,15 @@ export const useCarreraForm = (mode = 'create') => {
       } else {
         const msg = e?.message || 'No se pudo guardar la carrera';
         setError(msg);
-        message.error(msg);
+        notification.error({
+          title: 'Error al guardar',
+          description: msg,
+        });
       }
     } finally {
       setSubmitLoading(false);
     }
-  }, [carreraId, form, handleVolver, isEditMode, message, navigate, menuSidebarKey, returnListPath]);
+  }, [carreraId, form, handleVolver, isEditMode, notification, navigate, menuSidebarKey, returnListPath]);
 
   const initialValues = useMemo(() => mapCarreraToFormValues(null), []);
   const formSections = useMemo(() => createCarreraFormSections(), []);

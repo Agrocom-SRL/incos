@@ -3,6 +3,13 @@
  */
 
 import {
+  AppstoreOutlined,
+  BookOutlined,
+  IdcardOutlined,
+  ReadOutlined,
+  TrophyOutlined,
+} from '@ant-design/icons';
+import {
   carreraDetallePath,
   carreraEditarPath,
 } from '@application-configuracion/academico/config/paths';
@@ -83,22 +90,43 @@ export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) 
       fixed: 'right',
       width: 140,
       align: 'right',
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          navigate={navigate}
-          viewPath="/:id"
-          onView={(r) => navigate(carreraDetallePath(r.id), { state: listNavState })}
-          onEdit={(r) => navigate(carreraEditarPath(r.id), { state: listNavState })}
-          useCaseKey="eliminarCarrera"
-          refetch={refetch}
-          permisos={{
-            ver: { codigo: 'configuracion.carrera', accion: 'DETALLE' },
-            editar: { codigo: 'configuracion.carrera', accion: 'EDITAR' },
-            eliminar: { codigo: 'configuracion.carrera', accion: 'ELIMINAR' },
-          }}
-        />
-      ),
+      render: (_, record) => {
+        const nombre = (record.nombre || 'Sin nombre').toUpperCase();
+        const itemName = `la carrera ${nombre}`;
+        const itemDetails = [
+          { label: 'Nombre', value: nombre, icon: <ReadOutlined /> },
+          { label: 'Código', value: record.codigo, icon: <IdcardOutlined /> },
+          { label: 'Área de formación', value: record.areaFormacion, icon: <AppstoreOutlined /> },
+          { label: 'Título otorgado', value: record.tituloOtorgado, icon: <TrophyOutlined /> },
+          {
+            label: 'Carga académica',
+            value:
+              record.cantidadMaterias != null || record.cantidadPeriodos != null
+                ? `${record.cantidadMaterias ?? 0} materias · ${record.cantidadPeriodos ?? 0} periodos`
+                : null,
+            icon: <BookOutlined />,
+          },
+        ].filter((d) => d.value != null && d.value !== '');
+
+        return (
+          <TableActions
+            record={record}
+            navigate={navigate}
+            viewPath="/:id"
+            onView={(r) => navigate(carreraDetallePath(r.id), { state: listNavState })}
+            onEdit={(r) => navigate(carreraEditarPath(r.id), { state: listNavState })}
+            useCaseKey="eliminarCarrera"
+            refetch={refetch}
+            itemName={itemName}
+            itemDetails={itemDetails}
+            permisos={{
+              ver: { codigo: 'configuracion.carrera', accion: 'DETALLE' },
+              editar: { codigo: 'configuracion.carrera', accion: 'EDITAR' },
+              eliminar: { codigo: 'configuracion.carrera', accion: 'ELIMINAR' },
+            }}
+          />
+        );
+      },
     },
   ];
 };

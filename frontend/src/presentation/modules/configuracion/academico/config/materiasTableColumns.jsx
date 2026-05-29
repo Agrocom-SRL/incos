@@ -3,6 +3,12 @@
  */
 
 import {
+  AppstoreOutlined,
+  FontSizeOutlined,
+  ReadOutlined,
+  TagOutlined,
+} from '@ant-design/icons';
+import {
   materiaDetallePath,
   materiaEditarPath,
 } from '@application-configuracion/academico/config/paths';
@@ -70,22 +76,36 @@ export const createMateriasTableColumns = ({ navigate, listNavState, refetch }) 
       fixed: 'right',
       width: 140,
       align: 'right',
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          navigate={navigate}
-          viewPath="/:id"
-          onView={(r) => navigate(materiaDetallePath(r.id), { state: listNavState })}
-          onEdit={(r) => navigate(materiaEditarPath(r.id), { state: listNavState })}
-          useCaseKey="eliminarMateria"
-          refetch={refetch}
-          permisos={{
-            ver: { codigo: 'configuracion.materia', accion: 'DETALLE' },
-            editar: { codigo: 'configuracion.materia', accion: 'EDITAR' },
-            eliminar: { codigo: 'configuracion.materia', accion: 'ELIMINAR' },
-          }}
-        />
-      ),
+      render: (_, record) => {
+        const nombre = (record.nombre || 'Sin nombre').toUpperCase();
+        const sigla = record.sigla ? record.sigla.toUpperCase() : null;
+        const itemName = sigla ? `la materia ${sigla} — ${nombre}` : `la materia ${nombre}`;
+        const itemDetails = [
+          { label: 'Nombre', value: nombre, icon: <ReadOutlined /> },
+          { label: 'Sigla', value: sigla, icon: <FontSizeOutlined /> },
+          { label: 'Tipo', value: getMateriaTipoLabel(record.tipo), icon: <TagOutlined /> },
+          { label: 'Clasificación', value: record.clasificacion, icon: <AppstoreOutlined /> },
+        ].filter((d) => d.value != null && d.value !== '' && d.value !== '—');
+
+        return (
+          <TableActions
+            record={record}
+            navigate={navigate}
+            viewPath="/:id"
+            onView={(r) => navigate(materiaDetallePath(r.id), { state: listNavState })}
+            onEdit={(r) => navigate(materiaEditarPath(r.id), { state: listNavState })}
+            useCaseKey="eliminarMateria"
+            refetch={refetch}
+            itemName={itemName}
+            itemDetails={itemDetails}
+            permisos={{
+              ver: { codigo: 'configuracion.materia', accion: 'DETALLE' },
+              editar: { codigo: 'configuracion.materia', accion: 'EDITAR' },
+              eliminar: { codigo: 'configuracion.materia', accion: 'ELIMINAR' },
+            }}
+          />
+        );
+      },
     },
   ];
 };

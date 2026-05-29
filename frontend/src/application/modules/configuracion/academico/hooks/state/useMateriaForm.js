@@ -26,7 +26,7 @@ export const useMateriaForm = (mode = 'create') => {
   const materiaId = isEditMode ? Number(id) : null;
   const navigate = useNavigate();
   const location = useLocation();
-  const { message } = App.useApp();
+  const { notification } = App.useApp();
   const [form] = Form.useForm();
 
   const returnListPath = resolveReturnListPath(location, MATERIAS_LIST_PATH);
@@ -102,7 +102,9 @@ export const useMateriaForm = (mode = 'create') => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo guardar la materia');
       }
-      message.success(isEditMode ? 'Materia actualizada' : 'Materia creada');
+      notification.success({
+        title: isEditMode ? 'Materia actualizada' : 'Materia creada',
+      });
       const raw = result.data?.materia ?? result.data;
       const savedId = raw?.id ?? materiaId;
       if (savedId) {
@@ -119,12 +121,15 @@ export const useMateriaForm = (mode = 'create') => {
       } else {
         const msg = e?.message || 'No se pudo guardar la materia';
         setError(msg);
-        message.error(msg);
+        notification.error({
+          title: 'Error al guardar',
+          description: msg,
+        });
       }
     } finally {
       setSubmitLoading(false);
     }
-  }, [form, handleVolver, isEditMode, materiaId, message, navigate, menuSidebarKey, returnListPath]);
+  }, [form, handleVolver, isEditMode, materiaId, notification, navigate, menuSidebarKey, returnListPath]);
 
   const initialValues = useMemo(() => mapMateriaToFormValues(null), []);
   const formSections = useMemo(() => createMateriaFormSections(), []);
