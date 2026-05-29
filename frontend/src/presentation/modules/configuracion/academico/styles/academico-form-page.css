@@ -120,6 +120,34 @@
   color: #ff4d4f !important;
 }
 
+/* Formulario ABM — mismo shell que cfg-academico-workspace (listado) */
+.cfg-academico-form-workspace .cfg-academico-workspace__header {
+  padding-bottom: 16px;
+}
+
+.cfg-academico-form-workspace__body {
+  padding: 24px 28px 28px;
+}
+
+.cfg-academico-form-workspace__grid .form-field {
+  margin-bottom: 0;
+}
+
+.cfg-academico-form-workspace__grid .ant-form-item {
+  margin-bottom: 0;
+}
+
+.cfg-academico-form-workspace__footer {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+
+.cfg-materia-form-sigla .field-input,
+.cfg-materia-form-sigla input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
 /* Listado materias — celda identidad (patrón calificaciones) */
 .cfg-materia-identidad {
   display: flex;
@@ -355,13 +383,19 @@
 
   .cfg-academico-workspace__header,
   .cfg-academico-tabs-shell .ant-tabs-nav,
-  .cfg-academico-tab-panel {
+  .cfg-academico-tab-panel,
+  .cfg-academico-form-workspace__body {
     padding-left: 16px;
     padding-right: 16px;
   }
 
   .cfg-academico-workspace__header {
     padding-top: 20px;
+  }
+
+  .cfg-academico-form-workspace__body {
+    padding-top: 20px;
+    padding-bottom: 20px;
   }
 
 }

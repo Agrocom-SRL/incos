@@ -6,6 +6,7 @@ export { CreateCarreraController } from './carreras/create.controller.js';
 export { GetCarreraByIdController } from './carreras/get-by-id.controller.js';
 export { UpdateCarreraController } from './carreras/update.controller.js';
 export { DeleteCarreraController } from './carreras/delete.controller.js';
+export { UploadCarreraImagenController } from './carreras/upload-imagen.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - MATERIAS

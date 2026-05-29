@@ -18,6 +18,7 @@ import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
+import { createMateriaFormSections } from '@application-configuracion/academico/config/materiaFormFields';
 
 export const useMateriaForm = (mode = 'create') => {
   const isEditMode = mode === 'edit';
@@ -126,6 +127,7 @@ export const useMateriaForm = (mode = 'create') => {
   }, [form, handleVolver, isEditMode, materiaId, message, navigate, menuSidebarKey, returnListPath]);
 
   const initialValues = useMemo(() => mapMateriaToFormValues(null), []);
+  const formSections = useMemo(() => createMateriaFormSections(), []);
 
   return {
     form,
@@ -137,6 +139,7 @@ export const useMateriaForm = (mode = 'create') => {
     submitLoading,
     error,
     initialValues,
+    formSections,
     handleVolver,
     handleSubmit,
     isInvalidEditId,

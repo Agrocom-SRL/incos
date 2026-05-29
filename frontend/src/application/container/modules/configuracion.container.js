@@ -9,6 +9,7 @@ import {
   CrearCarreraUseCase,
   ActualizarCarreraUseCase,
   EliminarCarreraUseCase,
+  SubirCarreraImagenUseCase,
 } from '@useCases/configuracion/academico/carreras';
 import {
   GetTodasMateriasUseCase,
@@ -37,6 +38,7 @@ export function registerConfiguracionModule(factory) {
   factory.crearCarrera = () => new CrearCarreraUseCase(carreraRepository);
   factory.actualizarCarrera = () => new ActualizarCarreraUseCase(carreraRepository);
   factory.eliminarCarrera = () => new EliminarCarreraUseCase(carreraRepository);
+  factory.subirCarreraImagen = () => new SubirCarreraImagenUseCase(carreraRepository);
 
   factory.obtenerTodasMaterias = () => new GetTodasMateriasUseCase(materiaRepository);
   factory.obtenerMateriaPorId = () => new GetMateriaPorIdUseCase(materiaRepository);

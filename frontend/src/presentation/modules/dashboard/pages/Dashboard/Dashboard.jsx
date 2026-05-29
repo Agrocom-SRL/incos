@@ -27,7 +27,7 @@ import {
   DashboardPersonasOverflowModal,
 } from '../../components/molecules';
 
-const PATH_CARRERAS = '/configuracion/academico';
+const PATH_CARRERAS = '/configuracion/academico?tab=carreras';
 const PATH_DOCENTES = '/docentes/listar';
 const PATH_ESTUDIANTES = '/estudiantes/listar';
 

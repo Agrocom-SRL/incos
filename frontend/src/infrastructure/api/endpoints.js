@@ -135,7 +135,10 @@ export const ESTUDIANTES_BECAS_ENDPOINTS = {
 // MÓDULO: CONFIGURACIÓN
 // ============================================
 // Académico
-export const CARRERAS_ENDPOINTS = createCRUDEndpoints('/carreras');
+export const CARRERAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/carreras'),
+  IMAGEN: `${API_BASE}/carreras/imagen`,
+};
 export const MATERIAS_ENDPOINTS = createCRUDEndpoints('/materias');
 export const PLANES_ESTUDIOS_ENDPOINTS = {
   ...createCRUDEndpoints('/planes-estudios'),

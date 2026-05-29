@@ -19,12 +19,14 @@ import { CreateCarreraUseCase } from '../../../../application/use-cases/configur
 import { UpdateCarreraUseCase } from '../../../../application/use-cases/configuracion/UpdateCarreraUseCase.js';
 import { DeleteCarreraUseCase } from '../../../../application/use-cases/configuracion/DeleteCarreraUseCase.js';
 import { GetCarreraByIdUseCase } from '../../../../application/use-cases/configuracion/GetCarreraByIdUseCase.js';
+import { UploadCarreraImagenUseCase } from '../../../../application/use-cases/configuracion/UploadCarreraImagenUseCase.js';
 import {
     CreateCarreraController,
     DeleteCarreraController,
     GetCarreraByIdController,
     ListCarrerasController,
     UpdateCarreraController,
+    UploadCarreraImagenController,
 } from '../../../../presentation/controllers/configuracion/index.js';
 import { buildCarrerasRouter } from '../../../../presentation/routes/carreras.routes.js';
 
@@ -89,6 +91,15 @@ export function registerCarrerasResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.uploadCarreraImagenUseCase,
+        (c) =>
+            new UploadCarreraImagenUseCase({
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -147,6 +158,17 @@ export function registerCarrerasResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.uploadCarreraImagenController,
+        (c) =>
+            new UploadCarreraImagenController({
+                uploadCarreraImagenUseCase: c.resolve(CONFIGURACION_TOKENS.uploadCarreraImagenUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -160,6 +182,7 @@ export function registerCarrerasResource(container) {
                 createCarreraController: c.resolve(CONFIGURACION_TOKENS.createCarreraController),
                 updateCarreraController: c.resolve(CONFIGURACION_TOKENS.updateCarreraController),
                 deleteCarreraController: c.resolve(CONFIGURACION_TOKENS.deleteCarreraController),
+                uploadCarreraImagenController: c.resolve(CONFIGURACION_TOKENS.uploadCarreraImagenController),
             };
 
             const middlewares = {

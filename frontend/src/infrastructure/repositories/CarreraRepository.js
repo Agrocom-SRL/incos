@@ -82,6 +82,18 @@ export class CarreraRepository extends ICarreraRepository {
       return handleErrorResponse(error, 'Error al eliminar carrera');
     }
   }
+
+  async subirImagen(codigo, file) {
+    try {
+      const formData = new FormData();
+      formData.append('codigo', codigo);
+      formData.append('imagen', file);
+      const response = await apiClient.post(CARRERAS_ENDPOINTS.IMAGEN, formData);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al subir imagen de carrera');
+    }
+  }
 }
 
 export default new CarreraRepository();

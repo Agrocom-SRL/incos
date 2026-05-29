@@ -14,6 +14,7 @@ export const CONFIGURACION_TOKENS = {
     createCarreraUseCase: 'configuracion.createCarreraUseCase',
     updateCarreraUseCase: 'configuracion.updateCarreraUseCase',
     deleteCarreraUseCase: 'configuracion.deleteCarreraUseCase',
+    uploadCarreraImagenUseCase: 'configuracion.uploadCarreraImagenUseCase',
 
     listMateriasUseCase: 'configuracion.listMateriasUseCase',
     getMateriaByIdUseCase: 'configuracion.getMateriaByIdUseCase',
@@ -51,6 +52,7 @@ export const CONFIGURACION_TOKENS = {
     createCarreraController: 'configuracion.createCarreraController',
     updateCarreraController: 'configuracion.updateCarreraController',
     deleteCarreraController: 'configuracion.deleteCarreraController',
+    uploadCarreraImagenController: 'configuracion.uploadCarreraImagenController',
 
     listMateriasController: 'configuracion.listMateriasController',
     getMateriaByIdController: 'configuracion.getMateriaByIdController',

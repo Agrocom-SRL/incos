@@ -6,6 +6,8 @@ import {
     createCarreraValidator,
     updateCarreraValidator,
 } from '../validators/configuracion/carreras.validator.js';
+import { verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
+import { uploadCarreraImagen } from '../middleware/upload.middleware.js';
 
 /**
  * Construye el router del módulo Carreras
@@ -62,6 +64,31 @@ export function buildCarrerasRouter({ controllers, middlewares }) {
         createCarreraValidator,
         validateRequest,
         (req, res, next) => controllers.createCarreraController.handle(req, res, next)
+    );
+
+    /**
+     * POST /api/v1/carreras/imagen
+     * Subir imagen de carrera (multipart: imagen + codigo)
+     */
+    router.post(
+        '/imagen',
+        authenticate,
+        verificarPermisoCualquiera([
+            ['configuracion.carrera', 'CREAR'],
+            ['configuracion.carrera', 'EDITAR'],
+        ]),
+        (req, res, next) => {
+            uploadCarreraImagen(req, res, (err) => {
+                if (err) {
+                    return res.status(400).json({
+                        success: false,
+                        error: err.message || 'Error al subir la imagen',
+                    });
+                }
+                next();
+            });
+        },
+        (req, res, next) => controllers.uploadCarreraImagenController.handle(req, res, next)
     );
 
     router.get(

@@ -71,7 +71,11 @@ export const useFieldRenderer = ({
     if (fieldType === 'number' || fieldType === 'color') {
       return renderer(field, disabled, readOnly);
     }
-    
+
+    if (fieldType === 'imageUpload') {
+      return renderer(field, disabled, readOnly, form);
+    }
+
     // Para search: necesita form, resolveOptions, minAge para renderizar children
     if (fieldType === 'search') {
       return renderer(field, disabled, readOnly, form, resolveOptions, minAge);

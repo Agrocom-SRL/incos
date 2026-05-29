@@ -19,6 +19,8 @@ import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
+import { createCarreraFormSections } from '@application-configuracion/academico/config/carreraFormFields';
+import { resolveCarreraImagenOnSubmit } from '@application-configuracion/academico/utils/resolveCarreraImagenOnSubmit';
 
 export const useCarreraForm = (mode = 'create') => {
   const isEditMode = mode === 'edit';
@@ -92,7 +94,14 @@ export const useCarreraForm = (mode = 'create') => {
     setError(null);
     try {
       const values = await form.validateFields();
-      const payload = mapFormValuesToCarreraPayload(values);
+      const imagenRuta = await resolveCarreraImagenOnSubmit(
+        values,
+        useCasesFactory.subirCarreraImagen(),
+      );
+      const payload = mapFormValuesToCarreraPayload({
+        ...values,
+        imagenRuta: imagenRuta ?? values.imagenRuta,
+      });
       const useCase = isEditMode
         ? useCasesFactory.actualizarCarrera()
         : useCasesFactory.crearCarrera();
@@ -127,6 +136,7 @@ export const useCarreraForm = (mode = 'create') => {
   }, [carreraId, form, handleVolver, isEditMode, message, navigate, menuSidebarKey, returnListPath]);
 
   const initialValues = useMemo(() => mapCarreraToFormValues(null), []);
+  const formSections = useMemo(() => createCarreraFormSections(), []);
 
   return {
     form,
@@ -138,6 +148,7 @@ export const useCarreraForm = (mode = 'create') => {
     submitLoading,
     error,
     initialValues,
+    formSections,
     handleVolver,
     handleSubmit,
     isInvalidEditId,
