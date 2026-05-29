@@ -8,4 +8,13 @@ export const listCursosParaleloDocenteValidator = [
     .withMessage('paraleloId es requerido')
     .isInt({ min: 1 })
     .withMessage('paraleloId debe ser un entero positivo'),
+  query('gestionPlanId')
+    .notEmpty()
+    .withMessage('gestionPlanId es requerido')
+    .isInt({ min: 1 })
+    .withMessage('gestionPlanId debe ser un entero positivo'),
+  query('paraleloGestionId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('paraleloGestionId debe ser un entero positivo'),
 ];

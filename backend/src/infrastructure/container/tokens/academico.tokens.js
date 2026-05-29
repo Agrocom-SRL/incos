@@ -82,6 +82,8 @@ export const ACADEMICO_TOKENS = {
     createOfertaCursoUseCase: 'academico.createOfertaCursoUseCase',
     updateOfertaCursoEstadoUseCase: 'academico.updateOfertaCursoEstadoUseCase',
     deleteOfertaCursoUseCase: 'academico.deleteOfertaCursoUseCase',
+    getParaleloGestionCoberturaDocenteUseCase: 'academico.getParaleloGestionCoberturaDocenteUseCase',
+    getGestionCargaDocentesUseCase: 'academico.getGestionCargaDocentesUseCase',
 
     marcarGestionVigenteController: 'academico.marcarGestionVigenteController',
     listPlanesHabilitadosByGestionController: 'academico.listPlanesHabilitadosByGestionController',
@@ -99,6 +101,8 @@ export const ACADEMICO_TOKENS = {
     createOfertaCursoController: 'academico.createOfertaCursoController',
     updateOfertaCursoEstadoController: 'academico.updateOfertaCursoEstadoController',
     deleteOfertaCursoController: 'academico.deleteOfertaCursoController',
+    getParaleloGestionCoberturaDocenteController: 'academico.getParaleloGestionCoberturaDocenteController',
+    getGestionCargaDocentesController: 'academico.getGestionCargaDocentesController',
 
     // ROUTERS
     paralelosRouter: 'academico.paralelosRouter',

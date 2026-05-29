@@ -1,42 +1,62 @@
 /**
- * GET /api/v1/docentes/cursos-por-paralelo — cursos (oferta) de un paralelo para asignación docente.
+ * GET /api/v1/docentes/cursos-por-paralelo — oferta_cursos de un paralelo en gestión.
  */
 
-import { NotFoundError } from '../../../domain/errors/index.js';
+import { NotFoundError, UnprocessableEntityError } from '../../../domain/errors/index.js';
 
 export class ListCursosPorParaleloDocenteUseCase {
   /**
    * @param {Object} deps
-   * @param {import('../../../infrastructure/repositories/ParallelRepository.js').ParallelRepository} deps.parallelRepository
-   * @param {import('../../../infrastructure/repositories/CourseRepository.js').CourseRepository} deps.courseRepository
+   * @param {import('../../../infrastructure/repositories/ParallelManagementRepository.js').ParallelManagementRepository} deps.parallelManagementRepository
+   * @param {import('../../../infrastructure/repositories/CourseOfferRepository.js').CourseOfferRepository} deps.courseOfferRepository
    * @param {Object} deps.logger
    */
-  constructor({ parallelRepository, courseRepository, logger }) {
-    this.parallelRepository = parallelRepository;
-    this.courseRepository = courseRepository;
+  constructor({ parallelManagementRepository, courseOfferRepository, logger }) {
+    this.parallelManagementRepository = parallelManagementRepository;
+    this.courseOfferRepository = courseOfferRepository;
     this.logger = logger;
   }
 
   /**
    * @param {Object} params
-   * @param {number} params.paraleloId
+   * @param {number} params.paraleloId — paralelo maestro
+   * @param {number} params.gestionPlanId — plan habilitado
+   * @param {number} [params.paraleloGestionId] — atajo directo
    * @param {number} params.page
    * @param {number} params.limit
    */
-  async execute({ paraleloId, page = 1, limit = 500 } = {}) {
-    const pid = Number(paraleloId);
-    if (!Number.isFinite(pid) || pid < 1) {
-      throw new NotFoundError('Paralelo');
+  async execute({ paraleloId, gestionPlanId, paraleloGestionId, page = 1, limit = 500 } = {}) {
+    let pgId = Number(paraleloGestionId);
+
+    if (!Number.isFinite(pgId) || pgId < 1) {
+      const pid = Number(paraleloId);
+      const gpId = Number(gestionPlanId);
+      if (!Number.isFinite(pid) || pid < 1) {
+        throw new NotFoundError('Paralelo');
+      }
+      if (!Number.isFinite(gpId) || gpId < 1) {
+        throw new UnprocessableEntityError('gestionPlanId es requerido junto con paraleloId.', [
+          { field: 'gestionPlanId', message: 'Requerido' },
+        ]);
+      }
+
+      const pg = await this.parallelManagementRepository.findByParallelAndManagementPlan(pid, gpId);
+      if (!pg) {
+        throw new NotFoundError('Paralelo en gestión');
+      }
+      pgId = Number(pg.id);
     }
 
-    this.logger.info('[Docentes] Listar cursos por paralelo (asignación)', { paraleloId: pid, page, limit });
+    this.logger.info('[Docentes] Listar oferta por paralelo (asignación)', {
+      paraleloGestionId: pgId,
+      page,
+      limit,
+    });
 
-    const paralelo = await this.parallelRepository.findById(pid);
-    if (!paralelo) {
-      throw new NotFoundError('Paralelo');
-    }
-
-    const { rows, total } = await this.courseRepository.findCursosByParaleloIdForCatalog(pid, { page, limit });
+    const { rows, total } = await this.courseOfferRepository.findCatalogByParallelManagementId(pgId, {
+      page,
+      limit,
+    });
     const limitNum = Math.min(10000, Math.max(1, parseInt(String(limit), 10) || 500));
     const pageNum = Math.max(1, parseInt(String(page), 10) || 1);
     const totalPages = Math.ceil(total / limitNum) || 0;

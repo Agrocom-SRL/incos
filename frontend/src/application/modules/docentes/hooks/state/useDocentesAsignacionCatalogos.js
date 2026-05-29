@@ -186,7 +186,7 @@ export const useDocentesAsignacionCatalogos = (editingAssignment = null) => {
   }, [editingAssignment, gestionPlanId, periodoId, paraleloId, paralelos]);
 
   useEffect(() => {
-    if (!paraleloId) {
+    if (!paraleloId || !gestionPlanId) {
       setCursos([]);
       setCursoId(null);
       setErrorCursos(null);
@@ -196,7 +196,12 @@ export const useDocentesAsignacionCatalogos = (editingAssignment = null) => {
     (async () => {
       setLoadingCursos(true);
       setErrorCursos(null);
-      const res = await docenteRepository.listarCursosPorParaleloAsignacion({ paraleloId, page: 1, limit: 500 });
+      const res = await docenteRepository.listarCursosPorParaleloAsignacion({
+        paraleloId,
+        gestionPlanId,
+        page: 1,
+        limit: 500,
+      });
       if (cancelled) return;
       if (!res.success) {
         const msg = typeof res.error === 'string' ? res.error : res.error?.message || 'No se pudieron cargar los cursos';
@@ -212,7 +217,7 @@ export const useDocentesAsignacionCatalogos = (editingAssignment = null) => {
     return () => {
       cancelled = true;
     };
-  }, [paraleloId]);
+  }, [paraleloId, gestionPlanId]);
 
   useEffect(() => {
     if (!editingAssignment || !paraleloId || cursoId || !cursos.length) return;

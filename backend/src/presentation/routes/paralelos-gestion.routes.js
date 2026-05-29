@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { idValidator } from '../validators/common/index.js';
 import {
   updateParaleloGestionValidator,
@@ -13,6 +13,18 @@ export function buildParalelosGestionRouter({ controllers, middlewares }) {
   const { validateRequest } = middlewares;
   const permisoParalelo = 'institucional.oferta.paralelo-gestion';
   const permisoCursos = 'institucional.oferta.cursos';
+
+  router.get(
+    '/:id/cobertura-docente',
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.asignacion-docente', 'LISTAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+    idValidator,
+    validateRequest,
+    (req, res, next) => controllers.getParaleloGestionCoberturaDocenteController.handle(req, res, next)
+  );
 
   router.get(
     '/:id/validar-oferta',

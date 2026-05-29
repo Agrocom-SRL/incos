@@ -20,6 +20,8 @@ import { GenerarOfertaCursosUseCase } from '../../../../application/use-cases/of
 import { CreateOfertaCursoUseCase } from '../../../../application/use-cases/oferta/CreateOfertaCursoUseCase.js';
 import { UpdateOfertaCursoEstadoUseCase } from '../../../../application/use-cases/oferta/UpdateOfertaCursoEstadoUseCase.js';
 import { DeleteOfertaCursoUseCase } from '../../../../application/use-cases/oferta/DeleteOfertaCursoUseCase.js';
+import { GetParaleloGestionCoberturaDocenteUseCase } from '../../../../application/use-cases/oferta/GetParaleloGestionCoberturaDocenteUseCase.js';
+import { GetGestionCargaDocentesUseCase } from '../../../../application/use-cases/docentes/GetGestionCargaDocentesUseCase.js';
 
 import {
   MarcarGestionVigenteController,
@@ -38,6 +40,8 @@ import {
   CreateOfertaCursoController,
   UpdateOfertaCursoEstadoController,
   DeleteOfertaCursoController,
+  GetParaleloGestionCoberturaDocenteController,
+  GetGestionCargaDocentesController,
 } from '../../../../presentation/controllers/oferta/oferta.controllers.js';
 
 import { buildGestionesPlanesRouter } from '../../../../presentation/routes/gestiones-planes.routes.js';
@@ -168,6 +172,23 @@ function registerOfertaUseCases(container) {
 
   registerComponent(container, ACADEMICO_TOKENS.deleteOfertaCursoUseCase, (c) =>
     new DeleteOfertaCursoUseCase({
+      courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+      logger: c.resolve(SERVICIOS_TOKENS.logger),
+    })
+  );
+
+  registerComponent(container, ACADEMICO_TOKENS.getParaleloGestionCoberturaDocenteUseCase, (c) =>
+    new GetParaleloGestionCoberturaDocenteUseCase({
+      parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
+      courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+      logger: c.resolve(SERVICIOS_TOKENS.logger),
+    })
+  );
+
+  registerComponent(container, ACADEMICO_TOKENS.getGestionCargaDocentesUseCase, (c) =>
+    new GetGestionCargaDocentesUseCase({
+      managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+      teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
       courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
       logger: c.resolve(SERVICIOS_TOKENS.logger),
     })
@@ -336,6 +357,26 @@ function registerOfertaControllers(container) {
         responseFormatter: rf(c),
       })
   );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getParaleloGestionCoberturaDocenteController,
+    (c) =>
+      new GetParaleloGestionCoberturaDocenteController({
+        useCase: c.resolve(ACADEMICO_TOKENS.getParaleloGestionCoberturaDocenteUseCase),
+        responseFormatter: rf(c),
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getGestionCargaDocentesController,
+    (c) =>
+      new GetGestionCargaDocentesController({
+        useCase: c.resolve(ACADEMICO_TOKENS.getGestionCargaDocentesUseCase),
+        responseFormatter: rf(c),
+      })
+  );
 }
 
 export function registerOfertaResource(container) {
@@ -373,6 +414,10 @@ export function registerOfertaResource(container) {
     createOfertaCursoController: c.resolve(ACADEMICO_TOKENS.createOfertaCursoController),
     updateOfertaCursoEstadoController: c.resolve(ACADEMICO_TOKENS.updateOfertaCursoEstadoController),
     deleteOfertaCursoController: c.resolve(ACADEMICO_TOKENS.deleteOfertaCursoController),
+    getParaleloGestionCoberturaDocenteController: c.resolve(
+      ACADEMICO_TOKENS.getParaleloGestionCoberturaDocenteController
+    ),
+    getGestionCargaDocentesController: c.resolve(ACADEMICO_TOKENS.getGestionCargaDocentesController),
   });
 
   const middlewares = (c) => ({

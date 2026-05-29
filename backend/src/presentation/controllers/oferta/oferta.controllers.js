@@ -257,3 +257,35 @@ export class DeleteOfertaCursoController {
     }
   }
 }
+
+export class GetParaleloGestionCoberturaDocenteController {
+  constructor({ useCase, responseFormatter }) {
+    this.useCase = useCase;
+    this.responseFormatter = responseFormatter;
+  }
+  async handle(req, res, next) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const cobertura = await this.useCase.execute(id);
+      return this.responseFormatter._success(res, { cobertura_docente: cobertura }, {}, req);
+    } catch (e) {
+      return next(e);
+    }
+  }
+}
+
+export class GetGestionCargaDocentesController {
+  constructor({ useCase, responseFormatter }) {
+    this.useCase = useCase;
+    this.responseFormatter = responseFormatter;
+  }
+  async handle(req, res, next) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const carga = await this.useCase.execute(id);
+      return this.responseFormatter._success(res, { carga_docentes: carga }, {}, req);
+    } catch (e) {
+      return next(e);
+    }
+  }
+}

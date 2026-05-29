@@ -72,6 +72,9 @@ export function registerGestionesResource(container) {
                 listPlanesHabilitadosByGestionController: c.resolve(
                     ACADEMICO_TOKENS.listPlanesHabilitadosByGestionController
                 ),
+                getGestionCargaDocentesController: c.resolve(
+                    ACADEMICO_TOKENS.getGestionCargaDocentesController
+                ),
             };
 
             const middlewares = {

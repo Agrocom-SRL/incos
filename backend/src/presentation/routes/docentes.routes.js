@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
 import {
   createTeacherValidator,
@@ -36,8 +36,43 @@ export function buildDocentesRouter({ controllers, middlewares }) {
   const docenteCrear = [authenticate, verificarPermiso('docentes.crear', 'CREAR')];
   const docenteEditar = [authenticate, verificarPermiso('docentes.editar', 'EDITAR')];
   const docenteEliminar = [authenticate, verificarPermiso('docentes.editar', 'ELIMINAR')];
-  const docenteAsignar = [authenticate, verificarPermiso('docentes.asignar', 'EDITAR')];
-  const docenteAsignarEliminar = [authenticate, verificarPermiso('docentes.asignar', 'ELIMINAR')];
+  const docenteAsignar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.asignacion-docente', 'EDITAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
+  const docenteAsignarEliminar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.asignacion-docente', 'ELIMINAR'],
+      ['docentes.asignar', 'ELIMINAR'],
+    ]),
+  ];
+  const docenteColorListar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.color-docente', 'LISTAR'],
+      ['institucional.horarios.asignacion-docente', 'LISTAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
+  const docenteColorEditar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.color-docente', 'EDITAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
+  const docenteCargaListar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.carga-docente', 'LISTAR'],
+      ['institucional.horarios.asignacion-docente', 'LISTAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
 
   router.get(
     '/',
@@ -152,21 +187,21 @@ export function buildDocentesRouter({ controllers, middlewares }) {
 
   router.get(
     '/colores-en-uso',
-    ...docenteAsignar,
+    ...docenteColorListar,
     validateRequest,
     (req, res, next) => controllers.getDocenteColoresEnUsoController.handle(req, res, next)
   );
 
   router.get(
     '/colores-sugeridos',
-    ...docenteAsignar,
+    ...docenteColorListar,
     validateRequest,
     (req, res, next) => controllers.getDocenteColoresSugeridosController.handle(req, res, next)
   );
 
   router.get(
     '/:id/carga-gestion',
-    ...docenteAsignar,
+    ...docenteCargaListar,
     ...getDocenteCargaGestionValidator,
     validateRequest,
     (req, res, next) => controllers.getDocenteCargaGestionController.handle(req, res, next)
@@ -174,7 +209,7 @@ export function buildDocentesRouter({ controllers, middlewares }) {
 
   router.put(
     '/:id/color',
-    ...docenteAsignar,
+    ...docenteColorEditar,
     ...idValidator,
     putDocenteColorValidator,
     validateRequest,

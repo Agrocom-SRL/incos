@@ -431,6 +431,8 @@ Subrutas operativas de horarios (definidas en `frontend/.../institucional/routes
 - `/institucional/horarios/plantilla` — `institucional.horario.plantilla` + LISTAR
 - `/institucional/horarios/paralelo/:id/gestion` — `institucional.gestion.horarios` + LISTAR
 - `/institucional/horarios/armado` — `institucional.horario.armado` + EDITAR
+- `/institucional/horarios/asignacion-docente` — `institucional.horarios.asignacion-docente` + LISTAR
+- `/institucional/horarios/carga-docentes/:gestionId` — `institucional.horarios.carga-docente` + LISTAR
 - `/institucional/horarios/aulas` — `institucional.gestion.horarios` + LISTAR
 - `/institucional/horarios/publicacion` — `institucional.horario.publicacion` + EDITAR
 
@@ -469,6 +471,31 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 | `/api/v1/aulas/catalogo` | GET | `institucional.oferta.paralelo-gestion` | LISTAR |
 
 **Roles (55):** RECTOR (2) y SEC_ACADEMICA (5) operación completa; DIR_ACADEMICO (3) CREAR/EDITAR/LISTAR/DETALLE sin ACTIVAR masivo.
+
+#### Asignación docente y carga (Sprint 4)
+
+| Código (seed) | ID | Acciones (56) | UI |
+|---|---|---|---|
+| `institucional.horarios.asignacion-docente` | 108 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Matriz `/institucional/horarios/asignacion-docente` (A6) |
+| `institucional.horarios.color-docente` | 109 | LISTAR, EDITAR | Color picker al asignar docente |
+| `institucional.horarios.carga-docente` | 110 | LISTAR, DETALLE | Dashboard `/institucional/horarios/carga-docentes/:gestionId` (A6) |
+
+| Recurso API | Método | Permiso | Acción | Notas |
+|-------------|--------|---------|--------|-------|
+| `/api/v1/asignaciones-docentes` | GET | `institucional.horarios.asignacion-docente` | LISTAR | Fallback `docentes.asignar` EDITAR |
+| `/api/v1/asignaciones-docentes` | POST | `institucional.horarios.asignacion-docente` | CREAR | Fallback `docentes.asignar` CREAR |
+| `/api/v1/asignaciones-docentes/:id` | GET | `institucional.horarios.asignacion-docente` | DETALLE | |
+| `/api/v1/asignaciones-docentes/:id` | PUT | `institucional.horarios.asignacion-docente` | EDITAR | |
+| `/api/v1/asignaciones-docentes/:id` | DELETE | `institucional.horarios.asignacion-docente` | ELIMINAR | |
+| `/api/v1/paralelos-gestion/:id/cobertura-docente` | GET | `institucional.horarios.asignacion-docente` | LISTAR | |
+| `/api/v1/docentes/:id/carga-gestion` | GET | `institucional.horarios.carga-docente` | LISTAR | También acepta asignacion-docente LISTAR |
+| `/api/v1/gestiones/:id/carga-docentes` | GET | `institucional.horarios.carga-docente` | LISTAR | Dashboard KPIs |
+| `/api/v1/docentes/colores-en-uso` | GET | `institucional.horarios.color-docente` | LISTAR | |
+| `/api/v1/docentes/colores-sugeridos` | GET | `institucional.horarios.color-docente` | LISTAR | |
+| `/api/v1/docentes/:id/color` | PUT | `institucional.horarios.color-docente` | EDITAR | |
+| `/api/v1/docentes/cursos/:cursoId/horarios` | GET | `institucional.horarios.asignacion-docente` | EDITAR | `cursoId` = `oferta_curso_id`; aula efectiva vía vista 54 |
+
+**Roles (55):** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) con acciones operativas sobre 108–110. Rutas legacy bajo `/docentes/asignaciones*` mantienen fallback `docentes.asignar` en backend hasta retiro en A6.
 
 Rutas retiradas del router (tabla `cursos` ya no existe): `GET/POST /paralelos/:id/cursos-oferta`, `POST /paralelos/:id/cursos`, `GET/PUT /paralelos/:id/schedule`, montaje `/api/v1/cursos`.
 

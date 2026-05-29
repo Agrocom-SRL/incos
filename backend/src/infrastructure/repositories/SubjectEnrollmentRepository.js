@@ -38,7 +38,7 @@ export class SubjectEnrollmentRepository extends BaseRepository {
      *
      * Mapeo:
      * - enrollmentId         → inscripcionId         → inscripcion_id
-     * - teacherAssignmentId  → asignacionDocenteId   → asignacion_docente_id
+     * - offerCourseId        → ofertaCursoId         → oferta_curso_id
      * - curriculumSubjectId  → asignaturaPlanId      → asignatura_plan_id
      * - finalGrade           → notaFinal             → nota_final
      * - status               → estado                → estado
@@ -48,8 +48,8 @@ export class SubjectEnrollmentRepository extends BaseRepository {
      * @param {Object} filters
      *   - enrollmentId
      *   - enrollmentIds
-     *   - teacherAssignmentId
-     *   - teacherAssignmentIds
+     *   - offerCourseId
+     *   - offerCourseIds
      *   - curriculumSubjectId
      *   - finalGrade
      *   - status
@@ -71,13 +71,13 @@ export class SubjectEnrollmentRepository extends BaseRepository {
         }
 
         if (
-            filters.teacherAssignmentIds &&
-            Array.isArray(filters.teacherAssignmentIds) &&
-            filters.teacherAssignmentIds.length > 0
+            filters.offerCourseIds &&
+            Array.isArray(filters.offerCourseIds) &&
+            filters.offerCourseIds.length > 0
         ) {
-            where.asignacionDocenteId = { [Op.in]: filters.teacherAssignmentIds };
-        } else if (filters.teacherAssignmentId) {
-            where.asignacionDocenteId = filters.teacherAssignmentId;
+            where.ofertaCursoId = { [Op.in]: filters.offerCourseIds };
+        } else if (filters.offerCourseId) {
+            where.ofertaCursoId = filters.offerCourseId;
         }
 
         if (filters.curriculumSubjectId) {

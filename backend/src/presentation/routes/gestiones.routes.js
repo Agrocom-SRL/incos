@@ -74,6 +74,19 @@ export function buildGestionesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.listPlanesHabilitadosByGestionController.handle(req, res, next)
     );
 
+    router.get(
+        '/:id/carga-docentes',
+        authenticate,
+        verificarPermisoCualquiera([
+            ['institucional.horarios.carga-docente', 'LISTAR'],
+            ['institucional.horarios.asignacion-docente', 'LISTAR'],
+            ['docentes.asignar', 'EDITAR'],
+        ]),
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getGestionCargaDocentesController.handle(req, res, next)
+    );
+
     // ============================================
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================

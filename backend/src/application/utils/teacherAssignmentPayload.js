@@ -5,7 +5,7 @@ export function normalizeTeacherAssignmentBody(body = {}) {
   const b = body || {};
   return {
     managementPlanId: pickInt(b, 'gestionPlanId', 'gestion_plan_id'),
-    offerCourseId: pickInt(b, 'offerCourseId', 'oferta_curso_id', 'ofertaCursoId'),
+    offerCourseId: pickInt(b, 'offerCourseId', 'oferta_curso_id', 'ofertaCursoId', 'cursoId'),
     teacherId: pickInt(b, 'docenteId', 'docente_id', 'teacherId'),
     hours: pickOptionalInt(b, 'cargaHoraria', 'carga_horaria', 'hours'),
     assignmentDate: pickString(b, 'fechaAsignacion', 'fecha_asignacion'),

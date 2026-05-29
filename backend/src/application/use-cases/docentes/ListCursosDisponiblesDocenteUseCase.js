@@ -1,5 +1,5 @@
 /**
- * GET /api/v1/docentes/cursos-disponibles — cursos del plan de estudios del plan habilitado.
+ * GET /api/v1/docentes/cursos-disponibles — oferta_cursos del plan habilitado.
  */
 
 import { NotFoundError } from '../../../domain/errors/index.js';
@@ -8,12 +8,12 @@ export class ListCursosDisponiblesDocenteUseCase {
   /**
    * @param {Object} deps
    * @param {import('../../../infrastructure/repositories/ManagementPlanRepository.js').ManagementPlanRepository} deps.managementPlanRepository
-   * @param {import('../../../infrastructure/repositories/CourseRepository.js').CourseRepository} deps.courseRepository
+   * @param {import('../../../infrastructure/repositories/CourseOfferRepository.js').CourseOfferRepository} deps.courseOfferRepository
    * @param {Object} deps.logger
    */
-  constructor({ managementPlanRepository, courseRepository, logger }) {
+  constructor({ managementPlanRepository, courseOfferRepository, logger }) {
     this.managementPlanRepository = managementPlanRepository;
-    this.courseRepository = courseRepository;
+    this.courseOfferRepository = courseOfferRepository;
     this.logger = logger;
   }
 
@@ -29,19 +29,14 @@ export class ListCursosDisponiblesDocenteUseCase {
       throw new NotFoundError('Plan habilitado');
     }
 
-    this.logger.info('[Docentes] Listar cursos disponibles (asignación)', { gestionPlanId: gpId, page, limit });
+    this.logger.info('[Docentes] Listar oferta disponible (asignación)', { gestionPlanId: gpId, page, limit });
 
     const plan = await this.managementPlanRepository.findById(gpId);
     if (!plan) {
       throw new NotFoundError('Plan habilitado');
     }
 
-    const studyPlanId = plan.studyPlanId;
-    if (studyPlanId == null || !Number.isFinite(Number(studyPlanId))) {
-      return { cursos: [], total: 0, page: 1, limit: 500, totalPages: 0 };
-    }
-
-    const { rows, total } = await this.courseRepository.findCursosByStudyPlanIdForCatalog(Number(studyPlanId), {
+    const { rows, total } = await this.courseOfferRepository.findCatalogByManagementPlanId(gpId, {
       page,
       limit,
     });

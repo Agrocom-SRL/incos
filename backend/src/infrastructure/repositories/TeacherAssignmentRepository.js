@@ -280,6 +280,65 @@ export class TeacherAssignmentRepository extends BaseRepository {
   }
 
   /**
+   * Resumen de carga horaria por docente en una gestión (dashboard).
+   * @param {number} gestionId — PK de gestiones
+   */
+  async findCargaResumenByGestion(gestionId) {
+    const gId = Number(gestionId);
+    if (!Number.isFinite(gId) || gId < 1) return [];
+
+    const rows = await sequelize.query(
+      `
+      SELECT
+        d.id AS docente_id,
+        TRIM(CONCAT(COALESCE(d.nombres, ''), ' ', COALESCE(d.apellido_paterno, ''), ' ', COALESCE(d.apellido_materno, ''))) AS nombre,
+        d.color_hex AS color_hex,
+        COALESCE(d.max_horas_semana, :defaultMaxSemana) AS max_semana,
+        COALESCE(SUM(COALESCE(ad.carga_horaria, ap.horas_semanales, 0)), 0) AS carga_semana
+      FROM asignaciones_docentes ad
+      INNER JOIN gestiones_planes gp
+        ON gp.id = ad.gestion_plan_id
+        AND gp.deleted_at IS NULL
+        AND gp.activo = TRUE
+        AND gp.gestion_id = :gestionId
+      INNER JOIN docentes d
+        ON d.id = ad.docente_id
+        AND d.deleted_at IS NULL
+        AND d.activo = TRUE
+      INNER JOIN oferta_cursos oc
+        ON oc.id = ad.oferta_curso_id
+        AND oc.deleted_at IS NULL
+        AND oc.activo = TRUE
+      INNER JOIN asignaturas_plan ap
+        ON ap.id = oc.asignatura_plan_id
+        AND ap.deleted_at IS NULL
+        AND ap.activo = TRUE
+      WHERE ad.deleted_at IS NULL
+        AND ad.activo = TRUE
+        AND ad.vigente = TRUE
+        AND ad.docente_id IS NOT NULL
+      GROUP BY d.id, d.nombres, d.apellido_paterno, d.apellido_materno, d.color_hex, d.max_horas_semana
+      ORDER BY nombre ASC, d.id ASC
+      `,
+      {
+        replacements: {
+          gestionId: gId,
+          defaultMaxSemana: 20,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    return rows.map((row) => ({
+      docenteId: Number(row.docente_id),
+      nombre: (row.nombre ?? '').trim(),
+      colorHex: row.color_hex ?? null,
+      maxSemana: Number(row.max_semana) || 20,
+      cargaSemana: Number(row.carga_semana) || 0,
+    }));
+  }
+
+  /**
    * Marca como no vigentes las asignaciones activas previas sobre la misma oferta.
    * Las matrículas permanecen ancladas a oferta_curso_id (no se repuntan).
    */

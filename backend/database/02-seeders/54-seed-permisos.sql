@@ -14,7 +14,7 @@
 --   21-23           → operaciones del cuaderno (evaluaciones, notas, guardar bimestre vigente)
 --   24              → consolidado bimestre: ajuste administrativo (habilitación) en bimestre cerrado
 --
--- [TOTAL] 106 permisos (oferta académica por gestión 105-107; académico 78-83)
+-- [TOTAL] 109 permisos (oferta 105-107; asignación docente horarios 108-110; académico 78-83)
 -- Ejecutar después de: 53-seed-roles.sql
 -- Ejecutar antes de:   56-seed-permiso-acciones.sql, 55-seed-roles-permisos.sql
 -- ============================================
@@ -156,11 +156,16 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 -- ── OFERTA ACADÉMICA — wizard /institucional/oferta ───
 (105, 'institucional.oferta.gestion-plan',      'Oferta: habilitar planes en gestión',           'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta', TRUE),
 (106, 'institucional.oferta.paralelo-gestion',  'Oferta: paralelos de gestión',                  'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta', TRUE),
-(107, 'institucional.oferta.cursos',             'Oferta: cursos ofertados por paralelo',         'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta', TRUE);
+(107, 'institucional.oferta.cursos',             'Oferta: cursos ofertados por paralelo',         'INSTITUCIONAL', 'INST', 'inst_oferta_academica', '/institucional/oferta', TRUE),
+
+-- ── ASIGNACIÓN DOCENTE / HORARIOS (Sprint 4) ─────────────────────────────────
+(108, 'institucional.horarios.asignacion-docente', 'Horarios: asignación docente por oferta',     'INSTITUCIONAL', 'INST', 'inst_horarios_asignacion', '/institucional/horarios/asignacion-docente', TRUE),
+(109, 'institucional.horarios.color-docente',      'Horarios: color del docente',                 'INSTITUCIONAL', 'INST', 'inst_horarios_asignacion', '/institucional/horarios/asignacion-docente', TRUE),
+(110, 'institucional.horarios.carga-docente',      'Horarios: carga horaria de docentes',         'INSTITUCIONAL', 'INST', 'inst_horarios_carga',      '/institucional/horarios/carga-docentes', TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Verificación post-insert:
--- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 106
+-- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 109
 -- SELECT COUNT(*) FROM permisos WHERE grupo_ui IS NULL AND activo = 1;   -- 1 (104)
 -- SELECT id, codigo FROM permisos WHERE modulo = 'ACA' AND codigo LIKE 'academico.calificacion%' ORDER BY id;
