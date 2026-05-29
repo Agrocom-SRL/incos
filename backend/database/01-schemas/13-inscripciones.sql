@@ -7,7 +7,9 @@
 -- Este archivo modela la MATRICULACIÓN del estudiante a una gestión: lo que trae
 -- aprobado al inscribirse (historial_previo) y lo que cursa (matriculas_materia).
 -- Notas y evaluaciones en 13-evaluaciones.sql; historial_matricula y nivelaciones
--- en 16-nivelaciones.sql; asistencias y licencias en 18-asistencias-licencias.sql.
+-- en 16-nivelaciones.sql; asistencias y licencias en 17-asistencias-licencias.sql.
+--
+-- Pre-requisito schema: 07a-estructura-academica-oferta.sql (FK matriculas_materia.oferta_curso_id)
 --
 --
 -- FLUJO DE NEGOCIO:
@@ -48,10 +50,9 @@
 --      SÍ → nota_efectiva = nivelaciones.nota_nivelacion (intento académico aprobado)
 --   3. SINO → nota_efectiva = matriculas_materia.nota_final (cálculo regular)
 --
--- CADENA CANÓNICA DE ENLACE (no duplicar columnas derivables):
 --   estudiante en gestión : matricula → inscripcion → datos_academicos → estudiante
 --   gestión de la matrícula: matricula → inscripcion → gestion
---   asignatura            : matricula → asignacion → curso → asignatura_plan
+--   asignatura            : matricula → oferta_curso → asignatura_plan
 --                           (asignatura_plan_id en matrícula = backup histórico)
 --
 -- RESTRICCIONES DE DISEÑO:
@@ -200,11 +201,9 @@ COMMENT='Materias aprobadas cargadas al inscribir, ancladas a inscripcion_id. Pa
 -- asistencias, nivelaciones e historial_matricula. Ninguno
 -- de esos hijos repite estudiante_id (se deriva por inscripcion).
 --
--- asignacion_docente_id apunta al curso específico (paralelo + materia + docente)
--- al que se matricula. asignatura_plan_id es REDUNDANCIA CONTROLADA (documentada):
--- la asignatura "oficial del curso" se deriva por asignacion → curso →
--- asignatura_plan; este campo es backup histórico para preservar el vínculo con
--- la materia/plan si la asignación docente se elimina o cambia.
+-- oferta_curso_id apunta a la materia ofertada que cursa el estudiante.
+-- Permanece estable durante la gestión aunque cambie el docente asignado.
+-- asignatura_plan_id es REDUNDANCIA CONTROLADA (documentada).
 --
 -- SIMPLIFICACIÓN DE NOTAS (refactor por 3FN):
 -- Esta tabla guarda SOLO nota_final como caché del cálculo regular ponderado
@@ -221,8 +220,8 @@ CREATE TABLE matriculas_materia (
 
     -- Relaciones principales
     inscripcion_id INT NULL COMMENT 'Inscripción a la gestión (referencia a inscripciones). Vía esta FK se derivan estudiante y gestión: NO se repiten en esta tabla ni en sus hijos.',
-    asignacion_docente_id INT NULL COMMENT 'Asignación docente (curso + docente + gestion_plan) a la que se matricula',
-    asignatura_plan_id INT NULL COMMENT 'Asignatura del plan (REDUNDANCIA CONTROLADA, documentada). Derivable por asignacion → curso → asignatura_plan; se mantiene como backup histórico para preservar el vínculo con la materia/plan original aunque la asignación docente cambie o se elimine.',
+    oferta_curso_id INT NULL COMMENT 'Oferta de curso que cursa el estudiante. Estable durante la gestión (reemplaza asignacion_docente_id V1).',
+    asignatura_plan_id INT NULL COMMENT 'Asignatura del plan (REDUNDANCIA CONTROLADA, documentada). Derivable por oferta → asignatura_plan; se mantiene como backup histórico.',
 
     -- Resumen académico (caché del cálculo regular)
     nota_final DECIMAL(5,2) NULL COMMENT 'Nota final calculada (0-100). Caché del cálculo regular: SUMA_PONDERADA(4 bimestres + N evaluaciones finales) / SUMA(pesos). Nota mínima para aprobar: 61. Los casos excepcionales viven en historial_matricula (nota_resultante para administrativos; la nota de intentos académicos vive en nivelaciones, enlazada vía nivelaciones.historial_matricula_id).',
@@ -250,12 +249,12 @@ CREATE TABLE matriculas_materia (
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
     FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id) ON DELETE SET NULL,
-    FOREIGN KEY (asignacion_docente_id) REFERENCES asignaciones_docentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (oferta_curso_id) REFERENCES oferta_cursos(id) ON DELETE SET NULL,
     FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
 
     -- Índices para optimización
     INDEX idx_inscripcion_id (inscripcion_id) COMMENT 'Búsqueda por inscripción',
-    INDEX idx_asignacion_docente_id (asignacion_docente_id) COMMENT 'Búsqueda por asignación docente',
+    INDEX idx_oferta_curso_id (oferta_curso_id) COMMENT 'Búsqueda por oferta de curso',
     INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Búsqueda por asignatura del plan',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',

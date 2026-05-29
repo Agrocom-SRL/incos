@@ -1,13 +1,13 @@
 -- ============================================
 -- SEEDER: asignaciones_docentes - ADMINISTRACIÓN DE EMPRESAS TERCER AÑO
 -- Sistema de Gestión Académica - Instituto INCOS
--- Asignación de docentes a cursos - Gestión 2026 (VIGENTE)
+-- Asignación de docentes a oferta_cursos (V2) - Gestión 2026 (VIGENTE)
 -- ============================================
 -- Gestión 2026: gestion_id = 1 (vigente)
 -- Plan Administración de Empresas: gestion_plan_id = 2
 -- Periodo: Tercer Año (periodo_id = 6)
 -- Paralelo: TERCERO A (paralelo_id=10)
--- Cursos: IDs 68-74 (3A: 68-74)
+-- Oferta cursos: IDs 68-74 (3A: 68-74)
 -- ============================================
 -- NOTA: Asignaciones basadas en el horario académico oficial 2026 (imagen proporcionada)
 -- Docentes ADM-EMP: IDs 8-15
@@ -19,6 +19,9 @@
 --  15: Paola Mariaca
 --  18: Sonia Carrizales
 
+-- Sprint 4 — Asignación docente (ejecutar ANTES de 40–48 asignacion_horarios)
+-- Pre-requisitos: 28–30 seed-oferta-cursos-*, 26-seed-docentes
+
 USE instituto_incos;
 
 -- Deshabilitar foreign key checks temporalmente
@@ -29,43 +32,43 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - TERCERO A (NOCHE)
--- Cursos: IDs 68-74
+-- Oferta cursos: IDs 68-74
 -- ============================================
 
--- ADMINISTRACIÓN DE LA MICRO, PEQUEÑA Y MEDIANA EMPRESA (curso_id = 68, asignatura_plan_id = 39) - 6 horas/semana
+-- ADMINISTRACIÓN DE LA MICRO, PEQUEÑA Y MEDIANA EMPRESA (oferta_curso_id = 68, asignatura_plan_id = 39) - 6 horas/semana
 -- Docente: Lic. Paola Mariaca (docente_id = 15)
-INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
+INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
 (68, 2, 68, 15, 6, TRUE, '2026-01-19', TRUE);
 
--- INCUBACIÓN Y MODELOS DE NEGOCIOS (curso_id = 69, asignatura_plan_id = 40) - 4 horas/semana
+-- INCUBACIÓN Y MODELOS DE NEGOCIOS (oferta_curso_id = 69, asignatura_plan_id = 40) - 4 horas/semana
 -- Docente: Lic. René Roca (docente_id = 11)
-INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
+INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
 (69, 2, 69, 11, 4, TRUE, '2026-01-19', TRUE);
 
--- ADMINISTRACIÓN FINANCIERA II (curso_id = 70, asignatura_plan_id = 41) - 4 horas/semana
+-- ADMINISTRACIÓN FINANCIERA II (oferta_curso_id = 70, asignatura_plan_id = 41) - 4 horas/semana
 -- Docente: Lic. Jose Luiz Uribe (docente_id = 14)
-INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
+INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
 (70, 2, 70, 14, 4, TRUE, '2026-01-19', TRUE);
 
--- TALLER DE MODALIDAD DE GRADUACIÓN (curso_id = 71, asignatura_plan_id = 42) - 4 horas/semana
+-- TALLER DE MODALIDAD DE GRADUACIÓN (oferta_curso_id = 71, asignatura_plan_id = 42) - 4 horas/semana
 -- Docente: Lic. PUMA (docente_id = 13)
-INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
+INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
 (71, 2, 71, 13, 4, TRUE, '2026-01-19', TRUE);
 
--- EMPRENDIMIENTO PRODUCTIVO (curso_id = 72, asignatura_plan_id = 43) - 4 horas/semana
+-- EMPRENDIMIENTO PRODUCTIVO (oferta_curso_id = 72, asignatura_plan_id = 43) - 4 horas/semana
 -- Docente: Lic. Vladimir Marca (docente_id = 8)
 -- NOTA: La imagen muestra solo 2 horas asignadas (MARTES periodos 4-5), pero asignaturas_plan indica 4 horas
-INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
+INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
 (72, 2, 72, 8, 4, TRUE, '2026-01-19', TRUE);
 
--- COMERCIO INTERNACIONAL (curso_id = 73, asignatura_plan_id = 44) - 4 horas/semana
+-- COMERCIO INTERNACIONAL (oferta_curso_id = 73, asignatura_plan_id = 44) - 4 horas/semana
 -- Docente: Lic. Vladimir Marca (docente_id = 8)
-INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
+INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
 (73, 2, 73, 8, 4, TRUE, '2026-01-19', TRUE);
 
--- GESTIÓN ESTRATÉGICA (curso_id = 74, asignatura_plan_id = 45) - 4 horas/semana
+-- GESTIÓN ESTRATÉGICA (oferta_curso_id = 74, asignatura_plan_id = 45) - 4 horas/semana
 -- Docente: Lic. Sonia Carrizales (docente_id = 18)
-INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
+INSERT INTO asignaciones_docentes (id, gestion_plan_id, oferta_curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
 (74, 2, 74, 18, 4, TRUE, '2026-01-19', TRUE);
 
 -- Rehabilitar foreign key checks

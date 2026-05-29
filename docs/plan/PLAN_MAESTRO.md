@@ -91,7 +91,7 @@ Resumen operativo:
 4. **Permisos:** códigos `configuracion.*` en seeds **54–56**; coherencia con `routes.jsx` y `verificarPermiso` (ver `docs/referencia/matriz-permisos-sistema.md` § CFG).
 5. **Implementación:** listado/detalle → `docs/guias/`; arquitectura → `.cursor/rules/incos-*-module.mdc` y skill correspondiente.
 
-**Estado Sprint 1 (frontend, 2026-05-27):** refactor de menú Académico consolidado (tabs carreras/materias/planes + detalle de plan); Complementarios con mismo patrón (discapacidad operativa). Pendiente: matriz/validador backend, tabs planes/prerrequisitos completos, limpieza de carpetas legacy duplicadas.
+**Estado Sprint 1 (frontend, 2026-05-27):** refactor de menú Académico consolidado (tabs carreras/materias/planes + detalle de plan); Complementarios con mismo patrón (discapacidad operativa). **Cerrado 2026-05-29:** CRUD carreras/materias, modal eliminar, notificaciones `notification.*`.
 
 ---
 
@@ -148,4 +148,4 @@ Estos temas no se tocan en este refactor:
 
 ---
 
-**Estado del plan:** Aprobado. Sprint 1 en curso (backend CRUD listo; frontend CFG académico refactorizado según `incos-frontend-module`; ver `SPRINT_1.md` §8).
+**Estado del plan:** Aprobado. **Sprint 1 cerrado** (2026-05-29). **Sprint 2 en curso** — DDL V2 en `07a`/`07b` (módulos oferta y horarios); seeders `27`–`48`; aplicación manual: schemas → seeders → `03-views`.

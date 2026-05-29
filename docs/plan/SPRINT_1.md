@@ -312,7 +312,9 @@ Permisos exigidos en rutas: `configuracion.carrera`, `configuracion.materia`,
 - [x] Tab Planes: sidebar + lista por carrera; detalle con matriz, validador, marcar vigente, editar metadatos.
 - [x] Prerrequisitos en `PlanDetallePage` (no tab suelto).
 - [x] Presentation legacy `carreras/`, `materias/` eliminados; redirects `datos-complementarios` OK.
-- [ ] Prueba manual E2E (checklist abajo).
+- [ ] Prueba manual E2E (checklist abajo) — opcional post-cierre; CRUD carreras/materias verificado en desarrollo.
+
+**Estado:** Sprint 1 **cerrado** (2026-05-29).
 
 ### 9.1 Checklist E2E manual — CFG Académico
 

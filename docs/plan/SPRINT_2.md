@@ -8,16 +8,17 @@
 
 ## 1. Objetivo
 
-Reescribir el schema de horarios y oferta académica. Esto es un sprint **solo de base de datos**, sin endpoints ni UI, pero con scripts de migración y seeders actualizados.
+Reescribir el schema de horarios y oferta académica. Este es un sprint **solo de base de datos**, sin endpoints ni UI.
 
-Decisión confirmada: la base se vacía y se reconstruye. No hay migración de datos legacy.
+Decisión confirmada: la base se vacía y se reconstruye aplicando manualmente los `.sql` de `backend/database/01-schemas/` y los seeders de `02-seeders/`. No hay migración de datos legacy ni scripts automáticos en servidor.
 
 ## 2. Entregables
 
-1. **Script DDL** que elimina las tablas obsoletas y crea las nuevas.
-2. **Seeders actualizados** que ya no referencian `cursos`/`cursos_horarios`.
-3. **Tests del schema** (foreign keys, índices, soft delete funcionando).
-4. **Documentación inline** en los `.sql` con comentarios COMMENT.
+1. **Schemas en `01-schemas/`** — tablas V2 integradas en los archivos existentes (no un script suelto en `05-migrations/`).
+2. **Seeders actualizados** (`27`–`48`) que ya no referencian `cursos`/`cursos_horarios`.
+3. **Documentación inline** en los `.sql` con comentarios COMMENT.
+
+**Fuera de alcance:** scripts `backend/scripts/`, tests Jest de integración, `npm run db:reset`. El DBA aplica SQL manualmente.
 
 ## 3. Tablas eliminadas (DROP)
 
@@ -193,100 +194,83 @@ ALTER TABLE matriculas_materia
 
 `asignatura_plan_id` se conserva como redundancia controlada (ya documentada en el schema actual). Sirve para que las evaluaciones, historial y nivelaciones sigan funcionando sin tocar nada.
 
-## 6. Orden de ejecución del script
+## 6. Dónde vive el DDL (no usar `05-migrations/`)
 
-```sql
-SET FOREIGN_KEY_CHECKS = 0;
+Los cambios V2 están **integrados en los schemas base**, no en un archivo de migración incremental:
 
--- 1) Drop legacy
-DROP TABLE IF EXISTS cursos_horarios;
-DROP TABLE IF EXISTS cursos;
+| Archivo | Contenido |
+|---|---|
+| `06-estructura-academica-parte2.sql` | docentes (+ color, máx. carga), paralelos, aulas, horarios |
+| `07-estructura-academica-parte3.sql` | gestiones, gestiones_planes, actividades, periodos, calendario |
+| `07a-estructura-academica-oferta.sql` | `paralelos_gestion` + `oferta_cursos` |
+| `07b-estructura-academica-horarios.sql` | `asignaciones_docentes` + `asignacion_horarios` |
+| `12-inscripciones.sql` | `matriculas_materia.oferta_curso_id` (requiere `07a`) |
+| `20-supervision-libros.sql` | `supervisiones_programadas.oferta_curso_id` |
 
--- 2) Alter docentes
-ALTER TABLE docentes ...;
+**Orden de aplicación manual** (BD vacía o reconstruida):
 
--- 3) Crear tablas nuevas en orden de dependencia
-CREATE TABLE paralelos_gestion ...;
-CREATE TABLE oferta_cursos ...;
-CREATE TABLE asignacion_horarios ...;
+1. Schemas `01-schemas/` en orden: `01` … `07` → `07a` → `07b` → `08` … `23`.
+2. Seeders `02-seeders/` en orden numérico (ver §7).
+3. Vistas `03-views/` al final.
 
--- 4) Alter tablas que dependen de oferta_cursos
-ALTER TABLE asignaciones_docentes ...;
-ALTER TABLE matriculas_materia ...;
+Los archivos en `05-migrations/` (`01`–`03`) quedan en **segundo plano**: solo para migrar datos reales legacy cuando el schema V2 ya esté aplicado.
 
-SET FOREIGN_KEY_CHECKS = 1;
-```
+## 7. Seeders — orden alineado a Sprints 3 → 4 → 5
 
-## 7. Seeders a actualizar
+| Archivo | Sprint | Tabla |
+|---|---|---|
+| `27-seed-paralelos-gestion.sql` | 3 | Todos los `paralelos_gestion` (18 filas) |
+| `28-seed-oferta-cursos-sistemas.sql` | 3 | `oferta_cursos` SIS (1–30) |
+| `29-seed-oferta-cursos-administracion.sql` | 3 | `oferta_cursos` ADM (31–74) |
+| `30-seed-oferta-cursos-contaduria.sql` | 3 | `oferta_cursos` CON (75–140) |
+| `31`–`39` seed-asignaciones-docentes-* | 4 | `asignaciones_docentes` (docente → oferta) |
+| `40`–`48` seed-asignacion-horarios-* | 5 | `asignacion_horarios` (bloques por asignación docente) |
 
-- **Eliminar:** cualquier seeder que poblaba `cursos` o `cursos_horarios` (probablemente archivos como `25-cursos.sql`, `26-cursos-horarios.sql` si existen).
-- **Mantener:** seeders de catálogo (`18-carreras.sql`, `19-materias.sql`, `20-planes-estudios.sql`, etc.).
-- **No agregar todavía** seeders para `paralelos_gestion`, `oferta_cursos`, `asignacion_horarios`. Esas tablas se poblarán dinámicamente desde la UI de los Sprints 3-5.
+Los bloques horarios **dependen** de `asignacion_docente_id`; por eso asignaciones (31–39) van **antes** que horarios (40–48).
 
-## 8. Tests del schema
+IDs numéricos de oferta (1–140) y asignaciones se conservan para compatibilidad con datos institucionales 2026.
 
-Crear test mínimo que valide:
+## 8. Validación manual (checklist al aplicar SQL)
 
-1. Las tablas nuevas existen y tienen las columnas esperadas.
-2. Las FKs apuntan correctamente y permiten NULL.
-3. Los índices nuevos están presentes.
-4. `cursos` y `cursos_horarios` ya NO existen.
-5. `asignaciones_docentes` ya NO tiene `curso_id`.
-6. `matriculas_materia` ya NO tiene `asignacion_docente_id`.
-7. `docentes.color_hex`, `max_horas_semana`, `max_horas_mes` existen con sus defaults.
-8. Soft delete: insertar fila, marcar `deleted_at`, consulta filtrada por `deleted_at IS NULL` no la trae.
+Tras ejecutar schemas + seeders en tu cliente MySQL:
+
+1. `SHOW TABLES` no incluye `cursos` ni `cursos_horarios`.
+2. Existen `paralelos_gestion`, `oferta_cursos`, `asignacion_horarios`.
+3. `DESCRIBE asignaciones_docentes` → `oferta_curso_id` (sin `curso_id`).
+4. `DESCRIBE matriculas_materia` → `oferta_curso_id` (sin `asignacion_docente_id`).
+5. `DESCRIBE docentes` → `color_hex`, `max_horas_semana`, `max_horas_mes`.
+6. Conteos: 140 filas en `oferta_cursos`; 18 en `paralelos_gestion` (SIS 4 + ADM 6 + CON 8).
 
 ## 9. Definition of Done
 
-- [ ] Script `migration_v2.sql` ejecuta sin errores en BD vacía.
-- [ ] Script `migration_v2.sql` ejecuta sin errores en BD con seeders 1-21 cargados.
-- [ ] `SHOW TABLES` no muestra `cursos` ni `cursos_horarios`.
-- [ ] `DESCRIBE asignaciones_docentes` muestra `oferta_curso_id` y NO `curso_id`.
-- [ ] `DESCRIBE matriculas_materia` muestra `oferta_curso_id` y NO `asignacion_docente_id`.
-- [ ] `DESCRIBE docentes` muestra `color_hex`, `max_horas_semana`, `max_horas_mes`.
-- [ ] Tests automatizados de la sección 8 pasando.
-- [ ] Seeders 1-21 + DDL V2 se ejecutan en orden y dejan la BD lista para Sprint 3.
+- [x] Schemas `06`, `07`, `12`, `20` actualizados con DDL V2.
+- [x] Seeders `27`–`48` reestructurados (sin `.legacy`, sin renombrar a archivo muerto).
+- [x] Sin scripts automáticos en `backend/scripts/` ni tests de integración de schema.
+- [ ] Aplicación manual en servidor verificada por el DBA (checklist §8).
+- [ ] Vistas `03-views/` que referencian `cursos` — pendiente Sprint 3+ o ajuste aparte.
 
 ---
 
 ## 10. Prompt para agente IA
 
 ```
-Contexto: Sistema académico INCOS. Estamos en Sprint 2 del plan V2. Aquí solo tocamos el
-schema MySQL. La BD se vacía y reconstruye limpia (decisión confirmada del usuario).
+Contexto: Sistema académico INCOS. Sprint 2 del plan V2 — solo schema MySQL.
+La BD se reconstruye limpia. El usuario aplica SQL MANUALMENTE; no crear scripts
+automáticos ni tests de integración.
 
-Necesito que generes:
+Modificar directamente backend/database/01-schemas/:
+  - 06, 07, 07a (oferta: paralelos_gestion + oferta_cursos)
+  - 07b (horarios: asignaciones_docentes + asignacion_horarios)
+  - 12-inscripciones.sql, 20-supervision-libros.sql
 
-1) Un archivo SQL único `40-migration-v2-horarios.sql` que en una sola transacción:
-   - DROP TABLE cursos_horarios, cursos.
-   - ALTER docentes para agregar color_hex (VARCHAR 7 NULL), max_horas_semana (INT NULL
-     DEFAULT 20), max_horas_mes (INT NULL DEFAULT 80).
-   - CREATE TABLE paralelos_gestion según SPRINT_2.md sección 4.1.
-   - CREATE TABLE oferta_cursos según SPRINT_2.md sección 4.2.
-   - CREATE TABLE asignacion_horarios según SPRINT_2.md sección 4.3.
-   - ALTER asignaciones_docentes: agregar oferta_curso_id FK a oferta_cursos, eliminar
-     curso_id (la FK actual se debe inspeccionar y dropear primero por nombre real).
-   - ALTER matriculas_materia: agregar oferta_curso_id FK a oferta_cursos, eliminar
-     asignacion_docente_id.
+Reestructurar seeders 27-48 (orden = Sprint 3 → 4 → 5):
+  - 27: paralelos_gestion (único archivo)
+  - 28-30: oferta_cursos por carrera
+  - 31-39: asignaciones_docentes (ANTES de horarios)
+  - 40-48: asignacion_horarios (bloques por asignacion_docente_id)
 
-   Reglas del proyecto:
-   - Todas las FKs nuevas: NULL permitido, ON DELETE SET NULL.
-   - Sin UNIQUE, sin CHECK.
-   - Auditoría estándar completa en cada tabla nueva (activo, created_at, updated_at,
-     deleted_at, created_by, updated_by, deleted_by).
-   - Índices según los listados en cada CREATE TABLE.
-   - COMMENT documentando propósito en cada tabla y columna importante.
+NO crear 40-migration-v2-horarios.sql en 05-migrations/.
+NO crear backend/scripts/ ni tests schema-v2.
 
-2) Eliminar (o renombrar a .legacy) los archivos de seeder que poblaban cursos o
-   cursos_horarios. Lista los archivos afectados antes de eliminar.
-
-3) Tests del schema en Jest/Mocha (según lo que use el backend) que validen los 8
-   puntos de la sección 8 de SPRINT_2.md.
-
-4) Un script `reset-db.sh` que en orden ejecuta: schema base completo + seeders 1-21 +
-   40-migration-v2-horarios.sql, dejando la BD lista para Sprint 3.
-
-No generes endpoints ni código de aplicación. Solo schema y tests.
-
-Empieza por el SQL.
+Reglas: FKs NULL + ON DELETE SET NULL, auditoría estándar, COMMENT en tablas/columnas.
 ```
