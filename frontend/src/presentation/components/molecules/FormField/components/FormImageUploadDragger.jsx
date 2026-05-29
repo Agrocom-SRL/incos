@@ -1,14 +1,23 @@
 /**
- * Upload de imagen con vista previa a pantalla completa del área (blob local o ruta servidor).
+ * Upload de imagen: preview a pantalla completa + capa clickeable encima (sin depender del layout interno de Ant Upload).
+ * Form.Item con valuePropName="fileList" inyecta la prop fileList (no value).
  */
 import { useCallback } from 'react';
-import { Form, Upload, Typography } from 'antd';
+import { App, Form, Upload, Typography } from 'antd';
 import { InboxOutlined, UploadOutlined } from '@ant-design/icons';
 import { buildCarreraImageUrl } from '@application-configuracion/academico/utils/buildCarreraImageUrl';
 import { useImageUploadPreviewUrl } from '../hooks/useImageUploadPreviewUrl';
 
 const { Dragger } = Upload;
 const { Text } = Typography;
+
+const IMAGE_EXT_RE = /\.(jpe?g|png|webp|gif|bmp|tiff?|svg|avif|heic|heif)$/i;
+
+const isImageFile = (file) => {
+  if (!file) return false;
+  if (file.type?.startsWith('image/')) return true;
+  return IMAGE_EXT_RE.test(file.name || '');
+};
 
 const DEFAULT_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.tif,.svg,.avif,.heic,.heif';
 
@@ -35,19 +44,48 @@ const enrichFileListWithPreview = (nextList) => {
   });
 };
 
-const FormImageUploadDragger = ({ value, onChange, disabled, readOnly, field, form }) => {
+const resolveControlledFileList = (fileListProp, value) => {
+  if (Array.isArray(fileListProp)) return fileListProp;
+  if (Array.isArray(value)) return value;
+  return [];
+};
+
+const FormImageUploadDragger = ({
+  fileList: fileListProp,
+  value,
+  onChange,
+  disabled,
+  readOnly,
+  field,
+  form,
+}) => {
+  const { message } = App.useApp();
   const d = disabled || readOnly;
-  const fileList = value ?? [];
+  const fileList = resolveControlledFileList(fileListProp, value);
   const previewField = field.previewField || 'imagenRuta';
   const storedPath = form ? Form.useWatch(previewField, form) : null;
+  const hasLocalFile = Boolean(fileList[0]);
 
-  const previewUrl = useImageUploadPreviewUrl(fileList, () => buildCarreraImageUrl(storedPath));
+  const previewUrl = useImageUploadPreviewUrl(
+    fileList,
+    hasLocalFile ? null : () => buildCarreraImageUrl(storedPath),
+  );
   const hasPreview = Boolean(previewUrl);
+
+  const handleBeforeUpload = useCallback(
+    (file) => {
+      if (!isImageFile(file)) {
+        message.error('Seleccione un archivo de imagen (JPG, PNG, WEBP, GIF, etc.)');
+        return Upload.LIST_IGNORE;
+      }
+      return false;
+    },
+    [message],
+  );
 
   const handleChange = useCallback(
     ({ fileList: next }) => {
-      const enriched = enrichFileListWithPreview(next);
-      onChange?.(enriched);
+      onChange?.(enrichFileListWithPreview(next));
     },
     [onChange],
   );
@@ -58,23 +96,15 @@ const FormImageUploadDragger = ({ value, onChange, disabled, readOnly, field, fo
     >
       {hasPreview ? (
         <img
+          key={previewUrl}
           src={previewUrl}
           alt={field.previewAlt || 'Vista previa de la imagen'}
           className="form-image-upload__preview-img"
         />
       ) : null}
 
-      <Dragger
-        className="form-image-upload__dragger"
-        maxCount={field.maxCount ?? 1}
-        beforeUpload={() => false}
-        accept={field.accept || DEFAULT_ACCEPT}
-        fileList={fileList}
-        onChange={handleChange}
-        disabled={d}
-        showUploadList={false}
-      >
-        <div className="form-image-upload__content">
+      <div className="form-image-upload__layer">
+        <div className="form-image-upload__content" aria-hidden={false}>
           <p className="form-image-upload__icon">
             {hasPreview ? <UploadOutlined /> : <InboxOutlined />}
           </p>
@@ -88,7 +118,20 @@ const FormImageUploadDragger = ({ value, onChange, disabled, readOnly, field, fo
             {field.formatsHint || 'Formatos: JPG, PNG, WEBP, GIF, BMP, TIFF y más'}
           </Text>
         </div>
-      </Dragger>
+
+        <Dragger
+          className="form-image-upload__hit"
+          maxCount={field.maxCount ?? 1}
+          beforeUpload={handleBeforeUpload}
+          accept={field.accept || DEFAULT_ACCEPT}
+          fileList={fileList}
+          onChange={handleChange}
+          disabled={d}
+          showUploadList={false}
+        >
+          <span className="form-image-upload__hit-target" aria-label="Seleccionar imagen" />
+        </Dragger>
+      </div>
     </div>
   );
 };

@@ -144,6 +144,7 @@ const FormField = ({
         {...layoutProps}
         valuePropName="fileList"
         getValueFromEvent={fileListFromUploadEvent}
+        normalize={(v) => (Array.isArray(v) ? v : [])}
         rules={mergedRules}
         className={formItemClassName}
         {...preserveProps}

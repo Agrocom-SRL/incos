@@ -3,9 +3,17 @@
  */
 import { useEffect, useState } from 'react';
 
+const resolveLocalFile = (fileList) => {
+  const item = fileList?.[0];
+  if (!item) return null;
+  if (item.originFileObj instanceof File) return item.originFileObj;
+  if (item instanceof File) return item;
+  return null;
+};
+
 export const useImageUploadPreviewUrl = (fileList, resolveStoredUrl) => {
   const [blobUrl, setBlobUrl] = useState(null);
-  const localFile = fileList?.[0]?.originFileObj;
+  const localFile = resolveLocalFile(fileList);
 
   useEffect(() => {
     if (!(localFile instanceof File)) {
@@ -26,5 +34,9 @@ export const useImageUploadPreviewUrl = (fileList, resolveStoredUrl) => {
     return stored;
   }
 
-  return resolveStoredUrl?.() ?? null;
+  if (typeof resolveStoredUrl === 'function') {
+    return resolveStoredUrl() ?? null;
+  }
+
+  return null;
 };

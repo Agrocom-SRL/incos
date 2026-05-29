@@ -1,17 +1,24 @@
 import { materiaListMapper } from './materiaListMapper';
 
+const MATERIA_FORM_EMPTY = {
+  sigla: '',
+  nombre: '',
+  objetivos: '',
+  tipo: 'TEORICA_PRACTICA',
+  clasificacion: '',
+};
+
 /** API → valores de formulario */
 export const mapMateriaToFormValues = (raw) => {
   const m = materiaListMapper(raw) || raw;
-  if (!m) {
-    return { tipo: 'TEORICA_PRACTICA' };
-  }
+  if (!m) return { ...MATERIA_FORM_EMPTY };
   return {
+    ...MATERIA_FORM_EMPTY,
     sigla: m.sigla ?? '',
     nombre: m.nombre ?? '',
     objetivos: m.objetivos ?? '',
     tipo: m.tipo ?? 'TEORICA_PRACTICA',
-    clasificacion: m.clasificacion ? [m.clasificacion] : [],
+    clasificacion: m.clasificacion ?? '',
   };
 };
 
@@ -21,10 +28,7 @@ export const mapFormValuesToMateriaPayload = (values) => ({
   nombre: values.nombre?.trim(),
   objetivos: values.objetivos?.trim() || undefined,
   tipo: values.tipo || 'TEORICA_PRACTICA',
-  clasificacion: (Array.isArray(values.clasificacion)
-    ? values.clasificacion[0]
-    : values.clasificacion
-  )?.trim() || undefined,
+  clasificacion: values.clasificacion?.trim() || undefined,
 });
 
 const mapAsignaturaMateriaRow = (row) => ({

@@ -1,10 +1,22 @@
 import { carreraListMapper } from './carreraListMapper';
 
-/** API → valores de formulario Ant Design */
+const CARRERA_FORM_EMPTY = {
+  codigo: '',
+  nombre: '',
+  descripcion: '',
+  areaFormacion: '',
+  tituloOtorgado: '',
+  colorHex: '#52c41a',
+  imagenRuta: '',
+  imagenArchivo: [],
+};
+
+/** API → valores de formulario Ant Design (todos los campos definidos → sin warning controlled/uncontrolled) */
 export const mapCarreraToFormValues = (raw) => {
   const c = carreraListMapper(raw) || raw;
-  if (!c) return { colorHex: '#52c41a', imagenArchivo: [] };
+  if (!c) return { ...CARRERA_FORM_EMPTY };
   return {
+    ...CARRERA_FORM_EMPTY,
     codigo: c.codigo ?? '',
     nombre: c.nombre ?? '',
     descripcion: c.descripcion ?? '',

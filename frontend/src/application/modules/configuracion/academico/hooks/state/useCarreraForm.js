@@ -56,6 +56,7 @@ export const useCarreraForm = (mode = 'create') => {
   const loadCarrera = useCallback(async () => {
     if (!isEditMode) {
       form.setFieldsValue(mapCarreraToFormValues(null));
+      form.setFieldValue('imagenArchivo', []);
       setLoading(false);
       return;
     }
@@ -70,7 +71,9 @@ export const useCarreraForm = (mode = 'create') => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo cargar la carrera');
       }
-      form.setFieldsValue(mapCarreraToFormValues(result.data?.carrera ?? result.data));
+      const values = mapCarreraToFormValues(result.data?.carrera ?? result.data);
+      form.setFieldsValue(values);
+      form.setFieldValue('imagenArchivo', values.imagenArchivo ?? []);
     } catch (e) {
       setError(e?.message || 'Error al cargar la carrera');
     } finally {

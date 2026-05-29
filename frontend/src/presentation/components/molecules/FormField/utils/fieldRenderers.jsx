@@ -20,6 +20,8 @@ import { useEffect } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import FormColorPopoverPicker from '../components/FormColorPopoverPicker';
 import FormImageUploadDragger from '../components/FormImageUploadDragger';
+import FormPillSelect from '../components/FormPillSelect';
+import { resolveFormPillClassName } from './formPillSelectResolvers';
 import {
   FieldInput,
   FieldSelect,
@@ -121,6 +123,19 @@ const renderInput = (field, disabled, readOnly) => (
  * Ant Design Form.Item también maneja onChange automáticamente para actualizar el formulario
  * Si field.onChange existe, se ejecutará además del onChange del Form.Item
  */
+const renderPillSelect = (field, disabled, readOnly, selectOptions) => (
+  <FormPillSelect
+    placeholder={field.placeholder}
+    disabled={disabled}
+    readOnly={readOnly}
+    options={selectOptions}
+    allowClear={field.allowClear}
+    resolvePillClassName={(optionValue) =>
+      resolveFormPillClassName(field.pillVariant, optionValue)
+    }
+  />
+);
+
 const renderSelect = (field, disabled, readOnly, selectOptions, form) => {
   // Si hay un onChange personalizado del campo (agregado por enrichers),
   // combinarlo con el onChange del Form.Item
@@ -413,6 +428,7 @@ export const fieldRenderers = {
   imageUpload: renderImageUpload,
   search: renderSearch,
   select: renderSelect,
+  pillSelect: renderPillSelect,
   date: renderDate,
   switch: renderSwitch,
   textarea: renderTextarea,
@@ -437,6 +453,7 @@ const fieldRendererParams = {
   switch: ['field', 'disabled', 'readOnly'],
   textarea: ['field', 'disabled', 'readOnly'],
   select: ['field', 'disabled', 'readOnly', 'selectOptions'],
+  pillSelect: ['field', 'disabled', 'readOnly', 'selectOptions'],
   radio: ['field', 'disabled', 'readOnly', 'selectOptions'],
   checkboxGroup: ['field', 'disabled', 'readOnly', 'selectOptions'],
   date: ['field', 'disabled', 'readOnly', 'minAge'],
