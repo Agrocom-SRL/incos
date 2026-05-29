@@ -11,7 +11,7 @@ import { ESTADOS_MATERIA_INSCRITA } from '../../domain/constants/inscripciones.c
  *
  * Mapeo:
  * inscripcionId        → enrollmentId
- * asignacionDocenteId  → teacherAssignmentId
+ * ofertaCursoId        → offerCourseId
  * asignaturaPlanId     → curriculumSubjectId
  * notaFinal            → finalGrade
  * estado               → status
@@ -35,8 +35,8 @@ export class SubjectEnrollmentMapper {
             specificFields.enrollmentId = dataValues.inscripcionId;
         }
 
-        if ('asignacionDocenteId' in dataValues && dataValues.asignacionDocenteId !== undefined) {
-            specificFields.teacherAssignmentId = dataValues.asignacionDocenteId;
+        if ('ofertaCursoId' in dataValues && dataValues.ofertaCursoId !== undefined) {
+            specificFields.offerCourseId = dataValues.ofertaCursoId;
         }
 
         if ('asignaturaPlanId' in dataValues && dataValues.asignaturaPlanId !== undefined) {
@@ -78,7 +78,7 @@ export class SubjectEnrollmentMapper {
 
         return {
             inscripcionId: data.enrollmentId ?? null,
-            asignacionDocenteId: data.teacherAssignmentId ?? null,
+            ofertaCursoId: data.offerCourseId ?? null,
             asignaturaPlanId: data.curriculumSubjectId ?? null,
             notaFinal: data.finalGrade ?? null,
             estado: data.status ?? ESTADOS_MATERIA_INSCRITA.INSCRITO,
@@ -105,8 +105,8 @@ export class SubjectEnrollmentMapper {
             updateData.inscripcionId = data.enrollmentId ?? null;
         }
 
-        if ('teacherAssignmentId' in data) {
-            updateData.asignacionDocenteId = data.teacherAssignmentId ?? null;
+        if ('offerCourseId' in data) {
+            updateData.ofertaCursoId = data.offerCourseId ?? null;
         }
 
         if ('curriculumSubjectId' in data) {

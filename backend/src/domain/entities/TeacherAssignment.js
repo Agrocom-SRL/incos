@@ -13,6 +13,9 @@ export class TeacherAssignment extends BaseEntity {
     if (data.hasOwnProperty('managementPlanId')) {
       this.managementPlanId = data.managementPlanId;
     }
+    if (data.hasOwnProperty('offerCourseId')) {
+      this.offerCourseId = data.offerCourseId;
+    }
     if (data.hasOwnProperty('courseId')) {
       this.courseId = data.courseId;
     }
@@ -52,6 +55,9 @@ export class TeacherAssignment extends BaseEntity {
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('managementPlanId')) {
       plainObject.managementPlanId = this.managementPlanId;
+    }
+    if (this.hasOwnProperty('offerCourseId')) {
+      plainObject.offerCourseId = this.offerCourseId;
     }
     if (this.hasOwnProperty('courseId')) {
       plainObject.courseId = this.courseId;

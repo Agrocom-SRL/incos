@@ -18,11 +18,11 @@ export const MatriculaMateria = sequelize.define(
             comment: 'Inscripción anual del estudiante en una gestión.',
         },
 
-        asignacionDocenteId: {
+        ofertaCursoId: {
             type: DataTypes.INTEGER,
-            field: 'asignacion_docente_id',
+            field: 'oferta_curso_id',
             allowNull: true,
-            comment: 'Asignación docente específica: curso + docente + gestión_plan.',
+            comment: 'Oferta de curso que cursa el estudiante. Estable durante la gestión.',
         },
 
         asignaturaPlanId: {

@@ -15,6 +15,7 @@ import {
   listCursosParaleloDocenteValidator,
   listCursosDisponiblesDocenteValidator,
   cursoIdParamValidator,
+  getDocenteCargaGestionValidator,
 } from '../validators/docentes/index.js';
 
 /**
@@ -146,6 +147,14 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     ...idValidator,
     validateRequest,
     (req, res, next) => controllers.deleteTeacherAssignmentController.handle(req, res, next)
+  );
+
+  router.get(
+    '/:id/carga-gestion',
+    ...docenteAsignar,
+    ...getDocenteCargaGestionValidator,
+    validateRequest,
+    (req, res, next) => controllers.getDocenteCargaGestionController.handle(req, res, next)
   );
 
   router.put(

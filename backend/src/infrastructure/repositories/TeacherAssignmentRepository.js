@@ -1,5 +1,7 @@
 import { IAsignacionDocenteRepository } from '../../domain/interfaces/repositories/IAsignacionDocenteRepository.js';
 import { AsignacionDocente as AsignacionDocenteModel } from '../database/models/asignacion_docente.js';
+import { sequelize } from '../database/sequelize.js';
+import { QueryTypes } from 'sequelize';
 import { BaseRepository } from './BaseRepository.js';
 import { TeacherAssignmentMapper } from '../mappers/TeacherAssignmentMapper.js';
 
@@ -74,6 +76,9 @@ export class TeacherAssignmentRepository extends BaseRepository {
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.managementPlanId) {
       where.gestionPlanId = filters.managementPlanId;
+    }
+    if (filters.offerCourseId) {
+      where.ofertaCursoId = filters.offerCourseId;
     }
     if (filters.courseId) {
       where.cursoId = filters.courseId;
@@ -204,6 +209,74 @@ export class TeacherAssignmentRepository extends BaseRepository {
       [collectionName]: rows.map((model) => this.toEntity(model)),
       total: rows.length,
     };
+  }
+
+  /**
+   * Asignaciones vigentes del docente en una gestión, con materia y paralelo para carga horaria.
+   * @param {number} teacherId
+   * @param {number} gestionId — PK de gestiones
+   * @returns {Promise<Array<{ id: number, ofertaCursoId: number, asignatura: string, paralelo: string, horas: number }>>}
+   */
+  async findCargaDetalleByDocenteAndGestion(teacherId, gestionId) {
+    const docenteId = Number(teacherId);
+    const gestionPk = Number(gestionId);
+    if (!Number.isFinite(docenteId) || docenteId < 1 || !Number.isFinite(gestionPk) || gestionPk < 1) {
+      return [];
+    }
+
+    const rows = await sequelize.query(
+      `
+      SELECT
+        ad.id,
+        ad.oferta_curso_id,
+        m.sigla AS asignatura_sigla,
+        p.nombre AS paralelo_nombre,
+        COALESCE(ad.carga_horaria, ap.horas_semanales, 0) AS horas
+      FROM asignaciones_docentes ad
+      INNER JOIN gestiones_planes gp
+        ON gp.id = ad.gestion_plan_id
+        AND gp.deleted_at IS NULL
+        AND gp.activo = TRUE
+      INNER JOIN oferta_cursos oc
+        ON oc.id = ad.oferta_curso_id
+        AND oc.deleted_at IS NULL
+        AND oc.activo = TRUE
+      INNER JOIN asignaturas_plan ap
+        ON ap.id = oc.asignatura_plan_id
+        AND ap.deleted_at IS NULL
+        AND ap.activo = TRUE
+      INNER JOIN materias m
+        ON m.id = ap.materia_id
+        AND m.deleted_at IS NULL
+        AND m.activo = TRUE
+      INNER JOIN paralelos_gestion pg
+        ON pg.id = oc.paralelo_gestion_id
+        AND pg.deleted_at IS NULL
+        AND pg.activo = TRUE
+      INNER JOIN paralelos p
+        ON p.id = pg.paralelo_id
+        AND p.deleted_at IS NULL
+        AND p.activo = TRUE
+      WHERE ad.docente_id = :docenteId
+        AND gp.gestion_id = :gestionId
+        AND ad.deleted_at IS NULL
+        AND ad.activo = TRUE
+        AND ad.vigente = TRUE
+      ORDER BY p.nombre ASC, m.sigla ASC, ad.id ASC
+      `,
+      {
+        replacements: { docenteId, gestionId: gestionPk },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    return rows.map((row) => ({
+      id: Number(row.id),
+      ofertaCursoId: Number(row.oferta_curso_id),
+      asignatura: row.asignatura_sigla ?? '',
+      paralelo: row.paralelo_nombre ?? '',
+      horas: Number(row.horas) || 0,
+    }));
   }
 }
 

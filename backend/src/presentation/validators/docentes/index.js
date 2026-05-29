@@ -10,3 +10,4 @@ export { listPeriodosDocenteValidator } from './list-periodos-docente.validator.
 export { listParalelosDocenteValidator } from './list-paralelos-docente.validator.js';
 export { listCursosParaleloDocenteValidator } from './list-cursos-paralelo-docente.validator.js';
 export { cursoIdParamValidator } from './curso-id-param.validator.js';
+export { getDocenteCargaGestionValidator } from './get-carga-gestion.validator.js';

@@ -71,15 +71,15 @@ Diferencia esencial: `matriculas_materia.oferta_curso_id` queda **estable** dura
 | **Base de datos** | 1–2 | Catálogo + DDL/seeders V2 |
 | **Aplicación** | 3–5 | API, repos, vistas SQL, UI alineados a V2 |
 
-Sprint 2 deja la BD **sin** `cursos` / `cursos_horarios`. Los sprints 3–5 **migran el código** que aún las referencia. Mapa detallado: `MIGRACION_CODIGO_V2.md`.
+Sprint 2 deja la BD **sin** `cursos` / `cursos_horarios`. Los sprints 3–5 migran el código que aún referencia el modelo anterior. Mapa detallado: `MIGRACION_CODIGO.md`.
 
 | Sprint | Foco | Capa | Documento |
 |---|---|---|---|
 | **1** ✅ | CFG → Plan de Estudio (catálogo) | Código | `SPRINT_1.md` |
 | **2** ✅ | Schema V2 — DDL + seeders `27`–`48` | Solo BD | `SPRINT_2.md` |
-| **3** | INST → Oferta + **retiro V1** en paralelos/cursos | Código | `SPRINT_3.md` |
-| **4** | Asignación docente + **migración docentes / MAT / calif. (lectura)** | Código | `SPRINT_4.md` |
-| **5** | Bloques + conflictos + **vistas horarios + armado UI** | Código | `SPRINT_5.md` |
+| **3** ✅ | INST → Oferta + retiro rutas legacy de oferta en paralelos | Código | `SPRINT_3.md` |
+| **4** | Asignación docente + **MAT/calificaciones operativos** | Código | `SPRINT_4.md` |
+| **5** | Bloques + conflictos + grilla horarios + publicación | Código | `SPRINT_5.md` |
 | Bonus | MAT completo + evaluaciones edge cases | Código | (post-5) |
 
 Cada sprint de aplicación deja un **smoke E2E** contra seeders locales, no solo endpoints nuevos encima de legacy.
@@ -157,4 +157,4 @@ Temas que siguen sin rediseño de negocio:
 
 ---
 
-**Estado del plan:** Aprobado. **Sprint 1 cerrado** (2026-05-29). **Sprint 2 cerrado en BD local** (schemas + seeders `27`–`48`). **Sprint 3 en curso** — código oferta V2 listo; pendiente: despliegue vistas auth + smoke E2E. **No iniciar Sprint 4** hasta cerrar DoD Sprint 3. Ver `backend/database/README.md` y `MIGRACION_CODIGO_V2.md`.
+**Estado del plan:** Aprobado. **Sprint 1 cerrado** (2026-05-29). **Sprint 2 cerrado** (schemas + seeders `27`–`48`). **Sprint 3 cerrado** (2026-05-29): API/FE oferta en `/institucional/oferta`, rutas V1 de oferta retiradas, vistas grupo oferta reescritas. **Sprint 4 en curso** — asignación docente + **continuidad operativa** (inscripciones y calificaciones ya en producción local con estudiantes matriculados; no esperar Sprint 5 para alinearlas a `oferta_curso_id`). Sprint 5 sigue reservado al armado de grilla, conflictos y publicación. Ver `MIGRACION_CODIGO.md` y `SPRINT_4.md` §0.1.

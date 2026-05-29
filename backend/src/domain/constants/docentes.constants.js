@@ -137,3 +137,9 @@ export const TIPOS_SECRETARIA = {
  */
 export const TIPOS_SECRETARIA_VALUES = Object.values(TIPOS_SECRETARIA);
 
+/** Carga docente — defaults alineados al schema (data real 2026). */
+export const DEFAULT_MAX_HORAS_SEMANA_DOCENTE = 20;
+export const DEFAULT_MAX_HORAS_MES_DOCENTE = 80;
+/** Equivalencia mensual usada al sumar horas semanales de asignaciones. */
+export const SEMANAS_EQUIVALENTES_MES_CARGA_DOCENTE = 4;
+

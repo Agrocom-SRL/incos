@@ -55,7 +55,8 @@ export class CreateEnrollmentUseCase {
    * @param {Object} params.studentRepository - Repositorio de estudiantes
    * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} params.parallelRepository - Repositorio de paralelos
-   * @param {Object} params.courseRepository - Repositorio de cursos
+   * @param {Object} params.courseOfferRepository - Repositorio de oferta de cursos
+   * @param {Object} params.parallelManagementRepository - Repositorio de paralelos en gestión
    * @param {Object} params.teacherAssignmentRepository - Repositorio de asignaciones docentes
    * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {Object} params.managementPlanRepository - Repositorio de planes habilitados
@@ -79,7 +80,8 @@ export class CreateEnrollmentUseCase {
     studentRepository,
     studentAcademicDataRepository,
     parallelRepository,
-    courseRepository,
+    courseOfferRepository,
+    parallelManagementRepository,
     teacherAssignmentRepository,
     managementRepository,
     managementPlanRepository,
@@ -103,7 +105,8 @@ export class CreateEnrollmentUseCase {
     this.studentRepository = studentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.parallelRepository = parallelRepository;
-    this.courseRepository = courseRepository;
+    this.courseOfferRepository = courseOfferRepository;
+    this.parallelManagementRepository = parallelManagementRepository;
     this.teacherAssignmentRepository = teacherAssignmentRepository;
     this.managementRepository = managementRepository;
     this.managementPlanRepository = managementPlanRepository;
@@ -240,9 +243,10 @@ export class CreateEnrollmentUseCase {
           enrollmentType,
           observations
         );
+        const offerRows = await this._offerRowsFromTeacherAssignments(teacherAssignments);
         const subjectEnrollments = await this._createsubjectEnrollments(
           enrollment,
-          teacherAssignments
+          offerRows
         );
         const priorEnrollmentHistories = await this._createPriorEnrollmentHistory(
           enrollment,
@@ -279,7 +283,7 @@ export class CreateEnrollmentUseCase {
       );
       await this._validateNoExistingEnrollment(studentAcademicData, management);
       await this._validatePaymentExists(student, management);
-      teacherAssignments = await this._getTeacherAssignmentsFromParallel(
+      teacherAssignments = await this._getCourseOfferRowsFromParallel(
         parallel,
         managementPlan
       );
@@ -381,19 +385,30 @@ export class CreateEnrollmentUseCase {
       throw new NotFoundError(`Asignación docente con ID ${teacherAssignmentId}`);
     }
     const assignmentPlain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
-    const courseId = assignmentPlain.courseId ?? assignmentPlain.cursoId;
-    if (!courseId) {
-      this.logger.warn('[Inscripciones] Asignación docente sin curso', { teacherAssignmentId });
+    const offerCourseId = assignmentPlain.offerCourseId ?? assignmentPlain.ofertaCursoId;
+    if (!offerCourseId) {
+      this.logger.warn('[Inscripciones] Asignación docente sin oferta de curso', { teacherAssignmentId });
       return { parallel: null };
     }
-    const course = await this.courseRepository.findById(courseId);
-    if (!course) {
-      throw new NotFoundError(`Curso con ID ${courseId}`);
+    const offer = await this.courseOfferRepository.findById(offerCourseId);
+    if (!offer) {
+      throw new NotFoundError(`Oferta de curso con ID ${offerCourseId}`);
     }
-    const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
-    const parallelId = coursePlain.paraleloId ?? coursePlain.parallelId;
+    const offerPlain = offer.toPlainObject ? offer.toPlainObject() : offer;
+    const parallelManagementId = offerPlain.parallelManagementId ?? offerPlain.paraleloGestionId;
+    if (!parallelManagementId) {
+      this.logger.warn('[Inscripciones] Oferta sin paralelo-gestión', { offerCourseId });
+      return { parallel: null };
+    }
+    const parallelManagement = await this.parallelManagementRepository.findById(parallelManagementId);
+    if (!parallelManagement) {
+      throw new NotFoundError(`Paralelo-gestión con ID ${parallelManagementId}`);
+    }
+    const pgPlain = parallelManagement.toPlainObject
+      ? parallelManagement.toPlainObject()
+      : parallelManagement;
+    const parallelId = pgPlain.parallelId ?? pgPlain.paraleloId;
     if (!parallelId) {
-      this.logger.warn('[Inscripciones] Curso sin paralelo', { courseId });
       return { parallel: null };
     }
     const parallel = await this.parallelRepository.findById(parallelId);
@@ -757,29 +772,27 @@ export class CreateEnrollmentUseCase {
       const parallelId = parallelIdsByPeriod[periodId];
       if (!parallelId) continue;
 
-      const coursesResult = await this.courseRepository.findAll({ parallelId: Number(parallelId) }, null, null);
-      const courses = coursesResult.courses || [];
+      const parallelManagement = await this.parallelManagementRepository.findByParallelAndManagementPlan(
+        Number(parallelId),
+        managementPlanId
+      );
+      if (!parallelManagement) continue;
 
-      for (const course of courses) {
-        const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
-        const asignaturaPlanId = coursePlain.planSubjectId ?? coursePlain.asignaturaPlanId;
-        if (!asignaturaPlanId) continue;
+      const pgPlain = parallelManagement.toPlainObject
+        ? parallelManagement.toPlainObject()
+        : parallelManagement;
+      const offers = await this.courseOfferRepository.findEnrichedByParallelManagementId(pgPlain.id);
 
-        const planSubject = await this.planSubjectRepository.findById(asignaturaPlanId);
-        if (!planSubject) continue;
-
-        const planPlain = planSubject.toPlainObject ? planSubject.toPlainObject() : planSubject;
-        const planPeriodId = planPlain.periodId ?? planPlain.periodoId;
-        const planMateriaId = planPlain.subjectId ?? planPlain.materiaId;
-        if (Number(planPeriodId) !== Number(periodId)) continue;
+      for (const offer of offers) {
+        if (Number(offer.periodoId) !== Number(periodId)) continue;
 
         const allowedMaterias = materiaIdSetByPeriod[periodId];
-        if (!allowedMaterias || !allowedMaterias.has(Number(planMateriaId))) continue;
+        if (!allowedMaterias || !allowedMaterias.has(Number(offer.materiaId))) continue;
 
         const assignmentsResult = await this.teacherAssignmentRepository.findAll(
           {
             managementPlanId,
-            courseId: coursePlain.id,
+            offerCourseId: offer.id,
             active: true,
           },
           1,
@@ -802,56 +815,79 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
-   * Obtiene todas las asignaciones docentes del paralelo para el plan habilitado
+   * Obtiene filas de oferta del paralelo para matricular (todas las materias ofertadas).
    * @private
-   * @param {Object} parallel - Entidad Parallel
-   * @param {Object} managementPlan - Entidad ManagementPlan
-   * @returns {Promise<Array>} Array de entidades TeacherAssignment
    */
-  async _getTeacherAssignmentsFromParallel(parallel, managementPlan) {
-    // Obtener todos los cursos del paralelo
-    const coursesResult = await this.courseRepository.findAll(
-      { parallelId: parallel.id },
-      null,
-      null
+  async _getCourseOfferRowsFromParallel(parallel, managementPlan) {
+    const parallelManagement = await this.parallelManagementRepository.findByParallelAndManagementPlan(
+      parallel.id,
+      managementPlan.id
     );
-    const courses = coursesResult.courses || [];
-
-    this.logger.info('[Inscripciones] Cursos del paralelo obtenidos', {
-      parallelId: parallel.id,
-      coursesCount: courses.length,
-    });
-
-    // Obtener todas las asignaciones docentes para estos cursos y el plan habilitado
-    const allAssignments = [];
-    for (const course of courses) {
-      const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
-      const assignmentsResult = await this.teacherAssignmentRepository.findAll(
-        {
-          managementPlanId: managementPlan.id,
-          courseId: coursePlain.id,
-          active: true,
-          vigente: true,
-        },
-        null,
-        null
+    if (!parallelManagement) {
+      throw new ValidationError(
+        `El paralelo ${parallel.name ?? parallel.id} no está instanciado en la gestión actual`
       );
-
-      if (assignmentsResult.teacherAssignments && assignmentsResult.teacherAssignments.length > 0) {
-        allAssignments.push(...assignmentsResult.teacherAssignments);
-        this.logger.info('[Inscripciones] Asignaciones docentes encontradas para curso', {
-          courseId: coursePlain.id,
-          assignmentsCount: assignmentsResult.teacherAssignments.length,
-        });
-      }
     }
 
-    this.logger.info('[Inscripciones] Asignaciones docentes obtenidas', {
+    const pgPlain = parallelManagement.toPlainObject
+      ? parallelManagement.toPlainObject()
+      : parallelManagement;
+    const offers = await this.courseOfferRepository.findEnrichedByParallelManagementId(pgPlain.id);
+    const activeOffers = offers.filter((o) => o.activo !== false && o.activo !== 0);
+
+    this.logger.info('[Inscripciones] Oferta del paralelo obtenida', {
       parallelId: parallel.id,
-      totalAssignments: allAssignments.length,
+      parallelManagementId: pgPlain.id,
+      offersCount: activeOffers.length,
     });
 
-    return allAssignments;
+    if (activeOffers.length === 0) {
+      throw new ValidationError(
+        'El paralelo no tiene materias ofertadas en la gestión actual. Configure la oferta académica primero.'
+      );
+    }
+
+    return activeOffers.map((offer) => ({
+      offerCourseId: offer.id,
+      curriculumSubjectId: offer.asignaturaPlanId,
+    }));
+  }
+
+  /**
+   * Convierte asignaciones docentes validadas en filas de oferta para matricular.
+   * @private
+   */
+  async _offerRowsFromTeacherAssignments(teacherAssignments) {
+    const rows = [];
+    const seenOfferIds = new Set();
+
+    for (const assignment of teacherAssignments) {
+      const plain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
+      const offerCourseId = plain.offerCourseId ?? plain.ofertaCursoId;
+      if (!offerCourseId) {
+        throw new ValidationError(
+          `La asignación docente ${plain.id} no está vinculada a una oferta de curso`
+        );
+      }
+      if (seenOfferIds.has(offerCourseId)) continue;
+      seenOfferIds.add(offerCourseId);
+
+      const offer = await this.courseOfferRepository.findById(offerCourseId);
+      if (!offer) {
+        throw new NotFoundError(`Oferta de curso con ID ${offerCourseId}`);
+      }
+      const offerPlain = offer.toPlainObject ? offer.toPlainObject() : offer;
+      rows.push({
+        offerCourseId,
+        curriculumSubjectId: offerPlain.planSubjectId ?? offerPlain.asignaturaPlanId,
+      });
+    }
+
+    if (rows.length === 0) {
+      throw new ValidationError('No se pudieron resolver materias desde las asignaciones docentes');
+    }
+
+    return rows;
   }
 
   /**
@@ -882,22 +918,22 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
-   * Crea las inscripciones de materias para todas las asignaciones docentes
+   * Crea matrículas de materia ancladas a oferta_curso_id.
    * @private
    * @param {Object} enrollment - Entidad Enrollment
-   * @param {Array} teacherAssignments - Array de entidades TeacherAssignment
-   * @returns {Promise<Array>} Array de entidades EnrollmentSubject
+   * @param {Array<{offerCourseId: number, curriculumSubjectId: number}>} offerRows
+   * @returns {Promise<Array>}
    */
-  async _createsubjectEnrollments(enrollment, teacherAssignments) {
+  async _createsubjectEnrollments(enrollment, offerRows) {
     const subjectEnrollments = [];
 
-    for (const assignment of teacherAssignments) {
+    for (const row of offerRows) {
       const enrollmentSubjectData = {
         enrollmentId: enrollment.id,
-        teacherAssignmentId: assignment.id,
+        offerCourseId: row.offerCourseId,
+        curriculumSubjectId: row.curriculumSubjectId ?? null,
         status: ESTADOS_MATERIA_INSCRITA.INSCRITO,
         observations: null,
-        teacherObservations: null,
       };
 
       const enrollmentSubject = await this.subjectEnrollmentRepository.create(
@@ -908,7 +944,7 @@ export class CreateEnrollmentUseCase {
       this.logger.info('[Inscripciones] Materia inscrita creada', {
         enrollmentId: enrollment.id,
         enrollmentSubjectId: enrollmentSubject.id,
-        teacherAssignmentId: assignment.id,
+        offerCourseId: row.offerCourseId,
       });
     }
 

@@ -15,3 +15,4 @@ export { ListPeriodosDocenteAsignacionController } from './list-periodos-docente
 export { ListParalelosDocenteAsignacionController } from './list-paralelos-docente.controller.js';
 export { ListCursosPorParaleloDocenteController } from './list-cursos-paralelo-docente.controller.js';
 export { GetDocentesConflictoBloquesController } from './get-conflicto-bloques-curso.controller.js';
+export { GetDocenteCargaGestionController } from './get-carga-gestion.controller.js';

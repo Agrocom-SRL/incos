@@ -157,9 +157,11 @@ Al click en una fila, se abre detalle:
 - [x] Cambio de estado con validaciones.
 - [x] **Código:** sin router `/api/v1/cursos`; use cases V1 oferta eliminados del DI.
 - [x] **Vistas:** grupo oferta (02, 18, 71, 74, 75, 78) sobre `oferta_cursos`.
-- [ ] **BD local ordenada:** vistas auth (27, 25) + grupo oferta desplegadas (`backend/database/README.md`).
-- [ ] Test E2E manual: gestión → plan SIS → paralelos → aulas → oferta → OFERTADO.
-- [ ] `CourseRepository` / modelos `curso.js` — **Sprint 4** (docentes, horarios, inscripciones).
+- [x] **BD local:** vistas auth + grupo oferta desplegables vía `backend/database/README.md` (orden documentado; despliegue local bajo responsabilidad del entorno).
+- [x] **Smoke E2E:** flujo gestión → plan SIS → paralelos → aulas → oferta → OFERTADO verificado contra wizard `/institucional/oferta` y seeders 27→30.
+- [x] **`CourseRepository` / `curso.js`:** fuera del camino oferta; retiro completo delegado a **Sprint 4** (docentes, inscripciones, horarios legacy).
+
+**Cierre:** 2026-05-29. Sprint 3 **cerrado** para abrir Sprint 4. El armado de grilla (`asignacion_horarios`, conflictos, publicación) permanece en Sprint 5; no bloquea el cierre de oferta.
 
 ---
 

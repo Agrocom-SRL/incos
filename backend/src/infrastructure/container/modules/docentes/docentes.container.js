@@ -27,8 +27,10 @@ import {
   ListParalelosDocenteAsignacionController,
   ListCursosPorParaleloDocenteController,
   GetDocentesConflictoBloquesController,
+  GetDocenteCargaGestionController,
 } from '../../../../presentation/controllers/docentes/index.js';
 import { GetDocentesConflictoBloquesCursoUseCase } from '../../../../application/use-cases/docentes/GetDocentesConflictoBloquesCursoUseCase.js';
+import { GetDocenteCargaGestionUseCase } from '../../../../application/use-cases/docentes/GetDocenteCargaGestionUseCase.js';
 import { ListTeacherAssignmentsUseCase } from '../../../../application/use-cases/docentes/ListTeacherAssignmentsUseCase.js';
 import { CreateTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/CreateTeacherAssignmentUseCase.js';
 import { AssignTeacherToCourseUseCase } from '../../../../application/use-cases/docentes/AssignTeacherToCourseUseCase.js';
@@ -445,6 +447,29 @@ export function registerDocentesModule(container) {
 
   registerComponent(
     container,
+    DOCENTES_TOKENS.getDocenteCargaGestionUseCase,
+    (c) =>
+      new GetDocenteCargaGestionUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+        managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getDocenteCargaGestionController,
+    (c) =>
+      new GetDocenteCargaGestionController({
+        getDocenteCargaGestionUseCase: c.resolve(DOCENTES_TOKENS.getDocenteCargaGestionUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
     DOCENTES_TOKENS.docentesRouter,
     (c) => {
       const controllers = {
@@ -465,6 +490,7 @@ export function registerDocentesModule(container) {
         listCursosDisponiblesDocenteController: c.resolve(DOCENTES_TOKENS.listCursosDisponiblesDocenteController),
         getCursoHorariosDocenteController: c.resolve(DOCENTES_TOKENS.getCursoHorariosDocenteController),
         getDocentesConflictoBloquesController: c.resolve(DOCENTES_TOKENS.getDocentesConflictoBloquesController),
+        getDocenteCargaGestionController: c.resolve(DOCENTES_TOKENS.getDocenteCargaGestionController),
       };
       const middlewares = {
         validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),

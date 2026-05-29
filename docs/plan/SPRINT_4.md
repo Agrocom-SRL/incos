@@ -2,8 +2,8 @@
 
 **Documento padre:** `PLAN_V2_MAESTRO.md`
 **Duración estimada:** 1-2 semanas
-**Pre-requisito:** Sprint 3 cerrado (oferta operativa por API/FE V2; **sin** código activo que use tabla `cursos`).  
-**Mapa de migración:** `MIGRACION_CODIGO_V2.md`
+**Pre-requisito:** Sprint 3 cerrado (oferta operativa por API/FE en `/institucional/oferta`; rutas V1 de oferta retiradas).  
+**Mapa de migración:** `MIGRACION_CODIGO.md`
 
 ---
 
@@ -18,7 +18,26 @@
 | Vistas SQL | Grupo docente/asignación (~15 vistas) |
 | FE | Matriz asignación + dashboard carga + color picker |
 
-| No incluido (Sprint 5) | Armado grilla, `asignacion_horarios`, `PUT schedule` legacy |
+| No incluido (Sprint 5) | Armado grilla, `asignacion_horarios`, `PUT schedule` legacy, publicación horarios |
+
+### 0.1 Dos pistas en paralelo (decisión 2026-05-29)
+
+Sprint 5 describe el flujo ideal de **armado de horarios** (grilla, bloques, conflictos). Ese flujo depende de oferta + asignación docente ya cerrados. **No** podemos posponer hasta Sprint 5 los módulos que ya operan con estudiantes reales:
+
+| Pista | Prioridad | Qué |
+|-------|-----------|-----|
+| **A — Asignación docente** | Alta | Endpoints §3, matriz FE, color picker, carga docente (objetivo original del sprint) |
+| **B — Continuidad operativa** | Alta (paralela) | Inscripciones + calificaciones: BE y FE alineados a `oferta_curso_id` / `paralelos_gestion` **sin** esperar la grilla de Sprint 5 |
+
+**Pista B — entregables mínimos:**
+
+1. **Backend:** `CreateEnrollmentUseCase` (y update) resuelve materias desde `oferta_cursos` del `paralelo_gestion` vigente, no desde tabla `cursos` ni `CourseRepository` en el camino activo.
+2. **Backend:** listados de calificaciones (mis cursos, coordinación, cuaderno) leen vistas/repos sobre `asignaciones_docentes` + `oferta_cursos`; `dataFieldName` estable.
+3. **Frontend calificaciones:** mantener rutas y UX actuales (`asignacionId` = `asignacion_docente_id`); ajustar hooks/API solo si cambia el payload; verificar cuaderno con matriculados existentes.
+4. **Frontend inscripciones:** flujo de alta sigue operativo contra gestión con oferta generada (seeders 27→30 + asignaciones 31+).
+5. **Frontend horarios legacy** (`institucional/horarios/plantilla`, `CursoRepository` FE): marcar como deprecado o redirigir a oferta/asignación; **no** reimplementar grilla aquí (Sprint 5).
+
+Regla: **Sprint 4 cierra la cadena gestión → oferta → docente → matrícula → notas.** Sprint 5 cierra **bloques → conflictos → publicación horario**.
 
 ---
 
@@ -185,70 +204,53 @@ Modal con:
 
 ## 7. Definition of Done
 
-- [ ] Endpoints implementados y testeados.
+- [ ] Endpoints implementados y testeados (§3.1–3.4).
 - [ ] Permisos sembrados.
 - [ ] Vista matriz funcional con asignación inline.
 - [ ] Vista dashboard con cargas y colores.
 - [ ] Color picker funcional con validación de unicidad.
 - [ ] Validación de sobrecarga (warning + confirmación admin).
 - [ ] **Código:** `CreateTeacherAssignment` / listados docente usan `oferta_curso_id`; inscripción crea matrículas contra oferta.
+- [ ] **Pista B:** inscripción + calificaciones operativos con gestión/oferta actual (smoke con matriculados y cuaderno).
 - [ ] **Vistas:** grupo docente del mapa migración OK con seeders `31`–`39`.
-- [ ] Test E2E: paralelo con oferta → asignar docentes (seeders 31+) → dashboard carga → inscripción de prueba lee mismas ofertas.
+- [ ] Test E2E: paralelo con oferta → asignar docentes (seeders 31+) → dashboard carga → inscripción → cuaderno docente.
 
 ---
 
 ## 8. Prompt para agente IA
 
 ```
-Contexto: Sprint 4 del plan V2 de INCOS. Sprints 1-3 cerrados. Schema V2 desplegado.
-Hay paralelos_gestion con oferta_cursos generados. Hora de asignar docentes.
+Contexto: Sprint 4 del plan INCOS. Sprints 1–3 cerrados. Schema con paralelos_gestion,
+oferta_cursos, asignaciones_docentes (oferta_curso_id), asignacion_horarios.
 
-Conceptos clave:
-- Cada oferta_curso (= materia ofertada en un paralelo-gestión) recibe un docente vía
-  asignaciones_docentes. La carga (carga_horaria) se hereda de
-  asignaturas_plan.horas_semanales si no se especifica.
-- Cada docente tiene color_hex permanente. Si se le va a asignar el primer curso y no
-  tiene color, el sistema abre picker antes de confirmar.
-- docentes.max_horas_semana (default 20) y max_horas_mes (default 80) marcan el tope.
-  Si la suma de asignaciones excede el max, warning (no error).
-- La unicidad del color entre docentes activos se valida en aplicación.
+Hay estudiantes matriculados y calificaciones activas. Sprint 5 (grilla horarios) NO
+bloquea este sprint: primero cerramos oferta → docente → matrícula → notas.
 
-Tareas (en orden):
+Dos pistas en paralelo (ver SPRINT_4.md §0.1):
 
-1) Backend: endpoint GET /docentes/:id/carga-gestion?gestion_id=X que calcule:
-   - Suma de carga_horaria de asignaciones vigentes del docente en la gestión.
-   - Compare con max_horas_semana y max_horas_mes.
-   - Devuelva lista de asignaciones detalladas.
+== PISTA A — Asignación docente (orden interno) ==
 
-2) Backend: endpoint PUT /docentes/:id/color con validación de unicidad entre docentes
-   activos. GET /docentes/colores-en-uso y GET /docentes/colores-sugeridos
-   (paleta HSL fija de 16 colores).
+A1) GET /docentes/:id/carga-gestion?gestion_id=X (carga semana/mes vs máximos).
+A2) PUT /docentes/:id/color + GET colores-en-uso / colores-sugeridos.
+A3) CRUD asignaciones-docentes (requiere_color, confirmar_sobrecarga, vigente único).
+A4) Cobertura paralelo + dashboard carga gestión.
+A5) Permisos seeds 54/56/55 + matriz.
+A6) FE matriz /institucional/horarios/asignacion-docente + dashboard carga + ColorPicker.
 
-3) Backend: endpoints CRUD de asignaciones-docentes. Al crear:
-   - Si docente.color_hex es NULL → error 422 con flag requiere_color: true.
-   - Si nueva asignación causa sobrecarga → warning en response pero deja crear si
-     viene flag confirmar_sobrecarga: true en el body.
-   - Marca asignación previa del mismo oferta_curso como vigente=FALSE.
+== PISTA B — Continuidad operativa (en paralelo con A, no al final) ==
 
-4) Backend: endpoints de cobertura y dashboard de gestión.
+B1) CreateEnrollmentUseCase (+ update): matriculas_materia.oferta_curso_id desde
+    oferta del paralelo_gestion; retirar CourseRepository del camino activo.
+B2) Calificaciones BE: repos/vistas listado docente (108, 116, 119…) sin JOIN cursos.
+B3) Calificaciones FE: verificar mis-cursos / cuaderno / coordinación con asignaciones
+    seedeadas (31+); dataKey = dataFieldName; sin regresión con matriculados.
+B4) Inscripciones FE: smoke alta contra gestión con oferta OFERTADA.
+B5) FE horarios legacy (plantilla, CursoRepository): deprecar o banner → oferta/asignación;
+    NO armar grilla (Sprint 5).
 
-5) Backend: permisos sembrados.
+Mapa: MIGRACION_CODIGO.md §3.2 (docentes, inscripciones, calificaciones listados).
 
-6) Frontend: vista matriz /institucional/horarios/asignacion-docente con:
-   - Selector cascada gestión > plan > paralelo-gestión.
-   - Tabla de oferta_cursos con dropdown de docente, badge de carga, color del docente.
-   - Workflow: al seleccionar docente sin color, abre modal picker antes de POST.
-   - Indicador de sobrecarga con clase CSS .blink (animation blink 1s infinite).
+Restricciones: cero ALTER TABLE; soft delete; idempotencia donde aplique.
 
-7) Frontend: vista dashboard /institucional/horarios/carga-docentes/:gestion_id con
-   tarjetas KPI, tabla de docentes con barras de progreso, drawer de detalle.
-
-8) Frontend: componente ColorPicker reutilizable con paleta + estado en-uso.
-
-Restricciones:
-- No tocar schema (todo está en Sprint 2).
-- Soft delete con deleted_at.
-- Idempotencia donde tenga sentido.
-
-Empieza con la tarea 1.
+Empieza con A1; en cuanto A3 esté estable, abrir B1 en paralelo.
 ```

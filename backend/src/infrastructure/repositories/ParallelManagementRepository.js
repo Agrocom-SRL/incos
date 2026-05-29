@@ -175,4 +175,18 @@ export class ParallelManagementRepository extends BaseRepository {
     );
     return rows.map((r) => Number(r.planSubjectId)).filter(Boolean);
   }
+
+  /**
+   * Instancia de paralelo maestro en un plan habilitado concreto.
+   */
+  async findByParallelAndManagementPlan(parallelId, managementPlanId) {
+    const model = await this.getModel().findOne({
+      where: {
+        paraleloId: parallelId,
+        gestionPlanId: managementPlanId,
+        deletedAt: null,
+      },
+    });
+    return model ? this.toEntity(model) : null;
+  }
 }

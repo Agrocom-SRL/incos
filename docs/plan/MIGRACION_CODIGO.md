@@ -17,6 +17,10 @@ Este archivo es la **fuente de verdad para el código**. Los sprints 3–5 imple
 Sprint 2 **no** obliga a borrar código legacy; solo deja la BD incompatible con V1.  
 Los sprints 3–5 **sí** deben retirar o reescribir ese código.
 
+**Estado (2026-05-29):** Sprint 3 cerrado (oferta). Sprint 4 en curso con **dos pistas**:
+asignación docente + continuidad inscripciones/calificaciones (estudiantes ya matriculados).
+Sprint 5 = grilla horarios; no bloquea matrícula ni notas.
+
 ---
 
 ## 2. Cadena de lectura V2 (cómo se arma el horario)
@@ -55,8 +59,8 @@ calificaciones / evaluaciones       (preferir asignatura_plan_id; oferta solo pa
 | **Oferta** (nuevo) | API `gestiones-planes`, `paralelos-gestion`, `oferta-cursos` | 3 |
 | **Docentes / asignación** | `curso_id` → `oferta_curso_id`; catálogos desde `oferta_cursos` | 4 |
 | **Horarios / bloques** | Lectura/escritura en `asignacion_horarios`; grilla por `asignacion_docente_id` | 5 |
-| **Inscripciones** | `CreateEnrollmentUseCase`: ofertas del paralelo-gestión, no `cursos` | 4 |
-| **Calificaciones** | Listados “curso” = oferta o asignatura_plan; repos que JOIN `cursos` | 4–5 |
+| **Inscripciones** | `CreateEnrollmentUseCase`: ofertas del paralelo-gestión, no `cursos` | 4 (**prioridad operativa**) |
+| **Calificaciones** | Listados “curso” = oferta o asignatura_plan; repos que JOIN `cursos` | 4 (**prioridad operativa**) |
 | **Dashboard horarios** | Use cases que cuentan “sin curso” → “sin oferta” / cobertura V2 | 5 |
 
 ### 3.3 Vistas SQL (`03-views/`) — ~45 archivos citan `cursos`
@@ -79,9 +83,10 @@ Regla: **no ejecutar** vistas V1 contra BD V2; o marcarlas `.legacy.sql` hasta r
 |------|--------|--------|
 | Nuevo wizard | `/institucional/oferta` solo API V2 | 3 |
 | `CursoRepository`, hooks `useCursosDelParalelo*` | Sustituir por `OfertaCurso` / paralelo-gestión | 3–4 |
-| `institucional/horarios` (aulas, armado legacy) | Migrar a flujo oferta → docente → bloques | 4–5 |
+| `institucional/horarios` (aulas, armado legacy) | Migrar a flujo oferta → docente → bloques | 4–5 (FE legacy: banner/redirect en 4; grilla en 5) |
 | Docentes asignación | Endpoints y labels “curso” → “oferta” | 4 |
-| Calificaciones | `dataKey` alineado a respuesta V2 | 4–5 |
+| Calificaciones | `dataKey` alineado a respuesta V2 | **4** (lectura/cuaderno); 5 solo si depende de bloques |
+| Inscripciones / MAT | Hooks y use cases sin `CursoRepository` | **4** |
 
 ---
 
@@ -100,11 +105,12 @@ Regla: **no ejecutar** vistas V1 contra BD V2; o marcarlas `.legacy.sql` hasta r
 ## 5. Definition of Done global (código)
 
 - [ ] Ningún `import` activo de `curso.js` / `curso_horario.js` en `backend/src`.
-- [ ] `/api/v1/cursos` desmontado; paralelos sin rutas V1 de oferta/schedule.
+- [x] `/api/v1/cursos` desmontado; paralelos sin rutas V1 de oferta/schedule.
 - [ ] Docentes e inscripciones persisten solo `oferta_curso_id`.
 - [ ] Horarios leen/escriben `asignacion_horarios`.
 - [ ] Vistas en `03-views/` usadas por la app reescritas o no desplegadas.
 - [ ] FE institucional horarios + oferta sin `CursoRepository` V1.
+- [ ] **Operativo:** matriculados + cuaderno calificaciones contra gestión con oferta (Sprint 4).
 - [ ] Smoke manual: seeders 27→30→31→40 en cadena contra UI V2.
 
 ---
@@ -112,6 +118,6 @@ Regla: **no ejecutar** vistas V1 contra BD V2; o marcarlas `.legacy.sql` hasta r
 ## 6. Orden de ejecución recomendado (local)
 
 1. Schemas + seeders (ya hecho).
-2. Sprint 3: oferta API/FE + **retiro rutas/repos cursos en paralelos**.
-3. Sprint 4: asignación docente + inscripción + vistas/docentes + calificaciones (listados).
+2. Sprint 3: oferta API/FE + **retiro rutas/repos cursos en paralelos**. ✅
+3. Sprint 4: asignación docente + **inscripción + calificaciones (pista B en paralelo)** + vistas docentes.
 4. Sprint 5: bloques + vistas horarios + publicación + completar `cambiar-turno` con bloques.

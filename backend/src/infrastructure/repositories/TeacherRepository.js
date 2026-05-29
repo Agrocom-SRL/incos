@@ -1,5 +1,9 @@
 import { QueryTypes } from 'sequelize';
 import { IDocenteRepository } from '../../domain/interfaces/repositories/IDocenteRepository.js';
+import {
+  DEFAULT_MAX_HORAS_MES_DOCENTE,
+  DEFAULT_MAX_HORAS_SEMANA_DOCENTE,
+} from '../../domain/constants/docentes.constants.js';
 import { Docente as DocenteModel } from '../database/models/docente.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -442,6 +446,47 @@ export class TeacherRepository extends BaseRepository {
     }
 
     return result;
+  }
+
+  /**
+   * Límites de carga contractual del docente (columnas max_horas_* del schema).
+   * @param {number} teacherId
+   * @returns {Promise<{ id: number, maxHorasSemana: number, maxHorasMes: number }|null>}
+   */
+  async findCargaLimitesById(teacherId) {
+    const id = Number(teacherId);
+    if (!Number.isFinite(id) || id < 1) return null;
+
+    const rows = await sequelize.query(
+      `
+      SELECT
+        id,
+        COALESCE(max_horas_semana, :defaultSemana) AS max_horas_semana,
+        COALESCE(max_horas_mes, :defaultMes) AS max_horas_mes
+      FROM docentes
+      WHERE id = :teacherId
+        AND deleted_at IS NULL
+        AND activo = TRUE
+      LIMIT 1
+      `,
+      {
+        replacements: {
+          teacherId: id,
+          defaultSemana: DEFAULT_MAX_HORAS_SEMANA_DOCENTE,
+          defaultMes: DEFAULT_MAX_HORAS_MES_DOCENTE,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    const row = rows[0];
+    if (!row) return null;
+
+    return {
+      id: Number(row.id),
+      maxHorasSemana: Number(row.max_horas_semana) || DEFAULT_MAX_HORAS_SEMANA_DOCENTE,
+      maxHorasMes: Number(row.max_horas_mes) || DEFAULT_MAX_HORAS_MES_DOCENTE,
+    };
   }
 }
 
