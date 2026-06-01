@@ -18,9 +18,9 @@ const HorariosOperativaBanner = ({ style }) => {
       showIcon
       closable
       style={style}
-      message="Flujo operativo de la gestión"
+      title="Flujo operativo de la gestión"
       description={
-        <Space direction="vertical" size={allSpacing.marginSM} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={allSpacing.marginSM} style={{ width: '100%' }}>
           <span>
             En <strong>Configuración → Académico</strong> defina el plan de estudio y las horas semanales por
             materia. Luego, en <strong>Oferta académica</strong>, habilite planes, cree paralelos con turno y

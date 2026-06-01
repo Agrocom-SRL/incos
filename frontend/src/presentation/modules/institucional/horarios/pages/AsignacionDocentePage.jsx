@@ -123,7 +123,7 @@ const AsignacionDocentePage = () => {
 
       <MainContent>
         {errorCatalogos ? (
-          <Alert type="error" showIcon message={errorCatalogos} style={{ marginBottom: 16 }} />
+          <Alert type="error" showIcon title={errorCatalogos} style={{ marginBottom: 16 }} />
         ) : null}
 
         <Card className="asignacion-docente-filters" size="small">
@@ -133,7 +133,11 @@ const AsignacionDocentePage = () => {
               <Select
                 style={{ width: '100%', marginTop: 4 }}
                 placeholder="Seleccione gestión"
-                value={selectedGestionId ?? undefined}
+                value={
+                  gestiones.some((g) => g.id === selectedGestionId)
+                    ? selectedGestionId
+                    : undefined
+                }
                 loading={loadingCatalogos}
                 options={gestiones.map((g) => ({
                   value: g.id,
@@ -148,7 +152,11 @@ const AsignacionDocentePage = () => {
                 style={{ width: '100%', marginTop: 4 }}
                 placeholder="Seleccione plan"
                 disabled={!selectedGestionId}
-                value={selectedGestionPlanId ?? undefined}
+                value={
+                  planesHabilitados.some((p) => p.id === selectedGestionPlanId)
+                    ? selectedGestionPlanId
+                    : undefined
+                }
                 options={planesHabilitados.map((p) => ({
                   value: p.id,
                   label: p.nombre || p.planNombre || `Plan ${p.id}`,
@@ -162,7 +170,11 @@ const AsignacionDocentePage = () => {
                 style={{ width: '100%', marginTop: 4 }}
                 placeholder="Seleccione paralelo"
                 disabled={!selectedGestionPlanId}
-                value={selectedParaleloGestionId ?? undefined}
+                value={
+                  paralelosGestion.some((pg) => pg.id === selectedParaleloGestionId)
+                    ? selectedParaleloGestionId
+                    : undefined
+                }
                 options={paralelosGestion.map((pg) => ({
                   value: pg.id,
                   label: [pg.paraleloNombre, pg.turno, pg.aulaCodigo].filter(Boolean).join(' · '),
@@ -195,7 +207,7 @@ const AsignacionDocentePage = () => {
             <Alert
               type="info"
               showIcon
-              message="Seleccione gestión, plan y paralelo para cargar la matriz de asignación."
+              title="Seleccione gestión, plan y paralelo para cargar la matriz de asignación."
             />
           ) : (
             <Spin spinning={loadingMatriz}>

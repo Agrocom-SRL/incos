@@ -34,10 +34,16 @@ export const useInscripcionesData = () => {
 
     // Sincronizar estado local con datos de API cuando cambien
     useEffect(() => {
-        // Actualizar cuando hay datos de la API (carga inicial o refetch)
-        if (inscripcionesFromApi.length >= 0) {
-            setInscripciones(inscripcionesFromApi);
-        }
+        setInscripciones((prev) => {
+            if (prev === inscripcionesFromApi) return prev;
+            if (
+                prev.length === inscripcionesFromApi.length &&
+                prev.every((row, i) => row?.id === inscripcionesFromApi[i]?.id)
+            ) {
+                return prev;
+            }
+            return inscripcionesFromApi;
+        });
     }, [inscripcionesFromApi]);
 
     /**

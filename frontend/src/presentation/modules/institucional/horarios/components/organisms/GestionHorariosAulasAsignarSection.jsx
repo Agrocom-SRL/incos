@@ -339,7 +339,7 @@ const GestionHorariosAulasAsignarSection = ({
               <Alert
                 type={sinAulaDiaBase.length === 0 ? 'success' : 'info'}
                 showIcon
-                message={
+                title={
                   sinAulaDiaBase.length === 0
                     ? 'Todos los bloques del día tienen aula asignada.'
                     : 'No hay bloques sin aula para el paralelo seleccionado.'

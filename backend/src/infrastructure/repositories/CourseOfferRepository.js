@@ -54,7 +54,7 @@ export class CourseOfferRepository extends BaseRepository {
         ap.periodo_id AS periodoId,
         m.id AS materiaId,
         m.nombre AS materiaNombre,
-        m.codigo AS materiaCodigo
+        m.sigla AS materiaCodigo
       FROM oferta_cursos oc
       LEFT JOIN asignaturas_plan ap ON ap.id = oc.asignatura_plan_id AND ap.deleted_at IS NULL
       LEFT JOIN materias m ON m.id = ap.materia_id AND m.deleted_at IS NULL
@@ -77,7 +77,7 @@ export class CourseOfferRepository extends BaseRepository {
         ap.id AS asignaturaPlanId,
         ap.horas_semanales AS horasSemanales,
         m.nombre AS materiaNombre,
-        m.codigo AS materiaCodigo
+        m.sigla AS materiaCodigo
       FROM asignaturas_plan ap
       LEFT JOIN materias m ON m.id = ap.materia_id
       WHERE ap.plan_estudio_id = :studyPlanId
@@ -94,7 +94,7 @@ export class CourseOfferRepository extends BaseRepository {
         ap.periodo_id AS periodoId,
         ap.horas_semanales AS horasSemanales,
         m.nombre AS materiaNombre,
-        m.codigo AS materiaCodigo
+        m.sigla AS materiaCodigo
       FROM oferta_cursos oc
       LEFT JOIN asignaturas_plan ap ON ap.id = oc.asignatura_plan_id
       LEFT JOIN materias m ON m.id = ap.materia_id

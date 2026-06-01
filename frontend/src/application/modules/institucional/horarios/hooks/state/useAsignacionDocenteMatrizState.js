@@ -18,8 +18,24 @@ function extractApiErrorFlags(raw) {
 }
 
 export function useAsignacionDocenteMatrizState() {
-  const ofertaApi = useOfertaAcademicaApi();
-  const api = useAsignacionDocenteApi();
+  const {
+    loading: ofertaLoading,
+    error: ofertaError,
+    fetchGestiones: fetchGestionesOferta,
+    fetchPlanesHabilitados,
+    fetchParalelosGestion,
+  } = useOfertaAcademicaApi();
+  const {
+    fetchAsignaciones,
+    fetchOfertaCursos,
+    fetchCobertura,
+    fetchCargaGestion,
+    createAsignacion,
+    deleteAsignacion,
+    updateDocenteColor,
+    fetchColoresSugeridos,
+    fetchCargaDocente,
+  } = useAsignacionDocenteApi();
 
   const [gestiones, setGestiones] = useState([]);
   const [selectedGestionId, setSelectedGestionId] = useState(null);
@@ -58,45 +74,45 @@ export function useAsignacionDocenteMatrizState() {
   );
 
   const loadGestiones = useCallback(async () => {
-    const res = await ofertaApi.fetchGestiones();
+    const res = await fetchGestionesOferta();
     if (!res.success) return;
     const raw = res.data?.gestiones ?? res.data?.managements ?? res.data;
     const list = Array.isArray(raw) ? raw : [];
     setGestiones(list);
     const vigente = list.find((g) => g.vigente);
-    if (vigente && !selectedGestionId) {
-      setSelectedGestionId(vigente.id);
+    if (vigente) {
+      setSelectedGestionId((prev) => prev ?? vigente.id);
     }
-  }, [ofertaApi, selectedGestionId]);
+  }, [fetchGestionesOferta]);
 
   const loadPlanes = useCallback(async () => {
     if (!selectedGestionId) return;
-    const res = await ofertaApi.fetchPlanesHabilitados(selectedGestionId);
+    const res = await fetchPlanesHabilitados(selectedGestionId);
     if (!res.success) return;
     setPlanesHabilitados(res.data?.planesHabilitados ?? []);
-  }, [ofertaApi, selectedGestionId]);
+  }, [fetchPlanesHabilitados, selectedGestionId]);
 
   const loadParalelos = useCallback(async () => {
     if (!selectedGestionPlanId) return;
-    const res = await ofertaApi.fetchParalelosGestion(selectedGestionPlanId);
+    const res = await fetchParalelosGestion(selectedGestionPlanId);
     if (!res.success) return;
     setParalelosGestion(res.data?.paralelosGestion ?? []);
-  }, [ofertaApi, selectedGestionPlanId]);
+  }, [fetchParalelosGestion, selectedGestionPlanId]);
 
   const loadMatriz = useCallback(async () => {
     if (!selectedParaleloGestionId || !selectedGestionPlanId || !selectedGestionId) {
-      setMatrizRows([]);
-      setCobertura(null);
+      setMatrizRows((prev) => (prev.length === 0 ? prev : []));
+      setCobertura((prev) => (prev == null ? prev : null));
       return;
     }
 
     setLoadingMatriz(true);
     try {
       const [ofertaRes, asigRes, cobRes, cargaRes] = await Promise.all([
-        api.fetchOfertaCursos(selectedParaleloGestionId),
-        api.fetchAsignaciones({ paralelo_gestion_id: selectedParaleloGestionId }),
-        api.fetchCobertura(selectedParaleloGestionId),
-        api.fetchCargaGestion(selectedGestionId),
+        fetchOfertaCursos(selectedParaleloGestionId),
+        fetchAsignaciones({ paralelo_gestion_id: selectedParaleloGestionId }),
+        fetchCobertura(selectedParaleloGestionId),
+        fetchCargaGestion(selectedGestionId),
       ]);
 
       const ofertaCursos = ofertaRes.success ? ofertaRes.data?.ofertaCursos ?? [] : [];
@@ -109,11 +125,19 @@ export function useAsignacionDocenteMatrizState() {
     } finally {
       setLoadingMatriz(false);
     }
-  }, [api, selectedParaleloGestionId, selectedGestionPlanId, selectedGestionId]);
+  }, [
+    fetchOfertaCursos,
+    fetchAsignaciones,
+    fetchCobertura,
+    fetchCargaGestion,
+    selectedParaleloGestionId,
+    selectedGestionPlanId,
+    selectedGestionId,
+  ]);
 
   useEffect(() => {
     loadGestiones();
-  }, []);
+  }, [loadGestiones]);
 
   useEffect(() => {
     setSelectedGestionPlanId(null);
@@ -121,13 +145,13 @@ export function useAsignacionDocenteMatrizState() {
     setPlanesHabilitados([]);
     setParalelosGestion([]);
     if (selectedGestionId) loadPlanes();
-  }, [selectedGestionId]);
+  }, [selectedGestionId, loadPlanes]);
 
   useEffect(() => {
     setSelectedParaleloGestionId(null);
     setParalelosGestion([]);
     if (selectedGestionPlanId) loadParalelos();
-  }, [selectedGestionPlanId]);
+  }, [selectedGestionPlanId, loadParalelos]);
 
   useEffect(() => {
     loadMatriz();
@@ -160,7 +184,7 @@ export function useAsignacionDocenteMatrizState() {
       if (!selectedGestionPlanId || !ofertaCursoId || !docenteId) return false;
 
       setSavingOfertaId(ofertaCursoId);
-      const res = await api.createAsignacion({
+      const res = await createAsignacion({
         gestion_plan_id: selectedGestionPlanId,
         oferta_curso_id: ofertaCursoId,
         docente_id: docenteId,
@@ -210,7 +234,7 @@ export function useAsignacionDocenteMatrizState() {
       message.error(typeof res.error === 'string' ? res.error : 'No se pudo asignar el docente');
       return false;
     },
-    [api, selectedGestionPlanId, loadMatriz]
+    [createAsignacion, selectedGestionPlanId, loadMatriz]
   );
 
   const onSelectDocente = useCallback(
@@ -224,7 +248,7 @@ export function useAsignacionDocenteMatrizState() {
   const onQuitarAsignacion = useCallback(
     async (asignacionId) => {
       if (!asignacionId) return;
-      const res = await api.deleteAsignacion(asignacionId);
+      const res = await deleteAsignacion(asignacionId);
       if (res.success) {
         message.success('Asignación retirada');
         await loadMatriz();
@@ -232,7 +256,7 @@ export function useAsignacionDocenteMatrizState() {
         message.error(typeof res.error === 'string' ? res.error : 'No se pudo quitar la asignación');
       }
     },
-    [api, loadMatriz]
+    [deleteAsignacion, loadMatriz]
   );
 
   const onColorSaved = useCallback(async () => {
@@ -275,8 +299,8 @@ export function useAsignacionDocenteMatrizState() {
     cargaPorDocente,
     loadingMatriz,
     savingOfertaId,
-    loadingCatalogos: ofertaApi.loading || loadingMatriz,
-    errorCatalogos: ofertaApi.error,
+    loadingCatalogos: ofertaLoading || loadingMatriz,
+    errorCatalogos: ofertaError,
     onGestionChange,
     onPlanChange,
     onParaleloChange,
@@ -287,8 +311,8 @@ export function useAsignacionDocenteMatrizState() {
     closeColorPicker,
     onColorSaved,
     openColorPickerForDocente,
-    updateDocenteColor: api.updateDocenteColor,
-    fetchColoresSugeridos: api.fetchColoresSugeridos,
-    fetchCargaDocente: api.fetchCargaDocente,
+    updateDocenteColor,
+    fetchColoresSugeridos,
+    fetchCargaDocente,
   };
 }

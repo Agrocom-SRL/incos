@@ -16,7 +16,7 @@ const HorariosAlertBanner = ({ sinDocentes = 0, sinAulas = 0, sinHorarios = 0 })
             showIcon
             title="Requiere atención operativa"
             description={
-                <Space direction="vertical" size={8}>
+                <Space orientation="vertical" size={8}>
                     <span>
                         Sin horarios: {sinHorarios} | Sin docentes: {sinDocentes} | Sin aulas: {sinAulas}
                     </span>

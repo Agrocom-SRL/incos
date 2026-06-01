@@ -74,7 +74,9 @@ const HorariosPublicacionParaleloCard = ({ plan, onPublicar, publicando = false 
     const onEditarPlan = () => {
         const id = paralelo?.id;
         if (id == null) return;
-        navigate(`/institucional/horarios/armado?paralelo=${id}&tab=plan`);
+        const q = new URLSearchParams({ paralelo: String(id), tab: 'plan' });
+        if (pgId) q.set('pg', String(pgId));
+        navigate(`/institucional/horarios/armado?${q.toString()}`);
     };
 
     const onClickPublicar = async () => {

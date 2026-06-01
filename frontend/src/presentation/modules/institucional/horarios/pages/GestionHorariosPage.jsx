@@ -151,7 +151,7 @@ const GestionHorariosPage = () => {
                 <MainContent>
                     <Spin spinning={loading} tip="Cargando datos de horarios...">
                         <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-                            {error ? <Alert type="error" showIcon message={error} /> : null}
+                            {error ? <Alert type="error" showIcon title={error} /> : null}
                             <HorariosOperativaBanner />
                             {hayAlertas ? (
                                 <HorariosAlertBanner

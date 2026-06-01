@@ -79,7 +79,7 @@ Sprint 2 deja la BD **sin** `cursos` / `cursos_horarios`. Los sprints 3–5 migr
 | **2** ✅ | Schema — DDL + seeders `27`–`48` | Solo BD | `SPRINT_2.md` |
 | **3** ✅ | INST → Oferta + retiro rutas de oferta en paralelos | Código | `SPRINT_3.md` |
 | **4** ✅ | Asignación docente + matrícula + calificaciones | Código | `SPRINT_4.md` |
-| **5** | Grilla, conflictos, publicación (en curso) | Código | `SPRINT_5.md` |
+| **5** ✅ | Grilla, conflictos, publicación | Código | `SPRINT_5.md` |
 | Bonus | MAT completo + evaluaciones edge cases | Código | (post-5) |
 
 Cada sprint de aplicación deja un **smoke E2E** contra seeders locales, no solo endpoints nuevos encima de legacy.
@@ -157,4 +157,4 @@ Temas que siguen sin rediseño de negocio:
 
 ---
 
-**Estado del plan:** Aprobado. **Sprints 1–4 cerrados** (último cierre 2026-06-01: asignación docente, matrícula, notas, eliminación de repos/modelos `cursos` / `cursos_horarios`, bloques en `asignacion_horarios`). **Sprint 5 en curso:** grilla por `paralelo_gestion`, motor de conflictos, publicación (el armado actual ya persiste bloques vía `GET/PUT /paralelos/:id/schedule`). Ver `MIGRACION_CODIGO.md`, `SPRINT_5.md`, smoke `SMOKE_SPRINT_4.md`.
+**Estado del plan:** Aprobado. **Sprints 1–5 cerrados en código** (cierre Sprint 5: 2026-06-01 — API grilla `paralelo_gestion`, motor de conflictos, publicación masiva, armado FE con selector `?pg=`, `GET grilla-horario`, `POST bulk` + `POST conflictos/validar`, vistas conflictos y publicación). Ver `MIGRACION_CODIGO.md`, `SPRINT_5.md`. **Post-5 (opcional):** deprecar `PUT /paralelos/:id/schedule`, smoke E2E automatizado, parpadeo CSS en chips del plan semanal, confirmación con contraseña al publicar con conflictos.

@@ -43,8 +43,12 @@ export const useGestionHorariosDashboardState = () => {
             const cursosTotales = row.asignaturas_requeridas ?? 0;
             const cursosCreados = row.cursos_creados ?? 0;
             const cursosConHorario = row.cursos_con_horario ?? 0;
+            const pgId =
+                row.paralelo_gestion_id != null ? Number(row.paralelo_gestion_id) : null;
             const mapped = {
                 id: row.paralelo_id,
+                paraleloGestionId:
+                    Number.isFinite(pgId) && pgId > 0 ? pgId : null,
                 paralelo: row.paralelo_nombre,
                 carrera: row.carrera_nombre || 'Carrera no definida',
                 carreraId: row.carrera_id != null ? Number(row.carrera_id) : null,
@@ -130,8 +134,16 @@ export const useGestionHorariosDashboardState = () => {
         return String(gestiones?.[0]?.nombre || gestiones?.[0]?.gestion || currentGestion);
     }, [gestiones, currentGestion]);
 
+    const buildArmadoUrl = useCallback((paralelo, extraQuery = '') => {
+        const q = new URLSearchParams();
+        if (paralelo.id) q.set('paralelo', String(paralelo.id));
+        if (paralelo.paraleloGestionId) q.set('pg', String(paralelo.paraleloGestionId));
+        const base = `/institucional/horarios/armado?${q.toString()}`;
+        return extraQuery ? `${base}&${extraQuery.replace(/^&/, '')}` : base;
+    }, []);
+
     const getParaleloAction = useCallback((paralelo) => {
-        const baseArmado = `/institucional/horarios/armado?paralelo=${paralelo.id}`;
+        const baseArmado = buildArmadoUrl(paralelo);
         const bucket = paralelo.boardBucket ?? resolveHorariosBoardBucket(paralelo);
         if (bucket === 'completo') return `${baseArmado}&tab=vista`;
         if (bucket === 'sin_docentes') return `${baseArmado}&tab=cursos`;
@@ -145,7 +157,7 @@ export const useGestionHorariosDashboardState = () => {
             return planIncompleto ? `${baseArmado}&tab=gestion` : `${baseArmado}&tab=plan`;
         }
         return `${baseArmado}&tab=plan`;
-    }, []);
+    }, [buildArmadoUrl]);
 
     const onOpenArmado = useCallback((paralelo) => navigate(getParaleloAction(paralelo)), [getParaleloAction, navigate]);
 

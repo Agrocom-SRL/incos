@@ -49,6 +49,7 @@ const ParaleloArmadoPlanSection = ({
     editable = false,
     turnoLabel,
     onRequestPersist,
+    validatePlacement,
     persistLoading = false,
     persistError = null,
     persistSuccess = false,
@@ -78,7 +79,7 @@ const ParaleloArmadoPlanSection = ({
     }, []);
 
     const handleSlotDrop = useCallback(
-        (e, targetDia, targetSlotMinutes) => {
+        async (e, targetDia, targetSlotMinutes) => {
             if (!editable) return;
             const raw = e.dataTransfer.getData(DRAG_MIME);
             if (!raw) return;
@@ -94,16 +95,25 @@ const ParaleloArmadoPlanSection = ({
             ) {
                 return;
             }
-            onSchedulesChange(
-                moveBlockToSlot(schedules, {
-                    cursoId: payload.cursoId,
-                    cursoHorarioId: payload.cursoHorarioId,
-                    targetDia,
-                    targetSlotMinutes,
-                }),
-            );
+
+            const meta = {
+                cursoId: payload.cursoId,
+                cursoHorarioId: payload.cursoHorarioId,
+                targetDia,
+                targetSlotMinutes,
+            };
+
+            if (typeof validatePlacement === 'function') {
+                const check = await validatePlacement(meta);
+                if (!check?.ok) {
+                    message.warning(check?.message || 'No se puede colocar el bloque en ese horario');
+                    return;
+                }
+            }
+
+            onSchedulesChange(moveBlockToSlot(schedules, meta));
         },
-        [editable, onSchedulesChange, schedules],
+        [editable, onSchedulesChange, schedules, validatePlacement],
     );
 
     const handleDeleteChip = useCallback(
@@ -147,14 +157,15 @@ const ParaleloArmadoPlanSection = ({
     }, [addOpen, slotOptionsAdd, form]);
 
     const submitAddBlock = useCallback(() => {
-        form.validateFields().then((values) => {
+        form.validateFields().then(async (values) => {
             const cursoId = values.cursoId;
             const dia = values.dia;
             const startM = values.slotMinutes;
             const endM = startM + SLOT_STEP_ADD;
             const h = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+            const tempId = `temp-${Date.now()}`;
             const bloque = {
-                cursoHorarioId: `temp-${Date.now()}`,
+                cursoHorarioId: tempId,
                 dia,
                 horaInicio: h(startM),
                 horaFin: h(endM),
@@ -162,11 +173,26 @@ const ParaleloArmadoPlanSection = ({
                 paralelo: null,
                 aula: null,
             };
+
+            if (typeof validatePlacement === 'function') {
+                const check = await validatePlacement({
+                    cursoId,
+                    cursoHorarioId: tempId,
+                    targetDia: dia,
+                    targetSlotMinutes: startM,
+                    bloquePreview: bloque,
+                });
+                if (!check?.ok) {
+                    message.warning(check?.message || 'No se puede añadir el bloque en ese horario');
+                    return;
+                }
+            }
+
             onSchedulesChange(appendBlockToCourse(schedules, cursoId, bloque));
             setAddOpen(false);
             form.resetFields();
         });
-    }, [form, onSchedulesChange, schedules, turnoLabel]);
+    }, [form, onSchedulesChange, schedules, turnoLabel, validatePlacement]);
 
     const handleSaveClick = useCallback(() => {
         if (typeof onRequestPersist === 'function') {

@@ -22,7 +22,12 @@ export const useGestionHorariosPlantillaState = () => {
   const validParaleloId =
     numericParaleloId != null && !Number.isNaN(numericParaleloId) ? numericParaleloId : null;
 
-  const ofertaApi = useOfertaAcademicaApi();
+  const {
+    fetchOfertaCursos,
+    validarOferta,
+    eliminarOfertaCurso,
+    crearOfertaCursoManual,
+  } = useOfertaAcademicaApi();
   const resolver = useParaleloGestionVigenteResolver(validParaleloId);
 
   const [ofertaCursos, setOfertaCursos] = useState([]);
@@ -53,8 +58,8 @@ export const useGestionHorariosPlantillaState = () => {
     setOfertaLoadError(null);
 
     const [ofertaRes, validRes] = await Promise.all([
-      ofertaApi.fetchOfertaCursos(pgId),
-      ofertaApi.validarOferta(pgId),
+      fetchOfertaCursos(pgId),
+      validarOferta(pgId),
     ]);
 
     if (!ofertaRes.success) {
@@ -74,7 +79,7 @@ export const useGestionHorariosPlantillaState = () => {
     }
 
     setLoadingOferta(false);
-  }, [ofertaApi, resolver.paraleloGestionId]);
+  }, [fetchOfertaCursos, validarOferta, resolver.paraleloGestionId]);
 
   useEffect(() => {
     if (resolver.paraleloGestionId && !resolver.loading) {
@@ -151,9 +156,9 @@ export const useGestionHorariosPlantillaState = () => {
       if (!resolver.paraleloGestionId) {
         return { success: false, error: 'Paralelo en gestión no resuelto' };
       }
-      return ofertaApi.eliminarOfertaCurso(ofertaCursoId);
+      return eliminarOfertaCurso(ofertaCursoId);
     },
-    [ofertaApi, resolver.paraleloGestionId]
+    [eliminarOfertaCurso, resolver.paraleloGestionId]
   );
 
   const { deleteItem, loading: deleteCursoLoading } = useDeleteItem({
@@ -197,12 +202,12 @@ export const useGestionHorariosPlantillaState = () => {
       if (formValues?.asignaturaPlanId == null) {
         return { success: false, error: 'Seleccione una materia del plan' };
       }
-      return ofertaApi.crearOfertaCursoManual({
+      return crearOfertaCursoManual({
         paralelo_gestion_id: pgId,
         asignatura_plan_id: Number(formValues.asignaturaPlanId),
       });
     },
-    [ofertaApi, resolver.paraleloGestionId]
+    [crearOfertaCursoManual, resolver.paraleloGestionId]
   );
 
   const loading = resolver.loading || loadingOferta;

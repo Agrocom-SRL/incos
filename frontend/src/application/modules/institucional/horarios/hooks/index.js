@@ -19,4 +19,6 @@ export * from './state/useGestionHorariosPublicacionState';
 export * from './state/useGestionHorariosConflictosState';
 export * from './api/useBulkAsignacionHorariosApi';
 export * from './api/useGestionConflictosHorariosApi';
+export * from './api/useValidarConflictoHorarioApi';
+export * from './useHorariosArmadoParaleloCatalog';
 export * from './useParaleloGestionVigenteResolver';

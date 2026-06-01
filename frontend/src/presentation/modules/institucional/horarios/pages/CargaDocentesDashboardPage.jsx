@@ -84,7 +84,7 @@ const CargaDocentesDashboardPage = () => {
       </PageHeaderArea>
 
       <MainContent>
-        {error ? <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} /> : null}
+        {error ? <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} /> : null}
 
         <Spin spinning={loading}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
@@ -138,7 +138,7 @@ const CargaDocentesDashboardPage = () => {
         title={drawerDocente?.nombre ?? 'Detalle de carga'}
         open={Boolean(drawerDocente)}
         onClose={closeDrawer}
-        width={480}
+        size={480}
       >
         <Spin spinning={drawerLoading}>
           {drawerCarga ? (
@@ -152,7 +152,7 @@ const CargaDocentesDashboardPage = () => {
                   type="warning"
                   showIcon
                   style={{ marginTop: 12 }}
-                  message="Docente con sobrecarga en esta gestión"
+                  title="Docente con sobrecarga en esta gestión"
                 />
               ) : null}
               <List

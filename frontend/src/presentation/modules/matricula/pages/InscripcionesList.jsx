@@ -3,8 +3,8 @@
  * Orquestación: useMatriculaListPage + InscripcionesListProvider.
  */
 
-import { ClearOutlined, DownloadOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button as AntButton, Col, Row, Select, Space, Tag, Typography } from 'antd';
+import { DownloadOutlined, PlusOutlined } from '@ant-design/icons';
+import { Select, Space, Tag } from 'antd';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
@@ -31,15 +31,6 @@ const InscripcionesList = () => {
     handleExportLista,
     tableColumns,
     breadcrumbItems,
-    listFilters,
-    setListFilter,
-    clearListFilters,
-    hasActiveListFilters,
-    listFilterOptions,
-    paralelosForCarrera,
-    tipoInscripcionOptions,
-    historialEstadoOptions,
-    totalBeforeFilters,
   } = useMatriculaListPage();
 
   return (
@@ -125,98 +116,6 @@ const InscripcionesList = () => {
             border-color: #d9d9d9 !important;
           }
         `}</style>
-      ) : null}
-      <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={12} md={8} lg={5}>
-          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4, fontSize: 12 }}>
-            Carrera
-          </Typography.Text>
-          <Select
-            allowClear
-            placeholder="Todas"
-            style={{ width: '100%' }}
-            value={listFilters.carreraId}
-            onChange={(v) => setListFilter('carreraId', v)}
-            options={listFilterOptions.carreras.map((c) => ({
-              value: c.id,
-              label: c.codigo ? `${c.nombre} (${c.codigo})` : c.nombre,
-            }))}
-            showSearch
-            optionFilterProp="label"
-          />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={5}>
-          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4, fontSize: 12 }}>
-            Paralelo
-          </Typography.Text>
-          <Select
-            allowClear
-            placeholder="Todos"
-            style={{ width: '100%' }}
-            value={listFilters.paraleloId}
-            onChange={(v) => setListFilter('paraleloId', v)}
-            options={paralelosForCarrera.map((p) => ({ value: p.id, label: p.nombre }))}
-            showSearch
-            optionFilterProp="label"
-            disabled={paralelosForCarrera.length === 0}
-          />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={4}>
-          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4, fontSize: 12 }}>
-            Periodo
-          </Typography.Text>
-          <Select
-            allowClear
-            placeholder="Todos"
-            style={{ width: '100%' }}
-            value={listFilters.periodoId}
-            onChange={(v) => setListFilter('periodoId', v)}
-            options={listFilterOptions.periodos.map((p) => ({ value: p.id, label: p.nombre }))}
-            showSearch
-            optionFilterProp="label"
-          />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={4}>
-          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4, fontSize: 12 }}>
-            Tipo
-          </Typography.Text>
-          <Select
-            allowClear
-            placeholder="Todos"
-            style={{ width: '100%' }}
-            value={listFilters.tipoInscripcion}
-            onChange={(v) => setListFilter('tipoInscripcion', v)}
-            options={tipoInscripcionOptions.map((t) => ({ value: t, label: t }))}
-          />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={5}>
-          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4, fontSize: 12 }}>
-            Historial previo
-          </Typography.Text>
-          <Select
-            allowClear
-            placeholder="Todos"
-            style={{ width: '100%' }}
-            value={listFilters.historialPrevioEstado}
-            onChange={(v) => setListFilter('historialPrevioEstado', v)}
-            options={historialEstadoOptions}
-          />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={1} style={{ display: 'flex', alignItems: 'flex-end' }}>
-          {hasActiveListFilters ? (
-            <AntButton
-              type="text"
-              icon={<ClearOutlined />}
-              onClick={clearListFilters}
-              title="Limpiar filtros"
-            />
-          ) : null}
-        </Col>
-      </Row>
-      {hasActiveListFilters ? (
-        <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12, fontSize: 12 }}>
-          Mostrando {inscripciones.length} de {totalBeforeFilters} matrícula(s) con filtros aplicados
-        </Typography.Text>
       ) : null}
       <TableListView
         data={inscripciones}

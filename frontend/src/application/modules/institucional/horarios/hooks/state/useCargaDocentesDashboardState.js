@@ -6,7 +6,12 @@ import { useAsignacionDocenteApi } from '../api/useAsignacionDocenteApi.js';
 export function useCargaDocentesDashboardState() {
   const { gestionId: gestionIdParam } = useParams();
   const gestionId = Number(gestionIdParam);
-  const api = useAsignacionDocenteApi();
+  const {
+    fetchCargaGestion,
+    fetchCargaDocente,
+    updateDocenteColor,
+    fetchColoresSugeridos,
+  } = useAsignacionDocenteApi();
 
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +35,7 @@ export function useCargaDocentesDashboardState() {
     }
     setLoading(true);
     setError(null);
-    const res = await api.fetchCargaGestion(gestionId);
+    const res = await fetchCargaGestion(gestionId);
     if (!res.success) {
       setError(typeof res.error === 'string' ? res.error : 'No se pudo cargar el dashboard');
       setPayload(null);
@@ -38,7 +43,7 @@ export function useCargaDocentesDashboardState() {
       setPayload(res.data?.carga_docentes ?? null);
     }
     setLoading(false);
-  }, [api, gestionId]);
+  }, [fetchCargaGestion, gestionId]);
 
   useEffect(() => {
     loadDashboard();
@@ -53,7 +58,7 @@ export function useCargaDocentesDashboardState() {
       setDrawerDocente(row);
       setDrawerLoading(true);
       setDrawerCarga(null);
-      const res = await api.fetchCargaDocente(row.docente_id, gestionId);
+      const res = await fetchCargaDocente(row.docente_id, gestionId);
       if (res.success) {
         setDrawerCarga(res.data?.carga_gestion ?? null);
       } else {
@@ -61,7 +66,7 @@ export function useCargaDocentesDashboardState() {
       }
       setDrawerLoading(false);
     },
-    [api, gestionId]
+    [fetchCargaDocente, gestionId]
   );
 
   const closeDrawer = useCallback(() => {
@@ -101,7 +106,7 @@ export function useCargaDocentesDashboardState() {
     openColorPicker,
     closeColorPicker,
     onColorSaved,
-    updateDocenteColor: api.updateDocenteColor,
-    fetchColoresSugeridos: api.fetchColoresSugeridos,
+    updateDocenteColor,
+    fetchColoresSugeridos,
   };
 }

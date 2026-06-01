@@ -22,6 +22,7 @@ import ParaleloCursosGestionSection from '../components/organisms/ParaleloCursos
 import DocenteAsignacionCursoModal from '../components/organisms/DocenteAsignacionCursoModal';
 import ParaleloCursosTabSection from '../components/organisms/ParaleloCursosTabSection';
 import HorariosOperativaBanner from '../components/molecules/HorariosOperativaBanner';
+import HorariosArmadoParaleloSelector from '../components/molecules/HorariosArmadoParaleloSelector';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 
@@ -66,6 +67,12 @@ const GestionHorariosArmadoPage = () => {
         coberturaGrilla,
         paraleloGestionId,
         gestionVigenteId,
+        selectedGestionId,
+        handleSelectorGestionChange,
+        handleSelectorParaleloChange,
+        validatePlacement,
+        hasParaleloSelected,
+        validPgId,
     } = useHorariosArmadoContext();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -266,6 +273,7 @@ const GestionHorariosArmadoPage = () => {
                                         !persistLoading && !persistError && persistResult,
                                     )}
                                     onRequestPersist={onRequestPersist}
+                                    validatePlacement={validatePlacement}
                                     vistaExpandida={vistaExpandida}
                                 />
                             </div>
@@ -336,14 +344,21 @@ const GestionHorariosArmadoPage = () => {
             header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={headerActions} />}
             sidebar={null}
         >
-            <Spin spinning={Boolean(paraleloId) && loading} size="large" tip="Cargando plan del paralelo…">
+            <Spin spinning={hasParaleloSelected && loading} size="large" tip="Cargando plan del paralelo…">
                 <div className="sd sd-spin-body horarios-armado-page">
-                    {!paraleloId ? (
+                    <HorariosArmadoParaleloSelector
+                        gestionId={selectedGestionId}
+                        onGestionChange={handleSelectorGestionChange}
+                        paraleloGestionId={validPgId ?? paraleloGestionId}
+                        onParaleloGestionChange={handleSelectorParaleloChange}
+                    />
+                    {!hasParaleloSelected ? (
                         <Alert
                             type="warning"
                             showIcon
-                            title="Falta el paralelo"
-                            description="Abrí esta pantalla desde la gestión de horarios eligiendo un paralelo (Tablero o Tabla)."
+                            style={{ marginTop: 16 }}
+                            title="Elija un paralelo"
+                            description="Seleccione la gestión y el paralelo en gestión, o abra esta pantalla desde el tablero de horarios."
                         />
                     ) : (
                         <>

@@ -48,8 +48,11 @@ export function useGestionHorariosConflictosState() {
 
   const buildArmadoHref = useCallback((row) => {
     const pid = Number(row?.paraleloId);
+    const pgId = Number(row?.paraleloGestionId);
     if (!Number.isFinite(pid) || pid < 1) return null;
-    return `/institucional/horarios/armado?paralelo=${pid}&tab=plan`;
+    const q = new URLSearchParams({ paralelo: String(pid), tab: 'plan' });
+    if (Number.isFinite(pgId) && pgId > 0) q.set('pg', String(pgId));
+    return `/institucional/horarios/armado?${q.toString()}`;
   }, []);
 
   const reload = useCallback(() => {

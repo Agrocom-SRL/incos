@@ -135,7 +135,7 @@ const GestionHorariosConflictosPage = () => {
             />
           ) : null}
           {error ? (
-            <Alert type="error" showIcon style={{ marginBottom: 16 }} message={error} />
+            <Alert type="error" showIcon style={{ marginBottom: 16 }} title={error} />
           ) : null}
           <HorariosOperativaBanner style={{ marginBottom: allSpacing.marginLG }} />
           <Card {...sectionCardProps}>

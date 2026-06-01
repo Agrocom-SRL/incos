@@ -1,23 +1,39 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGestionesCatalogApi } from '@application/modules/shared/hooks';
+import { useOfertaAcademicaApi } from '@application-institucional/oferta';
 import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/hooks';
 import { useBulkAsignacionHorariosApi } from '../api/useBulkAsignacionHorariosApi';
+import { useValidarConflictoHorarioApi } from '../api/useValidarConflictoHorarioApi';
 import { useParaleloGestionGrillaHorarioApi } from '../api/useParaleloGestionGrillaHorarioApi';
 import { useParaleloGestionVigenteResolver } from '../useParaleloGestionVigenteResolver';
 import { normalizeArmadoTab } from '@application-institucional/horarios/utils/normalizeArmadoTab';
 import { buildBulkAsignacionHorarioItems } from '@application-institucional/horarios/utils/buildBulkAsignacionHorarioItems';
-import { buildHorarioSlotIndexFromGrilla } from '@application-institucional/horarios/utils/buildHorarioSlotIndex';
+import {
+    buildHorarioSlotIndexFromGrilla,
+    resolveHorarioIdForBloque,
+} from '@application-institucional/horarios/utils/buildHorarioSlotIndex';
+import {
+    appendBlockToCourse,
+    findCourseAndBlock,
+    moveBlockToSlot,
+} from '@application-institucional/horarios/utils/planSemanalBlockOps';
 import {
     extractGrillaHorarioMeta,
     grillaHorarioToCourseSchedules,
     missingSubjectsFromGrillaCobertura,
 } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
 
+function pickParaleloId(row) {
+    return Number(row?.paraleloId ?? row?.paralelo_id ?? row?.parallelId);
+}
+
 export const useGestionHorariosArmadoState = () => {
     const navigate = useNavigate();
+    const { fetchParaleloGestionDetalle } = useOfertaAcademicaApi();
     const [searchParams, setSearchParams] = useSearchParams();
     const paraleloId = searchParams.get('paralelo');
+    const pgParam = searchParams.get('pg');
     const tab = normalizeArmadoTab(searchParams.get('tab'));
 
     const numericParaleloId = paraleloId ? Number(paraleloId) : null;
@@ -26,15 +42,32 @@ export const useGestionHorariosArmadoState = () => {
             ? numericParaleloId
             : null;
 
+    const numericPgId = pgParam ? Number(pgParam) : null;
+    const validPgId =
+        numericPgId != null && Number.isFinite(numericPgId) && numericPgId > 0 ? numericPgId : null;
+
     const { gestiones } = useGestionesCatalogApi();
-    const gestionVigenteId = useMemo(() => {
+    const gestionVigente = useMemo(() => {
         const list = Array.isArray(gestiones) ? gestiones : [];
-        const vigente = list.find((g) => g.vigente) ?? list[0];
-        const id = vigente?.id != null ? Number(vigente.id) : null;
-        return Number.isFinite(id) && id > 0 ? id : null;
+        return list.find((g) => g.vigente) ?? list[0] ?? null;
     }, [gestiones]);
 
-    const resolver = useParaleloGestionVigenteResolver(validParaleloId);
+    const gestionVigenteId = useMemo(() => {
+        const id = gestionVigente?.id != null ? Number(gestionVigente.id) : null;
+        return Number.isFinite(id) && id > 0 ? id : null;
+    }, [gestionVigente]);
+
+    const [selectorGestionId, setSelectorGestionId] = useState(null);
+    const selectedGestionId = selectorGestionId ?? gestionVigenteId;
+
+    const [pgDirectMeta, setPgDirectMeta] = useState(null);
+    const [pgDirectLoading, setPgDirectLoading] = useState(false);
+    const [pgDirectError, setPgDirectError] = useState(null);
+
+    const resolver = useParaleloGestionVigenteResolver(validPgId ? null : validParaleloId);
+
+    const paraleloGestionId = validPgId ?? resolver.paraleloGestionId;
+
     const {
         grillaHorario,
         loading: grillaLoading,
@@ -53,30 +86,88 @@ export const useGestionHorariosArmadoState = () => {
         error: persistBulkError,
         ejecutarBulk,
     } = useBulkAsignacionHorariosApi();
+    const { validar: validarConflicto } = useValidarConflictoHorarioApi();
 
     const [bulkSaved, setBulkSaved] = useState(false);
     const persistLoading = persistLegacyLoading || persistBulkLoading;
     const persistError = persistBulkError || persistLegacyError;
     const persistResult = bulkSaved ? { ok: true } : legacyPersistResult;
 
+    const horarioSlotIndex = useMemo(
+        () => buildHorarioSlotIndexFromGrilla(grillaHorario),
+        [grillaHorario],
+    );
+
     const grillaMeta = useMemo(() => extractGrillaHorarioMeta(grillaHorario), [grillaHorario]);
 
-    const turnoEfectivo = (resolver.meta?.turno || grillaMeta?.turno || '').trim();
+    const metaFromPg = pgDirectMeta ?? resolver.meta;
+    const turnoEfectivo = (metaFromPg?.turno || grillaMeta?.turno || '').trim();
     const paraleloNombre =
-        resolver.meta?.nombre || (paraleloId ? `Paralelo #${paraleloId}` : null);
+        metaFromPg?.nombre || (paraleloId ? `Paralelo #${paraleloId}` : null);
 
     const paraleloApiMeta = useMemo(
         () =>
-            validParaleloId
+            validParaleloId || paraleloGestionId
                 ? {
                       id: validParaleloId,
                       nombre: paraleloNombre,
                       turno: turnoEfectivo || null,
-                      paraleloGestionId: resolver.paraleloGestionId,
+                      paraleloGestionId,
                   }
                 : null,
-        [validParaleloId, paraleloNombre, turnoEfectivo, resolver.paraleloGestionId],
+        [validParaleloId, paraleloNombre, turnoEfectivo, paraleloGestionId],
     );
+
+    useEffect(() => {
+        if (!validPgId) {
+            setPgDirectMeta(null);
+            setPgDirectError(null);
+            return;
+        }
+
+        let cancelled = false;
+        setPgDirectLoading(true);
+        setPgDirectError(null);
+
+        (async () => {
+            const detRes = await fetchParaleloGestionDetalle(validPgId);
+            if (cancelled) return;
+            if (!detRes.success) {
+                setPgDirectError(detRes.error || 'No se pudo cargar el paralelo en gestión');
+                setPgDirectMeta(null);
+                setPgDirectLoading(false);
+                return;
+            }
+            const det =
+                detRes.data?.paralelo_gestion ?? detRes.data?.paraleloGestion ?? detRes.data ?? {};
+            const pid = pickParaleloId(det);
+            setPgDirectMeta({
+                nombre: det.paraleloNombre ?? det.paralelo_nombre ?? null,
+                turno: det.turno ?? null,
+                paraleloMaestroId: Number.isFinite(pid) && pid > 0 ? pid : null,
+            });
+            setPgDirectLoading(false);
+
+            if (pid && String(paraleloId) !== String(pid)) {
+                setSearchParams(
+                    (prev) => {
+                        const n = new URLSearchParams(prev);
+                        if (n.get('paralelo') === String(pid) && n.get('pg') === String(validPgId)) {
+                            return prev;
+                        }
+                        n.set('paralelo', String(pid));
+                        n.set('pg', String(validPgId));
+                        return n;
+                    },
+                    { replace: true },
+                );
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [validPgId, fetchParaleloGestionDetalle, paraleloId, setSearchParams]);
 
     const breadcrumbItems = useMemo(
         () => [
@@ -89,12 +180,12 @@ export const useGestionHorariosArmadoState = () => {
     );
 
     const pageTitle = useMemo(() => {
-        if (!paraleloId) return 'Plan semanal del paralelo';
+        if (!paraleloId && !paraleloGestionId) return 'Plan semanal del paralelo';
         const base = paraleloNombre
             ? `Plan semanal — ${paraleloNombre}`
-            : `Plan semanal — Paralelo #${paraleloId}`;
+            : `Plan semanal — Paralelo #${paraleloId || paraleloGestionId}`;
         return turnoEfectivo ? `${base} · Turno ${turnoEfectivo}` : base;
-    }, [paraleloId, paraleloNombre, turnoEfectivo]);
+    }, [paraleloId, paraleloGestionId, paraleloNombre, turnoEfectivo]);
 
     const serverSchedules = useMemo(() => {
         if (!grillaHorario) return [];
@@ -115,27 +206,16 @@ export const useGestionHorariosArmadoState = () => {
     const [draftSchedules, setDraftSchedules] = useState([]);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- borrador local rehidrata desde grilla
-        setDraftSchedules((prev) => {
-            try {
-                if (JSON.stringify(prev) === JSON.stringify(serverSchedules)) return prev;
-            } catch {
-                /* noop */
-            }
-            return serverSchedules;
-        });
-    }, [serverSchedules]);
-
-    useEffect(() => {
-        if (resolver.paraleloGestionId) {
-            fetchGrillaHorario(resolver.paraleloGestionId);
+        if (paraleloGestionId) {
+            fetchGrillaHorario(paraleloGestionId);
         }
-    }, [resolver.paraleloGestionId, fetchGrillaHorario]);
+    }, [paraleloGestionId, fetchGrillaHorario]);
 
     useEffect(() => {
         if (!searchParams.get('turno')) return;
         setSearchParams(
             (prev) => {
+                if (!prev.get('turno')) return prev;
                 const n = new URLSearchParams(prev);
                 n.delete('turno');
                 return n;
@@ -145,17 +225,11 @@ export const useGestionHorariosArmadoState = () => {
     }, [setSearchParams, searchParams]);
 
     useEffect(() => {
-        if (!persistLoading && (bulkSaved || legacyPersistResult) && resolver.paraleloGestionId) {
-            fetchGrillaHorario(resolver.paraleloGestionId);
+        if (!persistLoading && (bulkSaved || legacyPersistResult) && paraleloGestionId) {
+            fetchGrillaHorario(paraleloGestionId);
             if (bulkSaved) setBulkSaved(false);
         }
-    }, [
-        persistLoading,
-        bulkSaved,
-        legacyPersistResult,
-        resolver.paraleloGestionId,
-        fetchGrillaHorario,
-    ]);
+    }, [persistLoading, bulkSaved, legacyPersistResult, paraleloGestionId, fetchGrillaHorario]);
 
     const setTab = useCallback(
         (key) => {
@@ -164,23 +238,26 @@ export const useGestionHorariosArmadoState = () => {
                     const n = new URLSearchParams(prev);
                     n.set('tab', key);
                     if (paraleloId) n.set('paralelo', paraleloId);
+                    if (validPgId) n.set('pg', String(validPgId));
                     n.delete('turno');
                     return n;
                 },
                 { replace: true },
             );
         },
-        [setSearchParams, paraleloId],
+        [setSearchParams, paraleloId, validPgId],
     );
 
     const onRequestPersist = useCallback(async () => {
-        if (!validParaleloId) return;
+        const pid =
+            validParaleloId ??
+            (pgDirectMeta?.paraleloMaestroId != null ? Number(pgDirectMeta.paraleloMaestroId) : null);
+        if (!pid) return;
 
-        const horarioIndex = buildHorarioSlotIndexFromGrilla(grillaHorario);
         const { items, incomplete } = buildBulkAsignacionHorarioItems(
             serverSchedules,
             draftSchedules,
-            horarioIndex,
+            horarioSlotIndex,
         );
 
         if (!items.length) return;
@@ -194,33 +271,124 @@ export const useGestionHorariosArmadoState = () => {
         }
 
         setBulkSaved(false);
-        await persistLegacy(validParaleloId, draftSchedules);
+        await persistLegacy(pid, draftSchedules);
     }, [
         validParaleloId,
+        pgDirectMeta,
         grillaHorario,
         serverSchedules,
         draftSchedules,
+        horarioSlotIndex,
         ejecutarBulk,
         persistLegacy,
     ]);
+
+    const validatePlacement = useCallback(
+        async ({ cursoId, cursoHorarioId, targetDia, targetSlotMinutes, bloquePreview }) => {
+            const preview = bloquePreview
+                ? appendBlockToCourse(draftSchedules, cursoId, bloquePreview)
+                : moveBlockToSlot(draftSchedules, {
+                      cursoId,
+                      cursoHorarioId,
+                      targetDia,
+                      targetSlotMinutes,
+                  });
+            const { course, block } = findCourseAndBlock(preview, cursoId, cursoHorarioId);
+            if (!course || !block) {
+                return { ok: true };
+            }
+
+            const horarioId = resolveHorarioIdForBloque(block, horarioSlotIndex);
+            const asignacionDocenteId = Number(
+                course.asignacionDocenteId ?? block.asignacionDocenteId,
+            );
+
+            if (!Number.isFinite(asignacionDocenteId) || asignacionDocenteId < 1 || !horarioId) {
+                return { ok: true };
+            }
+
+            const excludeRaw = block.cursoHorarioId;
+            const excludeId =
+                excludeRaw != null && !String(excludeRaw).startsWith('temp-')
+                    ? Number(excludeRaw)
+                    : null;
+
+            const res = await validarConflicto({
+                asignacion_docente_id: asignacionDocenteId,
+                horario_id: horarioId,
+                aula_id: block.aulaId ?? null,
+                asignacion_horario_id: Number.isFinite(excludeId) ? excludeId : null,
+            });
+
+            if (res.valido) return { ok: true };
+
+            const msg =
+                res.conflictos?.map((c) => c.mensaje).filter(Boolean).join(' ') ||
+                res.error ||
+                'El bloque genera un conflicto de horario';
+            return { ok: false, message: msg };
+        },
+        [draftSchedules, horarioSlotIndex, validarConflicto],
+    );
+
+    const handleSelectorGestionChange = useCallback(
+        (gId) => {
+            setSelectorGestionId(Number(gId));
+            setSearchParams(
+                (prev) => {
+                    const n = new URLSearchParams(prev);
+                    n.delete('pg');
+                    n.delete('paralelo');
+                    if (!n.get('tab')) n.set('tab', 'plan');
+                    return n;
+                },
+                { replace: true },
+            );
+        },
+        [setSearchParams],
+    );
+
+    const handleSelectorParaleloChange = useCallback(
+        (pgId, option) => {
+            const pid = option?.paraleloId;
+            setSearchParams(
+                (prev) => {
+                    const n = new URLSearchParams(prev);
+                    n.set('pg', String(pgId));
+                    if (pid) n.set('paralelo', String(pid));
+                    if (!n.get('tab')) n.set('tab', 'plan');
+                    n.delete('turno');
+                    return n;
+                },
+                { replace: true },
+            );
+        },
+        [setSearchParams],
+    );
 
     const handleVolver = useCallback(() => {
         navigate('/institucional/horarios');
     }, [navigate]);
 
-    const loading = resolver.loading || (Boolean(resolver.paraleloGestionId) && grillaLoading);
-    const error = resolver.error || grillaError;
+    const loading =
+        pgDirectLoading ||
+        (!validPgId && resolver.loading) ||
+        (Boolean(paraleloGestionId) && grillaLoading);
+    const error = pgDirectError || (!validPgId && resolver.error) || grillaError;
 
     const refetchSchedule = useCallback(() => {
-        if (resolver.paraleloGestionId) {
-            return fetchGrillaHorario(resolver.paraleloGestionId);
+        if (paraleloGestionId) {
+            return fetchGrillaHorario(paraleloGestionId);
         }
         return Promise.resolve({ success: false, error: 'Sin paralelo en gestión' });
-    }, [resolver.paraleloGestionId, fetchGrillaHorario]);
+    }, [paraleloGestionId, fetchGrillaHorario]);
+
+    const hasParaleloSelected = Boolean(validPgId || validParaleloId);
 
     return {
         paraleloId,
-        paraleloGestionId: resolver.paraleloGestionId,
+        paraleloGestionId,
+        validPgId,
         tab,
         setTab,
         turnoEfectivo,
@@ -240,8 +408,13 @@ export const useGestionHorariosArmadoState = () => {
         serverSchedules,
         setDraftSchedules,
         onRequestPersist,
+        validatePlacement,
         handleVolver,
         refetchSchedule,
         gestionVigenteId,
+        selectedGestionId,
+        handleSelectorGestionChange,
+        handleSelectorParaleloChange,
+        hasParaleloSelected,
     };
 };

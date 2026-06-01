@@ -9,7 +9,12 @@ function pickParaleloId(row) {
  * Resuelve paralelo_gestion de la gestión vigente a partir del id del paralelo maestro (URL armado).
  */
 export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
-  const api = useOfertaAcademicaApi();
+  const {
+    fetchGestiones,
+    fetchPlanesHabilitados,
+    fetchParalelosGestion,
+    fetchParaleloGestionDetalle,
+  } = useOfertaAcademicaApi();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [paraleloGestionId, setParaleloGestionId] = useState(null);
@@ -29,7 +34,7 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
     setLoading(true);
     setError(null);
 
-    const gestRes = await api.fetchGestiones();
+    const gestRes = await fetchGestiones();
     if (!gestRes.success) {
       setError(gestRes.error || 'No se pudieron cargar las gestiones');
       setLoading(false);
@@ -45,7 +50,7 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
       return;
     }
 
-    const planesRes = await api.fetchPlanesHabilitados(vigente.id);
+    const planesRes = await fetchPlanesHabilitados(vigente.id);
     if (!planesRes.success) {
       setError(planesRes.error || 'No se pudieron cargar los planes habilitados');
       setLoading(false);
@@ -54,13 +59,13 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
 
     const planes = planesRes.data?.planesHabilitados ?? [];
     for (const plan of planes) {
-      const pgRes = await api.fetchParalelosGestion(plan.id);
+      const pgRes = await fetchParalelosGestion(plan.id);
       if (!pgRes.success) continue;
       const paralelos = pgRes.data?.paralelosGestion ?? [];
       const match = paralelos.find((pg) => pickParaleloId(pg) === pid);
       if (!match?.id) continue;
 
-      const detRes = await api.fetchParaleloGestionDetalle(match.id);
+      const detRes = await fetchParaleloGestionDetalle(match.id);
       const det = detRes.success
         ? detRes.data?.paralelo_gestion ?? detRes.data?.paraleloGestion ?? match
         : match;
@@ -86,7 +91,13 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
       'Este paralelo no está habilitado en la gestión vigente. Agregue el paralelo en Institucional → Oferta académica.'
     );
     setLoading(false);
-  }, [api, paraleloMaestroId]);
+  }, [
+    fetchGestiones,
+    fetchPlanesHabilitados,
+    fetchParalelosGestion,
+    fetchParaleloGestionDetalle,
+    paraleloMaestroId,
+  ]);
 
   useEffect(() => {
     resolve();

@@ -118,7 +118,7 @@ const GestionHorariosPublicacionPage = () => {
                                 onClearFilters={clearFilters}
                                 title="Filtrar publicación"
                             />
-                            {error ? <Alert type="error" showIcon message={error} /> : null}
+                            {error ? <Alert type="error" showIcon title={error} /> : null}
                             {!loading && !error && planes.length === 0 ? (
                                 <Alert
                                     type="info"

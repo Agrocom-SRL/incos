@@ -90,14 +90,14 @@ const DocenteColorPickerModal = ({
       onOk={onConfirm}
       okText="Guardar color"
       confirmLoading={saving}
-      destroyOnClose
+      destroyOnHidden
       width={520}
     >
       <Alert
         type="info"
         showIcon
         style={{ marginBottom: allSpacing.marginMD }}
-        message="El color debe ser único entre docentes activos. Los bloques ocupados muestran quién lo usa."
+        title="El color debe ser único entre docentes activos. Los bloques ocupados muestran quién lo usa."
       />
 
       <Flex justify="space-between" align="center" style={{ marginBottom: allSpacing.marginSM }}>

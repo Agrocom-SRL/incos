@@ -52,7 +52,12 @@ export function buildAsignacionDocenteColumns({
           placeholder="Sin asignar"
           optionFilterProp="label"
           style={{ width: '100%' }}
-          value={row.docenteId ?? undefined}
+          value={
+            row.docenteId != null &&
+            docenteOptions.some((o) => o.value === row.docenteId)
+              ? row.docenteId
+              : undefined
+          }
           disabled={!canEditar || savingOfertaId === row.ofertaCursoId}
           loading={savingOfertaId === row.ofertaCursoId}
           options={docenteOptions}
@@ -132,7 +137,7 @@ export function buildCargaDocentesColumns({ onVerDetalle, onAssignColor, canColo
         const pct = max > 0 ? Math.round((carga / max) * 100) : 0;
         const sobrecarga = carga > max;
         return (
-          <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={2} style={{ width: '100%' }}>
             <span className={sobrecarga ? 'asignacion-docente-carga--sobrecarga' : undefined}>
               {carga}/{max} hrs
             </span>
