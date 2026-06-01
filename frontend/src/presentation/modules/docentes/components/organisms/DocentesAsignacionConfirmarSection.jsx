@@ -1,10 +1,10 @@
 /**
- * Último paso del wizard: resumen, horario semanal, carga horaria estimada y tabla de asignaciones.
+ * Último paso del wizard: resumen de la materia ofertada a vincular al docente.
+ * El armado de bloques horarios es Institucional → Gestión de horarios.
  */
 
-import { Alert, Spin, Typography } from 'antd';
+import { Alert, Typography } from 'antd';
 import { Card } from '@atoms';
-import DocenteSchedulesSection from '@docentes/components/organisms/DocenteSchedulesSection';
 
 const { Text, Paragraph } = Typography;
 
@@ -15,10 +15,7 @@ export default function DocentesAsignacionConfirmarSection({
   cursoLabel,
   docenteId,
   docenteNombre,
-  cargaHorariaOpt,
-  courseSchedulesPreview = [],
-  loadingHorariosPreview = false,
-  errorHorariosPreview = null,
+  horasSemanalesPlan,
 }) {
   return (
     <Card
@@ -29,8 +26,9 @@ export default function DocentesAsignacionConfirmarSection({
       className="form-section daa-asignacion-section"
     >
       <Paragraph type="secondary" style={{ marginTop: 0, marginBottom: 12 }}>
-        Revisá la selección y el <Text strong>horario semanal del curso</Text> antes de confirmar. El botón{' '}
-        <Text strong>Registrar asignación</Text> envía la fila al servidor.
+        Revisá la selección antes de confirmar. Esta acción vincula al docente con la{' '}
+        <Text strong>materia ofertada</Text> en la gestión. Los bloques de horario se arman después en{' '}
+        <Text strong>Institucional → Gestión de horarios</Text>.
       </Paragraph>
 
       <Alert
@@ -46,53 +44,34 @@ export default function DocentesAsignacionConfirmarSection({
               </li>
             )}
             <li>
-              <Text strong>Plan:</Text> {planLabel || '—'}
+              <Text strong>Plan habilitado:</Text> {planLabel || '—'}
             </li>
             <li>
-              <Text strong>Periodo:</Text> {periodoLabel || '—'}
+              <Text strong>Periodo del plan:</Text> {periodoLabel || '—'}
             </li>
             <li>
-              <Text strong>Paralelo:</Text> {paraleloLabel || '—'}
+              <Text strong>Paralelo en gestión:</Text> {paraleloLabel || '—'}
             </li>
             <li>
-              <Text strong>Curso:</Text> {cursoLabel || '—'}
+              <Text strong>Materia ofertada:</Text> {cursoLabel || '—'}
             </li>
+            {horasSemanalesPlan != null ? (
+              <li>
+                <Text strong>Carga según plan:</Text> {horasSemanalesPlan} h/semana
+              </li>
+            ) : null}
           </ul>
         }
       />
 
-      <Typography.Title level={5} style={{ marginTop: 4, marginBottom: 8 }}>
-        Horario semanal del curso elegido
-      </Typography.Title>
-      {errorHorariosPreview ? (
-        <Alert type="error" showIcon style={{ marginBottom: 12 }} message={errorHorariosPreview} />
-      ) : null}
-      <Spin spinning={loadingHorariosPreview}>
-        <DocenteSchedulesSection courseSchedules={courseSchedulesPreview} puedeAsignarMaterias={false} />
-      </Spin>
-
-      {docenteId != null ? (
-        <div className="daa-asignacion-actions" style={{ marginBottom: 16 }}>
-          <div className="daa-asignacion-actions__inner">
-            <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
-              Carga horaria semanal estimada
-            </Text>
-            <Text strong>{cargaHorariaOpt ?? '—'} h</Text>
-            <Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0, fontSize: 13 }}>
-              Se calcula automáticamente según la cantidad de bloques del horario del curso.
-            </Paragraph>
-          </div>
-        </div>
-      ) : (
+      {docenteId == null ? (
         <Alert
           type="warning"
           showIcon
-          style={{ marginBottom: 16 }}
           title="Sin docente en contexto"
-          description="No se puede registrar una asignación sin docente. Podés volver a la lista y abrir esta pantalla desde la fila del docente."
+          description="Abrí esta pantalla desde la ficha o la lista del docente para registrar la asignación."
         />
-      )}
-
+      ) : null}
     </Card>
   );
 }

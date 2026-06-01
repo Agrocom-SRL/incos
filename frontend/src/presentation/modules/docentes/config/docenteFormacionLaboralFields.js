@@ -38,8 +38,11 @@ export const DOCENTE_FORMACION_LABORAL_FIELD_NAMES = [
   'estadoLaboral',
   'fechaContratacion',
   'fechaRetiro',
+  'maxHorasSemana',
+  'maxHorasMes',
   'observaciones',
   'activo',
+  'colorHex',
 ];
 
 const createCamposFormacion = () => [
@@ -142,6 +145,26 @@ const createCamposCondicionLaboral = () => [
     required: false,
     span: 12,
     placeholder: 'YYYY-MM-DD',
+    ...PRESERVE,
+  },
+  {
+    name: 'maxHorasSemana',
+    label: 'Máx. horas / semana',
+    type: 'input',
+    inputType: 'number',
+    required: false,
+    span: 12,
+    placeholder: '20',
+    ...PRESERVE,
+  },
+  {
+    name: 'maxHorasMes',
+    label: 'Máx. horas / mes',
+    type: 'input',
+    inputType: 'number',
+    required: false,
+    span: 12,
+    placeholder: '80',
     ...PRESERVE,
   },
   {

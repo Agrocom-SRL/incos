@@ -1,0 +1,43 @@
+.docente-color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+}
+
+.docente-color-picker-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.docente-color-picker-swatch--selected {
+  border-color: var(--ant-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ant-color-primary) 35%, transparent);
+}
+
+.docente-color-picker-swatch--used {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.docente-color-picker-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.docente-color-bar {
+  display: inline-block;
+  width: 4px;
+  min-height: 1em;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.sd-profile__avatar--tinted {
+  box-shadow: inset 0 0 0 3px var(--docente-avatar-ring, transparent);
+}

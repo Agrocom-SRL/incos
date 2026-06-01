@@ -13,6 +13,8 @@ import {
   DOCENTE_RESIDENCIA_DEPARTAMENTO_ID,
   DOCENTE_WIZARD_ALL_FIELD_NAMES,
 } from '@docentes/config';
+import { useDocenteColorApi } from '../api/useDocenteColorApi';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 
 const toLabelValueOptions = (values = []) =>
   (Array.isArray(values) ? values : []).map((value) => ({
@@ -76,6 +78,9 @@ const mapDetailToForm = (profile = {}) => {
     estadoLaboral: profile.estadoLaboral || undefined,
     observaciones: profile.observaciones || '',
     activo: profile.registroActivo !== false,
+    colorHex: profile.colorHex ?? profile.color_hex ?? undefined,
+    maxHorasSemana: profile.maxHorasSemana ?? profile.max_horas_semana ?? 20,
+    maxHorasMes: profile.maxHorasMes ?? profile.max_horas_mes ?? 80,
   };
 };
 
@@ -113,6 +118,8 @@ const mapFormToPayload = (values) => ({
   estadoLaboral: values.estadoLaboral || null,
   observaciones: values.observaciones?.trim() || null,
   activo: values.activo !== false,
+  maxHorasSemana: toOptionalInt(values.maxHorasSemana) ?? 20,
+  maxHorasMes: toOptionalInt(values.maxHorasMes) ?? 80,
 });
 
 export const useDocentesFormPage = (mode = 'create') => {
@@ -125,13 +132,19 @@ export const useDocentesFormPage = (mode = 'create') => {
   const menuSidebarKey = location.state?.menuSidebarKey;
 
   const { message } = App.useApp();
+  const { updateDocenteColor } = useDocenteColorApi();
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState(null);
   const [estadosCiviles, setEstadosCiviles] = useState([]);
-  const [wizardInitialValues, setWizardInitialValues] = useState({ activo: true, nacionalidad: 'Boliviana' });
+  const [wizardInitialValues, setWizardInitialValues] = useState({
+    activo: true,
+    nacionalidad: 'Boliviana',
+    maxHorasSemana: 20,
+    maxHorasMes: 80,
+  });
   const [wizardMountKey, setWizardMountKey] = useState(0);
 
   const wizardSteps = useMemo(() => createDocenteWizardSteps(), []);
@@ -214,7 +227,12 @@ export const useDocentesFormPage = (mode = 'create') => {
           form.setFieldsValue(mapped);
           setWizardMountKey((k) => k + 1);
         } else {
-          const defaults = { activo: true, nacionalidad: 'Boliviana' };
+          const defaults = {
+            activo: true,
+            nacionalidad: 'Boliviana',
+            maxHorasSemana: 20,
+            maxHorasMes: 80,
+          };
           setWizardInitialValues(defaults);
           form.resetFields();
           form.setFieldsValue(defaults);
@@ -239,12 +257,22 @@ export const useDocentesFormPage = (mode = 'create') => {
     try {
       await form.validateFields(DOCENTE_WIZARD_ALL_FIELD_NAMES);
       const values = form.getFieldsValue(true);
+      const colorHex = sanitizeDocenteColorHex(values.colorHex);
+      if (!colorHex) {
+        throw new Error('Seleccione un color para el docente (paso Formación → Identidad visual)');
+      }
       const payload = mapFormToPayload(values);
       const useCase = isEditMode ? useCasesFactory.actualizarDocente() : useCasesFactory.crearDocente();
       const result = isEditMode ? await useCase.ejecutar(docenteId, payload) : await useCase.ejecutar(payload);
       if (!result?.success) throw new Error(result?.error || 'No se pudo guardar el docente');
 
-      const savedId = result?.data?.id || docenteId;
+      const savedId = result?.data?.id || result?.data?.docente?.id || docenteId;
+      if (savedId && colorHex) {
+        const colorRes = await updateDocenteColor(savedId, colorHex);
+        if (!colorRes.success) {
+          throw new Error(typeof colorRes.error === 'string' ? colorRes.error : 'Docente guardado, pero no se pudo asignar el color');
+        }
+      }
       message.success(isEditMode ? 'Docente actualizado' : 'Docente creado');
       if (savedId) navigate(`/docentes/${savedId}`, { state: { returnListPath, menuSidebarKey } });
       else navigate(returnListPath, menuSidebarKey != null ? { state: { menuSidebarKey } } : undefined);
@@ -255,12 +283,19 @@ export const useDocentesFormPage = (mode = 'create') => {
     } finally {
       setSubmitLoading(false);
     }
-  }, [docenteId, form, isEditMode, message, navigate, returnListPath, menuSidebarKey]);
+  }, [docenteId, form, isEditMode, message, navigate, returnListPath, menuSidebarKey, updateDocenteColor]);
 
   const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
     if (stepNumber === 1) return formInstance.validateFields(DOCENTE_DATOS_PERSONALES_FIELD_NAMES);
+    if (stepNumber === 2) {
+      const hex = sanitizeDocenteColorHex(formInstance.getFieldValue('colorHex'));
+      if (!hex) {
+        message.warning('Seleccione un color para el docente antes de registrar');
+        return Promise.reject(new Error('color'));
+      }
+    }
     return Promise.resolve();
-  }, []);
+  }, [message]);
 
   const finishLabel = isEditMode ? 'Guardar cambios' : 'Registrar docente';
   const isInvalidEditId = isEditMode && (!Number.isFinite(docenteId) || docenteId < 1);

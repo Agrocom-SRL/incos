@@ -110,6 +110,12 @@ export class Teacher extends BaseEntity {
     if (data.hasOwnProperty('colorHex')) {
       this.colorHex = data.colorHex;
     }
+    if (data.hasOwnProperty('maxHorasSemana')) {
+      this.maxHorasSemana = data.maxHorasSemana;
+    }
+    if (data.hasOwnProperty('maxHorasMes')) {
+      this.maxHorasMes = data.maxHorasMes;
+    }
   }
 
   /**
@@ -281,6 +287,12 @@ export class Teacher extends BaseEntity {
     }
     if (this.hasOwnProperty('colorHex')) {
       plainObject.colorHex = this.colorHex;
+    }
+    if (this.hasOwnProperty('maxHorasSemana')) {
+      plainObject.maxHorasSemana = this.maxHorasSemana;
+    }
+    if (this.hasOwnProperty('maxHorasMes')) {
+      plainObject.maxHorasMes = this.maxHorasMes;
     }
 
     return plainObject;

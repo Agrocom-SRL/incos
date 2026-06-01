@@ -37,10 +37,15 @@ export function createDocenteWizardSteps() {
     {
       title: 'Formación y laboral',
       formTitle: 'Formación académica y condición laboral',
-      sections: ['formacionAcademica', 'condicionLaboral'],
+      sections: ['formacionAcademica', 'condicionLaboral', 'identidadVisual'],
       config: {
         formacionAcademica: formacionLaboral.formacionAcademica,
         condicionLaboral: formacionLaboral.condicionLaboral,
+        identidadVisual: {
+          title: 'IDENTIDAD VISUAL',
+          fields: [],
+          customSection: true,
+        },
       },
     },
   ];

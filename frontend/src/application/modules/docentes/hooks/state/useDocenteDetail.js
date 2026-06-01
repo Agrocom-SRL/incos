@@ -55,10 +55,8 @@ export const useDocenteDetail = (docenteIdRaw) => {
     });
   }, [navigate, docenteId, returnListPath]);
 
-  const handleAsignacionAcademica = useCallback(
-    (options = {}) => {
+  const handleAsignacionAcademica = useCallback(() => {
       if (!Number.isFinite(docenteId) || docenteId < 1) return;
-      const focus = options.focus === 'horarios' ? 'horarios' : 'cursos';
       navigate(`/docentes/${docenteId}/asignaciones`, {
         state: {
           menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
@@ -66,7 +64,6 @@ export const useDocenteDetail = (docenteIdRaw) => {
           gestionReturnPath: `/docentes/${docenteId}`,
           docenteId,
           docenteNombre: nombreCompleto,
-          asignacionFocus: focus,
         },
       });
     },

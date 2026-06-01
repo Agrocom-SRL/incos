@@ -89,11 +89,11 @@ const DocenteAssignmentsSection = ({
   ) : null;
 
   return (
-    <DetailInfoCard title="Carga académica asignada" icon={<BookOutlined />} cols={1} extra={cardExtra}>
+    <DetailInfoCard title="Materias ofertadas asignadas" icon={<BookOutlined />} cols={1} extra={cardExtra}>
       {assignments.length === 0 ? (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="Sin asignaciones a cursos registradas"
+          description="Sin materias ofertadas vinculadas a este docente"
           extra={emptyExtra}
         />
       ) : (

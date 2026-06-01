@@ -134,6 +134,9 @@ export class TeacherDetailPresentationMapper {
       estadoLaboral: t.estado_laboral,
       observaciones: t.observaciones,
       registroActivo: Boolean(t.activo),
+      colorHex: normalizeHex(t.color_hex),
+      maxHorasSemana: t.max_horas_semana != null ? Number(t.max_horas_semana) : 20,
+      maxHorasMes: t.max_horas_mes != null ? Number(t.max_horas_mes) : 80,
       creadoEn: t.created_at,
       actualizadoEn: t.updated_at,
     };

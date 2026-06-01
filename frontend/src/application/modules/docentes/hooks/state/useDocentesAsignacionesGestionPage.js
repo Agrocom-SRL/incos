@@ -14,7 +14,6 @@ export const useDocentesAsignacionesGestionPage = (docenteIdRaw) => {
     docenteId,
     nombreCompleto,
     assignments,
-    courseSchedules,
     loading,
     error,
     returnListPath,
@@ -36,7 +35,7 @@ export const useDocentesAsignacionesGestionPage = (docenteIdRaw) => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Docentes', href: returnListPath || '/docentes/listar' },
-      { title: 'Gestión de asignaciones' },
+      { title: 'Materias asignadas' },
     ],
     [returnListPath]
   );
@@ -99,7 +98,6 @@ export const useDocentesAsignacionesGestionPage = (docenteIdRaw) => {
     docenteId,
     nombreCompleto,
     assignments,
-    courseSchedules,
     loading,
     error,
     breadcrumbItems,

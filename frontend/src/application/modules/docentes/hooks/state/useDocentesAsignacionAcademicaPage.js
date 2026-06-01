@@ -4,7 +4,6 @@ import { App, Form } from 'antd';
 import docenteRepository from '@implementations/DocenteRepository';
 import { createDocenteAsignacionAcademicaWizardSteps } from '@docentes/config';
 import { useDocentesAsignacionCatalogos } from './useDocentesAsignacionCatalogos';
-import { useDocentesAsignacionHorario } from './useDocentesAsignacionHorario';
 
 export const useDocentesAsignacionAcademicaPage = () => {
   const { message } = App.useApp();
@@ -77,11 +76,21 @@ export const useDocentesAsignacionAcademicaPage = () => {
     return p?.carreraNombre ?? null;
   }, [planes, gestionPlanId]);
 
-  const { loadingHorarios, errorHorarios, courseSchedulesDesdeBloques, cargaHorariaOpt } = useDocentesAsignacionHorario({
-    cursoId,
-    cursos,
-    paraleloNombreParaHorario,
-  });
+  const resumenCursoLabel = useMemo(() => {
+    if (!cursoId) return '';
+    const c = cursos.find((x) => Number(x.id) === Number(cursoId));
+    if (!c) return `Oferta #${cursoId}`;
+    return [c.materiaNombre || c.materia || c.codigo, c.codigo && c.materiaNombre ? `(${c.codigo})` : null]
+      .filter(Boolean)
+      .join(' ');
+  }, [cursoId, cursos]);
+
+  const horasSemanalesPlan = useMemo(() => {
+    if (!cursoId) return null;
+    const c = cursos.find((x) => Number(x.id) === Number(cursoId));
+    const h = c?.horasSemanales ?? c?.horas_semanales ?? c?.horasPlan;
+    return h != null && Number.isFinite(Number(h)) ? Number(h) : null;
+  }, [cursoId, cursos]);
 
   const resumenPeriodoLabel = useMemo(() => {
     const p = periodos.find((x) => Number(x.id) === Number(periodoId));
@@ -94,13 +103,6 @@ export const useDocentesAsignacionAcademicaPage = () => {
     if (!p) return '';
     return [p.nombre, p.turno].filter(Boolean).join(' · ');
   }, [paralelos, paraleloId]);
-
-  const resumenCursoLabel = useMemo(() => {
-    if (!cursoId) return '';
-    const c = cursos.find((x) => Number(x.id) === Number(cursoId));
-    if (!c) return `Curso #${cursoId}`;
-    return [c.materiaNombre || c.codigo, c.codigo && c.materiaNombre ? `(${c.codigo})` : null].filter(Boolean).join(' ');
-  }, [cursoId, cursos]);
 
   const breadcrumbItems = useMemo(
     () => [{ title: 'Inicio', href: '/' }, { title: 'Docentes', href: '/docentes/listar' }, { title: 'Asignación académica' }],
@@ -125,7 +127,7 @@ export const useDocentesAsignacionAcademicaPage = () => {
     }
     setSubmittingAsignacion(true);
     const body = { gestionPlanId, cursoId, docenteId };
-    if (cargaHorariaOpt != null && Number.isFinite(Number(cargaHorariaOpt))) body.cargaHoraria = Number(cargaHorariaOpt);
+    if (horasSemanalesPlan != null) body.cargaHoraria = horasSemanalesPlan;
     const res = await docenteRepository.crearAsignacion(body);
     setSubmittingAsignacion(false);
     if (!res.success) {
@@ -161,7 +163,7 @@ export const useDocentesAsignacionAcademicaPage = () => {
     }
     message.success('Asignación registrada');
     navigate(returnListPath.startsWith('/') ? returnListPath : '/docentes/listar', { state: { menuSidebarKey, gestionReturnPath } });
-  }, [docenteId, gestionPlanId, periodoId, paraleloId, cursoId, cargaHorariaOpt, message, navigate, returnListPath, menuSidebarKey, gestionReturnPath]);
+  }, [docenteId, gestionPlanId, periodoId, paraleloId, cursoId, horasSemanalesPlan, message, navigate, returnListPath, menuSidebarKey, gestionReturnPath]);
 
   const handleActualizarAsignacion = useCallback(async () => {
     if (!editingAssignmentId) return;
@@ -169,7 +171,7 @@ export const useDocentesAsignacionAcademicaPage = () => {
     setSubmittingAsignacion(true);
     const payload = { cursoId };
     if (docenteId) payload.docenteId = docenteId;
-    if (cargaHorariaOpt != null && Number.isFinite(Number(cargaHorariaOpt))) payload.cargaHoraria = Number(cargaHorariaOpt);
+    if (horasSemanalesPlan != null) payload.cargaHoraria = horasSemanalesPlan;
     const res = await docenteRepository.actualizarAsignacion(editingAssignmentId, payload);
     setSubmittingAsignacion(false);
     if (!res.success) {
@@ -179,7 +181,7 @@ export const useDocentesAsignacionAcademicaPage = () => {
     }
     message.success('Asignación actualizada');
     navigate(returnListPath.startsWith('/') ? returnListPath : '/docentes/listar', { state: { menuSidebarKey, gestionReturnPath } });
-  }, [editingAssignmentId, cursoId, docenteId, cargaHorariaOpt, message, navigate, returnListPath, menuSidebarKey, gestionReturnPath]);
+  }, [editingAssignmentId, cursoId, docenteId, horasSemanalesPlan, message, navigate, returnListPath, menuSidebarKey, gestionReturnPath]);
 
   const onValidateBeforeNext = useCallback(
     (stepNumber) =>
@@ -262,10 +264,7 @@ export const useDocentesAsignacionAcademicaPage = () => {
     resumenPeriodoLabel,
     resumenParaleloLabel,
     resumenCursoLabel,
-    cargaHorariaOpt,
-    courseSchedulesDesdeBloques,
-    loadingHorarios,
-    errorHorarios,
+    horasSemanalesPlan,
     existingAssignmentDialog,
     handleClearExistingAssignmentDialog,
     handleGoToExistingDocente,

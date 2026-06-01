@@ -56,5 +56,7 @@ export function teacherDomainFromApiBody(body = {}) {
       ? String(body.observaciones).trim()
       : null,
     active: body.activo !== false,
+    maxHorasSemana: body.maxHorasSemana ?? body.max_horas_semana ?? null,
+    maxHorasMes: body.maxHorasMes ?? body.max_horas_mes ?? null,
   };
 }

@@ -1,10 +1,10 @@
 /**
- * Ficha de docente — detalle con perfil, nacionalidad/domicilio, acceso, asignaciones y horarios.
- * Capa presentación: consume DocentesDetailContext (aplicación + API ya resueltas).
+ * Ficha de docente — detalle con perfil, nacionalidad/domicilio, acceso y materias asignadas.
+ * El armado de horarios vive en Institucional → Gestión de horarios.
  */
 
-import { useMemo } from 'react';
-import { Spin, Alert, Tabs } from 'antd';
+import { useMemo, useState, useCallback } from 'react';
+import { Spin, Alert, Tabs, Button } from 'antd';
 import {
   ArrowLeftOutlined,
   UserOutlined,
@@ -13,18 +13,20 @@ import {
   SolutionOutlined,
   IdcardOutlined,
   CarryOutOutlined,
-  ScheduleOutlined,
+  BgColorsOutlined,
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useAuthContext } from '@application-auth';
 import { useDocentesDetailContext } from '@application-docentes/hooks';
+import { useDocenteColorApi } from '@application-docentes/hooks/api/useDocenteColorApi';
 import DetailField from '@docentes/components/atoms/DetailField';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import DocenteProfileSummary from '@docentes/components/organisms/DocenteProfileSummary';
 import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAssignmentsSection';
-import DocenteSchedulesSection from '@docentes/components/organisms/DocenteSchedulesSection';
 import DocenteAccessSection from '@docentes/components/organisms/DocenteAccessSection';
+import DocenteColorPickerModal from '@docentes/components/molecules/DocenteColorPickerModal';
+import DocenteColorBar, { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 
 const fmtDate = (v) => {
   if (!v) return '—';
@@ -39,13 +41,14 @@ const fmtDate = (v) => {
 
 const DocentesDetail = () => {
   const { hasPermiso } = useAuthContext();
+  const { fetchColoresSugeridos, updateDocenteColor } = useDocenteColorApi();
+  const [colorModalOpen, setColorModalOpen] = useState(false);
   const {
     docenteId,
     loading,
     error,
     profile,
     assignments,
-    courseSchedules,
     access,
     nombreCompleto,
     iniciales,
@@ -53,6 +56,7 @@ const DocentesDetail = () => {
     handleVolver,
     handleEditar,
     handleAsignacionAcademica,
+    refetch,
   } = useDocentesDetailContext();
 
   const puedeEditar = hasPermiso('docentes.editar', 'EDITAR');
@@ -64,6 +68,14 @@ const DocentesDetail = () => {
     hasPermiso('docentes.editar', 'EDITAR');
   const puedeCrearUsuario = hasPermiso('seguridad.usuario.crear', 'CREAR');
   const puedeEditarUsuario = hasPermiso('seguridad.usuario.administrar', 'EDITAR');
+  const puedeEditarColor = hasPermiso('docentes.editar', 'EDITAR');
+
+  const colorHex = sanitizeDocenteColorHex(profile.colorHex);
+
+  const handleColorSaved = useCallback(async () => {
+    setColorModalOpen(false);
+    await refetch?.();
+  }, [refetch]);
 
   const headerActions = (
     <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
@@ -125,19 +137,45 @@ const DocentesDetail = () => {
               <DetailField label="Estado laboral">{profile.estadoLaboral}</DetailField>
               <DetailField label="Fecha de contratación">{fmtDate(profile.fechaContratacion)}</DetailField>
               <DetailField label="Fecha de retiro">{fmtDate(profile.fechaRetiro)}</DetailField>
+              <DetailField label="Máx. horas / semana">{profile.maxHorasSemana ?? '—'}</DetailField>
+              <DetailField label="Máx. horas / mes">{profile.maxHorasMes ?? '—'}</DetailField>
               <DetailField label="Registro activo">{profile.registroActivo ? 'Sí' : 'No'}</DetailField>
               <DetailField label="Observaciones" span={3}>
                 {profile.observaciones}
+              </DetailField>
+            </DetailInfoCard>
+            <DetailInfoCard
+              title="Identidad visual"
+              icon={<BgColorsOutlined />}
+              cols={3}
+              headVariant="labor"
+              extra={
+                puedeEditarColor ? (
+                  <Button size="small" type="primary" ghost onClick={() => setColorModalOpen(true)}>
+                    {colorHex ? 'Cambiar color' : 'Asignar color'}
+                  </Button>
+                ) : null
+              }
+            >
+              <DetailField label="Color en horarios">
+                {colorHex ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <DocenteColorBar hex={colorHex} className="docente-color-picker-preview" />
+                    {colorHex}
+                  </span>
+                ) : (
+                  'Sin asignar — requerido para vincular materias'
+                )}
               </DetailField>
             </DetailInfoCard>
           </div>
         ),
       },
       {
-        key: 'academico',
+        key: 'materias',
         label: (
           <span className="sd-tab-label">
-            <BookOutlined /> Académico
+            <BookOutlined /> Materias asignadas
           </span>
         ),
         children: (
@@ -145,25 +183,8 @@ const DocentesDetail = () => {
             <DocenteAssignmentsSection
               assignments={assignments}
               puedeAsignarMaterias={puedeAsignarMaterias}
-              onAsignarMaterias={() => handleAsignacionAcademica({ focus: 'cursos' })}
+              onAsignarMaterias={() => handleAsignacionAcademica()}
               showManageButtonInCard={puedeGestionarAsignaciones}
-            />
-          </div>
-        ),
-      },
-      {
-        key: 'horarios',
-        label: (
-          <span className="sd-tab-label">
-            <ScheduleOutlined /> Horarios
-          </span>
-        ),
-        children: (
-          <div className="sd-tab-body">
-            <DocenteSchedulesSection
-              courseSchedules={courseSchedules}
-              puedeAsignarMaterias={puedeAsignarMaterias}
-              onAsignarMaterias={() => handleAsignacionAcademica({ focus: 'horarios' })}
             />
           </div>
         ),
@@ -193,7 +214,6 @@ const DocentesDetail = () => {
     [
       profile,
       assignments,
-      courseSchedules,
       access,
       nombreCompleto,
       docenteId,
@@ -201,44 +221,61 @@ const DocentesDetail = () => {
       puedeEditarUsuario,
       puedeAsignarMaterias,
       puedeGestionarAsignaciones,
+      puedeEditarColor,
+      colorHex,
       handleAsignacionAcademica,
-    ]
+    ],
   );
 
   return (
-    <PageTemplate
-      header={
-        <PageHeader title="Ficha del docente" breadcrumbItems={breadcrumbItems} actions={headerActions} />
-      }
-      sidebar={null}
-    >
-      <Spin spinning={loading} size="large" tip="Cargando ficha…">
-        <div className="sd sd-spin-body">
-          {!loading && error && (
-            <Alert type="error" title="No se pudo cargar la ficha" description={error} showIcon style={{ marginBottom: 16 }} />
-          )}
-          {!loading && !error && (
-            <>
-              <DocenteProfileSummary
-                nombreCompleto={nombreCompleto}
-                iniciales={iniciales}
-                tituloProfesional={profile.tituloProfesional}
-                estadoLaboral={profile.estadoLaboral}
-                ciCompleto={profile.ciCompleto}
-                celular={profile.celular}
-                emailPersonal={profile.emailPersonal}
-                registroActivo={Boolean(profile.registroActivo)}
-                onEditar={handleEditar}
-                puedeEditar={puedeEditar}
-              />
-              <div className="sd-tabs-shell">
-                <Tabs defaultActiveKey="resumen" items={tabItems} className="sd-tabs" />
-              </div>
-            </>
-          )}
-        </div>
-      </Spin>
-    </PageTemplate>
+    <>
+      <PageTemplate
+        header={
+          <PageHeader title="Ficha del docente" breadcrumbItems={breadcrumbItems} actions={headerActions} />
+        }
+        sidebar={null}
+      >
+        <Spin spinning={loading} size="large" tip="Cargando ficha…">
+          <div className="sd sd-spin-body">
+            {!loading && error && (
+              <Alert type="error" title="No se pudo cargar la ficha" description={error} showIcon style={{ marginBottom: 16 }} />
+            )}
+            {!loading && !error && (
+              <>
+                <DocenteProfileSummary
+                  nombreCompleto={nombreCompleto}
+                  iniciales={iniciales}
+                  tituloProfesional={profile.tituloProfesional}
+                  estadoLaboral={profile.estadoLaboral}
+                  ciCompleto={profile.ciCompleto}
+                  celular={profile.celular}
+                  emailPersonal={profile.emailPersonal}
+                  registroActivo={Boolean(profile.registroActivo)}
+                  colorHex={profile.colorHex}
+                  maxHorasSemana={profile.maxHorasSemana}
+                  onEditar={handleEditar}
+                  puedeEditar={puedeEditar}
+                />
+                <div className="sd-tabs-shell">
+                  <Tabs defaultActiveKey="resumen" items={tabItems} className="sd-tabs" />
+                </div>
+              </>
+            )}
+          </div>
+        </Spin>
+      </PageTemplate>
+
+      <DocenteColorPickerModal
+        open={colorModalOpen}
+        docenteId={docenteId}
+        docenteNombre={nombreCompleto}
+        initialHex={colorHex || ''}
+        onClose={() => setColorModalOpen(false)}
+        onSaved={handleColorSaved}
+        fetchColoresSugeridos={fetchColoresSugeridos}
+        updateDocenteColor={updateDocenteColor}
+      />
+    </>
   );
 };
 

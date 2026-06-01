@@ -62,10 +62,7 @@ const DocentesAsignacionAcademica = () => {
     resumenPeriodoLabel,
     resumenParaleloLabel,
     resumenCursoLabel,
-    cargaHorariaOpt,
-    courseSchedulesDesdeBloques,
-    loadingHorarios,
-    errorHorarios,
+    horasSemanalesPlan,
     existingAssignmentDialog,
     handleClearExistingAssignmentDialog,
     handleGoToExistingDocente,
@@ -137,10 +134,7 @@ const DocentesAsignacionAcademica = () => {
               cursoLabel={resumenCursoLabel}
               docenteId={docenteId}
               docenteNombre={docenteNombre}
-              cargaHorariaOpt={cargaHorariaOpt}
-              courseSchedulesPreview={courseSchedulesDesdeBloques}
-              loadingHorariosPreview={loadingHorarios}
-              errorHorariosPreview={errorHorarios}
+              horasSemanalesPlan={horasSemanalesPlan}
             />
           );
         default:
@@ -175,10 +169,7 @@ const DocentesAsignacionAcademica = () => {
       resumenCursoLabel,
       docenteId,
       docenteNombre,
-      cargaHorariaOpt,
-      courseSchedulesDesdeBloques,
-      loadingHorarios,
-      errorHorarios,
+      horasSemanalesPlan,
     ]
   );
 
@@ -187,7 +178,7 @@ const DocentesAsignacionAcademica = () => {
       <PageTemplate
         header={
           <PageHeader
-            title="Asignación académica"
+            title="Asignar materias al docente"
             breadcrumbItems={breadcrumbItems}
             actions={
               <Button variant="back" icon={<ArrowLeftOutlined />} onClick={handleVolver}>

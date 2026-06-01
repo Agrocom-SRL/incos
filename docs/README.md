@@ -25,6 +25,7 @@ Dos capas con distinto ciclo de vida: **permanente** (reglas + guías + referenc
 | Archivo | Propósito |
 |---------|-----------|
 | `matriz-permisos-sistema.md` | Pantalla ↔ `permisos.codigo` ↔ API ↔ acción |
+| `flujo-operativo-gestion-academica.md` | Orden operativo CFG→INST→MAT→ACA; smoke E2E pantalla por pantalla |
 
 **No hay copia de las reglas en `docs/`** — solo `.cursor/rules/`.
 
