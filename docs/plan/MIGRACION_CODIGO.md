@@ -123,7 +123,8 @@ Si el tablero debe alinearse al mismo grano que la grilla: **ajustar el `GROUP B
 | Publicación | `useGestionHorariosPublicacionState` + publicar / publicar-todos (API Sprint 5); requiere vista `84` con `paralelo_gestion_id` |
 | Armado tab **Gestión de cursos** | `useOfertaAcademicaApi` ✅ |
 | Armado **Plan semanal** | `GET/PUT /paralelos/:id/schedule` (funciona con BE nuevo; UX grilla = Sprint 5) |
-| Grilla drag-and-drop por `paralelo_gestion` | Sprint 5 |
+| Panel cobertura / conflictos en armado (API grilla) | ✅ sidebar en tab Plan |
+| Grilla drag-and-drop por `paralelo_gestion` | Pendiente |
 | Conflictos globales + publicación masiva | Sprint 5 |
 
 ---
@@ -169,7 +170,8 @@ Si el tablero debe alinearse al mismo grano que la grilla: **ajustar el `GROUP B
 | Plan semanal por paralelo maestro (`GestionHorariosArmadoPage`, drag en grilla existente) | Selector **paralelo-gestión** y `GET grilla-horario` |
 | Asignación de aulas (`PATCH` bloque) | Panel cobertura + conflictos en vivo |
 | Publicación listado (`/horarios/publicacion`) | `POST publicar` con pre-condiciones |
-| Dashboard pendientes / capacidad turno | Vista `/horarios/conflictos/:gestionId` |
+| Vista conflictos globales | ✅ `/institucional/horarios/conflictos/:gestionId` |
+| Persistencia armado vía bulk | ✅ `POST /asignacion-horarios/bulk` (fallback `PUT schedule`) |
 
 No hace falta más limpieza de “cursos legacy” en FE para **empezar** Sprint 5; hace falta **implementar** los entregables de `SPRINT_5.md` (API grilla + pantallas nuevas o evolución del armado).
 

@@ -22,9 +22,21 @@ export const useGestionHorariosDashboardState = () => {
     const [filters, setFilters] = useState(FILTER_DEFAULTS);
     const [viewMode, setViewMode] = useState('table');
 
-    const currentGestion = useMemo(() => {
-        return String(gestiones?.[0]?.nombre || gestiones?.[0]?.gestion || 'Actual');
+    const gestionVigente = useMemo(() => {
+        const list = Array.isArray(gestiones) ? gestiones : [];
+        return list.find((g) => g.vigente) ?? list[0] ?? null;
     }, [gestiones]);
+
+    const gestionVigenteId =
+        gestionVigente?.id != null && Number.isFinite(Number(gestionVigente.id))
+            ? Number(gestionVigente.id)
+            : null;
+
+    const currentGestion = useMemo(() => {
+        return String(
+            gestionVigente?.nombre || gestionVigente?.gestion || gestiones?.[0]?.nombre || 'Actual',
+        );
+    }, [gestionVigente, gestiones]);
 
     const paralelosDashboard = useMemo(() => {
         return (paralelosEstado || []).map((row) => {
@@ -140,6 +152,12 @@ export const useGestionHorariosDashboardState = () => {
     const onVerHorariosAulas = useCallback(() => navigate('/institucional/horarios/aulas'), [navigate]);
     const onPublish = useCallback(() => navigate('/institucional/horarios/publicacion'), [navigate]);
 
+    const onVerConflictosGlobales = useCallback(() => {
+        if (gestionVigenteId) {
+            navigate(`/institucional/horarios/conflictos/${gestionVigenteId}`);
+        }
+    }, [navigate, gestionVigenteId]);
+
     const pendientesSidebar = useMemo(() => {
         if (!pendientesSidebarRaw || typeof pendientesSidebarRaw !== 'object') {
             return {
@@ -173,6 +191,8 @@ export const useGestionHorariosDashboardState = () => {
         onOpenArmado,
         onVerHorariosAulas,
         onPublish,
+        onVerConflictosGlobales,
+        gestionVigenteId,
         hayAlertas: kpis.sinDocentes > 0 || kpis.sinAulas > 0 || kpis.sinHorarios > 0,
         pendientesSidebar,
         getParaleloAction,

@@ -42,8 +42,10 @@ export class GetGestionConflictosUseCase {
         const pgId = Number(pg.id);
         const lista = await this.horarioConflictosService.listarConflictosParaleloGestion(pgId);
         if (lista.length) {
+          const paraleloId = Number(pg.paraleloId ?? pg.parallelId ?? pg.paralelo_id) || null;
           paralelos.push({
             paralelo_gestion_id: pgId,
+            paralelo_id: paraleloId,
             paralelo_nombre: pg.paraleloNombre ?? null,
             turno: pg.turno ?? null,
             total: lista.length,
@@ -52,7 +54,9 @@ export class GetGestionConflictosUseCase {
             ...lista.map((c) => ({
               ...c,
               paralelo_gestion_id: pgId,
+              paralelo_id: paraleloId,
               paralelo_nombre: pg.paraleloNombre ?? null,
+              turno: pg.turno ?? null,
             }))
           );
         }

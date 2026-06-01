@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useGestionesCatalogApi } from '@application/modules/shared/hooks';
 import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/hooks';
+import { useBulkAsignacionHorariosApi } from '../api/useBulkAsignacionHorariosApi';
 import { useParaleloGestionGrillaHorarioApi } from '../api/useParaleloGestionGrillaHorarioApi';
 import { useParaleloGestionVigenteResolver } from '../useParaleloGestionVigenteResolver';
 import { normalizeArmadoTab } from '@application-institucional/horarios/utils/normalizeArmadoTab';
+import { buildBulkAsignacionHorarioItems } from '@application-institucional/horarios/utils/buildBulkAsignacionHorarioItems';
+import { buildHorarioSlotIndexFromGrilla } from '@application-institucional/horarios/utils/buildHorarioSlotIndex';
 import {
     extractGrillaHorarioMeta,
     grillaHorarioToCourseSchedules,
@@ -22,6 +26,14 @@ export const useGestionHorariosArmadoState = () => {
             ? numericParaleloId
             : null;
 
+    const { gestiones } = useGestionesCatalogApi();
+    const gestionVigenteId = useMemo(() => {
+        const list = Array.isArray(gestiones) ? gestiones : [];
+        const vigente = list.find((g) => g.vigente) ?? list[0];
+        const id = vigente?.id != null ? Number(vigente.id) : null;
+        return Number.isFinite(id) && id > 0 ? id : null;
+    }, [gestiones]);
+
     const resolver = useParaleloGestionVigenteResolver(validParaleloId);
     const {
         grillaHorario,
@@ -31,11 +43,21 @@ export const useGestionHorariosArmadoState = () => {
     } = useParaleloGestionGrillaHorarioApi();
 
     const {
-        result: persistResult,
-        loading: persistLoading,
-        error: persistError,
-        fetch: persist,
+        result: legacyPersistResult,
+        loading: persistLegacyLoading,
+        error: persistLegacyError,
+        fetch: persistLegacy,
     } = usePersistParaleloScheduleApi();
+    const {
+        loading: persistBulkLoading,
+        error: persistBulkError,
+        ejecutarBulk,
+    } = useBulkAsignacionHorariosApi();
+
+    const [bulkSaved, setBulkSaved] = useState(false);
+    const persistLoading = persistLegacyLoading || persistBulkLoading;
+    const persistError = persistBulkError || persistLegacyError;
+    const persistResult = bulkSaved ? { ok: true } : legacyPersistResult;
 
     const grillaMeta = useMemo(() => extractGrillaHorarioMeta(grillaHorario), [grillaHorario]);
 
@@ -123,10 +145,17 @@ export const useGestionHorariosArmadoState = () => {
     }, [setSearchParams, searchParams]);
 
     useEffect(() => {
-        if (!persistLoading && persistResult && validParaleloId && resolver.paraleloGestionId) {
+        if (!persistLoading && (bulkSaved || legacyPersistResult) && resolver.paraleloGestionId) {
             fetchGrillaHorario(resolver.paraleloGestionId);
+            if (bulkSaved) setBulkSaved(false);
         }
-    }, [persistLoading, persistResult, validParaleloId, resolver.paraleloGestionId, fetchGrillaHorario]);
+    }, [
+        persistLoading,
+        bulkSaved,
+        legacyPersistResult,
+        resolver.paraleloGestionId,
+        fetchGrillaHorario,
+    ]);
 
     const setTab = useCallback(
         (key) => {
@@ -144,10 +173,36 @@ export const useGestionHorariosArmadoState = () => {
         [setSearchParams, paraleloId],
     );
 
-    const onRequestPersist = useCallback(() => {
+    const onRequestPersist = useCallback(async () => {
         if (!validParaleloId) return;
-        persist(validParaleloId, draftSchedules);
-    }, [validParaleloId, persist, draftSchedules]);
+
+        const horarioIndex = buildHorarioSlotIndexFromGrilla(grillaHorario);
+        const { items, incomplete } = buildBulkAsignacionHorarioItems(
+            serverSchedules,
+            draftSchedules,
+            horarioIndex,
+        );
+
+        if (!items.length) return;
+
+        if (!incomplete) {
+            const bulkRes = await ejecutarBulk(items);
+            if (bulkRes.success) {
+                setBulkSaved(true);
+                return;
+            }
+        }
+
+        setBulkSaved(false);
+        await persistLegacy(validParaleloId, draftSchedules);
+    }, [
+        validParaleloId,
+        grillaHorario,
+        serverSchedules,
+        draftSchedules,
+        ejecutarBulk,
+        persistLegacy,
+    ]);
 
     const handleVolver = useCallback(() => {
         navigate('/institucional/horarios');
@@ -187,5 +242,6 @@ export const useGestionHorariosArmadoState = () => {
         onRequestPersist,
         handleVolver,
         refetchSchedule,
+        gestionVigenteId,
     };
 };

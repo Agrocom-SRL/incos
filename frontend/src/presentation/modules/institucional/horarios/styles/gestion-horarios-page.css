@@ -305,6 +305,42 @@
     min-width: 0;
 }
 
+.horarios-armado-plan-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(300px, 32%);
+    gap: 16px;
+    align-items: start;
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-armado-plan-layout__main {
+    min-width: 0;
+}
+
+.horarios-armado-cobertura-sidebar {
+    min-width: 0;
+    position: sticky;
+    top: 8px;
+    max-height: min(72vh, 720px);
+    overflow: auto;
+}
+
+.horarios-armado-cobertura-sidebar__row {
+    padding-inline: 0 !important;
+}
+
+@media (max-width: 992px) {
+    .horarios-armado-plan-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .horarios-armado-cobertura-sidebar {
+        position: static;
+        max-height: none;
+    }
+}
+
 /* Armado de horarios — mismo patrón de pestañas que docentes / sd-tabs */
 .horarios-armado-page {
     width: 100%;

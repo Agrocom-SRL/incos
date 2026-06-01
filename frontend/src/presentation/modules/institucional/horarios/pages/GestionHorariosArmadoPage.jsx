@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Card, Flex, Spin, Tabs, Typography } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -17,6 +17,7 @@ import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosArmadoContext } from '@application-institucional/horarios';
 import { buildCarreraImageUrl } from '@application-institucional/horarios/utils/buildCarreraImageUrl';
 import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
+import { HorariosArmadoCoberturaSidebar } from '../components/organisms';
 import ParaleloCursosGestionSection from '../components/organisms/ParaleloCursosGestionSection';
 import DocenteAsignacionCursoModal from '../components/organisms/DocenteAsignacionCursoModal';
 import ParaleloCursosTabSection from '../components/organisms/ParaleloCursosTabSection';
@@ -64,7 +65,9 @@ const GestionHorariosArmadoPage = () => {
         conflictosGrilla,
         coberturaGrilla,
         paraleloGestionId,
+        gestionVigenteId,
     } = useHorariosArmadoContext();
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [vistaExpandida, setVistaExpandida] = useState(false);
     const [docenteModalOpen, setDocenteModalOpen] = useState(false);
@@ -250,17 +253,31 @@ const GestionHorariosArmadoPage = () => {
                 ),
                 children: (
                     <div className="sd-tab-body horarios-armado-tab-body">
-                        <ParaleloArmadoPlanSection
-                            schedules={draftSchedules}
-                            onSchedulesChange={setDraftSchedules}
-                            editable
-                            turnoLabel={turnoEfectivo || undefined}
-                            persistLoading={persistLoading}
-                            persistError={persistError}
-                            persistSuccess={Boolean(!persistLoading && !persistError && persistResult)}
-                            onRequestPersist={onRequestPersist}
-                            vistaExpandida={vistaExpandida}
-                        />
+                        <div className="horarios-armado-plan-layout">
+                            <div className="horarios-armado-plan-layout__main">
+                                <ParaleloArmadoPlanSection
+                                    schedules={draftSchedules}
+                                    onSchedulesChange={setDraftSchedules}
+                                    editable
+                                    turnoLabel={turnoEfectivo || undefined}
+                                    persistLoading={persistLoading}
+                                    persistError={persistError}
+                                    persistSuccess={Boolean(
+                                        !persistLoading && !persistError && persistResult,
+                                    )}
+                                    onRequestPersist={onRequestPersist}
+                                    vistaExpandida={vistaExpandida}
+                                />
+                            </div>
+                            {!vistaExpandida ? (
+                                <HorariosArmadoCoberturaSidebar
+                                    cobertura={coberturaGrilla}
+                                    conflictos={conflictosGrilla}
+                                    loading={loading}
+                                    paraleloGestionId={paraleloGestionId}
+                                />
+                            ) : null}
+                        </div>
                     </div>
                 ),
             },
@@ -298,6 +315,10 @@ const GestionHorariosArmadoPage = () => {
             setTab,
             ofertaParalelo,
             vistaExpandida,
+            coberturaGrilla,
+            conflictosGrilla,
+            paraleloGestionId,
+            loading,
             docentePreview,
             handleOpenDocenteAsignacion,
             handleCursoOfertaSaved,
@@ -342,6 +363,21 @@ const GestionHorariosArmadoPage = () => {
                                     style={{ marginBottom: 16 }}
                                     title={`${conflictosGrilla.length} conflicto(s) de horario`}
                                     description="Resuelva solapes de paralelo, aula o docente antes de publicar. Los bloques en conflicto están marcados en la grilla."
+                                    action={
+                                        gestionVigenteId ? (
+                                            <button
+                                                type="button"
+                                                className="sd-btn sd-btn--outline sd-btn--sm"
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/institucional/horarios/conflictos/${gestionVigenteId}`,
+                                                    )
+                                                }
+                                            >
+                                                Ver todos
+                                            </button>
+                                        ) : null
+                                    }
                                 />
                             ) : null}
                             {coberturaGrilla && coberturaGrilla.completa === false ? (

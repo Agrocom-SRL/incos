@@ -5,8 +5,7 @@ import { canListarAsignacion } from '@application-institucional/horarios/config/
 import { allSpacing } from '@theme/tokens';
 
 /**
- * Guía al flujo operativo: oferta académica → asignación docente (Sprint 4).
- * El armado de grilla y bloques sigue en esta sección hasta el hito de publicación.
+ * Guía al flujo operativo institucional (CFG Académico → oferta → docentes → horarios).
  */
 const HorariosOperativaBanner = ({ style }) => {
   const navigate = useNavigate();
@@ -19,13 +18,15 @@ const HorariosOperativaBanner = ({ style }) => {
       showIcon
       closable
       style={style}
-      message="Oferta y docentes: flujo vigente"
+      message="Flujo operativo de la gestión"
       description={
         <Space direction="vertical" size={allSpacing.marginSM} style={{ width: '100%' }}>
           <span>
-            Genere la oferta en <strong>Oferta académica</strong> y asigne docentes (color y carga) en{' '}
-            <strong>Asignación docente</strong>. Esta pantalla conserva el armado de grilla y bloques; la
-            publicación completa se completa en el siguiente hito del plan.
+            En <strong>Configuración → Académico</strong> defina el plan de estudio y las horas semanales por
+            materia. Luego, en <strong>Oferta académica</strong>, habilite planes, cree paralelos con turno y
+            genere la oferta de cursos. En <strong>Asignación docente</strong> vincule docente y materia (carga
+            horaria). Aquí se arman los <strong>bloques semanales</strong> hasta cubrir esa carga; revise{' '}
+            <strong>Conflictos globales</strong> antes de publicar.
           </span>
           <Space wrap>
             <Button size="small" onClick={() => navigate('/institucional/oferta')}>

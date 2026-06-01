@@ -48,6 +48,8 @@ const GestionHorariosPage = () => {
         onOpenArmado,
         onVerHorariosAulas,
         onPublish,
+        onVerConflictosGlobales,
+        gestionVigenteId,
         clearFilters,
         hayAlertas,
         pendientesSidebar,
@@ -122,6 +124,15 @@ const GestionHorariosPage = () => {
                                 onClick={onVerHorariosAulas}
                             >
                                 Horarios en aulas
+                            </ActionButton>
+                            <ActionButton
+                                permiso="institucional.horario.conflictos"
+                                accion="LISTAR"
+                                variant="default"
+                                disabled={!gestionVigenteId}
+                                onClick={onVerConflictosGlobales}
+                            >
+                                Conflictos globales
                             </ActionButton>
                             <ActionButton
                                 permiso="institucional.horario.publicacion"

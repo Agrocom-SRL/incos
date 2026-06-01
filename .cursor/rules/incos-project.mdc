@@ -22,6 +22,8 @@ interfaz inconsistente — tratar la consistencia visual como requisito, no extr
   `incos-backend-module`. Capas con responsabilidad única.
 - **Permisos, rutas protegidas, `verificarPermiso`, `ActionButton`, seeds 54/55/56** →
   `incos-rbac`. Misma acción en las 3 capas, vocabulario v2.
+- **Vistas SQL, tablero/grilla horarios, “nueva versión” del modelo** →
+  `incos-evolucion-proyecto` (siempre activa). Reutilizar `03-views/`; no etiquetas V2/beta.
 
 ## Principios que aplican a todo
 

@@ -76,7 +76,7 @@ router.get('/', authenticate,
 
 | # | Artefacto | Nota |
 |---|-----------|------|
-| 1 | Vista SQL (si ficha rica) | `database/03-views/` — **recrear en BD tras cada cambio** |
+| 1 | Vista SQL (si ficha rica) | `database/03-views/` — **recrear en BD tras cada cambio**; antes de crear vista nueva leer `incos-evolucion-proyecto` (reutilizar, no duplicar; sin etiquetas V2/beta) |
 | 2 | Repositorio `findById` / `findDetailBundleBy*Id` | cabecera + hijos |
 | 3 | `Get*ByIdUseCase.execute(id)` | `NotFoundError` si null |
 | 4 | Mapper detalle | DTO anidado: `profile`, colecciones, etc. |
