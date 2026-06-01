@@ -2,13 +2,19 @@
  * Conector del menú Académico: providers compartidos + página con tabs.
  */
 
-import { CarreraProvider, MateriaProvider } from '@application-configuracion/academico/providers';
+import {
+  CarreraProvider,
+  MateriaProvider,
+  ParaleloProvider,
+} from '@application-configuracion/academico/providers';
 import AcademicoPage from '@configuracion/academico/pages/AcademicoPage';
 
 const AcademicoConnector = () => (
   <CarreraProvider>
     <MateriaProvider>
-      <AcademicoPage />
+      <ParaleloProvider>
+        <AcademicoPage />
+      </ParaleloProvider>
     </MateriaProvider>
   </CarreraProvider>
 );

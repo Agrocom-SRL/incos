@@ -18,6 +18,13 @@ import {
   ActualizarMateriaUseCase,
   EliminarMateriaUseCase,
 } from '@useCases/configuracion/academico/materias';
+import {
+  GetParaleloPorIdUseCase,
+  CrearParaleloUseCase,
+  ActualizarParaleloUseCase,
+  EliminarParaleloUseCase,
+} from '@useCases/configuracion/academico/paralelos';
+import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import { GetTodasDiscapacidadesUseCase } from '@useCases/configuracion/complementario/discapacidad';
 import CarreraRepository from '@infrastructure/repositories/CarreraRepository';
 import MateriaRepository from '@infrastructure/repositories/MateriaRepository';
@@ -45,6 +52,12 @@ export function registerConfiguracionModule(factory) {
   factory.crearMateria = () => new CrearMateriaUseCase(materiaRepository);
   factory.actualizarMateria = () => new ActualizarMateriaUseCase(materiaRepository);
   factory.eliminarMateria = () => new EliminarMateriaUseCase(materiaRepository);
+
+  const paraleloRepository = ParaleloRepository;
+  factory.obtenerParaleloPorId = () => new GetParaleloPorIdUseCase(paraleloRepository);
+  factory.crearParalelo = () => new CrearParaleloUseCase(paraleloRepository);
+  factory.actualizarParalelo = () => new ActualizarParaleloUseCase(paraleloRepository);
+  factory.eliminarParalelo = () => new EliminarParaleloUseCase(paraleloRepository);
 
   factory.obtenerTodasDiscapacidades = () => new GetTodasDiscapacidadesUseCase(discapacidadRepository);
 

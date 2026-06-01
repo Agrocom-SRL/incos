@@ -53,6 +53,7 @@ const TableActions = (props) => {
     viewPath,
     editPath,
     onEdit,
+    onView,
     editDisabled,
     useCaseKey,
     customDeleteFn,
@@ -68,7 +69,7 @@ const TableActions = (props) => {
       size={actionsSize}
       spaceStyle={{ gap: 4 }}
     >
-      {viewPath && puedeVer && (
+      {(viewPath || onView) && puedeVer && (
         <TableActionIcon
           title={viewTooltip}
           icon={<viewAction.icon />}

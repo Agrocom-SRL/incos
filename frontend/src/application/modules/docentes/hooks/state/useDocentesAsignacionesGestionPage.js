@@ -1,18 +1,24 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { App } from 'antd';
 import { useAuthContext } from '@application-auth';
 import { useDeleteItem } from '@application/utils/useDeleteItem';
 import docenteRepository from '@implementations/DocenteRepository';
+import { useDocenteColorApi } from '../api/useDocenteColorApi';
 import { useDocenteDetail } from './useDocenteDetail';
 
 export const useDocentesAsignacionesGestionPage = (docenteIdRaw) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { hasPermiso } = useAuthContext();
+  const { message } = App.useApp();
   const detail = useDocenteDetail(docenteIdRaw);
+  const { updateDocenteColor } = useDocenteColorApi();
+  const [savingColor, setSavingColor] = useState(false);
   const {
     docenteId,
     nombreCompleto,
+    profile,
     assignments,
     loading,
     error,
@@ -29,6 +35,7 @@ export const useDocentesAsignacionesGestionPage = (docenteIdRaw) => {
   const puedeEditarAsignaciones = hasPermiso('docentes.asignar', 'EDITAR');
   const puedeEliminarAsignaciones = hasPermiso('docentes.asignar', 'ELIMINAR');
   const puedeAsignarMaterias = puedeGestionarAsignaciones;
+  const puedeEditarColor = hasPermiso('docentes.editar', 'EDITAR');
   const gestionReturnPath = location.state?.gestionReturnPath || returnListPath || '/docentes/listar';
 
   const breadcrumbItems = useMemo(
@@ -94,9 +101,28 @@ export const useDocentesAsignacionesGestionPage = (docenteIdRaw) => {
     [deleteItem]
   );
 
+  const handleSaveColor = useCallback(
+    async (colorHex) => {
+      if (!docenteId) return;
+      setSavingColor(true);
+      try {
+        const res = await updateDocenteColor(docenteId, colorHex);
+        if (!res.success) {
+          throw new Error(typeof res.error === 'string' ? res.error : 'No se pudo guardar el color');
+        }
+        await refetch?.();
+        message.success('Color del docente actualizado');
+      } finally {
+        setSavingColor(false);
+      }
+    },
+    [docenteId, refetch, updateDocenteColor, message],
+  );
+
   return {
     docenteId,
     nombreCompleto,
+    profile,
     assignments,
     loading,
     error,
@@ -105,6 +131,9 @@ export const useDocentesAsignacionesGestionPage = (docenteIdRaw) => {
     puedeAsignarMaterias,
     puedeEditarAsignaciones,
     puedeEliminarAsignaciones,
+    puedeEditarColor,
+    savingColor,
+    handleSaveColor,
     handleIrWizardAsignacion,
     handleEditAssignment,
     handleDeleteAssignment,

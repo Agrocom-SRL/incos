@@ -5,12 +5,14 @@ import {
   getMateriaClasificacionPillClass,
   getMateriaTipoPillClass,
 } from '@application-configuracion/academico/config/materiaTipoPill';
+import { getParaleloTurnoFormPillClass } from '@application-configuracion/academico/config/paraleloTurnoOptions';
 
 const DEFAULT_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--default';
 
 export const FORM_PILL_SELECT_RESOLVERS = {
   materiaClasificacion: () => getMateriaClasificacionPillClass(),
   materiaTipo: (value) => getMateriaTipoPillClass(value),
+  paraleloTurno: (value) => getParaleloTurnoFormPillClass(value),
 };
 
 export const resolveFormPillClassName = (pillVariant, value) => {

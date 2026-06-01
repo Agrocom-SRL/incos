@@ -42,7 +42,6 @@ export const DOCENTE_FORMACION_LABORAL_FIELD_NAMES = [
   'maxHorasMes',
   'observaciones',
   'activo',
-  'colorHex',
 ];
 
 const createCamposFormacion = () => [

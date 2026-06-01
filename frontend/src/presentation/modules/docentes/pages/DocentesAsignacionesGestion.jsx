@@ -9,10 +9,12 @@ import { PageHeader } from '@molecules';
 import { Button, ActionButton } from '@atoms';
 import { useDocentesAsignacionesGestionContext } from '@application-docentes/hooks';
 import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAssignmentsSection';
+import DocenteAsignacionColorPanel from '@docentes/components/organisms/DocenteAsignacionColorPanel';
 
 const DocentesAsignacionesGestion = () => {
   const {
     nombreCompleto,
+    profile,
     assignments,
     loading,
     error,
@@ -21,6 +23,9 @@ const DocentesAsignacionesGestion = () => {
     puedeAsignarMaterias,
     puedeEditarAsignaciones,
     puedeEliminarAsignaciones,
+    puedeEditarColor,
+    savingColor,
+    handleSaveColor,
     handleIrWizardAsignacion,
     handleEditAssignment,
     handleDeleteAssignment,
@@ -60,16 +65,24 @@ const DocentesAsignacionesGestion = () => {
             showIcon
             style={{ marginBottom: 12 }}
             title="Vinculación docente ↔ materia ofertada"
-            description="Aquí gestionás qué materias del plan dicta este docente en la gestión. El armado de bloques horarios se hace en Institucional → Gestión de horarios."
+            description="Vinculá materias ofertadas y definí el color del docente para la grilla horaria (Institucional → Gestión de horarios)."
           />
-          <DocenteAssignmentsSection
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <DocenteAsignacionColorPanel
+              colorHex={profile?.colorHex}
+              puedeEditarColor={puedeEditarColor}
+              saving={savingColor}
+              onSaveColor={handleSaveColor}
+            />
+            <DocenteAssignmentsSection
             assignments={assignments}
             puedeAsignarMaterias={puedeAsignarMaterias}
             onAsignarMaterias={handleIrWizardAsignacion}
             showAssignmentActions={puedeEditarAsignaciones || puedeEliminarAsignaciones}
             onEditAssignment={puedeEditarAsignaciones ? handleEditAssignment : null}
             onDeleteAssignment={puedeEliminarAsignaciones ? handleDeleteAssignment : null}
-          />
+            />
+          </div>
         </div>
       </Spin>
     </PageTemplate>

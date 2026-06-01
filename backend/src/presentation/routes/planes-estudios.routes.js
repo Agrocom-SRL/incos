@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { idValidator, listValidator } from '../validators/common/index.js';
 import {
   createPlanEstudiosValidator,
@@ -90,7 +90,11 @@ export function buildPlanesEstudiosRouter({ controllers, middlewares }) {
   router.get(
     '/:id/periodos',
     authenticate,
-    verificarPermiso(permisoPeriodos, 'LISTAR'),
+    verificarPermisoCualquiera([
+      [permisoPeriodos, 'LISTAR'],
+      ['configuracion.paralelo', 'LISTAR'],
+      ['configuracion.plan-estudio', 'DETALLE'],
+    ]),
     idValidator,
     validateRequest,
     (req, res, next) => controllers.listPeriodosByPlanController.handle(req, res, next)

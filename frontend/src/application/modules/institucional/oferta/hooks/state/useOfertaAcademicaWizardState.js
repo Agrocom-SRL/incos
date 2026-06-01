@@ -140,7 +140,13 @@ export function useOfertaAcademicaWizardState() {
     if (res.success) {
       message.success('Paralelos de gestión generados');
       await loadParalelosGestion();
+      return;
     }
+    message.warning(
+      res.error ||
+        'No se generaron paralelos de gestión. Revise que existan plantillas en Configuración → Académico → Paralelos (tab paralelos) para la carrera y periodos del plan.',
+      8,
+    );
   }, [api, selectedGestionPlanId, loadParalelosGestion]);
 
   const onGenerarOferta = useCallback(

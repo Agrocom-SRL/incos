@@ -1,7 +1,7 @@
 /**
  * Configuración → Académico
  *
- *   /configuracion/academico                    → tabs (planes | carreras | materias)
+ *   /configuracion/academico                    → tabs (planes | carreras | materias | paralelos)
  *   /configuracion/academico/carrera/nueva      → crear carrera
  *   /configuracion/academico/carrera/:id/editar → editar carrera
  *   /configuracion/academico/carrera/:id        → detalle carrera
@@ -17,6 +17,7 @@ const CFG_ACADEMICO_PERMISOS = [
   'configuracion.plan-estudio',
   'configuracion.carrera',
   'configuracion.materia',
+  'configuracion.paralelo',
 ];
 
 const AcademicoConnector = lazy(
@@ -40,6 +41,15 @@ const MateriaFormEditConnector = lazy(
 const MateriaDetailConnector = lazy(
   () => import('@configuracion/academico/connectors/MateriaDetailConnector.jsx'),
 );
+const ParaleloFormCreateConnector = lazy(
+  () => import('@configuracion/academico/connectors/ParaleloFormCreateConnector.jsx'),
+);
+const ParaleloFormEditConnector = lazy(
+  () => import('@configuracion/academico/connectors/ParaleloFormEditConnector.jsx'),
+);
+const ParaleloDetailConnector = lazy(
+  () => import('@configuracion/academico/connectors/ParaleloDetailConnector.jsx'),
+);
 export const academicoConfigRoutes = [
   {
     path: '/configuracion/academico/carrera/nueva',
@@ -62,6 +72,16 @@ export const academicoConfigRoutes = [
     breadcrumbLabel: 'Nueva materia',
   },
   {
+    path: '/configuracion/academico/paralelo/nueva',
+    element: <ParaleloFormCreateConnector />,
+    key: 'CFG-PARALELO-NUEVA',
+    permiso: 'configuracion.paralelo',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'CFG-ACADEMICO',
+    breadcrumbLabel: 'Nuevo paralelo',
+  },
+  {
     path: '/configuracion/academico/carrera/:id/editar',
     element: <CarreraFormEditConnector />,
     key: 'CFG-CARRERA-EDITAR',
@@ -82,6 +102,16 @@ export const academicoConfigRoutes = [
     breadcrumbLabel: 'Editar materia',
   },
   {
+    path: '/configuracion/academico/paralelo/:id/editar',
+    element: <ParaleloFormEditConnector />,
+    key: 'CFG-PARALELO-EDITAR',
+    permiso: 'configuracion.paralelo',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'CFG-ACADEMICO',
+    breadcrumbLabel: 'Editar paralelo',
+  },
+  {
     path: '/configuracion/academico/carrera/:id',
     element: <CarreraDetailConnector />,
     key: 'CFG-CARRERA-DETALLE',
@@ -100,6 +130,16 @@ export const academicoConfigRoutes = [
     menu: null,
     breadcrumbParent: 'CFG-ACADEMICO',
     breadcrumbLabel: 'Detalle de materia',
+  },
+  {
+    path: '/configuracion/academico/paralelo/:id',
+    element: <ParaleloDetailConnector />,
+    key: 'CFG-PARALELO-DETALLE',
+    permiso: 'configuracion.paralelo',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'CFG-ACADEMICO',
+    breadcrumbLabel: 'Detalle de paralelo',
   },
   {
     path: '/configuracion/academico/carreras',

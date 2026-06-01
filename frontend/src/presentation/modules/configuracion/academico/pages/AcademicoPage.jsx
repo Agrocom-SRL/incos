@@ -1,6 +1,6 @@
 /**
  * Menú CFG → Académico: catálogo plan-centrado + carreras/materias auxiliares.
- * URL: /configuracion/academico?tab=planes|carreras|materias
+ * URL: /configuracion/academico?tab=planes|carreras|materias|paralelos
  */
 
 import { useCallback, useMemo } from 'react';
@@ -15,15 +15,23 @@ import { useAuthContext } from '@application-auth';
 import {
   carreraNuevaPath,
   materiaNuevaPath,
+  paraleloNuevaPath,
 } from '@application-configuracion/academico/config/paths';
 import {
   carrerasListNavigationState,
   materiasListNavigationState,
+  paralelosListNavigationState,
 } from '@application-configuracion/academico/config/academicoNavigation';
 import PlanesTabPanel from './PlanesTabPanel';
 import CarrerasList from './CarrerasList';
 import MateriasList from './MateriasList';
-import { TAB_PLANES, TAB_CARRERAS, TAB_MATERIAS } from '@configuracion/academico/config/academicoTabs';
+import ParalelosList from './ParalelosList';
+import {
+  TAB_PLANES,
+  TAB_CARRERAS,
+  TAB_MATERIAS,
+  TAB_PARALELOS,
+} from '@configuracion/academico/config/academicoTabs';
 import { ACADEMICO_TAB_PANEL_META } from '@configuracion/academico/config/academicoTabPanels';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import '@presentation/styles/pages/detail-page.css';
@@ -49,9 +57,11 @@ const AcademicoPage = () => {
   const puedePlanes = hasPermiso('configuracion.plan-estudio', 'LISTAR');
   const puedeCarreras = hasPermiso('configuracion.carrera', 'LISTAR');
   const puedeMaterias = hasPermiso('configuracion.materia', 'LISTAR');
+  const puedeParalelos = hasPermiso('configuracion.paralelo', 'LISTAR');
 
   const carrerasNavState = useMemo(() => carrerasListNavigationState(), []);
   const materiasNavState = useMemo(() => materiasListNavigationState(), []);
+  const paralelosNavState = useMemo(() => paralelosListNavigationState(), []);
 
   const tabItems = useMemo(() => {
     const items = [];
@@ -94,8 +104,21 @@ const AcademicoPage = () => {
         children: wrapTabPanel(<MateriasList embedded />),
       });
     }
+    if (puedeParalelos) {
+      const meta = ACADEMICO_TAB_PANEL_META[TAB_PARALELOS];
+      const Icon = meta.icon;
+      items.push({
+        key: TAB_PARALELOS,
+        label: (
+          <span className="sd-tab-label">
+            <Icon /> {meta.shortLabel}
+          </span>
+        ),
+        children: wrapTabPanel(<ParalelosList embedded />),
+      });
+    }
     return items;
-  }, [puedePlanes, puedeCarreras, puedeMaterias]);
+  }, [puedePlanes, puedeCarreras, puedeMaterias, puedeParalelos]);
 
   const activeKey = useMemo(() => {
     let requested = searchParams.get('tab');
@@ -138,8 +161,21 @@ const AcademicoPage = () => {
         </ActionButton>
       );
     }
+    if (activeKey === TAB_PARALELOS) {
+      return (
+        <ActionButton
+          permiso="configuracion.paralelo"
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(paraleloNuevaPath, { state: paralelosNavState })}
+        >
+          Nuevo paralelo
+        </ActionButton>
+      );
+    }
     return null;
-  }, [activeKey, navigate, carrerasNavState, materiasNavState]);
+  }, [activeKey, navigate, carrerasNavState, materiasNavState, paralelosNavState]);
 
   const onTabChange = useCallback(
     (key) => {

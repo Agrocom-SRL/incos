@@ -158,6 +158,42 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener paralelo');
+    }
+  }
+
+  async crear(data) {
+    try {
+      const response = await apiClient.post(PARALELOS_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear paralelo');
+    }
+  }
+
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(PARALELOS_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar paralelo');
+    }
+  }
+
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(PARALELOS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar paralelo');
+    }
+  }
+
   async asignarAulaHorario(options = {}) {
     try {
       const { cursoHorarioId, aulaId } = options;

@@ -40,6 +40,12 @@ export {
     UpdateAsignaturaPlanController,
     DeleteAsignaturaPlanController,
 } from './planes-estudios/asignaturas.controllers.js';
+// PARALELOS MAESTRO (CFG)
+export { CreateParaleloController } from './paralelos/create.controller.js';
+export { GetParaleloByIdController } from './paralelos/get-by-id.controller.js';
+export { UpdateParaleloController } from './paralelos/update.controller.js';
+export { DeleteParaleloController } from './paralelos/delete.controller.js';
+
 export {
     ListPrerrequisitosByAsignaturaController,
     ListEsPrerrequisitoDeController,

@@ -76,6 +76,7 @@ const CfgAcademicoFormWorkspace = ({
   resolveOptions,
   readOnly = false,
   afterField = {},
+  beforeFields = null,
   footer = null,
 }) => (
   <section className="cfg-academico-workspace cfg-academico-form-workspace">
@@ -89,6 +90,9 @@ const CfgAcademicoFormWorkspace = ({
     </header>
 
     <div className="cfg-academico-form-workspace__body">
+      {beforeFields ? (
+        <div className="cfg-academico-form-workspace__before-fields">{beforeFields}</div>
+      ) : null}
       <CfgAcademicoFormFieldGrid
         fields={fields}
         form={form}

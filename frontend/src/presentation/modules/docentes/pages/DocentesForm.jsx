@@ -1,4 +1,7 @@
-import { useCallback } from 'react';
+/**
+ * Formulario de docente — sin identidad visual (color se asigna al vincular materias).
+ */
+
 import { Alert, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useDocentesFormContext } from '@application-docentes/hooks';
@@ -6,7 +9,6 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
 import { WizardForm } from '@organisms';
-import DocenteFormIdentidadVisualSection from '@docentes/components/organisms/DocenteFormIdentidadVisualSection';
 import '@docentes/styles/docentes-form.css';
 
 const DocentesForm = () => {
@@ -27,21 +29,6 @@ const DocentesForm = () => {
     handleFinish,
     isInvalidEditId,
   } = useDocentesFormContext();
-
-  const renderSectionContent = useCallback(
-    (stepIndex, sectionKey, _section, wizardForm) => {
-      if (stepIndex === 1 && sectionKey === 'identidadVisual') {
-        return (
-          <DocenteFormIdentidadVisualSection
-            form={wizardForm}
-            initialColorHex={wizardForm.getFieldValue('colorHex')}
-          />
-        );
-      }
-      return null;
-    },
-    [],
-  );
 
   if (isInvalidEditId) {
     return (
@@ -92,7 +79,6 @@ const DocentesForm = () => {
             initialValues={wizardInitialValues}
             onFinish={handleFinish}
             showSaveButton={false}
-            renderSectionContent={renderSectionContent}
             onValidateBeforeNext={onValidateBeforeNext}
             finishLabel={finishLabel}
             nextLabel="Siguiente"

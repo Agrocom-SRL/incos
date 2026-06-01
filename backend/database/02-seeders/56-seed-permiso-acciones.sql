@@ -13,8 +13,10 @@
 --              estado aportes/carrera (55 o 10), recibos PDF (55 o 10), etc.
 --
 -- Este catalogo define los checkboxes visibles en PermisosDominioPicker.
--- ADMIN_SISTEMA (rol_id=1) se resuelve dinamicamente desde esta tabla.
--- Una asignacion en roles_permisos solo es valida si existe aqui.
+-- ADMIN_SISTEMA (rol_id=1): sin filas en 55-seed-roles-permisos; hereda TODAS las
+--   filas activas de esta tabla vía vista_catalogo_acciones_permisos_activas.
+--   Tras reordenar IDs (p. ej. configuracion.paralelo = 90), re-ejecutar 54 → 56 → 55.
+-- Una asignacion en roles_permisos (roles 2+) solo es valida si existe aqui.
 -- ============================================
 
 USE instituto_incos;
@@ -177,58 +179,70 @@ INSERT INTO permiso_acciones (permiso_id, accion, activo) VALUES
 (76,'EDITAR',TRUE),
 (77,'LISTAR',TRUE),
 (77,'EDITAR',TRUE),
-
--- CONFIGURACIÓN (78-95) · configuracion.*
+-- Oferta académica (78-80)
 (78,'LISTAR',TRUE),
 (78,'DETALLE',TRUE),
 (78,'CREAR',TRUE),
 (78,'EDITAR',TRUE),
 (78,'ELIMINAR',TRUE),
+(78,'ACTIVAR',TRUE),
 (79,'LISTAR',TRUE),
 (79,'DETALLE',TRUE),
 (79,'CREAR',TRUE),
 (79,'EDITAR',TRUE),
 (79,'ELIMINAR',TRUE),
+(79,'ACTIVAR',TRUE),
 (80,'LISTAR',TRUE),
 (80,'DETALLE',TRUE),
 (80,'CREAR',TRUE),
 (80,'EDITAR',TRUE),
+(80,'ELIMINAR',TRUE),
 (80,'ACTIVAR',TRUE),
+-- Asignación docente / horarios (81-83)
 (81,'LISTAR',TRUE),
+(81,'DETALLE',TRUE),
 (81,'CREAR',TRUE),
 (81,'EDITAR',TRUE),
 (81,'ELIMINAR',TRUE),
 (82,'LISTAR',TRUE),
-(82,'CREAR',TRUE),
 (82,'EDITAR',TRUE),
-(82,'ELIMINAR',TRUE),
 (83,'LISTAR',TRUE),
 (83,'DETALLE',TRUE),
-(83,'CREAR',TRUE),
-(83,'ELIMINAR',TRUE),
-(84,'LISTAR',TRUE),
-(84,'CREAR',TRUE),
-(84,'EDITAR',TRUE),
+
+-- CONFIGURACIÓN (84-100) · configuracion.*
 (85,'LISTAR',TRUE),
+(85,'DETALLE',TRUE),
 (85,'CREAR',TRUE),
 (85,'EDITAR',TRUE),
+(85,'ELIMINAR',TRUE),
 (86,'LISTAR',TRUE),
+(86,'DETALLE',TRUE),
 (86,'CREAR',TRUE),
 (86,'EDITAR',TRUE),
+(86,'ELIMINAR',TRUE),
+(84,'LISTAR',TRUE),
+(84,'DETALLE',TRUE),
+(84,'CREAR',TRUE),
+(84,'EDITAR',TRUE),
+(84,'ACTIVAR',TRUE),
 (87,'LISTAR',TRUE),
 (87,'CREAR',TRUE),
 (87,'EDITAR',TRUE),
+(87,'ELIMINAR',TRUE),
 (88,'LISTAR',TRUE),
 (88,'CREAR',TRUE),
 (88,'EDITAR',TRUE),
 (88,'ELIMINAR',TRUE),
 (89,'LISTAR',TRUE),
+(89,'DETALLE',TRUE),
 (89,'CREAR',TRUE),
-(89,'EDITAR',TRUE),
+(89,'ELIMINAR',TRUE),
 (90,'LISTAR',TRUE),
+(90,'DETALLE',TRUE),
 (90,'CREAR',TRUE),
 (90,'EDITAR',TRUE),
 (90,'ELIMINAR',TRUE),
+(90,'ACTIVAR',TRUE),
 (91,'LISTAR',TRUE),
 (91,'CREAR',TRUE),
 (91,'EDITAR',TRUE),
@@ -236,65 +250,57 @@ INSERT INTO permiso_acciones (permiso_id, accion, activo) VALUES
 (92,'CREAR',TRUE),
 (92,'EDITAR',TRUE),
 (93,'LISTAR',TRUE),
-
--- REPORTES (94-100)
+(93,'CREAR',TRUE),
+(93,'EDITAR',TRUE),
 (94,'LISTAR',TRUE),
-(94,'EXPORTAR',TRUE),
+(94,'CREAR',TRUE),
+(94,'EDITAR',TRUE),
 (95,'LISTAR',TRUE),
-(95,'EXPORTAR',TRUE),
+(95,'CREAR',TRUE),
+(95,'EDITAR',TRUE),
+(95,'ELIMINAR',TRUE),
 (96,'LISTAR',TRUE),
-(96,'EXPORTAR',TRUE),
+(96,'CREAR',TRUE),
+(96,'EDITAR',TRUE),
 (97,'LISTAR',TRUE),
-(97,'EXPORTAR',TRUE),
+(97,'CREAR',TRUE),
+(97,'EDITAR',TRUE),
+(97,'ELIMINAR',TRUE),
 (98,'LISTAR',TRUE),
-(98,'EXPORTAR',TRUE),
+(98,'CREAR',TRUE),
+(98,'EDITAR',TRUE),
 (99,'LISTAR',TRUE),
-(99,'EXPORTAR',TRUE),
+(99,'CREAR',TRUE),
+(99,'EDITAR',TRUE),
 (100,'LISTAR',TRUE),
-(100,'EXPORTAR',TRUE),
 
--- SEGURIDAD (101-103)
-(101,'CREAR',TRUE),
+-- REPORTES (101-107)
+(101,'LISTAR',TRUE),
+(101,'EXPORTAR',TRUE),
 (102,'LISTAR',TRUE),
-(102,'DETALLE',TRUE),
-(102,'EDITAR',TRUE),
-(102,'ELIMINAR',TRUE),
-(102,'ACTIVAR',TRUE),
+(102,'EXPORTAR',TRUE),
 (103,'LISTAR',TRUE),
-(103,'EDITAR',TRUE),
-
--- SISTEMA (104)
+(103,'EXPORTAR',TRUE),
 (104,'LISTAR',TRUE),
-
--- OFERTA ACADÉMICA (105-107)
+(104,'EXPORTAR',TRUE),
 (105,'LISTAR',TRUE),
-(105,'DETALLE',TRUE),
-(105,'CREAR',TRUE),
-(105,'EDITAR',TRUE),
-(105,'ELIMINAR',TRUE),
-(105,'ACTIVAR',TRUE),
+(105,'EXPORTAR',TRUE),
 (106,'LISTAR',TRUE),
-(106,'DETALLE',TRUE),
-(106,'CREAR',TRUE),
-(106,'EDITAR',TRUE),
-(106,'ELIMINAR',TRUE),
-(106,'ACTIVAR',TRUE),
+(106,'EXPORTAR',TRUE),
 (107,'LISTAR',TRUE),
-(107,'DETALLE',TRUE),
-(107,'CREAR',TRUE),
-(107,'EDITAR',TRUE),
-(107,'ELIMINAR',TRUE),
-(107,'ACTIVAR',TRUE),
+(107,'EXPORTAR',TRUE),
 
--- ASIGNACIÓN DOCENTE / HORARIOS (108-110)
-(108,'LISTAR',TRUE),
-(108,'DETALLE',TRUE),
+-- SEGURIDAD (108-110)
 (108,'CREAR',TRUE),
-(108,'EDITAR',TRUE),
-(108,'ELIMINAR',TRUE),
 (109,'LISTAR',TRUE),
+(109,'DETALLE',TRUE),
 (109,'EDITAR',TRUE),
+(109,'ELIMINAR',TRUE),
+(109,'ACTIVAR',TRUE),
 (110,'LISTAR',TRUE),
-(110,'DETALLE',TRUE);
+(110,'EDITAR',TRUE),
+
+-- SISTEMA (111)
+(111,'LISTAR',TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;

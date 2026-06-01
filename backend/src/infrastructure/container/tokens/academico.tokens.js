@@ -10,6 +10,10 @@
 export const ACADEMICO_TOKENS = {
     // USE CASES
     listParalelosUseCase: 'academico.listParalelosUseCase',
+    createParaleloUseCase: 'academico.createParaleloUseCase',
+    getParaleloByIdUseCase: 'academico.getParaleloByIdUseCase',
+    updateParaleloUseCase: 'academico.updateParaleloUseCase',
+    deleteParaleloUseCase: 'academico.deleteParaleloUseCase',
     listGestionesUseCase: 'academico.listGestionesUseCase',
     getParalelosEstadoDashboardUseCase: 'academico.getParalelosEstadoDashboardUseCase',
     getAsignaturasSinCursoDashboardUseCase: 'academico.getAsignaturasSinCursoDashboardUseCase',
@@ -41,6 +45,10 @@ export const ACADEMICO_TOKENS = {
 
     // CONTROLLERS
     listParalelosController: 'academico.listParalelosController',
+    createParaleloController: 'academico.createParaleloController',
+    getParaleloByIdController: 'academico.getParaleloByIdController',
+    updateParaleloController: 'academico.updateParaleloController',
+    deleteParaleloController: 'academico.deleteParaleloController',
     listGestionesController: 'academico.listGestionesController',
     getDashboardParalelosEstadoController: 'academico.getDashboardParalelosEstadoController',
     getDashboardAsignaturasSinCursoController: 'academico.getDashboardAsignaturasSinCursoController',
