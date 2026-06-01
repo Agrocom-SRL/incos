@@ -21,3 +21,4 @@ export { useCarreraDetallePage } from './state/useCarreraDetallePage';
 export { useMateriaDetallePage } from './state/useMateriaDetallePage';
 export { useParaleloForm } from './state/useParaleloForm';
 export { useParaleloDetallePage } from './state/useParaleloDetallePage';
+export { useParaleloInstanciasGestionApi } from './api/useParaleloInstanciasGestionApi';

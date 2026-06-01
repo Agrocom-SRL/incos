@@ -27,12 +27,10 @@ const ParaleloFormPage = ({ mode = 'create' }) => {
     handleVolver,
     handleSubmit,
     isInvalidEditId,
-    onCarreraChange,
+    carreraId,
     carreras,
     carrerasLoading,
     carrerasError,
-    periodos,
-    periodosLoading,
     sinPlanVigente,
   } = useParaleloForm(mode);
 
@@ -98,10 +96,8 @@ const ParaleloFormPage = ({ mode = 'create' }) => {
                   carreras={carreras}
                   carrerasLoading={carrerasLoading}
                   carrerasError={carrerasError}
-                  periodos={periodos}
-                  periodosLoading={periodosLoading}
+                  carreraId={carreraId}
                   sinPlanVigente={sinPlanVigente}
-                  onCarreraChange={onCarreraChange}
                   fieldsDisabled={loading || submitLoading}
                 />
               </Form>

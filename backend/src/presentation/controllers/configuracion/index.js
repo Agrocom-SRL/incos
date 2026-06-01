@@ -45,6 +45,7 @@ export { CreateParaleloController } from './paralelos/create.controller.js';
 export { GetParaleloByIdController } from './paralelos/get-by-id.controller.js';
 export { UpdateParaleloController } from './paralelos/update.controller.js';
 export { DeleteParaleloController } from './paralelos/delete.controller.js';
+export { ListParalelosGestionByParaleloController } from './paralelos/list-paralelos-gestion-by-paralelo.controller.js';
 
 export {
     ListPrerrequisitosByAsignaturaController,

@@ -2,7 +2,7 @@
  * Orquestación ABM paralelo maestro (página completa crear/editar).
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { App, Form } from 'antd';
 import apiClient from '@api-client';
@@ -36,7 +36,7 @@ export const useParaleloForm = (mode = 'create') => {
   const [form] = Form.useForm();
 
   const { carreras = [], loading: carrerasLoading, error: carrerasError } = useCarrerasApi();
-  const { planes = [] } = usePlanesEstudiosApi();
+  const { planes = [], loading: planesLoading } = usePlanesEstudiosApi();
 
   const returnListPath = resolveReturnListPath(location, PARALELOS_LIST_PATH);
   const menuSidebarKey = resolveMenuSidebarKey(location);
@@ -46,6 +46,8 @@ export const useParaleloForm = (mode = 'create') => {
   const [error, setError] = useState(null);
   const [periodos, setPeriodos] = useState([]);
   const [loadingPeriodos, setLoadingPeriodos] = useState(false);
+  const pendingPeriodoIdRef = useRef(null);
+  const isHydratingRef = useRef(false);
 
   const carreraId = Form.useWatch('carrera_id', form);
 
@@ -73,7 +75,7 @@ export const useParaleloForm = (mode = 'create') => {
   const loadPeriodos = useCallback(async (planId) => {
     if (!planId) {
       setPeriodos([]);
-      return;
+      return [];
     }
     setLoadingPeriodos(true);
     try {
@@ -95,16 +97,20 @@ export const useParaleloForm = (mode = 'create') => {
           list = Array.isArray(raw) ? raw : [];
         }
       }
-      setPeriodos(mapPeriodosPlanList(list));
+      const mapped = mapPeriodosPlanList(list);
+      setPeriodos(mapped);
+      return mapped;
     } catch (e) {
       handleErrorResponse(e, 'Error al cargar periodos');
       setPeriodos([]);
+      return [];
     } finally {
       setLoadingPeriodos(false);
     }
   }, []);
 
   useEffect(() => {
+    if (isHydratingRef.current) return;
     const planId = planVigente?.id ?? planVigente?.plan_estudio_id;
     if (planId) {
       loadPeriodos(Number(planId));
@@ -112,6 +118,14 @@ export const useParaleloForm = (mode = 'create') => {
       setPeriodos([]);
     }
   }, [planVigente, loadPeriodos]);
+
+  useEffect(() => {
+    const pendingId = pendingPeriodoIdRef.current;
+    if (pendingId == null) return;
+    if (!periodos.some((o) => Number(o.value) === Number(pendingId))) return;
+    form.setFieldValue('periodo_id', pendingId);
+    pendingPeriodoIdRef.current = null;
+  }, [periodos, form]);
 
   const breadcrumbItems = useMemo(
     () => [
@@ -124,12 +138,9 @@ export const useParaleloForm = (mode = 'create') => {
     [pageTitle, returnListPath],
   );
 
-  const loadParalelo = useCallback(async () => {
-    if (!isEditMode) {
-      form.setFieldsValue(mapParaleloToFormValues(null));
-      setLoading(false);
-      return;
-    }
+  const loadedEditIdRef = useRef(null);
+
+  const loadParaleloForEdit = useCallback(async () => {
     if (isInvalidEditId) {
       setLoading(false);
       return;
@@ -141,17 +152,46 @@ export const useParaleloForm = (mode = 'create') => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo cargar el paralelo');
       }
-      form.setFieldsValue(mapParaleloToFormValues(result.data?.paralelo ?? result.data));
+      const raw = result.data?.paralelo ?? result.data;
+      const values = mapParaleloToFormValues(raw);
+
+      if (values.carrera_id) {
+        const cid = Number(values.carrera_id);
+        const plan = vigentePlanPorCarrera.get(cid);
+        const planId = plan?.id ?? plan?.plan_estudio_id;
+        if (planId) {
+          await loadPeriodos(Number(planId));
+        }
+      }
+
+      isHydratingRef.current = true;
+      pendingPeriodoIdRef.current = values.periodo_id ?? null;
+      form.setFieldsValue({ ...values, periodo_id: undefined });
+      isHydratingRef.current = false;
+      loadedEditIdRef.current = paraleloId;
     } catch (e) {
       setError(e?.message || 'Error al cargar el paralelo');
     } finally {
       setLoading(false);
     }
-  }, [form, isEditMode, isInvalidEditId, paraleloId]);
+  }, [form, isInvalidEditId, paraleloId, vigentePlanPorCarrera, loadPeriodos]);
 
   useEffect(() => {
-    loadParalelo();
-  }, [loadParalelo]);
+    if (!isEditMode) {
+      loadedEditIdRef.current = null;
+      pendingPeriodoIdRef.current = null;
+      form.setFieldsValue(mapParaleloToFormValues(null));
+      setLoading(false);
+      return;
+    }
+    if (isInvalidEditId) {
+      setLoading(false);
+      return;
+    }
+    if (planesLoading) return;
+    if (loadedEditIdRef.current === paraleloId) return;
+    loadParaleloForEdit();
+  }, [isEditMode, isInvalidEditId, planesLoading, paraleloId, loadParaleloForEdit, form]);
 
   const handleVolver = useCallback(() => {
     navigate(
@@ -205,21 +245,17 @@ export const useParaleloForm = (mode = 'create') => {
   );
 
   const resolveOptions = useCallback(
-    (field) => {
-      if (field.optionsKey === 'carreras') return carreraOptions;
-      if (field.optionsKey === 'periodos') return periodos;
-      return field.options ?? [];
+    (key) => {
+      if (key === 'carreras') return carreraOptions;
+      if (key === 'periodos') return periodos;
+      return [];
     },
     [carreraOptions, periodos],
   );
 
   const formSections = useMemo(() => createParaleloFormSections(), []);
 
-  const onCarreraChange = useCallback(() => {
-    form.setFieldValue('periodo_id', undefined);
-  }, [form]);
-
-  const sinPlanVigente = Boolean(carreraId && !planVigente);
+  const sinPlanVigente = Boolean(carreraId && !planVigente && !planesLoading);
 
   return {
     form,
@@ -234,7 +270,7 @@ export const useParaleloForm = (mode = 'create') => {
     handleVolver,
     handleSubmit,
     isInvalidEditId,
-    onCarreraChange,
+    carreraId,
     planVigente,
     carreras,
     carrerasLoading,

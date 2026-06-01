@@ -218,4 +218,49 @@ export class ParallelManagementRepository extends BaseRepository {
     });
     return model ? this.toEntity(model) : null;
   }
+
+  /**
+   * Instancias de paralelo en gestiones (oferta académica) para un paralelo maestro.
+   * @param {number} parallelId
+   */
+  async findEnrichedByParallelId(parallelId) {
+    return sequelize.query(
+      `
+      SELECT
+        pg.id AS id,
+        pg.gestion_plan_id AS gestionPlanId,
+        pg.paralelo_id AS paraleloId,
+        pg.aula_id AS aulaId,
+        pg.turno AS turno,
+        pg.estado AS estado,
+        pg.cupo_maximo AS cupoMaximo,
+        pg.cupo_minimo AS cupoMinimo,
+        pg.activo AS activo,
+        p.nombre AS paraleloNombre,
+        g.id AS gestionId,
+        g.codigo AS gestionCodigo,
+        g.nombre AS gestionNombre,
+        g.anio AS gestionAnio,
+        g.vigente AS gestionVigente,
+        a.codigo AS aulaCodigo,
+        a.nombre AS aulaNombre,
+        (
+          SELECT COUNT(*)
+          FROM oferta_cursos oc
+          WHERE oc.paralelo_gestion_id = pg.id
+            AND oc.deleted_at IS NULL
+            AND oc.activo = TRUE
+        ) AS ofertaActual
+      FROM paralelos_gestion pg
+      INNER JOIN paralelos p ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
+      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id AND gp.deleted_at IS NULL
+      INNER JOIN gestiones g ON g.id = gp.gestion_id AND g.deleted_at IS NULL
+      LEFT JOIN aulas a ON a.id = pg.aula_id AND a.deleted_at IS NULL
+      WHERE pg.paralelo_id = :parallelId
+        AND pg.deleted_at IS NULL
+      ORDER BY g.anio DESC, g.codigo ASC, pg.turno ASC, pg.id ASC
+      `,
+      { replacements: { parallelId }, type: QueryTypes.SELECT },
+    );
+  }
 }

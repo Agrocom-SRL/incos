@@ -93,6 +93,19 @@ export function buildParalelosRouter({ controllers, middlewares }) {
     );
 
     router.get(
+        '/:id/paralelos-gestion',
+        authenticate,
+        verificarPermisoCualquiera([
+            [permisoCfg, 'DETALLE'],
+            ['institucional.oferta.paralelo-gestion', 'LISTAR'],
+        ]),
+        ...idValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.listParalelosGestionByParaleloController.handle(req, res, next),
+    );
+
+    router.get(
         '/:id',
         ...detalleParalelo,
         ...idValidator,

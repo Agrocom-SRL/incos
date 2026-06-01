@@ -38,6 +38,6 @@ export class GetParaleloByIdUseCase {
       }
     }
 
-    return { paralelo };
+    return paralelo;
   }
 }

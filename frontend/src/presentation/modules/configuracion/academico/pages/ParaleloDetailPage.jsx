@@ -3,7 +3,7 @@
  */
 
 import { Alert } from 'antd';
-import { TeamOutlined } from '@ant-design/icons';
+import { TeamOutlined, ApartmentOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import DetailTabLabel from '@molecules/DetailTabLabel';
@@ -21,6 +21,9 @@ import {
   getMateriaEstadoPillClass,
 } from '@application-configuracion/academico/config/materiaTipoPill';
 import { getParaleloTurnoPillClass } from '@application-configuracion/academico/config/paraleloTurnoOptions';
+import { getParaleloPeriodoPillClass } from '@application-configuracion/academico/config/paraleloPeriodoPill';
+import ParaleloPeriodoCell from '../components/atoms/ParaleloPeriodoCell';
+import ParaleloDetailOfertaSection from '../components/organisms/ParaleloDetailOfertaSection';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/academico-form-page.css';
 
@@ -29,6 +32,8 @@ const ParaleloDetailPage = () => {
   const {
     paralelo,
     carrera,
+    instanciasGestion,
+    instanciasLoading,
     loading,
     error,
     isInvalidId,
@@ -42,6 +47,13 @@ const ParaleloDetailPage = () => {
   const estadoLabel = getMateriaEstadoLabel(paralelo?.activo);
   const estadoPillClass = getMateriaEstadoPillClass(paralelo?.activo);
 
+  const carreraLabel =
+    carrera?.nombre ?? paralelo?.carreraNombre ?? (carrera?.codigo ? carrera.codigo : '—');
+
+  const periodoLabel =
+    paralelo?.periodoNombre ||
+    (paralelo?.periodoNumero != null ? `${paralelo.periodoNumero}º año` : '—');
+
   const tabItems = paralelo
     ? [
         {
@@ -50,17 +62,47 @@ const ParaleloDetailPage = () => {
           children: (
             <div className="sd-tab-body">
               <DetailInfoCard title="Datos del paralelo">
-                <DetailField label="Carrera" value={carrera?.nombre ?? paralelo.carreraNombre ?? '—'} />
-                <DetailField
-                  label="Periodo"
-                  value={
-                    paralelo.periodoNombre ||
-                    (paralelo.periodoNumero != null ? `${paralelo.periodoNumero}º año` : '—')
-                  }
-                />
-                <DetailField label="Turno" value={paralelo.turno ?? '—'} />
-                <DetailField label="Descripción" value={paralelo.descripcion || '—'} />
+                <DetailField label="Carrera">{carreraLabel}</DetailField>
+                <DetailField label="Periodo">
+                  {periodoLabel !== '—' ? (
+                    <ParaleloPeriodoCell
+                      periodoNumero={paralelo.periodoNumero}
+                      periodoNombre={paralelo.periodoNombre}
+                      descripcion={paralelo.descripcion}
+                      showDescripcion={false}
+                    />
+                  ) : (
+                    '—'
+                  )}
+                </DetailField>
+                <DetailField label="Turno">
+                  {paralelo.turno ? (
+                    <StatusPill
+                      label={paralelo.turno}
+                      className={getParaleloTurnoPillClass(paralelo.turno)}
+                    />
+                  ) : (
+                    '—'
+                  )}
+                </DetailField>
+                <DetailField label="Descripción" span={2}>
+                  {paralelo.descripcion || '—'}
+                </DetailField>
               </DetailInfoCard>
+            </div>
+          ),
+        },
+        {
+          key: 'oferta',
+          label: <DetailTabLabel icon={<ApartmentOutlined />}>Oferta académica</DetailTabLabel>,
+          children: (
+            <div className="sd-tab-body">
+              <ParaleloDetailOfertaSection
+                instancias={instanciasGestion}
+                loading={instanciasLoading}
+                paralelo={paralelo}
+                carrera={carrera}
+              />
             </div>
           ),
         },
@@ -105,6 +147,15 @@ const ParaleloDetailPage = () => {
                 <>
                   <StatusPill label={paralelo.turno} className={getParaleloTurnoPillClass(paralelo.turno)} />
                   {carrera?.codigo ? ` · ${carrera.codigo}` : ''}
+                  {paralelo.periodoNumero != null ? (
+                    <>
+                      {' · '}
+                      <StatusPill
+                        label={`${paralelo.periodoNumero}º año`}
+                        className={getParaleloPeriodoPillClass(paralelo.periodoNumero)}
+                      />
+                    </>
+                  ) : null}
                 </>
               }
               metaExtra={<StatusPill label={estadoLabel} className={estadoPillClass} />}

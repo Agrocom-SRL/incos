@@ -10,6 +10,7 @@ import {
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
 import { useCarrerasApi } from '../api/useCarrerasApi';
+import { useParaleloInstanciasGestionApi } from '../api/useParaleloInstanciasGestionApi';
 
 export const useParaleloDetallePage = () => {
   const { id } = useParams();
@@ -17,6 +18,12 @@ export const useParaleloDetallePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { carreras = [] } = useCarrerasApi();
+  const {
+    instancias: instanciasGestion,
+    loading: instanciasLoading,
+    fetchByParaleloId: fetchInstanciasGestion,
+    reset: resetInstanciasGestion,
+  } = useParaleloInstanciasGestionApi();
 
   const returnListPath = resolveReturnListPath(location, PARALELOS_LIST_PATH);
   const menuSidebarKey = resolveMenuSidebarKey(location);
@@ -52,9 +59,18 @@ export const useParaleloDetallePage = () => {
     refetch();
   }, [refetch]);
 
+  useEffect(() => {
+    if (isInvalidId) {
+      resetInstanciasGestion();
+      return;
+    }
+    fetchInstanciasGestion(paraleloId);
+  }, [isInvalidId, paraleloId, fetchInstanciasGestion, resetInstanciasGestion]);
+
   const carrera = useMemo(() => {
-    if (!paralelo?.carreraId) return null;
-    return carreras.find((c) => c.id === paralelo.carreraId) ?? null;
+    const cid = paralelo?.carreraId ?? paralelo?.carrera_id;
+    if (cid == null) return null;
+    return carreras.find((c) => Number(c.id) === Number(cid)) ?? null;
   }, [carreras, paralelo]);
 
   const breadcrumbItems = useMemo(
@@ -84,6 +100,8 @@ export const useParaleloDetallePage = () => {
   return {
     paralelo,
     carrera,
+    instanciasGestion,
+    instanciasLoading,
     loading,
     error,
     isInvalidId,

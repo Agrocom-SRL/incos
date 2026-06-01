@@ -1,7 +1,6 @@
-import { Form } from 'antd';
+import { Alert, Form } from 'antd';
 import CfgAcademicoFormWorkspace from './CfgAcademicoFormWorkspace';
-import ParaleloCarreraPicker from './ParaleloCarreraPicker';
-import ParaleloPeriodoPicker from './ParaleloPeriodoPicker';
+import ParaleloCarreraFormControl from './ParaleloCarreraFormControl';
 
 const ParaleloFormSections = ({
   form,
@@ -11,10 +10,8 @@ const ParaleloFormSections = ({
   carreras = [],
   carrerasLoading = false,
   carrerasError = null,
-  periodos = [],
-  periodosLoading = false,
   sinPlanVigente = false,
-  onCarreraChange,
+  carreraId,
   fieldsDisabled = false,
 }) => {
   const { datosParalelo } = formSections ?? {};
@@ -22,6 +19,16 @@ const ParaleloFormSections = ({
   if (!datosParalelo?.fields?.length) {
     return null;
   }
+
+  const periodoExtra =
+    sinPlanVigente && carreraId ? (
+      <Alert
+        type="warning"
+        showIcon
+        message="La carrera no tiene plan de estudio vigente. Defínalo en el tab Planes."
+        style={{ marginTop: 8 }}
+      />
+    ) : null;
 
   return (
     <CfgAcademicoFormWorkspace
@@ -31,38 +38,22 @@ const ParaleloFormSections = ({
       form={form}
       resolveOptions={resolveOptions}
       footer={footer}
+      afterField={{ periodo_id: periodoExtra }}
       beforeFields={
-        <>
-          <Form.Item
-            name="carrera_id"
-            label="Carrera"
-            rules={[{ required: true, message: 'Seleccione la carrera' }]}
-          >
-            <ParaleloCarreraPicker
-              carreras={carreras}
-              loading={carrerasLoading}
-              error={carrerasError}
-              disabled={fieldsDisabled}
-              onChange={() => {
-                form.setFieldValue('periodo_id', undefined);
-                onCarreraChange?.();
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="periodo_id"
-            label="Periodo del plan"
-            rules={[{ required: true, message: 'Seleccione el periodo' }]}
-          >
-            <ParaleloPeriodoPicker
-              periodos={periodos}
-              loading={periodosLoading}
-              disabled={fieldsDisabled}
-              sinPlanVigente={sinPlanVigente}
-            />
-          </Form.Item>
-        </>
+        <Form.Item
+          name="carrera_id"
+          label="Carrera"
+          rules={[{ required: true, message: 'Seleccione la carrera' }]}
+          className="cfg-paralelo-carrera-form-item"
+        >
+          <ParaleloCarreraFormControl
+            form={form}
+            carreras={carreras}
+            loading={carrerasLoading}
+            error={carrerasError}
+            disabled={fieldsDisabled}
+          />
+        </Form.Item>
       }
     />
   );

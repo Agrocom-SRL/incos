@@ -131,7 +131,7 @@ const renderPillSelect = (field, disabled, readOnly, selectOptions) => (
     options={selectOptions}
     allowClear={field.allowClear}
     resolvePillClassName={(optionValue) =>
-      resolveFormPillClassName(field.pillVariant, optionValue)
+      resolveFormPillClassName(field.pillVariant, optionValue, selectOptions)
     }
   />
 );

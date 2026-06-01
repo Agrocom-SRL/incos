@@ -7,6 +7,17 @@ export const createParaleloFormSections = () => ({
       'Plantilla reutilizable por carrera, periodo del plan y turno. Se copia a paralelos de gestión en Oferta académica.',
     fields: [
       {
+        name: 'periodo_id',
+        label: 'Periodo del plan',
+        type: 'pillSelect',
+        pillVariant: 'paraleloPeriodo',
+        required: true,
+        span: 12,
+        placeholder: 'Seleccione periodo',
+        options: 'periodos',
+        allowClear: false,
+      },
+      {
         name: 'nombre',
         label: 'Nombre',
         type: 'input',
@@ -30,7 +41,7 @@ export const createParaleloFormSections = () => ({
         name: 'descripcion',
         label: 'Descripción',
         type: 'textarea',
-        span: 24,
+        span: 12,
         placeholder: 'Opcional — visible en el listado bajo el periodo',
         rows: 3,
       },

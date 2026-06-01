@@ -187,6 +187,7 @@ export const PARALELOS_ENDPOINTS = {
   DASHBOARD_CAPACIDAD_TURNO: `${API_BASE}/paralelos/dashboard/capacidad-turno`,
   DASHBOARD_HORARIOS_PENDIENTES: `${API_BASE}/paralelos/dashboard/horarios-pendientes`,
   DASHBOARD_HORARIOS_PUBLICACION: `${API_BASE}/paralelos/dashboard/horarios-publicacion`,
+  PARALELOS_GESTION_BY_PARALELO: (id) => `${API_BASE}/paralelos/${id}/paralelos-gestion`,
 };
 
 export const AULAS_HORARIOS_ENDPOINTS = {

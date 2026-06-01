@@ -11,7 +11,7 @@ const ParaleloCarreraPicker = ({
   loading = false,
   error = null,
   value,
-  onChange,
+  onChange: onChangeProp,
   disabled = false,
 }) => {
   const selectedValue = value != null && value !== '' ? Number(value) : null;
@@ -23,7 +23,9 @@ const ParaleloCarreraPicker = ({
   if (loading) {
     return (
       <div className="cfg-paralelo-picker-loading">
-        <Spin tip="Cargando carreras…" />
+        <Spin tip="Cargando carreras…">
+          <div className="cfg-paralelo-picker-loading__nest" aria-hidden />
+        </Spin>
       </div>
     );
   }
@@ -36,7 +38,7 @@ const ParaleloCarreraPicker = ({
     <Radio.Group
       className="cfg-paralelo-carrera-picker"
       value={selectedValue ?? undefined}
-      onChange={(e) => onChange?.(e.target.value)}
+      onChange={(e) => onChangeProp?.(e.target.value)}
       disabled={disabled}
     >
       <div className="cfg-paralelo-carrera-picker__grid">

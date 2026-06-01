@@ -63,20 +63,7 @@ export function useGestionHorariosPublicacionState() {
         });
     }, [planes, filters]);
 
-    const carreraIdFromFiltro = useCallback(() => {
-        if (filters.carrera === 'all') return null;
-        const hit = planes.find((pl) => pl?.paralelo?.carreraNombre === filters.carrera);
-        return hit?.paralelo?.carreraId != null ? Number(hit.paralelo.carreraId) : null;
-    }, [filters.carrera, planes]);
-
-    const reloadPlanes = useCallback(() => {
-        const params = {};
-        const cid = carreraIdFromFiltro();
-        if (cid != null) params.carrera_id = cid;
-        if (filters.turno !== 'all') params.turno = filters.turno;
-        if (filters.periodo !== 'all') params.periodo = filters.periodo;
-        return fetch({ params });
-    }, [fetch, filters.turno, filters.periodo, carreraIdFromFiltro]);
+    const reloadPlanes = useCallback(() => fetch({ params: {} }), [fetch]);
 
     useEffect(() => {
         reloadPlanes();
