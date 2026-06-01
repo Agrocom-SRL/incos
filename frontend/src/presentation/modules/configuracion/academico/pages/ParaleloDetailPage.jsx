@@ -21,8 +21,13 @@ import {
   getMateriaEstadoPillClass,
 } from '@application-configuracion/academico/config/materiaTipoPill';
 import { getParaleloTurnoPillClass } from '@application-configuracion/academico/config/paraleloTurnoOptions';
-import { getParaleloPeriodoPillClass } from '@application-configuracion/academico/config/paraleloPeriodoPill';
+import {
+  getParaleloPeriodoLabel,
+  getParaleloPeriodoPillClass,
+} from '@application-configuracion/academico/config/paraleloPeriodoPill';
+import { getParaleloTurnoHorarioInfo } from '@application-configuracion/academico/config/paraleloTurnoHorarioInfo';
 import ParaleloPeriodoCell from '../components/atoms/ParaleloPeriodoCell';
+import ParaleloTurnoHorarioInfo from '../components/atoms/ParaleloTurnoHorarioInfo';
 import ParaleloDetailOfertaSection from '../components/organisms/ParaleloDetailOfertaSection';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/academico-form-page.css';
@@ -50,9 +55,15 @@ const ParaleloDetailPage = () => {
   const carreraLabel =
     carrera?.nombre ?? paralelo?.carreraNombre ?? (carrera?.codigo ? carrera.codigo : '—');
 
-  const periodoLabel =
-    paralelo?.periodoNombre ||
-    (paralelo?.periodoNumero != null ? `${paralelo.periodoNumero}º año` : '—');
+  const periodoLabel = paralelo ? getParaleloPeriodoLabel(paralelo) : '—';
+  const turnoHorarioInfo = paralelo?.turno ? getParaleloTurnoHorarioInfo(paralelo.turno) : null;
+  const horarioLvLabel = turnoHorarioInfo
+    ? `${turnoHorarioInfo.horaInicio} – ${turnoHorarioInfo.horaFin}`
+    : '—';
+  const bloquesLabel =
+    turnoHorarioInfo?.bloquesPorDia != null
+      ? `${turnoHorarioInfo.bloquesPorDia} × ${turnoHorarioInfo.duracionBloqueMin} min`
+      : '—';
 
   const tabItems = paralelo
     ? [
@@ -64,16 +75,7 @@ const ParaleloDetailPage = () => {
               <DetailInfoCard title="Datos del paralelo">
                 <DetailField label="Carrera">{carreraLabel}</DetailField>
                 <DetailField label="Periodo">
-                  {periodoLabel !== '—' ? (
-                    <ParaleloPeriodoCell
-                      periodoNumero={paralelo.periodoNumero}
-                      periodoNombre={paralelo.periodoNombre}
-                      descripcion={paralelo.descripcion}
-                      showDescripcion={false}
-                    />
-                  ) : (
-                    '—'
-                  )}
+                  <ParaleloPeriodoCell record={paralelo} showDescripcion={false} />
                 </DetailField>
                 <DetailField label="Turno">
                   {paralelo.turno ? (
@@ -88,6 +90,11 @@ const ParaleloDetailPage = () => {
                 <DetailField label="Descripción" span={2}>
                   {paralelo.descripcion || '—'}
                 </DetailField>
+                {paralelo.turno ? (
+                  <DetailField label="Franjas horarias" span={2}>
+                    <ParaleloTurnoHorarioInfo turno={paralelo.turno} showTitle={false} />
+                  </DetailField>
+                ) : null}
               </DetailInfoCard>
             </div>
           ),
@@ -145,13 +152,29 @@ const ParaleloDetailPage = () => {
               title={paralelo.nombre}
               subtitle={
                 <>
-                  <StatusPill label={paralelo.turno} className={getParaleloTurnoPillClass(paralelo.turno)} />
-                  {carrera?.codigo ? ` · ${carrera.codigo}` : ''}
-                  {paralelo.periodoNumero != null ? (
+                  {carrera?.codigo ? (
+                    <span className="sd-profile__sub-text">{carrera.codigo}</span>
+                  ) : null}
+                  {carreraLabel !== '—' ? (
+                    <>
+                      {carrera?.codigo ? ' · ' : null}
+                      <span className="sd-profile__sub-text">{carreraLabel}</span>
+                    </>
+                  ) : null}
+                  {paralelo.turno ? (
                     <>
                       {' · '}
                       <StatusPill
-                        label={`${paralelo.periodoNumero}º año`}
+                        label={paralelo.turno}
+                        className={getParaleloTurnoPillClass(paralelo.turno)}
+                      />
+                    </>
+                  ) : null}
+                  {periodoLabel !== '—' ? (
+                    <>
+                      {' · '}
+                      <StatusPill
+                        label={periodoLabel}
                         className={getParaleloPeriodoPillClass(paralelo.periodoNumero)}
                       />
                     </>
@@ -163,6 +186,15 @@ const ParaleloDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar paralelo"
               editAriaLabel="Editar paralelo"
+              stats={[
+                { label: 'Periodo', value: periodoLabel, primary: true },
+                { label: 'Horario L–V', value: horarioLvLabel },
+                { label: 'Bloques / día', value: bloquesLabel },
+                {
+                  label: 'Instancias en gestión',
+                  value: instanciasLoading ? '…' : instanciasGestion.length,
+                },
+              ]}
             />
             <DetailTabsPanel items={tabItems} defaultActiveKey="informacion" />
           </>

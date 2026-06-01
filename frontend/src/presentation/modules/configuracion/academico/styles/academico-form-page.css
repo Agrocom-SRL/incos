@@ -692,3 +692,78 @@
   overflow-x: auto;
   min-width: 0;
 }
+
+/* Paralelo — franjas horarias por turno */
+.cfg-paralelo-turno-horario {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary, #22854f) 6%, var(--surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--primary, #22854f) 18%, transparent);
+}
+
+.cfg-paralelo-turno-horario--compact {
+  margin-top: 6px;
+}
+
+.cfg-paralelo-turno-horario__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.cfg-paralelo-turno-horario__icon {
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  font-size: 14px;
+}
+
+.cfg-paralelo-turno-horario__titulo {
+  font-size: 13px;
+}
+
+.cfg-paralelo-turno-horario__linea,
+.cfg-paralelo-turno-horario__sabado,
+.cfg-paralelo-turno-horario__slots,
+.cfg-paralelo-turno-horario__nota {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-600, #4b5563);
+}
+
+.cfg-paralelo-turno-horario__inline-icon {
+  margin-right: 6px;
+  color: var(--text-500, #6b7280);
+}
+
+.cfg-paralelo-turno-horario__slots {
+  padding-left: 20px;
+  color: var(--text-500, #6b7280);
+  word-break: break-word;
+}
+
+.cfg-paralelo-turno-horario__slots--nested {
+  display: block;
+  margin-top: 4px;
+  padding-left: 0;
+}
+
+.cfg-paralelo-turno-horario__nota {
+  margin-bottom: 0;
+  font-size: 11px;
+  color: var(--text-500, #6b7280);
+}
+
+.cfg-paralelo-turno-horario__nota--muted {
+  margin-top: 4px;
+}
+
+.sd-tab-body .cfg-paralelo-turno-horario {
+  margin-top: 0;
+}
+
+.sd-field__value .cfg-paralelo-turno-horario {
+  margin-top: 0;
+  width: 100%;
+}

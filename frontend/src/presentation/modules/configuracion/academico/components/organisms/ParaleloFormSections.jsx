@@ -1,6 +1,7 @@
 import { Alert, Form } from 'antd';
 import CfgAcademicoFormWorkspace from './CfgAcademicoFormWorkspace';
 import ParaleloCarreraFormControl from './ParaleloCarreraFormControl';
+import ParaleloTurnoHorarioInfo from '../atoms/ParaleloTurnoHorarioInfo';
 
 const ParaleloFormSections = ({
   form,
@@ -30,6 +31,11 @@ const ParaleloFormSections = ({
       />
     ) : null;
 
+  const turno = Form.useWatch('turno', form);
+  const turnoExtra = turno ? (
+    <ParaleloTurnoHorarioInfo turno={turno} compact />
+  ) : null;
+
   return (
     <CfgAcademicoFormWorkspace
       title={datosParalelo.title}
@@ -38,7 +44,7 @@ const ParaleloFormSections = ({
       form={form}
       resolveOptions={resolveOptions}
       footer={footer}
-      afterField={{ periodo_id: periodoExtra }}
+      afterField={{ periodo_id: periodoExtra, turno: turnoExtra }}
       beforeFields={
         <Form.Item
           name="carrera_id"

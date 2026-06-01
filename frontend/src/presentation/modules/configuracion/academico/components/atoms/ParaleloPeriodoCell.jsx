@@ -9,7 +9,7 @@ import {
   getParaleloPeriodoPillClass,
 } from '@application-configuracion/academico/config/paraleloPeriodoPill';
 
-const ParaleloPeriodoCell = ({ record }) => {
+const ParaleloPeriodoCell = ({ record, showDescripcion = true }) => {
   const numero = getParaleloPeriodoNumero(record);
   const label = getParaleloPeriodoLabel(record);
   const descripcion = record?.descripcion?.trim() || null;
@@ -19,13 +19,15 @@ const ParaleloPeriodoCell = ({ record }) => {
       <div className="cfg-paralelo-periodo-cell__fila">
         <StatusPill label={label} className={getParaleloPeriodoPillClass(numero)} />
       </div>
-      {descripcion ? (
-        <p className="cfg-paralelo-periodo-cell__texto" title={descripcion}>
-          {descripcion}
-        </p>
-      ) : (
-        <p className="cfg-paralelo-periodo-cell__texto cfg-paralelo-periodo-cell__texto--empty">—</p>
-      )}
+      {showDescripcion ? (
+        descripcion ? (
+          <p className="cfg-paralelo-periodo-cell__texto" title={descripcion}>
+            {descripcion}
+          </p>
+        ) : (
+          <p className="cfg-paralelo-periodo-cell__texto cfg-paralelo-periodo-cell__texto--empty">—</p>
+        )
+      ) : null}
     </div>
   );
 };
