@@ -41,7 +41,7 @@ export function useOfertaAcademicaWizardState() {
         rows.map(async (pg) => {
           const res = await api.validarOferta(pg.id);
           if (!res.success) return [pg.id, null];
-          return [pg.id, res.data];
+          return [pg.id, res.data?.validacion ?? res.data];
         })
       );
       setValidacionPorId(Object.fromEntries(entries));

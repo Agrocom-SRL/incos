@@ -82,7 +82,7 @@ const ParaleloCursosTabSection = ({
                 title={titulo}
                 extra={
                   <ActionButton
-                    permiso="docentes.asignar"
+                    permiso="institucional.horarios.asignacion-docente"
                     accion="EDITAR"
                     variant="primary"
                     icon={<TeamOutlined />}

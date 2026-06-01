@@ -4,7 +4,6 @@ export * from './configuracion/academico/carreras';
 export * from './configuracion/academico/materias';
 export * from './configuracion/complementario/discapacidad';
 export * from './academico/paralelos';
-export * from './academico/cursos';
 export * from './inscripciones';
 export * from './pagos';
 export * from './dashboard';

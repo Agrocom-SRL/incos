@@ -20,6 +20,7 @@ import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPla
 import ParaleloCursosGestionSection from '../components/organisms/ParaleloCursosGestionSection';
 import DocenteAsignacionCursoModal from '../components/organisms/DocenteAsignacionCursoModal';
 import ParaleloCursosTabSection from '../components/organisms/ParaleloCursosTabSection';
+import HorariosOperativaBanner from '../components/molecules/HorariosOperativaBanner';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 
@@ -219,19 +220,16 @@ const GestionHorariosArmadoPage = () => {
                             <ParaleloCursosGestionSection
                                 validParaleloId={ofertaParalelo.validParaleloId}
                                 canCrear={ofertaParalelo.canCrear}
-                                canEditar={ofertaParalelo.canEditar}
                                 canEliminar={ofertaParalelo.canEliminar}
                                 missingSubjects={ofertaParalelo.missingSubjects}
                                 filasOferta={ofertaParalelo.filasOferta}
                                 cursoModal={ofertaParalelo.cursoModal}
                                 closeCursoModal={ofertaParalelo.closeCursoModal}
                                 onNuevoCurso={ofertaParalelo.onNuevoCurso}
-                                onEditarCurso={ofertaParalelo.onEditarCurso}
                                 onCrearCursoDesdeMateria={ofertaParalelo.onCrearCursoDesdeMateria}
                                 requestDeleteCurso={ofertaParalelo.requestDeleteCurso}
                                 deleteCursoLoading={ofertaParalelo.deleteCursoLoading}
                                 handleCrearCursoOferta={ofertaParalelo.handleCrearCursoOferta}
-                                handleActualizarCursoOferta={ofertaParalelo.handleActualizarCursoOferta}
                                 refetchOferta={handleCursoOfertaSaved}
                                 ofertaError={ofertaParalelo.error}
                             />
@@ -334,6 +332,7 @@ const GestionHorariosArmadoPage = () => {
                                     description={error}
                                 />
                             ) : null}
+                            <HorariosOperativaBanner style={{ marginBottom: 16 }} />
                             {!error ? (
                                 <div
                                     className={[

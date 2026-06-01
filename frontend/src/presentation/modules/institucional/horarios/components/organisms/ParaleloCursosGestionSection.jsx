@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Alert, Flex, Table, Tag, Tooltip, Typography, Button as AntButton } from 'antd';
-import { BookOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { BookOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import ParaleloCursoOfertaModal from '../ParaleloCursoOfertaModal';
 
@@ -9,19 +9,16 @@ const { Text } = Typography;
 const ParaleloCursosGestionSection = ({
     validParaleloId,
     canCrear,
-    canEditar,
     canEliminar,
     missingSubjects,
     filasOferta,
     cursoModal,
     closeCursoModal,
     onNuevoCurso,
-    onEditarCurso,
     onCrearCursoDesdeMateria,
     requestDeleteCurso,
     deleteCursoLoading,
     handleCrearCursoOferta,
-    handleActualizarCursoOferta,
     refetchOferta,
     ofertaError = null,
 }) => {
@@ -116,18 +113,6 @@ const ParaleloCursosGestionSection = ({
                         </Flex>
                     ) : (
                         <Flex gap={4} justify="flex-end" wrap="wrap">
-                            {canEditar ? (
-                                <Tooltip title="Editar curso">
-                                    <AntButton
-                                        type="text"
-                                        size="small"
-                                        icon={<EditOutlined />}
-                                        aria-label="Editar curso"
-                                        onClick={() => onEditarCurso(row)}
-                                        style={{ color: 'var(--accent-600, #d48806)' }}
-                                    />
-                                </Tooltip>
-                            ) : null}
                             {canEliminar ? (
                                 <Tooltip title="Eliminar curso">
                                     <AntButton
@@ -146,15 +131,7 @@ const ParaleloCursosGestionSection = ({
                     ),
             },
         ],
-        [
-            onEditarCurso,
-            requestDeleteCurso,
-            onCrearCursoDesdeMateria,
-            deleteCursoLoading,
-            canCrear,
-            canEditar,
-            canEliminar,
-        ],
+        [requestDeleteCurso, onCrearCursoDesdeMateria, deleteCursoLoading, canCrear, canEliminar],
     );
 
     const extraCard = canCrear ? (
@@ -241,9 +218,9 @@ const ParaleloCursosGestionSection = ({
                     initialAsignaturaPlanId={cursoModal.prefillAsignaturaPlanId}
                     parallelId={validParaleloId}
                     onCrearCurso={handleCrearCursoOferta}
-                    onActualizarCurso={handleActualizarCursoOferta}
                     onSaved={() => refetchOferta()}
-                    canSubmit={cursoModal.isEdit ? canEditar : canCrear}
+                    canSubmit={canCrear}
+                    soloAsignatura
                 />
             ) : null}
         </>

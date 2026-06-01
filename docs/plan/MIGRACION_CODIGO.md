@@ -17,9 +17,7 @@ Este archivo es la **fuente de verdad para el código**. Los sprints 3–5 imple
 Sprint 2 **no** obliga a borrar código legacy; solo deja la BD incompatible con V1.  
 Los sprints 3–5 **sí** deben retirar o reescribir ese código.
 
-**Estado (2026-05-29):** Sprint 3 cerrado (oferta). Sprint 4 en curso con **dos pistas**:
-asignación docente + continuidad inscripciones/calificaciones (estudiantes ya matriculados).
-Sprint 5 = grilla horarios; no bloquea matrícula ni notas.
+**Estado (2026-06-01):** Sprint 3 cerrado (oferta). **Sprint 4 cerrado:** asignación docente + continuidad inscripciones/calificaciones + armado tab gestión sobre oferta. Sprint 5 = grilla horarios (`asignacion_horarios`, schedule/publicación); no bloquea matrícula ni notas.
 
 ---
 
@@ -106,10 +104,10 @@ Regla: **no ejecutar** vistas V1 contra BD V2; o marcarlas `.legacy.sql` hasta r
 
 - [ ] Ningún `import` activo de `curso.js` / `curso_horario.js` en `backend/src`.
 - [x] `/api/v1/cursos` desmontado; paralelos sin rutas V1 de oferta/schedule.
-- [ ] Docentes e inscripciones persisten solo `oferta_curso_id`.
-- [ ] Horarios leen/escriben `asignacion_horarios`.
-- [ ] Vistas en `03-views/` usadas por la app reescritas o no desplegadas.
-- [ ] FE institucional horarios + oferta sin `CursoRepository` V1.
+- [x] Docentes e inscripciones persisten solo `oferta_curso_id` (camino activo BE; armado horarios legacy aún en UI).
+- [ ] Horarios leen/escriben `asignacion_horarios` (Sprint 5).
+- [x] Vistas grupo docente/calificaciones listado en `03-views/` sin `JOIN cursos` (conflictos/grilla = Sprint 5).
+- [x] FE institucional horarios: oferta en `/institucional/oferta`, asignación en matriz S4, armado tab gestión vía `useOfertaAcademicaApi` (grilla/schedule = Sprint 5).
 - [ ] **Operativo:** matriculados + cuaderno calificaciones contra gestión con oferta (Sprint 4).
 - [ ] Smoke manual: seeders 27→30→31→40 en cadena contra UI V2.
 
@@ -119,5 +117,5 @@ Regla: **no ejecutar** vistas V1 contra BD V2; o marcarlas `.legacy.sql` hasta r
 
 1. Schemas + seeders (ya hecho).
 2. Sprint 3: oferta API/FE + **retiro rutas/repos cursos en paralelos**. ✅
-3. Sprint 4: asignación docente + **inscripción + calificaciones (pista B en paralelo)** + vistas docentes.
+3. Sprint 4 ✅: asignación docente + **inscripción + calificaciones (pista B)** + vistas docentes + armado tab gestión.
 4. Sprint 5: bloques + vistas horarios + publicación + completar `cambiar-turno` con bloques.

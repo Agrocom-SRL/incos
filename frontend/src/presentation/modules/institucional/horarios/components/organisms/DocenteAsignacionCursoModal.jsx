@@ -40,7 +40,10 @@ const DocenteAsignacionCursoModal = ({
     const [docentesConChoque, setDocentesConChoque] = useState(new Set());
     const { docentes = [] } = useDocentesApi();
     const { hasPermiso } = useAuthContext();
-    const puedeGuardarAsignacion = hasPermiso('docentes.asignar', 'EDITAR');
+    const puedeGuardarAsignacion =
+        hasPermiso('institucional.horarios.asignacion-docente', 'EDITAR') ||
+        hasPermiso('institucional.horarios.asignacion-docente', 'CREAR') ||
+        hasPermiso('docentes.asignar', 'EDITAR');
 
     const horasPlanReferencia = useMemo(() => {
         const v =
@@ -218,7 +221,7 @@ const DocenteAsignacionCursoModal = ({
                             type="warning"
                             showIcon
                             title="Sin permiso para asignar docente"
-                            description="Se requiere docentes.asignar (EDITAR). Podés revisar el horario; para guardar cambios pedí acceso al administrador."
+                            description="Se requiere permiso de asignación docente (EDITAR). Podés revisar el horario; para guardar cambios pedí acceso al administrador."
                         />
                     ) : null}
                     <Text type="secondary">

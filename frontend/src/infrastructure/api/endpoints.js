@@ -99,6 +99,15 @@ export const DOCENTES_ENDPOINTS = {
   CURSO_HORARIOS: (cursoId) => `${API_BASE}/docentes/cursos/${cursoId}/horarios`,
   /** GET — IDs de docentes con choque en los bloques de un curso (?cursoId=X) */
   CONFLICTO_BLOQUES: (cursoId) => `${API_BASE}/docentes/conflicto-bloques?cursoId=${cursoId}`,
+  CARGA_GESTION: (docenteId) => `${API_BASE}/docentes/${docenteId}/carga-gestion`,
+  COLORES_EN_USO: `${API_BASE}/docentes/colores-en-uso`,
+  COLORES_SUGERIDOS: `${API_BASE}/docentes/colores-sugeridos`,
+  COLOR: (docenteId) => `${API_BASE}/docentes/${docenteId}/color`,
+};
+
+export const ASIGNACIONES_DOCENTES_ENDPOINTS = {
+  BASE: `${API_BASE}/asignaciones-docentes`,
+  BY_ID: (id) => `${API_BASE}/asignaciones-docentes/${id}`,
 };
 
 // ============================================
@@ -167,14 +176,8 @@ export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================
-export const CURSOS_ENDPOINTS = {
-  BY_ID: (id) => `${API_BASE}/cursos/${id}`,
-};
-
 export const PARALELOS_ENDPOINTS = {
   ...createCRUDEndpoints('/paralelos'),
-  CURSOS_OFERTA: (id) => `${API_BASE}/paralelos/${id}/cursos-oferta`,
-  CURSOS_POST: (id) => `${API_BASE}/paralelos/${id}/cursos`,
   // Endpoint específico para obtener horarios de un paralelo
   SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
   // PUT /v1/paralelos/:id/schedule — persistir plan semanal
@@ -194,6 +197,7 @@ export const GESTIONES_ENDPOINTS = {
   ...createCRUDEndpoints('/gestiones'),
   MARCAR_VIGENTE: (id) => `${API_BASE}/gestiones/${id}/marcar-vigente`,
   PLANES_HABILITADOS: (id) => `${API_BASE}/gestiones/${id}/planes-habilitados`,
+  CARGA_DOCENTES: (id) => `${API_BASE}/gestiones/${id}/carga-docentes`,
 };
 
 export const GESTIONES_PLANES_ENDPOINTS = {
@@ -210,6 +214,7 @@ export const PARALELOS_GESTION_ENDPOINTS = {
   OFERTA_CURSOS: (id) => `${API_BASE}/paralelos-gestion/${id}/oferta-cursos`,
   GENERAR_OFERTA: (id) => `${API_BASE}/paralelos-gestion/${id}/generar-oferta`,
   VALIDAR_OFERTA: (id) => `${API_BASE}/paralelos-gestion/${id}/validar-oferta`,
+  COBERTURA_DOCENTE: (id) => `${API_BASE}/paralelos-gestion/${id}/cobertura-docente`,
 };
 
 export const OFERTA_CURSOS_ENDPOINTS = {

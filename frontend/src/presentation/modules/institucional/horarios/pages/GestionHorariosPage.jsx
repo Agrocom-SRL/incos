@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
-import { AppstoreOutlined, TableOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { AppstoreOutlined, TableOutlined, TeamOutlined } from '@ant-design/icons';
 import { Alert, Card, Flex, Spin, Tabs } from 'antd';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosContext } from '@application-institucional/horarios';
+import { canListarAsignacion } from '@application-institucional/horarios/config/asignacionDocentePermisos';
+import { useAuthContext } from '@application-auth';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
@@ -14,6 +17,7 @@ import {
     HorariosFiltersBar,
     HorariosGestionSidebarResumen,
     HorariosKpiStrip,
+    HorariosOperativaBanner,
     ParalelosBoard,
     ParalelosTable,
 } from '../components';
@@ -50,6 +54,9 @@ const GestionHorariosPage = () => {
         loading,
         error,
     } = useHorariosContext();
+    const navigate = useNavigate();
+    const { hasPermiso } = useAuthContext();
+    const puedeAsignacionDocente = canListarAsignacion(hasPermiso);
 
     const breadcrumbItems = [
         { title: 'Inicio', href: '/' },
@@ -97,6 +104,17 @@ const GestionHorariosPage = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
+                            {puedeAsignacionDocente ? (
+                                <ActionButton
+                                    permiso="institucional.horarios.asignacion-docente"
+                                    accion="LISTAR"
+                                    variant="default"
+                                    icon={<TeamOutlined />}
+                                    onClick={() => navigate('/institucional/horarios/asignacion-docente')}
+                                >
+                                    Asignación docente
+                                </ActionButton>
+                            ) : null}
                             <ActionButton
                                 permiso="institucional.horario.armado"
                                 accion="LISTAR"
@@ -123,6 +141,7 @@ const GestionHorariosPage = () => {
                     <Spin spinning={loading} tip="Cargando datos de horarios...">
                         <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
                             {error ? <Alert type="error" showIcon message={error} /> : null}
+                            <HorariosOperativaBanner />
                             {hayAlertas ? (
                                 <HorariosAlertBanner
                                     sinDocentes={kpis.sinDocentes}

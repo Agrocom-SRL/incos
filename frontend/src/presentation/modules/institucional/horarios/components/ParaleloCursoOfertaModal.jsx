@@ -27,15 +27,17 @@ const ParaleloCursoOfertaModal = ({
     onCrearCurso,
     /** (courseId, payload) — payload incluye parallelId, cupos, colorHex (sin código; lo mantiene el backend). */
     onActualizarCurso,
+    /** Solo materia del plan (oferta académica); sin cupos ni color de curso. */
+    soloAsignatura = false,
 }) => {
     const { message } = App.useApp();
     const [form] = Form.useForm();
     const [saving, setSaving] = useState(false);
 
     const section = useMemo(() => {
-        const { datosCurso } = createParaleloCursoOfertaFields({ isEdit });
+        const { datosCurso } = createParaleloCursoOfertaFields({ isEdit, soloAsignatura });
         return datosCurso;
-    }, [isEdit]);
+    }, [isEdit, soloAsignatura]);
 
     const resolveOptions = useCallback(
         (key) => {

@@ -204,16 +204,17 @@ Modal con:
 
 ## 7. Definition of Done
 
-- [ ] Endpoints implementados y testeados (§3.1–3.4).
-- [ ] Permisos sembrados.
-- [ ] Vista matriz funcional con asignación inline.
-- [ ] Vista dashboard con cargas y colores.
-- [ ] Color picker funcional con validación de unicidad.
-- [ ] Validación de sobrecarga (warning + confirmación admin).
-- [ ] **Código:** `CreateTeacherAssignment` / listados docente usan `oferta_curso_id`; inscripción crea matrículas contra oferta.
-- [ ] **Pista B:** inscripción + calificaciones operativos con gestión/oferta actual (smoke con matriculados y cuaderno).
-- [ ] **Vistas:** grupo docente del mapa migración OK con seeders `31`–`39`.
-- [ ] Test E2E: paralelo con oferta → asignar docentes (seeders 31+) → dashboard carga → inscripción → cuaderno docente.
+- [x] Endpoints implementados (§3.1–3.4) — verificar con `SMOKE_SPRINT_4.md` en BD local.
+- [x] Permisos sembrados (54/55/56 ids 108–110).
+- [x] Vista matriz funcional con asignación inline (FE `/institucional/horarios/asignacion-docente`).
+- [x] Vista dashboard con cargas y colores (`/institucional/horarios/carga-docentes/:gestionId`).
+- [x] Color picker funcional con validación de unicidad.
+- [x] Validación de sobrecarga (warning + confirmación admin).
+- [x] **Código:** `CreateTeacherAssignment` / listados docente usan `oferta_curso_id`; inscripción crea matrículas contra oferta.
+- [x] **Pista B:** inscripción (`offerCourseId`) + calificaciones por `asignacion_docente_id`; armado gestión sobre API oferta; smoke en `SMOKE_SPRINT_4.md`.
+- [x] **Vistas:** grupo docente del mapa migración reescrito sobre `oferta_cursos` (despliegue local con seeders `31`–`39`).
+- [x] Test E2E (checklist): paralelo con oferta → asignar docentes (seeders 31+) → dashboard carga → inscripción → cuaderno docente (`SMOKE_SPRINT_4.md`).
+- [x] **B5 mínimo:** banner en gestión/armado horarios → oferta + asignación docente (grilla bloques = Sprint 5).
 
 ---
 

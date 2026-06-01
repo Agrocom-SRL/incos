@@ -17,6 +17,8 @@ const GestionHorariosConnector = lazy(() => import('./horarios/connectors'));
 const GestionHorariosArmadoConnector = lazy(() => import('./horarios/connectors/ArmadoConnector'));
 const GestionHorariosAulasConnector = lazy(() => import('./horarios/connectors/AulasConnector'));
 const GestionHorariosPublicacionConnector = lazy(() => import('./horarios/connectors/PublicacionConnector'));
+const AsignacionDocenteConnector = lazy(() => import('./horarios/connectors/AsignacionDocenteConnector'));
+const CargaDocentesConnector = lazy(() => import('./horarios/connectors/CargaDocentesConnector'));
 const OfertaAcademicaConnector = lazy(() => import('./oferta/connectors/OfertaAcademicaConnector'));
 
 const INST_OFERTA_ACADEMICA_PERMISOS = [
@@ -155,7 +157,7 @@ export const institucionalRoutes = [
     },
     {
         path: '/institucional/horarios/asignacion-docente',
-        element: <UnderConstruction />,
+        element: <AsignacionDocenteConnector />,
         key: 'INST-HORARIO-ASIGNACION-DOCENTE',
         permiso: 'institucional.horarios.asignacion-docente',
         accion: 'LISTAR',
@@ -164,7 +166,7 @@ export const institucionalRoutes = [
     },
     {
         path: '/institucional/horarios/carga-docentes/:gestionId',
-        element: <UnderConstruction />,
+        element: <CargaDocentesConnector />,
         key: 'INST-HORARIO-CARGA-DOCENTES',
         permiso: 'institucional.horarios.carga-docente',
         accion: 'LISTAR',

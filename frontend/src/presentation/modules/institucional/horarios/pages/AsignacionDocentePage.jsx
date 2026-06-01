@@ -1,0 +1,228 @@
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Alert, Card, Col, Flex, Row, Select, Spin, Statistic, Table, Typography, Button } from 'antd';
+import { BarChartOutlined } from '@ant-design/icons';
+import { useAuthContext } from '@application-auth';
+import { useAsignacionDocenteContext } from '@application-institucional/horarios';
+import {
+  canEditarAsignacion,
+  canEliminarAsignacion,
+  canGestionarColor,
+  canVerCarga,
+} from '@application-institucional/horarios/config/asignacionDocentePermisos';
+import { useDocentesApi } from '@application-docentes/hooks/api';
+import { MainContent, PageHeaderArea } from '@templates';
+import { PageHeader } from '@molecules';
+import DocenteColorPickerModal from '../components/molecules/DocenteColorPickerModal';
+import { buildAsignacionDocenteColumns } from '../config/asignacionDocenteTableColumns';
+import '../styles/asignacion-docente.css';
+
+const { Text } = Typography;
+
+const AsignacionDocentePage = () => {
+  const navigate = useNavigate();
+  const { hasPermiso } = useAuthContext();
+  const { docentes = [] } = useDocentesApi();
+  const {
+    gestiones,
+    selectedGestionId,
+    planesHabilitados,
+    selectedGestionPlanId,
+    paralelosGestion,
+    selectedParaleloGestionId,
+    gestionSeleccionada,
+    planSeleccionado,
+    paraleloSeleccionado,
+    matrizRows,
+    cobertura,
+    cargaPorDocente,
+    loadingMatriz,
+    savingOfertaId,
+    loadingCatalogos,
+    errorCatalogos,
+    onGestionChange,
+    onPlanChange,
+    onParaleloChange,
+    onSelectDocente,
+    onQuitarAsignacion,
+    colorPicker,
+    closeColorPicker,
+    onColorSaved,
+    openColorPickerForDocente,
+    updateDocenteColor,
+    fetchColoresSugeridos,
+  } = useAsignacionDocenteContext();
+
+  const puedeEditar = canEditarAsignacion(hasPermiso);
+  const puedeEliminar = canEliminarAsignacion(hasPermiso);
+  const puedeColor = canGestionarColor(hasPermiso);
+  const puedeVerDashboard = canVerCarga(hasPermiso);
+
+  const docenteOptions = useMemo(
+    () =>
+      docentes.map((d) => ({
+        value: d.id,
+        label: d.nombreCompleto || d.nombre || `Docente #${d.id}`,
+      })),
+    [docentes]
+  );
+
+  const columns = useMemo(
+    () =>
+      buildAsignacionDocenteColumns({
+        docenteOptions,
+        cargaPorDocente,
+        savingOfertaId,
+        onSelectDocente,
+        onQuitarAsignacion,
+        onAssignColor: openColorPickerForDocente,
+        canEditar: puedeEditar,
+        canEliminar: puedeEliminar,
+        canColor: puedeColor,
+      }),
+    [
+      docenteOptions,
+      cargaPorDocente,
+      savingOfertaId,
+      onSelectDocente,
+      onQuitarAsignacion,
+      openColorPickerForDocente,
+      puedeEditar,
+      puedeEliminar,
+      puedeColor,
+    ]
+  );
+
+  const breadcrumbItems = [
+    { title: 'Inicio', href: '/' },
+    { title: 'Institucional', href: '/institucional/horarios' },
+    { title: 'Asignación docente' },
+  ];
+
+  return (
+    <>
+      <PageHeaderArea>
+        <PageHeader
+          title="Asignación docente por oferta"
+          breadcrumbItems={breadcrumbItems}
+          actions={
+            puedeVerDashboard && selectedGestionId ? (
+              <Button
+                type="primary"
+                icon={<BarChartOutlined />}
+                onClick={() =>
+                  navigate(`/institucional/horarios/carga-docentes/${selectedGestionId}`)
+                }
+              >
+                Dashboard de carga
+              </Button>
+            ) : null
+          }
+        />
+      </PageHeaderArea>
+
+      <MainContent>
+        {errorCatalogos ? (
+          <Alert type="error" showIcon message={errorCatalogos} style={{ marginBottom: 16 }} />
+        ) : null}
+
+        <Card className="asignacion-docente-filters" size="small">
+          <Row gutter={[16, 16]}>
+            <Col xs={24} md={8}>
+              <Text type="secondary">Gestión</Text>
+              <Select
+                style={{ width: '100%', marginTop: 4 }}
+                placeholder="Seleccione gestión"
+                value={selectedGestionId ?? undefined}
+                loading={loadingCatalogos}
+                options={gestiones.map((g) => ({
+                  value: g.id,
+                  label: g.nombre || g.codigo || `Gestión ${g.id}`,
+                }))}
+                onChange={onGestionChange}
+              />
+            </Col>
+            <Col xs={24} md={8}>
+              <Text type="secondary">Plan habilitado</Text>
+              <Select
+                style={{ width: '100%', marginTop: 4 }}
+                placeholder="Seleccione plan"
+                disabled={!selectedGestionId}
+                value={selectedGestionPlanId ?? undefined}
+                options={planesHabilitados.map((p) => ({
+                  value: p.id,
+                  label: p.nombre || p.planNombre || `Plan ${p.id}`,
+                }))}
+                onChange={onPlanChange}
+              />
+            </Col>
+            <Col xs={24} md={8}>
+              <Text type="secondary">Paralelo-gestión</Text>
+              <Select
+                style={{ width: '100%', marginTop: 4 }}
+                placeholder="Seleccione paralelo"
+                disabled={!selectedGestionPlanId}
+                value={selectedParaleloGestionId ?? undefined}
+                options={paralelosGestion.map((pg) => ({
+                  value: pg.id,
+                  label: [pg.paraleloNombre, pg.turno, pg.aulaCodigo].filter(Boolean).join(' · '),
+                }))}
+                onChange={onParaleloChange}
+              />
+            </Col>
+          </Row>
+        </Card>
+
+        {cobertura && selectedParaleloGestionId ? (
+          <Card size="small" className="asignacion-docente-cobertura">
+            <Flex gap={24} wrap="wrap">
+              <Statistic title="Cursos ofertados" value={cobertura.cursos_total} />
+              <Statistic title="Con docente" value={cobertura.cursos_con_docente} />
+              <Statistic title="Sin docente" value={cobertura.cursos_sin_docente} />
+              <Statistic title="Cobertura" value={cobertura.cobertura_pct} suffix="%" />
+            </Flex>
+          </Card>
+        ) : null}
+
+        <Card
+          title={
+            paraleloSeleccionado
+              ? `${paraleloSeleccionado.paraleloNombre ?? 'Paralelo'} — ${gestionSeleccionada?.nombre ?? ''} / ${planSeleccionado?.nombre ?? ''}`
+              : 'Matriz de asignación'
+          }
+        >
+          {!selectedParaleloGestionId ? (
+            <Alert
+              type="info"
+              showIcon
+              message="Seleccione gestión, plan y paralelo para cargar la matriz de asignación."
+            />
+          ) : (
+            <Spin spinning={loadingMatriz}>
+              <Table
+                rowKey="key"
+                columns={columns}
+                dataSource={matrizRows}
+                pagination={false}
+                size="middle"
+                locale={{ emptyText: 'No hay cursos ofertados en este paralelo' }}
+              />
+            </Spin>
+          )}
+        </Card>
+      </MainContent>
+
+      <DocenteColorPickerModal
+        open={colorPicker.open}
+        docenteId={colorPicker.docenteId}
+        docenteNombre={colorPicker.docenteNombre}
+        onClose={closeColorPicker}
+        onSaved={onColorSaved}
+        fetchColoresSugeridos={fetchColoresSugeridos}
+        updateDocenteColor={updateDocenteColor}
+      />
+    </>
+  );
+};
+
+export default AsignacionDocentePage;
