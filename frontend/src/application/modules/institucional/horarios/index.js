@@ -7,6 +7,11 @@ export {
     extractParaleloScheduleMeta,
 } from './utils/paraleloScheduleToCourseSchedules';
 export {
+    grillaHorarioToCourseSchedules,
+    extractGrillaHorarioMeta,
+    mergeGrillaWithOfertaCursos,
+} from './mappers/grillaHorarioMapper';
+export {
     PERM_ASIGNACION_DOCENTE,
     PERM_COLOR_DOCENTE,
     PERM_CARGA_DOCENTE,

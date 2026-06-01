@@ -1,6 +1,10 @@
 -- ============================================
 -- VISTA BASE: vista_base_horarios_paralelo_conflictos_aula
--- Conflictos aula+horario por paralelo (asignacion_horarios).
+-- Conflictos aula+horario por paralelo maestro (KPI tablero).
+--
+-- Alcance tablero: solo aula_id explícito en bloque; agrupa por paralelo_id.
+-- Detalle grilla por paralelo_gestion (aula efectiva): usar
+-- vista_base_paralelo_gestion_conflicto_aula_bloque (125).
 -- ============================================
 
 USE instituto_incos;

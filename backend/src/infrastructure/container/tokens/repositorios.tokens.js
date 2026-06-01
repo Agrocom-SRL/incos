@@ -59,6 +59,15 @@ export const REPOSITORIOS_TOKENS = {
     classroomRepository: 'classroomRepository',
     scheduleRepository: 'scheduleRepository',
     asignacionHorarioRepository: 'asignacionHorarioRepository',
+    paraleloGestionGrillaBloqueViewRepository: 'paraleloGestionGrillaBloqueViewRepository',
+    paraleloGestionAsignacionCoberturaBloquesViewRepository:
+        'paraleloGestionAsignacionCoberturaBloquesViewRepository',
+    paraleloGestionConflictoParaleloBloqueViewRepository:
+        'paraleloGestionConflictoParaleloBloqueViewRepository',
+    paraleloGestionConflictoAulaBloqueViewRepository: 'paraleloGestionConflictoAulaBloqueViewRepository',
+    paraleloGestionConflictoDocenteBloqueViewRepository:
+        'paraleloGestionConflictoDocenteBloqueViewRepository',
+    horarioGrillaRepository: 'horarioGrillaRepository',
     managementPlanRepository: 'managementPlanRepository',
     parallelManagementRepository: 'parallelManagementRepository',
     courseOfferRepository: 'courseOfferRepository',

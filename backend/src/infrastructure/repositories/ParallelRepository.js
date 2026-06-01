@@ -331,6 +331,8 @@ export class ParallelRepository extends BaseRepository {
 
     const query = `
       SELECT
+        paralelo_gestion_id,
+        paralelo_gestion_estado,
         paralelo_id,
         paralelo_nombre,
         paralelo_turno,

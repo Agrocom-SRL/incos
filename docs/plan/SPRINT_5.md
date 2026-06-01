@@ -24,7 +24,7 @@ Esto **no** cierra el sprint: es la base transitoria. El objetivo del sprint sig
 
 | Incluido | Detalle |
 |----------|---------|
-| API grilla | `GET /paralelos-gestion/:id/grilla-horario` |
+| API grilla | `GET /paralelos-gestion/:id/grilla-horario` ✅ (backend + hook `useParaleloGestionGrillaHorarioApi`; UI grilla pendiente) |
 | CRUD bloques | `POST/PUT/DELETE /asignacion-horarios` + `bulk` |
 | Motor conflictos + publicación | §3 |
 | `cambiar-turno-con-bloques` | Completa TODO del Sprint 3 |
@@ -35,7 +35,9 @@ Esto **no** cierra el sprint: es la base transitoria. El objetivo del sprint sig
 
 ## 1. Objetivo
 
-Construir el módulo donde se arma el horario semanal de cada paralelo-gestión asignando bloques (`asignacion_horarios`) a las asignaciones docentes. Incluye:
+Construir el módulo donde se arma el horario semanal de cada paralelo-gestión asignando bloques (`asignacion_horarios`) a las asignaciones docentes.
+
+Actores del armado: **oferta** → **asignación docente** → **bloque** (`asignacion_horarios`). Vistas por PG: `122`–`126`; tablero sigue en `87` hasta alinear grano (ver `MIGRACION_CODIGO.md` §3.4). Incluye:
 1. **Drag-and-drop** de bloques en grilla semanal por turno.
 2. **Motor de conflictos** en tiempo real: docente solapado, paralelo solapado, aula solapada.
 3. **Validación de cobertura**: cada asignación tiene la cantidad de bloques que sus horas requieren.
@@ -225,13 +227,14 @@ Botón global "Publicar todos los OK".
 
 - [x] **Pre-requisito código:** sin modelos/repos `cursos` / `cursos_horarios` (checklist `MIGRACION_CODIGO.md` §5).
 - [x] Bloques persisten en `asignacion_horarios` (plan semanal transitorio + PATCH aula).
-- [ ] Endpoints de las secciones 3.1 a 3.4 implementados y testeados.
-- [ ] Motor de conflictos detecta las 3 categorías correctamente.
+- [x] `GET /paralelos-gestion/:id/grilla-horario` (grilla + conflictos + cobertura bloques).
+- [x] Resto de endpoints sección 3.1 a 3.4 implementados (BE; smoke manual pendiente).
+- [x] Motor de conflictos detecta las 3 categorías (vistas 124–126 + `HorarioConflictosService`).
 - [ ] Grilla drag-and-drop funcional (selector `paralelo_gestion`).
 - [ ] Parpadeo de conflictos visible.
 - [ ] Validador de cobertura en vivo.
-- [ ] Endpoint de cambio de turno con re-mapeo de bloques funcional.
-- [ ] Publicación con todas las pre-condiciones validadas.
+- [x] Endpoint de cambio de turno con re-mapeo de bloques funcional.
+- [x] Publicación con pre-condiciones validadas (`publicar` + `publicar-todos`).
 - [ ] **Vistas:** horarios/conflictos desplegadas y usadas por la UI nueva.
 - [ ] Test E2E: seeders `40`–`48` coherentes con grilla UI → publicar paralelo.
 

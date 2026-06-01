@@ -1,6 +1,9 @@
 -- ============================================
 -- VISTA BASE: vista_base_horarios_paralelo_conflictos_solape_bloque
--- Franjas ocupadas por más de una oferta en el mismo paralelo.
+-- Franjas ocupadas por más de una oferta en el mismo paralelo maestro (KPI).
+--
+-- Detalle por instancia paralelo_gestion: usar
+-- vista_base_paralelo_gestion_conflicto_paralelo_bloque (124).
 -- ============================================
 
 USE instituto_incos;

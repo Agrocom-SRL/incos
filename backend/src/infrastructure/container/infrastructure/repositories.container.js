@@ -90,6 +90,12 @@ import { ParallelRepository } from '../../repositories/ParallelRepository.js';
 import { ClassroomRepository } from '../../repositories/ClassroomRepository.js';
 import { ScheduleRepository } from '../../repositories/ScheduleRepository.js';
 import { AsignacionHorarioRepository } from '../../repositories/AsignacionHorarioRepository.js';
+import { HorarioGrillaRepository } from '../../repositories/HorarioGrillaRepository.js';
+import { ParaleloGestionGrillaBloqueViewRepository } from '../../repositories/views/ParaleloGestionGrillaBloqueViewRepository.js';
+import { ParaleloGestionAsignacionCoberturaBloquesViewRepository } from '../../repositories/views/ParaleloGestionAsignacionCoberturaBloquesViewRepository.js';
+import { ParaleloGestionConflictoParaleloBloqueViewRepository } from '../../repositories/views/ParaleloGestionConflictoParaleloBloqueViewRepository.js';
+import { ParaleloGestionConflictoAulaBloqueViewRepository } from '../../repositories/views/ParaleloGestionConflictoAulaBloqueViewRepository.js';
+import { ParaleloGestionConflictoDocenteBloqueViewRepository } from '../../repositories/views/ParaleloGestionConflictoDocenteBloqueViewRepository.js';
 import { TeacherAssignmentRepository } from '../../repositories/TeacherAssignmentRepository.js';
 
 // ============================================
@@ -227,6 +233,50 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.classroomRepository, ClassroomRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.scheduleRepository, ScheduleRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.asignacionHorarioRepository, AsignacionHorarioRepository);
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionGrillaBloqueViewRepository,
+        ParaleloGestionGrillaBloqueViewRepository
+    );
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionAsignacionCoberturaBloquesViewRepository,
+        ParaleloGestionAsignacionCoberturaBloquesViewRepository
+    );
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionConflictoParaleloBloqueViewRepository,
+        ParaleloGestionConflictoParaleloBloqueViewRepository
+    );
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionConflictoAulaBloqueViewRepository,
+        ParaleloGestionConflictoAulaBloqueViewRepository
+    );
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionConflictoDocenteBloqueViewRepository,
+        ParaleloGestionConflictoDocenteBloqueViewRepository
+    );
+    registerComponent(container, REPOSITORIOS_TOKENS.horarioGrillaRepository, (c) =>
+        new HorarioGrillaRepository({
+            grillaBloqueViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionGrillaBloqueViewRepository
+            ),
+            asignacionCoberturaBloquesViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionAsignacionCoberturaBloquesViewRepository
+            ),
+            conflictoParaleloBloqueViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionConflictoParaleloBloqueViewRepository
+            ),
+            conflictoAulaBloqueViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionConflictoAulaBloqueViewRepository
+            ),
+            conflictoDocenteBloqueViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionConflictoDocenteBloqueViewRepository
+            ),
+        })
+    );
     registerRepository(container, REPOSITORIOS_TOKENS.teacherAssignmentRepository, TeacherAssignmentRepository);
 
     // ============================================

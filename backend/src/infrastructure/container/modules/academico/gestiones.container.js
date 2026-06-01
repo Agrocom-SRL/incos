@@ -17,6 +17,7 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListGestionesUseCase } from '../../../../application/use-cases/academico/ListGestionesUseCase.js';
 import { ListGestionesController } from '../../../../presentation/controllers/academico/gestiones/list.controller.js';
 import { buildGestionesRouter } from '../../../../presentation/routes/gestiones.routes.js';
+import { getHorariosGestionesControllers } from './horarios.container.js';
 
 /**
  * Registra el recurso Gestiones en el contenedor
@@ -75,6 +76,7 @@ export function registerGestionesResource(container) {
                 getGestionCargaDocentesController: c.resolve(
                     ACADEMICO_TOKENS.getGestionCargaDocentesController
                 ),
+                ...getHorariosGestionesControllers(c),
             };
 
             const middlewares = {

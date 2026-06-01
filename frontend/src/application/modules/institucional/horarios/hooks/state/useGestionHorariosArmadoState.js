@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useParaleloScheduleApi, usePersistParaleloScheduleApi } from '@application-academico/paralelos/hooks';
-import {
-    extractParaleloScheduleMeta,
-    paraleloScheduleToCourseSchedules,
-} from '@application-institucional/horarios';
+import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/hooks';
+import { useParaleloGestionGrillaHorarioApi } from '../api/useParaleloGestionGrillaHorarioApi';
+import { useParaleloGestionVigenteResolver } from '../useParaleloGestionVigenteResolver';
 import { normalizeArmadoTab } from '@application-institucional/horarios/utils/normalizeArmadoTab';
+import {
+    extractGrillaHorarioMeta,
+    grillaHorarioToCourseSchedules,
+    missingSubjectsFromGrillaCobertura,
+} from '@application-institucional/horarios/mappers/grillaHorarioMapper';
 
 export const useGestionHorariosArmadoState = () => {
     const navigate = useNavigate();
@@ -13,7 +16,20 @@ export const useGestionHorariosArmadoState = () => {
     const paraleloId = searchParams.get('paralelo');
     const tab = normalizeArmadoTab(searchParams.get('tab'));
 
-    const { schedule, loading, error, fetch } = useParaleloScheduleApi();
+    const numericParaleloId = paraleloId ? Number(paraleloId) : null;
+    const validParaleloId =
+        numericParaleloId != null && Number.isFinite(numericParaleloId) && numericParaleloId > 0
+            ? numericParaleloId
+            : null;
+
+    const resolver = useParaleloGestionVigenteResolver(validParaleloId);
+    const {
+        grillaHorario,
+        loading: grillaLoading,
+        error: grillaError,
+        fetchGrillaHorario,
+    } = useParaleloGestionGrillaHorarioApi();
+
     const {
         result: persistResult,
         loading: persistLoading,
@@ -21,10 +37,24 @@ export const useGestionHorariosArmadoState = () => {
         fetch: persist,
     } = usePersistParaleloScheduleApi();
 
-    const paraleloApiMeta = useMemo(() => extractParaleloScheduleMeta(schedule), [schedule]);
-    const turnoEfectivo = (paraleloApiMeta?.turno || '').trim();
+    const grillaMeta = useMemo(() => extractGrillaHorarioMeta(grillaHorario), [grillaHorario]);
+
+    const turnoEfectivo = (resolver.meta?.turno || grillaMeta?.turno || '').trim();
     const paraleloNombre =
-        paraleloApiMeta?.nombre || (paraleloId ? `Paralelo #${paraleloId}` : null);
+        resolver.meta?.nombre || (paraleloId ? `Paralelo #${paraleloId}` : null);
+
+    const paraleloApiMeta = useMemo(
+        () =>
+            validParaleloId
+                ? {
+                      id: validParaleloId,
+                      nombre: paraleloNombre,
+                      turno: turnoEfectivo || null,
+                      paraleloGestionId: resolver.paraleloGestionId,
+                  }
+                : null,
+        [validParaleloId, paraleloNombre, turnoEfectivo, resolver.paraleloGestionId],
+    );
 
     const breadcrumbItems = useMemo(
         () => [
@@ -38,45 +68,47 @@ export const useGestionHorariosArmadoState = () => {
 
     const pageTitle = useMemo(() => {
         if (!paraleloId) return 'Plan semanal del paralelo';
-        const nombre = paraleloApiMeta?.nombre;
-        const base = nombre ? `Plan semanal — ${nombre}` : `Plan semanal — Paralelo #${paraleloId}`;
+        const base = paraleloNombre
+            ? `Plan semanal — ${paraleloNombre}`
+            : `Plan semanal — Paralelo #${paraleloId}`;
         return turnoEfectivo ? `${base} · Turno ${turnoEfectivo}` : base;
-    }, [paraleloId, paraleloApiMeta?.nombre, turnoEfectivo]);
+    }, [paraleloId, paraleloNombre, turnoEfectivo]);
 
-    const meta = useMemo(
-        () => ({
+    const serverSchedules = useMemo(() => {
+        if (!grillaHorario) return [];
+        return grillaHorarioToCourseSchedules(grillaHorario, {
             turno: turnoEfectivo || null,
             paraleloNombre,
-        }),
-        [turnoEfectivo, paraleloNombre],
+        });
+    }, [grillaHorario, turnoEfectivo, paraleloNombre]);
+
+    const missingSubjects = useMemo(
+        () => missingSubjectsFromGrillaCobertura(grillaHorario),
+        [grillaHorario],
     );
 
-    const serverSchedules = useMemo(() => paraleloScheduleToCourseSchedules(schedule, meta), [schedule, meta]);
-    const missingSubjects = useMemo(() => {
-        if (!schedule || Array.isArray(schedule)) return [];
-        return Array.isArray(schedule.missingSubjects) ? schedule.missingSubjects : [];
-    }, [schedule]);
+    const conflictosGrilla = grillaMeta?.conflictos ?? [];
+    const coberturaGrilla = grillaMeta?.cobertura ?? null;
 
     const [draftSchedules, setDraftSchedules] = useState([]);
 
     useEffect(() => {
-        /* Sincronizar borrador con el plan del servidor cuando cambia la respuesta (p. ej. tras persistir). */
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- estado local de edición debe rehidratar desde API
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- borrador local rehidrata desde grilla
         setDraftSchedules((prev) => {
             try {
                 if (JSON.stringify(prev) === JSON.stringify(serverSchedules)) return prev;
             } catch {
-                /* comparación no bloqueante */
+                /* noop */
             }
             return serverSchedules;
         });
     }, [serverSchedules]);
 
     useEffect(() => {
-        if (paraleloId) {
-            fetch(Number(paraleloId));
+        if (resolver.paraleloGestionId) {
+            fetchGrillaHorario(resolver.paraleloGestionId);
         }
-    }, [paraleloId, fetch]);
+    }, [resolver.paraleloGestionId, fetchGrillaHorario]);
 
     useEffect(() => {
         if (!searchParams.get('turno')) return;
@@ -91,10 +123,10 @@ export const useGestionHorariosArmadoState = () => {
     }, [setSearchParams, searchParams]);
 
     useEffect(() => {
-        if (!persistLoading && persistResult && paraleloId) {
-            fetch(Number(paraleloId));
+        if (!persistLoading && persistResult && validParaleloId && resolver.paraleloGestionId) {
+            fetchGrillaHorario(resolver.paraleloGestionId);
         }
-    }, [persistLoading, persistResult, paraleloId, fetch]);
+    }, [persistLoading, persistResult, validParaleloId, resolver.paraleloGestionId, fetchGrillaHorario]);
 
     const setTab = useCallback(
         (key) => {
@@ -113,16 +145,27 @@ export const useGestionHorariosArmadoState = () => {
     );
 
     const onRequestPersist = useCallback(() => {
-        if (!paraleloId) return;
-        persist(Number(paraleloId), draftSchedules);
-    }, [paraleloId, persist, draftSchedules]);
+        if (!validParaleloId) return;
+        persist(validParaleloId, draftSchedules);
+    }, [validParaleloId, persist, draftSchedules]);
 
     const handleVolver = useCallback(() => {
         navigate('/institucional/horarios');
     }, [navigate]);
 
+    const loading = resolver.loading || (Boolean(resolver.paraleloGestionId) && grillaLoading);
+    const error = resolver.error || grillaError;
+
+    const refetchSchedule = useCallback(() => {
+        if (resolver.paraleloGestionId) {
+            return fetchGrillaHorario(resolver.paraleloGestionId);
+        }
+        return Promise.resolve({ success: false, error: 'Sin paralelo en gestión' });
+    }, [resolver.paraleloGestionId, fetchGrillaHorario]);
+
     return {
         paraleloId,
+        paraleloGestionId: resolver.paraleloGestionId,
         tab,
         setTab,
         turnoEfectivo,
@@ -136,11 +179,13 @@ export const useGestionHorariosArmadoState = () => {
         paraleloApiMeta,
         paraleloNombre,
         missingSubjects,
+        conflictosGrilla,
+        coberturaGrilla,
         draftSchedules,
         serverSchedules,
         setDraftSchedules,
         onRequestPersist,
         handleVolver,
-        refetchSchedule: fetch,
+        refetchSchedule,
     };
 };

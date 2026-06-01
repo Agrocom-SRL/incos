@@ -22,6 +22,7 @@ import { UpdateOfertaCursoEstadoUseCase } from '../../../../application/use-case
 import { DeleteOfertaCursoUseCase } from '../../../../application/use-cases/oferta/DeleteOfertaCursoUseCase.js';
 import { GetParaleloGestionCoberturaDocenteUseCase } from '../../../../application/use-cases/oferta/GetParaleloGestionCoberturaDocenteUseCase.js';
 import { GetGestionCargaDocentesUseCase } from '../../../../application/use-cases/docentes/GetGestionCargaDocentesUseCase.js';
+import { GetParaleloGestionGrillaHorarioUseCase } from '../../../../application/use-cases/horarios/GetParaleloGestionGrillaHorarioUseCase.js';
 
 import {
   MarcarGestionVigenteController,
@@ -43,9 +44,11 @@ import {
   GetParaleloGestionCoberturaDocenteController,
   GetGestionCargaDocentesController,
 } from '../../../../presentation/controllers/oferta/oferta.controllers.js';
+import { GetParaleloGestionGrillaHorarioController } from '../../../../presentation/controllers/horarios/get-paralelo-gestion-grilla-horario.controller.js';
 
 import { buildGestionesPlanesRouter } from '../../../../presentation/routes/gestiones-planes.routes.js';
 import { buildParalelosGestionRouter } from '../../../../presentation/routes/paralelos-gestion.routes.js';
+import { getHorariosParalelosGestionControllers } from './horarios.container.js';
 import { buildOfertaCursosRouter } from '../../../../presentation/routes/oferta-cursos.routes.js';
 
 function registerOfertaUseCases(container) {
@@ -190,6 +193,14 @@ function registerOfertaUseCases(container) {
       managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
       teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
       courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+      logger: c.resolve(SERVICIOS_TOKENS.logger),
+    })
+  );
+
+  registerComponent(container, ACADEMICO_TOKENS.getParaleloGestionGrillaHorarioUseCase, (c) =>
+    new GetParaleloGestionGrillaHorarioUseCase({
+      parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
+      horarioGrillaRepository: c.resolve(REPOSITORIOS_TOKENS.horarioGrillaRepository),
       logger: c.resolve(SERVICIOS_TOKENS.logger),
     })
   );
@@ -377,6 +388,16 @@ function registerOfertaControllers(container) {
         responseFormatter: rf(c),
       })
   );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getParaleloGestionGrillaHorarioController,
+    (c) =>
+      new GetParaleloGestionGrillaHorarioController({
+        useCase: c.resolve(ACADEMICO_TOKENS.getParaleloGestionGrillaHorarioUseCase),
+        responseFormatter: rf(c),
+      })
+  );
 }
 
 export function registerOfertaResource(container) {
@@ -418,6 +439,9 @@ export function registerOfertaResource(container) {
       ACADEMICO_TOKENS.getParaleloGestionCoberturaDocenteController
     ),
     getGestionCargaDocentesController: c.resolve(ACADEMICO_TOKENS.getGestionCargaDocentesController),
+    getParaleloGestionGrillaHorarioController: c.resolve(
+      ACADEMICO_TOKENS.getParaleloGestionGrillaHorarioController
+    ),
   });
 
   const middlewares = (c) => ({
@@ -433,7 +457,10 @@ export function registerOfertaResource(container) {
 
   registerComponent(container, ACADEMICO_TOKENS.paralelosGestionRouter, (c) =>
     buildParalelosGestionRouter({
-      controllers: ofertaControllers(c),
+      controllers: {
+        ...ofertaControllers(c),
+        ...getHorariosParalelosGestionControllers(c),
+      },
       middlewares: middlewares(c),
     })
   );

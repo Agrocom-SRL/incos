@@ -198,6 +198,8 @@ export const GESTIONES_ENDPOINTS = {
   MARCAR_VIGENTE: (id) => `${API_BASE}/gestiones/${id}/marcar-vigente`,
   PLANES_HABILITADOS: (id) => `${API_BASE}/gestiones/${id}/planes-habilitados`,
   CARGA_DOCENTES: (id) => `${API_BASE}/gestiones/${id}/carga-docentes`,
+  CONFLICTOS: (id) => `${API_BASE}/gestiones/${id}/conflictos`,
+  PUBLICAR_TODOS: (id) => `${API_BASE}/gestiones/${id}/publicar-todos`,
 };
 
 export const GESTIONES_PLANES_ENDPOINTS = {
@@ -215,6 +217,9 @@ export const PARALELOS_GESTION_ENDPOINTS = {
   GENERAR_OFERTA: (id) => `${API_BASE}/paralelos-gestion/${id}/generar-oferta`,
   VALIDAR_OFERTA: (id) => `${API_BASE}/paralelos-gestion/${id}/validar-oferta`,
   COBERTURA_DOCENTE: (id) => `${API_BASE}/paralelos-gestion/${id}/cobertura-docente`,
+  GRILLA_HORARIO: (id) => `${API_BASE}/paralelos-gestion/${id}/grilla-horario`,
+  CONFLICTOS: (id) => `${API_BASE}/paralelos-gestion/${id}/conflictos`,
+  PUBLICAR: (id) => `${API_BASE}/paralelos-gestion/${id}/publicar`,
 };
 
 export const OFERTA_CURSOS_ENDPOINTS = {
@@ -224,6 +229,12 @@ export const OFERTA_CURSOS_ENDPOINTS = {
 };
 
 export const AULAS_CATALOGO_ENDPOINT = `${API_BASE}/aulas/catalogo`;
+
+export const ASIGNACION_HORARIOS_ENDPOINTS = {
+  BASE: `${API_BASE}/asignacion-horarios`,
+  BY_ID: (id) => `${API_BASE}/asignacion-horarios/${id}`,
+  BULK: `${API_BASE}/asignacion-horarios/bulk`,
+};
 
 // ============================================
 // MÓDULO: CALIFICACIONES (Académico)

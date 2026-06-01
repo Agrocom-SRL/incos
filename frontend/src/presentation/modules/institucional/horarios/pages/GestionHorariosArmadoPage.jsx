@@ -61,6 +61,9 @@ const GestionHorariosArmadoPage = () => {
         handleVolver,
         ofertaParalelo,
         refetchSchedule,
+        conflictosGrilla,
+        coberturaGrilla,
+        paraleloGestionId,
     } = useHorariosArmadoContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const [vistaExpandida, setVistaExpandida] = useState(false);
@@ -330,6 +333,24 @@ const GestionHorariosArmadoPage = () => {
                                     style={{ marginBottom: 16 }}
                                     title="No se pudo cargar el plan"
                                     description={error}
+                                />
+                            ) : null}
+                            {paraleloGestionId && conflictosGrilla?.length > 0 ? (
+                                <Alert
+                                    type="warning"
+                                    showIcon
+                                    style={{ marginBottom: 16 }}
+                                    title={`${conflictosGrilla.length} conflicto(s) de horario`}
+                                    description="Resuelva solapes de paralelo, aula o docente antes de publicar. Los bloques en conflicto están marcados en la grilla."
+                                />
+                            ) : null}
+                            {coberturaGrilla && coberturaGrilla.completa === false ? (
+                                <Alert
+                                    type="info"
+                                    showIcon
+                                    style={{ marginBottom: 16 }}
+                                    title="Cobertura de bloques incompleta"
+                                    description="Faltan bloques por asignación docente según la gestión vigente."
                                 />
                             ) : null}
                             <HorariosOperativaBanner style={{ marginBottom: 16 }} />

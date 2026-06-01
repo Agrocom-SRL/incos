@@ -17,6 +17,8 @@ DROP VIEW IF EXISTS vista_horarios_publicacion_bloque;
 
 CREATE OR REPLACE VIEW vista_horarios_publicacion_bloque AS
 SELECT
+  pg.id AS paralelo_gestion_id,
+  pg.estado AS paralelo_gestion_estado,
   b.paralelo_id,
   b.paralelo_nombre,
   b.paralelo_turno,
@@ -43,6 +45,13 @@ SELECT
   a.codigo AS aula_codigo,
   a.nombre AS aula_nombre
 FROM vista_base_bloques_horarios_cursos_contexto b
+INNER JOIN oferta_cursos oc
+  ON oc.id = b.curso_id
+  AND oc.deleted_at IS NULL
+  AND oc.activo = TRUE
+INNER JOIN paralelos_gestion pg
+  ON pg.id = oc.paralelo_gestion_id
+  AND pg.deleted_at IS NULL
 LEFT JOIN aulas a
   ON a.id = b.aula_id
   AND a.deleted_at IS NULL

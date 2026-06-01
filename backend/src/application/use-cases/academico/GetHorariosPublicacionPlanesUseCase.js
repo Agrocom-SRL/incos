@@ -4,12 +4,17 @@
 function buildPlanes(rows) {
     const byParalelo = new Map();
     for (const r of rows || []) {
+        const pgId = r.paralelo_gestion_id != null ? Number(r.paralelo_gestion_id) : null;
         const pid = Number(r.paralelo_id);
         if (!Number.isFinite(pid)) continue;
-        if (!byParalelo.has(pid)) {
-            byParalelo.set(pid, {
+        const groupKey =
+            Number.isFinite(pgId) && pgId > 0 ? `pg:${pgId}` : `p:${pid}`;
+        if (!byParalelo.has(groupKey)) {
+            byParalelo.set(groupKey, {
                 paralelo: {
                     id: pid,
+                    paraleloGestionId: Number.isFinite(pgId) && pgId > 0 ? pgId : null,
+                    paraleloGestionEstado: r.paralelo_gestion_estado ?? null,
                     nombre: r.paralelo_nombre ?? null,
                     turno: r.paralelo_turno ?? null,
                     carreraNombre: r.carrera_nombre ?? null,
@@ -21,7 +26,7 @@ function buildPlanes(rows) {
                 courses: new Map(),
             });
         }
-        const slot = byParalelo.get(pid);
+        const slot = byParalelo.get(groupKey);
         const cid = Number(r.curso_id);
         if (!Number.isFinite(cid)) continue;
         if (!slot.courses.has(cid)) {

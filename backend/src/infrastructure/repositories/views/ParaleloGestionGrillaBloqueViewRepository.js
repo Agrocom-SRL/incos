@@ -1,0 +1,105 @@
+import { QueryTypes } from 'sequelize';
+import { sequelize } from '../../database/sequelize.js';
+
+const VIEW = 'vista_base_paralelo_gestion_grilla_bloque';
+
+/**
+ * Lectura: vista_base_paralelo_gestion_grilla_bloque (03-views/122).
+ */
+export class ParaleloGestionGrillaBloqueViewRepository {
+  /**
+   * @param {number} paraleloGestionId
+   * @returns {Promise<Array<Object>>}
+   */
+  async findByParaleloGestionId(paraleloGestionId) {
+    const pgId = Number(paraleloGestionId);
+    if (!Number.isFinite(pgId) || pgId < 1) return [];
+
+    return sequelize.query(
+      `
+      SELECT *
+      FROM ${VIEW}
+      WHERE paraleloGestionId = :paraleloGestionId
+      ORDER BY
+        FIELD(dia, 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'),
+        horaInicio ASC,
+        asignacionHorarioId ASC
+      `,
+      { replacements: { paraleloGestionId: pgId }, type: QueryTypes.SELECT }
+    );
+  }
+
+  /**
+   * @param {Object} params
+   */
+  async findByAssignmentAndHorario({
+    asignacionDocenteId,
+    horarioId,
+    excludeAsignacionHorarioId = null,
+  }) {
+    const adId = Number(asignacionDocenteId);
+    const hId = Number(horarioId);
+    const excludeId =
+      excludeAsignacionHorarioId != null ? Number(excludeAsignacionHorarioId) : null;
+    if (!Number.isFinite(adId) || !Number.isFinite(hId)) return null;
+
+    const rows = await sequelize.query(
+      `
+      SELECT asignacionHorarioId
+      FROM ${VIEW}
+      WHERE asignacionDocenteId = :asignacionDocenteId
+        AND horarioId = :horarioId
+        ${Number.isFinite(excludeId) && excludeId > 0 ? 'AND asignacionHorarioId <> :excludeId' : ''}
+      LIMIT 1
+      `,
+      {
+        replacements: {
+          asignacionDocenteId: adId,
+          horarioId: hId,
+          ...(Number.isFinite(excludeId) && excludeId > 0 ? { excludeId } : {}),
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+    return rows[0] ? Number(rows[0].asignacionHorarioId) : null;
+  }
+
+  /**
+   * Otra asignación del mismo paralelo_gestion en el mismo horario_id.
+   */
+  async findOtherAssignmentAtHorario({
+    paraleloGestionId,
+    horarioId,
+    asignacionDocenteId,
+    excludeAsignacionHorarioId = null,
+  }) {
+    const pgId = Number(paraleloGestionId);
+    const hId = Number(horarioId);
+    const adId = Number(asignacionDocenteId);
+    const excludeId =
+      excludeAsignacionHorarioId != null ? Number(excludeAsignacionHorarioId) : null;
+    if (!Number.isFinite(pgId) || !Number.isFinite(hId) || !Number.isFinite(adId)) return null;
+
+    const rows = await sequelize.query(
+      `
+      SELECT asignacionDocenteId
+      FROM ${VIEW}
+      WHERE paraleloGestionId = :paraleloGestionId
+        AND horarioId = :horarioId
+        AND asignacionDocenteId <> :asignacionDocenteId
+        ${Number.isFinite(excludeId) && excludeId > 0 ? 'AND asignacionHorarioId <> :excludeId' : ''}
+      LIMIT 1
+      `,
+      {
+        replacements: {
+          paraleloGestionId: pgId,
+          horarioId: hId,
+          asignacionDocenteId: adId,
+          ...(Number.isFinite(excludeId) && excludeId > 0 ? { excludeId } : {}),
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+    return rows[0] ? Number(rows[0].asignacionDocenteId) : null;
+  }
+}

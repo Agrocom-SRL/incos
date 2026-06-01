@@ -87,6 +87,25 @@ export function buildGestionesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.getGestionCargaDocentesController.handle(req, res, next)
     );
 
+    router.get(
+        '/:id/conflictos',
+        authenticate,
+        verificarPermiso('institucional.horario.conflictos', 'LISTAR'),
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getGestionConflictosController.handle(req, res, next)
+    );
+
+    router.post(
+        '/:id/publicar-todos',
+        authenticate,
+        verificarPermiso('institucional.horario.publicacion', 'EDITAR'),
+        idValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.publicarTodosParalelosGestionController.handle(req, res, next)
+    );
+
     // ============================================
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================

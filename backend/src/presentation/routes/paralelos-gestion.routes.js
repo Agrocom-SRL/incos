@@ -7,6 +7,7 @@ import {
   cambiarTurnoParaleloGestionValidator,
   updateParaleloGestionEstadoValidator,
 } from '../validators/oferta/oferta.validator.js';
+import { cambiarTurnoConBloquesValidator } from '../validators/horarios/asignacion-horarios.validator.js';
 
 export function buildParalelosGestionRouter({ controllers, middlewares }) {
   const router = express.Router();
@@ -24,6 +25,44 @@ export function buildParalelosGestionRouter({ controllers, middlewares }) {
     idValidator,
     validateRequest,
     (req, res, next) => controllers.getParaleloGestionCoberturaDocenteController.handle(req, res, next)
+  );
+
+  router.get(
+    '/:id/grilla-horario',
+    authenticate,
+    verificarPermiso('institucional.horario.armado', 'LISTAR'),
+    idValidator,
+    validateRequest,
+    (req, res, next) => controllers.getParaleloGestionGrillaHorarioController.handle(req, res, next)
+  );
+
+  router.get(
+    '/:id/conflictos',
+    authenticate,
+    verificarPermiso('institucional.horario.conflictos', 'LISTAR'),
+    idValidator,
+    validateRequest,
+    (req, res, next) => controllers.getParaleloGestionConflictosController.handle(req, res, next)
+  );
+
+  router.post(
+    '/:id/publicar',
+    authenticate,
+    verificarPermiso('institucional.horario.publicacion', 'EDITAR'),
+    idValidator,
+    validateRequest,
+    (req, res, next) => controllers.publicarParaleloGestionController.handle(req, res, next)
+  );
+
+  router.put(
+    '/:id/cambiar-turno-con-bloques',
+    authenticate,
+    verificarPermiso('institucional.horario.armado', 'EDITAR'),
+    idValidator,
+    cambiarTurnoConBloquesValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.cambiarTurnoParaleloGestionConBloquesController.handle(req, res, next)
   );
 
   router.get(

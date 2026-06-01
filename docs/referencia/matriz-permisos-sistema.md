@@ -488,6 +488,16 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 | `/api/v1/asignaciones-docentes/:id` | PUT | `institucional.horarios.asignacion-docente` | EDITAR | |
 | `/api/v1/asignaciones-docentes/:id` | DELETE | `institucional.horarios.asignacion-docente` | ELIMINAR | |
 | `/api/v1/paralelos-gestion/:id/cobertura-docente` | GET | `institucional.horarios.asignacion-docente` | LISTAR | |
+| `/api/v1/paralelos-gestion/:id/grilla-horario` | GET | `institucional.horario.armado` | LISTAR | Lectura grilla + conflictos + cobertura (vistas `122`–`126`) |
+| `/api/v1/paralelos-gestion/:id/conflictos` | GET | `institucional.horario.conflictos` | LISTAR | |
+| `/api/v1/paralelos-gestion/:id/publicar` | POST | `institucional.horario.publicacion` | EDITAR | |
+| `/api/v1/paralelos-gestion/:id/cambiar-turno-con-bloques` | PUT | `institucional.horario.armado` | EDITAR | |
+| `/api/v1/gestiones/:id/conflictos` | GET | `institucional.horario.conflictos` | LISTAR | |
+| `/api/v1/gestiones/:id/publicar-todos` | POST | `institucional.horario.publicacion` | EDITAR | Publica PG en `OFERTADO` que cumplan pre-condiciones |
+| `/api/v1/conflictos/validar` | POST | `institucional.horario.armado` | EDITAR | |
+| `/api/v1/asignacion-horarios` | POST | `institucional.horario.armado` | EDITAR | |
+| `/api/v1/asignacion-horarios/:id` | PUT, DELETE | `institucional.horario.armado` | EDITAR | |
+| `/api/v1/asignacion-horarios/bulk` | POST | `institucional.horario.armado` | EDITAR | |
 | `/api/v1/docentes/:id/carga-gestion` | GET | `institucional.horarios.carga-docente` | LISTAR | También acepta asignacion-docente LISTAR |
 | `/api/v1/gestiones/:id/carga-docentes` | GET | `institucional.horarios.carga-docente` | LISTAR | Dashboard KPIs |
 | `/api/v1/docentes/colores-en-uso` | GET | `institucional.horarios.color-docente` | LISTAR | |

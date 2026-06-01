@@ -122,6 +122,35 @@ export class ParallelManagementRepository extends BaseRepository {
   }
 
   /**
+   * Paralelos-gestión en OFERTADO de una gestión académica (publicación masiva).
+   * @param {number} gestionId
+   */
+  async findEnrichedOfertadoByGestionId(gestionId) {
+    return sequelize.query(
+      `
+      SELECT
+        pg.id AS id,
+        pg.gestion_plan_id AS gestionPlanId,
+        pg.paralelo_id AS paraleloId,
+        pg.turno AS turno,
+        pg.estado AS estado,
+        p.nombre AS paraleloNombre
+      FROM paralelos_gestion pg
+      INNER JOIN gestiones_planes gp
+        ON gp.id = pg.gestion_plan_id AND gp.deleted_at IS NULL
+      INNER JOIN paralelos p
+        ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
+      WHERE gp.gestion_id = :gestionId
+        AND pg.deleted_at IS NULL
+        AND pg.activo = TRUE
+        AND UPPER(pg.estado) = 'OFERTADO'
+      ORDER BY p.nombre ASC, pg.turno ASC, pg.id ASC
+      `,
+      { replacements: { gestionId }, type: QueryTypes.SELECT }
+    );
+  }
+
+  /**
    * IDs de paralelos maestros ya instanciados en un plan-gestión.
    */
   async findExistingParallelIds(managementPlanId) {

@@ -71,18 +71,20 @@ En API y UI, el nombre `cursoId` en rutas o payloads de horarios significa **`of
 | **Asignación docente** | `oferta_curso_id`, catálogos, matriz, carga, color |
 | **Bloques horarios** | `AsignacionHorarioRepository` + vistas `54`, `81`…; `PATCH aulas/horarios/:id/aula` |
 | **Plan semanal (transitorio)** | `GET/PUT /paralelos/:id/schedule` → `asignacion_horarios` vía `asignaciones_docentes` |
+| **Grilla paralelo-gestión** | `GET /paralelos-gestion/:id/grilla-horario` (bloques + conflictos + cobertura) ✅ |
 | **Inscripciones** | `CreateEnrollmentUseCase` con `oferta_curso_id` |
 | **Calificaciones** | Listados sobre oferta + `asignaciones_docentes` |
 
-### 3.3 Backend — pendiente Sprint 5
+### 3.3 Backend — Sprint 5 (API; FE grilla pendiente)
 
 | Entregable | Detalle |
 |------------|---------|
-| `GET /paralelos-gestion/:id/grilla-horario` | Grilla + conflictos + cobertura en una respuesta |
-| CRUD `asignacion-horarios` + `bulk` | Sustituye edición masiva del plan semanal transitorio |
-| Motor conflictos | `GET gestiones/:id/conflictos`, `POST conflictos/validar` |
-| Publicación | `POST paralelos-gestion/:id/publicar` |
-| Cambio turno con bloques | `PUT paralelos-gestion/:id/cambiar-turno-con-bloques` |
+| CRUD `asignacion-horarios` + `bulk` | ✅ `POST/PUT/DELETE` + `POST .../bulk` — validación conflictos + estado PG no PUBLICADO |
+| Motor conflictos | ✅ `GET gestiones/:id/conflictos`, `GET paralelos-gestion/:id/conflictos`, `POST conflictos/validar` |
+| Publicación | ✅ `POST paralelos-gestion/:id/publicar` (cobertura, conflictos, docentes, sobrecarga) |
+| Publicación masiva | ✅ `POST gestiones/:id/publicar-todos` (solo PG en `OFERTADO`; omite los que no cumplen) |
+| Cambio turno con bloques | ✅ `PUT paralelos-gestion/:id/cambiar-turno-con-bloques` (re-mapeo por `numero_bloque`) |
+| Vista publicación `84` | ✅ `paralelo_gestion_id` + `paralelo_gestion_estado` (recrear vista en BD) |
 
 ### 3.4 Vistas SQL (`03-views/`)
 
@@ -93,10 +95,22 @@ Grupos por sprint (recrear vista tras cada cambio):
 | Oferta / paralelo | `02`, `18`, `71`, `78`, `75`, `74` | 3 ✅ |
 | Docente / asignación | `51`, `55`, `59`, `64`–`67`, `80` | 4 ✅ |
 | Bloques / conflictos | `54`, `52`, `72`, `73`, `81`–`87`, `91`–`95` | 5 (desplegar + validar en UI) |
+| Grilla `paralelo_gestion` | `122`–`126` (`vista_base_paralelo_gestion_*`) + repos `views/*ViewRepository` | 5 ✅ BE grilla |
 | Calificaciones | `108`, `116`, `119`, `110` | 4 ✅ |
 | Matrícula / inscripción | `04`, `17`, `99`–`101` | 4 ✅ |
 
 Alias en vistas (`curso_id`, `curso_horario_id`) = `oferta_curso_id` / `asignacion_horarios.id`.
+
+**Armado — grano y reutilización (no crear vistas duplicadas):**
+
+| Necesidad | Ya existe | Consumidor |
+|-----------|-----------|------------|
+| Grilla + conflictos + cobertura por PG | `122`–`126` + `GET …/grilla-horario` | Armado (FE), publicación (pre-check API) |
+| Panel lateral (docente / horas) | `123` — misma data que `cobertura` del API | No hace falta vista extra; mapper en use case |
+| Tablero KPI (`tablero_grupo`) | `87` + bases `70`–`79`, `86` (agrupan por `paralelo_id`) | `ParallelRepository` → dashboard horarios |
+| Conflictos detalle PG | `124`–`126` (sustituyen lógica de `72`/`86`/`79` en armado) | `HorarioGrillaRepository` |
+
+Si el tablero debe alinearse al mismo grano que la grilla: **ajustar el `GROUP BY` de `71`, `78`, `73`… a `paralelo_gestion_id`** y que `87` arranque desde `paralelos_gestion` — no añadir vistas monolíticas nuevas.
 
 ### 3.5 Frontend
 
@@ -105,6 +119,8 @@ Alias en vistas (`curso_id`, `curso_horario_id`) = `oferta_curso_id` / `asignaci
 | Wizard `/institucional/oferta` | API oferta |
 | `CursoRepository` FE, hooks paralelo `cursos-oferta` | Eliminados |
 | Asignación docente + dashboard carga | Sprint 4 ✅ |
+| Armado plan semanal | Lectura vía `GET paralelos-gestion/:id/grilla-horario`; persistencia transitoria `PUT paralelos/:id/schedule` |
+| Publicación | `useGestionHorariosPublicacionState` + publicar / publicar-todos (API Sprint 5); requiere vista `84` con `paralelo_gestion_id` |
 | Armado tab **Gestión de cursos** | `useOfertaAcademicaApi` ✅ |
 | Armado **Plan semanal** | `GET/PUT /paralelos/:id/schedule` (funciona con BE nuevo; UX grilla = Sprint 5) |
 | Grilla drag-and-drop por `paralelo_gestion` | Sprint 5 |

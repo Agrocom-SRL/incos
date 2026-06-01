@@ -1,19 +1,15 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Flex, Tag, Tooltip, Typography } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Card, Flex, Tag, Tooltip, Typography, message } from 'antd';
+import { EditOutlined, SendOutlined } from '@ant-design/icons';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
+import { ActionButton } from '@atoms';
 import {
     getSabadoArmadoGridRangeMinutes,
     getTurnoGridRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
 import { paraleloScheduleToCourseSchedules } from '@application-institucional/horarios/utils/paraleloScheduleToCourseSchedules';
-import {
-    appendParaleloDashboardPendientesLineas,
-    buildHorariosPlanPendientesDetalleLines,
-} from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
-import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
-import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
+import { buildHorariosPlanPendientesDetalleLines } from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
 import ParaleloPlanSemanaCell from '../atoms/ParaleloPlanSemanaCell';
 import HorariosPlanPendientesLista from './HorariosPlanPendientesLista';
 
@@ -29,26 +25,26 @@ const cardShell = (accentBorder) => ({
     },
 });
 
-/** Tag según `tablero_grupo` del catálogo de paralelos (misma nomenclatura que el tablero de gestión). */
-const grupoTableroTag = (bucket) => {
-    const label = BOARD_COLUMN_LABELS[bucket] || bucket || '—';
-    switch (bucket) {
-        case 'completo':
-            return { color: 'success', label };
-        case 'sin_horarios':
-            return { color: 'error', label };
-        case 'sin_docentes':
-            return { color: 'warning', label };
-        case 'sin_aulas':
-            return { color: 'processing', label };
+const estadoPgTag = (estado) => {
+    const e = String(estado || '').toUpperCase();
+    switch (e) {
+        case 'OFERTADO':
+            return { color: 'processing', label: 'OFERTADO' };
+        case 'PUBLICADO':
+            return { color: 'success', label: 'PUBLICADO' };
+        case 'CERRADO':
+            return { color: 'default', label: 'CERRADO' };
         default:
-            return { color: 'default', label };
+            return { color: 'default', label: e || '—' };
     }
 };
 
-const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
+const HorariosPublicacionParaleloCard = ({ plan, onPublicar, publicando = false }) => {
     const navigate = useNavigate();
     const { paralelo, schedule } = plan || {};
+    const pgId = paralelo?.paraleloGestionId;
+    const pgEstado = paralelo?.paraleloGestionEstado;
+
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(paralelo?.turno), [paralelo?.turno]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
     const courseSchedules = useMemo(
@@ -61,27 +57,19 @@ const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
     );
 
     const border = paralelo?.carreraColorHex ? `${paralelo.carreraColorHex}55` : undefined;
-    const boardBucket = useMemo(() => resolveHorariosBoardBucket(paraleloEstado || {}), [paraleloEstado]);
     const pendientesLineas = useMemo(() => {
         const fromPlan = buildHorariosPlanPendientesDetalleLines(courseSchedules);
-        let merged = appendParaleloDashboardPendientesLineas(fromPlan, paraleloEstado);
-        if (
-            paraleloEstado?.conflictoDocenteHorario &&
-            !merged.some((l) => String(l).startsWith('Choque de docente'))
-        ) {
-            merged = [
-                ...merged,
-                'El sistema marca choque de horario de docente; no aparecen choques listables en el plan cargado (revisá docentes sin identificar o sincronización).',
-            ];
-        }
-        return merged;
-    }, [courseSchedules, paraleloEstado]);
-    const tag = useMemo(() => grupoTableroTag(boardBucket), [boardBucket]);
-    const okPublicacion = boardBucket === 'completo' && pendientesLineas.length === 0;
+        return fromPlan;
+    }, [courseSchedules]);
+
+    const estadoTag = useMemo(() => estadoPgTag(pgEstado), [pgEstado]);
+    const puedePublicar =
+        String(pgEstado || '').toUpperCase() === 'OFERTADO' && pendientesLineas.length === 0;
+
     const mensajeVacio =
-        paraleloEstado == null
-            ? 'No hay datos de estado para este paralelo.'
-            : 'No se listaron pendientes en el plan cargado; si el grupo del tablero no es Completo, revisá otras pestañas o la sincronización.';
+        pendientesLineas.length === 0
+            ? 'Sin observaciones en el plan cargado.'
+            : 'Revise pendientes antes de publicar.';
 
     const onEditarPlan = () => {
         const id = paralelo?.id;
@@ -89,27 +77,59 @@ const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
         navigate(`/institucional/horarios/armado?paralelo=${id}&tab=plan`);
     };
 
+    const onClickPublicar = async () => {
+        if (!pgId) {
+            message.warning('Falta paralelo en gestión. Recree la vista 84 en base de datos.');
+            return;
+        }
+        if (!puedePublicar) {
+            message.warning('El paralelo debe estar en OFERTADO y sin pendientes en el plan.');
+            return;
+        }
+        const res = await onPublicar?.(pgId);
+        if (res?.success) {
+            message.success('Paralelo publicado correctamente');
+        } else if (res?.error) {
+            message.error(res.error);
+        }
+    };
+
     return (
         <Card {...cardShell(border)} styles={{ body: { padding: 16 } }}>
             <Flex vertical gap={12} style={{ minWidth: 0 }}>
                 <div className="horarios-publicacion-paralelo-card__head">
-                    {paralelo?.id != null ? (
-                        <Tooltip title="Editar plan semanal">
-                            <button
-                                type="button"
-                                className="sd-profile__edit-btn"
-                                onClick={onEditarPlan}
-                                aria-label="Editar plan semanal del paralelo"
+                    <Flex align="center" justify="space-between" wrap="wrap" gap={8}>
+                        <Flex align="center" gap={8} wrap="wrap">
+                            {paralelo?.id != null ? (
+                                <Tooltip title="Editar plan semanal">
+                                    <button
+                                        type="button"
+                                        className="sd-profile__edit-btn"
+                                        onClick={onEditarPlan}
+                                        aria-label="Editar plan semanal del paralelo"
+                                    >
+                                        <EditOutlined />
+                                    </button>
+                                </Tooltip>
+                            ) : null}
+                            <Title level={5} style={{ margin: 0 }}>
+                                {paralelo?.nombre || 'Paralelo'}
+                            </Title>
+                            <Tag color={estadoTag.color}>{estadoTag.label}</Tag>
+                        </Flex>
+                        {pgId ? (
+                            <ActionButton
+                                permiso="institucional.horario.publicacion"
+                                accion="EDITAR"
+                                variant="primary"
+                                icon={<SendOutlined />}
+                                onClick={onClickPublicar}
+                                loading={publicando}
+                                disabled={!puedePublicar}
                             >
-                                <EditOutlined />
-                            </button>
-                        </Tooltip>
-                    ) : null}
-                    <Flex align="center" gap={8} wrap="wrap">
-                        <Title level={5} style={{ margin: 0 }}>
-                            {paralelo?.nombre || 'Paralelo'}
-                        </Title>
-                        <Tag color={tag.color}>{tag.label}</Tag>
+                                Publicar
+                            </ActionButton>
+                        ) : null}
                     </Flex>
                     <Text type="secondary">
                         {paralelo?.carreraNombre || '—'}
@@ -117,6 +137,7 @@ const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
                         {' · '}
                         {paralelo?.periodoNombre || '—'}
                         {paralelo?.turno ? ` · Turno ${paralelo.turno}` : ''}
+                        {pgId ? ` · PG #${pgId}` : ''}
                     </Text>
                 </div>
                 <div className="horarios-publicacion-plan__grid">
@@ -133,9 +154,9 @@ const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
                 </div>
                 <div>
                     <HorariosPlanPendientesLista
-                        ok={okPublicacion}
+                        ok={puedePublicar}
                         lineas={pendientesLineas}
-                        mensajeExito="Estado publicación: sin observaciones en el plan ni en validaciones del sistema."
+                        mensajeExito="Listo para publicar (estado OFERTADO y plan sin pendientes locales)."
                         mensajeVacio={mensajeVacio}
                     />
                 </div>
