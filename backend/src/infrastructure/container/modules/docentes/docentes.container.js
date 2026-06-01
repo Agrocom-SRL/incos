@@ -340,7 +340,7 @@ export function registerDocentesModule(container) {
     (c) =>
       new GetCursoHorariosDocenteUseCase({
         courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
-        courseScheduleRepository: c.resolve(REPOSITORIOS_TOKENS.courseScheduleRepository),
+        asignacionHorarioRepository: c.resolve(REPOSITORIOS_TOKENS.asignacionHorarioRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );

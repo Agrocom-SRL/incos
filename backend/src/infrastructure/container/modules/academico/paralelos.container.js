@@ -20,12 +20,16 @@ import { GetCapacidadTurnoDashboardUseCase } from '../../../../application/use-c
 import { GetParalelosEstadoDashboardUseCase } from '../../../../application/use-cases/academico/GetParalelosEstadoDashboardUseCase.js';
 import { GetHorariosSidebarPendientesUseCase } from '../../../../application/use-cases/academico/GetHorariosSidebarPendientesUseCase.js';
 import { GetHorariosPublicacionPlanesUseCase } from '../../../../application/use-cases/academico/GetHorariosPublicacionPlanesUseCase.js';
+import { GetParaleloScheduleUseCase } from '../../../../application/use-cases/academico/GetParaleloScheduleUseCase.js';
+import { PutParaleloScheduleUseCase } from '../../../../application/use-cases/academico/PutParaleloScheduleUseCase.js';
 import {
     GetDashboardAsignaturasSinCursoController,
     GetDashboardCapacidadTurnoController,
     GetDashboardHorariosPendientesController,
     GetDashboardParalelosEstadoController,
     GetHorariosPublicacionPlanesController,
+    GetParaleloScheduleController,
+    PutParaleloScheduleController,
     ListParalelosController,
 } from '../../../../presentation/controllers/academico/index.js';
 import { buildParalelosRouter } from '../../../../presentation/routes/paralelos.routes.js';
@@ -104,6 +108,36 @@ export function registerParalelosResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getParaleloScheduleUseCase,
+        (c) =>
+            new GetParaleloScheduleUseCase({
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+                asignacionHorarioRepository: c.resolve(REPOSITORIOS_TOKENS.asignacionHorarioRepository),
+                teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+                teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+                planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+                subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+                periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.putParaleloScheduleUseCase,
+        (c) =>
+            new PutParaleloScheduleUseCase({
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+                scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -173,6 +207,28 @@ export function registerParalelosResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getParaleloScheduleController,
+        (c) =>
+            new GetParaleloScheduleController({
+                getParaleloScheduleUseCase: c.resolve(ACADEMICO_TOKENS.getParaleloScheduleUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.putParaleloScheduleController,
+        (c) =>
+            new PutParaleloScheduleController({
+                putParaleloScheduleUseCase: c.resolve(ACADEMICO_TOKENS.putParaleloScheduleUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -187,6 +243,8 @@ export function registerParalelosResource(container) {
                 getDashboardCapacidadTurnoController: c.resolve(ACADEMICO_TOKENS.getDashboardCapacidadTurnoController),
                 getDashboardHorariosPendientesController: c.resolve(ACADEMICO_TOKENS.getDashboardHorariosPendientesController),
                 getHorariosPublicacionPlanesController: c.resolve(ACADEMICO_TOKENS.getHorariosPublicacionPlanesController),
+                getParaleloScheduleController: c.resolve(ACADEMICO_TOKENS.getParaleloScheduleController),
+                putParaleloScheduleController: c.resolve(ACADEMICO_TOKENS.putParaleloScheduleController),
             };
 
             const middlewares = {

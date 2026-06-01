@@ -7,7 +7,8 @@ export { GetDashboardAsignaturasSinCursoController } from './paralelos/get-dashb
 export { GetDashboardCapacidadTurnoController } from './paralelos/get-dashboard-capacidad-turno.controller.js';
 export { GetDashboardHorariosPendientesController } from './paralelos/get-dashboard-horarios-pendientes.controller.js';
 export { GetHorariosPublicacionPlanesController } from './paralelos/get-horarios-publicacion-planes.controller.js';
-// TODO: Agregar otros controllers cuando se implementen sus endpoints
+export { GetParaleloScheduleController } from './paralelos/get-schedule.controller.js';
+export { PutParaleloScheduleController } from './paralelos/put-schedule.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - GESTIONES

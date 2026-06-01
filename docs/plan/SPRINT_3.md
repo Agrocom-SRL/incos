@@ -1,9 +1,9 @@
 # Sprint 3 — INST: Oferta Académica
 
-**Documento padre:** `PLAN_V2_MAESTRO.md`
+**Documento padre:** `PLAN_MAESTRO.md`
 **Duración estimada:** 1-2 semanas
 **Pre-requisito:** Sprint 2 cerrado (schema V2 + seeders `27`–`30` en BD local).  
-**Mapa de migración:** `MIGRACION_CODIGO_V2.md`
+**Mapa de migración:** `MIGRACION_CODIGO.md`
 
 ---
 
@@ -14,8 +14,8 @@
 | BD | Ya en Sprint 2 (`paralelos_gestion`, `oferta_cursos`) |
 | API nueva | Oferta académica (§3) |
 | **Código V1** | Retirar repos/rutas/use cases que usan `cursos` en el **camino oferta/paralelo** |
-| Vistas SQL | Grupo **oferta/paralelo** (~10 vistas, ver `MIGRACION_CODIGO_V2.md` §3.3) |
-| FE | Wizard `/institucional/oferta` (solo API V2) |
+| Vistas SQL | Grupo **oferta/paralelo** (~10 vistas, ver `MIGRACION_CODIGO.md` §3.4) |
+| FE | Wizard `/institucional/oferta` (API oferta) |
 
 **No incluido aquí (Sprint 4–5):** asignación docente completa, bloques, calificaciones profundas, inscripción completa.
 
@@ -175,7 +175,7 @@ Académica. Los Sprints 1 y 2 ya están cerrados, así que:
   ya existen. asignaciones_docentes apunta a oferta_curso_id.
 - docentes tiene color_hex, max_horas_semana, max_horas_mes.
 
-Tareas (entrega en orden; ver MIGRACION_CODIGO_V2.md):
+Tareas (entrega en orden; ver `MIGRACION_CODIGO.md`):
 
 1) Backend: endpoints §3 (oferta V2). Prioridad: generar-paralelos, generar-oferta, validar-oferta.
 

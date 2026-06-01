@@ -1,7 +1,7 @@
 /**
  * Aulas × planificación semanal (vista `vista_aulas_horarios_semana`).
  *
- * PATCH /horarios/:cursoHorarioId/aula — body `{ "aulaId": number | null }` actualiza `cursos_horarios.aula_id`
+ * PATCH /horarios/:cursoHorarioId/aula — body `{ "aulaId": number | null }` actualiza `asignacion_horarios.aula_id`
  * (permiso `institucional.horario.armado` + EDITAR).
  */
 import express from 'express';

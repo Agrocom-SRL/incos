@@ -81,7 +81,7 @@ export class TeacherAssignmentRepository extends BaseRepository {
       where.ofertaCursoId = filters.offerCourseId;
     }
     if (filters.courseId) {
-      where.cursoId = filters.courseId;
+      where.ofertaCursoId = filters.courseId;
     }
     if (filters.teacherId) {
       where.docenteId = filters.teacherId;

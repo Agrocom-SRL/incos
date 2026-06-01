@@ -1,23 +1,35 @@
 # Sprint 5 — INST: Armado de Horario + Conflictos + Publicación
 
-**Documento padre:** `PLAN_V2_MAESTRO.md`
-**Duración estimada:** 2-3 semanas (es el más grande)
+**Documento padre:** `PLAN_MAESTRO.md`  
+**Duración estimada:** 2-3 semanas (es el más grande)  
 **Pre-requisito:** Sprint 4 cerrado (asignaciones docente sobre `oferta_curso_id`; seeders `31`–`39`).  
-**Mapa de migración:** `MIGRACION_CODIGO_V2.md`
+**Mapa de migración:** `MIGRACION_CODIGO.md`
 
 ---
 
 ## 0. Alcance (código)
 
+### 0.1 Ya hecho antes de la grilla nueva (2026-06-01)
+
+| Ítem | Detalle |
+|------|---------|
+| Modelos/repos `cursos` / `cursos_horarios` | Eliminados; `AsignacionHorarioRepository` activo |
+| `GET/PUT /paralelos/:id/schedule` | Persiste bloques en `asignacion_horarios` (`cursoId` en body = `oferta_curso_id`) |
+| `PATCH /aulas/horarios/:cursoHorarioId/aula` | Actualiza `asignacion_horarios.aula_id` |
+| FE armado plan semanal | `GestionHorariosArmadoPage` + `useParaleloScheduleApi` (sigue usando esas rutas) |
+
+Esto **no** cierra el sprint: es la base transitoria. El objetivo del sprint sigue siendo la grilla por **paralelo-gestión** y el motor de conflictos/publicación de §3.
+
+### 0.2 Pendiente (entregables del sprint)
+
 | Incluido | Detalle |
 |----------|---------|
-| API bloques | `asignacion_horarios` (reemplaza `cursos_horarios`) |
-| **Eliminar armado V1** | `PutParaleloScheduleUseCase`, `GetParaleloHorariosUseCase`, `CourseScheduleRepository` |
+| API grilla | `GET /paralelos-gestion/:id/grilla-horario` |
+| CRUD bloques | `POST/PUT/DELETE /asignacion-horarios` + `bulk` |
 | Motor conflictos + publicación | §3 |
 | `cambiar-turno-con-bloques` | Completa TODO del Sprint 3 |
-| Vistas SQL | Grupo bloques/conflictos/horarios (~25 vistas) |
-| FE | Grilla drag-and-drop, conflictos globales, publicar |
-| Dashboard horarios legacy | Migrar a grilla V2 o retirar pantallas que llaman `schedule` V1 |
+| Vistas SQL | Desplegar y validar grupo bloques/conflictos (`81`–`95`, etc.) |
+| FE | Grilla drag-and-drop por `paralelo_gestion`, conflictos globales, publicar |
 
 ---
 
@@ -37,7 +49,7 @@ Es el sprint más visual y más complejo. Recomendable dividir en dos sub-iterac
 2. **Frontend** con grilla drag-and-drop, validador de carga, parpadeo de conflictos.
 3. **Validador de publicación**: estado `OFERTADO → PUBLICADO`.
 4. **Endpoint de cambio de turno con re-mapeo** (completar el TODO de Sprint 3).
-5. **Migración código:** cero referencias a `cursos_horarios`; pantallas `institucional/horarios` consumen grilla V2.
+5. **Migración código:** pantallas `institucional/horarios` consumen API grilla (sustituir o convivir con `schedule` transitorio).
 6. **Vistas SQL** grupo bloques/conflictos; calificaciones que JOIN horarios actualizadas.
 
 ## 3. Endpoints backend
@@ -211,15 +223,16 @@ Botón global "Publicar todos los OK".
 
 ## 7. Definition of Done
 
+- [x] **Pre-requisito código:** sin modelos/repos `cursos` / `cursos_horarios` (checklist `MIGRACION_CODIGO.md` §5).
+- [x] Bloques persisten en `asignacion_horarios` (plan semanal transitorio + PATCH aula).
 - [ ] Endpoints de las secciones 3.1 a 3.4 implementados y testeados.
 - [ ] Motor de conflictos detecta las 3 categorías correctamente.
-- [ ] Grilla drag-and-drop funcional.
+- [ ] Grilla drag-and-drop funcional (selector `paralelo_gestion`).
 - [ ] Parpadeo de conflictos visible.
 - [ ] Validador de cobertura en vivo.
 - [ ] Endpoint de cambio de turno con re-mapeo de bloques funcional.
 - [ ] Publicación con todas las pre-condiciones validadas.
-- [ ] **Código:** eliminados modelos/repos `curso_horario` del path activo; `models/curso.js` solo si ya no hay imports (checklist global §5 en `MIGRACION_CODIGO_V2.md`).
-- [ ] **Vistas:** horarios/conflictos alineadas a `asignacion_horarios`.
+- [ ] **Vistas:** horarios/conflictos desplegadas y usadas por la UI nueva.
 - [ ] Test E2E: seeders `40`–`48` coherentes con grilla UI → publicar paralelo.
 
 ---
@@ -227,9 +240,9 @@ Botón global "Publicar todos los OK".
 ## 8. Prompt para agente IA
 
 ```
-Contexto: Sprint 5 del plan V2 de INCOS. Es el más grande del plan. Sprints 1-4
-cerrados. Schema V2 con paralelos_gestion, oferta_cursos, asignaciones_docentes (con
-color), asignacion_horarios.
+Contexto: Sprint 5 del plan INCOS. Sprints 1-4 cerrados. Schema con paralelos_gestion,
+oferta_cursos, asignaciones_docentes, asignacion_horarios. Repos cursos eliminados;
+GET/PUT schedule transitorio ya escribe asignacion_horarios.
 
 Tarea: módulo INST → Horarios → Armado, con drag-and-drop, motor de conflictos,
 validación de cobertura y publicación.

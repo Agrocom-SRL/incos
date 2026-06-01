@@ -15,17 +15,18 @@ Rol sugerido: **SEC_ACADEMICA** (rol 5) o **DIR_ACADEMICO** (3), con permisos 10
 ## Pista B — Oferta + armado + notas
 
 6. `/institucional/oferta` — paralelo con oferta generada (o generar oferta).
-7. `/institucional/horarios` → abrir armado de un paralelo → tab **Gestión de cursos**: lista oferta (sin error 404 legacy).
-8. Alta manual de materia faltante (si aplica) → aparece en tabla.
-9. Inscripción de estudiante en gestión vigente → matrículas con oferta del paralelo.
-10. `/academico/calificaciones/mis-cursos` (docente seed 31+) → listado con `asignacion_docente_id`.
-11. Cuaderno bimestre de un curso con matriculados → notas cargan sin 500.
+7. `/institucional/horarios` → abrir armado de un paralelo → tab **Gestión de cursos**: lista oferta vía API `oferta-cursos`.
+8. Mismo armado → tab **Plan semanal**: carga y guarda bloques (`GET/PUT /paralelos/:id/schedule` sobre `asignacion_horarios`).
+9. Alta manual de materia faltante (si aplica) → aparece en tabla.
+10. Inscripción de estudiante en gestión vigente → matrículas con oferta del paralelo.
+11. `/academico/calificaciones/mis-cursos` (docente seed 31+) → listado con `asignacion_docente_id`.
+12. Cuaderno bimestre de un curso con matriculados → notas cargan sin 500.
 
 ## Cierre
 
 Marque al ejecutar en su entorno (backend `:3000`, seeders 27→30→31+):
 
 - [ ] Pasos 1–5 OK (Pista A)  
-- [ ] Pasos 6–11 OK (Pista B)  
+- [ ] Pasos 6–12 OK (Pista B)  
 
 **Código Sprint 4:** cerrado en repo (2026-06-01). La validación operativa queda en este checklist antes de merge a `development`.

@@ -70,8 +70,7 @@ export { IDocenteRepository } from './IDocenteRepository.js';
 export { IParaleloRepository } from './IParaleloRepository.js';
 export { IAulaRepository } from './IAulaRepository.js';
 export { IHorarioRepository } from './IHorarioRepository.js';
-export { ICursoRepository } from './ICursoRepository.js';
-export { ICursoHorarioRepository } from './ICursoHorarioRepository.js';
+export { IAsignacionHorarioRepository } from './IAsignacionHorarioRepository.js';
 export { IAsignacionDocenteRepository } from './IAsignacionDocenteRepository.js';
 
 // ============================================

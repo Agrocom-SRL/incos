@@ -43,7 +43,6 @@ export class GetEnrollmentByIdUseCase {
    * @param {Object} params.parallelManagementRepository - Repositorio de paralelos en gestión
    * @param {Object} params.planSubjectRepository - Repositorio de asignaturas de plan
    * @param {Object} params.subjectRepository - Repositorio de materias
-   * @param {Object} params.courseScheduleRepository - Repositorio de horarios de cursos
    * @param {Object} params.scheduleRepository - Repositorio de horarios
    * @param {Object} params.classroomRepository - Repositorio de aulas
    * @param {Object} params.teacherRepository - Repositorio de docentes
@@ -62,7 +61,6 @@ export class GetEnrollmentByIdUseCase {
     parallelManagementRepository,
     planSubjectRepository,
     subjectRepository,
-    courseScheduleRepository,
     scheduleRepository,
     classroomRepository,
     teacherRepository,
@@ -84,7 +82,6 @@ export class GetEnrollmentByIdUseCase {
     this.parallelManagementRepository = parallelManagementRepository;
     this.planSubjectRepository = planSubjectRepository;
     this.subjectRepository = subjectRepository;
-    this.courseScheduleRepository = courseScheduleRepository;
     this.scheduleRepository = scheduleRepository;
     this.classroomRepository = classroomRepository;
     this.teacherRepository = teacherRepository;

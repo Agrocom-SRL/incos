@@ -1,20 +1,13 @@
 /**
- * GET /api/v1/docentes/cursos/:cursoId/horarios — bloques de horario + aula de una oferta.
- * Nota: cursoId en la ruta es oferta_curso_id (compatibilidad UI legacy).
+ * GET /api/v1/docentes/cursos/:cursoId/horarios — bloques de una oferta (oferta_curso_id en la ruta).
  */
 
 import { NotFoundError } from '../../../domain/errors/index.js';
 
 export class GetCursoHorariosDocenteUseCase {
-  /**
-   * @param {Object} deps
-   * @param {import('../../../infrastructure/repositories/CourseOfferRepository.js').CourseOfferRepository} deps.courseOfferRepository
-   * @param {import('../../../infrastructure/repositories/CourseScheduleRepository.js').CourseScheduleRepository} deps.courseScheduleRepository
-   * @param {Object} deps.logger
-   */
-  constructor({ courseOfferRepository, courseScheduleRepository, logger }) {
+  constructor({ courseOfferRepository, asignacionHorarioRepository, logger }) {
     this.courseOfferRepository = courseOfferRepository;
-    this.courseScheduleRepository = courseScheduleRepository;
+    this.asignacionHorarioRepository = asignacionHorarioRepository;
     this.logger = logger;
   }
 
@@ -31,7 +24,7 @@ export class GetCursoHorariosDocenteUseCase {
       throw new NotFoundError('Oferta de curso');
     }
 
-    const bloques = await this.courseScheduleRepository.findBloquesByCursoIdForPresentation(id);
+    const bloques = await this.asignacionHorarioRepository.findBloquesByOfertaCursoIdForPresentation(id);
     const plain = offer.toPlainObject ? offer.toPlainObject() : offer;
 
     return {

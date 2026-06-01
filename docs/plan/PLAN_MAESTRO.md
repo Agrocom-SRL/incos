@@ -1,16 +1,16 @@
-# PLAN V2 — Refactor Horarios + Plan de Estudio
+# Plan maestro — Refactor Horarios + Plan de Estudio
 
-**Sistema:** Académico Instituto INCOS
-**Decisión:** Migración limpia. Datos legacy se descartan. Schema V1 (`cursos`, `cursos_horarios`) se elimina por completo.
-**Documentos:** Este archivo es el **maestro** (`docs/plan/`). Cada sprint: `SPRINT_1.md` … `SPRINT_5.md` en la misma carpeta. **Temporal:** eliminar `docs/plan/` al cerrar el refactor V2.
+**Sistema:** Académico Instituto INCOS  
+**Decisión:** Migración limpia. Las tablas `cursos` y `cursos_horarios` no forman parte del schema actual.  
+**Documentos:** Este archivo es el **maestro** (`docs/plan/`). Cada sprint: `SPRINT_1.md` … `SPRINT_5.md`. **Temporal:** archivar o eliminar `docs/plan/` cuando el refactor esté estable en producción.
 
 ---
 
 ## 1. ¿Por qué este refactor?
 
-El modelo V1 mezclaba en una sola cadena tres conceptos que cambian a velocidades distintas: el catálogo del plan, la oferta de la gestión y la asignación docente. Cuando cambiaba el docente o el horario, se tocaban tablas que afectaban matrículas reales. Además, `cursos` y `cursos_horarios` ataban los bloques al curso, cuando en la realidad operativa el bloque pertenece al docente (puede mover su horario, intercambiar materias, etc.).
+El modelo anterior mezclaba en una sola cadena el catálogo del plan, la oferta de la gestión y la asignación docente. Los bloques colgaban de `cursos_horarios` en lugar de la asignación docente.
 
-El refactor V2 separa los procesos:
+El modelo actual separa los procesos:
 
 ```
 CFG  → Plan de Estudio       (catálogo reusable, sin gestión)
@@ -32,7 +32,7 @@ MAT  → Matrícula             (estudiante elige paralelo, puede tomar materias
 5. **Bloques cuelgan de la asignación docente** vía tabla `asignacion_horarios` (no `cursos_horarios`).
 6. **Estudiante se matricula a un paralelo** y el sistema genera N `matriculas_materia` automáticamente. Pero el estudiante puede **agregar/quitar matrículas individuales** hacia ofertas de otros paralelos (para nivelar materias atrasadas). Cada matrícula valida prerrequisitos contra `historial_previo` + matrículas aprobadas anteriores.
 
-### 2.2 Cadena canónica V2
+### 2.2 Cadena canónica
 
 ```
 estudiante → inscripcion → gestion + paralelo_gestion (sugerido)
@@ -42,13 +42,13 @@ asignaciones_docentes → asignacion_horarios (qué bloques usa)
 matriculas_materia → oferta_cursos (lo que el estudiante cursa)
 ```
 
-Diferencia esencial: `matriculas_materia.oferta_curso_id` queda **estable** durante toda la gestión aunque cambie el docente. En V1 dependía de `asignaciones_docentes`.
+Diferencia esencial: `matriculas_materia.oferta_curso_id` queda **estable** durante toda la gestión aunque cambie el docente.
 
 ---
 
 ## 3. Mapa del refactor (qué pasa con cada tabla)
 
-| Tabla actual | Acción V2 | Detalle |
+| Tabla anterior | Acción | Detalle |
 |---|---|---|
 | `carreras`, `materias`, `planes_estudios`, `periodos`, `asignaturas_plan`, `prerrequisitos` | **Sin cambios** | Catálogo del Sprint 1 |
 | `paralelos` | Sin cambios | Sigue como maestro conceptual |
@@ -68,18 +68,18 @@ Diferencia esencial: `matriculas_materia.oferta_curso_id` queda **estable** dura
 
 | Eje | Sprints | Qué se entrega |
 |-----|---------|----------------|
-| **Base de datos** | 1–2 | Catálogo + DDL/seeders V2 |
-| **Aplicación** | 3–5 | API, repos, vistas SQL, UI alineados a V2 |
+| **Base de datos** | 1–2 | Catálogo + DDL + seeders |
+| **Aplicación** | 3–5 | API, repos, vistas SQL, UI alineados al schema actual |
 
 Sprint 2 deja la BD **sin** `cursos` / `cursos_horarios`. Los sprints 3–5 migran el código que aún referencia el modelo anterior. Mapa detallado: `MIGRACION_CODIGO.md`.
 
 | Sprint | Foco | Capa | Documento |
 |---|---|---|---|
 | **1** ✅ | CFG → Plan de Estudio (catálogo) | Código | `SPRINT_1.md` |
-| **2** ✅ | Schema V2 — DDL + seeders `27`–`48` | Solo BD | `SPRINT_2.md` |
-| **3** ✅ | INST → Oferta + retiro rutas legacy de oferta en paralelos | Código | `SPRINT_3.md` |
-| **4** | Asignación docente + **MAT/calificaciones operativos** | Código | `SPRINT_4.md` |
-| **5** | Bloques + conflictos + grilla horarios + publicación | Código | `SPRINT_5.md` |
+| **2** ✅ | Schema — DDL + seeders `27`–`48` | Solo BD | `SPRINT_2.md` |
+| **3** ✅ | INST → Oferta + retiro rutas de oferta en paralelos | Código | `SPRINT_3.md` |
+| **4** ✅ | Asignación docente + matrícula + calificaciones | Código | `SPRINT_4.md` |
+| **5** | Grilla, conflictos, publicación (en curso) | Código | `SPRINT_5.md` |
 | Bonus | MAT completo + evaluaciones edge cases | Código | (post-5) |
 
 Cada sprint de aplicación deja un **smoke E2E** contra seeders locales, no solo endpoints nuevos encima de legacy.
@@ -125,7 +125,7 @@ Antes de empezar un sprint:
 
 Basado en archivos institucionales 2026 que validamos:
 
-- **Carga docente real:** entre 18 y 20 horas/semana, 72-80 horas/mes por docente. Default V2: `max_horas_semana = 20`, `max_horas_mes = 80`.
+- **Carga docente real:** entre 18 y 20 horas/semana, 72-80 horas/mes por docente. Default schema: `max_horas_semana = 20`, `max_horas_mes = 80`.
 - **Aulas existentes:** AULA-1 a AULA-8 (regulares, capacidad 30-45), LAB-1 a LAB-5 (laboratorios, capacidad 25-37).
 - **Turnos en operación:** TARDE (bloques 1-6, 14:00-18:30) y NOCHE (bloques 1-5, 18:45-22:30) y SÁBADO (bloques variables).
 - **Planes vigentes:** RM 0210/2023 para las 3 carreras (SIS-INF, ADM-EMP, CON-GEN), 3 años cada uno, 30 hrs/semana, 1200 hrs/año.
@@ -133,11 +133,11 @@ Basado en archivos institucionales 2026 que validamos:
 
 ---
 
-## 8. Fuera de alcance V2 (schema); en alcance (código mínimo)
+## 8. Fuera de alcance (schema); en alcance (código)
 
 **Schema:** evaluaciones, asistencias, licencias, nivelaciones no cambian tablas propias.
 
-**Código:** si un módulo **lee** `cursos` o `curso_id` (calificaciones, inscripciones, dashboard), se ajusta en Sprints 4–5 para leer `oferta_cursos` / `oferta_curso_id` o `asignatura_plan_id` según `MIGRACION_CODIGO_V2.md`.
+**Código:** módulos que leían `cursos` ya migran a `oferta_cursos` / `oferta_curso_id` (ver `MIGRACION_CODIGO.md`). Sprint 5 completa grilla y publicación.
 
 Temas que siguen sin rediseño de negocio:
 - Pagos, becas, documentos del estudiante.
@@ -157,4 +157,4 @@ Temas que siguen sin rediseño de negocio:
 
 ---
 
-**Estado del plan:** Aprobado. **Sprint 1 cerrado** (2026-05-29). **Sprint 2 cerrado** (schemas + seeders `27`–`48`). **Sprint 3 cerrado** (2026-05-29): API/FE oferta en `/institucional/oferta`, rutas V1 de oferta retiradas, vistas grupo oferta reescritas. **Sprint 4 cerrado** (2026-06-01): asignación docente (API + matriz + dashboard + color), continuidad inscripciones/calificaciones sobre `oferta_curso_id`, armado tab gestión alineado a oferta académica. **Sprint 5** — grilla/bloques (`asignacion_horarios`), schedule legacy del armado, publicación. Ver `MIGRACION_CODIGO.md`, `SPRINT_4.md` y smoke `SMOKE_SPRINT_4.md`.
+**Estado del plan:** Aprobado. **Sprints 1–4 cerrados** (último cierre 2026-06-01: asignación docente, matrícula, notas, eliminación de repos/modelos `cursos` / `cursos_horarios`, bloques en `asignacion_horarios`). **Sprint 5 en curso:** grilla por `paralelo_gestion`, motor de conflictos, publicación (el armado actual ya persiste bloques vía `GET/PUT /paralelos/:id/schedule`). Ver `MIGRACION_CODIGO.md`, `SPRINT_5.md`, smoke `SMOKE_SPRINT_4.md`.

@@ -1,8 +1,8 @@
 # Sprint 4 — INST: Asignación Docente con Carga + Color
 
-**Documento padre:** `PLAN_V2_MAESTRO.md`
+**Documento padre:** `PLAN_MAESTRO.md`
 **Duración estimada:** 1-2 semanas
-**Pre-requisito:** Sprint 3 cerrado (oferta operativa por API/FE en `/institucional/oferta`; rutas V1 de oferta retiradas).  
+**Pre-requisito:** Sprint 3 cerrado (oferta operativa por API/FE en `/institucional/oferta`; rutas de oferta en paralelo maestro retiradas).  
 **Mapa de migración:** `MIGRACION_CODIGO.md`
 
 ---
@@ -18,7 +18,7 @@
 | Vistas SQL | Grupo docente/asignación (~15 vistas) |
 | FE | Matriz asignación + dashboard carga + color picker |
 
-| No incluido (Sprint 5) | Armado grilla, `asignacion_horarios`, `PUT schedule` legacy, publicación horarios |
+| No incluido (Sprint 5) | Grilla por `paralelo_gestion`, motor conflictos, publicación masiva |
 
 ### 0.1 Dos pistas en paralelo (decisión 2026-05-29)
 
@@ -35,7 +35,7 @@ Sprint 5 describe el flujo ideal de **armado de horarios** (grilla, bloques, con
 2. **Backend:** listados de calificaciones (mis cursos, coordinación, cuaderno) leen vistas/repos sobre `asignaciones_docentes` + `oferta_cursos`; `dataFieldName` estable.
 3. **Frontend calificaciones:** mantener rutas y UX actuales (`asignacionId` = `asignacion_docente_id`); ajustar hooks/API solo si cambia el payload; verificar cuaderno con matriculados existentes.
 4. **Frontend inscripciones:** flujo de alta sigue operativo contra gestión con oferta generada (seeders 27→30 + asignaciones 31+).
-5. **Frontend horarios legacy** (`institucional/horarios/plantilla`, `CursoRepository` FE): marcar como deprecado o redirigir a oferta/asignación; **no** reimplementar grilla aquí (Sprint 5).
+5. **Frontend horarios:** banner hacia oferta/asignación; **no** grilla nueva aquí (Sprint 5). `CursoRepository` FE eliminado.
 
 Regla: **Sprint 4 cierra la cadena gestión → oferta → docente → matrícula → notas.** Sprint 5 cierra **bloques → conflictos → publicación horario**.
 

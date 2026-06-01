@@ -38,7 +38,7 @@ export function registerAulasHorariosModule(container) {
     AULAS_HORARIOS_TOKENS.patchAulaHorarioUseCase,
     (c) =>
       new PatchAulaHorarioUseCase({
-        courseScheduleRepository: c.resolve(REPOSITORIOS_TOKENS.courseScheduleRepository),
+        asignacionHorarioRepository: c.resolve(REPOSITORIOS_TOKENS.asignacionHorarioRepository),
         classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })

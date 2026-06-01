@@ -65,8 +65,7 @@ export { Teacher } from './Teacher.js';
 export { Parallel } from './Parallel.js';
 export { Classroom } from './Classroom.js';
 export { Schedule } from './Schedule.js';
-export { Course } from './Course.js';
-export { CourseSchedule } from './CourseSchedule.js';
+export { AsignacionHorario } from './AsignacionHorario.js';
 export { TeacherAssignment } from './TeacherAssignment.js';
 
 // ============================================

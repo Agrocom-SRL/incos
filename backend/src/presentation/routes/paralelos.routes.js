@@ -1,7 +1,8 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
-import { listParalelosValidator } from '../validators/academico/index.js';
+import { listParalelosValidator, putParaleloScheduleValidator } from '../validators/academico/index.js';
+import { idValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Paralelos (Académico)
@@ -24,6 +25,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
     const verHorarios = [authenticate, verificarPermiso('institucional.gestion.horarios', 'LISTAR')];
+    const editarArmadoHorarios = [authenticate, verificarPermiso('institucional.horario.armado', 'EDITAR')];
     const verPublicacionHorarios = [authenticate, verificarPermiso('institucional.horario.publicacion', 'LISTAR')];
 
     // ============================================
@@ -50,8 +52,22 @@ export function buildParalelosRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.listParalelosController.handle(req, res, next)
     );
 
-    // Oferta y schedule por paralelo maestro: retirados (oferta → /gestiones-planes, /paralelos-gestion;
-    // bloques horarios → Sprint 5 sobre asignacion_horarios).
+    router.get(
+        '/:id/schedule',
+        ...verHorarios,
+        ...idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getParaleloScheduleController.handle(req, res, next)
+    );
+
+    router.put(
+        '/:id/schedule',
+        ...editarArmadoHorarios,
+        ...idValidator,
+        ...putParaleloScheduleValidator,
+        validateRequest,
+        (req, res, next) => controllers.putParaleloScheduleController.handle(req, res, next)
+    );
 
     router.get(
         '/dashboard/paralelos-estado',

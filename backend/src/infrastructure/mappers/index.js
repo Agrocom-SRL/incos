@@ -53,8 +53,7 @@ export { PrerequisiteMapper } from './PrerequisiteMapper.js';
 export { ParallelMapper } from './ParallelMapper.js';
 export { ClassroomMapper } from './ClassroomMapper.js';
 export { ScheduleMapper } from './ScheduleMapper.js';
-export { CourseMapper } from './CourseMapper.js';
-export { CourseScheduleMapper } from './CourseScheduleMapper.js';
+export { AsignacionHorarioMapper } from './AsignacionHorarioMapper.js';
 export { TeacherAssignmentMapper } from './TeacherAssignmentMapper.js';
 
 // ============================================

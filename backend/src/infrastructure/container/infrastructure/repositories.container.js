@@ -89,8 +89,7 @@ import { TeacherRepository } from '../../repositories/TeacherRepository.js';
 import { ParallelRepository } from '../../repositories/ParallelRepository.js';
 import { ClassroomRepository } from '../../repositories/ClassroomRepository.js';
 import { ScheduleRepository } from '../../repositories/ScheduleRepository.js';
-import { CourseRepository } from '../../repositories/CourseRepository.js';
-import { CourseScheduleRepository } from '../../repositories/CourseScheduleRepository.js';
+import { AsignacionHorarioRepository } from '../../repositories/AsignacionHorarioRepository.js';
 import { TeacherAssignmentRepository } from '../../repositories/TeacherAssignmentRepository.js';
 
 // ============================================
@@ -227,8 +226,7 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.parallelRepository, ParallelRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.classroomRepository, ClassroomRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.scheduleRepository, ScheduleRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.courseRepository, CourseRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.courseScheduleRepository, CourseScheduleRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.asignacionHorarioRepository, AsignacionHorarioRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.teacherAssignmentRepository, TeacherAssignmentRepository);
 
     // ============================================

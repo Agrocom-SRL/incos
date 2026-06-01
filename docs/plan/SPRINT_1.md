@@ -1,6 +1,6 @@
 # Sprint 1 — CFG: Catálogo Plan de Estudio
 
-**Documento padre:** `PLAN_V2_MAESTRO.md`
+**Documento padre:** `PLAN_MAESTRO.md`
 **Duración estimada:** 1-2 semanas
 **Pre-requisito:** Ninguno. Es el primer sprint.
 

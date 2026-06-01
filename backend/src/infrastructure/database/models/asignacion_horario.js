@@ -2,40 +2,40 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
 
-export const CursoHorario = sequelize.define(
-  'CursoHorario',
+export const AsignacionHorario = sequelize.define(
+  'AsignacionHorario',
   {
     ...baseModelFields,
-    cursoId: {
+    asignacionDocenteId: {
       type: DataTypes.INTEGER,
-      field: 'curso_id',
+      field: 'asignacion_docente_id',
       allowNull: true,
-      comment: 'Curso al que pertenece este horario',
+      comment: 'Asignación docente (oferta + docente)',
     },
     horarioId: {
       type: DataTypes.INTEGER,
       field: 'horario_id',
       allowNull: true,
-      comment: 'Bloque horario (día + hora) de la tabla horarios',
+      comment: 'Bloque del catálogo horarios',
     },
     aulaId: {
       type: DataTypes.INTEGER,
       field: 'aula_id',
       allowNull: true,
-      comment: 'Aula o laboratorio asignado para este bloque',
+      comment: 'Aula del bloque; NULL hereda aula base del paralelo_gestion',
     },
     ordenSecuencia: {
       type: DataTypes.INTEGER,
       field: 'orden_secuencia',
       allowNull: false,
       defaultValue: 1,
-      comment: 'Orden del bloque en la semana (1, 2, 3, 4). Indica qué bloque se dicta primero, segundo, etc.',
+      comment: 'Orden cronológico del bloque en la semana',
     },
   },
   {
     ...baseModelOptions,
-    tableName: 'cursos_horarios',
+    tableName: 'asignacion_horarios',
   }
 );
 
-export default CursoHorario;
+export default AsignacionHorario;

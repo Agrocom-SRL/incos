@@ -1,6 +1,6 @@
 # Documentación INCOS
 
-Dos capas con distinto ciclo de vida: **permanente** (reglas + guías + referencia) y **temporal** (plan de refactor V2).
+Dos capas con distinto ciclo de vida: **permanente** (reglas + guías + referencia) y **temporal** (plan de refactor horarios + plan de estudio).
 
 ## Permanente — crece con el producto
 
@@ -28,14 +28,15 @@ Dos capas con distinto ciclo de vida: **permanente** (reglas + guías + referenc
 
 **No hay copia de las reglas en `docs/`** — solo `.cursor/rules/`.
 
-## Temporal — eliminar al cerrar Plan V2
+## Temporal — eliminar al cerrar el refactor
 
 | Ubicación | Propósito |
 |-----------|-----------|
-| `docs/plan/PLAN_V2_MAESTRO.md` | Mapa del refactor horarios + plan de estudio |
+| `docs/plan/PLAN_MAESTRO.md` | Mapa del refactor horarios + plan de estudio |
+| `docs/plan/MIGRACION_CODIGO.md` | Inventario código (tablas retiradas vs modelo actual) |
 | `docs/plan/SPRINT_1.md` … `SPRINT_5.md` | Entregables por sprint |
 
-Cuando el refactor V2 esté en producción y estable, **borrar `docs/plan/`** (o archivar fuera del repo). Las reglas en `.cursor/rules/` siguen siendo la base para features nuevas.
+Cuando el refactor esté en producción y estable, **borrar `docs/plan/`** (o archivar fuera del repo). Las reglas en `.cursor/rules/` siguen siendo la base para features nuevas.
 
 ## Flujo con el agente
 
