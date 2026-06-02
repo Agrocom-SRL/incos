@@ -8,6 +8,7 @@ const { Text } = Typography;
 
 export function buildGestionesTableColumns({
   onVerPlanes,
+  onHabilitarPlan,
   planesResumenByGestionId = {},
   planesResumenLoading = false,
 }) {
@@ -75,15 +76,32 @@ export function buildGestionesTableColumns({
     {
       title: '',
       key: 'acciones',
-      width: 140,
-      fixed: 'right',
+      width: 160,
       align: 'right',
       render: (_, row) => {
         const resumen = planesResumenByGestionId[row.id];
         const planesCount = resumen?.count ?? 0;
         const resumenListo = resumen != null;
 
-        if (!resumenListo || planesCount === 0) {
+        if (!resumenListo) {
+          return null;
+        }
+
+        if (row.vigente && planesCount === 0 && onHabilitarPlan) {
+          return (
+            <ActionButton
+              permiso="institucional.oferta.gestion-plan"
+              accion="CREAR"
+              variant="primary"
+              size="small"
+              onClick={() => onHabilitarPlan(row.id)}
+            >
+              Habilitar plan
+            </ActionButton>
+          );
+        }
+
+        if (planesCount === 0) {
           return null;
         }
 

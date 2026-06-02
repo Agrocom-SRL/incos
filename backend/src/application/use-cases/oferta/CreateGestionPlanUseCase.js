@@ -15,8 +15,10 @@ export class CreateGestionPlanUseCase {
     this.logger = logger;
   }
 
-  async execute({ gestionId, planEstudioId }, userId = null) {
-    if (!gestionId || !planEstudioId) {
+  async execute(body = {}, userId = null) {
+    const gestionId = Number(body.gestionId ?? body.gestion_id);
+    const planEstudioId = Number(body.planEstudioId ?? body.plan_estudio_id);
+    if (!Number.isFinite(gestionId) || gestionId < 1 || !Number.isFinite(planEstudioId) || planEstudioId < 1) {
       throw new ValidationError('gestion_id y plan_estudio_id son requeridos');
     }
 

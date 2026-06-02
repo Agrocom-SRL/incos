@@ -259,6 +259,8 @@ export function useOfertaGestionPlanesState() {
         message.success('Plan habilitado en la gestión');
         setModalHabilitarPlan(false);
         await loadPlanesHabilitados();
+      } else if (res.error) {
+        message.error(res.error);
       }
     },
     [habilitarPlan, gestionId, loadPlanesHabilitados]

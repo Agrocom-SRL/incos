@@ -96,9 +96,9 @@ const OfertaGestionPlanesPage = () => {
                   action={
                     contextAlert.showHabilitarPlan ? (
                       <ActionButton
+                        variant="error"
                         permiso="institucional.oferta.gestion-plan"
                         accion="CREAR"
-                        size="small"
                         onClick={s.openHabilitarPlanModal}
                       >
                         Habilitar plan
@@ -111,7 +111,7 @@ const OfertaGestionPlanesPage = () => {
                         variant="primary"
                         onClick={s.navigateGestionVigente}
                       >
-                        Ir a gestión vigente
+                        volver
                       </ActionButton>
                     ) : null
                   }
@@ -183,7 +183,9 @@ const OfertaGestionPlanesPage = () => {
               value: p.id,
               label: s.planCatalogoLabel(p),
             }))}
-            onChange={(planId) => s.onHabilitarPlan(planId)}
+            onChange={(planId) => {
+              if (planId != null) s.onHabilitarPlan(planId);
+            }}
           />
         </Modal>
       ) : null}

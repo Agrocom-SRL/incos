@@ -260,9 +260,9 @@
 .opc-band__nombre {
   margin: 0 0 4px;
   font-family: var(--font-family-heading);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  line-height: var(--line-height-sm);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  line-height: var(--line-height-normal);
   word-break: break-word;
 }
 
@@ -388,12 +388,12 @@
 .opc-info-icon--aula {
   background: linear-gradient(
     145deg,
-    var(--color-primary-bg) 0%,
-    var(--color-primary-bg-hover) 100%
+    var(--color-warning-bg) 0%,
+    var(--color-warning-bg-hover) 100%
   );
-  color: var(--color-primary);
-  border-color: var(--color-primary-border);
-  box-shadow: var(--shadow-primary);
+  color: var(--color-warning);
+  border-color: var(--color-warning-border);
+  box-shadow: var(--shadow-warning);
 }
 
 .opc-info-icon--docente {
@@ -410,12 +410,12 @@
 .opc-info-icon--horario {
   background: linear-gradient(
     145deg,
-    var(--color-success-bg) 0%,
-    var(--color-success-bg-hover) 100%
+    var(--color-error-bg) 0%,
+    var(--color-error-bg-hover) 100%
   );
-  color: var(--color-success);
-  border-color: var(--color-success-border);
-  box-shadow: var(--shadow-elevation-1);
+  color: var(--color-error);
+  border-color: var(--color-error-border);
+  box-shadow: var(--shadow-error);
 }
 
 .opc-info-icon--pend {
