@@ -29,12 +29,15 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-content-text', allThemeTokens.colorText);
   root.style.setProperty('--color-bg-layout', allThemeTokens.colorBgLayout);
   root.style.setProperty('--color-bg-container', allThemeTokens.colorBgContainer); // Para DataCards y otros componentes
+  root.style.setProperty('--color-bg-elevated', allThemeTokens.colorBgElevated);
   
   // Color verde institucional (usado en reset.css para focus y Tags)
   root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
   root.style.setProperty('--color-primary', allThemeTokens.colorPrimary); // Para uso en list-item.css y otros componentes
   root.style.setProperty('--color-primary-hover', allThemeTokens.colorPrimaryHover);
   root.style.setProperty('--color-primary-bg', allThemeTokens.colorPrimaryBg);
+  root.style.setProperty('--color-primary-bg-hover', allThemeTokens.colorPrimaryBgHover);
+  root.style.setProperty('--color-primary-border', allThemeTokens.colorPrimaryBorder);
   root.style.setProperty('--color-primary-text', allThemeTokens.colorPrimaryText);
 
   // ========================================
@@ -130,6 +133,8 @@ export function injectCSSVariables() {
   // Variables de borde y texto usadas en múltiples componentes
   root.style.setProperty('--color-border-secondary', allThemeTokens.colorBorderSecondary);
   root.style.setProperty('--color-border', allThemeTokens.colorBorder);
+  root.style.setProperty('--color-text', allThemeTokens.colorText);
+  root.style.setProperty('--color-text-secondary', allThemeTokens.colorTextSecondary);
   root.style.setProperty('--color-text-tertiary', allThemeTokens.colorTextTertiary);
   
   // Color blanco (para texto sobre fondos primarios, estados activos, etc.)
@@ -197,6 +202,7 @@ export function injectCSSVariables() {
   // Z-INDEX
   // ========================================
   root.style.setProperty('--z-fixed', '1030');
+  root.style.setProperty('--z-popup-base', `${allThemeTokens.zIndexPopupBase}`);
 
   // ========================================
   // BORDER RADIUS (solo las usadas)

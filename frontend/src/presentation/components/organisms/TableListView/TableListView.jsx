@@ -29,6 +29,10 @@ import React from 'react';
 import { Row, Col, Flex } from 'antd';
 import { DataTable } from '@molecules';
 import { Alert, Card, SearchBar, Spinner, Text } from '@atoms';
+import {
+    DATA_TABLE_PAGINATION_BASE,
+    resolvePaginationSizeChanger,
+} from '@molecules/DataTable/paginationDefaults';
 
 const TableListView = ({
     // Datos y estado
@@ -81,22 +85,18 @@ const TableListView = ({
 
     const basePagination = {
         defaultPageSize,
-        showSizeChanger: true,
-        showQuickJumper: false,
-        size: 'default',
-        className: 'data-table-pagination',
-        showTotal: (total, range) =>
-            `Mostrando ${range[0]}-${range[1]} de ${total} registros`,
-        pageSizeOptions,
-        locale: {
-            items_per_page: 'registros / página',
-        },
+        ...DATA_TABLE_PAGINATION_BASE,
     };
+
+    const sanitized = sanitizePagination(pagination);
 
     const finalPagination = {
         ...basePagination,
-        ...sanitizePagination(pagination),
+        ...sanitized,
         pageSizeOptions: (pagination && pagination.pageSizeOptions) || pageSizeOptions,
+        showSizeChanger: resolvePaginationSizeChanger(
+            sanitized.showSizeChanger ?? basePagination.showSizeChanger,
+        ),
         // Forzar que no se muestre el "quick jumper" nativo
         showQuickJumper: false,
     };

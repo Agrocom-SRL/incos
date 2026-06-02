@@ -115,7 +115,6 @@ export const createDocentesTableColumns = ({ navigate, listNavState, refetch, de
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 140,
       align: 'right',
       render: (_, record) => {

@@ -206,33 +206,116 @@
 }
 
 .data-table .ant-pagination-options {
-  margin-inline-start: 4px;
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--spacing-sm, 8px);
+  padding-inline-start: var(--spacing-sm, 8px);
+  border-inline-start: 1px solid var(--color-border-secondary);
 }
 
 .data-table .ant-pagination-options-size-changer.ant-select {
-  min-width: 128px;
+  min-width: 0;
 }
 
 .data-table .ant-pagination-options-size-changer .ant-select-selector {
-  min-height: 34px !important;
-  padding-inline: 12px !important;
-  border-radius: var(--border-radius-md, 8px) !important;
-  border-color: var(--color-border, #d9e2de) !important;
-  background: var(--color-bg-container, #fff) !important;
-  font-size: var(--font-size-sm, 13px) !important;
-  font-weight: 500;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding-inline: 10px 24px !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--border-radius-sm) !important;
+  background: var(--color-bg-container) !important;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm) !important;
+  font-weight: 400;
   box-shadow: none !important;
-  transition: border-color var(--transition-base, 0.2s ease);
+  transition:
+    background-color var(--transition-base, 0.2s ease),
+    border-color var(--transition-base, 0.2s ease);
 }
 
-.data-table .ant-pagination-options-size-changer.ant-select:hover .ant-select-selector,
-.data-table .ant-pagination-options-size-changer.ant-select-focused .ant-select-selector {
-  border-color: var(--color-primary, #196b45) !important;
+.data-table .ant-pagination-options-size-changer.ant-select:hover .ant-select-selector {
+  border-color: var(--color-primary-border) !important;
+  background: var(--color-bg-container) !important;
+}
+
+.data-table .ant-pagination-options-size-changer.ant-select-focused .ant-select-selector,
+.data-table .ant-pagination-options-size-changer.ant-select-open .ant-select-selector {
+  border-color: var(--color-primary) !important;
+  background: var(--color-bg-container) !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.data-table .ant-pagination-options-size-changer .ant-select-selection-search {
+  display: none;
 }
 
 .data-table .ant-pagination-options-size-changer .ant-select-selection-item {
-  line-height: 32px !important;
-  color: var(--color-text-secondary, #5f6b66);
+  line-height: 28px !important;
+  color: var(--color-text-secondary);
+  padding-inline-end: 0 !important;
+}
+
+.data-table .ant-pagination-options-size-changer .ant-select-arrow {
+  inset-inline-end: 8px;
+  color: var(--color-text-tertiary);
+  font-size: 10px;
+  pointer-events: none;
+}
+
+/* Dropdown del size changer (portal; clase vía classNames.popup.root) */
+.data-table-pagination-size-dropdown.ant-select-dropdown {
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-container) !important;
+  box-shadow: var(--sombra-documento);
+  z-index: calc(var(--z-popup-base, 1000) + 50);
+}
+
+.data-table-pagination-size-dropdown .ant-select-dropdown-content,
+.data-table-pagination-size-dropdown .rc-virtual-list,
+.data-table-pagination-size-dropdown .rc-virtual-list-holder,
+.data-table-pagination-size-dropdown .rc-virtual-list-holder-inner {
+  background: var(--color-bg-container);
+}
+
+.data-table-pagination-size-dropdown .ant-select-item {
+  min-height: 32px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  color: var(--color-text-secondary);
+  transition: background-color var(--transition-base, 0.2s ease);
+}
+
+.data-table-pagination-size-dropdown .ant-select-item-option-content {
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table-pagination-size-dropdown
+  .ant-select-item-option-active:not(.ant-select-item-option-disabled):not(.ant-select-item-option-selected) {
+  background: var(--color-bg-layout) !important;
+  color: var(--color-text) !important;
+}
+
+.data-table-pagination-size-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background: var(--color-primary) !important;
+  color: var(--color-white) !important;
+  font-weight: 600;
+}
+
+.data-table-pagination-size-dropdown
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled)
+  .ant-select-item-option-state {
+  color: var(--color-primary) !important;
+}
+
+.data-table-pagination-size-dropdown
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled)::before {
+  background: var(--color-primary-bg) !important;
 }
 
 @media (max-width: 768px) {

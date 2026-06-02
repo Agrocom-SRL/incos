@@ -4,15 +4,14 @@
 
 import { useMemo, useState } from 'react';
 import { getSorterFn, resolveColumnKey } from './tableSortUtils';
+import {
+  DATA_TABLE_PAGINATION_BASE,
+  resolvePaginationSizeChanger,
+} from '../paginationDefaults';
 
 const defaultPaginationConfig = {
   defaultPageSize: 10,
-  showSizeChanger: true,
-  showQuickJumper: false,
-  className: 'data-table-pagination',
-  showTotal: (total, range) => `Mostrando ${range[0]}-${range[1]} de ${total} registros`,
-  pageSizeOptions: ['10', '20', '50', '100'],
-  locale: { items_per_page: 'registros / página' },
+  ...DATA_TABLE_PAGINATION_BASE,
 };
 
 /**
@@ -83,6 +82,9 @@ export const useClientTableSort = ({
       : {
           ...defaultPaginationConfig,
           ...pagination,
+          showSizeChanger: resolvePaginationSizeChanger(
+            pagination?.showSizeChanger ?? defaultPaginationConfig.showSizeChanger,
+          ),
           current: pagState.current,
           pageSize: pagState.pageSize,
           onChange: (page, pageSize) => {
