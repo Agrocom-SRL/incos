@@ -69,6 +69,7 @@ const OfertaGestionPlanesPage = () => {
                   accion="CREAR"
                   variant="primary"
                   icon={<TeamOutlined />}
+                  loading={s.generandoParalelos}
                   onClick={s.onGenerarParalelos}
                 >
                   Generar paralelos
@@ -144,7 +145,7 @@ const OfertaGestionPlanesPage = () => {
                     />
                     <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                       {s.puedeEditarOferta
-                        ? 'Resumen de paralelos ofertados por plan habilitado. «Generar paralelos» crea instancias en la gestión desde las plantillas del catálogo (pestaña activa). El detalle operativo (aula, oferta, docentes) se gestiona en la ficha de cada paralelo.'
+                        ? 'Resumen de paralelos ofertados por plan habilitado. «Generar paralelos» crea instancias en todos los planes habilitados desde las plantillas del catálogo. El detalle operativo (aula, oferta, docentes) se gestiona en la ficha de cada paralelo.'
                         : 'Consulta histórica de paralelos por plan habilitado en esta gestión.'}
                     </Paragraph>
                   </header>

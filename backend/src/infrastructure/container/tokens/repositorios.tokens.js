@@ -60,6 +60,7 @@ export const REPOSITORIOS_TOKENS = {
     scheduleRepository: 'scheduleRepository',
     asignacionHorarioRepository: 'asignacionHorarioRepository',
     paraleloGestionGrillaBloqueViewRepository: 'paraleloGestionGrillaBloqueViewRepository',
+    paraleloGestionFichaViewRepository: 'paraleloGestionFichaViewRepository',
     paraleloGestionAsignacionCoberturaBloquesViewRepository:
         'paraleloGestionAsignacionCoberturaBloquesViewRepository',
     paraleloGestionConflictoParaleloBloqueViewRepository:

@@ -1,52 +1,7 @@
-/** Clase StatusPill según estado del paralelo_gestion. */
-export function paraleloEstadoPillClass(estado) {
-  const e = String(estado ?? '').toUpperCase();
-  if (e === 'PUBLICADO') return 'cfg-materia-pill cfg-materia-pill--activa';
-  if (e === 'OFERTADO') return 'cfg-materia-pill cfg-materia-pill--teorica';
-  if (e === 'BORRADOR') return 'cfg-materia-pill cfg-materia-pill--clasificacion';
-  return 'cfg-materia-pill cfg-materia-pill--default';
-}
-
-export function aulaParaleloLabel(row) {
-  if (row?.aulaCodigo) {
-    return row.aulaNombre ? `${row.aulaCodigo} — ${row.aulaNombre}` : row.aulaCodigo;
-  }
-  if (row?.aulaNombre) return row.aulaNombre;
-  return null;
-}
-
-/** Cupo mínimo y máximo del paralelo en gestión. */
-export function paraleloCupoLabel(row) {
-  const min = row?.cupoMinimo;
-  const max = row?.cupoMaximo;
-  if (min != null && max != null) return `Cupo: ${min}–${max}`;
-  if (max != null) return `Cupo máx.: ${max}`;
-  if (min != null) return `Cupo mín.: ${min}`;
-  return null;
-}
-
-/** Resumen docente a partir de GET cobertura-docente. */
-export function paraleloDocenteResumen(cobertura) {
-  if (!cobertura) return null;
-  const total = Number(cobertura.cursos_total ?? cobertura.cursosTotal ?? 0);
-  const conDocente = Number(cobertura.cursos_con_docente ?? cobertura.cursosConDocente ?? 0);
-  if (!total) return null;
-  if (conDocente >= total) return 'Docente: completo';
-  if (conDocente > 0) return `Docente: ${conDocente}/${total} cursos`;
-  return 'Docente: pendiente';
-}
-
-/** Indicadores operativos por paralelo_gestion (aula, docente, horarios). */
-export function paraleloAsignacionFlags(pg, cobertura) {
-  const estado = String(pg?.estado ?? '').toUpperCase();
-  const total = Number(cobertura?.cursos_total ?? cobertura?.cursosTotal ?? 0);
-  const conDocente = Number(cobertura?.cursos_con_docente ?? cobertura?.cursosConDocente ?? 0);
-
-  return {
-    aula: Boolean(pg?.aulaId),
-    docente: total > 0 && conDocente >= total,
-    docenteParcial: total > 0 && conDocente > 0 && conDocente < total,
-    horarios: estado === 'PUBLICADO',
-    horariosEnArmado: estado === 'OFERTADO',
-  };
-}
+export {
+  aulaParaleloLabel,
+  paraleloAsignacionFlags,
+  paraleloCupoLabel,
+  paraleloDocenteResumen,
+  paraleloEstadoPillClass,
+} from '@application-institucional/oferta/utils/ofertaParaleloUi.js';

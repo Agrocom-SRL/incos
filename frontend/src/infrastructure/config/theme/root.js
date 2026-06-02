@@ -39,6 +39,8 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-primary-bg-hover', allThemeTokens.colorPrimaryBgHover);
   root.style.setProperty('--color-primary-border', allThemeTokens.colorPrimaryBorder);
   root.style.setProperty('--color-primary-text', allThemeTokens.colorPrimaryText);
+  root.style.setProperty('--color-primary-active', allThemeTokens.colorPrimaryActive);
+  root.style.setProperty('--color-fill-quaternary', allThemeTokens.colorBgSpotlight);
 
   // ========================================
   // ICON BUTTON - Variables CSS simples
@@ -155,6 +157,16 @@ export function injectCSSVariables() {
   root.style.setProperty('--sombra-sider', componentConfig.Sider.boxShadow);
   root.style.setProperty('--sombra-header', componentConfig.Header.boxShadow);
   root.style.setProperty('--sombra-documento', allThemeTokens.shadowElevation3);
+  root.style.setProperty('--shadow-elevation-1', allThemeTokens.shadowElevation1);
+  root.style.setProperty('--shadow-elevation-2', allThemeTokens.shadowElevation2);
+  root.style.setProperty('--shadow-elevation-3', allThemeTokens.shadowElevation3);
+  root.style.setProperty('--shadow-primary', allThemeTokens.shadowPrimary);
+  root.style.setProperty('--shadow-primary-hover', allThemeTokens.shadowPrimaryHover);
+  root.style.setProperty('--shadow-info', allThemeTokens.shadowInfo);
+  root.style.setProperty('--shadow-info-hover', allThemeTokens.shadowInfoHover);
+  root.style.setProperty('--shadow-accent', allThemeTokens.shadowAccent);
+  root.style.setProperty('--shadow-accent-hover', allThemeTokens.shadowAccentHover);
+  root.style.setProperty('--shadow-warning', allThemeTokens.shadowWarning);
 
   // ========================================
   // ESPACIADO (Solo lo necesario para Layout y componentes)

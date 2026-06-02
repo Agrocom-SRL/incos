@@ -138,6 +138,12 @@ export function planesCatalogoPendientesHabilitar(planesVigentes, planesHabilita
   });
 }
 
+/** Payload GET /paralelos-gestion/:id/cobertura-docente → data.cobertura_docente */
+export function normalizeCoberturaDocentePayload(data) {
+  if (!data || typeof data !== 'object') return null;
+  return data.cobertura_docente ?? data.cobertura ?? data;
+}
+
 export async function refreshCoberturaParalelos(fetchCoberturaDocente, items) {
   const rows = Array.isArray(items) ? items : [];
   if (!rows.length) return {};
@@ -145,7 +151,7 @@ export async function refreshCoberturaParalelos(fetchCoberturaDocente, items) {
     rows.map(async (pg) => {
       const res = await fetchCoberturaDocente(pg.id);
       if (!res.success) return [pg.id, null];
-      return [pg.id, res.data?.cobertura ?? res.data];
+      return [pg.id, normalizeCoberturaDocentePayload(res.data)];
     })
   );
   return Object.fromEntries(entries);

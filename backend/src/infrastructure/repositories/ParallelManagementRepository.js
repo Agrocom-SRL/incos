@@ -3,8 +3,15 @@ import { ParaleloGestion as ParaleloGestionModel } from '../database/models/para
 import { BaseRepository } from './BaseRepository.js';
 import { ParallelManagementMapper } from '../mappers/ParallelManagementMapper.js';
 import { sequelize } from '../database/sequelize.js';
+import { ParaleloGestionFichaViewRepository } from './views/ParaleloGestionFichaViewRepository.js';
 
 export class ParallelManagementRepository extends BaseRepository {
+  constructor({ fichaViewRepository } = {}) {
+    super();
+    this.fichaViewRepository =
+      fichaViewRepository ?? new ParaleloGestionFichaViewRepository();
+  }
+
   getModel() {
     return ParaleloGestionModel;
   }
@@ -40,120 +47,26 @@ export class ParallelManagementRepository extends BaseRepository {
   }
 
   /**
-   * Lista enriquecida para el wizard (paralelo maestro, aula, conteo oferta).
+   * Lista enriquecida por plan habilitado (vista 127).
    * @param {number} managementPlanId
    */
-  async findEnrichedByManagementPlanId(managementPlanId) {
-    const sql = `
-      SELECT
-        pg.id AS id,
-        pg.gestion_plan_id AS gestionPlanId,
-        pg.paralelo_id AS paraleloId,
-        pg.aula_id AS aulaId,
-        pg.turno AS turno,
-        pg.estado AS estado,
-        pg.cupo_maximo AS cupoMaximo,
-        pg.cupo_minimo AS cupoMinimo,
-        pg.observaciones AS observaciones,
-        pg.activo AS activo,
-        p.nombre AS paraleloNombre,
-        p.turno AS paraleloTurnoMaestro,
-        p.periodo_id AS periodoId,
-        a.codigo AS aulaCodigo,
-        a.nombre AS aulaNombre,
-        (
-          SELECT COUNT(*)
-          FROM oferta_cursos oc
-          WHERE oc.paralelo_gestion_id = pg.id
-            AND oc.deleted_at IS NULL
-            AND oc.activo = TRUE
-        ) AS ofertaActual
-      FROM paralelos_gestion pg
-      LEFT JOIN paralelos p ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
-      LEFT JOIN aulas a ON a.id = pg.aula_id AND a.deleted_at IS NULL
-      WHERE pg.gestion_plan_id = :managementPlanId
-        AND pg.deleted_at IS NULL
-      ORDER BY p.nombre ASC, pg.id ASC
-    `;
-    return sequelize.query(sql, {
-      replacements: { managementPlanId },
-      type: QueryTypes.SELECT,
-    });
+  findEnrichedByManagementPlanId(managementPlanId) {
+    return this.fichaViewRepository.findByManagementPlanId(managementPlanId);
   }
 
   /**
-   * Detalle enriquecido de un paralelo-gestión.
+   * Detalle enriquecido (vista 127).
    */
-  async findEnrichedById(id) {
-    const rows = await sequelize.query(
-      `
-      SELECT
-        pg.id AS id,
-        pg.gestion_plan_id AS gestionPlanId,
-        pg.paralelo_id AS paraleloId,
-        pg.aula_id AS aulaId,
-        pg.turno AS turno,
-        pg.estado AS estado,
-        pg.cupo_maximo AS cupoMaximo,
-        pg.cupo_minimo AS cupoMinimo,
-        pg.observaciones AS observaciones,
-        pg.activo AS activo,
-        p.nombre AS paraleloNombre,
-        p.turno AS paraleloTurnoMaestro,
-        p.descripcion AS paraleloDescripcion,
-        p.carrera_id AS carreraId,
-        car.nombre AS carreraNombre,
-        car.codigo AS carreraCodigo,
-        car.imagen_ruta AS carreraImagenRuta,
-        car.color_hex AS carreraColorHex,
-        p.periodo_id AS periodoId,
-        per.nombre AS periodoNombre,
-        per.numero AS periodoNumero,
-        a.codigo AS aulaCodigo,
-        a.nombre AS aulaNombre,
-        gp.plan_estudio_id AS planEstudioId,
-        gp.gestion_id AS gestionId
-      FROM paralelos_gestion pg
-      LEFT JOIN paralelos p ON p.id = pg.paralelo_id
-      LEFT JOIN carreras car ON car.id = p.carrera_id AND car.deleted_at IS NULL
-      LEFT JOIN periodos per ON per.id = p.periodo_id AND per.deleted_at IS NULL
-      LEFT JOIN aulas a ON a.id = pg.aula_id
-      LEFT JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
-      WHERE pg.id = :id AND pg.deleted_at IS NULL
-      LIMIT 1
-      `,
-      { replacements: { id }, type: QueryTypes.SELECT }
-    );
-    return rows[0] ?? null;
+  findEnrichedById(id) {
+    return this.fichaViewRepository.findById(id);
   }
 
   /**
-   * Paralelos-gestión en OFERTADO de una gestión académica (publicación masiva).
+   * Paralelos-gestión en OFERTADO de una gestión (vista 127).
    * @param {number} gestionId
    */
-  async findEnrichedOfertadoByGestionId(gestionId) {
-    return sequelize.query(
-      `
-      SELECT
-        pg.id AS id,
-        pg.gestion_plan_id AS gestionPlanId,
-        pg.paralelo_id AS paraleloId,
-        pg.turno AS turno,
-        pg.estado AS estado,
-        p.nombre AS paraleloNombre
-      FROM paralelos_gestion pg
-      INNER JOIN gestiones_planes gp
-        ON gp.id = pg.gestion_plan_id AND gp.deleted_at IS NULL
-      INNER JOIN paralelos p
-        ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
-      WHERE gp.gestion_id = :gestionId
-        AND pg.deleted_at IS NULL
-        AND pg.activo = TRUE
-        AND UPPER(pg.estado) = 'OFERTADO'
-      ORDER BY p.nombre ASC, pg.turno ASC, pg.id ASC
-      `,
-      { replacements: { gestionId }, type: QueryTypes.SELECT }
-    );
+  findEnrichedOfertadoByGestionId(gestionId) {
+    return this.fichaViewRepository.findOfertadoByGestionId(gestionId);
   }
 
   /**
@@ -226,47 +139,10 @@ export class ParallelManagementRepository extends BaseRepository {
   }
 
   /**
-   * Instancias de paralelo en gestiones (oferta académica) para un paralelo maestro.
+   * Instancias de paralelo en gestiones (vista 127).
    * @param {number} parallelId
    */
-  async findEnrichedByParallelId(parallelId) {
-    return sequelize.query(
-      `
-      SELECT
-        pg.id AS id,
-        pg.gestion_plan_id AS gestionPlanId,
-        pg.paralelo_id AS paraleloId,
-        pg.aula_id AS aulaId,
-        pg.turno AS turno,
-        pg.estado AS estado,
-        pg.cupo_maximo AS cupoMaximo,
-        pg.cupo_minimo AS cupoMinimo,
-        pg.activo AS activo,
-        p.nombre AS paraleloNombre,
-        g.id AS gestionId,
-        g.codigo AS gestionCodigo,
-        g.nombre AS gestionNombre,
-        g.anio AS gestionAnio,
-        g.vigente AS gestionVigente,
-        a.codigo AS aulaCodigo,
-        a.nombre AS aulaNombre,
-        (
-          SELECT COUNT(*)
-          FROM oferta_cursos oc
-          WHERE oc.paralelo_gestion_id = pg.id
-            AND oc.deleted_at IS NULL
-            AND oc.activo = TRUE
-        ) AS ofertaActual
-      FROM paralelos_gestion pg
-      INNER JOIN paralelos p ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
-      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id AND gp.deleted_at IS NULL
-      INNER JOIN gestiones g ON g.id = gp.gestion_id AND g.deleted_at IS NULL
-      LEFT JOIN aulas a ON a.id = pg.aula_id AND a.deleted_at IS NULL
-      WHERE pg.paralelo_id = :parallelId
-        AND pg.deleted_at IS NULL
-      ORDER BY g.anio DESC, g.codigo ASC, pg.turno ASC, pg.id ASC
-      `,
-      { replacements: { parallelId }, type: QueryTypes.SELECT },
-    );
+  findEnrichedByParallelId(parallelId) {
+    return this.fichaViewRepository.findByParallelId(parallelId);
   }
 }

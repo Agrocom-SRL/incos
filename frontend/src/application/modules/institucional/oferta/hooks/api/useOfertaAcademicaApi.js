@@ -108,6 +108,26 @@ export function useOfertaAcademicaApi() {
     [run]
   );
 
+  /** Lote en gestión de planes: evita parpadeo del loading global entre planes. */
+  const generarParalelosGestionSilent = useCallback(async (gestionPlanId) => {
+    try {
+      const response = await apiClient.post(
+        GESTIONES_PLANES_ENDPOINTS.GENERAR_PARALELOS(gestionPlanId)
+      );
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error || 'No se pudieron generar los paralelos de gestión',
+        };
+      }
+      return { success: true, data: result.data };
+    } catch (err) {
+      const fail = handleErrorResponse(err, 'No se pudieron generar los paralelos de gestión');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
   /** Sin toggle de loading global: se invoca en lote desde el wizard (evita parpadeos y re-renders). */
   const validarOferta = useCallback(async (paraleloGestionId) => {
     try {
@@ -232,6 +252,7 @@ export function useOfertaAcademicaApi() {
     habilitarPlan,
     fetchParalelosGestion,
     generarParalelosGestion,
+    generarParalelosGestionSilent,
     validarOferta,
     fetchCoberturaDocente,
     generarOferta,

@@ -28,6 +28,7 @@ export function rowToPresentation(row) {
     aulaCodigo: row.aulaCodigo ?? null,
     aulaNombre: row.aulaNombre ?? null,
     planEstudioId: row.planEstudioId ?? null,
+    planNombre: row.planNombre ?? null,
     gestionId: row.gestionId ?? null,
     ofertaActual: row.ofertaActual != null ? Number(row.ofertaActual) : undefined,
   };

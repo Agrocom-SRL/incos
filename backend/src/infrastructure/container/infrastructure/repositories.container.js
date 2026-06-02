@@ -92,6 +92,7 @@ import { ScheduleRepository } from '../../repositories/ScheduleRepository.js';
 import { AsignacionHorarioRepository } from '../../repositories/AsignacionHorarioRepository.js';
 import { HorarioGrillaRepository } from '../../repositories/HorarioGrillaRepository.js';
 import { ParaleloGestionGrillaBloqueViewRepository } from '../../repositories/views/ParaleloGestionGrillaBloqueViewRepository.js';
+import { ParaleloGestionFichaViewRepository } from '../../repositories/views/ParaleloGestionFichaViewRepository.js';
 import { ParaleloGestionAsignacionCoberturaBloquesViewRepository } from '../../repositories/views/ParaleloGestionAsignacionCoberturaBloquesViewRepository.js';
 import { ParaleloGestionConflictoParaleloBloqueViewRepository } from '../../repositories/views/ParaleloGestionConflictoParaleloBloqueViewRepository.js';
 import { ParaleloGestionConflictoAulaBloqueViewRepository } from '../../repositories/views/ParaleloGestionConflictoAulaBloqueViewRepository.js';
@@ -220,7 +221,16 @@ export function registerRepositoriesModule(container) {
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.activityRepository, ActivityRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.managementPlanRepository, ManagementPlanRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.parallelManagementRepository, ParallelManagementRepository);
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionFichaViewRepository,
+        ParaleloGestionFichaViewRepository
+    );
+    registerComponent(container, REPOSITORIOS_TOKENS.parallelManagementRepository, (c) =>
+        new ParallelManagementRepository({
+            fichaViewRepository: c.resolve(REPOSITORIOS_TOKENS.paraleloGestionFichaViewRepository),
+        })
+    );
     registerRepository(container, REPOSITORIOS_TOKENS.courseOfferRepository, CourseOfferRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.academicPeriodRepository, AcademicPeriodRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.calendarActivityRepository, CalendarActivityRepository);
