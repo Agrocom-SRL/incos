@@ -12,17 +12,21 @@ export function useValidarConflictoHorarioApi() {
   const validar = useCallback(async (payload) => {
     setLoading(true);
     try {
+      const excludeRaw =
+        payload.asignacion_horario_id ??
+        payload.asignacionHorarioId ??
+        payload.excludeAsignacionHorarioId ??
+        payload.exclude_id;
+      const excludeId = Number(excludeRaw);
       const body = {
         asignacion_docente_id:
           payload.asignacion_docente_id ?? payload.asignacionDocenteId,
         horario_id: payload.horario_id ?? payload.horarioId,
         aula_id: payload.aula_id ?? payload.aulaId ?? null,
-        asignacion_horario_id:
-          payload.asignacion_horario_id ??
-          payload.asignacionHorarioId ??
-          payload.excludeAsignacionHorarioId ??
-          null,
       };
+      if (Number.isFinite(excludeId) && excludeId > 0) {
+        body.asignacion_horario_id = excludeId;
+      }
 
       const response = await apiClient.post(CONFLICTOS_ENDPOINTS.VALIDAR, body);
       const result = handleSuccessResponse(response);

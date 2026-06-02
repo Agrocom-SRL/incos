@@ -29,6 +29,9 @@ export function mapOfertaCursoToFilaCurso(oc) {
     colorHex: null,
     estado: oc.estado ?? null,
     horasSemanalesPlan: oc.horasSemanales ?? oc.horas_semanales ?? null,
+    asignacionDocenteId: oc.asignacionDocenteId ?? oc.asignacion_docente_id ?? null,
+    docenteNombre: oc.docenteNombre ?? oc.docente_nombre ?? null,
+    colorHex: oc.colorHex ?? oc.color_hex ?? null,
   };
 }
 

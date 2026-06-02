@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { message } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGestionesCatalogApi } from '@application/modules/shared/hooks';
 import { useOfertaAcademicaApi } from '@application-institucional/oferta';
@@ -23,9 +24,17 @@ import {
     grillaHorarioToCourseSchedules,
     missingSubjectsFromGrillaCobertura,
 } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
+import {
+    isParaleloGestionHorarioEditable,
+    mensajeParaleloGestionNoEditable,
+} from '@application-institucional/horarios/utils/paraleloGestionHorarioEditable';
 
 function pickParaleloId(row) {
     return Number(row?.paraleloId ?? row?.paralelo_id ?? row?.parallelId);
+}
+
+function pickParaleloGestionEstado(row) {
+    return row?.estado ?? row?.state ?? null;
 }
 
 export const useGestionHorariosArmadoState = () => {
@@ -101,9 +110,13 @@ export const useGestionHorariosArmadoState = () => {
     const grillaMeta = useMemo(() => extractGrillaHorarioMeta(grillaHorario), [grillaHorario]);
 
     const metaFromPg = pgDirectMeta ?? resolver.meta;
+    const paraleloGestionEstado = metaFromPg?.estado ?? null;
+    const horarioEditable = isParaleloGestionHorarioEditable(paraleloGestionEstado);
     const turnoEfectivo = (metaFromPg?.turno || grillaMeta?.turno || '').trim();
     const paraleloNombre =
         metaFromPg?.nombre || (paraleloId ? `Paralelo #${paraleloId}` : null);
+
+    const contextMeta = pgDirectMeta ?? resolver.meta;
 
     const paraleloApiMeta = useMemo(
         () =>
@@ -113,9 +126,15 @@ export const useGestionHorariosArmadoState = () => {
                       nombre: paraleloNombre,
                       turno: turnoEfectivo || null,
                       paraleloGestionId,
+                      carreraNombre: contextMeta?.carreraNombre ?? null,
+                      carreraCodigo: contextMeta?.carreraCodigo ?? null,
+                      carreraImagenRuta: contextMeta?.carreraImagenRuta ?? null,
+                      periodoNombre: contextMeta?.periodoNombre ?? null,
+                      periodoNumero: contextMeta?.periodoNumero ?? null,
+                      descripcion: contextMeta?.descripcion ?? null,
                   }
                 : null,
-        [validParaleloId, paraleloNombre, turnoEfectivo, paraleloGestionId],
+        [validParaleloId, paraleloNombre, turnoEfectivo, paraleloGestionId, contextMeta],
     );
 
     useEffect(() => {
@@ -144,7 +163,14 @@ export const useGestionHorariosArmadoState = () => {
             setPgDirectMeta({
                 nombre: det.paraleloNombre ?? det.paralelo_nombre ?? null,
                 turno: det.turno ?? null,
+                estado: pickParaleloGestionEstado(det),
                 paraleloMaestroId: Number.isFinite(pid) && pid > 0 ? pid : null,
+                carreraNombre: det.carreraNombre ?? det.carrera_nombre ?? null,
+                carreraCodigo: det.carreraCodigo ?? det.carrera_codigo ?? null,
+                carreraImagenRuta: det.carreraImagenRuta ?? det.carrera_imagen_ruta ?? null,
+                periodoNombre: det.periodoNombre ?? det.periodo_nombre ?? null,
+                periodoNumero: det.periodoNumero ?? det.periodo_numero ?? null,
+                descripcion: det.paraleloDescripcion ?? det.paralelo_descripcion ?? null,
             });
             setPgDirectLoading(false);
 
@@ -249,6 +275,11 @@ export const useGestionHorariosArmadoState = () => {
     );
 
     const onRequestPersist = useCallback(async () => {
+        if (!horarioEditable) {
+            message.warning(mensajeParaleloGestionNoEditable(paraleloGestionEstado));
+            return;
+        }
+
         const pid =
             validParaleloId ??
             (pgDirectMeta?.paraleloMaestroId != null ? Number(pgDirectMeta.paraleloMaestroId) : null);
@@ -260,27 +291,37 @@ export const useGestionHorariosArmadoState = () => {
             horarioSlotIndex,
         );
 
-        if (!items.length) return;
+        if (!items.length) {
+            message.info('No hay cambios pendientes para guardar.');
+            return;
+        }
 
-        if (!incomplete) {
-            const bulkRes = await ejecutarBulk(items);
-            if (bulkRes.success) {
-                setBulkSaved(true);
-                return;
-            }
+        if (incomplete) {
+            message.warning(
+                'Algunos bloques no tienen docente o franja válida. Revisá la asignación docente y el turno del paralelo antes de guardar.',
+            );
+            setBulkSaved(false);
+            return;
+        }
+
+        const bulkRes = await ejecutarBulk(items);
+        if (bulkRes.success) {
+            message.success('Bloques del plan guardados correctamente.');
+            setBulkSaved(true);
+            return;
         }
 
         setBulkSaved(false);
-        await persistLegacy(pid, draftSchedules);
+        message.error(bulkRes.error || 'No se pudieron guardar los bloques del plan.');
     }, [
+        horarioEditable,
+        paraleloGestionEstado,
         validParaleloId,
         pgDirectMeta,
-        grillaHorario,
         serverSchedules,
         draftSchedules,
         horarioSlotIndex,
         ejecutarBulk,
-        persistLegacy,
     ]);
 
     const validatePlacement = useCallback(
@@ -303,8 +344,20 @@ export const useGestionHorariosArmadoState = () => {
                 course.asignacionDocenteId ?? block.asignacionDocenteId,
             );
 
-            if (!Number.isFinite(asignacionDocenteId) || asignacionDocenteId < 1 || !horarioId) {
-                return { ok: true };
+            if (!Number.isFinite(asignacionDocenteId) || asignacionDocenteId < 1) {
+                return {
+                    ok: false,
+                    message:
+                        'Asigná un docente a esta materia en la pestaña «Cursos del paralelo» antes de colocar bloques en el plan.',
+                };
+            }
+
+            if (!horarioId) {
+                return {
+                    ok: false,
+                    message:
+                        'No se encontró el horario del catálogo para esa franja. Verificá el turno del paralelo (NOCHE/TARDE) y la hora elegida.',
+                };
             }
 
             const excludeRaw = block.cursoHorarioId;
@@ -322,10 +375,13 @@ export const useGestionHorariosArmadoState = () => {
 
             if (res.valido) return { ok: true };
 
+            const conflictoParalelo = res.conflictos?.find((c) => c?.tipo === 'PARALELO');
             const msg =
-                res.conflictos?.map((c) => c.mensaje).filter(Boolean).join(' ') ||
-                res.error ||
-                'El bloque genera un conflicto de horario';
+                conflictoParalelo?.mensaje
+                    ? `${conflictoParalelo.mensaje} Usá «Añadir bloque» y elegí solo franjas libres, o una celda vacía en la grilla.`
+                    : res.conflictos?.map((c) => c.mensaje).filter(Boolean).join(' ') ||
+                      res.error ||
+                      'El bloque genera un conflicto de horario';
             return { ok: false, message: msg };
         },
         [draftSchedules, horarioSlotIndex, validarConflicto],
@@ -416,5 +472,9 @@ export const useGestionHorariosArmadoState = () => {
         handleSelectorGestionChange,
         handleSelectorParaleloChange,
         hasParaleloSelected,
+        horarioSlotIndex,
+        grillaHorario,
+        paraleloGestionEstado,
+        horarioEditable,
     };
 };

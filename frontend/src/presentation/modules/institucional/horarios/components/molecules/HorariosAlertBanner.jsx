@@ -18,7 +18,8 @@ const HorariosAlertBanner = ({ sinDocentes = 0, sinAulas = 0, sinHorarios = 0 })
             description={
                 <Space orientation="vertical" size={8}>
                     <span>
-                        Sin horarios: {sinHorarios} | Sin docentes: {sinDocentes} | Sin aulas: {sinAulas}
+                        Sin horarios: {sinHorarios} | Sin docentes: {sinDocentes} | Sin aula efectiva: {sinAulas}{' '}
+                        (revisar aula en Oferta académica o overrides aquí)
                     </span>
                     {sinDocentes > 0 && puedeAsignacion ? (
                         <Button

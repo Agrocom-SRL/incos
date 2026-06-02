@@ -1,0 +1,33 @@
+/**
+ * Oferta académica — layout alineado con gestión de horarios (shell + KPI + pasos).
+ */
+
+.oferta-flow-steps {
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.oferta-step-section__select {
+  max-width: 420px;
+}
+
+.oferta-step-section__hint {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.oferta-wizard-card .ant-card-head-title {
+  font-weight: 600;
+}
+
+.oferta-paralelos-table__select {
+  width: 120px;
+}
+
+.oferta-paralelos-table__select--aula {
+  width: 160px;
+}
+
+.oferta-sidebar-resumen-stat .ant-card-body {
+  padding: 16px;
+}

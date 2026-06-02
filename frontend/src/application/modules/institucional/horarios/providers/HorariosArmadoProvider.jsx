@@ -1,18 +1,50 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HorariosArmadoContext } from '@application-institucional/horarios/context';
 import { useGestionHorariosArmadoState } from '@application-institucional/horarios/hooks/state/useGestionHorariosArmadoState';
 import { useGestionHorariosPlantillaState } from '@application-institucional/horarios/hooks/state/useGestionHorariosPlantillaState';
+import { useAsignacionDocenteApi } from '@application-institucional/horarios/hooks/api/useAsignacionDocenteApi';
+import { indexAsignacionesPorOferta } from '@application-institucional/horarios/mappers/asignacionDocenteMatrizMapper';
 import { mergeGrillaWithOfertaCursos } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
 
 export const HorariosArmadoProvider = ({ children }) => {
     const armadoState = useGestionHorariosArmadoState();
-    const ofertaParalelo = useGestionHorariosPlantillaState();
+    const ofertaParalelo = useGestionHorariosPlantillaState(armadoState.paraleloGestionId);
+    const { fetchAsignaciones } = useAsignacionDocenteApi();
+    const [asignacionesPorOferta, setAsignacionesPorOferta] = useState(null);
     const lastDraftSigRef = useRef('');
+
+    useEffect(() => {
+        const pgId = armadoState.paraleloGestionId;
+        if (!pgId) {
+            setAsignacionesPorOferta(null);
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            const res = await fetchAsignaciones({
+                paralelo_gestion_id: pgId,
+                vigente: true,
+                page: 1,
+                limit: 200,
+            });
+            if (cancelled) return;
+            if (res.success) {
+                const rows = res.data?.asignaciones ?? [];
+                setAsignacionesPorOferta(indexAsignacionesPorOferta(rows));
+            } else {
+                setAsignacionesPorOferta(null);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [armadoState.paraleloGestionId, fetchAsignaciones]);
 
     useEffect(() => {
         const merged = mergeGrillaWithOfertaCursos(
             armadoState.serverSchedules,
             ofertaParalelo.filasOferta ?? [],
+            asignacionesPorOferta,
         );
         let sig = '';
         try {
@@ -31,7 +63,12 @@ export const HorariosArmadoProvider = ({ children }) => {
             }
             return merged;
         });
-    }, [armadoState.serverSchedules, ofertaParalelo.filasOferta, armadoState.setDraftSchedules]);
+    }, [
+        armadoState.serverSchedules,
+        ofertaParalelo.filasOferta,
+        asignacionesPorOferta,
+        armadoState.setDraftSchedules,
+    ]);
 
     const value = {
         ...armadoState,

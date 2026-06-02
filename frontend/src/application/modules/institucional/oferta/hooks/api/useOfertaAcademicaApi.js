@@ -108,14 +108,22 @@ export function useOfertaAcademicaApi() {
     [run]
   );
 
-  const validarOferta = useCallback(
-    (paraleloGestionId) =>
-      run(
-        () => apiClient.get(PARALELOS_GESTION_ENDPOINTS.VALIDAR_OFERTA(paraleloGestionId)),
-        'No se pudo validar la oferta del paralelo'
-      ),
-    [run]
-  );
+  /** Sin toggle de loading global: se invoca en lote desde el wizard (evita parpadeos y re-renders). */
+  const validarOferta = useCallback(async (paraleloGestionId) => {
+    try {
+      const response = await apiClient.get(
+        PARALELOS_GESTION_ENDPOINTS.VALIDAR_OFERTA(paraleloGestionId)
+      );
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo validar la oferta del paralelo' };
+      }
+      return { success: true, data: result.data };
+    } catch (err) {
+      const fail = handleErrorResponse(err, 'No se pudo validar la oferta del paralelo');
+      return { success: false, error: fail.error };
+    }
+  }, []);
 
   const generarOferta = useCallback(
     (paraleloGestionId) =>

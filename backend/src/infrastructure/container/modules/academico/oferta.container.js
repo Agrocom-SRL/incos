@@ -201,6 +201,7 @@ function registerOfertaUseCases(container) {
     new GetParaleloGestionGrillaHorarioUseCase({
       parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
       horarioGrillaRepository: c.resolve(REPOSITORIOS_TOKENS.horarioGrillaRepository),
+      scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
       logger: c.resolve(SERVICIOS_TOKENS.logger),
     })
   );

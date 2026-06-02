@@ -105,30 +105,66 @@ export function missingSubjectsFromGrillaCobertura(payload) {
     }));
 }
 
+function pickAsignacionPorOferta(asignacionesPorOferta, cursoId) {
+  if (!asignacionesPorOferta || typeof asignacionesPorOferta.get !== 'function') return null;
+  return asignacionesPorOferta.get(Number(cursoId)) ?? null;
+}
+
+function enrichCourseFromAsignacion(course, asig) {
+  if (!asig) return course;
+  const adId = Number(asig.asignacionId ?? asig.id);
+  return {
+    ...course,
+    asignacionDocenteId:
+      Number.isFinite(adId) && adId > 0 ? adId : course.asignacionDocenteId ?? null,
+    cursoColorHex: asig.colorHex ?? course.cursoColorHex ?? null,
+    docente: asig.docenteNombre ?? course.docente ?? null,
+    horasSemanalesPlan:
+      course.horasSemanalesPlan ??
+      (asig.cargaHoraria != null ? Number(asig.cargaHoraria) : null) ??
+      null,
+  };
+}
+
 /**
- * Incorpora cursos de oferta sin bloques en la grilla.
+ * Incorpora cursos de oferta sin bloques en la grilla y enlaza asignación docente vigente.
  * @param {Array} courseSchedules
- * @param {Array<{ cursoId?: number, id?: number, materiaNombre?: string, materiaSigla?: string, colorHex?: string, docenteNombre?: string }>} ofertaFilas
+ * @param {Array<{ cursoId?: number, id?: number, materiaNombre?: string, materiaSigla?: string, colorHex?: string, docenteNombre?: string, asignacionDocenteId?: number }>} ofertaFilas
+ * @param {Map<number, object>|null} [asignacionesPorOferta]
  */
-export function mergeGrillaWithOfertaCursos(courseSchedules, ofertaFilas = []) {
+export function mergeGrillaWithOfertaCursos(courseSchedules, ofertaFilas = [], asignacionesPorOferta = null) {
   const byId = new Map(
-    (courseSchedules || []).map((c) => [Number(c.cursoId), { ...c, bloques: [...(c.bloques || [])] }]),
+    (courseSchedules || []).map((c) => {
+      const cursoId = Number(c.cursoId);
+      const base = { ...c, bloques: [...(c.bloques || [])] };
+      return [cursoId, enrichCourseFromAsignacion(base, pickAsignacionPorOferta(asignacionesPorOferta, cursoId))];
+    }),
   );
 
   for (const row of ofertaFilas || []) {
     const cursoId = Number(row.cursoId ?? row.id ?? row.ofertaCursoId);
     if (!Number.isFinite(cursoId) || cursoId < 1) continue;
-    if (byId.has(cursoId)) continue;
-    byId.set(cursoId, {
+    const asig = pickAsignacionPorOferta(asignacionesPorOferta, cursoId);
+    if (byId.has(cursoId)) {
+      byId.set(cursoId, enrichCourseFromAsignacion(byId.get(cursoId), asig));
+      continue;
+    }
+    byId.set(
       cursoId,
-      asignacionDocenteId: row.asignacionDocenteId ?? null,
-      cursoCodigo: row.materiaSigla || row.materiaNombre || '—',
-      cursoColorHex: row.colorHex ?? row.cursoColorHex ?? null,
-      materiaNombre: row.materiaNombre ?? null,
-      materiaSigla: row.materiaSigla ?? null,
-      docente: row.docenteNombre ?? row.docente ?? null,
-      bloques: [],
-    });
+      enrichCourseFromAsignacion(
+        {
+          cursoId,
+          asignacionDocenteId: row.asignacionDocenteId ?? null,
+          cursoCodigo: row.materiaSigla || row.materiaNombre || '—',
+          cursoColorHex: row.colorHex ?? row.cursoColorHex ?? null,
+          materiaNombre: row.materiaNombre ?? null,
+          materiaSigla: row.materiaSigla ?? null,
+          docente: row.docenteNombre ?? row.docente ?? null,
+          bloques: [],
+        },
+        asig,
+      ),
+    );
   }
 
   return [...byId.values()].sort((a, b) =>

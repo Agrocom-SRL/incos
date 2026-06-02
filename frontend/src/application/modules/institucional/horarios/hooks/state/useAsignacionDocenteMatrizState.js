@@ -40,6 +40,8 @@ export function useAsignacionDocenteMatrizState() {
   const [gestiones, setGestiones] = useState([]);
   const [selectedGestionId, setSelectedGestionId] = useState(null);
   const [planesHabilitados, setPlanesHabilitados] = useState([]);
+  const [planesCatalogLoading, setPlanesCatalogLoading] = useState(false);
+  const [paralelosCatalogLoading, setParalelosCatalogLoading] = useState(false);
   const [selectedGestionPlanId, setSelectedGestionPlanId] = useState(null);
   const [paralelosGestion, setParalelosGestion] = useState([]);
   const [selectedParaleloGestionId, setSelectedParaleloGestionId] = useState(null);
@@ -81,22 +83,47 @@ export function useAsignacionDocenteMatrizState() {
     setGestiones(list);
     const vigente = list.find((g) => g.vigente);
     if (vigente) {
-      setSelectedGestionId((prev) => prev ?? vigente.id);
+      const vigenteId = Number(vigente.id);
+      setSelectedGestionId((prev) => prev ?? (Number.isFinite(vigenteId) ? vigenteId : vigente.id));
     }
   }, [fetchGestionesOferta]);
 
   const loadPlanes = useCallback(async () => {
     if (!selectedGestionId) return;
-    const res = await fetchPlanesHabilitados(selectedGestionId);
-    if (!res.success) return;
-    setPlanesHabilitados(res.data?.planesHabilitados ?? []);
+    setPlanesCatalogLoading(true);
+    try {
+      const res = await fetchPlanesHabilitados(selectedGestionId);
+      if (!res.success) {
+        setPlanesHabilitados([]);
+        return;
+      }
+      const list = res.data?.planesHabilitados ?? [];
+      setPlanesHabilitados(list);
+      if (list.length === 1) {
+        setSelectedGestionPlanId((prev) => prev ?? list[0].id);
+      }
+    } finally {
+      setPlanesCatalogLoading(false);
+    }
   }, [fetchPlanesHabilitados, selectedGestionId]);
 
   const loadParalelos = useCallback(async () => {
     if (!selectedGestionPlanId) return;
-    const res = await fetchParalelosGestion(selectedGestionPlanId);
-    if (!res.success) return;
-    setParalelosGestion(res.data?.paralelosGestion ?? []);
+    setParalelosCatalogLoading(true);
+    try {
+      const res = await fetchParalelosGestion(selectedGestionPlanId);
+      if (!res.success) {
+        setParalelosGestion([]);
+        return;
+      }
+      const list = res.data?.paralelosGestion ?? [];
+      setParalelosGestion(list);
+      if (list.length === 1) {
+        setSelectedParaleloGestionId((prev) => prev ?? list[0].id);
+      }
+    } finally {
+      setParalelosCatalogLoading(false);
+    }
   }, [fetchParalelosGestion, selectedGestionPlanId]);
 
   const loadMatriz = useCallback(async () => {
@@ -158,15 +185,18 @@ export function useAsignacionDocenteMatrizState() {
   }, [loadMatriz]);
 
   const onGestionChange = useCallback((id) => {
-    setSelectedGestionId(id ?? null);
+    const normalized = id == null ? null : Number(id);
+    setSelectedGestionId(Number.isFinite(normalized) ? normalized : id);
   }, []);
 
   const onPlanChange = useCallback((id) => {
-    setSelectedGestionPlanId(id ?? null);
+    const normalized = id == null ? null : Number(id);
+    setSelectedGestionPlanId(Number.isFinite(normalized) ? normalized : id);
   }, []);
 
   const onParaleloChange = useCallback((id) => {
-    setSelectedParaleloGestionId(id ?? null);
+    const normalized = id == null ? null : Number(id);
+    setSelectedParaleloGestionId(Number.isFinite(normalized) ? normalized : id);
   }, []);
 
   const closeColorPicker = useCallback(() => {
@@ -299,8 +329,14 @@ export function useAsignacionDocenteMatrizState() {
     cargaPorDocente,
     loadingMatriz,
     savingOfertaId,
+    planesCatalogLoading,
+    paralelosCatalogLoading,
     loadingCatalogos: ofertaLoading || loadingMatriz,
     errorCatalogos: ofertaError,
+    catalogosListos:
+      Boolean(selectedGestionId) &&
+      !planesCatalogLoading &&
+      planesHabilitados.length > 0,
     onGestionChange,
     onPlanChange,
     onParaleloChange,

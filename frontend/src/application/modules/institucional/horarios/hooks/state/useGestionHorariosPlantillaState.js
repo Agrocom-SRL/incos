@@ -10,7 +10,7 @@ import {
   mapFaltantesToMissingSubjects,
 } from '../../mappers/plantillaOfertaMapper.js';
 
-export const useGestionHorariosPlantillaState = () => {
+export const useGestionHorariosPlantillaState = (paraleloGestionIdOverride = null) => {
   const { canCrear, canEliminar } = useHorariosOfertaPermisos();
   const navigate = useNavigate();
   const { paraleloId: paraleloIdParam } = useParams();
@@ -28,7 +28,13 @@ export const useGestionHorariosPlantillaState = () => {
     eliminarOfertaCurso,
     crearOfertaCursoManual,
   } = useOfertaAcademicaApi();
-  const resolver = useParaleloGestionVigenteResolver(validParaleloId);
+  const resolver = useParaleloGestionVigenteResolver(
+    paraleloGestionIdOverride ? null : validParaleloId
+  );
+  const effectiveParaleloGestionId =
+    paraleloGestionIdOverride != null && Number(paraleloGestionIdOverride) > 0
+      ? Number(paraleloGestionIdOverride)
+      : resolver.paraleloGestionId;
 
   const [ofertaCursos, setOfertaCursos] = useState([]);
   const [missingSubjects, setMissingSubjects] = useState([]);
@@ -47,7 +53,7 @@ export const useGestionHorariosPlantillaState = () => {
   const resolverError = resolver.error;
 
   const loadOferta = useCallback(async () => {
-    const pgId = resolver.paraleloGestionId;
+    const pgId = effectiveParaleloGestionId;
     if (!pgId) {
       setOfertaCursos([]);
       setMissingSubjects([]);
@@ -79,13 +85,13 @@ export const useGestionHorariosPlantillaState = () => {
     }
 
     setLoadingOferta(false);
-  }, [fetchOfertaCursos, validarOferta, resolver.paraleloGestionId]);
+  }, [fetchOfertaCursos, validarOferta, effectiveParaleloGestionId]);
 
   useEffect(() => {
-    if (resolver.paraleloGestionId && !resolver.loading) {
+    if (effectiveParaleloGestionId && (!resolver.loading || paraleloGestionIdOverride)) {
       loadOferta();
     }
-  }, [resolver.paraleloGestionId, resolver.loading, loadOferta]);
+  }, [effectiveParaleloGestionId, resolver.loading, loadOferta, paraleloGestionIdOverride]);
 
   const filasOferta = useMemo(
     () => buildFilasOfertaPlantilla(ofertaCursos, missingSubjects),
@@ -117,7 +123,7 @@ export const useGestionHorariosPlantillaState = () => {
 
   const openCursoModalCrear = useCallback(
     (prefillAsignaturaPlanId) => {
-      if (!resolver.paraleloGestionId || !canCrear) return;
+      if (!effectiveParaleloGestionId || !canCrear) return;
       setCursoModal({
         open: true,
         isEdit: false,
@@ -128,7 +134,7 @@ export const useGestionHorariosPlantillaState = () => {
             : undefined,
       });
     },
-    [resolver.paraleloGestionId, canCrear]
+    [effectiveParaleloGestionId, canCrear]
   );
 
   const closeCursoModal = useCallback(() => {
@@ -153,12 +159,12 @@ export const useGestionHorariosPlantillaState = () => {
 
   const deleteFn = useCallback(
     async (ofertaCursoId) => {
-      if (!resolver.paraleloGestionId) {
+      if (!effectiveParaleloGestionId) {
         return { success: false, error: 'Paralelo en gestión no resuelto' };
       }
       return eliminarOfertaCurso(ofertaCursoId);
     },
-    [eliminarOfertaCurso, resolver.paraleloGestionId]
+    [eliminarOfertaCurso, effectiveParaleloGestionId]
   );
 
   const { deleteItem, loading: deleteCursoLoading } = useDeleteItem({
@@ -170,7 +176,7 @@ export const useGestionHorariosPlantillaState = () => {
   const requestDeleteCurso = useCallback(
     (record) => {
       const ofertaId = record?.ofertaCursoId ?? record?.cursoId;
-      if (!canEliminar || !resolver.paraleloGestionId || !ofertaId) return;
+      if (!canEliminar || !effectiveParaleloGestionId || !ofertaId) return;
       const displayName =
         record.codigo ||
         [record.materiaSigla, record.materiaNombre].filter(Boolean).join(' — ') ||
@@ -190,12 +196,12 @@ export const useGestionHorariosPlantillaState = () => {
       ];
       deleteItem(ofertaId, displayName, itemDetails);
     },
-    [validParaleloId, meta, deleteItem, canEliminar, resolver.paraleloGestionId]
+    [validParaleloId, meta, deleteItem, canEliminar, effectiveParaleloGestionId]
   );
 
   const handleCrearCursoOferta = useCallback(
     async (formValues) => {
-      const pgId = resolver.paraleloGestionId;
+      const pgId = effectiveParaleloGestionId;
       if (!pgId) {
         return { success: false, error: 'Paralelo en gestión no resuelto' };
       }
@@ -207,7 +213,7 @@ export const useGestionHorariosPlantillaState = () => {
         asignatura_plan_id: Number(formValues.asignaturaPlanId),
       });
     },
-    [crearOfertaCursoManual, resolver.paraleloGestionId]
+    [crearOfertaCursoManual, effectiveParaleloGestionId]
   );
 
   const loading = resolver.loading || loadingOferta;
@@ -215,7 +221,7 @@ export const useGestionHorariosPlantillaState = () => {
 
   return {
     validParaleloId,
-    paraleloGestionId: resolver.paraleloGestionId,
+    paraleloGestionId: effectiveParaleloGestionId,
     canCrear,
     canEliminar,
     meta,

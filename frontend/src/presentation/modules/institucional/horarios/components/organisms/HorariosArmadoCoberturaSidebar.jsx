@@ -47,7 +47,7 @@ const HorariosArmadoCoberturaSidebar = ({
                 <Flex vertical gap={allSpacing.marginMD}>
                     <div>
                         <Title level={5} style={{ margin: 0 }}>
-                            Asignaciones docente
+                            Bloques en el plan semanal
                         </Title>
                         {paraleloGestionId ? (
                             <Text type="secondary" style={{ fontSize: 'inherit' }}>
@@ -58,17 +58,21 @@ const HorariosArmadoCoberturaSidebar = ({
 
                     <Flex wrap="wrap" gap={8}>
                         <Tag>
-                            {resumen.ok}/{resumen.total} cobertura completa
+                            {resumen.ok}/{resumen.total} materias con bloques completos
                         </Tag>
                         <Tag color={cobertura?.completa ? 'success' : 'warning'}>
-                            {resumen.bloques}/{resumen.horasReq} bloques / horas plan
+                            {resumen.bloques}/{resumen.horasReq} bloques colocados / horas plan
                         </Tag>
                     </Flex>
 
+                    <Text type="secondary" style={{ fontSize: 'inherit' }}>
+                        Distinto a «Asignación docente»: aquí cuenta cada franja del plan (asignacion_horarios).
+                        Si el docente ya está asignado pero faltan bloques, usá «Añadir bloque» en la grilla.
+                    </Text>
                     <List
                         size="small"
                         dataSource={asignaciones}
-                        locale={{ emptyText: 'Sin asignaciones vigentes en la oferta' }}
+                        locale={{ emptyText: 'Sin materias con docente vigente en la oferta' }}
                         renderItem={(item) => {
                             const ok = item?.ok === true;
                             const req = Number(item?.horas_requeridas ?? 0);

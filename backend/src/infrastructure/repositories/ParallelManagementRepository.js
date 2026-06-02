@@ -102,15 +102,21 @@ export class ParallelManagementRepository extends BaseRepository {
         p.turno AS paraleloTurnoMaestro,
         p.descripcion AS paraleloDescripcion,
         p.carrera_id AS carreraId,
+        car.nombre AS carreraNombre,
+        car.codigo AS carreraCodigo,
+        car.imagen_ruta AS carreraImagenRuta,
+        car.color_hex AS carreraColorHex,
         p.periodo_id AS periodoId,
         per.nombre AS periodoNombre,
+        per.numero AS periodoNumero,
         a.codigo AS aulaCodigo,
         a.nombre AS aulaNombre,
         gp.plan_estudio_id AS planEstudioId,
         gp.gestion_id AS gestionId
       FROM paralelos_gestion pg
       LEFT JOIN paralelos p ON p.id = pg.paralelo_id
-      LEFT JOIN periodos per ON per.id = p.periodo_id
+      LEFT JOIN carreras car ON car.id = p.carrera_id AND car.deleted_at IS NULL
+      LEFT JOIN periodos per ON per.id = p.periodo_id AND per.deleted_at IS NULL
       LEFT JOIN aulas a ON a.id = pg.aula_id
       LEFT JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
       WHERE pg.id = :id AND pg.deleted_at IS NULL

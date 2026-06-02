@@ -1,15 +1,39 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { message } from 'antd';
 import { useOfertaAcademicaApi } from '../api/useOfertaAcademicaApi.js';
 
 const TURNOS = ['MAÑANA', 'TARDE', 'NOCHE'];
 
 export function useOfertaAcademicaWizardState() {
-  const api = useOfertaAcademicaApi();
+  const {
+    loading: apiLoading,
+    error: apiError,
+    fetchGestiones,
+    marcarGestionVigente,
+    fetchPlanesHabilitados,
+    fetchPlanesVigentesCatalogo,
+    habilitarPlan,
+    fetchParalelosGestion,
+    generarParalelosGestion,
+    validarOferta,
+    generarOferta,
+    updateParaleloGestion,
+    cambiarTurnoParaleloGestion,
+    updateParaleloGestionEstado,
+    fetchParaleloGestionDetalle,
+    fetchOfertaCursos,
+    crearOfertaCursoManual,
+    eliminarOfertaCurso,
+    fetchAulasCatalogo,
+  } = useOfertaAcademicaApi();
+
+  const planesFetchSeq = useRef(0);
+  const paralelosFetchSeq = useRef(0);
   const [step, setStep] = useState(0);
   const [gestiones, setGestiones] = useState([]);
   const [selectedGestionId, setSelectedGestionId] = useState(null);
   const [planesHabilitados, setPlanesHabilitados] = useState([]);
+  const [planesHabilitadosLoaded, setPlanesHabilitadosLoaded] = useState(false);
   const [selectedGestionPlanId, setSelectedGestionPlanId] = useState(null);
   const [paralelosGestion, setParalelosGestion] = useState([]);
   const [validacionPorId, setValidacionPorId] = useState({});
@@ -21,7 +45,10 @@ export function useOfertaAcademicaWizardState() {
   const [drawerOfertaCursos, setDrawerOfertaCursos] = useState([]);
 
   const gestionSeleccionada = useMemo(
-    () => gestiones.find((g) => g.id === selectedGestionId) ?? null,
+    () =>
+      gestiones.find((g) => Number(g.id) === Number(selectedGestionId)) ??
+      gestiones.find((g) => g.id === selectedGestionId) ??
+      null,
     [gestiones, selectedGestionId]
   );
 
@@ -30,89 +57,107 @@ export function useOfertaAcademicaWizardState() {
     [planesHabilitados, selectedGestionPlanId]
   );
 
-  const refreshValidaciones = useCallback(
-    async (items) => {
-      const rows = items ?? paralelosGestion;
-      if (!rows?.length) {
-        setValidacionPorId({});
-        return;
-      }
-      const entries = await Promise.all(
-        rows.map(async (pg) => {
-          const res = await api.validarOferta(pg.id);
-          if (!res.success) return [pg.id, null];
-          return [pg.id, res.data?.validacion ?? res.data];
-        })
-      );
-      setValidacionPorId(Object.fromEntries(entries));
-    },
-    [api, paralelosGestion]
-  );
+  /** Solo depende de validarOferta: incluir paralelosGestion recreaba loadParalelosGestion y el useEffect del paso 3 en bucle. */
+  const refreshValidaciones = useCallback(async (items) => {
+    const rows = Array.isArray(items) ? items : [];
+    if (!rows.length) {
+      setValidacionPorId({});
+      return;
+    }
+    const entries = await Promise.all(
+      rows.map(async (pg) => {
+        const res = await validarOferta(pg.id);
+        if (!res.success) return [pg.id, null];
+        return [pg.id, res.data?.validacion ?? res.data];
+      })
+    );
+    setValidacionPorId(Object.fromEntries(entries));
+  }, [validarOferta]);
 
   const loadGestiones = useCallback(async () => {
-    const res = await api.fetchGestiones();
+    const res = await fetchGestiones();
     if (!res.success) return;
     const raw = res.data?.gestiones ?? res.data?.managements ?? res.data;
     const list = Array.isArray(raw) ? raw : [];
     setGestiones(list);
     const vigente = list.find((g) => g.vigente);
-    if (vigente && !selectedGestionId) {
-      setSelectedGestionId(vigente.id);
+    if (vigente) {
+      const id = Number(vigente.id);
+      const normalized = Number.isFinite(id) ? id : vigente.id;
+      setSelectedGestionId((prev) => prev ?? normalized);
     }
-  }, [api, selectedGestionId]);
+  }, [fetchGestiones]);
 
   const loadPlanesHabilitados = useCallback(async () => {
-    if (!selectedGestionId) return;
-    const res = await api.fetchPlanesHabilitados(selectedGestionId);
-    if (!res.success) return;
+    if (!selectedGestionId) {
+      setPlanesHabilitados([]);
+      setPlanesHabilitadosLoaded(false);
+      return;
+    }
+    const seq = ++planesFetchSeq.current;
+    setPlanesHabilitadosLoaded(false);
+    const res = await fetchPlanesHabilitados(selectedGestionId);
+    if (seq !== planesFetchSeq.current) return;
+    if (!res.success) {
+      setPlanesHabilitados([]);
+      setPlanesHabilitadosLoaded(true);
+      return;
+    }
     setPlanesHabilitados(res.data?.planesHabilitados ?? []);
-  }, [api, selectedGestionId]);
+    setPlanesHabilitadosLoaded(true);
+  }, [fetchPlanesHabilitados, selectedGestionId]);
 
   const loadParalelosGestion = useCallback(async () => {
     if (!selectedGestionPlanId) return;
-    const res = await api.fetchParalelosGestion(selectedGestionPlanId);
+    const seq = ++paralelosFetchSeq.current;
+    const res = await fetchParalelosGestion(selectedGestionPlanId);
+    if (seq !== paralelosFetchSeq.current) return;
     if (!res.success) return;
     const list = res.data?.paralelosGestion ?? [];
     setParalelosGestion(list);
     await refreshValidaciones(list);
-  }, [api, selectedGestionPlanId, refreshValidaciones]);
+  }, [fetchParalelosGestion, selectedGestionPlanId, refreshValidaciones]);
 
   const loadAulas = useCallback(async () => {
-    const res = await api.fetchAulasCatalogo();
+    const res = await fetchAulasCatalogo();
     if (!res.success) return;
     setAulas(res.data?.aulas ?? []);
-  }, [api]);
+  }, [fetchAulasCatalogo]);
 
   useEffect(() => {
     loadGestiones();
-  }, []);
+  }, [loadGestiones]);
 
   useEffect(() => {
-    if (step >= 1 && selectedGestionId) {
-      loadPlanesHabilitados();
+    if (!selectedGestionId) {
+      planesFetchSeq.current += 1;
+      setPlanesHabilitados([]);
+      setPlanesHabilitadosLoaded(false);
+      return;
     }
-  }, [step, selectedGestionId]);
+    loadPlanesHabilitados();
+  }, [selectedGestionId, loadPlanesHabilitados]);
 
   useEffect(() => {
     if (step >= 2 && selectedGestionPlanId) {
       loadParalelosGestion();
       loadAulas();
     }
-  }, [step, selectedGestionPlanId]);
+  }, [step, selectedGestionPlanId, loadParalelosGestion, loadAulas]);
 
   const onMarcarVigente = useCallback(async () => {
     if (!selectedGestionId) return;
-    const res = await api.marcarGestionVigente(selectedGestionId);
+    const res = await marcarGestionVigente(selectedGestionId);
     if (res.success) {
       message.success('Gestión marcada como vigente');
       await loadGestiones();
     }
-  }, [api, selectedGestionId, loadGestiones]);
+  }, [marcarGestionVigente, selectedGestionId, loadGestiones]);
 
   const onHabilitarPlan = useCallback(
     async (planEstudioId) => {
       if (!selectedGestionId || !planEstudioId) return;
-      const res = await api.habilitarPlan({
+      const res = await habilitarPlan({
         gestion_id: selectedGestionId,
         plan_estudio_id: planEstudioId,
       });
@@ -122,21 +167,21 @@ export function useOfertaAcademicaWizardState() {
         await loadPlanesHabilitados();
       }
     },
-    [api, selectedGestionId, loadPlanesHabilitados]
+    [habilitarPlan, selectedGestionId, loadPlanesHabilitados]
   );
 
   const openHabilitarPlanModal = useCallback(async () => {
     setModalHabilitarPlan(true);
-    const res = await api.fetchPlanesVigentesCatalogo();
+    const res = await fetchPlanesVigentesCatalogo();
     if (res.success) {
       const raw = res.data?.planes_estudios ?? res.data;
       setPlanesVigentes(Array.isArray(raw) ? raw : []);
     }
-  }, [api]);
+  }, [fetchPlanesVigentesCatalogo]);
 
   const onGenerarParalelos = useCallback(async () => {
     if (!selectedGestionPlanId) return;
-    const res = await api.generarParalelosGestion(selectedGestionPlanId);
+    const res = await generarParalelosGestion(selectedGestionPlanId);
     if (res.success) {
       message.success('Paralelos de gestión generados');
       await loadParalelosGestion();
@@ -147,51 +192,51 @@ export function useOfertaAcademicaWizardState() {
         'No se generaron paralelos de gestión. Revise que existan plantillas en Configuración → Académico → Paralelos (tab paralelos) para la carrera y periodos del plan.',
       8,
     );
-  }, [api, selectedGestionPlanId, loadParalelosGestion]);
+  }, [generarParalelosGestion, selectedGestionPlanId, loadParalelosGestion]);
 
   const onGenerarOferta = useCallback(
     async (paraleloGestionId) => {
-      const res = await api.generarOferta(paraleloGestionId);
+      const res = await generarOferta(paraleloGestionId);
       if (res.success) {
         message.success('Oferta de cursos generada');
         await loadParalelosGestion();
       }
     },
-    [api, loadParalelosGestion]
+    [generarOferta, loadParalelosGestion]
   );
 
   const onUpdateAula = useCallback(
     async (paraleloGestionId, aulaId) => {
-      const res = await api.updateParaleloGestion(paraleloGestionId, {
+      const res = await updateParaleloGestion(paraleloGestionId, {
         aula_id: aulaId ?? null,
       });
       if (res.success) {
         await loadParalelosGestion();
       }
     },
-    [api, loadParalelosGestion]
+    [updateParaleloGestion, loadParalelosGestion]
   );
 
   const onCambiarTurno = useCallback(
     async (paraleloGestionId, turno) => {
-      const res = await api.cambiarTurnoParaleloGestion(paraleloGestionId, turno);
+      const res = await cambiarTurnoParaleloGestion(paraleloGestionId, turno);
       if (res.success) {
         message.success('Turno actualizado');
         await loadParalelosGestion();
       }
     },
-    [api, loadParalelosGestion]
+    [cambiarTurnoParaleloGestion, loadParalelosGestion]
   );
 
   const onPasarOfertado = useCallback(
     async (paraleloGestionId) => {
-      const res = await api.updateParaleloGestionEstado(paraleloGestionId, 'OFERTADO');
+      const res = await updateParaleloGestionEstado(paraleloGestionId, 'OFERTADO');
       if (res.success) {
         message.success('Paralelo marcado como OFERTADO');
         await loadParalelosGestion();
       }
     },
-    [api, loadParalelosGestion]
+    [updateParaleloGestionEstado, loadParalelosGestion]
   );
 
   const onPasarTodosOfertado = useCallback(async () => {
@@ -199,18 +244,18 @@ export function useOfertaAcademicaWizardState() {
       const v = validacionPorId[pg.id];
       if (!pg.aulaId || !v?.valido) continue;
       if (pg.estado !== 'BORRADOR') continue;
-      await api.updateParaleloGestionEstado(pg.id, 'OFERTADO');
+      await updateParaleloGestionEstado(pg.id, 'OFERTADO');
     }
     message.success('Proceso de cambio masivo finalizado');
     await loadParalelosGestion();
-  }, [api, paralelosGestion, validacionPorId, loadParalelosGestion]);
+  }, [updateParaleloGestionEstado, paralelosGestion, validacionPorId, loadParalelosGestion]);
 
   const openDrawer = useCallback(
     async (paraleloGestionId) => {
       setDrawerParaleloId(paraleloGestionId);
       const [det, oferta] = await Promise.all([
-        api.fetchParaleloGestionDetalle(paraleloGestionId),
-        api.fetchOfertaCursos(paraleloGestionId),
+        fetchParaleloGestionDetalle(paraleloGestionId),
+        fetchOfertaCursos(paraleloGestionId),
       ]);
       if (det.success) {
         setDrawerDetalle(det.data?.paraleloGestion ?? det.data);
@@ -219,7 +264,7 @@ export function useOfertaAcademicaWizardState() {
         setDrawerOfertaCursos(oferta.data?.ofertaCursos ?? []);
       }
     },
-    [api]
+    [fetchParaleloGestionDetalle, fetchOfertaCursos]
   );
 
   const closeDrawer = useCallback(() => {
@@ -233,6 +278,110 @@ export function useOfertaAcademicaWizardState() {
     setStep(2);
   }, []);
 
+  const pageTitle = useMemo(() => {
+    if (gestionSeleccionada) {
+      const codigo =
+        gestionSeleccionada.codigo ??
+        gestionSeleccionada.name ??
+        gestionSeleccionada.nombre ??
+        `Gestión ${gestionSeleccionada.id}`;
+      return `Oferta — ${codigo}${gestionSeleccionada.anio ? ` ${gestionSeleccionada.anio}` : ''}`;
+    }
+    return 'Oferta Académica';
+  }, [gestionSeleccionada]);
+
+  const kpis = useMemo(() => {
+    if (step < 2) {
+      const planesCount = planesHabilitados.length;
+      const sinPlanesReal =
+        planesHabilitadosLoaded && selectedGestionId && planesCount === 0 ? 1 : 0;
+      return {
+        phase: 'setup',
+        total: planesCount,
+        planesHabilitados: planesCount,
+        planesHabilitadosLoaded,
+        sinPlanes: sinPlanesReal,
+        gestionVigente: gestionSeleccionada?.vigente ? 1 : 0,
+      };
+    }
+
+    const total = paralelosGestion.length || 1;
+    let sinAula = 0;
+    let ofertaIncompleta = 0;
+    let listosOfertado = 0;
+    let ofertados = 0;
+    let publicados = 0;
+
+    for (const pg of paralelosGestion) {
+      if (!pg.aulaId) sinAula += 1;
+      const v = validacionPorId[pg.id];
+      if (v && !v.valido) ofertaIncompleta += 1;
+      const est = String(pg.estado || '').toUpperCase();
+      if (est === 'OFERTADO') ofertados += 1;
+      if (est === 'PUBLICADO') publicados += 1;
+      if (est === 'BORRADOR' && pg.aulaId && v?.valido) listosOfertado += 1;
+    }
+
+    const avanceOferta = ofertados + publicados;
+
+    return {
+      phase: 'paralelos',
+      total: paralelosGestion.length,
+      sinAula,
+      ofertaIncompleta,
+      listosOfertado,
+      ofertados,
+      publicados,
+      completosPct: total > 0 ? Math.round((avanceOferta / total) * 100) : 0,
+    };
+  }, [
+    step,
+    planesHabilitados.length,
+    planesHabilitadosLoaded,
+    selectedGestionId,
+    gestionSeleccionada,
+    paralelosGestion,
+    validacionPorId,
+  ]);
+
+  const hayAlertas = useMemo(() => {
+    if (step === 0) {
+      return Boolean(selectedGestionId && !gestionSeleccionada?.vigente);
+    }
+    if (step === 1) {
+      return Boolean(
+        selectedGestionId && planesHabilitadosLoaded && planesHabilitados.length === 0
+      );
+    }
+    return kpis.sinAula > 0 || kpis.ofertaIncompleta > 0;
+  }, [
+    step,
+    selectedGestionId,
+    gestionSeleccionada,
+    planesHabilitados.length,
+    planesHabilitadosLoaded,
+    kpis,
+  ]);
+
+  const canGoToStep = useCallback(
+    (targetStep) => {
+      if (targetStep === 0) return true;
+      if (targetStep === 1) return Boolean(selectedGestionId);
+      if (targetStep === 2) return Boolean(selectedGestionPlanId);
+      return false;
+    },
+    [selectedGestionId, selectedGestionPlanId]
+  );
+
+  const goToStep = useCallback(
+    (targetStep) => {
+      if (canGoToStep(targetStep)) {
+        setStep(targetStep);
+      }
+    },
+    [canGoToStep]
+  );
+
   return {
     step,
     setStep,
@@ -242,6 +391,7 @@ export function useOfertaAcademicaWizardState() {
     setSelectedGestionId,
     gestionSeleccionada,
     planesHabilitados,
+    planesHabilitadosLoaded,
     selectedGestionPlanId,
     planSeleccionado,
     paralelosGestion,
@@ -253,8 +403,8 @@ export function useOfertaAcademicaWizardState() {
     drawerParaleloId,
     drawerDetalle,
     drawerOfertaCursos,
-    apiLoading: api.loading,
-    apiError: api.error,
+    apiLoading,
+    apiError,
     onMarcarVigente,
     onHabilitarPlan,
     openHabilitarPlanModal,
@@ -268,8 +418,13 @@ export function useOfertaAcademicaWizardState() {
     closeDrawer,
     selectPlanYContinuar,
     loadParalelosGestion,
-    crearOfertaCursoManual: api.crearOfertaCursoManual,
-    eliminarOfertaCurso: api.eliminarOfertaCurso,
-    updateParaleloGestion: api.updateParaleloGestion,
+    pageTitle,
+    kpis,
+    hayAlertas,
+    canGoToStep,
+    goToStep,
+    crearOfertaCursoManual,
+    eliminarOfertaCurso,
+    updateParaleloGestion,
   };
 }

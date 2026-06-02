@@ -10,6 +10,10 @@ import {
     getSabadoArmadoGridRangeMinutes,
     getTurnoGridRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
+import {
+    buildFreeSlotOptionsForDay,
+    buildOccupiedSlotKeysFromSchedules,
+} from '@application-institucional/horarios/utils/buildHorarioSlotIndex';
 import { buildHorariosPlanPendientesDetalleLines } from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
 import ParaleloPlanSemanaCell, { DRAG_MIME } from '../atoms/ParaleloPlanSemanaCell';
 import HorariosPlanPendientesLista from './HorariosPlanPendientesLista';
@@ -132,32 +136,99 @@ const ParaleloArmadoPlanSection = ({
         }));
     }, [addOpen, schedules]);
 
+    const occupiedSlotKeys = useMemo(
+        () => buildOccupiedSlotKeysFromSchedules(schedules),
+        [schedules],
+    );
+
     const slotOptionsAdd = useMemo(() => {
         if (!addOpen) return [];
         const dia = diaAddWatch ?? 'LUNES';
-        const fixed = sabadoRange.fixedSlotStartsMinutes;
-        if (dia === 'SABADO' && Array.isArray(fixed) && fixed.length) {
-            return fixed.map((m) => {
-                const h = Math.floor(m / 60);
-                const min = m % 60;
-                const label = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-                return { value: m, label };
-            });
+        return buildFreeSlotOptionsForDay({
+            dia,
+            rangeStart: gridRange.start,
+            rangeEnd: gridRange.end,
+            step: SLOT_STEP_ADD,
+            occupiedKeys: occupiedSlotKeys,
+            sabadoFixedStarts: sabadoRange.fixedSlotStartsMinutes,
+        });
+    }, [
+        addOpen,
+        diaAddWatch,
+        sabadoRange.fixedSlotStartsMinutes,
+        gridRange.start,
+        gridRange.end,
+        occupiedSlotKeys,
+    ]);
+
+    const freeSlotsTotal = useMemo(() => {
+        let n = 0;
+        for (const d of DIA_OPTIONS) {
+            n += buildFreeSlotOptionsForDay({
+                dia: d.value,
+                rangeStart: gridRange.start,
+                rangeEnd: gridRange.end,
+                step: SLOT_STEP_ADD,
+                occupiedKeys: occupiedSlotKeys,
+                sabadoFixedStarts: sabadoRange.fixedSlotStartsMinutes,
+            }).length;
         }
-        return slotOptionsForRange(gridRange.start, gridRange.end, SLOT_STEP_ADD);
-    }, [addOpen, diaAddWatch, sabadoRange.fixedSlotStartsMinutes, gridRange.start, gridRange.end]);
+        return n;
+    }, [occupiedSlotKeys, gridRange.start, gridRange.end, sabadoRange.fixedSlotStartsMinutes]);
 
     useEffect(() => {
-        if (!addOpen || !slotOptionsAdd.length) return;
-        const cur = form.getFieldValue('slotMinutes');
-        const ok = slotOptionsAdd.some((o) => o.value === cur);
-        if (!ok) {
-            form.setFieldsValue({ slotMinutes: slotOptionsAdd[0].value });
+        if (!addOpen) return;
+        const curDia = form.getFieldValue('dia');
+        let dia = curDia;
+        let opts = buildFreeSlotOptionsForDay({
+            dia: dia || 'LUNES',
+            rangeStart: gridRange.start,
+            rangeEnd: gridRange.end,
+            step: SLOT_STEP_ADD,
+            occupiedKeys: occupiedSlotKeys,
+            sabadoFixedStarts: sabadoRange.fixedSlotStartsMinutes,
+        });
+        if (!opts.length) {
+            const found = DIA_OPTIONS.find((d) =>
+                buildFreeSlotOptionsForDay({
+                    dia: d.value,
+                    rangeStart: gridRange.start,
+                    rangeEnd: gridRange.end,
+                    step: SLOT_STEP_ADD,
+                    occupiedKeys: occupiedSlotKeys,
+                    sabadoFixedStarts: sabadoRange.fixedSlotStartsMinutes,
+                }).length,
+            );
+            if (found) {
+                dia = found.value;
+                opts = buildFreeSlotOptionsForDay({
+                    dia,
+                    rangeStart: gridRange.start,
+                    rangeEnd: gridRange.end,
+                    step: SLOT_STEP_ADD,
+                    occupiedKeys: occupiedSlotKeys,
+                    sabadoFixedStarts: sabadoRange.fixedSlotStartsMinutes,
+                });
+            }
         }
-    }, [addOpen, slotOptionsAdd, form]);
+        if (dia && dia !== curDia) {
+            form.setFieldsValue({ dia, slotMinutes: opts[0]?.value });
+        } else if (opts.length) {
+            const cur = form.getFieldValue('slotMinutes');
+            if (!opts.some((o) => o.value === cur)) {
+                form.setFieldsValue({ slotMinutes: opts[0].value });
+            }
+        }
+    }, [addOpen, slotOptionsAdd, form, occupiedSlotKeys, gridRange, sabadoRange]);
 
     const submitAddBlock = useCallback(() => {
         form.validateFields().then(async (values) => {
+            if (!slotOptionsAdd.length) {
+                message.warning(
+                    'No hay franjas libres en el día elegido. Probá otro día o liberá un bloque en la grilla.',
+                );
+                return;
+            }
             const cursoId = values.cursoId;
             const dia = values.dia;
             const startM = values.slotMinutes;
@@ -192,7 +263,7 @@ const ParaleloArmadoPlanSection = ({
             setAddOpen(false);
             form.resetFields();
         });
-    }, [form, onSchedulesChange, schedules, turnoLabel, validatePlacement]);
+    }, [form, onSchedulesChange, schedules, turnoLabel, validatePlacement, slotOptionsAdd]);
 
     const handleSaveClick = useCallback(() => {
         if (typeof onRequestPersist === 'function') {
@@ -346,10 +417,28 @@ const ParaleloArmadoPlanSection = ({
                     <Form.Item name="dia" label="Día" rules={[{ required: true }]}>
                         <Select options={DIA_OPTIONS} />
                     </Form.Item>
-                    <Form.Item name="slotMinutes" label="Hora de inicio" rules={[{ required: true }]}>
-                        <Select options={slotOptionsAdd} showSearch optionFilterProp="label" />
+                    <Form.Item
+                        name="slotMinutes"
+                        label="Hora de inicio (solo franjas libres)"
+                        rules={[{ required: true, message: 'Elija una franja libre' }]}
+                    >
+                        <Select
+                            options={slotOptionsAdd}
+                            showSearch
+                            optionFilterProp="label"
+                            placeholder={
+                                slotOptionsAdd.length
+                                    ? 'Franja disponible'
+                                    : 'No hay franjas libres este día'
+                            }
+                            disabled={!slotOptionsAdd.length}
+                        />
                     </Form.Item>
-                    <Text type="secondary">Duración por defecto del nuevo bloque: 45 minutos.</Text>
+                    <Text type="secondary">
+                        Duración: 45 min. En el paralelo quedan {freeSlotsTotal} franja(s) libre(s); MPI-101
+                        necesita las que falten según el panel lateral. No se puede repetir la misma hora que otra
+                        materia.
+                    </Text>
                 </Form>
             </Modal>
         </section>

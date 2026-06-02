@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeftOutlined, CompressOutlined, ExpandOutlined } from '@ant-design/icons';
-import { Button, Card, Flex } from 'antd';
+import { Alert, Button, Card, Flex, Space } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { IconButton } from '@atoms';
@@ -81,6 +81,23 @@ const GestionHorariosAulasPage = () => {
                     .filter(Boolean)
                     .join(' ')}
             >
+                <Alert
+                    type="info"
+                    showIcon
+                    closable
+                    style={{ marginBottom: 16 }}
+                    title="Aula base del paralelo y override por bloque"
+                    description={
+                        <Space orientation="vertical" size={8}>
+                            <span>
+                                La <strong>aula base</strong> se define en{' '}
+                                <strong>Institucional → Oferta académica</strong> (paralelo de gestión). Los bloques
+                                heredan esa aula en la grilla. Aquí puede asignar un <strong>override</strong> por franja
+                                cuando un curso use otra aula distinta a la del paralelo.
+                            </span>
+                        </Space>
+                    }
+                />
                 <Card
                     className={[
                         'horarios-gestion-planificacion',

@@ -27,6 +27,7 @@ export class GrillaHorarioPresentationMapper {
    * @param {Array<Object>} params.conflictosParalelo
    * @param {Array<Object>} params.conflictosAula
    * @param {Array<Object>} params.conflictosDocente
+   * @param {Array<Object>} [params.franjasCatalogo]
    */
   static toPresentation({
     paraleloGestionId,
@@ -36,6 +37,7 @@ export class GrillaHorarioPresentationMapper {
     conflictosParalelo = [],
     conflictosAula = [],
     conflictosDocente = [],
+    franjasCatalogo = [],
   }) {
     const conflictAssignmentIds = new Set();
     const conflictHorarioIds = new Set();
@@ -139,10 +141,24 @@ export class GrillaHorarioPresentationMapper {
     const completa =
       asignacionesCobertura.length > 0 && asignacionesCobertura.every((a) => a.ok === true);
 
+    const franjas = (franjasCatalogo || []).map((f) => {
+      const hi = f.horaInicio != null ? String(f.horaInicio).slice(0, 5) : null;
+      const hf = f.horaFin != null ? String(f.horaFin).slice(0, 5) : null;
+      return {
+        horario_id: Number(f.horarioId),
+        dia: f.dia ?? null,
+        hora_inicio: hi,
+        hora_fin: hf,
+        turno: f.turno ?? turno ?? null,
+        numero_bloque: f.numeroBloque != null ? Number(f.numeroBloque) : null,
+      };
+    });
+
     return {
       paralelo_gestion_id: paraleloGestionId,
       turno: turno ?? null,
       grilla,
+      franjas,
       conflictos,
       cobertura: {
         completa,

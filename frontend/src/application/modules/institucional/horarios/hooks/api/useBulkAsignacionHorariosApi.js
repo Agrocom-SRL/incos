@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import apiClient from '@api-client';
 import { ASIGNACION_HORARIOS_ENDPOINTS } from '@api/endpoints';
 import { handleErrorResponse, handleSuccessResponse } from '@api/responseHandler';
+import { summarizeBulkAsignacionHorarios } from '@application-institucional/horarios/utils/summarizeBulkAsignacionHorarios';
 
 export function useBulkAsignacionHorariosApi() {
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,18 @@ export function useBulkAsignacionHorariosApi() {
         setError(msg);
         return { success: false, error: msg, details: result.details };
       }
+
+      const bulkMsg = summarizeBulkAsignacionHorarios(result.data);
+      if (bulkMsg) {
+        setError(bulkMsg);
+        return {
+          success: false,
+          error: bulkMsg,
+          data: result.data,
+          partial: true,
+        };
+      }
+
       return { success: true, data: result.data };
     } catch (err) {
       const fail = handleErrorResponse(err, 'No se pudo guardar los bloques');

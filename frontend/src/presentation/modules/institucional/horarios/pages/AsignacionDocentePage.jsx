@@ -1,6 +1,19 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Card, Col, Flex, Row, Select, Spin, Statistic, Table, Typography, Button } from 'antd';
+import {
+  Alert,
+  Card,
+  Col,
+  Flex,
+  Row,
+  Select,
+  Spin,
+  Statistic,
+  Table,
+  Typography,
+  Button,
+  Space,
+} from 'antd';
 import { BarChartOutlined } from '@ant-design/icons';
 import { useAuthContext } from '@application-auth';
 import { useAsignacionDocenteContext } from '@application-institucional/horarios';
@@ -39,7 +52,10 @@ const AsignacionDocentePage = () => {
     loadingMatriz,
     savingOfertaId,
     loadingCatalogos,
+    planesCatalogLoading,
+    paralelosCatalogLoading,
     errorCatalogos,
+    catalogosListos,
     onGestionChange,
     onPlanChange,
     onParaleloChange,
@@ -126,6 +142,56 @@ const AsignacionDocentePage = () => {
           <Alert type="error" showIcon title={errorCatalogos} style={{ marginBottom: 16 }} />
         ) : null}
 
+        <Alert
+          type="info"
+          showIcon
+          closable
+          style={{ marginBottom: 16 }}
+          title="Flujo operativo — asignación docente"
+          description={
+            <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+              <span>
+                Requiere <strong>oferta de cursos</strong> generada en{' '}
+                <strong>Institucional → Oferta académica</strong> (paralelos con materias ofertadas). Aquí vincula
+                docente y materia; el armado de bloques semanal es en <strong>Gestión de horarios</strong>.
+              </span>
+              <Button size="small" onClick={() => navigate('/institucional/oferta')}>
+                Ir a oferta académica
+              </Button>
+            </Space>
+          }
+        />
+
+        {selectedGestionId && !planesCatalogLoading && planesHabilitados.length === 0 ? (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+            title="Sin planes habilitados en esta gestión"
+            description={
+              <Space orientation="vertical" size={8}>
+                <span>
+                  El seeder <code>19-gestiones-planes</code> vincula planes a la gestión vigente (id=1). Si el listado
+                  está vacío, ejecute los seeders o habilite un plan en Oferta académica → paso Planes.
+                </span>
+                <Button size="small" type="primary" onClick={() => navigate('/institucional/oferta')}>
+                  Habilitar plan en oferta
+                </Button>
+              </Space>
+            }
+          />
+        ) : null}
+
+        {selectedGestionPlanId && !paralelosCatalogLoading && paralelosGestion.length === 0 ? (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+            title="Sin paralelos de gestión"
+            description="Genere paralelos de gestión en Oferta académica (paso 3) para el plan seleccionado."
+          />
+        ) : null}
+
         <Card className="asignacion-docente-filters" size="small">
           <Row gutter={[16, 16]}>
             <Col xs={24} md={8}>
@@ -138,10 +204,12 @@ const AsignacionDocentePage = () => {
                     ? selectedGestionId
                     : undefined
                 }
-                loading={loadingCatalogos}
+                loading={loadingCatalogos && !gestiones.length}
                 options={gestiones.map((g) => ({
-                  value: g.id,
-                  label: g.nombre || g.codigo || `Gestión ${g.id}`,
+                  value: Number(g.id) || g.id,
+                  label: `${g.nombre || g.codigo || `Gestión ${g.id}`}${
+                    g.codigo ? ` (${g.codigo})` : ''
+                  }${g.vigente ? ' · vigente' : ''}`,
                 }))}
                 onChange={onGestionChange}
               />
@@ -152,14 +220,18 @@ const AsignacionDocentePage = () => {
                 style={{ width: '100%', marginTop: 4 }}
                 placeholder="Seleccione plan"
                 disabled={!selectedGestionId}
+                loading={planesCatalogLoading}
                 value={
                   planesHabilitados.some((p) => p.id === selectedGestionPlanId)
                     ? selectedGestionPlanId
                     : undefined
                 }
                 options={planesHabilitados.map((p) => ({
-                  value: p.id,
-                  label: p.nombre || p.planNombre || `Plan ${p.id}`,
+                  value: Number(p.id) || p.id,
+                  label:
+                    p.carreraNombre && p.nombre
+                      ? `${p.carreraNombre} — ${p.nombre}`
+                      : p.nombre || p.planNombre || `Plan ${p.id}`,
                 }))}
                 onChange={onPlanChange}
               />
@@ -170,13 +242,14 @@ const AsignacionDocentePage = () => {
                 style={{ width: '100%', marginTop: 4 }}
                 placeholder="Seleccione paralelo"
                 disabled={!selectedGestionPlanId}
+                loading={paralelosCatalogLoading}
                 value={
                   paralelosGestion.some((pg) => pg.id === selectedParaleloGestionId)
                     ? selectedParaleloGestionId
                     : undefined
                 }
                 options={paralelosGestion.map((pg) => ({
-                  value: pg.id,
+                  value: Number(pg.id) || pg.id,
                   label: [pg.paraleloNombre, pg.turno, pg.aulaCodigo].filter(Boolean).join(' · '),
                 }))}
                 onChange={onParaleloChange}
@@ -208,6 +281,11 @@ const AsignacionDocentePage = () => {
               type="info"
               showIcon
               title="Seleccione gestión, plan y paralelo para cargar la matriz de asignación."
+              description={
+                catalogosListos && !selectedParaleloGestionId
+                  ? 'Elija un paralelo-gestión en los filtros superiores.'
+                  : undefined
+              }
             />
           ) : (
             <Spin spinning={loadingMatriz}>

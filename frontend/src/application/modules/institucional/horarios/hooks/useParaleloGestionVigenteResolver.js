@@ -75,7 +75,14 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
       setMeta({
         nombre: det.paraleloNombre ?? det.paralelo_nombre ?? match.paraleloNombre ?? null,
         turno: det.turno ?? match.turno ?? null,
+        estado: det.estado ?? det.state ?? match.estado ?? match.state ?? null,
         aulaCodigo: det.aulaCodigo ?? det.aula_codigo ?? match.aulaCodigo ?? null,
+        carreraNombre: det.carreraNombre ?? det.carrera_nombre ?? null,
+        carreraCodigo: det.carreraCodigo ?? det.carrera_codigo ?? null,
+        carreraImagenRuta: det.carreraImagenRuta ?? det.carrera_imagen_ruta ?? null,
+        periodoNombre: det.periodoNombre ?? det.periodo_nombre ?? null,
+        periodoNumero: det.periodoNumero ?? det.periodo_numero ?? null,
+        descripcion: det.paraleloDescripcion ?? det.paralelo_descripcion ?? null,
         gestionNombre: vigente.nombre ?? vigente.codigo ?? null,
         planNombre: plan.nombre ?? plan.planNombre ?? null,
       });

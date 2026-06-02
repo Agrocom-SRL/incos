@@ -22,6 +22,7 @@ import ParaleloCursosGestionSection from '../components/organisms/ParaleloCursos
 import DocenteAsignacionCursoModal from '../components/organisms/DocenteAsignacionCursoModal';
 import ParaleloCursosTabSection from '../components/organisms/ParaleloCursosTabSection';
 import HorariosOperativaBanner from '../components/molecules/HorariosOperativaBanner';
+import HorariosArmadoParaleloEstadoAlert from '../components/molecules/HorariosArmadoParaleloEstadoAlert';
 import HorariosArmadoParaleloSelector from '../components/molecules/HorariosArmadoParaleloSelector';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
@@ -73,6 +74,8 @@ const GestionHorariosArmadoPage = () => {
         validatePlacement,
         hasParaleloSelected,
         validPgId,
+        paraleloGestionEstado,
+        horarioEditable,
     } = useHorariosArmadoContext();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -265,7 +268,7 @@ const GestionHorariosArmadoPage = () => {
                                 <ParaleloArmadoPlanSection
                                     schedules={draftSchedules}
                                     onSchedulesChange={setDraftSchedules}
-                                    editable
+                                    editable={horarioEditable}
                                     turnoLabel={turnoEfectivo || undefined}
                                     persistLoading={persistLoading}
                                     persistError={persistError}
@@ -320,6 +323,7 @@ const GestionHorariosArmadoPage = () => {
             persistResult,
             setDraftSchedules,
             onRequestPersist,
+            horarioEditable,
             setTab,
             ofertaParalelo,
             vistaExpandida,
@@ -400,10 +404,15 @@ const GestionHorariosArmadoPage = () => {
                                     type="info"
                                     showIcon
                                     style={{ marginBottom: 16 }}
-                                    title="Cobertura de bloques incompleta"
-                                    description="Faltan bloques por asignación docente según la gestión vigente."
+                                    title="Plan semanal incompleto"
+                                    description="Faltan bloques en la grilla para una o más materias (p. ej. docente ya asignado pero sin franjas en el plan). Usá «Añadir bloque» o arrastrá en la grilla y guardá."
                                 />
                             ) : null}
+                            <HorariosArmadoParaleloEstadoAlert
+                                estado={paraleloGestionEstado}
+                                paraleloGestionId={paraleloGestionId}
+                                style={{ marginBottom: 16 }}
+                            />
                             <HorariosOperativaBanner style={{ marginBottom: 16 }} />
                             {!error ? (
                                 <div

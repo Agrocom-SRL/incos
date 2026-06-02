@@ -61,7 +61,11 @@ export const validarConflictoHorarioValidator = [
     return true;
   }),
   body('aula_id').optional({ nullable: true }).isInt({ min: 1 }),
-  body('asignacion_horario_id').optional().isInt({ min: 1 }),
+  body('aulaId').optional({ nullable: true }).isInt({ min: 1 }),
+  // Bloque nuevo: omitir o null; al mover/actualizar: id del bloque a excluir del chequeo
+  body('asignacion_horario_id').optional({ nullable: true }).isInt({ min: 1 }),
+  body('asignacionHorarioId').optional({ nullable: true }).isInt({ min: 1 }),
+  body('exclude_id').optional({ nullable: true }).isInt({ min: 1 }),
 ];
 
 export const cambiarTurnoConBloquesValidator = [

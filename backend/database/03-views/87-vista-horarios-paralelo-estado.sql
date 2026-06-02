@@ -17,7 +17,7 @@
 --       vista_base_docente_asignacion_conflicto_horario / vista_docente_resumen_conflictos.conflicto_horario)
 --
 --   sin_aulas:
---     - bloque en asignacion_horarios activo sin aula_id (vista_base_horarios_paralelo_bloques_sin_aula), o
+--     - bloque sin aula efectiva (ni override en bloque ni aula base en paralelos_gestion; vista 73), o
 --     - cruce global mismo aula_id + horario_id en más de un curso (vista_base_horarios_paralelo_conflictos_aula;
 --       relacionado con ocupación de slot que también alimenta vista_base_docente_conflicto_aula a nivel docente)
 --
