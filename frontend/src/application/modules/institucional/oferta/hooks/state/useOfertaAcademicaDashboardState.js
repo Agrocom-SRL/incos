@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
+import { pasadasPaths } from '@application-institucional/pasadas';
 import {
   buildParalelosKpis,
   buildSetupKpis,
@@ -138,7 +139,7 @@ export function useOfertaAcademicaDashboardState() {
     [planesHabilitados.length, paralelosAgregados.length, dashboardKpis]
   );
 
-  const navigateGestiones = useCallback(() => navigate(ofertaPaths.gestiones()), [navigate]);
+  const navigateGestiones = useCallback(() => navigate(pasadasPaths.list()), [navigate]);
   const navigatePlanesVigente = useCallback(() => {
     if (gestionVigenteId) navigate(ofertaPaths.gestionPlanes(gestionVigenteId));
   }, [navigate, gestionVigenteId]);

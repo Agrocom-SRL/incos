@@ -12,6 +12,19 @@ export function gestionLabel(gestion) {
   );
 }
 
+/** Filtra gestiones por código o año (búsqueda en cliente). */
+export function filterGestionesBySearch(gestiones, searchText) {
+  const items = Array.isArray(gestiones) ? gestiones : [];
+  const q = String(searchText ?? '').trim().toLowerCase();
+  if (!q) return items;
+  return items.filter((g) => {
+    const codigo = (g.codigo ?? '').toLowerCase();
+    const nombre = (g.nombre ?? g.name ?? '').toLowerCase();
+    const anio = String(g.anio ?? '');
+    return codigo.includes(q) || nombre.includes(q) || anio.includes(q);
+  });
+}
+
 export function buildSetupKpis({ planesHabilitados, planesHabilitadosLoaded, gestionSeleccionada }) {
   const planesCount = planesHabilitados.length;
   const sinPlanesReal =

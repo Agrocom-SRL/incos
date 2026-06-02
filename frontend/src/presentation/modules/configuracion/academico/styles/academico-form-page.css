@@ -238,7 +238,8 @@
 
 .cfg-materia-pill--activa {
   background: #ecfdf5;
-  color: #047857;
+  color: var(--ant-color-primary, #134d32);
+  font-size: 14px;
   border-color: rgba(4, 120, 87, 0.22);
 }
 

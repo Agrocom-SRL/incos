@@ -49,6 +49,11 @@
   min-width: 0;
 }
 
+.oferta-dashboard-cta-btn {
+  width: fit-content;
+  align-self: flex-start;
+}
+
 .oferta-dashboard-planes-hint {
   display: block;
   margin: 0;

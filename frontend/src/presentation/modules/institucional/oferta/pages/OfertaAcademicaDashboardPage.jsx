@@ -39,7 +39,7 @@ const OfertaAcademicaDashboardPage = () => {
           actions={
             <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
               <ActionButton
-                permiso="institucional.oferta.gestion-plan"
+                permiso="institucional.gestion.pasadas"
                 accion="LISTAR"
                 variant="error"
                 icon={<CalendarOutlined />}

@@ -26,6 +26,7 @@ const OfertaDashboardQuickAccess = ({
         permiso="institucional.oferta.gestion-plan"
         accion="LISTAR"
         variant="primary"
+        className="oferta-dashboard-cta-btn"
         icon={<BookOutlined />}
         disabled={!gestionVigente}
         onClick={onPlanesVigente}

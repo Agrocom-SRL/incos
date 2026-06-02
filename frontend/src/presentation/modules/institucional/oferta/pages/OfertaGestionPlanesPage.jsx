@@ -16,7 +16,7 @@ const OfertaGestionPlanesPage = () => {
     { title: 'Inicio', href: '/' },
     { title: 'Institucional', href: '/institucional' },
     { title: 'Oferta Académica', href: '/institucional/oferta' },
-    { title: 'Gestiones', href: '/institucional/oferta/gestiones' },
+    { title: 'Gestiones pasadas', href: '/institucional/pasadas' },
     { title: s.gestionSeleccionada?.codigo ?? 'Gestión' },
     { title: 'Planes' },
   ];

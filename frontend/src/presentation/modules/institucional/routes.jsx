@@ -21,7 +21,6 @@ const GestionHorariosConflictosConnector = lazy(() => import('./horarios/connect
 const AsignacionDocenteConnector = lazy(() => import('./horarios/connectors/AsignacionDocenteConnector'));
 const CargaDocentesConnector = lazy(() => import('./horarios/connectors/CargaDocentesConnector'));
 const OfertaDashboardConnector = lazy(() => import('./oferta/connectors/OfertaDashboardConnector'));
-const OfertaGestionesConnector = lazy(() => import('./oferta/connectors/OfertaGestionesConnector'));
 const OfertaGestionPlanesConnector = lazy(() => import('./oferta/connectors/OfertaGestionPlanesConnector'));
 const OfertaParalelosGestionConnector = lazy(
     () => import('./oferta/connectors/OfertaParalelosGestionConnector'),
@@ -29,6 +28,7 @@ const OfertaParalelosGestionConnector = lazy(
 const OfertaParaleloDetalleConnector = lazy(
     () => import('./oferta/connectors/OfertaParaleloDetalleConnector'),
 );
+const GestionesPasadasConnector = lazy(() => import('./pasadas/connectors/GestionesPasadasConnector'));
 
 const INST_OFERTA_ACADEMICA_PERMISOS = [
     'institucional.oferta.gestion-plan',
@@ -89,12 +89,9 @@ export const institucionalRoutes = [
     },
     {
         path: '/institucional/oferta/gestiones',
-        element: <OfertaGestionesConnector />,
-        key: 'INST-OFERTA-GESTIONES',
-        permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
-        accion: 'LISTAR',
+        element: <Navigate to="/institucional/pasadas" replace />,
+        key: 'INST-OFERTA-GESTIONES-REDIRECT',
         menu: null,
-        breadcrumbParent: 'INST-OFERTA-ACADEMICA',
     },
     {
         path: '/institucional/oferta/paralelo/:paraleloGestionId',
@@ -244,7 +241,7 @@ export const institucionalRoutes = [
     },
     {
         path: '/institucional/pasadas',
-        element: <UnderConstruction />,
+        element: <GestionesPasadasConnector />,
         key: 'INST-GESTIONES-PASADAS',
         permiso: 'institucional.gestion.pasadas',
         accion: 'LISTAR',

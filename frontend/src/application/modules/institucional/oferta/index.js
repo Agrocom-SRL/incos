@@ -1,5 +1,4 @@
 export { useOfertaAcademicaDashboardState } from './hooks/state/useOfertaAcademicaDashboardState.js';
-export { useOfertaGestionesState } from './hooks/state/useOfertaGestionesState.js';
 export { useOfertaGestionPlanesState } from './hooks/state/useOfertaGestionPlanesState.js';
 export { useOfertaParalelosGestionState } from './hooks/state/useOfertaParalelosGestionState.js';
 export { useOfertaParaleloDetalleState } from './hooks/state/useOfertaParaleloDetalleState.js';

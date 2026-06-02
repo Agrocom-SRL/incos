@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { message } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
+import { pasadasPaths } from '@application-institucional/pasadas';
 import { buildSetupKpis, gestionLabel } from './ofertaStateShared.js';
 import { useOfertaAcademicaApi } from '../api/useOfertaAcademicaApi.js';
 
@@ -126,7 +127,7 @@ export function useOfertaGestionPlanesState() {
     onHabilitarPlan,
     openHabilitarPlanModal,
     onVerParalelos,
-    navigateBack: () => navigate(ofertaPaths.gestiones()),
+    navigateBack: () => navigate(pasadasPaths.list()),
     navigateDashboard: () => navigate(ofertaPaths.dashboard()),
   };
 }
