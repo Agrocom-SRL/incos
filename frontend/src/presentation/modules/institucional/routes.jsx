@@ -22,8 +22,8 @@ const AsignacionDocenteConnector = lazy(() => import('./horarios/connectors/Asig
 const CargaDocentesConnector = lazy(() => import('./horarios/connectors/CargaDocentesConnector'));
 const OfertaDashboardConnector = lazy(() => import('./oferta/connectors/OfertaDashboardConnector'));
 const OfertaGestionPlanesConnector = lazy(() => import('./oferta/connectors/OfertaGestionPlanesConnector'));
-const OfertaParalelosGestionConnector = lazy(
-    () => import('./oferta/connectors/OfertaParalelosGestionConnector'),
+const OfertaParalelosGestionRedirect = lazy(
+    () => import('./oferta/connectors/OfertaParalelosGestionRedirect'),
 );
 const OfertaParaleloDetalleConnector = lazy(
     () => import('./oferta/connectors/OfertaParaleloDetalleConnector'),
@@ -71,7 +71,7 @@ export const institucionalRoutes = [
     },
     {
         path: '/institucional/oferta/gestiones/:gestionId/planes/:gestionPlanId/paralelos',
-        element: <OfertaParalelosGestionConnector />,
+        element: <OfertaParalelosGestionRedirect />,
         key: 'INST-OFERTA-PARALELOS',
         permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
         accion: 'LISTAR',

@@ -145,7 +145,7 @@ export function useOfertaAcademicaDashboardState() {
   }, [navigate, gestionVigenteId]);
   const navigateParalelosPlan = useCallback(
     (gestionPlanId) => {
-      if (gestionVigenteId) navigate(ofertaPaths.paralelosGestion(gestionVigenteId, gestionPlanId));
+      if (gestionVigenteId) navigate(ofertaPaths.gestionPlanesConPlan(gestionVigenteId, gestionPlanId));
     },
     [navigate, gestionVigenteId]
   );

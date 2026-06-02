@@ -125,6 +125,26 @@ export function useOfertaAcademicaApi() {
     }
   }, []);
 
+  /** Sin toggle de loading global: se invoca en lote desde listados de paralelos. */
+  const fetchCoberturaDocente = useCallback(async (paraleloGestionId) => {
+    try {
+      const response = await apiClient.get(
+        PARALELOS_GESTION_ENDPOINTS.COBERTURA_DOCENTE(paraleloGestionId)
+      );
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error || 'No se pudo cargar la cobertura docente',
+        };
+      }
+      return { success: true, data: result.data };
+    } catch (err) {
+      const fail = handleErrorResponse(err, 'No se pudo cargar la cobertura docente');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
   const generarOferta = useCallback(
     (paraleloGestionId) =>
       run(
@@ -213,6 +233,7 @@ export function useOfertaAcademicaApi() {
     fetchParalelosGestion,
     generarParalelosGestion,
     validarOferta,
+    fetchCoberturaDocente,
     generarOferta,
     updateParaleloGestion,
     cambiarTurnoParaleloGestion,

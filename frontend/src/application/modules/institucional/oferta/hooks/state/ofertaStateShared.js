@@ -12,7 +12,26 @@ export function gestionLabel(gestion) {
   );
 }
 
-/** Filtra gestiones por código o año (búsqueda en cliente). */
+/** Etiqueta corta de plan habilitado (tabs, breadcrumbs). */
+export function planTabLabel(plan) {
+  if (!plan) return 'Plan';
+  return (
+    plan.carreraCodigo ??
+    plan.carreraNombre ??
+    plan.nombre ??
+    (plan.planEstudioId ? `Plan #${plan.planEstudioId}` : `Plan #${plan.id}`)
+  );
+}
+
+/** Etiqueta larga de plan (listas, hints). */
+export function planDisplayLabel(plan) {
+  if (!plan) return '—';
+  if (plan.carreraNombre && plan.nombre) {
+    return `${plan.carreraNombre} · ${plan.nombre}`;
+  }
+  return planTabLabel(plan);
+}
+
 export function filterGestionesBySearch(gestiones, searchText) {
   const items = Array.isArray(gestiones) ? gestiones : [];
   const q = String(searchText ?? '').trim().toLowerCase();
@@ -22,6 +41,16 @@ export function filterGestionesBySearch(gestiones, searchText) {
     const nombre = (g.nombre ?? g.name ?? '').toLowerCase();
     const anio = String(g.anio ?? '');
     return codigo.includes(q) || nombre.includes(q) || anio.includes(q);
+  });
+}
+
+/** Instancias de gestión con oferta o estado avanzado (no plantillas vacías recién generadas). */
+export function filterParalelosGestionVisibles(paralelos = []) {
+  return (Array.isArray(paralelos) ? paralelos : []).filter((pg) => {
+    const estado = String(pg?.estado ?? '').toUpperCase();
+    const oferta = Number(pg?.ofertaActual ?? 0);
+    if (estado === 'OFERTADO' || estado === 'PUBLICADO' || estado === 'CERRADO') return true;
+    return oferta > 0;
   });
 }
 
@@ -82,6 +111,41 @@ export async function refreshValidacionesParalelos(validarOferta, items) {
       const res = await validarOferta(pg.id);
       if (!res.success) return [pg.id, null];
       return [pg.id, res.data?.validacion ?? res.data];
+    })
+  );
+  return Object.fromEntries(entries);
+}
+
+/** Etiqueta de plan del catálogo académico (API planes-estudios). */
+export function planCatalogoLabel(plan) {
+  if (!plan) return '—';
+  const nombre = plan.nombre_plan ?? plan.nombrePlan ?? plan.nombre;
+  const resolucion = plan.resolucion_ministerial ?? plan.resolucionMinisterial;
+  if (nombre && resolucion) return `${nombre} · ${resolucion}`;
+  return nombre ?? resolucion ?? `Plan #${plan.id}`;
+}
+
+export function planesCatalogoPendientesHabilitar(planesVigentes, planesHabilitados) {
+  const habilitadosIds = new Set(
+    (planesHabilitados ?? [])
+      .map((p) => Number(p.planEstudioId))
+      .filter((id) => Number.isFinite(id) && id > 0)
+  );
+  return (planesVigentes ?? []).filter((p) => {
+    if (p.vigente === false) return false;
+    const id = Number(p.id);
+    return Number.isFinite(id) && id > 0 && !habilitadosIds.has(id);
+  });
+}
+
+export async function refreshCoberturaParalelos(fetchCoberturaDocente, items) {
+  const rows = Array.isArray(items) ? items : [];
+  if (!rows.length) return {};
+  const entries = await Promise.all(
+    rows.map(async (pg) => {
+      const res = await fetchCoberturaDocente(pg.id);
+      if (!res.success) return [pg.id, null];
+      return [pg.id, res.data?.cobertura ?? res.data];
     })
   );
   return Object.fromEntries(entries);

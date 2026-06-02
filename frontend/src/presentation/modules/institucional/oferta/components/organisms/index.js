@@ -1,3 +1,5 @@
+export { default as OfertaParalelosCardsGrid } from './OfertaParalelosCardsGrid';
+export { default as OfertaGestionPlanTabPanel } from './OfertaGestionPlanTabPanel';
 export { default as OfertaKpiStrip } from './OfertaKpiStrip';
 export { default as OfertaDashboardKpiStrip } from './OfertaDashboardKpiStrip';
 export { default as OfertaDashboardQuickAccess } from './OfertaDashboardQuickAccess';

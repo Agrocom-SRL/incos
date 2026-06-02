@@ -34,18 +34,6 @@ const OfertaParalelosGestionPage = () => {
     { title: 'Paralelos' },
   ];
 
-  const columnsCtx = {
-    turnos: s.TURNOS,
-    aulas: s.aulas,
-    validacionPorId: s.validacionPorId,
-    onCambiarTurno: s.onCambiarTurno,
-    onUpdateAula: s.onUpdateAula,
-    onGenerarOferta: s.onGenerarOferta,
-    onNavigateDetalle: s.onNavigateDetalle,
-    onOpenDrawer: s.openDrawer,
-    onPasarOfertado: s.onPasarOfertado,
-  };
-
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
@@ -80,12 +68,10 @@ const OfertaParalelosGestionPage = () => {
                 loading={s.apiLoading}
                 paralelosGestion={s.paralelosGestion}
                 planSeleccionado={s.planSeleccionado}
-                columnsCtx={columnsCtx}
+                coberturaByParaleloId={{}}
                 onGenerarParalelos={s.onGenerarParalelos}
                 onPasarTodosOfertado={s.onPasarTodosOfertado}
                 onNavigateDetalle={s.onNavigateDetalle}
-                onRowClick={s.onNavigateDetalle}
-                onOpenDrawer={s.openDrawer}
               />
             </Flex>
           </Spin>

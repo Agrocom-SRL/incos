@@ -81,3 +81,363 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Paralelos — grilla de tarjetas responsive */
+.oferta-paralelos-cards__toolbar {
+  width: 100%;
+}
+
+.oferta-paralelos-cards__grid {
+  display: grid;
+  gap: var(--spacing-md, 16px);
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 576px) {
+  .oferta-paralelos-cards__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .oferta-paralelos-cards__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1400px) {
+  .oferta-paralelos-cards__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ── Card paralelo (band + body) ── */
+.oferta-paralelo-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--color-border, #e8e8e8);
+  border-radius: var(--border-radius-lg, 12px);
+  background: var(--color-bg-container, #fff);
+  box-shadow: none;
+  overflow: hidden;
+  transition:
+    transform var(--transition-base, 0.2s ease),
+    border-color var(--transition-base, 0.2s ease);
+}
+
+.oferta-paralelo-card:hover {
+  border-color: var(--color-primary-border, #b7d4c4);
+  transform: translateY(-2px);
+}
+
+.oferta-paralelo-card--skeleton {
+  pointer-events: none;
+}
+
+/* Band — colores por turno */
+.opc-band {
+  position: relative;
+  padding: 14px 16px 12px;
+  min-width: 0;
+}
+
+.opc-band--tarde {
+  background: var(--color-primary-bg);
+}
+
+.opc-band--noche {
+  background: var(--color-accent-bg);
+}
+
+.opc-band--manana,
+.opc-band--default {
+  background: var(--color-info-bg);
+}
+
+.opc-band--skeleton {
+  min-height: 90px;
+  background: var(--color-fill-quaternary, #f3f4f6);
+}
+
+.opc-band__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  min-width: 0;
+}
+
+.opc-band__carrera {
+  flex: 1;
+  min-width: 0;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.opc-band--tarde .opc-band__carrera {
+  color: var(--color-primary-text);
+}
+
+.opc-band--noche .opc-band__carrera {
+  color: var(--color-accent-text);
+}
+
+.opc-band--manana .opc-band__carrera,
+.opc-band--default .opc-band__carrera {
+  color: var(--color-info-text);
+}
+
+.opc-band__estado {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+  line-height: 1.35;
+  color: var(--color-white, #fff);
+}
+
+.opc-band__estado--publicado {
+  background: var(--color-primary);
+}
+
+.opc-band__estado--ofertado {
+  background: var(--color-info);
+}
+
+.opc-band__estado--borrador,
+.opc-band__estado--default {
+  background: var(--color-text-tertiary);
+}
+
+.opc-band__estado--cerrado {
+  background: var(--color-accent);
+}
+
+.opc-band__nombre {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.opc-band--tarde .opc-band__nombre {
+  color: var(--color-primary-active, #1a3a28);
+}
+
+.opc-band--noche .opc-band__nombre {
+  color: var(--color-accent-active);
+}
+
+.opc-band--manana .opc-band__nombre,
+.opc-band--default .opc-band__nombre {
+  color: var(--color-info-active);
+}
+
+.opc-band__sub {
+  margin: 0 0 10px;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.opc-band--tarde .opc-band__sub {
+  color: var(--color-primary);
+}
+
+.opc-band--noche .opc-band__sub {
+  color: var(--color-accent);
+}
+
+.opc-band--manana .opc-band__sub,
+.opc-band--default .opc-band__sub {
+  color: var(--color-info);
+}
+
+.opc-dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.opc-dot {
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.opc-dot--ok-tarde {
+  background: var(--color-primary);
+}
+
+.opc-dot--ok-noche {
+  background: var(--color-accent);
+}
+
+.opc-dot--ok-manana {
+  background: var(--color-info);
+}
+
+.opc-dot--warn {
+  background: var(--color-warning, #f59e0b);
+}
+
+.opc-dot--off {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* Body */
+.opc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 16px 14px;
+  min-width: 0;
+}
+
+.opc-body--skeleton {
+  padding-top: 12px;
+}
+
+.opc-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.opc-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.opc-info-icon .anticon {
+  font-size: 12px;
+}
+
+.opc-info-icon--aula {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+}
+
+.opc-info-icon--docente {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+}
+
+.opc-info-icon--horario {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.opc-info-icon--pend {
+  background: var(--color-fill-quaternary, #f3f4f6);
+  color: var(--color-text-tertiary);
+}
+
+.opc-info-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.opc-info-label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  line-height: 1.3;
+}
+
+.opc-info-value {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.opc-info-value--pend {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.opc-info-value--warn {
+  color: var(--color-warning-text);
+}
+
+.opc-info-value--ok {
+  color: var(--color-primary);
+}
+
+.opc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 5px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--color-border-secondary);
+  min-width: 0;
+}
+
+.opc-cupo {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  line-height: 1.35;
+  min-width: 0;
+}
+
+.opc-footer__cta.sd-btn {
+  flex-shrink: 0;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--border-radius-md, 8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.opc-footer__cta.sd-btn .anticon {
+  font-size: 10px;
+}
+
+.oferta-paralelos-cards__empty {
+  padding: var(--spacing-lg, 24px) 0;
+}
+
+.oferta-paralelo-detalle__chips {
+  margin-top: var(--spacing-sm, 8px);
+}
+
+.oferta-paralelo-detalle__meta-line {
+  margin-bottom: 0 !important;
+}
+
+.oferta-gestion-planes-page__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+  align-items: center;
+}
