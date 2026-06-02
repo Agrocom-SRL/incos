@@ -10,6 +10,7 @@ export function buildOfertaParalelosTableColumns({
   onUpdateAula,
   onGenerarOferta,
   onOpenDrawer,
+  onNavigateDetalle,
   onPasarOfertado,
 }) {
   return [
@@ -95,18 +96,34 @@ export function buildOfertaParalelosTableColumns({
             >
               Generar oferta
             </ActionButton>
-            <ActionButton
-              permiso="institucional.oferta.paralelo-gestion"
-              accion="DETALLE"
-              size="small"
-              type="link"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenDrawer(row.id);
-              }}
-            >
-              Detalle
-            </ActionButton>
+            {onNavigateDetalle ? (
+              <ActionButton
+                permiso="institucional.oferta.paralelo-gestion"
+                accion="DETALLE"
+                size="small"
+                type="link"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNavigateDetalle(row.id);
+                }}
+              >
+                Detalle →
+              </ActionButton>
+            ) : null}
+            {onOpenDrawer ? (
+              <ActionButton
+                permiso="institucional.oferta.paralelo-gestion"
+                accion="EDITAR"
+                size="small"
+                type="link"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenDrawer(row.id);
+                }}
+              >
+                Aula/cupos
+              </ActionButton>
+            ) : null}
             {puedeOfertar ? (
               <ActionButton
                 permiso="institucional.oferta.paralelo-gestion"

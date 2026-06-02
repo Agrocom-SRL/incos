@@ -2,11 +2,6 @@
  * Oferta académica — layout alineado con gestión de horarios (shell + KPI + pasos).
  */
 
-.oferta-flow-steps {
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--ant-color-border-secondary);
-}
-
 .oferta-step-section__select {
   max-width: 420px;
 }
@@ -14,10 +9,6 @@
 .oferta-step-section__hint {
   display: block;
   margin-bottom: 16px;
-}
-
-.oferta-wizard-card .ant-card-head-title {
-  font-weight: 600;
 }
 
 .oferta-paralelos-table__select {
@@ -30,4 +21,58 @@
 
 .oferta-sidebar-resumen-stat .ant-card-body {
   padding: 16px;
+}
+
+/* Dashboard índice */
+.oferta-dashboard-main {
+  width: 100%;
+  min-width: 0;
+}
+
+.oferta-dashboard-lead {
+  display: block;
+  margin: 0;
+}
+
+.oferta-dashboard-kpi-row {
+  width: 100%;
+  margin-inline: 0 !important;
+}
+
+.oferta-dashboard-kpi-row > .ant-col {
+  display: flex;
+  min-width: 0;
+}
+
+.oferta-dashboard-kpi-row .ant-card {
+  width: 100%;
+  min-width: 0;
+}
+
+.oferta-dashboard-planes-hint {
+  display: block;
+  margin: 0;
+}
+
+.oferta-dashboard-planes-list {
+  margin: 0;
+}
+
+.oferta-dashboard-planes-list__item {
+  padding-inline: 0 !important;
+}
+
+.oferta-dashboard-plan-link {
+  max-width: 100%;
+  padding: 0;
+  height: auto;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.oferta-dashboard-plan-link span:not(.anticon) {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

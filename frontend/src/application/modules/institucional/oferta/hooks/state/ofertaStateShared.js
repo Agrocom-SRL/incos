@@ -1,0 +1,75 @@
+/** Utilidades compartidas entre pantallas de oferta (sin fetch). */
+
+export const OFERTA_TURNOS = ['MAÑANA', 'TARDE', 'NOCHE'];
+
+export function gestionLabel(gestion) {
+  if (!gestion) return '—';
+  return (
+    gestion.codigo ??
+    gestion.nombre ??
+    gestion.name ??
+    `Gestión ${gestion.id}`
+  );
+}
+
+export function buildSetupKpis({ planesHabilitados, planesHabilitadosLoaded, gestionSeleccionada }) {
+  const planesCount = planesHabilitados.length;
+  const sinPlanesReal =
+    planesHabilitadosLoaded && gestionSeleccionada && planesCount === 0 ? 1 : 0;
+  return {
+    phase: 'setup',
+    total: planesCount,
+    planesHabilitados: planesCount,
+    planesHabilitadosLoaded,
+    sinPlanes: sinPlanesReal,
+    gestionVigente: gestionSeleccionada?.vigente ? 1 : 0,
+  };
+}
+
+export function buildParalelosKpis(paralelosGestion, validacionPorId) {
+  const total = paralelosGestion.length || 1;
+  let sinAula = 0;
+  let ofertaIncompleta = 0;
+  let listosOfertado = 0;
+  let ofertados = 0;
+  let publicados = 0;
+  let borrador = 0;
+
+  for (const pg of paralelosGestion) {
+    if (!pg.aulaId) sinAula += 1;
+    const v = validacionPorId[pg.id];
+    if (v && !v.valido) ofertaIncompleta += 1;
+    const est = String(pg.estado || '').toUpperCase();
+    if (est === 'BORRADOR') borrador += 1;
+    if (est === 'OFERTADO') ofertados += 1;
+    if (est === 'PUBLICADO') publicados += 1;
+    if (est === 'BORRADOR' && pg.aulaId && v?.valido) listosOfertado += 1;
+  }
+
+  const avanceOferta = ofertados + publicados;
+
+  return {
+    phase: 'paralelos',
+    total: paralelosGestion.length,
+    sinAula,
+    ofertaIncompleta,
+    listosOfertado,
+    ofertados,
+    publicados,
+    borrador,
+    completosPct: total > 0 ? Math.round((avanceOferta / total) * 100) : 0,
+  };
+}
+
+export async function refreshValidacionesParalelos(validarOferta, items) {
+  const rows = Array.isArray(items) ? items : [];
+  if (!rows.length) return {};
+  const entries = await Promise.all(
+    rows.map(async (pg) => {
+      const res = await validarOferta(pg.id);
+      if (!res.success) return [pg.id, null];
+      return [pg.id, res.data?.validacion ?? res.data];
+    })
+  );
+  return Object.fromEntries(entries);
+}

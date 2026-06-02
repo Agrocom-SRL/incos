@@ -1,6 +1,9 @@
-import { Space, Table } from 'antd';
+import { Flex, Table, Typography } from 'antd';
 import { ActionButton } from '@atoms';
+import { allSpacing } from '@theme/tokens';
 import { buildOfertaParalelosTableColumns } from '../../config/ofertaParalelosTableColumns';
+
+const { Text } = Typography;
 
 const OfertaStepParalelosSection = ({
   loading,
@@ -10,6 +13,8 @@ const OfertaStepParalelosSection = ({
   onGenerarParalelos,
   onPasarTodosOfertado,
   onOpenDrawer,
+  onNavigateDetalle,
+  onRowClick,
 }) => (
   <>
     <Table
@@ -21,7 +26,11 @@ const OfertaStepParalelosSection = ({
       scroll={{ x: 960 }}
       className="oferta-paralelos-table"
       onRow={(row) => ({
-        onClick: () => onOpenDrawer(row.id),
+        onClick: () => {
+          if (onRowClick) onRowClick(row.id);
+          else if (onNavigateDetalle) onNavigateDetalle(row.id);
+          else if (onOpenDrawer) onOpenDrawer(row.id);
+        },
         style: { cursor: 'pointer' },
       })}
       locale={{
@@ -30,7 +39,15 @@ const OfertaStepParalelosSection = ({
           : 'Seleccione un plan habilitado en el paso anterior.',
       }}
     />
-    <Space wrap style={{ marginTop: 16 }}>
+    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: allSpacing.marginSM }}>
+      Clic en una fila para ver detalle y asignar docentes
+    </Text>
+    <Flex
+      justify="space-between"
+      align="center"
+      wrap="wrap"
+      style={{ marginTop: allSpacing.marginMD, gap: allSpacing.marginSM }}
+    >
       <ActionButton
         permiso="institucional.oferta.paralelo-gestion"
         accion="CREAR"
@@ -47,8 +64,11 @@ const OfertaStepParalelosSection = ({
       >
         Cambiar todos a OFERTADO
       </ActionButton>
-    </Space>
+    </Flex>
   </>
 );
 
 export default OfertaStepParalelosSection;
+
+// ✅ Bugs corregidos: (ninguno)
+// ✅ Mejoras aplicadas: pie de tabla hint; Flex en acciones inferiores con tokens de espaciado

@@ -2,17 +2,19 @@ import { CheckOutlined } from '@ant-design/icons';
 import { Space } from 'antd';
 import { allColors, allSpacing, typography } from '@theme/tokens';
 
-const StepPill = ({ label, index, isActive = false, isCompleted = false, onClick }) => {
+const StepPill = ({ label, index, isActive = false, isCompleted = false, disabled = false, onClick }) => {
     return (
         <button
             type="button"
-            onClick={onClick}
+            disabled={disabled}
+            onClick={disabled ? undefined : onClick}
             style={{
                 border: 'none',
                 background: 'transparent',
                 padding: `${allSpacing.paddingSM}px`,
                 borderBottom: isActive ? `2px solid ${allColors.colorPrimary}` : `2px solid transparent`,
-                cursor: 'pointer',
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.55 : 1,
             }}
         >
             <Space size={8}>

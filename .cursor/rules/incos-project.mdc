@@ -15,7 +15,9 @@ interfaz inconsistente — tratar la consistencia visual como requisito, no extr
 - **Componente, página, tabla, ficha, estilo, color, tipografía, `.css`** →
   aplica `incos-ui-system`. Es la prioridad: la mayoría de bugs de este repo son
   de UI inconsistente. Nunca uses `#hex` o `fontSize` literal; el theme de AntD
-  manda.
+  manda. **Ant Design 5:** `Alert` → `message` (no `title`); `Space` → `direction`
+  (no `orientation`); modales → `open` (no `visible`) — ver `incos-ui-system` §5
+  y skill `incos-antd5-api`.
 - **Estructura de un módulo frontend, hooks, providers, connectors, rutas** →
   `incos-frontend-module`. Carpetas por ítem de menú, no por entidad.
 - **Endpoint, repositorio, use case, controller, router, seeder** →

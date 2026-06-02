@@ -7,9 +7,10 @@ description: Polishes INCOS React UI per incos-ui-system and incos-frontend-modu
 
 ## Reglas obligatorias (leer completas)
 
-1. **`.cursor/rules/incos-ui-system.mdc`** — prioridad: theme AntD única fuente de verdad, Atomic Design, patrones listado/ficha, cero `#hex`/`fontSize` literal
-2. **`.cursor/rules/incos-frontend-module.mdc`** — páginas solo orquestan; sin fetch en `pages/`
-3. **`.cursor/rules/incos-rbac.mdc`** — `ActionButton` / `TableActions` con permisos reales
+1. **`.cursor/rules/incos-ui-system.mdc`** — prioridad: theme AntD única fuente de verdad, Atomic Design, patrones listado/ficha, cero `#hex`/`fontSize` literal, **API Ant Design 5 (§5)**
+2. **`.cursor/skills/incos-antd5-api/SKILL.md`** — antes de escribir `Alert`, `Space`, `Modal`, `Drawer`
+3. **`.cursor/rules/incos-frontend-module.mdc`** — páginas solo orquestan; sin fetch en `pages/`
+4. **`.cursor/rules/incos-rbac.mdc`** — `ActionButton` / `TableActions` con permisos reales
 
 ## Qué mejorar (sin romper capas)
 
@@ -24,6 +25,13 @@ description: Polishes INCOS React UI per incos-ui-system and incos-frontend-modu
 - Estilos inline (salvo color de negocio sanitizado — `incos-ui-system` §1)
 - `TableActions` sin `permisos` “para que se vea” (bypass — `incos-rbac` §4)
 - Columnas inline en la page en vez de `config/*TableColumns.jsx`
+- **`Alert title=`**, **`Space orientation=`**, **`Modal visible=`** — props inválidas en antd 5 (`incos-antd5-api`)
+
+## Checklist Ant Design 5 (obligatorio en banners y formularios)
+
+- [ ] `Alert`: `message` + `description`, nunca `title`
+- [ ] `Space`: `direction`, nunca `orientation` (o `Flex vertical`)
+- [ ] `Modal` / `Drawer`: `open`, nunca `visible`
 
 ## Guías de referencia visual
 

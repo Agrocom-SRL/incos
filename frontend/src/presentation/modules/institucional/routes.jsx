@@ -20,7 +20,15 @@ const GestionHorariosPublicacionConnector = lazy(() => import('./horarios/connec
 const GestionHorariosConflictosConnector = lazy(() => import('./horarios/connectors/ConflictosConnector'));
 const AsignacionDocenteConnector = lazy(() => import('./horarios/connectors/AsignacionDocenteConnector'));
 const CargaDocentesConnector = lazy(() => import('./horarios/connectors/CargaDocentesConnector'));
-const OfertaAcademicaConnector = lazy(() => import('./oferta/connectors/OfertaAcademicaConnector'));
+const OfertaDashboardConnector = lazy(() => import('./oferta/connectors/OfertaDashboardConnector'));
+const OfertaGestionesConnector = lazy(() => import('./oferta/connectors/OfertaGestionesConnector'));
+const OfertaGestionPlanesConnector = lazy(() => import('./oferta/connectors/OfertaGestionPlanesConnector'));
+const OfertaParalelosGestionConnector = lazy(
+    () => import('./oferta/connectors/OfertaParalelosGestionConnector'),
+);
+const OfertaParaleloDetalleConnector = lazy(
+    () => import('./oferta/connectors/OfertaParaleloDetalleConnector'),
+);
 
 const INST_OFERTA_ACADEMICA_PERMISOS = [
     'institucional.oferta.gestion-plan',
@@ -62,8 +70,44 @@ export const institucionalRoutes = [
         },
     },
     {
+        path: '/institucional/oferta/gestiones/:gestionId/planes/:gestionPlanId/paralelos',
+        element: <OfertaParalelosGestionConnector />,
+        key: 'INST-OFERTA-PARALELOS',
+        permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+        accion: 'LISTAR',
+        menu: null,
+        breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+    },
+    {
+        path: '/institucional/oferta/gestiones/:gestionId/planes',
+        element: <OfertaGestionPlanesConnector />,
+        key: 'INST-OFERTA-GESTION-PLANES',
+        permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+        accion: 'LISTAR',
+        menu: null,
+        breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+    },
+    {
+        path: '/institucional/oferta/gestiones',
+        element: <OfertaGestionesConnector />,
+        key: 'INST-OFERTA-GESTIONES',
+        permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+        accion: 'LISTAR',
+        menu: null,
+        breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+    },
+    {
+        path: '/institucional/oferta/paralelo/:paraleloGestionId',
+        element: <OfertaParaleloDetalleConnector />,
+        key: 'INST-OFERTA-PARALELO-DETALLE',
+        permiso: 'institucional.oferta.paralelo-gestion',
+        accion: 'DETALLE',
+        menu: null,
+        breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+    },
+    {
         path: '/institucional/oferta',
-        element: <OfertaAcademicaConnector />,
+        element: <OfertaDashboardConnector />,
         key: 'INST-OFERTA-ACADEMICA',
         permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
         accion: 'LISTAR',
@@ -78,6 +122,12 @@ export const institucionalRoutes = [
         path: '/institucional/oferta-academica',
         element: <Navigate to="/institucional/oferta" replace />,
         key: 'INST-OFERTA-LEGACY-REDIRECT',
+        menu: null,
+    },
+    {
+        path: '/institucional/oferta/wizard',
+        element: <Navigate to="/institucional/oferta" replace />,
+        key: 'INST-OFERTA-WIZARD-REDIRECT',
         menu: null,
     },
     {

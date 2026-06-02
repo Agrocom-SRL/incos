@@ -16,7 +16,7 @@ Clean Architecture por capas. Plan en docs/plan/ (temporal). Reglas permanentes 
    - Listado/tabla → incos-modulo-listado + docs/guias/implementacion-listado-modulo.md + checklist-listado.md
    - Ficha/detalle/plan → incos-modulo-detalle + implementacion-detalle-modulo.md + checklist-detalle.md
    - Solo permisos/seeds → incos-permisos-rbac + docs/referencia/matriz-permisos-sistema.md
-   - Pulir pantalla → react-ui-ux-designer
+   - Pulir pantalla / JSX con antd → react-ui-ux-designer + **incos-antd5-api** (Alert `message`, Space `direction`, Modal `open`)
 3. Plan actual: `docs/plan/SPRINT_4.md`, `MIGRACION_CODIGO.md`, `PLAN_MAESTRO.md`
 
 ## Restricciones globales

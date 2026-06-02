@@ -124,3 +124,5 @@ importan el **mapper del módulo dueño**, no reimplementan el map.
 4. `dataKey` ≠ `dataFieldName` → tabla vacía con 200 OK.
 5. Límite por defecto (50) en listado filtrable en cliente → datos truncados.
 6. Provider con lógica de negocio → debe ser delgado, solo ensambla.
+7. Props Ant Design v4 en JSX nuevo (`Alert title`, `Space orientation`, `Modal visible`) →
+   ver `incos-ui-system` §5 y skill `incos-antd5-api`.
