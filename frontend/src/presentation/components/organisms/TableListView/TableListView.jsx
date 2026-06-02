@@ -83,6 +83,8 @@ const TableListView = ({
         defaultPageSize,
         showSizeChanger: true,
         showQuickJumper: false,
+        size: 'default',
+        className: 'data-table-pagination',
         showTotal: (total, range) =>
             `Mostrando ${range[0]}-${range[1]} de ${total} registros`,
         pageSizeOptions,

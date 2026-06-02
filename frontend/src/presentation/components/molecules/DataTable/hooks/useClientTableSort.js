@@ -9,6 +9,7 @@ const defaultPaginationConfig = {
   defaultPageSize: 10,
   showSizeChanger: true,
   showQuickJumper: false,
+  className: 'data-table-pagination',
   showTotal: (total, range) => `Mostrando ${range[0]}-${range[1]} de ${total} registros`,
   pageSizeOptions: ['10', '20', '50', '100'],
   locale: { items_per_page: 'registros / página' },

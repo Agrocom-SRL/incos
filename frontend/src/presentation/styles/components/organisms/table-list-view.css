@@ -9,3 +9,12 @@
   margin-bottom: 16px;
 }
 
+.table-list-view--embedded .data-table .ant-table-container {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.table-list-view--embedded .data-table .ant-table-wrapper .ant-table-pagination {
+  border-radius: 0 0 var(--border-radius-lg, 12px) var(--border-radius-lg, 12px);
+}
+
