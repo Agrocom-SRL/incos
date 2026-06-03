@@ -25,7 +25,13 @@ const KpiCard = ({ label, value, sub, badgeText, intent = 'neutral', percent = 0
                 <Typography.Title level={3} style={{ margin: `${allSpacing.marginXS}px 0`, color }}>
                     {value}
                 </Typography.Title>
-                <Typography.Text type="secondary">{sub}</Typography.Text>
+                {typeof sub === 'string' ? (
+                    <Typography.Text type="secondary">{sub}</Typography.Text>
+                ) : (
+                    <Typography.Text type="secondary" className="horarios-kpi-card__sub">
+                        {sub}
+                    </Typography.Text>
+                )}
                 <div style={{ marginTop: allSpacing.marginSM, height: allSpacing.marginXS, borderRadius: allSpacing.borderRadius, background: allColors.colorBgSpotlight }}>
                     <div style={{ width: `${Math.max(0, Math.min(100, percent))}%`, height: '100%', background: color, borderRadius: allSpacing.borderRadius }} />
                 </div>

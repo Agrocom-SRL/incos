@@ -8,6 +8,7 @@ import {
     FILTER_DEFAULTS,
 } from '@application-institucional/horarios/config/dashboardConstants';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
+import { buildHorariosDashboardAlertLineas } from '@application-institucional/horarios/utils/buildHorariosDashboardAlertLineas';
 
 export const useGestionHorariosDashboardState = () => {
     const navigate = useNavigate();
@@ -45,11 +46,14 @@ export const useGestionHorariosDashboardState = () => {
             const cursosConHorario = row.cursos_con_horario ?? 0;
             const pgId =
                 row.paralelo_gestion_id != null ? Number(row.paralelo_gestion_id) : null;
+            const ofertasCoberturaIncompleta = row.ofertas_cobertura_incompleta ?? 0;
             const mapped = {
                 id: row.paralelo_id,
                 paraleloGestionId:
                     Number.isFinite(pgId) && pgId > 0 ? pgId : null,
                 paralelo: row.paralelo_nombre,
+                paraleloGestionEstado: row.paralelo_gestion_estado ?? null,
+                paraleloAulaId: row.paralelo_aula_id != null ? Number(row.paralelo_aula_id) : null,
                 carrera: row.carrera_nombre || 'Carrera no definida',
                 carreraId: row.carrera_id != null ? Number(row.carrera_id) : null,
                 carreraColorHex: row.carrera_color_hex ?? null,
@@ -58,14 +62,13 @@ export const useGestionHorariosDashboardState = () => {
                 cursosAsignados: cursosConHorario,
                 cursosTotales,
                 cursosCreados,
+                ofertasCoberturaIncompleta,
                 cursosSinDocente: row.cursos_sin_docente ?? 0,
-                cursosSinBloquesHorario: Math.max(0, cursosCreados - cursosConHorario),
+                cursosSinBloquesHorario: Math.max(0, ofertasCoberturaIncompleta, cursosCreados - cursosConHorario),
                 bloquesSinAula: row.bloques_sin_aula ?? 0,
                 conflictosSolapeMismoBloque: row.conflictos_solape_mismo_bloque ?? 0,
                 conflictosAula: row.conflictos_aula ?? 0,
                 conflictoDocenteHorario: Number(row.conflicto_docente_horario) === 1,
-                bloquesAsignados: (cursosConHorario || 0) * 3,
-                bloquesRequeridos: cursosTotales * 3,
             };
             return {
                 ...mapped,
@@ -164,12 +167,6 @@ export const useGestionHorariosDashboardState = () => {
     const onVerHorariosAulas = useCallback(() => navigate('/institucional/horarios/aulas'), [navigate]);
     const onPublish = useCallback(() => navigate('/institucional/horarios/publicacion'), [navigate]);
 
-    const onVerConflictosGlobales = useCallback(() => {
-        if (gestionVigenteId) {
-            navigate(`/institucional/horarios/conflictos/${gestionVigenteId}`);
-        }
-    }, [navigate, gestionVigenteId]);
-
     const pendientesSidebar = useMemo(() => {
         if (!pendientesSidebarRaw || typeof pendientesSidebarRaw !== 'object') {
             return {
@@ -184,6 +181,25 @@ export const useGestionHorariosDashboardState = () => {
             docentesConConflictosOperativos: pendientesSidebarRaw.docentesConConflictosOperativos || [],
         };
     }, [pendientesSidebarRaw]);
+
+    const docentesConConflictosCount = useMemo(() => {
+        const list = pendientesSidebar.docentesConConflictosOperativos || [];
+        return list.filter((d) => d?.docenteId != null).length;
+    }, [pendientesSidebar]);
+
+    const alertLineas = useMemo(
+        () =>
+            buildHorariosDashboardAlertLineas(filteredParallels, {
+                docentesConConflictos: docentesConConflictosCount,
+            }),
+        [filteredParallels, docentesConConflictosCount],
+    );
+
+    const hayAlertas =
+        kpis.sinDocentes > 0 ||
+        kpis.sinAulas > 0 ||
+        kpis.sinHorarios > 0 ||
+        docentesConConflictosCount > 0;
 
     const loading = estadoLoading || pendientesSidebarLoading;
     const error = estadoError || pendientesSidebarError || null;
@@ -203,9 +219,9 @@ export const useGestionHorariosDashboardState = () => {
         onOpenArmado,
         onVerHorariosAulas,
         onPublish,
-        onVerConflictosGlobales,
         gestionVigenteId,
-        hayAlertas: kpis.sinDocentes > 0 || kpis.sinAulas > 0 || kpis.sinHorarios > 0,
+        hayAlertas,
+        alertLineas,
         pendientesSidebar,
         getParaleloAction,
         loading,

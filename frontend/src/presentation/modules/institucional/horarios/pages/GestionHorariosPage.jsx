@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AppstoreOutlined, BookOutlined, TableOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, TableOutlined } from '@ant-design/icons';
 import { Alert, Card, Flex, Spin, Tabs } from 'antd';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -15,7 +14,6 @@ import {
     HorariosFiltersBar,
     HorariosGestionSidebarResumen,
     HorariosKpiStrip,
-    HorariosOperativaBanner,
     ParalelosBoard,
     ParalelosTable,
 } from '../components';
@@ -46,15 +44,13 @@ const GestionHorariosPage = () => {
         onOpenArmado,
         onVerHorariosAulas,
         onPublish,
-        onVerConflictosGlobales,
-        gestionVigenteId,
         clearFilters,
         hayAlertas,
+        alertLineas,
         pendientesSidebar,
         loading,
         error,
     } = useHorariosContext();
-    const navigate = useNavigate();
 
     const breadcrumbItems = [
         { title: 'Inicio', href: '/' },
@@ -103,30 +99,12 @@ const GestionHorariosPage = () => {
                     actions={
                         <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
                             <ActionButton
-                                permiso="institucional.oferta.paralelo-gestion"
-                                accion="LISTAR"
-                                variant="default"
-                                icon={<BookOutlined />}
-                                onClick={() => navigate('/institucional/oferta')}
-                            >
-                                Oferta académica
-                            </ActionButton>
-                            <ActionButton
                                 permiso="institucional.horario.armado"
                                 accion="LISTAR"
                                 variant="warning"
                                 onClick={onVerHorariosAulas}
                             >
                                 Horarios en aulas
-                            </ActionButton>
-                            <ActionButton
-                                permiso="institucional.horario.conflictos"
-                                accion="LISTAR"
-                                variant="default"
-                                disabled={!gestionVigenteId}
-                                onClick={onVerConflictosGlobales}
-                            >
-                                Conflictos globales
                             </ActionButton>
                             <ActionButton
                                 permiso="institucional.horario.publicacion"
@@ -146,14 +124,7 @@ const GestionHorariosPage = () => {
                     <Spin spinning={loading} tip="Cargando datos de horarios...">
                         <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
                             {error ? <Alert type="error" showIcon title={error} /> : null}
-                            <HorariosOperativaBanner />
-                            {hayAlertas ? (
-                                <HorariosAlertBanner
-                                    sinDocentes={kpis.sinDocentes}
-                                    sinAulas={kpis.sinAulas}
-                                    sinHorarios={kpis.sinHorarios}
-                                />
-                            ) : null}
+                            {hayAlertas ? <HorariosAlertBanner lineas={alertLineas} /> : null}
 
                             <HorariosKpiStrip kpis={kpis} variant="details" />
 
@@ -190,8 +161,8 @@ const GestionHorariosPage = () => {
                         />
                     </Flex>
                 </InfoSidebar>
-            </DashboardPageShell >
-        </Flex >
+            </DashboardPageShell>
+        </Flex>
     );
 };
 

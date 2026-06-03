@@ -169,17 +169,20 @@ export class ParallelRepository extends BaseRepository {
 
     const query = `
       SELECT
+        e.paralelo_gestion_id,
         e.paralelo_id,
-        pg_map.paralelo_gestion_id,
         e.paralelo_nombre,
         e.turno,
         e.carrera_id,
         e.carrera_nombre,
         e.carrera_color_hex,
         e.periodo_nombre,
+        e.paralelo_gestion_estado,
+        e.paralelo_aula_id,
         e.asignaturas_requeridas,
         e.cursos_creados,
         e.cursos_con_horario,
+        e.ofertas_cobertura_incompleta,
         e.cursos_sin_docente,
         e.bloques_sin_aula,
         e.conflictos_solape_mismo_bloque,
@@ -187,24 +190,6 @@ export class ParallelRepository extends BaseRepository {
         e.conflicto_docente_horario,
         e.tablero_grupo
       FROM vista_horarios_paralelo_estado e
-      LEFT JOIN (
-        SELECT
-          pg.paralelo_id,
-          pg.turno,
-          MIN(pg.id) AS paralelo_gestion_id
-        FROM paralelos_gestion pg
-        INNER JOIN gestiones_planes gp
-          ON gp.id = pg.gestion_plan_id
-          AND gp.deleted_at IS NULL
-        INNER JOIN gestiones g
-          ON g.id = gp.gestion_id
-          AND g.deleted_at IS NULL
-          AND g.vigente = TRUE
-        WHERE pg.deleted_at IS NULL
-        GROUP BY pg.paralelo_id, pg.turno
-      ) pg_map
-        ON pg_map.paralelo_id = e.paralelo_id
-        AND UPPER(pg_map.turno) = UPPER(e.turno)
       ${where.length ? `WHERE ${where.map((w) => w.replace(/^(\w+)/, 'e.$1')).join(' AND ')}` : ''}
       ORDER BY e.carrera_nombre ASC, e.periodo_nombre ASC, e.paralelo_nombre ASC
     `;

@@ -21,7 +21,6 @@ import { HorariosArmadoCoberturaSidebar } from '../components/organisms';
 import ParaleloCursosGestionSection from '../components/organisms/ParaleloCursosGestionSection';
 import DocenteAsignacionCursoModal from '../components/organisms/DocenteAsignacionCursoModal';
 import ParaleloCursosTabSection from '../components/organisms/ParaleloCursosTabSection';
-import HorariosOperativaBanner from '../components/molecules/HorariosOperativaBanner';
 import HorariosArmadoParaleloEstadoAlert from '../components/molecules/HorariosArmadoParaleloEstadoAlert';
 import HorariosArmadoParaleloSelector from '../components/molecules/HorariosArmadoParaleloSelector';
 import '@presentation/styles/pages/detail-page.css';
@@ -382,21 +381,6 @@ const GestionHorariosArmadoPage = () => {
                                     style={{ marginBottom: 16 }}
                                     title={`${conflictosGrilla.length} conflicto(s) de horario`}
                                     description="Resuelva solapes de paralelo, aula o docente antes de publicar. Los bloques en conflicto están marcados en la grilla."
-                                    action={
-                                        gestionVigenteId ? (
-                                            <button
-                                                type="button"
-                                                className="sd-btn sd-btn--outline sd-btn--sm"
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/institucional/horarios/conflictos/${gestionVigenteId}`,
-                                                    )
-                                                }
-                                            >
-                                                Ver todos
-                                            </button>
-                                        ) : null
-                                    }
                                 />
                             ) : null}
                             {coberturaGrilla && coberturaGrilla.completa === false ? (
@@ -413,7 +397,6 @@ const GestionHorariosArmadoPage = () => {
                                 paraleloGestionId={paraleloGestionId}
                                 style={{ marginBottom: 16 }}
                             />
-                            <HorariosOperativaBanner style={{ marginBottom: 16 }} />
                             {!error ? (
                                 <div
                                     className={[

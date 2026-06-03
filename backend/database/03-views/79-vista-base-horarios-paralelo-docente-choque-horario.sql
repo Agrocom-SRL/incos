@@ -1,6 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_horarios_paralelo_docente_choque_horario
--- Paralelos con al menos una oferta en choque de horario docente.
+-- Paralelos_gestion con choque de horario del mismo docente (gestión vigente).
 -- ============================================
 
 USE instituto_incos;
@@ -9,11 +9,19 @@ DROP VIEW IF EXISTS vista_base_horarios_paralelo_docente_choque_horario;
 
 CREATE VIEW vista_base_horarios_paralelo_docente_choque_horario AS
 SELECT DISTINCT
-    pg.paralelo_id
+    pg.id AS paralelo_gestion_id
 FROM oferta_cursos oc1
 INNER JOIN paralelos_gestion pg
     ON pg.id = oc1.paralelo_gestion_id
     AND pg.deleted_at IS NULL
+    AND pg.estado <> 'CERRADO'
+INNER JOIN gestiones_planes gp
+    ON gp.id = pg.gestion_plan_id
+    AND gp.deleted_at IS NULL
+INNER JOIN gestiones g
+    ON g.id = gp.gestion_id
+    AND g.deleted_at IS NULL
+    AND g.vigente = TRUE
 INNER JOIN asignaciones_docentes ad1
     ON ad1.oferta_curso_id = oc1.id
     AND ad1.deleted_at IS NULL

@@ -1,31 +1,32 @@
-import { Alert, Button, Space } from 'antd';
-import { useNavigate } from 'react-router-dom';
-const HorariosAlertBanner = ({ sinDocentes = 0, sinAulas = 0, sinHorarios = 0 }) => {
-    const navigate = useNavigate();
+import { Alert, Flex, Typography } from 'antd';
+import { allSpacing } from '@theme/tokens';
 
-    if (sinDocentes <= 0 && sinAulas <= 0 && sinHorarios <= 0) return null;
-    const type = sinHorarios > 0 ? 'error' : sinDocentes > 0 ? 'warning' : 'info';
+const { Text } = Typography;
+
+/**
+ * Resumen operativo de pendientes para armar y publicar horarios.
+ * @param {string[]} [lineas] — mensajes agregados (dashboard state)
+ */
+const HorariosAlertBanner = ({ lineas = [] }) => {
+    const items = (lineas || []).filter(Boolean);
+
+    if (items.length === 0) return null;
+
     return (
         <Alert
-            type={type}
+            type="error"
             showIcon
-            title="Requiere atención operativa"
+            title="Pendientes para completar horarios"
             description={
-                <Space orientation="vertical" size={8}>
-                    <span>
-                        Sin horarios: {sinHorarios} | Sin docentes: {sinDocentes} | Sin aula efectiva: {sinAulas}{' '}
-                        (revisar aula en Oferta académica o overrides aquí)
-                    </span>
-                    {sinDocentes > 0 ? (
-                        <Button
-                            size="small"
-                            type="primary"
-                            onClick={() => navigate('/institucional/oferta')}
-                        >
-                            Ir a oferta académica
-                        </Button>
-                    ) : null}
-                </Space>
+                <Flex vertical gap={allSpacing.marginSM}>
+                    <ul className="horarios-alert-banner__list" style={{ margin: 0, paddingLeft: 20 }}>
+                        {items.map((linea) => (
+                            <li key={linea}>
+                                <Text>{linea}</Text>
+                            </li>
+                        ))}
+                    </ul>
+                </Flex>
             }
         />
     );

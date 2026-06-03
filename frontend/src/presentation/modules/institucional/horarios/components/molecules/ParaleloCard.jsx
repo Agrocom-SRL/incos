@@ -24,8 +24,10 @@ function resumenTableroParaleloCard(p) {
             ? Number(p.cursosSinBloquesHorario) || 0
             : Math.max(0, cursosCreados - cursosAsignados);
     const bloquesSinAula = Number(p.bloquesSinAula) || 0;
+    const coberturaInc = Number(p.ofertasCoberturaIncompleta) || 0;
     const solape = Number(p.conflictosSolapeMismoBloque) || 0;
     const confAula = Number(p.conflictosAula) || 0;
+    const sinAulaBase = p.paraleloAulaId == null || p.paraleloAulaId === 0;
 
     switch (bucket) {
         case 'completo':
@@ -37,14 +39,20 @@ function resumenTableroParaleloCard(p) {
             if (solape > 0) {
                 return 'Hay solapes de franja entre materias del grupo; corregí el plan semanal.';
             }
+            if (coberturaInc > 0) {
+                return `${coberturaInc} materia(s) con bloques insuficientes para cubrir las horas semanales del plan.`;
+            }
             if (sinBloques > 0) {
-                return `${sinBloques} materia(s) sin franjas de horario cargadas en el plan.`;
+                return `${sinBloques} materia(s) sin cobertura horaria completa en el plan semanal.`;
             }
             return 'Completá cursos y el plan semanal (franjas) antes de asignar aulas o docentes.';
         case 'sin_docentes':
             if (sinDoc > 0) return `${sinDoc} materia(s) aún sin docente asignado.`;
             return 'Hay choque de horario de docente entre materias; reasigná o mové franjas.';
         case 'sin_aulas':
+            if (sinAulaBase) {
+                return 'El paralelo no tiene aula base en Oferta académica; asigná aula al paralelo o por bloque.';
+            }
             if (bloquesSinAula > 0) {
                 return `${bloquesSinAula} bloque(s) sin aula asignada en el plan.`;
             }

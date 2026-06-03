@@ -2,6 +2,12 @@
  * Gestión de horarios — layout alineado con dashboard (shell + planificación).
  */
 
+.horarios-kpi-card__sub {
+    display: inline-block;
+    min-height: 2.75em;
+    line-height: 1.375;
+}
+
 .horarios-gestion-planificacion .sd-tabs-shell {
     margin-top: 0;
 }

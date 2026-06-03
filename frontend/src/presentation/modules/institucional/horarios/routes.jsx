@@ -24,10 +24,6 @@ const GestionHorariosAulasConnector = lazy(
 const GestionHorariosPublicacionConnector = lazy(
   () => import('@institucional/horarios/connectors/PublicacionConnector'),
 );
-const GestionHorariosConflictosConnector = lazy(
-  () => import('@institucional/horarios/connectors/ConflictosConnector'),
-);
-
 export const horariosRoutes = [
   {
     path: '/institucional/horarios/generar',
@@ -75,6 +71,12 @@ export const horariosRoutes = [
     breadcrumbParent: 'INST-HORARIOS',
   },
   {
+    path: '/institucional/horarios/conflictos/:gestionId',
+    element: <Navigate to="/institucional/horarios" replace />,
+    key: 'INST-HORARIO-CONFLICTOS-LEGACY',
+    menu: null,
+  },
+  {
     path: '/institucional/horarios/asignacion-docente',
     element: <Navigate to="/institucional/oferta" replace />,
     key: 'INST-HORARIO-ASIGNACION-DOCENTE-LEGACY',
@@ -85,15 +87,6 @@ export const horariosRoutes = [
     element: <Navigate to="/institucional/oferta" replace />,
     key: 'INST-HORARIO-CARGA-DOCENTES-LEGACY',
     menu: null,
-  },
-  {
-    path: '/institucional/horarios/conflictos/:gestionId',
-    element: <GestionHorariosConflictosConnector />,
-    key: 'INST-HORARIO-CONFLICTOS',
-    permiso: 'institucional.horario.conflictos',
-    accion: 'LISTAR',
-    menu: null,
-    breadcrumbParent: 'INST-HORARIOS',
   },
   {
     path: '/institucional/horarios/publicacion',

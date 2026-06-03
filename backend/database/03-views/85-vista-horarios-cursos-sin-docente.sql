@@ -26,6 +26,14 @@ INNER JOIN paralelos_gestion pg
   ON pg.id = oc.paralelo_gestion_id
   AND pg.deleted_at IS NULL
   AND pg.activo = TRUE
+  AND pg.estado <> 'CERRADO'
+INNER JOIN gestiones_planes gp
+  ON gp.id = pg.gestion_plan_id
+  AND gp.deleted_at IS NULL
+INNER JOIN gestiones g
+  ON g.id = gp.gestion_id
+  AND g.deleted_at IS NULL
+  AND g.vigente = TRUE
 INNER JOIN paralelos p
   ON p.id = pg.paralelo_id
   AND p.deleted_at IS NULL

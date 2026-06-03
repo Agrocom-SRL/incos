@@ -1,6 +1,9 @@
 -- ============================================
 -- VISTA BASE: vista_base_horarios_paralelo_cursos
--- Ofertas creadas y ofertas con al menos un bloque horario por paralelo maestro.
+-- Ofertas creadas y ofertas con cobertura horaria completa por paralelo_gestion (gestión vigente).
+--
+-- cursos_con_horario: oferta con docente vigente y bloques >= horas requeridas
+-- (COALESCE(asignaciones_docentes.carga_horaria, asignaturas_plan.horas_semanales)).
 -- ============================================
 
 USE instituto_incos;
@@ -9,28 +12,54 @@ DROP VIEW IF EXISTS vista_base_horarios_paralelo_cursos;
 
 CREATE VIEW vista_base_horarios_paralelo_cursos AS
 SELECT
-    pg.paralelo_id,
+    pg.id AS paralelo_gestion_id,
     COUNT(DISTINCT oc.id) AS cursos_creados,
-    COUNT(DISTINCT CASE WHEN bloques.total_horarios > 0 THEN oc.id END) AS cursos_con_horario
+    COUNT(DISTINCT CASE WHEN cov.cobertura_completa = 1 THEN oc.id END) AS cursos_con_horario,
+    COUNT(DISTINCT CASE
+        WHEN cov.asignacion_docente_id IS NOT NULL AND cov.cobertura_completa = 0 THEN oc.id
+    END) AS ofertas_cobertura_incompleta
 FROM oferta_cursos oc
 INNER JOIN paralelos_gestion pg
     ON pg.id = oc.paralelo_gestion_id
     AND pg.deleted_at IS NULL
     AND pg.activo = TRUE
+    AND pg.estado <> 'CERRADO'
+INNER JOIN gestiones_planes gp
+    ON gp.id = pg.gestion_plan_id
+    AND gp.deleted_at IS NULL
+INNER JOIN gestiones g
+    ON g.id = gp.gestion_id
+    AND g.deleted_at IS NULL
+    AND g.vigente = TRUE
 LEFT JOIN (
     SELECT
         ad.oferta_curso_id,
-        COUNT(*) AS total_horarios
-    FROM asignacion_horarios ah
-    INNER JOIN asignaciones_docentes ad
-        ON ad.id = ah.asignacion_docente_id
-        AND ad.deleted_at IS NULL
-        AND ad.activo = TRUE
-    WHERE ah.deleted_at IS NULL
-      AND ah.activo = TRUE
+        MAX(ad.id) AS asignacion_docente_id,
+        CASE
+            WHEN MAX(ad.docente_id) IS NULL THEN 0
+            WHEN COUNT(ah.id) >= COALESCE(MAX(ad.carga_horaria), MAX(ap.horas_semanales), 0)
+                AND COALESCE(MAX(ad.carga_horaria), MAX(ap.horas_semanales), 0) > 0
+            THEN 1
+            ELSE 0
+        END AS cobertura_completa
+    FROM asignaciones_docentes ad
+    INNER JOIN oferta_cursos oc2
+        ON oc2.id = ad.oferta_curso_id
+        AND oc2.deleted_at IS NULL
+        AND oc2.activo = TRUE
+    INNER JOIN asignaturas_plan ap
+        ON ap.id = oc2.asignatura_plan_id
+        AND ap.deleted_at IS NULL
+    LEFT JOIN asignacion_horarios ah
+        ON ah.asignacion_docente_id = ad.id
+        AND ah.deleted_at IS NULL
+        AND ah.activo = TRUE
+    WHERE ad.deleted_at IS NULL
+      AND ad.activo = TRUE
+      AND ad.vigente = TRUE
     GROUP BY ad.oferta_curso_id
-) bloques
-    ON bloques.oferta_curso_id = oc.id
+) cov
+    ON cov.oferta_curso_id = oc.id
 WHERE oc.deleted_at IS NULL
   AND oc.activo = TRUE
-GROUP BY pg.paralelo_id;
+GROUP BY pg.id;
