@@ -1,19 +1,35 @@
 import { ValidationError } from '../../../domain/errors/index.js';
 import { ESTADOS_PARALELO_GESTION } from '../../../domain/constants/oferta.constants.js';
 
-const BLOQUEADOS = new Set([
+const BLOQUEADOS_EDICION_COMPLETA = new Set([
   ESTADOS_PARALELO_GESTION.PUBLICADO,
   ESTADOS_PARALELO_GESTION.CERRADO,
 ]);
 
+const BLOQUEADOS_REUBICACION = new Set([ESTADOS_PARALELO_GESTION.CERRADO]);
+
 /**
+ * Alta, baja y generación de bloques (no aplica a reubicar franjas en plan publicado).
  * @param {string|null|undefined} estado
  */
 export function assertParaleloGestionHorarioEditable(estado) {
   const s = String(estado || '').trim().toUpperCase();
-  if (BLOQUEADOS.has(s)) {
+  if (BLOQUEADOS_EDICION_COMPLETA.has(s)) {
     throw new ValidationError(
-      `No se pueden modificar bloques cuando el paralelo en gestión está en estado ${s}`
+      `No se pueden crear ni eliminar bloques cuando el paralelo en gestión está en estado ${s}`
+    );
+  }
+}
+
+/**
+ * Actualizar horario/aula de un bloque existente (permite PUBLICADO).
+ * @param {string|null|undefined} estado
+ */
+export function assertParaleloGestionHorarioReubicable(estado) {
+  const s = String(estado || '').trim().toUpperCase();
+  if (BLOQUEADOS_REUBICACION.has(s)) {
+    throw new ValidationError(
+      `No se pueden reubicar bloques cuando el paralelo en gestión está en estado ${s}`
     );
   }
 }

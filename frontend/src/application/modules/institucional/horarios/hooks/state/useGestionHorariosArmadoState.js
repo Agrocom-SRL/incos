@@ -32,7 +32,9 @@ import {
 } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
 import {
     isParaleloGestionHorarioEditable,
+    isParaleloGestionPlanSemanalEditable,
     mensajeParaleloGestionNoEditable,
+    mensajeParaleloGestionPlanNoEditable,
 } from '@application-institucional/horarios/utils/paraleloGestionHorarioEditable';
 import {
     generarBloquesAutomaticosCurso,
@@ -120,6 +122,7 @@ export const useGestionHorariosArmadoState = (notification) => {
     const metaFromPg = pgDirectMeta ?? resolver.meta;
     const paraleloGestionEstado = metaFromPg?.estado ?? null;
     const horarioEditable = isParaleloGestionHorarioEditable(paraleloGestionEstado);
+    const planSemanalEditable = isParaleloGestionPlanSemanalEditable(paraleloGestionEstado);
     const turnoEfectivo = (metaFromPg?.turno || grillaMeta?.turno || '').trim();
     const paraleloNombre =
         metaFromPg?.nombre ||
@@ -267,21 +270,41 @@ export const useGestionHorariosArmadoState = (notification) => {
     );
 
     const onRequestPersist = useCallback(async () => {
-        if (!horarioEditable) {
+        if (!planSemanalEditable) {
             notification.warning({
                 title: 'Plan no editable',
-                description: mensajeParaleloGestionNoEditable(paraleloGestionEstado),
+                description: mensajeParaleloGestionPlanNoEditable(paraleloGestionEstado),
             });
             return;
         }
 
         if (!paraleloGestionId) return;
 
-        const { items, incomplete } = buildBulkAsignacionHorarioItems(
+        let { items, incomplete } = buildBulkAsignacionHorarioItems(
             serverSchedules,
             draftSchedules,
             horarioSlotIndex,
         );
+
+        if (!horarioEditable) {
+            const reubicaciones = items.filter((item) => String(item.op).toLowerCase() === 'update');
+            const descartados = items.length - reubicaciones.length;
+            if (descartados > 0 && reubicaciones.length === 0) {
+                notification.warning({
+                    title: 'Paralelo publicado',
+                    description: mensajeParaleloGestionNoEditable(paraleloGestionEstado),
+                });
+                return;
+            }
+            if (descartados > 0) {
+                notification.info({
+                    title: 'Paralelo publicado',
+                    description:
+                        'Solo se guardarán reubicaciones de bloques existentes. No se aplican altas ni bajas en este estado.',
+                });
+            }
+            items = reubicaciones;
+        }
 
         if (!items.length) {
             notification.info({
@@ -319,6 +342,7 @@ export const useGestionHorariosArmadoState = (notification) => {
     }, [
         notification,
         horarioEditable,
+        planSemanalEditable,
         paraleloGestionEstado,
         paraleloGestionId,
         serverSchedules,
@@ -537,6 +561,7 @@ export const useGestionHorariosArmadoState = (notification) => {
         grillaHorario,
         paraleloGestionEstado,
         horarioEditable,
+        planSemanalEditable,
         generarBloquesCurso,
     };
 };

@@ -26,6 +26,10 @@ const ParaleloArmadoPlanSection = ({
     schedules,
     onSchedulesChange,
     editable = false,
+    /** Si false, no se muestra quitar bloque (p. ej. paralelo PUBLICADO). Por defecto sigue a `editable`. */
+    allowDelete,
+    /** Paralelo publicado: arrastrar y guardar, sin alta/baja desde grilla. */
+    soloReubicacion = false,
     turnoLabel,
     onRequestPersist,
     validatePlacement,
@@ -35,6 +39,7 @@ const ParaleloArmadoPlanSection = ({
     showPendientesDetalle = false,
 }) => {
     const { notification } = App.useApp();
+    const puedeEliminar = allowDelete ?? editable;
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
     const pendientesLineas = useMemo(() => {
@@ -99,10 +104,10 @@ const ParaleloArmadoPlanSection = ({
 
     const handleDeleteChip = useCallback(
         (item) => {
-            if (!editable || !item?.cursoId || item.cursoHorarioId == null) return;
+            if (!puedeEliminar || !item?.cursoId || item.cursoHorarioId == null) return;
             onSchedulesChange(removeBlockFromSchedules(schedules, item.cursoId, item.cursoHorarioId));
         },
-        [editable, onSchedulesChange, schedules],
+        [puedeEliminar, onSchedulesChange, schedules],
     );
 
     const handleSaveClick = useCallback(() => {
@@ -142,6 +147,12 @@ const ParaleloArmadoPlanSection = ({
                             · Turno {turnoLabel}
                         </Text>
                     ) : null}
+                    {soloReubicacion ? (
+                        <Text type="secondary" style={{ display: 'block' }}>
+                            Paralelo publicado: podés reubicar bloques existentes; no se pueden agregar ni quitar
+                            desde la grilla.
+                        </Text>
+                    ) : null}
                 </div>
                 <Space wrap>
                     {editable ? (
@@ -173,7 +184,7 @@ const ParaleloArmadoPlanSection = ({
                     onSlotDrop={handleSlotDrop}
                     cellExtraProps={{
                         onBeginDragChip: handleBeginDragChip,
-                        onDeleteChip: handleDeleteChip,
+                        onDeleteChip: puedeEliminar ? handleDeleteChip : undefined,
                     }}
                 />
             </div>

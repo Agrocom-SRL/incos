@@ -53,6 +53,7 @@ const GestionHorariosArmadoPage = () => {
         validatePlacement,
         hasParaleloSelected,
         horarioEditable,
+        planSemanalEditable,
         coberturaGrilla,
         generarBloquesCurso,
     } = useHorariosArmadoContext();
@@ -107,7 +108,9 @@ const GestionHorariosArmadoPage = () => {
                         <ParaleloArmadoPlanSection
                             schedules={draftSchedules}
                             onSchedulesChange={setDraftSchedules}
-                            editable={horarioEditable}
+                            editable={planSemanalEditable}
+                            allowDelete={horarioEditable}
+                            soloReubicacion={planSemanalEditable && !horarioEditable}
                             turnoLabel={turnoEfectivo || undefined}
                             persistLoading={persistLoading}
                             onRequestPersist={onRequestPersist}
@@ -146,6 +149,7 @@ const GestionHorariosArmadoPage = () => {
             setDraftSchedules,
             onRequestPersist,
             horarioEditable,
+            planSemanalEditable,
             vistaExpandida,
             paraleloGestionId,
             coberturaGrilla,
