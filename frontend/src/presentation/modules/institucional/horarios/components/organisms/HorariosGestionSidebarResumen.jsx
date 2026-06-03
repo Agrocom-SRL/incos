@@ -6,7 +6,10 @@ import { ActionButton, Button } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows, typography, gradients } from '@theme/tokens';
 import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
-import { buildHorariosArmadoUrl } from '@application-institucional/horarios/config/paths';
+import {
+    buildHorariosArmadoUrl,
+    buildOfertaParaleloDetalleFromHorarios,
+} from '@application-institucional/horarios/config/paths';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 
 const { Text, Title } = Typography;
@@ -544,17 +547,16 @@ const HorariosGestionSidebarResumen = ({
                                             onClick={() => {
                                                 const pg = row.paraleloGestionId;
                                                 if (!pg) return;
+                                                const target = buildOfertaParaleloDetalleFromHorarios(pg);
                                                 navigate(
-                                                    buildHorariosArmadoUrl(pg, {
-                                                        tab: 'cursos',
-                                                        asignarCurso: row.cursoId,
-                                                    }),
+                                                    target.pathname,
+                                                    target.state ? { state: target.state } : undefined,
                                                 );
                                                 close();
                                             }}
                                             disabled={!row.paraleloGestionId}
                                         >
-                                            Asignar docente
+                                            Asignar en oferta
                                         </ActionButton>
                                     </Flex>
                                 ))}

@@ -145,8 +145,20 @@ export function mergeGrillaWithOfertaCursos(courseSchedules, ofertaFilas = [], a
     const cursoId = Number(row.cursoId ?? row.id ?? row.ofertaCursoId);
     if (!Number.isFinite(cursoId) || cursoId < 1) continue;
     const asig = pickAsignacionPorOferta(asignacionesPorOferta, cursoId);
+    const horasOferta =
+      row.horasSemanalesPlan != null ? Number(row.horasSemanalesPlan) : null;
     if (byId.has(cursoId)) {
-      byId.set(cursoId, enrichCourseFromAsignacion(byId.get(cursoId), asig));
+      const prev = byId.get(cursoId);
+      byId.set(
+        cursoId,
+        enrichCourseFromAsignacion(
+          {
+            ...prev,
+            horasSemanalesPlan: prev.horasSemanalesPlan ?? horasOferta ?? null,
+          },
+          asig,
+        ),
+      );
       continue;
     }
     byId.set(
@@ -160,6 +172,7 @@ export function mergeGrillaWithOfertaCursos(courseSchedules, ofertaFilas = [], a
           materiaNombre: row.materiaNombre ?? null,
           materiaSigla: row.materiaSigla ?? null,
           docente: row.docenteNombre ?? row.docente ?? null,
+          horasSemanalesPlan: horasOferta,
           bloques: [],
         },
         asig,

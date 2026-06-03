@@ -22,7 +22,7 @@ export function buildOfertaParaleloDetalleFromHorarios(paraleloGestionId) {
 /**
  * URL canónica del armado: solo `paralelo_gestion` (`pg`), sin id maestro `paralelos`.
  * @param {number} paraleloGestionId
- * @param {{ tab?: string, asignarCurso?: number|string }} [opts]
+ * @param {{ tab?: 'cobertura'|'plan'|'vista'|'cursos' }} [opts] — `cursos` se normaliza a `cobertura`
  */
 export function buildHorariosArmadoUrl(paraleloGestionId, opts = {}) {
     const pg = Number(paraleloGestionId);
@@ -31,10 +31,8 @@ export function buildHorariosArmadoUrl(paraleloGestionId, opts = {}) {
     }
     const q = new URLSearchParams();
     q.set('pg', String(pg));
-    const tab = opts.tab ?? 'plan';
+    let tab = opts.tab ?? 'plan';
+    if (tab === 'cursos') tab = 'cobertura';
     if (tab) q.set('tab', tab);
-    if (opts.asignarCurso != null && String(opts.asignarCurso).trim() !== '') {
-        q.set('asignarCurso', String(opts.asignarCurso));
-    }
     return `${HORARIOS_GESTION_PATH}/armado?${q.toString()}`;
 }

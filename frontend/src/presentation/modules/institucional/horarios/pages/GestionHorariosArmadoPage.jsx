@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, Flex, Result, Spin, Tabs } from 'antd';
 import {
     ArrowLeftOutlined,
-    BookOutlined,
     CompressOutlined,
     ExpandOutlined,
     EyeOutlined,
+    PieChartOutlined,
     ScheduleOutlined,
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
@@ -15,13 +14,12 @@ import { IconButton } from '@atoms';
 import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosArmadoContext } from '@application-institucional/horarios';
 import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
-import DocenteAsignacionCursoModal from '../components/organisms/DocenteAsignacionCursoModal';
-import ParaleloCursosTabSection from '../components/organisms/ParaleloCursosTabSection';
+import ParaleloCoberturaTabSection from '../components/organisms/ParaleloCoberturaTabSection';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 
 const ARMADO_CONTEXT_HINT =
-    'Asigná docentes por curso, armá el plan semanal en la grilla y revisá la vista previa. La oferta de cursos se gestiona en Institucional → Oferta académica.';
+    'Revisá la cobertura horaria, generá bloques por materia y afiná el plan semanal en la grilla. Docentes y oferta de cursos se gestionan en Institucional → Oferta académica.';
 
 const sectionCardProps = {
     style: {
@@ -48,27 +46,18 @@ const GestionHorariosArmadoPage = () => {
         persistLoading,
         persistError,
         paraleloGestionDetalle,
-        paraleloNombre,
-        missingSubjects,
         draftSchedules,
-        serverSchedules,
         setDraftSchedules,
         onRequestPersist,
         handleVolver,
-        refetchSchedule,
-        refetchOferta,
         paraleloGestionId,
-        gestionVigenteId,
         validatePlacement,
         hasParaleloSelected,
         horarioEditable,
+        coberturaGrilla,
+        generarBloquesCurso,
     } = useHorariosArmadoContext();
-    const [searchParams, setSearchParams] = useSearchParams();
     const [vistaExpandida, setVistaExpandida] = useState(false);
-    const [docenteModalOpen, setDocenteModalOpen] = useState(false);
-    const [selectedCourse, setSelectedCourse] = useState(null);
-    const [docentePreview, setDocentePreview] = useState(null);
-    const lastHandledAsignarCursoKey = useRef(null);
 
     useEffect(() => {
         if (!vistaExpandida) return undefined;
@@ -79,126 +68,29 @@ const GestionHorariosArmadoPage = () => {
         };
     }, [vistaExpandida]);
 
-    useEffect(() => {
-        lastHandledAsignarCursoKey.current = null;
-    }, [paraleloGestionId]);
-
-    const handleOpenDocenteAsignacion = useCallback(
-        (row) => {
-            if (!row?.cursoId) return;
-            const source = draftSchedules.find((c) => Number(c.cursoId) === Number(row.cursoId));
-            const fallback = {
-                ...row,
-                bloques: Array.isArray(row.bloques) ? row.bloques : [],
-                docente: row.docente || null,
-                cursoColorHex: row.colorHex || row.cursoColorHex || null,
-            };
-            setSelectedCourse(source || fallback);
-            setDocentePreview(null);
-            setDocenteModalOpen(true);
-        },
-        [draftSchedules],
+    const handleGenerarBloquesCurso = useCallback(
+        (cursoId, horasPlan) => generarBloquesCurso(cursoId, horasPlan),
+        [generarBloquesCurso],
     );
-
-    useEffect(() => {
-        const raw = searchParams.get('asignarCurso');
-        if (raw == null || String(raw).trim() === '') {
-            lastHandledAsignarCursoKey.current = null;
-            return;
-        }
-        const id = Number(raw);
-        if (!Number.isFinite(id)) return;
-        if (loading) return;
-        if (tab !== 'cursos') {
-            setTab('cursos');
-            return;
-        }
-        const key = `${paraleloGestionId}|${raw}`;
-        if (lastHandledAsignarCursoKey.current === key) return;
-        const fromDraft = (draftSchedules || []).find((c) => Number(c.cursoId) === id);
-        const fromServer = (serverSchedules || []).find((c) => Number(c.cursoId) === id);
-        const row = fromDraft || fromServer;
-        const clearParam = () => {
-            setSearchParams(
-                (prev) => {
-                    const n = new URLSearchParams(prev);
-                    n.delete('asignarCurso');
-                    return n;
-                },
-                { replace: true },
-            );
-        };
-        if (!row?.cursoId) {
-            lastHandledAsignarCursoKey.current = key;
-            clearParam();
-            return;
-        }
-        lastHandledAsignarCursoKey.current = key;
-        handleOpenDocenteAsignacion(row);
-        clearParam();
-    }, [
-        searchParams,
-        tab,
-        loading,
-        draftSchedules,
-        serverSchedules,
-        paraleloGestionId,
-        setSearchParams,
-        handleOpenDocenteAsignacion,
-        setTab,
-    ]);
-
-    const handleDocenteAssigned = useCallback(
-        ({ cursoId, docenteNombre }) => {
-            const docente = docenteNombre || null;
-            setDocentePreview(null);
-            setDraftSchedules((prev) =>
-                prev.map((c) =>
-                    Number(c.cursoId) === Number(cursoId)
-                        ? {
-                              ...c,
-                              docente,
-                          }
-                        : c,
-                ),
-            );
-            setSelectedCourse((prev) =>
-                prev && Number(prev.cursoId) === Number(cursoId)
-                    ? {
-                          ...prev,
-                          docente,
-                      }
-                    : prev,
-            );
-            refetchOferta?.();
-            refetchSchedule?.();
-        },
-        [refetchOferta, refetchSchedule, setDraftSchedules],
-    );
-
-    const handleDocenteModalClose = useCallback(() => {
-        setDocentePreview(null);
-        setDocenteModalOpen(false);
-    }, []);
 
     const tabItems = useMemo(
         () => [
             {
-                key: 'cursos',
+                key: 'cobertura',
                 label: (
                     <span className="sd-tab-label">
-                        <BookOutlined className="horarios-armado-tab__icon" aria-hidden />
-                        <span>Cursos del paralelo</span>
+                        <PieChartOutlined className="horarios-armado-tab__icon" aria-hidden />
+                        <span>Cobertura</span>
                     </span>
                 ),
                 children: (
                     <div className="sd-tab-body horarios-armado-tab-body">
-                        <ParaleloCursosTabSection
+                        <ParaleloCoberturaTabSection
                             draftSchedules={draftSchedules}
-                            missingSubjects={missingSubjects}
                             paraleloGestionId={paraleloGestionId}
-                            onOpenDocenteAsignacion={handleOpenDocenteAsignacion}
-                            docentePreview={docentePreview}
+                            coberturaGrilla={coberturaGrilla}
+                            horarioEditable={horarioEditable}
+                            onGenerarBloquesCurso={handleGenerarBloquesCurso}
                         />
                     </div>
                 ),
@@ -252,7 +144,6 @@ const GestionHorariosArmadoPage = () => {
         ],
         [
             draftSchedules,
-            missingSubjects,
             turnoEfectivo,
             persistLoading,
             persistError,
@@ -262,12 +153,9 @@ const GestionHorariosArmadoPage = () => {
             horarioEditable,
             vistaExpandida,
             paraleloGestionId,
-            loading,
-            docentePreview,
-            handleOpenDocenteAsignacion,
+            coberturaGrilla,
+            handleGenerarBloquesCurso,
             validatePlacement,
-            paraleloGestionDetalle,
-            turnoEfectivo,
         ],
     );
 
@@ -396,20 +284,6 @@ const GestionHorariosArmadoPage = () => {
             <Spin spinning={hasParaleloSelected && loading} size="large" tip="Cargando plan del paralelo…">
                 <div className="sd sd-spin-body horarios-armado-page">{bodyContent}</div>
             </Spin>
-            {docenteModalOpen ? (
-                <DocenteAsignacionCursoModal
-                    open={docenteModalOpen}
-                    onClose={handleDocenteModalClose}
-                    selectedCourse={selectedCourse}
-                    gestionId={gestionVigenteId}
-                    paraleloLabel={paraleloNombre || `#${paraleloGestionId || '—'}`}
-                    onAssigned={handleDocenteAssigned}
-                    onPreviewDocenteChange={setDocentePreview}
-                    onWarning={(suggestedTab) => {
-                        if (suggestedTab === 'plan') setTab('plan');
-                    }}
-                />
-            ) : null}
         </PageTemplate>
     );
 };

@@ -1,5 +1,5 @@
 /**
- * Adapta respuestas de oferta académica al tab «Gestión de cursos» del armado de horarios.
+ * Adapta respuestas de oferta académica al armado de horarios (fusión con grilla).
  */
 
 export function mapFaltantesToMissingSubjects(faltantes = []) {

@@ -33,6 +33,9 @@ import {
     isParaleloGestionHorarioEditable,
     mensajeParaleloGestionNoEditable,
 } from '@application-institucional/horarios/utils/paraleloGestionHorarioEditable';
+import {
+    generarBloquesAutomaticosCurso,
+} from '@application-institucional/horarios/utils/generarBloquesAutomaticosCurso';
 
 function pickParaleloId(row) {
     return Number(row?.paraleloId ?? row?.paralelo_id ?? row?.parallelId);
@@ -332,7 +335,7 @@ export const useGestionHorariosArmadoState = () => {
                 return {
                     ok: false,
                     message:
-                        'Asigná un docente a esta materia en la pestaña «Cursos del paralelo» antes de colocar bloques en el plan.',
+                        'Asigná un docente a esta materia en Institucional → Oferta académica antes de colocar bloques en el plan.',
                 };
             }
 
@@ -374,6 +377,60 @@ export const useGestionHorariosArmadoState = () => {
     const handleVolver = useCallback(() => {
         navigate('/institucional/horarios');
     }, [navigate]);
+
+    const generarBloquesCurso = useCallback(
+        (cursoId, horasPlanOverride = null) => {
+            if (!horarioEditable) {
+                message.warning(mensajeParaleloGestionNoEditable(paraleloGestionEstado));
+                return { ok: false };
+            }
+
+            const det = paraleloGestionDetalle;
+            const result = generarBloquesAutomaticosCurso({
+                schedules: draftSchedules,
+                cursoId,
+                turnoLabel: turnoEfectivo || null,
+                horarioSlotIndex,
+                horasPlanOverride,
+                aulaMeta: {
+                    aulaId: det?.aulaId ?? null,
+                    aulaNombre: det?.aulaNombre ?? null,
+                    aulaCodigo: det?.aulaCodigo ?? null,
+                    paraleloNombre: paraleloNombre ?? null,
+                },
+            });
+
+            if (result.placed > 0) {
+                setDraftSchedules(result.schedules);
+                if (result.faltante > 0) {
+                    message.warning(
+                        result.message ||
+                            `Se generaron ${result.placed} bloque(s); aún faltan franjas libres para cubrir toda la carga.`,
+                    );
+                } else {
+                    message.success(
+                        `Se generaron ${result.placed} bloque(s) de 45 min. Revisá el plan y guardá los cambios.`,
+                    );
+                }
+                setTab('plan');
+                return { ok: true, ...result };
+            }
+
+            message.warning(result.message || 'No se pudieron generar bloques para esta materia.');
+            return { ok: false, ...result };
+        },
+        [
+            horarioEditable,
+            paraleloGestionEstado,
+            draftSchedules,
+            turnoEfectivo,
+            horarioSlotIndex,
+            paraleloGestionDetalle,
+            paraleloNombre,
+            setDraftSchedules,
+            setTab,
+        ],
+    );
 
     const loading =
         pgDirectLoading ||
@@ -420,5 +477,6 @@ export const useGestionHorariosArmadoState = () => {
         grillaHorario,
         paraleloGestionEstado,
         horarioEditable,
+        generarBloquesCurso,
     };
 };

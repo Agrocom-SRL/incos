@@ -34,7 +34,7 @@ const fmtHoraCorta = (t) => {
 };
 
 /**
- * Resumen de bloques de un curso para la pestaña «Cursos del paralelo» del armado.
+ * Resumen de bloques de un curso para la pestaña «Cobertura» del armado.
  */
 export const resumenBloquesCurso = (c) => {
     const bloques = c.bloques || [];

@@ -5,6 +5,7 @@ export function syncArmadoSearchParams(prev, { paraleloGestionId, tab }) {
     const n = new URLSearchParams(prev);
     n.delete('paralelo');
     n.delete('turno');
+    n.delete('asignarCurso');
     if (paraleloGestionId != null && Number(paraleloGestionId) > 0) {
         n.set('pg', String(paraleloGestionId));
     }
