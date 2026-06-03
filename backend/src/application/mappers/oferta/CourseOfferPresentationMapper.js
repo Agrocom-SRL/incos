@@ -15,6 +15,14 @@ export function rowToPresentation(row) {
     materiaId: row.materiaId ?? null,
     materiaNombre: row.materiaNombre ?? null,
     materiaCodigo: row.materiaCodigo ?? null,
+    asignacionDocenteId:
+      row.asignacionDocenteId != null ? Number(row.asignacionDocenteId) : null,
+    docenteId: row.docenteId != null ? Number(row.docenteId) : null,
+    docenteNombre: row.docenteNombre?.trim() || null,
+    colorHex: row.colorHex ?? null,
+    cargaHorariaAsignacion:
+      row.cargaHorariaAsignacion != null ? Number(row.cargaHorariaAsignacion) : null,
+    fechaAsignacion: row.fechaAsignacion ?? null,
   };
 }
 

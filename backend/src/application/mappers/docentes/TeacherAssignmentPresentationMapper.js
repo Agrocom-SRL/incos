@@ -43,7 +43,7 @@ export function enrichedRowToLegacyPresentation(row) {
     id: p.id,
     gestionPlanId: p.gestion_plan_id,
     ofertaCursoId: p.oferta_curso_id,
-    cursoId: null,
+    cursoId: p.oferta_curso_id,
     docenteId: p.docente_id,
     cargaHoraria: p.carga_horaria,
     vigente: p.vigente,

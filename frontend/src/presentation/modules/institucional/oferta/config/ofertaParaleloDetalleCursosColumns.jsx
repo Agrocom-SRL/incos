@@ -1,9 +1,13 @@
 import { TeamOutlined } from '@ant-design/icons';
+import { Flex, Typography } from 'antd';
 import { ActionButton, StatusPill } from '@atoms';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import {
   ofertaCursoDocentePillClass,
   ofertaCursoEstadoPillClass,
 } from '../utils/ofertaParaleloUi';
+
+const { Text } = Typography;
 
 export function buildOfertaParaleloDetalleCursosColumns({
   faltantesDocenteIds,
@@ -15,7 +19,23 @@ export function buildOfertaParaleloDetalleCursosColumns({
       dataIndex: 'materiaNombre',
       key: 'materia',
       ellipsis: true,
-      render: (nombre, row) => nombre ?? `Asignatura #${row.asignaturaPlanId ?? '—'}`,
+      render: (nombre, row) => {
+        const label = nombre ?? `Asignatura #${row.asignaturaPlanId ?? '—'}`;
+        const swatch =
+          row.docenteId != null ? sanitizeDocenteColorHex(row.colorHex) : null;
+        return (
+          <Flex align="center" gap={8} style={{ minWidth: 0 }}>
+            {swatch ? (
+              <span
+                className="cfg-carrera-titulo-dot__swatch"
+                style={{ backgroundColor: swatch }}
+                aria-hidden
+              />
+            ) : null}
+            <Text ellipsis={{ tooltip: label }}>{label}</Text>
+          </Flex>
+        );
+      },
     },
     {
       title: 'Sigla',
@@ -35,14 +55,22 @@ export function buildOfertaParaleloDetalleCursosColumns({
     {
       title: 'Docente',
       key: 'docente',
-      width: 120,
+      width: 200,
+      ellipsis: true,
       render: (_, row) => {
         const pendiente = faltantesDocenteIds.has(Number(row.id));
+        if (pendiente) {
+          return (
+            <StatusPill
+              label="Sin docente"
+              className={ofertaCursoDocentePillClass(true)}
+            />
+          );
+        }
         return (
-          <StatusPill
-            label={pendiente ? 'Pendiente' : 'Asignado'}
-            className={ofertaCursoDocentePillClass(pendiente)}
-          />
+          <Text ellipsis={{ tooltip: row.docenteNombre }}>
+            {row.docenteNombre || '—'}
+          </Text>
         );
       },
     },

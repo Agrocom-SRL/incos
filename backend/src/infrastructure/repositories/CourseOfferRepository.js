@@ -38,7 +38,8 @@ export class CourseOfferRepository extends BaseRepository {
   }
 
   /**
-   * Oferta de cursos con datos de asignatura y materia.
+   * Oferta de cursos con asignatura, materia y docente vigente (si existe).
+   * Reutiliza vista_base_docentes_vigentes_por_curso (80); no duplicar JOIN a asignaciones_docentes.
    */
   async findEnrichedByParallelManagementId(parallelManagementId) {
     const sql = `
@@ -54,10 +55,17 @@ export class CourseOfferRepository extends BaseRepository {
         ap.periodo_id AS periodoId,
         m.id AS materiaId,
         m.nombre AS materiaNombre,
-        m.sigla AS materiaCodigo
+        m.sigla AS materiaCodigo,
+        dv.asignacion_docente_id AS asignacionDocenteId,
+        dv.docente_id AS docenteId,
+        dv.carga_horaria AS cargaHorariaAsignacion,
+        dv.fecha_asignacion AS fechaAsignacion,
+        dv.docente_nombre AS docenteNombre,
+        dv.color_hex AS colorHex
       FROM oferta_cursos oc
       LEFT JOIN asignaturas_plan ap ON ap.id = oc.asignatura_plan_id AND ap.deleted_at IS NULL
       LEFT JOIN materias m ON m.id = ap.materia_id AND m.deleted_at IS NULL
+      LEFT JOIN vista_base_docentes_vigentes_por_curso dv ON dv.curso_id = oc.id
       WHERE oc.paralelo_gestion_id = :parallelManagementId
         AND oc.deleted_at IS NULL
       ORDER BY ap.orden_visualizacion ASC, oc.id ASC

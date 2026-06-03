@@ -6,6 +6,7 @@ import { ActionButton } from '@atoms';
 import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useOfertaParaleloDetalleState } from '@application-institucional/oferta';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DocenteAsignacionCursoModal from '@institucional/horarios/components/organisms/DocenteAsignacionCursoModal';
 import {
   OfertaParaleloAulaSelectModal,
   OfertaParaleloDetalleContextHeader,
@@ -39,9 +40,6 @@ const OfertaParaleloDetallePage = () => {
     { title: s.detalle?.paraleloNombre ?? `Paralelo #${s.paraleloGestionId}` },
   ];
 
-  const puedeOfertar =
-    s.detalle?.estado === 'BORRADOR' && Boolean(s.detalle?.aulaId) && s.ofertaCursos.length > 0;
-
   return (
     <Flex
       vertical
@@ -64,7 +62,7 @@ const OfertaParaleloDetallePage = () => {
               >
                 Volver
               </ActionButton>
-              {puedeOfertar ? (
+              {s.puedeMarcarOfertado ? (
                 <ActionButton
                   permiso="institucional.oferta.paralelo-gestion"
                   accion="EDITAR"
@@ -124,6 +122,15 @@ const OfertaParaleloDetallePage = () => {
                 />
               ) : null}
 
+              {s.detalle?.estado === 'BORRADOR' ? (
+                <Alert
+                  type="info"
+                  showIcon
+                  title="Siguiente paso: docentes y horarios"
+                  description="Asigne docente a cada materia desde la tabla (modal). OFERTADO solo exige aula y oferta completa; los horarios se arman después en Gestión de horarios."
+                />
+              ) : null}
+
               <Card className="oferta-paralelo-detalle-workspace" {...sectionCardProps}>
                 <Flex vertical gap={allSpacing.marginLG}>
 
@@ -137,7 +144,7 @@ const OfertaParaleloDetallePage = () => {
                     ofertaCursos={s.ofertaCursos}
                     cargaHorariaResumen={carga}
                     faltantesDocenteIds={s.faltantesDocenteIds}
-                    onAsignarDocente={s.onNavigateAsignarDocente}
+                    onAsignarDocente={s.openDocenteModal}
                   />
                 </Flex>
               </Card>
@@ -155,6 +162,17 @@ const OfertaParaleloDetallePage = () => {
         onConfirm={s.onConfirmarAulaModal}
         confirming={s.guardandoAula}
       />
+
+      {s.docenteModalOpen ? (
+        <DocenteAsignacionCursoModal
+          open={s.docenteModalOpen}
+          onClose={s.closeDocenteModal}
+          selectedCourse={s.docenteModalSelectedCourse}
+          gestionId={s.detalle?.gestionId}
+          paraleloLabel={s.docenteModalParaleloLabel}
+          onAssigned={s.onDocenteAsignado}
+        />
+      ) : null}
     </Flex>
   );
 };

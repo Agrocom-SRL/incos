@@ -151,9 +151,9 @@ const AsignacionDocentePage = () => {
           description={
             <Space orientation="vertical" size={8} style={{ width: '100%' }}>
               <span>
-                Requiere <strong>oferta de cursos</strong> generada en{' '}
-                <strong>Institucional → Oferta académica</strong> (paralelos con materias ofertadas). Aquí vincula
-                docente y materia; el armado de bloques semanal es en <strong>Gestión de horarios</strong>.
+                Vista masiva por gestión/plan/paralelo. Para una materia concreta, use{' '}
+                <strong>Oferta académica → detalle del paralelo</strong> (tabla de cursos). El armado de bloques
+                semanal es en <strong>Gestión de horarios</strong>.
               </span>
               <Button size="small" onClick={() => navigate('/institucional/oferta')}>
                 Ir a oferta académica

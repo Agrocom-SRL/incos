@@ -95,8 +95,8 @@ const OfertaParaleloDetalleContextHeader = ({
             </Text>
           ) : null}
           <Text type="secondary" className="oferta-paralelo-detalle-context__hint">
-            Revise las materias del periodo y vincule docentes antes de armar horarios o marcar
-            OFERTADO. El aula es obligatoria para pasar a OFERTADO.
+            Vincule docentes por materia en la tabla. Para marcar OFERTADO se requiere aula y oferta
+            completa del periodo; docentes y bloques horarios pueden completarse después.
           </Text>
         </Flex>
       </Flex>

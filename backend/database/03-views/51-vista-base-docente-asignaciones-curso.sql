@@ -9,6 +9,7 @@ DROP VIEW IF EXISTS vista_base_docente_asignaciones_curso;
 
 CREATE VIEW vista_base_docente_asignaciones_curso AS
 SELECT
+  oc.id AS oferta_curso_id,
   ad.docente_id AS docente_id,
   ad.id AS asignacion_docente_id,
   ad.vigente,

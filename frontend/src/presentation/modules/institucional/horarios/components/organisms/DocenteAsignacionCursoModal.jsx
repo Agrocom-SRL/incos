@@ -1,13 +1,31 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Col, Flex, Modal, Row, Space, Tag, Typography, message } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 import { SearchBar } from '@atoms';
 import { useAuthContext } from '@application-auth';
 import { useDocentesApi } from '@application-docentes/hooks/api';
+import { useAsignacionDocenteApi } from '@application-institucional/horarios/hooks/api/useAsignacionDocenteApi';
 import DocenteRepository from '@implementations/DocenteRepository';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
+import {
+    buildDocenteAsignacionCandidatos,
+    horasMateriaParaAsignacion,
+    mapCargaDocentesIndex,
+    pickAsignacionField,
+} from '@application-institucional/horarios/mappers/asignacionDocenteMatrizMapper';
+import '@institucional/horarios/styles/asignacion-docente.css';
 
 const { Text } = Typography;
+
+function extractApiErrorFlags(raw) {
+    const err = raw?.response?.data?.error;
+    if (!err || typeof err !== 'object') return {};
+    return {
+        requiereColor: Boolean(err.requiere_color),
+        sobrecarga: Boolean(err.sobrecarga),
+        message: err.message,
+    };
+}
 
 const parseAsignaciones = (payload) => {
     const rows = Array.isArray(payload)
@@ -26,6 +44,7 @@ const DocenteAsignacionCursoModal = ({
     open,
     onClose,
     selectedCourse,
+    gestionId,
     paraleloLabel,
     onAssigned,
     onWarning,
@@ -38,7 +57,9 @@ const DocenteAsignacionCursoModal = ({
     const [loadingAsignacion, setLoadingAsignacion] = useState(false);
     const [cursoAsignacion, setCursoAsignacion] = useState(null);
     const [docentesConChoque, setDocentesConChoque] = useState(new Set());
+    const [cargaPorDocente, setCargaPorDocente] = useState(() => new Map());
     const { docentes = [] } = useDocentesApi();
+    const { fetchCargaGestion } = useAsignacionDocenteApi();
     const { hasPermiso } = useAuthContext();
     const puedeGuardarAsignacion =
         hasPermiso('institucional.horarios.asignacion-docente', 'EDITAR') ||
@@ -56,38 +77,92 @@ const DocenteAsignacionCursoModal = ({
         return Number.isFinite(n) ? n : null;
     }, [selectedCourse]);
 
-    const docenteCandidates = useMemo(() => {
-        const query = candidateSearch.trim().toLowerCase();
-        const mapped = docentes
-            .filter((d) => {
-                if (!query) return true;
-                return String(d.nombreCompleto || '').toLowerCase().includes(query);
-            })
-            .map((d) => {
-                const totalAsignaciones = Number(d.teachingStats?.totalAsignaciones || 0);
-                const hasConflicts = Boolean(d.teachingStats?.conflictos?.hasConflictos);
-                const chocaBloques = docentesConChoque.has(Number(d.id));
-                const semaforo = chocaBloques
-                    ? 'rojo'
-                    : hasConflicts || totalAsignaciones >= 5
-                        ? 'amarillo'
-                        : 'verde';
-                return { ...d, semaforo, chocaBloques };
-            });
+    const fechaAsignacionDisplay = useMemo(() => {
+        const fromApi = pickAsignacionField(cursoAsignacion, 'fecha_asignacion', 'fechaAsignacion');
+        if (fromApi) return String(fromApi);
+        if (selectedCourse?.fechaAsignacion) return String(selectedCourse.fechaAsignacion);
+        return null;
+    }, [cursoAsignacion, selectedCourse?.fechaAsignacion]);
 
-        // Libres primero; garantizar al menos 50% del total visible
-        const libres = mapped.filter((d) => d.semaforo === 'verde');
-        const otros = mapped.filter((d) => d.semaforo !== 'verde');
-        const MAX = 10;
-        const libresSlot = Math.min(libres.length, Math.ceil(MAX / 2)); // hasta 5
-        const otrosSlot = MAX - libresSlot;
-        return [...libres.slice(0, libresSlot), ...otros.slice(0, otrosSlot)];
-    }, [docentes, candidateSearch, docentesConChoque]);
+    const cargaHorariaDisplay = useMemo(() => {
+        const fromApi = pickAsignacionField(cursoAsignacion, 'carga_horaria', 'cargaHoraria');
+        if (fromApi != null && fromApi !== '') return Number(fromApi);
+        if (selectedCourse?.cargaHoraria != null && selectedCourse.cargaHoraria !== '') {
+            return Number(selectedCourse.cargaHoraria);
+        }
+        return null;
+    }, [cursoAsignacion, selectedCourse?.cargaHoraria]);
 
-    const selectedDocente = useMemo(
-        () => docenteCandidates.find((d) => Number(d.id) === Number(selectedDocenteId)) || null,
-        [docenteCandidates, selectedDocenteId],
+    const horasMateria = useMemo(
+        () =>
+            horasMateriaParaAsignacion({
+                horasAsignacion: cargaHorariaDisplay,
+                horasPlan: horasPlanReferencia,
+            }),
+        [cargaHorariaDisplay, horasPlanReferencia]
     );
+
+    const docenteActualCursoId = useMemo(() => {
+        const fromAsig = pickAsignacionField(cursoAsignacion, 'docente_id', 'docenteId');
+        if (fromAsig != null) return Number(fromAsig);
+        if (selectedCourse?.docenteId != null) return Number(selectedCourse.docenteId);
+        return null;
+    }, [cursoAsignacion, selectedCourse?.docenteId]);
+
+    const gestionIdEfectiva = useMemo(() => {
+        const g = Number(gestionId ?? selectedCourse?.gestionId);
+        return Number.isFinite(g) && g > 0 ? g : null;
+    }, [gestionId, selectedCourse?.gestionId]);
+
+    const docenteCandidates = useMemo(
+        () =>
+            buildDocenteAsignacionCandidatos({
+                docentes,
+                candidateSearch,
+                docentesConChoque,
+                cargaPorDocente,
+                horasMateria,
+                docenteActualCursoId,
+                selectedDocenteId,
+            }),
+        [
+            docentes,
+            candidateSearch,
+            docentesConChoque,
+            cargaPorDocente,
+            horasMateria,
+            docenteActualCursoId,
+            selectedDocenteId,
+        ]
+    );
+
+    const selectedDocente = useMemo(() => {
+        if (selectedDocenteId == null) return null;
+        return (
+            docentes.find((d) => Number(d.id) === Number(selectedDocenteId)) ||
+            docenteCandidates.find((d) => Number(d.id) === Number(selectedDocenteId)) ||
+            null
+        );
+    }, [docentes, docenteCandidates, selectedDocenteId]);
+
+    useEffect(() => {
+        if (!open || !gestionIdEfectiva) {
+            setCargaPorDocente(new Map());
+            return;
+        }
+        let cancelled = false;
+        fetchCargaGestion(gestionIdEfectiva).then((res) => {
+            if (cancelled) return;
+            if (res.success) {
+                setCargaPorDocente(mapCargaDocentesIndex(res.data?.carga_docentes));
+            } else {
+                setCargaPorDocente(new Map());
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [open, gestionIdEfectiva, fetchCargaGestion]);
 
     useEffect(() => {
         if (!open || !selectedCourse?.cursoId) return;
@@ -105,18 +180,36 @@ const DocenteAsignacionCursoModal = ({
     useEffect(() => {
         if (!open || !selectedCourse?.cursoId) return;
         setCandidateSearch('');
+        setSelectedDocenteId(
+            selectedCourse?.docenteId != null ? Number(selectedCourse.docenteId) : null
+        );
         setLoadingAsignacion(true);
-        DocenteRepository.listarAsignaciones({ cursoId: selectedCourse.cursoId, vigente: 'true', page: 1, limit: 5 })
+        DocenteRepository.listarAsignaciones({
+                ofertaCursoId: selectedCourse.cursoId,
+                cursoId: selectedCourse.cursoId,
+                vigente: 'true',
+                page: 1,
+                limit: 5,
+            })
             .then((res) => {
                 if (!res?.success) {
                     setCursoAsignacion(null);
-                    setSelectedDocenteId(null);
+                    setSelectedDocenteId(
+                        selectedCourse?.docenteId != null ? Number(selectedCourse.docenteId) : null
+                    );
                     return;
                 }
                 const rows = parseAsignaciones(res.data);
                 const first = rows[0] || null;
                 setCursoAsignacion(first);
-                setSelectedDocenteId(first?.docenteId ?? first?.docente?.id ?? null);
+                const docenteIdAsig = pickAsignacionField(first, 'docente_id', 'docenteId');
+                setSelectedDocenteId(
+                    docenteIdAsig != null
+                        ? Number(docenteIdAsig)
+                        : selectedCourse?.docenteId != null
+                          ? Number(selectedCourse.docenteId)
+                          : null
+                );
             })
             .catch(() => {
                 setCursoAsignacion(null);
@@ -154,29 +247,39 @@ const DocenteAsignacionCursoModal = ({
         docenteCandidates,
     ]);
 
-    const handleConfirm = async () => {
-        if (!puedeGuardarAsignacion || !selectedCourse?.cursoId || !selectedDocenteId) return;
-        setSaving(true);
-        try {
+    const ejecutarAsignacion = useCallback(
+        async (confirmOverload = false) => {
             const result = await DocenteRepository.asignarDocenteCurso({
                 gestionPlanId: selectedCourse?.gestionPlanId ?? undefined,
                 cursoId: Number(selectedCourse.cursoId),
                 docenteId: Number(selectedDocenteId),
                 vigente: true,
+                confirmar_sobrecarga: confirmOverload,
             });
 
             if (!result?.success) {
+                const flags = extractApiErrorFlags(result?.raw);
+                if (flags.sobrecarga) {
+                    Modal.confirm({
+                        title: 'Sobrecarga docente',
+                        content:
+                            flags.message ||
+                            'La asignación supera el máximo semanal del docente. ¿Desea confirmar bajo su responsabilidad?',
+                        okText: 'Confirmar asignación',
+                        cancelText: 'Cancelar',
+                        onOk: () => ejecutarAsignacion(true),
+                    });
+                    return false;
+                }
                 messageApi.error(result?.error || 'No se pudo guardar la asignacion docente.');
-                return;
+                return false;
             }
 
             const warnings = Array.isArray(result?.data?.warnings) ? result.data.warnings : [];
-            if (warnings.length) {
-                warnings.forEach((w) => {
-                    if (w?.message) messageApi.warning(w.message);
-                    if (typeof onWarning === 'function' && w?.suggestedTab) onWarning(w.suggestedTab, w);
-                });
-            }
+            warnings.forEach((w) => {
+                if (w?.message) messageApi.warning(w.message);
+                if (typeof onWarning === 'function' && w?.suggestedTab) onWarning(w.suggestedTab, w);
+            });
 
             const docenteSel = docentes.find((d) => Number(d.id) === Number(selectedDocenteId)) || null;
             messageApi.success('Asignacion docente guardada.');
@@ -188,6 +291,45 @@ const DocenteAsignacionCursoModal = ({
                 });
             }
             onClose?.();
+            return true;
+        },
+        [
+            selectedCourse,
+            selectedDocenteId,
+            docentes,
+            messageApi,
+            onAssigned,
+            onClose,
+            onWarning,
+        ]
+    );
+
+    const handleConfirm = async () => {
+        if (!puedeGuardarAsignacion || !selectedCourse?.cursoId || !selectedDocenteId) return;
+        if (selectedDocente?.semaforo === 'rojo') {
+            messageApi.warning('Este docente tiene choque de horario en los bloques de esta materia.');
+            return;
+        }
+        if (selectedDocente?.cargaProyectada?.sobrecarga) {
+            Modal.confirm({
+                title: 'Sobrecarga docente',
+                content: `Con esta materia (${horasMateria} h/sem) el docente quedaría en ${selectedDocente.cargaProyectada.projected}/${selectedDocente.cargaProyectada.maxSemana} h/semana. ¿Confirmar asignación?`,
+                okText: 'Confirmar asignación',
+                cancelText: 'Cancelar',
+                onOk: async () => {
+                    setSaving(true);
+                    try {
+                        await ejecutarAsignacion(true);
+                    } finally {
+                        setSaving(false);
+                    }
+                },
+            });
+            return;
+        }
+        setSaving(true);
+        try {
+            await ejecutarAsignacion(false);
         } finally {
             setSaving(false);
         }
@@ -210,7 +352,11 @@ const DocenteAsignacionCursoModal = ({
                 okText="Guardar asignacion"
                 onOk={handleConfirm}
                 okButtonProps={{
-                    disabled: !selectedDocente || saving || !puedeGuardarAsignacion,
+                    disabled:
+                        !selectedDocente ||
+                        saving ||
+                        !puedeGuardarAsignacion ||
+                        selectedDocente?.semaforo === 'rojo',
                     loading: saving,
                 }}
                 cancelText="Cancelar"
@@ -236,8 +382,8 @@ const DocenteAsignacionCursoModal = ({
                             <div style={{ fontSize: 13 }}>
                                 <div>
                                     <Text strong>Fecha de asignación: </Text>
-                                    {cursoAsignacion?.fechaAsignacion ? (
-                                        <Text>{String(cursoAsignacion.fechaAsignacion)}</Text>
+                                    {fechaAsignacionDisplay ? (
+                                        <Text>{fechaAsignacionDisplay}</Text>
                                     ) : (
                                         <Text type="secondary">
                                             Sin fecha registrada — al guardar se usará la fecha de hoy.
@@ -246,8 +392,8 @@ const DocenteAsignacionCursoModal = ({
                                 </div>
                                 <div style={{ marginTop: 6 }}>
                                     <Text strong>Carga horaria: </Text>
-                                    {cursoAsignacion?.cargaHoraria != null && cursoAsignacion?.cargaHoraria !== '' ? (
-                                        <Text>{cursoAsignacion.cargaHoraria} h/semana</Text>
+                                    {cargaHorariaDisplay != null ? (
+                                        <Text>{cargaHorariaDisplay} h/semana</Text>
                                     ) : (
                                         <Text type="secondary">
                                             Sin carga registrada — al guardar se tomará la del plan de la materia
@@ -283,8 +429,15 @@ const DocenteAsignacionCursoModal = ({
                                 item.semaforo === 'rojo'
                                     ? 'Choque en estos bloques: '
                                     : item.semaforo === 'amarillo'
-                                        ? 'Carga alta o conflicto general: '
+                                        ? item.cargaProyectada?.sobrecarga
+                                            ? 'Excede carga horaria: '
+                                            : 'Carga alta o conflicto general: '
                                         : 'Libre en estos bloques: ';
+                            const { projected, maxSemana, sobrecarga } = item.cargaProyectada || {};
+                            const cargaLabel =
+                                projected != null && maxSemana != null
+                                    ? `${projected}/${maxSemana} h/sem${sobrecarga ? ' ⚠' : ''}`
+                                    : null;
                             const selected = Number(selectedDocenteId) === Number(item.id);
                             return (
                                 <button
@@ -305,20 +458,51 @@ const DocenteAsignacionCursoModal = ({
                                         <Text>{item.nombreCompleto}</Text>
                                         <Text type="secondary">· {item.genero || '—'}</Text>
                                         <Text type="secondary">· {item.tituloProfesional || '—'}</Text>
+                                        {cargaLabel ? (
+                                            <Text
+                                                type="secondary"
+                                                className={
+                                                    sobrecarga ? 'asignacion-docente-carga--sobrecarga' : undefined
+                                                }
+                                            >
+                                                · {cargaLabel}
+                                            </Text>
+                                        ) : null}
                                         {selected ? <Tag color="processing">Seleccionado</Tag> : null}
                                     </Space>
                                 </button>
                             );
                         })}
                     </div>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                        Hasta 10 docentes libres (sin choque de bloques ni sobrecarga). Si la materia aún no tiene
+                        horarios publicados, no se aplican choques por bloque. La carga suma las horas de esta materia
+                        ({horasMateria} h/sem) al total semanal del docente en la gestión.
+                    </Text>
                     <Text type="secondary">
                         Docente actual:{' '}
                         {loadingAsignacion
                             ? 'Cargando...'
                             : (() => {
-                                const docenteActualId = cursoAsignacion?.docenteId ?? null;
-                                const docenteActual = docentes.find((d) => Number(d.id) === Number(docenteActualId));
-                                return docenteActual?.nombreCompleto || selectedCourse?.docente || 'Sin asignar';
+                                const docenteActualId =
+                                    pickAsignacionField(cursoAsignacion, 'docente_id', 'docenteId') ??
+                                    selectedCourse?.docenteId ??
+                                    null;
+                                const docenteActual = docentes.find(
+                                    (d) => Number(d.id) === Number(docenteActualId)
+                                );
+                                const nombreAsig = pickAsignacionField(
+                                    cursoAsignacion,
+                                    'docente_nombre',
+                                    'docenteNombre'
+                                );
+                                return (
+                                    docenteActual?.nombreCompleto ||
+                                    nombreAsig ||
+                                    selectedCourse?.docenteNombre ||
+                                    selectedCourse?.docente ||
+                                    'Sin asignar'
+                                );
                             })()}
                     </Text>
                 </Flex>

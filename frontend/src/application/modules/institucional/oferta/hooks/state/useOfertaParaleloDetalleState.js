@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { message } from 'antd';
+import { App } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
 import { useOfertaAcademicaApi } from '../api/useOfertaAcademicaApi.js';
@@ -7,6 +7,7 @@ import { normalizeCoberturaDocentePayload } from './ofertaStateShared.js';
 import { buildAulasParaModalItems } from '../../utils/ofertaAulaModal.js';
 
 export function useOfertaParaleloDetalleState() {
+  const { notification, modal } = App.useApp();
   const { paraleloGestionId: idParam } = useParams();
   const paraleloGestionId = Number(idParam);
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ export function useOfertaParaleloDetalleState() {
   const [aulaModalOpen, setAulaModalOpen] = useState(false);
   const [aulaModalDraftId, setAulaModalDraftId] = useState(null);
   const [guardandoAula, setGuardandoAula] = useState(false);
+  const [docenteModalOpen, setDocenteModalOpen] = useState(false);
+  const [docenteModalCurso, setDocenteModalCurso] = useState(null);
 
   const load = useCallback(async () => {
     if (!Number.isFinite(paraleloGestionId) || paraleloGestionId < 1) return;
@@ -140,15 +143,59 @@ export function useOfertaParaleloDetalleState() {
     setAulaModalOpen(false);
   }, []);
 
-  const onMarcarOfertado = useCallback(async () => {
-    const res = await updateParaleloGestionEstado(paraleloGestionId, 'OFERTADO');
-    if (res.success) {
-      message.success('Paralelo marcado como OFERTADO');
-      await load();
-    } else if (res.error) {
-      message.error(res.error);
+  const onMarcarOfertado = useCallback(() => {
+    if (!detalle?.aulaId) {
+      notification.warning({
+        title: 'Aula requerida',
+        description: 'Asigne un aula al paralelo antes de marcarlo como OFERTADO.',
+      });
+      return;
     }
-  }, [updateParaleloGestionEstado, paraleloGestionId, load]);
+    if (!cargaHorariaResumen.valido) {
+      notification.warning({
+        title: 'Oferta de cursos incompleta',
+        description:
+          'Genere o complete la oferta del periodo según el plan de estudio antes de pasar a OFERTADO.',
+      });
+      return;
+    }
+
+    const docentesPendientes = faltantesDocenteIds.size;
+    const descripcionDocente =
+      docentesPendientes > 0
+        ? `Quedan ${docentesPendientes} materia(s) sin docente; puede asignarlas desde esta tabla después. `
+        : '';
+    modal.confirm({
+      title: 'Marcar paralelo como OFERTADO',
+      content: `${descripcionDocente}OFERTADO habilita la matrícula. No exige docentes ni horarios publicados: eso se completa en asignación docente y Gestión de horarios.`,
+      okText: 'Marcar OFERTADO',
+      cancelText: 'Cancelar',
+      onOk: async () => {
+        const res = await updateParaleloGestionEstado(paraleloGestionId, 'OFERTADO');
+        if (res.success) {
+          notification.success({
+            title: 'Paralelo OFERTADO',
+            description: 'El paralelo quedó listo para matrícula en esta gestión.',
+          });
+          await load();
+        } else if (res.error) {
+          notification.error({
+            title: 'No se pudo actualizar el estado',
+            description: String(res.error),
+          });
+        }
+      },
+    });
+  }, [
+    detalle?.aulaId,
+    cargaHorariaResumen.valido,
+    faltantesDocenteIds.size,
+    modal,
+    notification,
+    updateParaleloGestionEstado,
+    paraleloGestionId,
+    load,
+  ]);
 
   const onConfirmarAulaModal = useCallback(async () => {
     if (!puedeEditarAula || aulaModalDraftId == null) return;
@@ -158,11 +205,17 @@ export function useOfertaParaleloDetalleState() {
         aula_id: aulaModalDraftId,
       });
       if (res.success) {
-        message.success('Aula actualizada para el paralelo');
+        notification.success({
+          title: 'Aula actualizada',
+          description: 'El aula quedó asignada a este paralelo en la gestión.',
+        });
         setAulaModalOpen(false);
         await load();
       } else if (res.error) {
-        message.error(res.error);
+        notification.error({
+          title: 'No se pudo guardar el aula',
+          description: String(res.error),
+        });
       }
     } finally {
       setGuardandoAula(false);
@@ -173,7 +226,43 @@ export function useOfertaParaleloDetalleState() {
     paraleloGestionId,
     aulaModalDraftId,
     load,
+    notification,
   ]);
+
+  const docenteModalSelectedCourse = useMemo(() => {
+    if (!docenteModalCurso || !detalle) return null;
+    return {
+      cursoId: Number(docenteModalCurso.id),
+      gestionPlanId: detalle.gestionPlanId,
+      gestionId: detalle.gestionId ?? null,
+      materiaNombre: docenteModalCurso.materiaNombre,
+      horasSemanales: docenteModalCurso.horasSemanales,
+      horasSemanalesPlan: docenteModalCurso.horasSemanales,
+      docenteId: docenteModalCurso.docenteId ?? null,
+      docenteNombre: docenteModalCurso.docenteNombre ?? null,
+      colorHex: docenteModalCurso.colorHex ?? null,
+      cargaHoraria: docenteModalCurso.cargaHorariaAsignacion ?? null,
+      fechaAsignacion: docenteModalCurso.fechaAsignacion ?? null,
+    };
+  }, [docenteModalCurso, detalle]);
+
+  const openDocenteModal = useCallback(
+    (curso) => {
+      if (!curso?.id || !detalle) return;
+      setDocenteModalCurso(curso);
+      setDocenteModalOpen(true);
+    },
+    [detalle]
+  );
+
+  const closeDocenteModal = useCallback(() => {
+    setDocenteModalOpen(false);
+    setDocenteModalCurso(null);
+  }, []);
+
+  const onDocenteAsignado = useCallback(async () => {
+    await load();
+  }, [load]);
 
   const returnPath = useMemo(() => {
     if (detalle?.gestionPlanId && detalle?.gestionId) {
@@ -182,36 +271,11 @@ export function useOfertaParaleloDetalleState() {
     return ofertaPaths.dashboard();
   }, [detalle]);
 
-  const detallePath = useMemo(
-    () => ofertaPaths.paraleloDetalle(paraleloGestionId),
-    [paraleloGestionId]
-  );
-
   const navigateBack = useCallback(() => navigate(returnPath), [navigate, returnPath]);
 
   const navigateHorariosArmado = useCallback(
     () => navigate(`/institucional/horarios/armado?pg=${paraleloGestionId}`),
     [navigate, paraleloGestionId]
-  );
-
-  const onNavigateAsignarDocente = useCallback(
-    (curso) => {
-      if (!detalle || !curso?.id) return;
-      navigate('/docentes/asignar', {
-        state: {
-          asignacionPrefill: {
-            gestionPlanId: detalle.gestionPlanId,
-            periodoId: detalle.periodoId,
-            paraleloId: detalle.paraleloId,
-            cursoId: curso.id,
-          },
-          returnListPath: detallePath,
-          gestionReturnPath: returnPath,
-          menuSidebarKey: 'inst_oferta_academica',
-        },
-      });
-    },
-    [navigate, detalle, detallePath, returnPath]
   );
 
   const pageTitle = 'Oferta del paralelo';
@@ -238,9 +302,19 @@ export function useOfertaParaleloDetalleState() {
     onConfirmarAulaModal,
     pageTitle,
     onMarcarOfertado,
+    puedeMarcarOfertado:
+      String(detalle?.estado ?? '').toUpperCase() === 'BORRADOR' &&
+      Boolean(detalle?.aulaId) &&
+      cargaHorariaResumen.valido &&
+      ofertaCursos.length > 0,
     load,
     navigateBack,
     navigateHorariosArmado,
-    onNavigateAsignarDocente,
+    docenteModalOpen,
+    docenteModalSelectedCourse,
+    docenteModalParaleloLabel: detalle?.paraleloNombre ?? null,
+    openDocenteModal,
+    closeDocenteModal,
+    onDocenteAsignado,
   };
 }

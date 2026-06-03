@@ -560,6 +560,7 @@ const GestionHorariosArmadoPage = () => {
                     open={docenteModalOpen}
                     onClose={handleDocenteModalClose}
                     selectedCourse={selectedCourse}
+                    gestionId={selectedGestionId}
                     paraleloLabel={paraleloNombre || `#${paraleloId || '—'}`}
                     onAssigned={handleDocenteAssigned}
                     onPreviewDocenteChange={setDocentePreview}

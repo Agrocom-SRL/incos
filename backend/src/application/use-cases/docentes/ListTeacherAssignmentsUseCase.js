@@ -68,7 +68,11 @@ export class ListTeacherAssignmentsUseCase {
     if (gestionPlanId) filters.managementPlanId = gestionPlanId;
 
     const offerCourseId = parsePositiveInt(
-      queryParams.offerCourseId ?? queryParams.oferta_curso_id ?? queryParams.ofertaCursoId
+      queryParams.offerCourseId ??
+        queryParams.oferta_curso_id ??
+        queryParams.ofertaCursoId ??
+        queryParams.cursoId ??
+        queryParams.curso_id
     );
     if (offerCourseId) filters.offerCourseId = offerCourseId;
 
