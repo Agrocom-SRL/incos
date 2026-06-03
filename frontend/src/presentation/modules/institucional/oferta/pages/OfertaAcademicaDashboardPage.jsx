@@ -41,7 +41,7 @@ const OfertaAcademicaDashboardPage = () => {
               <ActionButton
                 permiso="institucional.gestion.pasadas"
                 accion="LISTAR"
-                variant="error"
+                variant="warning"
                 icon={<CalendarOutlined />}
                 onClick={s.navigateGestiones}
               >
@@ -50,7 +50,7 @@ const OfertaAcademicaDashboardPage = () => {
               <ActionButton
                 permiso="institucional.gestion.horarios"
                 accion="LISTAR"
-                variant="info"
+                variant="success"
                 icon={<ScheduleOutlined />}
                 onClick={s.navigateHorarios}
               >
@@ -72,7 +72,6 @@ const OfertaAcademicaDashboardPage = () => {
                   step={s.gestionVigente?.vigente ? 1 : 0}
                   kpis={s.setupKpis}
                   gestionVigente={s.gestionVigente?.vigente}
-                  onGoToPlanes={s.navigatePlanesVigente}
                 />
               ) : (
                 <Text type="secondary" className="oferta-dashboard-lead">
@@ -85,7 +84,10 @@ const OfertaAcademicaDashboardPage = () => {
               <OfertaDashboardQuickAccess
                 gestionVigente={s.gestionVigente}
                 planesHabilitados={s.planesHabilitados}
+                sinPlanesHabilitados={s.sinPlanesHabilitados}
+                habilitandoPlanes={s.habilitandoPlanes}
                 onPlanesVigente={s.navigatePlanesVigente}
+                onHabilitarTodosPlanes={s.onHabilitarTodosPlanes}
                 onParalelosPlan={s.navigateParalelosPlan}
               />
             </Flex>

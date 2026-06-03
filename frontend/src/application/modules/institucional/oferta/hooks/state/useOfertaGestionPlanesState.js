@@ -4,11 +4,9 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
 import {
   buildSetupKpis,
-  filterParalelosGestionVisibles,
   gestionLabel,
-  planCatalogoLabel,
+  paralelosSinOfertaCursos,
   planTabLabel,
-  planesCatalogoPendientesHabilitar,
   refreshCoberturaParalelos,
 } from './ofertaStateShared.js';
 import { useOfertaAcademicaApi } from '../api/useOfertaAcademicaApi.js';
@@ -18,18 +16,18 @@ export function useOfertaGestionPlanesState() {
   const gestionId = Number(gestionIdParam);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { notification } = App.useApp();
+  const { modal, notification } = App.useApp();
 
   const {
     loading: apiLoading,
     error: apiError,
     fetchGestiones,
     fetchPlanesHabilitados,
-    fetchPlanesVigentesCatalogo,
     fetchParalelosGestion,
     generarParalelosGestionSilent,
-    habilitarPlan,
+    generarOfertaSilent,
     fetchCoberturaDocente,
+    updateParaleloGestionEstado,
   } = useOfertaAcademicaApi();
 
   const planesFetchSeq = useRef(0);
@@ -38,12 +36,11 @@ export function useOfertaGestionPlanesState() {
   const [gestiones, setGestiones] = useState([]);
   const [planesHabilitados, setPlanesHabilitados] = useState([]);
   const [planesHabilitadosLoaded, setPlanesHabilitadosLoaded] = useState(false);
-  const [planesVigentes, setPlanesVigentes] = useState([]);
   const [paralelosByPlanId, setParalelosByPlanId] = useState({});
   const [coberturaByParaleloId, setCoberturaByParaleloId] = useState({});
   const [paralelosLoadingPlanId, setParalelosLoadingPlanId] = useState(null);
   const [generandoParalelos, setGenerandoParalelos] = useState(false);
-  const [modalHabilitarPlan, setModalHabilitarPlan] = useState(false);
+  const [inhabilitandoParaleloId, setInhabilitandoParaleloId] = useState(null);
 
   const gestionSeleccionada = useMemo(
     () => gestiones.find((g) => Number(g.id) === gestionId) ?? null,
@@ -58,7 +55,6 @@ export function useOfertaGestionPlanesState() {
   const esGestionOperativa = Boolean(gestionSeleccionada?.vigente);
   const sinPlanesHabilitados =
     planesHabilitadosLoaded && planesHabilitados.length === 0;
-  const puedeHabilitarPlan = esGestionOperativa;
   const puedeEditarOferta = esGestionOperativa;
 
   const gestionContextAlert = useMemo(() => {
@@ -85,16 +81,6 @@ export function useOfertaGestionPlanesState() {
           ? `Los paralelos de ${codigoActual} son referencia histórica. Para habilitar planes o generar paralelos, use la gestión vigente (${codigoVigente}).`
           : `Los paralelos de ${codigoActual} son referencia histórica. Para operar la oferta, use la gestión vigente del instituto.`,
         showIrGestionVigente: Boolean(gestionVigente),
-      };
-    }
-
-    if (sinPlanesHabilitados) {
-      return {
-        type: 'warning',
-        message: 'Sin planes habilitados en la gestión',
-        description:
-          'Habilite al menos un plan de estudio vigente del catálogo académico para generar paralelos en esta gestión.',
-        showHabilitarPlan: true,
       };
     }
 
@@ -158,8 +144,7 @@ export function useOfertaGestionPlanesState() {
       if (seq !== paralelosFetchSeq.current) return;
       const list = res.success ? (res.data?.paralelosGestion ?? []) : [];
       setParalelosByPlanId((prev) => ({ ...prev, [activePlanId]: list }));
-      const visibles = filterParalelosGestionVisibles(list);
-      const coberturas = await refreshCoberturaParalelos(fetchCoberturaDocente, visibles);
+      const coberturas = await refreshCoberturaParalelos(fetchCoberturaDocente, list);
       if (seq !== paralelosFetchSeq.current) return;
       setCoberturaByParaleloId((prev) => ({ ...prev, ...coberturas }));
     } finally {
@@ -181,8 +166,7 @@ export function useOfertaGestionPlanesState() {
         if (seq !== paralelosFetchSeq.current) return;
         const list = res.success ? (res.data?.paralelosGestion ?? []) : [];
         nextByPlan[plan.id] = list;
-        const visibles = filterParalelosGestionVisibles(list);
-        const coberturas = await refreshCoberturaParalelos(fetchCoberturaDocente, visibles);
+        const coberturas = await refreshCoberturaParalelos(fetchCoberturaDocente, list);
         if (seq !== paralelosFetchSeq.current) return;
         Object.assign(nextCobertura, coberturas);
       }
@@ -213,26 +197,11 @@ export function useOfertaGestionPlanesState() {
   }, [loadParalelosGestion]);
 
   useEffect(() => {
-    if (!esGestionOperativa) return;
-    fetchPlanesVigentesCatalogo().then((res) => {
-      if (!res.success) return;
-      const raw = res.data?.planes_estudios ?? res.data;
-      setPlanesVigentes(Array.isArray(raw) ? raw : []);
-    });
-  }, [esGestionOperativa, fetchPlanesVigentesCatalogo]);
-
-  const planesPendientesHabilitar = useMemo(
-    () => planesCatalogoPendientesHabilitar(planesVigentes, planesHabilitados),
-    [planesVigentes, planesHabilitados]
-  );
-
-  const paralelosVisiblesByPlanId = useMemo(() => {
-    const out = {};
-    for (const [planId, list] of Object.entries(paralelosByPlanId)) {
-      out[planId] = filterParalelosGestionVisibles(list);
+    if (!planesHabilitadosLoaded || !esGestionOperativa) return;
+    if (sinPlanesHabilitados) {
+      navigate(ofertaPaths.dashboard(), { replace: true });
     }
-    return out;
-  }, [paralelosByPlanId]);
+  }, [planesHabilitadosLoaded, esGestionOperativa, sinPlanesHabilitados, navigate]);
 
   useEffect(() => {
     if (!planesHabilitadosLoaded || !planesHabilitados.length) return;
@@ -248,55 +217,6 @@ export function useOfertaGestionPlanesState() {
     [setSearchParams]
   );
 
-  const onHabilitarPlan = useCallback(
-    async (planEstudioId) => {
-      if (!gestionId || !planEstudioId) return;
-      const res = await habilitarPlan({
-        gestion_id: gestionId,
-        plan_estudio_id: planEstudioId,
-      });
-      if (res.success) {
-        message.success('Plan habilitado en la gestión');
-        setModalHabilitarPlan(false);
-        await loadPlanesHabilitados();
-      } else if (res.error) {
-        message.error(res.error);
-      }
-    },
-    [habilitarPlan, gestionId, loadPlanesHabilitados]
-  );
-
-  const openHabilitarPlanModal = useCallback(async () => {
-    if (!puedeHabilitarPlan) return;
-
-    let catalogo = planesVigentes;
-    if (!catalogo.length) {
-      const res = await fetchPlanesVigentesCatalogo();
-      if (res.success) {
-        const raw = res.data?.planes_estudios ?? res.data;
-        catalogo = Array.isArray(raw) ? raw : [];
-        setPlanesVigentes(catalogo);
-      }
-    }
-
-    const pendientes = planesCatalogoPendientesHabilitar(catalogo, planesHabilitados);
-    if (!pendientes.length) {
-      message.info('Todos los planes vigentes del catálogo ya están habilitados en esta gestión.');
-      return;
-    }
-    if (pendientes.length === 1) {
-      await onHabilitarPlan(pendientes[0].id);
-      return;
-    }
-    setModalHabilitarPlan(true);
-  }, [
-    puedeHabilitarPlan,
-    planesVigentes,
-    planesHabilitados,
-    fetchPlanesVigentesCatalogo,
-    onHabilitarPlan,
-  ]);
-
   const navigateGestionVigente = useCallback(() => {
     if (gestionVigente?.id) {
       navigate(ofertaPaths.gestionPlanes(gestionVigente.id));
@@ -305,19 +225,68 @@ export function useOfertaGestionPlanesState() {
     }
   }, [navigate, gestionVigente]);
 
+  const refreshParalelosPlan = useCallback(
+    async (gestionPlanId) => {
+      if (!Number.isFinite(gestionPlanId) || gestionPlanId < 1) return;
+      const seq = ++paralelosFetchSeq.current;
+      const res = await fetchParalelosGestion(gestionPlanId);
+      if (seq !== paralelosFetchSeq.current || !res.success) return;
+      const refreshed = res.data?.paralelosGestion ?? [];
+      setParalelosByPlanId((prev) => ({ ...prev, [gestionPlanId]: refreshed }));
+      const coberturas = await refreshCoberturaParalelos(fetchCoberturaDocente, refreshed);
+      if (seq === paralelosFetchSeq.current) {
+        setCoberturaByParaleloId((prev) => ({ ...prev, ...coberturas }));
+      }
+    },
+    [fetchParalelosGestion, fetchCoberturaDocente]
+  );
+
+  const generarOfertaCursosEnPlan = useCallback(
+    async (gestionPlanId, paralelosLista) => {
+      const pendientes = paralelosSinOfertaCursos(paralelosLista);
+      if (!pendientes.length) {
+        return { totalCursos: 0, paralelosOk: 0, errores: [] };
+      }
+
+      let totalCursos = 0;
+      let paralelosOk = 0;
+      const errores = [];
+
+      for (const pg of pendientes) {
+        const res = await generarOfertaSilent(pg.id);
+        if (!res.success) {
+          errores.push(pg.paraleloNombre ?? `Paralelo #${pg.id}`);
+          continue;
+        }
+        const creados = Number(res.data?.resumen?.creados ?? 0);
+        if (creados > 0) {
+          totalCursos += creados;
+          paralelosOk += 1;
+        }
+      }
+
+      await refreshParalelosPlan(gestionPlanId);
+      return { totalCursos, paralelosOk, errores };
+    },
+    [generarOfertaSilent, refreshParalelosPlan]
+  );
+
   const onGenerarParalelos = useCallback(async () => {
     if (!puedeEditarOferta || !planesHabilitados.length) return;
 
     setGenerandoParalelos(true);
-    let totalCreados = 0;
-    let planesConAlta = 0;
-    const errores = [];
+    let totalParalelosCreados = 0;
+    let planesConParalelosNuevos = 0;
+    let totalCursos = 0;
+    let paralelosConOferta = 0;
+    const erroresPlanes = [];
+    const erroresOferta = [];
 
     try {
       for (const plan of planesHabilitados) {
         const res = await generarParalelosGestionSilent(plan.id);
         if (!res.success) {
-          errores.push(planTabLabel(plan));
+          erroresPlanes.push(planTabLabel(plan));
           continue;
         }
         const resumen = res.data?.resumen;
@@ -325,43 +294,66 @@ export function useOfertaGestionPlanesState() {
           Number(resumen?.creados ?? 0) ||
           (Array.isArray(res.data?.paralelosGestion) ? res.data.paralelosGestion.length : 0);
         if (creados > 0) {
-          totalCreados += creados;
-          planesConAlta += 1;
+          totalParalelosCreados += creados;
+          planesConParalelosNuevos += 1;
+        }
+
+        const listaRes = await fetchParalelosGestion(plan.id);
+        const lista = listaRes.success ? (listaRes.data?.paralelosGestion ?? []) : [];
+        if (lista.length) {
+          setParalelosByPlanId((prev) => ({ ...prev, [plan.id]: lista }));
+        }
+
+        const ofertaRes = await generarOfertaCursosEnPlan(plan.id, lista);
+        totalCursos += ofertaRes.totalCursos;
+        paralelosConOferta += ofertaRes.paralelosOk;
+        if (ofertaRes.errores.length) {
+          erroresOferta.push(...ofertaRes.errores);
         }
       }
 
-      await reloadParalelosTodosPlanes();
-
-      if (errores.length && !totalCreados) {
+      if (erroresPlanes.length && !totalParalelosCreados && !totalCursos) {
         notification.warning({
-          message: 'No se generaron paralelos',
+          message: 'No se generó la oferta',
           description:
-            'Revise plantillas en Configuración → Académico → Paralelos para las carreras de los planes habilitados.',
+            'Revise plantillas en Configuración → Académico → Paralelos y asignaturas del plan de estudio.',
           duration: 8,
         });
         return;
       }
 
-      if (totalCreados > 0) {
+      const partes = [];
+      if (totalParalelosCreados > 0) {
+        partes.push(
+          planesConParalelosNuevos > 1
+            ? `${totalParalelosCreados} paralelo(s) nuevos en ${planesConParalelosNuevos} planes`
+            : `${totalParalelosCreados} paralelo(s) nuevos`
+        );
+      }
+      if (totalCursos > 0) {
+        partes.push(
+          `${totalCursos} curso(s) en ${paralelosConOferta} paralelo${paralelosConOferta === 1 ? '' : 's'}`
+        );
+      }
+
+      if (partes.length) {
         notification.success({
-          message: 'Paralelos de gestión generados',
-          description:
-            planesConAlta > 1
-              ? `Se crearon ${totalCreados} paralelo(s) en ${planesConAlta} plan(es) habilitado(s).`
-              : `Se crearon ${totalCreados} paralelo(s) en el plan habilitado.`,
+          message: 'Oferta preparada en la gestión',
+          description: `${partes.join('. ')}.`,
         });
       } else {
         notification.success({
-          message: 'Paralelos de gestión al día',
+          message: 'Oferta al día',
           description:
-            'Todos los planes habilitados ya tenían instancias desde las plantillas del catálogo.',
+            'Los paralelos y las materias del periodo ya estaban generados en todos los planes habilitados.',
         });
       }
 
-      if (errores.length) {
+      if (erroresPlanes.length || erroresOferta.length) {
+        const detalle = [...new Set([...erroresPlanes, ...erroresOferta])].join(', ');
         notification.warning({
-          message: 'Algunos planes no se procesaron',
-          description: errores.join(', '),
+          message: 'Algunos ítems no se procesaron',
+          description: detalle,
           duration: 8,
         });
       }
@@ -372,9 +364,75 @@ export function useOfertaGestionPlanesState() {
     puedeEditarOferta,
     planesHabilitados,
     generarParalelosGestionSilent,
-    reloadParalelosTodosPlanes,
+    fetchParalelosGestion,
+    generarOfertaCursosEnPlan,
     notification,
   ]);
+
+  const actualizarEstadoParalelo = useCallback(
+    async (paraleloId, gestionPlanId, estado, mensajeExito) => {
+      setInhabilitandoParaleloId(paraleloId);
+      try {
+        const res = await updateParaleloGestionEstado(paraleloId, estado);
+        if (res.success) {
+          message.success(mensajeExito);
+          if (gestionPlanId) {
+            await refreshParalelosPlan(gestionPlanId);
+          } else {
+            await reloadParalelosTodosPlanes();
+          }
+        } else if (res.error) {
+          message.error(res.error);
+        }
+      } finally {
+        setInhabilitandoParaleloId(null);
+      }
+    },
+    [updateParaleloGestionEstado, refreshParalelosPlan, reloadParalelosTodosPlanes]
+  );
+
+  const onInhabilitarParalelo = useCallback(
+    (paraleloId, gestionPlanId, paraleloNombre) => {
+      if (!puedeEditarOferta || !paraleloId) return;
+
+      modal.confirm({
+        title: 'Inhabilitar oferta del paralelo',
+        content: `¿Cerrar la oferta de ${paraleloNombre ?? 'este paralelo'} en la gestión? El paralelo quedará en estado CERRADO.`,
+        okText: 'Inhabilitar',
+        okType: 'danger',
+        cancelText: 'Cancelar',
+        onOk: () =>
+          actualizarEstadoParalelo(
+            paraleloId,
+            gestionPlanId,
+            'CERRADO',
+            'Oferta del paralelo inhabilitada'
+          ),
+      });
+    },
+    [puedeEditarOferta, modal, actualizarEstadoParalelo]
+  );
+
+  const onHabilitarParalelo = useCallback(
+    (paraleloId, gestionPlanId, paraleloNombre) => {
+      if (!puedeEditarOferta || !paraleloId) return;
+
+      modal.confirm({
+        title: 'Habilitar paralelo en la gestión',
+        content: `¿Reactivar ${paraleloNombre ?? 'este paralelo'}? Volverá a estado BORRADOR con su oferta de cursos y datos asociados.`,
+        okText: 'Habilitar',
+        cancelText: 'Cancelar',
+        onOk: () =>
+          actualizarEstadoParalelo(
+            paraleloId,
+            gestionPlanId,
+            'BORRADOR',
+            'Paralelo habilitado en la gestión'
+          ),
+      });
+    },
+    [puedeEditarOferta, modal, actualizarEstadoParalelo]
+  );
 
   const onNavigateDetalle = useCallback(
     (paraleloGestionId) => {
@@ -417,7 +475,11 @@ export function useOfertaGestionPlanesState() {
 
   return {
     gestionId,
-    apiLoading: apiLoading || paralelosLoadingPlanId != null || generandoParalelos,
+    apiLoading:
+      apiLoading ||
+      paralelosLoadingPlanId != null ||
+      generandoParalelos ||
+      inhabilitandoParaleloId != null,
     planesLoading: apiLoading && !planesHabilitadosLoaded,
     paralelosLoadingPlanId,
     apiError,
@@ -425,30 +487,24 @@ export function useOfertaGestionPlanesState() {
     gestionVigente,
     esGestionOperativa,
     sinPlanesHabilitados,
-    puedeHabilitarPlan,
     puedeEditarOferta,
     gestionContextAlert,
     planesHabilitados,
     planesHabilitadosLoaded,
-    planesVigentes,
     planSeleccionado,
     activePlanKey: activePlanId != null ? String(activePlanId) : undefined,
     tabItems,
     paralelosByPlanId,
-    paralelosVisiblesByPlanId,
     coberturaByParaleloId,
     generandoParalelos,
-    planesPendientesHabilitar,
-    planCatalogoLabel,
-    modalHabilitarPlan,
-    setModalHabilitarPlan,
+    inhabilitandoParaleloId,
     pageTitle,
     breadcrumbItems,
     kpis,
     onTabChange,
-    onHabilitarPlan,
-    openHabilitarPlanModal,
     onGenerarParalelos,
+    onInhabilitarParalelo,
+    onHabilitarParalelo,
     onNavigateDetalle,
     navigateBack: () => navigate(ofertaPaths.dashboard()),
     navigateDashboard: () => navigate(ofertaPaths.dashboard()),

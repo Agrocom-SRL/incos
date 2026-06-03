@@ -1,5 +1,5 @@
-import { Alert, Flex, Modal, Select, Spin, Tabs, Typography } from 'antd';
-import { ArrowLeftOutlined, BookOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons';
+import { Alert, Flex, Spin, Tabs, Typography } from 'antd';
+import { ArrowLeftOutlined, BookOutlined, TeamOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
@@ -30,20 +30,19 @@ const OfertaGestionPlanesPage = () => {
       <OfertaGestionPlanTabPanel
         loading={s.paralelosLoadingPlanId === plan.id}
         plan={plan}
-        paralelos={s.paralelosVisiblesByPlanId[plan.id] ?? []}
-        totalParalelosGestion={(s.paralelosByPlanId[plan.id] ?? []).length}
+        paralelos={s.paralelosByPlanId[plan.id] ?? []}
         coberturaByParaleloId={s.coberturaByParaleloId}
         soloConsulta={!s.puedeEditarOferta}
+        inhabilitandoParaleloId={s.inhabilitandoParaleloId}
+        onInhabilitarParalelo={s.onInhabilitarParalelo}
+        onHabilitarParalelo={s.onHabilitarParalelo}
         onNavigateDetalle={s.onNavigateDetalle}
       />
     ),
   }));
 
   const showWorkspace = s.planesHabilitados.length > 0;
-  const showHeaderHabilitar =
-    s.puedeHabilitarPlan && s.planesPendientesHabilitar.length > 0;
   const showGenerarParalelos = s.puedeEditarOferta && showWorkspace && s.planSeleccionado;
-
   const contextAlert = s.gestionContextAlert;
 
   return (
@@ -75,7 +74,6 @@ const OfertaGestionPlanesPage = () => {
                   Generar paralelos
                 </ActionButton>
               ) : null}
-
             </Flex>
           }
         />
@@ -94,16 +92,7 @@ const OfertaGestionPlanesPage = () => {
                   message={contextAlert.message}
                   description={contextAlert.description}
                   action={
-                    contextAlert.showHabilitarPlan ? (
-                      <ActionButton
-                        variant="error"
-                        permiso="institucional.oferta.gestion-plan"
-                        accion="CREAR"
-                        onClick={s.openHabilitarPlanModal}
-                      >
-                        Habilitar plan
-                      </ActionButton>
-                    ) : contextAlert.showIrGestionVigente ? (
+                    contextAlert.showIrGestionVigente ? (
                       <ActionButton
                         permiso="institucional.oferta.gestion-plan"
                         accion="LISTAR"
@@ -129,23 +118,10 @@ const OfertaGestionPlanesPage = () => {
                             'Gestión')
                           : 'Gestión'
                       }
-                      actions={
-                        showHeaderHabilitar ? (
-                          <ActionButton
-                            permiso="institucional.oferta.gestion-plan"
-                            accion="CREAR"
-                            variant="primary"
-                            icon={<PlusOutlined />}
-                            onClick={s.openHabilitarPlanModal}
-                          >
-                            Habilitar plan
-                          </ActionButton>
-                        ) : null
-                      }
                     />
                     <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                       {s.puedeEditarOferta
-                        ? 'Resumen de paralelos ofertados por plan habilitado. «Generar paralelos» crea instancias en todos los planes habilitados desde las plantillas del catálogo. El detalle operativo (aula, oferta, docentes) se gestiona en la ficha de cada paralelo.'
+                        ? 'Paralelos de la gestión por plan habilitado. «Generar paralelos» crea instancias y las materias del periodo en un solo paso. Aula, docentes y horarios se completan en la ficha de cada paralelo.'
                         : 'Consulta histórica de paralelos por plan habilitado en esta gestión.'}
                     </Paragraph>
                   </header>
@@ -165,30 +141,6 @@ const OfertaGestionPlanesPage = () => {
           </Spin>
         </MainContent>
       </DashboardPageShell>
-
-      {s.puedeHabilitarPlan ? (
-        <Modal
-          title="Habilitar plan de estudio"
-          open={s.modalHabilitarPlan}
-          onCancel={() => s.setModalHabilitarPlan(false)}
-          footer={null}
-          destroyOnHidden
-        >
-          <Select
-            showSearch
-            placeholder="Seleccione un plan vigente del catálogo"
-            style={{ width: '100%' }}
-            optionFilterProp="label"
-            options={s.planesPendientesHabilitar.map((p) => ({
-              value: p.id,
-              label: s.planCatalogoLabel(p),
-            }))}
-            onChange={(planId) => {
-              if (planId != null) s.onHabilitarPlan(planId);
-            }}
-          />
-        </Modal>
-      ) : null}
     </Flex>
   );
 };

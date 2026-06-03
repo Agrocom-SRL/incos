@@ -17,22 +17,40 @@ const cardProps = {
 const OfertaDashboardQuickAccess = ({
   gestionVigente,
   planesHabilitados,
+  sinPlanesHabilitados,
+  habilitandoPlanes,
   onPlanesVigente,
+  onHabilitarTodosPlanes,
   onParalelosPlan,
 }) => (
   <Card title="Acciones" {...cardProps}>
     <Flex vertical gap="middle">
-      <ActionButton
-        permiso="institucional.oferta.gestion-plan"
-        accion="LISTAR"
-        variant="primary"
-        className="oferta-dashboard-cta-btn"
-        icon={<BookOutlined />}
-        disabled={!gestionVigente}
-        onClick={onPlanesVigente}
-      >
-        Planes vigentes
-      </ActionButton>
+      {sinPlanesHabilitados ? (
+        <ActionButton
+          permiso="institucional.oferta.gestion-plan"
+          accion="CREAR"
+          variant="error"
+          className="oferta-dashboard-cta-btn"
+          icon={<BookOutlined />}
+          disabled={!gestionVigente}
+          loading={habilitandoPlanes}
+          onClick={onHabilitarTodosPlanes}
+        >
+          Habilitar planes
+        </ActionButton>
+      ) : (
+        <ActionButton
+          permiso="institucional.oferta.gestion-plan"
+          accion="LISTAR"
+          variant="primary"
+          className="oferta-dashboard-cta-btn"
+          icon={<BookOutlined />}
+          disabled={!gestionVigente}
+          onClick={onPlanesVigente}
+        >
+          Planes vigentes
+        </ActionButton>
+      )}
 
       {planesHabilitados.length > 0 ? (
         <>
@@ -64,9 +82,12 @@ const OfertaDashboardQuickAccess = ({
             }}
           />
         </>
-      ) : (
-        <Text type="secondary">Habilite al menos un plan en la gestión vigente.</Text>
-      )}
+      ) : sinPlanesHabilitados ? (
+        <Text type="secondary">
+          Vincule todos los planes vigentes del catálogo académico a la gestión antes de generar
+          paralelos.
+        </Text>
+      ) : null}
     </Flex>
   </Card>
 );

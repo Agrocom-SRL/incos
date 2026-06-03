@@ -9,7 +9,13 @@ const ROW_ICONS = {
   horario: <CalendarOutlined />,
 };
 
-const OfertaParaleloCard = ({ model, onNavigateDetalle }) => (
+const OfertaParaleloCard = ({
+  model,
+  inhabilitandoParaleloId = null,
+  onNavigateDetalle,
+  onInhabilitarParalelo,
+  onHabilitarParalelo,
+}) => (
   <article className={model.cardClassName}>
     <OfertaParaleloCardBand
       band={model.band}
@@ -18,13 +24,30 @@ const OfertaParaleloCard = ({ model, onNavigateDetalle }) => (
       dots={model.dots}
     />
     <div className="opc-body">
-      <OfertaParaleloCardInfoRow icon={ROW_ICONS.aula} {...model.rows.aula} />
-      <OfertaParaleloCardInfoRow icon={ROW_ICONS.docente} {...model.rows.docente} />
-      <OfertaParaleloCardInfoRow icon={ROW_ICONS.horario} {...model.rows.horario} />
+      <div className="opc-body__main">
+        <OfertaParaleloCardInfoRow icon={ROW_ICONS.aula} {...model.rows.aula} />
+        <OfertaParaleloCardInfoRow icon={ROW_ICONS.docente} {...model.rows.docente} />
+        <OfertaParaleloCardInfoRow icon={ROW_ICONS.horario} {...model.rows.horario} />
+      </div>
       <OfertaParaleloCardFooter
         cupo={model.cupo}
         ctaLabel={model.ctaLabel}
+        puedeInhabilitar={model.puedeInhabilitar}
+        puedeHabilitar={model.puedeHabilitar}
+        mutandoEstado={inhabilitandoParaleloId === model.id}
         onDetalle={() => onNavigateDetalle?.(model.id)}
+        onInhabilitar={
+          model.puedeInhabilitar && onInhabilitarParalelo
+            ? () =>
+                onInhabilitarParalelo(model.id, model.gestionPlanId, model.paraleloNombre)
+            : undefined
+        }
+        onHabilitar={
+          model.puedeHabilitar && onHabilitarParalelo
+            ? () =>
+                onHabilitarParalelo(model.id, model.gestionPlanId, model.paraleloNombre)
+            : undefined
+        }
       />
     </div>
   </article>

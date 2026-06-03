@@ -11,6 +11,7 @@ export function buildGestionesTableColumns({
   onHabilitarPlan,
   planesResumenByGestionId = {},
   planesResumenLoading = false,
+  habilitandoPlanes = false,
 }) {
   return [
     {
@@ -94,9 +95,10 @@ export function buildGestionesTableColumns({
               accion="CREAR"
               variant="primary"
               size="small"
+              loading={habilitandoPlanes}
               onClick={() => onHabilitarPlan(row.id)}
             >
-              Habilitar plan
+              Habilitar planes
             </ActionButton>
           );
         }

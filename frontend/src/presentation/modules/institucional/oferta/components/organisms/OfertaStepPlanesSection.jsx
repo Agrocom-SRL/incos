@@ -22,7 +22,7 @@ const OfertaStepPlanesSection = ({ loading, planesHabilitados, onSelectPlan }) =
       pagination={false}
       className="oferta-planes-table"
       columns={buildOfertaPlanesTableColumns({ onSelectPlan })}
-      locale={{ emptyText: 'No hay planes habilitados. Use «Habilitar plan» para vincular uno.' }}
+      locale={{ emptyText: 'No hay planes habilitados. Use «Habilitar planes» en el panel de oferta.' }}
     />
   </>
 );

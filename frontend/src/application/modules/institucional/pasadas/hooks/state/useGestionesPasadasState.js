@@ -8,8 +8,7 @@ import { ofertaPaths } from '@application-institucional/oferta';
 import { useOfertaAcademicaApi } from '@application-institucional/oferta';
 import {
   filterGestionesBySearch,
-  planCatalogoLabel,
-  planesCatalogoPendientesHabilitar,
+  habilitarTodosPlanesPendientesEnGestion,
 } from '@application-institucional/oferta/hooks/state/ofertaStateShared.js';
 import { buildGestionesTableColumns } from '@institucional/pasadas/config/gestionesTableColumns';
 import { pasadasPaths } from '../../config/paths.js';
@@ -47,11 +46,8 @@ export function useGestionesPasadasState() {
   const [searchText, setSearchText] = useState('');
   const [planesResumenByGestionId, setPlanesResumenByGestionId] = useState({});
   const [planesResumenLoading, setPlanesResumenLoading] = useState(false);
-  const [modalHabilitarPlan, setModalHabilitarPlan] = useState(false);
-  const [gestionIdHabilitar, setGestionIdHabilitar] = useState(null);
   const [planesVigentes, setPlanesVigentes] = useState([]);
-  const [planesPendientesModal, setPlanesPendientesModal] = useState([]);
-  const [habilitandoPlan, setHabilitandoPlan] = useState(false);
+  const [habilitandoPlanes, setHabilitandoPlanes] = useState(false);
 
   const loadPlanesResumen = useCallback(async (items) => {
     const list = Array.isArray(items) ? items : [];
@@ -95,31 +91,7 @@ export function useGestionesPasadasState() {
     setPlanesResumenByGestionId((prev) => ({ ...prev, [gestionId]: resumen }));
   }, []);
 
-  const onHabilitarPlan = useCallback(
-    async (gestionId, planEstudioId) => {
-      if (!gestionId || !planEstudioId) return;
-      setHabilitandoPlan(true);
-      try {
-        const res = await habilitarPlan({
-          gestion_id: gestionId,
-          plan_estudio_id: planEstudioId,
-        });
-        if (res.success) {
-          messageApi.success('Plan habilitado en la gestión');
-          setModalHabilitarPlan(false);
-          setGestionIdHabilitar(null);
-          await refreshResumenGestion(gestionId);
-        } else if (res.error) {
-          messageApi.error(res.error);
-        }
-      } finally {
-        setHabilitandoPlan(false);
-      }
-    },
-    [habilitarPlan, messageApi, refreshResumenGestion]
-  );
-
-  const openHabilitarPlanModal = useCallback(
+  const onHabilitarTodosPlanes = useCallback(
     async (gestionId) => {
       const gestion = gestiones.find((g) => Number(g.id) === Number(gestionId));
       if (!gestion?.vigente) {
@@ -127,46 +99,52 @@ export function useGestionesPasadasState() {
         return;
       }
 
-      setGestionIdHabilitar(gestionId);
+      setHabilitandoPlanes(true);
+      try {
+        const result = await habilitarTodosPlanesPendientesEnGestion({
+          gestionId,
+          habilitarPlan,
+          fetchPlanesHabilitados,
+          fetchPlanesVigentesCatalogo,
+          planesVigentes,
+        });
 
-      const [habRes, catRes] = await Promise.all([
-        fetchPlanesHabilitados(gestionId),
-        planesVigentes.length
-          ? Promise.resolve({ success: true, data: { planes_estudios: planesVigentes } })
-          : fetchPlanesVigentesCatalogo(),
-      ]);
+        if (result.catalogo?.length) {
+          setPlanesVigentes(result.catalogo);
+        }
 
-      let catalogo = planesVigentes;
-      if (catRes.success) {
-        const raw = catRes.data?.planes_estudios ?? catRes.data;
-        catalogo = Array.isArray(raw) ? raw : [];
-        setPlanesVigentes(catalogo);
+        if (result.yaCompletos) {
+          messageApi.info('Todos los planes vigentes del catálogo ya están habilitados en esta gestión.');
+          return;
+        }
+
+        if (!result.success && result.error) {
+          messageApi.error(result.error);
+          return;
+        }
+
+        if (result.habilitados > 0) {
+          messageApi.success(
+            result.errores.length
+              ? `Se habilitaron ${result.habilitados} de ${result.total} planes. Revise los que no se vincularon.`
+              : `Se habilitaron ${result.habilitados} planes en la gestión.`
+          );
+          await refreshResumenGestion(gestionId);
+        } else if (result.errores.length) {
+          messageApi.error('No se pudo habilitar ningún plan en la gestión.');
+        }
+      } finally {
+        setHabilitandoPlanes(false);
       }
-
-      const habilitados = habRes.success ? (habRes.data?.planesHabilitados ?? []) : [];
-      const pendientes = planesCatalogoPendientesHabilitar(catalogo, habilitados);
-
-      if (!pendientes.length) {
-        messageApi.info('Todos los planes vigentes del catálogo ya están habilitados en esta gestión.');
-        setGestionIdHabilitar(null);
-        return;
-      }
-
-      if (pendientes.length === 1) {
-        await onHabilitarPlan(gestionId, pendientes[0].id);
-        return;
-      }
-
-      setPlanesPendientesModal(pendientes);
-      setModalHabilitarPlan(true);
     },
     [
       gestiones,
-      planesVigentes,
+      habilitarPlan,
       fetchPlanesHabilitados,
       fetchPlanesVigentesCatalogo,
-      onHabilitarPlan,
+      planesVigentes,
       messageApi,
+      refreshResumenGestion,
     ]
   );
 
@@ -179,20 +157,18 @@ export function useGestionesPasadasState() {
     () =>
       buildGestionesTableColumns({
         onVerPlanes,
-        onHabilitarPlan: openHabilitarPlanModal,
+        onHabilitarPlan: onHabilitarTodosPlanes,
         planesResumenByGestionId,
         planesResumenLoading,
+        habilitandoPlanes,
       }),
-    [onVerPlanes, openHabilitarPlanModal, planesResumenByGestionId, planesResumenLoading]
-  );
-
-  const habilitarPlanModalOptions = useMemo(
-    () =>
-      planesPendientesModal.map((p) => ({
-        value: p.id,
-        label: planCatalogoLabel(p),
-      })),
-    [planesPendientesModal]
+    [
+      onVerPlanes,
+      onHabilitarTodosPlanes,
+      planesResumenByGestionId,
+      planesResumenLoading,
+      habilitandoPlanes,
+    ]
   );
 
   const breadcrumbItems = useMemo(
@@ -220,18 +196,6 @@ export function useGestionesPasadasState() {
     loadGestiones,
     navigateOferta: useCallback(() => navigate(ofertaPaths.dashboard()), [navigate]),
     listPath: pasadasPaths.list(),
-    modalHabilitarPlan,
-    setModalHabilitarPlan,
-    gestionIdHabilitar,
-    habilitarPlanModalOptions,
-    habilitandoPlan,
-    onHabilitarPlanSeleccion: useCallback(
-      (planEstudioId) => {
-        if (gestionIdHabilitar != null && planEstudioId != null) {
-          onHabilitarPlan(gestionIdHabilitar, planEstudioId);
-        }
-      },
-      [gestionIdHabilitar, onHabilitarPlan]
-    ),
+    habilitandoPlanes,
   };
 }

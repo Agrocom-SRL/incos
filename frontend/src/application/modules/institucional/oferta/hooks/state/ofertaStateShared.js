@@ -44,7 +44,14 @@ export function filterGestionesBySearch(gestiones, searchText) {
   });
 }
 
-/** Instancias de gestión con oferta o estado avanzado (no plantillas vacías recién generadas). */
+/** Paralelos de gestión sin filas en oferta_cursos (ofertaActual = 0). */
+export function paralelosSinOfertaCursos(paralelos = []) {
+  return (Array.isArray(paralelos) ? paralelos : []).filter(
+    (pg) => Number(pg?.ofertaActual ?? 0) === 0
+  );
+}
+
+/** Instancias con oferta o estado avanzado (p. ej. listados que ocultan plantillas vacías). */
 export function filterParalelosGestionVisibles(paralelos = []) {
   return (Array.isArray(paralelos) ? paralelos : []).filter((pg) => {
     const estado = String(pg?.estado ?? '').toUpperCase();
@@ -136,6 +143,75 @@ export function planesCatalogoPendientesHabilitar(planesVigentes, planesHabilita
     const id = Number(p.id);
     return Number.isFinite(id) && id > 0 && !habilitadosIds.has(id);
   });
+}
+
+/**
+ * Habilita en lote todos los planes vigentes del catálogo aún no vinculados a la gestión.
+ * @returns {{ success: boolean, habilitados: number, total: number, errores: string[], yaCompletos?: boolean, catalogo?: object[], error?: string }}
+ */
+export async function habilitarTodosPlanesPendientesEnGestion({
+  gestionId,
+  habilitarPlan,
+  fetchPlanesHabilitados,
+  fetchPlanesVigentesCatalogo,
+  planesVigentes = [],
+}) {
+  if (!gestionId) {
+    return { success: false, habilitados: 0, total: 0, errores: [], error: 'Gestión no válida' };
+  }
+
+  let catalogo = Array.isArray(planesVigentes) ? planesVigentes : [];
+  if (!catalogo.length) {
+    const catRes = await fetchPlanesVigentesCatalogo();
+    if (!catRes.success) {
+      return {
+        success: false,
+        habilitados: 0,
+        total: 0,
+        errores: [],
+        error: catRes.error,
+      };
+    }
+    const raw = catRes.data?.planes_estudios ?? catRes.data;
+    catalogo = Array.isArray(raw) ? raw : [];
+  }
+
+  const habRes = await fetchPlanesHabilitados(gestionId);
+  const habilitados = habRes.success ? (habRes.data?.planesHabilitados ?? []) : [];
+  const pendientes = planesCatalogoPendientesHabilitar(catalogo, habilitados);
+
+  if (!pendientes.length) {
+    return {
+      success: true,
+      habilitados: 0,
+      total: 0,
+      errores: [],
+      yaCompletos: true,
+      catalogo,
+    };
+  }
+
+  let ok = 0;
+  const errores = [];
+  for (const plan of pendientes) {
+    const res = await habilitarPlan({
+      gestion_id: gestionId,
+      plan_estudio_id: plan.id,
+    });
+    if (res.success) {
+      ok += 1;
+    } else {
+      errores.push(planCatalogoLabel(plan));
+    }
+  }
+
+  return {
+    success: errores.length === 0,
+    habilitados: ok,
+    total: pendientes.length,
+    errores,
+    catalogo,
+  };
 }
 
 /** Payload GET /paralelos-gestion/:id/cobertura-docente → data.cobertura_docente */

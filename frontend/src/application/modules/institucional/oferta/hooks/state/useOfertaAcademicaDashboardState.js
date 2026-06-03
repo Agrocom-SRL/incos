@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { App } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
 import { pasadasPaths } from '@application-institucional/pasadas';
@@ -6,18 +7,22 @@ import {
   buildParalelosKpis,
   buildSetupKpis,
   gestionLabel,
+  habilitarTodosPlanesPendientesEnGestion,
   refreshValidacionesParalelos,
 } from './ofertaStateShared.js';
 import { useOfertaAcademicaApi } from '../api/useOfertaAcademicaApi.js';
 
 export function useOfertaAcademicaDashboardState() {
   const navigate = useNavigate();
+  const { message: messageApi } = App.useApp();
   const {
     loading: apiLoading,
     error: apiError,
     fetchGestiones,
     fetchPlanesHabilitados,
+    fetchPlanesVigentesCatalogo,
     fetchParalelosGestion,
+    habilitarPlan,
     validarOferta,
   } = useOfertaAcademicaApi();
 
@@ -28,6 +33,8 @@ export function useOfertaAcademicaDashboardState() {
   const [paralelosAgregados, setParalelosAgregados] = useState([]);
   const [validacionPorId, setValidacionPorId] = useState({});
   const [loadingParalelos, setLoadingParalelos] = useState(false);
+  const [planesVigentes, setPlanesVigentes] = useState([]);
+  const [habilitandoPlanes, setHabilitandoPlanes] = useState(false);
 
   const gestionVigente = useMemo(() => gestiones.find((g) => g.vigente) ?? null, [gestiones]);
   const gestionVigenteId = useMemo(() => {
@@ -151,6 +158,65 @@ export function useOfertaAcademicaDashboardState() {
   );
   const navigateHorarios = useCallback(() => navigate('/institucional/horarios'), [navigate]);
 
+  const sinPlanesHabilitados =
+    Boolean(gestionVigente?.vigente) &&
+    planesHabilitadosLoaded &&
+    planesHabilitados.length === 0;
+
+  const onHabilitarTodosPlanes = useCallback(async () => {
+    if (!gestionVigenteId || !gestionVigente?.vigente) {
+      messageApi.info('Solo la gestión vigente admite habilitar planes desde el panel de oferta.');
+      return;
+    }
+
+    setHabilitandoPlanes(true);
+    try {
+      const result = await habilitarTodosPlanesPendientesEnGestion({
+        gestionId: gestionVigenteId,
+        habilitarPlan,
+        fetchPlanesHabilitados,
+        fetchPlanesVigentesCatalogo,
+        planesVigentes,
+      });
+
+      if (result.catalogo?.length) {
+        setPlanesVigentes(result.catalogo);
+      }
+
+      if (result.yaCompletos) {
+        messageApi.info('Todos los planes vigentes del catálogo ya están habilitados en esta gestión.');
+        return;
+      }
+
+      if (!result.success && result.error) {
+        messageApi.error(result.error);
+        return;
+      }
+
+      if (result.habilitados > 0) {
+        messageApi.success(
+          result.errores.length
+            ? `Se habilitaron ${result.habilitados} de ${result.total} planes. Revise los que no se vincularon.`
+            : `Se habilitaron ${result.habilitados} planes en la gestión vigente.`
+        );
+        await loadPlanesYParalelos();
+      } else if (result.errores.length) {
+        messageApi.error('No se pudo habilitar ningún plan en la gestión.');
+      }
+    } finally {
+      setHabilitandoPlanes(false);
+    }
+  }, [
+    gestionVigenteId,
+    gestionVigente,
+    habilitarPlan,
+    fetchPlanesHabilitados,
+    fetchPlanesVigentesCatalogo,
+    planesVigentes,
+    messageApi,
+    loadPlanesYParalelos,
+  ]);
+
   return {
     apiLoading: apiLoading || loadingParalelos,
     apiError,
@@ -165,5 +231,8 @@ export function useOfertaAcademicaDashboardState() {
     navigatePlanesVigente,
     navigateParalelosPlan,
     navigateHorarios,
+    sinPlanesHabilitados,
+    habilitandoPlanes,
+    onHabilitarTodosPlanes,
   };
 }

@@ -2,7 +2,7 @@ import { Alert, Button, Flex, Space, Tag } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
-const OfertaAlertBanner = ({ step, kpis, gestionVigente, onGoToPlanes }) => {
+const OfertaAlertBanner = ({ step, kpis, gestionVigente }) => {
   const navigate = useNavigate();
 
   if (step <= 1 && kpis.planesHabilitadosLoaded && kpis.sinPlanes > 0) {
@@ -12,18 +12,11 @@ const OfertaAlertBanner = ({ step, kpis, gestionVigente, onGoToPlanes }) => {
         showIcon
         message={<strong>Sin planes habilitados en la gestión</strong>}
         description={
-          <Flex vertical gap="small">
-            <span>
-              El catálogo académico (CFG) define los planes; aquí debe <strong>habilitar</strong> al menos uno en la
-              gestión vigente. Con seeders locales, ejecute <Tag color="orange">seeder</Tag> o use el botón Habilitar plan
-              en el paso 2.
-            </span>
-            {step === 0 && onGoToPlanes ? (
-              <Button size="small" type="primary" onClick={onGoToPlanes}>
-                Ir al paso Planes
-              </Button>
-            ) : null}
-          </Flex>
+          <span>
+            El catálogo académico (Configuración → Académico) define los planes de estudio; en la gestión
+            vigente use <strong>Habilitar planes</strong> en el panel <strong>Acciones</strong> para vincular
+            todos los planes vigentes antes de generar paralelos.
+          </span>
         }
       />
     );
@@ -87,4 +80,4 @@ const OfertaAlertBanner = ({ step, kpis, gestionVigente, onGoToPlanes }) => {
 export default OfertaAlertBanner;
 
 // ✅ Bugs corregidos: Alert `title` → `message`; Space `orientation` → Flex vertical
-// ✅ Mejoras aplicadas: Tag seeder; ícono gestión no vigente; KPIs como Tags semánticos
+// KPIs como Tags semánticos en alertas operativas (paso ≥ 2)

@@ -174,6 +174,26 @@ export function useOfertaAcademicaApi() {
     [run]
   );
 
+  /** Lote desde Planes vigentes: evita parpadeo del loading global. */
+  const generarOfertaSilent = useCallback(async (paraleloGestionId) => {
+    try {
+      const response = await apiClient.post(
+        PARALELOS_GESTION_ENDPOINTS.GENERAR_OFERTA(paraleloGestionId)
+      );
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error || 'No se pudo generar la oferta de cursos',
+        };
+      }
+      return { success: true, data: result.data };
+    } catch (err) {
+      const fail = handleErrorResponse(err, 'No se pudo generar la oferta de cursos');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
   const updateParaleloGestion = useCallback(
     (id, body) =>
       run(
@@ -256,6 +276,7 @@ export function useOfertaAcademicaApi() {
     validarOferta,
     fetchCoberturaDocente,
     generarOferta,
+    generarOfertaSilent,
     updateParaleloGestion,
     cambiarTurnoParaleloGestion,
     updateParaleloGestionEstado,

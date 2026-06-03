@@ -11,6 +11,9 @@ const OfertaParalelosCardsGrid = ({
   coberturaByParaleloId = {},
   emptyDescription = 'No hay paralelos de gestión.',
   soloConsulta = false,
+  inhabilitandoParaleloId = null,
+  onInhabilitarParalelo,
+  onHabilitarParalelo,
   onNavigateDetalle,
   toolbar = null,
 }) => {
@@ -47,7 +50,14 @@ const OfertaParalelosCardsGrid = ({
       {!loading && cardModels.length > 0 ? (
         <div className="oferta-paralelos-cards__grid">
           {cardModels.map((model) => (
-            <OfertaParaleloCard key={model.id} model={model} onNavigateDetalle={onNavigateDetalle} />
+            <OfertaParaleloCard
+              key={model.id}
+              model={model}
+              inhabilitandoParaleloId={inhabilitandoParaleloId}
+              onInhabilitarParalelo={onInhabilitarParalelo}
+              onHabilitarParalelo={onHabilitarParalelo}
+              onNavigateDetalle={onNavigateDetalle}
+            />
           ))}
         </div>
       ) : null}

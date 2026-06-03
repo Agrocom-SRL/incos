@@ -122,6 +122,7 @@ export function mapParaleloToCardModel(pg, cobertura, { soloConsulta = false } =
   const band = buildContextoBand(pg);
   const docente = buildDocenteValue(cobertura, flags);
   const horario = buildHorarioValue(pg.turno, flags);
+  const esCerrado = String(pg.estado ?? '').toUpperCase() === 'CERRADO';
 
   return {
     id: pg.id,
@@ -149,8 +150,18 @@ export function mapParaleloToCardModel(pg, cobertura, { soloConsulta = false } =
         valueVariant: horario.variant,
       },
     },
+    gestionPlanId: pg.gestionPlanId ?? null,
+    paraleloNombre: pg.paraleloNombre ?? null,
     cupo: paraleloCupoLabel(pg),
     ctaLabel: soloConsulta ? 'Consultar' : 'Ver detalle',
-    cardClassName: `oferta-paralelo-card ${band.cardTurnoClass}`.trim(),
+    puedeInhabilitar: !soloConsulta && !esCerrado,
+    puedeHabilitar: !soloConsulta && esCerrado,
+    cardClassName: [
+      'oferta-paralelo-card',
+      band.cardTurnoClass,
+      esCerrado ? 'oferta-paralelo-card--cerrado' : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
   };
 }

@@ -10,45 +10,52 @@ const OfertaGestionPlanTabPanel = ({
   plan,
   paralelos,
   coberturaByParaleloId = {},
-  totalParalelosGestion = 0,
   soloConsulta = false,
+  inhabilitandoParaleloId = null,
+  onInhabilitarParalelo,
+  onHabilitarParalelo,
   onNavigateDetalle,
-}) => (
-  <Flex vertical gap={allSpacing.marginMD} className="oferta-gestion-plan-tab-panel">
-    {plan ? (
-      <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-        {soloConsulta ? (
-          <>
-            Paralelos ofertados para <strong>{planDisplayLabel(plan)}</strong> en esta gestión
-            histórica. Consulte aula, docentes y horarios en el detalle de cada paralelo.
-          </>
-        ) : (
-          <>
-            Paralelos ofertados para <strong>{planDisplayLabel(plan)}</strong>. Use «Generar
-            paralelos» en el encabezado para crear instancias desde plantillas del catálogo; luego
-            configure aula, oferta y docentes en cada ficha.
-          </>
-        )}
-      </Paragraph>
-    ) : null}
+}) => {
+  const emptyDescription = !plan
+    ? 'Seleccione un plan habilitado.'
+    : soloConsulta
+      ? 'No hay paralelos en este plan para la gestión.'
+      : paralelos.length === 0
+        ? 'No hay paralelos. Use «Generar paralelos» en el encabezado para crear instancias y materias del periodo.'
+        : 'No se pudieron cargar los paralelos de este plan.';
 
-    <OfertaParalelosCardsGrid
-      loading={loading}
-      paralelos={paralelos}
-      coberturaByParaleloId={coberturaByParaleloId}
-      soloConsulta={soloConsulta}
-      onNavigateDetalle={onNavigateDetalle}
-      emptyDescription={
-        plan
-          ? soloConsulta
-            ? 'No hay paralelos ofertados para este plan en la gestión.'
-            : totalParalelosGestion > 0
-              ? 'Hay paralelos generados sin oferta de cursos. Abra el detalle de cada uno o genere la oferta desde la ficha.'
-              : 'No hay paralelos ofertados. Use «Generar paralelos» en el encabezado para crear instancias desde plantillas del catálogo académico.'
-          : 'Seleccione un plan habilitado.'
-      }
-    />
-  </Flex>
-);
+  return (
+    <Flex vertical gap={allSpacing.marginMD} className="oferta-gestion-plan-tab-panel">
+      {plan ? (
+        <Paragraph type="secondary" className="cfg-academico-workspace__desc">
+          {soloConsulta ? (
+            <>
+              Paralelos de <strong>{planDisplayLabel(plan)}</strong> en esta gestión histórica. Consulte
+              aula, docentes y horarios en el detalle de cada paralelo.
+            </>
+          ) : (
+            <>
+              Paralelos de <strong>{planDisplayLabel(plan)}</strong> en estado{' '}
+              <strong>BORRADOR</strong> hasta completar aula y oferta. Las tarjetas muestran el avance;
+              use «Generar paralelos» en el encabezado para materializar instancias y cursos del periodo.
+            </>
+          )}
+        </Paragraph>
+      ) : null}
+
+      <OfertaParalelosCardsGrid
+        loading={loading}
+        paralelos={paralelos}
+        coberturaByParaleloId={coberturaByParaleloId}
+        soloConsulta={soloConsulta}
+        inhabilitandoParaleloId={inhabilitandoParaleloId}
+        onInhabilitarParalelo={onInhabilitarParalelo}
+        onHabilitarParalelo={onHabilitarParalelo}
+        onNavigateDetalle={onNavigateDetalle}
+        emptyDescription={emptyDescription}
+      />
+    </Flex>
+  );
+};
 
 export default OfertaGestionPlanTabPanel;
