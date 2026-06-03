@@ -1,4 +1,3 @@
-export * from './useHorariosOfertaPermisos';
 export * from './context/useHorariosContext';
 export * from './context/useHorariosArmadoContext';
 export * from './context/useHorariosAulasContext';
@@ -14,5 +13,4 @@ export * from './context/useHorariosPublicacionContext';
 export * from './state/useGestionHorariosPublicacionState';
 export * from './api/useBulkAsignacionHorariosApi';
 export * from './api/useValidarConflictoHorarioApi';
-export * from './useHorariosArmadoParaleloCatalog';
 export * from './useParaleloGestionVigenteResolver';

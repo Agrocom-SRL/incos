@@ -9,6 +9,10 @@ import {
 } from '@application-institucional/horarios/config/dashboardConstants';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 import { buildHorariosDashboardAlertLineas } from '@application-institucional/horarios/utils/buildHorariosDashboardAlertLineas';
+import {
+    buildHorariosArmadoUrl,
+    buildOfertaParaleloDetalleFromHorarios,
+} from '@application-institucional/horarios/config/paths';
 
 export const useGestionHorariosDashboardState = () => {
     const navigate = useNavigate();
@@ -138,31 +142,45 @@ export const useGestionHorariosDashboardState = () => {
     }, [gestiones, currentGestion]);
 
     const buildArmadoUrl = useCallback((paralelo, extraQuery = '') => {
-        const q = new URLSearchParams();
-        if (paralelo.id) q.set('paralelo', String(paralelo.id));
-        if (paralelo.paraleloGestionId) q.set('pg', String(paralelo.paraleloGestionId));
-        const base = `/institucional/horarios/armado?${q.toString()}`;
+        const pgId = paralelo.paraleloGestionId;
+        const base = buildHorariosArmadoUrl(pgId, { tab: 'plan' });
         return extraQuery ? `${base}&${extraQuery.replace(/^&/, '')}` : base;
     }, []);
 
-    const getParaleloAction = useCallback((paralelo) => {
-        const baseArmado = buildArmadoUrl(paralelo);
-        const bucket = paralelo.boardBucket ?? resolveHorariosBoardBucket(paralelo);
-        if (bucket === 'completo') return `${baseArmado}&tab=vista`;
-        if (bucket === 'sin_docentes') return `${baseArmado}&tab=cursos`;
-        if (bucket === 'sin_aulas') {
-            return '/institucional/horarios/aulas';
-        }
-        if (bucket === 'sin_horarios') {
-            const planIncompleto =
-                (paralelo.cursosTotales ?? 0) > 0 &&
-                (paralelo.cursosCreados ?? 0) < (paralelo.cursosTotales ?? 0);
-            return planIncompleto ? `${baseArmado}&tab=gestion` : `${baseArmado}&tab=plan`;
-        }
-        return `${baseArmado}&tab=plan`;
-    }, [buildArmadoUrl]);
+    const getParaleloActionTarget = useCallback(
+        (paralelo) => {
+            const baseArmado = buildArmadoUrl(paralelo);
+            const bucket = paralelo.boardBucket ?? resolveHorariosBoardBucket(paralelo);
+            const pgId = paralelo.paraleloGestionId;
 
-    const onOpenArmado = useCallback((paralelo) => navigate(getParaleloAction(paralelo)), [getParaleloAction, navigate]);
+            if ((bucket === 'sin_aulas' || bucket === 'sin_docentes') && Number.isFinite(pgId) && pgId > 0) {
+                return buildOfertaParaleloDetalleFromHorarios(pgId);
+            }
+
+            if (bucket === 'completo') {
+                return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'vista' }) };
+            }
+            if (bucket === 'sin_horarios') {
+                const planIncompleto =
+                    (paralelo.cursosTotales ?? 0) > 0 &&
+                    (paralelo.cursosCreados ?? 0) < (paralelo.cursosTotales ?? 0);
+                if (planIncompleto && Number.isFinite(pgId) && pgId > 0) {
+                    return buildOfertaParaleloDetalleFromHorarios(pgId);
+                }
+                return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'plan' }) };
+            }
+            return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'plan' }) };
+        },
+        [buildArmadoUrl],
+    );
+
+    const onOpenArmado = useCallback(
+        (paralelo) => {
+            const target = getParaleloActionTarget(paralelo);
+            navigate(target.pathname, target.state ? { state: target.state } : undefined);
+        },
+        [getParaleloActionTarget, navigate],
+    );
 
     const onVerHorariosAulas = useCallback(() => navigate('/institucional/horarios/aulas'), [navigate]);
     const onPublish = useCallback(() => navigate('/institucional/horarios/publicacion'), [navigate]);
@@ -223,7 +241,6 @@ export const useGestionHorariosDashboardState = () => {
         hayAlertas,
         alertLineas,
         pendientesSidebar,
-        getParaleloAction,
         loading,
         error,
     };

@@ -8,6 +8,7 @@ import {
     getSabadoArmadoGridRangeMinutes,
     getTurnoGridRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
+import { buildHorariosArmadoUrl } from '@application-institucional/horarios/config/paths';
 import { paraleloScheduleToCourseSchedules } from '@application-institucional/horarios/utils/paraleloScheduleToCourseSchedules';
 import { buildHorariosPlanPendientesDetalleLines } from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
 import ParaleloPlanSemanaCell from '../atoms/ParaleloPlanSemanaCell';
@@ -72,11 +73,8 @@ const HorariosPublicacionParaleloCard = ({ plan, onPublicar, publicando = false 
             : 'Revise pendientes antes de publicar.';
 
     const onEditarPlan = () => {
-        const id = paralelo?.id;
-        if (id == null) return;
-        const q = new URLSearchParams({ paralelo: String(id), tab: 'plan' });
-        if (pgId) q.set('pg', String(pgId));
-        navigate(`/institucional/horarios/armado?${q.toString()}`);
+        if (!pgId) return;
+        navigate(buildHorariosArmadoUrl(pgId, { tab: 'plan' }));
     };
 
     const onClickPublicar = async () => {

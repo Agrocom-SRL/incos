@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { App } from 'antd';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
+import { buildHorariosArmadoUrl } from '@application-institucional/horarios/config/paths';
 import { useOfertaAcademicaApi } from '../api/useOfertaAcademicaApi.js';
 import { normalizeCoberturaDocentePayload } from './ofertaStateShared.js';
 import { buildAulasParaModalItems } from '../../utils/ofertaAulaModal.js';
@@ -11,6 +12,7 @@ export function useOfertaParaleloDetalleState() {
   const { paraleloGestionId: idParam } = useParams();
   const paraleloGestionId = Number(idParam);
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     loading: apiLoading,
     error: apiError,
@@ -265,16 +267,28 @@ export function useOfertaParaleloDetalleState() {
   }, [load]);
 
   const returnPath = useMemo(() => {
+    const fromState = location.state?.returnListPath;
+    if (typeof fromState === 'string' && fromState.trim()) {
+      return fromState.trim();
+    }
     if (detalle?.gestionPlanId && detalle?.gestionId) {
       return ofertaPaths.gestionPlanesConPlan(detalle.gestionId, detalle.gestionPlanId);
     }
     return ofertaPaths.dashboard();
-  }, [detalle]);
+  }, [detalle, location.state]);
 
-  const navigateBack = useCallback(() => navigate(returnPath), [navigate, returnPath]);
+  const navigateBack = useCallback(
+    () =>
+      navigate(returnPath, {
+        state: location.state?.menuSidebarKey
+          ? { menuSidebarKey: location.state.menuSidebarKey }
+          : undefined,
+      }),
+    [navigate, returnPath, location.state],
+  );
 
   const navigateHorariosArmado = useCallback(
-    () => navigate(`/institucional/horarios/armado?pg=${paraleloGestionId}`),
+    () => navigate(buildHorariosArmadoUrl(paraleloGestionId, { tab: 'plan' })),
     [navigate, paraleloGestionId]
   );
 

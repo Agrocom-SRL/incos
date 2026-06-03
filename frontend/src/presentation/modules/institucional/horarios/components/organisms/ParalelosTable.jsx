@@ -11,8 +11,15 @@ import { StatusTag } from '../atoms';
 const ctaByBucket = {
     sin_horarios: 'Completar plan',
     sin_docentes: 'Asignar docentes',
-    sin_aulas: 'Ir a aulas',
+    sin_aulas: 'Asignar aula',
     completo: 'Ver horario',
+};
+
+const actionPermisoByBucket = {
+    sin_horarios: { permiso: 'institucional.horario.armado', accion: 'EDITAR' },
+    sin_docentes: { permiso: 'institucional.oferta.paralelo-gestion', accion: 'DETALLE' },
+    sin_aulas: { permiso: 'institucional.oferta.paralelo-gestion', accion: 'DETALLE' },
+    completo: { permiso: 'institucional.horario.armado', accion: 'EDITAR' },
 };
 
 const ctaLabelForRow = (row) => {
@@ -95,20 +102,24 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) =
             key: 'accion',
             align: 'right',
             width: 260,
-            render: (_, row) => (
-                <Space size={8} wrap>
-                    <ActionButton
-                        permiso="institucional.horario.armado"
-                        accion="EDITAR"
-                        size="small"
-                        variant={actionVariantForBucket(row.boardBucket ?? resolveHorariosBoardBucket(row))}
-                        className="horarios-paralelos-table__action-btn"
-                        onClick={() => onOpenArmado(row)}
-                    >
-                        {ctaLabelForRow(row)}
-                    </ActionButton>
-                </Space>
-            ),
+            render: (_, row) => {
+                const bucket = row.boardBucket ?? resolveHorariosBoardBucket(row);
+                const actionPermiso = actionPermisoByBucket[bucket] ?? actionPermisoByBucket.sin_horarios;
+                return (
+                    <Space size={8} wrap>
+                        <ActionButton
+                            permiso={actionPermiso.permiso}
+                            accion={actionPermiso.accion}
+                            size="small"
+                            variant={actionVariantForBucket(bucket)}
+                            className="horarios-paralelos-table__action-btn"
+                            onClick={() => onOpenArmado(row)}
+                        >
+                            {ctaLabelForRow(row)}
+                        </ActionButton>
+                    </Space>
+                );
+            },
         },
     ];
 

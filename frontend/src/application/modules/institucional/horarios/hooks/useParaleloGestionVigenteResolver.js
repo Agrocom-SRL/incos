@@ -7,8 +7,11 @@ function pickParaleloId(row) {
 
 /**
  * Resuelve paralelo_gestion de la gestión vigente a partir del id del paralelo maestro (URL armado).
+ * @param {number|null} paraleloMaestroId — id en tabla `paralelos`
+ * @param {{ gestionVigenteId?: number|null }} [options] — catálogo compartido (evita depender solo de fetchGestiones de oferta)
  */
-export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
+export function useParaleloGestionVigenteResolver(paraleloMaestroId, options = {}) {
+  const { gestionVigenteId: gestionVigenteIdOpt } = options;
   const {
     fetchGestiones,
     fetchPlanesHabilitados,
@@ -34,23 +37,33 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
     setLoading(true);
     setError(null);
 
-    const gestRes = await fetchGestiones();
-    if (!gestRes.success) {
-      setError(gestRes.error || 'No se pudieron cargar las gestiones');
-      setLoading(false);
-      return;
+    let vigenteId =
+      gestionVigenteIdOpt != null && Number.isFinite(Number(gestionVigenteIdOpt)) && Number(gestionVigenteIdOpt) > 0
+        ? Number(gestionVigenteIdOpt)
+        : null;
+    let vigenteNombre = null;
+
+    if (!vigenteId) {
+      const gestRes = await fetchGestiones();
+      if (!gestRes.success) {
+        setError(gestRes.error || 'No se pudieron cargar las gestiones');
+        setLoading(false);
+        return;
+      }
+
+      const gestiones = gestRes.data?.gestiones ?? gestRes.data?.managements ?? [];
+      const listG = Array.isArray(gestiones) ? gestiones : [];
+      const vigente = listG.find((g) => g.vigente) ?? listG[0];
+      if (!vigente?.id) {
+        setError('No hay gestión académica vigente. Configure la oferta en Institucional → Oferta académica.');
+        setLoading(false);
+        return;
+      }
+      vigenteId = Number(vigente.id);
+      vigenteNombre = vigente.nombre ?? vigente.codigo ?? null;
     }
 
-    const gestiones = gestRes.data?.gestiones ?? gestRes.data?.managements ?? [];
-    const listG = Array.isArray(gestiones) ? gestiones : [];
-    const vigente = listG.find((g) => g.vigente) ?? listG[0];
-    if (!vigente?.id) {
-      setError('No hay gestión académica vigente. Configure la oferta en Institucional → Oferta académica.');
-      setLoading(false);
-      return;
-    }
-
-    const planesRes = await fetchPlanesHabilitados(vigente.id);
+    const planesRes = await fetchPlanesHabilitados(vigenteId);
     if (!planesRes.success) {
       setError(planesRes.error || 'No se pudieron cargar los planes habilitados');
       setLoading(false);
@@ -73,6 +86,7 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
       setParaleloGestionId(Number(match.id));
       setGestionPlanId(Number(plan.id));
       setMeta({
+        paraleloMaestroId: pid,
         nombre: det.paraleloNombre ?? det.paralelo_nombre ?? match.paraleloNombre ?? null,
         turno: det.turno ?? match.turno ?? null,
         estado: det.estado ?? det.state ?? match.estado ?? match.state ?? null,
@@ -83,7 +97,7 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
         periodoNombre: det.periodoNombre ?? det.periodo_nombre ?? null,
         periodoNumero: det.periodoNumero ?? det.periodo_numero ?? null,
         descripcion: det.paraleloDescripcion ?? det.paralelo_descripcion ?? null,
-        gestionNombre: vigente.nombre ?? vigente.codigo ?? null,
+        gestionNombre: vigenteNombre,
         planNombre: plan.nombre ?? plan.planNombre ?? null,
       });
       setError(null);
@@ -104,6 +118,7 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId) {
     fetchParalelosGestion,
     fetchParaleloGestionDetalle,
     paraleloMaestroId,
+    gestionVigenteIdOpt,
   ]);
 
   useEffect(() => {

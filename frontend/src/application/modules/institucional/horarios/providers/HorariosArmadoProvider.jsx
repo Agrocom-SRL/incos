@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { HorariosArmadoContext } from '@application-institucional/horarios/context';
 import { useGestionHorariosArmadoState } from '@application-institucional/horarios/hooks/state/useGestionHorariosArmadoState';
-import { useGestionHorariosPlantillaState } from '@application-institucional/horarios/hooks/state/useGestionHorariosPlantillaState';
+import { useArmadoOfertaLectura } from '@application-institucional/horarios/hooks/state/useArmadoOfertaLectura';
 import { useAsignacionDocenteApi } from '@application-institucional/horarios/hooks/api/useAsignacionDocenteApi';
 import { indexAsignacionesPorOferta } from '@application-institucional/horarios/mappers/asignacionDocenteMatrizMapper';
 import { mergeGrillaWithOfertaCursos } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
 
 export const HorariosArmadoProvider = ({ children }) => {
     const armadoState = useGestionHorariosArmadoState();
-    const ofertaParalelo = useGestionHorariosPlantillaState(armadoState.paraleloGestionId);
+    const ofertaLectura = useArmadoOfertaLectura(armadoState.paraleloGestionId);
     const { fetchAsignaciones } = useAsignacionDocenteApi();
     const [asignacionesPorOferta, setAsignacionesPorOferta] = useState(null);
     const lastDraftSigRef = useRef('');
@@ -43,7 +43,7 @@ export const HorariosArmadoProvider = ({ children }) => {
     useEffect(() => {
         const merged = mergeGrillaWithOfertaCursos(
             armadoState.serverSchedules,
-            ofertaParalelo.filasOferta ?? [],
+            ofertaLectura.filasOferta ?? [],
             asignacionesPorOferta,
         );
         let sig = '';
@@ -65,14 +65,14 @@ export const HorariosArmadoProvider = ({ children }) => {
         });
     }, [
         armadoState.serverSchedules,
-        ofertaParalelo.filasOferta,
+        ofertaLectura.filasOferta,
         asignacionesPorOferta,
         armadoState.setDraftSchedules,
     ]);
 
     const value = {
         ...armadoState,
-        ofertaParalelo,
+        refetchOferta: ofertaLectura.refetchOferta,
     };
     return <HorariosArmadoContext.Provider value={value}>{children}</HorariosArmadoContext.Provider>;
 };

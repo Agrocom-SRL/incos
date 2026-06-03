@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import { Alert, Col, Divider, Flex, Row, Typography } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 import { Card, ActionButton } from '@atoms';
+import { buildOfertaParaleloDetalleFromHorarios } from '@application-institucional/horarios/config/paths';
 import { resumenBloquesCurso } from '@application-institucional/horarios/utils/resumenBloquesCurso';
 
 const { Text } = Typography;
@@ -8,10 +10,13 @@ const { Text } = Typography;
 const ParaleloCursosTabSection = ({
     draftSchedules,
     missingSubjects,
-    setTab,
+    paraleloGestionId,
     onOpenDocenteAsignacion,
     docentePreview = null,
 }) => {
+  const navigate = useNavigate();
+  const pgId = Number(paraleloGestionId);
+
   if (!draftSchedules.length) {
     return (
       <Alert
@@ -20,16 +25,21 @@ const ParaleloCursosTabSection = ({
         title="Sin cursos"
         description={
           <Flex vertical gap={8} align="flex-start">
-            <span>No hay cursos cargados para este paralelo.</span>
-            <ActionButton
-              permiso="institucional.gestion.horarios"
-              accion="LISTAR"
-              variant="default"
-              size="small"
-              onClick={() => setTab('gestion')}
-            >
-              Ir a gestión de cursos
-            </ActionButton>
+            <span>No hay cursos de oferta para este paralelo en la gestión vigente.</span>
+            {Number.isFinite(pgId) && pgId > 0 ? (
+              <ActionButton
+                permiso="institucional.oferta.paralelo-gestion"
+                accion="DETALLE"
+                variant="default"
+                size="small"
+                onClick={() => {
+                  const target = buildOfertaParaleloDetalleFromHorarios(pgId);
+                  navigate(target.pathname, target.state ? { state: target.state } : undefined);
+                }}
+              >
+                Ir a oferta académica del paralelo
+              </ActionButton>
+            ) : null}
           </Flex>
         }
       />

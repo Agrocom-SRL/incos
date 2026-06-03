@@ -7,8 +7,15 @@ import { resolveHorariosBoardBucket } from '@application-institucional/horarios/
 const ctaByBucket = {
     sin_horarios: 'Completar plan',
     sin_docentes: 'Asignar docentes',
-    sin_aulas: 'Ir a aulas',
+    sin_aulas: 'Asignar aula',
     completo: 'Ver horario',
+};
+
+const actionPermisoByBucket = {
+    sin_horarios: { permiso: 'institucional.horario.armado', accion: 'EDITAR' },
+    sin_docentes: { permiso: 'institucional.oferta.paralelo-gestion', accion: 'DETALLE' },
+    sin_aulas: { permiso: 'institucional.oferta.paralelo-gestion', accion: 'DETALLE' },
+    completo: { permiso: 'institucional.horario.armado', accion: 'EDITAR' },
 };
 
 /** Texto breve según grupo del tablero (no el `estado` legacy del backend). */
@@ -100,6 +107,8 @@ const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
                   ? 'success'
                   : 'default';
 
+    const actionPermiso = actionPermisoByBucket[bucket] ?? actionPermisoByBucket.sin_horarios;
+
     return (
         <Card
             className="horarios-paralelo-card"
@@ -127,8 +136,8 @@ const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
                 {resumenColumna}
             </Typography.Paragraph>
             <ActionButton
-                permiso="institucional.horario.armado"
-                accion="EDITAR"
+                permiso={actionPermiso.permiso}
+                accion={actionPermiso.accion}
                 block
                 size="small"
                 className="horarios-paralelo-card__cta"

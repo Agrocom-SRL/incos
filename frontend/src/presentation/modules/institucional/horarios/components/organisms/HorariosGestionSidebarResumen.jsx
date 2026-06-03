@@ -6,6 +6,7 @@ import { ActionButton, Button } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows, typography, gradients } from '@theme/tokens';
 import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
+import { buildHorariosArmadoUrl } from '@application-institucional/horarios/config/paths';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 
 const { Text, Title } = Typography;
@@ -63,6 +64,18 @@ const HorariosGestionSidebarResumen = ({
     const navigate = useNavigate();
     const [modal, setModal] = useState({ open: false, kind: null });
     const [aulasDiaFiltroPreferido, setAulasDiaFiltroPreferido] = useState(null);
+
+    const pgIdByParaleloMaestro = useMemo(() => {
+        const m = new Map();
+        (filteredParallels || []).forEach((p) => {
+            const pid = Number(p.id);
+            const pg = Number(p.paraleloGestionId);
+            if (Number.isFinite(pid) && pid > 0 && Number.isFinite(pg) && pg > 0) {
+                m.set(pid, pg);
+            }
+        });
+        return m;
+    }, [filteredParallels]);
 
     const counts = useMemo(() => {
         const paralelos = (filteredParallels || []).length;
@@ -170,6 +183,7 @@ const HorariosGestionSidebarResumen = ({
                     carreraId: g.carreraId,
                     carreraNombre: g.carreraNombre,
                 });
+                const pgId = pgIdByParaleloMaestro.get(Number(g.paraleloId)) ?? null;
                 rows.push({
                     key: `d-${g.paraleloId}-${it.cursoId}-${idx}`,
                     carreraNombre: g.carreraNombre || '—',
@@ -177,6 +191,7 @@ const HorariosGestionSidebarResumen = ({
                     paraleloNombre: g.paraleloNombre || `Paralelo #${g.paraleloId}`,
                     paraleloTurno: g.paraleloTurno || '',
                     paraleloId: g.paraleloId,
+                    paraleloGestionId: pgId,
                     cursoId: it.cursoId,
                     materiaLabel: it.materiaSigla || it.materiaNombre || it.cursoCodigo || 'Curso',
                     carreraColor: hex || allColors.colorPrimary,
@@ -184,7 +199,7 @@ const HorariosGestionSidebarResumen = ({
             });
         });
         return rows;
-    }, [cursosSinDocentePorParalelo]);
+    }, [cursosSinDocentePorParalelo, pgIdByParaleloMaestro]);
 
     const openKind = (kind) => setModal({ open: true, kind });
     const close = () => {
@@ -527,11 +542,17 @@ const HorariosGestionSidebarResumen = ({
                                             icon={<TeamOutlined />}
                                             style={{ flexShrink: 0 }}
                                             onClick={() => {
+                                                const pg = row.paraleloGestionId;
+                                                if (!pg) return;
                                                 navigate(
-                                                    `/institucional/horarios/armado?paralelo=${row.paraleloId}&tab=cursos&asignarCurso=${row.cursoId}`,
+                                                    buildHorariosArmadoUrl(pg, {
+                                                        tab: 'cursos',
+                                                        asignarCurso: row.cursoId,
+                                                    }),
                                                 );
                                                 close();
                                             }}
+                                            disabled={!row.paraleloGestionId}
                                         >
                                             Asignar docente
                                         </ActionButton>

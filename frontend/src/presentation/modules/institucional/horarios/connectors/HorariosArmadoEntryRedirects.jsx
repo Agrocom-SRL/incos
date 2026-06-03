@@ -1,37 +1,38 @@
 /**
- * Entradas alternativas al flujo actual de Armado (misma UX que el tab «Gestión»):
- * rutas públicas siguen existiendo por permisos / marcadores / enlaces viejos, pero llevan al destino único `/horarios/armado`.
- *
- * - `/horarios/plantilla?paralelo=…` conserva compatibilidad con URLs que antes abrían oferta desde query.
- * - `/horarios/paralelo/:paraleloId/gestion` conserva compatibilidad con URLs que antes usaban el id en path.
+ * Enlaces viejos al armado: normalizan a `?pg=` (paralelo_gestion_id).
  */
 import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { buildHorariosArmadoUrl, buildOfertaParaleloDetalleFromHorarios } from '@application-institucional/horarios/config/paths';
+import { syncArmadoSearchParams } from '@application-institucional/horarios/utils/syncArmadoSearchParams';
 
-const toArmadoUrl = (searchParams) => {
-    const q = searchParams.toString();
-    return `/institucional/horarios/armado${q ? `?${q}` : ''}`;
-};
-
-/** Desde `/institucional/horarios/plantilla` (query `paralelo` ⇒ tab gestión si no viene `tab`). */
+/** Desde `/institucional/horarios/plantilla` */
 export const ArmadoGestionRedirectFromPlantillaPath = () => {
     const location = useLocation();
     const sp = new URLSearchParams(location.search);
-    if (sp.get('paralelo') && !sp.get('tab')) {
-        sp.set('tab', 'gestion');
+    const pg = Number(sp.get('pg'));
+    if (Number.isFinite(pg) && pg > 0) {
+        return <Navigate replace to={buildHorariosArmadoUrl(pg, { tab: sp.get('tab') || 'plan' })} />;
     }
-    return <Navigate replace to={toArmadoUrl(sp)} />;
+    sp.delete('paralelo');
+    if (!sp.get('tab') || sp.get('tab') === 'gestion') sp.set('tab', 'plan');
+    return <Navigate replace to={`/institucional/horarios/armado?${sp.toString()}`} />;
 };
 
-/** Desde `/institucional/horarios/paralelo/:paraleloId/gestion` (mezcla params + query). */
+/** Desde `/institucional/horarios/paralelo/:paraleloId/gestion` */
 export const ArmadoGestionRedirectFromParaleloPath = () => {
     const { paraleloId } = useParams();
     const location = useLocation();
     const sp = new URLSearchParams(location.search);
+    const pg = Number(sp.get('pg'));
+    if (Number.isFinite(pg) && pg > 0) {
+        const target = buildOfertaParaleloDetalleFromHorarios(pg);
+        return <Navigate replace to={target.pathname} state={target.state} />;
+    }
     if (paraleloId) {
-        sp.set('paralelo', String(paraleloId));
+        const next = syncArmadoSearchParams(sp, { tab: 'plan' });
+        next.delete('pg');
+        next.set('paralelo', String(paraleloId));
+        return <Navigate replace to={`/institucional/horarios/armado?${next.toString()}`} />;
     }
-    if (!sp.get('tab')) {
-        sp.set('tab', 'gestion');
-    }
-    return <Navigate replace to={toArmadoUrl(sp)} />;
+    return <Navigate replace to="/institucional/horarios/armado" />;
 };
