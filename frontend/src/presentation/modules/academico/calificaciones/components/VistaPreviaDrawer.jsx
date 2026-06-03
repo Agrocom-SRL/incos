@@ -117,7 +117,7 @@ const VistaPreviaDrawer = ({
           type="info"
           showIcon
           className="cal-preview-drawer__alert"
-          message={`Cuota institucional: ${cuota.teorico} pts teórico · ${cuota.practico} pts práctico`}
+          title={`Cuota institucional: ${cuota.teorico} pts teórico · ${cuota.practico} pts práctico`}
           description="Distribución de los 100 puntos del bimestre según política institucional."
         />
       ) : null}
@@ -136,7 +136,7 @@ const VistaPreviaDrawer = ({
           key={msg}
           type="warning"
           showIcon
-          message={msg}
+          title={msg}
           className="cal-preview-drawer__alert"
         />
       ))}
@@ -156,7 +156,7 @@ const VistaPreviaDrawer = ({
           type="info"
           showIcon
           className="cal-preview-drawer__alert"
-          message={`${resumen.conFaltantes} estudiante${resumen.conFaltantes > 1 ? 's' : ''} con notas faltantes`}
+          title={`${resumen.conFaltantes} estudiante${resumen.conFaltantes > 1 ? 's' : ''} con notas faltantes`}
           description="Completá las celdas vacías en el cuaderno para ver el bimestre calculado."
         />
       ) : null}

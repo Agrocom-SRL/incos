@@ -125,7 +125,7 @@ const ParaleloDetailPage = () => {
           <PageHeader title="Detalle de paralelo" breadcrumbItems={breadcrumbItems} actions={headerActions} />
         }
       >
-        <Alert type="error" showIcon message="Identificador de paralelo inválido" />
+        <Alert type="error" showIcon title="Identificador de paralelo inválido" />
       </PageTemplate>
     );
   }

@@ -113,7 +113,7 @@ const MisCursosPage = () => {
               <Alert
                 type="info"
                 showIcon
-                message={
+                title={
                   esVistaCoordinacion
                     ? 'Este docente no tiene cursos asignados en la gestión.'
                     : 'No tenés cursos asignados en la gestión vigente.'

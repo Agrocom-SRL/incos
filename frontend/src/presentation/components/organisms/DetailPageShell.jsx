@@ -19,7 +19,7 @@ const DetailPageShell = ({
         <Alert
           type="error"
           showIcon
-          message={error}
+          title={error}
           action={
             onRetry ? (
               <button type="button" className="sd-btn sd-btn--outline" onClick={onRetry}>

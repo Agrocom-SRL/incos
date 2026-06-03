@@ -66,7 +66,7 @@ const DocentesForm = () => {
       sidebar={null}
     >
       <Spin spinning={loading}>
-        {error ? <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} /> : null}
+        {error ? <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} /> : null}
         {!loading ? (
           <WizardForm
             key={wizardMountKey}

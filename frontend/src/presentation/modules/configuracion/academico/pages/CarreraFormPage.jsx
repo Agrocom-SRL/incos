@@ -54,7 +54,7 @@ const CarreraFormPage = ({ mode = 'create' }) => {
         </PageHeaderArea>
         <DashboardPageShell>
           <MainContent>
-            <Alert type="error" showIcon message="Identificador de carrera inválido" />
+            <Alert type="error" showIcon title="Identificador de carrera inválido" />
           </MainContent>
         </DashboardPageShell>
       </Flex>
@@ -75,7 +75,7 @@ const CarreraFormPage = ({ mode = 'create' }) => {
         <MainContent>
           <Spin spinning={loading} tip="Cargando carrera…">
             <Flex vertical gap="middle" className="cfg-academico-page__stack">
-              {error ? <Alert type="error" showIcon message={error} /> : null}
+              {error ? <Alert type="error" showIcon title={error} /> : null}
 
               <Form
                 form={form}

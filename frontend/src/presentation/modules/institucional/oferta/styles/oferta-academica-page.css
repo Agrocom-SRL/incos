@@ -39,7 +39,7 @@
   margin-inline: 0 !important;
 }
 
-.oferta-dashboard-kpi-row > .ant-col {
+.oferta-dashboard-kpi-row>.ant-col {
   display: flex;
   min-width: 0;
 }
@@ -177,11 +177,9 @@
 .oferta-paralelo-card--cerrado .opc-band--noche,
 .oferta-paralelo-card--cerrado .opc-band--manana,
 .oferta-paralelo-card--cerrado .opc-band--default {
-  background: linear-gradient(
-    165deg,
-    var(--color-fill-tertiary) 0%,
-    var(--color-fill-quaternary) 100%
-  );
+  background: linear-gradient(165deg,
+      var(--color-fill-tertiary) 0%,
+      var(--color-fill-quaternary) 100%);
   border-bottom-color: var(--color-border-secondary);
 }
 
@@ -253,30 +251,24 @@
 }
 
 .opc-band--tarde {
-  background: linear-gradient(
-    165deg,
-    var(--color-primary-bg) 0%,
-    var(--color-primary-bg-hover) 100%
-  );
+  background: linear-gradient(165deg,
+      var(--color-primary-bg) 0%,
+      var(--color-primary-bg-hover) 100%);
   border-bottom-color: var(--color-primary-border);
 }
 
 .opc-band--noche {
-  background: linear-gradient(
-    165deg,
-    var(--color-accent-bg) 0%,
-    var(--color-accent-bg-hover) 100%
-  );
+  background: linear-gradient(165deg,
+      var(--color-accent-bg) 0%,
+      var(--color-accent-bg-hover) 100%);
   border-bottom-color: var(--color-accent-border);
 }
 
 .opc-band--manana,
 .opc-band--default {
-  background: linear-gradient(
-    165deg,
-    var(--color-info-bg) 0%,
-    var(--color-info-bg-hover) 100%
-  );
+  background: linear-gradient(165deg,
+      var(--color-info-bg) 0%,
+      var(--color-info-bg-hover) 100%);
   border-bottom-color: var(--color-info-border);
 }
 
@@ -480,33 +472,27 @@
 }
 
 .opc-info-icon--aula {
-  background: linear-gradient(
-    145deg,
-    var(--color-warning-bg) 0%,
-    var(--color-warning-bg-hover) 100%
-  );
+  background: linear-gradient(145deg,
+      var(--color-warning-bg) 0%,
+      var(--color-warning-bg-hover) 100%);
   color: var(--color-warning);
   border-color: var(--color-warning-border);
   box-shadow: var(--shadow-warning);
 }
 
 .opc-info-icon--docente {
-  background: linear-gradient(
-    145deg,
-    var(--color-info-bg) 0%,
-    var(--color-info-bg-hover) 100%
-  );
+  background: linear-gradient(145deg,
+      var(--color-info-bg) 0%,
+      var(--color-info-bg-hover) 100%);
   color: var(--color-info);
   border-color: var(--color-info-border);
   box-shadow: var(--shadow-info);
 }
 
 .opc-info-icon--horario {
-  background: linear-gradient(
-    145deg,
-    var(--color-error-bg) 0%,
-    var(--color-error-bg-hover) 100%
-  );
+  background: linear-gradient(145deg,
+      var(--color-error-bg) 0%,
+      var(--color-error-bg-hover) 100%);
   color: var(--color-error);
   border-color: var(--color-error-border);
   box-shadow: var(--shadow-error);
@@ -637,6 +623,124 @@
 
 .oferta-paralelo-detalle__meta-line {
   margin-bottom: 0 !important;
+}
+
+.oferta-paralelo-detalle-workspace {
+  min-width: 0;
+}
+
+.oferta-paralelo-detalle-context {
+  margin-bottom: 0;
+  padding: var(--spacing-md);
+  border-radius: 10px;
+  border: 1px solid var(--color-primary-bg-hover);
+}
+
+.oferta-paralelo-detalle-context__img {
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-secondary);
+}
+
+.oferta-paralelo-detalle-context__desc,
+.oferta-paralelo-detalle-context__hint {
+  margin-top: var(--spacing-xs);
+}
+
+.oferta-paralelo-detalle-context__hint {
+  font-size: var(--font-size-sm);
+}
+
+.oferta-paralelo-detalle-context__aula-row {
+  margin-top: var(--spacing-xs, 4px);
+}
+
+.oferta-paralelo-detalle-context__aula-hint {
+  font-size: var(--font-size-sm, 12px);
+}
+
+.oferta-aula-select-modal__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.oferta-aula-select-modal__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1px solid var(--color-border-secondary, #f0f0f0);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition-base, 0.2s ease);
+}
+
+.oferta-aula-select-modal__item:last-child {
+  border-bottom: none;
+}
+
+.oferta-aula-select-modal__item:hover {
+  background: var(--color-fill-quaternary, #f5f7f6);
+}
+
+.oferta-aula-select-modal__item--selected {
+  background: var(--color-primary-bg, #e8f5ee);
+}
+
+.oferta-aula-select-modal__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-fill-quaternary, #f3f4f6);
+  color: var(--color-primary, #134d32);
+  flex-shrink: 0;
+}
+
+.oferta-aula-select-modal__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.oferta-aula-select-modal__desc {
+  font-size: var(--font-size-sm, 12px);
+}
+
+.oferta-paralelo-detalle__link-asignar.ant-btn-link {
+  color: var(--color-primary) !important;
+  font-weight: 600;
+  padding-inline: 0;
+}
+
+.oferta-paralelo-detalle__link-asignar.ant-btn-link:hover {
+  color: var(--color-primary-hover) !important;
+}
+
+/* Tabla en sd-card: título de sección ya actúa como cabecera; columnas discretas */
+.oferta-paralelo-detalle-workspace .sd-card .oferta-paralelo-detalle-cursos__table .ant-table-thead>tr>th {
+  background: var(--color-fill-quaternary, #f5f7f6) !important;
+  color: var(--text-700, #374151) !important;
+  font-weight: 600;
+  font-size: var(--font-size-sm, 12px);
+  text-transform: none;
+  letter-spacing: normal;
+  border-bottom: 1px solid var(--color-border-secondary, #e8ece9);
+}
+
+.oferta-paralelo-detalle-workspace .sd-card .oferta-paralelo-detalle-cursos__table .ant-table-tbody>tr>td {
+  font-weight: 400;
+}
+
+.oferta-paralelo-detalle-cursos__summary .ant-table-cell {
+  background: var(--color-info-bg);
 }
 
 .oferta-gestion-planes-page__header-actions {

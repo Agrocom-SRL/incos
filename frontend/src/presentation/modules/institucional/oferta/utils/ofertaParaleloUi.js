@@ -1,5 +1,7 @@
 export {
   aulaParaleloLabel,
+  ofertaCursoDocentePillClass,
+  ofertaCursoEstadoPillClass,
   paraleloAsignacionFlags,
   paraleloCupoLabel,
   paraleloDocenteResumen,

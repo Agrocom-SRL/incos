@@ -59,7 +59,7 @@ const DocentesAsignacionesGestion = () => {
     >
       <Spin spinning={loading} size="large" tip="Cargando materias asignadas…">
         <div className="sd sd-spin-body">
-          {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message={error} /> : null}
+          {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} title={error} /> : null}
           <Alert
             type="info"
             showIcon

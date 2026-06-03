@@ -65,7 +65,7 @@ const OfertaAcademicaDashboardPage = () => {
         <MainContent>
           <Spin spinning={s.apiLoading} tip="Cargando resumen...">
             <Flex vertical gap={allSpacing.marginLG} className="oferta-dashboard-main">
-              {s.apiError ? <Alert type="error" showIcon message={s.apiError} /> : null}
+              {s.apiError ? <Alert type="error" showIcon title={s.apiError} /> : null}
 
               {showAlert ? (
                 <OfertaAlertBanner

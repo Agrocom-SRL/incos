@@ -12,6 +12,11 @@ export const useDocentesAsignacionAcademicaPage = () => {
   const st = location.state ?? {};
   const [form] = Form.useForm();
   const editingAssignment = st.editAssignment && typeof st.editAssignment === 'object' ? st.editAssignment : null;
+  const asignacionPrefill =
+    !editingAssignment && st.asignacionPrefill && typeof st.asignacionPrefill === 'object'
+      ? st.asignacionPrefill
+      : null;
+  const catalogPrefill = editingAssignment || asignacionPrefill;
   const editingAssignmentId =
     editingAssignment?.id != null && Number.isFinite(Number(editingAssignment.id)) ? Number(editingAssignment.id) : null;
 
@@ -47,7 +52,7 @@ export const useDocentesAsignacionAcademicaPage = () => {
     errorCursos,
     cursoId,
     setCursoId,
-  } = useDocentesAsignacionCatalogos(editingAssignment);
+  } = useDocentesAsignacionCatalogos(catalogPrefill);
 
   const resumenPlanLabel = useMemo(() => {
     const p = planes.find((x) => Number(x.id) === Number(gestionPlanId));

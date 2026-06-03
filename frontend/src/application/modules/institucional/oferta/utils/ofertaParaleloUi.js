@@ -8,6 +8,22 @@ export function paraleloEstadoPillClass(estado) {
   return 'cfg-materia-pill cfg-materia-pill--default';
 }
 
+/** Pill docente en fila de oferta_curso (detalle paralelo). */
+export function ofertaCursoDocentePillClass(pendiente) {
+  return pendiente
+    ? 'cfg-materia-pill cfg-materia-pill--clasificacion'
+    : 'cfg-materia-pill cfg-materia-pill--activa';
+}
+
+/** Pill estado de oferta_curso (PROGRAMADA, ACTIVA, …). */
+export function ofertaCursoEstadoPillClass(estado) {
+  const e = String(estado ?? '').toUpperCase();
+  if (e === 'ACTIVA') return 'cfg-materia-pill cfg-materia-pill--activa';
+  if (e === 'PROGRAMADA') return 'cfg-materia-pill cfg-materia-pill--teorica';
+  if (e === 'CERRADA' || e === 'CANCELADA') return 'cfg-materia-pill cfg-materia-pill--inactiva';
+  return 'cfg-materia-pill cfg-materia-pill--default';
+}
+
 export function aulaParaleloLabel(row) {
   if (row?.aulaCodigo) {
     return row.aulaNombre ? `${row.aulaCodigo} — ${row.aulaNombre}` : row.aulaCodigo;

@@ -76,7 +76,7 @@ export default function DocentesAsignacionParaleloSection({
         El paralelo agrupa la <Text strong>oferta de cursos</Text> (materias en ese año y turno). Elegí uno para listar
         los cursos disponibles.
       </Paragraph>
-      {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message={error} /> : null}
+      {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} title={error} /> : null}
 
       {disabled ? (
         <Alert type="info" showIcon title="Elegí plan y periodo primero." />

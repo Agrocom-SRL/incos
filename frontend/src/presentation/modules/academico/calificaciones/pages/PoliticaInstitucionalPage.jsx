@@ -196,7 +196,7 @@ const PoliticaInstitucionalPage = () => {
               <Alert
                 type="error"
                 showIcon
-                message={errorGuardado ?? errorPolitica ?? 'No se pudo cargar la configuración'}
+                title={errorGuardado ?? errorPolitica ?? 'No se pudo cargar la configuración'}
                 action={
                   <Button size="small" onClick={refetchPolitica}>
                     Reintentar

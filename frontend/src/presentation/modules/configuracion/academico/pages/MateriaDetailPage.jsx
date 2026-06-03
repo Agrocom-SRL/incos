@@ -76,7 +76,7 @@ const MateriaDetailPage = () => {
           <PageHeader title="Detalle de materia" breadcrumbItems={breadcrumbItems} actions={headerActions} />
         }
       >
-        <Alert type="error" showIcon message="Identificador de materia inválido" />
+        <Alert type="error" showIcon title="Identificador de materia inválido" />
       </PageTemplate>
     );
   }

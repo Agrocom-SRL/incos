@@ -35,7 +35,7 @@ export default function DocentesAsignacionPeriodoSection({
       <Paragraph type="secondary" style={{ marginTop: 0, marginBottom: 12 }}>
         Cada periodo corresponde a un <Text strong>año del plan</Text>. Elegí uno para cargar los paralelos ofertados.
       </Paragraph>
-      {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message={error} /> : null}
+      {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} title={error} /> : null}
 
       {disabled ? (
         <Alert type="info" showIcon title="Elegí primero un plan habilitado en el paso anterior." />

@@ -64,7 +64,7 @@ const ComplementariosPage = () => {
   if (!tabItems.length) {
     return (
       <PageTemplate sidebar={null}>
-        <Alert type="warning" message="No tiene permisos para acceder a complementarios." />
+        <Alert type="warning" title="No tiene permisos para acceder a complementarios." />
       </PageTemplate>
     );
   }

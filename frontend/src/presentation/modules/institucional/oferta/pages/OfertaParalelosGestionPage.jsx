@@ -52,7 +52,7 @@ const OfertaParalelosGestionPage = () => {
         <MainContent>
           <Spin spinning={s.apiLoading} tip="Cargando paralelos...">
             <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-              {s.apiError ? <Alert type="error" showIcon message={s.apiError} /> : null}
+              {s.apiError ? <Alert type="error" showIcon title={s.apiError} /> : null}
 
               <OfertaAlertBanner step={2} kpis={s.kpis} gestionVigente />
 

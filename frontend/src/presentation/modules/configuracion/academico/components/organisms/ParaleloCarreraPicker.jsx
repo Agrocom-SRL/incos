@@ -17,7 +17,7 @@ const ParaleloCarreraPicker = ({
   const selectedValue = value != null && value !== '' ? Number(value) : null;
 
   if (error) {
-    return <Alert type="error" showIcon message={error} />;
+    return <Alert type="error" showIcon title={error} />;
   }
 
   if (loading) {

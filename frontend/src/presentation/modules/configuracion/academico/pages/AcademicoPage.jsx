@@ -192,7 +192,7 @@ const AcademicoPage = () => {
         </PageHeaderArea>
         <DashboardPageShell>
           <MainContent>
-            <Alert type="warning" showIcon message="No tiene permisos para acceder al módulo académico." />
+            <Alert type="warning" showIcon title="No tiene permisos para acceder al módulo académico." />
           </MainContent>
         </DashboardPageShell>
       </Flex>

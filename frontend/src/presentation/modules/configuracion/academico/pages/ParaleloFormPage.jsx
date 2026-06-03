@@ -59,7 +59,7 @@ const ParaleloFormPage = ({ mode = 'create' }) => {
         </PageHeaderArea>
         <DashboardPageShell>
           <MainContent>
-            <Alert type="error" showIcon message="Identificador de paralelo inválido" />
+            <Alert type="error" showIcon title="Identificador de paralelo inválido" />
           </MainContent>
         </DashboardPageShell>
       </Flex>
@@ -80,7 +80,7 @@ const ParaleloFormPage = ({ mode = 'create' }) => {
         <MainContent>
           <Spin spinning={loading} tip="Cargando paralelo…">
             <Flex vertical gap="middle" className="cfg-academico-page__stack">
-              {error ? <Alert type="error" showIcon message={error} /> : null}
+              {error ? <Alert type="error" showIcon title={error} /> : null}
 
               <Form
                 form={form}

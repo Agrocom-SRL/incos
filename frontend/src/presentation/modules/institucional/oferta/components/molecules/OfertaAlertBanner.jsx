@@ -10,7 +10,7 @@ const OfertaAlertBanner = ({ step, kpis, gestionVigente }) => {
       <Alert
         type="warning"
         showIcon
-        message={<strong>Sin planes habilitados en la gestión</strong>}
+        title={<strong>Sin planes habilitados en la gestión</strong>}
         description={
           <span>
             El catálogo académico (Configuración → Académico) define los planes de estudio; en la gestión
@@ -27,7 +27,7 @@ const OfertaAlertBanner = ({ step, kpis, gestionVigente }) => {
       <Alert
         type="warning"
         showIcon
-        message={
+        title={
           <span>
             <ExclamationCircleOutlined style={{ marginRight: 8 }} />
             <strong>Gestión no vigente</strong>
@@ -51,7 +51,7 @@ const OfertaAlertBanner = ({ step, kpis, gestionVigente }) => {
       <Alert
         type={type}
         showIcon
-        message={<strong>Requiere atención operativa</strong>}
+        title={<strong>Requiere atención operativa</strong>}
         description={
           <Flex vertical gap="small">
             <Space wrap>
@@ -79,5 +79,4 @@ const OfertaAlertBanner = ({ step, kpis, gestionVigente }) => {
 
 export default OfertaAlertBanner;
 
-// ✅ Bugs corregidos: Alert `title` → `message`; Space `orientation` → Flex vertical
-// KPIs como Tags semánticos en alertas operativas (paso ≥ 2)
+// Alert antd 6: `title` (no `message`). KPIs como Tags en alertas operativas (paso ≥ 2).

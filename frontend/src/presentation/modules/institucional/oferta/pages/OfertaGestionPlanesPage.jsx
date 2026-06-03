@@ -83,13 +83,13 @@ const OfertaGestionPlanesPage = () => {
         <MainContent>
           <Spin spinning={s.planesLoading} tip="Cargando planes...">
             <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-              {s.apiError ? <Alert type="error" showIcon message={s.apiError} /> : null}
+              {s.apiError ? <Alert type="error" showIcon title={s.apiError} /> : null}
 
               {contextAlert ? (
                 <Alert
                   type={contextAlert.type}
                   showIcon
-                  message={contextAlert.message}
+                  title={contextAlert.message}
                   description={contextAlert.description}
                   action={
                     contextAlert.showIrGestionVigente ? (

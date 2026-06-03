@@ -26,7 +26,7 @@ const ParaleloFormSections = ({
       <Alert
         type="warning"
         showIcon
-        message="La carrera no tiene plan de estudio vigente. Defínalo en el tab Planes."
+        title="La carrera no tiene plan de estudio vigente. Defínalo en el tab Planes."
         style={{ marginTop: 8 }}
       />
     ) : null;

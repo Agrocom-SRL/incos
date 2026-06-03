@@ -91,7 +91,7 @@ export default function UsuarioCreatePage() {
         }
       >
         {submitError ? (
-          <Alert type="error" showIcon message={submitError} style={{ marginBottom: 16 }} />
+          <Alert type="error" showIcon title={submitError} style={{ marginBottom: 16 }} />
         ) : null}
         <WizardForm
           key={wizardFormMountKey}

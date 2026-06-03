@@ -1,40 +1,39 @@
 ---
 name: incos-antd5-api
 description: >-
-  Evita props obsoletas o inexistentes de Ant Design 5 en INCOS (Alert message,
-  Space direction, Modal open). Usar al crear o editar cualquier .jsx con
-  componentes antd, banners, alerts, modales, drawers o layout con Space/Flex.
+  API Ant Design 6 en INCOS (Alert title, Space direction, Modal open, evitar List
+  nuevo). Usar al crear o editar .jsx con antd, alerts, modales o layout Space/Flex.
 ---
 
-# Ant Design 5 — API correcta en INCOS
+# Ant Design 6 — API correcta en INCOS
 
 Regla completa: `.cursor/rules/incos-ui-system.mdc` §5.
 
-El stack del frontend es **React 18 + antd ^5**. Varias props de v4 u otras
-librerías **no existen** en v5: React las ignora y el UI queda mal **sin error
-en consola**.
+El frontend usa **React 18 + antd ^6** (`frontend/package.json`). Las reglas
+antiguas de v5 (`Alert.message`) están **obsoletas** y generan warnings en consola.
 
 ## Tabla de reemplazos obligatorios
 
-| Componente | ❌ No escribir | ✅ Escribir |
-|------------|---------------|-------------|
-| `Alert` | `title="..."` | `message="..."` o `message={<strong>...</strong>}` |
+| Componente | ❌ No escribir (deprecado en v6) | ✅ Usar en INCOS |
+|------------|----------------------------------|------------------|
+| `Alert` | `message="..."` | `title="..."` o `title={<strong>...</strong>}` |
+| `Alert` | — | `description` para el cuerpo largo |
 | `Space` | `orientation="vertical"` | `direction="vertical"` |
 | `Modal`, `Drawer` | `visible={open}` | `open={open}` |
 | `Dropdown`, `Tooltip`, `Popover` | `visible` | `open` |
 | `Tabs` | `<TabPane>` | prop `items={[...]}` |
+| `List` (antd) | **Nuevo** `<List>` en pantallas | `Flex vertical` + filas, o mantener `List` solo en legacy hasta migrar |
 
 ## Ejemplos canónicos
 
 ```jsx
 import { Alert, Flex, Space } from 'antd';
 
-// Banner informativo
 <Alert
   type="info"
   showIcon
   closable
-  message={<strong>Flujo operativo</strong>}
+  title={<strong>Flujo operativo</strong>}
   description={
     <Flex vertical gap="small">
       <span>Texto de ayuda.</span>
@@ -42,27 +41,23 @@ import { Alert, Flex, Space } from 'antd';
   }
 />
 
-// Apilado (alternativa: Flex vertical)
 <Space direction="vertical" size="small" style={{ width: '100%' }}>
   <span>Uno</span>
-  <span>Dos</span>
 </Space>
 ```
 
-## `TableCell` (molécula del repo)
+## `List` deprecado
 
-- `TableCell` **sí** tiene prop `orientation` — es API **del molécula**, no de antd.
-- En componentes nuevos con `<Space importado de 'antd'>`: solo `direction`.
-- No propagar `orientation` a `<Space>` por copiar `TableCell`.
+- En código **nuevo**: no importar `List` de `antd`; usar listas con `Flex` + botones/div (como modales del dashboard).
+- Código existente con `<List>`: sigue funcionando pero muestra warning; migrar cuando convenga (sucesor futuro: **Listy** en antd).
 
 ## Checklist al generar código
 
-1. Buscar en el diff: `title=` en `<Alert` → cambiar a `message`.
-2. Buscar: `orientation=` en `<Space` → cambiar a `direction` (o usar `Flex vertical`).
+1. Buscar en el diff: `message=` en `<Alert` → cambiar a `title`.
+2. Buscar: `orientation=` en `<Space` → cambiar a `direction` (o `Flex vertical`).
 3. Buscar: `visible=` en Modal/Drawer → cambiar a `open`.
-4. Si pulís UI visual, aplicar también `incos-ui-system` y skill `react-ui-ux-designer`.
+4. No añadir `<List>` nuevo de antd sin justificar.
 
-## Origen del conocimiento
+## Origen
 
-Corregido en módulo Oferta Académica (`OfertaOperativaBanner`, `OfertaAlertBanner`,
-etc., 2026-06): los títulos de `Alert` no se mostraban por usar `title` en lugar de `message`.
+Migración v5→v6: [Ant Design migration v6](https://ant.design/docs/react/migration-v6) — `Alert.message` → `title`.

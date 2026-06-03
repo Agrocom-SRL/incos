@@ -108,28 +108,29 @@ con prefijos `sd-`/`da-` **solo para layout**.
 - `type="primary"` solo para la acción principal de la vista (una por pantalla).
 - Acciones destructivas: `danger` + confirmación. No inventes estilos de "rojo".
 
-## 5. Ant Design 5 — props que NO existen (errores silenciosos)
+## 5. Ant Design 6 — props deprecadas (warnings en consola)
 
-El proyecto usa **Ant Design 5.x** (`antd` ^5). No asumir la API de v4 ni la de
-Chakra/MUI. Estas props se **ignoran en runtime** (el UI queda roto sin error en consola).
+El proyecto usa **Ant Design 6.x** (`antd` ^6 en `frontend/package.json`). No asumir
+la API de v5 (`Alert.message`) ni v4 (`Modal.visible`).
 
-| Componente | ❌ No usar | ✅ Usar en INCOS |
-|------------|-----------|------------------|
-| `Alert` | `title` | `message` (acepta string o JSX; título en `<strong>` si hace falta) |
-| `Alert` | — | `description` para el cuerpo largo (sin cambios) |
+| Componente | ❌ No usar (v6 deprecado) | ✅ Usar en INCOS |
+|------------|-------------------------|------------------|
+| `Alert` | `message` | `title` (string o JSX; título en `<strong>` si hace falta) |
+| `Alert` | — | `description` para el cuerpo largo |
 | `Space` | `orientation` | `direction="vertical"` \| `direction="horizontal"` |
 | `Modal` / `Drawer` | `visible` | `open` |
 | `Dropdown` / `Tooltip` / `Popover` | `visible` | `open` |
 | `Tabs` | `TabPane` hijo | `items={[ { key, label, children } ]}` |
+| `List` | Nuevo uso en pantallas | `Flex` + filas; legacy `<List>` migrar gradualmente |
 
 ### Patrones correctos (copiar, no improvisar)
 
 ```jsx
-// Alert — título visible
+// Alert — título visible (antd 6)
 <Alert
   type="warning"
   showIcon
-  message={<strong>Sin planes habilitados</strong>}
+  title={<strong>Sin planes habilitados</strong>}
   description="Texto de ayuda o acciones."
 />
 
@@ -153,7 +154,7 @@ El molécula `TableCell` expone prop **`orientation`** como API propia del proye
 
 ### Checklist AntD antes de cerrar JSX nuevo
 
-- [ ] ¿Todo `<Alert>` usa `message`, nunca `title`?
+- [ ] ¿Todo `<Alert>` usa `title`, nunca `message`?
 - [ ] ¿Todo `<Space>` usa `direction`, nunca `orientation`?
 - [ ] ¿Modales/drawers usan `open`, no `visible`?
 
@@ -169,7 +170,7 @@ chocan, **gana el componente AntD** para no fragmentar la implementación.
 
 ## 7. Checklist antes de dar por cerrado un componente
 
-- [ ] ¿API Ant Design 5 correcta? (`Alert.message`, `Space.direction`, `Modal.open` — ver §5)
+- [ ] ¿API Ant Design 6 correcta? (`Alert.title`, `Space.direction`, `Modal.open` — ver §5)
 - [ ] ¿Cero `#hex`, `fontSize:` numérico o `px` de color en JSX/CSS (salvo color de negocio sanitizado)?
 - [ ] ¿Usé props de AntD antes que estilos manuales?
 - [ ] ¿El componente está en el nivel atómico correcto y la carpeta correcta?
@@ -182,7 +183,7 @@ chocan, **gana el componente AntD** para no fragmentar la implementación.
 
 1. **Hex literal en componente** en vez de `token.colorPrimary` → cada pantalla
    con un azul distinto. El #1 del problema.
-2. **`Alert title=` o `Space orientation=`** → título o layout no se renderizan (§5).
+2. **`Alert message=` (v5) o `Space orientation=`** → warnings o UI roto (§5).
 3. **CSS var propia con su propio hex** que ya existe como token AntD → dos
    fuentes de verdad. Mapear, no clonar.
 4. **Columnas/acciones inline** en la página → imposible homogeneizar tablas.

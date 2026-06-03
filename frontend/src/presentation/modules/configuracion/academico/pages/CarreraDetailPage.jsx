@@ -83,7 +83,7 @@ const CarreraDetailPage = () => {
           <PageHeader title="Detalle de carrera" breadcrumbItems={breadcrumbItems} actions={headerActions} />
         }
       >
-        <Alert type="error" showIcon message="Identificador de carrera inválido" />
+        <Alert type="error" showIcon title="Identificador de carrera inválido" />
       </PageTemplate>
     );
   }

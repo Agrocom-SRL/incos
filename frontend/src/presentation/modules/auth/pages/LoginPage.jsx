@@ -124,7 +124,7 @@ export default function LoginPage() {
           <Divider style={{ margin: '8px 0' }} />
 
           {error ? (
-            <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} />
+            <Alert type="error" title={error} showIcon closable onClose={() => setError(null)} />
           ) : null}
 
           <Form
