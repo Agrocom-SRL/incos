@@ -1,5 +1,5 @@
 import { ArrowRightOutlined, BookOutlined } from '@ant-design/icons';
-import { Card, Flex, List, Typography } from 'antd';
+import { Card, Flex, Typography } from 'antd';
 import { ActionButton } from '@atoms';
 import { componentConfig, shadows, allColors } from '@theme/tokens';
 
@@ -57,16 +57,13 @@ const OfertaDashboardQuickAccess = ({
           <Text type="secondary" className="oferta-dashboard-planes-hint">
             Paralelos por plan habilitado
           </Text>
-          <List
-            size="small"
-            className="oferta-dashboard-planes-list"
-            dataSource={planesHabilitados}
-            renderItem={(plan) => {
+          <Flex vertical gap={4} className="oferta-dashboard-planes-list">
+            {planesHabilitados.map((plan) => {
               const label = plan.carreraNombre
                 ? `${plan.carreraNombre} · ${plan.nombre ?? plan.planEstudioId}`
                 : plan.nombre ?? `Plan #${plan.planEstudioId}`;
               return (
-                <List.Item className="oferta-dashboard-planes-list__item">
+                <div key={plan.id} className="oferta-dashboard-planes-list__item">
                   <ActionButton
                     permiso="institucional.oferta.gestion-plan"
                     accion="LISTAR"
@@ -77,10 +74,10 @@ const OfertaDashboardQuickAccess = ({
                   >
                     {label}
                   </ActionButton>
-                </List.Item>
+                </div>
               );
-            }}
-          />
+            })}
+          </Flex>
         </>
       ) : sinPlanesHabilitados ? (
         <Text type="secondary">

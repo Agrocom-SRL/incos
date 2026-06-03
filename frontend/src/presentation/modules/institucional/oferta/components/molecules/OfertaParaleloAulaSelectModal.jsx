@@ -1,10 +1,9 @@
 import { BankOutlined } from '@ant-design/icons';
-import { Modal, Button, Empty, Typography } from 'antd';
-
-const { Text } = Typography;
+import { Modal, Button, Empty } from 'antd';
+import IdentidadCelda from '@atoms/IdentidadCelda';
 
 /**
- * Modal: listado de aulas (título + descripción), selección y confirmación.
+ * Modal: listado de aulas (código + nombre, capacidad), selección y confirmación.
  */
 const OfertaParaleloAulaSelectModal = ({
   open,
@@ -42,13 +41,15 @@ const OfertaParaleloAulaSelectModal = ({
       {items.length === 0 ? (
         <Empty description="No hay aulas libres en esta gestión" />
       ) : (
-        <div className="oferta-aula-select-modal__list">
+        <div className="oferta-aula-select-modal__list" role="listbox" aria-label="Aulas disponibles">
           {items.map((item) => {
             const selected = Number(selectedId) === Number(item.id);
             return (
               <button
                 key={item.id}
                 type="button"
+                role="option"
+                aria-selected={selected}
                 className={`oferta-aula-select-modal__item${
                   selected ? ' oferta-aula-select-modal__item--selected' : ''
                 }`}
@@ -57,13 +58,22 @@ const OfertaParaleloAulaSelectModal = ({
                 <span className="oferta-aula-select-modal__icon" aria-hidden>
                   <BankOutlined />
                 </span>
-                <span className="oferta-aula-select-modal__text">
-                  <Text strong>{item.name}</Text>
-                  {item.description ? (
-                    <Text type="secondary" className="oferta-aula-select-modal__desc">
-                      {item.description}
-                    </Text>
-                  ) : null}
+                <span className="oferta-aula-select-modal__body">
+                  <IdentidadCelda
+                    codigo={item.codigo}
+                    nombre={item.nombre}
+                    className="oferta-aula-identidad"
+                  />
+                  <span className="oferta-aula-select-modal__meta">
+                    {item.capacidad != null && !Number.isNaN(item.capacidad) ? (
+                      <span className="oferta-aula-select-modal__meta-line">
+                        {item.capacidad} cupos
+                      </span>
+                    ) : null}
+                    {item.isCurrent ? (
+                      <span className="oferta-aula-select-modal__actual">Asignada aquí</span>
+                    ) : null}
+                  </span>
                 </span>
               </button>
             );

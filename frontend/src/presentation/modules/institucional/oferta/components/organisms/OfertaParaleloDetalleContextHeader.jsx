@@ -66,7 +66,7 @@ const OfertaParaleloDetalleContextHeader = ({
           <Flex wrap="wrap" gap="small" align="center" className="oferta-paralelo-detalle-context__aula-row">
             <Text type="secondary">
               Aula:{' '}
-              <Text strong={tieneAula}>{tieneAula ? aulaLabel : 'Sin asignar'}</Text>
+              <Text type={tieneAula ? 'success' : 'default'} strong={tieneAula}>{tieneAula ? aulaLabel : 'Sin asignar'}</Text>
             </Text>
             {puedeEditarAula ? (
               <ActionButton

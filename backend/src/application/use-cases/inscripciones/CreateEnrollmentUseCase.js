@@ -183,7 +183,8 @@ export class CreateEnrollmentUseCase {
       const student = await this._validateStudent(studentId);
       const management = await this._getCurrentManagement();
 
-      // Resolver teacherAssignmentIds desde selección por periodo (ANTIGUO) si aplica
+      // Resolver teacherAssignmentIds u oferta de curso desde selección por periodo (ANTIGUO)
+      let offerRowsFromSelection = null;
       if (hasSelectionByPeriod && (!Array.isArray(teacherAssignmentIds) || teacherAssignmentIds.length === 0)) {
         const resolved = await this._resolveTeacherAssignmentIdsFromSelection(
           parallelIdsByPeriod,
@@ -198,11 +199,72 @@ export class CreateEnrollmentUseCase {
             count: teacherAssignmentIds.length,
             parallelIdsByPeriod: Object.keys(parallelIdsByPeriod).length,
           });
+        } else {
+          offerRowsFromSelection = await this._resolveOfferRowsFromSelection(
+            parallelIdsByPeriod,
+            materiaIdsByPeriod,
+            student,
+            management
+          );
+          if (offerRowsFromSelection.length > 0) {
+            this.logger.info('[Inscripciones] Oferta de curso resuelta desde selección por periodo', {
+              count: offerRowsFromSelection.length,
+            });
+          }
         }
       }
 
       let parallel;
       let teacherAssignments;
+
+      if (offerRowsFromSelection?.length > 0) {
+        const periodIds = Object.keys(materiaIdsByPeriod).filter(
+          (k) => Array.isArray(materiaIdsByPeriod[k]) && materiaIdsByPeriod[k].length > 0
+        );
+        const firstPeriodId = periodIds[0];
+        const firstParallelId = parallelIdsByPeriod[firstPeriodId];
+        if (!firstParallelId) {
+          throw new ValidationError(
+            'Debe indicar el paralelo por periodo para las materias seleccionadas'
+          );
+        }
+        parallel = await this._validateParallel(Number(firstParallelId));
+
+        const studentAcademicData = await this._getOrCreateStudentAcademicData(
+          student,
+          parallel,
+          management
+        );
+        const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+          studentAcademicData,
+          management
+        );
+        await this._validateNoExistingEnrollment(studentAcademicData, management);
+        await this._validatePaymentExists(student, management);
+        const enrollment = await this._createEnrollment(
+          studentAcademicData,
+          management,
+          enrollmentType,
+          observations
+        );
+        const subjectEnrollments = await this._createsubjectEnrollments(
+          enrollment,
+          offerRowsFromSelection
+        );
+        const priorEnrollmentHistories = await this._createPriorEnrollmentHistory(
+          enrollment,
+          priorHistory,
+          managementPlan
+        );
+        return this._buildResponse(
+          enrollment,
+          subjectEnrollments,
+          studentId,
+          parallel.id,
+          management,
+          priorEnrollmentHistories
+        );
+      }
 
       if (useMateriasMode) {
         // Modo materias específicas: permite inscribir materias de diferentes paralelos/periodos
@@ -264,6 +326,11 @@ export class CreateEnrollmentUseCase {
       }
 
       if (!parallelId) {
+        if (hasSelectionByPeriod) {
+          throw new ValidationError(
+            'No hay oferta de curso vigente para las materias y paralelo seleccionados. Verifique la oferta académica de la gestión.'
+          );
+        }
         throw new ValidationError(
           'El ID del paralelo es requerido cuando no se envían materias específicas (teacherAssignmentIds)'
         );
@@ -812,6 +879,72 @@ export class CreateEnrollmentUseCase {
       assignmentCount: assignmentIds.length,
     });
     return assignmentIds;
+  }
+
+  /**
+   * Resuelve filas de oferta (oferta_curso) desde paralelo + materias por periodo.
+   * Usado cuando aún no hay asignación docente vigente pero la oferta académica existe.
+   *
+   * @private
+   */
+  async _resolveOfferRowsFromSelection(parallelIdsByPeriod, materiaIdsByPeriod, student, management) {
+    const periodIds = Object.keys(materiaIdsByPeriod).filter(
+      (k) => Array.isArray(materiaIdsByPeriod[k]) && materiaIdsByPeriod[k].length > 0
+    );
+    if (periodIds.length === 0) return [];
+
+    const firstPeriodId = periodIds[0];
+    const firstParallelId = parallelIdsByPeriod[firstPeriodId];
+    if (!firstParallelId) return [];
+
+    const parallel = await this.parallelRepository.findById(Number(firstParallelId));
+    if (!parallel) return [];
+
+    const studentAcademicData = await this._getOrCreateStudentAcademicData(student, parallel, management);
+    const { managementPlan } = await this._getStudyPlanAndManagementPlan(studentAcademicData, management);
+    const managementPlanId = managementPlan.id;
+
+    const rows = [];
+    const seenOfferIds = new Set();
+    const materiaIdSetByPeriod = {};
+    for (const pid of periodIds) {
+      materiaIdSetByPeriod[pid] = new Set((materiaIdsByPeriod[pid] || []).map(Number));
+    }
+
+    for (const periodId of periodIds) {
+      const parallelId = parallelIdsByPeriod[periodId];
+      if (!parallelId) continue;
+
+      const parallelManagement = await this.parallelManagementRepository.findByParallelAndManagementPlan(
+        Number(parallelId),
+        managementPlanId
+      );
+      if (!parallelManagement) continue;
+
+      const pgPlain = parallelManagement.toPlainObject
+        ? parallelManagement.toPlainObject()
+        : parallelManagement;
+      const offers = await this.courseOfferRepository.findEnrichedByParallelManagementId(pgPlain.id);
+
+      for (const offer of offers) {
+        if (Number(offer.periodoId) !== Number(periodId)) continue;
+
+        const allowedMaterias = materiaIdSetByPeriod[periodId];
+        if (!allowedMaterias || !allowedMaterias.has(Number(offer.materiaId))) continue;
+
+        const offerId = Number(offer.id);
+        if (!Number.isFinite(offerId) || offerId < 1 || seenOfferIds.has(offerId)) continue;
+        if (offer.activo === false || offer.activo === 0) continue;
+
+        seenOfferIds.add(offerId);
+        rows.push({
+          offerCourseId: offerId,
+          curriculumSubjectId: offer.asignaturaPlanId ?? offer.planSubjectId ?? null,
+        });
+      }
+    }
+
+    return rows;
   }
 
   /**

@@ -66,7 +66,7 @@ export function buildOfertaParaleloDetalleCursosColumns({
       render: (_, row) => (
         <ActionButton
           permiso="docentes.asignar"
-          accion="CREAR"
+          accion="EDITAR"
           type="link"
           size="small"
           icon={<TeamOutlined />}

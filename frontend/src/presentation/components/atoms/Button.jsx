@@ -46,6 +46,7 @@ const Button = ({
   className = '',
   icon,
   type: antButtonType,
+  buttonStyle: _buttonStyle,
   ...props
 }) => {
   if (antButtonType === 'link') {
