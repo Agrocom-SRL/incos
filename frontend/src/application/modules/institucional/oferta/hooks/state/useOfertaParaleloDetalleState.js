@@ -147,7 +147,7 @@ export function useOfertaParaleloDetalleState() {
     if (!detalle?.aulaId) {
       notification.warning({
         title: 'Aula requerida',
-        description: 'Asigne un aula al paralelo antes de marcarlo como OFERTADO.',
+        description: 'Asigne un aula al paralelo antes de ofertarlo.',
       });
       return;
     }
@@ -155,7 +155,7 @@ export function useOfertaParaleloDetalleState() {
       notification.warning({
         title: 'Oferta de cursos incompleta',
         description:
-          'Genere o complete la oferta del periodo según el plan de estudio antes de pasar a OFERTADO.',
+          'Genere o complete la oferta del periodo según el plan de estudio antes de ofertar el paralelo.',
       });
       return;
     }
@@ -166,16 +166,16 @@ export function useOfertaParaleloDetalleState() {
         ? `Quedan ${docentesPendientes} materia(s) sin docente; puede asignarlas desde esta tabla después. `
         : '';
     modal.confirm({
-      title: 'Marcar paralelo como OFERTADO',
-      content: `${descripcionDocente}OFERTADO habilita la matrícula. No exige docentes ni horarios publicados: eso se completa en asignación docente y Gestión de horarios.`,
-      okText: 'Marcar OFERTADO',
+      title: 'Ofertar paralelo',
+      content: `${descripcionDocente}Al ofertar el paralelo queda en estado OFERTADO y se habilita la matrícula. No exige docentes ni horarios publicados: eso se completa en asignación docente y Gestión de horarios.`,
+      okText: 'Ofertar paralelo',
       cancelText: 'Cancelar',
       onOk: async () => {
         const res = await updateParaleloGestionEstado(paraleloGestionId, 'OFERTADO');
         if (res.success) {
           notification.success({
-            title: 'Paralelo OFERTADO',
-            description: 'El paralelo quedó listo para matrícula en esta gestión.',
+            title: 'Paralelo ofertado',
+            description: 'El paralelo quedó en estado OFERTADO y listo para matrícula en esta gestión.',
           });
           await load();
         } else if (res.error) {

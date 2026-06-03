@@ -69,7 +69,7 @@ const OfertaParaleloDetallePage = () => {
                   variant="primary"
                   onClick={s.onMarcarOfertado}
                 >
-                  Marcar OFERTADO
+                  Ofertar paralelo
                 </ActionButton>
               ) : null}
               <ActionButton
@@ -127,7 +127,7 @@ const OfertaParaleloDetallePage = () => {
                   type="info"
                   showIcon
                   title="Siguiente paso: docentes y horarios"
-                  description="Asigne docente a cada materia desde la tabla (modal). OFERTADO solo exige aula y oferta completa; los horarios se arman después en Gestión de horarios."
+                  description="Asigne docente a cada materia desde la tabla (modal). Ofertar el paralelo solo exige aula y oferta completa; los horarios se arman después en Gestión de horarios."
                 />
               ) : null}
 

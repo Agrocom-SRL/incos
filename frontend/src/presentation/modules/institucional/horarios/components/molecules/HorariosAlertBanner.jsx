@@ -1,12 +1,7 @@
 import { Alert, Button, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from '@application-auth';
-import { canListarAsignacion } from '@application-institucional/horarios/config/asignacionDocentePermisos';
-
 const HorariosAlertBanner = ({ sinDocentes = 0, sinAulas = 0, sinHorarios = 0 }) => {
     const navigate = useNavigate();
-    const { hasPermiso } = useAuthContext();
-    const puedeAsignacion = canListarAsignacion(hasPermiso);
 
     if (sinDocentes <= 0 && sinAulas <= 0 && sinHorarios <= 0) return null;
     const type = sinHorarios > 0 ? 'error' : sinDocentes > 0 ? 'warning' : 'info';
@@ -21,13 +16,13 @@ const HorariosAlertBanner = ({ sinDocentes = 0, sinAulas = 0, sinHorarios = 0 })
                         Sin horarios: {sinHorarios} | Sin docentes: {sinDocentes} | Sin aula efectiva: {sinAulas}{' '}
                         (revisar aula en Oferta académica o overrides aquí)
                     </span>
-                    {sinDocentes > 0 && puedeAsignacion ? (
+                    {sinDocentes > 0 ? (
                         <Button
                             size="small"
                             type="primary"
-                            onClick={() => navigate('/institucional/horarios/asignacion-docente')}
+                            onClick={() => navigate('/institucional/oferta')}
                         >
-                            Ir a asignación docente
+                            Ir a oferta académica
                         </Button>
                     ) : null}
                 </Space>

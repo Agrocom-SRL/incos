@@ -95,7 +95,7 @@ const OfertaParaleloDetalleContextHeader = ({
             </Text>
           ) : null}
           <Text type="secondary" className="oferta-paralelo-detalle-context__hint">
-            Vincule docentes por materia en la tabla. Para marcar OFERTADO se requiere aula y oferta
+            Vincule docentes por materia en la tabla. Para ofertar el paralelo se requiere aula y oferta
             completa del periodo; docentes y bloques horarios pueden completarse después.
           </Text>
         </Flex>
