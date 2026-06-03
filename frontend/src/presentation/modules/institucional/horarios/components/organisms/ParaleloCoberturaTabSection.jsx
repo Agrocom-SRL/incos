@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Col, Divider, Flex, Row, Tag, Typography } from 'antd';
+import { Col, Divider, Flex, Row, Typography } from 'antd';
 import { ThunderboltOutlined, TeamOutlined } from '@ant-design/icons';
-import { Card, ActionButton } from '@atoms';
+import { Card, ActionButton, StatusPill } from '@atoms';
 import { buildOfertaParaleloDetalleFromHorarios } from '@application-institucional/horarios/config/paths';
 import { bloquesRequeridosPorCarga } from '@application-institucional/horarios/utils/generarBloquesAutomaticosCurso';
 import { indexCoberturaPorAsignacion } from '@application-institucional/horarios/utils/indexCoberturaPorAsignacion';
@@ -92,16 +92,9 @@ const ParaleloCoberturaTabSection = ({
                 const bloquesFaltantes = Math.max(0, bloquesReq - bloquesActuales);
                 const sinDocente = !c.docente;
                 const docenteEnConflictoHorario = Boolean(c.docenteEnConflictoHorario);
-                const coberturaCompleta =
-                    horasPlanEfectivo != null &&
-                    horasPlanEfectivo > 0 &&
-                    horasGrilla >= horasPlanEfectivo;
-                const horasFaltantes =
-                    horasPlanEfectivo != null && horasGrilla < horasPlanEfectivo
-                        ? Math.round((horasPlanEfectivo - horasGrilla) * 100) / 100
-                        : 0;
+                const coberturaCompleta = bloquesReq > 0 && bloquesActuales >= bloquesReq;
                 const puedeGenerar =
-                    !sinDocente && horarioEditable && horasFaltantes > 0 && bloquesFaltantes > 0;
+                    !sinDocente && horarioEditable && bloquesFaltantes > 0;
                 const generando = Number(generandoCursoId) === Number(c.cursoId);
 
                 const cardExtra = sinDocente ? (
@@ -113,7 +106,7 @@ const ParaleloCoberturaTabSection = ({
                         icon={<TeamOutlined />}
                         onClick={irAOferta}
                     >
-                        Asignar en oferta
+                        Asignar docente
                     </ActionButton>
                 ) : puedeGenerar ? (
                     <ActionButton
@@ -125,10 +118,13 @@ const ParaleloCoberturaTabSection = ({
                         loading={generando}
                         onClick={() => handleGenerar(c.cursoId, horasPlanEfectivo)}
                     >
-                        Generar bloques
+                        Generar horarios
                     </ActionButton>
                 ) : coberturaCompleta ? (
-                    <Tag color="success">Cobertura completa</Tag>
+                    <StatusPill
+                        label={"Cobertura completa"}
+                        className={"cfg-materia-pill cfg-materia-pill--activa"}
+                    />
                 ) : null;
 
                 return (
@@ -188,12 +184,11 @@ const ParaleloCoberturaTabSection = ({
                                         : ''}
                                     )
                                 </Text>
-                                {horasFaltantes > 0 ? (
+                                {bloquesFaltantes > 0 ? (
                                     <Text type="secondary">
                                         Pendiente:{' '}
                                         <Text strong type="warning">
-                                            {horasFaltantes} h · {bloquesFaltantes} bloque(s) por
-                                            generar
+                                            {bloquesFaltantes} bloque(s) por generar
                                         </Text>
                                     </Text>
                                 ) : null}

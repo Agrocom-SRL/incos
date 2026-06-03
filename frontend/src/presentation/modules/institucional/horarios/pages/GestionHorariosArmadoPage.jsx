@@ -15,11 +15,12 @@ import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosArmadoContext } from '@application-institucional/horarios';
 import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
 import ParaleloCoberturaTabSection from '../components/organisms/ParaleloCoberturaTabSection';
+import '@configuracion/academico/styles/academico-form-page.css';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 
 const ARMADO_CONTEXT_HINT =
-    'Revisá la cobertura horaria, generá bloques por materia y afiná el plan semanal en la grilla. Docentes y oferta de cursos se gestionan en Institucional → Oferta académica.';
+    'Revisá la cobertura horaria, generá horarios por materia y afiná el plan semanal en la grilla. Docentes y oferta de cursos se gestionan en Institucional → Oferta académica.';
 
 const sectionCardProps = {
     style: {
@@ -42,9 +43,7 @@ const GestionHorariosArmadoPage = () => {
         pageTitle,
         loading,
         error,
-        persistResult,
         persistLoading,
-        persistError,
         paraleloGestionDetalle,
         draftSchedules,
         setDraftSchedules,
@@ -111,8 +110,6 @@ const GestionHorariosArmadoPage = () => {
                             editable={horarioEditable}
                             turnoLabel={turnoEfectivo || undefined}
                             persistLoading={persistLoading}
-                            persistError={persistError}
-                            persistSuccess={Boolean(!persistLoading && !persistError && persistResult)}
                             onRequestPersist={onRequestPersist}
                             validatePlacement={validatePlacement}
                             vistaExpandida={vistaExpandida}
@@ -146,8 +143,6 @@ const GestionHorariosArmadoPage = () => {
             draftSchedules,
             turnoEfectivo,
             persistLoading,
-            persistError,
-            persistResult,
             setDraftSchedules,
             onRequestPersist,
             horarioEditable,

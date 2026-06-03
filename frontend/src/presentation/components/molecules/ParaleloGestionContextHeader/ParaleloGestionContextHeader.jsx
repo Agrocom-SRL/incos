@@ -115,7 +115,14 @@ const ParaleloGestionContextHeader = ({
                                 </Text>
                             ) : null}
                         </Flex>
-                    ) : null}
+                    ) : (
+                        <Text type="secondary">
+                            Aula:{' '}
+                            <Text type={tieneAula ? 'success' : 'default'} strong={tieneAula}>
+                                {tieneAula ? aulaLabel : 'Sin asignar'}
+                            </Text>
+                        </Text>
+                    )}
                     {isOferta && detalle.planNombre ? (
                         <Text type="secondary">{detalle.planNombre}</Text>
                     ) : null}

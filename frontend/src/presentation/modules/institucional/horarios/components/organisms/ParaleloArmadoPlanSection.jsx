@@ -3,7 +3,7 @@
  */
 
 import React, { useCallback, useMemo } from 'react';
-import { Alert, Flex, message, Space, Typography } from 'antd';
+import { App, Flex, Space, Typography } from 'antd';
 import { ActionButton } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 import {
@@ -30,12 +30,11 @@ const ParaleloArmadoPlanSection = ({
     onRequestPersist,
     validatePlacement,
     persistLoading = false,
-    persistError = null,
-    persistSuccess = false,
     vistaExpandida = false,
     /** Si es true, bajo la grilla se muestra el detalle de solapes / sin aula / docentes (vista previa). */
     showPendientesDetalle = false,
 }) => {
+    const { notification } = App.useApp();
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
     const pendientesLineas = useMemo(() => {
@@ -83,14 +82,17 @@ const ParaleloArmadoPlanSection = ({
             if (typeof validatePlacement === 'function') {
                 const check = await validatePlacement(meta);
                 if (!check?.ok) {
-                    message.warning(check?.message || 'No se puede colocar el bloque en ese horario');
+                    notification.warning({
+                        title: 'No se puede mover',
+                        description: check?.message || 'No se puede colocar el bloque en ese horario.',
+                    });
                     return;
                 }
             }
 
             onSchedulesChange(moveBlockToSlot(schedules, meta));
         },
-        [editable, onSchedulesChange, schedules, validatePlacement],
+        [editable, notification, onSchedulesChange, schedules, validatePlacement],
     );
 
     const handleDeleteChip = useCallback(
@@ -106,10 +108,12 @@ const ParaleloArmadoPlanSection = ({
             onRequestPersist();
             return;
         }
-        message.warning(
-            'Los cambios del plan son locales por ahora. El guardado en servidor se conectará cuando exista el endpoint de persistencia de bloques.',
-        );
-    }, [onRequestPersist]);
+        notification.warning({
+            title: 'Guardado no disponible',
+            description:
+                'Los cambios del plan son locales por ahora. El guardado en servidor se conectará cuando exista el endpoint de persistencia de bloques.',
+        });
+    }, [notification, onRequestPersist]);
 
     return (
         <section
@@ -153,33 +157,6 @@ const ParaleloArmadoPlanSection = ({
                     )}
                 </Space>
             </Flex>
-            {editable && persistLoading ? (
-                <Alert
-                    type="info"
-                    showIcon
-                    style={{ marginBottom: 12, flexShrink: 0 }}
-                    title="Guardando cambios del plan semanal..."
-                />
-            ) : null}
-            {editable && persistError ? (
-                <Alert
-                    type="error"
-                    showIcon
-                    style={{ marginBottom: 12, flexShrink: 0 }}
-                    title="No se pudo guardar el plan"
-                    description={
-                        <span style={{ whiteSpace: 'pre-wrap' }}>{persistError}</span>
-                    }
-                />
-            ) : null}
-            {editable && !persistLoading && !persistError && persistSuccess ? (
-                <Alert
-                    type="success"
-                    showIcon
-                    style={{ marginBottom: 12, flexShrink: 0 }}
-                    title="Plan semanal guardado correctamente."
-                />
-            ) : null}
             <div
                 className={vistaExpandida ? 'horarios-armado-plan__grid-host' : undefined}
             >

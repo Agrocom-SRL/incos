@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { message } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGestionesCatalogApi } from '@application/modules/shared/hooks';
 import { useOfertaAcademicaApi } from '@application-institucional/oferta';
@@ -45,7 +44,7 @@ function pickParaleloGestionEstado(row) {
     return row?.estado ?? row?.state ?? null;
 }
 
-export const useGestionHorariosArmadoState = () => {
+export const useGestionHorariosArmadoState = (notification) => {
     const navigate = useNavigate();
     const { fetchParaleloGestionDetalle } = useOfertaAcademicaApi();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -267,7 +266,10 @@ export const useGestionHorariosArmadoState = () => {
 
     const onRequestPersist = useCallback(async () => {
         if (!horarioEditable) {
-            message.warning(mensajeParaleloGestionNoEditable(paraleloGestionEstado));
+            notification.warning({
+                title: 'Plan no editable',
+                description: mensajeParaleloGestionNoEditable(paraleloGestionEstado),
+            });
             return;
         }
 
@@ -280,28 +282,40 @@ export const useGestionHorariosArmadoState = () => {
         );
 
         if (!items.length) {
-            message.info('No hay cambios pendientes para guardar.');
+            notification.info({
+                title: 'Sin cambios',
+                description: 'No hay cambios pendientes para guardar.',
+            });
             return;
         }
 
         if (incomplete) {
-            message.warning(
-                'Algunos bloques no tienen docente o franja válida. Revisá la asignación docente y el turno del paralelo antes de guardar.',
-            );
+            notification.warning({
+                title: 'Plan incompleto',
+                description:
+                    'Algunos bloques no tienen docente o franja válida. Revisá la asignación docente y el turno del paralelo antes de guardar.',
+            });
             setBulkSaved(false);
             return;
         }
 
         const bulkRes = await ejecutarBulk(items);
         if (bulkRes.success) {
-            message.success('Bloques del plan guardados correctamente.');
+            notification.success({
+                title: 'Plan guardado',
+                description: 'Bloques del plan guardados correctamente.',
+            });
             setBulkSaved(true);
             return;
         }
 
         setBulkSaved(false);
-        message.error(bulkRes.error || 'No se pudieron guardar los bloques del plan.');
+        notification.error({
+            title: 'Error al guardar',
+            description: bulkRes.error || 'No se pudieron guardar los bloques del plan.',
+        });
     }, [
+        notification,
         horarioEditable,
         paraleloGestionEstado,
         paraleloGestionId,
@@ -365,7 +379,7 @@ export const useGestionHorariosArmadoState = () => {
             const conflictoParalelo = res.conflictos?.find((c) => c?.tipo === 'PARALELO');
             const msg =
                 conflictoParalelo?.mensaje
-                    ? `${conflictoParalelo.mensaje} Usá «Añadir bloque» y elegí solo franjas libres, o una celda vacía en la grilla.`
+                    ? `${conflictoParalelo.mensaje} Elegí otra franja libre o mové el bloque en la grilla.`
                     : res.conflictos?.map((c) => c.mensaje).filter(Boolean).join(' ') ||
                       res.error ||
                       'El bloque genera un conflicto de horario';
@@ -381,7 +395,10 @@ export const useGestionHorariosArmadoState = () => {
     const generarBloquesCurso = useCallback(
         (cursoId, horasPlanOverride = null) => {
             if (!horarioEditable) {
-                message.warning(mensajeParaleloGestionNoEditable(paraleloGestionEstado));
+                notification.warning({
+                    title: 'Plan no editable',
+                    description: mensajeParaleloGestionNoEditable(paraleloGestionEstado),
+                });
                 return { ok: false };
             }
 
@@ -403,23 +420,30 @@ export const useGestionHorariosArmadoState = () => {
             if (result.placed > 0) {
                 setDraftSchedules(result.schedules);
                 if (result.faltante > 0) {
-                    message.warning(
-                        result.message ||
+                    notification.warning({
+                        title: 'Horario parcial',
+                        description:
+                            result.message ||
                             `Se generaron ${result.placed} bloque(s); aún faltan franjas libres para cubrir toda la carga.`,
-                    );
+                    });
                 } else {
-                    message.success(
-                        `Se generaron ${result.placed} bloque(s) de 45 min. Revisá el plan y guardá los cambios.`,
-                    );
+                    notification.success({
+                        title: 'Horario generado',
+                        description: `Se generaron ${result.placed} bloque(s) de 45 min. Revisá el plan y guardá los cambios.`,
+                    });
                 }
                 setTab('plan');
                 return { ok: true, ...result };
             }
 
-            message.warning(result.message || 'No se pudieron generar bloques para esta materia.');
+            notification.warning({
+                title: 'No se pudo generar',
+                description: result.message || 'No se pudieron generar bloques para esta materia.',
+            });
             return { ok: false, ...result };
         },
         [
+            notification,
             horarioEditable,
             paraleloGestionEstado,
             draftSchedules,

@@ -30,7 +30,7 @@ export function grillaHorarioToCourseSchedules(payload, ctx = {}) {
             b.asignacion_docente_id != null ? Number(b.asignacion_docente_id) : null,
           cursoCodigo: b.asignatura || '—',
           cursoColorHex: b.color_hex ?? null,
-          materiaNombre: b.asignatura ?? null,
+          materiaNombre: null,
           materiaSigla: b.asignatura ?? null,
           docente: b.docente ?? null,
           docenteEnConflictoHorario: b.tiene_conflicto === true,
@@ -149,12 +149,17 @@ export function mergeGrillaWithOfertaCursos(courseSchedules, ofertaFilas = [], a
       row.horasSemanalesPlan != null ? Number(row.horasSemanalesPlan) : null;
     if (byId.has(cursoId)) {
       const prev = byId.get(cursoId);
+      const materiaNombre = row.materiaNombre ?? prev.materiaNombre ?? null;
+      const materiaSigla = row.materiaSigla ?? prev.materiaSigla ?? null;
       byId.set(
         cursoId,
         enrichCourseFromAsignacion(
           {
             ...prev,
             horasSemanalesPlan: prev.horasSemanalesPlan ?? horasOferta ?? null,
+            materiaNombre,
+            materiaSigla,
+            cursoCodigo: materiaSigla || materiaNombre || prev.cursoCodigo,
           },
           asig,
         ),

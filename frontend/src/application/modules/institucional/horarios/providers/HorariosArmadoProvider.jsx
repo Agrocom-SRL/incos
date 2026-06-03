@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { App } from 'antd';
 import { HorariosArmadoContext } from '@application-institucional/horarios/context';
 import { useGestionHorariosArmadoState } from '@application-institucional/horarios/hooks/state/useGestionHorariosArmadoState';
 import { useArmadoOfertaLectura } from '@application-institucional/horarios/hooks/state/useArmadoOfertaLectura';
@@ -7,7 +8,8 @@ import { indexAsignacionesPorOferta } from '@application-institucional/horarios/
 import { mergeGrillaWithOfertaCursos } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
 
 export const HorariosArmadoProvider = ({ children }) => {
-    const armadoState = useGestionHorariosArmadoState();
+    const { notification } = App.useApp();
+    const armadoState = useGestionHorariosArmadoState(notification);
     const ofertaLectura = useArmadoOfertaLectura(armadoState.paraleloGestionId);
     const { fetchAsignaciones } = useAsignacionDocenteApi();
     const [asignacionesPorOferta, setAsignacionesPorOferta] = useState(null);

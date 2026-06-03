@@ -15,11 +15,16 @@ import {
 const DIAS_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
 const SLOT_STEP_MINUTES = 45;
 
-/** Bloques de 45 min necesarios para cubrir la carga horaria semanal (horas reloj). */
+/**
+ * Bloques de 45 min requeridos según el plan.
+ * En INCOS, `horas_semanales` / `carga_horaria` = cantidad de bloques semanales
+ * (1 «hora» del plan ministerial = 1 bloque), no horas reloj.
+ * Alineado con vista 123 y cobertura del API (bloques_asignados >= horas_requeridas).
+ */
 export function bloquesRequeridosPorCarga(horasPlan) {
     const h = Number(horasPlan);
     if (!Number.isFinite(h) || h <= 0) return 0;
-    return Math.ceil((h * 60) / SLOT_STEP_MINUTES);
+    return Math.round(h);
 }
 
 /** Minutos ya cubiertos en la grilla para un curso. */
@@ -145,10 +150,10 @@ export function generarBloquesAutomaticosCurso({
         };
     }
 
-    const targetMins = horasPlan * 60;
-    const minsActuales = minutosGrillaCurso(course);
-    let faltanMins = Math.max(0, targetMins - minsActuales);
-    if (faltanMins <= 0) {
+    const targetBlocks = bloquesRequeridosPorCarga(horasPlan);
+    const bloquesActuales = course.bloques?.length ?? 0;
+    let faltanBloques = Math.max(0, targetBlocks - bloquesActuales);
+    if (faltanBloques <= 0) {
         return {
             schedules,
             placed: 0,
@@ -167,7 +172,7 @@ export function generarBloquesAutomaticosCurso({
             ? [aulaMeta.aulaCodigo, aulaMeta.aulaNombre].filter(Boolean).join(' · ')
             : null;
 
-    while (faltanMins > 0) {
+    while (faltanBloques > 0) {
         const currentCourse = nextSchedules.find((c) => Number(c.cursoId) === Number(cursoId));
         const free = collectFreeSlots(nextSchedules, gridRange, sabadoRange);
         const ordered = ordenarFranjasParaCurso(
@@ -195,21 +200,20 @@ export function generarBloquesAutomaticosCurso({
 
         nextSchedules = appendBlockToCourse(nextSchedules, cursoId, bloque);
         placed += 1;
-        faltanMins = Math.max(0, faltanMins - SLOT_STEP_MINUTES);
+        faltanBloques -= 1;
     }
 
-    const bloquesFaltantes = Math.ceil(faltanMins / SLOT_STEP_MINUTES);
     let message = null;
     if (placed === 0) {
         message = 'No hay franjas libres en el turno (incluido sábado) para añadir más bloques.';
-    } else if (bloquesFaltantes > 0) {
-        message = `Se generaron ${placed} bloque(s); faltan ${bloquesFaltantes} franja(s) libre(s) para cubrir toda la carga.`;
+    } else if (faltanBloques > 0) {
+        message = `Se generaron ${placed} bloque(s); faltan ${faltanBloques} franja(s) libre(s) para cubrir toda la carga.`;
     }
 
     return {
         schedules: nextSchedules,
         placed,
-        faltante: bloquesFaltantes,
+        faltante: faltanBloques,
         message,
     };
 }
