@@ -102,6 +102,7 @@ export function registerHorariosResource(container) {
         createAsignacionHorarioUseCase: c.resolve(ACADEMICO_TOKENS.createAsignacionHorarioUseCase),
         updateAsignacionHorarioUseCase: c.resolve(ACADEMICO_TOKENS.updateAsignacionHorarioUseCase),
         deleteAsignacionHorarioUseCase: c.resolve(ACADEMICO_TOKENS.deleteAsignacionHorarioUseCase),
+        asignacionHorarioRepository: c.resolve(REPOSITORIOS_TOKENS.asignacionHorarioRepository),
         logger: log(c),
       })
   );

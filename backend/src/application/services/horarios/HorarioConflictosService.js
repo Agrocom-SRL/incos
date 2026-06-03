@@ -8,6 +8,19 @@ function parseIdList(raw) {
     .filter((n) => Number.isFinite(n) && n > 0);
 }
 
+function normalizeExcludeAsignacionHorarioIds(primaryId, extraIds = null) {
+  const set = new Set();
+  const add = (value) => {
+    const n = Number(value);
+    if (Number.isFinite(n) && n > 0) set.add(n);
+  };
+  add(primaryId);
+  if (Array.isArray(extraIds)) {
+    for (const id of extraIds) add(id);
+  }
+  return [...set];
+}
+
 /**
  * Motor de conflictos operativos por paralelo_gestion (vistas 124–126 + grilla 122).
  */
@@ -56,16 +69,22 @@ export class HorarioConflictosService {
    * @param {number} params.horarioId
    * @param {number|null} [params.aulaId]
    * @param {number|null} [params.excludeAsignacionHorarioId]
+   * @param {number[]|null} [params.excludeAsignacionHorarioIds]
    */
   async validarPropuesta({
     asignacionDocenteId,
     horarioId,
     aulaId = null,
     excludeAsignacionHorarioId = null,
+    excludeAsignacionHorarioIds = null,
   }) {
     const adId = Number(asignacionDocenteId);
     const hId = Number(horarioId);
     const conflictos = [];
+    const excludeIds = normalizeExcludeAsignacionHorarioIds(
+      excludeAsignacionHorarioId,
+      excludeAsignacionHorarioIds
+    );
 
     const assignment = await this.teacherAssignmentRepository.findEnrichedById(adId);
     if (!assignment || !assignment.vigente) {
@@ -91,13 +110,10 @@ export class HorarioConflictosService {
       };
     }
 
-    const excludeBloqueId =
-      excludeAsignacionHorarioId != null ? Number(excludeAsignacionHorarioId) : null;
-
     const dupSame = await this.grillaBloqueViewRepository.findByAssignmentAndHorario({
       asignacionDocenteId: adId,
       horarioId: hId,
-      excludeAsignacionHorarioId: excludeBloqueId,
+      excludeAsignacionHorarioIds: excludeIds,
     });
     if (dupSame) {
       conflictos.push({
@@ -112,7 +128,7 @@ export class HorarioConflictosService {
       paraleloGestionId: pgId,
       horarioId: hId,
       asignacionDocenteId: adId,
-      excludeAsignacionHorarioId: excludeBloqueId,
+      excludeAsignacionHorarioIds: excludeIds,
     });
     if (otherAd) {
       conflictos.push({

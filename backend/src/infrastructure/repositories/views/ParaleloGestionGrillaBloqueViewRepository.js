@@ -3,6 +3,28 @@ import { sequelize } from '../../database/sequelize.js';
 
 const VIEW = 'vista_base_paralelo_gestion_grilla_bloque';
 
+function normalizeExcludeAsignacionHorarioIds(primaryId, extraIds = null) {
+  const set = new Set();
+  const add = (value) => {
+    const n = Number(value);
+    if (Number.isFinite(n) && n > 0) set.add(n);
+  };
+  add(primaryId);
+  if (Array.isArray(extraIds)) {
+    for (const id of extraIds) add(id);
+  }
+  return [...set];
+}
+
+function buildExcludeHorarioClause(excludeIds, column = 'asignacionHorarioId') {
+  const ids = normalizeExcludeAsignacionHorarioIds(null, excludeIds);
+  if (!ids.length) return { clause: '', replacements: {} };
+  return {
+    clause: `AND ${column} NOT IN (:excludeHorarioIds)`,
+    replacements: { excludeHorarioIds: ids },
+  };
+}
+
 /**
  * Lectura: vista_base_paralelo_gestion_grilla_bloque (03-views/122).
  */
@@ -36,12 +58,17 @@ export class ParaleloGestionGrillaBloqueViewRepository {
     asignacionDocenteId,
     horarioId,
     excludeAsignacionHorarioId = null,
+    excludeAsignacionHorarioIds = null,
   }) {
     const adId = Number(asignacionDocenteId);
     const hId = Number(horarioId);
-    const excludeId =
-      excludeAsignacionHorarioId != null ? Number(excludeAsignacionHorarioId) : null;
+    const excludeIds = normalizeExcludeAsignacionHorarioIds(
+      excludeAsignacionHorarioId,
+      excludeAsignacionHorarioIds
+    );
     if (!Number.isFinite(adId) || !Number.isFinite(hId)) return null;
+
+    const { clause, replacements: excludeRepl } = buildExcludeHorarioClause(excludeIds);
 
     const rows = await sequelize.query(
       `
@@ -49,14 +76,14 @@ export class ParaleloGestionGrillaBloqueViewRepository {
       FROM ${VIEW}
       WHERE asignacionDocenteId = :asignacionDocenteId
         AND horarioId = :horarioId
-        ${Number.isFinite(excludeId) && excludeId > 0 ? 'AND asignacionHorarioId <> :excludeId' : ''}
+        ${clause}
       LIMIT 1
       `,
       {
         replacements: {
           asignacionDocenteId: adId,
           horarioId: hId,
-          ...(Number.isFinite(excludeId) && excludeId > 0 ? { excludeId } : {}),
+          ...excludeRepl,
         },
         type: QueryTypes.SELECT,
       }
@@ -72,13 +99,18 @@ export class ParaleloGestionGrillaBloqueViewRepository {
     horarioId,
     asignacionDocenteId,
     excludeAsignacionHorarioId = null,
+    excludeAsignacionHorarioIds = null,
   }) {
     const pgId = Number(paraleloGestionId);
     const hId = Number(horarioId);
     const adId = Number(asignacionDocenteId);
-    const excludeId =
-      excludeAsignacionHorarioId != null ? Number(excludeAsignacionHorarioId) : null;
+    const excludeIds = normalizeExcludeAsignacionHorarioIds(
+      excludeAsignacionHorarioId,
+      excludeAsignacionHorarioIds
+    );
     if (!Number.isFinite(pgId) || !Number.isFinite(hId) || !Number.isFinite(adId)) return null;
+
+    const { clause, replacements: excludeRepl } = buildExcludeHorarioClause(excludeIds);
 
     const rows = await sequelize.query(
       `
@@ -87,7 +119,7 @@ export class ParaleloGestionGrillaBloqueViewRepository {
       WHERE paraleloGestionId = :paraleloGestionId
         AND horarioId = :horarioId
         AND asignacionDocenteId <> :asignacionDocenteId
-        ${Number.isFinite(excludeId) && excludeId > 0 ? 'AND asignacionHorarioId <> :excludeId' : ''}
+        ${clause}
       LIMIT 1
       `,
       {
@@ -95,7 +127,7 @@ export class ParaleloGestionGrillaBloqueViewRepository {
           paraleloGestionId: pgId,
           horarioId: hId,
           asignacionDocenteId: adId,
-          ...(Number.isFinite(excludeId) && excludeId > 0 ? { excludeId } : {}),
+          ...excludeRepl,
         },
         type: QueryTypes.SELECT,
       }

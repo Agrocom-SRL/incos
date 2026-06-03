@@ -20,8 +20,10 @@ import {
 } from '@application-institucional/horarios/utils/buildHorarioSlotIndex';
 import {
     appendBlockToCourse,
+    findBlockAtSlot,
     findCourseAndBlock,
     moveBlockToSlot,
+    swapOrMoveBlockToSlot,
 } from '@application-institucional/horarios/utils/planSemanalBlockOps';
 import {
     extractGrillaHorarioMeta,
@@ -326,18 +328,52 @@ export const useGestionHorariosArmadoState = (notification) => {
     ]);
 
     const validatePlacement = useCallback(
-        async ({ cursoId, cursoHorarioId, targetDia, targetSlotMinutes, bloquePreview }) => {
+        async ({
+            cursoId,
+            cursoHorarioId,
+            targetDia,
+            targetSlotMinutes,
+            sourceDia,
+            sourceSlotMinutes,
+            bloquePreview,
+        }) => {
+            const { course: occupantCourse, block: occupantBlock } = findBlockAtSlot(
+                draftSchedules,
+                targetDia,
+                targetSlotMinutes,
+                cursoHorarioId,
+            );
+            const esIntercambioParalelo =
+                occupantBlock &&
+                occupantCourse &&
+                Number(occupantCourse.cursoId) !== Number(cursoId) &&
+                sourceDia &&
+                Number.isFinite(Number(sourceSlotMinutes));
+
             const preview = bloquePreview
                 ? appendBlockToCourse(draftSchedules, cursoId, bloquePreview)
-                : moveBlockToSlot(draftSchedules, {
-                      cursoId,
-                      cursoHorarioId,
-                      targetDia,
-                      targetSlotMinutes,
-                  });
+                : esIntercambioParalelo
+                  ? swapOrMoveBlockToSlot(draftSchedules, {
+                        cursoId,
+                        cursoHorarioId,
+                        targetDia,
+                        targetSlotMinutes,
+                        sourceDia,
+                        sourceSlotMinutes,
+                    })
+                  : moveBlockToSlot(draftSchedules, {
+                        cursoId,
+                        cursoHorarioId,
+                        targetDia,
+                        targetSlotMinutes,
+                    });
             const { course, block } = findCourseAndBlock(preview, cursoId, cursoHorarioId);
             if (!course || !block) {
                 return { ok: true };
+            }
+
+            if (esIntercambioParalelo) {
+                return { ok: true, swap: true };
             }
 
             const horarioId = resolveHorarioIdForBloque(block, horarioSlotIndex);

@@ -58,6 +58,11 @@ export class UpdateAsignacionHorarioUseCase {
       horarioId,
       aulaId,
       excludeAsignacionHorarioId: bloqueId,
+      excludeAsignacionHorarioIds: Array.isArray(body?._exclude_asignacion_horario_ids)
+        ? body._exclude_asignacion_horario_ids
+        : Array.isArray(body?._excludeAsignacionHorarioIds)
+          ? body._excludeAsignacionHorarioIds
+          : null,
     });
     if (!valido) {
       throw new UnprocessableEntityError('Conflicto de horario', conflictos);

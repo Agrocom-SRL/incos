@@ -14,8 +14,8 @@ import { buildHorariosPlanPendientesDetalleLines } from '@application-institucio
 import ParaleloPlanSemanaCell, { DRAG_MIME } from '../atoms/ParaleloPlanSemanaCell';
 import HorariosPlanPendientesLista from './HorariosPlanPendientesLista';
 import {
-    moveBlockToSlot,
     removeBlockFromSchedules,
+    swapOrMoveBlockToSlot,
 } from '../../utils/planSemanalBlockOps';
 
 const { Text } = Typography;
@@ -77,6 +77,8 @@ const ParaleloArmadoPlanSection = ({
                 cursoHorarioId: payload.cursoHorarioId,
                 targetDia,
                 targetSlotMinutes,
+                sourceDia: payload.sourceDia,
+                sourceSlotMinutes: payload.sourceStartMinutes,
             };
 
             if (typeof validatePlacement === 'function') {
@@ -90,7 +92,7 @@ const ParaleloArmadoPlanSection = ({
                 }
             }
 
-            onSchedulesChange(moveBlockToSlot(schedules, meta));
+            onSchedulesChange(swapOrMoveBlockToSlot(schedules, meta));
         },
         [editable, notification, onSchedulesChange, schedules, validatePlacement],
     );
