@@ -31,14 +31,36 @@ const ParaleloPlanSemanaCell = ({
     editable = false,
     onBeginDragChip,
     onDeleteChip,
+    bloquesEnConflicto = null,
+    resaltarConflictos = false,
 }) => {
     if (!items.length) {
         return <div className="da-cal-semanal__cell-inner da-cal-semanal__cell-inner--empty" aria-hidden />;
     }
 
+    const conflictSet =
+        bloquesEnConflicto instanceof Set
+            ? bloquesEnConflicto
+            : bloquesEnConflicto
+              ? new Set(bloquesEnConflicto)
+              : null;
+    const celdaConChoque = resaltarConflictos && items.length > 1;
+
     return (
-        <div className="da-cal-semanal__cell-inner">
+        <div
+            className={[
+                'da-cal-semanal__cell-inner',
+                celdaConChoque ? 'horarios-conflictos-celda--choque' : '',
+            ]
+                .filter(Boolean)
+                .join(' ')}
+        >
             {items.map((ev, idx) => {
+                const enConflicto =
+                    celdaConChoque ||
+                    (conflictSet &&
+                        ev.cursoHorarioId != null &&
+                        conflictSet.has(Number(ev.cursoHorarioId)));
                 const rgb = hexToRgb(ev.cursoColorHex);
                 const hora =
                     ev.horaInicio || ev.horaFin ? `${fmtHora(ev.horaInicio)}–${fmtHora(ev.horaFin)}` : '—';
@@ -58,7 +80,13 @@ const ParaleloPlanSemanaCell = ({
                 return (
                     <div
                         key={`${ev.cursoCodigo}-${ev.cursoHorarioId ?? ev.orden}-${idx}`}
-                        className={`da-cal-semanal__chip ${editable ? 'da-cal-semanal__chip--draggable' : ''}`}
+                        className={[
+                            'da-cal-semanal__chip',
+                            editable ? 'da-cal-semanal__chip--draggable' : '',
+                            enConflicto ? 'da-cal-semanal__chip--conflicto' : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
                         style={chipStyle}
                         draggable={Boolean(editable && onBeginDragChip)}
                         onDragStart={handleDragStart}

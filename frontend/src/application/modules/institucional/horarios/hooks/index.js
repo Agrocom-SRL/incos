@@ -11,6 +11,8 @@ export * from './api/useParaleloGestionGrillaHorarioApi';
 export * from './api/usePublicarParaleloGestionApi';
 export * from './api/usePublicarTodosHorariosGestionApi';
 export * from './context/useHorariosPublicacionContext';
+export * from './context/useHorariosConflictosContext';
+export * from './state/useGestionHorariosConflictosState';
 export * from './state/useGestionHorariosPublicacionState';
 export * from './api/useBulkAsignacionHorariosApi';
 export * from './api/useValidarConflictoHorarioApi';

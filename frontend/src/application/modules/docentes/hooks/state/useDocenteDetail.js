@@ -56,18 +56,14 @@ export const useDocenteDetail = (docenteIdRaw) => {
   }, [navigate, docenteId, returnListPath]);
 
   const handleAsignacionAcademica = useCallback(() => {
-      if (!Number.isFinite(docenteId) || docenteId < 1) return;
-      navigate(`/docentes/${docenteId}/asignaciones`, {
+      navigate('/institucional/oferta', {
         state: {
           menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
-          returnListPath: `/docentes/${docenteId}`,
-          gestionReturnPath: `/docentes/${docenteId}`,
-          docenteId,
-          docenteNombre: nombreCompleto,
+          returnListPath: Number.isFinite(docenteId) && docenteId > 0 ? `/docentes/${docenteId}` : returnListPath,
         },
       });
     },
-    [navigate, docenteId, location.state?.menuSidebarKey, nombreCompleto]
+    [navigate, docenteId, location.state?.menuSidebarKey, returnListPath]
   );
 
   const refetchWithDocenteId = useCallback(async () => {

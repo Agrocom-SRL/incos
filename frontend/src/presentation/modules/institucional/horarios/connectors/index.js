@@ -9,4 +9,5 @@ export {
     ArmadoConnector,
     AulasConnector,
     PublicacionConnector,
+    ConflictosConnector,
 };

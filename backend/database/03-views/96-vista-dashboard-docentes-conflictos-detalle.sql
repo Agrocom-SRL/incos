@@ -12,7 +12,8 @@
 --   96-vista-base-dashboard-detalle-conflicto-docente-duplicado.sql
 --
 -- Uso:
---   SELECT docente_id, docente_nombre, detalle_linea
+--   SELECT docente_id, docente_nombre, detalle_linea,
+--          paralelo_gestion_id, oferta_curso_id, tipo_conflicto
 --   FROM vista_dashboard_docentes_conflictos_detalle
 --   ORDER BY docente_nombre ASC, detalle_linea ASC;
 -- ============================================
@@ -25,17 +26,26 @@ CREATE VIEW vista_dashboard_docentes_conflictos_detalle AS
 SELECT
   docente_id,
   docente_nombre COLLATE utf8mb4_unicode_ci AS docente_nombre,
-  detalle_linea COLLATE utf8mb4_unicode_ci AS detalle_linea
+  detalle_linea COLLATE utf8mb4_unicode_ci AS detalle_linea,
+  paralelo_gestion_id,
+  oferta_curso_id,
+  tipo_conflicto COLLATE utf8mb4_unicode_ci AS tipo_conflicto
 FROM vista_base_dashboard_detalle_conflicto_docente_horario
 UNION ALL
 SELECT
   docente_id,
   docente_nombre COLLATE utf8mb4_unicode_ci,
-  detalle_linea COLLATE utf8mb4_unicode_ci
+  detalle_linea COLLATE utf8mb4_unicode_ci,
+  paralelo_gestion_id,
+  oferta_curso_id,
+  tipo_conflicto COLLATE utf8mb4_unicode_ci
 FROM vista_base_dashboard_detalle_conflicto_docente_aula
 UNION ALL
 SELECT
   docente_id,
   docente_nombre COLLATE utf8mb4_unicode_ci,
-  detalle_linea COLLATE utf8mb4_unicode_ci
+  detalle_linea COLLATE utf8mb4_unicode_ci,
+  paralelo_gestion_id,
+  oferta_curso_id,
+  tipo_conflicto COLLATE utf8mb4_unicode_ci
 FROM vista_base_dashboard_detalle_conflicto_docente_duplicado;

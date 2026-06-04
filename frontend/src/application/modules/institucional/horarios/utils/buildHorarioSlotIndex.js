@@ -46,6 +46,17 @@ export function buildHorarioSlotIndexFromGrilla(grillaPayload) {
  * @param {object} bloque
  * @param {Map<string, number>} horarioIndex
  */
+/**
+ * @param {Array<{ dia: string, hora_inicio: string, hora_fin: string, horario_id: number }>} franjas
+ */
+export function buildHorarioSlotIndexFromFranjas(franjas = []) {
+  const map = new Map();
+  for (const f of franjas || []) {
+    indexFranja(map, f.dia, f.hora_inicio, f.hora_fin, f.horario_id);
+  }
+  return map;
+}
+
 export function resolveHorarioIdForBloque(bloque, horarioIndex) {
   const fromBloque = Number(bloque?.horarioId);
   if (Number.isFinite(fromBloque) && fromBloque > 0) {

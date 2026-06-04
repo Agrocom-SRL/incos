@@ -165,18 +165,12 @@ export const createDocentesTableColumns = ({ navigate, listNavState, refetch, de
               {
                 icon: <ApartmentOutlined />,
                 variant: 'default',
-                tooltip: 'Materias asignadas',
-                permiso: 'docentes.asignar',
-                accion: 'EDITAR',
-                onClick: (r) =>
-                  navigate(`/docentes/${r.id}/asignaciones`, {
-                    state: {
-                      ...listNavState,
-                      gestionReturnPath: returnListPath,
-                      docenteId: r.id,
-                      docenteNombre: nombreCompleto,
-                      asignacionFocus: 'cursos',
-                    },
+                tooltip: 'Oferta y asignación docente',
+                permiso: 'institucional.oferta',
+                accion: 'LISTAR',
+                onClick: () =>
+                  navigate('/institucional/oferta', {
+                    state: { ...listNavState, returnListPath },
                   }),
               },
             ]}

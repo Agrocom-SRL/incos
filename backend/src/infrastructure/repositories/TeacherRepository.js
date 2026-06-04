@@ -357,6 +357,126 @@ export class TeacherRepository extends BaseRepository {
   }
 
   /**
+   * Bloques y pares en choque de horario para resolución en grilla (gestión concreta).
+   * @param {number} teacherId
+   * @param {number} gestionId
+   */
+  async findGrillaConflictosByDocenteAndGestion(teacherId, gestionId) {
+    const docenteId = Number(teacherId);
+    const gestionPk = Number(gestionId);
+    if (!Number.isFinite(docenteId) || docenteId < 1 || !Number.isFinite(gestionPk) || gestionPk < 1) {
+      return { teacher: null, scheduleRows: [], paresConflicto: [] };
+    }
+
+    const teacherRows = await sequelize.query(
+      `SELECT docente_id, nombres, apellido_paterno, apellido_materno, color_hex
+       FROM vista_base_docente_ficha
+       WHERE docente_id = :docenteId
+       LIMIT 1`,
+      { replacements: { docenteId }, type: QueryTypes.SELECT },
+    );
+    const teacher = Array.isArray(teacherRows) && teacherRows.length ? teacherRows[0] : null;
+    if (!teacher) {
+      return { teacher: null, scheduleRows: [], paresConflicto: [] };
+    }
+
+    const scheduleRows = await sequelize.query(
+      `SELECT *
+       FROM vista_base_docente_curso_bloques_horario
+       WHERE docente_id = :docenteId
+         AND gestion_id = :gestionId
+       ORDER BY curso_codigo, orden_secuencia`,
+      { replacements: { docenteId, gestionId: gestionPk }, type: QueryTypes.SELECT },
+    );
+
+    const paresConflicto = await sequelize.query(
+      `
+      SELECT DISTINCT
+        ah2.id AS bloque_a_id,
+        ah3.id AS bloque_b_id,
+        h.id AS horario_id,
+        h.dia,
+        h.hora_inicio AS hora_inicio,
+        h.hora_fin AS hora_fin,
+        COALESCE(NULLIF(TRIM(m2.sigla), ''), m2.nombre, CONCAT('OC-', oc2.id)) AS sigla_a,
+        COALESCE(NULLIF(TRIM(m3.sigla), ''), m3.nombre, CONCAT('OC-', oc3.id)) AS sigla_b,
+        p2.nombre AS paralelo_a,
+        p3.nombre AS paralelo_b
+      FROM asignaciones_docentes ad2
+      INNER JOIN gestiones_planes gp2
+        ON gp2.id = ad2.gestion_plan_id
+        AND gp2.gestion_id = :gestionId
+        AND gp2.deleted_at IS NULL
+      INNER JOIN asignacion_horarios ah2
+        ON ah2.asignacion_docente_id = ad2.id
+        AND ah2.deleted_at IS NULL
+        AND ah2.activo = TRUE
+      INNER JOIN horarios h
+        ON h.id = ah2.horario_id
+        AND h.deleted_at IS NULL
+      INNER JOIN asignaciones_docentes ad3
+        ON ad3.docente_id = ad2.docente_id
+        AND ad3.id <> ad2.id
+        AND ad3.deleted_at IS NULL
+        AND ad3.activo = TRUE
+        AND ad3.vigente = TRUE
+      INNER JOIN gestiones_planes gp3
+        ON gp3.id = ad3.gestion_plan_id
+        AND gp3.gestion_id = :gestionId
+        AND gp3.deleted_at IS NULL
+      INNER JOIN asignacion_horarios ah3
+        ON ah3.asignacion_docente_id = ad3.id
+        AND ah3.deleted_at IS NULL
+        AND ah3.activo = TRUE
+        AND ah3.horario_id = ah2.horario_id
+      INNER JOIN oferta_cursos oc2 ON oc2.id = ad2.oferta_curso_id AND oc2.deleted_at IS NULL
+      INNER JOIN oferta_cursos oc3 ON oc3.id = ad3.oferta_curso_id AND oc3.deleted_at IS NULL
+      LEFT JOIN asignaturas_plan ap2 ON ap2.id = oc2.asignatura_plan_id AND ap2.deleted_at IS NULL
+      LEFT JOIN asignaturas_plan ap3 ON ap3.id = oc3.asignatura_plan_id AND ap3.deleted_at IS NULL
+      LEFT JOIN materias m2 ON m2.id = ap2.materia_id AND m2.deleted_at IS NULL
+      LEFT JOIN materias m3 ON m3.id = ap3.materia_id AND m3.deleted_at IS NULL
+      LEFT JOIN paralelos_gestion pg2 ON pg2.id = oc2.paralelo_gestion_id AND pg2.deleted_at IS NULL
+      LEFT JOIN paralelos_gestion pg3 ON pg3.id = oc3.paralelo_gestion_id AND pg3.deleted_at IS NULL
+      LEFT JOIN paralelos p2 ON p2.id = pg2.paralelo_id AND p2.deleted_at IS NULL
+      LEFT JOIN paralelos p3 ON p3.id = pg3.paralelo_id AND p3.deleted_at IS NULL
+      WHERE ad2.docente_id = :docenteId
+        AND ad2.deleted_at IS NULL
+        AND ad2.activo = TRUE
+        AND ad2.vigente = TRUE
+      ORDER BY h.dia, h.hora_inicio, sigla_a, sigla_b
+      `,
+      { replacements: { docenteId, gestionId: gestionPk }, type: QueryTypes.SELECT },
+    );
+
+    const mappedPairs = (paresConflicto || []).map((row) => {
+      const siglaA = row.sigla_a ?? '—';
+      const siglaB = row.sigla_b ?? '—';
+      const dia = row.dia ? String(row.dia).toUpperCase() : '';
+      const hi = row.hora_inicio != null ? String(row.hora_inicio).slice(0, 5) : '';
+      const hf = row.hora_fin != null ? String(row.hora_fin).slice(0, 5) : '';
+      return {
+        bloqueAId: row.bloque_a_id != null ? Number(row.bloque_a_id) : null,
+        bloqueBId: row.bloque_b_id != null ? Number(row.bloque_b_id) : null,
+        horarioId: row.horario_id != null ? Number(row.horario_id) : null,
+        dia,
+        horaInicio: hi,
+        horaFin: hf,
+        siglaA,
+        siglaB,
+        paraleloA: row.paralelo_a ?? null,
+        paraleloB: row.paralelo_b ?? null,
+        descripcion: `${siglaA} (${row.paralelo_a || '—'}) ↔ ${siglaB} (${row.paralelo_b || '—'}) · ${dia} ${hi}-${hf}`,
+      };
+    });
+
+    return {
+      teacher,
+      scheduleRows: Array.isArray(scheduleRows) ? scheduleRows : [],
+      paresConflicto: mappedPairs,
+    };
+  }
+
+  /**
    * Métricas de carga y conflictos para un conjunto de docentes.
    * - carga: materias/asignaciones/paralelos
    * - conflictos:

@@ -125,6 +125,7 @@ router.use('/oferta-cursos', container.resolve(ACADEMICO_TOKENS.ofertaCursosRout
 router.use('/calificaciones', container.resolve(ACADEMICO_TOKENS.calificacionesRouter));
 router.use('/asignacion-horarios', container.resolve(ACADEMICO_TOKENS.asignacionHorariosRouter));
 router.use('/conflictos', container.resolve(ACADEMICO_TOKENS.conflictosRouter));
+router.use('/horarios/docentes', container.resolve(ACADEMICO_TOKENS.horariosDocenteRouter));
 
 // ============================================
 // 4. MÓDULO: GEOGRÁFICOS

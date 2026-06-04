@@ -146,7 +146,7 @@ const DocentesDetail = () => {
             <DocenteAssignmentsSection
               assignments={assignments}
               puedeAsignarMaterias={puedeAsignarMaterias}
-              onAsignarMaterias={() => handleAsignacionAcademica()}
+              onAsignarMaterias={handleAsignacionAcademica}
               showManageButtonInCard={puedeGestionarAsignaciones}
             />
           </div>

@@ -231,6 +231,15 @@ export const OFERTA_CURSOS_ENDPOINTS = {
 
 export const AULAS_CATALOGO_ENDPOINT = `${API_BASE}/aulas/catalogo`;
 
+export const HORARIOS_DOCENTE_ENDPOINTS = {
+  GRILLA_CONFLICTOS: (docenteId, gestionId) => {
+    const q = new URLSearchParams();
+    if (gestionId != null) q.set('gestion_id', String(gestionId));
+    const qs = q.toString();
+    return `${API_BASE}/horarios/docentes/${docenteId}/grilla-conflictos${qs ? `?${qs}` : ''}`;
+  },
+};
+
 export const ASIGNACION_HORARIOS_ENDPOINTS = {
   BASE: `${API_BASE}/asignacion-horarios`,
   BY_ID: (id) => `${API_BASE}/asignacion-horarios/${id}`,

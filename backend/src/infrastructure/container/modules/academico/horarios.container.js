@@ -28,6 +28,9 @@ import {
 } from '../../../../presentation/controllers/horarios/horarios.controllers.js';
 import { buildAsignacionHorariosRouter } from '../../../../presentation/routes/asignacion-horarios.routes.js';
 import { buildConflictosRouter } from '../../../../presentation/routes/conflictos.routes.js';
+import { buildHorariosDocenteRouter } from '../../../../presentation/routes/horarios-docente.routes.js';
+import { GetDocenteGrillaConflictosUseCase } from '../../../../application/use-cases/horarios/GetDocenteGrillaConflictosUseCase.js';
+import { GetDocenteGrillaConflictosController } from '../../../../presentation/controllers/horarios/get-docente-grilla-conflictos.controller.js';
 
 function horarioConflictosServiceFactory(c) {
   return new HorarioConflictosService({
@@ -307,6 +310,37 @@ export function registerHorariosResource(container) {
         ),
       },
       middlewares: { validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest) },
+    })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getDocenteGrillaConflictosUseCase,
+    (c) =>
+      new GetDocenteGrillaConflictosUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+        logger: log(c),
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getDocenteGrillaConflictosController,
+    (c) =>
+      new GetDocenteGrillaConflictosController({
+        useCase: c.resolve(ACADEMICO_TOKENS.getDocenteGrillaConflictosUseCase),
+        responseFormatter: rf(c),
+      })
+  );
+
+  registerComponent(container, ACADEMICO_TOKENS.horariosDocenteRouter, (c) =>
+    buildHorariosDocenteRouter({
+      controllers: {
+        getDocenteGrillaConflictosController: c.resolve(
+          ACADEMICO_TOKENS.getDocenteGrillaConflictosController
+        ),
+      },
     })
   );
 

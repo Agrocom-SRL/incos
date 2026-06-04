@@ -306,7 +306,13 @@ export class ParallelRepository extends BaseRepository {
   async obtenerDocentesConflictosDetalleDashboard() {
     // Vista: 92-vista-dashboard-docentes-conflictos-detalle.sql
     return sequelize.query(
-      `SELECT docente_id, docente_nombre, detalle_linea
+      `SELECT
+         docente_id,
+         docente_nombre,
+         detalle_linea,
+         paralelo_gestion_id,
+         oferta_curso_id,
+         tipo_conflicto
        FROM vista_dashboard_docentes_conflictos_detalle
        ORDER BY docente_nombre ASC, detalle_linea ASC`,
       { type: QueryTypes.SELECT }

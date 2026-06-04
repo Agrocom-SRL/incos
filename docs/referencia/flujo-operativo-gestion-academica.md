@@ -144,8 +144,8 @@ Leyenda estado UI: ✅ implementado · 🚧 `UnderConstruction` (no bloquea el f
 | 2.2 | DOC | `/docentes/registrar` | Alta docente | CI, contacto, `max_horas_semana` / `max_horas_mes`, color | `docentes` |
 | 2.3 | DOC → detalle | `/docentes/:id` | Asignar **color** único | Swatch en ficha; se usa en grilla Institucional | `docentes.color_hex` |
 | 2.4 | DOC → detalle | `/docentes/:id` | Tab **Materias asignadas** | Lista vínculos sin calendario semanal | `asignaciones_docentes` |
-| 2.5 | DOC → Asignar materia | `/docentes/asignar` | Wizard: plan → periodo → paralelo → **oferta** | Confirma horas según plan; **sin preview de bloques** | `asignaciones_docentes` |
-| 2.6 | DOC → Materias asignadas | `/docentes/:id/asignaciones` | Crear / editar / baja de vínculos | Misma data que 2.4 con acciones CRUD | `asignaciones_docentes` |
+| 2.5 | **INST** → Oferta académica | `/institucional/oferta` | Asignar docente por **oferta** (modal en ficha del paralelo) | Vínculo vigente por `oferta_curso_id` | `asignaciones_docentes` |
+| 2.6 | **INST** → Resolver conflictos | `/institucional/horarios/conflictos` | Grilla semanal del docente; mover bloques en choque | Reubicar `asignacion_horarios`; no listado de tarjetas | `asignacion_horarios` |
 
 **Criterio de cierre Fase 2:** al menos un docente activo con color, límites de carga definidos y **una asignación docente por materia** que se dictará en la prueba (sin exigir bloques horarios aún).
 
@@ -184,7 +184,7 @@ Leyenda estado UI: ✅ implementado · 🚧 `UnderConstruction` (no bloquea el f
 | 4.5 | Armado grilla | `/institucional/horarios/armado?pg=:paraleloGestionId` | Colocar bloques semanales | Cubrir `carga_horaria` de cada asignación | `asignacion_horarios` |
 | 4.6 | Armado (tabs) | mismo | Tab *Cursos del paralelo* | Materias pendientes de bloques | cobertura vista 123 |
 | 4.7 | Horarios en aulas | `/institucional/horarios/aulas` | Vista ocupación aulas | Sin solapamiento mismo aula+slot | vista conflictos aula |
-| 4.8 | Conflictos | `/institucional/horarios/conflictos/:gestionId` | Revisar docente/aula | Lista vacía o resuelta | motor conflictos |
+| 4.8 | Conflictos | `/institucional/horarios/conflictos?docenteId=` | Grilla docente + pares en choque | Bloques reubicados o lista de pares vacía | motor conflictos + bulk bloques |
 | 4.9 | Publicación | `/institucional/horarios/publicacion` | Publicar paralelo(s) | Estado → **PUBLICADO** | `paralelos_gestion.estado` |
 
 **Criterio de cierre Fase 4:** paralelo-gestión en **PUBLICADO** con bloques que cubren la carga de todas las asignaciones vigentes.

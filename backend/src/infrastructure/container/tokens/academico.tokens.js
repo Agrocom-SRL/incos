@@ -110,6 +110,7 @@ export const ACADEMICO_TOKENS = {
     publicarParaleloGestionUseCase: 'academico.publicarParaleloGestionUseCase',
     publicarTodosParalelosGestionUseCase: 'academico.publicarTodosParalelosGestionUseCase',
     cambiarTurnoParaleloGestionConBloquesUseCase: 'academico.cambiarTurnoParaleloGestionConBloquesUseCase',
+    getDocenteGrillaConflictosUseCase: 'academico.getDocenteGrillaConflictosUseCase',
 
     marcarGestionVigenteController: 'academico.marcarGestionVigenteController',
     listPlanesHabilitadosByGestionController: 'academico.listPlanesHabilitadosByGestionController',
@@ -141,6 +142,7 @@ export const ACADEMICO_TOKENS = {
     publicarTodosParalelosGestionController: 'academico.publicarTodosParalelosGestionController',
     cambiarTurnoParaleloGestionConBloquesController:
         'academico.cambiarTurnoParaleloGestionConBloquesController',
+    getDocenteGrillaConflictosController: 'academico.getDocenteGrillaConflictosController',
 
     // ROUTERS
     paralelosRouter: 'academico.paralelosRouter',
@@ -151,4 +153,5 @@ export const ACADEMICO_TOKENS = {
     calificacionesRouter: 'academico.calificacionesRouter',
     asignacionHorariosRouter: 'academico.asignacionHorariosRouter',
     conflictosRouter: 'academico.conflictosRouter',
+    horariosDocenteRouter: 'academico.horariosDocenteRouter',
 };

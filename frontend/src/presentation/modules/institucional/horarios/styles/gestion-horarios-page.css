@@ -810,3 +810,16 @@
     z-index: 3;
     background-image: linear-gradient(rgba(25, 107, 69, 0.06), rgba(25, 107, 69, 0.06));
 }
+
+/* === Resolución de conflictos docente (grilla agregada) === */
+.horarios-conflictos-celda--choque,
+.da-cal-semanal__cell-inner.horarios-conflictos-celda--choque {
+    outline: 2px solid var(--ant-color-error, #ff4d4f);
+    outline-offset: -2px;
+    background-color: var(--ant-color-error-bg, #fff2f0);
+}
+
+.da-cal-semanal__chip--conflicto {
+    outline: 2px solid var(--ant-color-error, #ff4d4f);
+    box-shadow: 0 0 0 1px var(--ant-color-error-border, #ffccc7);
+}

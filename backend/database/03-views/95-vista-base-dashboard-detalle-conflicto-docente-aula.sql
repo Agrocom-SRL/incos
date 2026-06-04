@@ -15,6 +15,9 @@ SELECT DISTINCT
     COALESCE(d.apellido_paterno, ''), ' ',
     COALESCE(d.apellido_materno, '')
   )) AS docente_nombre,
+  pg.id AS paralelo_gestion_id,
+  oc.id AS oferta_curso_id,
+  'aula' AS tipo_conflicto,
   CONCAT(
     COALESCE(NULLIF(TRIM(m.sigla), ''), m.nombre, CONCAT('OC-', oc.id), '—'),
     ' · ',
