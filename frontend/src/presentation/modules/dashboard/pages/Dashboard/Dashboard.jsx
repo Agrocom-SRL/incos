@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { Flex, Spin, Alert } from 'antd';
+import { Spinner } from '@atoms';
 import { useAuth } from '@application-auth';
 import {
   useDashboardContext,
@@ -15,7 +16,6 @@ import {
   PERMISO_ESTUDIANTES_DETALLE,
 } from '@application-dashboard';
 import { MainContent, InfoSidebar } from '@templates';
-import { allSpacing } from '@theme/tokens';
 import { PERSONAS_VISIBLE } from '../../constants';
 import { DashboardPageShell } from '../../components/organisms';
 import {
@@ -86,7 +86,7 @@ const Dashboard = () => {
     return (
       <DashboardPageShell>
         <Flex justify="center" align="center" style={{ minHeight: '400px', width: '100%' }}>
-          <Spin size="large" tip="Cargando resumen…" />
+          <Spinner text="Cargando resumen…" />
         </Flex>
       </DashboardPageShell>
     );
@@ -97,14 +97,13 @@ const Dashboard = () => {
       <DashboardPageShell>
         <MainContent>
           <Spin spinning={loading && !sinDatos} tip="Actualizando resumen…">
-            <div>
+            <Flex vertical gap="large">
           {dashboardError ? (
             <Alert
               type="warning"
               showIcon
               title="No se pudo cargar el resumen en vivo"
               description={dashboardError}
-              style={{ marginBottom: allSpacing.marginLG }}
             />
           ) : null}
 
@@ -152,13 +151,13 @@ const Dashboard = () => {
               )
             }
           />
-            </div>
+            </Flex>
           </Spin>
         </MainContent>
 
         <InfoSidebar>
           <Spin spinning={loading && !sinDatos} tip="Actualizando…">
-            <div>
+            <Flex vertical gap="large">
           <DashboardEstudiantesResumenCard
             todayCount={stats.todayOrders}
             monthCount={stats.monthOrders}
@@ -170,7 +169,7 @@ const Dashboard = () => {
             }
             onRowNavigate={(path) => navigateToPath(path)}
           />
-            </div>
+            </Flex>
           </Spin>
         </InfoSidebar>
       </DashboardPageShell>

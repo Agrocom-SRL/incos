@@ -1,22 +1,20 @@
-/* Login.css - Estilos para la página de login */
+/* Estilos login y tarjeta pública compartida (404 invitado). */
 
 .login-card {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   border: none !important;
-  background: #ffffff;
+  background: var(--ant-color-bg-container, #ffffff);
   backdrop-filter: blur(10px);
   overflow: hidden;
   padding: 32px 24px;
 }
 
-/* Eliminar bordes de Ant Design Card */
 .login-card .ant-card-body {
   padding: 0 !important;
   border: none !important;
 }
 
-/* Header del login */
 .login-header {
   text-align: center;
   padding: 8px 0 20px 0;
@@ -44,7 +42,7 @@
 }
 
 .login-institute-name {
-  color: #196b45;
+  color: var(--color-primary, #196b45);
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.2px;
@@ -75,10 +73,10 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  animation: shimmer 3s infinite;
+  animation: login-tagline-shimmer 3s infinite;
 }
 
-@keyframes shimmer {
+@keyframes login-tagline-shimmer {
   0% {
     left: -100%;
   }
@@ -87,34 +85,42 @@
   }
 }
 
-/* Formulario */
 .login-form {
   padding: 0 4px;
 }
 
 .login-label {
-  color: #333333;
+  color: var(--ant-color-text, #333333);
   font-weight: 500;
   font-size: 14px;
 }
 
 .login-input {
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .login-input:hover {
-  border-color: #196b45;
+  border-color: var(--color-primary, #196b45);
 }
 
 .login-input:focus,
 .login-input-focused {
-  border-color: #196b45;
+  border-color: var(--color-primary, #196b45);
   box-shadow: 0 0 0 2px rgba(25, 107, 69, 0.1);
 }
 
 .login-input-icon {
-  color: #666666;
+  color: var(--ant-color-text-secondary, #666666);
+}
+
+.login-remember {
+  margin-bottom: 8px;
+}
+
+.login-remember .ant-checkbox + span {
+  color: var(--ant-color-text-secondary, #666666);
+  font-size: 13px;
 }
 
 .login-button {
@@ -125,7 +131,7 @@
   background: linear-gradient(135deg, #196b45 0%, #134d32 100%);
   border: none;
   box-shadow: 0 4px 12px rgba(25, 107, 69, 0.3);
-  transition: all 0.3s ease;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .login-button:hover {
@@ -139,20 +145,18 @@
   box-shadow: 0 2px 8px rgba(25, 107, 69, 0.3);
 }
 
-/* Footer */
 .login-footer {
   text-align: center;
   padding-top: 8px;
 }
 
 .login-footer-text {
-  color: #999999;
+  color: var(--ant-color-text-tertiary, #999999);
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.2px;
 }
 
-/* Responsive */
 @media (max-width: 480px) {
   .login-card {
     margin: 16px;

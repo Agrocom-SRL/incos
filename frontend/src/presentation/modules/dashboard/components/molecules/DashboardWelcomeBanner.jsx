@@ -21,8 +21,8 @@ const DashboardWelcomeBanner = ({
                 boxShadow: shadows.shadowElevation2,
                 border: `1px solid ${allColors.colorBorder}`,
                 borderLeft: `4px solid ${allColors.colorPrimary}`,
-                padding: `${componentConfig.Card.paddingLG}px`,
             }}
+            styles={{ body: { padding: `${componentConfig.Card.paddingLG}px` } }}
         >
             <Flex vertical gap={allSpacing.marginLG}>
                 <Title

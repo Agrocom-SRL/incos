@@ -14,10 +14,9 @@ const DashboardEstudiantesResumenCard = ({ todayCount, monthCount }) => {
                 borderRadius: `${componentConfig.Card.borderRadiusLG}px`,
                 boxShadow: shadows.shadowPrimary,
                 border: 'none',
-                padding: `${componentConfig.Card.paddingLG}px`,
                 minHeight: 160,
             }}
-            styles={{ body: { padding: 0 } }}
+            styles={{ body: { padding: `${componentConfig.Card.paddingLG}px` } }}
         >
             <Flex vertical gap={allSpacing.marginMD}>
                 <Text
