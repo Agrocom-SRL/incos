@@ -12,13 +12,18 @@ import {
     horasMateriaParaAsignacion,
     mapCargaDocentesIndex,
     pickAsignacionField,
+    proyectarCargaSemanaDocente,
 } from '@application-institucional/horarios/mappers/asignacionDocenteMatrizMapper';
 import '@institucional/horarios/styles/asignacion-docente.css';
 
 const { Text } = Typography;
 
-function extractApiErrorFlags(raw) {
-    const err = raw?.response?.data?.error;
+/** Lee flags de negocio del error API (422 sobrecarga, color obligatorio, etc.). */
+function extractApiErrorFlags(result) {
+    const err =
+        result?.errorDetails ??
+        result?.raw?.response?.data?.error ??
+        (result?.error && typeof result.error === 'object' ? result.error : null);
     if (!err || typeof err !== 'object') return {};
     return {
         requiereColor: Boolean(err.requiere_color),
@@ -138,12 +143,35 @@ const DocenteAsignacionCursoModal = ({
 
     const selectedDocente = useMemo(() => {
         if (selectedDocenteId == null) return null;
-        return (
-            docentes.find((d) => Number(d.id) === Number(selectedDocenteId)) ||
-            docenteCandidates.find((d) => Number(d.id) === Number(selectedDocenteId)) ||
-            null
+        const fromCandidates = docenteCandidates.find(
+            (d) => Number(d.id) === Number(selectedDocenteId)
         );
-    }, [docentes, docenteCandidates, selectedDocenteId]);
+        if (fromCandidates) return fromCandidates;
+        const base = docentes.find((d) => Number(d.id) === Number(selectedDocenteId));
+        if (!base) return null;
+        const id = Number(base.id);
+        const chocaBloques = docentesConChoque.has(id);
+        const hasConflicts = Boolean(base.teachingStats?.conflictos?.hasConflictos);
+        const carga = proyectarCargaSemanaDocente({
+            docenteId: id,
+            cargaPorDocente,
+            maxHorasSemana: base.maxHorasSemana,
+            horasMateria,
+            docenteActualCursoId,
+        });
+        let semaforo = 'verde';
+        if (chocaBloques) semaforo = 'rojo';
+        else if (carga.sobrecarga || hasConflicts) semaforo = 'amarillo';
+        return { ...base, semaforo, chocaBloques, cargaProyectada: carga, hasConflicts };
+    }, [
+        docentes,
+        docenteCandidates,
+        selectedDocenteId,
+        docentesConChoque,
+        cargaPorDocente,
+        horasMateria,
+        docenteActualCursoId,
+    ]);
 
     useEffect(() => {
         if (!open || !gestionIdEfectiva) {
@@ -258,7 +286,7 @@ const DocenteAsignacionCursoModal = ({
             });
 
             if (!result?.success) {
-                const flags = extractApiErrorFlags(result?.raw);
+                const flags = extractApiErrorFlags(result);
                 if (flags.sobrecarga) {
                     Modal.confirm({
                         title: 'Sobrecarga docente',

@@ -41,7 +41,10 @@ function appendValidationDetailsToMessage(baseMessage, errorData) {
     if (d == null) return null;
     if (typeof d === 'string') return `• ${d}`;
     if (typeof d !== 'object') return `• ${String(d)}`;
-    const { cursoId, dia, horaInicio, horaFin, reason, field, invalid } = d;
+    const { cursoId, dia, horaInicio, horaFin, reason, field, invalid, message } = d;
+    if (field != null && message != null) {
+      return `• ${field}: ${message}`;
+    }
     if (field != null && invalid != null) {
       return `• ${field}: ${Array.isArray(invalid) ? invalid.join(', ') : String(invalid)}`;
     }

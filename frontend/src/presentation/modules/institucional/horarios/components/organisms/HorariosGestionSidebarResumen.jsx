@@ -196,7 +196,7 @@ const HorariosGestionSidebarResumen = ({
                     paraleloId: g.paraleloId,
                     paraleloGestionId: pgId,
                     cursoId: it.cursoId,
-                    materiaLabel: it.materiaSigla || it.materiaNombre || it.cursoCodigo || 'Curso',
+                    materiaLabel: it.materiaNombre || it.cursoCodigo || 'Curso',
                     carreraColor: hex || allColors.colorPrimary,
                 });
             });
@@ -533,21 +533,26 @@ const HorariosGestionSidebarResumen = ({
                                                 {row.carreraNombre}
                                             </Text>
                                             <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                                                {row.periodoNombre} · {row.paraleloNombre}
-                                                {row.paraleloTurno ? ` · ${row.paraleloTurno}` : ''}
+                                                Periodo: {row.periodoNombre}
+                                            </Text><Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                                                Paralelo: {row.paraleloNombre} - {row.paraleloTurno}
                                             </Text>
-                                            <Text strong>{row.materiaLabel}</Text>
+                                            <Text type="primary" strong style={{ fontSize: typography.fontSizeSM }}>
+                                                Materia: {row.materiaLabel }
+                                            </Text>
                                         </Flex>
                                         <ActionButton
                                             permiso="institucional.horario.armado"
                                             accion="EDITAR"
-                                            variant="primary"
+                                            variant="success"
                                             icon={<TeamOutlined />}
                                             style={{ flexShrink: 0 }}
                                             onClick={() => {
                                                 const pg = row.paraleloGestionId;
                                                 if (!pg) return;
-                                                const target = buildOfertaParaleloDetalleFromHorarios(pg);
+                                                const target = buildOfertaParaleloDetalleFromHorarios(pg, {
+                                                    ofertaCursoId: row.cursoId,
+                                                });
                                                 navigate(
                                                     target.pathname,
                                                     target.state ? { state: target.state } : undefined,
@@ -556,7 +561,7 @@ const HorariosGestionSidebarResumen = ({
                                             }}
                                             disabled={!row.paraleloGestionId}
                                         >
-                                            Asignar en oferta
+                                            Asignar materia
                                         </ActionButton>
                                     </Flex>
                                 ))}

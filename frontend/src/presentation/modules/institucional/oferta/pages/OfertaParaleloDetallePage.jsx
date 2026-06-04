@@ -122,15 +122,6 @@ const OfertaParaleloDetallePage = () => {
                 />
               ) : null}
 
-              {s.detalle?.estado === 'BORRADOR' ? (
-                <Alert
-                  type="info"
-                  showIcon
-                  title="Siguiente paso: docentes y horarios"
-                  description="Asigne docente a cada materia desde la tabla (modal). Ofertar el paralelo solo exige aula y oferta completa; los horarios se arman después en Gestión de horarios."
-                />
-              ) : null}
-
               <Card className="oferta-paralelo-detalle-workspace" {...sectionCardProps}>
                 <Flex vertical gap={allSpacing.marginLG}>
 
