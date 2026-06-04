@@ -31,6 +31,7 @@ const InscripcionesList = () => {
     handleExportLista,
     tableColumns,
     breadcrumbItems,
+    tablePagination,
   } = useMatriculaListPage();
 
   return (
@@ -127,12 +128,7 @@ const InscripcionesList = () => {
         columns={tableColumns}
         rowKey={(record) => record.id || record.enrollment?.id || Math.random()}
         tableClassName="data-table--inscripciones"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Total: ${total} inscripciones`,
-          pageSizeOptions: ['10', '20', '50', '100'],
-        }}
+        pagination={tablePagination}
         defaultSort={{
           field: 'fechaInscripcion',
           order: 'descend',

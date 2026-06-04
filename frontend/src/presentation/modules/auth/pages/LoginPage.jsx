@@ -14,20 +14,10 @@ import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
 import { AuthLayout } from '@templates';
 import { Logo } from '@atoms';
 import { useAuth } from '@application-auth';
-import { buildV1FetchUrl } from '@/infrastructure/http/apiClient.js';
-import { AUTH_ENDPOINTS } from '@api/endpoints.js';
+import { authenticateCredentials } from '@application/modules/auth/utils/authenticateCredentials.js';
 import './Login.css';
 
 const { Text } = Typography;
-
-function formatApiErrorMessage(json, status) {
-  const err = json?.error;
-  if (status === 422 && err?.details?.length) {
-    return err.details.map((d) => d.message || d.msg || String(d)).join('. ');
-  }
-  if (typeof err === 'string') return err;
-  return err?.message || 'No se pudo iniciar sesión';
-}
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -41,65 +31,37 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(buildV1FetchUrl(AUTH_ENDPOINTS.LOGIN), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      const json = await res.json().catch(() => ({}));
+      const { token, usuario, permisos } = await authenticateCredentials({ username, password });
+      login(token, usuario, permisos);
+      navigate('/dashboard', { replace: true });
+    } catch (e) {
+      const status = e?.status;
+      const payload = e?.payload;
 
-      if (res.ok) {
-        const token = json.data?.token;
-        const usuario = json.data?.usuario;
-        if (!token || !usuario) {
-          setError('Respuesta del servidor incompleta.');
-          return;
-        }
-
-        localStorage.setItem('incos_token', token);
-
-        const meRes = await fetch(buildV1FetchUrl(AUTH_ENDPOINTS.ME), {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const meJson = await meRes.json().catch(() => ({}));
-
-        if (!meRes.ok) {
-          localStorage.removeItem('incos_token');
-          localStorage.removeItem('incos_usuario');
-          setError(formatApiErrorMessage(meJson, meRes.status));
-          return;
-        }
-
-        const permisos = meJson.data?.permisos ?? [];
-        login(token, usuario, permisos);
-        navigate('/dashboard', { replace: true });
-        return;
-      }
-
-      if (res.status === 401) {
+      if (status === 401) {
         setError('Usuario o contraseña incorrectos');
         return;
       }
 
-      if (res.status === 403) {
+      if (status === 403) {
         const msg =
-          typeof json.error === 'string'
-            ? json.error
-            : json.error?.message || 'no disponible';
+          typeof payload?.error === 'string'
+            ? payload.error
+            : payload?.error?.message || e?.message || 'no disponible';
         setError(msg.startsWith('Cuenta ') ? msg : `Cuenta ${msg}`);
         return;
       }
 
-      if (res.status === 422) {
-        setError(formatApiErrorMessage(json, 422));
+      if (status === 422) {
+        setError(e.message);
         return;
       }
 
-      setError(formatApiErrorMessage(json, res.status));
-    } catch (e) {
+      if (status) {
+        setError(e.message);
+        return;
+      }
+
       console.error(e);
       setError('Error de red. Intente nuevamente.');
     } finally {

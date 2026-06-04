@@ -26,6 +26,7 @@ export class ObtenerTodosDocentesUseCase {
       return {
         success: true,
         data: result.data || [],
+        pagination: result.pagination ?? null,
       };
     } catch (error) {
       return {

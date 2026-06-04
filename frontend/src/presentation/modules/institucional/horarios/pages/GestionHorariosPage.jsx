@@ -49,6 +49,7 @@ const GestionHorariosPage = () => {
         alertLineas,
         pendientesSidebar,
         loading,
+        sidebarLoading,
         error,
     } = useHorariosContext();
 
@@ -153,12 +154,16 @@ const GestionHorariosPage = () => {
                 <InfoSidebar>
                     <Flex vertical gap={allSpacing.marginMD} style={{ width: '100%', minWidth: 0 }}>
                         <HorariosKpiStrip kpis={kpis} variant="total" />
-                        <HorariosGestionSidebarResumen
-                            filteredParallels={filteredParallels}
-                            bloquesSinAulaPorParalelo={pendientesSidebar?.bloquesSinAulaPorParalelo}
-                            cursosSinDocentePorParalelo={pendientesSidebar?.cursosSinDocentePorParalelo}
-                            docentesConConflictosOperativos={pendientesSidebar?.docentesConConflictosOperativos}
-                        />
+                        <Spin spinning={sidebarLoading} tip="Cargando pendientes…">
+                            <HorariosGestionSidebarResumen
+                                filteredParallels={filteredParallels}
+                                bloquesSinAulaPorParalelo={pendientesSidebar?.bloquesSinAulaPorParalelo}
+                                cursosSinDocentePorParalelo={pendientesSidebar?.cursosSinDocentePorParalelo}
+                                docentesConConflictosOperativos={
+                                    pendientesSidebar?.docentesConConflictosOperativos
+                                }
+                            />
+                        </Spin>
                     </Flex>
                 </InfoSidebar>
             </DashboardPageShell>

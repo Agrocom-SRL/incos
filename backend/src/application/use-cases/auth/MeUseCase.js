@@ -1,3 +1,5 @@
+import { mapPermisosEfectivos } from './mapPermisosEfectivos.js';
+
 /**
  * Caso de uso: perfil actual + permisos efectivos (vista).
  */
@@ -16,21 +18,7 @@ export class MeUseCase {
    */
   async execute(usuarioId, sesionData) {
     const filas = await this.authRepository.findPermisosEfectivos(usuarioId);
-
-    const mapa = {};
-    for (const row of filas) {
-      const codigo = row.permiso_codigo;
-      const accion = row.accion;
-      if (!mapa[codigo]) {
-        mapa[codigo] = [];
-      }
-      mapa[codigo].push(accion);
-    }
-
-    const permisos = Object.entries(mapa).map(([codigo, acciones]) => ({
-      codigo,
-      acciones,
-    }));
+    const permisos = mapPermisosEfectivos(filas);
 
     return {
       usuario: {

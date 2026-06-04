@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App } from 'antd';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
@@ -14,18 +14,20 @@ export function useOfertaParaleloDetalleState() {
   const navigate = useNavigate();
   const location = useLocation();
   const {
-    loading: apiLoading,
-    error: apiError,
-    fetchParaleloGestionDetalle,
-    fetchOfertaCursos,
+    loading: mutationLoading,
+    error: mutationError,
+    fetchParaleloGestionDetalleSilent,
+    fetchOfertaCursosSilent,
     updateParaleloGestionEstado,
     updateParaleloGestion,
     validarOferta,
     fetchCoberturaDocente,
-    fetchAulasCatalogo,
-    fetchParalelosGestion,
+    fetchAulasCatalogoSilent,
+    fetchParalelosGestionSilent,
   } = useOfertaAcademicaApi();
 
+  const [pageLoading, setPageLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [detalle, setDetalle] = useState(null);
   const [ofertaCursos, setOfertaCursos] = useState([]);
   const [validacion, setValidacion] = useState(null);
@@ -37,38 +39,57 @@ export function useOfertaParaleloDetalleState() {
   const [guardandoAula, setGuardandoAula] = useState(false);
   const [docenteModalOpen, setDocenteModalOpen] = useState(false);
   const [docenteModalCurso, setDocenteModalCurso] = useState(null);
+  const docenteModalAutoOpenDone = useRef(false);
+
+  const pendingOfertaCursoId = useMemo(() => {
+    const id = location.state?.ofertaCursoId;
+    const n = Number(id);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [location.state?.ofertaCursoId]);
 
   const load = useCallback(async () => {
     if (!Number.isFinite(paraleloGestionId) || paraleloGestionId < 1) return;
-    const [det, oferta, val, cob] = await Promise.all([
-      fetchParaleloGestionDetalle(paraleloGestionId),
-      fetchOfertaCursos(paraleloGestionId),
-      validarOferta(paraleloGestionId),
-      fetchCoberturaDocente(paraleloGestionId),
-    ]);
-    if (det.success) {
-      const pg = det.data?.paraleloGestion ?? det.data;
-      setDetalle(pg);
-      if (pg?.gestionPlanId) {
-        const par = await fetchParalelosGestion(pg.gestionPlanId);
-        if (par.success) {
-          setParalelosEnPlan(par.data?.paralelosGestion ?? []);
+    setPageLoading(true);
+    setLoadError(null);
+    try {
+      const [det, oferta, val, cob] = await Promise.all([
+        fetchParaleloGestionDetalleSilent(paraleloGestionId),
+        fetchOfertaCursosSilent(paraleloGestionId),
+        validarOferta(paraleloGestionId),
+        fetchCoberturaDocente(paraleloGestionId),
+      ]);
+
+      const errores = [det, oferta, val, cob]
+        .filter((r) => r && !r.success && r.error)
+        .map((r) => String(r.error));
+      if (errores.length) setLoadError(errores[0]);
+
+      if (det.success) {
+        const pg = det.data?.paraleloGestion ?? det.data;
+        setDetalle(pg);
+        if (pg?.gestionPlanId) {
+          const par = await fetchParalelosGestionSilent(pg.gestionPlanId);
+          if (par.success) {
+            setParalelosEnPlan(par.data?.paralelosGestion ?? []);
+          }
+        } else {
+          setParalelosEnPlan([]);
         }
-      } else {
-        setParalelosEnPlan([]);
       }
-    }
-    if (oferta.success) setOfertaCursos(oferta.data?.ofertaCursos ?? []);
-    if (val.success) setValidacion(val.data?.validacion ?? val.data);
-    if (cob.success) {
-      setCoberturaDocente(normalizeCoberturaDocentePayload(cob.data));
+      if (oferta.success) setOfertaCursos(oferta.data?.ofertaCursos ?? []);
+      if (val.success) setValidacion(val.data?.validacion ?? val.data);
+      if (cob.success) {
+        setCoberturaDocente(normalizeCoberturaDocentePayload(cob.data));
+      }
+    } finally {
+      setPageLoading(false);
     }
   }, [
-    fetchParaleloGestionDetalle,
-    fetchOfertaCursos,
+    fetchParaleloGestionDetalleSilent,
+    fetchOfertaCursosSilent,
     validarOferta,
     fetchCoberturaDocente,
-    fetchParalelosGestion,
+    fetchParalelosGestionSilent,
     paraleloGestionId,
   ]);
 
@@ -77,18 +98,17 @@ export function useOfertaParaleloDetalleState() {
   }, [load]);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const res = await fetchAulasCatalogo();
-      if (!cancelled && res.success) {
-        const raw = res.data?.aulas ?? res.data;
-        setAulas(Array.isArray(raw) ? raw : []);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [fetchAulasCatalogo]);
+    docenteModalAutoOpenDone.current = false;
+  }, [paraleloGestionId]);
+
+  const ensureAulasCatalogo = useCallback(async () => {
+    if (aulas.length > 0) return;
+    const res = await fetchAulasCatalogoSilent();
+    if (res.success) {
+      const raw = res.data?.aulas ?? res.data;
+      setAulas(Array.isArray(raw) ? raw : []);
+    }
+  }, [aulas.length, fetchAulasCatalogoSilent]);
 
   const cargaHorariaResumen = useMemo(() => {
     const horasPlan = Number(validacion?.horas_total ?? 0);
@@ -139,7 +159,8 @@ export function useOfertaParaleloDetalleState() {
   const openAulaModal = useCallback(() => {
     setAulaModalDraftId(detalle?.aulaId ?? null);
     setAulaModalOpen(true);
-  }, [detalle?.aulaId]);
+    void ensureAulasCatalogo();
+  }, [detalle?.aulaId, ensureAulasCatalogo]);
 
   const closeAulaModal = useCallback(() => {
     setAulaModalOpen(false);
@@ -257,6 +278,40 @@ export function useOfertaParaleloDetalleState() {
     [detalle]
   );
 
+  /** Desde horarios: abrir modal tras pintar la ficha (evita ráfaga API + UI congelada). */
+  useEffect(() => {
+    if (
+      pageLoading ||
+      docenteModalAutoOpenDone.current ||
+      pendingOfertaCursoId == null ||
+      !detalle
+    ) {
+      return undefined;
+    }
+    const curso = ofertaCursos.find((c) => Number(c.id) === pendingOfertaCursoId);
+    if (!curso) return undefined;
+
+    docenteModalAutoOpenDone.current = true;
+    const nextState = { ...location.state };
+    delete nextState.ofertaCursoId;
+    navigate(location.pathname, { replace: true, state: nextState });
+
+    const timer = window.setTimeout(() => {
+      setDocenteModalCurso(curso);
+      setDocenteModalOpen(true);
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    pageLoading,
+    pendingOfertaCursoId,
+    ofertaCursos,
+    detalle,
+    location.pathname,
+    location.state,
+    navigate,
+  ]);
+
   const closeDocenteModal = useCallback(() => {
     setDocenteModalOpen(false);
     setDocenteModalCurso(null);
@@ -296,8 +351,8 @@ export function useOfertaParaleloDetalleState() {
 
   return {
     paraleloGestionId,
-    apiLoading: apiLoading || guardandoAula,
-    apiError,
+    apiLoading: pageLoading || mutationLoading || guardandoAula,
+    apiError: loadError || mutationError,
     detalle,
     ofertaCursos,
     validacion,

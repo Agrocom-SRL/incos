@@ -19,7 +19,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useInscripcionesApi } from '@application-inscripciones/hooks/api/useInscripcionesApi';
+import { useInscripcionesApi, inscripcionesListFetchParams } from '@application-inscripciones/hooks/api/useInscripcionesApi';
 import { useDeleteInscripcion } from '@application-inscripciones/hooks/api/useDeleteInscripcion';
 
 export const useInscripcionesData = () => {
@@ -105,7 +105,8 @@ export const useInscripcionesData = () => {
      * Útil cuando se necesita asegurar que los datos están actualizados
      */
     const refetch = useCallback(async (options = {}) => {
-        await refetchFromApi(options);
+        const hasArgs = options && Object.keys(options).length > 0;
+        await refetchFromApi(hasArgs ? options : inscripcionesListFetchParams());
     }, [refetchFromApi]);
 
     // Memoizar el objeto retornado para mantener referencia estable

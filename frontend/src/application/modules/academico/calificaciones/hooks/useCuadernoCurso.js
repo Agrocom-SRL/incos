@@ -3,9 +3,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@application-auth';
-import { useCasesFactory } from '@container';
 import { CALIFICACIONES_PERMISOS } from '../utils/calificacionesPermisos.js';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
@@ -16,27 +15,17 @@ import {
   saveEvaluacionesCache,
 } from '../utils/cuadernoLocalCache.js';
 import { mergeNotasEnEstudiantes } from '../utils/mergeNotasCuaderno.js';
-import {
-  mapBimestresCalendario,
-  periodoCalendarioPorNumero,
-} from '../utils/bimestrePlazoUtils.js';
+import { periodoCalendarioPorNumero } from '../utils/bimestrePlazoUtils.js';
 import { MIS_CURSOS_PATH, notasCursoPath } from '../utils/calificacionesPaths.js';
 import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
-
-const mapEstudiantesRegistro = (filas = []) =>
-  filas.map((e, index) => ({
-    id: e.id,
-    nro: e.nro ?? index + 1,
-    codigo: e.codigo ?? '',
-    nombre: e.nombre ?? '',
-    notas: {},
-  }));
+import { cargarContextoCursoRegistro } from '../utils/cargarContextoCursoRegistro.js';
 
 export const useCuadernoCurso = () => {
   const { asignacionId, n: bimestreRuta } = useParams();
+  const navigate = useNavigate();
   const cursoIdResolved = asignacionId;
   const { hasPermiso } = useAuth();
-  const { docenteIdCoordinacion, esVistaCoordinacion } = useCalificacionesVistaContext();
+  const { esVistaCoordinacion } = useCalificacionesVistaContext();
 
   const bimestreVigenteEditable = useCallback(
     (cuadernoState) => Boolean(cuadernoState?.modoEdicion),
@@ -48,6 +37,7 @@ export const useCuadernoCurso = () => {
   const [bimestresCalendario, setBimestresCalendario] = useState([]);
   const [gestionFechas, setGestionFechas] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
   const [error, setError] = useState(null);
 
   const bimestreDesdeUrl = useMemo(() => {
@@ -57,7 +47,7 @@ export const useCuadernoCurso = () => {
 
   const construirEstadoBimestre = useCallback(
     async (ctx, bimestreNum) => {
-      const { docente, cursoList, estudiantesBase } = ctx;
+      const { docente, curso, estudiantesBase } = ctx;
       const bimestreVigente = Number(docente.bimestreVigente) || 1;
       const activo = Math.min(Math.max(bimestreNum, 1), 4);
 
@@ -84,15 +74,15 @@ export const useCuadernoCurso = () => {
 
       return {
         curso: {
-          id: cursoList.id,
-          materia: cursoList.materia,
-          materiaSigla: cursoList.materiaSigla ?? null,
-          carrera: cursoList.carrera,
-          carreraColor: cursoList.carreraColor ?? '#196b45',
-          periodo: cursoList.periodo ?? cursoList.periodoNombre ?? null,
-          paralelo: cursoList.paralelo,
-          turno: cursoList.turno,
-          estudiantes: cursoList.estudiantes,
+          id: curso.id,
+          materia: curso.materia,
+          materiaSigla: curso.materiaSigla ?? null,
+          carrera: curso.carrera,
+          carreraColor: curso.carreraColor ?? '#196b45',
+          periodo: curso.periodo ?? null,
+          paralelo: curso.paralelo,
+          turno: curso.turno,
+          estudiantes: curso.estudiantes,
         },
         docente,
         bimestreVigente,
@@ -115,62 +105,20 @@ export const useCuadernoCurso = () => {
       setBase(null);
       setCuaderno(null);
       try {
-        const ucCursos = useCasesFactory.listarMisCursosCalificaciones();
-        const resCursos = esVistaCoordinacion
-          ? await ucCursos.ejecutar({ docenteId: docenteIdCoordinacion })
-          : await ucCursos.ejecutar();
-
-        if (!resCursos?.success) {
-          throw new Error(resCursos?.error || 'No se pudo cargar el contexto del curso');
-        }
-
-        const data = resCursos.data ?? {};
-        const docente = data.docente ?? null;
-        const cursos = Array.isArray(data.cursos) ? data.cursos : [];
-        const calendarioFallback = mapBimestresCalendario(
-          data.bimestresCalendario ?? docente?.bimestresCalendario,
-        );
-        const cursoList = cursos.find((c) => String(c.id) === String(cursoIdResolved));
-
-        if (!docente || !cursoList) {
-          const err = new Error('CURSO_NOT_FOUND');
-          err.code = 'CURSO_NOT_FOUND';
-          throw err;
-        }
-
-        const ucRegistro = useCasesFactory.obtenerRegistroNotasCurso();
-        const resRegistro = await ucRegistro.ejecutar(cursoIdResolved);
-        if (!resRegistro?.success) {
-          throw new Error(resRegistro?.error || 'No se pudo cargar el listado de estudiantes');
-        }
-
-        const cursoRegistro = resRegistro.data?.curso ?? {};
-        const cursoMerged = {
-          ...cursoList,
-          periodo: cursoList.periodo ?? cursoRegistro.periodo ?? null,
-        };
-
-        const estudiantesBase = mapEstudiantesRegistro(resRegistro.data?.estudiantes);
+        const registro = await cargarContextoCursoRegistro(cursoIdResolved);
         if (cancelled) return;
 
-        setBimestresCalendario(
-          mapBimestresCalendario(
-            resRegistro.data?.bimestresCalendario?.length
-              ? resRegistro.data.bimestresCalendario
-              : calendarioFallback,
-          ),
-        );
-        setGestionFechas(
-          resRegistro.data?.gestion?.fechaFin
-            ? resRegistro.data.gestion
-            : data.gestion ?? docente?.gestion ?? null,
-        );
+        setBimestresCalendario(registro.bimestresCalendario);
+        setGestionFechas(registro.gestionFechas);
 
-        const ctx = { docente, cursoList: cursoMerged, estudiantesBase };
+        const ctx = {
+          docente: registro.docente,
+          curso: registro.curso,
+          estudiantesBase: registro.estudiantesBase,
+        };
         setBase(ctx);
 
-        const bimestreVigente = Number(docente.bimestreVigente) || 1;
-        const activoInicial = bimestreDesdeUrl ?? bimestreVigente;
+        const activoInicial = bimestreDesdeUrl ?? registro.bimestreVigente;
         const estado = await construirEstadoBimestre(ctx, activoInicial);
         if (!cancelled) setCuaderno(estado);
       } catch (err) {
@@ -178,6 +126,9 @@ export const useCuadernoCurso = () => {
           setError(err?.message || err);
           setBase(null);
           setCuaderno(null);
+          if (err?.code === 'CURSO_NOT_FOUND') {
+            navigate(MIS_CURSOS_PATH, { replace: true });
+          }
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -188,18 +139,23 @@ export const useCuadernoCurso = () => {
     return () => {
       cancelled = true;
     };
-  }, [cursoIdResolved, docenteIdCoordinacion, esVistaCoordinacion, construirEstadoBimestre]);
+  }, [cursoIdResolved, bimestreDesdeUrl, construirEstadoBimestre, navigate]);
 
   useEffect(() => {
     if (!base || bimestreDesdeUrl == null || isLoading) return;
+    if (cuaderno?.bimestreActivo === bimestreDesdeUrl) return;
     let cancelled = false;
 
     const syncBimestre = async () => {
+      setIsRefetching(true);
+      setError(null);
       try {
         const estado = await construirEstadoBimestre(base, bimestreDesdeUrl);
         if (!cancelled) setCuaderno(estado);
       } catch (err) {
         if (!cancelled) setError(err?.message || err);
+      } finally {
+        if (!cancelled) setIsRefetching(false);
       }
     };
 
@@ -207,7 +163,7 @@ export const useCuadernoCurso = () => {
     return () => {
       cancelled = true;
     };
-  }, [bimestreDesdeUrl, base, isLoading, construirEstadoBimestre]);
+  }, [bimestreDesdeUrl, base, isLoading, cuaderno?.bimestreActivo, construirEstadoBimestre]);
 
   const bimestreVigente = Number(base?.docente?.bimestreVigente ?? cuaderno?.bimestreVigente) || 1;
   const bimestreActivoResolved =
@@ -322,7 +278,7 @@ export const useCuadernoCurso = () => {
 
   const refetch = useCallback(async () => {
     if (!base) return;
-    setIsLoading(true);
+    setIsRefetching(true);
     setError(null);
     try {
       const estado = await construirEstadoBimestre(base, bimestreActivoResolved);
@@ -330,11 +286,11 @@ export const useCuadernoCurso = () => {
     } catch (err) {
       setError(err?.message || err);
     } finally {
-      setIsLoading(false);
+      setIsRefetching(false);
     }
   }, [base, bimestreActivoResolved, construirEstadoBimestre]);
 
-  const materiaCurso = cuaderno?.curso?.materia ?? base?.cursoList?.materia ?? null;
+  const materiaCurso = cuaderno?.curso?.materia ?? base?.curso?.materia ?? null;
 
   const breadcrumbItems = useMemo(() => {
     const n = bimestreActivoResolved;
@@ -398,7 +354,7 @@ export const useCuadernoCurso = () => {
     puedeEditarNotas,
     puedeGuardarBimestre,
     isLoading,
-    isRefetching: false,
+    isRefetching,
     error,
     refetch,
     breadcrumbItems,

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import apiClient from '@api-client';
 import { PLANES_ESTUDIOS_ENDPOINTS } from '@api/endpoints';
 import { handleErrorResponse, handleSuccessResponse } from '@api/responseHandler';
+import { CATALOG_LIST_LIMIT, DEFAULT_LIST_PAGE } from '@application/constants/listPagination';
 
 export function usePlanesEstudiosApi({ carreraId, autoFetch = true } = {}) {
   const [planes, setPlanes] = useState([]);
@@ -17,8 +18,8 @@ export function usePlanesEstudiosApi({ carreraId, autoFetch = true } = {}) {
     setError(null);
     try {
       const params = {
-        page: 1,
-        limit: 10000,
+        page: DEFAULT_LIST_PAGE,
+        limit: CATALOG_LIST_LIMIT,
         ...(carreraId ? { carrera_id: carreraId } : {}),
       };
       const response = await apiClient.get(PLANES_ESTUDIOS_ENDPOINTS.BASE, { params });

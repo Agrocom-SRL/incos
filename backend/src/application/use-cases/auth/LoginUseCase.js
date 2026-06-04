@@ -4,6 +4,7 @@ import {
   ForbiddenError,
 } from '../../../domain/errors/AppError.js';
 import { calcularFechaExpiracion, generarToken } from '../../../infrastructure/utils/jwt.utils.js';
+import { mapPermisosEfectivos } from './mapPermisosEfectivos.js';
 
 /**
  * Caso de uso: inicio de sesión (JWT + fila en sesiones).
@@ -58,8 +59,12 @@ export class LoginUseCase {
       dispositivo: dispositivo || 'DESKTOP',
     });
 
+    const filasPermisos = await this.authRepository.findPermisosEfectivos(usuario.id);
+    const permisos = mapPermisosEfectivos(filasPermisos);
+
     return {
       token,
+      permisos,
       usuario: {
         id: usuario.id,
         username: usuario.username,

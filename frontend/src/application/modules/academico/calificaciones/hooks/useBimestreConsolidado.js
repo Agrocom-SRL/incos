@@ -4,29 +4,22 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCasesFactory } from '@container';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
 import { tituloBimestre } from '../utils/bimestreTitulos.js';
 import { MIS_CURSOS_PATH, notasCursoPath } from '../utils/calificacionesPaths.js';
 import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
-
-const mapEstudiantesRegistro = (filas = []) =>
-  filas.map((e, index) => ({
-    id: e.id,
-    nro: e.nro ?? index + 1,
-    codigo: e.codigo ?? '',
-    nombre: e.nombre ?? '',
-  }));
+import { cargarContextoCursoRegistro } from '../utils/cargarContextoCursoRegistro.js';
 
 export const useBimestreConsolidado = () => {
   const { asignacionId, n: bimestreRuta } = useParams();
   const navigate = useNavigate();
-  const { docenteIdCoordinacion, esVistaCoordinacion } = useCalificacionesVistaContext();
+  const { esVistaCoordinacion } = useCalificacionesVistaContext();
 
   const [base, setBase] = useState(null);
   const [consolidado, setConsolidado] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
   const [error, setError] = useState(null);
 
   const bimestreNum = useMemo(() => {
@@ -43,47 +36,19 @@ export const useBimestreConsolidado = () => {
       setBase(null);
       setConsolidado(null);
       try {
-        const ucCursos = useCasesFactory.listarMisCursosCalificaciones();
-        const resCursos = esVistaCoordinacion
-          ? await ucCursos.ejecutar({ docenteId: docenteIdCoordinacion })
-          : await ucCursos.ejecutar();
-
-        if (!resCursos?.success) {
-          throw new Error(resCursos?.error || 'No se pudo cargar el contexto del curso');
-        }
-
-        const data = resCursos.data ?? {};
-        const docente = data.docente ?? null;
-        const cursos = Array.isArray(data.cursos) ? data.cursos : [];
-        const cursoList = cursos.find((c) => String(c.id) === String(asignacionId));
-
-        if (!docente || !cursoList) {
-          const err = new Error('CURSO_NOT_FOUND');
-          err.code = 'CURSO_NOT_FOUND';
-          throw err;
-        }
-
-        const ucRegistro = useCasesFactory.obtenerRegistroNotasCurso();
-        const resRegistro = await ucRegistro.ejecutar(asignacionId);
-        if (!resRegistro?.success) {
-          throw new Error(resRegistro?.error || 'No se pudo cargar el listado de estudiantes');
-        }
-
-        if (cancelled) return;
-
-        setBase({
-          docente,
-          curso: {
-            ...cursoList,
-            periodo: cursoList.periodo ?? resRegistro.data?.periodo ?? null,
-          },
-          estudiantesBase: mapEstudiantesRegistro(resRegistro.data?.estudiantes),
-          bimestreVigente: Number(docente.bimestreVigente) || 1,
-        });
-
         if (bimestreNum == null) {
           throw new Error('Bimestre inválido');
         }
+
+        const ctx = await cargarContextoCursoRegistro(asignacionId);
+        if (cancelled) return;
+
+        setBase({
+          docente: ctx.docente,
+          curso: ctx.curso,
+          estudiantesBase: ctx.estudiantesBase,
+          bimestreVigente: ctx.bimestreVigente,
+        });
 
         const resConsolidado = await CalificacionRepository.obtenerBimestreConsolidado(
           asignacionId,
@@ -112,13 +77,23 @@ export const useBimestreConsolidado = () => {
     return () => {
       cancelled = true;
     };
-  }, [asignacionId, bimestreNum, docenteIdCoordinacion, esVistaCoordinacion, navigate]);
+  }, [asignacionId, bimestreNum, navigate]);
 
   const bimestreVigente = base?.bimestreVigente ?? 1;
   const bimestreActivo = consolidado?.bimestre ?? bimestreNum ?? 1;
   const bimestreTitulo = tituloBimestre(bimestreActivo);
 
   const materiaCurso = base?.curso?.materia ?? null;
+
+  const estudiantes = useMemo(() => {
+    const list = [...(consolidado?.estudiantes ?? [])];
+    list.sort((a, b) =>
+      String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', {
+        sensitivity: 'base',
+      }),
+    );
+    return list.map((e, i) => ({ ...e, nro: i + 1 }));
+  }, [consolidado?.estudiantes]);
 
   const breadcrumbItems = useMemo(
     () =>
@@ -142,12 +117,17 @@ export const useBimestreConsolidado = () => {
       if (!res?.success) {
         throw new Error(res?.error || 'No se pudo guardar');
       }
-      const refreshed = await CalificacionRepository.obtenerBimestreConsolidado(
-        asignacionId,
-        bimestreActivo,
-      );
-      if (refreshed?.success) {
-        setConsolidado(refreshed.data);
+      setIsRefetching(true);
+      try {
+        const refreshed = await CalificacionRepository.obtenerBimestreConsolidado(
+          asignacionId,
+          bimestreActivo,
+        );
+        if (refreshed?.success) {
+          setConsolidado(refreshed.data);
+        }
+      } finally {
+        setIsRefetching(false);
       }
       return res.data;
     },
@@ -157,15 +137,7 @@ export const useBimestreConsolidado = () => {
   return {
     curso: base?.curso ?? null,
     docente: base?.docente ?? null,
-    estudiantes: useMemo(() => {
-      const list = [...(consolidado?.estudiantes ?? [])];
-      list.sort((a, b) =>
-        String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', {
-          sensitivity: 'base',
-        }),
-      );
-      return list.map((e, i) => ({ ...e, nro: i + 1 }));
-    }, [consolidado?.estudiantes]),
+    estudiantes,
     evaluaciones: consolidado?.evaluaciones ?? [],
     cuotaTeorico: consolidado?.cuotaTeorico ?? 30,
     cuotaPractico: consolidado?.cuotaPractico ?? 70,
@@ -175,6 +147,7 @@ export const useBimestreConsolidado = () => {
     periodoConsolidado: consolidado?.periodo ?? null,
     cerrado: consolidado?.cerrado ?? true,
     isLoading,
+    isRefetching,
     error,
     breadcrumbItems,
     tituloPagina,

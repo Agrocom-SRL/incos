@@ -75,11 +75,20 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
+  const sinDatos =
+    !dashboardError &&
+    carreras.length === 0 &&
+    ultimosDocentes.length === 0 &&
+    ultimosEstudiantes.length === 0 &&
+    actividades.length === 0;
+
+  if (loading && sinDatos) {
     return (
-      <Flex justify="center" align="center" style={{ minHeight: '400px' }}>
-        <Spin size="large" />
-      </Flex>
+      <DashboardPageShell>
+        <Flex justify="center" align="center" style={{ minHeight: '400px', width: '100%' }}>
+          <Spin size="large" tip="Cargando resumen…" />
+        </Flex>
+      </DashboardPageShell>
     );
   }
 
@@ -87,6 +96,8 @@ const Dashboard = () => {
     <>
       <DashboardPageShell>
         <MainContent>
+          <Spin spinning={loading && !sinDatos} tip="Actualizando resumen…">
+            <div>
           {dashboardError ? (
             <Alert
               type="warning"
@@ -141,9 +152,13 @@ const Dashboard = () => {
               )
             }
           />
+            </div>
+          </Spin>
         </MainContent>
 
         <InfoSidebar>
+          <Spin spinning={loading && !sinDatos} tip="Actualizando…">
+            <div>
           <DashboardEstudiantesResumenCard
             todayCount={stats.todayOrders}
             monthCount={stats.monthOrders}
@@ -155,6 +170,8 @@ const Dashboard = () => {
             }
             onRowNavigate={(path) => navigateToPath(path)}
           />
+            </div>
+          </Spin>
         </InfoSidebar>
       </DashboardPageShell>
 

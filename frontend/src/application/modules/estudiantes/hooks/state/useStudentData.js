@@ -17,12 +17,13 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useEstudiantesApi } from '@application-estudiantes/hooks/api/useEstudiantesApi';
+import { useEstudiantesApi, estudiantesListFetchParams } from '@application-estudiantes/hooks/api/useEstudiantesApi';
 import { useDeleteStudent } from '@application-estudiantes/hooks/api/useDeleteStudent';
 
 export const useStudentData = () => {
     // Hook para cargar datos iniciales desde BD
     const { estudiantes: estudiantesFromApi, loading, error, refetch: refetchFromApi } = useEstudiantesApi();
+    // Sin autoFetch: la lista paginada carga en StudentListProvider; aquí solo refetch puntual si hace falta.
     
     // Hook para eliminar estudiantes
     const { deleteStudent: deleteStudentApi, loading: deleting } = useDeleteStudent();
@@ -33,8 +34,7 @@ export const useStudentData = () => {
     // Sincronizar estado local con datos de API cuando cambien
     // Esto cubre: carga inicial y refetch explícito
     useEffect(() => {
-        // Actualizar cuando hay datos de la API (carga inicial o refetch)
-        if (estudiantesFromApi.length >= 0) {
+        if (estudiantesFromApi.length > 0) {
             setEstudiantes(estudiantesFromApi);
         }
     }, [estudiantesFromApi]);
@@ -90,7 +90,8 @@ export const useStudentData = () => {
      * Útil cuando se necesita asegurar que los datos están actualizados
      */
     const refetch = useCallback(async (options = {}) => {
-        await refetchFromApi(options);
+        const hasArgs = options && Object.keys(options).length > 0;
+        await refetchFromApi(hasArgs ? options : estudiantesListFetchParams());
     }, [refetchFromApi]);
 
     return {

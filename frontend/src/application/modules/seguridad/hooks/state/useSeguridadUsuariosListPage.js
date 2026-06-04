@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { useUsuariosList } from '@/application/modules/seguridad/hooks/state/useUsuariosList';
+import { useCasesFactory } from '@container';
+import { useServerPaginatedList } from '@application/utils/hooks/useServerPaginatedList.js';
 import { createUsuariosTableColumns } from '@modules/seguridad/config/usuariosTableColumns.jsx';
 
 function errorMessage(error) {
@@ -11,45 +12,57 @@ function errorMessage(error) {
 export const useSeguridadUsuariosListPage = () => {
   const navigate = useNavigate();
   const { message } = App.useApp();
-  const { usuarios, loading, searchText, setSearchText, pagination, cargar } = useUsuariosList();
+
+  const fetchUsuarios = useCallback(async ({ page, limit, search }) => {
+    try {
+      const data = await useCasesFactory.listarUsuariosAdmin().ejecutar({
+        page,
+        limit,
+        search: search || undefined,
+      });
+      return {
+        success: true,
+        data: data.users || [],
+        pagination: data.pagination ?? {
+          page,
+          limit,
+          total: data.total ?? 0,
+        },
+      };
+    } catch (error) {
+      message.error(errorMessage(error));
+      return { success: false, error: errorMessage(error), data: [] };
+    }
+  }, [message]);
+
+  const {
+    rows: usuarios,
+    loading,
+    searchText,
+    setSearchText,
+    tablePagination,
+  } = useServerPaginatedList({
+    fetch: fetchUsuarios,
+    buildRequest: ({ page, limit, search }) => ({ page, limit, search }),
+    initialPageSize: 20,
+  });
 
   const breadcrumbItems = useMemo(
     () => [{ title: 'Inicio', href: '/' }, { title: 'Seguridad' }, { title: 'Usuarios' }],
-    []
+    [],
   );
 
   const columns = useMemo(() => createUsuariosTableColumns(navigate), [navigate]);
-
-  const loadUsuarios = useCallback(
-    async (page = 1, limit = 20, query = searchText) => {
-      try {
-        await cargar({ page, limit, search: query || undefined });
-      } catch (error) {
-        message.error(errorMessage(error));
-      }
-    },
-    [cargar, message, searchText]
-  );
-
-  useEffect(() => {
-    loadUsuarios(1, pagination.pageSize, '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo carga inicial
-  }, []);
 
   const handleCreateUsuario = useCallback(() => {
     navigate('/seguridad/usuarios/nuevo');
   }, [navigate]);
 
-  const handleSearchChange = useCallback((event) => {
-    setSearchText(event.target.value);
-  }, [setSearchText]);
-
-  const tablePagination = useMemo(
-    () => ({
-      ...pagination,
-      onChange: (page, pageSize) => loadUsuarios(page, pageSize, searchText),
-    }),
-    [pagination, loadUsuarios, searchText]
+  const handleSearchChange = useCallback(
+    (event) => {
+      setSearchText(event.target.value);
+    },
+    [setSearchText],
   );
 
   return {

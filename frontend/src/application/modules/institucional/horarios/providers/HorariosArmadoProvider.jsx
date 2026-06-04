@@ -6,12 +6,13 @@ import { useArmadoOfertaLectura } from '@application-institucional/horarios/hook
 import { useAsignacionDocenteApi } from '@application-institucional/horarios/hooks/api/useAsignacionDocenteApi';
 import { indexAsignacionesPorOferta } from '@application-institucional/horarios/mappers/asignacionDocenteMatrizMapper';
 import { mergeGrillaWithOfertaCursos } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
+import { courseSchedulesSignature } from '@application-institucional/horarios/utils/courseSchedulesSignature';
 
 export const HorariosArmadoProvider = ({ children }) => {
     const { notification } = App.useApp();
     const armadoState = useGestionHorariosArmadoState(notification);
     const ofertaLectura = useArmadoOfertaLectura(armadoState.paraleloGestionId);
-    const { fetchAsignaciones } = useAsignacionDocenteApi();
+    const { fetchAsignacionesSilent } = useAsignacionDocenteApi();
     const [asignacionesPorOferta, setAsignacionesPorOferta] = useState(null);
     const lastDraftSigRef = useRef('');
 
@@ -23,7 +24,7 @@ export const HorariosArmadoProvider = ({ children }) => {
         }
         let cancelled = false;
         (async () => {
-            const res = await fetchAsignaciones({
+            const res = await fetchAsignacionesSilent({
                 paralelo_gestion_id: pgId,
                 vigente: true,
                 page: 1,
@@ -40,7 +41,7 @@ export const HorariosArmadoProvider = ({ children }) => {
         return () => {
             cancelled = true;
         };
-    }, [armadoState.paraleloGestionId, fetchAsignaciones]);
+    }, [armadoState.paraleloGestionId, fetchAsignacionesSilent]);
 
     useEffect(() => {
         const merged = mergeGrillaWithOfertaCursos(
@@ -48,21 +49,12 @@ export const HorariosArmadoProvider = ({ children }) => {
             ofertaLectura.filasOferta ?? [],
             asignacionesPorOferta,
         );
-        let sig = '';
-        try {
-            sig = JSON.stringify(merged);
-        } catch {
-            sig = String(merged?.length ?? 0);
-        }
+        const sig = courseSchedulesSignature(merged);
         if (sig === lastDraftSigRef.current) return;
         lastDraftSigRef.current = sig;
 
         armadoState.setDraftSchedules((prev) => {
-            try {
-                if (JSON.stringify(prev) === sig) return prev;
-            } catch {
-                /* noop */
-            }
+            if (courseSchedulesSignature(prev) === sig) return prev;
             return merged;
         });
     }, [

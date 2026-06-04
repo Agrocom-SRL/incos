@@ -6,7 +6,6 @@ import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Grid } from 'antd';
 import { useInscripcionesListContext } from '../../context/useInscripcionesListContext';
-import { useInscripcionesContext } from '../../context/useInscripcionesContext';
 import { createInscripcionesTableColumns } from '@matricula/config';
 
 export const useMatriculaListTable = () => {
@@ -30,15 +29,9 @@ export const useMatriculaListTable = () => {
     tipoInscripcionOptions,
     historialEstadoOptions,
     totalBeforeFilters = 0,
+    tablePagination,
+    deleteInscripcion,
   } = useInscripcionesListContext();
-
-  let deleteInscripcion = null;
-  try {
-    const mainContext = useInscripcionesContext();
-    deleteInscripcion = mainContext.deleteInscripcion;
-  } catch {
-    // Contexto principal no disponible
-  }
 
   const handleNuevaInscripcion = useCallback(() => {
     navigate('/matricula/nueva');
@@ -76,5 +69,6 @@ export const useMatriculaListTable = () => {
     tipoInscripcionOptions,
     historialEstadoOptions,
     totalBeforeFilters,
+    tablePagination,
   };
 };

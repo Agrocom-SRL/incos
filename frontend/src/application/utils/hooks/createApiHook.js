@@ -143,7 +143,7 @@ export const createApiHook = ({
           if (validationError) {
             optimizedSetErrorRef.current(validationError);
             optimizedSetDataRef.current(initialData);
-            return;
+            return { success: false, error: validationError };
           }
         }
 
@@ -165,7 +165,7 @@ export const createApiHook = ({
           optimizedSetErrorRef.current(errorMsg);
           optimizedSetDataRef.current(initialData);
           if (paginationKey) setPagination(null);
-          return;
+          return { success: false, error: errorMsg };
         }
 
         // 5. Si hay éxito, mapear (si existe mapper) y actualizar el estado
@@ -183,6 +183,11 @@ export const createApiHook = ({
         } else if (paginationKey) {
           setPagination(null);
         }
+        return {
+          success: true,
+          data: finalData,
+          pagination: paginationKey ? result.pagination ?? null : undefined,
+        };
       } catch (err) {
         // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
         const errorMsg = normalizeError(
@@ -192,6 +197,7 @@ export const createApiHook = ({
         optimizedSetErrorRef.current(errorMsg);
         optimizedSetDataRef.current(initialData);
         if (paginationKey) setPagination(null);
+        return { success: false, error: errorMsg };
       } finally {
         // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
         optimizedSetLoadingRef.current(false);

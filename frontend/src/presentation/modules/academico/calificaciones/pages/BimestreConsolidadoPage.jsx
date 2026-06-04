@@ -56,6 +56,7 @@ const BimestreConsolidadoPage = () => {
     bimestreTitulo,
     periodoConsolidado,
     isLoading,
+    isRefetching,
     error,
     breadcrumbItems,
     tituloPagina,
@@ -323,7 +324,7 @@ const BimestreConsolidadoPage = () => {
       <PageHeaderArea>{pageHeader}</PageHeaderArea>
 
       <MainContent>
-        <Spin spinning={isLoading} tip="Cargando consolidado…">
+        <Spin spinning={isRefetching} tip="Actualizando consolidado…">
           <Flex vertical gap={allSpacing.marginLG} className="sd cal-cuaderno cal-bimestre-consolidado-page">
             {error ? (
               <Alert

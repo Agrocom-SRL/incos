@@ -16,6 +16,7 @@ export const useDocentesListPage = () => {
     setSearchText,
     refetch,
     deleteDocente,
+    tablePagination,
   } = useDocentesListContext();
 
   const listNavState = useMemo(() => docentesListNavigationState(pathname), [pathname]);
@@ -56,5 +57,6 @@ export const useDocentesListPage = () => {
     breadcrumbItems,
     handleNuevoDocente,
     handleSearchChange,
+    tablePagination,
   };
 };

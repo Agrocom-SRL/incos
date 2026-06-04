@@ -2,7 +2,7 @@
  * Calificaciones — cursos del docente (propio o elegido por coordinación).
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useAuth } from '@application-auth';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, Flex, Spin, Typography } from 'antd';
@@ -24,15 +24,11 @@ const { Text } = Typography;
 
 const MisCursosPage = () => {
   const navigate = useNavigate();
-  const { refreshMe, hasPermiso } = useAuth();
+  const { hasPermiso } = useAuth();
   const puedeVolverCoordinacion = hasPermiso(
     CALIFICACIONES_PERMISOS.coordinacion,
     'LISTAR',
   );
-
-  useEffect(() => {
-    refreshMe();
-  }, [refreshMe]);
 
   const {
     titulo,

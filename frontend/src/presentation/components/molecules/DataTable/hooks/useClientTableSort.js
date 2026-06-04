@@ -76,25 +76,38 @@ export const useClientTableSort = ({
     [columns, sortState, rowOffset],
   );
 
+  const serverSide = pagination?.serverPagination === true;
+
   const mergedPagination =
     pagination === false
       ? false
-      : {
-          ...defaultPaginationConfig,
-          ...pagination,
-          showSizeChanger: resolvePaginationSizeChanger(
-            pagination?.showSizeChanger ?? defaultPaginationConfig.showSizeChanger,
-          ),
-          current: pagState.current,
-          pageSize: pagState.pageSize,
-          onChange: (page, pageSize) => {
-            setPagState({ current: page, pageSize });
-            pagination?.onChange?.(page, pageSize);
-          },
-        };
+      : serverSide
+        ? {
+            ...defaultPaginationConfig,
+            ...pagination,
+            showSizeChanger: resolvePaginationSizeChanger(
+              pagination?.showSizeChanger ?? defaultPaginationConfig.showSizeChanger,
+            ),
+            onChange: (page, pageSize) => {
+              pagination?.onChange?.(page, pageSize);
+            },
+          }
+        : {
+            ...defaultPaginationConfig,
+            ...pagination,
+            showSizeChanger: resolvePaginationSizeChanger(
+              pagination?.showSizeChanger ?? defaultPaginationConfig.showSizeChanger,
+            ),
+            current: pagState.current,
+            pageSize: pagState.pageSize,
+            onChange: (page, pageSize) => {
+              setPagState({ current: page, pageSize });
+              pagination?.onChange?.(page, pageSize);
+            },
+          };
 
   const handleTableChange = (pag, _filters, sorter, onChange) => {
-    if (pag?.current != null || pag?.pageSize != null) {
+    if (!serverSide && (pag?.current != null || pag?.pageSize != null)) {
       setPagState({
         current: pag.current ?? pagState.current,
         pageSize: pag.pageSize ?? pagState.pageSize,

@@ -1,66 +1,59 @@
 /**
- * Provider: StudentListProvider
- * 
- * Single Responsibility: Proporcionar estado compartido SOLO para la feature de lista de estudiantes
- * 
- * Clean Architecture:
- * - Application Layer: Provider específico para la feature de listado
- * - Usa datos compartidos de StudentDataProvider (estado en memoria)
- * - Solo maneja lógica de UI (búsqueda, filtrado, formateo)
- * 
- * Ventajas:
- * - Aislamiento de errores: errores en registro no afectan la lista
- * - Performance: usa estado compartido en memoria (no recarga desde BD)
- * - Separación de responsabilidades: datos compartidos, UI específica
+ * Provider: lista de estudiantes con paginación y búsqueda en servidor.
  */
 
 import { useMemo } from 'react';
-import { useStudentContext } from '@application-estudiantes/hooks';
-import { useTableData } from '@molecules';
+import { useEstudiantesApi } from '@application-estudiantes/hooks/api/useEstudiantesApi';
+import { useDeleteStudent } from '@application-estudiantes/hooks/api/useDeleteStudent';
+import { useServerPaginatedList } from '@application/utils';
 import { StudentListContext } from '@application-estudiantes/context/StudentListContext';
 
 export const StudentListProvider = ({ children }) => {
-    // Obtener datos compartidos del estado en memoria
-    const { estudiantes: estudiantesData, loading, error, refetch, deleteStudent } = useStudentContext();
+  const { fetch: fetchEstudiantes } = useEstudiantesApi();
+  const { deleteStudent: deleteStudentApi, loading: deleting } = useDeleteStudent();
 
-    // Campos de búsqueda: nombre, CI, contacto, datos académicos, datos laborales
-    const getSearchFields = useMemo(
-        () => (estudiante) => [
-            estudiante.nombreCompleto,
-            estudiante.codigoEstudiante,
-            estudiante.ciCompleto,
-            estudiante.emailPersonal,
-            estudiante.celular,
-            estudiante.carreraNombre,
-            estudiante.gestionIngresoNombre,
-            estudiante.tipoAdmision,
-            estudiante.datosTrabajo,
-            estudiante.empresaInstitucion,
-            estudiante.cargo,
-        ].filter(Boolean),
-        []
-    );
+  const {
+    rows,
+    loading,
+    error,
+    searchText,
+    setSearchText,
+    tablePagination,
+    refetch,
+  } = useServerPaginatedList({
+    fetch: fetchEstudiantes,
+    buildRequest: ({ page, limit, search }) => ({
+      params: {
+        page,
+        limit,
+        search: search || undefined,
+        sort: 'created_at:DESC',
+      },
+    }),
+  });
 
-    // Hook genérico para manejo de búsqueda y filtrado (solo lógica de UI)
-    const { searchText, setSearchText, filteredData } = useTableData(
-        estudiantesData,
-        getSearchFields
-    );
+  const deleteStudent = useMemo(
+    () => async (studentId) => {
+      const result = await deleteStudentApi(studentId);
+      if (result.success) await refetch();
+      return result;
+    },
+    [deleteStudentApi, refetch],
+  );
 
-    const value = {
-        estudiantes: filteredData,
-        loading,
-        error,
-        refetch,
-        deleteStudent,
-        searchText,
-        setSearchText,
-    };
+  const value = useMemo(
+    () => ({
+      estudiantes: rows,
+      loading: loading || deleting,
+      error,
+      refetch,
+      deleteStudent,
+      searchText,
+      setSearchText,
+      tablePagination,
+    }),
+    [rows, loading, deleting, error, refetch, deleteStudent, searchText, setSearchText, tablePagination],
+  );
 
-    return (
-        <StudentListContext.Provider value={value}>
-            {children}
-        </StudentListContext.Provider>
-    );
+  return <StudentListContext.Provider value={value}>{children}</StudentListContext.Provider>;
 };
-

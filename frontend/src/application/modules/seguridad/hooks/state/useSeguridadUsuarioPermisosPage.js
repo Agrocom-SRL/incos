@@ -35,6 +35,7 @@ export const useSeguridadUsuarioPermisosPage = () => {
 
   const [payloadUsuario, setPayloadUsuario] = useState(null);
   const [permisoOptions, setPermisoOptions] = useState([]);
+  const [catalogoCargado, setCatalogoCargado] = useState(false);
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [savingOverride, setSavingOverride] = useState(false);
 
@@ -57,24 +58,30 @@ export const useSeguridadUsuarioPermisosPage = () => {
     loadUsuarioPermisos();
   }, [loadUsuarioPermisos]);
 
-  useEffect(() => {
-    const run = async () => {
-      const grouped = await cargarCatalogo();
-      const opts = [];
-      Object.keys(grouped)
-        .sort()
-        .forEach((dom) => {
-          (grouped[dom] || []).forEach((p) => {
-            opts.push({
-              value: p.id,
-              label: `[${dom}] ${p.nombre} (${p.codigo})`,
-            });
+  const cargarOpcionesCatalogo = useCallback(async () => {
+    if (catalogoCargado) return;
+    const grouped = await cargarCatalogo();
+    const opts = [];
+    Object.keys(grouped)
+      .sort()
+      .forEach((dom) => {
+        (grouped[dom] || []).forEach((p) => {
+          opts.push({
+            value: p.id,
+            label: `[${dom}] ${p.nombre} (${p.codigo})`,
           });
         });
-      setPermisoOptions(opts);
-    };
-    run();
-  }, [cargarCatalogo]);
+      });
+    setPermisoOptions(opts);
+    setCatalogoCargado(true);
+  }, [cargarCatalogo, catalogoCargado]);
+
+  useEffect(() => {
+    if (!overrideOpen || !puedeEditar) return;
+    cargarOpcionesCatalogo().catch((error) => {
+      message.error(errMsg(error));
+    });
+  }, [overrideOpen, puedeEditar, cargarOpcionesCatalogo, message]);
 
   const rolRows = useMemo(() => agruparRol(permisos_rol), [permisos_rol]);
 

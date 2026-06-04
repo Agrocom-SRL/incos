@@ -219,7 +219,8 @@ export const useGestionHorariosDashboardState = () => {
         kpis.sinHorarios > 0 ||
         docentesConConflictosCount > 0;
 
-    const loading = estadoLoading || pendientesSidebarLoading;
+    const loading = estadoLoading;
+    const sidebarLoading = pendientesSidebarLoading;
     const error = estadoError || pendientesSidebarError || null;
 
     return {
@@ -242,6 +243,7 @@ export const useGestionHorariosDashboardState = () => {
         alertLineas,
         pendientesSidebar,
         loading,
+        sidebarLoading,
         error,
     };
 };

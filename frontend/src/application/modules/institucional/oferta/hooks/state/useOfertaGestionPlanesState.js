@@ -19,11 +19,11 @@ export function useOfertaGestionPlanesState() {
   const { modal, notification } = App.useApp();
 
   const {
-    loading: apiLoading,
+    loading: mutationLoading,
     error: apiError,
-    fetchGestiones,
-    fetchPlanesHabilitados,
-    fetchParalelosGestion,
+    fetchGestionesSilent,
+    fetchPlanesHabilitadosSilent,
+    fetchParalelosGestionSilent,
     generarParalelosGestionSilent,
     generarOfertaSilent,
     fetchCoberturaDocente,
@@ -108,11 +108,11 @@ export function useOfertaGestionPlanesState() {
   const activePlanId = planSeleccionado?.id ?? null;
 
   const loadGestiones = useCallback(async () => {
-    const res = await fetchGestiones();
+    const res = await fetchGestionesSilent();
     if (!res.success) return;
     const raw = res.data?.gestiones ?? res.data?.managements ?? res.data;
     setGestiones(Array.isArray(raw) ? raw : []);
-  }, [fetchGestiones]);
+  }, [fetchGestionesSilent]);
 
   const loadPlanesHabilitados = useCallback(async () => {
     if (!Number.isFinite(gestionId) || gestionId < 1) {
@@ -122,7 +122,7 @@ export function useOfertaGestionPlanesState() {
     }
     const seq = ++planesFetchSeq.current;
     setPlanesHabilitadosLoaded(false);
-    const res = await fetchPlanesHabilitados(gestionId);
+    const res = await fetchPlanesHabilitadosSilent(gestionId);
     if (seq !== planesFetchSeq.current) return;
     if (!res.success) {
       setPlanesHabilitados([]);
@@ -131,7 +131,7 @@ export function useOfertaGestionPlanesState() {
     }
     setPlanesHabilitados(res.data?.planesHabilitados ?? []);
     setPlanesHabilitadosLoaded(true);
-  }, [fetchPlanesHabilitados, gestionId]);
+  }, [fetchPlanesHabilitadosSilent, gestionId]);
 
   const loadParalelosGestion = useCallback(async () => {
     if (!Number.isFinite(activePlanId) || activePlanId < 1) {
@@ -140,7 +140,7 @@ export function useOfertaGestionPlanesState() {
     const seq = ++paralelosFetchSeq.current;
     setParalelosLoadingPlanId(activePlanId);
     try {
-      const res = await fetchParalelosGestion(activePlanId);
+      const res = await fetchParalelosGestionSilent(activePlanId);
       if (seq !== paralelosFetchSeq.current) return;
       const list = res.success ? (res.data?.paralelosGestion ?? []) : [];
       setParalelosByPlanId((prev) => ({ ...prev, [activePlanId]: list }));
@@ -152,7 +152,7 @@ export function useOfertaGestionPlanesState() {
         setParalelosLoadingPlanId(null);
       }
     }
-  }, [fetchParalelosGestion, fetchCoberturaDocente, activePlanId]);
+  }, [fetchParalelosGestionSilent, fetchCoberturaDocente, activePlanId]);
 
   const reloadParalelosTodosPlanes = useCallback(async () => {
     if (!planesHabilitados.length) return;
@@ -162,7 +162,7 @@ export function useOfertaGestionPlanesState() {
       const nextByPlan = {};
       const nextCobertura = {};
       for (const plan of planesHabilitados) {
-        const res = await fetchParalelosGestion(plan.id);
+        const res = await fetchParalelosGestionSilent(plan.id);
         if (seq !== paralelosFetchSeq.current) return;
         const list = res.success ? (res.data?.paralelosGestion ?? []) : [];
         nextByPlan[plan.id] = list;
@@ -180,7 +180,7 @@ export function useOfertaGestionPlanesState() {
   }, [
     planesHabilitados,
     activePlanId,
-    fetchParalelosGestion,
+    fetchParalelosGestionSilent,
     fetchCoberturaDocente,
   ]);
 
@@ -229,7 +229,7 @@ export function useOfertaGestionPlanesState() {
     async (gestionPlanId) => {
       if (!Number.isFinite(gestionPlanId) || gestionPlanId < 1) return;
       const seq = ++paralelosFetchSeq.current;
-      const res = await fetchParalelosGestion(gestionPlanId);
+      const res = await fetchParalelosGestionSilent(gestionPlanId);
       if (seq !== paralelosFetchSeq.current || !res.success) return;
       const refreshed = res.data?.paralelosGestion ?? [];
       setParalelosByPlanId((prev) => ({ ...prev, [gestionPlanId]: refreshed }));
@@ -238,7 +238,7 @@ export function useOfertaGestionPlanesState() {
         setCoberturaByParaleloId((prev) => ({ ...prev, ...coberturas }));
       }
     },
-    [fetchParalelosGestion, fetchCoberturaDocente]
+    [fetchParalelosGestionSilent, fetchCoberturaDocente]
   );
 
   const generarOfertaCursosEnPlan = useCallback(
@@ -298,7 +298,7 @@ export function useOfertaGestionPlanesState() {
           planesConParalelosNuevos += 1;
         }
 
-        const listaRes = await fetchParalelosGestion(plan.id);
+        const listaRes = await fetchParalelosGestionSilent(plan.id);
         const lista = listaRes.success ? (listaRes.data?.paralelosGestion ?? []) : [];
         if (lista.length) {
           setParalelosByPlanId((prev) => ({ ...prev, [plan.id]: lista }));
@@ -364,7 +364,7 @@ export function useOfertaGestionPlanesState() {
     puedeEditarOferta,
     planesHabilitados,
     generarParalelosGestionSilent,
-    fetchParalelosGestion,
+    fetchParalelosGestionSilent,
     generarOfertaCursosEnPlan,
     notification,
   ]);
@@ -476,11 +476,11 @@ export function useOfertaGestionPlanesState() {
   return {
     gestionId,
     apiLoading:
-      apiLoading ||
-      paralelosLoadingPlanId != null ||
+      mutationLoading ||
       generandoParalelos ||
       inhabilitandoParaleloId != null,
-    planesLoading: apiLoading && !planesHabilitadosLoaded,
+    planesLoading: !planesHabilitadosLoaded,
+    paralelosLoading: paralelosLoadingPlanId != null,
     paralelosLoadingPlanId,
     apiError,
     gestionSeleccionada,

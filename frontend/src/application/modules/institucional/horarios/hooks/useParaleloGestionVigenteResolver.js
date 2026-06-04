@@ -13,10 +13,10 @@ function pickParaleloId(row) {
 export function useParaleloGestionVigenteResolver(paraleloMaestroId, options = {}) {
   const { gestionVigenteId: gestionVigenteIdOpt } = options;
   const {
-    fetchGestiones,
-    fetchPlanesHabilitados,
-    fetchParalelosGestion,
-    fetchParaleloGestionDetalle,
+    fetchGestionesSilent,
+    fetchPlanesHabilitadosSilent,
+    fetchParalelosGestionSilent,
+    fetchParaleloGestionDetalleSilent,
   } = useOfertaAcademicaApi();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -44,7 +44,7 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId, options = {
     let vigenteNombre = null;
 
     if (!vigenteId) {
-      const gestRes = await fetchGestiones();
+      const gestRes = await fetchGestionesSilent();
       if (!gestRes.success) {
         setError(gestRes.error || 'No se pudieron cargar las gestiones');
         setLoading(false);
@@ -63,7 +63,7 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId, options = {
       vigenteNombre = vigente.nombre ?? vigente.codigo ?? null;
     }
 
-    const planesRes = await fetchPlanesHabilitados(vigenteId);
+    const planesRes = await fetchPlanesHabilitadosSilent(vigenteId);
     if (!planesRes.success) {
       setError(planesRes.error || 'No se pudieron cargar los planes habilitados');
       setLoading(false);
@@ -71,14 +71,20 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId, options = {
     }
 
     const planes = planesRes.data?.planesHabilitados ?? [];
-    for (const plan of planes) {
-      const pgRes = await fetchParalelosGestion(plan.id);
+    const pgResults = await Promise.all(
+      plans.map(async (plan) => {
+        const pgRes = await fetchParalelosGestionSilent(plan.id);
+        return { plan, pgRes };
+      }),
+    );
+
+    for (const { plan, pgRes } of pgResults) {
       if (!pgRes.success) continue;
       const paralelos = pgRes.data?.paralelosGestion ?? [];
       const match = paralelos.find((pg) => pickParaleloId(pg) === pid);
       if (!match?.id) continue;
 
-      const detRes = await fetchParaleloGestionDetalle(match.id);
+      const detRes = await fetchParaleloGestionDetalleSilent(match.id);
       const det = detRes.success
         ? detRes.data?.paralelo_gestion ?? detRes.data?.paraleloGestion ?? match
         : match;
@@ -113,10 +119,10 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId, options = {
     );
     setLoading(false);
   }, [
-    fetchGestiones,
-    fetchPlanesHabilitados,
-    fetchParalelosGestion,
-    fetchParaleloGestionDetalle,
+    fetchGestionesSilent,
+    fetchPlanesHabilitadosSilent,
+    fetchParalelosGestionSilent,
+    fetchParaleloGestionDetalleSilent,
     paraleloMaestroId,
     gestionVigenteIdOpt,
   ]);

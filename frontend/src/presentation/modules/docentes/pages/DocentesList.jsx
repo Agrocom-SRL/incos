@@ -26,6 +26,7 @@ const DocentesList = () => {
     breadcrumbItems,
     handleNuevoDocente,
     handleSearchChange,
+    tablePagination,
   } = useDocentesListPage();
 
   const registrarAction = (
@@ -67,12 +68,7 @@ const DocentesList = () => {
               searchColSpan={10}
               searchStyle={{ maxWidth: 520 }}
               tableClassName="data-table--docentes"
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showTotal: (total) => `Total: ${total} docentes`,
-                pageSizeOptions: ['10', '20', '50', '100'],
-              }}
+              pagination={tablePagination}
               loadingTip="Cargando docentes..."
             />
           </div>

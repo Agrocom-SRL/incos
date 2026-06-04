@@ -9,16 +9,14 @@
  * - Arquitectura modular: cada módulo gestiona sus propios conectores
  */
 
-import { PagosProvider, PagosListProvider } from '@application-pagos/providers';
+import { PagosListProvider } from '@application-pagos/providers';
 import PagosList from '@pagos/pages/PagosList';
 
 const ListConnector = () => {
   return (
-    <PagosProvider>
-      <PagosListProvider>
-        <PagosList />
-      </PagosListProvider>
-    </PagosProvider>
+    <PagosListProvider>
+      <PagosList />
+    </PagosListProvider>
   );
 };
 

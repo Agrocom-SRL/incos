@@ -16,12 +16,12 @@ export function useOfertaAcademicaDashboardState() {
   const navigate = useNavigate();
   const { message: messageApi } = App.useApp();
   const {
-    loading: apiLoading,
+    loading: mutationLoading,
     error: apiError,
-    fetchGestiones,
-    fetchPlanesHabilitados,
+    fetchGestionesSilent,
+    fetchPlanesHabilitadosSilent,
     fetchPlanesVigentesCatalogo,
-    fetchParalelosGestion,
+    fetchParalelosGestionSilent,
     habilitarPlan,
     validarOferta,
   } = useOfertaAcademicaApi();
@@ -45,11 +45,11 @@ export function useOfertaAcademicaDashboardState() {
   }, [gestionVigente]);
 
   const loadGestiones = useCallback(async () => {
-    const res = await fetchGestiones();
+    const res = await fetchGestionesSilent();
     if (!res.success) return;
     const raw = res.data?.gestiones ?? res.data?.managements ?? res.data;
     setGestiones(Array.isArray(raw) ? raw : []);
-  }, [fetchGestiones]);
+  }, [fetchGestionesSilent]);
 
   const loadPlanesYParalelos = useCallback(async () => {
     if (!gestionVigenteId) {
@@ -62,7 +62,7 @@ export function useOfertaAcademicaDashboardState() {
 
     const seq = ++planesFetchSeq.current;
     setPlanesHabilitadosLoaded(false);
-    const resPlanes = await fetchPlanesHabilitados(gestionVigenteId);
+    const resPlanes = await fetchPlanesHabilitadosSilent(gestionVigenteId);
     if (seq !== planesFetchSeq.current) return;
 
     if (!resPlanes.success) {
@@ -79,7 +79,7 @@ export function useOfertaAcademicaDashboardState() {
     try {
       const listas = await Promise.all(
         planes.map(async (plan) => {
-          const res = await fetchParalelosGestion(plan.id);
+          const res = await fetchParalelosGestionSilent(plan.id);
           return res.success ? res.data?.paralelosGestion ?? [] : [];
         })
       );
@@ -95,7 +95,7 @@ export function useOfertaAcademicaDashboardState() {
         setLoadingParalelos(false);
       }
     }
-  }, [gestionVigenteId, fetchPlanesHabilitados, fetchParalelosGestion, validarOferta]);
+  }, [gestionVigenteId, fetchPlanesHabilitadosSilent, fetchParalelosGestionSilent, validarOferta]);
 
   useEffect(() => {
     loadGestiones();
@@ -218,7 +218,8 @@ export function useOfertaAcademicaDashboardState() {
   ]);
 
   return {
-    apiLoading: apiLoading || loadingParalelos,
+    apiLoading: mutationLoading,
+    loadingParalelos,
     apiError,
     gestiones,
     gestionVigente,

@@ -27,7 +27,20 @@ export class ListTeachersUseCase extends BaseListUseCase {
     return TeacherListMapper;
   }
 
+  buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+    const incluir = queryParams.incluir_estadisticas;
+    this._skipTeachingStats =
+      incluir === 'false' ||
+      incluir === false ||
+      incluir === '0' ||
+      incluir === 0;
+    return baseFilters;
+  }
+
   async enrichData(data) {
+    if (this._skipTeachingStats) {
+      return data;
+    }
     const teacherIds = (data || [])
       .map((row) => Number(row?.id))
       .filter((id) => Number.isFinite(id) && id > 0);

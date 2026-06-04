@@ -10,7 +10,6 @@ import {
   Card,
   Flex,
   Input,
-  Spin,
   Table,
   Typography,
 } from 'antd';
@@ -158,8 +157,7 @@ const CoordinacionPage = () => {
 
       <DashboardPageShell>
         <MainContent>
-          <Spin spinning={isLoading} tip="Cargando docentes…">
-            <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+          <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
               <Alert
                 type="info"
                 showIcon
@@ -230,7 +228,6 @@ const CoordinacionPage = () => {
                 </Flex>
               </Card>
             </Flex>
-          </Spin>
         </MainContent>
       </DashboardPageShell>
     </Flex>

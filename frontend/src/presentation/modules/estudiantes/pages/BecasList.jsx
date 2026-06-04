@@ -33,6 +33,7 @@ const BecasList = () => {
         setSearchText,
         refetch,
         deleteBeca,
+        tablePagination,
     } = useBecasListContext();
 
     const handleNuevaBeca = () => {
@@ -94,12 +95,7 @@ const BecasList = () => {
                 searchPlaceholder="Buscar por nombre, tipo, descripción..."
                 columns={tableColumns}
                 rowKey={(record) => record.id || Math.random()}
-                pagination={{
-                    pageSize: 10,
-                    showSizeChanger: true,
-                    showTotal: (total) => `Total: ${total} becas`,
-                    pageSizeOptions: ['10', '20', '50', '100'],
-                }}
+                pagination={tablePagination}
                 defaultSort={{
                     field: 'nombre',
                     order: 'ascend',

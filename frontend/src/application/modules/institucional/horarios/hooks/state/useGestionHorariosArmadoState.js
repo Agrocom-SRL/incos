@@ -50,7 +50,7 @@ function pickParaleloGestionEstado(row) {
 
 export const useGestionHorariosArmadoState = (notification) => {
     const navigate = useNavigate();
-    const { fetchParaleloGestionDetalle } = useOfertaAcademicaApi();
+    const { fetchParaleloGestionDetalleSilent } = useOfertaAcademicaApi();
     const [searchParams, setSearchParams] = useSearchParams();
     const paraleloId = searchParams.get('paralelo');
     const pgParam = searchParams.get('pg');
@@ -154,7 +154,7 @@ export const useGestionHorariosArmadoState = (notification) => {
         setPgDirectError(null);
 
         (async () => {
-            const detRes = await fetchParaleloGestionDetalle(validPgId);
+            const detRes = await fetchParaleloGestionDetalleSilent(validPgId);
             if (cancelled) return;
             if (!detRes.success) {
                 setPgDirectError(detRes.error || 'No se pudo cargar el paralelo en gestión');
@@ -189,7 +189,7 @@ export const useGestionHorariosArmadoState = (notification) => {
         return () => {
             cancelled = true;
         };
-    }, [validPgId, fetchParaleloGestionDetalle]);
+    }, [validPgId, fetchParaleloGestionDetalleSilent]);
 
     /** URL canónica: `?pg=` + `tab`; sin `paralelo` maestro (enlace legacy `?paralelo=` se resuelve y reemplaza). */
     useEffect(() => {

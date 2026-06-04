@@ -6,6 +6,7 @@ export * from './state/useGestionHorariosDashboardState';
 export * from './api/useHorariosPendientesSidebarApi';
 export * from './api/useHorariosPublicacionPlanesApi';
 export * from './api/useAsignacionDocenteApi';
+export * from './api/useDocentesAsignacionModal';
 export * from './api/useParaleloGestionGrillaHorarioApi';
 export * from './api/usePublicarParaleloGestionApi';
 export * from './api/usePublicarTodosHorariosGestionApi';

@@ -6,7 +6,7 @@ import { mapOfertaCursoToFilaCurso } from '../../mappers/plantillaOfertaMapper.j
  * Lectura de oferta_cursos para fusionar la grilla (sin CRUD de cursos; eso vive en Oferta académica).
  */
 export function useArmadoOfertaLectura(paraleloGestionId) {
-    const { fetchOfertaCursos } = useOfertaAcademicaApi();
+    const { fetchOfertaCursosSilent } = useOfertaAcademicaApi();
     const [ofertaCursos, setOfertaCursos] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -18,14 +18,14 @@ export function useArmadoOfertaLectura(paraleloGestionId) {
         }
 
         setLoading(true);
-        const res = await fetchOfertaCursos(pgId);
+        const res = await fetchOfertaCursosSilent(pgId);
         if (!res.success) {
             setOfertaCursos([]);
         } else {
             setOfertaCursos(res.data?.ofertaCursos ?? []);
         }
         setLoading(false);
-    }, [fetchOfertaCursos, paraleloGestionId]);
+    }, [fetchOfertaCursosSilent, paraleloGestionId]);
 
     useEffect(() => {
         load();

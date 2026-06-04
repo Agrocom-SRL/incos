@@ -39,6 +39,21 @@ export function useOfertaAcademicaApi() {
     }
   }, []);
 
+  /** Sin loading global: carga inicial en paralelo (evita parpadeos y bloqueo del hilo UI). */
+  const runSilent = useCallback(async (fn, fallbackMessage) => {
+    try {
+      const response = await fn();
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || fallbackMessage };
+      }
+      return { success: true, data: result.data };
+    } catch (err) {
+      const fail = handleErrorResponse(err, fallbackMessage);
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
   const fetchGestiones = useCallback(
     () =>
       run(
@@ -49,6 +64,18 @@ export function useOfertaAcademicaApi() {
         'No se pudieron cargar las gestiones'
       ),
     [run]
+  );
+
+  const fetchGestionesSilent = useCallback(
+    () =>
+      runSilent(
+        () =>
+          apiClient.get(GESTIONES_ENDPOINTS.BASE, {
+            params: { page: 1, limit: 200 },
+          }),
+        'No se pudieron cargar las gestiones'
+      ),
+    [runSilent]
   );
 
   const marcarGestionVigente = useCallback(
@@ -67,6 +94,15 @@ export function useOfertaAcademicaApi() {
         'No se pudieron cargar los planes habilitados'
       ),
     [run]
+  );
+
+  const fetchPlanesHabilitadosSilent = useCallback(
+    (gestionId) =>
+      runSilent(
+        () => apiClient.get(GESTIONES_ENDPOINTS.PLANES_HABILITADOS(gestionId)),
+        'No se pudieron cargar los planes habilitados'
+      ),
+    [runSilent]
   );
 
   const fetchPlanesVigentesCatalogo = useCallback(
@@ -97,6 +133,15 @@ export function useOfertaAcademicaApi() {
         'No se pudieron cargar los paralelos de gestión'
       ),
     [run]
+  );
+
+  const fetchParalelosGestionSilent = useCallback(
+    (gestionPlanId) =>
+      runSilent(
+        () => apiClient.get(GESTIONES_PLANES_ENDPOINTS.PARALELOS_GESTION(gestionPlanId)),
+        'No se pudieron cargar los paralelos de gestión'
+      ),
+    [runSilent]
   );
 
   const generarParalelosGestion = useCallback(
@@ -230,6 +275,15 @@ export function useOfertaAcademicaApi() {
     [run]
   );
 
+  const fetchParaleloGestionDetalleSilent = useCallback(
+    (id) =>
+      runSilent(
+        () => apiClient.get(PARALELOS_GESTION_ENDPOINTS.BY_ID(id)),
+        'No se pudo cargar el detalle del paralelo'
+      ),
+    [runSilent]
+  );
+
   const fetchOfertaCursos = useCallback(
     (paraleloGestionId) =>
       run(
@@ -237,6 +291,15 @@ export function useOfertaAcademicaApi() {
         'No se pudo cargar la oferta de cursos'
       ),
     [run]
+  );
+
+  const fetchOfertaCursosSilent = useCallback(
+    (paraleloGestionId) =>
+      runSilent(
+        () => apiClient.get(PARALELOS_GESTION_ENDPOINTS.OFERTA_CURSOS(paraleloGestionId)),
+        'No se pudo cargar la oferta de cursos'
+      ),
+    [runSilent]
   );
 
   const crearOfertaCursoManual = useCallback(
@@ -262,15 +325,23 @@ export function useOfertaAcademicaApi() {
     [run]
   );
 
+  const fetchAulasCatalogoSilent = useCallback(
+    () => runSilent(() => apiClient.get(AULAS_CATALOGO_ENDPOINT), 'No se pudieron cargar las aulas'),
+    [runSilent]
+  );
+
   return {
     loading,
     error,
     fetchGestiones,
+    fetchGestionesSilent,
     marcarGestionVigente,
     fetchPlanesHabilitados,
+    fetchPlanesHabilitadosSilent,
     fetchPlanesVigentesCatalogo,
     habilitarPlan,
     fetchParalelosGestion,
+    fetchParalelosGestionSilent,
     generarParalelosGestion,
     generarParalelosGestionSilent,
     validarOferta,
@@ -281,9 +352,12 @@ export function useOfertaAcademicaApi() {
     cambiarTurnoParaleloGestion,
     updateParaleloGestionEstado,
     fetchParaleloGestionDetalle,
+    fetchParaleloGestionDetalleSilent,
     fetchOfertaCursos,
+    fetchOfertaCursosSilent,
     crearOfertaCursoManual,
     eliminarOfertaCurso,
     fetchAulasCatalogo,
+    fetchAulasCatalogoSilent,
   };
 }

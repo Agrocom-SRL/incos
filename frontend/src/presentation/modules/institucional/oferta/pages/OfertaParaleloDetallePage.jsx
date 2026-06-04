@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Alert, Card, Flex, Spin } from 'antd';
 import { ArrowLeftOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -6,7 +7,9 @@ import { ActionButton } from '@atoms';
 import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useOfertaParaleloDetalleState } from '@application-institucional/oferta';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
-import DocenteAsignacionCursoModal from '@institucional/horarios/components/organisms/DocenteAsignacionCursoModal';
+const DocenteAsignacionCursoModal = lazy(
+  () => import('@institucional/horarios/components/organisms/DocenteAsignacionCursoModal'),
+);
 import {
   OfertaParaleloAulaSelectModal,
   OfertaParaleloDetalleContextHeader,
@@ -88,8 +91,7 @@ const OfertaParaleloDetallePage = () => {
 
       <DashboardPageShell>
         <MainContent>
-          <Spin spinning={s.apiLoading} tip="Cargando paralelo…">
-            <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+          <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
               {s.apiError ? <Alert type="error" showIcon title={s.apiError} /> : null}
 
               {carga.materiasEsperadas > 0 && !carga.valido ? (
@@ -122,25 +124,25 @@ const OfertaParaleloDetallePage = () => {
                 />
               ) : null}
 
-              <Card className="oferta-paralelo-detalle-workspace" {...sectionCardProps}>
-                <Flex vertical gap={allSpacing.marginLG}>
+              <Spin spinning={s.apiLoading} tip="Cargando paralelo…">
+                <Card className="oferta-paralelo-detalle-workspace" {...sectionCardProps}>
+                  <Flex vertical gap={allSpacing.marginLG}>
+                    <OfertaParaleloDetalleContextHeader
+                      detalle={s.detalle}
+                      puedeEditarAula={s.puedeEditarAula}
+                      onAsignarAula={s.openAulaModal}
+                    />
 
-                  <OfertaParaleloDetalleContextHeader
-                    detalle={s.detalle}
-                    puedeEditarAula={s.puedeEditarAula}
-                    onAsignarAula={s.openAulaModal}
-                  />
-
-                  <OfertaParaleloDetalleCursosSection
-                    ofertaCursos={s.ofertaCursos}
-                    cargaHorariaResumen={carga}
-                    faltantesDocenteIds={s.faltantesDocenteIds}
-                    onAsignarDocente={s.openDocenteModal}
-                  />
-                </Flex>
-              </Card>
+                    <OfertaParaleloDetalleCursosSection
+                      ofertaCursos={s.ofertaCursos}
+                      cargaHorariaResumen={carga}
+                      faltantesDocenteIds={s.faltantesDocenteIds}
+                      onAsignarDocente={s.openDocenteModal}
+                    />
+                  </Flex>
+                </Card>
+              </Spin>
             </Flex>
-          </Spin>
         </MainContent>
       </DashboardPageShell>
 
@@ -155,14 +157,16 @@ const OfertaParaleloDetallePage = () => {
       />
 
       {s.docenteModalOpen ? (
-        <DocenteAsignacionCursoModal
-          open={s.docenteModalOpen}
-          onClose={s.closeDocenteModal}
-          selectedCourse={s.docenteModalSelectedCourse}
-          gestionId={s.detalle?.gestionId}
-          paraleloLabel={s.docenteModalParaleloLabel}
-          onAssigned={s.onDocenteAsignado}
-        />
+        <Suspense fallback={null}>
+          <DocenteAsignacionCursoModal
+            open={s.docenteModalOpen}
+            onClose={s.closeDocenteModal}
+            selectedCourse={s.docenteModalSelectedCourse}
+            gestionId={s.detalle?.gestionId}
+            paraleloLabel={s.docenteModalParaleloLabel}
+            onAssigned={s.onDocenteAsignado}
+          />
+        </Suspense>
       ) : null}
     </Flex>
   );

@@ -94,23 +94,35 @@ export function useRolPermisos() {
     setCodigoToPermisoId(buildCodigoMap(ppd));
   }, []);
 
-  const cargar = useCallback(async (rolId, dominio) => {
-    if (!rolId || !dominio) return null;
-    ultimoDominioRef.current = dominio;
-    setLoading(true);
-    setDelta({});
-    try {
-      const [full, grilla] = await Promise.all([
-        useCasesFactory.obtenerPermisosRolAdmin().ejecutar(rolId),
-        useCasesFactory.obtenerPermisosGrillaRolAdmin().ejecutar(rolId, dominio),
-      ]);
-      aplicarSnapshotCompleto(full);
-      setGrupos(Array.isArray(grilla) ? grilla : []);
-      return { full, grilla };
-    } finally {
-      setLoading(false);
-    }
-  }, [aplicarSnapshotCompleto]);
+  const cargar = useCallback(
+    async (rolId, dominio) => {
+      if (!rolId || !dominio) return null;
+      ultimoDominioRef.current = dominio;
+      setLoading(true);
+      setDelta({});
+      try {
+        const mismoRol = Number(rol?.id) === Number(rolId);
+        if (mismoRol) {
+          const grilla = await useCasesFactory
+            .obtenerPermisosGrillaRolAdmin()
+            .ejecutar(rolId, dominio);
+          setGrupos(Array.isArray(grilla) ? grilla : []);
+          return { grilla };
+        }
+
+        const [full, grilla] = await Promise.all([
+          useCasesFactory.obtenerPermisosRolAdmin().ejecutar(rolId),
+          useCasesFactory.obtenerPermisosGrillaRolAdmin().ejecutar(rolId, dominio),
+        ]);
+        aplicarSnapshotCompleto(full);
+        setGrupos(Array.isArray(grilla) ? grilla : []);
+        return { full, grilla };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [aplicarSnapshotCompleto, rol],
+  );
 
   const obtenerDelta = useCallback(() => Object.values(delta), [delta]);
 

@@ -2,7 +2,7 @@
  * Pantalla B — Cuaderno del curso (grilla de notas del bimestre activo).
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Modal, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -27,7 +27,7 @@ import CuadernoGrillaSeparador from '../components/CuadernoGrillaSeparador.jsx';
 import NotasGrid from '../components/NotasGrid.jsx';
 import CuadernoFooter from '../components/CuadernoFooter.jsx';
 import CuadernoSkeleton from '../components/CuadernoSkeleton.jsx';
-import EvaluacionDrawer from '../components/EvaluacionDrawer.jsx';
+const EvaluacionDrawer = lazy(() => import('../components/EvaluacionDrawer.jsx'));
 import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/calificaciones.css';
@@ -226,6 +226,7 @@ const CuadernoPage = () => {
     puedeEditarNotas,
     puedeGuardarBimestre,
     isLoading,
+    isRefetching,
     error,
     refetch,
     breadcrumbItems,
@@ -420,7 +421,7 @@ const CuadernoPage = () => {
       <PageHeaderArea>{pageHeader}</PageHeaderArea>
 
       <MainContent>
-        <Spin spinning={isLoading} tip="Cargando cuaderno…">
+        <Spin spinning={isRefetching} tip="Actualizando cuaderno…">
           <CuadernoAutosaveProvider>
             <Flex vertical gap={allSpacing.marginLG} className="sd cal-cuaderno">
               {error ? (
@@ -440,22 +441,24 @@ const CuadernoPage = () => {
       </MainContent>
 
       {drawerAbierto ? (
-        <EvaluacionDrawer
-          abierto
-          modo={drawerModo}
-          evaluacion={evaluacionEditar}
-          cursoId={cursoId}
-          bimestre={bimestreActivo}
-          evaluacionesActuales={evaluaciones}
-          estudiantes={estudiantes}
-          onCerrar={cerrarDrawer}
-          onGuardado={handleGuardado}
-          onEliminado={handleEliminado}
-          crearEvaluacion={crearEvaluacion}
-          editarEvaluacion={editarEvaluacion}
-          cuotaTeorico={cuotaTeorico}
-          cuotaPractico={cuotaPractico}
-        />
+        <Suspense fallback={null}>
+          <EvaluacionDrawer
+            abierto
+            modo={drawerModo}
+            evaluacion={evaluacionEditar}
+            cursoId={cursoId}
+            bimestre={bimestreActivo}
+            evaluacionesActuales={evaluaciones}
+            estudiantes={estudiantes}
+            onCerrar={cerrarDrawer}
+            onGuardado={handleGuardado}
+            onEliminado={handleEliminado}
+            crearEvaluacion={crearEvaluacion}
+            editarEvaluacion={editarEvaluacion}
+            cuotaTeorico={cuotaTeorico}
+            cuotaPractico={cuotaPractico}
+          />
+        </Suspense>
       ) : null}
     </Flex>
   );

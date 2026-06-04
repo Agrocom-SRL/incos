@@ -23,14 +23,23 @@
  */
 
 import { createApiHook } from '@application/utils';
+import { DEFAULT_LIST_LIMIT, DEFAULT_LIST_PAGE } from '@application/constants/listPagination';
 
 export const useInscripcionesApi = createApiHook({
   name: 'useInscripcionesApi',
   useCase: 'obtenerTodasInscripciones',
-  dataType: 'array', // Retorna un array
-  initialLoading: false, // No carga automáticamente al montar
-  autoFetch: true, // Carga automáticamente al montar
-  autoFetchArgs: [{ params: { page: 1, limit: 10000 } }], // Traer todos los registros (búsqueda/filtro en cliente)
-  dataKey: 'inscripciones', // Nombre de la propiedad en el resultado
+  dataType: 'array',
+  initialLoading: false,
+  autoFetch: false,
+  paginationKey: 'pagination',
+  dataKey: 'inscripciones',
   errorMessage: 'Error al cargar las inscripciones',
+});
+
+export const inscripcionesListFetchParams = (overrides = {}) => ({
+  params: {
+    page: DEFAULT_LIST_PAGE,
+    limit: DEFAULT_LIST_LIMIT,
+    ...overrides,
+  },
 });

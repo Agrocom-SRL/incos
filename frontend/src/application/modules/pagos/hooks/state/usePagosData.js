@@ -17,7 +17,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { usePagosApi } from '@application-pagos/hooks/api/usePagosApi';
+import { usePagosApi, pagosListFetchParams } from '@application-pagos/hooks/api/usePagosApi';
 import { useDeletePagoAporte } from '@application-pagos/hooks/api/useDeletePagoAporte';
 
 export const usePagosData = () => {
@@ -27,7 +27,7 @@ export const usePagosData = () => {
     const [pagos, setPagos] = useState([]);
 
     useEffect(() => {
-        if (pagosFromApi.length >= 0) {
+        if (pagosFromApi.length > 0) {
             setPagos(pagosFromApi);
         }
     }, [pagosFromApi]);
@@ -66,7 +66,8 @@ export const usePagosData = () => {
     }, [deletePagoAporteApi, removePago]);
 
     const refetch = useCallback(async (options = {}) => {
-        await refetchFromApi(options);
+        const hasArgs = options && Object.keys(options).length > 0;
+        await refetchFromApi(hasArgs ? options : pagosListFetchParams());
     }, [refetchFromApi]);
 
     return useMemo(

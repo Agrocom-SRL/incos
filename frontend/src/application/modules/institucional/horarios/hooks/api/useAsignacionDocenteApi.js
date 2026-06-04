@@ -37,6 +37,20 @@ export function useAsignacionDocenteApi() {
     }
   }, []);
 
+  const runSilent = useCallback(async (fn, fallbackMessage) => {
+    try {
+      const response = await fn();
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || fallbackMessage };
+      }
+      return { success: true, data: result.data, pagination: result.pagination };
+    } catch (err) {
+      const fail = handleErrorResponse(err, fallbackMessage);
+      return { success: false, error: fail.error, raw: err };
+    }
+  }, []);
+
   const fetchAsignaciones = useCallback(
     (params = {}) =>
       run(
@@ -47,6 +61,18 @@ export function useAsignacionDocenteApi() {
         'No se pudieron cargar las asignaciones'
       ),
     [run]
+  );
+
+  const fetchAsignacionesSilent = useCallback(
+    (params = {}) =>
+      runSilent(
+        () =>
+          apiClient.get(ASIGNACIONES_DOCENTES_ENDPOINTS.BASE, {
+            params: { page: 1, limit: 500, vigente: true, ...params },
+          }),
+        'No se pudieron cargar las asignaciones'
+      ),
+    [runSilent]
   );
 
   const fetchOfertaCursos = useCallback(
@@ -124,6 +150,7 @@ export function useAsignacionDocenteApi() {
     loading,
     error,
     fetchAsignaciones,
+    fetchAsignacionesSilent,
     fetchOfertaCursos,
     fetchCobertura,
     fetchCargaGestion,

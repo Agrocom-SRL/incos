@@ -8,14 +8,20 @@ export const HORARIOS_MENU_ROUTE_KEY = 'INST-HORARIOS';
 /**
  * Navegación al detalle de oferta del paralelo con retorno al dashboard de horarios.
  * @param {number} paraleloGestionId
+ * @param {{ ofertaCursoId?: number }} [opts] — abre el modal de asignación docente al cargar la ficha
  */
-export function buildOfertaParaleloDetalleFromHorarios(paraleloGestionId) {
+export function buildOfertaParaleloDetalleFromHorarios(paraleloGestionId, opts = {}) {
+    const state = {
+        returnListPath: HORARIOS_GESTION_PATH,
+        menuSidebarKey: HORARIOS_MENU_ROUTE_KEY,
+    };
+    const ofertaCursoId = Number(opts.ofertaCursoId);
+    if (Number.isFinite(ofertaCursoId) && ofertaCursoId > 0) {
+        state.ofertaCursoId = ofertaCursoId;
+    }
     return {
         pathname: ofertaPaths.paraleloDetalle(paraleloGestionId),
-        state: {
-            returnListPath: HORARIOS_GESTION_PATH,
-            menuSidebarKey: HORARIOS_MENU_ROUTE_KEY,
-        },
+        state,
     };
 }
 

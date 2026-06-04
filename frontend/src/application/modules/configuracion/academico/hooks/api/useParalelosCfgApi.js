@@ -1,7 +1,9 @@
 import { createApiHook, normalizeFieldToArray } from '@application/utils';
 import { mapParalelosList } from '@application-academico/paralelos/mappers';
 
-const LIST_FETCH_PARAMS = { params: { page: 1, limit: 10000 } };
+import { CATALOG_LIST_LIMIT, DEFAULT_LIST_PAGE } from '@application/constants/listPagination';
+
+const LIST_FETCH_PARAMS = { params: { page: DEFAULT_LIST_PAGE, limit: CATALOG_LIST_LIMIT } };
 
 export const useParalelosCfgApi = createApiHook({
   name: 'useParalelosCfgApi',
