@@ -15,7 +15,7 @@ SELECT
   ah.id AS asignacion_horario_id,
   ah.horario_id,
   ah.aula_id,
-  gp.gestion_plan_id,
+  gp.id AS gestion_plan_id,
   gp.gestion_id,
   CONCAT('OC-', oc.id) AS curso_codigo,
   doc.color_hex AS curso_color_hex,
