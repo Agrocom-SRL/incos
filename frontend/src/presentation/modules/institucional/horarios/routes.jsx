@@ -79,12 +79,7 @@ export const horariosRoutes = [
     key: 'INST-HORARIO-CONFLICTOS',
     permiso: 'institucional.horario.armado',
     accion: 'LISTAR',
-    menu: {
-      label: 'Resolver conflictos',
-      module: 'INST',
-      parent: 'INST',
-      order: 5,
-    },
+    menu: null,
     breadcrumbParent: 'INST-HORARIOS',
   },
   {

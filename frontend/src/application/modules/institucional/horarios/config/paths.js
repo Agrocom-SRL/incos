@@ -80,7 +80,11 @@ export function buildResolverConflictoDocenteNavTarget(docenteRow = {}) {
 
     const docenteId = Number(docenteRow.docenteId);
     if (Number.isFinite(docenteId) && docenteId > 0) {
-        return { pathname: buildHorariosConflictosUrl(docenteId) };
+        return {
+            pathname: HORARIOS_CONFLICTOS_PATH,
+            search: `?docenteId=${docenteId}`,
+            state: returnHorariosDashboardState(),
+        };
     }
 
     if (Number.isFinite(pg) && pg > 0) {

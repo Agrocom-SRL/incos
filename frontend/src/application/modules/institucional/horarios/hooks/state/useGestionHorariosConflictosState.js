@@ -21,8 +21,10 @@ import {
     moveBlockToSlot,
     swapOrMoveBlockToSlot,
 } from '@application-institucional/horarios/utils/planSemanalBlockOps';
-import { HORARIOS_GESTION_PATH } from '@application-institucional/horarios/config/paths';
-import { buildHorariosConflictosUrl } from '@application-institucional/horarios/config/paths';
+import {
+    HORARIOS_CONFLICTOS_PATH,
+    HORARIOS_GESTION_PATH,
+} from '@application-institucional/horarios/config/paths';
 
 export const useGestionHorariosConflictosState = () => {
     const navigate = useNavigate();
@@ -116,10 +118,22 @@ export const useGestionHorariosConflictosState = () => {
                 setSearchParams({}, { replace: true });
                 return;
             }
-            navigate(buildHorariosConflictosUrl(n), { replace: true });
+            navigate(
+                { pathname: HORARIOS_CONFLICTOS_PATH, search: `?docenteId=${n}` },
+                { replace: true },
+            );
         },
         [navigate, setSearchParams],
     );
+
+    useEffect(() => {
+        if (docenteId != null) return;
+        const unico = (docentesConConflictos || []).filter((d) => d?.docenteId != null);
+        if (unico.length !== 1) return;
+        const id = Number(unico[0].docenteId);
+        if (!Number.isFinite(id) || id < 1) return;
+        navigate({ pathname: HORARIOS_CONFLICTOS_PATH, search: `?docenteId=${id}` }, { replace: true });
+    }, [docenteId, docentesConConflictos, navigate]);
 
     const validatePlacement = useCallback(
         async ({

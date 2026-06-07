@@ -1,4 +1,4 @@
-import { Alert, Card, Flex, Select, Spin, Typography } from 'antd';
+import { Alert, Card, Flex, Spin, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -25,7 +25,6 @@ const sectionCardProps = {
 const GestionHorariosConflictosPage = () => {
     const {
         docenteId,
-        setDocenteId,
         docentesConConflictos,
         gestionVigente,
         loading,
@@ -42,10 +41,10 @@ const GestionHorariosConflictosPage = () => {
         pageTitle,
     } = useHorariosConflictosContext();
 
-    const docenteOptions = (docentesConConflictos || []).map((d) => ({
-        value: d.docenteId,
-        label: d.docenteNombre || `Docente #${d.docenteId}`,
-    }));
+    const docenteNombre =
+        grilla?.docenteNombre ||
+        (docentesConConflictos || []).find((d) => Number(d.docenteId) === Number(docenteId))?.docenteNombre ||
+        (docenteId ? `Docente #${docenteId}` : null);
 
     const headerActions = (
         <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
@@ -61,29 +60,16 @@ const GestionHorariosConflictosPage = () => {
             <Spin spinning={loading} size="large" tip="Cargando grilla del docente…">
                 <div className="sd sd-spin-body horarios-conflictos-page">
                     <Flex vertical gap={allSpacing.marginLG}>
-                        <Alert
-                            type="info"
-                            showIcon
-                            title="Resolución en Institucional"
-                            description="Los choques de horario se resuelven moviendo bloques en esta grilla. La asignación docente ↔ materia ofertada se gestiona en Institucional → Oferta académica; el color del docente en su ficha."
-                        />
 
                         <Card {...sectionCardProps}>
                             <Flex vertical gap={allSpacing.marginMD}>
                                 <Flex wrap="wrap" gap={allSpacing.marginMD} align="flex-end">
-                                    <Flex vertical gap={4} style={{ minWidth: 280, flex: '1 1 280px' }}>
-                                        <Text type="secondary">Docente con conflicto operativo</Text>
-                                        <Select
-                                            showSearch
-                                            allowClear
-                                            placeholder="Elegí un docente…"
-                                            optionFilterProp="label"
-                                            value={docenteId ?? undefined}
-                                            onChange={(v) => setDocenteId(v ?? null)}
-                                            options={docenteOptions}
-                                            style={{ width: '100%' }}
-                                        />
-                                    </Flex>
+                                    {docenteId && docenteNombre ? (
+                                        <Flex vertical gap={4} style={{ minWidth: 280, flex: '1 1 280px' }}>
+                                            <Text type="secondary">Docente con conflicto operativo</Text>
+                                            <Text strong>{docenteNombre}</Text>
+                                        </Flex>
+                                    ) : null}
                                     {gestionVigente ? (
                                         <Text type="secondary">
                                             Gestión:{' '}

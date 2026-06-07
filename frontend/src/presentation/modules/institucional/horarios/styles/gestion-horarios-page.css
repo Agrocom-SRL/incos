@@ -812,14 +812,52 @@
 }
 
 /* === Resolución de conflictos docente (grilla agregada) === */
+@keyframes horarios-conflictos-parpadeo {
+    0%,
+    100% {
+        border-color: var(--ant-color-error, #ff4d4f);
+        background-color: rgba(255, 77, 79, 0.18);
+        box-shadow: inset 0 0 0 0 rgba(255, 77, 79, 0);
+    }
+    50% {
+        border-color: var(--ant-color-error-active, #d9363e);
+        background-color: rgba(255, 77, 79, 0.48);
+        box-shadow: inset 0 0 14px 0 rgba(255, 77, 79, 0.35);
+    }
+}
+
+@keyframes horarios-conflictos-chip-parpadeo {
+    0%,
+    100% {
+        outline-color: var(--ant-color-error, #ff4d4f);
+        outline-width: 2px;
+    }
+    50% {
+        outline-color: var(--ant-color-error-active, #d9363e);
+        outline-width: 3px;
+    }
+}
+
+/* Zona roja punteada (slot con 2+ bloques) — parpadeo visible */
+.horarios-conflictos-page .da-cal-semanal__slot-wrap--conflict {
+    animation: horarios-conflictos-parpadeo 1s ease-in-out infinite;
+}
+
 .horarios-conflictos-celda--choque,
 .da-cal-semanal__cell-inner.horarios-conflictos-celda--choque {
     outline: 2px solid var(--ant-color-error, #ff4d4f);
     outline-offset: -2px;
-    background-color: var(--ant-color-error-bg, #fff2f0);
 }
 
-.da-cal-semanal__chip--conflicto {
+.horarios-conflictos-page .da-cal-semanal__chip--conflicto {
     outline: 2px solid var(--ant-color-error, #ff4d4f);
-    box-shadow: 0 0 0 1px var(--ant-color-error-border, #ffccc7);
+    outline-offset: 0;
+    animation: horarios-conflictos-chip-parpadeo 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .horarios-conflictos-page .da-cal-semanal__slot-wrap--conflict,
+    .horarios-conflictos-page .da-cal-semanal__chip--conflicto {
+        animation: none;
+    }
 }
