@@ -2,6 +2,12 @@
  * GET /horarios/docentes/:docenteId/grilla-conflictos — grilla semanal del docente y pares en choque.
  */
 
+import {
+  bloquesConflictoIdsFromPares,
+  resolveParalelosConflictoHorarioResolucion,
+  solapeParaleloHorarioKeySet,
+} from '../../utils/horarios/resolveParalelosConflictoHorarioResolucion.js';
+
 function normalizeHex(v) {
   if (v == null || v === '') return null;
   const s = String(v).trim();
@@ -40,40 +46,6 @@ function mergeFranjasCatalogo(existingFranjas, catalogoFranjas) {
   return [...map.values()];
 }
 
-function buildParalelosInvolucrados(scheduleRows, paresConflicto) {
-  const turnoPorPgId = new Map();
-  for (const r of scheduleRows || []) {
-    const id = Number(r.paralelo_gestion_id);
-    if (!Number.isFinite(id) || id < 1) continue;
-    const turno = r.paralelo_turno ?? r.horario_turno ?? null;
-    if (turno != null && String(turno).trim() && !turnoPorPgId.has(id)) {
-      turnoPorPgId.set(id, String(turno).trim());
-    }
-  }
-
-  const map = new Map();
-  const add = (pgId, nombre) => {
-    const id = Number(pgId);
-    if (!Number.isFinite(id) || id < 1) return;
-    if (!map.has(id)) {
-      map.set(id, {
-        paraleloGestionId: id,
-        paraleloNombre: nombre ?? `Paralelo #${id}`,
-        turno: turnoPorPgId.get(id) ?? null,
-      });
-    }
-  };
-
-  for (const p of paresConflicto || []) {
-    add(p.paraleloGestionIdA, p.paraleloA);
-    add(p.paraleloGestionIdB, p.paraleloB);
-  }
-
-  return [...map.values()].sort((a, b) =>
-    String(a.paraleloNombre || '').localeCompare(String(b.paraleloNombre || '')),
-  );
-}
-
 function resolveTurnoEfectivo(scheduleRows, paralelosInvolucrados) {
   for (const r of scheduleRows || []) {
     const t = r.paralelo_turno ?? r.horario_turno;
@@ -85,13 +57,17 @@ function resolveTurnoEfectivo(scheduleRows, paralelosInvolucrados) {
   return null;
 }
 
-function groupCourseSchedules(rows, docenteNombre) {
+function groupCourseSchedules(rows, docenteNombre, bloquesConflictoIds) {
+  const conflictoSet =
+    bloquesConflictoIds instanceof Set ? bloquesConflictoIds : new Set(bloquesConflictoIds || []);
   const byCourse = new Map();
   const franjas = new Map();
 
   for (const r of rows || []) {
     const cursoId = Number(r.oferta_curso_id);
     if (!Number.isFinite(cursoId) || cursoId < 1) continue;
+
+    const bloqueId = r.asignacion_horario_id != null ? Number(r.asignacion_horario_id) : null;
 
     if (!byCourse.has(cursoId)) {
       byCourse.set(cursoId, {
@@ -106,7 +82,7 @@ function groupCourseSchedules(rows, docenteNombre) {
         materiaSigla: r.materia_sigla ?? null,
         carrera: r.carrera_nombre ?? null,
         docente: docenteNombre ?? null,
-        docenteEnConflictoHorario: Number(r.tiene_conflicto_horario) === 1,
+        docenteEnConflictoHorario: false,
         bloques: [],
       });
     }
@@ -116,6 +92,13 @@ function groupCourseSchedules(rows, docenteNombre) {
     const dia = r.dia ? String(r.dia).toUpperCase() : null;
     const horaInicio = fmtHora(r.hora_inicio);
     const horaFin = fmtHora(r.hora_fin);
+    const bloqueEnConflicto =
+      (bloqueId != null && conflictoSet.has(bloqueId)) ||
+      Number(r.tiene_conflicto_horario) === 1;
+
+    if (bloqueEnConflicto) {
+      course.docenteEnConflictoHorario = true;
+    }
 
     if (horarioId && dia && horaInicio && horaFin) {
       const fk = `${dia}|${horaInicio}|${horaFin}|${horarioId}`;
@@ -131,8 +114,7 @@ function groupCourseSchedules(rows, docenteNombre) {
 
     course.bloques.push({
       orden: r.orden_secuencia != null ? Number(r.orden_secuencia) : course.bloques.length + 1,
-      cursoHorarioId:
-        r.asignacion_horario_id != null ? Number(r.asignacion_horario_id) : null,
+      cursoHorarioId: bloqueId,
       horarioId,
       asignacionDocenteId:
         r.asignacion_docente_id != null ? Number(r.asignacion_docente_id) : null,
@@ -145,7 +127,7 @@ function groupCourseSchedules(rows, docenteNombre) {
         ? `${r.aula_codigo || ''} — ${r.aula_nombre}`.replace(/^ — /, '')
         : r.aula_codigo || null,
       aulaId: r.aula_id != null ? Number(r.aula_id) : null,
-      tieneConflicto: Number(r.tiene_conflicto_horario) === 1,
+      tieneConflicto: bloqueEnConflicto,
     });
   }
 
@@ -170,6 +152,7 @@ export class DocenteGrillaConflictosPresentationMapper {
    *   teacher: object|null,
    *   scheduleRows: object[],
    *   paresConflicto: object[],
+   *   solapeParaleloHorario?: object[],
    *   lineasDetalle: string[],
    *   catalogoFranjas?: object[],
    * }} bundle
@@ -183,24 +166,31 @@ export class DocenteGrillaConflictosPresentationMapper {
       .join(' ')
       .trim();
 
+    const paresRaw = bundle.paresConflicto || [];
+    const bloquesConflictoIds = bloquesConflictoIdsFromPares(paresRaw);
+    const solapeKeys = solapeParaleloHorarioKeySet(bundle.solapeParaleloHorario ?? []);
+
     const { courseSchedules, franjas: franjasOcupadas } = groupCourseSchedules(
       bundle.scheduleRows,
       docenteNombre,
+      bloquesConflictoIds,
     );
 
     const franjas = mergeFranjasCatalogo(franjasOcupadas, bundle.catalogoFranjas ?? []);
-    const paralelosInvolucrados = buildParalelosInvolucrados(
-      bundle.scheduleRows,
-      bundle.paresConflicto,
-    );
-    const turnoEfectivo = resolveTurnoEfectivo(bundle.scheduleRows, paralelosInvolucrados);
 
     const conflictHorarioIds = new Set();
-    for (const p of bundle.paresConflicto || []) {
+    for (const p of paresRaw) {
       if (p.horarioId != null) conflictHorarioIds.add(Number(p.horarioId));
     }
 
-    const paresConflicto = (bundle.paresConflicto || []).map((p) => ({
+    const paralelosInvolucrados = resolveParalelosConflictoHorarioResolucion(
+      paresRaw,
+      solapeKeys,
+      bundle.scheduleRows,
+    );
+    const turnoEfectivo = resolveTurnoEfectivo(bundle.scheduleRows, paralelosInvolucrados);
+
+    const paresConflicto = paresRaw.map((p) => ({
       bloqueAId: p.bloqueAId != null ? Number(p.bloqueAId) : null,
       bloqueBId: p.bloqueBId != null ? Number(p.bloqueBId) : null,
       horarioId: p.horarioId != null ? Number(p.horarioId) : null,
@@ -216,6 +206,8 @@ export class DocenteGrillaConflictosPresentationMapper {
       descripcion: p.descripcion ?? null,
     }));
 
+    const solapeParaleloHorarioKeys = [...solapeKeys];
+
     return {
       docenteId: Number(t.docente_id ?? t.id),
       docenteNombre: docenteNombre || null,
@@ -225,6 +217,8 @@ export class DocenteGrillaConflictosPresentationMapper {
       franjas,
       paralelosInvolucrados,
       conflictHorarioIds: [...conflictHorarioIds],
+      bloquesConflictoIds: [...bloquesConflictoIds],
+      solapeParaleloHorarioKeys,
       paresConflicto,
       lineasDetalle: Array.isArray(bundle.lineasDetalle) ? bundle.lineasDetalle : [],
     };

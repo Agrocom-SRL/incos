@@ -5,6 +5,10 @@ import { PageTemplate } from '@templates';
 import { PageHeader, ListPanelHeader } from '@molecules';
 import { useHorariosConflictosContext } from '@application-institucional/horarios/hooks/context/useHorariosConflictosContext';
 import {
+    conflictHorarioIdsForParaleloTab,
+    solapeParaleloHorarioKeySet,
+} from '@application-institucional/horarios/utils/resolveParalelosTabsConflicto';
+import {
     isParaleloGestionHorarioEditable,
     isParaleloGestionPlanSemanalEditable,
 } from '@application-institucional/horarios/utils/paraleloGestionHorarioEditable';
@@ -45,6 +49,11 @@ const GestionHorariosConflictosPage = () => {
         turnoEfectivo,
         conflictoResuelto,
     } = useHorariosConflictosContext();
+
+    const solapeParaleloHorarioKeys = useMemo(
+        () => solapeParaleloHorarioKeySet(grilla?.solapeParaleloHorarioKeys ?? []),
+        [grilla?.solapeParaleloHorarioKeys],
+    );
 
     const docenteNombre =
         grilla?.docenteNombre ||
@@ -128,6 +137,15 @@ const GestionHorariosConflictosPage = () => {
             const panelLoading = !isDocente && Boolean(paraleloState?.loading);
             const panelError = !isDocente ? paraleloState?.error : null;
 
+            const conflictIdsParalelo = (() => {
+                const scoped = conflictHorarioIdsForParaleloTab(
+                    pgId,
+                    grilla?.paresConflicto ?? [],
+                    solapeParaleloHorarioKeys,
+                );
+                return scoped.size > 0 ? scoped : conflictHorarioIds;
+            })();
+
             return {
                 key: String(opcion.key),
                 label: (
@@ -156,7 +174,7 @@ const GestionHorariosConflictosPage = () => {
                             persistLoading={persistLoading}
                             onRequestPersist={() => onRequestPersist(pgId)}
                             validatePlacement={validatePlacement}
-                            conflictHorarioIds={conflictHorarioIds}
+                            conflictHorarioIds={conflictIdsParalelo}
                             horarioSlotIndex={horarioSlotIndex}
                             docenteConflictMode
                             headerMinimal
@@ -173,6 +191,8 @@ const GestionHorariosConflictosPage = () => {
         turnoEfectivo,
         conflictHorarioIds,
         horarioSlotIndex,
+        solapeParaleloHorarioKeys,
+        grilla?.paresConflicto,
         setParaleloDraftSchedules,
         persistLoading,
         onRequestPersist,

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { App } from 'antd';
 import apiClient from '@api-client';
 import { HORARIOS_DOCENTE_ENDPOINTS, PARALELOS_GESTION_ENDPOINTS } from '@api/endpoints';
@@ -40,6 +40,11 @@ import {
     buildMergedDocenteSchedules,
     computeConflictHorarioIds,
 } from '@application-institucional/horarios/utils/computeConflictosBloquesLive';
+import {
+    resolveParalelosConflictoHorarioResolucion,
+    conflictHorarioIdsForParaleloTab,
+    solapeParaleloHorarioKeySet,
+} from '@application-institucional/horarios/utils/resolveParalelosTabsConflicto';
 
 const VISTA_DOCENTE = 'docente';
 
@@ -57,6 +62,7 @@ function parseVistaModo(vistaParam) {
 
 export const useGestionHorariosConflictosState = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
     const { notification } = App.useApp();
 
@@ -102,20 +108,41 @@ export const useGestionHorariosConflictosState = () => {
         [grilla?.franjas],
     );
 
-    const paralelosInvolucrados = useMemo(
+    const paralelosMeta = useMemo(
         () => grilla?.paralelosInvolucrados ?? [],
         [grilla?.paralelosInvolucrados],
     );
+
+    const solapeParaleloHorarioKeys = useMemo(
+        () => solapeParaleloHorarioKeySet(grilla?.solapeParaleloHorarioKeys ?? []),
+        [grilla?.solapeParaleloHorarioKeys],
+    );
+
+    const allParalelosForMerge = useMemo(() => {
+        const merged = new Map(paralelosMeta.map((p) => [Number(p.paraleloGestionId), p]));
+        for (const [key, st] of Object.entries(paraleloStates)) {
+            const id = Number(key);
+            if (!Number.isFinite(id) || id < 1) continue;
+            if (!merged.has(id)) {
+                merged.set(id, {
+                    paraleloGestionId: id,
+                    paraleloNombre: st?.paraleloNombre ?? `Paralelo #${id}`,
+                    turno: st?.turno ?? null,
+                });
+            }
+        }
+        return [...merged.values()];
+    }, [paralelosMeta, paraleloStates]);
 
     const mergedDocenteParaConflictos = useMemo(
         () =>
             buildMergedDocenteSchedules(
                 docenteDraftSchedules,
                 paraleloStates,
-                paralelosInvolucrados,
+                allParalelosForMerge,
                 grilla?.docenteNombre,
             ),
-        [docenteDraftSchedules, paraleloStates, paralelosInvolucrados, grilla?.docenteNombre],
+        [docenteDraftSchedules, paraleloStates, allParalelosForMerge, grilla?.docenteNombre],
     );
 
     const conflictHorarioIds = useMemo(() => {
@@ -131,9 +158,19 @@ export const useGestionHorariosConflictosState = () => {
         return live;
     }, [mergedDocenteParaConflictos, horarioSlotIndexDocente, grilla?.conflictHorarioIds]);
 
-    const turnoEfectivo = useMemo(() => grilla?.turnoEfectivo ?? null, [grilla?.turnoEfectivo]);
+    const paralelosInvolucrados = useMemo(() => {
+        if (!grilla) return [];
+        return resolveParalelosConflictoHorarioResolucion(
+            grilla.paresConflicto ?? [],
+            solapeParaleloHorarioKeys,
+            grilla.paralelosInvolucrados ?? [],
+        );
+    }, [grilla, solapeParaleloHorarioKeys]);
 
     const isParaleloVista = vistaModo !== VISTA_DOCENTE && Number.isFinite(vistaModo);
+
+    const turnoEfectivo = useMemo(() => grilla?.turnoEfectivo ?? null, [grilla?.turnoEfectivo]);
+
     const activeParaleloState = isParaleloVista ? paraleloStates[vistaModo] : null;
 
     const draftSchedules = isParaleloVista
@@ -549,7 +586,10 @@ export const useGestionHorariosConflictosState = () => {
         paralelosInvolucrados,
     ]);
 
-    const handleVolver = useCallback(() => navigate(HORARIOS_GESTION_PATH), [navigate]);
+    const handleVolver = useCallback(() => {
+        const returnPath = location.state?.returnListPath;
+        navigate(typeof returnPath === 'string' && returnPath.trim() ? returnPath : HORARIOS_GESTION_PATH);
+    }, [navigate, location.state]);
 
     const breadcrumbItems = useMemo(
         () => [

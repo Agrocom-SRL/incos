@@ -6,6 +6,10 @@ import {
     resolveCarreraDashboardColor,
 } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
+import {
+    labelParaleloSinDocentesCta,
+    permisoParaleloSinDocentesCta,
+} from '@application-institucional/horarios/config/paths';
 import { StatusTag } from '../atoms';
 
 const ctaByBucket = {
@@ -44,6 +48,7 @@ const ctaLabelForRow = (row) => {
         if (faltaCursos > 0) return 'Completar cursos';
         return 'Asignar horarios';
     }
+    if (bucket === 'sin_docentes') return labelParaleloSinDocentesCta(row);
     return ctaByBucket[bucket] || 'Abrir';
 };
 
@@ -117,7 +122,10 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) =
             width: 260,
             render: (_, row) => {
                 const bucket = row.boardBucket ?? resolveHorariosBoardBucket(row);
-                const actionPermiso = actionPermisoByBucket[bucket] ?? actionPermisoByBucket.sin_horarios;
+                const actionPermiso =
+                    bucket === 'sin_docentes'
+                        ? permisoParaleloSinDocentesCta(row)
+                        : (actionPermisoByBucket[bucket] ?? actionPermisoByBucket.sin_horarios);
                 return (
                     <Space size={8} wrap>
                         <ActionButton

@@ -3,6 +3,10 @@ import { Typography } from 'antd';
 import { allSpacing } from '@theme/tokens';
 import { Card, ActionButton } from '@atoms';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
+import {
+    labelParaleloSinDocentesCta,
+    permisoParaleloSinDocentesCta,
+} from '@application-institucional/horarios/config/paths';
 
 const ctaByBucket = {
     sin_horarios: 'Completar plan',
@@ -101,6 +105,7 @@ const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
             if (faltaCursos > 0) return 'Completar cursos';
             return 'Asignar horarios';
         }
+        if (bucket === 'sin_docentes') return labelParaleloSinDocentesCta(paralelo);
         return ctaByBucket[bucket] || 'Abrir';
     }, [paralelo, bucket]);
 
@@ -120,7 +125,10 @@ const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
                   ? 'success'
                   : 'default';
 
-    const actionPermiso = actionPermisoByBucket[bucket] ?? actionPermisoByBucket.sin_horarios;
+    const actionPermiso =
+        bucket === 'sin_docentes'
+            ? permisoParaleloSinDocentesCta(paralelo)
+            : (actionPermisoByBucket[bucket] ?? actionPermisoByBucket.sin_horarios);
 
     return (
         <Card

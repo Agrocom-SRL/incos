@@ -19,6 +19,7 @@ SELECT
   b.id AS asignacionHorarioId,
   oc.paralelo_gestion_id AS paraleloGestionId,
   ad.id AS asignacionDocenteId,
+  ad.docente_id AS docenteId,
   b.cursoId AS ofertaCursoId,
   b.horarioId AS horarioId,
   b.dia AS dia,

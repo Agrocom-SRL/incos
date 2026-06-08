@@ -13,6 +13,8 @@ import {
     buildHorariosArmadoUrl,
     buildHorariosAulasEdicionUrl,
     buildOfertaParaleloDetalleFromHorarios,
+    buildParaleloSinDocentesNavTarget,
+    formatHorariosNavTarget,
 } from '@application-institucional/horarios/config/paths';
 
 export const useGestionHorariosDashboardState = () => {
@@ -148,6 +150,11 @@ export const useGestionHorariosDashboardState = () => {
         return extraQuery ? `${base}&${extraQuery.replace(/^&/, '')}` : base;
     }, []);
 
+    const docentesConConflictosOperativos = useMemo(
+        () => pendientesSidebarRaw?.docentesConConflictosOperativos ?? [],
+        [pendientesSidebarRaw],
+    );
+
     const getParaleloActionTarget = useCallback(
         (paralelo) => {
             const bucket = paralelo.boardBucket ?? resolveHorariosBoardBucket(paralelo);
@@ -160,8 +167,8 @@ export const useGestionHorariosDashboardState = () => {
                 return buildOfertaParaleloDetalleFromHorarios(pgId);
             }
 
-            if (bucket === 'sin_docentes' && Number.isFinite(pgId) && pgId > 0) {
-                return buildOfertaParaleloDetalleFromHorarios(pgId);
+            if (bucket === 'sin_docentes') {
+                return buildParaleloSinDocentesNavTarget(paralelo, docentesConConflictosOperativos);
             }
 
             if (bucket === 'sin_horarios' && confAula > 0) {
@@ -204,13 +211,13 @@ export const useGestionHorariosDashboardState = () => {
             }
             return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'plan' }) };
         },
-        [],
+        [docentesConConflictosOperativos],
     );
 
     const onOpenArmado = useCallback(
         (paralelo) => {
-            const target = getParaleloActionTarget(paralelo);
-            navigate(target.pathname, target.state ? { state: target.state } : undefined);
+            const { to, state } = formatHorariosNavTarget(getParaleloActionTarget(paralelo));
+            navigate(to, state ? { state } : undefined);
         },
         [getParaleloActionTarget, navigate],
     );

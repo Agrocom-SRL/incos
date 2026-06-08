@@ -351,6 +351,39 @@
     padding-left: 1.1rem;
 }
 
+/* Celda con solape local (plan semanal / vista previa armado) — mismo parpadeo que conflictos docente */
+.horarios-armado-page .da-cal-semanal__slot-wrap--conflict {
+    min-height: 100%;
+    border: 2px dashed var(--ant-color-error-border, rgba(255, 77, 79, 0.65));
+    border-radius: 4px;
+    animation: horarios-conflictos-parpadeo 1.5s ease-in-out infinite;
+}
+
+.horarios-armado-page .da-cal-semanal__slot-wrap--conflict .da-cal-semanal__cell-inner--empty {
+    min-height: 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .horarios-armado-page .da-cal-semanal__slot-wrap--conflict {
+        animation: none;
+    }
+}
+
+.horarios-armado-cobertura-docente-link {
+    padding: 0;
+    height: auto;
+    font-weight: inherit;
+    vertical-align: baseline;
+}
+
+.horarios-armado-cobertura-docente-link.ant-typography {
+    color: var(--ant-color-error, #ff4d4f);
+}
+
+.horarios-armado-cobertura-docente-link.ant-typography:hover {
+    color: var(--ant-color-error-active, #d9363e);
+}
+
 .horarios-armado-docente--conflicto {
     color: var(--ant-color-error, #ff4d4f);
 }

@@ -3,7 +3,7 @@
 -- Bloques de asignacion_horarios por oferta asignada al docente (vigente).
 --
 -- Requiere desplegar antes:
---   65-vista-base-docente-asignacion-conflicto-horario.sql
+--   130-vista-base-docente-bloque-conflicto-horario.sql
 -- ============================================
 
 USE instituto_incos;
@@ -38,7 +38,7 @@ SELECT
   a.codigo AS aula_codigo,
   a.nombre AS aula_nombre,
   a.categoria AS aula_categoria,
-  CASE WHEN ch.asignacion_docente_id IS NOT NULL THEN 1 ELSE 0 END AS tiene_conflicto_horario
+  CASE WHEN ch.asignacion_horario_id IS NOT NULL THEN 1 ELSE 0 END AS tiene_conflicto_horario
 FROM asignaciones_docentes ad
 INNER JOIN oferta_cursos oc
   ON oc.id = ad.oferta_curso_id
@@ -64,13 +64,14 @@ LEFT JOIN planes_estudios pe
 LEFT JOIN carreras c
   ON c.id = pe.carrera_id
   AND c.deleted_at IS NULL
-LEFT JOIN vista_base_docente_asignacion_conflicto_horario ch
-  ON ch.asignacion_docente_id = ad.id
-  AND ch.docente_id = ad.docente_id
 INNER JOIN asignacion_horarios ah
   ON ah.asignacion_docente_id = ad.id
   AND ah.deleted_at IS NULL
   AND ah.activo = TRUE
+LEFT JOIN vista_base_docente_bloque_conflicto_horario ch
+  ON ch.asignacion_horario_id = ah.id
+  AND ch.docente_id = ad.docente_id
+  AND ch.gestion_id = gp.gestion_id
 LEFT JOIN horarios h ON h.id = ah.horario_id AND h.deleted_at IS NULL
 LEFT JOIN aulas a ON a.id = ah.aula_id AND a.deleted_at IS NULL
 WHERE ad.deleted_at IS NULL

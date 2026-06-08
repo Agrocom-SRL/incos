@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Col, Divider, Flex, Row, Typography } from 'antd';
 import { SyncOutlined, ThunderboltOutlined, TeamOutlined } from '@ant-design/icons';
 import { Card, ActionButton, StatusPill } from '@atoms';
-import { buildOfertaParaleloDetalleFromHorarios } from '@application-institucional/horarios/config/paths';
+import {
+    buildHorariosConflictosUrl,
+    buildOfertaParaleloDetalleFromHorarios,
+    HORARIOS_MENU_ROUTE_KEY,
+} from '@application-institucional/horarios/config/paths';
 import { bloquesRequeridosPorCarga } from '@application-institucional/horarios/utils/generarBloquesAutomaticosCurso';
 import { indexCoberturaPorAsignacion } from '@application-institucional/horarios/utils/indexCoberturaPorAsignacion';
 import { resumenBloquesCurso } from '@application-institucional/horarios/utils/resumenBloquesCurso';
@@ -34,6 +38,20 @@ const ParaleloCoberturaTabSection = ({
         const target = buildOfertaParaleloDetalleFromHorarios(pgId);
         navigate(target.pathname, target.state ? { state: target.state } : undefined);
     }, [navigate, pgId]);
+
+    const irAConflictosDocente = useCallback(
+        (docenteId) => {
+            const id = Number(docenteId);
+            if (!Number.isFinite(id) || id < 1) return;
+            navigate(buildHorariosConflictosUrl(id), {
+                state: {
+                    returnListPath: `/institucional/horarios/armado?pg=${pgId}&tab=cobertura`,
+                    menuSidebarKey: HORARIOS_MENU_ROUTE_KEY,
+                },
+            });
+        },
+        [navigate, pgId],
+    );
 
     const handleGenerar = useCallback(
         async (cursoId, horasPlan) => {
@@ -178,22 +196,40 @@ const ParaleloCoberturaTabSection = ({
                                 ) : null}
                                 <Text type="secondary">
                                     Docente:{' '}
-                                    <Text
-                                        strong
-                                        type={docenteEnConflictoHorario ? 'danger' : undefined}
-                                        className={
-                                            docenteEnConflictoHorario
-                                                ? 'horarios-armado-docente--conflicto'
-                                                : undefined
-                                        }
-                                    >
-                                        {c.docente || 'Sin asignar'}
-                                    </Text>
-                                    {docenteEnConflictoHorario ? (
-                                        <Text type="danger" style={{ marginLeft: 8 }}>
-                                            (choque de horario)
-                                        </Text>
-                                    ) : null}
+                                    {docenteEnConflictoHorario && c.docenteId ? (
+                                        <>
+                                            <Typography.Link
+                                                className="horarios-armado-cobertura-docente-link"
+                                                onClick={() => irAConflictosDocente(c.docenteId)}
+                                            >
+                                                <Text strong type="danger">
+                                                    {c.docente}
+                                                </Text>
+                                            </Typography.Link>
+                                            <Text type="danger" style={{ marginLeft: 8 }}>
+                                                (choque de horario — resolver)
+                                            </Text>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Text
+                                                strong
+                                                type={docenteEnConflictoHorario ? 'danger' : undefined}
+                                                className={
+                                                    docenteEnConflictoHorario
+                                                        ? 'horarios-armado-docente--conflicto'
+                                                        : undefined
+                                                }
+                                            >
+                                                {c.docente || 'Sin asignar'}
+                                            </Text>
+                                            {docenteEnConflictoHorario ? (
+                                                <Text type="danger" style={{ marginLeft: 8 }}>
+                                                    (choque de horario)
+                                                </Text>
+                                            ) : null}
+                                        </>
+                                    )}
                                 </Text>
                                 <Text type="secondary">
                                     Carga horaria (plan):{' '}

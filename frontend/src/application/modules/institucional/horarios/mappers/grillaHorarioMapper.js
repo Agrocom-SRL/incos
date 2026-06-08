@@ -28,6 +28,7 @@ export function grillaHorarioToCourseSchedules(payload, ctx = {}) {
           cursoId,
           asignacionDocenteId:
             b.asignacion_docente_id != null ? Number(b.asignacion_docente_id) : null,
+          docenteId: b.docente_id != null ? Number(b.docente_id) : null,
           cursoCodigo: b.asignatura || '—',
           cursoColorHex: b.color_hex ?? null,
           materiaNombre: null,
@@ -41,6 +42,12 @@ export function grillaHorarioToCourseSchedules(payload, ctx = {}) {
       const course = byCurso.get(cursoId);
       const horaInicio = normalizeHoraHm(b.hora_inicio);
       const horaFin = normalizeHoraHm(b.hora_fin);
+      if (b.docente_id != null && course.docenteId == null) {
+        course.docenteId = Number(b.docente_id);
+      }
+      if (b.tiene_conflicto === true) {
+        course.docenteEnConflictoHorario = true;
+      }
       course.bloques.push({
         orden: course.bloques.length + 1,
         cursoHorarioId: Number(b.asignacion_horario_id),

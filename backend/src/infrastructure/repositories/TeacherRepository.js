@@ -421,10 +421,22 @@ export class TeacherRepository extends BaseRepository {
       orderBy: 'dia, hora_inicio, sigla_a, sigla_b',
     });
 
+    const solapeParaleloHorario = await sequelize.query(
+      `
+      SELECT sol.paraleloGestionId AS paralelo_gestion_id, sol.horarioId AS horario_id
+      FROM vista_base_paralelo_gestion_conflicto_paralelo_bloque sol
+      INNER JOIN paralelos_gestion pg ON pg.id = sol.paraleloGestionId AND pg.deleted_at IS NULL
+      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id AND gp.deleted_at IS NULL
+      WHERE gp.gestion_id = :gestionId
+      `,
+      { replacements: { gestionId: gestionPk }, type: QueryTypes.SELECT },
+    );
+
     return {
       teacher,
       scheduleRows,
       paresConflicto: paresRows.map((row) => this._mapParConflictoHorarioRow(row)),
+      solapeParaleloHorario,
     };
   }
 

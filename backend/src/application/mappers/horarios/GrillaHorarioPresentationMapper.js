@@ -117,6 +117,7 @@ export class GrillaHorarioPresentationMapper {
         hora_inicio: b.horaInicio ?? null,
         hora_fin: b.horaFin ?? null,
         asignacion_docente_id: asignacionDocenteId,
+        docente_id: b.docenteId != null ? Number(b.docenteId) : null,
         oferta_curso_id: Number(b.ofertaCursoId),
         asignatura: b.asignatura ?? null,
         docente: (b.docenteNombre || '').replace(/\s+/g, ' ').trim() || null,

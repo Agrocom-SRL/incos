@@ -172,3 +172,92 @@ export function labelResolverConflictoDocente(docenteRow = {}) {
     if (docenteSoloConflictoAula(docenteRow)) return 'Resolver en aulas';
     return 'Resolver conflictos';
 }
+
+/** Columna «Sin docentes» por choque de franjas (sin materias pendientes de docente). */
+export function paraleloSinDocentesEsSoloChoqueHorario(paralelo = {}) {
+    const sinDoc = Number(paralelo.cursosSinDocente) || 0;
+    return sinDoc <= 0 && Boolean(paralelo.conflictoDocenteHorario);
+}
+
+/**
+ * Docente con conflicto de horario que afecta al paralelo en gestión.
+ * @param {number} paraleloGestionId
+ * @param {{ paralelo?: string, turno?: string }} paraleloMeta
+ * @param {Array<{ docenteId?: number, paraleloGestionId?: number, lineasDetalle?: string[], tiposConflicto?: string[] }>} docentesList
+ */
+export function findDocenteConflictoHorarioEnParalelo(
+    paraleloGestionId,
+    paraleloMeta = {},
+    docentesList = [],
+) {
+    const pgId = Number(paraleloGestionId);
+    const nombre = String(paraleloMeta.paralelo || '').trim().toUpperCase();
+    const turno = String(paraleloMeta.turno || '').trim().toUpperCase();
+
+    const candidatos = (docentesList || []).filter(
+        (d) => d?.docenteId != null && docenteTieneConflictoHorario(d),
+    );
+    if (!candidatos.length) return null;
+
+    const involucraParalelo = (d) => {
+        if (Number.isFinite(pgId) && pgId > 0 && Number(d.paraleloGestionId) === pgId) return true;
+        if (!nombre) return false;
+        return (d.lineasDetalle || []).some((line) => {
+            const upper = String(line).toUpperCase();
+            if (!upper.includes(nombre)) return false;
+            if (turno && !upper.includes(turno)) return false;
+            return true;
+        });
+    };
+
+    return candidatos.find(involucraParalelo) ?? null;
+}
+
+/**
+ * Destino del CTA en columna «Sin docentes» del tablero de horarios.
+ * @param {Record<string, unknown>} paralelo
+ * @param {Array} [docentesConConflictosOperativos]
+ */
+export function buildParaleloSinDocentesNavTarget(paralelo = {}, docentesConConflictosOperativos = []) {
+    const pgId = Number(paralelo.paraleloGestionId);
+
+    if (paraleloSinDocentesEsSoloChoqueHorario(paralelo)) {
+        const docente = findDocenteConflictoHorarioEnParalelo(
+            pgId,
+            { paralelo: paralelo.paralelo, turno: paralelo.turno },
+            docentesConConflictosOperativos,
+        );
+        if (docente) return buildResolverConflictoDocenteNavTarget(docente);
+        return {
+            pathname: HORARIOS_CONFLICTOS_PATH,
+            state: returnHorariosDashboardState(),
+        };
+    }
+
+    if (Number.isFinite(pgId) && pgId > 0) {
+        return buildOfertaParaleloDetalleFromHorarios(pgId);
+    }
+
+    return { pathname: HORARIOS_GESTION_PATH };
+}
+
+/** Etiqueta del CTA en columna «Sin docentes». */
+export function labelParaleloSinDocentesCta(paralelo = {}) {
+    if (paraleloSinDocentesEsSoloChoqueHorario(paralelo)) return 'Resolver conflictos';
+    return 'Asignar docentes';
+}
+
+/** Permiso RBAC del CTA en columna «Sin docentes». */
+export function permisoParaleloSinDocentesCta(paralelo = {}) {
+    if (paraleloSinDocentesEsSoloChoqueHorario(paralelo)) {
+        return { permiso: 'institucional.horario.armado', accion: 'EDITAR' };
+    }
+    return { permiso: 'institucional.oferta.paralelo-gestion', accion: 'DETALLE' };
+}
+
+/** @param {{ pathname: string, search?: string, state?: object }} target */
+export function formatHorariosNavTarget(target = {}) {
+    const pathname = target.pathname || HORARIOS_GESTION_PATH;
+    const to = target.search ? `${pathname}${target.search}` : pathname;
+    return { to, state: target.state };
+}
