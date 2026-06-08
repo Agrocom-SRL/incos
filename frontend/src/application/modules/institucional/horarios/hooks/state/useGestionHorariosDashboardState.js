@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGestionesCatalogApi, useParalelosEstadoApi } from '@application/modules/shared/hooks';
+import { useGestionesCatalogApi, useParalelosEstadoApi } from '@application-shared/hooks';
 import { useHorariosPendientesSidebarApi } from '../api/useHorariosPendientesSidebarApi';
 import {
     BOARD_COLUMNS,
@@ -11,7 +11,7 @@ import { resolveHorariosBoardBucket } from '@application-institucional/horarios/
 import { buildHorariosDashboardAlertLineas } from '@application-institucional/horarios/utils/buildHorariosDashboardAlertLineas';
 import {
     buildHorariosArmadoUrl,
-    buildHorariosAulasEdicionUrl,
+    HORARIOS_CONFLICTOS_PATH,
     buildOfertaParaleloDetalleFromHorarios,
     buildParaleloSinDocentesNavTarget,
     formatHorariosNavTarget,
@@ -186,14 +186,7 @@ export const useGestionHorariosDashboardState = () => {
                     !sinAulaBase &&
                     bloquesSinAula <= 0;
                 if (soloCruceAula) {
-                    const paraleloMaestroId = Number(paralelo.id);
-                    return {
-                        pathname: buildHorariosAulasEdicionUrl(
-                            Number.isFinite(paraleloMaestroId) && paraleloMaestroId > 0
-                                ? { paralelo: paraleloMaestroId }
-                                : {},
-                        ),
-                    };
+                    return { pathname: HORARIOS_CONFLICTOS_PATH };
                 }
             }
 
@@ -222,7 +215,6 @@ export const useGestionHorariosDashboardState = () => {
         [getParaleloActionTarget, navigate],
     );
 
-    const onVerHorariosAulas = useCallback(() => navigate('/institucional/horarios/aulas'), [navigate]);
     const onPublish = useCallback(() => navigate('/institucional/horarios/publicacion'), [navigate]);
 
     const pendientesSidebar = useMemo(() => {
@@ -276,7 +268,6 @@ export const useGestionHorariosDashboardState = () => {
         onFilterChange,
         clearFilters,
         onOpenArmado,
-        onVerHorariosAulas,
         onPublish,
         gestionVigenteId,
         hayAlertas,

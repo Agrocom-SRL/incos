@@ -52,7 +52,7 @@ INNER JOIN paralelos_gestion pg
   ON pg.id = oc.paralelo_gestion_id
   AND pg.deleted_at IS NULL
 INNER JOIN aulas au
-  ON au.id = COALESCE(ah.aula_id, pg.aula_id)
+  ON au.id = pg.aula_id
   AND au.deleted_at IS NULL AND au.activo = TRUE
 INNER JOIN (
   SELECT DISTINCT
@@ -62,7 +62,7 @@ INNER JOIN (
     SELECT
       ad_b.id AS asignacion_docente_id,
       ah_b.horario_id,
-      COALESCE(ah_b.aula_id, pg_b.aula_id) AS aula_efectiva_id,
+      pg_b.aula_id AS aula_efectiva_id,
       pg_b.id AS paralelo_gestion_id
     FROM asignacion_horarios ah_b
     INNER JOIN asignaciones_docentes ad_b
@@ -80,12 +80,12 @@ INNER JOIN (
     WHERE ah_b.deleted_at IS NULL
       AND ah_b.activo = TRUE
       AND ah_b.horario_id IS NOT NULL
-      AND COALESCE(ah_b.aula_id, pg_b.aula_id) IS NOT NULL
+      AND pg_b.aula_id IS NOT NULL
   ) base
   INNER JOIN (
     SELECT
       ah_o.horario_id,
-      COALESCE(ah_o.aula_id, pg_o.aula_id) AS aula_efectiva_id,
+      pg_o.aula_id AS aula_efectiva_id,
       pg_o.id AS paralelo_gestion_id
     FROM asignacion_horarios ah_o
     INNER JOIN asignaciones_docentes ad_o
@@ -103,7 +103,7 @@ INNER JOIN (
     WHERE ah_o.deleted_at IS NULL
       AND ah_o.activo = TRUE
       AND ah_o.horario_id IS NOT NULL
-      AND COALESCE(ah_o.aula_id, pg_o.aula_id) IS NOT NULL
+      AND pg_o.aula_id IS NOT NULL
   ) otro
     ON otro.aula_efectiva_id = base.aula_efectiva_id
     AND otro.horario_id = base.horario_id

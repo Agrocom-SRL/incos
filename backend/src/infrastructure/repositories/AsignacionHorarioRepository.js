@@ -138,8 +138,7 @@ export class AsignacionHorarioRepository extends BaseRepository {
         ad.oferta_curso_id AS ofertaCursoId,
         ah.asignacion_docente_id AS asignacionDocenteId,
         ah.horario_id AS horarioId,
-        ah.orden_secuencia AS ordenSecuencia,
-        ah.aula_id AS aulaId
+        ah.orden_secuencia AS ordenSecuencia
       FROM asignacion_horarios ah
       INNER JOIN asignaciones_docentes ad ON ad.id = ah.asignacion_docente_id
         AND ad.deleted_at IS NULL

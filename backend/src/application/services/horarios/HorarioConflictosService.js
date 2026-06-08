@@ -67,14 +67,12 @@ export class HorarioConflictosService {
    * @param {Object} params
    * @param {number} params.asignacionDocenteId
    * @param {number} params.horarioId
-   * @param {number|null} [params.aulaId]
    * @param {number|null} [params.excludeAsignacionHorarioId]
    * @param {number[]|null} [params.excludeAsignacionHorarioIds]
    */
   async validarPropuesta({
     asignacionDocenteId,
     horarioId,
-    aulaId = null,
     excludeAsignacionHorarioId = null,
     excludeAsignacionHorarioIds = null,
   }) {
@@ -139,12 +137,9 @@ export class HorarioConflictosService {
       });
     }
 
-    const aulaEfectiva =
-      aulaId != null && Number.isFinite(Number(aulaId)) && Number(aulaId) > 0
-        ? Number(aulaId)
-        : Number(pg.classroomId ?? pg.aulaId);
+    const aulaEfectiva = Number(pg.classroomId ?? pg.aulaId);
 
-    if (aulaEfectiva) {
+    if (Number.isFinite(aulaEfectiva) && aulaEfectiva > 0) {
       const aulaRows = await this.conflictoAulaBloqueViewRepository.findByParaleloGestionId(pgId);
       for (const row of aulaRows) {
         if (Number(row.horarioId) !== hId) continue;

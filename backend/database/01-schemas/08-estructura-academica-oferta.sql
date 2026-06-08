@@ -58,7 +58,7 @@ CREATE TABLE paralelos_gestion (
     gestion_plan_id INT NULL COMMENT 'Plan habilitado en la gestión (gestiones_planes.id)',
     paralelo_id INT NULL COMMENT 'Paralelo maestro reutilizable (paralelos.id)',
     aula_id INT NULL COMMENT 'Aula base por defecto. Casi inmutable durante la gestión.',
-    turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NOT NULL COMMENT 'Turno efectivo. Si difiere del paralelo maestro, la app reasigna bloques.',
+    turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NOT NULL COMMENT 'Turno operativo único del paralelo en esta gestión. Fuente de verdad para armado y conflictos.',
 
     estado ENUM('BORRADOR', 'OFERTADO', 'PUBLICADO', 'CERRADO') DEFAULT 'BORRADOR'
         COMMENT 'BORRADOR: en armado. OFERTADO: lista para matrícula. PUBLICADO: con horario completo. CERRADO: gestión finalizada.',

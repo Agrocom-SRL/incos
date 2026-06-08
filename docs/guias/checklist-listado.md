@@ -44,7 +44,7 @@ Marca en orden. Si un ítem no aplica, táchalo y anota por qué (ej. listado so
 | 8 | Connector lazy; rutas con `permiso` o `permisoAny` (menú con tabs). |
 | 9 | Rutas `/:id` **después** de estáticas; tabs usan `?tab=` (no `/:id` para el tab). |
 | 10 | Permisos coherentes: ruta, UI y `verificarPermiso` backend. |
-| 11 | Si el catálogo se reusa en otros módulos: mapper exportado + `shared/hooks/use*CatalogApi`. |
+| 11 | Si el catálogo se reusa en otros módulos: mapper exportado + `@application-shared/hooks/use*CatalogApi`. |
 
 ---
 

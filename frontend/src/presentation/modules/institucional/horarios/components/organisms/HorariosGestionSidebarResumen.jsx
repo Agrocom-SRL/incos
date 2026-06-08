@@ -433,8 +433,8 @@ const HorariosGestionSidebarResumen = ({
                 {modal.kind === 'aulas' ? (
                     <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
                         <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                            Filtrá por día; la tabla muestra solo ese día. Usá el botón inferior para abrir la pantalla de
-                            aulas en modo edición con ese día activo.
+                            El aula base se asigna en Institucional → Oferta académica (paralelo de gestión), no por bloque
+                            de horario.
                         </Text>
                         {tablaBloquesRows.length === 0 ? (
                             <Text type="secondary">No hay bloques sin aula para mostrar.</Text>
@@ -471,24 +471,20 @@ const HorariosGestionSidebarResumen = ({
                                 />
                                 <Flex vertical gap={8}>
                                     <ActionButton
-                                        permiso="institucional.horario.armado"
+                                        permiso="institucional.oferta.paralelo-gestion"
                                         accion="EDITAR"
                                         variant="primary"
                                         size="large"
                                         block
-                                        disabled={!aulasDiaFiltro}
                                         onClick={() => {
-                                            if (!aulasDiaFiltro) return;
-                                            navigate(
-                                                `/institucional/horarios/aulas?dia=${encodeURIComponent(aulasDiaFiltro)}&edicion=1`,
-                                            );
+                                            navigate('/institucional/oferta');
                                             close();
                                         }}
                                     >
-                                        Completar en aulas — {aulasDiaFiltro || '…'}
+                                        Ir a Oferta académica
                                     </ActionButton>
                                     <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                                        Se abre la vista de aulas con el día seleccionado y la edición habilitada.
+                                        Asigne el aula base en cada paralelo de gestión antes de armar horarios.
                                     </Text>
                                 </Flex>
                             </>

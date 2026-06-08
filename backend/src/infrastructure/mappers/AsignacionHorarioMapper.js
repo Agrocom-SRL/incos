@@ -14,9 +14,6 @@ export class AsignacionHorarioMapper {
     if ('horarioId' in dataValues && dataValues.horarioId !== undefined) {
       specificFields.scheduleId = dataValues.horarioId;
     }
-    if ('aulaId' in dataValues && dataValues.aulaId !== undefined) {
-      specificFields.classroomId = dataValues.aulaId;
-    }
     if ('ordenSecuencia' in dataValues && dataValues.ordenSecuencia !== undefined) {
       specificFields.sequenceOrder = dataValues.ordenSecuencia;
     }
@@ -30,7 +27,6 @@ export class AsignacionHorarioMapper {
     return {
       asignacionDocenteId: data.teacherAssignmentId || null,
       horarioId: data.scheduleId || null,
-      aulaId: data.classroomId || null,
       ordenSecuencia: data.sequenceOrder !== undefined ? data.sequenceOrder : 1,
     };
   }
@@ -44,9 +40,6 @@ export class AsignacionHorarioMapper {
     }
     if ('scheduleId' in data) {
       updateData.horarioId = data.scheduleId || null;
-    }
-    if ('classroomId' in data) {
-      updateData.aulaId = data.classroomId || null;
     }
     if ('sequenceOrder' in data) {
       updateData.ordenSecuencia = data.sequenceOrder;

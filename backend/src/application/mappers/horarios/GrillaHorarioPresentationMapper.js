@@ -103,8 +103,6 @@ export class GrillaHorarioPresentationMapper {
 
       const asignacionDocenteId = Number(b.asignacionDocenteId);
       const horarioId = Number(b.horarioId);
-      const aulaBaseId = b.aulaBaseId != null ? Number(b.aulaBaseId) : null;
-      const aulaIdBloque = b.aulaIdBloque != null ? Number(b.aulaIdBloque) : null;
       const aulaId = b.aulaId != null ? Number(b.aulaId) : null;
 
       const tieneConflicto =
@@ -124,7 +122,6 @@ export class GrillaHorarioPresentationMapper {
         color_hex: b.colorHex ?? null,
         aula_id: aulaId,
         aula_nombre: b.aulaNombre ?? b.aulaCodigo ?? null,
-        es_aula_base: aulaIdBloque == null && aulaBaseId != null && aulaId === aulaBaseId,
         tiene_conflicto: tieneConflicto,
       });
     }

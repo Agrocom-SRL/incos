@@ -32,10 +32,6 @@ export class UpdateAsignacionHorarioUseCase {
       body?.asignacion_docente_id ?? body?.asignacionDocenteId ?? existing.teacherAssignmentId
     );
     const horarioId = Number(body?.horario_id ?? body?.horarioId ?? existing.scheduleId);
-    const aulaProvided = body?.aula_id !== undefined || body?.aulaId !== undefined;
-    const aulaIdRaw = aulaProvided ? body?.aula_id ?? body?.aulaId : existing.classroomId;
-    const aulaId =
-      aulaIdRaw == null || aulaIdRaw === '' ? null : Number(aulaIdRaw);
     const ordenSecuencia = Number(
       body?.orden_secuencia ?? body?.ordenSecuencia ?? existing.sequenceOrder ?? 1
     );
@@ -56,7 +52,6 @@ export class UpdateAsignacionHorarioUseCase {
     const { valido, conflictos } = await this.horarioConflictosService.validarPropuesta({
       asignacionDocenteId,
       horarioId,
-      aulaId,
       excludeAsignacionHorarioId: bloqueId,
       excludeAsignacionHorarioIds: Array.isArray(body?._exclude_asignacion_horario_ids)
         ? body._exclude_asignacion_horario_ids
@@ -73,7 +68,6 @@ export class UpdateAsignacionHorarioUseCase {
       {
         teacherAssignmentId: asignacionDocenteId,
         scheduleId: horarioId,
-        classroomId: aulaId,
         sequenceOrder: ordenSecuencia,
       },
       userId

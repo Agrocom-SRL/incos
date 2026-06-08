@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useGestionesCatalogApi } from '@application/modules/shared/hooks';
+import { useGestionesCatalogApi } from '@application-shared/hooks';
 import { useOfertaAcademicaApi } from '@application-institucional/oferta';
 import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/hooks';
 import { useBulkAsignacionHorariosApi } from '../api/useBulkAsignacionHorariosApi';

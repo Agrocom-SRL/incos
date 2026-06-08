@@ -1,6 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_paralelo_gestion_conflicto_aula_bloque
--- Misma franja y misma aula efectiva (bloque o aula base del paralelo_gestion).
+-- Misma franja y misma aula (paralelos_gestion.aula_id) dentro del paralelo_gestion.
 --
 -- Nota: el tablero (72) cuenta cruces entre paralelos_gestion distintos.
 -- Intra-paralelo: solape de franja (86) y vista_base_paralelo_gestion_conflicto_aula_bloque (125).
@@ -21,7 +21,7 @@ FROM (
     oc.paralelo_gestion_id,
     ah.horario_id,
     ad.id AS asignacion_docente_id,
-    COALESCE(ah.aula_id, pg.aula_id) AS aula_efectiva_id
+    pg.aula_id AS aula_efectiva_id
   FROM asignacion_horarios ah
   INNER JOIN asignaciones_docentes ad
     ON ad.id = ah.asignacion_docente_id
@@ -38,7 +38,7 @@ FROM (
   WHERE ah.deleted_at IS NULL
     AND ah.activo = TRUE
     AND ah.horario_id IS NOT NULL
-    AND COALESCE(ah.aula_id, pg.aula_id) IS NOT NULL
+    AND pg.aula_id IS NOT NULL
 ) bloques
 GROUP BY bloques.paralelo_gestion_id, bloques.horario_id, bloques.aula_efectiva_id
 HAVING COUNT(DISTINCT bloques.asignacion_docente_id) > 1;

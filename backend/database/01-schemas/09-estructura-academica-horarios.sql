@@ -6,6 +6,7 @@
 --
 -- Módulo INST → Asignación docente + bloques horarios.
 -- asignacion_horarios: bloques cuelgan del docente asignado, no del curso aislado.
+-- Turno operativo: paralelos_gestion.turno. horarios.turno = catálogo de franjas L-V.
 -- Una ejecución crea ambas tablas en orden correcto.
 --
 -- Pre-requisitos (ejecutar antes de este archivo):
@@ -100,8 +101,8 @@ COMMENT='Asignación de docentes a oferta por plan habilitado. El docente puede 
 -- TABLA: asignacion_horarios
 -- Bloques horarios de una asignación docente
 -- ============================================
--- Cada bloque indica en qué horario y aula dicta el docente esa oferta.
--- aula_id NULL = usa el aula base del paralelo_gestion padre.
+-- Cada bloque indica en qué franja horaria dicta el docente esa oferta.
+-- El aula física vive solo en paralelos_gestion.aula_id (Oferta académica).
 -- horario_id 56-60 (SÁBADO, turno NULL en catálogo): extensión opcional para cubrir
 -- carga_horaria cuando L-V del turno del paralelo no alcanza; TARDE y NOCHE comparten
 -- los mismos slots de sábado. Validación de turno aplica solo a L-V (horarios.turno).
@@ -110,7 +111,6 @@ CREATE TABLE asignacion_horarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     asignacion_docente_id INT NULL COMMENT 'Asignación docente (= docente + oferta_curso)',
     horario_id INT NULL COMMENT 'Bloque del calendario semanal (horarios.id)',
-    aula_id INT NULL COMMENT 'Aula del bloque. NULL = usa aula base del paralelo_gestion.',
     orden_secuencia INT NOT NULL DEFAULT 1 COMMENT 'Orden cronológico durante la semana',
 
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -127,15 +127,11 @@ CREATE TABLE asignacion_horarios (
 
     FOREIGN KEY (asignacion_docente_id) REFERENCES asignaciones_docentes(id) ON DELETE SET NULL,
     FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
 
     INDEX idx_asignacion_docente_id (asignacion_docente_id) COMMENT 'Búsqueda por asignación docente',
     INDEX idx_horario_id (horario_id) COMMENT 'Búsqueda por bloque horario',
-    INDEX idx_aula_id (aula_id) COMMENT 'Búsqueda por aula',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_horario_aula (horario_id, aula_id, activo, deleted_at)
-        COMMENT 'Detección conflicto aula (mismo horario + misma aula)',
     INDEX idx_asignacion_orden (asignacion_docente_id, orden_secuencia, activo, deleted_at)
         COMMENT 'Orden de bloques por asignación'
 

@@ -2,7 +2,7 @@
 -- VISTA BASE: vista_base_docente_conflicto_aula
 -- Cruces de aula efectiva + horario entre paralelos_gestion (por docente).
 --
--- Aula efectiva = COALESCE(asignacion_horarios.aula_id, paralelos_gestion.aula_id).
+-- Aula: paralelos_gestion.aula_id.
 -- ============================================
 
 USE instituto_incos;
@@ -13,7 +13,7 @@ CREATE VIEW vista_base_docente_conflicto_aula AS
 SELECT
   ad.docente_id,
   COUNT(DISTINCT CONCAT(
-    COALESCE(ah.aula_id, pg.aula_id), ':', ah.horario_id
+    pg.aula_id, ':', ah.horario_id
   )) AS aula_conflictos
 FROM asignaciones_docentes ad
 INNER JOIN asignacion_horarios ah
@@ -33,7 +33,7 @@ INNER JOIN (
     base.horario_id
   FROM (
     SELECT
-      COALESCE(ah2.aula_id, pg2.aula_id) AS aula_efectiva_id,
+      pg2.aula_id AS aula_efectiva_id,
       ah2.horario_id,
       pg2.id AS paralelo_gestion_id
     FROM asignaciones_docentes ad2
@@ -52,11 +52,11 @@ INNER JOIN (
       AND ad2.activo = TRUE
       AND ad2.vigente = TRUE
       AND ah2.horario_id IS NOT NULL
-      AND COALESCE(ah2.aula_id, pg2.aula_id) IS NOT NULL
+      AND pg2.aula_id IS NOT NULL
   ) base
   INNER JOIN (
     SELECT
-      COALESCE(ah3.aula_id, pg3.aula_id) AS aula_efectiva_id,
+      pg3.aula_id AS aula_efectiva_id,
       ah3.horario_id,
       pg3.id AS paralelo_gestion_id
     FROM asignaciones_docentes ad3
@@ -75,18 +75,18 @@ INNER JOIN (
       AND ad3.activo = TRUE
       AND ad3.vigente = TRUE
       AND ah3.horario_id IS NOT NULL
-      AND COALESCE(ah3.aula_id, pg3.aula_id) IS NOT NULL
+      AND pg3.aula_id IS NOT NULL
   ) otro
     ON otro.aula_efectiva_id = base.aula_efectiva_id
     AND otro.horario_id = base.horario_id
     AND otro.paralelo_gestion_id <> base.paralelo_gestion_id
 ) g
-  ON g.aula_efectiva_id = COALESCE(ah.aula_id, pg.aula_id)
+  ON g.aula_efectiva_id = pg.aula_id
   AND g.horario_id = ah.horario_id
 WHERE ad.deleted_at IS NULL
   AND ad.activo = TRUE
   AND ad.vigente = TRUE
   AND ad.docente_id IS NOT NULL
   AND ah.horario_id IS NOT NULL
-  AND COALESCE(ah.aula_id, pg.aula_id) IS NOT NULL
+  AND pg.aula_id IS NOT NULL
 GROUP BY ad.docente_id;

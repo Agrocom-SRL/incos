@@ -8,6 +8,7 @@
 --
 -- Este archivo modela el SISTEMA DE NOTAS Y EVALUACIONES de la gestión vigente.
 -- Inscripciones, historial_previo y matrículas en 12-inscripciones.sql.
+-- Turno del curso/grupo: derivar de matricula → oferta_curso → paralelos_gestion.turno.
 -- historial_matricula y nivelaciones en 16-nivelaciones.sql.
 --
 -- REFACTOR 3FN (cambio respecto al schema anterior):

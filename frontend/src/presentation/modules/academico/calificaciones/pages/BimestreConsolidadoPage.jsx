@@ -10,7 +10,7 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
-import { useAcciones } from '@application/modules/shared/hooks/useAcciones.js';
+import { useAcciones } from '@application-shared/hooks';
 import { useBimestreConsolidado } from '@application-academico/calificaciones/hooks/useBimestreConsolidado.js';
 import { useBimestrePagerTeclado } from '@application-academico/calificaciones/hooks/useBimestrePagerTeclado.js';
 import { useNavegacionBimestres } from '@application-academico/calificaciones/hooks/useNavegacionBimestres.js';

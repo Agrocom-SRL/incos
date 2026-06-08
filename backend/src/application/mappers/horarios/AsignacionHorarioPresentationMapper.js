@@ -8,7 +8,6 @@ export class AsignacionHorarioPresentationMapper {
       id: entity.id,
       asignacion_docente_id: entity.teacherAssignmentId,
       horario_id: entity.scheduleId,
-      aula_id: entity.classroomId ?? null,
       orden_secuencia: entity.sequenceOrder ?? 1,
     };
   }

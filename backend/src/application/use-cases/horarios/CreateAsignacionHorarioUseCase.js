@@ -25,9 +25,6 @@ export class CreateAsignacionHorarioUseCase {
   async execute(body, userId = null) {
     const asignacionDocenteId = Number(body?.asignacion_docente_id ?? body?.asignacionDocenteId);
     const horarioId = Number(body?.horario_id ?? body?.horarioId);
-    const aulaIdRaw = body?.aula_id ?? body?.aulaId;
-    const aulaId =
-      aulaIdRaw == null || aulaIdRaw === '' ? null : Number(aulaIdRaw);
     const ordenSecuencia = Number(body?.orden_secuencia ?? body?.ordenSecuencia ?? 1);
 
     if (!Number.isFinite(asignacionDocenteId) || asignacionDocenteId < 1) {
@@ -36,10 +33,6 @@ export class CreateAsignacionHorarioUseCase {
     if (!Number.isFinite(horarioId) || horarioId < 1) {
       throw new ValidationError('horario_id es requerido');
     }
-    if (aulaId != null && (!Number.isFinite(aulaId) || aulaId < 1)) {
-      throw new ValidationError('aula_id debe ser null o un id válido');
-    }
-
     const assignment = await this.teacherAssignmentRepository.findEnrichedById(asignacionDocenteId);
     if (!assignment?.vigente) {
       throw new NotFoundError('Asignación docente');
@@ -60,7 +53,6 @@ export class CreateAsignacionHorarioUseCase {
     const { valido, conflictos } = await this.horarioConflictosService.validarPropuesta({
       asignacionDocenteId,
       horarioId,
-      aulaId,
     });
     if (!valido) {
       throw new UnprocessableEntityError('Conflicto de horario', conflictos);
@@ -70,7 +62,6 @@ export class CreateAsignacionHorarioUseCase {
       {
         teacherAssignmentId: asignacionDocenteId,
         scheduleId: horarioId,
-        classroomId: aulaId,
         sequenceOrder: Number.isFinite(ordenSecuencia) && ordenSecuencia > 0 ? ordenSecuencia : 1,
       },
       userId

@@ -87,23 +87,9 @@ export function hintModalConflictoDocente(docenteRow = {}) {
     return 'Mové al menos uno de los bloques en rojo a otra franja. La asignación docente ↔ materia se ajusta en Oferta académica si hace falta cambiar quién dicta la materia.';
 }
 
-/** @param {{ paralelo?: number|null, dia?: string|null }} [opts] */
-export function buildHorariosAulasEdicionUrl(opts = {}) {
-    const q = new URLSearchParams();
-    q.set('edicion', '1');
-    const paralelo = Number(opts.paralelo);
-    if (Number.isFinite(paralelo) && paralelo > 0) {
-        q.set('paralelo', String(paralelo));
-    }
-    const dia = String(opts.dia || '').trim().toUpperCase();
-    if (dia) q.set('dia', dia);
-    return `${HORARIOS_AULAS_PATH}?${q.toString()}`;
-}
-
 /**
  * Destino para resolver conflictos operativos de un docente desde el sidebar de horarios.
- * Prioriza armado de grilla (choque de franjas); aula y asignación duplicada tienen rutas dedicadas.
- * Conflicto solo aula → pantalla Horarios en aulas (override por bloque; aula base en oferta académica).
+ * Prioriza armado de grilla (choque de franjas); conflicto de aula → pantalla de conflictos.
  *
  * @param {{ docenteId?: number|null, paraleloGestionId?: number|null, ofertaCursoId?: number|null, tiposConflicto?: string[] }} docenteRow
  * @returns {{ pathname: string, search?: string, state?: object }}
@@ -128,8 +114,8 @@ export function buildResolverConflictoDocenteNavTarget(docenteRow = {}) {
 
     if (docenteSoloConflictoAula(docenteRow)) {
         return {
-            pathname: HORARIOS_AULAS_PATH,
-            search: '?edicion=1',
+            pathname: HORARIOS_CONFLICTOS_PATH,
+            search: Number.isFinite(docenteId) && docenteId > 0 ? `?docenteId=${docenteId}` : undefined,
             state: returnHorariosDashboardState(),
         };
     }

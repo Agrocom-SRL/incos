@@ -4,7 +4,7 @@ import { App } from 'antd';
 import apiClient from '@api-client';
 import { HORARIOS_DOCENTE_ENDPOINTS, PARALELOS_GESTION_ENDPOINTS } from '@api/endpoints';
 import { handleErrorResponse, handleSuccessResponse } from '@api/responseHandler';
-import { useGestionesCatalogApi } from '@application/modules/shared/hooks';
+import { useGestionesCatalogApi } from '@application-shared/hooks';
 import { useHorariosPendientesSidebarApi } from '../api/useHorariosPendientesSidebarApi';
 import { useBulkAsignacionHorariosApi } from '../api/useBulkAsignacionHorariosApi';
 import { useValidarConflictoHorarioApi } from '../api/useValidarConflictoHorarioApi';

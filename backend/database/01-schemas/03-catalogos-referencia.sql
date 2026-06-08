@@ -1,7 +1,7 @@
 -- ============================================
 -- CATÁLOGOS DE REFERENCIA
 -- Sistema de Gestión Académica - Instituto INCOS
--- 6 Tablas: idiomas, estados_civiles, tipos_discapacidad, turnos_horarios, tipos_parentesco, documentacion
+-- 5 Tablas: idiomas, estados_civiles, tipos_discapacidad, tipos_parentesco, documentacion
 -- ============================================
 
 USE instituto_incos;

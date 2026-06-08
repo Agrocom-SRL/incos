@@ -125,7 +125,7 @@ CREATE TABLE paralelos (
     
     -- Identificación
     nombre VARCHAR(50) NOT NULL COMMENT 'Nombre del paralelo (ej: PRIMERO A, SEGUNDO B, TERCERO A)',
-    turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NOT NULL COMMENT 'Turno horario del paralelo',
+    turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NOT NULL COMMENT 'Turno plantilla del paralelo maestro. Operación por gestión: paralelos_gestion.turno.',
     descripcion TEXT COMMENT 'Descripción informativa del paralelo',
     
     -- Campos de auditoría y control (ESTÁNDAR)

@@ -3,7 +3,7 @@
 -- Bloques activos por paralelo_gestion para GET grilla-horario.
 --
 -- Modelo de negocio:
--- - Reutiliza vista_base_curso_bloques_horario (aula efectiva = COALESCE bloque, aula base PG).
+-- - Reutiliza vista_base_curso_bloques_horario (aula = paralelos_gestion.aula_id).
 -- - Una fila por asignacion_horarios vigente.
 --
 -- Reutiliza:
@@ -26,7 +26,6 @@ SELECT
   DATE_FORMAT(b.horaInicio, '%H:%i') AS horaInicio,
   DATE_FORMAT(b.horaFin, '%H:%i') AS horaFin,
   b.numeroBloque AS numeroBloque,
-  ah.aula_id AS aulaIdBloque,
   pg.aula_id AS aulaBaseId,
   b.aulaId AS aulaId,
   b.aulaNombre AS aulaNombre,

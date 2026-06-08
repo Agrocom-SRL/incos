@@ -53,6 +53,7 @@
 --   estudiante en gestión : matricula → inscripcion → datos_academicos → estudiante
 --   gestión de la matrícula: matricula → inscripcion → gestion
 --   asignatura            : matricula → oferta_curso → asignatura_plan
+--   turno del paralelo    : oferta_curso → paralelos_gestion.turno (no paralelos.turno maestro)
 --                           (asignatura_plan_id en matrícula = backup histórico)
 --
 -- RESTRICCIONES DE DISEÑO:

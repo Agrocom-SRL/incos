@@ -19,7 +19,7 @@ SELECT
   ad.id AS asignacion_docente_id,
   ah.id AS asignacion_horario_id,
   ah.horario_id,
-  ah.aula_id,
+  pg.aula_id,
   gp.id AS gestion_plan_id,
   gp.gestion_id,
   CONCAT('OC-', oc.id) AS curso_codigo,
@@ -73,7 +73,7 @@ LEFT JOIN vista_base_docente_bloque_conflicto_horario ch
   AND ch.docente_id = ad.docente_id
   AND ch.gestion_id = gp.gestion_id
 LEFT JOIN horarios h ON h.id = ah.horario_id AND h.deleted_at IS NULL
-LEFT JOIN aulas a ON a.id = ah.aula_id AND a.deleted_at IS NULL
+LEFT JOIN aulas a ON a.id = pg.aula_id AND a.deleted_at IS NULL
 WHERE ad.deleted_at IS NULL
   AND ad.activo = TRUE
   AND ad.vigente = TRUE;

@@ -42,7 +42,6 @@ const GestionHorariosPage = () => {
         setViewMode,
         onFilterChange,
         onOpenArmado,
-        onVerHorariosAulas,
         onPublish,
         clearFilters,
         hayAlertas,
@@ -99,14 +98,6 @@ const GestionHorariosPage = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
-                            {/* <ActionButton
-                                permiso="institucional.horario.armado"
-                                accion="LISTAR"
-                                variant="warning"
-                                onClick={onVerHorariosAulas}
-                            >
-                                Horarios en aulas
-                            </ActionButton > */}
                             <ActionButton
                                 permiso="institucional.horario.publicacion"
                                 accion="EDITAR"

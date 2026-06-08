@@ -187,7 +187,7 @@ Organización de hooks (obligatoria en módulos nuevos — `incos-frontend-modul
 - **Hook API:** `hooks/api/use<Recurso>Api.js` con `autoFetch: true`, `autoFetchArgs: [{ params: { page: 1, limit: 10000 } }]`.
 - **Provider:** `providers/*Provider.jsx` llama `use*List()` del feature y publica contexto (ej. `CarreraProvider` en CFG académico).
 - **Barrel:** `hooks/index.js` reexporta por tipo (como inscripciones).
-- **Catálogos compartidos:** `application/modules/shared/hooks/use*CatalogApi.js` importan mappers del módulo dueño (ej. carreras desde `@application-configuracion/academico/mappers`).
+- **Catálogos compartidos:** `@application-shared/hooks` (`use*CatalogApi.js`) importan mappers del módulo dueño (ej. carreras desde `@application-configuracion/academico/mappers`).
 - **Registro factory:** `application/container/modules/<modulo>.container.js`.
 
 **Referencias:**

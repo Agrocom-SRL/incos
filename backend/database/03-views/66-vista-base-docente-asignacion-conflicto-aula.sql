@@ -2,7 +2,7 @@
 -- VISTA BASE: vista_base_docente_asignacion_conflicto_aula
 -- Cruce de aula efectiva + horario entre paralelos_gestion distintos.
 --
--- Aula efectiva = COALESCE(asignacion_horarios.aula_id, paralelos_gestion.aula_id).
+-- Aula: paralelos_gestion.aula_id (sin override por bloque).
 -- Solape intra-paralelo: vista_base_horarios_paralelo_conflictos_solape_bloque (86).
 -- Alineado con vista_base_horarios_paralelo_conflictos_aula (72).
 -- ============================================
@@ -50,5 +50,5 @@ WHERE ad2.deleted_at IS NULL
   AND ad2.vigente = TRUE
   AND ad2.docente_id IS NOT NULL
   AND ah2.horario_id IS NOT NULL
-  AND COALESCE(ah2.aula_id, pg2.aula_id) IS NOT NULL
-  AND COALESCE(ah3.aula_id, pg3.aula_id) = COALESCE(ah2.aula_id, pg2.aula_id);
+  AND pg2.aula_id IS NOT NULL
+  AND pg3.aula_id = pg2.aula_id;

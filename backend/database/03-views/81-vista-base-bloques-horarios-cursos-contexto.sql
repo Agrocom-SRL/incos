@@ -3,8 +3,8 @@
 -- Bloques de asignacion_horarios con contexto académico.
 --
 -- Modelo de negocio:
--- - aula_id NULL en asignacion_horarios hereda el aula base de paralelos_gestion (Oferta académica).
--- - aula_id expuesto aquí es la aula efectiva: COALESCE(bloque, paralelo_gestion).
+-- - Aula: paralelos_gestion.aula_id (Oferta académica).
+-- - Turno operativo: paralelos_gestion.turno (no paralelos.turno maestro).
 -- ============================================
 
 USE instituto_incos;
@@ -24,7 +24,7 @@ SELECT
   h.turno AS turno,
   h.numero_bloque AS numero_bloque,
   ah.orden_secuencia AS orden_secuencia,
-  COALESCE(ah.aula_id, pg.aula_id) AS aula_id,
+  pg.aula_id AS aula_id,
   m.id AS materia_id,
   m.sigla AS materia_sigla,
   m.nombre AS materia_nombre,

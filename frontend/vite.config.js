@@ -40,6 +40,7 @@ export default defineConfig({
             '@application-auth': path.resolve(__dirname, './src/application/modules/auth'),
             '@application-docentes': path.resolve(__dirname, './src/application/modules/docentes'),
             '@application-institucional': path.resolve(__dirname, './src/application/modules/institucional'),
+            '@application-shared': path.resolve(__dirname, './src/application/modules/shared'),
 
             // Infrastructure Layer
             '@infrastructure': path.resolve(__dirname, './src/infrastructure'),

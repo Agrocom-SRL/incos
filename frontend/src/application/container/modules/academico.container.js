@@ -17,8 +17,6 @@ import {
   GetParalelosEstadoDashboardUseCase,
   GetTodosParalelosUseCase,
   PutParaleloHorariosUseCase,
-  GetAulasHorariosUseCase,
-  PatchAulaHorarioUseCase,
   GetHorariosPendientesSidebarUseCase,
   GetHorariosPublicacionPlanesUseCase,
 } from '@useCases/academico/paralelos';
@@ -70,14 +68,6 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerCapacidadTurno = () => {
     return new GetCapacidadTurnoUseCase(paraleloRepository);
-  };
-
-  factory.obtenerAulasHorarios = () => {
-    return new GetAulasHorariosUseCase(paraleloRepository);
-  };
-
-  factory.asignarAulaHorario = () => {
-    return new PatchAulaHorarioUseCase(paraleloRepository);
   };
 
   factory.obtenerHorariosPendientesSidebar = () => {

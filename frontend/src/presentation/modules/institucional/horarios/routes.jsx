@@ -18,9 +18,6 @@ const GestionHorariosConnector = lazy(() => import('@institucional/horarios/conn
 const GestionHorariosArmadoConnector = lazy(
   () => import('@institucional/horarios/connectors/ArmadoConnector'),
 );
-const GestionHorariosAulasConnector = lazy(
-  () => import('@institucional/horarios/connectors/AulasConnector'),
-);
 const GestionHorariosPublicacionConnector = lazy(
     () => import('@institucional/horarios/connectors/PublicacionConnector'),
 );
@@ -66,12 +63,9 @@ export const horariosRoutes = [
   },
   {
     path: '/institucional/horarios/aulas',
-    element: <GestionHorariosAulasConnector />,
-    key: 'INST-HORARIO-AULAS',
-    permiso: 'institucional.gestion.horarios',
-    accion: 'LISTAR',
+    element: <Navigate to="/institucional/horarios" replace />,
+    key: 'INST-HORARIO-AULAS-LEGACY',
     menu: null,
-    breadcrumbParent: 'INST-HORARIOS',
   },
   {
     path: '/institucional/horarios/conflictos',

@@ -4,41 +4,16 @@ import {
   SERVICIOS_TOKENS,
 } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListAulasHorariosUseCase } from '../../../../application/use-cases/aulas-horarios/ListAulasHorariosUseCase.js';
-import { PatchAulaHorarioUseCase } from '../../../../application/use-cases/aulas-horarios/PatchAulaHorarioUseCase.js';
 import { ListAulasCatalogUseCase } from '../../../../application/use-cases/aulas-horarios/ListAulasCatalogUseCase.js';
-import { ListAulasHorariosController } from '../../../../presentation/controllers/aulas-horarios/list-aulas-horarios.controller.js';
-import { PatchAulaHorarioController } from '../../../../presentation/controllers/aulas-horarios/patch-aula-horario.controller.js';
 import { ListAulasCatalogController } from '../../../../presentation/controllers/aulas-horarios/list-aulas-catalog.controller.js';
 import { buildAulasHorariosRouter } from '../../../../presentation/routes/aulas-horarios.routes.js';
 
 export function registerAulasHorariosModule(container) {
   registerComponent(
     container,
-    AULAS_HORARIOS_TOKENS.listAulasHorariosUseCase,
-    (c) =>
-      new ListAulasHorariosUseCase({
-        aulasHorariosSemanaRepository: c.resolve(REPOSITORIOS_TOKENS.weeklyClassroomScheduleRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      })
-  );
-
-  registerComponent(
-    container,
     AULAS_HORARIOS_TOKENS.listAulasCatalogUseCase,
     (c) =>
       new ListAulasCatalogUseCase({
-        classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      })
-  );
-
-  registerComponent(
-    container,
-    AULAS_HORARIOS_TOKENS.patchAulaHorarioUseCase,
-    (c) =>
-      new PatchAulaHorarioUseCase({
-        asignacionHorarioRepository: c.resolve(REPOSITORIOS_TOKENS.asignacionHorarioRepository),
         classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
@@ -56,35 +31,11 @@ export function registerAulasHorariosModule(container) {
 
   registerComponent(
     container,
-    AULAS_HORARIOS_TOKENS.listAulasHorariosController,
-    (c) =>
-      new ListAulasHorariosController({
-        listAulasHorariosUseCase: c.resolve(AULAS_HORARIOS_TOKENS.listAulasHorariosUseCase),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      })
-  );
-
-  registerComponent(
-    container,
-    AULAS_HORARIOS_TOKENS.patchAulaHorarioController,
-    (c) =>
-      new PatchAulaHorarioController({
-        patchAulaHorarioUseCase: c.resolve(AULAS_HORARIOS_TOKENS.patchAulaHorarioUseCase),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      })
-  );
-
-  registerComponent(
-    container,
     AULAS_HORARIOS_TOKENS.aulasHorariosRouter,
     (c) =>
       buildAulasHorariosRouter({
         controllers: {
           listAulasCatalogController: c.resolve(AULAS_HORARIOS_TOKENS.listAulasCatalogController),
-          listAulasHorariosController: c.resolve(AULAS_HORARIOS_TOKENS.listAulasHorariosController),
-          patchAulaHorarioController: c.resolve(AULAS_HORARIOS_TOKENS.patchAulaHorarioController),
         },
         middlewares: {
           validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
@@ -94,4 +45,3 @@ export function registerAulasHorariosModule(container) {
 
   return container;
 }
-

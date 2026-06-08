@@ -102,8 +102,18 @@ del mismo menú. **No** mezclar fetch dentro de `pages/*.jsx`. **No** duplicar
 
 Por **dominio de menú**, no por entidad: `@application-configuracion`,
 `@configuracion`, `@application-docentes`, etc. Registrar en `vite.config.js` y
-`jsconfig.json`. Catálogos compartidos: `application/modules/shared/hooks/use*CatalogApi`
-importan el **mapper del módulo dueño**, no reimplementan el map.
+`jsconfig.json`.
+
+**Módulo shared (catálogos cross-menú):** alias dedicado `@application-shared`
+→ `application/modules/shared/`. Import canónico del barrel:
+
+```js
+import { useCarrerasCatalogApi, useAcciones } from '@application-shared/hooks';
+```
+
+- **Usar** `@application-shared/hooks` (registrado en Vite + jsconfig).
+- **No usar** `@application/modules/shared/...` ni rutas relativas largas entre módulos.
+- Los `use*CatalogApi` importan el **mapper del módulo dueño**, no reimplementan el map.
 
 ## 8. Checklist — nuevo ítem de menú
 
@@ -126,3 +136,5 @@ importan el **mapper del módulo dueño**, no reimplementan el map.
 6. Provider con lógica de negocio → debe ser delgado, solo ensambla.
 7. Props Ant Design obsoletas en JSX nuevo (`Alert message`, `Space orientation`, `Modal visible`, `List` nuevo) →
    ver `incos-ui-system` §5 y skill `incos-antd5-api` (stack: antd ^6).
+8. Catálogo cross-menú sin `@application-shared/hooks` → Vite `Failed to resolve import`
+   (alias no registrado o ruta `@application/modules/shared/...` inconsistente).

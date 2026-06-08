@@ -1,8 +1,8 @@
 -- ============================================
 -- VISTA BASE: vista_base_horarios_paralelo_bloques_sin_aula
--- Bloques activos sin aula efectiva, por paralelo_gestion (gestión vigente).
+-- Paralelos_gestion con bloques activos pero sin aula base asignada.
 --
--- Aula efectiva = COALESCE(asignacion_horarios.aula_id, paralelos_gestion.aula_id).
+-- Aula: solo paralelos_gestion.aula_id (Oferta académica).
 -- ============================================
 
 USE instituto_incos;
@@ -37,5 +37,5 @@ INNER JOIN gestiones g
     AND g.vigente = TRUE
 WHERE ah.deleted_at IS NULL
   AND ah.activo = TRUE
-  AND COALESCE(ah.aula_id, pg.aula_id) IS NULL
+  AND pg.aula_id IS NULL
 GROUP BY pg.id;

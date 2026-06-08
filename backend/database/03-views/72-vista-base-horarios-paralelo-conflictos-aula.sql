@@ -2,7 +2,7 @@
 -- VISTA BASE: vista_base_horarios_paralelo_conflictos_aula
 -- Cruces de aula efectiva + horario entre paralelos_gestion distintos (gestión vigente).
 --
--- Aula efectiva = COALESCE(asignacion_horarios.aula_id, paralelos_gestion.aula_id).
+-- Aula: paralelos_gestion.aula_id.
 -- El solape de franjas dentro del mismo paralelo lo cubre vista_base_horarios_paralelo_conflictos_solape_bloque (86).
 -- El choque intra-paralelo (misma pg + franja + aula) lo cubre vista_base_paralelo_gestion_conflicto_aula_bloque (125).
 -- ============================================
@@ -19,7 +19,7 @@ FROM (
     SELECT
         pg.id AS paralelo_gestion_id,
         ah.horario_id,
-        COALESCE(ah.aula_id, pg.aula_id) AS aula_efectiva_id,
+        pg.aula_id AS aula_efectiva_id,
         ad.id AS asignacion_docente_id
     FROM asignacion_horarios ah
     INNER JOIN asignaciones_docentes ad
@@ -45,13 +45,13 @@ FROM (
     WHERE ah.deleted_at IS NULL
       AND ah.activo = TRUE
       AND ah.horario_id IS NOT NULL
-      AND COALESCE(ah.aula_id, pg.aula_id) IS NOT NULL
+      AND pg.aula_id IS NOT NULL
 ) base
 INNER JOIN (
     SELECT
         pg.id AS paralelo_gestion_id,
         ah.horario_id,
-        COALESCE(ah.aula_id, pg.aula_id) AS aula_efectiva_id,
+        pg.aula_id AS aula_efectiva_id,
         ad.id AS asignacion_docente_id
     FROM asignacion_horarios ah
     INNER JOIN asignaciones_docentes ad
@@ -77,7 +77,7 @@ INNER JOIN (
     WHERE ah.deleted_at IS NULL
       AND ah.activo = TRUE
       AND ah.horario_id IS NOT NULL
-      AND COALESCE(ah.aula_id, pg.aula_id) IS NOT NULL
+      AND pg.aula_id IS NOT NULL
 ) otro
     ON otro.aula_efectiva_id = base.aula_efectiva_id
     AND otro.horario_id = base.horario_id

@@ -18,12 +18,6 @@ export const AsignacionHorario = sequelize.define(
       allowNull: true,
       comment: 'Bloque del catálogo horarios',
     },
-    aulaId: {
-      type: DataTypes.INTEGER,
-      field: 'aula_id',
-      allowNull: true,
-      comment: 'Aula del bloque; NULL hereda aula base del paralelo_gestion',
-    },
     ordenSecuencia: {
       type: DataTypes.INTEGER,
       field: 'orden_secuencia',
