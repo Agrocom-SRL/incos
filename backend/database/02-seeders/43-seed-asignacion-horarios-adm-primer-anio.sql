@@ -21,7 +21,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Fuente: Excel horarios oficial 2026-02-18
 -- Fuente: dump servidor 2026-05-29 — 93 bloques (oferta 31–51)
 -- asignacion_docente_id = asignaciones_docentes.id (= oferta en gestión 2026)
--- aula_id NULL = hereda aula base de paralelos_gestion; valor explícito = override admin
+-- aula_id siempre NULL: hereda aula base de paralelos_gestion (sin override por bloque en seed)
 
 -- asignacion_docente_id = 31
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -57,15 +57,15 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 35
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(141, 35, 13, 1, 1),
-(142, 35, 14, 1, 2),
-(143, 35, 15, 1, 3),
-(144, 35, 16, 1, 4);
+(141, 35, 13, NULL, 1),
+(142, 35, 14, NULL, 2),
+(143, 35, 15, NULL, 3),
+(144, 35, 16, NULL, 4);
 
 -- asignacion_docente_id = 36
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(145, 36, 7, 1, 1),
-(146, 36, 8, 1, 2);
+(145, 36, 7, NULL, 1),
+(146, 36, 8, NULL, 2);
 
 -- asignacion_docente_id = 37
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -108,15 +108,15 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 42 — Práctica Laboral (4h MIERCOLES TARDE)
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(171, 42, 13, 1, 1),
-(172, 42, 14, 1, 2),
-(173, 42, 15, 1, 3),
-(174, 42, 16, 1, 4);
+(171, 42, 13, NULL, 1),
+(172, 42, 14, NULL, 2),
+(173, 42, 15, NULL, 3),
+(174, 42, 16, NULL, 4);
 
 -- asignacion_docente_id = 43 — Informática Empresarial Lab 1 (2h MARTES TARDE)
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(175, 43, 11, 1, 1),
-(176, 43, 12, 1, 2);
+(175, 43, 11, NULL, 1),
+(176, 43, 12, NULL, 2);
 
 -- asignacion_docente_id = 44 — Inglés Técnico (4h VIERNES TARDE)
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -159,15 +159,15 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 49
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(201, 49, 37, 1, 1),
-(202, 49, 38, 1, 2),
-(203, 49, 39, 1, 3),
-(204, 49, 40, 1, 4);
+(201, 49, 37, NULL, 1),
+(202, 49, 38, NULL, 2),
+(203, 49, 39, NULL, 3),
+(204, 49, 40, NULL, 4);
 
 -- asignacion_docente_id = 50
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(205, 50, 51, 1, 1),
-(206, 50, 52, 1, 2);
+(205, 50, 51, NULL, 1),
+(206, 50, 52, NULL, 2);
 
 -- asignacion_docente_id = 51
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES

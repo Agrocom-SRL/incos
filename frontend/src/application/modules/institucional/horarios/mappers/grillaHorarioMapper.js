@@ -80,6 +80,7 @@ export function extractGrillaHorarioMeta(payload) {
   if (!payload || typeof payload !== 'object') return null;
   return {
     paraleloGestionId: payload.paralelo_gestion_id ?? null,
+    paraleloGestionEstado: payload.paralelo_gestion_estado ?? null,
     turno: payload.turno ?? null,
     conflictos: Array.isArray(payload.conflictos) ? payload.conflictos : [],
     cobertura: payload.cobertura ?? null,

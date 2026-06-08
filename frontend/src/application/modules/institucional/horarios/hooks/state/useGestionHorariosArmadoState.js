@@ -31,13 +31,16 @@ import {
     missingSubjectsFromGrillaCobertura,
 } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
 import {
+    isParaleloGestionCoberturaReajustable,
     isParaleloGestionHorarioEditable,
     isParaleloGestionPlanSemanalEditable,
+    mensajeParaleloGestionCoberturaNoReajustable,
     mensajeParaleloGestionNoEditable,
     mensajeParaleloGestionPlanNoEditable,
 } from '@application-institucional/horarios/utils/paraleloGestionHorarioEditable';
 import {
     generarBloquesAutomaticosCurso,
+    reajustarCoberturaCurso,
 } from '@application-institucional/horarios/utils/generarBloquesAutomaticosCurso';
 
 function pickParaleloId(row) {
@@ -123,6 +126,7 @@ export const useGestionHorariosArmadoState = (notification) => {
     const paraleloGestionEstado = metaFromPg?.estado ?? null;
     const horarioEditable = isParaleloGestionHorarioEditable(paraleloGestionEstado);
     const planSemanalEditable = isParaleloGestionPlanSemanalEditable(paraleloGestionEstado);
+    const coberturaReajustable = isParaleloGestionCoberturaReajustable(paraleloGestionEstado);
     const turnoEfectivo = (metaFromPg?.turno || grillaMeta?.turno || '').trim();
     const paraleloNombre =
         metaFromPg?.nombre ||
@@ -452,6 +456,53 @@ export const useGestionHorariosArmadoState = (notification) => {
         navigate('/institucional/horarios');
     }, [navigate]);
 
+    const persistDraftSchedules = useCallback(
+        async (nextDraft, { coberturaReajuste = false } = {}) => {
+            if (!paraleloGestionId) {
+                return { success: false, error: 'Sin paralelo en gestión' };
+            }
+
+            let { items, incomplete } = buildBulkAsignacionHorarioItems(
+                serverSchedules,
+                nextDraft,
+                horarioSlotIndex,
+            );
+
+            if (!coberturaReajuste && !horarioEditable) {
+                const reubicaciones = items.filter((item) => String(item.op).toLowerCase() === 'update');
+                items = reubicaciones;
+            }
+
+            if (!items.length) {
+                return { success: true, noop: true };
+            }
+
+            if (incomplete) {
+                return {
+                    success: false,
+                    error:
+                        'Algunos bloques no tienen docente o franja válida. Revisá la asignación docente y el turno del paralelo.',
+                };
+            }
+
+            const bulkRes = await ejecutarBulk(items, { coberturaReajuste });
+            if (bulkRes.success) {
+                setBulkSaved(true);
+                return { success: true, data: bulkRes.data };
+            }
+
+            setBulkSaved(false);
+            return { success: false, error: bulkRes.error || 'No se pudieron guardar los bloques.' };
+        },
+        [
+            paraleloGestionId,
+            serverSchedules,
+            horarioSlotIndex,
+            horarioEditable,
+            ejecutarBulk,
+        ],
+    );
+
     const generarBloquesCurso = useCallback(
         (cursoId, horasPlanOverride = null) => {
             if (!horarioEditable) {
@@ -516,6 +567,86 @@ export const useGestionHorariosArmadoState = (notification) => {
         ],
     );
 
+    const reajustarBloquesCurso = useCallback(
+        async (cursoId, horasPlanOverride = null) => {
+            if (!coberturaReajustable) {
+                notification.warning({
+                    title: 'Cobertura no editable',
+                    description: mensajeParaleloGestionCoberturaNoReajustable(paraleloGestionEstado),
+                });
+                return { ok: false };
+            }
+
+            const det = paraleloGestionDetalle;
+            const result = reajustarCoberturaCurso({
+                schedules: draftSchedules,
+                cursoId,
+                turnoLabel: turnoEfectivo || null,
+                horarioSlotIndex,
+                horasPlanOverride,
+                aulaMeta: {
+                    aulaId: det?.aulaId ?? null,
+                    aulaNombre: det?.aulaNombre ?? null,
+                    aulaCodigo: det?.aulaCodigo ?? null,
+                    paraleloNombre: paraleloNombre ?? null,
+                },
+            });
+
+            if (result.removed === 0 && result.placed === 0) {
+                notification.warning({
+                    title: 'Sin cambios',
+                    description:
+                        result.message ||
+                        'La cobertura ya coincide con el plan o no hay franjas libres para completarla.',
+                });
+                return { ok: false, ...result };
+            }
+
+            const persistRes = await persistDraftSchedules(result.schedules, { coberturaReajuste: true });
+            if (!persistRes.success) {
+                notification.error({
+                    title: 'No se pudo guardar',
+                    description:
+                        persistRes.error ||
+                        'Se calculó el reajuste pero no se pudo persistir. Revisá conflictos o permisos.',
+                });
+                return { ok: false, ...result };
+            }
+
+            setDraftSchedules(result.schedules);
+            if (result.faltante > 0) {
+                notification.warning({
+                    title: 'Cobertura parcial',
+                    description:
+                        result.message ||
+                        'Se alineó parte de la carga; aún faltan franjas libres en el turno.',
+                });
+            } else {
+                notification.success({
+                    title: 'Cobertura reajustada',
+                    description:
+                        result.message ||
+                        `Se alineó la materia con la carga del plan (${result.removed} quitados, ${result.placed} generados).`,
+                });
+            }
+            setTab('plan');
+            return { ok: true, ...result };
+        },
+        [
+            notification,
+            coberturaReajustable,
+            paraleloGestionEstado,
+            draftSchedules,
+            turnoEfectivo,
+            horarioSlotIndex,
+            paraleloGestionDetalle,
+            paraleloNombre,
+            persistDraftSchedules,
+            setDraftSchedules,
+            setTab,
+        ],
+    );
+
     const loading =
         pgDirectLoading ||
         (!validPgId && resolver.loading) ||
@@ -562,6 +693,8 @@ export const useGestionHorariosArmadoState = (notification) => {
         paraleloGestionEstado,
         horarioEditable,
         planSemanalEditable,
+        coberturaReajustable,
         generarBloquesCurso,
+        reajustarBloquesCurso,
     };
 };

@@ -1,5 +1,8 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/index.js';
-import { assertParaleloGestionHorarioEditable } from '../../utils/horarios/assertParaleloGestionHorarioEditable.js';
+import {
+  assertParaleloGestionCoberturaReajustable,
+  assertParaleloGestionHorarioEditable,
+} from '../../utils/horarios/assertParaleloGestionHorarioEditable.js';
 
 export class DeleteAsignacionHorarioUseCase {
   constructor({
@@ -14,7 +17,7 @@ export class DeleteAsignacionHorarioUseCase {
     this.logger = logger;
   }
 
-  async execute(id, userId = null) {
+  async execute(id, userId = null, options = {}) {
     const bloqueId = Number(id);
     if (!Number.isFinite(bloqueId) || bloqueId < 1) {
       throw new ValidationError('id de bloque inválido');
@@ -31,7 +34,11 @@ export class DeleteAsignacionHorarioUseCase {
     const pg = await this.parallelManagementRepository.findById(assignment.paralelo_gestion_id);
     if (!pg) throw new NotFoundError('Paralelo en gestión');
 
-    assertParaleloGestionHorarioEditable(pg.state);
+    if (options?.coberturaReajuste === true) {
+      assertParaleloGestionCoberturaReajustable(pg.state);
+    } else {
+      assertParaleloGestionHorarioEditable(pg.state);
+    }
 
     await this.asignacionHorarioRepository.delete(bloqueId, userId);
 

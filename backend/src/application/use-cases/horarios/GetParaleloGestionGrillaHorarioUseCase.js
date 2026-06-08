@@ -47,6 +47,7 @@ export class GetParaleloGestionGrillaHorarioUseCase {
 
     const payload = GrillaHorarioPresentationMapper.toPresentation({
       paraleloGestionId: pgId,
+      paraleloGestionEstado: detalle.state ?? detalle.estado ?? null,
       turno,
       bloques,
       coberturaRows,

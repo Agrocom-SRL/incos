@@ -10,7 +10,7 @@ import {
     getSabadoArmadoGridRangeMinutes,
     getTurnoGridRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
-import ConflictosPlanSemanaCell, { DRAG_MIME } from '../atoms/ConflictosPlanSemanaCell';
+import ParaleloPlanSemanaCell, { DRAG_MIME } from '../atoms/ParaleloPlanSemanaCell';
 import {
     removeBlockFromSchedules,
     swapOrMoveBlockToSlot,
@@ -22,13 +22,17 @@ const SLOT_STEP_ADD = 45;
 const HorariosConflictosPlanSection = ({
     schedules,
     onSchedulesChange,
-    bloquesEnConflicto,
+    conflictHorarioIds = null,
+    horarioSlotIndex = null,
     onRequestPersist,
     validatePlacement,
     persistLoading = false,
     turnoLabel = null,
     vistaLabel = 'Grilla semanal',
     vistaHint = null,
+    editable = true,
+    showSave = true,
+    headerMinimal = false,
 }) => {
     const { notification } = App.useApp();
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
@@ -47,6 +51,7 @@ const HorariosConflictosPlanSection = ({
 
     const handleSlotDrop = useCallback(
         async (e, targetDia, targetSlotMinutes) => {
+            if (!editable) return;
             const raw = e.dataTransfer.getData(DRAG_MIME);
             if (!raw) return;
             let payload;
@@ -84,55 +89,59 @@ const HorariosConflictosPlanSection = ({
 
             onSchedulesChange(swapOrMoveBlockToSlot(schedules, meta));
         },
-        [notification, onSchedulesChange, schedules, validatePlacement],
+        [editable, notification, onSchedulesChange, schedules, validatePlacement],
     );
 
     const handleDeleteChip = useCallback(
         (item) => {
+            if (!editable) return;
             if (!item?.cursoId || item.cursoHorarioId == null) return;
             onSchedulesChange(removeBlockFromSchedules(schedules, item.cursoId, item.cursoHorarioId));
         },
-        [onSchedulesChange, schedules],
+        [editable, onSchedulesChange, schedules],
     );
-
-    const hint =
-        vistaHint ??
-        'Arrastrá un bloque en rojo a una franja vacía del turno, o soltalo sobre otro bloque para intercambiar. Guardá al terminar.';
 
     return (
         <section className="horarios-armado-plan" aria-label={vistaLabel}>
-            <Flex justify="space-between" align="center" wrap="wrap" gap={12} style={{ marginBottom: 12 }}>
-                <div>
-                    <Text strong>{vistaLabel}</Text>
-                    <Text type="secondary" style={{ display: 'block' }}>
-                        {hint}
-                    </Text>
-                </div>
-                <Space wrap>
-                    <ActionButton
-                        permiso="institucional.horario.armado"
-                        accion="EDITAR"
-                        variant="primary"
-                        onClick={onRequestPersist}
-                        loading={persistLoading}
-                    >
-                        Guardar cambios
-                    </ActionButton>
-                </Space>
-            </Flex>
+            {!headerMinimal ? (
+                <Flex justify="space-between" align="center" wrap="wrap" gap={12} style={{ marginBottom: 12 }}>
+                    <div>
+                        <Text strong>{vistaLabel}</Text>
+                        {vistaHint ? (
+                            <Text type="secondary" style={{ display: 'block' }}>
+                                {vistaHint}
+                            </Text>
+                        ) : null}
+                    </div>
+                    <Space wrap>
+                        {showSave && editable ? (
+                            <ActionButton
+                                permiso="institucional.horario.armado"
+                                accion="EDITAR"
+                                variant="primary"
+                                onClick={onRequestPersist}
+                                loading={persistLoading}
+                            >
+                                Guardar cambios
+                            </ActionButton>
+                        ) : null}
+                    </Space>
+                </Flex>
+            ) : null}
             <DocenteHorarioSemanalGrid
                 courseSchedules={schedules}
-                CellComponent={ConflictosPlanSemanaCell}
+                CellComponent={ParaleloPlanSemanaCell}
                 gridTimeRange={gridRange}
                 saturdayGridTimeRange={sabadoRange}
                 slotStepMinutes={SLOT_STEP_ADD}
-                uniformSlotGrid={false}
-                editable
+                uniformSlotGrid={!editable}
+                editable={editable}
                 onSlotDrop={handleSlotDrop}
+                conflictHorarioIds={conflictHorarioIds}
+                horarioSlotIndex={horarioSlotIndex}
                 cellExtraProps={{
-                    onBeginDragChip: handleBeginDragChip,
-                    onDeleteChip: handleDeleteChip,
-                    bloquesEnConflicto,
+                    onBeginDragChip: editable ? handleBeginDragChip : undefined,
+                    onDeleteChip: editable ? handleDeleteChip : undefined,
                 }}
             />
         </section>

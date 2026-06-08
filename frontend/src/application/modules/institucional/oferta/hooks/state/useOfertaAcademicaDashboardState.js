@@ -19,6 +19,7 @@ export function useOfertaAcademicaDashboardState() {
     loading: mutationLoading,
     error: apiError,
     fetchGestionesSilent,
+    fetchPlanesHabilitados,
     fetchPlanesHabilitadosSilent,
     fetchPlanesVigentesCatalogo,
     fetchParalelosGestionSilent,

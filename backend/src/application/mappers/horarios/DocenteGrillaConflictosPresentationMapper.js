@@ -41,27 +41,32 @@ function mergeFranjasCatalogo(existingFranjas, catalogoFranjas) {
 }
 
 function buildParalelosInvolucrados(scheduleRows, paresConflicto) {
+  const turnoPorPgId = new Map();
+  for (const r of scheduleRows || []) {
+    const id = Number(r.paralelo_gestion_id);
+    if (!Number.isFinite(id) || id < 1) continue;
+    const turno = r.paralelo_turno ?? r.horario_turno ?? null;
+    if (turno != null && String(turno).trim() && !turnoPorPgId.has(id)) {
+      turnoPorPgId.set(id, String(turno).trim());
+    }
+  }
+
   const map = new Map();
-  const add = (pgId, nombre, turno) => {
+  const add = (pgId, nombre) => {
     const id = Number(pgId);
     if (!Number.isFinite(id) || id < 1) return;
     if (!map.has(id)) {
       map.set(id, {
         paraleloGestionId: id,
         paraleloNombre: nombre ?? `Paralelo #${id}`,
-        turno: turno ?? null,
+        turno: turnoPorPgId.get(id) ?? null,
       });
-    } else if (turno && !map.get(id).turno) {
-      map.get(id).turno = turno;
     }
   };
 
-  for (const r of scheduleRows || []) {
-    add(r.paralelo_gestion_id, r.paralelo_nombre, r.paralelo_turno ?? r.horario_turno);
-  }
   for (const p of paresConflicto || []) {
-    add(p.paraleloGestionIdA, p.paraleloA, null);
-    add(p.paraleloGestionIdB, p.paraleloB, null);
+    add(p.paraleloGestionIdA, p.paraleloA);
+    add(p.paraleloGestionIdB, p.paraleloB);
   }
 
   return [...map.values()].sort((a, b) =>
@@ -190,10 +195,9 @@ export class DocenteGrillaConflictosPresentationMapper {
     );
     const turnoEfectivo = resolveTurnoEfectivo(bundle.scheduleRows, paralelosInvolucrados);
 
-    const bloquesEnConflicto = new Set();
+    const conflictHorarioIds = new Set();
     for (const p of bundle.paresConflicto || []) {
-      if (p.bloqueAId != null) bloquesEnConflicto.add(Number(p.bloqueAId));
-      if (p.bloqueBId != null) bloquesEnConflicto.add(Number(p.bloqueBId));
+      if (p.horarioId != null) conflictHorarioIds.add(Number(p.horarioId));
     }
 
     const paresConflicto = (bundle.paresConflicto || []).map((p) => ({
@@ -220,7 +224,7 @@ export class DocenteGrillaConflictosPresentationMapper {
       courseSchedules,
       franjas,
       paralelosInvolucrados,
-      bloquesEnConflicto: [...bloquesEnConflicto],
+      conflictHorarioIds: [...conflictHorarioIds],
       paresConflicto,
       lineasDetalle: Array.isArray(bundle.lineasDetalle) ? bundle.lineasDetalle : [],
     };

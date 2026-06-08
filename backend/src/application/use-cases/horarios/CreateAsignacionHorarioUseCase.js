@@ -1,5 +1,8 @@
 import { NotFoundError, ValidationError, UnprocessableEntityError } from '../../../domain/errors/index.js';
-import { assertParaleloGestionHorarioEditable } from '../../utils/horarios/assertParaleloGestionHorarioEditable.js';
+import {
+  assertParaleloGestionCoberturaReajustable,
+  assertParaleloGestionHorarioEditable,
+} from '../../utils/horarios/assertParaleloGestionHorarioEditable.js';
 import { AsignacionHorarioPresentationMapper } from '../../mappers/horarios/AsignacionHorarioPresentationMapper.js';
 
 export class CreateAsignacionHorarioUseCase {
@@ -45,7 +48,11 @@ export class CreateAsignacionHorarioUseCase {
     const pg = await this.parallelManagementRepository.findById(assignment.paralelo_gestion_id);
     if (!pg) throw new NotFoundError('Paralelo en gestión');
 
-    assertParaleloGestionHorarioEditable(pg.state);
+    if (body?.cobertura_reajuste === true || body?.coberturaReajuste === true) {
+      assertParaleloGestionCoberturaReajustable(pg.state);
+    } else {
+      assertParaleloGestionHorarioEditable(pg.state);
+    }
 
     const horario = await this.scheduleRepository.findById(horarioId);
     if (!horario) throw new NotFoundError('Horario');

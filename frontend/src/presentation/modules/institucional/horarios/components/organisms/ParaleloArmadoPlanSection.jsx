@@ -37,6 +37,11 @@ const ParaleloArmadoPlanSection = ({
     vistaExpandida = false,
     /** Si es true, bajo la grilla se muestra el detalle de solapes / sin aula / docentes (vista previa). */
     showPendientesDetalle = false,
+    /** horario_id del catálogo en choque (resaltado rojo por celda en grilla de conflictos). */
+    conflictHorarioIds = null,
+    horarioSlotIndex = null,
+    /** Oculta títulos y leyendas; solo grilla + guardar (pantalla de conflictos). */
+    headerMinimal = false,
 }) => {
     const { notification } = App.useApp();
     const puedeEliminar = allowDelete ?? editable;
@@ -132,30 +137,9 @@ const ParaleloArmadoPlanSection = ({
                 .join(' ')}
             aria-label="Plan semanal del paralelo"
         >
-            <Flex
-                justify="space-between"
-                align="center"
-                wrap="wrap"
-                gap={12}
-                style={{ marginBottom: 12, flexShrink: 0 }}
-            >
-                <div>
-                    <Text strong>Plan semanal</Text>
-                    {turnoLabel ? (
-                        <Text type="secondary">
-                            {' '}
-                            · Turno {turnoLabel}
-                        </Text>
-                    ) : null}
-                    {soloReubicacion ? (
-                        <Text type="secondary" style={{ display: 'block' }}>
-                            Paralelo publicado: podés reubicar bloques existentes; no se pueden agregar ni quitar
-                            desde la grilla.
-                        </Text>
-                    ) : null}
-                </div>
-                <Space wrap>
-                    {editable ? (
+            {headerMinimal ? (
+                editable ? (
+                    <Flex justify="flex-end" style={{ marginBottom: 12, flexShrink: 0 }}>
                         <ActionButton
                             permiso="institucional.horario.armado"
                             accion="EDITAR"
@@ -165,11 +149,48 @@ const ParaleloArmadoPlanSection = ({
                         >
                             Guardar cambios
                         </ActionButton>
-                    ) : (
-                        <Text type="secondary">Solo lectura</Text>
-                    )}
-                </Space>
-            </Flex>
+                    </Flex>
+                ) : null
+            ) : (
+                <Flex
+                    justify="space-between"
+                    align="center"
+                    wrap="wrap"
+                    gap={12}
+                    style={{ marginBottom: 12, flexShrink: 0 }}
+                >
+                    <div>
+                        <Text strong>Plan semanal</Text>
+                        {turnoLabel ? (
+                            <Text type="secondary">
+                                {' '}
+                                · Turno {turnoLabel}
+                            </Text>
+                        ) : null}
+                        {soloReubicacion ? (
+                            <Text type="secondary" style={{ display: 'block' }}>
+                                Paralelo publicado: podés reubicar bloques existentes; no se pueden agregar ni quitar
+                                desde la grilla.
+                            </Text>
+                        ) : null}
+                    </div>
+                    <Space wrap>
+                        {editable ? (
+                            <ActionButton
+                                permiso="institucional.horario.armado"
+                                accion="EDITAR"
+                                variant="primary"
+                                onClick={handleSaveClick}
+                                loading={persistLoading}
+                            >
+                                Guardar cambios
+                            </ActionButton>
+                        ) : (
+                            <Text type="secondary">Solo lectura</Text>
+                        )}
+                    </Space>
+                </Flex>
+            )}
             <div
                 className={vistaExpandida ? 'horarios-armado-plan__grid-host' : undefined}
             >
@@ -182,6 +203,8 @@ const ParaleloArmadoPlanSection = ({
                     uniformSlotGrid={!editable}
                     editable={editable}
                     onSlotDrop={handleSlotDrop}
+                    conflictHorarioIds={conflictHorarioIds?.size ? conflictHorarioIds : null}
+                    horarioSlotIndex={horarioSlotIndex}
                     cellExtraProps={{
                         onBeginDragChip: handleBeginDragChip,
                         onDeleteChip: puedeEliminar ? handleDeleteChip : undefined,

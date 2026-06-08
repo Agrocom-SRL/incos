@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Col, Divider, Flex, Row, Typography } from 'antd';
-import { ThunderboltOutlined, TeamOutlined } from '@ant-design/icons';
+import { SyncOutlined, ThunderboltOutlined, TeamOutlined } from '@ant-design/icons';
 import { Card, ActionButton, StatusPill } from '@atoms';
 import { buildOfertaParaleloDetalleFromHorarios } from '@application-institucional/horarios/config/paths';
 import { bloquesRequeridosPorCarga } from '@application-institucional/horarios/utils/generarBloquesAutomaticosCurso';
@@ -15,11 +15,14 @@ const ParaleloCoberturaTabSection = ({
     paraleloGestionId,
     coberturaGrilla = null,
     horarioEditable = true,
+    coberturaReajustable = true,
     onGenerarBloquesCurso,
+    onReajustarBloquesCurso,
 }) => {
     const navigate = useNavigate();
     const pgId = Number(paraleloGestionId);
     const [generandoCursoId, setGenerandoCursoId] = useState(null);
+    const [reajustandoCursoId, setReajustandoCursoId] = useState(null);
 
     const coberturaPorAsignacion = useMemo(
         () => indexCoberturaPorAsignacion(coberturaGrilla),
@@ -43,6 +46,19 @@ const ParaleloCoberturaTabSection = ({
             }
         },
         [onGenerarBloquesCurso],
+    );
+
+    const handleReajustar = useCallback(
+        async (cursoId, horasPlan) => {
+            if (typeof onReajustarBloquesCurso !== 'function') return;
+            setReajustandoCursoId(cursoId);
+            try {
+                await onReajustarBloquesCurso(cursoId, horasPlan);
+            } finally {
+                setReajustandoCursoId(null);
+            }
+        },
+        [onReajustarBloquesCurso],
     );
 
     if (!draftSchedules.length) {
@@ -90,12 +106,17 @@ const ParaleloCoberturaTabSection = ({
                 const bloquesReq = bloquesRequeridosPorCarga(horasPlanEfectivo);
                 const bloquesActuales = c.bloques?.length ?? 0;
                 const bloquesFaltantes = Math.max(0, bloquesReq - bloquesActuales);
+                const bloquesExcedentes = Math.max(0, bloquesActuales - bloquesReq);
                 const sinDocente = !c.docente;
                 const docenteEnConflictoHorario = Boolean(c.docenteEnConflictoHorario);
-                const coberturaCompleta = bloquesReq > 0 && bloquesActuales >= bloquesReq;
+                const coberturaExacta = bloquesReq > 0 && bloquesActuales === bloquesReq;
+                const coberturaDesajustada = bloquesReq > 0 && bloquesActuales !== bloquesReq;
+                const puedeReajustar =
+                    !sinDocente && coberturaReajustable && coberturaDesajustada;
                 const puedeGenerar =
-                    !sinDocente && horarioEditable && bloquesFaltantes > 0;
+                    !sinDocente && horarioEditable && bloquesFaltantes > 0 && !puedeReajustar;
                 const generando = Number(generandoCursoId) === Number(c.cursoId);
+                const reajustando = Number(reajustandoCursoId) === Number(c.cursoId);
 
                 const cardExtra = sinDocente ? (
                     <ActionButton
@@ -107,6 +128,18 @@ const ParaleloCoberturaTabSection = ({
                         onClick={irAOferta}
                     >
                         Asignar docente
+                    </ActionButton>
+                ) : puedeReajustar ? (
+                    <ActionButton
+                        permiso="institucional.horario.armado"
+                        accion="EDITAR"
+                        variant="primary"
+                        size="small"
+                        icon={<SyncOutlined />}
+                        loading={reajustando}
+                        onClick={() => handleReajustar(c.cursoId, horasPlanEfectivo)}
+                    >
+                        Reajustar cobertura
                     </ActionButton>
                 ) : puedeGenerar ? (
                     <ActionButton
@@ -120,7 +153,7 @@ const ParaleloCoberturaTabSection = ({
                     >
                         Generar horarios
                     </ActionButton>
-                ) : coberturaCompleta ? (
+                ) : coberturaExacta ? (
                     <StatusPill
                         label={"Cobertura completa"}
                         className={"cfg-materia-pill cfg-materia-pill--activa"}
@@ -189,6 +222,14 @@ const ParaleloCoberturaTabSection = ({
                                         Pendiente:{' '}
                                         <Text strong type="warning">
                                             {bloquesFaltantes} bloque(s) por generar
+                                        </Text>
+                                    </Text>
+                                ) : null}
+                                {bloquesExcedentes > 0 ? (
+                                    <Text type="secondary">
+                                        Excedente:{' '}
+                                        <Text strong type="danger">
+                                            {bloquesExcedentes} bloque(s) sobre el plan
                                         </Text>
                                     </Text>
                                 ) : null}

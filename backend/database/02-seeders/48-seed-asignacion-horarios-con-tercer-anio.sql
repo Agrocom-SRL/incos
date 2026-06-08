@@ -7,6 +7,7 @@
 -- Pre-requisitos: 31–39 seed-asignaciones-docentes-* (mismos IDs numéricos)
 -- IDs oferta (asignacion_docente_id ref): 125-140 (3A: 125-132, 3B: 133-140)
 -- Bloques PK (asignacion_horarios.id): 481–540 (continúa desde seeder 47, id 480; fin cadena 40–48)
+-- aula_id siempre NULL: hereda aula base de paralelos_gestion (sin override por bloque en seed)
 
 USE instituto_incos;
 
@@ -47,10 +48,10 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 130 (bloques 499-502)
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(499, 130, 1, 1, 1),
-(500, 130, 2, 1, 2),
-(501, 130, 3, 1, 3),
-(502, 130, 4, 1, 4);
+(499, 130, 1, NULL, 1),
+(500, 130, 2, NULL, 2),
+(501, 130, 3, NULL, 3),
+(502, 130, 4, NULL, 4);
 
 -- asignacion_docente_id = 131 (bloques 503-506)
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -101,10 +102,10 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 138 (bloques 529-532)
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(529, 138, 33, 1, 1),
-(530, 138, 34, 1, 2),
-(531, 138, 35, 1, 3),
-(532, 138, 38, 1, 4);
+(529, 138, 33, NULL, 1),
+(530, 138, 34, NULL, 2),
+(531, 138, 35, NULL, 3),
+(532, 138, 38, NULL, 4);
 
 -- asignacion_docente_id = 139 (bloques 533-536)
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES

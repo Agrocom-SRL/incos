@@ -1,32 +1,26 @@
-import { Alert, Card, Flex, Segmented, Spin, Typography } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
+import { Alert, Flex, Spin, Tabs, Typography } from 'antd';
+import { ArrowLeftOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
-import { ActionButton } from '@atoms';
-import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
+import { PageHeader, ListPanelHeader } from '@molecules';
 import { useHorariosConflictosContext } from '@application-institucional/horarios/hooks/context/useHorariosConflictosContext';
-import { buildOfertaParaleloDetalleFromHorarios } from '@application-institucional/horarios/config/paths';
+import {
+    isParaleloGestionHorarioEditable,
+    isParaleloGestionPlanSemanalEditable,
+} from '@application-institucional/horarios/utils/paraleloGestionHorarioEditable';
 import HorariosConflictosPlanSection from '../components/organisms/HorariosConflictosPlanSection';
+import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
+import '@configuracion/academico/styles/academico-form-page.css';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
 
-const sectionCardProps = {
-    style: {
-        borderRadius: `${componentConfig.Card.borderRadiusLG}px`,
-        boxShadow: shadows.shadowElevation2,
-        border: `1px solid ${allColors.colorBorder}`,
-        backgroundColor: allColors.colorBgContainer,
-    },
-    styles: {
-        body: { padding: `${componentConfig.Card.paddingLG}px` },
-    },
-};
+const wrapTabPanel = (node) => (
+    <div className="cfg-academico-tab-panel horarios-conflictos-tab-panel">{node}</div>
+);
 
 const GestionHorariosConflictosPage = () => {
-    const navigate = useNavigate();
     const {
         docenteId,
         docentesConConflictos,
@@ -34,9 +28,11 @@ const GestionHorariosConflictosPage = () => {
         loading,
         error,
         grilla,
-        draftSchedules,
-        setDraftSchedules,
-        bloquesEnConflictoSet,
+        docenteDraftSchedules,
+        conflictHorarioIds,
+        horarioSlotIndex,
+        paraleloStates,
+        setParaleloDraftSchedules,
         persistLoading,
         onRequestPersist,
         validatePlacement,
@@ -44,12 +40,9 @@ const GestionHorariosConflictosPage = () => {
         breadcrumbItems,
         pageTitle,
         vistaActivaKey,
-        vistaActivaLabel,
         vistaOpciones,
         setVistaModo,
-        turnoVistaActiva,
-        paralelosInvolucrados,
-        isParaleloVista,
+        turnoEfectivo,
     } = useHorariosConflictosContext();
 
     const docenteNombre =
@@ -57,141 +50,152 @@ const GestionHorariosConflictosPage = () => {
         (docentesConConflictos || []).find((d) => Number(d.docenteId) === Number(docenteId))?.docenteNombre ||
         (docenteId ? `Docente #${docenteId}` : null);
 
-    const headerActions = (
+    const gestionLabel = gestionVigente
+        ? gestionVigente.nombre || gestionVigente.gestion || gestionVigente.id
+        : null;
+
+    const workspaceActions = (
         <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
             <ArrowLeftOutlined /> Volver
         </button>
     );
 
-    const vistaHint = isParaleloVista
-        ? 'Vista del paralelo completo: todas las materias y docentes. Reubicá o intercambiá bloques dentro de este paralelo.'
-        : 'Vista agregada del docente en todos sus paralelos. Reubicá según disponibilidad o cambiá a vista de paralelo para intercalar con otras materias.';
+    const workspaceDescription = useMemo(() => {
+        const partes = [];
+        if (docenteId && docenteNombre) {
+            partes.push(`Docente con conflicto operativo: ${docenteNombre}`);
+        }
+        if (gestionLabel) {
+            partes.push(`Gestión: ${gestionLabel}`);
+        }
+        partes.push(
+            'Las celdas en rojo marcan la misma franja horaria en choque. Reubicá un bloque en la pestaña del paralelo y guardá para resolver el solape.',
+        );
+        return partes.join(' · ');
+    }, [docenteId, docenteNombre, gestionLabel]);
+
+    const tabItems = useMemo(() => {
+        if (!docenteId || vistaOpciones.length <= 1) return [];
+
+        return vistaOpciones.map((opcion) => {
+            const isDocente = opcion.key === 'docente';
+            const pgId = isDocente ? null : Number(opcion.key);
+            const paraleloState = pgId != null ? paraleloStates[pgId] : null;
+            const schedules = isDocente
+                ? docenteDraftSchedules
+                : (paraleloState?.draftSchedules ?? []);
+            const turnoLabel = isDocente
+                ? turnoEfectivo
+                : (paraleloState?.turno ?? turnoEfectivo);
+
+            const estadoPg = paraleloState?.paraleloGestionEstado ?? null;
+            const planEditable = isParaleloGestionPlanSemanalEditable(estadoPg);
+            const horEditable = isParaleloGestionHorarioEditable(estadoPg);
+
+            const panelLoading = !isDocente && Boolean(paraleloState?.loading);
+            const panelError = !isDocente ? paraleloState?.error : null;
+
+            return {
+                key: String(opcion.key),
+                label: (
+                    <span className="sd-tab-label">
+                        {isDocente ? <UserOutlined /> : <TeamOutlined />}
+                        {opcion.label}
+                    </span>
+                ),
+                children: wrapTabPanel(
+                    panelLoading ? (
+                        <Flex justify="center" style={{ padding: 24 }}>
+                            <Spin tip="Cargando grilla…" />
+                        </Flex>
+                    ) : panelError ? (
+                        <Alert type="error" showIcon title={panelError} />
+                    ) : isDocente ? (
+                        <HorariosConflictosPlanSection
+                            schedules={schedules}
+                            onSchedulesChange={() => {}}
+                            conflictHorarioIds={conflictHorarioIds}
+                            horarioSlotIndex={horarioSlotIndex}
+                            editable={false}
+                            showSave={false}
+                            turnoLabel={turnoLabel}
+                            headerMinimal
+                        />
+                    ) : (
+                        <ParaleloArmadoPlanSection
+                            schedules={schedules}
+                            onSchedulesChange={(updater) => setParaleloDraftSchedules(pgId, updater)}
+                            editable={planEditable}
+                            allowDelete={horEditable}
+                            soloReubicacion={planEditable && !horEditable}
+                            turnoLabel={turnoLabel}
+                            persistLoading={persistLoading}
+                            onRequestPersist={() => onRequestPersist(pgId)}
+                            validatePlacement={validatePlacement}
+                            conflictHorarioIds={conflictHorarioIds}
+                            horarioSlotIndex={horarioSlotIndex}
+                            headerMinimal
+                        />
+                    ),
+                ),
+            };
+        });
+    }, [
+        docenteId,
+        vistaOpciones,
+        paraleloStates,
+        docenteDraftSchedules,
+        turnoEfectivo,
+        conflictHorarioIds,
+        horarioSlotIndex,
+        setParaleloDraftSchedules,
+        persistLoading,
+        onRequestPersist,
+        validatePlacement,
+    ]);
 
     return (
         <PageTemplate
-            header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={headerActions} />}
+            header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}
             sidebar={null}
         >
             <Spin spinning={loading} size="large" tip="Cargando grilla…">
                 <div className="sd sd-spin-body horarios-conflictos-page">
-                    <Flex vertical gap={allSpacing.marginLG}>
-                        <Alert
-                            type="info"
-                            showIcon
-                            title="Tres formas de resolver"
-                            description={
-                                <Flex vertical gap={4}>
-                                    <Text>
-                                        1. <Text strong>Reubicar</Text> — mové un bloque en rojo a otra franja libre
-                                        (vista docente o paralelo).
-                                    </Text>
-                                    <Text>
-                                        2. <Text strong>Intercambiar</Text> — en vista paralelo, soltá un bloque sobre
-                                        otro del mismo paralelo para permutar horarios.
-                                    </Text>
-                                    <Text>
-                                        3. <Text strong>Cambiar docente</Text> — si la misma persona no puede dictar
-                                        dos materias a la vez, reasigná en Oferta académica.
-                                    </Text>
-                                </Flex>
-                            }
-                        />
+                    {error ? (
+                        <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} />
+                    ) : null}
 
-                        <Card {...sectionCardProps}>
-                            <Flex vertical gap={allSpacing.marginMD}>
-                                <Flex wrap="wrap" gap={allSpacing.marginMD} align="flex-end">
-                                    {docenteId && docenteNombre ? (
-                                        <Flex vertical gap={4} style={{ minWidth: 280, flex: '1 1 280px' }}>
-                                            <Text type="secondary">Docente con conflicto operativo</Text>
-                                            <Text strong>{docenteNombre}</Text>
-                                        </Flex>
-                                    ) : null}
-                                    {gestionVigente ? (
-                                        <Text type="secondary">
-                                            Gestión:{' '}
-                                            <Text strong>
-                                                {gestionVigente.nombre || gestionVigente.gestion || gestionVigente.id}
-                                            </Text>
-                                        </Text>
-                                    ) : null}
-                                </Flex>
+                    {!docenteId ? (
+                        <Text type="secondary">
+                            Abrí esta pantalla desde el panel lateral del tablero de horarios.
+                        </Text>
+                    ) : null}
 
-                                {vistaOpciones.length > 1 ? (
-                                    <Flex vertical gap={allSpacing.marginSM}>
-                                        <Text type="secondary">Modo de grilla</Text>
-                                        <Segmented
-                                            value={vistaActivaKey}
-                                            onChange={(key) =>
-                                                setVistaModo(key === 'docente' ? 'docente' : Number(key))
-                                            }
-                                            options={vistaOpciones.map((o) => ({
-                                                label: o.label,
-                                                value: o.key,
-                                            }))}
-                                        />
-                                    </Flex>
-                                ) : null}
+                    {docenteId && tabItems.length > 0 ? (
+                        <section className="cfg-academico-workspace horarios-conflictos-workspace">
+                            <header className="cfg-academico-workspace__header">
+                                <ListPanelHeader
+                                    title="Resolver conflictos de horario"
+                                    actions={workspaceActions}
+                                />
+                                <Paragraph type="secondary" className="cfg-academico-workspace__desc">
+                                    {workspaceDescription}
+                                </Paragraph>
+                            </header>
 
-                                {paralelosInvolucrados.length ? (
-                                    <Flex wrap="wrap" gap={allSpacing.marginSM}>
-                                        {paralelosInvolucrados.map((p) => (
-                                            <ActionButton
-                                                key={`oferta-pg-${p.paraleloGestionId}`}
-                                                permiso="institucional.oferta.paralelo-gestion"
-                                                accion="EDITAR"
-                                                variant="secondary"
-                                                onClick={() => {
-                                                    const target = buildOfertaParaleloDetalleFromHorarios(
-                                                        p.paraleloGestionId,
-                                                    );
-                                                    navigate(target.pathname, { state: target.state });
-                                                }}
-                                            >
-                                                Oferta — {p.paraleloNombre || `Paralelo #${p.paraleloGestionId}`}
-                                            </ActionButton>
-                                        ))}
-                                    </Flex>
-                                ) : null}
-
-                                {error ? <Alert type="error" showIcon title={error} /> : null}
-
-                                {!docenteId ? (
-                                    <Text type="secondary">
-                                        Abrí esta pantalla desde el panel lateral del tablero de horarios.
-                                    </Text>
-                                ) : null}
-
-                                {docenteId && grilla?.paresConflicto?.length ? (
-                                    <div>
-                                        <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                                            Pares en conflicto ({grilla.paresConflicto.length})
-                                        </Text>
-                                        <Flex vertical gap={4}>
-                                            {grilla.paresConflicto.map((p, i) => (
-                                                <Text key={`par-${i}`} type="secondary">
-                                                    {p.descripcion || `${p.siglaA} ↔ ${p.siglaB}`}
-                                                </Text>
-                                            ))}
-                                        </Flex>
-                                    </div>
-                                ) : null}
-
-                                {docenteId && !loading && !error ? (
-                                    <HorariosConflictosPlanSection
-                                        schedules={draftSchedules}
-                                        onSchedulesChange={setDraftSchedules}
-                                        bloquesEnConflicto={bloquesEnConflictoSet}
-                                        onRequestPersist={onRequestPersist}
-                                        validatePlacement={validatePlacement}
-                                        persistLoading={persistLoading}
-                                        turnoLabel={turnoVistaActiva}
-                                        vistaLabel={vistaActivaLabel}
-                                        vistaHint={vistaHint}
-                                    />
-                                ) : null}
-                            </Flex>
-                        </Card>
-                    </Flex>
+                            <div className="sd-tabs-shell cfg-academico-tabs-shell">
+                                <Tabs
+                                    className="sd-tabs cfg-academico-workspace__tabs horarios-conflictos-workspace__tabs"
+                                    activeKey={vistaActivaKey}
+                                    onChange={(key) =>
+                                        setVistaModo(key === 'docente' ? 'docente' : Number(key))
+                                    }
+                                    items={tabItems}
+                                    destroyOnHidden={false}
+                                />
+                            </div>
+                        </section>
+                    ) : null}
                 </div>
             </Spin>
         </PageTemplate>

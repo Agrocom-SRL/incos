@@ -6,6 +6,7 @@ import {
     appendBlockToCourse,
     blockDurationMinutes,
     minutesToHoraStr,
+    removeBlockFromSchedules,
 } from '@application-institucional/horarios/utils/planSemanalBlockOps';
 import {
     getSabadoArmadoGridRangeMinutes,
@@ -214,6 +215,98 @@ export function generarBloquesAutomaticosCurso({
         schedules: nextSchedules,
         placed,
         faltante: faltanBloques,
+        message,
+    };
+}
+
+/**
+ * Alinea bloques del curso con la carga del plan: elimina excedentes y genera faltantes.
+ * @param {object} params — mismos que generarBloquesAutomaticosCurso
+ * @returns {{ schedules: object[], removed: number, placed: number, faltante: number, message: string|null }}
+ */
+export function reajustarCoberturaCurso(params) {
+    const {
+        schedules,
+        cursoId,
+        turnoLabel = null,
+        horarioSlotIndex = null,
+        aulaMeta = {},
+        horasPlanOverride = null,
+    } = params;
+
+    const course = (schedules || []).find((c) => Number(c.cursoId) === Number(cursoId));
+    if (!course) {
+        return {
+            schedules,
+            removed: 0,
+            placed: 0,
+            faltante: 0,
+            message: 'Materia no encontrada en el paralelo.',
+        };
+    }
+    if (!course.docente || !course.asignacionDocenteId) {
+        return {
+            schedules,
+            removed: 0,
+            placed: 0,
+            faltante: 0,
+            message: 'Asigná un docente en Oferta académica antes de reajustar bloques.',
+        };
+    }
+
+    const horasPlan = resolveHorasPlanCurso(course, horasPlanOverride);
+    const targetBlocks = bloquesRequeridosPorCarga(horasPlan);
+    if (targetBlocks <= 0) {
+        return {
+            schedules,
+            removed: 0,
+            placed: 0,
+            faltante: 0,
+            message: 'Esta materia no tiene carga horaria definida en el plan.',
+        };
+    }
+
+    let nextSchedules = schedules;
+    const bloquesActuales = course.bloques?.length ?? 0;
+    let removed = 0;
+
+    if (bloquesActuales > targetBlocks) {
+        const exceso = bloquesActuales - targetBlocks;
+        const sorted = [...(course.bloques || [])].sort((a, b) => {
+            const oa = Number(a.orden) || 0;
+            const ob = Number(b.orden) || 0;
+            if (ob !== oa) return ob - oa;
+            return String(b.cursoHorarioId ?? '').localeCompare(String(a.cursoHorarioId ?? ''));
+        });
+        for (let i = 0; i < exceso; i += 1) {
+            const bloque = sorted[i];
+            if (!bloque?.cursoHorarioId) continue;
+            nextSchedules = removeBlockFromSchedules(nextSchedules, cursoId, bloque.cursoHorarioId);
+            removed += 1;
+        }
+    }
+
+    const gen = generarBloquesAutomaticosCurso({
+        schedules: nextSchedules,
+        cursoId,
+        turnoLabel,
+        horarioSlotIndex,
+        aulaMeta,
+        horasPlanOverride,
+    });
+
+    const message =
+        removed > 0 && gen.placed > 0
+            ? `Se quitaron ${removed} bloque(s) y se generaron ${gen.placed} para alinear la cobertura.`
+            : removed > 0
+              ? `Se quitaron ${removed} bloque(s) para alinear la cobertura con el plan.`
+              : gen.message;
+
+    return {
+        schedules: gen.schedules,
+        removed,
+        placed: gen.placed,
+        faltante: gen.faltante,
         message,
     };
 }

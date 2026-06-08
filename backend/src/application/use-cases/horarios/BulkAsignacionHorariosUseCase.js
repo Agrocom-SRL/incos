@@ -73,6 +73,8 @@ export class BulkAsignacionHorariosUseCase {
       throw new ValidationError('Se requiere un array `items` con al menos una operación');
     }
 
+    const coberturaReajuste =
+      body?.cobertura_reajuste === true || body?.coberturaReajuste === true;
     const batchExcludes = await buildBatchExcludeMap(items, this.asignacionHorarioRepository);
     const resultados = [];
 
@@ -83,7 +85,9 @@ export class BulkAsignacionHorariosUseCase {
       try {
         if (op === 'delete' || op === 'eliminar') {
           const id = item.id ?? item.asignacion_horario_id;
-          const out = await this.deleteAsignacionHorarioUseCase.execute(id, userId);
+          const out = await this.deleteAsignacionHorarioUseCase.execute(id, userId, {
+            coberturaReajuste,
+          });
           resultados.push({ index: i, op: 'delete', success: true, data: out });
         } else if (op === 'update' || op === 'actualizar') {
           const id = item.id ?? item.asignacion_horario_id;
@@ -98,7 +102,10 @@ export class BulkAsignacionHorariosUseCase {
           );
           resultados.push({ index: i, op: 'update', success: true, data: out });
         } else {
-          const out = await this.createAsignacionHorarioUseCase.execute(item, userId);
+          const out = await this.createAsignacionHorarioUseCase.execute(
+            coberturaReajuste ? { ...item, cobertura_reajuste: true } : item,
+            userId,
+          );
           resultados.push({ index: i, op: 'create', success: true, data: out });
         }
       } catch (e) {

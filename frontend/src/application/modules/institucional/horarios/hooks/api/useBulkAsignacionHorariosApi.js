@@ -8,7 +8,7 @@ export function useBulkAsignacionHorariosApi() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const ejecutarBulk = useCallback(async (items) => {
+  const ejecutarBulk = useCallback(async (items, options = {}) => {
     if (!Array.isArray(items) || items.length === 0) {
       return { success: false, error: 'No hay cambios para guardar' };
     }
@@ -17,7 +17,11 @@ export function useBulkAsignacionHorariosApi() {
     setError(null);
 
     try {
-      const response = await apiClient.post(ASIGNACION_HORARIOS_ENDPOINTS.BULK, { items });
+      const payload = { items };
+      if (options.coberturaReajuste === true) {
+        payload.cobertura_reajuste = true;
+      }
+      const response = await apiClient.post(ASIGNACION_HORARIOS_ENDPOINTS.BULK, payload);
       const result = handleSuccessResponse(response);
       if (!result.success) {
         const msg = result.error || 'No se pudo guardar los bloques';

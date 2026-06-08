@@ -27,10 +27,19 @@ import {
     swapOrMoveBlockToSlot,
 } from '@application-institucional/horarios/utils/planSemanalBlockOps';
 import {
-    HORARIOS_CONFLICTOS_PATH,
     HORARIOS_GESTION_PATH,
     buildHorariosConflictosUrl,
 } from '@application-institucional/horarios/config/paths';
+import {
+    isParaleloGestionHorarioEditable,
+    isParaleloGestionPlanSemanalEditable,
+    mensajeParaleloGestionNoEditable,
+    mensajeParaleloGestionPlanNoEditable,
+} from '@application-institucional/horarios/utils/paraleloGestionHorarioEditable';
+import {
+    buildMergedDocenteSchedules,
+    computeConflictHorarioIds,
+} from '@application-institucional/horarios/utils/computeConflictosBloquesLive';
 
 const VISTA_DOCENTE = 'docente';
 
@@ -93,14 +102,24 @@ export const useGestionHorariosConflictosState = () => {
         [grilla?.franjas],
     );
 
-    const bloquesEnConflictoSet = useMemo(
-        () => new Set(grilla?.bloquesEnConflicto ?? []),
-        [grilla?.bloquesEnConflicto],
-    );
-
     const paralelosInvolucrados = useMemo(
         () => grilla?.paralelosInvolucrados ?? [],
         [grilla?.paralelosInvolucrados],
+    );
+
+    const mergedDocenteParaConflictos = useMemo(
+        () =>
+            buildMergedDocenteSchedules(
+                docenteDraftSchedules,
+                paraleloStates,
+                paralelosInvolucrados,
+            ),
+        [docenteDraftSchedules, paraleloStates, paralelosInvolucrados],
+    );
+
+    const conflictHorarioIds = useMemo(
+        () => computeConflictHorarioIds(mergedDocenteParaConflictos, horarioSlotIndexDocente),
+        [mergedDocenteParaConflictos, horarioSlotIndexDocente],
     );
 
     const turnoEfectivo = useMemo(() => grilla?.turnoEfectivo ?? null, [grilla?.turnoEfectivo]);
@@ -112,24 +131,30 @@ export const useGestionHorariosConflictosState = () => {
         ? (activeParaleloState?.draftSchedules ?? [])
         : docenteDraftSchedules;
 
+    const setParaleloDraftSchedules = useCallback((paraleloGestionId, updater) => {
+        const pgId = Number(paraleloGestionId);
+        if (!Number.isFinite(pgId) || pgId < 1) return;
+        setParaleloStates((prev) => {
+            const cur = prev[pgId];
+            if (!cur) return prev;
+            const nextSchedules =
+                typeof updater === 'function' ? updater(cur.draftSchedules) : updater;
+            return {
+                ...prev,
+                [pgId]: { ...cur, draftSchedules: nextSchedules },
+            };
+        });
+    }, []);
+
     const setDraftSchedules = useCallback(
         (updater) => {
             if (isParaleloVista) {
-                setParaleloStates((prev) => {
-                    const cur = prev[vistaModo];
-                    if (!cur) return prev;
-                    const nextSchedules =
-                        typeof updater === 'function' ? updater(cur.draftSchedules) : updater;
-                    return {
-                        ...prev,
-                        [vistaModo]: { ...cur, draftSchedules: nextSchedules },
-                    };
-                });
+                setParaleloDraftSchedules(vistaModo, updater);
                 return;
             }
             setDocenteDraftSchedules(updater);
         },
-        [isParaleloVista, vistaModo],
+        [isParaleloVista, vistaModo, setParaleloDraftSchedules],
     );
 
     const fetchParaleloGrilla = useCallback(async (paraleloGestionId) => {
@@ -168,14 +193,19 @@ export const useGestionHorariosConflictosState = () => {
             const schedules = grillaHorarioToCourseSchedules(payload, {
                 turno: meta?.turno ?? paraleloMeta?.turno,
                 paraleloNombre: paraleloMeta?.paraleloNombre,
-            });
+            }).map((course) => ({
+                ...course,
+                paraleloGestionId: pgId,
+            }));
 
+            const paraleloGestionEstado = meta?.paraleloGestionEstado ?? null;
             setParaleloStates((prev) => ({
                 ...prev,
                 [pgId]: {
                     paraleloGestionId: pgId,
                     paraleloNombre: paraleloMeta?.paraleloNombre ?? `Paralelo #${pgId}`,
                     turno: meta?.turno ?? paraleloMeta?.turno ?? null,
+                    paraleloGestionEstado,
                     serverSchedules: schedules,
                     draftSchedules: schedules,
                     horarioSlotIndex: buildHorarioSlotIndexFromGrilla(payload),
@@ -415,22 +445,59 @@ export const useGestionHorariosConflictosState = () => {
         ],
     );
 
-    const onRequestPersist = useCallback(async () => {
-        const serverSchedules = isParaleloVista
-            ? (paraleloStates[vistaModo]?.serverSchedules ?? [])
-            : docenteServerSchedules;
-        const currentDraft = isParaleloVista
-            ? (paraleloStates[vistaModo]?.draftSchedules ?? [])
-            : docenteDraftSchedules;
-        const slotIndex = isParaleloVista
-            ? (paraleloStates[vistaModo]?.horarioSlotIndex ?? horarioSlotIndexDocente)
-            : horarioSlotIndexDocente;
+    const onRequestPersist = useCallback(async (paraleloGestionIdOverride) => {
+        const pgId = Number(paraleloGestionIdOverride ?? (isParaleloVista ? vistaModo : null));
+        if (!Number.isFinite(pgId) || pgId < 1) {
+            notification.info({
+                title: 'Edición por paralelo',
+                description:
+                    'Elegí la pestaña del paralelo que querés ajustar. Los cambios se guardan solo en ese paralelo.',
+            });
+            return;
+        }
 
-        const { items, incomplete } = buildBulkAsignacionHorarioItems(
+        const estadoPg = paraleloStates[pgId]?.paraleloGestionEstado ?? null;
+        const planEditable = isParaleloGestionPlanSemanalEditable(estadoPg);
+        const horEditable = isParaleloGestionHorarioEditable(estadoPg);
+
+        if (!planEditable) {
+            notification.warning({
+                title: 'Plan no editable',
+                description: mensajeParaleloGestionPlanNoEditable(estadoPg),
+            });
+            return;
+        }
+
+        const serverSchedules = paraleloStates[pgId]?.serverSchedules ?? [];
+        const currentDraft = paraleloStates[pgId]?.draftSchedules ?? [];
+        const slotIndex = paraleloStates[pgId]?.horarioSlotIndex ?? horarioSlotIndexDocente;
+
+        let { items, incomplete } = buildBulkAsignacionHorarioItems(
             serverSchedules,
             currentDraft,
             slotIndex,
         );
+
+        if (!horEditable) {
+            const reubicaciones = items.filter((item) => String(item.op).toLowerCase() === 'update');
+            const descartados = items.length - reubicaciones.length;
+            if (descartados > 0 && reubicaciones.length === 0) {
+                notification.warning({
+                    title: 'Paralelo publicado',
+                    description: mensajeParaleloGestionNoEditable(estadoPg),
+                });
+                return;
+            }
+            if (descartados > 0) {
+                notification.info({
+                    title: 'Paralelo publicado',
+                    description:
+                        'Solo se guardarán reubicaciones de bloques existentes en este paralelo.',
+                });
+            }
+            items = reubicaciones;
+        }
+
         if (!items.length) {
             notification.info({ title: 'Sin cambios', description: 'No hay bloques modificados para guardar.' });
             return;
@@ -450,12 +517,10 @@ export const useGestionHorariosConflictosState = () => {
             });
             await fetchGrilla();
             paralelosCargadosRef.current = new Set();
-            if (isParaleloVista) {
-                await fetchParaleloGrilla(vistaModo);
-            } else {
-                for (const p of paralelosInvolucrados) {
-                    await fetchParaleloGrilla(p.paraleloGestionId);
-                }
+            await fetchParaleloGrilla(pgId);
+            for (const p of paralelosInvolucrados) {
+                const otherPg = Number(p.paraleloGestionId);
+                if (otherPg !== pgId) await fetchParaleloGrilla(otherPg);
             }
             return;
         }
@@ -467,8 +532,6 @@ export const useGestionHorariosConflictosState = () => {
         isParaleloVista,
         vistaModo,
         paraleloStates,
-        docenteServerSchedules,
-        docenteDraftSchedules,
         horarioSlotIndexDocente,
         ejecutarBulk,
         notification,
@@ -526,6 +589,14 @@ export const useGestionHorariosConflictosState = () => {
         ? (activeParaleloState?.turno ?? turnoEfectivo)
         : turnoEfectivo;
 
+    const paraleloGestionEstado = activeParaleloState?.paraleloGestionEstado ?? null;
+    const horarioEditable = isParaleloVista
+        ? isParaleloGestionHorarioEditable(paraleloGestionEstado)
+        : false;
+    const planSemanalEditable = isParaleloVista
+        ? isParaleloGestionPlanSemanalEditable(paraleloGestionEstado)
+        : false;
+
     const vistaLoading = isParaleloVista ? Boolean(activeParaleloState?.loading) : false;
     const vistaError = isParaleloVista ? activeParaleloState?.error : null;
 
@@ -537,9 +608,13 @@ export const useGestionHorariosConflictosState = () => {
         loading: loading || vistaLoading,
         error: error || vistaError,
         grilla,
+        docenteDraftSchedules,
         draftSchedules,
         setDraftSchedules,
-        bloquesEnConflictoSet,
+        conflictHorarioIds,
+        horarioSlotIndex: horarioSlotIndexDocente,
+        paraleloStates,
+        setParaleloDraftSchedules,
         persistLoading,
         onRequestPersist,
         validatePlacement,
@@ -555,5 +630,7 @@ export const useGestionHorariosConflictosState = () => {
         turnoVistaActiva,
         paralelosInvolucrados,
         isParaleloVista,
+        horarioEditable,
+        planSemanalEditable,
     };
 };

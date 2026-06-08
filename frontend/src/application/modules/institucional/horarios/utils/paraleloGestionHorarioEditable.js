@@ -21,6 +21,22 @@ export function isParaleloGestionPlanSemanalEditable(estado) {
   return s.length > 0 && !BLOQUEADOS_PLAN_SEMANAL.has(s);
 }
 
+/** Reajustar bloques a la carga del plan desde Cobertura (incluye PUBLICADO; no CERRADO). */
+/** @param {string|null|undefined} estado */
+export function isParaleloGestionCoberturaReajustable(estado) {
+  const s = normalizeEstado(estado);
+  return s.length > 0 && !BLOQUEADOS_PLAN_SEMANAL.has(s);
+}
+
+/** @param {string|null|undefined} estado */
+export function mensajeParaleloGestionCoberturaNoReajustable(estado) {
+  const s = normalizeEstado(estado);
+  if (s === 'CERRADO') {
+    return 'Este paralelo está CERRADO: no se puede reajustar la cobertura horaria.';
+  }
+  return 'El paralelo en gestión no admite reajuste de cobertura en su estado actual.';
+}
+
 /** @param {string|null|undefined} estado */
 export function mensajeParaleloGestionNoEditable(estado) {
   const s = normalizeEstado(estado);

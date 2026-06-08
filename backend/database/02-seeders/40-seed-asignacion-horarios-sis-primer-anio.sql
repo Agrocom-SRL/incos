@@ -20,7 +20,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Fuente: Excel horarios oficial 2026-02-18
 -- Fuente: dump servidor 2026-05-29 — 60 bloques (oferta 1–14)
 -- asignacion_docente_id = asignaciones_docentes.id (= oferta en gestión 2026)
--- aula_id NULL = hereda aula base de paralelos_gestion; valor explícito = override admin
+-- aula_id siempre NULL: hereda aula base de paralelos_gestion (sin override por bloque en seed)
 
 -- asignacion_docente_id = 1
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES

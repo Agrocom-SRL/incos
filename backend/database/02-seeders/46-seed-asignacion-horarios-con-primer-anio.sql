@@ -21,7 +21,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Fuente: Excel horarios oficial 2026-02-18
 -- Fuente: dump servidor 2026-05-29 — 138 bloques (oferta 75–110)
 -- asignacion_docente_id = asignaciones_docentes.id (= oferta en gestión 2026)
--- aula_id NULL = hereda aula base de paralelos_gestion; valor explícito = override admin
+-- aula_id siempre NULL: hereda aula base de paralelos_gestion (sin override por bloque en seed)
 
 -- asignacion_docente_id = 75
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -43,10 +43,10 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 77
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(313, 77, 11, 1, 1),
-(314, 77, 12, 1, 2),
-(315, 77, 29, 1, 3),
-(316, 77, 30, 1, 4);
+(313, 77, 11, NULL, 1),
+(314, 77, 12, NULL, 2),
+(315, 77, 29, NULL, 3),
+(316, 77, 30, NULL, 4);
 
 -- asignacion_docente_id = 78
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -57,8 +57,8 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 79
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(321, 79, 23, 1, 1),
-(322, 79, 24, 1, 2);
+(321, 79, 23, NULL, 1),
+(322, 79, 24, NULL, 2);
 
 -- asignacion_docente_id = 80
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -100,10 +100,10 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 86
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(343, 86, 19, 1, 1),
-(344, 86, 20, 1, 2),
-(345, 86, 21, 1, 3),
-(346, 86, 22, 1, 4);
+(343, 86, 19, NULL, 1),
+(344, 86, 20, NULL, 2),
+(345, 86, 21, NULL, 3),
+(346, 86, 22, NULL, 4);
 
 -- asignacion_docente_id = 87
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -114,8 +114,8 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 88
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(351, 88, 11, 1, 1),
-(352, 88, 12, 1, 2);
+(351, 88, 11, NULL, 1),
+(352, 88, 12, NULL, 2);
 
 -- asignacion_docente_id = 89
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -157,10 +157,10 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 95
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(373, 95, 31, 1, 1),
-(374, 95, 32, 1, 2),
-(375, 95, 49, 1, 3),
-(376, 95, 50, 1, 4);
+(373, 95, 31, NULL, 1),
+(374, 95, 32, NULL, 2),
+(375, 95, 49, NULL, 3),
+(376, 95, 50, NULL, 4);
 
 -- asignacion_docente_id = 96
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -171,8 +171,8 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 97
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(381, 97, 59, 1, 1),
-(382, 97, 60, 1, 2);
+(381, 97, 59, NULL, 1),
+(382, 97, 60, NULL, 2);
 
 -- asignacion_docente_id = 98
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -214,10 +214,10 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 104
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(403, 104, 46, 1, 1),
-(404, 104, 51, 1, 2),
-(405, 104, 52, 1, 3),
-(406, 104, 53, 1, 4);
+(403, 104, 46, NULL, 1),
+(404, 104, 51, NULL, 2),
+(405, 104, 52, NULL, 3),
+(406, 104, 53, NULL, 4);
 
 -- asignacion_docente_id = 105
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -228,8 +228,8 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 106
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(411, 106, 56, 1, 1),
-(412, 106, 57, 1, 2);
+(411, 106, 56, NULL, 1),
+(412, 106, 57, NULL, 2);
 
 -- asignacion_docente_id = 107
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
@@ -243,8 +243,8 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id,
 
 -- asignacion_docente_id = 109
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES
-(417, 109, 31, 1, 1),
-(418, 109, 32, 1, 2);
+(417, 109, 31, NULL, 1),
+(418, 109, 32, NULL, 2);
 
 -- asignacion_docente_id = 110
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, aula_id, orden_secuencia) VALUES

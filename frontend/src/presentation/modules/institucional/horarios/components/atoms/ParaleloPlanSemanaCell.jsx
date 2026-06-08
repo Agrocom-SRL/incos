@@ -1,5 +1,6 @@
 /**
  * Celda día×hora en el plan semanal del paralelo (chips arrastrables en modo edición).
+ * El resaltado de conflictos docente lo aplica DocenteHorarioSemanalGrid por horario_id.
  */
 
 import { CloseOutlined } from '@ant-design/icons';
@@ -31,36 +32,14 @@ const ParaleloPlanSemanaCell = ({
     editable = false,
     onBeginDragChip,
     onDeleteChip,
-    bloquesEnConflicto = null,
-    resaltarConflictos = false,
 }) => {
     if (!items.length) {
         return <div className="da-cal-semanal__cell-inner da-cal-semanal__cell-inner--empty" aria-hidden />;
     }
 
-    const conflictSet =
-        bloquesEnConflicto instanceof Set
-            ? bloquesEnConflicto
-            : bloquesEnConflicto
-              ? new Set(bloquesEnConflicto)
-              : null;
-    const celdaConChoque = resaltarConflictos && items.length > 1;
-
     return (
-        <div
-            className={[
-                'da-cal-semanal__cell-inner',
-                celdaConChoque ? 'horarios-conflictos-celda--choque' : '',
-            ]
-                .filter(Boolean)
-                .join(' ')}
-        >
+        <div className="da-cal-semanal__cell-inner">
             {items.map((ev, idx) => {
-                const enConflicto =
-                    celdaConChoque ||
-                    (conflictSet &&
-                        ev.cursoHorarioId != null &&
-                        conflictSet.has(Number(ev.cursoHorarioId)));
                 const rgb = hexToRgb(ev.cursoColorHex);
                 const hora =
                     ev.horaInicio || ev.horaFin ? `${fmtHora(ev.horaInicio)}–${fmtHora(ev.horaFin)}` : '—';
@@ -83,7 +62,6 @@ const ParaleloPlanSemanaCell = ({
                         className={[
                             'da-cal-semanal__chip',
                             editable ? 'da-cal-semanal__chip--draggable' : '',
-                            enConflicto ? 'da-cal-semanal__chip--conflicto' : '',
                         ]
                             .filter(Boolean)
                             .join(' ')}

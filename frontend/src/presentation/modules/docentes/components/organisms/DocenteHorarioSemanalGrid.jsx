@@ -4,6 +4,7 @@
 
 import { useMemo } from 'react';
 import DocenteHorarioSemanaCell from '@docentes/components/atoms/DocenteHorarioSemanaCell';
+import { isConflictGridCell } from '@application-institucional/horarios/utils/computeConflictosBloquesLive';
 
 /** Días alineados al ENUM de `horarios.dia` en BD (sin DOMINGO en columnas). */
 const DIA_DB_KEYS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
@@ -67,6 +68,7 @@ function flattenEvents(
         horaInicio: b.horaInicio,
         horaFin: b.horaFin,
         aula: b.aula ?? null,
+        horarioId: b.horarioId ?? null,
         turno: b.turno ?? c.turno ?? null,
         paralelo: b.paralelo ?? c.paralelo ?? null,
         materiaNombre,
@@ -221,6 +223,10 @@ const DocenteHorarioSemanalGrid = ({
   editable = false,
   onSlotDrop,
   cellExtraProps = {},
+  /** horario_id del catálogo en choque docente (misma celda en todas las grillas). */
+  conflictHorarioIds = null,
+  /** Map franja → horario_id (catálogo del turno) para celdas vacías. */
+  horarioSlotIndex = null,
 }) => {
   const Cell = CellComponent;
   const gridStart = gridTimeRange?.start ?? SLOT_MINUTE_START;
@@ -360,7 +366,16 @@ const DocenteHorarioSemanalGrid = ({
               </th>
               {dayKeys.map((dia) => {
                 const cellItems = cellMap.get(`${dia}-${slotMinutes}`) || [];
-                const slotHasConflict = cellItems.length >= 2;
+                const slotHasConflict = conflictHorarioIds?.size
+                  ? isConflictGridCell(
+                      dia,
+                      slotMinutes,
+                      cellItems,
+                      slotStepMinutes,
+                      conflictHorarioIds,
+                      horarioSlotIndex,
+                    )
+                  : cellItems.length >= 2;
                 return (
                   <td
                     key={`${dia}-${slotMinutes}`}

@@ -16,8 +16,8 @@ export function mapDocenteGrillaConflictosFromApi(raw) {
     paralelosInvolucrados: Array.isArray(payload.paralelosInvolucrados)
       ? payload.paralelosInvolucrados
       : [],
-    bloquesEnConflicto: Array.isArray(payload.bloquesEnConflicto)
-      ? payload.bloquesEnConflicto.map((id) => Number(id)).filter((n) => Number.isFinite(n))
+    conflictHorarioIds: Array.isArray(payload.conflictHorarioIds)
+      ? payload.conflictHorarioIds.map((id) => Number(id)).filter((n) => Number.isFinite(n))
       : [],
     paresConflicto: Array.isArray(payload.paresConflicto) ? payload.paresConflicto : [],
     lineasDetalle: Array.isArray(payload.lineasDetalle) ? payload.lineasDetalle : [],

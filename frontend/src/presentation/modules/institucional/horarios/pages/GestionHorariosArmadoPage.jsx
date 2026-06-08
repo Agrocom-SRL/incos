@@ -54,8 +54,10 @@ const GestionHorariosArmadoPage = () => {
         hasParaleloSelected,
         horarioEditable,
         planSemanalEditable,
+        coberturaReajustable,
         coberturaGrilla,
         generarBloquesCurso,
+        reajustarBloquesCurso,
     } = useHorariosArmadoContext();
     const [vistaExpandida, setVistaExpandida] = useState(false);
 
@@ -71,6 +73,11 @@ const GestionHorariosArmadoPage = () => {
     const handleGenerarBloquesCurso = useCallback(
         (cursoId, horasPlan) => generarBloquesCurso(cursoId, horasPlan),
         [generarBloquesCurso],
+    );
+
+    const handleReajustarBloquesCurso = useCallback(
+        (cursoId, horasPlan) => reajustarBloquesCurso(cursoId, horasPlan),
+        [reajustarBloquesCurso],
     );
 
     const tabItems = useMemo(
@@ -90,7 +97,9 @@ const GestionHorariosArmadoPage = () => {
                             paraleloGestionId={paraleloGestionId}
                             coberturaGrilla={coberturaGrilla}
                             horarioEditable={horarioEditable}
+                            coberturaReajustable={coberturaReajustable}
                             onGenerarBloquesCurso={handleGenerarBloquesCurso}
+                            onReajustarBloquesCurso={handleReajustarBloquesCurso}
                         />
                     </div>
                 ),
@@ -150,10 +159,12 @@ const GestionHorariosArmadoPage = () => {
             onRequestPersist,
             horarioEditable,
             planSemanalEditable,
+            coberturaReajustable,
             vistaExpandida,
             paraleloGestionId,
             coberturaGrilla,
             handleGenerarBloquesCurso,
+            handleReajustarBloquesCurso,
             validatePlacement,
         ],
     );

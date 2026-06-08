@@ -21,6 +21,7 @@ export class GrillaHorarioPresentationMapper {
   /**
    * @param {Object} params
    * @param {number} params.paraleloGestionId
+   * @param {string|null} params.paraleloGestionEstado
    * @param {string|null} params.turno
    * @param {Array<Object>} params.bloques
    * @param {Array<Object>} params.coberturaRows
@@ -31,6 +32,7 @@ export class GrillaHorarioPresentationMapper {
    */
   static toPresentation({
     paraleloGestionId,
+    paraleloGestionEstado = null,
     turno,
     bloques = [],
     coberturaRows = [],
@@ -156,6 +158,7 @@ export class GrillaHorarioPresentationMapper {
 
     return {
       paralelo_gestion_id: paraleloGestionId,
+      paralelo_gestion_estado: paraleloGestionEstado ?? null,
       turno: turno ?? null,
       grilla,
       franjas,

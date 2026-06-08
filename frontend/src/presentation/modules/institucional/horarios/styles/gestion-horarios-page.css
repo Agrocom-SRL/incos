@@ -826,38 +826,30 @@
     }
 }
 
-@keyframes horarios-conflictos-chip-parpadeo {
-    0%,
-    100% {
-        outline-color: var(--ant-color-error, #ff4d4f);
-        outline-width: 2px;
-    }
-    50% {
-        outline-color: var(--ant-color-error-active, #d9363e);
-        outline-width: 3px;
-    }
-}
-
-/* Zona roja punteada (slot con 2+ bloques) — parpadeo visible */
+/* Zona roja (franja en choque docente) — fondo de celda */
 .horarios-conflictos-page .da-cal-semanal__slot-wrap--conflict {
-    animation: horarios-conflictos-parpadeo 1s ease-in-out infinite;
+    min-height: 100%;
+    border: 1px dashed var(--ant-color-error-border, rgba(255, 77, 79, 0.65));
+    border-radius: 4px;
+    animation: horarios-conflictos-parpadeo 1.5s ease-in-out infinite;
 }
 
-.horarios-conflictos-celda--choque,
-.da-cal-semanal__cell-inner.horarios-conflictos-celda--choque {
-    outline: 2px solid var(--ant-color-error, #ff4d4f);
-    outline-offset: -2px;
+.horarios-conflictos-page .da-cal-semanal__slot-wrap--conflict .da-cal-semanal__cell-inner--empty {
+    min-height: 48px;
 }
 
-.horarios-conflictos-page .da-cal-semanal__chip--conflicto {
-    outline: 2px solid var(--ant-color-error, #ff4d4f);
-    outline-offset: 0;
-    animation: horarios-conflictos-chip-parpadeo 1s ease-in-out infinite;
+.horarios-conflictos-workspace {
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-conflictos-page {
+    width: 100%;
+    min-width: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .horarios-conflictos-page .da-cal-semanal__slot-wrap--conflict,
-    .horarios-conflictos-page .da-cal-semanal__chip--conflicto {
+    .horarios-conflictos-page .da-cal-semanal__slot-wrap--conflict {
         animation: none;
     }
 }
