@@ -1,6 +1,9 @@
 -- ============================================
 -- VISTA BASE: vista_base_dashboard_detalle_conflicto_docente_aula
--- Detalle de conflicto de aula por docente.
+-- Detalle de cruce de aula efectiva entre paralelos (panel lateral docentes).
+--
+-- Aula efectiva = COALESCE(asignacion_horarios.aula_id, paralelos_gestion.aula_id).
+-- Solo franjas con otro paralelo_gestion en la misma aula+horario.
 -- ============================================
 
 USE instituto_incos;
@@ -42,19 +45,72 @@ INNER JOIN oferta_cursos oc
 INNER JOIN asignacion_horarios ah
   ON ah.asignacion_docente_id = ad.id
   AND ah.deleted_at IS NULL AND ah.activo = TRUE
-  AND ah.aula_id IS NOT NULL
 INNER JOIN horarios h
   ON h.id = ah.horario_id
   AND h.deleted_at IS NULL AND h.activo = TRUE
-INNER JOIN aulas au
-  ON au.id = ah.aula_id
-  AND au.deleted_at IS NULL AND au.activo = TRUE
 INNER JOIN paralelos_gestion pg
   ON pg.id = oc.paralelo_gestion_id
   AND pg.deleted_at IS NULL
-INNER JOIN paralelos p
-  ON p.id = pg.paralelo_id
-  AND p.deleted_at IS NULL AND p.activo = TRUE
+INNER JOIN aulas au
+  ON au.id = COALESCE(ah.aula_id, pg.aula_id)
+  AND au.deleted_at IS NULL AND au.activo = TRUE
+INNER JOIN (
+  SELECT DISTINCT
+    base.asignacion_docente_id,
+    base.horario_id
+  FROM (
+    SELECT
+      ad_b.id AS asignacion_docente_id,
+      ah_b.horario_id,
+      COALESCE(ah_b.aula_id, pg_b.aula_id) AS aula_efectiva_id,
+      pg_b.id AS paralelo_gestion_id
+    FROM asignacion_horarios ah_b
+    INNER JOIN asignaciones_docentes ad_b
+      ON ad_b.id = ah_b.asignacion_docente_id
+      AND ad_b.deleted_at IS NULL
+      AND ad_b.activo = TRUE
+      AND ad_b.vigente = TRUE
+    INNER JOIN oferta_cursos oc_b
+      ON oc_b.id = ad_b.oferta_curso_id
+      AND oc_b.deleted_at IS NULL
+      AND oc_b.activo = TRUE
+    INNER JOIN paralelos_gestion pg_b
+      ON pg_b.id = oc_b.paralelo_gestion_id
+      AND pg_b.deleted_at IS NULL
+    WHERE ah_b.deleted_at IS NULL
+      AND ah_b.activo = TRUE
+      AND ah_b.horario_id IS NOT NULL
+      AND COALESCE(ah_b.aula_id, pg_b.aula_id) IS NOT NULL
+  ) base
+  INNER JOIN (
+    SELECT
+      ah_o.horario_id,
+      COALESCE(ah_o.aula_id, pg_o.aula_id) AS aula_efectiva_id,
+      pg_o.id AS paralelo_gestion_id
+    FROM asignacion_horarios ah_o
+    INNER JOIN asignaciones_docentes ad_o
+      ON ad_o.id = ah_o.asignacion_docente_id
+      AND ad_o.deleted_at IS NULL
+      AND ad_o.activo = TRUE
+      AND ad_o.vigente = TRUE
+    INNER JOIN oferta_cursos oc_o
+      ON oc_o.id = ad_o.oferta_curso_id
+      AND oc_o.deleted_at IS NULL
+      AND oc_o.activo = TRUE
+    INNER JOIN paralelos_gestion pg_o
+      ON pg_o.id = oc_o.paralelo_gestion_id
+      AND pg_o.deleted_at IS NULL
+    WHERE ah_o.deleted_at IS NULL
+      AND ah_o.activo = TRUE
+      AND ah_o.horario_id IS NOT NULL
+      AND COALESCE(ah_o.aula_id, pg_o.aula_id) IS NOT NULL
+  ) otro
+    ON otro.aula_efectiva_id = base.aula_efectiva_id
+    AND otro.horario_id = base.horario_id
+    AND otro.paralelo_gestion_id <> base.paralelo_gestion_id
+) conflicto_slot
+  ON conflicto_slot.asignacion_docente_id = ad.id
+  AND conflicto_slot.horario_id = ah.horario_id
 LEFT JOIN asignaturas_plan ap
   ON ap.id = oc.asignatura_plan_id
   AND ap.deleted_at IS NULL AND ap.activo = TRUE

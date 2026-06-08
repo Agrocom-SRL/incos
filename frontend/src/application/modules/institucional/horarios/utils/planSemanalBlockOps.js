@@ -79,6 +79,7 @@ export function moveBlockToSlot(courseSchedules, { cursoId, cursoHorarioId, targ
                 dia: targetDia,
                 horaInicio: startStr,
                 horaFin: endStr,
+                horarioId: null,
             };
         });
         return { ...course, bloques: nextBloques };

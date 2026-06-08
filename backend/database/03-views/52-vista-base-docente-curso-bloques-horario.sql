@@ -1,6 +1,9 @@
 -- ============================================
 -- VISTA BASE: vista_base_docente_curso_bloques_horario
--- Bloques de asignacion_horarios por oferta asignada al docente (vigente)
+-- Bloques de asignacion_horarios por oferta asignada al docente (vigente).
+--
+-- Requiere desplegar antes:
+--   65-vista-base-docente-asignacion-conflicto-horario.sql
 -- ============================================
 
 USE instituto_incos;
@@ -11,6 +14,8 @@ CREATE VIEW vista_base_docente_curso_bloques_horario AS
 SELECT
   ad.docente_id AS docente_id,
   oc.id AS oferta_curso_id,
+  pg.id AS paralelo_gestion_id,
+  pg.turno AS paralelo_turno,
   ad.id AS asignacion_docente_id,
   ah.id AS asignacion_horario_id,
   ah.horario_id,

@@ -7,9 +7,9 @@
 -- Propósito: Alimentar ParallelRepository.obtenerDocentesConflictosDetalleDashboard()
 --
 -- Depende de (ejecutar antes):
---   94-vista-base-dashboard-detalle-conflicto-docente-horario.sql
+--   93-vista-base-dashboard-detalle-conflicto-docente-horario.sql
 --   95-vista-base-dashboard-detalle-conflicto-docente-aula.sql
---   96-vista-base-dashboard-detalle-conflicto-docente-duplicado.sql
+--   94-vista-base-dashboard-detalle-conflicto-docente-duplicado.sql
 --
 -- Uso:
 --   SELECT docente_id, docente_nombre, detalle_linea,

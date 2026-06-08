@@ -49,6 +49,7 @@ export function buildHorariosDashboardAlertLineas(paralelos, extras = {}) {
             materiasSinBloques += sinBloques;
             ofertasCoberturaIncompleta += coberturaInc;
             if (solape > 0) paralelosConSolape += 1;
+            crucesAula += confAula;
         }
         if (bucket === 'sin_docentes') {
             paralelosSinDocentes += 1;
@@ -58,7 +59,6 @@ export function buildHorariosDashboardAlertLineas(paralelos, extras = {}) {
         if (bucket === 'sin_aulas') {
             paralelosSinAulas += 1;
             bloquesSinAula += bloquesAula;
-            crucesAula += confAula;
             if (sinAulaBase) paralelosSinAulaBase += 1;
         }
     }
@@ -73,14 +73,6 @@ export function buildHorariosDashboardAlertLineas(paralelos, extras = {}) {
             lines.push(
                 `${bloquesSinAula} bloque(s) sin aula efectiva en ${paralelosSinAulas} paralelo(s); usá Horarios en aulas o override en el armado.`,
             );
-        }
-        if (crucesAula > 0) {
-            lines.push(
-                `${crucesAula} cruce(s) de ocupación de aula entre cursos; revisá Horarios en aulas o los bloques del plan.`,
-            );
-        }
-        if (paralelosSinAulaBase <= 0 && bloquesSinAula <= 0 && crucesAula <= 0) {
-            lines.push(`${paralelosSinAulas} paralelo(s) con pendientes de aulas en el plan.`);
         }
     }
 
@@ -121,11 +113,17 @@ export function buildHorariosDashboardAlertLineas(paralelos, extras = {}) {
                 `${paralelosConSolape} paralelo(s) con solapes de franja entre materias del mismo grupo; corregí el plan en el armado antes de publicar.`,
             );
         }
+        if (crucesAula > 0) {
+            lines.push(
+                `${crucesAula} cruce(s) de ocupación de aula entre paralelos; revisá Horarios en aulas (override por bloque).`,
+            );
+        }
         if (
             cursosFaltantesOferta <= 0 &&
             materiasSinBloques <= 0 &&
             ofertasCoberturaIncompleta <= 0 &&
-            paralelosConSolape <= 0
+            paralelosConSolape <= 0 &&
+            crucesAula <= 0
         ) {
             lines.push(
                 `${paralelosSinHorarios} paralelo(s) pendientes de armado del plan semanal (cursos, franjas o validaciones de horario).`,

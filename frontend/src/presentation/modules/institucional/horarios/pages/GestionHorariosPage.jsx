@@ -99,14 +99,14 @@ const GestionHorariosPage = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
-                            <ActionButton
+                            {/* <ActionButton
                                 permiso="institucional.horario.armado"
                                 accion="LISTAR"
                                 variant="warning"
                                 onClick={onVerHorariosAulas}
                             >
                                 Horarios en aulas
-                            </ActionButton>
+                            </ActionButton > */}
                             <ActionButton
                                 permiso="institucional.horario.publicacion"
                                 accion="EDITAR"

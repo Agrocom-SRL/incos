@@ -10,6 +10,8 @@ import {
     buildHorariosArmadoUrl,
     buildOfertaParaleloDetalleFromHorarios,
     buildResolverConflictoDocenteNavTarget,
+    docenteSoloConflictoAula,
+    hintModalConflictoDocente,
     labelResolverConflictoDocente,
 } from '@application-institucional/horarios/config/paths';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
@@ -575,8 +577,9 @@ const HorariosGestionSidebarResumen = ({
                 {modal.kind === 'conflictos' ? (
                     <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
                         <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                            Mové al menos uno de los bloques en rojo a otra franja. La asignación docente ↔ materia se
-                            ajusta en Oferta académica si hace falta cambiar quién dicta la materia.
+                            {docentesConConflictosOperativos.some((d) => !docenteSoloConflictoAula(d))
+                                ? hintModalConflictoDocente({ tiposConflicto: ['horario'] })
+                                : hintModalConflictoDocente(docentesConConflictosOperativos[0] || {})}
                         </Text>
                         {!docentesConConflictosOperativos.length ? (
                             <Text type="secondary">No hay docentes con conflictos operativos.</Text>
@@ -630,18 +633,8 @@ const HorariosGestionSidebarResumen = ({
                                                 )}
                                             </Flex>
                                             <ActionButton
-                                                permiso={
-                                                    (d.tiposConflicto || []).length === 1 &&
-                                                    d.tiposConflicto[0] === 'aula'
-                                                        ? 'institucional.gestion.horarios'
-                                                        : 'institucional.horario.armado'
-                                                }
-                                                accion={
-                                                    (d.tiposConflicto || []).length === 1 &&
-                                                    d.tiposConflicto[0] === 'aula'
-                                                        ? 'LISTAR'
-                                                        : 'EDITAR'
-                                                }
+                                                permiso="institucional.horario.armado"
+                                                accion="EDITAR"
                                                 variant="primary"
                                                 style={{ flexShrink: 0 }}
                                                 disabled={d.docenteId == null}

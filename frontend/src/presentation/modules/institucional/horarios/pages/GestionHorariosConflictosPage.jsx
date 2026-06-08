@@ -1,9 +1,12 @@
-import { Alert, Card, Flex, Spin, Typography } from 'antd';
+import { Alert, Card, Flex, Segmented, Spin, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { ActionButton } from '@atoms';
 import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosConflictosContext } from '@application-institucional/horarios/hooks/context/useHorariosConflictosContext';
+import { buildOfertaParaleloDetalleFromHorarios } from '@application-institucional/horarios/config/paths';
 import HorariosConflictosPlanSection from '../components/organisms/HorariosConflictosPlanSection';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
@@ -23,6 +26,7 @@ const sectionCardProps = {
 };
 
 const GestionHorariosConflictosPage = () => {
+    const navigate = useNavigate();
     const {
         docenteId,
         docentesConConflictos,
@@ -39,6 +43,13 @@ const GestionHorariosConflictosPage = () => {
         handleVolver,
         breadcrumbItems,
         pageTitle,
+        vistaActivaKey,
+        vistaActivaLabel,
+        vistaOpciones,
+        setVistaModo,
+        turnoVistaActiva,
+        paralelosInvolucrados,
+        isParaleloVista,
     } = useHorariosConflictosContext();
 
     const docenteNombre =
@@ -52,14 +63,39 @@ const GestionHorariosConflictosPage = () => {
         </button>
     );
 
+    const vistaHint = isParaleloVista
+        ? 'Vista del paralelo completo: todas las materias y docentes. Reubicá o intercambiá bloques dentro de este paralelo.'
+        : 'Vista agregada del docente en todos sus paralelos. Reubicá según disponibilidad o cambiá a vista de paralelo para intercalar con otras materias.';
+
     return (
         <PageTemplate
             header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={headerActions} />}
             sidebar={null}
         >
-            <Spin spinning={loading} size="large" tip="Cargando grilla del docente…">
+            <Spin spinning={loading} size="large" tip="Cargando grilla…">
                 <div className="sd sd-spin-body horarios-conflictos-page">
                     <Flex vertical gap={allSpacing.marginLG}>
+                        <Alert
+                            type="info"
+                            showIcon
+                            title="Tres formas de resolver"
+                            description={
+                                <Flex vertical gap={4}>
+                                    <Text>
+                                        1. <Text strong>Reubicar</Text> — mové un bloque en rojo a otra franja libre
+                                        (vista docente o paralelo).
+                                    </Text>
+                                    <Text>
+                                        2. <Text strong>Intercambiar</Text> — en vista paralelo, soltá un bloque sobre
+                                        otro del mismo paralelo para permutar horarios.
+                                    </Text>
+                                    <Text>
+                                        3. <Text strong>Cambiar docente</Text> — si la misma persona no puede dictar
+                                        dos materias a la vez, reasigná en Oferta académica.
+                                    </Text>
+                                </Flex>
+                            }
+                        />
 
                         <Card {...sectionCardProps}>
                             <Flex vertical gap={allSpacing.marginMD}>
@@ -80,12 +116,48 @@ const GestionHorariosConflictosPage = () => {
                                     ) : null}
                                 </Flex>
 
+                                {vistaOpciones.length > 1 ? (
+                                    <Flex vertical gap={allSpacing.marginSM}>
+                                        <Text type="secondary">Modo de grilla</Text>
+                                        <Segmented
+                                            value={vistaActivaKey}
+                                            onChange={(key) =>
+                                                setVistaModo(key === 'docente' ? 'docente' : Number(key))
+                                            }
+                                            options={vistaOpciones.map((o) => ({
+                                                label: o.label,
+                                                value: o.key,
+                                            }))}
+                                        />
+                                    </Flex>
+                                ) : null}
+
+                                {paralelosInvolucrados.length ? (
+                                    <Flex wrap="wrap" gap={allSpacing.marginSM}>
+                                        {paralelosInvolucrados.map((p) => (
+                                            <ActionButton
+                                                key={`oferta-pg-${p.paraleloGestionId}`}
+                                                permiso="institucional.oferta.paralelo-gestion"
+                                                accion="EDITAR"
+                                                variant="secondary"
+                                                onClick={() => {
+                                                    const target = buildOfertaParaleloDetalleFromHorarios(
+                                                        p.paraleloGestionId,
+                                                    );
+                                                    navigate(target.pathname, { state: target.state });
+                                                }}
+                                            >
+                                                Oferta — {p.paraleloNombre || `Paralelo #${p.paraleloGestionId}`}
+                                            </ActionButton>
+                                        ))}
+                                    </Flex>
+                                ) : null}
+
                                 {error ? <Alert type="error" showIcon title={error} /> : null}
 
                                 {!docenteId ? (
                                     <Text type="secondary">
-                                        Elegí un docente del listado o abrí esta pantalla desde el panel lateral del
-                                        tablero de horarios.
+                                        Abrí esta pantalla desde el panel lateral del tablero de horarios.
                                     </Text>
                                 ) : null}
 
@@ -112,6 +184,9 @@ const GestionHorariosConflictosPage = () => {
                                         onRequestPersist={onRequestPersist}
                                         validatePlacement={validatePlacement}
                                         persistLoading={persistLoading}
+                                        turnoLabel={turnoVistaActiva}
+                                        vistaLabel={vistaActivaLabel}
+                                        vistaHint={vistaHint}
                                     />
                                 ) : null}
                             </Flex>

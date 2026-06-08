@@ -26,11 +26,11 @@ export function resolveHorariosBoardBucket(p) {
     const docChoc = Boolean(p.conflictoDocenteHorario);
     const sinAulaParalelo = p.paraleloAulaId == null || p.paraleloAulaId === 0;
 
-    if (sinAulaParalelo || bloquesSinAula > 0 || confAula > 0) return 'sin_aulas';
+    if (sinAulaParalelo || bloquesSinAula > 0) return 'sin_aulas';
 
     if (sinDoc > 0 || docChoc) return 'sin_docentes';
 
-    if ((tot > 0 && cread < tot) || coberturaIncompleta > 0 || sinBloques > 0 || solape > 0) {
+    if ((tot > 0 && cread < tot) || coberturaIncompleta > 0 || sinBloques > 0 || solape > 0 || confAula > 0) {
         return 'sin_horarios';
     }
 

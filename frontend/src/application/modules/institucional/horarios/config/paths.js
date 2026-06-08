@@ -2,6 +2,7 @@ import { ofertaPaths } from '@application-institucional/oferta/config/paths.js';
 
 export const HORARIOS_GESTION_PATH = '/institucional/horarios';
 export const HORARIOS_CONFLICTOS_PATH = `${HORARIOS_GESTION_PATH}/conflictos`;
+export const HORARIOS_AULAS_PATH = `${HORARIOS_GESTION_PATH}/aulas`;
 
 /** Clave de ruta para resaltar el ítem de menú al volver desde oferta. */
 export const HORARIOS_MENU_ROUTE_KEY = 'INST-HORARIOS';
@@ -49,36 +50,90 @@ const returnHorariosDashboardState = () => ({
     menuSidebarKey: HORARIOS_MENU_ROUTE_KEY,
 });
 
+/** @param {{ tiposConflicto?: string[] }} docenteRow */
+export function docenteConflictoTiposSet(docenteRow = {}) {
+    return new Set(
+        (docenteRow.tiposConflicto || [])
+            .map((t) => String(t || '').trim().toLowerCase())
+            .filter(Boolean),
+    );
+}
+
+/** @param {{ tiposConflicto?: string[] }} docenteRow */
+export function docenteTieneConflictoHorario(docenteRow = {}) {
+    return docenteConflictoTiposSet(docenteRow).has('horario');
+}
+
+/** @param {{ tiposConflicto?: string[] }} docenteRow */
+export function docenteSoloConflictoAula(docenteRow = {}) {
+    const tipos = docenteConflictoTiposSet(docenteRow);
+    return tipos.size === 1 && tipos.has('aula');
+}
+
+/** @param {{ tiposConflicto?: string[] }} docenteRow */
+export function docenteSoloConflictoDuplicado(docenteRow = {}) {
+    const tipos = docenteConflictoTiposSet(docenteRow);
+    return tipos.size === 1 && tipos.has('duplicado');
+}
+
+/** Texto de ayuda del modal según tipos de conflicto del docente. */
+export function hintModalConflictoDocente(docenteRow = {}) {
+    if (docenteSoloConflictoAula(docenteRow)) {
+        return 'Otro paralelo ocupa la misma aula en esa franja. Asigná override por bloque en Horarios en aulas o ajustá la aula base en Oferta académica.';
+    }
+    if (docenteSoloConflictoDuplicado(docenteRow)) {
+        return 'Hay más de una asignación vigente del mismo docente al mismo curso; revisá la oferta del paralelo.';
+    }
+    return 'Mové al menos uno de los bloques en rojo a otra franja. La asignación docente ↔ materia se ajusta en Oferta académica si hace falta cambiar quién dicta la materia.';
+}
+
+/** @param {{ paralelo?: number|null, dia?: string|null }} [opts] */
+export function buildHorariosAulasEdicionUrl(opts = {}) {
+    const q = new URLSearchParams();
+    q.set('edicion', '1');
+    const paralelo = Number(opts.paralelo);
+    if (Number.isFinite(paralelo) && paralelo > 0) {
+        q.set('paralelo', String(paralelo));
+    }
+    const dia = String(opts.dia || '').trim().toUpperCase();
+    if (dia) q.set('dia', dia);
+    return `${HORARIOS_AULAS_PATH}?${q.toString()}`;
+}
+
 /**
  * Destino para resolver conflictos operativos de un docente desde el sidebar de horarios.
  * Prioriza armado de grilla (choque de franjas); aula y asignación duplicada tienen rutas dedicadas.
+ * Conflicto solo aula → pantalla Horarios en aulas (override por bloque; aula base en oferta académica).
  *
- * @param {{ paraleloGestionId?: number|null, ofertaCursoId?: number|null, tiposConflicto?: string[] }} docenteRow
- * @returns {{ pathname: string, state?: object }}
+ * @param {{ docenteId?: number|null, paraleloGestionId?: number|null, ofertaCursoId?: number|null, tiposConflicto?: string[] }} docenteRow
+ * @returns {{ pathname: string, search?: string, state?: object }}
  */
 export function buildResolverConflictoDocenteNavTarget(docenteRow = {}) {
     const pg = Number(docenteRow.paraleloGestionId);
     const oc = Number(docenteRow.ofertaCursoId);
-    const tipos = new Set(
-        (docenteRow.tiposConflicto || []).map((t) => String(t || '').trim().toLowerCase()).filter(Boolean),
-    );
-    const soloAula = tipos.size === 1 && tipos.has('aula');
-    const soloDuplicado = tipos.size === 1 && tipos.has('duplicado');
+    const docenteId = Number(docenteRow.docenteId);
 
-    if (soloAula) {
+    if (docenteTieneConflictoHorario(docenteRow) && Number.isFinite(docenteId) && docenteId > 0) {
         return {
-            pathname: `${HORARIOS_GESTION_PATH}/aulas`,
+            pathname: HORARIOS_CONFLICTOS_PATH,
+            search: `?docenteId=${docenteId}`,
+            state: returnHorariosDashboardState(),
+        };
+    }
+
+    if (docenteSoloConflictoDuplicado(docenteRow) && Number.isFinite(pg) && pg > 0) {
+        const opts = Number.isFinite(oc) && oc > 0 ? { ofertaCursoId: oc } : {};
+        return buildOfertaParaleloDetalleFromHorarios(pg, opts);
+    }
+
+    if (docenteSoloConflictoAula(docenteRow)) {
+        return {
+            pathname: HORARIOS_AULAS_PATH,
             search: '?edicion=1',
             state: returnHorariosDashboardState(),
         };
     }
 
-    if (soloDuplicado && Number.isFinite(pg) && pg > 0) {
-        const opts = Number.isFinite(oc) && oc > 0 ? { ofertaCursoId: oc } : {};
-        return buildOfertaParaleloDetalleFromHorarios(pg, opts);
-    }
-
-    const docenteId = Number(docenteRow.docenteId);
     if (Number.isFinite(docenteId) && docenteId > 0) {
         return {
             pathname: HORARIOS_CONFLICTOS_PATH,
@@ -94,23 +149,26 @@ export function buildResolverConflictoDocenteNavTarget(docenteRow = {}) {
     return { pathname: HORARIOS_GESTION_PATH };
 }
 
-/** @param {number} docenteId */
-export function buildHorariosConflictosUrl(docenteId) {
+/** @param {number} docenteId @param {{ vista?: 'docente'|number }} [opts] */
+export function buildHorariosConflictosUrl(docenteId, opts = {}) {
     const id = Number(docenteId);
-    if (!Number.isFinite(id) || id < 1) {
-        return HORARIOS_CONFLICTOS_PATH;
-    }
     const q = new URLSearchParams();
-    q.set('docenteId', String(id));
-    return `${HORARIOS_CONFLICTOS_PATH}?${q.toString()}`;
+    if (Number.isFinite(id) && id > 0) {
+        q.set('docenteId', String(id));
+    }
+    const vista = opts.vista;
+    if (vista != null && vista !== 'docente') {
+        const pg = Number(vista);
+        if (Number.isFinite(pg) && pg > 0) q.set('vista', `pg-${pg}`);
+    }
+    const qs = q.toString();
+    return qs ? `${HORARIOS_CONFLICTOS_PATH}?${qs}` : HORARIOS_CONFLICTOS_PATH;
 }
 
 /** Etiqueta del CTA según tipos de conflicto del docente. */
 export function labelResolverConflictoDocente(docenteRow = {}) {
-    const tipos = new Set(
-        (docenteRow.tiposConflicto || []).map((t) => String(t || '').trim().toLowerCase()).filter(Boolean),
-    );
-    if (tipos.size === 1 && tipos.has('aula')) return 'Resolver en aulas';
-    if (tipos.size === 1 && tipos.has('duplicado')) return 'Revisar asignación';
+    if (docenteTieneConflictoHorario(docenteRow)) return 'Resolver conflictos';
+    if (docenteSoloConflictoDuplicado(docenteRow)) return 'Revisar asignación';
+    if (docenteSoloConflictoAula(docenteRow)) return 'Resolver en aulas';
     return 'Resolver conflictos';
 }

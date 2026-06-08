@@ -320,6 +320,7 @@ export function registerHorariosResource(container) {
       new GetDocenteGrillaConflictosUseCase({
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+        scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
         logger: log(c),
       })
   );

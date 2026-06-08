@@ -6,7 +6,10 @@ import React, { useCallback, useMemo } from 'react';
 import { App, Flex, Space, Typography } from 'antd';
 import { ActionButton } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
-import { getSabadoArmadoGridRangeMinutes } from '@application-institucional/horarios/utils/turnoGridRange';
+import {
+    getSabadoArmadoGridRangeMinutes,
+    getTurnoGridRangeMinutes,
+} from '@application-institucional/horarios/utils/turnoGridRange';
 import ConflictosPlanSemanaCell, { DRAG_MIME } from '../atoms/ConflictosPlanSemanaCell';
 import {
     removeBlockFromSchedules,
@@ -15,7 +18,6 @@ import {
 
 const { Text } = Typography;
 const SLOT_STEP_ADD = 45;
-const GRID_RANGE = { start: 8 * 60, end: 22 * 60 };
 
 const HorariosConflictosPlanSection = ({
     schedules,
@@ -24,8 +26,12 @@ const HorariosConflictosPlanSection = ({
     onRequestPersist,
     validatePlacement,
     persistLoading = false,
+    turnoLabel = null,
+    vistaLabel = 'Grilla semanal',
+    vistaHint = null,
 }) => {
     const { notification } = App.useApp();
+    const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
 
     const handleBeginDragChip = useCallback((e, item, sourceDia, sourceSlotMinutes) => {
@@ -89,14 +95,17 @@ const HorariosConflictosPlanSection = ({
         [onSchedulesChange, schedules],
     );
 
+    const hint =
+        vistaHint ??
+        'Arrastrá un bloque en rojo a una franja vacía del turno, o soltalo sobre otro bloque para intercambiar. Guardá al terminar.';
+
     return (
-        <section className="horarios-armado-plan" aria-label="Grilla de conflictos del docente">
+        <section className="horarios-armado-plan" aria-label={vistaLabel}>
             <Flex justify="space-between" align="center" wrap="wrap" gap={12} style={{ marginBottom: 12 }}>
                 <div>
-                    <Text strong>Grilla semanal del docente</Text>
+                    <Text strong>{vistaLabel}</Text>
                     <Text type="secondary" style={{ display: 'block' }}>
-                        Arrastrá uno de los bloques en rojo a una franja libre. Si la celda tiene dos materias, mové al
-                        menos una para resolver el choque.
+                        {hint}
                     </Text>
                 </div>
                 <Space wrap>
@@ -114,7 +123,7 @@ const HorariosConflictosPlanSection = ({
             <DocenteHorarioSemanalGrid
                 courseSchedules={schedules}
                 CellComponent={ConflictosPlanSemanaCell}
-                gridTimeRange={GRID_RANGE}
+                gridTimeRange={gridRange}
                 saturdayGridTimeRange={sabadoRange}
                 slotStepMinutes={SLOT_STEP_ADD}
                 uniformSlotGrid={false}

@@ -16,6 +16,70 @@ function fmtHora(raw) {
   return s.length >= 5 ? s.slice(0, 5) : s;
 }
 
+function mergeFranjasCatalogo(existingFranjas, catalogoFranjas) {
+  const map = new Map();
+  const add = (f) => {
+    const dia = f.dia ? String(f.dia).toUpperCase() : null;
+    const hi = fmtHora(f.hora_inicio ?? f.horaInicio);
+    const hf = fmtHora(f.hora_fin ?? f.horaFin);
+    const hid = Number(f.horario_id ?? f.horarioId);
+    if (!dia || !hi || !hf || !Number.isFinite(hid) || hid < 1) return;
+    const key = `${dia}|${hi}|${hf}|${hid}`;
+    if (!map.has(key)) {
+      map.set(key, {
+        dia,
+        hora_inicio: hi,
+        hora_fin: hf,
+        horario_id: hid,
+        turno: f.turno ?? null,
+      });
+    }
+  };
+  for (const f of existingFranjas || []) add(f);
+  for (const f of catalogoFranjas || []) add(f);
+  return [...map.values()];
+}
+
+function buildParalelosInvolucrados(scheduleRows, paresConflicto) {
+  const map = new Map();
+  const add = (pgId, nombre, turno) => {
+    const id = Number(pgId);
+    if (!Number.isFinite(id) || id < 1) return;
+    if (!map.has(id)) {
+      map.set(id, {
+        paraleloGestionId: id,
+        paraleloNombre: nombre ?? `Paralelo #${id}`,
+        turno: turno ?? null,
+      });
+    } else if (turno && !map.get(id).turno) {
+      map.get(id).turno = turno;
+    }
+  };
+
+  for (const r of scheduleRows || []) {
+    add(r.paralelo_gestion_id, r.paralelo_nombre, r.paralelo_turno ?? r.horario_turno);
+  }
+  for (const p of paresConflicto || []) {
+    add(p.paraleloGestionIdA, p.paraleloA, null);
+    add(p.paraleloGestionIdB, p.paraleloB, null);
+  }
+
+  return [...map.values()].sort((a, b) =>
+    String(a.paraleloNombre || '').localeCompare(String(b.paraleloNombre || '')),
+  );
+}
+
+function resolveTurnoEfectivo(scheduleRows, paralelosInvolucrados) {
+  for (const r of scheduleRows || []) {
+    const t = r.paralelo_turno ?? r.horario_turno;
+    if (t != null && String(t).trim()) return String(t).trim();
+  }
+  for (const p of paralelosInvolucrados || []) {
+    if (p.turno) return p.turno;
+  }
+  return null;
+}
+
 function groupCourseSchedules(rows, docenteNombre) {
   const byCourse = new Map();
   const franjas = new Map();
@@ -27,6 +91,8 @@ function groupCourseSchedules(rows, docenteNombre) {
     if (!byCourse.has(cursoId)) {
       byCourse.set(cursoId, {
         cursoId,
+        paraleloGestionId:
+          r.paralelo_gestion_id != null ? Number(r.paralelo_gestion_id) : null,
         asignacionDocenteId:
           r.asignacion_docente_id != null ? Number(r.asignacion_docente_id) : null,
         cursoCodigo: r.curso_codigo || `OC-${cursoId}`,
@@ -68,7 +134,7 @@ function groupCourseSchedules(rows, docenteNombre) {
       dia,
       horaInicio,
       horaFin,
-      turno: r.horario_turno ?? null,
+      turno: r.paralelo_turno ?? r.horario_turno ?? null,
       paralelo: r.paralelo_nombre ?? null,
       aula: r.aula_nombre
         ? `${r.aula_codigo || ''} — ${r.aula_nombre}`.replace(/^ — /, '')
@@ -100,6 +166,7 @@ export class DocenteGrillaConflictosPresentationMapper {
    *   scheduleRows: object[],
    *   paresConflicto: object[],
    *   lineasDetalle: string[],
+   *   catalogoFranjas?: object[],
    * }} bundle
    */
   static toResponse(bundle) {
@@ -111,7 +178,17 @@ export class DocenteGrillaConflictosPresentationMapper {
       .join(' ')
       .trim();
 
-    const { courseSchedules, franjas } = groupCourseSchedules(bundle.scheduleRows, docenteNombre);
+    const { courseSchedules, franjas: franjasOcupadas } = groupCourseSchedules(
+      bundle.scheduleRows,
+      docenteNombre,
+    );
+
+    const franjas = mergeFranjasCatalogo(franjasOcupadas, bundle.catalogoFranjas ?? []);
+    const paralelosInvolucrados = buildParalelosInvolucrados(
+      bundle.scheduleRows,
+      bundle.paresConflicto,
+    );
+    const turnoEfectivo = resolveTurnoEfectivo(bundle.scheduleRows, paralelosInvolucrados);
 
     const bloquesEnConflicto = new Set();
     for (const p of bundle.paresConflicto || []) {
@@ -130,6 +207,8 @@ export class DocenteGrillaConflictosPresentationMapper {
       siglaB: p.siglaB ?? null,
       paraleloA: p.paraleloA ?? null,
       paraleloB: p.paraleloB ?? null,
+      paraleloGestionIdA: p.paraleloGestionIdA ?? null,
+      paraleloGestionIdB: p.paraleloGestionIdB ?? null,
       descripcion: p.descripcion ?? null,
     }));
 
@@ -137,8 +216,10 @@ export class DocenteGrillaConflictosPresentationMapper {
       docenteId: Number(t.docente_id ?? t.id),
       docenteNombre: docenteNombre || null,
       colorHex: normalizeHex(t.color_hex),
+      turnoEfectivo,
       courseSchedules,
       franjas,
+      paralelosInvolucrados,
       bloquesEnConflicto: [...bloquesEnConflicto],
       paresConflicto,
       lineasDetalle: Array.isArray(bundle.lineasDetalle) ? bundle.lineasDetalle : [],

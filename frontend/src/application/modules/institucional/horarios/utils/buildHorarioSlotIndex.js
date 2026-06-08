@@ -58,15 +58,19 @@ export function buildHorarioSlotIndexFromFranjas(franjas = []) {
 }
 
 export function resolveHorarioIdForBloque(bloque, horarioIndex) {
+  const key = slotKey(bloque.dia, bloque.horaInicio, bloque.horaFin);
+  if (key) {
+    const fromSlot = horarioIndex.get(key);
+    const hid = Number(fromSlot);
+    if (Number.isFinite(hid) && hid > 0) {
+      return hid;
+    }
+  }
   const fromBloque = Number(bloque?.horarioId);
   if (Number.isFinite(fromBloque) && fromBloque > 0) {
-    const key = slotKey(bloque.dia, bloque.horaInicio, bloque.horaFin);
-    const fromSlot = key ? horarioIndex.get(key) : null;
-    if (fromSlot && fromSlot !== fromBloque) return fromSlot;
     return fromBloque;
   }
-  const key = slotKey(bloque.dia, bloque.horaInicio, bloque.horaFin);
-  return key ? horarioIndex.get(key) ?? null : null;
+  return null;
 }
 
 /** Franjas ya ocupadas por cualquier materia del paralelo (una materia por bloque horario). */

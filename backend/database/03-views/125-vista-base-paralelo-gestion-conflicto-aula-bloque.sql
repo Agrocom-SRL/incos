@@ -2,8 +2,8 @@
 -- VISTA BASE: vista_base_paralelo_gestion_conflicto_aula_bloque
 -- Misma franja y misma aula efectiva (bloque o aula base del paralelo_gestion).
 --
--- Nota: vista_base_horarios_paralelo_conflictos_aula (72) solo considera aula_id
--- explícito en el bloque y agrupa por paralelo maestro; usar esta vista para grilla.
+-- Nota: el tablero (72) cuenta cruces entre paralelos_gestion distintos.
+-- Intra-paralelo: solape de franja (86) y vista_base_paralelo_gestion_conflicto_aula_bloque (125).
 -- ============================================
 
 USE instituto_incos;

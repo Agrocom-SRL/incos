@@ -5,9 +5,9 @@
 -- tablero_grupo (prioridad única por paralelo):
 --   sin_aulas > sin_docentes > sin_horarios > completo
 --
---   sin_aulas: paralelo sin aula base, bloques sin aula efectiva o cruce de aula
+--   sin_aulas: paralelo sin aula base o bloques sin aula efectiva
 --   sin_docentes: oferta sin docente vigente o choque de docente
---   sin_horarios: oferta incompleta, cobertura de bloques o solape de franja
+--   sin_horarios: oferta incompleta, cobertura, solape de franja o cruce de aula entre paralelos
 --   completo: sin pendientes de aula, docencia ni plan semanal
 -- ============================================
 
@@ -39,13 +39,13 @@ SELECT
     CASE
         WHEN req.paralelo_aula_id IS NULL THEN 'sin_aulas'
         WHEN COALESCE(sinaula.bloques_sin_aula, 0) > 0 THEN 'sin_aulas'
-        WHEN COALESCE(conf.conflictos_aula, 0) > 0 THEN 'sin_aulas'
         WHEN COALESCE(nodoc.cursos_sin_docente, 0) > 0 THEN 'sin_docentes'
         WHEN dchoque.paralelo_gestion_id IS NOT NULL THEN 'sin_docentes'
         WHEN COALESCE(cur.cursos_creados, 0) < req.asignaturas_requeridas THEN 'sin_horarios'
         WHEN COALESCE(cur.ofertas_cobertura_incompleta, 0) > 0 THEN 'sin_horarios'
         WHEN COALESCE(cur.cursos_con_horario, 0) < COALESCE(cur.cursos_creados, 0) THEN 'sin_horarios'
         WHEN COALESCE(solape.conflictos_solape_mismo_bloque, 0) > 0 THEN 'sin_horarios'
+        WHEN COALESCE(conf.conflictos_aula, 0) > 0 THEN 'sin_horarios'
         ELSE 'completo'
     END AS tablero_grupo
 FROM vista_base_horarios_paralelo_requeridos req

@@ -52,7 +52,10 @@ function resumenTableroParaleloCard(p) {
             if (sinBloques > 0) {
                 return `${sinBloques} materia(s) sin cobertura horaria completa en el plan semanal.`;
             }
-            return 'Completá cursos y el plan semanal (franjas) antes de asignar aulas o docentes.';
+            if (confAula > 0) {
+                return `Hay ${confAula} cruce(s) de aula con otro paralelo; reasigná override por bloque en Horarios en aulas.`;
+            }
+            return 'Completá cursos y el plan semanal (franjas) antes de publicar.';
         case 'sin_docentes':
             if (sinDoc > 0) return `${sinDoc} materia(s) aún sin docente asignado.`;
             return 'Hay choque de horario de docente entre materias; reasigná o mové franjas.';
@@ -61,12 +64,9 @@ function resumenTableroParaleloCard(p) {
                 return 'El paralelo no tiene aula base en Oferta académica; asigná aula al paralelo o por bloque.';
             }
             if (bloquesSinAula > 0) {
-                return `${bloquesSinAula} bloque(s) sin aula asignada en el plan.`;
+                return `${bloquesSinAula} bloque(s) sin aula efectiva (sin base en paralelo ni override por bloque).`;
             }
-            if (confAula > 0) {
-                return `Hay ${confAula} cruce(s) de aula con otro curso; reasigná aulas en la grilla de aulas.`;
-            }
-            return 'Asigná aulas a los bloques del plan o resolvé cruces de ocupación.';
+            return 'Asigná aula base en Oferta académica o override por bloque en el plan.';
         default:
             return 'Revisá el armado del plan en gestión de horarios.';
     }
@@ -81,10 +81,23 @@ const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
     );
 
     const ctaPrincipal = useMemo(() => {
+        const confAula = Number(paralelo.conflictosAula) || 0;
+        const cursosTotales = Number(paralelo.cursosTotales) || 0;
+        const cursosCreados = Number(paralelo.cursosCreados) || 0;
+        const coberturaInc = Number(paralelo.ofertasCoberturaIncompleta) || 0;
+        const sinBloques = Number(paralelo.cursosSinBloquesHorario) || 0;
+        const solape = Number(paralelo.conflictosSolapeMismoBloque) || 0;
+        const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
+        const soloCruceAula =
+            bucket === 'sin_horarios' &&
+            confAula > 0 &&
+            faltaCursos <= 0 &&
+            coberturaInc <= 0 &&
+            sinBloques <= 0 &&
+            solape <= 0;
+
+        if (soloCruceAula) return 'Resolver cruces';
         if (bucket === 'sin_horarios') {
-            const cursosTotales = Number(paralelo.cursosTotales) || 0;
-            const cursosCreados = Number(paralelo.cursosCreados) || 0;
-            const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
             if (faltaCursos > 0) return 'Completar cursos';
             return 'Asignar horarios';
         }

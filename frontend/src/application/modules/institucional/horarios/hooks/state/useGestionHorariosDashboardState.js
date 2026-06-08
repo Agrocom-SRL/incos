@@ -11,6 +11,7 @@ import { resolveHorariosBoardBucket } from '@application-institucional/horarios/
 import { buildHorariosDashboardAlertLineas } from '@application-institucional/horarios/utils/buildHorariosDashboardAlertLineas';
 import {
     buildHorariosArmadoUrl,
+    buildHorariosAulasEdicionUrl,
     buildOfertaParaleloDetalleFromHorarios,
 } from '@application-institucional/horarios/config/paths';
 
@@ -149,12 +150,44 @@ export const useGestionHorariosDashboardState = () => {
 
     const getParaleloActionTarget = useCallback(
         (paralelo) => {
-            const baseArmado = buildArmadoUrl(paralelo);
             const bucket = paralelo.boardBucket ?? resolveHorariosBoardBucket(paralelo);
             const pgId = paralelo.paraleloGestionId;
+            const confAula = Number(paralelo.conflictosAula) || 0;
+            const bloquesSinAula = Number(paralelo.bloquesSinAula) || 0;
+            const sinAulaBase = paralelo.paraleloAulaId == null || paralelo.paraleloAulaId === 0;
 
-            if ((bucket === 'sin_aulas' || bucket === 'sin_docentes') && Number.isFinite(pgId) && pgId > 0) {
+            if (bucket === 'sin_aulas' && Number.isFinite(pgId) && pgId > 0) {
                 return buildOfertaParaleloDetalleFromHorarios(pgId);
+            }
+
+            if (bucket === 'sin_docentes' && Number.isFinite(pgId) && pgId > 0) {
+                return buildOfertaParaleloDetalleFromHorarios(pgId);
+            }
+
+            if (bucket === 'sin_horarios' && confAula > 0) {
+                const cursosTotales = Number(paralelo.cursosTotales) || 0;
+                const cursosCreados = Number(paralelo.cursosCreados) || 0;
+                const coberturaInc = Number(paralelo.ofertasCoberturaIncompleta) || 0;
+                const sinBloques = Number(paralelo.cursosSinBloquesHorario) || 0;
+                const solape = Number(paralelo.conflictosSolapeMismoBloque) || 0;
+                const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
+                const soloCruceAula =
+                    faltaCursos <= 0 &&
+                    coberturaInc <= 0 &&
+                    sinBloques <= 0 &&
+                    solape <= 0 &&
+                    !sinAulaBase &&
+                    bloquesSinAula <= 0;
+                if (soloCruceAula) {
+                    const paraleloMaestroId = Number(paralelo.id);
+                    return {
+                        pathname: buildHorariosAulasEdicionUrl(
+                            Number.isFinite(paraleloMaestroId) && paraleloMaestroId > 0
+                                ? { paralelo: paraleloMaestroId }
+                                : {},
+                        ),
+                    };
+                }
             }
 
             if (bucket === 'completo') {
@@ -171,7 +204,7 @@ export const useGestionHorariosDashboardState = () => {
             }
             return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'plan' }) };
         },
-        [buildArmadoUrl],
+        [],
     );
 
     const onOpenArmado = useCallback(
