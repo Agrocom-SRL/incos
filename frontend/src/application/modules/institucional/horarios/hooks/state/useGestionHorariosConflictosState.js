@@ -113,14 +113,23 @@ export const useGestionHorariosConflictosState = () => {
                 docenteDraftSchedules,
                 paraleloStates,
                 paralelosInvolucrados,
+                grilla?.docenteNombre,
             ),
-        [docenteDraftSchedules, paraleloStates, paralelosInvolucrados],
+        [docenteDraftSchedules, paraleloStates, paralelosInvolucrados, grilla?.docenteNombre],
     );
 
-    const conflictHorarioIds = useMemo(
-        () => computeConflictHorarioIds(mergedDocenteParaConflictos, horarioSlotIndexDocente),
-        [mergedDocenteParaConflictos, horarioSlotIndexDocente],
-    );
+    const conflictHorarioIds = useMemo(() => {
+        const live = computeConflictHorarioIds(
+            mergedDocenteParaConflictos,
+            horarioSlotIndexDocente,
+        );
+        if (live.size > 0) return live;
+        const fromApi = grilla?.conflictHorarioIds;
+        if (Array.isArray(fromApi) && fromApi.length) {
+            return new Set(fromApi.map(Number).filter((n) => Number.isFinite(n) && n > 0));
+        }
+        return live;
+    }, [mergedDocenteParaConflictos, horarioSlotIndexDocente, grilla?.conflictHorarioIds]);
 
     const turnoEfectivo = useMemo(() => grilla?.turnoEfectivo ?? null, [grilla?.turnoEfectivo]);
 
@@ -600,6 +609,29 @@ export const useGestionHorariosConflictosState = () => {
     const vistaLoading = isParaleloVista ? Boolean(activeParaleloState?.loading) : false;
     const vistaError = isParaleloVista ? activeParaleloState?.error : null;
 
+    const conflictoResuelto = useMemo(() => {
+        if (!docenteId || loading || !grilla) return false;
+        const sinPares = !(grilla.paresConflicto?.length);
+        const sinParalelos = paralelosInvolucrados.length === 0;
+        return sinPares && sinParalelos && conflictHorarioIds.size === 0;
+    }, [
+        docenteId,
+        loading,
+        grilla,
+        paralelosInvolucrados.length,
+        conflictHorarioIds,
+    ]);
+
+    useEffect(() => {
+        if (!isParaleloVista || loading) return;
+        const stillInvolved = paralelosInvolucrados.some(
+            (p) => Number(p.paraleloGestionId) === Number(vistaModo),
+        );
+        if (!stillInvolved) {
+            setVistaModo(VISTA_DOCENTE);
+        }
+    }, [isParaleloVista, vistaModo, paralelosInvolucrados, loading, setVistaModo]);
+
     return {
         docenteId,
         setDocenteId,
@@ -632,5 +664,6 @@ export const useGestionHorariosConflictosState = () => {
         isParaleloVista,
         horarioEditable,
         planSemanalEditable,
+        conflictoResuelto,
     };
 };

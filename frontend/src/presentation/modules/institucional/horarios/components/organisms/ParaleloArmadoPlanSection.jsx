@@ -40,6 +40,8 @@ const ParaleloArmadoPlanSection = ({
     /** horario_id del catálogo en choque (resaltado rojo por celda en grilla de conflictos). */
     conflictHorarioIds = null,
     horarioSlotIndex = null,
+    /** true = resalta celdas por horario_id del docente (pantalla conflictos). */
+    docenteConflictMode = false,
     /** Oculta títulos y leyendas; solo grilla + guardar (pantalla de conflictos). */
     headerMinimal = false,
 }) => {
@@ -203,8 +205,9 @@ const ParaleloArmadoPlanSection = ({
                     uniformSlotGrid={!editable}
                     editable={editable}
                     onSlotDrop={handleSlotDrop}
-                    conflictHorarioIds={conflictHorarioIds?.size ? conflictHorarioIds : null}
+                    conflictHorarioIds={conflictHorarioIds}
                     horarioSlotIndex={horarioSlotIndex}
+                    docenteConflictMode={docenteConflictMode}
                     cellExtraProps={{
                         onBeginDragChip: handleBeginDragChip,
                         onDeleteChip: puedeEliminar ? handleDeleteChip : undefined,

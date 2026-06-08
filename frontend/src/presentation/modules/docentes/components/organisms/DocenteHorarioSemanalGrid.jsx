@@ -223,7 +223,9 @@ const DocenteHorarioSemanalGrid = ({
   editable = false,
   onSlotDrop,
   cellExtraProps = {},
-  /** horario_id del catálogo en choque docente (misma celda en todas las grillas). */
+  /** Modo resolución conflictos docente: resalta celdas por horario_id (no solape local). */
+  docenteConflictMode = false,
+  /** horario_id del catálogo en choque docente. */
   conflictHorarioIds = null,
   /** Map franja → horario_id (catálogo del turno) para celdas vacías. */
   horarioSlotIndex = null,
@@ -366,7 +368,7 @@ const DocenteHorarioSemanalGrid = ({
               </th>
               {dayKeys.map((dia) => {
                 const cellItems = cellMap.get(`${dia}-${slotMinutes}`) || [];
-                const slotHasConflict = conflictHorarioIds?.size
+                const slotHasConflict = docenteConflictMode
                   ? isConflictGridCell(
                       dia,
                       slotMinutes,
@@ -376,6 +378,11 @@ const DocenteHorarioSemanalGrid = ({
                       horarioSlotIndex,
                     )
                   : cellItems.length >= 2;
+                const slotWrapClass = slotHasConflict
+                  ? docenteConflictMode
+                    ? 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--docente-conflicto'
+                    : 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--conflict'
+                  : 'da-cal-semanal__slot-wrap';
                 return (
                   <td
                     key={`${dia}-${slotMinutes}`}
@@ -397,13 +404,7 @@ const DocenteHorarioSemanalGrid = ({
                         : undefined
                     }
                   >
-                    <div
-                      className={
-                        slotHasConflict
-                          ? 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--conflict'
-                          : 'da-cal-semanal__slot-wrap'
-                      }
-                    >
+                    <div className={slotWrapClass}>
                       <Cell
                         items={cellItems}
                         slotDia={dia}

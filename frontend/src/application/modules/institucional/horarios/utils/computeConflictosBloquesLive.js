@@ -1,6 +1,6 @@
 /**
  * Conflictos docente en grilla: identidad de celda = horario_id del catálogo (vista 36/128).
- * Una celda en conflicto tiene 2+ bloques del mismo docente en el mismo horario_id.
+ * Solo cuenta bloques del docente en conflicto (no otros docentes del paralelo).
  */
 
 import {
@@ -12,6 +12,23 @@ function minutesToHm(minutes) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function normalizeDocenteNombre(raw) {
+  return String(raw || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+/** Solo cursos/asignaciones del docente en resolución de conflictos. */
+export function filterSchedulesForDocente(schedules, docenteNombre) {
+  const target = normalizeDocenteNombre(docenteNombre);
+  if (!target) return [];
+  return (schedules || []).filter((course) => {
+    const name = normalizeDocenteNombre(course?.docente);
+    return name.length > 0 && name === target;
+  });
 }
 
 function flattenBlocksWithHorarioId(schedules, horarioIndex) {
@@ -44,15 +61,25 @@ function collectCursoHorarioIds(schedules) {
   return ids;
 }
 
+/** horario_id en choque según pares de la vista backend. */
+export function conflictHorarioIdsFromPares(paresConflicto) {
+  const ids = new Set();
+  for (const p of paresConflicto || []) {
+    const hid = Number(p.horarioId ?? p.horario_id);
+    if (Number.isFinite(hid) && hid > 0) ids.add(hid);
+  }
+  return ids;
+}
+
 /**
- * @param {object[]} docenteDraftSchedules
- * @param {Record<number, { draftSchedules?: object[] }>} paraleloStates
- * @param {{ paraleloGestionId: number }[]} paralelosInvolucrados
+ * Plan agregado del docente: borradores de paralelo solo aportan sus cursos, no la grilla entera.
+ * @param {string|null} docenteNombre
  */
 export function buildMergedDocenteSchedules(
   docenteDraftSchedules,
   paraleloStates,
   paralelosInvolucrados,
+  docenteNombre = null,
 ) {
   const replacedPgIds = new Set();
   const replacedCursoHorarioIds = new Set();
@@ -63,9 +90,13 @@ export function buildMergedDocenteSchedules(
     if (!Number.isFinite(pgId) || pgId < 1) continue;
     const draft = paraleloStates[pgId]?.draftSchedules;
     if (!Array.isArray(draft) || draft.length === 0) continue;
+
+    const draftDocente = filterSchedulesForDocente(draft, docenteNombre);
+    if (!draftDocente.length) continue;
+
     replacedPgIds.add(pgId);
-    merged.push(...draft);
-    for (const id of collectCursoHorarioIds(draft)) {
+    merged.push(...draftDocente);
+    for (const id of collectCursoHorarioIds(draftDocente)) {
       replacedCursoHorarioIds.add(id);
     }
   }
@@ -130,7 +161,7 @@ export function resolveHorarioIdForGridCell(dia, slotMinutes, cellItems, slotSte
 }
 
 /**
- * ¿Celda en conflicto? (por horario_id, propagable a todas las pestañas del docente).
+ * ¿Celda en conflicto docente? Solo true si el horario_id de la celda está en el set.
  * @param {Set<number>} conflictHorarioIds
  * @param {Map<string, number>|null} horarioIndex
  */
@@ -143,11 +174,6 @@ export function isConflictGridCell(
   horarioIndex = null,
 ) {
   if (!conflictHorarioIds?.size) return false;
-
-  for (const item of cellItems || []) {
-    const hid = Number(item.horarioId);
-    if (conflictHorarioIds.has(hid)) return true;
-  }
 
   const cellHorarioId = resolveHorarioIdForGridCell(
     dia,

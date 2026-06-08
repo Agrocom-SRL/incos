@@ -1041,7 +1041,7 @@
   box-sizing: border-box;
 }
 
-/** Dos o más bloques en la misma celda (solape). */
+/** Dos o más bloques en la misma celda del mismo plan (vista previa armado). */
 .da-cal-semanal__slot-wrap--conflict {
   border: 2px dashed var(--ant-color-error, #ff4d4f);
   border-radius: 6px;

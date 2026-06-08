@@ -635,7 +635,7 @@ const HorariosGestionSidebarResumen = ({
                                             <ActionButton
                                                 permiso="institucional.horario.armado"
                                                 accion="EDITAR"
-                                                variant="primary"
+                                                variant="error"
                                                 style={{ flexShrink: 0 }}
                                                 disabled={d.docenteId == null}
                                                 onClick={() => {

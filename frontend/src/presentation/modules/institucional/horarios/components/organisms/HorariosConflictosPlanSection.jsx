@@ -24,6 +24,7 @@ const HorariosConflictosPlanSection = ({
     onSchedulesChange,
     conflictHorarioIds = null,
     horarioSlotIndex = null,
+    docenteConflictMode = false,
     onRequestPersist,
     validatePlacement,
     persistLoading = false,
@@ -139,6 +140,7 @@ const HorariosConflictosPlanSection = ({
                 onSlotDrop={handleSlotDrop}
                 conflictHorarioIds={conflictHorarioIds}
                 horarioSlotIndex={horarioSlotIndex}
+                docenteConflictMode={docenteConflictMode}
                 cellExtraProps={{
                     onBeginDragChip: editable ? handleBeginDragChip : undefined,
                     onDeleteChip: editable ? handleDeleteChip : undefined,

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Alert, Flex, Spin, Tabs, Typography } from 'antd';
-import { ArrowLeftOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CheckCircleOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader, ListPanelHeader } from '@molecules';
 import { useHorariosConflictosContext } from '@application-institucional/horarios/hooks/context/useHorariosConflictosContext';
@@ -43,6 +43,7 @@ const GestionHorariosConflictosPage = () => {
         vistaOpciones,
         setVistaModo,
         turnoEfectivo,
+        conflictoResuelto,
     } = useHorariosConflictosContext();
 
     const docenteNombre =
@@ -61,6 +62,15 @@ const GestionHorariosConflictosPage = () => {
     );
 
     const workspaceDescription = useMemo(() => {
+        if (conflictoResuelto) {
+            return [
+                docenteNombre ? `Docente: ${docenteNombre}` : null,
+                gestionLabel ? `Gestión: ${gestionLabel}` : null,
+                'No quedan solapes de horario para este docente en la gestión vigente.',
+            ]
+                .filter(Boolean)
+                .join(' · ');
+        }
         const partes = [];
         if (docenteId && docenteNombre) {
             partes.push(`Docente con conflicto operativo: ${docenteNombre}`);
@@ -72,10 +82,33 @@ const GestionHorariosConflictosPage = () => {
             'Las celdas en rojo marcan la misma franja horaria en choque. Reubicá un bloque en la pestaña del paralelo y guardá para resolver el solape.',
         );
         return partes.join(' · ');
-    }, [docenteId, docenteNombre, gestionLabel]);
+    }, [conflictoResuelto, docenteId, docenteNombre, gestionLabel]);
+
+    const docentePlanPanel = useMemo(
+        () => (
+            <HorariosConflictosPlanSection
+                schedules={docenteDraftSchedules}
+                onSchedulesChange={() => { }}
+                conflictHorarioIds={conflictHorarioIds}
+                horarioSlotIndex={horarioSlotIndex}
+                editable={false}
+                showSave={false}
+                turnoLabel={turnoEfectivo}
+                headerMinimal
+                docenteConflictMode={!conflictoResuelto}
+            />
+        ),
+        [
+            docenteDraftSchedules,
+            conflictHorarioIds,
+            horarioSlotIndex,
+            turnoEfectivo,
+            conflictoResuelto,
+        ],
+    );
 
     const tabItems = useMemo(() => {
-        if (!docenteId || vistaOpciones.length <= 1) return [];
+        if (!docenteId) return [];
 
         return vistaOpciones.map((opcion) => {
             const isDocente = opcion.key === 'docente';
@@ -111,16 +144,7 @@ const GestionHorariosConflictosPage = () => {
                     ) : panelError ? (
                         <Alert type="error" showIcon title={panelError} />
                     ) : isDocente ? (
-                        <HorariosConflictosPlanSection
-                            schedules={schedules}
-                            onSchedulesChange={() => {}}
-                            conflictHorarioIds={conflictHorarioIds}
-                            horarioSlotIndex={horarioSlotIndex}
-                            editable={false}
-                            showSave={false}
-                            turnoLabel={turnoLabel}
-                            headerMinimal
-                        />
+                        docentePlanPanel
                     ) : (
                         <ParaleloArmadoPlanSection
                             schedules={schedules}
@@ -134,6 +158,7 @@ const GestionHorariosConflictosPage = () => {
                             validatePlacement={validatePlacement}
                             conflictHorarioIds={conflictHorarioIds}
                             horarioSlotIndex={horarioSlotIndex}
+                            docenteConflictMode
                             headerMinimal
                         />
                     ),
@@ -152,11 +177,14 @@ const GestionHorariosConflictosPage = () => {
         persistLoading,
         onRequestPersist,
         validatePlacement,
+        docentePlanPanel,
     ]);
+
+    const soloVistaDocente = tabItems.length === 1;
 
     return (
         <PageTemplate
-            header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}
+            header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={workspaceActions} />}
             sidebar={null}
         >
             <Spin spinning={loading} size="large" tip="Cargando grilla…">
@@ -171,29 +199,46 @@ const GestionHorariosConflictosPage = () => {
                         </Text>
                     ) : null}
 
-                    {docenteId && tabItems.length > 0 ? (
+                    {conflictoResuelto ? (
+                        <Alert
+                            type="success"
+                            showIcon
+                            icon={<CheckCircleOutlined />}
+                            title="El docente ya no tiene choques de horario en esta gestión"
+                            description="Podés volver al tablero de horarios o revisar la grilla semanal del docente abajo."
+                        />
+                    ) : null}
+
+                    {docenteId ? (
                         <section className="cfg-academico-workspace horarios-conflictos-workspace">
                             <header className="cfg-academico-workspace__header">
                                 <ListPanelHeader
-                                    title="Resolver conflictos de horario"
-                                    actions={workspaceActions}
+                                    title={
+                                        conflictoResuelto
+                                            ? 'Conflicto resuelto'
+                                            : 'Resolver conflictos de horario'
+                                    }
                                 />
                                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                                     {workspaceDescription}
                                 </Paragraph>
                             </header>
 
-                            <div className="sd-tabs-shell cfg-academico-tabs-shell">
-                                <Tabs
-                                    className="sd-tabs cfg-academico-workspace__tabs horarios-conflictos-workspace__tabs"
-                                    activeKey={vistaActivaKey}
-                                    onChange={(key) =>
-                                        setVistaModo(key === 'docente' ? 'docente' : Number(key))
-                                    }
-                                    items={tabItems}
-                                    destroyOnHidden={false}
-                                />
-                            </div>
+                            {soloVistaDocente ? (
+                                wrapTabPanel(docentePlanPanel)
+                            ) : (
+                                <div className="sd-tabs-shell cfg-academico-tabs-shell">
+                                    <Tabs
+                                        className="sd-tabs cfg-academico-workspace__tabs horarios-conflictos-workspace__tabs"
+                                        activeKey={vistaActivaKey}
+                                        onChange={(key) =>
+                                            setVistaModo(key === 'docente' ? 'docente' : Number(key))
+                                        }
+                                        items={tabItems}
+                                        destroyOnHidden={false}
+                                    />
+                                </div>
+                            )}
                         </section>
                     ) : null}
                 </div>
