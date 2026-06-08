@@ -417,18 +417,18 @@
   box-shadow: 0 4px 12px rgba(25, 118, 210, 0.35);
 }
 
-.sd-btn--declaracion {
-  background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 100%);
+.sd-btn--alternative {
+  background: #7c3aed;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.28);
 }
 
-.sd-btn--declaracion:hover {
-  background: linear-gradient(145deg, #1d4ed8 0%, #1e40af 100%);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+.sd-btn--alternative:hover {
+  background: #6d28d9;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35);
 }
 
-.sd-btn--declaracion:disabled {
+.sd-btn--alternative:disabled {
   opacity: .6;
   cursor: not-allowed;
 }

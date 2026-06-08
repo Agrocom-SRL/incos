@@ -121,17 +121,18 @@
   box-shadow: 0 4px 12px rgba(25, 118, 210, 0.35) !important;
 }
 
-.ant-btn.sd-btn--declaracion {
-  background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 100%) !important;
-  border: none !important;
+.ant-btn.sd-btn--alternative {
+  background: #7c3aed !important;
+  border-color: #7c3aed !important;
   color: #fff !important;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.28) !important;
 }
 
-.ant-btn.sd-btn--declaracion:hover:not(:disabled) {
-  background: linear-gradient(145deg, #1d4ed8 0%, #1e40af 100%) !important;
+.ant-btn.sd-btn--alternative:hover:not(:disabled) {
+  background: #6d28d9 !important;
+  border-color: #6d28d9 !important;
   color: #fff !important;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35) !important;
 }
 
 .ant-btn.sd-btn:disabled,

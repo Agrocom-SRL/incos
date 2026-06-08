@@ -9,16 +9,7 @@
  */
 
 import { Navigate, useParams } from 'react-router-dom';
-
-const DocenteConflictosLegacyRedirect = () => {
-  const { id } = useParams();
-  const n = Number(id);
-  const to =
-    Number.isFinite(n) && n > 0
-      ? `/institucional/horarios/conflictos?docenteId=${n}`
-      : '/institucional/horarios/conflictos';
-  return <Navigate to={to} replace />;
-};
+import { ofertaPaths } from '@application-institucional/oferta/config/paths';
 import { UnderConstruction } from '@components/pages';
 import {
   DocentesListConnector,
@@ -26,6 +17,11 @@ import {
   DocentesCreateConnector,
   DocentesEditConnector,
 } from '@docentes/connectors';
+
+const DocenteAsignacionesLegacyRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={ofertaPaths.docenteAsignaciones(id)} replace />;
+};
 
 export const docentesRoutes = [
   {
@@ -89,8 +85,8 @@ export const docentesRoutes = [
   },
   {
     path: '/docentes/:id/asignaciones',
-    element: <DocenteConflictosLegacyRedirect />,
-    key: 'DOC-ASIGNACIONES-GESTION-LEGACY',
+    element: <DocenteAsignacionesLegacyRedirect />,
+    key: 'DOC-ASIGNACIONES-LEGACY',
     menu: null,
   },
   {

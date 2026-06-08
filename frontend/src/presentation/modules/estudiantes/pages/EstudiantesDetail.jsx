@@ -593,7 +593,7 @@ const EstudiantesDetail = () => {
             {showDeclaracionButton && puedeGenerarPdfDocumento && (
               <button
                 type="button"
-                className="sd-btn sd-btn--declaracion"
+                className="sd-btn sd-btn--alternative"
                 onClick={handleGenerateDeclaracionJurada}
                 disabled={loadingDeclaracion}
               >
