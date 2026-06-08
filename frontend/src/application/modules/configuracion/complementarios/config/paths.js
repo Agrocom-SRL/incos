@@ -2,9 +2,6 @@
 
 export const COMPLEMENTARIOS_BASE = '/configuracion/complementarios';
 
-/** @deprecated */
-export const DATOS_COMPLEMENTARIOS_BASE = COMPLEMENTARIOS_BASE;
-
 export const complementarioTabPath = (tab) => `${COMPLEMENTARIOS_BASE}?tab=${tab}`;
 
 export const DISCAPACIDAD_BASE = `${COMPLEMENTARIOS_BASE}/discapacidad`;

@@ -14,7 +14,8 @@ import { useAcciones } from '@application-shared/hooks';
 import { useBimestreConsolidado } from '@application-academico/calificaciones/hooks/useBimestreConsolidado.js';
 import { useBimestrePagerTeclado } from '@application-academico/calificaciones/hooks/useBimestrePagerTeclado.js';
 import { useNavegacionBimestres } from '@application-academico/calificaciones/hooks/useNavegacionBimestres.js';
-import { useCalificacionesVistaContext } from '@application-academico/calificaciones/hooks/useCalificacionesVistaContext.js';
+import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
+import { CALIFICACIONES_VIEW_ROUTE_KEY } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import CuadernoContextoPanel from '../components/CuadernoContextoPanel.jsx';
 import BimestreConsolidadoSeparador from '../components/BimestreConsolidadoSeparador.jsx';
@@ -41,7 +42,7 @@ const normalizarComponente = (v) => {
 const BimestreConsolidadoPage = () => {
   const navigate = useNavigate();
   const { notification } = App.useApp();
-  const { docenteNombreCoordinacion } = useCalificacionesVistaContext();
+  const { contextName: docenteNombreCoordinacion } = useRouteViewMode(CALIFICACIONES_VIEW_ROUTE_KEY);
   const ajusteAdmin = useAcciones(CALIFICACIONES_PERMISOS.bimestreAjusteAdmin);
   const puedeEdicionAdmin = ajusteAdmin.puedeEditar;
   const {

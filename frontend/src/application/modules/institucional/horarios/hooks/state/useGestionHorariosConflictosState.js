@@ -48,6 +48,37 @@ import {
 
 const VISTA_DOCENTE = 'docente';
 
+function enrichParaleloSchedulesFromDocenteGrilla(schedules, paraleloGestionId, docenteCourseSchedules) {
+    const pgId = Number(paraleloGestionId);
+    let carreraPorParalelo = null;
+    const metaByCursoId = new Map();
+
+    for (const course of docenteCourseSchedules || []) {
+        const cursoId = Number(course.cursoId);
+        if (Number.isFinite(cursoId) && cursoId > 0) {
+            metaByCursoId.set(cursoId, {
+                carrera: course.carrera ?? null,
+                materiaNombre: course.materiaNombre ?? null,
+                materiaSigla: course.materiaSigla ?? null,
+            });
+        }
+        if (course?.carrera && Number(course.paraleloGestionId) === pgId) {
+            carreraPorParalelo = course.carrera;
+        }
+    }
+
+    return (schedules || []).map((course) => {
+        const cursoId = Number(course.cursoId);
+        const meta = Number.isFinite(cursoId) ? metaByCursoId.get(cursoId) : null;
+        return {
+            ...course,
+            carrera: course.carrera ?? meta?.carrera ?? carreraPorParalelo ?? null,
+            materiaNombre: course.materiaNombre ?? meta?.materiaNombre ?? null,
+            materiaSigla: course.materiaSigla ?? meta?.materiaSigla ?? course.materiaSigla ?? null,
+        };
+    });
+}
+
 function parseVistaModo(vistaParam) {
     if (vistaParam == null || vistaParam === '' || vistaParam === VISTA_DOCENTE) {
         return VISTA_DOCENTE;
@@ -236,13 +267,17 @@ export const useGestionHorariosConflictosState = () => {
             const paraleloMeta = paralelosInvolucrados.find(
                 (p) => Number(p.paraleloGestionId) === pgId,
             );
-            const schedules = grillaHorarioToCourseSchedules(payload, {
-                turno: meta?.turno ?? paraleloMeta?.turno,
-                paraleloNombre: paraleloMeta?.paraleloNombre,
-            }).map((course) => ({
-                ...course,
-                paraleloGestionId: pgId,
-            }));
+            const schedules = enrichParaleloSchedulesFromDocenteGrilla(
+                grillaHorarioToCourseSchedules(payload, {
+                    turno: meta?.turno ?? paraleloMeta?.turno,
+                    paraleloNombre: paraleloMeta?.paraleloNombre,
+                }).map((course) => ({
+                    ...course,
+                    paraleloGestionId: pgId,
+                })),
+                pgId,
+                grilla?.courseSchedules,
+            );
 
             const paraleloGestionEstado = meta?.paraleloGestionEstado ?? null;
             setParaleloStates((prev) => ({
@@ -270,7 +305,7 @@ export const useGestionHorariosConflictosState = () => {
                 },
             }));
         }
-    }, [paralelosInvolucrados]);
+    }, [paralelosInvolucrados, grilla?.courseSchedules]);
 
     const fetchGrilla = useCallback(async () => {
         if (!docenteId || !gestionVigenteId) {

@@ -2,8 +2,8 @@
 -- VISTA BASE: vista_base_horarios_paralelo_cursos
 -- Ofertas creadas y ofertas con cobertura horaria completa por paralelo_gestion (gestión vigente).
 --
--- cursos_con_horario: oferta con docente vigente y bloques >= horas requeridas
--- (COALESCE(asignaciones_docentes.carga_horaria, asignaturas_plan.horas_semanales)).
+-- cursos_con_horario: oferta con docente vigente y bloques >= horas del plan
+-- (asignaturas_plan.horas_semanales; respaldo ad.carga_horaria).
 -- ============================================
 
 USE instituto_incos;
@@ -37,8 +37,8 @@ LEFT JOIN (
         MAX(ad.id) AS asignacion_docente_id,
         CASE
             WHEN MAX(ad.docente_id) IS NULL THEN 0
-            WHEN COUNT(ah.id) >= COALESCE(MAX(ad.carga_horaria), MAX(ap.horas_semanales), 0)
-                AND COALESCE(MAX(ad.carga_horaria), MAX(ap.horas_semanales), 0) > 0
+            WHEN COUNT(ah.id) = COALESCE(MAX(ap.horas_semanales), MAX(ad.carga_horaria), 0)
+                AND COALESCE(MAX(ap.horas_semanales), MAX(ad.carga_horaria), 0) > 0
             THEN 1
             ELSE 0
         END AS cobertura_completa

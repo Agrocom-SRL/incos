@@ -58,6 +58,10 @@ export class IParaleloRepository extends IRepository {
     throw new Error('Method obtenerPublicacionBloques must be implemented by subclass');
   }
 
+  async obtenerEstadoParaleloGestionPorIds(_paraleloGestionIds = []) {
+    throw new Error('Method obtenerEstadoParaleloGestionPorIds must be implemented by subclass');
+  }
+
   /**
    * Cursos de un paralelo cuya asignación docente vigente participa en choque de franja (misma horario_id con otro curso del mismo docente).
    * @param {number} _paraleloId

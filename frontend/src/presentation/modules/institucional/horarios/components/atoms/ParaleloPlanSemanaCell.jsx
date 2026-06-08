@@ -25,6 +25,13 @@ const hexToRgb = (hex) => {
     };
 };
 
+const resolveNombreMateria = (ev) => {
+    const nom = ev.materiaNombre != null ? String(ev.materiaNombre).trim() : '';
+    const sig = ev.materiaSigla != null ? String(ev.materiaSigla).trim() : '';
+    if (nom && sig && nom !== sig) return nom;
+    return nom || null;
+};
+
 const ParaleloPlanSemanaCell = ({
     items = [],
     slotDia,
@@ -87,15 +94,22 @@ const ParaleloPlanSemanaCell = ({
                             <div className="da-cal-semanal__chip-sigla">{ev.materiaSigla}</div>
                         ) : null}
                         {(() => {
-                            const nom = ev.materiaNombre != null ? String(ev.materiaNombre).trim() : '';
-                            const sig = ev.materiaSigla != null ? String(ev.materiaSigla).trim() : '';
-                            let label = '';
-                            if (nom && sig && nom !== sig) label = nom;
-                            else if (nom) label = nom;
-                            else if (!sig) label = `Asignación ${ev.cursoCodigo}`;
-                            return label ? <div className="da-cal-semanal__chip-curso">{label}</div> : null;
+                            const nombreMateria = resolveNombreMateria(ev);
+                            if (nombreMateria) {
+                                return (
+                                    <div className="da-cal-semanal__chip-curso">{nombreMateria}</div>
+                                );
+                            }
+                            if (ev.materiaSigla) return null;
+                            return (
+                                <div className="da-cal-semanal__chip-curso">
+                                    Asignación {ev.cursoCodigo}
+                                </div>
+                            );
                         })()}
-                        {ev.carrera ? <div className="da-cal-semanal__chip-line">{ev.carrera}</div> : null}
+                        {ev.carrera ? (
+                            <div className="da-cal-semanal__chip-line">{ev.carrera}</div>
+                        ) : null}
                         {ev.paralelo || ev.turno ? (
                             <div className="da-cal-semanal__chip-line text-bold">
                                 {[ev.paralelo, ev.turno].filter(Boolean).join(' · ')}

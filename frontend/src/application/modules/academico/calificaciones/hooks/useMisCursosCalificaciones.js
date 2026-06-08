@@ -5,8 +5,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { notasCursoPath } from '../utils/calificacionesPaths.js';
-import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
+import { notasCursoPath, CALIFICACIONES_VIEW_ROUTE_KEY } from '../utils/calificacionesPaths.js';
+import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
 
 const formatGestionLabel = (nombre) => {
   if (!nombre) return '';
@@ -24,8 +24,10 @@ const getResumenCursos = (cursos) => {
 };
 
 export const useMisCursosCalificaciones = () => {
-  const { docenteIdCoordinacion, docenteNombreCoordinacion, esVistaCoordinacion } =
-    useCalificacionesVistaContext();
+  const { contextId, contextName, isView } = useRouteViewMode(CALIFICACIONES_VIEW_ROUTE_KEY);
+  const docenteIdCoordinacion = contextId;
+  const docenteNombreCoordinacion = contextName;
+  const esVistaCoordinacion = isView('coordinacion');
 
   const [cursos, setCursos] = useState(null);
   const [docente, setDocente] = useState(null);

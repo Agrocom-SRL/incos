@@ -31,6 +31,8 @@ SELECT
   b.aulaNombre AS aulaNombre,
   b.aulaCodigo AS aulaCodigo,
   m.sigla AS asignatura,
+  m.nombre AS materiaNombre,
+  c.nombre AS carreraNombre,
   TRIM(CONCAT(
     COALESCE(doc.nombres, ''),
     ' ',
@@ -64,6 +66,12 @@ INNER JOIN asignaturas_plan ap
 LEFT JOIN materias m
   ON m.id = ap.materia_id
   AND m.deleted_at IS NULL
+LEFT JOIN planes_estudios pe
+  ON pe.id = ap.plan_estudio_id
+  AND pe.deleted_at IS NULL
+LEFT JOIN carreras c
+  ON c.id = pe.carrera_id
+  AND c.deleted_at IS NULL
 LEFT JOIN docentes doc
   ON doc.id = ad.docente_id
   AND doc.deleted_at IS NULL;

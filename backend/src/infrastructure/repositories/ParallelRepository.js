@@ -357,6 +357,7 @@ export class ParallelRepository extends BaseRepository {
         materia_id,
         materia_sigla,
         materia_nombre,
+        horas_plan,
         docente_nombre,
         curso_horario_id,
         horario_id,
@@ -383,5 +384,39 @@ export class ParallelRepository extends BaseRepository {
       replacements,
       type: QueryTypes.SELECT,
     });
+  }
+
+  /**
+   * Métricas del tablero (vista 87) por paralelo_gestion_id — publicación / validaciones.
+   * @param {number[]} paraleloGestionIds
+   */
+  async obtenerEstadoParaleloGestionPorIds(paraleloGestionIds = []) {
+    const ids = [...new Set(
+      (paraleloGestionIds || [])
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id) && id > 0),
+    )];
+    if (!ids.length) return new Map();
+
+    const rows = await sequelize.query(
+      `SELECT
+         e.paralelo_gestion_id,
+         e.paralelo_aula_id,
+         e.asignaturas_requeridas,
+         e.cursos_creados,
+         e.cursos_con_horario,
+         e.ofertas_cobertura_incompleta,
+         e.cursos_sin_docente,
+         e.bloques_sin_aula,
+         e.conflictos_solape_mismo_bloque,
+         e.conflictos_aula,
+         e.conflicto_docente_horario,
+         e.tablero_grupo
+       FROM vista_horarios_paralelo_estado e
+       WHERE e.paralelo_gestion_id IN (:ids)`,
+      { replacements: { ids }, type: QueryTypes.SELECT },
+    );
+
+    return new Map(rows.map((r) => [Number(r.paralelo_gestion_id), r]));
   }
 }

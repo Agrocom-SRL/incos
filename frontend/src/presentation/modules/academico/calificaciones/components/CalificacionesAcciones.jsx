@@ -40,7 +40,4 @@ export const AccionConfiguracionNotas = ({ onClick }) => (
   </ActionButton>
 );
 
-/** @deprecated Usar AccionConfiguracionNotas */
-export const AccionPoliticaInstitucional = AccionConfiguracionNotas;
-
 export default CalificacionesAcciones;

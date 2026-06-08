@@ -16,7 +16,8 @@ import { useNavegacionBimestres } from '@application-academico/calificaciones/ho
 import { contarNotasCargadas } from '@application-academico/calificaciones/utils/puntosEvaluaciones.js';
 import { usePoliticaInstitucional } from '@application-academico/calificaciones/hooks/usePoliticaInstitucional.js';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
-import { useCalificacionesVistaContext } from '@application-academico/calificaciones/hooks/useCalificacionesVistaContext.js';
+import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
+import { CALIFICACIONES_VIEW_ROUTE_KEY } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import {
   CuadernoAutosaveProvider,
   useCuadernoAutosaveRegistry,
@@ -205,7 +206,7 @@ const CuadernoGrilla = ({
 
 const CuadernoPage = () => {
   const navigate = useNavigate();
-  const { docenteNombreCoordinacion } = useCalificacionesVistaContext();
+  const { contextName: docenteNombreCoordinacion } = useRouteViewMode(CALIFICACIONES_VIEW_ROUTE_KEY);
   const { politica } = usePoliticaInstitucional();
   const cuotaTeorico = Number(politica?.cuotaTeorico) || 30;
   const cuotaPractico = Number(politica?.cuotaPractico) || 70;

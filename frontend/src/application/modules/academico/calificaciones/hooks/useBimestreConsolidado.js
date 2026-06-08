@@ -7,14 +7,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
 import { tituloBimestre } from '../utils/bimestreTitulos.js';
-import { MIS_CURSOS_PATH, notasCursoPath } from '../utils/calificacionesPaths.js';
-import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
+import { MIS_CURSOS_PATH, notasCursoPath, CALIFICACIONES_VIEW_ROUTE_KEY } from '../utils/calificacionesPaths.js';
+import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
 import { cargarContextoCursoRegistro } from '../utils/cargarContextoCursoRegistro.js';
 
 export const useBimestreConsolidado = () => {
   const { asignacionId, n: bimestreRuta } = useParams();
   const navigate = useNavigate();
-  const { esVistaCoordinacion } = useCalificacionesVistaContext();
+  const { isView } = useRouteViewMode(CALIFICACIONES_VIEW_ROUTE_KEY);
+  const esVistaCoordinacion = isView('coordinacion');
 
   const [base, setBase] = useState(null);
   const [consolidado, setConsolidado] = useState(null);

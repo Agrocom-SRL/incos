@@ -1,6 +1,7 @@
 -- ============================================
 -- VISTA BASE: vista_base_paralelo_gestion_asignacion_cobertura_bloques
--- Cobertura de bloques vs horas requeridas por asignación docente vigente.
+-- Cobertura de bloques vs carga del plan de estudios (asignaturas_plan.horas_semanales).
+-- En INCOS 1 «hora» ministerial = 1 bloque de 45 min. ad.carga_horaria solo respaldo si el plan no tiene valor.
 -- ============================================
 
 USE instituto_incos;
@@ -12,7 +13,7 @@ SELECT
   oc.paralelo_gestion_id AS paraleloGestionId,
   ad.id AS asignacionDocenteId,
   m.sigla AS asignatura,
-  COALESCE(ad.carga_horaria, ap.horas_semanales, 0) AS horasRequeridas,
+  COALESCE(ap.horas_semanales, ad.carga_horaria, 0) AS horasRequeridas,
   COUNT(ah.id) AS bloquesAsignados,
   ap.orden_visualizacion AS ordenVisualizacion
 FROM asignaciones_docentes ad

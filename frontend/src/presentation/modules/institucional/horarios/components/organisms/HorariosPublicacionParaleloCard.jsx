@@ -10,7 +10,11 @@ import {
 } from '@application-institucional/horarios/utils/turnoGridRange';
 import { buildHorariosArmadoUrl } from '@application-institucional/horarios/config/paths';
 import { paraleloScheduleToCourseSchedules } from '@application-institucional/horarios/utils/paraleloScheduleToCourseSchedules';
-import { buildHorariosPlanPendientesDetalleLines } from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
+import {
+    appendCoberturaPlanPendientesLineas,
+    appendParaleloDashboardPendientesLineas,
+    buildHorariosPlanPendientesDetalleLines,
+} from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
 import ParaleloPlanSemanaCell from '../atoms/ParaleloPlanSemanaCell';
 import HorariosPlanPendientesLista from './HorariosPlanPendientesLista';
 
@@ -59,9 +63,11 @@ const HorariosPublicacionParaleloCard = ({ plan, onPublicar, publicando = false 
 
     const border = paralelo?.carreraColorHex ? `${paralelo.carreraColorHex}55` : undefined;
     const pendientesLineas = useMemo(() => {
-        const fromPlan = buildHorariosPlanPendientesDetalleLines(courseSchedules);
-        return fromPlan;
-    }, [courseSchedules]);
+        let lines = buildHorariosPlanPendientesDetalleLines(courseSchedules);
+        lines = appendParaleloDashboardPendientesLineas(lines, plan?.paraleloDashboard);
+        lines = appendCoberturaPlanPendientesLineas(courseSchedules, plan?.paraleloDashboard, lines);
+        return lines;
+    }, [courseSchedules, plan?.paraleloDashboard]);
 
     const estadoTag = useMemo(() => estadoPgTag(pgEstado), [pgEstado]);
     const puedePublicar =

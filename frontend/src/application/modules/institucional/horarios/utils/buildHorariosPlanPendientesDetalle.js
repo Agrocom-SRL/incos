@@ -1,3 +1,5 @@
+import { resolveHorasPlanSemanalCurso } from './resolveHorasPlanSemanalCurso';
+
 /**
  * Construye mensajes legibles de pendientes/conflictos a partir del plan local
  * (`courseSchedules` como lo consume DocenteHorarioSemanalGrid).
@@ -9,6 +11,7 @@
  *   cursoCodigo?: string|null,
  *   docente?: string|null,
  *   docenteId?: number|null,
+ *   horasSemanalesPlan?: number|null,
  *   bloques?: object[],
  * }>} courseSchedules
  * @param {{ maxSolapeLineas?: number, maxChoqueLineas?: number }} [opts]
@@ -260,6 +263,67 @@ export function buildHorariosPlanPendientesDetalleLines(courseSchedules, opts = 
     return lineas;
 }
 
+const COBERTURA_LINE_PATTERNS = [
+    /bloques insuficientes/i,
+    /más bloques de los requeridos/i,
+    /Materias sin ningún bloque/i,
+    /sin bloques de horario/i,
+    /cobertura horaria/i,
+    /cobertura insuficiente/i,
+];
+
+function stripCoberturaRelatedLines(lineas) {
+    return (lineas || []).filter((l) => !COBERTURA_LINE_PATTERNS.some((p) => p.test(String(l))));
+}
+
+/**
+ * Una línea por tipo de desajuste de cobertura (insuficiente / exceso), sin duplicar dashboard vs plan local.
+ * @param {unknown[]} courseSchedules
+ * @param {Record<string, unknown>|null|undefined} paraleloDashboard
+ * @param {string[]} [baseLineas]
+ */
+export function appendCoberturaPlanPendientesLineas(courseSchedules, paraleloDashboard, baseLineas = []) {
+    const lineas = stripCoberturaRelatedLines(baseLineas);
+    const insufParcial = [];
+    const exceso = [];
+    const sinBloques = [];
+
+    for (const c of Array.isArray(courseSchedules) ? courseSchedules : []) {
+        const horasPlan = resolveHorasPlanSemanalCurso(c);
+        const bloques = Array.isArray(c.bloques) ? c.bloques : [];
+        const sigla = siglaCurso(c);
+        if (!bloques.length) {
+            sinBloques.push(sigla);
+            continue;
+        }
+        if (!horasPlan || horasPlan <= 0) continue;
+        if (bloques.length < horasPlan) insufParcial.push(sigla);
+        else if (bloques.length > horasPlan) exceso.push(sigla);
+    }
+
+    const dash = paraleloDashboard || {};
+    const coberturaInc = Number(dash.ofertasCoberturaIncompleta) || 0;
+    const excesoCount = exceso.length;
+    const insufSiglas = [...new Set([...sinBloques, ...insufParcial])];
+    const insufFromDash = coberturaInc > 0 ? Math.max(0, coberturaInc - excesoCount) : 0;
+    const insufCount = Math.max(insufFromDash, insufSiglas.length);
+
+    if (insufCount > 0) {
+        const siglasTxt = insufSiglas.length ? `: ${unirSiglas(insufSiglas)}` : '';
+        lineas.push(
+            `${insufCount} materia(s) con bloques insuficientes para cubrir las horas semanales del plan${siglasTxt}.`,
+        );
+    }
+
+    if (excesoCount > 0) {
+        lineas.push(
+            `${excesoCount} materia(s) con más bloques de los requeridos por el plan: ${unirSiglas(exceso)}.`,
+        );
+    }
+
+    return lineas;
+}
+
 /**
  * Añade líneas a partir de métricas del dashboard de paralelos (vista SQL / API).
  * @param {string[]} base
@@ -270,20 +334,9 @@ export function appendParaleloDashboardPendientesLineas(base, paraleloDashboardR
     const st = paraleloDashboardRow || {};
     const cursosTotales = Number(st.cursosTotales) || 0;
     const cursosCreados = Number(st.cursosCreados) || 0;
-    const cursosAsignados = Number(st.cursosAsignados) || 0;
     const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
     if (faltaCursos > 0) {
         out.unshift(`Faltan ${faltaCursos} curso(s) del plan por crear en el paralelo.`);
-    }
-    const sinBloquesEstado =
-        st.cursosSinBloquesHorario != null
-            ? Number(st.cursosSinBloquesHorario) || 0
-            : Math.max(0, cursosCreados - cursosAsignados);
-    const tieneLineaSinBloquesPlan = (base || []).some((l) => l.startsWith('Materias sin ningún bloque'));
-    if (sinBloquesEstado > 0 && !tieneLineaSinBloquesPlan) {
-        out.push(
-            `${sinBloquesEstado} materia(s) sin bloques de horario (no figuran en el plan cargado o revisá la pestaña de cursos).`,
-        );
     }
     const aulaCruce = Number(st.conflictosAula) || 0;
     if (aulaCruce > 0) {

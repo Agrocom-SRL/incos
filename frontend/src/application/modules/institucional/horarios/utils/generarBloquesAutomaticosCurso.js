@@ -12,6 +12,7 @@ import {
     getSabadoArmadoGridRangeMinutes,
     getTurnoGridRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
+import { resolveHorasPlanSemanalCurso } from '@application-institucional/horarios/utils/resolveHorasPlanSemanalCurso';
 
 const DIAS_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
 const SLOT_STEP_MINUTES = 45;
@@ -106,8 +107,8 @@ function resolveHorasPlanCurso(course, horasPlanOverride) {
     if (horasPlanOverride != null && Number(horasPlanOverride) > 0) {
         return Number(horasPlanOverride);
     }
-    const h = Number(course.horasSemanalesPlan);
-    return Number.isFinite(h) && h > 0 ? h : 0;
+    const h = resolveHorasPlanSemanalCurso(course);
+    return h != null && h > 0 ? h : 0;
 }
 
 /**

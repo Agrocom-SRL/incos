@@ -14,6 +14,9 @@ export const CALIFICACIONES_GESTION_BIMESTRES_PATH =
 
 export const MIS_CURSOS_PATH = '/academico/calificaciones/mis-cursos';
 
+/** key de routes.jsx para useRouteViewMode (coordinación vs docente propio). */
+export const CALIFICACIONES_VIEW_ROUTE_KEY = 'ACA-CAL-MIS-CURSOS';
+
 export const notasCursoPath = (asignacionId) =>
   `${MIS_CURSOS_PATH}/${asignacionId}/notas`;
 

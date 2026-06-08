@@ -2,9 +2,6 @@
 
 export const ACADEMICO_BASE = '/configuracion/academico';
 
-/** @deprecated alias */
-export const PLAN_ESTUDIO_BASE = ACADEMICO_BASE;
-
 export const academicoTabPath = (tab) => `${ACADEMICO_BASE}?tab=${tab}`;
 
 export const CARRERAS_LIST_PATH = `${ACADEMICO_BASE}?tab=carreras`;
@@ -26,8 +23,3 @@ export const materiaEditarPath = (materiaId) => `${ACADEMICO_BASE}/materia/${mat
 export const paraleloNuevaPath = `${ACADEMICO_BASE}/paralelo/nueva`;
 export const paraleloDetallePath = (paraleloId) => `${ACADEMICO_BASE}/paralelo/${paraleloId}`;
 export const paraleloEditarPath = (paraleloId) => `${ACADEMICO_BASE}/paralelo/${paraleloId}/editar`;
-
-/** @deprecated usar carreraNuevaPath */
-export const CARRERAS_REGISTRAR_PATH = carreraNuevaPath;
-/** @deprecated usar materiaNuevaPath */
-export const MATERIAS_REGISTRAR_PATH = materiaNuevaPath;

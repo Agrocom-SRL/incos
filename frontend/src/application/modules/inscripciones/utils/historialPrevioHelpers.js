@@ -184,11 +184,6 @@ export function seedHistorialFromPriorEnrollmentHistories(priorHistories = []) {
   return { gradesByKey, statusByKey };
 }
 
-/** @deprecated Use seedHistorialFromPriorEnrollmentHistories */
-export function seedGradesFromPriorEnrollmentHistories(priorHistories = []) {
-  return seedHistorialFromPriorEnrollmentHistories(priorHistories).gradesByKey;
-}
-
 export function historialPrevioEstadoLabel(estado) {
   switch (String(estado ?? '').toUpperCase()) {
     case 'REGISTRADO':

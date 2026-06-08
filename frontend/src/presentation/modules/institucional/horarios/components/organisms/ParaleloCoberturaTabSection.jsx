@@ -10,6 +10,7 @@ import {
 } from '@application-institucional/horarios/config/paths';
 import { bloquesRequeridosPorCarga } from '@application-institucional/horarios/utils/generarBloquesAutomaticosCurso';
 import { indexCoberturaPorAsignacion } from '@application-institucional/horarios/utils/indexCoberturaPorAsignacion';
+import { resolveHorasPlanSemanalCurso } from '@application-institucional/horarios/utils/resolveHorasPlanSemanalCurso';
 import { resumenBloquesCurso } from '@application-institucional/horarios/utils/resumenBloquesCurso';
 
 const { Text } = Typography;
@@ -107,16 +108,10 @@ const ParaleloCoberturaTabSection = ({
                 const titulo = c.materiaNombre || c.materiaSigla || 'Materia sin nombre';
                 const adId = Number(c.asignacionDocenteId);
                 const cobRow = Number.isFinite(adId) ? coberturaPorAsignacion.get(adId) : null;
-                const horasPlanFromCobertura =
-                    cobRow?.horasRequeridas != null && cobRow.horasRequeridas > 0
-                        ? cobRow.horasRequeridas
-                        : null;
-                const horasPlan =
-                    horasPlanFromCobertura ??
-                    (c.horasSemanalesPlan != null ? Number(c.horasSemanalesPlan) : null);
+                const horasPlan = resolveHorasPlanSemanalCurso(c, cobRow);
                 const courseForResumen =
-                    horasPlanFromCobertura != null && c.horasSemanalesPlan == null
-                        ? { ...c, horasSemanalesPlan: horasPlanFromCobertura }
+                    horasPlan != null && c.horasSemanalesPlan == null
+                        ? { ...c, horasSemanalesPlan: horasPlan }
                         : c;
                 const { horasGrilla, horasPlan: horasPlanResumen, diasOrd, lineas } =
                     resumenBloquesCurso(courseForResumen);

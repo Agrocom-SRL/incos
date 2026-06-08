@@ -13,7 +13,6 @@
  * 
  * @param {boolean} shadow - Si debe mostrar sombra (default: true)
  * @param {string} shadowType - Tipo de sombra: 'elevation2' | 'primary' | 'success' | 'info' | 'warning' | 'error' | 'accent' (default: 'elevation2')
- * @param {boolean} bordered - Si debe mostrar borde (default: false) - DEPRECATED: usar variant en su lugar
  * @param {string} variant - Variante del card: 'outlined' | 'borderless' (default: 'borderless')
  * @param {string} headerColor - Color del header: 'default' | 'primary' | 'success' | 'warning' | 'info' | 'error' | 'accent' (default: 'default'). Ignorado si hay `headerAccentHex` válido (el encabezado usa el tinte del curso).
  * @param {string|null} [headerAccentHex] - Hex del curso (#RRGGBB o RRGGBB). Con `title`, aplica tinte en el header (class `card--header-accent-hex` + estilos en `styles.header`).
@@ -45,8 +44,7 @@ const Card = ({
   title,
   shadow = true,
   shadowType = 'elevation2',
-  bordered = false, // Mantener para compatibilidad, pero usar variant
-  variant,
+  variant = 'borderless',
   headerColor = 'default', // 'default' | 'primary' | 'success' | 'warning' | 'info' | 'error' | 'accent'
   headerAccentHex = null,
   className = '',
@@ -81,9 +79,7 @@ const Card = ({
         }
       : stylesProp;
   
-  // Determinar variant: si se pasa variant, usarlo; si no, usar bordered para compatibilidad
-  const cardVariant = variant || (bordered ? 'outlined' : 'borderless');
-  
+  const cardVariant = variant;
   // Obtener sombra según el tipo
   const getShadow = () => {
     if (!shadow) return 'none';

@@ -28,6 +28,7 @@ SELECT
   m.id AS materia_id,
   m.sigla AS materia_sigla,
   m.nombre AS materia_nombre,
+  ap.horas_semanales AS horas_plan,
   p.id AS paralelo_id,
   p.nombre AS paralelo_nombre,
   pg.turno AS paralelo_turno,

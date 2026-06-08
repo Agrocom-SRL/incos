@@ -16,8 +16,8 @@ import {
 } from '../utils/cuadernoLocalCache.js';
 import { mergeNotasEnEstudiantes } from '../utils/mergeNotasCuaderno.js';
 import { periodoCalendarioPorNumero } from '../utils/bimestrePlazoUtils.js';
-import { MIS_CURSOS_PATH, notasCursoPath } from '../utils/calificacionesPaths.js';
-import { useCalificacionesVistaContext } from './useCalificacionesVistaContext.js';
+import { MIS_CURSOS_PATH, notasCursoPath, CALIFICACIONES_VIEW_ROUTE_KEY } from '../utils/calificacionesPaths.js';
+import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
 import { cargarContextoCursoRegistro } from '../utils/cargarContextoCursoRegistro.js';
 
 export const useCuadernoCurso = () => {
@@ -25,7 +25,8 @@ export const useCuadernoCurso = () => {
   const navigate = useNavigate();
   const cursoIdResolved = asignacionId;
   const { hasPermiso } = useAuth();
-  const { esVistaCoordinacion } = useCalificacionesVistaContext();
+  const { isView } = useRouteViewMode(CALIFICACIONES_VIEW_ROUTE_KEY);
+  const esVistaCoordinacion = isView('coordinacion');
 
   const bimestreVigenteEditable = useCallback(
     (cuadernoState) => Boolean(cuadernoState?.modoEdicion),

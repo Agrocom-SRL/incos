@@ -33,6 +33,7 @@ SELECT
   b.materia_id,
   b.materia_sigla,
   b.materia_nombre,
+  b.horas_plan,
   b.docente_nombre,
   b.curso_horario_id,
   b.horario_id,

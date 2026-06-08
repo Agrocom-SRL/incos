@@ -1,6 +1,30 @@
 /**
  * Planes de horario por paralelo para vista de publicación (una query, sin N+1).
  */
+
+function mapParaleloDashboardRow(row) {
+    if (!row) return null;
+    const cursosTotales = Number(row.asignaturas_requeridas) || 0;
+    const cursosCreados = Number(row.cursos_creados) || 0;
+    const cursosConHorario = Number(row.cursos_con_horario) || 0;
+    const ofertasCoberturaIncompleta = Number(row.ofertas_cobertura_incompleta) || 0;
+    return {
+        cursosTotales,
+        cursosCreados,
+        cursosAsignados: cursosConHorario,
+        cursosConHorario,
+        ofertasCoberturaIncompleta,
+        cursosSinDocente: Number(row.cursos_sin_docente) || 0,
+        cursosSinBloquesHorario: Math.max(0, ofertasCoberturaIncompleta, cursosCreados - cursosConHorario),
+        bloquesSinAula: Number(row.bloques_sin_aula) || 0,
+        conflictosSolapeMismoBloque: Number(row.conflictos_solape_mismo_bloque) || 0,
+        conflictosAula: Number(row.conflictos_aula) || 0,
+        conflictoDocenteHorario: Number(row.conflicto_docente_horario) === 1,
+        paraleloAulaId: row.paralelo_aula_id != null ? Number(row.paralelo_aula_id) : null,
+        boardBucket: row.tablero_grupo ?? null,
+    };
+}
+
 function buildPlanes(rows) {
     const byParalelo = new Map();
     for (const r of rows || []) {
@@ -37,6 +61,8 @@ function buildPlanes(rows) {
                 docenteNombre: r.docente_nombre ?? null,
                 docente: r.docente_nombre ?? null,
                 color: r.curso_color_hex ?? null,
+                horasSemanalesPlan:
+                    r.horas_plan != null && Number(r.horas_plan) > 0 ? Number(r.horas_plan) : null,
                 horarios: [],
             });
         }
@@ -87,6 +113,22 @@ export class GetHorariosPublicacionPlanesUseCase {
     async execute(filters = {}) {
         this.logger.info('[Academico] Horarios publicación — planes', { filters });
         const rows = await this.parallelRepository.obtenerPublicacionBloques(filters);
-        return { planes: buildPlanes(rows) };
+        const planes = buildPlanes(rows);
+
+        const pgIds = planes
+            .map((p) => p.paralelo?.paraleloGestionId)
+            .filter((id) => id != null && Number(id) > 0);
+        const estadoMap = await this.parallelRepository.obtenerEstadoParaleloGestionPorIds(pgIds);
+
+        for (const plan of planes) {
+            const pgId = plan.paralelo?.paraleloGestionId;
+            if (pgId == null) continue;
+            const estadoRow = estadoMap.get(Number(pgId));
+            if (estadoRow) {
+                plan.paraleloDashboard = mapParaleloDashboardRow(estadoRow);
+            }
+        }
+
+        return { planes };
     }
 }

@@ -83,7 +83,4 @@ export const matriculaRoutes = [
   },
 ];
 
-/** @deprecated usar matriculaRoutes */
-export const inscripcionesRoutes = matriculaRoutes;
-
 export default matriculaRoutes;

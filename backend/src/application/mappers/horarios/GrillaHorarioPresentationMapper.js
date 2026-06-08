@@ -118,6 +118,8 @@ export class GrillaHorarioPresentationMapper {
         docente_id: b.docenteId != null ? Number(b.docenteId) : null,
         oferta_curso_id: Number(b.ofertaCursoId),
         asignatura: b.asignatura ?? null,
+        materia_nombre: b.materiaNombre ?? null,
+        carrera_nombre: b.carreraNombre ?? null,
         docente: (b.docenteNombre || '').replace(/\s+/g, ' ').trim() || null,
         color_hex: b.colorHex ?? null,
         aula_id: aulaId,
