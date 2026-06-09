@@ -1,19 +1,21 @@
 /**
- * Tab color + carga: picker inline (sin card anidada) y tabla resumen de asignaciones.
+ * Toolbar de color del docente (picker + guardar) — usado en el tab Horario semanal.
  */
 import { Flex, Form } from 'antd';
 import { ActionButton } from '@atoms';
 import { FormField } from '@molecules';
 import { DOCENTE_COLOR_FIELD } from '@docentes/config/docenteColorField';
-import DocenteAsignacionesResumenTable from './DocenteAsignacionesResumenTable';
 
-const DocenteAsignacionesColorSection = ({ form, saving, onSave, tabla, gestionLabel }) => (
-  <Flex vertical gap={24} className="docente-asignaciones-color-tab">
-
-    <DocenteAsignacionesResumenTable tabla={tabla} gestionLabel={gestionLabel} />
-
-    <Form form={form} layout="vertical" className="cfg-academico-form docente-asignaciones-color-tab__form">
-      <FormField field={DOCENTE_COLOR_FIELD} form={form} labelLayout="vertical" />
+const DocenteAsignacionesColorSection = ({ form, saving, onSave }) => (
+  <Form form={form} layout="horizontal" className="cfg-academico-form docente-asignaciones-color-tab__form">
+    <Flex
+      justify="flex-end"
+      align="flex-start"
+      gap={16}
+      wrap="wrap"
+      className="docente-asignaciones-color-tab__toolbar"
+    >
+      <FormField field={DOCENTE_COLOR_FIELD} form={form} labelLayout="horizontal" />
       <div className="docente-asignaciones-color-tab__actions">
         <ActionButton
           permiso="docentes.editar"
@@ -25,8 +27,8 @@ const DocenteAsignacionesColorSection = ({ form, saving, onSave, tabla, gestionL
           Guardar color
         </ActionButton>
       </div>
-    </Form>
-  </Flex>
+    </Flex>
+  </Form>
 );
 
 export default DocenteAsignacionesColorSection;

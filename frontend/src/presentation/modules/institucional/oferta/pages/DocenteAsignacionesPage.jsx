@@ -11,8 +11,8 @@ import {
   DOCENTE_ASIGNACIONES_TABS,
 } from '@application-institucional/oferta/config/paths';
 import { DOCENTE_ASIGNACIONES_TAB_PANEL_META } from '@application-institucional/oferta/config/docenteAsignacionesTabPanels';
-import HorariosConflictosPlanSection from '@institucional/horarios/components/organisms/HorariosConflictosPlanSection';
-import DocenteAsignacionesColorSection from '../components/organisms/DocenteAsignacionesColorSection';
+import DocenteAsignacionesHorarioTabSection from '../components/organisms/DocenteAsignacionesHorarioTabSection';
+import DocenteAsignacionesResumenTable from '../components/organisms/DocenteAsignacionesResumenTable';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@presentation/styles/pages/detail-page.css';
 import '@institucional/horarios/styles/gestion-horarios-page.css';
@@ -55,10 +55,7 @@ const DocenteAsignacionesPage = () => {
           </span>
         ),
         children: wrapTabPanel(
-          <DocenteAsignacionesColorSection
-            form={s.form}
-            saving={s.savingColor}
-            onSave={s.handleGuardarColor}
+          <DocenteAsignacionesResumenTable
             tabla={s.tablaAsignaciones}
             gestionLabel={s.gestionLabel}
           />,
@@ -73,16 +70,13 @@ const DocenteAsignacionesPage = () => {
           </span>
         ),
         children: wrapTabPanel(
-          <HorariosConflictosPlanSection
+          <DocenteAsignacionesHorarioTabSection
+            form={s.form}
+            savingColor={s.savingColor}
+            onSaveColor={s.handleGuardarColor}
             schedules={s.schedules}
-            onSchedulesChange={() => { }}
             horarioSlotIndex={s.horarioSlotIndex}
-            editable={false}
-            showSave={false}
             turnoLabel={s.turnoEfectivo}
-            vistaLabel="Horario semanal"
-            vistaHint="Vista de lectura de las asignaciones vigentes en la gestión actual."
-            headerMinimal
           />,
         ),
       },

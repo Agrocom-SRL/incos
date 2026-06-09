@@ -27,9 +27,9 @@ const DocenteAsignacionesResumenTable = ({ tabla, gestionLabel }) => {
   return (
     <div className="docente-asignaciones-resumen">
       <div className="docente-asignaciones-resumen__banner">
-        <Text strong className="docente-asignaciones-resumen__gestion">
+        <Typography.Title level={4} className="docente-asignaciones-resumen__gestion">
           {gestionTitulo}
-        </Text>
+        </Typography.Title>
         <Text type="secondary" className="docente-asignaciones-resumen__subtitulo">
           Horario específico por docente
         </Text>
@@ -39,7 +39,6 @@ const DocenteAsignacionesResumenTable = ({ tabla, gestionLabel }) => {
         <table className="docente-asignaciones-resumen__table">
           <thead>
             <tr>
-              <th>Docente</th>
               <th>Perfil</th>
               <th>Nº de ítem</th>
               <th>Asignatura</th>
@@ -57,9 +56,6 @@ const DocenteAsignacionesResumenTable = ({ tabla, gestionLabel }) => {
                 <tr key={`${row.codigo}-${row.anio}-${idx}`}>
                   {idx === 0 ? (
                     <>
-                      <td rowSpan={filas.length} className="docente-asignaciones-resumen__docente">
-                        {docenteNombre}
-                      </td>
                       <td rowSpan={filas.length}>{perfil}</td>
                       <td rowSpan={filas.length}>{numeroItem}</td>
                     </>
@@ -82,7 +78,7 @@ const DocenteAsignacionesResumenTable = ({ tabla, gestionLabel }) => {
               );
             })}
             <tr className="docente-asignaciones-resumen__totales">
-              <td colSpan={7}>
+              <td colSpan={6}>
                 <Text strong>Totales</Text>
               </td>
               <td className="docente-asignaciones-resumen__num">

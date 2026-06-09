@@ -855,8 +855,33 @@
 }
 
 /* === Asignaciones docente (oferta) === */
+.docente-asignaciones-color-tab__toolbar {
+  width: 100%;
+}
+
+.docente-asignaciones-color-tab__toolbar .form-field {
+  margin-bottom: 0;
+  flex: 0 1 auto;
+}
+
+.docente-asignaciones-color-tab__toolbar .form-field .ant-form-item-row {
+  flex-wrap: nowrap;
+}
+
+.docente-asignaciones-color-tab__toolbar .form-field .ant-form-item-label,
+.docente-asignaciones-color-tab__toolbar .form-field .ant-form-item-control {
+  flex: 0 0 auto;
+  max-width: none;
+}
+
+.docente-asignaciones-color-tab__toolbar .form-field .ant-form-item-label {
+  padding-inline-end: var(--spacing-sm, 8px);
+  white-space: nowrap;
+}
+
 .docente-asignaciones-color-tab__actions {
-  margin-top: var(--spacing-md, 16px);
+  flex-shrink: 0;
+  padding-top: 0;
 }
 
 .docente-asignaciones-resumen__banner {
@@ -890,7 +915,7 @@
 .docente-asignaciones-resumen__table th,
 .docente-asignaciones-resumen__table td {
   border: 1px solid var(--color-border-secondary, #d9dedb);
-  padding: 8px 10px;
+  padding: 14px 8px;
   vertical-align: middle;
 }
 
