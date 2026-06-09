@@ -141,3 +141,8 @@ vite.config.ts.timestamp-*
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Tooling de IA — rastreado solo en la rama development; ignorado en master
+.claude/
+.cursor/
+/CLAUDE.md
