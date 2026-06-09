@@ -2,13 +2,15 @@
  * Cabecera de ficha de matrícula (patrón sd-profile).
  */
 
-import { Tooltip } from 'antd';
+import { Tag, Tooltip } from 'antd';
 import {
   BookOutlined,
+  CheckCircleOutlined,
   DownloadOutlined,
   EditOutlined,
   FileTextOutlined,
 } from '@ant-design/icons';
+import { getSubjectStatusColor } from '@application-inscripciones/utils/inscripcionDetailHelpers';
 
 const InscripcionProfileSummary = ({
   avatarText,
@@ -18,6 +20,10 @@ const InscripcionProfileSummary = ({
   management,
   subjectCount,
   historialEstadoInfo,
+  estadoCursado,
+  puedeActivarCursado,
+  activatingCursado,
+  onActivarCursado,
   puedeEditarInscripcion,
   canEdit,
   onEditar,
@@ -85,11 +91,31 @@ const InscripcionProfileSummary = ({
         <span className="sd-stat__label">Materias</span>
         <span className="sd-stat__value">{subjectCount || 0}</span>
       </div>
+      {estadoCursado ? (
+        <div className="sd-stat">
+          <span className="sd-stat__label">Estado de cursado</span>
+          <span className="sd-stat__value">
+            <Tag color={getSubjectStatusColor(estadoCursado)} style={{ margin: 0 }}>
+              {estadoCursado}
+            </Tag>
+          </span>
+        </div>
+      ) : null}
     </div>
 
     <div className="sd-profile__divider" />
 
     <div className="sd-profile__actions">
+      {puedeActivarCursado ? (
+        <button
+          type="button"
+          className="sd-btn sd-btn--primary"
+          onClick={onActivarCursado}
+          disabled={activatingCursado}
+        >
+          <CheckCircleOutlined /> {activatingCursado ? 'Activando…' : 'Activar cursado'}
+        </button>
+      ) : null}
       {puedeGenerarBoletaPdf ? (
         <button
           type="button"

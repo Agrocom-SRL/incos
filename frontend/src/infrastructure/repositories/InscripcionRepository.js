@@ -244,36 +244,28 @@ export class InscripcionRepository extends IInscripcionRepository {
   }
 
   /**
-   * Cambia el estado activo/inactivo de una inscripción
-   * PATCH /v1/inscripciones/:id/activo
-   * 
-   * TODO: Este endpoint aún no está implementado en el backend
-   * Por ahora retorna un error indicando que no está disponible
-   * 
+   * Activa el cursado de una inscripción: sus matrículas pasan INSCRITO → CURSANDO
+   * y se abren sus bimestres.
+   * PATCH /v1/inscripciones/:id/activar-cursado
+   *
    * @param {string|number} id - ID de la inscripción
-   * @param {boolean} activo - Nuevo estado (true = activo, false = inactivo)
-   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   * @returns {Promise<{success: boolean, data?: Object, error?: string, code?: string}>}
    */
-  async cambiarEstado(id, activo) {
-    try {
-      // Validar que el ID sea válido
-      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
-        return {
-          success: false,
-          error: 'ID de la inscripción es requerido',
-        };
-      }
-
-      // TODO: Cuando el backend implemente PATCH /inscripciones/:id/activo, usar:
-      // const response = await apiClient.patch(`${INSCRIPCIONES_ENDPOINTS.BY_ID(id)}/activo`, { activo });
-      
-      // Por ahora, retornar error indicando que no está disponible
+  async cambiarEstadoCursado(id) {
+    if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
       return {
         success: false,
-        error: 'El endpoint de cambio de estado aún no está implementado en el backend',
+        error: 'ID de la inscripción es requerido',
       };
+    }
+
+    try {
+      const response = await apiClient.patch(INSCRIPCIONES_ENDPOINTS.ACTIVAR_CURSADO(id));
+      return handleSuccessResponse(response);
     } catch (error) {
-      return handleErrorResponse(error, 'Error al cambiar estado de inscripción');
+      const mapped = handleErrorResponse(error, 'Error al activar el cursado de la inscripción');
+      if (error?.response?.data?.code) mapped.code = error.response.data.code;
+      return mapped;
     }
   }
 }

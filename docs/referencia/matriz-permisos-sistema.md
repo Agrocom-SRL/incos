@@ -239,6 +239,7 @@ Fuente: `53-seed-roles.sql`.
 | `inscripciones.routes.js` | GET | `/api/v1/inscripciones/:id` | VER detalle |
 | `inscripciones.routes.js` | PUT | `/api/v1/inscripciones/:id` | EDITAR |
 | `inscripciones.routes.js` | DELETE | `/api/v1/inscripciones/:id` | ELIMINAR |
+| `inscripciones.routes.js` | PATCH | `/api/v1/inscripciones/:id/activar-cursado` | EDITAR (activar cursado) |
 | `inscripciones.routes.js` | POST | `/api/v1/inscripciones/:id/generar-formulario` | CREAR documento (PDF) |
 | `pagos-aportes.routes.js` | GET | `/api/v1/pagos-aportes` | VER listado |
 | `pagos-aportes.routes.js` | GET | `/api/v1/pagos-aportes/estado-registro` | VER estado |
@@ -346,7 +347,15 @@ Endpoint(s): `GET/POST/PUT/DELETE /inscripciones`, `POST /inscripciones/:id/gene
 | VER | Ver matriculas | GET | ADM, REC, DIRA, SECA |
 | CREAR | Registrar matricula | POST | ADM, REC, DIRA, SECA |
 | EDITAR | Editar matricula | PUT | ADM, REC, DIRA, SECA |
+| EDITAR | Activar cursado de una inscripcion (INSCRITO→CURSANDO + bimestres) | PATCH `/inscripciones/:id/activar-cursado` | ADM, REC, DIRA, SECA |
 | ELIMINAR | Eliminar matricula | DELETE | ADM, REC (segun politica), DIRM (si aplica) |
+
+> **Activación del cursado (`matricula.inscripcion.editar` + EDITAR):** el botón "Activar cursado" del
+> detalle (`InscripcionesDetail`) usa `PATCH /inscripciones/:id/activar-cursado`. Misma acción en ruta UI
+> (`/inscripciones/:id` DETALLE para entrar; botón con EDITAR), `ActionButton`/`hasPermiso` y `verificarPermiso`
+> backend. La activación **masiva** por gestión vive en Institucional → Gestión actual (ver INST abajo) y
+> reutiliza `academico.calificacion.gestion_bimestres` + EDITAR. Inscripciones creadas con la gestión ya
+> iniciada nacen en CURSANDO automáticamente.
 
 ### MAT - Becas (`/estudiantes/becas/listar`, `/estudiantes/becas/asignar`)
 Permisos: `matricula.beca.ver`, `matricula.beca.asignar`, `matricula.beca.aprobar`
@@ -439,7 +448,11 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 Permisos: `institucional.*`
 
 Rutas simplificadas vigentes del modulo:
-- `/institucional/actual`
+- `/institucional/actual` — ✅ **Gestión actual** (gestión vigente + estado de cursado). Entrada con
+  `institucional.gestion.actual` (67) + LISTAR. El botón "Activar cursado / Iniciar gestión académica"
+  invoca `POST /calificaciones/gestion-bimestres/iniciar` y se guarda con `academico.calificacion.gestion_bimestres`
+  (20) + EDITAR (coherencia con el backend del endpoint). RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5)
+  tienen ambos en seed 55; ADMIN_SISTEMA por derivación del catálogo. Sin cambios de seed.
 - `/institucional/cronogramas`
 - `/institucional/oferta` (wizard oferta; redirect desde `/institucional/oferta-academica`)
 - `/institucional/horarios`

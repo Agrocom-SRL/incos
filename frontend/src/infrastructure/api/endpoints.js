@@ -312,6 +312,8 @@ export const INSCRIPCIONES_ENDPOINTS = {
   GENERATE_FORMULARIO: (studentId) => `${API_BASE}/inscripciones/${studentId}/generar-formulario`,
   HISTORIAL_PREVIO: (inscripcionId) =>
     `${API_BASE}/inscripciones/${encodeURIComponent(String(inscripcionId))}/historial-previo`,
+  ACTIVAR_CURSADO: (inscripcionId) =>
+    `${API_BASE}/inscripciones/${encodeURIComponent(String(inscripcionId))}/activar-cursado`,
 };
 
 // ============================================

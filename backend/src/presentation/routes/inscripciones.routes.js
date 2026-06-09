@@ -120,6 +120,19 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
     );
 
     /**
+     * PATCH /api/v1/inscripciones/:id/activar-cursado
+     * Activa el cursado de la inscripción: sus matrículas pasan INSCRITO → CURSANDO
+     * y se abren sus bimestres. Idempotente.
+     */
+    router.patch(
+        '/:id/activar-cursado',
+        ...editarInscripcion,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.activarCursadoMatriculaController.handle(req, res, next)
+    );
+
+    /**
      * PUT /api/v1/inscripciones/:id
      * Actualizar inscripción (observaciones, fecha; TODO: paralelo/materias)
      */
