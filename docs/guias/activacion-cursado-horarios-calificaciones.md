@@ -217,10 +217,17 @@ de la gestión vigente. Repos relevantes: `AcademicPeriodRepository`,
 
 ---
 
-## 6. ⚠️ Brecha crítica antes de activar el cursado
+## 6. ⚠️ Brecha crítica antes de activar el cursado — ✅ RESUELTA (2026-06)
 
-El SQL **crudo** de `GestionBimestresRepository.js` quedó escrito contra el
-esquema **viejo** y referencia una columna que **ya no existe**:
+> **Estado:** corregido. Se eliminaron todas las referencias a
+> `mm.asignacion_docente_id` en `GestionBimestresRepository.js` (4 sitios) y
+> `CuadernoRepository.js` (6 sitios). Verificado: `grep` sin coincidencias +
+> `node --check` OK. Se aplicaron dos puentes según la intención de cada query:
+> - **Filtrar por gestión** (GestionBimestres): `oferta_cursos → paralelos_gestion → gestiones_planes` (1:1, sin fan-out).
+> - **Alumnos de un curso (asignación docente)** (Cuaderno): `ad.oferta_curso_id = mm.oferta_curso_id` con `WHERE ad.id = ?`, o subconsulta escalar `mm.oferta_curso_id = (SELECT oferta_curso_id FROM asignaciones_docentes WHERE id = ?)` en los INSERT para no arrastrar fan-out.
+
+El SQL **crudo** estaba escrito contra el esquema **viejo** y referenciaba una
+columna que **ya no existe**:
 
 ```sql
 -- En GestionBimestresRepository.js (líneas 19, 111, 137, 360, y COUNT en 53, 279)
@@ -254,7 +261,7 @@ Revisar de la misma forma cualquier otro SQL crudo que toque
 
 | # | Tarea | Estado hoy | Dónde |
 |---|---|---|---|
-| 1 | Corregir puente `mm.asignacion_docente_id` → `oferta_curso_id` (vigente) | ❌ pendiente (bloqueante) | `GestionBimestresRepository.js` y similares |
+| 1 | Corregir puente `mm.asignacion_docente_id` → `oferta_curso_id` | ✅ hecho (2026-06) | `GestionBimestresRepository.js` (4), `CuadernoRepository.js` (6) |
 | 2 | Cablear UI “Iniciar gestión académica” al método ya existente | ❌ falta UI | módulo calificaciones / gestión-bimestres |
 | 3 | (Opcional) Use case de transición de estado por estudiante (`CambiarEstadoMatriculaUseCase`) + `PATCH /inscripciones/:id/...` | ❌ no existe | use-cases/inscripciones |
 | 4 | Endpoint “horario del estudiante” (query sección 4) | ❌ solo existe por paralelo | nuevo use case + ruta |

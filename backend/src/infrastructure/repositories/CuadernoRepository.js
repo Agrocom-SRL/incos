@@ -159,7 +159,10 @@ export class CuadernoRepository {
         AND eda.deleted_at IS NULL AND eda.activo = TRUE
       INNER JOIN estudiantes est ON est.id = eda.estudiante_id
         AND est.deleted_at IS NULL AND est.activo = TRUE
-      WHERE mm.asignacion_docente_id = ?
+      WHERE mm.oferta_curso_id = (
+          SELECT oferta_curso_id FROM asignaciones_docentes
+          WHERE id = ? AND deleted_at IS NULL
+        )
         AND est.id = ?
         AND mm.estado IN ('INSCRITO', 'CURSANDO')
         AND mm.deleted_at IS NULL
@@ -216,7 +219,10 @@ export class CuadernoRepository {
         ON bm.matricula_materia_id = mm.id
         AND bm.bimestre = nums.n
         AND bm.deleted_at IS NULL
-      WHERE mm.asignacion_docente_id = ?
+      WHERE mm.oferta_curso_id = (
+          SELECT oferta_curso_id FROM asignaciones_docentes
+          WHERE id = ? AND deleted_at IS NULL
+        )
         AND mm.estado IN ('INSCRITO', 'CURSANDO')
         AND mm.deleted_at IS NULL
         AND mm.activo = TRUE
@@ -334,13 +340,13 @@ export class CuadernoRepository {
       INNER JOIN matriculas_materia mm
         ON mm.id = bm.matricula_materia_id
         AND mm.deleted_at IS NULL AND mm.activo = TRUE
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
+      INNER JOIN asignaciones_docentes ad ON ad.oferta_curso_id = mm.oferta_curso_id
         AND ad.deleted_at IS NULL AND ad.activo = TRUE
       LEFT JOIN vista_base_cuaderno_nota_celda nc
         ON nc.bimestre_matricula_id = bm.id
         AND nc.asignacion_docente_id = ad.id
         AND nc.nota IS NOT NULL
-      WHERE mm.asignacion_docente_id = ?
+      WHERE ad.id = ?
         AND bm.bimestre = ?
         AND bm.deleted_at IS NULL
         AND bm.activo = TRUE
@@ -451,9 +457,9 @@ export class CuadernoRepository {
       FROM bimestres_matricula bm
       INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
         AND mm.deleted_at IS NULL AND mm.activo = TRUE
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
+      INNER JOIN asignaciones_docentes ad ON ad.oferta_curso_id = mm.oferta_curso_id
         AND ad.deleted_at IS NULL AND ad.activo = TRUE
-      WHERE mm.asignacion_docente_id = ?
+      WHERE ad.id = ?
         AND bm.bimestre = ?
         AND bm.deleted_at IS NULL
         AND bm.activo = TRUE

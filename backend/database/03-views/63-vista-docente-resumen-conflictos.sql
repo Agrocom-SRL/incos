@@ -10,8 +10,8 @@
 -- Reutiliza sub-vistas base:
 -- - vista_base_docente_carga_resumen (59)
 -- - vista_base_docente_conflicto_curso (60)
--- - vista_base_docente_conflicto_horario (61)
--- - vista_base_docente_conflicto_aula (62)
+-- - vista_base_docente_conflicto_horario (61, derivada del primitivo 36)
+-- - vista_base_docente_conflicto_aula_slot (62, primitivo de cruce de aula)
 -- ============================================
 
 USE instituto_incos;
@@ -31,5 +31,11 @@ FROM docentes d
 LEFT JOIN vista_base_docente_carga_resumen carga ON carga.docente_id = d.id
 LEFT JOIN vista_base_docente_conflicto_curso curso ON curso.docente_id = d.id
 LEFT JOIN vista_base_docente_conflicto_horario horario ON horario.docente_id = d.id
-LEFT JOIN vista_base_docente_conflicto_aula aula ON aula.docente_id = d.id
+LEFT JOIN (
+  SELECT
+    docente_id,
+    COUNT(DISTINCT CONCAT(aula_id, ':', horario_id)) AS aula_conflictos
+  FROM vista_base_docente_conflicto_aula_slot
+  GROUP BY docente_id
+) aula ON aula.docente_id = d.id
 WHERE d.deleted_at IS NULL;
