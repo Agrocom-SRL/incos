@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useGestionesCatalogApi } from '@application-shared/hooks';
 import { useOfertaAcademicaApi } from '@application-institucional/oferta';
 import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/hooks';
@@ -53,6 +53,7 @@ function pickParaleloGestionEstado(row) {
 
 export const useGestionHorariosArmadoState = (notification) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { fetchParaleloGestionDetalleSilent } = useOfertaAcademicaApi();
     const [searchParams, setSearchParams] = useSearchParams();
     const paraleloId = searchParams.get('paralelo');
@@ -453,8 +454,17 @@ export const useGestionHorariosArmadoState = (notification) => {
     );
 
     const handleVolver = useCallback(() => {
-        navigate('/institucional/horarios');
-    }, [navigate]);
+        const returnPath = location.state?.returnListPath;
+        const target =
+            typeof returnPath === 'string' && returnPath.trim()
+                ? returnPath.trim()
+                : '/institucional/horarios';
+        navigate(target, {
+            state: location.state?.menuSidebarKey
+                ? { menuSidebarKey: location.state.menuSidebarKey }
+                : undefined,
+        });
+    }, [navigate, location.state]);
 
     const persistDraftSchedules = useCallback(
         async (nextDraft, { coberturaReajuste = false } = {}) => {

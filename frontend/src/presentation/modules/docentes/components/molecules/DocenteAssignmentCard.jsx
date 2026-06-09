@@ -1,18 +1,32 @@
 /**
- * Tarjeta compacta de una asignación curso/materia/paralelo (carga académica).
+ * Tarjeta de asignación docente — patrón cobertura horarios (Card atómico + meta).
  */
 
-import { Tag } from 'antd';
+import { Flex, Typography } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { ActionButton } from '@atoms';
+import { Card, ActionButton, StatusPill } from '@atoms';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 
-const vigenteColor = (v) => (v ? 'success' : 'default');
+const { Text } = Typography;
 
-const DocenteAssignmentCard = ({ assignment: a, showActions = false, onEdit = null, onDelete = null }) => {
-  const curso = sanitizeDocenteColorHex(a.cursoColorHex);
-  const carrera = sanitizeDocenteColorHex(a.carreraColorHex);
-  const accent = curso || carrera;
+const MetaLine = ({ label, value }) => {
+  if (value == null || value === '' || value === '—') return null;
+  return (
+    <Text type="secondary">
+      {label}: <Text strong>{value}</Text>
+    </Text>
+  );
+};
+
+const DocenteAssignmentCard = ({
+  assignment: a,
+  showActions = false,
+  onEdit = null,
+  onDelete = null,
+}) => {
+  const titulo = a.materia || a.siglaMateria || 'Materia sin nombre';
+  const accent =
+    sanitizeDocenteColorHex(a.cursoColorHex) || sanitizeDocenteColorHex(a.carreraColorHex);
   const conflictos = a?.conflictos || {};
   const hasConflictos = Boolean(conflictos.hasConflictos) || Number(conflictos.total) > 0;
   const conflictResumen = [
@@ -23,95 +37,80 @@ const DocenteAssignmentCard = ({ assignment: a, showActions = false, onEdit = nu
     .filter(Boolean)
     .join(' · ');
 
+  const cargaHoraria =
+    a.cargaHorariaSemanal != null
+      ? `${a.cargaHorariaSemanal} h/semana`
+      : a.horasPlanMateria != null
+        ? `${a.horasPlanMateria} h/semana (plan)`
+        : null;
+
+  const statusPill = hasConflictos ? (
+    <StatusPill label="Conflicto" className="cfg-materia-pill cfg-materia-pill--inactiva" />
+  ) : a.vigente ? (
+    <StatusPill label="Vigente" className="cfg-materia-pill cfg-materia-pill--activa" />
+  ) : (
+    <StatusPill label="No vigente" className="cfg-materia-pill cfg-materia-pill--default" />
+  );
+
+  const cardExtra = (
+    <Flex align="center" gap={8} wrap="wrap" justify="flex-end">
+      {showActions && (onEdit || onDelete) ? (
+        <>
+          {onEdit ? (
+            <ActionButton
+              permiso="docentes.asignar"
+              accion="EDITAR"
+              size="small"
+              variant="warning"
+              icon={<EditOutlined />}
+              onClick={() => onEdit?.(a)}
+              title="Editar asignación"
+            />
+          ) : null}
+          {onDelete ? (
+            <ActionButton
+              permiso="docentes.asignar"
+              accion="ELIMINAR"
+              size="small"
+              variant="error"
+              icon={<DeleteOutlined />}
+              onClick={() => onDelete?.(a)}
+              title="Dar de baja asignación"
+            />
+          ) : null}
+        </>
+      ) : null}
+      {statusPill}
+    </Flex>
+  );
+
   return (
-    <article
-      className={`da-carga__card${hasConflictos ? ' da-carga__card--conflict' : ''}`}
-      style={accent ? { borderLeft: `4px solid ${accent}` } : undefined}
+    <Card
+      variant="default"
+      shadow
+      headerColor="primary"
+      headerAccentHex={accent}
+      title={titulo}
+      extra={cardExtra}
+      className={hasConflictos ? 'docente-asignacion-card--conflict' : undefined}
     >
-      <div className="da-carga__card-head">
-        <span
-          className="da-carga__sigla"
-          aria-hidden
-          style={
-            accent
-              ? {
-                  background: accent,
-                  boxShadow: `0 2px 8px ${accent}66`,
-                }
-              : undefined
-          }
-        >
-          {(a.siglaMateria || '—').slice(0, 6)}
-        </span>
-        <div>
-          <p className="da-carga__materia-name">{a.materia || '—'}</p>
-        </div>
-        {showActions && (onEdit || onDelete) ? (
-          <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 6 }}>
-            {onEdit ? (
-              <ActionButton
-                permiso="docentes.asignar"
-                accion="EDITAR"
-                size="small"
-                variant="warning"
-                icon={<EditOutlined />}
-                onClick={() => onEdit?.(a)}
-                title="Editar asignación"
-              />
-            ) : null}
-            {onDelete ? (
-              <ActionButton
-                permiso="docentes.asignar"
-                accion="ELIMINAR"
-                size="small"
-                variant="error"
-                icon={<DeleteOutlined />}
-                onClick={() => onDelete?.(a)}
-                title="Dar de baja asignación"
-              />
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-      <div className="da-carga__meta">
+      <Flex vertical gap={6}>
+        <MetaLine label="Sigla" value={a.siglaMateria} />
+        <MetaLine label="Paralelo" value={a.paralelo} />
+        <MetaLine label="Turno" value={a.turnoParalelo} />
+        <MetaLine label="Carga horaria" value={cargaHoraria} />
+        <MetaLine label="Gestión" value={a.gestion} />
+        <MetaLine label="Plan habilitado" value={a.planHabilitado} />
+        <MetaLine label="Oferta" value={a.cursoCodigo} />
+        <MetaLine label="Asignación" value={a.fechaAsignacion} />
         {hasConflictos ? (
-          <div className="da-carga__row da-carga__row--conflict">
-            <span className="da-carga__row-label">Conflicto</span>
-            <span className="da-carga__row-val">
-              <Tag color="error" style={{ margin: 0 }}>
-                {conflictResumen || 'Revisar asignación'}
-              </Tag>
-            </span>
-          </div>
+          <Text type="danger">
+            Conflicto detectado
+            {conflictResumen ? `: ${conflictResumen}` : ''}
+          </Text>
         ) : null}
-        <div className="da-carga__row">
-          <span className="da-carga__row-label">Paralelo</span>
-          <span className="da-carga__row-val">{a.paralelo || '—'}</span>
-        </div>
-        <div className="da-carga__row">
-          <span className="da-carga__row-label">Turno</span>
-          <span className="da-carga__row-val">{a.turnoParalelo || '—'}</span>
-        </div>
-        <div className="da-carga__row">
-          <span className="da-carga__row-label">Horas / sem.</span>
-          <span className="da-carga__row-val">{a.cargaHorariaSemanal ?? '—'}</span>
-        </div>
-        <div className="da-carga__row">
-          <span className="da-carga__row-label">Vigente</span>
-          <span className="da-carga__row-val">
-            <Tag color={vigenteColor(a.vigente)} style={{ margin: 0 }}>
-              {a.vigente ? 'Sí' : 'No'}
-            </Tag>
-          </span>
-        </div>
-        {a.fechaAsignacion ? (
-          <div className="da-carga__row">
-            <span className="da-carga__row-label">Asignación</span>
-            <span className="da-carga__row-val">{a.fechaAsignacion}</span>
-          </div>
-        ) : null}
-      </div>
-    </article>
+      </Flex>
+    </Card>
   );
 };
 

@@ -44,6 +44,8 @@ import { ResetNotasEvaluacionCuadernoController } from '../../../../presentation
 import { GuardarNotasCuadernoBimestreController } from '../../../../presentation/controllers/academico/calificaciones/guardar-notas-cuaderno-bimestre.controller.js';
 import { GetBimestreConsolidadoController } from '../../../../presentation/controllers/academico/calificaciones/get-bimestre-consolidado.controller.js';
 import { GuardarBimestreConsolidadoController } from '../../../../presentation/controllers/academico/calificaciones/guardar-bimestre-consolidado.controller.js';
+import { ExportRegistroPedagogicoBimestreUseCase } from '../../../../application/use-cases/academico/ExportRegistroPedagogicoBimestreUseCase.js';
+import { ExportRegistroPedagogicoBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-registro-pedagogico-bimestre.controller.js';
 import { buildCalificacionesRouter } from '../../../../presentation/routes/calificaciones.routes.js';
 
 export function registerCalificacionesResource(container) {
@@ -556,6 +558,33 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.exportRegistroPedagogicoBimestreUseCase,
+    (c) =>
+      new ExportRegistroPedagogicoBimestreUseCase({
+        calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportRegistroPedagogicoBimestreController,
+    (c) =>
+      new ExportRegistroPedagogicoBimestreController({
+        exportRegistroPedagogicoBimestreUseCase: c.resolve(
+          ACADEMICO_TOKENS.exportRegistroPedagogicoBimestreUseCase,
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController,
     (c) =>
       new ListCoordinacionCalificacionesDocentesController({
@@ -610,6 +639,9 @@ export function registerCalificacionesResource(container) {
       getBimestreConsolidadoController: c.resolve(ACADEMICO_TOKENS.getBimestreConsolidadoController),
       guardarBimestreConsolidadoController: c.resolve(
         ACADEMICO_TOKENS.guardarBimestreConsolidadoController,
+      ),
+      exportRegistroPedagogicoBimestreController: c.resolve(
+        ACADEMICO_TOKENS.exportRegistroPedagogicoBimestreController,
       ),
     };
     const middlewares = {

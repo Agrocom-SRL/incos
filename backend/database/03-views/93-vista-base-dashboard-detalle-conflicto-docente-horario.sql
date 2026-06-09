@@ -1,6 +1,9 @@
 -- ============================================
 -- VISTA BASE: vista_base_dashboard_detalle_conflicto_docente_horario
 -- Detalle de conflicto de horario por docente (misma franja, dos asignaciones).
+--
+-- DERIVADA del primitivo 36 (vista_base_docente_conflicto_horario_par), que ya
+-- identifica el bloque exacto en choque. Antes reescribía el self-join inline.
 -- ============================================
 
 USE instituto_incos;
@@ -34,9 +37,9 @@ SELECT DISTINCT
       ELSE ''
     END
   ) AS detalle_linea
-FROM vista_base_docente_asignacion_conflicto_horario conf
+FROM vista_base_docente_conflicto_horario_par par
 INNER JOIN asignaciones_docentes ad
-  ON ad.id = conf.asignacion_docente_id
+  ON ad.id = par.asignacion_docente_id_a
   AND ad.deleted_at IS NULL AND ad.activo = TRUE AND ad.vigente = TRUE
 INNER JOIN docentes d
   ON d.id = ad.docente_id
@@ -46,37 +49,11 @@ INNER JOIN oferta_cursos oc
   AND oc.deleted_at IS NULL AND oc.activo = TRUE
 INNER JOIN asignacion_horarios ah
   ON ah.asignacion_docente_id = ad.id
+  AND ah.horario_id = par.horario_id
   AND ah.deleted_at IS NULL AND ah.activo = TRUE
 INNER JOIN horarios h
   ON h.id = ah.horario_id
   AND h.deleted_at IS NULL AND h.activo = TRUE
-INNER JOIN (
-  SELECT DISTINCT
-    ad1.docente_id,
-    ah1.horario_id
-  FROM asignaciones_docentes ad1
-  INNER JOIN asignacion_horarios ah1
-    ON ah1.asignacion_docente_id = ad1.id
-    AND ah1.deleted_at IS NULL
-    AND ah1.activo = TRUE
-  INNER JOIN asignaciones_docentes ad2
-    ON ad2.docente_id = ad1.docente_id
-    AND ad2.id <> ad1.id
-    AND ad2.deleted_at IS NULL
-    AND ad2.activo = TRUE
-    AND ad2.vigente = TRUE
-  INNER JOIN asignacion_horarios ah2
-    ON ah2.asignacion_docente_id = ad2.id
-    AND ah2.deleted_at IS NULL
-    AND ah2.activo = TRUE
-    AND ah2.horario_id = ah1.horario_id
-  WHERE ad1.deleted_at IS NULL
-    AND ad1.activo = TRUE
-    AND ad1.vigente = TRUE
-    AND ad1.docente_id IS NOT NULL
-) choque
-  ON choque.docente_id = ad.docente_id
-  AND choque.horario_id = ah.horario_id
 INNER JOIN paralelos_gestion pg
   ON pg.id = oc.paralelo_gestion_id
   AND pg.deleted_at IS NULL

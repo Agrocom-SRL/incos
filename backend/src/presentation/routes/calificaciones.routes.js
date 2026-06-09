@@ -225,6 +225,20 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.getCuadernoBimestreController.handle(req, res, next),
   );
 
+  const cuadernoExportar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.cuaderno', 'EXPORTAR'),
+  ];
+
+  router.get(
+    '/asignaciones/:asignacionId/bimestre/:bimestre/export/registro-pedagogico',
+    ...cuadernoExportar,
+    getBimestreConsolidadoValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.exportRegistroPedagogicoBimestreController.handle(req, res, next),
+  );
+
   router.get(
     '/asignaciones/:asignacionId/bimestre/:bimestre/consolidado',
     ...cuadernoListar,

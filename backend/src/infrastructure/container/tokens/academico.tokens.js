@@ -43,6 +43,7 @@ export const ACADEMICO_TOKENS = {
     guardarNotasCuadernoBimestreUseCase: 'academico.guardarNotasCuadernoBimestreUseCase',
     getBimestreConsolidadoUseCase: 'academico.getBimestreConsolidadoUseCase',
     guardarBimestreConsolidadoUseCase: 'academico.guardarBimestreConsolidadoUseCase',
+    exportRegistroPedagogicoBimestreUseCase: 'academico.exportRegistroPedagogicoBimestreUseCase',
 
     // CONTROLLERS
     listParalelosController: 'academico.listParalelosController',
@@ -79,6 +80,7 @@ export const ACADEMICO_TOKENS = {
     guardarNotasCuadernoBimestreController: 'academico.guardarNotasCuadernoBimestreController',
     getBimestreConsolidadoController: 'academico.getBimestreConsolidadoController',
     guardarBimestreConsolidadoController: 'academico.guardarBimestreConsolidadoController',
+    exportRegistroPedagogicoBimestreController: 'academico.exportRegistroPedagogicoBimestreController',
 
     marcarGestionVigenteUseCase: 'academico.marcarGestionVigenteUseCase',
     listPlanesHabilitadosByGestionUseCase: 'academico.listPlanesHabilitadosByGestionUseCase',

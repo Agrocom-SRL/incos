@@ -27,6 +27,9 @@ const OfertaGestionPlanesConnector = lazy(
 const OfertaParaleloDetalleConnector = lazy(
   () => import('@institucional/oferta/connectors/OfertaParaleloDetalleConnector'),
 );
+const DocenteAsignacionesConnector = lazy(
+  () => import('@institucional/oferta/connectors/DocenteAsignacionesConnector'),
+);
 
 /** Ruta legacy …/planes/:gestionPlanId/paralelos → resumen por tabs (?plan=). */
 function OfertaParalelosLegacyRedirect() {
@@ -67,6 +70,15 @@ export const ofertaRoutes = [
     key: 'INST-OFERTA-PARALELO-DETALLE',
     permiso: 'institucional.oferta.paralelo-gestion',
     accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
+  {
+    path: '/institucional/oferta/docente/:docenteId/asignaciones',
+    element: <DocenteAsignacionesConnector />,
+    key: 'INST-OFERTA-DOCENTE-ASIGNACIONES',
+    permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+    accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'INST-OFERTA-ACADEMICA',
   },

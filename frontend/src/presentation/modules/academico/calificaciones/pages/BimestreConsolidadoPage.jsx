@@ -5,13 +5,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Spin, Switch } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, FileExcelOutlined, SaveOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { BackButton } from '@atoms';
+import { BackButton, ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useAcciones } from '@application-shared/hooks';
 import { useBimestreConsolidado } from '@application-academico/calificaciones/hooks/useBimestreConsolidado.js';
+import { useExportRegistroPedagogicoExcel } from '@application-academico/calificaciones/hooks/useExportRegistroPedagogicoExcel.js';
 import { useBimestrePagerTeclado } from '@application-academico/calificaciones/hooks/useBimestrePagerTeclado.js';
 import { useNavegacionBimestres } from '@application-academico/calificaciones/hooks/useNavegacionBimestres.js';
 import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
@@ -66,6 +67,19 @@ const BimestreConsolidadoPage = () => {
     esVistaCoordinacion,
     guardarConsolidado,
   } = useBimestreConsolidado();
+
+  const { exportar: exportarRegistroPedagogico, loading: exportandoExcel } =
+    useExportRegistroPedagogicoExcel();
+
+  const handleExportarRegistro = useCallback(async () => {
+    const result = await exportarRegistroPedagogico(cursoId, bimestreActivo);
+    if (!result.success) {
+      notification.error({
+        title: 'No se pudo exportar',
+        description: result.error || 'Reintentá en unos segundos.',
+      });
+    }
+  }, [exportarRegistroPedagogico, cursoId, bimestreActivo, notification]);
 
   const navegacionBimestres = useNavegacionBimestres(cursoId, bimestreActivo, bimestreVigente);
   useBimestrePagerTeclado({
@@ -203,13 +217,26 @@ const BimestreConsolidadoPage = () => {
       title={tituloHeader}
       breadcrumbItems={breadcrumbItems}
       actions={
-        <BackButton
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(volverPath)}
-          aria-label="Volver al registro académico"
-        >
-          Volver
-        </BackButton>
+        <Flex gap={8} wrap="wrap">
+          <ActionButton
+            permiso={CALIFICACIONES_PERMISOS.cuaderno}
+            accion="EXPORTAR"
+            variant="info"
+            icon={<FileExcelOutlined />}
+            loading={exportandoExcel}
+            disabled={isLoading || estudiantes.length === 0}
+            onClick={handleExportarRegistro}
+          >
+            Registro pedagógico
+          </ActionButton>
+          <BackButton
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(volverPath)}
+            aria-label="Volver al registro académico"
+          >
+            Volver
+          </BackButton>
+        </Flex>
       }
     />
   );

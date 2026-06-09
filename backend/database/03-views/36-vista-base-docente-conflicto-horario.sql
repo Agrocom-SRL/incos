@@ -3,7 +3,16 @@
 -- Pares de bloques (asignacion_horarios) del mismo docente en el mismo horario_id,
 -- dentro de una gestión académica. Consumidor: grilla de resolución de conflictos.
 --
--- Requiere: 65-vista-base-docente-asignacion-conflicto-horario.sql (misma lógica de choque).
+-- PRIMITIVO CANÓNICO del choque de horario del mismo docente. Define UNA sola vez
+-- el self-join (mismo docente · mismo horario_id · 2 asignaciones distintas). Las
+-- vistas derivadas reutilizan este primitivo en lugar de reescribir el predicado:
+--   - 52  vista_base_docente_bloque_conflicto_horario   (bloques en par)
+--   - 61  vista_base_docente_conflicto_horario          (conteo por docente)
+--   - 65  vista_base_docente_asignacion_conflicto_horario (flag por asignación)
+--   - 79  vista_base_horarios_paralelo_docente_choque_horario (paralelo_gestion)
+--   - 91  vista_base_cursos_choque_docente_horario_por_paralelo
+--   - 93  vista_base_dashboard_detalle_conflicto_docente_horario (detalle)
+-- Por eso expone también ids _a/_b de asignación, oferta y paralelo.
 -- ============================================
 
 USE instituto_incos;
@@ -14,6 +23,12 @@ CREATE VIEW vista_base_docente_conflicto_horario_par AS
 SELECT DISTINCT
   ad2.docente_id AS docente_id,
   gp2.gestion_id AS gestion_id,
+  ad2.id AS asignacion_docente_id_a,
+  ad3.id AS asignacion_docente_id_b,
+  oc2.id AS oferta_curso_id_a,
+  oc3.id AS oferta_curso_id_b,
+  pg2.paralelo_id AS paralelo_id_a,
+  pg3.paralelo_id AS paralelo_id_b,
   ah2.id AS bloque_a_id,
   ah3.id AS bloque_b_id,
   h.id AS horario_id,

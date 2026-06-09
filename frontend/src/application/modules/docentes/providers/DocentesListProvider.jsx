@@ -26,7 +26,7 @@ export const DocentesListProvider = ({ children }) => {
         page,
         limit,
         search: search || undefined,
-        incluir_estadisticas: 'false',
+        incluir_estadisticas: 'true',
       },
     }),
   });

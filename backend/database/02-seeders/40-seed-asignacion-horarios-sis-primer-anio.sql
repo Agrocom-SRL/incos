@@ -24,21 +24,21 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- asignacion_docente_id = 1
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES
-(9, 1, 43, 1),
-(10, 1, 44, 2),
-(11, 1, 45, 3),
-(12, 1, 48, 4);
+(1, 1, 43, 1),
+(2, 1, 44, 2),
+(3, 1, 45, 3),
+(4, 1, 48, 4);
 
 -- asignacion_docente_id = 2
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES
-(1, 2, 36, 1),
-(2, 2, 37, 2),
-(3, 2, 38, 3),
-(4, 2, 39, 4),
-(5, 2, 40, 5),
-(6, 2, 49, 6),
-(7, 2, 50, 7),
-(8, 2, 60, 8);
+(5, 2, 36, 1),
+(6, 2, 37, 2),
+(7, 2, 38, 3),
+(8, 2, 39, 4),
+(9, 2, 40, 5),
+(10, 2, 49, 6),
+(11, 2, 50, 7),
+(12, 2, 60, 8);
 
 -- asignacion_docente_id = 3
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES
@@ -75,21 +75,21 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_se
 
 -- asignacion_docente_id = 8
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES
-(39, 8, 39, 1),
-(40, 8, 40, 2),
-(41, 8, 49, 3),
-(42, 8, 50, 4);
+(31, 8, 39, 1),
+(32, 8, 40, 2),
+(33, 8, 49, 3),
+(34, 8, 50, 4);
 
 -- asignacion_docente_id = 9
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES
-(31, 9, 33, 1),
-(32, 9, 34, 2),
-(33, 9, 35, 3),
-(34, 9, 46, 4),
-(35, 9, 47, 5),
-(36, 9, 48, 6),
-(37, 9, 54, 7),
-(38, 9, 55, 8);
+(35, 9, 33, 1),
+(36, 9, 34, 2),
+(37, 9, 35, 3),
+(38, 9, 46, 4),
+(39, 9, 47, 5),
+(40, 9, 48, 6),
+(41, 9, 54, 7),
+(42, 9, 55, 8);
 
 -- asignacion_docente_id = 10
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES

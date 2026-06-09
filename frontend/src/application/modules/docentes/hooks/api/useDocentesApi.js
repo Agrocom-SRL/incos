@@ -22,7 +22,7 @@ export const docentesListFetchParams = (overrides = {}) => ({
   params: {
     page: DEFAULT_LIST_PAGE,
     limit: DEFAULT_LIST_LIMIT,
-    incluir_estadisticas: 'false',
+    incluir_estadisticas: 'true',
     ...overrides,
   },
 });

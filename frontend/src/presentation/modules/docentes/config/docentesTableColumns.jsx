@@ -10,8 +10,10 @@ import {
   MailOutlined,
   PhoneOutlined,
   ReadOutlined,
+  ScheduleOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import { ofertaPaths } from '@application-institucional/oferta/config/paths';
 import IdentidadCelda from '@atoms/IdentidadCelda';
 import { TableActions } from '@molecules';
 import DocenteReferenciaCell from '@docentes/components/atoms/DocenteReferenciaCell';
@@ -115,7 +117,7 @@ export const createDocentesTableColumns = ({ navigate, listNavState, refetch, de
     {
       title: 'Acciones',
       key: 'acciones',
-      width: 140,
+      width: 180,
       align: 'right',
       render: (_, record) => {
         const nombreCompleto = getNombreCompleto(record);
@@ -163,6 +165,22 @@ export const createDocentesTableColumns = ({ navigate, listNavState, refetch, de
             }
             extraActions={[
               {
+                key: 'asignaciones',
+                icon: <ScheduleOutlined />,
+                variant: 'alternative',
+                tooltip: 'Ver asignaciones',
+                permiso: 'docentes.ver',
+                accion: 'LISTAR',
+                onClick: () =>
+                  navigate(ofertaPaths.docenteAsignaciones(record.id), {
+                    state: {
+                      ...listNavState,
+                      menuSidebarKey: 'INST-OFERTA-ACADEMICA',
+                    },
+                  }),
+              },
+              {
+                key: 'oferta',
                 icon: <ApartmentOutlined />,
                 variant: 'default',
                 tooltip: 'Oferta y asignación docente',

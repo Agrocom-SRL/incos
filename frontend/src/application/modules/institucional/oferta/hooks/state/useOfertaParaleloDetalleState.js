@@ -343,8 +343,14 @@ export function useOfertaParaleloDetalleState() {
   );
 
   const navigateHorariosArmado = useCallback(
-    () => navigate(buildHorariosArmadoUrl(paraleloGestionId, { tab: 'plan' })),
-    [navigate, paraleloGestionId]
+    () =>
+      navigate(buildHorariosArmadoUrl(paraleloGestionId, { tab: 'vista' }), {
+        state: {
+          returnListPath: ofertaPaths.paraleloDetalle(paraleloGestionId),
+          menuSidebarKey: location.state?.menuSidebarKey ?? 'INST-OFERTA-ACADEMICA',
+        },
+      }),
+    [navigate, paraleloGestionId, location.state?.menuSidebarKey],
   );
 
   const pageTitle = 'Oferta del paralelo';

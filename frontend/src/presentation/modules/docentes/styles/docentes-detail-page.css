@@ -1,0 +1,44 @@
+/**
+ * Ficha docente — grilla de asignaciones (patrón cobertura horarios).
+ */
+
+.docente-asignaciones-cobertura {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  grid-column: 1 / -1;
+}
+
+.docente-asignaciones-cobertura__carrera-title {
+  margin: 0 0 8px;
+  font-size: var(--font-size-md, 15px);
+  font-weight: 700;
+  color: var(--primary-dark, var(--ant-color-primary-active));
+  letter-spacing: 0.02em;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ant-color-primary-border, rgba(25, 107, 69, 0.22));
+}
+
+.docente-asignaciones-cobertura__carrera-title--tinted {
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 10px);
+  padding-bottom: 10px;
+  letter-spacing: 0.03em;
+}
+
+.docente-asignaciones-cobertura__periodo {
+  margin-bottom: 4px;
+}
+
+.docente-asignaciones-cobertura__periodo-label {
+  font-size: var(--font-size-sm, 12.5px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.55px;
+  color: var(--text-500, var(--ant-color-text-secondary));
+  margin: 10px 0 8px;
+}
+
+.docente-asignacion-card--conflict .card {
+  box-shadow: 0 0 0 1px var(--ant-color-error-border, rgba(255, 77, 79, 0.45));
+}

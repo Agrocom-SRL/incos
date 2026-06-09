@@ -1,7 +1,26 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-05-27
+## Ultima actualizacion: 2026-06-09
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+> **IMPORTANTE (renumeracion):** Tras el sync de schema, la fuente unica de IDs de permiso es
+> `54-seed-permisos.sql` (**111 permisos**, orden por modulo MAT→ACA→DOC→FIN→INST→CFG→REP→SEG→SYS).
+> Algunos IDs citados inline mas abajo pueden estar desfasados; el RBAC en runtime resuelve por
+> **`codigo`**, no por ID, por lo que los codigos siguen siendo validos. Para el ID exacto consultar el seeder 54.
+
+## Changelog 2026-06-09
+
+- **Fix RBAC `/supervision/pasantias/evaluar`:** `docentes.supervision.pasantia.evaluar` (id **58**) tenia
+  solo `EDITAR` en el catalogo, pero la ruta exige `APROBAR` → bloqueaba incluso a ADMIN_SISTEMA.
+  Corregido a `APROBAR` en `permiso_acciones` (56) y en `roles_permisos` (55) para RECTOR (2) y DIR_ACADEMICO (3).
+- **SEC_ACADEMICA (rol 5) — operacion institucional completa:** se le asignaron los permisos institucionales
+  67–83 (sin 74 plantilla) como espejo de RECTOR (37 filas), habilitando los botones de accion en
+  `institucional/oferta`, `/horarios` y `/pasadas`. Coherente con "RECTOR y SEC_ACADEMICA operacion completa".
+- **Seeders 55 y 56 regenerados desde BD y reordenados:** `56` por bloque de modulos (`permiso_id, accion`),
+  `55` por bloque de roles (`rol_id, permiso_id, accion`); IDs reasignados secuenciales. BD y seeders quedan identicos.
+- **Auditoria de paginas (horarios, oferta, pasadas, docentes, calificaciones, configuracion/academico):** todos
+  los pares (permiso, accion) usados por los botones (`ActionButton`/`PermisoGuard`/`useAcciones`/`hasPermiso`)
+  ya existian en el catalogo (54+56); no requirio permisos nuevos. ADMIN_SISTEMA los tiene todos por derivacion del catalogo.
 
 **Arquitectura:** frontend `.cursor/rules/incos-frontend-module.mdc` · backend `.cursor/rules/incos-backend-module.mdc` · guías `docs/guias/implementacion-*` y `checklist-*`.
 
@@ -137,7 +156,7 @@ Reglas:
 
 | Dato en panel | API | Permiso middleware | Detalle / listado ABM |
 |---|---|---|---|
-| Carreras, docentes, estudiantes, actividades, conteos | `GET /dashboard/resumen` | `sistema.catalogo.referencia` + LISTAR (105) | Requiere permiso del modulo (`cfg.academico.carreras`, `docentes.ver`, `matricula.admision.ver`, etc.) |
+| Carreras, docentes, estudiantes, actividades, conteos | `GET /dashboard/resumen` | `sistema.catalogo.referencia` + LISTAR (111) | Requiere permiso del modulo (`cfg.academico.carreras`, `docentes.ver`, `matricula.admision.ver`, etc.) |
 | ABM carreras | `GET /carreras` | `cfg.academico.carreras` + LISTAR | No usar en dashboard; solo administracion |
 
 Frontend: `useDashboardData` carga solo `/dashboard/resumen`. `useDashboardGuardedNavigate` muestra notificacion de acceso denegado si el usuario pulsa "Ver todas", tarjeta o actividad sin permiso de detalle (misma notificacion que `PrivateRoute`).
@@ -284,7 +303,7 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 ### Inventario frontend de permisos en rutas (single source UI)
 
 El barrido de `frontend/src/presentation/modules/**/routes.jsx` confirma que los codigos usados en UI
-estan alineados con `54-seed-permisos.sql` (100 permisos; ultimo `institucional.horario.publicacion` id 100) y que la visibilidad del sidebar en v2 depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
+estan alineados con `54-seed-permisos.sql` (111 permisos; ultimo `sistema.catalogo.referencia` id 111) y que la visibilidad del sidebar en v2 depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
 
 ### Nota de compatibilidad documental
 
@@ -378,7 +397,7 @@ Permisos: `academico.calificacion.*` — menu: `/academico/calificaciones` (IDs 
 | `academico.calificacion.ingreso` | LISTAR | Item menu Calificaciones | REC, DIRA, SECA, DOC, EST |
 | `academico.calificacion.coordinacion` | LISTAR | Vista general docentes (inline en ingreso) | REC, DIRA, SECA |
 | `academico.calificacion.mis_cursos` | LISTAR, DETALLE | Mis cursos del docente (redirect desde ingreso si no hay 16) | REC, DIRA, SECA, DOC |
-| `academico.calificacion.cuaderno` | LISTAR | Cuaderno de notas | REC, DIRA, SECA, DOC |
+| `academico.calificacion.cuaderno` | LISTAR, EXPORTAR | Cuaderno / consolidado bimestre; export Excel registro pedagógico (`GET .../export/registro-pedagogico`) | REC, DIRA, SECA, DOC |
 | `academico.calificacion.politica` | EDITAR (pantalla); LISTAR en ruta de menú | `/academico/calificaciones/politica` (solo edición) | REC, DIRA, SECA |
 | `sistema.catalogo.referencia` | LISTAR | **API complemento:** `GET /calificaciones/politica`, `/politica/catalogo`, `/tipos-evaluacion` (cuaderno, drawer, vista previa). Cualquier usuario con rol; no aparece en grilla Seguridad | Todos con rol |
 | `academico.calificacion.gestion_bimestres` | LISTAR, EDITAR | `/academico/calificaciones/gestion-bimestres` | REC, DIRA, SECA |
@@ -404,7 +423,7 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 |---|---|---|
 | `docentes.ver` (45) | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista) |
 | `docentes.crear` (42) | CREAR | Alta `/docentes/registrar` |
-| `docentes.editar` (96) | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
+| `docentes.editar` (59) | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
 | `docentes.asignar` (43) | CREAR, EDITAR, ELIMINAR | Asignacion docente-curso (`/docentes/asignar`, API `POST /docentes/asignaciones/curso`, modal en armado paralelo) |
 
 | Accion | Descripcion | Roles |
@@ -446,9 +465,9 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 
 | Código (seed) | ID | Acciones (56) | UI |
 |---|---|---|---|
-| `institucional.oferta.gestion-plan` | 105 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 1–2 wizard: gestión vigente, habilitar plan |
-| `institucional.oferta.paralelo-gestion` | 106 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 3: paralelos_gestion, aula, turno, estado |
-| `institucional.oferta.cursos` | 107 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Generar/validar oferta_cursos, drawer manual |
+| `institucional.oferta.gestion-plan` | 78 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 1–2 wizard: gestión vigente, habilitar plan |
+| `institucional.oferta.paralelo-gestion` | 79 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 3: paralelos_gestion, aula, turno, estado |
+| `institucional.oferta.cursos` | 80 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Generar/validar oferta_cursos, drawer manual |
 
 | Recurso API | Método | Permiso | Acción |
 |-------------|--------|---------|--------|
@@ -476,9 +495,9 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 
 | Código (seed) | ID | Acciones (56) | UI |
 |---|---|---|---|
-| `institucional.horarios.asignacion-docente` | 108 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Matriz `/institucional/horarios/asignacion-docente` (A6) |
-| `institucional.horarios.color-docente` | 109 | LISTAR, EDITAR | Color picker al asignar docente |
-| `institucional.horarios.carga-docente` | 110 | LISTAR, DETALLE | Dashboard `/institucional/horarios/carga-docentes/:gestionId` (A6) |
+| `institucional.horarios.asignacion-docente` | 81 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Matriz `/institucional/horarios/asignacion-docente` (A6) |
+| `institucional.horarios.color-docente` | 82 | LISTAR, EDITAR | Color picker al asignar docente |
+| `institucional.horarios.carga-docente` | 83 | LISTAR, DETALLE | Dashboard `/institucional/horarios/carga-docentes/:gestionId` (A6) |
 
 | Recurso API | Método | Permiso | Acción | Notas |
 |-------------|--------|---------|--------|-------|
@@ -527,7 +546,7 @@ CREAR/EDITAR/ELIMINAR de la tabla de cursos en armado acepta `institucional.gest
 
 ### CFG - Configuracion (`/configuracion/*`)
 
-**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`. Seeds: ids **78–93** en `54-seed-permisos.sql`, acciones en **56**, asignacion roles en **55**.
+**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`. Seeds: ids **84–100** en `54-seed-permisos.sql` (`configuracion.plan-estudio`=84, `carrera`=85, `materia`=86, `plan-estudio.periodos`=87, `plan-estudio.asignaturas`=88, `plan-estudio.prerrequisitos`=89, `paralelo`=90, documentacion 91–94, complementario 95–97, convenios 98, pagos 99, historial-actividades 100), acciones en **56**, asignacion roles en **55**.
 
 #### Académico — Plan de estudio (menu unico, tabs + subruta)
 
@@ -615,7 +634,7 @@ Los controladores de seguridad deben mantener reglas de negocio extra (p. ej. in
 - **Cursos oferta:** PATCH/DELETE `/cursos/:id` → EDITAR / ELIMINAR sobre `institucional.gestion.horarios`.
 - **Docentes:** listado/detalle/CRUD y asignaciones alineados con `docentes.ver`, `docentes.crear`, `docentes.editar`, `docentes.asignar` (POST asignacion curso con mismo stack que **EDITAR** en `docentes.asignar`, coherente con UI).
 
-### Catálogos de referencia (`sistema.catalogo.referencia`, permiso_id **105**, acción **LISTAR**)
+### Catálogos de referencia (`sistema.catalogo.referencia`, permiso_id **111**, acción **LISTAR**)
 
 **Permiso técnico (transparente para Seguridad).** No tiene `grupo_ui` ni `ruta_sidebar`: **no aparece** en `RolPermisosPage` / `PermisosDominioPicker`. No se guarda en `roles_permisos` (55).
 
@@ -646,7 +665,7 @@ Middleware: `listarCatalogoReferencia` (`authenticate` + `verificarPermiso`). Ca
 
 ## Hallazgos de la auditoria
 
-- Docentes: permiso dedicado `docentes.editar` (id 96) separa **EDITAR** ficha de **CREAR** alta; **ELIMINAR** en UI queda listo; endpoint `DELETE /docentes/:id` pendiente de implementar.
+- Docentes: permiso dedicado `docentes.editar` (id 59) separa **EDITAR** ficha de **CREAR** alta; **ELIMINAR** en UI queda listo; endpoint `DELETE /docentes/:id` pendiente de implementar.
 - Existen `DELETE` activos para estudiantes, becas asignadas, inscripciones, pagos y overrides de usuarios.
 - Existen `EXPORTAR` reales en estudiantes (excel) y pagos (recibo PDF).
 - `ADMIN_SISTEMA` debe ser inmutable en SEG; se protegio en backend y UI.

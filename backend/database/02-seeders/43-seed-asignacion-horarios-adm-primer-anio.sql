@@ -129,10 +129,10 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_se
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES
 (181, 45, 31, 1),
 (182, 45, 32, 2),
-(185, 45, 33, 3),
-(186, 45, 46, 4),
-(183, 45, 47, 5),
-(184, 45, 48, 6);
+(183, 45, 33, 3),
+(184, 45, 46, 4),
+(185, 45, 47, 5),
+(186, 45, 48, 6);
 
 -- asignacion_docente_id = 46
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES
@@ -171,10 +171,10 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_se
 
 -- asignacion_docente_id = 51
 INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia) VALUES
-(208, 51, 34, 1),
-(209, 51, 35, 2),
-(210, 51, 44, 3),
-(207, 51, 45, 4);
+(207, 51, 34, 1),
+(208, 51, 35, 2),
+(209, 51, 44, 3),
+(210, 51, 45, 4);
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- TOTAL: 90 bloques asignacion_horarios (Excel 2026-02-18)

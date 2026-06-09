@@ -20,7 +20,7 @@ const IconButton = ({
     onClick,
     size = 'large',
     disabled = false,
-    variant = 'default', // 'default' | 'info' | 'success' | 'warning' | 'error'
+    variant = 'default', // 'default' | 'info' | 'success' | 'warning' | 'error' | 'alternative'
     className = '',
     style = {},
     circle = false,

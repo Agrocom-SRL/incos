@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Col, Divider, Flex, Row, Typography } from 'antd';
 import { SyncOutlined, ThunderboltOutlined, TeamOutlined } from '@ant-design/icons';
 import { Card, ActionButton, StatusPill } from '@atoms';
+import { ofertaPaths } from '@application-institucional/oferta/config/paths';
 import {
     buildHorariosConflictosUrl,
     buildOfertaParaleloDetalleFromHorarios,
@@ -40,18 +41,37 @@ const ParaleloCoberturaTabSection = ({
         navigate(target.pathname, target.state ? { state: target.state } : undefined);
     }, [navigate, pgId]);
 
+    const returnArmadoCoberturaPath =
+        Number.isFinite(pgId) && pgId > 0
+            ? `/institucional/horarios/armado?pg=${pgId}&tab=cobertura`
+            : '/institucional/horarios/armado';
+
     const irAConflictosDocente = useCallback(
         (docenteId) => {
             const id = Number(docenteId);
             if (!Number.isFinite(id) || id < 1) return;
             navigate(buildHorariosConflictosUrl(id), {
                 state: {
-                    returnListPath: `/institucional/horarios/armado?pg=${pgId}&tab=cobertura`,
+                    returnListPath: returnArmadoCoberturaPath,
                     menuSidebarKey: HORARIOS_MENU_ROUTE_KEY,
                 },
             });
         },
-        [navigate, pgId],
+        [navigate, returnArmadoCoberturaPath],
+    );
+
+    const irADocenteAsignaciones = useCallback(
+        (docenteId) => {
+            const id = Number(docenteId);
+            if (!Number.isFinite(id) || id < 1) return;
+            navigate(ofertaPaths.docenteAsignaciones(id), {
+                state: {
+                    returnListPath: returnArmadoCoberturaPath,
+                    menuSidebarKey: HORARIOS_MENU_ROUTE_KEY,
+                },
+            });
+        },
+        [navigate, returnArmadoCoberturaPath],
     );
 
     const handleGenerar = useCallback(
@@ -205,25 +225,17 @@ const ParaleloCoberturaTabSection = ({
                                                 (choque de horario — resolver)
                                             </Text>
                                         </>
-                                    ) : (
+                                    ) : c.docenteId ? (
                                         <>
-                                            <Text
-                                                strong
-                                                type={docenteEnConflictoHorario ? 'danger' : undefined}
-                                                className={
-                                                    docenteEnConflictoHorario
-                                                        ? 'horarios-armado-docente--conflicto'
-                                                        : undefined
-                                                }
+                                            <Typography.Link
+                                                className="horarios-armado-cobertura-docente-link"
+                                                onClick={() => irADocenteAsignaciones(c.docenteId)}
                                             >
-                                                {c.docente || 'Sin asignar'}
-                                            </Text>
-                                            {docenteEnConflictoHorario ? (
-                                                <Text type="danger" style={{ marginLeft: 8 }}>
-                                                    (choque de horario)
-                                                </Text>
-                                            ) : null}
+                                                <Text strong>{c.docente}</Text>
+                                            </Typography.Link>
                                         </>
+                                    ) : (
+                                        <Text strong>{c.docente || 'Sin asignar'}</Text>
                                     )}
                                 </Text>
                                 <Text type="secondary">

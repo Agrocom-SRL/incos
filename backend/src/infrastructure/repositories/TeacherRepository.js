@@ -17,7 +17,7 @@ const DOCENTE_SQL_VIEWS = {
   CURSO_BLOQUES_HORARIO: 'vista_base_docente_curso_bloques_horario',
   CONFLICTO_HORARIO_PAR: 'vista_base_docente_conflicto_horario_par',
   RESUMEN_CONFLICTOS: 'vista_docente_resumen_conflictos',
-  CHOQUE_BLOQUES_POR_CURSO: 'vista_base_docentes_choque_bloques_por_curso',
+  DOCENTES_OCUPADOS_FRANJA_CURSO: 'vista_base_curso_docentes_ocupados_franja',
 };
 
 /**
@@ -460,8 +460,8 @@ export class TeacherRepository extends BaseRepository {
   async getDocentesConChoqueBloques(cursoId) {
     const id = Number(cursoId);
     if (!Number.isFinite(id) || id < 1) return [];
-    // Vista: 93-vista-base-docentes-choque-bloques-por-curso.sql
-    const rows = await this._selectFromView(DOCENTE_SQL_VIEWS.CHOQUE_BLOQUES_POR_CURSO, {
+    // Vista: 92-vista-base-curso-docentes-ocupados-franja.sql (disponibilidad cruzada)
+    const rows = await this._selectFromView(DOCENTE_SQL_VIEWS.DOCENTES_OCUPADOS_FRANJA_CURSO, {
       where: ['curso_id = :cursoId'],
       replacements: { cursoId: id },
     });

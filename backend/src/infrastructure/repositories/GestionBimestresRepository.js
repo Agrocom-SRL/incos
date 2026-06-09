@@ -16,8 +16,9 @@ export class GestionBimestresRepository {
       `
       SELECT COUNT(*) AS total
       FROM matriculas_materia mm
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-      INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
+      INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+      INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
       WHERE gp.gestion_id = ?
         AND mm.estado IN ('CURSANDO', 'APROBADO', 'REPROBADO')
         AND mm.deleted_at IS NULL
@@ -108,8 +109,9 @@ export class GestionBimestresRepository {
     const [, meta] = await sequelize.query(
       `
       UPDATE matriculas_materia mm
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-      INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
+      INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+      INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
       SET mm.estado = 'CURSANDO',
           mm.updated_by = ?,
           mm.updated_at = NOW()
@@ -134,8 +136,9 @@ export class GestionBimestresRepository {
         ?,
         TRUE
       FROM matriculas_materia mm
-      INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-      INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
+      INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+      INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
       CROSS JOIN (
         SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
       ) nums
@@ -357,8 +360,9 @@ export class GestionBimestresRepository {
         `
         SELECT COUNT(*) AS total
         FROM matriculas_materia mm
-        INNER JOIN asignaciones_docentes ad ON ad.id = mm.asignacion_docente_id
-        INNER JOIN gestiones_planes gp ON gp.id = ad.gestion_plan_id
+        INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+        INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+        INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
         WHERE gp.gestion_id = ?
           AND mm.estado = 'CURSANDO'
         `,

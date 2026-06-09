@@ -123,6 +123,14 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_se
 (478, 124, 44, 2),
 (479, 124, 45, 3),
 (480, 124, 55, 4);
+
 SET FOREIGN_KEY_CHECKS = 1;
 
--- TOTAL: 60 bloques (ids 421-480)
+-- TOTAL: 60 bloques (ids 421-480) — 2A: 421-450 (30) + 2B: 451-480 (30)
+--
+-- NOTA: se eliminó el bloque "BLOQUES ADICIONALES" (ids 541-548) que provenía de
+-- una sincronización de dump. 543-548 eran duplicados exactos de (asig_doc, horario)
+-- ya sembrados en el INSERT base, y 541-542 eran bloques espurios (inactivos) de
+-- CDS-204. Inflaban la carga de 2A (CON-201=8, COS-203=6, SIT-207=6) frente al plan
+-- de estudios (CON-201=6, COS-203=4, SIT-207=4). El INSERT base ya coincide
+-- exactamente con el plan (14-seed-asignaturas-plan.sql) y el horario real.

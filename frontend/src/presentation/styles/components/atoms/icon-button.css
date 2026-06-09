@@ -31,7 +31,7 @@
 }
 
 /* Solo círculos: borde neutro si no hay variante semántica */
-.icon-button--circle.ant-btn-text:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) {
+.icon-button--circle.ant-btn-text:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error):not(.icon-button--alternative) {
     border: 1px solid var(--color-border);
 }
 
@@ -143,23 +143,50 @@
     color: var(--color-error-text-hover) !important;
 }
 
+/* Variante Alternative (violeta) */
+.icon-button--alternative.ant-btn-text {
+    color: #7c3aed;
+}
+
+.icon-button--circle.icon-button--alternative.ant-btn-text {
+    border: 1px solid #7c3aed;
+}
+
+.icon-button--alternative.ant-btn-text .anticon {
+    color: #7c3aed !important;
+}
+
+.icon-button--alternative.ant-btn-text:hover {
+    background-color: rgba(124, 58, 237, 0.12) !important;
+    color: #6d28d9 !important;
+}
+
+.icon-button--alternative.ant-btn-text:hover .anticon {
+    color: #6d28d9 !important;
+}
+
+.icon-button--alternative.ant-btn-text:active {
+    background-color: rgba(109, 40, 217, 0.18) !important;
+    color: #6d28d9 !important;
+}
+
 /* Hover genérico (para default) */
-.icon-button.ant-btn-text:hover:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) {
+.icon-button.ant-btn-text:hover:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error):not(.icon-button--alternative) {
     background-color: var(--color-icon-button-hover-bg) !important;
     color: var(--color-icon-button-hover-text);
 }
 
-.icon-button.ant-btn-text:hover:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) .anticon {
+.icon-button.ant-btn-text:hover:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error):not(.icon-button--alternative) .anticon {
     color: var(--color-icon-button-hover-text) !important;
 }
 
 /* Active genérico (para default) */
-.icon-button.ant-btn-text:active:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) {
+.icon-button.ant-btn-text:active:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error):not(.icon-button--alternative) {
     background-color: var(--color-icon-button-active-bg) !important;
     color: var(--color-icon-button-active-text);
 }
 
-.icon-button.ant-btn-text:active:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) .anticon {
+.icon-button.ant-btn-text:active:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error):not(.icon-button--alternative) .anticon {
     color: var(--color-icon-button-active-text) !important;
 }
 

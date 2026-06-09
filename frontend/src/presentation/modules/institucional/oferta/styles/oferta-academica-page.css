@@ -853,3 +853,100 @@
   gap: var(--spacing-sm, 8px);
   align-items: center;
 }
+
+/* === Asignaciones docente (oferta) === */
+.docente-asignaciones-color-tab__toolbar {
+  width: 100%;
+}
+
+.docente-asignaciones-color-tab__toolbar .form-field {
+  margin-bottom: 0;
+  flex: 0 1 auto;
+}
+
+.docente-asignaciones-color-tab__toolbar .form-field .ant-form-item-row {
+  flex-wrap: nowrap;
+}
+
+.docente-asignaciones-color-tab__toolbar .form-field .ant-form-item-label,
+.docente-asignaciones-color-tab__toolbar .form-field .ant-form-item-control {
+  flex: 0 0 auto;
+  max-width: none;
+}
+
+.docente-asignaciones-color-tab__toolbar .form-field .ant-form-item-label {
+  padding-inline-end: var(--spacing-sm, 8px);
+  white-space: nowrap;
+}
+
+.docente-asignaciones-color-tab__actions {
+  flex-shrink: 0;
+  padding-top: 0;
+}
+
+.docente-asignaciones-resumen__banner {
+  text-align: center;
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.docente-asignaciones-resumen__gestion {
+  display: block;
+  font-size: var(--font-size-lg, 16px);
+  letter-spacing: 0.04em;
+}
+
+.docente-asignaciones-resumen__subtitulo {
+  display: block;
+  margin-top: 4px;
+}
+
+.docente-asignaciones-resumen__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border-secondary, #e8ece9);
+  border-radius: var(--radius-md, 10px);
+}
+
+.docente-asignaciones-resumen__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm, 13px);
+}
+
+.docente-asignaciones-resumen__table th,
+.docente-asignaciones-resumen__table td {
+  border: 1px solid var(--color-border-secondary, #d9dedb);
+  padding: 14px 8px;
+  vertical-align: middle;
+}
+
+.docente-asignaciones-resumen__table thead th {
+  background: var(--color-fill-quaternary, #f0f2f1);
+  font-weight: 600;
+  text-align: center;
+}
+
+.docente-asignaciones-resumen__docente {
+  color: var(--color-error, #e41c24);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.docente-asignaciones-resumen__carrera {
+  font-weight: 600;
+  text-align: center;
+}
+
+.docente-asignaciones-resumen__anio {
+  background: var(--color-warning-bg, #fffbe6);
+  font-weight: 600;
+  text-align: center;
+}
+
+.docente-asignaciones-resumen__num {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.docente-asignaciones-resumen__totales td {
+  background: var(--color-fill-quaternary, #f5f7f6);
+}

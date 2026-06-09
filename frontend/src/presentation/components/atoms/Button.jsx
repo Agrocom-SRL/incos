@@ -12,7 +12,7 @@
  *   info | view        → azul (ver / exportar / detalle)
  *   warning | warn     → ámbar (editar)
  *   danger | error     → rojo (eliminar)
- *   declaracion        → azul degradado (PDF declaración jurada)
+ *   alternative        → violeta institucional (acción secundaria destacada)
  *
  * type="link" → Ant Design link (sin sd-btn).
  */
@@ -32,7 +32,7 @@ const VARIANT_SD_CLASS = {
   warn: 'sd-btn--warn',
   danger: 'sd-btn--danger',
   error: 'sd-btn--danger',
-  declaracion: 'sd-btn--declaracion',
+  alternative: 'sd-btn--alternative',
 };
 
 const Button = ({

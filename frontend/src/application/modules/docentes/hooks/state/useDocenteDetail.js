@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useGetDocenteById } from '@application-docentes/hooks/api';
+import { ofertaPaths } from '@application-institucional/oferta/config/paths';
 
 export const useDocenteDetail = (docenteIdRaw) => {
   const docenteId = docenteIdRaw != null ? Number(docenteIdRaw) : NaN;
@@ -56,15 +57,14 @@ export const useDocenteDetail = (docenteIdRaw) => {
   }, [navigate, docenteId, returnListPath]);
 
   const handleAsignacionAcademica = useCallback(() => {
-      navigate('/institucional/oferta', {
-        state: {
-          menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
-          returnListPath: Number.isFinite(docenteId) && docenteId > 0 ? `/docentes/${docenteId}` : returnListPath,
-        },
-      });
-    },
-    [navigate, docenteId, location.state?.menuSidebarKey, returnListPath]
-  );
+    if (!Number.isFinite(docenteId) || docenteId < 1) return;
+    navigate(ofertaPaths.docenteAsignaciones(docenteId), {
+      state: {
+        menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
+        returnListPath: `/docentes/${docenteId}`,
+      },
+    });
+  }, [navigate, docenteId, location.state?.menuSidebarKey]);
 
   const refetchWithDocenteId = useCallback(async () => {
     if (!Number.isFinite(docenteId) || docenteId <= 0) return;
