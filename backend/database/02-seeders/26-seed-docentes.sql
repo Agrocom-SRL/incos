@@ -4,6 +4,7 @@
 -- Datos iniciales: Docentes extraídos del horario académico 2026
 -- ============================================
 -- Orden: SIS-INF (IDs 1-7), ADM-EMP (IDs 8-15), CON-GEN (IDs 16-31)
+-- Nota: se omiten los IDs 24 (Ferrufino) y 27 (Hurtado): docentes sin asignaciones (dump local 2026-06)
 -- IDs fijos para facilitar referencias consistentes
 -- color_hex: identidad visual en grilla de horarios (vive en docentes)
 
@@ -48,10 +49,8 @@ INSERT INTO docentes (id, ci, expedicion, nombres, apellido_paterno, apellido_ma
 (21, '12345024', 'SC', 'Miguel', 'Padilla', NULL, '1988-04-12', 'MASCULINO', '70000024', 'Licenciado', 'CONTRATO', 'ACTIVO', '#76F42C'),
 (22, '12345025', 'SC', 'Jose Luis', 'Montenegro', NULL, '1984-09-30', 'MASCULINO', '70000025', 'Licenciado', 'CONTRATO', 'ACTIVO', '#91ABCB'),
 (23, '12345026', 'SC', 'Franz', 'Lujan', NULL, '1986-02-14', 'MASCULINO', '70000026', 'Licenciado', 'CONTRATO', 'ACTIVO', '#38DE86'),
-(24, '12345027', 'SC', 'Manuel Ignacio', 'Ferrufino', NULL, '1985-06-22', 'MASCULINO', '70000027', 'Licenciado', 'CONTRATO', 'ACTIVO', NULL),
 (25, '12345028', 'SC', 'Dory', 'Robles', NULL, '1989-12-05', 'FEMENINO', '70000028', 'Licenciada', 'CONTRATO', 'ACTIVO', '#B40AD2'),
 (26, '12345029', 'SC', 'Willma', 'Fernandez', NULL, '1984-06-18', 'FEMENINO', '70000029', 'Licenciada', 'CONTRATO', 'ACTIVO', '#4C828A'),
-(27, '12345030', 'SC', 'Aurelio', 'Hurtado', NULL, '1983-09-22', 'MASCULINO', '70000030', 'Licenciado', 'CONTRATO', 'ACTIVO', '#F5E019'),
 (28, '12345031', 'SC', 'Elias', 'Sarzuri', NULL, '1985-11-08', 'MASCULINO', '70000031', 'Licenciado', 'CONTRATO', 'ACTIVO', '#80C62E'),
 (29, '12345032', 'SC', 'Teodora', 'Paraguayo', NULL, '1986-04-14', 'FEMENINO', '70000032', 'Licenciada', 'CONTRATO', 'ACTIVO', '#BF71A1'),
 (30, '12345033', 'SC', 'José Antonio', 'Vara', NULL, '1982-12-03', 'MASCULINO', '70000033', 'Licenciado', 'CONTRATO', 'ACTIVO', '#FF97B8');
@@ -62,4 +61,4 @@ INSERT INTO docentes (id, ci, expedicion, nombres, apellido_paterno, apellido_ma
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- TOTAL: 31 docentes (Gestión 2026)
+-- TOTAL: 29 docentes (Gestión 2026) — IDs 24 y 27 eliminados por no tener asignaciones

@@ -123,6 +123,23 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_se
 (478, 124, 44, 2),
 (479, 124, 45, 3),
 (480, 124, 55, 4);
+
+-- ============================================
+-- BLOQUES ADICIONALES — sincronización dump local 2026-06 (ids 541-548)
+-- Extienden la carga semanal de asig_doc 111, 113, 114, 117 (CON 2A).
+-- 541-542 quedaron desactivados (activo=0) en el sistema; el resto activos.
+-- Se incluye la columna activo explícita por ese motivo.
+-- ============================================
+INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia, activo) VALUES
+(541, 114, 17, 3, 0),
+(542, 114, 18, 4, 0),
+(543, 117, 30, 3, 1),
+(544, 117, 29, 4, 1),
+(545, 113, 27, 3, 1),
+(546, 113, 28, 4, 1),
+(547, 111, 17, 5, 1),
+(548, 111, 18, 6, 1);
+
 SET FOREIGN_KEY_CHECKS = 1;
 
--- TOTAL: 60 bloques (ids 421-480)
+-- TOTAL: 68 bloques (ids 421-480 + 541-548)
