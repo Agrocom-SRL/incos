@@ -23,6 +23,7 @@ import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import DocenteProfileSummary from '@docentes/components/organisms/DocenteProfileSummary';
 import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAssignmentsSection';
 import DocenteAccessSection from '@docentes/components/organisms/DocenteAccessSection';
+import '@docentes/styles/docentes-detail-page.css';
 
 const fmtDate = (v) => {
   if (!v) return '—';
