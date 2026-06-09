@@ -124,22 +124,13 @@ INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_se
 (479, 124, 45, 3),
 (480, 124, 55, 4);
 
--- ============================================
--- BLOQUES ADICIONALES — sincronización dump local 2026-06 (ids 541-548)
--- Extienden la carga semanal de asig_doc 111, 113, 114, 117 (CON 2A).
--- 541-542 quedaron desactivados (activo=0) en el sistema; el resto activos.
--- Se incluye la columna activo explícita por ese motivo.
--- ============================================
-INSERT INTO asignacion_horarios (id, asignacion_docente_id, horario_id, orden_secuencia, activo) VALUES
-(541, 114, 17, 3, 0),
-(542, 114, 18, 4, 0),
-(543, 117, 30, 3, 1),
-(544, 117, 29, 4, 1),
-(545, 113, 27, 3, 1),
-(546, 113, 28, 4, 1),
-(547, 111, 17, 5, 1),
-(548, 111, 18, 6, 1);
-
 SET FOREIGN_KEY_CHECKS = 1;
 
--- TOTAL: 68 bloques (ids 421-480 + 541-548)
+-- TOTAL: 60 bloques (ids 421-480) — 2A: 421-450 (30) + 2B: 451-480 (30)
+--
+-- NOTA: se eliminó el bloque "BLOQUES ADICIONALES" (ids 541-548) que provenía de
+-- una sincronización de dump. 543-548 eran duplicados exactos de (asig_doc, horario)
+-- ya sembrados en el INSERT base, y 541-542 eran bloques espurios (inactivos) de
+-- CDS-204. Inflaban la carga de 2A (CON-201=8, COS-203=6, SIT-207=6) frente al plan
+-- de estudios (CON-201=6, COS-203=4, SIT-207=4). El INSERT base ya coincide
+-- exactamente con el plan (14-seed-asignaturas-plan.sql) y el horario real.
