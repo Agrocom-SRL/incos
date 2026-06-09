@@ -47,12 +47,17 @@ function mergeFranjasCatalogo(existingFranjas, catalogoFranjas) {
 }
 
 function resolveTurnoEfectivo(scheduleRows, paralelosInvolucrados) {
+  const turnos = new Set();
   for (const r of scheduleRows || []) {
     const t = r.paralelo_turno ?? r.horario_turno;
-    if (t != null && String(t).trim()) return String(t).trim();
+    if (t != null && String(t).trim()) {
+      turnos.add(String(t).trim().toUpperCase());
+    }
   }
+  if (turnos.size > 1) return null;
+  if (turnos.size === 1) return [...turnos][0];
   for (const p of paralelosInvolucrados || []) {
-    if (p.turno) return p.turno;
+    if (p.turno) return String(p.turno).trim();
   }
   return null;
 }

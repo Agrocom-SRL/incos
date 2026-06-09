@@ -7,8 +7,8 @@ import { App, Flex, Space, Typography } from 'antd';
 import { ActionButton } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 import {
-    getSabadoArmadoGridRangeMinutes,
-    getTurnoGridRangeMinutes,
+    resolveDocenteGrillaGridRangeMinutes,
+    resolveDocenteGrillaSabadoRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
 import ParaleloPlanSemanaCell, { DRAG_MIME } from '../atoms/ParaleloPlanSemanaCell';
 import {
@@ -36,8 +36,14 @@ const HorariosConflictosPlanSection = ({
     headerMinimal = false,
 }) => {
     const { notification } = App.useApp();
-    const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
-    const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
+    const gridRange = useMemo(
+        () => resolveDocenteGrillaGridRangeMinutes(schedules, turnoLabel),
+        [schedules, turnoLabel],
+    );
+    const sabadoRange = useMemo(
+        () => resolveDocenteGrillaSabadoRangeMinutes(schedules),
+        [schedules],
+    );
 
     const handleBeginDragChip = useCallback((e, item, sourceDia, sourceSlotMinutes) => {
         const payload = {

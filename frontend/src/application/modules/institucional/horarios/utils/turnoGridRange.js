@@ -52,3 +52,62 @@ export function getSabadoArmadoGridRangeMinutes() {
         fixedSlotStartsMinutes: SABADO_CLASES_TARDE_SLOT_STARTS_MINUTES,
     };
 }
+
+function normalizeTurnoKey(turnoRaw) {
+    return String(turnoRaw || '')
+        .toUpperCase()
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Turnos distintos presentes en `courseSchedules` (bloques o curso).
+ * @param {object[]} courseSchedules
+ * @returns {string[]}
+ */
+export function collectTurnosFromCourseSchedules(courseSchedules) {
+    const turnos = new Set();
+    for (const c of courseSchedules || []) {
+        const courseTurno = normalizeTurnoKey(c.turno);
+        if (courseTurno) turnos.add(courseTurno);
+        for (const b of c.bloques || []) {
+            const bloqueTurno = normalizeTurnoKey(b.turno);
+            if (bloqueTurno) turnos.add(bloqueTurno);
+        }
+    }
+    return [...turnos];
+}
+
+/**
+ * Rango lun–vie para grilla de docente: unión de turnos si hay varios (TARDE + NOCHE).
+ * Patrón alineado con matrícula (`useMatriculaDetailSchedules`).
+ *
+ * @param {object[]} courseSchedules
+ * @param {string|null|undefined} turnoLabel — fallback si los bloques no traen turno
+ */
+export function resolveDocenteGrillaGridRangeMinutes(courseSchedules, turnoLabel = null) {
+    let turnos = collectTurnosFromCourseSchedules(courseSchedules);
+    if (!turnos.length && turnoLabel) {
+        turnos = [normalizeTurnoKey(turnoLabel)].filter(Boolean);
+    }
+    if (!turnos.length) return getTurnoGridRangeMinutes(null);
+    if (turnos.length === 1) return getTurnoGridRangeMinutes(turnos[0]);
+    const ranges = turnos.map(getTurnoGridRangeMinutes);
+    return {
+        start: Math.min(...ranges.map((r) => r.start)),
+        end: Math.max(...ranges.map((r) => r.end)),
+    };
+}
+
+/**
+ * Sábado en grilla docente: extiende hasta 22:00 si hay turno NOCHE en los bloques.
+ */
+export function resolveDocenteGrillaSabadoRangeMinutes(courseSchedules) {
+    const base = getSabadoArmadoGridRangeMinutes();
+    const turnos = collectTurnosFromCourseSchedules(courseSchedules);
+    if (turnos.includes('NOCHE')) {
+        return { ...base, end: Math.max(base.end, 22 * 60) };
+    }
+    return base;
+}
