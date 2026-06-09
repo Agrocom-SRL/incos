@@ -359,6 +359,42 @@ export class CuadernoRepository {
     }));
   }
 
+  /**
+   * Estudiantes matriculados con CI y género para exportación registro pedagógico.
+   * @param {number} asignacionId
+   */
+  async listarEstudiantesExportRegistroPedagogico(asignacionId) {
+    return sequelize.query(
+      `
+      SELECT
+        emc.estudiante_id,
+        emc.codigo,
+        emc.nombre,
+        est.ci,
+        est.genero,
+        TRIM(
+          CONCAT_WS(
+            ' ',
+            est.apellido_paterno,
+            est.apellido_materno,
+            est.nombres
+          )
+        ) AS nombre_export
+      FROM vista_base_calificacion_estudiante_matricula_curso emc
+      INNER JOIN estudiantes est
+        ON est.id = emc.estudiante_id
+        AND est.deleted_at IS NULL
+        AND est.activo = TRUE
+      WHERE emc.asignacion_docente_id = ?
+      ORDER BY nombre_export ASC, emc.estudiante_id ASC
+      `,
+      {
+        replacements: [asignacionId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+  }
+
   async listarEstudiantesResumenBimestre(asignacionId, bimestreNumero) {
     return sequelize.query(
       `

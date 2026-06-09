@@ -390,6 +390,61 @@ class CalificacionRepository {
     }
   }
 
+  /**
+   * GET export registro pedagógico bimestral (.xlsx)
+   * @param {string|number} asignacionId
+   * @param {number} bimestre
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarRegistroPedagogicoExcel(asignacionId, bimestre) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.EXPORT_REGISTRO_PEDAGOGICO(asignacionId, bimestre),
+        { responseType: 'blob' },
+      );
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'registro_pedagogico.xlsx';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName,
+      };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar registro pedagógico';
+          return { success: false, error: msg };
+        } catch {
+          /* fall through */
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar registro pedagógico');
+    }
+  }
+
 }
 
 export default new CalificacionRepository();

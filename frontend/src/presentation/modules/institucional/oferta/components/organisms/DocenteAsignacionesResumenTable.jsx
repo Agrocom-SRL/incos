@@ -40,7 +40,7 @@ const DocenteAsignacionesResumenTable = ({ tabla, gestionLabel }) => {
           <thead>
             <tr>
               <th>Perfil</th>
-              <th>Nº de ítem</th>
+              <th>Cédula</th>
               <th>Asignatura</th>
               <th>Código</th>
               <th>Carrera</th>
