@@ -1,12 +1,6 @@
 ---
+name: incos-rbac
 description: RBAC y permisos INCOS — coherencia en 3 capas (ruta frontend, controles UI, verificarPermiso backend), vocabulario de acciones v2 (LISTAR/DETALLE/CREAR/...), seeds 54/56/55, landingStack y viewStack. Activa SIEMPRE al tocar permisos, rutas protegidas, ActionButton/TableActions, verificarPermiso o seeders de permisos.
-globs:
-  - "frontend/src/presentation/modules/**/routes.jsx"
-  - "frontend/src/**/*.jsx"
-  - "backend/src/presentation/routes/**/*.js"
-  - "backend/src/presentation/middleware/**/*.js"
-  - "backend/database/02-seeders/**/*.sql"
-alwaysApply: false
 ---
 
 # RBAC y permisos — INCOS

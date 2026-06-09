@@ -1,9 +1,6 @@
 ---
+name: incos-ui-system
 description: Sistema de diseño homogéneo INCOS — Ant Design v5 + Atomic Design + tokens. SIEMPRE activa al crear o editar cualquier componente, página, tabla, formulario, ficha o estilo en el frontend.
-globs:
-  - "frontend/src/**/*.jsx"
-  - "frontend/src/**/*.css"
-alwaysApply: false
 ---
 
 # Sistema de diseño UI — INCOS (Ant Design v5)

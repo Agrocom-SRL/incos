@@ -1,9 +1,6 @@
 ---
+name: incos-backend-module
 description: Arquitectura de módulos backend INCOS — Express + Sequelize + MySQL en capas limpias (routes/controllers/use-cases/repositories), inyección de dependencias, contrato de respuesta y RBAC. Activa al crear o editar cualquier endpoint, repositorio, use case, controller o router del backend.
-globs:
-  - "backend/src/**/*.js"
-  - "backend/database/**/*.sql"
-alwaysApply: false
 ---
 
 # Arquitectura de módulos backend — INCOS

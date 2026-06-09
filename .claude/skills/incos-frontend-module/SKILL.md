@@ -1,12 +1,6 @@
 ---
+name: incos-frontend-module
 description: Arquitectura de módulos frontend INCOS — estructura por ítem de menú, capas de hooks (api/features/state/context), providers, connectors lazy y rutas. Activa al crear o reorganizar cualquier módulo, página, hook o ruta del frontend.
-globs:
-  - "frontend/src/application/modules/**/*.js"
-  - "frontend/src/application/modules/**/*.jsx"
-  - "frontend/src/presentation/modules/**/*.jsx"
-  - "frontend/src/domain/**/*.js"
-  - "frontend/src/infrastructure/**/*.js"
-alwaysApply: false
 ---
 
 # Arquitectura de módulos frontend — INCOS
