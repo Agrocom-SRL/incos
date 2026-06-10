@@ -1,37 +1,27 @@
 /**
- * Estado de la pantalla Institucional → Gestión actual.
+ * Estado del PANEL de Gestión actual (solo lectura).
  *
- * Muestra la gestión vigente y su estado de activación del cursado, y permite
- * iniciar la gestión académica (activación masiva INSCRITO → CURSANDO + bimestres).
+ * Muestra la gestión vigente, KPIs globales y la línea de tiempo de bimestres
+ * con sus fechas y estado. Las acciones (iniciar gestión / cerrar bimestre) viven
+ * en la página de Control de bimestres (`/institucional/actual/bimestres`).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { App } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { useGestionActivacionApi } from '../api/useGestionActivacionApi.js';
 import { gestionActivacionStatus } from '../../utils/gestionActivacionStatus.js';
+import { buildBimestresTimeline } from '../../utils/bimestresTimeline.js';
+import { resolverFaseGestion } from '../../utils/resolverFaseGestion.js';
+import { actualPaths } from '../../config/paths.js';
 
 export function useGestionActualState() {
-  const { modal, message } = App.useApp();
-  const {
-    loading,
-    iniciando,
-    fetchGestionVigente,
-    fetchEstadoActivacion,
-    iniciarGestionAcademica,
-  } = useGestionActivacionApi();
+  const navigate = useNavigate();
+  const { loading, fetchGestionVigente, fetchEstadoActivacion } = useGestionActivacionApi();
 
   const [cargandoInicial, setCargandoInicial] = useState(true);
   const [error, setError] = useState(null);
   const [gestionVigente, setGestionVigente] = useState(null);
-  const [estado, setEstado] = useState(gestionActivacionStatus(null));
-
-  const cargarEstado = useCallback(async () => {
-    const estadoResult = await fetchEstadoActivacion();
-    // obtenerGestionBimestres() → { success, data } | { success:false, error } | null
-    const data = estadoResult?.success ? estadoResult.data : estadoResult?.data ?? null;
-    setEstado(gestionActivacionStatus(data));
-    return data;
-  }, [fetchEstadoActivacion]);
+  const [estadoPayload, setEstadoPayload] = useState(null);
 
   const cargar = useCallback(async () => {
     setCargandoInicial(true);
@@ -43,40 +33,43 @@ export function useGestionActualState() {
       } else {
         setGestionVigente(vigenteResult.data);
       }
-      await cargarEstado();
+      const estadoResult = await fetchEstadoActivacion();
+      setEstadoPayload(estadoResult?.success ? estadoResult.data : estadoResult?.data ?? null);
     } finally {
       setCargandoInicial(false);
     }
-  }, [fetchGestionVigente, cargarEstado]);
+  }, [fetchGestionVigente, fetchEstadoActivacion]);
 
   useEffect(() => {
     cargar();
   }, [cargar]);
 
-  const handleActivarCursado = useCallback(() => {
-    if (estado.iniciada) return;
+  const estado = useMemo(() => gestionActivacionStatus(estadoPayload), [estadoPayload]);
 
-    modal.confirm({
-      title: 'Iniciar gestión académica',
-      content:
-        'Se activará el cursado de toda la gestión vigente: las matrículas pasarán a ' +
-        'CURSANDO y se abrirán los 4 bimestres. Esta acción no se puede deshacer. ¿Continuar?',
-      okText: 'Activar cursado',
-      cancelText: 'Cancelar',
-      onOk: async () => {
-        const result = await iniciarGestionAcademica();
-        if (result.success) {
-          message.success('Gestión académica iniciada. El cursado está activo.');
-          await cargarEstado();
-        } else if (result.code === 'GESTION_YA_INICIADA') {
-          message.info('La gestión académica ya estaba iniciada.');
-          await cargarEstado();
-        } else {
-          message.error(result.error || 'No se pudo iniciar la gestión académica.');
-        }
-      },
-    });
-  }, [estado.iniciada, modal, message, iniciarGestionAcademica, cargarEstado]);
+  const timeline = useMemo(
+    () => buildBimestresTimeline(estadoPayload?.bimestres),
+    [estadoPayload],
+  );
+
+  const fase = useMemo(
+    () =>
+      resolverFaseGestion({
+        gestionIniciada: Boolean(estadoPayload?.gestionIniciada),
+        bimestres: estadoPayload?.bimestres ?? [],
+        bimestreVigente: estadoPayload?.bimestreVigente,
+      }),
+    [estadoPayload],
+  );
+
+  const kpis = useMemo(() => {
+    const m = estadoPayload?.metricasGlobales ?? {};
+    return {
+      matriculasCursando: estado.matriculasCursando,
+      totalCursos: m.totalCursos ?? null,
+      totalDocentes: m.totalDocentes ?? null,
+      bimestreVigente: estadoPayload?.bimestreVigente ?? null,
+    };
+  }, [estadoPayload, estado.matriculasCursando]);
 
   const breadcrumbItems = useMemo(
     () => [
@@ -94,10 +87,11 @@ export function useGestionActualState() {
     iniciada: estado.iniciada,
     estadoLabel: estado.estadoLabel,
     estadoColor: estado.estadoColor,
-    matriculasCursando: estado.matriculasCursando,
-    iniciando,
-    handleActivarCursado,
+    timeline,
+    kpis,
+    fase,
     breadcrumbItems,
     pageTitle: 'Gestión actual',
+    goToControl: useCallback(() => navigate(actualPaths.bimestres()), [navigate]),
   };
 }

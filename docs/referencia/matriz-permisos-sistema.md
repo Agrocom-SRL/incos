@@ -448,11 +448,18 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 Permisos: `institucional.*`
 
 Rutas simplificadas vigentes del modulo:
-- `/institucional/actual` — ✅ **Gestión actual** (gestión vigente + estado de cursado). Entrada con
-  `institucional.gestion.actual` (67) + LISTAR. El botón "Activar cursado / Iniciar gestión académica"
-  invoca `POST /calificaciones/gestion-bimestres/iniciar` y se guarda con `academico.calificacion.gestion_bimestres`
-  (20) + EDITAR (coherencia con el backend del endpoint). RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5)
-  tienen ambos en seed 55; ADMIN_SISTEMA por derivación del catálogo. Sin cambios de seed.
+- `/institucional/actual` — ✅ **Gestión actual (Panel, solo lectura)**. Entrada `institucional.gestion.actual` (67) + LISTAR.
+  KPIs globales + línea de tiempo de bimestres (fechas/estado, datos de `GET /calificaciones/gestion-bimestres`).
+- `/institucional/actual/bimestres` — ✅ **Control de bimestres (acciones)**. Ruta `institucional.gestion.actual` (67) + **EDITAR**.
+  Acciones: "Iniciar gestión académica" (`POST /calificaciones/gestion-bimestres/iniciar`) y "Cerrar bimestre"
+  (`.../bimestre/:n/validar-cierre` + `.../cerrar`; el cierre efectivo en backend está en preparación).
+
+  **RBAC (nuevo permiso EDITAR del 67):** se añadió la acción `EDITAR` al permiso `institucional.gestion.actual` (67)
+  en seed `56` y se asignó a RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) en seed `55`
+  (migración idempotente `05-migrations/25-rbac-institucional-gestion-actual-editar.sql`). Los endpoints de
+  `gestion-bimestres` (GET estado, iniciar, validar/cerrar) usan `verificarPermisoCualquiera` y aceptan
+  **`academico.calificacion.gestion_bimestres` O `institucional.gestion.actual`** (LISTAR/EDITAR), de modo que
+  los opera tanto Calificaciones (coordinación) como Institucional → Gestión actual. ADMIN_SISTEMA por derivación.
 - `/institucional/cronogramas`
 - `/institucional/oferta` (wizard oferta; redirect desde `/institucional/oferta-academica`)
 - `/institucional/horarios`

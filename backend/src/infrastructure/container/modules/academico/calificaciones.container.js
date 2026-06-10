@@ -11,6 +11,7 @@ import { GetPoliticaCatalogoUseCase } from '../../../../application/use-cases/ac
 import { ListTiposEvaluacionUseCase } from '../../../../application/use-cases/academico/ListTiposEvaluacionUseCase.js';
 import { SavePoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/SavePoliticaInstitucionalUseCase.js';
 import { GetGestionBimestresUseCase } from '../../../../application/use-cases/academico/GetGestionBimestresUseCase.js';
+import { GetCronogramaGestionUseCase } from '../../../../application/use-cases/academico/GetCronogramaGestionUseCase.js';
 import { IniciarGestionAcademicaUseCase } from '../../../../application/use-cases/academico/IniciarGestionAcademicaUseCase.js';
 import { ValidarCierreBimestreUseCase } from '../../../../application/use-cases/academico/ValidarCierreBimestreUseCase.js';
 import { CerrarBimestreGestionUseCase } from '../../../../application/use-cases/academico/CerrarBimestreGestionUseCase.js';
@@ -21,6 +22,7 @@ import { GetPoliticaCatalogoController } from '../../../../presentation/controll
 import { ListTiposEvaluacionController } from '../../../../presentation/controllers/academico/calificaciones/list-tipos-evaluacion.controller.js';
 import { SavePoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/save-politica-institucional.controller.js';
 import { GetGestionBimestresController } from '../../../../presentation/controllers/academico/calificaciones/get-gestion-bimestres.controller.js';
+import { GetCronogramaGestionController } from '../../../../presentation/controllers/academico/calificaciones/get-cronograma-gestion.controller.js';
 import { IniciarGestionAcademicaController } from '../../../../presentation/controllers/academico/calificaciones/iniciar-gestion-academica.controller.js';
 import { ValidarCierreBimestreController } from '../../../../presentation/controllers/academico/calificaciones/validar-cierre-bimestre.controller.js';
 import { CerrarBimestreGestionController } from '../../../../presentation/controllers/academico/calificaciones/cerrar-bimestre-gestion.controller.js';
@@ -190,6 +192,16 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getCronogramaGestionUseCase,
+    (c) =>
+      new GetCronogramaGestionUseCase({
+        cronogramaGestionRepository: c.resolve(REPOSITORIOS_TOKENS.cronogramaGestionRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.iniciarGestionAcademicaUseCase,
     (c) =>
       new IniciarGestionAcademicaUseCase({
@@ -241,6 +253,17 @@ export function registerCalificacionesResource(container) {
     (c) =>
       new GetGestionBimestresController({
         getGestionBimestresUseCase: c.resolve(ACADEMICO_TOKENS.getGestionBimestresUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getCronogramaGestionController,
+    (c) =>
+      new GetCronogramaGestionController({
+        getCronogramaGestionUseCase: c.resolve(ACADEMICO_TOKENS.getCronogramaGestionUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       }),
@@ -613,6 +636,7 @@ export function registerCalificacionesResource(container) {
         ACADEMICO_TOKENS.savePoliticaInstitucionalController
       ),
       getGestionBimestresController: c.resolve(ACADEMICO_TOKENS.getGestionBimestresController),
+      getCronogramaGestionController: c.resolve(ACADEMICO_TOKENS.getCronogramaGestionController),
       iniciarGestionAcademicaController: c.resolve(
         ACADEMICO_TOKENS.iniciarGestionAcademicaController
       ),

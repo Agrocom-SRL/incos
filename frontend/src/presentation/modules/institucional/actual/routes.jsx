@@ -1,11 +1,17 @@
 /**
- * Institucional → Gestión actual (gestión vigente + activación del cursado).
+ * Institucional → Gestión actual.
+ *
+ * - `/institucional/actual`            Panel (solo lectura): KPIs + línea de tiempo de bimestres.
+ * - `/institucional/actual/bimestres`  Control de bimestres (acciones: iniciar gestión, cerrar bimestre).
  */
 
 import { lazy } from 'react';
 
 const GestionActualConnector = lazy(
   () => import('@institucional/actual/connectors/GestionActualConnector'),
+);
+const ControlBimestresConnector = lazy(
+  () => import('@institucional/actual/connectors/ControlBimestresConnector'),
 );
 
 export const actualRoutes = [
@@ -21,6 +27,20 @@ export const actualRoutes = [
       parent: 'INST',
       order: 1,
     },
+  },
+  {
+    path: '/institucional/actual/bimestres',
+    element: <ControlBimestresConnector />,
+    key: 'INST-GESTION-BIMESTRES',
+    permiso: 'institucional.gestion.actual',
+    accion: 'EDITAR',
+    menu: {
+      label: 'Control de Bimestres',
+      module: 'INST',
+      parent: 'INST',
+      order: 2,
+    },
+    breadcrumbParent: 'INST-GESTION-ACTUAL',
   },
 ];
 

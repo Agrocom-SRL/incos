@@ -43,11 +43,25 @@ export const useGestionActivacionApi = () => {
     }
   }, []);
 
+  /** Valida si un bimestre puede cerrarse (cursos con notas faltantes). */
+  const validarCierreBimestre = useCallback(
+    (numero) => CalificacionRepository.validarCierreBimestre(numero),
+    [],
+  );
+
+  /** Cierra un bimestre de la gestión (backend en preparación). */
+  const cerrarBimestreGestion = useCallback(
+    (numero) => CalificacionRepository.cerrarBimestreGestion(numero),
+    [],
+  );
+
   return {
     loading,
     iniciando,
     fetchGestionVigente,
     fetchEstadoActivacion,
     iniciarGestionAcademica,
+    validarCierreBimestre,
+    cerrarBimestreGestion,
   };
 };

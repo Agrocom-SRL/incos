@@ -126,14 +126,22 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.savePoliticaInstitucionalController.handle(req, res, next)
   );
 
+  // Tablero/control de bimestres: lo opera tanto Calificaciones (coordinación) como
+  // Institucional → Gestión actual. Se acepta cualquiera de los dos permisos.
   const gestionBimestresListar = [
     authenticate,
-    verificarPermiso('academico.calificacion.gestion_bimestres', 'LISTAR'),
+    verificarPermisoCualquiera([
+      ['academico.calificacion.gestion_bimestres', 'LISTAR'],
+      ['institucional.gestion.actual', 'LISTAR'],
+    ]),
   ];
 
   const gestionBimestresEditar = [
     authenticate,
-    verificarPermiso('academico.calificacion.gestion_bimestres', 'EDITAR'),
+    verificarPermisoCualquiera([
+      ['academico.calificacion.gestion_bimestres', 'EDITAR'],
+      ['institucional.gestion.actual', 'EDITAR'],
+    ]),
   ];
 
   const cuadernoListar = [
@@ -179,6 +187,14 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     '/gestion-bimestres',
     ...gestionBimestresListar,
     (req, res, next) => controllers.getGestionBimestresController.handle(req, res, next),
+  );
+
+  // Cronograma / calendario académico de la gestión vigente (mismo permiso de lectura
+  // que gestión-bimestres; lo consume Institucional → Gestión actual).
+  router.get(
+    '/gestion-cronograma',
+    ...gestionBimestresListar,
+    (req, res, next) => controllers.getCronogramaGestionController.handle(req, res, next),
   );
 
   router.post(

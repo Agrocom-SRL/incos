@@ -1,25 +1,16 @@
 import { Card, Descriptions, Flex, Tag, Typography } from 'antd';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { SettingOutlined } from '@ant-design/icons';
 import { ActionButton } from '@atoms';
 
-const { Paragraph, Title } = Typography;
+const { Title } = Typography;
 
 /**
- * Tarjeta de la gestión vigente + control de activación del cursado.
- *
- * El botón se guarda con `academico.calificacion.gestion_bimestres` + EDITAR para
- * mantener coherencia con el backend del endpoint de inicio (vive en calificaciones),
- * aunque la pantalla se entre con `institucional.gestion.actual` + LISTAR.
+ * Tarjeta resumen de la gestión vigente (solo lectura) + acceso a la página de
+ * Control de bimestres. Las acciones (iniciar/cerrar) viven en esa página.
+ * El acceso se guarda con `institucional.gestion.actual` + EDITAR (mismo permiso
+ * que protege las acciones).
  */
-const GestionActualCard = ({
-  gestionVigente,
-  iniciada,
-  estadoLabel,
-  estadoColor,
-  matriculasCursando,
-  iniciando,
-  onActivarCursado,
-}) => (
+const GestionActualCard = ({ gestionVigente, estadoLabel, estadoColor, onIrAControl }) => (
   <Card>
     <Flex vertical gap="middle">
       <Flex align="center" justify="space-between" wrap gap="middle">
@@ -30,32 +21,19 @@ const GestionActualCard = ({
         <Tag color={estadoColor}>{estadoLabel}</Tag>
       </Flex>
 
-      <Descriptions column={{ xs: 1, sm: 2 }} size="small">
-        <Descriptions.Item label="Código">
-          {gestionVigente?.codigo || '—'}
-        </Descriptions.Item>
-        <Descriptions.Item label="Matrículas en cursado">
-          {matriculasCursando != null ? matriculasCursando : '—'}
-        </Descriptions.Item>
+      <Descriptions column={1} size="small">
+        <Descriptions.Item label="Código">{gestionVigente?.codigo || '—'}</Descriptions.Item>
       </Descriptions>
-
-      <Paragraph type="secondary" style={{ margin: 0 }}>
-        Activar el cursado pone las matrículas de la gestión en <strong>CURSANDO</strong> y abre
-        sus 4 bimestres. A partir de ese momento los estudiantes ven su horario y se habilita el
-        registro de calificaciones. Las inscripciones posteriores nacerán directamente en cursado.
-      </Paragraph>
 
       <Flex>
         <ActionButton
-          permiso="academico.calificacion.gestion_bimestres"
+          permiso="institucional.gestion.actual"
           accion="EDITAR"
           variant="primary"
-          icon={<CheckCircleOutlined />}
-          loading={iniciando}
-          disabled={iniciada}
-          onClick={onActivarCursado}
+          icon={<SettingOutlined />}
+          onClick={onIrAControl}
         >
-          {iniciada ? 'Cursado ya activado' : 'Activar cursado / Iniciar gestión académica'}
+          Control de bimestres
         </ActionButton>
       </Flex>
     </Flex>

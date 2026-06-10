@@ -133,6 +133,7 @@ import { CuadernoRepository } from '../../repositories/CuadernoRepository.js';
 import { CalificacionContextoRepository } from '../../repositories/CalificacionContextoRepository.js';
 import { CalificacionCoordinacionRepository } from '../../repositories/CalificacionCoordinacionRepository.js';
 import { GestionBimestresRepository } from '../../repositories/GestionBimestresRepository.js';
+import { CronogramaGestionRepository } from '../../repositories/CronogramaGestionRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
@@ -342,6 +343,16 @@ export function registerRepositoriesModule(container) {
       REPOSITORIOS_TOKENS.gestionBimestresRepository,
       (c) =>
         new GestionBimestresRepository({
+          calificacionContextoRepository: c.resolve(
+            REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          ),
+        }),
+    );
+    registerComponent(
+      container,
+      REPOSITORIOS_TOKENS.cronogramaGestionRepository,
+      (c) =>
+        new CronogramaGestionRepository({
           calificacionContextoRepository: c.resolve(
             REPOSITORIOS_TOKENS.calificacionContextoRepository,
           ),
