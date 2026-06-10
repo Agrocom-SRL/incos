@@ -212,6 +212,13 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     ...cronogramaListar,
     (req, res, next) => controllers.listCronogramaAdminController.handle(req, res, next),
   );
+  router.get(
+    '/cronograma/:id',
+    ...cronogramaListar,
+    cronogramaIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.getActividadCronogramaController.handle(req, res, next),
+  );
   router.post(
     '/cronograma',
     ...cronogramaCrear,

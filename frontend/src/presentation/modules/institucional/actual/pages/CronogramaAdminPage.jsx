@@ -1,22 +1,20 @@
 import { useMemo, useState } from 'react';
-import { Flex, Tag, Typography } from 'antd';
+import { Flex } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { ActionButton } from '@atoms';
+import { ActionButton, StatusPill } from '@atoms';
 import { TableListView } from '@organisms';
+import { getActivityIconComponent } from '@config/icons';
 import { useCronogramaAdminState } from '@application-institucional/actual';
-import { tipoMeta } from '@application-institucional/actual/utils/cronogramaGestion.js';
+import {
+  getActividadTipoLabel,
+  getActividadTipoPillClass,
+  getActividadEstadoLabel,
+  getActividadEstadoPillClass,
+} from '@application-institucional/actual/config/actividadPill.js';
 import { formatFechaCorta } from '@application-institucional/actual/utils/bimestresTimeline.js';
-import { CronogramaActividadModal } from '@institucional/actual/components/organisms';
-
-const { Text } = Typography;
-
-const ESTADO_TAG = {
-  pasada: { color: 'default', label: 'Pasada' },
-  vigente: { color: 'processing', label: 'Vigente' },
-  futura: { color: 'green', label: 'Futura' },
-};
+import '@institucional/actual/styles/cronograma.css';
 
 const PERMISO = 'institucional.gestion.cronograma';
 
@@ -28,7 +26,7 @@ const CronogramaAdminPage = () => {
     const q = searchText.trim().toLowerCase();
     if (!q) return s.actividades;
     return s.actividades.filter((a) =>
-      [a.nombre, a.periodoNombre, tipoMeta(a.tipo).label]
+      [a.nombre, a.periodoNombre, getActividadTipoLabel(a.tipo)]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q)),
     );
@@ -40,17 +38,28 @@ const CronogramaAdminPage = () => {
         title: 'Etapa',
         dataIndex: 'periodoNombre',
         key: 'periodo',
-        render: (t) => <Tag>{t}</Tag>,
+        render: (t) => <StatusPill label={t} className="cronograma-pill cronograma-pill--otro" />,
       },
       {
         title: 'Actividad',
         dataIndex: 'nombre',
         key: 'nombre',
-        render: (t, r) => (
-          <Flex align="center" gap="small" wrap>
-            <Text>{t}</Text>
-            {r.tipo ? <Tag color={tipoMeta(r.tipo).color}>{tipoMeta(r.tipo).label}</Tag> : null}
-          </Flex>
+        render: (t, r) => {
+          const Icon = getActivityIconComponent(r.icono);
+          return (
+            <Flex align="center" gap="small">
+              <Icon />
+              <span>{t}</span>
+            </Flex>
+          );
+        },
+      },
+      {
+        title: 'Tipo',
+        dataIndex: 'tipo',
+        key: 'tipo',
+        render: (tipo) => (
+          <StatusPill label={getActividadTipoLabel(tipo)} className={getActividadTipoPillClass(tipo)} />
         ),
       },
       {
@@ -63,16 +72,15 @@ const CronogramaAdminPage = () => {
         title: 'Fin',
         dataIndex: 'fechaFin',
         key: 'fin',
-        render: (v) => (v ? formatFechaCorta(v) : '—'),
+        render: (v) => (v ? formatFechaCorta(v) : 'Todo el día'),
       },
       {
         title: 'Estado',
         dataIndex: 'estado',
         key: 'estado',
-        render: (e) => {
-          const meta = ESTADO_TAG[e] ?? ESTADO_TAG.futura;
-          return <Tag color={meta.color}>{meta.label}</Tag>;
-        },
+        render: (e) => (
+          <StatusPill label={getActividadEstadoLabel(e)} className={getActividadEstadoPillClass(e)} />
+        ),
       },
       {
         title: 'Acciones',
@@ -86,7 +94,7 @@ const CronogramaAdminPage = () => {
               variant="warning"
               size="small"
               icon={<EditOutlined />}
-              onClick={() => s.abrirEditar(record)}
+              onClick={() => s.goToEditar(record)}
             >
               Editar
             </ActionButton>
@@ -135,7 +143,7 @@ const CronogramaAdminPage = () => {
             accion="CREAR"
             variant="primary"
             icon={<PlusOutlined />}
-            onClick={s.abrirCrear}
+            onClick={s.goToNueva}
           >
             Nueva actividad
           </ActionButton>
@@ -150,16 +158,6 @@ const CronogramaAdminPage = () => {
         searchPlaceholder="Buscar por actividad, etapa o tipo…"
         loadingTip="Cargando cronograma…"
         pagination={{ pageSize: 10, showTotal: (total) => `Total: ${total} actividades` }}
-      />
-
-      <CronogramaActividadModal
-        open={s.modalOpen}
-        saving={s.saving}
-        editing={s.editing}
-        periodos={s.periodos}
-        catalogo={s.catalogo}
-        onCancel={s.cerrarModal}
-        onSubmit={s.submit}
       />
     </Flex>
   );

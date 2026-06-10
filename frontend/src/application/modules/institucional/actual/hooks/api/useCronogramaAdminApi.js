@@ -19,6 +19,8 @@ export const useCronogramaAdminApi = () => {
     }
   }, []);
 
+  const fetchById = useCallback((id) => CalificacionRepository.obtenerActividadCronograma(id), []);
+
   const crear = useCallback(async (payload) => {
     setSaving(true);
     try {
@@ -39,5 +41,5 @@ export const useCronogramaAdminApi = () => {
 
   const eliminar = useCallback((id) => CalificacionRepository.eliminarActividadCronograma(id), []);
 
-  return { loading, saving, fetchData, crear, actualizar, eliminar };
+  return { loading, saving, fetchData, fetchById, crear, actualizar, eliminar };
 };

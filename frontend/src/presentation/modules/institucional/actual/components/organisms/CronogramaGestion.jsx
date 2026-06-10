@@ -1,10 +1,23 @@
+import { createElement } from 'react';
 import { Card, Collapse, Empty, Flex, Tag, Timeline, Typography } from 'antd';
 import { CalendarOutlined, SettingOutlined, StarFilled } from '@ant-design/icons';
 import { allColors, allSpacing } from '@theme/tokens';
-import { ActionButton } from '@atoms';
+import { ActionButton, StatusPill } from '@atoms';
+import { getActivityIconComponent } from '@config/icons';
 import { estadoDot } from '@application-institucional/actual/utils/cronogramaGestion.js';
+import {
+  getActividadTipoLabel,
+  getActividadTipoPillClass,
+} from '@application-institucional/actual/config/actividadPill.js';
+import '@institucional/actual/styles/cronograma.css';
 
 const { Text } = Typography;
+
+/** Elemento de icono de una actividad (createElement evita crear componentes en render). */
+const renderActividadIcono = (icono) =>
+  createElement(getActivityIconComponent(icono), {
+    style: { color: allColors.colorTextSecondary },
+  });
 
 /** Línea de tiempo de actividades de un periodo (antd Timeline). */
 const actividadesTimeline = (actividades = []) => (
@@ -14,9 +27,10 @@ const actividadesTimeline = (actividades = []) => (
       children: (
         <Flex vertical gap={allSpacing.marginXS}>
           <Flex align="center" gap="small" wrap>
+            {renderActividadIcono(a.icono)}
             {a.esDestacada ? <StarFilled style={{ color: allColors.colorWarning }} /> : null}
             <Text strong={a.estado === 'vigente'}>{a.nombre}</Text>
-            <Tag color={a.tipoMeta.color}>{a.tipoMeta.label}</Tag>
+            <StatusPill label={getActividadTipoLabel(a.tipo)} className={getActividadTipoPillClass(a.tipo)} />
             {a.estado === 'vigente' ? <Tag color="processing">En curso</Tag> : null}
           </Flex>
           <Text type="secondary">{a.rango}</Text>
@@ -102,8 +116,12 @@ const CronogramaGestion = ({ periodos = [], proximas = [], onGestionar }) => {
                   <Text type="secondary" style={{ minWidth: 150 }}>
                     {a.rango}
                   </Text>
+                  {renderActividadIcono(a.icono)}
                   <Text>{a.nombre}</Text>
-                  <Tag color={a.tipoMeta.color}>{a.tipoMeta.label}</Tag>
+                  <StatusPill
+                    label={getActividadTipoLabel(a.tipo)}
+                    className={getActividadTipoPillClass(a.tipo)}
+                  />
                 </Flex>
               ))}
             </Flex>

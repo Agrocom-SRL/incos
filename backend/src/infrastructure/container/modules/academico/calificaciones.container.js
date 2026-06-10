@@ -13,6 +13,7 @@ import { SavePoliticaInstitucionalUseCase } from '../../../../application/use-ca
 import { GetGestionBimestresUseCase } from '../../../../application/use-cases/academico/GetGestionBimestresUseCase.js';
 import { GetCronogramaGestionUseCase } from '../../../../application/use-cases/academico/GetCronogramaGestionUseCase.js';
 import { ListCronogramaAdminUseCase } from '../../../../application/use-cases/academico/ListCronogramaAdminUseCase.js';
+import { GetActividadCronogramaUseCase } from '../../../../application/use-cases/academico/GetActividadCronogramaUseCase.js';
 import { CreateActividadCronogramaUseCase } from '../../../../application/use-cases/academico/CreateActividadCronogramaUseCase.js';
 import { UpdateActividadCronogramaUseCase } from '../../../../application/use-cases/academico/UpdateActividadCronogramaUseCase.js';
 import { DeleteActividadCronogramaUseCase } from '../../../../application/use-cases/academico/DeleteActividadCronogramaUseCase.js';
@@ -28,6 +29,7 @@ import { SavePoliticaInstitucionalController } from '../../../../presentation/co
 import { GetGestionBimestresController } from '../../../../presentation/controllers/academico/calificaciones/get-gestion-bimestres.controller.js';
 import { GetCronogramaGestionController } from '../../../../presentation/controllers/academico/calificaciones/get-cronograma-gestion.controller.js';
 import { ListCronogramaAdminController } from '../../../../presentation/controllers/academico/calificaciones/list-cronograma-admin.controller.js';
+import { GetActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/get-actividad-cronograma.controller.js';
 import { CreateActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/create-actividad-cronograma.controller.js';
 import { UpdateActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/update-actividad-cronograma.controller.js';
 import { DeleteActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/delete-actividad-cronograma.controller.js';
@@ -220,6 +222,16 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getActividadCronogramaUseCase,
+    (c) =>
+      new GetActividadCronogramaUseCase({
+        cronogramaGestionRepository: c.resolve(REPOSITORIOS_TOKENS.cronogramaGestionRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.createActividadCronogramaUseCase,
     (c) =>
       new CreateActividadCronogramaUseCase({
@@ -323,6 +335,17 @@ export function registerCalificacionesResource(container) {
     (c) =>
       new ListCronogramaAdminController({
         listCronogramaAdminUseCase: c.resolve(ACADEMICO_TOKENS.listCronogramaAdminUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getActividadCronogramaController,
+    (c) =>
+      new GetActividadCronogramaController({
+        getActividadCronogramaUseCase: c.resolve(ACADEMICO_TOKENS.getActividadCronogramaUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       }),
@@ -730,6 +753,7 @@ export function registerCalificacionesResource(container) {
       getGestionBimestresController: c.resolve(ACADEMICO_TOKENS.getGestionBimestresController),
       getCronogramaGestionController: c.resolve(ACADEMICO_TOKENS.getCronogramaGestionController),
       listCronogramaAdminController: c.resolve(ACADEMICO_TOKENS.listCronogramaAdminController),
+      getActividadCronogramaController: c.resolve(ACADEMICO_TOKENS.getActividadCronogramaController),
       createActividadCronogramaController: c.resolve(
         ACADEMICO_TOKENS.createActividadCronogramaController,
       ),

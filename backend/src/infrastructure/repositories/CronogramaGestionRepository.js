@@ -102,6 +102,40 @@ export class CronogramaGestionRepository {
     );
   }
 
+  /** Una actividad del cronograma por id (forma editable, para precargar el formulario). */
+  async obtenerActividadAdminPorId(id) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        ac.id,
+        ac.periodo_academico_id   AS periodoAcademicoId,
+        pa.nombre                 AS periodoNombre,
+        pa.numero_orden           AS periodoNumeroOrden,
+        ac.actividad_id           AS actividadId,
+        a.tipo,
+        a.icono,
+        a.es_destacada            AS esDestacada,
+        ac.nombre_personalizado   AS nombrePersonalizado,
+        a.nombre                  AS catalogoNombre,
+        COALESCE(ac.nombre_personalizado, a.nombre) AS nombre,
+        ac.codigo,
+        ac.fecha_inicio           AS fechaInicio,
+        ac.fecha_fin              AS fechaFin
+      FROM actividades_calendario ac
+      JOIN periodos_academicos pa
+        ON pa.id = ac.periodo_academico_id AND pa.deleted_at IS NULL
+      LEFT JOIN actividades a
+        ON a.id = ac.actividad_id AND a.deleted_at IS NULL
+      WHERE ac.id = ?
+        AND ac.activo = TRUE
+        AND ac.deleted_at IS NULL
+      LIMIT 1
+      `,
+      { replacements: [id], type: sequelize.QueryTypes.SELECT },
+    );
+    return rows[0] ?? null;
+  }
+
   /** Periodos/etapas de una gestión (todas las divisiones) para el select del formulario. */
   async obtenerPeriodosGestion(gestionId) {
     return sequelize.query(

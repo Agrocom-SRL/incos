@@ -1,7 +1,7 @@
 /**
- * Estado de la página de administración del Cronograma: tabla de actividades de
- * la gestión vigente + alta/edición (modal) + baja (confirm). El formulario vive
- * en el modal (valida y entrega `values` a `submit`).
+ * Estado de la página de administración del Cronograma: tabla de actividades de la
+ * gestión vigente + baja (confirm). El alta/edición vive en una página de formulario
+ * (`/institucional/actual/cronograma/nueva` y `/:id/editar`).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -13,12 +13,10 @@ import { actualPaths } from '../../config/paths.js';
 export function useCronogramaAdminState() {
   const navigate = useNavigate();
   const { notification, modal } = App.useApp();
-  const { loading, saving, fetchData, crear, actualizar, eliminar } = useCronogramaAdminApi();
+  const { loading, fetchData, eliminar } = useCronogramaAdminApi();
 
-  const [data, setData] = useState({ gestion: null, actividades: [], periodos: [], catalogo: [] });
+  const [data, setData] = useState({ gestion: null, actividades: [] });
   const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null); // actividad en edición, o null = crear
 
   const cargar = useCallback(async () => {
     const result = await fetchData();
@@ -26,8 +24,6 @@ export function useCronogramaAdminState() {
       setData({
         gestion: result.data?.gestion ?? null,
         actividades: result.data?.actividades ?? [],
-        periodos: result.data?.periodos ?? [],
-        catalogo: result.data?.catalogo ?? [],
       });
       setError(null);
     } else {
@@ -44,8 +40,6 @@ export function useCronogramaAdminState() {
         setData({
           gestion: result.data?.gestion ?? null,
           actividades: result.data?.actividades ?? [],
-          periodos: result.data?.periodos ?? [],
-          catalogo: result.data?.catalogo ?? [],
         });
         setError(null);
       } else {
@@ -57,36 +51,10 @@ export function useCronogramaAdminState() {
     };
   }, [fetchData]);
 
-  const abrirCrear = useCallback(() => {
-    setEditing(null);
-    setModalOpen(true);
-  }, []);
-
-  const abrirEditar = useCallback((record) => {
-    setEditing(record);
-    setModalOpen(true);
-  }, []);
-
-  const cerrarModal = useCallback(() => {
-    setModalOpen(false);
-    setEditing(null);
-  }, []);
-
-  const submit = useCallback(
-    async (values) => {
-      const result = editing
-        ? await actualizar(editing.id, values)
-        : await crear(values);
-      if (result.success) {
-        notification.success({ title: editing ? 'Actividad actualizada' : 'Actividad creada' });
-        cerrarModal();
-        await cargar();
-      } else {
-        notification.error({ title: 'No se pudo guardar', description: result.error });
-      }
-      return result.success;
-    },
-    [editing, actualizar, crear, notification, cerrarModal, cargar],
+  const goToNueva = useCallback(() => navigate(actualPaths.cronogramaNueva()), [navigate]);
+  const goToEditar = useCallback(
+    (record) => navigate(actualPaths.cronogramaEditar(record.id)),
+    [navigate],
   );
 
   const eliminarActividad = useCallback(
@@ -123,18 +91,11 @@ export function useCronogramaAdminState() {
 
   return {
     loading,
-    saving,
     error,
     gestion: data.gestion,
     actividades: data.actividades,
-    periodos: data.periodos,
-    catalogo: data.catalogo,
-    modalOpen,
-    editing,
-    abrirCrear,
-    abrirEditar,
-    cerrarModal,
-    submit,
+    goToNueva,
+    goToEditar,
     eliminarActividad,
     breadcrumbItems,
     pageTitle: 'Cronograma de la gestión',

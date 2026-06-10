@@ -1,0 +1,87 @@
+/* Badges (pills) del cronograma — misma estética que los pills de materias. */
+
+.cronograma-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tipos de actividad */
+.cronograma-pill--inscripcion {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}
+.cronograma-pill--planificacion {
+  background: #cffafe;
+  color: #0e7490;
+  border-color: rgba(14, 116, 144, 0.22);
+}
+.cronograma-pill--academica {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+.cronograma-pill--evaluacion {
+  background: #fef9c3;
+  color: #a16207;
+  border-color: rgba(161, 98, 7, 0.22);
+}
+.cronograma-pill--administrativa {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+.cronograma-pill--feriado {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.22);
+}
+.cronograma-pill--evento {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: rgba(109, 40, 217, 0.22);
+}
+.cronograma-pill--feria {
+  background: #fce7f3;
+  color: #be185d;
+  border-color: rgba(190, 24, 93, 0.22);
+}
+.cronograma-pill--modalidad {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.2);
+}
+.cronograma-pill--otro {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+/* Estados de la actividad */
+.cronograma-pill--vigente {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+.cronograma-pill--pasada {
+  background: #f3f4f6;
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+.cronograma-pill--futura {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}

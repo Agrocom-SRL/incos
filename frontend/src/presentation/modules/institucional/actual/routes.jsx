@@ -17,6 +17,16 @@ const ControlBimestresConnector = lazy(
 const CronogramaAdminConnector = lazy(
   () => import('@institucional/actual/connectors/CronogramaAdminConnector'),
 );
+const CronogramaActividadCreateConnector = lazy(() =>
+  import('@institucional/actual/connectors/CronogramaActividadFormConnector').then((m) => ({
+    default: m.CronogramaActividadCreateConnector,
+  })),
+);
+const CronogramaActividadEditConnector = lazy(() =>
+  import('@institucional/actual/connectors/CronogramaActividadFormConnector').then((m) => ({
+    default: m.CronogramaActividadEditConnector,
+  })),
+);
 
 export const actualRoutes = [
   {
@@ -53,6 +63,24 @@ export const actualRoutes = [
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'INST-GESTION-ACTUAL',
+  },
+  {
+    path: '/institucional/actual/cronograma/nueva',
+    element: <CronogramaActividadCreateConnector />,
+    key: 'INST-GESTION-CRONOGRAMA-NUEVA',
+    permiso: 'institucional.gestion.cronograma',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'INST-GESTION-CRONOGRAMA',
+  },
+  {
+    path: '/institucional/actual/cronograma/:id/editar',
+    element: <CronogramaActividadEditConnector />,
+    key: 'INST-GESTION-CRONOGRAMA-EDITAR',
+    permiso: 'institucional.gestion.cronograma',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'INST-GESTION-CRONOGRAMA',
   },
 ];
 

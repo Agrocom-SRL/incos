@@ -214,6 +214,20 @@ class CalificacionRepository {
     }
   }
 
+  /** GET /v1/calificaciones/cronograma/:id — detalle de una actividad del calendario. */
+  async obtenerActividadCronograma(id) {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN_BY_ID(id));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar la actividad');
+    }
+  }
+
   /** POST /v1/calificaciones/cronograma */
   async crearActividadCronograma(data) {
     try {
