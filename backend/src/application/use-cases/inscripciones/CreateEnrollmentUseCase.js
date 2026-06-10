@@ -8,6 +8,7 @@ import {
   ESTADOS_MATERIA_INSCRITA,
 } from '../../../domain/constants/inscripciones.constants.js';
 import { parsePriorHistoryItem } from './priorHistoryItemValidation.js';
+import { activarCursadoInscripcion } from '../../utils/activarCursadoInscripcion.js';
 
 /**
  * Use Case: CreateEnrollmentUseCase
@@ -98,7 +99,7 @@ export class CreateEnrollmentUseCase {
     planSubjectRepository,
     contributionPaymentRepository,
     priorEnrollmentHistoryRepository,
-    gestionBimestresRepository,
+    subjectEnrollmentBimesterRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -124,7 +125,7 @@ export class CreateEnrollmentUseCase {
     this.planSubjectRepository = planSubjectRepository;
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
-    this.gestionBimestresRepository = gestionBimestresRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.logger = logger;
   }
 
@@ -187,8 +188,8 @@ export class CreateEnrollmentUseCase {
 
       // Si la gestión vigente ya está "en activación" (cursado iniciado), las
       // matrículas nuevas nacen en CURSANDO con sus bimestres abiertos, no en INSCRITO.
-      const gestionIniciada = this.gestionBimestresRepository
-        ? await this.gestionBimestresRepository.gestionAcademicaIniciada(management.id)
+      const gestionIniciada = this.subjectEnrollmentRepository
+        ? await this.subjectEnrollmentRepository.existeCursandoEnGestion(management.id)
         : false;
 
       // Resolver teacherAssignmentIds u oferta de curso desde selección por periodo (ANTIGUO)
@@ -1104,8 +1105,13 @@ export class CreateEnrollmentUseCase {
 
     // Gestión en activación: abrir los 4 bimestres de las matrículas recién creadas
     // (CURSANDO). Idempotente; userId no disponible en creación → auditoría con NULL.
-    if (gestionIniciada && this.gestionBimestresRepository) {
-      await this.gestionBimestresRepository.activarCursadoPorInscripcion(enrollment.id, null);
+    if (gestionIniciada && this.subjectEnrollmentBimesterRepository) {
+      await activarCursadoInscripcion({
+        subjectEnrollmentRepository: this.subjectEnrollmentRepository,
+        subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+        inscripcionId: enrollment.id,
+        userId: null,
+      });
       this.logger.info('[Inscripciones] Bimestres abiertos por gestión en activación', {
         enrollmentId: enrollment.id,
       });

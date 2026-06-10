@@ -15,6 +15,8 @@ export class GuardarBimestreConsolidadoUseCase {
     calificacionCoordinacionRepository,
     calificacionContextoRepository,
     cuadernoRepository,
+    subjectEnrollmentRepository,
+    subjectEnrollmentBimesterRepository,
     evaluationConfigurationRepository,
     teacherRepository,
     userRepository,
@@ -24,6 +26,8 @@ export class GuardarBimestreConsolidadoUseCase {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
@@ -66,7 +70,7 @@ export class GuardarBimestreConsolidadoUseCase {
       gestionId,
     });
 
-    await this.cuadernoRepository.asegurarBimestresMatriculaCurso(
+    await this.subjectEnrollmentBimesterRepository.asegurarBimestresMatriculaCurso(
       Number(asignacionId),
       bimestreNum,
       usuarioId,
@@ -94,7 +98,7 @@ export class GuardarBimestreConsolidadoUseCase {
         );
       }
 
-      const bmId = await this.cuadernoRepository.asegurarBimestreMatriculaId(
+      const bmId = await this.subjectEnrollmentBimesterRepository.asegurarBimestreMatriculaId(
         Number(asignacionId),
         estudianteId,
         bimestreNum,
@@ -102,7 +106,7 @@ export class GuardarBimestreConsolidadoUseCase {
       );
       if (!bmId) continue;
 
-      const actual = await this.cuadernoRepository.obtenerBimestreMatriculaPorId(bmId);
+      const actual = await this.subjectEnrollmentBimesterRepository.obtenerBimestreMatriculaPorId(bmId);
       const habTeorico = tieneTeorico ? teoricoEntrada : actual?.habilitacion_teorico ?? null;
       const habPractico = tienePractico ? practicoEntrada : actual?.habilitacion_practico ?? null;
 
@@ -113,7 +117,7 @@ export class GuardarBimestreConsolidadoUseCase {
         notaPractico: actual?.nota_practico,
       });
 
-      await this.cuadernoRepository.actualizarHabilitacionBimestreMatricula(
+      await this.subjectEnrollmentBimesterRepository.actualizarHabilitacionBimestreMatricula(
         bmId,
         {
           habilitacionTeorico: habTeorico,
@@ -128,6 +132,7 @@ export class GuardarBimestreConsolidadoUseCase {
 
     const recalculoFinal = await recalcularNotaFinalMatriculaCurso({
       cuadernoRepository: this.cuadernoRepository,
+      subjectEnrollmentRepository: this.subjectEnrollmentRepository,
       asignacionId: Number(asignacionId),
       pesosBimestres,
       usuarioId,

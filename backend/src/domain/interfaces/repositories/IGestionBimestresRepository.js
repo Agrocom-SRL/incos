@@ -2,22 +2,14 @@
  * Interfaz de Repositorio (comando + consulta): IGestionBimestresRepository
  *
  * Contrato del repositorio de gestión institucional de bimestres (estado,
- * métricas, iniciar gestión académica, activar cursado, cerrar bimestre).
+ * métricas, validación y cierre de bimestre).
  *
- * NO extiende IRepository: no es un CRUD por id sobre una tabla, sino un
- * repositorio transaccional de dominio (lecturas de vista + mutaciones
- * acopladas en una misma operación de negocio). Declara sus métodos públicos.
+ * NO extiende IRepository: es un repositorio de LECTURA (vistas) + coordinación.
+ * Las escrituras de transición (matriculas_materia / bimestres_matricula) NO
+ * viven aquí: se orquestan en los casos de uso sobre repos de tabla única.
+ * Declara sus métodos públicos.
  */
 export class IGestionBimestresRepository {
-  /**
-   * ¿La gestión académica ya fue iniciada (hay matrículas en cursado)?
-   * @param {number} gestionId
-   * @returns {Promise<boolean>}
-   */
-  async gestionAcademicaIniciada(gestionId) {
-    throw new Error('Method gestionAcademicaIniciada() must be implemented');
-  }
-
   /**
    * Estados institucionales por bimestre de una gestión.
    * @param {number} gestionId
@@ -34,25 +26,6 @@ export class IGestionBimestresRepository {
    */
   async obtenerMetricasGestionBimestres(gestionId) {
     throw new Error('Method obtenerMetricasGestionBimestres() must be implemented');
-  }
-
-  /**
-   * Inicia la gestión académica vigente (INSCRITO→CURSANDO + apertura de bimestres).
-   * @param {number} userId
-   * @returns {Promise<Object>}
-   */
-  async iniciarGestionAcademica(userId) {
-    throw new Error('Method iniciarGestionAcademica() must be implemented');
-  }
-
-  /**
-   * Activa el cursado de todas las matrículas de una inscripción (transaccional).
-   * @param {number} inscripcionId
-   * @param {number|null} [userId]
-   * @returns {Promise<Object>}
-   */
-  async activarCursadoPorInscripcion(inscripcionId, userId) {
-    throw new Error('Method activarCursadoPorInscripcion() must be implemented');
   }
 
   /**

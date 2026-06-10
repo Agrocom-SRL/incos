@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { activarCursadoInscripcion } from '../../utils/activarCursadoInscripcion.js';
 
 /**
  * Use Case: CambiarEstadoMatriculaUseCase
@@ -9,18 +10,27 @@ import { NotFoundError } from '../../../domain/errors/AppError.js';
  * tardías cuando la gestión ya arrancó (la activación masiva por gestión vive en
  * `IniciarGestionAcademicaUseCase`).
  *
- * Idempotente: reejecutar es seguro y devuelve `matriculasInscritoACursando = 0`.
+ * Orquesta la operación multi-tabla (matriculas_materia + bimestres_matricula)
+ * en una transacción vía `activarCursadoInscripcion`; cada repositorio escribe
+ * una sola tabla. Idempotente: reejecutar devuelve `matriculasInscritoACursando = 0`.
  */
 export class CambiarEstadoMatriculaUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} params.gestionBimestresRepository - Repositorio de gestión de bimestres
+   * @param {Object} params.subjectEnrollmentRepository - Repositorio de matriculas_materia
+   * @param {Object} params.subjectEnrollmentBimesterRepository - Repositorio de bimestres_matricula
    * @param {ILogger} params.logger
    */
-  constructor({ enrollmentRepository, gestionBimestresRepository, logger }) {
+  constructor({
+    enrollmentRepository,
+    subjectEnrollmentRepository,
+    subjectEnrollmentBimesterRepository,
+    logger,
+  }) {
     this.enrollmentRepository = enrollmentRepository;
-    this.gestionBimestresRepository = gestionBimestresRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.logger = logger;
   }
 
@@ -36,10 +46,12 @@ export class CambiarEstadoMatriculaUseCase {
       throw new NotFoundError(`Inscripción con ID ${inscripcionId}`);
     }
 
-    const result = await this.gestionBimestresRepository.activarCursadoPorInscripcion(
+    const result = await activarCursadoInscripcion({
+      subjectEnrollmentRepository: this.subjectEnrollmentRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
       inscripcionId,
       userId,
-    );
+    });
 
     this.logger.info('[Inscripciones] Cursado activado por inscripción', {
       inscripcionId,

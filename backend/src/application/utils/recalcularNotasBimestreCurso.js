@@ -5,6 +5,7 @@ import { agruparYCalcularPorBimestreMatricula } from './cuadernoNotasCalculo.js'
  */
 export async function recalcularNotasBimestreCurso({
   cuadernoRepository,
+  subjectEnrollmentBimesterRepository,
   asignacionId,
   bimestreNumero,
   cuotaTeorico,
@@ -17,7 +18,7 @@ export async function recalcularNotasBimestreCurso({
   );
   const calculados = agruparYCalcularPorBimestreMatricula(filas);
 
-  const todosBm = await cuadernoRepository.listarBimestresMatriculaIdsCurso(
+  const todosBm = await subjectEnrollmentBimesterRepository.listarBimestresMatriculaIdsCurso(
     Number(asignacionId),
     bimestreNumero,
   );
@@ -28,7 +29,7 @@ export async function recalcularNotasBimestreCurso({
       practico: null,
       bimestre: null,
     };
-    await cuadernoRepository.actualizarComponentesBimestreMatricula(bmId, vals, usuarioId);
+    await subjectEnrollmentBimesterRepository.actualizarComponentesBimestreMatricula(bmId, vals, usuarioId);
   }
 
   return { estudiantesActualizados: todosBm.length };

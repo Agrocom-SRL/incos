@@ -3,33 +3,19 @@ import { IGestionBimestresRepository } from '../../domain/interfaces/repositorie
 import { CalificacionContextoRepository } from './views/CalificacionContextoRepository.js';
 
 /**
- * Gestión institucional de bimestres (estado, métricas, iniciar/cerrar).
- * Repositorio transaccional de dominio (comando + consulta), no CRUD por id.
+ * Gestión institucional de bimestres: estado institucional, métricas, validación
+ * y cierre. Solo LECTURA (vistas) + coordinación; las escrituras de transición
+ * (matriculas_materia / bimestres_matricula) viven en los casos de uso
+ * (IniciarGestionAcademicaUseCase, activarCursadoInscripcion) sobre sus repos de
+ * tabla única. Las lecturas de matriculas_materia se delegan a
+ * subjectEnrollmentRepository (no se consulta esa tabla directamente aquí).
  */
 export class GestionBimestresRepository extends IGestionBimestresRepository {
-  constructor({ calificacionContextoRepository } = {}) {
+  constructor({ calificacionContextoRepository, subjectEnrollmentRepository } = {}) {
     super();
     this.contexto =
       calificacionContextoRepository ?? new CalificacionContextoRepository();
-  }
-
-  /** @param {number} gestionId */
-  async gestionAcademicaIniciada(gestionId) {
-    const rows = await sequelize.query(
-      `
-      SELECT COUNT(*) AS total
-      FROM matriculas_materia mm
-      INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
-      INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
-      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
-      WHERE gp.gestion_id = ?
-        AND mm.estado IN ('CURSANDO', 'APROBADO', 'REPROBADO')
-        AND mm.deleted_at IS NULL
-        AND mm.activo = TRUE
-      `,
-      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
-    );
-    return Number(rows[0]?.total ?? 0) > 0;
+    this.subjectEnrollment = subjectEnrollmentRepository ?? null;
   }
 
   /** @param {number} gestionId @returns {Promise<Map<number, string>>} */
@@ -92,138 +78,6 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       notasFaltantes,
       docentesActivos,
     };
-  }
-
-  /** @param {number} userId */
-  async iniciarGestionAcademica(userId) {
-    const ctx = await this.contexto.obtenerContextoVigente();
-    if (!ctx?.gestion_id) {
-      throw new Error('No hay gestión académica vigente');
-    }
-
-    const gestionId = Number(ctx.gestion_id);
-    const yaIniciada = await this.gestionAcademicaIniciada(gestionId);
-    if (yaIniciada) {
-      const err = new Error('La gestión académica ya fue iniciada');
-      err.code = 'GESTION_YA_INICIADA';
-      throw err;
-    }
-
-    const [, meta] = await sequelize.query(
-      `
-      UPDATE matriculas_materia mm
-      INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
-      INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
-      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
-      SET mm.estado = 'CURSANDO',
-          mm.updated_by = ?,
-          mm.updated_at = NOW()
-      WHERE gp.gestion_id = ?
-        AND mm.estado = 'INSCRITO'
-        AND mm.deleted_at IS NULL
-        AND mm.activo = TRUE
-      `,
-      { replacements: [userId, gestionId] },
-    );
-
-    await sequelize.query(
-      `
-      INSERT INTO bimestres_matricula (
-        matricula_materia_id, bimestre, estado, created_by, updated_by, activo
-      )
-      SELECT
-        mm.id,
-        nums.n,
-        CASE WHEN nums.n = 1 THEN 'EN_CURSO' ELSE 'PENDIENTE' END,
-        ?,
-        ?,
-        TRUE
-      FROM matriculas_materia mm
-      INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
-      INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
-      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
-      CROSS JOIN (
-        SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
-      ) nums
-      LEFT JOIN bimestres_matricula bm
-        ON bm.matricula_materia_id = mm.id
-        AND bm.bimestre = nums.n
-        AND bm.deleted_at IS NULL
-      WHERE gp.gestion_id = ?
-        AND mm.estado = 'CURSANDO'
-        AND mm.deleted_at IS NULL
-        AND mm.activo = TRUE
-        AND bm.id IS NULL
-      `,
-      { replacements: [userId, userId, gestionId] },
-    );
-
-    return {
-      matriculasInscritoACursando: meta?.affectedRows ?? 0,
-    };
-  }
-
-  /**
-   * Activa el cursado de TODAS las matrículas de materia de una inscripción:
-   * INSCRITO → CURSANDO y abre sus 4 bimestres (B1=EN_CURSO, B2-4=PENDIENTE).
-   *
-   * A diferencia de `iniciarGestionAcademica` (masivo por gestión), aquí se filtra
-   * directo por `mm.inscripcion_id`, por lo que no hace falta puentear por
-   * oferta_cursos → paralelos_gestion → gestiones_planes y no hay fan-out de JOINs.
-   * Idempotente: el INSERT solo crea bimestres faltantes (`LEFT JOIN ... bm.id IS NULL`),
-   * por lo que reejecutar es seguro y devuelve `matriculasInscritoACursando = 0`.
-   *
-   * @param {number} inscripcionId
-   * @param {number|null} userId
-   * @returns {Promise<{matriculasInscritoACursando:number}>}
-   */
-  async activarCursadoPorInscripcion(inscripcionId, userId = null) {
-    return sequelize.transaction(async (t) => {
-      const [, meta] = await sequelize.query(
-        `
-        UPDATE matriculas_materia mm
-        SET mm.estado = 'CURSANDO',
-            mm.updated_by = ?,
-            mm.updated_at = NOW()
-        WHERE mm.inscripcion_id = ?
-          AND mm.estado = 'INSCRITO'
-          AND mm.deleted_at IS NULL
-          AND mm.activo = TRUE
-        `,
-        { replacements: [userId, inscripcionId], transaction: t },
-      );
-
-      await sequelize.query(
-        `
-        INSERT INTO bimestres_matricula (
-          matricula_materia_id, bimestre, estado, created_by, updated_by, activo
-        )
-        SELECT
-          mm.id,
-          nums.n,
-          CASE WHEN nums.n = 1 THEN 'EN_CURSO' ELSE 'PENDIENTE' END,
-          ?,
-          ?,
-          TRUE
-        FROM matriculas_materia mm
-        CROSS JOIN (
-          SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
-        ) nums
-        LEFT JOIN bimestres_matricula bm
-          ON bm.matricula_materia_id = mm.id
-          AND bm.bimestre = nums.n
-          AND bm.deleted_at IS NULL
-        WHERE mm.inscripcion_id = ?
-          AND mm.estado = 'CURSANDO'
-          AND mm.deleted_at IS NULL
-          AND mm.activo = TRUE
-          AND bm.id IS NULL
-        `,
-        { replacements: [userId, userId, inscripcionId], transaction: t },
-      );
-
-      return { matriculasInscritoACursando: meta?.affectedRows ?? 0 };
-    });
   }
 
   /** @param {number} numeroBimestre @param {number} gestionId */
@@ -383,7 +237,7 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
     const [periodos, gestionIniciada, estadosMap, metricasGlobales, metricasBim] =
       await Promise.all([
         this.contexto.obtenerPeriodosBimestresGestion(gestionId),
-        this.gestionAcademicaIniciada(gestionId),
+        this.subjectEnrollment.existeCursandoEnGestion(gestionId),
         this.estadosInstitucionalesBimestres(gestionId),
         this._metricasGlobales(gestionId),
         this._metricasPorBimestre(gestionId),
@@ -422,19 +276,8 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
     });
 
     if (gestionIniciada && bimestres[0]) {
-      const [countRow] = await sequelize.query(
-        `
-        SELECT COUNT(*) AS total
-        FROM matriculas_materia mm
-        INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
-        INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
-        INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
-        WHERE gp.gestion_id = ?
-          AND mm.estado = 'CURSANDO'
-        `,
-        { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
-      );
-      bimestres[0].matriculasTransicionadas = Number(countRow?.total ?? 0);
+      bimestres[0].matriculasTransicionadas =
+        await this.subjectEnrollment.contarCursandoEnGestion(gestionId);
     }
 
     return {

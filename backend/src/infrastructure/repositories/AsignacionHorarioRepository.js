@@ -7,6 +7,7 @@ import { AsignacionHorarioMapper } from '../mappers/AsignacionHorarioMapper.js';
 
 /**
  * Bloques horarios (asignacion_horarios) vinculados a asignaciones_docentes.
+ * @implements {IAsignacionHorarioRepository}
  */
 export class AsignacionHorarioRepository extends BaseRepository {
   getModel() {

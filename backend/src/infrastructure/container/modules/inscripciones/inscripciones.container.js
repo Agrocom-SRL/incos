@@ -86,7 +86,7 @@ export function registerInscripcionesResource(container) {
                 priorEnrollmentHistoryRepository: c.resolve(
                   REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
                 ),
-                gestionBimestresRepository: c.resolve(REPOSITORIOS_TOKENS.gestionBimestresRepository),
+                subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -181,7 +181,8 @@ export function registerInscripcionesResource(container) {
         (c) =>
             new CambiarEstadoMatriculaUseCase({
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
-                gestionBimestresRepository: c.resolve(REPOSITORIOS_TOKENS.gestionBimestresRepository),
+                subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
+                subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

@@ -3,6 +3,7 @@ import { IMatriculaMateriaRepository } from '../../domain/interfaces/repositorie
 import { MatriculaMateria as MatriculaMateriaModel } from '../database/models/matricula_materia.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SubjectEnrollmentMapper } from '../mappers/SubjectEnrollmentMapper.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * Implementación del repositorio de matrículas de materia usando Sequelize.
@@ -146,5 +147,122 @@ export class SubjectEnrollmentRepository extends BaseRepository {
      */
     getCollectionName() {
         return 'subjectEnrollments';
+    }
+
+    // ============================================
+    // Operaciones de negocio sobre matriculas_materia (set-based).
+    // La orquestación multi-tabla (con bimestres_matricula) vive en los casos
+    // de uso; aquí solo se escribe/lee la tabla matriculas_materia.
+    // ============================================
+
+    /**
+     * ¿Existe al menos una matrícula en cursado/cerrado en la gestión?
+     * (indicador de "gestión académica ya iniciada").
+     * @param {number} gestionId — PK de gestiones
+     * @returns {Promise<boolean>}
+     */
+    async existeCursandoEnGestion(gestionId) {
+        const rows = await sequelize.query(
+            `
+            SELECT COUNT(*) AS total
+            FROM matriculas_materia mm
+            INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+            INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+            INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
+            WHERE gp.gestion_id = ?
+              AND mm.estado IN ('CURSANDO', 'APROBADO', 'REPROBADO')
+              AND mm.deleted_at IS NULL
+              AND mm.activo = TRUE
+            `,
+            { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+        );
+        return Number(rows[0]?.total ?? 0) > 0;
+    }
+
+    /**
+     * Cuenta matrículas en estado CURSANDO de una gestión.
+     * @param {number} gestionId — PK de gestiones
+     * @returns {Promise<number>}
+     */
+    async contarCursandoEnGestion(gestionId) {
+        const rows = await sequelize.query(
+            `
+            SELECT COUNT(*) AS total
+            FROM matriculas_materia mm
+            INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+            INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+            INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
+            WHERE gp.gestion_id = ?
+              AND mm.estado = 'CURSANDO'
+            `,
+            { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+        );
+        return Number(rows[0]?.total ?? 0) || 0;
+    }
+
+    /**
+     * Transiciona INSCRITO → CURSANDO todas las matrículas de una gestión.
+     * @param {number} gestionId — PK de gestiones
+     * @param {number|null} userId
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns {Promise<number>} filas afectadas
+     */
+    async marcarCursandoPorGestion(gestionId, userId = null, { transaction } = {}) {
+        const [, meta] = await sequelize.query(
+            `
+            UPDATE matriculas_materia mm
+            INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+            INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+            INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
+            SET mm.estado = 'CURSANDO',
+                mm.updated_by = ?,
+                mm.updated_at = NOW()
+            WHERE gp.gestion_id = ?
+              AND mm.estado = 'INSCRITO'
+              AND mm.deleted_at IS NULL
+              AND mm.activo = TRUE
+            `,
+            { replacements: [userId, gestionId], transaction },
+        );
+        return meta?.affectedRows ?? 0;
+    }
+
+    /**
+     * Transiciona INSCRITO → CURSANDO las matrículas de una inscripción.
+     * @param {number} inscripcionId
+     * @param {number|null} userId
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns {Promise<number>} filas afectadas
+     */
+    async marcarCursandoPorInscripcion(inscripcionId, userId = null, { transaction } = {}) {
+        const [, meta] = await sequelize.query(
+            `
+            UPDATE matriculas_materia mm
+            SET mm.estado = 'CURSANDO',
+                mm.updated_by = ?,
+                mm.updated_at = NOW()
+            WHERE mm.inscripcion_id = ?
+              AND mm.estado = 'INSCRITO'
+              AND mm.deleted_at IS NULL
+              AND mm.activo = TRUE
+            `,
+            { replacements: [userId, inscripcionId], transaction },
+        );
+        return meta?.affectedRows ?? 0;
+    }
+
+    /**
+     * Actualiza la nota final de una matrícula de materia (cierre de cuaderno).
+     * @returns {Promise<void>}
+     */
+    async actualizarNotaFinalMatricula(matriculaMateriaId, notaFinal, usuarioId, { transaction } = {}) {
+        await sequelize.query(
+            `
+            UPDATE matriculas_materia
+            SET nota_final = ?, updated_by = ?, updated_at = NOW()
+            WHERE id = ? AND deleted_at IS NULL
+            `,
+            { replacements: [notaFinal, usuarioId, matriculaMateriaId], type: sequelize.QueryTypes.UPDATE, transaction },
+        );
     }
 }

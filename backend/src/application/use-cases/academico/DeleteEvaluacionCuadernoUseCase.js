@@ -9,6 +9,9 @@ export class DeleteEvaluacionCuadernoUseCase {
     calificacionCoordinacionRepository,
     calificacionContextoRepository,
     cuadernoRepository,
+    subjectEnrollmentRepository,
+    subjectEnrollmentBimesterRepository,
+    bimesterEvaluationGradeRepository,
     evaluationConfigurationRepository,
     bimesterEvaluationRepository,
     teacherRepository,
@@ -19,6 +22,9 @@ export class DeleteEvaluacionCuadernoUseCase {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
     this.teacherRepository = teacherRepository;
@@ -55,7 +61,7 @@ export class DeleteEvaluacionCuadernoUseCase {
       throw new ForbiddenError('Esta evaluación está cerrada y no se puede eliminar.');
     }
 
-    await this.cuadernoRepository.softEliminarNotasPorEvaluacion(Number(evaluacionId), usuarioId);
+    await this.bimesterEvaluationGradeRepository.softEliminarNotasPorEvaluacion(Number(evaluacionId), usuarioId);
 
     const { cuotaTeorico, cuotaPractico, pesosBimestres } = await cargarCuotasPoliticaGestion({
       calificacionContextoRepository: this.calificacionContextoRepository,
@@ -65,6 +71,7 @@ export class DeleteEvaluacionCuadernoUseCase {
 
     await recalcularNotasBimestreCurso({
       cuadernoRepository: this.cuadernoRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
       asignacionId: Number(asignacionId),
       bimestreNumero: bimestreNum,
       cuotaTeorico,
@@ -74,6 +81,7 @@ export class DeleteEvaluacionCuadernoUseCase {
 
     await recalcularNotaFinalMatriculaCurso({
       cuadernoRepository: this.cuadernoRepository,
+      subjectEnrollmentRepository: this.subjectEnrollmentRepository,
       asignacionId: Number(asignacionId),
       pesosBimestres,
       usuarioId,

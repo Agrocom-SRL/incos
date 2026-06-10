@@ -6,6 +6,8 @@ import { mapNotaRowToDto } from '../mappers/cuadernoEvaluacionMapper.js';
  */
 export async function persistirNotaCuadernoCelda({
   cuadernoRepository,
+  subjectEnrollmentBimesterRepository,
+  bimesterEvaluationGradeRepository,
   asignacionId,
   bimestreNum,
   gestionId,
@@ -52,7 +54,7 @@ export async function persistirNotaCuadernoCelda({
     );
   }
 
-  const bimestreMatriculaId = await cuadernoRepository.asegurarBimestreMatriculaId(
+  const bimestreMatriculaId = await subjectEnrollmentBimesterRepository.asegurarBimestreMatriculaId(
     Number(asignacionId),
     estudianteId,
     bimestreNum,
@@ -63,7 +65,7 @@ export async function persistirNotaCuadernoCelda({
   }
 
   if (nota == null) {
-    await cuadernoRepository.eliminarNotaCelda(evaluacionId, bimestreMatriculaId, usuarioId);
+    await bimesterEvaluationGradeRepository.eliminarNotaCelda(evaluacionId, bimestreMatriculaId, usuarioId);
     return mapNotaRowToDto({
       estudiante_id: estudianteId,
       evaluacion_id: evaluacionId,
@@ -71,7 +73,7 @@ export async function persistirNotaCuadernoCelda({
     });
   }
 
-  const fila = await cuadernoRepository.upsertNotaCelda({
+  const fila = await bimesterEvaluationGradeRepository.upsertNotaCelda({
     evaluacionId,
     bimestreMatriculaId,
     nota,

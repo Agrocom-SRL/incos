@@ -76,6 +76,7 @@ export { IAulaRepository } from './IAulaRepository.js';
 export { IHorarioRepository } from './IHorarioRepository.js';
 export { IAsignacionHorarioRepository } from './IAsignacionHorarioRepository.js';
 export { IAsignacionDocenteRepository } from './IAsignacionDocenteRepository.js';
+export { IParaleloGestionRepository } from './IParaleloGestionRepository.js';
 export { IAulasHorariosSemanaRepository } from './IAulasHorariosSemanaRepository.js';
 export { IHorarioGrillaRepository } from './IHorarioGrillaRepository.js';
 export { IParaleloGestionFichaViewRepository } from './IParaleloGestionFichaViewRepository.js';

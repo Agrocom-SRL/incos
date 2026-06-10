@@ -346,6 +346,9 @@ export function registerRepositoriesModule(container) {
           calificacionContextoRepository: c.resolve(
             REPOSITORIOS_TOKENS.calificacionContextoRepository,
           ),
+          subjectEnrollmentRepository: c.resolve(
+            REPOSITORIOS_TOKENS.subjectEnrollmentRepository,
+          ),
         }),
     );
     registerComponent(

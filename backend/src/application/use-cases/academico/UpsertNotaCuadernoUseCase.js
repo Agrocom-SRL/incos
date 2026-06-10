@@ -13,6 +13,8 @@ export class UpsertNotaCuadernoUseCase {
     calificacionCoordinacionRepository,
     calificacionContextoRepository,
     cuadernoRepository,
+    subjectEnrollmentBimesterRepository,
+    bimesterEvaluationGradeRepository,
     teacherRepository,
     userRepository,
     authRepository,
@@ -21,6 +23,8 @@ export class UpsertNotaCuadernoUseCase {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
     this.authRepository = authRepository;
@@ -60,6 +64,8 @@ export class UpsertNotaCuadernoUseCase {
 
     const resultado = await persistirNotaCuadernoCelda({
       cuadernoRepository: this.cuadernoRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+      bimesterEvaluationGradeRepository: this.bimesterEvaluationGradeRepository,
       asignacionId: Number(asignacionId),
       bimestreNum,
       gestionId,
