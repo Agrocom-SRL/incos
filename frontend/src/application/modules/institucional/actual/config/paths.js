@@ -7,5 +7,6 @@ export const actualPaths = {
   bimestres: () => `${ACTUAL_BASE}/bimestres`,
   cronograma: () => `${ACTUAL_BASE}/cronograma`,
   cronogramaNueva: () => `${ACTUAL_BASE}/cronograma/nueva`,
+  cronogramaDetalle: (id) => `${ACTUAL_BASE}/cronograma/${id}`,
   cronogramaEditar: (id) => `${ACTUAL_BASE}/cronograma/${id}/editar`,
 };

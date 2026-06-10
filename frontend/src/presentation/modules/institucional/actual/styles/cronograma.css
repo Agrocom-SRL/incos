@@ -17,56 +17,359 @@
   text-overflow: ellipsis;
 }
 
+.ant-form-item-extra {
+  font-size: small !important; 
+}
+
 /* Tipos de actividad */
 .cronograma-pill--inscripcion {
   background: #e0f2fe;
   color: #0369a1;
   border-color: rgba(3, 105, 161, 0.22);
 }
+
 .cronograma-pill--planificacion {
   background: #cffafe;
   color: #0e7490;
   border-color: rgba(14, 116, 144, 0.22);
 }
+
 .cronograma-pill--academica {
   background: #ecfdf5;
   color: #047857;
   border-color: rgba(4, 120, 87, 0.22);
 }
+
 .cronograma-pill--evaluacion {
   background: #fef9c3;
   color: #a16207;
   border-color: rgba(161, 98, 7, 0.22);
 }
+
 .cronograma-pill--administrativa {
   background: #f3f4f6;
   color: #374151;
   border-color: #d1d5db;
 }
+
 .cronograma-pill--feriado {
   background: #fee2e2;
   color: #b91c1c;
   border-color: rgba(185, 28, 28, 0.22);
 }
+
 .cronograma-pill--evento {
   background: #ede9fe;
   color: #6d28d9;
   border-color: rgba(109, 40, 217, 0.22);
 }
+
 .cronograma-pill--feria {
   background: #fce7f3;
   color: #be185d;
   border-color: rgba(190, 24, 93, 0.22);
 }
+
 .cronograma-pill--modalidad {
   background: #fff7ed;
   color: #c2410c;
   border-color: rgba(194, 65, 12, 0.2);
 }
+
 .cronograma-pill--otro {
   background: #f3f4f6;
   color: #374151;
   border-color: #d1d5db;
+}
+
+/* ── Celda de etapa: pill teñido con el color propio del periodo (color de negocio) ── */
+.cronograma-etapa {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+
+.cronograma-etapa__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cronograma-etapa__swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Celda de actividad: identidad (IdentidadCelda) + dot de tipo debajo ── */
+.cronograma-actividad-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Truncado del nombre/código para no empujar el resto de columnas */
+.cronograma-actividad-cell .cfg-materia-identidad,
+.cronograma-actividad-cell .cfg-materia-identidad__texto {
+  min-width: 0;
+}
+
+.cronograma-actividad-cell .cfg-materia-identidad__nombre,
+.cronograma-actividad-cell .cfg-materia-identidad__sigla {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cronograma-actividad-cell__tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  color: var(--text-500, #6b7280);
+}
+
+/* El dot hereda el color del texto del tipo (una sola fuente de color por tipo) */
+.cronograma-actividad-cell__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  background: currentColor;
+}
+
+/* Color del tipo (texto + dot) — misma paleta que los pills */
+.cronograma-tipo--inscripcion {
+  color: #0369a1;
+}
+
+.cronograma-tipo--planificacion {
+  color: #0e7490;
+}
+
+.cronograma-tipo--academica {
+  color: #047857;
+}
+
+.cronograma-tipo--evaluacion {
+  color: #a16207;
+}
+
+.cronograma-tipo--administrativa {
+  color: #374151;
+}
+
+.cronograma-tipo--feriado {
+  color: #b91c1c;
+}
+
+.cronograma-tipo--evento {
+  color: #6d28d9;
+}
+
+.cronograma-tipo--feria {
+  color: #be185d;
+}
+
+.cronograma-tipo--modalidad {
+  color: #c2410c;
+}
+
+.cronograma-tipo--otro {
+  color: #6b7280;
+}
+
+.cronograma-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.cronograma-dot--inscripcion {
+  background: #0369a1;
+}
+
+.cronograma-dot--planificacion {
+  background: #0e7490;
+}
+
+.cronograma-dot--academica {
+  background: #047857;
+}
+
+.cronograma-dot--evaluacion {
+  background: #a16207;
+}
+
+.cronograma-dot--administrativa {
+  background: #374151;
+}
+
+.cronograma-dot--feriado {
+  background: #b91c1c;
+}
+
+.cronograma-dot--evento {
+  background: #6d28d9;
+}
+
+.cronograma-dot--feria {
+  background: #be185d;
+}
+
+.cronograma-dot--modalidad {
+  background: #c2410c;
+}
+
+.cronograma-dot--otro {
+  background: #6b7280;
+}
+
+/* ── Celda de duración: fechas con icono (patrón métricas de carrera) ── */
+.cronograma-duracion__todo {
+  color: var(--text-500, #6b7280) !important;
+  font-style: italic;
+}
+
+/* ── Formulario: switch en línea + opción de etapa con color ── */
+.crono-switch-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.crono-etapa-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crono-etapa-option__swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--border, #d1d5db);
+}
+
+/* ── Campo selector de actividad (input + botón buscar) ── */
+.crono-actividad-selector__prefix {
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  display: inline-flex;
+}
+
+.crono-actividad-selector__clear {
+  color: var(--text-400, #9ca3af);
+  cursor: pointer;
+}
+
+.crono-actividad-selector__clear:hover {
+  color: var(--text-600, #4b5563);
+}
+
+/* ── Modal de selección de actividad ── */
+.crono-selector__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.crono-selector__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-md, 10px);
+  background: var(--surface, #fff);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.crono-selector__row:hover {
+  background: var(--border-soft, #f9fafb);
+  border-color: color-mix(in srgb, var(--primary, #22854f) 30%, var(--border, #e5e7eb));
+}
+
+.crono-selector__row--selected {
+  border-color: var(--primary, var(--ant-color-primary, #22854f));
+  background: color-mix(in srgb, var(--primary, #22854f) 7%, var(--surface, #fff));
+}
+
+.crono-selector__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  font-size: 20px;
+  border-radius: 50%;
+  background: var(--primary, var(--ant-color-primary, #22854f));
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.crono-selector__tipo {
+  font-size: 12px;
+}
+
+.crono-selector__star {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+/* Título del modal con más aire + descripción + nota de actividad ya programada */
+.crono-selector__header {
+  margin-bottom: 18px;
+}
+
+.crono-selector__header .ant-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.crono-selector__desc {
+  margin: 0 !important;
+}
+
+.crono-selector__usada {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--warning, #b45309);
+}
+
+.crono-selector__row--usada {
+  border-color: color-mix(in srgb, #b45309 28%, var(--border, #e5e7eb));
+  background: color-mix(in srgb, #f59e0b 6%, var(--surface, #fff));
 }
 
 /* Estados de la actividad */
@@ -75,11 +378,13 @@
   color: #047857;
   border-color: rgba(4, 120, 87, 0.22);
 }
+
 .cronograma-pill--pasada {
   background: #f3f4f6;
   color: #6b7280;
   border-color: #d1d5db;
 }
+
 .cronograma-pill--futura {
   background: #e0f2fe;
   color: #0369a1;

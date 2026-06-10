@@ -74,6 +74,7 @@ export class CronogramaGestionRepository extends ICronogramaGestionRepository {
         ac.periodo_academico_id   AS periodoAcademicoId,
         pa.nombre                 AS periodoNombre,
         pa.numero_orden           AS periodoNumeroOrden,
+        pa.color_hex              AS periodoColor,
         ac.actividad_id           AS actividadId,
         a.tipo,
         a.icono,
@@ -113,6 +114,7 @@ export class CronogramaGestionRepository extends ICronogramaGestionRepository {
         ac.periodo_academico_id   AS periodoAcademicoId,
         pa.nombre                 AS periodoNombre,
         pa.numero_orden           AS periodoNumeroOrden,
+        pa.color_hex              AS periodoColor,
         ac.actividad_id           AS actividadId,
         a.tipo,
         a.icono,
@@ -122,7 +124,13 @@ export class CronogramaGestionRepository extends ICronogramaGestionRepository {
         COALESCE(ac.nombre_personalizado, a.nombre) AS nombre,
         ac.codigo,
         ac.fecha_inicio           AS fechaInicio,
-        ac.fecha_fin              AS fechaFin
+        ac.fecha_fin              AS fechaFin,
+        CASE
+          WHEN CURDATE() < ac.fecha_inicio THEN 'futura'
+          WHEN ac.fecha_fin IS NOT NULL AND CURDATE() > ac.fecha_fin THEN 'pasada'
+          WHEN ac.fecha_fin IS NULL AND CURDATE() > ac.fecha_inicio THEN 'pasada'
+          ELSE 'vigente'
+        END                       AS estado
       FROM actividades_calendario ac
       JOIN periodos_academicos pa
         ON pa.id = ac.periodo_academico_id AND pa.deleted_at IS NULL

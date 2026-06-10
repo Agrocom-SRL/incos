@@ -455,8 +455,13 @@ Rutas simplificadas vigentes del modulo:
   `periodos_academicos`, vía vista `vista_base_cronograma_gestion`) quedó **integrado en esta página**:
   ya **no existe** el ítem de menú `/institucional/cronogramas`. El endpoint `GET /calificaciones/gestion-cronograma`
   reutiliza `verificarPermisoCualquiera` y acepta `academico.calificacion.gestion_bimestres` O
-  `institucional.gestion.actual` (LISTAR) — **no requiere permiso nuevo**. El permiso `institucional.gestion.cronograma`
-  queda **reservado** (sin uso en routing; no se borra de seeds para no romper IDs).
+  `institucional.gestion.actual` (LISTAR) — **no requiere permiso nuevo**.
+- **Administración del cronograma** (`/institucional/actual/cronograma`, `…/nueva`, `…/:id` ficha, `…/:id/editar`):
+  usa el permiso `institucional.gestion.cronograma` (68) con **LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR**.
+  - `GET /calificaciones/cronograma` → LISTAR · `GET /calificaciones/cronograma/:id` → **DETALLE** (ficha y precarga del form)
+    · `POST` → CREAR · `PUT /:id` → EDITAR · `DELETE /:id` → ELIMINAR.
+  - **RBAC (nueva acción DETALLE del 68):** añadida en seed `56` (id 259) y asignada a RECTOR (2), DIR_ACADEMICO (3)
+    y SEC_ACADEMICA (5) en seed `55` (ids 655–657). ADMIN_SISTEMA por derivación. Requiere **re-seed** 56/55.
 - `/institucional/actual/bimestres` — ✅ **Control de bimestres (acciones)**. Ruta `institucional.gestion.actual` (67) + **EDITAR**.
   **No es ítem del sidebar**: se accede desde el botón "Control de bimestres" del panel de Gestión actual.
   Acciones: "Iniciar gestión académica" (`POST /calificaciones/gestion-bimestres/iniciar`) y "Cerrar bimestre"

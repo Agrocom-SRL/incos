@@ -31,7 +31,7 @@ Cadena de datos: `gestiones` → `periodos_academicos` (PLAN, BIM1–BIM4, CLAU)
 | id | permiso | acciones | roles (seed 55) | uso |
 |----|---------|----------|-----------------|-----|
 | 67 | `institucional.gestion.actual` | LISTAR, **EDITAR** | 2,3,5 (ADMIN deriva) | Panel (LISTAR) + Control de bimestres (EDITAR) |
-| 68 | `institucional.gestion.cronograma` | LISTAR, CREAR, EDITAR, **ELIMINAR** | 2,3,5 | CRUD de actividades **de calendario** |
+| 68 | `institucional.gestion.cronograma` | LISTAR, **DETALLE**, CREAR, EDITAR, **ELIMINAR** | 2,3,5 | CRUD + **ficha** de actividades **de calendario** |
 | — | `institucional.actividad` (**A CREAR en Fase B**) | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | 2,3,5 | CRUD del **catálogo maestro** |
 
 - La acción **EDITAR del 67** y **ELIMINAR del 68** fueron añadidas a seeds 55/56 (ids: 56→257,258; 55→649-651,652-654).
@@ -52,7 +52,7 @@ repos en `infrastructure/repositories/`, DI en `container/modules/academico/cali
 |--------|------|---------|-----------------|
 | GET | `/gestion-cronograma` | 67/gb LISTAR | `GetCronogramaGestionUseCase` — panel: periodos+actividades agrupados + próximas |
 | GET | `/cronograma` | 68 LISTAR | `ListCronogramaAdminUseCase` — `{ gestion, actividades(flat), periodos, catalogo }` |
-| GET | `/cronograma/:id` | 68 LISTAR | `GetActividadCronogramaUseCase` — precarga el form de edición |
+| GET | `/cronograma/:id` | 68 **DETALLE** | `GetActividadCronogramaUseCase` — ficha + precarga del form (incluye `periodoColor`, `estado`) |
 | POST | `/cronograma` | 68 CREAR | `CreateActividadCronogramaUseCase` (usa `CalendarActivityRepository`) |
 | PUT | `/cronograma/:id` | 68 EDITAR | `UpdateActividadCronogramaUseCase` |
 | DELETE | `/cronograma/:id` | 68 ELIMINAR | `DeleteActividadCronogramaUseCase` (soft delete) |
@@ -79,8 +79,16 @@ Módulo `presentation/modules/institucional/actual/` + `application/modules/inst
 **Páginas / componentes:**
 - `pages/GestionActualPage.jsx` — KPI strip full-width + `DashboardPageShell` (Main=`CronogramaGestion`, Sidebar=`GestionActualCard`+`BimestresTimeline`).
 - `components/organisms/CronogramaGestion.jsx` — Collapse por periodo + Timeline; **iconos + badges** por actividad; botón "Gestionar".
-- `pages/CronogramaAdminPage.jsx` — `TableListView` con búsqueda; columnas con `StatusPill` (tipo/estado) + icono; acciones Editar/Eliminar.
-- `pages/CronogramaActividadFormPage.jsx` (+ `connectors/CronogramaActividadFormConnector.jsx`) — form-page create/edit; `FieldDatePicker` (fin vacío = todo el día), Select etapa + Select catálogo (icono en `optionRender`).
+- `pages/CronogramaAdminPage.jsx` — shell `cfg-academico-workspace` (igual que Docentes): header con título primario + subtítulo, `TableListView embedded` con búsqueda. Columnas en `config/cronogramaTableColumns.jsx` (patrón Docentes): **#** numérica, **Etapa** (pill teñido con `periodoColor` propio), **Actividad** (`IdentidadCelda` + dot de tipo debajo), **Duración** (fechas con icono; sin `fecha_fin` ⇒ "todo el día") y **Acciones** con `TableActions` (**Ver/DETALLE**, Editar, Eliminar). Se eliminó la columna Estado y los `StatusPill` de tipo/estado.
+  - Átomos nuevos: `components/atoms/CronogramaEtapaCell`, `CronogramaActividadCell`, `CronogramaDuracionCell`. Color de etapa vía `periodoColor` (alias `pa.color_hex` en `obtenerActividadesAdmin` + `mapActividad`).
+- `pages/CronogramaActividadFormPage.jsx` (+ `connectors/CronogramaActividadFormConnector.jsx`) — form-page create/edit con shell `cfg-academico-form-workspace` (igual que CFG Académico, grid span 12). Organismo `components/organisms/CronogramaActividadFormSections`:
+  1. **Etapa** (`Select` con dot de color por periodo), 2. **Actividad** (campo con botón Buscar → `CronogramaActividadSelectorModal`, estilo del selector de asignación docente), 3. switch **Personalizar nombre** → input condicional, 4. **Fecha de inicio**, 5. switch **¿Evento de un solo día?** → si NO, aparece **Fecha de fin**.
+  - Átomo `CronogramaActividadSelectorField` (input + botón, compatible con `Form.Item`). El modal tiene botón "Nueva actividad" **deshabilitado** (tooltip "Fase B") hasta habilitar el catálogo maestro.
+  - Estado del modal/switches en `hooks/state/useCronogramaActividadForm.js` (no en la página): `selectedActividad`, `modalOpen`, `sobrescribirNombre`, `eventoUnDia`.
+
+- `pages/CronogramaActividadDetailPage.jsx` (+ `connectors/CronogramaActividadDetailConnector.jsx`) — **ficha** (permiso DETALLE), ruta `/institucional/actual/cronograma/:id`. `DetailInfoCard` + `DetailField`: código, etapa (pill de color), tipo (dot+texto teñido), estado, origen del nombre, destacada, duración. Hook `hooks/state/useCronogramaActividadDetail.js` (reusa `GET /:id`).
+
+**Pendiente del form (Fase B):** "Crear nueva actividad" desde el modal debe lanzar a una form-page del **catálogo maestro** con el mismo estilo y, al volver, reabrir el form de calendario con el borrador. Hoy el botón está deshabilitado.
 
 **Hooks (`application/.../actual/hooks/`):**
 - `api/useGestionActivacionApi.js` (panel: gestión vigente, bimestres, cronograma), `api/useCronogramaAdminApi.js` (list/byId/crear/actualizar/eliminar).
@@ -125,8 +133,8 @@ Módulo `presentation/modules/institucional/actual/` + `application/modules/inst
 > El usuario aplica cambios de **schema/datos** (no ejecutar SQL contra su BD sin su aprobación).
 
 1. **Aplicar la vista**: `mysql ... < backend/database/03-views/129-vista-base-cronograma-gestion.sql`.
-2. **Re-seed** (trunca + corre seeds 54/55/56) para activar EDITAR del 67, el 68 completo (incl. ELIMINAR)
-   y —tras Fase B— el permiso `institucional.actividad`.
+2. **Re-seed** (trunca + corre seeds 54/55/56) para activar EDITAR del 67, el 68 completo (incl. **DETALLE** y ELIMINAR)
+   y —tras Fase B— el permiso `institucional.actividad`. **Sin re-seed, la ficha y el botón "ver" dan 403.**
 3. **Reiniciar backend** al agregar rutas/DI nuevas.
 
 ---

@@ -31,6 +31,14 @@ export const getActividadEstadoLabel = (estado) => (ESTADO_META[estado] ?? ESTAD
 export const getActividadEstadoPillClass = (estado) =>
   `cronograma-pill cronograma-pill--${(ESTADO_META[estado] ?? ESTADO_META.futura).mod}`;
 
+/** Punto de color (dot) que identifica el tipo bajo el nombre de la actividad. */
+export const getActividadTipoDotClass = (tipo) =>
+  `cronograma-dot cronograma-dot--${(TIPO_META[tipo] ?? TIPO_META.OTRO).mod}`;
+
+/** Clase que tiñe el texto del tipo (dot + etiqueta) con el color del tipo. */
+export const getActividadTipoTextClass = (tipo) =>
+  `cronograma-tipo--${(TIPO_META[tipo] ?? TIPO_META.OTRO).mod}`;
+
 /** Opciones de tipo para selects/filtros. */
 export const TIPO_ACTIVIDAD_OPTIONS = Object.entries(TIPO_META).map(([value, meta]) => ({
   value,

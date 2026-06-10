@@ -8,6 +8,7 @@ const mapActividad = (row) => ({
   periodoAcademicoId: row.periodoAcademicoId,
   periodoNombre: row.periodoNombre,
   periodoNumeroOrden: row.periodoNumeroOrden ?? null,
+  periodoColor: row.periodoColor ?? null,
   actividadId: row.actividadId ?? null,
   nombrePersonalizado: row.nombrePersonalizado ?? null,
   catalogoNombre: row.catalogoNombre ?? null,

@@ -5,15 +5,13 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { App } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useCronogramaAdminApi } from '../api/useCronogramaAdminApi.js';
 import { actualPaths } from '../../config/paths.js';
 
 export function useCronogramaAdminState() {
   const navigate = useNavigate();
-  const { notification, modal } = App.useApp();
-  const { loading, fetchData, eliminar } = useCronogramaAdminApi();
+  const { loading, fetchData, eliminar: eliminarApi } = useCronogramaAdminApi();
 
   const [data, setData] = useState({ gestion: null, actividades: [] });
   const [error, setError] = useState(null);
@@ -52,32 +50,18 @@ export function useCronogramaAdminState() {
   }, [fetchData]);
 
   const goToNueva = useCallback(() => navigate(actualPaths.cronogramaNueva()), [navigate]);
+  const goToDetalle = useCallback(
+    (record) => navigate(actualPaths.cronogramaDetalle(record.id)),
+    [navigate],
+  );
   const goToEditar = useCallback(
     (record) => navigate(actualPaths.cronogramaEditar(record.id)),
     [navigate],
   );
 
-  const eliminarActividad = useCallback(
-    (record) => {
-      modal.confirm({
-        title: 'Eliminar actividad',
-        content: `¿Eliminar "${record.nombre}" del cronograma? Esta acción no se puede deshacer.`,
-        okText: 'Eliminar',
-        okType: 'danger',
-        cancelText: 'Cancelar',
-        onOk: async () => {
-          const result = await eliminar(record.id);
-          if (result.success) {
-            notification.success({ title: 'Actividad eliminada' });
-            await cargar();
-          } else {
-            notification.error({ title: 'No se pudo eliminar', description: result.error });
-          }
-        },
-      });
-    },
-    [modal, eliminar, notification, cargar],
-  );
+  // Eliminación crudita para TableActions (la confirmación/feedback la gestiona
+  // useDeleteItem dentro de TableActions). Devuelve el resultado del repositorio.
+  const eliminar = useCallback((id) => eliminarApi(id), [eliminarApi]);
 
   const breadcrumbItems = useMemo(
     () => [
@@ -95,8 +79,10 @@ export function useCronogramaAdminState() {
     gestion: data.gestion,
     actividades: data.actividades,
     goToNueva,
+    goToDetalle,
     goToEditar,
-    eliminarActividad,
+    eliminar,
+    refetch: cargar,
     breadcrumbItems,
     pageTitle: 'Cronograma de la gestión',
     goToPanel: useCallback(() => navigate(actualPaths.root()), [navigate]),

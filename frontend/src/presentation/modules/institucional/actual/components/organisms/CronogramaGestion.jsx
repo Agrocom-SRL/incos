@@ -51,7 +51,6 @@ const CronogramaGestion = ({ periodos = [], proximas = [], onGestionar }) => {
       permiso="institucional.gestion.cronograma"
       accion="LISTAR"
       variant="info"
-      size="small"
       icon={<SettingOutlined />}
       onClick={onGestionar}
     >

@@ -1,5 +1,5 @@
 /**
- * Detalle de una actividad del cronograma (para precargar el formulario de edición).
+ * Detalle de una actividad del cronograma (ficha DETALLE y precarga del form de edición).
  */
 export class GetActividadCronogramaUseCase {
   constructor({ cronogramaGestionRepository, logger }) {
@@ -19,6 +19,7 @@ export class GetActividadCronogramaUseCase {
       id: actividad.id,
       periodoAcademicoId: actividad.periodoAcademicoId,
       periodoNombre: actividad.periodoNombre,
+      periodoColor: actividad.periodoColor ?? null,
       actividadId: actividad.actividadId ?? null,
       nombrePersonalizado: actividad.nombrePersonalizado ?? null,
       catalogoNombre: actividad.catalogoNombre ?? null,
@@ -29,6 +30,7 @@ export class GetActividadCronogramaUseCase {
       codigo: actividad.codigo ?? null,
       fechaInicio: actividad.fechaInicio,
       fechaFin: actividad.fechaFin ?? null,
+      estado: actividad.estado ?? null,
     };
   }
 }

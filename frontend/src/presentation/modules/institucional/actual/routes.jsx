@@ -27,6 +27,9 @@ const CronogramaActividadEditConnector = lazy(() =>
     default: m.CronogramaActividadEditConnector,
   })),
 );
+const CronogramaActividadDetailConnector = lazy(
+  () => import('@institucional/actual/connectors/CronogramaActividadDetailConnector'),
+);
 
 export const actualRoutes = [
   {
@@ -70,6 +73,17 @@ export const actualRoutes = [
     key: 'INST-GESTION-CRONOGRAMA-NUEVA',
     permiso: 'institucional.gestion.cronograma',
     accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'INST-GESTION-CRONOGRAMA',
+  },
+  {
+    // Ficha de detalle de una actividad del calendario (DETALLE). Acceso por el
+    // botón "ver" de la tabla. Ruta dinámica DESPUÉS de las estáticas (`nueva`).
+    path: '/institucional/actual/cronograma/:id',
+    element: <CronogramaActividadDetailConnector />,
+    key: 'INST-GESTION-CRONOGRAMA-DETALLE',
+    permiso: 'institucional.gestion.cronograma',
+    accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'INST-GESTION-CRONOGRAMA',
   },

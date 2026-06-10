@@ -203,6 +203,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   // CRUD del cronograma (administración de actividades del calendario académico).
   // Protegido por el permiso reservado `institucional.gestion.cronograma` (68).
   const cronogramaListar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'LISTAR')];
+  const cronogramaDetalle = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'DETALLE')];
   const cronogramaCrear = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'CREAR')];
   const cronogramaEditar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'EDITAR')];
   const cronogramaEliminar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'ELIMINAR')];
@@ -214,7 +215,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   );
   router.get(
     '/cronograma/:id',
-    ...cronogramaListar,
+    ...cronogramaDetalle,
     cronogramaIdValidator,
     validateRequest,
     (req, res, next) => controllers.getActividadCronogramaController.handle(req, res, next),
