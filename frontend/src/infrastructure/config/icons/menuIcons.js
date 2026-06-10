@@ -100,7 +100,6 @@ export const menuIconMap = {
     'DOC': UsergroupAddOutlined,
     'FIN': DollarOutlined,
     'INST': HomeOutlined,
-    'REP': LineChartOutlined,
     'SEG': SafetyOutlined,
 
     // Institucional - Nivel 1
@@ -187,7 +186,6 @@ export const menuIconMap = {
     'ACA-CAL-POLITICA': FileTextOutlined,
     'ACA-CAL-GESTION-BIMESTRES': DashboardOutlined,
     'ACA-CAL-MIS-CURSOS': TeamOutlined,
-    'ACA-CAL-NOTAS': FileTextOutlined,
     'ACA-CAL-DOCENTES-CUADERNO': EditOutlined,
     'ACA-CAL-CUADERNO': EditOutlined,
     'ACA-CAL-PLAN': FileTextOutlined,

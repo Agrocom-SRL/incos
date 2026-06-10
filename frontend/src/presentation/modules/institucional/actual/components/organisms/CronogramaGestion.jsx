@@ -1,6 +1,7 @@
 import { Card, Collapse, Empty, Flex, Tag, Timeline, Typography } from 'antd';
-import { CalendarOutlined, StarFilled } from '@ant-design/icons';
+import { CalendarOutlined, SettingOutlined, StarFilled } from '@ant-design/icons';
 import { allColors, allSpacing } from '@theme/tokens';
+import { ActionButton } from '@atoms';
 import { estadoDot } from '@application-institucional/actual/utils/cronogramaGestion.js';
 
 const { Text } = Typography;
@@ -30,10 +31,23 @@ const actividadesTimeline = (actividades = []) => (
  * Agrupa las actividades por periodo (planificación, bimestres, clausura) en un
  * Collapse; abre por defecto el/los periodo(s) con actividad vigente.
  */
-const CronogramaGestion = ({ periodos = [], proximas = [] }) => {
+const CronogramaGestion = ({ periodos = [], proximas = [], onGestionar }) => {
+  const gestionarBtn = onGestionar ? (
+    <ActionButton
+      permiso="institucional.gestion.cronograma"
+      accion="LISTAR"
+      variant="info"
+      size="small"
+      icon={<SettingOutlined />}
+      onClick={onGestionar}
+    >
+      Gestionar
+    </ActionButton>
+  ) : null;
+
   if (!periodos.length) {
     return (
-      <Card title="Cronograma académico">
+      <Card title="Cronograma académico" extra={gestionarBtn}>
         <Empty description="No hay actividades de calendario para la gestión vigente" />
       </Card>
     );
@@ -68,6 +82,7 @@ const CronogramaGestion = ({ periodos = [], proximas = [] }) => {
           <span>Cronograma académico</span>
         </Flex>
       }
+      extra={gestionarBtn}
     >
       <Flex vertical gap="middle" style={{ width: '100%' }}>
         {proximas.length ? (

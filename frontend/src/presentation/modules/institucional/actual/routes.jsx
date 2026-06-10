@@ -1,8 +1,9 @@
 /**
  * Institucional → Gestión actual.
  *
- * - `/institucional/actual`            Panel (solo lectura): KPIs + línea de tiempo de bimestres.
+ * - `/institucional/actual`            Panel (solo lectura): KPIs + cronograma + línea de tiempo de bimestres.
  * - `/institucional/actual/bimestres`  Control de bimestres (acciones: iniciar gestión, cerrar bimestre).
+ * - `/institucional/actual/cronograma` Administración del cronograma (CRUD de actividades del calendario).
  */
 
 import { lazy } from 'react';
@@ -12,6 +13,9 @@ const GestionActualConnector = lazy(
 );
 const ControlBimestresConnector = lazy(
   () => import('@institucional/actual/connectors/ControlBimestresConnector'),
+);
+const CronogramaAdminConnector = lazy(
+  () => import('@institucional/actual/connectors/CronogramaAdminConnector'),
 );
 
 export const actualRoutes = [
@@ -36,6 +40,17 @@ export const actualRoutes = [
     key: 'INST-GESTION-BIMESTRES',
     permiso: 'institucional.gestion.actual',
     accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'INST-GESTION-ACTUAL',
+  },
+  {
+    // Administración del cronograma (CRUD). No es ítem del sidebar: se accede
+    // desde el botón "Gestionar" de la tarjeta Cronograma del panel.
+    path: '/institucional/actual/cronograma',
+    element: <CronogramaAdminConnector />,
+    key: 'INST-GESTION-CRONOGRAMA',
+    permiso: 'institucional.gestion.cronograma',
+    accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'INST-GESTION-ACTUAL',
   },

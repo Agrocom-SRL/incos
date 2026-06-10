@@ -35,7 +35,11 @@ const GestionActualPage = () => {
 
           <DashboardPageShell>
             <MainContent>
-              <CronogramaGestion periodos={s.cronograma} proximas={s.proximasActividades} />
+              <CronogramaGestion
+                periodos={s.cronograma}
+                proximas={s.proximasActividades}
+                onGestionar={s.goToCronograma}
+              />
             </MainContent>
             <InfoSidebar>
               <GestionActualCard

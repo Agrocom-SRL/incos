@@ -200,6 +200,62 @@ class CalificacionRepository {
     }
   }
 
+  /** GET /v1/calificaciones/cronograma — datos de administración (actividades + periodos + catálogo). */
+  async listarCronogramaAdmin() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el cronograma');
+    }
+  }
+
+  /** POST /v1/calificaciones/cronograma */
+  async crearActividadCronograma(data) {
+    try {
+      const response = await apiClient.post(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN, data);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear la actividad');
+    }
+  }
+
+  /** PUT /v1/calificaciones/cronograma/:id */
+  async actualizarActividadCronograma(id, data) {
+    try {
+      const response = await apiClient.put(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN_BY_ID(id), data);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar la actividad');
+    }
+  }
+
+  /** DELETE /v1/calificaciones/cronograma/:id */
+  async eliminarActividadCronograma(id) {
+    try {
+      const response = await apiClient.delete(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN_BY_ID(id));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la actividad');
+    }
+  }
+
   /** POST /v1/calificaciones/gestion-bimestres/iniciar */
   async iniciarGestionAcademica() {
     try {

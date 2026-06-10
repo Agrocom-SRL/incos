@@ -104,5 +104,6 @@ export function useGestionActualState() {
     breadcrumbItems,
     pageTitle: 'Gestión actual',
     goToControl: useCallback(() => navigate(actualPaths.bimestres()), [navigate]),
+    goToCronograma: useCallback(() => navigate(actualPaths.cronograma()), [navigate]),
   };
 }

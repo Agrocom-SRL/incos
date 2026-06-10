@@ -17,6 +17,9 @@ import {
   guardarNotasCuadernoBimestreValidator,
   getBimestreConsolidadoValidator,
   guardarBimestreConsolidadoValidator,
+  createActividadCronogramaValidator,
+  updateActividadCronogramaValidator,
+  cronogramaIdValidator,
 } from '../validators/academico/index.js';
 
 /**
@@ -195,6 +198,40 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     '/gestion-cronograma',
     ...gestionBimestresListar,
     (req, res, next) => controllers.getCronogramaGestionController.handle(req, res, next),
+  );
+
+  // CRUD del cronograma (administración de actividades del calendario académico).
+  // Protegido por el permiso reservado `institucional.gestion.cronograma` (68).
+  const cronogramaListar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'LISTAR')];
+  const cronogramaCrear = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'CREAR')];
+  const cronogramaEditar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'EDITAR')];
+  const cronogramaEliminar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'ELIMINAR')];
+
+  router.get(
+    '/cronograma',
+    ...cronogramaListar,
+    (req, res, next) => controllers.listCronogramaAdminController.handle(req, res, next),
+  );
+  router.post(
+    '/cronograma',
+    ...cronogramaCrear,
+    createActividadCronogramaValidator,
+    validateRequest,
+    (req, res, next) => controllers.createActividadCronogramaController.handle(req, res, next),
+  );
+  router.put(
+    '/cronograma/:id',
+    ...cronogramaEditar,
+    updateActividadCronogramaValidator,
+    validateRequest,
+    (req, res, next) => controllers.updateActividadCronogramaController.handle(req, res, next),
+  );
+  router.delete(
+    '/cronograma/:id',
+    ...cronogramaEliminar,
+    cronogramaIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.deleteActividadCronogramaController.handle(req, res, next),
   );
 
   router.post(
