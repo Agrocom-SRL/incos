@@ -11,17 +11,20 @@ import { useNavigate } from 'react-router-dom';
 import { useGestionActivacionApi } from '../api/useGestionActivacionApi.js';
 import { gestionActivacionStatus } from '../../utils/gestionActivacionStatus.js';
 import { buildBimestresTimeline } from '../../utils/bimestresTimeline.js';
+import { buildCronograma } from '../../utils/cronogramaGestion.js';
 import { resolverFaseGestion } from '../../utils/resolverFaseGestion.js';
 import { actualPaths } from '../../config/paths.js';
 
 export function useGestionActualState() {
   const navigate = useNavigate();
-  const { loading, fetchGestionVigente, fetchEstadoActivacion } = useGestionActivacionApi();
+  const { loading, fetchGestionVigente, fetchEstadoActivacion, fetchCronograma } =
+    useGestionActivacionApi();
 
   const [cargandoInicial, setCargandoInicial] = useState(true);
   const [error, setError] = useState(null);
   const [gestionVigente, setGestionVigente] = useState(null);
   const [estadoPayload, setEstadoPayload] = useState(null);
+  const [cronogramaPayload, setCronogramaPayload] = useState(null);
 
   const cargar = useCallback(async () => {
     setCargandoInicial(true);
@@ -33,12 +36,16 @@ export function useGestionActualState() {
       } else {
         setGestionVigente(vigenteResult.data);
       }
-      const estadoResult = await fetchEstadoActivacion();
+      const [estadoResult, cronogramaResult] = await Promise.all([
+        fetchEstadoActivacion(),
+        fetchCronograma(),
+      ]);
       setEstadoPayload(estadoResult?.success ? estadoResult.data : estadoResult?.data ?? null);
+      setCronogramaPayload(cronogramaResult?.success ? cronogramaResult.data : null);
     } finally {
       setCargandoInicial(false);
     }
-  }, [fetchGestionVigente, fetchEstadoActivacion]);
+  }, [fetchGestionVigente, fetchEstadoActivacion, fetchCronograma]);
 
   useEffect(() => {
     cargar();
@@ -50,6 +57,8 @@ export function useGestionActualState() {
     () => buildBimestresTimeline(estadoPayload?.bimestres),
     [estadoPayload],
   );
+
+  const cronograma = useMemo(() => buildCronograma(cronogramaPayload), [cronogramaPayload]);
 
   const fase = useMemo(
     () =>
@@ -88,6 +97,8 @@ export function useGestionActualState() {
     estadoLabel: estado.estadoLabel,
     estadoColor: estado.estadoColor,
     timeline,
+    cronograma: cronograma.periodos,
+    proximasActividades: cronograma.proximas,
     kpis,
     fase,
     breadcrumbItems,

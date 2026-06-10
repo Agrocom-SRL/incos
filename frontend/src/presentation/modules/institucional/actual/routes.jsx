@@ -29,17 +29,14 @@ export const actualRoutes = [
     },
   },
   {
+    // Página de acciones (EDITAR). No es ítem del sidebar: se accede desde el
+    // botón "Control de bimestres" del panel de Gestión actual.
     path: '/institucional/actual/bimestres',
     element: <ControlBimestresConnector />,
     key: 'INST-GESTION-BIMESTRES',
     permiso: 'institucional.gestion.actual',
     accion: 'EDITAR',
-    menu: {
-      label: 'Control de Bimestres',
-      module: 'INST',
-      parent: 'INST',
-      order: 2,
-    },
+    menu: null,
     breadcrumbParent: 'INST-GESTION-ACTUAL',
   },
 ];

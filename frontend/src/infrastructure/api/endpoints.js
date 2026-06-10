@@ -262,6 +262,7 @@ export const CALIFICACIONES_ENDPOINTS = {
   POLITICA: `${API_BASE}/calificaciones/politica`,
   POLITICA_CATALOGO: `${API_BASE}/calificaciones/politica/catalogo`,
   GESTION_BIMESTRES: `${API_BASE}/calificaciones/gestion-bimestres`,
+  GESTION_CRONOGRAMA: `${API_BASE}/calificaciones/gestion-cronograma`,
   GESTION_BIMESTRES_INICIAR: `${API_BASE}/calificaciones/gestion-bimestres/iniciar`,
   GESTION_BIMESTRES_VALIDAR_CIERRE: (numero) =>
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/validar-cierre`,

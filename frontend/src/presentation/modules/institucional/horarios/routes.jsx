@@ -107,7 +107,7 @@ export const horariosRoutes = [
       label: 'Gestión de Horarios',
       module: 'INST',
       parent: 'INST',
-      order: 4,
+      order: 3,
     },
   },
 ];

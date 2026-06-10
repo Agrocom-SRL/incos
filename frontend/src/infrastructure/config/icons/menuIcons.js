@@ -44,7 +44,6 @@ import {
     FileSearchOutlined,
     EyeOutlined,
     // Supervisión
-    ScheduleOutlined,
     FormOutlined,
     BarChartOutlined,
     // Horarios
@@ -108,7 +107,6 @@ export const menuIconMap = {
     'INST-ROOT': HomeOutlined,
     'INST-GESTION-ACTUAL': CalendarOutlined,
     'INST-GESTIONES-PASADAS': UnorderedListOutlined,
-    'INST-CRONOGRAMAS': ScheduleOutlined,
     'INST-OFERTA-ACADEMICA': BookOutlined,
     'INST-HORARIOS': CalendarOutlined,
     'INST-OFERTA-MAT-INSCRIBIR': BookOutlined,

@@ -33,6 +33,12 @@ export const useGestionActivacionApi = () => {
     }
   }, []);
 
+  /** Cronograma / calendario académico de la gestión vigente. */
+  const fetchCronograma = useCallback(
+    () => CalificacionRepository.obtenerGestionCronograma(),
+    [],
+  );
+
   /** Activa el cursado masivo (INSCRITO → CURSANDO + bimestres). */
   const iniciarGestionAcademica = useCallback(async () => {
     setIniciando(true);
@@ -60,6 +66,7 @@ export const useGestionActivacionApi = () => {
     iniciando,
     fetchGestionVigente,
     fetchEstadoActivacion,
+    fetchCronograma,
     iniciarGestionAcademica,
     validarCierreBimestre,
     cerrarBimestreGestion,

@@ -10,7 +10,13 @@ const { Title } = Typography;
  * El acceso se guarda con `institucional.gestion.actual` + EDITAR (mismo permiso
  * que protege las acciones).
  */
-const GestionActualCard = ({ gestionVigente, estadoLabel, estadoColor, onIrAControl }) => (
+const GestionActualCard = ({
+  gestionVigente,
+  estadoLabel,
+  estadoColor,
+  bimestreVigente,
+  onIrAControl,
+}) => (
   <Card>
     <Flex vertical gap="middle">
       <Flex align="center" justify="space-between" wrap gap="middle">
@@ -23,6 +29,9 @@ const GestionActualCard = ({ gestionVigente, estadoLabel, estadoColor, onIrACont
 
       <Descriptions column={1} size="small">
         <Descriptions.Item label="Código">{gestionVigente?.codigo || '—'}</Descriptions.Item>
+        <Descriptions.Item label="Bimestre vigente">
+          {bimestreVigente ? `B${bimestreVigente}` : '—'}
+        </Descriptions.Item>
       </Descriptions>
 
       <Flex>

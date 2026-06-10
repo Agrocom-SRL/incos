@@ -449,8 +449,16 @@ Permisos: `institucional.*`
 
 Rutas simplificadas vigentes del modulo:
 - `/institucional/actual` — ✅ **Gestión actual (Panel, solo lectura)**. Entrada `institucional.gestion.actual` (67) + LISTAR.
-  KPIs globales + línea de tiempo de bimestres (fechas/estado, datos de `GET /calificaciones/gestion-bimestres`).
+  KPIs globales + **cronograma académico** de la gestión vigente + línea de tiempo de bimestres
+  (datos de `GET /calificaciones/gestion-bimestres` y `GET /calificaciones/gestion-cronograma`).
+  El **cronograma** (calendario académico real, `actividades_calendario` seed 20 + `actividades` seed 17 +
+  `periodos_academicos`, vía vista `vista_base_cronograma_gestion`) quedó **integrado en esta página**:
+  ya **no existe** el ítem de menú `/institucional/cronogramas`. El endpoint `GET /calificaciones/gestion-cronograma`
+  reutiliza `verificarPermisoCualquiera` y acepta `academico.calificacion.gestion_bimestres` O
+  `institucional.gestion.actual` (LISTAR) — **no requiere permiso nuevo**. El permiso `institucional.gestion.cronograma`
+  queda **reservado** (sin uso en routing; no se borra de seeds para no romper IDs).
 - `/institucional/actual/bimestres` — ✅ **Control de bimestres (acciones)**. Ruta `institucional.gestion.actual` (67) + **EDITAR**.
+  **No es ítem del sidebar**: se accede desde el botón "Control de bimestres" del panel de Gestión actual.
   Acciones: "Iniciar gestión académica" (`POST /calificaciones/gestion-bimestres/iniciar`) y "Cerrar bimestre"
   (`.../bimestre/:n/validar-cierre` + `.../cerrar`; el cierre efectivo en backend está en preparación).
 
@@ -460,7 +468,6 @@ Rutas simplificadas vigentes del modulo:
   `gestion-bimestres` (GET estado, iniciar, validar/cerrar) usan `verificarPermisoCualquiera` y aceptan
   **`academico.calificacion.gestion_bimestres` O `institucional.gestion.actual`** (LISTAR/EDITAR), de modo que
   los opera tanto Calificaciones (coordinación) como Institucional → Gestión actual. ADMIN_SISTEMA por derivación.
-- `/institucional/cronogramas`
 - `/institucional/oferta` (wizard oferta; redirect desde `/institucional/oferta-academica`)
 - `/institucional/horarios`
 - `/institucional/pasadas`

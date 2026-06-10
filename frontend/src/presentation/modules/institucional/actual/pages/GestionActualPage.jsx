@@ -7,6 +7,7 @@ import {
   GestionActualCard,
   GestionActualKpiStrip,
   BimestresTimeline,
+  CronogramaGestion,
 } from '@institucional/actual/components/organisms';
 
 const GestionActualPage = () => {
@@ -28,22 +29,26 @@ const GestionActualPage = () => {
       ) : !s.gestionVigente ? (
         <Empty description="No hay una gestión vigente configurada" />
       ) : (
-        <DashboardPageShell>
-          <MainContent>
-            <Flex vertical gap="large" style={{ width: '100%' }}>
-              <GestionActualKpiStrip kpis={s.kpis} />
+        <Flex vertical gap="large" style={{ width: '100%' }}>
+          {/* KPIs a todo el ancho: evita que queden comprimidos junto al panel lateral */}
+          <GestionActualKpiStrip kpis={s.kpis} iniciada={s.iniciada} />
+
+          <DashboardPageShell>
+            <MainContent>
+              <CronogramaGestion periodos={s.cronograma} proximas={s.proximasActividades} />
+            </MainContent>
+            <InfoSidebar>
+              <GestionActualCard
+                gestionVigente={s.gestionVigente}
+                estadoLabel={s.estadoLabel}
+                estadoColor={s.estadoColor}
+                bimestreVigente={s.kpis?.bimestreVigente}
+                onIrAControl={s.goToControl}
+              />
               <BimestresTimeline timeline={s.timeline} />
-            </Flex>
-          </MainContent>
-          <InfoSidebar>
-            <GestionActualCard
-              gestionVigente={s.gestionVigente}
-              estadoLabel={s.estadoLabel}
-              estadoColor={s.estadoColor}
-              onIrAControl={s.goToControl}
-            />
-          </InfoSidebar>
-        </DashboardPageShell>
+            </InfoSidebar>
+          </DashboardPageShell>
+        </Flex>
       )}
     </Flex>
   );

@@ -183,6 +183,23 @@ class CalificacionRepository {
     }
   }
 
+  /** GET /v1/calificaciones/gestion-cronograma */
+  async obtenerGestionCronograma() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.GESTION_CRONOGRAMA);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el cronograma de la gestión');
+    }
+  }
+
   /** POST /v1/calificaciones/gestion-bimestres/iniciar */
   async iniciarGestionAcademica() {
     try {
