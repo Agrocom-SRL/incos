@@ -155,6 +155,19 @@ export function useControlBimestresState() {
   );
 
   // --- Activación / cierre (existente) ---------------------------------------
+  const ejecutarIniciarGestion = useCallback(async () => {
+    const result = await iniciarGestionAcademica();
+    if (result.success) {
+      message.success('Gestión académica iniciada. El cursado está activo.');
+      await cargar();
+    } else if (result.code === 'GESTION_YA_INICIADA') {
+      message.info('La gestión académica ya estaba iniciada.');
+      await cargar();
+    } else {
+      message.error(result.error || 'No se pudo iniciar la gestión académica.');
+    }
+  }, [iniciarGestionAcademica, message, cargar]);
+
   const handleIniciarGestion = useCallback(() => {
     if (estado.iniciada) return;
     modal.confirm({
@@ -164,20 +177,13 @@ export function useControlBimestresState() {
         'CURSANDO y se abrirán los 4 bimestres. Esta acción no se puede deshacer. ¿Continuar?',
       okText: 'Activar cursado',
       cancelText: 'Cancelar',
-      onOk: async () => {
-        const result = await iniciarGestionAcademica();
-        if (result.success) {
-          message.success('Gestión académica iniciada. El cursado está activo.');
-          await cargar();
-        } else if (result.code === 'GESTION_YA_INICIADA') {
-          message.info('La gestión académica ya estaba iniciada.');
-          await cargar();
-        } else {
-          message.error(result.error || 'No se pudo iniciar la gestión académica.');
-        }
+      // Fire-and-forget: el confirm cierra de inmediato y el progreso se muestra
+      // en IniciarGestionProgressModal (bloqueante) mientras `iniciando` es true.
+      onOk: () => {
+        ejecutarIniciarGestion();
       },
     });
-  }, [estado.iniciada, modal, message, iniciarGestionAcademica, cargar]);
+  }, [estado.iniciada, modal, ejecutarIniciarGestion]);
 
   const handleValidarCierre = useCallback(async () => {
     if (!bimestreVigente) return;

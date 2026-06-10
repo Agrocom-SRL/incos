@@ -7,6 +7,7 @@ import { Card, Flex, Typography } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { ActionButton } from '@atoms';
 import { formatFechaCorta } from '@application-institucional/actual/utils/bimestresTimeline.js';
+import IniciarGestionProgressModal from './IniciarGestionProgressModal.jsx';
 
 const { Paragraph } = Typography;
 
@@ -27,13 +28,15 @@ const IniciarGestionCard = ({ iniciada, fase, iniciando, onIniciarGestion }) => 
           variant="primary"
           icon={<CheckCircleOutlined />}
           loading={iniciando}
-          disabled={iniciada || (fase?.fase === 'PRE_INICIO' && fase?.ventanaAbierta === false)}
+          disabled={iniciada || iniciando || (fase?.fase === 'PRE_INICIO' && fase?.ventanaAbierta === false)}
           onClick={onIniciarGestion}
         >
           {iniciada ? 'Cursado ya activado' : 'Habilitar inicio de clases'}
         </ActionButton>
       </Flex>
     </Flex>
+
+    <IniciarGestionProgressModal key={iniciando ? 'on' : 'off'} open={iniciando} />
   </Card>
 );
 
