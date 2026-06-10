@@ -1,9 +1,11 @@
-import { sequelize } from '../database/sequelize.js';
+import { sequelize } from '../../database/sequelize.js';
+import { ICalificacionCoordinacionRepository } from '../../../domain/interfaces/repositories/ICalificacionCoordinacionRepository.js';
 
 /**
  * Lecturas de coordinación y cursos docente (vistas 104, 106, 108, 109, 107).
+ * Repositorio de SOLO LECTURA sobre vistas (arquetipo views/).
  */
-export class CalificacionCoordinacionRepository {
+export class CalificacionCoordinacionRepository extends ICalificacionCoordinacionRepository {
   /**
    * @param {Object} options
    * @param {boolean} [options.preliminar=false]

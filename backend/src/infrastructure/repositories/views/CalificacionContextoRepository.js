@@ -1,9 +1,11 @@
-import { sequelize } from '../database/sequelize.js';
+import { sequelize } from '../../database/sequelize.js';
+import { ICalificacionContextoRepository } from '../../../domain/interfaces/repositories/ICalificacionContextoRepository.js';
 
 /**
  * Contexto académico vigente y periodos bimestre (vistas 103, 105).
+ * Repositorio de SOLO LECTURA sobre vistas (arquetipo views/).
  */
-export class CalificacionContextoRepository {
+export class CalificacionContextoRepository extends ICalificacionContextoRepository {
   /**
    * @returns {Promise<{ gestion_id, gestion_anio, gestion_nombre, bimestre_vigente, bimestre_nombre }|null>}
    */

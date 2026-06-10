@@ -1,9 +1,11 @@
-import { sequelize } from '../database/sequelize.js';
+import { sequelize } from '../../database/sequelize.js';
+import { IPaymentAporteCareerExcelReportRepository } from '../../../domain/interfaces/repositories/IPaymentAporteCareerExcelReportRepository.js';
 
 /**
  * Filas para Excel: estado de aporte por estudiante inscrito (vista SQL).
+ * Repositorio de SOLO LECTURA para reportes (arquetipo views/).
  */
-export class PaymentAporteCareerExcelReportRepository {
+export class PaymentAporteCareerExcelReportRepository extends IPaymentAporteCareerExcelReportRepository {
   /**
    * @param {number} gestionId
    * @param {number} carreraId

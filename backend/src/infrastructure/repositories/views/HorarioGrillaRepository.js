@@ -1,8 +1,10 @@
+import { IHorarioGrillaRepository } from '../../../domain/interfaces/repositories/IHorarioGrillaRepository.js';
+
 /**
  * Fachada de lectura para GET /paralelos-gestion/:id/grilla-horario.
  * Delega en un repositorio por vista SQL (03-views/122–126).
  */
-export class HorarioGrillaRepository {
+export class HorarioGrillaRepository extends IHorarioGrillaRepository {
   constructor({
     grillaBloqueViewRepository,
     asignacionCoberturaBloquesViewRepository,
@@ -10,6 +12,7 @@ export class HorarioGrillaRepository {
     conflictoAulaBloqueViewRepository,
     conflictoDocenteBloqueViewRepository,
   }) {
+    super();
     this.grillaBloqueViewRepository = grillaBloqueViewRepository;
     this.asignacionCoberturaBloquesViewRepository = asignacionCoberturaBloquesViewRepository;
     this.conflictoParaleloBloqueViewRepository = conflictoParaleloBloqueViewRepository;

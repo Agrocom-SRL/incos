@@ -1,5 +1,6 @@
-import { sequelize } from '../database/sequelize.js';
-import { TIPOS_REFERENCIA } from '../../domain/constants/usuarios.constants.js';
+import { sequelize } from '../../database/sequelize.js';
+import { TIPOS_REFERENCIA } from '../../../domain/constants/usuarios.constants.js';
+import { IUsuarioReferenciaVinculoRepository } from '../../../domain/interfaces/repositories/IUsuarioReferenciaVinculoRepository.js';
 
 const TIPO_ETIQUETA = {
   [TIPOS_REFERENCIA.ESTUDIANTE]: 'Estudiante',
@@ -25,7 +26,7 @@ function ciTexto(ci, expedicion) {
  * Resuelve tipo_referencia + referencia_id a datos legibles para administración SEG.
  * No expone IDs internos; solo etiquetas y texto para UI.
  */
-export class UsuarioReferenciaVinculoRepository {
+export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVinculoRepository {
   /**
    * @returns {Promise<{
    *   tipo_etiqueta: string,

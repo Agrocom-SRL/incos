@@ -1,9 +1,16 @@
 import { QueryTypes } from 'sequelize';
+import { IOfertaCursoRepository } from '../../domain/interfaces/repositories/IOfertaCursoRepository.js';
 import { OfertaCurso as OfertaCursoModel } from '../database/models/oferta_curso.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CourseOfferMapper } from '../mappers/CourseOfferMapper.js';
 import { sequelize } from '../database/sequelize.js';
 
+/**
+ * Oferta de cursos (oferta_cursos): CRUD heredado de BaseRepository más lecturas
+ * enriquecidas/validación y cobertura docente. Las agregaciones de cobertura
+ * sobre tablas base son candidatas a una vista delgada futura.
+ * @implements {IOfertaCursoRepository}
+ */
 export class CourseOfferRepository extends BaseRepository {
   getModel() {
     return OfertaCursoModel;

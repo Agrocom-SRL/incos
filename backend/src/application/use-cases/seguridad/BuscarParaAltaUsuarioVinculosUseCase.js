@@ -1,7 +1,7 @@
 export class BuscarParaAltaUsuarioVinculosUseCase {
   /**
    * @param {Object} deps
-   * @param {import('../../../infrastructure/repositories/SeguridadAltaUsuarioLookupRepository.js').SeguridadAltaUsuarioLookupRepository} deps.seguridadAltaUsuarioLookupRepository
+   * @param {import('../../../infrastructure/repositories/views/SeguridadAltaUsuarioLookupRepository.js').SeguridadAltaUsuarioLookupRepository} deps.seguridadAltaUsuarioLookupRepository
    */
   constructor({ seguridadAltaUsuarioLookupRepository }) {
     this.seguridadAltaUsuarioLookupRepository = seguridadAltaUsuarioLookupRepository;

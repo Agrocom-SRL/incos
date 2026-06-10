@@ -1,11 +1,14 @@
 import { sequelize } from '../database/sequelize.js';
-import { CalificacionContextoRepository } from './CalificacionContextoRepository.js';
+import { ICuadernoRepository } from '../../domain/interfaces/repositories/ICuadernoRepository.js';
+import { CalificacionContextoRepository } from './views/CalificacionContextoRepository.js';
 
 /**
- * Consultas del cuaderno bimestral (evaluaciones + notas cargadas).
+ * Consultas y mutaciones del cuaderno bimestral (evaluaciones + notas cargadas).
+ * Repositorio transaccional de dominio (comando + consulta), no CRUD por id.
  */
-export class CuadernoRepository {
+export class CuadernoRepository extends ICuadernoRepository {
   constructor() {
+    super();
     this.contexto = new CalificacionContextoRepository();
   }
 

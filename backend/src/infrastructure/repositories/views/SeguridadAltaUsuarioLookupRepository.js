@@ -1,5 +1,6 @@
 import { QueryTypes } from 'sequelize';
-import { sequelize } from '../database/sequelize.js';
+import { sequelize } from '../../database/sequelize.js';
+import { ISeguridadAltaUsuarioLookupRepository } from '../../../domain/interfaces/repositories/ISeguridadAltaUsuarioLookupRepository.js';
 
 function normalizeLimit(limit, fallback = 20) {
   return Math.min(Math.max(parseInt(limit, 10) || fallback, 1), 50);
@@ -12,7 +13,7 @@ function normalizeSearch(searchTerm) {
   return `%${safe}%`;
 }
 
-export class SeguridadAltaUsuarioLookupRepository {
+export class SeguridadAltaUsuarioLookupRepository extends ISeguridadAltaUsuarioLookupRepository {
   async buscarEstudiantesSinCuenta(searchTerm, limit = 20) {
     const term = normalizeSearch(searchTerm);
     if (!term) return [];

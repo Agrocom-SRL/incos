@@ -1,15 +1,17 @@
-import { sequelize } from '../database/sequelize.js';
+import { sequelize } from '../../database/sequelize.js';
+import { ICronogramaGestionRepository } from '../../../domain/interfaces/repositories/ICronogramaGestionRepository.js';
 import { CalificacionContextoRepository } from './CalificacionContextoRepository.js';
 
 /**
  * Cronograma / calendario académico de la gestión vigente.
  *
  * Lee la vista delgada `vista_base_cronograma_gestion` (actividades_calendario +
- * actividades + periodos_academicos). Estilo de consulta cruda como
- * GestionBimestresRepository (no CRUD Sequelize).
+ * actividades + periodos_academicos). Repositorio de SOLO LECTURA sobre
+ * vistas/tablas (arquetipo views/, no CRUD Sequelize).
  */
-export class CronogramaGestionRepository {
+export class CronogramaGestionRepository extends ICronogramaGestionRepository {
   constructor({ calificacionContextoRepository } = {}) {
+    super();
     this.contexto =
       calificacionContextoRepository ?? new CalificacionContextoRepository();
   }

@@ -1,5 +1,6 @@
 import { QueryTypes } from 'sequelize';
-import { sequelize } from '../database/sequelize.js';
+import { sequelize } from '../../database/sequelize.js';
+import { IAulasHorariosSemanaRepository } from '../../../domain/interfaces/repositories/IAulasHorariosSemanaRepository.js';
 
 function buildWhere(filters = {}) {
   const where = [];
@@ -24,7 +25,7 @@ function buildWhere(filters = {}) {
   };
 }
 
-export class AulasHorariosSemanaRepository {
+export class AulasHorariosSemanaRepository extends IAulasHorariosSemanaRepository {
   async findAll(filters = {}, page = null, limit = null) {
     const { whereClause, replacements } = buildWhere(filters);
     const sql = `

@@ -1,13 +1,15 @@
-import { sequelize } from '../database/sequelize.js';
-import { DASHBOARD_QUERY_TARGETS } from '../constants/dashboardQuery.targets.js';
+import { sequelize } from '../../database/sequelize.js';
+import { DASHBOARD_QUERY_TARGETS } from '../../constants/dashboardQuery.targets.js';
+import { IDashboardRepository } from '../../../domain/interfaces/repositories/IDashboardRepository.js';
 
 const { vistaActividadesRecientes, vistaDocentePanel, vistaEstudiantePanel, tablaEstudiantes } =
   DASHBOARD_QUERY_TARGETS;
 
 /**
  * Consultas agregadas para el resumen del panel principal (dashboard).
+ * Repositorio de SOLO LECTURA sobre vistas (arquetipo views/).
  */
-export class DashboardRepository {
+export class DashboardRepository extends IDashboardRepository {
   /**
    * Actividades recientes: prioriza las de la fecha de hoy y luego por ocurrido_en descendente.
    *

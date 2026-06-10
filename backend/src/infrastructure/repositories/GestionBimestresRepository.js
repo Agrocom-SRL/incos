@@ -1,11 +1,14 @@
 import { sequelize } from '../database/sequelize.js';
-import { CalificacionContextoRepository } from './CalificacionContextoRepository.js';
+import { IGestionBimestresRepository } from '../../domain/interfaces/repositories/IGestionBimestresRepository.js';
+import { CalificacionContextoRepository } from './views/CalificacionContextoRepository.js';
 
 /**
  * Gestión institucional de bimestres (estado, métricas, iniciar/cerrar).
+ * Repositorio transaccional de dominio (comando + consulta), no CRUD por id.
  */
-export class GestionBimestresRepository {
+export class GestionBimestresRepository extends IGestionBimestresRepository {
   constructor({ calificacionContextoRepository } = {}) {
+    super();
     this.contexto =
       calificacionContextoRepository ?? new CalificacionContextoRepository();
   }

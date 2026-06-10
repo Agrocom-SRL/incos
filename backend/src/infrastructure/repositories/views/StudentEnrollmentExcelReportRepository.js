@@ -1,9 +1,11 @@
-import { sequelize } from '../database/sequelize.js';
+import { sequelize } from '../../database/sequelize.js';
+import { IStudentEnrollmentExcelReportRepository } from '../../../domain/interfaces/repositories/IStudentEnrollmentExcelReportRepository.js';
 
 /**
  * Consultas para el reporte Excel de estadísticas de inscritos (vista SQL).
+ * Repositorio de SOLO LECTURA para reportes (arquetipo views/).
  */
-export class StudentEnrollmentExcelReportRepository {
+export class StudentEnrollmentExcelReportRepository extends IStudentEnrollmentExcelReportRepository {
   /**
    * Filas de vista_reporte_excel_inscritos para una gestión.
    *
