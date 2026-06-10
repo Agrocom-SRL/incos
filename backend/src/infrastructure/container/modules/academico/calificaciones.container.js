@@ -17,6 +17,10 @@ import { GetActividadCronogramaUseCase } from '../../../../application/use-cases
 import { CreateActividadCronogramaUseCase } from '../../../../application/use-cases/academico/CreateActividadCronogramaUseCase.js';
 import { UpdateActividadCronogramaUseCase } from '../../../../application/use-cases/academico/UpdateActividadCronogramaUseCase.js';
 import { DeleteActividadCronogramaUseCase } from '../../../../application/use-cases/academico/DeleteActividadCronogramaUseCase.js';
+import { GetPeriodosGestionUseCase } from '../../../../application/use-cases/academico/GetPeriodosGestionUseCase.js';
+import { UpdatePeriodoFechasUseCase } from '../../../../application/use-cases/academico/UpdatePeriodoFechasUseCase.js';
+import { CreatePeriodoEtapaUseCase } from '../../../../application/use-cases/academico/CreatePeriodoEtapaUseCase.js';
+import { DeletePeriodoEtapaUseCase } from '../../../../application/use-cases/academico/DeletePeriodoEtapaUseCase.js';
 import { IniciarGestionAcademicaUseCase } from '../../../../application/use-cases/academico/IniciarGestionAcademicaUseCase.js';
 import { ValidarCierreBimestreUseCase } from '../../../../application/use-cases/academico/ValidarCierreBimestreUseCase.js';
 import { CerrarBimestreGestionUseCase } from '../../../../application/use-cases/academico/CerrarBimestreGestionUseCase.js';
@@ -33,6 +37,10 @@ import { GetActividadCronogramaController } from '../../../../presentation/contr
 import { CreateActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/create-actividad-cronograma.controller.js';
 import { UpdateActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/update-actividad-cronograma.controller.js';
 import { DeleteActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/delete-actividad-cronograma.controller.js';
+import { GetPeriodosGestionController } from '../../../../presentation/controllers/academico/calificaciones/get-periodos-gestion.controller.js';
+import { UpdatePeriodoFechasController } from '../../../../presentation/controllers/academico/calificaciones/update-periodo-fechas.controller.js';
+import { CreatePeriodoEtapaController } from '../../../../presentation/controllers/academico/calificaciones/create-periodo-etapa.controller.js';
+import { DeletePeriodoEtapaController } from '../../../../presentation/controllers/academico/calificaciones/delete-periodo-etapa.controller.js';
 import { IniciarGestionAcademicaController } from '../../../../presentation/controllers/academico/calificaciones/iniciar-gestion-academica.controller.js';
 import { ValidarCierreBimestreController } from '../../../../presentation/controllers/academico/calificaciones/validar-cierre-bimestre.controller.js';
 import { CerrarBimestreGestionController } from '../../../../presentation/controllers/academico/calificaciones/cerrar-bimestre-gestion.controller.js';
@@ -262,6 +270,50 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getPeriodosGestionUseCase,
+    (c) =>
+      new GetPeriodosGestionUseCase({
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        cronogramaGestionRepository: c.resolve(REPOSITORIOS_TOKENS.cronogramaGestionRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.updatePeriodoFechasUseCase,
+    (c) =>
+      new UpdatePeriodoFechasUseCase({
+        academicPeriodRepository: c.resolve(REPOSITORIOS_TOKENS.academicPeriodRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.createPeriodoEtapaUseCase,
+    (c) =>
+      new CreatePeriodoEtapaUseCase({
+        academicPeriodRepository: c.resolve(REPOSITORIOS_TOKENS.academicPeriodRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.deletePeriodoEtapaUseCase,
+    (c) =>
+      new DeletePeriodoEtapaUseCase({
+        academicPeriodRepository: c.resolve(REPOSITORIOS_TOKENS.academicPeriodRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.iniciarGestionAcademicaUseCase,
     (c) =>
       new IniciarGestionAcademicaUseCase({
@@ -381,6 +433,50 @@ export function registerCalificacionesResource(container) {
     (c) =>
       new DeleteActividadCronogramaController({
         deleteActividadCronogramaUseCase: c.resolve(ACADEMICO_TOKENS.deleteActividadCronogramaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getPeriodosGestionController,
+    (c) =>
+      new GetPeriodosGestionController({
+        getPeriodosGestionUseCase: c.resolve(ACADEMICO_TOKENS.getPeriodosGestionUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.updatePeriodoFechasController,
+    (c) =>
+      new UpdatePeriodoFechasController({
+        updatePeriodoFechasUseCase: c.resolve(ACADEMICO_TOKENS.updatePeriodoFechasUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.createPeriodoEtapaController,
+    (c) =>
+      new CreatePeriodoEtapaController({
+        createPeriodoEtapaUseCase: c.resolve(ACADEMICO_TOKENS.createPeriodoEtapaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.deletePeriodoEtapaController,
+    (c) =>
+      new DeletePeriodoEtapaController({
+        deletePeriodoEtapaUseCase: c.resolve(ACADEMICO_TOKENS.deletePeriodoEtapaUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       }),
@@ -778,6 +874,10 @@ export function registerCalificacionesResource(container) {
       deleteActividadCronogramaController: c.resolve(
         ACADEMICO_TOKENS.deleteActividadCronogramaController,
       ),
+      getPeriodosGestionController: c.resolve(ACADEMICO_TOKENS.getPeriodosGestionController),
+      updatePeriodoFechasController: c.resolve(ACADEMICO_TOKENS.updatePeriodoFechasController),
+      createPeriodoEtapaController: c.resolve(ACADEMICO_TOKENS.createPeriodoEtapaController),
+      deletePeriodoEtapaController: c.resolve(ACADEMICO_TOKENS.deletePeriodoEtapaController),
       iniciarGestionAcademicaController: c.resolve(
         ACADEMICO_TOKENS.iniciarGestionAcademicaController
       ),

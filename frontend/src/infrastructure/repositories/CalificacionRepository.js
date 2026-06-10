@@ -331,6 +331,65 @@ class CalificacionRepository {
     }
   }
 
+  /** GET /v1/calificaciones/gestion-bimestres/periodos — periodos/etapas de la gestión vigente. */
+  async listarPeriodosGestion() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.GESTION_PERIODOS);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar los periodos de la gestión');
+    }
+  }
+
+  /** PUT /v1/calificaciones/gestion-bimestres/periodos/:id/fechas */
+  async actualizarFechasPeriodo(id, { fechaInicio, fechaFin }) {
+    try {
+      const response = await apiClient.put(CALIFICACIONES_ENDPOINTS.GESTION_PERIODO_FECHAS(id), {
+        fechaInicio,
+        fechaFin,
+      });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data?.periodo ?? responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar las fechas del periodo');
+    }
+  }
+
+  /** POST /v1/calificaciones/gestion-bimestres/periodos — alta de etapa. */
+  async crearEtapaPeriodo(payload) {
+    try {
+      const response = await apiClient.post(CALIFICACIONES_ENDPOINTS.GESTION_PERIODOS, payload);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data?.periodo ?? responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear la etapa');
+    }
+  }
+
+  /** DELETE /v1/calificaciones/gestion-bimestres/periodos/:id */
+  async eliminarEtapaPeriodo(id) {
+    try {
+      const response = await apiClient.delete(CALIFICACIONES_ENDPOINTS.GESTION_PERIODO_BY_ID(id));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la etapa');
+    }
+  }
+
   /** GET cuaderno del bimestre (evaluaciones + notas cargadas). */
   async obtenerCuadernoBimestre(asignacionId, bimestre) {
     try {

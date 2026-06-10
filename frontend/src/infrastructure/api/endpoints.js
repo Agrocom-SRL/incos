@@ -270,6 +270,10 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/validar-cierre`,
   GESTION_BIMESTRES_CERRAR: (numero) =>
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/cerrar`,
+  GESTION_PERIODOS: `${API_BASE}/calificaciones/gestion-bimestres/periodos`,
+  GESTION_PERIODO_BY_ID: (id) => `${API_BASE}/calificaciones/gestion-bimestres/periodos/${id}`,
+  GESTION_PERIODO_FECHAS: (id) =>
+    `${API_BASE}/calificaciones/gestion-bimestres/periodos/${id}/fechas`,
   REGISTRO_NOTAS: (asignacionId) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/notas`,
   CUADERNO_BIMESTRE: (asignacionId, bimestre) =>

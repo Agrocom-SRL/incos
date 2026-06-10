@@ -23,3 +23,8 @@ export {
   updateActividadCronogramaValidator,
   cronogramaIdValidator,
 } from './cronograma.validator.js';
+export {
+  putPeriodoFechasValidator,
+  postPeriodoEtapaValidator,
+  periodoIdValidator,
+} from './periodos-gestion.validator.js';

@@ -462,10 +462,18 @@ Rutas simplificadas vigentes del modulo:
     · `POST` → CREAR · `PUT /:id` → EDITAR · `DELETE /:id` → ELIMINAR.
   - **RBAC (nueva acción DETALLE del 68):** añadida en seed `56` (id 259) y asignada a RECTOR (2), DIR_ACADEMICO (3)
     y SEC_ACADEMICA (5) en seed `55` (ids 655–657). ADMIN_SISTEMA por derivación. Requiere **re-seed** 56/55.
-- `/institucional/actual/bimestres` — ✅ **Control de bimestres (acciones)**. Ruta `institucional.gestion.actual` (67) + **EDITAR**.
+- `/institucional/actual/bimestres` — ✅ **Control de bimestres (configuración del ciclo lectivo)**. Ruta `institucional.gestion.actual` (67) + **EDITAR**.
   **No es ítem del sidebar**: se accede desde el botón "Control de bimestres" del panel de Gestión actual.
-  Acciones: "Iniciar gestión académica" (`POST /calificaciones/gestion-bimestres/iniciar`) y "Cerrar bimestre"
-  (`.../bimestre/:n/validar-cierre` + `.../cerrar`; el cierre efectivo en backend está en preparación).
+  Acciones: "Habilitar inicio de clases" (`POST /calificaciones/gestion-bimestres/iniciar`), "Cerrar bimestre"
+  (`.../bimestre/:n/validar-cierre` + `.../cerrar`; el cierre efectivo en backend está en preparación), y
+  **configuración de periodos** (calendario anual + edición de fechas + CRUD de etapas):
+  - `GET /calificaciones/gestion-bimestres/periodos` (LISTAR) — periodos/etapas de la gestión vigente.
+  - `PUT /calificaciones/gestion-bimestres/periodos/:id/fechas` (EDITAR) — fechas inicio/fin.
+  - `POST /calificaciones/gestion-bimestres/periodos` (EDITAR) — alta de etapa (división OTRO).
+  - `DELETE /calificaciones/gestion-bimestres/periodos/:id` (EDITAR) — baja de etapa no estructural
+    (bimestres/planificación/clausura protegidos en el use case).
+  Todos con `verificarPermisoCualquiera` (`academico.calificacion.gestion_bimestres` **o** `institucional.gestion.actual`).
+  **Sin permiso nuevo**: reusan el 67 EDITAR ya existente en seeds 55/56.
 
   **RBAC (nuevo permiso EDITAR del 67):** se añadió la acción `EDITAR` al permiso `institucional.gestion.actual` (67)
   en seed `56` y se asignó a RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) en seed `55`

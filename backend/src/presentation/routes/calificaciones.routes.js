@@ -20,6 +20,9 @@ import {
   createActividadCronogramaValidator,
   updateActividadCronogramaValidator,
   cronogramaIdValidator,
+  putPeriodoFechasValidator,
+  postPeriodoEtapaValidator,
+  periodoIdValidator,
 } from '../validators/academico/index.js';
 
 /**
@@ -246,6 +249,36 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     '/gestion-bimestres/iniciar',
     ...gestionBimestresEditar,
     (req, res, next) => controllers.iniciarGestionAcademicaController.handle(req, res, next),
+  );
+
+  // Configuración de bimestres/etapas (Institucional → Gestión actual). Edición de
+  // fechas de periodos y CRUD de etapas. Mismo permiso que gestión-bimestres
+  // (institucional.gestion.actual o academico.calificacion.gestion_bimestres).
+  router.get(
+    '/gestion-bimestres/periodos',
+    ...gestionBimestresListar,
+    (req, res, next) => controllers.getPeriodosGestionController.handle(req, res, next),
+  );
+  router.post(
+    '/gestion-bimestres/periodos',
+    ...gestionBimestresEditar,
+    postPeriodoEtapaValidator,
+    validateRequest,
+    (req, res, next) => controllers.createPeriodoEtapaController.handle(req, res, next),
+  );
+  router.put(
+    '/gestion-bimestres/periodos/:id/fechas',
+    ...gestionBimestresEditar,
+    putPeriodoFechasValidator,
+    validateRequest,
+    (req, res, next) => controllers.updatePeriodoFechasController.handle(req, res, next),
+  );
+  router.delete(
+    '/gestion-bimestres/periodos/:id',
+    ...gestionBimestresEditar,
+    periodoIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.deletePeriodoEtapaController.handle(req, res, next),
   );
 
   router.get(

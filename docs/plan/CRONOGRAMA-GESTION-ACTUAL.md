@@ -56,6 +56,15 @@ repos en `infrastructure/repositories/`, DI en `container/modules/academico/cali
 | POST | `/cronograma` | 68 CREAR | `CreateActividadCronogramaUseCase` (usa `CalendarActivityRepository`) |
 | PUT | `/cronograma/:id` | 68 EDITAR | `UpdateActividadCronogramaUseCase` |
 | DELETE | `/cronograma/:id` | 68 ELIMINAR | `DeleteActividadCronogramaUseCase` (soft delete) |
+| GET | `/gestion-bimestres/periodos` | 67/gb LISTAR | `GetPeriodosGestionUseCase` — periodos/etapas de la gestión vigente (calendario) |
+| PUT | `/gestion-bimestres/periodos/:id/fechas` | 67/gb EDITAR | `UpdatePeriodoFechasUseCase` — edita fechas inicio/fin (reusa `AcademicPeriodRepository.update`) |
+| POST | `/gestion-bimestres/periodos` | 67/gb EDITAR | `CreatePeriodoEtapaUseCase` — alta de etapa (división OTRO) |
+| DELETE | `/gestion-bimestres/periodos/:id` | 67/gb EDITAR | `DeletePeriodoEtapaUseCase` — baja de etapa no estructural (protege bimestres/PLAN/CLAU) |
+
+- Periodos: use cases en `application/use-cases/academico/{Get,Update,Create,Delete}Periodo*UseCase.js`, controllers en
+  `presentation/controllers/academico/calificaciones/{get,update,create,delete}-periodo*.controller.js`, validators
+  en `presentation/validators/academico/periodos-gestion.validator.js`, DI en `calificaciones.container.js`.
+  Reutilizan `AcademicPeriodRepository` (CRUD heredado de BaseRepository) y `CronogramaGestionRepository.obtenerPeriodosGestion` (lectura).
 
 - Vista SQL delgada **`03-views/129-vista-base-cronograma-gestion.sql`** (`vista_base_cronograma_gestion`) para la lectura del panel.
 - `CronogramaGestionRepository`: `obtenerActividadesGestion` (vista), `obtenerActividadesAdmin`,
@@ -122,8 +131,13 @@ Módulo `presentation/modules/institucional/actual/` + `application/modules/inst
   3. **Selector** `CatalogoActividadSelectorModal` (estilo `OfertaParaleloAulaSelectModal` + `SelectableDataList`):
      buscador + **filtro por tipo y destacadas** + **multi-selección** + **crear maestra inline** (→ `CreateActividad`),
      integrado en el form de calendario (reemplaza el Select simple) y/o flujo bulk "Agregar del catálogo".
-- ⏳ **Gestión de bimestres/etapas** (después de Fase B): editar fechas inicio/fin de `periodos_academicos`,
-  habilitar/cerrar manualmente, y CRUD de etapas. (Backend: aún no hay endpoint de edición de periodos.)
+- ✅ **Gestión de bimestres/etapas (Fase C)**: `ControlBimestresPage` rediseñada (shell `cfg-academico-workspace`
+  como las hermanas) con **calendario anual** (`BimestresCalendarBoard` + átomos `CalendarMonthMini`/`PeriodoRangePicker`)
+  que pinta cada periodo con su color, **aside de configuración** (`BimestresConfigAside`) con edición de fechas en vivo
+  (`PUT .../periodos/:id/fechas`), **CRUD de etapas** (`EtapaFormModal` + POST/DELETE) y **habilitar inicio de clases**
+  (`IniciarGestionCard`); el cierre queda en `CerrarBimestreCard`. Hook `useControlBimestresState` ampliado
+  (`usePeriodosGestionApi`, util `periodosCalendario.js`). RBAC: reusa 67 EDITAR (sin permiso nuevo).
+  Pendiente: cierre real de bimestre (stub) y edición de fechas de la **gestión** misma.
 - ⏳ **Cierre real de bimestre**: `cerrarBimestreGestion` es stub "en preparación" (falta consolidación de notas).
 
 ---
