@@ -93,10 +93,11 @@ export class ExcelSheetComposer {
     return cell;
   }
 
-  /** Fusiona un rango y aplica valor + estilo a la celda ancla. */
+  /** Fusiona un rango y aplica valor + estilo a la celda ancla (rango de una celda: sin merge). */
   merge(range, value, style) {
-    this.ws.mergeCells(range);
-    return this.cell(range.split(':')[0], value, style);
+    const [start, end] = range.split(':');
+    if (end && end !== start) this.ws.mergeCells(range);
+    return this.cell(start, value, style);
   }
 
   /** Banda de título institucional (fondo sólido, texto claro). */
@@ -114,6 +115,15 @@ export class ExcelSheetComposer {
   labelValue(labelAddr, label, valueAddr, value) {
     this.cell(labelAddr, label, { bold: true, align: 'left' });
     this.cell(valueAddr, value ?? '', { align: 'left', fontColor: EXCEL_COLOR.inkSoft });
+  }
+
+  /**
+   * Campo de cabecera institucional: etiqueta en negrita con fondo + valor.
+   * Ambos parámetros son rangos ('B2:C2'); se fusionan para alinear el bloque.
+   */
+  infoField(labelRange, label, valueRange, value) {
+    this.merge(labelRange, label, { bold: true, align: 'left', fill: EXCEL_COLOR.infoLabel });
+    this.merge(valueRange, value ?? '', { align: 'left', fontColor: EXCEL_COLOR.inkSoft });
   }
 
   /** Define anchos por índice de columna: { 2: 5, 3: 35, ... }. */

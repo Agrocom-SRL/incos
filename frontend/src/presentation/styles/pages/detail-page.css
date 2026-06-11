@@ -461,12 +461,13 @@
 }
 
 .sd-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
-  color: var(--primary) !important;
+  color: #399f53 !important;
 }
 
 .sd-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: var(--text-900) !important;
+  color: #22854f !important;
   font-weight: 600 !important;
+  border-bottom: 2px solid #134d32 !important;
 }
 
 .sd-tabs .ant-tabs-ink-bar {

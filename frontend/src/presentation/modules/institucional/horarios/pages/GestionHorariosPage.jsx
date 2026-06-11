@@ -65,7 +65,7 @@ const GestionHorariosPage = () => {
                 label: (
                     <span className="horarios-plan-tab-label">
                         <AppstoreOutlined className="horarios-plan-tab-label__icon" aria-hidden />
-                        <span>Tablero</span>
+                        <span>Conflictos de horarios</span>
                     </span>
                 ),
                 children: <ParalelosBoard boardByStatus={boardByStatus} onOpenArmado={onOpenArmado} />,
@@ -75,7 +75,7 @@ const GestionHorariosPage = () => {
                 label: (
                     <span className="horarios-plan-tab-label">
                         <TableOutlined className="horarios-plan-tab-label__icon" aria-hidden />
-                        <span>Tabla</span>
+                        <span>Configuración de horarios</span>
                     </span>
                 ),
                 children: (

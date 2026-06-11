@@ -1,15 +1,22 @@
 /**
  * ConsolidadoSheetBuilder — construye la hoja CONSOLIDADO del Registro Pedagógico:
- * detalle de evaluaciones prácticas / teóricas, promedios ponderados, nota final,
- * observaciones y estadísticas por curso.
+ * detalle de evaluaciones prácticas / teóricas, promedios por componente, nota
+ * final, observaciones y estadísticas por curso.
  *
  * Solo construcción + estilos (vía ExcelSheetComposer + ExcelTheme). La ponderación
- * (cuotas, pesos, nota de aprobación) llega como parámetro desde la configuración
- * institucional; no hay literales de negocio embebidos.
+ * (cuotas práctica/teórica y nota de aprobación) llega como parámetro desde la
+ * configuración institucional; no hay literales de negocio embebidos.
  *
- * Robustez: si un componente no tiene evaluaciones, su promedio y contadores se
- * emiten como literal 0 (nunca como fórmula auto-referente) para evitar referencias
- * circulares.
+ * Fórmulas en INGLÉS (IF/COUNTIF/SUM): el formato .xlsx almacena las funciones en
+ * inglés y Excel/LibreOffice las traduce al idioma del usuario. Escribirlas en
+ * español produce #NOMBRE?/#NAME?.
+ *
+ * Ponderación: el promedio de cada componente es la SUMA de sus notas (las notas
+ * de cada evaluación suman como máximo la cuota del componente, p.ej. 70 práctica
+ * + 30 teórica = 100). No se multiplica por 0.7/0.3.
+ *
+ * Caso vacío (sin evaluaciones registradas): no se emite ninguna fórmula ni
+ * cálculo — las celdas de promedio/nota/observación/estadística quedan en blanco.
  */
 
 import { EXCEL_COLOR, EXCEL_FONT_SIZE } from '../shared/index.js';
@@ -24,36 +31,60 @@ export class ConsolidadoSheetBuilder {
    * @param {Array} params.teoricas
    * @param {Array} params.estudiantes
    * @param {Object} params.cols
-   * @param {{ cuotaPractico:number, cuotaTeorico:number, pesoPractico:number, pesoTeorico:number, notaAprobacion:number }} params.ponderacion
+   * @param {{ cuotaPractico:number, cuotaTeorico:number, notaAprobacion:number }} params.ponderacion
    */
   static build({ composer: c, datos, practicas, teoricas, estudiantes, cols, ponderacion }) {
-    const { cuotaPractico, cuotaTeorico, pesoPractico, pesoTeorico, notaAprobacion } = ponderacion;
+    const { cuotaPractico, cuotaTeorico, notaAprobacion } = ponderacion;
     const { lastCol } = cols;
     const bimestreLabel = String(datos.bimestre ?? '').toUpperCase();
     const firstDataRow = 8;
     const hayEstudiantes = estudiantes.length > 0;
+    const hayEvaluaciones = practicas.length + teoricas.length > 0;
     const lastDataRow = firstDataRow + Math.max(estudiantes.length - 1, 0);
     const { small } = EXCEL_FONT_SIZE;
 
     // Anchos
-    c.colWidths({ 1: 2, [cols.colNro]: 5, [cols.colNombre]: 36 });
+    c.colWidths({ 1: 2, [cols.colNro]: 6, [cols.colNombre]: 38 });
     for (let col = cols.colPractStart; col <= cols.colNoEval; col += 1) {
-      let width = 8;
-      if (col === cols.colPromPract || col === cols.colPromTeo) width = 12;
-      else if (col === cols.colFinal) width = 11;
-      else if (col === cols.colObs) width = 15;
-      else if (col >= cols.colNoPract) width = 11;
+      let width = 9;
+      if (col === cols.colPromPract || col === cols.colPromTeo) width = 13;
+      else if (col === cols.colFinal) width = 13;
+      else if (col === cols.colObs) width = 16;
+      else if (col >= cols.colNoPract) width = 13;
       c.colWidths({ [col]: width });
     }
 
-    // Banda de título + cabecera institucional
+    // Banda de título
     c.bandTitle(`B1:${L(lastCol)}1`, `REGISTRO PEDAGÓGICO · ${bimestreLabel} BIMESTRE`);
-    c.labelValue('B2', 'CARRERA:', 'D2', datos.carrera);
-    c.labelValue('B3', 'ASIGNATURA:', 'D3', datos.asignatura);
-    c.labelValue('B4', 'CÓDIGO:', 'D4', datos.codigo_asignatura);
-    c.labelValue('L2', 'DOCENTE:', 'N2', datos.docente);
-    c.labelValue('L3', 'CURSO:', 'N3', `${datos.curso ?? ''}   PARALELO: ${datos.paralelo ?? ''}`);
-    c.labelValue('L4', 'GESTIÓN:', 'N4', `${datos.gestion ?? ''}   BIMESTRE: ${bimestreLabel}`);
+
+    // Cabecera institucional — bloque izquierdo (carrera/asignatura/código) y
+    // bloque derecho sobre las columnas de observación (docente/curso/gestión).
+    const izqValEnd = L(cols.colFinal);
+    c.infoField('B2:C2', 'CARRERA:', `D2:${izqValEnd}2`, datos.carrera);
+    c.infoField('B3:C3', 'ASIGNATURA:', `D3:${izqValEnd}3`, datos.asignatura);
+    c.infoField('B4:C4', 'CÓDIGO:', `D4:${izqValEnd}4`, datos.codigo_asignatura);
+
+    const derLabel = L(cols.colObs);
+    const derValIni = L(cols.colNoPract);
+    const derValEnd = L(cols.colNoEval);
+    c.infoField(
+      `${derLabel}2:${derLabel}2`,
+      'DOCENTE:',
+      `${derValIni}2:${derValEnd}2`,
+      datos.docente
+    );
+    c.infoField(
+      `${derLabel}3:${derLabel}3`,
+      'CURSO:',
+      `${derValIni}3:${derValEnd}3`,
+      `${datos.curso ?? ''}   PARALELO: ${datos.paralelo ?? ''}`
+    );
+    c.infoField(
+      `${derLabel}4:${derLabel}4`,
+      'GESTIÓN:',
+      `${derValIni}4:${derValEnd}4`,
+      `${datos.gestion ?? ''}   BIMESTRE: ${bimestreLabel}`
+    );
 
     // Cabecera de tabla (filas 5–7)
     const rowSec = 5;
@@ -79,30 +110,22 @@ export class ConsolidadoSheetBuilder {
 
     // Secciones (si un componente no tiene evaluaciones, el título cubre solo su promedio)
     const seccion = (numEvals, startCol, promCol, titulo, fill) => {
-      if (numEvals > 0) {
-        c.merge(`${L(startCol)}${rowSec}:${L(promCol)}${rowSec}`, titulo, {
-          bold: true,
-          size: small,
-          fill,
-          wrap: true,
-          borderMedium: true
-        });
-      } else {
-        c.cell(rowSec, promCol, titulo, { bold: true, size: small, fill, wrap: true });
-      }
+      const range =
+        numEvals > 0 ? `${L(startCol)}${rowSec}:${L(promCol)}${rowSec}` : `${L(promCol)}${rowSec}`;
+      c.merge(range, titulo, { bold: true, size: small, fill, wrap: true, borderMedium: true });
     };
     seccion(
       practicas.length,
       cols.colPractStart,
       cols.colPromPract,
-      `EVALUACIONES PRÁCTICAS ${cuotaPractico}%`,
+      `EVALUACIONES PRÁCTICAS (${cuotaPractico})`,
       EXCEL_COLOR.practicasStrong
     );
     seccion(
       teoricas.length,
       cols.colTeoStart,
       cols.colPromTeo,
-      `EVALUACIONES TEÓRICAS ${cuotaTeorico}%`,
+      `EVALUACIONES TEÓRICAS (${cuotaTeorico})`,
       EXCEL_COLOR.teoricasStrong
     );
 
@@ -127,17 +150,25 @@ export class ConsolidadoSheetBuilder {
       fill: EXCEL_COLOR.practicas,
       wrap: true
     });
-    c.cell(rowMax, cols.colPromPract, pesoPractico, { size: small, fill: EXCEL_COLOR.practicas });
+    c.cell(rowMax, cols.colPromPract, cuotaPractico, {
+      bold: true,
+      size: small,
+      fill: EXCEL_COLOR.practicas
+    });
     c.cell(rowNames, cols.colPromTeo, 'PROM. TEÓRICAS', {
       bold: true,
       size: small,
       fill: EXCEL_COLOR.teoricas,
       wrap: true
     });
-    c.cell(rowMax, cols.colPromTeo, pesoTeorico, { size: small, fill: EXCEL_COLOR.teoricas });
+    c.cell(rowMax, cols.colPromTeo, cuotaTeorico, {
+      bold: true,
+      size: small,
+      fill: EXCEL_COLOR.teoricas
+    });
 
-    c.ws.getRow(rowSec).height = 30;
-    c.ws.getRow(rowNames).height = 40;
+    c.ws.getRow(rowSec).height = 26;
+    c.ws.getRow(rowNames).height = 44;
 
     // Filas de estudiantes
     estudiantes.forEach((est, idx) => {
@@ -157,23 +188,44 @@ export class ConsolidadoSheetBuilder {
         c.cell(row, cols.colTeoStart + i, nota ?? 0, { fill: zebra });
       });
 
-      // Promedios: fórmula solo si el componente tiene evaluaciones; si no, literal 0.
+      if (!hayEvaluaciones) {
+        // Sin evaluaciones registradas: no se calcula nada (celdas en blanco).
+        const fillVacio = (col) => {
+          if (col === cols.colFinal) return EXCEL_COLOR.finalCell;
+          if (col === cols.colObs) return EXCEL_COLOR.obsCell;
+          return zebra;
+        };
+        [
+          cols.colPromPract,
+          cols.colPromTeo,
+          cols.colFinal,
+          cols.colObs,
+          cols.colNoPract,
+          cols.colNoTeo,
+          cols.colNoEval
+        ].forEach((col) => c.cell(row, col, '', { fill: fillVacio(col) }));
+        return;
+      }
+
+      // Promedio = SUMA de las notas del componente (sin multiplicar). Literal 0 si el componente no tiene evaluaciones.
       if (practicas.length > 0) {
-        c.formula(row, cols.colPromPract, `ENTERO(SUMA(${cols.practRange(row)})*${pesoPractico})`, {
+        c.formula(row, cols.colPromPract, `SUM(${cols.practRange(row)})`, {
+          bold: true,
           fill: EXCEL_COLOR.practicas
         });
-        c.formula(row, cols.colNoPract, `CONTAR.SI(${cols.practRange(row)},0)`, { fill: zebra });
+        c.formula(row, cols.colNoPract, `COUNTIF(${cols.practRange(row)},0)`, { fill: zebra });
       } else {
-        c.cell(row, cols.colPromPract, 0, { fill: EXCEL_COLOR.practicas });
+        c.cell(row, cols.colPromPract, 0, { bold: true, fill: EXCEL_COLOR.practicas });
         c.cell(row, cols.colNoPract, 0, { fill: zebra });
       }
       if (teoricas.length > 0) {
-        c.formula(row, cols.colPromTeo, `ENTERO(SUMA(${cols.teoRange(row)})*${pesoTeorico})`, {
+        c.formula(row, cols.colPromTeo, `SUM(${cols.teoRange(row)})`, {
+          bold: true,
           fill: EXCEL_COLOR.teoricas
         });
-        c.formula(row, cols.colNoTeo, `CONTAR.SI(${cols.teoRange(row)},0)`, { fill: zebra });
+        c.formula(row, cols.colNoTeo, `COUNTIF(${cols.teoRange(row)},0)`, { fill: zebra });
       } else {
-        c.cell(row, cols.colPromTeo, 0, { fill: EXCEL_COLOR.teoricas });
+        c.cell(row, cols.colPromTeo, 0, { bold: true, fill: EXCEL_COLOR.teoricas });
         c.cell(row, cols.colNoTeo, 0, { fill: zebra });
       }
 
@@ -184,7 +236,7 @@ export class ConsolidadoSheetBuilder {
       c.formula(
         row,
         cols.colObs,
-        `SI(${L(cols.colFinal)}${row}>=${notaAprobacion},"APROBADO/A",SI(${L(cols.colFinal)}${row}=0,"NO SE PRESENTO","REPROBADO/A"))`,
+        `IF(${L(cols.colFinal)}${row}>=${notaAprobacion},"APROBADO/A",IF(${L(cols.colFinal)}${row}=0,"NO SE PRESENTO","REPROBADO/A"))`,
         { fill: EXCEL_COLOR.obsCell, wrap: true }
       );
       c.formula(row, cols.colNoEval, `${L(cols.colNoPract)}${row}+${L(cols.colNoTeo)}${row}`, {
@@ -192,36 +244,48 @@ export class ConsolidadoSheetBuilder {
       });
     });
 
-    // Estadísticas
-    const statsStart = lastDataRow + 3;
+    this._estadisticas(c, cols, { firstDataRow, lastDataRow, hayEstudiantes, hayEvaluaciones });
+    c.freeze(rowMax, cols.colNombre);
+  }
+
+  /** Mini-tabla de estadísticas (Aprobados / Reprobados / No se presentó / Total). */
+  static _estadisticas(c, cols, { firstDataRow, lastDataRow, hayEstudiantes, hayEvaluaciones }) {
+    const { small } = EXCEL_FONT_SIZE;
+    const titleRow = lastDataRow + 2;
+    const headRow = titleRow + 1;
+    const valRow = headRow + 1;
+    const c0 = cols.colNombre;
     const obsCol = L(cols.colObs);
-    const obsRange = hayEstudiantes ? `${obsCol}${firstDataRow}:${obsCol}${lastDataRow}` : null;
-    const stats = [
-      ['APROBADOS:', 'APROBADO/A'],
-      ['REPROBADOS:', 'REPROBADO/A'],
-      ['NO SE PRESENTÓ:', 'NO SE PRESENTO']
+    const obsRange = `${obsCol}${firstDataRow}:${obsCol}${lastDataRow}`;
+    const calcular = hayEstudiantes && hayEvaluaciones;
+
+    c.cell(titleRow, c0, 'ESTADÍSTICAS', { bold: true, align: 'left', border: false });
+
+    const columnas = [
+      ['Aprobados', 'APROBADO/A'],
+      ['Reprobados', 'REPROBADO/A'],
+      ['No se presentó', 'NO SE PRESENTO'],
+      ['Total', null]
     ];
-    stats.forEach(([label, criterio], i) => {
-      const row = statsStart + i;
-      c.cell(row, cols.colNombre, label, { bold: true, align: 'left', border: false });
-      if (obsRange) {
-        c.formula(row, cols.colNombre + 1, `CONTAR.SI(${obsRange},"${criterio}")`, {
-          align: 'left'
-        });
+    columnas.forEach(([titulo, criterio], i) => {
+      const col = c0 + i;
+      c.cell(headRow, col, titulo, {
+        bold: true,
+        size: small,
+        wrap: true,
+        fill: EXCEL_COLOR.statHeader,
+        fontColor: EXCEL_COLOR.statHeaderText
+      });
+      if (!calcular) {
+        c.cell(valRow, col, '', {});
+      } else if (criterio) {
+        c.formula(valRow, col, `COUNTIF(${obsRange},"${criterio}")`, { bold: true });
       } else {
-        c.cell(row, cols.colNombre + 1, 0, { align: 'left' });
+        c.formula(valRow, col, `${L(c0)}${valRow}+${L(c0 + 1)}${valRow}+${L(c0 + 2)}${valRow}`, {
+          bold: true
+        });
       }
     });
-    const totalRow = statsStart + 3;
-    c.cell(totalRow, cols.colNombre, 'TOTAL:', { bold: true, align: 'left', border: false });
-    c.formula(
-      totalRow,
-      cols.colNombre + 1,
-      `${L(cols.colNombre + 1)}${statsStart}+${L(cols.colNombre + 1)}${statsStart + 1}+${L(cols.colNombre + 1)}${statsStart + 2}`,
-      { align: 'left' }
-    );
-
-    c.freeze(rowMax, cols.colNombre);
   }
 }
 

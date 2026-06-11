@@ -18,18 +18,12 @@ import { buildColumnMap } from './registro-pedagogico/registroPedagogicoColumnMa
 import { ConsolidadoSheetBuilder } from './registro-pedagogico/ConsolidadoSheetBuilder.js';
 import { PlanillaCalificacionesSheetBuilder } from './registro-pedagogico/PlanillaCalificacionesSheetBuilder.js';
 
-/** Deriva cuotas, pesos y nota de aprobación desde el payload (con respaldo institucional). */
-const resolverPonderacion = (datos) => {
-  const cuotaPractico = Number(datos.cuota_practico ?? 70);
-  const cuotaTeorico = Number(datos.cuota_teorico ?? 30);
-  return {
-    cuotaPractico,
-    cuotaTeorico,
-    pesoPractico: cuotaPractico / 100,
-    pesoTeorico: cuotaTeorico / 100,
-    notaAprobacion: Number(datos.nota_aprobacion ?? 61)
-  };
-};
+/** Deriva cuotas y nota de aprobación desde el payload (con respaldo institucional). */
+const resolverPonderacion = (datos) => ({
+  cuotaPractico: Number(datos.cuota_practico ?? 70),
+  cuotaTeorico: Number(datos.cuota_teorico ?? 30),
+  notaAprobacion: Number(datos.nota_aprobacion ?? 61)
+});
 
 export class RegistroPedagogicoExcelBuilder extends IRegistroPedagogicoExcelGenerator {
   /**
@@ -46,6 +40,7 @@ export class RegistroPedagogicoExcelBuilder extends IRegistroPedagogicoExcelGene
     const estudiantes = datos.estudiantes ?? [];
     const cols = buildColumnMap(practicas.length, teoricas.length);
     const ponderacion = resolverPonderacion(datos);
+    const hayEvaluaciones = practicas.length + teoricas.length > 0;
 
     ConsolidadoSheetBuilder.build({
       composer: new ExcelSheetComposer(workbook.addWorksheet('CONSOLIDADO')),
@@ -62,7 +57,8 @@ export class RegistroPedagogicoExcelBuilder extends IRegistroPedagogicoExcelGene
       datos,
       estudiantes,
       cols,
-      ponderacion
+      ponderacion,
+      hayEvaluaciones
     });
 
     const buffer = await workbook.xlsx.writeBuffer();

@@ -12,11 +12,11 @@
 export const EXCEL_FONT = 'Calibri';
 
 export const EXCEL_FONT_SIZE = {
-  title: 15,
-  subtitle: 11,
-  label: 9,
-  body: 9,
-  small: 8
+  title: 17,
+  subtitle: 15,
+  label: 14,
+  body: 13,
+  small: 12
 };
 
 /** Paleta institucional (ARGB). Tonos suaves para cabeceras, acentos para totales. */
@@ -26,6 +26,9 @@ export const EXCEL_COLOR = {
   inkSoft: 'FF475569', // texto secundario (slate-600)
   band: 'FF1F4E79', // banda de título institucional (azul profundo)
   bandText: 'FFFFFFFF',
+  infoLabel: 'FFDCE6F1', // fondo de etiquetas de cabecera (carrera/docente/...) azul muy suave
+  statHeader: 'FF1F4E79', // cabecera de tablas de estadísticas
+  statHeaderText: 'FFFFFFFF',
   practicas: 'FFFFF2CC', // ámbar suave
   practicasStrong: 'FFFFE08A',
   teoricas: 'FFE2EFDA', // verde suave
