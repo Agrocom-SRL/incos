@@ -8,6 +8,7 @@ import {
     FILTER_DEFAULTS,
 } from '@application-institucional/horarios/config/dashboardConstants';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
+import { resolveSinHorariosCta } from '@application-institucional/horarios/utils/resolveSinHorariosCta';
 import { buildHorariosDashboardAlertLineas } from '@application-institucional/horarios/utils/buildHorariosDashboardAlertLineas';
 import {
     buildHorariosArmadoUrl,
@@ -144,12 +145,6 @@ export const useGestionHorariosDashboardState = () => {
         return String(gestiones?.[0]?.nombre || gestiones?.[0]?.gestion || currentGestion);
     }, [gestiones, currentGestion]);
 
-    const buildArmadoUrl = useCallback((paralelo, extraQuery = '') => {
-        const pgId = paralelo.paraleloGestionId;
-        const base = buildHorariosArmadoUrl(pgId, { tab: 'plan' });
-        return extraQuery ? `${base}&${extraQuery.replace(/^&/, '')}` : base;
-    }, []);
-
     const docentesConConflictosOperativos = useMemo(
         () => pendientesSidebarRaw?.docentesConConflictosOperativos ?? [],
         [pendientesSidebarRaw],
@@ -159,9 +154,6 @@ export const useGestionHorariosDashboardState = () => {
         (paralelo) => {
             const bucket = paralelo.boardBucket ?? resolveHorariosBoardBucket(paralelo);
             const pgId = paralelo.paraleloGestionId;
-            const confAula = Number(paralelo.conflictosAula) || 0;
-            const bloquesSinAula = Number(paralelo.bloquesSinAula) || 0;
-            const sinAulaBase = paralelo.paraleloAulaId == null || paralelo.paraleloAulaId === 0;
 
             if (bucket === 'sin_aulas' && Number.isFinite(pgId) && pgId > 0) {
                 return buildOfertaParaleloDetalleFromHorarios(pgId);
@@ -171,37 +163,27 @@ export const useGestionHorariosDashboardState = () => {
                 return buildParaleloSinDocentesNavTarget(paralelo, docentesConConflictosOperativos);
             }
 
-            if (bucket === 'sin_horarios' && confAula > 0) {
-                const cursosTotales = Number(paralelo.cursosTotales) || 0;
-                const cursosCreados = Number(paralelo.cursosCreados) || 0;
-                const coberturaInc = Number(paralelo.ofertasCoberturaIncompleta) || 0;
-                const sinBloques = Number(paralelo.cursosSinBloquesHorario) || 0;
-                const solape = Number(paralelo.conflictosSolapeMismoBloque) || 0;
-                const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
-                const soloCruceAula =
-                    faltaCursos <= 0 &&
-                    coberturaInc <= 0 &&
-                    sinBloques <= 0 &&
-                    solape <= 0 &&
-                    !sinAulaBase &&
-                    bloquesSinAula <= 0;
-                if (soloCruceAula) {
-                    return { pathname: HORARIOS_CONFLICTOS_PATH };
-                }
-            }
-
             if (bucket === 'completo') {
                 return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'vista' }) };
             }
+
             if (bucket === 'sin_horarios') {
-                const planIncompleto =
-                    (paralelo.cursosTotales ?? 0) > 0 &&
-                    (paralelo.cursosCreados ?? 0) < (paralelo.cursosTotales ?? 0);
-                if (planIncompleto && Number.isFinite(pgId) && pgId > 0) {
+                // El motivo gobierna el destino: cruces de aula → conflictos;
+                // faltan cursos → oferta; falta de cobertura → tab Cobertura;
+                // solapes en grilla → tab Plan semanal.
+                const { kind } = resolveSinHorariosCta(paralelo);
+                if (kind === 'cruce-aula') {
+                    return { pathname: HORARIOS_CONFLICTOS_PATH };
+                }
+                if (kind === 'faltan-cursos' && Number.isFinite(pgId) && pgId > 0) {
                     return buildOfertaParaleloDetalleFromHorarios(pgId);
+                }
+                if (kind === 'cobertura') {
+                    return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'cobertura' }) };
                 }
                 return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'plan' }) };
             }
+
             return { pathname: buildHorariosArmadoUrl(pgId, { tab: 'plan' }) };
         },
         [docentesConConflictosOperativos],

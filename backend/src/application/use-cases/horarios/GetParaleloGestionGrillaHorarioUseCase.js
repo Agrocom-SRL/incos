@@ -68,37 +68,57 @@ export class GetParaleloGestionGrillaHorarioUseCase {
   }
 
   /**
-   * Catálogo horarios activos del turno (para resolver horario_id en franjas vacías de la grilla).
+   * Catálogo de horarios activos disponibles para la grilla del paralelo
+   * (para resolver horario_id en franjas vacías y en el armado por arrastre).
+   *
+   * Modelo de negocio: las franjas L–V pertenecen al turno del paralelo
+   * (TARDE/NOCHE). El sábado NO está atado a un turno (`horarios.turno IS NULL`):
+   * es un día comodín compartido por todos los turnos, que se ofrece para
+   * extender la carga horaria cuando L–V no alcanza. Por eso se carga aparte y
+   * se suma al catálogo del turno, sin importar el turno del paralelo.
+   *
    * @param {string|null} turno
    */
   async _loadFranjasCatalogo(turno) {
     const shift = turno != null ? String(turno).trim() : '';
     if (!shift) return [];
 
-    const result = await this.scheduleRepository.findAll(
-      { shift, scheduleType: 'CLASES', active: true },
-      { page: 1, limit: 500 },
-      null
-    );
-    const rows = result?.schedules ?? [];
-    return (rows || []).map((h) => {
+    const [turnoResult, sabadoResult] = await Promise.all([
+      this.scheduleRepository.findAll(
+        { shift, scheduleType: 'CLASES', active: true },
+        { page: 1, limit: 500 },
+        null
+      ),
+      this.scheduleRepository.findAll(
+        { day: 'SABADO', scheduleType: 'CLASES', active: true },
+        { page: 1, limit: 500 },
+        null
+      ),
+    ]);
+
+    const rows = [
+      ...(turnoResult?.schedules ?? []),
+      ...(sabadoResult?.schedules ?? []),
+    ];
+
+    const seen = new Set();
+    const franjas = [];
+    for (const h of rows) {
       const plain = h.toPlainObject ? h.toPlainObject() : h;
-      const hi = plain.startTime ?? plain.horaInicio;
-      const hf = plain.endTime ?? plain.horaFin;
-      return {
-        horarioId: plain.id,
-        dia: plain.day ?? plain.dia,
-        horaInicio:
-          hi != null && typeof hi === 'string'
-            ? hi.slice(0, 5)
-            : hi,
-        horaFin:
-          hf != null && typeof hf === 'string'
-            ? hf.slice(0, 5)
-            : hf,
-        turno: plain.shift ?? plain.turno,
-        numeroBloque: plain.blockNumber ?? plain.numeroBloque,
-      };
-    });
+      if (!seen.has(plain.id)) {
+        seen.add(plain.id);
+        const hi = plain.startTime ?? plain.horaInicio;
+        const hf = plain.endTime ?? plain.horaFin;
+        franjas.push({
+          horarioId: plain.id,
+          dia: plain.day ?? plain.dia,
+          horaInicio: hi != null && typeof hi === 'string' ? hi.slice(0, 5) : hi,
+          horaFin: hf != null && typeof hf === 'string' ? hf.slice(0, 5) : hf,
+          turno: plain.shift ?? plain.turno,
+          numeroBloque: plain.blockNumber ?? plain.numeroBloque,
+        });
+      }
+    }
+    return franjas;
   }
 }

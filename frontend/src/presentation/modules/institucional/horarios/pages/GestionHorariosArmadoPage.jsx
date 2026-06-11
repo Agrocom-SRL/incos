@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, Flex, Result, Spin, Tabs } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -54,10 +54,10 @@ const GestionHorariosArmadoPage = () => {
         hasParaleloSelected,
         horarioEditable,
         planSemanalEditable,
+        planSemanalDirty,
         coberturaReajustable,
         coberturaGrilla,
-        generarBloquesCurso,
-        reajustarBloquesCurso,
+        reajustarCoberturaParalelo,
     } = useHorariosArmadoContext();
     const [vistaExpandida, setVistaExpandida] = useState(false);
 
@@ -69,16 +69,6 @@ const GestionHorariosArmadoPage = () => {
             document.body.style.overflow = prev;
         };
     }, [vistaExpandida]);
-
-    const handleGenerarBloquesCurso = useCallback(
-        (cursoId, horasPlan) => generarBloquesCurso(cursoId, horasPlan),
-        [generarBloquesCurso],
-    );
-
-    const handleReajustarBloquesCurso = useCallback(
-        (cursoId, horasPlan) => reajustarBloquesCurso(cursoId, horasPlan),
-        [reajustarBloquesCurso],
-    );
 
     const tabItems = useMemo(
         () => [
@@ -96,10 +86,8 @@ const GestionHorariosArmadoPage = () => {
                             draftSchedules={draftSchedules}
                             paraleloGestionId={paraleloGestionId}
                             coberturaGrilla={coberturaGrilla}
-                            horarioEditable={horarioEditable}
                             coberturaReajustable={coberturaReajustable}
-                            onGenerarBloquesCurso={handleGenerarBloquesCurso}
-                            onReajustarBloquesCurso={handleReajustarBloquesCurso}
+                            onReajustarCoberturaParalelo={reajustarCoberturaParalelo}
                         />
                     </div>
                 ),
@@ -120,6 +108,7 @@ const GestionHorariosArmadoPage = () => {
                             editable={planSemanalEditable}
                             allowDelete={horarioEditable}
                             soloReubicacion={planSemanalEditable && !horarioEditable}
+                            dirty={planSemanalDirty}
                             turnoLabel={turnoEfectivo || undefined}
                             persistLoading={persistLoading}
                             onRequestPersist={onRequestPersist}
@@ -159,12 +148,12 @@ const GestionHorariosArmadoPage = () => {
             onRequestPersist,
             horarioEditable,
             planSemanalEditable,
+            planSemanalDirty,
             coberturaReajustable,
             vistaExpandida,
             paraleloGestionId,
             coberturaGrilla,
-            handleGenerarBloquesCurso,
-            handleReajustarBloquesCurso,
+            reajustarCoberturaParalelo,
             validatePlacement,
         ],
     );

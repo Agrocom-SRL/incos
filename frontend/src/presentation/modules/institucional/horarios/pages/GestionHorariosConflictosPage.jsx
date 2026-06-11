@@ -8,6 +8,7 @@ import {
     conflictHorarioIdsForParaleloTab,
     solapeParaleloHorarioKeySet,
 } from '@application-institucional/horarios/utils/resolveParalelosTabsConflicto';
+import { recomendacionesParaParalelo } from '@application-institucional/horarios/utils/conflictoGuia';
 import {
     isParaleloGestionHorarioEditable,
     isParaleloGestionPlanSemanalEditable,
@@ -93,19 +94,46 @@ const GestionHorariosConflictosPage = () => {
         return partes.join(' · ');
     }, [conflictoResuelto, docenteId, docenteNombre, gestionLabel]);
 
+    const paresConflicto = useMemo(() => grilla?.paresConflicto ?? [], [grilla?.paresConflicto]);
+
     const docentePlanPanel = useMemo(
         () => (
-            <HorariosConflictosPlanSection
-                schedules={docenteDraftSchedules}
-                onSchedulesChange={() => { }}
-                conflictHorarioIds={conflictHorarioIds}
-                horarioSlotIndex={horarioSlotIndex}
-                editable={false}
-                showSave={false}
-                turnoLabel={turnoEfectivo}
-                headerMinimal
-                docenteConflictMode={!conflictoResuelto}
-            />
+            <Flex vertical gap={12}>
+                {!conflictoResuelto ? (
+                    <Alert
+                        type="info"
+                        showIcon
+                        title="Esta vista del docente es de solo lectura"
+                        description={
+                            <>
+                                Muestra la semana completa del docente; las celdas en rojo son las
+                                franjas en choque. El choque se resuelve en las pestañas de paralelo de
+                                arriba: abrí una y mové uno de los bloques en rojo a una franja libre.
+                                {paresConflicto.length ? (
+                                    <ul style={{ margin: '8px 0 0', paddingInlineStart: 18 }}>
+                                        {paresConflicto.map((par, idx) => (
+                                            <li key={`${par.horarioId ?? 'h'}-${idx}`}>
+                                                {par.descripcion}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : null}
+                            </>
+                        }
+                    />
+                ) : null}
+                <HorariosConflictosPlanSection
+                    schedules={docenteDraftSchedules}
+                    onSchedulesChange={() => { }}
+                    conflictHorarioIds={conflictHorarioIds}
+                    horarioSlotIndex={horarioSlotIndex}
+                    editable={false}
+                    showSave={false}
+                    turnoLabel={turnoEfectivo}
+                    headerMinimal
+                    docenteConflictMode={!conflictoResuelto}
+                />
+            </Flex>
         ),
         [
             docenteDraftSchedules,
@@ -113,6 +141,7 @@ const GestionHorariosConflictosPage = () => {
             horarioSlotIndex,
             turnoEfectivo,
             conflictoResuelto,
+            paresConflicto,
         ],
     );
 
@@ -146,6 +175,11 @@ const GestionHorariosConflictosPage = () => {
                 return scoped.size > 0 ? scoped : conflictHorarioIds;
             })();
 
+            const recomendaciones =
+                isDocente || conflictoResuelto
+                    ? []
+                    : recomendacionesParaParalelo(grilla?.paresConflicto ?? [], pgId);
+
             return {
                 key: String(opcion.key),
                 label: (
@@ -164,21 +198,41 @@ const GestionHorariosConflictosPage = () => {
                     ) : isDocente ? (
                         docentePlanPanel
                     ) : (
-                        <ParaleloArmadoPlanSection
-                            schedules={schedules}
-                            onSchedulesChange={(updater) => setParaleloDraftSchedules(pgId, updater)}
-                            editable={planEditable}
-                            allowDelete={horEditable}
-                            soloReubicacion={planEditable && !horEditable}
-                            turnoLabel={turnoLabel}
-                            persistLoading={persistLoading}
-                            onRequestPersist={() => onRequestPersist(pgId)}
-                            validatePlacement={validatePlacement}
-                            conflictHorarioIds={conflictIdsParalelo}
-                            horarioSlotIndex={horarioSlotIndex}
-                            docenteConflictMode
-                            headerMinimal
-                        />
+                        <Flex vertical gap={12}>
+                            {recomendaciones.length ? (
+                                <Alert
+                                    type="warning"
+                                    showIcon
+                                    title="Cómo resolver el choque en este paralelo"
+                                    description={
+                                        recomendaciones.length === 1 ? (
+                                            recomendaciones[0].texto
+                                        ) : (
+                                            <ul style={{ margin: 0, paddingInlineStart: 18 }}>
+                                                {recomendaciones.map((r, idx) => (
+                                                    <li key={`${r.horarioId ?? 'h'}-${idx}`}>{r.texto}</li>
+                                                ))}
+                                            </ul>
+                                        )
+                                    }
+                                />
+                            ) : null}
+                            <ParaleloArmadoPlanSection
+                                schedules={schedules}
+                                onSchedulesChange={(updater) => setParaleloDraftSchedules(pgId, updater)}
+                                editable={planEditable}
+                                allowDelete={horEditable}
+                                soloReubicacion={planEditable && !horEditable}
+                                turnoLabel={turnoLabel}
+                                persistLoading={persistLoading}
+                                onRequestPersist={() => onRequestPersist(pgId)}
+                                validatePlacement={validatePlacement}
+                                conflictHorarioIds={conflictIdsParalelo}
+                                horarioSlotIndex={horarioSlotIndex}
+                                docenteConflictMode
+                                headerMinimal
+                            />
+                        </Flex>
                     ),
                 ),
             };
@@ -193,6 +247,7 @@ const GestionHorariosConflictosPage = () => {
         horarioSlotIndex,
         solapeParaleloHorarioKeys,
         grilla?.paresConflicto,
+        conflictoResuelto,
         setParaleloDraftSchedules,
         persistLoading,
         onRequestPersist,

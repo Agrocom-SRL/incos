@@ -467,7 +467,8 @@
 .sd-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #22854f !important;
   font-weight: 600 !important;
-  border-bottom: 2px solid #134d32 !important;
+  /* El indicador activo es la .ant-tabs-ink-bar (abajo). No duplicar con un
+     border-bottom en el botón: causaba doble línea bajo el tab activo. */
 }
 
 .sd-tabs .ant-tabs-ink-bar {
