@@ -20,7 +20,7 @@
  */
 
 import { EXCEL_COLOR, EXCEL_FONT_SIZE } from '../shared/index.js';
-import { L } from './registroPedagogicoColumnMap.js';
+import { L, MARCA_ANULADA } from './registroPedagogicoColumnMap.js';
 
 export class ConsolidadoSheetBuilder {
   /**
@@ -190,11 +190,21 @@ export class ConsolidadoSheetBuilder {
         align: 'left'
       });
 
+      // Notas administrativas (habilitación) por componente: si existen, las
+      // actividades de ese componente quedan anuladas (marca «—») y su promedio
+      // pasa a regirse por la habilitación. null = el docente calcula normal.
+      const habPract = est.habilitacion_practico;
+      const habTeo = est.habilitacion_teorico;
+
       (est.notas_practicas ?? []).forEach((nota, i) => {
-        c.cell(row, cols.colPractStart + i, nota ?? 0, { fill: zebra });
+        c.cell(row, cols.colPractStart + i, habPract != null ? MARCA_ANULADA : (nota ?? 0), {
+          fill: zebra
+        });
       });
       (est.notas_teoricas ?? []).forEach((nota, i) => {
-        c.cell(row, cols.colTeoStart + i, nota ?? 0, { fill: zebra });
+        c.cell(row, cols.colTeoStart + i, habTeo != null ? MARCA_ANULADA : (nota ?? 0), {
+          fill: zebra
+        });
       });
 
       if (!hayEvaluaciones) {
@@ -216,27 +226,38 @@ export class ConsolidadoSheetBuilder {
         return;
       }
 
-      // Promedio = SUMA de las notas del componente (sin multiplicar). Literal 0 si el componente no tiene evaluaciones.
-      if (practicas.length > 0) {
-        c.formula(row, cols.colPromPract, `SUM(${cols.practRange(row)})`, {
-          bold: true,
-          fill: EXCEL_COLOR.practicas
-        });
-        c.formula(row, cols.colNoPract, `COUNTIF(${cols.practRange(row)},0)`, { fill: zebra });
-      } else {
-        c.cell(row, cols.colPromPract, 0, { bold: true, fill: EXCEL_COLOR.practicas });
-        c.cell(row, cols.colNoPract, 0, { fill: zebra });
-      }
-      if (teoricas.length > 0) {
-        c.formula(row, cols.colPromTeo, `SUM(${cols.teoRange(row)})`, {
-          bold: true,
-          fill: EXCEL_COLOR.teoricas
-        });
-        c.formula(row, cols.colNoTeo, `COUNTIF(${cols.teoRange(row)},0)`, { fill: zebra });
-      } else {
-        c.cell(row, cols.colPromTeo, 0, { bold: true, fill: EXCEL_COLOR.teoricas });
-        c.cell(row, cols.colNoTeo, 0, { fill: zebra });
-      }
+      // Promedio = SUMA de las notas del componente (sin multiplicar). Si hay nota
+      // administrativa, el promedio es la habilitación (literal) y las actividades
+      // anuladas no se cuentan como "no presentadas". Literal 0 si el componente no
+      // tiene evaluaciones ni habilitación.
+      const pintarComponente = ({ hab, numEvals, promCol, noCol, rangeFn, fillProm }) => {
+        if (hab != null) {
+          c.cell(row, promCol, hab, { bold: true, fill: fillProm });
+          c.cell(row, noCol, 0, { fill: zebra });
+        } else if (numEvals > 0) {
+          c.formula(row, promCol, `SUM(${rangeFn(row)})`, { bold: true, fill: fillProm });
+          c.formula(row, noCol, `COUNTIF(${rangeFn(row)},0)`, { fill: zebra });
+        } else {
+          c.cell(row, promCol, 0, { bold: true, fill: fillProm });
+          c.cell(row, noCol, 0, { fill: zebra });
+        }
+      };
+      pintarComponente({
+        hab: habPract,
+        numEvals: practicas.length,
+        promCol: cols.colPromPract,
+        noCol: cols.colNoPract,
+        rangeFn: cols.practRange,
+        fillProm: EXCEL_COLOR.practicas
+      });
+      pintarComponente({
+        hab: habTeo,
+        numEvals: teoricas.length,
+        promCol: cols.colPromTeo,
+        noCol: cols.colNoTeo,
+        rangeFn: cols.teoRange,
+        fillProm: EXCEL_COLOR.teoricas
+      });
 
       c.formula(row, cols.colFinal, `${L(cols.colPromPract)}${row}+${L(cols.colPromTeo)}${row}`, {
         fill: EXCEL_COLOR.finalCell,

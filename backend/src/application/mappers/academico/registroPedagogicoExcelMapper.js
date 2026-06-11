@@ -69,6 +69,10 @@ const formatearGestion = (contexto) => {
 const redondearNota = (raw) =>
   raw != null && Number.isFinite(Number(raw)) ? Math.round(Number(raw)) : 0;
 
+/** Redondeo que preserva null (ausencia de nota administrativa, distinto de un 0 real). */
+const redondearOpcional = (raw) =>
+  raw != null && Number.isFinite(Number(raw)) ? Math.round(Number(raw)) : null;
+
 /**
  * @param {Object} params
  * @param {number} params.bimestreNum
@@ -80,6 +84,8 @@ const redondearNota = (raw) =>
  * @param {Array<Object>} params.filasEvaluaciones
  * @param {Array<Object>} params.filasEstudiantes
  * @param {Array<Object>} params.filasNotas
+ * @param {Array<Object>} [params.filasResumen] - resumen del bimestre por estudiante;
+ *   aporta habilitacion_teorico / habilitacion_practico (notas administrativas).
  * @param {{ cuotaTeorico:number, cuotaPractico:number, notaMinimaAprobacion:number }} [params.politica]
  *   Ponderación institucional vigente (cuotas y nota mínima de aprobación).
  * @param {Date} [params.fechaEmision]
@@ -95,6 +101,7 @@ export const construirRegistroPedagogicoExcelPayload = ({
   filasEvaluaciones,
   filasEstudiantes,
   filasNotas,
+  filasResumen,
   politica,
   fechaEmision = new Date()
 }) => {
@@ -123,9 +130,20 @@ export const construirRegistroPedagogicoExcelPayload = ({
     notasMap.set(key, row.nota != null ? Number(row.nota) : 0);
   }
 
+  // Habilitaciones (notas administrativas) por estudiante: null = sin habilitación
+  // en ese componente; un valor reemplaza la ponderación calculada del docente.
+  const habilitacionMap = new Map();
+  for (const row of filasResumen ?? []) {
+    habilitacionMap.set(Number(row.estudiante_id), {
+      teorico: redondearOpcional(row.habilitacion_teorico),
+      practico: redondearOpcional(row.habilitacion_practico)
+    });
+  }
+
   const estudiantes = (filasEstudiantes ?? []).map((row, index) => {
     const estudianteId = Number(row.estudiante_id);
     const nombreCompleto = String(row.nombre_export ?? row.nombre ?? '').toUpperCase();
+    const habilitacion = habilitacionMap.get(estudianteId) ?? {};
 
     const notasDe = (evals) =>
       evals.map((ev) => redondearNota(notasMap.get(`${estudianteId}::${ev.id}`)));
@@ -136,7 +154,9 @@ export const construirRegistroPedagogicoExcelPayload = ({
       sexo: mapGeneroSexo(row.genero),
       ci: row.ci ?? '',
       notas_practicas: notasDe(practicas),
-      notas_teoricas: notasDe(teoricas)
+      notas_teoricas: notasDe(teoricas),
+      habilitacion_practico: habilitacion.practico ?? null,
+      habilitacion_teorico: habilitacion.teorico ?? null
     };
   });
 

@@ -41,16 +41,26 @@ export class RegistroPedagogicoExcelBuilder extends IRegistroPedagogicoExcelGene
     const cols = buildColumnMap(practicas.length, teoricas.length);
     const ponderacion = resolverPonderacion(datos);
     const hayEvaluaciones = practicas.length + teoricas.length > 0;
+    const hayNotasAdministrativas = estudiantes.some(
+      (e) => e.habilitacion_practico != null || e.habilitacion_teorico != null
+    );
 
-    ConsolidadoSheetBuilder.build({
-      composer: new ExcelSheetComposer(workbook.addWorksheet('CONSOLIDADO')),
-      datos,
-      practicas,
-      teoricas,
-      estudiantes,
-      cols,
-      ponderacion
-    });
+    // Excepción: si la asignatura no tiene ninguna evaluación del docente pero los
+    // estudiantes traen notas administrativas (habilitación), la hoja CONSOLIDADO
+    // (detalle de actividades) no aporta nada y se omite: solo va el resumen.
+    const soloResumenAdministrativo = !hayEvaluaciones && hayNotasAdministrativas;
+
+    if (!soloResumenAdministrativo) {
+      ConsolidadoSheetBuilder.build({
+        composer: new ExcelSheetComposer(workbook.addWorksheet('CONSOLIDADO')),
+        datos,
+        practicas,
+        teoricas,
+        estudiantes,
+        cols,
+        ponderacion
+      });
+    }
 
     PlanillaCalificacionesSheetBuilder.build({
       composer: new ExcelSheetComposer(workbook.addWorksheet('PLANILLA CALIFICACIONES')),
@@ -58,7 +68,8 @@ export class RegistroPedagogicoExcelBuilder extends IRegistroPedagogicoExcelGene
       estudiantes,
       cols,
       ponderacion,
-      hayEvaluaciones
+      hayEvaluaciones,
+      hayNotasAdministrativas
     });
 
     const buffer = await workbook.xlsx.writeBuffer();

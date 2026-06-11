@@ -8,6 +8,14 @@ import { colLetter } from '../shared/index.js';
 
 export const L = colLetter;
 
+/**
+ * Marca para las celdas de actividad anuladas por una nota administrativa
+ * (habilitación): el componente del estudiante pasa a regirse por la habilitación,
+ * así que sus notas de actividad se sobreponen con un guion. Texto, no número:
+ * SUM/COUNTIF lo ignoran y no contamina promedios ni conteos de "no presentados".
+ */
+export const MARCA_ANULADA = '—';
+
 export const buildColumnMap = (numPract, numTeo) => {
   const colNro = 2;
   const colNombre = 3;
