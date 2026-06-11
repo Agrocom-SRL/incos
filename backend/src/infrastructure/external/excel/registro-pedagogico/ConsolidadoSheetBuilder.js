@@ -43,12 +43,13 @@ export class ConsolidadoSheetBuilder {
     const lastDataRow = firstDataRow + Math.max(estudiantes.length - 1, 0);
     const { small } = EXCEL_FONT_SIZE;
 
-    // Anchos (+50% respecto al diseño previo, para más aire dentro de la celda)
+    // Anchos. Columnas de evaluación más anchas (21 = base 14 +50%) y CALIFICACIÓN
+    // FINAL ampliada para que el rótulo y la nota respiren.
     c.colWidths({ 1: 3, [cols.colNro]: 9, [cols.colNombre]: 56 });
     for (let col = cols.colPractStart; col <= cols.colNoEval; col += 1) {
-      let width = 14;
+      let width = 21;
       if (col === cols.colPromPract || col === cols.colPromTeo) width = 20;
-      else if (col === cols.colFinal) width = 20;
+      else if (col === cols.colFinal) width = 26;
       else if (col === cols.colObs) width = 24;
       else if (col >= cols.colNoPract) width = 20;
       c.colWidths({ [col]: width });
@@ -62,7 +63,7 @@ export class ConsolidadoSheetBuilder {
     const izqValEnd = L(cols.colFinal);
     c.infoField('B2:C2', 'CARRERA:', `D2:${izqValEnd}2`, datos.carrera);
     c.infoField('B3:C3', 'ASIGNATURA:', `D3:${izqValEnd}3`, datos.asignatura);
-    c.infoField('B4:C4', 'CÓDIGO:', `D4:${izqValEnd}4`, datos.codigo_asignatura);
+    c.infoField('B4:C4', 'SIGLA:', `D4:${izqValEnd}4`, datos.codigo_asignatura);
 
     const derLabel = L(cols.colObs);
     const derValIni = L(cols.colNoPract);
@@ -153,16 +154,21 @@ export class ConsolidadoSheetBuilder {
       fillProm: EXCEL_COLOR.teoricas
     });
 
-    // Nombres de evaluación (fila 6) y puntajes máximos (fila 7)
+    // Nombres de evaluación (fila 6, recortados si son muy largos para no deformar
+    // el documento) y puntajes máximos (fila 7) con sufijo "pts".
+    const truncar = (texto, max = 46) => {
+      const t = String(texto ?? '');
+      return t.length > max ? `${t.slice(0, max - 1)}…` : t;
+    };
     const columnaEval = (evals, startCol, fill) => {
       evals.forEach((ev, i) => {
-        c.cell(rowNames, startCol + i, ev.nombre ?? '', {
+        c.cell(rowNames, startCol + i, truncar(ev.nombre), {
           bold: true,
           size: small,
           fill,
           wrap: true
         });
-        c.cell(rowMax, startCol + i, ev.puntaje_maximo ?? 0, { size: small, fill });
+        c.cell(rowMax, startCol + i, `${ev.puntaje_maximo ?? 0} pts`, { size: small, fill });
       });
     };
     columnaEval(practicas, cols.colPractStart, EXCEL_COLOR.practicas);

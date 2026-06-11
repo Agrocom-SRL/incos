@@ -43,7 +43,7 @@ export class PlanillaCalificacionesSheetBuilder {
     // Cabecera institucional — bloque izquierdo y derecho (mismo patrón que CONSOLIDADO).
     c.infoField('B2:B2', 'CARRERA:', 'C2:C2', datos.carrera);
     c.infoField('B3:B3', 'ASIGNATURA:', 'C3:C3', datos.asignatura);
-    c.infoField('B4:B4', 'CÓDIGO:', 'C4:C4', datos.codigo_asignatura);
+    c.infoField('B4:B4', 'SIGLA:', 'C4:C4', datos.codigo_asignatura);
     c.infoField('F2:G2', 'DOCENTE:', 'H2:I2', datos.docente);
     c.infoField(
       'F3:G3',
@@ -193,10 +193,12 @@ export class PlanillaCalificacionesSheetBuilder {
     slot(SLOT_M, headRow, 'Varones (M)', headStyle);
     slot(SLOT_TOTAL, headRow, 'Total', headStyle);
 
+    const sexoRange = rango(COL.sexo);
+    const notaRange = rango(COL.nota);
     const filas = [
       { label: 'Inscritos', tipo: 'inscritos' },
-      { label: 'Reprobados', tipo: 'total', criterio: 'REPROBADO/A' },
-      { label: 'Aprobados', tipo: 'total', criterio: 'APROBADO/A' },
+      { label: 'Reprobados', tipo: 'conteo', criterio: 'REPROBADO/A' },
+      { label: 'Aprobados', tipo: 'conteo', criterio: 'APROBADO/A' },
       { label: 'Promedio (aprobados)', tipo: 'promedio' }
     ];
     const calcular = hayEstudiantes && hayEvaluaciones;
@@ -207,20 +209,8 @@ export class PlanillaCalificacionesSheetBuilder {
 
       if (fila.tipo === 'inscritos') {
         // Conteo por sexo: válido aunque no haya evaluaciones.
-        slot(
-          SLOT_F,
-          row,
-          hayEstudiantes ? `COUNTIF(${rango(COL.sexo)},"F")` : '',
-          {},
-          hayEstudiantes
-        );
-        slot(
-          SLOT_M,
-          row,
-          hayEstudiantes ? `COUNTIF(${rango(COL.sexo)},"M")` : '',
-          {},
-          hayEstudiantes
-        );
+        slot(SLOT_F, row, hayEstudiantes ? `COUNTIF(${sexoRange},"F")` : '', {}, hayEstudiantes);
+        slot(SLOT_M, row, hayEstudiantes ? `COUNTIF(${sexoRange},"M")` : '', {}, hayEstudiantes);
         slot(
           SLOT_TOTAL,
           row,
@@ -231,21 +221,33 @@ export class PlanillaCalificacionesSheetBuilder {
         return;
       }
 
-      slot(SLOT_F, row, '');
-      slot(SLOT_M, row, '');
       if (!calcular) {
+        slot(SLOT_F, row, '');
+        slot(SLOT_M, row, '');
         slot(SLOT_TOTAL, row, '', { bold: true });
-      } else if (fila.tipo === 'total') {
-        slot(SLOT_TOTAL, row, `COUNTIF(${obsRange},"${fila.criterio}")`, { bold: true }, true);
-      } else {
-        slot(
-          SLOT_TOTAL,
-          row,
-          `AVERAGEIF(${obsRange},"APROBADO/A",${rango(COL.nota)})`,
-          { bold: true },
-          true
-        );
+        return;
       }
+
+      if (fila.tipo === 'conteo') {
+        // Acumulado por sexo (COUNTIFS sexo + observación) y total general.
+        slot(SLOT_F, row, `COUNTIFS(${sexoRange},"F",${obsRange},"${fila.criterio}")`, {}, true);
+        slot(SLOT_M, row, `COUNTIFS(${sexoRange},"M",${obsRange},"${fila.criterio}")`, {}, true);
+        slot(SLOT_TOTAL, row, `COUNTIF(${obsRange},"${fila.criterio}")`, { bold: true }, true);
+        return;
+      }
+
+      // Promedio de aprobados, redondeado; "—" si no hay aprobados (evita #DIV/0!).
+      const promedio = (cond) =>
+        `IFERROR(ROUND(AVERAGEIFS(${notaRange},${sexoRange},"${cond}",${obsRange},"APROBADO/A"),0),"—")`;
+      slot(SLOT_F, row, promedio('F'), {}, true);
+      slot(SLOT_M, row, promedio('M'), {}, true);
+      slot(
+        SLOT_TOTAL,
+        row,
+        `IFERROR(ROUND(AVERAGEIF(${obsRange},"APROBADO/A",${notaRange}),0),"—")`,
+        { bold: true },
+        true
+      );
     });
 
     // Firma del docente
