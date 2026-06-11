@@ -43,14 +43,14 @@ export class ConsolidadoSheetBuilder {
     const lastDataRow = firstDataRow + Math.max(estudiantes.length - 1, 0);
     const { small } = EXCEL_FONT_SIZE;
 
-    // Anchos
-    c.colWidths({ 1: 2, [cols.colNro]: 6, [cols.colNombre]: 38 });
+    // Anchos (+50% respecto al diseño previo, para más aire dentro de la celda)
+    c.colWidths({ 1: 3, [cols.colNro]: 9, [cols.colNombre]: 56 });
     for (let col = cols.colPractStart; col <= cols.colNoEval; col += 1) {
-      let width = 9;
-      if (col === cols.colPromPract || col === cols.colPromTeo) width = 13;
-      else if (col === cols.colFinal) width = 13;
-      else if (col === cols.colObs) width = 16;
-      else if (col >= cols.colNoPract) width = 13;
+      let width = 14;
+      if (col === cols.colPromPract || col === cols.colPromTeo) width = 20;
+      else if (col === cols.colFinal) width = 20;
+      else if (col === cols.colObs) width = 24;
+      else if (col >= cols.colNoPract) width = 20;
       c.colWidths({ [col]: width });
     }
 
@@ -108,26 +108,50 @@ export class ConsolidadoSheetBuilder {
     headBox(cols.colNoTeo, 'EXÁMENES NO PRESENTADOS', { fill: EXCEL_COLOR.obsHeader });
     headBox(cols.colNoEval, 'EVALUACIONES NO PRESENTADAS', { fill: EXCEL_COLOR.obsHeader });
 
-    // Secciones (si un componente no tiene evaluaciones, el título cubre solo su promedio)
-    const seccion = (numEvals, startCol, promCol, titulo, fill) => {
-      const range =
-        numEvals > 0 ? `${L(startCol)}${rowSec}:${L(promCol)}${rowSec}` : `${L(promCol)}${rowSec}`;
-      c.merge(range, titulo, { bold: true, size: small, fill, wrap: true, borderMedium: true });
+    // Cabecera de sección. Con evaluaciones: el título abarca columnas de
+    // evaluación + promedio (fila 5) y los nombres van en la fila 6. Sin
+    // evaluaciones: el título ocupa la columna de promedio en las filas 5–6
+    // unidas (evita el conflicto de D/E vacías). No se rotula "PROM." en fila 6.
+    const seccion = ({ numEvals, startCol, promCol, titulo, cuota, fillTitulo, fillProm }) => {
+      if (numEvals > 0) {
+        c.merge(`${L(startCol)}${rowSec}:${L(promCol)}${rowSec}`, titulo, {
+          bold: true,
+          size: small,
+          fill: fillTitulo,
+          wrap: true,
+          borderMedium: true
+        });
+        c.cell(rowNames, promCol, '', { fill: fillProm });
+      } else {
+        c.ws.mergeCells(rowSec, promCol, rowNames, promCol);
+        c.cell(rowSec, promCol, titulo, {
+          bold: true,
+          size: small,
+          fill: fillTitulo,
+          wrap: true,
+          borderMedium: true
+        });
+      }
+      c.cell(rowMax, promCol, cuota, { bold: true, size: small, fill: fillProm });
     };
-    seccion(
-      practicas.length,
-      cols.colPractStart,
-      cols.colPromPract,
-      `EVALUACIONES PRÁCTICAS (${cuotaPractico})`,
-      EXCEL_COLOR.practicasStrong
-    );
-    seccion(
-      teoricas.length,
-      cols.colTeoStart,
-      cols.colPromTeo,
-      `EVALUACIONES TEÓRICAS (${cuotaTeorico})`,
-      EXCEL_COLOR.teoricasStrong
-    );
+    seccion({
+      numEvals: practicas.length,
+      startCol: cols.colPractStart,
+      promCol: cols.colPromPract,
+      titulo: `EVALUACIONES PRÁCTICAS (${cuotaPractico})`,
+      cuota: `${cuotaPractico}%`,
+      fillTitulo: EXCEL_COLOR.practicasStrong,
+      fillProm: EXCEL_COLOR.practicas
+    });
+    seccion({
+      numEvals: teoricas.length,
+      startCol: cols.colTeoStart,
+      promCol: cols.colPromTeo,
+      titulo: `EVALUACIONES TEÓRICAS (${cuotaTeorico})`,
+      cuota: `${cuotaTeorico}%`,
+      fillTitulo: EXCEL_COLOR.teoricasStrong,
+      fillProm: EXCEL_COLOR.teoricas
+    });
 
     // Nombres de evaluación (fila 6) y puntajes máximos (fila 7)
     const columnaEval = (evals, startCol, fill) => {
@@ -144,36 +168,15 @@ export class ConsolidadoSheetBuilder {
     columnaEval(practicas, cols.colPractStart, EXCEL_COLOR.practicas);
     columnaEval(teoricas, cols.colTeoStart, EXCEL_COLOR.teoricas);
 
-    c.cell(rowNames, cols.colPromPract, 'PROM. PRÁCTICAS', {
-      bold: true,
-      size: small,
-      fill: EXCEL_COLOR.practicas,
-      wrap: true
-    });
-    c.cell(rowMax, cols.colPromPract, cuotaPractico, {
-      bold: true,
-      size: small,
-      fill: EXCEL_COLOR.practicas
-    });
-    c.cell(rowNames, cols.colPromTeo, 'PROM. TEÓRICAS', {
-      bold: true,
-      size: small,
-      fill: EXCEL_COLOR.teoricas,
-      wrap: true
-    });
-    c.cell(rowMax, cols.colPromTeo, cuotaTeorico, {
-      bold: true,
-      size: small,
-      fill: EXCEL_COLOR.teoricas
-    });
-
-    c.ws.getRow(rowSec).height = 26;
-    c.ws.getRow(rowNames).height = 44;
+    c.ws.getRow(rowSec).height = 30;
+    c.ws.getRow(rowNames).height = 50;
+    c.ws.getRow(rowMax).height = 22;
 
     // Filas de estudiantes
     estudiantes.forEach((est, idx) => {
       const row = firstDataRow + idx;
       const zebra = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
+      c.ws.getRow(row).height = 22;
 
       c.cell(row, cols.colNro, est.nro ?? idx + 1, { fill: zebra });
       c.cell(row, cols.colNombre, String(est.nombre ?? '').toUpperCase(), {

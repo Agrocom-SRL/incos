@@ -6,12 +6,15 @@
  * Las notas teórica/práctica referencian las columnas de promedio del CONSOLIDADO.
  * Fórmulas en INGLÉS (IF/COUNTIF/AVERAGEIF). Caso vacío (sin evaluaciones): no se
  * calcula nada; solo el conteo de inscritos por sexo se mantiene.
+ *
+ * Columnas contiguas (sin huecos): Nº | NOMBRES | Sexo | C.I. | Teórica | Práctica
+ * | NOTA | Observaciones.
  */
 
 import { EXCEL_COLOR, EXCEL_FONT_SIZE } from '../shared/index.js';
 import { L } from './registroPedagogicoColumnMap.js';
 
-const COL = { nro: 2, nombre: 3, sexo: 4, ci: 5, teoria: 7, practica: 8, nota: 9, obs: 10 };
+const COL = { nro: 2, nombre: 3, sexo: 4, ci: 5, teoria: 6, practica: 7, nota: 8, obs: 9 };
 
 export class PlanillaCalificacionesSheetBuilder {
   /**
@@ -30,26 +33,28 @@ export class PlanillaCalificacionesSheetBuilder {
     const hayEstudiantes = estudiantes.length > 0;
     const lastDataRow = firstDataRow + Math.max(estudiantes.length - 1, 0);
     const { small } = EXCEL_FONT_SIZE;
+    const lastCol = L(COL.obs);
 
-    c.colWidths({ 1: 2, 2: 12, 3: 38, 4: 7, 5: 16, 6: 3, 7: 11, 8: 11, 9: 11, 10: 18 });
+    // Anchos (+50% respecto al diseño previo, para más aire dentro de la celda)
+    c.colWidths({ 1: 3, 2: 18, 3: 56, 4: 11, 5: 24, 6: 17, 7: 17, 8: 17, 9: 27 });
 
-    c.bandTitle('B1:J1', `PLANILLA DE REGISTRO PEDAGÓGICO · ${bimestreLabel} BIMESTRE`);
+    c.bandTitle(`B1:${lastCol}1`, `PLANILLA DE REGISTRO PEDAGÓGICO · ${bimestreLabel} BIMESTRE`);
 
     // Cabecera institucional — bloque izquierdo y derecho (mismo patrón que CONSOLIDADO).
     c.infoField('B2:B2', 'CARRERA:', 'C2:C2', datos.carrera);
     c.infoField('B3:B3', 'ASIGNATURA:', 'C3:C3', datos.asignatura);
     c.infoField('B4:B4', 'CÓDIGO:', 'C4:C4', datos.codigo_asignatura);
-    c.infoField('F2:H2', 'DOCENTE:', 'I2:J2', datos.docente);
+    c.infoField('F2:G2', 'DOCENTE:', 'H2:I2', datos.docente);
     c.infoField(
-      'F3:H3',
+      'F3:G3',
       'CURSO:',
-      'I3:J3',
+      'H3:I3',
       `${datos.curso ?? ''}   PARALELO: ${datos.paralelo ?? ''}`
     );
     c.infoField(
-      'F4:H4',
+      'F4:G4',
       'GESTIÓN:',
-      'I4:J4',
+      'H4:I4',
       `${datos.gestion ?? ''}   BIMESTRE: ${bimestreLabel}`
     );
 
@@ -57,10 +62,19 @@ export class PlanillaCalificacionesSheetBuilder {
     const r7 = 5;
     const r8 = 6;
     ['Nº', 'NOMBRES', 'Sexo', 'C.I.'].forEach((h, i) => {
-      c.ws.mergeCells(r7, 2 + i, r8, 2 + i);
-      c.cell(r7, 2 + i, h, { bold: true, size: small, wrap: true, fill: EXCEL_COLOR.infoLabel });
+      c.ws.mergeCells(r7, COL.nro + i, r8, COL.nro + i);
+      c.cell(r7, COL.nro + i, h, {
+        bold: true,
+        size: small,
+        wrap: true,
+        fill: EXCEL_COLOR.infoLabel
+      });
     });
-    c.merge(`G${r7}:I${r7}`, 'PARCIAL', { bold: true, size: small, fill: EXCEL_COLOR.infoLabel });
+    c.merge(`${L(COL.teoria)}${r7}:${L(COL.nota)}${r7}`, 'PARCIAL', {
+      bold: true,
+      size: small,
+      fill: EXCEL_COLOR.infoLabel
+    });
     c.cell(r8, COL.teoria, `Teórica\n(${cuotaTeorico})`, {
       bold: true,
       size: small,
@@ -87,11 +101,13 @@ export class PlanillaCalificacionesSheetBuilder {
       wrap: true,
       fill: EXCEL_COLOR.obsHeader
     });
-    c.ws.getRow(r8).height = 30;
+    c.ws.getRow(r7).height = 26;
+    c.ws.getRow(r8).height = 34;
 
     estudiantes.forEach((est, idx) => {
       const row = firstDataRow + idx;
       const zebra = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
+      c.ws.getRow(row).height = 22;
       c.cell(row, COL.nro, est.nro ?? idx + 1, { fill: zebra });
       c.cell(row, COL.nombre, String(est.nombre ?? '').toUpperCase(), {
         align: 'left',
@@ -114,11 +130,14 @@ export class PlanillaCalificacionesSheetBuilder {
       c.formula(row, COL.practica, `CONSOLIDADO!${L(cols.colPromPract)}${8 + idx}`, {
         fill: EXCEL_COLOR.practicas
       });
-      c.formula(row, COL.nota, `G${row}+H${row}`, { bold: true, fill: EXCEL_COLOR.finalCell });
+      c.formula(row, COL.nota, `${L(COL.teoria)}${row}+${L(COL.practica)}${row}`, {
+        bold: true,
+        fill: EXCEL_COLOR.finalCell
+      });
       c.formula(
         row,
         COL.obs,
-        `IF(I${row}>=${notaAprobacion},"APROBADO/A",IF(I${row}=0,"NO SE PRESENTO","REPROBADO/A"))`,
+        `IF(${L(COL.nota)}${row}>=${notaAprobacion},"APROBADO/A",IF(${L(COL.nota)}${row}=0,"NO SE PRESENTO","REPROBADO/A"))`,
         { wrap: true, fill: EXCEL_COLOR.obsCell }
       );
     });
@@ -151,8 +170,8 @@ export class PlanillaCalificacionesSheetBuilder {
     const obsRange = rango(COL.obs);
 
     // Slots contiguos para que la grilla no quede separada: Concepto | F | M | Total.
-    const CONCEPTO = [3, 3];
-    const SLOT_F = [4, 5];
+    const CONCEPTO = [3, 4];
+    const SLOT_F = [5, 5];
     const SLOT_M = [6, 7];
     const SLOT_TOTAL = [8, 9];
     const slot = ([start, end], row, value, style = {}, isFormula = false) => {

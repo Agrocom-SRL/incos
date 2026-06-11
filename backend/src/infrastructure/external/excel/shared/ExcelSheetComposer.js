@@ -58,7 +58,8 @@ export class ExcelSheetComposer {
     cell.alignment = {
       horizontal: s.align ?? 'center',
       vertical: 'middle',
-      wrapText: Boolean(s.wrap)
+      wrapText: Boolean(s.wrap),
+      indent: s.indent ?? (s.align === 'left' ? 1 : 0)
     };
     if (s.border !== false) {
       cell.border = borderAll(s.borderMedium ? EXCEL_BORDER.medium : EXCEL_BORDER.thin);
