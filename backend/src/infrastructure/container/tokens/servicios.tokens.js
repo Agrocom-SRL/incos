@@ -16,6 +16,7 @@ export const SERVICIOS_TOKENS = {
     declaracionJuradaPdfGenerator: 'declaracionJuradaPdfGenerator', // Generador de formulario de declaración jurada (pdf-lib)
     reciboPagoPdfGenerator: 'reciboPagoPdfGenerator', // Generador de recibo de pago (pdf-lib)
     pdfGenerator: 'pdfGenerator', // IPDFGenerator (fachada única)
+    registroPedagogicoExcelGenerator: 'registroPedagogicoExcelGenerator', // IRegistroPedagogicoExcelGenerator (.xlsx)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
 };
 

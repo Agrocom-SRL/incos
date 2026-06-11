@@ -9,6 +9,7 @@ export function obtenerCuotasDesdePolitica(politicaExtra) {
     cuotaTeorico: Number(p.cuotaTeorico ?? 30),
     cuotaPractico: Number(p.cuotaPractico ?? 70),
     pesosBimestres: p.pesosBimestres ?? [25, 25, 25, 25],
+    notaMinimaAprobacion: Number(p.notaMinimaAprobacion ?? 61)
   };
 }
 
@@ -18,15 +19,13 @@ export function obtenerCuotasDesdePolitica(politicaExtra) {
 export async function cargarCuotasPoliticaGestion({
   calificacionContextoRepository,
   evaluationConfigurationRepository,
-  gestionId,
+  gestionId
 }) {
   let gid = gestionId;
   if (!gid) {
     const ctx = await calificacionContextoRepository.obtenerContextoVigente();
     gid = ctx?.gestion_id;
   }
-  const row = gid
-    ? await evaluationConfigurationRepository.findActiveRowByGestionId(gid)
-    : null;
+  const row = gid ? await evaluationConfigurationRepository.findActiveRowByGestionId(gid) : null;
   return obtenerCuotasDesdePolitica(mergePoliticaExtra(parsePoliticaFromRow(row)));
 }

@@ -814,9 +814,15 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
+        ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        registroPedagogicoExcelGenerator: c.resolve(
+          SERVICIOS_TOKENS.registroPedagogicoExcelGenerator,
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       }),
   );
