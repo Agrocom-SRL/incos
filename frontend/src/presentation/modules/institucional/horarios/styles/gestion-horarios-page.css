@@ -2,6 +2,16 @@
  * Gestión de horarios — layout alineado con dashboard (shell + planificación).
  */
 
+.ant-popover .ant-popover-container {
+    padding: 14px 16px;
+}
+
+.ant-popover .ant-popover-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
 .horarios-kpi-card__sub {
     display: inline-block;
     min-height: 2.75em;
@@ -885,4 +895,13 @@
     .horarios-conflictos-page .da-cal-semanal__slot-wrap--docente-conflicto {
         animation: none;
     }
+}
+
+/* Popover de ayuda anclado a la celda en conflicto (tab de paralelo). */
+.horarios-conflicto-ayuda-popover {
+    max-width: 320px;
+}
+
+.horarios-conflicto-ayuda-popover .ant-popover-inner-content {
+    font-size: var(--ant-font-size-sm, 12px);
 }

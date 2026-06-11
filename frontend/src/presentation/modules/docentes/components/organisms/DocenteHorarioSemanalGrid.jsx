@@ -3,6 +3,7 @@
  */
 
 import { useMemo } from 'react';
+import { Popover } from 'antd';
 import DocenteHorarioSemanaCell from '@docentes/components/atoms/DocenteHorarioSemanaCell';
 import { isConflictGridCell } from '@application-institucional/horarios/utils/computeConflictosBloquesLive';
 
@@ -229,6 +230,13 @@ const DocenteHorarioSemanalGrid = ({
   conflictHorarioIds = null,
   /** Map franja → horario_id (catálogo del turno) para celdas vacías. */
   horarioSlotIndex = null,
+  /**
+   * Ayuda de conflicto por franja: Map(`${dia}-${slotMinutes}` → ReactNode).
+   * Cuando `autoAyudaVisible` es true, la celda con ayuda muestra un Popover
+   * abierto automáticamente anclado a esa celda (guía para resolver el choque).
+   */
+  autoAyudaPorSlot = null,
+  autoAyudaVisible = false,
 }) => {
   const Cell = CellComponent;
   const gridStart = gridTimeRange?.start ?? SLOT_MINUTE_START;
@@ -383,6 +391,21 @@ const DocenteHorarioSemanalGrid = ({
                     ? 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--docente-conflicto'
                     : 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--conflict'
                   : 'da-cal-semanal__slot-wrap';
+                const ayudaConflicto =
+                  autoAyudaVisible && slotHasConflict
+                    ? autoAyudaPorSlot?.get(`${dia}-${slotMinutes}`)
+                    : null;
+                const slotInner = (
+                  <div className={slotWrapClass}>
+                    <Cell
+                      items={cellItems}
+                      slotDia={dia}
+                      slotMinutes={slotMinutes}
+                      editable={editable}
+                      {...cellExtraProps}
+                    />
+                  </div>
+                );
                 return (
                   <td
                     key={`${dia}-${slotMinutes}`}
@@ -404,15 +427,19 @@ const DocenteHorarioSemanalGrid = ({
                         : undefined
                     }
                   >
-                    <div className={slotWrapClass}>
-                      <Cell
-                        items={cellItems}
-                        slotDia={dia}
-                        slotMinutes={slotMinutes}
-                        editable={editable}
-                        {...cellExtraProps}
-                      />
-                    </div>
+                    {ayudaConflicto ? (
+                      <Popover
+                        open
+                        placement="top"
+                        title="Resolvé este choque"
+                        content={ayudaConflicto}
+                        overlayClassName="horarios-conflicto-ayuda-popover"
+                      >
+                        {slotInner}
+                      </Popover>
+                    ) : (
+                      slotInner
+                    )}
                   </td>
                 );
               })}

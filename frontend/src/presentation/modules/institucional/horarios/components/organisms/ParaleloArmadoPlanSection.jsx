@@ -50,6 +50,9 @@ const ParaleloArmadoPlanSection = ({
     docenteConflictMode = false,
     /** Oculta títulos y leyendas; solo grilla + guardar (pantalla de conflictos). */
     headerMinimal = false,
+    /** Ayuda de conflicto por franja (popover en celda); ver DocenteHorarioSemanalGrid. */
+    autoAyudaPorSlot = null,
+    autoAyudaVisible = false,
 }) => {
     const { notification } = App.useApp();
     const puedeEliminar = allowDelete ?? editable;
@@ -227,6 +230,8 @@ const ParaleloArmadoPlanSection = ({
                     conflictHorarioIds={conflictHorarioIds}
                     horarioSlotIndex={horarioSlotIndex}
                     docenteConflictMode={docenteConflictMode}
+                    autoAyudaPorSlot={autoAyudaPorSlot}
+                    autoAyudaVisible={autoAyudaVisible}
                     cellExtraProps={{
                         onBeginDragChip: handleBeginDragChip,
                         onDeleteChip: puedeEliminar ? handleDeleteChip : undefined,
