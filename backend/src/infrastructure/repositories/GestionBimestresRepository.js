@@ -1,6 +1,7 @@
 import { sequelize } from '../database/sequelize.js';
 import { IGestionBimestresRepository } from '../../domain/interfaces/repositories/IGestionBimestresRepository.js';
 import { CalificacionContextoRepository } from './views/CalificacionContextoRepository.js';
+import { claveCursadoIniciado } from '../../domain/constants/gestion.constants.js';
 
 /**
  * Gestión institucional de bimestres: estado institucional, métricas, validación
@@ -11,11 +12,32 @@ import { CalificacionContextoRepository } from './views/CalificacionContextoRepo
  * subjectEnrollmentRepository (no se consulta esa tabla directamente aquí).
  */
 export class GestionBimestresRepository extends IGestionBimestresRepository {
-  constructor({ calificacionContextoRepository, subjectEnrollmentRepository } = {}) {
+  constructor({
+    calificacionContextoRepository,
+    subjectEnrollmentRepository,
+    configuracionSistemaRepository,
+  } = {}) {
     super();
     this.contexto =
       calificacionContextoRepository ?? new CalificacionContextoRepository();
     this.subjectEnrollment = subjectEnrollmentRepository ?? null;
+    this.configuracion = configuracionSistemaRepository ?? null;
+  }
+
+  /**
+   * ¿La gestión está iniciada? Bandera `cursado_iniciado_<gestion>` en
+   * configuracion_sistema; si no existe, se cae al criterio derivado (CURSANDO).
+   * @param {number} gestionId
+   * @returns {Promise<boolean>}
+   */
+  async _gestionIniciada(gestionId) {
+    const flag = this.configuracion
+      ? await this.configuracion.obtenerValorPorClave(claveCursadoIniciado(gestionId))
+      : null;
+    if (flag != null) return flag === 'true';
+    return this.subjectEnrollment
+      ? this.subjectEnrollment.existeCursandoEnGestion(gestionId)
+      : false;
   }
 
   /** @param {number} gestionId @returns {Promise<Map<number, string>>} */
@@ -237,7 +259,7 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
     const [periodos, gestionIniciada, estadosMap, metricasGlobales, metricasBim] =
       await Promise.all([
         this.contexto.obtenerPeriodosBimestresGestion(gestionId),
-        this.subjectEnrollment.existeCursandoEnGestion(gestionId),
+        this._gestionIniciada(gestionId),
         this.estadosInstitucionalesBimestres(gestionId),
         this._metricasGlobales(gestionId),
         this._metricasPorBimestre(gestionId),

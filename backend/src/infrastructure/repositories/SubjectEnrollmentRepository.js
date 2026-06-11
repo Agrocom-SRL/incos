@@ -215,6 +215,10 @@ export class SubjectEnrollmentRepository extends BaseRepository {
             INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
             INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
             SET mm.estado = 'CURSANDO',
+                mm.historial_estados = JSON_SET(
+                    COALESCE(mm.historial_estados, JSON_OBJECT()),
+                    '$.CURSANDO', DATE_FORMAT(CURDATE(), '%Y-%m-%d')
+                ),
                 mm.updated_by = ?,
                 mm.updated_at = NOW()
             WHERE gp.gestion_id = ?
@@ -239,6 +243,10 @@ export class SubjectEnrollmentRepository extends BaseRepository {
             `
             UPDATE matriculas_materia mm
             SET mm.estado = 'CURSANDO',
+                mm.historial_estados = JSON_SET(
+                    COALESCE(mm.historial_estados, JSON_OBJECT()),
+                    '$.CURSANDO', DATE_FORMAT(CURDATE(), '%Y-%m-%d')
+                ),
                 mm.updated_by = ?,
                 mm.updated_at = NOW()
             WHERE mm.inscripcion_id = ?

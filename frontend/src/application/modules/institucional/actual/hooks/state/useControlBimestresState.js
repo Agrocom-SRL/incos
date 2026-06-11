@@ -170,20 +170,10 @@ export function useControlBimestresState() {
 
   const handleIniciarGestion = useCallback(() => {
     if (estado.iniciada) return;
-    modal.confirm({
-      title: 'Iniciar gestión académica',
-      content:
-        'Se activará el cursado de toda la gestión vigente: las matrículas pasarán a ' +
-        'CURSANDO y se abrirán los 4 bimestres. Esta acción no se puede deshacer. ¿Continuar?',
-      okText: 'Activar cursado',
-      cancelText: 'Cancelar',
-      // Fire-and-forget: el confirm cierra de inmediato y el progreso se muestra
-      // en IniciarGestionProgressModal (bloqueante) mientras `iniciando` es true.
-      onOk: () => {
-        ejecutarIniciarGestion();
-      },
-    });
-  }, [estado.iniciada, modal, ejecutarIniciarGestion]);
+    // Sin diálogo de confirmación: solo el modal de progreso bloqueante
+    // (IniciarGestionProgressModal) mientras `iniciando` es true.
+    ejecutarIniciarGestion();
+  }, [estado.iniciada, ejecutarIniciarGestion]);
 
   const handleValidarCierre = useCallback(async () => {
     if (!bimestreVigente) return;
