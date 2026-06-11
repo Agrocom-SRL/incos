@@ -31,9 +31,9 @@ SELECT
   TRIM(
     CONCAT_WS(
       ' ',
-      COALESCE(vie.nombres, ''),
       COALESCE(vie.apellido_paterno, ''),
-      COALESCE(vie.apellido_materno, '')
+      COALESCE(vie.apellido_materno, ''),
+      COALESCE(vie.nombres, '')
     )
   ) AS estudiante_nombre_completo,
 

@@ -14,9 +14,9 @@ CREATE VIEW vista_base_dashboard_detalle_conflicto_docente_horario AS
 SELECT DISTINCT
   ad.docente_id AS docente_id,
   TRIM(CONCAT(
-    COALESCE(d.nombres, ''), ' ',
     COALESCE(d.apellido_paterno, ''), ' ',
-    COALESCE(d.apellido_materno, '')
+    COALESCE(d.apellido_materno, ''), ' ',
+    COALESCE(d.nombres, '')
   )) AS docente_nombre,
   pg.id AS paralelo_gestion_id,
   oc.id AS oferta_curso_id,

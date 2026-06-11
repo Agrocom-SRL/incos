@@ -13,7 +13,7 @@ SELECT
     'DOCENTE' AS artefacto_tipo,
     d.id AS artefacto_id,
     '/docentes/listar' AS link_path,
-    TRIM(CONCAT(COALESCE(d.nombres, ''), ' ', COALESCE(d.apellido_paterno, ''), ' ', COALESCE(d.apellido_materno, ''))) AS titulo,
+    TRIM(CONCAT(COALESCE(d.apellido_paterno, ''), ' ', COALESCE(d.apellido_materno, ''), ' ', COALESCE(d.nombres, ''))) AS titulo,
     CONCAT('Alta de docente · ', COALESCE(NULLIF(TRIM(d.titulo_profesional), ''), 'Sin título declarado')) AS detalle,
     CONCAT('DOCENTE-', d.id) AS avatar_seed,
     d.created_at AS ocurrido_en

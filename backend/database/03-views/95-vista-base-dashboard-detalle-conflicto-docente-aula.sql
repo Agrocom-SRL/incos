@@ -18,9 +18,9 @@ CREATE VIEW vista_base_dashboard_detalle_conflicto_docente_aula AS
 SELECT DISTINCT
   slot.docente_id AS docente_id,
   TRIM(CONCAT(
-    COALESCE(d.nombres, ''), ' ',
     COALESCE(d.apellido_paterno, ''), ' ',
-    COALESCE(d.apellido_materno, '')
+    COALESCE(d.apellido_materno, ''), ' ',
+    COALESCE(d.nombres, '')
   )) AS docente_nombre,
   slot.paralelo_gestion_id AS paralelo_gestion_id,
   slot.oferta_curso_id AS oferta_curso_id,

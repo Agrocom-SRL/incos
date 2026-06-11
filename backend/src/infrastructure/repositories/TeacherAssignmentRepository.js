@@ -266,7 +266,7 @@ export class TeacherAssignmentRepository extends BaseRepository {
       `
       SELECT
         docente_id,
-        TRIM(CONCAT(COALESCE(docente_nombres, ''), ' ', COALESCE(docente_apellido_paterno, ''), ' ', COALESCE(docente_apellido_materno, ''))) AS nombre,
+        TRIM(CONCAT(COALESCE(docente_apellido_paterno, ''), ' ', COALESCE(docente_apellido_materno, ''), ' ', COALESCE(docente_nombres, ''))) AS nombre,
         color_hex,
         COALESCE(max_horas_semana, :defaultMaxSemana) AS max_semana,
         COALESCE(SUM(horas), 0) AS carga_semana

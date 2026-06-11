@@ -105,6 +105,34 @@ con prefijos `sd-`/`da-` **solo para layout**.
 - `type="primary"` solo para la acción principal de la vista (una por pantalla).
 - Acciones destructivas: `danger` + confirmación. No inventes estilos de "rojo".
 
+## 4b. Nombre completo de persona (estudiante / docente) — orden canónico
+
+**En toda lista, tabla, select, buscador, tooltip, encabezado de cuaderno y
+exportación (Excel/PDF), el nombre completo se muestra como
+`APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES` (apellidos primero).** Aplica a
+estudiantes y docentes por igual. El orden de la concatenación gobierna también
+el orden de la lista (ordenación alfabética por apellido), así que no se ajusta
+aparte.
+
+- **Única excepción:** página de **detalle de un solo individuo** (ficha) — puede
+  mostrar el nombre empezando por nombres si el diseño de la ficha lo pide. Nunca
+  en colecciones.
+- **Frontend:** no concatenes a mano. Usa el helper central
+  `buildFullName(nombres, apellidoPaterno, apellidoMaterno, fallback)` o
+  `buildPersonDisplayData(persona)` de
+  `@application/utils/formatters` (`personFormatters.js`). Ambos ya devuelven el
+  orden correcto. Un `[nombres, apellidoPaterno, ...].join(' ')` en el JSX es bug
+  de consistencia.
+- **Backend (vistas SQL `03-views/`):** cuando una vista concatena el nombre
+  (`CONCAT_WS(' ', …)` / `CONCAT(COALESCE(…))`), el orden debe ser
+  `apellido_paterno, apellido_materno, nombres`. Tras cambiar una vista,
+  recréala en BD (ver `incos-vistas-y-evolucion`). El consumidor (grilla de
+  calificaciones, dashboard, matrícula, horarios) recibe el campo ya formateado;
+  no lo reordena en el front.
+- **Coherencia front↔back:** la lista en pantalla (campo `nombre`/`nombreCompleto`
+  de la vista) y el documento exportado deben mostrar el MISMO orden. Si difieren,
+  casi siempre es una vista concatenando `nombres` primero.
+
 ## 5. Ant Design 6 — props deprecadas (warnings en consola)
 
 El proyecto usa **Ant Design 6.x** (`antd` ^6 en `frontend/package.json`). No asumir
@@ -174,6 +202,8 @@ chocan, **gana el componente AntD** para no fragmentar la implementación.
 - [ ] ¿La página solo orquesta y la lógica pesada vive en organismos/hooks?
 - [ ] ¿Reutilicé `PageTemplate`/`PageHeader`/`TableListView`/`DetailInfoCard` en vez de recrearlos?
 - [ ] ¿Los controles de acción respetan permisos (ver `incos-rbac`)?
+- [ ] ¿Los nombres de persona en listas/tablas/selects/exportaciones van
+      `APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES` vía `buildFullName`? (ver §4b)
 - [ ] ¿Si un valor de estilo se repite, lo subí al theme en vez de copiarlo?
 
 ## 8. Errores frecuentes (los que causan la UI inconsistente)

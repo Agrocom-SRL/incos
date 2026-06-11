@@ -1,7 +1,7 @@
 import { TeacherAssignmentListMapper } from './TeacherAssignmentListMapper.js';
 
 function teacherFullName(row) {
-  const parts = [row.docente_nombres, row.docente_apellido_paterno, row.docente_apellido_materno].filter(
+  const parts = [row.docente_apellido_paterno, row.docente_apellido_materno, row.docente_nombres].filter(
     Boolean
   );
   return parts.join(' ').trim() || null;

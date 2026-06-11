@@ -17,9 +17,9 @@ SELECT
   TRIM(
     CONCAT_WS(
       ' ',
-      f.nombres,
       f.apellido_paterno,
-      f.apellido_materno
+      f.apellido_materno,
+      f.nombres
     )
   ) AS docente_nombre
 FROM vista_base_docente_ficha f

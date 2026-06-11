@@ -9,18 +9,19 @@ import { Card } from '@atoms';
 import { FormSection } from '@molecules';
 import { Text } from '@atoms';
 import usuarioAltaLookupRepository from '@/infrastructure/repositories/seguridad/UsuarioAltaLookupRepository.js';
+import { buildFullName } from '@application/utils/formatters';
 
 const DEBOUNCE_MS = 380;
 
 function labelEstudiante(e) {
   const cod = e.codigoEstudiante ?? e.codigo_estudiante ?? '';
-  const nom = [e.nombres, e.apellidoPaterno, e.apellidoMaterno].filter(Boolean).join(' ');
+  const nom = buildFullName(e.nombres, e.apellidoPaterno, e.apellidoMaterno, '');
   const ci = e.ci && e.expedicion ? `${e.ci} ${e.expedicion}` : e.ci || '';
   return [cod && `Cód. ${cod}`, nom || '—', ci && `CI ${ci}`].filter(Boolean).join(' · ');
 }
 
 function labelDocente(d) {
-  const nom = [d.nombres, d.apellidoPaterno, d.apellidoMaterno].filter(Boolean).join(' ');
+  const nom = buildFullName(d.nombres, d.apellidoPaterno, d.apellidoMaterno, '');
   const ci = d.ci && d.expedicion ? `${d.ci} ${d.expedicion}` : d.ci || '';
   return [nom || '—', ci && `CI ${ci}`].filter(Boolean).join(' · ');
 }
@@ -30,7 +31,7 @@ function nombreCompletoReferencia(row) {
   const n = row.nombres ?? row.firstName;
   const ap = row.apellidoPaterno ?? row.lastName;
   const am = row.apellidoMaterno ?? row.motherLastName;
-  return [n, ap, am].filter(Boolean).join(' ').trim();
+  return buildFullName(n, ap, am, '').trim();
 }
 
 function emailReferencia(row) {

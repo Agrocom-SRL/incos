@@ -14,7 +14,7 @@ SELECT
     'ESTUDIANTE' AS artefacto_tipo,
     est.id AS artefacto_id,
     CONCAT('/estudiantes/', est.id) AS link_path,
-    TRIM(CONCAT(COALESCE(est.nombres, ''), ' ', COALESCE(est.apellido_paterno, ''), ' ', COALESCE(est.apellido_materno, ''))) AS titulo,
+    TRIM(CONCAT(COALESCE(est.apellido_paterno, ''), ' ', COALESCE(est.apellido_materno, ''), ' ', COALESCE(est.nombres, ''))) AS titulo,
     CONCAT('Nuevo estudiante · código ', est.codigo_estudiante) AS detalle,
     CONCAT('ESTUDIANTE-', est.id) AS avatar_seed,
     est.created_at AS ocurrido_en

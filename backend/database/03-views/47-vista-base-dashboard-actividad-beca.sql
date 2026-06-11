@@ -13,7 +13,7 @@ SELECT
     'BECA_ASIGNADA' AS artefacto_tipo,
     eb.id AS artefacto_id,
     CONCAT('/estudiantes/becas/asignacion/', eb.id) AS link_path,
-    TRIM(CONCAT(COALESCE(est.nombres, ''), ' ', COALESCE(est.apellido_paterno, ''), ' ', COALESCE(est.apellido_materno, ''))) AS titulo,
+    TRIM(CONCAT(COALESCE(est.apellido_paterno, ''), ' ', COALESCE(est.apellido_materno, ''), ' ', COALESCE(est.nombres, ''))) AS titulo,
     CONCAT(
         'Beca asignada · ',
         COALESCE(bd.nombre, 'Beca'),

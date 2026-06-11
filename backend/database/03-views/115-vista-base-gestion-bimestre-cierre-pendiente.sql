@@ -13,7 +13,7 @@ SELECT
   bm.bimestre,
   ad.id AS asignacion_id,
   m.nombre AS materia,
-  CONCAT_WS(' ', d.nombres, d.apellido_paterno, d.apellido_materno) AS docente_nombre,
+  CONCAT_WS(' ', d.apellido_paterno, d.apellido_materno, d.nombres) AS docente_nombre,
   p.nombre AS paralelo,
   bm.id AS bimestre_matricula_id
 FROM bimestres_matricula bm
