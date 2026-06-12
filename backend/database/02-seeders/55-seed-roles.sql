@@ -1,7 +1,7 @@
 -- ============================================
 -- SEEDER: roles v2 (actualizado)
 -- Sistema de Gestión Académica · Instituto INCOS
--- Archivo: backend/database/02-seeders/53-seed-roles.sql
+-- Archivo: backend/database/02-seeders/55-seed-roles.sql
 --
 -- CAMBIOS v2.1:
 --   [NUEVO] campo tipo VARCHAR(50): categoría visual del rol

@@ -198,6 +198,16 @@ export const menuIconMap = {
     'ACA-CAL-PERIODO': FilePdfOutlined,
     'ACA-CAL-MODIFICAR': EditOutlined,
 
+    // Académico — Asistencia (ítem ACA-ASI, gemelo de Calificaciones)
+    'ACA-ASI': SolutionOutlined,
+    'ACA-ASI-MIS-CURSOS': TeamOutlined,
+    'ACA-ASI-PLANILLA': EditOutlined,
+    'ACA-ASI-CND': CalendarOutlined,
+    'ACA-ASI-CONS': DashboardOutlined,
+    'ACA-ASI-LIC': FileTextOutlined,
+    'ACA-ASI-LIC-SOL': EditOutlined,
+    'ACA-ASI-LIC-APR': CheckCircleOutlined,
+
     // Académico — Nivelaciones
     'ACA-NIV': SyncOutlined,
     'ACA-NIV-INSCRIBIR': BookOutlined,

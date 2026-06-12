@@ -161,6 +161,7 @@ export class RolePermissionRepository extends BaseRepository {
       `
       SELECT
         grupo_ui,
+        nombre,
         ruta_sidebar,
         codigos,
         acciones_validas,
@@ -183,6 +184,7 @@ export class RolePermissionRepository extends BaseRepository {
         : [];
       return {
         grupoUi: r.grupo_ui,
+        grupoNombre: r.nombre || null,
         rutaSidebar: r.ruta_sidebar || null,
         codigos: r.codigos ? r.codigos.split(',') : [],
         accionesValidas,

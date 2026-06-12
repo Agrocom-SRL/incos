@@ -253,6 +253,13 @@ export const CONFLICTOS_ENDPOINTS = {
 // ============================================
 // MÓDULO: CALIFICACIONES (Académico)
 // ============================================
+export const ASISTENCIA_ENDPOINTS = {
+  COORDINACION_DOCENTES: `${API_BASE}/asistencia/coordinacion/docentes`,
+  MIS_CURSOS: `${API_BASE}/asistencia/mis-cursos`,
+  COORDINACION_DOCENTE_CURSOS: (docenteId) =>
+    `${API_BASE}/asistencia/coordinacion/docentes/${docenteId}/cursos`,
+};
+
 export const CALIFICACIONES_ENDPOINTS = {
   COORDINACION_DOCENTES: `${API_BASE}/calificaciones/coordinacion/docentes`,
   MIS_CURSOS: `${API_BASE}/calificaciones/mis-cursos`,

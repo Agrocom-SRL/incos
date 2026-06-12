@@ -1,7 +1,7 @@
 -- ============================================
 -- SEEDER: configuracion_evaluacion
 -- Política institucional (POLITICA_INSTITUCIONAL) por gestión
--- Requiere: 16-seed-gestiones.sql, 58-seed-tipos-evaluacion.sql
+-- Requiere: 16-seed-gestiones.sql, 53-seed-tipos-evaluacion.sql
 --
 -- Sincronizado con dump local 2026-06:
 --   id=1 → gestión 2025 (id=2), NO vigente (histórica).

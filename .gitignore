@@ -142,7 +142,7 @@ vite.config.ts.timestamp-*
 .DS_Store
 **/.DS_Store
 
-# Tooling de IA — rastreado solo en la rama development; ignorado en master
+# Tooling de IA (Claude, Cursor) — no versionar
 .claude/
 .cursor/
 /CLAUDE.md

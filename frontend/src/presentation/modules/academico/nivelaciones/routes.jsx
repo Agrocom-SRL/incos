@@ -16,7 +16,7 @@ export const nivelacionesRoutes = [
       label: 'Nivelaciones',
       module: 'ACA',
       parent: 'ACA',
-      order: 2,
+      order: 3,
       labelByRole: { ESTUDIANTE: 'Mi nivelación' },
     },
   },

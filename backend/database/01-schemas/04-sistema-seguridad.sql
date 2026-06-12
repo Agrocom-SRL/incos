@@ -1,7 +1,7 @@
 -- ============================================
 -- SISTEMA DE SEGURIDAD
 -- Sistema de Gestión Académica - Instituto INCOS
--- Tablas: roles, permisos, usuarios, roles_permisos,
+-- Tablas: roles, permisos, usuarios, roles_permisos, grupos_ui,
 --         usuarios_permisos, sesiones, configuracion_sistema
 -- ============================================
 
@@ -15,6 +15,7 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS grupos_ui;
 DROP TABLE IF EXISTS usuarios_permisos;
 DROP TABLE IF EXISTS sesiones;
 DROP TABLE IF EXISTS roles_permisos;
@@ -264,6 +265,50 @@ CREATE TABLE sesiones (
     INDEX idx_dispositivo (dispositivo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Sesiones de usuarios. Permite invalidación de JWT sin esperar expiración (stateful auth).';
+
+-- ============================================
+-- TABLA: grupos_ui
+-- ============================================
+-- Catálogo de nombres amigables por grupo de UI. Cada `grupo_ui` de la tabla
+-- `permisos` agrupa varios permisos en UNA fila de la grilla de Seguridad
+-- (RolPermisosPage / PermisosDominioPicker). Esta tabla es la FUENTE ÚNICA del
+-- nombre legible del grupo: el frontend ya NO hardcodea las etiquetas.
+--
+-- RESTRICCIONES DE DISEÑO:
+--   - Todas las FKs permiten NULL (aquí no hay FKs: `codigo` casa con
+--     `permisos.grupo_ui`, que es texto libre y nullable, por lo que NO se
+--     declara FK ni se fuerza integridad referencial).
+--   - Todas las FKs usan ON DELETE SET NULL (no aplica: sin FKs).
+--   - Ninguna restricción UNIQUE (la unicidad de `codigo` la garantiza el seeder).
+--   - Ninguna validación CHECK dentro del schema (validación en aplicación).
+--   - Auditoría estándar idéntica en todas las tablas.
+--   - Índices solo en propiedades clave de búsqueda y FKs.
+
+CREATE TABLE grupos_ui (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
+    codigo VARCHAR(100) NULL COMMENT 'Código del grupo; coincide con permisos.grupo_ui (JOIN de presentación)',
+    nombre VARCHAR(150) NULL COMMENT 'Nombre amigable mostrado como título del grupo en la grilla de permisos',
+    dominio VARCHAR(50) NULL COMMENT 'Dominio del módulo (MATRICULA, ACADEMICO, ...) para orden/filtrado',
+    orden INT NULL COMMENT 'Orden de presentación del grupo dentro del dominio',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+
+    -- NOTA: sin Foreign Keys (lookup de presentación; grupo_ui en permisos es texto libre)
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    INDEX idx_codigo (codigo) COMMENT 'Búsqueda/JOIN por código de grupo',
+    INDEX idx_dominio (dominio) COMMENT 'Filtrado por dominio',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Catálogo de nombres amigables por grupo_ui para la grilla de permisos.
+         Fuente única del título del grupo; el frontend no hardcodea etiquetas.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
