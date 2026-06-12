@@ -1,5 +1,6 @@
 /**
- * Celdas de la tabla de coordinación: carreras con color y métricas apiladas.
+ * Celdas de la tabla de coordinación de docentes: icono, carreras con color y
+ * métricas apiladas. Compartidas por Calificaciones y Asistencia.
  */
 
 import { Typography } from 'antd';
@@ -15,7 +16,7 @@ const { Text } = Typography;
 
 const DEFAULT_CARRERA_HEX = '#64748b';
 
-export const buildCarreraPillStyle = (hex) => {
+const buildCarreraPillStyle = (hex) => {
   const c = sanitizeDocenteColorHex(hex) || DEFAULT_CARRERA_HEX;
   const r = parseInt(c.slice(1, 3), 16);
   const g = parseInt(c.slice(3, 5), 16);
@@ -28,12 +29,21 @@ export const buildCarreraPillStyle = (hex) => {
   };
 };
 
-export const CoordinacionCarrerasCelda = ({ carreras }) => {
+export const CoordDocCeldaConIcono = ({ icon, children }) => (
+  <div className="coord-doc-celda">
+    <span className="coord-doc-celda__icon" aria-hidden>
+      {icon}
+    </span>
+    <div className="coord-doc-celda__contenido">{children}</div>
+  </div>
+);
+
+export const CoordDocCarrerasCelda = ({ carreras }) => {
   const lista = Array.isArray(carreras) ? carreras : [];
   if (lista.length === 0) {
     return (
-      <div className="cal-coord-celda">
-        <span className="cal-coord-celda__icon" aria-hidden>
+      <div className="coord-doc-celda">
+        <span className="coord-doc-celda__icon" aria-hidden>
           <BookOutlined />
         </span>
         <Text type="secondary">—</Text>
@@ -42,16 +52,19 @@ export const CoordinacionCarrerasCelda = ({ carreras }) => {
   }
 
   return (
-    <div className="cal-coord-celda cal-coord-celda--carreras">
-      <span className="cal-coord-celda__icon" aria-hidden>
+    <div className="coord-doc-celda coord-doc-celda--carreras">
+      <span className="coord-doc-celda__icon" aria-hidden>
         <BookOutlined />
       </span>
-      <ul className="cal-coord-carreras-list">
+      <ul className="coord-doc-carreras-list">
         {lista.map((c) => {
           const key = `${c.nombre}-${c.colorHex ?? ''}`;
           return (
-            <li key={key} className="cal-coord-carreras-list__item">
-              <span className="cal-coord-carrera-pill" style={buildCarreraPillStyle(c.colorHex)}>
+            <li key={key} className="coord-doc-carreras-list__item">
+              <span
+                className="coord-doc-carrera-pill"
+                style={buildCarreraPillStyle(c.colorHex)}
+              >
                 {c.nombre}
               </span>
             </li>
@@ -63,20 +76,24 @@ export const CoordinacionCarrerasCelda = ({ carreras }) => {
 };
 
 const MetricaLinea = ({ icon, valor, etiqueta }) => (
-  <li className="cal-coord-metricas-list__item">
-    <span className="cal-coord-metricas-list__icon" aria-hidden>
+  <li className="coord-doc-metricas-list__item">
+    <span className="coord-doc-metricas-list__icon" aria-hidden>
       {icon}
     </span>
-    <span className="cal-coord-metricas-list__texto">
-      <Text type="secondary" className="cal-coord-metricas-list__label">
+    <span className="coord-doc-metricas-list__texto">
+      <Text type="secondary" className="coord-doc-metricas-list__label">
         {valor} {etiqueta != null ? ` ${etiqueta}` : ''}
       </Text>
     </span>
   </li>
 );
 
-export const CoordinacionMetricasCelda = ({ cantidadMaterias, cantidadCursos, cantidadEstudiantes }) => (
-  <ul className="cal-coord-metricas-list">
+export const CoordDocMetricasCelda = ({
+  cantidadMaterias,
+  cantidadCursos,
+  cantidadEstudiantes,
+}) => (
+  <ul className="coord-doc-metricas-list">
     <MetricaLinea
       icon={<ReadOutlined />}
       valor={cantidadMaterias ?? 0}

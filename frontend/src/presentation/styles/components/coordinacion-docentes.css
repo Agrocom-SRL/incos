@@ -1,0 +1,114 @@
+/**
+ * Coordinación · "elegir docente" (pantalla previa del admin).
+ * Estilo compartido por Calificaciones y Asistencia (y futuros gemelos).
+ * Solo layout/composición; los colores referencian tokens globales con fallback.
+ */
+
+/* —— Celda con icono —— */
+.coord-doc-celda {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.coord-doc-celda__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 16px;
+  color: var(--color-primary, #196b45);
+}
+
+.coord-doc-celda__contenido {
+  min-width: 0;
+  flex: 1;
+}
+
+/* —— Tabla de coordinación —— */
+.coord-doc-table .ant-table-thead > tr > th {
+  background: var(--color-primary-bg, #e8f5ec) !important;
+}
+
+.coord-doc-table .ant-table-tbody > tr > td {
+  vertical-align: top;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+/* —— Carreras apiladas con viñeta y pill por color de carrera —— */
+.coord-doc-celda--carreras {
+  align-items: flex-start;
+}
+
+.coord-doc-carreras-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.coord-doc-carreras-list__item {
+  position: relative;
+  padding-left: 14px;
+  margin-bottom: 8px;
+}
+
+.coord-doc-carreras-list__item:last-child {
+  margin-bottom: 0;
+}
+
+.coord-doc-carreras-list__item::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-500, #6b7280);
+}
+
+.coord-doc-carrera-pill {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* —— Métricas: materias, cursos, estudiantes en columna —— */
+.coord-doc-metricas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.coord-doc-metricas-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coord-doc-metricas-list__icon {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--color-primary, #196b45);
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.coord-doc-metricas-list__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+
+.coord-doc-metricas-list__label {
+  font-size: 12px !important;
+}
