@@ -13,7 +13,10 @@
 -- - gestiones_planes, planes_estudios, gestiones
 --
 -- Modelo de negocio:
--- paralelos_gestion → oferta_cursos → asignaciones_docentes
+-- paralelos_gestion → oferta_cursos → asignaciones_docentes → asignacion_horarios
+-- ofertaActual: cursos ofertados. bloquesRequeridos: horas/semana del plan (1 hora
+-- = 1 bloque de 45 min). bloquesAsignados: bloques realmente armados en la grilla.
+-- Permite que la ficha/listado refleje el avance de horarios sin depender del estado.
 --
 -- Uso:
 -- SELECT * FROM vista_base_paralelo_gestion_ficha
@@ -63,7 +66,33 @@ SELECT
     WHERE oc.paralelo_gestion_id = pg.id
       AND oc.deleted_at IS NULL
       AND oc.activo = TRUE
-  ) AS ofertaActual
+  ) AS ofertaActual,
+  (
+    SELECT COALESCE(SUM(ap.horas_semanales), 0)
+    FROM oferta_cursos oc
+    INNER JOIN asignaturas_plan ap
+      ON ap.id = oc.asignatura_plan_id
+      AND ap.deleted_at IS NULL
+    WHERE oc.paralelo_gestion_id = pg.id
+      AND oc.deleted_at IS NULL
+      AND oc.activo = TRUE
+  ) AS bloquesRequeridos,
+  (
+    SELECT COUNT(ah.id)
+    FROM asignacion_horarios ah
+    INNER JOIN asignaciones_docentes ad
+      ON ad.id = ah.asignacion_docente_id
+      AND ad.deleted_at IS NULL
+      AND ad.activo = TRUE
+      AND ad.vigente = TRUE
+    INNER JOIN oferta_cursos oc
+      ON oc.id = ad.oferta_curso_id
+      AND oc.deleted_at IS NULL
+      AND oc.activo = TRUE
+    WHERE oc.paralelo_gestion_id = pg.id
+      AND ah.deleted_at IS NULL
+      AND ah.activo = TRUE
+  ) AS bloquesAsignados
 FROM paralelos_gestion pg
 LEFT JOIN paralelos p
   ON p.id = pg.paralelo_id

@@ -9,6 +9,7 @@ import { TeacherAssignmentPresentationMapper } from '../../mappers/docentes/Teac
 import { todayDateOnlyLocal, defaultWeeklyHoursFromPlan } from '../../utils/teacherAssignmentFieldDefaults.js';
 import { normalizeTeacherAssignmentBody } from '../../utils/teacherAssignmentPayload.js';
 import { resolveTeacherAssignmentOfferContext } from '../../utils/teacherAssignmentOfferContext.js';
+import { autoOfertarParaleloGestion } from '../oferta/autoOfertarParaleloGestion.js';
 import {
   DEFAULT_MAX_HORAS_SEMANA_DOCENTE,
   SEMANAS_EQUIVALENTES_MES_CARGA_DOCENTE,
@@ -83,14 +84,15 @@ export class CreateTeacherAssignmentUseCase {
       );
     }
 
-    const { planSubject, weeklyHours } = await resolveTeacherAssignmentOfferContext({
-      courseOfferRepository: this.courseOfferRepository,
-      parallelManagementRepository: this.parallelManagementRepository,
-      planSubjectRepository: this.planSubjectRepository,
-      managementPlanRepository: this.managementPlanRepository,
-      offerCourseId,
-      managementPlanId: gestionPlanId,
-    });
+    const { planSubject, weeklyHours, parallelManagementId } =
+      await resolveTeacherAssignmentOfferContext({
+        courseOfferRepository: this.courseOfferRepository,
+        parallelManagementRepository: this.parallelManagementRepository,
+        planSubjectRepository: this.planSubjectRepository,
+        managementPlanRepository: this.managementPlanRepository,
+        offerCourseId,
+        managementPlanId: gestionPlanId,
+      });
 
     const planHours = defaultWeeklyHoursFromPlan(weeklyHours ?? planSubject.weeklyHours);
     let hours;
@@ -129,6 +131,18 @@ export class CreateTeacherAssignmentUseCase {
 
     const created = await this.teacherAssignmentRepository.create(entity, userId);
     const enriched = await this.teacherAssignmentRepository.findEnrichedById(created.id);
+
+    // Si con esta asignación el paralelo queda con aula + todos los docentes,
+    // pasa a OFERTADO automáticamente (sin botón manual de ofertar).
+    await autoOfertarParaleloGestion(
+      {
+        parallelManagementRepository: this.parallelManagementRepository,
+        courseOfferRepository: this.courseOfferRepository,
+        logger: this.logger,
+      },
+      parallelManagementId,
+      userId,
+    );
 
     return {
       asignacion: enriched

@@ -905,3 +905,8 @@
 .horarios-conflicto-ayuda-popover .ant-popover-inner-content {
     font-size: var(--ant-font-size-sm, 12px);
 }
+
+.horarios-conflicto-ayuda__next {
+    margin-top: 6px;
+    text-align: right;
+}

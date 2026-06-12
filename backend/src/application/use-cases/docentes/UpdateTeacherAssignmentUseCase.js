@@ -9,6 +9,7 @@ import { TeacherAssignmentPresentationMapper } from '../../mappers/docentes/Teac
 import { todayDateOnlyLocal, defaultWeeklyHoursFromPlan } from '../../utils/teacherAssignmentFieldDefaults.js';
 import { normalizeTeacherAssignmentBody } from '../../utils/teacherAssignmentPayload.js';
 import { resolveTeacherAssignmentOfferContext } from '../../utils/teacherAssignmentOfferContext.js';
+import { autoOfertarParaleloGestion } from '../oferta/autoOfertarParaleloGestion.js';
 
 function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj || {}, key);
@@ -170,6 +171,26 @@ export class UpdateTeacherAssignmentUseCase {
     );
     if (!updated) {
       throw new NotFoundError('Asignación docente');
+    }
+
+    // Auto-ofertar si el paralelo quedó con aula + todos los docentes.
+    try {
+      const offer = targetOfferId ? await this.courseOfferRepository.findById(targetOfferId) : null;
+      const offerPlain = offer?.toPlainObject ? offer.toPlainObject() : offer;
+      const pgId = offerPlain?.parallelManagementId ?? offerPlain?.paraleloGestionId ?? null;
+      if (pgId) {
+        await autoOfertarParaleloGestion(
+          {
+            parallelManagementRepository: this.parallelManagementRepository,
+            courseOfferRepository: this.courseOfferRepository,
+            logger: this.logger,
+          },
+          pgId,
+          userId,
+        );
+      }
+    } catch (autoErr) {
+      this.logger?.warn?.('[AsignacionesDocentes] auto-oferta omitida', { error: autoErr?.message });
     }
 
     const enriched = await this.teacherAssignmentRepository.findEnrichedById(id);

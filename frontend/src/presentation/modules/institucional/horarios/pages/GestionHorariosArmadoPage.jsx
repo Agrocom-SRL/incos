@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, Flex, Result, Spin, Tabs } from 'antd';
 import {
     ArrowLeftOutlined,
+    CloudUploadOutlined,
     CompressOutlined,
     ExpandOutlined,
     EyeOutlined,
@@ -10,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader, ParaleloGestionContextHeader } from '@molecules';
-import { IconButton } from '@atoms';
+import { ActionButton, IconButton } from '@atoms';
 import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosArmadoContext } from '@application-institucional/horarios';
 import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
@@ -58,6 +59,9 @@ const GestionHorariosArmadoPage = () => {
         coberturaReajustable,
         coberturaGrilla,
         reajustarCoberturaParalelo,
+        puedePublicarDesdeArmado,
+        publicandoParalelo,
+        publicarParalelo,
     } = useHorariosArmadoContext();
     const [vistaExpandida, setVistaExpandida] = useState(false);
 
@@ -159,9 +163,23 @@ const GestionHorariosArmadoPage = () => {
     );
 
     const headerActions = (
-        <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-            <ArrowLeftOutlined /> Volver
-        </button>
+        <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">
+            {puedePublicarDesdeArmado ? (
+                <ActionButton
+                    permiso="institucional.horario.publicacion"
+                    accion="EDITAR"
+                    variant="primary"
+                    icon={<CloudUploadOutlined />}
+                    loading={publicandoParalelo}
+                    onClick={publicarParalelo}
+                >
+                    Publicar paralelo
+                </ActionButton>
+            ) : null}
+            <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
+                <ArrowLeftOutlined /> Volver
+            </button>
+        </Flex>
     );
 
     const bodyContent = !hasParaleloSelected ? (

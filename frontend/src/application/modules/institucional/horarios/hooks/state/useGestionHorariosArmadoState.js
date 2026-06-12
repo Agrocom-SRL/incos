@@ -6,6 +6,7 @@ import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/
 import { useBulkAsignacionHorariosApi } from '../api/useBulkAsignacionHorariosApi';
 import { useValidarConflictoHorarioApi } from '../api/useValidarConflictoHorarioApi';
 import { useParaleloGestionGrillaHorarioApi } from '../api/useParaleloGestionGrillaHorarioApi';
+import { usePublicarParaleloGestionApi } from '../api/usePublicarParaleloGestionApi';
 import { useParaleloGestionVigenteResolver } from '../useParaleloGestionVigenteResolver';
 import { normalizeArmadoTab } from '@application-institucional/horarios/utils/normalizeArmadoTab';
 import { mapParaleloGestionContextModel } from '@application-institucional/common/utils/mapParaleloGestionContextModel';
@@ -54,7 +55,10 @@ function pickParaleloGestionEstado(row) {
 export const useGestionHorariosArmadoState = (notification) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { fetchParaleloGestionDetalleSilent } = useOfertaAcademicaApi();
+    const { fetchParaleloGestionDetalleSilent, updateParaleloGestionEstado } =
+        useOfertaAcademicaApi();
+    const { publicar: publicarParaleloApi } = usePublicarParaleloGestionApi();
+    const [publicandoParalelo, setPublicandoParalelo] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const paraleloId = searchParams.get('paralelo');
     const pgParam = searchParams.get('pg');
@@ -782,6 +786,81 @@ export const useGestionHorariosArmadoState = (notification) => {
         return relevantes.length > 0;
     }, [serverSchedules, draftSchedules, horarioSlotIndex, horarioEditable]);
 
+    // Armado sin pendientes: cobertura completa, sin conflictos y sin materias
+    // faltantes. Habilita publicar el paralelo desde el armado (último paso del
+    // flujo) aunque la oferta nunca se haya marcado: se oferta y publica de una.
+    const armadoCompleto =
+        Boolean(coberturaGrilla?.completa) &&
+        (conflictosGrilla?.length ?? 0) === 0 &&
+        (missingSubjects?.length ?? 0) === 0;
+    const puedePublicarDesdeArmado =
+        armadoCompleto &&
+        !planSemanalDirty &&
+        paraleloGestionEstado !== 'PUBLICADO' &&
+        paraleloGestionEstado !== 'CERRADO';
+
+    const publicarParalelo = useCallback(async () => {
+        const pgId = Number(paraleloGestionId);
+        if (!Number.isFinite(pgId) || pgId < 1) return { ok: false };
+        if (planSemanalDirty) {
+            notification.warning({
+                title: 'Guardá los cambios',
+                description: 'Guardá el plan semanal antes de publicar el paralelo.',
+            });
+            return { ok: false };
+        }
+
+        setPublicandoParalelo(true);
+        try {
+            // Si sigue en BORRADOR, primero se oferta (valida aula + oferta completa).
+            if (paraleloGestionEstado === 'BORRADOR') {
+                const ofertaRes = await updateParaleloGestionEstado(pgId, 'OFERTADO');
+                if (!ofertaRes.success) {
+                    notification.error({
+                        title: 'No se pudo ofertar el paralelo',
+                        description:
+                            ofertaRes.error ||
+                            'Verificá que tenga aula asignada y la oferta de cursos completa.',
+                    });
+                    return { ok: false };
+                }
+            }
+
+            const pubRes = await publicarParaleloApi(pgId);
+            if (!pubRes.success) {
+                const fallas = pubRes.details?.fallas ?? pubRes.details ?? [];
+                const detalle =
+                    Array.isArray(fallas) && fallas.length
+                        ? fallas.map((f) => f?.mensaje || f).filter(Boolean).join(' ')
+                        : pubRes.error;
+                notification.error({
+                    title: 'No se pudo publicar',
+                    description:
+                        detalle ||
+                        'Revisá cobertura, conflictos y docentes antes de publicar el paralelo.',
+                });
+                return { ok: false };
+            }
+
+            notification.success({
+                title: 'Paralelo publicado',
+                description: 'El horario quedó ofertado y publicado.',
+            });
+            await fetchGrillaHorario(pgId);
+            return { ok: true };
+        } finally {
+            setPublicandoParalelo(false);
+        }
+    }, [
+        paraleloGestionId,
+        planSemanalDirty,
+        paraleloGestionEstado,
+        updateParaleloGestionEstado,
+        publicarParaleloApi,
+        fetchGrillaHorario,
+        notification,
+    ]);
+
     const loading =
         pgDirectLoading ||
         (!validPgId && resolver.loading) ||
@@ -833,5 +912,8 @@ export const useGestionHorariosArmadoState = (notification) => {
         generarBloquesCurso,
         reajustarBloquesCurso,
         reajustarCoberturaParalelo,
+        puedePublicarDesdeArmado,
+        publicandoParalelo,
+        publicarParalelo,
     };
 };

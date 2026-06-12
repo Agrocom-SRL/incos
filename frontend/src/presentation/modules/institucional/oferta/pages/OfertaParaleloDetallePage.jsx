@@ -65,16 +65,9 @@ const OfertaParaleloDetallePage = () => {
               >
                 Volver
               </ActionButton>
-              {s.puedeMarcarOfertado ? (
-                <ActionButton
-                  permiso="institucional.oferta.paralelo-gestion"
-                  accion="EDITAR"
-                  variant="primary"
-                  onClick={s.onMarcarOfertado}
-                >
-                  Ofertar paralelo
-                </ActionButton>
-              ) : null}
+              {/* El paso a OFERTADO ahora es automático (aula + todos los docentes);
+                  el botón manual de "Ofertar paralelo" se retiró. Publicar se hace
+                  en la página de horarios / publicación. */}
               <ActionButton
                 permiso="institucional.horario.armado"
                 accion="LISTAR"

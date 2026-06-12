@@ -8,6 +8,7 @@ import {
     conflictHorarioIdsForParaleloTab,
     solapeParaleloHorarioKeySet,
 } from '@application-institucional/horarios/utils/resolveParalelosTabsConflicto';
+import { buildBulkAsignacionHorarioItems } from '@application-institucional/horarios/utils/buildBulkAsignacionHorarioItems';
 import {
     ayudaConflictoParalelo,
     buildBloqueMateriaNombreMap,
@@ -180,6 +181,21 @@ const GestionHorariosConflictosPage = () => {
             const panelLoading = !isDocente && Boolean(paraleloState?.loading);
             const panelError = !isDocente ? paraleloState?.error : null;
 
+            const dirtyParalelo =
+                isDocente || !paraleloState
+                    ? false
+                    : (() => {
+                          const { items } = buildBulkAsignacionHorarioItems(
+                              paraleloState.serverSchedules ?? [],
+                              paraleloState.draftSchedules ?? [],
+                              paraleloState.horarioSlotIndex ?? null,
+                          );
+                          const relevantes = horEditable
+                              ? items
+                              : items.filter((it) => String(it.op).toLowerCase() === 'update');
+                          return relevantes.length > 0;
+                      })();
+
             const conflictIdsParalelo = (() => {
                 const scoped = conflictHorarioIdsForParaleloTab(
                     pgId,
@@ -243,6 +259,7 @@ const GestionHorariosConflictosPage = () => {
                             horarioSlotIndex={horarioSlotIndex}
                             docenteConflictMode
                             headerMinimal
+                            dirty={dirtyParalelo}
                             autoAyudaPorSlot={autoAyudaPorSlot}
                             autoAyudaVisible={autoAyudaVisible}
                         />

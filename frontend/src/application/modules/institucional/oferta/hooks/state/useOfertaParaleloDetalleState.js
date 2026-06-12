@@ -344,7 +344,7 @@ export function useOfertaParaleloDetalleState() {
 
   const navigateHorariosArmado = useCallback(
     () =>
-      navigate(buildHorariosArmadoUrl(paraleloGestionId, { tab: 'vista' }), {
+      navigate(buildHorariosArmadoUrl(paraleloGestionId, { tab: 'cobertura' }), {
         state: {
           returnListPath: ofertaPaths.paraleloDetalle(paraleloGestionId),
           menuSidebarKey: location.state?.menuSidebarKey ?? 'INST-OFERTA-ACADEMICA',

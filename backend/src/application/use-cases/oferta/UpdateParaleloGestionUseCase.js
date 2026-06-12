@@ -1,9 +1,11 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { entityToPresentation } from '../../mappers/oferta/ParallelManagementPresentationMapper.js';
+import { autoOfertarParaleloGestion } from './autoOfertarParaleloGestion.js';
 
 export class UpdateParaleloGestionUseCase {
-  constructor({ parallelManagementRepository, logger }) {
+  constructor({ parallelManagementRepository, courseOfferRepository, logger }) {
     this.parallelManagementRepository = parallelManagementRepository;
+    this.courseOfferRepository = courseOfferRepository;
     this.logger = logger;
   }
 
@@ -21,6 +23,21 @@ export class UpdateParaleloGestionUseCase {
     if (payload.observaciones !== undefined) update.observations = payload.observaciones;
 
     const updated = await this.parallelManagementRepository.update(id, update, userId);
+
+    // Asignar aula puede completar las condiciones de oferta (aula + docentes):
+    // se intenta auto-ofertar (no-op si aún falta algo).
+    if (update.classroomId) {
+      await autoOfertarParaleloGestion(
+        {
+          parallelManagementRepository: this.parallelManagementRepository,
+          courseOfferRepository: this.courseOfferRepository,
+          logger: this.logger,
+        },
+        id,
+        userId,
+      );
+    }
+
     return { paraleloGestion: entityToPresentation(updated) };
   }
 }

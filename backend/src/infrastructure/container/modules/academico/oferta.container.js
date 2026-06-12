@@ -111,6 +111,7 @@ function registerOfertaUseCases(container) {
   registerComponent(container, ACADEMICO_TOKENS.updateParaleloGestionUseCase, (c) =>
     new UpdateParaleloGestionUseCase({
       parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
+      courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
       logger: c.resolve(SERVICIOS_TOKENS.logger),
     })
   );
