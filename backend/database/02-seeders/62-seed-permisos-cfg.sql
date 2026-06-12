@@ -8,6 +8,21 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('configuracion_academico_carrera', 'Académico · carreras', 'CONFIGURACION', 1, 1, NOW(), NOW()),
+('configuracion_academico_materia', 'Académico · materias', 'CONFIGURACION', 2, 1, NOW(), NOW()),
+('configuracion_academico_plan', 'Académico · planes de estudio', 'CONFIGURACION', 3, 1, NOW(), NOW()),
+('configuracion_academico_paralelo', 'Académico · paralelos', 'CONFIGURACION', 4, 1, NOW(), NOW()),
+('configuracion_academico_prerrequisitos', 'Académico · prerrequisitos', 'CONFIGURACION', 5, 1, NOW(), NOW()),
+('configuracion_plan_periodos', 'Académico · periodos del plan', 'CONFIGURACION', 6, 1, NOW(), NOW()),
+('configuracion_plan_asignaturas', 'Académico · asignaturas del plan', 'CONFIGURACION', 7, 1, NOW(), NOW()),
+('configuracion_complementario', 'Datos complementarios', 'CONFIGURACION', 8, 1, NOW(), NOW()),
+('configuracion_documentacion', 'Documentación', 'CONFIGURACION', 9, 1, NOW(), NOW()),
+('configuracion_convenios', 'Convenios', 'CONFIGURACION', 10, 1, NOW(), NOW()),
+('configuracion_historial', 'Historial de actividades', 'CONFIGURACION', 11, 1, NOW(), NOW()),
+('configuracion_pagos', 'Configuración de pagos', 'CONFIGURACION', 12, 1, NOW(), NOW());
+
 -- 1) Permisos del módulo CFG
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('configuracion.plan-estudio', 'Académico: planes de estudio', NULL, 'CONFIGURACION', 'CFG', 'configuracion_academico_plan', '/configuracion/academico', 1, NOW(), NOW()),

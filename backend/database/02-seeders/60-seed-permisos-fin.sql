@@ -8,6 +8,12 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('fin_pagos', 'Pagos', 'FINANZAS', 1, 1, NOW(), NOW()),
+('fin_adicionales', 'Pagos adicionales', 'FINANZAS', 2, 1, NOW(), NOW()),
+('fin_reportes', 'Reportes de pagos', 'FINANZAS', 3, 1, NOW(), NOW());
+
 -- 1) Permisos del módulo FIN
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('finanzas.pago.ver', 'Pagos: listar, ver detalle; exportar recibos y Excel estado aportes por carrera', NULL, 'FINANZAS', 'FIN', 'fin_pagos', '/pagos/listar', 1, NOW(), NOW()),

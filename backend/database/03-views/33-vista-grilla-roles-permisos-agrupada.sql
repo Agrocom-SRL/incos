@@ -9,11 +9,13 @@
 -- - vista_grilla_catalogo_acciones_permisos_activas (catálogo vigente)
 -- - roles_permisos (asignaciones activas por rol)
 -- - roles (para incluir también grupos sin asignaciones)
+-- - grupos_ui (nombre amigable del grupo; LEFT JOIN por codigo = grupo_ui)
 --
 -- Relaciones según schemas:
 -- - vista_grilla_catalogo_acciones_permisos_activas.permiso_id → permisos.id
 -- - roles_permisos.permiso_id → permisos.id
 -- - roles_permisos.rol_id → roles.id
+-- - grupos_ui.codigo ↔ permisos.grupo_ui (lookup de presentación, sin FK)
 -- ============================================
 
 USE instituto_incos;
@@ -25,6 +27,7 @@ SELECT
   r.id AS rol_id,
   v.dominio,
   v.grupo_ui,
+  MAX(gu.nombre) AS nombre,
   GROUP_CONCAT(DISTINCT v.ruta_sidebar ORDER BY v.permiso_id SEPARATOR ' · ') AS ruta_sidebar,
   GROUP_CONCAT(DISTINCT v.codigo ORDER BY v.permiso_id SEPARATOR ',') AS codigos,
   GROUP_CONCAT(DISTINCT v.accion ORDER BY v.accion SEPARATOR ',') AS acciones_validas,
@@ -40,6 +43,10 @@ LEFT JOIN roles_permisos rp
  AND rp.accion = v.accion
  AND rp.activo = TRUE
  AND rp.deleted_at IS NULL
+LEFT JOIN grupos_ui gu
+  ON gu.codigo = v.grupo_ui
+ AND gu.activo = TRUE
+ AND gu.deleted_at IS NULL
 WHERE r.activo = TRUE
   AND r.deleted_at IS NULL
 GROUP BY

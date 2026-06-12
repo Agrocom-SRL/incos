@@ -8,6 +8,13 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('rep_avance', 'Reporte de avance académico', 'REPORTES', 1, 1, NOW(), NOW()),
+('rep_asistencia', 'Reporte de asistencia', 'REPORTES', 2, 1, NOW(), NOW()),
+('rep_desercion', 'Reporte de deserción', 'REPORTES', 3, 1, NOW(), NOW()),
+('rep_solicitudes', 'Reporte de solicitudes', 'REPORTES', 4, 1, NOW(), NOW());
+
 -- 1) Permisos del módulo REP
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('reportes.avance_academico', 'Reporte de avance académico', NULL, 'REPORTES', 'REP', 'rep_avance', '/reportes/avance-academico', 1, NOW(), NOW()),

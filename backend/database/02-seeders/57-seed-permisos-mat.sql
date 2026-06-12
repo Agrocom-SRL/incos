@@ -8,6 +8,15 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('mat_admision', 'Admisión', 'MATRICULA', 1, 1, NOW(), NOW()),
+('mat_inscripcion', 'Matrículas', 'MATRICULA', 2, 1, NOW(), NOW()),
+('mat_aportes', 'Aportes', 'MATRICULA', 3, 1, NOW(), NOW()),
+('mat_becas', 'Becas', 'MATRICULA', 4, 1, NOW(), NOW()),
+('mat_documentos', 'Documentos', 'MATRICULA', 5, 1, NOW(), NOW()),
+('mat_pasantias', 'Pasantías estudiantiles', 'MATRICULA', 6, 1, NOW(), NOW());
+
 -- 1) Permisos del módulo MAT
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('matricula.admision.ver', 'Admisión: listar, ver ficha; exportar Excel estadística de inscritos', NULL, 'MATRICULA', 'MAT', 'mat_admision', '/estudiantes/listar', 1, NOW(), NOW()),

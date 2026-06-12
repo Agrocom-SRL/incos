@@ -8,6 +8,28 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('aca_cal_ingreso', 'Calificaciones · menú', 'ACADEMICO', 1, 1, NOW(), NOW()),
+('aca_cal_coordinacion', 'Calificaciones · coordinación', 'ACADEMICO', 2, 1, NOW(), NOW()),
+('aca_cal_mis_cursos', 'Calificaciones · mis cursos', 'ACADEMICO', 3, 1, NOW(), NOW()),
+('aca_cal_cuaderno', 'Calificaciones · cuaderno', 'ACADEMICO', 4, 1, NOW(), NOW()),
+('aca_cal_cuaderno_evals', 'Calificaciones · cuaderno · evaluaciones', 'ACADEMICO', 5, 1, NOW(), NOW()),
+('aca_cal_cuaderno_notas', 'Calificaciones · cuaderno · notas', 'ACADEMICO', 6, 1, NOW(), NOW()),
+('aca_cal_cuaderno_guardar', 'Calificaciones · cuaderno · guardar bimestre', 'ACADEMICO', 7, 1, NOW(), NOW()),
+('aca_cal_gestion_anual', 'Calificaciones · gestión anual', 'ACADEMICO', 8, 1, NOW(), NOW()),
+('aca_cal_politica', 'Calificaciones · política institucional', 'ACADEMICO', 9, 1, NOW(), NOW()),
+('aca_cal_bim_ajuste_admin', 'Calificaciones · bimestre cerrado · ajuste administrativo', 'ACADEMICO', 10, 1, NOW(), NOW()),
+('aca_asi_registro', 'Asistencia · registro diario', 'ACADEMICO', 11, 1, NOW(), NOW()),
+('aca_asi_cnd', 'Asistencia · clases no dictadas', 'ACADEMICO', 12, 1, NOW(), NOW()),
+('aca_asi_consolidado', 'Asistencia · consolidado %', 'ACADEMICO', 13, 1, NOW(), NOW()),
+('aca_asi_licencias', 'Asistencia · licencias estudiantiles', 'ACADEMICO', 14, 1, NOW(), NOW()),
+('aca_nivelaciones', 'Nivelaciones', 'ACADEMICO', 15, 1, NOW(), NOW()),
+('aca_traspasos', 'Traspasos', 'ACADEMICO', 16, 1, NOW(), NOW()),
+('aca_transitabilidad', 'Transitabilidad', 'ACADEMICO', 17, 1, NOW(), NOW()),
+('aca_historial', 'Historial', 'ACADEMICO', 18, 1, NOW(), NOW()),
+('aca_avance', 'Avance académico', 'ACADEMICO', 19, 1, NOW(), NOW());
+
 -- 1) Permisos del módulo ACA
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('academico.calificacion.ingreso', 'Calificaciones · menú Académico', NULL, 'ACADEMICO', 'ACA', 'aca_cal_ingreso', '/academico/calificaciones', 1, NOW(), NOW()),

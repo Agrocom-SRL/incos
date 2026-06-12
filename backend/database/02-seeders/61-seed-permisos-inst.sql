@@ -8,6 +8,20 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('inst_gestion', 'Gestión actual', 'INSTITUCIONAL', 1, 1, NOW(), NOW()),
+('inst_cronograma', 'Cronogramas', 'INSTITUCIONAL', 2, 1, NOW(), NOW()),
+('inst_oferta', 'Oferta académica', 'INSTITUCIONAL', 3, 1, NOW(), NOW()),
+('inst_oferta_academica', 'Oferta académica · planes y cursos', 'INSTITUCIONAL', 4, 1, NOW(), NOW()),
+('inst_horarios', 'Horarios · tablero', 'INSTITUCIONAL', 5, 1, NOW(), NOW()),
+('inst_horarios_plantilla', 'Horarios · plantilla', 'INSTITUCIONAL', 6, 1, NOW(), NOW()),
+('inst_horarios_armado', 'Horarios · armado y conflictos', 'INSTITUCIONAL', 7, 1, NOW(), NOW()),
+('inst_horarios_asignacion', 'Horarios · asignación docente', 'INSTITUCIONAL', 8, 1, NOW(), NOW()),
+('inst_horarios_carga', 'Horarios · carga docente', 'INSTITUCIONAL', 9, 1, NOW(), NOW()),
+('inst_horarios_publicacion', 'Horarios · publicación', 'INSTITUCIONAL', 10, 1, NOW(), NOW()),
+('inst_pasadas', 'Gestiones pasadas', 'INSTITUCIONAL', 11, 1, NOW(), NOW());
+
 -- 1) Permisos del módulo INST
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('institucional.gestion.actual', 'Gestión actual: ver', NULL, 'INSTITUCIONAL', 'INST', 'inst_gestion', '/institucional/actual', 1, NOW(), NOW()),

@@ -8,6 +8,13 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('doc_docentes', 'Docentes', 'DOCENTES', 1, 1, NOW(), NOW()),
+('doc_licencias', 'Licencias docentes', 'DOCENTES', 2, 1, NOW(), NOW()),
+('doc_supervision', 'Supervisión', 'DOCENTES', 3, 1, NOW(), NOW()),
+('doc_pasantias', 'Pasantías docentes', 'DOCENTES', 4, 1, NOW(), NOW());
+
 -- 1) Permisos del módulo DOC
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('docentes.ver', 'Docentes: listar y ver ficha', NULL, 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', 1, NOW(), NOW()),

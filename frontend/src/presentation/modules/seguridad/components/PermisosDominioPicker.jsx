@@ -27,61 +27,12 @@ const ACCION_AYUDA = {
   GENERAR_PDF: 'Generar documentos PDF según el módulo.',
 };
 
-const GRUPO_UI_LABELS = {
-  mat_admision: 'Admisión',
-  mat_inscripcion: 'Matrículas',
-  mat_aportes: 'Aportes',
-  mat_becas: 'Becas',
-  mat_pasantias: 'Pasantías estudiantiles',
-  mat_documentos: 'Documentos',
-  aca_cal_ingreso: 'Calificaciones · menú',
-  aca_cal_coordinacion: 'Calificaciones · coordinación',
-  aca_cal_mis_cursos: 'Calificaciones · mis cursos',
-  aca_cal_cuaderno: 'Calificaciones · cuaderno',
-  aca_cal_politica: 'Calificaciones · política institucional',
-  aca_cal_gestion_anual: 'Calificaciones · gestión anual',
-  aca_cal_cuaderno_evals: 'Calificaciones · cuaderno · evaluaciones',
-  aca_cal_cuaderno_notas: 'Calificaciones · cuaderno · notas',
-  aca_cal_cuaderno_guardar: 'Calificaciones · cuaderno · guardar bimestre',
-  aca_cal_bim_ajuste_admin: 'Calificaciones · bimestre cerrado · ajuste administrativo',
-  aca_nivelaciones: 'Nivelaciones',
-  aca_traspasos: 'Traspasos',
-  aca_transitabilidad: 'Transitabilidad',
-  aca_historial: 'Historial',
-  aca_avance: 'Avance académico',
-  aca_licencias_est: 'Licencias estudiantiles',
-  doc_docentes: 'Docentes',
-  doc_licencias: 'Licencias docentes',
-  doc_supervision: 'Supervisión',
-  doc_pasantias: 'Pasantías docentes',
-  fin_pagos: 'Pagos',
-  fin_adicionales: 'Pagos adicionales',
-  fin_reportes: 'Reportes de pagos',
-  cfg_pagos: 'Config. de pagos',
-  inst_gestion: 'Gestión actual',
-  inst_cronograma: 'Cronogramas',
-  inst_oferta: 'Oferta académica',
-  inst_horarios: 'Horarios · tablero',
-  inst_horarios_plantilla: 'Horarios · plantilla',
-  inst_horarios_armado: 'Horarios · armado y conflictos',
-  inst_horarios_publicacion: 'Horarios · publicación',
-  inst_pasadas: 'Gestiones pasadas',
-  cfg_academico: 'Config. académica',
-  cfg_documentacion: 'Config. documentación',
-  cfg_complementario: 'Datos complementarios',
-  cfg_convenios: 'Convenios',
-  cfg_historial: 'Historial actividades',
-  rep_avance: 'Avance académico',
-  rep_asistencia: 'Asistencia',
-  rep_desercion: 'Deserción',
-  rep_solicitudes: 'Solicitudes',
-  seg_usuarios: 'Usuarios',
-  seg_roles: 'Roles y permisos',
-};
-
-function labelGrupoUi(grupoUi) {
-  const k = String(grupoUi || '');
-  return GRUPO_UI_LABELS[k] ?? k;
+/**
+ * Nombre amigable del grupo: viene del backend (`grupo.grupoNombre`), tabla `grupos_ui`
+ * (fuente única; sembrada por módulo). Fallback al código `grupoUi` si faltara la fila.
+ */
+function labelGrupoUi(grupo) {
+  return grupo?.grupoNombre || String(grupo?.grupoUi || '');
 }
 
 function estaEnDelta(delta, grupo, accion) {
@@ -164,7 +115,7 @@ export default function PermisosDominioPicker({
             {grupos.map((grupo) => (
               <tr key={`${grupo.grupoUi}:${grupo.rutaSidebar || ''}`}>
                 <td className="seg-grilla-v2__td-func">
-                  <div className="seg-grilla__grupo-titulo">{labelGrupoUi(grupo.grupoUi)}</div>
+                  <div className="seg-grilla__grupo-titulo">{labelGrupoUi(grupo)}</div>
                   <div className="seg-grilla__grupo-ruta">{grupo.rutaSidebar || '—'}</div>
                 </td>
                 {ACCIONES_GRILLA.map(({ key }) => renderCelda(grupo, key))}

@@ -8,6 +8,12 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+-- (incluye SYS: el permiso técnico sistema.catalogo.referencia no tiene grupo_ui, no se lista)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('seg_usuarios', 'Usuarios', 'SEGURIDAD', 1, 1, NOW(), NOW()),
+('seg_roles', 'Roles y permisos', 'SEGURIDAD', 2, 1, NOW(), NOW());
+
 -- 1) Permisos del módulo SEG
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('seguridad.usuario.crear', 'Usuarios: crear nuevo usuario', NULL, 'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', 1, NOW(), NOW()),
