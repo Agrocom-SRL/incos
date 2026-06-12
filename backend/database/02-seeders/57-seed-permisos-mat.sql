@@ -85,19 +85,14 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'EXPORTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.admision.ver', 'LISTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.admision.ver', 'DETALLE'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.admision.ver', 'EXPORTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.admision.ver', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.crear', 'CREAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.editar', 'ELIMINAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.editar', 'ACTIVAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.editar', 'EDITAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.admision.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.inscribir', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.inscribir', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.inscribir', 'CREAR'
@@ -106,22 +101,15 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'EXPORTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.inscribir', 'LISTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.inscribir', 'DETALLE'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.inscribir', 'CREAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.inscribir', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.inscripcion.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.inscripcion.editar', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscripcion.editar', 'EDITAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.inscripcion.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.beca.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.ver', 'DETALLE'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.beca.ver', 'LISTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.beca.ver', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'CREAR'
@@ -133,8 +121,6 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.asignar', 'CREAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.asignar', 'EDITAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.asignar', 'ELIMINAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.beca.asignar', 'CREAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.beca.asignar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.aprobar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.beca.aprobar', 'APROBAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.aprobar', 'APROBAR'
@@ -142,8 +128,6 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'matricula.documento.ver', 'GENERAR_PDF'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.documento.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.documento.ver', 'GENERAR_PDF'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.documento.ver', 'LISTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.documento.ver', 'GENERAR_PDF'
   UNION ALL SELECT 'RECTOR', 'matricula.pago.aporte.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.pago.aporte.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.pago.aporte.ver', 'EDITAR'
@@ -157,9 +141,6 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.pago.aporte.ver', 'EDITAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.pago.aporte.ver', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.pago.aporte.ver', 'EXPORTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.pago.aporte.ver', 'LISTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.pago.aporte.ver', 'EDITAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.pago.aporte.ver', 'EXPORTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'LISTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'DETALLE'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'EDITAR'
@@ -171,8 +152,6 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.pasantia.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.pasantia.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.pasantia.ver', 'DETALLE'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.pasantia.ver', 'LISTAR'
-  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.pasantia.ver', 'DETALLE'
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.pasantia.ver', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.pasantia.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.pasantia.solicitar', 'CREAR'
@@ -185,5 +164,16 @@ FROM (
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;
+
+-- 3b) SEC_ACADEMICA · acceso COMPLETO al módulo MAT (todas las acciones de cada permiso)
+--     Cubre admisión, matrícula, aportes (registrar/editar/anular), becas
+--     (asignar/aprobar), documentos y pasantías. Se genera desde permiso_acciones
+--     para garantizar "todo el módulo" sin perder acciones nuevas a futuro.
+INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo, created_at, updated_at)
+SELECT r.id, pa.permiso_id, pa.accion, 1, NOW(), NOW()
+FROM roles r
+JOIN permisos p           ON p.modulo = 'MAT'
+JOIN permiso_acciones pa  ON pa.permiso_id = p.id
+WHERE r.codigo = 'SEC_ACADEMICA';
 
 SET FOREIGN_KEY_CHECKS = 1;
