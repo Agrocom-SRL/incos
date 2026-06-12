@@ -122,9 +122,9 @@ GET /api/v1/<recurso>?pagina&limite&busqueda
 
 | Paso | Acción |
 |------|--------|
-| 1 | Insertar permiso en **`54-seed-permisos.sql`** (`codigo`, `dominio`, `modulo`, `grupo_ui`, `ruta_sidebar`). |
-| 2 | Acciones en **`56-seed-permiso-acciones.sql`** — al menos `LISTAR` para listado. |
-| 3 | Filas en **`55-seed-roles-permisos.sql`** para roles operativos (RECTOR, DIR_ACADEMICO, …). |
+| 1 | En el **archivo de permisos del módulo** (`02-seeders/5x-seed-permisos-<mod>.sql`, insert 1): permiso en `permisos` SIN id (`codigo`, `dominio`, `modulo`, `grupo_ui`, `ruta_sidebar`). |
+| 2 | Mismo archivo, insert 2: acciones en `permiso_acciones` por **código** — al menos `LISTAR`. |
+| 3 | Mismo archivo, insert 3: filas en `roles_permisos` por **código** de rol/permiso (RECTOR, DIR_ACADEMICO, …); ADMIN_SISTEMA NO. |
 | 4 | El string en `verificarPermiso('...', 'LISTAR')` debe ser **idéntico** a `permisos.codigo`. |
 | 5 | Actualizar **`docs/referencia/matriz-permisos-sistema.md`** (tabla pantalla ↔ permiso ↔ endpoint). |
 
@@ -316,7 +316,7 @@ Frontend: `application/.../complementarios/hooks/` + `DiscapacidadesList.jsx`.
 - [ ] ¿`List*UseCase` + `List*Controller` comparten `dataFieldName`?
 - [ ] ¿Router con `authenticate` + `verificarPermiso` + `listValidator`?
 - [ ] ¿Container + token + montaje en `routes/index.js`?
-- [ ] ¿Seeds 54/56/55 + matriz actualizados?
+- [ ] ¿Archivo de permisos del módulo (permiso+acciones+roles por código) + matriz actualizados?
 - [ ] ¿`GET` lista con `limite` alto sin 500?
 
 ### Frontend

@@ -8,11 +8,11 @@
 
 import { UnderConstruction } from '@components/pages';
 import { calificacionesRoutes } from './calificaciones/routes.jsx';
+import { asistenciaRoutes } from './asistencia/routes.jsx';
 import { nivelacionesRoutes } from './nivelaciones/routes.jsx';
 import { traspasosRoutes } from './traspasos/routes.jsx';
 import { transitabilidadRoutes } from './transitabilidad/routes.jsx';
 import { historialRoutes } from './historial/routes.jsx';
-import { licenciasRoutes } from './licencias/routes.jsx';
 import { avanceRoutes } from './avance/routes.jsx';
 
 export const academicoRoutes = [
@@ -23,11 +23,11 @@ export const academicoRoutes = [
     menu: null,
   },
   ...calificacionesRoutes,
+  ...asistenciaRoutes,
   ...nivelacionesRoutes,
   ...traspasosRoutes,
   ...transitabilidadRoutes,
   ...historialRoutes,
-  ...licenciasRoutes,
   ...avanceRoutes,
 ];
 

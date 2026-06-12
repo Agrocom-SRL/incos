@@ -1,7 +1,7 @@
 -- ============================================
 -- SEEDER: usuarios admin inicial v2
 -- Sistema de Gestión Académica · Instituto INCOS
--- Archivo: backend/database/02-seeders/57-seed-usuarios-admin.sql
+-- Archivo: backend/database/02-seeders/56-seed-usuarios-admin.sql
 --
 -- CAMBIOS respecto al legacy:
 --   [CAMBIA] rol_id = 1 (ADMIN_SISTEMA ahora es id=1, antes era id=8)

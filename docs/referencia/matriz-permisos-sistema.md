@@ -1,14 +1,32 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-06-09
+## Ultima actualizacion: 2026-06-12
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
-> **IMPORTANTE (renumeracion):** Tras el sync de schema, la fuente unica de IDs de permiso es
-> `54-seed-permisos.sql` (**111 permisos**, orden por modulo MAT→ACA→DOC→FIN→INST→CFG→REP→SEG→SYS).
-> Algunos IDs citados inline mas abajo pueden estar desfasados; el RBAC en runtime resuelve por
-> **`codigo`**, no por ID, por lo que los codigos siguen siendo validos. Para el ID exacto consultar el seeder 54.
+> **IMPORTANTE (seeds RBAC por módulo, sin ids fijos):** Los seeders de permisos están
+> **separados por módulo** en `02-seeders/`: `55-seed-roles.sql` → `56-seed-usuarios-admin.sql`
+> → `57-64 seed-permisos-<mod>.sql` (MAT, ACA, DOC, FIN, INST, CFG, REP, SEG — **SEG incluye SYS**).
+> Cada archivo de módulo es autocontenido con 3 inserts: `permisos` (SIN id, AUTO_INCREMENT) +
+> `permiso_acciones` + `roles_permisos`, **referenciando por CÓDIGO** (de permiso y de rol),
+> no por id. Por eso este documento **ya no cita ids de permiso**: la fuente de verdad es el
+> `codigo`. `ADMIN_SISTEMA` (rol 1) no tiene filas en `roles_permisos`; hereda todo por la vista
+> `vista_catalogo_acciones_permisos_activas`. Ver skill `incos-rbac`.
 
-## Changelog 2026-06-09
+## Changelog 2026-06-12
+
+- **Seeds RBAC migrados a por módulo (sin ids correlativos):** se eliminaron los monolíticos
+  `54-seed-permisos` / `55-seed-roles-permisos` / `56-seed-permiso-acciones`. Ahora cada módulo
+  tiene su archivo `57-64 seed-permisos-<mod>.sql` con permisos + acciones + roles_permisos
+  (refs por código; id por AUTO_INCREMENT). `53/54` = evaluación, `55` = roles, `56` = usuarios-admin.
+  **SEG incluye SYS.** Las tablas se vacían y resiembran.
+- **Asistencia (nuevo ítem de Académico, gemelo de Calificaciones):** permisos
+  `academico.asistencia.*` (registro.ver, registro.cuaderno, clase_no_dictada.ver, consolidado.ver)
+  en `58-seed-permisos-aca.sql`. **Licencias estudiantiles** renombradas
+  `academico.licencia.*` → `academico.asistencia.licencia.*` (ahora página dentro de Asistencia).
+- Las referencias inline a ids de permiso de versiones previas de este documento quedaron obsoletas
+  (el runtime resuelve por código); se están retirando por sección.
+
+## Changelog 2026-06-09 (histórico — numeración de seeds anterior)
 
 - **Fix RBAC `/supervision/pasantias/evaluar`:** `docentes.supervision.pasantia.evaluar` (id **58**) tenia
   solo `EDITAR` en el catalogo, pero la ruta exige `APROBAR` → bloqueaba incluso a ADMIN_SISTEMA.
@@ -26,11 +44,11 @@ Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por
 
 ## ADMIN_SISTEMA (rol_id = 1)
 
-El usuario **admin** inicial (`57-seed-usuarios-admin.sql`) tiene `rol_id = 1`. No tiene filas en `roles_permisos` (seeder **55**); los permisos efectivos salen del catalogo **56** (`permiso_acciones`) via `AuthRepository` / `vista_catalogo_acciones_permisos_activas`.
+El usuario **admin** inicial (`56-seed-usuarios-admin.sql`) tiene `rol_id = 1`. No tiene filas en `roles_permisos`; los permisos efectivos salen del catálogo `permiso_acciones` (poblado por los archivos de permisos por módulo) vía `AuthRepository` / `vista_catalogo_acciones_permisos_activas`.
 
 En **RolPermisosPage**, la grilla usa `vista_grilla_roles_permisos_agrupada`: para `rol_id = 1` el backend marca como asignadas todas las acciones validas del catalogo (misma fuente que login), no las filas vacias de `roles_permisos`.
 
-Tras cambiar `ruta_sidebar` o `grupo_ui` en el seeder **54**, en BD ya existente conviene re-seed de permisos o `UPDATE` manual; en instalación nueva basta con los seeders **53–57** y las vistas **32–33**.
+Tras cambiar `ruta_sidebar` o `grupo_ui` de un permiso, edita su archivo de módulo (`57-64 seed-permisos-<mod>.sql`) y re-seed (las tablas RBAC se vacían y resiembran); en instalación nueva basta con los seeders `55` (roles) → `56` (usuarios-admin) → `57-64` (permisos por módulo) y las vistas RBAC.
 
 ## Criterio canon para nuevas funciones (ABM limpio + seguridad)
 
@@ -65,8 +83,8 @@ Cuando **un mismo item de menu** (`permiso` de **ingreso**, accion **LISTAR**) a
 
 | Capa | Seed / artefacto | Responsabilidad |
 |------|------------------|-----------------|
-| Menu lateral | permiso **ingreso** (ej. id 15 `academico.calificacion.ingreso`) | Visibilidad del item en sidebar (`filterMenuByPermiso` + accion LISTAR) |
-| Pantallas hijas | permisos 16–24, rutas hijas en `routes.jsx` | Cada pantalla con `permiso` + `accion`; `PrivateRoute` bloquea URL directa |
+| Menu lateral | permiso **ingreso** (ej. `academico.calificacion.ingreso`) | Visibilidad del item en sidebar (`filterMenuByPermiso` + accion LISTAR) |
+| Pantallas hijas | permisos `academico.calificacion.*` hijos, rutas hijas en `routes.jsx` | Cada pantalla con `permiso` + `accion`; `PrivateRoute` bloquea URL directa |
 | Aterrizaje | `menu.landingStack` en la ruta de ingreso | Orden de preferencia al abrir el modulo (click menu o URL de ingreso) |
 | Modo de subpantallas | `viewStack` en la ruta raiz del modulo (misma key que menu) | API / UI segun permiso efectivo (`useRouteViewMode`) |
 
@@ -156,7 +174,7 @@ Reglas:
 
 | Dato en panel | API | Permiso middleware | Detalle / listado ABM |
 |---|---|---|---|
-| Carreras, docentes, estudiantes, actividades, conteos | `GET /dashboard/resumen` | `sistema.catalogo.referencia` + LISTAR (111) | Requiere permiso del modulo (`cfg.academico.carreras`, `docentes.ver`, `matricula.admision.ver`, etc.) |
+| Carreras, docentes, estudiantes, actividades, conteos | `GET /dashboard/resumen` | `sistema.catalogo.referencia` + LISTAR | Requiere permiso del modulo (`cfg.academico.carreras`, `docentes.ver`, `matricula.admision.ver`, etc.) |
 | ABM carreras | `GET /carreras` | `cfg.academico.carreras` + LISTAR | No usar en dashboard; solo administracion |
 
 Frontend: `useDashboardData` carga solo `/dashboard/resumen`. `useDashboardGuardedNavigate` muestra notificacion de acceso denegado si el usuario pulsa "Ver todas", tarjeta o actividad sin permiso de detalle (misma notificacion que `PrivateRoute`).
@@ -181,9 +199,9 @@ const CalificacionesEntradaConnector = () => (
 5. **`ModuleEntryConnector`** + pagina inline para la vista admin/coordinacion.
 6. **Hooks de datos**: `useRouteViewMode(routeKey)` para elegir API segun `isView('coordinacion'|'propio')` y `contextId`.
 7. **UI**: ocultar acciones admin con `PermisoGuard` / `ActionButton`, no con `if (rol === 'DOCENTE')`.
-8. **Documentar** fila en esta matriz (permisos, stacks, roles en seed 55).
+8. **Documentar** fila en esta matriz (permisos, stacks, roles asignados en el archivo de módulo).
 
-Referencia implementada: **ACA · Calificaciones** (`ACA-CAL`, seeds 15–24, rol DOCENTE id 7 en seed 55).
+Referencia implementada: **ACA · Calificaciones** (`ACA-CAL`, permisos `academico.calificacion.*`, rol DOCENTE en el archivo de módulo ACA).
 
 ## Resumen de roles
 
@@ -198,7 +216,7 @@ Referencia implementada: **ACA · Calificaciones** (`ACA-CAL`, seeds 15–24, ro
 | 7 | DOCENTE | Docente |
 | 8 | ESTUDIANTE | Estudiante |
 
-Fuente: `53-seed-roles.sql`.
+Fuente: `55-seed-roles.sql` (ids de rol fijos 1-8).
 
 ## Tabla de acciones disponibles por accion HTTP
 
@@ -304,7 +322,7 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 ### Inventario frontend de permisos en rutas (single source UI)
 
 El barrido de `frontend/src/presentation/modules/**/routes.jsx` confirma que los codigos usados en UI
-estan alineados con `54-seed-permisos.sql` (111 permisos; ultimo `sistema.catalogo.referencia` id 111) y que la visibilidad del sidebar en v2 depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
+estan alineados con los archivos de permisos por módulo (`57-64 seed-permisos-<mod>.sql`) por **código** y que la visibilidad del sidebar depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
 
 ### Nota de compatibilidad documental
 
@@ -385,19 +403,23 @@ Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 | Menú | Ruta canónica | Permisos (grupo) |
 |------|---------------|------------------|
 | Calificaciones | `/academico/calificaciones` | `academico.calificacion.*` |
+| Asistencia | `/academico/asistencia` | `academico.asistencia.*` (gemelo de Calificaciones; ver detalle abajo) |
 | Nivelaciones | `/academico/nivelaciones/listar` | `academico.nivelacion.*` |
 | Traspasos | `/academico/traspasos/listar` | `academico.trazabilidad.traspaso.*` |
 | Transitabilidad | `/academico/transitabilidad/listar` | `academico.trazabilidad.transitabilidad.*` |
 | Historial | `/academico/historial/academico` | `academico.historial.*` |
-| Licencias estudiantiles | `/academico/licencias/listar` | `academico.licencia.*` |
 | Avance académico | `/academico/avance` | `academico.avance` |
+
+> **Licencias estudiantiles** ya **no** es un ítem propio: pasó a ser una **página dentro de
+> Asistencia** (`/academico/asistencia/licencias/listar`), permisos renombrados
+> `academico.licencia.*` → `academico.asistencia.licencia.*`.
 
 Raíz `/academico`: dashboard pendiente (`UnderConstruction`).
 
 ### ACA - Calificaciones (detalle rutas)
 Permisos: `academico.calificacion.*` — menu: `/academico/calificaciones` (IDs 15–24)
 
-**Aterrizaje (`landingStack` en `ACA-CAL`):** coordinacion (16) inline → mis cursos (17) redirect. Rol DOCENTE (7) solo tiene 15+17+18+21–23 en seed 55 → entra directo a mis cursos. Roles con 16 (RECTOR, DIR_ACADEMICO, SEC_ACADEMICA) ven coordinacion.
+**Aterrizaje (`landingStack` en `ACA-CAL`):** `…coordinacion` inline → `…mis_cursos` redirect. Rol DOCENTE solo tiene ingreso + mis_cursos + cuaderno (+ operación cuaderno), sin coordinación → entra directo a mis cursos. Roles con `…coordinacion` (RECTOR, DIR_ACADEMICO, SEC_ACADEMICA) ven coordinacion.
 
 **API mis cursos:** DOCENTE usa `GET /calificaciones/mis-cursos` (permiso 17). El backend resuelve el docente por `docentes.usuario_id` o, si falta, por `usuarios.referencia_id` + `tipo_referencia = DOCENTE` (y sincroniza `usuario_id` en docentes). Sin vínculo → 403 con mensaje de contacto a coordinación. Seeder demo: `60-seed-usuario-docente-demo.sql` (usuario `docente`, docente id=1). `GET /calificaciones/coordinacion/docentes/:id/cursos` exige permiso 16; el frontend solo lo llama si `hasPermiso(coordinacion)` y hay `docenteId` en contexto (ver `useCalificacionesVistaContext`).
 
@@ -415,8 +437,25 @@ Permisos: `academico.calificacion.*` — menu: `/academico/calificaciones` (IDs 
 | `academico.calificacion.cuaderno.guardar` | EDITAR | Guardar bimestre y recalcular componentes | REC, DIRA, SECA, DOC |
 | `academico.calificacion.bimestre.ajuste_admin` | EDITAR | Consolidado bimestre cerrado: habilitación / ajuste administrativo | REC, DIRA, SECA |
 
-### ACA - Nivelaciones, Trazabilidad, Historial, Licencias
-Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.historial.*`, `academico.licencia.*`
+### ACA - Asistencia (detalle rutas)
+Permisos: `academico.asistencia.*` — ítem `/academico/asistencia` (gemelo de Calificaciones, un ítem con varias páginas). Seeds en `58-seed-permisos-aca.sql`. Ver `docs/plan/MODULO-ASISTENCIA.md`.
+
+| Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
+|---|---|---|---|
+| `academico.asistencia.registro.ver` | LISTAR, DETALLE | Ítem menú + mis cursos (registro diario); gobierna visibilidad | REC, DIRA, SECA, DOC |
+| `academico.asistencia.registro.cuaderno` | LISTAR, EDITAR | Planilla diaria del curso (toma P/R/F/L) | REC, DIRA, SECA (LISTAR), DOC (LISTAR+EDITAR) |
+| `academico.asistencia.clase_no_dictada.ver` | LISTAR, CREAR, EDITAR | Clases no dictadas (cancelaciones por asignación docente) | REC, DIRA, SECA, DOC |
+| `academico.asistencia.consolidado.ver` | LISTAR, EXPORTAR | Consolidado % por estudiante/curso | REC, DIRA, SECA (LISTAR+EXPORTAR), DOC (LISTAR) |
+| `academico.asistencia.licencia.ver` | LISTAR, DETALLE | Licencias estudiantiles (página dentro de Asistencia) | REC, DIRA, SECA, EST |
+| `academico.asistencia.licencia.crear` | CREAR | Solicitar licencia estudiantil | REC, DIRA, SECA, EST |
+| `academico.asistencia.licencia.aprobar` | APROBAR | Aprobar licencia estudiantil | REC, DIRA |
+
+> Modo coordinación (ver cualquier docente) vs propio: se resuelve por rol sobre el mismo
+> `registro.ver` (no hay permiso de coordinación separado), con `useRouteViewMode`.
+> Marca **L** y días neutros (feriado/receso/clase no dictada) se calculan en lectura, no se persisten.
+
+### ACA - Nivelaciones, Trazabilidad, Historial
+Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.historial.*`
 
 | Accion | Descripcion | Roles |
 |---|---|---|
@@ -430,10 +469,10 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 
 | Codigo (seed) | Acciones v2 (`permiso_acciones`) | Uso principal (UI) |
 |---|---|---|
-| `docentes.ver` (45) | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista) |
-| `docentes.crear` (42) | CREAR | Alta `/docentes/registrar` |
-| `docentes.editar` (59) | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
-| `docentes.asignar` (43) | CREAR, EDITAR, ELIMINAR | Asignacion docente-curso (`/docentes/asignar`, API `POST /docentes/asignaciones/curso`, modal en armado paralelo) |
+| `docentes.ver` | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista) |
+| `docentes.crear` | CREAR | Alta `/docentes/registrar` |
+| `docentes.editar` | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
+| `docentes.asignar` | CREAR, EDITAR, ELIMINAR | Asignacion docente-curso (`/docentes/asignar`, API `POST /docentes/asignaciones/curso`, modal en armado paralelo) |
 
 | Accion | Descripcion | Roles |
 |---|---|---|
@@ -442,7 +481,12 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 | EDITAR | Ajustes supervision | ADM, REC, DIRA |
 | APROBAR | Licencias docentes | ADM, REC, DIRA |
 
-**Rol DOCENTE (7) — alcance propio (seed 55):** `docentes.licencia.ver` (48) LISTAR + `docentes.licencia.crear` (49) CREAR (menú Licencias docentes; sin `docentes.ver`). Pasantías docentes: (56) LISTAR + CREAR, (57) EDITAR (menú `/supervision/pasantias`; sin supervisión ni listado de plantilla).
+**Rol DOCENTE (7) — alcance propio:** `docentes.licencia.ver` LISTAR + `docentes.licencia.crear` CREAR (menú Licencias docentes; sin `docentes.ver`). Pasantías docentes: `docentes.supervision.pasantia` LISTAR + CREAR + EDITAR (menú `/supervision/pasantias`; sin supervisión ni listado de plantilla).
+
+> **Licencias de docentes (pendiente):** los permisos `docentes.licencia.*` existen, pero la
+> **tabla `licencias_docentes` aún no está creada** (solo licencias de estudiante en schema 17).
+> Se diseñará en el dominio Docentes y Asistencia la consumirá para clases no dictadas
+> (ver `docs/plan/MODULO-ASISTENCIA.md` §7).
 
 ### INST - Institucional (`/institucional/*`)
 Permisos: `institucional.*`
@@ -495,19 +539,19 @@ Subrutas operativas de horarios (definidas en `frontend/.../institucional/routes
 - `/institucional/horarios/aulas` — `institucional.gestion.horarios` + LISTAR
 - `/institucional/horarios/publicacion` — `institucional.horario.publicacion` + EDITAR
 
-Permisos por etapa (seed `54-seed-permisos.sql`):
-- `97` `institucional.horario.plantilla`
-- `98` `institucional.horario.armado`
-- `99` `institucional.horario.conflictos`
-- `100` `institucional.horario.publicacion`
+Permisos por etapa (en `61-seed-permisos-inst.sql`):
+- `institucional.horario.plantilla`
+- `institucional.horario.armado`
+- `institucional.horario.conflictos`
+- `institucional.horario.publicacion`
 
 #### Oferta académica (Sprint 3)
 
-| Código (seed) | ID | Acciones (56) | UI |
-|---|---|---|---|
-| `institucional.oferta.gestion-plan` | 78 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 1–2 wizard: gestión vigente, habilitar plan |
-| `institucional.oferta.paralelo-gestion` | 79 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 3: paralelos_gestion, aula, turno, estado |
-| `institucional.oferta.cursos` | 80 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Generar/validar oferta_cursos, drawer manual |
+| Código | Acciones | UI |
+|---|---|---|
+| `institucional.oferta.gestion-plan` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 1–2 wizard: gestión vigente, habilitar plan |
+| `institucional.oferta.paralelo-gestion` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Paso 3: paralelos_gestion, aula, turno, estado |
+| `institucional.oferta.cursos` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Generar/validar oferta_cursos, drawer manual |
 
 | Recurso API | Método | Permiso | Acción |
 |-------------|--------|---------|--------|
@@ -529,15 +573,15 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 | `/api/v1/oferta-cursos/:id` | DELETE | `institucional.oferta.cursos` | ELIMINAR |
 | `/api/v1/aulas/catalogo` | GET | `institucional.oferta.paralelo-gestion` | LISTAR |
 
-**Roles (55):** RECTOR (2) y SEC_ACADEMICA (5) operación completa; DIR_ACADEMICO (3) CREAR/EDITAR/LISTAR/DETALLE sin ACTIVAR masivo.
+**Roles:** RECTOR (2) y SEC_ACADEMICA (5) operación completa; DIR_ACADEMICO (3) CREAR/EDITAR/LISTAR/DETALLE sin ACTIVAR masivo.
 
 #### Asignación docente y carga (Sprint 4)
 
-| Código (seed) | ID | Acciones (56) | UI |
-|---|---|---|---|
-| `institucional.horarios.asignacion-docente` | 81 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Matriz `/institucional/horarios/asignacion-docente` (A6) |
-| `institucional.horarios.color-docente` | 82 | LISTAR, EDITAR | Color picker al asignar docente |
-| `institucional.horarios.carga-docente` | 83 | LISTAR, DETALLE | Dashboard `/institucional/horarios/carga-docentes/:gestionId` (A6) |
+| Código | Acciones | UI |
+|---|---|---|
+| `institucional.horarios.asignacion-docente` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Matriz `/institucional/horarios/asignacion-docente` (A6) |
+| `institucional.horarios.color-docente` | LISTAR, EDITAR | Color picker al asignar docente |
+| `institucional.horarios.carga-docente` | LISTAR, DETALLE | Dashboard `/institucional/horarios/carga-docentes/:gestionId` (A6) |
 
 | Recurso API | Método | Permiso | Acción | Notas |
 |-------------|--------|---------|--------|-------|
@@ -564,7 +608,7 @@ Permisos por etapa (seed `54-seed-permisos.sql`):
 | `/api/v1/docentes/:id/color` | PUT | `institucional.horarios.color-docente` | EDITAR | |
 | `/api/v1/docentes/cursos/:cursoId/horarios` | GET | `institucional.horarios.asignacion-docente` | EDITAR | `cursoId` = `oferta_curso_id`; aula efectiva vía vista 54 |
 
-**Roles (55):** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) con acciones operativas sobre 108–110. Rutas legacy bajo `/docentes/asignaciones*` mantienen fallback `docentes.asignar` en backend hasta retiro en A6.
+**Roles:** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) con acciones operativas sobre `institucional.horarios.{asignacion-docente,color-docente,carga-docente}`. Rutas legacy bajo `/docentes/asignaciones*` mantienen fallback `docentes.asignar` en backend hasta retiro en A6.
 
 Rutas retiradas del router (tabla `cursos` ya no existe): `GET/POST /paralelos/:id/cursos-oferta`, `POST /paralelos/:id/cursos`, `GET/PUT /paralelos/:id/schedule`, montaje `/api/v1/cursos`.
 
@@ -586,44 +630,47 @@ CREAR/EDITAR/ELIMINAR de la tabla de cursos en armado acepta `institucional.gest
 
 ### CFG - Configuracion (`/configuracion/*`)
 
-**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`. Seeds: ids **84–100** en `54-seed-permisos.sql` (`configuracion.plan-estudio`=84, `carrera`=85, `materia`=86, `plan-estudio.periodos`=87, `plan-estudio.asignaturas`=88, `plan-estudio.prerrequisitos`=89, `paralelo`=90, documentacion 91–94, complementario 95–97, convenios 98, pagos 99, historial-actividades 100), acciones en **56**, asignacion roles en **55**.
+**Arquitectura frontend:** skill `incos-frontend-module`. Permisos del módulo en
+`62-seed-permisos-cfg.sql` (códigos `configuracion.*`: plan-estudio, carrera, materia,
+plan-estudio.{periodos,asignaturas,prerrequisitos}, paralelo, complementario.*, documentacion.*,
+convenios, pagos, historial-actividades), cada uno con sus acciones y grants en el mismo archivo.
 
 #### Académico — Plan de estudio (menu unico, tabs + subruta)
 
-| Ruta UI | Permiso (codigo) | ID | Acciones tipicas (56) | Uso |
-|---------|------------------|-----|----------------------|-----|
-| `/configuracion/academico` | Entrada: `permisoAny` 78–80 | — | LISTAR en cada tab visible | Menu "Academico"; tabs filtrados por permiso |
-| `?tab=planes` | `configuracion.plan-estudio` | 80 | LISTAR, DETALLE, CREAR, EDITAR, ACTIVAR | Tab planes |
-| `?tab=carreras` | `configuracion.carrera` | 78 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab carreras |
-| `?tab=materias` | `configuracion.materia` | 79 | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab materias |
-| `/configuracion/academico/plan/:planId` | `configuracion.plan-estudio` | 80 | DETALLE (+ EDITAR matriz via 82) | Matriz del plan; prerrequisitos usan 83 |
-| (API periodos) | `configuracion.plan-estudio.periodos` | 81 | LISTAR, CREAR, EDITAR, ELIMINAR | Anios del plan |
-| (API asignaturas) | `configuracion.plan-estudio.asignaturas` | 82 | LISTAR, CREAR, EDITAR, ELIMINAR | Celdas matriz |
-| (API prerrequisitos) | `configuracion.plan-estudio.prerrequisitos` | 83 | LISTAR, DETALLE, CREAR, ELIMINAR | Editor en detalle de plan |
+| Ruta UI | Permiso (codigo) | Acciones tipicas | Uso |
+|---------|------------------|------------------|-----|
+| `/configuracion/academico` | Entrada: `permisoAny` (carrera, materia, plan-estudio) | LISTAR en cada tab visible | Menu "Academico"; tabs filtrados por permiso |
+| `?tab=planes` | `configuracion.plan-estudio` | LISTAR, DETALLE, CREAR, EDITAR, ACTIVAR | Tab planes |
+| `?tab=carreras` | `configuracion.carrera` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab carreras |
+| `?tab=materias` | `configuracion.materia` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab materias |
+| `/configuracion/academico/plan/:planId` | `configuracion.plan-estudio` | DETALLE (+ EDITAR matriz vía `…asignaturas`) | Matriz del plan; prerrequisitos usan `…prerrequisitos` |
+| (API periodos) | `configuracion.plan-estudio.periodos` | LISTAR, CREAR, EDITAR, ELIMINAR | Anios del plan |
+| (API asignaturas) | `configuracion.plan-estudio.asignaturas` | LISTAR, CREAR, EDITAR, ELIMINAR | Celdas matriz |
+| (API prerrequisitos) | `configuracion.plan-estudio.prerrequisitos` | LISTAR, DETALLE, CREAR, ELIMINAR | Editor en detalle de plan |
 
 Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requieren permiso distinto.
 
-**Roles (seed 55):** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio 78–83; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales documentados en 55. **Nota:** RECTOR incluye `DETALLE` en 79 (materia); DIR_ACADEMICO incluye `DETALLE` en 80 (plan) para abrir matriz; edicion de celdas sigue requiriendo 82 `EDITAR`.
+**Roles:** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio de `configuracion.*`; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales. **Nota:** RECTOR incluye `DETALLE` en materia; DIR_ACADEMICO incluye `DETALLE` en plan para abrir matriz; edición de celdas sigue requiriendo `configuracion.plan-estudio.asignaturas` `EDITAR`.
 
 #### Datos complementarios (tabs)
 
-| Ruta UI canonica | Permiso | ID | Notas |
-|------------------|---------|-----|--------|
-| `/configuracion/complementarios` | `permisoAny` 88–90 | — | Menu "Datos complementarios" |
-| `?tab=discapacidad` | `configuracion.complementario.discapacidad` | 88 | Listado operativo |
-| `?tab=apoderados` | `configuracion.complementario.apoderados` | 89 | Placeholder / pendiente ABM |
-| `?tab=idiomas` | `configuracion.complementario.idiomas` | 90 | Placeholder / pendiente ABM |
+| Ruta UI canonica | Permiso | Notas |
+|------------------|---------|--------|
+| `/configuracion/complementarios` | `permisoAny` (complementario.*) | Menu "Datos complementarios" |
+| `?tab=discapacidad` | `configuracion.complementario.discapacidad` | Listado operativo |
+| `?tab=apoderados` | `configuracion.complementario.apoderados` | Placeholder / pendiente ABM |
+| `?tab=idiomas` | `configuracion.complementario.idiomas` | Placeholder / pendiente ABM |
 
-`ruta_sidebar` en seed 54 aun apunta `/configuracion/datos-complementarios`; la app redirige a `/configuracion/complementarios`. Alinear seed en proxima migracion de permisos.
+`ruta_sidebar` del permiso aún apunta `/configuracion/datos-complementarios`; la app redirige a `/configuracion/complementarios`. Alinear en el archivo de permisos CFG.
 
 #### Otros items CFG (rutas separadas)
 
-| Menu | Ruta | Permisos (ids) |
-|------|------|----------------|
-| Documentacion | `/configuracion/documentacion` | 84–87 |
-| Convenios | `/configuracion/convenios` | 91 |
-| Historial actividades | `/configuracion/historial-actividades` | 93 |
-| Pagos config | `/pagos/configuracion` | 92 |
+| Menu | Ruta | Permiso (codigo) |
+|------|------|------------------|
+| Documentacion | `/configuracion/documentacion` | `configuracion.documentacion.*` |
+| Convenios | `/configuracion/convenios` | `configuracion.convenios` |
+| Historial actividades | `/configuracion/historial-actividades` | `configuracion.historial-actividades` |
+| Pagos config | `/pagos/configuracion` | `configuracion.pagos` |
 
 Codigos legacy `cfg.academico.*` **no** deben usarse en codigo nuevo; fueron reemplazados por `configuracion.*`.
 
@@ -649,7 +696,7 @@ Endpoint(s): `GET/POST/PUT/PATCH/DELETE /usuarios`, `GET/PUT /roles/:id/permisos
 
 Revision sobre `backend/src/presentation/routes/*.routes.js` y `permisos.middleware.js`.
 
-**Cadena RBAC:** tras `authenticate`, `verificarPermiso(codigo, accion)` llama a `AuthRepository.tienePermiso(usuarioId, codigo, accion)`. Respuesta tipica si falla: **403** con `{ error: 'Acceso denegado', codigo, accion }`. Para `rol_id = 1` (ADMIN_SISTEMA) la vigencia del par se valida contra el catalogo `permiso_acciones` (vista `vista_catalogo_acciones_permisos_activas`); para el resto, contra `vista_usuario_permisos_efectivos` / seed `55-seed-roles-permisos.sql`.
+**Cadena RBAC:** tras `authenticate`, `verificarPermiso(codigo, accion)` llama a `AuthRepository.tienePermiso(usuarioId, codigo, accion)`. Respuesta tipica si falla: **403** con `{ error: 'Acceso denegado', codigo, accion }`. Para `rol_id = 1` (ADMIN_SISTEMA) la vigencia del par se valida contra el catalogo `permiso_acciones` (vista `vista_catalogo_acciones_permisos_activas`); para el resto, contra `vista_usuario_permisos_efectivos` / `roles_permisos` (poblado por los archivos de permisos por módulo).
 
 ### Modulo Seguridad (`/api/v1/usuarios`, `/roles`, `/permisos`)
 
@@ -674,9 +721,9 @@ Los controladores de seguridad deben mantener reglas de negocio extra (p. ej. in
 - **Cursos oferta:** PATCH/DELETE `/cursos/:id` → EDITAR / ELIMINAR sobre `institucional.gestion.horarios`.
 - **Docentes:** listado/detalle/CRUD y asignaciones alineados con `docentes.ver`, `docentes.crear`, `docentes.editar`, `docentes.asignar` (POST asignacion curso con mismo stack que **EDITAR** en `docentes.asignar`, coherente con UI).
 
-### Catálogos de referencia (`sistema.catalogo.referencia`, permiso_id **111**, acción **LISTAR**)
+### Catálogos de referencia (`sistema.catalogo.referencia`, acción **LISTAR**)
 
-**Permiso técnico (transparente para Seguridad).** No tiene `grupo_ui` ni `ruta_sidebar`: **no aparece** en `RolPermisosPage` / `PermisosDominioPicker`. No se guarda en `roles_permisos` (55).
+**Permiso técnico (transparente para Seguridad).** No tiene `grupo_ui` ni `ruta_sidebar`: **no aparece** en `RolPermisosPage` / `PermisosDominioPicker`. No se asigna a roles en `roles_permisos`.
 
 **Quién lo tiene:** cualquier usuario autenticado con `rol_id` asignado (`AuthRepository.tienePermiso` devuelve true para LISTAR). Así un rol con “crear estudiante” no queda sin combos de país, idioma, método de pago, etc.
 
@@ -684,7 +731,7 @@ Los controladores de seguridad deben mantener reglas de negocio extra (p. ej. in
 
 **Bloquear datos concretos** (una carrera inactiva, un idioma dado) es configuración de negocio en CFG o estado `activo` en tablas, no este toggle.
 
-Middleware: `listarCatalogoReferencia` (`authenticate` + `verificarPermiso`). Catálogo en `permiso_acciones` (56) para validar que la acción existe en el sistema.
+Middleware: `listarCatalogoReferencia` (`authenticate` + `verificarPermiso`). Catálogo en `permiso_acciones` para validar que la acción existe en el sistema.
 
 | Archivo | GET |
 |---------|-----|

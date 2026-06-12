@@ -20,7 +20,7 @@ Marca en orden. Si un ítem no aplica, táchalo y anota por qué (ej. detalle em
 | 6 | `GET /:id` **después** de rutas estáticas (`/matriz`, …). |
 | 7 | Cadena: `authenticate` + `verificarPermiso` + **`DETALLE`** + `idValidator` + `validateRequest`. |
 | 8 | Registro en `*.container.js` + tokens; router montado en `routes/index.js`. |
-| 9 | Seeds 54/56/55 + fila en matriz para `DETALLE` y endpoints hijos. |
+| 9 | Archivo de permisos del módulo (permiso+acciones+roles por código) + fila en matriz para `DETALLE` y endpoints hijos. |
 | 10 | Prueba: 404 id inválido, 403 rol sin DETALLE, JSON con clave `dataFieldName` esperada. |
 
 ---
