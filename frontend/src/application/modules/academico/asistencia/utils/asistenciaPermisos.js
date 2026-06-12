@@ -14,6 +14,8 @@
 export const ASISTENCIA_PERMISOS = {
   /** Registro diario — entrada "mis cursos" (LISTAR/DETALLE); gobierna el ítem de menú */
   registroVer: 'academico.asistencia.registro.ver',
+  /** Coordinación: ver/elegir cualquier docente (admin). Si falta → docente entra a mis cursos */
+  coordinacion: 'academico.asistencia.registro.coordinacion',
   /** Planilla diaria del curso — toma/edición (LISTAR/EDITAR) */
   registroCuaderno: 'academico.asistencia.registro.cuaderno',
   /** Clases no dictadas (LISTAR/CREAR/EDITAR) */

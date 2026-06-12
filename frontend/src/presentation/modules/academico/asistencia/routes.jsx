@@ -10,16 +10,25 @@
  *   registro.ver · registro.cuaderno · clase_no_dictada.ver · consolidado.ver
  *   licencia.ver/crear/aprobar (renombrados desde academico.licencia.*).
  *
- * Fase 1: andamiaje con placeholders (UnderConstruction). Connectors/pages/hooks
- * reales se añaden en las fases siguientes (ver docs/plan/MODULO-ASISTENCIA.md).
+ * Entrada (ACA-ASI): coordinación inline (elegir docente) o redirect a mis-cursos
+ * según landingStack. Planilla/clases-no-dictadas/consolidado/licencias: placeholders
+ * hasta sus fases (ver docs/plan/MODULO-ASISTENCIA.md).
  */
 
+import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
 import {
   ASISTENCIA_LANDING_STACK,
   ASISTENCIA_VIEW_STACK,
 } from '@application-academico/asistencia/config/asistenciaViewStack.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
+
+const AsistenciaEntradaConnector = lazy(
+  () => import('./connectors/AsistenciaEntradaConnector.jsx'),
+);
+const MisCursosAsistenciaConnector = lazy(
+  () => import('./connectors/MisCursosAsistenciaConnector.jsx'),
+);
 
 export const asistenciaRoutes = [
   {
@@ -34,14 +43,14 @@ export const asistenciaRoutes = [
   },
   {
     path: '/academico/asistencia/mis-cursos',
-    element: <UnderConstruction />,
+    element: <MisCursosAsistenciaConnector />,
     key: 'ACA-ASI-MIS-CURSOS',
     breadcrumbLabel: 'Mis cursos',
     permiso: ASISTENCIA_PERMISOS.registroVer,
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'ACA-ASI',
-    /** Modos de subpantallas → useRouteViewMode (propio; coordinación en fase Registro). */
+    /** Modos de subpantallas → useRouteViewMode (coordinación con docenteId | propio). */
     viewStack: ASISTENCIA_VIEW_STACK,
   },
   {
@@ -94,7 +103,7 @@ export const asistenciaRoutes = [
   },
   {
     path: '/academico/asistencia',
-    element: <UnderConstruction />,
+    element: <AsistenciaEntradaConnector />,
     key: 'ACA-ASI',
     permiso: ASISTENCIA_PERMISOS.registroVer,
     accion: 'LISTAR',
@@ -102,11 +111,13 @@ export const asistenciaRoutes = [
       label: 'Asistencia',
       module: 'ACA',
       parent: 'ACA',
-      order: 6,
+      order: 1,
       labelByRole: { ESTUDIANTE: 'Mi asistencia' },
-      /** Entrada menú → redirect a mis cursos (registro diario). */
+      /** Entrada menú → coordinación inline (elegir docente) | redirect mis cursos. */
       landingStack: ASISTENCIA_LANDING_STACK,
     },
+    /** viewStack también en la raíz para que useRouteViewMode lo herede. */
+    viewStack: ASISTENCIA_VIEW_STACK,
   },
 ];
 

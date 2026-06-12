@@ -63,6 +63,7 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('academico.asistencia.licencia.crear', 'Asistencia · Licencias estudiantiles: solicitar', NULL, 'ACADEMICO', 'ACA', 'aca_asi_licencias', '/academico/asistencia/licencias/listar', 1, NOW(), NOW()),
 ('academico.asistencia.licencia.aprobar', 'Asistencia · Licencias estudiantiles: aprobar', NULL, 'ACADEMICO', 'ACA', 'aca_asi_licencias', '/academico/asistencia/licencias/listar', 1, NOW(), NOW()),
 ('academico.asistencia.registro.ver', 'Asistencia · Registro diario: mis cursos', NULL, 'ACADEMICO', 'ACA', 'aca_asi_registro', '/academico/asistencia', 1, NOW(), NOW()),
+('academico.asistencia.registro.coordinacion', 'Asistencia · Registro diario: coordinación (elegir docente)', NULL, 'ACADEMICO', 'ACA', 'aca_asi_registro', '/academico/asistencia', 1, NOW(), NOW()),
 ('academico.asistencia.registro.cuaderno', 'Asistencia · Planilla diaria del curso', NULL, 'ACADEMICO', 'ACA', 'aca_asi_registro', '/academico/asistencia/mis-cursos', 1, NOW(), NOW()),
 ('academico.asistencia.clase_no_dictada.ver', 'Asistencia · Clases no dictadas', NULL, 'ACADEMICO', 'ACA', 'aca_asi_cnd', '/academico/asistencia/clases-no-dictadas', 1, NOW(), NOW()),
 ('academico.asistencia.consolidado.ver', 'Asistencia · Consolidado %', NULL, 'ACADEMICO', 'ACA', 'aca_asi_consolidado', '/academico/asistencia/consolidado', 1, NOW(), NOW());
@@ -120,6 +121,7 @@ JOIN (
   UNION ALL SELECT 'academico.asistencia.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'academico.asistencia.registro.ver', 'LISTAR'
   UNION ALL SELECT 'academico.asistencia.registro.ver', 'DETALLE'
+  UNION ALL SELECT 'academico.asistencia.registro.coordinacion', 'LISTAR'
   UNION ALL SELECT 'academico.asistencia.registro.cuaderno', 'LISTAR'
   UNION ALL SELECT 'academico.asistencia.registro.cuaderno', 'EDITAR'
   UNION ALL SELECT 'academico.asistencia.clase_no_dictada.ver', 'LISTAR'
@@ -275,6 +277,9 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.registro.ver', 'DETALLE'
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.registro.ver', 'LISTAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.registro.ver', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'academico.asistencia.registro.coordinacion', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.registro.coordinacion', 'LISTAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.registro.coordinacion', 'LISTAR'
   UNION ALL SELECT 'DOCENTE', 'academico.asistencia.registro.cuaderno', 'LISTAR'
   UNION ALL SELECT 'DOCENTE', 'academico.asistencia.registro.cuaderno', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.registro.cuaderno', 'LISTAR'

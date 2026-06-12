@@ -310,9 +310,17 @@ módulo Académico: `02-seeders/58-seed-permisos-aca.sql` (permisos + acciones +
 
 1. **✅ Fase 1 — Andamiaje + RBAC:** ítem ACA-ASI + páginas placeholder; `config/utils`;
    licencias reubicadas; seeds RBAC por módulo con `academico.asistencia.*`. (Hecho.)
-2. **Fase 2 — Backend lectura:** vistas planilla + consolidado (reusar `99`–`101`);
-   `*ViewRepository`; `GetPlanillaAsistencia`/`GetConsolidadoAsistencia`/`GetMisCursos`;
-   mappers; `asistencia.routes.js`; `asistencia.container.js`; montar router.
+2. **Fase 2 — Backend lectura** (en curso):
+   - ✅ **Mis cursos + Coordinación** (page-driven): backend `GET /asistencia/mis-cursos`,
+     `GET /asistencia/coordinacion/docentes` (reusa el use-case/controller de coordinación de
+     Calificaciones) y `…/coordinacion/docentes/:docenteId/cursos`. `GetMisCursosAsistenciaUseCase`
+     (delgado) + `asistencia.routes.js` + `asistencia.container.js` + router montado.
+     Frontend: `CoordinacionAsistenciaPage` (elegir docente, inline para admin vía landingStack) +
+     `MisCursosAsistenciaPage` (cards de curso; redirect directo para rol docente) + connectors +
+     `AsistenciaRepository`/use-cases/factory + hooks. Permiso nuevo
+     `academico.asistencia.registro.coordinacion` (admin; docente entra a sus cursos). Build + DI verificados.
+   - ⏳ **Planilla diaria** + **Consolidado %**: requieren vistas SQL nuevas (reusar `99`–`101`),
+     `*ViewRepository`, use-cases, mappers (P/R/F/L + neutros). SQL en archivos + validar en BD.
 3. **Fase 3 — Backend escritura:** `BulkRegistrarAsistencia` + validators + endpoint PUT planilla.
 4. **Fase 4 — CRUD Licencias estudiantiles:** use-cases + frontend (listado/ficha/solicitar/aprobar).
 5. **Fase 5 — Licencias de docentes (DOC):** tabla `licencias_docentes` + CRUD + frontend.

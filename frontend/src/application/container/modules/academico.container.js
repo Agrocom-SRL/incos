@@ -30,9 +30,14 @@ import {
   ObtenerPoliticaInstitucionalUseCase,
   ObtenerRegistroNotasCursoUseCase,
 } from '@useCases/academico/calificaciones';
+import {
+  ListCoordinacionAsistenciaDocentesUseCase,
+  ListMisCursosAsistenciaUseCase,
+} from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository';
+import AsistenciaRepository from '@infrastructure/repositories/AsistenciaRepository';
 import TipoEvaluacionRepository from '@infrastructure/repositories/TipoEvaluacionRepository';
 
 /**
@@ -89,6 +94,14 @@ export function registerAcademicoModule(factory) {
 
   factory.listarMisCursosCalificaciones = () => {
     return new ListMisCursosUseCase(CalificacionRepository);
+  };
+
+  factory.listarCoordinacionAsistenciaDocentes = () => {
+    return new ListCoordinacionAsistenciaDocentesUseCase(AsistenciaRepository);
+  };
+
+  factory.listarMisCursosAsistencia = () => {
+    return new ListMisCursosAsistenciaUseCase(AsistenciaRepository);
   };
 
   factory.obtenerRegistroNotasCurso = () => {

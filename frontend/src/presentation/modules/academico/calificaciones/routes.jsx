@@ -164,7 +164,7 @@ export const calificacionesRoutes = [
       label: 'Calificaciones',
       module: 'ACA',
       parent: 'ACA',
-      order: 1,
+      order: 2,
       labelByRole: { ESTUDIANTE: 'Mis calificaciones' },
       /** Entrada menú → ModuleEntryConnector (inline coordinación | redirect mis cursos). */
       landingStack: CALIFICACIONES_LANDING_STACK,

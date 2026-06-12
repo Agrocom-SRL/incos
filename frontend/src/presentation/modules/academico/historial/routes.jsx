@@ -16,7 +16,7 @@ export const historialRoutes = [
       label: 'Historial',
       module: 'ACA',
       parent: 'ACA',
-      order: 5,
+      order: 6,
       labelByRole: { ESTUDIANTE: 'Mi historial' },
     },
   },
