@@ -1,12 +1,13 @@
 import { QueryTypes } from 'sequelize';
 import { sequelize } from '../../database/sequelize.js';
+import { IParaleloGestionConflictoDocenteBloqueViewRepository } from '../../../domain/interfaces/repositories/IParaleloGestionConflictoDocenteBloqueViewRepository.js';
 
 const VIEW = 'vista_base_paralelo_gestion_conflicto_docente_bloque';
 
 /**
  * Lectura: vista_base_paralelo_gestion_conflicto_docente_bloque (03-views/126).
  */
-export class ParaleloGestionConflictoDocenteBloqueViewRepository {
+export class ParaleloGestionConflictoDocenteBloqueViewRepository extends IParaleloGestionConflictoDocenteBloqueViewRepository {
   /**
    * @param {number} paraleloGestionId
    * @returns {Promise<Array<Object>>}

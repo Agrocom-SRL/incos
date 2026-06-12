@@ -22,6 +22,7 @@ export const INSCRIPCIONES_TOKENS = {
     generateFormularioInscripcionUseCase: 'inscripciones.generateFormularioInscripcionUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
     updateEnrollmentUseCase: 'inscripciones.updateEnrollmentUseCase',
+    cambiarEstadoMatriculaUseCase: 'inscripciones.cambiarEstadoMatriculaUseCase',
 
     // CONTROLLERS
     listEnrollmentsController: 'inscripciones.listEnrollmentsController',
@@ -32,6 +33,7 @@ export const INSCRIPCIONES_TOKENS = {
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
     updateEnrollmentController: 'inscripciones.updateEnrollmentController',
     updateEnrollmentPriorHistoryController: 'inscripciones.updateEnrollmentPriorHistoryController',
+    activarCursadoMatriculaController: 'inscripciones.activarCursadoMatriculaController',
 
     // ROUTERS
     inscripcionesRouter: 'inscripciones.inscripcionesRouter',

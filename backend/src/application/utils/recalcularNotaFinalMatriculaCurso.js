@@ -8,6 +8,7 @@ import {
  */
 export async function recalcularNotaFinalMatriculaCurso({
   cuadernoRepository,
+  subjectEnrollmentRepository,
   asignacionId,
   pesosBimestres,
   usuarioId,
@@ -32,7 +33,7 @@ export async function recalcularNotaFinalMatriculaCurso({
   let actualizados = 0;
   for (const { mmId, bimestres } of porMatricula.values()) {
     const notaFinal = calcularNotaFinalPonderada(bimestres, pesosBimestres);
-    await cuadernoRepository.actualizarNotaFinalMatricula(mmId, notaFinal, usuarioId);
+    await subjectEnrollmentRepository.actualizarNotaFinalMatricula(mmId, notaFinal, usuarioId);
     actualizados += 1;
   }
 

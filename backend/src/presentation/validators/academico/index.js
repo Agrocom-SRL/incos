@@ -18,3 +18,13 @@ export {
   getBimestreConsolidadoValidator,
   guardarBimestreConsolidadoValidator,
 } from './cuaderno-evaluacion.validator.js';
+export {
+  createActividadCronogramaValidator,
+  updateActividadCronogramaValidator,
+  cronogramaIdValidator,
+} from './cronograma.validator.js';
+export {
+  putPeriodoFechasValidator,
+  postPeriodoEtapaValidator,
+  periodoIdValidator,
+} from './periodos-gestion.validator.js';

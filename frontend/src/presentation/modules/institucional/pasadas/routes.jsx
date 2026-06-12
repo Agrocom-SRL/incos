@@ -19,7 +19,7 @@ export const pasadasRoutes = [
       label: 'Gestiones Pasadas',
       module: 'INST',
       parent: 'INST',
-      order: 5,
+      order: 4,
     },
   },
 ];

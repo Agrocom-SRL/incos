@@ -6,6 +6,7 @@ import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/
 import { useBulkAsignacionHorariosApi } from '../api/useBulkAsignacionHorariosApi';
 import { useValidarConflictoHorarioApi } from '../api/useValidarConflictoHorarioApi';
 import { useParaleloGestionGrillaHorarioApi } from '../api/useParaleloGestionGrillaHorarioApi';
+import { usePublicarParaleloGestionApi } from '../api/usePublicarParaleloGestionApi';
 import { useParaleloGestionVigenteResolver } from '../useParaleloGestionVigenteResolver';
 import { normalizeArmadoTab } from '@application-institucional/horarios/utils/normalizeArmadoTab';
 import { mapParaleloGestionContextModel } from '@application-institucional/common/utils/mapParaleloGestionContextModel';
@@ -54,7 +55,10 @@ function pickParaleloGestionEstado(row) {
 export const useGestionHorariosArmadoState = (notification) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { fetchParaleloGestionDetalleSilent } = useOfertaAcademicaApi();
+    const { fetchParaleloGestionDetalleSilent, updateParaleloGestionEstado } =
+        useOfertaAcademicaApi();
+    const { publicar: publicarParaleloApi } = usePublicarParaleloGestionApi();
+    const [publicandoParalelo, setPublicandoParalelo] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const paraleloId = searchParams.get('paralelo');
     const pgParam = searchParams.get('pg');
@@ -372,6 +376,18 @@ export const useGestionHorariosArmadoState = (notification) => {
                 targetSlotMinutes,
                 cursoHorarioId,
             );
+
+            // Soltar sobre una franja donde la MISMA materia ya tiene otro bloque:
+            // no-op silencioso. No es un error que deba interrumpir al usuario
+            // (equivale al conflicto backend "La asignación ya tiene un bloque").
+            if (
+                occupantBlock &&
+                occupantCourse &&
+                Number(occupantCourse.cursoId) === Number(cursoId)
+            ) {
+                return { ok: false, silent: true };
+            }
+
             const esIntercambioParalelo =
                 occupantBlock &&
                 occupantCourse &&
@@ -444,7 +460,7 @@ export const useGestionHorariosArmadoState = (notification) => {
             const conflictoParalelo = res.conflictos?.find((c) => c?.tipo === 'PARALELO');
             const msg =
                 conflictoParalelo?.mensaje
-                    ? `${conflictoParalelo.mensaje} Elegí otra franja libre o mové el bloque en la grilla.`
+                    ? `${conflictoParalelo.mensaje} Cada franja del paralelo admite una sola clase: elegí una franja libre, o primero mové a otro horario el bloque que ya está ahí.`
                     : res.conflictos?.map((c) => c.mensaje).filter(Boolean).join(' ') ||
                       res.error ||
                       'El bloque genera un conflicto de horario';
@@ -657,6 +673,194 @@ export const useGestionHorariosArmadoState = (notification) => {
         ],
     );
 
+    const reajustarCoberturaParalelo = useCallback(async () => {
+        if (!coberturaReajustable) {
+            notification.warning({
+                title: 'Cobertura no editable',
+                description: mensajeParaleloGestionCoberturaNoReajustable(paraleloGestionEstado),
+            });
+            return { ok: false };
+        }
+
+        const det = paraleloGestionDetalle;
+        const aulaMeta = {
+            aulaId: det?.aulaId ?? null,
+            aulaNombre: det?.aulaNombre ?? null,
+            aulaCodigo: det?.aulaCodigo ?? null,
+            paraleloNombre: paraleloNombre ?? null,
+        };
+
+        let nextSchedules = draftSchedules;
+        let totalRemoved = 0;
+        let totalPlaced = 0;
+        let totalFaltante = 0;
+        const sinDocente = [];
+
+        for (const curso of draftSchedules) {
+            if (!curso?.docente || !curso?.asignacionDocenteId) {
+                sinDocente.push(
+                    curso?.materiaNombre || curso?.materiaSigla || `Curso ${curso?.cursoId}`,
+                );
+                continue;
+            }
+            const result = reajustarCoberturaCurso({
+                schedules: nextSchedules,
+                cursoId: curso.cursoId,
+                turnoLabel: turnoEfectivo || null,
+                horarioSlotIndex,
+                aulaMeta,
+            });
+            nextSchedules = result.schedules;
+            totalRemoved += result.removed ?? 0;
+            totalPlaced += result.placed ?? 0;
+            totalFaltante += result.faltante ?? 0;
+        }
+
+        const sinDocenteMsg = sinDocente.length
+            ? ` Sin docente (asigná en Oferta académica): ${sinDocente.join(', ')}.`
+            : '';
+
+        if (totalRemoved === 0 && totalPlaced === 0) {
+            notification.warning({
+                title: 'Cobertura sin cambios',
+                description:
+                    `La cobertura de las materias con docente ya coincide con el plan o no hay franjas libres en el turno (incluido sábado).${sinDocenteMsg}`,
+            });
+            return { ok: false };
+        }
+
+        const persistRes = await persistDraftSchedules(nextSchedules, {
+            coberturaReajuste: true,
+        });
+        if (!persistRes.success) {
+            notification.error({
+                title: 'No se pudo guardar',
+                description:
+                    persistRes.error ||
+                    'Se calculó la cobertura de la semana pero no se pudo persistir. Revisá conflictos o permisos.',
+            });
+            return { ok: false };
+        }
+
+        setDraftSchedules(nextSchedules);
+        const resumen = `${totalPlaced} bloque(s) generados, ${totalRemoved} quitado(s)`;
+        if (totalFaltante > 0) {
+            notification.warning({
+                title: 'Cobertura parcial de la semana',
+                description: `Se alineó parte de la carga (${resumen}); faltan ${totalFaltante} franja(s) libre(s) en el turno.${sinDocenteMsg}`,
+            });
+        } else {
+            notification.success({
+                title: 'Cobertura de la semana generada',
+                description: `Se alineó toda la semana con el plan (${resumen}).${sinDocenteMsg}`,
+            });
+        }
+        setTab('plan');
+        return { ok: true, placed: totalPlaced, removed: totalRemoved, faltante: totalFaltante };
+    }, [
+        notification,
+        coberturaReajustable,
+        paraleloGestionEstado,
+        draftSchedules,
+        turnoEfectivo,
+        horarioSlotIndex,
+        paraleloGestionDetalle,
+        paraleloNombre,
+        persistDraftSchedules,
+        setDraftSchedules,
+        setTab,
+    ]);
+
+    // Plan semanal con cambios sin guardar respecto al servidor (diff bulk).
+    // Refleja exactamente lo que persistDraftSchedules enviaría: si un paralelo
+    // no es editable solo cuentan reubicaciones (op 'update').
+    const planSemanalDirty = useMemo(() => {
+        const { items } = buildBulkAsignacionHorarioItems(
+            serverSchedules,
+            draftSchedules,
+            horarioSlotIndex,
+        );
+        const relevantes = horarioEditable
+            ? items
+            : items.filter((it) => String(it.op).toLowerCase() === 'update');
+        return relevantes.length > 0;
+    }, [serverSchedules, draftSchedules, horarioSlotIndex, horarioEditable]);
+
+    // Armado sin pendientes: cobertura completa, sin conflictos y sin materias
+    // faltantes. Habilita publicar el paralelo desde el armado (último paso del
+    // flujo) aunque la oferta nunca se haya marcado: se oferta y publica de una.
+    const armadoCompleto =
+        Boolean(coberturaGrilla?.completa) &&
+        (conflictosGrilla?.length ?? 0) === 0 &&
+        (missingSubjects?.length ?? 0) === 0;
+    const puedePublicarDesdeArmado =
+        armadoCompleto &&
+        !planSemanalDirty &&
+        paraleloGestionEstado !== 'PUBLICADO' &&
+        paraleloGestionEstado !== 'CERRADO';
+
+    const publicarParalelo = useCallback(async () => {
+        const pgId = Number(paraleloGestionId);
+        if (!Number.isFinite(pgId) || pgId < 1) return { ok: false };
+        if (planSemanalDirty) {
+            notification.warning({
+                title: 'Guardá los cambios',
+                description: 'Guardá el plan semanal antes de publicar el paralelo.',
+            });
+            return { ok: false };
+        }
+
+        setPublicandoParalelo(true);
+        try {
+            // Si sigue en BORRADOR, primero se oferta (valida aula + oferta completa).
+            if (paraleloGestionEstado === 'BORRADOR') {
+                const ofertaRes = await updateParaleloGestionEstado(pgId, 'OFERTADO');
+                if (!ofertaRes.success) {
+                    notification.error({
+                        title: 'No se pudo ofertar el paralelo',
+                        description:
+                            ofertaRes.error ||
+                            'Verificá que tenga aula asignada y la oferta de cursos completa.',
+                    });
+                    return { ok: false };
+                }
+            }
+
+            const pubRes = await publicarParaleloApi(pgId);
+            if (!pubRes.success) {
+                const fallas = pubRes.details?.fallas ?? pubRes.details ?? [];
+                const detalle =
+                    Array.isArray(fallas) && fallas.length
+                        ? fallas.map((f) => f?.mensaje || f).filter(Boolean).join(' ')
+                        : pubRes.error;
+                notification.error({
+                    title: 'No se pudo publicar',
+                    description:
+                        detalle ||
+                        'Revisá cobertura, conflictos y docentes antes de publicar el paralelo.',
+                });
+                return { ok: false };
+            }
+
+            notification.success({
+                title: 'Paralelo publicado',
+                description: 'El horario quedó ofertado y publicado.',
+            });
+            await fetchGrillaHorario(pgId);
+            return { ok: true };
+        } finally {
+            setPublicandoParalelo(false);
+        }
+    }, [
+        paraleloGestionId,
+        planSemanalDirty,
+        paraleloGestionEstado,
+        updateParaleloGestionEstado,
+        publicarParaleloApi,
+        fetchGrillaHorario,
+        notification,
+    ]);
+
     const loading =
         pgDirectLoading ||
         (!validPgId && resolver.loading) ||
@@ -703,8 +907,13 @@ export const useGestionHorariosArmadoState = (notification) => {
         paraleloGestionEstado,
         horarioEditable,
         planSemanalEditable,
+        planSemanalDirty,
         coberturaReajustable,
         generarBloquesCurso,
         reajustarBloquesCurso,
+        reajustarCoberturaParalelo,
+        puedePublicarDesdeArmado,
+        publicandoParalelo,
+        publicarParalelo,
     };
 };

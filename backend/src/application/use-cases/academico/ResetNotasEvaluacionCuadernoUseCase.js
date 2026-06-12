@@ -9,6 +9,9 @@ export class ResetNotasEvaluacionCuadernoUseCase {
     calificacionCoordinacionRepository,
     calificacionContextoRepository,
     cuadernoRepository,
+    subjectEnrollmentRepository,
+    subjectEnrollmentBimesterRepository,
+    bimesterEvaluationGradeRepository,
     evaluationConfigurationRepository,
     teacherRepository,
     userRepository,
@@ -18,6 +21,9 @@ export class ResetNotasEvaluacionCuadernoUseCase {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
@@ -54,7 +60,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
       throw new ForbiddenError('Las notas de esta evaluación están cerradas.');
     }
 
-    await this.cuadernoRepository.softEliminarNotasPorEvaluacion(evalId, usuarioId);
+    await this.bimesterEvaluationGradeRepository.softEliminarNotasPorEvaluacion(evalId, usuarioId);
 
     const { cuotaTeorico, cuotaPractico, pesosBimestres } = await cargarCuotasPoliticaGestion({
       calificacionContextoRepository: this.calificacionContextoRepository,
@@ -64,6 +70,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
 
     const recalculo = await recalcularNotasBimestreCurso({
       cuadernoRepository: this.cuadernoRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
       asignacionId: Number(asignacionId),
       bimestreNumero: bimestreNum,
       cuotaTeorico,
@@ -73,6 +80,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
 
     const recalculoFinal = await recalcularNotaFinalMatriculaCurso({
       cuadernoRepository: this.cuadernoRepository,
+      subjectEnrollmentRepository: this.subjectEnrollmentRepository,
       asignacionId: Number(asignacionId),
       pesosBimestres,
       usuarioId,

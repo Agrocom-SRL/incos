@@ -7,7 +7,7 @@ import { ExcelGenerator } from '../../../infrastructure/external/excel/ExcelGene
 export class ExportPaymentAporteByCareerExcelUseCase {
   /**
    * @param {Object} params
-   * @param {import('../../../infrastructure/repositories/PaymentAporteCareerExcelReportRepository.js').PaymentAporteCareerExcelReportRepository} params.paymentAporteCareerExcelReportRepository
+   * @param {import('../../../infrastructure/repositories/views/PaymentAporteCareerExcelReportRepository.js').PaymentAporteCareerExcelReportRepository} params.paymentAporteCareerExcelReportRepository
    * @param {import('../../../domain/interfaces/repositories/IGestionRepository.js').IGestionRepository} params.managementRepository
    * @param {import('../../../domain/interfaces/repositories/ICarreraRepository.js').ICarreraRepository} params.careerRepository
    * @param {Object} params.logger

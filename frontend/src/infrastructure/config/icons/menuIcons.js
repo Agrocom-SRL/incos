@@ -44,7 +44,6 @@ import {
     FileSearchOutlined,
     EyeOutlined,
     // Supervisión
-    ScheduleOutlined,
     FormOutlined,
     BarChartOutlined,
     // Horarios
@@ -101,14 +100,12 @@ export const menuIconMap = {
     'DOC': UsergroupAddOutlined,
     'FIN': DollarOutlined,
     'INST': HomeOutlined,
-    'REP': LineChartOutlined,
     'SEG': SafetyOutlined,
 
     // Institucional - Nivel 1
     'INST-ROOT': HomeOutlined,
     'INST-GESTION-ACTUAL': CalendarOutlined,
     'INST-GESTIONES-PASADAS': UnorderedListOutlined,
-    'INST-CRONOGRAMAS': ScheduleOutlined,
     'INST-OFERTA-ACADEMICA': BookOutlined,
     'INST-HORARIOS': CalendarOutlined,
     'INST-OFERTA-MAT-INSCRIBIR': BookOutlined,
@@ -189,7 +186,6 @@ export const menuIconMap = {
     'ACA-CAL-POLITICA': FileTextOutlined,
     'ACA-CAL-GESTION-BIMESTRES': DashboardOutlined,
     'ACA-CAL-MIS-CURSOS': TeamOutlined,
-    'ACA-CAL-NOTAS': FileTextOutlined,
     'ACA-CAL-DOCENTES-CUADERNO': EditOutlined,
     'ACA-CAL-CUADERNO': EditOutlined,
     'ACA-CAL-PLAN': FileTextOutlined,

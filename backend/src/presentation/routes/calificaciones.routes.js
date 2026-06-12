@@ -17,6 +17,12 @@ import {
   guardarNotasCuadernoBimestreValidator,
   getBimestreConsolidadoValidator,
   guardarBimestreConsolidadoValidator,
+  createActividadCronogramaValidator,
+  updateActividadCronogramaValidator,
+  cronogramaIdValidator,
+  putPeriodoFechasValidator,
+  postPeriodoEtapaValidator,
+  periodoIdValidator,
 } from '../validators/academico/index.js';
 
 /**
@@ -126,14 +132,22 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.savePoliticaInstitucionalController.handle(req, res, next)
   );
 
+  // Tablero/control de bimestres: lo opera tanto Calificaciones (coordinación) como
+  // Institucional → Gestión actual. Se acepta cualquiera de los dos permisos.
   const gestionBimestresListar = [
     authenticate,
-    verificarPermiso('academico.calificacion.gestion_bimestres', 'LISTAR'),
+    verificarPermisoCualquiera([
+      ['academico.calificacion.gestion_bimestres', 'LISTAR'],
+      ['institucional.gestion.actual', 'LISTAR'],
+    ]),
   ];
 
   const gestionBimestresEditar = [
     authenticate,
-    verificarPermiso('academico.calificacion.gestion_bimestres', 'EDITAR'),
+    verificarPermisoCualquiera([
+      ['academico.calificacion.gestion_bimestres', 'EDITAR'],
+      ['institucional.gestion.actual', 'EDITAR'],
+    ]),
   ];
 
   const cuadernoListar = [
@@ -181,10 +195,90 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.getGestionBimestresController.handle(req, res, next),
   );
 
+  // Cronograma / calendario académico de la gestión vigente (mismo permiso de lectura
+  // que gestión-bimestres; lo consume Institucional → Gestión actual).
+  router.get(
+    '/gestion-cronograma',
+    ...gestionBimestresListar,
+    (req, res, next) => controllers.getCronogramaGestionController.handle(req, res, next),
+  );
+
+  // CRUD del cronograma (administración de actividades del calendario académico).
+  // Protegido por el permiso reservado `institucional.gestion.cronograma` (68).
+  const cronogramaListar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'LISTAR')];
+  const cronogramaDetalle = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'DETALLE')];
+  const cronogramaCrear = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'CREAR')];
+  const cronogramaEditar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'EDITAR')];
+  const cronogramaEliminar = [authenticate, verificarPermiso('institucional.gestion.cronograma', 'ELIMINAR')];
+
+  router.get(
+    '/cronograma',
+    ...cronogramaListar,
+    (req, res, next) => controllers.listCronogramaAdminController.handle(req, res, next),
+  );
+  router.get(
+    '/cronograma/:id',
+    ...cronogramaDetalle,
+    cronogramaIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.getActividadCronogramaController.handle(req, res, next),
+  );
+  router.post(
+    '/cronograma',
+    ...cronogramaCrear,
+    createActividadCronogramaValidator,
+    validateRequest,
+    (req, res, next) => controllers.createActividadCronogramaController.handle(req, res, next),
+  );
+  router.put(
+    '/cronograma/:id',
+    ...cronogramaEditar,
+    updateActividadCronogramaValidator,
+    validateRequest,
+    (req, res, next) => controllers.updateActividadCronogramaController.handle(req, res, next),
+  );
+  router.delete(
+    '/cronograma/:id',
+    ...cronogramaEliminar,
+    cronogramaIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.deleteActividadCronogramaController.handle(req, res, next),
+  );
+
   router.post(
     '/gestion-bimestres/iniciar',
     ...gestionBimestresEditar,
     (req, res, next) => controllers.iniciarGestionAcademicaController.handle(req, res, next),
+  );
+
+  // Configuración de bimestres/etapas (Institucional → Gestión actual). Edición de
+  // fechas de periodos y CRUD de etapas. Mismo permiso que gestión-bimestres
+  // (institucional.gestion.actual o academico.calificacion.gestion_bimestres).
+  router.get(
+    '/gestion-bimestres/periodos',
+    ...gestionBimestresListar,
+    (req, res, next) => controllers.getPeriodosGestionController.handle(req, res, next),
+  );
+  router.post(
+    '/gestion-bimestres/periodos',
+    ...gestionBimestresEditar,
+    postPeriodoEtapaValidator,
+    validateRequest,
+    (req, res, next) => controllers.createPeriodoEtapaController.handle(req, res, next),
+  );
+  router.put(
+    '/gestion-bimestres/periodos/:id/fechas',
+    ...gestionBimestresEditar,
+    putPeriodoFechasValidator,
+    validateRequest,
+    (req, res, next) => controllers.updatePeriodoFechasController.handle(req, res, next),
+  );
+  router.delete(
+    '/gestion-bimestres/periodos/:id',
+    ...gestionBimestresEditar,
+    periodoIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.deletePeriodoEtapaController.handle(req, res, next),
   );
 
   router.get(

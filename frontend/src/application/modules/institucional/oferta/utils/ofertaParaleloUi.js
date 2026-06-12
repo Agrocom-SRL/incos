@@ -52,15 +52,21 @@ export function paraleloDocenteResumen(cobertura) {
 }
 
 export function paraleloAsignacionFlags(pg, cobertura) {
-  const estado = String(pg?.estado ?? '').toUpperCase();
   const total = Number(cobertura?.cursos_total ?? cobertura?.cursosTotal ?? 0);
   const conDocente = Number(cobertura?.cursos_con_docente ?? cobertura?.cursosConDocente ?? 0);
+
+  // Horarios según los bloques realmente armados (vista ficha), no según el
+  // estado: un paralelo en BORRADOR puede tener su grilla completa.
+  const bloquesReq = Number(pg?.bloquesRequeridos ?? 0);
+  const bloquesAsig = Number(pg?.bloquesAsignados ?? 0);
+  const horarioCompleto = bloquesReq > 0 && bloquesAsig >= bloquesReq;
+  const horarioParcial = bloquesAsig > 0 && !horarioCompleto;
 
   return {
     aula: Boolean(pg?.aulaId),
     docente: total > 0 && conDocente >= total,
     docenteParcial: total > 0 && conDocente > 0 && conDocente < total,
-    horarios: estado === 'PUBLICADO',
-    horariosEnArmado: estado === 'OFERTADO',
+    horarios: horarioCompleto,
+    horariosEnArmado: horarioParcial,
   };
 }

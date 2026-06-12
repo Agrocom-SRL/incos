@@ -3,5 +3,6 @@ export { ParallelMapper } from './ParallelMapper.js';
 export {
   EvaluationTypePresentationMapper,
   entityToPresentation as evaluationTypeToPresentation,
-  entitiesToPresentation as evaluationTypesToPresentation,
+  entitiesToPresentation as evaluationTypesToPresentation
 } from './EvaluationTypeMapper.js';
+export { construirRegistroPedagogicoExcelPayload } from './registroPedagogicoExcelMapper.js';

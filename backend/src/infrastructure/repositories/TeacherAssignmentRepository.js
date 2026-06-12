@@ -227,42 +227,17 @@ export class TeacherAssignmentRepository extends BaseRepository {
     const rows = await sequelize.query(
       `
       SELECT
-        ad.id,
-        ad.oferta_curso_id,
-        m.sigla AS asignatura_sigla,
-        p.nombre AS paralelo_nombre,
-        COALESCE(ad.carga_horaria, ap.horas_semanales, 0) AS horas
-      FROM asignaciones_docentes ad
-      INNER JOIN gestiones_planes gp
-        ON gp.id = ad.gestion_plan_id
-        AND gp.deleted_at IS NULL
-        AND gp.activo = TRUE
-      INNER JOIN oferta_cursos oc
-        ON oc.id = ad.oferta_curso_id
-        AND oc.deleted_at IS NULL
-        AND oc.activo = TRUE
-      INNER JOIN asignaturas_plan ap
-        ON ap.id = oc.asignatura_plan_id
-        AND ap.deleted_at IS NULL
-        AND ap.activo = TRUE
-      INNER JOIN materias m
-        ON m.id = ap.materia_id
-        AND m.deleted_at IS NULL
-        AND m.activo = TRUE
-      INNER JOIN paralelos_gestion pg
-        ON pg.id = oc.paralelo_gestion_id
-        AND pg.deleted_at IS NULL
-        AND pg.activo = TRUE
-      INNER JOIN paralelos p
-        ON p.id = pg.paralelo_id
-        AND p.deleted_at IS NULL
-        AND p.activo = TRUE
-      WHERE ad.docente_id = :docenteId
-        AND gp.gestion_id = :gestionId
-        AND ad.deleted_at IS NULL
-        AND ad.activo = TRUE
-        AND ad.vigente = TRUE
-      ORDER BY p.nombre ASC, m.sigla ASC, ad.id ASC
+        id,
+        oferta_curso_id,
+        materia_sigla,
+        paralelo_nombre,
+        horas
+      FROM vista_base_asignacion_docente_detalle
+      WHERE docente_id = :docenteId
+        AND gestion_id = :gestionId
+        AND activo = TRUE
+        AND vigente = TRUE
+      ORDER BY paralelo_nombre ASC, materia_sigla ASC, id ASC
       `,
       {
         replacements: { docenteId, gestionId: gestionPk },
@@ -273,7 +248,7 @@ export class TeacherAssignmentRepository extends BaseRepository {
     return rows.map((row) => ({
       id: Number(row.id),
       ofertaCursoId: Number(row.oferta_curso_id),
-      asignatura: row.asignatura_sigla ?? '',
+      asignatura: row.materia_sigla ?? '',
       paralelo: row.paralelo_nombre ?? '',
       horas: Number(row.horas) || 0,
     }));
@@ -290,35 +265,18 @@ export class TeacherAssignmentRepository extends BaseRepository {
     const rows = await sequelize.query(
       `
       SELECT
-        d.id AS docente_id,
-        TRIM(CONCAT(COALESCE(d.nombres, ''), ' ', COALESCE(d.apellido_paterno, ''), ' ', COALESCE(d.apellido_materno, ''))) AS nombre,
-        d.color_hex AS color_hex,
-        COALESCE(d.max_horas_semana, :defaultMaxSemana) AS max_semana,
-        COALESCE(SUM(COALESCE(ad.carga_horaria, ap.horas_semanales, 0)), 0) AS carga_semana
-      FROM asignaciones_docentes ad
-      INNER JOIN gestiones_planes gp
-        ON gp.id = ad.gestion_plan_id
-        AND gp.deleted_at IS NULL
-        AND gp.activo = TRUE
-        AND gp.gestion_id = :gestionId
-      INNER JOIN docentes d
-        ON d.id = ad.docente_id
-        AND d.deleted_at IS NULL
-        AND d.activo = TRUE
-      INNER JOIN oferta_cursos oc
-        ON oc.id = ad.oferta_curso_id
-        AND oc.deleted_at IS NULL
-        AND oc.activo = TRUE
-      INNER JOIN asignaturas_plan ap
-        ON ap.id = oc.asignatura_plan_id
-        AND ap.deleted_at IS NULL
-        AND ap.activo = TRUE
-      WHERE ad.deleted_at IS NULL
-        AND ad.activo = TRUE
-        AND ad.vigente = TRUE
-        AND ad.docente_id IS NOT NULL
-      GROUP BY d.id, d.nombres, d.apellido_paterno, d.apellido_materno, d.color_hex, d.max_horas_semana
-      ORDER BY nombre ASC, d.id ASC
+        docente_id,
+        TRIM(CONCAT(COALESCE(docente_apellido_paterno, ''), ' ', COALESCE(docente_apellido_materno, ''), ' ', COALESCE(docente_nombres, ''))) AS nombre,
+        color_hex,
+        COALESCE(max_horas_semana, :defaultMaxSemana) AS max_semana,
+        COALESCE(SUM(horas), 0) AS carga_semana
+      FROM vista_base_asignacion_docente_detalle
+      WHERE gestion_id = :gestionId
+        AND activo = TRUE
+        AND vigente = TRUE
+        AND docente_id IS NOT NULL
+      GROUP BY docente_id, docente_nombres, docente_apellido_paterno, docente_apellido_materno, color_hex, max_horas_semana
+      ORDER BY nombre ASC, docente_id ASC
       `,
       {
         replacements: {
@@ -372,84 +330,73 @@ export class TeacherAssignmentRepository extends BaseRepository {
    * Listado enriquecido con oferta, materia, paralelo y docente.
    */
   async findEnriched(filters = {}, page = 1, limit = 50) {
-    const whereParts = ['ad.deleted_at IS NULL'];
+    const whereParts = [];
     const replacements = {};
 
     if (filters.managementPlanId) {
-      whereParts.push('ad.gestion_plan_id = :managementPlanId');
+      whereParts.push('gestion_plan_id = :managementPlanId');
       replacements.managementPlanId = Number(filters.managementPlanId);
     }
     if (filters.offerCourseId) {
-      whereParts.push('ad.oferta_curso_id = :offerCourseId');
+      whereParts.push('oferta_curso_id = :offerCourseId');
       replacements.offerCourseId = Number(filters.offerCourseId);
     }
     if (filters.teacherId) {
-      whereParts.push('ad.docente_id = :teacherId');
+      whereParts.push('docente_id = :teacherId');
       replacements.teacherId = Number(filters.teacherId);
     }
     if (filters.parallelManagementId) {
-      whereParts.push('pg.id = :parallelManagementId');
+      whereParts.push('paralelo_gestion_id = :parallelManagementId');
       replacements.parallelManagementId = Number(filters.parallelManagementId);
     }
     if (filters.vigente === true) {
-      whereParts.push('ad.vigente = TRUE');
+      whereParts.push('vigente = TRUE');
     } else if (filters.vigente === false) {
-      whereParts.push('ad.vigente = FALSE');
+      whereParts.push('vigente = FALSE');
     }
     if (filters.recordActive !== false) {
-      whereParts.push('ad.activo = TRUE');
+      whereParts.push('activo = TRUE');
     }
 
-    const whereSql = whereParts.join(' AND ');
+    // La vista ya filtra ad.deleted_at IS NULL; si no hay filtros, traer todo.
+    const whereSql = whereParts.length ? whereParts.join(' AND ') : '1 = 1';
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, parseInt(limit, 10) || 50);
     const offset = (pageNum - 1) * limitNum;
 
     const baseFrom = `
-      FROM asignaciones_docentes ad
-      INNER JOIN oferta_cursos oc
-        ON oc.id = ad.oferta_curso_id AND oc.deleted_at IS NULL
-      INNER JOIN paralelos_gestion pg
-        ON pg.id = oc.paralelo_gestion_id AND pg.deleted_at IS NULL
-      INNER JOIN asignaturas_plan ap
-        ON ap.id = oc.asignatura_plan_id AND ap.deleted_at IS NULL
-      LEFT JOIN materias m
-        ON m.id = ap.materia_id AND m.deleted_at IS NULL
-      INNER JOIN paralelos p
-        ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
-      LEFT JOIN docentes doc
-        ON doc.id = ad.docente_id AND doc.deleted_at IS NULL
+      FROM vista_base_asignacion_docente_detalle
       WHERE ${whereSql}
     `;
 
     const [countRows, rows] = await Promise.all([
-      sequelize.query(`SELECT COUNT(DISTINCT ad.id) AS total ${baseFrom}`, {
+      sequelize.query(`SELECT COUNT(*) AS total ${baseFrom}`, {
         replacements,
         type: QueryTypes.SELECT,
       }),
       sequelize.query(
         `
         SELECT
-          ad.id,
-          ad.gestion_plan_id,
-          ad.oferta_curso_id,
-          pg.id AS paralelo_gestion_id,
-          ad.docente_id,
-          ad.carga_horaria,
-          ad.vigente,
-          ad.motivo,
-          ad.fecha_asignacion,
-          ad.created_at,
-          ad.updated_at,
-          m.sigla AS materia_sigla,
-          m.nombre AS materia_nombre,
-          p.nombre AS paralelo_nombre,
-          doc.nombres AS docente_nombres,
-          doc.apellido_paterno AS docente_apellido_paterno,
-          doc.apellido_materno AS docente_apellido_materno,
-          doc.color_hex
+          id,
+          gestion_plan_id,
+          oferta_curso_id,
+          paralelo_gestion_id,
+          docente_id,
+          carga_horaria,
+          vigente,
+          motivo,
+          fecha_asignacion,
+          created_at,
+          updated_at,
+          materia_sigla,
+          materia_nombre,
+          paralelo_nombre,
+          docente_nombres,
+          docente_apellido_paterno,
+          docente_apellido_materno,
+          color_hex
         ${baseFrom}
-        ORDER BY ad.id DESC
+        ORDER BY id DESC
         LIMIT :limit OFFSET :offset
         `,
         {
@@ -473,38 +420,26 @@ export class TeacherAssignmentRepository extends BaseRepository {
     const result = await sequelize.query(
       `
       SELECT
-        ad.id,
-        ad.gestion_plan_id,
-        ad.oferta_curso_id,
-        pg.id AS paralelo_gestion_id,
-        ad.docente_id,
-        ad.carga_horaria,
-        ad.vigente,
-        ad.motivo,
-        ad.fecha_asignacion,
-        ad.created_at,
-        ad.updated_at,
-        m.sigla AS materia_sigla,
-        m.nombre AS materia_nombre,
-        p.nombre AS paralelo_nombre,
-        doc.nombres AS docente_nombres,
-        doc.apellido_paterno AS docente_apellido_paterno,
-        doc.apellido_materno AS docente_apellido_materno,
-        doc.color_hex
-      FROM asignaciones_docentes ad
-      INNER JOIN oferta_cursos oc
-        ON oc.id = ad.oferta_curso_id AND oc.deleted_at IS NULL
-      INNER JOIN paralelos_gestion pg
-        ON pg.id = oc.paralelo_gestion_id AND pg.deleted_at IS NULL
-      INNER JOIN asignaturas_plan ap
-        ON ap.id = oc.asignatura_plan_id AND ap.deleted_at IS NULL
-      LEFT JOIN materias m
-        ON m.id = ap.materia_id AND m.deleted_at IS NULL
-      INNER JOIN paralelos p
-        ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
-      LEFT JOIN docentes doc
-        ON doc.id = ad.docente_id AND doc.deleted_at IS NULL
-      WHERE ad.id = :assignmentId AND ad.deleted_at IS NULL
+        id,
+        gestion_plan_id,
+        oferta_curso_id,
+        paralelo_gestion_id,
+        docente_id,
+        carga_horaria,
+        vigente,
+        motivo,
+        fecha_asignacion,
+        created_at,
+        updated_at,
+        materia_sigla,
+        materia_nombre,
+        paralelo_nombre,
+        docente_nombres,
+        docente_apellido_paterno,
+        docente_apellido_materno,
+        color_hex
+      FROM vista_base_asignacion_docente_detalle
+      WHERE id = :assignmentId
       LIMIT 1
       `,
       { replacements: { assignmentId }, type: QueryTypes.SELECT }

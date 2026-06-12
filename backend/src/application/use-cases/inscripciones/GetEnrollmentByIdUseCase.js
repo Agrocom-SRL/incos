@@ -62,6 +62,7 @@ export class GetEnrollmentByIdUseCase {
     planSubjectRepository,
     subjectRepository,
     scheduleRepository,
+    asignacionHorarioRepository,
     classroomRepository,
     teacherRepository,
     parallelRepository,
@@ -83,6 +84,7 @@ export class GetEnrollmentByIdUseCase {
     this.planSubjectRepository = planSubjectRepository;
     this.subjectRepository = subjectRepository;
     this.scheduleRepository = scheduleRepository;
+    this.asignacionHorarioRepository = asignacionHorarioRepository;
     this.classroomRepository = classroomRepository;
     this.teacherRepository = teacherRepository;
     this.parallelRepository = parallelRepository;
@@ -350,6 +352,34 @@ export class GetEnrollmentByIdUseCase {
                   parallelIdFromOffer = pg?.parallelId ?? pg?.paraleloId ?? null;
                 }
 
+                // Bloques de horario armados para la oferta (vista de presentación).
+                // Forma esperada por el frontend (useMatriculaDetailSchedules):
+                // cada item con dia/horaInicio/horaFin + aula{codigo,nombre} + ordenSecuencia.
+                try {
+                  const bloques =
+                    (await this.asignacionHorarioRepository?.findBloquesByOfertaCursoIdForPresentation(
+                      offerCourseId,
+                    )) || [];
+                  horarios = bloques.map((b) => ({
+                    id: b.id,
+                    ordenSecuencia: b.ordenSecuencia ?? null,
+                    dia: b.dia,
+                    horaInicio: b.horaInicio,
+                    horaFin: b.horaFin,
+                    turno: b.turno ?? null,
+                    numeroBloque: b.numeroBloque ?? null,
+                    aula:
+                      b.aulaCodigo || b.aulaNombre
+                        ? { codigo: b.aulaCodigo ?? null, nombre: b.aulaNombre ?? null }
+                        : null,
+                  }));
+                } catch (errHor) {
+                  this.logger.warn('[Inscripciones] Error al obtener bloques de horario', {
+                    offerCourseId,
+                    error: errHor.message,
+                  });
+                }
+
                 const assignmentsResult = await this.teacherAssignmentRepository.findAll(
                   { offerCourseId, active: true },
                   1,
@@ -373,6 +403,7 @@ export class GetEnrollmentByIdUseCase {
                         'telefono',
                         'celular',
                         'emailPersonal',
+                        'colorHex',
                       ],
                     });
                     teacher = teacher?.toPlainObject ? teacher.toPlainObject() : teacher;
@@ -436,7 +467,9 @@ export class GetEnrollmentByIdUseCase {
               materiaId: subject ? subject.id : null,
               materiaNombre: subject ? subject.name : null,
               materiaSigla: subject ? subject.acronym : null,
-              color: course ? course.colorHex : null,
+              // Color del bloque de horario = color propio del docente (docentes.color_hex),
+              // misma fuente que la grilla del detalle de docente. Fallback al color del curso.
+              color: teacher?.colorHex ?? (course ? course.colorHex : null),
               periodoId,
               paraleloId,
               paralelo,

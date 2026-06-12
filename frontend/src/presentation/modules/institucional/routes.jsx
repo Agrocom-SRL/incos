@@ -5,6 +5,7 @@
  */
 
 import { UnderConstruction } from '@components/pages';
+import { actualRoutes } from './actual/routes.jsx';
 import { ofertaRoutes } from './oferta/routes.jsx';
 import { horariosRoutes } from './horarios/routes.jsx';
 import { pasadasRoutes } from './pasadas/routes.jsx';
@@ -16,32 +17,7 @@ export const institucionalRoutes = [
     key: 'INST-ROOT',
     menu: null,
   },
-  {
-    path: '/institucional/actual',
-    element: <UnderConstruction />,
-    key: 'INST-GESTION-ACTUAL',
-    permiso: 'institucional.gestion.actual',
-    accion: 'LISTAR',
-    menu: {
-      label: 'Gestión Actual',
-      module: 'INST',
-      parent: 'INST',
-      order: 1,
-    },
-  },
-  {
-    path: '/institucional/cronogramas',
-    element: <UnderConstruction />,
-    key: 'INST-CRONOGRAMAS',
-    permiso: 'institucional.gestion.cronograma',
-    accion: 'LISTAR',
-    menu: {
-      label: 'Cronogramas',
-      module: 'INST',
-      parent: 'INST',
-      order: 2,
-    },
-  },
+  ...actualRoutes,
   ...ofertaRoutes,
   ...horariosRoutes,
   ...pasadasRoutes,

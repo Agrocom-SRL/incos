@@ -7,7 +7,7 @@ import { ExcelGenerator } from '../../../infrastructure/external/excel/ExcelGene
 export class ExportStudentEnrollmentStatisticsExcelUseCase {
   /**
    * @param {Object} params
-   * @param {import('../../../infrastructure/repositories/StudentEnrollmentExcelReportRepository.js').StudentEnrollmentExcelReportRepository} params.studentEnrollmentExcelReportRepository
+   * @param {import('../../../infrastructure/repositories/views/StudentEnrollmentExcelReportRepository.js').StudentEnrollmentExcelReportRepository} params.studentEnrollmentExcelReportRepository
    * @param {import('../../../domain/interfaces/repositories/IGestionRepository.js').IGestionRepository} params.managementRepository
    * @param {Object} params.logger
    */

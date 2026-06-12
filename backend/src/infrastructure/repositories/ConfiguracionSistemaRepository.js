@@ -136,10 +136,42 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'systemConfigurations';
+  }
+
+  // ============================================
+  // Acceso clave-valor (configuracion_sistema es una tabla clave-valor).
+  // ============================================
+
+  /**
+   * Valor (string) de una clave de configuración, o null si no existe.
+   * @param {string} clave
+   * @returns {Promise<string|null>}
+   */
+  async obtenerValorPorClave(clave) {
+    const cfg = await this.findBy({ key: clave });
+    return cfg ? (cfg.value ?? null) : null;
+  }
+
+  /**
+   * Upsert de una clave de configuración (crea si no existe, actualiza el valor si existe).
+   * @param {string} clave
+   * @param {string|number|boolean} valor
+   * @param {{ tipo?: string, descripcion?: string|null }} [meta]
+   * @param {number|null} userId
+   */
+  async establecerValor(clave, valor, { tipo = 'STRING', descripcion = null } = {}, userId = null) {
+    const existing = await this.findBy({ key: clave });
+    if (existing) {
+      return this.update(existing.id, { value: String(valor) }, userId);
+    }
+    return this.create(
+      { key: clave, value: String(valor), type: tipo, description: descripcion },
+      userId,
+    );
   }
 }

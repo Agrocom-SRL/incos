@@ -14,7 +14,7 @@
 
 import { INSCRIPCIONES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, DeleteEnrollmentUseCase, GenerateFormularioInscripcionUseCase, UpdateEnrollmentUseCase } from '../../../../application/use-cases/inscripciones/index.js';
+import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, DeleteEnrollmentUseCase, GenerateFormularioInscripcionUseCase, UpdateEnrollmentUseCase, CambiarEstadoMatriculaUseCase } from '../../../../application/use-cases/inscripciones/index.js';
 import {
   ListEnrollmentsController,
   CreateEnrollmentController,
@@ -23,6 +23,7 @@ import {
   GenerateFormularioInscripcionController,
   UpdateEnrollmentController,
   UpdateEnrollmentPriorHistoryController,
+  ActivarCursadoMatriculaController,
 } from '../../../../presentation/controllers/inscripciones/index.js';
 import { buildInscripcionesRouter } from '../../../../presentation/routes/inscripciones.routes.js';
 
@@ -85,6 +86,7 @@ export function registerInscripcionesResource(container) {
                 priorEnrollmentHistoryRepository: c.resolve(
                   REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
                 ),
+                subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -107,6 +109,7 @@ export function registerInscripcionesResource(container) {
                 planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
                 subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
+                asignacionHorarioRepository: c.resolve(REPOSITORIOS_TOKENS.asignacionHorarioRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
                 teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
                 parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
@@ -169,6 +172,18 @@ export function registerInscripcionesResource(container) {
                 priorEnrollmentHistoryRepository: c.resolve(
                   REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
                 ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.cambiarEstadoMatriculaUseCase,
+        (c) =>
+            new CambiarEstadoMatriculaUseCase({
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
+                subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -253,6 +268,17 @@ export function registerInscripcionesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.activarCursadoMatriculaController,
+        (c) =>
+            new ActivarCursadoMatriculaController({
+                cambiarEstadoMatriculaUseCase: c.resolve(INSCRIPCIONES_TOKENS.cambiarEstadoMatriculaUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -269,6 +295,9 @@ export function registerInscripcionesResource(container) {
                 updateEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.updateEnrollmentController),
                 updateEnrollmentPriorHistoryController: c.resolve(
                   INSCRIPCIONES_TOKENS.updateEnrollmentPriorHistoryController
+                ),
+                activarCursadoMatriculaController: c.resolve(
+                  INSCRIPCIONES_TOKENS.activarCursadoMatriculaController
                 ),
             };
 

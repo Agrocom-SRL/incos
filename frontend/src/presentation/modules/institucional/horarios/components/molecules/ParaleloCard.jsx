@@ -3,6 +3,7 @@ import { Typography } from 'antd';
 import { allSpacing } from '@theme/tokens';
 import { Card, ActionButton } from '@atoms';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
+import { resolveSinHorariosCta } from '@application-institucional/horarios/utils/resolveSinHorariosCta';
 import { resumenTableroParaleloCard } from '@application-institucional/horarios/utils/paraleloTableroResumen';
 import {
     labelParaleloSinDocentesCta,
@@ -32,26 +33,7 @@ const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
     );
 
     const ctaPrincipal = useMemo(() => {
-        const confAula = Number(paralelo.conflictosAula) || 0;
-        const cursosTotales = Number(paralelo.cursosTotales) || 0;
-        const cursosCreados = Number(paralelo.cursosCreados) || 0;
-        const coberturaInc = Number(paralelo.ofertasCoberturaIncompleta) || 0;
-        const sinBloques = Number(paralelo.cursosSinBloquesHorario) || 0;
-        const solape = Number(paralelo.conflictosSolapeMismoBloque) || 0;
-        const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
-        const soloCruceAula =
-            bucket === 'sin_horarios' &&
-            confAula > 0 &&
-            faltaCursos <= 0 &&
-            coberturaInc <= 0 &&
-            sinBloques <= 0 &&
-            solape <= 0;
-
-        if (soloCruceAula) return 'Resolver cruces';
-        if (bucket === 'sin_horarios') {
-            if (faltaCursos > 0) return 'Completar cursos';
-            return 'Asignar horarios';
-        }
+        if (bucket === 'sin_horarios') return resolveSinHorariosCta(paralelo).label;
         if (bucket === 'sin_docentes') return labelParaleloSinDocentesCta(paralelo);
         return ctaByBucket[bucket] || 'Abrir';
     }, [paralelo, bucket]);

@@ -11,6 +11,16 @@ import { GetPoliticaCatalogoUseCase } from '../../../../application/use-cases/ac
 import { ListTiposEvaluacionUseCase } from '../../../../application/use-cases/academico/ListTiposEvaluacionUseCase.js';
 import { SavePoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/SavePoliticaInstitucionalUseCase.js';
 import { GetGestionBimestresUseCase } from '../../../../application/use-cases/academico/GetGestionBimestresUseCase.js';
+import { GetCronogramaGestionUseCase } from '../../../../application/use-cases/academico/GetCronogramaGestionUseCase.js';
+import { ListCronogramaAdminUseCase } from '../../../../application/use-cases/academico/ListCronogramaAdminUseCase.js';
+import { GetActividadCronogramaUseCase } from '../../../../application/use-cases/academico/GetActividadCronogramaUseCase.js';
+import { CreateActividadCronogramaUseCase } from '../../../../application/use-cases/academico/CreateActividadCronogramaUseCase.js';
+import { UpdateActividadCronogramaUseCase } from '../../../../application/use-cases/academico/UpdateActividadCronogramaUseCase.js';
+import { DeleteActividadCronogramaUseCase } from '../../../../application/use-cases/academico/DeleteActividadCronogramaUseCase.js';
+import { GetPeriodosGestionUseCase } from '../../../../application/use-cases/academico/GetPeriodosGestionUseCase.js';
+import { UpdatePeriodoFechasUseCase } from '../../../../application/use-cases/academico/UpdatePeriodoFechasUseCase.js';
+import { CreatePeriodoEtapaUseCase } from '../../../../application/use-cases/academico/CreatePeriodoEtapaUseCase.js';
+import { DeletePeriodoEtapaUseCase } from '../../../../application/use-cases/academico/DeletePeriodoEtapaUseCase.js';
 import { IniciarGestionAcademicaUseCase } from '../../../../application/use-cases/academico/IniciarGestionAcademicaUseCase.js';
 import { ValidarCierreBimestreUseCase } from '../../../../application/use-cases/academico/ValidarCierreBimestreUseCase.js';
 import { CerrarBimestreGestionUseCase } from '../../../../application/use-cases/academico/CerrarBimestreGestionUseCase.js';
@@ -21,6 +31,16 @@ import { GetPoliticaCatalogoController } from '../../../../presentation/controll
 import { ListTiposEvaluacionController } from '../../../../presentation/controllers/academico/calificaciones/list-tipos-evaluacion.controller.js';
 import { SavePoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/save-politica-institucional.controller.js';
 import { GetGestionBimestresController } from '../../../../presentation/controllers/academico/calificaciones/get-gestion-bimestres.controller.js';
+import { GetCronogramaGestionController } from '../../../../presentation/controllers/academico/calificaciones/get-cronograma-gestion.controller.js';
+import { ListCronogramaAdminController } from '../../../../presentation/controllers/academico/calificaciones/list-cronograma-admin.controller.js';
+import { GetActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/get-actividad-cronograma.controller.js';
+import { CreateActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/create-actividad-cronograma.controller.js';
+import { UpdateActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/update-actividad-cronograma.controller.js';
+import { DeleteActividadCronogramaController } from '../../../../presentation/controllers/academico/calificaciones/delete-actividad-cronograma.controller.js';
+import { GetPeriodosGestionController } from '../../../../presentation/controllers/academico/calificaciones/get-periodos-gestion.controller.js';
+import { UpdatePeriodoFechasController } from '../../../../presentation/controllers/academico/calificaciones/update-periodo-fechas.controller.js';
+import { CreatePeriodoEtapaController } from '../../../../presentation/controllers/academico/calificaciones/create-periodo-etapa.controller.js';
+import { DeletePeriodoEtapaController } from '../../../../presentation/controllers/academico/calificaciones/delete-periodo-etapa.controller.js';
 import { IniciarGestionAcademicaController } from '../../../../presentation/controllers/academico/calificaciones/iniciar-gestion-academica.controller.js';
 import { ValidarCierreBimestreController } from '../../../../presentation/controllers/academico/calificaciones/validar-cierre-bimestre.controller.js';
 import { CerrarBimestreGestionController } from '../../../../presentation/controllers/academico/calificaciones/cerrar-bimestre-gestion.controller.js';
@@ -190,10 +210,117 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.getCronogramaGestionUseCase,
+    (c) =>
+      new GetCronogramaGestionUseCase({
+        cronogramaGestionRepository: c.resolve(REPOSITORIOS_TOKENS.cronogramaGestionRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.listCronogramaAdminUseCase,
+    (c) =>
+      new ListCronogramaAdminUseCase({
+        cronogramaGestionRepository: c.resolve(REPOSITORIOS_TOKENS.cronogramaGestionRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getActividadCronogramaUseCase,
+    (c) =>
+      new GetActividadCronogramaUseCase({
+        cronogramaGestionRepository: c.resolve(REPOSITORIOS_TOKENS.cronogramaGestionRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.createActividadCronogramaUseCase,
+    (c) =>
+      new CreateActividadCronogramaUseCase({
+        calendarActivityRepository: c.resolve(REPOSITORIOS_TOKENS.calendarActivityRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.updateActividadCronogramaUseCase,
+    (c) =>
+      new UpdateActividadCronogramaUseCase({
+        calendarActivityRepository: c.resolve(REPOSITORIOS_TOKENS.calendarActivityRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.deleteActividadCronogramaUseCase,
+    (c) =>
+      new DeleteActividadCronogramaUseCase({
+        calendarActivityRepository: c.resolve(REPOSITORIOS_TOKENS.calendarActivityRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getPeriodosGestionUseCase,
+    (c) =>
+      new GetPeriodosGestionUseCase({
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        cronogramaGestionRepository: c.resolve(REPOSITORIOS_TOKENS.cronogramaGestionRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.updatePeriodoFechasUseCase,
+    (c) =>
+      new UpdatePeriodoFechasUseCase({
+        academicPeriodRepository: c.resolve(REPOSITORIOS_TOKENS.academicPeriodRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.createPeriodoEtapaUseCase,
+    (c) =>
+      new CreatePeriodoEtapaUseCase({
+        academicPeriodRepository: c.resolve(REPOSITORIOS_TOKENS.academicPeriodRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.deletePeriodoEtapaUseCase,
+    (c) =>
+      new DeletePeriodoEtapaUseCase({
+        academicPeriodRepository: c.resolve(REPOSITORIOS_TOKENS.academicPeriodRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.iniciarGestionAcademicaUseCase,
     (c) =>
       new IniciarGestionAcademicaUseCase({
-        gestionBimestresRepository: c.resolve(REPOSITORIOS_TOKENS.gestionBimestresRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
+        configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.systemConfigurationRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       }),
   );
@@ -241,6 +368,116 @@ export function registerCalificacionesResource(container) {
     (c) =>
       new GetGestionBimestresController({
         getGestionBimestresUseCase: c.resolve(ACADEMICO_TOKENS.getGestionBimestresUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getCronogramaGestionController,
+    (c) =>
+      new GetCronogramaGestionController({
+        getCronogramaGestionUseCase: c.resolve(ACADEMICO_TOKENS.getCronogramaGestionUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.listCronogramaAdminController,
+    (c) =>
+      new ListCronogramaAdminController({
+        listCronogramaAdminUseCase: c.resolve(ACADEMICO_TOKENS.listCronogramaAdminUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getActividadCronogramaController,
+    (c) =>
+      new GetActividadCronogramaController({
+        getActividadCronogramaUseCase: c.resolve(ACADEMICO_TOKENS.getActividadCronogramaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.createActividadCronogramaController,
+    (c) =>
+      new CreateActividadCronogramaController({
+        createActividadCronogramaUseCase: c.resolve(ACADEMICO_TOKENS.createActividadCronogramaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.updateActividadCronogramaController,
+    (c) =>
+      new UpdateActividadCronogramaController({
+        updateActividadCronogramaUseCase: c.resolve(ACADEMICO_TOKENS.updateActividadCronogramaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.deleteActividadCronogramaController,
+    (c) =>
+      new DeleteActividadCronogramaController({
+        deleteActividadCronogramaUseCase: c.resolve(ACADEMICO_TOKENS.deleteActividadCronogramaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getPeriodosGestionController,
+    (c) =>
+      new GetPeriodosGestionController({
+        getPeriodosGestionUseCase: c.resolve(ACADEMICO_TOKENS.getPeriodosGestionUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.updatePeriodoFechasController,
+    (c) =>
+      new UpdatePeriodoFechasController({
+        updatePeriodoFechasUseCase: c.resolve(ACADEMICO_TOKENS.updatePeriodoFechasUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.createPeriodoEtapaController,
+    (c) =>
+      new CreatePeriodoEtapaController({
+        createPeriodoEtapaUseCase: c.resolve(ACADEMICO_TOKENS.createPeriodoEtapaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.deletePeriodoEtapaController,
+    (c) =>
+      new DeletePeriodoEtapaController({
+        deletePeriodoEtapaUseCase: c.resolve(ACADEMICO_TOKENS.deletePeriodoEtapaUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       }),
@@ -353,6 +590,9 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
+        bimesterEvaluationGradeRepository: c.resolve(REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository),
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
         ),
@@ -372,6 +612,9 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
+        bimesterEvaluationGradeRepository: c.resolve(REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository),
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
         ),
@@ -390,6 +633,9 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
+        bimesterEvaluationGradeRepository: c.resolve(REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository),
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
         ),
@@ -426,6 +672,8 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
         ),
@@ -444,6 +692,8 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
+        bimesterEvaluationGradeRepository: c.resolve(REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
@@ -564,9 +814,15 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
+        ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        registroPedagogicoExcelGenerator: c.resolve(
+          SERVICIOS_TOKENS.registroPedagogicoExcelGenerator,
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       }),
   );
@@ -613,6 +869,22 @@ export function registerCalificacionesResource(container) {
         ACADEMICO_TOKENS.savePoliticaInstitucionalController
       ),
       getGestionBimestresController: c.resolve(ACADEMICO_TOKENS.getGestionBimestresController),
+      getCronogramaGestionController: c.resolve(ACADEMICO_TOKENS.getCronogramaGestionController),
+      listCronogramaAdminController: c.resolve(ACADEMICO_TOKENS.listCronogramaAdminController),
+      getActividadCronogramaController: c.resolve(ACADEMICO_TOKENS.getActividadCronogramaController),
+      createActividadCronogramaController: c.resolve(
+        ACADEMICO_TOKENS.createActividadCronogramaController,
+      ),
+      updateActividadCronogramaController: c.resolve(
+        ACADEMICO_TOKENS.updateActividadCronogramaController,
+      ),
+      deleteActividadCronogramaController: c.resolve(
+        ACADEMICO_TOKENS.deleteActividadCronogramaController,
+      ),
+      getPeriodosGestionController: c.resolve(ACADEMICO_TOKENS.getPeriodosGestionController),
+      updatePeriodoFechasController: c.resolve(ACADEMICO_TOKENS.updatePeriodoFechasController),
+      createPeriodoEtapaController: c.resolve(ACADEMICO_TOKENS.createPeriodoEtapaController),
+      deletePeriodoEtapaController: c.resolve(ACADEMICO_TOKENS.deletePeriodoEtapaController),
       iniciarGestionAcademicaController: c.resolve(
         ACADEMICO_TOKENS.iniciarGestionAcademicaController
       ),

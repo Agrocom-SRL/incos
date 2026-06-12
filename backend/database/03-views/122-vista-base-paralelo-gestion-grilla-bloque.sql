@@ -34,11 +34,11 @@ SELECT
   m.nombre AS materiaNombre,
   c.nombre AS carreraNombre,
   TRIM(CONCAT(
-    COALESCE(doc.nombres, ''),
-    ' ',
     COALESCE(doc.apellido_paterno, ''),
     ' ',
-    COALESCE(doc.apellido_materno, '')
+    COALESCE(doc.apellido_materno, ''),
+    ' ',
+    COALESCE(doc.nombres, '')
   )) AS docenteNombre,
   doc.color_hex AS colorHex,
   ad.carga_horaria AS cargaHoraria,

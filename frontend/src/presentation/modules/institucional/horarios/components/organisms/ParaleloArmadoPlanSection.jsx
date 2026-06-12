@@ -30,6 +30,12 @@ const ParaleloArmadoPlanSection = ({
     allowDelete,
     /** Paralelo publicado: arrastrar y guardar, sin alta/baja desde grilla. */
     soloReubicacion = false,
+    /**
+     * Hay cambios locales sin guardar respecto al servidor. Si se omite (undefined),
+     * se asume `true` para no romper consumidores que no lo calculan (p. ej. conflictos).
+     * Cuando es `false`, se oculta «Guardar cambios» y se muestra una guía.
+     */
+    dirty,
     turnoLabel,
     onRequestPersist,
     validatePlacement,
@@ -44,9 +50,13 @@ const ParaleloArmadoPlanSection = ({
     docenteConflictMode = false,
     /** Oculta títulos y leyendas; solo grilla + guardar (pantalla de conflictos). */
     headerMinimal = false,
+    /** Ayuda de conflicto por franja (popover en celda); ver DocenteHorarioSemanalGrid. */
+    autoAyudaPorSlot = null,
+    autoAyudaVisible = false,
 }) => {
     const { notification } = App.useApp();
     const puedeEliminar = allowDelete ?? editable;
+    const hayCambios = dirty ?? true;
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
     const pendientesLineas = useMemo(() => {
@@ -96,10 +106,16 @@ const ParaleloArmadoPlanSection = ({
             if (typeof validatePlacement === 'function') {
                 const check = await validatePlacement(meta);
                 if (!check?.ok) {
-                    notification.warning({
-                        title: 'No se puede mover',
-                        description: check?.message || 'No se puede colocar el bloque en ese horario.',
-                    });
+                    // Rechazo silencioso (p. ej. soltar sobre una franja donde la
+                    // misma materia ya tiene un bloque): no es un error para el
+                    // usuario, solo se cancela el movimiento sin avisar.
+                    if (!check?.silent) {
+                        notification.warning({
+                            title: 'No se puede mover',
+                            description:
+                                check?.message || 'No se puede colocar el bloque en ese horario.',
+                        });
+                    }
                     return;
                 }
             }
@@ -140,7 +156,7 @@ const ParaleloArmadoPlanSection = ({
             aria-label="Plan semanal del paralelo"
         >
             {headerMinimal ? (
-                editable ? (
+                editable && hayCambios ? (
                     <Flex justify="flex-end" style={{ marginBottom: 12, flexShrink: 0 }}>
                         <ActionButton
                             permiso="institucional.horario.armado"
@@ -175,9 +191,17 @@ const ParaleloArmadoPlanSection = ({
                                 desde la grilla.
                             </Text>
                         ) : null}
+                        {editable && !hayCambios ? (
+                            <Text type="secondary" style={{ display: 'block' }}>
+                                Arrastrá los bloques en la grilla para reubicarlos. El botón «Guardar
+                                cambios» aparecerá cuando muevas un bloque.
+                            </Text>
+                        ) : null}
                     </div>
                     <Space wrap>
-                        {editable ? (
+                        {!editable ? (
+                            <Text type="secondary">Solo lectura</Text>
+                        ) : hayCambios ? (
                             <ActionButton
                                 permiso="institucional.horario.armado"
                                 accion="EDITAR"
@@ -187,9 +211,7 @@ const ParaleloArmadoPlanSection = ({
                             >
                                 Guardar cambios
                             </ActionButton>
-                        ) : (
-                            <Text type="secondary">Solo lectura</Text>
-                        )}
+                        ) : null}
                     </Space>
                 </Flex>
             )}
@@ -208,6 +230,8 @@ const ParaleloArmadoPlanSection = ({
                     conflictHorarioIds={conflictHorarioIds}
                     horarioSlotIndex={horarioSlotIndex}
                     docenteConflictMode={docenteConflictMode}
+                    autoAyudaPorSlot={autoAyudaPorSlot}
+                    autoAyudaVisible={autoAyudaVisible}
                     cellExtraProps={{
                         onBeginDragChip: handleBeginDragChip,
                         onDeleteChip: puedeEliminar ? handleDeleteChip : undefined,

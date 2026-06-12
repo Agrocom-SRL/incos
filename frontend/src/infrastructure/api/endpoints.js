@@ -262,11 +262,18 @@ export const CALIFICACIONES_ENDPOINTS = {
   POLITICA: `${API_BASE}/calificaciones/politica`,
   POLITICA_CATALOGO: `${API_BASE}/calificaciones/politica/catalogo`,
   GESTION_BIMESTRES: `${API_BASE}/calificaciones/gestion-bimestres`,
+  GESTION_CRONOGRAMA: `${API_BASE}/calificaciones/gestion-cronograma`,
+  CRONOGRAMA_ADMIN: `${API_BASE}/calificaciones/cronograma`,
+  CRONOGRAMA_ADMIN_BY_ID: (id) => `${API_BASE}/calificaciones/cronograma/${id}`,
   GESTION_BIMESTRES_INICIAR: `${API_BASE}/calificaciones/gestion-bimestres/iniciar`,
   GESTION_BIMESTRES_VALIDAR_CIERRE: (numero) =>
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/validar-cierre`,
   GESTION_BIMESTRES_CERRAR: (numero) =>
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/cerrar`,
+  GESTION_PERIODOS: `${API_BASE}/calificaciones/gestion-bimestres/periodos`,
+  GESTION_PERIODO_BY_ID: (id) => `${API_BASE}/calificaciones/gestion-bimestres/periodos/${id}`,
+  GESTION_PERIODO_FECHAS: (id) =>
+    `${API_BASE}/calificaciones/gestion-bimestres/periodos/${id}/fechas`,
   REGISTRO_NOTAS: (asignacionId) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/notas`,
   CUADERNO_BIMESTRE: (asignacionId, bimestre) =>
@@ -312,6 +319,8 @@ export const INSCRIPCIONES_ENDPOINTS = {
   GENERATE_FORMULARIO: (studentId) => `${API_BASE}/inscripciones/${studentId}/generar-formulario`,
   HISTORIAL_PREVIO: (inscripcionId) =>
     `${API_BASE}/inscripciones/${encodeURIComponent(String(inscripcionId))}/historial-previo`,
+  ACTIVAR_CURSADO: (inscripcionId) =>
+    `${API_BASE}/inscripciones/${encodeURIComponent(String(inscripcionId))}/activar-cursado`,
 };
 
 // ============================================

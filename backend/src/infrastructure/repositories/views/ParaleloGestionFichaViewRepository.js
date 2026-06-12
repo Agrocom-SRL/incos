@@ -1,5 +1,6 @@
 import { QueryTypes } from 'sequelize';
 import { sequelize } from '../../database/sequelize.js';
+import { IParaleloGestionFichaViewRepository } from '../../../domain/interfaces/repositories/IParaleloGestionFichaViewRepository.js';
 
 const VIEW = 'vista_base_paralelo_gestion_ficha';
 
@@ -8,7 +9,7 @@ const ACTIVE_FILTER = 'deletedAt IS NULL';
 /**
  * Lectura: vista_base_paralelo_gestion_ficha (03-views/127).
  */
-export class ParaleloGestionFichaViewRepository {
+export class ParaleloGestionFichaViewRepository extends IParaleloGestionFichaViewRepository {
   /**
    * @param {number} managementPlanId
    * @returns {Promise<Array<Object>>}

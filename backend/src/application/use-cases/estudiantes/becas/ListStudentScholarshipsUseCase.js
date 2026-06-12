@@ -169,8 +169,8 @@ export class ListStudentScholarshipsUseCase {
         const nombres = student?.nombres || '';
         const apellidoPaterno = student?.apellidoPaterno || '';
         const apellidoMaterno = student?.apellidoMaterno || '';
-        const nombreCompleto = student 
-          ? `${nombres} ${apellidoPaterno} ${apellidoMaterno}`.trim()
+        const nombreCompleto = student
+          ? `${apellidoPaterno} ${apellidoMaterno} ${nombres}`.trim()
           : null;
 
         return {

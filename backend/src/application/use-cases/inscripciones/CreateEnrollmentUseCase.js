@@ -8,6 +8,7 @@ import {
   ESTADOS_MATERIA_INSCRITA,
 } from '../../../domain/constants/inscripciones.constants.js';
 import { parsePriorHistoryItem } from './priorHistoryItemValidation.js';
+import { activarCursadoInscripcion } from '../../utils/activarCursadoInscripcion.js';
 
 /**
  * Use Case: CreateEnrollmentUseCase
@@ -98,6 +99,7 @@ export class CreateEnrollmentUseCase {
     planSubjectRepository,
     contributionPaymentRepository,
     priorEnrollmentHistoryRepository,
+    subjectEnrollmentBimesterRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -123,6 +125,7 @@ export class CreateEnrollmentUseCase {
     this.planSubjectRepository = planSubjectRepository;
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.logger = logger;
   }
 
@@ -182,6 +185,12 @@ export class CreateEnrollmentUseCase {
     try {
       const student = await this._validateStudent(studentId);
       const management = await this._getCurrentManagement();
+
+      // Si la gestión vigente ya está "en activación" (cursado iniciado), las
+      // matrículas nuevas nacen en CURSANDO con sus bimestres abiertos, no en INSCRITO.
+      const gestionIniciada = this.subjectEnrollmentRepository
+        ? await this.subjectEnrollmentRepository.existeCursandoEnGestion(management.id)
+        : false;
 
       // Resolver teacherAssignmentIds u oferta de curso desde selección por periodo (ANTIGUO)
       let offerRowsFromSelection = null;
@@ -249,7 +258,8 @@ export class CreateEnrollmentUseCase {
         );
         const subjectEnrollments = await this._createsubjectEnrollments(
           enrollment,
-          offerRowsFromSelection
+          offerRowsFromSelection,
+          gestionIniciada
         );
         const priorEnrollmentHistories = await this._createPriorEnrollmentHistory(
           enrollment,
@@ -308,7 +318,8 @@ export class CreateEnrollmentUseCase {
         const offerRows = await this._offerRowsFromTeacherAssignments(teacherAssignments);
         const subjectEnrollments = await this._createsubjectEnrollments(
           enrollment,
-          offerRows
+          offerRows,
+          gestionIniciada
         );
         const priorEnrollmentHistories = await this._createPriorEnrollmentHistory(
           enrollment,
@@ -362,7 +373,8 @@ export class CreateEnrollmentUseCase {
       );
       const subjectEnrollments = await this._createsubjectEnrollments(
         enrollment,
-        teacherAssignments
+        teacherAssignments,
+        gestionIniciada
       );
       const priorEnrollmentHistories = await this._createPriorEnrollmentHistory(
         enrollment,
@@ -1055,17 +1067,22 @@ export class CreateEnrollmentUseCase {
    * @private
    * @param {Object} enrollment - Entidad Enrollment
    * @param {Array<{offerCourseId: number, curriculumSubjectId: number}>} offerRows
+   * @param {boolean} [gestionIniciada=false] - Si la gestión ya está en activación, las
+   *   matrículas nacen en CURSANDO y se abren sus bimestres (no INSCRITO).
    * @returns {Promise<Array>}
    */
-  async _createsubjectEnrollments(enrollment, offerRows) {
+  async _createsubjectEnrollments(enrollment, offerRows, gestionIniciada = false) {
     const subjectEnrollments = [];
+    const status = gestionIniciada
+      ? ESTADOS_MATERIA_INSCRITA.CURSANDO
+      : ESTADOS_MATERIA_INSCRITA.INSCRITO;
 
     for (const row of offerRows) {
       const enrollmentSubjectData = {
         enrollmentId: enrollment.id,
         offerCourseId: row.offerCourseId,
         curriculumSubjectId: row.curriculumSubjectId ?? null,
-        status: ESTADOS_MATERIA_INSCRITA.INSCRITO,
+        status,
         observations: null,
       };
 
@@ -1085,6 +1102,20 @@ export class CreateEnrollmentUseCase {
       enrollmentId: enrollment.id,
       totalSubjects: subjectEnrollments.length,
     });
+
+    // Gestión en activación: abrir los 4 bimestres de las matrículas recién creadas
+    // (CURSANDO). Idempotente; userId no disponible en creación → auditoría con NULL.
+    if (gestionIniciada && this.subjectEnrollmentBimesterRepository) {
+      await activarCursadoInscripcion({
+        subjectEnrollmentRepository: this.subjectEnrollmentRepository,
+        subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+        inscripcionId: enrollment.id,
+        userId: null,
+      });
+      this.logger.info('[Inscripciones] Bimestres abiertos por gestión en activación', {
+        enrollmentId: enrollment.id,
+      });
+    }
 
     return subjectEnrollments;
   }

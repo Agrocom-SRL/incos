@@ -28,11 +28,11 @@ SELECT
 
   TRIM(
     CONCAT(
-      COALESCE(vb.nombres, ''),
-      ' ',
       COALESCE(vb.apellido_paterno, ''),
       ' ',
-      COALESCE(vb.apellido_materno, '')
+      COALESCE(vb.apellido_materno, ''),
+      ' ',
+      COALESCE(vb.nombres, '')
     )
   ) AS titulo,
 

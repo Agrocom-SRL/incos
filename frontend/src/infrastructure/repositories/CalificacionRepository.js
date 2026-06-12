@@ -183,6 +183,93 @@ class CalificacionRepository {
     }
   }
 
+  /** GET /v1/calificaciones/gestion-cronograma */
+  async obtenerGestionCronograma() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.GESTION_CRONOGRAMA);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el cronograma de la gestión');
+    }
+  }
+
+  /** GET /v1/calificaciones/cronograma — datos de administración (actividades + periodos + catálogo). */
+  async listarCronogramaAdmin() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el cronograma');
+    }
+  }
+
+  /** GET /v1/calificaciones/cronograma/:id — detalle de una actividad del calendario. */
+  async obtenerActividadCronograma(id) {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN_BY_ID(id));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar la actividad');
+    }
+  }
+
+  /** POST /v1/calificaciones/cronograma */
+  async crearActividadCronograma(data) {
+    try {
+      const response = await apiClient.post(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN, data);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear la actividad');
+    }
+  }
+
+  /** PUT /v1/calificaciones/cronograma/:id */
+  async actualizarActividadCronograma(id, data) {
+    try {
+      const response = await apiClient.put(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN_BY_ID(id), data);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar la actividad');
+    }
+  }
+
+  /** DELETE /v1/calificaciones/cronograma/:id */
+  async eliminarActividadCronograma(id) {
+    try {
+      const response = await apiClient.delete(CALIFICACIONES_ENDPOINTS.CRONOGRAMA_ADMIN_BY_ID(id));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la actividad');
+    }
+  }
+
   /** POST /v1/calificaciones/gestion-bimestres/iniciar */
   async iniciarGestionAcademica() {
     try {
@@ -241,6 +328,65 @@ class CalificacionRepository {
         mapped.validacion = error.response.data.data.validacion;
       }
       return mapped;
+    }
+  }
+
+  /** GET /v1/calificaciones/gestion-bimestres/periodos — periodos/etapas de la gestión vigente. */
+  async listarPeriodosGestion() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.GESTION_PERIODOS);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar los periodos de la gestión');
+    }
+  }
+
+  /** PUT /v1/calificaciones/gestion-bimestres/periodos/:id/fechas */
+  async actualizarFechasPeriodo(id, { fechaInicio, fechaFin }) {
+    try {
+      const response = await apiClient.put(CALIFICACIONES_ENDPOINTS.GESTION_PERIODO_FECHAS(id), {
+        fechaInicio,
+        fechaFin,
+      });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data?.periodo ?? responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar las fechas del periodo');
+    }
+  }
+
+  /** POST /v1/calificaciones/gestion-bimestres/periodos — alta de etapa. */
+  async crearEtapaPeriodo(payload) {
+    try {
+      const response = await apiClient.post(CALIFICACIONES_ENDPOINTS.GESTION_PERIODOS, payload);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data?.periodo ?? responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear la etapa');
+    }
+  }
+
+  /** DELETE /v1/calificaciones/gestion-bimestres/periodos/:id */
+  async eliminarEtapaPeriodo(id) {
+    try {
+      const response = await apiClient.delete(CALIFICACIONES_ENDPOINTS.GESTION_PERIODO_BY_ID(id));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la etapa');
     }
   }
 

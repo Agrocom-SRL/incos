@@ -6,6 +6,7 @@ import {
     resolveCarreraDashboardColor,
 } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
+import { resolveSinHorariosCta } from '@application-institucional/horarios/utils/resolveSinHorariosCta';
 import {
     labelParaleloSinDocentesCta,
     permisoParaleloSinDocentesCta,
@@ -28,26 +29,7 @@ const actionPermisoByBucket = {
 
 const ctaLabelForRow = (row) => {
     const bucket = row.boardBucket ?? resolveHorariosBoardBucket(row);
-    const confAula = Number(row.conflictosAula) || 0;
-    const cursosTotales = Number(row.cursosTotales) || 0;
-    const cursosCreados = Number(row.cursosCreados) || 0;
-    const coberturaInc = Number(row.ofertasCoberturaIncompleta) || 0;
-    const sinBloques = Number(row.cursosSinBloquesHorario) || 0;
-    const solape = Number(row.conflictosSolapeMismoBloque) || 0;
-    const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
-    const soloCruceAula =
-        bucket === 'sin_horarios' &&
-        confAula > 0 &&
-        faltaCursos <= 0 &&
-        coberturaInc <= 0 &&
-        sinBloques <= 0 &&
-        solape <= 0;
-
-    if (soloCruceAula) return 'Resolver cruces';
-    if (bucket === 'sin_horarios') {
-        if (faltaCursos > 0) return 'Completar cursos';
-        return 'Asignar horarios';
-    }
+    if (bucket === 'sin_horarios') return resolveSinHorariosCta(row).label;
     if (bucket === 'sin_docentes') return labelParaleloSinDocentesCta(row);
     return ctaByBucket[bucket] || 'Abrir';
 };

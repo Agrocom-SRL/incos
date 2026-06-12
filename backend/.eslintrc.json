@@ -15,15 +15,35 @@
   "rules": {
     "no-console": "warn",
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "max-len": ["error", { "code": 100, "ignoreComments": true }],
-    "indent": ["error", 2],
-    "quotes": ["error", "single"],
+    "max-len": [
+      "error",
+      {
+        "code": 100,
+        "ignoreComments": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreUrls": true,
+        "ignorePattern": "^\\s*import\\s"
+      }
+    ],
+    "quotes": ["error", "single", { "avoidEscape": true }],
     "semi": ["error", "always"],
-    "comma-dangle": ["error", "never"],
     "arrow-parens": ["error", "always"],
     "no-param-reassign": ["error", { "props": false }],
     "consistent-return": "off",
     "no-underscore-dangle": "off",
-    "class-methods-use-this": "off"
+    "class-methods-use-this": "off",
+
+    "indent": "off",
+    "comma-dangle": "off",
+    "function-paren-newline": "off",
+    "implicit-arrow-linebreak": "off",
+    "operator-linebreak": "off",
+    "object-curly-newline": "off",
+    "no-confusing-arrow": "off",
+    "arrow-body-style": "off",
+    "import/extensions": "off",
+    "import/prefer-default-export": "off",
+    "no-restricted-syntax": "off"
   }
 }

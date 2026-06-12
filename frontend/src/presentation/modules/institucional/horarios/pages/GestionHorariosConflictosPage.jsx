@@ -8,6 +8,12 @@ import {
     conflictHorarioIdsForParaleloTab,
     solapeParaleloHorarioKeySet,
 } from '@application-institucional/horarios/utils/resolveParalelosTabsConflicto';
+import { buildBulkAsignacionHorarioItems } from '@application-institucional/horarios/utils/buildBulkAsignacionHorarioItems';
+import {
+    ayudaConflictoParalelo,
+    buildBloqueMateriaNombreMap,
+    lineasConflictoDocente,
+} from '@application-institucional/horarios/utils/conflictoGuia';
 import {
     isParaleloGestionHorarioEditable,
     isParaleloGestionPlanSemanalEditable,
@@ -93,19 +99,56 @@ const GestionHorariosConflictosPage = () => {
         return partes.join(' · ');
     }, [conflictoResuelto, docenteId, docenteNombre, gestionLabel]);
 
+    const paresConflicto = useMemo(() => grilla?.paresConflicto ?? [], [grilla?.paresConflicto]);
+
+    const bloqueNombreMap = useMemo(() => {
+        const listasParalelo = Object.values(paraleloStates || {}).map(
+            (s) => s?.draftSchedules ?? [],
+        );
+        return buildBloqueMateriaNombreMap(docenteDraftSchedules, ...listasParalelo);
+    }, [docenteDraftSchedules, paraleloStates]);
+
+    const lineasDocente = useMemo(
+        () => lineasConflictoDocente(paresConflicto, bloqueNombreMap),
+        [paresConflicto, bloqueNombreMap],
+    );
+
     const docentePlanPanel = useMemo(
         () => (
-            <HorariosConflictosPlanSection
-                schedules={docenteDraftSchedules}
-                onSchedulesChange={() => { }}
-                conflictHorarioIds={conflictHorarioIds}
-                horarioSlotIndex={horarioSlotIndex}
-                editable={false}
-                showSave={false}
-                turnoLabel={turnoEfectivo}
-                headerMinimal
-                docenteConflictMode={!conflictoResuelto}
-            />
+            <Flex vertical gap={12}>
+                {!conflictoResuelto ? (
+                    <Alert
+                        type="info"
+                        showIcon
+                        title="Esta vista del docente es de solo lectura"
+                        description={
+                            <>
+                                Muestra la semana completa del docente; las celdas en rojo son las
+                                franjas en choque. El choque se resuelve en las pestañas de paralelo de
+                                arriba: abrí una y mové uno de los bloques en rojo a una franja libre.
+                                {lineasDocente.length ? (
+                                    <ul style={{ margin: '8px 0 0', paddingInlineStart: 18 }}>
+                                        {lineasDocente.map((linea, idx) => (
+                                            <li key={idx}>{linea}</li>
+                                        ))}
+                                    </ul>
+                                ) : null}
+                            </>
+                        }
+                    />
+                ) : null}
+                <HorariosConflictosPlanSection
+                    schedules={docenteDraftSchedules}
+                    onSchedulesChange={() => { }}
+                    conflictHorarioIds={conflictHorarioIds}
+                    horarioSlotIndex={horarioSlotIndex}
+                    editable={false}
+                    showSave={false}
+                    turnoLabel={turnoEfectivo}
+                    headerMinimal
+                    docenteConflictMode={!conflictoResuelto}
+                />
+            </Flex>
         ),
         [
             docenteDraftSchedules,
@@ -113,6 +156,7 @@ const GestionHorariosConflictosPage = () => {
             horarioSlotIndex,
             turnoEfectivo,
             conflictoResuelto,
+            lineasDocente,
         ],
     );
 
@@ -137,6 +181,21 @@ const GestionHorariosConflictosPage = () => {
             const panelLoading = !isDocente && Boolean(paraleloState?.loading);
             const panelError = !isDocente ? paraleloState?.error : null;
 
+            const dirtyParalelo =
+                isDocente || !paraleloState
+                    ? false
+                    : (() => {
+                          const { items } = buildBulkAsignacionHorarioItems(
+                              paraleloState.serverSchedules ?? [],
+                              paraleloState.draftSchedules ?? [],
+                              paraleloState.horarioSlotIndex ?? null,
+                          );
+                          const relevantes = horEditable
+                              ? items
+                              : items.filter((it) => String(it.op).toLowerCase() === 'update');
+                          return relevantes.length > 0;
+                      })();
+
             const conflictIdsParalelo = (() => {
                 const scoped = conflictHorarioIdsForParaleloTab(
                     pgId,
@@ -145,6 +204,28 @@ const GestionHorariosConflictosPage = () => {
                 );
                 return scoped.size > 0 ? scoped : conflictHorarioIds;
             })();
+
+            const autoAyudaPorSlot =
+                isDocente || conflictoResuelto
+                    ? null
+                    : ayudaConflictoParalelo(paresConflicto, pgId, bloqueNombreMap).reduce(
+                          (map, r) => {
+                              const nodo = (
+                                  <span>
+                                      <strong>{r.miNombre}</strong> choca con{' '}
+                                      <strong>{r.otroNombre}</strong>
+                                      {r.otroParalelo ? ` (paralelo ${r.otroParalelo})` : ''} ·{' '}
+                                      {r.franja}. Para resolverlo: mové este bloque a una franja
+                                      libre, intercambialo con otra materia, o eliminálo; luego
+                                      guardá.
+                                  </span>
+                              );
+                              map.set(r.slotKey, map.has(r.slotKey) ? map.get(r.slotKey) : nodo);
+                              return map;
+                          },
+                          new Map(),
+                      );
+            const autoAyudaVisible = !isDocente && String(opcion.key) === vistaActivaKey;
 
             return {
                 key: String(opcion.key),
@@ -178,6 +259,9 @@ const GestionHorariosConflictosPage = () => {
                             horarioSlotIndex={horarioSlotIndex}
                             docenteConflictMode
                             headerMinimal
+                            dirty={dirtyParalelo}
+                            autoAyudaPorSlot={autoAyudaPorSlot}
+                            autoAyudaVisible={autoAyudaVisible}
                         />
                     ),
                 ),
@@ -193,6 +277,10 @@ const GestionHorariosConflictosPage = () => {
         horarioSlotIndex,
         solapeParaleloHorarioKeys,
         grilla?.paresConflicto,
+        paresConflicto,
+        bloqueNombreMap,
+        vistaActivaKey,
+        conflictoResuelto,
         setParaleloDraftSchedules,
         persistLoading,
         onRequestPersist,

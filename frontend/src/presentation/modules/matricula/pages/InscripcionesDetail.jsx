@@ -16,6 +16,7 @@ const InscripcionesDetail = () => {
   const { hasPermiso } = useAuthContext();
   const puedeGenerarBoletaPdf = hasPermiso('matricula.documento.ver', 'GENERAR_PDF');
   const puedeEditarInscripcion = hasPermiso('matricula.inscripcion.editar', 'EDITAR');
+  const puedeActivarCursado = hasPermiso('matricula.inscripcion.editar', 'EDITAR');
 
   const {
     inscripcion,
@@ -45,6 +46,10 @@ const InscripcionesDetail = () => {
     courseSchedules,
     gridRangeInscripcion,
     sabadoRangeInscripcion,
+    estadoCursado,
+    puedeActivar,
+    activating,
+    handleActivarCursado,
   } = useInscripcionDetailContext();
 
   const headerActions = (
@@ -95,6 +100,10 @@ const InscripcionesDetail = () => {
           management={management}
           subjectCount={subjectEnrollments.length}
           historialEstadoInfo={historialEstadoInfo}
+          estadoCursado={estadoCursado}
+          puedeActivarCursado={puedeActivarCursado && puedeActivar}
+          activatingCursado={activating}
+          onActivarCursado={handleActivarCursado}
           puedeEditarInscripcion={puedeEditarInscripcion}
           canEdit={canEdit}
           onEditar={handleEditar}

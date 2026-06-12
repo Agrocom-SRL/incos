@@ -4,4 +4,5 @@
  */
 export { menuIconMap } from './menuIcons';
 export { getDataTableAction } from './dataTableIcons';
+export { activityIconMap, getActivityIconComponent, ACTIVITY_ICON_OPTIONS } from './activityIcons';
 

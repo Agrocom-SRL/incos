@@ -13,6 +13,9 @@ export class GuardarNotasCuadernoBimestreUseCase {
     calificacionCoordinacionRepository,
     calificacionContextoRepository,
     cuadernoRepository,
+    subjectEnrollmentRepository,
+    subjectEnrollmentBimesterRepository,
+    bimesterEvaluationGradeRepository,
     evaluationConfigurationRepository,
     teacherRepository,
     userRepository,
@@ -22,6 +25,9 @@ export class GuardarNotasCuadernoBimestreUseCase {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
@@ -53,7 +59,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
       );
     }
 
-    await this.cuadernoRepository.asegurarBimestresMatriculaCurso(
+    await this.subjectEnrollmentBimesterRepository.asegurarBimestresMatriculaCurso(
       Number(asignacionId),
       bimestreVigente,
       usuarioId,
@@ -72,6 +78,8 @@ export class GuardarNotasCuadernoBimestreUseCase {
 
       const dto = await persistirNotaCuadernoCelda({
         cuadernoRepository: this.cuadernoRepository,
+        subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+        bimesterEvaluationGradeRepository: this.bimesterEvaluationGradeRepository,
         asignacionId: Number(asignacionId),
         bimestreNum,
         gestionId,
@@ -91,6 +99,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
 
     const recalculoBimestre = await recalcularNotasBimestreCurso({
       cuadernoRepository: this.cuadernoRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
       asignacionId: Number(asignacionId),
       bimestreNumero: bimestreNum,
       cuotaTeorico,
@@ -100,6 +109,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
 
     const recalculoFinal = await recalcularNotaFinalMatriculaCurso({
       cuadernoRepository: this.cuadernoRepository,
+      subjectEnrollmentRepository: this.subjectEnrollmentRepository,
       asignacionId: Number(asignacionId),
       pesosBimestres,
       usuarioId,

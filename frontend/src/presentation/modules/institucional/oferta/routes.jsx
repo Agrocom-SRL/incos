@@ -122,7 +122,7 @@ export const ofertaRoutes = [
       label: 'Oferta Académica',
       module: 'INST',
       parent: 'INST',
-      order: 3,
+      order: 2,
     },
   },
 ];

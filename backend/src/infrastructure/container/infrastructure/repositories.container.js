@@ -50,8 +50,8 @@ import { ConfiguracionSistemaRepository } from '../../repositories/Configuracion
 import { RoleRepository } from '../../repositories/RoleRepository.js';
 import { PermissionRepository } from '../../repositories/PermissionRepository.js';
 import { UserRepository } from '../../repositories/UserRepository.js';
-import { SeguridadAltaUsuarioLookupRepository } from '../../repositories/SeguridadAltaUsuarioLookupRepository.js';
-import { UsuarioReferenciaVinculoRepository } from '../../repositories/UsuarioReferenciaVinculoRepository.js';
+import { SeguridadAltaUsuarioLookupRepository } from '../../repositories/views/SeguridadAltaUsuarioLookupRepository.js';
+import { UsuarioReferenciaVinculoRepository } from '../../repositories/views/UsuarioReferenciaVinculoRepository.js';
 import { RolePermissionRepository } from '../../repositories/RolePermissionRepository.js';
 import { UserPermissionRepository } from '../../repositories/UserPermissionRepository.js';
 import { SessionRepository } from '../../repositories/SessionRepository.js';
@@ -90,7 +90,7 @@ import { ParallelRepository } from '../../repositories/ParallelRepository.js';
 import { ClassroomRepository } from '../../repositories/ClassroomRepository.js';
 import { ScheduleRepository } from '../../repositories/ScheduleRepository.js';
 import { AsignacionHorarioRepository } from '../../repositories/AsignacionHorarioRepository.js';
-import { HorarioGrillaRepository } from '../../repositories/HorarioGrillaRepository.js';
+import { HorarioGrillaRepository } from '../../repositories/views/HorarioGrillaRepository.js';
 import { ParaleloGestionGrillaBloqueViewRepository } from '../../repositories/views/ParaleloGestionGrillaBloqueViewRepository.js';
 import { ParaleloGestionFichaViewRepository } from '../../repositories/views/ParaleloGestionFichaViewRepository.js';
 import { ParaleloGestionAsignacionCoberturaBloquesViewRepository } from '../../repositories/views/ParaleloGestionAsignacionCoberturaBloquesViewRepository.js';
@@ -112,8 +112,8 @@ import { ScholarshipRepository } from '../../repositories/ScholarshipRepository.
 import { StudentScholarshipRepository } from '../../repositories/StudentScholarshipRepository.js';
 import { LicenseRepository } from '../../repositories/LicenseRepository.js';
 import { StudentGuardianRepository } from '../../repositories/StudentGuardianRepository.js';
-import { StudentEnrollmentExcelReportRepository } from '../../repositories/StudentEnrollmentExcelReportRepository.js';
-import { StudentEnrollmentStudentListExcelReportRepository } from '../../repositories/StudentEnrollmentStudentListExcelReportRepository.js';
+import { StudentEnrollmentExcelReportRepository } from '../../repositories/views/StudentEnrollmentExcelReportRepository.js';
+import { StudentEnrollmentStudentListExcelReportRepository } from '../../repositories/views/StudentEnrollmentStudentListExcelReportRepository.js';
 import { TransitabilityRepository } from '../../repositories/TransitabilityRepository.js';
 import { TransferRepository } from '../../repositories/TransferRepository.js';
 
@@ -130,9 +130,10 @@ import { SubjectEnrollmentBimesterRepository } from '../../repositories/SubjectE
 import { BimesterEvaluationRepository } from '../../repositories/BimesterEvaluationRepository.js';
 import { BimesterEvaluationGradeRepository } from '../../repositories/BimesterEvaluationGradeRepository.js';
 import { CuadernoRepository } from '../../repositories/CuadernoRepository.js';
-import { CalificacionContextoRepository } from '../../repositories/CalificacionContextoRepository.js';
-import { CalificacionCoordinacionRepository } from '../../repositories/CalificacionCoordinacionRepository.js';
+import { CalificacionContextoRepository } from '../../repositories/views/CalificacionContextoRepository.js';
+import { CalificacionCoordinacionRepository } from '../../repositories/views/CalificacionCoordinacionRepository.js';
 import { GestionBimestresRepository } from '../../repositories/GestionBimestresRepository.js';
+import { CronogramaGestionRepository } from '../../repositories/views/CronogramaGestionRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
@@ -146,9 +147,9 @@ import { AuthorizedBankRepository } from '../../repositories/AuthorizedBankRepos
 import { PaymentAccountRepository } from '../../repositories/PaymentAccountRepository.js';
 import { ContributionPaymentRepository } from '../../repositories/ContributionPaymentRepository.js';
 import { ContributionPaymentInstallmentRepository } from '../../repositories/ContributionPaymentInstallmentRepository.js';
-import { PaymentAporteCareerExcelReportRepository } from '../../repositories/PaymentAporteCareerExcelReportRepository.js';
-import { DashboardRepository } from '../../repositories/DashboardRepository.js';
-import { AulasHorariosSemanaRepository } from '../../repositories/AulasHorariosSemanaRepository.js';
+import { PaymentAporteCareerExcelReportRepository } from '../../repositories/views/PaymentAporteCareerExcelReportRepository.js';
+import { DashboardRepository } from '../../repositories/views/DashboardRepository.js';
+import { AulasHorariosSemanaRepository } from '../../repositories/views/AulasHorariosSemanaRepository.js';
 
 /**
  * Registra todas las dependencias de repositorios
@@ -342,6 +343,22 @@ export function registerRepositoriesModule(container) {
       REPOSITORIOS_TOKENS.gestionBimestresRepository,
       (c) =>
         new GestionBimestresRepository({
+          calificacionContextoRepository: c.resolve(
+            REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          ),
+          subjectEnrollmentRepository: c.resolve(
+            REPOSITORIOS_TOKENS.subjectEnrollmentRepository,
+          ),
+          configuracionSistemaRepository: c.resolve(
+            REPOSITORIOS_TOKENS.systemConfigurationRepository,
+          ),
+        }),
+    );
+    registerComponent(
+      container,
+      REPOSITORIOS_TOKENS.cronogramaGestionRepository,
+      (c) =>
+        new CronogramaGestionRepository({
           calificacionContextoRepository: c.resolve(
             REPOSITORIOS_TOKENS.calificacionContextoRepository,
           ),

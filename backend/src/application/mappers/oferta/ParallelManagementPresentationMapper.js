@@ -24,13 +24,14 @@ export function rowToPresentation(row) {
     carreraCodigo: row.carreraCodigo ?? null,
     carreraImagenRuta: row.carreraImagenRuta ?? null,
     carreraColorHex: row.carreraColorHex ?? null,
-    paraleloDescripcion: row.paraleloDescripcion ?? null,
     aulaCodigo: row.aulaCodigo ?? null,
     aulaNombre: row.aulaNombre ?? null,
     planEstudioId: row.planEstudioId ?? null,
     planNombre: row.planNombre ?? null,
     gestionId: row.gestionId ?? null,
     ofertaActual: row.ofertaActual != null ? Number(row.ofertaActual) : undefined,
+    bloquesRequeridos: row.bloquesRequeridos != null ? Number(row.bloquesRequeridos) : 0,
+    bloquesAsignados: row.bloquesAsignados != null ? Number(row.bloquesAsignados) : 0,
   };
 }
 

@@ -1,10 +1,17 @@
 import { QueryTypes } from 'sequelize';
+import { IParaleloGestionRepository } from '../../domain/interfaces/repositories/IParaleloGestionRepository.js';
 import { ParaleloGestion as ParaleloGestionModel } from '../database/models/paralelo_gestion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ParallelManagementMapper } from '../mappers/ParallelManagementMapper.js';
 import { sequelize } from '../database/sequelize.js';
 import { ParaleloGestionFichaViewRepository } from './views/ParaleloGestionFichaViewRepository.js';
 
+/**
+ * Paralelos en gestión (paralelos_gestion): CRUD heredado de BaseRepository más
+ * lecturas enriquecidas (vista 127, vía fichaViewRepository) y contexto de
+ * generación de oferta.
+ * @implements {IParaleloGestionRepository}
+ */
 export class ParallelManagementRepository extends BaseRepository {
   constructor({ fichaViewRepository } = {}) {
     super();

@@ -157,7 +157,7 @@ Leyenda estado UI: ✅ implementado · 🚧 `UnderConstruction` (no bloquea el f
 
 | # | Menú | Ruta | Acción | Verificación | Tablas |
 |---|------|------|--------|--------------|--------|
-| 3.1 | **INST** → Gestión actual | `/institucional/actual` | 🚧 | Usar gestión **vigente** de seeders si UI pendiente | `gestiones` |
+| 3.1 | **INST** → Gestión actual | `/institucional/actual` | ✅ Ver gestión vigente + **Activar cursado** (inicia bimestres, INSCRITO→CURSANDO) | Estado de cursado visible; botón con `academico.calificacion.gestion_bimestres` EDITAR | `gestiones`, `matriculas_materia`, `bimestres_matricula` |
 | 3.2 | INST → Cronogramas | `/institucional/cronogramas` | 🚧 | Periodos académicos vía seed/API | `periodos_academicos` |
 | 3.3 | **INST** → Oferta Académica | `/institucional/oferta` | **Paso 1:** elegir gestión | Gestión vigente seleccionada | `gestiones` |
 | 3.4 | Oferta (paso 2) | `/institucional/oferta` | Habilitar plan en gestión | Plan en estado VIGENTE/APROBADO | `gestiones_planes` |
@@ -299,7 +299,6 @@ No forman parte del smoke E2E principal hasta que se implementen:
 
 | Ruta | Módulo |
 |------|--------|
-| `/institucional/actual` | Gestión actual |
 | `/institucional/cronogramas` | Cronogramas |
 | `/institucional/oferta/inscribir`, `/institucional/oferta/curso` | Atajos legacy oferta |
 | `/institucional/horarios/generar` | Generación automática |

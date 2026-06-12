@@ -1,5 +1,6 @@
 import { QueryTypes } from 'sequelize';
 import { sequelize } from '../../database/sequelize.js';
+import { IParaleloGestionGrillaBloqueViewRepository } from '../../../domain/interfaces/repositories/IParaleloGestionGrillaBloqueViewRepository.js';
 
 const VIEW = 'vista_base_paralelo_gestion_grilla_bloque';
 
@@ -28,7 +29,7 @@ function buildExcludeHorarioClause(excludeIds, column = 'asignacionHorarioId') {
 /**
  * Lectura: vista_base_paralelo_gestion_grilla_bloque (03-views/122).
  */
-export class ParaleloGestionGrillaBloqueViewRepository {
+export class ParaleloGestionGrillaBloqueViewRepository extends IParaleloGestionGrillaBloqueViewRepository {
   /**
    * @param {number} paraleloGestionId
    * @returns {Promise<Array<Object>>}

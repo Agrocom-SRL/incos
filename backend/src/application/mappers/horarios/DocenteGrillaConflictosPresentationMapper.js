@@ -166,7 +166,7 @@ export class DocenteGrillaConflictosPresentationMapper {
     const t = bundle?.teacher;
     if (!t) return null;
 
-    const docenteNombre = [t.nombres, t.apellido_paterno, t.apellido_materno]
+    const docenteNombre = [t.apellido_paterno, t.apellido_materno, t.nombres]
       .filter(Boolean)
       .join(' ')
       .trim();

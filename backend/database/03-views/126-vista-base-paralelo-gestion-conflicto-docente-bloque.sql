@@ -20,11 +20,11 @@ SELECT DISTINCT
   oc1.paralelo_gestion_id AS paraleloGestionId1,
   oc2.paralelo_gestion_id AS paraleloGestionId2,
   TRIM(CONCAT(
-    COALESCE(d.nombres, ''),
-    ' ',
     COALESCE(d.apellido_paterno, ''),
     ' ',
-    COALESCE(d.apellido_materno, '')
+    COALESCE(d.apellido_materno, ''),
+    ' ',
+    COALESCE(d.nombres, '')
   )) AS docenteNombre
 FROM asignacion_horarios ah1
 INNER JOIN asignaciones_docentes ad1

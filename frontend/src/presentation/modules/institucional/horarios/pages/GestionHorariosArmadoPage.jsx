@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, Flex, Result, Spin, Tabs } from 'antd';
 import {
     ArrowLeftOutlined,
+    CloudUploadOutlined,
     CompressOutlined,
     ExpandOutlined,
     EyeOutlined,
@@ -10,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader, ParaleloGestionContextHeader } from '@molecules';
-import { IconButton } from '@atoms';
+import { ActionButton, IconButton } from '@atoms';
 import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosArmadoContext } from '@application-institucional/horarios';
 import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
@@ -54,10 +55,13 @@ const GestionHorariosArmadoPage = () => {
         hasParaleloSelected,
         horarioEditable,
         planSemanalEditable,
+        planSemanalDirty,
         coberturaReajustable,
         coberturaGrilla,
-        generarBloquesCurso,
-        reajustarBloquesCurso,
+        reajustarCoberturaParalelo,
+        puedePublicarDesdeArmado,
+        publicandoParalelo,
+        publicarParalelo,
     } = useHorariosArmadoContext();
     const [vistaExpandida, setVistaExpandida] = useState(false);
 
@@ -69,16 +73,6 @@ const GestionHorariosArmadoPage = () => {
             document.body.style.overflow = prev;
         };
     }, [vistaExpandida]);
-
-    const handleGenerarBloquesCurso = useCallback(
-        (cursoId, horasPlan) => generarBloquesCurso(cursoId, horasPlan),
-        [generarBloquesCurso],
-    );
-
-    const handleReajustarBloquesCurso = useCallback(
-        (cursoId, horasPlan) => reajustarBloquesCurso(cursoId, horasPlan),
-        [reajustarBloquesCurso],
-    );
 
     const tabItems = useMemo(
         () => [
@@ -96,10 +90,8 @@ const GestionHorariosArmadoPage = () => {
                             draftSchedules={draftSchedules}
                             paraleloGestionId={paraleloGestionId}
                             coberturaGrilla={coberturaGrilla}
-                            horarioEditable={horarioEditable}
                             coberturaReajustable={coberturaReajustable}
-                            onGenerarBloquesCurso={handleGenerarBloquesCurso}
-                            onReajustarBloquesCurso={handleReajustarBloquesCurso}
+                            onReajustarCoberturaParalelo={reajustarCoberturaParalelo}
                         />
                     </div>
                 ),
@@ -120,6 +112,7 @@ const GestionHorariosArmadoPage = () => {
                             editable={planSemanalEditable}
                             allowDelete={horarioEditable}
                             soloReubicacion={planSemanalEditable && !horarioEditable}
+                            dirty={planSemanalDirty}
                             turnoLabel={turnoEfectivo || undefined}
                             persistLoading={persistLoading}
                             onRequestPersist={onRequestPersist}
@@ -159,20 +152,34 @@ const GestionHorariosArmadoPage = () => {
             onRequestPersist,
             horarioEditable,
             planSemanalEditable,
+            planSemanalDirty,
             coberturaReajustable,
             vistaExpandida,
             paraleloGestionId,
             coberturaGrilla,
-            handleGenerarBloquesCurso,
-            handleReajustarBloquesCurso,
+            reajustarCoberturaParalelo,
             validatePlacement,
         ],
     );
 
     const headerActions = (
-        <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-            <ArrowLeftOutlined /> Volver
-        </button>
+        <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">
+            {puedePublicarDesdeArmado ? (
+                <ActionButton
+                    permiso="institucional.horario.publicacion"
+                    accion="EDITAR"
+                    variant="primary"
+                    icon={<CloudUploadOutlined />}
+                    loading={publicandoParalelo}
+                    onClick={publicarParalelo}
+                >
+                    Publicar paralelo
+                </ActionButton>
+            ) : null}
+            <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
+                <ArrowLeftOutlined /> Volver
+            </button>
+        </Flex>
     );
 
     const bodyContent = !hasParaleloSelected ? (

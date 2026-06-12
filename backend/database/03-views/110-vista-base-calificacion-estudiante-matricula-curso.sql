@@ -16,9 +16,9 @@ SELECT
   TRIM(
     CONCAT_WS(
       ' ',
-      est.nombres,
       est.apellido_paterno,
-      est.apellido_materno
+      est.apellido_materno,
+      est.nombres
     )
   ) AS nombre
 FROM matriculas_materia mm

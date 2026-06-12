@@ -1,4 +1,5 @@
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { buildFullName } from '@application/utils/formatters';
 
 const horasMesDesdeSemana = (horasSem) => {
   const h = Number(horasSem);
@@ -16,8 +17,7 @@ export function buildDocenteAsignacionesTabla({
 }) {
   const docenteNombre =
     profile.nombreCompleto?.toUpperCase?.() ||
-    [profile.nombres, profile.apellidoPaterno, profile.apellidoMaterno].filter(Boolean).join(' ').toUpperCase() ||
-    '—';
+    buildFullName(profile.nombres, profile.apellidoPaterno, profile.apellidoMaterno, '—').toUpperCase();
   const perfil = profile.tituloProfesional || profile.especialidad || '—';
   const numeroItem = profile.ciCompleto || profile.ci || (docenteId != null ? String(docenteId) : '—');
 

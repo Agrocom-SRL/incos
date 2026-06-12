@@ -4,7 +4,7 @@
 export class GetDashboardResumenUseCase {
   /**
    * @param {Object} deps
-   * @param {import('../../../infrastructure/repositories/DashboardRepository.js').DashboardRepository} deps.dashboardRepository
+   * @param {import('../../../infrastructure/repositories/views/DashboardRepository.js').DashboardRepository} deps.dashboardRepository
    * @param {Object} deps.logger
    */
   constructor({ dashboardRepository, logger }) {

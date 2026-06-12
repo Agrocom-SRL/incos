@@ -6,7 +6,7 @@ export class ObtenerUsuarioUseCase {
    * @param {Object} deps
    * @param {import('../../../infrastructure/repositories/UserRepository.js').UserRepository} deps.userRepository
    * @param {import('../../../infrastructure/repositories/UserPermissionRepository.js').UserPermissionRepository} deps.userPermissionRepository
-   * @param {import('../../../infrastructure/repositories/UsuarioReferenciaVinculoRepository.js').UsuarioReferenciaVinculoRepository} deps.usuarioReferenciaVinculoRepository
+   * @param {import('../../../infrastructure/repositories/views/UsuarioReferenciaVinculoRepository.js').UsuarioReferenciaVinculoRepository} deps.usuarioReferenciaVinculoRepository
    * @param {import('../../../infrastructure/repositories/StaffRepository.js').StaffRepository} deps.staffRepository
    */
   constructor({

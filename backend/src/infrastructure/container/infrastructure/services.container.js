@@ -34,6 +34,7 @@ import { FormularioInscripcionPdfGenerator } from '../../external/pdf/Formulario
 import { DeclaracionJuradaPdfGenerator } from '../../external/pdf/DeclaracionJuradaPdfGenerator.js';
 import { ReciboPagoPdfGenerator } from '../../external/pdf/ReciboPagoPdfGenerator.js';
 import { PDFGenerator } from '../../external/pdf/PDFGenerator.js';
+import { RegistroPedagogicoExcelBuilder } from '../../external/excel/RegistroPedagogicoExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
 export function registerServicesModule(container) {
@@ -115,6 +116,15 @@ export function registerServicesModule(container) {
             reciboPagoPdfGenerator: c.resolve(SERVICIOS_TOKENS.reciboPagoPdfGenerator),
             logger: c.resolve(SERVICIOS_TOKENS.logger),
         })
+    );
+
+    // ============================================
+    // EXCEL GENERATOR (IRegistroPedagogicoExcelGenerator)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.registroPedagogicoExcelGenerator,
+        () => new RegistroPedagogicoExcelBuilder()
     );
 
     // ============================================

@@ -72,3 +72,11 @@ export const DIVISIONES_PERIODO_ACADEMICO = {
  * Array de divisiones de período académico válidas (útil para validators)
  */
 export const DIVISIONES_PERIODO_ACADEMICO_VALUES = Object.values(DIVISIONES_PERIODO_ACADEMICO);
+
+/**
+ * Clave de `configuracion_sistema` que marca el cursado iniciado de una gestión
+ * (bandera "clases iniciadas"). Se crea/actualiza al iniciar la gestión.
+ * @param {number} gestionId
+ * @returns {string}
+ */
+export const claveCursadoIniciado = (gestionId) => `cursado_iniciado_${gestionId}`;

@@ -262,9 +262,9 @@ Revisar de la misma forma cualquier otro SQL crudo que toque
 | # | Tarea | Estado hoy | Dónde |
 |---|---|---|---|
 | 1 | Corregir puente `mm.asignacion_docente_id` → `oferta_curso_id` | ✅ hecho (2026-06) | `GestionBimestresRepository.js` (4), `CuadernoRepository.js` (6) |
-| 2 | Cablear UI “Iniciar gestión académica” al método ya existente | ❌ falta UI | módulo calificaciones / gestión-bimestres |
-| 3 | (Opcional) Use case de transición de estado por estudiante (`CambiarEstadoMatriculaUseCase`) + `PATCH /inscripciones/:id/...` | ❌ no existe | use-cases/inscripciones |
-| 4 | Endpoint “horario del estudiante” (query sección 4) | ❌ solo existe por paralelo | nuevo use case + ruta |
+| 2 | Cablear UI “Iniciar gestión académica” al método ya existente | ✅ hecho (2026-06) | **Institucional → Gestión actual** (`/institucional/actual`): `useGestionActualState` → `CalificacionRepository.iniciarGestionAcademica()` |
+| 3 | Use case de transición de estado por estudiante (`CambiarEstadoMatriculaUseCase`) + `PATCH /inscripciones/:id/activar-cursado` | ✅ hecho (2026-06) | `CambiarEstadoMatriculaUseCase` + `GestionBimestresRepository.activarCursadoPorInscripcion`; botón en `InscripcionesDetail`. Además, `CreateEnrollmentUseCase` deja CURSANDO+bimestres si la gestión ya está iniciada |
+| 4 | Endpoint “horario del estudiante” (query sección 4) | ❌ solo existe por paralelo (la ficha reusa `subjectEnrollments[].horarios`) | nuevo use case + ruta |
 | 5 | Exponer rutas/controllers de **asistencia** | ⚠️ repo sí, rutas no | presentation/routes |
 | 6 | Verificar que cuaderno/consolidado resuelven el curso vía oferta→asignación vigente | revisar | `CuadernoRepository`, use cases de calificaciones |
 | 7 | Confirmar `configuracion_evaluacion` vigente para la gestión activa (pesos/cuotas) | ✅ sincronizado (seeder 59) | `02-seeders/59` |

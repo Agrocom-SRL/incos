@@ -239,6 +239,7 @@ Fuente: `53-seed-roles.sql`.
 | `inscripciones.routes.js` | GET | `/api/v1/inscripciones/:id` | VER detalle |
 | `inscripciones.routes.js` | PUT | `/api/v1/inscripciones/:id` | EDITAR |
 | `inscripciones.routes.js` | DELETE | `/api/v1/inscripciones/:id` | ELIMINAR |
+| `inscripciones.routes.js` | PATCH | `/api/v1/inscripciones/:id/activar-cursado` | EDITAR (activar cursado) |
 | `inscripciones.routes.js` | POST | `/api/v1/inscripciones/:id/generar-formulario` | CREAR documento (PDF) |
 | `pagos-aportes.routes.js` | GET | `/api/v1/pagos-aportes` | VER listado |
 | `pagos-aportes.routes.js` | GET | `/api/v1/pagos-aportes/estado-registro` | VER estado |
@@ -346,7 +347,15 @@ Endpoint(s): `GET/POST/PUT/DELETE /inscripciones`, `POST /inscripciones/:id/gene
 | VER | Ver matriculas | GET | ADM, REC, DIRA, SECA |
 | CREAR | Registrar matricula | POST | ADM, REC, DIRA, SECA |
 | EDITAR | Editar matricula | PUT | ADM, REC, DIRA, SECA |
+| EDITAR | Activar cursado de una inscripcion (INSCRITO→CURSANDO + bimestres) | PATCH `/inscripciones/:id/activar-cursado` | ADM, REC, DIRA, SECA |
 | ELIMINAR | Eliminar matricula | DELETE | ADM, REC (segun politica), DIRM (si aplica) |
+
+> **Activación del cursado (`matricula.inscripcion.editar` + EDITAR):** el botón "Activar cursado" del
+> detalle (`InscripcionesDetail`) usa `PATCH /inscripciones/:id/activar-cursado`. Misma acción en ruta UI
+> (`/inscripciones/:id` DETALLE para entrar; botón con EDITAR), `ActionButton`/`hasPermiso` y `verificarPermiso`
+> backend. La activación **masiva** por gestión vive en Institucional → Gestión actual (ver INST abajo) y
+> reutiliza `academico.calificacion.gestion_bimestres` + EDITAR. Inscripciones creadas con la gestión ya
+> iniciada nacen en CURSANDO automáticamente.
 
 ### MAT - Becas (`/estudiantes/becas/listar`, `/estudiantes/becas/asignar`)
 Permisos: `matricula.beca.ver`, `matricula.beca.asignar`, `matricula.beca.aprobar`
@@ -439,8 +448,39 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 Permisos: `institucional.*`
 
 Rutas simplificadas vigentes del modulo:
-- `/institucional/actual`
-- `/institucional/cronogramas`
+- `/institucional/actual` — ✅ **Gestión actual (Panel, solo lectura)**. Entrada `institucional.gestion.actual` (67) + LISTAR.
+  KPIs globales + **cronograma académico** de la gestión vigente + línea de tiempo de bimestres
+  (datos de `GET /calificaciones/gestion-bimestres` y `GET /calificaciones/gestion-cronograma`).
+  El **cronograma** (calendario académico real, `actividades_calendario` seed 20 + `actividades` seed 17 +
+  `periodos_academicos`, vía vista `vista_base_cronograma_gestion`) quedó **integrado en esta página**:
+  ya **no existe** el ítem de menú `/institucional/cronogramas`. El endpoint `GET /calificaciones/gestion-cronograma`
+  reutiliza `verificarPermisoCualquiera` y acepta `academico.calificacion.gestion_bimestres` O
+  `institucional.gestion.actual` (LISTAR) — **no requiere permiso nuevo**.
+- **Administración del cronograma** (`/institucional/actual/cronograma`, `…/nueva`, `…/:id` ficha, `…/:id/editar`):
+  usa el permiso `institucional.gestion.cronograma` (68) con **LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR**.
+  - `GET /calificaciones/cronograma` → LISTAR · `GET /calificaciones/cronograma/:id` → **DETALLE** (ficha y precarga del form)
+    · `POST` → CREAR · `PUT /:id` → EDITAR · `DELETE /:id` → ELIMINAR.
+  - **RBAC (nueva acción DETALLE del 68):** añadida en seed `56` (id 259) y asignada a RECTOR (2), DIR_ACADEMICO (3)
+    y SEC_ACADEMICA (5) en seed `55` (ids 655–657). ADMIN_SISTEMA por derivación. Requiere **re-seed** 56/55.
+- `/institucional/actual/bimestres` — ✅ **Control de bimestres (configuración del ciclo lectivo)**. Ruta `institucional.gestion.actual` (67) + **EDITAR**.
+  **No es ítem del sidebar**: se accede desde el botón "Control de bimestres" del panel de Gestión actual.
+  Acciones: "Habilitar inicio de clases" (`POST /calificaciones/gestion-bimestres/iniciar`), "Cerrar bimestre"
+  (`.../bimestre/:n/validar-cierre` + `.../cerrar`; el cierre efectivo en backend está en preparación), y
+  **configuración de periodos** (calendario anual + edición de fechas + CRUD de etapas):
+  - `GET /calificaciones/gestion-bimestres/periodos` (LISTAR) — periodos/etapas de la gestión vigente.
+  - `PUT /calificaciones/gestion-bimestres/periodos/:id/fechas` (EDITAR) — fechas inicio/fin.
+  - `POST /calificaciones/gestion-bimestres/periodos` (EDITAR) — alta de etapa (división OTRO).
+  - `DELETE /calificaciones/gestion-bimestres/periodos/:id` (EDITAR) — baja de etapa no estructural
+    (bimestres/planificación/clausura protegidos en el use case).
+  Todos con `verificarPermisoCualquiera` (`academico.calificacion.gestion_bimestres` **o** `institucional.gestion.actual`).
+  **Sin permiso nuevo**: reusan el 67 EDITAR ya existente en seeds 55/56.
+
+  **RBAC (nuevo permiso EDITAR del 67):** se añadió la acción `EDITAR` al permiso `institucional.gestion.actual` (67)
+  en seed `56` y se asignó a RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) en seed `55`
+  (migración idempotente `05-migrations/25-rbac-institucional-gestion-actual-editar.sql`). Los endpoints de
+  `gestion-bimestres` (GET estado, iniciar, validar/cerrar) usan `verificarPermisoCualquiera` y aceptan
+  **`academico.calificacion.gestion_bimestres` O `institucional.gestion.actual`** (LISTAR/EDITAR), de modo que
+  los opera tanto Calificaciones (coordinación) como Institucional → Gestión actual. ADMIN_SISTEMA por derivación.
 - `/institucional/oferta` (wizard oferta; redirect desde `/institucional/oferta-academica`)
 - `/institucional/horarios`
 - `/institucional/pasadas`

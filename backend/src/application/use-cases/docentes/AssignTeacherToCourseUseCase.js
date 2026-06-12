@@ -9,6 +9,7 @@ import { todayDateOnlyLocal, defaultWeeklyHoursFromPlan } from '../../utils/teac
 import { normalizeTeacherAssignmentBody } from '../../utils/teacherAssignmentPayload.js';
 import { resolveTeacherAssignmentOfferContext } from '../../utils/teacherAssignmentOfferContext.js';
 import { normalizeDocenteColorHex } from '../../mappers/docentes/DocenteColorMapper.js';
+import { autoOfertarParaleloGestion } from '../oferta/autoOfertarParaleloGestion.js';
 
 export class AssignTeacherToCourseUseCase {
   constructor({
@@ -114,6 +115,17 @@ export class AssignTeacherToCourseUseCase {
     const updated = await this.teacherAssignmentRepository.update(
       existing.id,
       new TeacherAssignment(patch),
+      userId
+    );
+
+    // Auto-ofertar si el paralelo quedó con aula + todos los docentes.
+    await autoOfertarParaleloGestion(
+      {
+        parallelManagementRepository: this.parallelManagementRepository,
+        courseOfferRepository: this.courseOfferRepository,
+        logger: this.logger,
+      },
+      ctx.parallelManagementId,
       userId
     );
 
