@@ -15,8 +15,9 @@
 }
 
 /* ── Logo area ─────────────────────────────────────────────────────────────── */
+/* WS-C: iguala a .matricula-v2-sidebar__logo — padding 10px 8px, min-height 56px */
 .sidebar-container__logo {
-    padding: var(--spacing-sm) var(--spacing-sm);
+    padding: 10px 8px;
     border-bottom: 1px solid var(--border, var(--color-border));
     display: flex;
     align-items: center;
@@ -24,18 +25,37 @@
     min-height: 56px;
 }
 
+/* Logo expandido: muestra el logo horizontal limpio.
+   Sobreescribimos el tamaño del átomo Logo para igualar mv2 (height: 84px).
+   max-width: 100% para que nunca se corte dentro del sidebar. */
+.sidebar-container__logo .logo--horizontal {
+    width: auto;
+    height: 84px;
+    max-width: calc(100% - 16px);
+}
+
+.sidebar-container__logo .logo--horizontal img,
+.sidebar-container__logo .logo--horizontal .ant-image,
+.sidebar-container__logo .logo--horizontal .ant-image-img {
+    width: auto !important;
+    height: 84px !important;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+/* Logo colapsado: badge "INCOS" — WS-C iguala .matricula-v2-sidebar__logo-icon */
 .sidebar-container__logo-icon {
-    width: 100%;
-    max-width: 52px;
-    height: 40px;
-    border-radius: var(--border-radius-sm, 4px);
+    width: 64px;
+    height: 44px;
+    border-radius: 10px;
     background: var(--brand-700, #004830);
     color: #fff;
     font-weight: 800;
-    font-size: 11px;
+    font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto;
     letter-spacing: 0.5px;
 }
 
@@ -48,11 +68,12 @@
 }
 
 /* ── Footer de usuario (SidebarUserFooter) ──────────────────────────────────── */
+/* WS-C: iguala .matricula-v2-sidebar__footer — gap 10px, padding 12px 16px */
 .sidebar-user-footer {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm, 8px);
-    padding: var(--spacing-sm, 8px) var(--spacing-base, 16px);
+    gap: 10px;
+    padding: 12px 16px;
     border-top: 1px solid var(--border, var(--color-border));
     flex-shrink: 0;
 }
@@ -97,8 +118,9 @@
     justify-content: center;
 }
 
+/* Colapsado: padding simétrico para centrar el badge INCOS */
 .sidebar-container--collapsed .sidebar-container__logo {
-    padding: var(--spacing-xs, 4px);
+    padding: 6px 8px;
 }
 
 /* ── Dark mode (vars conmutables) ────────────────────────────────────────────── */

@@ -128,6 +128,8 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
 
+- 2026-06-15 — Verificador pase paridad WS-C (shell+theming): APROBADO. Build verde 12.59s. Lint exit 0 en root.js/colors.js/HeaderLeft.jsx/Sidebar.jsx (0 errores). themingSimetrico: applyThemeVars escribe 9 --color-* CORE (bg-container/elevated/layout/content-bg/content-text/text/text-secondary/border/split) + 8 --color-primary* SIEMPRE desde sc=brandScale[mode], sin ningún if(mode). noIfModeEnColorCore: grep 'if (mode' root.js = 0 resultados. logoNoDuplicado: HeaderLeft.jsx = solo IconButton trigger (clase matricula-v2-topbar__menu), logo ausente; Logo atom SOLO en Sidebar.jsx. fontItem14: .sidebar-item font-size: var(--font-size-sm, 14px); fontSizeSM=14 en typography.js → resuelve a 14px (antes var(--font-size-base)=16px). footerParidad: .sidebar-user-footer gap:10px / padding:12px 16px / avatar font-size:13px / nombre:13px / rol:11px — idéntico a .matricula-v2-sidebar__footer. rbacIntacto: git diff application/navigation/ = 0 líneas.
+
 - 2026-06-15 — Cierre WS-C tras auditoría revisor-ui (MIXTO → resuelto) + 2 pases de
   corrección. revisor-ui (Opus) marcó 4 altos: dark incompleto fuera del shell, sidebar
   colapsado sin tooltip, sin :focus-visible, AA avatar dark (2.33:1). Decisión del usuario:

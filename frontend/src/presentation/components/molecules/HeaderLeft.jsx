@@ -1,25 +1,26 @@
 // src/presentation/components/molecules/HeaderLeft.jsx
-import { Flex } from 'antd';
-import IconButton from '@atoms/IconButton';
-import Logo from '@atoms/Logo';
-import { MenuOutlined } from '@ant-design/icons';
-import { allSpacing } from '@theme/tokens';
-
 /**
- * HeaderLeft - Componente molecular para la sección izquierda del Header
- * Contiene el Logo y el botón trigger (hamburguesa)
+ * HeaderLeft — zona izquierda del header (solo trigger/hamburguesa).
+ *
+ * WS-C: el logo se eliminó del header para evitar duplicado con el sidebar
+ * (el logo vive únicamente en la zona superior del Sidebar).
+ * El buscador global se difiere hasta que exista búsqueda real (WS-búsqueda).
+ * Layout mv2: hamburguesa · (spacer) → utilities a la derecha via Header.
+ *
+ * @level molécula
  */
-const HeaderLeft = ({ collapsed, onToggle }) => {
+import IconButton from '@atoms/IconButton';
+import { MenuOutlined } from '@ant-design/icons';
+
+const HeaderLeft = ({ onToggle }) => {
     return (
-        <Flex align="center" gap={allSpacing.margin}>
-            <Logo variant="horizontal" size="medium" />
-            <IconButton
-                icon={<MenuOutlined />}
-                onClick={onToggle}
-                size="large"
-                className="header-trigger"
-            />
-        </Flex>
+        <IconButton
+            icon={<MenuOutlined />}
+            onClick={onToggle}
+            size="large"
+            className="header-trigger matricula-v2-topbar__menu"
+            aria-label="Abrir/cerrar menú"
+        />
     );
 };
 

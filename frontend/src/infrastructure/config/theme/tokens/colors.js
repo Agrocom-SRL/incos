@@ -70,7 +70,7 @@ export const brandScale = {
     text:         '#e8f0ea',
     textSecondary:'#9fb3a7',
     colorBgContainer: '#102019',
-    colorBgElevated:  '#102019',
+    colorBgElevated:  '#16291f',
     colorBgLayout:    '#07140e',
   },
 };

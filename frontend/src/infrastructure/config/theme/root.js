@@ -45,23 +45,30 @@ export function applyThemeVars(mode = 'light', overrides = {}) {
   root.style.setProperty('--accent-gold', sc.accentGold);
   root.style.setProperty('--accent-sky',  sc.accentSky);
 
-  // ── Variables --color-* CORE de superficie/texto/borde (conmutables por modo) ──
-  // En light: EXACTAMENTE los valores de allThemeTokens (sin regresión respecto al baseline).
-  // En dark:  se derivan de brandScale.dark para oscurecer el shell y las superficies de la app.
-  // NOTA: las --color-* específicas de componentes legacy (tables, buttons, etc.)
-  //       se oscurecerán individualmente en Fase 5; estas cubren solo la capa de shell.
-  if (mode === 'dark') {
-    root.style.setProperty('--color-bg-container',  sc.colorBgContainer);
-    root.style.setProperty('--color-bg-elevated',   sc.colorBgElevated);
-    root.style.setProperty('--color-bg-layout',     sc.colorBgLayout);
-    root.style.setProperty('--color-content-bg',    sc.bgPage);
-    root.style.setProperty('--color-text',           sc.text);
-    root.style.setProperty('--color-text-secondary', sc.textSecondary);
-    root.style.setProperty('--color-border',         sc.border);
-    root.style.setProperty('--color-split',          sc.border);
-  }
-  // En light, --color-bg-container/elevated/layout/content-bg/text/text-secondary/border/split
-  // se establecen más abajo desde allThemeTokens (valores exactos del baseline).
+  // ── Variables --color-* CORE de superficie/texto/borde (simétricas, sin casos por modo) ──
+  // Se leen SIEMPRE desde sc = brandScale[mode]: un cambio de modo actualiza TODO el shell
+  // automáticamente sin ningún `if`. Las brandScale.light/dark garantizan los valores correctos.
+  // NOTA: las --color-* específicas de componentes legacy (menu, table, breadcrumb, accent
+  //       púrpura, semantic buttons, avatar genérico, sombras, spacing, tipografía) se dejan
+  //       desde allThemeTokens por ahora (Fase 5 dará su variante dark por componente).
+  root.style.setProperty('--color-bg-container',    sc.colorBgContainer);
+  root.style.setProperty('--color-bg-elevated',     sc.colorBgElevated);
+  root.style.setProperty('--color-bg-layout',       sc.colorBgLayout);
+  root.style.setProperty('--color-content-bg',      sc.bgPage);
+  root.style.setProperty('--color-content-text',    sc.text);
+  root.style.setProperty('--color-text',            sc.text);
+  root.style.setProperty('--color-text-secondary',  sc.textSecondary);
+  root.style.setProperty('--color-border',          sc.border);
+  root.style.setProperty('--color-split',           sc.border);
+  // Primario mode-aware: brand500/600/700/50/100/200 cambian entre light y dark automáticamente.
+  root.style.setProperty('--color-verde-main',       sc.brand500);
+  root.style.setProperty('--color-primary',          sc.brand500);
+  root.style.setProperty('--color-primary-hover',    sc.brand600);
+  root.style.setProperty('--color-primary-active',   sc.brand700);
+  root.style.setProperty('--color-primary-bg',       sc.brand50);
+  root.style.setProperty('--color-primary-bg-hover', sc.brand100);
+  root.style.setProperty('--color-primary-border',   sc.brand200);
+  root.style.setProperty('--color-primary-text',     sc.brand500);
 
   // Personalización runtime (preparado, sin feature implementada)
   Object.entries(overrides).forEach(([k, v]) => root.style.setProperty(k, v));
@@ -73,26 +80,7 @@ export function applyThemeVars(mode = 'light', overrides = {}) {
   // (Solo las variables que se usan en CSS)
   // ========================================
 
-  // Content - Variables CSS usadas en global.css
-  // En light: estos valores son exactamente los del baseline (allThemeTokens / componentConfig).
-  // En dark: fueron establecidos arriba con sc.* (brandScale.dark). No se pisan aquí.
-  root.style.setProperty('--color-content-text', allThemeTokens.colorText);
-  if (mode !== 'dark') {
-    root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
-    root.style.setProperty('--color-bg-layout', allThemeTokens.colorBgLayout);
-    root.style.setProperty('--color-bg-container', allThemeTokens.colorBgContainer);
-    root.style.setProperty('--color-bg-elevated', allThemeTokens.colorBgElevated);
-  }
-  
-  // Color verde institucional (usado en reset.css para focus y Tags)
-  root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
-  root.style.setProperty('--color-primary', allThemeTokens.colorPrimary); // Para uso en list-item.css y otros componentes
-  root.style.setProperty('--color-primary-hover', allThemeTokens.colorPrimaryHover);
-  root.style.setProperty('--color-primary-bg', allThemeTokens.colorPrimaryBg);
-  root.style.setProperty('--color-primary-bg-hover', allThemeTokens.colorPrimaryBgHover);
-  root.style.setProperty('--color-primary-border', allThemeTokens.colorPrimaryBorder);
-  root.style.setProperty('--color-primary-text', allThemeTokens.colorPrimaryText);
-  root.style.setProperty('--color-primary-active', allThemeTokens.colorPrimaryActive);
+  // --color-fill-quaternary (spotlight/overlay) — no tiene variante mode en brandScale todavía
   root.style.setProperty('--color-fill-quaternary', allThemeTokens.colorBgSpotlight);
 
   // ========================================
@@ -185,16 +173,9 @@ export function applyThemeVars(mode = 'light', overrides = {}) {
   // ========================================
   root.style.setProperty('--color-item-hover-bg', allThemeTokens.colorAccentOliveBg);
   
-  // Variables de borde y texto usadas en múltiples componentes
-  // En light: valores exactos del baseline (allThemeTokens). En dark: ya establecidas con sc.*.
+  // Variables secundarias — sin variante mode en brandScale todavía (Fase 5)
   root.style.setProperty('--color-border-secondary', allThemeTokens.colorBorderSecondary);
   root.style.setProperty('--color-text-tertiary', allThemeTokens.colorTextTertiary);
-  if (mode !== 'dark') {
-    root.style.setProperty('--color-border', allThemeTokens.colorBorder);
-    root.style.setProperty('--color-split', allThemeTokens.colorBorder);
-    root.style.setProperty('--color-text', allThemeTokens.colorText);
-    root.style.setProperty('--color-text-secondary', allThemeTokens.colorTextSecondary);
-  }
   
   // Color blanco (para texto sobre fondos primarios, estados activos, etc.)
   root.style.setProperty('--color-white', allThemeTokens.colorWhite);
