@@ -26,6 +26,7 @@
   --dur-hover: 160ms;
   --dur-pop: 200ms;
   --dur-drawer: 320ms;
+  --dur-bell: 350ms;
 }
 
 /* --------------------------------------------------------------------------
@@ -147,12 +148,16 @@
 }
 
 /* --------------------------------------------------------------------------
-   Accesibilidad — prefers-reduced-motion (global, des-namespaciado)
+   Accesibilidad — prefers-reduced-motion (global)
    Neutraliza transforms y animaciones; conserva opacity/color para feedback.
-   Los selectores apuntan a clases de módulo migrado; el legacy no tiene
-   estas clases y no se ve afectado.
+   Cubre tanto los módulos migrados (mv2) como el shell global (app-shell).
+   MotionConfig reducedMotion="user" en MainLayout cubre los wrappers Motion/react.
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+  /* Shell global + módulos migrados */
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after,
   .matricula-v2-app *,
   .matricula-v2-app *::before,
   .matricula-v2-app *::after,
@@ -165,6 +170,7 @@
     scroll-behavior: auto !important;
   }
 
+  .app-shell *:active,
   .matricula-v2-app *:active {
     transform: none !important;
   }

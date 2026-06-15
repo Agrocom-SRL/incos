@@ -21,6 +21,7 @@ import {
   Table,
 } from 'antd';
 import { AnimatePresence, motion } from 'motion/react';
+import { variants as motionVariants } from '@presentation/motion/presets';
 import CareerChip from '../components/CareerChip';
 import FilterToolbar from '../components/FilterToolbar';
 import KpiCard from '../components/KpiCard';
@@ -38,23 +39,11 @@ const MotionDiv = motion.div;
 
 /**
  * Variantes de transición de vista (tabla ↔ tarjetas).
- * Asimétricas: enter con dirección+escala (0.26s), exit sin escala y más rápido (0.16s).
- * Reduced-motion: el bloque global en theme-vars.css neutraliza transforms/animaciones.
+ * Asimétricas: enter con y+scale (0.26s), exit más rápido sin escala (0.16s).
+ * Fuente: motionVariants.presenceSwap de presentation/motion/presets (sin literales).
+ * Reduced-motion: MotionConfig global reducedMotion="user" neutraliza transforms.
  */
-const VIEW_VARIANTS = {
-  hidden: { opacity: 0, y: 8, scale: 0.985 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.26, ease: [0.23, 1, 0.32, 1] },
-  },
-  exit: {
-    opacity: 0,
-    y: -6,
-    transition: { duration: 0.16, ease: [0.23, 1, 0.32, 1] },
-  },
-};
+const VIEW_VARIANTS = motionVariants.presenceSwap;
 
 const MatriculaListV2 = () => {
   const {

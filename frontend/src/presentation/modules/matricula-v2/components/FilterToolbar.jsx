@@ -11,11 +11,13 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import { Button, Dropdown, Input, Segmented, Select } from 'antd';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { HISTORY_FILTER_OPTIONS } from '../utils/historyStates';
 import { mv2DropdownPopupProps, mv2SelectPopupProps } from '../theme/popupClass';
+import PresenceSwap from '@presentation/components/atoms/motion/PresenceSwap';
+import { variants } from '@presentation/motion/presets';
 
-// Alias capitalizado: el linter cuenta el uso JSX por identificador, no por `motion.div`.
+// Alias capitalizado (linter JSX)
 const MotionDiv = motion.div;
 
 function BulkActionsBar({ selectedCount, onBulkNotify, onBulkExport, onBulkDelete }) {
@@ -139,14 +141,15 @@ const FilterToolbar = ({
       />
     </div>
     <div className="matricula-v2-toolbar-spacer" />
-    <AnimatePresence mode="wait" initial={false}>
+    {/* PresenceSwap mode="wait": swap bulk/actions con variants.presenceWait (presets, sin literales). */}
+    <PresenceSwap mode="wait">
       {selectedCount > 0 ? (
         <MotionDiv
           key="bulk"
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 6 }}
-          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          variants={variants.presenceWait}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           style={{ minWidth: 0 }}
         >
           <BulkActionsBar
@@ -160,10 +163,10 @@ const FilterToolbar = ({
         <MotionDiv
           key="actions"
           className="matricula-v2-toolbar-actions"
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 6 }}
-          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          variants={variants.presenceWait}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
         >
           <span className="matricula-v2-toolbar-actions__count">{filteredCount} resultados</span>
           <Segmented
@@ -176,7 +179,7 @@ const FilterToolbar = ({
           />
         </MotionDiv>
       )}
-    </AnimatePresence>
+    </PresenceSwap>
   </div>
 );
 

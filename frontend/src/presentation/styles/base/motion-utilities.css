@@ -1,0 +1,72 @@
+/* ============================================================================
+   MOTION UTILITIES — capa global de animación INCOS
+   Espejan brand-tokens.css (--ease-* / --dur-*). Sin literales.
+   Todos los keyframes globales (no de módulo) viven aquí.
+   ============================================================================ */
+
+/* ── Acordeón genérico (Collapse átomo) ─────────────────────────────────── */
+.collapse-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--dur-pop, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    opacity var(--dur-pop, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.collapse-wrapper--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.collapse-wrapper__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Press universal — clase utilitaria .is-pressable ───────────────────── */
+/* Aplicar en cualquier elemento interactivo que no tenga press propio.
+   Gateado (hover:hover)+(pointer:fine) para no activar en touch. */
+@media (hover: hover) and (pointer: fine) {
+  .is-pressable:active {
+    transform: scale(0.97);
+    transition: transform var(--dur-press, 140ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) !important;
+  }
+}
+
+/* ── Keyframe bell-tilt global (sin prefijo mv2-) ───────────────────────── */
+/* Consumido por .app-topbar__icon[aria-label='Notificaciones'] en app-topbar.css */
+@keyframes bell-tilt {
+  0%, 100% { transform: scale(1.12) rotate(0deg); }
+  25%       { transform: scale(1.12) rotate(-8deg); }
+  75%       { transform: scale(1.12) rotate(8deg); }
+}
+
+/* ── Keyframe chip-pop (sin prefijo mv2-) ───────────────────────────────── */
+/* Consumido por .matricula-v2-chip--active en matricula-v2.css */
+@keyframes chip-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.93); }
+  70%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* ── Keyframe shimmer (sin prefijo) ─────────────────────────────────────── */
+/* Consumido por .matricula-v2-skeleton-* en matricula-v2.css */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* ── prefers-reduced-motion — neutralizar transforms (global) ───────────── */
+@media (prefers-reduced-motion: reduce) {
+  .collapse-wrapper {
+    transition-property: opacity !important;
+  }
+
+  .is-pressable:active {
+    transform: none !important;
+  }
+
+  /* Los wrappers Motion están cubiertos por MotionConfig reducedMotion="user" en MainLayout. */
+}

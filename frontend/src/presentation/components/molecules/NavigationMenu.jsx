@@ -16,6 +16,7 @@
  */
 
 import { useNavigationContext } from '@application-navigation';
+import Stagger from '@presentation/components/atoms/motion/Stagger';
 import SidebarItem from './SidebarItem';
 import SidebarSection from './SidebarSection';
 
@@ -127,9 +128,13 @@ const NavigationMenu = ({ collapsed = false }) => {
   const groups = groupMenuItems(menuItemsWithIcons);
 
   return (
-    <nav className="navigation-menu-custom" aria-label="Menú principal">
+    /* Stagger: entrada escalonada por grupo de menú al montar (jerarquía de carga).
+       Motivo motivado (emit-design-eng): el shell tiene muchos ítems — el stagger
+       evita el "todo a la vez" y da sensación de profundidad. Gate reduced-motion
+       en Stagger.Item (solo opacity, sin y). */
+    <Stagger as="nav" className="navigation-menu-custom" aria-label="Menú principal">
       {groups.map(({ groupKey, label, items }) => (
-        <div key={groupKey || '__default'}>
+        <Stagger.Item key={groupKey || '__default'}>
           {/* Section-label visible solo cuando hay label Y el sidebar no está colapsado */}
           {label && !collapsed && (
             <div className="nav-section-label" aria-hidden>
@@ -137,9 +142,9 @@ const NavigationMenu = ({ collapsed = false }) => {
             </div>
           )}
           {items.map((item) => renderItem(item, ctx))}
-        </div>
+        </Stagger.Item>
       ))}
-    </nav>
+    </Stagger>
   );
 };
 

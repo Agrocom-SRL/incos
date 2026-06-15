@@ -33,6 +33,11 @@
         color: var(--brand-600) !important;
         transform: scale(1.1) !important;
     }
+    /* Press feedback universal (patrón mv2) */
+    .app-topbar__menu:active {
+        transform: scale(0.97) !important;
+        transition: transform var(--dur-press, 140ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) !important;
+    }
 }
 
 .app-topbar__menu:focus-visible {
@@ -54,6 +59,18 @@
     font-size: var(--font-size-nav, 14px);
 }
 
+/* Focus ring del buscador (patrón 7 mv2: scale 1.005 + ring 3px) */
+.app-topbar__search.ant-input-affix-wrapper:focus-within {
+    transform: scale(1.005);
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--brand-500, #007848) 20%, transparent),
+        var(--shadow-sm);
+    border-color: var(--brand-400) !important;
+    transition:
+        transform var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        box-shadow var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
 /* ── Spacer ──────────────────────────────────────────────────────────────────── */
 .app-topbar__spacer {
     flex: 1;
@@ -72,18 +89,17 @@
         color: var(--brand-600) !important;
         transform: scale(1.12) !important;
     }
+    /* Press feedback (patrón mv2 §Topbar icon hover) */
+    .app-topbar__icon:active {
+        transform: scale(0.97) !important;
+        transition: transform var(--dur-press, 140ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) !important;
+    }
 }
 
-/* Campana: tilt de atención en hover */
-@keyframes app-bell-tilt {
-    0%, 100% { transform: scale(1.12) rotate(0deg); }
-    25%       { transform: scale(1.12) rotate(-8deg); }
-    75%       { transform: scale(1.12) rotate(8deg); }
-}
-
+/* Campana: tilt de atención en hover — keyframe bell-tilt en motion-utilities.css (global) */
 @media (hover: hover) and (pointer: fine) {
     .app-topbar__icon[aria-label='Notificaciones']:hover {
-        animation: app-bell-tilt 0.35s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
+        animation: bell-tilt var(--dur-bell, 350ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
     }
 }
 

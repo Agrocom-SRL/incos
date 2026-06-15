@@ -5,30 +5,27 @@
 import { useEffect, useState } from 'react';
 import { Button, Drawer, Progress, Tag } from 'antd';
 import { CloseOutlined, EditOutlined, MailOutlined, PrinterOutlined } from '@ant-design/icons';
-import { motion } from 'motion/react';
 import { avatarFor } from '../utils/avatarFor';
 import { sanitizeBusinessColor } from '../utils/sanitizeColor';
 import { pagoStatusOf } from '../utils/pagoStatus';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useReducedMotion } from '@presentation/hooks/useReducedMotion';
+import { STAGGER } from '@presentation/motion/presets';
+import FadeIn from '@presentation/components/atoms/motion/FadeIn';
 import StatusPill from './StatusPill';
-
-// Alias capitalizado: el linter cuenta el uso JSX por identificador, no por `motion.div`.
-const MotionDiv = motion.div;
 
 // Progreso del semestre (placeholder pre-existente hasta exponer el dato real).
 const SEMESTER_PROGRESS = 42;
 
-function DetailSection({ title, children, index, reduce }) {
+// DetailSection migrado a FadeIn (capa compartida). Delay por índice usando STAGGER.perIndex.
+function DetailSection({ title, children, index }) {
   return (
-    <MotionDiv
+    <FadeIn
       className="matricula-v2-detail-section"
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1], delay: reduce ? 0 : 0.05 * index }}
+      delay={STAGGER.perIndex * index}
     >
       <div className="matricula-v2-detail-section__title">{title}</div>
       <div className="matricula-v2-detail-section__body">{children}</div>
-    </MotionDiv>
+    </FadeIn>
   );
 }
 
@@ -43,7 +40,7 @@ function DetailRow({ label, value }) {
 
 const StudentDrawer = ({ student, open, onClose, onEdit }) => {
   const reduce = useReducedMotion();
-  // Anima la barra de 0 al valor al abrir (feedback de estado).
+  // Anima la barra de progreso de 0 al valor al abrir (feedback de estado).
   const [filled, setFilled] = useState(false);
   useEffect(() => {
     if (!open || reduce) return undefined;
@@ -113,7 +110,7 @@ const StudentDrawer = ({ student, open, onClose, onEdit }) => {
       </div>
 
       <div className="matricula-v2-drawer-body">
-        <DetailSection title="Información de inscripción" index={0} reduce={reduce}>
+        <DetailSection title="Información de inscripción" index={0}>
           <DetailRow
             label="Carrera"
             value={
@@ -140,7 +137,7 @@ const StudentDrawer = ({ student, open, onClose, onEdit }) => {
           {student.paralelo ? <DetailRow label="Paralelo" value={student.paralelo} /> : null}
         </DetailSection>
 
-        <DetailSection title="Estado académico" index={1} reduce={reduce}>
+        <DetailSection title="Estado académico" index={1}>
           <DetailRow
             label="Historial"
             value={<StatusPill statusKey={student.historial} label={student.historyState?.label} />}

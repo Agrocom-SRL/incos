@@ -9,34 +9,11 @@
  *   sub?: string
  * }} props
  */
-import { useEffect, useState } from 'react';
 import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
-import { animate } from 'motion/react';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useCountUp } from '@presentation/hooks/useCountUp';
 
-/**
- * Anima el número de 0 al valor real al montar (feedback de estado del dato).
- * En reduced-motion / valores no numéricos muestra el valor final sin animar
- * (sin setState en el efecto para no disparar renders en cascada).
- */
-function useCountUp(value) {
-  const reduce = useReducedMotion();
-  const numeric = typeof value === 'number' && Number.isFinite(value);
-  const animatable = numeric && !reduce;
-  const [animated, setAnimated] = useState(0);
-
-  useEffect(() => {
-    if (!animatable) return undefined;
-    const controls = animate(0, value, {
-      duration: 0.55,
-      ease: [0.23, 1, 0.32, 1],
-      onUpdate: (v) => setAnimated(Math.round(v)),
-    });
-    return () => controls.stop();
-  }, [value, animatable]);
-
-  return animatable ? animated : value;
-}
+// useCountUp extraído a capa compartida (presentation/hooks/useCountUp.js).
+// Fuente única de animación de números: presets EASE/DUR de presentation/motion/presets.js.
 
 const KpiCard = ({ label, value, delta, icon, accent = 'var(--brand-600)', sub }) => {
   const positive = delta === undefined || delta >= 0;

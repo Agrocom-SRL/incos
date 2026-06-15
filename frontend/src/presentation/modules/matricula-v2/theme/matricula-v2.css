@@ -364,26 +364,18 @@
   }
 }
 
-/* Campana: pequeño "tilt" en hover para notificar atención */
+/* Campana: bell-tilt migrado al global (motion-utilities.css keyframe 'bell-tilt').
+   mv2-bell-tilt queda como alias local para evitar referencias rotas. */
 @keyframes mv2-bell-tilt {
-
-  0%,
-  100% {
-    transform: scale(1.12) rotate(0deg);
-  }
-
-  25% {
-    transform: scale(1.12) rotate(-8deg);
-  }
-
-  75% {
-    transform: scale(1.12) rotate(8deg);
-  }
+  0%, 100% { transform: scale(1.12) rotate(0deg); }
+  25%       { transform: scale(1.12) rotate(-8deg); }
+  75%       { transform: scale(1.12) rotate(8deg); }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .matricula-v2-topbar__icon[aria-label='Notificaciones']:hover {
-    animation: mv2-bell-tilt 0.35s var(--ease-out) both;
+    /* Usar el keyframe global bell-tilt (sin prefijo mv2-) */
+    animation: bell-tilt var(--dur-bell, 350ms) var(--ease-out) both;
   }
 }
 
@@ -788,7 +780,9 @@
   align-items: center;
 }
 
-/* Animación de "pop" al activar un chip (spring corto visual) */
+/* mv2-chip-pop: alias local → keyframe global chip-pop (motion-utilities.css).
+   Mantenemos el @keyframes aquí para que no haya referencia rota si motion-utilities.css
+   aún no está cargado. El consumidor real es chip-pop del global. */
 @keyframes mv2-chip-pop {
   0% {
     transform: translateY(-1px) scale(0.96);
@@ -833,7 +827,7 @@
   border-color: var(--chip-color);
   /* Chip activo "salta" del grupo para separarse visualmente */
   box-shadow: 0 2px 8px color-mix(in srgb, var(--chip-color) 38%, transparent);
-  animation: mv2-chip-pop var(--dur-pop) var(--ease-out) both;
+  animation: chip-pop var(--dur-pop) var(--ease-out) both;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1421,7 +1415,7 @@
       var(--surface-hover) 50%,
       var(--surface-alt) 70%);
   background-size: 200% 100%;
-  animation: matricula-v2-shimmer 1.4s var(--ease-in-out) infinite;
+  animation: shimmer 1.4s var(--ease-in-out) infinite;
 }
 
 .matricula-v2-skeleton-rows {
@@ -1437,18 +1431,11 @@
       var(--surface-hover) 50%,
       var(--surface) 70%);
   background-size: 200% 100%;
-  animation: matricula-v2-shimmer 1.4s var(--ease-in-out) infinite;
+  animation: shimmer 1.4s var(--ease-in-out) infinite;
 }
 
-@keyframes matricula-v2-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
+/* matricula-v2-shimmer: migrado al global shimmer (motion-utilities.css).
+   Alias local eliminado — shimmer en motion-utilities.css es la fuente. */
 
 @media (prefers-reduced-motion: reduce) {
 

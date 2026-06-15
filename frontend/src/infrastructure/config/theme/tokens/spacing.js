@@ -5,7 +5,7 @@
 
 export const spacing = {
   marginXS: 4,
-  marginSM: 8,
+  marginSM: 10,
   margin: 16,
   marginMD: 20,
   marginLG: 24,
@@ -96,13 +96,25 @@ export const navSpacing = {
   sidebarLogoMinH: 56,      // min-height del área del logo en sidebar
 };
 
+/**
+ * Tokens de motion JS — alineados con brand-tokens.css y presentation/motion/presets.js.
+ * ANTES divergían (motionEaseOut era cubic-bezier(0,0,0.2,1) vs --ease-out cubic-bezier(0.23,1,0.32,1)).
+ * AHORA: fuente única. --transition-base = motionDurationMid = 0.16s (--dur-hover).
+ * Cualquier cambio aquí debe reflejarse en presets.js y brand-tokens.css (y viceversa).
+ */
 export const motion = {
-  motionDurationFast: '0.15s',
-  motionDurationMid: '0.2s',
-  motionDurationSlow: '0.3s',
-  motionEaseInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  motionEaseOut: 'cubic-bezier(0.0, 0, 0.2, 1)',
-  motionEaseIn: 'cubic-bezier(0.4, 0, 1, 1)',
+  /** press: 140ms = --dur-press */
+  motionDurationFast: '0.14s',
+  /** hover: 160ms = --dur-hover → --transition-base */
+  motionDurationMid: '0.16s',
+  /** pop: 200ms = --dur-pop */
+  motionDurationSlow: '0.20s',
+  /** = --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1) */
+  motionEaseInOut: 'cubic-bezier(0.77, 0, 0.175, 1)',
+  /** = --ease-out: cubic-bezier(0.23, 1, 0.32, 1) */
+  motionEaseOut: 'cubic-bezier(0.23, 1, 0.32, 1)',
+  /** = --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1) */
+  motionEaseIn: 'cubic-bezier(0.32, 0.72, 0, 1)',
 };
 
 export const allSpacing = {

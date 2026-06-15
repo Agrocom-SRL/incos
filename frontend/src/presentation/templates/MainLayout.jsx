@@ -20,13 +20,14 @@
 import { Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, MotionConfig } from 'motion/react';
 import { allSpacing } from '@theme/tokens';
 import { Sidebar, useSidebarState } from '@organisms';
 import AppTopBar from '@organisms/Header/AppTopBar';
 import LoadingFallback from '@components-router/LoadingFallback';
 import { NavigationProvider } from '@application-navigation';
 import { useReducedMotion } from '@presentation/hooks/useReducedMotion';
+import { EASE, DUR } from '@presentation/motion/presets';
 
 const { Sider, Header: AntHeader, Content } = Layout;
 
@@ -37,26 +38,17 @@ const MotionDiv = motion.div;
  * Wrapper de transición de ruta — fade + translateY motivado (jerarquía/narrativa).
  * Gateado por useReducedMotion: si el usuario prefiere reducido, solo opacidad.
  */
+/**
+ * Wrapper de transición de ruta — fade + translateY motivado (jerarquía/narrativa).
+ * Usa presets EASE/DUR (cero literales). MotionConfig global cubre el gate reduced.
+ */
 function RouteTransition({ children }) {
     const reduced = useReducedMotion();
-    if (reduced) {
-        // Sin transform; solo opacidad (seguro para prefers-reduced-motion)
-        return (
-            <MotionDiv
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.14 }}
-                style={{ height: '100%' }}
-            >
-                {children}
-            </MotionDiv>
-        );
-    }
     return (
         <MotionDiv
-            initial={{ opacity: 0, y: 4 }}
+            initial={{ opacity: 0, y: reduced ? 0 : 4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.14, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: DUR.press, ease: EASE.out }}
             style={{ height: '100%' }}
         >
             {children}
@@ -74,6 +66,9 @@ const MainLayout = () => {
     const sidebarCollapsedWidth = allSpacing.sidebarCollapsedWidth;
 
     return (
+        // MotionConfig global: reducedMotion="user" cubre toda la app (incluye mv2).
+        // mv2Layout ya no necesita su propio MotionConfig.
+        <MotionConfig reducedMotion="user">
         <NavigationProvider defaultSelectedKey="DASH">
             {/* Estructura mv2: Sider a top:0 (columna izquierda, altura completa) y a su
                derecha una columna con TopBar + Content (flex, no fixed). */}
@@ -109,6 +104,7 @@ const MainLayout = () => {
                 </Layout>
             </Layout>
         </NavigationProvider>
+        </MotionConfig>
     );
 };
 

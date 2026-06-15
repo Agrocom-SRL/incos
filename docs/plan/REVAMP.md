@@ -109,9 +109,18 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       ni ThemeProvider locales). Borrados: incosTheme.js, matricula-v2-theme-vars.css,
       hooks/useTheme.jsx, components/ThemeToggle.jsx de matricula-v2.
       Build: ✓ 12.80s. Lint: 534 errores pre-existentes, 0 nuevos en archivos WS-A.
-- [~] Fase 2: Capa de motion — tokens de motion + `useReducedMotion` +
-      patrones (stagger, AnimatePresence, count-up, press feedback) aplicados en
-      `matricula-v2`; pendiente extraerlos a capa compartida.
+- [x] Fase 1B WS-B: Capa de motion compartida. COMPLETADO (2026-06-15).
+      presentation/motion/presets.js (EASE/DUR/STAGGER/variants); barrel index.js;
+      hooks: useReducedMotion (re-export motion/react), useCountUp (DUR/EASE, sin setState en efecto);
+      átomos: FadeIn, Stagger+Item, CountUp, PresenceSwap, Collapse;
+      motion-utilities.css global (collapse-wrapper, is-pressable, keyframes bell-tilt/chip-pop/shimmer).
+      Shell: MotionConfig reducedMotion="user" en MainLayout; RouteTransition via EASE/DUR (sin literales);
+      MatriculaV2Layout sin MotionConfig local (hereda global). NavigationMenu usa Stagger.
+      mv2 consume capa compartida: StudentCardGrid→Stagger, KpiCard→useCountUp, StudentDrawer→FadeIn+STAGGER,
+      FilterToolbar→PresenceSwap+variants, MatriculaListV2→motionVariants.presenceSwap, StudentCard→global hook.
+      Gate reduced-motion: 3 capas (MotionConfig, useReducedMotion en wrappers, @media CSS global).
+      Build: ✓ 51.90s. Lint: exit 0, 0 errores en 19 archivos WS-B. RBAC: application/navigation/ sin diff.
+      Observacion menor: bell-tilt usa 0.35s literal (no hay --dur-bell token) en mv2.css y app-topbar.css.
 - [ ] Fase 5: migración módulo a módulo.
 - [x] Fase 1B WS-C: shell legacy + tokens centralizados. COMPLETADO (2026-06-15).
       Tokens: brandScale.light/dark en colors.js (única fuente literal); buildAntdTheme
@@ -127,6 +136,17 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       archivos tocados (604 total = 534+70 pre-existentes sin cambio).
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
+
+- 2026-06-15 — WS-B (motion) APROBADO ronda 1 + Fase 3 (skills). Capa de motion
+  compartida en `presentation/motion/` (presets EASE/DUR/STAGGER/variants) + átomos
+  (FadeIn/Stagger/CountUp/PresenceSwap/Collapse) + hooks (useReducedMotion/useCountUp);
+  `MotionConfig reducedMotion="user"` global en MainLayout; mv2 consume la capa (no
+  duplica). Cierre del único faltante: `bell-tilt` tokenizado → `--dur-bell:350ms` en
+  brand-tokens.css + `DUR.bell` en presets.js (sin literal 0.35s). Fase 3: actualizados
+  `incos-ui-system` (§2 tokens al origen + flujo brandScale→buildAntdTheme→applyThemeVars;
+  §6b.1 capa de motion) e `incos-antd5-api` (theme único desde buildAntdTheme). Build ✓.
+
+- 2026-06-15 — Verificador Ronda 1 WS-B (capa de motion): APROBADO. Build verde 51.90s. Lint exit 0, 0 errores en 19 archivos tocados. RBAC: application/navigation/ 0 lineas diff. capaMotionCompartida: presentation/motion/ (presets.js+index.js) + hooks/useReducedMotion.js + hooks/useCountUp.js + atoms/motion/{FadeIn,Stagger,CountUp,PresenceSwap,Collapse}. shellConMotion: MainLayout con MotionConfig reducedMotion=user + RouteTransition via DUR.press/EASE.out; NavigationMenu envuelto en Stagger; MatriculaV2Layout sin MotionConfig local. mv2ConsumeCapa: StudentCardGrid→Stagger, KpiCard→useCountUp, StudentDrawer→FadeIn+STAGGER, FilterToolbar→PresenceSwap+variants.presenceWait, MatriculaListV2→motionVariants.presenceSwap, StudentCard+StudentDrawer→@presentation/hooks/useReducedMotion (global). todoGateado: 3 capas (MotionConfig, wrappers useReducedMotion, brand-tokens.css @media .app-shell*+.matricula-v2-app*). tokensMotionOrigen: JS consume EASE/DUR de presets.js; CSS consume var(--ease-*)/var(--dur-*). Observacion menor: bell-tilt 0.35s literal en app-topbar.css L102 y matricula-v2.css L378 (--dur-bell token no existe; easing SI usa var(--ease-out)). No bloqueante.
 
 - 2026-06-15 — Fix de estructura del layout (orden topbar/sidebar). Antes: `.header`
   `position:fixed` full-width arriba y `.sider` empezando en `top:var(--header-height)`

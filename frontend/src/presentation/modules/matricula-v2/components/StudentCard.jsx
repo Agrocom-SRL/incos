@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { Dropdown } from 'antd';
 import { avatarFor } from '../utils/avatarFor';
 import { sanitizeBusinessColor } from '../utils/sanitizeColor';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useReducedMotion } from '@presentation/hooks/useReducedMotion';
 import { mv2DropdownPopupProps } from '../theme/popupClass';
 
 function StatBlock({ label, value, accent = false }) {

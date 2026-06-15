@@ -15,6 +15,7 @@
 /* 1. Base - Tipografía, reset y globales */
 @import './base/fonts.css';
 @import './base/brand-tokens.css';
+@import './base/motion-utilities.css';
 @import './base/typography.css';
 @import './base/reset.css';
 @import './base/global.css';
