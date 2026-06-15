@@ -38,11 +38,11 @@ const SidebarItem = ({ icon, label, active = false, sub = false, collapsed = fal
       aria-label={collapsed ? label : undefined}
       title={collapsed ? label : undefined}
       className={classes}
-      style={{
-        paddingLeft: sub && !collapsed ? 44 : undefined,
-        justifyContent: collapsed ? 'center' : undefined,
-        paddingRight: collapsed ? 0 : undefined,
-      }}
+      style={
+        collapsed
+          ? { justifyContent: 'center', paddingRight: 0, paddingLeft: 0 }
+          : undefined
+      }
     >
       {active && <span className="sidebar-item__bar" aria-hidden />}
       {icon && <span className="sidebar-item__icon">{icon}</span>}

@@ -281,6 +281,31 @@ export function applyThemeVars(mode = 'light', overrides = {}) {
   root.style.setProperty('--line-height-lg', `${allThemeTokens.lineHeightLG}`);
   root.style.setProperty('--font-weight-strong', `${allThemeTokens.fontWeightStrong}`);
 
+  // ── Tipografía NAV / CHROME (tokens al ORIGEN — contrato shell) ────────────
+  root.style.setProperty('--font-size-nav',       `${allThemeTokens.fontSizeNav}px`);
+  root.style.setProperty('--font-size-nav-meta',  `${allThemeTokens.fontSizeNavMeta}px`);
+  root.style.setProperty('--font-size-nav-label', `${allThemeTokens.fontSizeNavLabel}px`);
+  root.style.setProperty('--font-size-nav-icon',  `${allThemeTokens.fontSizeNavIcon}px`);
+
+  // ── Espaciado NAV / CHROME (tokens al ORIGEN — contrato shell) ────────────
+  root.style.setProperty('--nav-item-gap',            `${allThemeTokens.navItemGap}px`);
+  root.style.setProperty('--nav-item-pad-y',          `${allThemeTokens.navItemPadY}px`);
+  root.style.setProperty('--nav-item-pad-x',          `${allThemeTokens.navItemPadX}px`);
+  root.style.setProperty('--nav-item-radius',         `${allThemeTokens.navItemRadius}px`);
+  root.style.setProperty('--nav-sub-indent',          `${allThemeTokens.navSubIndent}px`);
+  root.style.setProperty('--nav-section-label-pad-x', `${allThemeTokens.navSectionLabelPadX}px`);
+  root.style.setProperty('--nav-section-label-pad-b', `${allThemeTokens.navSectionLabelPadB}px`);
+
+  // ── Topbar / chrome y sidebar logo ────────────────────────────────────────
+  root.style.setProperty('--sidebar-logo-min-h', `${allThemeTokens.sidebarLogoMinH}px`);
+  root.style.setProperty('--topbar-height',      `${allThemeTokens.topbarHeight}px`);
+  root.style.setProperty('--topbar-pad-x',       `${allThemeTokens.topbarPadX}px`);
+  root.style.setProperty('--topbar-gap',         `${allThemeTokens.topbarGap}px`);
+  root.style.setProperty('--topbar-search-max',  `${allThemeTokens.topbarSearchMax}px`);
+  root.style.setProperty('--topbar-util-gap',    `${allThemeTokens.topbarUtilGap}px`);
+  root.style.setProperty('--topbar-end-gap',     `${allThemeTokens.topbarEndGap}px`);
+  root.style.setProperty('--chrome-control',     `${allThemeTokens.chromeControl}px`);
+
   // ========================================
   // TRANSICIONES
   // ========================================

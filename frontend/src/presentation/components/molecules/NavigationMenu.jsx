@@ -43,13 +43,14 @@ function isSectionOpen(key, openKeys) {
  * Renderiza recursivamente un ítem (hoja o sección) del menú.
  * @param {object} item - Ítem de menuItemsWithIcons
  * @param {{ selectedKeys, openKeys, handleMenuClick, handleOpenChange, collapsed }} ctx
+ * @param {boolean} [isSub=false] - true cuando el ítem está dentro de una sección (nivel 2)
  * @returns {import('react').ReactNode}
  */
-function renderItem(item, ctx) {
+function renderItem(item, ctx, isSub = false) {
   const { selectedKeys, openKeys, handleMenuClick, handleOpenChange, collapsed } = ctx;
 
   if (item.children?.length) {
-    // Sección acordeón
+    // Sección acordeón — los hijos directos son sub-ítems (nivel 2)
     const open = isSectionOpen(item.key, openKeys);
     return (
       <SidebarSection
@@ -67,22 +68,47 @@ function renderItem(item, ctx) {
           handleOpenChange(next);
         }}
       >
-        {item.children.map((child) => renderItem(child, ctx))}
+        {item.children.map((child) => renderItem(child, ctx, true))}
       </SidebarSection>
     );
   }
 
-  // Ítem hoja
+  // Ítem hoja — recibe sub=true cuando está anidado dentro de una sección
   return (
     <SidebarItem
       key={item.key}
       icon={item.icon}
       label={item.label}
       active={isActive(item.key, selectedKeys)}
+      sub={isSub}
       collapsed={collapsed}
       onClick={() => handleMenuClick({ key: item.key })}
     />
   );
+}
+
+/**
+ * Agrupa los ítems raíz por su propiedad `group` (metadata de UI).
+ * Ítems sin grupo van en un grupo implícito con key '' (sin label visible).
+ * El orden dentro de cada grupo se preserva (viene pre-ordenado del menuGenerator).
+ *
+ * @param {Array} items - menuItemsWithIcons (ya filtrado por permisos)
+ * @returns {{ groupKey: string, label: string|null, items: Array }[]}
+ */
+function groupMenuItems(items) {
+  const groups = [];
+  const groupMap = new Map();
+
+  items.forEach((item) => {
+    const groupKey = item.group || '';
+    if (!groupMap.has(groupKey)) {
+      groupMap.set(groupKey, { groupKey, label: item.group || null, items: [] });
+      groups.push(groupMap.get(groupKey));
+    }
+    groupMap.get(groupKey).items.push(item);
+  });
+
+  return groups;
 }
 
 /**
@@ -98,10 +124,21 @@ const NavigationMenu = ({ collapsed = false }) => {
   } = useNavigationContext();
 
   const ctx = { selectedKeys, openKeys, handleMenuClick, handleOpenChange, collapsed };
+  const groups = groupMenuItems(menuItemsWithIcons);
 
   return (
     <nav className="navigation-menu-custom" aria-label="Menú principal">
-      {menuItemsWithIcons.map((item) => renderItem(item, ctx))}
+      {groups.map(({ groupKey, label, items }) => (
+        <div key={groupKey || '__default'}>
+          {/* Section-label visible solo cuando hay label Y el sidebar no está colapsado */}
+          {label && !collapsed && (
+            <div className="nav-section-label" aria-hidden>
+              {label}
+            </div>
+          )}
+          {items.map((item) => renderItem(item, ctx))}
+        </div>
+      ))}
     </nav>
   );
 };

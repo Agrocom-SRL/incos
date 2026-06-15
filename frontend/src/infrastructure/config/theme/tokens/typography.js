@@ -42,6 +42,19 @@ export const typography = {
   fontSizeHeading5: 20,
 
   // ========================================
+  // TAMAÑOS DE FUENTE — NAV / CHROME
+  // (Ítem de menú, topbar, perfil, section-label)
+  // ========================================
+  // Ítem de menú nivel 1/2, input de búsqueda, nombre del perfil
+  fontSizeNav: 14,
+  // Nombre de usuario en footer/topbar, nombre del perfil (13px mv2)
+  fontSizeNavMeta: 13,
+  // Section-label, meta "Gestión", rol de usuario (11px mv2)
+  fontSizeNavLabel: 11,
+  // Icono de ítem de menú (.sidebar-item__icon)
+  fontSizeNavIcon: 16,
+
+  // ========================================
   // PESO DE FUENTE
   // ========================================
   // Peso fuerte para texto destacado (bold, strong)

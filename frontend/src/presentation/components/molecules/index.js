@@ -4,6 +4,8 @@ export { default as SidebarUserFooter } from './SidebarUserFooter';
 export { default as SidebarItem } from './SidebarItem';
 export { default as SidebarSection } from './SidebarSection';
 export { default as HeaderUtilities } from './HeaderUtilities';
+export { default as HeaderCompactMenu } from './HeaderCompactMenu';
+export { default as UserProfileChip } from './UserProfileChip';
 export { default as HeaderLeft } from './HeaderLeft';
 export { default as HeaderRight } from './HeaderRight';
 export { default as FormField } from './FormField';

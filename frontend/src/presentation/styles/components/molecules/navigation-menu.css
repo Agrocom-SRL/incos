@@ -256,18 +256,18 @@
 }
 
 /* ── SidebarItem (hoja) ─────────────────────────────────────────────────────── */
-/* WS-C: iguala a .matricula-v2-sidebar__item — 14px / gap 12px / radius 10px / 500 */
+/* Tokens al ORIGEN (contrato shell): gap/padding/radius/font-size desde navSpacing/typography */
 .sidebar-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    width: calc(100% - 20px);
-    margin: 2px 10px;
-    padding: 10px 14px;
-    border-radius: 10px;
+    gap: var(--nav-item-gap, 12px);
+    width: calc(100% - calc(var(--nav-item-margin-x, 10px) * 2));
+    margin: var(--nav-item-margin-y, 2px) var(--nav-item-margin-x, 10px);
+    padding: var(--nav-item-pad-y, 10px) var(--nav-item-pad-x, 14px);
+    border-radius: var(--nav-item-radius, 10px);
     cursor: pointer;
-    /* --font-size-base = 16px en el sistema; usar --font-size-sm = 14px para igualar mv2 */
-    font-size: var(--font-size-sm, 14px);
+    /* --font-size-nav = 14px (token al origen) iguala mv2 exacto */
+    font-size: var(--font-size-nav, 14px);
     text-align: left;
     position: relative;
     color: var(--nav-item-fg, var(--color-text));
@@ -315,10 +315,11 @@
     color: var(--nav-item-active-fg, #004830);
 }
 
-/* Ítem sub (dentro de sección) */
+/* Ítem sub (dentro de sección) — indentación desde token */
 .sidebar-item--sub {
     margin-left: 6px;
     margin-right: 6px;
+    padding-left: var(--nav-sub-indent, 44px);
 }
 
 /* Barra lateral del ítem activo */
@@ -333,9 +334,9 @@
     box-shadow: 0 0 6px color-mix(in srgb, var(--nav-item-active-bar, #007848) 50%, transparent);
 }
 
-/* Icono del ítem */
+/* Icono del ítem — font-size desde token al origen */
 .sidebar-item__icon {
-    font-size: 16px;
+    font-size: var(--font-size-nav-icon, 16px);
     display: inline-flex;
     flex-shrink: 0;
     transition: color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
@@ -349,20 +350,22 @@
     text-overflow: ellipsis;
 }
 
-/* ── SidebarSection (acordeón) ────────────────────────────────────────────── */
-/*
- * TODO WS-D: section-label ("Principal"/…) requiere metadata en menuItemsWithIcons.
- * Referencia mv2: .matricula-v2-sidebar__section-label — font-size 11px, color text-soft,
- * font-weight 600, letter-spacing 0.6px, text-transform uppercase, padding 0 24px 6px.
- * Diferido porque la estructura de ítems de menú no incluye groupLabel todavía.
- */
-.sidebar-section {
-    /* contenedor de sección */
+/* ── Section label ("Principal", "Gestión"…) ────────────────────────────────── */
+/* Replica .matricula-v2-sidebar__section-label con tokens al origen */
+.nav-section-label {
+    padding: 0 var(--nav-section-label-pad-x, 24px) var(--nav-section-label-pad-b, 6px);
+    font-size: var(--font-size-nav-label, 11px);
+    color: var(--text-soft, #6e7a72);
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    /* Margen superior para separar del grupo anterior */
+    margin-top: 12px;
 }
 
-/* Chevron rotatorio como affordance */
+/* Chevron rotatorio como affordance (10px = icono decorativo posicional, igual a mv2) */
 .sidebar-section__chevron {
-    font-size: 10px;
+    font-size: 10px; /* posicional justificado: icono RightOutlined decorativo */
     color: var(--text-soft, #6e7a72);
     display: inline-flex;
     flex-shrink: 0;

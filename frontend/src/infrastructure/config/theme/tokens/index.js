@@ -15,7 +15,7 @@ export { allColors } from './colors';
 export { gradients } from './gradients';
 export { shadows } from './shadows';
 export { typography } from './typography';
-export { allSpacing } from './spacing';
+export { allSpacing, navSpacing } from './spacing';
 export { componentConfig } from './components';
 
 // Combinación de todos los tokens

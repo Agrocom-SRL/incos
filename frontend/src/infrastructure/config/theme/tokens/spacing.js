@@ -39,7 +39,8 @@ export const controlHeights = {
 
 // Alturas de componentes layout
 export const layoutHeights = {
-  headerHeight: 64,
+  // Alineado a 65px (= topbarHeight mv2 aprobado) para fidelidad visual.
+  headerHeight: 65,
   footerHeight: 48,
   sidebarWidth: 274,
   sidebarCollapsedWidth: 80,
@@ -73,6 +74,28 @@ export const skeletonSizes = {
   skeletonCardHeight: 200,
 };
 
+// Espaciado específico de la navegación / chrome del shell
+// Todos los valores igualan a matricula-v2 (mv2) para fidelidad visual.
+export const navSpacing = {
+  navItemGap: 12,           // gap icono↔label (.sidebar-item)
+  navItemPadY: 10,          // padding vertical ítem de menú
+  navItemPadX: 14,          // padding horizontal ítem de menú
+  navItemRadius: 10,        // border-radius ítem (= mv2)
+  navItemMarginY: 2,        // margin vertical ítem (2px 10px)
+  navItemMarginX: 10,       // margin horizontal ítem
+  navSubIndent: 44,         // paddingLeft sub-item nivel 2
+  navSectionLabelPadX: 24,  // padding lateral section-label
+  navSectionLabelPadB: 6,   // padding bottom section-label
+  topbarHeight: 65,         // altura del topbar (mv2: 65px vs legacy 64px)
+  topbarPadX: 28,           // padding horizontal topbar
+  topbarGap: 20,            // gap entre zonas del topbar
+  topbarSearchMax: 460,     // max-width del buscador
+  topbarUtilGap: 2,         // gap entre botones-icono utilities
+  topbarEndGap: 4,          // gap zona __end (utilities + perfil)
+  chromeControl: 36,        // alto/ancho de controles del chrome (36px)
+  sidebarLogoMinH: 56,      // min-height del área del logo en sidebar
+};
+
 export const motion = {
   motionDurationFast: '0.15s',
   motionDurationMid: '0.2s',
@@ -91,5 +114,6 @@ export const allSpacing = {
   ...zIndex,
   ...motion,
   ...skeletonSizes,
+  ...navSpacing,
   wireframe: false,
 };

@@ -59,6 +59,7 @@
 @import './components/molecules/activity-list.css';
 
 /* 6. Components - Organisms */
+@import './components/organisms/app-topbar.css';
 @import './components/organisms/sidebar.css';
 @import './components/organisms/info-sidebar.css';
 @import './components/organisms/main-content.css';

@@ -128,6 +128,24 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
 
+- 2026-06-15 — Fix de estructura del layout (orden topbar/sidebar). Antes: `.header`
+  `position:fixed` full-width arriba y `.sider` empezando en `top:var(--header-height)`
+  (topbar tapando el inicio del sidebar). Ahora replica el patrón flex de mv2
+  (`.matricula-v2-app`): `MainLayout` = `Layout.app-shell` (fila) con `Sider` (columna
+  izquierda a `top:0`, `height:100vh`) + `Layout.app-main` (columna: `AntHeader` topbar
+  sobre `Content`). CSS: sider/header sin `fixed`; `.content` con `flex:1`+scroll propio
+  (sin márgenes de offset). Build ✓ 12.55s. (Mobile drawer overlay del sider = follow-up menor.)
+
+- 2026-06-15 — Mejora de PROCESO (para no repetir instrucciones): creado
+  `docs/plan/REVAMP-SHELL-CONTRACT.md` (definición de HECHO del shell = réplica
+  COMPLETA de mv2 + reglas no negociables: tokens al ORIGEN sin hardcode, theming
+  simétrico, SOLID/atomic). Inyectadas "reglas de oro" en `.claude/agents/frontend.md`
+  y memoria durable. Workflow `revamp-shell-completo` con BUCLE AUTO-CORRECTOR
+  (frontend↔verificador hasta APROBADO contra el contrato) — APROBADO en ronda 1.
+  Pendiente menor: border-radius:4px literal en `.sidebar-item__bar` → `var(--border-radius-sm)`.
+
+- 2026-06-15 — Verificador Ronda 1 shell-contract (AppTopBar+tokens+RBAC): APROBADO. Build verde 12.80s. Lint: 0 errores nuevos en 21 archivos tocados (errores en useNavigationMenu.jsx son pre-existentes, confirmados presentes antes del diff). RBAC: git diff application/navigation/ = 5 líneas passthrough puro (group metadata, sin tocar filterMenuByPermiso/itemPermitido/hasAnyPermiso). Header: AppTopBar con trigger→search(Input+SearchOutlined+allowClear)→spacer→[HeaderUtilities|HeaderCompactMenu]+UserProfileChip; HeaderUtilities=help+lang+bell(Badge)+ThemeToggle; UserProfileChip=buildFullName+gestionLabel+avatar iniciales+logout; HeaderCompactMenu=MoreOutlined Dropdown<900px. Trigger dentro de AntHeader fixed, no tapado. Sidebar: sub-items vía .sidebar-item--sub padding-left: var(--nav-sub-indent,44px) (sub=true inyectado en renderItem); nav-section-label renderizada desde group metadata en NavigationMenu.groupMenuItems; bordes visibles light (--border:#c8d6cc) y dark (#1d3528). Tokens: fontSizeNav/Meta/Label/Icon en typography.js; navSpacing completo en spacing.js (spread en allSpacing→allThemeTokens); 17+ vars CSS emitidas en root.js sin literales de shell. Theming: grep if(mode root.js = 0. Literales px residuales justificados: border-radius:4px (.sidebar-item__bar, = --border-radius-sm, debería usar token) y font-size:10px (.sidebar-section__chevron, icono decorativo posicional, comentado). MatriculaV2TopBar=wrapper delgado de AppTopBar; useMediaQuery mv2=re-export global.
+
 - 2026-06-15 — Verificador pase paridad WS-C (shell+theming): APROBADO. Build verde 12.59s. Lint exit 0 en root.js/colors.js/HeaderLeft.jsx/Sidebar.jsx (0 errores). themingSimetrico: applyThemeVars escribe 9 --color-* CORE (bg-container/elevated/layout/content-bg/content-text/text/text-secondary/border/split) + 8 --color-primary* SIEMPRE desde sc=brandScale[mode], sin ningún if(mode). noIfModeEnColorCore: grep 'if (mode' root.js = 0 resultados. logoNoDuplicado: HeaderLeft.jsx = solo IconButton trigger (clase matricula-v2-topbar__menu), logo ausente; Logo atom SOLO en Sidebar.jsx. fontItem14: .sidebar-item font-size: var(--font-size-sm, 14px); fontSizeSM=14 en typography.js → resuelve a 14px (antes var(--font-size-base)=16px). footerParidad: .sidebar-user-footer gap:10px / padding:12px 16px / avatar font-size:13px / nombre:13px / rol:11px — idéntico a .matricula-v2-sidebar__footer. rbacIntacto: git diff application/navigation/ = 0 líneas.
 
 - 2026-06-15 — Cierre WS-C tras auditoría revisor-ui (MIXTO → resuelto) + 2 pases de

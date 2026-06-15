@@ -1,0 +1,265 @@
+/* ============================================================================
+   APP TOPBAR — organismo global (réplica neutral de .matricula-v2-topbar*)
+   Todos los valores desde tokens (contrato shell: cero literales nuevos).
+   Las clases .app-topbar__* reemplazan .matricula-v2-topbar__* para el shell global.
+   ============================================================================ */
+
+/* ── Contenedor principal ────────────────────────────────────────────────────── */
+.app-topbar {
+    height: var(--topbar-height, 65px);
+    background: var(--surface-chrome);
+    border-bottom: 1px solid var(--border, var(--color-border));
+    display: flex;
+    align-items: center;
+    padding: 0 var(--topbar-pad-x, 28px);
+    gap: var(--topbar-gap, 20px);
+    flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── Trigger (hamburguesa) ───────────────────────────────────────────────────── */
+.app-topbar__menu {
+    font-size: var(--font-size-nav-icon, 16px) !important;
+    color: var(--text-muted) !important;
+    flex-shrink: 0;
+    transition:
+        color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        transform var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .app-topbar__menu:hover {
+        color: var(--brand-600) !important;
+        transform: scale(1.1) !important;
+    }
+}
+
+.app-topbar__menu:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500, #007848) 35%, transparent);
+}
+
+/* ── Buscador ────────────────────────────────────────────────────────────────── */
+.app-topbar__search.ant-input-affix-wrapper {
+    max-width: var(--topbar-search-max, 460px);
+    flex: 0 1 var(--topbar-search-max, 460px);
+    height: var(--chrome-control, 36px);
+    border-radius: var(--nav-item-radius, 10px) !important;
+    background: var(--chrome-input-bg, var(--surface-alt)) !important;
+    border-color: var(--border) !important;
+}
+
+.app-topbar__search .ant-input {
+    font-size: var(--font-size-nav, 14px);
+}
+
+/* ── Spacer ──────────────────────────────────────────────────────────────────── */
+.app-topbar__spacer {
+    flex: 1;
+}
+
+/* ── Botones-icono de utilities ──────────────────────────────────────────────── */
+.app-topbar__icon {
+    color: var(--text-muted) !important;
+    transition:
+        color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        transform var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .app-topbar__icon:hover {
+        color: var(--brand-600) !important;
+        transform: scale(1.12) !important;
+    }
+}
+
+/* Campana: tilt de atención en hover */
+@keyframes app-bell-tilt {
+    0%, 100% { transform: scale(1.12) rotate(0deg); }
+    25%       { transform: scale(1.12) rotate(-8deg); }
+    75%       { transform: scale(1.12) rotate(8deg); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .app-topbar__icon[aria-label='Notificaciones']:hover {
+        animation: app-bell-tilt 0.35s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
+    }
+}
+
+.app-topbar__icon:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500, #007848) 35%, transparent);
+}
+
+/* ── ThemeToggle en el topbar ────────────────────────────────────────────────── */
+.app-topbar__theme-toggle {
+    position: relative;
+    width: var(--chrome-control, 36px);
+    height: var(--chrome-control, 36px);
+    border-radius: var(--nav-item-radius, 10px);
+    border: 1px solid var(--border, var(--color-border));
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background-color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        border-color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        transform var(--dur-press, 140ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.app-topbar__theme-toggle:hover {
+    background: var(--brand-50);
+    border-color: var(--brand-400);
+    color: var(--brand-600);
+}
+
+@media (hover: hover) {
+    .app-topbar__theme-toggle:active {
+        transform: scale(0.95);
+    }
+}
+
+.app-topbar__theme-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500, #007848) 35%, transparent);
+}
+
+/* ── Zona derecha (__end) ────────────────────────────────────────────────────── */
+.app-topbar__end {
+    display: flex;
+    align-items: center;
+    gap: var(--topbar-end-gap, 4px);
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+/* ── Utilities (botones agrupados) ──────────────────────────────────────────── */
+.app-topbar__utilities {
+    display: flex;
+    align-items: center;
+    gap: var(--topbar-util-gap, 2px);
+    flex-shrink: 0;
+}
+
+/* ── Botón "Más" (variante compacta MoreOutlined) ───────────────────────────── */
+.app-topbar__more {
+    color: var(--text-muted) !important;
+    flex-shrink: 0;
+}
+
+.app-topbar__more:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500, #007848) 35%, transparent);
+}
+
+/* ── Perfil de usuario ───────────────────────────────────────────────────────── */
+.app-topbar__profile {
+    display: flex;
+    align-items: center;
+    gap: var(--nav-item-gap, 12px);
+    min-width: 0;
+    cursor: pointer;
+    padding: var(--spacing-xs, 4px) var(--spacing-sm, 6px);
+    border-radius: var(--nav-item-radius, 10px);
+    transition:
+        background-color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.app-topbar__profile:hover {
+    background: var(--surface-hover, var(--brand-50));
+}
+
+.app-topbar__profile:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500, #007848) 35%, transparent);
+}
+
+.app-topbar__profile-text {
+    text-align: right;
+    min-width: 0;
+}
+
+.app-topbar__profile-name {
+    font-size: var(--font-size-nav-meta, 13px);
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+.app-topbar__profile-meta {
+    font-size: var(--font-size-nav-label, 11px);
+    color: var(--text-muted);
+}
+
+.app-topbar__profile-avatar {
+    width: var(--chrome-control, 36px);
+    height: var(--chrome-control, 36px);
+    border-radius: 50%;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--font-size-nav-meta, 13px);
+    flex-shrink: 0;
+    user-select: none;
+}
+
+/* Dark mode */
+:root[data-theme='dark'] .app-topbar__profile-avatar {
+    background: var(--brand-800, #003a26);
+    color: #ffffff;
+}
+
+/* ── Dropdown items del perfil ──────────────────────────────────────────────── */
+.app-topbar__profile-dropdown-user {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm, 8px);
+    padding: var(--spacing-sm, 8px) var(--spacing-xs, 4px);
+}
+
+.app-topbar__profile-dropdown-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm, 8px);
+}
+
+/* ── Dark mode del topbar ────────────────────────────────────────────────────── */
+:root[data-theme='dark'] .app-topbar {
+    background: var(--surface-chrome);
+    border-bottom-color: var(--border);
+}
+
+:root[data-theme='dark'] .app-topbar__theme-toggle {
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+:root[data-theme='dark'] .app-topbar__theme-toggle:hover {
+    background: var(--surface-hover);
+    border-color: var(--brand-500);
+    color: var(--text);
+}
+
+/* ── prefers-reduced-motion ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .app-topbar__menu,
+    .app-topbar__icon,
+    .app-topbar__theme-toggle,
+    .app-topbar__profile {
+        transition-property: opacity, color, background-color !important;
+    }
+    .app-topbar__icon[aria-label='Notificaciones']:hover {
+        animation: none !important;
+    }
+}

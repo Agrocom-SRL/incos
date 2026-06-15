@@ -23,6 +23,7 @@ export const dashboardRoutes = [
             label: 'Dashboard',
             module: 'DASH',
             order: 1,
+            group: 'Principal',
         },
     },
 ];

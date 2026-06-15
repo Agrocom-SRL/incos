@@ -6,18 +6,21 @@
    ============================================================================ */
 
 .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: calc(var(--z-fixed) + 1);
+    /* TopBar sobre el área de contenido (no full-width): vive dentro de .app-main,
+       a la derecha del sider. Flex-item de la columna, no fixed. */
+    flex-shrink: 0;
     /* Fondo explícito light — iguala al sider (--surface-chrome = #fafcfb) */
     background: var(--surface-chrome);
-    box-shadow: var(--sombra-header);
+    /* Borde inferior visible en light Y dark (igual que .matricula-v2-topbar) */
+    border-bottom: 1px solid var(--border, var(--color-border));
+    box-shadow: none;
+    /* El AntHeader envuelve AppTopBar — height/padding los controla AppTopBar.
+       Aquí solo anulamos el padding por defecto de AntD y ajustamos la altura. */
+    height: var(--topbar-height, 65px) !important;
+    padding: 0 !important;
+    line-height: 1 !important;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 var(--spacing-base);
+    align-items: stretch;
 }
 
 /* Dark mode conmutable — vars generadas por applyThemeVars() */
@@ -106,7 +109,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: var(--font-size-nav-icon, 16px);
     font-weight: 700;
     cursor: pointer;
     border: none;
@@ -125,31 +128,31 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500, #007848) 35%, transparent);
 }
 
-/* Dropdown items */
+/* Dropdown items (HeaderUtilities — legacy, reemplazado por UserProfileChip en AppTopBar) */
 .header-utilities__dropdown-user {
-    padding: 12px 16px;
+    padding: var(--nav-item-pad-y, 10px) var(--nav-item-pad-x, 14px);
     display: flex;
     align-items: center;
     gap: var(--spacing-sm, 8px);
 }
 
 .header-utilities__dropdown-icon {
-    font-size: 16px;
+    font-size: var(--font-size-nav-icon, 16px);
 }
 
 .header-utilities__dropdown-name {
-    font-size: var(--font-size-base, 14px);
+    font-size: var(--font-size-nav, 14px);
 }
 
 .header-utilities__dropdown-logout {
-    padding: 8px 16px;
+    padding: var(--spacing-sm, 8px) var(--nav-item-pad-x, 14px);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-sm, 8px);
 }
 
 .header-utilities__dropdown-logout-icon {
-    font-size: var(--font-size-base, 14px);
+    font-size: var(--font-size-nav, 14px);
 }
 
 /* Dark mode */

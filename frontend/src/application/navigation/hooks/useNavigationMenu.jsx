@@ -92,6 +92,9 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     /**
      * Ant Design Menu solo acepta key, label, icon, children, type, disabled, etc.
      * permiso/permisoAny/accion son metadatos internos y no deben llegar al DOM.
+     * `group`: passthrough puro de metadata UI para section-labels del sidebar.
+     *   No es prop de AntD Menu; el renderer NavigationMenu (presentation) lo consume.
+     *   Solo en ítems raíz (nivel 1); no se propaga a children. Sin efecto en RBAC.
      */
     const sanitizeMenuItemForAntd = (item) => {
         const sanitized = {
@@ -100,6 +103,8 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
             ...(item.icon != null && { icon: item.icon }),
             ...(item.type != null && { type: item.type }),
             ...(item.disabled != null && { disabled: item.disabled }),
+            // group: metadata de sección (ej. 'Principal', 'Gestión') — solo pasthrough
+            ...(item.group != null && { group: item.group }),
         };
         if (item.children?.length) {
             sanitized.children = item.children.map(sanitizeMenuItemForAntd);

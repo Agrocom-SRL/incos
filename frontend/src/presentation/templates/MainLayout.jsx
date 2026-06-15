@@ -22,7 +22,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
 import { motion, AnimatePresence } from 'motion/react';
 import { allSpacing } from '@theme/tokens';
-import { Sidebar, Header, useSidebarState } from '@organisms';
+import { Sidebar, useSidebarState } from '@organisms';
+import AppTopBar from '@organisms/Header/AppTopBar';
 import LoadingFallback from '@components-router/LoadingFallback';
 import { NavigationProvider } from '@application-navigation';
 import { useReducedMotion } from '@presentation/hooks/useReducedMotion';
@@ -74,24 +75,26 @@ const MainLayout = () => {
 
     return (
         <NavigationProvider defaultSelectedKey="DASH">
-            <Layout>
-                {/* Header siempre visible en la parte superior */}
-                <AntHeader className="header">
-                    <Header collapsed={collapsed} onToggle={toggle} />
-                </AntHeader>
+            {/* Estructura mv2: Sider a top:0 (columna izquierda, altura completa) y a su
+               derecha una columna con TopBar + Content (flex, no fixed). */}
+            <Layout className="app-shell">
+                {/* Sider que se muestra/oculta según el trigger — columna izquierda completa */}
+                <Sider
+                    trigger={null}
+                    collapsible
+                    collapsed={collapsed}
+                    className="sider"
+                    width={sidebarWidth}
+                    collapsedWidth={sidebarCollapsedWidth}
+                >
+                    <Sidebar collapsed={collapsed} />
+                </Sider>
 
-                <Layout>
-                    {/* Sider que se muestra/oculta según el trigger */}
-                    <Sider
-                        trigger={null}
-                        collapsible
-                        collapsed={collapsed}
-                        className="sider"
-                        width={sidebarWidth}
-                        collapsedWidth={sidebarCollapsedWidth}
-                    >
-                        <Sidebar collapsed={collapsed} />
-                    </Sider>
+                {/* Columna principal: TopBar sobre el área de contenido (no full-width) */}
+                <Layout className="app-main">
+                    <AntHeader className="header">
+                        <AppTopBar onMenuClick={toggle} collapsed={collapsed} />
+                    </AntHeader>
 
                     {/* Content con router integration (Suspense + AnimatePresence + Outlet) */}
                     <Content className="content">

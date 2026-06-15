@@ -34,6 +34,9 @@ const buildMenuHierarchy = (routes) => {
             label: route.menu.label,
             module: route.menu.module,
             menu: { ...route.menu },
+            // group: metadata de UI para section-labels en el sidebar.
+            // Campo opcional en route.menu; passthrough puro — no afecta RBAC.
+            ...(route.menu.group && { group: route.menu.group }),
             // Solo incluir path si tiene elemento (no es solo un grupo padre)
             ...(route.element && { path: route.path }),
             order: route.menu.order || 999, // Orden por defecto
