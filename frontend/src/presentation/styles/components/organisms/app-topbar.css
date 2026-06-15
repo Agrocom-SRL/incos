@@ -279,3 +279,17 @@
         animation: none !important;
     }
 }
+
+/* ── Móvil (≤767px, como mv2) ────────────────────────────────────────────────────
+   El buscador ya no ocupa media pantalla: se oculta (el contenido va al popup de
+   3 puntos para utilities). El perfil deja solo el avatar (el nombre/gestión se
+   desbordaban); el detalle del usuario vive en el dropdown del avatar.
+   Las utilities ya colapsan en HeaderCompactMenu (MoreOutlined) por JS < 900px. */
+@media (max-width: 767px) {
+    .app-topbar__search.ant-input-affix-wrapper {
+        display: none;
+    }
+    .app-topbar__profile-text {
+        display: none;
+    }
+}

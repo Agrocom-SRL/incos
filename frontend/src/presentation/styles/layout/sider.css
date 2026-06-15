@@ -41,15 +41,41 @@
    Ajustes para diferentes tamaños de pantalla
    ============================================================================ */
 
-/* Móviles Portrait (< 576px) - Ocultar sidebar solo cuando está colapsado */
-@media (max-width: 575px) {
-    
-    /* Cuando el sidebar está colapsado: ocultar completamente */
-    .ant-layout-sider-collapsed.sider,
-    .ant-layout .ant-layout-sider-collapsed.sider {
-        width: 0 !important;
-        min-width: 0 !important;
-        max-width: 0 !important;
-        overflow: hidden;
+/* Drawer móvil (≤767px, como mv2): el sider deja de ocupar columna y pasa a
+   overlay deslizable sobre el contenido. .app-main toma todo el ancho (el sider
+   sale del flujo al ser position:fixed). */
+@media (max-width: 767px) {
+    .sider.sider--mobile {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        z-index: 1100;
+        transform: translateX(-100%);
+        transition: transform var(--dur-drawer, 320ms) var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1));
+        box-shadow: var(--shadow-elevation-3);
     }
+    .sider.sider--mobile-open {
+        transform: translateX(0);
+    }
+}
+
+/* Respeta prefers-reduced-motion: sin animación de deslizamiento */
+@media (prefers-reduced-motion: reduce) {
+    .sider.sider--mobile {
+        transition: none;
+    }
+}
+
+/* Backdrop del drawer móvil — cubre el contenido y cierra al tocar (como mv2) */
+.app-sider-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    background: rgba(5, 20, 12, 0.45);
+    backdrop-filter: blur(2px);
 }

@@ -17,7 +17,7 @@
  * por applyThemeVars(mode).
  */
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
 import { motion, AnimatePresence, MotionConfig } from 'motion/react';
@@ -27,6 +27,7 @@ import AppTopBar from '@organisms/Header/AppTopBar';
 import LoadingFallback from '@components-router/LoadingFallback';
 import { NavigationProvider } from '@application-navigation';
 import { useReducedMotion } from '@presentation/hooks/useReducedMotion';
+import { useMobileNav } from '@presentation/hooks/useMobileNav';
 import { EASE, DUR } from '@presentation/motion/presets';
 
 const { Sider, Header: AntHeader, Content } = Layout;
@@ -57,13 +58,31 @@ function RouteTransition({ children }) {
 }
 
 const MainLayout = () => {
-    // Estado del sidebar (hook del organismo Sidebar)
+    // Estado del sidebar: colapso en desktop, drawer overlay en móvil (≤767px, como mv2)
     const { collapsed, toggle } = useSidebarState(false);
+    const { isMobile, navOpen, closeNav, toggleNav } = useMobileNav();
     const location = useLocation();
+
+    // En móvil, cerrar el drawer al navegar (cambio de ruta)
+    useEffect(() => {
+        if (isMobile) closeNav();
+    }, [location.pathname, isMobile, closeNav]);
 
     // Usar valores del tema para el sidebar
     const sidebarWidth = allSpacing.sidebarWidth;
     const sidebarCollapsedWidth = allSpacing.sidebarCollapsedWidth;
+
+    // El trigger alterna el drawer en móvil y el colapso en desktop
+    const handleMenuClick = isMobile ? toggleNav : toggle;
+    // En móvil el sider se muestra a ancho completo (drawer), nunca colapsado
+    const siderCollapsed = isMobile ? false : collapsed;
+    const siderClass = [
+        'sider',
+        isMobile ? 'sider--mobile' : '',
+        isMobile && navOpen ? 'sider--mobile-open' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
 
     return (
         // MotionConfig global: reducedMotion="user" cubre toda la app (incluye mv2).
@@ -73,22 +92,31 @@ const MainLayout = () => {
             {/* Estructura mv2: Sider a top:0 (columna izquierda, altura completa) y a su
                derecha una columna con TopBar + Content (flex, no fixed). */}
             <Layout className="app-shell">
-                {/* Sider que se muestra/oculta según el trigger — columna izquierda completa */}
+                {/* Backdrop del drawer móvil — cierra el menú al tocar fuera (como mv2) */}
+                {isMobile && navOpen ? (
+                    <button
+                        type="button"
+                        className="app-sider-backdrop"
+                        onClick={closeNav}
+                        aria-label="Cerrar menú"
+                    />
+                ) : null}
+                {/* Sider: columna fija en desktop; drawer overlay en móvil */}
                 <Sider
                     trigger={null}
                     collapsible
-                    collapsed={collapsed}
-                    className="sider"
+                    collapsed={siderCollapsed}
+                    className={siderClass}
                     width={sidebarWidth}
                     collapsedWidth={sidebarCollapsedWidth}
                 >
-                    <Sidebar collapsed={collapsed} />
+                    <Sidebar collapsed={siderCollapsed} />
                 </Sider>
 
                 {/* Columna principal: TopBar sobre el área de contenido (no full-width) */}
                 <Layout className="app-main">
                     <AntHeader className="header">
-                        <AppTopBar onMenuClick={toggle} collapsed={collapsed} />
+                        <AppTopBar onMenuClick={handleMenuClick} collapsed={collapsed} />
                     </AntHeader>
 
                     {/* Content con router integration (Suspense + AnimatePresence + Outlet) */}

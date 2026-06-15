@@ -137,6 +137,16 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
 
+- 2026-06-15 — Responsive del shell global = paridad mv2 en móvil (≤767px).
+  (a) Scroll de documento eliminado: `.app-shell` position:fixed inset:0 (réplica
+  `.matricula-v2-app`). (b) Sidebar drawer móvil: `useMobileNav` promovido a
+  `presentation/hooks/`; `MainLayout` usa isMobile/navOpen → Sider pasa a overlay
+  (`.sider--mobile`/`--mobile-open`, position:fixed + translateX, gateado reduced-motion)
+  + backdrop `.app-sider-backdrop`; trigger alterna drawer en móvil / colapso en desktop;
+  cierra al navegar. `.app-main` toma ancho completo (sider fuera de flujo). (c) Header
+  móvil: buscador oculto y texto de perfil oculto (solo avatar) en ≤767px; utilities ya
+  colapsan en HeaderCompactMenu (MoreOutlined) <900px. Build verde, lint 0 nuevos.
+
 - 2026-06-15 — Fix sidebar (2 detalles). (1) Altura FIJA de página sin scroll de
   página: `.sider` overflow-y:auto→hidden + `.ant-layout-sider-children` height:100%
   flex-column + `.sidebar-container__logo` flex-shrink:0 → solo `.sidebar-container__nav`
