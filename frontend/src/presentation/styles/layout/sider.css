@@ -6,13 +6,21 @@
    ============================================================================ */
 
 .sider {
-    /* Columna izquierda a altura completa (top:0), como mv2. Flex, no fixed. */
+    /* Columna izquierda a altura FIJA de la página (100vh), como mv2. El propio
+       sider NO scrollea: solo su zona .sidebar-container__nav (flex:1) lo hace. */
     height: 100vh;
     flex-shrink: 0;
     z-index: var(--z-fixed);
     box-shadow: var(--sombra-sider);
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
+}
+
+/* El div interno de AntD debe llenar la altura para que .sidebar-container
+   (height:100%) resuelva y el nav scrollee internamente (no la página). */
+.sider .ant-layout-sider-children {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Dark mode conmutable */

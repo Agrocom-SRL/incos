@@ -137,6 +137,14 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
 
+- 2026-06-15 — Fix sidebar (2 detalles). (1) Altura FIJA de página sin scroll de
+  página: `.sider` overflow-y:auto→hidden + `.ant-layout-sider-children` height:100%
+  flex-column + `.sidebar-container__logo` flex-shrink:0 → solo `.sidebar-container__nav`
+  (flex:1) scrollea internamente. (2) Padre activo en colapsado: NavigationMenu calcula
+  `hasActiveDescendant` y pasa `active` a SidebarSection; el toggle recibe
+  `sidebar-item--active` (fondo+icono tintado+barra) + aria-current → en modo colapsado
+  se ve qué módulo tiene un hijo de 2do nivel seleccionado. Build ✓ 15.99s, lint 0 nuevos.
+
 - 2026-06-15 — WS-B (motion) APROBADO ronda 1 + Fase 3 (skills). Capa de motion
   compartida en `presentation/motion/` (presets EASE/DUR/STAGGER/variants) + átomos
   (FadeIn/Stagger/CountUp/PresenceSwap/Collapse) + hooks (useReducedMotion/useCountUp);

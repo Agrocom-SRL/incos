@@ -31,6 +31,21 @@ function isActive(key, selectedKeys) {
 }
 
 /**
+ * Indica si una sección tiene algún descendiente seleccionado. Permite marcar
+ * activo el ítem padre (de 1er nivel) — clave en modo colapsado, donde los hijos
+ * de 2do nivel no se ven y sin esto no se sabría qué módulo está activo.
+ * @param {object} item
+ * @param {string[]} selectedKeys
+ * @returns {boolean}
+ */
+function hasActiveDescendant(item, selectedKeys) {
+  if (!item.children?.length) return false;
+  return item.children.some(
+    (child) => selectedKeys.includes(child.key) || hasActiveDescendant(child, selectedKeys),
+  );
+}
+
+/**
  * Determina si una sección está abierta (via openKeys del contexto).
  * @param {string} key
  * @param {string[]} openKeys
@@ -53,6 +68,7 @@ function renderItem(item, ctx, isSub = false) {
   if (item.children?.length) {
     // Sección acordeón — los hijos directos son sub-ítems (nivel 2)
     const open = isSectionOpen(item.key, openKeys);
+    const sectionActive = hasActiveDescendant(item, selectedKeys);
     return (
       <SidebarSection
         key={item.key}
@@ -60,6 +76,7 @@ function renderItem(item, ctx, isSub = false) {
         icon={item.icon}
         label={item.label}
         open={open}
+        active={sectionActive}
         collapsed={collapsed}
         onToggle={(key) => {
           // handleOpenChange espera el array de keys abiertas (como AntD Menu)

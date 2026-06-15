@@ -23,6 +23,7 @@
     align-items: center;
     justify-content: center;
     min-height: var(--sidebar-logo-min-h, 56px);
+    flex-shrink: 0;
 }
 
 /* Logo expandido: muestra el logo horizontal limpio.

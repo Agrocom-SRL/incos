@@ -19,6 +19,7 @@ import { RightOutlined } from '@ant-design/icons';
  *   label: string
  *   sectionKey: string
  *   open?: boolean
+ *   active?: boolean
  *   collapsed?: boolean
  *   onToggle: (key: string) => void
  *   children: import('react').ReactNode
@@ -29,11 +30,21 @@ const SidebarSection = ({
   label,
   sectionKey,
   open = false,
+  active = false,
   collapsed = false,
   onToggle,
   children,
 }) => {
   const expanded = open && !collapsed;
+  // En colapsado el padre activo es el ÚNICO indicador de módulo seleccionado
+  // (los hijos de 2do nivel no se ven). En expandido da el cue de módulo activo.
+  const toggleClass = [
+    'sidebar-item',
+    'sidebar-section__toggle',
+    active ? 'sidebar-item--active' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className="sidebar-section">
@@ -41,13 +52,15 @@ const SidebarSection = ({
         type="button"
         onClick={() => onToggle(sectionKey)}
         aria-expanded={expanded}
+        aria-current={active && collapsed ? 'page' : undefined}
         aria-label={collapsed ? label : undefined}
         title={collapsed ? label : undefined}
-        className="sidebar-item sidebar-section__toggle"
+        className={toggleClass}
         style={{
           justifyContent: collapsed ? 'center' : undefined,
         }}
       >
+        {active && <span className="sidebar-item__bar" aria-hidden />}
         {icon && <span className="sidebar-item__icon">{icon}</span>}
         {!collapsed && (
           <>
