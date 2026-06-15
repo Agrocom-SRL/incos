@@ -4,6 +4,8 @@
  */
 import StatusPill from './StatusPill';
 import AdmissionTypeTag from './AdmissionTypeTag';
+import { pagoStatusOf } from '../utils/pagoStatus';
+import { sanitizeBusinessColor } from '../utils/sanitizeColor';
 
 function DetailItem({ label, children }) {
   return (
@@ -20,7 +22,7 @@ function CareerDetail({ r }) {
       <span className="matricula-v2-table-expand__career">
         <span
           className="matricula-v2-table-expand__career-dot"
-          style={{ background: r.career.color }}
+          style={{ background: sanitizeBusinessColor(r.career.color) }}
           aria-hidden
         />
         {r.career.name}
@@ -34,10 +36,7 @@ function CareerDetail({ r }) {
 
 function PagoDetail({ r }) {
   return (
-    <span
-      className="matricula-v2-table-expand__pago"
-      data-status={r.estadoPago === 'Al día' ? 'ok' : r.estadoPago === 'Pendiente' ? 'err' : 'info'}
-    >
+    <span className="matricula-v2-table-expand__pago" data-status={pagoStatusOf(r.estadoPago).status}>
       {r.estadoPago}
     </span>
   );

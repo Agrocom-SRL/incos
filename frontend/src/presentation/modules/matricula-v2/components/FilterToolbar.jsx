@@ -11,8 +11,12 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import { Button, Dropdown, Input, Segmented, Select } from 'antd';
+import { AnimatePresence, motion } from 'motion/react';
 import { HISTORY_FILTER_OPTIONS } from '../utils/historyStates';
 import { mv2DropdownPopupProps, mv2SelectPopupProps } from '../theme/popupClass';
+
+// Alias capitalizado: el linter cuenta el uso JSX por identificador, no por `motion.div`.
+const MotionDiv = motion.div;
 
 function BulkActionsBar({ selectedCount, onBulkNotify, onBulkExport, onBulkDelete }) {
   const menu = {
@@ -135,26 +139,44 @@ const FilterToolbar = ({
       />
     </div>
     <div className="matricula-v2-toolbar-spacer" />
-    {selectedCount > 0 ? (
-      <BulkActionsBar
-        selectedCount={selectedCount}
-        onBulkNotify={onBulkNotify}
-        onBulkExport={onBulkExport}
-        onBulkDelete={onBulkDelete}
-      />
-    ) : (
-      <div className="matricula-v2-toolbar-actions">
-        <span className="matricula-v2-toolbar-actions__count">{filteredCount} resultados</span>
-        <Segmented
-          value={viewMode}
-          onChange={onViewModeChange}
-          options={[
-            { value: 'table', icon: <UnorderedListOutlined /> },
-            { value: 'grid', icon: <AppstoreOutlined /> },
-          ]}
-        />
-      </div>
-    )}
+    <AnimatePresence mode="wait" initial={false}>
+      {selectedCount > 0 ? (
+        <MotionDiv
+          key="bulk"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 6 }}
+          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          style={{ minWidth: 0 }}
+        >
+          <BulkActionsBar
+            selectedCount={selectedCount}
+            onBulkNotify={onBulkNotify}
+            onBulkExport={onBulkExport}
+            onBulkDelete={onBulkDelete}
+          />
+        </MotionDiv>
+      ) : (
+        <MotionDiv
+          key="actions"
+          className="matricula-v2-toolbar-actions"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 6 }}
+          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+        >
+          <span className="matricula-v2-toolbar-actions__count">{filteredCount} resultados</span>
+          <Segmented
+            value={viewMode}
+            onChange={onViewModeChange}
+            options={[
+              { value: 'table', icon: <UnorderedListOutlined /> },
+              { value: 'grid', icon: <AppstoreOutlined /> },
+            ]}
+          />
+        </MotionDiv>
+      )}
+    </AnimatePresence>
   </div>
 );
 

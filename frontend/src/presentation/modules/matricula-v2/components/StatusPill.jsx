@@ -1,5 +1,6 @@
 /**
- * Píldora de estado de historial previo.
+ * Píldora de estado de historial previo (átomo).
+ * Estilo en CSS (`matricula-v2-status-pill`), el mapa de estados es sólo datos.
  * @param {{ statusKey: string, label?: string }} props
  */
 import {
@@ -10,52 +11,21 @@ import {
 } from '@ant-design/icons';
 
 const STATUS_MAP = {
-  pendiente: {
-    bg: 'var(--pill-warn-bg)',
-    color: 'var(--pill-warn-fg)',
-    icon: <ClockCircleFilled />,
-  },
-  completo: {
-    bg: 'var(--pill-ok-bg)',
-    color: 'var(--pill-ok-fg)',
-    icon: <CheckCircleFilled />,
-  },
-  observado: {
-    bg: 'var(--pill-err-bg)',
-    color: 'var(--pill-err-fg)',
-    icon: <ExclamationCircleFilled />,
-  },
-  revision: {
-    bg: 'var(--pill-info-bg)',
-    color: 'var(--pill-info-fg)',
-    icon: <SyncOutlined spin />,
-  },
-  no_aplica: {
-    bg: 'var(--surface-alt)',
-    color: 'var(--text-muted)',
-    icon: <CheckCircleFilled />,
-  },
+  pendiente: { icon: <ClockCircleFilled /> },
+  completo: { icon: <CheckCircleFilled /> },
+  observado: { icon: <ExclamationCircleFilled /> },
+  // Icono estático: un spinner perpetuo por fila sería ruido visual (Emil).
+  revision: { icon: <SyncOutlined /> },
+  no_aplica: { icon: <CheckCircleFilled /> },
 };
 
 const StatusPill = ({ statusKey, label }) => {
-  const m = STATUS_MAP[statusKey] || STATUS_MAP.completo;
+  const key = STATUS_MAP[statusKey] ? statusKey : 'completo';
   const text = label || statusKey;
 
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        background: m.bg,
-        color: m.color,
-        padding: '4px 10px',
-        borderRadius: 999,
-        fontSize: 12,
-        fontWeight: 600,
-      }}
-    >
-      <span style={{ fontSize: 11, display: 'inline-flex' }}>{m.icon}</span>
+    <span className={`matricula-v2-status-pill matricula-v2-status-pill--${key}`}>
+      <span className="matricula-v2-status-pill__icon">{STATUS_MAP[key].icon}</span>
       {text}
     </span>
   );

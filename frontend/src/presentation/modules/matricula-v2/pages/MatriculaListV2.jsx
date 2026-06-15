@@ -18,18 +18,23 @@ import {
   Pagination,
   Select,
   Space,
-  Spin,
   Table,
 } from 'antd';
+import { AnimatePresence, motion } from 'motion/react';
 import CareerChip from '../components/CareerChip';
 import FilterToolbar from '../components/FilterToolbar';
 import KpiCard from '../components/KpiCard';
+import MatriculaEmptyState from '../components/MatriculaEmptyState';
+import MatriculaListSkeleton from '../components/MatriculaListSkeleton';
 import MatriculaTableRowDetails from '../components/MatriculaTableRowDetails';
-import StudentCard from '../components/StudentCard';
+import StudentCardGrid from '../components/StudentCardGrid';
 import { useCompactTableLayout } from '../hooks/useCompactTableLayout';
 import { useMatriculaListV2 } from '../hooks/useMatriculaListV2';
 import { buildMatriculaTableColumns } from '../utils/buildMatriculaTableColumns';
 import { mv2SelectPopupProps } from '../theme/popupClass';
+
+// Alias capitalizado: el linter cuenta el uso JSX por identificador, no por `motion.div`.
+const MotionDiv = motion.div;
 
 const MatriculaListV2 = () => {
   const {
@@ -72,11 +77,18 @@ const MatriculaListV2 = () => {
     setSelectedCarreraId,
     carrerasLoading,
     exportLoading,
-    selectedCarrera,
     carreraColor,
     carreraSelectOptions,
     handleExportLista,
   } = useMatriculaListV2();
+
+  const hasFilters = Boolean(search || careerFilter || historyFilter || tipoFilter !== 'todos');
+  const handleClearFilters = () => {
+    setSearch('');
+    setCareerFilter(null);
+    setHistoryFilter(null);
+    setTipoFilter('todos');
+  };
 
   const tableLayout = useCompactTableLayout();
   const { columns: tableColumns } = useMemo(
@@ -152,9 +164,12 @@ const MatriculaListV2 = () => {
                   loading={exportLoading}
                   disabled={!selectedCarreraId}
                   onClick={handleExportLista}
+                  className={
+                    selectedCarreraId ? 'matricula-v2-export-btn--career' : undefined
+                  }
                   style={
                     selectedCarreraId
-                      ? { backgroundColor: carreraColor, borderColor: carreraColor, color: '#fff' }
+                      ? { '--career-color': carreraColor }
                       : undefined
                   }
                 >
@@ -162,12 +177,7 @@ const MatriculaListV2 = () => {
                 </Button>
               </>
             ) : null}
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleNuevaInscripcion}
-              style={{ background: 'var(--brand-700)', borderColor: 'var(--brand-700)' }}
-            >
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleNuevaInscripcion}>
               Nueva Inscripción
             </Button>
           </Space>
@@ -178,70 +188,46 @@ const MatriculaListV2 = () => {
         <KpiCard
           label="Total inscritos"
           value={totalCount}
-          delta={12}
           icon={<TeamOutlined />}
-          accent="#0a6532"
+          accent="var(--brand-600)"
           sub={gestionLabel}
         />
         <KpiCard
           label="Estudiantes antiguos"
           value={antiguosCount}
-          delta={8}
           icon={<RiseOutlined />}
-          accent="#b8860b"
+          accent="var(--accent-gold)"
           sub={totalCount ? `${Math.round((antiguosCount / totalCount) * 100)}% del total` : '—'}
         />
         <KpiCard
           label="Nuevos ingresos"
           value={nuevosCount}
-          delta={24}
           icon={<UserAddOutlined />}
-          accent="#2f7fb8"
+          accent="var(--accent-sky)"
           sub="Primer semestre"
         />
         <KpiCard
           label="Historiales pendientes"
           value={pendientesCount}
-          delta={-5}
           icon={<ClockCircleFilled />}
-          accent="#b8312a"
+          accent="var(--accent-red)"
           sub="Requieren revisión"
         />
       </div>
 
       <div className="matricula-v2-career-chips">
-        <div
-          role="button"
-          tabIndex={0}
-          className="matricula-v2-chip-todas"
+        <CareerChip
+          label="Todas"
+          count={totalCount}
+          active={!careerFilter}
+          showDot={false}
           onClick={() => setCareerFilter(null)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') setCareerFilter(null);
-          }}
-          style={{
-            background: !careerFilter ? 'var(--brand-700)' : 'var(--surface)',
-            color: !careerFilter ? 'white' : 'var(--text-2)',
-            borderColor: !careerFilter ? 'var(--brand-700)' : 'var(--border)',
-          }}
-        >
-          Todas{' '}
-          <span
-            style={{
-              background: !careerFilter ? 'rgba(255,255,255,0.25)' : 'var(--surface-alt)',
-              color: !careerFilter ? 'white' : 'var(--text-muted)',
-              padding: '1px 8px',
-              borderRadius: 8,
-              fontSize: 11,
-              marginLeft: 6,
-            }}
-          >
-            {totalCount}
-          </span>
-        </div>
+        />
         {careersForChips.map((c) => (
           <CareerChip
             key={c.id}
-            career={c}
+            label={c.name}
+            color={c.color}
             count={careerCounts[c.id] || 0}
             active={careerFilter === c.id}
             onClick={() => setCareerFilter(careerFilter === c.id ? null : c.id)}
@@ -250,7 +236,13 @@ const MatriculaListV2 = () => {
       </div>
 
       {error ? (
-        <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />
+        <Alert
+          type="error"
+          showIcon
+          title={<strong>No se pudo cargar la lista</strong>}
+          description={error}
+          className="matricula-v2-alert-error"
+        />
       ) : null}
 
       <div className="matricula-v2-toolbar-wrap">
@@ -274,63 +266,86 @@ const MatriculaListV2 = () => {
       <div
         className={`matricula-v2-table-wrap${tableWrapClass}`}
       >
-        <Spin spinning={loading} tip="Cargando inscripciones...">
-          <div>
-            {viewMode === 'table' ? (
-              <div
-                className={`matricula-v2-table-scroll${tableLayout === 'full' ? ' matricula-v2-table-scroll--wide' : ''
-                  }`}
-              >
-                <Table
-                  rowKey="id"
-                  columns={tableColumns}
-                  dataSource={paged}
-                  pagination={false}
-                  size="middle"
-                  tableLayout={tableLayout === 'compact' ? 'auto' : 'fixed'}
-                  expandable={tableExpandable}
-                  scroll={
-                    tableLayout === 'full'
-                      ? { x: 880 }
-                      : tableLayout === 'medium'
-                        ? { x: 640 }
-                        : tableLayout === 'narrow'
-                          ? { x: 480 }
-                          : undefined
-                  }
-                  rowSelection={{
-                    selectedRowKeys,
-                    onChange: setSelectedRowKeys,
-                  }}
-                  onRow={(r) => ({
-                    onClick: (e) => {
-                      if (
-                        e.target.closest(
-                          'button, .ant-checkbox-wrapper, .ant-dropdown, .ant-table-row-expand-icon',
-                        )
-                      ) {
-                        return;
-                      }
-                      handleView(r);
-                    },
-                    style: { cursor: 'pointer' },
-                  })}
-                />
-              </div>
-            ) : (
-              <div className="matricula-v2-grid">
-                {paged.map((s) => (
-                  <StudentCard
-                    key={s.id}
-                    student={s}
-                    onOpen={() => handleView(s)}
-                    onEdit={() => handleEdit(s)}
+        <AnimatePresence mode="wait" initial={false}>
+          {loading ? (
+            <MotionDiv
+              key="skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <MatriculaListSkeleton viewMode={viewMode} rows={pageSize > 10 ? 10 : pageSize} />
+            </MotionDiv>
+          ) : filtered.length === 0 ? (
+            <MotionDiv
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <MatriculaEmptyState
+                hasFilters={hasFilters}
+                onClearFilters={handleClearFilters}
+                onNew={handleNuevaInscripcion}
+              />
+            </MotionDiv>
+          ) : (
+            <MotionDiv
+              key={`data-${viewMode}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            >
+              {viewMode === 'table' ? (
+                <div
+                  className={`matricula-v2-table-scroll${tableLayout === 'full' ? ' matricula-v2-table-scroll--wide' : ''
+                    }`}
+                >
+                  <Table
+                    rowKey="id"
+                    columns={tableColumns}
+                    dataSource={paged}
+                    pagination={false}
+                    size="middle"
+                    tableLayout={tableLayout === 'compact' ? 'auto' : 'fixed'}
+                    expandable={tableExpandable}
+                    scroll={
+                      tableLayout === 'full'
+                        ? { x: 880 }
+                        : tableLayout === 'medium'
+                          ? { x: 640 }
+                          : tableLayout === 'narrow'
+                            ? { x: 480 }
+                            : undefined
+                    }
+                    rowSelection={{
+                      selectedRowKeys,
+                      onChange: setSelectedRowKeys,
+                    }}
+                    onRow={(r) => ({
+                      onClick: (e) => {
+                        if (
+                          e.target.closest(
+                            'button, .ant-checkbox-wrapper, .ant-dropdown, .ant-table-row-expand-icon',
+                          )
+                        ) {
+                          return;
+                        }
+                        handleView(r);
+                      },
+                      style: { cursor: 'pointer' },
+                    })}
                   />
-                ))}
-              </div>
-            )}
-          </div>
-        </Spin>
+                </div>
+              ) : (
+                <StudentCardGrid students={paged} onOpen={handleView} onEdit={handleEdit} />
+              )}
+            </MotionDiv>
+          )}
+        </AnimatePresence>
 
         <div className="matricula-v2-footer">
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>

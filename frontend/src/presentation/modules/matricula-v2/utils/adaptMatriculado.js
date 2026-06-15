@@ -1,3 +1,4 @@
+import { buildFullName } from '@application/utils';
 import { resolveCareerColor } from './careerColors';
 import { HISTORY_STATES, mapHistorialEstado } from './historyStates';
 
@@ -45,10 +46,12 @@ export function adaptInscripcionToMatriculado(record) {
   const historialKey = mapHistorialEstado(record.historialPrevioEstado);
   const historyState = HISTORY_STATES[historialKey] || HISTORY_STATES.completo;
 
+  // §4b: en colecciones el orden es APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES.
+  // Si el API ya entrega `nombreCompleto` se respeta (contrato); si no, se
+  // construye con el helper central (no concatenar nombres primero a mano).
   const nombreCompleto =
     student?.nombreCompleto ||
-    [student?.nombre, student?.apellidoPaterno, student?.apellidoMaterno].filter(Boolean).join(' ') ||
-    'Sin nombre';
+    buildFullName(student?.nombre, student?.apellidoPaterno, student?.apellidoMaterno, 'Sin nombre');
 
   const careerColor = resolveCareerColor(carrera);
 

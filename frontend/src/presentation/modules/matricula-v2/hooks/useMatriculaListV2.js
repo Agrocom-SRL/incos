@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInscripcionesContext } from '@application-inscripciones/hooks';
 import { useMatriculaListExport } from '@application-inscripciones/hooks/state/matricula-list/useMatriculaListExport';
-import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+import { useCarrerasApi } from '@application-configuracion/academico/hooks';
 import { useMessage } from '@application/utils';
 import { adaptInscripcionesList } from '../utils/adaptMatriculado';
 import { resolveCareerColor } from '../utils/careerColors';
@@ -39,6 +39,12 @@ export const useMatriculaListV2 = () => {
 
   const debouncedSearch = useDebouncedValue(search, DEBOUNCE_MS);
   const matriculados = useMemo(() => adaptInscripcionesList(rawRows), [rawRows]);
+
+  // La API de inscripciones no auto-carga (autoFetch:false); dispara la carga al
+  // montar. matricula-v2 filtra/pagina en cliente, así que se piden hasta 100.
+  useEffect(() => {
+    refetch({ params: { page: 1, limit: 100 } });
+  }, [refetch]);
 
   const careersForChips = useMemo(
     () =>

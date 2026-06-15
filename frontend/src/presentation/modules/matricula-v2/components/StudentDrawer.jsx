@@ -2,67 +2,63 @@
  * Drawer de detalle de matrícula.
  * @param {{ student: object|null, open: boolean, onClose: () => void, onEdit?: () => void }} props
  */
+import { useEffect, useState } from 'react';
 import { Button, Drawer, Progress, Tag } from 'antd';
-import {
-  EditOutlined,
-  MailOutlined,
-  PrinterOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, EditOutlined, MailOutlined, PrinterOutlined } from '@ant-design/icons';
+import { motion } from 'motion/react';
 import { avatarFor } from '../utils/avatarFor';
+import { sanitizeBusinessColor } from '../utils/sanitizeColor';
+import { pagoStatusOf } from '../utils/pagoStatus';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import StatusPill from './StatusPill';
 
-function DetailSection({ title, children }) {
+// Alias capitalizado: el linter cuenta el uso JSX por identificador, no por `motion.div`.
+const MotionDiv = motion.div;
+
+// Progreso del semestre (placeholder pre-existente hasta exponer el dato real).
+const SEMESTER_PROGRESS = 42;
+
+function DetailSection({ title, children, index, reduce }) {
   return (
-    <div style={{ marginBottom: 20 }}>
-      <div
-        style={{
-          fontSize: 11,
-          color: 'var(--text-soft)',
-          fontWeight: 600,
-          letterSpacing: 0.6,
-          textTransform: 'uppercase',
-          marginBottom: 10,
-        }}
-      >
-        {title}
-      </div>
-      <div
-        style={{
-          background: 'var(--surface-alt)',
-          border: '1px solid var(--border)',
-          borderRadius: 10,
-          padding: '4px 14px',
-        }}
-      >
-        {children}
-      </div>
-    </div>
+    <MotionDiv
+      className="matricula-v2-detail-section"
+      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1], delay: reduce ? 0 : 0.05 * index }}
+    >
+      <div className="matricula-v2-detail-section__title">{title}</div>
+      <div className="matricula-v2-detail-section__body">{children}</div>
+    </MotionDiv>
   );
 }
 
 function DetailRow({ label, value }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 0',
-        borderBottom: '1px solid var(--divider)',
-        gap: 12,
-      }}
-    >
-      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{label}</div>
-      <div style={{ fontSize: 13, color: 'var(--text)', textAlign: 'right', flex: 1, minWidth: 0 }}>
-        {value}
-      </div>
+    <div className="matricula-v2-detail-row">
+      <div className="matricula-v2-detail-row__label">{label}</div>
+      <div className="matricula-v2-detail-row__value">{value}</div>
     </div>
   );
 }
 
 const StudentDrawer = ({ student, open, onClose, onEdit }) => {
+  const reduce = useReducedMotion();
+  // Anima la barra de 0 al valor al abrir (feedback de estado).
+  const [filled, setFilled] = useState(false);
+  useEffect(() => {
+    if (!open || reduce) return undefined;
+    const id = requestAnimationFrame(() => setFilled(true));
+    return () => {
+      cancelAnimationFrame(id);
+      setFilled(false);
+    };
+  }, [open, reduce]);
+  const progress = !open ? 0 : reduce || filled ? SEMESTER_PROGRESS : 0;
+
   if (!student) return null;
   const av = avatarFor(student.fullName);
+  const avatarColor = sanitizeBusinessColor(av.color, 'var(--brand-600)');
+  const careerColor = sanitizeBusinessColor(student.career?.color, 'var(--brand-600)');
 
   return (
     <Drawer
@@ -73,96 +69,59 @@ const StudentDrawer = ({ student, open, onClose, onEdit }) => {
       closable={false}
       styles={{ body: { padding: 0 }, header: { display: 'none' } }}
     >
-      <div
-        style={{
-          background: 'linear-gradient(135deg, var(--brand-700), var(--brand-500))',
-          padding: '28px 24px 60px',
-          color: 'white',
-          position: 'relative',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-          <Tag
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              border: 'none',
-              color: 'white',
-              borderRadius: 999,
-              padding: '2px 10px',
-            }}
-          >
-            {student.tipo}
-          </Tag>
+      <div className="matricula-v2-drawer-hero">
+        <div className="matricula-v2-drawer-hero__top">
+          <Tag className="matricula-v2-drawer-tag">{student.tipo}</Tag>
           <Button
             type="text"
             onClick={onClose}
-            style={{ color: 'white' }}
-            icon={<span style={{ fontSize: 18 }}>×</span>}
+            className="matricula-v2-drawer-hero__close"
+            aria-label="Cerrar"
+            icon={<CloseOutlined />}
           />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: '50%',
-              background: 'white',
-              color: av.color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 24,
-              fontWeight: 700,
-              border: '3px solid rgba(255,255,255,0.4)',
-            }}
-          >
+        <div className="matricula-v2-drawer-hero__id">
+          <div className="matricula-v2-drawer-hero__avatar" style={{ '--avatar': avatarColor }}>
             {av.initials}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.2 }}>{student.fullName}</div>
-            <div style={{ fontSize: 13, opacity: 0.9, marginTop: 4 }}>
+            <div className="matricula-v2-drawer-hero__name">{student.fullName}</div>
+            <div className="matricula-v2-drawer-hero__sub">
               Código {student.codigo} · CI {student.ci}
             </div>
           </div>
         </div>
       </div>
 
-      <div style={{ padding: '0 24px', marginTop: -36 }}>
-        <div
-          style={{
-            background: 'var(--surface)',
-            borderRadius: 12,
-            border: '1px solid var(--border)',
-            padding: 16,
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gap: 12,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-          }}
-        >
+      <div className="matricula-v2-drawer-stats">
+        <div className="matricula-v2-drawer-stats__card">
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-soft)', fontWeight: 500 }}>SEMESTRE</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>{student.semestre}°</div>
+            <div className="matricula-v2-drawer-stats__label">SEMESTRE</div>
+            <div className="matricula-v2-drawer-stats__value">{student.semestre}°</div>
           </div>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-soft)', fontWeight: 500 }}>MATERIAS</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>{student.materias}</div>
+            <div className="matricula-v2-drawer-stats__label">MATERIAS</div>
+            <div className="matricula-v2-drawer-stats__value">{student.materias}</div>
           </div>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-soft)', fontWeight: 500 }}>GESTIÓN</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--brand-700)' }}>{student.gestion}</div>
+            <div className="matricula-v2-drawer-stats__label">GESTIÓN</div>
+            <div className="matricula-v2-drawer-stats__value matricula-v2-drawer-stats__value--accent">
+              {student.gestion}
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{ padding: 24 }}>
-        <DetailSection title="Información de inscripción">
+      <div className="matricula-v2-drawer-body">
+        <DetailSection title="Información de inscripción" index={0} reduce={reduce}>
           <DetailRow
             label="Carrera"
             value={
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <span
-                  style={{ width: 8, height: 8, borderRadius: 2, background: student.career.color }}
+                  className="matricula-v2-detail-career-dot"
+                  style={{ background: careerColor }}
+                  aria-hidden
                 />
                 <strong>{student.career.name}</strong>
               </span>
@@ -181,7 +140,7 @@ const StudentDrawer = ({ student, open, onClose, onEdit }) => {
           {student.paralelo ? <DetailRow label="Paralelo" value={student.paralelo} /> : null}
         </DetailSection>
 
-        <DetailSection title="Estado académico">
+        <DetailSection title="Estado académico" index={1} reduce={reduce}>
           <DetailRow
             label="Historial"
             value={<StatusPill statusKey={student.historial} label={student.historyState?.label} />}
@@ -189,16 +148,7 @@ const StudentDrawer = ({ student, open, onClose, onEdit }) => {
           <DetailRow
             label="Estado de pago"
             value={
-              <Tag
-                color={
-                  student.estadoPago === 'Al día'
-                    ? 'green'
-                    : student.estadoPago === 'Pendiente'
-                      ? 'red'
-                      : 'blue'
-                }
-                style={{ margin: 0 }}
-              >
+              <Tag color={pagoStatusOf(student.estadoPago).tagColor} style={{ margin: 0 }}>
                 {student.estadoPago}
               </Tag>
             }
@@ -207,24 +157,29 @@ const StudentDrawer = ({ student, open, onClose, onEdit }) => {
             label="Progreso del semestre"
             value={
               <div style={{ flex: 1 }}>
-                <Progress percent={42} size="small" strokeColor="var(--brand-600)" style={{ margin: 0 }} />
+                <Progress
+                  percent={progress}
+                  size="small"
+                  strokeColor="var(--brand-600)"
+                  style={{ margin: 0 }}
+                />
               </div>
             }
           />
         </DetailSection>
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+        <div className="matricula-v2-drawer-actions">
           <Button
             type="primary"
             icon={<EditOutlined />}
             block
-            style={{ flex: 1, background: 'var(--brand-700)', borderColor: 'var(--brand-700)' }}
+            style={{ flex: 1 }}
             onClick={onEdit}
           >
             Editar inscripción
           </Button>
           <Button icon={<PrinterOutlined />}>Imprimir</Button>
-          <Button icon={<MailOutlined />} />
+          <Button icon={<MailOutlined />} aria-label="Enviar correo" />
         </div>
       </div>
     </Drawer>

@@ -1,38 +1,28 @@
 /**
  * Celda de estudiante con avatar e iniciales.
+ * El nombre viene de `student.fullName`, formateado por el adaptador con
+ * `buildFullName` (orden APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES, §4b).
  * @param {{ student: object, showAvatar?: boolean }} props
  */
 import { avatarFor } from '../utils/avatarFor';
+import { sanitizeBusinessColor } from '../utils/sanitizeColor';
 
 const StudentCell = ({ student, showAvatar = true }) => {
   const av = avatarFor(student.fullName);
+  const avatarColor = sanitizeBusinessColor(av.color, 'var(--brand-600)');
 
   return (
-    <div className="matricula-v2-student-cell" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div className="matricula-v2-student-cell">
       {showAvatar ? (
         <div
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: '50%',
-            background: `${av.color}15`,
-            color: av.color,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-            fontSize: 13,
-            flexShrink: 0,
-            border: `1.5px solid ${av.color}25`,
-          }}
+          className="matricula-v2-student-cell__avatar"
+          style={{ '--avatar': avatarColor }}
         >
           {av.initials}
         </div>
       ) : null}
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>
-          {student.fullName}
-        </div>
+      <div className="matricula-v2-student-cell__main">
+        <div className="matricula-v2-student-cell__name">{student.fullName}</div>
         <div className="matricula-v2-student-cell__meta">
           <span>#{student.codigo}</span>
           <span className="matricula-v2-student-cell__ci">CI {student.ci}</span>

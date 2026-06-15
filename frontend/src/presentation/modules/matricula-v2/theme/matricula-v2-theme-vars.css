@@ -1,20 +1,35 @@
 /* Variables de tema INCOS — claro / oscuro */
 
-:root[data-theme='light'] {
-  --brand-50: #e8f4ec;
-  --brand-100: #c8e4d2;
-  --brand-200: #93cba8;
-  --brand-300: #5fae7f;
-  --brand-400: #2a8d57;
-  --brand-500: #0d7a3d;
-  --brand-600: #0a6532;
-  --brand-700: #0a5028;
-  --brand-800: #073f22;
-  --brand-900: #052e1a;
+/* ==========================================================================
+   Tokens de motion (una sola fuente de verdad — §6b incos-ui-system)
+   Cualquier transición del módulo consume estas vars, nunca literales.
+   ========================================================================== */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-press: 140ms;
+  --dur-hover: 160ms;
+  --dur-pop: 200ms;
+  --dur-drawer: 320ms;
+}
 
-  --accent-red: #b8312a;
-  --accent-gold: #b8860b;
-  --accent-sky: #2f7fb8;
+:root[data-theme='light'] {
+  /* Escala de marca anclada a REVAMP §3: #007848 primario, #006048/#004830 oscuros */
+  --brand-50: #e3f2ea;
+  --brand-100: #bfe0cf;
+  --brand-200: #8ec9ad;
+  --brand-300: #56ad86;
+  --brand-400: #1f9163;
+  --brand-500: #007848;
+  --brand-600: #006048;
+  --brand-700: #004830;
+  --brand-800: #003a26;
+  --brand-900: #002b1c;
+
+  --accent-red: #c0282a;
+  --accent-gold: #b07e10;
+  --accent-sky: #3d6dd0;
 
   /* Fondo principal: gris verdoso (no neutro frío) */
   --bg-page: #e6ece8;
@@ -32,13 +47,13 @@
 
   --text: #0a1f15;
   --text-2: #2a3a32;
-  --text-muted: #5e6c64;
-  --text-soft: #8a958f;
+  --text-muted: #566159;
+  --text-soft: #6e7a72;
 
   --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --info: #1d4e89;
+  --warning: #b07e10;
+  --danger: #c0282a;
+  --info: #3d6dd0;
 
   --pill-warn-bg: #fef3c7;
   --pill-warn-fg: #92400e;
@@ -49,42 +64,43 @@
   --pill-info-bg: #dbeafe;
   --pill-info-fg: #1e3a8a;
 
-  --shadow-sm: 0 1px 2px rgba(8, 80, 42, 0.06);
-  --shadow: 0 2px 8px rgba(8, 80, 42, 0.08), 0 1px 2px rgba(8, 80, 42, 0.04);
-  --shadow-md: 0 8px 24px rgba(8, 80, 42, 0.1), 0 2px 6px rgba(8, 80, 42, 0.06);
-  --shadow-lg: 0 12px 40px rgba(8, 80, 42, 0.14);
+  --shadow-sm: 0 1px 2px rgba(0, 72, 48, 0.06);
+  --shadow: 0 2px 8px rgba(0, 72, 48, 0.08), 0 1px 2px rgba(0, 72, 48, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 72, 48, 0.1), 0 2px 6px rgba(0, 72, 48, 0.06);
+  --shadow-lg: 0 12px 40px rgba(0, 72, 48, 0.14);
 
   /* Navegación sidebar — activo debe contrastar con surface-chrome */
   --nav-item-fg: var(--text-2);
-  --nav-item-hover-bg: rgba(10, 101, 50, 0.1);
-  --nav-item-active-bg: #e3f3e2;
-  --nav-item-active-fg: #0a5028;
-  --nav-item-active-border: #2a8d57;
-  --nav-item-active-bar: #0d7a3d;
-  --nav-item-active-shadow: 0 1px 4px rgba(8, 80, 42, 0.12);
+  --nav-item-hover-bg: color-mix(in srgb, var(--brand-600) 10%, transparent);
+  --nav-item-active-bg: var(--brand-50);
+  --nav-item-active-fg: var(--brand-700);
+  --nav-item-active-border: var(--brand-400);
+  --nav-item-active-bar: var(--brand-500);
+  --nav-item-active-shadow: 0 1px 4px rgba(0, 72, 48, 0.12);
 
-  --tooltip-bg: #0a5028;
+  --tooltip-bg: var(--brand-700);
   --tooltip-fg: #f0f5f2;
-  --tooltip-border: #2a8d57;
+  --tooltip-border: var(--brand-400);
 
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --brand-50: #0e2218;
-  --brand-100: #133224;
-  --brand-200: #1a5239;
-  --brand-300: #2a7050;
-  --brand-400: #3f9468;
-  --brand-500: #4fb37e;
-  --brand-600: #2e9d68;
-  --brand-700: #1a8454;
-  --brand-800: #126a44;
-  --brand-900: #0a4f2d;
+  /* En oscuro la escala se ilumina partiendo de los mismos anclajes de marca */
+  --brand-50: #0a2218;
+  --brand-100: #103224;
+  --brand-200: #16513a;
+  --brand-300: #1f9163;
+  --brand-400: #2eae79;
+  --brand-500: #3fc48d;
+  --brand-600: #2eae79;
+  --brand-700: #1f9163;
+  --brand-800: #16513a;
+  --brand-900: #103224;
 
-  --accent-red: #e55a52;
-  --accent-gold: #f0c14c;
-  --accent-sky: #5fa3d8;
+  --accent-red: #e8625f;
+  --accent-gold: #e0a82e;
+  --accent-sky: #6f9af0;
 
   --bg-page: #07140e;
   --bg-page-2: #0a1d14;
@@ -100,8 +116,8 @@
 
   --text: #e8f0ea;
   --text-2: #c5d4cb;
-  --text-muted: #8aa094;
-  --text-soft: #5e7570;
+  --text-muted: #9fb3a7;
+  --text-soft: #7e948a;
 
   --success: #34d399;
   --warning: #fbbf24;
@@ -114,8 +130,8 @@
   --pill-ok-fg: #6ee7b0;
   --pill-err-bg: #3a1818;
   --pill-err-fg: #fca5a5;
-  --pill-info-bg: #102540;
-  --pill-info-fg: #93c5fd;
+  --pill-info-bg: #15294a;
+  --pill-info-fg: #aecbff;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -123,16 +139,16 @@
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
 
   --nav-item-fg: var(--text-2);
-  --nav-item-hover-bg: rgba(79, 179, 126, 0.12);
-  --nav-item-active-bg: #1a5239;
+  --nav-item-hover-bg: color-mix(in srgb, var(--brand-500) 12%, transparent);
+  --nav-item-active-bg: var(--brand-200);
   --nav-item-active-fg: #a7f3c8;
-  --nav-item-active-border: #2e9d68;
-  --nav-item-active-bar: #4fb37e;
+  --nav-item-active-border: var(--brand-600);
+  --nav-item-active-bar: var(--brand-500);
   --nav-item-active-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 
-  --tooltip-bg: #1a5239;
+  --tooltip-bg: var(--brand-200);
   --tooltip-fg: #e8f0ea;
-  --tooltip-border: #2e9d68;
+  --tooltip-border: var(--brand-600);
 
   color-scheme: dark;
 }
@@ -142,5 +158,27 @@ body,
 #root {
   background: var(--bg-page);
   color: var(--text);
-  transition: background 0.25s ease, color 0.25s ease;
+  transition: background var(--dur-pop) var(--ease-out), color var(--dur-pop) var(--ease-out);
+}
+
+/* ==========================================================================
+   Accesibilidad — usuarios con prefers-reduced-motion.
+   Neutraliza transforms y animaciones; conserva opacity/color para feedback.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .matricula-v2-app *,
+  .matricula-v2-app *::before,
+  .matricula-v2-app *::after,
+  .matricula-v2-ant-popup *,
+  .matricula-v2-tooltip * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: opacity, color, background-color, border-color !important;
+    transition-duration: var(--dur-hover) !important;
+    scroll-behavior: auto !important;
+  }
+
+  .matricula-v2-app *:active {
+    transform: none !important;
+  }
 }

@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 import { Badge, Button, Dropdown, Input } from 'antd';
 import { useAuthContext } from '@application-auth';
+import { buildFullName } from '@application/utils';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useTheme } from '../hooks/useTheme';
 import { mv2DropdownPopupProps } from '../theme/popupClass';
@@ -25,9 +26,10 @@ function getInitials(name) {
 const MatriculaV2TopBar = ({ onMenuClick }) => {
   const { user } = useAuthContext();
   const { theme, toggleTheme } = useTheme();
+  // Ficha del usuario logueado (excepción §4b); aun así usa el helper central.
   const displayName =
     user?.nombreCompleto ||
-    [user?.nombres, user?.apellidos].filter(Boolean).join(' ') ||
+    buildFullName(user?.nombres, user?.apellidoPaterno, user?.apellidoMaterno, '') ||
     user?.username ||
     'Usuario';
   const gestionLabel = user?.gestionActiva?.anio

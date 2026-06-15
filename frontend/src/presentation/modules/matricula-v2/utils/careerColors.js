@@ -1,13 +1,7 @@
 import { incosColors } from '../theme/incosTheme';
 
-const FALLBACK_PALETTE = [
-  '#0d6e3d',
-  '#1d4e89',
-  '#7a4cb8',
-  '#c7522a',
-  '#0a8a96',
-  '#a16207',
-];
+// Misma paleta categórica que avatares/carreras (una sola fuente de color de categoría).
+const FALLBACK_PALETTE = incosColors.categorical;
 
 const CODIGO_MAP = {
   CG: incosColors.careers['contaduria-general'],

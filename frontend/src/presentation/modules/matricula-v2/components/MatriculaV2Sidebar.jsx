@@ -8,19 +8,22 @@ import {
   BarChartOutlined,
   DashboardOutlined,
   DollarOutlined,
-  DownOutlined,
-  GiftOutlined,
   IdcardOutlined,
   ReadOutlined,
   RightOutlined,
   SafetyOutlined,
   SettingOutlined,
-  SolutionOutlined,
   TeamOutlined,
   UnorderedListOutlined,
   UserAddOutlined,
 } from '@ant-design/icons';
+import { useAuthContext } from '@application-auth';
 import logoHorizontal from '@assets/images/branding/logo-horizontal.webp';
+
+function getInitials(name) {
+  const parts = String(name || 'U').trim().split(/\s+/);
+  return ((parts[0]?.[0] || '') + (parts[parts.length - 1]?.[0] || '')).toUpperCase() || 'U';
+}
 
 function SidebarItem({ icon, label, active, sub, onClick, collapsed }) {
   const itemClass = [
@@ -32,13 +35,10 @@ function SidebarItem({ icon, label, active, sub, onClick, collapsed }) {
     .join(' ');
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onClick?.();
-      }}
+      aria-current={active ? 'page' : undefined}
       className={itemClass}
       style={{
         padding: collapsed ? '10px 0' : '10px 14px',
@@ -49,22 +49,20 @@ function SidebarItem({ icon, label, active, sub, onClick, collapsed }) {
       {active ? <span className="matricula-v2-sidebar__item-bar" aria-hidden /> : null}
       <span className="matricula-v2-sidebar__item-icon">{icon}</span>
       {!collapsed ? <span style={{ flex: 1 }}>{label}</span> : null}
-    </div>
+    </button>
   );
 }
 
 function SidebarSection({ icon, label, children, defaultOpen, collapsed }) {
   const [open, setOpen] = useState(defaultOpen);
+  const expanded = open && !collapsed;
 
   return (
     <div>
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setOpen(!open)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') setOpen((o) => !o);
-        }}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={expanded}
         className="matricula-v2-sidebar__item"
         style={{
           padding: collapsed ? '10px 0' : '10px 14px',
@@ -75,13 +73,26 @@ function SidebarSection({ icon, label, children, defaultOpen, collapsed }) {
         {!collapsed ? (
           <>
             <span style={{ flex: 1 }}>{label}</span>
-            <span style={{ fontSize: 10, color: 'var(--text-soft)' }}>
-              {open ? <DownOutlined /> : <RightOutlined />}
+            <span
+              className={`matricula-v2-sidebar__chevron${
+                open ? ' matricula-v2-sidebar__chevron--open' : ''
+              }`}
+              aria-hidden
+            >
+              <RightOutlined />
             </span>
           </>
         ) : null}
-      </div>
-      {open && !collapsed ? <div style={{ paddingBottom: 4 }}>{children}</div> : null}
+      </button>
+      {!collapsed ? (
+        <div
+          className={`matricula-v2-sidebar__submenu${
+            expanded ? ' matricula-v2-sidebar__submenu--open' : ''
+          }`}
+        >
+          <div className="matricula-v2-sidebar__submenu-inner">{children}</div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -97,6 +108,14 @@ const MatriculaV2Sidebar = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthContext();
+  const userName =
+    user?.nombreCompleto ||
+    [user?.nombres, user?.apellidos].filter(Boolean).join(' ') ||
+    user?.username ||
+    'Usuario';
+  const userRole = user?.rol?.nombre || user?.rolNombre || 'Usuario';
+  const userInitials = getInitials(userName);
   const width = isMobile ? 260 : collapsed ? 76 : 252;
   const isMatriculas =
     location.pathname === '/matricula/listar-v2' || location.pathname === '/matricula/listar';
@@ -166,11 +185,13 @@ const MatriculaV2Sidebar = ({
       </nav>
 
       <div className="matricula-v2-sidebar__footer">
-        <div className="matricula-v2-sidebar__avatar">U</div>
+        <div className="matricula-v2-sidebar__avatar">{userInitials}</div>
         {!collapsed ? (
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="matricula-v2-sidebar__user-name">Usuario</div>
-            <div className="matricula-v2-sidebar__user-role">Administrador</div>
+          <div className="matricula-v2-sidebar__footer-text">
+            <div className="matricula-v2-sidebar__user-name" title={userName}>
+              {userName}
+            </div>
+            <div className="matricula-v2-sidebar__user-role">{userRole}</div>
           </div>
         ) : null}
       </div>

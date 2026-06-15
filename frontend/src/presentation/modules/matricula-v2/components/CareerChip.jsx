@@ -1,53 +1,33 @@
 /**
- * Chip de filtro por carrera.
- * @param {{ career: { id: string, name: string, color: string }, count: number, active: boolean, onClick: () => void }} props
+ * Chip de filtro (átomo). Gemelo único para el chip "Todas" y los de carrera:
+ * mismas dimensiones, radio, transiciones y feedback de press.
+ * @param {{
+ *   label: string,
+ *   count: number,
+ *   active: boolean,
+ *   onClick: () => void,
+ *   color?: string,    // color de negocio (carrera); se sanitiza
+ *   showDot?: boolean, // el chip "Todas" no muestra punto de color
+ * }} props
  */
-const CareerChip = ({ career, count, active, onClick }) => (
-  <div
-    role="button"
-    tabIndex={0}
-    onClick={onClick}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') onClick();
-    }}
-    style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 8,
-      padding: '6px 12px',
-      background: active ? career.color : 'var(--surface)',
-      color: active ? 'white' : 'var(--text-2)',
-      border: `1px solid ${active ? career.color : 'var(--border)'}`,
-      borderRadius: 999,
-      cursor: 'pointer',
-      fontSize: 13,
-      fontWeight: 500,
-      transition: 'all 0.15s',
-      whiteSpace: 'nowrap',
-    }}
-  >
-    <span
-      style={{
-        width: 8,
-        height: 8,
-        borderRadius: '50%',
-        background: active ? 'white' : career.color,
-      }}
-    />
-    {career.name}
-    <span
-      style={{
-        background: active ? 'rgba(255,255,255,0.25)' : 'var(--bg-page-2)',
-        color: active ? 'white' : 'var(--text-muted)',
-        padding: '1px 8px',
-        borderRadius: 8,
-        fontSize: 11,
-        fontWeight: 600,
-      }}
+import { sanitizeBusinessColor } from '../utils/sanitizeColor';
+
+const CareerChip = ({ label, count, active, onClick, color, showDot = true }) => {
+  const chipColor = sanitizeBusinessColor(color, 'var(--brand-700)');
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`matricula-v2-chip${active ? ' matricula-v2-chip--active' : ''}`}
+      style={{ '--chip-color': chipColor }}
     >
-      {count}
-    </span>
-  </div>
-);
+      {showDot ? <span className="matricula-v2-chip__dot" aria-hidden /> : null}
+      {label}
+      <span className="matricula-v2-chip__count">{count}</span>
+    </button>
+  );
+};
 
 export default CareerChip;

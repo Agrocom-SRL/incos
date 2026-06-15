@@ -11,36 +11,24 @@ import {
   FileTextOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
+import { useEffect, useState } from 'react';
 import { Dropdown } from 'antd';
 import { avatarFor } from '../utils/avatarFor';
+import { sanitizeBusinessColor } from '../utils/sanitizeColor';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { mv2DropdownPopupProps } from '../theme/popupClass';
 
-function StatBlock({ label, value, accent = 'var(--text)' }) {
+function StatBlock({ label, value, accent = false }) {
   return (
-    <div style={{ textAlign: 'center' }}>
+    <div className="matricula-v2-student-card__stat">
       <div
-        style={{
-          fontSize: 18,
-          fontWeight: 800,
-          color: accent,
-          letterSpacing: -0.5,
-          lineHeight: 1,
-        }}
+        className={`matricula-v2-student-card__stat-value${
+          accent ? ' matricula-v2-student-card__stat-value--accent' : ''
+        }`}
       >
         {value}
       </div>
-      <div
-        style={{
-          fontSize: 10,
-          color: 'var(--text-soft)',
-          fontWeight: 600,
-          letterSpacing: 0.3,
-          textTransform: 'uppercase',
-          marginTop: 4,
-        }}
-      >
-        {label}
-      </div>
+      <div className="matricula-v2-student-card__stat-label">{label}</div>
     </div>
   );
 }
@@ -64,12 +52,23 @@ function MetaRow({ label, value }) {
 }
 
 const StudentCard = ({ student, onOpen, onEdit, onView }) => {
+  const reduce = useReducedMotion();
   const av = avatarFor(student.fullName);
   const progress = Math.min(100, Math.round((Number(student.semestre) / 6) * 100));
   const hs = HISTORY_MAP[student.historial] || HISTORY_MAP.completo;
   const promedio = student.promedio ?? student.avgGrade ?? '—';
-  const careerColor = student.career?.color ?? 'var(--brand-600)';
+  const careerColor = sanitizeBusinessColor(student.career?.color, 'var(--brand-600)');
   const periodoLabel = [student.periodoNombre, student.paralelo].filter(Boolean).join(' · ');
+
+  // Anima el llenado de la barra de 0 al valor real (explica el dato).
+  // En reduced-motion se renderiza el valor final directamente (sin efecto).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    if (reduce) return undefined;
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, [reduce]);
+  const fillWidth = reduce || mounted ? progress : 0;
 
   const menuItems = [
     {
@@ -155,7 +154,7 @@ const StudentCard = ({ student, onOpen, onEdit, onView }) => {
       <div className="matricula-v2-student-card__stats">
         <StatBlock label="Semestre" value={`${student.semestre}°`} />
         <StatBlock label="Materias" value={student.materias} />
-        <StatBlock label="Promedio" value={promedio} accent="var(--brand-600)" />
+        <StatBlock label="Promedio" value={promedio} accent />
       </div>
 
       <div className="matricula-v2-student-card__progress">
@@ -164,7 +163,7 @@ const StudentCard = ({ student, onOpen, onEdit, onView }) => {
           <span>{progress}%</span>
         </div>
         <div className="matricula-v2-student-card__progress-track">
-          <div className="matricula-v2-student-card__progress-fill" style={{ width: `${progress}%` }} />
+          <div className="matricula-v2-student-card__progress-fill" style={{ width: `${fillWidth}%` }} />
         </div>
       </div>
 

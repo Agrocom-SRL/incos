@@ -15,6 +15,8 @@ import AdmissionTypeTag from '../components/AdmissionTypeTag';
 import StatusPill from '../components/StatusPill';
 import StudentCell from '../components/StudentCell';
 import { mv2DropdownPopupProps, mv2TooltipProps } from '../theme/popupClass';
+import { pagoStatusOf } from './pagoStatus';
+import { sanitizeBusinessColor } from './sanitizeColor';
 
 function rowActionMenuItems(r, { handleView, handleEdit }) {
   return [
@@ -142,7 +144,7 @@ const careerColumn = {
       <div className="matricula-v2-table-career">
         <span
           className="matricula-v2-table-career__bar"
-          style={{ background: r.career.color }}
+          style={{ background: sanitizeBusinessColor(r.career.color) }}
           aria-hidden
         />
         {r.career.name}
@@ -166,10 +168,7 @@ const pagoColumn = {
   key: 'pago',
   width: 96,
   render: (_, r) => (
-    <span
-      className="matricula-v2-table-expand__pago"
-      data-status={r.estadoPago === 'Al día' ? 'ok' : r.estadoPago === 'Pendiente' ? 'err' : 'info'}
-    >
+    <span className="matricula-v2-table-expand__pago" data-status={pagoStatusOf(r.estadoPago).status}>
       {r.estadoPago}
     </span>
   ),
