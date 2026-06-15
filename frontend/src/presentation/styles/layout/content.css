@@ -5,8 +5,12 @@
    Colores: AntD theme (Layout.bodyBg) en light; vars conmutables en dark.
    ============================================================================ */
 
-/* Shell flex (patrón mv2): contenedor fijo a viewport, fila = sider + columna principal. */
+/* Shell flex (patrón mv2): ANCLADO al viewport (position:fixed inset:0) para que
+   el documento nunca scrollee y el topbar no se mueva. El único scroll vive en
+   .content (flex:1, overflow-y:auto). Réplica de .matricula-v2-app. */
 .app-shell {
+    position: fixed;
+    inset: 0;
     height: 100vh;
     overflow: hidden;
 }
