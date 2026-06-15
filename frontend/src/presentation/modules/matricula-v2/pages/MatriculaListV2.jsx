@@ -36,6 +36,26 @@ import { mv2SelectPopupProps } from '../theme/popupClass';
 // Alias capitalizado: el linter cuenta el uso JSX por identificador, no por `motion.div`.
 const MotionDiv = motion.div;
 
+/**
+ * Variantes de transición de vista (tabla ↔ tarjetas).
+ * Asimétricas: enter con dirección+escala (0.26s), exit sin escala y más rápido (0.16s).
+ * Reduced-motion: el bloque global en theme-vars.css neutraliza transforms/animaciones.
+ */
+const VIEW_VARIANTS = {
+  hidden: { opacity: 0, y: 8, scale: 0.985 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.26, ease: [0.23, 1, 0.32, 1] },
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    transition: { duration: 0.16, ease: [0.23, 1, 0.32, 1] },
+  },
+};
+
 const MatriculaListV2 = () => {
   const {
     loading,
@@ -266,24 +286,27 @@ const MatriculaListV2 = () => {
       <div
         className={`matricula-v2-table-wrap${tableWrapClass}`}
       >
-        <AnimatePresence mode="wait" initial={false}>
+        {/* AnimatePresence mode="popLayout": solapa entrada y salida (sin hueco en blanco).
+            Variantes asimétricas: enter más lento con y+scale, exit rápido y sin escala.
+            Reduced-motion: solo crossfade (ver bloque global en theme-vars.css). */}
+        <AnimatePresence mode="popLayout" initial={false}>
           {loading ? (
             <MotionDiv
               key="skeleton"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              variants={VIEW_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             >
               <MatriculaListSkeleton viewMode={viewMode} rows={pageSize > 10 ? 10 : pageSize} />
             </MotionDiv>
           ) : filtered.length === 0 ? (
             <MotionDiv
               key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              variants={VIEW_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             >
               <MatriculaEmptyState
                 hasFilters={hasFilters}
@@ -294,10 +317,10 @@ const MatriculaListV2 = () => {
           ) : (
             <MotionDiv
               key={`data-${viewMode}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              variants={VIEW_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             >
               {viewMode === 'table' ? (
                 <div

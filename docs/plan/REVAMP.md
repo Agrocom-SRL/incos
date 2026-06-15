@@ -79,6 +79,16 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 5. Estado y progreso (actualizar al cerrar cada tarea)
 
+- [x] Fase 2 — Ampliación de perceptibilidad motion/hover en `matricula-v2` (pase 2):
+      Primario reanclado a brand-500 en `incosTheme.js` + CSS; sombras amplificadas
+      (shadow-md/lg con brecha real); hover botón primario con lift+glow; ghost hover
+      con lift+shadow; KPI hover con translateY(-3px)+icon scale+value scale+blob parallax;
+      sidebar hover con translateX+icon tint; chips activos con `@keyframes mv2-chip-pop`;
+      AnimatePresence mode=popLayout con y+scale asimétrico (enter 0.26s/exit 0.16s);
+      topbar icon microinteracciones con scale+bell tilt; search focus ring amplificado;
+      acción de fila icon scale en hover; dark mode verde menos fosforescente (#86e3b3/#5dd3a0).
+
+
 - [x] Skills globales de diseño instaladas (`emil-design-eng`, `impeccable`,
       `design-taste-frontend`, `caveman`, `find-skills`). `humanize` descartada
       (servicio de pago externo).
@@ -98,6 +108,27 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 - [ ] Fase 5: migración módulo a módulo.
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
+
+- 2026-06-14 — Verificación pase 2: lint módulo  reporta exactamente 5 errores
+  PRE-EXISTENTES conocidos (3x set-state-in-effect en hooks no tocados + 2x
+  only-export-components). Cero errores en archivos editados por el pase. Datos intactos:
+   conserva el useEffect con refetch({ params:{page:1,limit:100} }) al
+  montar; adaptadores sin cambios. Sin hex/px sueltos nuevos en componentes; todas las
+  animaciones gateadas por useReducedMotion / prefers-reduced-motion. Estado: pase 2 CERRADO.
+
+- 2026-06-14 — Pase 2 de amplificación motion/hover en `matricula-v2` (nivel "notorio pero
+  profesional"). 14 hallazgos de auditoría aplicados: (alta) primario a brand-500 en
+  `incosTheme.js` y CSS (esmeralda saturado, AA 4.8:1); sombras shadow-md/lg amplificadas
+  con brecha real; botón primario hover con translateY(-1px)+glow de marca+active scale;
+  KPI hover con translateY(-3px)+icon scale(1.1)+value scale(1.025)+blob parallax+border accent;
+  sidebar hover con translateX(2px)+icon tint brand-600; AnimatePresence mode=popLayout con
+  y:8+scale:0.985 enter (0.26s) / y:-6 exit (0.16s) eliminando el "corte" en tabla↔tarjetas.
+  (media) ghost hover con lift+shadow; topbar icon scale+bell tilt keyframe; search focus
+  ring 3px; segmented selected font-weight+shadow amplificado; dark mode nav-hover 18%.
+  (baja/tokens) `@keyframes mv2-chip-pop` al activar chips; icon scale en acción de fila;
+  StudentCard hover border+shadow amplificados; dark verde fosforescente bajado
+  (active-fg #86e3b3, pill-ok-fg #5dd3a0). Lint: 0 errores en archivos tocados.
+
 
 - 2026-06-14 — Fix import roto PRE-EXISTENTE en `matricula-v2/hooks/useMatriculaListV2.js`
   (`@application-configuracion/academico/carreras/hooks/useCarrerasApi` →

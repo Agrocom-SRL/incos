@@ -66,7 +66,9 @@ export const buildIncosAntdTheme = (mode) => {
   const dark = mode === 'dark';
   return {
     token: {
-      colorPrimary: incosColors.brand[600],
+      /* brand-500 (#007848) es el verde esmeralda de identidad (§3 REVAMP),
+         pasa AA (≈4.8:1 sobre blanco). brand-700 queda solo para sidebar/headers. */
+      colorPrimary: incosColors.brand[500],
       colorSuccess: incosColors.semantic.success,
       colorWarning: dark ? '#e0a82e' : incosColors.semantic.warning,
       colorError: incosColors.semantic.danger,

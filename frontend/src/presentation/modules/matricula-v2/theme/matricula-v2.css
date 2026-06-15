@@ -230,8 +230,15 @@
   transform: rotate(90deg);
 }
 
-.matricula-v2-sidebar__item:hover:not(.matricula-v2-sidebar__item--active) {
-  background: var(--nav-item-hover-bg);
+@media (hover: hover) and (pointer: fine) {
+  .matricula-v2-sidebar__item:not(.matricula-v2-sidebar__item--active):hover {
+    background: var(--nav-item-hover-bg);
+    transform: translateX(2px);
+  }
+
+  .matricula-v2-sidebar__item:not(.matricula-v2-sidebar__item--active):hover .matricula-v2-sidebar__item-icon {
+    color: var(--brand-600);
+  }
 }
 
 .matricula-v2-sidebar__item--active {
@@ -265,6 +272,7 @@
 .matricula-v2-sidebar__item-icon {
   font-size: 16px;
   display: inline-flex;
+  transition: color var(--dur-hover) var(--ease-out);
 }
 
 .matricula-v2-sidebar__footer {
@@ -344,6 +352,39 @@
 
 .matricula-v2-topbar__icon {
   color: var(--text-muted) !important;
+  transition:
+    color var(--dur-hover) var(--ease-out),
+    transform var(--dur-hover) var(--ease-out) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .matricula-v2-topbar__icon:hover {
+    color: var(--brand-600) !important;
+    transform: scale(1.12) !important;
+  }
+}
+
+/* Campana: pequeño "tilt" en hover para notificar atención */
+@keyframes mv2-bell-tilt {
+
+  0%,
+  100% {
+    transform: scale(1.12) rotate(0deg);
+  }
+
+  25% {
+    transform: scale(1.12) rotate(-8deg);
+  }
+
+  75% {
+    transform: scale(1.12) rotate(8deg);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .matricula-v2-topbar__icon[aria-label='Notificaciones']:hover {
+    animation: mv2-bell-tilt 0.35s var(--ease-out) both;
+  }
 }
 
 .matricula-v2-topbar__divider {
@@ -393,6 +434,16 @@
   border-color: var(--brand-500) !important;
   color: var(--brand-700) !important;
   background: var(--surface-hover) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .matricula-v2-btn--ghost:not(:disabled):hover {
+    border-color: var(--brand-500) !important;
+    color: var(--brand-700) !important;
+    background: var(--surface-hover) !important;
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--brand-500) 18%, transparent) !important;
+    transform: translateY(-1px) !important;
+  }
 }
 
 .matricula-v2-btn--danger {
@@ -522,7 +573,7 @@
 }
 
 .matricula-v2-breadcrumb li:last-child {
-  color: var(--brand-700) !important;
+  color: var(--brand-600) !important;
   font-weight: 600;
 }
 
@@ -564,13 +615,35 @@
   box-shadow: var(--shadow-sm);
   transition:
     transform var(--dur-hover) var(--ease-out),
-    box-shadow var(--dur-hover) var(--ease-out);
+    box-shadow var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out);
 }
 
 @media (hover: hover) {
   .matricula-v2-kpi-card:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    box-shadow:
+      0 8px 24px rgba(0, 72, 48, 0.13),
+      0 2px 6px rgba(0, 72, 48, 0.08),
+      0 0 0 1px color-mix(in srgb, var(--kpi-accent) 30%, transparent);
+    border-color: color-mix(in srgb, var(--kpi-accent) 45%, var(--border));
+  }
+
+  /* Icono crece en hover de la card — microinteracción de refuerzo */
+  .matricula-v2-kpi-card:hover .matricula-v2-kpi-card__icon {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--kpi-accent) 35%, transparent);
+  }
+
+  /* Valor "respira" al hacer hover — da vida al número */
+  .matricula-v2-kpi-card:hover .matricula-v2-kpi-card__value {
+    transform: scale(1.025);
+    transform-origin: left center;
+  }
+
+  /* Blob parallax sutil en hover */
+  .matricula-v2-kpi-card:hover .matricula-v2-kpi-card__blob--lg {
+    transform: translate(-4px, 4px);
   }
 }
 
@@ -589,6 +662,7 @@
   height: 140px;
   opacity: 0.13;
   filter: blur(2px);
+  transition: transform var(--dur-hover) var(--ease-out);
 }
 
 .matricula-v2-kpi-card__blob {
@@ -626,6 +700,9 @@
   font-size: 18px;
   box-shadow: 0 4px 10px color-mix(in srgb, var(--kpi-accent) 25%, transparent);
   flex-shrink: 0;
+  transition:
+    transform var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out);
 }
 
 .matricula-v2-kpi-card__label {
@@ -647,6 +724,8 @@
   color: var(--text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.5px;
+  transition: transform var(--dur-hover) var(--ease-out);
+  display: inline-block;
 }
 
 .matricula-v2-kpi-card__delta {
@@ -709,6 +788,21 @@
   align-items: center;
 }
 
+/* Animación de "pop" al activar un chip (spring corto visual) */
+@keyframes mv2-chip-pop {
+  0% {
+    transform: translateY(-1px) scale(0.96);
+  }
+
+  60% {
+    transform: translateY(-2px) scale(1.04);
+  }
+
+  100% {
+    transform: translateY(-1px) scale(1);
+  }
+}
+
 /* Chip de filtro (carrera + "Todas") — átomo único, mismas transiciones/estados */
 .matricula-v2-chip {
   --chip-color: var(--brand-600);
@@ -729,6 +823,7 @@
     background-color var(--dur-hover) var(--ease-out),
     color var(--dur-hover) var(--ease-out),
     border-color var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out),
     transform var(--dur-press) var(--ease-out);
 }
 
@@ -736,9 +831,18 @@
   background: var(--chip-color);
   color: #fff;
   border-color: var(--chip-color);
+  /* Chip activo "salta" del grupo para separarse visualmente */
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--chip-color) 38%, transparent);
+  animation: mv2-chip-pop var(--dur-pop) var(--ease-out) both;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
+  .matricula-v2-chip:not(.matricula-v2-chip--active):hover {
+    border-color: var(--chip-color);
+    color: var(--chip-color);
+    background: color-mix(in srgb, var(--chip-color) 8%, var(--surface));
+  }
+
   .matricula-v2-chip:active {
     transform: scale(0.97);
   }
@@ -1246,9 +1350,14 @@
   color: #fff !important;
 }
 
-.matricula-v2-app .matricula-v2-export-btn--career.ant-btn:hover:not(:disabled) {
-  filter: brightness(1.08);
-  color: #fff !important;
+@media (hover: hover) and (pointer: fine) {
+  .matricula-v2-app .matricula-v2-export-btn--career.ant-btn:not(:disabled):hover {
+    filter: brightness(1.12) !important;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--career-color) 40%, transparent) !important;
+    transform: translateY(-1px) !important;
+    border-color: var(--career-color) !important;
+    color: #fff !important;
+  }
 }
 
 /* Estado vacío (organismo gemelo de listados) */
@@ -1307,12 +1416,10 @@
   height: 280px;
   border-radius: 16px;
   border: 1px solid var(--border);
-  background: linear-gradient(
-    100deg,
-    var(--surface-alt) 30%,
-    var(--surface-hover) 50%,
-    var(--surface-alt) 70%
-  );
+  background: linear-gradient(100deg,
+      var(--surface-alt) 30%,
+      var(--surface-hover) 50%,
+      var(--surface-alt) 70%);
   background-size: 200% 100%;
   animation: matricula-v2-shimmer 1.4s var(--ease-in-out) infinite;
 }
@@ -1325,12 +1432,10 @@
 
 .matricula-v2-skeleton-row {
   height: 56px;
-  background: linear-gradient(
-    100deg,
-    var(--surface) 30%,
-    var(--surface-hover) 50%,
-    var(--surface) 70%
-  );
+  background: linear-gradient(100deg,
+      var(--surface) 30%,
+      var(--surface-hover) 50%,
+      var(--surface) 70%);
   background-size: 200% 100%;
   animation: matricula-v2-shimmer 1.4s var(--ease-in-out) infinite;
 }
@@ -1339,12 +1444,14 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .matricula-v2-skeleton-card,
   .matricula-v2-skeleton-row {
     animation: none;
@@ -1370,9 +1477,12 @@
 
 @media (hover: hover) {
   .matricula-v2-student-card:hover {
-    border-color: color-mix(in srgb, var(--card-career-color) 32%, var(--border-strong));
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--card-career-color) 40%, var(--border-strong));
+    box-shadow:
+      0 10px 28px rgba(0, 72, 48, 0.12),
+      0 3px 8px rgba(0, 72, 48, 0.07),
+      0 0 0 1px color-mix(in srgb, var(--card-career-color) 25%, transparent);
+    transform: translateY(-3px);
   }
 
   .matricula-v2-student-card:active {
@@ -1672,7 +1782,12 @@
 .matricula-v2-app .ant-input:focus,
 .matricula-v2-app .ant-input-affix-wrapper-focused {
   border-color: var(--brand-500) !important;
-  box-shadow: 0 0 0 2px rgba(13, 122, 61, 0.12) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 18%, transparent) !important;
+  transform: scale(1.005);
+  transition:
+    border-color var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out),
+    transform var(--dur-hover) var(--ease-out) !important;
 }
 
 .matricula-v2-app .ant-btn {
@@ -1681,27 +1796,49 @@
   color: var(--text-2) !important;
 }
 
-.matricula-v2-app .ant-btn:hover {
-  border-color: var(--brand-500) !important;
-  color: var(--brand-600) !important;
+@media (hover: hover) and (pointer: fine) {
+  .matricula-v2-app .ant-btn:not(:disabled):hover {
+    border-color: var(--brand-500) !important;
+    color: var(--brand-600) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--text) 14%, transparent) !important;
+  }
 }
 
 .matricula-v2-app .ant-btn-text {
   background: transparent !important;
   border: none !important;
   color: var(--text-muted) !important;
+  border-color: var(--text-muted) !important;
 }
 
+/* Primario: anclado a brand-500 (esmeralda #007848, AA sobre blanco) en reposo.
+   brand-700 queda reservado para sidebar/headers (§3 REVAMP). */
 .matricula-v2-app .ant-btn-primary {
-  background: var(--brand-700) !important;
-  border-color: var(--brand-700) !important;
+  background: var(--brand-500) !important;
+  border-color: var(--brand-500) !important;
   color: white !important;
-  box-shadow: 0 2px 6px rgba(8, 80, 42, 0.18) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--brand-500) 28%, transparent) !important;
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out) !important;
 }
 
-.matricula-v2-app .ant-btn-primary:hover {
-  background: var(--brand-600) !important;
-  border-color: var(--brand-600) !important;
+@media (hover: hover) and (pointer: fine) {
+  .matricula-v2-app .ant-btn-primary:not(:disabled):hover {
+    background: var(--brand-600) !important;
+    border-color: var(--brand-600) !important;
+    color: white !important;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--brand-600) 38%, transparent) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .matricula-v2-app .ant-btn-primary:not(:disabled):active {
+    transform: translateY(0) scale(0.97) !important;
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--brand-700) 25%, transparent) !important;
+  }
 }
 
 /* Press feedback universal (sin tocar cada botón). Sólo puntero fino. */
@@ -1731,8 +1868,9 @@
 .matricula-v2-app .ant-segmented-item-selected,
 .matricula-v2-app .ant-segmented-thumb {
   background: var(--surface) !important;
-  color: var(--brand-700) !important;
-  box-shadow: var(--shadow-sm) !important;
+  color: var(--brand-600) !important;
+  font-weight: 600 !important;
+  box-shadow: var(--shadow) !important;
 }
 
 .matricula-v2-app .ant-pagination-item,
@@ -1749,7 +1887,7 @@
 }
 
 .matricula-v2-app .ant-pagination-item-active a {
-  color: var(--brand-700) !important;
+  color: var(--brand-600) !important;
   font-weight: 600;
 }
 
@@ -1977,7 +2115,7 @@
 
 .matricula-v2-app .ant-dropdown-menu-item:hover {
   background: var(--surface-hover) !important;
-  color: var(--brand-700) !important;
+  color: var(--brand-600) !important;
 }
 
 /* Select (Ant Design 6 — variables CSS del input) */
@@ -2071,6 +2209,18 @@
   background: var(--surface-hover) !important;
 }
 
+/* Scale del icono interno de los botones de acción (info/warning/muted) */
+@media (hover: hover) and (pointer: fine) {
+
+  .matricula-v2-app .matricula-v2-action-icon--info.ant-btn:hover .anticon,
+  .matricula-v2-app .matricula-v2-action-icon--warning.ant-btn:hover .anticon,
+  .matricula-v2-app .matricula-v2-action-icon--muted.ant-btn:hover .anticon {
+    transform: scale(1.1);
+    display: inline-flex;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+}
+
 /* Popups portados a body (Select dropdown + menú Dropdown) */
 .matricula-v2-ant-popup.ant-select-dropdown,
 .matricula-v2-ant-popup .ant-select-dropdown {
@@ -2092,7 +2242,7 @@
 
 .matricula-v2-ant-popup .ant-select-item-option-selected {
   background: var(--brand-50) !important;
-  color: var(--brand-700) !important;
+  color: var(--brand-600) !important;
   font-weight: 600;
 }
 
@@ -2111,7 +2261,7 @@
 
 .matricula-v2-ant-popup .ant-dropdown-menu-item:hover {
   background: var(--surface-hover) !important;
-  color: var(--brand-700) !important;
+  color: var(--brand-600) !important;
 }
 
 .matricula-v2-ant-popup .ant-dropdown-menu-item-danger {
