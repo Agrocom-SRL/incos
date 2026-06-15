@@ -1,26 +1,18 @@
 // src/infrastructure/config/theme/light.js
 /**
- * Configuración del tema claro (light) de Ant Design para INCOS Santa Cruz
- * Basado en los colores institucionales del logo y la bandera cruceña
- * 
- * Este archivo combina todos los módulos del tema siguiendo principios SOLID
- * 
- * NOTA: Si en el futuro se necesita un tema oscuro, crear un archivo dark.js
- * siguiendo la misma estructura pero con darkAlgorithm y tokens oscuros
+ * Tema claro (light) de INCOS — construido desde buildAntdTheme.
+ * La API de este módulo se mantiene para no romper los imports de init.js
+ * y de cualquier consumidor legacy que use `@theme/light`.
  */
 
 import { theme } from 'antd';
-import { allThemeTokens, componentConfig } from '@theme/tokens';
+import { buildAntdTheme } from '@theme/buildAntdTheme';
 
 const { defaultAlgorithm } = theme;
 
-/**
- * Tema claro (light) de INCOS
- * Usa defaultAlgorithm de Ant Design y todos los tokens personalizados
- */
+/** Objeto de tema AntD para modo claro (listo para <ConfigProvider theme=…>). */
 export const incosTheme = {
-  token: allThemeTokens,
-  components: componentConfig,
+  ...buildAntdTheme('light'),
   algorithm: defaultAlgorithm,
 };
 

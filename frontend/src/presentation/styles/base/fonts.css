@@ -1,0 +1,14 @@
+/* ==========================================================================
+   FUENTES — INCOS (auto-hospedadas, sin Google Fonts)
+   Inter via @fontsource/inter — font-display: swap para evitar FOIT.
+   Pesos usados en el sistema: 400 (normal) · 500 (medium) · 600 (semibold) · 700 (bold).
+   ========================================================================== */
+
+/* 400 — texto base */
+@import '@fontsource/inter/400.css';
+/* 500 — etiquetas, metadata */
+@import '@fontsource/inter/500.css';
+/* 600 — cabeceras de tabla, labels de form */
+@import '@fontsource/inter/600.css';
+/* 700 — headings, énfasis */
+@import '@fontsource/inter/700.css';

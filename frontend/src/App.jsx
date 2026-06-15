@@ -1,34 +1,57 @@
 // src/App.jsx
 /**
- * Componente raíz de la aplicación
- * 
+ * Componente raíz de la aplicación.
+ *
  * Responsabilidades:
- * - Configurar providers globales (Theme, Ant Design, etc.)
- * - Renderizar el router de la aplicación
- * - Contener la lógica de inicialización de la aplicación
- * - NO incluye Providers de módulos específicos (estos van en cada página)
- * 
+ * - Configurar providers globales (ThemeProvider, ConfigProvider AntD, AntApp).
+ * - Renderizar el router de la aplicación.
+ *
  * Arquitectura:
- * - main.jsx → App.jsx (providers + lógica app) → AppRouter → MainLayout → Pages
- * 
- * Single Responsibility: Configurar la aplicación y sus providers globales
- * Open/Closed: Abierto para agregar Providers globales (Auth, Theme, etc.)
+ *   main.jsx → App.jsx (providers) → AppRouter → MainLayout → Pages
+ *
+ * ThemeProvider: gestiona data-theme en <html> + localStorage 'incos-theme'.
+ * AppConfigProvider: inyecta el tema AntD correcto según el modo activo.
+ * injectCSSVariables(): sigue corriendo para los módulos legacy que leen --color-*.
+ *
+ * Single Responsibility: Configurar la aplicación y sus providers globales.
  */
 
-import { ConfigProvider, App as AntApp } from 'antd';
+import { ConfigProvider, App as AntApp, theme as antTheme } from 'antd';
 import { initStyles } from '@theme/init';
+import { buildAntdTheme } from '@theme/buildAntdTheme';
+import { ThemeProvider, useTheme } from '@presentation/hooks/useTheme';
 import AppRouter from '@components-router/AppRouter';
-// Inicializar sistema de estilos (tema + variables CSS + estilos)
-const incosTheme = initStyles();
 
-const App = () => {
-    return (
-        <ConfigProvider theme={incosTheme}>
-            <AntApp>
-                <AppRouter />
-            </AntApp>
-        </ConfigProvider>
-    );
-};
+// Inicializar variables CSS legacy (injectCSSVariables) y estilos.
+// La llamada sigue siendo necesaria: los módulos no migrados leen --color-* de JS.
+initStyles();
+
+/**
+ * Inner: accede al contexto de tema para pasar el algorithm correcto a AntD.
+ * Separado de App para poder usar useTheme() (necesita estar dentro del Provider).
+ */
+function AppConfigProvider({ children }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const antdTheme = {
+    ...buildAntdTheme(theme),
+    algorithm: isDark ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
+  };
+
+  return (
+    <ConfigProvider theme={antdTheme}>
+      <AntApp>{children}</AntApp>
+    </ConfigProvider>
+  );
+}
+
+const App = () => (
+  <ThemeProvider>
+    <AppConfigProvider>
+      <AppRouter />
+    </AppConfigProvider>
+  </ThemeProvider>
+);
 
 export default App;

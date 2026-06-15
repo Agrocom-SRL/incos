@@ -12,6 +12,37 @@
     width: 94%;
 }
 
+/* Dark mode conmutable — todos los colores via vars conmutables */
+:root[data-theme='dark'] .navigation-menu {
+    color: var(--text);
+}
+:root[data-theme='dark'] .navigation-menu .ant-menu-item {
+    color: var(--text-2) !important;
+}
+:root[data-theme='dark'] .navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) {
+    background-color: var(--nav-item-hover-bg) !important;
+    color: var(--text) !important;
+}
+:root[data-theme='dark'] .navigation-menu .ant-menu-item-selected {
+    background-color: var(--nav-item-active-bg) !important;
+    color: var(--nav-item-active-fg) !important;
+}
+:root[data-theme='dark'] .navigation-menu .ant-menu-item-selected .anticon,
+:root[data-theme='dark'] .navigation-menu .ant-menu-item-selected span {
+    color: var(--nav-item-active-fg) !important;
+}
+:root[data-theme='dark'] .navigation-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    background-color: var(--nav-item-active-bg) !important;
+    border-color: var(--nav-item-active-border) !important;
+    color: var(--nav-item-active-fg) !important;
+}
+:root[data-theme='dark'] .navigation-menu .ant-menu-submenu-title {
+    color: var(--text-2) !important;
+}
+:root[data-theme='dark'] .ant-layout-sider-collapsed .navigation-menu .ant-menu-item .anticon {
+    color: var(--text-2) !important;
+}
+
 .navigation-menu .ant-menu-item {
     border-radius: var(--border-radius-sm);
     margin: var(--spacing-sm) 0;
@@ -177,14 +208,6 @@
     margin: 0 var(--spacing-sm) 0 0;
 }
 
-.ant-layout-sider-collapsed .navigation-menu .ant-mƒenu-item {
-    padding: 0;
-    justify-content: center;
-    align-items: center;
-    height: var(--control-height);
-    display: flex;
-}
-
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item span {
     display: none;
 }
@@ -219,4 +242,162 @@
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item,
 .ant-layout-sider-collapsing .navigation-menu .ant-menu-item {
     position: relative;
+}
+
+/* ============================================================================
+   NAVIGATION MENU — patrón mv2 (renderer SidebarItem/SidebarSection)
+   Tokens conmutables: --nav-item-*, --brand-*, --text*, --border.
+   Animaciones gateadas por prefers-reduced-motion (brand-tokens.css).
+   ============================================================================ */
+
+.navigation-menu-custom {
+    padding: 0;
+    margin: 0;
+}
+
+/* ── SidebarItem (hoja) ─────────────────────────────────────────────────────── */
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm, 8px);
+    width: calc(100% - 20px);
+    margin: 2px 10px;
+    padding: 10px 14px;
+    border-radius: var(--border-radius-sm, 4px);
+    cursor: pointer;
+    font-size: var(--font-size-base, 14px);
+    text-align: left;
+    position: relative;
+    color: var(--nav-item-fg, var(--color-text));
+    font-weight: 500;
+    font-family: inherit;
+    background: transparent;
+    border: 1px solid transparent;
+    transition:
+        background-color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        border-color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        transform var(--dur-press, 140ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+/* Anillo de foco de marca — accesibilidad AA (§3 hallazgo focus-visible) */
+.sidebar-item:focus-visible,
+.sidebar-section__toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500, #007848) 35%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .sidebar-item:not(.sidebar-item--active):hover {
+        background: var(--nav-item-hover-bg);
+        transform: translateX(2px);
+    }
+    .sidebar-item:not(.sidebar-item--active):hover .sidebar-item__icon {
+        color: var(--brand-600, #006048);
+    }
+    .sidebar-item:active {
+        transform: scale(0.985);
+    }
+}
+
+/* Ítem activo */
+.sidebar-item--active {
+    background: var(--nav-item-active-bg, #e3f2ea);
+    color: var(--nav-item-active-fg, #004830);
+    font-weight: 600;
+    border-color: var(--nav-item-active-border, #1f9163);
+    box-shadow: var(--nav-item-active-shadow, 0 1px 4px rgba(0, 72, 48, 0.12));
+}
+
+.sidebar-item--active .sidebar-item__icon {
+    color: var(--nav-item-active-fg, #004830);
+}
+
+/* Ítem sub (dentro de sección) */
+.sidebar-item--sub {
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+/* Barra lateral del ítem activo */
+.sidebar-item__bar {
+    position: absolute;
+    left: -10px;
+    top: 6px;
+    bottom: 6px;
+    width: 4px;
+    background: var(--nav-item-active-bar, #007848);
+    border-radius: 4px;
+    box-shadow: 0 0 6px color-mix(in srgb, var(--nav-item-active-bar, #007848) 50%, transparent);
+}
+
+/* Icono del ítem */
+.sidebar-item__icon {
+    font-size: 16px;
+    display: inline-flex;
+    flex-shrink: 0;
+    transition: color var(--dur-hover, 160ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+/* Label del ítem */
+.sidebar-item__label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── SidebarSection (acordeón) ────────────────────────────────────────────── */
+.sidebar-section {
+    /* contenedor de sección */
+}
+
+/* Chevron rotatorio como affordance */
+.sidebar-section__chevron {
+    font-size: 10px;
+    color: var(--text-soft, #6e7a72);
+    display: inline-flex;
+    flex-shrink: 0;
+    transition: transform var(--dur-pop, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.sidebar-section__chevron--open {
+    transform: rotate(90deg);
+}
+
+/* Acordeón: animación de altura vía grid-template-rows (0fr → 1fr) */
+.sidebar-section__submenu {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+        grid-template-rows var(--dur-pop, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+        opacity var(--dur-pop, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.sidebar-section__submenu--open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+.sidebar-section__submenu-inner {
+    overflow: hidden;
+    min-height: 0;
+    padding-bottom: 4px;
+}
+
+/* ── prefers-reduced-motion — neutralizar animaciones ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .sidebar-item,
+    .sidebar-section__chevron,
+    .sidebar-section__submenu {
+        transition-property: opacity, color, background-color, border-color !important;
+        transition-duration: var(--dur-hover, 160ms) !important;
+    }
+    .sidebar-item:active {
+        transform: none !important;
+    }
+    .sidebar-item:hover {
+        transform: none !important;
+    }
 }

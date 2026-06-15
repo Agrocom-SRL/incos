@@ -1,14 +1,11 @@
 /* ============================================================================
    SIDEBAR (Ant Design Sider Component)
    ============================================================================
-   SOLO estilos de posicionamiento y layout
-   Los colores se aplican AUTOMÁTICAMENTE desde componentConfig.Layout.siderBg
-   Ant Design aplica estos valores cuando se pasa el tema al ConfigProvider
-   NO FORZAMOS colores aquí - el tema debe funcionar automáticamente
+   Posicionamiento y layout.
+   Colores: AntD theme (Layout.siderBg) en light; vars conmutables en dark.
    ============================================================================ */
 
 .sider {
-    /* Solo posicionamiento - los colores vienen del tema de Ant Design */
     height: calc(100vh - var(--header-height));
     position: fixed;
     left: 0;
@@ -18,6 +15,18 @@
     box-shadow: var(--sombra-sider);
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+/* Dark mode conmutable */
+:root[data-theme='dark'] .sider {
+    background: var(--surface-chrome) !important;
+    border-right: 1px solid var(--border);
+    box-shadow: none;
+}
+
+/* El componente Ant Design Sider anida un div interno — también debe oscurecerse */
+:root[data-theme='dark'] .sider .ant-layout-sider-children {
+    background: var(--surface-chrome);
 }
 
 /* ============================================================================

@@ -1,9 +1,23 @@
-/* Variables de tema INCOS — claro / oscuro */
-
 /* ==========================================================================
-   Tokens de motion (una sola fuente de verdad — §6b incos-ui-system)
-   Cualquier transición del módulo consume estas vars, nunca literales.
+   TOKENS DE MARCA — INCOS (global, conmutables light/dark)
+   Promovidos de matricula-v2/theme/matricula-v2-theme-vars.css a capa global.
+
+   CAMBIOS RESPECTO AL ORIGINAL:
+   (a) Se eliminó la regla `html, body, #root { background: var(--bg-page) }`
+       que pisaba el body del legacy. Los módulos migrados aplican el fondo
+       en sus propios selectores de clase (.matricula-v2-app, etc.).
+   (b) --ease-* / --dur-* se mantienen en :root (des-namespaciados de
+       .matricula-v2-app) para que cualquier módulo los pueda consumir.
+   (c) @media (prefers-reduced-motion) des-namespaciada a global — solo TOKENS.
+       Los wrappers Motion (AnimatePresence, MotionConfig) son WS-B.
+
+   NO incluir aquí: wrappers Motion, componentes, variables de layout.
    ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Tokens de motion — una sola fuente de verdad para toda la app (§6b)
+   Cualquier transición consume estas vars, nunca curvas/duraciones literales.
+   -------------------------------------------------------------------------- */
 :root {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -14,27 +28,17 @@
   --dur-drawer: 320ms;
 }
 
+/* --------------------------------------------------------------------------
+   Tokens de color de marca — modo CLARO
+   Anclados a REVAMP §3: #007848 primario, #006048/#004830 oscuros.
+   NOTA: --brand-N y --accent-* los genera applyThemeVars() en runtime
+   (tokens/colors.js → brandScale). No hay duplicado estático aquí.
+   -------------------------------------------------------------------------- */
 :root[data-theme='light'] {
-  /* Escala de marca anclada a REVAMP §3: #007848 primario, #006048/#004830 oscuros */
-  --brand-50: #e3f2ea;
-  --brand-100: #bfe0cf;
-  --brand-200: #8ec9ad;
-  --brand-300: #56ad86;
-  --brand-400: #1f9163;
-  --brand-500: #007848;
-  --brand-600: #006048;
-  --brand-700: #004830;
-  --brand-800: #003a26;
-  --brand-900: #002b1c;
-
-  --accent-red: #c0282a;
-  --accent-gold: #b07e10;
-  --accent-sky: #3d6dd0;
-
   /* Fondo principal: gris verdoso (no neutro frío) */
   --bg-page: #e6ece8;
   --bg-page-2: #d8e3dc;
-  /* Sidebar y topbar: verde muy suave, distinto del blanco puro */
+  /* Superficies: verde muy suave, distinto del blanco puro */
   --surface-chrome: #fafcfb;
   --chrome-input-bg: #e4ebe6;
   --surface: #fafcfb;
@@ -66,11 +70,10 @@
 
   --shadow-sm: 0 1px 2px rgba(0, 72, 48, 0.06);
   --shadow: 0 2px 8px rgba(0, 72, 48, 0.09), 0 1px 2px rgba(0, 72, 48, 0.05);
-  /* shadow-md amplificado: brecha clara respecto a shadow-sm para que el hover se "sienta" */
   --shadow-md: 0 10px 28px rgba(0, 72, 48, 0.14), 0 3px 8px rgba(0, 72, 48, 0.08);
   --shadow-lg: 0 16px 44px rgba(0, 72, 48, 0.18);
 
-  /* Navegación sidebar — activo debe contrastar con surface-chrome */
+  /* Navegación sidebar (ref --brand-N que applyThemeVars inyecta) */
   --nav-item-fg: var(--text-2);
   --nav-item-hover-bg: color-mix(in srgb, var(--brand-600) 17%, transparent);
   --nav-item-active-bg: var(--brand-50);
@@ -86,23 +89,11 @@
   color-scheme: light;
 }
 
+/* --------------------------------------------------------------------------
+   Tokens de color de marca — modo OSCURO
+   NOTA: --brand-N y --accent-* los genera applyThemeVars('dark') en runtime.
+   -------------------------------------------------------------------------- */
 :root[data-theme='dark'] {
-  /* En oscuro la escala se ilumina partiendo de los mismos anclajes de marca */
-  --brand-50: #0a2218;
-  --brand-100: #103224;
-  --brand-200: #16513a;
-  --brand-300: #1f9163;
-  --brand-400: #2eae79;
-  --brand-500: #3fc48d;
-  --brand-600: #2eae79;
-  --brand-700: #1f9163;
-  --brand-800: #16513a;
-  --brand-900: #103224;
-
-  --accent-red: #e8625f;
-  --accent-gold: #e0a82e;
-  --accent-sky: #6f9af0;
-
   --bg-page: #07140e;
   --bg-page-2: #0a1d14;
   --surface-chrome: #0c1812;
@@ -128,7 +119,6 @@
   --pill-warn-bg: #3a2810;
   --pill-warn-fg: #fbbf24;
   --pill-ok-bg: #103820;
-  /* Bajado de #6ee7b0 → menos fosforescente, más menta contenida (AA ≥4.5:1 sobre #103820) */
   --pill-ok-fg: #5dd3a0;
   --pill-err-bg: #3a1818;
   --pill-err-fg: #fca5a5;
@@ -140,6 +130,7 @@
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
 
+  /* Navegación sidebar (ref --brand-N que applyThemeVars inyecta) */
   --nav-item-fg: var(--text-2);
   --nav-item-hover-bg: color-mix(in srgb, var(--brand-500) 18%, transparent);
   --nav-item-active-bg: var(--brand-200);
@@ -155,18 +146,12 @@
   color-scheme: dark;
 }
 
-html,
-body,
-#root {
-  background: var(--bg-page);
-  color: var(--text);
-  transition: background var(--dur-pop) var(--ease-out), color var(--dur-pop) var(--ease-out);
-}
-
-/* ==========================================================================
-   Accesibilidad — usuarios con prefers-reduced-motion.
+/* --------------------------------------------------------------------------
+   Accesibilidad — prefers-reduced-motion (global, des-namespaciado)
    Neutraliza transforms y animaciones; conserva opacity/color para feedback.
-   ========================================================================== */
+   Los selectores apuntan a clases de módulo migrado; el legacy no tiene
+   estas clases y no se ve afectado.
+   -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .matricula-v2-app *,
   .matricula-v2-app *::before,

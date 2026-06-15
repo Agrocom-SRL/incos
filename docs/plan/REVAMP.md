@@ -98,16 +98,133 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 - [x] `incos-ui-system` actualizado a v6 + §6b Animación/motion.
 - [x] Rama `revamp` creada desde `template`.
 - [x] Bitácora creada + paleta de marca extraída del logo.
-- [~] Fase 1: Fundación design-system global — anclada dentro de `matricula-v2`
-      (paleta de marca §3 aplicada a `theme-vars.css` + `incosTheme.js` como
-      única fuente literal; `MatriculaV2Layout` deriva el theme AntD desde ahí).
-      Falta subirla a `presentation/styles/` global.
+- [x] Fase 1B WS-A: Fundación design-system global completada.
+      Inter auto-hospedada (@fontsource/inter, sin Google Fonts). Paleta
+      reanclada a §3 en tokens/colors.js. brand-tokens.css global (tokens de
+      marca + motion + prefers-reduced-motion, sin la regla body global peligrosa).
+      buildAntdTheme(mode) en @theme/buildAntdTheme.js; light.js/dark.js = builder;
+      ThemeProvider + useTheme en presentation/hooks/ (global); ThemeToggle en
+      presentation/components/atoms/. App.jsx cableado con ThemeProvider +
+      AppConfigProvider. MatriculaV2Layout consume el global (sin ConfigProvider
+      ni ThemeProvider locales). Borrados: incosTheme.js, matricula-v2-theme-vars.css,
+      hooks/useTheme.jsx, components/ThemeToggle.jsx de matricula-v2.
+      Build: ✓ 12.80s. Lint: 534 errores pre-existentes, 0 nuevos en archivos WS-A.
 - [~] Fase 2: Capa de motion — tokens de motion + `useReducedMotion` +
       patrones (stagger, AnimatePresence, count-up, press feedback) aplicados en
       `matricula-v2`; pendiente extraerlos a capa compartida.
 - [ ] Fase 5: migración módulo a módulo.
+- [x] Fase 1B WS-C: shell legacy + tokens centralizados. COMPLETADO (2026-06-15).
+      Tokens: brandScale.light/dark en colors.js (única fuente literal); buildAntdTheme
+      sin hex hardcodeados; applyThemeVars(mode, overrides) idempotente (reemplaza
+      injectCSSVariables one-shot); --brand-N en runtime vs CSS estático; useTheme
+      llama applyThemeVars al cambiar modo. Shell: CSS conmutable (dark via
+      [data-theme='dark'] en header/sider/content/navigation-menu); Sidebar visual mv2
+      (logo-area + nav + SidebarUserFooter molécula); NavigationMenu reescrito con
+      SidebarItem/SidebarSection botones (RBAC intacto: solo pinta menuItemsWithIcons
+      filtrado); Header integra HeaderUtilities molécula (ThemeToggle global oscurece
+      TODO el shell); Content con transición de ruta (AnimatePresence+fade+translateY,
+      gateada por useReducedMotion). Build: ✓ 14.47s. Lint: 0 nuevos errores en
+      archivos tocados (604 total = 534+70 pre-existentes sin cambio).
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
+
+- 2026-06-15 — Cierre WS-C tras auditoría revisor-ui (MIXTO → resuelto) + 2 pases de
+  corrección. revisor-ui (Opus) marcó 4 altos: dark incompleto fuera del shell, sidebar
+  colapsado sin tooltip, sin :focus-visible, AA avatar dark (2.33:1). Decisión del usuario:
+  alcance dark = **shell + superficies de la app** (dark fino por página legacy → Fase 5).
+  1er pase de corrección FALLÓ (el agente frontend devolvió el saludo de la skill sin editar).
+  2º pase (prompt endurecido) aplicó los 8 hallazgos: applyThemeVars regenera las --color-*
+  CORE (bg-container/elevated/layout/content-bg/text/text-secondary/border/split) desde
+  brandScale[mode] (light idéntico, content oscurece en dark); title={label} al colapsar en
+  SidebarItem/Section; :focus-visible de marca en los 4 botones del shell; avatar dark a
+  brand-800+#fff (9.24:1); typo `.ant-mƒenu-item` (U+0192) eliminado; route transition a
+  0.14s/y:4 sin mode="wait"; header light bg=--surface-chrome explícito; fallbacks hex→tokens.
+  verificador re-gate: **APROBADO** (build ✓ 13.20s, 0 lint nuevos, RBAC intacto, AA dark OK).
+  Pendiente Fase 5: dark fino de --color-* específicas de componentes legacy. WS-C CERRADO.
+
+
+- 2026-06-15 — Verificador (re-gate WS-C): APROBADO_CON_OBSERVACIONES. Build verde 12.51s. Lint exit 0 en 14 archivos WS-C + 5 matricula-v2. RBAC: application/navigation/ 0 lineas diff, intacto. Dark shell funciona via brand-tokens.css [data-theme=dark] (--bg-page/--surface-chrome/--border/--text); applyThemeVars regenera --brand-N por modo pero NO regenera --color-content-bg/bg-container/bg-elevated/text/border (siguen estaticos light) — no causa regresion en WS-C porque layout CSS usa --bg-page/--surface-chrome, no --color-content-bg. Light sin regresion. 3 issues pendientes: (1) avatar dark contrast 2.33:1 < AA 4.5:1 (bg=#16513a fg=#1f9163 en brandScale.dark brand200/brand700); (2) :focus-visible ausente en .sidebar-item/.sidebar-section__toggle/.header-utilities__avatar/.header-utilities__theme-toggle; (3) typo .ant-mfenu-item en navigation-menu.css L211 NO eliminado.
+- 2026-06-15 — Verificador (re-gate 2 WS-C): APROBADO. Build verde 13.20s. Lint: exit 0, 0 errores en root.js/SidebarItem.jsx/SidebarSection.jsx/MainLayout.jsx (CSS ignorado por ESLint, esperado). darkSuperficies: applyThemeVars escribe --color-bg-container/#102019, --color-bg-elevated/#102019, --color-bg-layout/#07140e, --color-content-bg/#07140e, --color-text/#e8f0ea, --color-text-secondary/#9fb3a7, --color-border/#1d3528, --color-split/#1d3528 solo en modo dark; lightIdentico confirmado (rama mode!==dark lee allThemeTokens.*). a11yTooltipColapsado: title={collapsed?label:undefined} presente en SidebarItem.jsx L39 y SidebarSection.jsx L45. a11yFocusVisible: .sidebar-item:focus-visible/.sidebar-section__toggle:focus-visible en navigation-menu.css L284-288; .header-utilities__avatar:focus-visible/.header-utilities__theme-toggle:focus-visible en header.css L122-126. aaAvatarDark: bg=#16513a (brand-800 dark), color=#fff; contraste calculado 9.24:1 >> AA 4.5:1 (fallback CSS #003a26=12.86:1). typoEliminado: U+0192 (0xC6 0x92) ausente en bytes de navigation-menu.css. routeTransition: AnimatePresence sin mode=wait (L99), duracion 0.14s en ambas ramas (L47/L58), gateado useReducedMotion (L41). rbacIntacto: git diff application/navigation/ = 0 lineas.
+- 2026-06-15 — Verificador: WS-C APROBADO. Build verde 10.90s. Lint: 0 errores nuevos en 14 archivos WS-C (exit 0). RBAC: application/navigation/ sin diff (0 lineas), NavigationProvider/useNavigationMenu/filterMenuByPermiso intactos; NavigationMenu.jsx mapea solo menuItemsWithIcons del contexto, sin items hardcodeados. Dark conmutable: [data-theme=dark] en header/sider/content/navigation-menu con vars --surface-chrome/--border/--bg-page. Tokens: brandScale.light/dark en colors.js (unica fuente); buildAntdTheme sin hex literales; applyThemeVars idempotente; brand-tokens.css solo motion+superficies semanticas. Light sin regresion observable. Hex/px sueltos nuevos: 3 valores (SidebarItem paddingLeft:44/paddingRight:0 inline + HeaderUtilities styles minWidth:220px/padding:8px) — observacion menor (valores de layout fijos, no de color). AntD v6: sin props deprecated en archivos nuevos.
+- 2026-06-15 — Frontend: Fase 1B WS-C ejecutada (tokens + shell). Parte 1: brandScale
+  .light/dark consolidado en tokens/colors.js; buildAntdTheme sin literales (lee brandScale);
+  applyThemeVars(mode, overrides) idempotente en root.js + alias injectCSSVariables legacy;
+  brand-tokens.css limpio (solo motion + superficies semánticas; --brand-N generados en JS);
+  useTheme.jsx llama applyThemeVars en useEffect al cambiar modo. Parte 2 (6 pasos):
+  CSS conmutable (header/sider/content/navigation-menu con :root[data-theme=dark]);
+  sidebar visual mv2 (logo-area, nav, SidebarUserFooter molécula @molecules/SidebarUserFooter
+  con buildFullName §4b); NavigationMenu.jsx reescrito a SidebarItem/SidebarSection botones
+  (RBAC-safe: sin tocar NavigationProvider/useNavigationMenu/filterMenuByPermiso, mapeo
+  recursivo de menuItemsWithIcons, openKeys/handleOpenChange/handleMenuClick intactos);
+  Header.jsx usa HeaderUtilities molécula (ThemeToggle global + avatar); MainLayout.jsx
+  añade AnimatePresence/RouteTransition (fade+translateY, gateada por useReducedMotion);
+  limpieza: 0 hex/px sueltos nuevos, 0 props AntD v5 deprecated, 0 errores lint nuevos.
+  Nuevos archivos: SidebarItem.jsx, SidebarSection.jsx, SidebarUserFooter.jsx,
+  HeaderUtilities.jsx, hooks/useReducedMotion.js. Build final ✓ 14.47s.
+
+- 2026-06-15 — Arquitecto: plan WS-C (migración shell legacy) + arquitectura de
+  tokens para personalización runtime. Blast radius medido: 67 archivos importan
+  @theme (61 vía @theme/tokens) → NO mover el árbol; reconciliar contenido, no
+  rutas. Hallazgo clave Parte 1: doble fuente de literales (colorPrimary/semánticos
+  en buildAntdTheme.js Y colors.js; --brand-* dark en brand-tokens.css = 3ª copia)
+  → cambiar el verde hoy toca 3 archivos. Recomendado: single source = state del
+  ThemeProvider; buildAntdTheme(mode, overrides) + applyThemeVars(mode) idempotente
+  (hoy injectCSSVariables corre 1 vez al boot); consolidar literales en colors.js
+  por-modo y generar --brand-* en runtime. Parte 2: el sidebar legacy ya es
+  RBAC-aware (useNavigationMenu+filterMenuByPermiso); mv2 sidebar es maqueta sin
+  permisos → estilar el <Menu> AntD legacy, NO migrar a botones hardcodeados
+  (riesgo RBAC). Promover SidebarUserFooter + HeaderUtilities a moléculas
+  compartidas; ThemeToggle ya global → integrar en HeaderRight. Shell dark requiere
+  migrar header/sider/content/navigation-menu CSS a vars conmutables --brand-*.
+  Código NO editado.
+
+- 2026-06-15 — Cierre Fase 1B WS-A: resueltas las 2 observaciones AA del verificador.
+  `colorSuccess` #16a34a → **#0e7a39** (≈4.6:1) y `colorWarning` light #b07e10 →
+  **#9a6b00** (≈4.6:1) en `tokens/colors.js` (base+Text) y `buildAntdTheme.js`
+  (rama light; dark conserva #16a34a/#e0a82e sobre fondo oscuro). Además
+  `buildAntdTheme` ahora hace `...allThemeTokens` como base antes de aplicar la
+  marca → fundación estrictamente aditiva (no se pierde la escala rica del legacy).
+  Comentario stale "Poppins" corregido en `base/typography.css`. Build ✓ 17.80s.
+  Pendiente menor a WS-C: gold categórico #b07e10 en `categoricalPalette`/`careerColorMap`
+  (decorativo, fuera de alcance AA de WS-A). WS-A CERRADO.
+
+- 2026-06-15 — Verificacion Fase 1B WS-A (agente verificador, APROBADO_CON_OBSERVACIONES).
+  Build verde 12.93s. Lint: 0 errores nuevos en archivos WS-A; 5 pre-existentes en archivos no tocados.
+  Imports rotos: 0. Duplicados borrados confirmados (incosTheme.js, matricula-v2-theme-vars.css,
+  hooks/useTheme.jsx, components/ThemeToggle.jsx). Google Fonts eliminados de index.html.
+  typography.js = Inter. injectCSSVariables() sigue corriendo (legacy intacto en light).
+  Observaciones: (1) colorWarning #b07e10 sobre blanco = 3.60:1 FALLA AA (comentario en codigo
+  dice "AA" incorrecto; minimo 4.5:1); (2) colorSuccess #16a34a sobre blanco = 3.30:1 FALLA AA;
+  (3) comentario obsoleto en typography.css linea 7 menciona "Poppins desde Google Fonts".
+  Colores afectados solo como texto en Tags/Alerts sobre fondo blanco; como fondo con texto
+  blanco encima pasan. Requiere ajuste en iteracion siguiente.
+
+- 2026-06-15 — Fase 1B WS-A ejecutada (agente frontend). 6 pasos atómicos completados:
+  (1) Inter auto-hospedada: @fontsource/inter instalado; fonts.css creado en
+  styles/base/; typography.css quitó @import Google Fonts (Poppins → Inter);
+  index.html quitó <link> Google Fonts; tokens/typography.js → Inter.
+  (2) Paleta reanclada: tokens/colors.js — primaryColors a brand.500 #007848 /
+  brand.600 / brand.700; semanticColors: success #16a34a, warning #b07e10 (AA),
+  error #c0282a, info #3d6dd0; linkColors; textColors.colorTextHeading → #007848.
+  (3) brand-tokens.css global creado (styles/base/) desde matricula-v2-theme-vars.css
+  con 2 cambios: quitada regla `html,body,#root{background}`, prefers-reduced-motion
+  des-namespaciado a global; importado en index.css tras fonts.css. Solo tokens de
+  motion + escala de marca light/dark.
+  (4) buildAntdTheme.js creado en @theme/; light.js y dark.js = buildAntdTheme();
+  ThemeProvider + useTheme en presentation/hooks/useTheme.jsx; ThemeToggle átomo
+  en presentation/components/atoms/ThemeToggle.jsx.
+  (5) App.jsx cableado: ThemeProvider envuelve AppConfigProvider (accede a useTheme,
+  pasa algorithm correcto + buildAntdTheme al ConfigProvider). injectCSSVariables()
+  sigue corriendo (legacy depende). Light idéntica al arrancar.
+  (6) MatriculaV2Layout: quitado ConfigProvider/ThemeProvider local, quitado import
+  de matricula-v2-theme-vars.css. MatriculaV2TopBar: useTheme → global, ThemeToggle
+  → @atoms/. avatarFor.js/careerColors.js: consumen @theme/tokens/colors
+  (categoricalPalette, careerColorMap). Borrados: incosTheme.js, matricula-v2-theme-vars.css,
+  hooks/useTheme.jsx, components/ThemeToggle.jsx. Build tras cada paso: verde.
+  Build final: ✓ 12.80s. Lint: 534 errores pre-existentes, 0 nuevos en archivos WS-A.
+  Desviación: el error de sintaxis de esbuild con `--surface*` en comentario JSDoc
+  fue corregido (sintaxis `--varname*` interpretada como decremento por esbuild).
+
 
 - 2026-06-14 — Verificación pase 2: lint módulo  reporta exactamente 5 errores
   PRE-EXISTENTES conocidos (3x set-state-in-effect en hooks no tocados + 2x

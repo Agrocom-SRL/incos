@@ -1,22 +1,24 @@
 /* ============================================================================
    CONTENT
    ============================================================================
-   SOLO estilos de posicionamiento y layout
-   Los colores se aplican AUTOMÁTICAMENTE desde componentConfig.Layout.bodyBg
-   Ant Design aplica estos valores cuando se pasa el tema al ConfigProvider
+   Posicionamiento y layout.
+   Colores: AntD theme (Layout.bodyBg) en light; vars conmutables en dark.
    ============================================================================ */
 
 .content {
-    /* Solo posicionamiento y márgenes - los colores vienen del tema de Ant Design */
     margin-top: calc(var(--header-height) + var(--spacing-xl));
     margin-left: calc(var(--sidebar-width) + var(--spacing-base));
     margin-right: var(--spacing-base);
     transition: margin-left var(--transition-base), padding var(--transition-base);
-
-    /* Prevenir overflow horizontal */
     overflow-x: hidden;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+/* Dark mode conmutable */
+:root[data-theme='dark'] .content {
+    background: var(--bg-page) !important;
+    color: var(--text);
 }
 
 /* ============================================================================

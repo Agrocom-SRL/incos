@@ -1,15 +1,121 @@
 /* ============================================================================
-   SIDEBAR COMPONENT (Organism)
+   SIDEBAR COMPONENT (Organism) — lenguaje visual mv2
    ============================================================================
-   Estilos para el componente Sidebar interno (sidebar-container)
-   SOLO estilos de layout y posicionamiento
-   Los colores vienen de componentConfig.Menu y componentConfig.Sider
+   Layout / posicionamiento / tokens conmutables (--brand-*, --surface*, --text*).
+   Los colores de fondo del Sider AntD vienen de ConfigProvider; aquí sólo se
+   ajusta el contenedor interno y sus sub-zonas.
    ============================================================================ */
 
 .sidebar-container {
     height: 100%;
-    width: 110%;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    padding: var(--spacing-lg) 0;
+    overflow: hidden;
+}
+
+/* ── Logo area ─────────────────────────────────────────────────────────────── */
+.sidebar-container__logo {
+    padding: var(--spacing-sm) var(--spacing-sm);
+    border-bottom: 1px solid var(--border, var(--color-border));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+}
+
+.sidebar-container__logo-icon {
+    width: 100%;
+    max-width: 52px;
+    height: 40px;
+    border-radius: var(--border-radius-sm, 4px);
+    background: var(--brand-700, #004830);
+    color: #fff;
+    font-weight: 800;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.5px;
+}
+
+/* ── Nav ────────────────────────────────────────────────────────────────────── */
+.sidebar-container__nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--spacing-sm) 0;
+}
+
+/* ── Footer de usuario (SidebarUserFooter) ──────────────────────────────────── */
+.sidebar-user-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm, 8px);
+    padding: var(--spacing-sm, 8px) var(--spacing-base, 16px);
+    border-top: 1px solid var(--border, var(--color-border));
+    flex-shrink: 0;
+}
+
+.sidebar-user-footer__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-100, #bfe0cf);
+    color: var(--brand-700, #004830);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.sidebar-user-footer__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.sidebar-user-footer__name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text, #0a1f15);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-user-footer__role {
+    font-size: 11px;
+    color: var(--text-muted, #566159);
+}
+
+/* ── Collapsed state — centrar avatar ──────────────────────────────────────── */
+.sidebar-container--collapsed .sidebar-user-footer {
+    padding: var(--spacing-sm, 8px) 0;
+    justify-content: center;
+}
+
+.sidebar-container--collapsed .sidebar-container__logo {
+    padding: var(--spacing-xs, 4px);
+}
+
+/* ── Dark mode (vars conmutables) ────────────────────────────────────────────── */
+:root[data-theme='dark'] .sidebar-container__logo {
+    border-bottom-color: var(--divider);
+}
+:root[data-theme='dark'] .sidebar-user-footer {
+    border-top-color: var(--divider);
+}
+:root[data-theme='dark'] .sidebar-user-footer__avatar {
+    /* brand-800 dark (#16513a) + #fff → contraste ≈5.8:1, pasa AA 4.5:1 */
+    background: var(--brand-800, #003a26);
+    color: #ffffff;
+}
+:root[data-theme='dark'] .sidebar-user-footer__name {
+    color: var(--text);
+}
+:root[data-theme='dark'] .sidebar-user-footer__role {
+    color: var(--text-muted);
 }

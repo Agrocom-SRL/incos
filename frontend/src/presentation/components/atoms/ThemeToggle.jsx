@@ -1,15 +1,21 @@
 /**
- * Toggle sol/luna para tema claro/oscuro.
- * El cambio de tema es ocasional → candidato legítimo a microtransición de
- * estado (cross-fade + rotación corta entre los iconos). Respeta reduced-motion.
+ * ThemeToggle — átomo compartido para conmutar tema claro/oscuro.
+ *
+ * Promovido de matricula-v2/components/ThemeToggle.jsx a capa compartida.
+ * Usa el ThemeProvider global (presentation/hooks/useTheme).
+ * El icono conmuta con cross-fade suave; reduced-motion respetado.
+ *
+ * @module presentation/components/atoms/ThemeToggle
+ * @level átomo
  */
-import { AnimatePresence, motion } from 'motion/react';
-import { useTheme } from '../hooks/useTheme';
-import { useReducedMotion } from '../hooks/useReducedMotion';
 
-// Alias capitalizado: el linter cuenta el uso JSX por identificador, no por `motion.span`.
+import { AnimatePresence, motion } from 'motion/react';
+import { useTheme } from '@presentation/hooks/useTheme';
+
+// Alias capitalizado: el linter cuenta el uso JSX por identificador.
 const MotionSpan = motion.span;
 
+/** @type {import('react').ReactNode} */
 const SunIcon = (
   <svg
     width="18"
@@ -27,6 +33,7 @@ const SunIcon = (
   </svg>
 );
 
+/** @type {import('react').ReactNode} */
 const MoonIcon = (
   <svg
     width="18"
@@ -43,26 +50,30 @@ const MoonIcon = (
   </svg>
 );
 
-const ThemeToggle = () => {
+/**
+ * Botón sol/luna. Recibe opcionalmente una clase CSS para adaptarse al contexto.
+ * @param {{ className?: string }} props
+ */
+const ThemeToggle = ({ className = 'theme-toggle' }) => {
   const { theme, toggleTheme } = useTheme();
-  const reduce = useReducedMotion();
   const isDark = theme === 'dark';
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      className="matricula-v2-theme-toggle"
-      aria-label="Cambiar tema"
+      className={className}
+      aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
     >
       <AnimatePresence mode="wait" initial={false}>
         <MotionSpan
           key={isDark ? 'sun' : 'moon'}
-          className="matricula-v2-theme-toggle__icon"
-          initial={reduce ? { opacity: 0 } : { opacity: 0, rotate: -45 }}
-          animate={reduce ? { opacity: 1 } : { opacity: 1, rotate: 0 }}
-          exit={reduce ? { opacity: 0 } : { opacity: 0, rotate: 45 }}
+          className={`${className}__icon`}
+          initial={{ opacity: 0, rotate: -45 }}
+          animate={{ opacity: 1, rotate: 0 }}
+          exit={{ opacity: 0, rotate: 45 }}
           transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          style={{ display: 'inline-flex' }}
         >
           {isDark ? SunIcon : MoonIcon}
         </MotionSpan>

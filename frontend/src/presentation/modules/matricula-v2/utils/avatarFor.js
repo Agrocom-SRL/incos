@@ -1,7 +1,7 @@
-import { incosColors } from '../theme/incosTheme';
+import { categoricalPalette } from '@theme/tokens/colors';
 
-// Paleta categórica única del módulo (derivada de los acentos de marca).
-const PALETTE = incosColors.categorical;
+// Paleta categórica global (promovida a @theme/tokens/colors en WS-A).
+const PALETTE = categoricalPalette;
 
 /**
  * Iniciales y color para avatar a partir del nombre completo.

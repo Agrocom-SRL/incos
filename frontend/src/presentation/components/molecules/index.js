@@ -1,5 +1,9 @@
 // src/presentation/components/molecules/index.js
 export { default as NavigationMenu } from './NavigationMenu';
+export { default as SidebarUserFooter } from './SidebarUserFooter';
+export { default as SidebarItem } from './SidebarItem';
+export { default as SidebarSection } from './SidebarSection';
+export { default as HeaderUtilities } from './HeaderUtilities';
 export { default as HeaderLeft } from './HeaderLeft';
 export { default as HeaderRight } from './HeaderRight';
 export { default as FormField } from './FormField';

@@ -1,16 +1,8 @@
-import { incosColors } from '../theme/incosTheme';
+import { categoricalPalette, careerColorMap, primaryColors } from '@theme/tokens/colors';
 
-// Misma paleta categórica que avatares/carreras (una sola fuente de color de categoría).
-const FALLBACK_PALETTE = incosColors.categorical;
-
-const CODIGO_MAP = {
-  CG: incosColors.careers['contaduria-general'],
-  SI: incosColors.careers['sistemas-informaticos'],
-  AE: incosColors.careers.administracion,
-  MP: incosColors.careers.marketing,
-  SE: incosColors.careers.secretariado,
-  EI: incosColors.careers.electronica,
-};
+// Paleta categórica global y mapa de carreras promovidos a @theme/tokens/colors en WS-A.
+const FALLBACK_PALETTE = categoricalPalette;
+const CODIGO_MAP = careerColorMap;
 
 /**
  * Color de carrera: API (colorHex) → código → hash por id.
@@ -27,5 +19,6 @@ export function resolveCareerColor(carrera) {
   if (!Number.isNaN(id) && id > 0) {
     return FALLBACK_PALETTE[id % FALLBACK_PALETTE.length];
   }
-  return incosColors.brand[600];
+  // Fallback: brand.600 del sistema global
+  return primaryColors.colorPrimaryHover;
 }

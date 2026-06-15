@@ -1,21 +1,23 @@
 // src/presentation/components/organisms/Header/Header.jsx
-import { HeaderLeft, HeaderRight } from '@molecules';
-
 /**
- * Header - Componente organismo del Header principal
- * Contiene las secciones izquierda y derecha
- * 
- * Single Responsibility: Organismo que compone el Header de la aplicación
- * 
+ * Header — organismo del header principal (lenguaje visual mv2).
+ *
+ * Compone HeaderLeft (logo + trigger) + HeaderUtilities (ThemeToggle + avatar).
+ * HeaderUtilities integra el ThemeToggle global para que el toggle oscurezca
+ * TODO el shell (header, sider, content, menú), no solo matricula-v2.
+ *
  * Clean Architecture:
  * - Presentation Layer: Organism component
- * - Usa: Molecules (HeaderLeft, HeaderRight)
+ * - Usa: Molecules (HeaderLeft, HeaderUtilities)
  */
+import { HeaderLeft } from '@molecules';
+import HeaderUtilities from '@molecules/HeaderUtilities';
+
 const Header = ({ collapsed, onToggle }) => {
     return (
         <>
             <HeaderLeft collapsed={collapsed} onToggle={onToggle} />
-            <HeaderRight />
+            <HeaderUtilities />
         </>
     );
 };

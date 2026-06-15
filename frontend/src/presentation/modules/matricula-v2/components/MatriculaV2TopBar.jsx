@@ -14,9 +14,9 @@ import { Badge, Button, Dropdown, Input } from 'antd';
 import { useAuthContext } from '@application-auth';
 import { buildFullName } from '@application/utils';
 import { useMediaQuery } from '../hooks/useMediaQuery';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '@presentation/hooks/useTheme';
 import { mv2DropdownPopupProps } from '../theme/popupClass';
-import ThemeToggle from './ThemeToggle';
+import ThemeToggle from '@atoms/ThemeToggle';
 
 function getInitials(name) {
   const parts = String(name || 'U').trim().split(/\s+/);
@@ -121,7 +121,7 @@ const MatriculaV2TopBar = ({ onMenuClick }) => {
                 aria-label="Notificaciones"
               />
             </Badge>
-            <ThemeToggle />
+            <ThemeToggle className="matricula-v2-theme-toggle" />
           </div>
         )}
         

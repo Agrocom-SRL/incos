@@ -1,23 +1,72 @@
 // src/infrastructure/config/theme/root.js
 /**
- * Generador de variables CSS desde el tema de Ant Design
- * Este archivo sincroniza las variables CSS con el tema JS e inyecta en :root
- * 
- * TODAS las variables CSS se generan desde el tema JS (single source of truth)
- * y se inyectan en el elemento root del HTML (document.documentElement)
- * 
- * Responsabilidad: Inyectar variables CSS en :root desde la configuración del tema
+ * Generador de variables CSS desde el tema de Ant Design.
+ *
+ * ── applyThemeVars(mode, overrides) ─────────────────────────────────────────
+ * Idempotente y re-invocable: puede llamarse cada vez que cambia el modo.
+ * Genera en runtime los tokens --brand-* (light/dark) desde brandScale,
+ * eliminando la 3ª copia que vivía en brand-tokens.css.
+ *
+ * ── injectCSSVariables() ────────────────────────────────────────────────────
+ * Alias legacy (sigue siendo llamado desde init.js para módulos no migrados
+ * que leen --color-* legacy). Delega en applyThemeVars('light').
+ *
+ * Responsabilidad: Sincronizar variables CSS con el estado del tema.
  * Ubicación: Infrastructure/theme (parte del sistema de tema)
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import { allThemeTokens, componentConfig } from '@theme/tokens';
+import { brandScale } from '@theme/tokens/colors';
 
 /**
- * Genera TODAS las variables CSS desde el tema JS
- * Se inyecta en el DOM al cargar la aplicación
+ * Genera TODAS las variables CSS desde el tema JS.
+ * Idempotente: puede llamarse múltiples veces (cada llamada sobreescribe).
+ *
+ * @param {'light' | 'dark'} [mode='light']
+ * @param {object} [overrides={}] Tokens extra (preparado para personalización runtime).
  */
-export function injectCSSVariables() {
+export function applyThemeVars(mode = 'light', overrides = {}) {
   const root = document.documentElement;
+  const sc = brandScale[mode] ?? brandScale.light;
+
+  // ── Variables --brand-* conmutables (reemplaza la copia dark de brand-tokens.css) ──
+  root.style.setProperty('--brand-50',  sc.brand50);
+  root.style.setProperty('--brand-100', sc.brand100);
+  root.style.setProperty('--brand-200', sc.brand200);
+  root.style.setProperty('--brand-300', sc.brand300);
+  root.style.setProperty('--brand-400', sc.brand400);
+  root.style.setProperty('--brand-500', sc.brand500);
+  root.style.setProperty('--brand-600', sc.brand600);
+  root.style.setProperty('--brand-700', sc.brand700);
+  root.style.setProperty('--brand-800', sc.brand800);
+  root.style.setProperty('--brand-900', sc.brand900);
+  root.style.setProperty('--accent-red',  sc.accentRed);
+  root.style.setProperty('--accent-gold', sc.accentGold);
+  root.style.setProperty('--accent-sky',  sc.accentSky);
+
+  // ── Variables --color-* CORE de superficie/texto/borde (conmutables por modo) ──
+  // En light: EXACTAMENTE los valores de allThemeTokens (sin regresión respecto al baseline).
+  // En dark:  se derivan de brandScale.dark para oscurecer el shell y las superficies de la app.
+  // NOTA: las --color-* específicas de componentes legacy (tables, buttons, etc.)
+  //       se oscurecerán individualmente en Fase 5; estas cubren solo la capa de shell.
+  if (mode === 'dark') {
+    root.style.setProperty('--color-bg-container',  sc.colorBgContainer);
+    root.style.setProperty('--color-bg-elevated',   sc.colorBgElevated);
+    root.style.setProperty('--color-bg-layout',     sc.colorBgLayout);
+    root.style.setProperty('--color-content-bg',    sc.bgPage);
+    root.style.setProperty('--color-text',           sc.text);
+    root.style.setProperty('--color-text-secondary', sc.textSecondary);
+    root.style.setProperty('--color-border',         sc.border);
+    root.style.setProperty('--color-split',          sc.border);
+  }
+  // En light, --color-bg-container/elevated/layout/content-bg/text/text-secondary/border/split
+  // se establecen más abajo desde allThemeTokens (valores exactos del baseline).
+
+  // Personalización runtime (preparado, sin feature implementada)
+  Object.entries(overrides).forEach(([k, v]) => root.style.setProperty(k, v));
+
+  // ── (El resto de las variables --color-* / --spacing-* sigue igual) ──
 
   // ========================================
   // COLORES DE COMPONENTES LAYOUT
@@ -25,11 +74,15 @@ export function injectCSSVariables() {
   // ========================================
 
   // Content - Variables CSS usadas en global.css
-  root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
+  // En light: estos valores son exactamente los del baseline (allThemeTokens / componentConfig).
+  // En dark: fueron establecidos arriba con sc.* (brandScale.dark). No se pisan aquí.
   root.style.setProperty('--color-content-text', allThemeTokens.colorText);
-  root.style.setProperty('--color-bg-layout', allThemeTokens.colorBgLayout);
-  root.style.setProperty('--color-bg-container', allThemeTokens.colorBgContainer); // Para DataCards y otros componentes
-  root.style.setProperty('--color-bg-elevated', allThemeTokens.colorBgElevated);
+  if (mode !== 'dark') {
+    root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
+    root.style.setProperty('--color-bg-layout', allThemeTokens.colorBgLayout);
+    root.style.setProperty('--color-bg-container', allThemeTokens.colorBgContainer);
+    root.style.setProperty('--color-bg-elevated', allThemeTokens.colorBgElevated);
+  }
   
   // Color verde institucional (usado en reset.css para focus y Tags)
   root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
@@ -133,11 +186,15 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-item-hover-bg', allThemeTokens.colorAccentOliveBg);
   
   // Variables de borde y texto usadas en múltiples componentes
+  // En light: valores exactos del baseline (allThemeTokens). En dark: ya establecidas con sc.*.
   root.style.setProperty('--color-border-secondary', allThemeTokens.colorBorderSecondary);
-  root.style.setProperty('--color-border', allThemeTokens.colorBorder);
-  root.style.setProperty('--color-text', allThemeTokens.colorText);
-  root.style.setProperty('--color-text-secondary', allThemeTokens.colorTextSecondary);
   root.style.setProperty('--color-text-tertiary', allThemeTokens.colorTextTertiary);
+  if (mode !== 'dark') {
+    root.style.setProperty('--color-border', allThemeTokens.colorBorder);
+    root.style.setProperty('--color-split', allThemeTokens.colorBorder);
+    root.style.setProperty('--color-text', allThemeTokens.colorText);
+    root.style.setProperty('--color-text-secondary', allThemeTokens.colorTextSecondary);
+  }
   
   // Color blanco (para texto sobre fondos primarios, estados activos, etc.)
   root.style.setProperty('--color-white', allThemeTokens.colorWhite);
@@ -247,5 +304,13 @@ export function injectCSSVariables() {
   // TRANSICIONES
   // ========================================
   root.style.setProperty('--transition-base', allThemeTokens.motionDurationMid);
-  
+}
+
+/**
+ * Alias legacy — llama applyThemeVars('light') para que los módulos no migrados
+ * que leen --color-* sigan funcionando sin cambios.
+ * init.js llama este alias al boot.
+ */
+export function injectCSSVariables() {
+  applyThemeVars('light');
 }

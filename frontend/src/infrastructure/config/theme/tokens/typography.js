@@ -8,8 +8,8 @@ export const typography = {
   // ========================================
   // FAMILIAS DE FUENTES
   // ========================================
-  // Fuente principal para toda la aplicación
-  fontFamily: "'Poppins', sans-serif",
+  // Fuente principal para toda la aplicación (auto-hospedada, sin Google Fonts)
+  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   // Fuente monoespaciada para código (ej: <code>, <pre>)
   fontFamilyCode: "'Courier New', monospace",
 
