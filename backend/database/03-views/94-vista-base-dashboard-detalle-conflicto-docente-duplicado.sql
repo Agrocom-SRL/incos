@@ -1,15 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_dashboard_detalle_conflicto_docente_duplicado
--- Una fila por asignación docente que presenta conflicto de duplicación
--- (mismo curso asignado más de una vez al mismo docente).
---
--- Devuelve: docente_id, docente_nombre, detalle_linea
--- Reutilizada por: vista_dashboard_docentes_conflictos_detalle (92)
---
--- Reutiliza:
---   vista_base_docente_asignacion_conflicto_curso (64),
---   asignaciones_docentes, docentes, cursos,
---   paralelos, asignaturas_plan, materias
+-- Detalle de asignación duplicada por docente.
 -- ============================================
 
 USE instituto_incos;
@@ -20,18 +11,21 @@ CREATE VIEW vista_base_dashboard_detalle_conflicto_docente_duplicado AS
 SELECT DISTINCT
   ad.docente_id AS docente_id,
   TRIM(CONCAT(
-    COALESCE(d.nombres, ''), ' ',
     COALESCE(d.apellido_paterno, ''), ' ',
-    COALESCE(d.apellido_materno, '')
+    COALESCE(d.apellido_materno, ''), ' ',
+    COALESCE(d.nombres, '')
   )) AS docente_nombre,
+  pg.id AS paralelo_gestion_id,
+  oc.id AS oferta_curso_id,
+  'duplicado' AS tipo_conflicto,
   CONCAT(
     'Asignación duplicada · ',
-    COALESCE(NULLIF(TRIM(m.sigla), ''), m.nombre, c.codigo, '—'),
+    COALESCE(NULLIF(TRIM(m.sigla), ''), m.nombre, CONCAT('OC-', oc.id), '—'),
     ' · ',
     COALESCE(p.nombre, ''),
     CASE
-      WHEN p.turno IS NOT NULL AND TRIM(COALESCE(p.turno, '')) <> ''
-        THEN CONCAT(' · ', p.turno)
+      WHEN pg.turno IS NOT NULL AND TRIM(COALESCE(pg.turno, '')) <> ''
+        THEN CONCAT(' · ', pg.turno)
       ELSE ''
     END
   ) AS detalle_linea
@@ -42,14 +36,17 @@ INNER JOIN asignaciones_docentes ad
 INNER JOIN docentes d
   ON d.id = ad.docente_id
   AND d.deleted_at IS NULL AND d.activo = TRUE
-INNER JOIN cursos c
-  ON c.id = ad.curso_id
-  AND c.deleted_at IS NULL AND c.activo = TRUE
+INNER JOIN oferta_cursos oc
+  ON oc.id = ad.oferta_curso_id
+  AND oc.deleted_at IS NULL AND oc.activo = TRUE
+INNER JOIN paralelos_gestion pg
+  ON pg.id = oc.paralelo_gestion_id
+  AND pg.deleted_at IS NULL
 INNER JOIN paralelos p
-  ON p.id = c.paralelo_id
+  ON p.id = pg.paralelo_id
   AND p.deleted_at IS NULL AND p.activo = TRUE
 LEFT JOIN asignaturas_plan ap
-  ON ap.id = c.asignatura_plan_id
+  ON ap.id = oc.asignatura_plan_id
   AND ap.deleted_at IS NULL AND ap.activo = TRUE
 LEFT JOIN materias m
   ON m.id = ap.materia_id

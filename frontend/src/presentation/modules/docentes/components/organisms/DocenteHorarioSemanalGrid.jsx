@@ -2,8 +2,11 @@
  * Grilla lunes–sábado × franjas horarias (calendario semanal del docente).
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Button, Flex, Popover } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import DocenteHorarioSemanaCell from '@docentes/components/atoms/DocenteHorarioSemanaCell';
+import { isConflictGridCell } from '@application-institucional/horarios/utils/computeConflictosBloquesLive';
 
 /** Días alineados al ENUM de `horarios.dia` en BD (sin DOMINGO en columnas). */
 const DIA_DB_KEYS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
@@ -67,6 +70,7 @@ function flattenEvents(
         horaInicio: b.horaInicio,
         horaFin: b.horaFin,
         aula: b.aula ?? null,
+        horarioId: b.horarioId ?? null,
         turno: b.turno ?? c.turno ?? null,
         paralelo: b.paralelo ?? c.paralelo ?? null,
         materiaNombre,
@@ -221,8 +225,57 @@ const DocenteHorarioSemanalGrid = ({
   editable = false,
   onSlotDrop,
   cellExtraProps = {},
+  /** Modo resolución conflictos docente: resalta celdas por horario_id (no solape local). */
+  docenteConflictMode = false,
+  /** horario_id del catálogo en choque docente. */
+  conflictHorarioIds = null,
+  /** Map franja → horario_id (catálogo del turno) para celdas vacías. */
+  horarioSlotIndex = null,
+  /**
+   * Ayuda de conflicto por franja: Map(`${dia}-${slotMinutes}` → ReactNode).
+   * Cuando `autoAyudaVisible` es true, la celda con ayuda muestra un Popover
+   * abierto automáticamente anclado a esa celda (guía para resolver el choque).
+   */
+  autoAyudaPorSlot = null,
+  autoAyudaVisible = false,
 }) => {
   const Cell = CellComponent;
+
+  // Ayuda de conflicto: un solo popover visible a la vez (evita solapamientos
+  // con varios choques). X cierra; «siguiente» avanza al próximo choque.
+  const helpKeys = useMemo(
+    () => (autoAyudaVisible && autoAyudaPorSlot ? Array.from(autoAyudaPorSlot.keys()) : []),
+    [autoAyudaVisible, autoAyudaPorSlot],
+  );
+  const helpKeysSig = helpKeys.join('|');
+  const [helpPos, setHelpPos] = useState(0);
+  const [helpDir, setHelpDir] = useState(1);
+  // Reset al cambiar el set de choques (cambio de tab/datos) sin useEffect:
+  // patrón de ajuste de estado en render (evita setState-in-effect).
+  const [helpSig, setHelpSig] = useState(helpKeysSig);
+  if (helpSig !== helpKeysSig) {
+    setHelpSig(helpKeysSig);
+    setHelpPos(0);
+    setHelpDir(1);
+  }
+  const openHelpKey = helpPos < helpKeys.length ? helpKeys[helpPos] : null;
+
+  // Navegación ping-pong entre choques: al llegar al último se ofrece «anterior»;
+  // al volver al primero, vuelve a «siguiente».
+  const tieneVariosChoques = helpKeys.length > 1;
+  const navDir = !tieneVariosChoques
+    ? 0
+    : helpPos >= helpKeys.length - 1
+      ? -1
+      : helpPos <= 0
+        ? 1
+        : helpDir;
+  const navLabel = navDir > 0 ? 'Ver siguiente choque →' : '← Ver choque anterior';
+  const irAlOtroChoque = () => {
+    setHelpDir(navDir);
+    setHelpPos((p) => p + navDir);
+  };
+
   const gridStart = gridTimeRange?.start ?? SLOT_MINUTE_START;
   const gridEnd = gridTimeRange?.end ?? SLOT_MINUTE_END;
   const satStart = saturdayGridTimeRange?.start ?? gridStart;
@@ -360,7 +413,36 @@ const DocenteHorarioSemanalGrid = ({
               </th>
               {dayKeys.map((dia) => {
                 const cellItems = cellMap.get(`${dia}-${slotMinutes}`) || [];
-                const slotHasConflict = cellItems.length >= 2;
+                const slotHasConflict = docenteConflictMode
+                  ? isConflictGridCell(
+                      dia,
+                      slotMinutes,
+                      cellItems,
+                      slotStepMinutes,
+                      conflictHorarioIds,
+                      horarioSlotIndex,
+                    )
+                  : cellItems.length >= 2;
+                const slotWrapClass = slotHasConflict
+                  ? docenteConflictMode
+                    ? 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--docente-conflicto'
+                    : 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--conflict'
+                  : 'da-cal-semanal__slot-wrap';
+                const slotKey = `${dia}-${slotMinutes}`;
+                const ayudaConflicto =
+                  autoAyudaVisible && slotHasConflict ? autoAyudaPorSlot?.get(slotKey) : null;
+                const ayudaAbierta = Boolean(ayudaConflicto) && slotKey === openHelpKey;
+                const slotInner = (
+                  <div className={slotWrapClass}>
+                    <Cell
+                      items={cellItems}
+                      slotDia={dia}
+                      slotMinutes={slotMinutes}
+                      editable={editable}
+                      {...cellExtraProps}
+                    />
+                  </div>
+                );
                 return (
                   <td
                     key={`${dia}-${slotMinutes}`}
@@ -382,21 +464,44 @@ const DocenteHorarioSemanalGrid = ({
                         : undefined
                     }
                   >
-                    <div
-                      className={
-                        slotHasConflict
-                          ? 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--conflict'
-                          : 'da-cal-semanal__slot-wrap'
-                      }
-                    >
-                      <Cell
-                        items={cellItems}
-                        slotDia={dia}
-                        slotMinutes={slotMinutes}
-                        editable={editable}
-                        {...cellExtraProps}
-                      />
-                    </div>
+                    {ayudaAbierta ? (
+                      <Popover
+                        open
+                        placement="top"
+                        overlayClassName="horarios-conflicto-ayuda-popover"
+                        title={
+                          <Flex align="center" justify="space-between" gap={8}>
+                            <span>
+                              Resolvé este choque
+                              {helpKeys.length > 1 ? ` (${helpPos + 1}/${helpKeys.length})` : ''}
+                            </span>
+                            <Button
+                              type="text"
+                              size="small"
+                              aria-label="Cerrar ayuda"
+                              icon={<CloseOutlined />}
+                              onClick={() => setHelpPos(helpKeys.length)}
+                            />
+                          </Flex>
+                        }
+                        content={
+                          <div className="horarios-conflicto-ayuda__body">
+                            {ayudaConflicto}
+                            {tieneVariosChoques ? (
+                              <div className="horarios-conflicto-ayuda__next">
+                                <Button type="link" size="small" onClick={irAlOtroChoque}>
+                                  {navLabel}
+                                </Button>
+                              </div>
+                            ) : null}
+                          </div>
+                        }
+                      >
+                        {slotInner}
+                      </Popover>
+                    ) : (
+                      slotInner
+                    )}
                   </td>
                 );
               })}

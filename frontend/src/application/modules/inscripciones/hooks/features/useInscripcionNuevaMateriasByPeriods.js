@@ -12,7 +12,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useCasesFactory } from '@container';
 import { normalizeFieldToArray } from '@application/utils';
-import { mapMateriasList } from '@application-configuracion/academico/materias/mappers';
+import { mapMateriasList } from '@application-configuracion/academico/mappers';
 
 export const useInscripcionNuevaMateriasByPeriods = (selectedPeriodIds = [], carreraId = null) => {
   const [materiasByPeriod, setMateriasByPeriod] = useState({});

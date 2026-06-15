@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useGetDocenteById } from '@application-docentes/hooks/api';
+import { ofertaPaths } from '@application-institucional/oferta/config/paths';
 
 export const useDocenteDetail = (docenteIdRaw) => {
   const docenteId = docenteIdRaw != null ? Number(docenteIdRaw) : NaN;
@@ -55,23 +56,15 @@ export const useDocenteDetail = (docenteIdRaw) => {
     });
   }, [navigate, docenteId, returnListPath]);
 
-  const handleAsignacionAcademica = useCallback(
-    (options = {}) => {
-      if (!Number.isFinite(docenteId) || docenteId < 1) return;
-      const focus = options.focus === 'horarios' ? 'horarios' : 'cursos';
-      navigate(`/docentes/${docenteId}/asignaciones`, {
-        state: {
-          menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
-          returnListPath: `/docentes/${docenteId}`,
-          gestionReturnPath: `/docentes/${docenteId}`,
-          docenteId,
-          docenteNombre: nombreCompleto,
-          asignacionFocus: focus,
-        },
-      });
-    },
-    [navigate, docenteId, location.state?.menuSidebarKey, nombreCompleto]
-  );
+  const handleAsignacionAcademica = useCallback(() => {
+    if (!Number.isFinite(docenteId) || docenteId < 1) return;
+    navigate(ofertaPaths.docenteAsignaciones(docenteId), {
+      state: {
+        menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
+        returnListPath: `/docentes/${docenteId}`,
+      },
+    });
+  }, [navigate, docenteId, location.state?.menuSidebarKey]);
 
   const refetchWithDocenteId = useCallback(async () => {
     if (!Number.isFinite(docenteId) || docenteId <= 0) return;

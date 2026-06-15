@@ -1,19 +1,19 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/index.js';
 
 export class PatchAulaHorarioUseCase {
-  constructor({ courseScheduleRepository, classroomRepository, logger }) {
-    this.courseScheduleRepository = courseScheduleRepository;
+  constructor({ asignacionHorarioRepository, classroomRepository, logger }) {
+    this.asignacionHorarioRepository = asignacionHorarioRepository;
     this.classroomRepository = classroomRepository;
     this.logger = logger;
   }
 
-  async execute(courseScheduleId, aulaId, userId = null) {
-    const id = Number(courseScheduleId);
+  async execute(asignacionHorarioId, aulaId, userId = null) {
+    const id = Number(asignacionHorarioId);
     if (!Number.isFinite(id) || id < 1) {
       throw new ValidationError('cursoHorarioId inválido');
     }
 
-    const schedule = await this.courseScheduleRepository.findById(id);
+    const schedule = await this.asignacionHorarioRepository.findById(id);
     if (!schedule) {
       throw new NotFoundError('Bloque de curso horario');
     }
@@ -27,30 +27,28 @@ export class PatchAulaHorarioUseCase {
       const aula = await this.classroomRepository.findById(nextAulaId);
       if (!aula) throw new NotFoundError('Aula');
 
-      const conflictCourseScheduleId = await this.courseScheduleRepository.findClassroomConflict({
+      const conflictBloqueId = await this.asignacionHorarioRepository.findClassroomConflict({
         scheduleId: schedule.scheduleId,
         classroomId: nextAulaId,
-        excludeCourseScheduleId: id,
+        excludeAsignacionHorarioId: id,
       });
 
-      if (Number.isFinite(conflictCourseScheduleId) && conflictCourseScheduleId > 0) {
+      if (Number.isFinite(conflictBloqueId) && conflictBloqueId > 0) {
         this.logger?.warn('Conflicto de aula resuelto por reasignación automática', {
           scheduleId: schedule.scheduleId,
           classroomId: nextAulaId,
-          requestedCourseScheduleId: id,
-          previousCourseScheduleId: conflictCourseScheduleId,
+          requestedAsignacionHorarioId: id,
+          previousAsignacionHorarioId: conflictBloqueId,
         });
 
-        // Regla de negocio: el bloque editado por el usuario queda como oficial
-        // y el bloque previo en conflicto se desasigna.
-        await this.courseScheduleRepository.update(conflictCourseScheduleId, { classroomId: null }, userId);
+        await this.asignacionHorarioRepository.update(conflictBloqueId, { classroomId: null }, userId);
       }
     }
 
-    const updated = await this.courseScheduleRepository.update(id, { classroomId: nextAulaId }, userId);
+    const updated = await this.asignacionHorarioRepository.update(id, { classroomId: nextAulaId }, userId);
     return {
       id: updated.id,
-      courseId: updated.courseId,
+      teacherAssignmentId: updated.teacherAssignmentId,
       scheduleId: updated.scheduleId,
       classroomId: updated.classroomId ?? null,
       sequenceOrder: updated.sequenceOrder,

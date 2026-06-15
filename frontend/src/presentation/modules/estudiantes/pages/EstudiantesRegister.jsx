@@ -790,7 +790,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   // Acciones del header
   const headerActions = useMemo(() => (
     <Button
-      variant="default"
+      variant="back"
       icon={<ArrowLeftOutlined />}
       onClick={handleVolverALista}
     >

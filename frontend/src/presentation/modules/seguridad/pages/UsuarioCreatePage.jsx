@@ -83,7 +83,7 @@ export default function UsuarioCreatePage() {
             title={isEditMode ? 'Editar Usuario' : 'Nuevo Usuario'}
             breadcrumbItems={breadcrumbItems}
             actions={
-              <Button variant="default" icon={<ArrowLeftOutlined />} onClick={goToUsuariosList}>
+              <Button variant="back" icon={<ArrowLeftOutlined />} onClick={goToUsuariosList}>
                 Volver
               </Button>
             }
@@ -91,7 +91,7 @@ export default function UsuarioCreatePage() {
         }
       >
         {submitError ? (
-          <Alert type="error" showIcon message={submitError} style={{ marginBottom: 16 }} />
+          <Alert type="error" showIcon title={submitError} style={{ marginBottom: 16 }} />
         ) : null}
         <WizardForm
           key={wizardFormMountKey}

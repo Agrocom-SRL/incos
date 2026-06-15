@@ -1,59 +1,31 @@
 /**
  * Hook: useDeleteItem
- * 
+ *
  * Single Responsibility: Gestionar la lógica de eliminación de elementos
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Hook reutilizable para eliminación
- * 
+ *
  * Funcionalidades:
  * - Maneja el estado de loading durante la eliminación
  * - Muestra modal de confirmación
  * - Ejecuta la función de eliminación
- * - Maneja errores y muestra mensajes
- * - Los mensajes success/error se cierran al cambiar el foco (pestaña, ventana o clic fuera)
+ * - Feedback vía notification (App.useApp), alineado a EvaluacionDrawer / calificaciones
  */
 
 import { useState, useCallback } from 'react';
 import { App } from 'antd';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 
-const MESSAGE_KEY_DELETE_FEEDBACK = 'useDeleteItem-feedback';
-
-/**
- * Muestra un mensaje (success o error) que se cierra al cambiar el foco (visibilitychange o blur).
- * @param {Object} messageApi - message de App.useApp()
- * @param {'success'|'error'} type
- * @param {string} content
- * @param {number} duration - segundos
- */
-function showMessageWithFocusClose(messageApi, type, content, duration) {
-  const key = MESSAGE_KEY_DELETE_FEEDBACK;
-  const destroy = () => {
-    messageApi.destroy(key);
-    window.removeEventListener('visibilitychange', onFocusChange);
-    window.removeEventListener('blur', onFocusChange);
-  };
-  const onFocusChange = () => {
-    destroy();
-  };
-  window.addEventListener('visibilitychange', onFocusChange);
-  window.addEventListener('blur', onFocusChange);
-  const api = type === 'success' ? messageApi.success : messageApi.error;
-  api({ content, key, duration });
-  setTimeout(destroy, duration * 1000);
-}
-
 /**
  * Hook reutilizable para eliminar elementos
- * 
+ *
  * @param {Object} options - Opciones del hook
  * @param {Function} options.deleteFn - Función que ejecuta la eliminación (debe retornar Promise)
  * @param {string} options.itemName - Nombre del elemento para el mensaje (opcional)
  * @param {Array} options.itemDetails - Detalles del elemento para mostrar en el diálogo (opcional)
  * @param {Function} options.onSuccess - Callback al eliminar exitosamente (opcional)
  * @param {Function} options.onError - Callback al fallar (opcional)
- * @param {number} [options.errorMessageDuration=8] - Duración en segundos del mensaje de error (para dar tiempo a leer)
  * @returns {Object} { deleteItem, loading }
  */
 export const useDeleteItem = ({
@@ -62,10 +34,9 @@ export const useDeleteItem = ({
   itemDetails,
   onSuccess,
   onError,
-  errorMessageDuration = 6,
 }) => {
   const [loading, setLoading] = useState(false);
-  const { message, modal } = App.useApp();
+  const { notification, modal } = App.useApp();
 
   const deleteItem = useCallback(async (id, customItemName = null, customItemDetails = null) => {
     if (!deleteFn) {
@@ -75,7 +46,7 @@ export const useDeleteItem = ({
 
     const name = customItemName || itemName;
     const details = customItemDetails || itemDetails;
-    
+
     const confirmed = await showDeleteConfirm({
       modal,
       itemName: name,
@@ -84,21 +55,31 @@ export const useDeleteItem = ({
         setLoading(true);
         try {
           const result = await deleteFn(id);
-          
+
           if (result.success) {
-            showMessageWithFocusClose(message, 'success', `${name} eliminado correctamente`, 3);
+            notification.success({
+              title: 'Eliminación correcta',
+              description: `${name} fue eliminado.`,
+            });
             if (onSuccess) {
               onSuccess(result, id);
             }
           } else {
-            showMessageWithFocusClose(message, 'error', result.error || `Error al eliminar ${name}`, errorMessageDuration);
+            const errorMsg = result.error || `Error al eliminar ${name}`;
+            notification.error({
+              title: 'Error al eliminar',
+              description: errorMsg,
+            });
             if (onError) {
               onError(result, id);
             }
           }
         } catch (error) {
           console.error('Error al eliminar:', error);
-          showMessageWithFocusClose(message, 'error', `Error al eliminar ${name}: ${error.message || 'Error desconocido'}`, errorMessageDuration);
+          notification.error({
+            title: 'Error al eliminar',
+            description: error.message || `No se pudo eliminar ${name}.`,
+          });
           if (onError) {
             onError(error, id);
           }
@@ -109,7 +90,7 @@ export const useDeleteItem = ({
     });
 
     return confirmed;
-  }, [deleteFn, itemName, itemDetails, onSuccess, onError, message, errorMessageDuration]);
+  }, [deleteFn, itemName, itemDetails, onSuccess, onError, notification, modal]);
 
   return { deleteItem, loading };
 };

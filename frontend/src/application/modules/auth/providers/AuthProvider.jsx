@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.js';
 import { apiCall } from '@/infrastructure/http/apiClient.js';
 import { AUTH_ENDPOINTS } from '@api/endpoints.js';
+import { clearSessionNavigationState } from '@/infrastructure/navigation/utils/clearSessionNavigationState.js';
 
 const initialState = {
   usuario: null,
@@ -63,6 +64,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = useCallback((token, usuario, permisos) => {
+    clearSessionNavigationState();
     localStorage.setItem('incos_token', token);
     localStorage.setItem('incos_usuario', JSON.stringify(usuario));
     setState({
@@ -74,6 +76,25 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
+  const refreshMe = useCallback(async () => {
+    const token = localStorage.getItem('incos_token');
+    if (!token) return false;
+
+    const res = await apiCall(AUTH_ENDPOINTS.ME);
+    if (!res?.ok) return false;
+
+    const json = await res.json();
+    setState((prev) => ({
+      ...prev,
+      usuario: json.data?.usuario ?? prev.usuario,
+      permisos: json.data?.permisos ?? prev.permisos,
+      token,
+      isAuthenticated: true,
+      isLoading: false,
+    }));
+    return true;
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await apiCall(AUTH_ENDPOINTS.LOGOUT, { method: 'POST' });
@@ -82,6 +103,7 @@ export const AuthProvider = ({ children }) => {
     }
     localStorage.removeItem('incos_token');
     localStorage.removeItem('incos_usuario');
+    clearSessionNavigationState();
     setState({ ...initialState, isLoading: false });
     navigate('/login', { replace: true });
   }, [navigate]);
@@ -89,9 +111,9 @@ export const AuthProvider = ({ children }) => {
   const hasPermiso = useCallback(
     (codigo, accion) =>
       state.permisos.some(
-        (p) => p.codigo === codigo && p.acciones.includes(accion)
+        (p) => p.codigo === codigo && p.acciones.includes(accion),
       ),
-    [state.permisos]
+    [state.permisos],
   );
 
   const value = useMemo(
@@ -99,9 +121,10 @@ export const AuthProvider = ({ children }) => {
       ...state,
       login,
       logout,
+      refreshMe,
       hasPermiso,
     }),
-    [state, login, logout, hasPermiso]
+    [state, login, logout, refreshMe, hasPermiso],
   );
 
   return (

@@ -45,4 +45,43 @@ export const UPLOAD = {
     const nameWithoutExt = path.basename(sanitizedName, ext);
     return `pago_${ts}_${nameWithoutExt}${ext}`;
   },
+
+  /** Ruta relativa para imágenes de carreras (backend/uploads/carreras/) */
+  carreras: () => 'carreras',
+
+  /** Extensiones permitidas para imagen de carrera */
+  carreraImageExtensions: [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.webp',
+    '.gif',
+    '.bmp',
+    '.tiff',
+    '.tif',
+    '.svg',
+    '.avif',
+    '.heic',
+    '.heif',
+  ],
+
+  /**
+   * Nombre de archivo: {codigo}_{timestamp}.{ext}
+   * @param {string} codigo - Código de la carrera (ej. SIS-INF)
+   * @param {string} originalName - Nombre original del archivo subido
+   */
+  generateCarreraImageFileName: (codigo, originalName) => {
+    const ts = Date.now();
+    const safeCodigo = String(codigo || 'carrera')
+      .trim()
+      .replace(/[^a-zA-Z0-9-]/g, '_')
+      .toUpperCase();
+    const ext = path.extname(originalName || '').toLowerCase() || '.webp';
+    const allowed = UPLOAD.carreraImageExtensions;
+    const finalExt = allowed.includes(ext) ? ext : '.webp';
+    return `${safeCodigo}_${ts}${finalExt}`;
+  },
+
+  /** Ruta pública relativa para respuesta API */
+  carreraImagePublicPath: (filename) => `/uploads/carreras/${filename}`,
 };

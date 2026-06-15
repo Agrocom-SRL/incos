@@ -1,0 +1,47 @@
+.docente-color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+}
+
+.docente-color-picker-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.docente-color-picker-swatch--selected {
+  outline: 2px solid var(--ant-color-primary);
+  outline-offset: 2px;
+}
+
+.docente-color-picker-swatch--used {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.docente-color-picker-preview {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+@keyframes docente-carga-sobrecarga-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.asignacion-docente-carga--sobrecarga {
+  animation: docente-carga-sobrecarga-blink 1s infinite;
+  color: var(--ant-color-error);
+  font-weight: 600;
+}

@@ -3,6 +3,7 @@
  */
 
 import { buildPersonDisplayData } from '@application/utils/formatters';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 
 const toSearchStr = (v) => {
   if (v == null || v === '') return null;
@@ -63,6 +64,9 @@ export const docenteListMapper = (row) => {
     fechaContratacion: toSearchStr(row.hireDate),
     fechaRetiro: toSearchStr(row.retirementDate),
     userId: row.userId ?? null,
+    colorHex: sanitizeDocenteColorHex(row.colorHex ?? row.color_hex),
+    maxHorasSemana: row.maxHorasSemana ?? row.max_horas_semana ?? null,
+    maxHorasMes: row.maxHorasMes ?? row.max_horas_mes ?? null,
     civilStatusId: row.civilStatusId ?? null,
     createdAt: row.createdAt ?? null,
     teachingStats: {

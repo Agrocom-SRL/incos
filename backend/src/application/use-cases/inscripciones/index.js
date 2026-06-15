@@ -7,6 +7,7 @@ export { GetEnrollmentByIdUseCase } from './GetEnrollmentByIdUseCase.js';
 export { DeleteEnrollmentUseCase } from './DeleteEnrollmentUseCase.js';
 export { GenerateFormularioInscripcionUseCase } from './GenerateFormularioInscripcionUseCase.js';
 export { UpdateEnrollmentUseCase } from './UpdateEnrollmentUseCase.js';
+export { CambiarEstadoMatriculaUseCase } from './CambiarEstadoMatriculaUseCase.js';
 
 // ============================================
 // USE CASES FUTUROS - MATERIAS INSCRITAS

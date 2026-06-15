@@ -3,7 +3,7 @@ import { AppstoreOutlined, TableOutlined } from '@ant-design/icons';
 import { Alert, Card, Flex, Spin, Tabs } from 'antd';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button, ActionButton } from '@atoms';
+import { ActionButton } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosContext } from '@application-institucional/horarios';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
@@ -42,12 +42,13 @@ const GestionHorariosPage = () => {
         setViewMode,
         onFilterChange,
         onOpenArmado,
-        onVerHorariosAulas,
         onPublish,
         clearFilters,
         hayAlertas,
+        alertLineas,
         pendientesSidebar,
         loading,
+        sidebarLoading,
         error,
     } = useHorariosContext();
 
@@ -64,7 +65,7 @@ const GestionHorariosPage = () => {
                 label: (
                     <span className="horarios-plan-tab-label">
                         <AppstoreOutlined className="horarios-plan-tab-label__icon" aria-hidden />
-                        <span>Tablero</span>
+                        <span>Conflictos de horarios</span>
                     </span>
                 ),
                 children: <ParalelosBoard boardByStatus={boardByStatus} onOpenArmado={onOpenArmado} />,
@@ -74,7 +75,7 @@ const GestionHorariosPage = () => {
                 label: (
                     <span className="horarios-plan-tab-label">
                         <TableOutlined className="horarios-plan-tab-label__icon" aria-hidden />
-                        <span>Tabla</span>
+                        <span>Configuración de horarios</span>
                     </span>
                 ),
                 children: (
@@ -97,9 +98,6 @@ const GestionHorariosPage = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
-                            <Button variant="warning" onClick={onVerHorariosAulas}>
-                                Horarios en aulas
-                            </Button>
                             <ActionButton
                                 permiso="institucional.horario.publicacion"
                                 accion="EDITAR"
@@ -117,14 +115,8 @@ const GestionHorariosPage = () => {
                 <MainContent>
                     <Spin spinning={loading} tip="Cargando datos de horarios...">
                         <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-                            {error ? <Alert type="error" showIcon message={error} /> : null}
-                            {hayAlertas ? (
-                                <HorariosAlertBanner
-                                    sinDocentes={kpis.sinDocentes}
-                                    sinAulas={kpis.sinAulas}
-                                    sinHorarios={kpis.sinHorarios}
-                                />
-                            ) : null}
+                            {error ? <Alert type="error" showIcon title={error} /> : null}
+                            {hayAlertas ? <HorariosAlertBanner lineas={alertLineas} /> : null}
 
                             <HorariosKpiStrip kpis={kpis} variant="details" />
 
@@ -153,16 +145,20 @@ const GestionHorariosPage = () => {
                 <InfoSidebar>
                     <Flex vertical gap={allSpacing.marginMD} style={{ width: '100%', minWidth: 0 }}>
                         <HorariosKpiStrip kpis={kpis} variant="total" />
-                        <HorariosGestionSidebarResumen
-                            filteredParallels={filteredParallels}
-                            bloquesSinAulaPorParalelo={pendientesSidebar?.bloquesSinAulaPorParalelo}
-                            cursosSinDocentePorParalelo={pendientesSidebar?.cursosSinDocentePorParalelo}
-                            docentesConConflictosOperativos={pendientesSidebar?.docentesConConflictosOperativos}
-                        />
+                        <Spin spinning={sidebarLoading} tip="Cargando pendientes…">
+                            <HorariosGestionSidebarResumen
+                                filteredParallels={filteredParallels}
+                                bloquesSinAulaPorParalelo={pendientesSidebar?.bloquesSinAulaPorParalelo}
+                                cursosSinDocentePorParalelo={pendientesSidebar?.cursosSinDocentePorParalelo}
+                                docentesConConflictosOperativos={
+                                    pendientesSidebar?.docentesConConflictosOperativos
+                                }
+                            />
+                        </Spin>
                     </Flex>
                 </InfoSidebar>
-            </DashboardPageShell >
-        </Flex >
+            </DashboardPageShell>
+        </Flex>
     );
 };
 

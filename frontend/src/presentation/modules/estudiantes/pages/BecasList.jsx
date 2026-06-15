@@ -16,7 +16,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { useBecasListContext } from '@application-estudiantes/hooks';
 import { createBecasTableColumns } from '@estudiantes/config';
 
@@ -33,6 +33,7 @@ const BecasList = () => {
         setSearchText,
         refetch,
         deleteBeca,
+        tablePagination,
     } = useBecasListContext();
 
     const handleNuevaBeca = () => {
@@ -70,13 +71,15 @@ const BecasList = () => {
                     title="Lista de Becas"
                     breadcrumbItems={breadcrumbItems}
                     actions={
-                        <Button
+                        <ActionButton
+                            permiso="matricula.beca.asignar"
+                            accion="CREAR"
                             variant="primary"
                             icon={<PlusOutlined />}
                             onClick={handleNuevaBeca}
                         >
                             Nueva Asignación de Beca
-                        </Button>
+                        </ActionButton>
                     }
                 />
             }
@@ -92,12 +95,7 @@ const BecasList = () => {
                 searchPlaceholder="Buscar por nombre, tipo, descripción..."
                 columns={tableColumns}
                 rowKey={(record) => record.id || Math.random()}
-                pagination={{
-                    pageSize: 10,
-                    showSizeChanger: true,
-                    showTotal: (total) => `Total: ${total} becas`,
-                    pageSizeOptions: ['10', '20', '50', '100'],
-                }}
+                pagination={tablePagination}
                 defaultSort={{
                     field: 'nombre',
                     order: 'ascend',

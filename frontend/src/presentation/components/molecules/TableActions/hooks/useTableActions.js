@@ -64,6 +64,7 @@ export function useTableActions(props) {
     viewPath,
     editPath,
     onEdit,
+    onView,
     editDisabled,
     useCaseKey,
     customDeleteFn,

@@ -1,0 +1,10 @@
+export { default as OfertaParalelosCardsGrid } from './OfertaParalelosCardsGrid';
+export { default as OfertaGestionPlanTabPanel } from './OfertaGestionPlanTabPanel';
+export { default as OfertaKpiStrip } from './OfertaKpiStrip';
+export { default as OfertaDashboardKpiStrip } from './OfertaDashboardKpiStrip';
+export { default as OfertaDashboardQuickAccess } from './OfertaDashboardQuickAccess';
+export { default as OfertaSidebarResumen } from './OfertaSidebarResumen';
+export { default as OfertaStepGestionSection } from './OfertaStepGestionSection';
+export { default as OfertaStepPlanesSection } from './OfertaStepPlanesSection';
+export { default as OfertaParaleloDetalleContextHeader } from './OfertaParaleloDetalleContextHeader';
+export { default as OfertaParaleloDetalleCursosSection } from './OfertaParaleloDetalleCursosSection';

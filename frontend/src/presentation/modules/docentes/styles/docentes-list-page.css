@@ -1,0 +1,41 @@
+/**
+ * Listado de docentes — reutiliza tokens y clases de CFG Académico.
+ */
+
+.doc-carga-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.doc-carga-cell__dot {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.doc-docente-genero-icon {
+  font-size: 15px;
+}
+
+.doc-docente-genero-label {
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 800;
+  margin: 0;
+}
+
+.doc-docente-genero-tone--m .cfg-academico-metricas-list__icon,
+.doc-docente-genero-tone--m .doc-docente-genero-label {
+  color: var(--ant-blue, #1677ff);
+}
+
+.doc-docente-genero-tone--f .cfg-academico-metricas-list__icon,
+.doc-docente-genero-tone--f .doc-docente-genero-label {
+  color: var(--ant-color-magenta, #eb2f96);
+}
+
+.doc-docente-genero-tone--o .cfg-academico-metricas-list__icon,
+.doc-docente-genero-tone--o .doc-docente-genero-label {
+  color: var(--text-500, #6b7280);
+}

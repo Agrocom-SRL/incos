@@ -13,6 +13,7 @@ const DashboardUltimosPersonasBlock = ({
     people,
     onOverflowClick,
     overflowTooltip,
+    detalleInteractivo = true,
 }) => {
     const recentLine =
         people.length > 0 && people[0].description ? `Reciente: ${people[0].description}` : null;

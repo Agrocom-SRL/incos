@@ -25,9 +25,17 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as menuGenerator from '@navigation-services/menuGenerator';
-import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
+import { getEffectiveRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
 import MenuItem from '@atoms/MenuItem';
 import { useAuthContext } from '@application-auth';
+import { hasAnyPermiso } from '@navigation/utils/hasAnyPermiso.js';
+
+function itemPermitido(item, hasPermisoFn) {
+    const accion = item.accion ?? 'LISTAR';
+    if (item.permiso) return hasPermisoFn(item.permiso, accion);
+    if (item.permisoAny?.length) return hasAnyPermiso(item.permisoAny, hasPermisoFn, accion);
+    return true;
+}
 
 function filterMenuByPermiso(items, hasPermisoFn, userRole) {
     if (!items?.length) return [];
@@ -36,13 +44,10 @@ function filterMenuByPermiso(items, hasPermisoFn, userRole) {
         if (item.children?.length) {
           const children = filterMenuByPermiso(item.children, hasPermisoFn, userRole);
           if (children.length === 0) return null;
-          if (!item.permiso) return { ...item, children };
-          const accion = item.accion ?? 'LISTAR';
-          return hasPermisoFn(item.permiso, accion) ? { ...item, children } : null;
+          if (!itemPermitido(item, hasPermisoFn)) return null;
+          return { ...item, children };
         }
-        if (!item.permiso) return item;
-        const accion = item.accion ?? 'LISTAR';
-        if (!hasPermisoFn(item.permiso, accion)) return null;
+        if (!itemPermitido(item, hasPermisoFn)) return null;
         if (item.menu?.labelByRole?.[userRole]) {
           return { ...item, menu: { ...item.menu, label: item.menu.labelByRole[userRole] } };
         }
@@ -85,6 +90,24 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     }, [rawNavigationMenu, hasPermisoStable, isAuthenticated, usuario]);
 
     /**
+     * Ant Design Menu solo acepta key, label, icon, children, type, disabled, etc.
+     * permiso/permisoAny/accion son metadatos internos y no deben llegar al DOM.
+     */
+    const sanitizeMenuItemForAntd = (item) => {
+        const sanitized = {
+            key: item.key,
+            label: item.label,
+            ...(item.icon != null && { icon: item.icon }),
+            ...(item.type != null && { type: item.type }),
+            ...(item.disabled != null && { disabled: item.disabled }),
+        };
+        if (item.children?.length) {
+            sanitized.children = item.children.map(sanitizeMenuItemForAntd);
+        }
+        return sanitized;
+    };
+
+    /**
      * Función recursiva para mapear items y subitems con iconos
      * Prepara la estructura de datos para renderizar en la UI
      * 
@@ -103,8 +126,8 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
             if (item.children && item.children.length > 0) {
                 mappedItem.children = mapItemsWithIcons(item.children);
             }
-            
-            return mappedItem;
+
+            return sanitizeMenuItemForAntd(mappedItem);
         });
     };
 
@@ -132,7 +155,7 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
      */
     const handleDashboardClick = (clickedKey, info) => {
         setOpenKeys([]);
-        const route = getRouteFromMenuKey(clickedKey);
+        const route = getEffectiveRouteFromMenuKey(clickedKey, hasPermisoStable);
         if (route) {
             navigate(route);
         }
@@ -161,7 +184,7 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
      * @param {Object} info - Información del click
      */
     const navigateToMenuItem = (clickedKey, info) => {
-        const route = getRouteFromMenuKey(clickedKey);
+        const route = getEffectiveRouteFromMenuKey(clickedKey, hasPermisoStable);
         if (route) {
             navigate(route);
         }

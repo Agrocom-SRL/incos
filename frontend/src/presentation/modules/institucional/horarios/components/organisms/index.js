@@ -7,5 +7,3 @@ export { default as HorariosCursosSinDocentePanel } from './HorariosCursosSinDoc
 export { default as HorariosGestionSidebarResumen } from './HorariosGestionSidebarResumen';
 export { default as HorariosPublicacionParaleloCard } from './HorariosPublicacionParaleloCard';
 export { default as HorariosPlanPendientesLista } from './HorariosPlanPendientesLista';
-export { default as GestionHorariosAulasAsignarSection } from './GestionHorariosAulasAsignarSection';
-export { default as AulasAsignacionGrid } from './AulasAsignacionGrid';

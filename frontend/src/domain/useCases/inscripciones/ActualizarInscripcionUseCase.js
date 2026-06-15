@@ -36,7 +36,14 @@ export class ActualizarInscripcionUseCase {
           validationErrors = Array.isArray(result.error.details) ? result.error.details : [result.error.details];
           errorMessage = result.error.message || 'Error de validación';
         }
-        return { success: false, error: errorMessage || 'Error al actualizar inscripción', validationErrors };
+        return {
+          success: false,
+          error: errorMessage || 'Error al actualizar inscripción',
+          validationErrors,
+          errorDetails:
+            result.errorDetails ??
+            (typeof result.error === 'object' && result.error != null ? result.error : null),
+        };
       }
 
       return { success: true, data: result.data };

@@ -1,14 +1,33 @@
-import { Alert } from 'antd';
+import { Alert, Flex, Typography } from 'antd';
+import { allSpacing } from '@theme/tokens';
 
-const HorariosAlertBanner = ({ sinDocentes = 0, sinAulas = 0, sinHorarios = 0 }) => {
-    if (sinDocentes <= 0 && sinAulas <= 0 && sinHorarios <= 0) return null;
-    const type = sinHorarios > 0 ? 'error' : sinDocentes > 0 ? 'warning' : 'info';
+const { Text } = Typography;
+
+/**
+ * Resumen operativo de pendientes para armar y publicar horarios.
+ * @param {string[]} [lineas] — mensajes agregados (dashboard state)
+ */
+const HorariosAlertBanner = ({ lineas = [] }) => {
+    const items = (lineas || []).filter(Boolean);
+
+    if (items.length === 0) return null;
+
     return (
         <Alert
-            type={type}
+            type="error"
             showIcon
-            title="Requiere atención operativa"
-            description={`Sin horarios: ${sinHorarios} | Sin docentes: ${sinDocentes} | Sin aulas: ${sinAulas}`}
+            title="Pendientes para completar horarios"
+            description={
+                <Flex vertical gap={allSpacing.marginSM}>
+                    <ul className="horarios-alert-banner__list" style={{ margin: 0, paddingLeft: 20 }}>
+                        {items.map((linea) => (
+                            <li key={linea}>
+                                <Text>{linea}</Text>
+                            </li>
+                        ))}
+                    </ul>
+                </Flex>
+            }
         />
     );
 };

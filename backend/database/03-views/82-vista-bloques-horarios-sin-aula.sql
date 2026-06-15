@@ -2,8 +2,8 @@
 -- VISTA: vista_bloques_horarios_sin_aula
 -- Bloques reales no asignados a aula
 --
--- Propósito: Exponer los bloques de cursos_horarios con aula pendiente
--- (`aula_id IS NULL`) para el panel izquierdo en la edición de aulas.
+-- Propósito: Exponer bloques sin aula efectiva (sin override ni aula base en paralelos_gestion)
+-- para el panel izquierdo en la edición de aulas.
 --
 -- Reutiliza:
 -- - vista_base_bloques_horarios_cursos_contexto (81)

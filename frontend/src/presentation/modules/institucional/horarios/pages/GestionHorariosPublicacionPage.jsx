@@ -1,17 +1,16 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Alert, Card, Flex, Spin } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { useMemo } from 'react';
+import { Alert, Card, Flex, Spin, Typography } from 'antd';
+import { ArrowLeftOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { ActionButton } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows } from '@theme/tokens';
-import {
-    useHorariosContext,
-    useHorariosPublicacionPlanesApi,
-} from '@application-institucional/horarios';
+import { useHorariosPublicacionContext } from '@application-institucional/horarios';
 import { HorariosFiltersBar, HorariosPublicacionParaleloCard } from '../components';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
+
+const { Text } = Typography;
 
 const sectionCardProps = {
     style: {
@@ -26,63 +25,51 @@ const sectionCardProps = {
 };
 
 const GestionHorariosPublicacionPage = () => {
-    const navigate = useNavigate();
     const {
         filters,
         options,
         onFilterChange,
         clearFilters,
-        paralelosCatalog,
-    } = useHorariosContext();
-    const { data: publicacionPayload, loading, error, fetch } = useHorariosPublicacionPlanesApi();
-
-    const planes = useMemo(() => publicacionPayload?.planes || [], [publicacionPayload]);
-
-    const paraleloEstadoById = useMemo(() => {
-        const map = new Map();
-        (paralelosCatalog || []).forEach((p) => {
-            if (p?.id == null) return;
-            map.set(Number(p.id), p);
-        });
-        return map;
-    }, [paralelosCatalog]);
-
-    const carreraIdFromFiltro = useCallback(() => {
-        if (filters.carrera === 'all') return null;
-        const hit = (paralelosCatalog || []).find((p) => p.carrera === filters.carrera);
-        return hit?.carreraId != null ? Number(hit.carreraId) : null;
-    }, [filters.carrera, paralelosCatalog]);
-
-    useEffect(() => {
-        const params = {};
-        const cid = carreraIdFromFiltro();
-        if (cid != null) params.carrera_id = cid;
-        if (filters.turno !== 'all') params.turno = filters.turno;
-        if (filters.periodo !== 'all') params.periodo = filters.periodo;
-        fetch({ params });
-    }, [fetch, filters.carrera, filters.turno, filters.periodo, carreraIdFromFiltro]);
-
-    const handleVolver = useCallback(() => {
-        navigate('/institucional/horarios');
-    }, [navigate]);
-
-    const breadcrumbItems = useMemo(
-        () => [
-            { title: 'Inicio', href: '/' },
-            { title: 'Institucional', href: '/institucional' },
-            { title: 'Gestión de horarios', href: '/institucional/horarios' },
-            { title: 'Publicación de horarios' },
-        ],
-        [],
-    );
+        planes,
+        loading,
+        error,
+        breadcrumbItems,
+        handleVolver,
+        gestionVigente,
+        resumenPublicacion,
+        publicandoPgId,
+        publicarParaleloLoading,
+        publicarTodosLoading,
+        publicarTodosResultado,
+        handlePublicarParalelo,
+        handlePublicarTodos,
+    } = useHorariosPublicacionContext();
 
     const headerActions = useMemo(
         () => (
-            <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-                <ArrowLeftOutlined /> Volver
-            </button>
+            <Flex gap={8} wrap="wrap" justify="flex-end">
+                <ActionButton
+                    permiso="institucional.horario.publicacion"
+                    accion="EDITAR"
+                    variant="primary"
+                    onClick={handlePublicarTodos}
+                    loading={publicarTodosLoading}
+                    disabled={!gestionVigente?.id || resumenPublicacion.ofertado === 0}
+                >
+                    Publicar todos (OFERTADO)
+                </ActionButton>
+                <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
+                    <ArrowLeftOutlined /> Volver
+                </button>
+            </Flex>
         ),
-        [handleVolver],
+        [
+            handlePublicarTodos,
+            handleVolver,
+            publicarTodosLoading,
+            gestionVigente?.id,
+            resumenPublicacion.ofertado,
+        ],
     );
 
     return (
@@ -100,6 +87,30 @@ const GestionHorariosPublicacionPage = () => {
                 <Spin spinning={loading} tip="Cargando planes de horarios…">
                     <Card className="horarios-gestion-planificacion" {...sectionCardProps}>
                         <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+                            {gestionVigente ? (
+                                <Text type="secondary">
+                                    Gestión vigente: <strong>{gestionVigente.nombre || gestionVigente.codigo}</strong>
+                                    {' · '}
+                                    {resumenPublicacion.ofertado} en OFERTADO · {resumenPublicacion.publicado}{' '}
+                                    publicados
+                                </Text>
+                            ) : null}
+
+                            {publicarTodosResultado?.resumen ? (
+                                <Alert
+                                    type="info"
+                                    showIcon
+                                    icon={<CheckCircleOutlined />}
+                                    title="Resultado publicación masiva"
+                                    description={
+                                        <>
+                                            Publicados: {publicarTodosResultado.resumen.publicados ?? 0}. Omitidos:{' '}
+                                            {publicarTodosResultado.resumen.omitidos ?? 0}.
+                                        </>
+                                    }
+                                />
+                            ) : null}
+
                             <HorariosFiltersBar
                                 filters={filters}
                                 options={options}
@@ -107,9 +118,7 @@ const GestionHorariosPublicacionPage = () => {
                                 onClearFilters={clearFilters}
                                 title="Filtrar publicación"
                             />
-                            {error ? (
-                                <Alert type="error" showIcon message={error} />
-                            ) : null}
+                            {error ? <Alert type="error" showIcon title={error} /> : null}
                             {!loading && !error && planes.length === 0 ? (
                                 <Alert
                                     type="info"
@@ -120,13 +129,20 @@ const GestionHorariosPublicacionPage = () => {
                             ) : null}
                             <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
                                 {planes.map((plan) => {
-                                    const pid = plan?.paralelo?.id != null ? Number(plan.paralelo.id) : null;
-                                    const paraleloEstado = pid != null ? paraleloEstadoById.get(pid) : null;
+                                    const pgId = plan?.paralelo?.paraleloGestionId;
+                                    const key =
+                                        pgId != null
+                                            ? `pg-${pgId}`
+                                            : `p-${plan.paralelo?.id ?? plan.paralelo?.nombre}`;
                                     return (
                                         <HorariosPublicacionParaleloCard
-                                            key={plan.paralelo?.id ?? plan.paralelo?.nombre}
+                                            key={key}
                                             plan={plan}
-                                            paraleloEstado={paraleloEstado}
+                                            onPublicar={handlePublicarParalelo}
+                                            publicando={
+                                                publicarParaleloLoading &&
+                                                Number(publicandoPgId) === Number(pgId)
+                                            }
                                         />
                                     );
                                 })}

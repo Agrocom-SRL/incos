@@ -24,16 +24,26 @@
 
 import { createApiHook } from '@application/utils';
 import { mapEstudiantesList } from '@application-estudiantes/mappers';
+import { DEFAULT_LIST_LIMIT, DEFAULT_LIST_PAGE } from '@application/constants/listPagination';
 
 export const useEstudiantesApi = createApiHook({
   name: 'useEstudiantesApi',
   useCase: 'obtenerTodosEstudiantes',
-  dataType: 'array', // Retorna un array
-  mapper: mapEstudiantesList, // Mapea los datos antes de guardarlos
-  initialLoading: false, // No carga automáticamente al montar
-  autoFetch: true, // Carga automáticamente al montar
-  autoFetchArgs: [{ params: { page: 1, limit: 10000 } }], // Traer todos los registros (búsqueda/filtro en cliente)
-  dataKey: 'estudiantes', // Nombre de la propiedad en el resultado
+  dataType: 'array',
+  mapper: mapEstudiantesList,
+  initialLoading: false,
+  autoFetch: false,
+  paginationKey: 'pagination',
+  dataKey: 'estudiantes',
   errorMessage: 'Error al cargar los estudiantes',
+});
+
+/** Parámetros iniciales recomendados para el listado paginado en servidor */
+export const estudiantesListFetchParams = (overrides = {}) => ({
+  params: {
+    page: DEFAULT_LIST_PAGE,
+    limit: DEFAULT_LIST_LIMIT,
+    ...overrides,
+  },
 });
 

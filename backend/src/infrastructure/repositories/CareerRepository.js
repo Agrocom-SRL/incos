@@ -153,5 +153,62 @@ export class CareerRepository extends BaseRepository {
   getCollectionName() {
     return 'careers';
   }
+
+  /**
+   * Conteo de materias y periodos distintos por carrera (planes de la carrera).
+   * @param {number[]} carreraIds
+   * @returns {Promise<Map<number, { cantidad_materias: number, cantidad_periodos: number }>>}
+   */
+  async findResumenAcademicoByCarreraIds(carreraIds = []) {
+    const ids = [...new Set(carreraIds.filter((id) => Number.isFinite(Number(id))))];
+    const map = new Map();
+    if (!ids.length) return map;
+
+    const sequelize = this.getModel().sequelize;
+    const rows = await sequelize.query(
+      `
+      SELECT
+        pe.carrera_id,
+        COUNT(DISTINCT ap.materia_id) AS cantidad_materias,
+        COUNT(DISTINCT p.id) AS cantidad_periodos
+      FROM planes_estudios pe
+      LEFT JOIN periodos p
+        ON p.plan_estudio_id = pe.id AND p.deleted_at IS NULL
+      LEFT JOIN asignaturas_plan ap
+        ON ap.plan_estudio_id = pe.id AND ap.deleted_at IS NULL
+      WHERE pe.carrera_id IN (:ids)
+        AND pe.deleted_at IS NULL
+      GROUP BY pe.carrera_id
+      `,
+      { replacements: { ids }, type: sequelize.QueryTypes.SELECT },
+    );
+
+    for (const row of rows ?? []) {
+      map.set(Number(row.carrera_id), {
+        cantidad_materias: Number(row.cantidad_materias) || 0,
+        cantidad_periodos: Number(row.cantidad_periodos) || 0,
+      });
+    }
+    return map;
+  }
+
+  /**
+   * Matriz asignaturas por carrera (vista_base_carrera_asignaturas_matriz).
+   * @param {number} carreraId
+   * @returns {Promise<Object[]>}
+   */
+  async findAsignaturasMatrizByCarreraId(carreraId) {
+    const sequelize = this.getModel().sequelize;
+    const rows = await sequelize.query(
+      `
+      SELECT *
+      FROM vista_base_carrera_asignaturas_matriz
+      WHERE carrera_id = :carreraId
+      ORDER BY periodo_numero ASC, periodo_orden ASC, materia_sigla ASC
+      `,
+      { replacements: { carreraId }, type: sequelize.QueryTypes.SELECT },
+    );
+    return Array.isArray(rows) ? rows : [];
+  }
 }
 

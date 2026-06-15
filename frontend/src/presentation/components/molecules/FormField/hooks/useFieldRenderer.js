@@ -54,7 +54,7 @@ export const useFieldRenderer = ({
 
     // Determinar qué parámetros pasar según el tipo de campo
     // Strategy Pattern: cada renderer recibe exactamente los parámetros que necesita
-    if (fieldType === 'select' || fieldType === 'radio') {
+    if (fieldType === 'select' || fieldType === 'radio' || fieldType === 'pillSelect') {
       // Select necesita form para combinar onChange personalizado con Form.Item
       return renderer(field, disabled, readOnly, selectOptions, form);
     }
@@ -71,7 +71,11 @@ export const useFieldRenderer = ({
     if (fieldType === 'number' || fieldType === 'color') {
       return renderer(field, disabled, readOnly);
     }
-    
+
+    if (fieldType === 'imageUpload') {
+      return renderer(field, disabled, readOnly, form);
+    }
+
     // Para search: necesita form, resolveOptions, minAge para renderizar children
     if (fieldType === 'search') {
       return renderer(field, disabled, readOnly, form, resolveOptions, minAge);

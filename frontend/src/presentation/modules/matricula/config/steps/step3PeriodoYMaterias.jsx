@@ -17,7 +17,7 @@ const PERIODO_MATERIAS_FIELDS = [
     type: 'alert',
     label: '',
     message: 'Información',
-    description: 'Seleccione uno o más periodos. Luego marque las materias que cursará (estudiante antiguo) o revise las del primer año (estudiante nuevo). En el siguiente paso elija el paralelo por periodo.',
+    description: 'Seleccione uno o más periodos. Luego marque las materias que cursará (estudiante antiguo) o revise las del primer año (estudiante nuevo). En los pasos siguientes elija el paralelo y, si aplica, las notas del historial previo.',
     alertType: 'info',
     span: 12,
     required: false,

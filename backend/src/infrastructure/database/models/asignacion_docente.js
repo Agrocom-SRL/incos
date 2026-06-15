@@ -12,11 +12,11 @@ export const AsignacionDocente = sequelize.define(
       allowNull: true,
       comment: 'Plan habilitado en la gestión (garantiza que curso pertenece al plan correcto)',
     },
-    cursoId: {
+    ofertaCursoId: {
       type: DataTypes.INTEGER,
-      field: 'curso_id',
+      field: 'oferta_curso_id',
       allowNull: true,
-      comment: 'Curso (paralelo + materia) que se dicta',
+      comment: 'Oferta de curso (paralelo_gestion + asignatura_plan) que se dicta',
     },
     docenteId: {
       type: DataTypes.INTEGER,

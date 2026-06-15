@@ -6,6 +6,7 @@ export { default as InscripcionesCarreraSelectionSection } from './Inscripciones
 export { default as InscripcionesCarreraStepContent } from './InscripcionesCarreraStepContent';
 export { default as InscripcionesPeriodoParalelosStepContent } from './InscripcionesPeriodoParalelosStepContent';
 export { default as InscripcionesPeriodoMateriasStepContent } from './InscripcionesPeriodoMateriasStepContent';
+export { default as InscripcionesHistorialPrevioStepContent } from './InscripcionesHistorialPrevioStepContent';
 export { default as HistorialPrevioNotasSection } from './HistorialPrevioNotasSection';
 export { default as MateriasList } from './MateriasList';
 export { default as InscripcionProfileSummary } from './InscripcionProfileSummary';

@@ -1,0 +1,41 @@
+.not-found-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(72vh, 640px);
+  padding: var(--spacing-lg, 24px) var(--spacing-base, 16px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.not-found-page__card {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.not-found-page__icon {
+  font-size: 56px;
+  line-height: 1;
+}
+
+.not-found-page__actions {
+  width: 100%;
+}
+
+.not-found-page--public .not-found-page__card {
+  max-width: 520px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  border: none;
+  background: var(--ant-color-bg-container, #fff);
+  padding: 32px 24px;
+}
+
+.not-found-page--public .not-found-page__card .ant-card-body {
+  padding: 0;
+}
+
+.not-found-page__brand {
+  text-align: center;
+  margin-bottom: 8px;
+}

@@ -6,5 +6,4 @@
 
 export { useParalelosApi } from './useParalelosApi';
 export { useParaleloScheduleApi } from './useParaleloScheduleApi';
-export { useParaleloCursosOfertaApi } from './useParaleloCursosOfertaApi';
 export { usePersistParaleloScheduleApi } from './usePersistParaleloScheduleApi';

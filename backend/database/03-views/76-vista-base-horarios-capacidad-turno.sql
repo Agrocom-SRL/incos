@@ -1,6 +1,7 @@
 -- ============================================
 -- VISTA BASE: vista_base_horarios_capacidad_turno
--- Métricas de ocupación de bloques por turno.
+-- Métricas de ocupación de bloques por turno de catálogo (horarios.turno).
+-- Ocupación aula+franja usa paralelos_gestion.aula_id.
 -- ============================================
 
 USE instituto_incos;
@@ -12,17 +13,29 @@ SELECT
     h.turno,
     COUNT(DISTINCT h.id) AS total_bloques_disponibles,
     COUNT(DISTINCT CASE
-        WHEN ch.id IS NOT NULL THEN CONCAT(ch.aula_id, '-', ch.horario_id)
+        WHEN ah.id IS NOT NULL AND pg.aula_id IS NOT NULL
+            THEN CONCAT(pg.aula_id, '-', ah.horario_id)
     END) AS bloques_ocupados,
     COUNT(DISTINCT CASE
-        WHEN ch.aula_id IS NOT NULL THEN ch.aula_id
+        WHEN pg.aula_id IS NOT NULL THEN pg.aula_id
     END) AS aulas_en_uso
 FROM horarios h
-LEFT JOIN cursos_horarios ch
-    ON ch.horario_id = h.id
-    AND ch.deleted_at IS NULL
-    AND ch.activo = TRUE
-    AND ch.aula_id IS NOT NULL
+LEFT JOIN asignacion_horarios ah
+    ON ah.horario_id = h.id
+    AND ah.deleted_at IS NULL
+    AND ah.activo = TRUE
+LEFT JOIN asignaciones_docentes ad
+    ON ad.id = ah.asignacion_docente_id
+    AND ad.deleted_at IS NULL
+    AND ad.activo = TRUE
+    AND ad.vigente = TRUE
+LEFT JOIN oferta_cursos oc
+    ON oc.id = ad.oferta_curso_id
+    AND oc.deleted_at IS NULL
+    AND oc.activo = TRUE
+LEFT JOIN paralelos_gestion pg
+    ON pg.id = oc.paralelo_gestion_id
+    AND pg.deleted_at IS NULL
 WHERE h.deleted_at IS NULL
   AND h.activo = TRUE
   AND h.tipo_horario = 'CLASES'

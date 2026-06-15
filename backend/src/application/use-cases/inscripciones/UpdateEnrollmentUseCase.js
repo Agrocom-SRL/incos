@@ -20,7 +20,7 @@
 
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { ESTADOS_MATERIA_INSCRITA } from '../../../domain/constants/inscripciones.constants.js';
-import { ESTADOS_HISTORIAL_PREVIO_VALUES } from '../../../domain/constants/evaluaciones.constants.js';
+import { parsePriorHistoryItem } from './priorHistoryItemValidation.js';
 import { EnrollmentMapper, EnrollmentSubjectMapper } from '../../mappers/inscripciones/index.js';
 
 export class UpdateEnrollmentUseCase {
@@ -32,7 +32,8 @@ export class UpdateEnrollmentUseCase {
     subjectEnrollmentRepository,
     studentAcademicDataRepository,
     parallelRepository,
-    courseRepository,
+    courseOfferRepository,
+    parallelManagementRepository,
     teacherAssignmentRepository,
     managementRepository,
     managementPlanRepository,
@@ -45,7 +46,8 @@ export class UpdateEnrollmentUseCase {
     this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.parallelRepository = parallelRepository;
-    this.courseRepository = courseRepository;
+    this.courseOfferRepository = courseOfferRepository;
+    this.parallelManagementRepository = parallelManagementRepository;
     this.teacherAssignmentRepository = teacherAssignmentRepository;
     this.managementRepository = managementRepository;
     this.managementPlanRepository = managementPlanRepository;
@@ -178,11 +180,15 @@ export class UpdateEnrollmentUseCase {
     const useParallelMode = parallelId != null && parallelId !== '';
     if (useParallelMode) {
       const parallel = await this._validateParallel(parallelId);
-      return this._getTeacherAssignmentsFromParallel(parallel, managementPlan);
+      return this._getCourseOfferRowsFromParallel(parallel, managementPlan);
     }
 
     if (Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0) {
-      return this._validateAndResolveTeacherAssignments(teacherAssignmentIds, managementPlan.id);
+      const assignments = await this._validateAndResolveTeacherAssignments(
+        teacherAssignmentIds,
+        managementPlan.id
+      );
+      return this._offerRowsFromTeacherAssignments(assignments);
     }
 
     throw new ValidationError(
@@ -221,27 +227,25 @@ export class UpdateEnrollmentUseCase {
       const parallelId = parallelIdsByPeriod[periodId];
       if (!parallelId) continue;
 
-      const coursesResult = await this.courseRepository.findAll({ parallelId: Number(parallelId) }, null, null);
-      const courses = coursesResult.courses || [];
+      const parallelManagement = await this.parallelManagementRepository.findByParallelAndManagementPlan(
+        Number(parallelId),
+        managementPlanId
+      );
+      if (!parallelManagement) continue;
 
-      for (const course of courses) {
-        const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
-        const asignaturaPlanId = coursePlain.planSubjectId ?? coursePlain.asignaturaPlanId;
-        if (!asignaturaPlanId) continue;
+      const pgPlain = parallelManagement.toPlainObject
+        ? parallelManagement.toPlainObject()
+        : parallelManagement;
+      const offers = await this.courseOfferRepository.findEnrichedByParallelManagementId(pgPlain.id);
 
-        const planSubject = await this.planSubjectRepository.findById(asignaturaPlanId);
-        if (!planSubject) continue;
-
-        const planPlain = planSubject.toPlainObject ? planSubject.toPlainObject() : planSubject;
-        const planPeriodId = planPlain.periodId ?? planPlain.periodoId;
-        const planMateriaId = planPlain.subjectId ?? planPlain.materiaId;
-        if (Number(planPeriodId) !== Number(periodId)) continue;
+      for (const offer of offers) {
+        if (Number(offer.periodoId) !== Number(periodId)) continue;
 
         const allowedMaterias = materiaIdSetByPeriod[periodId];
-        if (!allowedMaterias || !allowedMaterias.has(Number(planMateriaId))) continue;
+        if (!allowedMaterias || !allowedMaterias.has(Number(offer.materiaId))) continue;
 
         const assignmentsResult = await this.teacherAssignmentRepository.findAll(
-          { managementPlanId, courseId: coursePlain.id, active: true },
+          { managementPlanId, offerCourseId: offer.id, active: true },
           1,
           null
         );
@@ -295,35 +299,62 @@ export class UpdateEnrollmentUseCase {
     return parallel;
   }
 
-  async _getTeacherAssignmentsFromParallel(parallel, managementPlan) {
-    const coursesResult = await this.courseRepository.findAll(
-      { parallelId: parallel.id },
-      null,
-      null
+  async _getCourseOfferRowsFromParallel(parallel, managementPlan) {
+    const parallelManagement = await this.parallelManagementRepository.findByParallelAndManagementPlan(
+      parallel.id,
+      managementPlan.id
     );
-    const courses = coursesResult.courses || [];
-    const allAssignments = [];
-    for (const course of courses) {
-      const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
-      const assignmentsResult = await this.teacherAssignmentRepository.findAll(
-        {
-          managementPlanId: managementPlan.id,
-          courseId: coursePlain.id,
-          active: true,
-          vigente: true,
-        },
-        null,
-        null
+    if (!parallelManagement) {
+      throw new ValidationError(
+        `El paralelo ${parallel.name ?? parallel.id} no está instanciado en la gestión actual`
       );
-      if (assignmentsResult.teacherAssignments?.length > 0) {
-        allAssignments.push(...assignmentsResult.teacherAssignments);
-      }
     }
-    this.logger.info('[Inscripciones] Asignaciones docentes obtenidas desde paralelo', {
-      parallelId: parallel.id,
-      totalAssignments: allAssignments.length,
-    });
-    return allAssignments;
+
+    const pgPlain = parallelManagement.toPlainObject
+      ? parallelManagement.toPlainObject()
+      : parallelManagement;
+    const offers = await this.courseOfferRepository.findEnrichedByParallelManagementId(pgPlain.id);
+    const activeOffers = offers.filter((o) => o.activo !== false && o.activo !== 0);
+
+    if (activeOffers.length === 0) {
+      throw new ValidationError(
+        'El paralelo no tiene materias ofertadas en la gestión actual. Configure la oferta académica primero.'
+      );
+    }
+
+    return activeOffers.map((offer) => ({
+      offerCourseId: offer.id,
+      curriculumSubjectId: offer.asignaturaPlanId,
+    }));
+  }
+
+  async _offerRowsFromTeacherAssignments(teacherAssignments) {
+    const rows = [];
+    const seenOfferIds = new Set();
+
+    for (const assignment of teacherAssignments) {
+      const plain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
+      const offerCourseId = plain.offerCourseId ?? plain.ofertaCursoId;
+      if (!offerCourseId) {
+        throw new ValidationError(
+          `La asignación docente ${plain.id} no está vinculada a una oferta de curso`
+        );
+      }
+      if (seenOfferIds.has(offerCourseId)) continue;
+      seenOfferIds.add(offerCourseId);
+
+      const offer = await this.courseOfferRepository.findById(offerCourseId);
+      if (!offer) {
+        throw new NotFoundError(`Oferta de curso con ID ${offerCourseId}`);
+      }
+      const offerPlain = offer.toPlainObject ? offer.toPlainObject() : offer;
+      rows.push({
+        offerCourseId,
+        curriculumSubjectId: offerPlain.planSubjectId ?? offerPlain.asignaturaPlanId,
+      });
+    }
+
+    return rows;
   }
 
   async _validateAndResolveTeacherAssignments(teacherAssignmentIds, managementPlanId) {
@@ -377,21 +408,20 @@ export class UpdateEnrollmentUseCase {
     });
   }
 
-  async _createsubjectEnrollments(enrollment, teacherAssignments) {
+  async _createsubjectEnrollments(enrollment, offerRows) {
     const enrollmentId = enrollment.id ?? enrollment.Id;
-    for (const assignment of teacherAssignments) {
-      const assignmentId = assignment.id ?? assignment.Id;
+    for (const row of offerRows) {
       await this.subjectEnrollmentRepository.create({
         enrollmentId,
-        teacherAssignmentId: assignmentId,
+        offerCourseId: row.offerCourseId,
+        curriculumSubjectId: row.curriculumSubjectId ?? null,
         status: ESTADOS_MATERIA_INSCRITA.INSCRITO,
         observations: null,
-        teacherObservations: null,
       });
     }
     this.logger.info('[Inscripciones] Nuevas materias inscritas creadas', {
       enrollmentId,
-      totalSubjects: teacherAssignments.length,
+      totalSubjects: offerRows.length,
     });
   }
 
@@ -438,25 +468,7 @@ export class UpdateEnrollmentUseCase {
     }
 
     for (const item of priorHistory) {
-      const materiaId = Number(item.materiaId ?? item.materia_id);
-      const periodId = Number(item.periodId ?? item.period_id);
-      const finalGrade = Number(item.finalGrade ?? item.final_grade ?? item.nota_final);
-      const status = String(item.status ?? item.estado ?? 'APROBADO').toUpperCase();
-
-      if (!materiaId || !periodId) {
-        throw new ValidationError('Cada fila de historial previo requiere materia_id y period_id');
-      }
-      if (Number.isNaN(finalGrade) || finalGrade < 0 || finalGrade > 100) {
-        throw new ValidationError('La nota del historial previo debe estar entre 0 y 100');
-      }
-      if (finalGrade < 61) {
-        throw new ValidationError('La nota mínima de aprobación en historial previo es 61');
-      }
-      if (!ESTADOS_HISTORIAL_PREVIO_VALUES.includes(status)) {
-        throw new ValidationError(
-          `Estado de historial previo inválido. Valores: ${ESTADOS_HISTORIAL_PREVIO_VALUES.join(', ')}`
-        );
-      }
+      const { materiaId, periodId, finalGrade, status } = parsePriorHistoryItem(item);
 
       const planSubjectsResult = await this.planSubjectRepository.findAll(
         { studyPlanId, periodId, subjectId: materiaId },
@@ -484,5 +496,38 @@ export class UpdateEnrollmentUseCase {
       enrollmentId,
       count: priorHistory.length,
     });
+  }
+
+  /**
+   * Actualiza solo historial_previo de una inscripción (PUT dedicado).
+   * @param {number} enrollmentId
+   * @param {Array} priorHistory - Filas { materiaId, periodId, finalGrade, status }
+   */
+  async executePriorHistoryOnly(enrollmentId, priorHistory) {
+    this.logger.info('[Inscripciones] Actualización de historial previo', { enrollmentId });
+
+    if (!Array.isArray(priorHistory)) {
+      throw new ValidationError('prior_history debe ser un arreglo');
+    }
+
+    const enrollment = await this.enrollmentRepository.findById(enrollmentId);
+    if (!enrollment) {
+      throw new NotFoundError(`Inscripción con ID ${enrollmentId}`);
+    }
+
+    const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
+    const academicDataId = enrollmentPlain.academicDataId ?? enrollmentPlain.studentAcademicData_id;
+    const managementId = enrollmentPlain.managementId ?? enrollmentPlain.management_id;
+    const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
+    const management = await this.managementRepository.findById(managementId);
+    const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+      studentAcademicData,
+      management
+    );
+
+    await this._replacePriorEnrollmentHistory(enrollmentId, priorHistory, managementPlan);
+
+    const updated = await this.enrollmentRepository.findById(enrollmentId);
+    return EnrollmentMapper.entityToPresentation(updated);
   }
 }

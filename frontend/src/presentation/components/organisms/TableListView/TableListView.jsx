@@ -28,7 +28,11 @@
 import React from 'react';
 import { Row, Col, Flex } from 'antd';
 import { DataTable } from '@molecules';
-import { Alert, Card, SearchBar, Spinner } from '@atoms';
+import { Alert, Card, SearchBar, Spinner, Text } from '@atoms';
+import {
+    DATA_TABLE_PAGINATION_BASE,
+    resolvePaginationSizeChanger,
+} from '@molecules/DataTable/paginationDefaults';
 
 const TableListView = ({
     // Datos y estado
@@ -40,6 +44,8 @@ const TableListView = ({
     searchText = '',
     onSearchChange,
     searchPlaceholder = 'Buscar...',
+    searchColSpan = 8,
+    searchStyle,
 
     // Configuración de tabla
     columns = [],
@@ -54,6 +60,13 @@ const TableListView = ({
 
     // Loading personalizado
     loadingTip = 'Cargando...',
+
+    // Header interno (dentro del Card)
+    title,
+    headerActions,
+    cardProps,
+    /** Sin Card externa — para tabs embebidos en workspace (CFG Académico). */
+    embedded = false,
 }) => {
     const isLoading = loading && data.length === 0;
 
@@ -72,23 +85,64 @@ const TableListView = ({
 
     const basePagination = {
         defaultPageSize,
-        showSizeChanger: true,
-        showQuickJumper: false,
-        showTotal: (total, range) =>
-            `Mostrando ${range[0]}-${range[1]} de ${total} registros`,
-        pageSizeOptions,
-        locale: {
-            items_per_page: 'registros / página',
-        },
+        ...DATA_TABLE_PAGINATION_BASE,
     };
+
+    const sanitized = sanitizePagination(pagination);
 
     const finalPagination = {
         ...basePagination,
-        ...sanitizePagination(pagination),
+        ...sanitized,
         pageSizeOptions: (pagination && pagination.pageSizeOptions) || pageSizeOptions,
+        showSizeChanger: resolvePaginationSizeChanger(
+            sanitized.showSizeChanger ?? basePagination.showSizeChanger,
+        ),
         // Forzar que no se muestre el "quick jumper" nativo
         showQuickJumper: false,
     };
+
+    const tableBlock = (
+        <>
+            {(title || headerActions) ? (
+                <Flex
+                    align="center"
+                    justify="space-between"
+                    wrap="wrap"
+                    gap={8}
+                    style={{ marginBottom: 12 }}
+                >
+                    {title ? (
+                        <Text strong style={{ fontSize: 16 }}>
+                            {title}
+                        </Text>
+                    ) : (
+                        <span />
+                    )}
+                    {headerActions ? <div>{headerActions}</div> : null}
+                </Flex>
+            ) : null}
+
+            <Row justify="end" className="table-list-view__search-row" style={{ marginBottom: 12 }}>
+                <Col span={searchColSpan} style={searchStyle}>
+                    <SearchBar
+                        placeholder={searchPlaceholder}
+                        value={searchText}
+                        onChange={onSearchChange}
+                    />
+                </Col>
+            </Row>
+
+            <DataTable
+                dataSource={data}
+                columns={columns}
+                loading={loading}
+                rowKey={rowKey}
+                pagination={finalPagination}
+                defaultSort={defaultSort}
+                className={tableClassName}
+            />
+        </>
+    );
 
     return (
         <>
@@ -115,28 +169,11 @@ const TableListView = ({
                         />
                     )}
 
-                    <Card variant="outlined">
-                        {/* SearchBar con span=8 alineado a la derecha */}
-                        <Row justify="end" className="table-list-view__search-row">
-                            <Col span={8}>
-                                <SearchBar
-                                    placeholder={searchPlaceholder}
-                                    value={searchText}
-                                    onChange={onSearchChange}
-                                />
-                            </Col>
-                        </Row>
-
-                        <DataTable
-                            dataSource={data}
-                            columns={columns}
-                            loading={loading}
-                            rowKey={rowKey}
-                            pagination={finalPagination}
-                            defaultSort={defaultSort}
-                            className={tableClassName}
-                        />
-                    </Card>
+                    {embedded ? (
+                        <div className="table-list-view table-list-view--embedded">{tableBlock}</div>
+                    ) : (
+                        <Card variant="outlined" {...(cardProps || {})}>{tableBlock}</Card>
+                    )}
                 </>
             )}
         </>

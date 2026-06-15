@@ -2,6 +2,22 @@
  * Gestión de horarios — layout alineado con dashboard (shell + planificación).
  */
 
+.ant-popover .ant-popover-container {
+    padding: 14px 16px;
+}
+
+.ant-popover .ant-popover-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.horarios-kpi-card__sub {
+    display: inline-block;
+    min-height: 2.75em;
+    line-height: 1.375;
+}
+
 .horarios-gestion-planificacion .sd-tabs-shell {
     margin-top: 0;
 }
@@ -343,6 +359,39 @@
 .horarios-armado-cursos__lista {
     margin: 0;
     padding-left: 1.1rem;
+}
+
+/* Celda con solape local (plan semanal / vista previa armado) — mismo parpadeo que conflictos docente */
+.horarios-armado-page .da-cal-semanal__slot-wrap--conflict {
+    min-height: 100%;
+    border: 2px dashed var(--ant-color-error-border, rgba(255, 77, 79, 0.65));
+    border-radius: 4px;
+    animation: horarios-conflictos-parpadeo 1.5s ease-in-out infinite;
+}
+
+.horarios-armado-page .da-cal-semanal__slot-wrap--conflict .da-cal-semanal__cell-inner--empty {
+    min-height: 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .horarios-armado-page .da-cal-semanal__slot-wrap--conflict {
+        animation: none;
+    }
+}
+
+.horarios-armado-cobertura-docente-link {
+    padding: 0;
+    height: auto;
+    font-weight: inherit;
+    vertical-align: baseline;
+}
+
+.horarios-armado-cobertura-docente-link.ant-typography {
+    color: var(--ant-color-error, #ff4d4f);
+}
+
+.horarios-armado-cobertura-docente-link.ant-typography:hover {
+    color: var(--ant-color-error-active, #d9363e);
 }
 
 .horarios-armado-docente--conflicto {
@@ -803,4 +852,61 @@
 .horarios-aulas-grid--edicion .da-cal-semanal__th--hora {
     z-index: 3;
     background-image: linear-gradient(rgba(25, 107, 69, 0.06), rgba(25, 107, 69, 0.06));
+}
+
+/* === Resolución de conflictos docente (grilla agregada) === */
+@keyframes horarios-conflictos-parpadeo {
+    0%,
+    100% {
+        border-color: var(--ant-color-error, #ff4d4f);
+        background-color: rgba(255, 77, 79, 0.18);
+        box-shadow: inset 0 0 0 0 rgba(255, 77, 79, 0);
+    }
+    50% {
+        border-color: var(--ant-color-error-active, #d9363e);
+        background-color: rgba(255, 77, 79, 0.48);
+        box-shadow: inset 0 0 14px 0 rgba(255, 77, 79, 0.35);
+    }
+}
+
+/* Celda en choque docente (mismo horario_id en 2+ asignaciones del docente) */
+.horarios-conflictos-page .da-cal-semanal__slot-wrap--docente-conflicto {
+    min-height: 100%;
+    border: 2px dashed var(--ant-color-error-border, rgba(255, 77, 79, 0.65));
+    border-radius: 4px;
+    animation: horarios-conflictos-parpadeo 1.5s ease-in-out infinite;
+}
+
+.horarios-conflictos-page .da-cal-semanal__slot-wrap--docente-conflicto .da-cal-semanal__cell-inner--empty {
+    min-height: 48px;
+}
+
+.horarios-conflictos-workspace {
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-conflictos-page {
+    width: 100%;
+    min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .horarios-conflictos-page .da-cal-semanal__slot-wrap--docente-conflicto {
+        animation: none;
+    }
+}
+
+/* Popover de ayuda anclado a la celda en conflicto (tab de paralelo). */
+.horarios-conflicto-ayuda-popover {
+    max-width: 320px;
+}
+
+.horarios-conflicto-ayuda-popover .ant-popover-inner-content {
+    font-size: var(--ant-font-size-sm, 12px);
+}
+
+.horarios-conflicto-ayuda__next {
+    margin-top: 6px;
+    text-align: right;
 }

@@ -60,9 +60,10 @@ export { Docente } from './docente.js';
 export { Paralelo } from './paralelo.js';
 export { Aula } from './aula.js';
 export { Horario } from './horario.js';
-export { Curso } from './curso.js';
-export { CursoHorario } from './curso_horario.js';
 export { AsignacionDocente } from './asignacion_docente.js';
+export { AsignacionHorario } from './asignacion_horario.js';
+export { ParaleloGestion } from './paralelo_gestion.js';
+export { OfertaCurso } from './oferta_curso.js';
 
 // ============================================
 // ESTUDIANTES - PARTE 1
@@ -103,7 +104,7 @@ export { TipoEvaluacion } from './tipo_evaluacion.js';
 export { ConfiguracionEvaluacion } from './configuracion_evaluacion.js';
 export { BimestreMatricula } from './bimestre_matricula.js';
 export { Evaluacion } from './evaluacion.js';
-export { EvaluacionFinal } from './evaluacion_final.js';
+export { EvaluacionNota } from './evaluacion_nota.js';
 
 // ============================================
 // NIVELACIONES

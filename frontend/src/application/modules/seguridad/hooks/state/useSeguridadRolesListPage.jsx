@@ -60,15 +60,19 @@ export const useSeguridadRolesListPage = () => {
         <TableActions
           record={record}
           navigate={navigate}
-          onView={() => navigate(`/seguridad/roles/${record.id}/permisos`)}
           extraActions={[
             {
               icon: <KeyOutlined />,
-              tooltip: 'Gestionar Permisos',
+              tooltip: 'Gestionar permisos del rol',
               variant: 'primary',
+              permiso: 'seguridad.rol.gestionar',
+              accion: 'EDITAR',
               onClick: () => navigate(`/seguridad/roles/${record.id}/permisos`),
             },
           ]}
+          permisos={{
+            ver: { codigo: 'seguridad.rol.gestionar', accion: 'LISTAR' },
+          }}
         />
       ),
     },

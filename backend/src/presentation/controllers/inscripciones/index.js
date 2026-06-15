@@ -7,6 +7,8 @@ export { GetEnrollmentByIdController } from './inscripciones/get-by-id.controlle
 export { DeleteEnrollmentController } from './inscripciones/delete.controller.js';
 export { GenerateFormularioInscripcionController } from './generate-formulario.controller.js';
 export { UpdateEnrollmentController } from './inscripciones/update.controller.js';
+export { UpdateEnrollmentPriorHistoryController } from './inscripciones/update-prior-history.controller.js';
+export { ActivarCursadoMatriculaController } from './inscripciones/activar-cursado.controller.js';
 
 // ============================================
 // CONTROLLERS FUTUROS - MATERIAS INSCRITAS

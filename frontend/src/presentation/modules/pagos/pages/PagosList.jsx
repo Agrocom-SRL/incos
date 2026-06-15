@@ -16,7 +16,7 @@ import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import { ActionButton, Button } from '@atoms';
 import { usePagosListContext, useExportListaAportesPorCarreraExcel } from '@application-pagos/hooks';
-import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+import { useCarrerasCatalogApi } from '@application-shared/hooks';
 import { useMessage } from '@application/utils';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';
 import { createPagosTableColumns } from '@pagos/config';
@@ -33,7 +33,7 @@ const PagosList = () => {
   const puedeExportarLista = puedeExportarFinanzas || puedeExportarMatricula;
 
   const [selectedCarreraId, setSelectedCarreraId] = useState(null);
-  const { carreras = [], loading: carrerasLoading } = useCarrerasApi();
+  const { carreras = [], loading: carrerasLoading } = useCarrerasCatalogApi();
   const { exportar, loading: exportLoading } = useExportListaAportesPorCarreraExcel();
   const selectedCarrera = useMemo(() => {
     if (!selectedCarreraId) return null;
@@ -56,6 +56,7 @@ const PagosList = () => {
     setSearchText,
     refetch,
     deletePago,
+    tablePagination,
   } = usePagosListContext();
 
   const handleNuevoPago = () => {
@@ -193,12 +194,7 @@ const PagosList = () => {
         searchPlaceholder="Buscar por estudiante, número de recibo, código de comprobante..."
         columns={tableColumns}
         rowKey={(record) => record.id || record.numeroRecibo || Math.random()}
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Total: ${total} pagos`,
-          pageSizeOptions: ['10', '20', '50', '100'],
-        }}
+        pagination={tablePagination}
         defaultSort={{
           field: 'fechaPago',
           order: 'descend',

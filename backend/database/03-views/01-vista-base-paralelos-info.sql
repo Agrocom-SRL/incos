@@ -24,6 +24,7 @@ SELECT
   p.periodo_id,
   car.nombre AS carrera_nombre,
   car.codigo AS carrera_codigo,
+  car.color_hex AS carrera_color_hex,
   per.numero AS periodo_numero,
   per.nombre AS periodo_nombre
 FROM paralelos p

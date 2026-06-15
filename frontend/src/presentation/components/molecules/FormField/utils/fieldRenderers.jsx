@@ -18,6 +18,10 @@
 import { Form, Typography, InputNumber, Flex } from 'antd';
 import { useEffect } from 'react';
 import { HexColorPicker } from 'react-colorful';
+import FormColorPopoverPicker from '../components/FormColorPopoverPicker';
+import FormImageUploadDragger from '../components/FormImageUploadDragger';
+import FormPillSelect from '../components/FormPillSelect';
+import { resolveFormPillClassName } from './formPillSelectResolvers';
 import {
   FieldInput,
   FieldSelect,
@@ -63,8 +67,21 @@ const FormHexColorPicker = ({ value, onChange, disabled, readOnly, field }) => {
     );
 };
 
-const renderColor = (field, disabled, readOnly) => (
-    <FormHexColorPicker disabled={disabled} readOnly={readOnly} field={field} />
+const renderColor = (field, disabled, readOnly) => {
+  if (field.pickerMode === 'popover' || field.pickerMode === 'modal') {
+    return (
+      <FormColorPopoverPicker
+        disabled={disabled}
+        readOnly={readOnly}
+        field={field}
+      />
+    );
+  }
+  return <FormHexColorPicker disabled={disabled} readOnly={readOnly} field={field} />;
+};
+
+const renderImageUpload = (field, disabled, readOnly, form) => (
+  <FormImageUploadDragger disabled={disabled} readOnly={readOnly} field={field} form={form} />
 );
 
 /**
@@ -79,6 +96,8 @@ const renderNumber = (field, disabled, readOnly) => (
     min={field.min}
     max={field.max}
     step={field.step ?? 1}
+    precision={field.precision}
+    addonAfter={field.addonAfter}
   />
 );
 
@@ -93,6 +112,7 @@ const renderInput = (field, disabled, readOnly) => (
     iconPosition={field.iconPosition}
     defaultValue={field.defaultValue}
     capitalize={field.capitalize || false}
+    className={field.className}
   />
 );
 
@@ -103,6 +123,19 @@ const renderInput = (field, disabled, readOnly) => (
  * Ant Design Form.Item también maneja onChange automáticamente para actualizar el formulario
  * Si field.onChange existe, se ejecutará además del onChange del Form.Item
  */
+const renderPillSelect = (field, disabled, readOnly, selectOptions) => (
+  <FormPillSelect
+    placeholder={field.placeholder}
+    disabled={disabled}
+    readOnly={readOnly}
+    options={selectOptions}
+    allowClear={field.allowClear}
+    resolvePillClassName={(optionValue) =>
+      resolveFormPillClassName(field.pillVariant, optionValue, selectOptions)
+    }
+  />
+);
+
 const renderSelect = (field, disabled, readOnly, selectOptions, form) => {
   // Si hay un onChange personalizado del campo (agregado por enrichers),
   // combinarlo con el onChange del Form.Item
@@ -120,8 +153,12 @@ const renderSelect = (field, disabled, readOnly, selectOptions, form) => {
       options={selectOptions}
       icon={field.icon}
       defaultValue={field.defaultValue}
-      onChange={handleChange} // Callback combinado (personalizado + Form.Item)
-      loading={field.loading} // Estado de carga (agregado por enrichers)
+      onChange={handleChange}
+      loading={field.loading}
+      allowClear={field.allowClear}
+      showSearch={field.showSearch}
+      mode={field.mode}
+      maxCount={field.maxCount}
     />
   );
 };
@@ -388,8 +425,10 @@ export const fieldRenderers = {
   input: renderInput,
   number: renderNumber,
   color: renderColor,
+  imageUpload: renderImageUpload,
   search: renderSearch,
   select: renderSelect,
+  pillSelect: renderPillSelect,
   date: renderDate,
   switch: renderSwitch,
   textarea: renderTextarea,
@@ -414,6 +453,7 @@ const fieldRendererParams = {
   switch: ['field', 'disabled', 'readOnly'],
   textarea: ['field', 'disabled', 'readOnly'],
   select: ['field', 'disabled', 'readOnly', 'selectOptions'],
+  pillSelect: ['field', 'disabled', 'readOnly', 'selectOptions'],
   radio: ['field', 'disabled', 'readOnly', 'selectOptions'],
   checkboxGroup: ['field', 'disabled', 'readOnly', 'selectOptions'],
   date: ['field', 'disabled', 'readOnly', 'minAge'],

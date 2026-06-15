@@ -9,9 +9,9 @@
 --   - aula (mismo aula+horario con otra asignación activa/vigente del sistema)
 --
 -- Reutiliza:
--- - vista_base_docente_asignacion_conflicto_curso (65)
--- - vista_base_docente_asignacion_conflicto_horario (66)
--- - vista_base_docente_asignacion_conflicto_aula (67)
+-- - vista_base_docente_asignacion_conflicto_curso
+-- - vista_base_docente_asignacion_conflicto_horario (65)
+-- - vista_base_docente_asignacion_conflicto_aula (66)
 -- ============================================
 
 USE instituto_incos;

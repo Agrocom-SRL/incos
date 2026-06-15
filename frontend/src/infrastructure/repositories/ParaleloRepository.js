@@ -72,35 +72,6 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
-  async obtenerCursosOferta(options = {}) {
-    try {
-      const { parallelId } = options;
-      if (!parallelId) {
-        return { success: false, error: 'ID del paralelo es requerido' };
-      }
-      const response = await apiClient.get(PARALELOS_ENDPOINTS.CURSOS_OFERTA(parallelId));
-      return handleSuccessResponse(response);
-    } catch (error) {
-      return handleErrorResponse(error, 'Error al obtener la oferta de cursos del paralelo');
-    }
-  }
-
-  async crearCursoOferta(options = {}) {
-    try {
-      const { parallelId, payload } = options;
-      if (!parallelId) {
-        return { success: false, error: 'ID del paralelo es requerido' };
-      }
-      if (!payload || payload.asignaturaPlanId == null) {
-        return { success: false, error: 'asignaturaPlanId es requerido' };
-      }
-      const response = await apiClient.post(PARALELOS_ENDPOINTS.CURSOS_POST(parallelId), payload);
-      return handleSuccessResponse(response);
-    } catch (error) {
-      return handleErrorResponse(error, 'Error al crear el curso del paralelo');
-    }
-  }
-
   /**
    * Persiste el plan semanal (bloques) del paralelo.
    * PUT /v1/paralelos/:id/schedule
@@ -184,6 +155,42 @@ export class ParaleloRepository extends IParaleloRepository {
       return handleSuccessResponse(response);
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener bloques de horarios en aulas');
+    }
+  }
+
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener paralelo');
+    }
+  }
+
+  async crear(data) {
+    try {
+      const response = await apiClient.post(PARALELOS_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear paralelo');
+    }
+  }
+
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(PARALELOS_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar paralelo');
+    }
+  }
+
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(PARALELOS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar paralelo');
     }
   }
 

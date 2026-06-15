@@ -8,10 +8,15 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Spin, Alert, Empty, Tag, Tooltip, Tabs } from 'antd';
+import DetailField from '@atoms/DetailField';
+import DetailInfoCard from '@molecules/DetailInfoCard';
+import DetailTabLabel from '@molecules/DetailTabLabel';
+import DetailProfileCard from '@organisms/DetailProfileCard';
+import DetailTabsPanel from '@organisms/DetailTabsPanel';
+import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
+import '@presentation/styles/pages/detail-page.css';
+import { Spin, Alert, Empty, Tag } from 'antd';
 import {
-  ArrowLeftOutlined,
-  EditOutlined,
   UserOutlined,
   PercentageOutlined,
   DollarOutlined,
@@ -24,28 +29,6 @@ import { useEstadoAporteRegistro } from '@application-pagos/hooks';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 
 const DURACION_MENSAJE_ERROR = 8;
-
-const Field = ({ label, children, span = 1 }) => (
-  <div className={`sd-field sd-field--span-${span}`}>
-    <span className="sd-field__label">{label}</span>
-    <span className="sd-field__value">{children ?? '—'}</span>
-  </div>
-);
-
-const InfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
-  <div className="sd-card">
-    <div className={`sd-card__head${headVariant ? ` sd-card__head--${headVariant}` : ''}`}>
-      <span className="sd-card__title">
-        {icon && <span className="sd-card__title-icon">{icon}</span>}
-        {title}
-      </span>
-      {extra && <div className="sd-card__extra">{extra}</div>}
-    </div>
-    <div className={`sd-card__body sd-card__body--cols-${cols}`}>
-      {children}
-    </div>
-  </div>
-);
 
 const initialsFromName = (name) => {
   if (!name || typeof name !== 'string') return 'B';
@@ -186,36 +169,28 @@ const BecaAsignacionDetail = () => {
     return [
       {
         key: 'informacion',
-        label: (
-          <span className="sd-tab-label">
-            <PercentageOutlined /> Información
-          </span>
-        ),
+        label: <DetailTabLabel icon={<PercentageOutlined />}>Información</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
-            <InfoCard title="Tipo de beca y estado" icon={<PercentageOutlined />} cols={2}>
-              <Field label="Código">{data.scholarship?.codigo}</Field>
-              <Field label="Estado asignación">{estadoTag(data.state)}</Field>
-              <Field label="Descripción" span={2}>
+            <DetailInfoCard title="Tipo de beca y estado" icon={<PercentageOutlined />} cols={2}>
+              <DetailField label="Código">{data.scholarship?.codigo}</DetailField>
+              <DetailField label="Estado asignación">{estadoTag(data.state)}</DetailField>
+              <DetailField label="Descripción" span={2}>
                 {data.scholarship?.descripcion || '—'}
-              </Field>
-              <Field label="Observaciones" span={2}>
+              </DetailField>
+              <DetailField label="Observaciones" span={2}>
                 {data.observations || '—'}
-              </Field>
-            </InfoCard>
+              </DetailField>
+            </DetailInfoCard>
           </div>
         ),
       },
       {
         key: 'estudiante',
-        label: (
-          <span className="sd-tab-label">
-            <UserOutlined /> Estudiante
-          </span>
-        ),
+        label: <DetailTabLabel icon={<UserOutlined />}>Estudiante</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
-            <InfoCard
+            <DetailInfoCard
               title="Datos del beneficiario"
               icon={<UserOutlined />}
               cols={2}
@@ -231,26 +206,22 @@ const BecaAsignacionDetail = () => {
                 ) : null
               }
             >
-              <Field label="Nombre completo">{data.student?.nombreCompleto}</Field>
-              <Field label="Código">{data.student?.codigoEstudiante}</Field>
-              <Field label="CI">
+              <DetailField label="Nombre completo">{data.student?.nombreCompleto}</DetailField>
+              <DetailField label="Código">{data.student?.codigoEstudiante}</DetailField>
+              <DetailField label="CI">
                 {data.student?.ci}
                 {data.student?.expedicion ? ` (${data.student.expedicion})` : ''}
-              </Field>
-            </InfoCard>
+              </DetailField>
+            </DetailInfoCard>
           </div>
         ),
       },
       {
         key: 'pago',
-        label: (
-          <span className="sd-tab-label">
-            <DollarOutlined /> Pago de aporte
-          </span>
-        ),
+        label: <DetailTabLabel icon={<DollarOutlined />}>Pago de aporte</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
-            <InfoCard
+            <DetailInfoCard
               title="Cuotas del aporte relacionadas"
               icon={<DollarOutlined />}
               cols={2}
@@ -273,12 +244,12 @@ const BecaAsignacionDetail = () => {
                 </Spin>
               ) : estadoAporte?.cabecera?.id && Array.isArray(estadoAporte?.cuotas) && estadoAporte.cuotas.length > 0 ? (
                 <>
-                  <Field label="Descuento aplicado">
+                  <DetailField label="Descuento aplicado">
                     {Number(estadoAporte?.cabecera?.descuento_beca ?? 0) > 0
                       ? `Sí (Bs. ${Number(estadoAporte?.cabecera?.descuento_beca ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
                       : 'No'}
-                  </Field>
-                  <Field label="Estado del aporte">{estadoTag(estadoAporte?.cabecera?.estado)}</Field>
+                  </DetailField>
+                  <DetailField label="Estado del aporte">{estadoTag(estadoAporte?.cabecera?.estado)}</DetailField>
                   <div className="sd-field sd-field--span-2">
                     <span className="sd-field__label">Cuotas registradas</span>
                     <div className="sd-field__value">
@@ -315,10 +286,10 @@ const BecaAsignacionDetail = () => {
                 </>
               ) : data.payment?.id ? (
                 <>
-                  <Field label="Descuento aplicado">
+                  <DetailField label="Descuento aplicado">
                     {Number(data?.payment?.scholarshipDiscount ?? 0) > 0 ? 'Sí' : 'No'}
-                  </Field>
-                  <Field label="Estado del aporte">{estadoTag(data.payment.state)}</Field>
+                  </DetailField>
+                  <DetailField label="Estado del aporte">{estadoTag(data.payment.state)}</DetailField>
                 </>
               ) : (
                 <div className="sd-empty">
@@ -328,7 +299,7 @@ const BecaAsignacionDetail = () => {
                   </p>
                 </div>
               )}
-            </InfoCard>
+            </DetailInfoCard>
           </div>
         ),
       },
@@ -374,94 +345,54 @@ const BecaAsignacionDetail = () => {
       })
     : '—';
 
-  const headerActions = (
-    <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-      <ArrowLeftOutlined /> Volver
-    </button>
-  );
+  const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
 
   return (
     <PageTemplate
       header={<PageHeader title="Asignación de beca" breadcrumbItems={breadcrumbItems} actions={headerActions} />}
     >
-      <div className="sd">
-        <div className="sd-profile">
-          {puedeEditarAsignacion ? (
-            <Tooltip title="Editar asignación (reemplazar tipo de beca)">
-              <button
-                type="button"
-                className="sd-profile__edit-btn"
-                onClick={handleEditar}
-                aria-label="Editar asignación de beca"
-              >
-                <EditOutlined />
-              </button>
-            </Tooltip>
-          ) : null}
-
-          <div className="sd-profile__identity">
-            <div className="sd-profile__avatar-wrap">
-              <div className="sd-profile__avatar sd-profile__avatar--default">{avatarText}</div>
-              <span className="sd-profile__status-dot" />
-            </div>
-            <div className="sd-profile__name-block">
-              <h1 className="sd-profile__name">{tituloPrincipal}</h1>
-              <div className="sd-profile__meta">
-                {subtitulo ? (
-                  <p className="sd-profile__sub">
-                    <UserOutlined /> {subtitulo}
-                  </p>
-                ) : null}
-                {data.state ? (
-                  <span className="sd-profile__admission-pill sd-profile__admission-pill--default">
-                    {String(data.state)}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          <div className="sd-profile__divider" />
-
-          <div className="sd-profile__stats">
-            <div className="sd-stat">
-              <span className="sd-stat__label">Descuento</span>
-              <span className="sd-stat__value sd-stat__value--primary">
-                {data.scholarship?.porcentaje != null ? `${data.scholarship.porcentaje}%` : '—'}
-              </span>
-            </div>
-            <div className="sd-stat">
-              <span className="sd-stat__label">Gestión</span>
-              <span className="sd-stat__value">
-                {data.management?.codigo || data.management?.nombre || data.management?.anio || '—'}
-              </span>
-            </div>
-            <div className="sd-stat">
-              <span className="sd-stat__label">Solicitud</span>
-              <span className="sd-stat__value">{requestFmt}</span>
-            </div>
-          </div>
-
-          <div className="sd-profile__divider" />
-
-          <div className="sd-profile__actions">
-            {puedeEliminar ? (
-              <button
-                type="button"
-                className="sd-btn sd-btn--danger"
-                onClick={handleEliminar}
-                disabled={deletingBeca}
-              >
-                Eliminar asignación
-              </button>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="sd-tabs-shell">
-          <Tabs defaultActiveKey="informacion" items={tabItems} className="sd-tabs" />
-        </div>
-      </div>
+      <DetailProfileCard
+        avatarInitials={avatarText}
+        avatarClassName="sd-profile__avatar sd-profile__avatar--default"
+        title={tituloPrincipal}
+        subtitle={subtitulo ? <><UserOutlined /> {subtitulo}</> : null}
+        metaExtra={
+          data.state ? (
+            <span className="sd-profile__admission-pill sd-profile__admission-pill--default">
+              {String(data.state)}
+            </span>
+          ) : null
+        }
+        showEdit={puedeEditarAsignacion}
+        onEdit={handleEditar}
+        editTooltip="Editar asignación (reemplazar tipo de beca)"
+        editAriaLabel="Editar asignación de beca"
+        stats={[
+          {
+            label: 'Descuento',
+            value: data.scholarship?.porcentaje != null ? `${data.scholarship.porcentaje}%` : '—',
+            primary: true,
+          },
+          {
+            label: 'Gestión',
+            value: data.management?.codigo || data.management?.nombre || data.management?.anio || '—',
+          },
+          { label: 'Solicitud', value: requestFmt },
+        ]}
+        actions={
+          puedeEliminar ? (
+            <button
+              type="button"
+              className="sd-btn sd-btn--danger"
+              onClick={handleEliminar}
+              disabled={deletingBeca}
+            >
+              Eliminar asignación
+            </button>
+          ) : null
+        }
+      />
+      <DetailTabsPanel items={tabItems} defaultActiveKey="informacion" />
     </PageTemplate>
   );
 };

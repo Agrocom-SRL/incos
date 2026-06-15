@@ -1,7 +1,17 @@
 -- ============================================
 -- ESTRUCTURA ACADÉMICA - PARTE 2
 -- Sistema de Gestión Académica - Instituto INCOS
--- 6 Tablas: docentes, paralelos, aulas, horarios, cursos, cursos_horarios
+-- 4 Tablas: docentes, paralelos, aulas, horarios
+-- (Oferta e horarios: ver 08-estructura-academica-oferta.sql y 09-estructura-academica-horarios.sql)
+-- ============================================
+--
+-- RESTRICCIONES DE DISEÑO:
+--   - Todas las FKs permiten NULL
+--   - Todas las FKs usan ON DELETE SET NULL
+--   - Ninguna restricción UNIQUE
+--   - Ninguna validación CHECK dentro del schema (validación en aplicación)
+--   - Auditoría estándar idéntica en todas las tablas
+--   - Índices solo en propiedades clave de búsqueda y FKs
 -- ============================================
 
 USE instituto_incos;
@@ -13,9 +23,7 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
-DROP TABLE IF EXISTS cursos_horarios;
-DROP TABLE IF EXISTS cursos;
+-- Eliminar tablas (recreación idempotente del schema)
 DROP TABLE IF EXISTS horarios;
 DROP TABLE IF EXISTS aulas;
 DROP TABLE IF EXISTS paralelos;
@@ -67,6 +75,11 @@ CREATE TABLE docentes (
     tipo_contrato ENUM('PLANTA', 'CONTRATO', 'HORARIO', 'CONSULTOR') DEFAULT 'CONTRATO' COMMENT 'Tipo de contrato',
     estado_laboral ENUM('ACTIVO', 'LICENCIA', 'RETIRADO', 'SUSPENDIDO') DEFAULT 'ACTIVO' COMMENT 'Estado laboral',
     observaciones TEXT COMMENT 'Observaciones adicionales',
+
+    -- Identidad visual y límites de carga (horarios / asignación docente)
+    color_hex VARCHAR(7) NULL COMMENT 'Color exclusivo del docente para visualización en horarios.',
+    max_horas_semana INT NULL DEFAULT 20 COMMENT 'Carga máxima semanal según contrato. Default 20 (data real 2026).',
+    max_horas_mes INT NULL DEFAULT 80 COMMENT 'Carga máxima mensual según contrato. Default 80.',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -112,7 +125,7 @@ CREATE TABLE paralelos (
     
     -- Identificación
     nombre VARCHAR(50) NOT NULL COMMENT 'Nombre del paralelo (ej: PRIMERO A, SEGUNDO B, TERCERO A)',
-    turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NOT NULL COMMENT 'Turno horario del paralelo',
+    turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NOT NULL COMMENT 'Turno plantilla del paralelo maestro. Operación por gestión: paralelos_gestion.turno.',
     descripcion TEXT COMMENT 'Descripción informativa del paralelo',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -229,100 +242,6 @@ CREATE TABLE horarios (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Bloques horarios conceptuales. Soporta clases (45 min), eventos (personalizados), feriados (día completo) y capacitaciones';
-
--- ============================================
--- TABLA: cursos
--- Cursos (materias) de cada paralelo
--- ============================================
--- Los cursos representan las materias específicas que se ofertan en cada paralelo.
--- Son la intersección entre un paralelo y las asignaturas del plan de estudios.
--- Constituyen el "maestro de oferta" que luego se activa por gestión.
-
-CREATE TABLE cursos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(50) NOT NULL COMMENT 'Código identificador del curso (ej: SIS-1A-NOCHE-PRG102)',
-    paralelo_id INT NULL COMMENT 'Paralelo al que pertenece este curso',
-    asignatura_plan_id INT NULL COMMENT 'Asignatura del plan (incluye: materia + periodo + plan + horas_semanales)',
-    
-    -- Control de cupos
-    cupo_maximo INT DEFAULT 35 COMMENT 'Cupo máximo de estudiantes para este curso',
-    cupo_minimo INT DEFAULT 10 COMMENT 'Cupo mínimo requerido para abrir el curso',
-    
-    -- Visualización
-    color_hex VARCHAR(7) COMMENT 'Color identificador en formato hexadecimal (ej: #FF5733) para horarios y calendarios',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el curso está activo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
-    
-    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
-    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
-    
-    FOREIGN KEY (paralelo_id) REFERENCES paralelos(id) ON DELETE SET NULL,
-    FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
-    
-    -- Índices para optimización
-    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
-    INDEX idx_paralelo_id (paralelo_id) COMMENT 'Búsqueda por paralelo',
-    INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Búsqueda por asignatura del plan',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_paralelo_asignatura (paralelo_id, asignatura_plan_id, deleted_at) COMMENT 'Búsqueda combinada por paralelo y asignatura',
-    INDEX idx_cupo (cupo_maximo, cupo_minimo) COMMENT 'Búsqueda por cupos'
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Cursos del maestro de oferta. Representa la intersección entre paralelos y asignaturas del plan. Se activan por gestión en asignaciones_docentes. El color facilita la visualización en horarios.';
-
--- ============================================
--- TABLA: cursos_horarios
--- Horarios de cada curso
--- ============================================
--- Define qué bloques horarios y aulas utiliza cada curso.
--- Un curso puede tener múltiples bloques horarios (ej: LUNES y MARTES).
--- Los bloques se ordenan secuencialmente (1, 2, 3, 4) para indicar
--- la secuencia en que se dictan durante la semana.
-
-CREATE TABLE cursos_horarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    curso_id INT NULL COMMENT 'Curso al que pertenece este horario',
-    horario_id INT NULL COMMENT 'Bloque horario (día + hora) de la tabla horarios',
-    aula_id INT NULL COMMENT 'Aula o laboratorio asignado para este bloque',
-    
-    -- Orden de secuencia
-    orden_secuencia INT NOT NULL DEFAULT 1 COMMENT 'Orden del bloque en la semana (1, 2, 3, 4). Indica qué bloque se dicta primero, segundo, etc.',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el horario está activo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
-    
-    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
-    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
-    
-    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
-    FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
-    
-    INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',
-    INDEX idx_horario_id (horario_id) COMMENT 'Búsqueda por horario',
-    INDEX idx_aula_id (aula_id) COMMENT 'Búsqueda por aula',
-    INDEX idx_orden_secuencia (orden_secuencia) COMMENT 'Ordenamiento de bloques',
-    INDEX idx_horario_aula (horario_id, aula_id, deleted_at) COMMENT 'Detección de conflictos de aula',
-    INDEX idx_curso_orden (curso_id, orden_secuencia, deleted_at) COMMENT 'Bloques ordenados por curso',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Horarios de cursos. Define bloques horarios y aulas. Usa orden_secuencia (1,2,3,4) para indicar el orden cronológico de los bloques durante la semana. Reutilizable entre gestiones.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

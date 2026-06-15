@@ -1,6 +1,6 @@
 -- ============================================
 -- VISTA BASE: vista_base_horarios_asignaturas_cobertura
--- Cobertura de asignaturas por carrera/periodo/asignatura.
+-- Cobertura de asignaturas por carrera/periodo (oferta vs plan).
 -- ============================================
 
 USE instituto_incos;
@@ -19,7 +19,7 @@ SELECT
     m.sigla                 AS materia_sigla,
     ap.horas_semanales,
     COUNT(DISTINCT p.id)    AS paralelos_del_periodo,
-    COUNT(DISTINCT c.id)    AS cursos_creados
+    COUNT(DISTINCT oc.id)   AS cursos_creados
 FROM asignaturas_plan ap
 INNER JOIN periodos per
     ON per.id = ap.periodo_id
@@ -43,10 +43,10 @@ LEFT JOIN paralelos p
     AND p.periodo_id = per.id
     AND p.deleted_at IS NULL
     AND p.activo = TRUE
-LEFT JOIN cursos c
-    ON c.asignatura_plan_id = ap.id
-    AND c.deleted_at IS NULL
-    AND c.activo = TRUE
+LEFT JOIN oferta_cursos oc
+    ON oc.asignatura_plan_id = ap.id
+    AND oc.deleted_at IS NULL
+    AND oc.activo = TRUE
 WHERE ap.deleted_at IS NULL
   AND ap.activo = TRUE
 GROUP BY

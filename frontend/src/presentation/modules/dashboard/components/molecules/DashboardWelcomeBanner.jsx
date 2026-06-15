@@ -6,7 +6,13 @@ const { Title, Text } = Typography;
 /**
  * Molécula: hero de bienvenida con CTA (dashboard).
  */
-const DashboardWelcomeBanner = ({ onVerCarreras, onRegistrarEstudiante }) => {
+const DashboardWelcomeBanner = ({
+    onVerCarreras,
+    onRegistrarEstudiante,
+    showVerCarreras = true,
+    showRegistrarEstudiante = true,
+}) => {
+    const showActions = showVerCarreras || showRegistrarEstudiante;
     return (
         <Card
             style={{
@@ -15,8 +21,8 @@ const DashboardWelcomeBanner = ({ onVerCarreras, onRegistrarEstudiante }) => {
                 boxShadow: shadows.shadowElevation2,
                 border: `1px solid ${allColors.colorBorder}`,
                 borderLeft: `4px solid ${allColors.colorPrimary}`,
-                padding: `${componentConfig.Card.paddingLG}px`,
             }}
+            styles={{ body: { padding: `${componentConfig.Card.paddingLG}px` } }}
         >
             <Flex vertical gap={allSpacing.marginLG}>
                 <Title
@@ -40,7 +46,9 @@ const DashboardWelcomeBanner = ({ onVerCarreras, onRegistrarEstudiante }) => {
                     Formamos profesionales competentes en Administración de Empresas, Contaduría y Sistemas
                     Informáticos. Únete a nuestra comunidad educativa y construye tu futuro profesional.
                 </Text>
+                {showActions ? (
                 <Flex gap={allSpacing.margin}>
+                    {showVerCarreras ? (
                     <Button
                         type="primary"
                         size="large"
@@ -63,6 +71,8 @@ const DashboardWelcomeBanner = ({ onVerCarreras, onRegistrarEstudiante }) => {
                     >
                         Ver Carreras
                     </Button>
+                    ) : null}
+                    {showRegistrarEstudiante ? (
                     <Button
                         size="large"
                         style={{
@@ -85,7 +95,9 @@ const DashboardWelcomeBanner = ({ onVerCarreras, onRegistrarEstudiante }) => {
                     >
                         Registrar Estudiante
                     </Button>
+                    ) : null}
                 </Flex>
+                ) : null}
             </Flex>
         </Card>
     );

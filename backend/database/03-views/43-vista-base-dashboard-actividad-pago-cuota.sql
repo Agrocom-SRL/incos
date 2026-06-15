@@ -13,7 +13,7 @@ SELECT
     'PAGO_CUOTA' AS artefacto_tipo,
     pc.id AS artefacto_id,
     CONCAT('/pagos/', pa.id) AS link_path,
-    TRIM(CONCAT(COALESCE(est.nombres, ''), ' ', COALESCE(est.apellido_paterno, ''), ' ', COALESCE(est.apellido_materno, ''))) AS titulo,
+    TRIM(CONCAT(COALESCE(est.apellido_paterno, ''), ' ', COALESCE(est.apellido_materno, ''), ' ', COALESCE(est.nombres, ''))) AS titulo,
     CONCAT('Pago de aporte · recibo ', pc.numero_recibo, ' · Bs. ', pc.monto) AS detalle,
     CONCAT('PAGO_CUOTA-', pc.id) AS avatar_seed,
     pc.created_at AS ocurrido_en

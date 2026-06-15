@@ -1,195 +1,159 @@
-import { TeacherAssignment } from '../../../domain/entities/TeacherAssignment.js';
+/**
+ * POST /api/v1/docentes/asignaciones/curso — asignación rápida sobre oferta_curso.
+ */
+
 import { NotFoundError, UnprocessableEntityError } from '../../../domain/errors/index.js';
-import { TeacherAssignmentListMapper } from '../../mappers/docentes/TeacherAssignmentListMapper.js';
-import {
-  todayDateOnlyLocal,
-  defaultWeeklyHoursFromPlan,
-} from '../../utils/teacherAssignmentFieldDefaults.js';
+import { TeacherAssignment } from '../../../domain/entities/TeacherAssignment.js';
+import { TeacherAssignmentPresentationMapper } from '../../mappers/docentes/TeacherAssignmentPresentationMapper.js';
+import { todayDateOnlyLocal, defaultWeeklyHoursFromPlan } from '../../utils/teacherAssignmentFieldDefaults.js';
+import { normalizeTeacherAssignmentBody } from '../../utils/teacherAssignmentPayload.js';
+import { resolveTeacherAssignmentOfferContext } from '../../utils/teacherAssignmentOfferContext.js';
+import { normalizeDocenteColorHex } from '../../mappers/docentes/DocenteColorMapper.js';
+import { autoOfertarParaleloGestion } from '../oferta/autoOfertarParaleloGestion.js';
 
 export class AssignTeacherToCourseUseCase {
   constructor({
     teacherAssignmentRepository,
     teacherRepository,
-    courseRepository,
-    courseScheduleRepository,
+    courseOfferRepository,
+    parallelManagementRepository,
     planSubjectRepository,
     managementPlanRepository,
     managementRepository,
-    syncMatriculasTeacherAssignmentUseCase,
+    createTeacherAssignmentUseCase,
     logger,
   }) {
     this.teacherAssignmentRepository = teacherAssignmentRepository;
     this.teacherRepository = teacherRepository;
-    this.courseRepository = courseRepository;
-    this.courseScheduleRepository = courseScheduleRepository;
+    this.courseOfferRepository = courseOfferRepository;
+    this.parallelManagementRepository = parallelManagementRepository;
     this.planSubjectRepository = planSubjectRepository;
     this.managementPlanRepository = managementPlanRepository;
     this.managementRepository = managementRepository;
-    this.syncMatriculasTeacherAssignmentUseCase = syncMatriculasTeacherAssignmentUseCase;
+    this.createTeacherAssignmentUseCase = createTeacherAssignmentUseCase;
     this.logger = logger;
   }
 
   async execute(body, userId = null) {
-    const cursoId = Number(body?.cursoId);
-    const docenteId = Number(body?.docenteId);
-    const requestedGestionPlanId = Number(body?.gestionPlanId);
+    const input = normalizeTeacherAssignmentBody(body);
+    const offerCourseId = input.offerCourseId;
+    const docenteId = input.teacherId;
 
-    if (!Number.isFinite(cursoId) || cursoId < 1 || !Number.isFinite(docenteId) || docenteId < 1) {
-      throw new UnprocessableEntityError('cursoId y docenteId deben ser enteros positivos.', [
-        { field: 'cursoId', message: 'Inválido' },
-        { field: 'docenteId', message: 'Inválido' },
-      ]);
+    if (!Number.isFinite(offerCourseId) || offerCourseId < 1 || !Number.isFinite(docenteId) || docenteId < 1) {
+      throw new UnprocessableEntityError(
+        'oferta_curso_id y docente_id deben ser enteros positivos.',
+        [
+          { field: 'oferta_curso_id', message: 'Inválido' },
+          { field: 'docente_id', message: 'Inválido' },
+        ]
+      );
     }
 
-    const [course, teacher] = await Promise.all([
-      this.courseRepository.findById(cursoId),
-      this.teacherRepository.findById(docenteId),
-    ]);
-    if (!course) throw new NotFoundError('Curso');
+    const teacher = await this.teacherRepository.findById(docenteId);
     if (!teacher) throw new NotFoundError('Docente');
 
-    const planSubjectId = course.planSubjectId;
-    if (!planSubjectId) {
-      throw new UnprocessableEntityError('El curso no tiene asignatura de plan vinculada.', [
-        { field: 'cursoId', message: 'asignatura_plan_id es requerido' },
-      ]);
+    const tp = teacher.toPlainObject ? teacher.toPlainObject() : teacher;
+    if (!normalizeDocenteColorHex(tp.colorHex)) {
+      throw new UnprocessableEntityError(
+        'El docente debe tener color asignado.',
+        [{ field: 'docente_id', message: 'color_hex requerido' }],
+        { requiere_color: true }
+      );
     }
 
-    const planSubject = await this.planSubjectRepository.findById(planSubjectId);
-    if (!planSubject) throw new NotFoundError('Asignatura del plan');
+    let gestionPlanId = input.managementPlanId;
+    if (!Number.isFinite(gestionPlanId) || gestionPlanId < 1) {
+      gestionPlanId = await this._resolveManagementPlanIdFromOffer(offerCourseId);
+    }
 
-    const managementPlanId = await this.resolveManagementPlanId({
-      requestedGestionPlanId,
-      courseStudyPlanId: planSubject.studyPlanId,
+    const ctx = await resolveTeacherAssignmentOfferContext({
+      courseOfferRepository: this.courseOfferRepository,
+      parallelManagementRepository: this.parallelManagementRepository,
+      planSubjectRepository: this.planSubjectRepository,
+      managementPlanRepository: this.managementPlanRepository,
+      offerCourseId,
+      managementPlanId: gestionPlanId,
     });
 
-    const vigente =
-      body?.vigente === undefined || body?.vigente === null
-        ? true
-        : body.vigente === true || body.vigente === 'true' || body.vigente === 1 || body.vigente === '1';
-
     const existing = await this.teacherAssignmentRepository.findBy({
-      managementPlanId,
-      courseId: cursoId,
+      managementPlanId: gestionPlanId,
+      offerCourseId,
       active: true,
     });
 
-    const planHours = defaultWeeklyHoursFromPlan(planSubject.weeklyHours);
-
-    let asignacion;
-    if (existing) {
-      const patch = {
-        teacherId: docenteId,
-        active: vigente,
-      };
-
-      const prevDocente = existing.teacherId != null ? Number(existing.teacherId) : null;
-      const docenteCambio = prevDocente !== docenteId;
-      const sinFecha =
-        existing.assignmentDate == null ||
-        existing.assignmentDate === '' ||
-        (typeof existing.assignmentDate === 'string' && String(existing.assignmentDate).trim() === '');
-
-      if (docenteCambio || sinFecha) {
-        patch.assignmentDate = todayDateOnlyLocal();
-      }
-
-      const sinCarga = existing.hours == null || existing.hours === '';
-      if (sinCarga && planHours != null) {
-        patch.hours = planHours;
-      }
-
-      const updated = await this.teacherAssignmentRepository.update(
-        existing.id,
-        new TeacherAssignment(patch),
+    if (!existing) {
+      const created = await this.createTeacherAssignmentUseCase.execute(
+        {
+          gestion_plan_id: gestionPlanId,
+          oferta_curso_id: offerCourseId,
+          docente_id: docenteId,
+          carga_horaria: input.hours,
+          vigente: input.active ?? true,
+          confirmar_sobrecarga: input.confirmOverload,
+        },
         userId
       );
-      asignacion = TeacherAssignmentListMapper.entityToPresentation(updated);
-    } else {
-      const created = await this.teacherAssignmentRepository.create(
-        new TeacherAssignment({
-          managementPlanId,
-          courseId: cursoId,
-          teacherId: docenteId,
-          active: vigente,
-          hours: planHours ?? undefined,
-          assignmentDate: todayDateOnlyLocal(),
-        }),
-        userId
-      );
-      await this.syncMatriculasTeacherAssignmentUseCase.repointAfterAssignmentCreated({
-        managementPlanId,
-        courseId: cursoId,
-        newTeacherAssignmentId: created.id,
-        userId,
-      });
-      asignacion = TeacherAssignmentListMapper.entityToPresentation(created);
+      return { asignacion: created.asignacion, warnings: [] };
     }
 
-    const warnings = await this.collectWarnings(cursoId);
-    return { asignacion, warnings };
+    const planHours = defaultWeeklyHoursFromPlan(ctx.weeklyHours);
+    const patch = {
+      teacherId: docenteId,
+      active: input.active !== undefined ? input.active : true,
+    };
+
+    const prevDocente = existing.teacherId != null ? Number(existing.teacherId) : null;
+    if (prevDocente !== docenteId) {
+      patch.assignmentDate = todayDateOnlyLocal();
+    }
+    if (input.hours !== undefined) {
+      patch.hours = input.hours;
+    } else if (existing.hours == null || existing.hours === '') {
+      patch.hours = planHours ?? undefined;
+    }
+
+    const updated = await this.teacherAssignmentRepository.update(
+      existing.id,
+      new TeacherAssignment(patch),
+      userId
+    );
+
+    // Auto-ofertar si el paralelo quedó con aula + todos los docentes.
+    await autoOfertarParaleloGestion(
+      {
+        parallelManagementRepository: this.parallelManagementRepository,
+        courseOfferRepository: this.courseOfferRepository,
+        logger: this.logger,
+      },
+      ctx.parallelManagementId,
+      userId
+    );
+
+    const enriched = await this.teacherAssignmentRepository.findEnrichedById(existing.id);
+    return {
+      asignacion: enriched
+        ? TeacherAssignmentPresentationMapper.enrichedRowToLegacyPresentation(enriched)
+        : TeacherAssignmentPresentationMapper.entityToLegacyPresentation(updated),
+      warnings: [],
+    };
   }
 
-  async resolveManagementPlanId({ requestedGestionPlanId, courseStudyPlanId }) {
-    if (!courseStudyPlanId) {
-      throw new UnprocessableEntityError('No se pudo resolver el plan de estudios del curso.', [
-        { field: 'cursoId', message: 'No existe plan_estudio_id relacionado' },
+  async _resolveManagementPlanIdFromOffer(offerCourseId) {
+    const offer = await this.courseOfferRepository.findById(offerCourseId);
+    if (!offer) throw new NotFoundError('Oferta de curso');
+
+    const offerPlain = offer.toPlainObject ? offer.toPlainObject() : offer;
+    const pgId = offerPlain.parallelManagementId ?? offerPlain.paraleloGestionId;
+    const pg = await this.parallelManagementRepository.findById(pgId);
+    if (!pg) throw new NotFoundError('Paralelo-gestión');
+
+    const pgPlain = pg.toPlainObject ? pg.toPlainObject() : pg;
+    const gpId = pgPlain.managementPlanId ?? pgPlain.gestionPlanId;
+    if (!gpId) {
+      throw new UnprocessableEntityError('No se pudo resolver gestion_plan_id desde la oferta.', [
+        { field: 'oferta_curso_id', message: 'Sin plan habilitado' },
       ]);
     }
-
-    if (Number.isFinite(requestedGestionPlanId) && requestedGestionPlanId > 0) {
-      const requested = await this.managementPlanRepository.findById(requestedGestionPlanId);
-      if (!requested) throw new NotFoundError('Plan habilitado (gestión-plan)');
-      if (Number(requested.studyPlanId) !== Number(courseStudyPlanId)) {
-        throw new UnprocessableEntityError(
-          'El curso no pertenece al mismo plan de estudios que el plan habilitado enviado.',
-          [{ field: 'gestionPlanId', message: 'Incoherencia con el curso' }]
-        );
-      }
-      return requested.id;
-    }
-
-    const management = await this.managementRepository.findBy({ vigente: true, isActive: true });
-    if (management?.id) {
-      const fromCurrentManagement = await this.managementPlanRepository.findBy({
-        managementId: management.id,
-        studyPlanId: courseStudyPlanId,
-        state: 'VIGENTE',
-      });
-      if (fromCurrentManagement?.id) return fromCurrentManagement.id;
-    }
-
-    const candidates = await this.managementPlanRepository.findAll({
-      studyPlanId: courseStudyPlanId,
-      state: 'VIGENTE',
-      includeInactive: true,
-    });
-    const rows = candidates?.managementPlans || [];
-    const fallback = rows.sort((a, b) => Number(b.id || 0) - Number(a.id || 0))[0];
-    if (!fallback?.id) {
-      throw new UnprocessableEntityError(
-        'No existe un plan habilitado vigente para el plan de estudios del curso.',
-        [{ field: 'cursoId', message: 'Sin gestion_plan vigente' }]
-      );
-    }
-    return fallback.id;
-  }
-
-  async collectWarnings(cursoId) {
-    const warnings = [];
-    const scheduleResult = await this.courseScheduleRepository.findAll({
-      courseId: cursoId,
-      includeInactive: false,
-    });
-    const rows = scheduleResult?.courseSchedules || [];
-    if (!rows.length) {
-      warnings.push({
-        code: 'COURSE_WITHOUT_SCHEDULE',
-        message:
-          'La materia no tiene bloques horarios asignados. Podés continuar, pero revisá "Gestión de cursos" y luego "Plan semanal".',
-        suggestedTab: 'gestion',
-      });
-    }
-    return warnings;
+    return Number(gpId);
   }
 }

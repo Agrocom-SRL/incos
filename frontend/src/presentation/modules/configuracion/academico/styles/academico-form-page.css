@@ -1,0 +1,769 @@
+/**
+ * Páginas de formulario/detalle CFG Académico — alineado con cal-politica-page.
+ * Referencia: politica-institucional.css
+ */
+
+.cfg-academico-page {
+  padding: 0 0 32px;
+  width: 100%;
+}
+
+.cfg-academico-page__stack {
+  width: 100%;
+}
+
+.cfg-planes-tag-vigente {
+  margin-left: 8px;
+}
+
+.cfg-academico-entity-tagline {
+  display: block;
+  margin-top: 12px;
+  color: var(--text-500, #6b7280);
+  font-size: var(--font-size-sm, 13px);
+}
+
+.cfg-academico-page__actions {
+  margin-top: 8px;
+}
+
+.cfg-academico-resumen-card {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+.cfg-academico-resumen__fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: var(--font-size-base, 15px);
+}
+
+.cfg-academico-resumen__label {
+  color: var(--text-500, #6b7280);
+  flex-shrink: 0;
+}
+
+.cfg-academico-resumen__valor {
+  font-weight: 500;
+  color: var(--text-800, #1f2937);
+  text-align: right;
+}
+
+.cfg-academico-entity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.cfg-academico-entity-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--surface, #fff);
+  font-weight: 700;
+  font-size: 18px;
+  background: var(--primary-mid, var(--ant-color-primary, #22854f));
+  flex-shrink: 0;
+}
+
+.cfg-academico-entity-title {
+  font-size: 20px;
+  display: block;
+}
+
+.cfg-academico-entity-subtitle {
+  font-family: ui-monospace, monospace;
+  font-size: 20px;
+  display: block;
+}
+
+.cfg-academico-entity-name {
+  font-size: 18px;
+  display: block;
+  margin-top: 4px;
+}
+
+.cfg-academico-color-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cfg-academico-color-chip__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.1));
+  flex-shrink: 0;
+}
+
+.cfg-table-codigo-chip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.cfg-academico-form-card .ant-form-item-label>label {
+  font-weight: 500;
+}
+
+.cfg-academico-form-card .ant-form-item-required::before {
+  color: #ff4d4f !important;
+}
+
+/* Formulario ABM — mismo shell que cfg-academico-workspace (listado) */
+.cfg-academico-form-workspace .cfg-academico-workspace__header {
+  padding-bottom: 16px;
+}
+
+.cfg-academico-form-workspace__body {
+  padding: 24px 28px 28px;
+}
+
+.cfg-academico-form-workspace__grid .form-field {
+  margin-bottom: 0;
+}
+
+.cfg-academico-form-workspace__grid .ant-form-item {
+  margin-bottom: 0;
+}
+
+.cfg-academico-form-workspace__footer {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+
+.cfg-materia-form-sigla .field-input,
+.cfg-materia-form-sigla input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Listado materias — celda identidad (patrón calificaciones) */
+.cfg-materia-identidad {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cfg-materia-identidad__margen {
+  flex-shrink: 0;
+  width: 2px;
+  align-self: stretch;
+  min-height: 28px;
+  border-radius: 2px;
+  background: var(--primary, var(--ant-color-primary, #22854f));
+}
+
+.cfg-materia-identidad__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cfg-materia-identidad__sigla {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-500, #6b7280);
+  font-variant-numeric: tabular-nums;
+}
+
+.cfg-materia-identidad__nombre {
+  font-weight: 700;
+  color: var(--text-800, #1f2937);
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+/* Pills tipo / clasificación (distintos a admisión estudiante) */
+.cfg-materia-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cfg-materia-pill--teorica {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}
+
+.cfg-materia-pill--practica {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+
+.cfg-materia-pill--mixta {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: rgba(109, 40, 217, 0.22);
+}
+
+.cfg-materia-pill--clasificacion {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.2);
+}
+
+.cfg-materia-pill--default {
+  background: #f3f4f6;
+  color: var(--text-700, #374151);
+  border-color: #d1d5db;
+}
+
+.cfg-materia-pill--activa {
+  background: #ecfdf5;
+  color: var(--ant-color-primary, #134d32);
+  font-size: 14px;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+
+.cfg-materia-pill--inactiva {
+  background: #f3f4f6;
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+/* Tabs Académico — workspace unificado */
+.cfg-academico-workspace {
+  width: 100%;
+  min-width: 0;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-xl, 18px);
+  box-shadow: var(--shadow-md, 0 1px 3px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.05));
+  overflow: hidden;
+}
+
+.cfg-academico-workspace__header {
+  padding: 24px 28px 12px;
+  background: var(--border-soft, #f9fafb) !important;
+}
+
+.cfg-academico-workspace__title {
+  margin: 0 0 4px !important;
+  color: var(--primary-dark, #134d32) !important;
+  font-weight: 700 !important;
+}
+
+.cfg-academico-workspace__desc {
+  margin: 8px 0 0 !important;
+}
+
+.cfg-academico-tabs-shell {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Nav: línea separadora solo bajo tabs inactivos (el activo la tapa) */
+.cfg-academico-tabs-shell .sd-tabs.cfg-academico-workspace__tabs .ant-tabs-nav {
+  padding: 0 28px !important;
+  margin-bottom: 0 !important;
+  background: var(--border-soft, #f9fafb) !important;
+  border-bottom: 1px solid var(--border, #e5e7eb) !important;
+}
+
+.cfg-academico-tabs-shell .sd-tabs.cfg-academico-workspace__tabs .ant-tabs-nav::before {
+  border: none !important;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-nav-list {
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab {
+  margin: 8px 0 0 !important;
+  padding: 10px 16px !important;
+  border-radius: 10px 10px 0 0 !important;
+  border: 1px solid transparent !important;
+  border-bottom: none !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab:hover:not(.ant-tabs-tab-active) {
+  background: rgba(25, 107, 69, 0.06) !important;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab:hover:not(.ant-tabs-tab-active) .ant-tabs-tab-btn {
+  color: var(--primary, #196b45) !important;
+}
+
+/* Tab activo: mismo fondo que el contenido y tapa la línea del nav */
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active {
+  background: var(--surface, #fff) !important;
+  border-color: var(--border, #e5e7eb) !important;
+  border-bottom: 1px solid var(--surface, #fff) !important;
+  margin-bottom: -1px !important;
+  box-shadow: 0 -2px 8px rgba(25, 107, 69, 0.06) !important;
+  position: relative;
+  z-index: 2;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--primary-dark, #134d32) !important;
+  font-weight: 700 !important;
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .sd-tab-label {
+  color: var(--primary-dark, #134d32);
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .sd-tab-label .anticon {
+  color: var(--primary, #196b45);
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab:active .ant-tabs-tab-btn {
+  transform: scale(0.98);
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-ink-bar {
+  display: none !important;
+}
+
+/* Sin borde superior: el tab activo ya cierra visualmente con el contenido */
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-content-holder {
+  background: var(--surface, #fff);
+  border-top: none !important;
+  position: relative;
+  z-index: 1;
+}
+
+.cfg-academico-tab-panel {
+  padding: 24px 28px 28px;
+  min-height: 120px;
+}
+
+.cfg-academico-tab-content {
+  width: 100%;
+  min-width: 0;
+}
+
+.table-list-view--embedded {
+  width: 100%;
+  min-width: 0;
+}
+
+.cfg-planes-tab--embedded .cfg-planes-document {
+  padding: 4px 0 0;
+}
+
+.cfg-planes-tab--embedded {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+
+  .cfg-academico-workspace__header,
+  .cfg-academico-tabs-shell .ant-tabs-nav,
+  .cfg-academico-tab-panel,
+  .cfg-academico-form-workspace__body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .cfg-academico-workspace__header {
+    padding-top: 20px;
+  }
+
+  .cfg-academico-form-workspace__body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+}
+
+/* Tabs Académico — contenido dentro del shell */
+.cfg-academico-tabs-shell .cfg-academico-workspace__tabs .ant-tabs-content-holder {
+  background: var(--surface, #fff);
+}
+
+/* Carrera — área + descripción */
+.cfg-carrera-area-desc {
+  max-width: 280px;
+}
+
+.cfg-carrera-area-desc__area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-800, #1f2937);
+  font-size: 13px;
+}
+
+.cfg-carrera-area-desc__icon {
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  font-size: 14px;
+}
+
+.cfg-carrera-area-desc__texto {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-500, #6b7280);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cfg-carrera-area-desc__texto--empty {
+  margin-top: 4px;
+}
+
+.cfg-carrera-titulo-dot {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cfg-carrera-titulo-dot__swatch {
+  width: 15px;
+  height: 15px;
+  border-radius: 20%;
+  flex-shrink: 0;
+}
+
+.cfg-carrera-titulo-dot__texto {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-800, #1f2937);
+}
+
+/* Métricas listado carreras */
+.cfg-academico-metricas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cfg-academico-metricas-list__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cfg-academico-metricas-list__icon {
+  flex-shrink: 0;
+  font-size: 15px;
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.cfg-academico-metricas-list__label {
+  font-size: 12px !important;
+  margin: 0 !important;
+}
+
+/* Paralelos — tabla */
+.cfg-paralelo-periodo-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cfg-paralelo-periodo-cell__fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cfg-paralelo-periodo-cell__texto {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-600, #4b5563);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cfg-paralelo-periodo-cell__texto--empty {
+  color: var(--text-400, #9ca3af);
+}
+
+.cfg-paralelo-periodo-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+}
+
+.cfg-paralelo-periodo-pill--n1 {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}
+
+.cfg-paralelo-periodo-pill--n2 {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+
+.cfg-paralelo-periodo-pill--n3 {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: rgba(109, 40, 217, 0.22);
+}
+
+.cfg-paralelo-periodo-pill--n4 {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.2);
+}
+
+.cfg-paralelo-periodo-pill--default {
+  background: #f3f4f6;
+  color: var(--text-700, #374151);
+  border-color: #d1d5db;
+}
+
+/* Paralelos — pickers ABM */
+.cfg-paralelo-picker-loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.cfg-paralelo-picker-loading__nest {
+  min-height: 48px;
+  min-width: 120px;
+}
+
+.cfg-paralelo-carrera-picker {
+  display: block;
+  width: 100%;
+}
+
+.cfg-paralelo-carrera-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.cfg-paralelo-carrera-picker .ant-radio-button-wrapper {
+  height: auto !important;
+  line-height: normal !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.cfg-paralelo-carrera-picker .ant-radio-button-wrapper::before {
+  display: none !important;
+}
+
+.cfg-paralelo-carrera-picker__card {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.cfg-paralelo-carrera-picker__card--selected {
+  border-width: 3px !important;
+}
+
+.cfg-paralelo-carrera-picker__media {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+
+.cfg-paralelo-carrera-picker__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cfg-paralelo-carrera-picker__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 55%);
+  color: #fff;
+}
+
+.cfg-paralelo-carrera-picker__codigo {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.cfg-paralelo-carrera-picker__nombre {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.cfg-paralelo-carrera-picker__fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  padding: 16px;
+  text-align: center;
+}
+
+.cfg-paralelo-carrera-picker__initial {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cfg-paralelo-carrera-form-item,
+.cfg-paralelo-carrera-form-item .ant-form-item-control,
+.cfg-paralelo-carrera-form-item .ant-form-item-control-input,
+.cfg-paralelo-carrera-form-item .ant-form-item-control-input-content {
+  width: 100%;
+  max-width: 100%;
+}
+
+.cfg-academico-form-workspace__before-fields {
+  margin-bottom: 8px;
+}
+
+.cfg-academico-form-workspace__before-fields .ant-form-item {
+  margin-bottom: 20px;
+}
+
+.cfg-paralelo-detalle-oferta__loading {
+  padding: 48px 16px;
+}
+
+.cfg-paralelo-detalle-instancia-card__grid {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+/* Paralelo — franjas horarias por turno */
+.cfg-paralelo-turno-horario {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary, #22854f) 6%, var(--surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--primary, #22854f) 18%, transparent);
+}
+
+.cfg-paralelo-turno-horario--compact {
+  margin-top: 6px;
+}
+
+.cfg-paralelo-turno-horario__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.cfg-paralelo-turno-horario__icon {
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  font-size: 14px;
+}
+
+.cfg-paralelo-turno-horario__titulo {
+  font-size: 13px;
+}
+
+.cfg-paralelo-turno-horario__linea,
+.cfg-paralelo-turno-horario__sabado,
+.cfg-paralelo-turno-horario__slots,
+.cfg-paralelo-turno-horario__nota {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-600, #4b5563);
+}
+
+.cfg-paralelo-turno-horario__inline-icon {
+  margin-right: 6px;
+  color: var(--text-500, #6b7280);
+}
+
+.cfg-paralelo-turno-horario__slots {
+  padding-left: 20px;
+  color: var(--text-500, #6b7280);
+  word-break: break-word;
+}
+
+.cfg-paralelo-turno-horario__slots--nested {
+  display: block;
+  margin-top: 4px;
+  padding-left: 0;
+}
+
+.cfg-paralelo-turno-horario__nota {
+  margin-bottom: 0;
+  font-size: 11px;
+  color: var(--text-500, #6b7280);
+}
+
+.cfg-paralelo-turno-horario__nota--muted {
+  margin-top: 4px;
+}
+
+.sd-tab-body .cfg-paralelo-turno-horario {
+  margin-top: 0;
+}
+
+.sd-field__value .cfg-paralelo-turno-horario {
+  margin-top: 0;
+  width: 100%;
+}

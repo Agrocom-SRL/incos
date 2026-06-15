@@ -122,6 +122,15 @@ export class TeacherMapper {
     if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
       specificFields.observations = dataValues.observaciones;
     }
+    if ('colorHex' in dataValues && dataValues.colorHex !== undefined) {
+      specificFields.colorHex = dataValues.colorHex;
+    }
+    if ('maxHorasSemana' in dataValues && dataValues.maxHorasSemana !== undefined) {
+      specificFields.maxHorasSemana = dataValues.maxHorasSemana;
+    }
+    if ('maxHorasMes' in dataValues && dataValues.maxHorasMes !== undefined) {
+      specificFields.maxHorasMes = dataValues.maxHorasMes;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -173,6 +182,9 @@ export class TeacherMapper {
       tipoContrato: data.contractType || 'CONTRATO',
       estadoLaboral: data.laborState || 'ACTIVO',
       observaciones: data.observations || null,
+      colorHex: data.colorHex || null,
+      maxHorasSemana: data.maxHorasSemana ?? 20,
+      maxHorasMes: data.maxHorasMes ?? 80,
     };
   }
 
@@ -221,6 +233,9 @@ export class TeacherMapper {
     if ('contractType' in data) { updateData.tipoContrato = data.contractType; }
     if ('laborState' in data) { updateData.estadoLaboral = data.laborState; }
     if ('observations' in data) { updateData.observaciones = data.observations || null; }
+    if ('colorHex' in data) { updateData.colorHex = data.colorHex || null; }
+    if ('maxHorasSemana' in data) { updateData.maxHorasSemana = data.maxHorasSemana ?? null; }
+    if ('maxHorasMes' in data) { updateData.maxHorasMes = data.maxHorasMes ?? null; }
 
     // Campos base (active/activo)
     const baseFields = BaseMapper.baseFieldsToModelForUpdate(entity);

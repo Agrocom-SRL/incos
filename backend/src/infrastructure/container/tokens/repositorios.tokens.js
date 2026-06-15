@@ -58,9 +58,20 @@ export const REPOSITORIOS_TOKENS = {
     parallelRepository: 'parallelRepository',
     classroomRepository: 'classroomRepository',
     scheduleRepository: 'scheduleRepository',
-    courseRepository: 'courseRepository',
-    courseScheduleRepository: 'courseScheduleRepository',
+    asignacionHorarioRepository: 'asignacionHorarioRepository',
+    paraleloGestionGrillaBloqueViewRepository: 'paraleloGestionGrillaBloqueViewRepository',
+    paraleloGestionFichaViewRepository: 'paraleloGestionFichaViewRepository',
+    paraleloGestionAsignacionCoberturaBloquesViewRepository:
+        'paraleloGestionAsignacionCoberturaBloquesViewRepository',
+    paraleloGestionConflictoParaleloBloqueViewRepository:
+        'paraleloGestionConflictoParaleloBloqueViewRepository',
+    paraleloGestionConflictoAulaBloqueViewRepository: 'paraleloGestionConflictoAulaBloqueViewRepository',
+    paraleloGestionConflictoDocenteBloqueViewRepository:
+        'paraleloGestionConflictoDocenteBloqueViewRepository',
+    horarioGrillaRepository: 'horarioGrillaRepository',
     managementPlanRepository: 'managementPlanRepository',
+    parallelManagementRepository: 'parallelManagementRepository',
+    courseOfferRepository: 'courseOfferRepository',
     teacherAssignmentRepository: 'teacherAssignmentRepository',
 
     // ESTUDIANTES
@@ -88,7 +99,12 @@ export const REPOSITORIOS_TOKENS = {
     evaluationConfigurationRepository: 'evaluationConfigurationRepository',
     subjectEnrollmentBimesterRepository: 'subjectEnrollmentBimesterRepository',
     bimesterEvaluationRepository: 'bimesterEvaluationRepository',
-    finalEvaluationRepository: 'finalEvaluationRepository',
+    bimesterEvaluationGradeRepository: 'bimesterEvaluationGradeRepository',
+    cuadernoRepository: 'cuadernoRepository',
+    calificacionContextoRepository: 'calificacionContextoRepository',
+    calificacionCoordinacionRepository: 'calificacionCoordinacionRepository',
+    gestionBimestresRepository: 'gestionBimestresRepository',
+    cronogramaGestionRepository: 'cronogramaGestionRepository',
 
     // NIVELACIONES
     levelingRepository: 'levelingRepository',

@@ -27,21 +27,48 @@ const DIA_ETIQUETA = {
     SABADO: 'Sábado',
 };
 
+const DIAS_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+
 const fmtHoraCorta = (t) => {
     if (t == null || t === '') return '—';
     const s = String(t);
     return s.length >= 5 ? s.slice(0, 5) : s;
 };
 
+/** Una línea por día con todas las franjas separadas por coma. */
+function buildLineasPorDia(bloques) {
+    const byDay = new Map();
+    for (const b of bloques || []) {
+        const d = b.dia ? String(b.dia).toUpperCase() : '';
+        if (!d) continue;
+        if (!byDay.has(d)) byDay.set(d, []);
+        byDay.get(d).push(b);
+    }
+
+    const lineas = [];
+    for (const d of DIAS_ORDEN) {
+        const dayBlocks = byDay.get(d);
+        if (!dayBlocks?.length) continue;
+        dayBlocks.sort(
+            (a, b) =>
+                (horaToMinutes(a.horaInicio) ?? 0) - (horaToMinutes(b.horaInicio) ?? 0),
+        );
+        const franjas = dayBlocks
+            .map((b) => `${fmtHoraCorta(b.horaInicio)}–${fmtHoraCorta(b.horaFin)}`)
+            .join(', ');
+        lineas.push(`${DIA_ETIQUETA[d] || d}: ${franjas}`);
+    }
+    return lineas;
+}
+
 /**
- * Resumen de bloques de un curso para la pestaña «Cursos del paralelo» del armado.
+ * Resumen de bloques de un curso para la pestaña «Cobertura» del armado.
  */
 export const resumenBloquesCurso = (c) => {
     const bloques = c.bloques || [];
     let minutos = 0;
     const diasOrd = [];
     const visto = new Set();
-    const lineas = [];
     for (const b of bloques) {
         const d = b.dia ? String(b.dia).toUpperCase() : '';
         const mins = blockDurationMinutes(b.horaInicio, b.horaFin);
@@ -50,13 +77,9 @@ export const resumenBloquesCurso = (c) => {
             visto.add(d);
             diasOrd.push(DIA_ETIQUETA[d] || d);
         }
-        if (d) {
-            lineas.push(
-                `${DIA_ETIQUETA[d] || d}: ${fmtHoraCorta(b.horaInicio)}–${fmtHoraCorta(b.horaFin)}${b.aula ? ` · ${b.aula}` : ''}`,
-            );
-        }
     }
     const horasGrilla = Math.round((minutos / 60) * 100) / 100;
     const horasPlan = c.horasSemanalesPlan != null ? Number(c.horasSemanalesPlan) : null;
+    const lineas = buildLineasPorDia(bloques);
     return { horasGrilla, horasPlan, diasOrd, lineas };
 };

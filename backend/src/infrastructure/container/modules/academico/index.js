@@ -14,8 +14,11 @@
  */
 
 import { registerParalelosResource } from './paralelos.container.js';
+import { registerOfertaResource } from './oferta.container.js';
 import { registerGestionesResource } from './gestiones.container.js';
-import { registerCursosResource } from './cursos.container.js';
+import { registerCalificacionesResource } from './calificaciones.container.js';
+import { registerAsistenciaResource } from './asistencia.container.js';
+import { registerHorariosResource } from './horarios.container.js';
 
 /**
  * Registra el módulo completo de Académico en el contenedor
@@ -26,8 +29,11 @@ import { registerCursosResource } from './cursos.container.js';
 export function registerAcademicoModule(container) {
     // Registrar cada recurso individualmente
     registerParalelosResource(container);
+    registerHorariosResource(container);
+    registerOfertaResource(container);
     registerGestionesResource(container);
-    registerCursosResource(container);
+    registerCalificacionesResource(container);
+    registerAsistenciaResource(container);
 
     return container;
 }

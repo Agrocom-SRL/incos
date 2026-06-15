@@ -1,2 +1,0 @@
-export { createDiscapacidadesTableColumns } from './tableColumns';
-

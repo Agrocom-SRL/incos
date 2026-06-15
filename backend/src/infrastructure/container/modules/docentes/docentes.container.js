@@ -27,14 +27,22 @@ import {
   ListParalelosDocenteAsignacionController,
   ListCursosPorParaleloDocenteController,
   GetDocentesConflictoBloquesController,
+  GetDocenteCargaGestionController,
+  UpdateDocenteColorController,
+  GetDocenteColoresEnUsoController,
+  GetDocenteColoresSugeridosController,
 } from '../../../../presentation/controllers/docentes/index.js';
 import { GetDocentesConflictoBloquesCursoUseCase } from '../../../../application/use-cases/docentes/GetDocentesConflictoBloquesCursoUseCase.js';
+import { GetDocenteCargaGestionUseCase } from '../../../../application/use-cases/docentes/GetDocenteCargaGestionUseCase.js';
+import { GetTeacherAssignmentByIdUseCase } from '../../../../application/use-cases/docentes/GetTeacherAssignmentByIdUseCase.js';
+import { UpdateDocenteColorUseCase } from '../../../../application/use-cases/docentes/UpdateDocenteColorUseCase.js';
+import { GetDocenteColoresEnUsoUseCase } from '../../../../application/use-cases/docentes/GetDocenteColoresEnUsoUseCase.js';
+import { GetDocenteColoresSugeridosUseCase } from '../../../../application/use-cases/docentes/GetDocenteColoresSugeridosUseCase.js';
 import { ListTeacherAssignmentsUseCase } from '../../../../application/use-cases/docentes/ListTeacherAssignmentsUseCase.js';
 import { CreateTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/CreateTeacherAssignmentUseCase.js';
 import { AssignTeacherToCourseUseCase } from '../../../../application/use-cases/docentes/AssignTeacherToCourseUseCase.js';
 import { UpdateTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/UpdateTeacherAssignmentUseCase.js';
 import { DeleteTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/DeleteTeacherAssignmentUseCase.js';
-import { SyncMatriculasTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/SyncMatriculasTeacherAssignmentUseCase.js';
 import { ListPlanesHabilitadosDocenteUseCase } from '../../../../application/use-cases/docentes/ListPlanesHabilitadosDocenteUseCase.js';
 import { ListCursosDisponiblesDocenteUseCase } from '../../../../application/use-cases/docentes/ListCursosDisponiblesDocenteUseCase.js';
 import { GetCursoHorariosDocenteUseCase } from '../../../../application/use-cases/docentes/GetCursoHorariosDocenteUseCase.js';
@@ -42,6 +50,7 @@ import { ListPeriodosDocenteAsignacionUseCase } from '../../../../application/us
 import { ListParalelosDocenteAsignacionUseCase } from '../../../../application/use-cases/docentes/ListParalelosDocenteAsignacionUseCase.js';
 import { ListCursosPorParaleloDocenteUseCase } from '../../../../application/use-cases/docentes/ListCursosPorParaleloDocenteUseCase.js';
 import { buildDocentesRouter } from '../../../../presentation/routes/docentes.routes.js';
+import { registerAsignacionesDocentesResource } from './asignaciones-docentes.container.js';
 
 export function registerDocentesModule(container) {
   registerComponent(
@@ -162,28 +171,15 @@ export function registerDocentesModule(container) {
 
   registerComponent(
     container,
-    DOCENTES_TOKENS.syncMatriculasTeacherAssignmentUseCase,
-    (c) =>
-      new SyncMatriculasTeacherAssignmentUseCase({
-        teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
-        subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      })
-  );
-
-  registerComponent(
-    container,
     DOCENTES_TOKENS.createTeacherAssignmentUseCase,
     (c) =>
       new CreateTeacherAssignmentUseCase({
         teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
-        courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+        courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+        parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
         managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
         planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
-        syncMatriculasTeacherAssignmentUseCase: c.resolve(
-          DOCENTES_TOKENS.syncMatriculasTeacherAssignmentUseCase
-        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -195,14 +191,12 @@ export function registerDocentesModule(container) {
       new AssignTeacherToCourseUseCase({
         teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
-        courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
-        courseScheduleRepository: c.resolve(REPOSITORIOS_TOKENS.courseScheduleRepository),
+        courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+        parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
         planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
         managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
         managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
-        syncMatriculasTeacherAssignmentUseCase: c.resolve(
-          DOCENTES_TOKENS.syncMatriculasTeacherAssignmentUseCase
-        ),
+        createTeacherAssignmentUseCase: c.resolve(DOCENTES_TOKENS.createTeacherAssignmentUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -214,9 +208,20 @@ export function registerDocentesModule(container) {
       new UpdateTeacherAssignmentUseCase({
         teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
-        courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+        courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+        parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
         planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
         managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getTeacherAssignmentByIdUseCase,
+    (c) =>
+      new GetTeacherAssignmentByIdUseCase({
+        teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -227,9 +232,6 @@ export function registerDocentesModule(container) {
     (c) =>
       new DeleteTeacherAssignmentUseCase({
         teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
-        syncMatriculasTeacherAssignmentUseCase: c.resolve(
-          DOCENTES_TOKENS.syncMatriculasTeacherAssignmentUseCase
-        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -316,7 +318,7 @@ export function registerDocentesModule(container) {
     (c) =>
       new ListCursosDisponiblesDocenteUseCase({
         managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
-        courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+        courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -337,8 +339,8 @@ export function registerDocentesModule(container) {
     DOCENTES_TOKENS.getCursoHorariosDocenteUseCase,
     (c) =>
       new GetCursoHorariosDocenteUseCase({
-        courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
-        courseScheduleRepository: c.resolve(REPOSITORIOS_TOKENS.courseScheduleRepository),
+        courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+        asignacionHorarioRepository: c.resolve(REPOSITORIOS_TOKENS.asignacionHorarioRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -405,8 +407,8 @@ export function registerDocentesModule(container) {
     DOCENTES_TOKENS.listCursosPorParaleloDocenteUseCase,
     (c) =>
       new ListCursosPorParaleloDocenteUseCase({
-        parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
-        courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+        parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
+        courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -445,6 +447,92 @@ export function registerDocentesModule(container) {
 
   registerComponent(
     container,
+    DOCENTES_TOKENS.getDocenteCargaGestionUseCase,
+    (c) =>
+      new GetDocenteCargaGestionUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+        managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getDocenteCargaGestionController,
+    (c) =>
+      new GetDocenteCargaGestionController({
+        getDocenteCargaGestionUseCase: c.resolve(DOCENTES_TOKENS.getDocenteCargaGestionUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.updateDocenteColorUseCase,
+    (c) =>
+      new UpdateDocenteColorUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.updateDocenteColorController,
+    (c) =>
+      new UpdateDocenteColorController({
+        updateDocenteColorUseCase: c.resolve(DOCENTES_TOKENS.updateDocenteColorUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getDocenteColoresEnUsoUseCase,
+    (c) =>
+      new GetDocenteColoresEnUsoUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getDocenteColoresEnUsoController,
+    (c) =>
+      new GetDocenteColoresEnUsoController({
+        getDocenteColoresEnUsoUseCase: c.resolve(DOCENTES_TOKENS.getDocenteColoresEnUsoUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getDocenteColoresSugeridosUseCase,
+    (c) =>
+      new GetDocenteColoresSugeridosUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getDocenteColoresSugeridosController,
+    (c) =>
+      new GetDocenteColoresSugeridosController({
+        getDocenteColoresSugeridosUseCase: c.resolve(DOCENTES_TOKENS.getDocenteColoresSugeridosUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
     DOCENTES_TOKENS.docentesRouter,
     (c) => {
       const controllers = {
@@ -465,6 +553,10 @@ export function registerDocentesModule(container) {
         listCursosDisponiblesDocenteController: c.resolve(DOCENTES_TOKENS.listCursosDisponiblesDocenteController),
         getCursoHorariosDocenteController: c.resolve(DOCENTES_TOKENS.getCursoHorariosDocenteController),
         getDocentesConflictoBloquesController: c.resolve(DOCENTES_TOKENS.getDocentesConflictoBloquesController),
+        getDocenteCargaGestionController: c.resolve(DOCENTES_TOKENS.getDocenteCargaGestionController),
+        updateDocenteColorController: c.resolve(DOCENTES_TOKENS.updateDocenteColorController),
+        getDocenteColoresEnUsoController: c.resolve(DOCENTES_TOKENS.getDocenteColoresEnUsoController),
+        getDocenteColoresSugeridosController: c.resolve(DOCENTES_TOKENS.getDocenteColoresSugeridosController),
       };
       const middlewares = {
         validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
@@ -472,6 +564,8 @@ export function registerDocentesModule(container) {
       return buildDocentesRouter({ controllers, middlewares });
     }
   );
+
+  registerAsignacionesDocentesResource(container);
 
   return container;
 }

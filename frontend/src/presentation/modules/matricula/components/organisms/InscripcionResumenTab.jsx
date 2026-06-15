@@ -71,7 +71,7 @@ const InscripcionResumenTab = ({
         )}
       </DetailField>
       {requiereHistorialPrevio !== false ? (
-        <DetailField label="Historial previo" span={3}>
+        <DetailField label="Historial de notas" span={3}>
           <Tag color={historialEstadoInfo.color}>{historialEstadoInfo.text}</Tag>
           {(cantidadHistorialPrevio ?? priorEnrollmentHistories?.length ?? 0) > 0 ? (
             <span style={{ marginLeft: 8, color: 'var(--color-text-secondary)' }}>

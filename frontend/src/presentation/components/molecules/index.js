@@ -17,3 +17,8 @@ export { default as ActivityList } from './ActivityList';
 export { default as TimetableCell } from './TimetableCell';
 export { default as showDeleteConfirm } from './DeleteConfirmModal';
 export { default as TableActions, useTableActions, cumplePermisoRef } from './TableActions';
+export { default as DetailInfoCard } from './DetailInfoCard';
+export { default as DetailTabLabel } from './DetailTabLabel';
+export { default as ListPanelHeader } from './ListPanelHeader';
+export { default as ParaleloGestionContextHeader } from './ParaleloGestionContextHeader';
+export { useClientTableSort, getSorterFn, resolveColumnKey } from './DataTable';

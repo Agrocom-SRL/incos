@@ -1,6 +1,64 @@
 import { Col, Row } from 'antd';
 import { KpiCard } from '../atoms';
 
+/** Subtítulo en dos líneas para altura uniforme de las tarjetas KPI. */
+function KpiSub({ line1, line2 }) {
+    return (
+        <span className="horarios-kpi-card__sub">
+            {line1}
+        </span>
+    );
+}
+
+const KPI_CONFIG = {
+    completo: {
+        label: 'Completos',
+        kpiKey: 'completos',
+        badgeText: 'Completado',
+        intent: 'success',
+        sub: (
+            <KpiSub
+                line1="Oferta académica lista para publicar."
+            />
+        ),
+    },
+    sin_aulas: {
+        label: 'Sin aulas',
+        kpiKey: 'sinAulas',
+        badgeText: 'Aulas',
+        intent: 'info',
+        sub: (
+            <KpiSub
+                line1="Oferta académica sin aula asignada."
+            />
+        ),
+    },
+    sin_docentes: {
+        label: 'Sin docentes',
+        kpiKey: 'sinDocentes',
+        badgeText: 'Docentes',
+        intent: 'warning',
+        sub: (
+            <KpiSub
+                line1="Oferta académica sin docente asignado."
+            />
+        ),
+    },
+    sin_horarios: {
+        label: 'Sin horarios',
+        kpiKey: 'sinHorarios',
+        badgeText: 'Horarios',
+        intent: 'danger',
+        sub: (
+            <KpiSub
+                line1="Oferta académica sin horario semanal."
+            />
+        ),
+    },
+};
+
+const KPI_ORDER = ['completo', 'sin_aulas', 'sin_docentes', 'sin_horarios'];
+
 const HorariosKpiStrip = ({ kpis, variant = 'all' }) => {
     const total = kpis.total || 1;
 
@@ -10,7 +68,11 @@ const HorariosKpiStrip = ({ kpis, variant = 'all' }) => {
                 <KpiCard
                     label="Total paralelos"
                     value={kpis.total}
-                    sub="Total de paralelos"
+                    sub={
+                        <KpiSub
+                            line1="Instancias totales de paralelos en la gestión vigente."
+                        />
+                    }
                     badgeText="100%"
                     intent="neutral"
                     percent={100}
@@ -21,46 +83,22 @@ const HorariosKpiStrip = ({ kpis, variant = 'all' }) => {
 
     const detailsRow = (
         <Row gutter={[12, 12]}>
-            <Col xs={24} md={12} xxl={6}>
-                <KpiCard
-                    label="Sin horarios"
-                    value={kpis.sinHorarios}
-                    sub="Horarios pendientes"
-                    badgeText="Horarios"
-                    intent="danger"
-                    percent={Math.round((kpis.sinHorarios / total) * 100)}
-                />
-            </Col>
-            <Col xs={24} md={12} xxl={6}>
-                <KpiCard
-                    label="Sin docentes"
-                    value={kpis.sinDocentes}
-                    sub="Docentes sin asignar"
-                    badgeText="Docentes"
-                    intent="warning"
-                    percent={Math.round((kpis.sinDocentes / total) * 100)}
-                />
-            </Col>
-            <Col xs={24} md={12} xxl={6}>
-                <KpiCard
-                    label="Sin aulas"
-                    value={kpis.sinAulas}
-                    sub="Bloques sin aula"
-                    badgeText="Aulas"
-                    intent="info"
-                    percent={Math.round((kpis.sinAulas / total) * 100)}
-                />
-            </Col>
-            <Col xs={24} md={12} xxl={6}>
-                <KpiCard
-                    label="Completos"
-                    value={kpis.completos}
-                    sub="Listos para publicar"
-                    badgeText="Completado"
-                    intent="success"
-                    percent={Math.round((kpis.completos / total) * 100)}
-                />
-            </Col>
+            {KPI_ORDER.map((key) => {
+                const cfg = KPI_CONFIG[key];
+                const value = kpis[cfg.kpiKey] ?? 0;
+                return (
+                    <Col key={key} xs={24} md={12} xxl={6}>
+                        <KpiCard
+                            label={cfg.label}
+                            value={value}
+                            sub={cfg.sub}
+                            badgeText={cfg.badgeText}
+                            intent={cfg.intent}
+                            percent={Math.round((value / total) * 100)}
+                        />
+                    </Col>
+                );
+            })}
         </Row>
     );
 

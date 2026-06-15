@@ -26,10 +26,6 @@ export { useMatriculaWizardContext } from './state/matricula-wizard-context';
 export { useMatriculaWizardPage } from './state/matricula-wizard-page';
 export { useMatriculaDetail, useMatriculaDetailPage } from './state/matricula-detail';
 export { useMatriculaListPage } from './state/matricula-list';
-/** @deprecated useMatriculaDetail / useMatriculaDetailPage */
-export { useMatriculaDetail as useInscripcionDetail, useMatriculaDetailPage as useInscripcionesDetailPage } from './state/matricula-detail';
-/** @deprecated useMatriculaListPage */
-export { useMatriculaListPage as useInscripcionesListPage } from './state/matricula-list';
 
 // ============================================
 // 3. API / DATA FETCHING (Application Layer)
@@ -40,6 +36,7 @@ export { useGetInscripcionById } from './api/useGetInscripcionById';
 export { useCreateInscripcion } from './api/useCreateInscripcion';
 export { useUpdateInscripcion } from './api/useUpdateInscripcion';
 export { useDeleteInscripcion } from './api/useDeleteInscripcion';
+export { useActivarCursadoInscripcion } from './api/useActivarCursadoInscripcion';
 
 // ============================================
 // 4. FEATURE LOGIC (Application Layer)

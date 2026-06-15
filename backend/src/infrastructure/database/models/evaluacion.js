@@ -8,11 +8,18 @@ export const Evaluacion = sequelize.define(
     {
         ...baseModelFields,
 
-        bimestreMatriculaId: {
+        asignacionDocenteId: {
             type: DataTypes.INTEGER,
-            field: 'bimestre_matricula_id',
+            field: 'asignacion_docente_id',
             allowNull: true,
-            comment: 'Bimestre al que pertenece.',
+            comment: 'Curso al que pertenece esta columna del cuaderno.',
+        },
+
+        periodoAcademicoId: {
+            type: DataTypes.INTEGER,
+            field: 'periodo_academico_id',
+            allowNull: true,
+            comment: 'Bimestre del calendario (periodos_academicos con division=BIMESTRE).',
         },
 
         tipoEvaluacionId: {
@@ -30,7 +37,7 @@ export const Evaluacion = sequelize.define(
         },
 
         nombreEvaluacion: {
-            type: DataTypes.STRING(200),
+            type: DataTypes.STRING(255),
             field: 'nombre_evaluacion',
             allowNull: true,
             comment: 'Nombre descriptivo de la evaluación.',
@@ -42,17 +49,11 @@ export const Evaluacion = sequelize.define(
             comment: 'Descripción o consigna.',
         },
 
-        nota: {
-            type: DataTypes.DECIMAL(5, 2),
-            allowNull: true,
-            comment: 'Nota obtenida (0-100).',
-        },
-
-        peso: {
-            type: DataTypes.DECIMAL(5, 2),
+        puntos: {
+            type: DataTypes.SMALLINT.UNSIGNED,
             allowNull: true,
             defaultValue: 1,
-            comment: 'Peso dentro de su componente en el bimestre.',
+            comment: 'Puntos máximos de la actividad (entero). La celda admite 0..puntos.',
         },
 
         fecha: {
@@ -61,39 +62,12 @@ export const Evaluacion = sequelize.define(
             comment: 'Fecha en que se rindió.',
         },
 
-        intento: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-            defaultValue: 1,
-            comment: 'Número de intento.',
-        },
-
         notasCerradas: {
             type: DataTypes.BOOLEAN,
             field: 'notas_cerradas',
             allowNull: true,
             defaultValue: false,
-            comment: 'TRUE cuando la nota está cerrada.',
-        },
-
-        fechaCierreNotas: {
-            type: DataTypes.DATEONLY,
-            field: 'fecha_cierre_notas',
-            allowNull: true,
-            comment: 'Fecha de cierre de la nota.',
-        },
-
-        cerradasPor: {
-            type: DataTypes.INTEGER,
-            field: 'cerradas_por',
-            allowNull: true,
-            comment: 'Usuario que cerró la nota.',
-        },
-
-        observaciones: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-            comment: 'Observaciones específicas.',
+            comment: 'TRUE cuando las notas de esta columna están cerradas.',
         },
     },
     {

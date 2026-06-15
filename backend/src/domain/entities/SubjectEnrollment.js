@@ -16,6 +16,10 @@ export class SubjectEnrollment extends BaseEntity {
             this.enrollmentId = data.enrollmentId;
         }
 
+        if (data.hasOwnProperty('offerCourseId')) {
+            this.offerCourseId = data.offerCourseId;
+        }
+
         if (data.hasOwnProperty('teacherAssignmentId')) {
             this.teacherAssignmentId = data.teacherAssignmentId;
         }
@@ -107,6 +111,10 @@ export class SubjectEnrollment extends BaseEntity {
 
         if (this.hasOwnProperty('enrollmentId')) {
             plainObject.enrollmentId = this.enrollmentId;
+        }
+
+        if (this.hasOwnProperty('offerCourseId')) {
+            plainObject.offerCourseId = this.offerCourseId;
         }
 
         if (this.hasOwnProperty('teacherAssignmentId')) {

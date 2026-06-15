@@ -1,8 +1,5 @@
 /**
- * PUT /api/v1/paralelos/:id/schedule
- *
- * Persiste el plan semanal del paralelo (bloques) en `cursos_horarios`.
- * Por ahora se omiten aulas (`aula_id` siempre NULL).
+ * PUT /api/v1/paralelos/:id/schedule — persiste bloques en asignacion_horarios.
  */
 export class PutParaleloScheduleController {
   constructor({ putParaleloScheduleUseCase, logger, responseFormatter }) {
@@ -32,4 +29,3 @@ export class PutParaleloScheduleController {
     }
   }
 }
-

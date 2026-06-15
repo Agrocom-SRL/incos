@@ -15,8 +15,18 @@ export class ListCursosPorParaleloDocenteController {
     try {
       const { page, limit } = ListRequestDTO.fromQuery(req.query);
       const paraleloId = parseInt(String(req.query.paraleloId), 10);
+      const gestionPlanId = parseInt(String(req.query.gestionPlanId), 10);
+      const paraleloGestionId = req.query.paraleloGestionId
+        ? parseInt(String(req.query.paraleloGestionId), 10)
+        : undefined;
 
-      const result = await this.useCase.execute({ paraleloId, page, limit });
+      const result = await this.useCase.execute({
+        paraleloId,
+        gestionPlanId,
+        paraleloGestionId,
+        page,
+        limit,
+      });
 
       return this.responseFormatter.list(
         res,

@@ -1,9 +1,9 @@
 /**
- * Plan semanal de un paralelo: grilla compartida con docentes + edición local (drag, quitar, añadir bloque).
+ * Plan semanal de un paralelo: grilla compartida con docentes + edición local (drag, quitar).
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Flex, Form, message, Modal, Select, Space, Typography } from 'antd';
+import React, { useCallback, useMemo } from 'react';
+import { App, Flex, Space, Typography } from 'antd';
 import { ActionButton } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 import {
@@ -14,51 +14,49 @@ import { buildHorariosPlanPendientesDetalleLines } from '@application-institucio
 import ParaleloPlanSemanaCell, { DRAG_MIME } from '../atoms/ParaleloPlanSemanaCell';
 import HorariosPlanPendientesLista from './HorariosPlanPendientesLista';
 import {
-    appendBlockToCourse,
-    moveBlockToSlot,
     removeBlockFromSchedules,
+    swapOrMoveBlockToSlot,
 } from '../../utils/planSemanalBlockOps';
 
 const { Text } = Typography;
 
-const DIA_OPTIONS = [
-    { value: 'LUNES', label: 'Lunes' },
-    { value: 'MARTES', label: 'Martes' },
-    { value: 'MIERCOLES', label: 'Miércoles' },
-    { value: 'JUEVES', label: 'Jueves' },
-    { value: 'VIERNES', label: 'Viernes' },
-    { value: 'SABADO', label: 'Sábado' },
-];
-
 const SLOT_STEP_ADD = 45;
-
-const slotOptionsForRange = (rangeStart, rangeEnd, step = SLOT_STEP_ADD) => {
-    const o = [];
-    for (let m = rangeStart; m < rangeEnd; m += step) {
-        const h = Math.floor(m / 60);
-        const min = m % 60;
-        const label = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-        o.push({ value: m, label });
-    }
-    return o;
-};
 
 const ParaleloArmadoPlanSection = ({
     schedules,
     onSchedulesChange,
     editable = false,
+    /** Si false, no se muestra quitar bloque (p. ej. paralelo PUBLICADO). Por defecto sigue a `editable`. */
+    allowDelete,
+    /** Paralelo publicado: arrastrar y guardar, sin alta/baja desde grilla. */
+    soloReubicacion = false,
+    /**
+     * Hay cambios locales sin guardar respecto al servidor. Si se omite (undefined),
+     * se asume `true` para no romper consumidores que no lo calculan (p. ej. conflictos).
+     * Cuando es `false`, se oculta «Guardar cambios» y se muestra una guía.
+     */
+    dirty,
     turnoLabel,
     onRequestPersist,
+    validatePlacement,
     persistLoading = false,
-    persistError = null,
-    persistSuccess = false,
     vistaExpandida = false,
     /** Si es true, bajo la grilla se muestra el detalle de solapes / sin aula / docentes (vista previa). */
     showPendientesDetalle = false,
+    /** horario_id del catálogo en choque (resaltado rojo por celda en grilla de conflictos). */
+    conflictHorarioIds = null,
+    horarioSlotIndex = null,
+    /** true = resalta celdas por horario_id del docente (pantalla conflictos). */
+    docenteConflictMode = false,
+    /** Oculta títulos y leyendas; solo grilla + guardar (pantalla de conflictos). */
+    headerMinimal = false,
+    /** Ayuda de conflicto por franja (popover en celda); ver DocenteHorarioSemanalGrid. */
+    autoAyudaPorSlot = null,
+    autoAyudaVisible = false,
 }) => {
-    const [addOpen, setAddOpen] = useState(false);
-    const [form] = Form.useForm();
-    const diaAddWatch = Form.useWatch('dia', form);
+    const { notification } = App.useApp();
+    const puedeEliminar = allowDelete ?? editable;
+    const hayCambios = dirty ?? true;
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
     const pendientesLineas = useMemo(() => {
@@ -66,6 +64,7 @@ const ParaleloArmadoPlanSection = ({
         return buildHorariosPlanPendientesDetalleLines(schedules || []);
     }, [showPendientesDetalle, schedules]);
     const tieneCursos = (schedules || []).length > 0;
+
     const handleBeginDragChip = useCallback((e, item, sourceDia, sourceSlotMinutes) => {
         const payload = {
             cursoId: item.cursoId,
@@ -78,7 +77,7 @@ const ParaleloArmadoPlanSection = ({
     }, []);
 
     const handleSlotDrop = useCallback(
-        (e, targetDia, targetSlotMinutes) => {
+        async (e, targetDia, targetSlotMinutes) => {
             if (!editable) return;
             const raw = e.dataTransfer.getData(DRAG_MIME);
             if (!raw) return;
@@ -94,89 +93,57 @@ const ParaleloArmadoPlanSection = ({
             ) {
                 return;
             }
-            onSchedulesChange(
-                moveBlockToSlot(schedules, {
-                    cursoId: payload.cursoId,
-                    cursoHorarioId: payload.cursoHorarioId,
-                    targetDia,
-                    targetSlotMinutes,
-                }),
-            );
+
+            const meta = {
+                cursoId: payload.cursoId,
+                cursoHorarioId: payload.cursoHorarioId,
+                targetDia,
+                targetSlotMinutes,
+                sourceDia: payload.sourceDia,
+                sourceSlotMinutes: payload.sourceStartMinutes,
+            };
+
+            if (typeof validatePlacement === 'function') {
+                const check = await validatePlacement(meta);
+                if (!check?.ok) {
+                    // Rechazo silencioso (p. ej. soltar sobre una franja donde la
+                    // misma materia ya tiene un bloque): no es un error para el
+                    // usuario, solo se cancela el movimiento sin avisar.
+                    if (!check?.silent) {
+                        notification.warning({
+                            title: 'No se puede mover',
+                            description:
+                                check?.message || 'No se puede colocar el bloque en ese horario.',
+                        });
+                    }
+                    return;
+                }
+            }
+
+            onSchedulesChange(swapOrMoveBlockToSlot(schedules, meta));
         },
-        [editable, onSchedulesChange, schedules],
+        [editable, notification, onSchedulesChange, schedules, validatePlacement],
     );
 
     const handleDeleteChip = useCallback(
         (item) => {
-            if (!editable || !item?.cursoId || item.cursoHorarioId == null) return;
+            if (!puedeEliminar || !item?.cursoId || item.cursoHorarioId == null) return;
             onSchedulesChange(removeBlockFromSchedules(schedules, item.cursoId, item.cursoHorarioId));
         },
-        [editable, onSchedulesChange, schedules],
+        [puedeEliminar, onSchedulesChange, schedules],
     );
-
-    const cursoOptions = useMemo(() => {
-        if (!addOpen) return [];
-        return (schedules || []).map((c) => ({
-            value: c.cursoId,
-            label: c.materiaNombre || c.materiaSigla || 'Materia sin nombre',
-        }));
-    }, [addOpen, schedules]);
-
-    const slotOptionsAdd = useMemo(() => {
-        if (!addOpen) return [];
-        const dia = diaAddWatch ?? 'LUNES';
-        const fixed = sabadoRange.fixedSlotStartsMinutes;
-        if (dia === 'SABADO' && Array.isArray(fixed) && fixed.length) {
-            return fixed.map((m) => {
-                const h = Math.floor(m / 60);
-                const min = m % 60;
-                const label = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-                return { value: m, label };
-            });
-        }
-        return slotOptionsForRange(gridRange.start, gridRange.end, SLOT_STEP_ADD);
-    }, [addOpen, diaAddWatch, sabadoRange.fixedSlotStartsMinutes, gridRange.start, gridRange.end]);
-
-    useEffect(() => {
-        if (!addOpen || !slotOptionsAdd.length) return;
-        const cur = form.getFieldValue('slotMinutes');
-        const ok = slotOptionsAdd.some((o) => o.value === cur);
-        if (!ok) {
-            form.setFieldsValue({ slotMinutes: slotOptionsAdd[0].value });
-        }
-    }, [addOpen, slotOptionsAdd, form]);
-
-    const submitAddBlock = useCallback(() => {
-        form.validateFields().then((values) => {
-            const cursoId = values.cursoId;
-            const dia = values.dia;
-            const startM = values.slotMinutes;
-            const endM = startM + SLOT_STEP_ADD;
-            const h = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
-            const bloque = {
-                cursoHorarioId: `temp-${Date.now()}`,
-                dia,
-                horaInicio: h(startM),
-                horaFin: h(endM),
-                turno: turnoLabel || null,
-                paralelo: null,
-                aula: null,
-            };
-            onSchedulesChange(appendBlockToCourse(schedules, cursoId, bloque));
-            setAddOpen(false);
-            form.resetFields();
-        });
-    }, [form, onSchedulesChange, schedules, turnoLabel]);
 
     const handleSaveClick = useCallback(() => {
         if (typeof onRequestPersist === 'function') {
             onRequestPersist();
             return;
         }
-        message.warning(
-            'Los cambios del plan son locales por ahora. El guardado en servidor se conectará cuando exista el endpoint de persistencia de bloques.',
-        );
-    }, [onRequestPersist]);
+        notification.warning({
+            title: 'Guardado no disponible',
+            description:
+                'Los cambios del plan son locales por ahora. El guardado en servidor se conectará cuando exista el endpoint de persistencia de bloques.',
+        });
+    }, [notification, onRequestPersist]);
 
     return (
         <section
@@ -188,34 +155,53 @@ const ParaleloArmadoPlanSection = ({
                 .join(' ')}
             aria-label="Plan semanal del paralelo"
         >
-            <Flex
-                justify="space-between"
-                align="center"
-                wrap="wrap"
-                gap={12}
-                style={{ marginBottom: 12, flexShrink: 0 }}
-            >
-                <div>
-                    <Text strong>Plan semanal</Text>
-                    {turnoLabel ? (
-                        <Text type="secondary">
-                            {' '}
-                            · Turno {turnoLabel}
-                        </Text>
-                    ) : null}
-                </div>
-                <Space wrap>
-                    {editable ? (
-                        <>
-                            <ActionButton
-                                permiso="institucional.horario.armado"
-                                accion="EDITAR"
-                                variant="secondary"
-                                buttonStyle="outlined"
-                                onClick={() => setAddOpen(true)}
-                            >
-                                Añadir bloque
-                            </ActionButton>
+            {headerMinimal ? (
+                editable && hayCambios ? (
+                    <Flex justify="flex-end" style={{ marginBottom: 12, flexShrink: 0 }}>
+                        <ActionButton
+                            permiso="institucional.horario.armado"
+                            accion="EDITAR"
+                            variant="primary"
+                            onClick={handleSaveClick}
+                            loading={persistLoading}
+                        >
+                            Guardar cambios
+                        </ActionButton>
+                    </Flex>
+                ) : null
+            ) : (
+                <Flex
+                    justify="space-between"
+                    align="center"
+                    wrap="wrap"
+                    gap={12}
+                    style={{ marginBottom: 12, flexShrink: 0 }}
+                >
+                    <div>
+                        <Text strong>Plan semanal</Text>
+                        {turnoLabel ? (
+                            <Text type="secondary">
+                                {' '}
+                                · Turno {turnoLabel}
+                            </Text>
+                        ) : null}
+                        {soloReubicacion ? (
+                            <Text type="secondary" style={{ display: 'block' }}>
+                                Paralelo publicado: podés reubicar bloques existentes; no se pueden agregar ni quitar
+                                desde la grilla.
+                            </Text>
+                        ) : null}
+                        {editable && !hayCambios ? (
+                            <Text type="secondary" style={{ display: 'block' }}>
+                                Arrastrá los bloques en la grilla para reubicarlos. El botón «Guardar
+                                cambios» aparecerá cuando muevas un bloque.
+                            </Text>
+                        ) : null}
+                    </div>
+                    <Space wrap>
+                        {!editable ? (
+                            <Text type="secondary">Solo lectura</Text>
+                        ) : hayCambios ? (
                             <ActionButton
                                 permiso="institucional.horario.armado"
                                 accion="EDITAR"
@@ -225,39 +211,10 @@ const ParaleloArmadoPlanSection = ({
                             >
                                 Guardar cambios
                             </ActionButton>
-                        </>
-                    ) : (
-                        <Text type="secondary">Solo lectura</Text>
-                    )}
-                </Space>
-            </Flex>
-            {editable && persistLoading ? (
-                <Alert
-                    type="info"
-                    showIcon
-                    style={{ marginBottom: 12, flexShrink: 0 }}
-                    title="Guardando cambios del plan semanal..."
-                />
-            ) : null}
-            {editable && persistError ? (
-                <Alert
-                    type="error"
-                    showIcon
-                    style={{ marginBottom: 12, flexShrink: 0 }}
-                    title="No se pudo guardar el plan"
-                    description={
-                        <span style={{ whiteSpace: 'pre-wrap' }}>{persistError}</span>
-                    }
-                />
-            ) : null}
-            {editable && !persistLoading && !persistError && persistSuccess ? (
-                <Alert
-                    type="success"
-                    showIcon
-                    style={{ marginBottom: 12, flexShrink: 0 }}
-                    title="Plan semanal guardado correctamente."
-                />
-            ) : null}
+                        ) : null}
+                    </Space>
+                </Flex>
+            )}
             <div
                 className={vistaExpandida ? 'horarios-armado-plan__grid-host' : undefined}
             >
@@ -270,9 +227,14 @@ const ParaleloArmadoPlanSection = ({
                     uniformSlotGrid={!editable}
                     editable={editable}
                     onSlotDrop={handleSlotDrop}
+                    conflictHorarioIds={conflictHorarioIds}
+                    horarioSlotIndex={horarioSlotIndex}
+                    docenteConflictMode={docenteConflictMode}
+                    autoAyudaPorSlot={autoAyudaPorSlot}
+                    autoAyudaVisible={autoAyudaVisible}
                     cellExtraProps={{
                         onBeginDragChip: handleBeginDragChip,
-                        onDeleteChip: handleDeleteChip,
+                        onDeleteChip: puedeEliminar ? handleDeleteChip : undefined,
                     }}
                 />
             </div>
@@ -289,43 +251,6 @@ const ParaleloArmadoPlanSection = ({
                     />
                 </div>
             ) : null}
-            <Modal
-                title="Añadir bloque al plan"
-                open={addOpen}
-                onOk={submitAddBlock}
-                onCancel={() => {
-                    setAddOpen(false);
-                    form.resetFields();
-                }}
-                okText="Añadir"
-                destroyOnHidden
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    initialValues={{ dia: 'LUNES', slotMinutes: gridRange.start }}
-                >
-                    <Form.Item
-                        name="cursoId"
-                        label="Materia (curso del paralelo)"
-                        rules={[{ required: true, message: 'Elija una materia' }]}
-                    >
-                        <Select
-                            options={cursoOptions}
-                            placeholder="Materia"
-                            showSearch
-                            optionFilterProp="label"
-                        />
-                    </Form.Item>
-                    <Form.Item name="dia" label="Día" rules={[{ required: true }]}>
-                        <Select options={DIA_OPTIONS} />
-                    </Form.Item>
-                    <Form.Item name="slotMinutes" label="Hora de inicio" rules={[{ required: true }]}>
-                        <Select options={slotOptionsAdd} showSearch optionFilterProp="label" />
-                    </Form.Item>
-                    <Text type="secondary">Duración por defecto del nuevo bloque: 45 minutos.</Text>
-                </Form>
-            </Modal>
         </section>
     );
 };

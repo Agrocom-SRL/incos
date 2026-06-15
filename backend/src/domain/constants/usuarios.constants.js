@@ -76,6 +76,15 @@ export const ACCIONES_PERMISOS = {
  */
 export const ACCIONES_PERMISOS_VALUES = Object.values(ACCIONES_PERMISOS);
 
+/** Permiso técnico: combos de formularios (GET /api/v1/paises, etc.). No aparece en la grilla de roles. */
+export const PERMISO_CATALOGO_REFERENCIA_CODIGO = 'sistema.catalogo.referencia';
+/** Seed 54 — id 105; no se asigna en roles_permisos (AuthRepository lo concede a cualquier rol). */
+export const PERMISO_CATALOGO_REFERENCIA_ID = 105;
+
+export function esPermisoCatalogoReferencia(codigo, accion) {
+  return codigo === PERMISO_CATALOGO_REFERENCIA_CODIGO && accion === ACCIONES_PERMISOS.LISTAR;
+}
+
 /**
  * Override de permiso por usuario (usuarios_permisos.tipo)
  */

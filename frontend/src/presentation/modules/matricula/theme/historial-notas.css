@@ -1,0 +1,51 @@
+/* Historial de notas — switcher Aprobado / Convalidado */
+
+.step-historial-notas-table .historial-estado-segmented {
+  width: 100%;
+  max-width: 220px;
+  padding: 3px;
+  background: var(--ant-color-fill-tertiary, #f0f0f0);
+  border-radius: 8px;
+}
+
+.step-historial-notas-table .historial-estado-segmented .ant-segmented-item {
+  flex: 1;
+  border-radius: 6px !important;
+  font-size: 12px;
+  font-weight: 500;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.step-historial-notas-table .historial-estado-segmented.historial-estado-segmented--aprobado
+  .ant-segmented-item-selected {
+  background: var(--ant-color-success, #52c41a) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 4px rgba(56, 158, 13, 0.35);
+}
+
+.step-historial-notas-table .historial-estado-segmented.historial-estado-segmented--convalidado
+  .ant-segmented-item-selected {
+  background: var(--ant-color-warning, #faad14) !important;
+  color: rgba(0, 0, 0, 0.88) !important;
+  box-shadow: 0 1px 4px rgba(250, 173, 20, 0.35);
+}
+
+.step-historial-notas-table .historial-nota-input--error.ant-input-number {
+  border-color: var(--ant-color-error, #ff4d4f) !important;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.12);
+}
+
+.step-periodo-materias-section--invalid .step2-materias-block {
+  outline: 2px solid var(--ant-color-error, #ff4d4f);
+  outline-offset: 4px;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.step-periodo-materias-section--invalid .step2-materias-invalid-hint {
+  color: var(--ant-color-error, #ff4d4f);
+  font-size: 13px;
+  margin-bottom: 12px;
+}

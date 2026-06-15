@@ -3,7 +3,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+import { useCarrerasCatalogApi } from '@application-shared/hooks';
 import { useExportListaInscritosPorCarreraExcel } from '../../features/useExportListaInscritosPorCarreraExcel';
 import { useMessage } from '@application/utils';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';
@@ -16,7 +16,7 @@ export const useMatriculaListExport = () => {
   const puedeExportarLista = puedeExportarAdmision || puedeExportarInscripcion;
 
   const [selectedCarreraId, setSelectedCarreraId] = useState(null);
-  const { carreras = [], loading: carrerasLoading } = useCarrerasApi();
+  const { carreras = [], loading: carrerasLoading } = useCarrerasCatalogApi();
   const { exportar, loading: exportLoading } = useExportListaInscritosPorCarreraExcel();
 
   const selectedCarrera = useMemo(() => {

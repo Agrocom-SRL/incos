@@ -67,15 +67,38 @@ function groupDocentesConflictosDetalle(flatRows) {
       r.docente_nombre != null ? String(r.docente_nombre).replace(/\s+/g, ' ').trim() || null : null;
     const line = String(r.detalle_linea || '').trim();
     if (!line) continue;
+    const pgId = Number(r.paralelo_gestion_id);
+    const ocId = Number(r.oferta_curso_id);
+    const tipo = String(r.tipo_conflicto || '').trim().toLowerCase();
     if (!map.has(id)) {
-      map.set(id, { docenteId: id, docenteNombre: name, lineasDetalle: [] });
+      map.set(id, {
+        docenteId: id,
+        docenteNombre: name,
+        lineasDetalle: [],
+        paraleloGestionId: null,
+        ofertaCursoId: null,
+        tiposConflicto: new Set(),
+      });
     }
-    const arr = map.get(id).lineasDetalle;
+    const entry = map.get(id);
+    const arr = entry.lineasDetalle;
     if (!arr.includes(line)) arr.push(line);
+    if (tipo) entry.tiposConflicto.add(tipo);
+    if (Number.isFinite(pgId) && pgId > 0 && entry.paraleloGestionId == null) {
+      entry.paraleloGestionId = pgId;
+    }
+    if (Number.isFinite(ocId) && ocId > 0 && entry.ofertaCursoId == null) {
+      entry.ofertaCursoId = ocId;
+    }
   }
-  return [...map.values()].sort((a, b) =>
-    String(a.docenteNombre || '').localeCompare(String(b.docenteNombre || ''), 'es'),
-  );
+  return [...map.values()]
+    .map(({ tiposConflicto, ...rest }) => ({
+      ...rest,
+      tiposConflicto: [...tiposConflicto],
+    }))
+    .sort((a, b) =>
+      String(a.docenteNombre || '').localeCompare(String(b.docenteNombre || ''), 'es'),
+    );
 }
 
 export class GetHorariosSidebarPendientesUseCase {

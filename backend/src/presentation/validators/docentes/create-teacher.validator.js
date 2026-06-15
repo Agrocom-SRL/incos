@@ -163,6 +163,16 @@ const teacherBodyFields = () => [
     .optional()
     .isBoolean()
     .toBoolean(),
+
+  body('maxHorasSemana')
+    .optional({ nullable: true })
+    .isInt({ min: 1, max: 60 })
+    .toInt(),
+
+  body('maxHorasMes')
+    .optional({ nullable: true })
+    .isInt({ min: 1, max: 320 })
+    .toInt(),
 ];
 
 export const createTeacherValidator = teacherBodyFields();

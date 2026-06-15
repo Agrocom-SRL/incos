@@ -154,5 +154,24 @@ export class SubjectRepository extends BaseRepository {
   getCollectionName() {
     return 'subjects';
   }
+
+  /**
+   * Asignaturas de la materia en todos los planes (vista_base_materia_asignaturas_matriz).
+   * @param {number} materiaId
+   * @returns {Promise<Object[]>}
+   */
+  async findAsignaturasMatrizByMateriaId(materiaId) {
+    const sequelize = this.getModel().sequelize;
+    const rows = await sequelize.query(
+      `
+      SELECT *
+      FROM vista_base_materia_asignaturas_matriz
+      WHERE materia_id = :materiaId
+      ORDER BY plan_vigente DESC, nombre_plan ASC, periodo_numero ASC, orden_visualizacion ASC
+      `,
+      { replacements: { materiaId }, type: sequelize.QueryTypes.SELECT },
+    );
+    return Array.isArray(rows) ? rows : [];
+  }
 }
 

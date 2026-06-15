@@ -1,10 +1,19 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppstoreOutlined, RightOutlined, TeamOutlined, TableOutlined, WarningOutlined } from '@ant-design/icons';
-import { Button, Card, Flex, Modal, Table, Tag, Typography } from 'antd';
+import { Card, Flex, Modal, Table, Tag, Typography } from 'antd';
+import { ActionButton, Button } from '@atoms';
 import { allSpacing, allColors, componentConfig, shadows, typography, gradients } from '@theme/tokens';
 import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
+import {
+    buildHorariosArmadoUrl,
+    buildOfertaParaleloDetalleFromHorarios,
+    buildResolverConflictoDocenteNavTarget,
+    docenteSoloConflictoAula,
+    hintModalConflictoDocente,
+    labelResolverConflictoDocente,
+} from '@application-institucional/horarios/config/paths';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 
 const { Text, Title } = Typography;
@@ -62,6 +71,18 @@ const HorariosGestionSidebarResumen = ({
     const navigate = useNavigate();
     const [modal, setModal] = useState({ open: false, kind: null });
     const [aulasDiaFiltroPreferido, setAulasDiaFiltroPreferido] = useState(null);
+
+    const pgIdByParaleloMaestro = useMemo(() => {
+        const m = new Map();
+        (filteredParallels || []).forEach((p) => {
+            const pid = Number(p.id);
+            const pg = Number(p.paraleloGestionId);
+            if (Number.isFinite(pid) && pid > 0 && Number.isFinite(pg) && pg > 0) {
+                m.set(pid, pg);
+            }
+        });
+        return m;
+    }, [filteredParallels]);
 
     const counts = useMemo(() => {
         const paralelos = (filteredParallels || []).length;
@@ -169,6 +190,7 @@ const HorariosGestionSidebarResumen = ({
                     carreraId: g.carreraId,
                     carreraNombre: g.carreraNombre,
                 });
+                const pgId = pgIdByParaleloMaestro.get(Number(g.paraleloId)) ?? null;
                 rows.push({
                     key: `d-${g.paraleloId}-${it.cursoId}-${idx}`,
                     carreraNombre: g.carreraNombre || '—',
@@ -176,14 +198,15 @@ const HorariosGestionSidebarResumen = ({
                     paraleloNombre: g.paraleloNombre || `Paralelo #${g.paraleloId}`,
                     paraleloTurno: g.paraleloTurno || '',
                     paraleloId: g.paraleloId,
+                    paraleloGestionId: pgId,
                     cursoId: it.cursoId,
-                    materiaLabel: it.materiaSigla || it.materiaNombre || it.cursoCodigo || 'Curso',
+                    materiaLabel: it.materiaNombre || it.cursoCodigo || 'Curso',
                     carreraColor: hex || allColors.colorPrimary,
                 });
             });
         });
         return rows;
-    }, [cursosSinDocentePorParalelo]);
+    }, [cursosSinDocentePorParalelo, pgIdByParaleloMaestro]);
 
     const openKind = (kind) => setModal({ open: true, kind });
     const close = () => {
@@ -410,8 +433,8 @@ const HorariosGestionSidebarResumen = ({
                 {modal.kind === 'aulas' ? (
                     <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
                         <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                            Filtrá por día; la tabla muestra solo ese día. Usá el botón inferior para abrir la pantalla de
-                            aulas en modo edición con ese día activo.
+                            El aula base se asigna en Institucional → Oferta académica (paralelo de gestión), no por bloque
+                            de horario.
                         </Text>
                         {tablaBloquesRows.length === 0 ? (
                             <Text type="secondary">No hay bloques sin aula para mostrar.</Text>
@@ -447,23 +470,21 @@ const HorariosGestionSidebarResumen = ({
                                     scroll={{ x: 'max-content' }}
                                 />
                                 <Flex vertical gap={8}>
-                                    <Button
-                                        type="primary"
+                                    <ActionButton
+                                        permiso="institucional.oferta.paralelo-gestion"
+                                        accion="EDITAR"
+                                        variant="primary"
                                         size="large"
                                         block
-                                        disabled={!aulasDiaFiltro}
                                         onClick={() => {
-                                            if (!aulasDiaFiltro) return;
-                                            navigate(
-                                                `/institucional/horarios/aulas?dia=${encodeURIComponent(aulasDiaFiltro)}&edicion=1`,
-                                            );
+                                            navigate('/institucional/oferta');
                                             close();
                                         }}
                                     >
-                                        Completar en aulas — {aulasDiaFiltro || '…'}
-                                    </Button>
+                                        Ir a Oferta académica
+                                    </ActionButton>
                                     <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                                        Se abre la vista de aulas con el día seleccionado y la edición habilitada.
+                                        Asigne el aula base en cada paralelo de gestión antes de armar horarios.
                                     </Text>
                                 </Flex>
                             </>
@@ -512,24 +533,36 @@ const HorariosGestionSidebarResumen = ({
                                                 {row.carreraNombre}
                                             </Text>
                                             <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                                                {row.periodoNombre} · {row.paraleloNombre}
-                                                {row.paraleloTurno ? ` · ${row.paraleloTurno}` : ''}
+                                                Periodo: {row.periodoNombre}
+                                            </Text><Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                                                Paralelo: {row.paraleloNombre} - {row.paraleloTurno}
                                             </Text>
-                                            <Text strong>{row.materiaLabel}</Text>
+                                            <Text type="primary" strong style={{ fontSize: typography.fontSizeSM }}>
+                                                Materia: {row.materiaLabel }
+                                            </Text>
                                         </Flex>
-                                        <Button
-                                            type="primary"
+                                        <ActionButton
+                                            permiso="institucional.horario.armado"
+                                            accion="EDITAR"
+                                            variant="success"
                                             icon={<TeamOutlined />}
                                             style={{ flexShrink: 0 }}
                                             onClick={() => {
+                                                const pg = row.paraleloGestionId;
+                                                if (!pg) return;
+                                                const target = buildOfertaParaleloDetalleFromHorarios(pg, {
+                                                    ofertaCursoId: row.cursoId,
+                                                });
                                                 navigate(
-                                                    `/institucional/horarios/armado?paralelo=${row.paraleloId}&tab=cursos&asignarCurso=${row.cursoId}`,
+                                                    target.pathname,
+                                                    target.state ? { state: target.state } : undefined,
                                                 );
                                                 close();
                                             }}
+                                            disabled={!row.paraleloGestionId}
                                         >
-                                            Asignar docente
-                                        </Button>
+                                            Asignar materia
+                                        </ActionButton>
                                     </Flex>
                                 ))}
                             </Flex>
@@ -540,7 +573,9 @@ const HorariosGestionSidebarResumen = ({
                 {modal.kind === 'conflictos' ? (
                     <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
                         <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                            Resumen por materia; en el calendario semanal del docente ves día y hora de cada franja.
+                            {docentesConConflictosOperativos.some((d) => !docenteSoloConflictoAula(d))
+                                ? hintModalConflictoDocente({ tiposConflicto: ['horario'] })
+                                : hintModalConflictoDocente(docentesConConflictosOperativos[0] || {})}
                         </Text>
                         {!docentesConConflictosOperativos.length ? (
                             <Text type="secondary">No hay docentes con conflictos operativos.</Text>
@@ -593,18 +628,23 @@ const HorariosGestionSidebarResumen = ({
                                                     </Text>
                                                 )}
                                             </Flex>
-                                            <Button
-                                                type="primary"
+                                            <ActionButton
+                                                permiso="institucional.horario.armado"
+                                                accion="EDITAR"
+                                                variant="error"
                                                 style={{ flexShrink: 0 }}
                                                 disabled={d.docenteId == null}
                                                 onClick={() => {
-                                                    if (d.docenteId == null) return;
-                                                    navigate(`/docentes/${d.docenteId}/asignaciones?tab=horarios`);
+                                                    const target = buildResolverConflictoDocenteNavTarget(d);
+                                                    const to = target.search
+                                                        ? `${target.pathname}${target.search}`
+                                                        : target.pathname;
+                                                    navigate(to, target.state ? { state: target.state } : undefined);
                                                     close();
                                                 }}
                                             >
-                                                Ver calendario semanal
-                                            </Button>
+                                                {labelResolverConflictoDocente(d)}
+                                            </ActionButton>
                                         </Flex>
                                     );
                                 })}

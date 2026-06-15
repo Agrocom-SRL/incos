@@ -3,6 +3,7 @@ import { useMatriculaDetailNavigation } from './useMatriculaDetailNavigation';
 import { useMatriculaDetailBoleta } from './useMatriculaDetailBoleta';
 import { useMatriculaDetailEntity } from './useMatriculaDetailEntity';
 import { useMatriculaDetailSchedules } from './useMatriculaDetailSchedules';
+import { useMatriculaDetailActivation } from './useMatriculaDetailActivation';
 
 /**
  * Orquestador: ficha de matrícula por ID.
@@ -13,6 +14,11 @@ export const useMatriculaDetail = (matriculaIdRaw) => {
   const boleta = useMatriculaDetailBoleta(fetch.inscripcion);
   const entity = useMatriculaDetailEntity(fetch.inscripcion);
   const schedules = useMatriculaDetailSchedules(entity.subjectEnrollments, entity.career);
+  const activation = useMatriculaDetailActivation({
+    inscripcionId: fetch.inscripcionId,
+    subjectEnrollments: entity.subjectEnrollments,
+    refetch: fetch.refetch,
+  });
 
   return {
     ...fetch,
@@ -20,6 +26,7 @@ export const useMatriculaDetail = (matriculaIdRaw) => {
     ...boleta,
     ...entity,
     ...schedules,
+    ...activation,
   };
 };
 

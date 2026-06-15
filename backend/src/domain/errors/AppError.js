@@ -39,9 +39,10 @@ export class ValidationError extends AppError {
  * Error de validación semántica / payload (422 Unprocessable Entity)
  */
 export class UnprocessableEntityError extends AppError {
-  constructor(message = 'Los datos proporcionados son inválidos', details = []) {
+  constructor(message = 'Los datos proporcionados son inválidos', details = [], extensions = {}) {
     super(message, 422, 'VALIDATION_ERROR');
     this.details = details;
+    this.extensions = extensions;
   }
 }
 

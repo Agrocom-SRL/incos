@@ -1,0 +1,130 @@
+/**
+ * Institucional → Oferta académica
+ *
+ *   /institucional/oferta                                    → dashboard
+ *   /institucional/oferta/gestiones/:gestionId/planes        → tabs por plan
+ *   /institucional/oferta/gestiones/.../paralelos            → legacy → ?plan=
+ *   /institucional/oferta/paralelo/:paraleloGestionId        → detalle
+ */
+
+import { lazy } from 'react';
+import { Navigate, useParams } from 'react-router-dom';
+import { UnderConstruction } from '@components/pages';
+import { ofertaPaths } from '@application-institucional/oferta';
+
+const INST_OFERTA_ACADEMICA_PERMISOS = [
+  'institucional.oferta.gestion-plan',
+  'institucional.oferta.paralelo-gestion',
+  'institucional.oferta.cursos',
+];
+
+const OfertaDashboardConnector = lazy(
+  () => import('@institucional/oferta/connectors/OfertaDashboardConnector'),
+);
+const OfertaGestionPlanesConnector = lazy(
+  () => import('@institucional/oferta/connectors/OfertaGestionPlanesConnector'),
+);
+const OfertaParaleloDetalleConnector = lazy(
+  () => import('@institucional/oferta/connectors/OfertaParaleloDetalleConnector'),
+);
+const DocenteAsignacionesConnector = lazy(
+  () => import('@institucional/oferta/connectors/DocenteAsignacionesConnector'),
+);
+
+/** Ruta legacy …/planes/:gestionPlanId/paralelos → resumen por tabs (?plan=). */
+function OfertaParalelosLegacyRedirect() {
+  const { gestionId, gestionPlanId } = useParams();
+  return (
+    <Navigate to={ofertaPaths.gestionPlanesConPlan(gestionId, gestionPlanId)} replace />
+  );
+}
+
+export const ofertaRoutes = [
+  {
+    path: '/institucional/oferta/gestiones/:gestionId/planes/:gestionPlanId/paralelos',
+    element: <OfertaParalelosLegacyRedirect />,
+    key: 'INST-OFERTA-PARALELOS-LEGACY',
+    permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
+  {
+    path: '/institucional/oferta/gestiones/:gestionId/planes',
+    element: <OfertaGestionPlanesConnector />,
+    key: 'INST-OFERTA-GESTION-PLANES',
+    permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
+  {
+    path: '/institucional/oferta/gestiones',
+    element: <Navigate to="/institucional/pasadas" replace />,
+    key: 'INST-OFERTA-GESTIONES-REDIRECT',
+    menu: null,
+  },
+  {
+    path: '/institucional/oferta/paralelo/:paraleloGestionId',
+    element: <OfertaParaleloDetalleConnector />,
+    key: 'INST-OFERTA-PARALELO-DETALLE',
+    permiso: 'institucional.oferta.paralelo-gestion',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
+  {
+    path: '/institucional/oferta/docente/:docenteId/asignaciones',
+    element: <DocenteAsignacionesConnector />,
+    key: 'INST-OFERTA-DOCENTE-ASIGNACIONES',
+    permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
+  {
+    path: '/institucional/oferta/inscribir',
+    element: <UnderConstruction />,
+    key: 'INST-OFERTA-MAT-INSCRIBIR',
+    permiso: 'institucional.oferta.gestionar',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
+  {
+    path: '/institucional/oferta/curso',
+    element: <UnderConstruction />,
+    key: 'INST-OFERTA-MAT-CURSO',
+    permiso: 'institucional.oferta.gestionar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
+  {
+    path: '/institucional/oferta-academica',
+    element: <Navigate to="/institucional/oferta" replace />,
+    key: 'INST-OFERTA-LEGACY-REDIRECT',
+    menu: null,
+  },
+  {
+    path: '/institucional/oferta/wizard',
+    element: <Navigate to="/institucional/oferta" replace />,
+    key: 'INST-OFERTA-WIZARD-REDIRECT',
+    menu: null,
+  },
+  {
+    path: '/institucional/oferta',
+    element: <OfertaDashboardConnector />,
+    key: 'INST-OFERTA-ACADEMICA',
+    permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+    accion: 'LISTAR',
+    menu: {
+      label: 'Oferta Académica',
+      module: 'INST',
+      parent: 'INST',
+      order: 2,
+    },
+  },
+];
+
+export default ofertaRoutes;

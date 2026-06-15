@@ -32,6 +32,11 @@ export const listValidator = [
     .isInt({ min: 1, max: 10000 })
     .withMessage('El límite debe ser un número entre 1 y 10000'),
 
+  query('incluir_estadisticas')
+    .optional()
+    .isIn(['true', 'false', '0', '1'])
+    .withMessage('incluir_estadisticas debe ser true o false'),
+
   query('search')
     .optional()
     .trim()

@@ -1,0 +1,134 @@
+-- ============================================
+-- SEEDER permisos · módulo Docentes (DOC)
+-- Sin ids: id por AUTO_INCREMENT; tablas hijas referencian por CÓDIGO.
+-- Orden: roles (55) → usuarios-admin (56) → permisos+acciones+roles por módulo (57-64).
+-- ============================================
+
+USE instituto_incos;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 0) Nombres amigables de los grupos de UI (grilla de Seguridad)
+INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
+('doc_docentes', 'Docentes', 'DOCENTES', 1, 1, NOW(), NOW()),
+('doc_licencias', 'Licencias docentes', 'DOCENTES', 2, 1, NOW(), NOW()),
+('doc_supervision', 'Supervisión', 'DOCENTES', 3, 1, NOW(), NOW()),
+('doc_pasantias', 'Pasantías docentes', 'DOCENTES', 4, 1, NOW(), NOW());
+
+-- 1) Permisos del módulo DOC
+INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
+('docentes.ver', 'Docentes: listar y ver ficha', NULL, 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', 1, NOW(), NOW()),
+('docentes.crear', 'Docentes: registrar nuevo docente', NULL, 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', 1, NOW(), NOW()),
+('docentes.asignar', 'Docentes: asignar a oferta académica', NULL, 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', 1, NOW(), NOW()),
+('docentes.licencia.ver', 'Licencias docentes: listar y ver', NULL, 'DOCENTES', 'DOC', 'doc_licencias', '/docentes/licencias/listar', 1, NOW(), NOW()),
+('docentes.licencia.crear', 'Licencias docentes: solicitar', NULL, 'DOCENTES', 'DOC', 'doc_licencias', '/docentes/licencias/listar', 1, NOW(), NOW()),
+('docentes.licencia.aprobar', 'Licencias docentes: aprobar', NULL, 'DOCENTES', 'DOC', 'doc_licencias', '/docentes/licencias/listar', 1, NOW(), NOW()),
+('docentes.supervision.evaluar', 'Supervisión: evaluar docente', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
+('docentes.supervision.reporte', 'Supervisión: ver reportes', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
+('docentes.supervision.programar', 'Supervisión: programar sesión', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
+('docentes.supervision.ficha.crear', 'Supervisión: crear ficha de evaluación', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
+('docentes.supervision.ficha.editar', 'Supervisión: editar ficha de evaluación', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
+('docentes.supervision.pasantia.solicitar', 'Pasantías docentes: solicitar', NULL, 'DOCENTES', 'DOC', 'doc_pasantias', '/supervision/pasantias', 1, NOW(), NOW()),
+('docentes.supervision.pasantia.seguimiento', 'Pasantías docentes: seguimiento', NULL, 'DOCENTES', 'DOC', 'doc_pasantias', '/supervision/pasantias', 1, NOW(), NOW()),
+('docentes.supervision.pasantia.evaluar', 'Pasantías docentes: evaluación final', NULL, 'DOCENTES', 'DOC', 'doc_pasantias', '/supervision/pasantias', 1, NOW(), NOW()),
+('docentes.editar', 'Docentes: editar ficha y eliminar o desactivar registro', NULL, 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', 1, NOW(), NOW());
+
+-- 2) Acciones de los permisos del módulo DOC
+INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)
+SELECT p.id, x.accion, 1, NOW(), NOW()
+FROM permisos p
+JOIN (
+  SELECT 'docentes.ver' AS codigo, 'LISTAR' AS accion
+  UNION ALL SELECT 'docentes.ver', 'DETALLE'
+  UNION ALL SELECT 'docentes.ver', 'EXPORTAR'
+  UNION ALL SELECT 'docentes.crear', 'CREAR'
+  UNION ALL SELECT 'docentes.asignar', 'CREAR'
+  UNION ALL SELECT 'docentes.asignar', 'EDITAR'
+  UNION ALL SELECT 'docentes.asignar', 'ELIMINAR'
+  UNION ALL SELECT 'docentes.licencia.ver', 'LISTAR'
+  UNION ALL SELECT 'docentes.licencia.ver', 'DETALLE'
+  UNION ALL SELECT 'docentes.licencia.crear', 'CREAR'
+  UNION ALL SELECT 'docentes.licencia.aprobar', 'APROBAR'
+  UNION ALL SELECT 'docentes.supervision.evaluar', 'LISTAR'
+  UNION ALL SELECT 'docentes.supervision.evaluar', 'DETALLE'
+  UNION ALL SELECT 'docentes.supervision.evaluar', 'EDITAR'
+  UNION ALL SELECT 'docentes.supervision.reporte', 'LISTAR'
+  UNION ALL SELECT 'docentes.supervision.reporte', 'EXPORTAR'
+  UNION ALL SELECT 'docentes.supervision.programar', 'CREAR'
+  UNION ALL SELECT 'docentes.supervision.ficha.crear', 'CREAR'
+  UNION ALL SELECT 'docentes.supervision.ficha.editar', 'EDITAR'
+  UNION ALL SELECT 'docentes.supervision.pasantia.solicitar', 'LISTAR'
+  UNION ALL SELECT 'docentes.supervision.pasantia.solicitar', 'DETALLE'
+  UNION ALL SELECT 'docentes.supervision.pasantia.solicitar', 'CREAR'
+  UNION ALL SELECT 'docentes.supervision.pasantia.seguimiento', 'EDITAR'
+  UNION ALL SELECT 'docentes.supervision.pasantia.evaluar', 'APROBAR'
+  UNION ALL SELECT 'docentes.editar', 'EDITAR'
+  UNION ALL SELECT 'docentes.editar', 'ELIMINAR'
+) AS x ON x.codigo = p.codigo;
+
+-- 3) Roles-permisos del módulo DOC (roles 2-8; ADMIN_SISTEMA hereda por vista)
+INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo, created_at, updated_at)
+SELECT r.id, p.id, g.accion, 1, NOW(), NOW()
+FROM (
+  SELECT 'RECTOR' AS rol, 'docentes.ver' AS codigo, 'LISTAR' AS accion
+  UNION ALL SELECT 'RECTOR', 'docentes.ver', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'docentes.ver', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.ver', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.ver', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.ver', 'EXPORTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.crear', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.crear', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.asignar', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.asignar', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.asignar', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.asignar', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.asignar', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.asignar', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.licencia.ver', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.licencia.ver', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.licencia.ver', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.licencia.ver', 'DETALLE'
+  UNION ALL SELECT 'DOCENTE', 'docentes.licencia.ver', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.licencia.crear', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.licencia.crear', 'CREAR'
+  UNION ALL SELECT 'DOCENTE', 'docentes.licencia.crear', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.licencia.aprobar', 'APROBAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.licencia.aprobar', 'APROBAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.evaluar', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.evaluar', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.evaluar', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.evaluar', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.evaluar', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.evaluar', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.reporte', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.reporte', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.reporte', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.reporte', 'EXPORTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.programar', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.programar', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha.crear', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha.crear', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha.editar', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha.editar', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.solicitar', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.solicitar', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.solicitar', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.solicitar', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.solicitar', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.solicitar', 'CREAR'
+  UNION ALL SELECT 'DOCENTE', 'docentes.supervision.pasantia.solicitar', 'LISTAR'
+  UNION ALL SELECT 'DOCENTE', 'docentes.supervision.pasantia.solicitar', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.seguimiento', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.seguimiento', 'EDITAR'
+  UNION ALL SELECT 'DOCENTE', 'docentes.supervision.pasantia.seguimiento', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.evaluar', 'APROBAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.evaluar', 'APROBAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.editar', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.editar', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.editar', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.editar', 'ELIMINAR'
+) AS g
+JOIN roles r ON r.codigo = g.rol
+JOIN permisos p ON p.codigo = g.codigo;
+
+SET FOREIGN_KEY_CHECKS = 1;

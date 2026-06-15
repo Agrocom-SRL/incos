@@ -13,22 +13,32 @@
 import {
   GetAsignaturasSinCursoUseCase,
   GetCapacidadTurnoUseCase,
-  GetParaleloCursosOfertaUseCase,
-  CrearParaleloCursoOfertaUseCase,
   GetParaleloHorariosUseCase,
   GetParalelosEstadoDashboardUseCase,
   GetTodosParalelosUseCase,
   PutParaleloHorariosUseCase,
-  GetAulasHorariosUseCase,
-  PatchAulaHorarioUseCase,
   GetHorariosPendientesSidebarUseCase,
   GetHorariosPublicacionPlanesUseCase,
 } from '@useCases/academico/paralelos';
-import { ActualizarCursoOfertaUseCase, EliminarCursoOfertaUseCase } from '@useCases/academico/cursos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
+import {
+  GetPoliticaCatalogoUseCase,
+  GetTiposEvaluacionUseCase,
+  GuardarPoliticaInstitucionalUseCase,
+  ListCoordinacionDocentesUseCase,
+  ListMisCursosUseCase,
+  ObtenerPoliticaInstitucionalUseCase,
+  ObtenerRegistroNotasCursoUseCase,
+} from '@useCases/academico/calificaciones';
+import {
+  ListCoordinacionAsistenciaDocentesUseCase,
+  ListMisCursosAsistenciaUseCase,
+} from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
-import CursoRepository from '@infrastructure/repositories/CursoRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
+import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository';
+import AsistenciaRepository from '@infrastructure/repositories/AsistenciaRepository';
+import TipoEvaluacionRepository from '@infrastructure/repositories/TipoEvaluacionRepository';
 
 /**
  * Registra los Use Cases del módulo académico
@@ -38,7 +48,6 @@ import GestionRepository from '@infrastructure/repositories/GestionRepository';
 export function registerAcademicoModule(factory) {
   // Repositorios singleton (stateless)
   const paraleloRepository = ParaleloRepository;
-  const cursoRepository = CursoRepository;
   const gestionRepository = GestionRepository;
 
   // Registrar Use Cases de Paralelos
@@ -48,22 +57,6 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerParaleloHorarios = () => {
     return new GetParaleloHorariosUseCase(paraleloRepository);
-  };
-
-  factory.obtenerParaleloCursosOferta = () => {
-    return new GetParaleloCursosOfertaUseCase(paraleloRepository);
-  };
-
-  factory.crearParaleloCursoOferta = () => {
-    return new CrearParaleloCursoOfertaUseCase(paraleloRepository);
-  };
-
-  factory.actualizarCursoOferta = () => {
-    return new ActualizarCursoOfertaUseCase(cursoRepository);
-  };
-
-  factory.eliminarCursoOferta = () => {
-    return new EliminarCursoOfertaUseCase(cursoRepository);
   };
 
   factory.persistirParaleloHorarios = () => {
@@ -82,14 +75,6 @@ export function registerAcademicoModule(factory) {
     return new GetCapacidadTurnoUseCase(paraleloRepository);
   };
 
-  factory.obtenerAulasHorarios = () => {
-    return new GetAulasHorariosUseCase(paraleloRepository);
-  };
-
-  factory.asignarAulaHorario = () => {
-    return new PatchAulaHorarioUseCase(paraleloRepository);
-  };
-
   factory.obtenerHorariosPendientesSidebar = () => {
     return new GetHorariosPendientesSidebarUseCase(paraleloRepository);
   };
@@ -101,6 +86,42 @@ export function registerAcademicoModule(factory) {
   // Registrar Use Cases de Gestiones
   factory.obtenerTodasGestiones = () => {
     return new GetTodasGestionesUseCase(gestionRepository);
+  };
+
+  factory.listarCoordinacionCalificacionesDocentes = () => {
+    return new ListCoordinacionDocentesUseCase(CalificacionRepository);
+  };
+
+  factory.listarMisCursosCalificaciones = () => {
+    return new ListMisCursosUseCase(CalificacionRepository);
+  };
+
+  factory.listarCoordinacionAsistenciaDocentes = () => {
+    return new ListCoordinacionAsistenciaDocentesUseCase(AsistenciaRepository);
+  };
+
+  factory.listarMisCursosAsistencia = () => {
+    return new ListMisCursosAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerRegistroNotasCurso = () => {
+    return new ObtenerRegistroNotasCursoUseCase(CalificacionRepository);
+  };
+
+  factory.obtenerPoliticaInstitucional = () => {
+    return new ObtenerPoliticaInstitucionalUseCase(CalificacionRepository);
+  };
+
+  factory.guardarPoliticaInstitucional = () => {
+    return new GuardarPoliticaInstitucionalUseCase(CalificacionRepository);
+  };
+
+  factory.obtenerTiposEvaluacion = () => {
+    return new GetTiposEvaluacionUseCase(TipoEvaluacionRepository);
+  };
+
+  factory.obtenerPoliticaCatalogo = () => {
+    return new GetPoliticaCatalogoUseCase(CalificacionRepository);
   };
 
   return factory;

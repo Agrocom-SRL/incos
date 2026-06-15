@@ -10,18 +10,32 @@ export const useMatriculaWizardPageWizardInit = ({
   studentSearch,
   carrerasData,
   form,
+  wizardStepMeta,
 }) => {
+  const indices = wizardStepMeta?.indices ?? {
+    buscar: 0,
+    carrera: 1,
+    periodo: 2,
+    paralelo: 3,
+    historial: null,
+  };
+
   const initialStep = useMemo(() => {
     if (editData) {
-      if (editData.completarSoloHistorialPrevio) return 2;
-      return isNuevoEstudiante ? 3 : 2;
+      if (editData.completarSoloHistorialPrevio && indices.historial != null) {
+        return indices.historial;
+      }
+      if (editData.completarSoloHistorialPrevio) {
+        return indices.periodo;
+      }
+      return isNuevoEstudiante ? indices.paralelo : indices.periodo;
     }
     const hasStudent = studentSearch?.selectedStudent && !studentSearch?.loading;
     if (hasStudent && carrerasData?.selectedCarrera) {
-      return isNuevoEstudiante ? 3 : 2;
+      return isNuevoEstudiante ? indices.paralelo : indices.periodo;
     }
-    if (hasStudent) return 1;
-    return 0;
+    if (hasStudent) return indices.carrera;
+    return indices.buscar;
   }, [
     editData,
     editData?.completarSoloHistorialPrevio,
@@ -29,6 +43,7 @@ export const useMatriculaWizardPageWizardInit = ({
     studentSearch?.selectedStudent,
     studentSearch?.loading,
     carrerasData?.selectedCarrera,
+    indices,
   ]);
 
   const initialValues = useMemo(() => {

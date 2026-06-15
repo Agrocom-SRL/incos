@@ -265,21 +265,12 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
           { label: 'Gestión', value: gestionAnio },
         ].filter(detail => detail.value && detail.value !== 'N/A' && detail.value !== 'Sin nombre');
 
-        // Permitir editar todos los tipos de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD)
-        const canEdit = true;
         const historialPendiente = isHistorialPrevioPendiente(record);
 
-        // Extraer datos necesarios para la edición
-        const estudianteId = student?.id || record.estudianteId || record.enrollment?.estudianteId;
-        const carreraId = carrera?.id || record.carreraId || record.enrollment?.carreraId;
-
         const handleEdit = () => {
-          if (!canEdit) return;
           navigate(`/inscripciones/${inscripcionId}/editar`);
         };
 
-        // Mostrar el botón de editar, deshabilitado si no se puede editar
-        // Habilitar eliminar desde la lista (anular inscripción)
         return (
           <TableActions
             record={{ ...record, id: inscripcionId }}
@@ -292,8 +283,12 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
             viewPath="/inscripciones/:id"
             editPath={null}
             onEdit={handleEdit}
-            editDisabled={!canEdit}
             editTitle={historialPendiente ? 'Completar historial previo y editar' : 'Editar inscripción'}
+            permisos={{
+              ver: { codigo: 'matricula.inscribir', accion: 'DETALLE' },
+              editar: { codigo: 'matricula.inscripcion.editar', accion: 'EDITAR' },
+              eliminar: { codigo: 'matricula.inscripcion.editar', accion: 'ELIMINAR' },
+            }}
           />
         );
       },
@@ -355,10 +350,13 @@ export const createInscripcionesAnularTableColumns = (navigate, refetch = null, 
             refetch={refetch}
             useCaseKey={deleteInscripcion ? null : "eliminarInscripcion"}
             deleteFn={deleteInscripcion}
-            itemName={`anular ${itemName}`} // Personalizar el mensaje para indicar que es anulación
+            itemName={`anular ${itemName}`}
             itemDetails={itemDetails}
-            viewPath={null} // No permitir ver en modo anular
-            editPath={null} // No permitir editar en modo anular
+            viewPath={null}
+            editPath={null}
+            permisos={{
+              eliminar: { codigo: 'matricula.inscripcion.editar', accion: 'ELIMINAR' },
+            }}
           />
         );
       },

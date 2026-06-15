@@ -54,7 +54,7 @@ const InscripcionDetailTabs = ({
         key: 'historial-previo',
         label: (
           <span className="sd-tab-label">
-            <HistoryOutlined /> Historial previo
+            <HistoryOutlined /> Historial de notas
           </span>
         ),
         children: (

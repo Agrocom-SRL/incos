@@ -4,10 +4,15 @@ import { body } from 'express-validator';
  * Body para PATCH /docentes/asignaciones/:id
  */
 export const updateTeacherAssignmentValidator = [
-  body('cursoId')
+  body('ofertaCursoId')
     .optional({ nullable: true })
     .isInt({ min: 1 })
-    .withMessage('cursoId debe ser un entero positivo'),
+    .withMessage('ofertaCursoId debe ser un entero positivo'),
+
+  body('oferta_curso_id')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('oferta_curso_id debe ser un entero positivo'),
 
   body('docenteId')
     .optional({ nullable: true })
@@ -36,7 +41,7 @@ export const updateTeacherAssignmentValidator = [
     const hasAnyField =
       value &&
       typeof value === 'object' &&
-      ['cursoId', 'docenteId', 'cargaHoraria', 'vigente', 'motivo', 'fechaAsignacion'].some((k) =>
+      ['ofertaCursoId', 'oferta_curso_id', 'docenteId', 'cargaHoraria', 'vigente', 'motivo', 'fechaAsignacion'].some((k) =>
         Object.prototype.hasOwnProperty.call(value, k)
       );
     if (!hasAnyField) {

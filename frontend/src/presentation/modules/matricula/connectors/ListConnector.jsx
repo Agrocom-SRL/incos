@@ -9,16 +9,14 @@
  * - Arquitectura modular: cada módulo gestiona sus propios conectores
  */
 
-import { InscripcionesProvider, InscripcionesListProvider } from '@application-inscripciones/providers';
+import { InscripcionesListProvider } from '@application-inscripciones/providers';
 import InscripcionesList from '@inscripciones/pages/InscripcionesList';
 
 const ListConnector = () => {
   return (
-    <InscripcionesProvider>
-      <InscripcionesListProvider>
-        <InscripcionesList />
-      </InscripcionesListProvider>
-    </InscripcionesProvider>
+    <InscripcionesListProvider>
+      <InscripcionesList />
+    </InscripcionesListProvider>
   );
 };
 

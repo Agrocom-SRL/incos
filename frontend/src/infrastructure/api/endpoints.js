@@ -99,6 +99,15 @@ export const DOCENTES_ENDPOINTS = {
   CURSO_HORARIOS: (cursoId) => `${API_BASE}/docentes/cursos/${cursoId}/horarios`,
   /** GET — IDs de docentes con choque en los bloques de un curso (?cursoId=X) */
   CONFLICTO_BLOQUES: (cursoId) => `${API_BASE}/docentes/conflicto-bloques?cursoId=${cursoId}`,
+  CARGA_GESTION: (docenteId) => `${API_BASE}/docentes/${docenteId}/carga-gestion`,
+  COLORES_EN_USO: `${API_BASE}/docentes/colores-en-uso`,
+  COLORES_SUGERIDOS: `${API_BASE}/docentes/colores-sugeridos`,
+  COLOR: (docenteId) => `${API_BASE}/docentes/${docenteId}/color`,
+};
+
+export const ASIGNACIONES_DOCENTES_ENDPOINTS = {
+  BASE: `${API_BASE}/asignaciones-docentes`,
+  BY_ID: (id) => `${API_BASE}/asignaciones-docentes/${id}`,
 };
 
 // ============================================
@@ -135,8 +144,31 @@ export const ESTUDIANTES_BECAS_ENDPOINTS = {
 // MÓDULO: CONFIGURACIÓN
 // ============================================
 // Académico
-export const CARRERAS_ENDPOINTS = createCRUDEndpoints('/carreras');
+export const CARRERAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/carreras'),
+  IMAGEN: `${API_BASE}/carreras/imagen`,
+};
 export const MATERIAS_ENDPOINTS = createCRUDEndpoints('/materias');
+export const PLANES_ESTUDIOS_ENDPOINTS = {
+  ...createCRUDEndpoints('/planes-estudios'),
+  MATRIZ: (id) => `${API_BASE}/planes-estudios/${id}/matriz`,
+  VALIDAR: (id) => `${API_BASE}/planes-estudios/${id}/validar`,
+  MARCAR_VIGENTE: (id) => `${API_BASE}/planes-estudios/${id}/marcar-vigente`,
+  PERIODOS: (planId) => `${API_BASE}/planes-estudios/${planId}/periodos`,
+  ASIGNATURAS: (planId) => `${API_BASE}/planes-estudios/${planId}/asignaturas`,
+};
+
+export const ASIGNATURAS_PLAN_ENDPOINTS = {
+  BASE: `${API_BASE}/asignaturas-plan`,
+  BY_ID: (id) => `${API_BASE}/asignaturas-plan/${id}`,
+  PRERREQUISITOS: (asignaturaId) => `${API_BASE}/asignaturas-plan/${asignaturaId}/prerrequisitos`,
+  ES_PRERREQUISITO_DE: (asignaturaId) => `${API_BASE}/asignaturas-plan/${asignaturaId}/es-prerrequisito-de`,
+};
+
+export const PRERREQUISITOS_ENDPOINTS = {
+  BASE: `${API_BASE}/prerrequisitos`,
+  BY_ID: (id) => `${API_BASE}/prerrequisitos/${id}`,
+};
 
 // Complementario
 export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
@@ -144,14 +176,8 @@ export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================
-export const CURSOS_ENDPOINTS = {
-  BY_ID: (id) => `${API_BASE}/cursos/${id}`,
-};
-
 export const PARALELOS_ENDPOINTS = {
   ...createCRUDEndpoints('/paralelos'),
-  CURSOS_OFERTA: (id) => `${API_BASE}/paralelos/${id}/cursos-oferta`,
-  CURSOS_POST: (id) => `${API_BASE}/paralelos/${id}/cursos`,
   // Endpoint específico para obtener horarios de un paralelo
   SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
   // PUT /v1/paralelos/:id/schedule — persistir plan semanal
@@ -161,13 +187,119 @@ export const PARALELOS_ENDPOINTS = {
   DASHBOARD_CAPACIDAD_TURNO: `${API_BASE}/paralelos/dashboard/capacidad-turno`,
   DASHBOARD_HORARIOS_PENDIENTES: `${API_BASE}/paralelos/dashboard/horarios-pendientes`,
   DASHBOARD_HORARIOS_PUBLICACION: `${API_BASE}/paralelos/dashboard/horarios-publicacion`,
+  PARALELOS_GESTION_BY_PARALELO: (id) => `${API_BASE}/paralelos/${id}/paralelos-gestion`,
 };
 
 export const AULAS_HORARIOS_ENDPOINTS = {
   BLOQUES: `${API_BASE}/aulas/horarios`,
   PATCH_AULA: (cursoHorarioId) => `${API_BASE}/aulas/horarios/${cursoHorarioId}/aula`,
 };
-export const GESTIONES_ENDPOINTS = createCRUDEndpoints('/gestiones');
+export const GESTIONES_ENDPOINTS = {
+  ...createCRUDEndpoints('/gestiones'),
+  MARCAR_VIGENTE: (id) => `${API_BASE}/gestiones/${id}/marcar-vigente`,
+  PLANES_HABILITADOS: (id) => `${API_BASE}/gestiones/${id}/planes-habilitados`,
+  CARGA_DOCENTES: (id) => `${API_BASE}/gestiones/${id}/carga-docentes`,
+  CONFLICTOS: (id) => `${API_BASE}/gestiones/${id}/conflictos`,
+  PUBLICAR_TODOS: (id) => `${API_BASE}/gestiones/${id}/publicar-todos`,
+};
+
+export const GESTIONES_PLANES_ENDPOINTS = {
+  BASE: `${API_BASE}/gestiones-planes`,
+  ESTADO: (id) => `${API_BASE}/gestiones-planes/${id}/estado`,
+  PARALELOS_GESTION: (id) => `${API_BASE}/gestiones-planes/${id}/paralelos-gestion`,
+  GENERAR_PARALELOS: (id) => `${API_BASE}/gestiones-planes/${id}/generar-paralelos-gestion`,
+};
+
+export const PARALELOS_GESTION_ENDPOINTS = {
+  BY_ID: (id) => `${API_BASE}/paralelos-gestion/${id}`,
+  ESTADO: (id) => `${API_BASE}/paralelos-gestion/${id}/estado`,
+  CAMBIAR_TURNO: (id) => `${API_BASE}/paralelos-gestion/${id}/cambiar-turno`,
+  OFERTA_CURSOS: (id) => `${API_BASE}/paralelos-gestion/${id}/oferta-cursos`,
+  GENERAR_OFERTA: (id) => `${API_BASE}/paralelos-gestion/${id}/generar-oferta`,
+  VALIDAR_OFERTA: (id) => `${API_BASE}/paralelos-gestion/${id}/validar-oferta`,
+  COBERTURA_DOCENTE: (id) => `${API_BASE}/paralelos-gestion/${id}/cobertura-docente`,
+  GRILLA_HORARIO: (id) => `${API_BASE}/paralelos-gestion/${id}/grilla-horario`,
+  CONFLICTOS: (id) => `${API_BASE}/paralelos-gestion/${id}/conflictos`,
+  PUBLICAR: (id) => `${API_BASE}/paralelos-gestion/${id}/publicar`,
+};
+
+export const OFERTA_CURSOS_ENDPOINTS = {
+  BASE: `${API_BASE}/oferta-cursos`,
+  ESTADO: (id) => `${API_BASE}/oferta-cursos/${id}/estado`,
+  BY_ID: (id) => `${API_BASE}/oferta-cursos/${id}`,
+};
+
+export const AULAS_CATALOGO_ENDPOINT = `${API_BASE}/aulas/catalogo`;
+
+export const HORARIOS_DOCENTE_ENDPOINTS = {
+  GRILLA_CONFLICTOS: (docenteId, gestionId) => {
+    const q = new URLSearchParams();
+    if (gestionId != null) q.set('gestion_id', String(gestionId));
+    const qs = q.toString();
+    return `${API_BASE}/horarios/docentes/${docenteId}/grilla-conflictos${qs ? `?${qs}` : ''}`;
+  },
+};
+
+export const ASIGNACION_HORARIOS_ENDPOINTS = {
+  BASE: `${API_BASE}/asignacion-horarios`,
+  BY_ID: (id) => `${API_BASE}/asignacion-horarios/${id}`,
+  BULK: `${API_BASE}/asignacion-horarios/bulk`,
+};
+
+export const CONFLICTOS_ENDPOINTS = {
+  VALIDAR: `${API_BASE}/conflictos/validar`,
+};
+
+// ============================================
+// MÓDULO: CALIFICACIONES (Académico)
+// ============================================
+export const ASISTENCIA_ENDPOINTS = {
+  COORDINACION_DOCENTES: `${API_BASE}/asistencia/coordinacion/docentes`,
+  MIS_CURSOS: `${API_BASE}/asistencia/mis-cursos`,
+  COORDINACION_DOCENTE_CURSOS: (docenteId) =>
+    `${API_BASE}/asistencia/coordinacion/docentes/${docenteId}/cursos`,
+};
+
+export const CALIFICACIONES_ENDPOINTS = {
+  COORDINACION_DOCENTES: `${API_BASE}/calificaciones/coordinacion/docentes`,
+  MIS_CURSOS: `${API_BASE}/calificaciones/mis-cursos`,
+  COORDINACION_DOCENTE_CURSOS: (docenteId) =>
+    `${API_BASE}/calificaciones/coordinacion/docentes/${docenteId}/cursos`,
+  TIPOS_EVALUACION: `${API_BASE}/calificaciones/tipos-evaluacion`,
+  POLITICA: `${API_BASE}/calificaciones/politica`,
+  POLITICA_CATALOGO: `${API_BASE}/calificaciones/politica/catalogo`,
+  GESTION_BIMESTRES: `${API_BASE}/calificaciones/gestion-bimestres`,
+  GESTION_CRONOGRAMA: `${API_BASE}/calificaciones/gestion-cronograma`,
+  CRONOGRAMA_ADMIN: `${API_BASE}/calificaciones/cronograma`,
+  CRONOGRAMA_ADMIN_BY_ID: (id) => `${API_BASE}/calificaciones/cronograma/${id}`,
+  GESTION_BIMESTRES_INICIAR: `${API_BASE}/calificaciones/gestion-bimestres/iniciar`,
+  GESTION_BIMESTRES_VALIDAR_CIERRE: (numero) =>
+    `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/validar-cierre`,
+  GESTION_BIMESTRES_CERRAR: (numero) =>
+    `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/cerrar`,
+  GESTION_PERIODOS: `${API_BASE}/calificaciones/gestion-bimestres/periodos`,
+  GESTION_PERIODO_BY_ID: (id) => `${API_BASE}/calificaciones/gestion-bimestres/periodos/${id}`,
+  GESTION_PERIODO_FECHAS: (id) =>
+    `${API_BASE}/calificaciones/gestion-bimestres/periodos/${id}/fechas`,
+  REGISTRO_NOTAS: (asignacionId) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/notas`,
+  CUADERNO_BIMESTRE: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}`,
+  CUADERNO_EVALUACIONES: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/evaluaciones`,
+  CUADERNO_EVALUACION: (asignacionId, bimestre, evaluacionId) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/evaluaciones/${evaluacionId}`,
+  CUADERNO_EVALUACION_NOTAS: (asignacionId, bimestre, evaluacionId) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/evaluaciones/${evaluacionId}/notas`,
+  CUADERNO_NOTA: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/notas`,
+  CUADERNO_GUARDAR: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/guardar`,
+  BIMESTRE_CONSOLIDADO: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/consolidado`,
+  EXPORT_REGISTRO_PEDAGOGICO: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/export/registro-pedagogico`,
+};
 
 // ============================================
 // MÓDULO: GEOGRÁFICOS
@@ -192,6 +324,10 @@ export const INSCRIPCIONES_ENDPOINTS = {
   ...createCRUDEndpoints('/inscripciones'),
   // Endpoint específico para generar formulario de inscripción (se usará desde el módulo de inscripciones)
   GENERATE_FORMULARIO: (studentId) => `${API_BASE}/inscripciones/${studentId}/generar-formulario`,
+  HISTORIAL_PREVIO: (inscripcionId) =>
+    `${API_BASE}/inscripciones/${encodeURIComponent(String(inscripcionId))}/historial-previo`,
+  ACTIVAR_CURSADO: (inscripcionId) =>
+    `${API_BASE}/inscripciones/${encodeURIComponent(String(inscripcionId))}/activar-cursado`,
 };
 
 // ============================================

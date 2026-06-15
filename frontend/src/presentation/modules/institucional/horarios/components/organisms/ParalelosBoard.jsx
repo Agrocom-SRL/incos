@@ -13,7 +13,7 @@ const ParalelosBoard = ({ boardByStatus, onOpenArmado }) => {
     return (
         <Row gutter={[12, 12]} className="horarios-gestion-board">
             {boardByStatus.map((column) => (
-                <Col xs={24} md={12} xl={6} key={column.key}>
+                <Col xs={24} md={12} xl={8} key={column.key}>
                     <Card
                         className={`horarios-gestion-board__column horarios-gestion-board__column--${column.key}`}
                         variant="outlined"

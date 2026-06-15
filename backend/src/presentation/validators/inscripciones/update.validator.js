@@ -95,22 +95,20 @@ export const updateEnrollmentValidator = [
         if (!row || typeof row !== 'object') return false;
         const materiaId = row.materia_id ?? row.materiaId;
         const periodId = row.period_id ?? row.periodId;
+        const status = String(row.status ?? row.estado ?? 'APROBADO').toUpperCase();
         const grade = row.final_grade ?? row.finalGrade ?? row.nota_final;
-        const status = row.status ?? row.estado;
+        if (!['APROBADO', 'CONVALIDADO'].includes(status)) return false;
+        if (
+          !Number.isInteger(Number(materiaId)) ||
+          Number(materiaId) < 1 ||
+          !Number.isInteger(Number(periodId)) ||
+          Number(periodId) < 1
+        ) {
+          return false;
+        }
+        if (status === 'CONVALIDADO') return true;
         const gradeNum = Number(grade);
-        const statusOk =
-          status == null ||
-          ['APROBADO', 'CONVALIDADO'].includes(String(status).toUpperCase());
-        return (
-          Number.isInteger(Number(materiaId)) &&
-          Number(materiaId) >= 1 &&
-          Number.isInteger(Number(periodId)) &&
-          Number(periodId) >= 1 &&
-          !Number.isNaN(gradeNum) &&
-          gradeNum >= 0 &&
-          gradeNum <= 100 &&
-          statusOk
-        );
+        return !Number.isNaN(gradeNum) && gradeNum >= 0 && gradeNum <= 100;
       });
     })
     .withMessage(

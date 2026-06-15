@@ -23,17 +23,24 @@
  */
 
 import { createApiHook } from '@application/utils';
+import { DEFAULT_LIST_LIMIT, DEFAULT_LIST_PAGE } from '@application/constants/listPagination';
 
 export const useBecasAsignadasApi = createApiHook({
   name: 'useBecasAsignadasApi',
   useCase: 'obtenerTodasBecasAsignadas',
-  dataType: 'object', // Retorna un objeto con { becas: [...], total, page, limit, totalPages }
-  mapper: null, // No necesita mapper, los datos vienen ya estructurados del backend
-  initialLoading: true, // Carga automáticamente al montar
-  autoFetch: true, // Carga automáticamente al montar
-  autoFetchArgs: {}, // Argumentos para el auto-fetch
-  dataKey: 'becasAsignadas', // Nombre de la propiedad en el resultado del hook
-  // El backend retorna: { becas: [...], total, page, limit, totalPages }
-  // El hook retornará: { becasAsignadas: { becas: [...], total, ... }, loading, error }
+  dataType: 'object',
+  mapper: null,
+  initialLoading: false,
+  autoFetch: false,
+  paginationKey: 'pagination',
+  dataKey: 'becasAsignadas',
   errorMessage: 'Error al cargar las becas asignadas',
+});
+
+export const becasAsignadasListFetchParams = (overrides = {}) => ({
+  params: {
+    page: DEFAULT_LIST_PAGE,
+    limit: DEFAULT_LIST_LIMIT,
+    ...overrides,
+  },
 });

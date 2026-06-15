@@ -12,6 +12,7 @@ import {
     PAGOS_TOKENS,
     DASHBOARD_TOKENS,
     DOCENTES_TOKENS,
+    ASIGNACIONES_DOCENTES_TOKENS,
     AULAS_HORARIOS_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
@@ -35,10 +36,17 @@ router.get('/', (req, res) => {
             // Módulo: Configuración
             carreras: '/api/v1/carreras',
             materias: '/api/v1/materias',
+            planesEstudios: '/api/v1/planes-estudios',
+            periodos: '/api/v1/periodos',
+            asignaturasPlan: '/api/v1/asignaturas-plan',
+            prerrequisitos: '/api/v1/prerrequisitos',
             // Módulo: Académico
             paralelos: '/api/v1/paralelos',
-            cursos: '/api/v1/cursos',
             gestiones: '/api/v1/gestiones',
+            gestionesPlanes: '/api/v1/gestiones-planes',
+            paralelosGestion: '/api/v1/paralelos-gestion',
+            ofertaCursos: '/api/v1/oferta-cursos',
+            calificaciones: '/api/v1/calificaciones',
             // Módulo: Geográficos
             paises: '/api/v1/paises',
             departamentos: '/api/v1/departamentos',
@@ -67,6 +75,7 @@ router.get('/', (req, res) => {
             docentesCursosPorParalelo: '/api/v1/docentes/cursos-por-paralelo?paraleloId=',
             docentesCursosDisponibles: '/api/v1/docentes/cursos-disponibles?gestionPlanId=',
             docentesCursoHorarios: '/api/v1/docentes/cursos/:cursoId/horarios',
+            aulasCatalogo: '/api/v1/aulas/catalogo',
             aulasHorarios: '/api/v1/aulas/horarios',
         },
     });
@@ -100,13 +109,24 @@ router.use('/becas-descuentos', container.resolve(ESTUDIANTES_TOKENS.becasDescue
 // ============================================
 router.use('/carreras', container.resolve(CONFIGURACION_TOKENS.carrerasRouter));
 router.use('/materias', container.resolve(CONFIGURACION_TOKENS.materiasRouter));
+router.use('/planes-estudios', container.resolve(CONFIGURACION_TOKENS.planesEstudiosRouter));
+router.use('/periodos', container.resolve(CONFIGURACION_TOKENS.periodosRouter));
+router.use('/asignaturas-plan', container.resolve(CONFIGURACION_TOKENS.asignaturasPlanRouter));
+router.use('/prerrequisitos', container.resolve(CONFIGURACION_TOKENS.prerrequisitosRouter));
 
 // ============================================
 // 3. MÓDULO: ACADÉMICO
 // ============================================
 router.use('/paralelos', container.resolve(ACADEMICO_TOKENS.paralelosRouter));
-router.use('/cursos', container.resolve(ACADEMICO_TOKENS.cursosRouter));
 router.use('/gestiones', container.resolve(ACADEMICO_TOKENS.gestionesRouter));
+router.use('/gestiones-planes', container.resolve(ACADEMICO_TOKENS.gestionesPlanesRouter));
+router.use('/paralelos-gestion', container.resolve(ACADEMICO_TOKENS.paralelosGestionRouter));
+router.use('/oferta-cursos', container.resolve(ACADEMICO_TOKENS.ofertaCursosRouter));
+router.use('/calificaciones', container.resolve(ACADEMICO_TOKENS.calificacionesRouter));
+router.use('/asistencia', container.resolve(ACADEMICO_TOKENS.asistenciaRouter));
+router.use('/asignacion-horarios', container.resolve(ACADEMICO_TOKENS.asignacionHorariosRouter));
+router.use('/conflictos', container.resolve(ACADEMICO_TOKENS.conflictosRouter));
+router.use('/horarios/docentes', container.resolve(ACADEMICO_TOKENS.horariosDocenteRouter));
 
 // ============================================
 // 4. MÓDULO: GEOGRÁFICOS
@@ -148,6 +168,10 @@ router.use('/dashboard', container.resolve(DASHBOARD_TOKENS.dashboardRouter));
 // 9. MÓDULO: DOCENTES
 // ============================================
 router.use('/docentes', container.resolve(DOCENTES_TOKENS.docentesRouter));
+router.use(
+  '/asignaciones-docentes',
+  container.resolve(ASIGNACIONES_DOCENTES_TOKENS.asignacionesDocentesRouter)
+);
 router.use('/aulas', container.resolve(AULAS_HORARIOS_TOKENS.aulasHorariosRouter));
 
 // Para agregar un nuevo módulo:

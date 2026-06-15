@@ -7,12 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { useMessage } from '@application/utils';
 import { useCreateInscripcion } from '../../api/useCreateInscripcion';
 import { useUpdateInscripcion } from '../../api/useUpdateInscripcion';
+import { useSaveHistorialPrevio } from '../../api/useSaveHistorialPrevio';
 import { isPaymentRequiredError } from '@application-inscripciones/utils/inscripcionPaymentErrors';
 import {
   resolveSelectionByPeriod,
   validateInscripcionSubmit,
 } from '@application-inscripciones/utils/inscripcionSubmitValidation';
 import { buildInscripcionPayload } from '@application-inscripciones/utils/buildInscripcionPayload';
+import { resolveInscripcionApiUserMessage } from '@application-inscripciones/utils/inscripcionApiErrors';
 
 export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getFormValues) => {
   const {
@@ -45,26 +47,36 @@ export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getF
     error: errorUpdate,
     validationErrors: validationErrorsUpdate,
   } = useUpdateInscripcion();
+  const { saveHistorialPrevio, loading: loadingHistorial } = useSaveHistorialPrevio();
 
-  const loading = isEditMode ? loadingUpdate : loadingCreate;
+  const loading = isEditMode ? loadingUpdate || loadingHistorial : loadingCreate;
   const error = isEditMode ? errorUpdate : errorCreate;
   const validationErrors = isEditMode ? validationErrorsUpdate : validationErrorsCreate;
 
   const [inscripcionResult, setInscripcionResult] = useState(null);
   const [paymentRequiredStudentId, setPaymentRequiredStudentId] = useState(null);
+  const [materiasStepInvalid, setMateriasStepInvalid] = useState(false);
   const clearPaymentRequiredDialog = useCallback(() => setPaymentRequiredStudentId(null), []);
 
   const notifySubmitResult = useCallback(
     (result, successMessage, defaultErrorMessage) => {
       if (result?.success) {
+        setMateriasStepInvalid(false);
         showMessage?.('success', successMessage);
         setInscripcionResult(result);
       } else if (result?.error) {
-        const msg =
+        const rawMsg =
           typeof result.error === 'object'
             ? result.error.message || defaultErrorMessage
             : result.error || defaultErrorMessage;
-        showMessage?.('error', msg);
+        const { message: userMsg, field } = resolveInscripcionApiUserMessage(
+          rawMsg,
+          result.errorDetails ?? (typeof result.error === 'object' ? result.error : null),
+        );
+        if (field === 'materiasPorPeriodo') {
+          setMateriasStepInvalid(true);
+        }
+        showMessage?.('error', userMsg);
         setInscripcionResult(null);
       }
     },
@@ -73,6 +85,7 @@ export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getF
 
   const runSubmit = useCallback(
     async ({ navigateOnSuccess, successMessage, defaultErrorMessage, allowSoloHistorialBypass }) => {
+      setMateriasStepInvalid(false);
       const formValues = getFormValues?.() ?? {};
       const studentId = selectedStudent?.id || formValues.student_id;
       const tipoAdmision =
@@ -100,6 +113,26 @@ export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getF
       if (!validation.valid) {
         showMessage?.('error', validation.errorMessage);
         return { success: false, error: validation.errorMessage };
+      }
+
+      if (validation.soloHistorial && isEditMode && inscripcionId && buildPriorHistory) {
+        const priorHistory = buildPriorHistory();
+        if (!Array.isArray(priorHistory) || priorHistory.length === 0) {
+          showMessage?.('error', 'No hay notas de historial previo para guardar.');
+          return { success: false, error: 'Historial previo vacío' };
+        }
+        const result = await saveHistorialPrevio(inscripcionId, priorHistory);
+        if (result?.success) {
+          showMessage?.('success', successMessage);
+          setInscripcionResult(result);
+          if (navigateOnSuccess) {
+            navigate(`/inscripciones/${inscripcionId}`, { replace: true });
+          }
+        } else if (result?.error) {
+          showMessage?.('error', result.error);
+          setInscripcionResult(null);
+        }
+        return result;
       }
 
       const inscripcionData = buildInscripcionPayload({
@@ -156,6 +189,7 @@ export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getF
       historialPrevioHasRows,
       validatePriorHistory,
       buildPriorHistory,
+      saveHistorialPrevio,
       createInscripcion,
       updateInscripcion,
       showMessage,
@@ -201,5 +235,7 @@ export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getF
     inscripcionResult,
     paymentRequiredStudentId,
     clearPaymentRequiredDialog,
+    materiasStepInvalid,
+    setMateriasStepInvalid,
   };
 };

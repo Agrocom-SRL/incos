@@ -1,16 +1,7 @@
 import { body } from 'express-validator';
 
 /**
- * Valida payload para persistir el plan semanal de un paralelo.
- *
- * Acepta cualquiera de estos nombres como array principal:
- * - schedules
- * - schedule
- * - courseSchedules
- *
- * Cada item debe contener:
- * - cursoId (int > 0)
- * - bloques (array) opcional
+ * PUT /paralelos/:id/schedule — body con schedules[] (cursoId = oferta_curso_id).
  */
 export const putParaleloScheduleValidator = [
   body().custom((value) => {
@@ -29,4 +20,3 @@ export const putParaleloScheduleValidator = [
     .toInt(),
   body(['schedules.*.bloques', 'schedule.*.bloques', 'courseSchedules.*.bloques']).optional().isArray(),
 ];
-

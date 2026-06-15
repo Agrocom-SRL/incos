@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
-import { CursoHorario as CursoHorarioModel } from '../../../infrastructure/database/models/curso_horario.js';
+import { AsignacionHorario as AsignacionHorarioModel } from '../../../infrastructure/database/models/asignacion_horario.js';
+import { AsignacionDocente as AsignacionDocenteModel } from '../../../infrastructure/database/models/asignacion_docente.js';
 import { NotFoundError, UnprocessableEntityError, ValidationError } from '../../../domain/errors/index.js';
 
 function normalizeDia(raw) {
@@ -27,30 +29,23 @@ function horaToMinutes(hhmmss) {
 
 /**
  * PUT /api/v1/paralelos/:id/schedule
- *
- * Reemplaza el plan semanal (bloques) del paralelo a nivel maestro (`cursos_horarios`).
- * - Omite aula_id (se setea NULL siempre).
- * - Solo admite bloques que existan en la tabla `horarios` (por día + horaInicio + horaFin, tipo CLASES).
- * - Diferencia creación / actualización / eliminación comparando con el estado actual.
+ * Persiste bloques en asignacion_horarios (vía asignaciones_docentes + oferta_cursos).
  */
 export class PutParaleloScheduleUseCase {
   constructor({
     parallelRepository,
-    courseRepository,
+    courseOfferRepository,
     scheduleRepository,
-    courseScheduleRepository,
+    teacherAssignmentRepository,
     logger,
   }) {
     this.parallelRepository = parallelRepository;
-    this.courseRepository = courseRepository;
+    this.courseOfferRepository = courseOfferRepository;
     this.scheduleRepository = scheduleRepository;
-    this.courseScheduleRepository = courseScheduleRepository;
+    this.teacherAssignmentRepository = teacherAssignmentRepository;
     this.logger = logger;
   }
 
-  /**
-   * @param {{ paraleloId: number, schedules: Array<{ cursoId: number, bloques?: Array<{ dia: string, horaInicio: string, horaFin: string }> }> }} input
-   */
   async execute(input) {
     const paraleloId = Number(input?.paraleloId);
     if (!Number.isFinite(paraleloId) || paraleloId < 1) {
@@ -60,24 +55,44 @@ export class PutParaleloScheduleUseCase {
     const paralelo = await this.parallelRepository.findById(paraleloId);
     if (!paralelo) throw new NotFoundError('Paralelo');
 
+    const pgRows = await sequelize.query(
+      `
+      SELECT pg.id AS paraleloGestionId, pg.gestion_plan_id AS gestionPlanId
+      FROM paralelos_gestion pg
+      INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id AND gp.deleted_at IS NULL
+      INNER JOIN gestiones g ON g.id = gp.gestion_id AND g.deleted_at IS NULL AND g.vigente = TRUE
+      WHERE pg.paralelo_id = :paraleloId
+        AND pg.deleted_at IS NULL
+        AND pg.activo = TRUE
+      ORDER BY pg.id DESC
+      LIMIT 1
+      `,
+      { replacements: { paraleloId }, type: QueryTypes.SELECT }
+    );
+    const pg = pgRows[0];
+    if (!pg?.paraleloGestionId) {
+      throw new NotFoundError('Paralelo en gestión vigente');
+    }
+
+    const gestionPlanId = Number(pg.gestionPlanId);
+    const paraleloGestionId = Number(pg.paraleloGestionId);
+
     const payloadSchedules = Array.isArray(input?.schedules) ? input.schedules : null;
     if (!payloadSchedules) {
       throw new ValidationError('El body debe incluir `schedules` como array');
     }
 
-    // Cursos válidos del paralelo (maestro de oferta)
-    const { courses } = await this.courseRepository.findAll({ parallelId: paraleloId });
-    const cursoIdsAllowed = new Set((courses || []).map((c) => Number(c.id)).filter((n) => Number.isFinite(n)));
+    const ofertas = await this.courseOfferRepository.findEnrichedByParallelManagementId(paraleloGestionId);
+    const ofertaIdsAllowed = new Set(ofertas.map((o) => Number(o.id)).filter((n) => Number.isFinite(n)));
 
-    // Normalizar y validar bloques -> (cursoId, horarioId, ordenSecuencia)
-    const desiredByCurso = new Map(); // cursoId -> Array<{ horarioId, dia, startMinutes, ordenSecuencia }>
-    const invalidCursos = [];
+    const desiredByOferta = new Map();
+    const invalidOfertas = [];
     const invalidBloques = [];
 
     for (const c of payloadSchedules) {
-      const cursoId = Number(c?.cursoId);
-      if (!Number.isFinite(cursoId) || cursoId < 1 || !cursoIdsAllowed.has(cursoId)) {
-        invalidCursos.push(c?.cursoId);
+      const ofertaCursoId = Number(c?.cursoId);
+      if (!Number.isFinite(ofertaCursoId) || ofertaCursoId < 1 || !ofertaIdsAllowed.has(ofertaCursoId)) {
+        invalidOfertas.push(c?.cursoId);
         continue;
       }
 
@@ -89,17 +104,16 @@ export class PutParaleloScheduleUseCase {
         const horaInicio = normalizeHora(b?.horaInicio);
         const horaFin = normalizeHora(b?.horaFin);
         if (!dia || !horaInicio || !horaFin) {
-          invalidBloques.push({ cursoId, dia: b?.dia, horaInicio: b?.horaInicio, horaFin: b?.horaFin });
+          invalidBloques.push({ cursoId: ofertaCursoId, dia: b?.dia, horaInicio: b?.horaInicio, horaFin: b?.horaFin });
           continue;
         }
         const a = horaToMinutes(horaInicio);
         const z = horaToMinutes(horaFin);
         if (a == null || z == null || z <= a) {
-          invalidBloques.push({ cursoId, dia, horaInicio, horaFin });
+          invalidBloques.push({ cursoId: ofertaCursoId, dia, horaInicio, horaFin });
           continue;
         }
 
-        // Debe existir en `horarios` (semilla / catálogo)
         const horario = await this.scheduleRepository.findBy({
           day: dia,
           startTime: horaInicio,
@@ -107,7 +121,7 @@ export class PutParaleloScheduleUseCase {
           scheduleType: 'CLASES',
         });
         if (!horario?.id) {
-          invalidBloques.push({ cursoId, dia, horaInicio, horaFin, reason: 'HORARIO_NO_EXISTE' });
+          invalidBloques.push({ cursoId: ofertaCursoId, dia, horaInicio, horaFin, reason: 'HORARIO_NO_EXISTE' });
           continue;
         }
 
@@ -118,73 +132,99 @@ export class PutParaleloScheduleUseCase {
         });
       }
 
-      // Orden determinístico: día + horaInicio
       normalized.sort((x, y) => {
         if (x.dia !== y.dia) return x.dia.localeCompare(y.dia);
         return x.startMinutes - y.startMinutes;
       });
       const withOrder = normalized.map((b, idx) => ({ ...b, ordenSecuencia: idx + 1 }));
-      desiredByCurso.set(cursoId, withOrder);
+      desiredByOferta.set(ofertaCursoId, withOrder);
     }
 
-    if (invalidCursos.length) {
-      throw new UnprocessableEntityError('Hay cursos inválidos para este paralelo', [
-        { field: 'schedules[].cursoId', invalid: invalidCursos },
+    if (invalidOfertas.length) {
+      throw new UnprocessableEntityError('Hay ofertas inválidas para este paralelo', [
+        { field: 'schedules[].cursoId', invalid: invalidOfertas },
       ]);
     }
     if (invalidBloques.length) {
       throw new UnprocessableEntityError(
-        'Hay bloques inválidos. Asegúrese de usar horarios existentes del catálogo (día + horaInicio + horaFin).',
-        invalidBloques,
+        'Hay bloques inválidos. Use horarios del catálogo (día + horaInicio + horaFin).',
+        invalidBloques
       );
     }
 
-    const cursoIds = [...desiredByCurso.keys()];
+    const ofertaCursoIds = [...desiredByOferta.keys()];
 
-    // Estado actual (solo los cursos en el payload)
-    const existingRows = await CursoHorarioModel.findAll({
-      where: { cursoId: cursoIds },
-      attributes: ['id', 'cursoId', 'horarioId', 'ordenSecuencia', 'aulaId'],
+    const asignacionByOferta = new Map();
+    for (const ofertaCursoId of ofertaCursoIds) {
+      let asignacion = await AsignacionDocenteModel.findOne({
+        where: {
+          ofertaCursoId,
+          gestionPlanId,
+          vigente: true,
+          deletedAt: null,
+        },
+        order: [['id', 'DESC']],
+      });
+      if (!asignacion) {
+        asignacion = await AsignacionDocenteModel.create({
+          gestionPlanId,
+          ofertaCursoId,
+          docenteId: null,
+          vigente: true,
+          activo: true,
+        });
+      }
+      asignacionByOferta.set(ofertaCursoId, Number(asignacion.id));
+    }
+
+    const asignacionIds = [...asignacionByOferta.values()];
+    const existingRows = await AsignacionHorarioModel.findAll({
+      where: { asignacionDocenteId: asignacionIds },
+      attributes: ['id', 'asignacionDocenteId', 'horarioId', 'ordenSecuencia', 'aulaId'],
     });
 
-    const existingByKey = new Map(); // key cursoId-horarioId -> row
+    const existingByKey = new Map();
     for (const r of existingRows) {
-      existingByKey.set(`${r.cursoId}-${r.horarioId}`, r);
+      const ofertaId = [...asignacionByOferta.entries()].find(
+        ([, aid]) => aid === Number(r.asignacionDocenteId)
+      )?.[0];
+      if (ofertaId != null) {
+        existingByKey.set(`${ofertaId}-${r.horarioId}`, r);
+      }
     }
 
     const toCreate = [];
     const toUpdate = [];
     const toDeleteIds = [];
 
-    // Detect create/update
-    for (const [cursoId, bloques] of desiredByCurso.entries()) {
+    for (const [ofertaCursoId, bloques] of desiredByOferta.entries()) {
+      const asignacionDocenteId = asignacionByOferta.get(ofertaCursoId);
       const desiredKeys = new Set();
+
       for (const b of bloques) {
-        const key = `${cursoId}-${b.horarioId}`;
+        const key = `${ofertaCursoId}-${b.horarioId}`;
         desiredKeys.add(key);
         const ex = existingByKey.get(key);
         if (!ex) {
           toCreate.push({
-            cursoId,
+            asignacionDocenteId,
             horarioId: b.horarioId,
             aulaId: null,
             ordenSecuencia: b.ordenSecuencia,
             activo: true,
           });
         } else {
-          const nextOrden = Number(b.ordenSecuencia);
-          const needOrden = Number(ex.ordenSecuencia) !== nextOrden;
+          const needOrden = Number(ex.ordenSecuencia) !== Number(b.ordenSecuencia);
           const needAulaNull = ex.aulaId != null;
           if (needOrden || needAulaNull) {
-            toUpdate.push({ id: ex.id, ordenSecuencia: nextOrden, aulaId: null });
+            toUpdate.push({ id: ex.id, ordenSecuencia: b.ordenSecuencia, aulaId: null });
           }
         }
       }
 
-      // Detect deletions for this curso
       for (const ex of existingRows) {
-        if (Number(ex.cursoId) !== Number(cursoId)) continue;
-        const key = `${ex.cursoId}-${ex.horarioId}`;
+        if (Number(ex.asignacionDocenteId) !== Number(asignacionDocenteId)) continue;
+        const key = `${ofertaCursoId}-${ex.horarioId}`;
         if (!desiredKeys.has(key)) {
           toDeleteIds.push(ex.id);
         }
@@ -192,19 +232,16 @@ export class PutParaleloScheduleUseCase {
     }
 
     const result = await sequelize.transaction(async (t) => {
-      // Deletes
       if (toDeleteIds.length) {
-        await CursoHorarioModel.destroy({ where: { id: toDeleteIds }, transaction: t });
+        await AsignacionHorarioModel.destroy({ where: { id: toDeleteIds }, transaction: t });
       }
-      // Creates
       if (toCreate.length) {
-        await CursoHorarioModel.bulkCreate(toCreate, { transaction: t });
+        await AsignacionHorarioModel.bulkCreate(toCreate, { transaction: t });
       }
-      // Updates (orden / aula)
       for (const u of toUpdate) {
-        await CursoHorarioModel.update(
+        await AsignacionHorarioModel.update(
           { ordenSecuencia: u.ordenSecuencia, aulaId: u.aulaId },
-          { where: { id: u.id }, transaction: t },
+          { where: { id: u.id }, transaction: t }
         );
       }
       return {
@@ -215,11 +252,7 @@ export class PutParaleloScheduleUseCase {
       };
     });
 
-    this.logger.info('[Académico] Plan semanal persistido (cursos_horarios)', result);
-
-    // Respuesta útil para UI: resumen + el schedule actualizado via query del use case GET
-    // (el controller puede decidir si rehidrata con GET; por ahora devolvemos el resumen)
+    this.logger.info('[Académico] Plan semanal persistido (asignacion_horarios)', result);
     return { persistencia: result };
   }
 }
-

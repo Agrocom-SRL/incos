@@ -1,6 +1,6 @@
 import { BaseEntity } from './BaseEntity.js';
 import { EXPEDICIONES_CI_VALUES, GENEROS_VALUES } from '../constants/index.js';
-import { NIVELES_ACADEMICOS_PERSONAL_VALUES, NIVELES_ACADEMICOS, TIPOS_CONTRATO_DOCENTE_VALUES, TIPOS_CONTRATO_DOCENTE, ESTADOS_LABORALES_VALUES, ESTADOS_LABORALES } from '../constants/docentes.constants.js';
+import { NIVELES_ACADEMICOS_PERSONAL_VALUES, NIVELES_ACADEMICOS, TIPOS_CONTRATO_DOCENTE_VALUES, TIPOS_CONTRATO_DOCENTE, ESTADOS_LABORALES_VALUES, ESTADOS_LABORALES, DOCENTE_COLOR_HEX_REGEX } from '../constants/docentes.constants.js';
 
 /**
  * Entidad de Dominio: Teacher
@@ -107,6 +107,15 @@ export class Teacher extends BaseEntity {
     if (data.hasOwnProperty('observations')) {
       this.observations = data.observations;
     }
+    if (data.hasOwnProperty('colorHex')) {
+      this.colorHex = data.colorHex;
+    }
+    if (data.hasOwnProperty('maxHorasSemana')) {
+      this.maxHorasSemana = data.maxHorasSemana;
+    }
+    if (data.hasOwnProperty('maxHorasMes')) {
+      this.maxHorasMes = data.maxHorasMes;
+    }
   }
 
   /**
@@ -173,6 +182,17 @@ export class Teacher extends BaseEntity {
   isValidLaborState() {
     if (!this.laborState) return false;
     return ESTADOS_LABORALES_VALUES.includes(this.laborState);
+  }
+
+  /**
+   * Valida formato #RRGGBB del color de horario.
+   * @returns {boolean}
+   */
+  isValidColorHex() {
+    if (this.colorHex === null || this.colorHex === undefined || this.colorHex === '') {
+      return true;
+    }
+    return DOCENTE_COLOR_HEX_REGEX.test(String(this.colorHex).trim());
   }
 
   /**
@@ -264,6 +284,15 @@ export class Teacher extends BaseEntity {
     }
     if (this.hasOwnProperty('observations')) {
       plainObject.observations = this.observations;
+    }
+    if (this.hasOwnProperty('colorHex')) {
+      plainObject.colorHex = this.colorHex;
+    }
+    if (this.hasOwnProperty('maxHorasSemana')) {
+      plainObject.maxHorasSemana = this.maxHorasSemana;
+    }
+    if (this.hasOwnProperty('maxHorasMes')) {
+      plainObject.maxHorasMes = this.maxHorasMes;
     }
 
     return plainObject;

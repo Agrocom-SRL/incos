@@ -20,13 +20,23 @@ export class BimesterEvaluationRepository extends BaseRepository {
         const where = {};
 
         if (
-            filters.subjectEnrollmentBimesterIds &&
-            Array.isArray(filters.subjectEnrollmentBimesterIds) &&
-            filters.subjectEnrollmentBimesterIds.length > 0
+            filters.teacherAssignmentIds &&
+            Array.isArray(filters.teacherAssignmentIds) &&
+            filters.teacherAssignmentIds.length > 0
         ) {
-            where.bimestreMatriculaId = { [Op.in]: filters.subjectEnrollmentBimesterIds };
-        } else if (filters.subjectEnrollmentBimesterId) {
-            where.bimestreMatriculaId = filters.subjectEnrollmentBimesterId;
+            where.asignacionDocenteId = { [Op.in]: filters.teacherAssignmentIds };
+        } else if (filters.teacherAssignmentId) {
+            where.asignacionDocenteId = filters.teacherAssignmentId;
+        }
+
+        if (
+            filters.academicPeriodIds &&
+            Array.isArray(filters.academicPeriodIds) &&
+            filters.academicPeriodIds.length > 0
+        ) {
+            where.periodoAcademicoId = { [Op.in]: filters.academicPeriodIds };
+        } else if (filters.academicPeriodId) {
+            where.periodoAcademicoId = filters.academicPeriodId;
         }
 
         if (
@@ -45,15 +55,12 @@ export class BimesterEvaluationRepository extends BaseRepository {
         if (filters.gradesClosed !== undefined) {
             where.notasCerradas = filters.gradesClosed;
         }
-        if (filters.attempt !== undefined) {
-            where.intento = filters.attempt;
-        }
 
         return where;
     }
 
     getSearchFields() {
-        return ['nombreEvaluacion', 'descripcion', 'observaciones'];
+        return ['nombreEvaluacion', 'descripcion'];
     }
 
     getDefaultSort() {

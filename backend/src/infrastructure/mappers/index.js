@@ -53,8 +53,7 @@ export { PrerequisiteMapper } from './PrerequisiteMapper.js';
 export { ParallelMapper } from './ParallelMapper.js';
 export { ClassroomMapper } from './ClassroomMapper.js';
 export { ScheduleMapper } from './ScheduleMapper.js';
-export { CourseMapper } from './CourseMapper.js';
-export { CourseScheduleMapper } from './CourseScheduleMapper.js';
+export { AsignacionHorarioMapper } from './AsignacionHorarioMapper.js';
 export { TeacherAssignmentMapper } from './TeacherAssignmentMapper.js';
 
 // ============================================
@@ -84,7 +83,7 @@ export { EvaluationTypeMapper } from './EvaluationTypeMapper.js';
 export { EvaluationConfigurationMapper } from './EvaluationConfigurationMapper.js';
 export { SubjectEnrollmentBimesterMapper } from './SubjectEnrollmentBimesterMapper.js';
 export { BimesterEvaluationMapper } from './BimesterEvaluationMapper.js';
-export { FinalEvaluationMapper } from './FinalEvaluationMapper.js';
+export { BimesterEvaluationGradeMapper } from './BimesterEvaluationGradeMapper.js';
 
 // ============================================
 // NIVELACIONES

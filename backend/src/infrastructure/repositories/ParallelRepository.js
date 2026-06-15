@@ -169,25 +169,29 @@ export class ParallelRepository extends BaseRepository {
 
     const query = `
       SELECT
-        paralelo_id,
-        paralelo_nombre,
-        turno,
-        carrera_id,
-        carrera_nombre,
-        carrera_color_hex,
-        periodo_nombre,
-        asignaturas_requeridas,
-        cursos_creados,
-        cursos_con_horario,
-        cursos_sin_docente,
-        bloques_sin_aula,
-        conflictos_solape_mismo_bloque,
-        conflictos_aula,
-        conflicto_docente_horario,
-        tablero_grupo
-      FROM vista_horarios_paralelo_estado
-      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-      ORDER BY carrera_nombre ASC, periodo_nombre ASC, paralelo_nombre ASC
+        e.paralelo_gestion_id,
+        e.paralelo_id,
+        e.paralelo_nombre,
+        e.turno,
+        e.carrera_id,
+        e.carrera_nombre,
+        e.carrera_color_hex,
+        e.periodo_nombre,
+        e.paralelo_gestion_estado,
+        e.paralelo_aula_id,
+        e.asignaturas_requeridas,
+        e.cursos_creados,
+        e.cursos_con_horario,
+        e.ofertas_cobertura_incompleta,
+        e.cursos_sin_docente,
+        e.bloques_sin_aula,
+        e.conflictos_solape_mismo_bloque,
+        e.conflictos_aula,
+        e.conflicto_docente_horario,
+        e.tablero_grupo
+      FROM vista_horarios_paralelo_estado e
+      ${where.length ? `WHERE ${where.map((w) => w.replace(/^(\w+)/, 'e.$1')).join(' AND ')}` : ''}
+      ORDER BY e.carrera_nombre ASC, e.periodo_nombre ASC, e.paralelo_nombre ASC
     `;
 
     return sequelize.query(query, {
@@ -300,9 +304,15 @@ export class ParallelRepository extends BaseRepository {
   }
 
   async obtenerDocentesConflictosDetalleDashboard() {
-    // Vista: 92-vista-dashboard-docentes-conflictos-detalle.sql
+    // Vista: 96-vista-dashboard-docentes-conflictos-detalle.sql
     return sequelize.query(
-      `SELECT docente_id, docente_nombre, detalle_linea
+      `SELECT
+         docente_id,
+         docente_nombre,
+         detalle_linea,
+         paralelo_gestion_id,
+         oferta_curso_id,
+         tipo_conflicto
        FROM vista_dashboard_docentes_conflictos_detalle
        ORDER BY docente_nombre ASC, detalle_linea ASC`,
       { type: QueryTypes.SELECT }
@@ -331,6 +341,8 @@ export class ParallelRepository extends BaseRepository {
 
     const query = `
       SELECT
+        paralelo_gestion_id,
+        paralelo_gestion_estado,
         paralelo_id,
         paralelo_nombre,
         paralelo_turno,
@@ -345,6 +357,7 @@ export class ParallelRepository extends BaseRepository {
         materia_id,
         materia_sigla,
         materia_nombre,
+        horas_plan,
         docente_nombre,
         curso_horario_id,
         horario_id,
@@ -371,5 +384,39 @@ export class ParallelRepository extends BaseRepository {
       replacements,
       type: QueryTypes.SELECT,
     });
+  }
+
+  /**
+   * Métricas del tablero (vista 87) por paralelo_gestion_id — publicación / validaciones.
+   * @param {number[]} paraleloGestionIds
+   */
+  async obtenerEstadoParaleloGestionPorIds(paraleloGestionIds = []) {
+    const ids = [...new Set(
+      (paraleloGestionIds || [])
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id) && id > 0),
+    )];
+    if (!ids.length) return new Map();
+
+    const rows = await sequelize.query(
+      `SELECT
+         e.paralelo_gestion_id,
+         e.paralelo_aula_id,
+         e.asignaturas_requeridas,
+         e.cursos_creados,
+         e.cursos_con_horario,
+         e.ofertas_cobertura_incompleta,
+         e.cursos_sin_docente,
+         e.bloques_sin_aula,
+         e.conflictos_solape_mismo_bloque,
+         e.conflictos_aula,
+         e.conflicto_docente_horario,
+         e.tablero_grupo
+       FROM vista_horarios_paralelo_estado e
+       WHERE e.paralelo_gestion_id IN (:ids)`,
+      { replacements: { ids }, type: QueryTypes.SELECT },
+    );
+
+    return new Map(rows.map((r) => [Number(r.paralelo_gestion_id), r]));
   }
 }

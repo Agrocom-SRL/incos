@@ -6,24 +6,31 @@ import {
     resolveCarreraDashboardColor,
 } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
+import { resolveSinHorariosCta } from '@application-institucional/horarios/utils/resolveSinHorariosCta';
+import {
+    labelParaleloSinDocentesCta,
+    permisoParaleloSinDocentesCta,
+} from '@application-institucional/horarios/config/paths';
 import { StatusTag } from '../atoms';
 
 const ctaByBucket = {
     sin_horarios: 'Completar plan',
     sin_docentes: 'Asignar docentes',
-    sin_aulas: 'Ir a aulas',
+    sin_aulas: 'Asignar aula',
     completo: 'Ver horario',
+};
+
+const actionPermisoByBucket = {
+    sin_horarios: { permiso: 'institucional.horario.armado', accion: 'EDITAR' },
+    sin_docentes: { permiso: 'institucional.oferta.paralelo-gestion', accion: 'DETALLE' },
+    sin_aulas: { permiso: 'institucional.oferta.paralelo-gestion', accion: 'DETALLE' },
+    completo: { permiso: 'institucional.horario.armado', accion: 'EDITAR' },
 };
 
 const ctaLabelForRow = (row) => {
     const bucket = row.boardBucket ?? resolveHorariosBoardBucket(row);
-    if (bucket === 'sin_horarios') {
-        const cursosTotales = Number(row.cursosTotales) || 0;
-        const cursosCreados = Number(row.cursosCreados) || 0;
-        const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
-        if (faltaCursos > 0) return 'Completar cursos';
-        return 'Asignar horarios';
-    }
+    if (bucket === 'sin_horarios') return resolveSinHorariosCta(row).label;
+    if (bucket === 'sin_docentes') return labelParaleloSinDocentesCta(row);
     return ctaByBucket[bucket] || 'Abrir';
 };
 
@@ -95,20 +102,27 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) =
             key: 'accion',
             align: 'right',
             width: 260,
-            render: (_, row) => (
-                <Space size={8} wrap>
-                    <ActionButton
-                        permiso="institucional.horario.armado"
-                        accion="EDITAR"
-                        size="small"
-                        variant={actionVariantForBucket(row.boardBucket ?? resolveHorariosBoardBucket(row))}
-                        className="horarios-paralelos-table__action-btn"
-                        onClick={() => onOpenArmado(row)}
-                    >
-                        {ctaLabelForRow(row)}
-                    </ActionButton>
-                </Space>
-            ),
+            render: (_, row) => {
+                const bucket = row.boardBucket ?? resolveHorariosBoardBucket(row);
+                const actionPermiso =
+                    bucket === 'sin_docentes'
+                        ? permisoParaleloSinDocentesCta(row)
+                        : (actionPermisoByBucket[bucket] ?? actionPermisoByBucket.sin_horarios);
+                return (
+                    <Space size={8} wrap>
+                        <ActionButton
+                            permiso={actionPermiso.permiso}
+                            accion={actionPermiso.accion}
+                            size="small"
+                            variant={actionVariantForBucket(bucket)}
+                            className="horarios-paralelos-table__action-btn"
+                            onClick={() => onOpenArmado(row)}
+                        >
+                            {ctaLabelForRow(row)}
+                        </ActionButton>
+                    </Space>
+                );
+            },
         },
     ];
 

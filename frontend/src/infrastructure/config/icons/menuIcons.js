@@ -44,7 +44,6 @@ import {
     FileSearchOutlined,
     EyeOutlined,
     // Supervisión
-    ScheduleOutlined,
     FormOutlined,
     BarChartOutlined,
     // Horarios
@@ -101,14 +100,12 @@ export const menuIconMap = {
     'DOC': UsergroupAddOutlined,
     'FIN': DollarOutlined,
     'INST': HomeOutlined,
-    'REP': LineChartOutlined,
     'SEG': SafetyOutlined,
 
     // Institucional - Nivel 1
     'INST-ROOT': HomeOutlined,
     'INST-GESTION-ACTUAL': CalendarOutlined,
     'INST-GESTIONES-PASADAS': UnorderedListOutlined,
-    'INST-CRONOGRAMAS': ScheduleOutlined,
     'INST-OFERTA-ACADEMICA': BookOutlined,
     'INST-HORARIOS': CalendarOutlined,
     'INST-OFERTA-MAT-INSCRIBIR': BookOutlined,
@@ -144,7 +141,8 @@ export const menuIconMap = {
     'CFG-IDIOMAS': GlobalOutlined,
     'CFG-PAGOS': DollarOutlined,
     'CFG-CONVENIOS': BankOutlined,
-    // Historial de Actividades
+    // Actividades (catálogo CFG; antes historial-actividades)
+    'CFG-ACTIVIDADES': HistoryOutlined,
     'CFG-HISTORIAL-ACTIVIDADES': HistoryOutlined,
 
     // Matrícula (sidebar v1.2)
@@ -185,6 +183,13 @@ export const menuIconMap = {
 
     // Académico — Calificaciones
     'ACA-CAL': CheckCircleOutlined,
+    'ACA-CAL-POLITICA': FileTextOutlined,
+    'ACA-CAL-GESTION-BIMESTRES': DashboardOutlined,
+    'ACA-CAL-MIS-CURSOS': TeamOutlined,
+    'ACA-CAL-DOCENTES-CUADERNO': EditOutlined,
+    'ACA-CAL-CUADERNO': EditOutlined,
+    'ACA-CAL-PLAN': FileTextOutlined,
+    'ACA-CAL-NOTAS': EditOutlined,
     'ACA-CAL-REGISTRAR': EditOutlined,
     'ACA-CAL-REG-PARCIAL': FileTextOutlined,
     'ACA-CAL-REG-PRACTICO': EditOutlined,
@@ -192,6 +197,16 @@ export const menuIconMap = {
     'ACA-CAL-CURSO': TableOutlined,
     'ACA-CAL-PERIODO': FilePdfOutlined,
     'ACA-CAL-MODIFICAR': EditOutlined,
+
+    // Académico — Asistencia (ítem ACA-ASI, gemelo de Calificaciones)
+    'ACA-ASI': SolutionOutlined,
+    'ACA-ASI-MIS-CURSOS': TeamOutlined,
+    'ACA-ASI-PLANILLA': EditOutlined,
+    'ACA-ASI-CND': CalendarOutlined,
+    'ACA-ASI-CONS': DashboardOutlined,
+    'ACA-ASI-LIC': FileTextOutlined,
+    'ACA-ASI-LIC-SOL': EditOutlined,
+    'ACA-ASI-LIC-APR': CheckCircleOutlined,
 
     // Académico — Nivelaciones
     'ACA-NIV': SyncOutlined,

@@ -139,6 +139,26 @@ export const Docente = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    colorHex: {
+      type: DataTypes.STRING(7),
+      field: 'color_hex',
+      allowNull: true,
+      comment: 'Color exclusivo del docente para visualización en horarios.',
+    },
+    maxHorasSemana: {
+      type: DataTypes.INTEGER,
+      field: 'max_horas_semana',
+      allowNull: true,
+      defaultValue: 20,
+      comment: 'Carga máxima semanal según contrato.',
+    },
+    maxHorasMes: {
+      type: DataTypes.INTEGER,
+      field: 'max_horas_mes',
+      allowNull: true,
+      defaultValue: 80,
+      comment: 'Carga máxima mensual según contrato.',
+    },
   },
   {
     ...baseModelOptions,

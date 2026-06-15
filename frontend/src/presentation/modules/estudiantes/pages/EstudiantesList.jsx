@@ -42,6 +42,7 @@ const EstudiantesList = () => {
         setSearchText,
         refetch,
         deleteStudent,
+        tablePagination,
     } = useStudentListContext();
 
     // Obtener contexto de pagos para verificar si los estudiantes ya tienen pagos
@@ -94,8 +95,7 @@ const EstudiantesList = () => {
                             <ActionButton
                                 permiso="matricula.admision.ver"
                                 accion="EXPORTAR"
-                                variant="success"
-                                buttonStyle="filled"
+                                variant="info"
                                 icon={<FileExcelOutlined />}
                                 loading={exportingExcel}
                                 onClick={handleExportarEstadisticaInscritos}
@@ -128,12 +128,7 @@ const EstudiantesList = () => {
                 columns={tableColumns}
                 rowKey={(record) => record.id || record.ciCompleto || Math.random()}
                 tableClassName="data-table--estudiantes"
-                pagination={{
-                    pageSize: 10,
-                    showSizeChanger: true,
-                    showTotal: (total) => `Total: ${total} estudiantes`,
-                    pageSizeOptions: ['10', '20', '50', '100'],
-                }}
+                pagination={tablePagination}
                 defaultSort={{
                     field: 'createdAt',
                     order: 'descend',

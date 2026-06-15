@@ -1,94 +1,113 @@
 /**
- * Provider: InscripcionesListProvider
- * 
- * Single Responsibility: Proporcionar estado compartido SOLO para la feature de lista de inscripciones
- * 
- * Clean Architecture:
- * - Application Layer: Provider específico para la feature de listado
- * - Usa datos compartidos de InscripcionesProvider (estado en memoria)
- * - Solo maneja lógica de UI (búsqueda, filtrado, formateo)
- * 
- * Ventajas:
- * - Aislamiento de errores: errores en registro no afectan la lista
- * - Performance: usa estado compartido en memoria (no recarga desde BD)
- * - Separación de responsabilidades: datos compartidos, UI específica
+ * Provider: listado de matrículas — paginación y búsqueda en servidor (sin cargar todo en RAM).
  */
 
-import { useMemo } from 'react';
-import { useInscripcionesContext } from '@application-inscripciones/hooks';
-import { useTableData } from '@molecules';
+import { useCallback, useMemo } from 'react';
+import { useInscripcionesApi } from '@application-inscripciones/hooks/api/useInscripcionesApi';
+import { useDeleteInscripcion } from '@application-inscripciones/hooks/api/useDeleteInscripcion';
+import { useServerPaginatedList } from '@application/utils';
 import { InscripcionesListContext } from '@application-inscripciones/context/InscripcionesListContext';
 import { useMatriculaListFilters } from '@application-inscripciones/hooks/state/matricula-list/useMatriculaListFilters';
 
 export const InscripcionesListProvider = ({ children }) => {
-    // Obtener datos compartidos del estado en memoria
-    const { inscripciones: inscripcionesData, loading, error, refetch } = useInscripcionesContext();
+  const { fetch: fetchInscripciones } = useInscripcionesApi();
+  const { deleteInscripcion: deleteInscripcionApi, loading: deleting } = useDeleteInscripcion();
 
-    const {
-        filters,
-        setFilter,
-        clearFilters,
-        hasActiveFilters,
-        filterOptions,
-        paralelosForCarrera,
-        filteredRows: criteriaFilteredRows,
-        tipoInscripcionOptions,
-        historialEstadoOptions,
-    } = useMatriculaListFilters(inscripcionesData);
+  const {
+    filters,
+    setFilter,
+    clearFilters,
+    hasActiveFilters,
+    filterOptions,
+    paralelosForCarrera,
+    tipoInscripcionOptions,
+    historialEstadoOptions,
+  } = useMatriculaListFilters([]);
 
-    // Función para obtener los campos de búsqueda de una inscripción
-    const getSearchFields = useMemo(
-        () => (inscripcion) => {
-            // Priorizar campos enriquecidos del backend (estudiante, carrera)
-            const student = inscripcion.estudiante || inscripcion.student || inscripcion.enrollment?.student;
-            const carrera = inscripcion.carrera || inscripcion.enrollment?.carrera;
-            const gestion = inscripcion.gestion || inscripcion.enrollment?.gestion;
-            const paralelo = inscripcion.paralelo || inscripcion.enrollment?.paralelo;
-            const periodo = inscripcion.periodo || inscripcion.enrollment?.periodo;
-            return [
-                student?.nombreCompleto || student?.nombre || '',
-                student?.codigoEstudiante || '',
-                student?.ci || '',
-                inscripcion.codigo || inscripcion.enrollment?.codigo || '',
-                carrera?.nombre || carrera?.codigo || '',
-                gestion?.nombre || gestion?.anio || '',
-                inscripcion.anioCarrera || inscripcion.enrollment?.anioCarrera || '',
-                paralelo?.nombre || '',
-                paralelo?.turno || '',
-                periodo?.nombre || '',
-                inscripcion.tipoInscripcion || '',
-            ];
-        },
-        []
-    );
+  const listQueryExtra = useMemo(
+    () => ({
+      carrera_id: filters.carreraId ?? undefined,
+      paralelo_id: filters.paraleloId ?? undefined,
+      periodo_id: filters.periodoId ?? undefined,
+      tipo_inscripcion: filters.tipoInscripcion ?? undefined,
+      historial_previo_estado: filters.historialPrevioEstado ?? undefined,
+    }),
+    [filters],
+  );
 
-    // Hook genérico para manejo de búsqueda y filtrado (solo lógica de UI)
-    const { searchText, setSearchText, filteredData } = useTableData(
-        criteriaFilteredRows,
-        getSearchFields
-    );
+  const {
+    rows,
+    loading,
+    error,
+    searchText,
+    setSearchText,
+    tablePagination,
+    refetch,
+    pagination,
+  } = useServerPaginatedList({
+    fetch: fetchInscripciones,
+    extra: listQueryExtra,
+    buildRequest: ({ page, limit, search, extra }) => ({
+      params: {
+        page,
+        limit,
+        search: search || undefined,
+        sort: 'fecha_inscripcion:DESC',
+        ...extra,
+      },
+    }),
+  });
 
-    const value = {
-        inscripciones: filteredData,
-        loading,
-        error,
-        refetch,
-        searchText,
-        setSearchText,
-        listFilters: filters,
-        setListFilter: setFilter,
-        clearListFilters: clearFilters,
-        hasActiveListFilters: hasActiveFilters,
-        listFilterOptions: filterOptions,
-        paralelosForCarrera,
-        tipoInscripcionOptions,
-        historialEstadoOptions,
-        totalBeforeFilters: inscripcionesData?.length ?? 0,
-    };
+  const deleteInscripcion = useCallback(
+    async (inscripcionId) => {
+      const result = await deleteInscripcionApi(inscripcionId);
+      if (result.success) await refetch();
+      return result;
+    },
+    [deleteInscripcionApi, refetch],
+  );
 
-    return (
-        <InscripcionesListContext.Provider value={value}>
-            {children}
-        </InscripcionesListContext.Provider>
-    );
+  const value = useMemo(
+    () => ({
+      inscripciones: rows,
+      loading: loading || deleting,
+      error,
+      refetch,
+      deleteInscripcion,
+      searchText,
+      setSearchText,
+      tablePagination,
+      listFilters: filters,
+      setListFilter: setFilter,
+      clearListFilters: clearFilters,
+      hasActiveListFilters: hasActiveFilters,
+      listFilterOptions: filterOptions,
+      paralelosForCarrera,
+      tipoInscripcionOptions,
+      historialEstadoOptions,
+      totalBeforeFilters: pagination.total,
+    }),
+    [
+      rows,
+      loading,
+      deleting,
+      error,
+      refetch,
+      deleteInscripcion,
+      searchText,
+      setSearchText,
+      tablePagination,
+      filters,
+      setFilter,
+      clearFilters,
+      hasActiveFilters,
+      filterOptions,
+      paralelosForCarrera,
+      tipoInscripcionOptions,
+      historialEstadoOptions,
+      pagination.total,
+    ],
+  );
+
+  return <InscripcionesListContext.Provider value={value}>{children}</InscripcionesListContext.Provider>;
 };

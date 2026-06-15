@@ -1,3 +1,5 @@
+import { resolveInscripcionApiUserMessage } from '@application-inscripciones/utils/inscripcionApiErrors';
+
 /**
  * Helper para manejar respuestas y errores del API
  * 
@@ -39,7 +41,10 @@ function appendValidationDetailsToMessage(baseMessage, errorData) {
     if (d == null) return null;
     if (typeof d === 'string') return `• ${d}`;
     if (typeof d !== 'object') return `• ${String(d)}`;
-    const { cursoId, dia, horaInicio, horaFin, reason, field, invalid } = d;
+    const { cursoId, dia, horaInicio, horaFin, reason, field, invalid, message } = d;
+    if (field != null && message != null) {
+      return `• ${field}: ${message}`;
+    }
     if (field != null && invalid != null) {
       return `• ${field}: ${Array.isArray(invalid) ? invalid.join(', ') : String(invalid)}`;
     }
@@ -135,10 +140,12 @@ export function handleErrorResponse(error, defaultMessage = 'Error en la petici�
         ? appendValidationDetailsToMessage(errorMessage, errorData)
         : errorMessage;
 
+    const { message: safeMessage } = resolveInscripcionApiUserMessage(withDetails, errorData);
+
     // Retornar objeto con error como string y opcionalmente el objeto completo para casos especiales
     return {
       success: false,
-      error: withDetails,
+      error: safeMessage,
       errorDetails: typeof errorData === 'object' ? errorData : null, // Objeto completo opcional
     };
   }

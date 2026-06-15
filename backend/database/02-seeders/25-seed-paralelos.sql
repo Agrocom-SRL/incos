@@ -39,7 +39,7 @@ INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) V
 -- PRIMER AÑO (periodo_id = 4)
 INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) VALUES
 (5, 2, 4, 'PRIMERO A', 'TARDE', 'Paralelo A de Primer Año - Administración de Empresas - Turno Tarde'),
-(6, 2, 4, 'PRIMERO B', 'NOCHE', 'Paralelo B de Primer Año - Administración de Empresas - Turno Noche'),
+(6, 2, 4, 'PRIMERO B', 'TARDE', 'Paralelo B de Primer Año - Administración de Empresas - Turno Tarde'),
 (7, 2, 4, 'PRIMERO C', 'NOCHE', 'Paralelo C de Primer Año - Administración de Empresas - Turno Noche');
 
 -- SEGUNDO AÑO (periodo_id = 5)

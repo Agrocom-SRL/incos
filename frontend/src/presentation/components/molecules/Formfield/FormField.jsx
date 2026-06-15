@@ -30,9 +30,19 @@ import { Form } from 'antd';
 import { useFormField } from './hooks/useFormField';
 import { useFieldRenderer } from './hooks/useFieldRenderer';
 import { labelCol, wrapperCol } from './utils/formLayout';
+import { fileListFromUploadEvent } from './components/FormImageUploadDragger';
 import { FieldInput } from '@atoms';
 
-const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = false }) => {
+const FormField = ({
+  field,
+  form,
+  resolveOptions,
+  minAge = null,
+  readOnly = false,
+  labelLayout = 'horizontal',
+}) => {
+  const isVertical = labelLayout === 'vertical' || field.labelLayout === 'vertical';
+  const layoutProps = isVertical ? {} : { labelCol, wrapperCol };
   // Hook que compone toda la lógica del campo
   const { fieldName, disabled, selectOptions, rules, minAge: fieldMinAge } = useFormField({
     field,
@@ -75,8 +85,7 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     return (
       <Form.Item
         label={field.label}
-        labelCol={labelCol}
-        wrapperCol={wrapperCol}
+        {...layoutProps}
         className="form-field"
         {...preserveDisplay}
         shouldUpdate={(prevValues, currentValues) => {
@@ -112,9 +121,10 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     );
   }
 
+  const verticalClass = isVertical ? 'form-field--vertical' : '';
   const formItemClassName = field.className
-    ? `form-field ${field.className}`.trim()
-    : 'form-field';
+    ? `form-field ${verticalClass} ${field.className}`.trim()
+    : `form-field ${verticalClass}`.trim();
 
   const preserveProps = field.preserve ? { preserve: true } : {};
   const extraRules = Array.isArray(field.rules) ? field.rules : [];
@@ -124,18 +134,40 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
       ? { dependencies: field.dependencies }
       : {};
   const feedbackProps = field.hasFeedback === true ? { hasFeedback: true } : {};
+  const extraProps = field.extra ? { extra: field.extra } : {};
+
+  if (field.type === 'imageUpload') {
+    return (
+      <Form.Item
+        name={fieldName}
+        label={field.label}
+        {...layoutProps}
+        valuePropName="fileList"
+        getValueFromEvent={fileListFromUploadEvent}
+        normalize={(v) => (Array.isArray(v) ? v : [])}
+        rules={mergedRules}
+        className={formItemClassName}
+        {...preserveProps}
+        {...depProps}
+        {...feedbackProps}
+        {...extraProps}
+      >
+        {renderField()}
+      </Form.Item>
+    );
+  }
 
   return (
     <Form.Item
       name={fieldName}
       label={field.label}
-      labelCol={labelCol}
-      wrapperCol={wrapperCol}
+      {...layoutProps}
       rules={mergedRules}
       className={formItemClassName}
       {...preserveProps}
       {...depProps}
       {...feedbackProps}
+      {...extraProps}
     >
       {renderField()}
     </Form.Item>

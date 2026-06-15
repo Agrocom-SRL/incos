@@ -1,0 +1,10 @@
+export { default as GestionActualCard } from './GestionActualCard.jsx';
+export { default as GestionActualKpiStrip } from './GestionActualKpiStrip.jsx';
+export { default as BimestresTimeline } from './BimestresTimeline.jsx';
+export { default as CronogramaGestion } from './CronogramaGestion.jsx';
+export { default as IniciarGestionCard } from './IniciarGestionCard.jsx';
+export { default as IniciarGestionProgressModal } from './IniciarGestionProgressModal.jsx';
+export { default as CerrarBimestreCard } from './CerrarBimestreCard.jsx';
+export { default as BimestresCalendarBoard } from './BimestresCalendarBoard.jsx';
+export { default as BimestresConfigAside } from './BimestresConfigAside.jsx';
+export { default as EtapaFormModal } from './EtapaFormModal.jsx';

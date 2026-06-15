@@ -27,6 +27,7 @@ export class ErrorFormatter {
         code: error.code || 'ERROR',
         message: error.message,
         ...(error.details && { details: error.details }),
+        ...(error.extensions && Object.keys(error.extensions).length > 0 ? error.extensions : {}),
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -49,6 +50,7 @@ export class ErrorFormatter {
         code: error.code || 'VALIDATION_ERROR',
         message: error.message || 'Los datos proporcionados son inválidos',
         details: error.details || [],
+        ...(error.extensions && Object.keys(error.extensions).length > 0 ? error.extensions : {}),
       },
       meta: {
         timestamp: new Date().toISOString(),

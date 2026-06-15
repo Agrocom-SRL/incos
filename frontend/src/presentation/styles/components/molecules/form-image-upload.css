@@ -1,0 +1,275 @@
+/* Upload imagen — preview + capa interactiva a tamaño completo */
+.form-field--vertical .ant-form-item-control-input,
+.form-field--vertical .ant-form-item-control-input-content {
+  width: 100%;
+}
+
+.form-image-upload {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-height: 220px;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  background-color: var(--border-soft, #f9fafb);
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+.form-image-upload__preview-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Capa única: overlay + zona de drop al 100% */
+.form-image-upload__layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+}
+
+.form-image-upload:not(.form-image-upload--has-preview) .form-image-upload__layer {
+  border: 1px dashed var(--border, #d9d9d9);
+  border-radius: var(--radius-md, 8px);
+  box-sizing: border-box;
+}
+
+.form-image-upload--has-preview .form-image-upload__layer {
+  background: rgba(15, 23, 42, 0.4);
+  transition: background-color 0.2s ease;
+}
+
+.form-image-upload--has-preview:hover .form-image-upload__layer,
+.form-image-upload--has-preview:focus-within .form-image-upload__layer {
+  background: rgba(15, 23, 42, 0.62);
+}
+
+/* Texto centrado en toda el área */
+.form-image-upload__content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 20px 16px;
+  box-sizing: border-box;
+  pointer-events: none;
+  text-align: center;
+}
+
+/* Dragger transparente cubre el 100% — solo captura clics */
+.form-image-upload__hit.ant-upload-wrapper {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 3;
+  width: 100% !important;
+  height: 99% !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
+.form-image-upload__hit .ant-upload {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.form-image-upload__hit.ant-upload-wrapper .ant-upload-drag {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+.form-image-upload__hit .ant-upload-btn {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  display: block !important;
+}
+
+.form-image-upload__hit .ant-upload-drag-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 220px !important;
+  display: block !important;
+  padding: 0 !important;
+}
+
+.form-image-upload__hit-target {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  cursor: pointer;
+}
+
+.form-image-upload__hit-target:hover {
+  border: 1px dashed #c8f5d8 !important;
+}
+
+.form-image-upload:not(.form-image-upload--has-preview) .form-image-upload__hit.ant-upload-wrapper:hover .ant-upload-drag,
+.form-image-upload:not(.form-image-upload--has-preview) .form-image-upload__hit.ant-upload-wrapper .ant-upload-drag.ant-upload-drag-hover {
+  border: 1px dashed #196b45 !important;
+}
+
+.form-image-upload:not(.form-image-upload--has-preview):hover .form-image-upload__layer {
+  background: rgba(25, 107, 69, 0.06);
+}
+
+.form-image-upload__icon {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.form-image-upload:not(.form-image-upload--has-preview) .form-image-upload__icon {
+  color: var(--ant-color-primary, #196b45);
+}
+
+.form-image-upload--has-preview .form-image-upload__icon {
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+.form-image-upload__title {
+  margin: 10px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  max-width: 100%;
+}
+
+.form-image-upload:not(.form-image-upload--has-preview) .form-image-upload__title {
+  color: var(--text-100, #1f2937);
+}
+
+.form-image-upload--has-preview .form-image-upload__title {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+.form-image-upload__hint {
+  margin: 0;
+  font-size: 12px;
+  max-width: 100%;
+}
+
+.form-image-upload:not(.form-image-upload--has-preview) .form-image-upload__hint {
+  color: var(--text-500, #6b7280);
+}
+
+.form-image-upload--has-preview .form-image-upload__hint {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.form-image-upload__link {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.form-image-upload:not(.form-image-upload--has-preview) .form-image-upload__link {
+  color: var(--ant-color-primary, #196b45);
+}
+
+.form-image-upload--has-preview .form-image-upload__link {
+  color: #c8f5d8;
+}
+
+.form-image-upload__formats {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  max-width: 100%;
+}
+
+.form-image-upload:not(.form-image-upload--has-preview) .form-image-upload__formats {
+  color: var(--text-500, #6b7280);
+}
+
+.form-image-upload--has-preview .form-image-upload__formats {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.cfg-academico-form-col--image {
+  display: flex;
+  flex-direction: column;
+}
+
+.cfg-academico-form-col--image .form-field {
+  width: 100%;
+}
+
+/* Color popover */
+.form-color-popover-picker {
+  width: 100%;
+}
+
+.form-color-popover-picker__row {
+  width: 100%;
+}
+
+.form-color-popover-picker__swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #e5e7eb);
+  flex-shrink: 0;
+}
+
+.form-color-popover-picker__hex {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+}
+
+.form-color-popover-picker__hint {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.form-color-popover-picker__overlay .ant-popover-inner {
+  padding: 12px;
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.12));
+}
+
+.form-color-popover-picker__panel {
+  width: 240px;
+}
+
+.form-color-popover-picker__picker {
+  width: 100% !important;
+  height: 160px !important;
+  border-radius: 8px;
+}
+
+.form-color-popover-picker__panel-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft, #f0f0f0);
+}
+
+.form-color-popover-picker__hex-panel {
+  font-size: 12px;
+}

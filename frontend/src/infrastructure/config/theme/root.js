@@ -29,13 +29,18 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-content-text', allThemeTokens.colorText);
   root.style.setProperty('--color-bg-layout', allThemeTokens.colorBgLayout);
   root.style.setProperty('--color-bg-container', allThemeTokens.colorBgContainer); // Para DataCards y otros componentes
+  root.style.setProperty('--color-bg-elevated', allThemeTokens.colorBgElevated);
   
   // Color verde institucional (usado en reset.css para focus y Tags)
   root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
   root.style.setProperty('--color-primary', allThemeTokens.colorPrimary); // Para uso en list-item.css y otros componentes
   root.style.setProperty('--color-primary-hover', allThemeTokens.colorPrimaryHover);
   root.style.setProperty('--color-primary-bg', allThemeTokens.colorPrimaryBg);
+  root.style.setProperty('--color-primary-bg-hover', allThemeTokens.colorPrimaryBgHover);
+  root.style.setProperty('--color-primary-border', allThemeTokens.colorPrimaryBorder);
   root.style.setProperty('--color-primary-text', allThemeTokens.colorPrimaryText);
+  root.style.setProperty('--color-primary-active', allThemeTokens.colorPrimaryActive);
+  root.style.setProperty('--color-fill-quaternary', allThemeTokens.colorBgSpotlight);
 
   // ========================================
   // ICON BUTTON - Variables CSS simples
@@ -130,6 +135,8 @@ export function injectCSSVariables() {
   // Variables de borde y texto usadas en múltiples componentes
   root.style.setProperty('--color-border-secondary', allThemeTokens.colorBorderSecondary);
   root.style.setProperty('--color-border', allThemeTokens.colorBorder);
+  root.style.setProperty('--color-text', allThemeTokens.colorText);
+  root.style.setProperty('--color-text-secondary', allThemeTokens.colorTextSecondary);
   root.style.setProperty('--color-text-tertiary', allThemeTokens.colorTextTertiary);
   
   // Color blanco (para texto sobre fondos primarios, estados activos, etc.)
@@ -150,6 +157,16 @@ export function injectCSSVariables() {
   root.style.setProperty('--sombra-sider', componentConfig.Sider.boxShadow);
   root.style.setProperty('--sombra-header', componentConfig.Header.boxShadow);
   root.style.setProperty('--sombra-documento', allThemeTokens.shadowElevation3);
+  root.style.setProperty('--shadow-elevation-1', allThemeTokens.shadowElevation1);
+  root.style.setProperty('--shadow-elevation-2', allThemeTokens.shadowElevation2);
+  root.style.setProperty('--shadow-elevation-3', allThemeTokens.shadowElevation3);
+  root.style.setProperty('--shadow-primary', allThemeTokens.shadowPrimary);
+  root.style.setProperty('--shadow-primary-hover', allThemeTokens.shadowPrimaryHover);
+  root.style.setProperty('--shadow-info', allThemeTokens.shadowInfo);
+  root.style.setProperty('--shadow-info-hover', allThemeTokens.shadowInfoHover);
+  root.style.setProperty('--shadow-accent', allThemeTokens.shadowAccent);
+  root.style.setProperty('--shadow-accent-hover', allThemeTokens.shadowAccentHover);
+  root.style.setProperty('--shadow-warning', allThemeTokens.shadowWarning);
 
   // ========================================
   // ESPACIADO (Solo lo necesario para Layout y componentes)
@@ -197,6 +214,7 @@ export function injectCSSVariables() {
   // Z-INDEX
   // ========================================
   root.style.setProperty('--z-fixed', '1030');
+  root.style.setProperty('--z-popup-base', `${allThemeTokens.zIndexPopupBase}`);
 
   // ========================================
   // BORDER RADIUS (solo las usadas)

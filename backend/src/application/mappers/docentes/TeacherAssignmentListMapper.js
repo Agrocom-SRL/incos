@@ -18,6 +18,7 @@ function toPresentationOne(entity) {
   return {
     id: a.id,
     gestionPlanId: a.managementPlanId ?? null,
+    ofertaCursoId: a.offerCourseId ?? null,
     cursoId: a.courseId ?? null,
     docenteId: a.teacherId ?? null,
     cargaHoraria: a.hours ?? null,

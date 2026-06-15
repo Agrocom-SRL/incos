@@ -1,14 +1,18 @@
-import { createApiHook } from '@application/utils';
-import { mapCarrerasList } from '@application-configuracion/academico/carreras/mappers';
+import { createApiHook, normalizeFieldToArray } from '@application/utils';
+import { mapCarrerasList } from '@application-configuracion/academico/mappers';
+
+import { CATALOG_LIST_LIMIT, DEFAULT_LIST_PAGE } from '@application/constants/listPagination';
+
+const LIST_FETCH_PARAMS = { params: { page: DEFAULT_LIST_PAGE, limit: CATALOG_LIST_LIMIT } };
 
 export const useCarrerasCatalogApi = createApiHook({
   name: 'useCarrerasCatalogApi',
   useCase: 'obtenerTodasCarreras',
   dataType: 'array',
-  mapper: mapCarrerasList,
+  mapper: (data) => mapCarrerasList(normalizeFieldToArray(data, 'carreras')),
   initialLoading: true,
   autoFetch: true,
-  autoFetchArgs: {},
+  autoFetchArgs: [LIST_FETCH_PARAMS],
   dataKey: 'carreras',
   errorMessage: 'Error al cargar el catalogo de carreras',
 });

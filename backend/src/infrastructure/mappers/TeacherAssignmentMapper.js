@@ -44,6 +44,9 @@ export class TeacherAssignmentMapper {
     if ('gestionPlanId' in dataValues && dataValues.gestionPlanId !== undefined) {
       specificFields.managementPlanId = dataValues.gestionPlanId;
     }
+    if ('ofertaCursoId' in dataValues && dataValues.ofertaCursoId !== undefined) {
+      specificFields.offerCourseId = dataValues.ofertaCursoId;
+    }
     if ('cursoId' in dataValues && dataValues.cursoId !== undefined) {
       specificFields.courseId = dataValues.cursoId;
     }
@@ -87,7 +90,7 @@ export class TeacherAssignmentMapper {
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       gestionPlanId: data.managementPlanId || null,
-      cursoId: data.courseId || null,
+      ofertaCursoId: data.offerCourseId || null,
       docenteId: data.teacherId || null,
       cargaHoraria: data.hours || null,
       vigente: data.active !== undefined ? data.active : true,
@@ -112,6 +115,9 @@ export class TeacherAssignmentMapper {
     // Campos específicos de TeacherAssignment
     if (data.managementPlanId !== undefined) {
       updateData.gestionPlanId = data.managementPlanId || null;
+    }
+    if (data.offerCourseId !== undefined) {
+      updateData.ofertaCursoId = data.offerCourseId || null;
     }
     if (data.courseId !== undefined) {
       updateData.cursoId = data.courseId || null;

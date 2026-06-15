@@ -3,7 +3,7 @@
  * Orquestación: useMatriculaWizardPage + InscripcionesNuevaProvider (useMatriculaWizardContext).
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Alert, Modal, Typography } from 'antd';
 import { DollarOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
@@ -14,7 +14,10 @@ import {
   InscripcionesCarreraStepContent,
   InscripcionesPeriodoParalelosStepContent,
   InscripcionesPeriodoMateriasStepContent,
+  InscripcionesHistorialPrevioStepContent,
 } from '@inscripciones/components/organisms';
+import { WIZARD_SECTION_HISTORIAL } from '@application-inscripciones/utils/matriculaWizardStepConfig';
+import { requiereHistorialPrevio } from '@application-inscripciones/utils/historialPrevioHelpers';
 import { useMatriculaWizardPage } from '@application-inscripciones/hooks';
 
 const { Paragraph } = Typography;
@@ -48,11 +51,40 @@ const InscripcionesNueva = () => {
     initialStep,
     initialValues,
     handleValidateBeforeNext,
+    wizardStepMeta,
+    materiasStepInvalid,
+    setMateriasStepInvalid,
   } = useMatriculaWizardPage();
+
+  const handleToggleMaterias = useCallback(
+    (periodId, ids) => {
+      setMateriasStepInvalid?.(false);
+      onToggleMaterias?.(periodId, ids);
+    },
+    [onToggleMaterias, setMateriasStepInvalid],
+  );
+
+  const materiasInvalidHint = useMemo(
+    () =>
+      materiasStepInvalid
+        ? 'Revise periodo, paralelo y materias: al menos una materia no tiene docente asignado vigente en esta gestión.'
+        : null,
+    [materiasStepInvalid],
+  );
+
+  const stepIndices = wizardStepMeta?.indices ?? {
+    carrera: 1,
+    periodo: 2,
+    paralelo: 3,
+    historial: null,
+  };
+  const needsHistorialStep = requiereHistorialPrevio(
+    studentSearch?.selectedStudent?.tipoAdmision ?? editData?.tipoAdmision,
+  );
 
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, section, formInstance) => {
-      if (stepIndex === 1 && sectionKey === 'carrera') {
+      if (stepIndex === stepIndices.carrera && sectionKey === 'carrera') {
         return (
           <InscripcionesCarreraStepContent
             key={sectionKey}
@@ -67,7 +99,7 @@ const InscripcionesNueva = () => {
           />
         );
       }
-      if (stepIndex === 2 && sectionKey === 'periodoYMaterias') {
+      if (stepIndex === stepIndices.periodo && sectionKey === 'periodoYMaterias') {
         return (
           <InscripcionesPeriodoMateriasStepContent
             key={sectionKey}
@@ -76,20 +108,17 @@ const InscripcionesNueva = () => {
             periodosData={periodosData}
             materiasByPeriodsData={materiasByPeriodsData}
             selectedMateriaIdsByPeriod={selectedMateriaIdsByPeriod}
-            onToggleMaterias={onToggleMaterias}
+            onToggleMaterias={handleToggleMaterias}
             studentSearch={studentSearch}
             resolveOptions={() => []}
             readOnly={!!editData && isNuevoEstudiante}
             isEditModeAntiguo={!!editData && !isNuevoEstudiante}
-            historialPrevioData={
-              !isNuevoEstudiante && historialPrevioData?.needsHistorial
-                ? historialPrevioData
-                : null
-            }
+            materiasInvalid={materiasStepInvalid}
+            materiasInvalidHint={materiasInvalidHint}
           />
         );
       }
-      if (stepIndex === 3 && sectionKey === 'paralelos') {
+      if (stepIndex === stepIndices.paralelo && sectionKey === 'paralelos') {
         return (
           <InscripcionesPeriodoParalelosStepContent
             key={sectionKey}
@@ -103,20 +132,38 @@ const InscripcionesNueva = () => {
           />
         );
       }
+      if (
+        stepIndices.historial != null &&
+        stepIndex === stepIndices.historial &&
+        sectionKey === WIZARD_SECTION_HISTORIAL &&
+        needsHistorialStep
+      ) {
+        return (
+          <InscripcionesHistorialPrevioStepContent
+            key={sectionKey}
+            section={section}
+            historialPrevioData={historialPrevioData}
+          />
+        );
+      }
       return null;
     },
     [
+      stepIndices,
+      needsHistorialStep,
       editData,
       isTraspasoOrTransitabilidad,
       isNuevoEstudiante,
       carrerasData,
-      studentSearch?.selectedStudent,
+      studentSearch,
       onSelectCarrera,
       periodosData,
       paralelosData,
       materiasByPeriodsData,
       selectedMateriaIdsByPeriod,
-      onToggleMaterias,
+      handleToggleMaterias,
+      materiasStepInvalid,
+      materiasInvalidHint,
       onSelectParalelo,
       historialPrevioData,
     ],
@@ -154,7 +201,7 @@ const InscripcionesNueva = () => {
             title={pageTitle}
             breadcrumbItems={breadcrumbItems}
             actions={
-              <Button variant="default" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+              <Button variant="back" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
                 Volver
               </Button>
             }
@@ -167,8 +214,8 @@ const InscripcionesNueva = () => {
             type="warning"
             showIcon
             style={{ marginBottom: 16 }}
-            title="Completar historial previo"
-            description="Esta inscripción es de tipo antiguo, traspaso o transitabilidad y aún no tiene registradas las notas de periodos anteriores. Ingrese la nota (61–100) o estado convalidado según corresponda y guarde. Puede continuar al paso de materias si también desea ajustar la matrícula actual."
+            title="Completar historial de notas"
+            description="Esta inscripción es de tipo antiguo, traspaso o transitabilidad y aún no tiene registradas las notas de periodos anteriores. Use el paso «Historial de notas» (último del asistente) para ingresar las notas y finalizar. Puede volver a pasos anteriores si también desea ajustar periodos, materias o paralelos."
           />
         ) : null}
         <WizardForm

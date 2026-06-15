@@ -76,6 +76,8 @@ const mapDetailToForm = (profile = {}) => {
     estadoLaboral: profile.estadoLaboral || undefined,
     observaciones: profile.observaciones || '',
     activo: profile.registroActivo !== false,
+    maxHorasSemana: profile.maxHorasSemana ?? profile.max_horas_semana ?? 20,
+    maxHorasMes: profile.maxHorasMes ?? profile.max_horas_mes ?? 80,
   };
 };
 
@@ -113,6 +115,8 @@ const mapFormToPayload = (values) => ({
   estadoLaboral: values.estadoLaboral || null,
   observaciones: values.observaciones?.trim() || null,
   activo: values.activo !== false,
+  maxHorasSemana: toOptionalInt(values.maxHorasSemana) ?? 20,
+  maxHorasMes: toOptionalInt(values.maxHorasMes) ?? 80,
 });
 
 export const useDocentesFormPage = (mode = 'create') => {
@@ -131,7 +135,12 @@ export const useDocentesFormPage = (mode = 'create') => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState(null);
   const [estadosCiviles, setEstadosCiviles] = useState([]);
-  const [wizardInitialValues, setWizardInitialValues] = useState({ activo: true, nacionalidad: 'Boliviana' });
+  const [wizardInitialValues, setWizardInitialValues] = useState({
+    activo: true,
+    nacionalidad: 'Boliviana',
+    maxHorasSemana: 20,
+    maxHorasMes: 80,
+  });
   const [wizardMountKey, setWizardMountKey] = useState(0);
 
   const wizardSteps = useMemo(() => createDocenteWizardSteps(), []);
@@ -214,7 +223,12 @@ export const useDocentesFormPage = (mode = 'create') => {
           form.setFieldsValue(mapped);
           setWizardMountKey((k) => k + 1);
         } else {
-          const defaults = { activo: true, nacionalidad: 'Boliviana' };
+          const defaults = {
+            activo: true,
+            nacionalidad: 'Boliviana',
+            maxHorasSemana: 20,
+            maxHorasMes: 80,
+          };
           setWizardInitialValues(defaults);
           form.resetFields();
           form.setFieldsValue(defaults);
@@ -244,7 +258,7 @@ export const useDocentesFormPage = (mode = 'create') => {
       const result = isEditMode ? await useCase.ejecutar(docenteId, payload) : await useCase.ejecutar(payload);
       if (!result?.success) throw new Error(result?.error || 'No se pudo guardar el docente');
 
-      const savedId = result?.data?.id || docenteId;
+      const savedId = result?.data?.id || result?.data?.docente?.id || docenteId;
       message.success(isEditMode ? 'Docente actualizado' : 'Docente creado');
       if (savedId) navigate(`/docentes/${savedId}`, { state: { returnListPath, menuSidebarKey } });
       else navigate(returnListPath, menuSidebarKey != null ? { state: { menuSidebarKey } } : undefined);

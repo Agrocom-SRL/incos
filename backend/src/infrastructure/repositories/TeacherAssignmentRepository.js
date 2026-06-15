@@ -1,5 +1,7 @@
 import { IAsignacionDocenteRepository } from '../../domain/interfaces/repositories/IAsignacionDocenteRepository.js';
 import { AsignacionDocente as AsignacionDocenteModel } from '../database/models/asignacion_docente.js';
+import { sequelize } from '../database/sequelize.js';
+import { QueryTypes } from 'sequelize';
 import { BaseRepository } from './BaseRepository.js';
 import { TeacherAssignmentMapper } from '../mappers/TeacherAssignmentMapper.js';
 
@@ -75,8 +77,11 @@ export class TeacherAssignmentRepository extends BaseRepository {
     if (filters.managementPlanId) {
       where.gestionPlanId = filters.managementPlanId;
     }
+    if (filters.offerCourseId) {
+      where.ofertaCursoId = filters.offerCourseId;
+    }
     if (filters.courseId) {
-      where.cursoId = filters.courseId;
+      where.ofertaCursoId = filters.courseId;
     }
     if (filters.teacherId) {
       where.docenteId = filters.teacherId;
@@ -204,6 +209,243 @@ export class TeacherAssignmentRepository extends BaseRepository {
       [collectionName]: rows.map((model) => this.toEntity(model)),
       total: rows.length,
     };
+  }
+
+  /**
+   * Asignaciones vigentes del docente en una gestión, con materia y paralelo para carga horaria.
+   * @param {number} teacherId
+   * @param {number} gestionId — PK de gestiones
+   * @returns {Promise<Array<{ id: number, ofertaCursoId: number, asignatura: string, paralelo: string, horas: number }>>}
+   */
+  async findCargaDetalleByDocenteAndGestion(teacherId, gestionId) {
+    const docenteId = Number(teacherId);
+    const gestionPk = Number(gestionId);
+    if (!Number.isFinite(docenteId) || docenteId < 1 || !Number.isFinite(gestionPk) || gestionPk < 1) {
+      return [];
+    }
+
+    const rows = await sequelize.query(
+      `
+      SELECT
+        id,
+        oferta_curso_id,
+        materia_sigla,
+        paralelo_nombre,
+        horas
+      FROM vista_base_asignacion_docente_detalle
+      WHERE docente_id = :docenteId
+        AND gestion_id = :gestionId
+        AND activo = TRUE
+        AND vigente = TRUE
+      ORDER BY paralelo_nombre ASC, materia_sigla ASC, id ASC
+      `,
+      {
+        replacements: { docenteId, gestionId: gestionPk },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    return rows.map((row) => ({
+      id: Number(row.id),
+      ofertaCursoId: Number(row.oferta_curso_id),
+      asignatura: row.materia_sigla ?? '',
+      paralelo: row.paralelo_nombre ?? '',
+      horas: Number(row.horas) || 0,
+    }));
+  }
+
+  /**
+   * Resumen de carga horaria por docente en una gestión (dashboard).
+   * @param {number} gestionId — PK de gestiones
+   */
+  async findCargaResumenByGestion(gestionId) {
+    const gId = Number(gestionId);
+    if (!Number.isFinite(gId) || gId < 1) return [];
+
+    const rows = await sequelize.query(
+      `
+      SELECT
+        docente_id,
+        TRIM(CONCAT(COALESCE(docente_apellido_paterno, ''), ' ', COALESCE(docente_apellido_materno, ''), ' ', COALESCE(docente_nombres, ''))) AS nombre,
+        color_hex,
+        COALESCE(max_horas_semana, :defaultMaxSemana) AS max_semana,
+        COALESCE(SUM(horas), 0) AS carga_semana
+      FROM vista_base_asignacion_docente_detalle
+      WHERE gestion_id = :gestionId
+        AND activo = TRUE
+        AND vigente = TRUE
+        AND docente_id IS NOT NULL
+      GROUP BY docente_id, docente_nombres, docente_apellido_paterno, docente_apellido_materno, color_hex, max_horas_semana
+      ORDER BY nombre ASC, docente_id ASC
+      `,
+      {
+        replacements: {
+          gestionId: gId,
+          defaultMaxSemana: 20,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    return rows.map((row) => ({
+      docenteId: Number(row.docente_id),
+      nombre: (row.nombre ?? '').trim(),
+      colorHex: row.color_hex ?? null,
+      maxSemana: Number(row.max_semana) || 20,
+      cargaSemana: Number(row.carga_semana) || 0,
+    }));
+  }
+
+  /**
+   * Marca como no vigentes las asignaciones activas previas sobre la misma oferta.
+   * Las matrículas permanecen ancladas a oferta_curso_id (no se repuntan).
+   */
+  async retireVigenteForOffer(offerCourseId, exceptAssignmentId = null, userId = null) {
+    const offerId = Number(offerCourseId);
+    if (!Number.isFinite(offerId) || offerId < 1) return 0;
+
+    const result = await this.findAll({ offerCourseId: offerId, active: true }, null, null);
+    const list = result.teacherAssignments ?? [];
+    let retired = 0;
+
+    for (const assignment of list) {
+      const plain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
+      if (exceptAssignmentId != null && Number(plain.id) === Number(exceptAssignmentId)) continue;
+
+      await this.update(
+        plain.id,
+        {
+          active: false,
+          reason: 'Reemplazada por nueva asignación docente vigente',
+        },
+        userId
+      );
+      retired += 1;
+    }
+
+    return retired;
+  }
+
+  /**
+   * Listado enriquecido con oferta, materia, paralelo y docente.
+   */
+  async findEnriched(filters = {}, page = 1, limit = 50) {
+    const whereParts = [];
+    const replacements = {};
+
+    if (filters.managementPlanId) {
+      whereParts.push('gestion_plan_id = :managementPlanId');
+      replacements.managementPlanId = Number(filters.managementPlanId);
+    }
+    if (filters.offerCourseId) {
+      whereParts.push('oferta_curso_id = :offerCourseId');
+      replacements.offerCourseId = Number(filters.offerCourseId);
+    }
+    if (filters.teacherId) {
+      whereParts.push('docente_id = :teacherId');
+      replacements.teacherId = Number(filters.teacherId);
+    }
+    if (filters.parallelManagementId) {
+      whereParts.push('paralelo_gestion_id = :parallelManagementId');
+      replacements.parallelManagementId = Number(filters.parallelManagementId);
+    }
+    if (filters.vigente === true) {
+      whereParts.push('vigente = TRUE');
+    } else if (filters.vigente === false) {
+      whereParts.push('vigente = FALSE');
+    }
+    if (filters.recordActive !== false) {
+      whereParts.push('activo = TRUE');
+    }
+
+    // La vista ya filtra ad.deleted_at IS NULL; si no hay filtros, traer todo.
+    const whereSql = whereParts.length ? whereParts.join(' AND ') : '1 = 1';
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 50);
+    const offset = (pageNum - 1) * limitNum;
+
+    const baseFrom = `
+      FROM vista_base_asignacion_docente_detalle
+      WHERE ${whereSql}
+    `;
+
+    const [countRows, rows] = await Promise.all([
+      sequelize.query(`SELECT COUNT(*) AS total ${baseFrom}`, {
+        replacements,
+        type: QueryTypes.SELECT,
+      }),
+      sequelize.query(
+        `
+        SELECT
+          id,
+          gestion_plan_id,
+          oferta_curso_id,
+          paralelo_gestion_id,
+          docente_id,
+          carga_horaria,
+          vigente,
+          motivo,
+          fecha_asignacion,
+          created_at,
+          updated_at,
+          materia_sigla,
+          materia_nombre,
+          paralelo_nombre,
+          docente_nombres,
+          docente_apellido_paterno,
+          docente_apellido_materno,
+          color_hex
+        ${baseFrom}
+        ORDER BY id DESC
+        LIMIT :limit OFFSET :offset
+        `,
+        {
+          replacements: { ...replacements, limit: limitNum, offset },
+          type: QueryTypes.SELECT,
+        }
+      ),
+    ]);
+
+    const total = Number(countRows[0]?.total ?? 0) || 0;
+    return { rows, total, page: pageNum, limit: limitNum };
+  }
+
+  /**
+   * Detalle enriquecido de una asignación docente.
+   */
+  async findEnrichedById(id) {
+    const assignmentId = Number(id);
+    if (!Number.isFinite(assignmentId) || assignmentId < 1) return null;
+
+    const result = await sequelize.query(
+      `
+      SELECT
+        id,
+        gestion_plan_id,
+        oferta_curso_id,
+        paralelo_gestion_id,
+        docente_id,
+        carga_horaria,
+        vigente,
+        motivo,
+        fecha_asignacion,
+        created_at,
+        updated_at,
+        materia_sigla,
+        materia_nombre,
+        paralelo_nombre,
+        docente_nombres,
+        docente_apellido_paterno,
+        docente_apellido_materno,
+        color_hex
+      FROM vista_base_asignacion_docente_detalle
+      WHERE id = :assignmentId
+      LIMIT 1
+      `,
+      { replacements: { assignmentId }, type: QueryTypes.SELECT }
+    );
+
+    return result[0] ?? null;
   }
 }
 

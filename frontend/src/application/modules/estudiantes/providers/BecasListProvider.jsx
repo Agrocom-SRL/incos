@@ -1,62 +1,59 @@
 /**
- * Provider: BecasListProvider
- * 
- * Single Responsibility: Proporcionar estado compartido SOLO para la feature de lista de becas
- * 
- * Clean Architecture:
- * - Application Layer: Provider específico para la feature de listado
- * - Usa datos compartidos de BecasProvider (estado en memoria)
- * - Solo maneja lógica de UI (búsqueda, filtrado, formateo)
- * 
- * Ventajas:
- * - Aislamiento de errores: errores en registro no afectan la lista
- * - Performance: usa estado compartido en memoria (no recarga desde BD)
- * - Separación de responsabilidades: datos compartidos, UI específica
+ * Provider: becas asignadas — paginación y búsqueda en servidor.
  */
 
-import { useMemo } from 'react';
-import { useBecasContext } from '@application-estudiantes/hooks';
-import { useTableData } from '@molecules';
+import { useCallback, useMemo } from 'react';
+import { useBecasAsignadasApi } from '@application-estudiantes/hooks/api/useBecasAsignadasApi';
+import { useDeleteBecaAsignada } from '@application-estudiantes/hooks/api/useDeleteBecaAsignada';
+import { useServerPaginatedList, mapNestedListResponse } from '@application/utils';
 import { BecasListContext } from '@application-estudiantes/context/BecasListContext';
 
 export const BecasListProvider = ({ children }) => {
-    // Obtener datos compartidos del estado en memoria
-    const { becas: becasData, loading, error, refetch, deleteBeca } = useBecasContext();
+  const { fetch: fetchBecas } = useBecasAsignadasApi();
+  const { deleteBecaAsignada: deleteBecaApi, loading: deleting } = useDeleteBecaAsignada();
 
-    // Función para obtener los campos de búsqueda de una beca asignada
-    const getSearchFields = useMemo(
-        () => (beca) => [
-            beca.student?.nombreCompleto || '',
-            beca.student?.ci || '',
-            beca.student?.codigoEstudiante || '',
-            beca.scholarship?.nombre || '',
-            beca.scholarship?.codigo || '',
-            beca.management?.codigo || '',
-            beca.management?.nombre || '',
-            beca.state || '',
-        ],
-        []
-    );
+  const {
+    rows,
+    loading,
+    error,
+    searchText,
+    setSearchText,
+    tablePagination,
+    refetch,
+  } = useServerPaginatedList({
+    fetch: fetchBecas,
+    mapResponse: (raw) => mapNestedListResponse(raw, 'becas'),
+    buildRequest: ({ page, limit, search }) => ({
+      params: {
+        page,
+        limit,
+        search: search || undefined,
+      },
+    }),
+  });
 
-    // Hook genérico para manejo de búsqueda y filtrado (solo lógica de UI)
-    const { searchText, setSearchText, filteredData } = useTableData(
-        becasData,
-        getSearchFields
-    );
+  const deleteBeca = useCallback(
+    async (becaId) => {
+      const result = await deleteBecaApi(becaId);
+      if (result.success) await refetch();
+      return result;
+    },
+    [deleteBecaApi, refetch],
+  );
 
-    const value = {
-        becas: filteredData,
-        loading,
-        error,
-        refetch,
-        deleteBeca,
-        searchText,
-        setSearchText,
-    };
+  const value = useMemo(
+    () => ({
+      becas: rows,
+      loading: loading || deleting,
+      error,
+      refetch,
+      deleteBeca,
+      searchText,
+      setSearchText,
+      tablePagination,
+    }),
+    [rows, loading, deleting, error, refetch, deleteBeca, searchText, setSearchText, tablePagination],
+  );
 
-    return (
-        <BecasListContext.Provider value={value}>
-            {children}
-        </BecasListContext.Provider>
-    );
+  return <BecasListContext.Provider value={value}>{children}</BecasListContext.Provider>;
 };

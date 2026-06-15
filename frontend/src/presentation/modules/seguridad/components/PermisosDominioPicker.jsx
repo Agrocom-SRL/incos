@@ -27,49 +27,12 @@ const ACCION_AYUDA = {
   GENERAR_PDF: 'Generar documentos PDF según el módulo.',
 };
 
-const GRUPO_UI_LABELS = {
-  mat_admision: 'Admisión',
-  mat_inscripcion: 'Matrículas',
-  mat_aportes: 'Aportes',
-  mat_becas: 'Becas',
-  mat_pasantias: 'Pasantías estudiantiles',
-  mat_documentos: 'Documentos',
-  aca_calificaciones: 'Calificaciones',
-  aca_nivelaciones: 'Nivelaciones',
-  aca_traspasos: 'Traspasos',
-  aca_transitabilidad: 'Transitabilidad',
-  aca_historial: 'Historial',
-  aca_avance: 'Avance académico',
-  aca_licencias_est: 'Licencias estudiantiles',
-  doc_docentes: 'Docentes',
-  doc_licencias: 'Licencias docentes',
-  doc_supervision: 'Supervisión',
-  doc_pasantias: 'Pasantías docentes',
-  fin_pagos: 'Pagos',
-  fin_adicionales: 'Pagos adicionales',
-  fin_reportes: 'Reportes de pagos',
-  cfg_pagos: 'Config. de pagos',
-  inst_gestion: 'Gestión actual',
-  inst_cronograma: 'Cronogramas',
-  inst_oferta: 'Oferta académica',
-  inst_horarios: 'Horarios',
-  inst_pasadas: 'Gestiones pasadas',
-  cfg_academico: 'Config. académica',
-  cfg_documentacion: 'Config. documentación',
-  cfg_complementario: 'Datos complementarios',
-  cfg_convenios: 'Convenios',
-  cfg_historial: 'Historial actividades',
-  rep_avance: 'Avance académico',
-  rep_asistencia: 'Asistencia',
-  rep_desercion: 'Deserción',
-  rep_solicitudes: 'Solicitudes',
-  seg_usuarios: 'Usuarios',
-  seg_roles: 'Roles y permisos',
-};
-
-function labelGrupoUi(grupoUi) {
-  const k = String(grupoUi || '');
-  return GRUPO_UI_LABELS[k] ?? k;
+/**
+ * Nombre amigable del grupo: viene del backend (`grupo.grupoNombre`), tabla `grupos_ui`
+ * (fuente única; sembrada por módulo). Fallback al código `grupoUi` si faltara la fila.
+ */
+function labelGrupoUi(grupo) {
+  return grupo?.grupoNombre || String(grupo?.grupoUi || '');
 }
 
 function estaEnDelta(delta, grupo, accion) {
@@ -150,9 +113,9 @@ export default function PermisosDominioPicker({
           </thead>
           <tbody>
             {grupos.map((grupo) => (
-              <tr key={grupo.grupoUi}>
+              <tr key={`${grupo.grupoUi}:${grupo.rutaSidebar || ''}`}>
                 <td className="seg-grilla-v2__td-func">
-                  <div className="seg-grilla__grupo-titulo">{labelGrupoUi(grupo.grupoUi)}</div>
+                  <div className="seg-grilla__grupo-titulo">{labelGrupoUi(grupo)}</div>
                   <div className="seg-grilla__grupo-ruta">{grupo.rutaSidebar || '—'}</div>
                 </td>
                 {ACCIONES_GRILLA.map(({ key }) => renderCelda(grupo, key))}

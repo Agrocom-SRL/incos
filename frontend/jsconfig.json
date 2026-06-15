@@ -1,16 +1,15 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
         "paths": {
             "@/*": [
                 "./src/*"
             ],
             // Domain Layer
             "@domain/*": [
-                "src/domain/*"
+                "./src/domain/*"
             ],
             "@useCases/*": [
-                "src/domain/useCases/*"
+                "./src/domain/useCases/*"
             ],
             "@useCases-estudiantes": [
                 "./src/domain/useCases/estudiantes"
@@ -37,7 +36,7 @@
                 "./src/domain/useCases/docentes/*"
             ],
             "@repositories/*": [
-                "src/domain/repositories/*"
+                "./src/domain/repositories/*"
             ],
             // Application Layer
             "@application/*": [
@@ -80,6 +79,12 @@
             "@application-configuracion/*": [
                 "./src/application/modules/configuracion/*"
             ],
+            "@application-configuracion-complementarios": [
+                "./src/application/modules/configuracion/complementarios"
+            ],
+            "@application-configuracion-complementarios/*": [
+                "./src/application/modules/configuracion/complementarios/*"
+            ],
             "@application-inscripciones": [
                 "./src/application/modules/inscripciones"
             ],
@@ -121,6 +126,12 @@
             ],
             "@application-institucional/*": [
                 "./src/application/modules/institucional/*"
+            ],
+            "@application-shared": [
+                "./src/application/modules/shared"
+            ],
+            "@application-shared/*": [
+                "./src/application/modules/shared/*"
             ],
             "@container": [
                 "./src/application/container/index.js"
@@ -208,11 +219,23 @@
             "@configuracion/*": [
                 "./src/presentation/modules/configuracion/*"
             ],
-            "@calificaciones": [
-                "./src/presentation/modules/calificaciones"
+            "@configuracion-complementarios": [
+                "./src/presentation/modules/configuracion/complementarios"
             ],
-            "@calificaciones/*": [
-                "./src/presentation/modules/calificaciones/*"
+            "@configuracion-complementarios/*": [
+                "./src/presentation/modules/configuracion/complementarios/*"
+            ],
+            "@configuracion-actividades": [
+                "./src/presentation/modules/configuracion/actividades"
+            ],
+            "@configuracion-actividades/*": [
+                "./src/presentation/modules/configuracion/actividades/*"
+            ],
+            "@academico": [
+                "./src/presentation/modules/academico"
+            ],
+            "@academico/*": [
+                "./src/presentation/modules/academico/*"
             ],
             "@docentes": [
                 "./src/presentation/modules/docentes"
@@ -227,10 +250,10 @@
                 "./src/presentation/modules/institucional/*"
             ],
             "@historial": [
-                "./src/presentation/modules/historial"
+                "./src/presentation/modules/academico/historial"
             ],
             "@historial/*": [
-                "./src/presentation/modules/historial/*"
+                "./src/presentation/modules/academico/historial/*"
             ],
             "@matricula": [
                 "./src/presentation/modules/matricula"
@@ -245,10 +268,10 @@
                 "./src/presentation/modules/matricula/*"
             ],
             "@nivelaciones": [
-                "./src/presentation/modules/nivelaciones"
+                "./src/presentation/modules/academico/nivelaciones"
             ],
             "@nivelaciones/*": [
-                "./src/presentation/modules/nivelaciones/*"
+                "./src/presentation/modules/academico/nivelaciones/*"
             ],
             "@pagos": [
                 "./src/presentation/modules/pagos"
@@ -269,10 +292,10 @@
                 "./src/presentation/modules/supervision/*"
             ],
             "@trazabilidad": [
-                "./src/presentation/modules/trazabilidad"
+                "./src/presentation/modules/academico/traspasos"
             ],
             "@trazabilidad/*": [
-                "./src/presentation/modules/trazabilidad/*"
+                "./src/presentation/modules/academico/traspasos/*"
             ],
             "@usuarios": [
                 "./src/presentation/modules/usuarios"
@@ -324,7 +347,7 @@
         },
         "jsx": "react-jsx",
         "module": "ESNext",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "target": "ES2020",
         "allowJs": true,
         "checkJs": false,

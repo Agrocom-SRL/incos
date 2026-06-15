@@ -19,7 +19,7 @@
  */
 
 import { REPOSITORIOS_TOKENS } from '../tokens/index.js';
-import { registerRepository } from '../utils/container.helpers.js';
+import { registerRepository, registerComponent } from '../utils/container.helpers.js';
 
 // ============================================
 // CATÁLOGOS GEOGRÁFICOS
@@ -50,8 +50,8 @@ import { ConfiguracionSistemaRepository } from '../../repositories/Configuracion
 import { RoleRepository } from '../../repositories/RoleRepository.js';
 import { PermissionRepository } from '../../repositories/PermissionRepository.js';
 import { UserRepository } from '../../repositories/UserRepository.js';
-import { SeguridadAltaUsuarioLookupRepository } from '../../repositories/SeguridadAltaUsuarioLookupRepository.js';
-import { UsuarioReferenciaVinculoRepository } from '../../repositories/UsuarioReferenciaVinculoRepository.js';
+import { SeguridadAltaUsuarioLookupRepository } from '../../repositories/views/SeguridadAltaUsuarioLookupRepository.js';
+import { UsuarioReferenciaVinculoRepository } from '../../repositories/views/UsuarioReferenciaVinculoRepository.js';
 import { RolePermissionRepository } from '../../repositories/RolePermissionRepository.js';
 import { UserPermissionRepository } from '../../repositories/UserPermissionRepository.js';
 import { SessionRepository } from '../../repositories/SessionRepository.js';
@@ -77,6 +77,8 @@ import { PlanSubjectRepository } from '../../repositories/PlanSubjectRepository.
 // ============================================
 import { ActivityRepository } from '../../repositories/ActivityRepository.js';
 import { ManagementPlanRepository } from '../../repositories/ManagementPlanRepository.js';
+import { ParallelManagementRepository } from '../../repositories/ParallelManagementRepository.js';
+import { CourseOfferRepository } from '../../repositories/CourseOfferRepository.js';
 import { AcademicPeriodRepository } from '../../repositories/AcademicPeriodRepository.js';
 import { CalendarActivityRepository } from '../../repositories/CalendarActivityRepository.js';
 
@@ -87,8 +89,14 @@ import { TeacherRepository } from '../../repositories/TeacherRepository.js';
 import { ParallelRepository } from '../../repositories/ParallelRepository.js';
 import { ClassroomRepository } from '../../repositories/ClassroomRepository.js';
 import { ScheduleRepository } from '../../repositories/ScheduleRepository.js';
-import { CourseRepository } from '../../repositories/CourseRepository.js';
-import { CourseScheduleRepository } from '../../repositories/CourseScheduleRepository.js';
+import { AsignacionHorarioRepository } from '../../repositories/AsignacionHorarioRepository.js';
+import { HorarioGrillaRepository } from '../../repositories/views/HorarioGrillaRepository.js';
+import { ParaleloGestionGrillaBloqueViewRepository } from '../../repositories/views/ParaleloGestionGrillaBloqueViewRepository.js';
+import { ParaleloGestionFichaViewRepository } from '../../repositories/views/ParaleloGestionFichaViewRepository.js';
+import { ParaleloGestionAsignacionCoberturaBloquesViewRepository } from '../../repositories/views/ParaleloGestionAsignacionCoberturaBloquesViewRepository.js';
+import { ParaleloGestionConflictoParaleloBloqueViewRepository } from '../../repositories/views/ParaleloGestionConflictoParaleloBloqueViewRepository.js';
+import { ParaleloGestionConflictoAulaBloqueViewRepository } from '../../repositories/views/ParaleloGestionConflictoAulaBloqueViewRepository.js';
+import { ParaleloGestionConflictoDocenteBloqueViewRepository } from '../../repositories/views/ParaleloGestionConflictoDocenteBloqueViewRepository.js';
 import { TeacherAssignmentRepository } from '../../repositories/TeacherAssignmentRepository.js';
 
 // ============================================
@@ -104,8 +112,8 @@ import { ScholarshipRepository } from '../../repositories/ScholarshipRepository.
 import { StudentScholarshipRepository } from '../../repositories/StudentScholarshipRepository.js';
 import { LicenseRepository } from '../../repositories/LicenseRepository.js';
 import { StudentGuardianRepository } from '../../repositories/StudentGuardianRepository.js';
-import { StudentEnrollmentExcelReportRepository } from '../../repositories/StudentEnrollmentExcelReportRepository.js';
-import { StudentEnrollmentStudentListExcelReportRepository } from '../../repositories/StudentEnrollmentStudentListExcelReportRepository.js';
+import { StudentEnrollmentExcelReportRepository } from '../../repositories/views/StudentEnrollmentExcelReportRepository.js';
+import { StudentEnrollmentStudentListExcelReportRepository } from '../../repositories/views/StudentEnrollmentStudentListExcelReportRepository.js';
 import { TransitabilityRepository } from '../../repositories/TransitabilityRepository.js';
 import { TransferRepository } from '../../repositories/TransferRepository.js';
 
@@ -120,7 +128,12 @@ import { EvaluationTypeRepository } from '../../repositories/EvaluationTypeRepos
 import { EvaluationConfigurationRepository } from '../../repositories/EvaluationConfigurationRepository.js';
 import { SubjectEnrollmentBimesterRepository } from '../../repositories/SubjectEnrollmentBimesterRepository.js';
 import { BimesterEvaluationRepository } from '../../repositories/BimesterEvaluationRepository.js';
-import { FinalEvaluationRepository } from '../../repositories/FinalEvaluationRepository.js';
+import { BimesterEvaluationGradeRepository } from '../../repositories/BimesterEvaluationGradeRepository.js';
+import { CuadernoRepository } from '../../repositories/CuadernoRepository.js';
+import { CalificacionContextoRepository } from '../../repositories/views/CalificacionContextoRepository.js';
+import { CalificacionCoordinacionRepository } from '../../repositories/views/CalificacionCoordinacionRepository.js';
+import { GestionBimestresRepository } from '../../repositories/GestionBimestresRepository.js';
+import { CronogramaGestionRepository } from '../../repositories/views/CronogramaGestionRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
@@ -134,9 +147,9 @@ import { AuthorizedBankRepository } from '../../repositories/AuthorizedBankRepos
 import { PaymentAccountRepository } from '../../repositories/PaymentAccountRepository.js';
 import { ContributionPaymentRepository } from '../../repositories/ContributionPaymentRepository.js';
 import { ContributionPaymentInstallmentRepository } from '../../repositories/ContributionPaymentInstallmentRepository.js';
-import { PaymentAporteCareerExcelReportRepository } from '../../repositories/PaymentAporteCareerExcelReportRepository.js';
-import { DashboardRepository } from '../../repositories/DashboardRepository.js';
-import { AulasHorariosSemanaRepository } from '../../repositories/AulasHorariosSemanaRepository.js';
+import { PaymentAporteCareerExcelReportRepository } from '../../repositories/views/PaymentAporteCareerExcelReportRepository.js';
+import { DashboardRepository } from '../../repositories/views/DashboardRepository.js';
+import { AulasHorariosSemanaRepository } from '../../repositories/views/AulasHorariosSemanaRepository.js';
 
 /**
  * Registra todas las dependencias de repositorios
@@ -209,6 +222,17 @@ export function registerRepositoriesModule(container) {
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.activityRepository, ActivityRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.managementPlanRepository, ManagementPlanRepository);
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionFichaViewRepository,
+        ParaleloGestionFichaViewRepository
+    );
+    registerComponent(container, REPOSITORIOS_TOKENS.parallelManagementRepository, (c) =>
+        new ParallelManagementRepository({
+            fichaViewRepository: c.resolve(REPOSITORIOS_TOKENS.paraleloGestionFichaViewRepository),
+        })
+    );
+    registerRepository(container, REPOSITORIOS_TOKENS.courseOfferRepository, CourseOfferRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.academicPeriodRepository, AcademicPeriodRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.calendarActivityRepository, CalendarActivityRepository);
 
@@ -219,8 +243,51 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.parallelRepository, ParallelRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.classroomRepository, ClassroomRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.scheduleRepository, ScheduleRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.courseRepository, CourseRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.courseScheduleRepository, CourseScheduleRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.asignacionHorarioRepository, AsignacionHorarioRepository);
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionGrillaBloqueViewRepository,
+        ParaleloGestionGrillaBloqueViewRepository
+    );
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionAsignacionCoberturaBloquesViewRepository,
+        ParaleloGestionAsignacionCoberturaBloquesViewRepository
+    );
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionConflictoParaleloBloqueViewRepository,
+        ParaleloGestionConflictoParaleloBloqueViewRepository
+    );
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionConflictoAulaBloqueViewRepository,
+        ParaleloGestionConflictoAulaBloqueViewRepository
+    );
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.paraleloGestionConflictoDocenteBloqueViewRepository,
+        ParaleloGestionConflictoDocenteBloqueViewRepository
+    );
+    registerComponent(container, REPOSITORIOS_TOKENS.horarioGrillaRepository, (c) =>
+        new HorarioGrillaRepository({
+            grillaBloqueViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionGrillaBloqueViewRepository
+            ),
+            asignacionCoberturaBloquesViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionAsignacionCoberturaBloquesViewRepository
+            ),
+            conflictoParaleloBloqueViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionConflictoParaleloBloqueViewRepository
+            ),
+            conflictoAulaBloqueViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionConflictoAulaBloqueViewRepository
+            ),
+            conflictoDocenteBloqueViewRepository: c.resolve(
+                REPOSITORIOS_TOKENS.paraleloGestionConflictoDocenteBloqueViewRepository
+            ),
+        })
+    );
     registerRepository(container, REPOSITORIOS_TOKENS.teacherAssignmentRepository, TeacherAssignmentRepository);
 
     // ============================================
@@ -260,7 +327,44 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.evaluationConfigurationRepository, EvaluationConfigurationRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository, SubjectEnrollmentBimesterRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationRepository, BimesterEvaluationRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.finalEvaluationRepository, FinalEvaluationRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository, BimesterEvaluationGradeRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.calificacionContextoRepository,
+      CalificacionContextoRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+      CalificacionCoordinacionRepository,
+    );
+    registerComponent(
+      container,
+      REPOSITORIOS_TOKENS.gestionBimestresRepository,
+      (c) =>
+        new GestionBimestresRepository({
+          calificacionContextoRepository: c.resolve(
+            REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          ),
+          subjectEnrollmentRepository: c.resolve(
+            REPOSITORIOS_TOKENS.subjectEnrollmentRepository,
+          ),
+          configuracionSistemaRepository: c.resolve(
+            REPOSITORIOS_TOKENS.systemConfigurationRepository,
+          ),
+        }),
+    );
+    registerComponent(
+      container,
+      REPOSITORIOS_TOKENS.cronogramaGestionRepository,
+      (c) =>
+        new CronogramaGestionRepository({
+          calificacionContextoRepository: c.resolve(
+            REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          ),
+        }),
+    );
+    registerRepository(container, REPOSITORIOS_TOKENS.cuadernoRepository, CuadernoRepository);
 
     // ============================================
     // NIVELACIONES

@@ -32,20 +32,68 @@ export class CarreraRepository extends ICarreraRepository {
       // Llamada HTTP directa al endpoint
       const response = await apiClient.get(CARRERAS_ENDPOINTS.BASE, { params });
 
-      // Procesar respuesta exitosa
       const result = handleSuccessResponse(response);
 
-      // Asegurar que data sea un array
-      if (result.success && result.data) {
-        result.data = Array.isArray(result.data) ? result.data : [];
-      }
-
+      // El backend devuelve { carreras: [...] }; el mapper usa normalizeFieldToArray
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener carreras');
     }
   }
 
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(CARRERAS_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      if (result.success && result.data?.carrera) {
+        result.data = result.data;
+      } else if (result.success && result.data && !result.data.carrera) {
+        result.data = { carrera: result.data, periodos: [] };
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener la carrera');
+    }
+  }
+
+  async crear(data) {
+    try {
+      const response = await apiClient.post(CARRERAS_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear carrera');
+    }
+  }
+
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(CARRERAS_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar carrera');
+    }
+  }
+
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(CARRERAS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar carrera');
+    }
+  }
+
+  async subirImagen(codigo, file) {
+    try {
+      const formData = new FormData();
+      formData.append('codigo', codigo);
+      formData.append('imagen', file);
+      const response = await apiClient.post(CARRERAS_ENDPOINTS.IMAGEN, formData);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al subir imagen de carrera');
+    }
+  }
 }
 
 export default new CarreraRepository();

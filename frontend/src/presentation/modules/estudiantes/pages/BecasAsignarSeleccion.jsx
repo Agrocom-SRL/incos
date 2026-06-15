@@ -17,7 +17,7 @@ import {
 import dayjs from 'dayjs';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { Button, ActionButton } from '@atoms';
 import { useCasesFactory } from '@container';
 
 const { Text } = Typography;
@@ -205,9 +205,15 @@ const BecasAsignarSeleccion = () => {
         render: (_, r) => {
           const sid = r.id;
           return (
-            <Button variant="primary" size="small" onClick={() => irAAsignar(sid, r.nombreCompleto)}>
+            <ActionButton
+              permiso="matricula.beca.asignar"
+              accion="CREAR"
+              variant="primary"
+              size="small"
+              onClick={() => irAAsignar(sid, r.nombreCompleto)}
+            >
               Asignar beca
-            </Button>
+            </ActionButton>
           );
         },
       },

@@ -4,6 +4,7 @@ import fs from 'fs';
 import { multerConfig } from '../../infrastructure/config/multer.config.js';
 import { serverConfig } from '../../infrastructure/config/server.config.js';
 import { UPLOAD } from '../../infrastructure/config/uploads.config.js';
+import { getEnvAsNumber } from '../../infrastructure/config/env.validator.js';
 
 /**
  * Middleware de upload para documentos de pago
@@ -92,6 +93,88 @@ const baseUploadMiddleware = createUploadMiddleware('documentoRespaldo');
 /**
  * Wrapper del middleware de upload con logging
  */
+const CARRERA_IMAGE_EXTENSIONS = UPLOAD.carreraImageExtensions;
+const CARRERA_IMAGE_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/bmp',
+  'image/tiff',
+  'image/svg+xml',
+  'image/avif',
+  'image/heic',
+  'image/heif',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+];
+
+/**
+ * Upload de imagen de carrera → uploads/carreras/{codigo}_{timestamp}.ext
+ * Requiere campo multipart `imagen` y texto `codigo` en el body.
+ */
+export function createCarreraImageUploadMiddleware(fieldName = 'imagen') {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const relativePath = UPLOAD.carreras();
+      const uploadPath = path.isAbsolute(multerConfig.uploadDir)
+        ? path.join(multerConfig.uploadDir, relativePath)
+        : path.resolve(serverConfig.backendRoot, multerConfig.uploadDir, relativePath);
+
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const codigo = req.body?.codigo ?? req.body?.code ?? 'carrera';
+      const filename = UPLOAD.generateCarreraImageFileName(codigo, file.originalname);
+      cb(null, filename);
+    },
+  });
+
+  const fileFilter = (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!CARRERA_IMAGE_EXTENSIONS.includes(ext)) {
+      return cb(
+        new Error(`Solo imágenes permitidas: ${CARRERA_IMAGE_EXTENSIONS.join(', ')}`),
+        false,
+      );
+    }
+    const mime = file.mimetype || '';
+    const mimeOk =
+      !mime ||
+      mime.startsWith('image/') ||
+      CARRERA_IMAGE_MIME_TYPES.includes(mime);
+    if (!mimeOk) {
+      return cb(new Error('Tipo MIME de imagen no permitido'), false);
+    }
+    cb(null, true);
+  };
+
+  const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+      fileSize: getEnvAsNumber('MAX_CARRERA_IMAGE_SIZE', 5 * 1024 * 1024),
+      files: 1,
+    },
+  });
+
+  return upload.single(fieldName);
+}
+
+export const uploadCarreraImagen = (req, res, next) => {
+  const middleware = createCarreraImageUploadMiddleware('imagen');
+  middleware(req, res, (err) => {
+    if (err) {
+      return next(err);
+    }
+    next();
+  });
+};
+
 export const uploadPaymentDocument = (req, res, next) => {
     // Log antes de procesar el upload
     console.log('[Upload] Iniciando procesamiento de archivo', {

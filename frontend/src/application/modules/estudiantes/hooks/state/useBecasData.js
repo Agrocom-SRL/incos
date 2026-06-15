@@ -17,7 +17,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useBecasAsignadasApi } from '@application-estudiantes/hooks/api/useBecasAsignadasApi';
+import { useBecasAsignadasApi, becasAsignadasListFetchParams } from '@application-estudiantes/hooks/api/useBecasAsignadasApi';
 import { useDeleteBecaAsignada } from '@application-estudiantes/hooks/api/useDeleteBecaAsignada';
 
 export const useBecasData = () => {
@@ -101,7 +101,8 @@ export const useBecasData = () => {
      * Útil cuando se necesita asegurar que los datos están actualizados
      */
     const refetch = useCallback(async (options = {}) => {
-        await refetchFromApi(options);
+        const hasArgs = options && Object.keys(options).length > 0;
+        await refetchFromApi(hasArgs ? options : becasAsignadasListFetchParams());
     }, [refetchFromApi]);
 
     return useMemo(() => ({

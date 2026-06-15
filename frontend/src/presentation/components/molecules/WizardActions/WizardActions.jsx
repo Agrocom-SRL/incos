@@ -58,7 +58,7 @@ const WizardActions = ({
     >
       {/* Botón Anterior - htmlType="button" evita submit del Form al hacer clic o Enter (átomo Button usa htmlType para tipo HTML) */}
       {showPrev && (
-        <Button htmlType="button" onClick={onPrev} size="large">
+        <Button htmlType="button" variant="back" onClick={onPrev} size="large">
           {prevLabel}
         </Button>
       )}

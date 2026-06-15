@@ -11,7 +11,7 @@ DROP VIEW IF EXISTS vista_base_dashboard_docente_panel;
 CREATE VIEW vista_base_dashboard_docente_panel AS
 SELECT
     d.id,
-    TRIM(CONCAT(COALESCE(d.nombres, ''), ' ', COALESCE(d.apellido_paterno, ''), ' ', COALESCE(d.apellido_materno, ''))) AS nombre_completo,
+    TRIM(CONCAT(COALESCE(d.apellido_paterno, ''), ' ', COALESCE(d.apellido_materno, ''), ' ', COALESCE(d.nombres, ''))) AS nombre_completo,
     d.titulo_profesional,
     CONCAT('DOCENTE-', d.id) AS avatar_seed,
     d.created_at,

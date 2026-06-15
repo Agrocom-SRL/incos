@@ -19,7 +19,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useInscripcionesApi } from '@application-inscripciones/hooks/api/useInscripcionesApi';
+import { useInscripcionesApi, inscripcionesListFetchParams } from '@application-inscripciones/hooks/api/useInscripcionesApi';
 import { useDeleteInscripcion } from '@application-inscripciones/hooks/api/useDeleteInscripcion';
 
 export const useInscripcionesData = () => {
@@ -34,10 +34,16 @@ export const useInscripcionesData = () => {
 
     // Sincronizar estado local con datos de API cuando cambien
     useEffect(() => {
-        // Actualizar cuando hay datos de la API (carga inicial o refetch)
-        if (inscripcionesFromApi.length >= 0) {
-            setInscripciones(inscripcionesFromApi);
-        }
+        setInscripciones((prev) => {
+            if (prev === inscripcionesFromApi) return prev;
+            if (
+                prev.length === inscripcionesFromApi.length &&
+                prev.every((row, i) => row?.id === inscripcionesFromApi[i]?.id)
+            ) {
+                return prev;
+            }
+            return inscripcionesFromApi;
+        });
     }, [inscripcionesFromApi]);
 
     /**
@@ -99,7 +105,8 @@ export const useInscripcionesData = () => {
      * Útil cuando se necesita asegurar que los datos están actualizados
      */
     const refetch = useCallback(async (options = {}) => {
-        await refetchFromApi(options);
+        const hasArgs = options && Object.keys(options).length > 0;
+        await refetchFromApi(hasArgs ? options : inscripcionesListFetchParams());
     }, [refetchFromApi]);
 
     // Memoizar el objeto retornado para mantener referencia estable

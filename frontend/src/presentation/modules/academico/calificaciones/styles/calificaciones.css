@@ -1,0 +1,3005 @@
+/* Calificaciones — tokens locales del cuaderno (mapean variables globales del proyecto) */
+.cal-cuaderno,
+.cal-cuaderno-hoja,
+.cal-consolidado,
+.cal-consolidado-grid-wrap,
+.cal-bimestre-consolidado-wrap,
+/* Drawer en portal (fuera de .cal-cuaderno): necesita los mismos tokens */
+.ant-drawer.cal-ajustes-drawer {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: var(--color-primary, #196b45);
+  --cuaderno-verde-acento: var(--primary-dark, #134d32);
+
+  --cuaderno-papel: var(--color-bg-container, #ffffff);
+  --cuaderno-fondo: #fafafa;
+  --cuaderno-borde-suave: #f0f0f0;
+  --cuaderno-borde: #e5e7eb;
+  --cuaderno-borde-puntos: #d1d5db;
+  --cuaderno-texto-tenue: #9ca3af;
+  --cuaderno-texto-medio: var(--text-500, #6b7280);
+  --cuaderno-texto-fuerte: var(--text-800, #1f2937);
+
+  --bimestre-vigente-bg: var(--cuaderno-verde-tenue);
+  --bimestre-vigente-border: var(--cuaderno-verde-medio);
+  --bimestre-vigente-text: var(--cuaderno-verde-oscuro);
+  --bimestre-anterior-text: var(--cuaderno-texto-medio);
+  --bimestre-futuro-text: #cbd5e1;
+  --bimestre-futuro-opacity: 0.55;
+}
+
+/* —— Acciones contextuales por pantalla —— */
+.cal-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.cal-acciones--end {
+  justify-content: flex-end;
+}
+
+/* —— Impersonación (vista admin) —— */
+.cal-impersonacion-banner {
+  margin-bottom: 16px;
+  border: 1px solid #fcd34d !important;
+  background: #fffbeb !important;
+}
+
+.cal-impersonacion-banner .ant-alert-message {
+  color: #92400e;
+}
+
+.cal-curso-card__bimestres {
+  padding-top: 4px;
+}
+
+.cal-curso-card__bimestres-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cuaderno-texto-medio);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.cal-curso-card__bimestres-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 520px) {
+  .cal-curso-card__bimestres-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cal-curso-card__bimestre {
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--color-fill-quaternary, #f5f5f5);
+  border: 1px solid var(--color-border-secondary, #e8e8e8);
+}
+
+.cal-curso-card__bimestre--vigente {
+  background: var(--bimestre-vigente-bg, #e8f5ec);
+  border-color: var(--bimestre-vigente-border, #6db088);
+}
+
+.cal-curso-card__bimestre--futuro {
+  opacity: var(--bimestre-futuro-opacity, 0.55);
+}
+
+.cal-curso-card__bimestre-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.cal-curso-card__bimestre-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-curso-card__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.cal-curso-card__dot--en-curso {
+  background: var(--color-primary, #196b45);
+}
+
+.cal-curso-card__dot--cerrado {
+  background: #f59e0b;
+}
+
+.cal-curso-card__dot--futuro {
+  background: #9ca3af;
+}
+
+.cal-curso-card__stat-pendientes {
+  font-size: 10px;
+  color: var(--color-warning, #d97706);
+  font-weight: 500;
+}
+
+.cal-curso-card__bimestre-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-curso-card__bimestre-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cal-curso-card__stat-icon--ok {
+  color: var(--color-success, #16a34a);
+  font-size: 11px;
+}
+
+.cal-curso-card__stat-icon--no {
+  color: var(--color-error, #dc2626);
+  font-size: 11px;
+}
+
+/* —— Cuaderno: layout general —— */
+.cal-cuaderno {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* —— Cuaderno: título en PageHeader (mismo patrón que Registro / Mis cursos) —— */
+.cal-cuaderno-page-title {
+  color: var(--cuaderno-verde-oscuro, #196b45);
+  font-weight: 700;
+}
+
+.cal-cuaderno-bimestre-pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cal-cuaderno-bimestre-pager__btn {
+  border-color: var(--cuaderno-borde) !important;
+  color: var(--cuaderno-verde-oscuro) !important;
+}
+
+.cal-cuaderno-bimestre-pager__btn:disabled {
+  opacity: 0.4;
+}
+
+.cal-cuaderno-coord-tag {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #fcd34d;
+  background: #fffbeb !important;
+  color: #92400e !important;
+}
+
+/* —— Cuaderno: ficha de contexto (estilo registro RITT) —— */
+.cal-cuaderno-contexto {
+  background: var(--cuaderno-fondo);
+}
+
+.cal-cuaderno-contexto__filas {
+  display: flex;
+  flex-direction: column;
+}
+
+.cal-cuaderno-contexto__fila {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--cuaderno-borde);
+}
+
+.cal-cuaderno-contexto__fila:first-child {
+  border-top: none;
+}
+
+.cal-cuaderno-contexto__fila--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.cal-cuaderno-contexto__fila--2 {
+  grid-template-columns: 2fr 1fr;
+}
+
+.cal-cuaderno-contexto__celda {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  border: 1px solid var(--cuaderno-borde);
+  margin: -0.5px;
+  min-height: 38px;
+}
+
+.cal-cuaderno-contexto__celda--compact {
+  grid-template-columns: 160px auto;
+}
+
+.cal-cuaderno-contexto__label {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--cuaderno-verde-oscuro);
+  color: #fff;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.cal-cuaderno-contexto__value {
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: 400;
+  background: var(--cuaderno-papel);
+  color: var(--cuaderno-texto-fuerte);
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .cal-cuaderno-contexto__fila--3,
+  .cal-cuaderno-contexto__fila--2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* —— Card contexto / card grilla —— */
+.cal-cuaderno-contexto-card {
+  overflow: hidden;
+}
+
+.cal-cuaderno-contexto-card > .ant-card-body {
+  padding: 0 !important;
+}
+
+.cal-cuaderno-buscar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.cal-cuaderno-buscar__input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.cal-cuaderno-buscar__icon {
+  color: var(--cuaderno-texto-tenue);
+}
+
+.cal-cuaderno-buscar__contador {
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  white-space: nowrap;
+}
+
+/* —— Separador ficha / grilla (50% texto · 50% buscador) —— */
+.cal-cuaderno-separador {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  border-top: 2px solid var(--cuaderno-verde-medio);
+  border-bottom: 1px solid var(--cuaderno-borde-suave);
+  background: var(--cuaderno-verde-tenue);
+}
+
+.cal-cuaderno-separador__texto {
+  flex: 1 1 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cal-cuaderno-separador__buscar {
+  flex: 1 1 50%;
+  max-width: 50%;
+  justify-content: flex-end;
+}
+
+.cal-cuaderno-separador__buscar .cal-cuaderno-buscar__input {
+  max-width: none;
+}
+
+.cal-cuaderno-separador__titulo {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cuaderno-verde-oscuro);
+  letter-spacing: 0.02em;
+}
+
+.cal-cuaderno-separador__desc strong,
+.cal-bimestre-plazo__texto strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+.cal-cuaderno-separador__desc {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--cuaderno-texto-medio);
+}
+
+/* —— Plazo de carga de notas (cuenta regresiva bimestre) —— */
+.cal-bimestre-plazo {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  max-width: 100%;
+}
+
+.cal-bimestre-plazo__barra {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.cal-bimestre-plazo__progreso {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.35s ease;
+}
+
+.cal-bimestre-plazo__texto {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cal-bimestre-plazo--primary {
+  background: rgba(25, 107, 69, 0.08);
+  border-color: rgba(25, 107, 69, 0.25);
+  color: var(--cuaderno-verde-oscuro, #196b45);
+}
+
+.cal-bimestre-plazo--primary .cal-bimestre-plazo__progreso {
+  background: var(--cuaderno-verde-oscuro, #196b45);
+}
+
+.cal-bimestre-plazo--warning {
+  background: rgba(250, 173, 20, 0.12);
+  border-color: rgba(250, 173, 20, 0.45);
+  color: #ad6800;
+}
+
+.cal-bimestre-plazo--warning .cal-bimestre-plazo__progreso {
+  background: #faad14;
+}
+
+.cal-bimestre-plazo--danger {
+  background: rgba(255, 77, 79, 0.1);
+  border-color: rgba(255, 77, 79, 0.45);
+  color: #cf1322;
+}
+
+.cal-bimestre-plazo--danger .cal-bimestre-plazo__progreso {
+  background: #ff4d4f;
+}
+
+.cal-bimestre-plazo--parpadeo {
+  animation: cal-bimestre-plazo-parpadeo 1.1s ease-in-out infinite;
+}
+
+@keyframes cal-bimestre-plazo-parpadeo {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.35);
+  }
+
+  50% {
+    opacity: 0.82;
+    box-shadow: 0 0 0 4px rgba(255, 77, 79, 0.12);
+  }
+}
+
+@media (max-width: 768px) {
+  .cal-cuaderno-separador {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .cal-cuaderno-separador__buscar {
+    max-width: none;
+    justify-content: stretch;
+  }
+}
+
+.cal-notas-grid__eval-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.cal-notas-grid__eval-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 6px;
+  box-sizing: border-box;
+}
+
+.cal-notas-grid__eval-head .cal-notas-grid__col-head-tooltip,
+.cal-notas-grid__eval-head .ant-tooltip-open {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  white-space: normal;
+}
+
+.cal-notas-grid__eval-head .cal-notas-grid__col-head-text {
+  display: -webkit-box;
+  width: 100%;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  text-align: left;
+  line-height: 1.35;
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+  cursor: default;
+}
+
+.cal-notas-grid__col-ponderacion {
+  display: block;
+  width: 100%;
+  padding: 0 6px 6px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.02em;
+}
+
+.cal-notas-grid__eval-menu-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cal-notas-grid__eval-menu-btn:hover,
+.cal-notas-grid__eval-menu-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  outline: none;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval {
+  max-width: var(--cal-col-eval-max, 280px);
+}
+
+.cal-notas-grid__col-actions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.cal-notas-grid__col-actions .ant-btn {
+  color: var(--cuaderno-verde-medio);
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .cal-notas-grid__col-actions
+  .ant-btn {
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-notas-grid__col-actions .ant-btn:not(:disabled):hover {
+  color: var(--cuaderno-verde-acento);
+  background: var(--cuaderno-verde-tenue);
+}
+
+.cal-notas-grid__col-nro {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cuaderno-texto-medio);
+  font-weight: 600;
+}
+
+.cal-notas-grid__codigo-solo {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-notas-grid__nombre-solo {
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  font-size: 13px;
+}
+
+.cal-notas-grid__col-sin-eval {
+  text-align: center !important;
+}
+
+.cal-notas-grid__col-sin-eval .cal-notas-grid__th-sub-text {
+  display: block;
+  text-align: center;
+}
+
+.cal-notas-grid__celda-vacia {
+  display: block;
+  width: 100%;
+  text-align: center;
+  color: var(--cuaderno-texto-tenue);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.cal-notas-grid__sin-evals {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 11px;
+}
+
+/* —— Hoja del cuaderno (grilla + pie) —— */
+.cal-cuaderno-hoja-card {
+  margin-top: 0;
+}
+
+.cal-cuaderno-hoja-card > .ant-card-body {
+  padding: 0 !important;
+}
+
+.cal-cuaderno-hoja {
+  margin-top: 0;
+  background: var(--color-bg-container, #ffffff);
+  border: none;
+  border-radius: 0 0 var(--border-radius-lg, 12px) var(--border-radius-lg, 12px);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.cal-notas-grid-wrap {
+  position: relative;
+  overflow-x: auto;
+}
+
+/* —— Grilla notas —— */
+.cal-notas-grid.ant-table-wrapper .ant-table {
+  background: transparent;
+}
+
+.cal-notas-grid.ant-table-wrapper .ant-table {
+  width: 100% !important;
+}
+
+.cal-notas-grid.ant-table-wrapper .ant-table table {
+  table-layout: fixed;
+  width: 100% !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-nro,
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-nro {
+  width: 44px !important;
+  max-width: 44px !important;
+  min-width: 44px !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-estudiante,
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-estudiante {
+  width: 200px !important;
+  max-width: 220px !important;
+  min-width: 160px !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-bim-espacio,
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-bim-espacio {
+  width: auto !important;
+  min-width: 32px;
+  padding: 0 !important;
+  background: var(--cuaderno-papel) !important;
+  border-bottom: 1px solid var(--cuaderno-borde-suave) !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-sub--eval,
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval {
+  background: var(--cuaderno-verde-acento) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  white-space: normal !important;
+  overflow: visible;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-sub--eval
+  .ant-table-cell,
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval
+  .ant-table-cell {
+  white-space: normal !important;
+  overflow: visible;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-bim-espacio,
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-sub--hint,
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-hint {
+  background: var(--cuaderno-verde-acento) !important;
+  color: var(--cuaderno-verde-tenue) !important;
+  border-color: rgba(25, 107, 69, 0.12) !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-add {
+  background: var(--cuaderno-verde-acento) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.cal-notas-grid:not(.cal-notas-grid--consolidado-style)
+  .ant-table-thead
+  > tr
+  > th {
+  background: var(--cuaderno-fondo) !important;
+  border-bottom: 1px solid var(--cuaderno-verde-medio) !important;
+  color: var(--cuaderno-verde-acento) !important;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 12px !important;
+  letter-spacing: 0.02em;
+}
+
+/* Cabecera cuaderno alineada al registro consolidado (verde oscuro) */
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-est {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 8px 6px !important;
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-sub {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 8px !important;
+  vertical-align: top !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-bim {
+  padding: 0 !important;
+  vertical-align: top !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-bim--activo {
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+  box-shadow: inset 0 -3px 0 var(--cuaderno-verde-medio);
+}
+
+.cal-notas-grid__bim-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.cal-notas-grid__bim-head--activo {
+  color: #fff;
+  background: var(--cuaderno-verde-oscuro);
+}
+
+.cal-notas-grid__bim-titulo-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cal-notas-grid__bim-titulo {
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: uppercase;
+  letter-spacing: inherit;
+  padding: 0 12px !important;
+}
+
+.cal-notas-grid__bim-guardar.ant-btn-primary {
+  margin-top: 6px;
+  background: var(--cuaderno-verde-medio) !important;
+  border-color: var(--cuaderno-verde-acento) !important;
+  box-shadow: 0 1px 4px rgba(19, 77, 50, 0.25);
+  font-size: 12px;
+  font-weight: 600;
+  height: 28px;
+  padding-inline: 12px;
+}
+
+.cal-notas-grid__bim-guardar.ant-btn-primary:not(:disabled):hover {
+  background: var(--cuaderno-verde-oscuro) !important;
+  border-color: var(--cuaderno-verde-acento) !important;
+}
+
+.cal-notas-grid__hint-agregar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-style: italic;
+  color: #fff;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.cal-notas-grid__hint-agregar .anticon {
+  font-size: 13px;
+  color: #fff;
+}
+
+/* Dropdown gestión de actividades — restablecer en warning (portal fuera del wrap) */
+.cal-notas-grid__eval-menu-dropdown
+  .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning,
+.cal-notas-grid__eval-menu-dropdown
+  .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning
+  .anticon {
+  color: var(--color-warning, #faad14) !important;
+}
+
+.cal-notas-grid__eval-menu-dropdown
+  .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning:hover,
+.cal-notas-grid__eval-menu-dropdown
+  .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning:hover
+  .anticon {
+  color: var(--color-warning-text-hover, #faad14) !important;
+  background: #d97706 !important;
+}
+
+.cal-notas-grid__th-sub-text {
+  font-size: 11px;
+  font-weight: 500;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.cal-notas-grid .ant-table-tbody > tr > td {
+  padding: 8px 12px !important;
+  border-bottom: 1px solid var(--cuaderno-borde-suave) !important;
+  vertical-align: middle !important;
+}
+
+.cal-notas-grid .ant-table-tbody > tr:hover > td {
+  background: var(--cuaderno-fondo) !important;
+}
+
+.cal-notas-grid .ant-table-tbody > tr:last-child > td {
+  border-bottom: none !important;
+}
+
+/* Celda estudiante — compartida (cuaderno + consolidado) */
+.cal-celda-estudiante {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cal-celda-estudiante__margen {
+  flex-shrink: 0;
+  width: 2px;
+  align-self: stretch;
+  min-height: 28px;
+  border-radius: 2px;
+  background: var(--cuaderno-verde-acento);
+}
+
+.cal-celda-estudiante__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cal-celda-estudiante__codigo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-celda-estudiante__nombre {
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  font-size: 13px;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+.cal-notas-grid__col-eval {
+  text-align: center;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-add {
+  background: var(--cuaderno-verde-acento) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  vertical-align: middle !important;
+  border-left: 1px solid var(--cuaderno-verde-tenue) !important;
+}
+
+.cal-notas-grid__col-add {
+  background: var(--cuaderno-fondo) !important;
+  text-align: center !important;
+}
+
+.cal-notas-grid__add-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  width: 100%;
+  height: 100%;
+  min-height: 28px;
+}
+
+.cal-notas-grid--consolidado-style .cal-notas-grid__add-header {
+  font-size: 18px;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.cal-notas-grid--consolidado-style
+  .cal-notas-grid__add-header--clickable:hover {
+  color: #fff;
+  opacity: 1;
+}
+
+.cal-notas-grid__add-btn {
+  color: var(--cuaderno-texto-tenue) !important;
+  opacity: 0.5;
+}
+
+.cal-notas-grid__add-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* —— Celdas de nota —— */
+.cal-nota-cell {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.cal-nota-cell--empty {
+  min-width: 80px;
+  height: 32px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px dashed var(--cuaderno-borde-puntos);
+  border-radius: 6px;
+  color: var(--cuaderno-texto-tenue);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-nota-cell--filled {
+  min-width: 80px;
+}
+
+.cal-nota-cell__input {
+  width: 80px !important;
+}
+
+.cal-nota-cell__input.ant-input-number {
+  border: 1px solid var(--cuaderno-borde);
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+.cal-nota-cell__input .ant-input-number-input {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  background: #f9f9f9;
+  height: 30px;
+  padding: 0 8px;
+}
+
+.cal-nota-cell__input.ant-input-number-disabled {
+  background: #f9f9f9;
+  border-color: var(--cuaderno-borde);
+}
+
+.cal-nota-cell__input.ant-input-number-disabled .ant-input-number-input {
+  color: var(--cuaderno-texto-fuerte);
+  cursor: not-allowed;
+}
+
+.cal-nota-cell--editable {
+  position: relative;
+  gap: 4px;
+}
+
+.cal-nota-cell--editable-empty .cal-nota-cell__input.ant-input-number {
+  background: transparent;
+  border: 1px dashed var(--cuaderno-borde-puntos);
+}
+
+.cal-nota-cell--editable-empty .cal-nota-cell__input .ant-input-number-input {
+  background: transparent;
+}
+
+.cal-nota-cell--pendiente .cal-nota-cell__input.ant-input-number {
+  border-color: #9ca3af;
+}
+
+.cal-nota-cell--guardando .cal-nota-cell__input.ant-input-number {
+  border-color: var(--cuaderno-verde-medio);
+}
+
+.cal-nota-cell--guardado .cal-nota-cell__input.ant-input-number {
+  animation: cal-nota-guardado-flash 0.2s ease;
+  border-color: var(--cuaderno-verde-oscuro);
+  box-shadow: 0 0 0 2px rgba(25, 107, 69, 0.15);
+}
+
+@keyframes cal-nota-guardado-flash {
+  0% {
+    box-shadow: 0 0 0 3px rgba(25, 107, 69, 0.28);
+  }
+
+  100% {
+    box-shadow: 0 0 0 2px rgba(25, 107, 69, 0.15);
+  }
+}
+
+.cal-nota-cell--error .cal-nota-cell__input.ant-input-number,
+.cal-nota-cell--error.cal-nota-cell--readonly .cal-nota-cell__readonly-valor {
+  border-color: #ef4444;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.cal-nota-cell--error .cal-nota-cell__input.ant-input-number {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18);
+}
+
+.cal-nota-cell--error .cal-nota-cell__input .ant-input-number-input {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.cal-nota-cell__spinner {
+  font-size: 12px;
+  color: var(--cuaderno-verde-medio);
+}
+
+.cal-nota-cell__error-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.cal-nota-cell__error-btn:hover {
+  color: #dc2626;
+}
+
+.cal-nota-cell--readonly .cal-nota-cell__readonly-valor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: 32px;
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  background: #f9f9f9;
+  border: 1px solid var(--cuaderno-borde);
+  border-radius: 6px;
+}
+
+.cal-notas-grid-wrap--loading .cal-notas-grid {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.cal-notas-grid__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.cal-cuaderno-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cal-cuaderno-skeleton__tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cal-cuaderno-skeleton__hoja {
+  padding: 20px;
+}
+
+.cal-cuaderno-footer__guardado--activo {
+  color: var(--cuaderno-verde-oscuro);
+  font-weight: 500;
+}
+
+.cal-cuaderno-footer__guardado--neutro {
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-cuaderno-footer__guardado--pendiente {
+  color: var(--cuaderno-texto-fuerte);
+  font-weight: 500;
+}
+
+.cal-cuaderno-footer__guardado--error {
+  color: #dc2626;
+  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.cal-cuaderno-footer__icon--error {
+  color: #ef4444;
+}
+
+/* —— Footer integrado en la hoja —— */
+.cal-cuaderno-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 10px 16px 12px;
+  font-size: 12px;
+  border-top: 1px solid var(--cuaderno-borde-suave);
+  background: var(--cuaderno-fondo);
+}
+
+.cal-cuaderno-footer__guardado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cuaderno-verde-oscuro);
+  font-size: 13px;
+}
+
+.cal-cuaderno-footer__icon {
+  font-size: 16px;
+  color: var(--cuaderno-verde-medio);
+}
+
+.cal-cuaderno-footer__nota {
+  color: var(--cuaderno-texto-medio);
+  font-size: 12px;
+  text-align: right;
+  max-width: 420px;
+  line-height: 1.4;
+}
+
+/* —— Drawers calificaciones (Ant Design 6: rootClassName → .ant-drawer; className → .ant-drawer-section) —— */
+.ant-drawer.cal-ajustes-drawer > .ant-drawer-content-wrapper {
+  top: 0 !important;
+  bottom: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-section,
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-header,
+.ant-drawer.cal-ajustes-drawer .ant-drawer-footer {
+  flex-shrink: 0;
+}
+
+.cal-eval-drawer .ant-drawer-footer {
+  border-top: 1px solid var(--cuaderno-borde-suave);
+  padding: 12px 24px;
+}
+
+.cal-eval-drawer__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.cal-eval-drawer__footer-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.cal-eval-drawer__btn-primary.ant-btn-primary {
+  background: var(--cuaderno-verde-oscuro) !important;
+  border-color: var(--cuaderno-verde-oscuro) !important;
+}
+
+.cal-eval-drawer__btn-primary.ant-btn-primary:hover {
+  background: var(--cuaderno-verde-acento) !important;
+  border-color: var(--cuaderno-verde-acento) !important;
+}
+
+.ant-drawer.cal-ajustes-drawer
+  .cal-eval-drawer__btn-eliminar.ant-btn-variant-outlined {
+  color: #fecaca !important;
+  border-color: #f87171 !important;
+  background: var(--ant-color-error-active) !important;
+}
+
+.ant-drawer.cal-ajustes-drawer
+  .cal-eval-drawer__btn-eliminar.ant-btn-variant-outlined:hover {
+  color: #fff !important;
+  border-color: #ef4444 !important;
+  background: var(--ant-color-error) !important;
+}
+
+.cal-eval-drawer__segmented.ant-segmented {
+  padding: 4px;
+  background: var(--ant-color-fill-tertiary, #f0f0f0);
+  border-radius: 10px;
+}
+
+.cal-eval-drawer__segmented .ant-segmented-item {
+  flex: 1;
+  border-radius: 8px !important;
+  font-weight: 600;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cal-eval-drawer__segmented .ant-segmented-item-selected {
+  background: var(
+    --cuaderno-verde-oscuro,
+    var(--color-primary, #196b45)
+  ) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(25, 107, 69, 0.28);
+}
+
+.cal-eval-drawer__segmented
+  .ant-segmented-item-selected
+  .ant-segmented-item-label {
+  color: #fff !important;
+}
+
+.cal-eval-drawer__puntos-item,
+.cal-eval-drawer__puntos-item .ant-form-item-control-input,
+.cal-eval-drawer__puntos-item .ant-form-item-control-input-content,
+.cal-eval-drawer__puntos-field,
+.cal-eval-drawer__puntos-field .ant-form-item-row,
+.cal-eval-drawer__puntos-field .ant-form-item-control-input,
+.cal-eval-drawer__puntos-field .ant-form-item-control-input-content {
+  width: 100%;
+}
+
+.cal-eval-drawer__puntos-compact {
+  width: 100%;
+}
+
+.cal-eval-drawer__puntos-compact
+  .cal-eval-drawer__puntos-input.ant-input-number {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.cal-eval-drawer__puntos-compact
+  .cal-eval-drawer__puntos-input
+  .ant-input-number-input {
+  width: 100%;
+}
+
+.cal-eval-drawer__puntos-suffix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio, #6b7280);
+  background: #fafafa;
+  border: 1px solid var(--cuaderno-borde, #d9d9d9);
+  border-inline-start: none;
+  border-radius: 0 6px 6px 0;
+}
+
+.cal-eval-drawer__cuota {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin: 0 0 4px;
+  border: 1px solid rgba(109, 176, 136, 0.35);
+  background: var(--cuaderno-verde-tenue) !important;
+}
+
+.cal-eval-drawer__cuota--warn {
+  background: #fef3c7 !important;
+  border-color: #fbbf24 !important;
+}
+
+.cal-eval-drawer__cuota--ok-full {
+  border-color: var(--cuaderno-verde-medio) !important;
+}
+
+.cal-eval-drawer__cuota-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-header,
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-meta,
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-titulo,
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-total {
+  color: #92400e !important;
+}
+
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-track {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.45);
+}
+
+.cal-eval-drawer__cuota-titulo {
+  font-weight: 600;
+}
+
+.cal-eval-drawer__cuota-total {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-eval-drawer__cuota-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cuaderno-texto-medio, #6b7280);
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(109, 176, 136, 0.25);
+}
+
+.cal-eval-drawer__cuota-hint .anticon {
+  margin-top: 2px;
+  color: var(--cuaderno-verde-medio);
+  flex-shrink: 0;
+}
+
+.cal-eval-drawer__cuota-hint strong {
+  color: var(--cuaderno-verde-oscuro);
+  font-weight: 700;
+}
+
+.cal-eval-drawer__cuota-track {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(25, 107, 69, 0.12);
+}
+
+.cal-eval-drawer__cuota-fill {
+  display: block;
+  height: 100%;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: 0;
+  transition: width 0.25s ease;
+}
+
+.cal-eval-drawer__cuota-fill--otras {
+  background: var(--cuaderno-verde-medio, #6db088);
+}
+
+.cal-eval-drawer__cuota-fill--esta {
+  background: var(--cuaderno-verde-oscuro, #196b45);
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.35);
+}
+
+.cal-eval-drawer__cuota-fill--exceso {
+  background: #ef4444;
+}
+
+.cal-eval-drawer__cuota-meta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-eval-drawer__cuota-disponible {
+  color: var(--cuaderno-verde-oscuro, #196b45);
+  font-weight: 700;
+}
+
+.cal-eval-drawer__cuota-restante {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.cal-eval-drawer__cuota--warn .cal-eval-drawer__cuota-restante {
+  color: #b91c1c !important;
+}
+
+.cal-eval-drawer__cuota-icon {
+  margin-right: 6px;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+/* —— Cabeceras de columna clickeables —— */
+.cal-notas-grid__col-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: var(--cuaderno-verde-acento);
+}
+
+.cal-notas-grid--consolidado-style .cal-notas-grid__col-head {
+  color: #fff;
+}
+
+.cal-notas-grid__col-head--clickable {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.cal-notas-grid__col-head--clickable:hover {
+  background: var(--cuaderno-fondo);
+}
+
+.cal-notas-grid--consolidado-style .cal-notas-grid__col-head--clickable:hover {
+  background: rgba(25, 107, 69, 0.08);
+}
+
+.cal-notas-grid__col-head--clickable:hover .cal-notas-grid__col-edit-icon {
+  opacity: 1;
+}
+
+.cal-notas-grid__col-edit-icon {
+  font-size: 12px;
+  opacity: 0;
+  color: var(--cuaderno-texto-medio);
+  transition: opacity 0.15s ease;
+}
+
+.cal-notas-grid--consolidado-style .cal-notas-grid__col-edit-icon {
+  color: var(--cuaderno-verde-medio);
+}
+
+.cal-notas-grid__add-header--clickable {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 4px 10px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  color: #fff !important;
+}
+
+.cal-notas-grid--consolidado-style
+  .cal-notas-grid__add-header--clickable:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  opacity: 1;
+}
+
+.cal-notas-grid__add-header--clickable:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+/* —— Animación columnas —— */
+.cal-col--enter {
+  animation: cal-col-fade-in 0.3s ease forwards;
+}
+
+.cal-col--leave {
+  animation: cal-col-fade-out 0.25s ease forwards;
+  opacity: 0;
+}
+
+@keyframes cal-col-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cal-col-fade-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+.ant-table-container table > thead > tr:first-child > *:first-child {
+  border-start-start-radius: none !important;
+}
+
+/* —— Tokens y panel interno (ajustes curso + evaluación cuaderno) —— */
+.ant-drawer.cal-ajustes-drawer {
+  z-index: 1100 !important;
+  --cal-ajustes-drawer-bg: var(--cuaderno-fondo, #fafafa);
+  --cal-ajustes-drawer-bg-footer: #032d1b;
+  --cal-ajustes-drawer-header: #15201d;
+  --cal-ajustes-drawer-pad-x: 24px;
+  --cal-ajustes-drawer-pad-y: 16px;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-header {
+  background: var(--cal-ajustes-drawer-header) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-header .ant-drawer-title {
+  color: #fff;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-close {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-close:hover {
+  color: #fff;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin-bottom: var(--cal-ajustes-drawer-pad-y) !important;
+  padding: var(--cal-ajustes-drawer-pad-y) var(--cal-ajustes-drawer-pad-x) !important;
+  background: var(--cal-ajustes-drawer-bg) !important;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .cal-ajustes-drawer__form,
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .cal-eval-drawer__form {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-footer {
+  background: var(--cal-ajustes-drawer-bg-footer) !important;
+  border-top-color: #a8cfb8 !important;
+}
+
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .ant-skeleton,
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .ant-alert {
+  flex-shrink: 0;
+}
+
+.cal-consolidado-page__spin-nest {
+  min-height: 280px;
+  width: 100%;
+}
+
+.cal-ajustes-drawer__input-pct-suffix {
+  width: 42px !important;
+  text-align: center;
+  color: var(--cuaderno-texto-medio, #6b7280) !important;
+  background: #fafafa !important;
+  pointer-events: none;
+}
+
+.cal-eval-drawer__alert {
+  flex-shrink: 0;
+  margin: 0 0 12px;
+}
+
+.cal-eval-drawer__form {
+  width: 100%;
+}
+
+.cal-eval-drawer__bloques,
+.cal-ajustes-drawer__override-zona,
+.cal-ajustes-inst__zona {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.cal-ajustes-drawer__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.cal-eval-drawer__form .cal-ajustes-seccion,
+.cal-ajustes-drawer__form .cal-ajustes-seccion {
+  margin-bottom: 0;
+}
+
+.cal-eval-drawer__segmented.ant-segmented {
+  width: 100%;
+}
+
+.cal-ajustes-drawer__btn-guardar.ant-btn-primary:not(:disabled) {
+  background: #0f6e56 !important;
+  border-color: #0f6e56 !important;
+  color: #fff !important;
+  box-shadow: none;
+}
+
+.cal-ajustes-drawer__btn-guardar.ant-btn-primary:not(:disabled):hover {
+  background: #134d32 !important;
+  border-color: #134d32 !important;
+  color: #fff !important;
+}
+
+.cal-ajustes-drawer__btn-guardar.ant-btn-primary:disabled {
+  background: #9cb8ad !important;
+  border-color: #9cb8ad !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.ant-drawer.cal-ajustes-drawer
+  .cal-politica-asistencia-radio
+  .ant-form-item-control-input {
+  min-height: auto;
+}
+
+.ant-drawer.cal-ajustes-drawer .cal-politica-asistencia-grid,
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__politica-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.ant-drawer.cal-ajustes-drawer .cal-politica-asistencia-option {
+  width: 100% !important;
+  height: auto !important;
+  padding: 12px 14px !important;
+  border-radius: 10px !important;
+  text-align: left;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.ant-drawer.cal-ajustes-drawer .cal-politica-asistencia-option::before {
+  display: none;
+}
+
+.cal-ajustes-drawer__override-alert {
+  margin: 0 0 16px;
+}
+
+.cal-ajustes-seccion__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cal-ajustes-seccion__icon {
+  font-size: 16px;
+  color: var(--color-text-secondary, #8c8c8c);
+  flex-shrink: 0;
+}
+
+.cal-ajustes-seccion__titulo {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-heading, #000);
+  line-height: 1.3;
+}
+
+.cal-ajustes-seccion__body {
+  min-width: 0;
+}
+
+.cal-ajustes-seccion--destacada {
+  animation: cal-ajustes-seccion-pulse 1s ease-out forwards;
+}
+
+@keyframes cal-ajustes-seccion-pulse {
+  0% {
+    box-shadow: 0 0 0 1px rgba(15, 110, 86, 0.55);
+    border-color: rgba(15, 110, 86, 0.45);
+  }
+
+  100% {
+    box-shadow: 0 0 0 1px transparent;
+    border-color: inherit;
+  }
+}
+
+.cal-estado-eval-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.cal-estado-eval-chip__icon {
+  font-size: 10px;
+}
+
+.cal-estado-eval-chip--aplica {
+  background: #e8f5ec;
+  color: #0f6e56;
+}
+
+.cal-estado-eval-chip--no-aplica {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.cal-estado-eval-chip--compact {
+  font-size: 10px;
+  padding: 1px 7px;
+}
+
+.cal-ajustes-drawer__section-desc {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  line-height: 1.4;
+}
+
+/* Tarjeta unificada (drawer evaluación + drawer ajustes) */
+.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__override-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--cuaderno-borde, #e5e7eb);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.ant-drawer.cal-ajustes-drawer
+  .cal-ajustes-drawer__override-card
+  .cal-ajustes-seccion__header {
+  margin-bottom: 10px;
+}
+
+.ant-drawer.cal-ajustes-drawer
+  .cal-ajustes-drawer__override-card
+  .cal-ajustes-seccion__titulo {
+  color: var(--cuaderno-texto-fuerte, #1f2937);
+}
+
+.ant-drawer.cal-ajustes-drawer
+  .cal-ajustes-drawer__override-card
+  .cal-ajustes-seccion__icon {
+  color: var(--cuaderno-verde-oscuro, #196b45);
+}
+
+.cal-ajustes-drawer__switch-item {
+  margin-bottom: 8px;
+}
+
+.cal-ajustes-drawer__switch.ant-switch {
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.cal-ajustes-drawer__cuota-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.cal-ajustes-drawer__final-item {
+  padding: 8px 0;
+  border-bottom: 0.5px solid #e5e7eb;
+}
+
+.cal-ajustes-drawer__final-item:last-child {
+  border-bottom: none;
+}
+
+.cal-ajustes-drawer__final-item--disabled {
+  opacity: 0.55;
+}
+
+.cal-ajustes-drawer__final-line1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.cal-ajustes-drawer__final-line1-end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cal-ajustes-drawer__final-nombre {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--cuaderno-texto-fuerte);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal-ajustes-drawer__final-meta {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  line-height: 1.35;
+}
+
+.cal-ajustes-drawer__final-peso {
+  margin-bottom: 0 !important;
+}
+
+.cal-ajustes-drawer__final-peso .ant-form-item-label {
+  padding-bottom: 2px;
+}
+
+.cal-ajustes-drawer__info-icon {
+  color: var(--cuaderno-texto-tenue);
+  font-size: 14px;
+}
+
+.cal-ajustes-drawer__hint-extra {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.cal-ajustes-drawer__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.cal-ajustes-drawer__footer-count {
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  flex: 1;
+  min-width: 0;
+}
+
+.cal-ajustes-drawer__footer-count--empty {
+  visibility: hidden;
+}
+
+.cal-ajustes-drawer__footer-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cal-ajustes-drawer__divider-override {
+  margin: 20px 0 16px;
+}
+
+.cal-ajustes-drawer__override-hint {
+  margin-bottom: 14px;
+}
+
+.cal-ajustes-inst__intro {
+  margin-bottom: 0;
+}
+
+.cal-ajustes-inst__fila {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.cal-ajustes-inst__fila + .cal-ajustes-inst__fila {
+  border-top: 0.5px solid #eceef0;
+}
+
+.cal-ajustes-inst__label {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-secondary, #8c8c8c);
+  flex-shrink: 0;
+}
+
+.cal-ajustes-inst__valor-wrap {
+  text-align: right;
+  min-width: 0;
+}
+
+.cal-ajustes-inst__valor {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text, #262626);
+}
+
+.cal-ajustes-inst__bimestre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.cal-ajustes-inst__bimestre-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #fff;
+  border: 0.5px solid #e5e7eb;
+  color: var(--color-text, #262626);
+}
+
+.cal-ajustes-inst__hint {
+  margin: 0 0 8px !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.cal-ajustes-inst__reglas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cal-ajustes-inst__regla {
+  padding: 8px 0;
+  border-bottom: 0.5px solid #e5e7eb;
+}
+
+.cal-ajustes-inst__regla:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.cal-ajustes-inst__regla-line1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.cal-ajustes-inst__regla-nombre {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text, #262626);
+}
+
+.cal-ajustes-inst__regla-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  line-height: 1.35;
+}
+
+/* —— Registro académico (consolidado) —— */
+.cal-consolidado {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: var(--color-primary, #196b45);
+  --cuaderno-texto-medio: var(--text-500, #6b7280);
+  --cuaderno-texto-fuerte: var(--text-800, #1f2937);
+}
+
+.cal-curso-profile__avatar {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.cal-curso-profile__avatar--sigla {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  padding: 6px 4px;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.cal-curso-profile__bimestre-pill {
+  background: #e8f5e9;
+  color: #196b45;
+  border-color: rgba(25, 107, 69, 0.35);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+
+.cal-curso-profile__toolbar {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: min(100% - 56px, 520px);
+}
+
+.cal-curso-profile__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-curso-profile__config-btn {
+  position: static;
+  flex-shrink: 0;
+}
+
+.cal-curso-profile__config-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cal-cuaderno-vista-previa-btn {
+  white-space: nowrap;
+}
+
+.ant-table-wrapper
+  .ant-table-container
+  table
+  > thead
+  > tr:first-child
+  > *:first-child {
+  border-start-start-radius: none;
+}
+
+.ant-table-wrapper
+  .ant-table-container
+  table
+  > thead
+  > tr:first-child
+  > *:last-child {
+  border-start-end-radius: none;
+}
+
+/* Tokens locales — la grilla no depende solo de .cal-consolidado ancestro */
+.cal-consolidado-grid-wrap {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: #196b45;
+  --cuaderno-verde-acento: #134d32;
+  --cuaderno-texto-medio: var(--text-500, #6b7280);
+  --cuaderno-texto-fuerte: var(--text-800, #1f2937);
+  padding: 0;
+  overflow-x: auto;
+}
+
+.cal-consolidado-grid__leyenda-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: center;
+  margin: 0;
+  padding: 10px 14px;
+  background: #fff;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 10px 10px 0 0;
+  border-bottom: none;
+  font-size: 14px;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-consolidado-grid__leyenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.35;
+}
+
+.cal-consolidado-grid__leyenda-item strong {
+  color: var(--cuaderno-texto-fuerte);
+  font-weight: 600;
+}
+
+.cal-consolidado-grid__leyenda-muestra {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.cal-consolidado-grid__leyenda-muestra--cerrado {
+  background: var(--cuaderno-verde-acento);
+  color: var(--cuaderno-verde-tenue);
+}
+
+.cal-consolidado-grid__leyenda-muestra--en-curso {
+  background: var(--cuaderno-verde-oscuro);
+}
+
+.cal-consolidado-grid__leyenda-muestra--pendiente {
+  background: var(--cuaderno-verde-tenue);
+  color: var(--cuaderno-verde-acento);
+  opacity: 0.9;
+}
+
+/* —— Tabla registro académico (scoped al wrapper + ant-table-wrapper) —— */
+.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table {
+  font-size: 13px;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr:first-child
+  > th.cal-consolidado-grid__th-bim--pendiente {
+  border-bottom: 1px solid var(--text-400) !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-est {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 8px 6px !important;
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-sub-est {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 8px !important;
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-bim {
+  padding: 0 !important;
+  vertical-align: top !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-bim--cerrado {
+  background: var(--cuaderno-verde-medio) !important;
+  color: #fff !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-bim--en_curso {
+  background: var(--cuaderno-verde-acento) !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 0 2px var(--cuaderno-verde-medio);
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-bim--pendiente {
+  background: var(--cuaderno-verde-tenue) !important;
+  color: var(--cuaderno-verde-acento) !important;
+}
+
+.cal-consolidado-grid__bim-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-height: 76px;
+  padding: 8px 10px 10px;
+  text-align: left;
+  color: var(--cuaderno-verde-acento);
+}
+
+.cal-consolidado-grid__bim-head--cerrado {
+  color: #fff;
+  background: var(--cuaderno-verde-acento);
+}
+
+.cal-consolidado-grid__bim-head--en_curso {
+  color: #fff;
+  background: var(--cuaderno-verde-oscuro);
+}
+
+.cal-consolidado-grid__bim-head--pendiente {
+  background: var(--cuaderno-verde-tenue);
+}
+
+.cal-consolidado-grid__bim-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.cal-consolidado-grid__bim-titulo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.cal-consolidado-grid__bim-titulo {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cal-consolidado-grid__bim-head--cerrado
+  .cal-consolidado-grid__bim-icon-estado {
+  font-size: 14px;
+  color: #fff;
+}
+
+.cal-consolidado-grid__bim-head--pendiente
+  .cal-consolidado-grid__bim-icon-estado {
+  font-size: 14px;
+  color: var(--cuaderno-verde-acento);
+}
+
+.cal-consolidado-grid__bim-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cuaderno-verde-medio);
+  box-shadow: 0 0 0 3px rgba(109, 176, 136, 0.45);
+  flex-shrink: 0;
+}
+
+.cal-consolidado-grid__bim-estado-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.cal-consolidado-grid__bim-estado-tag--cerrado {
+  color: #fff;
+  opacity: 0.9;
+}
+
+.cal-consolidado-grid__bim-estado-tag--en_curso {
+  color: var(--cuaderno-verde-tenue);
+  font-weight: 600;
+}
+
+.cal-consolidado-grid__bim-estado-tag--pendiente {
+  color: var(--cuaderno-verde-acento);
+}
+
+.cal-consolidado-grid__bim-action {
+  margin-top: 2px;
+}
+
+.cal-consolidado-grid__bim-btn {
+  width: 100%;
+  height: auto !important;
+  min-height: 26px;
+  padding: 5px 10px !important;
+  border-radius: 7px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.cal-consolidado-grid__bim-btn .anticon {
+  font-size: 13px;
+}
+
+.cal-consolidado-grid__bim-btn--cerrado {
+  background: var(--cuaderno-verde-medio) !important;
+  color: var(--cuaderno-verde-acento) !important;
+}
+
+.cal-consolidado-grid__bim-btn--cerrado:hover {
+  background: var(--cuaderno-verde-tenue) !important;
+  color: var(--cuaderno-verde-acento) !important;
+}
+
+.cal-consolidado-grid__bim-btn--en-curso {
+  background: var(--cuaderno-verde-acento) !important;
+  color: #fff !important;
+}
+
+.cal-consolidado-grid__bim-btn--en-curso:hover {
+  background: var(--cuaderno-verde-tenue) !important;
+  color: var(--cuaderno-verde-acento) !important;
+}
+
+.cal-consolidado-grid__bim-btn--pendiente,
+.cal-consolidado-grid__bim-btn--pendiente:hover {
+  background: var(--cuaderno-verde-medio) !important;
+  color: var(--cuaderno-verde-acento) !important;
+  cursor: not-allowed !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr:last-child
+  > th.cal-consolidado-grid__th-sub--cerrado {
+  background: var(--cuaderno-verde-acento) !important;
+  color: #fff !important;
+  font-weight: 500;
+  padding: 6px 4px !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr:last-child
+  > th.cal-consolidado-grid__th-sub--en_curso {
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 6px 4px !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr:last-child
+  > th.cal-consolidado-grid__th-sub--pendiente {
+  background: var(--cuaderno-verde-tenue) !important;
+  color: var(--cuaderno-verde-acento) !important;
+  padding: 6px 4px !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td {
+  border-right: 1px solid var(--text-400) !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__col-bim-pendiente {
+  opacity: 0.85;
+  border-right: 1px solid var(--text-400) !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__celda-activa {
+  background: var(--cuaderno-verde-tenue) !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-suma--activa,
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-suma--activa
+  .cal-consolidado-grid__nota {
+  color: var(--cuaderno-verde-acento) !important;
+  font-weight: 600;
+}
+
+.cal-consolidado-header {
+  margin-bottom: 20px;
+}
+
+.cal-consolidado-header__titulo-block {
+  margin-bottom: 16px;
+}
+
+.cal-consolidado-header__sistema {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.cal-consolidado-header__titulo {
+  margin: 0 0 4px !important;
+  color: var(--cuaderno-verde-oscuro) !important;
+}
+
+.cal-consolidado-header__subtitulo {
+  display: block;
+  font-size: 14px;
+}
+
+.cal-consolidado-header__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+  padding: 16px;
+  background: var(--cuaderno-verde-tenue);
+  border: 1px solid var(--cuaderno-verde-medio);
+  border-radius: var(--incos-radius-lg, 12px);
+}
+
+.cal-consolidado-header__meta-item {
+  margin: 0;
+  min-width: 0;
+}
+
+.cal-consolidado-header__meta-item dt {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-consolidado-header__meta-item dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+.cal-consolidado__leyenda {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--cuaderno-texto-medio);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cal-consolidado__hoja .ant-card-body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td {
+  padding: 6px 8px !important;
+  vertical-align: middle;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td:not(.cal-consolidado-grid__celda-activa) {
+  background: #fafafa;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__col-estudiante,
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-estudiante {
+  width: 300px !important;
+  min-width: 260px !important;
+  max-width: 320px !important;
+  vertical-align: middle !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-estudiante
+  .ant-table-cell-content {
+  overflow: visible !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+}
+
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-estudiante
+  .cal-celda-estudiante {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Celda estudiante — cuaderno y consolidado bimestre (misma columna que NotasGrid) */
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-estudiante,
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-estudiante {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  vertical-align: middle !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-estudiante
+  .ant-table-cell-content {
+  overflow: visible !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-estudiante
+  .cal-celda-estudiante {
+  width: 100%;
+  min-width: 0;
+}
+
+.cal-consolidado-grid__col-num,
+.cal-consolidado-grid__col-suma,
+.cal-consolidado-grid__col-final {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.cal-consolidado-grid__col-suma {
+  font-weight: 600;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-consolidado-grid__nota {
+  display: inline-block;
+  min-width: 1.5em;
+}
+
+.cal-celda-ajuste-info {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 20px 0 4px;
+  box-sizing: border-box;
+}
+
+.cal-celda-ajuste-info__valor {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-celda-ajuste-info__btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: #1677ff;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.cal-celda-ajuste-info__btn:hover {
+  color: #4096ff;
+}
+
+.cal-celda-ajuste-info__popover p {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.cal-celda-ajuste-info__popover p:last-child {
+  margin-bottom: 0;
+}
+
+.cal-celda-ajuste-info__overlay .ant-popover-inner {
+  border-radius: 12px;
+}
+
+.cal-celda-ajuste-info__popover {
+  min-width: 240px;
+}
+
+.cal-celda-ajuste-info__popover-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cal-celda-ajuste-info__popover-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cal-celda-ajuste-info__popover-label {
+  font-size: 12px;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  white-space: nowrap;
+}
+
+.cal-celda-ajuste-info__popover-value {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text, rgba(0, 0, 0, 0.88));
+}
+
+.cal-celda-ajuste-info__popover-value--strong {
+  font-weight: 700;
+}
+
+.cal-celda-ajuste-info__popover-foot {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border-secondary, rgba(5, 5, 5, 0.06));
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cal-celda-ajuste-info__popover-foot-label {
+  font-size: 12px;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  white-space: nowrap;
+}
+
+.cal-celda-ajuste-info__popover-foot-value {
+  font-size: 12px;
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-consolidado-grid__leyenda-info-glyph {
+  color: #1677ff;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.cal-consolidado-grid__obs-parcial {
+  font-size: 12px;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  font-style: italic;
+}
+
+.cal-consolidado-grid__obs {
+  margin: 0;
+  font-size: 11px;
+}
+
+.cal-consolidado-grid__obs.ant-tag-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+/* —— Drawer vista previa —— */
+.cal-preview-drawer__alert {
+  margin-bottom: 12px;
+}
+
+.cal-preview-drawer__resumen {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-preview-drawer__table .ant-table-thead > tr > th {
+  background: var(--cuaderno-verde-tenue) !important;
+  color: var(--cuaderno-verde-oscuro);
+  font-weight: 600;
+}
+
+.cal-preview__celda {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.cal-preview__celda--bimestre {
+  color: var(--cuaderno-verde-oscuro);
+  font-weight: 600;
+}
+
+.cal-preview__celda--reprobado {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.cal-preview__celda--incompleta {
+  color: var(--cuaderno-texto-tenue);
+}
+
+.cal-preview__tag {
+  margin: 0;
+}
+
+.cal-preview-drawer__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.cal-preview-drawer__nota-pie {
+  font-size: 12px;
+  max-width: 320px;
+  line-height: 1.4;
+}
+
+@media (max-width: 1279px) {
+  .cal-cuaderno-header__title {
+    font-size: 1.35rem;
+  }
+}
+
+/* —— Bimestre consolidado (cerrado) —— */
+.cal-bimestre-consolidado-page {
+  --cuaderno-verde-1: #e8f5e9;
+  --cuaderno-verde-2: #c8e6c9;
+  --cuaderno-verde-3: #a5d6a7;
+  --cuaderno-verde-4: #81c784;
+  --cuaderno-verde-5: #66bb6a;
+  --cuaderno-verde-6: #4caf50;
+  --cuaderno-verde-7: #43a047;
+  --cuaderno-verde-8: #388e3c;
+  --cuaderno-texto-tenue: rgba(0, 0, 0, 0.45);
+}
+
+.cal-bimestre-consolidado-toolbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border, #f0f0f0);
+  background: var(--color-fill-quaternary, #fafafa);
+}
+
+.cal-bimestre-consolidado-toolbar__label {
+  font-size: 13px;
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+}
+
+.cal-bimestre-consolidado__bim-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 8px;
+}
+
+.cal-bimestre-consolidado__bim-titulo {
+  font-weight: 600;
+}
+
+.cal-bimestre-consolidado__bim-info {
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  font-size: 14px;
+}
+
+.cal-bimestre-consolidado__modo-tag {
+  margin: 0;
+  font-size: 11px;
+}
+
+.cal-bimestre-consolidado__total {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-bimestre-consolidado__total--vacio {
+  color: var(--color-text-quaternary, rgba(0, 0, 0, 0.25));
+  font-weight: 400;
+}
+
+.cal-bimestre-consolidado-leyenda {
+  margin: 0;
+  padding: 10px 16px 14px;
+  font-size: 12px;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  border-top: 1px solid var(--color-border-secondary, #f0f0f0);
+}
+
+.cal-bimestre-consolidado-wrap .cal-bimestre-consolidado__col-total {
+  background: var(--color-fill-quaternary, #fafafa);
+}

@@ -6,7 +6,7 @@
  * @returns {boolean}
  */
 export function cumplePermisoRef(ref, hasPermiso) {
-  if (!ref) return true;
+  if (!ref) return false;
   const opciones = Array.isArray(ref) ? ref : [ref];
   return opciones.some((p) => p?.codigo && hasPermiso(p.codigo, p.accion));
 }

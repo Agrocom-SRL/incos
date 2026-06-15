@@ -49,10 +49,9 @@ const TableCell = ({
     spaceStyle = {},
     align = 'left',
     actions = false,
-    direction: _directionDeprecated, // antd Space: use orientation instead
     ...props
 }) => {
-    const orientation = orientationProp ?? _directionDeprecated ?? 'horizontal';
+    const orientation = orientationProp ?? 'horizontal';
     const content = children ?? fallback;
     const hasContent = content !== null && content !== undefined && content !== '';
 

@@ -1,7 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { AMBITOS_TIPO_EVALUACION_VALUES } from '../../../domain/constants/evaluaciones.constants.js';
 
 export const TipoEvaluacion = sequelize.define(
     'TipoEvaluacion',
@@ -26,27 +25,12 @@ export const TipoEvaluacion = sequelize.define(
             comment: 'Descripción del tipo y cuándo se aplica.',
         },
 
-        ambito: {
-            type: DataTypes.ENUM(...AMBITOS_TIPO_EVALUACION_VALUES),
-            allowNull: true,
-            defaultValue: 'BIMESTRE',
-            comment: 'BIMESTRE o MATERIA_COMPLETA.',
-        },
-
         esRecuperatorio: {
             type: DataTypes.BOOLEAN,
             field: 'es_recuperatorio',
             allowNull: true,
             defaultValue: false,
             comment: 'TRUE si reemplaza la nota original.',
-        },
-
-        permiteMultiplesIntentos: {
-            type: DataTypes.BOOLEAN,
-            field: 'permite_multiples_intentos',
-            allowNull: true,
-            defaultValue: false,
-            comment: 'TRUE si permite múltiples intentos.',
         },
     },
     {

@@ -1,0 +1,40 @@
+/* Select con pills — valor cerrado y opciones del listado */
+.form-pill-select.ant-select .ant-select-selector {
+  min-height: 40px;
+  align-items: center;
+}
+
+.form-pill-select .ant-select-selection-item {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: auto !important;
+  line-height: normal !important;
+}
+
+.form-pill-select__option {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.form-pill-select__popup .ant-select-item {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.form-pill-select__popup .ant-select-item-option-active {
+  background: var(--border-soft, #f9fafb) !important;
+}
+
+.form-pill-select__popup .ant-select-item-option-selected {
+  background: var(--border-soft, #f3f4f6) !important;
+  font-weight: inherit;
+}
+
+.form-pill-select__popup
+  .ant-select-item-option-selected
+  .ant-select-item-option-state {
+  color: var(--text-600, #4b5563);
+}

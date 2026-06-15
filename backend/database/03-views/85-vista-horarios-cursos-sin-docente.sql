@@ -1,58 +1,63 @@
 -- ============================================
 -- VISTA: vista_horarios_cursos_sin_docente
--- Cursos activos sin asignación docente vigente (para panel lateral de horarios)
---
--- Propósito:
--- - Listar materias/cursos por paralelo que aún no tienen fila en
---   vista_base_docentes_vigentes_por_curso.
---
--- Reutiliza:
--- - vista_base_docentes_vigentes_por_curso (80)
+-- Ofertas activas sin docente vigente asignado.
 -- ============================================
 
 USE instituto_incos;
 
 DROP VIEW IF EXISTS vista_horarios_cursos_sin_docente;
 
-CREATE OR REPLACE VIEW vista_horarios_cursos_sin_docente AS
+CREATE VIEW vista_horarios_cursos_sin_docente AS
 SELECT
-  c.id AS curso_id,
-  c.codigo AS curso_codigo,
+  oc.id AS curso_id,
+  CONCAT('OC-', oc.id) AS curso_codigo,
   m.id AS materia_id,
   m.sigla AS materia_sigla,
   m.nombre AS materia_nombre,
   p.id AS paralelo_id,
   p.nombre AS paralelo_nombre,
-  p.turno AS paralelo_turno,
+  pg.turno AS paralelo_turno,
   per.nombre AS periodo_nombre,
   car.id AS carrera_id,
   car.nombre AS carrera_nombre,
   car.codigo AS carrera_codigo
-FROM cursos c
+FROM oferta_cursos oc
+INNER JOIN paralelos_gestion pg
+  ON pg.id = oc.paralelo_gestion_id
+  AND pg.deleted_at IS NULL
+  AND pg.activo = TRUE
+  AND pg.estado <> 'CERRADO'
+INNER JOIN gestiones_planes gp
+  ON gp.id = pg.gestion_plan_id
+  AND gp.deleted_at IS NULL
+INNER JOIN gestiones g
+  ON g.id = gp.gestion_id
+  AND g.deleted_at IS NULL
+  AND g.vigente = TRUE
 INNER JOIN paralelos p
-  ON p.id = c.paralelo_id
+  ON p.id = pg.paralelo_id
   AND p.deleted_at IS NULL
-  AND p.activo = 1
+  AND p.activo = TRUE
 LEFT JOIN periodos per
   ON per.id = p.periodo_id
   AND per.deleted_at IS NULL
-  AND per.activo = 1
+  AND per.activo = TRUE
 LEFT JOIN carreras car
   ON car.id = p.carrera_id
   AND car.deleted_at IS NULL
-  AND car.activo = 1
-LEFT JOIN asignaturas_plan ap
-  ON ap.id = c.asignatura_plan_id
+  AND car.activo = TRUE
+INNER JOIN asignaturas_plan ap
+  ON ap.id = oc.asignatura_plan_id
   AND ap.deleted_at IS NULL
-  AND ap.activo = 1
+  AND ap.activo = TRUE
 LEFT JOIN materias m
   ON m.id = ap.materia_id
   AND m.deleted_at IS NULL
-  AND m.activo = 1
-WHERE c.deleted_at IS NULL
-  AND c.activo = 1
+  AND m.activo = TRUE
+WHERE oc.deleted_at IS NULL
+  AND oc.activo = TRUE
   AND NOT EXISTS (
     SELECT 1
     FROM vista_base_docentes_vigentes_por_curso d
-    WHERE d.curso_id = c.id
+    WHERE d.curso_id = oc.id
   );

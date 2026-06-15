@@ -32,11 +32,26 @@
   }
 }
 
-/* A partir de 1200px (xl, xxl): alineación a la derecha (al lado del input) */
+/* A partir de 1200px (xl, xxl): alineación a la derecha (layout horizontal legacy) */
 @media (min-width: 1200px) {
-  .form-field .ant-form-item-label {
+  .form-field:not(.form-field--vertical) .ant-form-item-label {
     text-align: right !important;
   }
+}
+
+/* Layout vertical (formularios tipo workspace CFG): etiqueta siempre a la izquierda */
+.form-field--vertical.ant-form-item {
+  align-items: flex-start !important;
+}
+
+.form-field--vertical .ant-form-item-label {
+  text-align: left !important;
+  padding-right: 0 !important;
+}
+
+.form-field--vertical .ant-form-item-label > label {
+  font-weight: 500;
+  height: auto !important;
 }
 
 /* Asegurar que DatePicker tenga el mismo ancho que Input */

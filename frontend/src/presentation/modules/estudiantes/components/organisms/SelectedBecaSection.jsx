@@ -26,7 +26,7 @@ import {
   CheckCircleOutlined,
   BankOutlined
 } from '@ant-design/icons';
-import { Card, Button } from '@atoms';
+import { Card, Button, ActionButton } from '@atoms';
 import { SelectedBecaInfoItem } from '../molecules';
 
 const { TextArea } = Input;
@@ -63,7 +63,8 @@ const SelectedBecaSection = ({
   form,
   onFinish,
   onCancel,
-  disabled = false
+  disabled = false,
+  isEditMode = false,
 }) => {
   if (!selectedBecaDescuento) return null;
 
@@ -162,14 +163,16 @@ const SelectedBecaSection = ({
       {/* Botones de acción - Solo se muestran cuando hay una beca seleccionada */}
       <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--color-border-secondary, #e8e8e8)' }}>
         <Space size="large">
-          <Button
+          <ActionButton
+            permiso="matricula.beca.asignar"
+            accion={isEditMode ? 'EDITAR' : 'CREAR'}
             variant="primary"
             onClick={() => form?.submit()}
             icon={<SaveOutlined />}
             disabled={disabled}
           >
-            Asignar Beca
-          </Button>
+            {isEditMode ? 'Guardar cambios' : 'Asignar beca'}
+          </ActionButton>
           <Button
             variant="default"
             onClick={onCancel}

@@ -39,7 +39,7 @@ import {
 import { useMessage } from '@application/utils';
 import { StudentRegisterContext } from '@application-estudiantes/context/StudentRegisterContext';
 import { EDAD_MINIMA_REGISTRO } from '@infrastructure/config/constants/studentConstants';
-import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+import { useCarrerasApi } from '@application-configuracion/academico/hooks';
 import { useGestionesApi } from '@application-estudiantes/hooks/api/useGestionesApi';
 
 export const StudentRegisterProvider = ({ children, mode = 'create', studentId = null }) => {

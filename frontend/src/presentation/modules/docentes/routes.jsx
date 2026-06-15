@@ -8,15 +8,20 @@
  * Los campos `permiso` + `accion` se aplican en `routerFactory` vía `PrivateRoute` (RBAC alineado con seeders).
  */
 
+import { Navigate, useParams } from 'react-router-dom';
+import { ofertaPaths } from '@application-institucional/oferta/config/paths';
 import { UnderConstruction } from '@components/pages';
 import {
   DocentesListConnector,
   DocentesDetailConnector,
   DocentesCreateConnector,
   DocentesEditConnector,
-  DocentesAsignacionAcademicaConnector,
-  DocentesAsignacionesGestionConnector,
 } from '@docentes/connectors';
+
+const DocenteAsignacionesLegacyRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={ofertaPaths.docenteAsignaciones(id)} replace />;
+};
 
 export const docentesRoutes = [
   {
@@ -43,12 +48,9 @@ export const docentesRoutes = [
   },
   {
     path: '/docentes/asignar',
-    element: <DocentesAsignacionAcademicaConnector />,
-    key: 'DOC-ASIGNAR',
-    permiso: 'docentes.asignar',
-    accion: 'EDITAR',
+    element: <Navigate to="/institucional/oferta" replace />,
+    key: 'DOC-ASIGNAR-LEGACY',
     menu: null,
-    breadcrumbParent: 'DOC-LIST',
   },
   {
     path: '/docentes/licencias/listar',
@@ -83,12 +85,9 @@ export const docentesRoutes = [
   },
   {
     path: '/docentes/:id/asignaciones',
-    element: <DocentesAsignacionesGestionConnector />,
-    key: 'DOC-ASIGNACIONES-GESTION',
-    permiso: 'docentes.asignar',
-    accion: 'EDITAR',
+    element: <DocenteAsignacionesLegacyRedirect />,
+    key: 'DOC-ASIGNACIONES-LEGACY',
     menu: null,
-    breadcrumbParent: 'DOC-LIST',
   },
   {
     path: '/docentes/:id/editar',

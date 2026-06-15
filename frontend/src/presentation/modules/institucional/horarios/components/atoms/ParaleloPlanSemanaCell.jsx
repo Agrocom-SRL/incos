@@ -1,5 +1,6 @@
 /**
  * Celda día×hora en el plan semanal del paralelo (chips arrastrables en modo edición).
+ * El resaltado de conflictos docente lo aplica DocenteHorarioSemanalGrid por horario_id.
  */
 
 import { CloseOutlined } from '@ant-design/icons';
@@ -22,6 +23,13 @@ const hexToRgb = (hex) => {
         b: parseInt(normalized.slice(5, 7), 16),
         hex: normalized,
     };
+};
+
+const resolveNombreMateria = (ev) => {
+    const nom = ev.materiaNombre != null ? String(ev.materiaNombre).trim() : '';
+    const sig = ev.materiaSigla != null ? String(ev.materiaSigla).trim() : '';
+    if (nom && sig && nom !== sig) return nom;
+    return nom || null;
 };
 
 const ParaleloPlanSemanaCell = ({
@@ -58,7 +66,12 @@ const ParaleloPlanSemanaCell = ({
                 return (
                     <div
                         key={`${ev.cursoCodigo}-${ev.cursoHorarioId ?? ev.orden}-${idx}`}
-                        className={`da-cal-semanal__chip ${editable ? 'da-cal-semanal__chip--draggable' : ''}`}
+                        className={[
+                            'da-cal-semanal__chip',
+                            editable ? 'da-cal-semanal__chip--draggable' : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
                         style={chipStyle}
                         draggable={Boolean(editable && onBeginDragChip)}
                         onDragStart={handleDragStart}
@@ -81,15 +94,22 @@ const ParaleloPlanSemanaCell = ({
                             <div className="da-cal-semanal__chip-sigla">{ev.materiaSigla}</div>
                         ) : null}
                         {(() => {
-                            const nom = ev.materiaNombre != null ? String(ev.materiaNombre).trim() : '';
-                            const sig = ev.materiaSigla != null ? String(ev.materiaSigla).trim() : '';
-                            let label = '';
-                            if (nom && sig && nom !== sig) label = nom;
-                            else if (nom) label = nom;
-                            else if (!sig) label = `Asignación ${ev.cursoCodigo}`;
-                            return label ? <div className="da-cal-semanal__chip-curso">{label}</div> : null;
+                            const nombreMateria = resolveNombreMateria(ev);
+                            if (nombreMateria) {
+                                return (
+                                    <div className="da-cal-semanal__chip-curso">{nombreMateria}</div>
+                                );
+                            }
+                            if (ev.materiaSigla) return null;
+                            return (
+                                <div className="da-cal-semanal__chip-curso">
+                                    Asignación {ev.cursoCodigo}
+                                </div>
+                            );
                         })()}
-                        {ev.carrera ? <div className="da-cal-semanal__chip-line">{ev.carrera}</div> : null}
+                        {ev.carrera ? (
+                            <div className="da-cal-semanal__chip-line">{ev.carrera}</div>
+                        ) : null}
                         {ev.paralelo || ev.turno ? (
                             <div className="da-cal-semanal__chip-line text-bold">
                                 {[ev.paralelo, ev.turno].filter(Boolean).join(' · ')}

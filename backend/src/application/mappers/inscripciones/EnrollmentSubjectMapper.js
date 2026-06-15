@@ -23,7 +23,8 @@ export function entityToPresentation(enrollmentSubject) {
   return {
     id: enrollmentSubject.id,
     inscripcionId: enrollmentSubject.enrollmentId,
-    asignacionDocenteId: enrollmentSubject.teacherAssignmentId,
+    ofertaCursoId: enrollmentSubject.offerCourseId,
+    asignaturaPlanId: enrollmentSubject.curriculumSubjectId,
     notaFinal: enrollmentSubject.finalGrade,
     notaDefinitiva: enrollmentSubject.definitiveGrade,
     estado: enrollmentSubject.status,

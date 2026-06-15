@@ -1,3 +1,7 @@
+/**
+ * Formulario de docente — sin identidad visual (color se asigna al vincular materias).
+ */
+
 import { Alert, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useDocentesFormContext } from '@application-docentes/hooks';
@@ -34,7 +38,7 @@ const DocentesForm = () => {
             title={pageTitle}
             breadcrumbItems={breadcrumbItems}
             actions={
-              <Button variant="default" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+              <Button variant="back" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
                 Volver
               </Button>
             }
@@ -53,7 +57,7 @@ const DocentesForm = () => {
           title={pageTitle}
           breadcrumbItems={breadcrumbItems}
           actions={
-            <Button variant="default" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+            <Button variant="back" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
               Volver
             </Button>
           }
@@ -62,7 +66,7 @@ const DocentesForm = () => {
       sidebar={null}
     >
       <Spin spinning={loading}>
-        {error ? <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} /> : null}
+        {error ? <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} /> : null}
         {!loading ? (
           <WizardForm
             key={wizardMountKey}

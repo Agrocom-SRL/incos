@@ -1,17 +1,30 @@
 /**
  * Módulo: Configuración
  * Registra todos los Use Cases relacionados con configuración (académico, datos complementarios)
- * 
- * Clean Architecture:
- * - Application Layer: Registro de dependencias del módulo de configuración
- * 
- * Ubicación: application/container/modules
- * - Parte del módulo de Configuración
- * - Submódulos: Académico, Datos Complementarios
  */
 
-import { GetTodasCarrerasUseCase } from '@useCases/configuracion/academico/carreras';
-import { GetTodasMateriasUseCase } from '@useCases/configuracion/academico/materias';
+import {
+  GetTodasCarrerasUseCase,
+  GetCarreraPorIdUseCase,
+  CrearCarreraUseCase,
+  ActualizarCarreraUseCase,
+  EliminarCarreraUseCase,
+  SubirCarreraImagenUseCase,
+} from '@useCases/configuracion/academico/carreras';
+import {
+  GetTodasMateriasUseCase,
+  GetMateriaPorIdUseCase,
+  CrearMateriaUseCase,
+  ActualizarMateriaUseCase,
+  EliminarMateriaUseCase,
+} from '@useCases/configuracion/academico/materias';
+import {
+  GetParaleloPorIdUseCase,
+  CrearParaleloUseCase,
+  ActualizarParaleloUseCase,
+  EliminarParaleloUseCase,
+} from '@useCases/configuracion/academico/paralelos';
+import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import { GetTodasDiscapacidadesUseCase } from '@useCases/configuracion/complementario/discapacidad';
 import CarreraRepository from '@infrastructure/repositories/CarreraRepository';
 import MateriaRepository from '@infrastructure/repositories/MateriaRepository';
@@ -23,26 +36,30 @@ import DiscapacidadRepository from '@infrastructure/repositories/DiscapacidadRep
  * @returns {Object} Factory con los Use Cases registrados
  */
 export function registerConfiguracionModule(factory) {
-  // Repositorios singleton (stateless)
   const carreraRepository = CarreraRepository;
   const materiaRepository = MateriaRepository;
   const discapacidadRepository = DiscapacidadRepository;
 
-  // Registrar Use Cases de Carreras
-  factory.obtenerTodasCarreras = () => {
-    return new GetTodasCarrerasUseCase(carreraRepository);
-  };
+  factory.obtenerTodasCarreras = () => new GetTodasCarrerasUseCase(carreraRepository);
+  factory.obtenerCarreraPorId = () => new GetCarreraPorIdUseCase(carreraRepository);
+  factory.crearCarrera = () => new CrearCarreraUseCase(carreraRepository);
+  factory.actualizarCarrera = () => new ActualizarCarreraUseCase(carreraRepository);
+  factory.eliminarCarrera = () => new EliminarCarreraUseCase(carreraRepository);
+  factory.subirCarreraImagen = () => new SubirCarreraImagenUseCase(carreraRepository);
 
-  // Registrar Use Cases de Materias
-  factory.obtenerTodasMaterias = () => {
-    return new GetTodasMateriasUseCase(materiaRepository);
-  };
+  factory.obtenerTodasMaterias = () => new GetTodasMateriasUseCase(materiaRepository);
+  factory.obtenerMateriaPorId = () => new GetMateriaPorIdUseCase(materiaRepository);
+  factory.crearMateria = () => new CrearMateriaUseCase(materiaRepository);
+  factory.actualizarMateria = () => new ActualizarMateriaUseCase(materiaRepository);
+  factory.eliminarMateria = () => new EliminarMateriaUseCase(materiaRepository);
 
-  // Registrar Use Cases de Discapacidad
-  factory.obtenerTodasDiscapacidades = () => {
-    return new GetTodasDiscapacidadesUseCase(discapacidadRepository);
-  };
+  const paraleloRepository = ParaleloRepository;
+  factory.obtenerParaleloPorId = () => new GetParaleloPorIdUseCase(paraleloRepository);
+  factory.crearParalelo = () => new CrearParaleloUseCase(paraleloRepository);
+  factory.actualizarParalelo = () => new ActualizarParaleloUseCase(paraleloRepository);
+  factory.eliminarParalelo = () => new EliminarParaleloUseCase(paraleloRepository);
+
+  factory.obtenerTodasDiscapacidades = () => new GetTodasDiscapacidadesUseCase(discapacidadRepository);
 
   return factory;
 }
-

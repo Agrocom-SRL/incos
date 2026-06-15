@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
 import {
   createTeacherValidator,
@@ -15,6 +15,8 @@ import {
   listCursosParaleloDocenteValidator,
   listCursosDisponiblesDocenteValidator,
   cursoIdParamValidator,
+  getDocenteCargaGestionValidator,
+  putDocenteColorValidator,
 } from '../validators/docentes/index.js';
 
 /**
@@ -34,8 +36,43 @@ export function buildDocentesRouter({ controllers, middlewares }) {
   const docenteCrear = [authenticate, verificarPermiso('docentes.crear', 'CREAR')];
   const docenteEditar = [authenticate, verificarPermiso('docentes.editar', 'EDITAR')];
   const docenteEliminar = [authenticate, verificarPermiso('docentes.editar', 'ELIMINAR')];
-  const docenteAsignar = [authenticate, verificarPermiso('docentes.asignar', 'EDITAR')];
-  const docenteAsignarEliminar = [authenticate, verificarPermiso('docentes.asignar', 'ELIMINAR')];
+  const docenteAsignar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.asignacion-docente', 'EDITAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
+  const docenteAsignarEliminar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.asignacion-docente', 'ELIMINAR'],
+      ['docentes.asignar', 'ELIMINAR'],
+    ]),
+  ];
+  const docenteColorListar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.color-docente', 'LISTAR'],
+      ['institucional.horarios.asignacion-docente', 'LISTAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
+  const docenteColorEditar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.color-docente', 'EDITAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
+  const docenteCargaListar = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.carga-docente', 'LISTAR'],
+      ['institucional.horarios.asignacion-docente', 'LISTAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
 
   router.get(
     '/',
@@ -146,6 +183,37 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     ...idValidator,
     validateRequest,
     (req, res, next) => controllers.deleteTeacherAssignmentController.handle(req, res, next)
+  );
+
+  router.get(
+    '/colores-en-uso',
+    ...docenteColorListar,
+    validateRequest,
+    (req, res, next) => controllers.getDocenteColoresEnUsoController.handle(req, res, next)
+  );
+
+  router.get(
+    '/colores-sugeridos',
+    ...docenteColorListar,
+    validateRequest,
+    (req, res, next) => controllers.getDocenteColoresSugeridosController.handle(req, res, next)
+  );
+
+  router.get(
+    '/:id/carga-gestion',
+    ...docenteCargaListar,
+    ...getDocenteCargaGestionValidator,
+    validateRequest,
+    (req, res, next) => controllers.getDocenteCargaGestionController.handle(req, res, next)
+  );
+
+  router.put(
+    '/:id/color',
+    ...docenteColorEditar,
+    ...idValidator,
+    putDocenteColorValidator,
+    validateRequest,
+    (req, res, next) => controllers.updateDocenteColorController.handle(req, res, next)
   );
 
   router.put(

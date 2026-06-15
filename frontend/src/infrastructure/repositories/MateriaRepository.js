@@ -32,20 +32,56 @@ export class MateriaRepository extends IMateriaRepository {
       // Llamada HTTP directa al endpoint
       const response = await apiClient.get(MATERIAS_ENDPOINTS.BASE, { params });
 
-      // Procesar respuesta exitosa
       const result = handleSuccessResponse(response);
 
-      // Asegurar que data sea un array
-      if (result.success && result.data) {
-        result.data = Array.isArray(result.data) ? result.data : [];
-      }
-
+      // El backend devuelve { materias: [...] }; el mapper usa normalizeFieldToArray
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener materias');
     }
   }
 
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(MATERIAS_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      if (result.success && result.data?.materia) {
+        result.data = result.data;
+      } else if (result.success && result.data && !result.data.materia) {
+        result.data = { materia: result.data, usos: [] };
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener la materia');
+    }
+  }
+
+  async crear(data) {
+    try {
+      const response = await apiClient.post(MATERIAS_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear materia');
+    }
+  }
+
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(MATERIAS_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar materia');
+    }
+  }
+
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(MATERIAS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar materia');
+    }
+  }
 }
 
 export default new MateriaRepository();

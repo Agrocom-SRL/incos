@@ -1,29 +1,42 @@
-// components/atoms/Button.jsx
 /**
- * Button - Componente atómico para botones
- * 
- * Los estilos de tema vienen automáticamente de Ant Design via ConfigProvider
- * CSS solo para layout y posicionamiento
- * 
- * Ant Design aplica automáticamente:
- * - colorPrimary (desde theme.components.Button.colorPrimary)
- * - borderRadius (desde theme.components.Button.borderRadius)
- * - controlHeight (desde theme.components.Button.controlHeight)
- * 
- * Variantes semánticas:
- * - variant: 'default' | 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error'
- * - buttonStyle: 'filled' | 'outlined' (solo para variantes semánticas)
- * 
- * Nota: Se usa 'buttonStyle' en lugar de 'style' para evitar conflicto con el prop 'style' de React
- * para estilos inline. Los estilos inline se pueden pasar normalmente via prop 'style'.
+ * Button — diseño sd-btn (detalle estudiante / fichas).
+ *
+ * Convención:
+ *   - Volver / cancelar / anterior → variant="back" (outline pill; nunca primary).
+ *   - Una sola acción principal por grupo (header o footer del wizard).
+ *   - Semánticas por acción: view/info (azul), warning (editar), danger (eliminar).
+ *
+ * Variantes:
+ *   primary | success  → verde institucional
+ *   back | outline | default | secondary → outline (Volver)
+ *   info | view        → azul (ver / exportar / detalle)
+ *   warning | warn     → ámbar (editar)
+ *   danger | error     → rojo (eliminar)
+ *   alternative        → violeta institucional (acción secundaria destacada)
+ *
+ * type="link" → Ant Design link (sin sd-btn).
  */
 
 import { Button as AntButton } from 'antd';
 
+const VARIANT_SD_CLASS = {
+  primary: 'sd-btn--primary',
+  success: 'sd-btn--primary',
+  back: 'sd-btn--outline',
+  outline: 'sd-btn--outline',
+  default: 'sd-btn--outline',
+  secondary: 'sd-btn--outline',
+  info: 'sd-btn--info',
+  view: 'sd-btn--info',
+  warning: 'sd-btn--warn',
+  warn: 'sd-btn--warn',
+  danger: 'sd-btn--danger',
+  error: 'sd-btn--danger',
+  alternative: 'sd-btn--alternative',
+};
+
 const Button = ({
-  type = 'default',
-  variant = 'default', // 'primary' | 'secondary' | 'default' | 'info' | 'success' | 'warning' | 'error'
-  buttonStyle = 'filled', // 'filled' | 'outlined' (solo para variantes semánticas) - renombrado de 'style' para evitar conflicto con estilos inline
+  variant = 'default',
   size = 'large',
   loading = false,
   disabled = false,
@@ -31,32 +44,42 @@ const Button = ({
   onClick,
   children,
   className = '',
+  icon,
+  type: antButtonType,
+  buttonStyle: _buttonStyle,
   ...props
 }) => {
-  const baseClassName = 'button';
-  const semanticVariants = ['info', 'success', 'warning', 'error'];
-  const isSemantic = semanticVariants.includes(variant);
-  const variantClassName = isSemantic ? `button--${variant}` : '';
-  const styleClassName = isSemantic && buttonStyle === 'filled' ? 'button--filled' : '';
-  const buttonClassName = className 
-    ? `${baseClassName} ${variantClassName} ${styleClassName} ${className}`.trim() 
-    : `${baseClassName} ${variantClassName} ${styleClassName}`.trim();
+  if (antButtonType === 'link') {
+    return (
+      <AntButton
+        type="link"
+        size={size}
+        loading={loading}
+        disabled={disabled}
+        htmlType={htmlType}
+        onClick={onClick}
+        icon={icon}
+        className={className || undefined}
+        {...props}
+      >
+        {children}
+      </AntButton>
+    );
+  }
 
-  // Para variantes semánticas, SIEMPRE usar 'default' de Ant Design y aplicar estilos via CSS
-  // Esto evita que Ant Design sobrescriba con colorPrimary
-  // Para variantes normales, usar 'primary' o 'default' según variant
-  const antButtonType = isSemantic 
-    ? 'default' // Siempre 'default' para semánticos (filled y outlined se controlan via CSS)
-    : (variant === 'primary' ? 'primary' : 'default');
+  const sdModifier = VARIANT_SD_CLASS[variant] ?? 'sd-btn--outline';
+  const sizeClass = size === 'small' ? 'sd-btn--sm' : '';
+  const buttonClassName = ['sd-btn', sdModifier, sizeClass, className].filter(Boolean).join(' ');
 
   return (
     <AntButton
-      type={antButtonType}
+      type="default"
       size={size}
       loading={loading}
       disabled={disabled}
       htmlType={htmlType}
       onClick={onClick}
+      icon={icon}
       className={buttonClassName}
       {...props}
     >
@@ -65,5 +88,11 @@ const Button = ({
   );
 };
 
-export default Button;
+/** Botón «Volver» estándar (outline + flecha). */
+export const BackButton = ({ children = 'Volver', icon, ...props }) => (
+  <Button variant="back" icon={icon} {...props}>
+    {children}
+  </Button>
+);
 
+export default Button;

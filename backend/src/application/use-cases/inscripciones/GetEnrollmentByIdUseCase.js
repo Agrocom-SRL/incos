@@ -39,10 +39,10 @@ export class GetEnrollmentByIdUseCase {
    * @param {Object} params.studyPlanRepository - Repositorio de planes de estudio
    * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {Object} params.teacherAssignmentRepository - Repositorio de asignaciones docentes
-   * @param {Object} params.courseRepository - Repositorio de cursos
+   * @param {Object} params.courseOfferRepository - Repositorio de oferta de cursos
+   * @param {Object} params.parallelManagementRepository - Repositorio de paralelos en gestión
    * @param {Object} params.planSubjectRepository - Repositorio de asignaturas de plan
    * @param {Object} params.subjectRepository - Repositorio de materias
-   * @param {Object} params.courseScheduleRepository - Repositorio de horarios de cursos
    * @param {Object} params.scheduleRepository - Repositorio de horarios
    * @param {Object} params.classroomRepository - Repositorio de aulas
    * @param {Object} params.teacherRepository - Repositorio de docentes
@@ -57,16 +57,18 @@ export class GetEnrollmentByIdUseCase {
     studyPlanRepository,
     managementRepository,
     teacherAssignmentRepository,
-    courseRepository,
+    courseOfferRepository,
+    parallelManagementRepository,
     planSubjectRepository,
     subjectRepository,
-    courseScheduleRepository,
     scheduleRepository,
+    asignacionHorarioRepository,
     classroomRepository,
     teacherRepository,
     parallelRepository,
     studentDocumentRepository,
     priorEnrollmentHistoryRepository,
+    periodRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -77,16 +79,18 @@ export class GetEnrollmentByIdUseCase {
     this.studyPlanRepository = studyPlanRepository;
     this.managementRepository = managementRepository;
     this.teacherAssignmentRepository = teacherAssignmentRepository;
-    this.courseRepository = courseRepository;
+    this.courseOfferRepository = courseOfferRepository;
+    this.parallelManagementRepository = parallelManagementRepository;
     this.planSubjectRepository = planSubjectRepository;
     this.subjectRepository = subjectRepository;
-    this.courseScheduleRepository = courseScheduleRepository;
     this.scheduleRepository = scheduleRepository;
+    this.asignacionHorarioRepository = asignacionHorarioRepository;
     this.classroomRepository = classroomRepository;
     this.teacherRepository = teacherRepository;
     this.parallelRepository = parallelRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
+    this.periodRepository = periodRepository;
     this.logger = logger;
   }
 
@@ -317,154 +321,123 @@ export class GetEnrollmentByIdUseCase {
             let subject = null;
             let horarios = [];
 
-            // 7a. Obtener asignación docente
-            if (enrollmentSubjectPlain.teacherAssignmentId) {
-              try {
-                teacherAssignment = await this.teacherAssignmentRepository.findById(
-                  enrollmentSubjectPlain.teacherAssignmentId
-                );
-                teacherAssignment = teacherAssignment?.toPlainObject
-                  ? teacherAssignment.toPlainObject()
-                  : teacherAssignment;
+            let parallelIdFromOffer = null;
 
-                // 7a.1. Obtener docente desde la asignación docente
-                if (teacherAssignment?.teacherId) {
-                  try {
-                    teacher = await this.teacherRepository.findById(teacherAssignment.teacherId, {
-                      attributes: ['id', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'expedicion', 'telefono', 'celular', 'emailPersonal'],
-                    });
-                    teacher = teacher?.toPlainObject ? teacher.toPlainObject() : teacher;
-                  } catch (err) {
-                    this.logger.warn('[Inscripciones] Error al obtener docente', {
-                      enrollmentSubjectId: enrollmentSubjectPlain.id,
-                      teacherId: teacherAssignment.teacherId,
-                      error: err.message,
-                    });
+            const offerCourseId = enrollmentSubjectPlain.offerCourseId;
+            if (offerCourseId) {
+              try {
+                const offerEntity = await this.courseOfferRepository.findById(offerCourseId);
+                const offer = offerEntity?.toPlainObject
+                  ? offerEntity.toPlainObject()
+                  : offerEntity;
+
+                const curriculumSubjectId =
+                  enrollmentSubjectPlain.curriculumSubjectId ?? offer?.planSubjectId;
+                if (curriculumSubjectId) {
+                  planSubject = await this.planSubjectRepository.findById(curriculumSubjectId);
+                  planSubject = planSubject?.toPlainObject
+                    ? planSubject.toPlainObject()
+                    : planSubject;
+
+                  if (planSubject?.subjectId) {
+                    subject = await this.subjectRepository.findById(planSubject.subjectId);
+                    subject = subject?.toPlainObject ? subject.toPlainObject() : subject;
                   }
                 }
 
-                // 7b. Obtener curso desde la asignación docente
-                if (teacherAssignment?.courseId) {
-                  try {
-                    course = await this.courseRepository.findById(teacherAssignment.courseId);
-                    course = course?.toPlainObject ? course.toPlainObject() : course;
+                const parallelManagementId = offer?.parallelManagementId ?? offer?.paraleloGestionId;
+                if (parallelManagementId) {
+                  const pgEntity = await this.parallelManagementRepository.findById(parallelManagementId);
+                  const pg = pgEntity?.toPlainObject ? pgEntity.toPlainObject() : pgEntity;
+                  parallelIdFromOffer = pg?.parallelId ?? pg?.paraleloId ?? null;
+                }
 
-                    // 7c. Obtener asignatura de plan desde el curso
-                    if (course?.planSubjectId) {
-                      try {
-                        planSubject = await this.planSubjectRepository.findById(course.planSubjectId);
-                        planSubject = planSubject?.toPlainObject ? planSubject.toPlainObject() : planSubject;
+                // Bloques de horario armados para la oferta (vista de presentación).
+                // Forma esperada por el frontend (useMatriculaDetailSchedules):
+                // cada item con dia/horaInicio/horaFin + aula{codigo,nombre} + ordenSecuencia.
+                try {
+                  const bloques =
+                    (await this.asignacionHorarioRepository?.findBloquesByOfertaCursoIdForPresentation(
+                      offerCourseId,
+                    )) || [];
+                  horarios = bloques.map((b) => ({
+                    id: b.id,
+                    ordenSecuencia: b.ordenSecuencia ?? null,
+                    dia: b.dia,
+                    horaInicio: b.horaInicio,
+                    horaFin: b.horaFin,
+                    turno: b.turno ?? null,
+                    numeroBloque: b.numeroBloque ?? null,
+                    aula:
+                      b.aulaCodigo || b.aulaNombre
+                        ? { codigo: b.aulaCodigo ?? null, nombre: b.aulaNombre ?? null }
+                        : null,
+                  }));
+                } catch (errHor) {
+                  this.logger.warn('[Inscripciones] Error al obtener bloques de horario', {
+                    offerCourseId,
+                    error: errHor.message,
+                  });
+                }
 
-                        // 7d. Obtener materia desde la asignatura de plan
-                        if (planSubject?.subjectId) {
-                          try {
-                            subject = await this.subjectRepository.findById(planSubject.subjectId);
-                            subject = subject?.toPlainObject ? subject.toPlainObject() : subject;
-                          } catch (err) {
-                            this.logger.warn('[Inscripciones] Error al obtener materia', {
-                              enrollmentSubjectId: enrollmentSubjectPlain.id,
-                              subjectId: planSubject.subjectId,
-                              error: err.message,
-                            });
-                          }
-                        }
-                      } catch (err) {
-                        this.logger.warn('[Inscripciones] Error al obtener asignatura de plan', {
-                          enrollmentSubjectId: enrollmentSubjectPlain.id,
-                          planSubjectId: course.planSubjectId,
-                          error: err.message,
-                        });
-                      }
-                    }
+                const assignmentsResult = await this.teacherAssignmentRepository.findAll(
+                  { offerCourseId, active: true },
+                  1,
+                  null
+                );
+                const assignList = assignmentsResult.teacherAssignments || [];
+                if (assignList.length > 0) {
+                  teacherAssignment = assignList[0]?.toPlainObject
+                    ? assignList[0].toPlainObject()
+                    : assignList[0];
 
-                    // 7e. Obtener horarios del curso
-                    if (course?.id) {
-                      try {
-                        const cursosHorariosResult = await this.courseScheduleRepository.findAll(
-                          { courseId: course.id },
-                          null,
-                          null
-                        );
-                        const cursosHorarios = cursosHorariosResult.courseSchedules || [];
-
-                        // 7f. Para cada curso_horario, obtener horario y aula completos
-                        horarios = await Promise.all(
-                          cursosHorarios.map(async (cursoHorario) => {
-                            try {
-                              let horario = null;
-                              if (cursoHorario.scheduleId) {
-                                horario = await this.scheduleRepository.findById(cursoHorario.scheduleId);
-                                horario = horario?.toPlainObject ? horario.toPlainObject() : horario;
-                              }
-
-                              let aula = null;
-                              if (cursoHorario.classroomId) {
-                                try {
-                                  aula = await this.classroomRepository.findById(cursoHorario.classroomId);
-                                  aula = aula?.toPlainObject ? aula.toPlainObject() : aula;
-                                } catch (error) {
-                                  this.logger.warn('[Inscripciones] Error al obtener aula', {
-                                    cursoHorarioId: cursoHorario.id,
-                                    aulaId: cursoHorario.classroomId,
-                                    error: error.message,
-                                  });
-                                }
-                              }
-
-                              return {
-                                id: cursoHorario.id,
-                                ordenSecuencia: cursoHorario.sequenceOrder,
-                                horario: horario
-                                  ? {
-                                    dia: horario.day,
-                                    horaInicio: horario.startTime,
-                                    horaFin: horario.endTime,
-                                  }
-                                  : null,
-                                aula: aula ? `${aula.code} - ${aula.name}` : null,
-                              };
-                            } catch (error) {
-                              this.logger.warn('[Inscripciones] Error al obtener horario o aula', {
-                                cursoHorarioId: cursoHorario.id,
-                                error: error.message,
-                              });
-                              return null;
-                            }
-                          })
-                        );
-
-                        // Filtrar horarios nulos (errores)
-                        horarios = horarios.filter((h) => h !== null);
-
-                        // Ordenar por ordenSecuencia
-                        horarios.sort((a, b) => a.ordenSecuencia - b.ordenSecuencia);
-                      } catch (err) {
-                        this.logger.warn('[Inscripciones] Error al obtener horarios del curso', {
-                          enrollmentSubjectId: enrollmentSubjectPlain.id,
-                          courseId: course.id,
-                          error: err.message,
-                        });
-                      }
-                    }
-                  } catch (err) {
-                    this.logger.warn('[Inscripciones] Error al obtener curso', {
-                      enrollmentSubjectId: enrollmentSubjectPlain.id,
-                      courseId: teacherAssignment.courseId,
-                      error: err.message,
+                  if (teacherAssignment?.teacherId) {
+                    teacher = await this.teacherRepository.findById(teacherAssignment.teacherId, {
+                      attributes: [
+                        'id',
+                        'nombres',
+                        'apellidoPaterno',
+                        'apellidoMaterno',
+                        'ci',
+                        'expedicion',
+                        'telefono',
+                        'celular',
+                        'emailPersonal',
+                        'colorHex',
+                      ],
                     });
+                    teacher = teacher?.toPlainObject ? teacher.toPlainObject() : teacher;
                   }
                 }
               } catch (err) {
-                this.logger.warn('[Inscripciones] Error al obtener asignación docente', {
+                this.logger.warn('[Inscripciones] Error al resolver oferta de curso', {
                   enrollmentSubjectId: enrollmentSubjectPlain.id,
-                  teacherAssignmentId: enrollmentSubjectPlain.teacherAssignmentId,
+                  offerCourseId,
+                  error: err.message,
+                });
+              }
+            } else if (enrollmentSubjectPlain.curriculumSubjectId) {
+              try {
+                planSubject = await this.planSubjectRepository.findById(
+                  enrollmentSubjectPlain.curriculumSubjectId
+                );
+                planSubject = planSubject?.toPlainObject
+                  ? planSubject.toPlainObject()
+                  : planSubject;
+                if (planSubject?.subjectId) {
+                  subject = await this.subjectRepository.findById(planSubject.subjectId);
+                  subject = subject?.toPlainObject ? subject.toPlainObject() : subject;
+                }
+              } catch (err) {
+                this.logger.warn('[Inscripciones] Error al obtener asignatura de plan', {
+                  enrollmentSubjectId: enrollmentSubjectPlain.id,
                   error: err.message,
                 });
               }
             }
 
             const periodoId = planSubject?.periodId ?? planSubject?.periodoId ?? null;
-            const paraleloId = course?.parallelId ?? course?.paraleloId ?? null;
+            const paraleloId = parallelIdFromOffer ?? course?.parallelId ?? course?.paraleloId ?? null;
 
             let paralelo = null;
             if (paraleloId) {
@@ -494,7 +467,9 @@ export class GetEnrollmentByIdUseCase {
               materiaId: subject ? subject.id : null,
               materiaNombre: subject ? subject.name : null,
               materiaSigla: subject ? subject.acronym : null,
-              color: course ? course.colorHex : null,
+              // Color del bloque de horario = color propio del docente (docentes.color_hex),
+              // misma fuente que la grilla del detalle de docente. Fallback al color del curso.
+              color: teacher?.colorHex ?? (course ? course.colorHex : null),
               periodoId,
               paraleloId,
               paralelo,
@@ -755,6 +730,7 @@ export class GetEnrollmentByIdUseCase {
       let materiaNombre = null;
       let materiaSigla = null;
       let periodName = null;
+      let periodNumero = null;
 
       const asignaturaPlanId = plain.curriculumSubjectId ?? plain.asignaturaPlanId;
       if (asignaturaPlanId && this.planSubjectRepository) {
@@ -763,6 +739,7 @@ export class GetEnrollmentByIdUseCase {
           const ps = planSubject?.toPlainObject ? planSubject.toPlainObject() : planSubject;
           if (ps) {
             periodId = ps.periodId ?? ps.periodoId ?? null;
+            periodNumero = ps.periodNumber ?? ps.periodoNumero ?? null;
             materiaId = ps.subjectId ?? ps.materiaId ?? null;
             if (materiaId && this.subjectRepository) {
               const subject = await this.subjectRepository.findById(materiaId);
@@ -770,7 +747,20 @@ export class GetEnrollmentByIdUseCase {
               materiaNombre = sp?.name ?? sp?.nombre ?? null;
               materiaSigla = sp?.acronym ?? sp?.sigla ?? null;
             }
-            if (periodId) {
+            if (periodId && this.periodRepository) {
+              try {
+                const periodEntity = await this.periodRepository.findById(periodId);
+                const periodPlain = periodEntity?.toPlainObject
+                  ? periodEntity.toPlainObject()
+                  : periodEntity;
+                periodName =
+                  periodPlain?.name ??
+                  periodPlain?.nombre ??
+                  `Periodo ${ps.periodNumber ?? ps.periodoNumero ?? periodId}`;
+              } catch {
+                periodName = `Periodo ${ps.periodNumber ?? ps.periodoNumero ?? periodId}`;
+              }
+            } else if (periodId) {
               periodName = `Periodo ${ps.periodNumber ?? ps.periodoNumero ?? periodId}`;
             }
           }
@@ -790,6 +780,8 @@ export class GetEnrollmentByIdUseCase {
           materiaNombre,
           materiaSigla,
           periodName,
+          periodoNombre: periodName,
+          periodoNumero: periodNumero,
         })
       );
     }

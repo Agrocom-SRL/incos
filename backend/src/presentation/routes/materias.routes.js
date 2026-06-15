@@ -1,7 +1,12 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { idValidator, listValidator } from '../validators/common/index.js';
 import { listMateriasValidator } from '../validators/academico/index.js';
+import {
+    createMateriaValidator,
+    updateMateriaValidator,
+} from '../validators/configuracion/materias.validator.js';
 
 /**
  * Construye el router del módulo Materias
@@ -23,7 +28,11 @@ import { listMateriasValidator } from '../validators/academico/index.js';
 export function buildMateriasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const listarMaterias = [authenticate, verificarPermiso('cfg.academico.materias', 'LISTAR')];
+    const listarMaterias = [authenticate, verificarPermiso('configuracion.materia', 'LISTAR')];
+    const detalleMaterias = [authenticate, verificarPermiso('configuracion.materia', 'DETALLE')];
+    const crearMaterias = [authenticate, verificarPermiso('configuracion.materia', 'CREAR')];
+    const editarMaterias = [authenticate, verificarPermiso('configuracion.materia', 'EDITAR')];
+    const eliminarMaterias = [authenticate, verificarPermiso('configuracion.materia', 'ELIMINAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -48,39 +57,38 @@ export function buildMateriasRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.listMateriasController.handle(req, res, next)
     );
 
-    // ============================================
-    // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
-    // ============================================
+    router.post(
+        '/',
+        ...crearMaterias,
+        createMateriaValidator,
+        validateRequest,
+        (req, res, next) => controllers.createMateriaController.handle(req, res, next)
+    );
 
-    // POST / - Crear materia
-    // router.post(
-    //     '/',
-    //     createMateriaValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.createMateriaController.handle(req, res, next)
-    // );
+    router.get(
+        '/:id',
+        ...detalleMaterias,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getMateriaByIdController.handle(req, res, next)
+    );
 
-    // GET /:id - Obtener materia por ID
-    // router.get(
-    //     '/:id',
-    //     getMateriaByIdValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.getMateriaByIdController.handle(req, res, next)
-    // );
+    router.put(
+        '/:id',
+        ...editarMaterias,
+        idValidator,
+        updateMateriaValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateMateriaController.handle(req, res, next)
+    );
 
-    // PUT /:id - Actualizar materia
-    // router.put(
-    //     '/:id',
-    //     updateMateriaValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.updateMateriaController.handle(req, res, next)
-    // );
-
-    // DELETE /:id - Eliminar materia (soft delete)
-    // router.delete(
-    //     '/:id',
-    //     (req, res, next) => controllers.deleteMateriaController.handle(req, res, next)
-    // );
+    router.delete(
+        '/:id',
+        ...eliminarMaterias,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteMateriaController.handle(req, res, next)
+    );
 
     return router;
 }

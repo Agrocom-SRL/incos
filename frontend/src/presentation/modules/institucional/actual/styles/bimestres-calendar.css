@@ -1,0 +1,142 @@
+/* Calendario anual de bimestres/etapas (Institucional → Control de bimestres). */
+
+.bim-cal-board {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bim-cal-board__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 1200px) {
+  .bim-cal-board__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .bim-cal-board__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Mini-mes ── */
+.bim-cal-month {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-md, 10px);
+  padding: 8px;
+  background: var(--surface, #fff);
+}
+
+.bim-cal-month__title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-600, #4b5563);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.bim-cal-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.bim-cal-month__wd {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-400, #9ca3af);
+  text-align: center;
+  padding-bottom: 2px;
+}
+
+.bim-cal-day {
+  font-size: 11px;
+  line-height: 1;
+  text-align: center;
+  padding: 4px 0;
+  border-radius: 5px;
+  color: var(--text-500, #6b7280);
+  border: 1px solid transparent;
+}
+
+.bim-cal-day--empty {
+  visibility: hidden;
+}
+
+.bim-cal-day--painted {
+  font-weight: 600;
+}
+
+.bim-cal-day--hoy {
+  border-color: var(--primary, var(--ant-color-primary, #22854f));
+  font-weight: 800;
+}
+
+/* ── Leyenda ── */
+.bim-cal-legend {
+  list-style: none;
+  margin: 0;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px 16px;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+
+.bim-cal-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bim-cal-legend__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bim-cal-legend__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-700, #374151);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bim-cal-legend__range {
+  font-size: 12px;
+  color: var(--text-400, #9ca3af);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ── Item de configuración de periodo (aside) ── */
+.bim-periodo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border, #e5e7eb);
+}
+
+.bim-periodo-item:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.bim-periodo-item__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}

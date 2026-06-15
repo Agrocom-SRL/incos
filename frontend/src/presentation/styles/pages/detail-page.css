@@ -104,6 +104,22 @@
   transform: scale(0.96);
 }
 
+.sd-profile__edit-btn--info {
+  background: linear-gradient(145deg, #69b1ff 0%, #1677ff 100%);
+  box-shadow: 0 4px 14px rgba(22, 119, 255, 0.45), 0 2px 6px rgba(9, 88, 217, 0.25);
+  animation: none;
+}
+
+.sd-profile__edit-btn--info:hover {
+  box-shadow: 0 6px 20px rgba(22, 119, 255, 0.5), 0 3px 8px rgba(9, 88, 217, 0.3);
+}
+
+.sd-profile__edit-btn--info:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .sd-profile__identity {
   display: flex;
   align-items: center;
@@ -390,18 +406,29 @@
   color: var(--text-900, #111827);
 }
 
-.sd-btn--declaracion {
-  background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 100%);
+.sd-btn--info {
+  background: #1976d2;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.28);
 }
 
-.sd-btn--declaracion:hover {
-  background: linear-gradient(145deg, #1d4ed8 0%, #1e40af 100%);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+.sd-btn--info:hover {
+  background: #1565c0;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.35);
 }
 
-.sd-btn--declaracion:disabled {
+.sd-btn--alternative {
+  background: #7c3aed;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.28);
+}
+
+.sd-btn--alternative:hover {
+  background: #6d28d9;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35);
+}
+
+.sd-btn--alternative:disabled {
   opacity: .6;
   cursor: not-allowed;
 }
@@ -433,17 +460,15 @@
   transition: color .15s !important;
 }
 
-.sd-tabs .ant-tabs-tab+.ant-tabs-tab {
-  margin-left: 28px !important;
-}
-
 .sd-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
-  color: var(--primary) !important;
+  color: #399f53 !important;
 }
 
 .sd-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: var(--text-900) !important;
+  color: #22854f !important;
   font-weight: 600 !important;
+  /* El indicador activo es la .ant-tabs-ink-bar (abajo). No duplicar con un
+     border-bottom en el botón: causaba doble línea bajo el tab activo. */
 }
 
 .sd-tabs .ant-tabs-ink-bar {
@@ -1018,7 +1043,7 @@
   box-sizing: border-box;
 }
 
-/** Dos o más bloques en la misma celda (solape). */
+/** Dos o más bloques en la misma celda del mismo plan (vista previa armado). */
 .da-cal-semanal__slot-wrap--conflict {
   border: 2px dashed var(--ant-color-error, #ff4d4f);
   border-radius: 6px;
