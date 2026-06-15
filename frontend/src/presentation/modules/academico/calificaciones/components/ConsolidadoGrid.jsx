@@ -30,13 +30,7 @@ const celdaNota = (valor) => (
 );
 
 const celdaSumaBimestre = (bim) => (
-  <CeldaSumaConAjusteInfo
-    suma={bim?.suma}
-    tieneAjusteAdmin={bim?.tieneAjusteAdmin}
-    fechaHabilitacion={bim?.fechaHabilitacion}
-    sumaCalculada={bim?.sumaCalculada}
-    className="cal-consolidado-grid__celda-suma-wrap"
-  />
+  <CeldaSumaConAjusteInfo suma={bim?.suma} className="cal-consolidado-grid__celda-suma-wrap" />
 );
 
 const LeyendaEstados = () => (

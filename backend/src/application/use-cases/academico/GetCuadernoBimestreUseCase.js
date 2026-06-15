@@ -14,6 +14,7 @@ export class GetCuadernoBimestreUseCase {
     calificacionCoordinacionRepository,
     calificacionContextoRepository,
     cuadernoRepository,
+    subjectEnrollmentBimesterRepository,
     teacherRepository,
     userRepository,
     authRepository,
@@ -22,6 +23,7 @@ export class GetCuadernoBimestreUseCase {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
     this.authRepository = authRepository;
@@ -75,13 +77,20 @@ export class GetCuadernoBimestreUseCase {
 
     const notas = filasNotas.map(mapNotaRowToDto);
 
+    const reabierto =
+      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+        Number(asignacionId),
+        bimestreNum,
+      )) > 0;
+
     this.logger.info('[Calificaciones] Cuaderno bimestre', {
       asignacionId,
       bimestre: bimestreNum,
       evaluaciones: evaluaciones.length,
       notas: notas.length,
+      reabierto,
     });
 
-    return { bimestre: bimestreNum, evaluaciones, notas };
+    return { bimestre: bimestreNum, evaluaciones, notas, reabierto };
   }
 }

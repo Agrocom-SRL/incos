@@ -520,11 +520,11 @@ class CalificacionRepository {
     }
   }
 
-  async guardarBimestreConsolidado(asignacionId, bimestre, filas = []) {
+  /** POST reabrir bimestre de un curso (deja el cuaderno editable). */
+  async reabrirBimestreCurso(asignacionId, bimestre) {
     try {
       const response = await apiClient.post(
-        CALIFICACIONES_ENDPOINTS.BIMESTRE_CONSOLIDADO(asignacionId, bimestre),
-        { filas },
+        CALIFICACIONES_ENDPOINTS.BIMESTRE_REABRIR(asignacionId, bimestre),
       );
       const responseData = response.data;
       if (responseData.success === false) {
@@ -532,7 +532,23 @@ class CalificacionRepository {
       }
       return { success: true, data: responseData.data ?? {} };
     } catch (error) {
-      return handleErrorResponse(error, 'Error al guardar el consolidado del bimestre');
+      return handleErrorResponse(error, 'Error al reabrir el bimestre');
+    }
+  }
+
+  /** POST cerrar y consolidar bimestre de un curso. */
+  async cerrarBimestreCurso(asignacionId, bimestre) {
+    try {
+      const response = await apiClient.post(
+        CALIFICACIONES_ENDPOINTS.BIMESTRE_CERRAR(asignacionId, bimestre),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cerrar el bimestre');
     }
   }
 

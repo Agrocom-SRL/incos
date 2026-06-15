@@ -15,6 +15,7 @@ export async function persistirNotaCuadernoCelda({
   evaluacionId,
   notaRaw,
   usuarioId,
+  reabierto = false,
 }) {
   let nota = notaRaw;
   if (nota === '' || nota === undefined) {
@@ -28,7 +29,8 @@ export async function persistirNotaCuadernoCelda({
   if (!evaluacion) {
     throw new NotFoundError('Evaluación');
   }
-  if (evaluacion.notas_cerradas) {
+  // Un bimestre reabierto administrativamente vuelve editable aunque sus notas estén cerradas.
+  if (evaluacion.notas_cerradas && !reabierto) {
     throw new ForbiddenError('Las notas de esta evaluación están cerradas.');
   }
 

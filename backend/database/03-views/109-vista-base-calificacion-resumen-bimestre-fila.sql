@@ -20,8 +20,7 @@ SELECT
   mm.id AS matricula_materia_id,
   COALESCE(
     bm.nota_bimestre,
-    COALESCE(bm.habilitacion_teorico, bm.nota_teorico, 0)
-      + COALESCE(bm.habilitacion_practico, bm.nota_practico, 0)
+    COALESCE(bm.nota_teorico, 0) + COALESCE(bm.nota_practico, 0)
   ) AS nota_efectiva,
   bm.estado AS estado_bimestre
 FROM matriculas_materia mm

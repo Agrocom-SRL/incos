@@ -14,8 +14,6 @@ export class SubjectEnrollmentBimesterMapper {
         if ('notaPractico' in d) specific.practiceGrade = num(d.notaPractico);
         if ('notaBimestre' in d) specific.bimesterGrade = num(d.notaBimestre);
         if ('pesoBimestre' in d) specific.bimesterWeight = num(d.pesoBimestre);
-        if ('notaHabilitacion' in d) specific.makeupGrade = num(d.notaHabilitacion);
-        if ('fechaHabilitacion' in d) specific.makeupDate = d.fechaHabilitacion;
         if ('estado' in d) specific.status = d.estado;
         if ('fechaCierre' in d) specific.closedAt = d.fechaCierre;
         if ('cerradoPor' in d) specific.closedBy = d.cerradoPor;
@@ -32,8 +30,6 @@ export class SubjectEnrollmentBimesterMapper {
             notaPractico: data.practiceGrade ?? null,
             notaBimestre: data.bimesterGrade ?? null,
             pesoBimestre: data.bimesterWeight ?? 1,
-            notaHabilitacion: data.makeupGrade ?? null,
-            fechaHabilitacion: data.makeupDate ?? null,
             estado: data.status ?? 'PENDIENTE',
             fechaCierre: data.closedAt ?? null,
             cerradoPor: data.closedBy ?? null,
@@ -50,8 +46,6 @@ export class SubjectEnrollmentBimesterMapper {
         if ('practiceGrade' in data) update.notaPractico = data.practiceGrade ?? null;
         if ('bimesterGrade' in data) update.notaBimestre = data.bimesterGrade ?? null;
         if ('bimesterWeight' in data) update.pesoBimestre = data.bimesterWeight;
-        if ('makeupGrade' in data) update.notaHabilitacion = data.makeupGrade ?? null;
-        if ('makeupDate' in data) update.fechaHabilitacion = data.makeupDate ?? null;
         if ('status' in data) update.estado = data.status;
         if ('closedAt' in data) update.fechaCierre = data.closedAt ?? null;
         if ('closedBy' in data) update.cerradoPor = data.closedBy ?? null;

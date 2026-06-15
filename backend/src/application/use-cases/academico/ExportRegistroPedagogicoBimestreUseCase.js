@@ -87,22 +87,18 @@ export class ExportRegistroPedagogicoBimestreUseCase {
       Number(cursoRow.docente_id)
     );
 
-    const [politica, [filasEvaluaciones, filasEstudiantes, filasNotas, filasResumen]] =
-      await Promise.all([
-        cargarCuotasPoliticaGestion({
-          calificacionContextoRepository: this.calificacionContextoRepository,
-          evaluationConfigurationRepository: this.evaluationConfigurationRepository,
-          gestionId
-        }),
-        Promise.all([
-          this.cuadernoRepository.listarEvaluaciones(asignacionIdNum, periodoId),
-          this.cuadernoRepository.listarEstudiantesExportRegistroPedagogico(asignacionIdNum),
-          this.cuadernoRepository.listarTodasNotasBimestreCuaderno(asignacionIdNum, bimestreNum),
-          // Notas administrativas (habilitación teórica/práctica) del bimestre: se
-          // sobreponen a la ponderación calculada de las actividades del docente.
-          this.cuadernoRepository.listarEstudiantesResumenBimestre(asignacionIdNum, bimestreNum)
-        ])
-      ]);
+    const [politica, [filasEvaluaciones, filasEstudiantes, filasNotas]] = await Promise.all([
+      cargarCuotasPoliticaGestion({
+        calificacionContextoRepository: this.calificacionContextoRepository,
+        evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+        gestionId
+      }),
+      Promise.all([
+        this.cuadernoRepository.listarEvaluaciones(asignacionIdNum, periodoId),
+        this.cuadernoRepository.listarEstudiantesExportRegistroPedagogico(asignacionIdNum),
+        this.cuadernoRepository.listarTodasNotasBimestreCuaderno(asignacionIdNum, bimestreNum)
+      ])
+    ]);
 
     const payload = construirRegistroPedagogicoExcelPayload({
       bimestreNum,
@@ -114,7 +110,6 @@ export class ExportRegistroPedagogicoBimestreUseCase {
       filasEvaluaciones,
       filasEstudiantes,
       filasNotas,
-      filasResumen,
       politica
     });
 

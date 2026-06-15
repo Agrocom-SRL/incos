@@ -50,43 +50,11 @@ export const BimestreMatricula = sequelize.define(
             comment: 'Peso del bimestre en la nota final.',
         },
 
-        notaHabilitacion: {
-            type: DataTypes.VIRTUAL,
-            get() {
-                const teo = this.getDataValue('habilitacionTeorico');
-                const pra = this.getDataValue('habilitacionPractico');
-                if (teo == null && pra == null) return null;
-                return (Number(teo) || 0) + (Number(pra) || 0);
-            },
-            comment: 'Compatibilidad: suma de habilitaciones por componente.',
-        },
-
-        habilitacionTeorico: {
-            type: DataTypes.DECIMAL(5, 2),
-            field: 'habilitacion_teorico',
-            allowNull: true,
-            comment: 'Puntos de habilitación teórica.',
-        },
-
-        habilitacionPractico: {
-            type: DataTypes.DECIMAL(5, 2),
-            field: 'habilitacion_practico',
-            allowNull: true,
-            comment: 'Puntos de habilitación práctica.',
-        },
-
-        fechaHabilitacion: {
-            type: DataTypes.DATEONLY,
-            field: 'fecha_habilitacion',
-            allowNull: true,
-            comment: 'Fecha del primer acto administrativo de habilitación.',
-        },
-
         estado: {
             type: DataTypes.ENUM(...ESTADOS_BIMESTRE_MATRICULA_VALUES),
             allowNull: true,
             defaultValue: 'PENDIENTE',
-            comment: 'PENDIENTE, EN_CURSO o CERRADO.',
+            comment: 'PENDIENTE, EN_CURSO, CERRADO o REABIERTO.',
         },
 
         fechaCierre: {

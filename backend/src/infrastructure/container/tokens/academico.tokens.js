@@ -53,7 +53,8 @@ export const ACADEMICO_TOKENS = {
     resetNotasEvaluacionCuadernoUseCase: 'academico.resetNotasEvaluacionCuadernoUseCase',
     guardarNotasCuadernoBimestreUseCase: 'academico.guardarNotasCuadernoBimestreUseCase',
     getBimestreConsolidadoUseCase: 'academico.getBimestreConsolidadoUseCase',
-    guardarBimestreConsolidadoUseCase: 'academico.guardarBimestreConsolidadoUseCase',
+    reabrirBimestreCursoUseCase: 'academico.reabrirBimestreCursoUseCase',
+    cerrarBimestreCursoUseCase: 'academico.cerrarBimestreCursoUseCase',
     exportRegistroPedagogicoBimestreUseCase: 'academico.exportRegistroPedagogicoBimestreUseCase',
 
     // CONTROLLERS
@@ -101,7 +102,8 @@ export const ACADEMICO_TOKENS = {
     resetNotasEvaluacionCuadernoController: 'academico.resetNotasEvaluacionCuadernoController',
     guardarNotasCuadernoBimestreController: 'academico.guardarNotasCuadernoBimestreController',
     getBimestreConsolidadoController: 'academico.getBimestreConsolidadoController',
-    guardarBimestreConsolidadoController: 'academico.guardarBimestreConsolidadoController',
+    reabrirBimestreCursoController: 'academico.reabrirBimestreCursoController',
+    cerrarBimestreCursoController: 'academico.cerrarBimestreCursoController',
     exportRegistroPedagogicoBimestreController: 'academico.exportRegistroPedagogicoBimestreController',
 
     marcarGestionVigenteUseCase: 'academico.marcarGestionVigenteUseCase',

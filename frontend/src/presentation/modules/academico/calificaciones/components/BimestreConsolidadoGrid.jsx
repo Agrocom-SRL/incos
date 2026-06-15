@@ -1,8 +1,8 @@
 /**
- * Grilla bimestre cerrado: Nro | Estudiante | Bimestre (Práctico, Teórico, Total).
+ * Grilla bimestre cerrado (solo lectura): Nro | Estudiante | Bimestre (Práctico, Teórico, Total).
  */
 
-import { Table, Tag, Tooltip } from 'antd';
+import { Table, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import ComponenteNotaCell from './ComponenteNotaCell.jsx';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
@@ -15,23 +15,8 @@ const renderEstudiante = (nombre, row) => (
   <CeldaEstudiante nombre={nombre ?? '—'} codigo={row.codigo ?? row.codigoEstudiante} />
 );
 
-const puntosComponente = (editVal, rowVal) => {
-  const v = editVal !== undefined ? editVal : rowVal;
-  if (v == null || v === '') return 0;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-};
-
-const componenteSinDato = (editVal, rowVal) => {
-  const v = editVal !== undefined ? editVal : rowVal;
-  return v == null || v === '' || !Number.isFinite(Number(v)) || Number(v) <= 0;
-};
-
-const celdaTotal = (row, { vacioSiCero = false } = {}) => {
+const celdaTotal = (row) => {
   const t = row.total ?? 0;
-  if (vacioSiCero && t <= 0) {
-    return <span className="cal-bimestre-consolidado__total cal-bimestre-consolidado__total--vacio">—</span>;
-  }
   return (
     <span className="cal-bimestre-consolidado__total">
       <strong>{t}</strong>
@@ -44,9 +29,6 @@ const BimestreConsolidadoGrid = ({
   bimestreTitulo = 'Bimestre',
   cuotaTeorico = 30,
   cuotaPractico = 70,
-  soloLectura = true,
-  valoresEdit = {},
-  onCambioComponente,
   evaluacionesCount = 0,
 }) => {
   const thEst = () => ({ className: 'cal-notas-grid__th-est' });
@@ -61,11 +43,6 @@ const BimestreConsolidadoGrid = ({
         >
           <InfoCircleOutlined className="cal-bimestre-consolidado__bim-info" aria-hidden />
         </Tooltip>
-        {!soloLectura ? (
-          <Tag color="orange" className="cal-bimestre-consolidado__modo-tag">
-            Edición administrativa
-          </Tag>
-        ) : null}
       </div>
     ),
     className: 'cal-notas-grid__th-bim cal-notas-grid__th-bim--activo',
@@ -79,19 +56,9 @@ const BimestreConsolidadoGrid = ({
         className: 'cal-bimestre-consolidado__col-comp',
         onHeaderCell: thSub,
         onCell: () => ({ className: 'cal-bimestre-consolidado__col-comp' }),
-        render: (_, row) => {
-          const edit = valoresEdit[row.id];
-          const valor = edit?.practico !== undefined ? edit.practico : row.practico;
-          return (
-            <ComponenteNotaCell
-              valor={valor}
-              max={cuotaPractico}
-              soloLectura={soloLectura}
-              etiqueta="Práctico"
-              onChange={(v) => onCambioComponente?.(row.id, 'practico', v)}
-            />
-          );
-        },
+        render: (_, row) => (
+          <ComponenteNotaCell valor={row.practico} max={cuotaPractico} soloLectura etiqueta="Práctico" />
+        ),
       },
       {
         title: `Teórico (${cuotaTeorico} pts)`,
@@ -101,19 +68,9 @@ const BimestreConsolidadoGrid = ({
         className: 'cal-bimestre-consolidado__col-comp',
         onHeaderCell: thSub,
         onCell: () => ({ className: 'cal-bimestre-consolidado__col-comp' }),
-        render: (_, row) => {
-          const edit = valoresEdit[row.id];
-          const valor = edit?.teorico !== undefined ? edit.teorico : row.teorico;
-          return (
-            <ComponenteNotaCell
-              valor={valor}
-              max={cuotaTeorico}
-              soloLectura={soloLectura}
-              etiqueta="Teórico"
-              onChange={(v) => onCambioComponente?.(row.id, 'teorico', v)}
-            />
-          );
-        },
+        render: (_, row) => (
+          <ComponenteNotaCell valor={row.teorico} max={cuotaTeorico} soloLectura etiqueta="Teórico" />
+        ),
       },
       {
         title: 'Total',
@@ -123,26 +80,7 @@ const BimestreConsolidadoGrid = ({
         className: 'cal-bimestre-consolidado__col-total',
         onHeaderCell: thSub,
         onCell: () => ({ className: 'cal-bimestre-consolidado__col-total' }),
-        render: (_, row) => {
-          if (!soloLectura) {
-            const edit = valoresEdit[row.id];
-            const sinPractico = componenteSinDato(edit?.practico, row.practico);
-            const sinTeorico = componenteSinDato(edit?.teorico, row.teorico);
-            if (sinPractico && sinTeorico) {
-              return celdaTotal(row, { vacioSiCero: true });
-            }
-            const p = puntosComponente(edit?.practico, row.practico);
-            const t = puntosComponente(edit?.teorico, row.teorico);
-            const total =
-              Math.round(p * 100) / 100 + Math.round(t * 100) / 100;
-            return (
-              <span className="cal-bimestre-consolidado__total">
-                <strong>{Math.round(total * 100) / 100}</strong>
-              </span>
-            );
-          }
-          return celdaTotal(row);
-        },
+        render: (_, row) => celdaTotal(row),
       },
     ],
   };

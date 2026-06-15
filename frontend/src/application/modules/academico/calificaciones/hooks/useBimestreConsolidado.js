@@ -20,7 +20,6 @@ export const useBimestreConsolidado = () => {
   const [base, setBase] = useState(null);
   const [consolidado, setConsolidado] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefetching, setIsRefetching] = useState(false);
   const [error, setError] = useState(null);
 
   const bimestreNum = useMemo(() => {
@@ -108,32 +107,13 @@ export const useBimestreConsolidado = () => {
 
   const tituloPagina = `Consolidado · ${bimestreTitulo}`;
 
-  const guardarConsolidado = useCallback(
-    async (filas) => {
-      const res = await CalificacionRepository.guardarBimestreConsolidado(
-        asignacionId,
-        bimestreActivo,
-        filas,
-      );
-      if (!res?.success) {
-        throw new Error(res?.error || 'No se pudo guardar');
-      }
-      setIsRefetching(true);
-      try {
-        const refreshed = await CalificacionRepository.obtenerBimestreConsolidado(
-          asignacionId,
-          bimestreActivo,
-        );
-        if (refreshed?.success) {
-          setConsolidado(refreshed.data);
-        }
-      } finally {
-        setIsRefetching(false);
-      }
-      return res.data;
-    },
-    [asignacionId, bimestreActivo],
-  );
+  const reabrirBimestre = useCallback(async () => {
+    const res = await CalificacionRepository.reabrirBimestreCurso(asignacionId, bimestreActivo);
+    if (!res?.success) {
+      throw new Error(res?.error || 'No se pudo reabrir el bimestre');
+    }
+    return res.data;
+  }, [asignacionId, bimestreActivo]);
 
   return {
     curso: base?.curso ?? null,
@@ -148,13 +128,13 @@ export const useBimestreConsolidado = () => {
     periodoConsolidado: consolidado?.periodo ?? null,
     cerrado: consolidado?.cerrado ?? true,
     isLoading,
-    isRefetching,
+    isRefetching: false,
     error,
     breadcrumbItems,
     tituloPagina,
     volverPath: asignacionId ? notasCursoPath(asignacionId) : MIS_CURSOS_PATH,
     cursoId: asignacionId,
     esVistaCoordinacion,
-    guardarConsolidado,
+    reabrirBimestre,
   };
 };

@@ -13,7 +13,7 @@ SELECT
   bm.bimestre,
   CASE
     WHEN COUNT(*) = SUM(CASE WHEN bm.estado = 'CERRADO' THEN 1 ELSE 0 END) THEN 'CERRADO'
-    WHEN SUM(CASE WHEN bm.estado = 'EN_CURSO' THEN 1 ELSE 0 END) > 0 THEN 'EN_CURSO'
+    WHEN SUM(CASE WHEN bm.estado IN ('EN_CURSO', 'REABIERTO') THEN 1 ELSE 0 END) > 0 THEN 'EN_CURSO'
     ELSE 'PENDIENTE'
   END AS estado_institucional
 FROM bimestres_matricula bm

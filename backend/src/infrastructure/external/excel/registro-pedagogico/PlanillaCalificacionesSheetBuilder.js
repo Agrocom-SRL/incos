@@ -7,11 +7,6 @@
  * Fórmulas en INGLÉS (IF/COUNTIF/AVERAGEIF). Caso vacío (sin evaluaciones): no se
  * calcula nada; solo el conteo de inscritos por sexo se mantiene.
  *
- * Excepción de notas administrativas: si la asignatura no tiene evaluaciones del
- * docente pero los estudiantes traen habilitación (habilitacion_teorico/practico),
- * el CONSOLIDADO se omite y esta planilla pinta esas habilitaciones como valores
- * literales (no como referencia), conservando NOTA = teórica + práctica.
- *
  * Columnas contiguas (sin huecos): Nº | NOMBRES | Sexo | C.I. | Teórica | Práctica
  * | NOTA | Observaciones.
  */
@@ -30,7 +25,6 @@ export class PlanillaCalificacionesSheetBuilder {
    * @param {Object} params.cols - mapa de columnas del CONSOLIDADO (para referencias).
    * @param {{ cuotaPractico:number, cuotaTeorico:number, notaAprobacion:number }} params.ponderacion
    * @param {boolean} params.hayEvaluaciones - true si existe la hoja CONSOLIDADO (se referencia).
-   * @param {boolean} [params.hayNotasAdministrativas] - true si algún estudiante trae habilitación.
    */
   static build({
     composer: c,
@@ -38,16 +32,13 @@ export class PlanillaCalificacionesSheetBuilder {
     estudiantes,
     cols,
     ponderacion,
-    hayEvaluaciones,
-    hayNotasAdministrativas = false
+    hayEvaluaciones
   }) {
     const { cuotaPractico, cuotaTeorico, notaAprobacion } = ponderacion;
     const bimestreLabel = String(datos.bimestre ?? '').toUpperCase();
     const firstDataRow = 7;
     const hayEstudiantes = estudiantes.length > 0;
-    // Hay valores que resumir si el docente cargó evaluaciones o si existen notas
-    // administrativas (habilitación) que se sobreponen a la ponderación calculada.
-    const hayCalificaciones = hayEvaluaciones || hayNotasAdministrativas;
+    const hayCalificaciones = hayEvaluaciones;
     const lastDataRow = firstDataRow + Math.max(estudiantes.length - 1, 0);
     const { small } = EXCEL_FONT_SIZE;
     const lastCol = L(COL.obs);
@@ -134,32 +125,11 @@ export class PlanillaCalificacionesSheetBuilder {
       c.cell(row, COL.ci, est.ci ?? '', { fill: zebra });
 
       if (!hayEvaluaciones) {
-        // Sin CONSOLIDADO que referenciar. Si el estudiante trae notas
-        // administrativas, sus habilitaciones se vuelcan como literales (el
-        // componente sin habilitación queda en 0, no hay actividades que sumar).
-        const tieneAdmin =
-          est.habilitacion_teorico != null || est.habilitacion_practico != null;
-        if (!tieneAdmin) {
-          c.cell(row, COL.teoria, '', { fill: EXCEL_COLOR.teoricas });
-          c.cell(row, COL.practica, '', { fill: EXCEL_COLOR.practicas });
-          c.cell(row, COL.nota, '', { fill: EXCEL_COLOR.finalCell });
-          c.cell(row, COL.obs, '', { fill: EXCEL_COLOR.obsCell });
-          return;
-        }
-        c.cell(row, COL.teoria, est.habilitacion_teorico ?? 0, { fill: EXCEL_COLOR.teoricas });
-        c.cell(row, COL.practica, est.habilitacion_practico ?? 0, {
-          fill: EXCEL_COLOR.practicas
-        });
-        c.formula(row, COL.nota, `${L(COL.teoria)}${row}+${L(COL.practica)}${row}`, {
-          bold: true,
-          fill: EXCEL_COLOR.finalCell
-        });
-        c.formula(
-          row,
-          COL.obs,
-          `IF(${L(COL.nota)}${row}>=${notaAprobacion},"APROBADO/A",IF(${L(COL.nota)}${row}=0,"NO SE PRESENTO","REPROBADO/A"))`,
-          { wrap: true, fill: EXCEL_COLOR.obsCell }
-        );
+        // Sin CONSOLIDADO que referenciar: no hay nada que resumir.
+        c.cell(row, COL.teoria, '', { fill: EXCEL_COLOR.teoricas });
+        c.cell(row, COL.practica, '', { fill: EXCEL_COLOR.practicas });
+        c.cell(row, COL.nota, '', { fill: EXCEL_COLOR.finalCell });
+        c.cell(row, COL.obs, '', { fill: EXCEL_COLOR.obsCell });
         return;
       }
 

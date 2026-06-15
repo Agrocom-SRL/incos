@@ -297,6 +297,10 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/guardar`,
   BIMESTRE_CONSOLIDADO: (asignacionId, bimestre) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/consolidado`,
+  BIMESTRE_REABRIR: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/reabrir`,
+  BIMESTRE_CERRAR: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/cerrar`,
   EXPORT_REGISTRO_PEDAGOGICO: (asignacionId, bimestre) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/export/registro-pedagogico`,
 };

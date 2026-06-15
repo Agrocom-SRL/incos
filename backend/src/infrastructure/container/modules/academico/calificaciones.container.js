@@ -54,7 +54,8 @@ import { UpsertNotaCuadernoUseCase } from '../../../../application/use-cases/aca
 import { ResetNotasEvaluacionCuadernoUseCase } from '../../../../application/use-cases/academico/ResetNotasEvaluacionCuadernoUseCase.js';
 import { GuardarNotasCuadernoBimestreUseCase } from '../../../../application/use-cases/academico/GuardarNotasCuadernoBimestreUseCase.js';
 import { GetBimestreConsolidadoUseCase } from '../../../../application/use-cases/academico/GetBimestreConsolidadoUseCase.js';
-import { GuardarBimestreConsolidadoUseCase } from '../../../../application/use-cases/academico/GuardarBimestreConsolidadoUseCase.js';
+import { ReabrirBimestreCursoUseCase } from '../../../../application/use-cases/academico/ReabrirBimestreCursoUseCase.js';
+import { CerrarBimestreCursoUseCase } from '../../../../application/use-cases/academico/CerrarBimestreCursoUseCase.js';
 import { GetCuadernoBimestreController } from '../../../../presentation/controllers/academico/calificaciones/get-cuaderno-bimestre.controller.js';
 import { CreateEvaluacionCuadernoController } from '../../../../presentation/controllers/academico/calificaciones/create-evaluacion-cuaderno.controller.js';
 import { UpdateEvaluacionCuadernoController } from '../../../../presentation/controllers/academico/calificaciones/update-evaluacion-cuaderno.controller.js';
@@ -63,7 +64,8 @@ import { UpsertNotaCuadernoController } from '../../../../presentation/controlle
 import { ResetNotasEvaluacionCuadernoController } from '../../../../presentation/controllers/academico/calificaciones/reset-notas-evaluacion-cuaderno.controller.js';
 import { GuardarNotasCuadernoBimestreController } from '../../../../presentation/controllers/academico/calificaciones/guardar-notas-cuaderno-bimestre.controller.js';
 import { GetBimestreConsolidadoController } from '../../../../presentation/controllers/academico/calificaciones/get-bimestre-consolidado.controller.js';
-import { GuardarBimestreConsolidadoController } from '../../../../presentation/controllers/academico/calificaciones/guardar-bimestre-consolidado.controller.js';
+import { ReabrirBimestreCursoController } from '../../../../presentation/controllers/academico/calificaciones/reabrir-bimestre-curso.controller.js';
+import { CerrarBimestreCursoController } from '../../../../presentation/controllers/academico/calificaciones/cerrar-bimestre-curso.controller.js';
 import { ExportRegistroPedagogicoBimestreUseCase } from '../../../../application/use-cases/academico/ExportRegistroPedagogicoBimestreUseCase.js';
 import { ExportRegistroPedagogicoBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-registro-pedagogico-bimestre.controller.js';
 import { buildCalificacionesRouter } from '../../../../presentation/routes/calificaciones.routes.js';
@@ -535,6 +537,7 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
@@ -555,6 +558,7 @@ export function registerCalificacionesResource(container) {
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
         ),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
@@ -666,9 +670,24 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
-    ACADEMICO_TOKENS.guardarBimestreConsolidadoUseCase,
+    ACADEMICO_TOKENS.reabrirBimestreCursoUseCase,
     (c) =>
-      new GuardarBimestreConsolidadoUseCase({
+      new ReabrirBimestreCursoUseCase({
+        calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
+        calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.cerrarBimestreCursoUseCase,
+    (c) =>
+      new CerrarBimestreCursoUseCase({
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
@@ -795,12 +814,21 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
-    ACADEMICO_TOKENS.guardarBimestreConsolidadoController,
+    ACADEMICO_TOKENS.reabrirBimestreCursoController,
     (c) =>
-      new GuardarBimestreConsolidadoController({
-        guardarBimestreConsolidadoUseCase: c.resolve(
-          ACADEMICO_TOKENS.guardarBimestreConsolidadoUseCase,
-        ),
+      new ReabrirBimestreCursoController({
+        reabrirBimestreCursoUseCase: c.resolve(ACADEMICO_TOKENS.reabrirBimestreCursoUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.cerrarBimestreCursoController,
+    (c) =>
+      new CerrarBimestreCursoController({
+        cerrarBimestreCursoUseCase: c.resolve(ACADEMICO_TOKENS.cerrarBimestreCursoUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       }),
@@ -909,9 +937,8 @@ export function registerCalificacionesResource(container) {
         ACADEMICO_TOKENS.guardarNotasCuadernoBimestreController,
       ),
       getBimestreConsolidadoController: c.resolve(ACADEMICO_TOKENS.getBimestreConsolidadoController),
-      guardarBimestreConsolidadoController: c.resolve(
-        ACADEMICO_TOKENS.guardarBimestreConsolidadoController,
-      ),
+      reabrirBimestreCursoController: c.resolve(ACADEMICO_TOKENS.reabrirBimestreCursoController),
+      cerrarBimestreCursoController: c.resolve(ACADEMICO_TOKENS.cerrarBimestreCursoController),
       exportRegistroPedagogicoBimestreController: c.resolve(
         ACADEMICO_TOKENS.exportRegistroPedagogicoBimestreController,
       ),
