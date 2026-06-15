@@ -6,6 +6,7 @@
 
 import { Progress, Tooltip } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import '../styles/calificaciones.css';
 
 const ESTADO_BIMESTRE_DOT = {
   abierto: 'cal-curso-card__dot--en-curso',
