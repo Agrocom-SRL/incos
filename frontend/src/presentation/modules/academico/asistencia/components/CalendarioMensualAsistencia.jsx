@@ -19,6 +19,7 @@
 
 import { useMemo } from 'react';
 import { Tooltip } from 'antd';
+import { CalendarOutlined } from '@ant-design/icons';
 import {
   MESES_NOMBRES,
   DIAS_SEMANA,
@@ -255,6 +256,17 @@ const CalendarioMensualAsistencia = ({
 
   return (
     <div className="asi-cal">
+      <header className="asi-cal__header">
+        <h3 className="asi-cal__titulo">
+          <CalendarOutlined aria-hidden />
+          Calendario del bimestre
+        </h3>
+        <p className="asi-cal__subtitulo">
+          Cada mes pinta los días del bimestre; los días de clase resaltan en color para tomar
+          lista.
+        </p>
+      </header>
+
       <div className="asi-cal__meses asi-cal__meses--anual">
         {meses.map(({ year, month }) => (
           <MesBloque

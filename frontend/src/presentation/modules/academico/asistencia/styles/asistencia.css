@@ -10,76 +10,84 @@
   width: 100%;
 }
 
+/* En el rango lg (≥992 y <xl) el InfoSidebar global fija 350px; aquí lo reducimos
+   para dar más aire al calendario en pantallas medias. Scope local: no afecta otras
+   páginas. En xl+ vuelve al ancho estándar (350px) y en <lg ya pasa a 100%. */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .asi-calendario-shell .info-sidebar {
+    min-width: 280px;
+    max-width: 280px;
+  }
+}
+
 /* La elevación/borde/padding de las cards viene del contrato del sistema
    (asistenciaSectionCardProps), no de clases locales — igual que Calificaciones. */
 
-/* —— Ficha de contexto del curso —— */
-.asi-contexto {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
+/* —— Cabecera del curso (perfil a todo el ancho, gemela de CursoProfileHeader) —— */
+/* La base la aporta .sd-profile (detail-page.css, ya importado por la página).
+   Aquí solo los ajustes propios de Asistencia: avatar con sigla, pill del bimestre
+   (teñida con el color de negocio por estilo inline) y badge de estado del registro. */
+/* Mapeo de las variables de diseño de .sd-profile a los tokens del proyecto, para que
+   la tarjeta (fondo/borde/sombra/colores) funcione sin necesitar un ancestro .sd. */
+.asi-profile {
+  --surface: var(--color-bg-container);
+  --border: var(--color-border-secondary);
+  --radius-xl: var(--border-radius-lg);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.05);
+  --text-900: var(--color-text);
+  --text-800: var(--color-text);
+  --text-700: var(--color-text);
+  --text-500: var(--color-text-secondary);
+  --primary: var(--color-primary);
+  --primary-dark: var(--color-primary-hover);
+  width: 100%;
 }
 
-/* Cabecera de la ficha: pill del bimestre (color de negocio) + estado del registro. */
-.asi-contexto__titulo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-md);
+.asi-profile__avatar {
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
-.asi-contexto__pill {
+.asi-profile__avatar--sigla {
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  padding: 6px 4px;
+  word-break: break-word;
+  hyphens: auto;
+  text-align: center;
+}
+
+.asi-profile__bimestre-pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
-  font-size: var(--font-size-base);
+  gap: var(--spacing-xs);
+  text-transform: none;
+  letter-spacing: 0.02em;
   font-weight: 700;
-  color: var(--color-text);
+  border-width: 1px;
+  border-style: solid;
 }
 
-.asi-contexto__swatch {
-  width: var(--spacing-sm);
-  height: var(--spacing-sm);
-  border-radius: 50%;
-  background: var(--color-primary);
+.asi-profile__toolbar {
+  position: absolute;
+  top: 18px;
+  right: 28px;
+  z-index: 2;
 }
 
-.asi-contexto__estado {
+.asi-profile__estado {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: 999px;
   font-size: var(--font-size-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--color-text-tertiary);
-}
-
-.asi-contexto__fila {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-lg);
-}
-
-.asi-contexto__celda {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  min-width: 0;
-}
-
-.asi-contexto__label {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-tertiary);
-}
-
-.asi-contexto__value {
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-text);
+  color: var(--color-text-secondary);
+  background: var(--color-fill-quaternary);
+  border: 1px solid var(--color-border-secondary);
 }
 
 /* —— Cabecera de navegación semanal —— */
@@ -105,35 +113,92 @@
   gap: var(--spacing-lg);
 }
 
+/* —— Cabecera del calendario: título primario (gemelo de ControlBimestres) —— */
+.asi-cal__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.asi-cal__titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.01em;
+}
+
+.asi-cal__subtitulo {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
 .asi-cal__meses {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-xl);
 }
 
-/* Año completo: grilla responsiva de 12 meses. */
+/* Año completo: meses por fila según el ancho (escala de breakpoints AntD).
+   El InfoSidebar ocupa ~30%, así que el calendario muestra un mes MENOS por fila
+   que el ancho total sugeriría: 3 en xl, 4 en xxl, y reduce progresivamente. */
 .asi-cal__meses--anual {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-md);
 }
 
+/* ≥ xxl (≥1600): hay espacio de sobra → 4 por fila. */
+@media (min-width: 1600px) {
+  .asi-cal__meses--anual {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* < xl (lg y menores): 2 por fila. */
+@media (max-width: 1199px) {
+  .asi-cal__meses--anual {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* < lg (md y menores): 1 por fila. */
+@media (max-width: 991px) {
+  .asi-cal__meses--anual {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Cada mes es una tarjeta con borde/padding propios (mismo look que bim-cal-month). */
 .asi-cal__mes {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-container);
 }
 
 /* Mes sin días del bimestre: apagado, sin protagonismo. */
 .asi-cal__mes--inactivo {
-  opacity: 0.45;
+  opacity: 0.5;
+  background: var(--color-border);
+  border-style: dashed;
 }
 
 .asi-cal__mes-titulo {
   margin: 0;
-  font-size: var(--font-size-base);
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--color-text);
+  text-align: center;
 }
 
 .asi-cal__grid {
@@ -162,7 +227,7 @@
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
-  min-width: var(--spacing-xl);
+  min-width: 0;
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius-md);
   background: var(--color-bg-container);
@@ -179,7 +244,6 @@
 .asi-cal__dia--fuera {
   background: transparent;
   border-color: transparent;
-  color: var(--color-text-quaternary, var(--color-text-tertiary));
   opacity: 0.55;
 }
 
@@ -189,12 +253,13 @@
   color: var(--color-text-secondary);
 }
 
-/* Día de clase (a tomar lista): realce con color primario sobre el tinte. */
+/* Día de clase (a tomar lista): relleno con el color primario y texto blanco.
+   El !important vence al tinte del bimestre inyectado por estilo inline. */
 .asi-cal__dia--clase {
+  background: var(--color-primary) !important;
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: #fff;
   font-weight: 700;
-  box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 /* Sin clase (feriado / receso / vacaciones): rojo vibrante. */
@@ -255,6 +320,17 @@
   background: var(--color-success-bg);
 }
 
+/* Día de clase navegable: realce de marca sin perder el relleno primario. */
+.asi-cal__dia--clase.asi-cal__dia--navegable:hover {
+  background: var(--color-primary-hover) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+/* Dot de asistencia tomada sobre el relleno primario: blanco para contraste. */
+.asi-cal__dia--clase .asi-cal__dot {
+  background: #fff;
+}
+
 .asi-cal__dia--navegable:active {
   transform: scale(0.96);
 }
@@ -310,11 +386,10 @@
   border-color: var(--color-border-secondary);
 }
 
-/* Día de clase: realce primario. */
+/* Día de clase: relleno primario (igual que la celda). */
 .asi-cal__chip--clase {
   border-color: var(--color-primary);
-  box-shadow: inset 0 0 0 1px var(--color-primary);
-  background: var(--color-bg-container);
+  background: var(--color-primary);
 }
 
 /* Sin clase: rojo. */
@@ -489,6 +564,17 @@
   background: var(--color-bg-container);
 }
 
+/* Badge de icono por tipo de actividad: hereda color/fondo del cronograma-pill,
+   pero lo forzamos a un cuadrado para alojar solo el icono. */
+.asi-actividades__icono.cronograma-pill {
+  flex-shrink: 0;
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  padding: 0;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-md);
+}
+
 .asi-actividades__fecha {
   min-width: 110px;
   font-size: var(--font-size-sm);
@@ -506,10 +592,17 @@
    SIDEBAR: contexto del bimestre
    ============================================================ */
 .asi-resumen-ctx__label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
   font-size: var(--font-size-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.asi-resumen-ctx__bloque {
+  flex: 1 1 140px;
+  min-width: 0;
 }
 
 /* Fecha actual resaltada: card con realce primario. */

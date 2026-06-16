@@ -16,10 +16,11 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, Flex, Skeleton } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, EditOutlined } from '@ant-design/icons';
-import { PageTemplate } from '@templates';
+import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
+import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { useCalendarioAsistenciaState } from '@application-academico/asistencia/hooks/state/useCalendarioAsistenciaState.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
 import { ESTADOS_REGISTRO } from '@application-academico/asistencia/utils/asistenciaEstados.js';
@@ -66,62 +67,90 @@ const CalendarioAsistenciaPage = () => {
   );
 
   const pageHeader = (
-    <PageHeader
-      title={
-        <Flex align="center" gap={allSpacing.marginXS} wrap="wrap">
-          <CalendarOutlined aria-hidden />
-          <span>{curso?.materia ? `Asistencia · ${curso.materia}` : 'Calendario de asistencia'}</span>
-        </Flex>
-      }
-      breadcrumbItems={breadcrumbItems}
-      actions={
-        <Flex gap={allSpacing.marginXS} wrap="wrap">
-          <ActionButton
-            permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-            accion="LISTAR"
-            variant="primary"
-            icon={<EditOutlined />}
-            onClick={() => irAPlanilla()}
-          >
-            Marcar asistencia
-          </ActionButton>
-          <BackButton
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(volverPath)}
-            aria-label="Volver a mis cursos"
-          >
-            Volver
-          </BackButton>
-        </Flex>
-      }
-    />
+    <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+      <PageHeader
+        title={
+          <Flex align="center" gap={allSpacing.marginXS} wrap="wrap">
+            <CalendarOutlined aria-hidden />
+            <span>
+              {curso?.materia ? `Asistencia · ${curso.materia}` : 'Calendario de asistencia'}
+            </span>
+          </Flex>
+        }
+        breadcrumbItems={breadcrumbItems}
+        actions={
+          <Flex gap={allSpacing.marginXS} wrap="wrap">
+            <ActionButton
+              permiso={ASISTENCIA_PERMISOS.registroCuaderno}
+              accion="LISTAR"
+              variant="primary"
+              icon={<EditOutlined />}
+              onClick={() => irAPlanilla()}
+            >
+              Marcar asistencia
+            </ActionButton>
+            <BackButton
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate(volverPath)}
+              aria-label="Volver a mis cursos"
+            >
+              Volver
+            </BackButton>
+          </Flex>
+        }
+      />
+
+      {curso ? (
+        <CursoContextoAsistencia
+          curso={curso}
+          bimestre={bimestre}
+          bimestreNombre={bimestreNombre}
+          bimestreColor={bimestreColor}
+          gestion={gestion}
+          registroEstado={registroEstado}
+        />
+      ) : null}
+    </Flex>
+  );
+
+  // Estructura común: cabecera a todo el ancho + capa DashboardPageShell (content + sidebar).
+  const renderPagina = (mainNode, sidebarNode = null) => (
+    <Flex
+      vertical
+      gap="large"
+      className="page-container asi-calendario-shell"
+      style={{ width: '100%' }}
+    >
+      <PageHeaderArea>{pageHeader}</PageHeaderArea>
+
+      <DashboardPageShell>
+        <MainContent>{mainNode}</MainContent>
+        {sidebarNode ? <InfoSidebar>{sidebarNode}</InfoSidebar> : null}
+      </DashboardPageShell>
+    </Flex>
   );
 
   if (isLoading && dias.length === 0) {
-    return (
-      <PageTemplate header={pageHeader}>
-        <Card {...asistenciaSectionCardProps}>
-          <Skeleton active paragraph={{ rows: 8 }} />
-        </Card>
-      </PageTemplate>
+    return renderPagina(
+      <Card {...asistenciaSectionCardProps}>
+        <Skeleton active paragraph={{ rows: 8 }} />
+      </Card>,
     );
   }
 
   if (error && dias.length === 0) {
-    return (
-      <PageTemplate header={pageHeader}>
-        <Alert
-          type="error"
-          showIcon
-          title="No se pudo cargar el calendario"
-          description={typeof error === 'string' ? error : String(error)}
-          action={
-            <Button size="small" onClick={refetch}>
-              Reintentar
-            </Button>
-          }
-        />
-      </PageTemplate>
+    return renderPagina(
+      <Alert
+        type="error"
+        showIcon
+        title="No se pudo cargar el calendario"
+        description={typeof error === 'string' ? error : String(error)}
+        action={
+          <Button size="small" onClick={refetch}>
+            Reintentar
+          </Button>
+        }
+      />,
     );
   }
 
@@ -135,17 +164,6 @@ const CalendarioAsistenciaPage = () => {
           description="La asistencia de este bimestre está cerrada. Reabrila desde la planilla para corregir."
         />
       ) : null}
-
-      <Card {...asistenciaSectionCardProps}>
-        <CursoContextoAsistencia
-          curso={curso}
-          bimestre={bimestre}
-          bimestreNombre={bimestreNombre}
-          bimestreColor={bimestreColor}
-          gestion={gestion}
-          registroEstado={registroEstado}
-        />
-      </Card>
 
       {dias.length === 0 ? (
         <Card {...asistenciaSectionCardProps}>
@@ -188,9 +206,7 @@ const CalendarioAsistenciaPage = () => {
 
   return (
     <>
-      <PageTemplate header={pageHeader} sidebar={sidebar}>
-        {content}
-      </PageTemplate>
+      {renderPagina(content, sidebar)}
 
       <FechaEspecialDrawer
         abierto={fechaEspecial.abierto}

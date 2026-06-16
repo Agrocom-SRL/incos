@@ -7,7 +7,19 @@
  */
 
 import { Empty, Flex, Tag, Typography } from 'antd';
-import { CalendarOutlined, StarFilled } from '@ant-design/icons';
+import {
+  CalendarOutlined,
+  CarryOutOutlined,
+  CoffeeOutlined,
+  ExperimentOutlined,
+  FileTextOutlined,
+  FlagOutlined,
+  ReadOutlined,
+  ScheduleOutlined,
+  SolutionOutlined,
+  StarFilled,
+  TrophyOutlined,
+} from '@ant-design/icons';
 import { allColors } from '@theme/tokens';
 import { StatusPill } from '@atoms';
 import {
@@ -18,6 +30,22 @@ import { etiquetaDiaMes } from '@application-academico/asistencia/utils/asistenc
 import '@institucional/actual/styles/cronograma.css';
 
 const { Text } = Typography;
+
+/** Icono representativo por tipo de actividad (mismo vocabulario que el cronograma). */
+const TIPO_ICONO = {
+  INSCRIPCION: <SolutionOutlined aria-hidden />,
+  PLANIFICACION: <ScheduleOutlined aria-hidden />,
+  ACADEMICA: <ReadOutlined aria-hidden />,
+  EVALUACION: <FileTextOutlined aria-hidden />,
+  ADMINISTRATIVA: <CarryOutOutlined aria-hidden />,
+  FERIADO: <CoffeeOutlined aria-hidden />,
+  EVENTO_INSTITUCIONAL: <FlagOutlined aria-hidden />,
+  FERIA: <ExperimentOutlined aria-hidden />,
+  MODALIDAD_GRADO: <TrophyOutlined aria-hidden />,
+  OTRO: <CalendarOutlined aria-hidden />,
+};
+
+const iconoTipo = (tipo) => TIPO_ICONO[tipo] ?? TIPO_ICONO.OTRO;
 
 /** 'desde – hasta' o un único día, en formato corto. */
 const rangoActividad = (act) => {
@@ -50,6 +78,9 @@ const ActividadesSinClaseList = ({ actividades = [] }) => {
       <ul className="asi-actividades__lista">
         {actividades.map((act) => (
           <li key={act.id} className="asi-actividades__item">
+            <span className={`asi-actividades__icono ${getActividadTipoPillClass(act.tipo)}`}>
+              {iconoTipo(act.tipo)}
+            </span>
             <span className="asi-actividades__fecha">{rangoActividad(act)}</span>
             <Flex align="center" gap="small" wrap className="asi-actividades__cuerpo">
               {act.esDestacada ? (
