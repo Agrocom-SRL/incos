@@ -45,20 +45,28 @@ export class AsistenciaSesionViewRepository extends IAsistenciaSesionViewReposit
     );
   }
 
-  /** Feriados del calendario (gestión) que solapan el rango (vista 129). */
+  /**
+   * Días SIN CLASE del calendario (gestión) que solapan el rango (vista 129).
+   * Captura feriados nacionales + receso/vacaciones vía `suspende_clases = TRUE`
+   * (no solo `tipo='FERIADO'`). Devuelve nombre/tipo/rango para listar y pintar.
+   */
   async listarFeriadosCalendario(gestionId, desde, hasta) {
     return sequelize.query(
       `
       SELECT
+        actividad_calendario_id,
         fecha_inicio,
         fecha_fin,
         nombre,
-        tipo
+        tipo,
+        es_destacada,
+        estado_actividad
       FROM vista_base_cronograma_gestion
       WHERE gestion_id = ?
-        AND tipo = 'FERIADO'
+        AND suspende_clases = TRUE
         AND fecha_inicio <= ?
         AND COALESCE(fecha_fin, fecha_inicio) >= ?
+      ORDER BY fecha_inicio ASC
       `,
       { replacements: [gestionId, hasta, desde], type: sequelize.QueryTypes.SELECT },
     );

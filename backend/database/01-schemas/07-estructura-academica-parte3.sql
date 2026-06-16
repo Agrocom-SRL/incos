@@ -236,8 +236,7 @@ CREATE TABLE actividades_calendario (
     fecha_inicio DATE NOT NULL COMMENT 'Fecha de inicio de la actividad',
     fecha_fin DATE COMMENT 'Fecha de fin (NULL si es actividad de un solo día)',
 
-    horario_id INT NULL COMMENT 'Bloque de la tabla horarios (NULL = sin horario específico)',
-    aula_id INT NULL COMMENT 'Aula asignada (NULL si no requiere aula o es virtual)',
+    suspende_clases BOOLEAN DEFAULT FALSE COMMENT 'TRUE = este día NO se pasa clase (feriado, receso, vacaciones); se trata como neutro en asistencia',
 
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
@@ -249,19 +248,16 @@ CREATE TABLE actividades_calendario (
 
     FOREIGN KEY (periodo_academico_id) REFERENCES periodos_academicos(id) ON DELETE SET NULL,
     FOREIGN KEY (actividad_id) REFERENCES actividades(id) ON DELETE SET NULL,
-    FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
 
     INDEX idx_periodo_academico_id (periodo_academico_id) COMMENT 'Búsqueda por periodo académico',
     INDEX idx_actividad_id (actividad_id) COMMENT 'Búsqueda por actividad',
-    INDEX idx_horario_id (horario_id) COMMENT 'Búsqueda por horario',
-    INDEX idx_aula_id (aula_id) COMMENT 'Búsqueda por aula',
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_fecha_inicio (fecha_inicio) COMMENT 'Búsqueda por fecha de inicio',
     INDEX idx_fecha_fin (fecha_fin) COMMENT 'Búsqueda por fecha de fin',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_periodo_fechas (periodo_academico_id, fecha_inicio, activo) COMMENT 'Búsqueda por periodo y fechas'
+    INDEX idx_periodo_fechas (periodo_academico_id, fecha_inicio, activo) COMMENT 'Búsqueda por periodo y fechas',
+    INDEX idx_suspende_clases (suspende_clases, fecha_inicio, fecha_fin, activo) COMMENT 'Días neutros (sin clase) para asistencia'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Calendario académico: instancias de actividades con fechas específicas.';

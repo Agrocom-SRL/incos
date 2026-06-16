@@ -78,6 +78,55 @@ export function hoyISO() {
 }
 
 /**
+ * Resuelve el número de bimestre activo (1-4) de la gestión a partir de sus periodos.
+ * Prioridad: bimestre abierto del calendario → el que contiene hoy → último ya iniciado →
+ * primero de la gestión. Devuelve null si no hay periodos.
+ *
+ * @param {Array<{ numero_orden:number, estado_calendario?:string, fecha_inicio:string, fecha_fin:string }>} periodos
+ * @param {string} [hoy] 'YYYY-MM-DD'
+ * @returns {number|null}
+ */
+export function resolverBimestreActivo(periodos = [], hoy = hoyISO()) {
+  const lista = periodos ?? [];
+  const abierto = lista.find((p) => p.estado_calendario === 'abierto');
+  if (abierto) return Number(abierto.numero_orden);
+
+  const vigente = lista.find(
+    (p) => toISODate(p.fecha_inicio) <= hoy && hoy <= toISODate(p.fecha_fin),
+  );
+  if (vigente) return Number(vigente.numero_orden);
+
+  const iniciados = lista
+    .filter((p) => toISODate(p.fecha_inicio) <= hoy)
+    .sort((a, b) => Number(b.numero_orden) - Number(a.numero_orden));
+  if (iniciados.length > 0) return Number(iniciados[0].numero_orden);
+
+  return lista.length > 0 ? Number(lista[0].numero_orden) : null;
+}
+
+/**
+ * Semana (lun–sáb) que contiene `fecha`, recortada al rango del bimestre.
+ * Espejo de `asistenciaSemanas.semanaDeFecha` del frontend.
+ *
+ * @param {string} fecha 'YYYY-MM-DD'
+ * @param {{ desde:string, hasta:string }} rango límites del bimestre
+ * @returns {{ desde:string, hasta:string }}
+ */
+export function semanaDeFecha(fecha, rango) {
+  const f = toISODate(fecha);
+  const dow = indiceDiaSemana(f); // 0=domingo … 6=sábado
+  const offsetLunes = dow === 0 ? 6 : dow - 1;
+  const lunes = sumarDias(f, -offsetLunes);
+  const sabado = sumarDias(lunes, 5);
+  const acotar = (iso) => {
+    if (iso < rango.desde) return rango.desde;
+    if (iso > rango.hasta) return rango.hasta;
+    return iso;
+  };
+  return { desde: acotar(lunes), hasta: acotar(sabado) };
+}
+
+/**
  * Expande filas de feriados (rango fecha_inicio..fecha_fin) a un Set de fechas
  * 'YYYY-MM-DD'. Usado para marcar días neutros del calendario.
  *

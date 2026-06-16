@@ -7,6 +7,8 @@ import {
   setDiasDesdeHorario,
   toISODate,
   hoyISO,
+  resolverBimestreActivo,
+  semanaDeFecha,
 } from '../../../utils/asistenciaCalendario.js';
 import {
   ESTADOS_REGISTRO_ASISTENCIA,
@@ -46,12 +48,6 @@ export class GetPlanillaAsistenciaSemanalUseCase {
   }
 
   async execute({ usuarioId, asignacionId, desde, hasta }) {
-    const desdeIso = toISODate(desde);
-    const hastaIso = toISODate(hasta);
-    if (!desdeIso || !hastaIso || desdeIso > hastaIso) {
-      throw new ValidationError('Rango de fechas inválido');
-    }
-
     const { cursoRow, gestionId } = await assertAsistenciaCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
@@ -64,6 +60,32 @@ export class GetPlanillaAsistenciaSemanalUseCase {
 
     const asignacionIdNum = Number(asignacionId);
     const hoy = hoyISO();
+
+    // Rango: el solicitado si vino; si no, la semana (lun–sáb) vigente del bimestre activo.
+    // El frontend no envía rango por defecto: el backend lo calcula según la fecha.
+    let desdeIso = toISODate(desde);
+    let hastaIso = toISODate(hasta);
+    if (!desdeIso || !hastaIso) {
+      const periodos =
+        await this.calificacionContextoRepository.obtenerPeriodosBimestresGestion(gestionId);
+      const bimestreNum = resolverBimestreActivo(periodos, hoy);
+      const periodo = (periodos ?? []).find((p) => Number(p.numero_orden) === bimestreNum);
+      if (!periodo) {
+        throw new ValidationError('No hay bimestre activo para derivar la semana');
+      }
+      const rangoBim = {
+        desde: toISODate(periodo.fecha_inicio),
+        hasta: toISODate(periodo.fecha_fin),
+      };
+      // Semana de hoy si cae en el bimestre; si no, la primera semana del bimestre.
+      const ref = hoy >= rangoBim.desde && hoy <= rangoBim.hasta ? hoy : rangoBim.desde;
+      const semana = semanaDeFecha(ref, rangoBim);
+      desdeIso = semana.desde;
+      hastaIso = semana.hasta;
+    }
+    if (!desdeIso || !hastaIso || desdeIso > hastaIso) {
+      throw new ValidationError('Rango de fechas inválido');
+    }
 
     const sesionRepo = this.asistenciaSesionViewRepository;
     const planillaRepo = this.asistenciaPlanillaViewRepository;

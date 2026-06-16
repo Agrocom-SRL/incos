@@ -5,10 +5,16 @@
  * Marca de faltas (ciclo según modo normal / corrección), navegación de semanas
  * dentro del bimestre y guardado del lote (PUT). Banner cuando el registro está cerrado.
  */
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Flex, Skeleton } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, UnlockOutlined } from '@ant-design/icons';
+import { Alert, App, Button, Card, Flex, Skeleton } from 'antd';
+import {
+  ArrowLeftOutlined,
+  LockOutlined,
+  PlusOutlined,
+  SaveOutlined,
+  UnlockOutlined,
+} from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
@@ -19,6 +25,7 @@ import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
 import CursoContextoAsistencia from '../components/CursoContextoAsistencia.jsx';
 import CabeceraSemanaAsistencia from '../components/CabeceraSemanaAsistencia.jsx';
 import GrillaAsistenciaSemanal from '../components/GrillaAsistenciaSemanal.jsx';
+import FechaEspecialModal from '../components/FechaEspecialModal.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/asistencia.css';
 
@@ -51,13 +58,19 @@ const PlanillaAsistenciaSemanalPage = () => {
     descartarCambios,
     guardarPlanilla,
     guardando,
+    cerrarRegistro,
     reabrirYcorregir,
-    reabriendo,
+    procesandoCierre,
     semanaPrev,
     semanaSig,
     irSemanaAnterior,
     irSemanaSiguiente,
+    habilitarFechaEspecial,
+    creandoSesion,
   } = usePlanillaAsistenciaState();
+
+  const { modal } = App.useApp();
+  const [modalEspecial, setModalEspecial] = useState(false);
 
   const handleVolver = useCallback(() => {
     if (hayCambios) {
@@ -65,6 +78,18 @@ const PlanillaAsistenciaSemanalPage = () => {
     }
     navigate(volverPath);
   }, [hayCambios, descartarCambios, navigate, volverPath]);
+
+  const confirmarCerrar = useCallback(() => {
+    modal.confirm({
+      title: 'Cerrar registro de asistencia',
+      okText: 'Cerrar registro',
+      okType: 'danger',
+      cancelText: 'Cancelar',
+      content:
+        'La asistencia del bimestre quedará en solo lectura. Podrás reabrirla para corregir.',
+      onOk: cerrarRegistro,
+    });
+  }, [modal, cerrarRegistro]);
 
   const pageHeader = (
     <PageHeader
@@ -81,29 +106,51 @@ const PlanillaAsistenciaSemanalPage = () => {
             onAnterior={irSemanaAnterior}
             onSiguiente={irSemanaSiguiente}
           />
+          <ActionButton
+            permiso={ASISTENCIA_PERMISOS.registroCuaderno}
+            accion="EDITAR"
+            variant="default"
+            icon={<PlusOutlined />}
+            onClick={() => setModalEspecial(true)}
+            disabled={registroCerrado}
+          >
+            Habilitar fecha especial
+          </ActionButton>
           {registroCerrado ? (
             <ActionButton
               permiso={ASISTENCIA_PERMISOS.registroCuaderno}
               accion="EDITAR"
               variant="warning"
               icon={<UnlockOutlined />}
-              loading={reabriendo}
+              loading={procesandoCierre}
               onClick={reabrirYcorregir}
             >
               Reabrir para corregir
             </ActionButton>
           ) : (
-            <ActionButton
-              permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-              accion="EDITAR"
-              variant="primary"
-              icon={<SaveOutlined />}
-              loading={guardando}
-              disabled={!hayCambios}
-              onClick={guardarPlanilla}
-            >
-              Guardar
-            </ActionButton>
+            <>
+              <ActionButton
+                permiso={ASISTENCIA_PERMISOS.registroCuaderno}
+                accion="EDITAR"
+                variant="primary"
+                icon={<SaveOutlined />}
+                loading={guardando}
+                disabled={!hayCambios}
+                onClick={guardarPlanilla}
+              >
+                Guardar
+              </ActionButton>
+              <ActionButton
+                permiso={ASISTENCIA_PERMISOS.registroCuaderno}
+                accion="EDITAR"
+                variant="danger"
+                icon={<LockOutlined />}
+                loading={procesandoCierre}
+                onClick={confirmarCerrar}
+              >
+                Cerrar registro
+              </ActionButton>
+            </>
           )}
           <BackButton
             icon={<ArrowLeftOutlined />}
@@ -207,6 +254,13 @@ const PlanillaAsistenciaSemanalPage = () => {
           )}
         </Flex>
       </MainContent>
+
+      <FechaEspecialModal
+        open={modalEspecial}
+        onClose={() => setModalEspecial(false)}
+        onConfirmar={habilitarFechaEspecial}
+        confirmando={creandoSesion}
+      />
     </Flex>
   );
 };

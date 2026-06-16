@@ -32,6 +32,17 @@ export const useCalendarioAsistenciaState = () => {
 
   const puedeEditar = hasPermiso(ASISTENCIA_PERMISOS.registroCuaderno, 'EDITAR');
 
+  // Drawer de fecha especial: abierto + fecha precargada del día clickeado.
+  const [fechaEspecial, setFechaEspecial] = useState({ abierto: false, fecha: null });
+
+  const abrirFechaEspecial = useCallback((fecha = null) => {
+    setFechaEspecial({ abierto: true, fecha });
+  }, []);
+
+  const cerrarFechaEspecial = useCallback(() => {
+    setFechaEspecial((prev) => ({ ...prev, abierto: false }));
+  }, []);
+
   const cargar = useCallback(() => {
     if (asignacionId) fetch(asignacionId, {});
   }, [asignacionId, fetch]);
@@ -41,10 +52,20 @@ export const useCalendarioAsistenciaState = () => {
   }, [cargar]);
 
   const dias = useMemo(() => calendario?.dias ?? [], [calendario]);
+  const actividadesSinClase = useMemo(
+    () => calendario?.actividadesSinClase ?? [],
+    [calendario],
+  );
   const rango = calendario?.rango ?? null;
   const registroEstado = calendario?.registroEstado ?? ESTADOS_REGISTRO.ABIERTO;
   const registroCerrado = registroEstado === ESTADOS_REGISTRO.CERRADO;
   const bimestre = calendario?.bimestre ?? null;
+  const bimestreNombre = calendario?.bimestreNombre ?? null;
+  const bimestreColor = calendario?.bimestreColor ?? null;
+  const gestion = calendario?.gestion ?? null;
+  const anioCalendario = calendario?.anioCalendario ?? null;
+  const hoy = calendario?.hoy ?? null;
+  const resumen = calendario?.resumen ?? null;
   const curso = calendario?.curso ?? null;
 
   const breadcrumbItems = useMemo(
@@ -125,7 +146,14 @@ export const useCalendarioAsistenciaState = () => {
     asignacionId,
     curso,
     bimestre,
+    bimestreNombre,
+    bimestreColor,
+    gestion,
+    anioCalendario,
+    hoy,
+    resumen,
     dias,
+    actividadesSinClase,
     rango,
     registroEstado,
     registroCerrado,
@@ -141,5 +169,9 @@ export const useCalendarioAsistenciaState = () => {
     habilitarFechaEspecial,
     procesandoRegistro: procesando,
     creandoSesion: creando,
+    // Drawer de fecha especial
+    fechaEspecial,
+    abrirFechaEspecial,
+    cerrarFechaEspecial,
   };
 };

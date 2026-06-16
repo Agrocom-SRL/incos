@@ -2,15 +2,10 @@
  * Modal para habilitar una fecha especial de clase (taller/recuperación) — molécula.
  * Permite fecha futura. Envía { fecha, motivo, horaInicio?, horaFin? } al confirmar.
  */
-import { useEffect } from 'react';
 import { DatePicker, Form, Input, Modal, TimePicker } from 'antd';
 
 const FechaEspecialModal = ({ open, onClose, onConfirmar, confirmando }) => {
   const [form] = Form.useForm();
-
-  useEffect(() => {
-    if (!open) form.resetFields();
-  }, [open, form]);
 
   const handleOk = async () => {
     const values = await form.validateFields();
@@ -32,7 +27,8 @@ const FechaEspecialModal = ({ open, onClose, onConfirmar, confirmando }) => {
       confirmLoading={confirmando}
       onOk={handleOk}
       onCancel={onClose}
-      destroyOnClose
+      forceRender
+      afterClose={() => form.resetFields()}
     >
       <Form form={form} layout="vertical" requiredMark="optional" className="asi-fecha-especial-form">
         <Form.Item

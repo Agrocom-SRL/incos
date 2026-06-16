@@ -30,14 +30,8 @@ export class CalendarActivity extends BaseEntity {
     if (data.hasOwnProperty('endDate')) {
       this.endDate = data.endDate;
     }
-    if (data.hasOwnProperty('isAllDay')) {
-      this.isAllDay = data.isAllDay;
-    } else if (!data.hasOwnProperty('academicPeriodId')) {
-      // Solo usar valor por defecto si no se está usando attributes limitados
-      this.isAllDay = true;
-    }
-    if (data.hasOwnProperty('schedule')) {
-      this.schedule = data.schedule; // JSON: {"inicio": "08:00", "fin": "12:00"}
+    if (data.hasOwnProperty('suspendsClasses')) {
+      this.suspendsClasses = data.suspendsClasses; // TRUE = día sin clase (feriado/receso/vacaciones)
     }
   }
 
@@ -131,11 +125,8 @@ export class CalendarActivity extends BaseEntity {
     if (this.hasOwnProperty('endDate')) {
       plainObject.endDate = this.endDate;
     }
-    if (this.hasOwnProperty('isAllDay')) {
-      plainObject.isAllDay = this.isAllDay;
-    }
-    if (this.hasOwnProperty('schedule')) {
-      plainObject.schedule = this.schedule;
+    if (this.hasOwnProperty('suspendsClasses')) {
+      plainObject.suspendsClasses = this.suspendsClasses;
     }
 
     return plainObject;

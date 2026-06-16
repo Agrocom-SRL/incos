@@ -6,6 +6,7 @@ import {
   setDiasDesdeHorario,
   toISODate,
   hoyISO,
+  resolverBimestreActivo,
 } from '../../../utils/asistenciaCalendario.js';
 import {
   ESTADOS_REGISTRO_ASISTENCIA,
@@ -25,6 +26,7 @@ export class GetCalendarioAsistenciaUseCase {
     calificacionContextoRepository,
     cuadernoRepository,
     asistenciaSesionViewRepository,
+    asistenciaPlanillaViewRepository,
     asistenciaRegistroEstadoViewRepository,
     teacherRepository,
     userRepository,
@@ -35,6 +37,7 @@ export class GetCalendarioAsistenciaUseCase {
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.asistenciaSesionViewRepository = asistenciaSesionViewRepository;
+    this.asistenciaPlanillaViewRepository = asistenciaPlanillaViewRepository;
     this.asistenciaRegistroEstadoViewRepository = asistenciaRegistroEstadoViewRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
@@ -42,13 +45,22 @@ export class GetCalendarioAsistenciaUseCase {
     this.logger = logger;
   }
 
-  async execute({ usuarioId, asignacionId, bimestre }) {
-    const bimestreNum = Number(bimestre);
-    if (!Number.isFinite(bimestreNum) || bimestreNum < 1 || bimestreNum > 4) {
-      throw new NotFoundError('Bimestre');
+  /**
+   * Resuelve el número de bimestre (1-4): el solicitado si es válido, si no el activo.
+   * @param {number|string|undefined} bimestre solicitado (opcional)
+   * @param {Array<Object>} periodos de la gestión
+   * @returns {number|null}
+   */
+  _resolverBimestre(bimestre, periodos) {
+    const pedido = Number(bimestre);
+    if (Number.isFinite(pedido) && pedido >= 1 && pedido <= 4) {
+      return pedido;
     }
+    return resolverBimestreActivo(periodos);
+  }
 
-    const { cursoRow, gestionId } = await assertAsistenciaCursoAccess({
+  async execute({ usuarioId, asignacionId, bimestre }) {
+    const { cursoRow, ctx, gestionId } = await assertAsistenciaCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
@@ -63,6 +75,14 @@ export class GetCalendarioAsistenciaUseCase {
     // Rango del bimestre desde periodos_academicos (vista 105 vía cuadernoRepository).
     const periodos =
       await this.calificacionContextoRepository.obtenerPeriodosBimestresGestion(gestionId);
+
+    // Bimestre: el solicitado si vino; si no, el activo del calendario (abierto),
+    // con respaldo al que contiene hoy y, en último caso, al último ya iniciado.
+    const bimestreNum = this._resolverBimestre(bimestre, periodos);
+    if (!bimestreNum) {
+      throw new NotFoundError('Bimestre activo del curso');
+    }
+
     const periodo = (periodos ?? []).find((p) => Number(p.numero_orden) === bimestreNum);
     if (!periodo) {
       throw new NotFoundError('Periodo académico del bimestre');
@@ -76,7 +96,7 @@ export class GetCalendarioAsistenciaUseCase {
     const hasta = toISODate(periodo.fecha_fin);
     const hoy = hoyISO();
 
-    const [bloquesHorario, diasTomados, feriados, clasesNoDictadas, estadoRow] =
+    const [bloquesHorario, diasTomados, feriados, clasesNoDictadas, estadoRow, celdas] =
       await Promise.all([
         this.asistenciaSesionViewRepository.listarBloquesHorario(asignacionIdNum),
         this.asistenciaSesionViewRepository.listarDiasTomados(asignacionIdNum, desde, hasta),
@@ -88,7 +108,42 @@ export class GetCalendarioAsistenciaUseCase {
               periodoAcademicoId,
             )
           : Promise.resolve(null),
+        this.asistenciaPlanillaViewRepository.listarCeldasPlanilla(asignacionIdNum, desde, hasta),
       ]);
+
+    // Resumen P/R/F/L del bimestre (1 celda = 1 estudiante × 1 sesión tomada).
+    const resumen = { presentes: 0, atrasados: 0, faltantes: 0, conLicencia: 0, total: 0 };
+    for (const c of celdas ?? []) {
+      resumen.total += 1;
+      if (c.tiene_licencia === 1 || c.tiene_licencia === true) resumen.conLicencia += 1;
+      else if (c.estado === 'AUSENTE') resumen.faltantes += 1;
+      else if (c.estado === 'TARDANZA') resumen.atrasados += 1;
+      else resumen.presentes += 1; // estado NULL/PRESENTE = presente implícito (sparse)
+    }
+
+    // Nombre del docente (orden APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES).
+    let docenteNombre = '';
+    try {
+      const docente = await this.teacherRepository.findById(Number(cursoRow.docente_id));
+      const d = typeof docente?.toPlainObject === 'function' ? docente.toPlainObject() : docente;
+      docenteNombre = [d?.lastName, d?.motherLastName, d?.firstName]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+    } catch {
+      docenteNombre = '';
+    }
+
+    // Días sin clase (feriados/receso/vacaciones) del bimestre, para listar y pintar en rojo.
+    const actividadesSinClase = (feriados ?? []).map((f) => ({
+      id: f.actividad_calendario_id ?? null,
+      nombre: f.nombre ?? 'Día sin clase',
+      tipo: f.tipo ?? 'OTRO',
+      fechaInicio: toISODate(f.fecha_inicio),
+      fechaFin: toISODate(f.fecha_fin) ?? toISODate(f.fecha_inicio),
+      estado: f.estado_actividad ?? null,
+      esDestacada: f.es_destacada === 1 || f.es_destacada === true,
+    }));
 
     // Expansión día-de-semana → fechas reales (lógica de app, no SQL).
     const diasSet = setDiasDesdeHorario(bloquesHorario);
@@ -151,12 +206,20 @@ export class GetCalendarioAsistenciaUseCase {
         carrera: cursoRow.carrera_nombre ?? '',
         paralelo: cursoRow.paralelo_nombre ?? '',
         turno: cursoRow.paralelo_turno ?? '',
+        docente: docenteNombre,
         estudiantes: Number(cursoRow.cantidad_estudiantes ?? 0),
       },
       bimestre: bimestreNum,
+      bimestreNombre: periodo.nombre ?? `Bimestre ${bimestreNum}`,
+      bimestreColor: periodo.color_hex ?? null,
       periodoAcademicoId: periodoAcademicoId ?? null,
+      anioCalendario: Number(String(desde).slice(0, 4)),
+      gestion: ctx?.gestion_nombre ?? ctx?.gestion_anio ?? null,
       rango: { desde, hasta },
+      hoy,
       registroEstado,
+      resumen,
+      actividadesSinClase,
       dias,
     };
   }

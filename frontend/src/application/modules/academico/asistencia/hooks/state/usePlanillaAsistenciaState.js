@@ -15,6 +15,7 @@ import { usePlanillaAsistenciaApi } from '../api/usePlanillaAsistenciaApi.js';
 import { useCalendarioAsistenciaApi } from '../api/useCalendarioAsistenciaApi.js';
 import { useBulkAsistenciaApi } from '../api/useBulkAsistenciaApi.js';
 import { useRegistroCierreApi } from '../api/useRegistroCierreApi.js';
+import { useSesionEspecialApi } from '../api/useSesionEspecialApi.js';
 import { ASISTENCIA_PERMISOS } from '../../utils/asistenciaPermisos.js';
 import { createAsistenciaBreadcrumbItems } from '../../utils/asistenciaBreadcrumbs.js';
 import { calendarioCursoPath } from '../../utils/asistenciaPaths.js';
@@ -43,7 +44,8 @@ export const usePlanillaAsistenciaState = () => {
   const { planilla, loading, error, fetch } = usePlanillaAsistenciaApi();
   const { calendario, fetch: fetchCalendario } = useCalendarioAsistenciaApi();
   const { guardar, guardando } = useBulkAsistenciaApi();
-  const { reabrir, procesando: reabriendo } = useRegistroCierreApi();
+  const { cerrar, reabrir, procesando: procesandoCierre } = useRegistroCierreApi();
+  const { crear: crearSesion, creando: creandoSesion } = useSesionEspecialApi();
 
   const puedeEditar = hasPermiso(ASISTENCIA_PERMISOS.registroCuaderno, 'EDITAR');
 
@@ -71,8 +73,6 @@ export const usePlanillaAsistenciaState = () => {
 
   useEffect(() => {
     cargarPlanilla();
-    // Al cambiar de semana se descartan cambios sin guardar de la semana previa.
-    setCambios(new Map());
   }, [cargarPlanilla]);
 
   const filas = useMemo(() => planilla?.filas ?? [], [planilla]);
@@ -173,6 +173,24 @@ export const usePlanillaAsistenciaState = () => {
     cargarPlanilla();
   }, [hayCambios, construirPayloadDias, guardar, asignacionId, notification, cargarPlanilla]);
 
+  const cerrarRegistro = useCallback(async () => {
+    const res = await cerrar(asignacionId, { bimestre });
+    if (!res?.success) {
+      notification.error({
+        title: 'No se pudo cerrar el registro',
+        description: res?.error || 'Reintentá en unos segundos.',
+      });
+      return false;
+    }
+    setModoCorreccion(false);
+    notification.success({
+      title: 'Registro cerrado',
+      description: 'La asistencia del bimestre quedó en solo lectura.',
+    });
+    cargarPlanilla();
+    return true;
+  }, [cerrar, asignacionId, bimestre, notification, cargarPlanilla]);
+
   const reabrirYcorregir = useCallback(async () => {
     const res = await reabrir(asignacionId, { bimestre });
     if (!res?.success) {
@@ -190,6 +208,32 @@ export const usePlanillaAsistenciaState = () => {
     cargarPlanilla();
   }, [reabrir, asignacionId, bimestre, notification, cargarPlanilla]);
 
+  /** Habilita una sesión especial (taller/recuperación) y salta a su semana. */
+  const habilitarFechaEspecial = useCallback(
+    async ({ fecha, motivo, horaInicio, horaFin }) => {
+      const res = await crearSesion(asignacionId, { fecha, motivo, horaInicio, horaFin });
+      if (!res?.success) {
+        notification.error({
+          title: 'No se pudo habilitar la fecha',
+          description: res?.error || 'Reintentá en unos segundos.',
+        });
+        return false;
+      }
+      notification.success({
+        title: 'Fecha especial habilitada',
+        description: 'Ya podés tomar asistencia en ese día.',
+      });
+      // Saltar a la semana de la fecha habilitada (recarga implícita por el cambio de query).
+      if (fecha && rangoBimestre) {
+        setSearchParams(semanaDeFecha(fecha, rangoBimestre));
+      } else {
+        cargarPlanilla();
+      }
+      return true;
+    },
+    [crearSesion, asignacionId, notification, rangoBimestre, setSearchParams, cargarPlanilla],
+  );
+
   // Navegación de semanas dentro del bimestre.
   const semanaActual = useMemo(() => {
     if (rangoSemana) return rangoSemana;
@@ -200,6 +244,8 @@ export const usePlanillaAsistenciaState = () => {
   const irASemana = useCallback(
     (semana) => {
       if (!semana) return;
+      // Al cambiar de semana se descartan los cambios sin guardar de la semana previa.
+      setCambios(new Map());
       setSearchParams({ desde: semana.desde, hasta: semana.hasta });
     },
     [setSearchParams],
@@ -251,8 +297,11 @@ export const usePlanillaAsistenciaState = () => {
     // acciones
     guardarPlanilla,
     guardando,
+    cerrarRegistro,
     reabrirYcorregir,
-    reabriendo,
+    procesandoCierre,
+    habilitarFechaEspecial,
+    creandoSesion,
     // navegación
     semanaPrev,
     semanaSig,

@@ -9,12 +9,20 @@ const bimestreQuery = query('bimestre')
   .isInt({ min: 1, max: 4 })
   .withMessage('Bimestre debe ser entre 1 y 4');
 
-export const getCalendarioAsistenciaValidator = [asignacionParam, bimestreQuery];
+// En el calendario el bimestre es OPCIONAL: si no se envía, el use-case resuelve el
+// bimestre activo (estado_calendario = abierto) del curso. Solo se valida si viene.
+const bimestreQueryOpcional = query('bimestre')
+  .optional()
+  .isInt({ min: 1, max: 4 })
+  .withMessage('Bimestre debe ser entre 1 y 4');
 
+export const getCalendarioAsistenciaValidator = [asignacionParam, bimestreQueryOpcional];
+
+// Rango OPCIONAL: si no viene, el use-case deriva la semana vigente del bimestre activo.
 export const getPlanillaAsistenciaValidator = [
   asignacionParam,
-  query('desde').isISO8601().withMessage('Fecha "desde" inválida'),
-  query('hasta').isISO8601().withMessage('Fecha "hasta" inválida'),
+  query('desde').optional().isISO8601().withMessage('Fecha "desde" inválida'),
+  query('hasta').optional().isISO8601().withMessage('Fecha "hasta" inválida'),
 ];
 
 export const bulkRegistrarAsistenciaValidator = [

@@ -1,21 +1,22 @@
 /**
- * Pantalla CALENDARIO MENSUAL de asistencia (bimestre activo del curso).
+ * Pantalla CALENDARIO de asistencia (bimestre activo del curso).
  *
- * Días del bimestre con dot en los ya tomados; botón «Marcar asistencia» → planilla
- * semanal; «Habilitar fecha especial» (modal); «Cerrar / Reabrir registro» (permiso EDITAR).
+ * Layout de ficha (PageTemplate header + content + sidebar):
+ *  - Header: ficha del curso con swatch del color del bimestre + acción "Marcar asistencia".
+ *  - Content: calendario anual (días del bimestre, días de clase, sin clase) + lista de
+ *    actividades que explican los días sin clase.
+ *  - Sidebar: KPIs del resumen de asistencia + contexto (turno, rango, fecha actual).
+ *
+ * Interacción del calendario:
+ *  - día de clase → arma esa semana en la planilla.
+ *  - día del bimestre sin horario → abre el drawer de fecha especial precargado.
  */
-import { useCallback, useState } from 'react';
+
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, App, Button, Card, Flex, Skeleton } from 'antd';
-import {
-  ArrowLeftOutlined,
-  CalendarOutlined,
-  EditOutlined,
-  LockOutlined,
-  PlusOutlined,
-  UnlockOutlined,
-} from '@ant-design/icons';
-import { MainContent, PageHeaderArea } from '@templates';
+import { Alert, Button, Card, Flex, Skeleton } from 'antd';
+import { ArrowLeftOutlined, CalendarOutlined, EditOutlined } from '@ant-design/icons';
+import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
@@ -25,60 +26,44 @@ import { ESTADOS_REGISTRO } from '@application-academico/asistencia/utils/asiste
 import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
 import CalendarioMensualAsistencia from '../components/CalendarioMensualAsistencia.jsx';
 import CursoContextoAsistencia from '../components/CursoContextoAsistencia.jsx';
-import FechaEspecialModal from '../components/FechaEspecialModal.jsx';
+import ActividadesSinClaseList from '../components/ActividadesSinClaseList.jsx';
+import ResumenAsistenciaSidebar from '../components/ResumenAsistenciaSidebar.jsx';
+import FechaEspecialDrawer from '../components/FechaEspecialDrawer.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/asistencia.css';
 
 const CalendarioAsistenciaPage = () => {
   const navigate = useNavigate();
-  const { modal } = App.useApp();
   const {
     curso,
     bimestre,
+    bimestreNombre,
+    bimestreColor,
+    gestion,
+    anioCalendario,
+    hoy,
+    resumen,
     dias,
+    actividadesSinClase,
+    rango,
     registroEstado,
-    registroCerrado,
     isLoading,
     error,
     refetch,
     breadcrumbItems,
     volverPath,
     planillaPath,
-    cerrarRegistro,
-    reabrirRegistro,
     habilitarFechaEspecial,
-    procesandoRegistro,
     creandoSesion,
+    fechaEspecial,
+    abrirFechaEspecial,
+    cerrarFechaEspecial,
   } = useCalendarioAsistenciaState();
-
-  const [modalEspecial, setModalEspecial] = useState(false);
 
   const irAPlanilla = useCallback(
     (fecha) => navigate(planillaPath(fecha)),
     [navigate, planillaPath],
   );
-
-  const confirmarCerrar = useCallback(() => {
-    modal.confirm({
-      title: 'Cerrar registro de asistencia',
-      okText: 'Cerrar registro',
-      okType: 'danger',
-      cancelText: 'Cancelar',
-      content:
-        'La asistencia del bimestre quedará en solo lectura. Podrás reabrirla para corregir.',
-      onOk: cerrarRegistro,
-    });
-  }, [modal, cerrarRegistro]);
-
-  const confirmarReabrir = useCallback(() => {
-    modal.confirm({
-      title: 'Reabrir registro de asistencia',
-      okText: 'Reabrir',
-      cancelText: 'Cancelar',
-      content: 'Volverás a poder editar la asistencia del bimestre en modo corrección.',
-      onOk: reabrirRegistro,
-    });
-  }, [modal, reabrirRegistro]);
 
   const pageHeader = (
     <PageHeader
@@ -91,39 +76,6 @@ const CalendarioAsistenciaPage = () => {
       breadcrumbItems={breadcrumbItems}
       actions={
         <Flex gap={allSpacing.marginXS} wrap="wrap">
-          <ActionButton
-            permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-            accion="EDITAR"
-            variant="default"
-            icon={<PlusOutlined />}
-            onClick={() => setModalEspecial(true)}
-            disabled={registroCerrado}
-          >
-            Habilitar fecha especial
-          </ActionButton>
-          {registroCerrado ? (
-            <ActionButton
-              permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-              accion="EDITAR"
-              variant="warning"
-              icon={<UnlockOutlined />}
-              loading={procesandoRegistro}
-              onClick={confirmarReabrir}
-            >
-              Reabrir registro
-            </ActionButton>
-          ) : (
-            <ActionButton
-              permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-              accion="EDITAR"
-              variant="danger"
-              icon={<LockOutlined />}
-              loading={procesandoRegistro}
-              onClick={confirmarCerrar}
-            >
-              Cerrar registro
-            </ActionButton>
-          )}
           <ActionButton
             permiso={ASISTENCIA_PERMISOS.registroCuaderno}
             accion="LISTAR"
@@ -147,84 +99,107 @@ const CalendarioAsistenciaPage = () => {
 
   if (isLoading && dias.length === 0) {
     return (
-      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
-        <PageHeaderArea>{pageHeader}</PageHeaderArea>
-        <MainContent>
-          <Card {...asistenciaSectionCardProps}>
-            <Skeleton active paragraph={{ rows: 8 }} />
-          </Card>
-        </MainContent>
-      </Flex>
+      <PageTemplate header={pageHeader}>
+        <Card {...asistenciaSectionCardProps}>
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </Card>
+      </PageTemplate>
     );
   }
 
   if (error && dias.length === 0) {
     return (
-      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
-        <PageHeaderArea>{pageHeader}</PageHeaderArea>
-        <MainContent>
-          <Alert
-            type="error"
-            showIcon
-            title="No se pudo cargar el calendario"
-            description={typeof error === 'string' ? error : String(error)}
-            action={
-              <Button size="small" onClick={refetch}>
-                Reintentar
-              </Button>
-            }
-          />
-        </MainContent>
-      </Flex>
+      <PageTemplate header={pageHeader}>
+        <Alert
+          type="error"
+          showIcon
+          title="No se pudo cargar el calendario"
+          description={typeof error === 'string' ? error : String(error)}
+          action={
+            <Button size="small" onClick={refetch}>
+              Reintentar
+            </Button>
+          }
+        />
+      </PageTemplate>
     );
   }
 
-  return (
-    <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
-      <PageHeaderArea>{pageHeader}</PageHeaderArea>
-      <MainContent>
-        <Flex vertical gap={allSpacing.marginLG} className="asi-calendario-page">
-          {registroEstado === ESTADOS_REGISTRO.CERRADO ? (
-            <Alert
-              type="warning"
-              showIcon
-              title="Registro cerrado (solo lectura)"
-              description="La asistencia de este bimestre está cerrada. Reabrí el registro para corregir."
-            />
-          ) : null}
+  const content = (
+    <Flex vertical gap={allSpacing.marginLG} className="asi-calendario-page">
+      {registroEstado === ESTADOS_REGISTRO.CERRADO ? (
+        <Alert
+          type="warning"
+          showIcon
+          title="Registro cerrado (solo lectura)"
+          description="La asistencia de este bimestre está cerrada. Reabrila desde la planilla para corregir."
+        />
+      ) : null}
 
-          <Card {...asistenciaSectionCardProps}>
-            <CursoContextoAsistencia
-              curso={curso}
-              bimestre={bimestre}
-              registroEstado={registroEstado}
-            />
-          </Card>
+      <Card {...asistenciaSectionCardProps}>
+        <CursoContextoAsistencia
+          curso={curso}
+          bimestre={bimestre}
+          bimestreNombre={bimestreNombre}
+          bimestreColor={bimestreColor}
+          gestion={gestion}
+          registroEstado={registroEstado}
+        />
+      </Card>
 
-          {dias.length === 0 ? (
-            <Card {...asistenciaSectionCardProps}>
-              <Alert
-                type="info"
-                showIcon
-                title="Sin días de clase en el bimestre"
-                description="Todavía no hay días de clase configurados para este curso en el bimestre vigente."
-              />
-            </Card>
-          ) : (
-            <Card {...asistenciaSectionCardProps}>
-              <CalendarioMensualAsistencia dias={dias} onElegirDia={irAPlanilla} />
-            </Card>
-          )}
-        </Flex>
-      </MainContent>
+      {dias.length === 0 ? (
+        <Card {...asistenciaSectionCardProps}>
+          <Alert
+            type="info"
+            showIcon
+            title="Sin días de clase en el bimestre"
+            description="Todavía no hay días de clase configurados para este curso en el bimestre vigente."
+          />
+        </Card>
+      ) : (
+        <Card {...asistenciaSectionCardProps}>
+          <CalendarioMensualAsistencia
+            dias={dias}
+            rango={rango}
+            actividadesSinClase={actividadesSinClase}
+            bimestreColor={bimestreColor}
+            anioCalendario={anioCalendario}
+            hoy={hoy}
+            onElegirDia={irAPlanilla}
+            onDiaEspecial={abrirFechaEspecial}
+          />
+        </Card>
+      )}
 
-      <FechaEspecialModal
-        open={modalEspecial}
-        onClose={() => setModalEspecial(false)}
-        onConfirmar={habilitarFechaEspecial}
-        confirmando={creandoSesion}
-      />
+      <Card {...asistenciaSectionCardProps} title="Días sin clase del bimestre">
+        <ActividadesSinClaseList actividades={actividadesSinClase} />
+      </Card>
     </Flex>
+  );
+
+  const sidebar = (
+    <ResumenAsistenciaSidebar
+      resumen={resumen}
+      turno={curso?.turno}
+      rango={rango}
+      hoy={hoy}
+    />
+  );
+
+  return (
+    <>
+      <PageTemplate header={pageHeader} sidebar={sidebar}>
+        {content}
+      </PageTemplate>
+
+      <FechaEspecialDrawer
+        abierto={fechaEspecial.abierto}
+        fechaInicial={fechaEspecial.fecha}
+        confirmando={creandoSesion}
+        onCerrar={cerrarFechaEspecial}
+        onConfirmar={habilitarFechaEspecial}
+      />
+    </>
   );
 };
 

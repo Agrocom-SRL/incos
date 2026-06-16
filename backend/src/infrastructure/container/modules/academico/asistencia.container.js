@@ -60,6 +60,9 @@ export function registerAsistenciaResource(container) {
         asistenciaSesionViewRepository: c.resolve(
           REPOSITORIOS_TOKENS.asistenciaSesionViewRepository,
         ),
+        asistenciaPlanillaViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository,
+        ),
         asistenciaRegistroEstadoViewRepository: c.resolve(
           REPOSITORIOS_TOKENS.asistenciaRegistroEstadoViewRepository,
         ),

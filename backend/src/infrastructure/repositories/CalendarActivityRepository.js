@@ -95,11 +95,8 @@ export class CalendarActivityRepository extends BaseRepository {
     if (filters.endDate !== undefined) {
       where.fechaFin = filters.endDate;
     }
-    if (filters.isAllDay !== undefined) {
-      where.esTodoElDia = filters.isAllDay;
-    }
-    if (filters.schedule !== undefined) {
-      where.horario = filters.schedule;
+    if (filters.suspendsClasses !== undefined) {
+      where.suspendeClases = filters.suspendsClasses;
     }
 
     return where;

@@ -120,6 +120,19 @@ INSERT INTO actividades_calendario (id, periodo_academico_id, actividad_id, codi
 (78, 6, 47, '2026-CLAU-002', '2026-12-10', NULL, NULL),  -- Rendición Cuentas
 (79, 6, 48, '2026-CLAU-003', '2026-12-11', NULL, NULL);  -- Clausura
 
+-- ============================================
+-- DÍAS SIN CLASE (suspende_clases = TRUE) → neutros en el cálculo de asistencia
+-- Feriados nacionales 2026 (actividad FERIADO) + Receso académico.
+--   2  Estado Plurinacional (22 ene)    8  Carnaval (16-17 feb)
+--   17 Viernes Santo (3 abr)            23 Día del Trabajo (1 may)
+--   29 Corpus Christi (4 jun)           30 Año Nuevo Aymara (22 jun)
+--   32 Receso académico (13-24 jul)     43 Día de la Patria (6 ago)
+--   53 Efemérides departamental (24 sep) 61 Fieles Difuntos (2 nov)
+-- ============================================
+UPDATE actividades_calendario
+SET suspende_clases = TRUE
+WHERE id IN (2, 8, 17, 23, 29, 30, 32, 43, 53, 61);
+
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
