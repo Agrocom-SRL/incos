@@ -17,6 +17,7 @@ import {
   ClockCircleOutlined,
   CloseCircleOutlined,
   FieldTimeOutlined,
+  ScheduleOutlined,
   SolutionOutlined,
 } from '@ant-design/icons';
 import { allColors, allSpacing, componentConfig, gradients, shadows, typography } from '@theme/tokens';
@@ -99,7 +100,13 @@ const KpiGradientCard = ({ etiqueta, icon, valor, titulo, detalle, gradient }) =
   </Card>
 );
 
-const ResumenAsistenciaSidebar = ({ resumen = null, turno = null, rango = null, hoy = null }) => {
+const ResumenAsistenciaSidebar = ({
+  resumen = null,
+  turno = null,
+  horario = [],
+  rango = null,
+  hoy = null,
+}) => {
   const total = resumen?.total ?? 0;
   const rangoLabel =
     rango?.desde && rango?.hasta
@@ -138,7 +145,7 @@ const ResumenAsistenciaSidebar = ({ resumen = null, turno = null, rango = null, 
             </div>
           </Flex>
 
-          <div className="asi-resumen-ctx__hoy">
+          <div>
             <Text type="secondary" className="asi-resumen-ctx__label">
               Fecha actual
             </Text>
@@ -146,25 +153,51 @@ const ResumenAsistenciaSidebar = ({ resumen = null, turno = null, rango = null, 
               {hoy ? etiquetaFechaCompleta(hoy) : '—'}
             </span>
           </div>
+
+          {horario.length ? (
+            <div className="asi-resumen-ctx__bloque">
+              <Text type="secondary" className="asi-resumen-ctx__label">
+                Días de clase
+              </Text>
+              <ul className="asi-resumen-ctx__horario">
+                {horario.map((d) => (
+                  <li key={d.dia} className="asi-resumen-ctx__horario-item">
+                    <span className="asi-resumen-ctx__horario-dia">
+                      <ScheduleOutlined aria-hidden />
+                      {d.diaLabel}
+                    </span>
+                    <span className="asi-resumen-ctx__horario-horas">
+                      {d.bloques.map((b) => (
+                        <span key={`${b.inicio}-${b.fin}`} className="asi-resumen-ctx__horario-hora">
+                          {b.inicio}–{b.fin}
+                        </span>
+                      ))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
         </Flex>
       </Card>
 
       {resumen
         ? KPI_DEFS.map(({ key, label, icon, gradient }) => {
-            const valor = resumen[key] ?? 0;
-            const pct = Math.round(porcentaje(valor, total));
-            return (
-              <KpiGradientCard
-                key={key}
-                etiqueta={label}
-                icon={icon}
-                valor={valor}
-                titulo={`${pct}% del total`}
-                detalle={`de ${total} marcas`}
-                gradient={gradient}
-              />
-            );
-          })
+          const valor = resumen[key] ?? 0;
+          const pct = Math.round(porcentaje(valor, total));
+          return (
+            <KpiGradientCard
+              key={key}
+              etiqueta={label}
+              icon={icon}
+              valor={valor}
+              titulo={`${pct}% del total`}
+              detalle={`de ${total} marcas`}
+              gradient={gradient}
+            />
+          );
+        })
         : null}
     </Flex>
   );

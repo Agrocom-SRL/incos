@@ -26,6 +26,18 @@ export class ISesionClaseRepository extends IRepository {
   }
 
   /**
+   * Elimina (soft-delete) la sesión ESPECIAL de un curso en una fecha.
+   * @param {number} _asignacionDocenteId
+   * @param {string} _fecha YYYY-MM-DD
+   * @param {number} _usuarioId
+   * @param {import('sequelize').Transaction} [_transaction]
+   * @returns {Promise<{ eliminada: boolean }>}
+   */
+  async eliminarSesionEspecial(_asignacionDocenteId, _fecha, _usuarioId, _transaction) {
+    throw new Error('Method eliminarSesionEspecial() must be implemented');
+  }
+
+  /**
    * Pone CERRADA todas las sesiones del curso en el bimestre.
    * @returns {Promise<number>} filas afectadas
    */

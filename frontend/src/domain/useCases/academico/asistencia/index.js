@@ -6,3 +6,4 @@ export { GuardarPlanillaAsistenciaUseCase } from './GuardarPlanillaAsistenciaUse
 export { CerrarRegistroAsistenciaUseCase } from './CerrarRegistroAsistenciaUseCase.js';
 export { ReabrirRegistroAsistenciaUseCase } from './ReabrirRegistroAsistenciaUseCase.js';
 export { CrearSesionEspecialUseCase } from './CrearSesionEspecialUseCase.js';
+export { EliminarSesionEspecialUseCase } from './EliminarSesionEspecialUseCase.js';

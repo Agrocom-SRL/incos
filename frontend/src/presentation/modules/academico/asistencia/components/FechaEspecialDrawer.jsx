@@ -8,8 +8,8 @@
  */
 
 import { useEffect } from 'react';
-import { Alert, Button, DatePicker, Drawer, Form, Input, TimePicker } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Alert, Button, DatePicker, Drawer, Form, Input, Popconfirm, TimePicker, Tooltip } from 'antd';
+import { CalendarOutlined, ClockCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import SeccionAjustes from '@academico/calificaciones/components/ajustes/SeccionAjustes.jsx';
 import {
@@ -22,42 +22,93 @@ import {
 } from '@academico/calificaciones/utils/calificacionesDrawerLayout.js';
 import '@academico/calificaciones/styles/calificaciones.css';
 
-const FechaEspecialDrawerFooter = ({ confirmando, onCerrar, onConfirmar }) => (
-  <div className="cal-ajustes-drawer__footer">
-    <span className="cal-ajustes-drawer__footer-count cal-ajustes-drawer__footer-count--empty" />
-    <div className="cal-ajustes-drawer__footer-actions">
-      <Button onClick={onCerrar} disabled={confirmando}>
-        Cancelar
-      </Button>
-      <Button
-        type="primary"
-        className="cal-ajustes-drawer__btn-guardar"
-        loading={confirmando}
-        onClick={onConfirmar}
-      >
-        Habilitar fecha
-      </Button>
+const FechaEspecialDrawerFooter = ({
+  esEdicion,
+  tieneMarcas,
+  confirmando,
+  eliminando,
+  onCerrar,
+  onConfirmar,
+  onEliminar,
+}) => {
+  const ocupado = confirmando || eliminando;
+  const botonEliminar = (
+    <Button danger icon={<DeleteOutlined />} loading={eliminando} disabled={tieneMarcas || confirmando}>
+      Eliminar
+    </Button>
+  );
+
+  return (
+    <div className="cal-ajustes-drawer__footer">
+      {esEdicion ? (
+        tieneMarcas ? (
+          <Tooltip title="No se puede eliminar: ya tiene asistencia registrada en ese día.">
+            <span>{botonEliminar}</span>
+          </Tooltip>
+        ) : (
+          <Popconfirm
+            title="Eliminar fecha especial"
+            description="Se quitará este día especial del calendario. ¿Continuar?"
+            okText="Eliminar"
+            okButtonProps={{ danger: true }}
+            cancelText="Cancelar"
+            onConfirm={onEliminar}
+          >
+            {botonEliminar}
+          </Popconfirm>
+        )
+      ) : (
+        <span className="cal-ajustes-drawer__footer-count cal-ajustes-drawer__footer-count--empty" />
+      )}
+      <div className="cal-ajustes-drawer__footer-actions">
+        <Button onClick={onCerrar} disabled={ocupado}>
+          Cancelar
+        </Button>
+        <Button
+          type="primary"
+          className="cal-ajustes-drawer__btn-guardar"
+          loading={confirmando}
+          disabled={eliminando}
+          onClick={onConfirmar}
+        >
+          {esEdicion ? 'Guardar cambios' : 'Habilitar fecha'}
+        </Button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
+/** 'HH:mm:ss' | 'HH:mm' → dayjs (o null). Sin plugins de parseo de formato. */
+const horaADayjs = (valor) => {
+  const hhmm = String(valor ?? '').slice(0, 5);
+  return /^\d{2}:\d{2}$/.test(hhmm) ? dayjs(`2000-01-01T${hhmm}`) : null;
+};
 
 const FechaEspecialDrawer = ({
   abierto,
   fechaInicial = null,
+  sesion = null,
   confirmando = false,
+  eliminando = false,
   onCerrar,
   onConfirmar,
+  onEliminar,
 }) => {
   const [form] = Form.useForm();
+  const esEdicion = Boolean(sesion);
+  const tieneMarcas = Boolean(sesion?.tieneMarcas);
 
-  // Precarga la fecha del día clickeado cada vez que se abre el drawer.
+  // Precarga la fecha del día clickeado; en edición precarga motivo y horas existentes.
   useEffect(() => {
     if (!abierto) return;
     form.resetFields();
     form.setFieldsValue({
       fecha: fechaInicial ? dayjs(fechaInicial) : null,
+      motivo: sesion?.motivo ?? undefined,
+      horaInicio: horaADayjs(sesion?.horaInicio),
+      horaFin: horaADayjs(sesion?.horaFin),
     });
-  }, [abierto, fechaInicial, form]);
+  }, [abierto, fechaInicial, sesion, form]);
 
   const handleConfirmar = async () => {
     const values = await form.validateFields();
@@ -70,22 +121,31 @@ const FechaEspecialDrawer = ({
     if (ok) onCerrar();
   };
 
+  const handleEliminar = async () => {
+    const ok = await onEliminar?.(fechaInicial);
+    if (ok) onCerrar();
+  };
+
   const handleCerrar = () => {
-    if (!confirmando) onCerrar();
+    if (!confirmando && !eliminando) onCerrar();
   };
 
   return (
     <Drawer
-      title="Habilitar fecha especial"
+      title={esEdicion ? 'Editar fecha especial' : 'Habilitar fecha especial'}
       size={520}
       open={abierto}
       onClose={handleCerrar}
       destroyOnHidden
       footer={
         <FechaEspecialDrawerFooter
+          esEdicion={esEdicion}
+          tieneMarcas={tieneMarcas}
           confirmando={confirmando}
+          eliminando={eliminando}
           onCerrar={handleCerrar}
           onConfirmar={handleConfirmar}
+          onEliminar={handleEliminar}
         />
       }
       rootClassName={calificacionesDrawerRootClassName}
@@ -98,7 +158,11 @@ const FechaEspecialDrawer = ({
         type="info"
         showIcon
         title="Sesión fuera del horario habitual"
-        description="Habilitá un día que no figura en el horario del curso (taller, recuperación o reposición) para poder tomar lista en esa fecha."
+        description={
+          esEdicion
+            ? 'Editá el motivo o el horario de esta sesión especial, o eliminala si la creaste por error (solo si todavía no tiene asistencia tomada).'
+            : 'Habilitá un día que no figura en el horario del curso (taller, recuperación o reposición) para poder tomar lista en esa fecha.'
+        }
         className="asi-fecha-especial__alert"
       />
 
@@ -123,6 +187,7 @@ const FechaEspecialDrawer = ({
                 style={{ width: '100%' }}
                 format="DD/MM/YYYY"
                 placeholder="Seleccioná un día"
+                disabled={esEdicion}
               />
             </Form.Item>
 

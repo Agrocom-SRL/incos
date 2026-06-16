@@ -72,6 +72,71 @@ export function setDiasDesdeHorario(bloquesHorario = []) {
   return set;
 }
 
+/** Etiqueta legible por día de semana (ENUM `horarios.dia`). */
+const DIA_SEMANA_LABEL = {
+  LUNES: 'Lunes',
+  MARTES: 'Martes',
+  MIERCOLES: 'Miércoles',
+  JUEVES: 'Jueves',
+  VIERNES: 'Viernes',
+  SABADO: 'Sábado',
+  DOMINGO: 'Domingo',
+};
+
+/** Orden de la semana (Lunes primero) para presentar el horario. */
+const DIA_SEMANA_ORDEN = {
+  LUNES: 1,
+  MARTES: 2,
+  MIERCOLES: 3,
+  JUEVES: 4,
+  VIERNES: 5,
+  SABADO: 6,
+  DOMINGO: 7,
+};
+
+/** 'HH:MM:SS' / Date → 'HH:MM'. */
+function toHHMM(value) {
+  if (value == null) return null;
+  if (value instanceof Date) {
+    return `${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`;
+  }
+  return String(value).slice(0, 5);
+}
+
+/**
+ * Resume el horario semanal del curso AGRUPADO por día: cada día aparece una sola vez
+ * (aunque tenga varios bloques) con la lista de sus rangos horarios ordenados, y el
+ * rango consolidado (primera hora de inicio – última hora de fin).
+ *
+ * @param {Array<{ dia: string, hora_inicio: string, hora_fin: string }>} bloquesHorario
+ * @returns {Array<{ dia: string, diaLabel: string, bloques: Array<{ inicio: string, fin: string }>, rango: string }>}
+ */
+export function resumirHorarioSemanal(bloquesHorario = []) {
+  const porDia = new Map();
+  for (const b of bloquesHorario) {
+    const dia = String(b?.dia ?? '').toUpperCase();
+    const inicio = toHHMM(b?.hora_inicio);
+    const fin = toHHMM(b?.hora_fin);
+    if (DIA_SEMANA_ORDEN[dia] && inicio && fin) {
+      if (!porDia.has(dia)) porDia.set(dia, []);
+      porDia.get(dia).push({ inicio, fin });
+    }
+  }
+
+  return [...porDia.entries()]
+    .map(([dia, bloques]) => {
+      const ordenados = bloques.sort((a, b) => a.inicio.localeCompare(b.inicio));
+      return {
+        dia,
+        diaLabel: DIA_SEMANA_LABEL[dia] ?? dia,
+        bloques: ordenados,
+        // Rango consolidado: útil cuando los bloques son contiguos (mismo día).
+        rango: `${ordenados[0].inicio} – ${ordenados[ordenados.length - 1].fin}`,
+      };
+    })
+    .sort((a, b) => DIA_SEMANA_ORDEN[a.dia] - DIA_SEMANA_ORDEN[b.dia]);
+}
+
 /** Hoy en 'YYYY-MM-DD' (UTC). */
 export function hoyISO() {
   return toISODate(new Date());

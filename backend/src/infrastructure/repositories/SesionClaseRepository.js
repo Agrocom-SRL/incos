@@ -83,6 +83,23 @@ export class SesionClaseRepository extends ISesionClaseRepository {
     });
   }
 
+  /**
+   * Soft-delete de la sesión ESPECIAL (es_especial = TRUE) de un curso en una fecha.
+   * No toca sesiones de horario regular (esas no se eliminan desde aquí).
+   * @returns {Promise<{ eliminada: boolean }>}
+   */
+  async eliminarSesionEspecial(asignacionDocenteId, fecha, usuarioId = null, transaction = null) {
+    const sesion = await SesionClaseModel.findOne({
+      where: { asignacionDocenteId, fecha, esEspecial: true, deletedAt: null },
+      transaction,
+    });
+    if (!sesion) return { eliminada: false };
+
+    await sesion.update({ updatedBy: usuarioId }, { transaction });
+    await sesion.destroy({ transaction }); // paranoid → setea deletedAt
+    return { eliminada: true };
+  }
+
   /** @returns {Promise<number>} filas afectadas */
   async cerrarSesionesBimestre(asignacionDocenteId, periodoAcademicoId, usuarioId = null) {
     const [afectadas] = await SesionClaseModel.update(

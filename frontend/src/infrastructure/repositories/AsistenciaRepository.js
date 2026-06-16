@@ -224,6 +224,26 @@ class AsistenciaRepository {
       return handleErrorResponse(error, 'Error al habilitar la fecha especial');
     }
   }
+
+  /**
+   * DELETE eliminar sesión especial (solo si no tiene asistencia tomada).
+   * @param {number|string} asignacionId
+   * @param {string} fecha YYYY-MM-DD
+   */
+  async eliminarSesionEspecial(asignacionId, fecha) {
+    try {
+      const response = await apiClient.delete(
+        ASISTENCIA_ENDPOINTS.SESION_ESPECIAL_ELIMINAR(asignacionId, fecha),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la fecha especial');
+    }
+  }
 }
 
 export default new AsistenciaRepository();

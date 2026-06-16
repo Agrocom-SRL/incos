@@ -5,4 +5,5 @@ export {
   cerrarRegistroAsistenciaValidator,
   reabrirRegistroAsistenciaValidator,
   crearSesionEspecialValidator,
+  eliminarSesionEspecialValidator,
 } from './asistencia.validator.js';

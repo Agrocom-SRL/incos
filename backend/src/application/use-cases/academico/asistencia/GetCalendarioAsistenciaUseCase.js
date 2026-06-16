@@ -4,6 +4,7 @@ import {
   expandirFechasClase,
   expandirFeriados,
   setDiasDesdeHorario,
+  resumirHorarioSemanal,
   toISODate,
   hoyISO,
   resolverBimestreActivo,
@@ -145,6 +146,9 @@ export class GetCalendarioAsistenciaUseCase {
       esDestacada: f.es_destacada === 1 || f.es_destacada === true,
     }));
 
+    // Horario semanal agrupado por día (día + horas) para mostrar en el sidebar.
+    const horario = resumirHorarioSemanal(bloquesHorario);
+
     // Expansión día-de-semana → fechas reales (lógica de app, no SQL).
     const diasSet = setDiasDesdeHorario(bloquesHorario);
     const fechasClase = new Set(expandirFechasClase(desde, hasta, diasSet));
@@ -159,6 +163,10 @@ export class GetCalendarioAsistenciaUseCase {
     const sesionPorFecha = new Map(
       (diasTomados ?? []).map((s) => [toISODate(s.fecha), s]),
     );
+
+    // Fechas con asistencia REALMENTE registrada (hay celdas de planilla ese día).
+    // Sirve para saber si una sesión especial puede eliminarse (solo si no tiene marcas).
+    const fechasConMarcas = new Set((celdas ?? []).map((c) => toISODate(c.fecha_clase)));
 
     // Unión de fechas a mostrar: días de clase del horario ∪ fechas con sesión tomada
     // (las especiales pueden caer en días sin horario regular).
@@ -177,10 +185,13 @@ export class GetCalendarioAsistenciaUseCase {
         fechaClase: fecha,
         esDiaClase,
         tieneAsistencia: sesion != null,
+        tieneMarcas: fechasConMarcas.has(fecha),
         neutro,
         esFuturo: fecha > hoy,
         esSesionEspecial: Boolean(sesion?.es_especial),
         motivo: sesion?.motivo ?? cndPorFecha.get(fecha) ?? null,
+        horaInicio: sesion?.hora_inicio ?? null,
+        horaFin: sesion?.hora_fin ?? null,
         sesionEstado: sesion?.sesion_estado ?? null,
       };
     });
@@ -219,6 +230,7 @@ export class GetCalendarioAsistenciaUseCase {
       hoy,
       registroEstado,
       resumen,
+      horario,
       actividadesSinClase,
       dias,
     };

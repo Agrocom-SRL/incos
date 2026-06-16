@@ -8,6 +8,7 @@ import {
   cerrarRegistroAsistenciaValidator,
   reabrirRegistroAsistenciaValidator,
   crearSesionEspecialValidator,
+  eliminarSesionEspecialValidator,
 } from '../validators/asistencia/index.js';
 
 /**
@@ -119,13 +120,22 @@ export function buildAsistenciaRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.reabrirRegistroAsistenciaController.handle(req, res, next),
   );
 
-  /** POST crear sesión especial (taller/recuperación; permite fecha futura). */
+  /** POST crear/editar sesión especial (taller/recuperación; permite fecha futura). */
   router.post(
     '/cursos/:asignacionId/sesiones-especiales',
     ...cuadernoEditar,
     crearSesionEspecialValidator,
     validateRequest,
     (req, res, next) => controllers.crearSesionEspecialController.handle(req, res, next),
+  );
+
+  /** DELETE eliminar sesión especial (solo si no tiene asistencia tomada). */
+  router.delete(
+    '/cursos/:asignacionId/sesiones-especiales/:fecha',
+    ...cuadernoEditar,
+    eliminarSesionEspecialValidator,
+    validateRequest,
+    (req, res, next) => controllers.eliminarSesionEspecialController.handle(req, res, next),
   );
 
   return router;

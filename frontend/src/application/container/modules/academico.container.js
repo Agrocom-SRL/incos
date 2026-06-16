@@ -39,6 +39,7 @@ import {
   CerrarRegistroAsistenciaUseCase,
   ReabrirRegistroAsistenciaUseCase,
   CrearSesionEspecialUseCase,
+  EliminarSesionEspecialUseCase,
 } from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
@@ -132,6 +133,10 @@ export function registerAcademicoModule(factory) {
 
   factory.crearSesionEspecialAsistencia = () => {
     return new CrearSesionEspecialUseCase(AsistenciaRepository);
+  };
+
+  factory.eliminarSesionEspecialAsistencia = () => {
+    return new EliminarSesionEspecialUseCase(AsistenciaRepository);
   };
 
   factory.obtenerRegistroNotasCurso = () => {

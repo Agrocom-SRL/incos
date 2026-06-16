@@ -267,6 +267,8 @@ export const ASISTENCIA_ENDPOINTS = {
     `${API_BASE}/asistencia/cursos/${asignacionId}/registro/reabrir`,
   SESIONES_ESPECIALES: (asignacionId) =>
     `${API_BASE}/asistencia/cursos/${asignacionId}/sesiones-especiales`,
+  SESION_ESPECIAL_ELIMINAR: (asignacionId, fecha) =>
+    `${API_BASE}/asistencia/cursos/${asignacionId}/sesiones-especiales/${fecha}`,
 };
 
 export const CALIFICACIONES_ENDPOINTS = {

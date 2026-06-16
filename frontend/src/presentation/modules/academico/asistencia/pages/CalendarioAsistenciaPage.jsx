@@ -44,6 +44,7 @@ const CalendarioAsistenciaPage = () => {
     anioCalendario,
     hoy,
     resumen,
+    horario,
     dias,
     actividadesSinClase,
     rango,
@@ -55,9 +56,12 @@ const CalendarioAsistenciaPage = () => {
     volverPath,
     planillaPath,
     habilitarFechaEspecial,
+    eliminarFechaEspecial,
     creandoSesion,
+    eliminandoSesion,
     fechaEspecial,
     abrirFechaEspecial,
+    abrirEditarFechaEspecial,
     cerrarFechaEspecial,
   } = useCalendarioAsistenciaState();
 
@@ -185,6 +189,7 @@ const CalendarioAsistenciaPage = () => {
             hoy={hoy}
             onElegirDia={irAPlanilla}
             onDiaEspecial={abrirFechaEspecial}
+            onEditarEspecial={abrirEditarFechaEspecial}
           />
         </Card>
       )}
@@ -199,6 +204,7 @@ const CalendarioAsistenciaPage = () => {
     <ResumenAsistenciaSidebar
       resumen={resumen}
       turno={curso?.turno}
+      horario={horario}
       rango={rango}
       hoy={hoy}
     />
@@ -211,9 +217,12 @@ const CalendarioAsistenciaPage = () => {
       <FechaEspecialDrawer
         abierto={fechaEspecial.abierto}
         fechaInicial={fechaEspecial.fecha}
+        sesion={fechaEspecial.sesion}
         confirmando={creandoSesion}
+        eliminando={eliminandoSesion}
         onCerrar={cerrarFechaEspecial}
         onConfirmar={habilitarFechaEspecial}
+        onEliminar={eliminarFechaEspecial}
       />
     </>
   );

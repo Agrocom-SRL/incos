@@ -53,13 +53,14 @@ export class CrearSesionEspecialUseCase {
 
     const asignacionIdNum = Number(asignacionId);
 
-    // No duplicar asignacion + fecha.
+    // Permite editar una sesión ESPECIAL existente (mismo curso+fecha); solo bloquea
+    // si ese día ya tiene una sesión de horario regular (no es especial).
     const existente = await this.sesionClaseRepository.obtenerSesionPorFecha(
       asignacionIdNum,
       fecha,
     );
-    if (existente) {
-      throw new ConflictError(`Ya existe una sesión para el ${fecha} en este curso.`);
+    if (existente && !existente.esEspecial) {
+      throw new ConflictError(`El ${fecha} es un día de horario regular en este curso.`);
     }
 
     // Resolver bimestre por la fecha.

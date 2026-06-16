@@ -54,3 +54,8 @@ export const crearSesionEspecialValidator = [
   body('horaInicio').optional({ nullable: true }).isString(),
   body('horaFin').optional({ nullable: true }).isString(),
 ];
+
+export const eliminarSesionEspecialValidator = [
+  asignacionParam,
+  param('fecha').isISO8601().withMessage('fecha inválida'),
+];

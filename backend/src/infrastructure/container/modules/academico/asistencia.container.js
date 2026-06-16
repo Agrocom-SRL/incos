@@ -15,6 +15,7 @@ import { BulkRegistrarAsistenciaUseCase } from '../../../../application/use-case
 import { CerrarRegistroAsistenciaUseCase } from '../../../../application/use-cases/academico/asistencia/CerrarRegistroAsistenciaUseCase.js';
 import { ReabrirRegistroAsistenciaUseCase } from '../../../../application/use-cases/academico/asistencia/ReabrirRegistroAsistenciaUseCase.js';
 import { CrearSesionEspecialUseCase } from '../../../../application/use-cases/academico/asistencia/CrearSesionEspecialUseCase.js';
+import { EliminarSesionEspecialUseCase } from '../../../../application/use-cases/academico/asistencia/EliminarSesionEspecialUseCase.js';
 import { GetMisCursosAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/get-mis-cursos-asistencia.controller.js';
 import { GetCalendarioAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/get-calendario-asistencia.controller.js';
 import { GetPlanillaAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/get-planilla-asistencia.controller.js';
@@ -22,6 +23,7 @@ import { BulkRegistrarAsistenciaController } from '../../../../presentation/cont
 import { CerrarRegistroAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/cerrar-registro-asistencia.controller.js';
 import { ReabrirRegistroAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/reabrir-registro-asistencia.controller.js';
 import { CrearSesionEspecialController } from '../../../../presentation/controllers/academico/asistencia/crear-sesion-especial.controller.js';
+import { EliminarSesionEspecialController } from '../../../../presentation/controllers/academico/asistencia/eliminar-sesion-especial.controller.js';
 import { buildAsistenciaRouter } from '../../../../presentation/routes/asistencia.routes.js';
 
 export function registerAsistenciaResource(container) {
@@ -185,6 +187,28 @@ export function registerAsistenciaResource(container) {
       }),
   );
 
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.eliminarSesionEspecialUseCase,
+    (c) =>
+      new EliminarSesionEspecialUseCase({
+        calificacionCoordinacionRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+        ),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+        ),
+        sesionClaseRepository: c.resolve(REPOSITORIOS_TOKENS.sesionClaseRepository),
+        asistenciaPlanillaViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository,
+        ),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
   // ============================================
   // CONTROLLERS
   // ============================================
@@ -271,6 +295,17 @@ export function registerAsistenciaResource(container) {
       }),
   );
 
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.eliminarSesionEspecialController,
+    (c) =>
+      new EliminarSesionEspecialController({
+        eliminarSesionEspecialUseCase: c.resolve(ACADEMICO_TOKENS.eliminarSesionEspecialUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
   // ============================================
   // ROUTER — reutiliza el controller de coordinación-docentes de Calificaciones
   // ============================================
@@ -299,6 +334,9 @@ export function registerAsistenciaResource(container) {
           ACADEMICO_TOKENS.reabrirRegistroAsistenciaController,
         ),
         crearSesionEspecialController: c.resolve(ACADEMICO_TOKENS.crearSesionEspecialController),
+        eliminarSesionEspecialController: c.resolve(
+          ACADEMICO_TOKENS.eliminarSesionEspecialController,
+        ),
       },
       middlewares: { validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest) },
     }),

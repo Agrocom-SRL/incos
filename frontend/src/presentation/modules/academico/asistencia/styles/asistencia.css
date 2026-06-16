@@ -270,6 +270,14 @@
   font-weight: 600;
 }
 
+/* Si un día es feriado Y de clase a la vez, el feriado gana (vence al relleno
+   primario que aplica --clase con !important). */
+.asi-cal__dia--sin-clase.asi-cal__dia--clase {
+  background: var(--color-error-bg) !important;
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
 /* Futuro: gris, sin interacción. */
 .asi-cal__dia--futuro {
   opacity: 0.5;
@@ -411,7 +419,7 @@
   width: 100%;
 }
 
-.asi-grid .ant-table-thead > tr > th.asi-grid__col-dia {
+.asi-grid .ant-table-thead>tr>th.asi-grid__col-dia {
   text-align: center;
 }
 
@@ -601,21 +609,64 @@
 }
 
 .asi-resumen-ctx__bloque {
-  flex: 1 1 140px;
+  flex: 1 1 40px;
   min-width: 0;
 }
 
-/* Fecha actual resaltada: card con realce primario. */
-.asi-resumen-ctx__hoy {
+/* Horario semanal: grilla de 2 columnas; cada celda es un día (con sus horas).
+   En contenedores muy angostos cae a 1 columna para no apretar las horas. */
+.asi-resumen-ctx__horario {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 360px) {
+  .asi-resumen-ctx__horario {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.asi-resumen-ctx__horario-item {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
   padding: var(--spacing-md);
   border: 1px solid var(--color-primary);
   border-radius: var(--border-radius-md);
   background: var(--color-primary-bg);
 }
 
+.asi-resumen-ctx__horario-dia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.asi-resumen-ctx__horario-dia .anticon {
+  color: var(--color-primary);
+}
+
+.asi-resumen-ctx__horario-horas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.asi-resumen-ctx__horario-hora {
+  white-space: nowrap;
+}
+
+/* Fecha actual resaltada: card con realce primario. */
 .asi-resumen-ctx__hoy-valor {
   font-size: var(--font-size-md);
   font-weight: 700;
@@ -636,6 +687,7 @@
 
 /* —— Accesibilidad: respetar reduced motion (sin transform de press) —— */
 @media (prefers-reduced-motion: reduce) {
+
   .asi-cal__dia--navegable,
   .asi-cal__dia--habilitable,
   .asi-celda--editable {

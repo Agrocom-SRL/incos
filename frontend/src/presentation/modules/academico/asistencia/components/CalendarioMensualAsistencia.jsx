@@ -82,9 +82,18 @@ const DiaCelda = ({
   tinteStyle,
   onElegirDia,
   onDiaEspecial,
+  onEditarEspecial,
 }) => {
-  // Día de horario navegable → planilla. Día del bimestre sin horario ni sin-clase → especial.
-  const navegableClase = Boolean(dia?.esDiaClase) && !dia?.esFuturo && !dia?.neutro;
+  // Un feriado/receso gana sobre el día de clase: aunque haya horario, ese día NO se
+  // dicta (salvo que exista una sesión especial que lo habilite explícitamente).
+  const esClaseEfectiva = Boolean(dia?.esDiaClase) && (!esSinClase || dia?.esSesionEspecial);
+
+  // Sesión especial existente → abre el drawer para editar/eliminar (NO navega a la planilla).
+  const esEspecialEditable = Boolean(dia?.esSesionEspecial) && typeof onEditarEspecial === 'function';
+
+  // Día de horario regular navegable → planilla (las especiales se gestionan en el drawer).
+  const navegableClase =
+    esClaseEfectiva && !dia?.esFuturo && !dia?.neutro && !dia?.esSesionEspecial;
   const habilitable =
     enBimestre &&
     !esSinClase &&
@@ -96,7 +105,7 @@ const DiaCelda = ({
     'asi-cal__dia',
     enBimestre ? 'asi-cal__dia--en-bimestre' : 'asi-cal__dia--fuera',
     esSinClase ? 'asi-cal__dia--sin-clase' : '',
-    dia?.esDiaClase ? 'asi-cal__dia--clase' : '',
+    esClaseEfectiva ? 'asi-cal__dia--clase' : '',
     dia?.esSesionEspecial ? 'asi-cal__dia--especial' : '',
     dia?.esFuturo ? 'asi-cal__dia--futuro' : '',
     esHoy ? 'asi-cal__dia--hoy' : '',
@@ -114,6 +123,23 @@ const DiaCelda = ({
   // El tinte del bimestre se aplica solo a días dentro del rango (no a sin-clase).
   const estiloCelda = enBimestre && !esSinClase ? tinteStyle : undefined;
   const titulo = tituloDia(dia, esSinClase, motivoSinClase);
+
+  if (esEspecialEditable) {
+    const tituloEspecial = `${etiquetaDiaMes(dia.fechaClase)} · editar / eliminar fecha especial`;
+    return (
+      <Tooltip title={tituloEspecial}>
+        <button
+          type="button"
+          className={`${className} asi-cal__dia--navegable`}
+          style={estiloCelda}
+          onClick={() => onEditarEspecial(dia)}
+          aria-label={tituloEspecial}
+        >
+          {contenido}
+        </button>
+      </Tooltip>
+    );
+  }
 
   if (navegableClase) {
     return (
@@ -165,6 +191,7 @@ const MesBloque = ({
   tinteStyle,
   onElegirDia,
   onDiaEspecial,
+  onEditarEspecial,
 }) => {
   const celdas = celdasDelMes(year, month0);
   // Mes con al menos un día dentro del bimestre se muestra activo; el resto, apagado.
@@ -199,6 +226,7 @@ const MesBloque = ({
               tinteStyle={tinteStyle}
               onElegirDia={onElegirDia}
               onDiaEspecial={onDiaEspecial}
+              onEditarEspecial={onEditarEspecial}
             />
           );
         })}
@@ -216,6 +244,7 @@ const CalendarioMensualAsistencia = ({
   hoy = null,
   onElegirDia,
   onDiaEspecial,
+  onEditarEspecial,
 }) => {
   const infoPorFecha = useMemo(() => {
     const m = new Map();
@@ -280,6 +309,7 @@ const CalendarioMensualAsistencia = ({
             tinteStyle={tinteStyle}
             onElegirDia={onElegirDia}
             onDiaEspecial={onDiaEspecial}
+            onEditarEspecial={onEditarEspecial}
           />
         ))}
       </div>

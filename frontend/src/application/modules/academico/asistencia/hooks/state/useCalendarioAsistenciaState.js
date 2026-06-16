@@ -28,15 +28,36 @@ export const useCalendarioAsistenciaState = () => {
 
   const { calendario, loading, error, fetch } = useCalendarioAsistenciaApi();
   const { cerrar, reabrir, procesando } = useRegistroCierreApi();
-  const { crear: crearSesion, creando } = useSesionEspecialApi();
+  const { crear: crearSesion, creando, eliminar: eliminarSesion, eliminando } = useSesionEspecialApi();
 
   const puedeEditar = hasPermiso(ASISTENCIA_PERMISOS.registroCuaderno, 'EDITAR');
 
-  // Drawer de fecha especial: abierto + fecha precargada del día clickeado.
-  const [fechaEspecial, setFechaEspecial] = useState({ abierto: false, fecha: null });
+  // Drawer de fecha especial: abierto + fecha precargada + datos de la sesión existente
+  // (modo edición/eliminación) cuando se abre desde un día que ya es sesión especial.
+  const [fechaEspecial, setFechaEspecial] = useState({
+    abierto: false,
+    fecha: null,
+    sesion: null,
+  });
 
+  // Crear: día del bimestre sin sesión todavía.
   const abrirFechaEspecial = useCallback((fecha = null) => {
-    setFechaEspecial({ abierto: true, fecha });
+    setFechaEspecial({ abierto: true, fecha, sesion: null });
+  }, []);
+
+  // Editar/eliminar: día que YA es sesión especial (precarga motivo/horas + si tiene marcas).
+  const abrirEditarFechaEspecial = useCallback((dia) => {
+    if (!dia?.fechaClase) return;
+    setFechaEspecial({
+      abierto: true,
+      fecha: dia.fechaClase,
+      sesion: {
+        motivo: dia.motivo ?? '',
+        horaInicio: dia.horaInicio ?? null,
+        horaFin: dia.horaFin ?? null,
+        tieneMarcas: Boolean(dia.tieneMarcas),
+      },
+    });
   }, []);
 
   const cerrarFechaEspecial = useCallback(() => {
@@ -66,6 +87,7 @@ export const useCalendarioAsistenciaState = () => {
   const anioCalendario = calendario?.anioCalendario ?? null;
   const hoy = calendario?.hoy ?? null;
   const resumen = calendario?.resumen ?? null;
+  const horario = useMemo(() => calendario?.horario ?? [], [calendario]);
   const curso = calendario?.curso ?? null;
 
   const breadcrumbItems = useMemo(
@@ -142,6 +164,26 @@ export const useCalendarioAsistenciaState = () => {
     [crearSesion, asignacionId, notification, cargar],
   );
 
+  const eliminarFechaEspecial = useCallback(
+    async (fecha) => {
+      const res = await eliminarSesion(asignacionId, fecha);
+      if (!res?.success) {
+        notification.error({
+          title: 'No se pudo eliminar la fecha',
+          description: res?.error || 'Reintentá en unos segundos.',
+        });
+        return false;
+      }
+      notification.success({
+        title: 'Fecha especial eliminada',
+        description: 'El día especial se quitó del calendario.',
+      });
+      await cargar();
+      return true;
+    },
+    [eliminarSesion, asignacionId, notification, cargar],
+  );
+
   return {
     asignacionId,
     curso,
@@ -152,6 +194,7 @@ export const useCalendarioAsistenciaState = () => {
     anioCalendario,
     hoy,
     resumen,
+    horario,
     dias,
     actividadesSinClase,
     rango,
@@ -167,11 +210,14 @@ export const useCalendarioAsistenciaState = () => {
     cerrarRegistro,
     reabrirRegistro,
     habilitarFechaEspecial,
+    eliminarFechaEspecial,
     procesandoRegistro: procesando,
     creandoSesion: creando,
+    eliminandoSesion: eliminando,
     // Drawer de fecha especial
     fechaEspecial,
     abrirFechaEspecial,
+    abrirEditarFechaEspecial,
     cerrarFechaEspecial,
   };
 };
