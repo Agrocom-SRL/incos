@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCasesFactory } from '@container';
 import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { planillaCursoPath, ASISTENCIA_VIEW_ROUTE_KEY } from '../utils/asistenciaPaths.js';
+import { calendarioCursoPath, ASISTENCIA_VIEW_ROUTE_KEY } from '../utils/asistenciaPaths.js';
 
 export const useMisCursosAsistencia = () => {
   const { contextId, contextName, isView } = useRouteViewMode(ASISTENCIA_VIEW_ROUTE_KEY);
@@ -65,6 +65,6 @@ export const useMisCursosAsistencia = () => {
     error,
     refetch: cargar,
     breadcrumbItems,
-    cursoPath: (cursoId) => (cursoId ? planillaCursoPath(cursoId) : '#'),
+    cursoPath: (cursoId) => (cursoId ? calendarioCursoPath(cursoId) : '#'),
   };
 };

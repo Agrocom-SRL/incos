@@ -112,6 +112,10 @@ export const REPOSITORIOS_TOKENS = {
     // ASISTENCIAS
     attendanceRepository: 'attendanceRepository',
     missedClassRepository: 'missedClassRepository',
+    sesionClaseRepository: 'sesionClaseRepository',
+    asistenciaSesionViewRepository: 'asistenciaSesionViewRepository',
+    asistenciaPlanillaViewRepository: 'asistenciaPlanillaViewRepository',
+    asistenciaRegistroEstadoViewRepository: 'asistenciaRegistroEstadoViewRepository',
 
     // PAGOS ACADÉMICOS
     contributionConfigurationRepository: 'contributionConfigurationRepository',

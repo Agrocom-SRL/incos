@@ -1,0 +1,382 @@
+/**
+ * Estilos de la toma de asistencia (calendario mensual + planilla semanal).
+ * Solo layout/composición: todos los colores, tamaños y radios salen de tokens
+ * globales (var(--color-*), var(--spacing-*), var(--font-size-*), var(--border-radius-*)).
+ * Gemelo visual del cuaderno de notas, sin reintroducir literales.
+ */
+
+.asi-calendario-page,
+.asi-planilla-page {
+  width: 100%;
+}
+
+/* La elevación/borde/padding de las cards viene del contrato del sistema
+   (asistenciaSectionCardProps), no de clases locales — igual que Calificaciones. */
+
+/* —— Ficha de contexto del curso —— */
+.asi-contexto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.asi-contexto__fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.asi-contexto__celda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.asi-contexto__label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+}
+
+.asi-contexto__value {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* —— Cabecera de navegación semanal —— */
+.asi-cabecera-semana {
+  min-width: 0;
+}
+
+.asi-cabecera-semana__rotulo {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   CALENDARIO MENSUAL
+   ============================================================ */
+.asi-cal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.asi-cal__meses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xl);
+}
+
+.asi-cal__mes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.asi-cal__mes-titulo {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.asi-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.asi-cal__dow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  padding-bottom: var(--spacing-xs);
+}
+
+.asi-cal__hueco {
+  aspect-ratio: 1;
+}
+
+.asi-cal__dia {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-width: var(--spacing-xl);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-container);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-cal__dia-num {
+  line-height: 1;
+}
+
+/* Día de clase: borde y peso más marcados. */
+.asi-cal__dia--clase {
+  border-color: var(--color-border);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* Neutro (feriado / clase no dictada): apagado. */
+.asi-cal__dia--neutro {
+  background: var(--color-bg-layout);
+  color: var(--color-text-tertiary);
+  border-style: dashed;
+  font-weight: 400;
+}
+
+/* Futuro: gris, sin interacción. */
+.asi-cal__dia--futuro {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sesión especial: acento. */
+.asi-cal__dia--especial {
+  border-color: var(--color-primary);
+}
+
+/* Navegable: clickeable con realce de marca. */
+.asi-cal__dia--navegable {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.14s ease;
+}
+
+.asi-cal__dia--navegable:hover {
+  border-color: var(--color-primary);
+  background: var(--color-success-bg);
+}
+
+.asi-cal__dia--navegable:active {
+  transform: scale(0.96);
+}
+
+/* Dot de asistencia tomada. */
+.asi-cal__dot {
+  position: absolute;
+  bottom: var(--spacing-xs);
+  width: var(--spacing-xs);
+  height: var(--spacing-xs);
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+/* —— Leyenda —— */
+.asi-cal__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border-secondary);
+  padding-top: var(--spacing-md);
+}
+
+.asi-cal__leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.asi-cal__chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-container);
+}
+
+.asi-cal__chip--tomado .asi-cal__dot {
+  position: static;
+}
+
+.asi-cal__chip--clase {
+  border-color: var(--color-border);
+  background: var(--color-bg-container);
+}
+
+.asi-cal__chip--neutro {
+  border-style: dashed;
+  background: var(--color-bg-layout);
+}
+
+.asi-cal__chip--futuro {
+  opacity: 0.5;
+}
+
+/* ============================================================
+   GRILLA SEMANAL
+   ============================================================ */
+.asi-grid-wrap {
+  width: 100%;
+}
+
+.asi-grid .ant-table-thead > tr > th.asi-grid__col-dia {
+  text-align: center;
+}
+
+.asi-grid__col-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  line-height: 1.1;
+}
+
+.asi-grid__col-head-dow {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.asi-grid__col-head-num {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-grid__col-nro {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-grid__col-dia--futuro {
+  background: var(--color-bg-layout);
+}
+
+.asi-grid__col-dia--neutro {
+  background: var(--color-bg-layout);
+}
+
+/* ============================================================
+   CELDA DE MARCA (P/R/F/L)
+   ============================================================ */
+.asi-celda {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--spacing-xl);
+  padding: var(--spacing-xs);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+}
+
+.asi-celda__marca {
+  line-height: 1;
+}
+
+/* Presente (P): tenue, casi neutro. */
+.asi-celda--presente {
+  color: var(--color-text-tertiary);
+}
+
+/* Falta (F): error. */
+.asi-celda--falta {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* Atraso (R): warning. */
+.asi-celda--atraso {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+/* Licencia (L): informativa, solo lectura. */
+.asi-celda--licencia {
+  color: var(--color-text-secondary);
+}
+
+/* Neutro / futuro: solo lectura, apagado. */
+.asi-celda--neutro,
+.asi-celda--futuro {
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+}
+
+/* Editable: cursor + realce al pasar. */
+.asi-celda--editable {
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.14s ease;
+}
+
+.asi-celda--editable:hover {
+  background: var(--color-fill-quaternary);
+}
+
+.asi-celda--editable:active {
+  transform: scale(0.92);
+}
+
+.asi-celda--editable.asi-celda--falta:hover {
+  background: var(--color-error-bg-hover);
+}
+
+.asi-celda--editable.asi-celda--atraso:hover {
+  background: var(--color-warning-bg-hover);
+}
+
+.asi-celda--readonly {
+  cursor: default;
+}
+
+/* —— Form del modal de fecha especial —— */
+.asi-fecha-especial-form {
+  margin-top: var(--spacing-sm);
+}
+
+/* —— Accesibilidad: respetar reduced motion (sin transform de press) —— */
+@media (prefers-reduced-motion: reduce) {
+  .asi-cal__dia--navegable,
+  .asi-celda--editable {
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .asi-cal__dia--navegable:active,
+  .asi-celda--editable:active {
+    transform: none;
+  }
+}

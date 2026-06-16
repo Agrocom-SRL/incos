@@ -258,6 +258,15 @@ export const ASISTENCIA_ENDPOINTS = {
   MIS_CURSOS: `${API_BASE}/asistencia/mis-cursos`,
   COORDINACION_DOCENTE_CURSOS: (docenteId) =>
     `${API_BASE}/asistencia/coordinacion/docentes/${docenteId}/cursos`,
+  // Toma de asistencia (modelo sesiones_clase)
+  CALENDARIO: (asignacionId) => `${API_BASE}/asistencia/cursos/${asignacionId}/calendario`,
+  PLANILLA: (asignacionId) => `${API_BASE}/asistencia/cursos/${asignacionId}/planilla`,
+  REGISTRO_CERRAR: (asignacionId) =>
+    `${API_BASE}/asistencia/cursos/${asignacionId}/registro/cerrar`,
+  REGISTRO_REABRIR: (asignacionId) =>
+    `${API_BASE}/asistencia/cursos/${asignacionId}/registro/reabrir`,
+  SESIONES_ESPECIALES: (asignacionId) =>
+    `${API_BASE}/asistencia/cursos/${asignacionId}/sesiones-especiales`,
 };
 
 export const CALIFICACIONES_ENDPOINTS = {

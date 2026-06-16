@@ -137,6 +137,10 @@ import { CronogramaGestionRepository } from '../../repositories/views/Cronograma
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
+import { SesionClaseRepository } from '../../repositories/SesionClaseRepository.js';
+import { AsistenciaSesionViewRepository } from '../../repositories/views/AsistenciaSesionViewRepository.js';
+import { AsistenciaPlanillaViewRepository } from '../../repositories/views/AsistenciaPlanillaViewRepository.js';
+import { AsistenciaRegistroEstadoViewRepository } from '../../repositories/views/AsistenciaRegistroEstadoViewRepository.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
@@ -376,6 +380,22 @@ export function registerRepositoriesModule(container) {
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.attendanceRepository, AttendanceRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.missedClassRepository, MissedClassRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.sesionClaseRepository, SesionClaseRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.asistenciaSesionViewRepository,
+      AsistenciaSesionViewRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository,
+      AsistenciaPlanillaViewRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.asistenciaRegistroEstadoViewRepository,
+      AsistenciaRegistroEstadoViewRepository,
+    );
 
     // ============================================
     // PAGOS ACADÉMICOS

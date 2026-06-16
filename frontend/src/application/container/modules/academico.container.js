@@ -33,6 +33,12 @@ import {
 import {
   ListCoordinacionAsistenciaDocentesUseCase,
   ListMisCursosAsistenciaUseCase,
+  GetCalendarioAsistenciaUseCase,
+  GetPlanillaAsistenciaSemanalUseCase,
+  GuardarPlanillaAsistenciaUseCase,
+  CerrarRegistroAsistenciaUseCase,
+  ReabrirRegistroAsistenciaUseCase,
+  CrearSesionEspecialUseCase,
 } from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
@@ -102,6 +108,30 @@ export function registerAcademicoModule(factory) {
 
   factory.listarMisCursosAsistencia = () => {
     return new ListMisCursosAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerCalendarioAsistencia = () => {
+    return new GetCalendarioAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerPlanillaAsistenciaSemanal = () => {
+    return new GetPlanillaAsistenciaSemanalUseCase(AsistenciaRepository);
+  };
+
+  factory.guardarPlanillaAsistencia = () => {
+    return new GuardarPlanillaAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.cerrarRegistroAsistencia = () => {
+    return new CerrarRegistroAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.reabrirRegistroAsistencia = () => {
+    return new ReabrirRegistroAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.crearSesionEspecialAsistencia = () => {
+    return new CrearSesionEspecialUseCase(AsistenciaRepository);
   };
 
   factory.obtenerRegistroNotasCurso = () => {

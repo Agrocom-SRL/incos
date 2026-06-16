@@ -86,6 +86,144 @@ class AsistenciaRepository {
       return handleErrorResponse(error, 'Error al cargar los cursos del docente');
     }
   }
+
+  // ============================================
+  // Toma de asistencia (modelo sesiones_clase)
+  // ============================================
+
+  /**
+   * GET calendario mensual del bimestre activo (días tomados, neutros, futuros).
+   * @param {number|string} asignacionId
+   * @param {{ bimestre?: number|string }} [options]
+   */
+  async getCalendario(asignacionId, { bimestre } = {}) {
+    try {
+      const params = {};
+      if (bimestre != null) params.bimestre = bimestre;
+      const response = await apiClient.get(ASISTENCIA_ENDPOINTS.CALENDARIO(asignacionId), { params });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el calendario de asistencia');
+    }
+  }
+
+  /**
+   * GET planilla semanal (roster × días del rango).
+   * @param {number|string} asignacionId
+   * @param {{ desde: string, hasta: string }} rango
+   */
+  async getPlanilla(asignacionId, { desde, hasta } = {}) {
+    try {
+      const params = {};
+      if (desde) params.desde = desde;
+      if (hasta) params.hasta = hasta;
+      const response = await apiClient.get(ASISTENCIA_ENDPOINTS.PLANILLA(asignacionId), { params });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar la planilla de asistencia');
+    }
+  }
+
+  /**
+   * PUT planilla — upsert de sesiones + marcas sparse (transaccional).
+   * @param {number|string} asignacionId
+   * @param {{ dias: Array<{ fechaClase: string, esEspecial?: boolean, motivo?: string,
+   *   horaInicio?: string, horaFin?: string, marcas: Array<{ matriculaMateriaId: number, estado: string }> }> }} payload
+   */
+  async guardarPlanilla(asignacionId, { dias } = {}) {
+    try {
+      const response = await apiClient.put(ASISTENCIA_ENDPOINTS.PLANILLA(asignacionId), {
+        dias: Array.isArray(dias) ? dias : [],
+      });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar la planilla de asistencia');
+    }
+  }
+
+  /**
+   * POST cerrar registro del bimestre (lote de sesiones).
+   * @param {number|string} asignacionId
+   * @param {{ bimestre?: number|string }} [options]
+   */
+  async cerrarRegistro(asignacionId, { bimestre } = {}) {
+    try {
+      const params = {};
+      if (bimestre != null) params.bimestre = bimestre;
+      const response = await apiClient.post(
+        ASISTENCIA_ENDPOINTS.REGISTRO_CERRAR(asignacionId),
+        null,
+        { params },
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cerrar el registro de asistencia');
+    }
+  }
+
+  /**
+   * POST reabrir registro del bimestre (lote de sesiones).
+   * @param {number|string} asignacionId
+   * @param {{ bimestre?: number|string }} [options]
+   */
+  async reabrirRegistro(asignacionId, { bimestre } = {}) {
+    try {
+      const params = {};
+      if (bimestre != null) params.bimestre = bimestre;
+      const response = await apiClient.post(
+        ASISTENCIA_ENDPOINTS.REGISTRO_REABRIR(asignacionId),
+        null,
+        { params },
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al reabrir el registro de asistencia');
+    }
+  }
+
+  /**
+   * POST crear sesión especial (taller/recuperación; permite fecha futura).
+   * @param {number|string} asignacionId
+   * @param {{ fecha: string, motivo: string, horaInicio?: string, horaFin?: string }} payload
+   */
+  async crearSesionEspecial(asignacionId, { fecha, motivo, horaInicio, horaFin } = {}) {
+    try {
+      const body = { fecha, motivo };
+      if (horaInicio) body.horaInicio = horaInicio;
+      if (horaFin) body.horaFin = horaFin;
+      const response = await apiClient.post(
+        ASISTENCIA_ENDPOINTS.SESIONES_ESPECIALES(asignacionId),
+        body,
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al habilitar la fecha especial');
+    }
+  }
 }
 
 export default new AsistenciaRepository();

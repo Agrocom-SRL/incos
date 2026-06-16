@@ -1,2 +1,8 @@
 export { ListMisCursosAsistenciaUseCase } from './ListMisCursosAsistenciaUseCase.js';
 export { ListCoordinacionAsistenciaDocentesUseCase } from './ListCoordinacionAsistenciaDocentesUseCase.js';
+export { GetCalendarioAsistenciaUseCase } from './GetCalendarioAsistenciaUseCase.js';
+export { GetPlanillaAsistenciaSemanalUseCase } from './GetPlanillaAsistenciaSemanalUseCase.js';
+export { GuardarPlanillaAsistenciaUseCase } from './GuardarPlanillaAsistenciaUseCase.js';
+export { CerrarRegistroAsistenciaUseCase } from './CerrarRegistroAsistenciaUseCase.js';
+export { ReabrirRegistroAsistenciaUseCase } from './ReabrirRegistroAsistenciaUseCase.js';
+export { CrearSesionEspecialUseCase } from './CrearSesionEspecialUseCase.js';

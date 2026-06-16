@@ -321,7 +321,47 @@ módulo Académico: `02-seeders/58-seed-permisos-aca.sql` (permisos + acciones +
      `academico.asistencia.registro.coordinacion` (admin; docente entra a sus cursos). Build + DI verificados.
    - ⏳ **Planilla diaria** + **Consolidado %**: requieren vistas SQL nuevas (reusar `99`–`101`),
      `*ViewRepository`, use-cases, mappers (P/R/F/L + neutros). SQL en archivos + validar en BD.
-3. **Fase 3 — Backend escritura:** `BulkRegistrarAsistencia` + validators + endpoint PUT planilla.
+### 3.5 Refinamiento del modelo `asistencias` (marca ↔ sesión)
+
+Ajuste de grano (no es versión ni V2): la marca de asistencia **cuelga de la sesión**,
+no se redefine cada vez.
+
+- **`asistencias` ya NO almacena `fecha_clase` ni `hora_clase`.** Eran redundancia
+  derivable: la fecha/hora viven en `sesiones_clase` (`sesion_clase_id → sesiones_clase.fecha`
+  / `hora_inicio`). La planilla de lectura (vista `133`) ya proyecta `sc.fecha AS fecha_clase`;
+  duplicar la fecha en cada marca abría la puerta a inconsistencias (marca con fecha ≠ sesión).
+  Camino de escritura: `AttendanceRepository.upsertMarcaSparse` ya no escribe esas columnas;
+  `listarMarcasCursoRango` deriva la fecha con `JOIN sesiones_clase` (`sc.fecha AS fecha_clase`).
+- **Bimestre DIRECTO al periodo académico, no vía `bimestres_matricula`.** La sesión se ata a
+  `asignacion_docente_id` (el curso) y a `periodo_academico_id` (el bimestre,
+  `periodos_academicos.division=BIMESTRE`) — mismo patrón que `evaluaciones.periodo_academico_id`
+  en Calificaciones, que mantiene coherentes las dos planillas hermanas. Gestión y `numero_orden`
+  se derivan del periodo, no se duplican. `bimestres_matricula` queda fuera de esta cadena.
+- **Modelo SPARSE:** PRESENTE es implícito (no se persiste); solo filas AUSENTE/TARDANZA. La
+  existencia de la **sesión** (no de las marcas) prueba el día tomado y da el denominador del %.
+- **Orden de creación en el schema:** `sesiones_clase` se crea **antes** que `asistencias`
+  (FK `asistencias.sesion_clase_id → sesiones_clase.id`); en ejecución por partes / MariaDB el
+  orden inverso da error `#1824 Failed to open the referenced table`.
+
+3. **✅ Fase 3 — Backend toma de asistencia (modelo `sesiones_clase`):** implementado.
+   - **Modelo revisado**: tabla `sesiones_clase` (1 curso × 1 fecha) gobierna día tomado
+     (dot + denominador) y cierre/reapertura (estado ABIERTA/CERRADA); `asistencias` SPARSE
+     (solo AUSENTE/TARDANZA; PRESENTE implícito). `asistencias.sesion_clase_id` cuelga de la sesión.
+   - **Vistas SQL nuevas** (delgadas, patrón 87/114; pendientes de ejecutar en BD):
+     `132 vista_base_asistencia_sesion_dia_tomado` (días tomados),
+     `133 vista_base_asistencia_planilla_celda` (roster 110 × sesiones × licencias aprobadas),
+     `134 vista_base_asistencia_registro_estado_bimestre` (cierre derivado, patrón 114).
+   - **Backend**: constantes `asistencia.constants.js`; modelo `sesion_clase.js`;
+     repos `SesionClaseRepository` (A) + `Asistencia*ViewRepository` (B, views/) +
+     `AttendanceRepository.upsertMarcaSparse`; use-cases `GetCalendarioAsistencia`,
+     `GetPlanillaAsistenciaSemanal`, `BulkRegistrarAsistencia`, `Cerrar/ReabrirRegistroAsistencia`,
+     `CrearSesionEspecial`; mapper `PlanillaAsistenciaPresentationMapper` (P/R/F/L + neutros);
+     util `asistenciaCalendario` (expansión día-de-semana → fechas, lógica de app) y
+     `asistenciaCursoAccess` (acceso docente/coordinación). Endpoints bajo
+     `academico.asistencia.registro.cuaderno` (LISTAR/EDITAR):
+     `GET cursos/:id/calendario`, `GET/PUT cursos/:id/planilla`,
+     `POST cursos/:id/registro/{cerrar,reabrir}`, `POST cursos/:id/sesiones-especiales`.
+     DI en `asistencia.container.js` + `repositories.container.js`. ESLint limpio.
 4. **Fase 4 — CRUD Licencias estudiantiles:** use-cases + frontend (listado/ficha/solicitar/aprobar).
 5. **Fase 5 — Licencias de docentes (DOC):** tabla `licencias_docentes` + CRUD + frontend.
 6. **Fase 6 — Clases no dictadas:** CRUD + consumo de licencias docentes (decidir autogenerar vs cruce).

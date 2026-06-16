@@ -13,6 +13,7 @@ export class UpdateEvaluacionCuadernoUseCase {
     calificacionCoordinacionRepository,
     calificacionContextoRepository,
     cuadernoRepository,
+    subjectEnrollmentBimesterRepository,
     bimesterEvaluationRepository,
     evaluationTypeRepository,
     evaluationConfigurationRepository,
@@ -24,6 +25,7 @@ export class UpdateEvaluacionCuadernoUseCase {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
     this.evaluationTypeRepository = evaluationTypeRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
@@ -47,8 +49,14 @@ export class UpdateEvaluacionCuadernoUseCase {
       asignacionId,
     });
 
-    if (bimestreNum !== bimestreVigente) {
-      throw new ForbiddenError('Solo podés editar evaluaciones del bimestre vigente.');
+    const reabierto =
+      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+        Number(asignacionId),
+        bimestreNum,
+      )) > 0;
+
+    if (bimestreNum !== bimestreVigente && !reabierto) {
+      throw new ForbiddenError('Solo podés editar evaluaciones del bimestre vigente o reabierto.');
     }
 
     const existente = await this.cuadernoRepository.obtenerEvaluacionDeAsignacion(
@@ -58,7 +66,7 @@ export class UpdateEvaluacionCuadernoUseCase {
     if (!existente) {
       throw new NotFoundError('Evaluación');
     }
-    if (existente.notas_cerradas) {
+    if (existente.notas_cerradas && !reabierto) {
       throw new ForbiddenError('Esta evaluación está cerrada y no se puede modificar.');
     }
 

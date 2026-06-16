@@ -29,13 +29,29 @@ const AsistenciaEntradaConnector = lazy(
 const MisCursosAsistenciaConnector = lazy(
   () => import('./connectors/MisCursosAsistenciaConnector.jsx'),
 );
+const CalendarioAsistenciaConnector = lazy(
+  () => import('./connectors/CalendarioAsistenciaConnector.jsx'),
+);
+const PlanillaAsistenciaSemanalConnector = lazy(
+  () => import('./connectors/PlanillaAsistenciaSemanalConnector.jsx'),
+);
 
 export const asistenciaRoutes = [
   {
     path: '/academico/asistencia/mis-cursos/:asignacionId/planilla',
-    element: <UnderConstruction />,
+    element: <PlanillaAsistenciaSemanalConnector />,
     key: 'ACA-ASI-PLANILLA',
-    breadcrumbLabel: 'Planilla diaria',
+    breadcrumbLabel: 'Planilla semanal',
+    permiso: ASISTENCIA_PERMISOS.registroCuaderno,
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'ACA-ASI-CALENDARIO',
+  },
+  {
+    path: '/academico/asistencia/mis-cursos/:asignacionId/calendario',
+    element: <CalendarioAsistenciaConnector />,
+    key: 'ACA-ASI-CALENDARIO',
+    breadcrumbLabel: 'Calendario de asistencia',
     permiso: ASISTENCIA_PERMISOS.registroCuaderno,
     accion: 'LISTAR',
     menu: null,

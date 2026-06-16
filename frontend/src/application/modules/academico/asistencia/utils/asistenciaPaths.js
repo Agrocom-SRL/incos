@@ -14,9 +14,25 @@ export const MIS_CURSOS_PATH = '/academico/asistencia/mis-cursos';
 /** key de routes.jsx para useRouteViewMode (coordinación vs docente propio). */
 export const ASISTENCIA_VIEW_ROUTE_KEY = 'ACA-ASI-MIS-CURSOS';
 
-/** Planilla diaria de un curso (roster × días, marcas P/R/F/L). */
-export const planillaCursoPath = (asignacionId) =>
-  `${MIS_CURSOS_PATH}/${asignacionId}/planilla`;
+/**
+ * Calendario mensual del curso (bimestre activo, dots por día tomado).
+ * Pantalla intermedia entre «mis cursos» y la planilla semanal.
+ */
+export const calendarioCursoPath = (asignacionId) =>
+  `${MIS_CURSOS_PATH}/${asignacionId}/calendario`;
+
+/**
+ * Planilla semanal de un curso (roster × días válidos de la semana, marcas P/R/F/L).
+ * `rango` (desde/hasta ISO) acota la semana visible; sin rango el backend resuelve la vigente.
+ */
+export const planillaCursoPath = (asignacionId, rango) => {
+  const base = `${MIS_CURSOS_PATH}/${asignacionId}/planilla`;
+  if (rango?.desde && rango?.hasta) {
+    const qs = new URLSearchParams({ desde: rango.desde, hasta: rango.hasta }).toString();
+    return `${base}?${qs}`;
+  }
+  return base;
+};
 
 /** Clases no dictadas (cancelaciones del dictado por asignación docente). */
 export const CLASES_NO_DICTADAS_PATH = '/academico/asistencia/clases-no-dictadas';

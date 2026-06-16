@@ -12,11 +12,8 @@ export class Attendance extends BaseEntity {
         if (data.hasOwnProperty('subjectEnrollmentId')) {
             this.subjectEnrollmentId = data.subjectEnrollmentId;
         }
-        if (data.hasOwnProperty('classDate')) {
-            this.classDate = data.classDate;
-        }
-        if (data.hasOwnProperty('classTime')) {
-            this.classTime = data.classTime;
+        if (data.hasOwnProperty('classSessionId')) {
+            this.classSessionId = data.classSessionId;
         }
         if (data.hasOwnProperty('status')) {
             this.status = data.status;
@@ -43,8 +40,7 @@ export class Attendance extends BaseEntity {
         if (this.hasOwnProperty('subjectEnrollmentId')) {
             plainObject.subjectEnrollmentId = this.subjectEnrollmentId;
         }
-        if (this.hasOwnProperty('classDate')) plainObject.classDate = this.classDate;
-        if (this.hasOwnProperty('classTime')) plainObject.classTime = this.classTime;
+        if (this.hasOwnProperty('classSessionId')) plainObject.classSessionId = this.classSessionId;
         if (this.hasOwnProperty('status')) plainObject.status = this.status;
         if (this.hasOwnProperty('observations')) plainObject.observations = this.observations;
         if (this.hasOwnProperty('registeredBy')) plainObject.registeredBy = this.registeredBy;

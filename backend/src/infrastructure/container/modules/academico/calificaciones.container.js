@@ -574,6 +574,7 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionCoordinacionRepository),
         calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
         bimesterEvaluationRepository: c.resolve(REPOSITORIOS_TOKENS.bimesterEvaluationRepository),
         evaluationTypeRepository: c.resolve(REPOSITORIOS_TOKENS.evaluationTypeRepository),
         evaluationConfigurationRepository: c.resolve(

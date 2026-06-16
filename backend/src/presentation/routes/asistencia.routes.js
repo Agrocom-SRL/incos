@@ -1,20 +1,32 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import {
+  getCalendarioAsistenciaValidator,
+  getPlanillaAsistenciaValidator,
+  bulkRegistrarAsistenciaValidator,
+  cerrarRegistroAsistenciaValidator,
+  reabrirRegistroAsistenciaValidator,
+  crearSesionEspecialValidator,
+} from '../validators/asistencia/index.js';
 
 /**
  * Router del módulo Asistencia (Académico · ítem ACA-ASI). Gemelo de Calificaciones.
  * Fase 2 (lectura):
  *   - mis cursos del docente (registro.ver)
  *   - coordinación: elegir docente + sus cursos (registro.coordinacion)
- * Planilla diaria y consolidado se añaden en sub-pasos siguientes.
+ * Toma de asistencia (modelo sesiones_clase):
+ *   - calendario / planilla (registro.cuaderno · LISTAR)
+ *   - registrar planilla, cerrar/reabrir, sesión especial (registro.cuaderno · EDITAR)
  *
  * @param {Object} params
  * @param {Object} params.controllers
+ * @param {Object} params.middlewares
  * @returns {import('express').Router}
  */
-export function buildAsistenciaRouter({ controllers }) {
+export function buildAsistenciaRouter({ controllers, middlewares }) {
   const router = express.Router();
+  const { validateRequest } = middlewares;
 
   const registroListar = [
     authenticate,
@@ -23,6 +35,14 @@ export function buildAsistenciaRouter({ controllers }) {
   const coordinacionListar = [
     authenticate,
     verificarPermiso('academico.asistencia.registro.coordinacion', 'LISTAR'),
+  ];
+  const cuadernoListar = [
+    authenticate,
+    verificarPermiso('academico.asistencia.registro.cuaderno', 'LISTAR'),
+  ];
+  const cuadernoEditar = [
+    authenticate,
+    verificarPermiso('academico.asistencia.registro.cuaderno', 'EDITAR'),
   ];
 
   /**
@@ -48,6 +68,64 @@ export function buildAsistenciaRouter({ controllers }) {
    */
   router.get('/mis-cursos', ...registroListar, (req, res, next) =>
     controllers.getMisCursosAsistenciaController.handle(req, res, next),
+  );
+
+  // ============================================
+  // Toma de asistencia (modelo sesiones_clase)
+  // ============================================
+
+  /** GET calendario del bimestre (días tomados, neutros, futuros). */
+  router.get(
+    '/cursos/:asignacionId/calendario',
+    ...cuadernoListar,
+    getCalendarioAsistenciaValidator,
+    validateRequest,
+    (req, res, next) => controllers.getCalendarioAsistenciaController.handle(req, res, next),
+  );
+
+  /** GET planilla (roster × días del rango). */
+  router.get(
+    '/cursos/:asignacionId/planilla',
+    ...cuadernoListar,
+    getPlanillaAsistenciaValidator,
+    validateRequest,
+    (req, res, next) => controllers.getPlanillaAsistenciaController.handle(req, res, next),
+  );
+
+  /** PUT planilla (upsert de sesiones + marcas sparse, transaccional). */
+  router.put(
+    '/cursos/:asignacionId/planilla',
+    ...cuadernoEditar,
+    bulkRegistrarAsistenciaValidator,
+    validateRequest,
+    (req, res, next) => controllers.bulkRegistrarAsistenciaController.handle(req, res, next),
+  );
+
+  /** POST cerrar registro del bimestre (lote). */
+  router.post(
+    '/cursos/:asignacionId/registro/cerrar',
+    ...cuadernoEditar,
+    cerrarRegistroAsistenciaValidator,
+    validateRequest,
+    (req, res, next) => controllers.cerrarRegistroAsistenciaController.handle(req, res, next),
+  );
+
+  /** POST reabrir registro del bimestre (lote). */
+  router.post(
+    '/cursos/:asignacionId/registro/reabrir',
+    ...cuadernoEditar,
+    reabrirRegistroAsistenciaValidator,
+    validateRequest,
+    (req, res, next) => controllers.reabrirRegistroAsistenciaController.handle(req, res, next),
+  );
+
+  /** POST crear sesión especial (taller/recuperación; permite fecha futura). */
+  router.post(
+    '/cursos/:asignacionId/sesiones-especiales',
+    ...cuadernoEditar,
+    crearSesionEspecialValidator,
+    validateRequest,
+    (req, res, next) => controllers.crearSesionEspecialController.handle(req, res, next),
   );
 
   return router;

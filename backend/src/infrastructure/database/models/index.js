@@ -117,6 +117,7 @@ export { Nivelacion } from './nivelacion.js';
 export { Licencia } from './licencia.js';
 export { ClaseNoDictada } from './clase_no_dictada.js';
 export { Asistencia } from './asistencia.js';
+export { SesionClase } from './sesion_clase.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
