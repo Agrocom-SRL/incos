@@ -15,7 +15,11 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, Flex, Skeleton } from 'antd';
-import { ArrowLeftOutlined, CalendarOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  CalendarOutlined,
+  EditOutlined,
+} from '@ant-design/icons';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
@@ -67,57 +71,58 @@ const CalendarioAsistenciaPage = () => {
 
   const irAPlanilla = useCallback(
     (fecha) => navigate(planillaPath(fecha)),
-    [navigate, planillaPath],
+    [navigate, planillaPath]
   );
+
+  const sigla = curso?.materiaSigla ?? null;
 
   const pageHeader = (
-    <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-      <PageHeader
-        title={
-          <Flex align="center" gap={allSpacing.marginXS} wrap="wrap">
-            <CalendarOutlined aria-hidden />
-            <span>
-              {curso?.materia ? `Asistencia · ${curso.materia}` : 'Calendario de asistencia'}
-            </span>
-          </Flex>
-        }
-        breadcrumbItems={breadcrumbItems}
-        actions={
-          <Flex gap={allSpacing.marginXS} wrap="wrap">
-            <ActionButton
-              permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-              accion="LISTAR"
-              variant="primary"
-              icon={<EditOutlined />}
-              onClick={() => irAPlanilla()}
-            >
-              Marcar asistencia
-            </ActionButton>
-            <BackButton
-              icon={<ArrowLeftOutlined />}
-              onClick={() => navigate(volverPath)}
-              aria-label="Volver a mis cursos"
-            >
-              Volver
-            </BackButton>
-          </Flex>
-        }
-      />
-
-      {curso ? (
-        <CursoContextoAsistencia
-          curso={curso}
-          bimestre={bimestre}
-          bimestreNombre={bimestreNombre}
-          bimestreColor={bimestreColor}
-          gestion={gestion}
-          registroEstado={registroEstado}
-        />
-      ) : null}
-    </Flex>
+    <PageHeader
+      title={
+        <Flex align="center" gap={allSpacing.marginXS} wrap="wrap">
+          <CalendarOutlined aria-hidden />
+          <span>
+            {sigla ? `Calendario · ${sigla}` : 'Calendario de asistencia'}
+          </span>
+        </Flex>
+      }
+      breadcrumbItems={breadcrumbItems}
+      actions={
+        <Flex gap={allSpacing.marginXS} wrap="wrap">
+          <ActionButton
+            permiso={ASISTENCIA_PERMISOS.registroCuaderno}
+            accion="LISTAR"
+            variant="primary"
+            icon={<EditOutlined />}
+            onClick={() => irAPlanilla()}
+          >
+            Marcar asistencia
+          </ActionButton>
+          <BackButton
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(volverPath)}
+            aria-label="Volver a mis cursos"
+          >
+            Volver
+          </BackButton>
+        </Flex>
+      }
+    />
   );
 
-  // Estructura común: cabecera a todo el ancho + capa DashboardPageShell (content + sidebar).
+  // La ficha del curso va DENTRO del shell, encima del contenido principal.
+  const cabecera = curso ? (
+    <CursoContextoAsistencia
+      curso={curso}
+      bimestre={bimestre}
+      bimestreNombre={bimestreNombre}
+      bimestreColor={bimestreColor}
+      gestion={gestion}
+      registroEstado={registroEstado}
+    />
+  ) : null;
+
+  // Estructura común: header de página + DashboardPageShell (cabecera + content + sidebar).
   const renderPagina = (mainNode, sidebarNode = null) => (
     <Flex
       vertical
@@ -128,7 +133,16 @@ const CalendarioAsistenciaPage = () => {
       <PageHeaderArea>{pageHeader}</PageHeaderArea>
 
       <DashboardPageShell>
-        <MainContent>{mainNode}</MainContent>
+        <MainContent>
+          <Flex
+            vertical
+            gap={allSpacing.marginLG}
+            style={{ width: '100%', minWidth: 0 }}
+          >
+            {cabecera}
+            {mainNode}
+          </Flex>
+        </MainContent>
         {sidebarNode ? <InfoSidebar>{sidebarNode}</InfoSidebar> : null}
       </DashboardPageShell>
     </Flex>
@@ -138,7 +152,7 @@ const CalendarioAsistenciaPage = () => {
     return renderPagina(
       <Card {...asistenciaSectionCardProps}>
         <Skeleton active paragraph={{ rows: 8 }} />
-      </Card>,
+      </Card>
     );
   }
 
@@ -154,7 +168,7 @@ const CalendarioAsistenciaPage = () => {
             Reintentar
           </Button>
         }
-      />,
+      />
     );
   }
 

@@ -18,13 +18,14 @@ const CursoContextoAsistencia = ({
   gestion,
   registroEstado,
 }) => {
-  const color = sanitizeDocenteColorHex(bimestreColor) ?? curso?.carreraColor ?? '#196b45';
+  const color =
+    sanitizeDocenteColorHex(bimestreColor) ?? curso?.carreraColor ?? '#196b45';
   const tituloBimestre =
     bimestreNombre ?? (bimestre != null ? `Bimestre ${bimestre}` : 'Bimestre');
   const sigla = (curso?.materiaSigla ?? '').trim().toUpperCase() || null;
 
   const stats = [
-    { label: 'Código', value: curso?.materiaSigla },
+    { label: 'Sigla', value: curso?.materiaSigla },
     { label: 'Paralelo', value: curso?.paralelo },
     { label: 'Docente', value: curso?.docente },
     { label: 'Gestión', value: gestion },
@@ -41,7 +42,11 @@ const CursoContextoAsistencia = ({
   };
 
   return (
-    <div className="sd-profile asi-profile" role="region" aria-label="Datos del curso y bimestre">
+    <div
+      className="sd-profile asi-profile"
+      role="region"
+      aria-label="Datos del curso y bimestre"
+    >
       {registroEstado ? (
         <div className="asi-profile__toolbar">
           <span className="asi-profile__estado">{registroEstado}</span>
@@ -85,7 +90,9 @@ const CursoContextoAsistencia = ({
         {stats.map(({ label, value }) => (
           <div key={label} className="sd-stat">
             <span className="sd-stat__label">{label}</span>
-            <span className="sd-stat__value sd-stat__value--primary">{value ?? '—'}</span>
+            <span className="sd-stat__value sd-stat__value--primary">
+              {value ?? '—'}
+            </span>
           </div>
         ))}
       </div>

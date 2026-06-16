@@ -3,10 +3,12 @@
  *
  * - El default vacío es PRESENTE. Para que el backend BORRE una fila al volver a presente,
  *   la celda modificada se envía con `estado: 'PRESENTE'` explícito (nunca se omite).
- * - Modo normal (registro ABIERTO): el click cicla PRESENTE ↔ AUSENTE.
- * - Modo corrección (el usuario REABRIÓ el registro): el click cicla
- *   AUSENTE → TARDANZA → PRESENTE. Quitar una falta deja «atrasado» (R/TARDANZA).
- *   TARDANZA solo es accesible en este modo.
+ * - Primera marcación (la celda aún no se guardó como falta): el click cicla
+ *   PRESENTE ↔ AUSENTE. Solo se puede marcar falta.
+ * - Re-marcación (la falta ya se guardó: el backend trae AUSENTE/TARDANZA): el click
+ *   cicla AUSENTE → TARDANZA → PRESENTE. Volver a tocar una falta guardada deja
+ *   «atrasado» (R/TARDANZA). TARDANZA solo es accesible sobre una falta ya guardada
+ *   (o con el registro reabierto en modo corrección).
  */
 
 export const ESTADO = {
@@ -50,19 +52,29 @@ export const marcaDeEstado = (estado, neutro) => {
 /**
  * Siguiente estado del ciclo de la celda.
  * @param {string|null} estadoActual
- * @param {boolean} modoCorreccion  TARDANZA solo accesible si true (registro reabierto).
+ * @param {boolean} permiteAtraso  TARDANZA solo accesible si true (falta ya guardada
+ *   o registro reabierto en modo corrección).
  * @returns {string} próximo estado (PRESENTE | AUSENTE | TARDANZA)
  */
-export const siguienteEstado = (estadoActual, modoCorreccion) => {
+export const siguienteEstado = (estadoActual, permiteAtraso) => {
   const actual = estadoEfectivo(estadoActual);
-  if (modoCorreccion) {
+  if (permiteAtraso) {
     // AUSENTE → TARDANZA → PRESENTE → AUSENTE
     if (actual === ESTADO.AUSENTE) return ESTADO.TARDANZA;
     if (actual === ESTADO.TARDANZA) return ESTADO.PRESENTE;
     return ESTADO.AUSENTE;
   }
-  // Modo normal: PRESENTE ↔ AUSENTE
+  // Primera marcación: PRESENTE ↔ AUSENTE
   return actual === ESTADO.AUSENTE ? ESTADO.PRESENTE : ESTADO.AUSENTE;
+};
+
+/**
+ * ¿La celda puede pasar a TARDANZA? Solo si la falta ya quedó guardada en el backend
+ * (AUSENTE/TARDANZA) o el registro fue reabierto para corregir.
+ */
+export const permiteAtraso = (estadoBackend, modoCorreccion = false) => {
+  const guardado = estadoEfectivo(estadoBackend);
+  return modoCorreccion || guardado === ESTADO.AUSENTE || guardado === ESTADO.TARDANZA;
 };
 
 /** Una celda es editable solo si es día de clase, no neutro, no futuro y el registro no está cerrado. */

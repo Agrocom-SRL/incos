@@ -1,15 +1,22 @@
 /**
- * Grilla semanal de asistencia (organismo, gemelo de NotasGrid).
+ * Grilla semanal de asistencia (organismo, gemelo de NotasGrid del cuaderno).
  *
- * Columnas = días de la semana con clase (`dias`); filas = estudiantes en el orden del
- * backend (no se reordena). Cada celda es un `CeldaAsistencia`. Recibe props ya mapeadas
- * y delega el ciclo de marca en `onToggleCelda` (lógica en el state hook).
+ * Estructura espejo del cuaderno: columnas fijas Nro + Estudiante y un grupo "Semana"
+ * con una sub-columna por cada día lun–sáb del rango. Cada sub-columna se pinta según
+ * su naturaleza:
+ *   - día de clase: color primario (si es futuro, primario atenuado tipo disabled).
+ *   - feriado / clase no dictada: rojo.
+ *   - día hábil sin clase: gris, con botón + para habilitar una sesión especial.
+ * El botón de guardar vive en la cabecera del grupo "Semana" y se habilita al haber
+ * cambios. La lógica de marca (P/R/F) se delega en `onToggleCelda` (state hook).
  */
-import { Table } from 'antd';
-import CeldaEstudiante from '@academico/calificaciones/components/CeldaEstudiante.jsx';
+import { PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { Table, Tooltip } from 'antd';
+import { Button, IdentidadCelda } from '@atoms';
 import CeldaAsistencia from './CeldaAsistencia.jsx';
 import {
   etiquetaDiaCorto,
+  etiquetaDiaMes,
   numeroDia,
 } from '@application-academico/asistencia/utils/asistenciaFechas.js';
 import { celdaEditable } from '@application-academico/asistencia/utils/asistenciaMarcas.js';
@@ -17,63 +24,171 @@ import { celdaEditable } from '@application-academico/asistencia/utils/asistenci
 /** Anchos fijos (mismos criterios que el cuaderno de notas). */
 const ANCHO_COL_NRO = 56;
 const ANCHO_COL_ESTUDIANTE = 320;
-const ANCHO_COL_DIA = 80;
+const ANCHO_COL_DIA = 92;
 
-const ColumnaDiaHead = ({ dia }) => (
+/** Clase de color de la columna del día según su naturaleza. */
+const claseColumnaDia = (dia) => {
+  if (dia.neutro) return 'asi-grid__col-dia--rojo';
+  if (!dia.esDiaClase) return 'asi-grid__col-dia--gris';
+  if (dia.esFuturo) return 'asi-grid__col-dia--clase-futuro';
+  return 'asi-grid__col-dia--clase';
+};
+
+const SemanaGrupoHead = ({ rango, onGuardar, guardando, mostrarGuardar }) => {
+  const titulo = rango
+    ? `Semana · ${etiquetaDiaMes(rango.desde)} – ${etiquetaDiaMes(rango.hasta)}`
+    : 'Semana';
+  return (
+    <div className="asi-grid__bim-head asi-grid__bim-head--activo">
+      <span className="asi-grid__bim-titulo-row">
+        <span className="asi-grid__bim-titulo">{titulo}</span>
+        {onGuardar && mostrarGuardar ? (
+          <Tooltip title="Guardar las marcas de asistencia de la semana">
+            <Button
+              variant="warning"
+              size="small"
+              icon={<SaveOutlined />}
+              loading={guardando}
+              disabled={guardando}
+              onClick={(e) => {
+                e.stopPropagation();
+                onGuardar();
+              }}
+            >
+              Guardar
+            </Button>
+          </Tooltip>
+        ) : null}
+      </span>
+    </div>
+  );
+};
+
+const ColumnaDiaHead = ({ dia, puedeAgregar, onHabilitarEspecial }) => (
   <div className="asi-grid__col-head">
-    <span className="asi-grid__col-head-dow">{etiquetaDiaCorto(dia.fechaClase)}</span>
+    <span className="asi-grid__col-head-dow">
+      {etiquetaDiaCorto(dia.fechaClase)}
+    </span>
     <span className="asi-grid__col-head-num">{numeroDia(dia.fechaClase)}</span>
+    {puedeAgregar ? (
+      <Tooltip title="Habilitar asistencia especial este día">
+        <button
+          type="button"
+          className="asi-grid__add-especial"
+          aria-label={`Habilitar asistencia especial el ${etiquetaDiaMes(dia.fechaClase)}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onHabilitarEspecial?.(dia.fechaClase);
+          }}
+        >
+          <PlusOutlined aria-hidden />
+        </button>
+      </Tooltip>
+    ) : null}
   </div>
 );
 
 const renderEstudiante = (_, row) => (
-  <CeldaEstudiante nombre={row.estudianteNombre} codigo={row.estudianteCodigo} />
+  <IdentidadCelda codigo={row.estudianteCodigo} nombre={row.estudianteNombre} />
 );
 
 const GrillaAsistenciaSemanal = ({
   dias = [],
   filas = [],
+  rangoSemana = null,
   registroCerrado = false,
+  puedeEditar = false,
   estadoCelda,
   onToggleCelda,
+  onHabilitarEspecial,
+  onGuardar,
+  guardando = false,
+  hayCambios = false,
 }) => {
   const fijarColumnaEstudiante = dias.length >= 4;
 
-  const columnasDia = dias.map((dia) => ({
-    title: <ColumnaDiaHead dia={dia} />,
-    key: dia.fechaClase,
-    width: ANCHO_COL_DIA,
-    align: 'center',
-    className: [
-      'asi-grid__col-dia',
-      dia.esFuturo ? 'asi-grid__col-dia--futuro' : '',
-      dia.neutro ? 'asi-grid__col-dia--neutro' : '',
-    ]
-      .filter(Boolean)
-      .join(' '),
-    onCell: () => ({ className: 'asi-grid__col-dia' }),
-    render: (_, row) => {
-      const celda = row.diasPorFecha.get(dia.fechaClase) ?? null;
-      const estadoBackend = celda?.estado ?? null;
-      const editable = celdaEditable({
-        esDiaClase: dia.esDiaClase,
-        neutro: celda?.neutro ?? dia.neutro,
-        esFuturo: dia.esFuturo,
-        registroCerrado,
-      });
-      return (
-        <CeldaAsistencia
-          estado={estadoCelda(row.matriculaMateriaId, dia.fechaClase, estadoBackend)}
-          neutro={celda?.neutro ?? dia.neutro}
-          futuro={dia.esFuturo}
-          editable={editable}
-          estudianteNombre={row.estudianteNombre}
-          fecha={dia.fechaClase}
-          onToggle={() => onToggleCelda(row.matriculaMateriaId, dia.fechaClase, estadoBackend)}
+  const columnasDia = dias.map((dia) => {
+    const colColor = claseColumnaDia(dia);
+    const puedeAgregar =
+      puedeEditar && !registroCerrado && Boolean(dia.puedeHabilitarEspecial);
+
+    return {
+      title: (
+        <ColumnaDiaHead
+          dia={dia}
+          puedeAgregar={puedeAgregar}
+          onHabilitarEspecial={onHabilitarEspecial}
         />
-      );
-    },
-  }));
+      ),
+      key: dia.fechaClase,
+      width: ANCHO_COL_DIA,
+      align: 'center',
+      className: `asi-grid__col-dia ${colColor}`,
+      onHeaderCell: () => ({
+        className: `asi-grid__th-sub asi-grid__col-dia ${colColor}`,
+      }),
+      onCell: () => ({ className: `asi-grid__col-dia ${colColor}` }),
+      render: (_, row) => {
+        // Día sin clase o feriado/clase no dictada: solo un guion, no se marca.
+        if (dia.neutro || !dia.esDiaClase) {
+          return (
+            <span
+              className="asi-celda asi-celda--vacia"
+              aria-label="Día sin asistencia"
+            >
+              <span className="asi-celda__marca">—</span>
+            </span>
+          );
+        }
+
+        const celda = row.diasPorFecha.get(dia.fechaClase) ?? null;
+        const estadoBackend = celda?.estado ?? null;
+        const editable = celdaEditable({
+          esDiaClase: dia.esDiaClase,
+          neutro: celda?.neutro ?? dia.neutro,
+          esFuturo: dia.esFuturo,
+          registroCerrado,
+        });
+        return (
+          <CeldaAsistencia
+            estado={estadoCelda(
+              row.matriculaMateriaId,
+              dia.fechaClase,
+              estadoBackend
+            )}
+            neutro={celda?.neutro ?? dia.neutro}
+            futuro={dia.esFuturo}
+            editable={editable}
+            estudianteNombre={row.estudianteNombre}
+            fecha={dia.fechaClase}
+            onToggle={() =>
+              onToggleCelda(
+                row.matriculaMateriaId,
+                dia.fechaClase,
+                estadoBackend
+              )
+            }
+          />
+        );
+      },
+    };
+  });
+
+  const grupoSemana = {
+    title: (
+      <SemanaGrupoHead
+        rango={rangoSemana}
+        onGuardar={onGuardar}
+        guardando={guardando}
+        mostrarGuardar={hayCambios}
+      />
+    ),
+    className: 'asi-grid__th-bim asi-grid__th-bim--activo',
+    onHeaderCell: () => ({
+      className: 'asi-grid__th-bim asi-grid__th-bim--activo',
+    }),
+    children: columnasDia,
+  };
 
   const columns = [
     {
@@ -84,6 +199,7 @@ const GrillaAsistenciaSemanal = ({
       fixed: 'left',
       align: 'center',
       className: 'asi-grid__col-nro',
+      onHeaderCell: () => ({ className: 'asi-grid__th-est' }),
       onCell: () => ({ className: 'asi-grid__col-nro' }),
     },
     {
@@ -92,10 +208,11 @@ const GrillaAsistenciaSemanal = ({
       width: ANCHO_COL_ESTUDIANTE,
       ...(fijarColumnaEstudiante ? { fixed: 'left' } : {}),
       className: 'asi-grid__col-estudiante',
+      onHeaderCell: () => ({ className: 'asi-grid__th-est' }),
       onCell: () => ({ className: 'asi-grid__col-estudiante' }),
       render: renderEstudiante,
     },
-    ...columnasDia,
+    grupoSemana,
   ];
 
   // Pre-indexa los días por fecha en cada fila para acceso O(1) en el render de columnas.
@@ -113,7 +230,7 @@ const GrillaAsistenciaSemanal = ({
   return (
     <div className="asi-grid-wrap">
       <Table
-        className="asi-grid"
+        className="asi-grid asi-grid--consolidado-style"
         columns={columns}
         dataSource={dataSource}
         pagination={false}

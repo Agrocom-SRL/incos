@@ -4,6 +4,7 @@ import { PlanillaAsistenciaPresentationMapper } from '../../../mappers/asistenci
 import {
   expandirFechasClase,
   expandirFeriados,
+  enumerarFechasRango,
   setDiasDesdeHorario,
   toISODate,
   hoyISO,
@@ -210,16 +211,23 @@ export class GetPlanillaAsistenciaSemanalUseCase {
         turno: cursoRow.paralelo_turno ?? '',
       },
       rango: { desde: desdeIso, hasta: hastaIso },
-      dias: fechasOrdenadas.map((fecha) => {
+      // Columnas = TODOS los días del rango (lun–sáb), no solo los de clase: la grilla
+      // pinta cada día según su naturaleza (clase / feriado / sin clase) y deja el resto
+      // como columnas vacías habilitables para una sesión especial.
+      dias: enumerarFechasRango(desdeIso, hastaIso).map((fecha) => {
         const sesion = sesionPorFecha.get(fecha) ?? null;
+        const esDiaClase = fechasClase.has(fecha) || Boolean(sesion?.esEspecial);
+        const neutro = neutroDeFecha(fecha);
         return {
           fechaClase: fecha,
-          esDiaClase: fechasClase.has(fecha) || Boolean(sesion?.esEspecial),
+          esDiaClase,
           tieneAsistencia: sesion != null,
-          neutro: neutroDeFecha(fecha),
+          neutro,
           esFuturo: fecha > hoy,
           esSesionEspecial: Boolean(sesion?.esEspecial),
           sesionEstado: sesion?.sesionEstado ?? null,
+          // Día hábil sin clase ni feriado: se puede habilitar una sesión especial.
+          puedeHabilitarEspecial: !esDiaClase && neutro == null,
         };
       }),
       diasValidos,

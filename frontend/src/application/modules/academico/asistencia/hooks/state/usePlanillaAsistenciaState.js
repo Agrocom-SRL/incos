@@ -29,6 +29,7 @@ import {
   ESTADO,
   estadoEfectivo,
   siguienteEstado,
+  permiteAtraso,
   celdaEditable,
 } from '../../utils/asistenciaMarcas.js';
 
@@ -60,6 +61,15 @@ export const usePlanillaAsistenciaState = () => {
   // Rango del bimestre (límites de la navegación) desde el calendario.
   const rangoBimestre = calendario?.rango ?? null;
   const bimestre = calendario?.bimestre ?? null;
+  // Ficha y resumen del bimestre (mismos datos que la pantalla de calendario): el
+  // endpoint del calendario trae docente, gestión, color del bimestre, horario y KPIs.
+  const cursoFicha = calendario?.curso ?? null;
+  const bimestreNombre = calendario?.bimestreNombre ?? null;
+  const bimestreColor = calendario?.bimestreColor ?? null;
+  const gestion = calendario?.gestion ?? null;
+  const resumen = calendario?.resumen ?? null;
+  const horario = useMemo(() => calendario?.horario ?? [], [calendario]);
+  const hoy = calendario?.hoy ?? null;
 
   const cargarPlanilla = useCallback(() => {
     if (!asignacionId) return;
@@ -119,7 +129,9 @@ export const usePlanillaAsistenciaState = () => {
       const actual = cambios.has(clave)
         ? cambios.get(clave)
         : estadoEfectivo(estadoBackend);
-      const proximo = siguienteEstado(actual, modoCorreccion);
+      // El atraso (TARDANZA) solo se habilita sobre una falta ya guardada o con el
+      // registro reabierto en modo corrección.
+      const proximo = siguienteEstado(actual, permiteAtraso(estadoBackend, modoCorreccion));
 
       setCambios((prev) => {
         const next = new Map(prev);
@@ -274,7 +286,14 @@ export const usePlanillaAsistenciaState = () => {
   return {
     asignacionId,
     curso,
+    cursoFicha,
     bimestre,
+    bimestreNombre,
+    bimestreColor,
+    gestion,
+    resumen,
+    horario,
+    hoy,
     filas,
     dias,
     diasValidos,

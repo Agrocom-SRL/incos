@@ -1,44 +1,43 @@
 /**
- * Cabecera de navegación de la planilla semanal (molécula): semana anterior / siguiente
- * dentro del bimestre + rótulo del rango visible.
+ * Flechas ◀ ▶ para cambiar de semana en la planilla (delante del título).
+ * Mismo estilo que el pager del Cuaderno (CuadernoBimestrePager): botones circulares,
+ * sin rótulo (el rango de la semana se muestra en la cabecera del grupo de la grilla).
  */
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { Flex, Tooltip } from 'antd';
-import { IconButton } from '@atoms';
-import { etiquetaDiaMes } from '@application-academico/asistencia/utils/asistenciaFechas.js';
+import { Button, Tooltip } from 'antd';
 
 const CabeceraSemanaAsistencia = ({
-  rangoSemana,
   puedeAnterior,
   puedeSiguiente,
   onAnterior,
   onSiguiente,
-}) => {
-  const rotulo = rangoSemana
-    ? `${etiquetaDiaMes(rangoSemana.desde)} – ${etiquetaDiaMes(rangoSemana.hasta)}`
-    : 'Semana';
-
-  return (
-    <Flex align="center" justify="center" gap="small" className="asi-cabecera-semana">
-      <Tooltip title="Semana anterior">
-        <IconButton
-          icon={<LeftOutlined />}
-          disabled={!puedeAnterior}
-          onClick={onAnterior}
-          aria-label="Semana anterior"
-        />
-      </Tooltip>
-      <span className="asi-cabecera-semana__rotulo">{rotulo}</span>
-      <Tooltip title="Semana siguiente">
-        <IconButton
-          icon={<RightOutlined />}
-          disabled={!puedeSiguiente}
-          onClick={onSiguiente}
-          aria-label="Semana siguiente"
-        />
-      </Tooltip>
-    </Flex>
-  );
-};
+}) => (
+  <span className="asi-semana-pager" aria-label="Navegación entre semanas">
+    <Tooltip title="Semana anterior">
+      <Button
+        type="default"
+        shape="circle"
+        size="small"
+        icon={<LeftOutlined />}
+        disabled={!puedeAnterior}
+        aria-label="Semana anterior"
+        onClick={onAnterior}
+        className="asi-semana-pager__btn"
+      />
+    </Tooltip>
+    <Tooltip title="Semana siguiente">
+      <Button
+        type="default"
+        shape="circle"
+        size="small"
+        icon={<RightOutlined />}
+        disabled={!puedeSiguiente}
+        aria-label="Semana siguiente"
+        onClick={onSiguiente}
+        className="asi-semana-pager__btn"
+      />
+    </Tooltip>
+  </span>
+);
 
 export default CabeceraSemanaAsistencia;

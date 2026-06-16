@@ -104,7 +104,11 @@ export default defineConfig({
     },
 
     server: {
+        // host: true escucha en 0.0.0.0 → accesible por la IP de la LAN (router),
+        // no solo por localhost. Vite imprime la URL "Network: http://<ip>:5173/".
+        host: true,
         port: 5173,
+        strictPort: true,
         open: true,
         proxy: {
             // Proxy para archivos de uploads (documentos, fotos)

@@ -1,18 +1,19 @@
 /**
  * Pantalla GRILLA SEMANAL de asistencia.
  *
- * Columnas = días válidos de la semana; filas = estudiantes (orden del backend).
- * Marca de faltas (ciclo según modo normal / corrección), navegación de semanas
- * dentro del bimestre y guardado del lote (PUT). Banner cuando el registro está cerrado.
+ * Cabecera espejo del calendario (PageHeader + ficha del curso a todo el ancho) con el
+ * resumen del bimestre embebido en la propia ficha (horario, días de clase y KPIs de
+ * presentes/atrasados/faltantes/licencias). Grilla espejo del cuaderno: columnas fijas
+ * + grupo "Semana" con sub-columnas día (lun–sáb). El botón de guardar vive en la
+ * grilla; el botón + por día abre el drawer de sesión especial.
  */
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Skeleton } from 'antd';
 import {
   ArrowLeftOutlined,
+  CalendarOutlined,
   LockOutlined,
-  PlusOutlined,
-  SaveOutlined,
   UnlockOutlined,
 } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -23,9 +24,11 @@ import { usePlanillaAsistenciaState } from '@application-academico/asistencia/ho
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
 import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
 import CursoContextoAsistencia from '../components/CursoContextoAsistencia.jsx';
+import ResumenCabeceraAsistencia from '../components/ResumenCabeceraAsistencia.jsx';
 import CabeceraSemanaAsistencia from '../components/CabeceraSemanaAsistencia.jsx';
 import GrillaAsistenciaSemanal from '../components/GrillaAsistenciaSemanal.jsx';
-import FechaEspecialModal from '../components/FechaEspecialModal.jsx';
+import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import FechaEspecialDrawer from '../components/FechaEspecialDrawer.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/asistencia.css';
 
@@ -39,7 +42,13 @@ const PlanillaAsistenciaSemanalPage = () => {
   const navigate = useNavigate();
   const {
     curso,
+    cursoFicha,
     bimestre,
+    bimestreNombre,
+    bimestreColor,
+    gestion,
+    resumen,
+    horario,
     filas,
     dias,
     rangoSemana,
@@ -69,8 +78,21 @@ const PlanillaAsistenciaSemanalPage = () => {
     creandoSesion,
   } = usePlanillaAsistenciaState();
 
+  const ficha = cursoFicha ?? curso;
+
   const { modal } = App.useApp();
-  const [modalEspecial, setModalEspecial] = useState(false);
+  const [fechaEspecial, setFechaEspecial] = useState({
+    abierto: false,
+    fecha: null,
+  });
+
+  const abrirFechaEspecial = useCallback((fecha) => {
+    setFechaEspecial({ abierto: true, fecha: fecha ?? null });
+  }, []);
+
+  const cerrarFechaEspecial = useCallback(() => {
+    setFechaEspecial((prev) => ({ ...prev, abierto: false }));
+  }, []);
 
   const handleVolver = useCallback(() => {
     if (hayCambios) {
@@ -91,31 +113,29 @@ const PlanillaAsistenciaSemanalPage = () => {
     });
   }, [modal, cerrarRegistro]);
 
+  const sigla = ficha?.materiaSigla ?? null;
+
   const pageHeader = (
     <PageHeader
       title={
-        <span>{curso?.materia ? `Asistencia · ${curso.materia}` : 'Planilla de asistencia'}</span>
-      }
-      breadcrumbItems={breadcrumbItems}
-      actions={
-        <Flex gap={allSpacing.marginXS} wrap="wrap" align="center">
+        <Flex align="center" gap={allSpacing.marginSM} wrap="wrap">
           <CabeceraSemanaAsistencia
-            rangoSemana={rangoSemana}
             puedeAnterior={Boolean(semanaPrev)}
             puedeSiguiente={Boolean(semanaSig)}
             onAnterior={irSemanaAnterior}
             onSiguiente={irSemanaSiguiente}
           />
-          <ActionButton
-            permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-            accion="EDITAR"
-            variant="default"
-            icon={<PlusOutlined />}
-            onClick={() => setModalEspecial(true)}
-            disabled={registroCerrado}
-          >
-            Habilitar fecha especial
-          </ActionButton>
+          <CalendarOutlined aria-hidden />
+          <span>
+            {sigla
+              ? `Planilla de asistencia · ${sigla}`
+              : 'Planilla de asistencia'}
+          </span>
+        </Flex>
+      }
+      breadcrumbItems={breadcrumbItems}
+      actions={
+        <Flex gap={allSpacing.marginXS} wrap="wrap" align="center">
           {registroCerrado ? (
             <ActionButton
               permiso={ASISTENCIA_PERMISOS.registroCuaderno}
@@ -128,29 +148,16 @@ const PlanillaAsistenciaSemanalPage = () => {
               Reabrir para corregir
             </ActionButton>
           ) : (
-            <>
-              <ActionButton
-                permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-                accion="EDITAR"
-                variant="primary"
-                icon={<SaveOutlined />}
-                loading={guardando}
-                disabled={!hayCambios}
-                onClick={guardarPlanilla}
-              >
-                Guardar
-              </ActionButton>
-              <ActionButton
-                permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-                accion="EDITAR"
-                variant="danger"
-                icon={<LockOutlined />}
-                loading={procesandoCierre}
-                onClick={confirmarCerrar}
-              >
-                Cerrar registro
-              </ActionButton>
-            </>
+            <ActionButton
+              permiso={ASISTENCIA_PERMISOS.registroCuaderno}
+              accion="EDITAR"
+              variant="danger"
+              icon={<LockOutlined />}
+              loading={procesandoCierre}
+              onClick={confirmarCerrar}
+            >
+              Cerrar registro
+            </ActionButton>
           )}
           <BackButton
             icon={<ArrowLeftOutlined />}
@@ -164,104 +171,141 @@ const PlanillaAsistenciaSemanalPage = () => {
     />
   );
 
-  if (isLoading && filas.length === 0) {
-    return (
-      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
-        <PageHeaderArea>{pageHeader}</PageHeaderArea>
+  // La ficha del curso + el resumen del bimestre van DENTRO del shell, encima del contenido.
+  const cabecera = (
+    <>
+      {ficha ? (
+        <CursoContextoAsistencia
+          curso={ficha}
+          bimestre={bimestre}
+          bimestreNombre={bimestreNombre}
+          bimestreColor={bimestreColor}
+          gestion={gestion}
+          registroEstado={registroEstado}
+        />
+      ) : null}
+      <ResumenCabeceraAsistencia resumen={resumen} horario={horario} />
+    </>
+  );
+
+  // Estructura: header de página + DashboardPageShell con la cabecera y el contenido.
+  const renderPagina = (mainNode) => (
+    <Flex
+      vertical
+      gap="large"
+      className="page-container asi-calendario-shell"
+      style={{ width: '100%' }}
+    >
+      <PageHeaderArea>{pageHeader}</PageHeaderArea>
+      <DashboardPageShell>
         <MainContent>
-          <Card {...asistenciaSectionCardProps}>
-            <Skeleton active paragraph={{ rows: 10 }} />
-          </Card>
+          <Flex
+            vertical
+            gap={allSpacing.marginLG}
+            style={{ width: '100%', minWidth: 0 }}
+          >
+            {cabecera}
+            {mainNode}
+          </Flex>
         </MainContent>
-      </Flex>
+      </DashboardPageShell>
+    </Flex>
+  );
+
+  if (isLoading && filas.length === 0) {
+    return renderPagina(
+      <Card {...asistenciaSectionCardProps}>
+        <Skeleton active paragraph={{ rows: 10 }} />
+      </Card>
     );
   }
 
   if (error && filas.length === 0) {
-    return (
-      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
-        <PageHeaderArea>{pageHeader}</PageHeaderArea>
-        <MainContent>
-          <Alert
-            type="error"
-            showIcon
-            title="No se pudo cargar la planilla"
-            description={typeof error === 'string' ? error : String(error)}
-            action={
-              <Button size="small" onClick={refetch}>
-                Reintentar
-              </Button>
-            }
-          />
-        </MainContent>
-      </Flex>
+    return renderPagina(
+      <Alert
+        type="error"
+        showIcon
+        title="No se pudo cargar la planilla"
+        description={typeof error === 'string' ? error : String(error)}
+        action={
+          <Button size="small" onClick={refetch}>
+            Reintentar
+          </Button>
+        }
+      />
     );
   }
 
-  return (
-    <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
-      <PageHeaderArea>{pageHeader}</PageHeaderArea>
-      <MainContent>
-        <Flex vertical gap={allSpacing.marginLG} className="asi-planilla-page">
-          {registroCerrado ? (
-            <Alert
-              type="warning"
-              showIcon
-              title="Registro cerrado (solo lectura)"
-              description="Reabrí el registro para marcar atrasos o corregir faltas de este bimestre."
-            />
-          ) : modoCorreccion ? (
-            <Alert
-              type="info"
-              showIcon
-              title="Modo corrección activo"
-              description="Tocá una falta para registrar un atraso (R); volvé a tocar para marcar presente."
-            />
-          ) : null}
+  const content = (
+    <Flex vertical gap={allSpacing.marginLG} className="asi-planilla-page">
+      {registroCerrado ? (
+        <Alert
+          type="warning"
+          showIcon
+          title="Registro cerrado (solo lectura)"
+          description="Reabrí el registro para marcar atrasos o corregir faltas de este bimestre."
+        />
+      ) : modoCorreccion ? (
+        <Alert
+          type="info"
+          showIcon
+          title="Modo corrección activo"
+          description="Tocá una falta para registrar un atraso (—); volvé a tocar para marcar presente."
+        />
+      ) : null}
 
-          {!puedeEditar ? (
-            <Alert
-              type="info"
-              showIcon
-              title="Solo lectura"
-              description="No tenés permiso para editar la asistencia de este curso."
-            />
-          ) : null}
+      {!puedeEditar ? (
+        <Alert
+          type="info"
+          showIcon
+          title="Solo lectura"
+          description="No tenés permiso para editar la asistencia de este curso."
+        />
+      ) : null}
 
-          <Card {...asistenciaSectionCardProps}>
-            <CursoContextoAsistencia curso={curso} bimestre={bimestre} registroEstado={registroEstado} />
-          </Card>
-
-          {dias.length === 0 ? (
-            <Card {...asistenciaSectionCardProps}>
-              <Alert
-                type="info"
-                showIcon
-                title="Sin días de clase en la semana"
-                description="Esta semana no tiene días de clase para tomar asistencia. Probá con otra semana."
-              />
-            </Card>
-          ) : (
-            <Card {...grillaCardProps}>
-              <GrillaAsistenciaSemanal
-                dias={dias}
-                filas={filas}
-                registroCerrado={registroCerrado}
-                estadoCelda={estadoCelda}
-                onToggleCelda={toggleCelda}
-              />
-            </Card>
-          )}
-        </Flex>
-      </MainContent>
-
-      <FechaEspecialModal
-        open={modalEspecial}
-        onClose={() => setModalEspecial(false)}
-        onConfirmar={habilitarFechaEspecial}
-        confirmando={creandoSesion}
-      />
+      {dias.length === 0 ? (
+        <Card {...asistenciaSectionCardProps}>
+          <Alert
+            type="info"
+            showIcon
+            title="Semana fuera del bimestre"
+            description="Esta semana no tiene días dentro del bimestre. Probá con otra semana."
+          />
+        </Card>
+      ) : (
+        <Card {...grillaCardProps}>
+          <GrillaAsistenciaSemanal
+            dias={dias}
+            filas={filas}
+            rangoSemana={rangoSemana}
+            registroCerrado={registroCerrado}
+            puedeEditar={puedeEditar}
+            estadoCelda={estadoCelda}
+            onToggleCelda={toggleCelda}
+            onHabilitarEspecial={abrirFechaEspecial}
+            onGuardar={
+              puedeEditar && !registroCerrado ? guardarPlanilla : undefined
+            }
+            guardando={guardando}
+            hayCambios={hayCambios}
+          />
+        </Card>
+      )}
     </Flex>
+  );
+
+  return (
+    <>
+      {renderPagina(content)}
+
+      <FechaEspecialDrawer
+        abierto={fechaEspecial.abierto}
+        fechaInicial={fechaEspecial.fecha}
+        confirmando={creandoSesion}
+        onCerrar={cerrarFechaEspecial}
+        onConfirmar={habilitarFechaEspecial}
+      />
+    </>
   );
 };
 

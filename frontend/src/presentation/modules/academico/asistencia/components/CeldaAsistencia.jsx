@@ -6,7 +6,11 @@
  * `onToggle` (lógica de ciclo en el state hook). Días neutros/futuros: solo lectura.
  */
 import { memo } from 'react';
-import { marcaDeEstado, MARCA } from '@application-academico/asistencia/utils/asistenciaMarcas.js';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import {
+  marcaDeEstado,
+  MARCA,
+} from '@application-academico/asistencia/utils/asistenciaMarcas.js';
 
 /** Etiqueta accesible por marca. */
 const ARIA_MARCA = {
@@ -16,7 +20,29 @@ const ARIA_MARCA = {
   [MARCA.LICENCIA]: 'Licencia',
 };
 
-const CeldaAsistencia = ({ estado, neutro, editable, futuro, onToggle, estudianteNombre, fecha }) => {
+/**
+ * Glifo visible por marca:
+ *  - Presente → check verde primario (no la letra «P»).
+ *  - Ausente → icono ✕ rojo (no la letra «F»).
+ *  - Atraso → guion medio (sobre fondo ámbar).
+ *  - Licencia → su letra (L).
+ */
+const glifoMarca = (marca) => {
+  if (marca === MARCA.PRESENTE) return <CheckOutlined aria-hidden />;
+  if (marca === MARCA.AUSENTE) return <CloseOutlined aria-hidden />;
+  if (marca === MARCA.TARDANZA) return '—';
+  return marca;
+};
+
+const CeldaAsistencia = ({
+  estado,
+  neutro,
+  editable,
+  futuro,
+  onToggle,
+  estudianteNombre,
+  fecha,
+}) => {
   const marca = marcaDeEstado(estado, neutro);
   const esFalta = marca === MARCA.AUSENTE;
   const esAtraso = marca === MARCA.TARDANZA;
@@ -25,7 +51,10 @@ const CeldaAsistencia = ({ estado, neutro, editable, futuro, onToggle, estudiant
   // Días futuros: columna gris, no clickeable.
   if (futuro) {
     return (
-      <span className="asi-celda asi-celda--futuro" aria-label="Día futuro, sin tomar">
+      <span
+        className="asi-celda asi-celda--futuro"
+        aria-label="Día futuro, sin tomar"
+      >
         <span className="asi-celda__marca">·</span>
       </span>
     );
@@ -36,9 +65,13 @@ const CeldaAsistencia = ({ estado, neutro, editable, futuro, onToggle, estudiant
     return (
       <span
         className={`asi-celda asi-celda--neutro${esLicencia ? ' asi-celda--licencia' : ''}`}
-        aria-label={esLicencia ? `Licencia de ${estudianteNombre}` : 'Día sin clase'}
+        aria-label={
+          esLicencia ? `Licencia de ${estudianteNombre}` : 'Día sin clase'
+        }
       >
-        <span className="asi-celda__marca">{esLicencia ? MARCA.LICENCIA : '—'}</span>
+        <span className="asi-celda__marca">
+          {esLicencia ? MARCA.LICENCIA : '—'}
+        </span>
       </span>
     );
   }
@@ -58,14 +91,19 @@ const CeldaAsistencia = ({ estado, neutro, editable, futuro, onToggle, estudiant
   if (!editable) {
     return (
       <span className={className} aria-label={label}>
-        <span className="asi-celda__marca">{marca}</span>
+        <span className="asi-celda__marca">{glifoMarca(marca)}</span>
       </span>
     );
   }
 
   return (
-    <button type="button" className={className} onClick={onToggle} aria-label={`${label}. Tocá para cambiar`}>
-      <span className="asi-celda__marca">{marca}</span>
+    <button
+      type="button"
+      className={className}
+      onClick={onToggle}
+      aria-label={`${label}. Tocá para cambiar`}
+    >
+      <span className="asi-celda__marca">{glifoMarca(marca)}</span>
     </button>
   );
 };

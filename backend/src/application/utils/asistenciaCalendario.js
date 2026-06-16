@@ -57,6 +57,30 @@ export function expandirFechasClase(desde, hasta, diasSet) {
 }
 
 /**
+ * Enumera TODAS las fechas del rango [desde, hasta] inclusive (no solo días de clase).
+ * Útil para pintar la grilla semanal completa (lun–sáb) con sus columnas vacías.
+ *
+ * @param {string} desde 'YYYY-MM-DD'
+ * @param {string} hasta 'YYYY-MM-DD'
+ * @returns {string[]} todas las fechas 'YYYY-MM-DD' del rango
+ */
+export function enumerarFechasRango(desde, hasta) {
+  const inicio = toISODate(desde);
+  const fin = toISODate(hasta);
+  if (!inicio || !fin || inicio > fin) return [];
+
+  const fechas = [];
+  let cursor = inicio;
+  let guard = 0;
+  while (cursor <= fin && guard < 1000) {
+    fechas.push(cursor);
+    cursor = sumarDias(cursor, 1);
+    guard += 1;
+  }
+  return fechas;
+}
+
+/**
  * Construye el set de índices de día-de-semana (getDay) a partir de los bloques de
  * horario de la vista 128 (campo `dia` ENUM LUNES..DOMINGO).
  *
