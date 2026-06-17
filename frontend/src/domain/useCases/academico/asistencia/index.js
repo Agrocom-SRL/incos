@@ -7,3 +7,9 @@ export { CerrarRegistroAsistenciaUseCase } from './CerrarRegistroAsistenciaUseCa
 export { ReabrirRegistroAsistenciaUseCase } from './ReabrirRegistroAsistenciaUseCase.js';
 export { CrearSesionEspecialUseCase } from './CrearSesionEspecialUseCase.js';
 export { EliminarSesionEspecialUseCase } from './EliminarSesionEspecialUseCase.js';
+// Licencias estudiantiles (página dentro de Asistencia · ACA-ASI-LIC)
+export { ListarLicenciasUseCase } from './ListarLicenciasUseCase.js';
+export { GetLicenciaByIdUseCase } from './GetLicenciaByIdUseCase.js';
+export { CrearLicenciaUseCase } from './CrearLicenciaUseCase.js';
+export { DecidirLicenciaUseCase } from './DecidirLicenciaUseCase.js';
+export { GetInscripcionVigenteUseCase } from './GetInscripcionVigenteUseCase.js';

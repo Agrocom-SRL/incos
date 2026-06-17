@@ -40,6 +40,11 @@ import {
   ReabrirRegistroAsistenciaUseCase,
   CrearSesionEspecialUseCase,
   EliminarSesionEspecialUseCase,
+  ListarLicenciasUseCase,
+  GetLicenciaByIdUseCase,
+  CrearLicenciaUseCase,
+  DecidirLicenciaUseCase,
+  GetInscripcionVigenteUseCase,
 } from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
@@ -137,6 +142,27 @@ export function registerAcademicoModule(factory) {
 
   factory.eliminarSesionEspecialAsistencia = () => {
     return new EliminarSesionEspecialUseCase(AsistenciaRepository);
+  };
+
+  // Licencias estudiantiles (página dentro de Asistencia · ACA-ASI-LIC)
+  factory.listarLicencias = () => {
+    return new ListarLicenciasUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerLicenciaPorId = () => {
+    return new GetLicenciaByIdUseCase(AsistenciaRepository);
+  };
+
+  factory.crearLicencia = () => {
+    return new CrearLicenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.decidirLicencia = () => {
+    return new DecidirLicenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerInscripcionVigenteLicencia = () => {
+    return new GetInscripcionVigenteUseCase(AsistenciaRepository);
   };
 
   factory.obtenerRegistroNotasCurso = () => {

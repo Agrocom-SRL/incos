@@ -33,6 +33,21 @@ export const etiquetaDiaMes = (iso) => {
   return `${d} ${MESES_CORTOS[m - 1] ?? ''}`;
 };
 
+/** '12 jun 2026' para listados de licencias (rango y fecha de solicitud). */
+export const etiquetaDiaMesAnio = (iso) => {
+  if (!iso) return '—';
+  const [y, m, d] = partes(iso);
+  if (!y || !m || !d) return String(iso);
+  return `${d} ${MESES_CORTOS[m - 1] ?? ''} ${y}`;
+};
+
+/** 'Lun 12 jun 2026' completa con año (rango de fechas de una licencia). */
+export const etiquetaRangoFechas = (desde, hasta) => {
+  if (!desde) return '—';
+  if (!hasta || hasta === desde) return etiquetaDiaMesAnio(desde);
+  return `${etiquetaDiaMesAnio(desde)} – ${etiquetaDiaMesAnio(hasta)}`;
+};
+
 /** 'Lun 12 jun' completo. */
 export const etiquetaFechaCompleta = (iso) => `${etiquetaDiaCorto(iso)} ${etiquetaDiaMes(iso)}`;
 

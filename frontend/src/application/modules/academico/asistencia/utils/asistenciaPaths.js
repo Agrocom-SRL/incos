@@ -44,3 +44,5 @@ export const CONSOLIDADO_PATH = '/academico/asistencia/consolidado';
 export const LICENCIAS_PATH = '/academico/asistencia/licencias/listar';
 export const LICENCIA_SOLICITAR_PATH = '/academico/asistencia/licencias/solicitar';
 export const LICENCIA_APROBAR_PATH = '/academico/asistencia/licencias/aprobar';
+/** Ficha de una licencia (detalle). La ruta `/:id` se declara DESPUÉS de las estáticas. */
+export const licenciaDetallePath = (id) => `/academico/asistencia/licencias/${id}`;

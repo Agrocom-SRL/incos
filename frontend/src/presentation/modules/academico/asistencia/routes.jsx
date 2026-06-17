@@ -35,6 +35,18 @@ const CalendarioAsistenciaConnector = lazy(
 const PlanillaAsistenciaSemanalConnector = lazy(
   () => import('./connectors/PlanillaAsistenciaSemanalConnector.jsx'),
 );
+const LicenciasListConnector = lazy(
+  () => import('./connectors/LicenciasListConnector.jsx'),
+);
+const LicenciaSolicitarConnector = lazy(
+  () => import('./connectors/LicenciaSolicitarConnector.jsx'),
+);
+const LicenciasAprobarConnector = lazy(
+  () => import('./connectors/LicenciasAprobarConnector.jsx'),
+);
+const LicenciaDetailConnector = lazy(
+  () => import('./connectors/LicenciaDetailConnector.jsx'),
+);
 
 export const asistenciaRoutes = [
   {
@@ -91,7 +103,7 @@ export const asistenciaRoutes = [
   },
   {
     path: '/academico/asistencia/licencias/listar',
-    element: <UnderConstruction />,
+    element: <LicenciasListConnector />,
     key: 'ACA-ASI-LIC',
     breadcrumbLabel: 'Licencias estudiantiles',
     permiso: ASISTENCIA_PERMISOS.licenciaVer,
@@ -101,7 +113,7 @@ export const asistenciaRoutes = [
   },
   {
     path: '/academico/asistencia/licencias/solicitar',
-    element: <UnderConstruction />,
+    element: <LicenciaSolicitarConnector />,
     key: 'ACA-ASI-LIC-SOL',
     permiso: ASISTENCIA_PERMISOS.licenciaCrear,
     accion: 'CREAR',
@@ -110,10 +122,21 @@ export const asistenciaRoutes = [
   },
   {
     path: '/academico/asistencia/licencias/aprobar',
-    element: <UnderConstruction />,
+    element: <LicenciasAprobarConnector />,
     key: 'ACA-ASI-LIC-APR',
     permiso: ASISTENCIA_PERMISOS.licenciaAprobar,
     accion: 'APROBAR',
+    menu: null,
+    breadcrumbParent: 'ACA-ASI-LIC',
+  },
+  {
+    // Ruta dinámica DESPUÉS de las estáticas (listar/solicitar/aprobar) — incos-frontend-module §6.
+    path: '/academico/asistencia/licencias/:id',
+    element: <LicenciaDetailConnector />,
+    key: 'ACA-ASI-LIC-DET',
+    breadcrumbLabel: 'Detalle de la licencia',
+    permiso: ASISTENCIA_PERMISOS.licenciaVer,
+    accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'ACA-ASI-LIC',
   },

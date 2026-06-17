@@ -269,6 +269,13 @@ export const ASISTENCIA_ENDPOINTS = {
     `${API_BASE}/asistencia/cursos/${asignacionId}/sesiones-especiales`,
   SESION_ESPECIAL_ELIMINAR: (asignacionId, fecha) =>
     `${API_BASE}/asistencia/cursos/${asignacionId}/sesiones-especiales/${fecha}`,
+  // Licencias estudiantiles (página dentro de Asistencia · ACA-ASI-LIC)
+  LICENCIAS: `${API_BASE}/asistencia/licencias`,
+  LICENCIA_BY_ID: (id) => `${API_BASE}/asistencia/licencias/${id}`,
+  LICENCIA_DECISION: (id) => `${API_BASE}/asistencia/licencias/${id}/decision`,
+  /** Inscripción vigente del estudiante (resuelve estudiante → inscripcionId para la solicitud). */
+  LICENCIA_INSCRIPCION_VIGENTE: (estudianteId) =>
+    `${API_BASE}/asistencia/licencias/inscripcion-vigente?estudianteId=${estudianteId}`,
 };
 
 export const CALIFICACIONES_ENDPOINTS = {

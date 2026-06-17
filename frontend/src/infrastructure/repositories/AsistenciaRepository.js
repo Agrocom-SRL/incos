@@ -244,6 +244,114 @@ class AsistenciaRepository {
       return handleErrorResponse(error, 'Error al eliminar la fecha especial');
     }
   }
+
+  // ============================================
+  // Licencias estudiantiles (página dentro de Asistencia · ACA-ASI-LIC)
+  // ============================================
+
+  /**
+   * GET /v1/asistencia/licencias?estado= — listado de licencias (filtro opcional por estado).
+   * dataKey backend: { licencias: [...] }.
+   * @param {{ estado?: string }} [options]
+   */
+  async listarLicencias({ estado } = {}) {
+    try {
+      const params = {};
+      if (estado) params.estado = estado;
+      const response = await apiClient.get(ASISTENCIA_ENDPOINTS.LICENCIAS, { params });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar las licencias');
+    }
+  }
+
+  /**
+   * GET /v1/asistencia/licencias/:id — detalle de una licencia. dataKey backend: { licencia }.
+   * @param {number|string} id
+   */
+  async getLicenciaById(id) {
+    try {
+      const response = await apiClient.get(ASISTENCIA_ENDPOINTS.LICENCIA_BY_ID(id));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar la licencia');
+    }
+  }
+
+  /**
+   * POST /v1/asistencia/licencias — solicitar una licencia (nace PENDIENTE).
+   * @param {{ inscripcionId: number, fechaInicio: string, fechaFin: string,
+   *   motivo: string, detalleMotivo: string }} payload
+   */
+  async crearLicencia({ inscripcionId, fechaInicio, fechaFin, motivo, detalleMotivo } = {}) {
+    try {
+      const response = await apiClient.post(ASISTENCIA_ENDPOINTS.LICENCIAS, {
+        inscripcionId,
+        fechaInicio,
+        fechaFin,
+        motivo,
+        detalleMotivo,
+      });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al solicitar la licencia');
+    }
+  }
+
+  /**
+   * PUT /v1/asistencia/licencias/:id/decision — aprobar/rechazar una licencia PENDIENTE.
+   * @param {number|string} id
+   * @param {{ decision: 'APROBAR'|'RECHAZAR', motivoRechazo?: string,
+   *   observacionesDecision?: string }} payload
+   */
+  async decidirLicencia(id, { decision, motivoRechazo, observacionesDecision } = {}) {
+    try {
+      const body = { decision };
+      if (motivoRechazo != null) body.motivoRechazo = motivoRechazo;
+      if (observacionesDecision != null) body.observacionesDecision = observacionesDecision;
+      const response = await apiClient.put(ASISTENCIA_ENDPOINTS.LICENCIA_DECISION(id), body);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al registrar la decisión de la licencia');
+    }
+  }
+
+  /**
+   * GET /v1/asistencia/licencias/inscripcion-vigente?estudianteId= — inscripción vigente
+   * del estudiante (resuelve estudiante → inscripcionId para la solicitud de licencia).
+   * dataKey backend: { inscripcion: {...} | null }.
+   * @param {number|string} estudianteId
+   */
+  async getInscripcionVigente(estudianteId) {
+    try {
+      const response = await apiClient.get(
+        ASISTENCIA_ENDPOINTS.LICENCIA_INSCRIPCION_VIGENTE(estudianteId),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al consultar la inscripción vigente del estudiante');
+    }
+  }
 }
 
 export default new AsistenciaRepository();
