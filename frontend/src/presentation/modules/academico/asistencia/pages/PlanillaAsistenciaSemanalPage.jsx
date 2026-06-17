@@ -14,7 +14,6 @@ import {
   ArrowLeftOutlined,
   CalendarOutlined,
   LockOutlined,
-  MedicineBoxOutlined,
   UnlockOutlined,
 } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -26,7 +25,7 @@ import { usePlanillaAsistenciaState } from '@application-academico/asistencia/ho
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
 import {
   calendarioCursoPath,
-  LICENCIAS_PATH,
+  planillaCursoPath,
   LICENCIA_SOLICITAR_PATH,
 } from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
@@ -107,10 +106,13 @@ const PlanillaAsistenciaSemanalPage = () => {
             nombre: row.estudianteNombre,
             codigo: row.estudianteCodigo,
           },
+          // Al venir desde la planilla, "Volver" y el envío regresan AQUÍ (no a la lista
+          // de licencias): el docente sigue tomando asistencia donde estaba.
+          returnListPath: planillaCursoPath(asignacionId, rangoSemana),
         },
       });
     },
-    [navigate]
+    [navigate, asignacionId, rangoSemana]
   );
 
   // Búsqueda local de estudiantes (filtra las filas de la grilla, patrón del cuaderno).
@@ -184,16 +186,6 @@ const PlanillaAsistenciaSemanalPage = () => {
             onClick={() => navigate(calendarioCursoPath(asignacionId))}
           >
             Calendario
-          </ActionButton>
-          {/* Acceso al listado de licencias estudiantiles; se auto-oculta sin permiso. */}
-          <ActionButton
-            permiso={ASISTENCIA_PERMISOS.licenciaVer}
-            accion="LISTAR"
-            variant="outline"
-            icon={<MedicineBoxOutlined />}
-            onClick={() => navigate(LICENCIAS_PATH)}
-          >
-            Licencias
           </ActionButton>
           {registroCerrado ? (
             <ActionButton

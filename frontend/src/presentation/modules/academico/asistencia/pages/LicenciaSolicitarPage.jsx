@@ -19,7 +19,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, App, Col, DatePicker, Flex, Form, Input, Row, Select, Table } from 'antd';
+import { Alert, App, Col, DatePicker, Flex, Form, Input, Row, Select, Switch, Table } from 'antd';
 import {
   ArrowLeftOutlined,
   BankOutlined,
@@ -87,6 +87,8 @@ const LicenciaSolicitarPage = () => {
   const [busquedaError, setBusquedaError] = useState(null);
   const [estudianteSel, setEstudianteSel] = useState(null);
   const [submitError, setSubmitError] = useState(null);
+  // Licencia de un solo día: alterna entre DatePicker único (fechaInicio) y RangePicker.
+  const [unSoloDia, setUnSoloDia] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setBusquedaDebounced(busquedaInput.trim()), BUSQUEDA_DEBOUNCE_MS);
@@ -214,11 +216,22 @@ const LicenciaSolicitarPage = () => {
   const handleSubmit = useCallback(async () => {
     setSubmitError(null);
     const values = await form.validateFields();
-    const [desde, hasta] = values.rango ?? [];
+    let fechaInicio;
+    let fechaFin;
+    if (unSoloDia) {
+      // Un solo día: fechaFin = fechaInicio (el backend exige ambas).
+      fechaInicio = values.fechaInicio?.format('YYYY-MM-DD');
+      fechaFin = fechaInicio;
+    } else {
+      const [desde, hasta] = values.rango ?? [];
+      fechaInicio = desde?.format('YYYY-MM-DD');
+      // Rango con solo fecha inicial (allowEmpty) → también se trata como un único día.
+      fechaFin = (hasta ?? desde)?.format('YYYY-MM-DD');
+    }
     const result = await crearLicencia({
       inscripcionId: Number(values.inscripcionId),
-      fechaInicio: desde?.format('YYYY-MM-DD'),
-      fechaFin: hasta?.format('YYYY-MM-DD'),
+      fechaInicio,
+      fechaFin,
       motivo: values.motivo,
       detalleMotivo: values.detalleMotivo?.trim(),
     });
@@ -228,7 +241,7 @@ const LicenciaSolicitarPage = () => {
       return;
     }
     setSubmitError(result.error || 'No se pudo registrar la solicitud');
-  }, [form, crearLicencia, message, navigate, returnListPath]);
+  }, [form, crearLicencia, message, navigate, returnListPath, unSoloDia]);
 
   const esBusquedaActiva = busquedaDebounced.length >= BUSQUEDA_MIN_CHARS;
   const formularioHabilitado = tieneInscripcion && !enviando;
@@ -358,13 +371,40 @@ const LicenciaSolicitarPage = () => {
 
                 <Row gutter={[24, 0]}>
                   <Col xs={24} md={12}>
-                    <Form.Item
-                      name="rango"
-                      label="Periodo de la licencia"
-                      rules={[{ required: true, message: 'Elegí el rango de fechas' }]}
+                    <Flex
+                      align="center"
+                      gap={allSpacing.marginXS}
+                      style={{ marginBottom: allSpacing.marginXS }}
                     >
-                      <RangePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
-                    </Form.Item>
+                      <Switch
+                        size="small"
+                        checked={unSoloDia}
+                        onChange={setUnSoloDia}
+                        disabled={!formularioHabilitado}
+                      />
+                      <Text type="secondary">Licencia de un solo día</Text>
+                    </Flex>
+                    {unSoloDia ? (
+                      <Form.Item
+                        name="fechaInicio"
+                        label="Fecha de la licencia"
+                        rules={[{ required: true, message: 'Elegí la fecha de la licencia' }]}
+                      >
+                        <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+                      </Form.Item>
+                    ) : (
+                      <Form.Item
+                        name="rango"
+                        label="Periodo de la licencia"
+                        rules={[{ required: true, message: 'Elegí el rango de fechas' }]}
+                      >
+                        <RangePicker
+                          style={{ width: '100%' }}
+                          format="DD/MM/YYYY"
+                          allowEmpty={[true, true]}
+                        />
+                      </Form.Item>
+                    )}
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item

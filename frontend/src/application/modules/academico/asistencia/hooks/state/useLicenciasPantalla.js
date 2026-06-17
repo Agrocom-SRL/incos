@@ -1,8 +1,9 @@
 /**
- * Estado de pantalla del listado/bandeja de licencias: filtrado en cliente + Modal de decisión.
- * El detalle ya NO es un drawer: la acción "ver" navega a la ficha (ACA-ASI-LIC-DET). La
- * carga/persistencia vive en LicenciasProvider (contexto); aquí solo orquesta la interacción
- * de la página (incos-frontend-module §3).
+ * Estado de pantalla del listado/bandeja de licencias: filtrado en cliente + drawer único
+ * de detalle/decisión. La acción "ver" (y los accesos rápidos aprobar/rechazar) abren el
+ * LicenciaDecisionDrawer en la misma pantalla; ya NO se navega a una ficha aparte.
+ * La carga/persistencia vive en LicenciasProvider (contexto); aquí solo orquesta la
+ * interacción de la página (incos-frontend-module §3).
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -30,28 +31,29 @@ export const useLicenciasPantalla = () => {
 
   const [searchText, setSearchText] = useState('');
 
-  // Modal de decisión: { licencia, decision: 'APROBAR' | 'RECHAZAR' }.
-  const [decisionContext, setDecisionContext] = useState(null);
+  // Drawer de detalle/decisión: { licencia, decisionInicial: 'APROBAR' | 'RECHAZAR' | null }.
+  const [drawer, setDrawer] = useState(null);
 
   const licenciasFiltradas = useMemo(
     () => (licencias ?? []).filter((l) => coincideBusqueda(l, searchText)),
     [licencias, searchText],
   );
 
-  const abrirDecision = useCallback(
-    (licencia, decision) => setDecisionContext({ licencia, decision }),
+  // decisionInicial posiciona el drawer directo en modo aprobar/rechazar (accesos rápidos de fila).
+  const verLicencia = useCallback(
+    (licencia, decisionInicial = null) => setDrawer({ licencia, decisionInicial }),
     [],
   );
-  const cerrarDecision = useCallback(() => setDecisionContext(null), []);
+  const cerrarDrawer = useCallback(() => setDrawer(null), []);
 
   const confirmarDecision = useCallback(
     async (payload) => {
-      if (!decisionContext?.licencia?.id) return { success: false };
-      const result = await decidir(decisionContext.licencia.id, payload);
-      if (result.success) setDecisionContext(null);
+      if (!drawer?.licencia?.id) return { success: false };
+      const result = await decidir(drawer.licencia.id, payload);
+      if (result.success) setDrawer(null);
       return result;
     },
-    [decidir, decisionContext],
+    [decidir, drawer],
   );
 
   return {
@@ -66,10 +68,12 @@ export const useLicenciasPantalla = () => {
     estadoBloqueado,
     searchText,
     setSearchText,
-    // decisión
-    decisionContext,
-    abrirDecision,
-    cerrarDecision,
+    // drawer detalle/decisión
+    drawerAbierto: Boolean(drawer),
+    licenciaActiva: drawer?.licencia ?? null,
+    decisionInicial: drawer?.decisionInicial ?? null,
+    verLicencia,
+    cerrarDrawer,
     confirmarDecision,
     decidiendo,
   };

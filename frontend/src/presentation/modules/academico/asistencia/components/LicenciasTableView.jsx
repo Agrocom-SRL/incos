@@ -2,10 +2,10 @@
  * Vista de tabla de licencias estudiantiles (organismo compartido por el listado general
  * y la bandeja de pendientes). Replica el lenguaje visual de DocentesList / CarrerasList:
  * PageTemplate → PageHeader → workspace (.cfg-academico-workspace) con ListPanelHeader +
- * descripción + TableListView embebido. La acción "ver" navega a la ficha (ACA-ASI-LIC-DET);
- * aprobar/rechazar abren un Modal de confirmación (LicenciaDecisionModal).
+ * descripción + TableListView embebido. La acción "ver" (y los accesos rápidos aprobar/rechazar)
+ * abren el LicenciaDecisionDrawer: ficha + decisión inline en la misma pantalla.
  *
- * La carga/decisión vive en LicenciasProvider; la interacción (filtros, modal) en
+ * La carga/decisión vive en LicenciasProvider; la interacción (filtros, drawer) en
  * useLicenciasPantalla. Wrappers delgados (páginas) le pasan title/breadcrumbs/CTA/descripción.
  */
 
@@ -19,12 +19,12 @@ import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton, Text } from '@atoms';
 import { allSpacing } from '@theme/tokens';
+import { useAuthContext } from '@application-auth';
 import { useLicenciasPantalla } from '@application-academico/asistencia/hooks/state/useLicenciasPantalla.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
 import { ESTADO_LICENCIA_OPTIONS } from '@application-academico/asistencia/utils/licenciasEstados.js';
-import { licenciaDetallePath } from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { createLicenciasTableColumns } from '@academico/asistencia/config/licenciasTableColumns.jsx';
-import LicenciaDecisionModal from './LicenciaDecisionModal.jsx';
+import LicenciaDecisionDrawer from './LicenciaDecisionDrawer.jsx';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
@@ -37,7 +37,6 @@ const TODOS_ESTADOS = '__TODOS__';
  * @param {Array} props.breadcrumbItems
  * @param {string} [props.descripcion]   - lede del workspace bajo el título
  * @param {string} [props.solicitarPath] - ruta del formulario de solicitud (CTA "Solicitar licencia")
- * @param {string} [props.returnListPath] - ruta a la que vuelve la ficha de detalle (este listado)
  * @param {boolean} [props.mostrarFiltroEstado=true] - oculto en la bandeja (estado fijado a PENDIENTE)
  */
 const LicenciasTableView = ({
@@ -45,10 +44,10 @@ const LicenciasTableView = ({
   breadcrumbItems,
   descripcion,
   solicitarPath,
-  returnListPath,
   mostrarFiltroEstado = true,
 }) => {
   const navigate = useNavigate();
+  const { hasPermiso } = useAuthContext();
 
   const {
     licencias,
@@ -58,27 +57,25 @@ const LicenciasTableView = ({
     setEstado,
     searchText,
     setSearchText,
-    abrirDecision,
-    decisionContext,
-    cerrarDecision,
+    drawerAbierto,
+    licenciaActiva,
+    decisionInicial,
+    verLicencia,
+    cerrarDrawer,
     confirmarDecision,
     decidiendo,
   } = useLicenciasPantalla();
 
-  const listNavState = useMemo(
-    () => ({ returnListPath, menuSidebarKey: 'ACA-ASI' }),
-    [returnListPath],
-  );
+  const puedeDecidir = hasPermiso(ASISTENCIA_PERMISOS.licenciaAprobar, 'APROBAR');
 
   const columns = useMemo(
     () =>
       createLicenciasTableColumns({
-        onVer: (licencia) =>
-          navigate(licenciaDetallePath(licencia.id), { state: listNavState }),
-        onAprobar: (licencia) => abrirDecision(licencia, 'APROBAR'),
-        onRechazar: (licencia) => abrirDecision(licencia, 'RECHAZAR'),
+        onVer: (licencia) => verLicencia(licencia),
+        onAprobar: (licencia) => verLicencia(licencia, 'APROBAR'),
+        onRechazar: (licencia) => verLicencia(licencia, 'RECHAZAR'),
       }),
-    [navigate, listNavState, abrirDecision],
+    [verLicencia],
   );
 
   const headerActions = (
@@ -152,13 +149,14 @@ const LicenciasTableView = ({
         </section>
       </Flex>
 
-      <LicenciaDecisionModal
-        open={Boolean(decisionContext)}
-        licencia={decisionContext?.licencia ?? null}
-        decision={decisionContext?.decision ?? 'APROBAR'}
+      <LicenciaDecisionDrawer
+        open={drawerAbierto}
+        licencia={licenciaActiva}
+        puedeDecidir={puedeDecidir}
+        decisionInicial={decisionInicial}
         guardando={decidiendo}
-        onCerrar={cerrarDecision}
-        onConfirmar={confirmarDecision}
+        onCerrar={cerrarDrawer}
+        onDecidir={confirmarDecision}
       />
     </PageTemplate>
   );

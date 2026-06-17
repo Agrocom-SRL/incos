@@ -19,6 +19,7 @@ import {
   ArrowLeftOutlined,
   CalendarOutlined,
   EditOutlined,
+  MedicineBoxOutlined,
 } from '@ant-design/icons';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -27,6 +28,7 @@ import { allSpacing } from '@theme/tokens';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { useCalendarioAsistenciaState } from '@application-academico/asistencia/hooks/state/useCalendarioAsistenciaState.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
+import { LICENCIAS_PATH } from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { ESTADOS_REGISTRO } from '@application-academico/asistencia/utils/asistenciaEstados.js';
 import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
 import CalendarioMensualAsistencia from '../components/CalendarioMensualAsistencia.jsx';
@@ -97,6 +99,16 @@ const CalendarioAsistenciaPage = () => {
             onClick={() => irAPlanilla()}
           >
             Marcar asistencia
+          </ActionButton>
+          {/* Listado de licencias estudiantiles; se auto-oculta sin permiso licencia.ver. */}
+          <ActionButton
+            permiso={ASISTENCIA_PERMISOS.licenciaVer}
+            accion="LISTAR"
+            variant="info"
+            icon={<MedicineBoxOutlined />}
+            onClick={() => navigate(LICENCIAS_PATH)}
+          >
+            Licencias
           </ActionButton>
           <BackButton
             icon={<ArrowLeftOutlined />}
