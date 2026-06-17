@@ -45,7 +45,7 @@ export const asistenciaRoutes = [
     permiso: ASISTENCIA_PERMISOS.registroCuaderno,
     accion: 'LISTAR',
     menu: null,
-    breadcrumbParent: 'ACA-ASI-CALENDARIO',
+    breadcrumbParent: 'ACA-ASI-MIS-CURSOS',
   },
   {
     path: '/academico/asistencia/mis-cursos/:asignacionId/calendario',
@@ -55,7 +55,7 @@ export const asistenciaRoutes = [
     permiso: ASISTENCIA_PERMISOS.registroCuaderno,
     accion: 'LISTAR',
     menu: null,
-    breadcrumbParent: 'ACA-ASI-MIS-CURSOS',
+    breadcrumbParent: 'ACA-ASI-PLANILLA',
   },
   {
     path: '/academico/asistencia/mis-cursos',

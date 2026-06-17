@@ -218,20 +218,75 @@
   color: var(--color-info);
 }
 
-/* —— Pager de semana al costado del título (estilo BimestreConsolidadoBimestrePager) —— */
-.asi-semana-pager {
+/* —— Barra de navegación de semana (destacada sobre la grilla, no en el header) —— */
+.asi-planilla-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-primary-border, var(--color-primary));
+  border-left-width: 4px;
+  border-radius: var(--border-radius-lg);
+  background: var(--color-primary-bg);
+}
+
+.asi-planilla-toolbar__label {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+}
+
+.asi-planilla-toolbar__label .anticon {
+  font-size: var(--font-size-md);
+}
+
+/* —— Pager de semana (flechas resaltadas + rango visible + salto a fecha) —— */
+.asi-semana-pager {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .asi-semana-pager__btn.ant-btn {
-  border-color: var(--color-border) !important;
+  border-color: var(--color-primary) !important;
   color: var(--color-primary) !important;
+  background: var(--color-bg-container) !important;
+}
+
+.asi-semana-pager__btn.ant-btn:hover:not(:disabled) {
+  background: var(--color-primary) !important;
+  color: #fff !important;
 }
 
 .asi-semana-pager__btn.ant-btn:disabled {
   opacity: 0.4;
+}
+
+/* Rango de la semana visible entre las flechas: deja claro qué se está navegando. */
+.asi-semana-pager__rango {
+  min-width: 120px;
+  padding: 0 var(--spacing-xs);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-semana-pager__ir {
+  display: inline-flex;
+}
+
+.asi-semana-pager__picker.field-date-picker {
+  width: 150px;
 }
 
 /* ============================================================
@@ -579,7 +634,6 @@
   > th.asi-grid__th-bim--activo {
   background: var(--color-primary) !important;
   color: #fff !important;
-  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--color-primary) 55%, #fff);
 }
 
 .asi-grid__bim-head {
@@ -599,7 +653,7 @@
   justify-content: center;
   gap: var(--spacing-sm);
   width: 100%;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: 0.06em;
@@ -618,8 +672,7 @@
   > th.asi-grid__th-est {
   background: color-mix(in srgb, var(--color-primary) 88%, #000) !important;
   color: #fff !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: 500;
   text-align: center;
 }
@@ -726,7 +779,7 @@
   > th.asi-grid__col-dia--clase {
   background: var(--color-primary) !important;
   color: #fff !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
+  border-color: var(--color-bg-container) !important;
 }
 
 /* Día de clase futuro: primario atenuado, aspecto disabled. */
@@ -773,9 +826,9 @@
   .ant-table-thead
   > tr
   > th.asi-grid__col-dia--gris {
-  background: var(--color-fill-secondary) !important;
+  background: var(--color-primary-bg) !important;
   color: var(--color-text-secondary) !important;
-  border-color: var(--color-border-secondary) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .asi-grid__col-dia--gris {
@@ -859,8 +912,10 @@
    ============================================================ */
 .asi-celda {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: calc(var(--spacing-xs) / 2);
   width: 100%;
   min-height: var(--spacing-xl);
   padding: var(--spacing-xs);
@@ -875,6 +930,15 @@
 
 .asi-celda__marca {
   line-height: 1;
+}
+
+/* Rótulo literal bajo el icono (Presente / Ausente / Atraso / Licencia). Hereda el
+   color de la celda → coincide con el color del icono. */
+.asi-celda__label {
+  line-height: 1;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 /* Presente: check verde primario. */
@@ -913,10 +977,10 @@
   opacity: 0.6;
 }
 
-/* Editable: caja con tamaño mínimo + cursor. */
+/* Editable: caja con tamaño mínimo + cursor (alto extra para el rótulo literal). */
 .asi-celda--editable {
-  width: 60px;
-  height: 40px;
+  width: 66px;
+  height: 52px;
   cursor: pointer;
   transition:
     border-color 0.15s ease,

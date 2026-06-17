@@ -363,8 +363,17 @@ no se redefine cada vez.
      `POST cursos/:id/registro/{cerrar,reabrir}`, `POST cursos/:id/sesiones-especiales`.
      DI en `asistencia.container.js` + `repositories.container.js`. ESLint limpio.
 4. **Fase 4 — CRUD Licencias estudiantiles:** use-cases + frontend (listado/ficha/solicitar/aprobar).
+   - **Entrada decidida (2026-06-17):** página dedicada (`ACA-ASI-LIC*`) **+ atajo inline desde la
+     planilla**: clic en la fila del estudiante → "registrar licencia" con el estudiante precargado y
+     rango de fechas. La planilla **ya cruza** licencias APROBADAS como `L` y neutraliza la falta en el
+     rango (lectura hecha; falta la escritura). Tabla `licencias` ya existe → sin cambio de schema.
 5. **Fase 5 — Licencias de docentes (DOC):** tabla `licencias_docentes` + CRUD + frontend.
 6. **Fase 6 — Clases no dictadas:** CRUD + consumo de licencias docentes (decidir autogenerar vs cruce).
+   - **Entrada decidida (2026-06-17):** **reutilizar la página de Calendario** como superficie de
+     marcado (ya es admin-only y pinta los días de clase): un clic en un **día de clase** abre un drawer
+     "marcar como no dictada" (gemelo inverso de la sesión especial) que escribe en `clases_no_dictadas`.
+     La ruta dedicada `ACA-ASI-CND` queda **delgada** (listado/auditoría), sin duplicar el calendario.
+     Tabla `clases_no_dictadas` ya existe → sin cambio de schema (licencias docentes = Fase 5).
 7. **Fase 7 — Registro diario funcional:** hooks api/state + provider autosave + grilla P/R/F/L (gemelo cuaderno).
 8. **Fase 8 — Consolidado %:** vista de agregación + frontend, respetando jerarquía §3.4.
 9. **Fase 9 — Verificación cruzada:** `dataKey`=`dataFieldName`; cálculo %; orden de nombres; rol sin permiso (403 + sidebar oculto).

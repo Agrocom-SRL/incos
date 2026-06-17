@@ -43,6 +43,21 @@ export const semanaDeFecha = (fecha, rango) => {
   };
 };
 
+/**
+ * Semana (lun–sáb) que contiene `fecha`, SIN acotar a un bimestre.
+ * Para saltar a una fecha puntual de la gestión: la planilla resuelve por rango y el
+ * backend cruza licencias/feriados/clases-no-dictadas de ese rango, sea cual sea el bimestre.
+ * @param {string} fecha ISO
+ * @returns {{ desde: string, hasta: string }}
+ */
+export const semanaLibreDeFecha = (fecha) => {
+  const f = aFecha(fecha);
+  const dow = f.getUTCDay();
+  const offsetLunes = dow === 0 ? 6 : dow - 1;
+  const lunes = aIso(new Date(f.getTime() - offsetLunes * MS_DIA));
+  return { desde: lunes, hasta: sumarDias(lunes, 5) };
+};
+
 /** Semana anterior, o null si saldría del rango. */
 export const semanaAnterior = (semana, rango) => {
   const lunesPrevio = sumarDias(semana.desde, -7);

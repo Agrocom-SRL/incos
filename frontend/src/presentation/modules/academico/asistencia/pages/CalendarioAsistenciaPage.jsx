@@ -101,7 +101,7 @@ const CalendarioAsistenciaPage = () => {
           <BackButton
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate(volverPath)}
-            aria-label="Volver a mis cursos"
+            aria-label="Volver a la planilla"
           >
             Volver
           </BackButton>

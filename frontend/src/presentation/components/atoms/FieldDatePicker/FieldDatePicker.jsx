@@ -18,9 +18,11 @@
  * @param {any} defaultValue - Valor por defecto
  * @param {any} value - Valor controlado
  * @param {Function} onChange - Callback cuando cambia el valor
+ * @param {Function} disabledDate - (opcional) Restricción extra de negocio; se combina con la de edad
  * @param {any} ...props - Otras props de DatePicker de Ant Design
  */
 
+import { useMemo } from 'react';
 import { DatePicker } from 'antd';
 import { useFieldDatePicker } from './hooks/useFieldDatePicker';
 
@@ -34,16 +36,24 @@ const FieldDatePicker = ({
   onChange,
   defaultValue,
   className = '',
+  disabledDate: disabledDateProp,
   ...props
 }) => {
   const datePickerClassName = className ? `field-date-picker ${className}`.trim() : 'field-date-picker';
 
   // Usar hook para obtener formato, lógica de restricción y valores convertidos
   const { acceptedFormats,
-    disabledDate,
+    disabledDate: disabledDateAge,
     value: dayjsValue,
     defaultValue: dayjsDefaultValue
   } = useFieldDatePicker(minAge, value, defaultValue);
+
+  // Restricción de fecha: la de edad (si hay minAge) combinada con la del consumidor
+  // (rango de negocio, p. ej. acotar a la gestión vigente). Cualquiera deshabilita el día.
+  const disabledDate = useMemo(() => {
+    if (!disabledDateProp) return disabledDateAge;
+    return (current) => disabledDateAge(current) || disabledDateProp(current);
+  }, [disabledDateProp, disabledDateAge]);
 
   // Handler personalizado para onChange
   const handleChange = (date, dateString) => {

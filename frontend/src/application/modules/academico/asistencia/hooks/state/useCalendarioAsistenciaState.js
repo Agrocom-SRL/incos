@@ -14,10 +14,7 @@ import { useRegistroCierreApi } from '../api/useRegistroCierreApi.js';
 import { useSesionEspecialApi } from '../api/useSesionEspecialApi.js';
 import { ASISTENCIA_PERMISOS } from '../../utils/asistenciaPermisos.js';
 import { createAsistenciaBreadcrumbItems } from '../../utils/asistenciaBreadcrumbs.js';
-import {
-  MIS_CURSOS_PATH,
-  planillaCursoPath,
-} from '../../utils/asistenciaPaths.js';
+import { planillaCursoPath } from '../../utils/asistenciaPaths.js';
 import { ESTADOS_REGISTRO } from '../../utils/asistenciaEstados.js';
 import { semanaDeFecha } from '../../utils/asistenciaSemanas.js';
 
@@ -205,7 +202,8 @@ export const useCalendarioAsistenciaState = () => {
     error,
     refetch: cargar,
     breadcrumbItems,
-    volverPath: MIS_CURSOS_PATH,
+    // El calendario se abre como administración DESDE la planilla; volver regresa allí.
+    volverPath: planillaCursoPath(asignacionId),
     planillaPath,
     cerrarRegistro,
     reabrirRegistro,

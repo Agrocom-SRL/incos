@@ -22,6 +22,7 @@ import { BackButton, ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { usePlanillaAsistenciaState } from '@application-academico/asistencia/hooks/state/usePlanillaAsistenciaState.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
+import { calendarioCursoPath } from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
 import CursoContextoAsistencia from '../components/CursoContextoAsistencia.jsx';
 import ResumenCabeceraAsistencia from '../components/ResumenCabeceraAsistencia.jsx';
@@ -41,12 +42,14 @@ const grillaCardProps = {
 const PlanillaAsistenciaSemanalPage = () => {
   const navigate = useNavigate();
   const {
+    asignacionId,
     curso,
     cursoFicha,
     bimestre,
     bimestreNombre,
     bimestreColor,
     gestion,
+    anioCalendario,
     resumen,
     horario,
     filas,
@@ -74,6 +77,7 @@ const PlanillaAsistenciaSemanalPage = () => {
     semanaSig,
     irSemanaAnterior,
     irSemanaSiguiente,
+    irAFecha,
     habilitarFechaEspecial,
     creandoSesion,
   } = usePlanillaAsistenciaState();
@@ -119,16 +123,9 @@ const PlanillaAsistenciaSemanalPage = () => {
     <PageHeader
       title={
         <Flex align="center" gap={allSpacing.marginSM} wrap="wrap">
-          <CabeceraSemanaAsistencia
-            puedeAnterior={Boolean(semanaPrev)}
-            puedeSiguiente={Boolean(semanaSig)}
-            onAnterior={irSemanaAnterior}
-            onSiguiente={irSemanaSiguiente}
-          />
-          <CalendarOutlined aria-hidden />
           <span>
             {sigla
-              ? `Planilla de asistencia · ${sigla}`
+              ? `Planilla de asistencia : ${sigla}`
               : 'Planilla de asistencia'}
           </span>
         </Flex>
@@ -136,6 +133,17 @@ const PlanillaAsistenciaSemanalPage = () => {
       breadcrumbItems={breadcrumbItems}
       actions={
         <Flex gap={allSpacing.marginXS} wrap="wrap" align="center">
+          {/* Calendario = acción de administración (coordinación/admin); el ActionButton
+              se auto-oculta para el docente, que solo tiene registro.*. */}
+          <ActionButton
+            permiso={ASISTENCIA_PERMISOS.coordinacion}
+            accion="LISTAR"
+            variant="warning"
+            icon={<CalendarOutlined />}
+            onClick={() => navigate(calendarioCursoPath(asignacionId))}
+          >
+            Calendario
+          </ActionButton>
           {registroCerrado ? (
             <ActionButton
               permiso={ASISTENCIA_PERMISOS.registroCuaderno}
@@ -162,7 +170,7 @@ const PlanillaAsistenciaSemanalPage = () => {
           <BackButton
             icon={<ArrowLeftOutlined />}
             onClick={handleVolver}
-            aria-label="Volver al calendario"
+            aria-label="Volver a mis cursos"
           >
             Volver
           </BackButton>
@@ -238,6 +246,23 @@ const PlanillaAsistenciaSemanalPage = () => {
 
   const content = (
     <Flex vertical gap={allSpacing.marginLG} className="asi-planilla-page">
+      {/* Barra de navegación de semana: destacada sobre la grilla (antes vivía en el
+          header y pasaba desapercibida). Flechas + rango visible + salto a fecha. */}
+      <div className="asi-planilla-toolbar">
+        <span className="asi-planilla-toolbar__label">
+          <CalendarOutlined aria-hidden /> Semana
+        </span>
+        <CabeceraSemanaAsistencia
+          rango={rangoSemana}
+          puedeAnterior={Boolean(semanaPrev)}
+          puedeSiguiente={Boolean(semanaSig)}
+          onAnterior={irSemanaAnterior}
+          onSiguiente={irSemanaSiguiente}
+          onIrAFecha={irAFecha}
+          anioGestion={anioCalendario}
+        />
+      </div>
+
       {registroCerrado ? (
         <Alert
           type="warning"

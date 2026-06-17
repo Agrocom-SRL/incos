@@ -18,10 +18,11 @@ import { useRegistroCierreApi } from '../api/useRegistroCierreApi.js';
 import { useSesionEspecialApi } from '../api/useSesionEspecialApi.js';
 import { ASISTENCIA_PERMISOS } from '../../utils/asistenciaPermisos.js';
 import { createAsistenciaBreadcrumbItems } from '../../utils/asistenciaBreadcrumbs.js';
-import { calendarioCursoPath } from '../../utils/asistenciaPaths.js';
+import { MIS_CURSOS_PATH } from '../../utils/asistenciaPaths.js';
 import { ESTADOS_REGISTRO } from '../../utils/asistenciaEstados.js';
 import {
   semanaDeFecha,
+  semanaLibreDeFecha,
   semanaAnterior,
   semanaSiguiente,
 } from '../../utils/asistenciaSemanas.js';
@@ -67,14 +68,32 @@ export const usePlanillaAsistenciaState = () => {
   const bimestreNombre = calendario?.bimestreNombre ?? null;
   const bimestreColor = calendario?.bimestreColor ?? null;
   const gestion = calendario?.gestion ?? null;
+  const anioCalendario = calendario?.anioCalendario ?? null;
   const resumen = calendario?.resumen ?? null;
   const horario = useMemo(() => calendario?.horario ?? [], [calendario]);
   const hoy = calendario?.hoy ?? null;
+
+  // Rango de navegación = la gestión completa (año calendario), no solo el bimestre:
+  // las flechas y el salto a fecha permiten moverse por toda la gestión vigente. Sin
+  // año disponible aún, cae al rango del bimestre (comportamiento previo).
+  const rangoGestion = useMemo(() => {
+    if (anioCalendario) {
+      return { desde: `${anioCalendario}-01-01`, hasta: `${anioCalendario}-12-31` };
+    }
+    return rangoBimestre;
+  }, [anioCalendario, rangoBimestre]);
 
   const cargarPlanilla = useCallback(() => {
     if (!asignacionId) return;
     fetch(asignacionId, { desde: desdeQuery, hasta: hastaQuery });
   }, [asignacionId, desdeQuery, hastaQuery, fetch]);
+
+  // El resumen (presentes/atrasados/faltantes/licencias del bimestre) sale del endpoint
+  // del calendario; al guardar marcas o habilitar una sesión hay que recargarlo para que
+  // la sumatoria de la cabecera quede al día (la planilla sola no lo refresca).
+  const recargarCalendario = useCallback(() => {
+    if (asignacionId) fetchCalendario(asignacionId, {});
+  }, [asignacionId, fetchCalendario]);
 
   // El calendario se carga una vez (límites de navegación + bimestre activo).
   useEffect(() => {
@@ -183,7 +202,8 @@ export const usePlanillaAsistenciaState = () => {
     });
     setCambios(new Map());
     cargarPlanilla();
-  }, [hayCambios, construirPayloadDias, guardar, asignacionId, notification, cargarPlanilla]);
+    recargarCalendario();
+  }, [hayCambios, construirPayloadDias, guardar, asignacionId, notification, cargarPlanilla, recargarCalendario]);
 
   const cerrarRegistro = useCallback(async () => {
     const res = await cerrar(asignacionId, { bimestre });
@@ -241,9 +261,11 @@ export const usePlanillaAsistenciaState = () => {
       } else {
         cargarPlanilla();
       }
+      // La nueva sesión cambia el denominador del resumen → recargar calendario.
+      recargarCalendario();
       return true;
     },
-    [crearSesion, asignacionId, notification, rangoBimestre, setSearchParams, cargarPlanilla],
+    [crearSesion, asignacionId, notification, rangoBimestre, setSearchParams, cargarPlanilla, recargarCalendario],
   );
 
   // Navegación de semanas dentro del bimestre.
@@ -263,13 +285,22 @@ export const usePlanillaAsistenciaState = () => {
     [setSearchParams],
   );
 
+  /** Salta a la semana (lun–sáb) de una fecha puntual de la gestión, sin importar el bimestre. */
+  const irAFecha = useCallback(
+    (fechaIso) => {
+      if (!fechaIso) return;
+      irASemana(semanaLibreDeFecha(fechaIso));
+    },
+    [irASemana],
+  );
+
   const semanaPrev = useMemo(
-    () => (semanaActual && rangoBimestre ? semanaAnterior(semanaActual, rangoBimestre) : null),
-    [semanaActual, rangoBimestre],
+    () => (semanaActual && rangoGestion ? semanaAnterior(semanaActual, rangoGestion) : null),
+    [semanaActual, rangoGestion],
   );
   const semanaSig = useMemo(
-    () => (semanaActual && rangoBimestre ? semanaSiguiente(semanaActual, rangoBimestre) : null),
-    [semanaActual, rangoBimestre],
+    () => (semanaActual && rangoGestion ? semanaSiguiente(semanaActual, rangoGestion) : null),
+    [semanaActual, rangoGestion],
   );
 
   const irSemanaAnterior = useCallback(() => irASemana(semanaPrev), [irASemana, semanaPrev]);
@@ -291,6 +322,7 @@ export const usePlanillaAsistenciaState = () => {
     bimestreNombre,
     bimestreColor,
     gestion,
+    anioCalendario,
     resumen,
     horario,
     hoy,
@@ -307,7 +339,7 @@ export const usePlanillaAsistenciaState = () => {
     error,
     refetch: cargarPlanilla,
     breadcrumbItems,
-    volverPath: calendarioCursoPath(asignacionId),
+    volverPath: MIS_CURSOS_PATH,
     // estado de celdas
     estadoCelda,
     toggleCelda,
@@ -326,6 +358,8 @@ export const usePlanillaAsistenciaState = () => {
     semanaSig,
     irSemanaAnterior,
     irSemanaSiguiente,
+    irAFecha,
+    rangoGestion,
     semanaDeFecha,
   };
 };

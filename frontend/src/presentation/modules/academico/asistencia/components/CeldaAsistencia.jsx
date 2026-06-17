@@ -20,6 +20,22 @@ const ARIA_MARCA = {
   [MARCA.LICENCIA]: 'Licencia',
 };
 
+/** Texto literal bajo el icono (el docente pide ver de forma escrita lo que marca). */
+const TEXTO_MARCA = {
+  [MARCA.PRESENTE]: 'Presente',
+  [MARCA.TARDANZA]: 'Atraso',
+  [MARCA.AUSENTE]: 'Ausente',
+  [MARCA.LICENCIA]: 'Licencia',
+};
+
+/** Contenido visible de la celda: icono/glifo + rótulo literal debajo, mismo color. */
+const ContenidoCelda = ({ marca }) => (
+  <>
+    <span className="asi-celda__marca">{glifoMarca(marca)}</span>
+    <span className="asi-celda__label">{TEXTO_MARCA[marca]}</span>
+  </>
+);
+
 /**
  * Glifo visible por marca:
  *  - Presente → check verde primario (no la letra «P»).
@@ -69,9 +85,11 @@ const CeldaAsistencia = ({
           esLicencia ? `Licencia de ${estudianteNombre}` : 'Día sin clase'
         }
       >
-        <span className="asi-celda__marca">
-          {esLicencia ? MARCA.LICENCIA : '—'}
-        </span>
+        {esLicencia ? (
+          <ContenidoCelda marca={MARCA.LICENCIA} />
+        ) : (
+          <span className="asi-celda__marca">—</span>
+        )}
       </span>
     );
   }
@@ -91,7 +109,7 @@ const CeldaAsistencia = ({
   if (!editable) {
     return (
       <span className={className} aria-label={label}>
-        <span className="asi-celda__marca">{glifoMarca(marca)}</span>
+        <ContenidoCelda marca={marca} />
       </span>
     );
   }
@@ -103,7 +121,7 @@ const CeldaAsistencia = ({
       onClick={onToggle}
       aria-label={`${label}. Tocá para cambiar`}
     >
-      <span className="asi-celda__marca">{glifoMarca(marca)}</span>
+      <ContenidoCelda marca={marca} />
     </button>
   );
 };

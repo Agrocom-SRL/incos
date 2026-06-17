@@ -46,7 +46,6 @@ const SemanaGrupoHead = ({ rango, onGuardar, guardando, mostrarGuardar }) => {
           <Tooltip title="Guardar las marcas de asistencia de la semana">
             <Button
               variant="warning"
-              size="small"
               icon={<SaveOutlined />}
               loading={guardando}
               disabled={guardando}
