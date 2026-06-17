@@ -294,6 +294,24 @@ export const usePlanillaAsistenciaState = () => {
     [irASemana],
   );
 
+  /** Reubica a la semana actual (hoy). */
+  const irHoy = useCallback(() => {
+    if (hoy) irAFecha(hoy);
+  }, [hoy, irAFecha]);
+
+  /** ¿La semana visible contiene el día de hoy? (estado del botón "Hoy"). */
+  const esSemanaActual = useMemo(
+    () =>
+      Boolean(
+        hoy &&
+          semanaActual?.desde &&
+          semanaActual?.hasta &&
+          hoy >= semanaActual.desde &&
+          hoy <= semanaActual.hasta,
+      ),
+    [hoy, semanaActual],
+  );
+
   const semanaPrev = useMemo(
     () => (semanaActual && rangoGestion ? semanaAnterior(semanaActual, rangoGestion) : null),
     [semanaActual, rangoGestion],
@@ -359,6 +377,8 @@ export const usePlanillaAsistenciaState = () => {
     irSemanaAnterior,
     irSemanaSiguiente,
     irAFecha,
+    irHoy,
+    esSemanaActual,
     rangoGestion,
     semanaDeFecha,
   };

@@ -18,6 +18,7 @@ import {
   etiquetaDiaCorto,
   etiquetaDiaMes,
   numeroDia,
+  tituloSemana,
 } from '@application-academico/asistencia/utils/asistenciaFechas.js';
 import { celdaEditable } from '@application-academico/asistencia/utils/asistenciaMarcas.js';
 
@@ -35,9 +36,8 @@ const claseColumnaDia = (dia) => {
 };
 
 const SemanaGrupoHead = ({ rango, onGuardar, guardando, mostrarGuardar }) => {
-  const titulo = rango
-    ? `Semana · ${etiquetaDiaMes(rango.desde)} – ${etiquetaDiaMes(rango.hasta)}`
-    : 'Semana';
+  const titulo =
+    rango?.desde && rango?.hasta ? tituloSemana(rango.desde, rango.hasta) : 'Semana';
   return (
     <div className="asi-grid__bim-head asi-grid__bim-head--activo">
       <span className="asi-grid__bim-titulo-row">
@@ -94,6 +94,7 @@ const renderEstudiante = (_, row) => (
 const GrillaAsistenciaSemanal = ({
   dias = [],
   filas = [],
+  hoy = null,
   rangoSemana = null,
   registroCerrado = false,
   puedeEditar = false,
@@ -110,6 +111,8 @@ const GrillaAsistenciaSemanal = ({
     const colColor = claseColumnaDia(dia);
     const puedeAgregar =
       puedeEditar && !registroCerrado && Boolean(dia.puedeHabilitarEspecial);
+    // Columna del día actual: contorno dashed primary continuo (toda la columna = hoy).
+    const colHoy = hoy && dia.fechaClase === hoy ? ' asi-grid__col-dia--hoy' : '';
 
     return {
       title: (
@@ -122,11 +125,11 @@ const GrillaAsistenciaSemanal = ({
       key: dia.fechaClase,
       width: ANCHO_COL_DIA,
       align: 'center',
-      className: `asi-grid__col-dia ${colColor}`,
+      className: `asi-grid__col-dia ${colColor}${colHoy}`,
       onHeaderCell: () => ({
-        className: `asi-grid__th-sub asi-grid__col-dia ${colColor}`,
+        className: `asi-grid__th-sub asi-grid__col-dia ${colColor}${colHoy}`,
       }),
-      onCell: () => ({ className: `asi-grid__col-dia ${colColor}` }),
+      onCell: () => ({ className: `asi-grid__col-dia ${colColor}${colHoy}` }),
       render: (_, row) => {
         // Día sin clase o feriado/clase no dictada: solo un guion, no se marca.
         if (dia.neutro || !dia.esDiaClase) {

@@ -25,8 +25,7 @@ import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asi
 import { calendarioCursoPath } from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
 import CursoContextoAsistencia from '../components/CursoContextoAsistencia.jsx';
-import ResumenCabeceraAsistencia from '../components/ResumenCabeceraAsistencia.jsx';
-import CabeceraSemanaAsistencia from '../components/CabeceraSemanaAsistencia.jsx';
+import SeparadorSemanaAsistencia from '../components/SeparadorSemanaAsistencia.jsx';
 import GrillaAsistenciaSemanal from '../components/GrillaAsistenciaSemanal.jsx';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import FechaEspecialDrawer from '../components/FechaEspecialDrawer.jsx';
@@ -50,6 +49,7 @@ const PlanillaAsistenciaSemanalPage = () => {
     bimestreColor,
     gestion,
     anioCalendario,
+    hoy,
     resumen,
     horario,
     filas,
@@ -78,6 +78,8 @@ const PlanillaAsistenciaSemanalPage = () => {
     irSemanaAnterior,
     irSemanaSiguiente,
     irAFecha,
+    irHoy,
+    esSemanaActual,
     habilitarFechaEspecial,
     creandoSesion,
   } = usePlanillaAsistenciaState();
@@ -179,24 +181,51 @@ const PlanillaAsistenciaSemanalPage = () => {
     />
   );
 
-  // La ficha del curso + el resumen del bimestre van DENTRO del shell, encima del contenido.
-  const cabecera = (
+  // La ficha del curso va DENTRO del shell, encima del contenido (el resumen del
+  // bimestre se unificó con la navegación de semana en el separador de la grilla).
+  const cabecera = ficha ? (
+    <CursoContextoAsistencia
+      curso={ficha}
+      bimestre={bimestre}
+      bimestreNombre={bimestreNombre}
+      bimestreColor={bimestreColor}
+      gestion={gestion}
+      registroEstado={registroEstado}
+    />
+  ) : null;
+
+  // Alertas de estado: van FUERA del MainContent (antes de la cabecera) para que un
+  // aviso (registro cerrado / corrección / solo lectura) salte primero.
+  const alertas = (
     <>
-      {ficha ? (
-        <CursoContextoAsistencia
-          curso={ficha}
-          bimestre={bimestre}
-          bimestreNombre={bimestreNombre}
-          bimestreColor={bimestreColor}
-          gestion={gestion}
-          registroEstado={registroEstado}
+      {registroCerrado ? (
+        <Alert
+          type="warning"
+          showIcon
+          title="Registro cerrado (solo lectura)"
+          description="Reabrí el registro para marcar atrasos o corregir faltas de este bimestre."
+        />
+      ) : modoCorreccion ? (
+        <Alert
+          type="info"
+          showIcon
+          title="Modo corrección activo"
+          description="Tocá una falta para registrar un atraso (—); volvé a tocar para marcar presente."
         />
       ) : null}
-      <ResumenCabeceraAsistencia resumen={resumen} horario={horario} />
+
+      {!puedeEditar ? (
+        <Alert
+          type="info"
+          showIcon
+          title="Solo lectura"
+          description="No tenés permiso para editar la asistencia de este curso."
+        />
+      ) : null}
     </>
   );
 
-  // Estructura: header de página + DashboardPageShell con la cabecera y el contenido.
+  // Estructura: header + alertas (fuera de MainContent) + DashboardPageShell (cabecera + contenido).
   const renderPagina = (mainNode) => (
     <Flex
       vertical
@@ -205,6 +234,7 @@ const PlanillaAsistenciaSemanalPage = () => {
       style={{ width: '100%' }}
     >
       <PageHeaderArea>{pageHeader}</PageHeaderArea>
+      {alertas}
       <DashboardPageShell>
         <MainContent>
           <Flex
@@ -245,63 +275,38 @@ const PlanillaAsistenciaSemanalPage = () => {
   }
 
   const content = (
-    <Flex vertical gap={allSpacing.marginLG} className="asi-planilla-page">
-      {/* Barra de navegación de semana: destacada sobre la grilla (antes vivía en el
-          header y pasaba desapercibida). Flechas + rango visible + salto a fecha. */}
-      <div className="asi-planilla-toolbar">
-        <span className="asi-planilla-toolbar__label">
-          <CalendarOutlined aria-hidden /> Semana
-        </span>
-        <CabeceraSemanaAsistencia
+    <Card {...grillaCardProps}>
+      <div className="asi-planilla-hoja">
+        {/* Separador unificado: resumen del bimestre + navegación de semana (estilo
+            cuaderno de Calificaciones), arriba de la grilla, dentro de la misma Card. */}
+        <SeparadorSemanaAsistencia
           rango={rangoSemana}
           puedeAnterior={Boolean(semanaPrev)}
           puedeSiguiente={Boolean(semanaSig)}
           onAnterior={irSemanaAnterior}
           onSiguiente={irSemanaSiguiente}
           onIrAFecha={irAFecha}
+          onHoy={irHoy}
+          esSemanaActual={esSemanaActual}
           anioGestion={anioCalendario}
+          resumen={resumen}
+          horario={horario}
         />
-      </div>
 
-      {registroCerrado ? (
-        <Alert
-          type="warning"
-          showIcon
-          title="Registro cerrado (solo lectura)"
-          description="Reabrí el registro para marcar atrasos o corregir faltas de este bimestre."
-        />
-      ) : modoCorreccion ? (
-        <Alert
-          type="info"
-          showIcon
-          title="Modo corrección activo"
-          description="Tocá una falta para registrar un atraso (—); volvé a tocar para marcar presente."
-        />
-      ) : null}
-
-      {!puedeEditar ? (
-        <Alert
-          type="info"
-          showIcon
-          title="Solo lectura"
-          description="No tenés permiso para editar la asistencia de este curso."
-        />
-      ) : null}
-
-      {dias.length === 0 ? (
-        <Card {...asistenciaSectionCardProps}>
-          <Alert
-            type="info"
-            showIcon
-            title="Semana fuera del bimestre"
-            description="Esta semana no tiene días dentro del bimestre. Probá con otra semana."
-          />
-        </Card>
-      ) : (
-        <Card {...grillaCardProps}>
+        {dias.length === 0 ? (
+          <div className="asi-planilla-hoja__vacio">
+            <Alert
+              type="info"
+              showIcon
+              title="Semana sin días de clase"
+              description="Esta semana no tiene días de clase. Probá con otra semana o usá «Ir a fecha»."
+            />
+          </div>
+        ) : (
           <GrillaAsistenciaSemanal
             dias={dias}
             filas={filas}
+            hoy={hoy}
             rangoSemana={rangoSemana}
             registroCerrado={registroCerrado}
             puedeEditar={puedeEditar}
@@ -314,9 +319,9 @@ const PlanillaAsistenciaSemanalPage = () => {
             guardando={guardando}
             hayCambios={hayCambios}
           />
-        </Card>
-      )}
-    </Flex>
+        )}
+      </div>
+    </Card>
   );
 
   return (

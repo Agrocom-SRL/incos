@@ -8,6 +8,10 @@ const MESES_CORTOS = [
   'ene', 'feb', 'mar', 'abr', 'may', 'jun',
   'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
 ];
+const MESES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
 
 const partes = (iso) => String(iso).split('-').map(Number);
 
@@ -31,3 +35,18 @@ export const etiquetaDiaMes = (iso) => {
 
 /** 'Lun 12 jun' completo. */
 export const etiquetaFechaCompleta = (iso) => `${etiquetaDiaCorto(iso)} ${etiquetaDiaMes(iso)}`;
+
+/**
+ * Título de la semana para la cabecera de la grilla:
+ *  - Mismo mes:   'Semana 15-20 de Junio'
+ *  - Cruza mes:   'Semana 29 de Junio – 4 de Julio'
+ */
+export const tituloSemana = (desde, hasta) => {
+  if (!desde || !hasta) return 'Semana';
+  const [, mD, dD] = partes(desde);
+  const [, mH, dH] = partes(hasta);
+  if (mD === mH) {
+    return `${dD}-${dH} de ${MESES[mD - 1] ?? ''}`;
+  }
+  return `${dD} de ${MESES[mD - 1] ?? ''} – ${dH} de ${MESES[mH - 1] ?? ''}`;
+};

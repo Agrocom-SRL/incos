@@ -17,6 +17,8 @@ const CabeceraSemanaAsistencia = ({
   onAnterior,
   onSiguiente,
   onIrAFecha,
+  onHoy,
+  esSemanaActual = false,
   anioGestion,
 }) => {
   const etiquetaRango =
@@ -63,6 +65,27 @@ const CabeceraSemanaAsistencia = ({
         />
       </Tooltip>
 
+      {onHoy ? (
+        <Tooltip
+          title={
+            esSemanaActual
+              ? 'Estás en la semana actual'
+              : 'Ir a la semana actual'
+          }
+        >
+          <Button
+            onClick={onHoy}
+            className={`asi-semana-pager__hoy${
+              esSemanaActual ? ' asi-semana-pager__hoy--actual' : ''
+            }`}
+            aria-label="Ir a la semana actual"
+            aria-pressed={esSemanaActual}
+          >
+            Hoy
+          </Button>
+        </Tooltip>
+      ) : null}
+
       {onIrAFecha ? (
         <Tooltip title="Ir a una fecha de la gestión">
           <span className="asi-semana-pager__ir">
@@ -72,8 +95,6 @@ const CabeceraSemanaAsistencia = ({
               value={rango?.desde ?? undefined}
               onChange={handleChange}
               disabledDate={disabledDate}
-              placeholder="Ir a fecha"
-              suffixIcon={<CalendarOutlined />}
               className="asi-semana-pager__picker"
             />
           </span>
