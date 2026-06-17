@@ -14,15 +14,21 @@ import {
   ArrowLeftOutlined,
   CalendarOutlined,
   LockOutlined,
+  MedicineBoxOutlined,
   UnlockOutlined,
 } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
+import { usePermiso } from '@application-auth';
 import { usePlanillaAsistenciaState } from '@application-academico/asistencia/hooks/state/usePlanillaAsistenciaState.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
-import { calendarioCursoPath } from '@application-academico/asistencia/utils/asistenciaPaths.js';
+import {
+  calendarioCursoPath,
+  LICENCIAS_PATH,
+  LICENCIA_SOLICITAR_PATH,
+} from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
 import CursoContextoAsistencia from '../components/CursoContextoAsistencia.jsx';
 import SeparadorSemanaAsistencia from '../components/SeparadorSemanaAsistencia.jsx';
@@ -85,6 +91,27 @@ const PlanillaAsistenciaSemanalPage = () => {
   } = usePlanillaAsistenciaState();
 
   const ficha = cursoFicha ?? curso;
+
+  // Permiso de crear licencia (mismo mecanismo que ActionButton: useAuthContext.hasPermiso).
+  // Gobierna la visibilidad del icon button por estudiante dentro de la grilla.
+  const puedeCrearLicencia = usePermiso(ASISTENCIA_PERMISOS.licenciaCrear, 'CREAR');
+
+  // Solicitar licencia para un estudiante de la planilla: navega al formulario precargando
+  // el estudiante (id/nombre/código) vía location.state para evitar volver a buscarlo.
+  const handleSolicitarLicencia = useCallback(
+    (row) => {
+      navigate(LICENCIA_SOLICITAR_PATH, {
+        state: {
+          estudiante: {
+            id: row.estudianteId,
+            nombre: row.estudianteNombre,
+            codigo: row.estudianteCodigo,
+          },
+        },
+      });
+    },
+    [navigate]
+  );
 
   // Búsqueda local de estudiantes (filtra las filas de la grilla, patrón del cuaderno).
   const [busquedaEstudiante, setBusquedaEstudiante] = useState('');
@@ -157,6 +184,16 @@ const PlanillaAsistenciaSemanalPage = () => {
             onClick={() => navigate(calendarioCursoPath(asignacionId))}
           >
             Calendario
+          </ActionButton>
+          {/* Acceso al listado de licencias estudiantiles; se auto-oculta sin permiso. */}
+          <ActionButton
+            permiso={ASISTENCIA_PERMISOS.licenciaVer}
+            accion="LISTAR"
+            variant="outline"
+            icon={<MedicineBoxOutlined />}
+            onClick={() => navigate(LICENCIAS_PATH)}
+          >
+            Licencias
           </ActionButton>
           {registroCerrado ? (
             <ActionButton
@@ -329,6 +366,9 @@ const PlanillaAsistenciaSemanalPage = () => {
             estadoCelda={estadoCelda}
             onToggleCelda={toggleCelda}
             onHabilitarEspecial={abrirFechaEspecial}
+            onSolicitarLicencia={
+              puedeCrearLicencia ? handleSolicitarLicencia : undefined
+            }
             onGuardar={
               puedeEditar && !registroCerrado ? guardarPlanilla : undefined
             }

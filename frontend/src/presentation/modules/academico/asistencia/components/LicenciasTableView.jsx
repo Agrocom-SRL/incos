@@ -37,6 +37,7 @@ const TODOS_ESTADOS = '__TODOS__';
  * @param {Array} props.breadcrumbItems
  * @param {string} [props.descripcion]   - lede del workspace bajo el título
  * @param {string} [props.solicitarPath] - ruta del formulario de solicitud (CTA "Solicitar licencia")
+ * @param {string} [props.returnListPath] - ruta a la que vuelve la ficha de detalle (este listado)
  * @param {boolean} [props.mostrarFiltroEstado=true] - oculto en la bandeja (estado fijado a PENDIENTE)
  */
 const LicenciasTableView = ({
@@ -44,6 +45,7 @@ const LicenciasTableView = ({
   breadcrumbItems,
   descripcion,
   solicitarPath,
+  returnListPath,
   mostrarFiltroEstado = true,
 }) => {
   const navigate = useNavigate();
@@ -64,8 +66,8 @@ const LicenciasTableView = ({
   } = useLicenciasPantalla();
 
   const listNavState = useMemo(
-    () => ({ returnListPath: breadcrumbItems ? undefined : undefined, menuSidebarKey: 'ACA-ASI' }),
-    [breadcrumbItems],
+    () => ({ returnListPath, menuSidebarKey: 'ACA-ASI' }),
+    [returnListPath],
   );
 
   const columns = useMemo(

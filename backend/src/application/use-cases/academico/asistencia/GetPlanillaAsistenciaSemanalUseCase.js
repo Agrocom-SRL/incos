@@ -179,6 +179,7 @@ export class GetPlanillaAsistenciaSemanalUseCase {
 
       return {
         matriculaMateriaId,
+        estudianteId: est.estudiante_id ?? null,
         estudianteNombre: est.estudiante_nombre ?? '',
         estudianteCodigo: est.estudiante_codigo ?? null,
         dias,

@@ -816,6 +816,21 @@
   transform: scale(0.9);
 }
 
+/* Columna estudiante: identidad + acceso directo a solicitar licencia. */
+.asi-grid__est {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+/* Botón "solicitar licencia" por fila: usa el átomo IconButton (variant info);
+   aquí solo se evita que crezca dentro de la celda de identidad. */
+.asi-grid__lic-btn {
+  flex: none;
+}
+
 .asi-grid__col-nro {
   text-align: center;
   font-size: var(--font-size-sm);

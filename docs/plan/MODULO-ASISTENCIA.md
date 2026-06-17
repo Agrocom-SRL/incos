@@ -362,11 +362,20 @@ no se redefine cada vez.
      `GET cursos/:id/calendario`, `GET/PUT cursos/:id/planilla`,
      `POST cursos/:id/registro/{cerrar,reabrir}`, `POST cursos/:id/sesiones-especiales`.
      DI en `asistencia.container.js` + `repositories.container.js`. ESLint limpio.
-4. **Fase 4 — CRUD Licencias estudiantiles:** use-cases + frontend (listado/ficha/solicitar/aprobar).
-   - **Entrada decidida (2026-06-17):** página dedicada (`ACA-ASI-LIC*`) **+ atajo inline desde la
-     planilla**: clic en la fila del estudiante → "registrar licencia" con el estudiante precargado y
-     rango de fechas. La planilla **ya cruza** licencias APROBADAS como `L` y neutraliza la falta en el
-     rango (lectura hecha; falta la escritura). Tabla `licencias` ya existe → sin cambio de schema.
+4. **✅ Fase 4 — CRUD Licencias estudiantiles:** implementado (backend + frontend).
+   - **Backend:** router `/asistencia/licencias` (`GET /`, `GET /:id`, `GET /inscripcion-vigente`,
+     `POST /`, `PUT /:id/decision`); use-cases `Listar/GetById/Crear/Decidir/GetInscripcionVigente`;
+     `LicenseRepository` ampliado con raw queries (estudianteNombre por JOIN en orden institucional,
+     suma de días aprobados para tope 15/gestión, inscripción vigente vía vista 20). Solicitud nace
+     PENDIENTE; aprobar/rechazar solo desde PENDIENTE. RBAC `academico.asistencia.licencia.*`. Sin
+     cambio de schema ni vistas nuevas. DI verificado, lint limpio.
+   - **Frontend:** listado (estilo `CarrerasList`/`DocentesList`), ficha de detalle como **página**
+     (estilo `DocentesDetail`, ruta `ACA-ASI-LIC-DET` → `/licencias/:id`), solicitar como **página de
+     formulario** (estilo `CarreraFormPage`, **no drawer**) con buscador de estudiante que precarga la
+     inscripción vigente, bandeja de pendientes, y decisión vía Modal de confirmación. Build OK.
+   - **Pendiente futuro:** atajo inline desde la planilla (clic en fila del estudiante → solicitar con
+     estudiante/rango precargados). La planilla ya cruza licencias APROBADAS como `L`; la escritura
+     desde la planilla queda para iteración.
 5. **Fase 5 — Licencias de docentes (DOC):** tabla `licencias_docentes` + CRUD + frontend.
 6. **Fase 6 — Clases no dictadas:** CRUD + consumo de licencias docentes (decidir autogenerar vs cruce).
    - **Entrada decidida (2026-06-17):** **reutilizar la página de Calendario** como superficie de

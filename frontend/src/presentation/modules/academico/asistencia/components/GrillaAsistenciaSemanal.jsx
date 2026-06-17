@@ -10,9 +10,9 @@
  * El botón de guardar vive en la cabecera del grupo "Semana" y se habilita al haber
  * cambios. La lógica de marca (P/R/F) se delega en `onToggleCelda` (state hook).
  */
-import { PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { MedicineBoxOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { Table, Tooltip } from 'antd';
-import { Button, IdentidadCelda } from '@atoms';
+import { Button, IconButton, IdentidadCelda } from '@atoms';
 import CeldaAsistencia from './CeldaAsistencia.jsx';
 import {
   etiquetaDiaCorto,
@@ -87,8 +87,29 @@ const ColumnaDiaHead = ({ dia, puedeAgregar, onHabilitarEspecial }) => (
   </div>
 );
 
-const renderEstudiante = (_, row) => (
-  <IdentidadCelda codigo={row.estudianteCodigo} nombre={row.estudianteNombre} />
+/**
+ * Render de la columna "Estudiante": identidad + (opcional) acceso directo a solicitar
+ * licencia. El botón se muestra solo si `onSolicitarLicencia` está definido (gateado por
+ * permiso desde la página); usa `stopPropagation` igual que el botón + de día especial.
+ */
+const renderEstudiante = (onSolicitarLicencia) => (_, row) => (
+  <span className="asi-grid__est">
+    <IdentidadCelda codigo={row.estudianteCodigo} nombre={row.estudianteNombre} />
+    {onSolicitarLicencia ? (
+      <Tooltip title="Solicitar licencia para este estudiante">
+        <IconButton
+          variant="info"
+          className="asi-grid__lic-btn"
+          aria-label={`Solicitar licencia para ${row.estudianteNombre}`}
+          icon={<MedicineBoxOutlined aria-hidden />}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSolicitarLicencia(row);
+          }}
+        />
+      </Tooltip>
+    ) : null}
+  </span>
 );
 
 const GrillaAsistenciaSemanal = ({
@@ -101,6 +122,7 @@ const GrillaAsistenciaSemanal = ({
   estadoCelda,
   onToggleCelda,
   onHabilitarEspecial,
+  onSolicitarLicencia,
   onGuardar,
   guardando = false,
   hayCambios = false,
@@ -212,7 +234,7 @@ const GrillaAsistenciaSemanal = ({
       className: 'asi-grid__col-estudiante',
       onHeaderCell: () => ({ className: 'asi-grid__th-est' }),
       onCell: () => ({ className: 'asi-grid__col-estudiante' }),
-      render: renderEstudiante,
+      render: renderEstudiante(onSolicitarLicencia),
     },
     grupoSemana,
   ];

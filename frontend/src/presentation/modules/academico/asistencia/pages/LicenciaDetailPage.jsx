@@ -20,8 +20,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
-import { DetailInfoCard } from '@molecules';
+import { PageHeader, DetailInfoCard } from '@molecules';
 import { DetailField, Button } from '@atoms';
 import { useAuthContext } from '@application-auth';
 import { useLicenciaDetalleContext } from '@application-academico/asistencia/hooks/context/useLicenciaDetalleContext.js';

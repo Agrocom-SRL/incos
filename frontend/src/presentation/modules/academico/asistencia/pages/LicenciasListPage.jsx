@@ -6,7 +6,10 @@
 
 import { useMemo } from 'react';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-import { LICENCIA_SOLICITAR_PATH } from '@application-academico/asistencia/utils/asistenciaPaths.js';
+import {
+  LICENCIA_SOLICITAR_PATH,
+  LICENCIAS_PATH,
+} from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import LicenciasTableView from '@academico/asistencia/components/LicenciasTableView.jsx';
 
 const LicenciasListPage = () => {
@@ -19,7 +22,9 @@ const LicenciasListPage = () => {
     <LicenciasTableView
       title="Licencias estudiantiles"
       breadcrumbItems={breadcrumbItems}
+      descripcion="Solicitudes de licencia de los estudiantes: periodo, motivo y estado de aprobación. El tope es de 15 días por gestión."
       solicitarPath={LICENCIA_SOLICITAR_PATH}
+      returnListPath={LICENCIAS_PATH}
       mostrarFiltroEstado
     />
   );

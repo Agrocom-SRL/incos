@@ -1,35 +1,25 @@
 /**
  * Solicitar una licencia estudiantil (ACA-ASI-LIC-SOL · CREAR).
  *
- * Página de formulario alineada al patrón de CarreraFormPage (CFG Académico):
- * Flex.page-container → PageHeaderArea(PageHeader + BackButton) → DashboardPageShell → MainContent,
- * formulario en cards (.sd-card) con botones guardar/cancelar al pie.
+ * Página de formulario alineada al patrón de CFG Académico (CarreraFormPage):
+ * Flex.page-container → PageHeaderArea(PageHeader + BackButton) → DashboardPageShell →
+ * MainContent → stack de secciones `cfg-academico-workspace` (header con ListPanelHeader
+ * + body), footer (Cancelar/Enviar) dentro de la última sección.
  *
- * Flujo de captura (selector de inscripción):
- *   1. El usuario busca y elige un estudiante con el buscador gemelo de Becas/Pagos
- *      (`buscarEstudiantesAsignacionBeca`).
- *   2. Al elegirlo se consulta su inscripción vigente
- *      (GET /asistencia/licencias/inscripcion-vigente?estudianteId=) y se PRECARGA
- *      `inscripcionId` mostrando carrera y gestión como contexto de solo lectura.
- *   3. Si el estudiante no tiene inscripción vigente → Alert y guardado deshabilitado.
+ * Flujo de captura del estudiante:
+ *   - Si se llega desde la planilla con un estudiante en location.state, se PRECARGA
+ *     y NO se muestra el buscador (se va directo a inscripción + datos); hay un botón
+ *     "Cambiar estudiante" para revelar el buscador.
+ *   - Si se entra directo a /solicitar, se muestra el buscador (gemelo de Becas/Pagos).
+ *   Al elegir estudiante se consulta su inscripción vigente y se precarga `inscripcionId`.
  *
  * El POST envía { inscripcionId, fechaInicio, fechaFin, motivo, detalleMotivo }.
- * El tope de 15 días/gestión y la validación de la inscripción los hace el backend;
- * aquí solo se muestra el error que devuelva.
+ * El tope de 15 días/gestión y la validación de inscripción los hace el backend.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  Alert,
-  App,
-  DatePicker,
-  Flex,
-  Form,
-  Input,
-  Select,
-  Table,
-} from 'antd';
+import { Alert, App, Col, DatePicker, Flex, Form, Input, Row, Select, Table } from 'antd';
 import {
   ArrowLeftOutlined,
   BankOutlined,
@@ -40,8 +30,8 @@ import {
 } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { DetailField } from '@atoms';
-import { Button, BackButton, Text } from '@atoms';
+import ListPanelHeader from '@molecules/ListPanelHeader';
+import { DetailField, Button, BackButton, Text } from '@atoms';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { allSpacing } from '@theme/tokens';
 import { useCasesFactory } from '@container';
@@ -59,6 +49,16 @@ const BUSQUEDA_DEBOUNCE_MS = 400;
 const BUSQUEDA_MIN_CHARS = 2;
 const PRELIM_LIMIT = 10;
 
+/** Sección con el mismo shell visual que el formulario de CFG Académico. */
+const Seccion = ({ title, actions = null, children }) => (
+  <section className="cfg-academico-workspace cfg-academico-form-workspace">
+    <header className="cfg-academico-workspace__header">
+      <ListPanelHeader title={title} actions={actions} />
+    </header>
+    <div className="cfg-academico-form-workspace__body">{children}</div>
+  </section>
+);
+
 const LicenciaSolicitarPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,6 +66,9 @@ const LicenciaSolicitarPage = () => {
   const [form] = Form.useForm();
 
   const returnListPath = location.state?.returnListPath || LICENCIAS_PATH;
+  const estudiantePrecargado = location.state?.estudiante;
+  // Entrada desde la planilla: el estudiante viene fijado → no se muestra el buscador.
+  const entradaConEstudiante = Boolean(estudiantePrecargado?.id);
 
   const { crearLicencia, loading: enviando } = useLicenciaCrearApi();
   const {
@@ -91,6 +94,8 @@ const LicenciaSolicitarPage = () => {
   }, [busquedaInput]);
 
   useEffect(() => {
+    // No se busca si el estudiante vino fijado desde la planilla (no hay buscador).
+    if (entradaConEstudiante) return undefined;
     let cancelado = false;
     (async () => {
       setBuscando(true);
@@ -120,7 +125,7 @@ const LicenciaSolicitarPage = () => {
     return () => {
       cancelado = true;
     };
-  }, [busquedaDebounced]);
+  }, [busquedaDebounced, entradaConEstudiante]);
 
   const breadcrumbItems = useMemo(
     () => createBreadcrumbItems('ACA-ASI-LIC-SOL', 'ACA-ASI', null),
@@ -143,6 +148,19 @@ const LicenciaSolicitarPage = () => {
     },
     [form, consultarInscripcion, limpiarInscripcion],
   );
+
+  // Precarga desde la planilla de asistencia (location.state.estudiante), una sola vez.
+  const precargaHecha = useRef(false);
+  useEffect(() => {
+    if (precargaHecha.current) return;
+    if (!estudiantePrecargado?.id) return;
+    precargaHecha.current = true;
+    handleElegirEstudiante({
+      id: estudiantePrecargado.id,
+      nombreCompleto: estudiantePrecargado.nombre,
+      codigoEstudiante: estudiantePrecargado.codigo,
+    });
+  }, [estudiantePrecargado, handleElegirEstudiante]);
 
   const columnasEstudiantes = useMemo(
     () => [
@@ -227,7 +245,7 @@ const LicenciaSolicitarPage = () => {
 
       <DashboardPageShell>
         <MainContent>
-          <div className="sd">
+          <Flex vertical gap="middle" className="cfg-academico-page__stack">
             <Alert
               type="info"
               showIcon
@@ -235,11 +253,8 @@ const LicenciaSolicitarPage = () => {
               description="Elegí al estudiante (su inscripción vigente se carga automáticamente) y definí el periodo y el motivo. La solicitud queda PENDIENTE hasta su aprobación. El tope es de 15 días por gestión (lo valida el sistema)."
             />
 
-            <section className="sd-card">
-              <div className="sd-card__head sd-card__head--cabecera">
-                <span className="sd-card__title">1 · Estudiante</span>
-              </div>
-              <div className="sd-card__body" style={{ display: 'block' }}>
+            {!entradaConEstudiante ? (
+              <Seccion title="Estudiante">
                 <Input.Search
                   allowClear
                   placeholder="Nombre, apellidos, código o CI…"
@@ -261,7 +276,7 @@ const LicenciaSolicitarPage = () => {
                   style={{ display: 'block', marginBottom: allSpacing.marginSM }}
                 >
                   {esBusquedaActiva
-                    ? `Búsqueda por similitud. Escribí menos de ${BUSQUEDA_MIN_CHARS} caracteres para volver a la muestra.`
+                    ? `Búsqueda por similitud. Borrá el texto para volver a la muestra.`
                     : `Muestra de hasta ${PRELIM_LIMIT} estudiantes. Escribí al menos ${BUSQUEDA_MIN_CHARS} caracteres para buscar.`}
                 </Text>
                 <Table
@@ -274,50 +289,45 @@ const LicenciaSolicitarPage = () => {
                   rowClassName={(r) => (estudianteSel?.id === r.id ? 'ant-table-row-selected' : '')}
                   locale={{ emptyText: buscando ? 'Cargando…' : 'Sin resultados.' }}
                 />
-              </div>
-            </section>
+              </Seccion>
+            ) : null}
 
-            <section className="sd-card">
-              <div className="sd-card__head sd-card__head--cabecera">
-                <span className="sd-card__title">2 · Inscripción vigente</span>
-              </div>
-              <div className="sd-card__body sd-card__body--cols-3">
-                {!estudianteSel ? (
-                  <DetailField label="Estudiante" span={3}>
-                    Elegí primero un estudiante de la tabla anterior.
-                  </DetailField>
-                ) : cargandoInscripcion ? (
-                  <DetailField label="Inscripción" span={3}>
-                    Consultando inscripción vigente…
-                  </DetailField>
-                ) : inscripcionError ? (
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <Alert type="error" showIcon title={inscripcionError} />
-                  </div>
-                ) : sinInscripcion ? (
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <Alert
-                      type="warning"
-                      showIcon
-                      title="El estudiante no tiene inscripción vigente"
-                      description="No es posible registrar una licencia sin una inscripción en la gestión vigente."
-                    />
-                  </div>
-                ) : (
-                  <>
+            <Seccion title="Inscripción vigente">
+              {!estudianteSel ? (
+                <Text type="secondary">Elegí primero un estudiante de la tabla anterior.</Text>
+              ) : cargandoInscripcion ? (
+                <Text type="secondary">Consultando inscripción vigente…</Text>
+              ) : inscripcionError ? (
+                <Alert type="error" showIcon title={inscripcionError} />
+              ) : sinInscripcion ? (
+                <Alert
+                  type="warning"
+                  showIcon
+                  title="El estudiante no tiene inscripción vigente"
+                  description="No es posible registrar una licencia sin una inscripción en la gestión vigente."
+                />
+              ) : (
+                <Row gutter={[24, 16]}>
+                  <Col xs={24} md={12} lg={8}>
                     <DetailField label="Estudiante">
                       <Flex gap={allSpacing.marginXS} align="center">
                         <UserOutlined />
                         {estudianteSel.nombreCompleto ?? '—'}
                       </Flex>
                     </DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
                     <DetailField label="Código">
                       <Flex gap={allSpacing.marginXS} align="center">
                         <IdcardOutlined />
                         {inscripcion.codigoEstudiante ?? estudianteSel.codigoEstudiante ?? '—'}
                       </Flex>
                     </DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
                     <DetailField label="Inscripción">{inscripcion.inscripcionId}</DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
                     <DetailField label="Carrera">
                       <Flex gap={allSpacing.marginXS} align="center">
                         <BankOutlined />
@@ -325,72 +335,73 @@ const LicenciaSolicitarPage = () => {
                         {inscripcion.carreraCodigo ? ` · ${inscripcion.carreraCodigo}` : ''}
                       </Flex>
                     </DetailField>
-                    <DetailField label="Gestión vigente" span={2}>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
+                    <DetailField label="Gestión vigente">
                       <Flex gap={allSpacing.marginXS} align="center">
                         <CalendarOutlined />
                         {inscripcion.gestionNombre ?? '—'}
                         {inscripcion.gestionAnio ? ` (${inscripcion.gestionAnio})` : ''}
                       </Flex>
                     </DetailField>
-                  </>
-                )}
-              </div>
-            </section>
+                  </Col>
+                </Row>
+              )}
+            </Seccion>
 
-            <section className="sd-card">
-              <div className="sd-card__head sd-card__head--cabecera">
-                <span className="sd-card__title">3 · Datos de la licencia</span>
-              </div>
-              <div className="sd-card__body" style={{ display: 'block' }}>
-                <Form form={form} layout="vertical" disabled={!formularioHabilitado}>
-                  {/* inscripcionId se precarga al resolver la inscripción vigente; oculto al usuario. */}
-                  <Form.Item name="inscripcionId" hidden rules={[{ required: true }]}>
-                    <Input type="hidden" />
-                  </Form.Item>
+            <Seccion title="Datos de la licencia">
+              <Form form={form} layout="vertical" disabled={!formularioHabilitado}>
+                {/* inscripcionId se precarga al resolver la inscripción vigente; oculto al usuario. */}
+                <Form.Item name="inscripcionId" hidden rules={[{ required: true }]}>
+                  <Input type="hidden" />
+                </Form.Item>
 
-                  <Form.Item
-                    name="rango"
-                    label="Periodo de la licencia"
-                    rules={[{ required: true, message: 'Elegí el rango de fechas' }]}
-                  >
-                    <RangePicker style={{ maxWidth: 360, width: '100%' }} format="DD/MM/YYYY" />
-                  </Form.Item>
+                <Row gutter={[24, 0]}>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      name="rango"
+                      label="Periodo de la licencia"
+                      rules={[{ required: true, message: 'Elegí el rango de fechas' }]}
+                    >
+                      <RangePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      name="motivo"
+                      label="Motivo"
+                      rules={[{ required: true, message: 'Elegí el motivo de la licencia' }]}
+                    >
+                      <Select placeholder="Seleccioná un motivo" options={MOTIVO_LICENCIA_OPTIONS} />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24}>
+                    <Form.Item
+                      name="detalleMotivo"
+                      label="Detalle del motivo"
+                      rules={[{ required: true, message: 'Describí el motivo de la licencia' }]}
+                    >
+                      <Input.TextArea
+                        rows={3}
+                        maxLength={300}
+                        showCount
+                        placeholder="Describí brevemente el motivo de la solicitud."
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
 
-                  <Form.Item
-                    name="motivo"
-                    label="Motivo"
-                    rules={[{ required: true, message: 'Elegí el motivo de la licencia' }]}
-                  >
-                    <Select
-                      style={{ maxWidth: 280, width: '100%' }}
-                      placeholder="Seleccioná un motivo"
-                      options={MOTIVO_LICENCIA_OPTIONS}
-                    />
-                  </Form.Item>
+              {submitError ? (
+                <Alert
+                  type="error"
+                  showIcon
+                  title={submitError}
+                  style={{ marginTop: allSpacing.marginSM }}
+                />
+              ) : null}
 
-                  <Form.Item
-                    name="detalleMotivo"
-                    label="Detalle del motivo"
-                    rules={[{ required: true, message: 'Describí el motivo de la licencia' }]}
-                  >
-                    <Input.TextArea
-                      rows={3}
-                      maxLength={300}
-                      showCount
-                      placeholder="Describí brevemente el motivo de la solicitud."
-                    />
-                  </Form.Item>
-                </Form>
-
-                {submitError ? (
-                  <Alert
-                    type="error"
-                    showIcon
-                    title={submitError}
-                    style={{ marginBottom: allSpacing.margin }}
-                  />
-                ) : null}
-
+              <div className="cfg-academico-form-workspace__footer">
                 <Flex justify="flex-end" gap={allSpacing.marginSM}>
                   <Button variant="outline" onClick={handleVolver} disabled={enviando}>
                     Cancelar
@@ -406,8 +417,8 @@ const LicenciaSolicitarPage = () => {
                   </Button>
                 </Flex>
               </div>
-            </section>
-          </div>
+            </Seccion>
+          </Flex>
         </MainContent>
       </DashboardPageShell>
     </Flex>
