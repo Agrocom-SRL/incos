@@ -157,6 +157,31 @@
   }
 }
 
+/* Buscador de estudiantes (componente reutilizado CuadernoBuscarEstudiantes): se
+   estiliza con tokens de asistencia para no depender de calificaciones.css. */
+.asi-separador__buscar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.asi-separador__buscar .cal-cuaderno-buscar__input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.asi-separador__buscar .cal-cuaderno-buscar__icon {
+  color: var(--color-text-tertiary);
+}
+
+.asi-separador__buscar .cal-cuaderno-buscar__contador {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .asi-resumen-cab__horario {
   display: flex;
   flex-wrap: wrap;

@@ -11,6 +11,7 @@ import {
   FieldTimeOutlined,
   SolutionOutlined,
 } from '@ant-design/icons';
+import CuadernoBuscarEstudiantes from '@academico/calificaciones/components/CuadernoBuscarEstudiantes.jsx';
 import CabeceraSemanaAsistencia from './CabeceraSemanaAsistencia.jsx';
 import { tituloSemana } from '@application-academico/asistencia/utils/asistenciaFechas.js';
 
@@ -33,6 +34,10 @@ const SeparadorSemanaAsistencia = ({
   esSemanaActual = false,
   anioGestion,
   resumen = null,
+  busqueda = '',
+  onBusquedaChange,
+  totalEstudiantes = 0,
+  filtrados = 0,
 }) => {
   const titulo =
     rango?.desde && rango?.hasta ? tituloSemana(rango.desde, rango.hasta) : 'Semana vigente';
@@ -73,6 +78,15 @@ const SeparadorSemanaAsistencia = ({
           esSemanaActual={esSemanaActual}
           anioGestion={anioGestion}
         />
+        {onBusquedaChange ? (
+          <CuadernoBuscarEstudiantes
+            value={busqueda}
+            onChange={onBusquedaChange}
+            total={totalEstudiantes}
+            filtrados={filtrados}
+            className="asi-separador__buscar"
+          />
+        ) : null}
       </div>
     </div>
   );

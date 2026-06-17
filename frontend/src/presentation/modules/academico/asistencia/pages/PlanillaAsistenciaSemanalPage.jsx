@@ -7,7 +7,7 @@
  * + grupo "Semana" con sub-columnas día (lun–sáb). El botón de guardar vive en la
  * grilla; el botón + por día abre el drawer de sesión especial.
  */
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Skeleton } from 'antd';
 import {
@@ -85,6 +85,18 @@ const PlanillaAsistenciaSemanalPage = () => {
   } = usePlanillaAsistenciaState();
 
   const ficha = cursoFicha ?? curso;
+
+  // Búsqueda local de estudiantes (filtra las filas de la grilla, patrón del cuaderno).
+  const [busquedaEstudiante, setBusquedaEstudiante] = useState('');
+  const filasFiltradas = useMemo(() => {
+    const q = busquedaEstudiante.trim().toLowerCase();
+    if (!q) return filas;
+    return filas.filter(
+      (f) =>
+        (f.estudianteNombre ?? '').toLowerCase().includes(q) ||
+        (f.estudianteCodigo ?? '').toLowerCase().includes(q)
+    );
+  }, [filas, busquedaEstudiante]);
 
   const { modal } = App.useApp();
   const [fechaEspecial, setFechaEspecial] = useState({
@@ -291,6 +303,10 @@ const PlanillaAsistenciaSemanalPage = () => {
           anioGestion={anioCalendario}
           resumen={resumen}
           horario={horario}
+          busqueda={busquedaEstudiante}
+          onBusquedaChange={setBusquedaEstudiante}
+          totalEstudiantes={filas.length}
+          filtrados={filasFiltradas.length}
         />
 
         {dias.length === 0 ? (
@@ -305,7 +321,7 @@ const PlanillaAsistenciaSemanalPage = () => {
         ) : (
           <GrillaAsistenciaSemanal
             dias={dias}
-            filas={filas}
+            filas={filasFiltradas}
             hoy={hoy}
             rangoSemana={rangoSemana}
             registroCerrado={registroCerrado}
