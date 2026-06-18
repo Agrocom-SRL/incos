@@ -103,6 +103,12 @@
             "@application-pagos/*": [
                 "./src/application/modules/pagos/*"
             ],
+            "@application-finanzas": [
+                "./src/application/modules/finanzas"
+            ],
+            "@application-finanzas/*": [
+                "./src/application/modules/finanzas/*"
+            ],
             "@application-academico": [
                 "./src/application/modules/academico"
             ],
@@ -278,6 +284,12 @@
             ],
             "@pagos/*": [
                 "./src/presentation/modules/pagos/*"
+            ],
+            "@finanzas": [
+                "./src/presentation/modules/finanzas"
+            ],
+            "@finanzas/*": [
+                "./src/presentation/modules/finanzas/*"
             ],
             "@reportes": [
                 "./src/presentation/modules/reportes"
