@@ -12,11 +12,15 @@ import { GetLicenciaByIdUseCase } from '../../../../application/use-cases/academ
 import { GetInscripcionVigenteUseCase } from '../../../../application/use-cases/academico/licencias/GetInscripcionVigenteUseCase.js';
 import { CrearLicenciaUseCase } from '../../../../application/use-cases/academico/licencias/CrearLicenciaUseCase.js';
 import { DecidirLicenciaUseCase } from '../../../../application/use-cases/academico/licencias/DecidirLicenciaUseCase.js';
+import { EditarLicenciaUseCase } from '../../../../application/use-cases/academico/licencias/EditarLicenciaUseCase.js';
+import { CancelarLicenciaUseCase } from '../../../../application/use-cases/academico/licencias/CancelarLicenciaUseCase.js';
 import { ListarLicenciasController } from '../../../../presentation/controllers/academico/licencias/listar-licencias.controller.js';
 import { GetLicenciaByIdController } from '../../../../presentation/controllers/academico/licencias/get-licencia-by-id.controller.js';
 import { GetInscripcionVigenteController } from '../../../../presentation/controllers/academico/licencias/get-inscripcion-vigente.controller.js';
 import { CrearLicenciaController } from '../../../../presentation/controllers/academico/licencias/crear-licencia.controller.js';
 import { DecidirLicenciaController } from '../../../../presentation/controllers/academico/licencias/decidir-licencia.controller.js';
+import { EditarLicenciaController } from '../../../../presentation/controllers/academico/licencias/editar-licencia.controller.js';
+import { CancelarLicenciaController } from '../../../../presentation/controllers/academico/licencias/cancelar-licencia.controller.js';
 import { buildLicenciasRouter } from '../../../../presentation/routes/licencias.routes.js';
 
 export function registerLicenciasResource(container) {
@@ -68,6 +72,26 @@ export function registerLicenciasResource(container) {
     ACADEMICO_TOKENS.decidirLicenciaUseCase,
     (c) =>
       new DecidirLicenciaUseCase({
+        licenseRepository: c.resolve(REPOSITORIOS_TOKENS.licenseRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.editarLicenciaUseCase,
+    (c) =>
+      new EditarLicenciaUseCase({
+        licenseRepository: c.resolve(REPOSITORIOS_TOKENS.licenseRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.cancelarLicenciaUseCase,
+    (c) =>
+      new CancelarLicenciaUseCase({
         licenseRepository: c.resolve(REPOSITORIOS_TOKENS.licenseRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       }),
@@ -131,6 +155,28 @@ export function registerLicenciasResource(container) {
       }),
   );
 
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.editarLicenciaController,
+    (c) =>
+      new EditarLicenciaController({
+        editarLicenciaUseCase: c.resolve(ACADEMICO_TOKENS.editarLicenciaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.cancelarLicenciaController,
+    (c) =>
+      new CancelarLicenciaController({
+        cancelarLicenciaUseCase: c.resolve(ACADEMICO_TOKENS.cancelarLicenciaUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
   // ============================================
   // ROUTER
   // ============================================
@@ -144,6 +190,8 @@ export function registerLicenciasResource(container) {
         getLicenciaByIdController: c.resolve(ACADEMICO_TOKENS.getLicenciaByIdController),
         crearLicenciaController: c.resolve(ACADEMICO_TOKENS.crearLicenciaController),
         decidirLicenciaController: c.resolve(ACADEMICO_TOKENS.decidirLicenciaController),
+        editarLicenciaController: c.resolve(ACADEMICO_TOKENS.editarLicenciaController),
+        cancelarLicenciaController: c.resolve(ACADEMICO_TOKENS.cancelarLicenciaController),
       },
       middlewares: { validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest) },
     }),

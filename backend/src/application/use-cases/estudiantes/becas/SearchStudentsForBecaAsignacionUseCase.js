@@ -54,6 +54,8 @@ export class SearchStudentsForBecaAsignacionUseCase {
       ci: row.ci ?? null,
       expedicion: row.expedicion ?? null,
       carreraNombre: row.carrera_nombre ?? null,
+      carreraCodigo: row.carrera_codigo ?? null,
+      carreraColorHex: row.carrera_color_hex ?? null,
       createdAt: row.created_at ?? null,
     };
   }

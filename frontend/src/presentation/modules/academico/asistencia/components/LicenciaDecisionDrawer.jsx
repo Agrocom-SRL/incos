@@ -1,29 +1,33 @@
 /**
- * Drawer único de una licencia estudiantil: ficha (detalle) + decisión (aprobar/rechazar).
+ * Drawer de detalle + decisión de una licencia estudiantil.
  *
  * Reutiliza el SHELL de drawer de calificaciones (EvaluacionDrawer): header oscuro, fondo
  * `--cuaderno-fondo`, footer verde oscuro y tarjetas `SeccionAjustes` sobre `override-card`
  * (única fuente de verdad de estilo, sin duplicar CSS). Lo propio de la licencia (hero con
  * avatar + estado, pills, grilla de campos) vive en `lic-drawer` (licencias.css).
  *
- * La acción "ver" de la tabla lo abre; sobre una licencia PENDIENTE (y con permiso
- * licencia.aprobar · APROBAR) ofrece aprobar/rechazar inline. Al rechazar el motivo es
- * obligatorio; las observaciones son opcionales. La regla "solo desde PENDIENTE" y el tope de
- * días los valida el backend.
+ * Acciones según estado (el backend valida cada transición):
+ *  - PENDIENTE: APROBAR (directo, sin confirmación), RECHAZAR (con motivo obligatorio) y
+ *    EDITAR (no abre formulario aquí: navega a la página de solicitud en modo edición, vía
+ *    `onEditar` — el drawer NO carga lógica de formulario).
+ *  - APROBADA: solo CANCELAR la solicitud (+ cerrar).
+ *  - RECHAZADA / CANCELADA: solo lectura (cerrar).
  */
 
 import { useEffect, useState } from 'react';
-import { Button, Drawer, Form, Input } from 'antd';
+import { App, Button, Drawer, Form, Input } from 'antd';
 import {
   ApartmentOutlined,
   BankOutlined,
   CalendarOutlined,
   CheckOutlined,
   CloseOutlined,
+  EditOutlined,
   FieldTimeOutlined,
   FileTextOutlined,
   IdcardOutlined,
   SolutionOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
 import StatusPill from '@atoms/StatusPill';
 import SeccionAjustes from '@academico/calificaciones/components/ajustes/SeccionAjustes.jsx';
@@ -73,57 +77,89 @@ const Tarjeta = ({ icon, titulo, children, className }) => (
   </SeccionAjustes>
 );
 
-const DrawerFooter = ({ modo, puedeAccionar, guardando, onCerrar, onConfirmar, onModo }) => {
-  const enDecision = modo !== 'idle';
-  const esRechazo = modo === 'RECHAZAR';
+/** Footer por estado/modo. La aprobación es directa (sin paso de confirmación). */
+const DrawerFooter = ({
+  enRechazo,
+  estado,
+  puedeDecidir,
+  puedeEditar,
+  puedeCancelar,
+  guardando,
+  cancelando,
+  onCerrar,
+  onModoRechazo,
+  onCancelarRechazo,
+  onAprobar,
+  onConfirmarRechazo,
+  onEditar,
+  onCancelarSolicitud,
+}) => {
+  const ocupado = guardando || cancelando;
 
-  if (enDecision) {
+  // Rechazo: confirmar rechazo / cancelar.
+  if (enRechazo) {
     return (
       <div className="cal-eval-drawer__footer">
-        <Button onClick={() => onModo('idle')} disabled={guardando}>
+        <Button onClick={onCancelarRechazo} disabled={ocupado}>
           Cancelar
         </Button>
         <div className="cal-eval-drawer__footer-actions">
           <Button
             type="primary"
-            danger={esRechazo}
-            className={esRechazo ? undefined : 'cal-eval-drawer__btn-primary'}
-            icon={esRechazo ? <CloseOutlined /> : <CheckOutlined />}
+            danger
+            icon={<CloseOutlined />}
             loading={guardando}
-            onClick={onConfirmar}
+            onClick={onConfirmarRechazo}
           >
-            {esRechazo ? 'Confirmar rechazo' : 'Confirmar aprobación'}
+            Confirmar rechazo
           </Button>
         </div>
       </div>
     );
   }
 
+  const esPendiente = estado === ESTADOS_LICENCIA.PENDIENTE;
+  const esAprobada = estado === ESTADOS_LICENCIA.APROBADA;
+
   return (
     <div className="cal-eval-drawer__footer">
-      <Button onClick={onCerrar} disabled={guardando}>
+      <Button onClick={onCerrar} disabled={ocupado}>
         Cerrar
       </Button>
-      {puedeAccionar ? (
-        <div className="cal-eval-drawer__footer-actions">
+      <div className="cal-eval-drawer__footer-actions">
+        {esPendiente && puedeEditar ? (
+          <Button variant="outlined" color="gold" icon={<EditOutlined />} onClick={onEditar}>
+            Editar
+          </Button>
+        ) : null}
+        {esPendiente && puedeDecidir ? (
+          <>
+            <Button color="danger" variant="solid" icon={<CloseOutlined />} onClick={onModoRechazo}>
+              Rechazar
+            </Button>
+            <Button
+              type="primary"
+              className="cal-eval-drawer__btn-primary"
+              icon={<CheckOutlined />}
+              loading={guardando}
+              onClick={onAprobar}
+            >
+              Aprobar
+            </Button>
+          </>
+        ) : null}
+        {esAprobada && puedeCancelar ? (
           <Button
             color="danger"
             variant="solid"
-            icon={<CloseOutlined />}
-            onClick={() => onModo('RECHAZAR')}
+            icon={<StopOutlined />}
+            loading={cancelando}
+            onClick={onCancelarSolicitud}
           >
-            Rechazar
+            Cancelar solicitud
           </Button>
-          <Button
-            type="primary"
-            className="cal-eval-drawer__btn-primary"
-            icon={<CheckOutlined />}
-            onClick={() => onModo('APROBAR')}
-          >
-            Aprobar
-          </Button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </div>
   );
 };
@@ -132,45 +168,72 @@ const LicenciaDecisionDrawer = ({
   open,
   licencia = null,
   puedeDecidir = false,
-  decisionInicial = null,
+  puedeEditar = false,
+  puedeCancelar = false,
   guardando = false,
+  cancelando = false,
   onCerrar,
   onDecidir,
+  onEditar,
+  onCancelar,
 }) => {
+  const { modal } = App.useApp();
   const [form] = Form.useForm();
-  const [modo, setModo] = useState('idle'); // 'idle' | 'APROBAR' | 'RECHAZAR'
+  const [enRechazo, setEnRechazo] = useState(false);
   const [sesion, setSesion] = useState(null);
 
-  const esPendiente = licencia?.estado === ESTADOS_LICENCIA.PENDIENTE;
-  const puedeAccionar = esPendiente && puedeDecidir;
   const tieneDecision = Boolean(licencia?.motivoRechazo || licencia?.observacionesDecision);
-  const esRechazo = modo === 'RECHAZAR';
-  const enDecision = modo !== 'idle';
 
   // Reset del modo al abrir o cambiar de licencia (ajuste de estado en render, sin efecto).
-  const sesionActual = open ? `${licencia?.id ?? ''}::${decisionInicial ?? ''}` : null;
+  const sesionActual = open ? `${licencia?.id ?? ''}` : null;
   if (sesionActual !== sesion) {
     setSesion(sesionActual);
-    setModo(open && puedeAccionar && decisionInicial ? decisionInicial : 'idle');
+    setEnRechazo(false);
   }
 
   useEffect(() => {
     if (open) form.resetFields();
-  }, [open, licencia, decisionInicial, form]);
+  }, [open, licencia, form]);
 
-  const handleConfirmar = async () => {
-    const values = await form.validateFields();
-    const payload = {
-      decision: modo,
-      observacionesDecision: values.observacionesDecision?.trim() || undefined,
-    };
-    if (esRechazo) payload.motivoRechazo = values.motivoRechazo?.trim();
-    const result = await onDecidir(payload);
+  const handleAprobar = async () => {
+    const result = await onDecidir?.({ decision: 'APROBAR' });
     if (result?.success) onCerrar?.();
   };
 
+  const handleConfirmarRechazo = async () => {
+    const values = await form.validateFields();
+    const result = await onDecidir?.({
+      decision: 'RECHAZAR',
+      motivoRechazo: values.motivoRechazo?.trim(),
+      observacionesDecision: values.observacionesDecision?.trim() || undefined,
+    });
+    if (result?.success) onCerrar?.();
+  };
+
+  const handleCancelarSolicitud = () => {
+    modal.confirm({
+      title: 'Cancelar la solicitud de licencia',
+      icon: <StopOutlined />,
+      content: (
+        <span>
+          La licencia de <strong>{licencia?.estudianteNombre ?? 'el estudiante'}</strong> pasará a
+          estado <strong>Cancelada</strong> y dejará de reflejarse en la planilla. Esta acción no se
+          puede deshacer.
+        </span>
+      ),
+      okText: 'Cancelar solicitud',
+      okButtonProps: { danger: true },
+      cancelText: 'Volver',
+      onOk: async () => {
+        const result = await onCancelar?.(licencia);
+        if (result?.success) onCerrar?.();
+      },
+    });
+  };
+
+  const ocupado = guardando || cancelando;
   const handleCerrar = () => {
-    if (!guardando) onCerrar?.();
+    if (!ocupado) onCerrar?.();
   };
 
   return (
@@ -188,12 +251,20 @@ const LicenciaDecisionDrawer = ({
       footer={
         licencia ? (
           <DrawerFooter
-            modo={modo}
-            puedeAccionar={puedeAccionar}
+            enRechazo={enRechazo}
+            estado={licencia.estado}
+            puedeDecidir={puedeDecidir}
+            puedeEditar={puedeEditar}
+            puedeCancelar={puedeCancelar}
             guardando={guardando}
+            cancelando={cancelando}
             onCerrar={handleCerrar}
-            onConfirmar={handleConfirmar}
-            onModo={setModo}
+            onModoRechazo={() => setEnRechazo(true)}
+            onCancelarRechazo={() => setEnRechazo(false)}
+            onAprobar={handleAprobar}
+            onConfirmarRechazo={handleConfirmarRechazo}
+            onEditar={() => onEditar?.(licencia)}
+            onCancelarSolicitud={handleCancelarSolicitud}
           />
         ) : null
       }
@@ -243,9 +314,7 @@ const LicenciaDecisionDrawer = ({
                 <FieldTimeOutlined /> {licencia.totalDias ?? '—'} día(s)
               </span>
             </Campo>
-            <Campo label="Fecha de solicitud">
-              {etiquetaDiaMesAnio(licencia.fechaSolicitud)}
-            </Campo>
+            <Campo label="Fecha de solicitud">{etiquetaDiaMesAnio(licencia.fechaSolicitud)}</Campo>
           </Tarjeta>
 
           <Tarjeta icon={SolutionOutlined} titulo="Motivo">
@@ -271,38 +340,29 @@ const LicenciaDecisionDrawer = ({
             </Tarjeta>
           ) : null}
 
-          {enDecision ? (
+          {enRechazo ? (
             <SeccionAjustes
-              icon={esRechazo ? CloseOutlined : CheckOutlined}
-              titulo={esRechazo ? 'Rechazar solicitud' : 'Aprobar solicitud'}
-              className={`${calificacionesDrawerTarjetaClassName} lic-drawer__decision lic-drawer__decision--${
-                esRechazo ? 'rechazo' : 'aprobacion'
-              }`}
+              icon={CloseOutlined}
+              titulo="Rechazar solicitud"
+              className={`${calificacionesDrawerTarjetaClassName} lic-drawer__decision lic-drawer__decision--rechazo`}
             >
               <p className="cal-ajustes-drawer__section-desc">
-                {esRechazo
-                  ? 'Indicá el motivo del rechazo. Las observaciones son opcionales.'
-                  : 'Confirmá la aprobación. Podés dejar observaciones internas (opcional).'}
+                Indicá el motivo del rechazo. Las observaciones son opcionales.
               </p>
               <Form form={form} layout="vertical">
-                {esRechazo ? (
-                  <Form.Item
-                    name="motivoRechazo"
-                    label="Motivo del rechazo"
-                    rules={[{ required: true, message: 'Indicá por qué se rechaza la licencia' }]}
-                  >
-                    <Input.TextArea
-                      rows={3}
-                      maxLength={300}
-                      showCount
-                      placeholder="Ej.: la documentación de respaldo no fue presentada."
-                    />
-                  </Form.Item>
-                ) : null}
                 <Form.Item
-                  name="observacionesDecision"
-                  label={esRechazo ? 'Observaciones adicionales (opcional)' : 'Observaciones (opcional)'}
+                  name="motivoRechazo"
+                  label="Motivo del rechazo"
+                  rules={[{ required: true, message: 'Indicá por qué se rechaza la licencia' }]}
                 >
+                  <Input.TextArea
+                    rows={3}
+                    maxLength={300}
+                    showCount
+                    placeholder="Ej.: la documentación de respaldo no fue presentada."
+                  />
+                </Form.Item>
+                <Form.Item name="observacionesDecision" label="Observaciones adicionales (opcional)">
                   <Input.TextArea
                     rows={3}
                     maxLength={300}

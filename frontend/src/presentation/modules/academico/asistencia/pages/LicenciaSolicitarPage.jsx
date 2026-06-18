@@ -20,7 +20,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, App, Col, Flex, Form, Input, Row, Select, Switch, Table, Typography } from 'antd';
+import dayjs from 'dayjs';
 import {
+  ApartmentOutlined,
   ArrowLeftOutlined,
   BankOutlined,
   CalendarOutlined,
@@ -32,12 +34,15 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { DetailField, Button, BackButton, FieldDatePicker, Text } from '@atoms';
+import IdentidadCelda from '@atoms/IdentidadCelda';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { cfgAcademicoFormColProps } from '@configuracion/academico/components/organisms/CfgAcademicoFormWorkspace';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { allSpacing } from '@theme/tokens';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
 import { useLicenciaCrearApi } from '@application-academico/asistencia/hooks/api/useLicenciaCrearApi.js';
+import { useLicenciaEditarApi } from '@application-academico/asistencia/hooks/api/useLicenciaEditarApi.js';
 import { useInscripcionVigenteApi } from '@application-academico/asistencia/hooks/api/useInscripcionVigenteApi.js';
 import { LICENCIAS_PATH } from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { MOTIVO_LICENCIA_OPTIONS } from '@application-academico/asistencia/utils/licenciasMotivos.js';
@@ -71,10 +76,15 @@ const LicenciaSolicitarPage = () => {
 
   const returnListPath = location.state?.returnListPath || LICENCIAS_PATH;
   const estudiantePrecargado = location.state?.estudiante;
+  // Modo edición: la lista manda la licencia completa por location.state (sin re-fetch).
+  const licenciaEditar = location.state?.licencia;
+  const esEdicion = Boolean(licenciaEditar?.id);
   // Entrada desde la planilla: el estudiante viene fijado → no se muestra el buscador.
   const entradaConEstudiante = Boolean(estudiantePrecargado?.id);
 
-  const { crearLicencia, loading: enviando } = useLicenciaCrearApi();
+  const { crearLicencia, loading: creando } = useLicenciaCrearApi();
+  const { editarLicencia, loading: editando } = useLicenciaEditarApi();
+  const enviando = creando || editando;
   const {
     inscripcion,
     loading: cargandoInscripcion,
@@ -92,16 +102,33 @@ const LicenciaSolicitarPage = () => {
   const [estudianteSel, setEstudianteSel] = useState(null);
   const [submitError, setSubmitError] = useState(null);
   // Licencia de un solo día (por defecto): muestra solo "inicio"; al desactivar aparece "fin".
-  const [unSoloDia, setUnSoloDia] = useState(true);
+  // En edición arranca según el rango de la licencia (init perezoso, sin efecto).
+  const [unSoloDia, setUnSoloDia] = useState(() =>
+    esEdicion ? licenciaEditar.fechaInicio === licenciaEditar.fechaFin : true,
+  );
 
   useEffect(() => {
     const t = setTimeout(() => setBusquedaDebounced(busquedaInput.trim()), BUSQUEDA_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [busquedaInput]);
 
+  // Prefill del formulario en modo edición (setFieldsValue es del form, no estado React).
+  const prefillEdicionHecho = useRef(false);
   useEffect(() => {
-    // No se busca si el estudiante vino fijado desde la planilla (no hay buscador).
-    if (entradaConEstudiante) return undefined;
+    if (!esEdicion || prefillEdicionHecho.current) return;
+    prefillEdicionHecho.current = true;
+    form.setFieldsValue({
+      inscripcionId: licenciaEditar.inscripcionId,
+      motivo: licenciaEditar.motivo,
+      detalleMotivo: licenciaEditar.detalleMotivo,
+      fechaInicio: licenciaEditar.fechaInicio ? dayjs(licenciaEditar.fechaInicio) : null,
+      fechaFin: licenciaEditar.fechaFin ? dayjs(licenciaEditar.fechaFin) : null,
+    });
+  }, [esEdicion, licenciaEditar, form]);
+
+  useEffect(() => {
+    // No se busca si el estudiante vino fijado desde la planilla ni en modo edición.
+    if (entradaConEstudiante || esEdicion) return undefined;
     let cancelado = false;
     (async () => {
       setBuscando(true);
@@ -131,7 +158,7 @@ const LicenciaSolicitarPage = () => {
     return () => {
       cancelado = true;
     };
-  }, [busquedaDebounced, entradaConEstudiante]);
+  }, [busquedaDebounced, entradaConEstudiante, esEdicion]);
 
   const breadcrumbItems = useMemo(
     () => createBreadcrumbItems('ACA-ASI-LIC-SOL', 'ACA-ASI', null),
@@ -155,6 +182,14 @@ const LicenciaSolicitarPage = () => {
     [form, consultarInscripcion, limpiarInscripcion],
   );
 
+  // Volver al buscador: deselecciona el estudiante y limpia la inscripción resuelta.
+  const handleCambiarEstudiante = useCallback(() => {
+    setEstudianteSel(null);
+    setSubmitError(null);
+    limpiarInscripcion();
+    form.setFieldsValue({ inscripcionId: undefined });
+  }, [form, limpiarInscripcion]);
+
   // Precarga desde la planilla de asistencia (location.state.estudiante), una sola vez.
   const precargaHecha = useRef(false);
   useEffect(() => {
@@ -168,45 +203,50 @@ const LicenciaSolicitarPage = () => {
     });
   }, [estudiantePrecargado, handleElegirEstudiante]);
 
+  // Columnas con el lenguaje visual de la tabla de licencias (numeración + identidad
+  // multilínea + carrera), mostrando solo lo exclusivo del estudiante. El periodo y el
+  // paralelo no vienen del buscador: se resuelven al elegir (bloque "Inscripción vigente").
   const columnasEstudiantes = useMemo(
     () => [
+      {
+        title: '#',
+        key: 'nro',
+        width: 56,
+        align: 'center',
+        render: (_v, _r, index) => index + 1,
+      },
       {
         title: 'Estudiante',
         key: 'nombre',
         render: (_, r) => (
-          <Flex gap={allSpacing.marginXS} align="start">
-            <UserOutlined />
-            <div>
-              <Text strong>{r.nombreCompleto ?? '—'}</Text>
-              <div>
-                <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                  <IdcardOutlined style={{ marginRight: allSpacing.marginXS }} />
-                  {r.codigoEstudiante ?? '—'}
-                  {r.ci ? ` · CI ${r.ci}` : ''}
-                </Text>
-              </div>
-            </div>
-          </Flex>
+          <IdentidadCelda codigo={r.codigoEstudiante} nombre={r.nombreCompleto} />
         ),
       },
       {
         title: 'Carrera',
         key: 'carrera',
         ellipsis: true,
-        render: (_, r) => <Text>{r.carreraNombre ?? '—'}</Text>,
+        render: (_, r) => (
+          <IdentidadCelda
+            codigo={r.carreraCodigo}
+            nombre={(r.carreraNombre || 'Sin carrera').toUpperCase()}
+            accentColor={sanitizeDocenteColorHex(r.carreraColorHex) || undefined}
+          />
+        ),
       },
       {
-        title: '',
+        title: 'Acción',
         key: 'accion',
-        width: 140,
+        width: 160,
+        align: 'right',
         render: (_, r) => (
           <Button
-            variant={estudianteSel?.id === r.id ? 'primary' : 'outline'}
+            variant="primary"
             size="small"
             loading={cargandoInscripcion && estudianteSel?.id === r.id}
             onClick={() => handleElegirEstudiante(r)}
           >
-            {estudianteSel?.id === r.id ? 'Elegido' : 'Elegir'}
+            Seleccionar
           </Button>
         ),
       },
@@ -223,30 +263,55 @@ const LicenciaSolicitarPage = () => {
     // Un solo día (default): fechaFin = fechaInicio. Con rango: campo "fin" aparte.
     const fechaInicio = values.fechaInicio?.format('YYYY-MM-DD');
     const fechaFin = unSoloDia ? fechaInicio : values.fechaFin?.format('YYYY-MM-DD');
-    const result = await crearLicencia({
-      inscripcionId: Number(values.inscripcionId),
-      fechaInicio,
-      fechaFin,
-      motivo: values.motivo,
-      detalleMotivo: values.detalleMotivo?.trim(),
-    });
+
+    const result = esEdicion
+      ? await editarLicencia(licenciaEditar.id, {
+          fechaInicio,
+          fechaFin,
+          motivo: values.motivo,
+          detalleMotivo: values.detalleMotivo?.trim(),
+        })
+      : await crearLicencia({
+          inscripcionId: Number(values.inscripcionId),
+          fechaInicio,
+          fechaFin,
+          motivo: values.motivo,
+          detalleMotivo: values.detalleMotivo?.trim(),
+        });
+
     if (result.success) {
-      message.success('Solicitud de licencia registrada');
+      message.success(esEdicion ? 'Licencia actualizada' : 'Solicitud de licencia registrada');
       navigate(returnListPath);
       return;
     }
-    setSubmitError(result.error || 'No se pudo registrar la solicitud');
-  }, [form, crearLicencia, message, navigate, returnListPath, unSoloDia]);
+    setSubmitError(
+      result.error || (esEdicion ? 'No se pudo editar la licencia' : 'No se pudo registrar la solicitud'),
+    );
+  }, [
+    form,
+    esEdicion,
+    editarLicencia,
+    licenciaEditar,
+    crearLicencia,
+    message,
+    navigate,
+    returnListPath,
+    unSoloDia,
+  ]);
 
   const esBusquedaActiva = busquedaDebounced.length >= BUSQUEDA_MIN_CHARS;
-  const formularioHabilitado = tieneInscripcion && !enviando;
+  const formularioHabilitado = esEdicion ? !enviando : tieneInscripcion && !enviando;
   const col = cfgAcademicoFormColProps(12);
+
+  // Bloques excluyentes: en edición o con estudiante fijado se ocultan el buscador; sin
+  // estudiante elegido se muestra SOLO el buscador; al elegir uno aparecen los datos.
+  const mostrarBuscador = !esEdicion && !entradaConEstudiante && !estudianteSel;
 
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
         <PageHeader
-          title="Solicitar licencia estudiantil"
+          title={esEdicion ? 'Editar licencia estudiantil' : 'Solicitar licencia estudiantil'}
           breadcrumbItems={breadcrumbItems}
           actions={<BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />}
         />
@@ -255,7 +320,7 @@ const LicenciaSolicitarPage = () => {
       <DashboardPageShell>
         <MainContent>
           <Flex vertical gap="middle" className="cfg-academico-page__stack">
-            {!entradaConEstudiante ? (
+            {mostrarBuscador ? (
               <Seccion title="Estudiante">
                 <Input.Search
                   allowClear
@@ -288,14 +353,67 @@ const LicenciaSolicitarPage = () => {
                   dataSource={estudiantes}
                   size="middle"
                   pagination={esBusquedaActiva ? { pageSize: 10, hideOnSinglePage: true } : false}
-                  rowClassName={(r) => (estudianteSel?.id === r.id ? 'ant-table-row-selected' : '')}
                   locale={{ emptyText: buscando ? 'Cargando…' : 'Sin resultados.' }}
                 />
               </Seccion>
-            ) : null}
-
-            <Seccion title="Inscripción vigente">
-              {!estudianteSel ? (
+            ) : (
+              <>
+                <Seccion
+                  title="Inscripción vigente"
+                  actions={
+                    !esEdicion && !entradaConEstudiante ? (
+                      <Button variant="outline" size="small" onClick={handleCambiarEstudiante}>
+                        Cambiar estudiante
+                      </Button>
+                    ) : null
+                  }
+                >
+              {esEdicion ? (
+                <Row gutter={[24, 16]}>
+                  <Col xs={24} md={12} lg={8}>
+                    <DetailField label="Estudiante">
+                      <Flex gap={allSpacing.marginXS} align="center">
+                        <UserOutlined />
+                        {licenciaEditar.estudianteNombre ?? '—'}
+                      </Flex>
+                    </DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
+                    <DetailField label="Código">
+                      <Flex gap={allSpacing.marginXS} align="center">
+                        <IdcardOutlined />
+                        {licenciaEditar.codigoEstudiante ?? '—'}
+                      </Flex>
+                    </DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
+                    <DetailField label="Carrera">
+                      <Flex gap={allSpacing.marginXS} align="center">
+                        <BankOutlined />
+                        {licenciaEditar.carreraNombre ?? '—'}
+                        {licenciaEditar.carreraCodigo ? ` · ${licenciaEditar.carreraCodigo}` : ''}
+                      </Flex>
+                    </DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
+                    <DetailField label="Periodo del plan">
+                      {licenciaEditar.periodoNombre ?? '—'}
+                    </DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
+                    <DetailField label="Paralelo">
+                      {licenciaEditar.paraleloNombre ? (
+                        <Flex gap={allSpacing.marginXS} align="center">
+                          <ApartmentOutlined />
+                          {licenciaEditar.paraleloNombre}
+                        </Flex>
+                      ) : (
+                        '—'
+                      )}
+                    </DetailField>
+                  </Col>
+                </Row>
+              ) : !estudianteSel ? (
                 <Text type="secondary">Elegí primero un estudiante de la tabla anterior.</Text>
               ) : cargandoInscripcion ? (
                 <Text type="secondary">Consultando inscripción vigente…</Text>
@@ -339,6 +457,23 @@ const LicenciaSolicitarPage = () => {
                     </DetailField>
                   </Col>
                   <Col xs={24} md={12} lg={8}>
+                    <DetailField label="Periodo del plan">
+                      {inscripcion.periodoNombre ?? '—'}
+                    </DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
+                    <DetailField label="Paralelo">
+                      {inscripcion.paraleloNombre ? (
+                        <Flex gap={allSpacing.marginXS} align="center">
+                          <ApartmentOutlined />
+                          {inscripcion.paraleloNombre}
+                        </Flex>
+                      ) : (
+                        '—'
+                      )}
+                    </DetailField>
+                  </Col>
+                  <Col xs={24} md={12} lg={8}>
                     <DetailField label="Gestión vigente">
                       <Flex gap={allSpacing.marginXS} align="center">
                         <CalendarOutlined />
@@ -349,7 +484,7 @@ const LicenciaSolicitarPage = () => {
                   </Col>
                 </Row>
               )}
-            </Seccion>
+                </Seccion>
 
             <Seccion
               title="Datos de la licencia"
@@ -458,12 +593,14 @@ const LicenciaSolicitarPage = () => {
                       disabled={!formularioHabilitado}
                       onClick={handleSubmit}
                     >
-                      Enviar solicitud
+                      {esEdicion ? 'Guardar cambios' : 'Enviar solicitud'}
                     </Button>
                   </Flex>
                 </Flex>
               </div>
             </Seccion>
+              </>
+            )}
           </Flex>
         </MainContent>
       </DashboardPageShell>

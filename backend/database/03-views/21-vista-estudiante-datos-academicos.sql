@@ -36,6 +36,7 @@ SELECT
   -- Carrera
   car.nombre AS carrera_nombre,
   car.codigo AS carrera_codigo,
+  car.color_hex AS carrera_color_hex,
   car.descripcion AS carrera_descripcion,
   car.area_formacion AS carrera_area_formacion,
   car.titulo_otorgado AS carrera_titulo_otorgado,

@@ -12,4 +12,6 @@ export { ListarLicenciasUseCase } from './ListarLicenciasUseCase.js';
 export { GetLicenciaByIdUseCase } from './GetLicenciaByIdUseCase.js';
 export { CrearLicenciaUseCase } from './CrearLicenciaUseCase.js';
 export { DecidirLicenciaUseCase } from './DecidirLicenciaUseCase.js';
+export { EditarLicenciaUseCase } from './EditarLicenciaUseCase.js';
+export { CancelarLicenciaUseCase } from './CancelarLicenciaUseCase.js';
 export { GetInscripcionVigenteUseCase } from './GetInscripcionVigenteUseCase.js';

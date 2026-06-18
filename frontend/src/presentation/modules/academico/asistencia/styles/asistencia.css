@@ -1018,7 +1018,8 @@
   color: var(--color-primary);
 }
 
-.asi-celda--presente .asi-celda__marca .anticon {
+/* Iconos de marca (mismos que los KPIs del resumen): tamaño uniforme en todos los estados. */
+.asi-celda__marca .anticon {
   font-size: var(--font-size-md);
 }
 

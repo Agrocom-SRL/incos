@@ -37,3 +37,17 @@ export const decidirLicenciaValidator = [
   body('motivoRechazo').optional({ nullable: true }).isString().isLength({ max: 2000 }),
   body('observacionesDecision').optional({ nullable: true }).isString().isLength({ max: 2000 }),
 ];
+
+export const editarLicenciaValidator = [
+  idParam,
+  body('fechaInicio').isISO8601().withMessage('Fecha de inicio inválida'),
+  body('fechaFin').isISO8601().withMessage('Fecha de fin inválida'),
+  body('motivo').isIn(MOTIVOS_LICENCIAS_VALUES).withMessage('Motivo inválido'),
+  body('detalleMotivo')
+    .trim()
+    .notEmpty()
+    .isLength({ max: 2000 })
+    .withMessage('El detalle del motivo es obligatorio'),
+];
+
+export const cancelarLicenciaValidator = [idParam];

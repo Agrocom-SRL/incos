@@ -6,7 +6,12 @@
  * `onToggle` (lógica de ciclo en el state hook). Días neutros/futuros: solo lectura.
  */
 import { memo } from 'react';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  FieldTimeOutlined,
+  SolutionOutlined,
+} from '@ant-design/icons';
 import {
   marcaDeEstado,
   MARCA,
@@ -37,16 +42,18 @@ const ContenidoCelda = ({ marca }) => (
 );
 
 /**
- * Glifo visible por marca:
- *  - Presente → check verde primario (no la letra «P»).
- *  - Ausente → icono ✕ rojo (no la letra «F»).
- *  - Atraso → guion medio (sobre fondo ámbar).
- *  - Licencia → su letra (L).
+ * Glifo visible por marca: los MISMOS iconos que los KPIs del resumen
+ * (ResumenAsistenciaSidebar · KPI_DEFS), para que celda y resumen hablen el mismo lenguaje:
+ *  - Presente  → CheckCircleOutlined (verde primario).
+ *  - Ausente   → CloseCircleOutlined (rojo).
+ *  - Atraso    → FieldTimeOutlined (ámbar).
+ *  - Licencia  → SolutionOutlined (info).
  */
 const glifoMarca = (marca) => {
-  if (marca === MARCA.PRESENTE) return <CheckOutlined aria-hidden />;
-  if (marca === MARCA.AUSENTE) return <CloseOutlined aria-hidden />;
-  if (marca === MARCA.TARDANZA) return '—';
+  if (marca === MARCA.PRESENTE) return <CheckCircleOutlined aria-hidden />;
+  if (marca === MARCA.AUSENTE) return <CloseCircleOutlined aria-hidden />;
+  if (marca === MARCA.TARDANZA) return <FieldTimeOutlined aria-hidden />;
+  if (marca === MARCA.LICENCIA) return <SolutionOutlined aria-hidden />;
   return marca;
 };
 

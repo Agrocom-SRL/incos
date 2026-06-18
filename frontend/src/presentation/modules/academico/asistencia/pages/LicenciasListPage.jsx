@@ -53,12 +53,16 @@ const LicenciasListPage = () => {
     handleSearchChange,
     tableColumns,
     puedeDecidir,
+    puedeEditar,
+    puedeCancelar,
     drawerAbierto,
     licenciaActiva,
-    decisionInicial,
     cerrarDrawer,
     confirmarDecision,
+    onEditar,
+    onCancelar,
     decidiendo,
+    cancelando,
   } = useLicenciasListPage();
 
   const headerActions = (
@@ -141,10 +145,14 @@ const LicenciasListPage = () => {
         open={drawerAbierto}
         licencia={licenciaActiva}
         puedeDecidir={puedeDecidir}
-        decisionInicial={decisionInicial}
+        puedeEditar={puedeEditar}
+        puedeCancelar={puedeCancelar}
         guardando={decidiendo}
+        cancelando={cancelando}
         onCerrar={cerrarDrawer}
         onDecidir={confirmarDecision}
+        onEditar={onEditar}
+        onCancelar={onCancelar}
       />
     </Flex>
   );

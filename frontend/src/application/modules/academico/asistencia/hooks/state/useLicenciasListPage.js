@@ -10,7 +10,10 @@ import { App } from 'antd';
 import { usePermiso } from '@application-auth';
 import { useLicenciasContext } from '@application-academico/asistencia/hooks/context/useLicenciasContext.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
-import { LICENCIA_SOLICITAR_PATH } from '@application-academico/asistencia/utils/asistenciaPaths.js';
+import {
+  LICENCIA_SOLICITAR_PATH,
+  LICENCIAS_PATH,
+} from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { createLicenciasTableColumns } from '@academico/asistencia/config/licenciasTableColumns.jsx';
 
 const coincideBusqueda = (licencia, q) => {
@@ -23,6 +26,8 @@ export const useLicenciasListPage = () => {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const puedeDecidir = usePermiso(ASISTENCIA_PERMISOS.licenciaAprobar, 'APROBAR');
+  const puedeEditar = usePermiso(ASISTENCIA_PERMISOS.licenciaCrear, 'EDITAR');
+  const puedeCancelar = usePermiso(ASISTENCIA_PERMISOS.licenciaCrear, 'ELIMINAR');
 
   const {
     licencias = [],
@@ -35,11 +40,12 @@ export const useLicenciasListPage = () => {
     decidir,
     decidiendo = false,
     cancelar,
+    cancelando = false,
   } = useLicenciasContext();
 
   const [searchText, setSearchText] = useState('');
 
-  // Drawer de detalle/decisión: { licencia, decisionInicial: 'APROBAR' | 'RECHAZAR' | null }.
+  // Drawer de detalle/decisión (solo vista; la edición vive en la página de solicitud).
   const [drawer, setDrawer] = useState(null);
 
   const licenciasFiltradas = useMemo(
@@ -47,20 +53,23 @@ export const useLicenciasListPage = () => {
     [licencias, searchText],
   );
 
-  const verLicencia = useCallback(
-    (licencia, decisionInicial = null) => setDrawer({ licencia, decisionInicial }),
-    [],
-  );
+  const verLicencia = useCallback((licencia) => setDrawer({ licencia }), []);
   const cerrarDrawer = useCallback(() => setDrawer(null), []);
 
-  // Editar: navega al formulario en modo edición (precarga la licencia PENDIENTE).
+  // Editar: navega a la página de solicitud en modo edición (precargada con la licencia).
+  // Mantiene la lógica de formulario fuera del drawer.
   const onEditar = useCallback(
-    (licencia) =>
-      navigate(LICENCIA_SOLICITAR_PATH, { state: { licenciaId: licencia.id, modo: 'editar' } }),
+    (licencia) => {
+      setDrawer(null);
+      navigate(LICENCIA_SOLICITAR_PATH, {
+        state: { licencia, returnListPath: LICENCIAS_PATH },
+      });
+    },
     [navigate],
   );
 
-  // Cancelar: cambia el estado a CANCELADA (provider recarga). TableActions ya confirma.
+  // Cancelar (PENDIENTE o APROBADA → CANCELADA). Usado por la fila (TableActions confirma)
+  // y por el drawer (confirma con su propio modal).
   const onCancelar = useCallback(
     async (licencia) => {
       const result = await cancelar?.(licencia.id);
@@ -107,16 +116,20 @@ export const useLicenciasListPage = () => {
     handleSearchChange,
     // tabla
     tableColumns,
-    // permiso de decisión (drawer)
+    // permisos (drawer)
     puedeDecidir,
+    puedeEditar,
+    puedeCancelar,
     // drawer detalle/decisión
     drawerAbierto: Boolean(drawer),
     licenciaActiva: drawer?.licencia ?? null,
-    decisionInicial: drawer?.decisionInicial ?? null,
     verLicencia,
     cerrarDrawer,
     confirmarDecision,
+    onEditar,
+    onCancelar,
     decidiendo,
+    cancelando,
   };
 };
 

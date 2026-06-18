@@ -333,6 +333,46 @@ class AsistenciaRepository {
   }
 
   /**
+   * PUT /v1/asistencia/licencias/:id — editar una licencia PENDIENTE.
+   * @param {number|string} id
+   * @param {{ fechaInicio: string, fechaFin: string, motivo: string, detalleMotivo: string }} payload
+   */
+  async editarLicencia(id, { fechaInicio, fechaFin, motivo, detalleMotivo } = {}) {
+    try {
+      const response = await apiClient.put(ASISTENCIA_ENDPOINTS.LICENCIA_UPDATE(id), {
+        fechaInicio,
+        fechaFin,
+        motivo,
+        detalleMotivo,
+      });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al editar la licencia');
+    }
+  }
+
+  /**
+   * PUT /v1/asistencia/licencias/:id/cancel — cancelar una licencia PENDIENTE o APROBADA.
+   * @param {number|string} id
+   */
+  async cancelarLicencia(id) {
+    try {
+      const response = await apiClient.put(ASISTENCIA_ENDPOINTS.LICENCIA_CANCEL(id));
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cancelar la licencia');
+    }
+  }
+
+  /**
    * GET /v1/asistencia/licencias/inscripcion-vigente?estudianteId= — inscripción vigente
    * del estudiante (resuelve estudiante → inscripcionId para la solicitud de licencia).
    * dataKey backend: { inscripcion: {...} | null }.

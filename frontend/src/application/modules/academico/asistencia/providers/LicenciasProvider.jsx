@@ -9,12 +9,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLicenciasListApi } from '@application-academico/asistencia/hooks/api/useLicenciasListApi.js';
 import { useLicenciaDecidirApi } from '@application-academico/asistencia/hooks/api/useLicenciaDecidirApi.js';
+import { useLicenciaEditarApi } from '@application-academico/asistencia/hooks/api/useLicenciaEditarApi.js';
 import { useLicenciaCancelarApi } from '@application-academico/asistencia/hooks/api/useLicenciaCancelarApi.js';
 import { LicenciasContext } from '@application-academico/asistencia/context/LicenciasContext.js';
 
 export const LicenciasProvider = ({ estadoFijo, children }) => {
   const { licencias = [], loading, error, fetch: fetchLicencias } = useLicenciasListApi();
   const { decidirLicencia: decidirApi, loading: decidiendo } = useLicenciaDecidirApi();
+  const { editarLicencia: editarApi, loading: editando } = useLicenciaEditarApi();
   const { cancelarLicencia: cancelarApi, loading: cancelando } = useLicenciaCancelarApi();
 
   const [estado, setEstado] = useState(estadoFijo ?? undefined);
@@ -33,6 +35,15 @@ export const LicenciasProvider = ({ estadoFijo, children }) => {
       return result;
     },
     [decidirApi, refetch],
+  );
+
+  const editar = useCallback(
+    async (id, payload) => {
+      const result = await editarApi(id, payload);
+      if (result.success) await refetch();
+      return result;
+    },
+    [editarApi, refetch],
   );
 
   const cancelar = useCallback(
@@ -55,10 +66,25 @@ export const LicenciasProvider = ({ estadoFijo, children }) => {
       refetch,
       decidir,
       decidiendo,
+      editar,
+      editando,
       cancelar,
       cancelando,
     }),
-    [licencias, loading, error, estado, estadoFijo, refetch, decidir, decidiendo, cancelar, cancelando],
+    [
+      licencias,
+      loading,
+      error,
+      estado,
+      estadoFijo,
+      refetch,
+      decidir,
+      decidiendo,
+      editar,
+      editando,
+      cancelar,
+      cancelando,
+    ],
   );
 
   return <LicenciasContext.Provider value={value}>{children}</LicenciasContext.Provider>;

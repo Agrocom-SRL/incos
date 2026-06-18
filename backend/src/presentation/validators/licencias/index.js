@@ -4,4 +4,6 @@ export {
   getInscripcionVigenteValidator,
   crearLicenciaValidator,
   decidirLicenciaValidator,
+  editarLicenciaValidator,
+  cancelarLicenciaValidator,
 } from './licencias.validator.js';

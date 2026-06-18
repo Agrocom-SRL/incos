@@ -253,7 +253,8 @@ ${INSCRIPCION_ACADEMICA_COLUMNS}
      *
      * @param {number} estudianteId
      * @returns {Promise<Object|null>} { inscripcionId, gestionNombre, gestionAnio,
-     *   carreraNombre, carreraCodigo, codigoEstudiante } o null si no tiene inscripción vigente.
+     *   carreraNombre, carreraCodigo, periodoNombre, paraleloNombre, codigoEstudiante }
+     *   o null si no tiene inscripción vigente.
      */
     async findInscripcionVigenteByEstudiante(estudianteId) {
         const query = `
@@ -264,6 +265,8 @@ ${INSCRIPCION_ACADEMICA_COLUMNS}
         gestion_anio,
         carrera_nombre,
         carrera_codigo,
+        periodo_nombre,
+        paralelo_nombre,
         codigo_estudiante
       FROM vista_estudiante_inscripcion_actual
       WHERE estudiante_id = ?
@@ -285,6 +288,8 @@ ${INSCRIPCION_ACADEMICA_COLUMNS}
             gestionAnio: row.gestion_anio ?? null,
             carreraNombre: row.carrera_nombre ?? null,
             carreraCodigo: row.carrera_codigo ?? null,
+            periodoNombre: row.periodo_nombre ?? null,
+            paraleloNombre: row.paralelo_nombre ?? null,
             codigoEstudiante: row.codigo_estudiante ?? null,
         };
     }

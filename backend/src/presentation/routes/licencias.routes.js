@@ -7,6 +7,8 @@ import {
   getInscripcionVigenteValidator,
   crearLicenciaValidator,
   decidirLicenciaValidator,
+  editarLicenciaValidator,
+  cancelarLicenciaValidator,
 } from '../validators/licencias/index.js';
 
 /**
@@ -38,6 +40,14 @@ export function buildLicenciasRouter({ controllers, middlewares }) {
   const licenciaAprobar = [
     authenticate,
     verificarPermiso('academico.asistencia.licencia.aprobar', 'APROBAR'),
+  ];
+  const licenciaEditar = [
+    authenticate,
+    verificarPermiso('academico.asistencia.licencia.crear', 'EDITAR'),
+  ];
+  const licenciaCancelar = [
+    authenticate,
+    verificarPermiso('academico.asistencia.licencia.crear', 'ELIMINAR'),
   ];
 
   /** GET / — listado de licencias (filtro opcional por estado). */
@@ -75,6 +85,20 @@ export function buildLicenciasRouter({ controllers, middlewares }) {
     decidirLicenciaValidator,
     validateRequest,
     (req, res, next) => controllers.decidirLicenciaController.handle(req, res, next),
+  );
+
+  /** PUT /:id/cancel — cancelar una licencia PENDIENTE o APROBADA (→ CANCELADA). */
+  router.put(
+    '/:id/cancel',
+    ...licenciaCancelar,
+    cancelarLicenciaValidator,
+    validateRequest,
+    (req, res, next) => controllers.cancelarLicenciaController.handle(req, res, next),
+  );
+
+  /** PUT /:id — editar una licencia PENDIENTE (motivo, detalle, rango de fechas). */
+  router.put('/:id', ...licenciaEditar, editarLicenciaValidator, validateRequest, (req, res, next) =>
+    controllers.editarLicenciaController.handle(req, res, next),
   );
 
   return router;

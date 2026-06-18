@@ -44,6 +44,8 @@ import {
   GetLicenciaByIdUseCase,
   CrearLicenciaUseCase,
   DecidirLicenciaUseCase,
+  EditarLicenciaUseCase,
+  CancelarLicenciaUseCase,
   GetInscripcionVigenteUseCase,
 } from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
@@ -159,6 +161,14 @@ export function registerAcademicoModule(factory) {
 
   factory.decidirLicencia = () => {
     return new DecidirLicenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.editarLicencia = () => {
+    return new EditarLicenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.cancelarLicencia = () => {
+    return new CancelarLicenciaUseCase(AsistenciaRepository);
   };
 
   factory.obtenerInscripcionVigenteLicencia = () => {

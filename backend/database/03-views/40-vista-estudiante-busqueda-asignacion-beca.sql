@@ -31,7 +31,8 @@ SELECT
   v.created_at,
   v.activo,
   cr.carrera_nombre,
-  cr.carrera_codigo
+  cr.carrera_codigo,
+  cr.carrera_color_hex
 FROM vista_estudiante_datos_personales v
 LEFT JOIN vista_base_estudiante_carrera_reciente cr ON cr.estudiante_id = v.id
 WHERE NOT EXISTS (

@@ -272,7 +272,11 @@ export const ASISTENCIA_ENDPOINTS = {
   // Licencias estudiantiles (página dentro de Asistencia · ACA-ASI-LIC)
   LICENCIAS: `${API_BASE}/asistencia/licencias`,
   LICENCIA_BY_ID: (id) => `${API_BASE}/asistencia/licencias/${id}`,
+  /** PUT — editar una licencia PENDIENTE (motivo, detalle, rango). */
+  LICENCIA_UPDATE: (id) => `${API_BASE}/asistencia/licencias/${id}`,
   LICENCIA_DECISION: (id) => `${API_BASE}/asistencia/licencias/${id}/decision`,
+  /** PUT — cancelar una licencia PENDIENTE o APROBADA. */
+  LICENCIA_CANCEL: (id) => `${API_BASE}/asistencia/licencias/${id}/cancel`,
   /** Inscripción vigente del estudiante (resuelve estudiante → inscripcionId para la solicitud). */
   LICENCIA_INSCRIPCION_VIGENTE: (estudianteId) =>
     `${API_BASE}/asistencia/licencias/inscripcion-vigente?estudianteId=${estudianteId}`,
