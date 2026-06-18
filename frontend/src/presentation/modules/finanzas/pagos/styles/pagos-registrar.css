@@ -39,6 +39,15 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .fin-pago-reg-resultado {
+    transition: none;
+  }
+  .fin-pago-reg-resultado:active {
+    transform: none;
+  }
+}
+
 .fin-pago-reg-resultado__info {
   display: flex;
   flex-direction: column;

@@ -320,6 +320,100 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
+   * Obtiene el compromiso de pago VIGENTE de una cabecera de aporte (o null).
+   * GET /v1/pagos-aportes/:pagoAporteId/compromiso
+   *
+   * @param {string|number} pagoAporteId - ID de la cabecera (pago_aporte)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerCompromiso(pagoAporteId) {
+    try {
+      if (!pagoAporteId || Number(pagoAporteId) < 1) {
+        return { success: false, error: 'pagoAporteId es requerido y debe ser mayor a 0' };
+      }
+      const response = await apiClient.get(
+        PAGOS_APORTES_ENDPOINTS.COMPROMISO_BY_PAGO(pagoAporteId),
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el compromiso de pago');
+    }
+  }
+
+  /**
+   * Crea/reemplaza (UPSERT) el compromiso de pago VIGENTE de una cabecera.
+   * POST /v1/pagos-aportes/:pagoAporteId/compromiso
+   *
+   * @param {string|number} pagoAporteId - ID de la cabecera (pago_aporte)
+   * @param {Object} payload - { fecha_compromiso (req, YYYY-MM-DD), observacion? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async guardarCompromiso(pagoAporteId, payload = {}) {
+    try {
+      if (!pagoAporteId || Number(pagoAporteId) < 1) {
+        return { success: false, error: 'pagoAporteId es requerido y debe ser mayor a 0' };
+      }
+      const body = {
+        fecha_compromiso: payload.fecha_compromiso ?? null,
+        observacion: payload.observacion ?? null,
+      };
+      const response = await apiClient.post(
+        PAGOS_APORTES_ENDPOINTS.COMPROMISO_BY_PAGO(pagoAporteId),
+        body,
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar el compromiso de pago');
+    }
+  }
+
+  /**
+   * Actualiza un compromiso de pago por su id.
+   * PUT /v1/pagos-aportes/compromiso/:id
+   *
+   * @param {string|number} id - ID del compromiso
+   * @param {Object} payload - { fecha_compromiso?, observacion?, estado? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async actualizarCompromiso(id, payload = {}) {
+    try {
+      if (!id || Number(id) < 1) {
+        return { success: false, error: 'ID del compromiso es requerido' };
+      }
+      const body = {};
+      if ('fecha_compromiso' in payload) body.fecha_compromiso = payload.fecha_compromiso;
+      if ('observacion' in payload) body.observacion = payload.observacion;
+      if ('estado' in payload) body.estado = payload.estado;
+      const response = await apiClient.put(PAGOS_APORTES_ENDPOINTS.COMPROMISO_BY_ID(id), body, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el compromiso de pago');
+    }
+  }
+
+  /**
+   * Elimina (soft delete) un compromiso de pago por su id.
+   * DELETE /v1/pagos-aportes/compromiso/:id
+   *
+   * @param {string|number} id - ID del compromiso
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminarCompromiso(id) {
+    try {
+      if (!id || Number(id) < 1) {
+        return { success: false, error: 'ID del compromiso es requerido' };
+      }
+      const response = await apiClient.delete(PAGOS_APORTES_ENDPOINTS.COMPROMISO_BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el compromiso de pago');
+    }
+  }
+
+  /**
    * Genera u obtiene el recibo de pago de un aporte académico
    * GET /v1/pagos-aportes/:id/recibo
    * 
@@ -349,6 +443,53 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al generar recibo de pago');
+    }
+  }
+
+  /**
+   * Obtiene la planilla de control de becas por carrera (reporte read-only).
+   * GET /v1/pagos-aportes/reportes/becas-por-carrera?gestion_id=
+   *
+   * @param {Object} [options]
+   * @param {number|string|null} [options.gestionId] - Gestión a consultar (opcional; vigente por defecto)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerReporteBecasPorCarrera(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
+      }
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.REPORTE_BECAS_POR_CARRERA, {
+        params,
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el reporte de becas por carrera');
+    }
+  }
+
+  /**
+   * Obtiene la planilla de control de cuentas por cobrar por carrera y paralelo
+   * (reporte read-only).
+   * GET /v1/pagos-aportes/reportes/cuentas-por-cobrar?gestion_id=
+   *
+   * @param {Object} [options]
+   * @param {number|string|null} [options.gestionId] - Gestión a consultar (opcional; vigente por defecto)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerReporteCuentasPorCobrar(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
+      }
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.REPORTE_CUENTAS_POR_COBRAR, {
+        params,
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el reporte de cuentas por cobrar');
     }
   }
 

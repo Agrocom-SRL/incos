@@ -152,6 +152,9 @@ import { PaymentAccountRepository } from '../../repositories/PaymentAccountRepos
 import { ContributionPaymentRepository } from '../../repositories/ContributionPaymentRepository.js';
 import { ContributionPaymentInstallmentRepository } from '../../repositories/ContributionPaymentInstallmentRepository.js';
 import { PaymentAporteCareerExcelReportRepository } from '../../repositories/views/PaymentAporteCareerExcelReportRepository.js';
+import { BecasPorCarreraViewRepository } from '../../repositories/views/BecasPorCarreraViewRepository.js';
+import { CompromisoPagoRepository } from '../../repositories/CompromisoPagoRepository.js';
+import { CuentasPorCobrarViewRepository } from '../../repositories/views/CuentasPorCobrarViewRepository.js';
 import { DashboardRepository } from '../../repositories/views/DashboardRepository.js';
 import { AulasHorariosSemanaRepository } from '../../repositories/views/AulasHorariosSemanaRepository.js';
 
@@ -407,6 +410,9 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentRepository, ContributionPaymentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository, ContributionPaymentInstallmentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentByCareerExcelReportRepository, PaymentAporteCareerExcelReportRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.becasPorCarreraViewRepository, BecasPorCarreraViewRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.compromisoPagoRepository, CompromisoPagoRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.cuentasPorCobrarViewRepository, CuentasPorCobrarViewRepository);
 
     // ============================================
     // DASHBOARD

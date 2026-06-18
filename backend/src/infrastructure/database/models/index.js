@@ -128,6 +128,7 @@ export { BancoAutorizado } from './banco_autorizado.js';
 export { CuentaPago } from './cuenta_pago.js';
 export { PagoAporte } from './pago_aporte.js';
 export { PagoCuotas } from './pago_cuotas.js';
+export { CompromisoPago } from './compromiso_pago.js';
 
 // ============================================
 // CONFIGURACIÓN DEL SISTEMA

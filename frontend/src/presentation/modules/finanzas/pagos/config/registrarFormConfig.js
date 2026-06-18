@@ -27,6 +27,46 @@ export const normFileFromUpload = (e) => {
   return e?.fileList ?? [];
 };
 
+// Códigos de método de pago (1=EFECTIVO, 2=QR, 3=TRANSFERENCIA, 4=DEPOSITO) — fuente única en el mapper.
+import { METODO_CODIGO } from '@application-finanzas/mappers/pagosRegistrarMapper';
+
+export { METODO_CODIGO };
+
+/** Devuelve el código de método (EFECTIVO/QR/TRANSFERENCIA/DEPOSITO) por id seleccionado. */
+export const findMetodoCodigo = (metodos = [], metodoPagoId) => {
+  const metodo = metodos.find((m) => m.id === metodoPagoId);
+  return metodo?.codigo || '';
+};
+
+/**
+ * Reglas de visibilidad/obligatoriedad por método de pago. Espeja FUNCIONALMENTE el
+ * validator del backend (cuenta y comprobante requeridos según método). Fuente única
+ * compartida entre el formulario de registro y el de edición de cuota.
+ *
+ *   - EFECTIVO (1):      sin cuenta, sin comprobante.
+ *   - QR (2):            comprobante requerido; cuenta opcional/visible.
+ *   - TRANSFERENCIA (3): cuenta requerida; comprobante requerido.
+ *   - DEPOSITO (4):      cuenta requerida; comprobante requerido.
+ *
+ * @param {string} metodoCodigo - Código del método seleccionado.
+ */
+export const buildReglasMetodo = (metodoCodigo) => {
+  const esEfectivo = metodoCodigo === METODO_CODIGO.EFECTIVO;
+  const esQR = metodoCodigo === METODO_CODIGO.QR;
+  const esTransferencia = metodoCodigo === METODO_CODIGO.TRANSFERENCIA;
+  const esDeposito = metodoCodigo === METODO_CODIGO.DEPOSITO;
+  return {
+    esEfectivo,
+    esQR,
+    esTransferencia,
+    esDeposito,
+    cuentaRequerida: esTransferencia || esDeposito,
+    cuentaVisible: esQR || esTransferencia || esDeposito,
+    comprobanteRequerido: esQR || esTransferencia || esDeposito,
+    comprobanteVisible: esQR || esTransferencia || esDeposito,
+  };
+};
+
 /**
  * Construye las reglas (Form rules) del campo monto según el saldo pendiente.
  * @param {number} saldoPendiente

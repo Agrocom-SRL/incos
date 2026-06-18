@@ -87,6 +87,31 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         ]),
     ];
 
+    // ---- Compromiso de pago: lectura con finanzas.pago.ver; mutaciones con finanzas.pago.editar ----
+    /** Ver compromiso vigente de una cabecera (lectura). */
+    const compromisoVer = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'LISTAR'],
+            ['finanzas.pago.ver', 'DETALLE'],
+            ['matricula.pago.aporte.ver', 'LISTAR'],
+            ['matricula.pago.aporte.ver', 'DETALLE'],
+        ]),
+    ];
+    /**
+     * Crear/reemplazar compromiso vigente.
+     * NOTA RBAC: `finanzas.pago.editar` NO tiene la acción CREAR sembrada (solo
+     * EDITAR/ELIMINAR, ver seed 60-seed-permisos-fin.sql). Para no introducir un
+     * permiso imposible de satisfacer (y sin crear seeds nuevos, por requisito),
+     * el alta/reemplazo del compromiso se autoriza con `finanzas.pago.editar`
+     * EDITAR: es una mutación sobre la cabecera de pago ya existente.
+     */
+    const compromisoCrear = [authenticate, verificarPermiso('finanzas.pago.editar', 'EDITAR')];
+    /** Editar compromiso. */
+    const compromisoEditar = [authenticate, verificarPermiso('finanzas.pago.editar', 'EDITAR')];
+    /** Eliminar (soft delete) compromiso. */
+    const compromisoEliminar = [authenticate, verificarPermiso('finanzas.pago.editar', 'ELIMINAR')];
+
     // ============================================
     // LISTADO DE CABECERAS DE APORTE
     // ============================================
@@ -138,6 +163,95 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         '/export/lista-por-carrera',
         ...pagoExportar,
         (req, res, next) => controllers.exportListaAportesPorCarreraExcelController.handle(req, res, next)
+    );
+
+    /** Planilla de control de becas por carrera (solo lectura). */
+    const reporteBecasCarrera = [
+        authenticate,
+        verificarPermiso('finanzas.pago.reporte.carrera', 'LISTAR'),
+    ];
+
+    /**
+     * GET /api/v1/pagos-aportes/reportes/becas-por-carrera
+     * Planilla de control de Becas por carrera (totales, distribución, resumen).
+     * Query: gestion_id (opcional; gestión vigente por defecto).
+     * Permiso: finanzas.pago.reporte.carrera LISTAR.
+     * DECLARADA antes de /:id para evitar colisión de rutas.
+     */
+    router.get(
+        '/reportes/becas-por-carrera',
+        ...reporteBecasCarrera,
+        (req, res, next) => controllers.getBecasPorCarreraReporteController.handle(req, res, next)
+    );
+
+    /** Planilla de control de Cuentas por cobrar (solo lectura). */
+    const reporteCuentasPorCobrar = [
+        authenticate,
+        verificarPermiso('finanzas.pago.reporte.carrera', 'LISTAR'),
+    ];
+
+    /**
+     * GET /api/v1/pagos-aportes/reportes/cuentas-por-cobrar
+     * Planilla de control de Cuentas por cobrar (CARRERA → PARALELO → ESTUDIANTES, totales).
+     * Query: gestion_id (opcional; gestión vigente por defecto).
+     * Permiso: finanzas.pago.reporte.carrera LISTAR.
+     * DECLARADA antes de /:id para evitar colisión de rutas.
+     */
+    router.get(
+        '/reportes/cuentas-por-cobrar',
+        ...reporteCuentasPorCobrar,
+        (req, res, next) => controllers.getCuentasPorCobrarReporteController.handle(req, res, next)
+    );
+
+    // ============================================
+    // COMPROMISO DE PAGO (CRUD)
+    // ============================================
+
+    /**
+     * PUT /api/v1/pagos-aportes/compromiso/:id
+     * Editar un compromiso de pago (id = compromisos_pago.id).
+     * DECLARADA antes de /:id para evitar colisión.
+     */
+    router.put(
+        '/compromiso/:id',
+        ...compromisoEditar,
+        ...idValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateCompromisoController.handle(req, res, next)
+    );
+
+    /**
+     * DELETE /api/v1/pagos-aportes/compromiso/:id
+     * Soft delete de un compromiso de pago (id = compromisos_pago.id).
+     * DECLARADA antes de /:id para evitar colisión.
+     */
+    router.delete(
+        '/compromiso/:id',
+        ...compromisoEliminar,
+        ...idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteCompromisoController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/pagos-aportes/:pagoAporteId/compromiso
+     * Compromiso VIGENTE de la cabecera (o null).
+     */
+    router.get(
+        '/:pagoAporteId/compromiso',
+        ...compromisoVer,
+        (req, res, next) => controllers.getCompromisoController.handle(req, res, next)
+    );
+
+    /**
+     * POST /api/v1/pagos-aportes/:pagoAporteId/compromiso
+     * Crea/reemplaza el compromiso VIGENTE de la cabecera.
+     * Body: fecha_compromiso (req), observacion (opt).
+     */
+    router.post(
+        '/:pagoAporteId/compromiso',
+        ...compromisoCrear,
+        (req, res, next) => controllers.upsertCompromisoController.handle(req, res, next)
     );
 
     // ============================================

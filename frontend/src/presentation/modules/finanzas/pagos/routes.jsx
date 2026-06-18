@@ -11,11 +11,11 @@
  */
 
 import { lazy } from 'react';
-import { UnderConstruction } from '@components/pages';
 
 const PagosListConnector = lazy(() => import('./connectors/PagosListConnector.jsx'));
 const PagosDetailConnector = lazy(() => import('./connectors/PagosDetailConnector.jsx'));
 const PagosRegistrarConnector = lazy(() => import('./connectors/PagosRegistrarConnector.jsx'));
+const CompromisoConnector = lazy(() => import('./connectors/CompromisoConnector.jsx'));
 
 export const finanzasPagosRoutes = [
   {
@@ -29,12 +29,13 @@ export const finanzasPagosRoutes = [
     breadcrumbParent: 'FIN-PAG',
   },
   {
+    // Página de GESTIÓN (registrar/editar/eliminar compromiso): acción EDITAR.
     path: '/finanzas/pagos/compromiso',
-    element: <UnderConstruction />,
+    element: <CompromisoConnector />,
     key: 'FIN-PAG-COMPROMISO',
     breadcrumbLabel: 'Compromiso de pago',
-    permiso: 'finanzas.pago.ver',
-    accion: 'LISTAR',
+    permiso: 'finanzas.pago.editar',
+    accion: 'EDITAR',
     menu: null,
     breadcrumbParent: 'FIN-PAG',
   },

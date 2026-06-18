@@ -8,7 +8,7 @@
  */
 
 import { Button, Space, Tooltip } from 'antd';
-import { DeleteOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import { Text } from '@atoms';
 
@@ -32,16 +32,20 @@ const formatFecha = (value) => {
 /**
  * @param {Object} params
  * @param {boolean} params.puedeExportarRecibo - Permiso EXPORTAR (recibo PDF).
+ * @param {boolean} params.puedeEditarCuota - Permiso EDITAR (cuota).
  * @param {boolean} params.puedeEliminarCuota - Permiso ELIMINAR (cuota).
  * @param {(cuota: Object) => void} params.onGenerarRecibo - Descarga el recibo PDF.
+ * @param {(cuota: Object) => void} params.onEditarCuota - Abre el modal de edición de la cuota.
  * @param {(cuota: Object) => void} params.onEliminarCuota - Elimina la cuota (con confirmación).
  * @param {number|string|null} params.reciboCuotaId - Cuota cuyo recibo se descarga (feedback).
  * @param {boolean} params.descargandoRecibo - Estado de descarga global.
  */
 export const createCuotasTableColumns = ({
   puedeExportarRecibo,
+  puedeEditarCuota,
   puedeEliminarCuota,
   onGenerarRecibo,
+  onEditarCuota,
   onEliminarCuota,
   reciboCuotaId,
   descargandoRecibo,
@@ -86,12 +90,13 @@ export const createCuotasTableColumns = ({
     },
   ];
 
-  const showAcciones = Boolean(onGenerarRecibo) || Boolean(onEliminarCuota);
+  const showAcciones =
+    Boolean(onGenerarRecibo) || Boolean(onEditarCuota) || Boolean(onEliminarCuota);
   if (showAcciones) {
     columns.push({
       title: 'Acciones',
       key: 'acciones',
-      width: 150,
+      width: 180,
       align: 'right',
       render: (_, record) => {
         const reciboKey = record.id ?? record.numeroRecibo;
@@ -106,6 +111,17 @@ export const createCuotasTableColumns = ({
                   aria-label="Descargar recibo PDF"
                   loading={descargandoRecibo && reciboCuotaId === reciboKey}
                   onClick={() => onGenerarRecibo(record)}
+                />
+              </Tooltip>
+            ) : null}
+            {puedeEditarCuota && onEditarCuota ? (
+              <Tooltip title="Editar cuota">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<EditOutlined />}
+                  aria-label="Editar cuota"
+                  onClick={() => onEditarCuota(record)}
                 />
               </Tooltip>
             ) : null}

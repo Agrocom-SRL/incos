@@ -30,16 +30,17 @@ export const usePaymentCatalogsApi = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const cargar = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
+  /** Lectura pura de los tres catálogos (sin setState): segura para llamar desde el efecto. */
+  const fetchCatalogos = useCallback(async () => {
     const [metodosRes, cuentasRes, bancosRes] = await Promise.all([
       paymentMethodRepository.obtenerTodos(CATALOG_PARAMS),
       paymentAccountRepository.obtenerTodos(CATALOG_PARAMS),
       authorizedBankRepository.obtenerTodos(CATALOG_PARAMS),
     ]);
+    return { metodosRes, cuentasRes, bancosRes };
+  }, []);
 
+  const aplicarResultado = useCallback(({ metodosRes, cuentasRes, bancosRes }) => {
     if (!metodosRes?.success) {
       setError(metodosRes?.error || 'No se pudieron cargar los métodos de pago');
       setLoading(false);
@@ -64,12 +65,30 @@ export const usePaymentCatalogsApi = () => {
     setLoading(false);
   }, []);
 
+  /** Recarga manual (refetch): muestra loading y vuelve a leer los catálogos. */
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const result = await fetchCatalogos();
+    aplicarResultado(result);
+  }, [fetchCatalogos, aplicarResultado]);
+
+  // Carga inicial: `loading` ya arranca en true; el efecto solo lee y aplica
+  // (sin setState síncrono antes del await).
   useEffect(() => {
-    cargar();
-  }, [cargar]);
+    let activo = true;
+    fetchCatalogos().then((result) => {
+      if (activo) {
+        aplicarResultado(result);
+      }
+    });
+    return () => {
+      activo = false;
+    };
+  }, [fetchCatalogos, aplicarResultado]);
 
   return useMemo(
-    () => ({ metodosPago, cuentasPago, bancos, loading, error, refetch: cargar }),
-    [metodosPago, cuentasPago, bancos, loading, error, cargar],
+    () => ({ metodosPago, cuentasPago, bancos, loading, error, refetch }),
+    [metodosPago, cuentasPago, bancos, loading, error, refetch],
   );
 };

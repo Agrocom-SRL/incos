@@ -375,6 +375,16 @@ export const PAGOS_APORTES_ENDPOINTS = {
   // Endpoint específico para generar/obtener recibo de pago
   GENERATE_RECIBO: (paymentId) => `${API_BASE}/pagos-aportes/${encodeURIComponent(String(paymentId))}/recibo`,
   EXPORT_LISTA_POR_CARRERA: `${API_BASE}/pagos-aportes/export/lista-por-carrera`,
+  // Reporte read-only: planilla de control de becas por carrera (query gestion_id opcional)
+  REPORTE_BECAS_POR_CARRERA: `${API_BASE}/pagos-aportes/reportes/becas-por-carrera`,
+  // Reporte read-only: planilla de cuentas por cobrar por carrera y paralelo (query gestion_id opcional)
+  REPORTE_CUENTAS_POR_COBRAR: `${API_BASE}/pagos-aportes/reportes/cuentas-por-cobrar`,
+  // Compromiso de pago VIGENTE de una cabecera de aporte (GET vigente / POST upsert)
+  COMPROMISO_BY_PAGO: (pagoAporteId) =>
+    `${API_BASE}/pagos-aportes/${encodeURIComponent(String(pagoAporteId))}/compromiso`,
+  // Compromiso de pago por su id (PUT actualizar / DELETE anular)
+  COMPROMISO_BY_ID: (id) =>
+    `${API_BASE}/pagos-aportes/compromiso/${encodeURIComponent(String(id))}`,
 };
 
 // ============================================

@@ -16,4 +16,10 @@ export { DeletePaymentInstallmentController } from './pagos-aportes/delete-cuota
 export { UpdatePaymentInstallmentController } from './pagos-aportes/update-cuota.controller.js';
 export { GenerateReciboPagoController } from './pagos-aportes/generate-recibo.controller.js';
 export { ExportListaAportesPorCarreraExcelController } from './pagos-aportes/export-lista-por-carrera-excel.controller.js';
+export { GetBecasPorCarreraReporteController } from './pagos-aportes/becas-por-carrera-reporte.controller.js';
 export { SearchStudentsForAporteRegistroController } from './pagos-aportes/search-students-registro.controller.js';
+export { GetCompromisoController } from './pagos-aportes/compromiso-get.controller.js';
+export { UpsertCompromisoController } from './pagos-aportes/compromiso-upsert.controller.js';
+export { UpdateCompromisoController } from './pagos-aportes/compromiso-update.controller.js';
+export { DeleteCompromisoController } from './pagos-aportes/compromiso-delete.controller.js';
+export { GetCuentasPorCobrarReporteController } from './pagos-aportes/cuentas-por-cobrar-reporte.controller.js';

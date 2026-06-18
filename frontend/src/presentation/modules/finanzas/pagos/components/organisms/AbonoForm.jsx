@@ -6,12 +6,17 @@
  * de transacción y comprobante de respaldo, replicando funcionalmente el validator del
  * backend (`registerPagoAporteValidator`).
  *
+ * Si el abono deja SALDO PENDIENTE, el formulario ofrece capturar una "Fecha de
+ * compromiso de pago" (opcional) que se persiste en el compromiso del aporte (no en
+ * observaciones). El hook de pantalla decide si la envía según el saldo resultante.
+ *
  * Validación con AntD6 (Form rules), Alert `title`, Upload AntD6 para el comprobante.
  */
 
 import { Alert, Col, DatePicker, Form, Input, InputNumber, Row, Select, Upload } from 'antd';
 import { InboxOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionButton, Button } from '@atoms';
+import { allSpacing } from '@theme/tokens';
 import {
   COMPROBANTE_ACCEPT,
   COMPROBANTE_MAX_MB,
@@ -41,6 +46,15 @@ const AbonoForm = ({
 
   /** El comprobante no se sube hasta enviar el formulario (lo gestiona el repositorio). */
   const beforeUpload = () => false;
+
+  // Saldo que quedaría tras el abono: si > 0, la fecha de compromiso es relevante.
+  const montoAbono = Form.useWatch('monto', form);
+  const montoNumerico = Number(montoAbono);
+  const saldoResultante =
+    saldoPendiente > 0 && Number.isFinite(montoNumerico)
+      ? Math.max(saldoPendiente - montoNumerico, 0)
+      : saldoPendiente;
+  const dejaSaldoPendiente = saldoResultante > 0;
 
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
@@ -134,7 +148,7 @@ const AbonoForm = ({
           </Col>
         ) : null}
 
-        {reglasMetodo && !reglasMetodo.esEfectivo ? (
+        {metodoPagoId && !reglasMetodo?.esEfectivo ? (
           <Col xs={24} sm={12}>
             <Form.Item name="numeroTransaccion" label="Número de transacción (opcional)">
               <Input size="large" placeholder="N.° de transacción" />
@@ -142,13 +156,32 @@ const AbonoForm = ({
           </Col>
         ) : null}
 
+        <Col xs={24} sm={12}>
+          <Form.Item
+            name="fechaCompromiso"
+            label="Fecha de compromiso de pago (opcional)"
+            extra={
+              dejaSaldoPendiente
+                ? `Quedará un saldo de ${formatBolivianos(saldoResultante)}. Indique la fecha en que se regularizará.`
+                : 'Solo aplica si el abono deja saldo pendiente.'
+            }
+          >
+            <DatePicker
+              size="large"
+              format="DD/MM/YYYY"
+              style={{ width: '100%' }}
+              placeholder="Fecha de regularización"
+            />
+          </Form.Item>
+        </Col>
+
         <Col xs={24}>
           <Form.Item name="descripcion" label="Observación (opcional)">
             <TextArea rows={2} maxLength={500} showCount placeholder="Detalle adicional del pago" />
           </Form.Item>
         </Col>
 
-        {reglasMetodo && !reglasMetodo.esEfectivo ? (
+        {metodoPagoId && !reglasMetodo?.esEfectivo ? (
           <Col xs={24}>
             <Form.Item
               name="documentoRespaldo"
@@ -181,7 +214,7 @@ const AbonoForm = ({
           showIcon
           title="Seleccione un método de pago"
           description="Los campos del comprobante se ajustan según el método elegido."
-          style={{ marginTop: 8 }}
+          style={{ marginTop: allSpacing.marginSM }}
         />
       ) : null}
 

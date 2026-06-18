@@ -125,6 +125,9 @@ export const REPOSITORIOS_TOKENS = {
     contributionPaymentRepository: 'contributionPaymentRepository',
     contributionPaymentInstallmentRepository: 'contributionPaymentInstallmentRepository',
     contributionPaymentByCareerExcelReportRepository: 'contributionPaymentByCareerExcelReportRepository',
+    becasPorCarreraViewRepository: 'becasPorCarreraViewRepository',
+    compromisoPagoRepository: 'compromisoPagoRepository',
+    cuentasPorCobrarViewRepository: 'cuentasPorCobrarViewRepository',
 
     // TRANSITABILIDAD Y TRASPASOS
     transitabilityRepository: 'transitabilityRepository',

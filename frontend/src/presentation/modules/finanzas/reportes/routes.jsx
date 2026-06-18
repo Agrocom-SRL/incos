@@ -10,7 +10,13 @@
  *   finanzas.pago.reporte.{carrera,estudiante,gestion}.
  */
 
+import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
+
+const BecasReporteConnector = lazy(() => import('./connectors/BecasReporteConnector.jsx'));
+const CuentasPorCobrarConnector = lazy(() =>
+  import('./connectors/CuentasPorCobrarConnector.jsx'),
+);
 
 export const finanzasReportesRoutes = [
   {
@@ -45,7 +51,7 @@ export const finanzasReportesRoutes = [
   },
   {
     path: '/finanzas/reportes/cuentas-por-cobrar',
-    element: <UnderConstruction />,
+    element: <CuentasPorCobrarConnector />,
     key: 'FIN-REP-CUENTAS-COBRAR',
     breadcrumbLabel: 'Cuentas por cobrar',
     permiso: 'finanzas.pago.reporte.carrera',
@@ -55,7 +61,7 @@ export const finanzasReportesRoutes = [
   },
   {
     path: '/finanzas/reportes/becas',
-    element: <UnderConstruction />,
+    element: <BecasReporteConnector />,
     key: 'FIN-REP-BECAS',
     breadcrumbLabel: 'Becas por carrera',
     permiso: 'finanzas.pago.reporte.carrera',

@@ -13,6 +13,12 @@
  *   - TRANSFERENCIA (3): cuenta requerida; comprobante requerido.
  *   - DEPOSITO (4):      cuenta requerida; comprobante requerido.
  * El monto del abono no puede superar el saldo pendiente del aporte.
+ *
+ * Si el abono deja SALDO PENDIENTE y el usuario indicó una "fecha de compromiso de
+ * pago", tras registrar la cuota se persiste esa fecha en el compromiso del aporte
+ * (POST sobre la cabecera/`pago_aporte_id`). Ese guardado es INDEPENDIENTE: si falla
+ * (p. ej. el usuario no tiene `finanzas.pago.editar` → 403), el pago ya registrado NO
+ * se pierde; solo se avisa que el compromiso no quedó guardado.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -20,17 +26,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import dayjs from 'dayjs';
 import { usePagosRegistrarContext } from '@application-finanzas/hooks/context/usePagosRegistrarContext';
-import { METODO_CODIGO } from '@application-finanzas/mappers/pagosRegistrarMapper';
+import {
+  buildReglasMetodo,
+  findMetodoCodigo,
+} from '@finanzas/pagos/config/registrarFormConfig';
 import { PAGOS_LIST_PATH, pagoDetallePath } from '@application-finanzas/config/paths';
 
 const FIN_PAG_MENU_KEY = 'FIN-PAG';
 const DURACION_MENSAJE_ERROR = 8;
-
-/** Devuelve el código de método (EFECTIVO/QR/TRANSFERENCIA/DEPOSITO) por id seleccionado. */
-const findMetodoCodigo = (metodos, metodoPagoId) => {
-  const metodo = metodos.find((m) => m.id === metodoPagoId);
-  return metodo?.codigo || '';
-};
 
 export const usePagosRegistrarPage = () => {
   const navigate = useNavigate();
@@ -55,6 +58,7 @@ export const usePagosRegistrarPage = () => {
     errorCatalogos,
     registrarPago,
     registrando,
+    guardarCompromiso,
   } = usePagosRegistrarContext();
 
   /** Estudiante seleccionado (DTO de búsqueda) o null mientras se elige. */
@@ -123,22 +127,7 @@ export const usePagosRegistrarPage = () => {
     () => findMetodoCodigo(metodosPago, metodoPagoId),
     [metodosPago, metodoPagoId],
   );
-  const reglasMetodo = useMemo(() => {
-    const esEfectivo = metodoCodigo === METODO_CODIGO.EFECTIVO;
-    const esQR = metodoCodigo === METODO_CODIGO.QR;
-    const esTransferencia = metodoCodigo === METODO_CODIGO.TRANSFERENCIA;
-    const esDeposito = metodoCodigo === METODO_CODIGO.DEPOSITO;
-    return {
-      esEfectivo,
-      esQR,
-      esTransferencia,
-      esDeposito,
-      cuentaRequerida: esTransferencia || esDeposito,
-      cuentaVisible: esQR || esTransferencia || esDeposito,
-      comprobanteRequerido: esQR || esTransferencia || esDeposito,
-      comprobanteVisible: esQR || esTransferencia || esDeposito,
-    };
-  }, [metodoCodigo]);
+  const reglasMetodo = useMemo(() => buildReglasMetodo(metodoCodigo), [metodoCodigo]);
 
   const saldoPendiente = estado?.saldoPendiente ?? 0;
 
@@ -184,18 +173,48 @@ export const usePagosRegistrarPage = () => {
 
       const result = await registrarPago(payload);
 
-      if (result?.success) {
-        message.success('Pago registrado correctamente');
-        const cabeceraId = estado?.cabeceraId ?? result?.data?.id ?? null;
-        if (cabeceraId) {
-          navigate(pagoDetallePath(cabeceraId), {
-            state: { returnListPath, menuSidebarKey },
-          });
+      if (!result?.success) {
+        message.error(result?.error || 'No se pudo registrar el pago', DURACION_MENSAJE_ERROR);
+        return;
+      }
+
+      const cabeceraId = estado?.cabeceraId ?? result?.data?.id ?? null;
+
+      // Saldo que queda tras el abono; con saldo > 0 y fecha indicada, se compromete.
+      const saldoResultante = saldoPendiente > 0 ? Math.max(saldoPendiente - monto, 0) : 0;
+      const fechaCompromiso = values.fechaCompromiso
+        ? dayjs(values.fechaCompromiso).format('YYYY-MM-DD')
+        : null;
+      const debeComprometer = saldoResultante > 0 && fechaCompromiso && cabeceraId;
+
+      // El compromiso es INDEPENDIENTE del pago: si falla, el abono ya quedó registrado.
+      if (debeComprometer) {
+        const compromisoResult = await guardarCompromiso({
+          pagoAporteId: cabeceraId,
+          values: { fechaCompromiso },
+        });
+
+        if (compromisoResult?.success) {
+          message.success('Pago registrado y compromiso de pago guardado');
         } else {
-          navigate(returnListPath, { state: { menuSidebarKey } });
+          message.success('Pago registrado correctamente');
+          message.warning(
+            compromisoResult?.error
+              ? `El pago se registró, pero no se pudo guardar el compromiso: ${compromisoResult.error}`
+              : 'El pago se registró, pero no se pudo guardar el compromiso de pago',
+            DURACION_MENSAJE_ERROR,
+          );
         }
       } else {
-        message.error(result?.error || 'No se pudo registrar el pago', DURACION_MENSAJE_ERROR);
+        message.success('Pago registrado correctamente');
+      }
+
+      if (cabeceraId) {
+        navigate(pagoDetallePath(cabeceraId), {
+          state: { returnListPath, menuSidebarKey },
+        });
+      } else {
+        navigate(returnListPath, { state: { menuSidebarKey } });
       }
     },
     [
@@ -204,6 +223,7 @@ export const usePagosRegistrarPage = () => {
       metodoPagoId,
       reglasMetodo,
       registrarPago,
+      guardarCompromiso,
       message,
       estado,
       navigate,

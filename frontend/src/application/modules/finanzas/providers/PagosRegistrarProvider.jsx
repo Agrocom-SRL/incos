@@ -2,10 +2,10 @@
  * Provider: registro de abono/pago de aporte (Finanzas).
  *
  * Provider DELGADO (espejo de `PagosDetailProvider`): ensambla los hooks de API
- * — búsqueda de estudiantes, estado del aporte, catálogos de pago y registro —
- * y publica su contrato. La orquestación de pantalla (selección de estudiante,
- * reglas por método, submit, navegación) vive en `usePagosRegistrarPage`
- * (hooks/state), no aquí.
+ * — búsqueda de estudiantes, estado del aporte, catálogos de pago, registro y el
+ * compromiso de pago — y publica su contrato. La orquestación de pantalla (selección
+ * de estudiante, reglas por método, submit + compromiso, navegación) vive en
+ * `usePagosRegistrarPage` (hooks/state), no aquí.
  */
 
 import { useMemo } from 'react';
@@ -13,6 +13,7 @@ import { useBuscarEstudiantesRegistro } from '@application-finanzas/hooks/api/us
 import { useEstadoAporteRegistro } from '@application-finanzas/hooks/api/useEstadoAporteRegistro';
 import { usePaymentCatalogsApi } from '@application-finanzas/hooks/api/usePaymentCatalogsApi';
 import { useRegistrarPagoAporte } from '@application-finanzas/hooks/api/useRegistrarPagoAporte';
+import { useGuardarCompromiso } from '@application-finanzas/hooks/api/useGuardarCompromiso';
 import { PagosRegistrarContext } from '@application-finanzas/context/PagosRegistrarContext';
 
 export const PagosRegistrarProvider = ({ children }) => {
@@ -20,6 +21,7 @@ export const PagosRegistrarProvider = ({ children }) => {
   const estadoAporte = useEstadoAporteRegistro();
   const catalogos = usePaymentCatalogsApi();
   const registro = useRegistrarPagoAporte();
+  const compromiso = useGuardarCompromiso();
 
   const value = useMemo(
     () => ({
@@ -46,8 +48,12 @@ export const PagosRegistrarProvider = ({ children }) => {
       registrarPago: registro.registrar,
       registrando: registro.loading,
       errorRegistro: registro.error,
+      // Compromiso de pago (cuando el abono deja saldo pendiente)
+      guardarCompromiso: compromiso.guardar,
+      guardandoCompromiso: compromiso.loading,
+      errorCompromiso: compromiso.error,
     }),
-    [busqueda, estadoAporte, catalogos, registro],
+    [busqueda, estadoAporte, catalogos, registro, compromiso],
   );
 
   return <PagosRegistrarContext.Provider value={value}>{children}</PagosRegistrarContext.Provider>;

@@ -57,6 +57,9 @@ export const mapCuota = (raw) => {
     monto: toNumber(raw.monto),
     metodoNombre,
     metodoCodigo: metodoPago ? cleanText(metodoPago.codigo) : null,
+    // Ids planos del estado-registro (necesarios para precargar el form de edición).
+    metodoPagoId: raw.metodo_pago_id ?? null,
+    cuentaPagoId: raw.cuenta_pago_id ?? null,
     cuenta: cuentaPartes.length ? cuentaPartes.join(' · ') : null,
     numeroTransaccion: cleanText(raw.numero_transaccion),
     codigoComprobante: cleanText(raw.codigo_comprobante),

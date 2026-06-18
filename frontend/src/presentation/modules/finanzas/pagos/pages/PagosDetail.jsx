@@ -7,14 +7,16 @@
  * de Docentes (`DocentesDetail`): shell de detalle `sd-*` + cabecera + secciones.
  */
 
-import { Alert, Spin } from 'antd';
+import { Alert, Empty, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useAuthContext } from '@application-auth';
 import { usePagosDetailPage } from '@application-finanzas/hooks/state/usePagosDetailPage';
 import PagoFichaHeader from '@finanzas/pagos/components/organisms/PagoFichaHeader';
 import PagoCuotasSection from '@finanzas/pagos/components/organisms/PagoCuotasSection';
+import EditarCuotaModal from '@finanzas/pagos/components/organisms/EditarCuotaModal';
 
 const buildGestionLabel = (gestion) => {
   if (!gestion) return null;
@@ -33,9 +35,18 @@ const PagosDetail = () => {
     handleVolver,
     handleGenerarRecibo,
     handleEliminarCuota,
+    cuotaEnEdicion,
+    abrirEditarCuota,
+    cerrarEditarCuota,
+    guardarEditarCuota,
+    actualizandoCuota,
+    metodosPago,
+    cuentasPago,
+    loadingCatalogos,
   } = usePagosDetailPage();
 
   const puedeExportarRecibo = hasPermiso('finanzas.pago.ver', 'EXPORTAR');
+  const puedeEditarCuota = hasPermiso('finanzas.pago.editar', 'EDITAR');
   const puedeEliminarCuota = hasPermiso('finanzas.pago.editar', 'ELIMINAR');
 
   const headerActions = (
@@ -62,8 +73,11 @@ const PagosDetail = () => {
               title="No se pudo cargar la ficha"
               description={error}
               showIcon
-              style={{ marginBottom: 16 }}
+              style={{ marginBottom: allSpacing.margin }}
             />
+          )}
+          {!loading && !error && !pago && (
+            <Empty description="No se encontró el pago solicitado." style={{ marginTop: allSpacing.marginXL }} />
           )}
           {!loading && !error && pago && (
             <>
@@ -85,8 +99,10 @@ const PagosDetail = () => {
                   saldoPendiente={pago.saldoPendiente}
                   cuotas={pago.cuotas}
                   puedeExportarRecibo={puedeExportarRecibo}
+                  puedeEditarCuota={puedeEditarCuota}
                   puedeEliminarCuota={puedeEliminarCuota}
                   onGenerarRecibo={handleGenerarRecibo}
+                  onEditarCuota={abrirEditarCuota}
                   onEliminarCuota={handleEliminarCuota}
                   reciboCuotaId={reciboCuotaId}
                   descargandoRecibo={descargandoRecibo}
@@ -96,6 +112,19 @@ const PagosDetail = () => {
           )}
         </div>
       </Spin>
+
+      {puedeEditarCuota && (
+        <EditarCuotaModal
+          open={Boolean(cuotaEnEdicion)}
+          cuota={cuotaEnEdicion}
+          metodosPago={metodosPago}
+          cuentasPago={cuentasPago}
+          loadingCatalogos={loadingCatalogos}
+          guardando={actualizandoCuota}
+          onGuardar={guardarEditarCuota}
+          onCancelar={cerrarEditarCuota}
+        />
+      )}
     </PageTemplate>
   );
 };

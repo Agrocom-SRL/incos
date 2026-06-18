@@ -10,13 +10,22 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useGetPagoById } from '@application-finanzas/hooks/api/useGetPagoById';
 import { useDeletePagoCuota } from '@application-finanzas/hooks/api/useDeletePagoCuota';
+import { useUpdatePagoCuota } from '@application-finanzas/hooks/api/useUpdatePagoCuota';
 import { useGenerateReciboPago } from '@application-finanzas/hooks/api/useGenerateReciboPago';
+import { usePaymentCatalogsApi } from '@application-finanzas/hooks/api/usePaymentCatalogsApi';
 import { PagosDetailContext } from '@application-finanzas/context/PagosDetailContext';
 
 export const PagosDetailProvider = ({ children, pagoId }) => {
   const { pago, loading, error, getPagoById, refetch } = useGetPagoById();
   const { eliminarCuota, loading: eliminandoCuota } = useDeletePagoCuota();
+  const { actualizarCuota, loading: actualizandoCuota } = useUpdatePagoCuota();
   const { generarRecibo, loading: descargandoRecibo, reciboCuotaId } = useGenerateReciboPago();
+  const {
+    metodosPago,
+    cuentasPago,
+    loading: loadingCatalogos,
+    error: errorCatalogos,
+  } = usePaymentCatalogsApi();
 
   const id = Number(pagoId);
   const idValido = Number.isFinite(id) && id > 0;
@@ -43,9 +52,16 @@ export const PagosDetailProvider = ({ children, pagoId }) => {
       refetch: refetchPago,
       eliminarCuota,
       eliminandoCuota,
+      actualizarCuota,
+      actualizandoCuota,
       generarRecibo,
       descargandoRecibo,
       reciboCuotaId,
+      // Catálogos de pago para el formulario de edición de cuota.
+      metodosPago,
+      cuentasPago,
+      loadingCatalogos,
+      errorCatalogos,
     }),
     [
       idValido,
@@ -56,9 +72,15 @@ export const PagosDetailProvider = ({ children, pagoId }) => {
       refetchPago,
       eliminarCuota,
       eliminandoCuota,
+      actualizarCuota,
+      actualizandoCuota,
       generarRecibo,
       descargandoRecibo,
       reciboCuotaId,
+      metodosPago,
+      cuentasPago,
+      loadingCatalogos,
+      errorCatalogos,
     ],
   );
 
