@@ -1036,9 +1036,14 @@
   color: var(--color-warning);
 }
 
-/* Licencia (L): informativa, solo lectura. */
-.asi-celda--licencia {
-  color: var(--color-text-secondary);
+/* Licencia (L): caja sólida informativa (azul), solo lectura. No se atenúa aunque
+   se renderice dentro de --neutro: la licencia debe leerse claramente en la planilla. */
+.asi-celda--licencia,
+.asi-celda--neutro.asi-celda--licencia {
+  border: 1px solid var(--color-info);
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  opacity: 1;
 }
 
 /* Neutro / futuro / vacía: solo lectura, apagado (guion medio). */

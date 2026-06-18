@@ -19,7 +19,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, App, Col, DatePicker, Flex, Form, Input, Row, Select, Switch, Table } from 'antd';
+import { Alert, App, Col, Flex, Form, Input, Row, Select, Switch, Table, Typography } from 'antd';
 import {
   ArrowLeftOutlined,
   BankOutlined,
@@ -31,7 +31,8 @@ import {
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { DetailField, Button, BackButton, Text } from '@atoms';
+import { DetailField, Button, BackButton, FieldDatePicker, Text } from '@atoms';
+import { cfgAcademicoFormColProps } from '@configuracion/academico/components/organisms/CfgAcademicoFormWorkspace';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { allSpacing } from '@theme/tokens';
 import { useCasesFactory } from '@container';
@@ -43,17 +44,20 @@ import { MOTIVO_LICENCIA_OPTIONS } from '@application-academico/asistencia/utils
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
-const { RangePicker } = DatePicker;
-
 const BUSQUEDA_DEBOUNCE_MS = 400;
 const BUSQUEDA_MIN_CHARS = 2;
 const PRELIM_LIMIT = 10;
 
-/** Sección con el mismo shell visual que el formulario de CFG Académico. */
-const Seccion = ({ title, actions = null, children }) => (
+/** Sección con el mismo shell visual que el formulario de CFG Académico (título + lede + body). */
+const Seccion = ({ title, actions = null, descripcion = null, children }) => (
   <section className="cfg-academico-workspace cfg-academico-form-workspace">
     <header className="cfg-academico-workspace__header">
       <ListPanelHeader title={title} actions={actions} />
+      {descripcion ? (
+        <Typography.Paragraph type="secondary" className="cfg-academico-workspace__desc">
+          {descripcion}
+        </Typography.Paragraph>
+      ) : null}
     </header>
     <div className="cfg-academico-form-workspace__body">{children}</div>
   </section>
@@ -87,8 +91,8 @@ const LicenciaSolicitarPage = () => {
   const [busquedaError, setBusquedaError] = useState(null);
   const [estudianteSel, setEstudianteSel] = useState(null);
   const [submitError, setSubmitError] = useState(null);
-  // Licencia de un solo día: alterna entre DatePicker único (fechaInicio) y RangePicker.
-  const [unSoloDia, setUnSoloDia] = useState(false);
+  // Licencia de un solo día (por defecto): muestra solo "inicio"; al desactivar aparece "fin".
+  const [unSoloDia, setUnSoloDia] = useState(true);
 
   useEffect(() => {
     const t = setTimeout(() => setBusquedaDebounced(busquedaInput.trim()), BUSQUEDA_DEBOUNCE_MS);
@@ -216,18 +220,9 @@ const LicenciaSolicitarPage = () => {
   const handleSubmit = useCallback(async () => {
     setSubmitError(null);
     const values = await form.validateFields();
-    let fechaInicio;
-    let fechaFin;
-    if (unSoloDia) {
-      // Un solo día: fechaFin = fechaInicio (el backend exige ambas).
-      fechaInicio = values.fechaInicio?.format('YYYY-MM-DD');
-      fechaFin = fechaInicio;
-    } else {
-      const [desde, hasta] = values.rango ?? [];
-      fechaInicio = desde?.format('YYYY-MM-DD');
-      // Rango con solo fecha inicial (allowEmpty) → también se trata como un único día.
-      fechaFin = (hasta ?? desde)?.format('YYYY-MM-DD');
-    }
+    // Un solo día (default): fechaFin = fechaInicio. Con rango: campo "fin" aparte.
+    const fechaInicio = values.fechaInicio?.format('YYYY-MM-DD');
+    const fechaFin = unSoloDia ? fechaInicio : values.fechaFin?.format('YYYY-MM-DD');
     const result = await crearLicencia({
       inscripcionId: Number(values.inscripcionId),
       fechaInicio,
@@ -245,6 +240,7 @@ const LicenciaSolicitarPage = () => {
 
   const esBusquedaActiva = busquedaDebounced.length >= BUSQUEDA_MIN_CHARS;
   const formularioHabilitado = tieneInscripcion && !enviando;
+  const col = cfgAcademicoFormColProps(12);
 
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
@@ -259,13 +255,6 @@ const LicenciaSolicitarPage = () => {
       <DashboardPageShell>
         <MainContent>
           <Flex vertical gap="middle" className="cfg-academico-page__stack">
-            <Alert
-              type="info"
-              showIcon
-              title="Solicitud de licencia"
-              description="Elegí al estudiante (su inscripción vigente se carga automáticamente) y definí el periodo y el motivo. La solicitud queda PENDIENTE hasta su aprobación. El tope es de 15 días por gestión (lo valida el sistema)."
-            />
-
             {!entradaConEstudiante ? (
               <Seccion title="Estudiante">
                 <Input.Search
@@ -362,64 +351,76 @@ const LicenciaSolicitarPage = () => {
               )}
             </Seccion>
 
-            <Seccion title="Datos de la licencia">
+            <Seccion
+              title="Datos de la licencia"
+              descripcion="Define el motivo y las fechas. Por defecto la licencia ocupa un solo día; desactiva el interruptor para indicar una fecha de fin. El tope es de 15 días por gestión (lo valida el sistema)."
+            >
               <Form form={form} layout="vertical" disabled={!formularioHabilitado}>
                 {/* inscripcionId se precarga al resolver la inscripción vigente; oculto al usuario. */}
                 <Form.Item name="inscripcionId" hidden rules={[{ required: true }]}>
                   <Input type="hidden" />
                 </Form.Item>
 
-                <Row gutter={[24, 0]}>
-                  <Col xs={24} md={12}>
-                    <Flex
-                      align="center"
-                      gap={allSpacing.marginXS}
-                      style={{ marginBottom: allSpacing.marginXS }}
-                    >
-                      <Switch
-                        size="small"
-                        checked={unSoloDia}
-                        onChange={setUnSoloDia}
-                        disabled={!formularioHabilitado}
-                      />
-                      <Text type="secondary">Licencia de un solo día</Text>
-                    </Flex>
-                    {unSoloDia ? (
-                      <Form.Item
-                        name="fechaInicio"
-                        label="Fecha de la licencia"
-                        rules={[{ required: true, message: 'Elegí la fecha de la licencia' }]}
-                      >
-                        <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
-                      </Form.Item>
-                    ) : (
-                      <Form.Item
-                        name="rango"
-                        label="Periodo de la licencia"
-                        rules={[{ required: true, message: 'Elegí el rango de fechas' }]}
-                      >
-                        <RangePicker
-                          style={{ width: '100%' }}
-                          format="DD/MM/YYYY"
-                          allowEmpty={[true, true]}
-                        />
-                      </Form.Item>
-                    )}
-                  </Col>
-                  <Col xs={24} md={12}>
+                <Row gutter={[24, 20]} className="cfg-academico-form-workspace__grid">
+                  <Col {...col}>
                     <Form.Item
                       name="motivo"
                       label="Motivo"
                       rules={[{ required: true, message: 'Elegí el motivo de la licencia' }]}
+                      className="form-field form-field--vertical"
                     >
                       <Select placeholder="Seleccioná un motivo" options={MOTIVO_LICENCIA_OPTIONS} />
                     </Form.Item>
                   </Col>
+
+                  <Col {...col}>
+                    <Form.Item
+                      label="¿Licencia de un solo día?"
+                      className="form-field form-field--vertical"
+                    >
+                      <Flex align="center" gap={allSpacing.marginXS}>
+                        <Switch
+                          checked={unSoloDia}
+                          onChange={setUnSoloDia}
+                          disabled={!formularioHabilitado}
+                        />
+                        <Text type="secondary">
+                          {unSoloDia ? 'Sí, ocupa un solo día' : 'No, tiene fecha de fin'}
+                        </Text>
+                      </Flex>
+                    </Form.Item>
+                  </Col>
+
+                  <Col {...col}>
+                    <Form.Item
+                      name="fechaInicio"
+                      label="Inicio de la licencia"
+                      rules={[{ required: true, message: 'Elegí la fecha de inicio' }]}
+                      className="form-field form-field--vertical"
+                    >
+                      <FieldDatePicker placeholder="dd-mm-aaaa" style={{ width: '100%' }} />
+                    </Form.Item>
+                  </Col>
+
+                  {!unSoloDia ? (
+                    <Col {...col}>
+                      <Form.Item
+                        name="fechaFin"
+                        label="Fin del periodo de la licencia"
+                        rules={[{ required: true, message: 'Elegí la fecha de fin' }]}
+                        className="form-field form-field--vertical"
+                      >
+                        <FieldDatePicker placeholder="dd-mm-aaaa" style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                  ) : null}
+
                   <Col xs={24}>
                     <Form.Item
                       name="detalleMotivo"
                       label="Detalle del motivo"
                       rules={[{ required: true, message: 'Describí el motivo de la licencia' }]}
+                      className="form-field form-field--vertical"
                     >
                       <Input.TextArea
                         rows={3}
@@ -442,19 +443,24 @@ const LicenciaSolicitarPage = () => {
               ) : null}
 
               <div className="cfg-academico-form-workspace__footer">
-                <Flex justify="flex-end" gap={allSpacing.marginSM}>
-                  <Button variant="outline" onClick={handleVolver} disabled={enviando}>
-                    Cancelar
-                  </Button>
-                  <Button
-                    variant="primary"
-                    icon={<SendOutlined />}
-                    loading={enviando}
-                    disabled={!formularioHabilitado}
-                    onClick={handleSubmit}
-                  >
-                    Enviar solicitud
-                  </Button>
+                <Flex justify="space-between" align="center" gap={allSpacing.marginSM} wrap="wrap">
+                  <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
+                    Los campos marcados con <Text type="danger">*</Text> son obligatorios.
+                  </Text>
+                  <Flex justify="flex-end" gap={allSpacing.marginSM}>
+                    <Button variant="outline" onClick={handleVolver} disabled={enviando}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      variant="primary"
+                      icon={<SendOutlined />}
+                      loading={enviando}
+                      disabled={!formularioHabilitado}
+                      onClick={handleSubmit}
+                    >
+                      Enviar solicitud
+                    </Button>
+                  </Flex>
                 </Flex>
               </div>
             </Seccion>

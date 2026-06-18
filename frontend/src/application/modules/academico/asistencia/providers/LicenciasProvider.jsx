@@ -9,11 +9,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLicenciasListApi } from '@application-academico/asistencia/hooks/api/useLicenciasListApi.js';
 import { useLicenciaDecidirApi } from '@application-academico/asistencia/hooks/api/useLicenciaDecidirApi.js';
+import { useLicenciaCancelarApi } from '@application-academico/asistencia/hooks/api/useLicenciaCancelarApi.js';
 import { LicenciasContext } from '@application-academico/asistencia/context/LicenciasContext.js';
 
 export const LicenciasProvider = ({ estadoFijo, children }) => {
   const { licencias = [], loading, error, fetch: fetchLicencias } = useLicenciasListApi();
   const { decidirLicencia: decidirApi, loading: decidiendo } = useLicenciaDecidirApi();
+  const { cancelarLicencia: cancelarApi, loading: cancelando } = useLicenciaCancelarApi();
 
   const [estado, setEstado] = useState(estadoFijo ?? undefined);
 
@@ -33,6 +35,15 @@ export const LicenciasProvider = ({ estadoFijo, children }) => {
     [decidirApi, refetch],
   );
 
+  const cancelar = useCallback(
+    async (id) => {
+      const result = await cancelarApi(id);
+      if (result.success) await refetch();
+      return result;
+    },
+    [cancelarApi, refetch],
+  );
+
   const value = useMemo(
     () => ({
       licencias,
@@ -44,8 +55,10 @@ export const LicenciasProvider = ({ estadoFijo, children }) => {
       refetch,
       decidir,
       decidiendo,
+      cancelar,
+      cancelando,
     }),
-    [licencias, loading, error, estado, estadoFijo, refetch, decidir, decidiendo],
+    [licencias, loading, error, estado, estadoFijo, refetch, decidir, decidiendo, cancelar, cancelando],
   );
 
   return <LicenciasContext.Provider value={value}>{children}</LicenciasContext.Provider>;

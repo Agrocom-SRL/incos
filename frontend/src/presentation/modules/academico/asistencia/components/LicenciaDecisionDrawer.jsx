@@ -1,48 +1,132 @@
 /**
  * Drawer único de una licencia estudiantil: ficha (detalle) + decisión (aprobar/rechazar).
  *
- * Reemplaza a la página de detalle (ACA-ASI-LIC-DET) y al Modal de decisión: la acción "ver"
- * de la tabla abre este drawer; sobre una licencia PENDIENTE (y con permiso licencia.aprobar ·
- * APROBAR) ofrece aprobar/rechazar inline, sin navegar a otra pantalla. Al rechazar, el motivo
- * es obligatorio; las observaciones son opcionales. La regla "solo desde PENDIENTE" y el tope de
+ * Reutiliza el SHELL de drawer de calificaciones (EvaluacionDrawer): header oscuro, fondo
+ * `--cuaderno-fondo`, footer verde oscuro y tarjetas `SeccionAjustes` sobre `override-card`
+ * (única fuente de verdad de estilo, sin duplicar CSS). Lo propio de la licencia (hero con
+ * avatar + estado, pills, grilla de campos) vive en `lic-drawer` (licencias.css).
+ *
+ * La acción "ver" de la tabla lo abre; sobre una licencia PENDIENTE (y con permiso
+ * licencia.aprobar · APROBAR) ofrece aprobar/rechazar inline. Al rechazar el motivo es
+ * obligatorio; las observaciones son opcionales. La regla "solo desde PENDIENTE" y el tope de
  * días los valida el backend.
- *
- * Modos internos:
- *  - 'idle'    → ficha + (si pendiente/puede) botones Aprobar / Rechazar.
- *  - 'APROBAR' → ficha + observaciones (opcional) + confirmar aprobación.
- *  - 'RECHAZAR'→ ficha + motivo del rechazo (obligatorio) + observaciones.
- *
- * @param {Object} props
- * @param {boolean} props.open
- * @param {Object|null} props.licencia
- * @param {boolean} [props.puedeDecidir=false]   - permiso licencia.aprobar · APROBAR
- * @param {'APROBAR'|'RECHAZAR'|null} [props.decisionInicial] - abrir directo en modo decisión
- * @param {boolean} [props.guardando=false]
- * @param {() => void} props.onCerrar
- * @param {(payload: { decision, motivoRechazo?, observacionesDecision? }) => Promise<{success:boolean}>} props.onDecidir
  */
 
-import { useState } from 'react';
-import { Alert, Drawer, Flex, Form, Input, Tag } from 'antd';
+import { useEffect, useState } from 'react';
+import { Button, Drawer, Form, Input } from 'antd';
 import {
+  ApartmentOutlined,
+  BankOutlined,
   CalendarOutlined,
   CheckOutlined,
   CloseOutlined,
-  UserOutlined,
+  FieldTimeOutlined,
+  FileTextOutlined,
+  IdcardOutlined,
+  SolutionOutlined,
 } from '@ant-design/icons';
-import { DetailField, Button, Text } from '@atoms';
-import { allSpacing } from '@theme/tokens';
+import StatusPill from '@atoms/StatusPill';
+import SeccionAjustes from '@academico/calificaciones/components/ajustes/SeccionAjustes.jsx';
+import {
+  CALIFICACIONES_DRAWER_Z_INDEX,
+  calificacionesDrawerClassNames,
+  calificacionesDrawerRootClassName,
+  calificacionesDrawerSectionClassName,
+  calificacionesDrawerStyles,
+  calificacionesDrawerTarjetaClassName,
+} from '@academico/calificaciones/utils/calificacionesDrawerLayout.js';
 import {
   formatEstadoLicencia,
-  tagColorEstadoLicencia,
   ESTADOS_LICENCIA,
 } from '@application-academico/asistencia/utils/licenciasEstados.js';
 import { formatMotivoLicencia } from '@application-academico/asistencia/utils/licenciasMotivos.js';
+import { getMotivoPillClass, getEstadoTextClass } from '@application-academico/asistencia/utils/licenciaPills.js';
 import {
   etiquetaRangoFechas,
   etiquetaDiaMesAnio,
 } from '@application-academico/asistencia/utils/asistenciaFechas.js';
-import '@presentation/styles/pages/detail-page.css';
+import '@academico/calificaciones/styles/calificaciones.css';
+import '../styles/licencias.css';
+
+const inicialesDe = (nombre) =>
+  String(nombre || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('') || 'E';
+
+const Campo = ({ label, children, full = false }) => (
+  <div className={`lic-drawer__field${full ? ' lic-drawer__field--full' : ''}`}>
+    <span className="lic-drawer__field-label">{label}</span>
+    <span className="lic-drawer__field-value">{children ?? '—'}</span>
+  </div>
+);
+
+const Tarjeta = ({ icon, titulo, children, className }) => (
+  <SeccionAjustes
+    icon={icon}
+    titulo={titulo}
+    className={[calificacionesDrawerTarjetaClassName, className].filter(Boolean).join(' ')}
+  >
+    <div className="lic-drawer__grid">{children}</div>
+  </SeccionAjustes>
+);
+
+const DrawerFooter = ({ modo, puedeAccionar, guardando, onCerrar, onConfirmar, onModo }) => {
+  const enDecision = modo !== 'idle';
+  const esRechazo = modo === 'RECHAZAR';
+
+  if (enDecision) {
+    return (
+      <div className="cal-eval-drawer__footer">
+        <Button onClick={() => onModo('idle')} disabled={guardando}>
+          Cancelar
+        </Button>
+        <div className="cal-eval-drawer__footer-actions">
+          <Button
+            type="primary"
+            danger={esRechazo}
+            className={esRechazo ? undefined : 'cal-eval-drawer__btn-primary'}
+            icon={esRechazo ? <CloseOutlined /> : <CheckOutlined />}
+            loading={guardando}
+            onClick={onConfirmar}
+          >
+            {esRechazo ? 'Confirmar rechazo' : 'Confirmar aprobación'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="cal-eval-drawer__footer">
+      <Button onClick={onCerrar} disabled={guardando}>
+        Cerrar
+      </Button>
+      {puedeAccionar ? (
+        <div className="cal-eval-drawer__footer-actions">
+          <Button
+            color="danger"
+            variant="solid"
+            icon={<CloseOutlined />}
+            onClick={() => onModo('RECHAZAR')}
+          >
+            Rechazar
+          </Button>
+          <Button
+            type="primary"
+            className="cal-eval-drawer__btn-primary"
+            icon={<CheckOutlined />}
+            onClick={() => onModo('APROBAR')}
+          >
+            Aprobar
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 const LicenciaDecisionDrawer = ({
   open,
@@ -54,24 +138,25 @@ const LicenciaDecisionDrawer = ({
   onDecidir,
 }) => {
   const [form] = Form.useForm();
-  // 'idle' | 'APROBAR' | 'RECHAZAR'
-  const [modo, setModo] = useState('idle');
+  const [modo, setModo] = useState('idle'); // 'idle' | 'APROBAR' | 'RECHAZAR'
   const [sesion, setSesion] = useState(null);
 
   const esPendiente = licencia?.estado === ESTADOS_LICENCIA.PENDIENTE;
   const puedeAccionar = esPendiente && puedeDecidir;
   const tieneDecision = Boolean(licencia?.motivoRechazo || licencia?.observacionesDecision);
+  const esRechazo = modo === 'RECHAZAR';
+  const enDecision = modo !== 'idle';
 
   // Reset del modo al abrir o cambiar de licencia (ajuste de estado en render, sin efecto).
-  // El form se monta fresco en cada modo gracias a destroyOnHidden + render condicional.
   const sesionActual = open ? `${licencia?.id ?? ''}::${decisionInicial ?? ''}` : null;
   if (sesionActual !== sesion) {
     setSesion(sesionActual);
     setModo(open && puedeAccionar && decisionInicial ? decisionInicial : 'idle');
   }
 
-  const esRechazo = modo === 'RECHAZAR';
-  const enDecision = modo !== 'idle';
+  useEffect(() => {
+    if (open) form.resetFields();
+  }, [open, licencia, decisionInicial, form]);
 
   const handleConfirmar = async () => {
     const values = await form.validateFields();
@@ -88,96 +173,117 @@ const LicenciaDecisionDrawer = ({
     if (!guardando) onCerrar?.();
   };
 
-  const footer = !licencia ? null : enDecision ? (
-    <Flex justify="flex-end" gap={allSpacing.marginSM}>
-      <Button variant="outline" onClick={() => setModo('idle')} disabled={guardando}>
-        Cancelar
-      </Button>
-      <Button
-        variant={esRechazo ? 'error' : 'success'}
-        icon={esRechazo ? <CloseOutlined /> : <CheckOutlined />}
-        loading={guardando}
-        onClick={handleConfirmar}
-      >
-        {esRechazo ? 'Confirmar rechazo' : 'Confirmar aprobación'}
-      </Button>
-    </Flex>
-  ) : (
-    <Flex justify="flex-end" gap={allSpacing.marginSM}>
-      <Button variant="outline" onClick={handleCerrar}>
-        Cerrar
-      </Button>
-      {puedeAccionar ? (
-        <>
-          <Button variant="error" icon={<CloseOutlined />} onClick={() => setModo('RECHAZAR')}>
-            Rechazar
-          </Button>
-          <Button variant="success" icon={<CheckOutlined />} onClick={() => setModo('APROBAR')}>
-            Aprobar
-          </Button>
-        </>
-      ) : null}
-    </Flex>
-  );
-
   return (
     <Drawer
-      open={open}
-      width={520}
       title="Detalle de la licencia"
+      width={540}
+      open={open}
       onClose={handleCerrar}
-      maskClosable={!guardando}
       destroyOnHidden
-      footer={footer}
+      rootClassName={calificacionesDrawerRootClassName}
+      className={`${calificacionesDrawerSectionClassName} lic-drawer`}
+      classNames={calificacionesDrawerClassNames}
+      zIndex={CALIFICACIONES_DRAWER_Z_INDEX}
+      styles={calificacionesDrawerStyles()}
+      footer={
+        licencia ? (
+          <DrawerFooter
+            modo={modo}
+            puedeAccionar={puedeAccionar}
+            guardando={guardando}
+            onCerrar={handleCerrar}
+            onConfirmar={handleConfirmar}
+            onModo={setModo}
+          />
+        ) : null
+      }
     >
       {licencia ? (
-        <Flex vertical gap={allSpacing.marginLG}>
-          <Flex vertical gap={allSpacing.marginXS}>
-            <Flex align="center" gap={allSpacing.marginXS} wrap="wrap">
-              <UserOutlined />
-              <Text strong style={{ fontSize: 'var(--font-size-lg)' }}>
+        <div className="cal-eval-drawer__bloques lic-drawer__bloques">
+          <div className="lic-drawer__hero">
+            <span className="lic-drawer__avatar">{inicialesDe(licencia.estudianteNombre)}</span>
+            <div className="lic-drawer__hero-info">
+              <span className="lic-drawer__hero-name">
                 {licencia.estudianteNombre ?? 'Estudiante'}
-              </Text>
-              <Tag color={tagColorEstadoLicencia(licencia.estado)}>
+              </span>
+              <span className="lic-drawer__hero-meta">
+                <IdcardOutlined /> {licencia.codigoEstudiante ?? '—'}
+                {licencia.carreraNombre ? ` · ${licencia.carreraNombre}` : ''}
+              </span>
+              <span className={`lic-drawer__hero-estado ${getEstadoTextClass(licencia.estado)}`}>
+                <span className="licencia-estudiante-cell__dot" aria-hidden />
                 {formatEstadoLicencia(licencia.estado)}
-              </Tag>
-            </Flex>
-            <Text type="secondary">
-              <CalendarOutlined style={{ marginRight: allSpacing.marginXS }} />
-              {etiquetaRangoFechas(licencia.fechaInicio, licencia.fechaFin)}
-            </Text>
-          </Flex>
+              </span>
+            </div>
+          </div>
 
-          <Flex vertical gap={allSpacing.marginSM}>
-            <DetailField label="Total de días">{licencia.totalDias ?? '—'}</DetailField>
-            <DetailField label="Motivo">{formatMotivoLicencia(licencia.motivo)}</DetailField>
-            <DetailField label="Detalle del motivo">{licencia.detalleMotivo}</DetailField>
-            <DetailField label="Fecha de solicitud">
+          <Tarjeta icon={BankOutlined} titulo="Inscripción">
+            <Campo label="Carrera" full>
+              {licencia.carreraNombre ?? '—'}
+              {licencia.carreraCodigo ? ` · ${licencia.carreraCodigo}` : ''}
+            </Campo>
+            <Campo label="Periodo del plan">{licencia.periodoNombre}</Campo>
+            <Campo label="Paralelo">
+              {licencia.paraleloNombre ? (
+                <span className="lic-drawer__inline">
+                  <ApartmentOutlined /> {licencia.paraleloNombre}
+                </span>
+              ) : (
+                '—'
+              )}
+            </Campo>
+          </Tarjeta>
+
+          <Tarjeta icon={CalendarOutlined} titulo="Periodo de la licencia">
+            <Campo label="Rango de fechas" full>
+              {etiquetaRangoFechas(licencia.fechaInicio, licencia.fechaFin)}
+            </Campo>
+            <Campo label="Total de días">
+              <span className="lic-drawer__inline">
+                <FieldTimeOutlined /> {licencia.totalDias ?? '—'} día(s)
+              </span>
+            </Campo>
+            <Campo label="Fecha de solicitud">
               {etiquetaDiaMesAnio(licencia.fechaSolicitud)}
-            </DetailField>
-            {tieneDecision ? (
-              <>
-                <DetailField label="Motivo del rechazo">{licencia.motivoRechazo}</DetailField>
-                <DetailField label="Observaciones de la decisión">
-                  {licencia.observacionesDecision}
-                </DetailField>
-              </>
-            ) : null}
-          </Flex>
+            </Campo>
+          </Tarjeta>
+
+          <Tarjeta icon={SolutionOutlined} titulo="Motivo">
+            <Campo label="Categoría" full>
+              <StatusPill
+                label={formatMotivoLicencia(licencia.motivo)}
+                className={getMotivoPillClass(licencia.motivo)}
+              />
+            </Campo>
+            <Campo label="Detalle del motivo" full>
+              {licencia.detalleMotivo}
+            </Campo>
+          </Tarjeta>
+
+          {tieneDecision ? (
+            <Tarjeta icon={FileTextOutlined} titulo="Decisión registrada">
+              <Campo label="Motivo del rechazo" full>
+                {licencia.motivoRechazo}
+              </Campo>
+              <Campo label="Observaciones" full>
+                {licencia.observacionesDecision}
+              </Campo>
+            </Tarjeta>
+          ) : null}
 
           {enDecision ? (
-            <Flex vertical gap={allSpacing.marginSM}>
-              <Alert
-                type={esRechazo ? 'warning' : 'info'}
-                showIcon
-                title={
-                  esRechazo ? 'Rechazar la solicitud de licencia' : 'Aprobar la solicitud de licencia'
-                }
-                description={`${licencia.estudianteNombre ?? 'Estudiante'} · ${etiquetaRangoFechas(
-                  licencia.fechaInicio,
-                  licencia.fechaFin,
-                )} · ${licencia.totalDias ?? '—'} día(s).`}
-              />
+            <SeccionAjustes
+              icon={esRechazo ? CloseOutlined : CheckOutlined}
+              titulo={esRechazo ? 'Rechazar solicitud' : 'Aprobar solicitud'}
+              className={`${calificacionesDrawerTarjetaClassName} lic-drawer__decision lic-drawer__decision--${
+                esRechazo ? 'rechazo' : 'aprobacion'
+              }`}
+            >
+              <p className="cal-ajustes-drawer__section-desc">
+                {esRechazo
+                  ? 'Indicá el motivo del rechazo. Las observaciones son opcionales.'
+                  : 'Confirmá la aprobación. Podés dejar observaciones internas (opcional).'}
+              </p>
               <Form form={form} layout="vertical">
                 {esRechazo ? (
                   <Form.Item
@@ -205,9 +311,9 @@ const LicenciaDecisionDrawer = ({
                   />
                 </Form.Item>
               </Form>
-            </Flex>
+            </SeccionAjustes>
           ) : null}
-        </Flex>
+        </div>
       ) : null}
     </Drawer>
   );

@@ -15,6 +15,38 @@ const ESTUDIANTE_NOMBRE_SQL =
   "TRIM(CONCAT_WS(' ', e.apellido_paterno, e.apellido_materno, e.nombres))";
 
 /**
+ * Datos académicos de la inscripción (código del estudiante, carrera, periodo del
+ * plan y paralelo) colapsados a UNA fila por inscripción.
+ *
+ * `vista_estudiante_inscripcion_actual` está a grano de MATERIA (una fila por
+ * materia inscrita), pero código/carrera/periodo/paralelo son compartidos por
+ * todas las materias de una misma inscripción (un estudiante se inscribe a un
+ * único paralelo). Por eso se agrupa por `inscripcion_id` con agregados MIN para
+ * obtener un único valor estable por inscripción y NO multiplicar la licencia.
+ */
+const INSCRIPCION_ACADEMICA_SUBQUERY = `
+      (
+        SELECT
+          v.inscripcion_id,
+          MIN(v.codigo_estudiante) AS codigo_estudiante,
+          MIN(v.carrera_nombre)    AS carrera_nombre,
+          MIN(v.carrera_codigo)    AS carrera_codigo,
+          MIN(v.periodo_nombre)    AS periodo_nombre,
+          MIN(v.paralelo_nombre)   AS paralelo_nombre
+        FROM vista_estudiante_inscripcion_actual v
+        GROUP BY v.inscripcion_id
+      )
+`;
+
+/** Columnas académicas seleccionadas desde el subquery agrupado (alias `ia`). */
+const INSCRIPCION_ACADEMICA_COLUMNS = `
+        ia.codigo_estudiante,
+        ia.carrera_nombre,
+        ia.carrera_codigo,
+        ia.periodo_nombre,
+        ia.paralelo_nombre`;
+
+/**
  * Implementación del repositorio de licencias (`licencias`).
  *
  * @implements {ILicenciaRepository}
@@ -129,11 +161,13 @@ export class LicenseRepository extends BaseRepository {
         l.estado,
         l.motivo_rechazo,
         l.observaciones_decision,
-        i.gestion_id
+        i.gestion_id,
+${INSCRIPCION_ACADEMICA_COLUMNS}
       FROM licencias l
       LEFT JOIN inscripciones i ON i.id = l.inscripcion_id
       LEFT JOIN estudiantes_datos_academicos eda ON eda.id = i.datos_academicos_id
       LEFT JOIN estudiantes e ON e.id = eda.estudiante_id
+      LEFT JOIN ${INSCRIPCION_ACADEMICA_SUBQUERY} ia ON ia.inscripcion_id = l.inscripcion_id
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY l.fecha_solicitud DESC, l.id DESC
     `;
@@ -164,11 +198,13 @@ export class LicenseRepository extends BaseRepository {
         l.estado,
         l.motivo_rechazo,
         l.observaciones_decision,
-        i.gestion_id
+        i.gestion_id,
+${INSCRIPCION_ACADEMICA_COLUMNS}
       FROM licencias l
       LEFT JOIN inscripciones i ON i.id = l.inscripcion_id
       LEFT JOIN estudiantes_datos_academicos eda ON eda.id = i.datos_academicos_id
       LEFT JOIN estudiantes e ON e.id = eda.estudiante_id
+      LEFT JOIN ${INSCRIPCION_ACADEMICA_SUBQUERY} ia ON ia.inscripcion_id = l.inscripcion_id
       WHERE l.id = ? AND l.deleted_at IS NULL
       LIMIT 1
     `;
