@@ -34,7 +34,6 @@ export const crearLicenciaValidator = [
 export const decidirLicenciaValidator = [
   idParam,
   body('decision').isIn(['APROBAR', 'RECHAZAR']).withMessage('Decisión inválida'),
-  body('motivoRechazo').optional({ nullable: true }).isString().isLength({ max: 2000 }),
   body('observacionesDecision').optional({ nullable: true }).isString().isLength({ max: 2000 }),
 ];
 
@@ -50,4 +49,7 @@ export const editarLicenciaValidator = [
     .withMessage('El detalle del motivo es obligatorio'),
 ];
 
-export const cancelarLicenciaValidator = [idParam];
+export const cancelarLicenciaValidator = [
+  idParam,
+  body('observacionesDecision').optional({ nullable: true }).isString().isLength({ max: 2000 }),
+];

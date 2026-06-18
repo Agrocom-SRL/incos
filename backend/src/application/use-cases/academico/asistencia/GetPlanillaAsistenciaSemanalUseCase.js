@@ -90,13 +90,29 @@ export class GetPlanillaAsistenciaSemanalUseCase {
 
     const sesionRepo = this.asistenciaSesionViewRepository;
     const planillaRepo = this.asistenciaPlanillaViewRepository;
-    const [bloquesHorario, roster, celdas, feriados, clasesNoDictadas] = await Promise.all([
-      sesionRepo.listarBloquesHorario(asignacionIdNum),
-      planillaRepo.listarRoster(asignacionIdNum),
-      planillaRepo.listarCeldasPlanilla(asignacionIdNum, desdeIso, hastaIso),
-      sesionRepo.listarFeriadosCalendario(gestionId, desdeIso, hastaIso),
-      sesionRepo.listarClasesNoDictadas(asignacionIdNum, desdeIso, hastaIso),
-    ]);
+    const [bloquesHorario, roster, celdas, licenciasRoster, feriados, clasesNoDictadas] =
+      await Promise.all([
+        sesionRepo.listarBloquesHorario(asignacionIdNum),
+        planillaRepo.listarRoster(asignacionIdNum),
+        planillaRepo.listarCeldasPlanilla(asignacionIdNum, desdeIso, hastaIso),
+        planillaRepo.listarLicenciasRoster(asignacionIdNum, desdeIso, hastaIso),
+        sesionRepo.listarFeriadosCalendario(gestionId, desdeIso, hastaIso),
+        sesionRepo.listarClasesNoDictadas(asignacionIdNum, desdeIso, hastaIso),
+      ]);
+
+    // Licencias APROBADAS por matrícula (rangos), para cruzar SIN depender de sesiones:
+    // un día de clase dentro del rango debe marcar LICENCIA aunque no se haya tomado asistencia.
+    const licenciaRangosPorMatricula = new Map();
+    for (const l of licenciasRoster ?? []) {
+      const key = Number(l.matricula_materia_id);
+      const rango = { inicio: toISODate(l.fecha_inicio), fin: toISODate(l.fecha_fin) };
+      if (!licenciaRangosPorMatricula.has(key)) licenciaRangosPorMatricula.set(key, []);
+      licenciaRangosPorMatricula.get(key).push(rango);
+    }
+    const tieneLicenciaEnFecha = (matriculaMateriaId, fecha) =>
+      (licenciaRangosPorMatricula.get(matriculaMateriaId) ?? []).some(
+        (r) => r.inicio <= fecha && fecha <= r.fin,
+      );
 
     // Días de clase (horario) ∪ fechas con sesión tomada (incluye especiales).
     const diasSet = setDiasDesdeHorario(bloquesHorario);
@@ -149,7 +165,11 @@ export class GetPlanillaAsistenciaSemanalUseCase {
         const neutroDia = neutroDeFecha(fecha);
         const celda = celdaPorClave.get(`${matriculaMateriaId}|${fecha}`) ?? null;
         const estado = celda?.estado ?? null;
-        const tieneLicencia = celda?.tiene_licencia === 1 || celda?.tiene_licencia === true;
+        // Licencia: la del cruce por sesión (vista 133) O la del rango directo (sin sesión).
+        const tieneLicencia =
+          celda?.tiene_licencia === 1 ||
+          celda?.tiene_licencia === true ||
+          tieneLicenciaEnFecha(matriculaMateriaId, fecha);
 
         // Solo se deriva marca si hay sesión (día tomado); sin sesión no hay marca.
         let marca = null;

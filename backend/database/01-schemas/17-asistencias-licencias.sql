@@ -99,8 +99,7 @@ CREATE TABLE licencias (
     -- Estado de aprobación
     estado ENUM('PENDIENTE', 'APROBADA', 'RECHAZADA', 'CANCELADA') DEFAULT 'PENDIENTE'
         COMMENT 'PENDIENTE (recibida), APROBADA (autorizada, neutraliza ausencias en el rango), RECHAZADA, CANCELADA',
-    motivo_rechazo TEXT NULL COMMENT 'Motivo del rechazo',
-    observaciones_decision TEXT NULL COMMENT 'Observaciones del decisor',
+    observaciones_decision TEXT NULL COMMENT 'Observación única de la decisión (motivo de aprobación/rechazo/cancelación)',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',

@@ -33,6 +33,38 @@ export class AsistenciaPlanillaViewRepository extends IAsistenciaPlanillaViewRep
     );
   }
 
+  /**
+   * Licencias APROBADAS que cubren el rango, por matrícula del roster — INDEPENDIENTE de
+   * sesiones (la vista 133 solo cruza licencias en días con sesión tomada). La licencia es
+   * transversal a la inscripción: aplica a TODAS las materias del estudiante en esas fechas.
+   * @param {number} asignacionDocenteId @param {string} desde @param {string} hasta
+   * @returns {Promise<Array<{ matricula_materia_id: number, fecha_inicio: string, fecha_fin: string }>>}
+   */
+  async listarLicenciasRoster(asignacionDocenteId, desde, hasta) {
+    return sequelize.query(
+      `
+      SELECT
+        r.matricula_materia_id,
+        l.fecha_inicio,
+        l.fecha_fin
+      FROM vista_base_calificacion_estudiante_matricula_curso r
+      INNER JOIN matriculas_materia mm
+        ON mm.id = r.matricula_materia_id
+        AND mm.deleted_at IS NULL
+        AND mm.activo = TRUE
+      INNER JOIN licencias l
+        ON l.inscripcion_id = mm.inscripcion_id
+        AND l.estado = 'APROBADA'
+        AND l.activo = TRUE
+        AND l.deleted_at IS NULL
+        AND l.fecha_inicio <= ?
+        AND l.fecha_fin >= ?
+      WHERE r.asignacion_docente_id = ?
+      `,
+      { replacements: [hasta, desde, asignacionDocenteId], type: sequelize.QueryTypes.SELECT },
+    );
+  }
+
   /** @param {number} asignacionDocenteId */
   async listarRoster(asignacionDocenteId) {
     return sequelize.query(

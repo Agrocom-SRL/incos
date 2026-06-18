@@ -70,8 +70,8 @@ export const useLicenciasListPage = () => {
   // Cancelar (PENDIENTE o APROBADA → CANCELADA). Usado por la fila (TableActions confirma)
   // y por el drawer (confirma con su propio modal).
   const onCancelar = useCallback(
-    async (licencia) => {
-      const result = await cancelar?.(licencia.id);
+    async (licencia, observacionesDecision) => {
+      const result = await cancelar?.(licencia.id, { observacionesDecision });
       if (result?.success) message.success('Licencia cancelada');
       else message.error(result?.error || 'No se pudo cancelar la licencia');
       return result;

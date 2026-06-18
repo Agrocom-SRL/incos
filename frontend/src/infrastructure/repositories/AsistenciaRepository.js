@@ -315,13 +315,12 @@ class AsistenciaRepository {
   /**
    * PUT /v1/asistencia/licencias/:id/decision — aprobar/rechazar una licencia PENDIENTE.
    * @param {number|string} id
-   * @param {{ decision: 'APROBAR'|'RECHAZAR', motivoRechazo?: string,
-   *   observacionesDecision?: string }} payload
+   * @param {{ decision: 'APROBAR'|'RECHAZAR', observacionesDecision?: string }} payload
+   *   `observacionesDecision`: campo único (motivo del rechazo / observación de la aprobación).
    */
-  async decidirLicencia(id, { decision, motivoRechazo, observacionesDecision } = {}) {
+  async decidirLicencia(id, { decision, observacionesDecision } = {}) {
     try {
       const body = { decision };
-      if (motivoRechazo != null) body.motivoRechazo = motivoRechazo;
       if (observacionesDecision != null) body.observacionesDecision = observacionesDecision;
       const response = await apiClient.put(ASISTENCIA_ENDPOINTS.LICENCIA_DECISION(id), body);
       const responseData = response.data;
@@ -360,10 +359,13 @@ class AsistenciaRepository {
   /**
    * PUT /v1/asistencia/licencias/:id/cancel — cancelar una licencia PENDIENTE o APROBADA.
    * @param {number|string} id
+   * @param {{ observacionesDecision?: string }} [payload] - Motivo de la cancelación (campo único).
    */
-  async cancelarLicencia(id) {
+  async cancelarLicencia(id, { observacionesDecision } = {}) {
     try {
-      const response = await apiClient.put(ASISTENCIA_ENDPOINTS.LICENCIA_CANCEL(id));
+      const body = {};
+      if (observacionesDecision != null) body.observacionesDecision = observacionesDecision;
+      const response = await apiClient.put(ASISTENCIA_ENDPOINTS.LICENCIA_CANCEL(id), body);
       const responseData = response.data;
       if (responseData.success === false) {
         return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };

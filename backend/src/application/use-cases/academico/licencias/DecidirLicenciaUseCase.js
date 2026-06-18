@@ -21,11 +21,14 @@ export class DecidirLicenciaUseCase {
    * @param {Object} params
    * @param {number} params.usuarioId
    * @param {number} params.id
-   * @param {Object} params.body - { decision, motivoRechazo?, observacionesDecision? }
+   * @param {Object} params.body - { decision, observacionesDecision? }
    * @returns {Promise<{licencia: Object}>}
+   *
+   * Campo ÚNICO `observacionesDecision`: registra la observación de cualquier decisión.
+   * En RECHAZAR es obligatorio (es el motivo); en APROBAR es opcional (por qué se aprueba).
    */
   async execute({ usuarioId, id, body = {} }) {
-    const { decision, motivoRechazo, observacionesDecision } = body;
+    const { decision, observacionesDecision } = body;
 
     if (!decision || !Object.values(DECISIONES).includes(decision)) {
       throw new ValidationError('Decisión inválida (APROBAR o RECHAZAR)');
@@ -39,6 +42,8 @@ export class DecidirLicenciaUseCase {
       throw new ValidationError('Solo se pueden decidir licencias en estado PENDIENTE');
     }
 
+    const observacion = observacionesDecision != null ? String(observacionesDecision).trim() : '';
+
     if (decision === DECISIONES.APROBAR) {
       const diasAprobados = await this.licenseRepository.sumApprovedDaysByInscripcion(
         licencia.enrollmentId,
@@ -49,8 +54,8 @@ export class DecidirLicenciaUseCase {
           `Aprobar supera el tope de ${TOPE_DIAS_GESTION} días por gestión (aprobados: ${diasAprobados})`,
         );
       }
-    } else if (!motivoRechazo || !String(motivoRechazo).trim()) {
-      throw new ValidationError('El motivo de rechazo es obligatorio');
+    } else if (!observacion) {
+      throw new ValidationError('El motivo del rechazo es obligatorio');
     }
 
     const nuevoEstado =
@@ -60,11 +65,7 @@ export class DecidirLicenciaUseCase {
       id,
       {
         state: nuevoEstado,
-        rejectionReason:
-          decision === DECISIONES.RECHAZAR ? String(motivoRechazo).trim() : null,
-        decisionObservations: observacionesDecision
-          ? String(observacionesDecision).trim()
-          : null,
+        decisionObservations: observacion || null,
       },
       usuarioId,
     );

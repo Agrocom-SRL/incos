@@ -13,6 +13,7 @@ export class CancelarLicenciaController {
       const resultado = await this.cancelarLicenciaUseCase.execute({
         usuarioId: req.usuario.id,
         id: Number(req.params.id),
+        observacionesDecision: req.body?.observacionesDecision,
       });
       return this.responseFormatter._success(
         res,

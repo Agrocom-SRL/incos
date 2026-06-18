@@ -9,8 +9,7 @@ export class DecidirLicenciaUseCase {
 
   /**
    * @param {number|string} id
-   * @param {{ decision: 'APROBAR'|'RECHAZAR', motivoRechazo?: string,
-   *   observacionesDecision?: string }} payload
+   * @param {{ decision: 'APROBAR'|'RECHAZAR', observacionesDecision?: string }} payload
    */
   async ejecutar(id, payload) {
     return this.asistenciaRepository.decidirLicencia(id, payload);

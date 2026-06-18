@@ -20,9 +20,10 @@ export class CancelarLicenciaUseCase {
    * @param {Object} params
    * @param {number} params.usuarioId
    * @param {number} params.id
+   * @param {string} [params.observacionesDecision] - Motivo de la cancelación (campo único).
    * @returns {Promise<{licencia: Object}>}
    */
-  async execute({ usuarioId, id }) {
+  async execute({ usuarioId, id, observacionesDecision }) {
     const licencia = await this.licenseRepository.findById(id);
     if (!licencia) {
       throw new NotFoundError('Licencia');
@@ -33,7 +34,14 @@ export class CancelarLicenciaUseCase {
       );
     }
 
-    await this.licenseRepository.update(id, { state: ESTADOS_LICENCIAS.CANCELADA }, usuarioId);
+    // Campo único: si llega observación, registra el motivo de la cancelación; si no
+    // (p. ej. cancelar desde la fila), conserva la observación previa.
+    const updateData = { state: ESTADOS_LICENCIAS.CANCELADA };
+    if (observacionesDecision !== undefined) {
+      updateData.decisionObservations = String(observacionesDecision ?? '').trim() || null;
+    }
+
+    await this.licenseRepository.update(id, updateData, usuarioId);
 
     this.logger?.info('[Licencias] Licencia cancelada', { id, estadoPrevio: licencia.state });
 

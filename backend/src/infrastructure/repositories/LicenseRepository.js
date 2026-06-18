@@ -97,9 +97,6 @@ export class LicenseRepository extends BaseRepository {
         if (filters.reasonDetail !== undefined) {
             where.detalleMotivo = filters.reasonDetail;
         }
-        if (filters.rejectionReason !== undefined) {
-            where.motivoRechazo = filters.rejectionReason;
-        }
         if (filters.decisionObservations !== undefined) {
             where.observacionesDecision = filters.decisionObservations;
         }
@@ -108,7 +105,7 @@ export class LicenseRepository extends BaseRepository {
     }
 
     getSearchFields() {
-        return ['detalleMotivo', 'observacionesDecision', 'motivoRechazo'];
+        return ['detalleMotivo', 'observacionesDecision'];
     }
 
     getDefaultSort() {
@@ -135,7 +132,7 @@ export class LicenseRepository extends BaseRepository {
      * @param {Object} [filters]
      * @param {string[]} [filters.states] - Estados a incluir (PENDIENTE/APROBADA/...).
      * @returns {Promise<Array>} filas: id, inscripcion_id, estudiante_nombre, fecha_solicitud,
-     *   fecha_inicio, fecha_fin, total_dias, motivo, detalle_motivo, estado, motivo_rechazo,
+     *   fecha_inicio, fecha_fin, total_dias, motivo, detalle_motivo, estado,
      *   observaciones_decision, gestion_id.
      */
     async findAllWithStudentName(filters = {}) {
@@ -159,7 +156,6 @@ export class LicenseRepository extends BaseRepository {
         l.motivo,
         l.detalle_motivo,
         l.estado,
-        l.motivo_rechazo,
         l.observaciones_decision,
         i.gestion_id,
 ${INSCRIPCION_ACADEMICA_COLUMNS}
@@ -196,7 +192,6 @@ ${INSCRIPCION_ACADEMICA_COLUMNS}
         l.motivo,
         l.detalle_motivo,
         l.estado,
-        l.motivo_rechazo,
         l.observaciones_decision,
         i.gestion_id,
 ${INSCRIPCION_ACADEMICA_COLUMNS}

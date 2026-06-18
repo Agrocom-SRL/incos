@@ -47,8 +47,8 @@ export const LicenciasProvider = ({ estadoFijo, children }) => {
   );
 
   const cancelar = useCallback(
-    async (id) => {
-      const result = await cancelarApi(id);
+    async (id, payload) => {
+      const result = await cancelarApi(id, payload);
       if (result.success) await refetch();
       return result;
     },

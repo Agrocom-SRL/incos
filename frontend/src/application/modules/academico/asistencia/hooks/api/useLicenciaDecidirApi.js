@@ -1,6 +1,6 @@
 /**
  * Aprobar o rechazar una licencia PENDIENTE.
- * Fetch puro: `decidirLicencia(id, { decision, motivoRechazo, observacionesDecision })`.
+ * Fetch puro: `decidirLicencia(id, { decision, observacionesDecision })`.
  * La regla "solo desde PENDIENTE" la valida el backend; el front solo muestra el error.
  */
 import { createApiHook } from '@application/utils/hooks';

@@ -39,9 +39,6 @@ export class License extends BaseEntity {
         } else if (!data.hasOwnProperty('enrollmentId')) {
             this.state = ESTADOS_LICENCIAS.PENDIENTE;
         }
-        if (data.hasOwnProperty('rejectionReason')) {
-            this.rejectionReason = data.rejectionReason;
-        }
         if (data.hasOwnProperty('decisionObservations')) {
             this.decisionObservations = data.decisionObservations;
         }
@@ -100,9 +97,6 @@ export class License extends BaseEntity {
         }
         if (this.hasOwnProperty('state')) {
             plainObject.state = this.state;
-        }
-        if (this.hasOwnProperty('rejectionReason')) {
-            plainObject.rejectionReason = this.rejectionReason;
         }
         if (this.hasOwnProperty('decisionObservations')) {
             plainObject.decisionObservations = this.decisionObservations;

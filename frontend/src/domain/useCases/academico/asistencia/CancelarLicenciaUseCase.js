@@ -9,9 +9,10 @@ export class CancelarLicenciaUseCase {
 
   /**
    * @param {number|string} id
+   * @param {{ observacionesDecision?: string }} [payload]
    */
-  async ejecutar(id) {
-    return this.asistenciaRepository.cancelarLicencia(id);
+  async ejecutar(id, payload = {}) {
+    return this.asistenciaRepository.cancelarLicencia(id, payload);
   }
 }
 

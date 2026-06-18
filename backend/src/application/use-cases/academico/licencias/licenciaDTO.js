@@ -24,7 +24,6 @@ export function toLicenciaDTO(row) {
     motivo: row.motivo ?? null,
     detalleMotivo: row.detalle_motivo ?? null,
     estado: row.estado ?? null,
-    motivoRechazo: row.motivo_rechazo ?? null,
     observacionesDecision: row.observaciones_decision ?? null,
   };
 }
