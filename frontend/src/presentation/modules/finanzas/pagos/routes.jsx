@@ -3,19 +3,24 @@
  * Finanzas → Pagos (ítem de menú FIN, order 1).
  *
  * Módulo NUEVO e independiente: NO importa connectors del legacy `@pagos`.
- * En Fase 1 las páginas son placeholders propios; la implementación real
- * (lista/registro/detalle de aportes sobre /api/v1/pagos-aportes y la página
- * de Compromiso de pago) se construye en fases posteriores.
+ * El LISTADO (FIN-PAG) ya está implementado con páginas/arquitectura propias
+ * (espejo de Docentes) sobre la infraestructura compartida /api/v1/pagos-aportes.
+ * Registro, compromiso y detalle siguen como placeholders hasta sus fases.
  *
  * Permisos reutilizados del seed 60-FIN: finanzas.pago.{ver,registrar}.
  */
 
+import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
+
+const PagosListConnector = lazy(() => import('./connectors/PagosListConnector.jsx'));
+const PagosDetailConnector = lazy(() => import('./connectors/PagosDetailConnector.jsx'));
+const PagosRegistrarConnector = lazy(() => import('./connectors/PagosRegistrarConnector.jsx'));
 
 export const finanzasPagosRoutes = [
   {
     path: '/finanzas/pagos/registrar',
-    element: <UnderConstruction />,
+    element: <PagosRegistrarConnector />,
     key: 'FIN-PAG-REGISTRAR',
     breadcrumbLabel: 'Registrar pago',
     permiso: 'finanzas.pago.registrar',
@@ -35,7 +40,7 @@ export const finanzasPagosRoutes = [
   },
   {
     path: '/finanzas/pagos/:id',
-    element: <UnderConstruction />,
+    element: <PagosDetailConnector />,
     key: 'FIN-PAG-DETALLE',
     breadcrumbLabel: 'Detalle de pago',
     permiso: 'finanzas.pago.ver',
@@ -45,7 +50,7 @@ export const finanzasPagosRoutes = [
   },
   {
     path: '/finanzas/pagos',
-    element: <UnderConstruction />,
+    element: <PagosListConnector />,
     key: 'FIN-PAG',
     permiso: 'finanzas.pago.ver',
     accion: 'LISTAR',
