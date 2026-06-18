@@ -10,12 +10,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Skeleton } from 'antd';
-import {
-  ArrowLeftOutlined,
-  CalendarOutlined,
-  LockOutlined,
-  UnlockOutlined,
-} from '@ant-design/icons';
+import { ArrowLeftOutlined, CalendarOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
@@ -61,8 +56,6 @@ const PlanillaAsistenciaSemanalPage = () => {
     dias,
     rangoSemana,
     registroEstado,
-    registroCerrado,
-    modoCorreccion,
     puedeEditar,
     isLoading,
     error,
@@ -75,8 +68,8 @@ const PlanillaAsistenciaSemanalPage = () => {
     descartarCambios,
     guardarPlanilla,
     guardando,
-    cerrarRegistro,
-    reabrirYcorregir,
+    cerrarDia,
+    reabrirDia,
     procesandoCierre,
     semanaPrev,
     semanaSig,
@@ -148,17 +141,21 @@ const PlanillaAsistenciaSemanalPage = () => {
     navigate(volverPath);
   }, [hayCambios, descartarCambios, navigate, volverPath]);
 
-  const confirmarCerrar = useCallback(() => {
-    modal.confirm({
-      title: 'Cerrar registro de asistencia',
-      okText: 'Cerrar registro',
-      okType: 'danger',
-      cancelText: 'Cancelar',
-      content:
-        'La asistencia del bimestre quedará en solo lectura. Podrás reabrirla para corregir.',
-      onOk: cerrarRegistro,
-    });
-  }, [modal, cerrarRegistro]);
+  // Cerrar un día desde la grilla pide confirmación (firma esa fecha en solo lectura).
+  const confirmarCerrarDia = useCallback(
+    (fecha) => {
+      modal.confirm({
+        title: 'Cerrar la asistencia de este día',
+        okText: 'Cerrar día',
+        okType: 'danger',
+        cancelText: 'Cancelar',
+        content:
+          'La asistencia de ese día quedará en solo lectura. Podrás reabrirla para corregir.',
+        onOk: () => cerrarDia(fecha),
+      });
+    },
+    [modal, cerrarDia],
+  );
 
   const sigla = ficha?.materiaSigla ?? null;
 
@@ -187,29 +184,6 @@ const PlanillaAsistenciaSemanalPage = () => {
           >
             Calendario
           </ActionButton>
-          {registroCerrado ? (
-            <ActionButton
-              permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-              accion="EDITAR"
-              variant="warning"
-              icon={<UnlockOutlined />}
-              loading={procesandoCierre}
-              onClick={reabrirYcorregir}
-            >
-              Reabrir para corregir
-            </ActionButton>
-          ) : (
-            <ActionButton
-              permiso={ASISTENCIA_PERMISOS.registroCuaderno}
-              accion="EDITAR"
-              variant="danger"
-              icon={<LockOutlined />}
-              loading={procesandoCierre}
-              onClick={confirmarCerrar}
-            >
-              Cerrar registro
-            </ActionButton>
-          )}
           <BackButton
             icon={<ArrowLeftOutlined />}
             onClick={handleVolver}
@@ -235,38 +209,8 @@ const PlanillaAsistenciaSemanalPage = () => {
     />
   ) : null;
 
-  // Alertas de estado: van FUERA del MainContent (antes de la cabecera) para que un
-  // aviso (registro cerrado / corrección / solo lectura) salte primero.
-  const alertas = (
-    <>
-      {registroCerrado ? (
-        <Alert
-          type="warning"
-          showIcon
-          title="Registro cerrado (solo lectura)"
-          description="Reabrí el registro para marcar atrasos o corregir faltas de este bimestre."
-        />
-      ) : modoCorreccion ? (
-        <Alert
-          type="info"
-          showIcon
-          title="Modo corrección activo"
-          description="Tocá una falta para registrar un atraso (—); volvé a tocar para marcar presente."
-        />
-      ) : null}
-
-      {!puedeEditar ? (
-        <Alert
-          type="info"
-          showIcon
-          title="Solo lectura"
-          description="No tenés permiso para editar la asistencia de este curso."
-        />
-      ) : null}
-    </>
-  );
-
-  // Estructura: header + alertas (fuera de MainContent) + DashboardPageShell (cabecera + contenido).
+  // Estructura: header + DashboardPageShell (cabecera + contenido). El cierre/reapertura
+  // por día es una acción intencional desde la grilla: no necesita banners de estado.
   const renderPagina = (mainNode) => (
     <Flex
       vertical
@@ -275,7 +219,6 @@ const PlanillaAsistenciaSemanalPage = () => {
       style={{ width: '100%' }}
     >
       <PageHeaderArea>{pageHeader}</PageHeaderArea>
-      {alertas}
       <DashboardPageShell>
         <MainContent>
           <Flex
@@ -353,17 +296,17 @@ const PlanillaAsistenciaSemanalPage = () => {
             filas={filasFiltradas}
             hoy={hoy}
             rangoSemana={rangoSemana}
-            registroCerrado={registroCerrado}
             puedeEditar={puedeEditar}
             estadoCelda={estadoCelda}
             onToggleCelda={toggleCelda}
             onHabilitarEspecial={abrirFechaEspecial}
+            onCerrarDia={confirmarCerrarDia}
+            onReabrirDia={reabrirDia}
+            procesandoCierre={procesandoCierre}
             onSolicitarLicencia={
               puedeCrearLicencia ? handleSolicitarLicencia : undefined
             }
-            onGuardar={
-              puedeEditar && !registroCerrado ? guardarPlanilla : undefined
-            }
+            onGuardar={puedeEditar ? guardarPlanilla : undefined}
             guardando={guardando}
             hayCambios={hayCambios}
           />

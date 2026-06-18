@@ -105,21 +105,6 @@ export const createLicenciasTableColumns = ({ onVer, onEditar, onCancelar } = {}
       const esAprobada = record.estado === ESTADOS_LICENCIA.APROBADA;
       const nombre = record.estudianteNombre || 'Estudiante';
 
-      // Editar solo PENDIENTE; cancelar PENDIENTE o APROBADA (no si ya RECHAZADA/CANCELADA).
-      const extraActions = esPendiente
-        ? [
-            {
-              key: 'editar',
-              icon: <CalendarOutlined />,
-              variant: 'warning',
-              tooltip: 'Editar licencia',
-              permiso: ASISTENCIA_PERMISOS.licenciaCrear,
-              accion: 'EDITAR',
-              onClick: (r) => onEditar?.(r),
-            },
-          ]
-        : [];
-
       const itemDetails = [
         { label: 'Estudiante', value: nombre, icon: <UserOutlined /> },
         { label: 'Código', value: record.codigoEstudiante, icon: <IdcardOutlined /> },
@@ -140,12 +125,14 @@ export const createLicenciasTableColumns = ({ onVer, onEditar, onCancelar } = {}
         <TableActions
           record={record}
           onView={() => onVer?.(record)}
-          extraActions={extraActions}
+          onEdit={esPendiente ? () => onEditar?.(record) : undefined}
+          editTitle="Editar licencia"
           deleteFn={esPendiente || esAprobada ? () => onCancelar?.(record) : undefined}
           itemName={`la licencia de ${nombre}`}
           itemDetails={itemDetails}
           permisos={{
             ver: { codigo: ASISTENCIA_PERMISOS.licenciaVer, accion: 'DETALLE' },
+            editar: { codigo: ASISTENCIA_PERMISOS.licenciaCrear, accion: 'EDITAR' },
             eliminar: { codigo: ASISTENCIA_PERMISOS.licenciaCrear, accion: 'ELIMINAR' },
           }}
         />

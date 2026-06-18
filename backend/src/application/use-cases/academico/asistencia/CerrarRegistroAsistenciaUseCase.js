@@ -27,7 +27,7 @@ export class CerrarRegistroAsistenciaUseCase {
     this.logger = logger;
   }
 
-  async execute({ usuarioId, asignacionId, bimestre }) {
+  async execute({ usuarioId, asignacionId, bimestre, fecha }) {
     const bimestreNum = Number(bimestre);
     if (!Number.isFinite(bimestreNum) || bimestreNum < 1 || bimestreNum > 4) {
       throw new NotFoundError('Bimestre');
@@ -51,6 +51,23 @@ export class CerrarRegistroAsistenciaUseCase {
       throw new NotFoundError('Periodo académico del bimestre');
     }
 
+    // Cierre por DÍA (preferido): firma una sola sesión; si no existe (día sin marcas), la crea.
+    if (fecha) {
+      const sesion = await this.sesionClaseRepository.cerrarSesionDia(
+        Number(asignacionId),
+        fecha,
+        { periodoAcademicoId },
+        usuarioId,
+      );
+      this.logger.info('[Asistencia] Día cerrado', {
+        asignacionId: Number(asignacionId),
+        bimestre: bimestreNum,
+        fecha,
+      });
+      return { bimestre: bimestreNum, fecha, sesionEstado: sesion.sesionEstado };
+    }
+
+    // Cierre en LOTE por bimestre (legacy / acción masiva).
     const afectadas = await this.sesionClaseRepository.cerrarSesionesBimestre(
       Number(asignacionId),
       periodoAcademicoId,

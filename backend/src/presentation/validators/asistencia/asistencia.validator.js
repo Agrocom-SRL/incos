@@ -39,9 +39,23 @@ export const bulkRegistrarAsistenciaValidator = [
     .withMessage('Estado de asistencia inválido'),
 ];
 
-export const cerrarRegistroAsistenciaValidator = [asignacionParam, bimestreQuery];
+// `fecha` OPCIONAL: si viene, el cierre/reapertura es por DÍA (una sesión); si no, en lote por bimestre.
+const fechaCierreOpcional = query('fecha')
+  .optional()
+  .isISO8601()
+  .withMessage('Fecha inválida');
 
-export const reabrirRegistroAsistenciaValidator = [asignacionParam, bimestreQuery];
+export const cerrarRegistroAsistenciaValidator = [
+  asignacionParam,
+  bimestreQuery,
+  fechaCierreOpcional,
+];
+
+export const reabrirRegistroAsistenciaValidator = [
+  asignacionParam,
+  bimestreQuery,
+  fechaCierreOpcional,
+];
 
 export const crearSesionEspecialValidator = [
   asignacionParam,

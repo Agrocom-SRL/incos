@@ -116,6 +116,31 @@ export class SesionClaseRepository extends ISesionClaseRepository {
     return afectadas;
   }
 
+  /**
+   * Cierra UNA sesión (día). Si el día de clase aún no tiene sesión (todos presentes,
+   * marcas sparse), la crea (upsert) y la marca CERRADA — cerrar firma ese día.
+   * @returns {Promise<{ id: number, fecha: string, sesionEstado: string }>}
+   */
+  async cerrarSesionDia(asignacionDocenteId, fecha, datos = {}, usuarioId = null) {
+    const { id } = await this.upsertSesion(asignacionDocenteId, fecha, datos, usuarioId);
+    await SesionClaseModel.update(
+      { estado: ESTADOS_SESION_CLASE.CERRADA, updatedBy: usuarioId },
+      { where: { id, deletedAt: null } },
+    );
+    return { id, fecha, sesionEstado: ESTADOS_SESION_CLASE.CERRADA };
+  }
+
+  /**
+   * Reabre UNA sesión (día) ya existente (vuelve ABIERTA).
+   * @returns {Promise<{ id: number|null, fecha: string, sesionEstado: string|null }>}
+   */
+  async reabrirSesionDia(asignacionDocenteId, fecha, usuarioId = null) {
+    const sesion = await this.obtenerSesionPorFecha(asignacionDocenteId, fecha);
+    if (!sesion) return { id: null, fecha, sesionEstado: null };
+    await sesion.update({ estado: ESTADOS_SESION_CLASE.ABIERTA, updatedBy: usuarioId });
+    return { id: sesion.id, fecha, sesionEstado: ESTADOS_SESION_CLASE.ABIERTA };
+  }
+
   /** @returns {Promise<number>} filas afectadas */
   async reabrirSesionesBimestre(asignacionDocenteId, periodoAcademicoId, usuarioId = null) {
     const [afectadas] = await SesionClaseModel.update(

@@ -205,40 +205,48 @@ export const usePlanillaAsistenciaState = () => {
     recargarCalendario();
   }, [hayCambios, construirPayloadDias, guardar, asignacionId, notification, cargarPlanilla, recargarCalendario]);
 
-  const cerrarRegistro = useCallback(async () => {
-    const res = await cerrar(asignacionId, { bimestre });
-    if (!res?.success) {
-      notification.error({
-        title: 'No se pudo cerrar el registro',
-        description: res?.error || 'Reintentá en unos segundos.',
+  /** Cierra la asistencia de UN día (su sesión → solo lectura). */
+  const cerrarDia = useCallback(
+    async (fecha) => {
+      const res = await cerrar(asignacionId, { bimestre, fecha });
+      if (!res?.success) {
+        notification.error({
+          title: 'No se pudo cerrar el día',
+          description: res?.error || 'Reintentá en unos segundos.',
+        });
+        return false;
+      }
+      notification.success({
+        title: 'Día cerrado',
+        description: 'La asistencia de ese día quedó en solo lectura.',
       });
-      return false;
-    }
-    setModoCorreccion(false);
-    notification.success({
-      title: 'Registro cerrado',
-      description: 'La asistencia del bimestre quedó en solo lectura.',
-    });
-    cargarPlanilla();
-    return true;
-  }, [cerrar, asignacionId, bimestre, notification, cargarPlanilla]);
+      cargarPlanilla();
+      return true;
+    },
+    [cerrar, asignacionId, bimestre, notification, cargarPlanilla],
+  );
 
-  const reabrirYcorregir = useCallback(async () => {
-    const res = await reabrir(asignacionId, { bimestre });
-    if (!res?.success) {
-      notification.error({
-        title: 'No se pudo reabrir el registro',
-        description: res?.error || 'Reintentá en unos segundos.',
+  /** Reabre la asistencia de UN día (modo corrección para ese día). */
+  const reabrirDia = useCallback(
+    async (fecha) => {
+      const res = await reabrir(asignacionId, { bimestre, fecha });
+      if (!res?.success) {
+        notification.error({
+          title: 'No se pudo reabrir el día',
+          description: res?.error || 'Reintentá en unos segundos.',
+        });
+        return false;
+      }
+      setModoCorreccion(true);
+      notification.success({
+        title: 'Día reabierto',
+        description: 'Modo corrección activo: tocá una falta para marcar atraso.',
       });
-      return;
-    }
-    setModoCorreccion(true);
-    notification.success({
-      title: 'Registro reabierto',
-      description: 'Modo corrección activo: tocá una falta para marcar atraso.',
-    });
-    cargarPlanilla();
-  }, [reabrir, asignacionId, bimestre, notification, cargarPlanilla]);
+      cargarPlanilla();
+      return true;
+    },
+    [reabrir, asignacionId, bimestre, notification, cargarPlanilla],
+  );
 
   /** Habilita una sesión especial (taller/recuperación) y salta a su semana. */
   const habilitarFechaEspecial = useCallback(
@@ -366,8 +374,8 @@ export const usePlanillaAsistenciaState = () => {
     // acciones
     guardarPlanilla,
     guardando,
-    cerrarRegistro,
-    reabrirYcorregir,
+    cerrarDia,
+    reabrirDia,
     procesandoCierre,
     habilitarFechaEspecial,
     creandoSesion,

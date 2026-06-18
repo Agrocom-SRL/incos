@@ -15,14 +15,10 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, Flex, Skeleton } from 'antd';
-import {
-  ArrowLeftOutlined,
-  CalendarOutlined,
-  EditOutlined,
-} from '@ant-design/icons';
+import { CalendarOutlined, EditOutlined } from '@ant-design/icons';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { BackButton, ActionButton } from '@atoms';
+import { ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { useCalendarioAsistenciaState } from '@application-academico/asistencia/hooks/state/useCalendarioAsistenciaState.js';
@@ -57,7 +53,6 @@ const CalendarioAsistenciaPage = () => {
     error,
     refetch,
     breadcrumbItems,
-    volverPath,
     planillaPath,
     habilitarFechaEspecial,
     eliminarFechaEspecial,
@@ -98,13 +93,6 @@ const CalendarioAsistenciaPage = () => {
           >
             Marcar asistencia
           </ActionButton>
-          <BackButton
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(volverPath)}
-            aria-label="Volver a la planilla"
-          >
-            Volver
-          </BackButton>
         </Flex>
       }
     />

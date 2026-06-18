@@ -10,7 +10,15 @@
  * El botón de guardar vive en la cabecera del grupo "Semana" y se habilita al haber
  * cambios. La lógica de marca (P/R/F) se delega en `onToggleCelda` (state hook).
  */
-import { MedicineBoxOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import {
+  LockFilled,
+  LockOutlined,
+  MedicineBoxOutlined,
+  PlusOutlined,
+  SaveOutlined,
+  UnlockFilled,
+  UnlockOutlined,
+} from '@ant-design/icons';
 import { Table, Tooltip } from 'antd';
 import { Button, IconButton, IdentidadCelda } from '@atoms';
 import CeldaAsistencia from './CeldaAsistencia.jsx';
@@ -63,29 +71,65 @@ const SemanaGrupoHead = ({ rango, onGuardar, guardando, mostrarGuardar }) => {
   );
 };
 
-const ColumnaDiaHead = ({ dia, puedeAgregar, onHabilitarEspecial }) => (
-  <div className="asi-grid__col-head">
-    <span className="asi-grid__col-head-dow">
-      {etiquetaDiaCorto(dia.fechaClase)}
-    </span>
-    <span className="asi-grid__col-head-num">{numeroDia(dia.fechaClase)}</span>
-    {puedeAgregar ? (
-      <Tooltip title="Habilitar asistencia especial este día">
-        <button
-          type="button"
-          className="asi-grid__add-especial"
-          aria-label={`Habilitar asistencia especial el ${etiquetaDiaMes(dia.fechaClase)}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onHabilitarEspecial?.(dia.fechaClase);
-          }}
+const ColumnaDiaHead = ({
+  dia,
+  puedeAgregar,
+  onHabilitarEspecial,
+  mostrarCierre,
+  onCerrarDia,
+  onReabrirDia,
+  procesandoCierre,
+}) => {
+  const cerrada = dia.sesionEstado === 'CERRADA';
+  return (
+    <div className="asi-grid__col-head">
+      <span className="asi-grid__col-head-dow">
+        {etiquetaDiaCorto(dia.fechaClase)}
+      </span>
+      <span className="asi-grid__col-head-num">{numeroDia(dia.fechaClase)}</span>
+      {puedeAgregar ? (
+        <Tooltip title="Habilitar asistencia especial este día">
+          <button
+            type="button"
+            className="asi-grid__add-especial"
+            aria-label={`Habilitar asistencia especial el ${etiquetaDiaMes(dia.fechaClase)}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onHabilitarEspecial?.(dia.fechaClase);
+            }}
+          >
+            <PlusOutlined aria-hidden />
+          </button>
+        </Tooltip>
+      ) : null}
+      {mostrarCierre ? (
+        <Tooltip
+          title={
+            cerrada ? 'Reabrir la asistencia de este día' : 'Cerrar la asistencia de este día'
+          }
         >
-          <PlusOutlined aria-hidden />
-        </button>
-      </Tooltip>
-    ) : null}
-  </div>
-);
+          <button
+            type="button"
+            className={`asi-grid__cierre-dia ${
+              cerrada ? 'asi-grid__cierre-dia--reabrir' : 'asi-grid__cierre-dia--cerrar'
+            }`}
+            aria-label={`${cerrada ? 'Reabrir' : 'Cerrar'} la asistencia del ${etiquetaDiaMes(
+              dia.fechaClase,
+            )}`}
+            disabled={procesandoCierre}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (cerrada) onReabrirDia?.(dia.fechaClase);
+              else onCerrarDia?.(dia.fechaClase);
+            }}
+          >
+            {cerrada ? <UnlockOutlined aria-hidden /> : <LockOutlined aria-hidden />}
+          </button>
+        </Tooltip>
+      ) : null}
+    </div>
+  );
+};
 
 /**
  * Render de la columna "Estudiante": identidad + (opcional) acceso directo a solicitar
@@ -117,11 +161,13 @@ const GrillaAsistenciaSemanal = ({
   filas = [],
   hoy = null,
   rangoSemana = null,
-  registroCerrado = false,
   puedeEditar = false,
   estadoCelda,
   onToggleCelda,
   onHabilitarEspecial,
+  onCerrarDia,
+  onReabrirDia,
+  procesandoCierre = false,
   onSolicitarLicencia,
   onGuardar,
   guardando = false,
@@ -131,8 +177,11 @@ const GrillaAsistenciaSemanal = ({
 
   const columnasDia = dias.map((dia) => {
     const colColor = claseColumnaDia(dia);
-    const puedeAgregar =
-      puedeEditar && !registroCerrado && Boolean(dia.puedeHabilitarEspecial);
+    const diaCerrado = dia.sesionEstado === 'CERRADA';
+    const puedeAgregar = puedeEditar && Boolean(dia.puedeHabilitarEspecial);
+    // Cierre/reapertura por día: solo en días de clase ya transcurridos (no futuros, no neutros).
+    const mostrarCierre =
+      puedeEditar && dia.esDiaClase && !dia.esFuturo && !dia.neutro;
     // Columna del día actual: contorno dashed primary continuo (toda la columna = hoy).
     const colHoy = hoy && dia.fechaClase === hoy ? ' asi-grid__col-dia--hoy' : '';
 
@@ -142,6 +191,10 @@ const GrillaAsistenciaSemanal = ({
           dia={dia}
           puedeAgregar={puedeAgregar}
           onHabilitarEspecial={onHabilitarEspecial}
+          mostrarCierre={mostrarCierre}
+          onCerrarDia={onCerrarDia}
+          onReabrirDia={onReabrirDia}
+          procesandoCierre={procesandoCierre}
         />
       ),
       key: dia.fechaClase,
@@ -171,7 +224,7 @@ const GrillaAsistenciaSemanal = ({
           esDiaClase: dia.esDiaClase,
           neutro: celda?.neutro ?? dia.neutro,
           esFuturo: dia.esFuturo,
-          registroCerrado,
+          registroCerrado: diaCerrado,
         });
         return (
           <CeldaAsistencia

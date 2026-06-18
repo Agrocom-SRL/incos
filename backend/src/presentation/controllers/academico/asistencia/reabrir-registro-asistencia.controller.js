@@ -14,6 +14,7 @@ export class ReabrirRegistroAsistenciaController {
         usuarioId: req.usuario.id,
         asignacionId: req.params.asignacionId,
         bimestre: req.query.bimestre,
+        fecha: req.query.fecha,
       });
       return this.responseFormatter._success(
         res,

@@ -158,13 +158,14 @@ class AsistenciaRepository {
    * @param {number|string} asignacionId
    * @param {{ bimestre?: number|string }} [options]
    */
-  async cerrarRegistro(asignacionId, { bimestre } = {}) {
+  async cerrarRegistro(asignacionId, { bimestre, fecha } = {}) {
     try {
       const params = {};
       if (bimestre != null) params.bimestre = bimestre;
+      if (fecha != null) params.fecha = fecha;
       const response = await apiClient.post(
         ASISTENCIA_ENDPOINTS.REGISTRO_CERRAR(asignacionId),
-        null,
+        {},
         { params },
       );
       const responseData = response.data;
@@ -182,13 +183,14 @@ class AsistenciaRepository {
    * @param {number|string} asignacionId
    * @param {{ bimestre?: number|string }} [options]
    */
-  async reabrirRegistro(asignacionId, { bimestre } = {}) {
+  async reabrirRegistro(asignacionId, { bimestre, fecha } = {}) {
     try {
       const params = {};
       if (bimestre != null) params.bimestre = bimestre;
+      if (fecha != null) params.fecha = fecha;
       const response = await apiClient.post(
         ASISTENCIA_ENDPOINTS.REGISTRO_REABRIR(asignacionId),
-        null,
+        {},
         { params },
       );
       const responseData = response.data;

@@ -816,6 +816,57 @@
   transform: scale(0.9);
 }
 
+/* Icon button de cierre/reapertura por día (debajo de la cabecera del día).
+   Relleno SÓLIDO con el color del estado y glifo BLANCO, para que resalte sobre la
+   columna primaria (el borde usa el bg primario como halo de contraste). */
+.asi-grid__cierre-dia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  padding: 0;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.95;
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.14s ease;
+}
+
+/* Cerrar: relleno rojo. Reabrir: relleno ámbar. Glifo blanco en ambos. */
+.asi-grid__cierre-dia--cerrar {
+  background: var(--color-error);
+  border: 1px dashed var(--color-error-bg);
+}
+
+.asi-grid__cierre-dia--reabrir {
+  background: var(--color-warning);
+  border: 1px dashed var(--color-warning-bg);
+}
+
+.asi-grid__cierre-dia--cerrar:hover:not(:disabled) {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--color-error) !important;
+}
+
+.asi-grid__cierre-dia--reabrir:hover:not(:disabled) {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--color-warning) !important;
+}
+
+.asi-grid__cierre-dia:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.asi-grid__cierre-dia:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* Columna estudiante: identidad + acceso directo a solicitar licencia. */
 .asi-grid__est {
   display: flex;
@@ -988,8 +1039,8 @@
   align-items: center;
   justify-content: center;
   gap: calc(var(--spacing-xs) / 2);
-  width: 100%;
-  min-height: var(--spacing-xl);
+  width: 66px;
+  height: 52px;
   padding: var(--spacing-xs);
   border: none;
   border-radius: var(--border-radius-sm);
@@ -1023,26 +1074,20 @@
   font-size: var(--font-size-md);
 }
 
-/* Falta: caja sólida roja con icono. */
+/* Falta / Atraso / Licencia en SOLO LECTURA: como presente, solo color (sin caja).
+   La caja (borde + fondo) se reserva al modo edición (reglas .asi-celda--editable.* abajo). */
 .asi-celda--falta {
-  border: 1px solid var(--color-error);
-  background: var(--color-error-bg);
   color: var(--color-error);
 }
 
-/* Atraso: caja sólida ámbar (guion medio). */
 .asi-celda--atraso {
-  border: 1px solid var(--color-warning);
-  background: var(--color-warning-bg);
   color: var(--color-warning);
 }
 
-/* Licencia (L): caja sólida informativa (azul), solo lectura. No se atenúa aunque
-   se renderice dentro de --neutro: la licencia debe leerse claramente en la planilla. */
+/* Licencia (L): siempre solo lectura (es neutro) → solo color info, sin caja. No se atenúa
+   aunque se renderice dentro de --neutro: la licencia debe leerse claramente en la planilla. */
 .asi-celda--licencia,
 .asi-celda--neutro.asi-celda--licencia {
-  border: 1px solid var(--color-info);
-  background: var(--color-info-bg);
   color: var(--color-info);
   opacity: 1;
 }
@@ -1079,6 +1124,18 @@
 
 .asi-celda--editable:active {
   transform: scale(0.92);
+}
+
+/* Caja (borde + fondo) SOLO en edición: falta roja, atraso ámbar. En solo lectura quedan
+   con color únicamente (regla base arriba), igual que presente. */
+.asi-celda--editable.asi-celda--falta {
+  border: 1px dashed var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.asi-celda--editable.asi-celda--atraso {
+  border: 1px dashed var(--color-warning);
+  background: var(--color-warning-bg);
 }
 
 .asi-celda--editable.asi-celda--falta:hover {

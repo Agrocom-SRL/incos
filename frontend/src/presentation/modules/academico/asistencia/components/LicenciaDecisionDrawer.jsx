@@ -22,7 +22,6 @@ import {
   CalendarOutlined,
   CheckOutlined,
   CloseOutlined,
-  EditOutlined,
   FieldTimeOutlined,
   FileTextOutlined,
   IdcardOutlined,
@@ -82,7 +81,6 @@ const DrawerFooter = ({
   enRechazo,
   estado,
   puedeDecidir,
-  puedeEditar,
   puedeCancelar,
   guardando,
   cancelando,
@@ -91,7 +89,6 @@ const DrawerFooter = ({
   onCancelarRechazo,
   onAprobar,
   onConfirmarRechazo,
-  onEditar,
   onCancelarSolicitud,
 }) => {
   const ocupado = guardando || cancelando;
@@ -127,11 +124,6 @@ const DrawerFooter = ({
         Cerrar
       </Button>
       <div className="cal-eval-drawer__footer-actions">
-        {esPendiente && puedeEditar ? (
-          <Button variant="outlined" color="gold" icon={<EditOutlined />} onClick={onEditar}>
-            Editar
-          </Button>
-        ) : null}
         {esPendiente && puedeDecidir ? (
           <>
             <Button color="danger" variant="solid" icon={<CloseOutlined />} onClick={onModoRechazo}>
@@ -168,13 +160,11 @@ const LicenciaDecisionDrawer = ({
   open,
   licencia = null,
   puedeDecidir = false,
-  puedeEditar = false,
   puedeCancelar = false,
   guardando = false,
   cancelando = false,
   onCerrar,
   onDecidir,
-  onEditar,
   onCancelar,
 }) => {
   const { modal } = App.useApp();
@@ -254,7 +244,6 @@ const LicenciaDecisionDrawer = ({
             enRechazo={enRechazo}
             estado={licencia.estado}
             puedeDecidir={puedeDecidir}
-            puedeEditar={puedeEditar}
             puedeCancelar={puedeCancelar}
             guardando={guardando}
             cancelando={cancelando}
@@ -263,7 +252,6 @@ const LicenciaDecisionDrawer = ({
             onCancelarRechazo={() => setEnRechazo(false)}
             onAprobar={handleAprobar}
             onConfirmarRechazo={handleConfirmarRechazo}
-            onEditar={() => onEditar?.(licencia)}
             onCancelarSolicitud={handleCancelarSolicitud}
           />
         ) : null

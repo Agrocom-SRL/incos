@@ -26,7 +26,6 @@ export const useLicenciasListPage = () => {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const puedeDecidir = usePermiso(ASISTENCIA_PERMISOS.licenciaAprobar, 'APROBAR');
-  const puedeEditar = usePermiso(ASISTENCIA_PERMISOS.licenciaCrear, 'EDITAR');
   const puedeCancelar = usePermiso(ASISTENCIA_PERMISOS.licenciaCrear, 'ELIMINAR');
 
   const {
@@ -118,7 +117,6 @@ export const useLicenciasListPage = () => {
     tableColumns,
     // permisos (drawer)
     puedeDecidir,
-    puedeEditar,
     puedeCancelar,
     // drawer detalle/decisión
     drawerAbierto: Boolean(drawer),

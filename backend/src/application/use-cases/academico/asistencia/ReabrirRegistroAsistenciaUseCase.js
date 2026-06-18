@@ -27,7 +27,7 @@ export class ReabrirRegistroAsistenciaUseCase {
     this.logger = logger;
   }
 
-  async execute({ usuarioId, asignacionId, bimestre }) {
+  async execute({ usuarioId, asignacionId, bimestre, fecha }) {
     const bimestreNum = Number(bimestre);
     if (!Number.isFinite(bimestreNum) || bimestreNum < 1 || bimestreNum > 4) {
       throw new NotFoundError('Bimestre');
@@ -51,6 +51,22 @@ export class ReabrirRegistroAsistenciaUseCase {
       throw new NotFoundError('Periodo académico del bimestre');
     }
 
+    // Reapertura por DÍA (preferido): vuelve ABIERTA una sola sesión.
+    if (fecha) {
+      const sesion = await this.sesionClaseRepository.reabrirSesionDia(
+        Number(asignacionId),
+        fecha,
+        usuarioId,
+      );
+      this.logger.info('[Asistencia] Día reabierto', {
+        asignacionId: Number(asignacionId),
+        bimestre: bimestreNum,
+        fecha,
+      });
+      return { bimestre: bimestreNum, fecha, sesionEstado: sesion.sesionEstado };
+    }
+
+    // Reapertura en LOTE por bimestre (legacy / acción masiva).
     const afectadas = await this.sesionClaseRepository.reabrirSesionesBimestre(
       Number(asignacionId),
       periodoAcademicoId,
