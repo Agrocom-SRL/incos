@@ -175,6 +175,68 @@ export const uploadCarreraImagen = (req, res, next) => {
   });
 };
 
+/**
+ * Upload de imagen QR de cuenta de pago → uploads/cuentas-pago/qr/qr_{timestamp}.ext
+ * Campo multipart `qr` (opcional). Si no se envía archivo, el middleware deja pasar.
+ */
+export function createCuentaPagoQrUploadMiddleware(fieldName = 'qr') {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const relativePath = UPLOAD.cuentasPagoQr();
+      const uploadPath = path.isAbsolute(multerConfig.uploadDir)
+        ? path.join(multerConfig.uploadDir, relativePath)
+        : path.resolve(serverConfig.backendRoot, multerConfig.uploadDir, relativePath);
+
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const filename = UPLOAD.generateCuentaPagoQrFileName(file.originalname);
+      cb(null, filename);
+    },
+  });
+
+  const fileFilter = (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!CARRERA_IMAGE_EXTENSIONS.includes(ext)) {
+      return cb(new Error(`Solo imágenes permitidas: ${CARRERA_IMAGE_EXTENSIONS.join(', ')}`), false);
+    }
+    const mime = file.mimetype || '';
+    const mimeOk = !mime || mime.startsWith('image/') || CARRERA_IMAGE_MIME_TYPES.includes(mime);
+    if (!mimeOk) {
+      return cb(new Error('Tipo MIME de imagen no permitido'), false);
+    }
+    cb(null, true);
+  };
+
+  const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+      fileSize: getEnvAsNumber('MAX_CUENTA_PAGO_QR_SIZE', 5 * 1024 * 1024),
+      files: 1,
+    },
+  });
+
+  return upload.single(fieldName);
+}
+
+/**
+ * Middleware de upload de QR de cuenta de pago (campo `qr`, opcional).
+ * El archivo es opcional: si no se envía, `req.file` queda undefined y continúa.
+ */
+export const uploadCuentaPagoQr = (req, res, next) => {
+  const middleware = createCuentaPagoQrUploadMiddleware('qr');
+  middleware(req, res, (err) => {
+    if (err) {
+      return next(err);
+    }
+    next();
+  });
+};
+
 export const uploadPaymentDocument = (req, res, next) => {
     // Log antes de procesar el upload
     console.log('[Upload] Iniciando procesamiento de archivo', {

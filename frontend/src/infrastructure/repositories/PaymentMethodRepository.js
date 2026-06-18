@@ -46,6 +46,28 @@ export class PaymentMethodRepository extends IPaymentMethodRepository {
     }
   }
 
+  /**
+   * Actualiza un método de pago (los 4 son fijos: solo se edita nombre/activo).
+   * PUT /v1/metodos-pago/:id
+   *
+   * @param {string|number} id - ID del método de pago
+   * @param {Object} payload - { nombre?, activo? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>} data.metodoPago
+   */
+  async actualizar(id, payload = {}) {
+    try {
+      if (!id && id !== 0) {
+        return { success: false, error: 'ID del método de pago es requerido' };
+      }
+      const response = await apiClient.put(METODOS_PAGO_ENDPOINTS.BY_ID(id), payload, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el método de pago');
+    }
+  }
+
 }
 
 export default new PaymentMethodRepository();

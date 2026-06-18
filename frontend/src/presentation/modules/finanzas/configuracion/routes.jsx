@@ -1,16 +1,23 @@
 // src/presentation/modules/finanzas/configuracion/routes.jsx
 /**
  * Finanzas → Config. de pagos (ítem de menú FIN, order 5).
- * Placeholder en Fase 1. Permiso reutilizado: configuracion.pagos.
- * Aquí vivirá la configuración de aportes, métodos de pago, cuentas y bancos.
+ *
+ * Pantalla de configuración de pagos de la gestión vigente: aporte
+ * (configuracion_aportes), métodos de pago, bancos autorizados y cuentas de pago.
+ * Módulo NUEVO e independiente del legacy `@pagos`.
+ *
+ * Permiso de la ruta: configuracion.pagos (LISTAR). El alta usa CREAR y la
+ * edición/toggle usan EDITAR (vía PermisoGuard en los organismos).
  */
 
-import { UnderConstruction } from '@components/pages';
+import { lazy } from 'react';
+
+const ConfigPagosConnector = lazy(() => import('./connectors/ConfigPagosConnector.jsx'));
 
 export const finanzasConfiguracionRoutes = [
   {
     path: '/finanzas/configuracion',
-    element: <UnderConstruction />,
+    element: <ConfigPagosConnector />,
     key: 'FIN-CFG',
     permiso: 'configuracion.pagos',
     accion: 'LISTAR',

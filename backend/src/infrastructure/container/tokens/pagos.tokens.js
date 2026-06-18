@@ -9,6 +9,15 @@ export const PAGOS_TOKENS = {
     listPaymentAccountsUseCase: 'pagos.listPaymentAccountsUseCase',
     listContributionConfigurationsUseCase: 'pagos.listContributionConfigurationsUseCase',
 
+    // Use Cases - Configuración de pagos (mutaciones)
+    createContributionConfigurationUseCase: 'pagos.createContributionConfigurationUseCase',
+    updateContributionConfigurationUseCase: 'pagos.updateContributionConfigurationUseCase',
+    updatePaymentMethodUseCase: 'pagos.updatePaymentMethodUseCase',
+    createAuthorizedBankUseCase: 'pagos.createAuthorizedBankUseCase',
+    updateAuthorizedBankUseCase: 'pagos.updateAuthorizedBankUseCase',
+    createPaymentAccountUseCase: 'pagos.createPaymentAccountUseCase',
+    updatePaymentAccountUseCase: 'pagos.updatePaymentAccountUseCase',
+
     // Use Cases - Registro de Pago
     registerPagoAporteUseCase: 'pagos.registerPagoAporteUseCase',
     listPagosAportesUseCase: 'pagos.listPagosAportesUseCase',
@@ -34,6 +43,15 @@ export const PAGOS_TOKENS = {
     listBancosAutorizadosController: 'pagos.listBancosAutorizadosController',
     listCuentasPagoController: 'pagos.listCuentasPagoController',
     listConfiguracionAportesController: 'pagos.listConfiguracionAportesController',
+
+    // Controllers - Configuración de pagos (mutaciones)
+    createConfiguracionAporteController: 'pagos.createConfiguracionAporteController',
+    updateConfiguracionAporteController: 'pagos.updateConfiguracionAporteController',
+    updateMetodoPagoController: 'pagos.updateMetodoPagoController',
+    createBancoAutorizadoController: 'pagos.createBancoAutorizadoController',
+    updateBancoAutorizadoController: 'pagos.updateBancoAutorizadoController',
+    createCuentaPagoController: 'pagos.createCuentaPagoController',
+    updateCuentaPagoController: 'pagos.updateCuentaPagoController',
 
     // Controllers - Registro de Pago
     registerPagoAporteController: 'pagos.registerPagoAporteController',
