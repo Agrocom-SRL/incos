@@ -14,7 +14,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { Button } from '@atoms';
+import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useCompromisoPage } from '@application-finanzas/hooks/state/useCompromisoPage';
 import EstudianteSelector from '@finanzas/pagos/components/organisms/EstudianteSelector';
@@ -22,6 +22,7 @@ import EstadoAporteResumen from '@finanzas/pagos/components/organisms/EstadoApor
 import CompromisoForm from '@finanzas/pagos/components/organisms/CompromisoForm';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/pagos/styles/pagos-registrar.css';
+import '@finanzas/pagos/styles/pagos-list.css';
 
 const { Paragraph } = Typography;
 
@@ -52,9 +53,9 @@ const CompromisoPage = () => {
   } = useCompromisoPage();
 
   const volverAction = (
-    <Button variant="back" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+    <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
       Volver
-    </Button>
+    </BackButton>
   );
 
   // El estado del aporte cargó pero el estudiante no tiene cabecera de aporte:

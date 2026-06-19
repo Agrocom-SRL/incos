@@ -18,7 +18,7 @@ export class CreateCuentaPagoController {
 
   async handle(req, res, next) {
     try {
-      const userId = req.user?.id ?? null;
+      const userId = req.usuario?.id ?? null;
       const cuenta = await this.createPaymentAccountUseCase.execute({
         body: req.body || {},
         qrFile: req.file ?? null,

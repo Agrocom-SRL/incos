@@ -124,7 +124,6 @@ const LicenciasListPage = () => {
                   rowKey={(record) => record.id}
                   searchColSpan={10}
                   searchStyle={{ maxWidth: 520 }}
-                  defaultSort={{ field: 'fechaInicio', order: 'descend' }}
                   pagination={{
                     pageSize: 10,
                     showSizeChanger: true,

@@ -1,13 +1,18 @@
 /**
  * Organismo: cabecera de la ficha de pago (resumen estudiante + montos + estado).
  *
- * Espejo del `DocenteProfileSummary` / cabecera de pago legacy, reusando el shell
- * compartido `sd-profile` (detail-page.css, prefijos sd-* solo para layout). Recibe
- * props ya mapeadas; no llama hooks de fetch.
+ * Reusa el shell compartido `sd-profile` (detail-page.css, prefijos sd-* solo para
+ * layout). El estado del aporte se muestra con `StatusPill` (gemelo del listado) y el
+ * saldo pendiente teñido por severidad. Recibe props ya mapeadas; no llama hooks de fetch.
  */
 
-import { Tag } from 'antd';
 import { DollarOutlined } from '@ant-design/icons';
+import { StatusPill } from '@atoms';
+import {
+  formatEstadoPago,
+  getEstadoPagoPillClass,
+  getSaldoPillClass,
+} from '@application-finanzas/utils/pagosPills';
 
 /** Formatea un monto en bolivianos (Bs 1.234,50). */
 const formatBolivianos = (value) => {
@@ -17,24 +22,6 @@ const formatBolivianos = (value) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
-};
-
-/** Mapa estado → color de preset AntD (sin #hex). */
-const ESTADO_TAG = {
-  PENDIENTE: { color: 'warning', label: 'Pendiente' },
-  PARCIAL: { color: 'processing', label: 'Parcial' },
-  CANCELADO: { color: 'success', label: 'Cancelado' },
-};
-
-const renderEstadoTag = (estado) => {
-  if (!estado) return '—';
-  const key = String(estado).toUpperCase();
-  const cfg = ESTADO_TAG[key] || { color: 'default', label: estado };
-  return (
-    <Tag color={cfg.color} style={{ margin: 0 }}>
-      {cfg.label}
-    </Tag>
-  );
 };
 
 const PagoFichaHeader = ({
@@ -60,7 +47,12 @@ const PagoFichaHeader = ({
           <h1 className="sd-profile__name">{nombreCompleto || 'Pago de aporte'}</h1>
           <div className="sd-profile__meta">
             <p className="sd-profile__sub">{subtitleParts.join(' · ') || 'Aporte académico'}</p>
-            {estado ? renderEstadoTag(estado) : null}
+            {estado ? (
+              <StatusPill
+                label={formatEstadoPago(estado)}
+                className={getEstadoPagoPillClass(estado)}
+              />
+            ) : null}
           </div>
         </div>
       </div>
@@ -80,7 +72,12 @@ const PagoFichaHeader = ({
         </div>
         <div className="sd-stat">
           <span className="sd-stat__label">Saldo pendiente</span>
-          <span className="sd-stat__value">{formatBolivianos(saldoPendiente)}</span>
+          <span className="sd-stat__value">
+            <StatusPill
+              label={formatBolivianos(saldoPendiente)}
+              className={getSaldoPillClass(saldoPendiente)}
+            />
+          </span>
         </div>
       </div>
     </div>

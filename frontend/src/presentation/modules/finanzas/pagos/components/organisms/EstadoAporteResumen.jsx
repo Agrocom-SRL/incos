@@ -5,8 +5,10 @@
  * descuento por beca, gestión). Solo presentación; no llama hooks de fetch.
  */
 
-import { Alert, Spin, Tag } from 'antd';
+import { Alert, Spin } from 'antd';
+import { StatusPill } from '@atoms';
 import { formatBolivianos } from '@finanzas/pagos/config/registrarFormConfig';
+import { getSaldoPillClass } from '@application-finanzas/utils/pagosPills';
 
 const EstadoAporteResumen = ({ estado, loading = false, error = null }) => {
   if (loading) {
@@ -45,9 +47,7 @@ const EstadoAporteResumen = ({ estado, loading = false, error = null }) => {
           <span className="fin-pago-reg-resumen__label">Descuento por beca</span>
           <span className="fin-pago-reg-resumen__valor">
             {formatBolivianos(estado.descuentoBeca)}{' '}
-            <Tag color="success" style={{ margin: 0 }}>
-              Aplicado
-            </Tag>
+            <StatusPill label="Aplicado" className="pago-pill pago-pill--cancelado" />
           </span>
         </div>
       ) : null}
@@ -59,8 +59,11 @@ const EstadoAporteResumen = ({ estado, loading = false, error = null }) => {
 
       <div className="fin-pago-reg-resumen__item">
         <span className="fin-pago-reg-resumen__label">Saldo pendiente</span>
-        <span className="fin-pago-reg-resumen__valor fin-pago-reg-resumen__valor--saldo">
-          {formatBolivianos(estado.saldoPendiente)}
+        <span className="fin-pago-reg-resumen__valor">
+          <StatusPill
+            label={formatBolivianos(estado.saldoPendiente)}
+            className={getSaldoPillClass(estado.saldoPendiente)}
+          />
         </span>
       </div>
     </div>

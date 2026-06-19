@@ -17,8 +17,8 @@
  * Si el abono deja SALDO PENDIENTE y el usuario indicó una "fecha de compromiso de
  * pago", tras registrar la cuota se persiste esa fecha en el compromiso del aporte
  * (POST sobre la cabecera/`pago_aporte_id`). Ese guardado es INDEPENDIENTE: si falla
- * (p. ej. el usuario no tiene `finanzas.pago.editar` → 403), el pago ya registrado NO
- * se pierde; solo se avisa que el compromiso no quedó guardado.
+ * (p. ej. el usuario no tiene `finanzas.compromiso.gestionar` → 403), el pago ya
+ * registrado NO se pierde; solo se avisa que el compromiso no quedó guardado.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';

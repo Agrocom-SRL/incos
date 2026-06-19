@@ -18,7 +18,7 @@ export class UpdateMetodoPagoController {
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
-      const userId = req.user?.id ?? null;
+      const userId = req.usuario?.id ?? null;
       const metodoPago = await this.updatePaymentMethodUseCase.execute(id, req.body || {}, userId);
 
       return this.responseFormatter.updated(

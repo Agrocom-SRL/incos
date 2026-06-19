@@ -10,9 +10,12 @@
  */
 
 import { Alert, Col, Empty, Flex, Row, Spin, Table, Tag, Typography } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
+import { BackButton } from '@atoms';
 import { useBecasReportePage } from '@application-finanzas/hooks/state/useBecasReportePage';
 import { becaPorcentajeKey } from '@application-finanzas/mappers/becasReporteMapper';
 import { formatPorcentaje } from '@finanzas/reportes/config/becasTableColumns';
@@ -20,6 +23,7 @@ import BecasResumenCards from '@finanzas/reportes/components/organisms/BecasResu
 import BecasDistribucion from '@finanzas/reportes/components/organisms/BecasDistribucion';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
+import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 
 const { Paragraph, Text } = Typography;
 
@@ -66,6 +70,7 @@ const renderTotalesRow = (totales, porcentajes) => {
 };
 
 const BecasReportePage = () => {
+  const navigate = useNavigate();
   const {
     loading,
     error,
@@ -122,7 +127,20 @@ const BecasReportePage = () => {
   }
 
   return (
-    <PageTemplate header={<PageHeader breadcrumbItems={breadcrumbItems} />} sidebar={null}>
+    <PageTemplate
+      header={
+        <PageHeader
+          title="Becas por carrera"
+          breadcrumbItems={breadcrumbItems}
+          actions={
+            <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+              Volver
+            </BackButton>
+          }
+        />
+      }
+      sidebar={null}
+    >
       <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
         <section className="cfg-academico-workspace">
           <header className="cfg-academico-workspace__header">

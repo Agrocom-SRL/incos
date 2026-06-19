@@ -1,11 +1,10 @@
 /**
- * Organismo: tarjeta de configuración del APORTE de la gestión vigente
- * (Config. de pagos · Finanzas).
+ * Panel del tab «Aporte» (Config. de pagos · Finanzas).
  *
- * Form en Card (gemelo de las secciones de `PoliticaInstitucionalPage`): monto base
- * (Bs), aporte activo (switch), fecha inicio y fecha fin (opcional). El guardado es
- * UPSERT (POST si no existe config para la gestión vigente; PUT si existe) — la
- * decisión vive en el hook de estado. El botón se envuelve en `PermisoGuard EDITAR`.
+ * Formulario del aporte de la gestión vigente: monto base (Bs), vigencia (fecha
+ * inicio req / fin opcional) y estado activo (switch). El guardado es UPSERT (POST
+ * si no existe config para la gestión vigente; PUT si existe) — la decisión vive en
+ * el hook de estado. El botón se envuelve en `PermisoGuard EDITAR` (atom `Button`).
  *
  * Recibe props ya mapeadas (aporte vigente, gestión, handlers); no llama hooks de fetch.
  */
@@ -13,7 +12,7 @@
 import { useEffect } from 'react';
 import { DatePicker, Form, InputNumber, Switch, Tag } from 'antd';
 import dayjs from 'dayjs';
-import { Card, Button as AtomButton } from '@atoms';
+import { Button } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { allSpacing } from '@theme/tokens';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
@@ -31,7 +30,7 @@ const MONTO_RULES = [
   },
 ];
 
-const AporteConfigCard = ({ aporteVigente, gestionVigente, saving, onGuardar }) => {
+const AporteTabPanel = ({ aporteVigente, gestionVigente, saving, onGuardar }) => {
   const [form] = Form.useForm();
 
   // Precarga el formulario con el aporte vigente (o valores por defecto para alta).
@@ -52,14 +51,14 @@ const AporteConfigCard = ({ aporteVigente, gestionVigente, saving, onGuardar }) 
   const gestionLabel = gestionVigente?.nombre || gestionVigente?.gestion || gestionVigente?.anio;
 
   return (
-    <Card
-      title="Aporte de la gestión vigente"
-      headerColor="primary"
-      variant="outlined"
-      shadow={false}
-      extra={gestionLabel ? <Tag color="processing">Gestión {gestionLabel}</Tag> : null}
-    >
-      <Form form={form} layout="vertical">
+    <div className="cfg-pagos-panel">
+      <Form form={form} layout="vertical" className="cfg-pagos-aporte-form">
+        {gestionLabel ? (
+          <Form.Item label="Gestión vigente">
+            <Tag color="processing">Gestión {gestionLabel}</Tag>
+          </Form.Item>
+        ) : null}
+
         <Form.Item name="montoBase" label="Monto base del aporte (Bs)" rules={MONTO_RULES}>
           <InputNumber
             size="large"
@@ -96,19 +95,19 @@ const AporteConfigCard = ({ aporteVigente, gestionVigente, saving, onGuardar }) 
             codigo={CONFIG_PAGOS_PERMISO}
             accion="EDITAR"
             fallback={
-              <AtomButton variant="primary" disabled>
+              <Button variant="primary" disabled>
                 Sin permiso para editar
-              </AtomButton>
+              </Button>
             }
           >
-            <AtomButton variant="primary" loading={saving} onClick={handleGuardar}>
+            <Button variant="primary" loading={saving} onClick={handleGuardar}>
               Guardar aporte
-            </AtomButton>
+            </Button>
           </PermisoGuard>
         </div>
       </Form>
-    </Card>
+    </div>
   );
 };
 
-export default AporteConfigCard;
+export default AporteTabPanel;

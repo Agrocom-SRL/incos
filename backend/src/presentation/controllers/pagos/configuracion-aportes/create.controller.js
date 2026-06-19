@@ -17,7 +17,7 @@ export class CreateConfiguracionAporteController {
 
   async handle(req, res, next) {
     try {
-      const userId = req.user?.id ?? null;
+      const userId = req.usuario?.id ?? null;
       const configuracion = await this.createContributionConfigurationUseCase.execute(req.body || {}, userId);
 
       return this.responseFormatter.created(

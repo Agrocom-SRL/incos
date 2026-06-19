@@ -1,16 +1,20 @@
 /**
  * Columnas de la tabla de cuotas de un pago de aporte (ficha — módulo Finanzas).
  *
- * Espejo de `tableColumns.jsx` del listado: columnas en archivo dedicado, celdas con
- * `TableCell`. Las acciones por fila (Recibo PDF [EXPORTAR] · Eliminar [ELIMINAR]) se
- * resuelven con permisos `finanzas.pago.*` resueltos en la página (fail-closed: si no
- * llega el handler, el botón no se pinta).
+ * Lenguaje visual del listado: celdas con `TableCell`, montos con `PagoMontoCell` y
+ * `StatusPill` para el método/dato con color; acciones de fila con `TableActions`
+ * (recibo PDF [EXPORTAR] · editar [EDITAR] · eliminar [ELIMINAR]).
+ *
+ * Permisos: cuota/recibo siguen en `finanzas.pago.*` (EXPORTAR el recibo, EDITAR y
+ * ELIMINAR la cuota) — NO usan el permiso de compromiso. Fail-closed: si no llega el
+ * handler o el permiso, la acción no se pinta.
  */
 
-import { Button, Space, Tooltip } from 'antd';
-import { DeleteOutlined, EditOutlined, FilePdfOutlined } from '@ant-design/icons';
-import { TableCell } from '@molecules';
-import { Text } from '@atoms';
+import { FilePdfOutlined } from '@ant-design/icons';
+import { TableCell, TableActions } from '@molecules';
+import { StatusPill } from '@atoms';
+import PagoMontoCell from '@finanzas/pagos/components/atoms/PagoMontoCell';
+import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 
 /** Formatea un monto en bolivianos (Bs 1.234,50). */
 const formatBolivianos = (value) => {
@@ -36,7 +40,9 @@ const formatFecha = (value) => {
  * @param {boolean} params.puedeEliminarCuota - Permiso ELIMINAR (cuota).
  * @param {(cuota: Object) => void} params.onGenerarRecibo - Descarga el recibo PDF.
  * @param {(cuota: Object) => void} params.onEditarCuota - Abre el modal de edición de la cuota.
- * @param {(cuota: Object) => void} params.onEliminarCuota - Elimina la cuota (con confirmación).
+ * @param {(id: number) => Promise<{success:boolean,error?:string}>} params.onEliminarCuota -
+ *        deleteFn de la cuota; `TableActions` muestra la confirmación y el feedback.
+ * @param {Function} [params.refetch] - Recarga la ficha tras eliminar.
  * @param {number|string|null} params.reciboCuotaId - Cuota cuyo recibo se descarga (feedback).
  * @param {boolean} params.descargandoRecibo - Estado de descarga global.
  */
@@ -47,6 +53,7 @@ export const createCuotasTableColumns = ({
   onGenerarRecibo,
   onEditarCuota,
   onEliminarCuota,
+  refetch,
   reciboCuotaId,
   descargandoRecibo,
 }) => {
@@ -75,18 +82,22 @@ export const createCuotasTableColumns = ({
       key: 'monto',
       width: 150,
       align: 'right',
-      render: (_, record) => (
-        <TableCell align="right" strong>
-          {formatBolivianos(record.monto)}
-        </TableCell>
-      ),
+      render: (_, record) => <PagoMontoCell valor={formatBolivianos(record.monto)} />,
     },
     {
       title: 'Método de pago',
       key: 'metodoNombre',
-      render: (_, record) => (
-        <TableCell subtext={record.cuenta || null}>{record.metodoNombre || '—'}</TableCell>
-      ),
+      render: (_, record) =>
+        record.metodoNombre ? (
+          <TableCell subtext={record.cuenta || null}>
+            <StatusPill
+              label={record.metodoNombre}
+              className="pago-pill pago-pill--parcial"
+            />
+          </TableCell>
+        ) : (
+          <TableCell>—</TableCell>
+        ),
     },
   ];
 
@@ -96,48 +107,50 @@ export const createCuotasTableColumns = ({
     columns.push({
       title: 'Acciones',
       key: 'acciones',
-      width: 180,
+      fixed: 'right',
+      width: 160,
       align: 'right',
       render: (_, record) => {
         const reciboKey = record.id ?? record.numeroRecibo;
+        const nombreCuota = record.numeroRecibo
+          ? `la cuota del recibo ${record.numeroRecibo}`
+          : 'esta cuota de pago';
+
+        const extraActions =
+          puedeExportarRecibo && onGenerarRecibo
+            ? [
+                {
+                  key: 'recibo',
+                  icon: <FilePdfOutlined />,
+                  variant: 'view',
+                  tooltip: 'Descargar recibo PDF',
+                  disabled: descargandoRecibo && reciboCuotaId === reciboKey,
+                  onClick: () => onGenerarRecibo(record),
+                },
+              ]
+            : [];
+
+        const itemDetails = [
+          { label: 'Recibo', value: record.numeroRecibo || '—' },
+          { label: 'Fecha', value: formatFecha(record.fechaPago) },
+          { label: 'Monto', value: formatBolivianos(record.monto) },
+        ];
+
         return (
-          <Space size="small">
-            {puedeExportarRecibo && onGenerarRecibo ? (
-              <Tooltip title="Descargar recibo PDF">
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<FilePdfOutlined />}
-                  aria-label="Descargar recibo PDF"
-                  loading={descargandoRecibo && reciboCuotaId === reciboKey}
-                  onClick={() => onGenerarRecibo(record)}
-                />
-              </Tooltip>
-            ) : null}
-            {puedeEditarCuota && onEditarCuota ? (
-              <Tooltip title="Editar cuota">
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<EditOutlined />}
-                  aria-label="Editar cuota"
-                  onClick={() => onEditarCuota(record)}
-                />
-              </Tooltip>
-            ) : null}
-            {puedeEliminarCuota && onEliminarCuota ? (
-              <Tooltip title="Eliminar cuota">
-                <Button
-                  type="text"
-                  size="small"
-                  danger
-                  icon={<DeleteOutlined />}
-                  aria-label="Eliminar cuota"
-                  onClick={() => onEliminarCuota(record)}
-                />
-              </Tooltip>
-            ) : null}
-          </Space>
+          <TableActions
+            record={record}
+            refetch={refetch}
+            itemName={nombreCuota}
+            itemDetails={itemDetails}
+            onEdit={puedeEditarCuota && onEditarCuota ? () => onEditarCuota(record) : undefined}
+            editTitle="Editar cuota"
+            deleteFn={puedeEliminarCuota && onEliminarCuota ? onEliminarCuota : undefined}
+            extraActions={extraActions}
+            permisos={{
+              editar: { codigo: FINANZAS_PERMISOS.pagoEditar, accion: 'EDITAR' },
+              eliminar: { codigo: FINANZAS_PERMISOS.pagoEditar, accion: 'ELIMINAR' },
+            }}
+          />
         );
       },
     });

@@ -13,9 +13,12 @@
  */
 
 import { Alert, Descriptions, Empty, Flex, Spin, Tag, Typography } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
+import { BackButton } from '@atoms';
 import { useCuentasPorCobrarPage } from '@application-finanzas/hooks/state/useCuentasPorCobrarPage';
 import { createCuentasPorCobrarColumns, formatBs, formatFecha } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
 import CuentasPorCobrarCarreraSection from '@finanzas/reportes/components/organisms/CuentasPorCobrarCarreraSection';
@@ -23,6 +26,7 @@ import CuentasPorCobrarResumen from '@finanzas/reportes/components/organisms/Cue
 import CuentasPorCobrarLeyenda from '@finanzas/reportes/components/organisms/CuentasPorCobrarLeyenda';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
+import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 
 const { Paragraph } = Typography;
 
@@ -35,6 +39,7 @@ const renderGestionTag = (gestion) => {
 };
 
 const CuentasPorCobrarPage = () => {
+  const navigate = useNavigate();
   const {
     loading,
     error,
@@ -107,7 +112,20 @@ const CuentasPorCobrarPage = () => {
   }
 
   return (
-    <PageTemplate header={<PageHeader breadcrumbItems={breadcrumbItems} />} sidebar={null}>
+    <PageTemplate
+      header={
+        <PageHeader
+          title="Cuentas por cobrar"
+          breadcrumbItems={breadcrumbItems}
+          actions={
+            <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+              Volver
+            </BackButton>
+          }
+        />
+      }
+      sidebar={null}
+    >
       <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
         <section className="cfg-academico-workspace">
           <header className="cfg-academico-workspace__header">

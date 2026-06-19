@@ -8,7 +8,9 @@
  * Campos: fecha del compromiso (requerida) y observación (opcional). El saldo se
  * deriva de las cuotas, por lo que el compromiso no captura monto. AntD6 — Form
  * rules, DatePicker, Popconfirm `open` interno.
- * Botones gateados por permiso `finanzas.pago.editar` (EDITAR / ELIMINAR).
+ *
+ * Botones gateados por el permiso PROPIO del compromiso `finanzas.compromiso.gestionar`:
+ * guardar es CREAR (alta) o EDITAR (sobre uno vigente); eliminar es ELIMINAR (anular).
  */
 
 import { useEffect } from 'react';
@@ -16,6 +18,7 @@ import { Col, DatePicker, Form, Input, Popconfirm, Row } from 'antd';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ActionButton, Button } from '@atoms';
+import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 
 const { TextArea } = Input;
 
@@ -89,7 +92,7 @@ const CompromisoForm = ({
                 onConfirm={onEliminar}
               >
                 <ActionButton
-                  permiso="finanzas.pago.editar"
+                  permiso={FINANZAS_PERMISOS.compromisoGestionar}
                   accion="ELIMINAR"
                   variant="danger"
                   icon={<DeleteOutlined />}
@@ -102,8 +105,8 @@ const CompromisoForm = ({
           ) : null}
           <Col>
             <ActionButton
-              permiso="finanzas.pago.editar"
-              accion="EDITAR"
+              permiso={FINANZAS_PERMISOS.compromisoGestionar}
+              accion={tieneVigente ? 'EDITAR' : 'CREAR'}
               variant="primary"
               icon={<SaveOutlined />}
               htmlType="submit"

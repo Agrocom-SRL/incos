@@ -25,7 +25,7 @@ export class UpdateCompromisoController {
     try {
       const id = parseInt(req.params.id, 10);
       const body = req.body || {};
-      const userId = req.user?.id ?? null;
+      const userId = req.usuario?.id ?? null;
 
       const compromiso = await this.updateCompromisoUseCase.execute(
         id,

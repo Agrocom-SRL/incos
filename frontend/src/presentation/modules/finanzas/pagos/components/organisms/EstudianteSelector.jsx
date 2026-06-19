@@ -8,9 +8,9 @@
  * Nombre completo en orden canónico (ya viene resuelto por el mapper vía buildFullName).
  */
 
-import { Alert, Empty, Flex, Input, Spin, Tag } from 'antd';
+import { Alert, Empty, Flex, Input, Spin } from 'antd';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
-import { Button } from '@atoms';
+import { Button, StatusPill } from '@atoms';
 import { formatBolivianos } from '@finanzas/pagos/config/registrarFormConfig';
 
 const EstudianteSelector = ({
@@ -80,15 +80,14 @@ const EstudianteSelector = ({
                 </span>
                 {estudiante.aporte.tieneSaldoPendiente ? (
                   <span className="fin-pago-reg-resultado__saldo">
-                    <Tag color="warning" style={{ margin: 0 }}>
-                      Saldo {formatBolivianos(estudiante.aporte.saldoPendienteTotal)}
-                    </Tag>
+                    <StatusPill
+                      label={`Saldo ${formatBolivianos(estudiante.aporte.saldoPendienteTotal)}`}
+                      className="pago-pill pago-pill--saldo"
+                    />
                   </span>
                 ) : estudiante.aporte.totalmenteCubierto ? (
                   <span className="fin-pago-reg-resultado__saldo">
-                    <Tag color="success" style={{ margin: 0 }}>
-                      Aporte al día
-                    </Tag>
+                    <StatusPill label="Aporte al día" className="pago-pill pago-pill--aldia" />
                   </span>
                 ) : null}
               </button>

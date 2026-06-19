@@ -7,7 +7,10 @@
  * (espejo de Docentes) sobre la infraestructura compartida /api/v1/pagos-aportes.
  * Registro, compromiso y detalle siguen como placeholders hasta sus fases.
  *
- * Permisos reutilizados del seed 60-FIN: finanzas.pago.{ver,registrar}.
+ * Permisos del seed 60-FIN:
+ *   - finanzas.pago.{ver,registrar,editar} → listado, ficha, registro y cuotas.
+ *   - finanzas.compromiso.gestionar → página de compromiso de pago (LISTAR para
+ *     entrar; CREAR/EDITAR/ELIMINAR en sus controles). Sembrado en paralelo.
  */
 
 import { lazy } from 'react';
@@ -29,13 +32,14 @@ export const finanzasPagosRoutes = [
     breadcrumbParent: 'FIN-PAG',
   },
   {
-    // Página de GESTIÓN (registrar/editar/eliminar compromiso): acción EDITAR.
+    // Página de GESTIÓN del compromiso (alta/edición/anulación): permiso propio.
+    // LISTAR para entrar; los botones internos validan CREAR/EDITAR/ELIMINAR.
     path: '/finanzas/pagos/compromiso',
     element: <CompromisoConnector />,
     key: 'FIN-PAG-COMPROMISO',
     breadcrumbLabel: 'Compromiso de pago',
-    permiso: 'finanzas.pago.editar',
-    accion: 'EDITAR',
+    permiso: 'finanzas.compromiso.gestionar',
+    accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'FIN-PAG',
   },

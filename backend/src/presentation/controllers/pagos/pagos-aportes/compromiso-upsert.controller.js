@@ -25,7 +25,7 @@ export class UpsertCompromisoController {
     try {
       const pagoAporteId = req.params.pagoAporteId;
       const body = req.body || {};
-      const userId = req.user?.id ?? null;
+      const userId = req.usuario?.id ?? null;
 
       const compromiso = await this.upsertCompromisoUseCase.execute({
         pagoAporteId,

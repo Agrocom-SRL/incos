@@ -11,34 +11,16 @@ import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import dayjs from 'dayjs';
-import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 import { usePagosDetailContext } from '@application-finanzas/hooks/context/usePagosDetailContext';
 import { PAGOS_LIST_PATH } from '@application-finanzas/config/paths';
 
 const FIN_PAG_MENU_KEY = 'FIN-PAG';
 const DURACION_MENSAJE_ERROR = 8;
 
-/** Formatea un monto en bolivianos (Bs 1.234,50). */
-const formatBolivianos = (value) => {
-  const n = Number(value);
-  const safe = Number.isFinite(n) ? n : 0;
-  return `Bs ${safe.toLocaleString('es-BO', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
-
-const formatFecha = (value) => {
-  if (!value) return '—';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
-  return d.toLocaleDateString('es-BO', { year: 'numeric', month: '2-digit', day: '2-digit' });
-};
-
 export const usePagosDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { message, modal } = App.useApp();
+  const { message } = App.useApp();
 
   const {
     pagoId,
@@ -100,30 +82,18 @@ export const usePagosDetailPage = () => {
     [generarRecibo, message],
   );
 
-  const handleEliminarCuota = useCallback(
-    (cuota) => {
-      const cuotaId = cuota?.id;
-      if (!cuotaId) return;
-      showDeleteConfirm({
-        modal,
-        itemName: 'esta cuota de pago',
-        itemDetails: [
-          { label: 'Recibo', value: cuota.numeroRecibo || '—' },
-          { label: 'Fecha', value: formatFecha(cuota.fechaPago) },
-          { label: 'Monto', value: formatBolivianos(cuota.monto) },
-        ],
-        onConfirm: async () => {
-          const result = await eliminarCuota(cuotaId);
-          if (result?.success) {
-            message.success('Cuota eliminada correctamente');
-            await refetch();
-          } else {
-            message.error(result?.error || 'No se pudo eliminar la cuota', DURACION_MENSAJE_ERROR);
-          }
-        },
-      });
+  /**
+   * Elimina una cuota (deleteFn de `TableActions`, que ya muestra la confirmación, el
+   * feedback y dispara el `refetch` de la ficha en `onSuccess`). Recibe el id de la
+   * fila y devuelve `{ success, error }`.
+   */
+  const eliminarCuotaPorId = useCallback(
+    async (cuotaId) => {
+      if (!cuotaId) return { success: false, error: 'Cuota inválida' };
+      const result = await eliminarCuota(cuotaId);
+      return result ?? { success: false, error: 'No se pudo eliminar la cuota' };
     },
-    [modal, eliminarCuota, refetch, message],
+    [eliminarCuota],
   );
 
   /** Abre el modal de edición con la cuota seleccionada. */
@@ -182,11 +152,12 @@ export const usePagosDetailPage = () => {
     error,
     breadcrumbItems,
     returnListPath,
+    refetch,
     reciboCuotaId,
     descargandoRecibo,
     handleVolver,
     handleGenerarRecibo,
-    handleEliminarCuota,
+    eliminarCuota: eliminarCuotaPorId,
     // Edición de cuota (modal dentro de la ficha)
     cuotaEnEdicion,
     abrirEditarCuota,

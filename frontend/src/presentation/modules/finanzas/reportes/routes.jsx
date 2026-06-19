@@ -6,12 +6,16 @@
  *   por carrera · por estudiante · por gestión · Cuentas por cobrar (planilla,
  *   imagen 1) · Becas por carrera (planilla, imagen 2).
  *
- * Placeholders en Fase 1. Permisos reutilizados del seed 60-FIN:
- *   finanzas.pago.reporte.{carrera,estudiante,gestion}.
+ * Permisos del seed 60-FIN:
+ *   finanzas.pago.reporte.{carrera,estudiante,gestion} (reportes de pagos),
+ *   finanzas.cuenta-cobrar.reporte (planilla de cuentas por cobrar),
+ *   finanzas.beca.reporte (planilla de becas por carrera).
+ * Estos dos últimos se siembran en paralelo (seed 60-FIN, refs por código).
  */
 
 import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
+import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 
 const BecasReporteConnector = lazy(() => import('./connectors/BecasReporteConnector.jsx'));
 const CuentasPorCobrarConnector = lazy(() =>
@@ -24,7 +28,7 @@ export const finanzasReportesRoutes = [
     element: <UnderConstruction />,
     key: 'FIN-REP-CARRERA',
     breadcrumbLabel: 'Reporte por carrera',
-    permiso: 'finanzas.pago.reporte.carrera',
+    permiso: FINANZAS_PERMISOS.reporteCarrera,
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'FIN-REP',
@@ -34,7 +38,7 @@ export const finanzasReportesRoutes = [
     element: <UnderConstruction />,
     key: 'FIN-REP-ESTUDIANTE',
     breadcrumbLabel: 'Reporte por estudiante',
-    permiso: 'finanzas.pago.reporte.estudiante',
+    permiso: FINANZAS_PERMISOS.reporteEstudiante,
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'FIN-REP',
@@ -44,7 +48,7 @@ export const finanzasReportesRoutes = [
     element: <UnderConstruction />,
     key: 'FIN-REP-GESTION',
     breadcrumbLabel: 'Reporte por gestión',
-    permiso: 'finanzas.pago.reporte.gestion',
+    permiso: FINANZAS_PERMISOS.reporteGestion,
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'FIN-REP',
@@ -54,7 +58,7 @@ export const finanzasReportesRoutes = [
     element: <CuentasPorCobrarConnector />,
     key: 'FIN-REP-CUENTAS-COBRAR',
     breadcrumbLabel: 'Cuentas por cobrar',
-    permiso: 'finanzas.pago.reporte.carrera',
+    permiso: FINANZAS_PERMISOS.cuentaCobrarReporte,
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'FIN-REP',
@@ -64,7 +68,7 @@ export const finanzasReportesRoutes = [
     element: <BecasReporteConnector />,
     key: 'FIN-REP-BECAS',
     breadcrumbLabel: 'Becas por carrera',
-    permiso: 'finanzas.pago.reporte.carrera',
+    permiso: FINANZAS_PERMISOS.becaReporte,
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'FIN-REP',
@@ -73,7 +77,7 @@ export const finanzasReportesRoutes = [
     path: '/finanzas/reportes',
     element: <UnderConstruction />,
     key: 'FIN-REP',
-    permiso: 'finanzas.pago.reporte.carrera',
+    permiso: FINANZAS_PERMISOS.reporteCarrera,
     accion: 'LISTAR',
     menu: {
       label: 'Reportes de pagos',

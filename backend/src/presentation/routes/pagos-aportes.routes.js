@@ -87,30 +87,22 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         ]),
     ];
 
-    // ---- Compromiso de pago: lectura con finanzas.pago.ver; mutaciones con finanzas.pago.editar ----
+    // ---- Compromiso de pago: permiso propio finanzas.compromiso.gestionar ----
     /** Ver compromiso vigente de una cabecera (lectura). */
     const compromisoVer = [
         authenticate,
         verificarPermisoCualquiera([
-            ['finanzas.pago.ver', 'LISTAR'],
-            ['finanzas.pago.ver', 'DETALLE'],
+            ['finanzas.compromiso.gestionar', 'LISTAR'],
+            ['finanzas.compromiso.gestionar', 'DETALLE'],
             ['matricula.pago.aporte.ver', 'LISTAR'],
-            ['matricula.pago.aporte.ver', 'DETALLE'],
         ]),
     ];
-    /**
-     * Crear/reemplazar compromiso vigente.
-     * NOTA RBAC: `finanzas.pago.editar` NO tiene la acción CREAR sembrada (solo
-     * EDITAR/ELIMINAR, ver seed 60-seed-permisos-fin.sql). Para no introducir un
-     * permiso imposible de satisfacer (y sin crear seeds nuevos, por requisito),
-     * el alta/reemplazo del compromiso se autoriza con `finanzas.pago.editar`
-     * EDITAR: es una mutación sobre la cabecera de pago ya existente.
-     */
-    const compromisoCrear = [authenticate, verificarPermiso('finanzas.pago.editar', 'EDITAR')];
+    /** Crear/reemplazar compromiso vigente. */
+    const compromisoCrear = [authenticate, verificarPermiso('finanzas.compromiso.gestionar', 'CREAR')];
     /** Editar compromiso. */
-    const compromisoEditar = [authenticate, verificarPermiso('finanzas.pago.editar', 'EDITAR')];
+    const compromisoEditar = [authenticate, verificarPermiso('finanzas.compromiso.gestionar', 'EDITAR')];
     /** Eliminar (soft delete) compromiso. */
-    const compromisoEliminar = [authenticate, verificarPermiso('finanzas.pago.editar', 'ELIMINAR')];
+    const compromisoEliminar = [authenticate, verificarPermiso('finanzas.compromiso.gestionar', 'ELIMINAR')];
 
     // ============================================
     // LISTADO DE CABECERAS DE APORTE
@@ -168,14 +160,14 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     /** Planilla de control de becas por carrera (solo lectura). */
     const reporteBecasCarrera = [
         authenticate,
-        verificarPermiso('finanzas.pago.reporte.carrera', 'LISTAR'),
+        verificarPermiso('finanzas.beca.reporte', 'LISTAR'),
     ];
 
     /**
      * GET /api/v1/pagos-aportes/reportes/becas-por-carrera
      * Planilla de control de Becas por carrera (totales, distribución, resumen).
      * Query: gestion_id (opcional; gestión vigente por defecto).
-     * Permiso: finanzas.pago.reporte.carrera LISTAR.
+     * Permiso: finanzas.beca.reporte LISTAR.
      * DECLARADA antes de /:id para evitar colisión de rutas.
      */
     router.get(
@@ -187,14 +179,14 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     /** Planilla de control de Cuentas por cobrar (solo lectura). */
     const reporteCuentasPorCobrar = [
         authenticate,
-        verificarPermiso('finanzas.pago.reporte.carrera', 'LISTAR'),
+        verificarPermiso('finanzas.cuenta-cobrar.reporte', 'LISTAR'),
     ];
 
     /**
      * GET /api/v1/pagos-aportes/reportes/cuentas-por-cobrar
      * Planilla de control de Cuentas por cobrar (CARRERA → PARALELO → ESTUDIANTES, totales).
      * Query: gestion_id (opcional; gestión vigente por defecto).
-     * Permiso: finanzas.pago.reporte.carrera LISTAR.
+     * Permiso: finanzas.cuenta-cobrar.reporte LISTAR.
      * DECLARADA antes de /:id para evitar colisión de rutas.
      */
     router.get(

@@ -17,6 +17,7 @@ import { Alert, Col, DatePicker, Form, Input, InputNumber, Row, Select, Upload }
 import { InboxOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionButton, Button } from '@atoms';
 import { allSpacing } from '@theme/tokens';
+import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import {
   COMPROBANTE_ACCEPT,
   COMPROBANTE_MAX_MB,
@@ -227,7 +228,7 @@ const AbonoForm = ({
           </Col>
           <Col>
             <ActionButton
-              permiso="finanzas.pago.registrar"
+              permiso={FINANZAS_PERMISOS.pagoRegistrar}
               accion="CREAR"
               variant="primary"
               icon={<SaveOutlined />}

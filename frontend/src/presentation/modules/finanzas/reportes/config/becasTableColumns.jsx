@@ -10,7 +10,9 @@
 
 import { TableCell } from '@molecules';
 import { Text } from '@atoms';
+import StatusPill from '@atoms/StatusPill';
 import { becaPorcentajeKey, becaPorcentajeLabel } from '@application-finanzas/mappers/becasReporteMapper';
+import { getCoberturaPillClass } from '@application-finanzas/utils/becasReportePills';
 
 const formatPorcentaje = (value) => {
   const n = Number(value);
@@ -108,7 +110,12 @@ export const createBecasTableColumns = (porcentajes = []) => {
       width: 120,
       align: 'center',
       render: (_, record) => (
-        <TableCell align="center">{formatPorcentaje(record.porcentajeConBeca)}</TableCell>
+        <TableCell align="center">
+          <StatusPill
+            label={formatPorcentaje(record.porcentajeConBeca)}
+            className={getCoberturaPillClass(record.porcentajeConBeca)}
+          />
+        </TableCell>
       ),
     },
     {
@@ -117,7 +124,12 @@ export const createBecasTableColumns = (porcentajes = []) => {
       width: 120,
       align: 'center',
       render: (_, record) => (
-        <TableCell align="center">{formatPorcentaje(record.porcentajeCobertura)}</TableCell>
+        <TableCell align="center">
+          <StatusPill
+            label={formatPorcentaje(record.porcentajeCobertura)}
+            className={getCoberturaPillClass(record.porcentajeCobertura)}
+          />
+        </TableCell>
       ),
     },
   ];

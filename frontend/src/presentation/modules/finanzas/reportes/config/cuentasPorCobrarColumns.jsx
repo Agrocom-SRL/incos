@@ -1,18 +1,28 @@
 /**
  * Columnas de la planilla de cuentas por cobrar (grano = estudiante, read-only).
  *
- * Replica las columnas de la planilla de referencia: Nº, Carnet, Nombre, Monto
- * total (Bs), Pagos realizados (Fecha último + Monto pagado), Saldo pendiente
- * (Bs), % del saldo, Fecha compromiso, Días de atraso, Estado y Observaciones.
+ * Lenguaje visual del catálogo académico / Asistencia · Licencias:
+ *   - Nº.
+ *   - Estudiante: `CobranzaEstudianteCell` (IdentidadCelda carnet + nombre) con el
+ *     ESTADO de cobranza (al día / próxima / vencida / sin compromiso) como
+ *     `StatusPill` DEBAJO del nombre — NO ocupa columna propia.
+ *   - Montos (total, pagos, saldo) con `TableCell`.
+ *   - Datos con color (% saldo, días de atraso) con `StatusPill` por severidad.
+ *   - Observaciones con `TableCell`.
  *
- * Celdas con `TableCell`; el nombre completo llega ya formateado por el backend
- * (orden APELLIDOS NOMBRES) y se usa tal cual. La fila de TOTALES por carrera y
- * los encabezados de paralelo se pintan en el organismo de sección, no aquí.
+ * El nombre completo llega ya formateado por el backend (orden APELLIDOS NOMBRES)
+ * y se usa tal cual. Las filas de TOTALES por carrera y los encabezados de
+ * paralelo se pintan en el organismo de sección, no aquí.
  */
 
 import { TableCell } from '@molecules';
 import { Text } from '@atoms';
-import EstadoCobranzaTag from '@finanzas/reportes/components/atoms/EstadoCobranzaTag';
+import StatusPill from '@atoms/StatusPill';
+import CobranzaEstudianteCell from '@finanzas/reportes/components/atoms/CobranzaEstudianteCell';
+import {
+  getDiasAtrasoPill,
+  getPorcentajeSaldoPillClass,
+} from '@application-finanzas/utils/cuentasPorCobrarPills';
 
 /** Formatea un monto en bolivianos: "1.200,00" (sin símbolo; la columna ya rotula Bs). */
 export const formatBs = (value) => {
@@ -43,38 +53,6 @@ export const formatFecha = (value) => {
 };
 
 /**
- * Días de atraso: positivo = vencido (peligro), negativo = faltan días (aviso),
- * 0 = vence hoy, null = sin compromiso. El color sigue el `textType` del átomo
- * `Text` (que deriva del token de estado), nunca #hex.
- */
-const renderDiasAtraso = (dias) => {
-  if (dias == null) {
-    return (
-      <TableCell align="center">
-        <Text type="secondary">—</Text>
-      </TableCell>
-    );
-  }
-  const n = Number(dias) || 0;
-  let textType = 'secondary';
-  let label = '0';
-  if (n > 0) {
-    textType = 'danger';
-    label = `+${n}`;
-  } else if (n < 0) {
-    textType = 'warning';
-    label = String(n);
-  }
-  return (
-    <TableCell align="center">
-      <Text type={textType} strong={n > 0}>
-        {label}
-      </Text>
-    </TableCell>
-  );
-};
-
-/**
  * @returns {Array} Columnas de AntD Table (grano estudiante).
  */
 export const createCuentasPorCobrarColumns = () => [
@@ -87,21 +65,18 @@ export const createCuentasPorCobrarColumns = () => [
     render: (_value, _record, index) => index + 1,
   },
   {
-    title: 'Carnet',
-    key: 'carnet',
-    width: 120,
-    fixed: 'left',
-    render: (_, record) => (
-      <TableCell subtext={record.codigoEstudiante || null}>{record.carnet || '—'}</TableCell>
-    ),
-  },
-  {
-    title: 'Nombre completo',
-    key: 'nombreCompleto',
-    width: 240,
+    title: 'Estudiante',
+    key: 'estudiante',
+    width: 280,
     fixed: 'left',
     ellipsis: true,
-    render: (_, record) => <TableCell>{record.nombreCompleto || 'Sin nombre'}</TableCell>,
+    render: (_, record) => (
+      <CobranzaEstudianteCell
+        carnet={record.carnet}
+        nombreCompleto={record.nombreCompleto}
+        estado={record.estado}
+      />
+    ),
   },
   {
     title: 'Monto total (Bs)',
@@ -154,7 +129,12 @@ export const createCuentasPorCobrarColumns = () => [
     width: 130,
     align: 'center',
     render: (_, record) => (
-      <TableCell align="center">{formatPorcentaje(record.porcentajeSaldo)}</TableCell>
+      <TableCell align="center">
+        <StatusPill
+          label={formatPorcentaje(record.porcentajeSaldo)}
+          className={getPorcentajeSaldoPillClass(record.porcentajeSaldo)}
+        />
+      </TableCell>
     ),
   },
   {
@@ -169,20 +149,16 @@ export const createCuentasPorCobrarColumns = () => [
   {
     title: 'Días de atraso',
     key: 'diasAtraso',
-    width: 110,
+    width: 120,
     align: 'center',
-    render: (_, record) => renderDiasAtraso(record.diasAtraso),
-  },
-  {
-    title: 'Estado',
-    key: 'estado',
-    width: 150,
-    align: 'center',
-    render: (_, record) => (
-      <TableCell align="center">
-        <EstadoCobranzaTag estado={record.estado} />
-      </TableCell>
-    ),
+    render: (_, record) => {
+      const { label, pillClass } = getDiasAtrasoPill(record.diasAtraso);
+      return (
+        <TableCell align="center">
+          <StatusPill label={label} className={pillClass} />
+        </TableCell>
+      );
+    },
   },
   {
     title: 'Observaciones',

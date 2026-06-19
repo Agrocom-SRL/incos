@@ -1,0 +1,55 @@
+/* Planilla de cuentas por cobrar — celda de identidad del estudiante con el estado
+   de cobranza bajo el nombre, y pills de color (StatusPill) para estado / días de
+   atraso / % de saldo. Misma estética que los pills del cronograma / materias /
+   licencias (StatusPill + clase de color). */
+
+/* ── Pill de color (estado, días de atraso, % saldo) ── */
+.cobranza-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cobranza-pill--al-dia {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+.cobranza-pill--proxima {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.2);
+}
+.cobranza-pill--vencida {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.22);
+}
+.cobranza-pill--sin {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+/* ── Estado de cobranza bajo el nombre del estudiante (StatusPill compacto) ── */
+.cobranza-estudiante-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cobranza-estudiante-cell__estado {
+  align-self: flex-start;
+}

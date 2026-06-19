@@ -13,7 +13,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { Button } from '@atoms';
+import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { usePagosRegistrarPage } from '@application-finanzas/hooks/state/usePagosRegistrarPage';
 import EstudianteSelector from '@finanzas/pagos/components/organisms/EstudianteSelector';
@@ -21,6 +21,7 @@ import EstadoAporteResumen from '@finanzas/pagos/components/organisms/EstadoApor
 import AbonoForm from '@finanzas/pagos/components/organisms/AbonoForm';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/pagos/styles/pagos-registrar.css';
+import '@finanzas/pagos/styles/pagos-list.css';
 
 const { Paragraph } = Typography;
 
@@ -52,9 +53,9 @@ const PagosRegistrar = () => {
   } = usePagosRegistrarPage();
 
   const volverAction = (
-    <Button variant="back" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+    <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
       Volver
-    </Button>
+    </BackButton>
   );
 
   return (

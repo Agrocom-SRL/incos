@@ -21,7 +21,7 @@ export class DeleteCompromisoController {
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
-      const userId = req.user?.id ?? null;
+      const userId = req.usuario?.id ?? null;
       await this.deleteCompromisoUseCase.execute(id, userId);
       return this.responseFormatter.deleted(res, this.resourceName, id, req);
     } catch (error) {

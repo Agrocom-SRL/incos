@@ -1,17 +1,23 @@
 /**
  * Organismo: leyenda de alertas + observaciones generales de la planilla.
  *
- * Reúne en una `Card` la leyenda de estados (reutilizando el átomo
- * `EstadoCobranzaTag` para que el color coincida exactamente con la columna
- * Estado) y un listado de observaciones generales (texto fijo breve).
+ * Reúne en una `Card` la leyenda de estados (reutilizando el mismo `StatusPill`
+ * + clase de color que la celda de estudiante, para que el color coincida
+ * exactamente con el estado bajo el nombre) y un listado de observaciones
+ * generales (texto fijo breve).
  *
  * Recibe `leyenda` y `observaciones` ya construidas por el hook de estado; no
  * hace fetch. Espaciado vía `allSpacing`; sin #hex.
  */
 
 import { Card, Col, Flex, Row, Typography } from 'antd';
-import EstadoCobranzaTag from '@finanzas/reportes/components/atoms/EstadoCobranzaTag';
+import StatusPill from '@atoms/StatusPill';
+import {
+  formatEstadoCobranza,
+  getEstadoCobranzaPillClass,
+} from '@application-finanzas/utils/cuentasPorCobrarPills';
 import { allSpacing } from '@theme/tokens';
+import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 
 const { Text } = Typography;
 
@@ -22,7 +28,10 @@ const CuentasPorCobrarLeyenda = ({ leyenda = [], observaciones = [] }) => (
         <Flex vertical gap={allSpacing.marginSM} style={{ width: '100%' }}>
           {leyenda.map((item) => (
             <Flex key={item.key} align="center" gap={allSpacing.marginSM} wrap="wrap">
-              <EstadoCobranzaTag estado={item.estado} />
+              <StatusPill
+                label={formatEstadoCobranza(item.estado)}
+                className={getEstadoCobranzaPillClass(item.estado)}
+              />
               <Text type="secondary">{item.descripcion}</Text>
             </Flex>
           ))}

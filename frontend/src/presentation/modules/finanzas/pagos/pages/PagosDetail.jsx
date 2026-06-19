@@ -12,11 +12,14 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { BackButton } from '@atoms';
 import { useAuthContext } from '@application-auth';
 import { usePagosDetailPage } from '@application-finanzas/hooks/state/usePagosDetailPage';
+import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import PagoFichaHeader from '@finanzas/pagos/components/organisms/PagoFichaHeader';
 import PagoCuotasSection from '@finanzas/pagos/components/organisms/PagoCuotasSection';
 import EditarCuotaModal from '@finanzas/pagos/components/organisms/EditarCuotaModal';
+import '@finanzas/pagos/styles/pagos-list.css';
 
 const buildGestionLabel = (gestion) => {
   if (!gestion) return null;
@@ -30,11 +33,12 @@ const PagosDetail = () => {
     loading,
     error,
     breadcrumbItems,
+    refetch,
     reciboCuotaId,
     descargandoRecibo,
     handleVolver,
     handleGenerarRecibo,
-    handleEliminarCuota,
+    eliminarCuota,
     cuotaEnEdicion,
     abrirEditarCuota,
     cerrarEditarCuota,
@@ -45,14 +49,14 @@ const PagosDetail = () => {
     loadingCatalogos,
   } = usePagosDetailPage();
 
-  const puedeExportarRecibo = hasPermiso('finanzas.pago.ver', 'EXPORTAR');
-  const puedeEditarCuota = hasPermiso('finanzas.pago.editar', 'EDITAR');
-  const puedeEliminarCuota = hasPermiso('finanzas.pago.editar', 'ELIMINAR');
+  const puedeExportarRecibo = hasPermiso(FINANZAS_PERMISOS.pagoVer, 'EXPORTAR');
+  const puedeEditarCuota = hasPermiso(FINANZAS_PERMISOS.pagoEditar, 'EDITAR');
+  const puedeEliminarCuota = hasPermiso(FINANZAS_PERMISOS.pagoEditar, 'ELIMINAR');
 
   const headerActions = (
-    <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-      <ArrowLeftOutlined /> Volver
-    </button>
+    <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+      Volver
+    </BackButton>
   );
 
   const profile = pago?.profile ?? {};
@@ -103,7 +107,8 @@ const PagosDetail = () => {
                   puedeEliminarCuota={puedeEliminarCuota}
                   onGenerarRecibo={handleGenerarRecibo}
                   onEditarCuota={abrirEditarCuota}
-                  onEliminarCuota={handleEliminarCuota}
+                  onEliminarCuota={eliminarCuota}
+                  refetch={refetch}
                   reciboCuotaId={reciboCuotaId}
                   descargandoRecibo={descargandoRecibo}
                 />

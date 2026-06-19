@@ -17,7 +17,7 @@ export class CreateBancoAutorizadoController {
 
   async handle(req, res, next) {
     try {
-      const userId = req.user?.id ?? null;
+      const userId = req.usuario?.id ?? null;
       const banco = await this.createAuthorizedBankUseCase.execute(req.body || {}, userId);
 
       return this.responseFormatter.created(
