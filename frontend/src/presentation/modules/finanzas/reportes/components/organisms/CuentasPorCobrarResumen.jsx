@@ -1,16 +1,15 @@
 /**
  * Organismo: resumen general de la planilla de cuentas por cobrar.
  *
- * Pinta el resumen total de TODAS las carreras como tarjetas `Statistic`
- * (matriculados, monto máximo, total cancelado, % pendiente) y un bloque
- * DESTACADO con el "Monto total pendiente por cobrar (todas las carreras)",
+ * Réplica del bloque "RESUMEN TOTAL POR CARRERA" de la planilla oficial con el
+ * kit `fin-planilla`: un panel de KPIs (`fin-kpis`/`fin-kpi`) con total de
+ * matriculados, monto total, total cancelado y % pendiente, y un bloque
+ * DESTACADO grande (`fin-destacado`) con el "Monto total pendiente por cobrar",
  * que es el dato principal de la planilla.
  *
- * Recibe `resumen` ya mapeado; no hace fetch. Colores de acento vía
- * `theme.useToken()` (sin #hex); espaciado vía `allSpacing`.
+ * Recibe `resumen` ya mapeado; no hace fetch. Solo presentación (clases del kit).
  */
 
-import { Card, Col, Flex, Row, Statistic, Typography, theme } from 'antd';
 import {
   BankOutlined,
   CheckCircleOutlined,
@@ -18,85 +17,61 @@ import {
   TeamOutlined,
 } from '@ant-design/icons';
 import { formatBs, formatPorcentaje } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
-import { allSpacing } from '@theme/tokens';
-
-const { Text, Title } = Typography;
 
 const CuentasPorCobrarResumen = ({ resumen }) => {
-  const { token } = theme.useToken();
   const data = resumen || {};
 
-  const items = [
+  const kpis = [
     {
       key: 'matriculados',
-      title: 'Total matriculados',
-      value: data.totalMatriculados || 0,
+      label: 'Total matriculados',
+      valor: data.totalMatriculados || 0,
       icon: <TeamOutlined />,
-      color: token.colorText,
+      variant: '',
     },
     {
       key: 'maximo',
-      title: 'Monto máximo total (Bs)',
-      value: formatBs(data.montoMaximoTotal),
+      label: 'Monto máximo total (Bs)',
+      valor: formatBs(data.montoMaximoTotal),
       icon: <BankOutlined />,
-      color: token.colorText,
+      variant: '',
     },
     {
       key: 'cancelado',
-      title: 'Total cancelado (Bs)',
-      value: formatBs(data.totalCancelado),
+      label: 'Total cancelado (Bs)',
+      valor: formatBs(data.totalCancelado),
       icon: <CheckCircleOutlined />,
-      color: token.colorSuccess,
+      variant: 'fin-kpi--success',
     },
     {
       key: 'porcentaje',
-      title: '% pendiente',
-      value: formatPorcentaje(data.porcentajePendiente),
+      label: '% pendiente',
+      valor: formatPorcentaje(data.porcentajePendiente),
       icon: <PercentageOutlined />,
-      color: token.colorWarning,
+      variant: 'fin-kpi--warning',
     },
   ];
 
   return (
-    <Row gutter={[allSpacing.marginLG, allSpacing.marginLG]}>
-      <Col xs={24} xl={16}>
-        <Row gutter={[allSpacing.margin, allSpacing.margin]}>
-          {items.map((item) => (
-            <Col key={item.key} xs={24} sm={12}>
-              <Card variant="outlined" size="small">
-                <Statistic
-                  title={item.title}
-                  value={item.value}
-                  prefix={item.icon}
-                  valueStyle={{ color: item.color }}
-                />
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      </Col>
+    <div className="cobranza-resumen">
+      <div className="fin-kpis">
+        {kpis.map((kpi) => (
+          <div key={kpi.key} className={`fin-kpi ${kpi.variant}`.trim()}>
+            <span className="fin-kpi__icon">{kpi.icon}</span>
+            <span className="fin-kpi__body">
+              <span className="fin-kpi__valor">{kpi.valor}</span>
+              <span className="fin-kpi__label">{kpi.label}</span>
+            </span>
+          </div>
+        ))}
+      </div>
 
-      <Col xs={24} xl={8}>
-        <Card
-          variant="outlined"
-          style={{
-            height: '100%',
-            borderColor: token.colorError,
-            background: token.colorErrorBg,
-          }}
-        >
-          <Flex vertical align="center" justify="center" gap={allSpacing.marginSM} style={{ height: '100%' }}>
-            <Text strong style={{ textAlign: 'center', color: token.colorErrorText }}>
-              Monto total pendiente por cobrar (todas las carreras)
-            </Text>
-            <Title level={2} style={{ margin: 0, color: token.colorError }}>
-              {formatBs(data.totalPendientePorCobrar)}
-            </Title>
-            <Text type="secondary">Bs</Text>
-          </Flex>
-        </Card>
-      </Col>
-    </Row>
+      <div className="fin-destacado">
+        <span className="fin-destacado__label">Monto total pendiente por cobrar</span>
+        <span className="fin-destacado__valor">{formatBs(data.totalPendientePorCobrar)} Bs</span>
+        <span className="fin-destacado__sub">Todas las carreras de la gestión</span>
+      </div>
+    </div>
   );
 };
 

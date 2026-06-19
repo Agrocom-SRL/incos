@@ -1,20 +1,19 @@
 /**
- * Organismo: tarjetas de resumen general de la planilla de becas.
+ * Organismo: RESUMEN GENERAL de la planilla de becas (KPIs).
  *
  * Recibe el `resumen` ya mapeado (total matriculados, total con beca, % con beca,
- * % sin beca) y lo pinta como cuatro `Statistic` en `Card`. No hace fetch ni
- * orquesta: solo presenta props ya mapeadas. Colores de acento vía
- * `theme.useToken()` (sin #hex). Espaciado vía tokens (`allSpacing`).
+ * % sin beca) y lo pinta con el panel de KPIs del KIT de planilla de Finanzas
+ * (`fin-kpis` / `fin-kpi`, cabecera/acento en verde primario). No hace fetch ni
+ * orquesta: solo presenta props ya mapeadas. Sin literales de color/espaciado:
+ * todo viene de las clases del kit.
  */
 
-import { Card, Col, Row, Statistic, theme } from 'antd';
 import {
   BankOutlined,
   PercentageOutlined,
   TeamOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
-import { allSpacing } from '@theme/tokens';
 
 const formatPorcentaje = (value) => {
   const n = Number(value);
@@ -23,59 +22,51 @@ const formatPorcentaje = (value) => {
 };
 
 const BecasResumenCards = ({ resumen }) => {
-  const { token } = theme.useToken();
-
   const data = resumen || {};
 
   const items = [
     {
       key: 'matriculados',
-      title: 'Total matriculados',
-      value: data.totalMatriculados || 0,
+      label: 'Total matriculados',
+      value: String(data.totalMatriculados || 0),
       icon: <TeamOutlined />,
-      color: token.colorText,
+      variant: '',
     },
     {
       key: 'conBeca',
-      title: 'Total con beca',
-      value: data.totalConBeca || 0,
+      label: 'Total con beca',
+      value: String(data.totalConBeca || 0),
       icon: <TrophyOutlined />,
-      color: token.colorPrimary,
+      variant: 'fin-kpi--success',
     },
     {
       key: 'porcentajeConBeca',
-      title: '% con beca',
-      value: formatPorcentaje(data.porcentajeConBeca),
-      suffix: '%',
+      label: '% con beca',
+      value: `${formatPorcentaje(data.porcentajeConBeca)}%`,
       icon: <PercentageOutlined />,
-      color: token.colorSuccess,
+      variant: 'fin-kpi--success',
     },
     {
       key: 'porcentajeSinBeca',
-      title: '% sin beca',
-      value: formatPorcentaje(data.porcentajeSinBeca),
-      suffix: '%',
+      label: '% sin beca',
+      value: `${formatPorcentaje(data.porcentajeSinBeca)}%`,
       icon: <BankOutlined />,
-      color: token.colorTextSecondary,
+      variant: 'fin-kpi--warning',
     },
   ];
 
   return (
-    <Row gutter={[allSpacing.margin, allSpacing.margin]}>
+    <div className="fin-kpis">
       {items.map((item) => (
-        <Col key={item.key} xs={24} sm={12} xl={6}>
-          <Card variant="outlined" size="small">
-            <Statistic
-              title={item.title}
-              value={item.value}
-              suffix={item.suffix}
-              prefix={item.icon}
-              valueStyle={{ color: item.color }}
-            />
-          </Card>
-        </Col>
+        <div key={item.key} className={`fin-kpi ${item.variant}`.trim()}>
+          <span className="fin-kpi__icon">{item.icon}</span>
+          <span className="fin-kpi__body">
+            <span className="fin-kpi__valor">{item.value}</span>
+            <span className="fin-kpi__label">{item.label}</span>
+          </span>
+        </div>
       ))}
-    </Row>
+    </div>
   );
 };
 

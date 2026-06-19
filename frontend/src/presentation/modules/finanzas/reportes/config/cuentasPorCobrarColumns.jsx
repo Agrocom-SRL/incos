@@ -1,27 +1,34 @@
 /**
  * Columnas de la planilla de cuentas por cobrar (grano = estudiante, read-only).
  *
- * Lenguaje visual del catálogo académico / Asistencia · Licencias:
+ * Lenguaje de PLANILLA oficial del instituto (kit `fin-planilla`): cabecera
+ * verde, celdas compactas, columnas numéricas alineadas a la derecha con
+ * `fin-num` (tabular-nums) y estado por DOT de color (al día / próximo /
+ * vencido / sin compromiso). Réplica de la planilla densa de calificaciones.
+ *
+ * Columnas:
  *   - Nº.
- *   - Estudiante: `CobranzaEstudianteCell` (IdentidadCelda carnet + nombre) con el
- *     ESTADO de cobranza (al día / próxima / vencida / sin compromiso) como
- *     `StatusPill` DEBAJO del nombre — NO ocupa columna propia.
- *   - Montos (total, pagos, saldo) con `TableCell`.
- *   - Datos con color (% saldo, días de atraso) con `StatusPill` por severidad.
- *   - Observaciones con `TableCell`.
+ *   - Estudiante: `CobranzaEstudianteCell` (IdentidadCelda carnet + nombre).
+ *   - Monto total (Bs) · numérica.
+ *   - Pagos realizados (fecha + monto) · numérica.
+ *   - Saldo pendiente (Bs) · numérica, banda teñida por severidad.
+ *   - % saldo pendiente · numérica.
+ *   - Fecha compromiso · centrada.
+ *   - Días de atraso · numérica.
+ *   - Estado · dot de color.
+ *   - Observaciones.
  *
  * El nombre completo llega ya formateado por el backend (orden APELLIDOS NOMBRES)
  * y se usa tal cual. Las filas de TOTALES por carrera y los encabezados de
- * paralelo se pintan en el organismo de sección, no aquí.
+ * paralelo se pintan en el organismo de sección (filas `fin-planilla__row-*`).
  */
 
-import { TableCell } from '@molecules';
-import { Text } from '@atoms';
-import StatusPill from '@atoms/StatusPill';
 import CobranzaEstudianteCell from '@finanzas/reportes/components/atoms/CobranzaEstudianteCell';
 import {
-  getDiasAtrasoPill,
-  getPorcentajeSaldoPillClass,
+  formatEstadoCobranza,
+  getDiasAtrasoLabel,
+  getEstadoDotClass,
+  getSaldoBandaClass,
 } from '@application-finanzas/utils/cuentasPorCobrarPills';
 
 /** Formatea un monto en bolivianos: "1.200,00" (sin símbolo; la columna ya rotula Bs). */
@@ -59,35 +66,28 @@ export const createCuentasPorCobrarColumns = () => [
   {
     title: 'Nº',
     key: 'nro',
-    width: 48,
+    width: 44,
     align: 'center',
     fixed: 'left',
+    className: 'fin-num--center',
     render: (_value, _record, index) => index + 1,
   },
   {
     title: 'Estudiante',
     key: 'estudiante',
-    width: 280,
+    width: 260,
     fixed: 'left',
     ellipsis: true,
     render: (_, record) => (
-      <CobranzaEstudianteCell
-        carnet={record.carnet}
-        nombreCompleto={record.nombreCompleto}
-        estado={record.estado}
-      />
+      <CobranzaEstudianteCell carnet={record.carnet} nombreCompleto={record.nombreCompleto} />
     ),
   },
   {
     title: 'Monto total (Bs)',
     key: 'montoTotal',
-    width: 130,
-    align: 'right',
-    render: (_, record) => (
-      <TableCell align="right" strong>
-        {formatBs(record.montoTotal)}
-      </TableCell>
-    ),
+    width: 120,
+    className: 'fin-num',
+    render: (_, record) => formatBs(record.montoTotal),
   },
   {
     title: 'Pagos realizados',
@@ -95,70 +95,59 @@ export const createCuentasPorCobrarColumns = () => [
       {
         title: 'Fecha',
         key: 'fechaUltimoPago',
-        width: 110,
-        align: 'center',
-        render: (_, record) => (
-          <TableCell align="center">{formatFecha(record.fechaUltimoPago)}</TableCell>
-        ),
+        width: 104,
+        className: 'fin-num--center',
+        render: (_, record) => formatFecha(record.fechaUltimoPago),
       },
       {
         title: 'Monto (Bs)',
         key: 'totalPagado',
-        width: 120,
-        align: 'right',
-        render: (_, record) => (
-          <TableCell align="right">{formatBs(record.totalPagado)}</TableCell>
-        ),
+        width: 116,
+        className: 'fin-num',
+        render: (_, record) => formatBs(record.totalPagado),
       },
     ],
   },
   {
     title: 'Saldo pendiente (Bs)',
     key: 'saldoPendiente',
-    width: 150,
-    align: 'right',
-    render: (_, record) => (
-      <TableCell align="right" strong>
-        {formatBs(record.saldoPendiente)}
-      </TableCell>
-    ),
+    width: 140,
+    className: 'fin-num fin-num--strong',
+    onCell: (record) => ({ className: `fin-num fin-num--strong ${getSaldoBandaClass(record.saldoPendiente)}` }),
+    render: (_, record) => formatBs(record.saldoPendiente),
   },
   {
-    title: '% saldo pendiente',
+    title: '% saldo',
     key: 'porcentajeSaldo',
-    width: 130,
-    align: 'center',
-    render: (_, record) => (
-      <TableCell align="center">
-        <StatusPill
-          label={formatPorcentaje(record.porcentajeSaldo)}
-          className={getPorcentajeSaldoPillClass(record.porcentajeSaldo)}
-        />
-      </TableCell>
-    ),
+    width: 92,
+    className: 'fin-num',
+    render: (_, record) => formatPorcentaje(record.porcentajeSaldo),
   },
   {
     title: 'Fecha compromiso',
     key: 'fechaCompromiso',
-    width: 130,
-    align: 'center',
-    render: (_, record) => (
-      <TableCell align="center">{formatFecha(record.fechaCompromiso)}</TableCell>
-    ),
+    width: 124,
+    className: 'fin-num--center',
+    render: (_, record) => formatFecha(record.fechaCompromiso),
   },
   {
     title: 'Días de atraso',
     key: 'diasAtraso',
-    width: 120,
-    align: 'center',
-    render: (_, record) => {
-      const { label, pillClass } = getDiasAtrasoPill(record.diasAtraso);
-      return (
-        <TableCell align="center">
-          <StatusPill label={label} className={pillClass} />
-        </TableCell>
-      );
-    },
+    width: 112,
+    className: 'fin-num--center',
+    render: (_, record) => getDiasAtrasoLabel(record.diasAtraso),
+  },
+  {
+    title: 'Estado',
+    key: 'estado',
+    width: 132,
+    align: 'left',
+    render: (_, record) => (
+      <span className="cobranza-estado">
+        <span className={`fin-dot ${getEstadoDotClass(record.estado)}`} aria-hidden />
+        <span className="cobranza-estado__label">{formatEstadoCobranza(record.estado)}</span>
+      </span>
+    ),
   },
   {
     title: 'Observaciones',
@@ -166,11 +155,9 @@ export const createCuentasPorCobrarColumns = () => [
     width: 200,
     ellipsis: true,
     render: (_, record) => (
-      <TableCell>
-        <Text type={record.observacion ? 'default' : 'secondary'}>
-          {record.observacion || '—'}
-        </Text>
-      </TableCell>
+      <span className={record.observacion ? 'cobranza-obs' : 'cobranza-obs cobranza-obs--vacio'}>
+        {record.observacion || '—'}
+      </span>
     ),
   },
 ];

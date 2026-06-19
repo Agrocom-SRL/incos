@@ -189,3 +189,36 @@
   margin-top: 2px;
   display: flex;
 }
+
+/* ============================================================
+   AJUSTES SOBRE EL KIT DE PLANILLA (.fin-planilla)
+   El listado de pagos compone la planilla verde (cabecera + zebra + hover).
+   Las celdas multinivel (estudiante / pagado / descuento / saldo) deben leerse
+   bien sobre la zebra y el hover verde sin que estos tapen los pills.
+   Solo presentación; no altera las clases base de las celdas.
+   ============================================================ */
+
+/* Celdas multinivel: alinear arriba (no centrar) para que el bloque respire. */
+.fin-planilla .ant-table-tbody > tr > td:has(.pago-estudiante-cell),
+.fin-planilla .ant-table-tbody > tr > td:has(.pago-pagado-cell),
+.fin-planilla .ant-table-tbody > tr > td:has(.pago-descuento-cell),
+.fin-planilla .ant-table-tbody > tr > td:has(.pago-saldo-cell) {
+  vertical-align: top;
+}
+
+/* El valor fuerte (total / monto) mantiene contraste sobre zebra y hover. */
+.fin-planilla .pago-pagado-cell__total,
+.fin-planilla .pago-monto-cell__valor {
+  color: var(--text-800, #1f2937);
+}
+
+/* Los pills (estado, beca, saldo) llevan fondo propio; el hover verde de la fila
+   nunca debe "lavarlos". Reafirmamos su opacidad para que destaquen sobre la banda. */
+.fin-planilla .ant-table-tbody > tr:hover > td .pago-pill {
+  opacity: 1;
+}
+
+/* La etiqueta de estado bajo el nombre conserva su color teñido sobre la zebra. */
+.fin-planilla .pago-estudiante-cell__estado {
+  background: transparent;
+}

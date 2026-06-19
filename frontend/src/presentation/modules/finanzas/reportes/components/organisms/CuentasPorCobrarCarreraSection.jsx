@@ -1,104 +1,133 @@
 /**
  * Organismo: sección de una carrera en la planilla de cuentas por cobrar.
  *
- * Cada carrera es una `Card` con una sub-tabla por PARALELO (grano estudiante).
- * Antes de cada sub-tabla se pinta una cabecera de paralelo (Nº matriculados,
- * monto máximo total). Al pie de la sección, una fila de TOTALES de la carrera
- * (matriculados, monto máximo, cancelado, pendiente por cobrar, % pendiente).
+ * Cada carrera es una `Card` con UNA planilla densa (kit `fin-planilla`) que,
+ * fiel a la planilla oficial del instituto, agrupa por PARALELO:
+ *   - una fila de cabecera de paralelo (`fin-planilla__row-grupo`) con Nº de
+ *     estudiantes matriculados, monto máximo por estudiante y monto máximo por
+ *     paralelo;
+ *   - las filas de estudiante (zebra + hover, columnas numéricas `fin-num`);
+ *   - al pie, una fila de TOTALES de la carrera (`fin-planilla__row-total`).
  *
- * Recibe props ya mapeadas; no hace fetch ni orquesta. Colores de acento vía
- * `theme.useToken()` (sin #hex); espaciado vía `allSpacing`.
+ * El agrupado se logra aplanando los paralelos en un único `dataSource` con
+ * filas sintéticas (`__tipo`: grupo | estudiante | total) y envolviendo el
+ * `render`/`onCell` de las columnas para que las filas de grupo y total ocupen
+ * el ancho completo. Solo presentación: recibe props ya mapeadas, sin fetch.
  */
 
-import { Card, Col, Flex, Row, Statistic, Table, Tag, Typography, theme } from 'antd';
+import { Card, Flex, Table, Tag, Typography } from 'antd';
 import { formatBs, formatPorcentaje } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
 import { allSpacing } from '@theme/tokens';
+import '@finanzas/styles/finanzas-planilla.css';
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
-/** Cabecera de un paralelo: identificador + turno + matriculados + monto máximo. */
-const ParaleloHeader = ({ paralelo }) => {
-  const { token } = theme.useToken();
-  return (
-    <Flex
-      align="center"
-      justify="space-between"
-      wrap="wrap"
-      gap={allSpacing.marginSM}
-      style={{
-        padding: `${allSpacing.marginXS}px ${allSpacing.marginSM}px`,
-        background: token.colorFillTertiary,
-        borderRadius: token.borderRadius,
-      }}
-    >
-      <Flex align="center" gap={allSpacing.marginSM} wrap="wrap">
-        <Tag color="processing" style={{ marginInlineEnd: 0 }}>
-          Paralelo {paralelo.paralelo}
-        </Tag>
-        {paralelo.turno ? <Text type="secondary">{paralelo.turno}</Text> : null}
-      </Flex>
-      <Flex align="center" gap={allSpacing.marginLG} wrap="wrap">
-        <Text type="secondary">
-          Nº matriculados: <Text strong>{paralelo.totalMatriculados || 0}</Text>
-        </Text>
-        <Text type="secondary">
-          Monto máximo total: <Text strong>{formatBs(paralelo.montoMaximoTotal)} Bs</Text>
-        </Text>
-      </Flex>
+/** Celda invisible (las filas de grupo/total se pintan en una sola celda ancha). */
+const HIDDEN_CELL = { props: { colSpan: 0 }, children: null };
+
+/**
+ * Aplana paralelos[] → filas con `__tipo`. La primera fila de cada paralelo es
+ * su cabecera de grupo; al final, la fila de totales de la carrera.
+ */
+const buildRows = (carrera) => {
+  const paralelos = Array.isArray(carrera.paralelos) ? carrera.paralelos : [];
+  const rows = [];
+
+  paralelos.forEach((paralelo) => {
+    const pid = paralelo.paraleloId ?? paralelo.paralelo;
+    rows.push({ __tipo: 'grupo', __key: `grupo-${pid}`, paralelo });
+    (paralelo.estudiantes || []).forEach((estudiante, index) => {
+      rows.push({
+        ...estudiante,
+        __tipo: 'estudiante',
+        __key: `est-${pid}-${estudiante.pagoAporteId ?? estudiante.estudianteId ?? index}`,
+        __nro: index + 1,
+      });
+    });
+  });
+
+  rows.push({ __tipo: 'total', __key: `total-${carrera.carreraId ?? carrera.carreraNombre}`, carrera });
+  return rows;
+};
+
+/** Banda de cabecera de un paralelo (Nº matriculados · máximos), en una celda ancha. */
+const renderGrupo = (paralelo, colSpan) => ({
+  children: (
+    <Flex align="center" justify="space-between" wrap="wrap" gap={allSpacing.marginSM}>
+      <span className="cobranza-grupo__titulo">
+        Paralelo {paralelo.paralelo}
+        {paralelo.turno ? <span className="cobranza-grupo__turno"> · {paralelo.turno}</span> : null}
+      </span>
+      <span className="cobranza-grupo__metricas">
+        Nº matriculados: <strong>{paralelo.totalMatriculados || 0}</strong>
+        <span className="cobranza-grupo__sep">|</span>
+        Monto máximo por paralelo: <strong>{formatBs(paralelo.montoMaximoTotal)} Bs</strong>
+      </span>
     </Flex>
-  );
-};
+  ),
+  props: { colSpan },
+});
 
-/** Fila de TOTALES de la carrera (resumen al pie de la sección). */
-const CarreraTotales = ({ carrera }) => {
-  const { token } = theme.useToken();
-  const items = [
-    { key: 'matriculados', title: 'Nº matriculados', value: carrera.totalMatriculados || 0 },
-    {
-      key: 'maximo',
-      title: 'Monto máximo total',
-      value: `${formatBs(carrera.montoMaximoTotal)} Bs`,
-    },
-    {
-      key: 'cancelado',
-      title: 'Total cancelado',
-      value: `${formatBs(carrera.totalCancelado)} Bs`,
-      color: token.colorSuccess,
-    },
-    {
-      key: 'pendiente',
-      title: 'Total pendiente por cobrar',
-      value: `${formatBs(carrera.totalPendiente)} Bs`,
-      color: token.colorError,
-    },
-    {
-      key: 'porcentaje',
-      title: '% pendiente',
-      value: formatPorcentaje(carrera.porcentajePendiente),
-      color: token.colorWarning,
-    },
-  ];
+/** Fila de TOTALES de la carrera (resumen al pie), en una celda ancha. */
+const renderTotal = (carrera, colSpan) => ({
+  children: (
+    <Flex align="center" justify="space-between" wrap="wrap" gap={allSpacing.marginSM}>
+      <span className="cobranza-total__titulo">RESUMEN TOTAL — {carrera.carreraNombre}</span>
+      <span className="cobranza-total__metricas">
+        <span>
+          Matriculados: <strong>{carrera.totalMatriculados || 0}</strong>
+        </span>
+        <span>
+          Monto máximo: <strong>{formatBs(carrera.montoMaximoTotal)} Bs</strong>
+        </span>
+        <span>
+          Cancelado: <strong>{formatBs(carrera.totalCancelado)} Bs</strong>
+        </span>
+        <span className="cobranza-total__pendiente">
+          Pendiente: <strong>{formatBs(carrera.totalPendiente)} Bs</strong>
+        </span>
+        <span>
+          % pendiente: <strong>{formatPorcentaje(carrera.porcentajePendiente)}</strong>
+        </span>
+      </span>
+    </Flex>
+  ),
+  props: { colSpan },
+});
 
-  return (
-    <Card variant="outlined" size="small" style={{ background: token.colorFillQuaternary }}>
-      <Row gutter={[allSpacing.margin, allSpacing.margin]}>
-        {items.map((item) => (
-          <Col key={item.key} xs={12} md={8} xl={Math.floor(24 / items.length)}>
-            <Statistic
-              title={item.title}
-              value={item.value}
-              valueStyle={{ color: item.color || token.colorText, fontSize: token.fontSizeLG }}
-            />
-          </Col>
-        ))}
-      </Row>
-    </Card>
-  );
-};
+/**
+ * Envuelve cada columna base para que las filas de grupo/total ocupen el ancho
+ * completo (primera columna) y se oculten en el resto. Las filas de estudiante
+ * usan el `render` original; la columna Nº usa el contador por paralelo.
+ */
+const withGroupRows = (columns, totalLeafCols) =>
+  columns.map((col, colIdx) => {
+    const isFirst = colIdx === 0;
+    return {
+      ...col,
+      render: (value, record) => {
+        if (record.__tipo === 'grupo') {
+          return isFirst ? renderGrupo(record.paralelo, totalLeafCols) : HIDDEN_CELL;
+        }
+        if (record.__tipo === 'total') {
+          return isFirst ? renderTotal(record.carrera, totalLeafCols) : HIDDEN_CELL;
+        }
+        if (col.key === 'nro') return record.__nro;
+        return col.render ? col.render(value, record, record.__nro - 1) : value;
+      },
+    };
+  });
+
+/** Nº de columnas hoja (Pagos realizados aporta 2 hijas). */
+const countLeafColumns = (columns) =>
+  columns.reduce((acc, col) => acc + (Array.isArray(col.children) ? col.children.length : 1), 0);
 
 const CuentasPorCobrarCarreraSection = ({ carrera, columns }) => {
   if (!carrera) return null;
-  const paralelos = Array.isArray(carrera.paralelos) ? carrera.paralelos : [];
+
+  const rows = buildRows(carrera);
+  const totalLeafCols = countLeafColumns(columns);
+  const wrappedColumns = withGroupRows(columns, totalLeafCols);
 
   return (
     <Card
@@ -111,30 +140,24 @@ const CuentasPorCobrarCarreraSection = ({ carrera, columns }) => {
           {carrera.carreraCodigo ? <Tag>{carrera.carreraCodigo}</Tag> : null}
         </Flex>
       }
+      styles={{ body: { padding: 0 } }}
     >
-      <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-        {paralelos.map((paralelo) => (
-          <Flex
-            key={paralelo.paraleloId ?? paralelo.paralelo}
-            vertical
-            gap={allSpacing.marginSM}
-            style={{ width: '100%', minWidth: 0 }}
-          >
-            <ParaleloHeader paralelo={paralelo} />
-            <Table
-              size="small"
-              bordered
-              rowKey={(record) => record.pagoAporteId ?? record.estudianteId}
-              dataSource={paralelo.estudiantes}
-              columns={columns}
-              pagination={false}
-              scroll={{ x: 'max-content' }}
-            />
-          </Flex>
-        ))}
-
-        <CarreraTotales carrera={carrera} />
-      </Flex>
+      <div className="fin-planilla-wrap">
+        <Table
+          className="fin-planilla"
+          size="small"
+          rowKey="__key"
+          dataSource={rows}
+          columns={wrappedColumns}
+          pagination={false}
+          scroll={{ x: 'max-content' }}
+          rowClassName={(record) => {
+            if (record.__tipo === 'grupo') return 'fin-planilla__row-grupo';
+            if (record.__tipo === 'total') return 'fin-planilla__row-total';
+            return '';
+          }}
+        />
+      </div>
     </Card>
   );
 };

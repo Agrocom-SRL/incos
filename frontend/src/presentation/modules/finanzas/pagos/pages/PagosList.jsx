@@ -24,6 +24,7 @@ import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos'
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
+import '@finanzas/styles/finanzas-planilla.css';
 import '@finanzas/pagos/styles/pagos-list.css';
 
 const { Paragraph } = Typography;
@@ -74,6 +75,7 @@ const PagosList = () => {
               <div className="cfg-academico-tab-panel">
                 <TableListView
                   embedded
+                  tableClassName="fin-planilla"
                   data={pagos}
                   loading={loading}
                   error={error}

@@ -27,6 +27,7 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import { allSpacing } from '@theme/tokens';
 import ReporteHubCard from '@finanzas/reportes/components/molecules/ReporteHubCard';
+import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/reportes/styles/reportes-hub.css';
 
@@ -94,32 +95,34 @@ const ReportesHubPage = () => {
       header={<PageHeader title="Reportes de pagos" breadcrumbItems={breadcrumbItems} />}
       sidebar={null}
     >
-      <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-        <section className="cfg-academico-workspace">
-          <header className="cfg-academico-workspace__header">
-            <ListPanelHeader title="Reportes disponibles" />
-            <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-              Planillas y consolidados de aportes académicos. Elija un reporte para abrirlo; solo se
-              muestran los que su rol tiene permiso de consultar.
-            </Paragraph>
-          </header>
-          <div className="cfg-academico-tab-panel">
-            <div className="reportes-hub-grid">
-              {REPORTES.map((reporte) => (
-                <PermisoGuard key={reporte.key} codigo={reporte.permiso} accion="LISTAR">
-                  <ReporteHubCard
-                    icon={reporte.icon}
-                    title={reporte.title}
-                    description={reporte.description}
-                    disponible={reporte.disponible}
-                    onClick={() => navigate(reporte.path)}
-                  />
-                </PermisoGuard>
-              ))}
+      <DashboardPageShell>
+        <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+          <section className="cfg-academico-workspace">
+            <header className="cfg-academico-workspace__header">
+              <ListPanelHeader title="Reportes disponibles" />
+              <Paragraph type="secondary" className="cfg-academico-workspace__desc">
+                Planillas y consolidados de aportes académicos. Elija un reporte para abrirlo; solo se
+                muestran los que su rol tiene permiso de consultar.
+              </Paragraph>
+            </header>
+            <div className="cfg-academico-tab-panel">
+              <div className="reportes-hub-grid">
+                {REPORTES.map((reporte) => (
+                  <PermisoGuard key={reporte.key} codigo={reporte.permiso} accion="LISTAR">
+                    <ReporteHubCard
+                      icon={reporte.icon}
+                      title={reporte.title}
+                      description={reporte.description}
+                      disponible={reporte.disponible}
+                      onClick={() => navigate(reporte.path)}
+                    />
+                  </PermisoGuard>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      </Flex>
+          </section>
+        </Flex>
+      </DashboardPageShell>
     </PageTemplate>
   );
 };

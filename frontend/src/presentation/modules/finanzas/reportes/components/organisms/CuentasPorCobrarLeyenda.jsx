@@ -1,22 +1,22 @@
 /**
  * Organismo: leyenda de alertas + observaciones generales de la planilla.
  *
- * Reúne en una `Card` la leyenda de estados (reutilizando el mismo `StatusPill`
- * + clase de color que la celda de estudiante, para que el color coincida
- * exactamente con el estado bajo el nombre) y un listado de observaciones
- * generales (texto fijo breve).
+ * Réplica de los bloques "LEYENDA DE ALERTAS" y "OBSERVACIONES GENERALES" de la
+ * planilla oficial. La leyenda usa el mismo DOT de color que la columna Estado
+ * (`fin-dot--*`) para que la correspondencia sea exacta. Las observaciones son
+ * una lista limpia de texto fijo.
  *
  * Recibe `leyenda` y `observaciones` ya construidas por el hook de estado; no
- * hace fetch. Espaciado vía `allSpacing`; sin #hex.
+ * hace fetch. Solo presentación (clases del kit + ajustes locales).
  */
 
 import { Card, Col, Flex, Row, Typography } from 'antd';
-import StatusPill from '@atoms/StatusPill';
 import {
   formatEstadoCobranza,
-  getEstadoCobranzaPillClass,
+  getEstadoDotClass,
 } from '@application-finanzas/utils/cuentasPorCobrarPills';
 import { allSpacing } from '@theme/tokens';
+import '@finanzas/styles/finanzas-planilla.css';
 import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 
 const { Text } = Typography;
@@ -28,10 +28,10 @@ const CuentasPorCobrarLeyenda = ({ leyenda = [], observaciones = [] }) => (
         <Flex vertical gap={allSpacing.marginSM} style={{ width: '100%' }}>
           {leyenda.map((item) => (
             <Flex key={item.key} align="center" gap={allSpacing.marginSM} wrap="wrap">
-              <StatusPill
-                label={formatEstadoCobranza(item.estado)}
-                className={getEstadoCobranzaPillClass(item.estado)}
-              />
+              <span className="cobranza-leyenda__estado">
+                <span className={`fin-dot ${getEstadoDotClass(item.estado)}`} aria-hidden />
+                <span className="cobranza-leyenda__label">{formatEstadoCobranza(item.estado)}</span>
+              </span>
               <Text type="secondary">{item.descripcion}</Text>
             </Flex>
           ))}

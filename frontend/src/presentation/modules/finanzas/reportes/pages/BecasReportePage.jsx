@@ -4,9 +4,12 @@
  * Página "dumb": compone template + organismos y consume `useBecasReportePage`.
  * No hace fetch ni orquesta (eso vive en el provider + hook de estado).
  *
- * Estructura (patrón CFG académico / Docentes):
- *   resumen (tarjetas) + distribución (donut sustituto) + planilla (tabla con
- *   columnas dinámicas por porcentaje y fila de TOTALES via Table.Summary).
+ * Réplica visual de la PLANILLA oficial del instituto (cabecera AZUL → VERDE
+ * primario), usando el KIT de planilla de Finanzas (`finanzas-planilla.css`):
+ *   - separador + tabla densa con cabecera verde y bloque agrupado de tramos,
+ *   - fila de TOTALES GENERALES (Table.Summary),
+ *   - RESUMEN GENERAL POR TIPO DE BECA + DISTRIBUCIÓN (donut) + RESUMEN (KPIs)
+ *     + OBSERVACIONES GENERALES.
  */
 
 import { Alert, Col, Empty, Flex, Row, Spin, Table, Tag, Typography } from 'antd';
@@ -18,12 +21,17 @@ import ListPanelHeader from '@molecules/ListPanelHeader';
 import { BackButton } from '@atoms';
 import { useBecasReportePage } from '@application-finanzas/hooks/state/useBecasReportePage';
 import { becaPorcentajeKey } from '@application-finanzas/mappers/becasReporteMapper';
-import { formatPorcentaje } from '@finanzas/reportes/config/becasTableColumns';
+import {
+  formatPorcentaje,
+  resolveTramos,
+} from '@finanzas/reportes/config/becasTableColumns';
 import BecasResumenCards from '@finanzas/reportes/components/organisms/BecasResumenCards';
 import BecasDistribucion from '@finanzas/reportes/components/organisms/BecasDistribucion';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
+import '@finanzas/styles/finanzas-planilla.css';
 import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
+import '@finanzas/reportes/styles/becas-reporte.css';
 
 const { Paragraph, Text } = Typography;
 
@@ -35,35 +43,46 @@ const renderGestionTag = (gestion) => {
   return <Tag color="processing">Gestión {label}</Tag>;
 };
 
-/** Fila de TOTALES GENERALES de la planilla (Table.Summary). */
+/**
+ * Fila de TOTALES GENERALES de la planilla (Table.Summary).
+ * Alineada con la estructura de columnas: Nº+Carrera+Modalidad (colSpan 3),
+ * Matriculados, [tramos canónicos+extra], Total con beca, % con beca,
+ * % cobertura (vacío), Observaciones (vacío).
+ */
 const renderTotalesRow = (totales, porcentajes) => {
   if (!totales) return null;
-  // Índices: 0=Nº, 1=Carrera, 2=Modalidad, 3=Matriculados, 4..=tramos, luego total/%/cobertura.
+  const tramos = resolveTramos(porcentajes);
   let cellIndex = 0;
   return (
     <Table.Summary fixed>
-      <Table.Summary.Row className="becas-reporte__summary">
+      <Table.Summary.Row className="fin-planilla__row-total">
         <Table.Summary.Cell index={cellIndex++} colSpan={3} align="right">
           <Text strong>TOTALES GENERALES</Text>
         </Table.Summary.Cell>
-        <Table.Summary.Cell index={cellIndex++} align="center">
-          <Text strong>{totales.totalMatriculados || 0}</Text>
+        <Table.Summary.Cell index={cellIndex++} align="center" className="fin-num fin-num--center">
+          <span className="fin-num--strong">{totales.totalMatriculados || 0}</span>
         </Table.Summary.Cell>
-        {porcentajes.map((porcentaje) => {
+        {tramos.map((porcentaje) => {
           const key = becaPorcentajeKey(porcentaje);
           return (
-            <Table.Summary.Cell key={key} index={cellIndex++} align="center">
-              <Text strong>{totales.becasPorPorcentaje?.[key] || 0}</Text>
+            <Table.Summary.Cell
+              key={key}
+              index={cellIndex++}
+              align="center"
+              className="fin-num fin-num--center"
+            >
+              <span className="fin-num--strong">{totales.becasPorPorcentaje?.[key] || 0}</span>
             </Table.Summary.Cell>
           );
         })}
-        <Table.Summary.Cell index={cellIndex++} align="center">
-          <Text strong>{totales.totalConBeca || 0}</Text>
+        <Table.Summary.Cell index={cellIndex++} align="center" className="fin-num fin-num--center">
+          <span className="fin-num--strong">{totales.totalConBeca || 0}</span>
         </Table.Summary.Cell>
-        <Table.Summary.Cell index={cellIndex++} align="center">
-          <Text strong>{formatPorcentaje(totales.porcentajeConBeca)}</Text>
+        <Table.Summary.Cell index={cellIndex++} align="center" className="fin-num fin-num--center">
+          <span className="fin-num--strong">{formatPorcentaje(totales.porcentajeConBeca)}</span>
         </Table.Summary.Cell>
         <Table.Summary.Cell index={cellIndex++} align="center" />
+        <Table.Summary.Cell index={cellIndex++} align="left" />
       </Table.Summary.Row>
     </Table.Summary>
   );
@@ -99,29 +118,60 @@ const BecasReportePage = () => {
   } else {
     body = (
       <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-        <BecasResumenCards resumen={resumen} />
+        {/* RESUMEN GENERAL AL INICIO: distribución (donut) · KPIs · observaciones,
+            en columnas lado a lado (réplica del pie de la planilla oficial). */}
+        <div className="fin-separador">
+          <span className="fin-separador__titulo">Resumen general por tipo de beca</span>
+        </div>
 
-        <Row gutter={[allSpacing.marginLG, allSpacing.marginLG]}>
-          <Col xs={24} xl={8}>
+        <Row gutter={[allSpacing.marginLG, allSpacing.marginLG]} align="stretch">
+          <Col xs={24} lg={12} xl={9}>
             <BecasDistribucion
               distribucion={distribucion}
               totalConBeca={resumen?.totalConBeca || 0}
               porcentajeConBeca={resumen?.porcentajeConBeca || 0}
             />
           </Col>
-          <Col xs={24} xl={16}>
-            <Table
-              size="small"
-              bordered
-              rowKey={(record) => record.carreraId}
-              dataSource={filas}
-              columns={tableColumns}
-              pagination={false}
-              scroll={{ x: 'max-content' }}
-              summary={() => renderTotalesRow(totales, porcentajes)}
-            />
+          <Col xs={24} lg={12} xl={9}>
+            <BecasResumenCards resumen={resumen} />
+          </Col>
+          <Col xs={24} xl={6}>
+            <div className="becas-observaciones">
+              <div className="becas-observaciones__titulo">Observaciones generales</div>
+              <ul className="becas-observaciones__lista">
+                <li>
+                  El % de cobertura por carrera corresponde a la proporción de
+                  estudiantes matriculados que cuentan con beca.
+                </li>
+                <li>
+                  Los tramos (25 %, 50 %, 75 %, 100 %) se determinan por el porcentaje
+                  de descuento asignado a cada estudiante.
+                </li>
+                <li>Reporte de solo lectura para la gestión vigente.</li>
+              </ul>
+            </div>
           </Col>
         </Row>
+
+        {/* DETALLE POR CARRERA (planilla) ABAJO: cabecera verde + bloque agrupado
+            + fila de TOTALES GENERALES. */}
+        <div className="fin-separador">
+          <span className="fin-separador__titulo">Detalle por carrera</span>
+        </div>
+
+        <div className="fin-planilla-wrap">
+          <Table
+            className="fin-planilla becas-planilla"
+            size="small"
+            bordered
+            rowKey={(record) => record.carreraId}
+            dataSource={filas}
+            columns={tableColumns}
+            pagination={false}
+            scroll={{ x: 'max-content' }}
+            summary={() => renderTotalesRow(totales, porcentajes)}
+          />
+        </div>
       </Flex>
     );
   }
