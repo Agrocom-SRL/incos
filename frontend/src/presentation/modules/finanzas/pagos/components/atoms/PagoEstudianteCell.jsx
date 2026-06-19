@@ -1,8 +1,11 @@
 /**
  * Celda Estudiante del listado de pagos (gemela de LicenciaEstudianteCell):
  * IdentidadCelda (código del estudiante + nombre) y, debajo, el ESTADO del pago
- * (PENDIENTE/PARCIAL/CANCELADO) como dot + etiqueta teñidos por color — el estado
- * NO va en columna propia, vive bajo el nombre.
+ * (Sin pagos / Cancelado / Parcial) como dot + etiqueta teñidos por color — el
+ * estado NO va en columna propia, vive bajo el nombre.
+ *
+ * El estado se recibe ya DERIVADO (clave de pagosPills.derivarEstadoPago), para
+ * poder distinguir "Sin pagos" del simple "Pendiente" del backend.
  *
  * El nombre ya viene resuelto del mapper en orden APELLIDO_PATERNO APELLIDO_MATERNO
  * NOMBRES (vía buildFullName); aquí no se reordena.
@@ -14,12 +17,12 @@ import {
   getEstadoPagoTextClass,
 } from '@application-finanzas/utils/pagosPills';
 
-const PagoEstudianteCell = ({ nombre, codigo, estado }) => (
+const PagoEstudianteCell = ({ nombre, codigo, estadoKey }) => (
   <div className="pago-estudiante-cell">
     <IdentidadCelda codigo={codigo} nombre={(nombre || '—').toUpperCase()} />
-    <span className={`pago-estudiante-cell__estado ${getEstadoPagoTextClass(estado)}`}>
+    <span className={`pago-estudiante-cell__estado ${getEstadoPagoTextClass(estadoKey)}`}>
       <span className="pago-estudiante-cell__dot" aria-hidden />
-      {formatEstadoPago(estado)}
+      {formatEstadoPago(estadoKey)}
     </span>
   </div>
 );

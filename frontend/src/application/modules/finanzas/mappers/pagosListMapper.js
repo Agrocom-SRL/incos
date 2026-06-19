@@ -19,6 +19,7 @@ export const pagoListMapper = (row) => {
 
   const estudianteRaw = row.estudiante || {};
   const gestionRaw = row.gestion || {};
+  const becaRaw = row.beca || {};
 
   const nombreCompleto = buildFullName(
     estudianteRaw.nombre,
@@ -42,6 +43,8 @@ export const pagoListMapper = (row) => {
       nombre: gestionRaw.nombre ?? null,
       anio: gestionRaw.anio ?? null,
     },
+    becaNombre: becaRaw.nombre ?? null,
+    becaPorcentaje: becaRaw.porcentaje != null ? Number(becaRaw.porcentaje) : null,
     montoBase: toNumber(row.monto_base),
     descuentoBeca: toNumber(row.descuento_beca),
     montoObligatorio: toNumber(row.monto_obligatorio),

@@ -2,9 +2,19 @@
  * Columnas del listado de pagos de aporte (módulo Finanzas).
  *
  * Lenguaje visual de CarrerasList / LicenciasListPage: numeración + IdentidadCelda +
- * celdas multi-línea + StatusPill. El ESTADO del pago (PENDIENTE/PARCIAL/CANCELADO)
- * NO tiene columna propia: vive bajo el nombre del estudiante (PagoEstudianteCell,
- * gemelo de LicenciaEstudianteCell). Saldo y avance se muestran con StatusPill.
+ * celdas multi-línea + StatusPill. El ESTADO del pago (Sin pagos / Parcial /
+ * Cancelado) NO tiene columna propia: vive bajo el nombre del estudiante
+ * (PagoEstudianteCell) y se DERIVA en el front (no del `estado` crudo del backend).
+ *
+ * Set de columnas: # · Estudiante · Pagado · Descuento · Saldo · Acciones.
+ *
+ * Ordenamiento SERVER-SIDE: cada columna ordenable declara `sortField` = campo de
+ * la vista (contrato con backend). La tabla notifica el cambio de sorter al
+ * provider, que recarga el dataset completo ordenado (no se ordena en cliente).
+ *   Estudiante → estudiante_apellido_paterno
+ *   Pagado     → total_pagado
+ *   Descuento  → beca_porcentaje
+ *   Saldo      → saldo_pendiente
  *
  * El nombre del estudiante ya viene del mapper en orden APELLIDO_PATERNO
  * APELLIDO_MATERNO NOMBRES (vía buildFullName) — no se reordena aquí.
@@ -23,14 +33,19 @@ import {
 import { StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
 import PagoEstudianteCell from '@finanzas/pagos/components/atoms/PagoEstudianteCell';
-import PagoGestionCell from '@finanzas/pagos/components/atoms/PagoGestionCell';
-import PagoMontoCell from '@finanzas/pagos/components/atoms/PagoMontoCell';
+import PagoPagadoCell from '@finanzas/pagos/components/atoms/PagoPagadoCell';
+import PagoDescuentoCell from '@finanzas/pagos/components/atoms/PagoDescuentoCell';
+import PagoSaldoCell from '@finanzas/pagos/components/atoms/PagoSaldoCell';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import {
+  derivarEstadoPago,
+  getDescuentoPillClass,
   getSaldoPillClass,
-  getPorcentajeCubiertoPillClass,
 } from '@application-finanzas/utils/pagosPills';
 import { pagoDetallePath, PAGOS_LIST_PATH } from '@application-finanzas/config/paths';
+
+/** Longitud máxima del nombre de beca en el subtexto del pill de descuento. */
+const BECA_NOMBRE_MAX = 50;
 
 /** Formatea un monto en bolivianos (Bs 1.234,50). */
 const formatBolivianos = (value) => {
@@ -47,13 +62,16 @@ const getGestionLabel = (record) => {
   return nombre || (anio != null ? String(anio) : null);
 };
 
-/** % cubierto del aporte (0–100), derivado de total pagado / monto obligatorio. */
-const getPorcentajeCubierto = (record) => {
-  const obligatorio = Number(record.montoObligatorio) || 0;
-  if (obligatorio <= 0) return 100;
-  const pagado = Number(record.totalPagado) || 0;
-  return Math.min(Math.round((pagado / obligatorio) * 100), 100);
+/** Trunca un texto a `max` caracteres con ellipsis (sin cortar a media palabra fea). */
+const truncar = (text, max) => {
+  const value = String(text ?? '').trim();
+  if (value.length <= max) return value;
+  return `${value.slice(0, max - 1).trimEnd()}…`;
 };
+
+/** ¿El registro tiene beca con descuento efectivo? */
+const tieneBeca = (record) =>
+  (Number(record.becaPorcentaje) || 0) > 0 || (Number(record.descuentoBeca) || 0) > 0;
 
 export const createPagosTableColumns = ({ navigate, listNavState, refetch }) => {
   return [
@@ -73,83 +91,68 @@ export const createPagosTableColumns = ({ navigate, listNavState, refetch }) => 
         <PagoEstudianteCell
           codigo={record.estudiante?.codigoEstudiante}
           nombre={record.estudiante?.nombreCompleto || 'Sin nombre'}
-          estado={record.estado}
+          estadoKey={derivarEstadoPago(record)}
         />
       ),
       sorter: true,
-      sortCompare: (a, b) =>
-        String(a.estudiante?.nombreCompleto || '').localeCompare(
-          String(b.estudiante?.nombreCompleto || ''),
-          'es',
-          { sensitivity: 'base' },
-        ),
-    },
-    {
-      title: 'Gestión',
-      key: 'gestion',
-      width: 200,
-      render: (_, record) => (
-        <PagoGestionCell gestionLabel={getGestionLabel(record)} gestionAnio={record.gestion?.anio} />
-      ),
-      sorter: true,
-      sortCompare: (a, b) =>
-        String(getGestionLabel(a) || '').localeCompare(String(getGestionLabel(b) || ''), 'es', {
-          sensitivity: 'base',
-        }),
-    },
-    {
-      title: 'Monto a pagar',
-      key: 'montoObligatorio',
-      width: 200,
-      align: 'right',
-      render: (_, record) => (
-        <PagoMontoCell
-          valor={formatBolivianos(record.montoObligatorio)}
-          sub={
-            record.descuentoBeca > 0
-              ? `Base ${formatBolivianos(record.montoBase)} · Beca -${formatBolivianos(record.descuentoBeca)}`
-              : `Base ${formatBolivianos(record.montoBase)}`
-          }
-        />
-      ),
-      sorter: true,
-      sortCompare: (a, b) => (a.montoObligatorio || 0) - (b.montoObligatorio || 0),
+      sortField: 'estudiante_apellido_paterno',
     },
     {
       title: 'Pagado',
       key: 'totalPagado',
-      width: 180,
-      align: 'right',
+      width: 200,
+      render: (_, record) => (
+        <PagoPagadoCell
+          total={formatBolivianos(record.totalPagado)}
+          cantidadPagos={Number(record.cantidadPagos) || 0}
+          gestionLabel={getGestionLabel(record)}
+        />
+      ),
+      sorter: true,
+      sortField: 'total_pagado',
+    },
+    {
+      title: 'Descuento',
+      key: 'descuento',
+      width: 220,
       render: (_, record) => {
-        const porcentaje = getPorcentajeCubierto(record);
+        if (!tieneBeca(record)) {
+          return <StatusPill label="Sin beca" className="pago-pill pago-pill--neutro" />;
+        }
+        const nombre = record.becaNombre ? truncar(record.becaNombre, BECA_NOMBRE_MAX) : null;
         return (
-          <PagoMontoCell
-            valor={formatBolivianos(record.totalPagado)}
-            sub={
-              <StatusPill
-                label={`${porcentaje}% cubierto`}
-                className={getPorcentajeCubiertoPillClass(porcentaje)}
-              />
-            }
+          <PagoDescuentoCell
+            porcentaje={record.becaPorcentaje}
+            montoLabel={formatBolivianos(record.descuentoBeca)}
+            nombre={nombre}
+            nombreCompleto={record.becaNombre}
+            pillClass={getDescuentoPillClass(record.becaPorcentaje)}
           />
         );
       },
       sorter: true,
-      sortCompare: (a, b) => (a.totalPagado || 0) - (b.totalPagado || 0),
+      sortField: 'beca_porcentaje',
     },
     {
-      title: 'Saldo pendiente',
+      title: 'Saldo',
       key: 'saldoPendiente',
-      width: 170,
-      align: 'right',
+      width: 220,
       render: (_, record) => {
-        const saldo = record.saldoPendiente || 0;
+        const saldo = Number(record.saldoPendiente) || 0;
+        const saldado = saldo <= 0;
         return (
-          <StatusPill label={formatBolivianos(saldo)} className={getSaldoPillClass(saldo)} />
+          <PagoSaldoCell
+            aporte={formatBolivianos(record.montoBase)}
+            cubierto={formatBolivianos(
+              (Number(record.descuentoBeca) || 0) + (Number(record.totalPagado) || 0),
+            )}
+            saldoLabel={saldado ? 'Cancelado' : formatBolivianos(saldo)}
+            saldoPillClass={getSaldoPillClass(saldo)}
+          />
         );
       },
       sorter: true,
-      sortCompare: (a, b) => (a.saldoPendiente || 0) - (b.saldoPendiente || 0),
+      sortField: 'saldo_pendiente',
     },
     {
       title: 'Acciones',

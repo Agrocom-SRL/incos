@@ -9,6 +9,7 @@
 import { DollarOutlined } from '@ant-design/icons';
 import { StatusPill } from '@atoms';
 import {
+  derivarEstadoPago,
   formatEstadoPago,
   getEstadoPagoPillClass,
   getSaldoPillClass,
@@ -31,9 +32,11 @@ const PagoFichaHeader = ({
   montoObligatorio,
   totalPagado,
   saldoPendiente,
-  estado,
+  cantidadPagos,
 }) => {
   const subtitleParts = [codigoEstudiante, gestionLabel].filter(Boolean);
+  // Estado derivado (mismo criterio que el listado): "Sin pagos"/"Cancelado"/"Parcial".
+  const estadoKey = derivarEstadoPago({ cantidadPagos, totalPagado, saldoPendiente });
 
   return (
     <div className="sd-profile">
@@ -47,12 +50,10 @@ const PagoFichaHeader = ({
           <h1 className="sd-profile__name">{nombreCompleto || 'Pago de aporte'}</h1>
           <div className="sd-profile__meta">
             <p className="sd-profile__sub">{subtitleParts.join(' · ') || 'Aporte académico'}</p>
-            {estado ? (
-              <StatusPill
-                label={formatEstadoPago(estado)}
-                className={getEstadoPagoPillClass(estado)}
-              />
-            ) : null}
+            <StatusPill
+              label={formatEstadoPago(estadoKey)}
+              className={getEstadoPagoPillClass(estadoKey)}
+            />
           </div>
         </div>
       </div>

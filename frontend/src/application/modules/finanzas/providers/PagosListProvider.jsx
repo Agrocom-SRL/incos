@@ -24,11 +24,14 @@ export const PagosListProvider = ({ children }) => {
     refetch,
   } = useServerPaginatedList({
     fetch: fetchPagos,
-    buildRequest: ({ page, limit, search }) => ({
+    buildRequest: ({ page, limit, search, sort }) => ({
       params: {
         page,
         limit,
         search: search || undefined,
+        // Orden server-side ya serializado ("campo:ASC"/"campo:DESC"); el backend
+        // mapea el campo de vista al ORDER BY (contrato compartido).
+        sort: sort || undefined,
       },
     }),
   });

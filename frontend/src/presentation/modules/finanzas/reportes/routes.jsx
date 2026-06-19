@@ -21,6 +21,7 @@ const BecasReporteConnector = lazy(() => import('./connectors/BecasReporteConnec
 const CuentasPorCobrarConnector = lazy(() =>
   import('./connectors/CuentasPorCobrarConnector.jsx'),
 );
+const ReportesHubPage = lazy(() => import('./pages/ReportesHubPage.jsx'));
 
 export const finanzasReportesRoutes = [
   {
@@ -75,7 +76,7 @@ export const finanzasReportesRoutes = [
   },
   {
     path: '/finanzas/reportes',
-    element: <UnderConstruction />,
+    element: <ReportesHubPage />,
     key: 'FIN-REP',
     permiso: FINANZAS_PERMISOS.reporteCarrera,
     accion: 'LISTAR',

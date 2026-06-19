@@ -56,6 +56,13 @@ export function entityToPresentation(row) {
     BaseMapper.mapFieldIfExists(row, 'gestion_anio', 'anio', gestion);
     presentation.gestion = gestion;
 
+    // Beca anidada: nombre y porcentaje del descuento aplicado (heredados de la vista).
+    // Siempre presente (al mismo nivel que estudiante/gestion); null cuando no hay beca.
+    presentation.beca = {
+        nombre: row.beca_nombre ?? null,
+        porcentaje: row.beca_porcentaje != null ? Number(row.beca_porcentaje) : null,
+    };
+
     return presentation;
 }
 

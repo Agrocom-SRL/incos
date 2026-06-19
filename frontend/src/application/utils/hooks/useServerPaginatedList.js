@@ -17,9 +17,19 @@ function normalizePagination(result, page, pageSize) {
 }
 
 /**
+ * Convierte el estado de orden ({ field, order: 'ASC'|'DESC' }) al formato de
+ * query que consume el backend ("campo:ASC"). Devuelve undefined si no hay orden.
+ */
+function buildSortParam(sort) {
+  if (!sort?.field || !sort?.order) return undefined;
+  return `${sort.field}:${sort.order}`;
+}
+
+/**
  * @param {Object} config
  * @param {Function} config.fetch - async (options) => result del createApiHook / repositorio
- * @param {Function} [config.buildRequest] - ({ page, limit, search, extra }) => argumento para fetch
+ * @param {Function} [config.buildRequest] - ({ page, limit, search, sort, extra }) => argumento para fetch
+ *   `sort` llega ya serializado como "campo:ASC"/"campo:DESC" (o undefined).
  * @param {Function} [config.mapResponse] - normaliza { data: array, pagination } (p. ej. becas anidadas)
  * @param {Object} [config.extra] - filtros estables (carrera_id, etc.)
  * @param {number} [config.initialPageSize]
@@ -43,9 +53,14 @@ export function useServerPaginatedList({
     pageSize: initialPageSize,
     total: 0,
   });
+  // Orden server-side: { field, order: 'ASC'|'DESC' } | null. Retrocompatible:
+  // si nadie cambia el orden, queda null y el request sale igual que antes.
+  const [sort, setSort] = useState(null);
 
   const fetchSeq = useRef(0);
   const pageSizeRef = useRef(initialPageSize);
+  // Espejo del orden vigente para que `load` lo lea sin recrear su identidad.
+  const sortRef = useRef(null);
   const extraKey = extra == null ? '' : JSON.stringify(extra);
 
   useEffect(() => {
@@ -64,6 +79,7 @@ export function useServerPaginatedList({
           page,
           limit: pageSize,
           search,
+          sort: buildSortParam(sortRef.current),
           extra: extra ?? undefined,
         });
         const raw = await fetch(request);
@@ -90,6 +106,29 @@ export function useServerPaginatedList({
     [enabled, fetch, buildRequest, extraKey],
   );
 
+  /**
+   * Cambia el orden server-side y recarga desde la página 1. `next` es
+   * { field, order: 'ASC'|'DESC' } o null para quitar el orden. Idempotente:
+   * si el orden no cambia, no dispara recarga.
+   */
+  const handleSortChange = useCallback(
+    (next) => {
+      const normalized = next?.field && next?.order ? { field: next.field, order: next.order } : null;
+      const current = sortRef.current;
+      const same =
+        (current == null && normalized == null) ||
+        (current != null &&
+          normalized != null &&
+          current.field === normalized.field &&
+          current.order === normalized.order);
+      if (same) return;
+      sortRef.current = normalized;
+      setSort(normalized);
+      load(DEFAULT_LIST_PAGE, pageSizeRef.current, debouncedSearch);
+    },
+    [load, debouncedSearch],
+  );
+
   useEffect(() => {
     if (!enabled) {
       setRows([]);
@@ -112,8 +151,12 @@ export function useServerPaginatedList({
       onChange: (page, pageSize) => {
         load(page, pageSize, debouncedSearch);
       },
+      // Orden server-side: estado vigente + callback para que la tabla notifique
+      // el cambio de sorter (en vez de ordenar la página visible en cliente).
+      sort,
+      onSortChange: handleSortChange,
     }),
-    [pagination.current, pagination.pageSize, pagination.total, load, debouncedSearch],
+    [pagination.current, pagination.pageSize, pagination.total, load, debouncedSearch, sort, handleSortChange],
   );
 
   const refetch = useCallback(() => {
@@ -129,5 +172,7 @@ export function useServerPaginatedList({
     tablePagination,
     refetch,
     pagination,
+    sort,
+    onSortChange: handleSortChange,
   };
 }

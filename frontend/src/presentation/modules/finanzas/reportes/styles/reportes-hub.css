@@ -1,0 +1,92 @@
+/* Hub de "Reportes de pagos" (Finanzas): grilla de tarjetas de acceso a cada
+   reporte. Solo presentación; misma estética de tarjetas del sistema. */
+
+.reportes-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-lg, 16px);
+  width: 100%;
+}
+
+.reporte-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--spacing-lg, 20px);
+  border: 1px solid var(--border-200, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--surface-0, #ffffff);
+  min-height: 168px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.reporte-hub-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(34, 133, 79, 0.1);
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  font-size: 20px;
+}
+
+.reporte-hub-card__title {
+  font-weight: 700;
+  font-size: var(--font-size-base, 15px);
+  color: var(--text-800, #1f2937);
+  line-height: 1.3;
+}
+
+.reporte-hub-card__desc {
+  font-size: var(--font-size-sm, 13px);
+  line-height: 1.45;
+  flex: 1 1 auto;
+}
+
+.reporte-hub-card__footer {
+  margin-top: 4px;
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 600;
+}
+
+.reporte-hub-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary, var(--ant-color-primary, #22854f));
+}
+
+.reporte-hub-card__soon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-400, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: var(--font-size-xs, 11px);
+}
+
+/* Disponible: clicable, con feedback al hover/focus. */
+.reporte-hub-card--clickable {
+  cursor: pointer;
+}
+.reporte-hub-card--clickable:hover,
+.reporte-hub-card--clickable:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  border-color: rgba(34, 133, 79, 0.4);
+  outline: none;
+}
+
+/* En construcción: atenuada, no interactiva. */
+.reporte-hub-card--disabled {
+  opacity: 0.72;
+  background: var(--surface-50, #f9fafb);
+  border-style: dashed;
+}
+.reporte-hub-card--disabled .reporte-hub-card__icon {
+  background: var(--surface-100, #f3f4f6);
+  color: var(--text-400, #9ca3af);
+}

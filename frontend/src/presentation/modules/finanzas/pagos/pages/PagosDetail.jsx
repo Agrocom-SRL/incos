@@ -92,7 +92,7 @@ const PagosDetail = () => {
                 montoObligatorio={pago.montoObligatorio}
                 totalPagado={pago.totalPagado}
                 saldoPendiente={pago.saldoPendiente}
-                estado={pago.estado}
+                cantidadPagos={pago.cantidadPagos}
               />
               <div className="sd-tabs-shell">
                 <PagoCuotasSection
