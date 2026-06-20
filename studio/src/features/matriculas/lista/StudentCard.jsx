@@ -15,6 +15,7 @@ import { AdmissionTypeTag } from './AdmissionTypeTag';
 import { EnrollmentActions } from './EnrollmentActions';
 import { historyStateOf, HISTORY_ICONS } from './historyStates';
 import { pagoStatusOf } from './pagoStatus';
+import './StudentCard.css';
 
 export function StudentCard({ row, onOpen, ...actions }) {
   const { t } = useTranslation();

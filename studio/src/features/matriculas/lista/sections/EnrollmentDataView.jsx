@@ -12,6 +12,7 @@ import { useReducedMotion } from '@lib/motion/useReducedMotion';
 import { presenceSwap } from '@lib/motion/presets';
 import { StudentCardGrid } from '../StudentCardGrid';
 import { ListSkeleton } from '../ListSkeleton';
+import './EnrollmentDataView.css';
 
 const MotionDiv = motion.div;
 

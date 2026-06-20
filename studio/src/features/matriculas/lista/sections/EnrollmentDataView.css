@@ -1,0 +1,119 @@
+/* Superficie de datos: contenedor de tabla/tarjetas + footer + estilos de celda. */
+.mat-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  overflow: hidden;
+}
+
+/* --- Footer (conteo + paginación) --- */
+.mat-footer {
+  padding: var(--space-md) 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--divider);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  background: var(--surface);
+}
+
+.mat-footer__count {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+/* --- Celda: carrera --- */
+.mat-career-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.mat-career {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text);
+}
+
+.mat-career__bar {
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.mat-career__sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-soft);
+  padding-left: 12px;
+}
+
+.mat-dash {
+  color: var(--text-soft);
+}
+
+/* --- Celda: gestión --- */
+.mat-term__year {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.mat-term__date {
+  font-size: var(--font-size-xs);
+  color: var(--text-soft);
+}
+
+.mat-subjects {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-2);
+}
+
+.mat-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+}
+
+/* --- Ajuste de la tabla AntD (scoped) --- */
+.mat-table .ant-table {
+  background: transparent;
+}
+
+.mat-table .ant-table-content {
+  overflow-x: auto;
+}
+
+.mat-table .ant-table-thead > tr > th {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--divider);
+  padding: 14px 16px;
+}
+
+.mat-table .ant-table-thead > tr > th::before {
+  display: none !important;
+}
+
+.mat-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--divider);
+  padding: 14px 16px;
+}
+
+/* Móvil: la tabla scrollea horizontalmente en lugar de aplastarse. */
+@media (max-width: 767px) {
+  .mat-table .ant-table-content > table {
+    min-width: 760px;
+  }
+}

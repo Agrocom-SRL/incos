@@ -6,6 +6,7 @@
 import { PlusOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Button, Select } from 'antd';
 import { useTranslation } from '@lib/i18n/useTranslation';
+import './EnrollmentHeaderActions.css';
 
 export function EnrollmentHeaderActions({
   careerSelectOptions,

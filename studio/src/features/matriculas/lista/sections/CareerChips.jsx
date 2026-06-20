@@ -4,6 +4,7 @@
  */
 import { Chip } from '@ui/atoms/Chip/Chip';
 import { useTranslation } from '@lib/i18n/useTranslation';
+import './CareerChips.css';
 
 export function CareerChips({ careers, total, value, onChange }) {
   const { t } = useTranslation();

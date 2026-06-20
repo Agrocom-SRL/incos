@@ -9,6 +9,7 @@ import { KpiCard } from '@ui/molecules/KpiCard/KpiCard';
 import { useTranslation } from '@lib/i18n/useTranslation';
 import { useReducedMotion } from '@lib/motion/useReducedMotion';
 import { staggerContainer, staggerItem } from '@lib/motion/presets';
+import './EnrollmentKpis.css';
 
 const MotionDiv = motion.div;
 

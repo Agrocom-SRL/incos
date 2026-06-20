@@ -1,0 +1,53 @@
+/* Esqueleto de carga (shimmer cross-fade, gateado por reduced-motion). */
+.mat-skeleton-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mat-skeleton-row {
+  height: 56px;
+  background: linear-gradient(
+    100deg,
+    var(--surface) 30%,
+    var(--surface-hover) 50%,
+    var(--surface) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s var(--ease-in-out) infinite;
+}
+
+.mat-skeleton-grid {
+  padding: var(--space-lg);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.mat-skeleton-card {
+  height: 280px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    100deg,
+    var(--surface-alt) 30%,
+    var(--surface-hover) 50%,
+    var(--surface-alt) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s var(--ease-in-out) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mat-skeleton-row,
+  .mat-skeleton-card {
+    animation: none;
+  }
+}
+
+@media (max-width: 575px) {
+  .mat-skeleton-grid {
+    padding: var(--space-md);
+    grid-template-columns: 1fr;
+  }
+}

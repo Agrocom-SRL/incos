@@ -155,6 +155,17 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
 
+- 2026-06-20 — **studio/ — fix layout (CSS co-locado) + pase responsive.** El listado se
+  "desformó" (KPIs apilados, grilla perdida) porque la reescritura de la página dejó fuera
+  el `import` de su CSS monolítico. Solución alineada al estándar: **partir el monolito y
+  co-locar cada CSS con su componente** (cada uno lo importa, igual que el JSX): EnrollmentKpis,
+  CareerChips, EnrollmentHeaderActions, EnrollmentDataView (tabla+footer+celdas), StudentCell,
+  StudentCardGrid, StudentCard, ListSkeleton; la página retiene solo `.mat-page` + `.mat-toolbar`.
+  Así un import olvidado ya no puede romper el layout. Pase responsive mobile→XXL: KPIs 1/2/4
+  por ancho (≤639/≤1199); grid de tarjetas auto-fill→1 col en móvil; tabla con scroll horizontal
+  (min-width 760px ≤767px); select de export full-width en móvil; `.mat-page` max-width 1680px
+  centrado para monitores XXL. Build ✓ 6.89s · Lint exit 0. Distribución de componentes intacta.
+
 - 2026-06-20 — **studio/ — auditoría white-label + refactor Atomic (manual).** A pedido del
   usuario, barrido de hardcodes y descomposición:
   • **Hardcodes → 0**: `careerColor.js` ya no define hex (consume nueva paleta

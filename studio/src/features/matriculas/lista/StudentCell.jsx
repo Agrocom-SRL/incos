@@ -4,6 +4,7 @@
  */
 import { Avatar } from '@ui/atoms/Avatar/Avatar';
 import { useTranslation } from '@lib/i18n/useTranslation';
+import './StudentCell.css';
 
 export function StudentCell({ row }) {
   const { t } = useTranslation();

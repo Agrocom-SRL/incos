@@ -1,0 +1,14 @@
+/* Grid de tarjetas — auto-fill: 1 col en móvil → varias en monitores XXL. */
+.mat-grid {
+  padding: var(--space-lg);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 575px) {
+  .mat-grid {
+    padding: var(--space-md);
+    grid-template-columns: 1fr;
+  }
+}

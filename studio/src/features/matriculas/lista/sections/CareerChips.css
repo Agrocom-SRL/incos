@@ -1,0 +1,8 @@
+/* Fila de chips de carrera (envuelve en pantallas angostas). */
+.mat-chips {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--space-base);
+}

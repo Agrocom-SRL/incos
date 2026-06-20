@@ -1,0 +1,30 @@
+/* Acciones del encabezado: select de export por carrera + botón teñible. */
+.mat-export-select {
+  min-width: 200px;
+}
+
+.mat-export-btn--career.ant-btn {
+  --export-color: var(--brand-600);
+  background: var(--export-color);
+  border-color: var(--export-color);
+  color: var(--color-on-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mat-export-btn--career.ant-btn:not(:disabled):hover {
+    background: var(--export-color);
+    border-color: var(--export-color);
+    color: var(--color-on-accent);
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--export-color) 40%, transparent);
+  }
+}
+
+/* Móvil: el select ocupa el ancho disponible en lugar de un mínimo fijo. */
+@media (max-width: 639px) {
+  .mat-export-select {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+}

@@ -17,6 +17,7 @@ import { EnrollmentKpis } from './sections/EnrollmentKpis';
 import { CareerChips } from './sections/CareerChips';
 import { EnrollmentHeaderActions } from './sections/EnrollmentHeaderActions';
 import { EnrollmentDataView } from './sections/EnrollmentDataView';
+import './EnrollmentsListPage.css';
 
 const noop = () => {};
 

@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { staggerContainer, staggerItem } from '@lib/motion/presets';
 import { useReducedMotion } from '@lib/motion/useReducedMotion';
 import { StudentCard } from './StudentCard';
+import './StudentCardGrid.css';
 
 const MotionDiv = motion.div;
 

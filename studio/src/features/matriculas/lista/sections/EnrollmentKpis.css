@@ -1,0 +1,22 @@
+/* KPIs — grilla responsiva: 1 col móvil · 2 tablet · 4 desktop+. */
+.mat-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-base);
+  margin-bottom: var(--space-xl);
+}
+
+/* Tablet / desktop angosto: 2 columnas */
+@media (max-width: 1199px) {
+  .mat-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Móvil: 1 columna */
+@media (max-width: 639px) {
+  .mat-kpis {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+}
