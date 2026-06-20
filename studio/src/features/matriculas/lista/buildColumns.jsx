@@ -1,22 +1,13 @@
 /**
  * buildColumns — define las columnas de la tabla de inscripciones.
  * Recibe `t` (i18n) y handlers; devuelve la config de AntD Table. Sin estado.
- * Compone átomos compartidos (StatusPill, IconButton) y organismos locales.
+ * Compone átomos compartidos (StatusPill) y moléculas locales (StudentCell,
+ * AdmissionTypeTag, EnrollmentActions).
  */
-import {
-  EyeOutlined,
-  EditOutlined,
-  MoreOutlined,
-  PrinterOutlined,
-  MailOutlined,
-  FileTextOutlined,
-  DeleteOutlined,
-} from '@ant-design/icons';
-import { Dropdown } from 'antd';
 import { StatusPill } from '@ui/atoms/StatusPill/StatusPill';
-import { IconButton } from '@ui/atoms/IconButton/IconButton';
 import { StudentCell } from './StudentCell';
 import { AdmissionTypeTag } from './AdmissionTypeTag';
+import { EnrollmentActions } from './EnrollmentActions';
 import { pagoStatusOf } from './pagoStatus';
 import { historyStateOf, HISTORY_ICONS } from './historyStates';
 
@@ -31,17 +22,7 @@ function renderHistoryPill(row, t) {
   );
 }
 
-export function buildColumns(t, { onView, onEdit, onPrint, onEmail, onReport, onDelete }) {
-  const rowMenu = (row) => ({
-    items: [
-      { key: 'print', icon: <PrinterOutlined />, label: t('enrollments.actions.print'), onClick: () => onPrint?.(row) },
-      { key: 'email', icon: <MailOutlined />, label: t('enrollments.actions.email'), onClick: () => onEmail?.(row) },
-      { key: 'report', icon: <FileTextOutlined />, label: t('enrollments.actions.report'), onClick: () => onReport?.(row) },
-      { type: 'divider' },
-      { key: 'delete', icon: <DeleteOutlined />, label: t('enrollments.actions.delete'), danger: true, onClick: () => onDelete?.(row) },
-    ],
-  });
-
+export function buildColumns(t, handlers) {
   return [
     {
       title: t('enrollments.table.student'),
@@ -104,17 +85,7 @@ export function buildColumns(t, { onView, onEdit, onPrint, onEmail, onReport, on
       key: 'actions',
       align: 'right',
       width: 140,
-      render: (_, row) => (
-        <div className="mat-row-actions">
-          <IconButton tone="info" icon={<EyeOutlined />} label={t('enrollments.actions.view')} onClick={() => onView?.(row)} />
-          <IconButton tone="warning" icon={<EditOutlined />} label={t('enrollments.actions.edit')} onClick={() => onEdit?.(row)} />
-          <Dropdown menu={rowMenu(row)} trigger={['click']} placement="bottomRight">
-            <span onClick={(e) => e.stopPropagation()}>
-              <IconButton tone="muted" icon={<MoreOutlined />} label={t('enrollments.actions.more')} />
-            </span>
-          </Dropdown>
-        </div>
-      ),
+      render: (_, row) => <EnrollmentActions row={row} className="mat-row-actions" {...handlers} />,
     },
   ];
 }

@@ -40,18 +40,18 @@
 
 .ds-chip--active {
   background: var(--chip-color);
-  color: #fff;
+  color: var(--color-on-accent);
   border-color: var(--chip-color);
   box-shadow: 0 2px 8px color-mix(in srgb, var(--chip-color) 38%, transparent);
 }
 
 .ds-chip--active .ds-chip__dot {
-  background: #fff;
+  background: var(--color-on-accent);
 }
 
 .ds-chip--active .ds-chip__count {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
+  background: var(--color-on-accent-soft);
+  color: var(--color-on-accent);
 }
 
 @media (hover: hover) and (pointer: fine) {

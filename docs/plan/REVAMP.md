@@ -155,6 +155,23 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
 
+- 2026-06-20 — **studio/ — auditoría white-label + refactor Atomic (manual).** A pedido del
+  usuario, barrido de hardcodes y descomposición:
+  • **Hardcodes → 0**: `careerColor.js` ya no define hex (consume nueva paleta
+    `design-system/tokens/categorical.js`); `#fff`/`rgba` literales de CSS → tokens nuevos
+    `--color-on-accent` / `--color-on-accent-soft` / `--backdrop` (en `palette.js` MISC por
+    modo + emitidos por `applyThemeVars`). Verificado: 0 hex en js/jsx (excl tokens/brand),
+    0 color literal en css (excl var()).
+  • **Atomic**: nuevos átomos compartidos `ui/atoms/ProgressBar` y `ui/atoms/Stat`; molécula
+    `ui/molecules/DescriptionRow`. `StudentCard` (164→~110 líneas) ahora COMPONE
+    AdmissionTypeTag + Stat + DescriptionRow + ProgressBar + EnrollmentActions (sin HTML
+    redundante ni menú duplicado). Acciones ver/editar/⋮ deduplicadas en una molécula única
+    `EnrollmentActions` usada por tabla (buildColumns) y tarjeta.
+  • **Página**: `EnrollmentsListPage` (269→~110 líneas) = composición pura; secciones
+    extraídas a `lista/sections/`: `EnrollmentKpis`, `CareerChips`, `EnrollmentHeaderActions`,
+    `EnrollmentDataView`. CSS huérfano eliminado (meta-row/stat/progress-fill reemplazados por
+    átomos). Build ✓ 6.79s · Lint exit 0. Sin tocar frontend/ legacy ni navigation.
+
 - 2026-06-20 — **Verificador: studio/ paridad UI matrícula — APROBADO.** Build verde (vite ✓ 6.44s) y lint exit 0 (0 errores/warnings) confirmados por el orquestador (Bash del verificador estaba en sandbox). 4 issues estáticos detectados y corregidos: (1) StatusPill.css font-size:11px → var(--font-size-xs) (token existente, sin crear); (2) StudentCell.jsx "CI" literal → t('enrollments.card.ci'); (3) EnrollmentsListPage.jsx stagger de KPIs gateado con reduce?undefined:stagger*; (4) StudentCardGrid.jsx stagger gateado con useReducedMotion. Sin cambios de schema/datos reales (solo mock con shape de vista 101). Sin tocar frontend/ legacy, navigation.js ni nav.js.
 
 - 2026-06-20 — **studio/ paridad UI matrícula (9 bloques, mock-first).** Listado de

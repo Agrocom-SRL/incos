@@ -6,3 +6,4 @@ export { typography } from './typography';
 export { shadows } from './shadows';
 export { zIndex } from './zIndex';
 export { buildPalette } from './palette';
+export { categoricalPalette } from './categorical';

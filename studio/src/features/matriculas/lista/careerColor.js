@@ -1,23 +1,17 @@
 /**
  * Color categórico por carrera (dominio matrícula). Función PURA.
- * Mapa por código; fallback a un color de la paleta según el id.
+ * Mapea el CÓDIGO de carrera a un índice de la paleta categórica del design-system
+ * (no define colores: los consume como token). Fallback determinista por id.
  */
-const CAREER_COLOR_MAP = {
-  CG: '#006048',
-  SI: '#3d6dd0',
-  AE: '#7a4cb8',
-  MP: '#c0282a',
-  SE: '#0a8a96',
-  EI: '#b07e10',
-};
+import { categoricalPalette } from '@ds/tokens';
 
-const FALLBACK = ['#006048', '#3d6dd0', '#7a4cb8', '#c0282a', '#0a8a96', '#b07e10', '#1f9163', '#2f5fb0'];
+const CAREER_INDEX = { CG: 0, SI: 1, AE: 2, MP: 3, SE: 4, EI: 5 };
 
 export function careerColor(carrera) {
-  if (!carrera) return FALLBACK[0];
-  if (carrera.codigo && CAREER_COLOR_MAP[carrera.codigo]) return CAREER_COLOR_MAP[carrera.codigo];
-  const idx = Number(carrera.id) || 0;
-  return FALLBACK[idx % FALLBACK.length];
+  if (!carrera) return categoricalPalette[0];
+  const byCode = CAREER_INDEX[carrera.codigo];
+  const idx = byCode != null ? byCode : (Number(carrera.id) || 0) % categoricalPalette.length;
+  return categoricalPalette[idx];
 }
 
 export default careerColor;

@@ -91,6 +91,12 @@ const TOOLTIP = {
   dark: { bg: 'var(--brand-200)', fg: '#e8f0ea', border: 'var(--brand-600)' },
 };
 
+// Roles auxiliares: texto/relleno sobre superficies de acento y velo modal.
+const MISC = {
+  light: { onAccent: '#ffffff', onAccentSoft: 'rgba(255, 255, 255, 0.25)', backdrop: 'rgba(5, 20, 12, 0.45)' },
+  dark: { onAccent: '#ffffff', onAccentSoft: 'rgba(255, 255, 255, 0.22)', backdrop: 'rgba(0, 0, 0, 0.6)' },
+};
+
 function paletteForMode(brand, mode) {
   return {
     brand: brand.ramp[mode],
@@ -102,6 +108,7 @@ function paletteForMode(brand, mode) {
     pill: PILL[mode],
     nav: NAV[mode],
     tooltip: TOOLTIP[mode],
+    misc: MISC[mode],
   };
 }
 

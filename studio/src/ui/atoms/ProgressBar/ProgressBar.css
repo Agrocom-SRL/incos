@@ -1,0 +1,13 @@
+.ds-progress {
+  height: 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-page-2);
+  overflow: hidden;
+}
+
+.ds-progress__fill {
+  height: 100%;
+  border-radius: var(--radius-xs);
+  background: var(--progress-tone, var(--brand-600));
+  transition: width var(--dur-pop) var(--ease-out);
+}

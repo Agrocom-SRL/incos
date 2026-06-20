@@ -68,6 +68,11 @@ export function applyThemeVars(mode = 'light') {
   set(root, '--tooltip-fg', p.tooltip.fg);
   set(root, '--tooltip-border', p.tooltip.border);
 
+  // ── Roles auxiliares (texto sobre acento, velo modal) ─────────────────────
+  set(root, '--color-on-accent', p.misc.onAccent);
+  set(root, '--color-on-accent-soft', p.misc.onAccentSoft);
+  set(root, '--backdrop', p.misc.backdrop);
+
   // ── Sombras ──────────────────────────────────────────────────────────────
   set(root, '--shadow-sm', sh.sm);
   set(root, '--shadow', sh.base);
