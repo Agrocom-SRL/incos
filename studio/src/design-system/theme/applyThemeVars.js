@@ -9,7 +9,7 @@
  * Es el contrato visual con el CSS: los componentes consumen var(--…), nunca literales.
  */
 import { activeBrand } from '@config/brand';
-import { buildPalette, motion, spacing, radii, typography, shadows, zIndex } from '@ds/tokens';
+import { buildPalette, motion, spacing, sizes, radii, typography, shadows, zIndex } from '@ds/tokens';
 
 const palette = buildPalette(activeBrand);
 
@@ -88,6 +88,10 @@ export function applyThemeVars(mode = 'light') {
   Object.entries(typography.weight).forEach(([k, v]) => set(root, `--font-weight-${k}`, `${v}`));
   Object.entries(typography.lineHeight).forEach(([k, v]) => set(root, `--line-height-${k}`, `${v}`));
   Object.entries(spacing).forEach(([k, v]) => set(root, `--space-${k}`, `${v}px`));
+  Object.entries(sizes).forEach(([k, v]) => {
+    const name = k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
+    set(root, `--size-${name}`, `${v}px`);
+  });
   Object.entries(radii).forEach(([k, v]) => set(root, `--radius-${k}`, `${v}px`));
   Object.entries(zIndex).forEach(([k, v]) => set(root, `--z-${k}`, `${v}`));
   set(root, '--ease-out', motion.ease.out);

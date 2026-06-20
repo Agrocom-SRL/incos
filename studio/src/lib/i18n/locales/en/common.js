@@ -3,6 +3,9 @@ export const common = {
   showing: 'Showing {from}–{to} of {total}',
   perPage: '/ page',
   results: '{count} results',
+  moreActions: 'More options',
+  expandRow: 'Show more details',
+  hiddenFields: 'Show {count} more fields',
 };
 
 export default common;

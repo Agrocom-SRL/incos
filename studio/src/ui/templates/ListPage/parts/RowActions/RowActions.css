@@ -1,0 +1,9 @@
+/* RowActions — layout por defecto del cluster de acciones (tokens only).
+   El consumidor puede pasar su propia clase (p. ej. la card) para conservar su
+   estilo; esta clase aplica solo cuando no se sobreescribe. */
+.ds-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+}

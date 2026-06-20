@@ -69,6 +69,12 @@
   color: var(--text-soft);
 }
 
+/* Gestión en la fila collapse (ficha): año + fecha en una línea, a la escala del
+   residual (no el año GRANDE apilado de la celda de tabla). */
+.mat-term--residual {
+  font-variant-numeric: tabular-nums;
+}
+
 .mat-subjects {
   font-variant-numeric: tabular-nums;
   font-weight: var(--font-weight-semibold);
@@ -82,13 +88,29 @@
   gap: var(--space-xs);
 }
 
+/* Wrapper medido por useElementWidth: define el "contenedor" cuyo ancho gobierna
+   qué columnas caben. Es el ancho real (encoge con el sidebar), no el viewport. */
+.mat-table__measure {
+  width: 100%;
+}
+
 /* --- Ajuste de la tabla AntD (scoped) --- */
 .mat-table .ant-table {
   background: transparent;
 }
 
+/* La tabla SIEMPRE cabe en el ancho medido: las columnas visibles que decide
+   useResponsiveColumns se reparten ese ancho (table-layout:fixed + width:100%),
+   las que no caben pasan a la fila collapse. El overflow-x:hidden queda solo como
+   RED DE SEGURIDAD (p. ej. un nombre largo sin wrap), NO como el mecanismo que
+   recorta columnas: si la medición funciona, la tabla nunca excede el wrapper. */
 .mat-table .ant-table-content {
-  overflow-x: auto;
+  overflow-x: hidden;
+}
+
+.mat-table .ant-table table {
+  table-layout: fixed;
+  width: 100%;
 }
 
 .mat-table .ant-table-thead > tr > th {
@@ -111,12 +133,74 @@
   padding: 14px 16px;
 }
 
-/* Content estrecho: la tabla scrollea horizontalmente en lugar de aplastarse.
-   Escala: md=768. */
-@container content (max-width: 768px) {
-  .mat-table .ant-table-content > table {
-    min-width: 760px;
+/* --- Fila collapse (expandable) con las columnas residuales ---
+   El toggle es el control MÁS importante en ancho estrecho (único acceso a las
+   columnas plegadas): touch target ≥44px (WCAG 2.5.5), igual que el ⋮. El glifo
+   +/- nativo de AntD (::before/::after) se centra con flex. Tamaño por token
+   (--size-control en mouse, --size-touch-target en táctil); sin px literales. */
+.mat-table .ant-table-row-expand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-control);
+  height: var(--size-control);
+  color: var(--text-muted);
+  border-color: var(--border);
+  background: var(--surface-alt);
+  transition:
+    color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out);
+}
+
+@media (pointer: coarse) {
+  .mat-table .ant-table-row-expand-icon {
+    width: var(--size-touch-target);
+    height: var(--size-touch-target);
   }
+}
+
+/* Descubribilidad: cuando la fila TIENE columnas ocultas, el toggle se tiñe con
+   color de marca (no gris inerte) para leerse como interactivo y señalar que hay
+   campos plegados; el conteo refuerza cuántos. */
+.mat-table .mat-expand--has-hidden {
+  color: var(--brand-600);
+  border-color: var(--brand-500);
+}
+
+/* Micro-indicador del nº de campos plegados (solo en estado colapsado). */
+.mat-table .mat-expand__count {
+  position: absolute;
+  top: calc(-1 * var(--space-xs));
+  right: calc(-1 * var(--space-xs));
+  min-width: var(--font-size-base);
+  height: var(--font-size-base);
+  padding: 0 var(--space-xxs);
+  border-radius: var(--radius-pill);
+  background: var(--brand-600);
+  color: var(--color-on-accent);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mat-table .ant-table-row-expand-icon:hover {
+    color: var(--brand-700);
+    border-color: var(--brand-600);
+  }
+}
+
+.mat-table .ant-table-row-expand-icon:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 25%, transparent);
+}
+
+.mat-table .ant-table-expanded-row > td {
+  background: var(--surface-alt);
+  padding: var(--space-sm) var(--space-md);
 }
 
 /* --- Grid de tarjetas — auto-fill: 1 col en móvil → varias en monitores XXL. --- */

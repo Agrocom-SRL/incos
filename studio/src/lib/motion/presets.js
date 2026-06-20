@@ -25,6 +25,24 @@ export const fadeInUp = {
   visible: { opacity: 1, y: 0, transition: { duration: DUR.pop, ease: EASE.out } },
 };
 
+/**
+ * Revelado de la fila collapse (ResidualRow) ENCADENADO al crecimiento del <tr>.
+ *
+ * Al expandir una fila, AntD cambia la ALTURA del <tr> de golpe; un fade con
+ * desplazamiento vertical competiría con ese salto y se sentiría como doble
+ * gesto. Por eso aquí: (1) NO traslada en Y (no pelea con el cambio de altura),
+ * solo opacidad; (2) DIFIERE el fade con `delay` igual al tiempo de expansión de
+ * la fila (`DUR.swapIn`, mismo timing del sistema), de modo que el contenido
+ * aparezca cuando la fila YA terminó de crecer → un solo gesto continuo.
+ */
+export const residualReveal = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: DUR.pop, ease: EASE.out, delay: DUR.swapIn },
+  },
+};
+
 /** Contenedor con stagger — listas/grids que aparecen en cascada. */
 export const staggerContainer = {
   hidden: {},
@@ -58,4 +76,13 @@ export const presenceWait = {
   exit: { opacity: 0, y: -4, transition: { duration: DUR.press, ease: EASE.out } },
 };
 
-export default { EASE, DUR, fadeInUp, staggerContainer, staggerItem, presenceSwap, presenceWait };
+export default {
+  EASE,
+  DUR,
+  fadeInUp,
+  residualReveal,
+  staggerContainer,
+  staggerItem,
+  presenceSwap,
+  presenceWait,
+};

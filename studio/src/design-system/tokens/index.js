@@ -2,6 +2,7 @@
 export { breakpoints } from './breakpoints';
 export { motion } from './motion';
 export { spacing } from './spacing';
+export { sizes } from './sizes';
 export { radii } from './radii';
 export { typography } from './typography';
 export { shadows } from './shadows';

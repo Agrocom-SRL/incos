@@ -1,9 +1,9 @@
 .ds-icon-btn {
   position: relative;
-  width: var(--chrome-control, 38px);
-  height: var(--chrome-control, 38px);
-  min-width: 38px;
-  min-height: 38px;
+  width: var(--size-control);
+  height: var(--size-control);
+  min-width: var(--size-control);
+  min-height: var(--size-control);
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   background: transparent;
@@ -18,6 +18,17 @@
     border-color var(--dur-hover) var(--ease-out),
     color var(--dur-hover) var(--ease-out),
     transform var(--dur-press) var(--ease-out);
+}
+
+/* Puntero grueso (táctil): el control crece al mínimo accesible (44x44, WCAG
+   2.5.5) sin afectar el desktop (puntero fino conserva el tamaño base). */
+@media (pointer: coarse) {
+  .ds-icon-btn {
+    width: var(--size-touch-target);
+    height: var(--size-touch-target);
+    min-width: var(--size-touch-target);
+    min-height: var(--size-touch-target);
+  }
 }
 
 .ds-icon-btn__glyph {

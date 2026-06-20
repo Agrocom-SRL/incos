@@ -1,0 +1,56 @@
+/* ResidualRow — columnas residuales (collapse) de una fila como FICHA DE
+   DEFINICIÓN. Patrón DescriptionRow: grid de items, cada item = label ARRIBA +
+   valor DEBAJO, ambos alineados a la IZQUIERDA (no floteo a la derecha). Tokens
+   only, coherente en dark mode. */
+.ds-residual-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md) var(--space-xl);
+  padding: var(--space-sm) var(--space-xs);
+}
+
+/* Cada item es una columna apilada (label / valor), alineada a la izquierda. La
+   alineación izquierda consistente es lo que lo hace leer como ficha y no como
+   celdas sueltas. */
+.ds-residual-row__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xxs);
+  min-width: 0;
+}
+
+.ds-residual-row__label {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
+  color: var(--text-soft);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Valor de texto plano a la ESCALA DEL RESIDUAL (no la heredada de la celda de
+   tabla). El selector `*` acota cualquier render de celda que traiga su propio
+   tamaño (p. ej. el año de GESTIÓN a `--font-size-sm`/grande con la fecha
+   apilada): dentro del residual todo cae a la escala de ficha. */
+.ds-residual-row__value {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text);
+  text-align: left;
+}
+
+/* Texto plano heredado de un render de celda: forzar la escala del residual sin
+   tocar los badges/chips (que mantienen su propia tipografía controlada). */
+.ds-residual-row__value > span:not([class]),
+.ds-residual-row__value > div:not([class]) {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text);
+}

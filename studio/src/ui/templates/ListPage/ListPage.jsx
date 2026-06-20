@@ -11,6 +11,17 @@
  *
  * NO importa nada de @features/* (acoplamiento prohibido): lo específico llega por slots.
  *
+ * CONTRATO HOMOGÉNEO (gratis para toda página que use ListPage):
+ *   La vista TABLA es responsive POR CONTENEDOR (no por viewport): muestra las
+ *   columnas que caben en el ancho real de la tabla (que encoge con el sidebar) y
+ *   lleva las que no caben a una fila collapse (ResidualRow). Las acciones de fila
+ *   se compactan en 3 niveles de densidad. Una página nueva obtiene todo esto SIN
+ *   tocar el template, declarando SOLO:
+ *     1) Columnas con `minWidth` (ancho mínimo de layout; la caída es derecha→izq).
+ *     2) Acciones como DATA: descriptores con `primary` (ver contrato en
+ *        parts/RowActions/RowActions.jsx) → el template decide botones vs `⋮`.
+ *   La vista CARD no se ve afectada (sin provider → densidad 'full').
+ *
  * @typedef {Object} ListKpiDef
  * @property {string} key                          Identificador estable del KPI.
  * @property {string} labelKey                     Clave i18n del rótulo.

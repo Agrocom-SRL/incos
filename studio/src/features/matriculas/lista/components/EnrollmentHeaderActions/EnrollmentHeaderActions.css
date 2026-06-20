@@ -21,10 +21,22 @@
   }
 }
 
-/* Móvil: el select ocupa el ancho disponible en lugar de un mínimo fijo. */
-@container content (max-width: 640px) {
+/* Ancho intermedio (tablet): el cluster de acciones empieza a apretarse. En lugar
+   de saltar a fila completa, el select ABSORBE el espacio sobrante de la fila
+   (flex-grow) y puede encogerse (min-width:0) para que el select y los dos botones
+   sigan en la MISMA fila mientras quepan. Base 200px = mínimo legible del select. */
+@container content (max-width: 768px) {
   .mat-export-select {
+    flex: 1 1 200px;
     min-width: 0;
-    flex: 1 1 100%;
+  }
+}
+
+/* Ancho realmente estrecho: ya no caben select + 2 botones en una fila → el select
+   pasa a ocupar toda la fila y los botones fluyen debajo (siguen alineados a la
+   derecha por el justify-content del wrapper del slot). */
+@container content (max-width: 480px) {
+  .mat-export-select {
+    flex-basis: 100%;
   }
 }

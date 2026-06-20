@@ -10,9 +10,10 @@ import { StatusPill } from '@ui/atoms/StatusPill/StatusPill';
 import { Stat } from '@ui/atoms/Stat/Stat';
 import { ProgressBar } from '@ui/atoms/ProgressBar/ProgressBar';
 import { DescriptionRow } from '@ui/molecules/DescriptionRow/DescriptionRow';
+import { RowActions } from '@ui/templates/ListPage/parts/RowActions/RowActions';
 import { useTranslation } from '@lib/i18n/useTranslation';
 import { AdmissionTypeTag } from '../AdmissionTypeTag/AdmissionTypeTag';
-import { EnrollmentActions } from '../EnrollmentActions/EnrollmentActions';
+import { buildEnrollmentActions } from '../../model/enrollmentActions';
 import { historyStateOf, HISTORY_ICONS } from '../../model/historyStates';
 import { pagoStatusOf } from '../../model/pagoStatus';
 import './StudentCard.css';
@@ -85,16 +86,20 @@ export function StudentCard({ row, onOpen, ...actions }) {
         <ProgressBar value={progress} tone="var(--card-career-color)" />
       </div>
 
-      <EnrollmentActions
+      {/* Fuera de la tabla no hay ListDensityProvider → densidad 'full' → la card
+          muestra Ver + Editar + ⋮ como hasta ahora. onView cae a onOpen. */}
+      <RowActions
         row={row}
         className="mat-card__footer"
         primaryClassName="mat-card__btn-primary"
-        onView={actions.onView || onOpen}
-        onEdit={actions.onEdit}
-        onPrint={actions.onPrint}
-        onEmail={actions.onEmail}
-        onReport={actions.onReport}
-        onDelete={actions.onDelete}
+        actions={buildEnrollmentActions(t, {
+          onView: actions.onView || onOpen,
+          onEdit: actions.onEdit,
+          onPrint: actions.onPrint,
+          onEmail: actions.onEmail,
+          onReport: actions.onReport,
+          onDelete: actions.onDelete,
+        })}
       />
     </div>
   );

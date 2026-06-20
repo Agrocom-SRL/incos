@@ -5,9 +5,10 @@
  * AdmissionTypeTag, EnrollmentActions).
  */
 import { StatusPill } from '@ui/atoms/StatusPill/StatusPill';
+import { RowActions } from '@ui/templates/ListPage/parts/RowActions/RowActions';
 import { StudentCell } from '../components/StudentCell/StudentCell';
 import { AdmissionTypeTag } from '../components/AdmissionTypeTag/AdmissionTypeTag';
-import { EnrollmentActions } from '../components/EnrollmentActions/EnrollmentActions';
+import { buildEnrollmentActions } from './enrollmentActions';
 import { pagoStatusOf } from './pagoStatus';
 import { historyStateOf, HISTORY_ICONS } from './historyStates';
 
@@ -23,15 +24,24 @@ function renderHistoryPill(row, t) {
 }
 
 export function buildColumns(t, handlers) {
+  // Descriptores de acción construidos UNA vez por tabla (no por celda): el render
+  // de cada fila solo recibe la referencia ya armada.
+  const enrollmentActions = buildEnrollmentActions(t, handlers);
+  const actionsCell = (_, row) => (
+    <RowActions actions={enrollmentActions} row={row} className="mat-row-actions" />
+  );
+
   return [
     {
       title: t('enrollments.table.student'),
       key: 'student',
+      minWidth: 220, // ancho mínimo de columna (layout), no breakpoint
       render: (_, row) => <StudentCell row={row} />,
     },
     {
       title: t('enrollments.table.program'),
       key: 'program',
+      minWidth: 200, // ancho mínimo de columna (layout), no breakpoint
       render: (_, row) => (
         <div className="mat-career-cell">
           <span className="mat-career">
@@ -47,26 +57,39 @@ export function buildColumns(t, handlers) {
     {
       title: t('enrollments.table.term'),
       key: 'term',
+      minWidth: 150, // ancho mínimo de columna (layout), no breakpoint
       render: (_, row) => (
         <div className="mat-term">
           <div className="mat-term__year">{row.gestionYear}</div>
           <div className="mat-term__date">{row.fecha}</div>
         </div>
       ),
+      // En la fila collapse (ficha): la celda de tabla apila año GRANDE + fecha,
+      // tipografía que rompe la escala del residual. Aquí se presenta inline a la
+      // escala de ficha — el año y la fecha en una sola línea legible.
+      renderResidual: (row) => (
+        <span className="mat-term--residual">
+          {row.gestionYear}
+          <span className="mat-term__date"> · {row.fecha}</span>
+        </span>
+      ),
     },
     {
       title: t('enrollments.table.type'),
       key: 'type',
+      minWidth: 130, // ancho mínimo de columna (layout), no breakpoint
       render: (_, row) => <AdmissionTypeTag typeKey={row.typeKey} t={t} />,
     },
     {
       title: t('enrollments.table.record'),
       key: 'record',
+      minWidth: 150, // ancho mínimo de columna (layout), no breakpoint
       render: (_, row) => renderHistoryPill(row, t),
     },
     {
       title: t('enrollments.table.payment'),
       key: 'payment',
+      minWidth: 130, // ancho mínimo de columna (layout), no breakpoint
       render: (_, row) => {
         if (!row.estadoPago) return <span className="mat-dash">—</span>;
         const { tone } = pagoStatusOf(row.estadoPago);
@@ -78,6 +101,7 @@ export function buildColumns(t, handlers) {
       title: t('enrollments.table.subjects'),
       key: 'subjects',
       align: 'center',
+      minWidth: 90, // ancho mínimo de columna (layout), no breakpoint
       render: (_, row) => <span className="mat-subjects">{row.materias}</span>,
     },
     {
@@ -85,7 +109,10 @@ export function buildColumns(t, handlers) {
       key: 'actions',
       align: 'right',
       width: 140,
-      render: (_, row) => <EnrollmentActions row={row} className="mat-row-actions" {...handlers} />,
+      // Columna FIJA (nunca se oculta): reserva su ancho de layout en
+      // useResponsiveColumns igual que `width`. Espejo de ACTIONS_W.full (140).
+      minWidth: 140, // ancho mínimo de columna (layout), no breakpoint
+      render: actionsCell,
     },
   ];
 }
