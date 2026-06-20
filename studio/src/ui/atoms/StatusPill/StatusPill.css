@@ -12,7 +12,7 @@
 }
 
 .ds-pill__icon {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   display: inline-flex;
 }
 
@@ -34,4 +34,9 @@
 .ds-pill--info {
   background: var(--pill-info-bg);
   color: var(--pill-info-fg);
+}
+
+.ds-pill--neutral {
+  background: var(--pill-neutral-bg);
+  color: var(--pill-neutral-fg);
 }

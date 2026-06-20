@@ -20,16 +20,6 @@ export const enrollments = {
     all: 'All',
   },
 
-  table: {
-    student: 'Student',
-    program: 'Program',
-    term: 'Term',
-    type: 'Type',
-    record: 'Record',
-    subjects: 'Subjects',
-    actions: 'Actions',
-  },
-
   type: {
     new: 'New',
     returning: 'Returning',
@@ -43,11 +33,70 @@ export const enrollments = {
     notApplicable: 'N/A',
   },
 
+  history: {
+    pendiente: 'Pending record',
+    completo: 'Complete record',
+    observado: 'Flagged',
+    revision: 'Under review',
+    no_aplica: 'No prior record',
+  },
+
+  payment: {
+    upToDate: 'Up to date',
+    pending: 'Pending',
+  },
+
   actions: {
     newEnrollment: 'New Enrollment',
     export: 'Export',
     view: 'View detail',
     edit: 'Edit',
+    more: 'More options',
+    print: 'Print receipt',
+    email: 'Send email',
+    report: 'Generate report',
+    delete: 'Delete',
+    exportCareerPlaceholder: 'Career to export…',
+  },
+
+  table: {
+    student: 'Student',
+    program: 'Program',
+    term: 'Term',
+    type: 'Type',
+    record: 'Record',
+    payment: 'Payment',
+    subjects: 'Subjects',
+    actions: 'Actions',
+    careerSubtitle: '{semestre} semester · {materias} subjects',
+  },
+
+  filters: {
+    all: 'All',
+    returning: 'Returning',
+    news: 'New',
+    historyPlaceholder: 'Record',
+    results: '{count} results',
+  },
+
+  bulk: {
+    selected: '{count} selected',
+    notify: 'Notify',
+    export: 'Export',
+    delete: 'Delete',
+    more: 'Selection actions',
+  },
+
+  card: {
+    ci: 'ID',
+    term: 'Term',
+    enrolled: 'Enrolled',
+    period: 'Period',
+    payment: 'Payment',
+    semester: 'Semester',
+    subjects: 'Subjects',
+    average: 'Average',
+    progress: 'Academic progress',
   },
 
   states: {

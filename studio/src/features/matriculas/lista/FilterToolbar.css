@@ -1,0 +1,55 @@
+/* Toolbar de filtros — réplica de .matricula-v2-toolbar-inner con tokens. */
+.mat-toolbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.mat-toolbar__search {
+  flex: 1 1 200px;
+  min-width: 0;
+  max-width: 360px;
+}
+
+.mat-toolbar__search-icon {
+  color: var(--text-soft);
+}
+
+.mat-toolbar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.mat-toolbar__history {
+  width: 180px;
+}
+
+.mat-toolbar__spacer {
+  flex: 1 1 auto;
+  min-width: var(--space-sm);
+}
+
+.mat-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+}
+
+.mat-toolbar__count {
+  font-size: var(--font-size-sm);
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .mat-toolbar__search {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}

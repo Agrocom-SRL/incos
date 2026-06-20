@@ -1,0 +1,37 @@
+/* Barra de acciones masivas — réplica de .matricula-v2-bulk-actions con tokens. */
+.mat-bulk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.mat-bulk__count {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.mat-bulk__buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.mat-bulk__menu-btn {
+  display: none;
+  color: var(--text-muted);
+}
+
+@media (max-width: 767px) {
+  .mat-bulk__buttons {
+    display: none;
+  }
+
+  .mat-bulk__menu-btn {
+    display: inline-flex;
+  }
+}

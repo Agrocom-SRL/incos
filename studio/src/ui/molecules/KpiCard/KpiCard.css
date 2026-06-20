@@ -1,3 +1,5 @@
+/* KpiCard — réplica de .matricula-v2-kpi-card (mv2) con clases ds-kpi* y tokens.
+   Two-tone blob (lg tenue + sm opaco), riel de acento y hover completo. */
 .ds-kpi {
   --kpi-accent: var(--brand-600);
   position: relative;
@@ -17,34 +19,40 @@
     border-color var(--dur-hover) var(--ease-out);
 }
 
-.ds-kpi__blob {
+.ds-kpi__blob,
+.ds-kpi__blob--lg {
   position: absolute;
+  border-radius: 50%;
+  background: var(--kpi-accent);
+  pointer-events: none;
+}
+
+.ds-kpi__blob--lg {
   top: -40px;
   right: -40px;
   width: 140px;
   height: 140px;
-  border-radius: 50%;
-  background: var(--kpi-accent);
   opacity: 0.13;
   filter: blur(2px);
-  pointer-events: none;
   transition: transform var(--dur-hover) var(--ease-out);
 }
 
-@media (hover: hover) {
-  .ds-kpi:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
-    border-color: color-mix(in srgb, var(--kpi-accent) 45%, var(--border));
-  }
+/* Blob pequeño opaco (segundo tono) sobre el grande tenue. */
+.ds-kpi__blob:not(.ds-kpi__blob--lg) {
+  top: -20px;
+  right: -20px;
+  width: 80px;
+  height: 80px;
+  opacity: 0.22;
+}
 
-  .ds-kpi:hover .ds-kpi__icon {
-    transform: scale(1.1);
-  }
-
-  .ds-kpi:hover .ds-kpi__blob {
-    transform: translate(-4px, 4px);
-  }
+.ds-kpi__rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--kpi-accent);
 }
 
 .ds-kpi__head {
@@ -65,7 +73,9 @@
   font-size: var(--font-size-lg);
   box-shadow: 0 4px 10px color-mix(in srgb, var(--kpi-accent) 25%, transparent);
   flex-shrink: 0;
-  transition: transform var(--dur-hover) var(--ease-out);
+  transition:
+    transform var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out);
 }
 
 .ds-kpi__label {
@@ -74,15 +84,49 @@
   font-weight: var(--font-weight-medium);
 }
 
+.ds-kpi__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .ds-kpi__value {
   font-size: var(--font-size-xxl);
   font-weight: var(--font-weight-bold);
   color: var(--text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.5px;
+  transition: transform var(--dur-hover) var(--ease-out);
+  display: inline-block;
 }
 
 .ds-kpi__sub {
   font-size: var(--font-size-xs);
   color: var(--text-soft);
+}
+
+@media (hover: hover) {
+  .ds-kpi:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 8px 24px color-mix(in srgb, var(--brand-900) 13%, transparent),
+      0 2px 6px color-mix(in srgb, var(--brand-900) 8%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--kpi-accent) 30%, transparent);
+    border-color: color-mix(in srgb, var(--kpi-accent) 45%, var(--border));
+  }
+
+  .ds-kpi:hover .ds-kpi__icon {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--kpi-accent) 35%, transparent);
+  }
+
+  .ds-kpi:hover .ds-kpi__value {
+    transform: scale(1.025);
+    transform-origin: left center;
+  }
+
+  .ds-kpi:hover .ds-kpi__blob--lg {
+    transform: translate(-4px, 4px);
+  }
 }

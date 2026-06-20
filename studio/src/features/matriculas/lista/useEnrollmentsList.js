@@ -17,6 +17,11 @@ export function useEnrollmentsList() {
   const [careerFilter, setCareerFilter] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [tipoFilter, setTipoFilter] = useState('todos');
+  const [historyFilter, setHistoryFilter] = useState(null);
+  const [viewMode, setViewMode] = useState('table');
+  const [selectedCareerForExport, setSelectedCareerForExport] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -60,6 +65,9 @@ export function useEnrollmentsList() {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
       if (careerFilter && r.career.id !== careerFilter) return false;
+      if (tipoFilter === 'antiguos' && !r.isAntiguo) return false;
+      if (tipoFilter === 'nuevos' && r.isAntiguo) return false;
+      if (historyFilter && r.historialKey !== historyFilter) return false;
       if (!q) return true;
       return (
         r.fullName.toLowerCase().includes(q) ||
@@ -67,19 +75,33 @@ export function useEnrollmentsList() {
         r.career.name.toLowerCase().includes(q)
       );
     });
-  }, [rows, search, careerFilter]);
+  }, [rows, search, careerFilter, tipoFilter, historyFilter]);
 
   const paged = useMemo(
     () => filtered.slice((page - 1) * pageSize, page * pageSize),
     [filtered, page, pageSize],
   );
 
-  const hasFilters = Boolean(search || careerFilter);
+  const hasFilters = Boolean(search || careerFilter || tipoFilter !== 'todos' || historyFilter);
   const clearFilters = () => {
     setSearch('');
     setCareerFilter(null);
+    setTipoFilter('todos');
+    setHistoryFilter(null);
     setPage(1);
   };
+
+  // Acciones masivas (mock: no-op / console hasta integrar backend).
+  const onBulkNotify = () => console.info('[bulk] notify', selectedRowKeys);
+  const onBulkExport = () => console.info('[bulk] export', selectedRowKeys);
+  const onBulkDelete = () => console.info('[bulk] delete', selectedRowKeys);
+
+  // Exportación por carrera (placeholder hasta integrar backend).
+  const careerSelectOptions = useMemo(
+    () => careers.map((c) => ({ value: c.id, label: c.name, color: c.color })),
+    [careers],
+  );
+  const onExport = () => console.info('[export] career', selectedCareerForExport);
 
   return {
     loading,
@@ -104,6 +126,27 @@ export function useEnrollmentsList() {
     setPageSize,
     hasFilters,
     clearFilters,
+    selectedRowKeys,
+    setSelectedRowKeys,
+    onBulkNotify,
+    onBulkExport,
+    onBulkDelete,
+    tipoFilter,
+    setTipoFilter: (v) => {
+      setTipoFilter(v);
+      setPage(1);
+    },
+    historyFilter,
+    setHistoryFilter: (v) => {
+      setHistoryFilter(v);
+      setPage(1);
+    },
+    viewMode,
+    setViewMode,
+    selectedCareerForExport,
+    setSelectedCareerForExport,
+    careerSelectOptions,
+    onExport,
   };
 }
 

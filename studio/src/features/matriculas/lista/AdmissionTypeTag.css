@@ -1,0 +1,15 @@
+/* Etiqueta de tipo de inscripción — teñida por el acento de marca (--type-accent). */
+.mat-type-tag.ant-tag {
+  --type-accent: var(--brand-600);
+  margin: 0;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  line-height: 1.4;
+  padding: 1px 9px;
+  color: var(--type-accent);
+  background: color-mix(in srgb, var(--type-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--type-accent) 30%, transparent);
+}

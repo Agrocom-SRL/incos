@@ -13,6 +13,8 @@ export const motion = {
     press: 140,
     hover: 160,
     pop: 200,
+    swapOut: 160,
+    swapIn: 260,
     drawer: 320,
     bell: 350,
   },

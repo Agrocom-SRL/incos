@@ -26,8 +26,38 @@ export const enrollments = {
     term: 'Gestión',
     type: 'Tipo',
     record: 'Historial',
+    payment: 'Pago',
     subjects: 'Materias',
     actions: 'Acciones',
+    careerSubtitle: '{semestre}° semestre · {materias} materias',
+  },
+
+  filters: {
+    all: 'Todos',
+    returning: 'Antiguos',
+    news: 'Nuevos',
+    historyPlaceholder: 'Historial',
+    results: '{count} resultados',
+  },
+
+  bulk: {
+    selected: '{count} seleccionados',
+    notify: 'Notificar',
+    export: 'Exportar',
+    delete: 'Eliminar',
+    more: 'Acciones de selección',
+  },
+
+  card: {
+    ci: 'CI',
+    term: 'Gestión',
+    enrolled: 'Inscripción',
+    period: 'Periodo',
+    payment: 'Pago',
+    semester: 'Semestre',
+    subjects: 'Materias',
+    average: 'Promedio',
+    progress: 'Progreso académico',
   },
 
   type: {
@@ -43,11 +73,30 @@ export const enrollments = {
     notApplicable: 'No aplica',
   },
 
+  history: {
+    pendiente: 'Historial pendiente',
+    completo: 'Historial completo',
+    observado: 'Observado',
+    revision: 'En revisión',
+    no_aplica: 'Sin historial previo',
+  },
+
+  payment: {
+    upToDate: 'Al día',
+    pending: 'Pendiente',
+  },
+
   actions: {
     newEnrollment: 'Nueva Inscripción',
     export: 'Exportar',
     view: 'Ver detalle',
     edit: 'Editar',
+    more: 'Más opciones',
+    print: 'Imprimir comprobante',
+    email: 'Enviar correo',
+    report: 'Generar reporte',
+    delete: 'Eliminar',
+    exportCareerPlaceholder: 'Carrera para exportar…',
   },
 
   states: {

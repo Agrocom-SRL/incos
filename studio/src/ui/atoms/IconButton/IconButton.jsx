@@ -4,11 +4,12 @@
  */
 import './IconButton.css';
 
-export function IconButton({ icon, label, onClick, badge, className = '' }) {
+export function IconButton({ icon, label, onClick, badge, tone, className = '' }) {
+  const toneClass = tone ? ` ds-icon-btn--${tone}` : '';
   return (
     <button
       type="button"
-      className={`ds-icon-btn ${className}`.trim()}
+      className={`ds-icon-btn${toneClass} ${className}`.trim()}
       onClick={onClick}
       aria-label={label}
       title={label}

@@ -54,12 +54,14 @@ const PILL = {
     okBg: '#d4ebdc', okFg: '#0a4f2d',
     errBg: '#fde0de', errFg: '#8a1a18',
     infoBg: '#dbeafe', infoFg: '#1e3a8a',
+    neutralBg: '#eef2f0', neutralFg: '#566159',
   },
   dark: {
     warnBg: '#3a2810', warnFg: '#fbbf24',
     okBg: '#103820', okFg: '#5dd3a0',
     errBg: '#3a1818', errFg: '#fca5a5',
     infoBg: '#15294a', infoFg: '#aecbff',
+    neutralBg: '#15291f', neutralFg: '#9fb3a7',
   },
 };
 

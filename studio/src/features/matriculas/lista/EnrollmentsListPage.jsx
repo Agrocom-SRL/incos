@@ -14,31 +14,24 @@ import {
   UserAddOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons';
-import { Button, Input, Table, Pagination } from 'antd';
-import { motion } from 'motion/react';
+import { Button, Table, Pagination, Select } from 'antd';
+import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from '@lib/i18n/useTranslation';
-import { staggerContainer, staggerItem } from '@lib/motion/presets';
+import { useReducedMotion } from '@lib/motion/useReducedMotion';
+import { staggerContainer, staggerItem, presenceSwap } from '@lib/motion/presets';
 import { PageHeader } from '@ui/molecules/PageHeader/PageHeader';
 import { KpiCard } from '@ui/molecules/KpiCard/KpiCard';
 import { EmptyState } from '@ui/molecules/EmptyState/EmptyState';
 import { ErrorState } from '@ui/molecules/ErrorState/ErrorState';
 import { Chip } from '@ui/atoms/Chip/Chip';
-import { Skeleton } from '@ui/atoms/Skeleton/Skeleton';
 import { useEnrollmentsList } from './useEnrollmentsList';
 import { buildColumns } from './buildColumns';
+import { FilterToolbar } from './FilterToolbar';
+import { StudentCardGrid } from './StudentCardGrid';
+import { ListSkeleton } from './ListSkeleton';
 import './EnrollmentsListPage.css';
 
 const MotionDiv = motion.div;
-
-function ListSkeleton() {
-  return (
-    <div className="mat-skeleton">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <Skeleton key={i} height={56} radius="0" />
-      ))}
-    </div>
-  );
-}
 
 export function EnrollmentsListPage() {
   const { t } = useTranslation();
@@ -59,10 +52,31 @@ export function EnrollmentsListPage() {
     setPageSize,
     hasFilters,
     clearFilters,
+    selectedRowKeys,
+    setSelectedRowKeys,
+    onBulkNotify,
+    onBulkExport,
+    onBulkDelete,
+    tipoFilter,
+    setTipoFilter,
+    historyFilter,
+    setHistoryFilter,
+    viewMode,
+    setViewMode,
+    selectedCareerForExport,
+    setSelectedCareerForExport,
+    careerSelectOptions,
+    onExport,
   } = useEnrollmentsList();
 
+  const reduce = useReducedMotion();
   const noop = () => {};
-  const columns = useMemo(() => buildColumns(t, { onView: noop, onEdit: noop }), [t]);
+  // Handlers de fila/tarjeta (mock: no-op hasta integrar backend/navegación).
+  const rowHandlers = useMemo(
+    () => ({ onOpen: noop, onView: noop, onEdit: noop, onPrint: noop, onEmail: noop, onReport: noop, onDelete: noop }),
+    [],
+  );
+  const columns = useMemo(() => buildColumns(t, rowHandlers), [t, rowHandlers]);
 
   const breadcrumb = [
     { title: (<span><HomeOutlined /> {t('enrollments.breadcrumbHome')}</span>) },
@@ -72,6 +86,10 @@ export function EnrollmentsListPage() {
 
   const pct = (n) => (kpis.total ? Math.round((n / kpis.total) * 100) : 0);
 
+  // Color de la carrera elegida para teñir el botón Export (white-label vía token).
+  const exportColor =
+    careerSelectOptions.find((c) => c.value === selectedCareerForExport)?.color || 'var(--brand-600)';
+
   return (
     <div className="mat-page">
       <PageHeader
@@ -80,7 +98,29 @@ export function EnrollmentsListPage() {
         subtitle={t('enrollments.subtitle', { term: t('topbar.term', { year: 2026 }) })}
         actions={
           <>
-            <Button icon={<DownloadOutlined />}>{t('enrollments.actions.export')}</Button>
+            <Select
+              className="mat-export-select"
+              placeholder={t('enrollments.actions.exportCareerPlaceholder')}
+              showSearch
+              allowClear
+              optionFilterProp="label"
+              value={selectedCareerForExport}
+              onChange={setSelectedCareerForExport}
+              options={careerSelectOptions}
+            />
+            <Button
+              icon={<DownloadOutlined />}
+              disabled={!selectedCareerForExport}
+              className={selectedCareerForExport ? 'mat-export-btn--career' : ''}
+              style={
+                selectedCareerForExport
+                  ? { '--export-color': exportColor }
+                  : undefined
+              }
+              onClick={onExport}
+            >
+              {t('enrollments.actions.export')}
+            </Button>
             <Button type="primary" icon={<PlusOutlined />}>
               {t('enrollments.actions.newEnrollment')}
             </Button>
@@ -88,20 +128,20 @@ export function EnrollmentsListPage() {
         }
       />
 
-      <MotionDiv className="mat-kpis" variants={staggerContainer} initial="hidden" animate="visible">
-        <MotionDiv variants={staggerItem}>
+      <MotionDiv className="mat-kpis" variants={reduce ? undefined : staggerContainer} initial="hidden" animate="visible">
+        <MotionDiv variants={reduce ? undefined : staggerItem}>
           <KpiCard label={t('enrollments.kpi.totalEnrolled')} value={kpis.total} icon={<TeamOutlined />}
             accent="var(--brand-600)" sub={t('topbar.term', { year: 2026 })} />
         </MotionDiv>
-        <MotionDiv variants={staggerItem}>
+        <MotionDiv variants={reduce ? undefined : staggerItem}>
           <KpiCard label={t('enrollments.kpi.returningStudents')} value={kpis.returning} icon={<RiseOutlined />}
             accent="var(--accent-gold)" sub={t('enrollments.kpi.ofTotal', { pct: pct(kpis.returning) })} />
         </MotionDiv>
-        <MotionDiv variants={staggerItem}>
+        <MotionDiv variants={reduce ? undefined : staggerItem}>
           <KpiCard label={t('enrollments.kpi.newEntries')} value={kpis.news} icon={<UserAddOutlined />}
             accent="var(--accent-sky)" sub={t('enrollments.kpi.firstTerm')} />
         </MotionDiv>
-        <MotionDiv variants={staggerItem}>
+        <MotionDiv variants={reduce ? undefined : staggerItem}>
           <KpiCard label={t('enrollments.kpi.pendingRecords')} value={kpis.pending} icon={<ClockCircleOutlined />}
             accent="var(--accent-red)" sub={t('enrollments.kpi.needReview')} />
         </MotionDiv>
@@ -121,25 +161,85 @@ export function EnrollmentsListPage() {
       ) : null}
 
       <div className="mat-toolbar">
-        <Input.Search
-          className="mat-toolbar__search"
-          placeholder={t('topbar.searchPlaceholder')}
-          allowClear
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+        <FilterToolbar
+          search={search}
+          onSearchChange={setSearch}
+          tipoFilter={tipoFilter}
+          onTipoFilterChange={setTipoFilter}
+          historyFilter={historyFilter}
+          onHistoryFilterChange={setHistoryFilter}
+          selectedCount={selectedRowKeys.length}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          filteredCount={filtered.length}
+          onBulkNotify={onBulkNotify}
+          onBulkExport={onBulkExport}
+          onBulkDelete={onBulkDelete}
         />
       </div>
 
       <div className="mat-table">
-        {loading ? (
-          <ListSkeleton />
-        ) : filtered.length === 0 ? (
-          <EmptyState title={t('enrollments.states.emptyTitle')} hint={t('enrollments.states.emptyHint')}>
-            {hasFilters ? <Button onClick={clearFilters}>{t('enrollments.states.clearFilters')}</Button> : null}
-          </EmptyState>
-        ) : (
-          <Table rowKey="id" columns={columns} dataSource={paged} pagination={false} size="middle" />
-        )}
+        <AnimatePresence mode="popLayout" initial={false}>
+          {loading ? (
+            <MotionDiv
+              key="skeleton"
+              variants={reduce ? undefined : presenceSwap}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <ListSkeleton viewMode={viewMode} />
+            </MotionDiv>
+          ) : filtered.length === 0 ? (
+            <MotionDiv
+              key="empty"
+              variants={reduce ? undefined : presenceSwap}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <EmptyState
+                title={t('enrollments.states.emptyTitle')}
+                hint={t('enrollments.states.emptyHint')}
+              >
+                {hasFilters ? (
+                  <Button onClick={clearFilters}>{t('enrollments.states.clearFilters')}</Button>
+                ) : (
+                  <Button type="primary" icon={<PlusOutlined />}>
+                    {t('enrollments.actions.newEnrollment')}
+                  </Button>
+                )}
+              </EmptyState>
+            </MotionDiv>
+          ) : (
+            <MotionDiv
+              key={`data-${viewMode}`}
+              variants={reduce ? undefined : presenceSwap}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {viewMode === 'table' ? (
+                <Table
+                  rowKey="id"
+                  columns={columns}
+                  dataSource={paged}
+                  pagination={false}
+                  size="middle"
+                  rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
+                  onRow={(row) => ({
+                    onClick: (e) => {
+                      if (e.target.closest('button, a, input, .ant-checkbox, .ant-dropdown')) return;
+                      rowHandlers.onOpen(row);
+                    },
+                  })}
+                />
+              ) : (
+                <StudentCardGrid rows={paged} handlers={rowHandlers} />
+              )}
+            </MotionDiv>
+          )}
+        </AnimatePresence>
 
         <div className="mat-footer">
           <span className="mat-footer__count">

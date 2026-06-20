@@ -14,6 +14,8 @@ export const DUR = {
   press: s(motionTokens.dur.press),
   hover: s(motionTokens.dur.hover),
   pop: s(motionTokens.dur.pop),
+  swapIn: s(motionTokens.dur.swapIn),
+  swapOut: s(motionTokens.dur.swapOut),
   drawer: s(motionTokens.dur.drawer),
 };
 
@@ -35,4 +37,25 @@ export const staggerItem = {
   visible: { opacity: 1, y: 0, transition: { duration: DUR.pop, ease: EASE.out } },
 };
 
-export default { EASE, DUR, fadeInUp, staggerContainer, staggerItem };
+/**
+ * Intercambio de cuerpos completos (skeleton ↔ vacío ↔ tabla/grid) bajo
+ * AnimatePresence mode="popLayout". Entrada con lift+scale; salida con fade rápido
+ * (asimétrico) para que lo nuevo "empuje" sin corte brusco.
+ */
+export const presenceSwap = {
+  hidden: { opacity: 0, y: 8, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: DUR.swapIn, ease: EASE.out } },
+  exit: { opacity: 0, transition: { duration: DUR.swapOut, ease: EASE.out } },
+};
+
+/**
+ * Swap puntual de un elemento (toolbar bulk ↔ contador) bajo AnimatePresence
+ * mode="wait": micro-desplazamiento vertical, sin escala.
+ */
+export const presenceWait = {
+  hidden: { opacity: 0, y: 4 },
+  visible: { opacity: 1, y: 0, transition: { duration: DUR.hover, ease: EASE.out } },
+  exit: { opacity: 0, y: -4, transition: { duration: DUR.press, ease: EASE.out } },
+};
+
+export default { EASE, DUR, fadeInUp, staggerContainer, staggerItem, presenceSwap, presenceWait };

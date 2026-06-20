@@ -155,6 +155,33 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
 
+- 2026-06-20 — **Verificador: studio/ paridad UI matrícula — APROBADO.** Build verde (vite ✓ 6.44s) y lint exit 0 (0 errores/warnings) confirmados por el orquestador (Bash del verificador estaba en sandbox). 4 issues estáticos detectados y corregidos: (1) StatusPill.css font-size:11px → var(--font-size-xs) (token existente, sin crear); (2) StudentCell.jsx "CI" literal → t('enrollments.card.ci'); (3) EnrollmentsListPage.jsx stagger de KPIs gateado con reduce?undefined:stagger*; (4) StudentCardGrid.jsx stagger gateado con useReducedMotion. Sin cambios de schema/datos reales (solo mock con shape de vista 101). Sin tocar frontend/ legacy, navigation.js ni nav.js.
+
+- 2026-06-20 — **studio/ paridad UI matrícula (9 bloques, mock-first).** Listado de
+  inscripciones llevado a paridad visual con mv2, todo por tokens. B0: par neutral en
+  PILL.light/dark (emisor lo genera --pill-neutral-*); presets presenceSwap/presenceWait
+  (+ dur.swapIn:260/swapOut:160 en tokens/motion.js); keyframes globales shimmer/chip-pop
+  + reduced-motion en base.css. B1: KpiCard EXTENDIDO (blob lg+sm, riel de acento,
+  value-row, hover completo translateY/icon scale/value scale/blob parallax; props sin
+  cambios; único consumidor). B2: mock con estadoPago/promedio planos; adapter +semestre/
+  tipo/isAntiguo/historialKey/gestion/estadoPago/promedio (puro, sin i18n, reusa careerColor).
+  B3: pagoStatus.js + historyStates.js (puros); StatusPill +tone neutral; AdmissionTypeTag
+  organismo local (acentos de marca del studio, i18n). B4: buildColumns enriquecido
+  (career+subtítulo, history pill con icono, columna payment, AdmissionTypeTag, acciones
+  Ver/Editar/⋮ Dropdown); IconButton +tone info/warning/danger/muted (aditivo); cell
+  padding 14/16. B5: selección múltiple en hook + BulkActionsBar local; rowSelection+onRow.
+  B6: FilterToolbar local (search+Segmented tipo+Select historial+AnimatePresence wait
+  bulk↔contador/toggle); hook +tipoFilter/historyFilter/viewMode. B7: StudentCard +
+  StudentCardGrid (stagger) locales; AnimatePresence popLayout skeleton/empty/data-{viewMode}
+  con presenceSwap; .mat-grid/.mat-card* port a tokens. B8: Select carrera para exportar
+  en header + botón teñible (--export-color, scoped sin !important). B9: ListSkeleton
+  grid/rows con shimmer; EmptyState con acciones (limpiar filtros / nueva inscripción).
+  i18n es/en: namespaces enrollments +history/payment/filters/bulk/card/table.careerSubtitle/
+  actions.{more,print,email,report,delete,exportCareerPlaceholder}. Build verde por bloque
+  (~6.5–7.8s); lint exit 0 (0 errores, 0 warnings). Atomos/moléculas EXTENDIDOS por props
+  (StatusPill tone, IconButton tone, KpiCard estructura). Sin tocar navigation/nav.js ni
+  frontend/ legacy.
+
 - 2026-06-19 — **Cambio de estrategia + Hito 1 de `studio/`.** Tras descartar (a) namespace
   en el mismo proyecto y (b) greenfield con cableado, se acordó: **proyecto frontend NUEVO
   e independiente `studio/` (Vite propio, hermano de `frontend/`), MOCK-FIRST** — cascarón +

@@ -31,6 +31,27 @@ function recordState(estado) {
   return { key: 'notApplicable', tone: 'neutral' };
 }
 
+/**
+ * historialPrevioEstado → clave de historial de la UI (pendiente/completo/
+ * observado/revision/no_aplica). Función PURA local (sin i18n).
+ */
+function historialKey(estado) {
+  switch (String(estado || '').toUpperCase()) {
+    case 'PENDIENTE':
+      return 'pendiente';
+    case 'REGISTRADO':
+      return 'completo';
+    case 'OBSERVADO':
+      return 'observado';
+    case 'REVISION':
+      return 'revision';
+    case 'NO_APLICA':
+      return 'no_aplica';
+    default:
+      return 'completo';
+  }
+}
+
 export function adaptEnrollment(record) {
   const est = record.estudiante ?? {};
   const carrera = record.carrera ?? {};
@@ -49,12 +70,20 @@ export function adaptEnrollment(record) {
       color: careerColor(carrera),
     },
     typeKey: tKey,
+    tipo: tKey, // alias semántico (la etiqueta se traduce en el render por clave)
     isReturning: tKey !== 'new',
+    isAntiguo: tKey !== 'new',
     record: rState,
+    historialKey: historialKey(record.historialPrevioEstado),
     gestionYear: record.gestion?.anio ?? '—',
+    gestion: record.gestion?.anio != null ? String(record.gestion.anio) : '—',
     periodo: record.periodo?.numero ?? 1,
+    semestre: record.periodo?.numero ?? 1,
+    periodoNombre: record.periodo?.nombre ?? '',
     paralelo: record.paralelo?.nombre ?? '—',
     materias: record.cantidadMaterias ?? 0,
+    estadoPago: record.estadoPago ?? null,
+    promedio: record.promedio ?? null,
     fecha: formatDate(record.fechaInscripcion),
   };
 }
