@@ -1,7 +1,7 @@
 /** Sidebar navigation — English strings. */
 export const nav = {
   // Sections (sidebar group labels)
-  main: 'Main',
+  main: 'MAIN',
   academicMgmt: 'ACADEMIC MANAGEMENT',
   financeReports: 'FINANCE & REPORTS',
   system: 'SYSTEM',
@@ -15,7 +15,7 @@ export const nav = {
   registrations: 'Registrations',
   contributions: 'Contributions',
   scholarships: 'Scholarships',
-  internships: 'Internships',
+  internships: 'Student internships',
 
   // Academic
   academic: 'Academic',
@@ -24,12 +24,12 @@ export const nav = {
   leveling: 'Leveling',
   transfers: 'Transfers',
   transitability: 'Transitability',
-  academicHistory: 'History',
+  academicHistory: 'Academic history',
   academicProgress: 'Academic progress',
 
   // Teachers
   teachers: 'Teachers',
-  teachersList: 'Teachers',
+  teachersList: 'Teachers list',
   teacherLeaves: 'Teacher leaves',
   supervision: 'Supervision',
   teacherInternships: 'Teacher internships',
@@ -50,14 +50,14 @@ export const nav = {
 
   // Reports
   reports: 'Reports',
-  reportProgress: 'Academic progress',
-  reportAttendance: 'Attendance',
+  reportProgress: 'Progress report',
+  reportAttendance: 'Attendance report',
   reportDropout: 'Dropout',
   reportRequests: 'Requests',
 
   // Settings
   settings: 'Settings',
-  academicConfig: 'Academic',
+  academicConfig: 'Academic settings',
   documentation: 'Documentation',
   complementaryData: 'Complementary data',
   companiesAgreements: 'Companies & agreements',

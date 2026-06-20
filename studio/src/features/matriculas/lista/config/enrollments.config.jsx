@@ -15,10 +15,10 @@ import {
   ClockCircleOutlined,
   HomeOutlined,
 } from '@ant-design/icons';
-import { fetchEnrollments } from './enrollments.api';
-import { adaptEnrollments } from './adaptEnrollment';
-import { buildColumns } from './buildColumns';
-import { HISTORY_FILTER_OPTIONS } from './historyStates';
+import { fetchEnrollments } from '../data/enrollments.api';
+import { adaptEnrollments } from '../model/adaptEnrollment';
+import { buildColumns } from '../model/buildColumns';
+import { HISTORY_FILTER_OPTIONS } from '../model/historyStates';
 
 const ENROLLMENT_YEAR = 2026;
 

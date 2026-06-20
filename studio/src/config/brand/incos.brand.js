@@ -44,10 +44,34 @@ export const incosBrand = {
     },
   },
 
-  /** Acentos categóricos / de estado por modo. */
+  /**
+   * Acentos categóricos / de estado por modo.
+   * Se usan como FONDO con texto blanco encima (chips/píldoras) y como texto/borde
+   * sutil. Light = saturados con AA ≥4.5:1 sobre blanco como texto; dark = variantes
+   * más luminosas para legibilidad sobre superficie oscura. Mismo set de claves por
+   * modo (red, gold, sky, teal, violet, orange, pink, lime) → theming simétrico.
+   */
   accents: {
-    light: { red: '#c0282a', gold: '#b07e10', sky: '#3d6dd0' },
-    dark: { red: '#e8625f', gold: '#e0a82e', sky: '#6f9af0' },
+    light: {
+      red: '#c0282a',
+      gold: '#b07e10',
+      sky: '#3d6dd0',
+      teal: '#0a8a96',
+      violet: '#7a4cb8',
+      orange: '#c2580f',
+      pink: '#b03a7a',
+      lime: '#5f7c0f',
+    },
+    dark: {
+      red: '#e8625f',
+      gold: '#e0a82e',
+      sky: '#6f9af0',
+      teal: '#33c2cf',
+      violet: '#b58ce8',
+      orange: '#f0905a',
+      pink: '#e88cc0',
+      lime: '#a8d04c',
+    },
   },
 
   /** Familia tipográfica (auto-hospedada vía @fontsource). */

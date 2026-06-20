@@ -5,9 +5,9 @@
  * AdmissionTypeTag, EnrollmentActions).
  */
 import { StatusPill } from '@ui/atoms/StatusPill/StatusPill';
-import { StudentCell } from './StudentCell';
-import { AdmissionTypeTag } from './AdmissionTypeTag';
-import { EnrollmentActions } from './EnrollmentActions';
+import { StudentCell } from '../components/StudentCell/StudentCell';
+import { AdmissionTypeTag } from '../components/AdmissionTypeTag/AdmissionTypeTag';
+import { EnrollmentActions } from '../components/EnrollmentActions/EnrollmentActions';
 import { pagoStatusOf } from './pagoStatus';
 import { historyStateOf, HISTORY_ICONS } from './historyStates';
 

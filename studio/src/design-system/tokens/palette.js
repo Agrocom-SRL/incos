@@ -11,6 +11,7 @@
  * estructura. nav/tooltip referencian var(--brand-N) (que el theme también emite),
  * así un cambio de rampa se propaga sin recalcular aquí.
  */
+import { categoricalFor } from './categorical';
 
 const SURFACES = {
   light: {
@@ -109,6 +110,7 @@ function paletteForMode(brand, mode) {
     nav: NAV[mode],
     tooltip: TOOLTIP[mode],
     misc: MISC[mode],
+    categorical: categoricalFor(mode),
   };
 }
 

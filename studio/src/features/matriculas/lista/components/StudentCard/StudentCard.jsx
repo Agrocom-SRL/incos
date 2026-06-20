@@ -11,10 +11,10 @@ import { Stat } from '@ui/atoms/Stat/Stat';
 import { ProgressBar } from '@ui/atoms/ProgressBar/ProgressBar';
 import { DescriptionRow } from '@ui/molecules/DescriptionRow/DescriptionRow';
 import { useTranslation } from '@lib/i18n/useTranslation';
-import { AdmissionTypeTag } from './AdmissionTypeTag';
-import { EnrollmentActions } from './EnrollmentActions';
-import { historyStateOf, HISTORY_ICONS } from './historyStates';
-import { pagoStatusOf } from './pagoStatus';
+import { AdmissionTypeTag } from '../AdmissionTypeTag/AdmissionTypeTag';
+import { EnrollmentActions } from '../EnrollmentActions/EnrollmentActions';
+import { historyStateOf, HISTORY_ICONS } from '../../model/historyStates';
+import { pagoStatusOf } from '../../model/pagoStatus';
 import './StudentCard.css';
 
 export function StudentCard({ row, onOpen, ...actions }) {

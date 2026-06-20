@@ -67,10 +67,10 @@ import { PageHeader } from '@ui/molecules/PageHeader/PageHeader';
 import { ErrorState } from '@ui/molecules/ErrorState/ErrorState';
 import { useTranslation } from '@lib/i18n/useTranslation';
 import { useListPage } from './useListPage';
-import { ListKpiRow } from './ListKpiRow';
-import { ListFacets } from './ListFacets';
-import { ListFilterBar } from './ListFilterBar';
-import { ListDataView } from './ListDataView';
+import { ListKpiRow } from './parts/ListKpiRow/ListKpiRow';
+import { ListFacets } from './parts/ListFacets/ListFacets';
+import { ListFilterBar } from './parts/ListFilterBar/ListFilterBar';
+import { ListDataView } from './parts/ListDataView/ListDataView';
 import './ListPage.css';
 
 const defaultRowKey = (r) => r.id;

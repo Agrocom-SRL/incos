@@ -15,7 +15,7 @@ import { EmptyState } from '@ui/molecules/EmptyState/EmptyState';
 import { useTranslation } from '@lib/i18n/useTranslation';
 import { useReducedMotion } from '@lib/motion/useReducedMotion';
 import { presenceSwap, staggerContainer, staggerItem } from '@lib/motion/presets';
-import { ListSkeleton } from './ListSkeleton';
+import { ListSkeleton } from '../ListSkeleton/ListSkeleton';
 import './ListDataView.css';
 
 const MotionDiv = motion.div;

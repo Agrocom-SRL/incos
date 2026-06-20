@@ -122,6 +122,14 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       Build: ✓ 51.90s. Lint: exit 0, 0 errores en 19 archivos WS-B. RBAC: application/navigation/ sin diff.
       Observacion menor: bell-tilt usa 0.35s literal (no hay --dur-bell token) en mv2.css y app-topbar.css.
 - [ ] Fase 5: migración módulo a módulo.
+- [x] studio/ Fase 2 (paleta ampliada theme-aware) + Fase 3 (cards híbridas). COMPLETADO (2026-06-20).
+      accents 3→8 por modo (red/gold/sky + teal/violet/orange/pink/lime) en incos.brand.js;
+      categorical.js → { light, dark } 12 colores DERIVADOS de incosBrand (índices 0–5 = carreras
+      CG/SI/AE/MP/SE/EI) + categoricalFor(mode) + compat categoricalPalette=light; palette.js
+      añade categorical:categoricalFor(mode); applyThemeVars itera p.accent (--accent-*) y emite
+      --cat-0…11; careerColor → var(--cat-N) theme-aware (consumidores todos en contexto CSS,
+      0 roturas); NUEVO lib/hooks/useCategoricalPalette.js; Fase 3: .mat-grid > *:nth-child(2n)
+      .mat-card tinte alterno sutil vía color-mix(--surface-alt). Build ✓ 6.99s · Lint exit 0.
 - [x] studio/ Fase A — responsive por contenedor (container queries). COMPLETADO (2026-06-20).
       NUEVO design-system/tokens/breakpoints.js (escala única xs480/sm640/md768/lg1024/xl1280)
       en el barrel; .ds-shell__content con container-type:inline-size + container-name:content;
@@ -172,6 +180,30 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       archivos tocados (604 total = 534+70 pre-existentes sin cambio).
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
+
+- 2026-06-20 — **studio/ Fase 2 (paleta ampliada theme-aware) + Fase 3 (cards híbridas).**
+  EXTIENDE el flujo de theme existente (brand → palette.paletteForMode → buildPalette →
+  applyThemeVars → var(--…)), no lo reinventa. (a) `config/brand/incos.brand.js`: accents 3→8
+  por modo manteniendo el patrón objeto { red, gold, sky, teal, violet, orange, pink, lime };
+  dark = variantes más luminosas. (b) `design-system/tokens/categorical.js`: array plano →
+  `{ light, dark }` de 12 colores DERIVADOS de `incosBrand` (ramp+accents) para no divergir;
+  índices 0–5 = carreras (CG verde marca · SI azul · AE violeta · MP rojo · SE teal · EI dorado),
+  6–11 extras; nuevo `categoricalFor(mode)`; compat `categoricalPalette = light`. Barrel
+  `tokens/index.js` exporta también `categoricalFor`. (c) `palette.js`: `paletteForMode` añade
+  `categorical: categoricalFor(mode)` (los 8 accents ya se propagan vía `brand.accents[mode]`).
+  (d) `applyThemeVars.js`: itera `p.accent` → `--accent-*` (sin hardcodear nombres; ahora 8) y
+  emite `--cat-0 … --cat-11` desde `p.categorical`. (e) `careerColor.js` (movido a
+  `features/matriculas/lista/model/`): retorna `var(--cat-${idx})` en vez de hex → color de
+  carrera THEME-AWARE; mismo CAREER_INDEX, CAT_COUNT=12. Verificados TODOS los consumidores —
+  todos usan el valor en contexto CSS (Avatar `--avatar-tone`, StudentCard `--card-career-color`,
+  Chip `--chip-color` vía ListFacets, EnrollmentHeaderActions `--export-color`, buildColumns
+  `background:` de `.mat-career__bar`); ninguno hace color-math en JS ni canvas → 0 roturas.
+  (f) NUEVO `lib/hooks/useCategoricalPalette.js` (lee modo de `useTheme`, devuelve
+  `categoricalFor(mode)`; base para gráficos, sin crear gráficos — YAGNI). FASE 3:
+  `StudentCard.css` añade tinte decorativo ALTERNO `.mat-grid > *:nth-child(2n) .mat-card`
+  con `color-mix(--surface-alt …)` (contraste bajísimo, no compite con el acento de carrera,
+  sin prop-drilling de índice, funciona en dark por tokens). 0 hex/px/fontSize sueltos nuevos
+  fuera de la fuente de paleta. Build ✓ 6.99s · Lint exit 0. Sin commits, sin backend, sin schema.
 
 - 2026-06-20 — **Orquestador: cierre plan studio (Fases A+B+C) — APROBADO.** Plan único por fases
   (eventual-napping-deer.md) ejecutado y cerrado. arquitecto fijó el contrato del template ListPage

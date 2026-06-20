@@ -26,9 +26,12 @@ export function applyThemeVars(mode = 'light') {
 
   // ── Marca (rampa + acentos) ──────────────────────────────────────────────
   Object.entries(p.brand).forEach(([k, v]) => set(root, `--brand-${k}`, v));
-  set(root, '--accent-red', p.accent.red);
-  set(root, '--accent-gold', p.accent.gold);
-  set(root, '--accent-sky', p.accent.sky);
+  // Acentos: itera el set completo del modo (red/gold/sky/teal/violet/orange/pink/lime)
+  // → emite --accent-<nombre> sin hardcodear cada uno.
+  Object.entries(p.accent).forEach(([k, v]) => set(root, `--accent-${k}`, v));
+
+  // ── Paleta categórica (carreras/gráficos) → --cat-0 … --cat-11 ───────────
+  p.categorical.forEach((v, i) => set(root, `--cat-${i}`, v));
 
   // ── Superficies / texto / borde ──────────────────────────────────────────
   set(root, '--bg-page', p.surface.bgPage);

@@ -1,7 +1,7 @@
 /** Navegación lateral — textos en español. Keys en inglés (identificador técnico). */
 export const nav = {
   // Secciones (labels de grupo del sidebar)
-  main: 'Principal',
+  main: 'PRINCIPAL',
   academicMgmt: 'GESTIÓN ACADÉMICA',
   financeReports: 'FINANZAS Y REPORTES',
   system: 'SISTEMA',
@@ -15,7 +15,7 @@ export const nav = {
   registrations: 'Inscripciones',
   contributions: 'Aportes',
   scholarships: 'Becas',
-  internships: 'Pasantías',
+  internships: 'Pasantías (estudiantes)',
 
   // Académico
   academic: 'Académico',
@@ -24,12 +24,12 @@ export const nav = {
   leveling: 'Nivelaciones',
   transfers: 'Traspasos',
   transitability: 'Transitabilidad',
-  academicHistory: 'Historial',
+  academicHistory: 'Historial académico',
   academicProgress: 'Avance académico',
 
   // Docentes
   teachers: 'Docentes',
-  teachersList: 'Docentes',
+  teachersList: 'Lista de docentes',
   teacherLeaves: 'Licencias docentes',
   supervision: 'Supervisión',
   teacherInternships: 'Pasantías docentes',
@@ -50,14 +50,14 @@ export const nav = {
 
   // Reportes
   reports: 'Reportes',
-  reportProgress: 'Avance académico',
-  reportAttendance: 'Asistencia',
+  reportProgress: 'Reporte de avance',
+  reportAttendance: 'Reporte de asistencia',
   reportDropout: 'Deserción',
   reportRequests: 'Solicitudes',
 
   // Configuración
   settings: 'Configuración',
-  academicConfig: 'Académico',
+  academicConfig: 'Config. académica',
   documentation: 'Documentación',
   complementaryData: 'Datos complementarios',
   companiesAgreements: 'Empresas y convenios',

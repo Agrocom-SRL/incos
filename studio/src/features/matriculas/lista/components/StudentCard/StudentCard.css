@@ -36,6 +36,16 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 25%, transparent);
 }
 
+/* Tinte decorativo ALTERNO (sin prop-drilling de índice): cada 2.ª tarjeta del grid
+   recibe un fondo/borde MUY sutil derivado de --surface-alt para dar ritmo visual.
+   Contraste bajísimo: decorativo, no compite con el acento de carrera. Tokens →
+   funciona igual en light y dark. El selector vive aquí porque el wrapper directo
+   del grid (.mat-grid > *) envuelve el .mat-card. */
+.mat-grid > *:nth-child(2n) .mat-card {
+  background: color-mix(in srgb, var(--surface-alt) 55%, var(--surface));
+  border-color: color-mix(in srgb, var(--surface-alt) 70%, var(--border));
+}
+
 .mat-card__accent {
   height: 4px;
   background: var(--card-career-color);

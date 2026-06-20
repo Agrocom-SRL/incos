@@ -7,10 +7,10 @@
  * (tarjeta, acciones de fila/cabecera, barra masiva, skeleton) entran por slots.
  */
 import { ListPage } from '@ui/templates/ListPage/ListPage';
-import { enrollmentsConfig } from './enrollments.config';
-import { StudentCard } from './StudentCard';
-import { BulkActionsBar } from './BulkActionsBar';
-import { EnrollmentHeaderActions } from './sections/EnrollmentHeaderActions';
+import { enrollmentsConfig } from './config/enrollments.config';
+import { StudentCard } from './components/StudentCard/StudentCard';
+import { BulkActionsBar } from './components/BulkActionsBar/BulkActionsBar';
+import { EnrollmentHeaderActions } from './components/EnrollmentHeaderActions/EnrollmentHeaderActions';
 
 const noop = () => {};
 
