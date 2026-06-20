@@ -42,7 +42,7 @@ import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/configuracion/styles/config-pagos.css';
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 const wrapTabPanel = (node) => <div className="cfg-academico-tab-panel">{node}</div>;
 
@@ -240,8 +240,15 @@ const ConfigPagosPage = () => {
   let body;
   if (loading) {
     body = (
-      <Flex align="center" justify="center" style={{ minHeight: allSpacing.skeletonCardHeight }}>
-        <Spin size="large" tip="Cargando configuración de pagos..." />
+      <Flex
+        vertical
+        align="center"
+        justify="center"
+        gap={allSpacing.marginSM}
+        style={{ minHeight: allSpacing.skeletonCardHeight }}
+      >
+        <Spin size="large" />
+        <Text type="secondary">Cargando configuración de pagos...</Text>
       </Flex>
     );
   } else if (error) {

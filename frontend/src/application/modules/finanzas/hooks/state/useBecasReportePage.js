@@ -29,6 +29,10 @@ export const useBecasReportePage = () => {
 
   const resumen = useMemo(() => reporte?.resumen ?? null, [reporte]);
 
+  const catalogo = useMemo(() => reporte?.catalogo ?? [], [reporte]);
+
+  const catalogoResumen = useMemo(() => reporte?.catalogoResumen ?? null, [reporte]);
+
   const gestion = useMemo(() => reporte?.gestion ?? null, [reporte]);
 
   const breadcrumbItems = useMemo(
@@ -56,6 +60,8 @@ export const useBecasReportePage = () => {
     totales,
     distribucion,
     resumen,
+    catalogo,
+    catalogoResumen,
   };
 };
 

@@ -59,6 +59,19 @@ const mapDistribucion = (distribucion) => {
   }));
 };
 
+/** Cobertura del catálogo: TODOS los tramos (usados o no) con sus tipos. */
+const mapCatalogo = (catalogo) => {
+  if (!Array.isArray(catalogo)) return [];
+  return catalogo.map((item) => ({
+    porcentaje: toNumber(item?.porcentaje),
+    etiqueta: item?.etiqueta ?? becaPorcentajeLabel(item?.porcentaje),
+    tipos: toNumber(item?.tipos),
+    beneficiados: toNumber(item?.beneficiados),
+    usado: Boolean(item?.usado),
+    porcentajeDelTotalConBeca: toNumber(item?.porcentajeDelTotalConBeca),
+  }));
+};
+
 /**
  * @param {Object|null} planilla - `data.planillaBecas` crudo del backend.
  * @returns {Object|null} DTO de UI o null si no hay datos.
@@ -96,6 +109,12 @@ export const mapBecasReporte = (planilla) => {
       totalConBeca: toNumber(resumenRaw.totalConBeca),
       porcentajeConBeca: toNumber(resumenRaw.porcentajeConBeca),
       porcentajeSinBeca: toNumber(resumenRaw.porcentajeSinBeca),
+    },
+    catalogo: mapCatalogo(planilla.catalogo),
+    catalogoResumen: {
+      totalTipos: toNumber(planilla.catalogoResumen?.totalTipos),
+      tramosTotales: toNumber(planilla.catalogoResumen?.tramosTotales),
+      tramosUsados: toNumber(planilla.catalogoResumen?.tramosUsados),
     },
   };
 };

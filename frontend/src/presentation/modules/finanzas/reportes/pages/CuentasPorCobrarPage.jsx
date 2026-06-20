@@ -32,7 +32,7 @@ import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/styles/finanzas-planilla.css';
 import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 const BREADCRUMB = [
   { title: 'Inicio', href: '/' },
@@ -126,8 +126,15 @@ const CuentasPorCobrarPage = () => {
   let body;
   if (loading) {
     body = (
-      <Flex align="center" justify="center" style={{ minHeight: allSpacing.skeletonCardHeight }}>
-        <Spin size="large" tip="Cargando cuentas por cobrar..." />
+      <Flex
+        vertical
+        align="center"
+        justify="center"
+        gap={allSpacing.marginSM}
+        style={{ minHeight: allSpacing.skeletonCardHeight }}
+      >
+        <Spin size="large" />
+        <Text type="secondary">Cargando cuentas por cobrar...</Text>
       </Flex>
     );
   } else if (error) {

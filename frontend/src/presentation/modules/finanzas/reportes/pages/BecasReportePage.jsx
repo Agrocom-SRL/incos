@@ -12,8 +12,8 @@
  *     + OBSERVACIONES GENERALES.
  */
 
-import { Alert, Col, Empty, Flex, Row, Spin, Table, Tag, Typography } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Alert, Button, Col, Empty, Flex, Popover, Row, Spin, Table, Tag, Typography } from 'antd';
+import { ArrowLeftOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -27,6 +27,7 @@ import {
 } from '@finanzas/reportes/config/becasTableColumns';
 import BecasResumenCards from '@finanzas/reportes/components/organisms/BecasResumenCards';
 import BecasDistribucion from '@finanzas/reportes/components/organisms/BecasDistribucion';
+import BecasCatalogoCobertura from '@finanzas/reportes/components/organisms/BecasCatalogoCobertura';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/styles/finanzas-planilla.css';
@@ -34,6 +35,21 @@ import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 import '@finanzas/reportes/styles/becas-reporte.css';
 
 const { Paragraph, Text } = Typography;
+
+/** Contenido informativo (observaciones generales) que vive dentro del Popover. */
+const observacionesContent = (
+  <ul className="becas-observaciones__lista">
+    <li>
+      El % de cobertura por carrera corresponde a la proporción de estudiantes
+      matriculados que cuentan con beca.
+    </li>
+    <li>
+      Los tramos (25 %, 50 %, 75 %, 100 %) se determinan por el porcentaje de
+      descuento asignado a cada estudiante.
+    </li>
+    <li>Reporte de solo lectura para la gestión vigente.</li>
+  </ul>
+);
 
 /** Etiqueta de gestión vigente del reporte (Tag informativo, read-only). */
 const renderGestionTag = (gestion) => {
@@ -102,13 +118,22 @@ const BecasReportePage = () => {
     totales,
     distribucion,
     resumen,
+    catalogo,
+    catalogoResumen,
   } = useBecasReportePage();
 
   let body;
   if (loading) {
     body = (
-      <Flex align="center" justify="center" style={{ minHeight: allSpacing.skeletonCardHeight }}>
-        <Spin size="large" tip="Cargando reporte de becas..." />
+      <Flex
+        vertical
+        align="center"
+        justify="center"
+        gap={allSpacing.marginSM}
+        style={{ minHeight: allSpacing.skeletonCardHeight }}
+      >
+        <Spin size="large" />
+        <Text type="secondary">Cargando reporte de becas...</Text>
       </Flex>
     );
   } else if (error) {
@@ -118,40 +143,47 @@ const BecasReportePage = () => {
   } else {
     body = (
       <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-        {/* RESUMEN GENERAL AL INICIO: distribución (donut) · KPIs · observaciones,
-            en columnas lado a lado (réplica del pie de la planilla oficial). */}
-        <div className="fin-separador">
-          <span className="fin-separador__titulo">Resumen general por tipo de beca</span>
-        </div>
+        {/* RESUMEN GENERAL AL INICIO: distribución (donut) · KPIs · cobertura del
+            catálogo, sobre una zona teñida (cuaderno verde tenue) para que las
+            tarjetas blancas con sombra resalten. Las observaciones generales
+            pasan a un Popover informativo (botón a la derecha del separador). */}
+        <div className="becas-resumen-zone">
+          <div className="fin-separador becas-resumen-zone__head">
+            <span className="fin-separador__titulo">Resumen general por tipo de beca</span>
+            <Popover
+              rootClassName="becas-obs-popover"
+              content={<div className="becas-observaciones__popover">{observacionesContent}</div>}
+              title="Observaciones generales"
+              trigger="click"
+              placement="bottomRight"
+            >
+              <Button
+                type="text"
+                size="small"
+                className="becas-obs-trigger"
+                icon={<InfoCircleOutlined />}
+              >
+                Observaciones
+              </Button>
+            </Popover>
+          </div>
 
-        <Row gutter={[allSpacing.marginLG, allSpacing.marginLG]} align="stretch">
-          <Col xs={24} lg={12} xl={9}>
-            <BecasDistribucion
-              distribucion={distribucion}
-              totalConBeca={resumen?.totalConBeca || 0}
-              porcentajeConBeca={resumen?.porcentajeConBeca || 0}
-            />
-          </Col>
-          <Col xs={24} lg={12} xl={9}>
-            <BecasResumenCards resumen={resumen} />
-          </Col>
-          <Col xs={24} xl={6}>
-            <div className="becas-observaciones">
-              <div className="becas-observaciones__titulo">Observaciones generales</div>
-              <ul className="becas-observaciones__lista">
-                <li>
-                  El % de cobertura por carrera corresponde a la proporción de
-                  estudiantes matriculados que cuentan con beca.
-                </li>
-                <li>
-                  Los tramos (25 %, 50 %, 75 %, 100 %) se determinan por el porcentaje
-                  de descuento asignado a cada estudiante.
-                </li>
-                <li>Reporte de solo lectura para la gestión vigente.</li>
-              </ul>
-            </div>
-          </Col>
-        </Row>
+          <Row gutter={[allSpacing.marginLG, allSpacing.marginLG]} align="stretch">
+            <Col xs={24} lg={12} xl={8}>
+              <BecasDistribucion
+                distribucion={distribucion}
+                totalConBeca={resumen?.totalConBeca || 0}
+                porcentajeConBeca={resumen?.porcentajeConBeca || 0}
+              />
+            </Col>
+            <Col xs={24} lg={12} xl={8}>
+              <BecasResumenCards resumen={resumen} />
+            </Col>
+            <Col xs={24} xl={8}>
+              <BecasCatalogoCobertura catalogo={catalogo} resumen={catalogoResumen} />
+            </Col>
+          </Row>
+        </div>
 
         {/* DETALLE POR CARRERA (planilla) ABAJO: cabecera verde + bloque agrupado
             + fila de TOTALES GENERALES. */}

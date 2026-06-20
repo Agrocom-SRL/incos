@@ -20,11 +20,18 @@ export class GetBecasPorCarreraReporteUseCase {
    * @param {Object} params
    * @param {import('../../../domain/interfaces/repositories/IBecasPorCarreraViewRepository.js').IBecasPorCarreraViewRepository} params.becasPorCarreraViewRepository
    * @param {import('../../../domain/interfaces/repositories/IGestionRepository.js').IGestionRepository} params.managementRepository
+   * @param {import('../../../domain/interfaces/repositories/IBecaDescuentoRepository.js').IBecaDescuentoRepository} params.scholarshipRepository
    * @param {Object} params.logger
    */
-  constructor({ becasPorCarreraViewRepository, managementRepository, logger }) {
+  constructor({
+    becasPorCarreraViewRepository,
+    managementRepository,
+    scholarshipRepository,
+    logger,
+  }) {
     this.becasPorCarreraViewRepository = becasPorCarreraViewRepository;
     this.managementRepository = managementRepository;
+    this.scholarshipRepository = scholarshipRepository;
     this.logger = logger;
   }
 
@@ -133,12 +140,20 @@ export class GetBecasPorCarreraReporteUseCase {
       porcentajeSinBeca: this._round(this._pct(sinBeca, totalMatriculados)),
     };
 
+    // Catálogo de descuentos: TODOS los tramos del catálogo (becas_descuentos),
+    // incluso los que NO se usan en la gestión, como dato estadístico de cobertura.
+    const { tramos: catalogo, resumen: catalogoResumen } = await this._buildCatalogo(
+      totalesBecasPorPorcentaje,
+      totalConBeca,
+    );
+
     this.logger?.info?.('[Pagos] Planilla becas por carrera generada', {
       gestionId,
       carreras: filas.length,
       totalMatriculados,
       totalConBeca,
       porcentajes,
+      catalogoTramos: catalogo.length,
     });
 
     return {
@@ -152,7 +167,75 @@ export class GetBecasPorCarreraReporteUseCase {
       totales,
       distribucion,
       resumen,
+      catalogo,
+      catalogoResumen,
     };
+  }
+
+  /**
+   * Construye la cobertura del CATÁLOGO de becas/descuentos: agrupa todos los
+   * tipos de beca activos por porcentaje (incluyendo tramos sin uso en la
+   * gestión) y los cruza con los beneficiados reales. Dato estadístico: cuántos
+   * tramos existen, cuántos se usan y cuántos beneficiados tiene cada uno.
+   *
+   * @param {Object<string, number>} beneficiadosPorPorcentaje - beneficiados reales por tramo.
+   * @param {number} totalConBeca
+   * @returns {Promise<{ tramos: Array<Object>, resumen: Object }>}
+   */
+  async _buildCatalogo(beneficiadosPorPorcentaje, totalConBeca) {
+    const becas = await this._loadCatalogo();
+
+    // Agrupar por porcentaje (solo becas reales: porcentaje > 0).
+    const grupos = new Map();
+    for (const beca of becas) {
+      const p = Number(beca.percentage);
+      if (Number.isFinite(p) && p > 0) {
+        if (!grupos.has(p)) {
+          grupos.set(p, { porcentaje: p, tipos: 0 });
+        }
+        grupos.get(p).tipos += 1;
+      }
+    }
+
+    const tramos = Array.from(grupos.values())
+      .sort((a, b) => a.porcentaje - b.porcentaje)
+      .map((grupo) => {
+        const beneficiados = Number(beneficiadosPorPorcentaje[grupo.porcentaje]) || 0;
+        return {
+          porcentaje: grupo.porcentaje,
+          etiqueta: `Beca ${grupo.porcentaje}%`,
+          tipos: grupo.tipos,
+          beneficiados,
+          usado: beneficiados > 0,
+          porcentajeDelTotalConBeca: this._round(this._pct(beneficiados, totalConBeca)),
+        };
+      });
+
+    const resumen = {
+      totalTipos: tramos.reduce((acc, t) => acc + t.tipos, 0),
+      tramosTotales: tramos.length,
+      tramosUsados: tramos.filter((t) => t.usado).length,
+    };
+
+    return { tramos, resumen };
+  }
+
+  /**
+   * Carga el catálogo de becas/descuentos activas y lo normaliza a objetos planos.
+   * @returns {Promise<Array<Object>>}
+   */
+  async _loadCatalogo() {
+    if (!this.scholarshipRepository?.findAll) return [];
+    try {
+      const result = await this.scholarshipRepository.findAll({});
+      const list = Array.isArray(result) ? result : result?.scholarships ?? [];
+      return list.map((beca) => (beca?.toPlainObject ? beca.toPlainObject() : beca));
+    } catch (error) {
+      this.logger?.warn?.('[Pagos] No se pudo cargar el catálogo de becas', {
+        error: error.message,
+      });
+      return [];
+    }
   }
 
   // ============================================

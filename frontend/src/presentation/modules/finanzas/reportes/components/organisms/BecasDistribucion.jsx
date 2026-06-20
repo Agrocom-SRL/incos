@@ -3,9 +3,9 @@
  *
  * El repo NO tiene librería de gráficos (sin recharts / @ant-design/plots). Para
  * no añadir una dependencia, el donut se dibuja con SVG nativo (arcos por
- * `stroke-dasharray`), un segmento por tramo de beca. La escala es de VERDES →
- * ÁMBAR (nunca azul como color dominante), derivada de los tokens del theme de
- * marca (sin #hex): tramos bajos en verde claro y el más alto en ámbar.
+ * `stroke-dasharray`), un segmento por tramo de beca. La paleta es CATEGÓRICA y
+ * VÍVIDA por tramo (verde · dorado · púrpura · rojo) para que cada tipo de beca
+ * resalte y se distinga; vive en `becasTramoColors` (fuente única, por tokens).
  *
  * Centro del donut = total con beca + % de cobertura global. Debajo, una leyenda
  * con un swatch por tramo, su conteo de beneficiados y su % del total con beca.
@@ -15,6 +15,7 @@
  */
 
 import { Card, Empty, Typography, theme } from 'antd';
+import { getTramoColor } from '@finanzas/reportes/config/becasTramoColors';
 
 const { Text } = Typography;
 
@@ -31,14 +32,9 @@ const formatPorcentaje = (value) => {
 const BecasDistribucion = ({ distribucion = [], totalConBeca = 0, porcentajeConBeca = 0 }) => {
   const { token } = theme.useToken();
 
-  // Escala VERDE → ÁMBAR (sin literales): tramos bajos verde, el alto ámbar.
-  const escala = [
-    token.colorSuccessBorder,
-    token.colorSuccess,
-    token.colorSuccessActive,
-    token.colorWarning,
-  ];
-  const colorTramo = (index) => escala[index % escala.length];
+  // Paleta categórica vívida por tramo (verde/dorado/púrpura/rojo), mapeada por
+  // porcentaje desde la fuente única `becasTramoColors`.
+  const colorTramo = (tramo, index) => getTramoColor(token, tramo?.porcentaje, index);
 
   const tramos = Array.isArray(distribucion) ? distribucion : [];
   const totalBeneficiados = tramos.reduce((acc, t) => acc + (Number(t?.beneficiados) || 0), 0);
@@ -53,7 +49,7 @@ const BecasDistribucion = ({ distribucion = [], totalConBeca = 0, porcentajeConB
       const longitud = fraccion * CIRCUNFERENCIA;
       acc.arcos.push({
         key: tramo.porcentaje ?? index,
-        color: colorTramo(index),
+        color: colorTramo(tramo, index),
         dashArray: `${longitud} ${CIRCUNFERENCIA - longitud}`,
         dashOffset: -acc.acumulado,
       });
@@ -117,7 +113,7 @@ const BecasDistribucion = ({ distribucion = [], totalConBeca = 0, porcentajeConB
                 <div key={tramo.porcentaje ?? index} className="becas-donut__item">
                   <span
                     className="becas-donut__swatch"
-                    style={{ background: colorTramo(index) }}
+                    style={{ background: colorTramo(tramo, index) }}
                   />
                   <span className="becas-donut__item-label">
                     <Text>{tramo.etiqueta}</Text>

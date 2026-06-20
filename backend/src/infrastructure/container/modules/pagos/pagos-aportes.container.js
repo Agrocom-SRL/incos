@@ -203,6 +203,7 @@ export function registerPagosAportesResource(container) {
             new GetBecasPorCarreraReporteUseCase({
                 becasPorCarreraViewRepository: c.resolve(REPOSITORIOS_TOKENS.becasPorCarreraViewRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
