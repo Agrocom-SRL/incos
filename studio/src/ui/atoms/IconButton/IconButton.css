@@ -1,0 +1,62 @@
+.ds-icon-btn {
+  position: relative;
+  width: var(--chrome-control, 38px);
+  height: var(--chrome-control, 38px);
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
+}
+
+.ds-icon-btn__glyph {
+  display: inline-flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ds-icon-btn:hover {
+    background: var(--surface-alt);
+    border-color: var(--border);
+    color: var(--brand-600);
+    transform: scale(1.06);
+  }
+
+  .ds-icon-btn:active {
+    transform: scale(0.95);
+  }
+}
+
+.ds-icon-btn:focus-visible {
+  outline: none;
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 25%, transparent);
+}
+
+.ds-icon-btn__badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}

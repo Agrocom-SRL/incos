@@ -1,0 +1,72 @@
+.ds-chip {
+  --chip-color: var(--brand-600);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
+}
+
+.ds-chip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--chip-color);
+  flex-shrink: 0;
+}
+
+.ds-chip__count {
+  padding: 1px 8px;
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: var(--bg-page-2);
+  color: var(--text-muted);
+}
+
+.ds-chip--active {
+  background: var(--chip-color);
+  color: #fff;
+  border-color: var(--chip-color);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--chip-color) 38%, transparent);
+}
+
+.ds-chip--active .ds-chip__dot {
+  background: #fff;
+}
+
+.ds-chip--active .ds-chip__count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ds-chip:not(.ds-chip--active):hover {
+    border-color: var(--chip-color);
+    color: var(--chip-color);
+    background: color-mix(in srgb, var(--chip-color) 8%, var(--surface));
+  }
+
+  .ds-chip:active {
+    transform: scale(0.97);
+  }
+}
+
+.ds-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--chip-color) 28%, transparent);
+}

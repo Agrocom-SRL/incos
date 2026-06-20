@@ -1,0 +1,37 @@
+.ds-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+  background: var(--surface-alt);
+  color: var(--text-muted);
+}
+
+.ds-pill__icon {
+  font-size: 11px;
+  display: inline-flex;
+}
+
+.ds-pill--ok {
+  background: var(--pill-ok-bg);
+  color: var(--pill-ok-fg);
+}
+
+.ds-pill--warn {
+  background: var(--pill-warn-bg);
+  color: var(--pill-warn-fg);
+}
+
+.ds-pill--err {
+  background: var(--pill-err-bg);
+  color: var(--pill-err-fg);
+}
+
+.ds-pill--info {
+  background: var(--pill-info-bg);
+  color: var(--pill-info-fg);
+}

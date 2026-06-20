@@ -1,0 +1,62 @@
+/* ==========================================================================
+   Base global del design-system Studio.
+   - Fuente auto-hospedada (Inter, sin Google Fonts).
+   - Reset mínimo + fondo de página desde tokens.
+   - Accesibilidad: prefers-reduced-motion neutraliza transforms/animaciones.
+   Las CSS vars (--brand-*, --surface, --space-*, …) las emite applyThemeVars().
+   ========================================================================== */
+
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inter/800.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--text);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: opacity, color, background-color, border-color !important;
+    transition-duration: var(--dur-hover) !important;
+    scroll-behavior: auto !important;
+  }
+
+  *:active {
+    transform: none !important;
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@ds/*": ["./src/design-system/*"],
+      "@ui/*": ["./src/ui/*"],
+      "@config/*": ["./src/config/*"],
+      "@features/*": ["./src/features/*"],
+      "@mocks/*": ["./src/mocks/*"],
+      "@lib/*": ["./src/lib/*"]
+    },
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src"]
+}

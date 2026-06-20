@@ -1,0 +1,16 @@
+.ds-avatar {
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+  background: var(--brand-100);
+  color: var(--brand-700);
+}
+
+.ds-avatar--tone {
+  color: var(--avatar-tone, var(--brand-600));
+  background: color-mix(in srgb, var(--avatar-tone, var(--brand-600)) 12%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--avatar-tone, var(--brand-600)) 22%, transparent);
+}

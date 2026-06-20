@@ -155,6 +155,29 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
 
+- 2026-06-19 — **Cambio de estrategia + Hito 1 de `studio/`.** Tras descartar (a) namespace
+  en el mismo proyecto y (b) greenfield con cableado, se acordó: **proyecto frontend NUEVO
+  e independiente `studio/` (Vite propio, hermano de `frontend/`), MOCK-FIRST** — cascarón +
+  datos mock que replican `matricula-v2`, sin tocar legacy ni backend. Arquitectura limpia
+  (SOLID: un archivo = una responsabilidad; Atomic), design-system centralizado y
+  **white-label paramétrico** (config por tenant). Integración backend = por capas, al final
+  (cambiar solo `*.api.js` mock→http). GUARD-RAIL: mocks con shapes reales (vista 101 /
+  `backend/database`). Hito 1 construido a mano (fijar estándar antes de escalar con agentes):
+  • `config/brand` (rampa+acentos+fuente+locale+features) + `config/navigation`.
+  • `design-system/tokens` (palette por modo, spacing, radii, typography, shadows, motion, z)
+    + `theme` (`applyThemeVars` simétrico sin if(mode), `buildAntdTheme`, ThemeProvider/useTheme).
+  • `lib/i18n` (keys en INGLÉS, namespaces es/en por contexto), `lib/motion` (presets +
+    useReducedMotion + useCountUp), `lib/hooks` (useMediaQuery/useMobileNav), `lib/text`.
+  • `ui` atoms (IconButton, ThemeToggle, LanguageSwitch, Logo, Avatar, Chip, StatusPill,
+    Skeleton) · molecules (SidebarItem/Section/Footer, HeaderUtilities, UserChip, KpiCard,
+    PageHeader, EmptyState, ErrorState) · organisms (Sidebar, TopBar) · template **AppShell**
+    (sidebar+topbar+content + dark + i18n + drawer móvil responsive).
+  • Feature `features/matriculas/lista` (mock+api+adapter+hook+columns+StudentCell+page) =
+    listado gemelo de MatriculaListV2 con KPIs (count-up), chips de carrera, tabla AntD,
+    estados vacío/error/carga, paginación. Router + App (providers) + main.
+  Build ✓ 8.27s · Lint ✓ exit 0 · dev ✓ HTTP 200 en :5173. Memorias:
+  revamp-prototipo-mock-first, studio-i18n-keys-ingles-namespaces.
+
 - 2026-06-19 — Frontend WS-D (plantillas ABM + estados compartidos), ADITIVO.
   B1 estados base: `atoms/Skeleton.jsx` (paramétrico rows|grid|detail|form sobre AntD
   Skeleton, shimmer CSS, sin motion JS), `molecules/ErrorState.jsx` (Alert title=/
