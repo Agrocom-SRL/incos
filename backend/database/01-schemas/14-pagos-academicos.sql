@@ -14,6 +14,7 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden: primero detalle, luego cabecera; con FK deshabilitado el orden no afecta)
+DROP TABLE IF EXISTS compromisos_pago;
 DROP TABLE IF EXISTS pago_cuotas;
 DROP TABLE IF EXISTS pago_aporte;
 DROP TABLE IF EXISTS bancos_autorizados;
@@ -275,6 +276,47 @@ CREATE TABLE pago_cuotas (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Historial de pagos (cuotas) del aporte. Montos y fechas libres; cada pago genera un recibo. Total pagado = SUM(monto) WHERE activo=1 AND deleted_at IS NULL.';
+
+-- ============================================
+-- TABLA: compromisos_pago
+-- Compromiso de pago del estudiante: fecha en la que se compromete a cancelar el
+-- saldo pendiente del aporte. Reemplaza la práctica errónea de anotar la fecha en
+-- pago_cuotas.descripcion. Un compromiso VIGENTE por cabecera (regla de negocio);
+-- la tabla conserva histórico (renegociaciones) vía estado/soft delete.
+-- ============================================
+
+CREATE TABLE compromisos_pago (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pago_aporte_id INT NULL COMMENT 'Cabecera del aporte (estudiante + gestión) a la que aplica el compromiso',
+
+    -- Datos del compromiso (el saldo/monto se deriva de las cuotas registradas; no se almacena monto aquí)
+    fecha_compromiso DATE NOT NULL COMMENT 'Fecha en la que el estudiante se compromete a cancelar el saldo',
+    observacion VARCHAR(500) NULL COMMENT 'Nota del compromiso (motivo, condiciones, respaldo firmado)',
+    estado ENUM('VIGENTE', 'CUMPLIDO', 'INCUMPLIDO') DEFAULT 'VIGENTE' COMMENT 'VIGENTE=compromiso activo; CUMPLIDO=saldo cancelado; INCUMPLIDO=venció sin pago',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+
+    FOREIGN KEY (pago_aporte_id) REFERENCES pago_aporte(id) ON DELETE SET NULL,
+
+    -- Sin UNIQUE en pago_aporte_id: la "un compromiso VIGENTE por cabecera" se garantiza en lógica de negocio (soft delete + histórico)
+    INDEX idx_pago_aporte_id (pago_aporte_id) COMMENT 'Búsqueda por cabecera',
+    INDEX idx_fecha_compromiso (fecha_compromiso) COMMENT 'Búsqueda/orden por fecha de compromiso',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado del compromiso',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_cabecera_vigente (pago_aporte_id, estado, activo, deleted_at) COMMENT 'Compromiso vigente por cabecera'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Compromiso de pago del estudiante: fecha comprometida para cancelar el saldo del aporte. Un compromiso VIGENTE por cabecera (lógica de negocio); histórico vía estado/soft delete.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

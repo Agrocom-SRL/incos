@@ -53,9 +53,15 @@ export class GuardarNotasCuadernoBimestreUseCase {
       asignacionId,
     });
 
-    if (bimestreNum !== bimestreVigente) {
+    const reabierto =
+      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+        Number(asignacionId),
+        bimestreNum,
+      )) > 0;
+
+    if (bimestreNum !== bimestreVigente && !reabierto) {
       throw new ForbiddenError(
-        'Solo podés guardar notas en el bimestre vigente de la gestión.',
+        'Solo podés guardar notas en el bimestre vigente o en un bimestre reabierto.',
       );
     }
 
@@ -87,6 +93,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
         evaluacionId,
         notaRaw: item?.nota,
         usuarioId,
+        reabierto,
       });
       guardadas.push(dto);
     }

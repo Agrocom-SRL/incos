@@ -201,7 +201,13 @@ export class ContributionPaymentRepository extends BaseRepository {
      * @private
      */
     _orderClauseForListado(sort) {
-        const allowed = ['id', 'estado', 'created_at', 'gestion_anio', 'total_pagado', 'cantidad_pagos', 'saldo_pendiente', 'codigo_estudiante', 'gestion_nombre'];
+        const allowed = [
+            'estudiante_apellido_paterno', 'estudiante_nombres', 'total_pagado',
+            'cantidad_pagos', 'descuento_beca', 'beca_porcentaje', 'saldo_pendiente',
+            'monto_obligatorio', 'monto_base', 'created_at', 'id',
+            // compatibilidad con orden previo
+            'estado', 'gestion_anio', 'codigo_estudiante', 'gestion_nombre',
+        ];
         const pendingFirstOrder = `
 ORDER BY
   CASE
@@ -225,7 +231,8 @@ ORDER BY
             return `${pendingFirstOrder}, COALESCE(saldo_pendiente, 0) DESC, created_at DESC, id DESC`;
         }
 
-        // Mantiene pendientes primero y luego aplica el orden solicitado por el cliente.
-        return `${pendingFirstOrder}, ${col} ${direction}, id DESC`;
+        // Orden explícito del cliente: prima la columna pedida (sin anteponer el
+        // agrupado "pendientes primero"), para que ordenar por columna ordene de verdad.
+        return `\nORDER BY ${col} ${direction}, id DESC`;
     }
 }

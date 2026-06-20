@@ -1,0 +1,224 @@
+/* Pills de estado/saldo de pagos de aporte (Finanzas) — misma estética que los pills
+   de licencias / materias (StatusPill + clase de color). Solo presentación. */
+
+.pago-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Estados del aporte ── */
+.pago-pill--parcial {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}
+.pago-pill--cancelado {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+
+/* "Sin pagos": el estudiante no tiene NINGÚN pago registrado (rojo). */
+.pago-pill--sin-pagos {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.22);
+}
+
+/* ── Severidad de saldo ── */
+.pago-pill--saldo {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.22);
+}
+.pago-pill--aldia {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+
+/* ── Descuento por beca (por % de beca) ── */
+/* Neutro: sin beca. */
+.pago-pill--neutro {
+  background: var(--surface-100, #f3f4f6);
+  color: var(--text-500, #6b7280);
+  border-color: var(--border-200, #e5e7eb);
+}
+/* Beca baja (< 50 %) → warning (ámbar). */
+.pago-pill--beca-baja {
+  background: #fef3c7;
+  color: #a16207;
+  border-color: rgba(161, 98, 7, 0.22);
+}
+/* Beca media (50 %–99 %) → info (azul). */
+.pago-pill--beca-media {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}
+/* Beca total (100 %) → color de marca (primary). */
+.pago-pill--beca-total {
+  background: rgba(34, 133, 79, 0.12);
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  border-color: rgba(34, 133, 79, 0.28);
+}
+
+/* ── Celda "Descuento" (pill de % arriba + sublíneas con icono) ── */
+.pago-descuento-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pago-descuento-cell__pct {
+  display: flex;
+}
+
+/* Sublíneas más compactas que las métricas por defecto. */
+.pago-descuento-cell__lineas {
+  gap: 4px;
+}
+
+/* ── Estado bajo el nombre del estudiante (dot + etiqueta teñidos) ── */
+.pago-estudiante-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pago-estudiante-cell__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pago-estudiante-cell__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  flex: none;
+}
+
+.pago-estado--sin-pagos {
+  color: #b91c1c;
+}
+.pago-estado--parcial {
+  color: #0369a1;
+}
+.pago-estado--cancelado {
+  color: #047857;
+}
+
+/* ── Celda de montos (monto sobre subtexto base/beca) ── */
+.pago-monto-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.pago-monto-cell__valor {
+  font-weight: 700;
+  color: var(--text-800, #1f2937);
+  font-size: var(--font-size-base, 14px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.pago-monto-cell__sub {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--text-500, #6b7280);
+}
+
+/* ── Celda "Pagado" (total en negrita + sublíneas con icono) ── */
+.pago-pagado-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pago-pagado-cell__total {
+  font-weight: 700;
+  color: var(--text-800, #1f2937);
+  font-size: var(--font-size-base, 14px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+/* Sublíneas más compactas que las métricas por defecto. */
+.pago-pagado-cell__lineas {
+  gap: 4px;
+}
+
+/* ── Celda "Saldo" (sublíneas con icono + pill de resultado al final) ── */
+.pago-saldo-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Sublíneas más compactas que las métricas por defecto. */
+.pago-saldo-cell__lineas {
+  gap: 4px;
+}
+
+.pago-saldo-cell__resultado {
+  margin-top: 2px;
+  display: flex;
+}
+
+/* ============================================================
+   AJUSTES SOBRE EL KIT DE PLANILLA (.fin-planilla)
+   El listado de pagos compone la planilla verde (cabecera + zebra + hover).
+   Las celdas multinivel (estudiante / pagado / descuento / saldo) deben leerse
+   bien sobre la zebra y el hover verde sin que estos tapen los pills.
+   Solo presentación; no altera las clases base de las celdas.
+   ============================================================ */
+
+/* Celdas multinivel: alinear arriba (no centrar) para que el bloque respire. */
+.fin-planilla .ant-table-tbody > tr > td:has(.pago-estudiante-cell),
+.fin-planilla .ant-table-tbody > tr > td:has(.pago-pagado-cell),
+.fin-planilla .ant-table-tbody > tr > td:has(.pago-descuento-cell),
+.fin-planilla .ant-table-tbody > tr > td:has(.pago-saldo-cell) {
+  vertical-align: top;
+}
+
+/* El valor fuerte (total / monto) mantiene contraste sobre zebra y hover. */
+.fin-planilla .pago-pagado-cell__total,
+.fin-planilla .pago-monto-cell__valor {
+  color: var(--text-800, #1f2937);
+}
+
+/* Los pills (estado, beca, saldo) llevan fondo propio; el hover verde de la fila
+   nunca debe "lavarlos". Reafirmamos su opacidad para que destaquen sobre la banda. */
+.fin-planilla .ant-table-tbody > tr:hover > td .pago-pill {
+  opacity: 1;
+}
+
+/* La etiqueta de estado bajo el nombre conserva su color teñido sobre la zebra. */
+.fin-planilla .pago-estudiante-cell__estado {
+  background: transparent;
+}

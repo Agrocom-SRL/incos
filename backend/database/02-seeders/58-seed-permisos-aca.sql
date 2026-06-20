@@ -19,7 +19,7 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('aca_cal_cuaderno_guardar', 'Calificaciones · cuaderno · guardar bimestre', 'ACADEMICO', 7, 1, NOW(), NOW()),
 ('aca_cal_gestion_anual', 'Calificaciones · gestión anual', 'ACADEMICO', 8, 1, NOW(), NOW()),
 ('aca_cal_politica', 'Calificaciones · política institucional', 'ACADEMICO', 9, 1, NOW(), NOW()),
-('aca_cal_bim_ajuste_admin', 'Calificaciones · bimestre cerrado · ajuste administrativo', 'ACADEMICO', 10, 1, NOW(), NOW()),
+('aca_cal_bim_ajuste_admin', 'Calificaciones · bimestre · reabrir / consolidar', 'ACADEMICO', 10, 1, NOW(), NOW()),
 ('aca_asi_registro', 'Asistencia · registro diario', 'ACADEMICO', 11, 1, NOW(), NOW()),
 ('aca_asi_cnd', 'Asistencia · clases no dictadas', 'ACADEMICO', 12, 1, NOW(), NOW()),
 ('aca_asi_consolidado', 'Asistencia · consolidado %', 'ACADEMICO', 13, 1, NOW(), NOW()),
@@ -41,7 +41,7 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('academico.calificacion.cuaderno.evaluaciones', 'Calificaciones · cuaderno · gestionar evaluaciones', NULL, 'ACADEMICO', 'ACA', 'aca_cal_cuaderno_evals', '/academico/calificaciones/mis-cursos/:asignacionId/cuaderno/:n', 1, NOW(), NOW()),
 ('academico.calificacion.cuaderno.notas', 'Calificaciones · cuaderno · registrar/modificar notas', NULL, 'ACADEMICO', 'ACA', 'aca_cal_cuaderno_notas', '/academico/calificaciones/mis-cursos/:asignacionId/cuaderno/:n', 1, NOW(), NOW()),
 ('academico.calificacion.cuaderno.guardar', 'Calificaciones · cuaderno · guardar y recalcular bimestre', NULL, 'ACADEMICO', 'ACA', 'aca_cal_cuaderno_guardar', '/academico/calificaciones/mis-cursos/:asignacionId/cuaderno/:n', 1, NOW(), NOW()),
-('academico.calificacion.bimestre.ajuste_admin', 'Calificaciones · bimestre cerrado · ajuste administrativo', NULL, 'ACADEMICO', 'ACA', 'aca_cal_bim_ajuste_admin', '/academico/calificaciones/mis-cursos/:asignacionId/bimestre/:n/consolidado', 1, NOW(), NOW()),
+('academico.calificacion.bimestre.ajuste_admin', 'Calificaciones · bimestre · reabrir / consolidar', NULL, 'ACADEMICO', 'ACA', 'aca_cal_bim_ajuste_admin', '/academico/calificaciones/mis-cursos/:asignacionId/bimestre/:n/consolidado', 1, NOW(), NOW()),
 ('academico.nivelacion.ver', 'Nivelaciones: listar y ver', NULL, 'ACADEMICO', 'ACA', 'aca_nivelaciones', '/academico/nivelaciones/listar', 1, NOW(), NOW()),
 ('academico.nivelacion.inscribir', 'Nivelaciones: inscribir estudiante', NULL, 'ACADEMICO', 'ACA', 'aca_nivelaciones', '/academico/nivelaciones/listar', 1, NOW(), NOW()),
 ('academico.nivelacion.aprobar', 'Nivelaciones: aprobar', NULL, 'ACADEMICO', 'ACA', 'aca_nivelaciones', '/academico/nivelaciones/listar', 1, NOW(), NOW()),
@@ -118,6 +118,8 @@ JOIN (
   UNION ALL SELECT 'academico.asistencia.licencia.ver', 'LISTAR'
   UNION ALL SELECT 'academico.asistencia.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'academico.asistencia.licencia.crear', 'CREAR'
+  UNION ALL SELECT 'academico.asistencia.licencia.crear', 'EDITAR'
+  UNION ALL SELECT 'academico.asistencia.licencia.crear', 'ELIMINAR'
   UNION ALL SELECT 'academico.asistencia.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'academico.asistencia.registro.ver', 'LISTAR'
   UNION ALL SELECT 'academico.asistencia.registro.ver', 'DETALLE'
@@ -233,12 +235,28 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.ver', 'DETALLE'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.ver', 'LISTAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.ver', 'DETALLE'
+  -- DOCENTE: solicita y ve licencias desde su planilla (icon por estudiante); no aprueba.
+  UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.ver', 'LISTAR'
+  UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'ESTUDIANTE', 'academico.asistencia.licencia.ver', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'academico.asistencia.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.crear', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.crear', 'CREAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.crear', 'CREAR'
+  UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.crear', 'CREAR'
   UNION ALL SELECT 'ESTUDIANTE', 'academico.asistencia.licencia.crear', 'CREAR'
+  -- Editar (solo PENDIENTE) y cancelar (PENDIENTE|APROBADA): roles que gestionan licencias.
+  UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.crear', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.crear', 'EDITAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.crear', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.crear', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.crear', 'ELIMINAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.crear', 'ELIMINAR'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.aprobar', 'APROBAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'DOCENTE', 'academico.asistencia.registro.ver', 'LISTAR'
   UNION ALL SELECT 'DOCENTE', 'academico.asistencia.registro.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.registro.ver', 'LISTAR'
@@ -260,6 +278,9 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.clase_no_dictada.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.clase_no_dictada.ver', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.clase_no_dictada.ver', 'EDITAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.clase_no_dictada.ver', 'LISTAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.clase_no_dictada.ver', 'CREAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.clase_no_dictada.ver', 'EDITAR'
   UNION ALL SELECT 'DOCENTE', 'academico.asistencia.consolidado.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.consolidado.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.consolidado.ver', 'EXPORTAR'

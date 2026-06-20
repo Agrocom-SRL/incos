@@ -7,8 +7,7 @@ export class AttendanceMapper {
         const d = model.dataValues || model;
         const specific = {};
         if ('matriculaMateriaId' in d) specific.subjectEnrollmentId = d.matriculaMateriaId;
-        if ('fechaClase' in d) specific.classDate = d.fechaClase;
-        if ('horaClase' in d) specific.classTime = d.horaClase;
+        if ('sesionClaseId' in d) specific.classSessionId = d.sesionClaseId;
         if ('estado' in d) specific.status = d.estado;
         if ('observaciones' in d) specific.observations = d.observaciones;
         if ('registradoPor' in d) specific.registeredBy = d.registradoPor;
@@ -20,8 +19,7 @@ export class AttendanceMapper {
         const data = entity instanceof Attendance ? entity.toPlainObject() : entity;
         return {
             matriculaMateriaId: data.subjectEnrollmentId ?? null,
-            fechaClase: data.classDate,
-            horaClase: data.classTime ?? null,
+            sesionClaseId: data.classSessionId ?? null,
             estado: data.status ?? 'AUSENTE',
             observaciones: data.observations ?? null,
             registradoPor: data.registeredBy ?? null,
@@ -33,8 +31,7 @@ export class AttendanceMapper {
         const data = entity instanceof Attendance ? entity.toPlainObject() : entity;
         const update = {};
         if ('subjectEnrollmentId' in data) update.matriculaMateriaId = data.subjectEnrollmentId ?? null;
-        if ('classDate' in data) update.fechaClase = data.classDate;
-        if ('classTime' in data) update.horaClase = data.classTime ?? null;
+        if ('classSessionId' in data) update.sesionClaseId = data.classSessionId ?? null;
         if ('status' in data) update.estado = data.status;
         if ('observations' in data) update.observaciones = data.observations ?? null;
         if ('registeredBy' in data) update.registradoPor = data.registeredBy ?? null;

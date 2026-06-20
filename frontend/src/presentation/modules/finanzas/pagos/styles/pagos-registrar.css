@@ -1,0 +1,133 @@
+/**
+ * Registro de abono (Finanzas) — layout específico del flujo de selección + formulario.
+ *
+ * Solo composición/layout (consume tokens vía var()). El shell de las secciones es
+ * el compartido `cfg-academico-workspace` / `cfg-academico-form-workspace`.
+ */
+
+/* Lista de resultados de búsqueda de estudiantes */
+.fin-pago-reg-resultados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  margin-top: var(--spacing-md, 16px);
+}
+
+.fin-pago-reg-resultado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 16px);
+  width: 100%;
+  padding: var(--spacing-md, 14px) var(--spacing-lg, 18px);
+  text-align: left;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.fin-pago-reg-resultado:hover {
+  border-color: var(--primary, #196b45);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
+}
+
+@media (hover: hover) {
+  .fin-pago-reg-resultado:active {
+    transform: scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fin-pago-reg-resultado {
+    transition: none;
+  }
+  .fin-pago-reg-resultado:active {
+    transform: none;
+  }
+}
+
+.fin-pago-reg-resultado__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  min-width: 0;
+}
+
+.fin-pago-reg-resultado__nombre {
+  font-weight: 700;
+  color: var(--text-800, #1f2937);
+  font-size: var(--font-size-base, 14px);
+  line-height: 1.35;
+}
+
+.fin-pago-reg-resultado__meta {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--text-500, #6b7280);
+}
+
+.fin-pago-reg-resultado__saldo {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+/* Tarjeta del estudiante seleccionado */
+.fin-pago-reg-seleccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 16px);
+  flex-wrap: wrap;
+}
+
+.fin-pago-reg-seleccion__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  min-width: 0;
+}
+
+.fin-pago-reg-seleccion__nombre {
+  font-weight: 700;
+  color: var(--text-800, #1f2937);
+  font-size: var(--font-size-lg, 16px);
+}
+
+.fin-pago-reg-seleccion__meta {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--text-500, #6b7280);
+}
+
+/* Resumen del estado del aporte (saldo/monto) */
+.fin-pago-reg-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--spacing-md, 16px);
+}
+
+.fin-pago-reg-resumen__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-md, 14px) var(--spacing-lg, 16px);
+  background: var(--border-soft, #f9fafb);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.fin-pago-reg-resumen__label {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--text-500, #6b7280);
+}
+
+.fin-pago-reg-resumen__valor {
+  font-weight: 700;
+  font-size: var(--font-size-lg, 16px);
+  color: var(--text-800, #1f2937);
+  font-variant-numeric: tabular-nums;
+}
+
+.fin-pago-reg-resumen__valor--saldo {
+  color: var(--primary-dark, #134d32);
+}

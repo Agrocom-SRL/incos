@@ -397,6 +397,43 @@ Endpoint(s): `GET/POST/DELETE /pagos-aportes`, `GET /pagos-aportes/:id/recibo`
 | ELIMINAR | Eliminar cuota de pago | DELETE | ADM, REC (si aplica) |
 | EXPORTAR | Descargar recibo | GET `/recibo` | ADM, REC, DIRM |
 
+> `finanzas.pago.editar` incluye ahora ELIMINAR también para SEC_ADMIN (anular cuota), además de RECTOR y DIR_ADMIN.
+
+### FIN - Compromiso de pago (`finanzas.compromiso.gestionar`)
+Permiso propio del compromiso de pago de una cabecera de aporte (antes se reutilizaba `finanzas.pago.editar`). Acciones: LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR. Grupo UI `fin_pagos`.
+
+| Accion | Endpoint | Permiso/Acción | Roles |
+|---|---|---|---|
+| LISTAR/DETALLE | `GET /pagos-aportes/:pagoAporteId/compromiso` | `finanzas.compromiso.gestionar` LISTAR o DETALLE (o `matricula.pago.aporte.ver` LISTAR) | RECTOR, DIR_ADMIN, SEC_ADMIN |
+| CREAR | `POST /pagos-aportes/:pagoAporteId/compromiso` | `finanzas.compromiso.gestionar` CREAR | RECTOR, DIR_ADMIN, SEC_ADMIN |
+| EDITAR | `PUT /pagos-aportes/compromiso/:id` | `finanzas.compromiso.gestionar` EDITAR | RECTOR, DIR_ADMIN, SEC_ADMIN |
+| ELIMINAR | `DELETE /pagos-aportes/compromiso/:id` | `finanzas.compromiso.gestionar` ELIMINAR | RECTOR, DIR_ADMIN |
+
+> SEC_ADMIN tiene LISTAR/DETALLE/CREAR/EDITAR del compromiso, **sin** ELIMINAR.
+
+### FIN - Pagos adicionales (`finanzas.pago.adicionales`)
+Acciones completas: LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR. Grupo UI `fin_adicionales`.
+
+| Accion | Roles |
+|---|---|
+| LISTAR | RECTOR, DIR_ADMIN, SEC_ADMIN |
+| DETALLE | RECTOR, DIR_ADMIN |
+| CREAR | RECTOR, DIR_ADMIN, SEC_ADMIN |
+| EDITAR | RECTOR, DIR_ADMIN |
+| ELIMINAR | RECTOR, DIR_ADMIN |
+
+> SEC_ADMIN solo LISTAR/CREAR de adicionales (sin DETALLE/EDITAR/ELIMINAR).
+
+### FIN - Reportes de control (becas y cuentas por cobrar)
+Permisos propios (antes ambos reportes compartían `finanzas.pago.reporte.carrera`). Grupo UI `fin_reportes`.
+
+| Permiso (codigo) | Acciones | Endpoint | Roles |
+|---|---|---|---|
+| `finanzas.beca.reporte` | LISTAR, EXPORTAR | `GET /pagos-aportes/reportes/becas-por-carrera` (LISTAR) | RECTOR, DIR_ADMIN |
+| `finanzas.cuenta-cobrar.reporte` | LISTAR, EXPORTAR | `GET /pagos-aportes/reportes/cuentas-por-cobrar` (LISTAR) | RECTOR, DIR_ADMIN |
+
+> SEC_ADMIN **no** recibe estos reportes de control.
+
 ### ACA - Académico (`/academico/*`)
 Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 
@@ -670,7 +707,7 @@ Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requi
 | Documentacion | `/configuracion/documentacion` | `configuracion.documentacion.*` |
 | Convenios | `/configuracion/convenios` | `configuracion.convenios` |
 | Historial actividades | `/configuracion/historial-actividades` | `configuracion.historial-actividades` |
-| Pagos config | `/pagos/configuracion` | `configuracion.pagos` |
+| Pagos config | `/pagos/configuracion` | `configuracion.pagos` (LISTAR/CREAR/EDITAR: RECTOR, DIR_ADMIN) |
 
 Codigos legacy `cfg.academico.*` **no** deben usarse en codigo nuevo; fueron reemplazados por `configuracion.*`.
 

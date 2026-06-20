@@ -35,6 +35,7 @@ SELECT
   ac.fecha_inicio,
   ac.fecha_fin,
   ac.carreras_ids,
+  ac.suspende_clases,
   CASE
     WHEN CURDATE() < ac.fecha_inicio THEN 'futura'
     WHEN ac.fecha_fin IS NOT NULL AND CURDATE() > ac.fecha_fin THEN 'pasada'

@@ -16,7 +16,6 @@ import {
   upsertNotaCuadernoValidator,
   guardarNotasCuadernoBimestreValidator,
   getBimestreConsolidadoValidator,
-  guardarBimestreConsolidadoValidator,
   createActividadCronogramaValidator,
   updateActividadCronogramaValidator,
   cronogramaIdValidator,
@@ -177,7 +176,7 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     verificarPermiso('academico.calificacion.cuaderno.guardar', 'EDITAR'),
   ];
 
-  /** Habilitación administrativa en bimestre cerrado (POST consolidado). */
+  /** Reabrir / cerrar (consolidar) un bimestre por curso. */
   const consolidadoAdminEditar = [
     authenticate,
     verificarPermisoCualquiera([
@@ -342,11 +341,19 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   );
 
   router.post(
-    '/asignaciones/:asignacionId/bimestre/:bimestre/consolidado',
+    '/asignaciones/:asignacionId/bimestre/:bimestre/reabrir',
     ...consolidadoAdminEditar,
-    guardarBimestreConsolidadoValidator,
+    getBimestreConsolidadoValidator,
     validateRequest,
-    (req, res, next) => controllers.guardarBimestreConsolidadoController.handle(req, res, next),
+    (req, res, next) => controllers.reabrirBimestreCursoController.handle(req, res, next),
+  );
+
+  router.post(
+    '/asignaciones/:asignacionId/bimestre/:bimestre/cerrar',
+    ...consolidadoAdminEditar,
+    getBimestreConsolidadoValidator,
+    validateRequest,
+    (req, res, next) => controllers.cerrarBimestreCursoController.handle(req, res, next),
   );
 
   router.post(

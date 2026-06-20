@@ -65,6 +65,8 @@ export const useMisCursosAsistencia = () => {
     error,
     refetch: cargar,
     breadcrumbItems,
+    // El docente entra directo a la planilla a tomar asistencia (el calendario queda
+    // como acción de administración dentro de la planilla, oculta para el docente).
     cursoPath: (cursoId) => (cursoId ? planillaCursoPath(cursoId) : '#'),
   };
 };

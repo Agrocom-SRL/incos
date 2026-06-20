@@ -134,6 +134,18 @@ const renderEstudiante = (nombre, row) => (
   <CeldaEstudiante nombre={nombre} codigo={row.codigo} />
 );
 
+/**
+ * Banda de color de la cabecera según el componente de la actividad, espejo de la
+ * paleta del export Excel (teórico verde, práctico ámbar) más el magenta reservado
+ * para la actividad especial calculada por asistencia.
+ */
+const componenteHeadClass = (ev) => {
+  if (ev?.tipoCalculo === 'ASISTENCIA') return 'cal-notas-grid__col-eval--asistencia';
+  if (ev?.componente === 'TEORICO') return 'cal-notas-grid__col-eval--teorico';
+  if (ev?.componente === 'PRACTICO') return 'cal-notas-grid__col-eval--practico';
+  return '';
+};
+
 /** Anchos fijos de identificación; el resto del ancho va al grupo bimestre. */
 const ANCHO_COL_NRO = 64;
 const ANCHO_COL_ESTUDIANTE = 340;
@@ -156,6 +168,7 @@ const NotasGrid = ({
   onGuardarBimestre,
   guardandoBimestre = false,
   mostrarGuardar = false,
+  ocultarHintAgregar = false,
   enteringColumnIds = [],
   removingColumnId = null,
 }) => {
@@ -169,6 +182,7 @@ const NotasGrid = ({
   const columnasEval = evaluaciones.map((ev) => {
     const colClass = [
       'cal-notas-grid__col-eval',
+      componenteHeadClass(ev),
       enteringColumnIds.includes(ev.id) ? 'cal-col--enter' : '',
       removingColumnId === ev.id ? 'cal-col--leave' : '',
     ]
@@ -224,7 +238,7 @@ const NotasGrid = ({
   };
 
   const columnaEspacioBimestre = {
-    title: permitirAgregar ? (
+    title: permitirAgregar && !ocultarHintAgregar ? (
       <span className="cal-notas-grid__hint-agregar">
         Presioná <PlusOutlined aria-hidden /> para agregar actividades
       </span>

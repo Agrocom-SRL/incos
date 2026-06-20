@@ -70,18 +70,11 @@ export const Licencia = sequelize.define(
                 'PENDIENTE, APROBADA (neutraliza ausencias en el rango), RECHAZADA, CANCELADA',
         },
 
-        motivoRechazo: {
-            type: DataTypes.TEXT,
-            field: 'motivo_rechazo',
-            allowNull: true,
-            comment: 'Motivo del rechazo',
-        },
-
         observacionesDecision: {
             type: DataTypes.TEXT,
             field: 'observaciones_decision',
             allowNull: true,
-            comment: 'Observaciones del decisor',
+            comment: 'Observación única de la decisión (motivo de aprobación/rechazo/cancelación)',
         },
     },
     {

@@ -56,9 +56,15 @@ export class UpsertNotaCuadernoUseCase {
       asignacionId,
     });
 
-    if (bimestreNum !== bimestreVigente) {
+    const reabierto =
+      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+        Number(asignacionId),
+        bimestreNum,
+      )) > 0;
+
+    if (bimestreNum !== bimestreVigente && !reabierto) {
       throw new ForbiddenError(
-        'Solo podés cargar notas en el bimestre vigente de la gestión.',
+        'Solo podés cargar notas en el bimestre vigente o en un bimestre reabierto.',
       );
     }
 
@@ -73,6 +79,7 @@ export class UpsertNotaCuadernoUseCase {
       evaluacionId,
       notaRaw: body?.nota,
       usuarioId,
+      reabierto,
     });
 
     this.logger.info('[Calificaciones] Nota guardada', {

@@ -1,11 +1,12 @@
 /**
- * Bimestre cerrado — resumen práctico / teórico / total (solo lectura; edición administrativa opcional).
+ * Bimestre cerrado — resumen práctico / teórico / total (solo lectura).
+ * Un administrador puede reabrirlo para editar nuevamente el cuaderno.
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Spin, Switch } from 'antd';
-import { ArrowLeftOutlined, FileExcelOutlined, SaveOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
@@ -16,7 +17,10 @@ import { useExportRegistroPedagogicoExcel } from '@application-academico/calific
 import { useBimestrePagerTeclado } from '@application-academico/calificaciones/hooks/useBimestrePagerTeclado.js';
 import { useNavegacionBimestres } from '@application-academico/calificaciones/hooks/useNavegacionBimestres.js';
 import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
-import { CALIFICACIONES_VIEW_ROUTE_KEY } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import {
+  CALIFICACIONES_VIEW_ROUTE_KEY,
+  cuadernoBimestrePath,
+} from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import CuadernoContextoPanel from '../components/CuadernoContextoPanel.jsx';
 import BimestreConsolidadoSeparador from '../components/BimestreConsolidadoSeparador.jsx';
@@ -34,15 +38,9 @@ const hojaCardProps = {
   },
 };
 
-const normalizarComponente = (v) => {
-  if (v == null || v === '') return 0;
-  const n = Number(v);
-  return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
-};
-
 const BimestreConsolidadoPage = () => {
   const navigate = useNavigate();
-  const { notification } = App.useApp();
+  const { notification, modal } = App.useApp();
   const { contextName: docenteNombreCoordinacion } = useRouteViewMode(CALIFICACIONES_VIEW_ROUTE_KEY);
   const ajusteAdmin = useAcciones(CALIFICACIONES_PERMISOS.bimestreAjusteAdmin);
   const puedeEdicionAdmin = ajusteAdmin.puedeEditar;
@@ -65,7 +63,7 @@ const BimestreConsolidadoPage = () => {
     volverPath,
     cursoId,
     esVistaCoordinacion,
-    guardarConsolidado,
+    reabrirBimestre,
   } = useBimestreConsolidado();
 
   const { exportar: exportarRegistroPedagogico, loading: exportandoExcel } =
@@ -91,9 +89,7 @@ const BimestreConsolidadoPage = () => {
   });
 
   const [busquedaEstudiante, setBusquedaEstudiante] = useState('');
-  const [modoAdmin, setModoAdmin] = useState(false);
-  const [valoresEdit, setValoresEdit] = useState({});
-  const [guardando, setGuardando] = useState(false);
+  const [reabriendo, setReabriendo] = useState(false);
 
   const estudiantesFiltrados = useMemo(() => {
     const q = busquedaEstudiante.trim().toLowerCase();
@@ -106,100 +102,43 @@ const BimestreConsolidadoPage = () => {
     });
   }, [estudiantes, busquedaEstudiante]);
 
-  const handleCambioComponente = useCallback((estudianteId, campo, valor) => {
-    setValoresEdit((prev) => ({
-      ...prev,
-      [estudianteId]: {
-        ...prev[estudianteId],
-        [campo]: valor,
-      },
-    }));
-  }, []);
-
-  const handleToggleAdmin = useCallback((checked) => {
-    setModoAdmin(checked);
-    if (!checked) setValoresEdit({});
-  }, []);
-
-  const hayCambios = useMemo(() => Object.keys(valoresEdit).length > 0, [valoresEdit]);
-
-  const handleGuardar = useCallback(async () => {
-    const filas = estudiantes
-      .map((e) => {
-        const edit = valoresEdit[e.id];
-        if (!edit) return null;
-        const patch = { estudianteId: e.id };
-        if (edit.teorico !== undefined) {
-          patch.teorico = normalizarComponente(edit.teorico);
-        }
-        if (edit.practico !== undefined) {
-          patch.practico = normalizarComponente(edit.practico);
-        }
-        if (patch.teorico === undefined && patch.practico === undefined) return null;
-
-        const origT =
-          e.habilitacionTeorico != null
-            ? normalizarComponente(e.habilitacionTeorico)
-            : normalizarComponente(e.notaTeorico ?? e.teorico);
-        const origP =
-          e.habilitacionPractico != null
-            ? normalizarComponente(e.habilitacionPractico)
-            : normalizarComponente(e.notaPractico ?? e.practico);
-        if (
-          (patch.teorico === undefined || patch.teorico === origT) &&
-          (patch.practico === undefined || patch.practico === origP)
-        ) {
-          return null;
-        }
-        return patch;
-      })
-      .filter(Boolean);
-
-    if (filas.length === 0) {
-      notification.info({
-        title: 'Sin cambios',
-        description: 'No hay notas modificadas para guardar.',
-      });
-      return;
-    }
-
-    const fueraDeRango = filas.some(
-      (f) =>
-        (f.teorico != null && (f.teorico > cuotaTeorico || f.teorico < 0)) ||
-        (f.practico != null && (f.practico > cuotaPractico || f.practico < 0)),
-    );
-    if (fueraDeRango) {
-      notification.error({
-        title: 'Notas fuera de cuota',
-        description: `Teórico ≤ ${cuotaTeorico}, práctico ≤ ${cuotaPractico}. Corregí las celdas en rojo.`,
-      });
-      return;
-    }
-
-    setGuardando(true);
+  const handleReabrir = useCallback(async () => {
+    setReabriendo(true);
     try {
-      await guardarConsolidado(filas);
-      setValoresEdit({});
+      await reabrirBimestre();
       notification.success({
-        title: 'Consolidado guardado',
-        description: 'Se registró la habilitación del bimestre y se actualizó la nota final del curso.',
+        title: 'Bimestre reabierto',
+        description: 'El bimestre quedó abierto para editar el cuaderno.',
       });
+      navigate(cuadernoBimestrePath(cursoId, bimestreActivo));
     } catch (err) {
       notification.error({
-        title: 'Error al guardar',
+        title: 'No se pudo reabrir el bimestre',
         description: typeof err?.message === 'string' ? err.message : 'Reintentá en unos segundos.',
       });
-    } finally {
-      setGuardando(false);
+      setReabriendo(false);
     }
-  }, [
-    estudiantes,
-    valoresEdit,
-    cuotaTeorico,
-    cuotaPractico,
-    guardarConsolidado,
-    notification,
-  ]);
+  }, [reabrirBimestre, notification, navigate, cursoId, bimestreActivo]);
+
+  const handleToggleReabrir = useCallback(
+    (checked) => {
+      if (!checked) return;
+      modal.confirm({
+        title: 'Reabrir bimestre',
+        okText: 'Reabrir',
+        cancelText: 'Cancelar',
+        content: (
+          <span>
+            El bimestre quedará <strong>abierto para edición</strong>: el docente podrá modificar
+            evaluaciones y notas del cuaderno de {bimestreTitulo}. Deberás cerrarlo nuevamente para
+            consolidarlo.
+          </span>
+        ),
+        onOk: handleReabrir,
+      });
+    },
+    [modal, bimestreTitulo, handleReabrir],
+  );
 
   const tituloHeader = (
     <Flex align="center" wrap="wrap" gap={8} className="cal-cuaderno-page-title">
@@ -249,7 +188,7 @@ const BimestreConsolidadoPage = () => {
         bimestreTitulo={bimestreTitulo}
         bimestreActivo={bimestreActivo}
         bimestreVigente={bimestreVigente}
-        modoEdicion={modoAdmin}
+        modoEdicion={false}
         esVistaCoordinacion={esVistaCoordinacion}
         docenteNombre={docenteNombreCoordinacion}
       />
@@ -265,21 +204,16 @@ const BimestreConsolidadoPage = () => {
       className="cal-bimestre-consolidado-toolbar"
     >
       <Flex align="center" gap={8}>
-        <Switch checked={modoAdmin} onChange={handleToggleAdmin} aria-label="Modo edición administrativa" />
+        <Switch
+          checked={reabriendo}
+          loading={reabriendo}
+          onChange={handleToggleReabrir}
+          aria-label="Reabrir bimestre para editar el cuaderno"
+        />
         <span className="cal-bimestre-consolidado-toolbar__label">
-          Edición administrativa (registra habilitación teórico / práctico)
+          Reabrir bimestre para editar el cuaderno
         </span>
       </Flex>
-      {modoAdmin && hayCambios ? (
-        <Button
-          type="primary"
-          icon={<SaveOutlined />}
-          loading={guardando}
-          onClick={handleGuardar}
-        >
-          Guardar consolidado
-        </Button>
-      ) : null}
     </Flex>
   ) : null;
 
@@ -301,15 +235,13 @@ const BimestreConsolidadoPage = () => {
           bimestreTitulo={bimestreTitulo}
           cuotaTeorico={cuotaTeorico}
           cuotaPractico={cuotaPractico}
-          soloLectura={!modoAdmin}
-          valoresEdit={valoresEdit}
-          onCambioComponente={modoAdmin ? handleCambioComponente : undefined}
+          soloLectura
           evaluacionesCount={evaluaciones.length}
         />
         <p className="cal-bimestre-consolidado-leyenda" role="note">
-          Se muestra habilitación si existe; si no, la nota bimestral del cuaderno. Al guardar en modo
-          administrativo se registran puntos de habilitación y se actualiza la nota cerrada del bimestre
-          (máx. {cuotaPractico + cuotaTeorico} pts = práctico + teórico).
+          Consolidado de solo lectura del bimestre cerrado (máx. {cuotaPractico + cuotaTeorico} pts =
+          práctico + teórico). Un administrador puede reabrirlo para que el docente vuelva a editar el
+          cuaderno.
         </p>
       </div>
     </Card>

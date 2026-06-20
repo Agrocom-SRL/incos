@@ -62,11 +62,8 @@ export class CalendarActivityMapper {
     if ('fechaFin' in dataValues && dataValues.fechaFin !== undefined) {
       specificFields.endDate = dataValues.fechaFin ?? null;
     }
-    if ('esTodoElDia' in dataValues && dataValues.esTodoElDia !== undefined) {
-      specificFields.isAllDay = Boolean(dataValues.esTodoElDia);
-    }
-    if ('horario' in dataValues && dataValues.horario !== undefined) {
-      specificFields.schedule = dataValues.horario ?? null; // JSON puede venir como objeto o string
+    if ('suspendeClases' in dataValues && dataValues.suspendeClases !== undefined) {
+      specificFields.suspendsClasses = Boolean(dataValues.suspendeClases);
     }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -99,8 +96,7 @@ export class CalendarActivityMapper {
       carrerasIds: data.careerIds ?? null, // Sequelize manejará la conversión a JSON
       fechaInicio: data.startDate,
       fechaFin: data.endDate ?? null,
-      esTodoElDia: data.isAllDay !== undefined ? data.isAllDay : true,
-      horario: data.schedule ?? null, // Sequelize manejará la conversión a JSON
+      suspendeClases: data.suspendsClasses !== undefined ? data.suspendsClasses : false,
     };
   }
 
@@ -143,11 +139,8 @@ export class CalendarActivityMapper {
     if ('endDate' in data) {
       updateData.fechaFin = data.endDate ?? null;
     }
-    if ('isAllDay' in data) {
-      updateData.esTodoElDia = data.isAllDay;
-    }
-    if ('schedule' in data) {
-      updateData.horario = data.schedule ?? null;
+    if ('suspendsClasses' in data) {
+      updateData.suspendeClases = data.suspendsClasses;
     }
 
     // Campos base (active/activo)
