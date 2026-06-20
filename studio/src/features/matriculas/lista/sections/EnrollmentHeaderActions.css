@@ -22,7 +22,7 @@
 }
 
 /* Móvil: el select ocupa el ancho disponible en lugar de un mínimo fijo. */
-@media (max-width: 639px) {
+@container content (max-width: 640px) {
   .mat-export-select {
     min-width: 0;
     flex: 1 1 100%;

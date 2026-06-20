@@ -1,5 +1,5 @@
-/* Listado de inscripciones — estilos de nivel PÁGINA (el resto está co-locado con
-   cada sección/componente: KPIs, chips, header-actions, data-view, card, etc.). */
+/* ListPage — estilos de nivel PÁGINA del molde de listado (el resto está co-locado
+   con cada sección: KPIs, chips, filtros, data-view, skeleton). */
 .mat-page {
   max-width: 1680px; /* legibilidad en monitores XXL */
   margin: 0 auto;
@@ -13,7 +13,7 @@
   padding: 14px 18px;
 }
 
-@media (max-width: 575px) {
+@container content (max-width: 640px) {
   .mat-toolbar {
     padding: var(--space-md) var(--space-md);
   }

@@ -47,7 +47,9 @@
   white-space: nowrap;
 }
 
-@media (max-width: 767px) {
+/* Content estrecho: el search ocupa toda la fila y los filtros wrapean debajo.
+   Escala: md=768. */
+@container content (max-width: 768px) {
   .mat-toolbar__search {
     flex: 1 1 100%;
     max-width: none;

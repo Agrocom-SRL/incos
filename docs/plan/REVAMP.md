@@ -122,6 +122,24 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       Build: ✓ 51.90s. Lint: exit 0, 0 errores en 19 archivos WS-B. RBAC: application/navigation/ sin diff.
       Observacion menor: bell-tilt usa 0.35s literal (no hay --dur-bell token) en mv2.css y app-topbar.css.
 - [ ] Fase 5: migración módulo a módulo.
+- [x] studio/ Fase A — responsive por contenedor (container queries). COMPLETADO (2026-06-20).
+      NUEVO design-system/tokens/breakpoints.js (escala única xs480/sm640/md768/lg1024/xl1280)
+      en el barrel; .ds-shell__content con container-type:inline-size + container-name:content;
+      grids de matrículas migrados @media(viewport)→@container content(ancho del content); drawer
+      767 sigue @media (sidebar fixed al window). Cleanup post-gate: 3 @media off-scale normalizados
+      a la escala vía @container (ListPage.css 575→640, BulkActionsBar.css 767→768,
+      EnrollmentHeaderActions.css 639→640). Build ✓ 6.59s · Lint exit 0.
+- [x] studio/ Fase B — template ListPage parametrizado + Matrículas a config. COMPLETADO (2026-06-20).
+      NUEVO ui/templates/ListPage/ (ListPage/useListPage/ListKpiRow/ListFacets/ListFilterBar/
+      ListDataView/ListSkeleton + CSS) generaliza 1:1 useEnrollmentsList; config declarativa +
+      slots headerActions/cardRender/rowActions/bulkActions/skeleton. Matrículas = consumidor
+      delgado (enrollments.config.jsx); useEnrollmentsList y secciones viejas eliminadas; viewMode
+      unificado 'table'|'card'. Build ✓ 6.43s · Lint exit 0.
+- [x] studio/ Fase C — nav por dominio (4 grupos) + menú completo. COMPLETADO (2026-06-20).
+      navigation.js: 1→4 secciones (main/academicMgmt/financeReports/system), 37 ítems hoja;
+      i18n es/en con labels de sección + todas las keys nuevas (keys muertas limpiadas); 37 rutas
+      explícitas a PlaceholderPage en router.jsx (enrollments→ListPage); Sidebar.jsx sin cambios.
+      Build ✓ 6.58s · Lint exit 0.
 - [x] Fase 1B WS-D: plantillas ABM + estados compartidos. COMPLETADO (2026-06-19).
       ADITIVO (no se migró ninguna page; eso es WS-F). Estados base: atoms/Skeleton.jsx
       (variant rows|grid|detail|form, wrapper sobre AntD Skeleton, sin motion JS);
@@ -154,6 +172,114 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       archivos tocados (604 total = 534+70 pre-existentes sin cambio).
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
+
+- 2026-06-20 — **Orquestador: cierre plan studio (Fases A+B+C) — APROBADO.** Plan único por fases
+  (eventual-napping-deer.md) ejecutado y cerrado. arquitecto fijó el contrato del template ListPage
+  (shape de config + firmas de slots + 8 riesgos de regresión); frontend ejecutó Fase A y Fase C en
+  paralelo (file sets disjuntos) y Fase B después con el contrato. Compuertas: revisor-ui
+  APROBADO_CON_OBSERVACIONES (paridad + estados + motion + reflow @container) y verificador
+  APROBADO_CON_OBSERVACIONES (lint 0, build 0, dataKey↔accessor 0 desajustes, i18n es+en sin
+  faltantes, AntD6 limpio, router sin rutas rotas). Único issue material de ambos gates (3 @media
+  off-scale 575/767/639) RESUELTO → @container content de la escala (640/768/640); re-verificado
+  lint exit 0 / build ✓ 6.59s. Deudas baja restantes (px 14/18 paridad mv2, ErrorState margin
+  inline) = tokenización pendiente, no bloqueantes. 0 cambios de schema/SQL (mock-first). Sin commits.
+
+- 2026-06-20 — **Verificador: studio/ Fases A+B+C — APROBADO_CON_OBSERVACIONES.** Lint exit 0,
+  build exit 0 / 6.56 s / 5239 módulos. dataKey↔accessor: 0 desajustes (todos los campos de
+  adaptEnrollment.js cubiertos en config/columns/card). i18n: 44 labelKeys nav.* + 23 enrollments.*
+  + common.results/showing en es+en, 0 faltantes. AntD6: 0 props deprecadas. Router: 37 rutas
+  explícitas + catch-all al final, 0 rotas. ISSUE-1 (media) ListPage.css @media(575) → 640 RESUELTO
+  por orquestador. ISSUE-2/3 (baja) px 14/18 = deuda de tokenización conocida. 0 cambios de schema.
+
+- 2026-06-20 — **revisor-ui (gate paridad): studio/ Matrículas → ListPage — APROBADO_CON_OBSERVACIONES.** Paridad visual intacta (orden canónico PageHeader→KpiRow→Facets→ErrorState→.mat-toolbar→DataView; clases .mat-* conservadas; KPIs/chips/search/segmented/select/toggle/bulk/paginación = mv2). viewMode UNIFICADO a 'table'|'card' en las 3 capas (useListPage/ListFilterBar/ListDataView/ListSkeleton) — el riesgo crítico del arquitecto (skeleton tabla en vista tarjeta) NO existe (ListDataView pasa el mismo valor al skeleton). Motion motivado y gateado en 3 capas: stagger KPIs+grid, presenceSwap del DataView (key=data-${viewMode} fuerza animación de swap de vista), presenceWait bulk↔contador, shimmer con @media prefers-reduced-motion; todos reduce?undefined:variants. Reflow por @container content (escala 1024/768/640) sobre .ds-shell__content (container-type:inline-size); feature CSS sin @container propio (centralizado en template); drawer 767 sigue @media (correcto). Estados vacío/carga/error completos; ErrorState AntD6 title=/description=. 0 hex, 0 font-size literal. OBSERVACIONES: (media) 3 @media fuera de escala — BulkActionsBar.css:29 (767→768), EnrollmentHeaderActions.css:25 (639→640), ListPage.css:16 (575→640), no migrados en Fase A; (baja) px sueltos de paridad mv2 (18/14 16/10px) en ListDataView.css/ListPage.css/BulkActionsBar.css = deuda de tokenización conocida; (baja) ErrorState margin inline → mover a CSS. No bloqueante.
+
+- 2026-06-20 — **studio/ Fase B — template ListPage parametrizado + Matrículas a
+  consumidor de config.** Ejecutado al pie del CONTRATO del arquitecto (entrada
+  Arquitecto-ListPage). NUEVO `src/ui/templates/ListPage/`: `useListPage.js`
+  (generaliza 1:1 useEnrollmentsList — fetch/adapt, KPIs por selectores, facetas por
+  accessor, search por campos, filtros declarativos con predicate, paginación,
+  selección, viewMode; bulk/export = no-ops console; hasFilters/clearFilters por
+  defaultValue), `ListKpiRow.jsx` (sobre KpiCard, stagger gateado), `ListFacets.jsx`
+  (sobre Chip atom), `ListFilterBar.jsx` (search + filtros segmented/select + toggle
+  vista + swap bulk↔contador con presenceWait gateado), `ListDataView.jsx` (skeleton↔
+  EmptyState↔table/card con AnimatePresence popLayout gateado + CardGrid genérico con
+  stagger + footer/paginación), `ListSkeleton.jsx` (co-locado en el template),
+  `ListPage.jsx` (orquesta useListPage + compone en ORDEN canónico PageHeader→
+  ListKpiRow→ListFacets→ErrorState(fuera de la toolbar)→.mat-toolbar(ListFilterBar)→
+  ListDataView; slots headerActions/cardRender/rowActions(objeto único compartido por
+  columns y cardRender)/bulkActions/facetsRender/skeleton; JSDoc del shape de config),
+  + CSS co-locado por componente conservando clases `.mat-*` y las reglas `@container
+  content` de Fase A EXACTAS (ListKpiRow.css/ListFacets.css/ListFilterBar.css/
+  ListDataView.css/ListSkeleton.css/ListPage.css). **viewMode UNIFICADO a 'table'|'card'**
+  en Segmented/DataView/skeleton (antes mv2 emitía 'grid' suelto; el skeleton ahora
+  recibe y comprueba el mismo valor). ListPage NO importa nada de @features (acoplamiento
+  prohibido); lo específico entra por slots. Matrículas → consumidor: NUEVO
+  `enrollments.config.jsx` (breadcrumbs factory(t) con icono, titleKey/subtitleKey/
+  headerI18nParams, fetch/adapt/getRowKey, kpis con selectores total/returning/news/
+  pending, facets{accessor:r=>r.career}, search 3 campos, filters tipo(segmented)+
+  history(select), views ['table','card'], columns:buildColumns); `EnrollmentsListPage.jsx`
+  reescrito DELGADO (<ListPage config + slots headerActions/cardRender(StudentCard)/
+  rowActions(objeto noop único)/bulkActions(BulkActionsBar)>). i18n: añadida `common.results`
+  es/en (default genérico del contador; Matrículas sigue usando enrollments.filters.results
+  vía resultsLabelKey → 0 cambio visual). ELIMINADOS (verificado por grep que nadie los
+  importa): useEnrollmentsList.js, FilterToolbar.jsx/.css, EnrollmentsListPage.css,
+  sections/{EnrollmentKpis,CareerChips,EnrollmentDataView}.jsx+css, StudentCardGrid.jsx/.css,
+  ListSkeleton.jsx/.css (feature; el del template cubre). CONSERVADOS sin cambio de render:
+  StudentCard, BulkActionsBar, EnrollmentHeaderActions, EnrollmentActions, StudentCell,
+  AdmissionTypeTag, buildColumns, historyStates, pagoStatus, careerColor, adaptEnrollment,
+  enrollments.api. enrollments.config debió ser .jsx (contiene JSX en breadcrumbs/iconos).
+  Build ✓ 6.42s · Lint exit 0 (0 nuevos). NO se tocó navigation.js, nav.js, router.jsx,
+  AppShell.css, breakpoints.js ni frontend/ legacy. Criterio de aceptación: Matrículas
+  idéntica (KPIs, chips, search, segmented tipo, select historial, toggle table↔card, bulk,
+  paginación, loading/empty/error) pero nace de config; un 2º listado = otro *.config.jsx.
+
+- 2026-06-20 — **studio/ Fase C — nav por dominio (4 grupos) + menú completo.**
+  `config/navigation.js` reestructurado de 1 sección (`nav.main` monolítica) a **4 grupos**
+  con el mismo shape `{ sectionKey, items:[NavItem] }`: `nav.main` (Dashboard), `nav.academicMgmt`
+  (Matrícula·Académico·Docentes·Institucional), `nav.financeReports` (Finanzas·Reportes),
+  `nav.system` (Configuración·Seguridad·Mi perfil). Children completados al menú real (37 ítems
+  hoja); `defaultOpen:true` solo en Matrícula; `Mi perfil` como ítem suelto sin children. Iconos
+  reutilizados + nuevos de `@ant-design/icons` (RiseOutlined, SwapOutlined, NodeIndexOutlined,
+  ExperimentOutlined, AuditOutlined, FileProtectOutlined, PlusCircleOutlined, FallOutlined,
+  FileSearchOutlined, FileTextOutlined, ClockCircleOutlined, DatabaseOutlined, ShopOutlined,
+  ProfileOutlined, UserOutlined). i18n es/en (`lib/i18n/locales/{es,en}/nav.js`): añadidos labels
+  de sección (academicMgmt/financeReports/system) y TODAS las keys nuevas; limpiadas keys muertas
+  (subjects, teachersCoordination, teacherAssignment, financeSettings, generalConfig,
+  newRegistration). Cada `labelKey` de navigation.js verificada en ambos idiomas. Router
+  (`app/router.jsx`): registradas EXPLÍCITAMENTE las 37 rutas → `PlaceholderPage` (excepto
+  `enrollments`→EnrollmentsListPage y el index Navigate); rutas relativas; catch-all `*` al final.
+  Sidebar.jsx SIN cambios (ya iteraba N secciones, pinta `section.sectionKey`, oculta label en
+  collapsed; separación de grupos vía `.ds-sidebar__group + .ds-sidebar__group { margin-top:
+  var(--space-md) }`). Cero hex/px/fontSize sueltos nuevos. Build ✓ 6.58s · Lint exit 0. No se
+  tocó Fase A/B ni frontend/ legacy.
+
+- 2026-06-20 — **studio/ — Fase A: responsive por contenedor (container queries).** Nueva
+  escala única de breakpoints `design-system/tokens/breakpoints.js` ({xs:480,sm:640,md:768,
+  lg:1024,xl:1280}) + barrel; JSDoc documenta que CSS no lee var() dentro de @container/@media,
+  por eso los .css repiten el número pero SIEMPRE de la escala (prohibido 1199/639/575 sueltos).
+  `.ds-shell__content` ahora es `container-type: inline-size; container-name: content` → los grids
+  internos reaccionan al ancho del content (al colapsar el sidebar reflowen, antes miraban el
+  viewport). Migrado @media (viewport) → @container content (ancho del content) en Matrículas con
+  mapeo a la escala: 1199→1024(lg), 639/575→640(sm), 767→768(md). Archivos: AppShell.css (padding
+  del content + media→container 768), EnrollmentKpis.css (4→2→1 cols vía lg/sm), StudentCardGrid.css
+  (auto-fill/minmax intacto; 1 col en sm; 575 normalizado a 640), FilterToolbar.css (search full-row
+  en md), EnrollmentDataView.css (tabla scroll-x en md). Drawer (767) sigue @media en useMobileNav/
+  useMediaQuery/Sidebar.css (sidebar es position:fixed al window → manda el viewport). 0 hex/px/
+  fontSize sueltos nuevos (única excepción: números de breakpoint, todos de la escala). Build ✓ 7.00s
+  · Lint exit 0, 0 nuevos. Sin regresión visual: mismo reflow, ahora reactivo al content.
+
+- 2026-06-20 — **Arquitecto: CONTRATO del template ListPage (studio/, Fase B del plan
+  eventual-napping-deer).** Solo lectura, sin código. Ubicación confirmada SIN colisión:
+  src/ui/templates/ListPage/ (hermano de AppShell; ListPage NO existe aún). Contrato
+  fijado: useListPage(config) generaliza 1:1 useEnrollmentsList (mismas props de retorno),
+  ListPage.jsx orquesta (PageHeader + ListKpiRow + ListFacets + ListFilterBar en wrapper
+  .mat-toolbar + ListDataView), config declarativa { fetch, adapt, getRowKey, kpis[select],
+  facets{accessor}, search{fields}, filters[predicate], views, columns(factory t,handlers) }
+  + slots de escape (headerActions/cardRender/rowActions/bulkActions/facetsRender). Matrículas
+  queda como enrollments.config.js + EnrollmentsListPage.jsx delgado. Riesgo crítico señalado:
+  el viewMode usa valor 'grid' en FilterToolbar pero 'table' vs no-table en DataView/Skeleton
+  (mantener el mismo desajuste); clases .mat-* conservadas tal cual (CSS co-locado) para 0
+  regresión visual. Entregado al orquestador para que frontend lo ejecute al pie de la letra.
 
 - 2026-06-20 — **studio/ — fix layout (CSS co-locado) + pase responsive.** El listado se
   "desformó" (KPIs apilados, grilla perdida) porque la reescritura de la página dejó fuera

@@ -1,4 +1,5 @@
 /** Barrel de tokens primitivos del design-system. */
+export { breakpoints } from './breakpoints';
 export { motion } from './motion';
 export { spacing } from './spacing';
 export { radii } from './radii';

@@ -111,9 +111,29 @@
   padding: 14px 16px;
 }
 
-/* Móvil: la tabla scrollea horizontalmente en lugar de aplastarse. */
-@media (max-width: 767px) {
+/* Content estrecho: la tabla scrollea horizontalmente en lugar de aplastarse.
+   Escala: md=768. */
+@container content (max-width: 768px) {
   .mat-table .ant-table-content > table {
     min-width: 760px;
+  }
+}
+
+/* --- Grid de tarjetas — auto-fill: 1 col en móvil → varias en monitores XXL. --- */
+.mat-grid {
+  padding: var(--space-lg);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+/* Content estrecho: 1 columna. El auto-fill/minmax de arriba ya es intrínsecamente
+   responsivo (1→N cols según el ancho del content); este @container solo fuerza la
+   columna única y ajusta el padding en el quiebre más estrecho.
+   Breakpoint 575 normalizado a la escala → sm=640. */
+@container content (max-width: 640px) {
+  .mat-grid {
+    padding: var(--space-md);
+    grid-template-columns: 1fr;
   }
 }

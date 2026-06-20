@@ -1,4 +1,4 @@
-/* Fila de chips de carrera (envuelve en pantallas angostas). */
+/* Fila de chips de faceta (envuelve en pantallas angostas). */
 .mat-chips {
   display: flex;
   gap: var(--space-sm);

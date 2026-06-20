@@ -1,11 +1,14 @@
 /**
  * ListSkeleton — esqueleto de carga del listado, con lenguaje mv2 (shimmer).
- * Render puro: filas para la vista de tabla, tarjetas para la vista de grid.
+ * Render puro: filas para la vista de tabla, tarjetas para la vista de tarjetas.
+ *
+ * Vocabulario de vista UNIFICADO a 'table' | 'card': muestra tarjetas cuando
+ * viewMode === 'card' (mismo valor que comprueba ListDataView/ListFilterBar).
  */
 import './ListSkeleton.css';
 
 export function ListSkeleton({ viewMode = 'table', count = 8 }) {
-  if (viewMode === 'grid') {
+  if (viewMode === 'card') {
     return (
       <div className="mat-skeleton-grid">
         {Array.from({ length: count }).map((_, i) => (

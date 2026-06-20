@@ -45,7 +45,8 @@
   }
 }
 
-@media (max-width: 575px) {
+/* Content estrecho: 1 columna. Escala: sm=640. */
+@container content (max-width: 640px) {
   .mat-skeleton-grid {
     padding: var(--space-md);
     grid-template-columns: 1fr;

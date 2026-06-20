@@ -1,43 +1,75 @@
 /** Navegación lateral — textos en español. Keys en inglés (identificador técnico). */
 export const nav = {
+  // Secciones (labels de grupo del sidebar)
   main: 'Principal',
+  academicMgmt: 'GESTIÓN ACADÉMICA',
+  financeReports: 'FINANZAS Y REPORTES',
+  system: 'SISTEMA',
+
   dashboard: 'Dashboard',
 
+  // Matrícula
   enrollment: 'Matrícula',
+  newStudent: 'Nuevo estudiante',
+  admission: 'Admisión',
   registrations: 'Inscripciones',
-  newRegistration: 'Nueva inscripción',
-
-  academic: 'Académico',
-  subjects: 'Materias',
-  grades: 'Calificaciones',
-  attendance: 'Asistencia',
-  academicHistory: 'Historial',
-
-  teachers: 'Docentes',
-  teachersList: 'Lista de docentes',
-  teachersCoordination: 'Coordinación',
-
-  finance: 'Finanzas',
-  payments: 'Pagos',
+  contributions: 'Aportes',
   scholarships: 'Becas',
-  financeReports: 'Reportes',
-  financeSettings: 'Configuración',
+  internships: 'Pasantías',
 
+  // Académico
+  academic: 'Académico',
+  attendance: 'Asistencia',
+  grades: 'Calificaciones',
+  leveling: 'Nivelaciones',
+  transfers: 'Traspasos',
+  transitability: 'Transitabilidad',
+  academicHistory: 'Historial',
+  academicProgress: 'Avance académico',
+
+  // Docentes
+  teachers: 'Docentes',
+  teachersList: 'Docentes',
+  teacherLeaves: 'Licencias docentes',
+  supervision: 'Supervisión',
+  teacherInternships: 'Pasantías docentes',
+
+  // Institucional
   institutional: 'Institucional',
   currentTerm: 'Gestión actual',
   academicOffer: 'Oferta académica',
-  teacherAssignment: 'Asignación docente',
   schedules: 'Gestión de horarios',
+  pastTerms: 'Gestiones pasadas',
 
+  // Finanzas
+  finance: 'Finanzas',
+  payments: 'Pagos',
+  additionalPayments: 'Pagos adicionales',
+  paymentReports: 'Reportes de pagos',
+  paymentSettings: 'Config. de pagos',
+
+  // Reportes
   reports: 'Reportes',
+  reportProgress: 'Avance académico',
+  reportAttendance: 'Asistencia',
+  reportDropout: 'Deserción',
+  reportRequests: 'Solicitudes',
 
+  // Configuración
+  settings: 'Configuración',
+  academicConfig: 'Académico',
+  documentation: 'Documentación',
+  complementaryData: 'Datos complementarios',
+  companiesAgreements: 'Empresas y convenios',
+  activityHistory: 'Historial de actividad',
+
+  // Seguridad
   security: 'Seguridad',
   users: 'Usuarios',
   rolesPermissions: 'Roles y permisos',
 
-  settings: 'Configuración',
-  academicConfig: 'Académico',
-  generalConfig: 'General',
+  // Mi perfil
+  myProfile: 'Mi perfil',
 };
 
 export default nav;

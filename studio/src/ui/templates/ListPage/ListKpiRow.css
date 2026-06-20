@@ -6,15 +6,15 @@
   margin-bottom: var(--space-xl);
 }
 
-/* Tablet / desktop angosto: 2 columnas */
-@media (max-width: 1199px) {
+/* Content angosto (sidebar expandido o tablet): 2 columnas. Escala: lg=1024. */
+@container content (max-width: 1024px) {
   .mat-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Móvil: 1 columna */
-@media (max-width: 639px) {
+/* Content estrecho (móvil): 1 columna. Escala: sm=640. */
+@container content (max-width: 640px) {
   .mat-kpis {
     grid-template-columns: 1fr;
     gap: var(--space-md);
