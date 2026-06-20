@@ -17,10 +17,18 @@
  */
 
 import { ConfigProvider, App as AntApp, theme as antTheme } from 'antd';
+import esES from 'antd/locale/es_ES';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import { initStyles } from '@theme/init';
 import { buildAntdTheme } from '@theme/buildAntdTheme';
 import { ThemeProvider, useTheme } from '@presentation/hooks/useTheme';
 import AppRouter from '@components-router/AppRouter';
+
+// Locale global en español: AntD (textos de DatePicker/Today/etc.) + dayjs (nombres de
+// días y meses de TODOS los DatePicker). Antes solo se fijaba dentro de un hook del
+// dashboard, así que el idioma dependía del orden de carga de módulos.
+dayjs.locale('es');
 
 // Inicializar variables CSS legacy (injectCSSVariables) y estilos.
 // La llamada sigue siendo necesaria: los módulos no migrados leen --color-* de JS.
@@ -40,7 +48,7 @@ function AppConfigProvider({ children }) {
   };
 
   return (
-    <ConfigProvider theme={antdTheme}>
+    <ConfigProvider theme={antdTheme} locale={esES}>
       <AntApp>{children}</AntApp>
     </ConfigProvider>
   );

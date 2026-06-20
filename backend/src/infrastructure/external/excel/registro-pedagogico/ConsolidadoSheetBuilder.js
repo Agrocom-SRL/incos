@@ -20,7 +20,7 @@
  */
 
 import { EXCEL_COLOR, EXCEL_FONT_SIZE } from '../shared/index.js';
-import { L, MARCA_ANULADA } from './registroPedagogicoColumnMap.js';
+import { L } from './registroPedagogicoColumnMap.js';
 
 export class ConsolidadoSheetBuilder {
   /**
@@ -190,21 +190,11 @@ export class ConsolidadoSheetBuilder {
         align: 'left'
       });
 
-      // Notas administrativas (habilitación) por componente: si existen, las
-      // actividades de ese componente quedan anuladas (marca «—») y su promedio
-      // pasa a regirse por la habilitación. null = el docente calcula normal.
-      const habPract = est.habilitacion_practico;
-      const habTeo = est.habilitacion_teorico;
-
       (est.notas_practicas ?? []).forEach((nota, i) => {
-        c.cell(row, cols.colPractStart + i, habPract != null ? MARCA_ANULADA : (nota ?? 0), {
-          fill: zebra
-        });
+        c.cell(row, cols.colPractStart + i, nota ?? 0, { fill: zebra });
       });
       (est.notas_teoricas ?? []).forEach((nota, i) => {
-        c.cell(row, cols.colTeoStart + i, habTeo != null ? MARCA_ANULADA : (nota ?? 0), {
-          fill: zebra
-        });
+        c.cell(row, cols.colTeoStart + i, nota ?? 0, { fill: zebra });
       });
 
       if (!hayEvaluaciones) {
@@ -226,15 +216,10 @@ export class ConsolidadoSheetBuilder {
         return;
       }
 
-      // Promedio = SUMA de las notas del componente (sin multiplicar). Si hay nota
-      // administrativa, el promedio es la habilitación (literal) y las actividades
-      // anuladas no se cuentan como "no presentadas". Literal 0 si el componente no
-      // tiene evaluaciones ni habilitación.
-      const pintarComponente = ({ hab, numEvals, promCol, noCol, rangeFn, fillProm }) => {
-        if (hab != null) {
-          c.cell(row, promCol, hab, { bold: true, fill: fillProm });
-          c.cell(row, noCol, 0, { fill: zebra });
-        } else if (numEvals > 0) {
+      // Promedio del componente = SUMA de las notas de sus actividades (sin
+      // multiplicar). Literal 0 si el componente no tiene evaluaciones.
+      const pintarComponente = ({ numEvals, promCol, noCol, rangeFn, fillProm }) => {
+        if (numEvals > 0) {
           c.formula(row, promCol, `SUM(${rangeFn(row)})`, { bold: true, fill: fillProm });
           c.formula(row, noCol, `COUNTIF(${rangeFn(row)},0)`, { fill: zebra });
         } else {
@@ -243,7 +228,6 @@ export class ConsolidadoSheetBuilder {
         }
       };
       pintarComponente({
-        hab: habPract,
         numEvals: practicas.length,
         promCol: cols.colPromPract,
         noCol: cols.colNoPract,
@@ -251,7 +235,6 @@ export class ConsolidadoSheetBuilder {
         fillProm: EXCEL_COLOR.practicas
       });
       pintarComponente({
-        hab: habTeo,
         numEvals: teoricas.length,
         promCol: cols.colPromTeo,
         noCol: cols.colNoTeo,

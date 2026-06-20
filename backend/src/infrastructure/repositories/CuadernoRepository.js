@@ -201,9 +201,6 @@ export class CuadernoRepository extends ICuadernoRepository {
         bm.nota_teorico,
         bm.nota_practico,
         bm.nota_bimestre,
-        bm.habilitacion_teorico,
-        bm.habilitacion_practico,
-        bm.fecha_habilitacion,
         bm.estado AS estado_bimestre
       FROM vista_base_calificacion_estudiante_matricula_curso emc
       LEFT JOIN bimestres_matricula bm
@@ -245,9 +242,9 @@ export class CuadernoRepository extends ICuadernoRepository {
       SELECT
         matricula_materia_id,
         bimestre,
-        nota_bimestre,
-        habilitacion_teorico,
-        habilitacion_practico
+        nota_teorico,
+        nota_practico,
+        nota_bimestre
       FROM vista_base_cuaderno_resumen_estudiante_bimestre
       WHERE asignacion_docente_id = ?
       `,

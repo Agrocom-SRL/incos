@@ -8,12 +8,7 @@ const BIMESTRES_TOTAL = 4;
 
 const redondear = (v) => (v == null ? null : Math.round(Number(v) * 100) / 100);
 
-const formatearFecha = (v) => {
-  if (v == null || v === '') return null;
-  const d = v instanceof Date ? v : new Date(v);
-  if (Number.isNaN(d.getTime())) return String(v);
-  return d.toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' });
-};
+const ESTADO_BIMESTRE_REABIERTO = 'REABIERTO';
 
 const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
   const map = new Map();
@@ -35,29 +30,17 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
     const num = Number(row.bimestre);
     if (!Number.isFinite(num) || num < 1 || num > 4) continue;
 
-    const teoricoCuota = redondear(row.nota_teorico);
-    const practicoCuota = redondear(row.nota_practico);
+    const teorico = redondear(row.nota_teorico);
+    const practico = redondear(row.nota_practico);
     const notaBimestre = redondear(row.nota_bimestre);
-    const habTeorico = redondear(row.habilitacion_teorico);
-    const habPractico = redondear(row.habilitacion_practico);
 
-    const teoEfectivo = habTeorico ?? teoricoCuota;
-    const praEfectivo = habPractico ?? practicoCuota;
-    const sumaCalculada = calcularNotaBimestre(teoricoCuota, practicoCuota);
-    const suma =
-      notaBimestre != null
-        ? notaBimestre
-        : calcularNotaBimestre(teoEfectivo, praEfectivo);
-    const tieneAjusteAdmin = habTeorico != null || habPractico != null;
+    const suma = notaBimestre != null ? notaBimestre : calcularNotaBimestre(teorico, practico);
 
     est.bimestresPorNumero.set(num, {
       numero: num,
-      teorico: teoEfectivo ?? teoricoCuota,
-      practico: praEfectivo ?? practicoCuota,
+      teorico,
+      practico,
       suma,
-      sumaCalculada,
-      tieneAjusteAdmin,
-      fechaHabilitacion: formatearFecha(row.fecha_habilitacion),
       estado: row.estado_bimestre ?? null,
     });
   }
@@ -76,9 +59,6 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
           teorico: null,
           practico: null,
           suma: null,
-          sumaCalculada: null,
-          tieneAjusteAdmin: false,
-          fechaHabilitacion: null,
           estado: null,
         }
       );
@@ -187,6 +167,19 @@ export class GetRegistroNotasCursoUseCase {
 
     const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion, pesosBimestres);
 
+    // Bimestres con alguna matrícula del curso en estado operativo REABIERTO (vista 116):
+    // habilitan la edición del cuaderno fuera del bimestre vigente.
+    const bimestresReabiertos = new Set();
+    for (const row of filasEstudiantes) {
+      const num = Number(row.bimestre);
+      if (
+        Number.isFinite(num) &&
+        String(row.estado_bimestre ?? '').toUpperCase() === ESTADO_BIMESTRE_REABIERTO
+      ) {
+        bimestresReabiertos.add(num);
+      }
+    }
+
     const bimestreVigente = Number(ctx.bimestre_vigente) || null;
     const periodosPorNumero = new Map(
       (periodosCalendario ?? []).map((p) => [Number(p.numero_orden), p]),
@@ -195,13 +188,16 @@ export class GetRegistroNotasCursoUseCase {
       const numero = i + 1;
       const p = periodosPorNumero.get(numero);
       const tipo = p?.estado_calendario ?? 'futuro';
+      const reabierto = bimestresReabiertos.has(numero);
       return {
         numero,
         nombre: p?.nombre ?? null,
         fechaInicio: p?.fecha_inicio ?? null,
         fechaFin: p?.fecha_fin ?? null,
         estadoCalendario: tipo,
-        editable: tipo === 'abierto' && numero <= (bimestreVigente ?? numero),
+        reabierto,
+        editable:
+          reabierto || (tipo === 'abierto' && numero <= (bimestreVigente ?? numero)),
       };
     });
 

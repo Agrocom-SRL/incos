@@ -5,7 +5,11 @@
 import { PAGOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListPaymentMethodsUseCase } from '../../../../application/use-cases/pagos/ListPaymentMethodsUseCase.js';
-import { ListMetodosPagoController } from '../../../../presentation/controllers/pagos/index.js';
+import { UpdatePaymentMethodUseCase } from '../../../../application/use-cases/pagos/UpdatePaymentMethodUseCase.js';
+import {
+    ListMetodosPagoController,
+    UpdateMetodoPagoController,
+} from '../../../../presentation/controllers/pagos/index.js';
 import { buildMetodosPagoRouter } from '../../../../presentation/routes/metodos-pago.routes.js';
 
 export function registerMetodosPagoResource(container) {
@@ -15,6 +19,16 @@ export function registerMetodosPagoResource(container) {
         PAGOS_TOKENS.listPaymentMethodsUseCase,
         (c) =>
             new ListPaymentMethodsUseCase({
+                paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.updatePaymentMethodUseCase,
+        (c) =>
+            new UpdatePaymentMethodUseCase({
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
@@ -32,6 +46,17 @@ export function registerMetodosPagoResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.updateMetodoPagoController,
+        (c) =>
+            new UpdateMetodoPagoController({
+                updatePaymentMethodUseCase: c.resolve(PAGOS_TOKENS.updatePaymentMethodUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ROUTER
     registerComponent(
         container,
@@ -39,6 +64,7 @@ export function registerMetodosPagoResource(container) {
         (c) => {
             const controllers = {
                 listMetodosPagoController: c.resolve(PAGOS_TOKENS.listMetodosPagoController),
+                updateMetodoPagoController: c.resolve(PAGOS_TOKENS.updateMetodoPagoController),
             };
 
             const middlewares = {

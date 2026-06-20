@@ -61,6 +61,13 @@ export const logoSizes = {
   logoHorizontalLargeHeight: 64,
 };
 
+// Anchos de modal (estructura, no estilo): consumidos vía prop `width` de AntD Modal.
+export const modalWidths = {
+  modalWidthSM: 420,
+  modalWidth: 520,
+  modalWidthLG: 720,
+};
+
 export const zIndex = {
   zIndexBase: 0,
   zIndexPopupBase: 1000,
@@ -123,6 +130,7 @@ export const allSpacing = {
   ...controlHeights,
   ...layoutHeights,
   ...logoSizes,
+  ...modalWidths,
   ...zIndex,
   ...motion,
   ...skeletonSizes,

@@ -15,18 +15,11 @@ export const Asistencia = sequelize.define(
             comment: 'Matrícula a la materia',
         },
 
-        fechaClase: {
-            type: DataTypes.DATEONLY,
-            field: 'fecha_clase',
-            allowNull: false,
-            comment: 'Fecha de la clase',
-        },
-
-        horaClase: {
-            type: DataTypes.TIME,
-            field: 'hora_clase',
+        sesionClaseId: {
+            type: DataTypes.INTEGER,
+            field: 'sesion_clase_id',
             allowNull: true,
-            comment: 'Hora de la clase (opcional)',
+            comment: 'Sesión de clase. Fecha, hora, curso y bimestre derivan de aquí.',
         },
 
         estado: {

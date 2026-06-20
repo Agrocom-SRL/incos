@@ -1,6 +1,11 @@
 import express from 'express';
-import { listarCatalogoReferencia } from '../middleware/permisos.middleware.js';
-import { listValidator } from '../validators/common/index.js';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { listarCatalogoReferencia, verificarPermiso } from '../middleware/permisos.middleware.js';
+import { listValidator, idValidator } from '../validators/common/index.js';
+import {
+    createBancoAutorizadoValidator,
+    updateBancoAutorizadoValidator,
+} from '../validators/pagos/index.js';
 
 /**
  * Construye el router del módulo Bancos Autorizados
@@ -9,6 +14,8 @@ export function buildBancosAutorizadosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
     // Catálogo de referencia: `sistema.catalogo.referencia` + LISTAR (seed 101)
+    const configCrear = [authenticate, verificarPermiso('configuracion.pagos', 'CREAR')];
+    const configEditar = [authenticate, verificarPermiso('configuracion.pagos', 'EDITAR')];
 
     router.get(
         '/',
@@ -16,6 +23,23 @@ export function buildBancosAutorizadosRouter({ controllers, middlewares }) {
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listBancosAutorizadosController.handle(req, res, next)
+    );
+
+    router.post(
+        '/',
+        ...configCrear,
+        createBancoAutorizadoValidator,
+        validateRequest,
+        (req, res, next) => controllers.createBancoAutorizadoController.handle(req, res, next)
+    );
+
+    router.put(
+        '/:id',
+        ...configEditar,
+        idValidator,
+        updateBancoAutorizadoValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateBancoAutorizadoController.handle(req, res, next)
     );
 
     return router;

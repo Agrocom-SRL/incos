@@ -46,6 +46,88 @@ export class PaymentAccountRepository extends IPaymentAccountRepository {
     }
   }
 
+  /**
+   * Construye el cuerpo de la petición de cuenta de pago.
+   * Si llega un archivo `qr` (File), usa multipart/FormData (espejo de
+   * `PagoAporteRepository.registrarPago`); si no, envía JSON plano. Solo se
+   * adjuntan los campos definidos (no se mandan `undefined`).
+   *
+   * @param {Object} data - Campos de la cuenta + `qr` (File opcional)
+   * @returns {{ requestData: Object|FormData, config: Object }}
+   */
+  buildRequest(data = {}) {
+    const campos = {
+      nombre_titular: data.nombre_titular,
+      metodo_pago_id: data.metodo_pago_id,
+      banco_id: data.banco_id,
+      numero_cuenta: data.numero_cuenta,
+      numero_celular: data.numero_celular,
+      qr_imagen_url: data.qr_imagen_url,
+      activo: data.activo,
+    };
+
+    const tieneArchivo = data.qr instanceof File;
+
+    if (tieneArchivo) {
+      const formData = new FormData();
+      Object.entries(campos).forEach(([clave, valor]) => {
+        if (valor !== undefined && valor !== null) {
+          formData.append(clave, String(valor));
+        }
+      });
+      formData.append('qr', data.qr);
+      // Sin Content-Type: axios fija el boundary del multipart automáticamente.
+      return { requestData: formData, config: {} };
+    }
+
+    const requestData = {};
+    Object.entries(campos).forEach(([clave, valor]) => {
+      if (valor !== undefined) {
+        requestData[clave] = valor;
+      }
+    });
+    return { requestData, config: { headers: { 'Content-Type': 'application/json' } } };
+  }
+
+  /**
+   * Crea una cuenta de pago (multipart si se adjunta el QR).
+   * POST /v1/cuentas-pago
+   *
+   * @param {Object} data - { nombre_titular (req), metodo_pago_id?, banco_id?, numero_cuenta?,
+   *   numero_celular?, qr_imagen_url?, activo? } + `qr` (File opcional)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>} data.cuentaPago
+   */
+  async crear(data = {}) {
+    try {
+      const { requestData, config } = this.buildRequest(data);
+      const response = await apiClient.post(CUENTAS_PAGO_ENDPOINTS.BASE, requestData, config);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear la cuenta de pago');
+    }
+  }
+
+  /**
+   * Actualiza una cuenta de pago (multipart si se adjunta el QR).
+   * PUT /v1/cuentas-pago/:id
+   *
+   * @param {string|number} id - ID de la cuenta
+   * @param {Object} data - mismos campos opcionales + `qr` (File opcional)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>} data.cuentaPago
+   */
+  async actualizar(id, data = {}) {
+    try {
+      if (!id && id !== 0) {
+        return { success: false, error: 'ID de la cuenta es requerido' };
+      }
+      const { requestData, config } = this.buildRequest(data);
+      const response = await apiClient.put(CUENTAS_PAGO_ENDPOINTS.BY_ID(id), requestData, config);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar la cuenta de pago');
+    }
+  }
+
 }
 
 export default new PaymentAccountRepository();

@@ -17,7 +17,8 @@ CREATE VIEW vista_base_estudiante_carrera_reciente AS
 SELECT
   va.estudiante_id,
   va.carrera_nombre,
-  va.carrera_codigo
+  va.carrera_codigo,
+  va.carrera_color_hex
 FROM vista_estudiante_datos_academicos va
 INNER JOIN (
   SELECT

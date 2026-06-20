@@ -1,0 +1,261 @@
+/* ============================================================
+   KIT DE PLANILLA — Finanzas (reportes y listados)
+   Réplica del lenguaje de planilla académico (calificaciones/asistencia),
+   con cabecera en VERDE PRIMARIO (las planillas Excel usan azul; aquí va verde).
+   Compartido por: Cuentas por cobrar, Becas por carrera, Listado de pagos.
+   Solo presentación. Scope: clases .fin-*.
+   ============================================================ */
+
+.fin-planilla {
+  /* Tokens locales (alineados a calificaciones.css). */
+  --fin-verde-oscuro: var(--primary, var(--color-primary, #196b45));
+  --fin-verde-medio: #6db088;
+  --fin-verde-tenue: #e8f5ec;
+  --fin-banda-ok: #c6e0b4; /* verde suave (totales / positivo) */
+  --fin-banda-warn: #ffe08a; /* ámbar */
+  --fin-banda-err: #fecaca; /* rojo suave */
+  --fin-texto-banda: #1f2937;
+  --fin-borde-suave: #f0f0f0;
+  --fin-fondo-zebra: #fafafa;
+}
+
+/* Wrapper con scroll horizontal para planillas anchas. */
+.fin-planilla-wrap {
+  position: relative;
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* ── Tabla base (AntD Table) ── */
+.fin-planilla .ant-table {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cabecera de columnas: VERDE PRIMARIO + texto blanco. */
+.fin-planilla .ant-table-thead > tr > th {
+  background: var(--fin-verde-oscuro) !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: var(--font-size-sm, 12px);
+  letter-spacing: 0.02em;
+  text-align: center;
+  border-bottom: none;
+  white-space: nowrap;
+}
+/* El conector de columnas agrupadas no debe pintar el separador claro. */
+.fin-planilla .ant-table-thead > tr > th::before {
+  display: none !important;
+}
+
+/* Celdas del cuerpo: compactas, borde suave. */
+.fin-planilla .ant-table-tbody > tr > td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--fin-borde-suave);
+  vertical-align: middle;
+}
+
+/* Zebra / hover. */
+.fin-planilla .ant-table-tbody > tr:nth-child(even) > td {
+  background: var(--fin-fondo-zebra);
+}
+.fin-planilla .ant-table-tbody > tr:hover > td {
+  background: var(--fin-verde-tenue) !important;
+}
+
+/* ── Columnas numéricas (alineadas a la derecha, tabular) ── */
+.fin-num,
+.fin-planilla .fin-num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.fin-num--center {
+  text-align: center !important;
+}
+.fin-num--strong {
+  font-weight: 700;
+  color: var(--text-800, #1f2937);
+}
+
+/* ── Filas especiales ── */
+/* Cabecera de grupo (carrera / paralelo): banda verde tenue. */
+.fin-planilla__row-grupo > td {
+  background: var(--fin-verde-tenue) !important;
+  color: var(--fin-verde-oscuro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+/* Fila de totales / subtotales. */
+.fin-planilla__row-total > td {
+  background: var(--fin-banda-ok) !important;
+  color: var(--fin-texto-banda) !important;
+  font-weight: 700;
+  border-top: 2px solid var(--fin-verde-medio);
+}
+
+/* Bandas teñidas en celdas puntuales. */
+.fin-banda--ok {
+  background: var(--fin-banda-ok) !important;
+  color: var(--fin-texto-banda) !important;
+}
+.fin-banda--warn {
+  background: var(--fin-banda-warn) !important;
+  color: var(--fin-texto-banda) !important;
+}
+.fin-banda--err {
+  background: var(--fin-banda-err) !important;
+  color: var(--fin-texto-banda) !important;
+}
+
+/* ── Dot de estado (al día / próximo / vencido) ── */
+.fin-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--text-300, #d1d5db);
+}
+.fin-dot--ok {
+  background: #16a34a;
+}
+.fin-dot--prox {
+  background: #d97706;
+}
+.fin-dot--venc {
+  background: #dc2626;
+}
+
+/* ── Panel de KPIs (resumen arriba de la planilla) ── */
+.fin-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+}
+
+.fin-kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-200, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--surface-0, #fff);
+  border-left: 4px solid var(--fin-verde-oscuro);
+}
+.fin-kpi__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md, 10px);
+  background: var(--fin-verde-tenue);
+  color: var(--fin-verde-oscuro);
+  font-size: 18px;
+  flex: none;
+}
+.fin-kpi__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.fin-kpi__valor {
+  font-size: var(--font-size-lg, 20px);
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-800, #1f2937);
+}
+.fin-kpi__label {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--text-500, #6b7280);
+}
+
+/* Variantes de severidad (solo el acento, no toda la tarjeta). */
+.fin-kpi--success {
+  border-left-color: #16a34a;
+}
+.fin-kpi--success .fin-kpi__icon {
+  background: #dcfce7;
+  color: #15803d;
+}
+.fin-kpi--warning {
+  border-left-color: #d97706;
+}
+.fin-kpi--warning .fin-kpi__icon {
+  background: #fef3c7;
+  color: #a16207;
+}
+.fin-kpi--error {
+  border-left-color: #dc2626;
+}
+.fin-kpi--error .fin-kpi__icon {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ── Bloque destacado (ej. Monto total pendiente, rojo) ── */
+.fin-destacado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 18px 20px;
+  border: 1px solid rgba(220, 38, 38, 0.28);
+  border-radius: var(--radius-lg, 12px);
+  background: #fef2f2;
+  text-align: center;
+}
+.fin-destacado__label {
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #b91c1c;
+}
+.fin-destacado__valor {
+  font-size: var(--font-size-xxl, 28px);
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: #dc2626;
+}
+.fin-destacado__sub {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--text-500, #6b7280);
+}
+
+/* Variante neutra/positiva del bloque destacado (verde). */
+.fin-destacado--ok {
+  border-color: rgba(22, 101, 52, 0.28);
+  background: var(--fin-verde-tenue);
+}
+.fin-destacado--ok .fin-destacado__label {
+  color: var(--fin-verde-oscuro);
+}
+.fin-destacado--ok .fin-destacado__valor {
+  color: var(--fin-verde-oscuro);
+}
+
+/* ── Separador (banda entre contexto y planilla) ── */
+.fin-separador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 14px 20px;
+  border-top: 2px solid var(--fin-verde-medio);
+  border-bottom: 1px solid var(--fin-borde-suave);
+  background: var(--fin-verde-tenue);
+}
+.fin-separador__titulo {
+  font-size: var(--font-size-base, 15px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--fin-verde-oscuro);
+}

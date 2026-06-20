@@ -4,20 +4,41 @@
  * (gemelo de calificaciones/CoordinacionPage). Al elegir docente navega a sus cursos.
  */
 
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { MedicineBoxOutlined } from '@ant-design/icons';
 import { CoordinacionDocentesView } from '@organisms';
+import { ActionButton } from '@atoms';
 import { useVistaAdminAsistenciaDocentes } from '@application-academico/asistencia/hooks/useVistaAdminAsistenciaDocentes.js';
-import { MIS_CURSOS_PATH } from '@application-academico/asistencia/utils/asistenciaPaths.js';
+import {
+  MIS_CURSOS_PATH,
+  LICENCIAS_PATH,
+} from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
 
 const CoordinacionAsistenciaPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const vista = useVistaAdminAsistenciaDocentes();
+
+  // Acceso administrativo al listado de licencias estudiantiles; se auto-oculta sin
+  // permiso licencia.ver. Vive en la pantalla previa del admin (no en el calendario del curso).
+  const headerActions = (
+    <ActionButton
+      permiso={ASISTENCIA_PERMISOS.licenciaVer}
+      accion="LISTAR"
+      variant="info"
+      icon={<MedicineBoxOutlined />}
+      onClick={() => navigate(LICENCIAS_PATH, { state: { returnPath: location.pathname } })}
+    >
+      Licencias
+    </ActionButton>
+  );
 
   return (
     <CoordinacionDocentesView
       title="Coordinación de asistencia"
       breadcrumbItems={vista.breadcrumbItems}
+      headerActions={headerActions}
       infoTitle="Coordinación de asistencia"
       infoDescription={
         <span>

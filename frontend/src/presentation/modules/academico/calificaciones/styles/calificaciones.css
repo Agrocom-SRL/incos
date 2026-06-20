@@ -11,6 +11,14 @@
   --cuaderno-verde-oscuro: var(--color-primary, #196b45);
   --cuaderno-verde-acento: var(--primary-dark, #134d32);
 
+  /* Banda de cabecera por componente — espejo de la paleta del export Excel
+     (ExcelTheme.js: teóricasStrong / practicasStrong) + magenta para asistencia. */
+  --cuaderno-comp-teorico-bg: #c6e0b4; /* verde suave */
+  --cuaderno-comp-practico-bg: #ffe08a; /* ámbar */
+  --cuaderno-comp-asistencia-bg: #f0a6d0; /* magenta */
+  --cuaderno-comp-text: #1f2937; /* texto oscuro legible sobre bandas claras */
+  --cuaderno-comp-text-soft: rgba(31, 41, 55, 0.72);
+
   --cuaderno-papel: var(--color-bg-container, #ffffff);
   --cuaderno-fondo: #fafafa;
   --cuaderno-borde-suave: #f0f0f0;
@@ -707,6 +715,59 @@
   overflow: visible;
 }
 
+/* —— Banda de cabecera por componente (espejo del export Excel) ——
+   Mismo prefijo que la regla base (.ant-table-wrapper.cal-notas-grid--consolidado-style)
+   para que la clase modificadora extra gane en especificidad sobre el verde por defecto. */
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval--teorico {
+  background: var(--cuaderno-comp-teorico-bg) !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval--practico {
+  background: var(--cuaderno-comp-practico-bg) !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval--asistencia {
+  background: var(--cuaderno-comp-asistencia-bg) !important;
+}
+
+/* Texto e iconos oscuros para mantener contraste AA sobre las bandas claras */
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__col-head-text,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__col-head-text,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__col-head-text,
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__eval-menu-btn,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__eval-menu-btn,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__eval-menu-btn {
+  color: var(--cuaderno-comp-text) !important;
+}
+
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__col-ponderacion,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__col-ponderacion,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__col-ponderacion {
+  color: var(--cuaderno-comp-text-soft) !important;
+}
+
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__eval-menu-btn:hover,
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__eval-menu-btn:focus-visible,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__eval-menu-btn:hover,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__eval-menu-btn:focus-visible,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__eval-menu-btn:hover,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__eval-menu-btn:focus-visible {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: var(--cuaderno-comp-text) !important;
+}
+
 .cal-notas-grid-wrap
   .ant-table-wrapper.cal-notas-grid--consolidado-style
   .ant-table-thead
@@ -890,6 +951,21 @@
 .cal-notas-grid__hint-agregar .anticon {
   font-size: 13px;
   color: #fff;
+}
+
+/* Defensa: el hint de la columna de relleno se recorta dentro de su celda
+   y nunca se desborda sobre la cabecera de la actividad contigua. */
+.cal-notas-grid__col-bim-espacio {
+  overflow: hidden;
+}
+
+.cal-notas-grid__col-bim-espacio .cal-notas-grid__hint-agregar {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* Dropdown gestión de actividades — restablecer en warning (portal fuera del wrap) */

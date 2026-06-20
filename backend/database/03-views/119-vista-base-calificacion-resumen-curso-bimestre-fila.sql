@@ -18,16 +18,12 @@ SELECT
   bm.nota_teorico,
   bm.nota_practico,
   bm.nota_bimestre,
-  bm.habilitacion_teorico,
-  bm.habilitacion_practico,
   bm.estado AS estado_bimestre,
   COALESCE(cuad.suma_teorico, 0) AS cuaderno_teorico,
   COALESCE(cuad.suma_practico, 0) AS cuaderno_practico,
   COALESCE(cuad.tiene_nota_celda, 0) AS tiene_nota_cuaderno,
   CASE
-    WHEN bm.habilitacion_teorico IS NOT NULL
-      OR bm.habilitacion_practico IS NOT NULL
-      OR bm.nota_bimestre IS NOT NULL
+    WHEN bm.nota_bimestre IS NOT NULL
       OR bm.nota_teorico IS NOT NULL
       OR bm.nota_practico IS NOT NULL
       OR COALESCE(cuad.tiene_nota_celda, 0) = 1
@@ -36,8 +32,8 @@ SELECT
   END AS tiene_registro,
   COALESCE(
     bm.nota_bimestre,
-    COALESCE(bm.habilitacion_teorico, bm.nota_teorico, cuad.suma_teorico, 0)
-      + COALESCE(bm.habilitacion_practico, bm.nota_practico, cuad.suma_practico, 0)
+    COALESCE(bm.nota_teorico, cuad.suma_teorico, 0)
+      + COALESCE(bm.nota_practico, cuad.suma_practico, 0)
   ) AS nota_efectiva
 FROM matriculas_materia mm
 INNER JOIN bimestres_matricula bm

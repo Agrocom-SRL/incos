@@ -20,6 +20,7 @@ export class CreateEvaluacionCuadernoUseCase {
     bimesterEvaluationRepository,
     evaluationTypeRepository,
     evaluationConfigurationRepository,
+    subjectEnrollmentBimesterRepository,
     teacherRepository,
     userRepository,
     authRepository,
@@ -31,6 +32,7 @@ export class CreateEvaluacionCuadernoUseCase {
     this.bimesterEvaluationRepository = bimesterEvaluationRepository;
     this.evaluationTypeRepository = evaluationTypeRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
     this.authRepository = authRepository;
@@ -53,9 +55,15 @@ export class CreateEvaluacionCuadernoUseCase {
       asignacionId,
     });
 
-    if (bimestreNum !== bimestreVigente) {
+    const reabierto =
+      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+        Number(asignacionId),
+        bimestreNum,
+      )) > 0;
+
+    if (bimestreNum !== bimestreVigente && !reabierto) {
       throw new ForbiddenError(
-        'Solo podés crear evaluaciones en el bimestre vigente de la gestión.',
+        'Solo podés crear evaluaciones en el bimestre vigente o en un bimestre reabierto.',
       );
     }
 

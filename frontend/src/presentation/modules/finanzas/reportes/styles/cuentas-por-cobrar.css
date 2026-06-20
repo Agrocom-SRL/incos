@@ -1,0 +1,138 @@
+/* Ajustes ESPECÍFICOS de las planillas de reportes de Finanzas (cuentas por
+   cobrar y becas). El lenguaje base de planilla (cabecera verde, zebra, dots,
+   bandas, KPIs, destacado, separador) vive en el kit
+   `presentation/modules/finanzas/styles/finanzas-planilla.css`; aquí solo van
+   reglas que ese kit no cubre. */
+
+/* ── Pill de cobertura (reutilizada por la planilla de BECAS · % cobertura) ──
+   El reporte de becas tiñe el % de cobertura con estas clases semánticas
+   (al-dia = buena, proxima = aviso, sin = neutra). NO usar en cuentas por
+   cobrar (allí el estado va por DOT del kit). */
+.cobranza-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cobranza-pill--al-dia {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+.cobranza-pill--proxima {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.2);
+}
+.cobranza-pill--vencida {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.22);
+}
+.cobranza-pill--sin {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+/* La celda de identidad del estudiante reutiliza IdentidadCelda con su estilo
+   base (cfg-materia-identidad, cargado por academico-form-page.css). */
+
+/* ── Columna Estado (dot del kit + etiqueta) ── */
+.cobranza-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.cobranza-estado__label {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--text-700, #374151);
+}
+
+/* ── Columna Observaciones ── */
+.cobranza-obs {
+  color: var(--text-700, #374151);
+}
+.cobranza-obs--vacio {
+  color: var(--text-400, #9ca3af);
+}
+
+/* ── Fila de cabecera de paralelo (fin-planilla__row-grupo) ── */
+.cobranza-grupo__titulo {
+  font-weight: 700;
+  text-transform: none;
+}
+.cobranza-grupo__turno {
+  font-weight: 600;
+  opacity: 0.85;
+}
+.cobranza-grupo__metricas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.cobranza-grupo__sep {
+  opacity: 0.45;
+}
+
+/* ── Fila de totales de la carrera (fin-planilla__row-total) ── */
+.cobranza-total__titulo {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.cobranza-total__metricas {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-variant-numeric: tabular-nums;
+}
+.cobranza-total__pendiente strong {
+  color: #b91c1c;
+}
+
+/* ── Cabecera de planilla (banda fin-separador) ── */
+.cobranza-cabecera__meta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: var(--font-size-sm, 12px);
+  color: var(--text-700, #374151);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Resumen general (KPIs + destacado en columna) ── */
+.cobranza-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+  width: 100%;
+}
+
+/* ── Leyenda de alertas (dot del kit + etiqueta) ── */
+.cobranza-leyenda__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 132px;
+}
+.cobranza-leyenda__label {
+  font-weight: 600;
+  color: var(--text-800, #1f2937);
+}

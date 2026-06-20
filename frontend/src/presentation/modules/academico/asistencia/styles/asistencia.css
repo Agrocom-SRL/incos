@@ -1,0 +1,1313 @@
+/**
+ * Estilos de la toma de asistencia (calendario mensual + planilla semanal).
+ * Solo layout/composición: todos los colores, tamaños y radios salen de tokens
+ * globales (var(--color-*), var(--spacing-*), var(--font-size-*), var(--border-radius-*)).
+ * Gemelo visual del cuaderno de notas, sin reintroducir literales.
+ */
+
+.asi-calendario-page,
+.asi-planilla-page {
+  width: 100%;
+}
+
+/* En el rango lg (≥992 y <xl) el InfoSidebar global fija 350px; aquí lo reducimos
+   para dar más aire al calendario en pantallas medias. Scope local: no afecta otras
+   páginas. En xl+ vuelve al ancho estándar (350px) y en <lg ya pasa a 100%. */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .asi-calendario-shell .info-sidebar {
+    min-width: 280px;
+    max-width: 280px;
+  }
+}
+
+/* La elevación/borde/padding de las cards viene del contrato del sistema
+   (asistenciaSectionCardProps), no de clases locales — igual que Calificaciones. */
+
+/* —— Cabecera del curso (perfil a todo el ancho, gemela de CursoProfileHeader) —— */
+/* La base la aporta .sd-profile (detail-page.css, ya importado por la página).
+   Aquí solo los ajustes propios de Asistencia: avatar con sigla, pill del bimestre
+   (teñida con el color de negocio por estilo inline) y badge de estado del registro. */
+/* Mapeo de las variables de diseño de .sd-profile a los tokens del proyecto, para que
+   la tarjeta (fondo/borde/sombra/colores) funcione sin necesitar un ancestro .sd. */
+.asi-profile {
+  --surface: var(--color-bg-container);
+  --border: var(--color-border-secondary);
+  --radius-xl: var(--border-radius-lg);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.05);
+  --text-900: var(--color-text);
+  --text-800: var(--color-text);
+  --text-700: var(--color-text);
+  --text-500: var(--color-text-secondary);
+  --primary: var(--color-primary);
+  --primary-dark: var(--color-primary-hover);
+  width: 100%;
+}
+
+.asi-profile__avatar {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.asi-profile__avatar--sigla {
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  padding: 6px 4px;
+  word-break: break-word;
+  hyphens: auto;
+  text-align: center;
+}
+
+.asi-profile__bimestre-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.asi-profile__toolbar {
+  position: absolute;
+  top: 18px;
+  right: 28px;
+  z-index: 2;
+}
+
+.asi-profile__estado {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  background: var(--color-fill-quaternary);
+  border: 1px solid var(--color-border-secondary);
+}
+
+/* ============================================================
+   HOJA DE PLANILLA (separador + grilla en una sola Card, modelo cuaderno)
+   ============================================================ */
+.asi-planilla-hoja {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+.asi-planilla-hoja__vacio {
+  padding: var(--spacing-lg);
+}
+
+/* —— Separador ficha/grilla: texto a la izquierda · controles + KPIs a la derecha —— */
+.asi-separador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 2px solid var(--color-primary);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.asi-separador__texto {
+  flex: 1 1 320px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.asi-separador__titulo {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+}
+
+.asi-separador__desc {
+  font-size: var(--font-size-base);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.asi-separador__desc strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.asi-separador__controles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+@media (max-width: 991px) {
+  .asi-separador__controles {
+    align-items: flex-start;
+  }
+}
+
+/* Buscador de estudiantes (componente reutilizado CuadernoBuscarEstudiantes): se
+   estiliza con tokens de asistencia para no depender de calificaciones.css. */
+.asi-separador__buscar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.asi-separador__buscar .cal-cuaderno-buscar__input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.asi-separador__buscar .cal-cuaderno-buscar__icon {
+  color: var(--color-text-tertiary);
+}
+
+.asi-separador__buscar .cal-cuaderno-buscar__contador {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-resumen-cab__horario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.asi-resumen-cab__horario-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-primary-bg);
+  font-size: var(--font-size-sm);
+}
+
+.asi-resumen-cab__horario-item .anticon {
+  color: var(--color-primary);
+}
+
+.asi-resumen-cab__horario-dia {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.asi-resumen-cab__horario-horas {
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-resumen-cab__kpis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.asi-resumen-cab__kpi {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.asi-resumen-cab__kpi-icono {
+  display: inline-flex;
+  font-size: var(--font-size-md);
+}
+
+.asi-resumen-cab__kpi-valor {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-resumen-cab__kpi-label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.asi-resumen-cab__kpi--success {
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+  color: var(--color-success);
+}
+
+.asi-resumen-cab__kpi--warning {
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
+  color: var(--color-warning);
+}
+
+.asi-resumen-cab__kpi--error {
+  background: var(--color-error-bg);
+  border-color: var(--color-error-border);
+  color: var(--color-error);
+}
+
+.asi-resumen-cab__kpi--info {
+  background: var(--color-info-bg);
+  border-color: var(--color-info-border);
+  color: var(--color-info);
+}
+
+/* —— Pager de semana (flechas resaltadas + rango + Hoy + ir a fecha como botón) —— */
+.asi-semana-pager {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.asi-semana-pager__btn.ant-btn {
+  border-color: var(--color-primary-bg) !important;
+  color: #fff !important;
+  background: var(--color-success) !important;
+}
+
+.asi-semana-pager__btn.ant-btn:hover:not(:disabled) {
+  color: #fff !important;
+  background: var(--color-primary-hover) !important;
+}
+
+.asi-semana-pager__btn.ant-btn:disabled {
+  opacity: 0.4;
+}
+
+/* Rango de la semana visible entre las flechas: deja claro qué se está navegando. */
+.asi-semana-pager__rango {
+  min-width: 120px;
+  padding: 0 var(--spacing-xs);
+  text-align: center;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Botón "Hoy": pill con acento primario. */
+.asi-semana-pager__hoy.ant-btn {
+  border-color: var(--color-primary-hover) !important;
+  color: var(--color-primary-bg) !important;
+  background: var(--color-primary) !important;
+  font-weight: 600;
+}
+
+.asi-semana-pager__hoy.ant-btn:hover:not(:disabled) {
+  background: var(--color-success) !important;
+  color: #fff !important;
+}
+
+/* Ya estás en la semana actual: estado calmado en primary-bg (no llama a la acción). */
+.asi-semana-pager__hoy--actual.ant-btn {
+  background: var(--color-primary-bg) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.asi-semana-pager__hoy--actual.ant-btn:hover:not(:disabled) {
+  background: var(--color-primary-bg) !important;
+  color: var(--color-primary) !important;
+}
+
+.asi-semana-pager__ir {
+  display: inline-flex;
+}
+
+/* "Ir a fecha": el DatePicker se ve como un botón (pill bordeado, acento primario). */
+.asi-semana-pager__picker.ant-picker {
+  width: auto;
+  border-color: var(--color-primary);
+  background: var(--color-bg-container);
+  border-radius: var(--border-radius-md);
+}
+
+.asi-semana-pager__picker.ant-picker:hover{
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.asi-semana-pager__picker.ant-picker .ant-picker-input>input {
+  width: 6.5em;
+  cursor: pointer;
+  margin: 0 var(--spacing-sm);
+}
+
+.asi-semana-pager__picker.ant-picker .ant-picker-input>input:hover {
+  color: #fff;
+  font-weight: 600;
+}
+
+.asi-semana-pager__picker.ant-picker .ant-picker-suffix {
+  color: var(--color-primary-hover);
+}
+
+.asi-semana-pager__picker.ant-picker:hover .ant-picker-suffix {
+  color: #fff;
+}
+
+/* ============================================================
+   CALENDARIO ANUAL
+   ============================================================ */
+.asi-cal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* —— Cabecera del calendario: título primario (gemelo de ControlBimestres) —— */
+.asi-cal__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.asi-cal__titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.01em;
+}
+
+.asi-cal__subtitulo {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.asi-cal__meses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xl);
+}
+
+/* Año completo: meses por fila según el ancho (escala de breakpoints AntD).
+   El InfoSidebar ocupa ~30%, así que el calendario muestra un mes MENOS por fila
+   que el ancho total sugeriría: 3 en xl, 4 en xxl, y reduce progresivamente. */
+.asi-cal__meses--anual {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-md);
+}
+
+/* ≥ xxl (≥1600): hay espacio de sobra → 4 por fila. */
+@media (min-width: 1600px) {
+  .asi-cal__meses--anual {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* < xl (lg y menores): 2 por fila. */
+@media (max-width: 1199px) {
+  .asi-cal__meses--anual {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* < lg (md y menores): 1 por fila. */
+@media (max-width: 991px) {
+  .asi-cal__meses--anual {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Cada mes es una tarjeta con borde/padding propios (mismo look que bim-cal-month). */
+.asi-cal__mes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-container);
+}
+
+/* Mes sin días del bimestre: apagado, sin protagonismo. */
+.asi-cal__mes--inactivo {
+  opacity: 0.5;
+  background: var(--color-border);
+  border-style: dashed;
+}
+
+.asi-cal__mes-titulo {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.asi-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.asi-cal__dow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  padding-bottom: var(--spacing-xs);
+}
+
+.asi-cal__hueco {
+  aspect-ratio: 1;
+}
+
+.asi-cal__dia {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-container);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-cal__dia-num {
+  line-height: 1;
+}
+
+/* Fuera del bimestre: lienzo apagado, sin protagonismo. */
+.asi-cal__dia--fuera {
+  background: transparent;
+  border-color: transparent;
+  opacity: 0.55;
+}
+
+/* Dentro del bimestre: el tinte del color del periodo llega por estilo inline
+   (color-mix con el hex del backend). Aquí solo el color de número base. */
+.asi-cal__dia--en-bimestre {
+  color: var(--color-text-secondary);
+}
+
+/* Día de clase (a tomar lista): relleno con el color primario y texto blanco.
+   El !important vence al tinte del bimestre inyectado por estilo inline. */
+.asi-cal__dia--clase {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Sin clase (feriado / receso / vacaciones): rojo vibrante. */
+.asi-cal__dia--sin-clase {
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+/* Si un día es feriado Y de clase a la vez, el feriado gana (vence al relleno
+   primario que aplica --clase con !important). */
+.asi-cal__dia--sin-clase.asi-cal__dia--clase {
+  background: var(--color-error-bg) !important;
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* Futuro: gris, sin interacción. */
+.asi-cal__dia--futuro {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sesión especial: acento discontinuo. */
+.asi-cal__dia--especial {
+  border-style: dashed;
+}
+
+/* Hoy: realce de borde para ubicarse rápido. */
+.asi-cal__dia--hoy {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* Día del bimestre sin horario: clickeable para habilitar fecha especial. */
+.asi-cal__dia--habilitable {
+  cursor: pointer;
+  border-style: dashed;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.14s ease;
+}
+
+.asi-cal__dia--habilitable:hover {
+  border-color: var(--color-primary);
+  border-style: solid;
+}
+
+.asi-cal__dia--habilitable:active {
+  transform: scale(0.96);
+}
+
+/* Navegable: clickeable con realce de marca. */
+.asi-cal__dia--navegable {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.14s ease;
+}
+
+.asi-cal__dia--navegable:hover {
+  border-color: var(--color-primary);
+  background: var(--color-success-bg);
+}
+
+/* Día de clase navegable: realce de marca sin perder el relleno primario. */
+.asi-cal__dia--clase.asi-cal__dia--navegable:hover {
+  background: var(--color-primary-hover) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+/* Dot de asistencia tomada sobre el relleno primario: blanco para contraste. */
+.asi-cal__dia--clase .asi-cal__dot {
+  background: #fff;
+}
+
+.asi-cal__dia--navegable:active {
+  transform: scale(0.96);
+}
+
+/* Dot de asistencia tomada. */
+.asi-cal__dot {
+  position: absolute;
+  bottom: var(--spacing-xs);
+  width: var(--spacing-xs);
+  height: var(--spacing-xs);
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+/* —— Leyenda —— */
+.asi-cal__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border-secondary);
+  padding-top: var(--spacing-md);
+}
+
+.asi-cal__leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.asi-cal__chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-container);
+}
+
+.asi-cal__chip--tomado .asi-cal__dot {
+  position: static;
+}
+
+/* Días del bimestre: tinte (recibe el color-mix por estilo inline). */
+.asi-cal__chip--bimestre {
+  border-color: var(--color-border-secondary);
+}
+
+/* Día de clase: relleno primario (igual que la celda). */
+.asi-cal__chip--clase {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+/* Sin clase: rojo. */
+.asi-cal__chip--sin-clase {
+  border-color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+/* Hoy: realce de borde. */
+.asi-cal__chip--hoy {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* ============================================================
+   GRILLA SEMANAL (shell espejo del cuaderno de notas)
+   ============================================================ */
+.asi-grid-wrap {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.asi-grid.ant-table-wrapper .ant-table {
+  width: 100% !important;
+  background: transparent;
+}
+
+.asi-grid.ant-table-wrapper .ant-table table {
+  table-layout: fixed;
+  width: 100% !important;
+}
+
+/* —— Cabecera del grupo "Semana" (gemela de la banda de bimestre del cuaderno) —— */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__th-bim {
+  padding: 0 !important;
+  vertical-align: top !important;
+}
+
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__th-bim--activo {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.asi-grid__bim-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  min-height: 44px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: center;
+}
+
+.asi-grid__bim-titulo-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.asi-grid__bim-titulo {
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— Columnas fijas de identificación (Nro + Estudiante), banda verde oscuro —— */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__th-est {
+  background: color-mix(in srgb, var(--color-primary) 88%, #000) !important;
+  color: #fff !important;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  text-align: center;
+}
+
+.asi-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.asi-grid__col-nro,
+.asi-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.asi-grid__col-nro {
+  width: 56px !important;
+  max-width: 56px !important;
+  min-width: 44px !important;
+}
+
+.asi-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.asi-grid__col-estudiante,
+.asi-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.asi-grid__col-estudiante {
+  width: 320px !important;
+  max-width: 340px !important;
+  min-width: 200px !important;
+}
+
+/* —— Sub-cabeceras de día —— */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__th-sub {
+  vertical-align: top !important;
+  text-align: center;
+  padding: var(--spacing-xs) var(--spacing-xs) !important;
+}
+
+.asi-grid__col-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.asi-grid__col-head-dow {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.asi-grid__col-head-num {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Botón + para habilitar una sesión especial en un día hábil sin clase. */
+.asi-grid__add-especial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  padding: 0;
+  border: 1px dashed currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease,
+    transform 0.14s ease;
+}
+
+.asi-grid__add-especial:hover {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.asi-grid__add-especial:active {
+  transform: scale(0.9);
+}
+
+/* Icon button de cierre/reapertura por día (debajo de la cabecera del día).
+   Relleno SÓLIDO con el color del estado y glifo BLANCO, para que resalte sobre la
+   columna primaria (el borde usa el bg primario como halo de contraste). */
+.asi-grid__cierre-dia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  padding: 0;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.95;
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.14s ease;
+}
+
+/* Cerrar: relleno rojo. Reabrir: relleno ámbar. Glifo blanco en ambos. */
+.asi-grid__cierre-dia--cerrar {
+  background: var(--color-error);
+  border: 1px dashed var(--color-error-bg);
+}
+
+.asi-grid__cierre-dia--reabrir {
+  background: var(--color-warning);
+  border: 1px dashed var(--color-warning-bg);
+}
+
+.asi-grid__cierre-dia--cerrar:hover:not(:disabled) {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--color-error) !important;
+}
+
+.asi-grid__cierre-dia--reabrir:hover:not(:disabled) {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--color-warning) !important;
+}
+
+.asi-grid__cierre-dia:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.asi-grid__cierre-dia:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Columna estudiante: identidad + acceso directo a solicitar licencia. */
+.asi-grid__est {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+/* Botón "solicitar licencia" por fila: usa el átomo IconButton (variant info);
+   aquí solo se evita que crezca dentro de la celda de identidad. */
+.asi-grid__lic-btn {
+  flex: none;
+}
+
+.asi-grid__col-nro {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— Color de columna por naturaleza del día —— */
+/* Día de clase: relleno primario en cabecera. */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__col-dia--clase {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  border-color: var(--color-bg-container) !important;
+}
+
+/* Día de clase futuro: primario atenuado, aspecto disabled. */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__col-dia--clase-futuro {
+  background: color-mix(in srgb,
+      var(--color-primary) 40%,
+      var(--color-bg-container)) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.asi-grid__col-dia--clase-futuro {
+  background: color-mix(in srgb,
+      var(--color-primary) 8%,
+      var(--color-bg-container));
+}
+
+/* Feriado / clase no dictada: rojo. */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__col-dia--rojo {
+  background: var(--color-error) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.asi-grid__col-dia--rojo {
+  background: var(--color-error-bg);
+}
+
+/* Día hábil sin clase: gris. */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__col-dia--gris {
+  background: var(--color-primary-bg) !important;
+  color: var(--color-text-secondary) !important;
+  border-color: var(--color-border) !important;
+}
+
+.asi-grid__col-dia--gris {
+  background: var(--color-fill-quaternary);
+}
+
+/* —— Columna del DÍA ACTUAL: contorno dashed primary continuo (header → última fila),
+   sin separadores horizontales internos, para leer toda la columna como "hoy". —— */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__col-dia--hoy,
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-tbody>tr>td.asi-grid__col-dia--hoy {
+  border-left: 1px dashed var(--color-primary) !important;
+  border-right: 1px dashed var(--color-primary) !important;
+}
+
+/* Header del día actual: cierra el contorno por arriba. */
+.asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__th-sub.asi-grid__col-dia--hoy {
+  border-top: 1px dashed var(--color-primary) !important;
+}
+
+/* Sin línea horizontal entre filas dentro de la columna de hoy. */
+.asi-grid .ant-table-tbody>tr>td.asi-grid__col-dia--hoy {
+  border-bottom-color: transparent !important;
+}
+
+/* Cierra el contorno por abajo en la última fila. */
+.asi-grid .ant-table-tbody>tr:last-child>td.asi-grid__col-dia--hoy {
+  border-bottom: 1px dashed var(--color-primary) !important;
+}
+
+/* —— Cuerpo: padding, separadores y hover suave (gemelo del cuaderno) —— */
+.asi-grid .ant-table-tbody>tr>td {
+  padding: var(--spacing-sm) var(--spacing-md) !important;
+  border-bottom: 1px solid var(--color-border-secondary) !important;
+  vertical-align: middle !important;
+}
+
+.asi-grid .ant-table-tbody>tr:last-child>td {
+  border-bottom: none !important;
+}
+
+.asi-grid .ant-table-tbody>tr:hover>td {
+  background: var(--color-fill-quaternary) !important;
+}
+
+/* El tinte de la columna gana al hover de fila para no perder la lectura del día. */
+.asi-grid .ant-table-tbody>tr:hover>td.asi-grid__col-dia--rojo {
+  background: var(--color-error-bg) !important;
+}
+
+.asi-grid .ant-table-tbody>tr:hover>td.asi-grid__col-dia--gris {
+  background: var(--color-fill-secondary) !important;
+}
+
+/* AntD inserta una fila de medición (measure-row) cuando hay scroll horizontal +
+   tableLayout fixed: el padding global de td la haría visible. La colapsamos. */
+.asi-grid .ant-table-tbody>tr.ant-table-measure-row>td {
+  padding: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+}
+
+/* —— Celda de identidad del estudiante (IdentidadCelda, patrón calificaciones) —— */
+.cfg-materia-identidad {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cfg-materia-identidad__margen {
+  flex-shrink: 0;
+  width: 2px;
+  align-self: stretch;
+  min-height: 28px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+.cfg-materia-identidad__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cfg-materia-identidad__sigla {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.cfg-materia-identidad__nombre {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+}
+
+/* ============================================================
+   CELDA DE MARCA (P/R/F/L)
+   ============================================================ */
+.asi-celda {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--spacing-xs) / 2);
+  width: 66px;
+  height: 52px;
+  padding: var(--spacing-xs);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+}
+
+.asi-celda__marca {
+  line-height: 1;
+}
+
+/* Rótulo literal bajo el icono (Presente / Ausente / Atraso / Licencia). Hereda el
+   color de la celda → coincide con el color del icono. */
+.asi-celda__label {
+  line-height: 1;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Presente: check verde primario. */
+.asi-celda--presente {
+  color: var(--color-primary);
+}
+
+/* Iconos de marca (mismos que los KPIs del resumen): tamaño uniforme en todos los estados. */
+.asi-celda__marca .anticon {
+  font-size: var(--font-size-md);
+}
+
+/* Falta / Atraso / Licencia en SOLO LECTURA: como presente, solo color (sin caja).
+   La caja (borde + fondo) se reserva al modo edición (reglas .asi-celda--editable.* abajo). */
+.asi-celda--falta {
+  color: var(--color-error);
+}
+
+.asi-celda--atraso {
+  color: var(--color-warning);
+}
+
+/* Licencia (L): siempre solo lectura (es neutro) → solo color info, sin caja. No se atenúa
+   aunque se renderice dentro de --neutro: la licencia debe leerse claramente en la planilla. */
+.asi-celda--licencia,
+.asi-celda--neutro.asi-celda--licencia {
+  color: var(--color-info);
+  opacity: 1;
+}
+
+/* Neutro / futuro / vacía: solo lectura, apagado (guion medio). */
+.asi-celda--neutro,
+.asi-celda--futuro,
+.asi-celda--vacia {
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+}
+
+/* Editable: caja con tamaño mínimo + cursor (alto extra para el rótulo literal). */
+.asi-celda--editable {
+  width: 66px;
+  height: 52px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.14s ease;
+}
+
+/* Slot vacío (presente y editable): borde discontinuo que invita a marcar la falta. */
+.asi-celda--editable.asi-celda--presente {
+  border: 1px dashed var(--color-border);
+  background: transparent;
+}
+
+.asi-celda--editable.asi-celda--presente:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.asi-celda--editable:active {
+  transform: scale(0.92);
+}
+
+/* Caja (borde + fondo) SOLO en edición: falta roja, atraso ámbar. En solo lectura quedan
+   con color únicamente (regla base arriba), igual que presente. */
+.asi-celda--editable.asi-celda--falta {
+  border: 1px dashed var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.asi-celda--editable.asi-celda--atraso {
+  border: 1px dashed var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+.asi-celda--editable.asi-celda--falta:hover {
+  background: var(--color-error-bg-hover);
+}
+
+.asi-celda--editable.asi-celda--atraso:hover {
+  background: var(--color-warning-bg-hover);
+}
+
+.asi-celda--readonly {
+  cursor: default;
+}
+
+/* ============================================================
+   LISTA DE DÍAS SIN CLASE
+   ============================================================ */
+.asi-actividades {
+  width: 100%;
+}
+
+.asi-actividades__intro {
+  color: var(--color-text-secondary);
+}
+
+.asi-actividades__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.asi-actividades__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-container);
+}
+
+/* Badge de icono por tipo de actividad: hereda color/fondo del cronograma-pill,
+   pero lo forzamos a un cuadrado para alojar solo el icono. */
+.asi-actividades__icono.cronograma-pill {
+  flex-shrink: 0;
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  padding: 0;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-md);
+}
+
+.asi-actividades__fecha {
+  min-width: 110px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-actividades__cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================================
+   SIDEBAR: contexto del bimestre
+   ============================================================ */
+.asi-resumen-ctx__label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.asi-resumen-ctx__bloque {
+  flex: 1 1 40px;
+  min-width: 0;
+}
+
+/* Horario semanal: grilla de 2 columnas; cada celda es un día (con sus horas).
+   En contenedores muy angostos cae a 1 columna para no apretar las horas. */
+.asi-resumen-ctx__horario {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 360px) {
+  .asi-resumen-ctx__horario {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.asi-resumen-ctx__horario-item {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-primary-bg);
+}
+
+.asi-resumen-ctx__horario-dia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.asi-resumen-ctx__horario-dia .anticon {
+  color: var(--color-primary);
+}
+
+.asi-resumen-ctx__horario-horas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.asi-resumen-ctx__horario-hora {
+  white-space: nowrap;
+}
+
+/* Fecha actual resaltada: card con realce primario. */
+.asi-resumen-ctx__hoy-valor {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— Drawer de fecha especial —— */
+.asi-fecha-especial__alert {
+  margin-bottom: var(--spacing-md);
+}
+
+.asi-fecha-especial__bloques {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* —— Accesibilidad: respetar reduced motion (sin transform de press) —— */
+@media (prefers-reduced-motion: reduce) {
+
+  .asi-cal__dia--navegable,
+  .asi-cal__dia--habilitable,
+  .asi-celda--editable {
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .asi-cal__dia--navegable:active,
+  .asi-cal__dia--habilitable:active,
+  .asi-celda--editable:active {
+    transform: none;
+  }
+}

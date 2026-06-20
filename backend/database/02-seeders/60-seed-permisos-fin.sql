@@ -20,9 +20,12 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('finanzas.pago.registrar', 'Pagos: registrar pago', NULL, 'FINANZAS', 'FIN', 'fin_pagos', '/pagos/listar', 1, NOW(), NOW()),
 ('finanzas.pago.editar', 'Pagos: editar y eliminar pago', NULL, 'FINANZAS', 'FIN', 'fin_pagos', '/pagos/listar', 1, NOW(), NOW()),
 ('finanzas.pago.adicionales', 'Pagos adicionales: gestionar', NULL, 'FINANZAS', 'FIN', 'fin_adicionales', '/pagos/adicionales', 1, NOW(), NOW()),
+('finanzas.compromiso.gestionar', 'Compromisos de pago: listar, ver detalle, crear, editar y eliminar', NULL, 'FINANZAS', 'FIN', 'fin_pagos', '/pagos/listar', 1, NOW(), NOW()),
 ('finanzas.pago.reporte.carrera', 'Reportes de pagos: por carrera', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
 ('finanzas.pago.reporte.estudiante', 'Reportes de pagos: por estudiante', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
-('finanzas.pago.reporte.gestion', 'Reportes de pagos: por gestión', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW());
+('finanzas.pago.reporte.gestion', 'Reportes de pagos: por gestión', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
+('finanzas.beca.reporte', 'Reportes de pagos: control de becas por carrera', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
+('finanzas.cuenta-cobrar.reporte', 'Reportes de pagos: cuentas por cobrar', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo FIN
 INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)
@@ -36,14 +39,25 @@ JOIN (
   UNION ALL SELECT 'finanzas.pago.editar', 'EDITAR'
   UNION ALL SELECT 'finanzas.pago.editar', 'ELIMINAR'
   UNION ALL SELECT 'finanzas.pago.adicionales', 'LISTAR'
+  UNION ALL SELECT 'finanzas.pago.adicionales', 'DETALLE'
   UNION ALL SELECT 'finanzas.pago.adicionales', 'CREAR'
   UNION ALL SELECT 'finanzas.pago.adicionales', 'EDITAR'
+  UNION ALL SELECT 'finanzas.pago.adicionales', 'ELIMINAR'
+  UNION ALL SELECT 'finanzas.compromiso.gestionar', 'LISTAR'
+  UNION ALL SELECT 'finanzas.compromiso.gestionar', 'DETALLE'
+  UNION ALL SELECT 'finanzas.compromiso.gestionar', 'CREAR'
+  UNION ALL SELECT 'finanzas.compromiso.gestionar', 'EDITAR'
+  UNION ALL SELECT 'finanzas.compromiso.gestionar', 'ELIMINAR'
   UNION ALL SELECT 'finanzas.pago.reporte.carrera', 'LISTAR'
   UNION ALL SELECT 'finanzas.pago.reporte.carrera', 'EXPORTAR'
   UNION ALL SELECT 'finanzas.pago.reporte.estudiante', 'LISTAR'
   UNION ALL SELECT 'finanzas.pago.reporte.estudiante', 'EXPORTAR'
   UNION ALL SELECT 'finanzas.pago.reporte.gestion', 'LISTAR'
   UNION ALL SELECT 'finanzas.pago.reporte.gestion', 'EXPORTAR'
+  UNION ALL SELECT 'finanzas.beca.reporte', 'LISTAR'
+  UNION ALL SELECT 'finanzas.beca.reporte', 'EXPORTAR'
+  UNION ALL SELECT 'finanzas.cuenta-cobrar.reporte', 'LISTAR'
+  UNION ALL SELECT 'finanzas.cuenta-cobrar.reporte', 'EXPORTAR'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo FIN (roles 2-8; ADMIN_SISTEMA hereda por vista)
@@ -67,14 +81,33 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.editar', 'EDITAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.editar', 'ELIMINAR'
   UNION ALL SELECT 'SEC_ADMIN', 'finanzas.pago.editar', 'EDITAR'
+  UNION ALL SELECT 'SEC_ADMIN', 'finanzas.pago.editar', 'ELIMINAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.pago.adicionales', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.pago.adicionales', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'finanzas.pago.adicionales', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.pago.adicionales', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.pago.adicionales', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.adicionales', 'LISTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.adicionales', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.adicionales', 'CREAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.adicionales', 'EDITAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.adicionales', 'ELIMINAR'
   UNION ALL SELECT 'SEC_ADMIN', 'finanzas.pago.adicionales', 'LISTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'finanzas.pago.adicionales', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.compromiso.gestionar', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.compromiso.gestionar', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'finanzas.compromiso.gestionar', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.compromiso.gestionar', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.compromiso.gestionar', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.compromiso.gestionar', 'LISTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.compromiso.gestionar', 'DETALLE'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.compromiso.gestionar', 'CREAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.compromiso.gestionar', 'EDITAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.compromiso.gestionar', 'ELIMINAR'
+  UNION ALL SELECT 'SEC_ADMIN', 'finanzas.compromiso.gestionar', 'LISTAR'
+  UNION ALL SELECT 'SEC_ADMIN', 'finanzas.compromiso.gestionar', 'DETALLE'
+  UNION ALL SELECT 'SEC_ADMIN', 'finanzas.compromiso.gestionar', 'CREAR'
+  UNION ALL SELECT 'SEC_ADMIN', 'finanzas.compromiso.gestionar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.pago.reporte.carrera', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.pago.reporte.carrera', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.reporte.carrera', 'LISTAR'
@@ -87,6 +120,14 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'finanzas.pago.reporte.gestion', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.reporte.gestion', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.pago.reporte.gestion', 'EXPORTAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.beca.reporte', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.beca.reporte', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca.reporte', 'LISTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca.reporte', 'EXPORTAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.cuenta-cobrar.reporte', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.cuenta-cobrar.reporte', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.cuenta-cobrar.reporte', 'LISTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.cuenta-cobrar.reporte', 'EXPORTAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

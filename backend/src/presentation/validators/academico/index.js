@@ -16,7 +16,6 @@ export {
   upsertNotaCuadernoValidator,
   guardarNotasCuadernoBimestreValidator,
   getBimestreConsolidadoValidator,
-  guardarBimestreConsolidadoValidator,
 } from './cuaderno-evaluacion.validator.js';
 export {
   createActividadCronogramaValidator,

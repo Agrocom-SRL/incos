@@ -47,17 +47,12 @@ export const ActividadCalendario = sequelize.define(
       allowNull: true,
       comment: 'Fecha de fin (NULL si es actividad de un solo día)',
     },
-    esTodoElDia: {
+    suspendeClases: {
       type: DataTypes.BOOLEAN,
-      field: 'es_todo_el_dia',
+      field: 'suspende_clases',
       allowNull: false,
-      defaultValue: true,
-      comment: 'Si la actividad dura todo el día o tiene horario específico',
-    },
-    horario: {
-      type: DataTypes.JSON,
-      allowNull: true,
-      comment: 'Horario específico si no es todo el día. Formato: {"inicio": "08:00", "fin": "12:00"}',
+      defaultValue: false,
+      comment: 'TRUE = este día NO se pasa clase (feriado, receso, vacaciones); neutro en asistencia',
     },
   },
   {

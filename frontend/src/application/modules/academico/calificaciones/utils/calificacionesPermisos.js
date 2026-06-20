@@ -25,6 +25,6 @@ export const CALIFICACIONES_PERMISOS = {
   cuadernoNotas: 'academico.calificacion.cuaderno.notas',
   /** Guardar bimestre: persiste y recalcula componentes del bimestre */
   cuadernoGuardar: 'academico.calificacion.cuaderno.guardar',
-  /** Bimestre cerrado: ajuste administrativo (habilitación / sobrescritura) */
+  /** Bimestre cerrado: reabrir / consolidar bimestre (ajuste administrativo) */
   bimestreAjusteAdmin: 'academico.calificacion.bimestre.ajuste_admin',
 };

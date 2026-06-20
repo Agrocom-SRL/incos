@@ -22,6 +22,17 @@
 --
 -- ASISTENCIAS: solo 3 estados registrados. La licencia no es un estado persistido;
 -- la aplicación cruza licencias APROBADAS al calcular % y trata esos días como neutros.
+-- La marca cuelga de la SESIÓN (sesion_clase_id): fecha, hora, curso y bimestre se
+-- derivan de sesiones_clase, NO se repiten en cada fila (un solo lugar de verdad).
+--
+-- ANCLA DE LA SESIÓN (sesiones_clase) — equivalencia con Calificaciones:
+--   La sesión se ata a asignacion_docente_id (el curso: docente + oferta) y a
+--   periodo_academico_id (el bimestre, periodos_academicos.division=BIMESTRE).
+--   El bimestre se referencia DIRECTO al periodo académico del calendario, NO a
+--   través de bimestres_matricula: mismo patrón que evaluaciones.periodo_academico_id
+--   en Calificaciones, que mantiene coherentes las dos planillas hermanas
+--   (notas y asistencia) del mismo docente/curso/bimestre. La gestión y el
+--   numero_orden del bimestre se derivan del periodo, no se duplican.
 --
 -- CLASES NO DICTADAS (Forma B): sin docente_ausente_id ni actividad_calendario_id.
 -- Docente derivable por asignacion_docente. Feriados solo en actividades_calendario.
@@ -43,6 +54,7 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS sesiones_clase;
 DROP TABLE IF EXISTS asistencias;
 DROP TABLE IF EXISTS clases_no_dictadas;
 DROP TABLE IF EXISTS licencias;
@@ -87,8 +99,7 @@ CREATE TABLE licencias (
     -- Estado de aprobación
     estado ENUM('PENDIENTE', 'APROBADA', 'RECHAZADA', 'CANCELADA') DEFAULT 'PENDIENTE'
         COMMENT 'PENDIENTE (recibida), APROBADA (autorizada, neutraliza ausencias en el rango), RECHAZADA, CANCELADA',
-    motivo_rechazo TEXT NULL COMMENT 'Motivo del rechazo',
-    observaciones_decision TEXT NULL COMMENT 'Observaciones del decisor',
+    observaciones_decision TEXT NULL COMMENT 'Observación única de la decisión (motivo de aprobación/rechazo/cancelación)',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -176,12 +187,84 @@ CREATE TABLE clases_no_dictadas (
 COMMENT='Cancelaciones específicas no cubiertas por actividades_calendario (Forma B). 1 fila = 1 día de 1 asignación docente.';
 
 -- ============================================
+-- TABLA: sesiones_clase
+-- Sesión de clase en que el docente tomó asistencia. 1 fila = 1 curso × 1 fecha.
+-- ============================================
+-- Su EXISTENCIA = "ese día se registró asistencia" → da el dot del calendario y el
+-- DENOMINADOR del % (no se infiere de contar faltas). Unifica el día regular del horario
+-- y la sesión especial fuera de horario (taller/recuperación) vía es_especial.
+-- El cierre/reapertura vive aquí (estado ABIERTA/CERRADA): cerrar el registro del bimestre
+-- = cerrar en lote sus sesiones; reabrir para corregir = volver una sesión a ABIERTA.
+-- El bimestre se referencia por FK a periodos_academicos (division=BIMESTRE), NO por un
+-- entero suelto (mismo patrón que evaluaciones.periodo_academico_id).
+
+CREATE TABLE sesiones_clase (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Relaciones principales
+    asignacion_docente_id INT NULL COMMENT 'Curso (docente + oferta). Referencia a asignaciones_docentes.',
+    periodo_academico_id INT NULL COMMENT 'Bimestre del calendario (periodos_academicos, division=BIMESTRE). De aquí derivan gestión y numero_orden.',
+
+    -- Fecha y hora de la sesión
+    fecha DATE NOT NULL COMMENT 'Fecha de la sesión',
+    hora_inicio TIME NULL COMMENT 'Hora de inicio (opcional; derivable del horario en sesiones regulares)',
+    hora_fin TIME NULL COMMENT 'Hora de fin (opcional)',
+
+    -- Tipo y motivo
+    es_especial BOOLEAN DEFAULT FALSE COMMENT 'FALSE = sesión del horario regular; TRUE = sesión fuera de horario (taller/recuperación)',
+    motivo VARCHAR(255) NULL COMMENT 'Motivo cuando es_especial = TRUE',
+
+    -- Cierre del registro (por sesión; el estado por bimestre se deriva por agregación)
+    estado ENUM('ABIERTA', 'CERRADA') NOT NULL DEFAULT 'ABIERTA'
+        COMMENT 'ABIERTA: el docente marca/edita. CERRADA: registro firmado; reabrir = volver a ABIERTA.',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    FOREIGN KEY (asignacion_docente_id) REFERENCES asignaciones_docentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (periodo_academico_id) REFERENCES periodos_academicos(id) ON DELETE SET NULL,
+
+    UNIQUE KEY uq_asignacion_fecha (asignacion_docente_id, fecha, deleted_at),
+    INDEX idx_asignacion_docente_id (asignacion_docente_id) COMMENT 'Búsqueda por curso',
+    INDEX idx_periodo_academico_id (periodo_academico_id) COMMENT 'Búsqueda por bimestre',
+    INDEX idx_fecha (fecha) COMMENT 'Búsqueda por fecha',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado de cierre',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_asignacion_fecha (asignacion_docente_id, fecha, activo, deleted_at) COMMENT '¿Se tomó asistencia este curso este día? (dot + denominador %)',
+    INDEX idx_asignacion_periodo (asignacion_docente_id, periodo_academico_id, estado, activo, deleted_at) COMMENT 'Sesiones de un curso por bimestre (cierre en lote y estado derivado)'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Sesión de clase en que se tomó asistencia. 1 fila = 1 curso × 1 fecha. Unifica día regular y sesión especial; su existencia marca el día tomado y su estado gobierna el cierre/reapertura.';
+
+-- ============================================
 -- TABLA: asistencias
 -- Registro de asistencia del estudiante a clases
 -- ============================================
 -- Solo 3 estados persistidos: PRESENTE, AUSENTE, TARDANZA.
 -- Licencias APROBADAS se cruzan dinámicamente por matricula → inscripcion + fecha;
 -- no se almacena licencia_id ni estado LICENCIA en esta tabla.
+--
+-- GRANO Y CLAVES (1 fila = 1 estudiante · 1 sesión):
+--   - matricula_materia_id → estudiante + materia (roster del curso).
+--   - sesion_clase_id       → la sesión tomada (sesiones_clase). ÚNICA fuente del
+--     día y la hora: la FECHA y la HORA de la clase NO se almacenan aquí, se derivan
+--     de sesiones_clase.fecha / sesiones_clase.hora_inicio (un solo lugar de verdad).
+--     El curso (asignacion_docente) y el bimestre (periodo_academico) también
+--     derivan de la sesión, no se repiten en cada marca.
+--   - Modelo SPARSE: PRESENTE es implícito (no se persiste); solo se guardan filas
+--     AUSENTE/TARDANZA. La existencia de la SESIÓN (no de las marcas) prueba el día
+--     tomado y da el denominador del %.
+--
+-- Por qué NO hay fecha_clase/hora_clase: serían redundancia derivable de la sesión.
+-- La planilla de lectura (vista 133) ya proyecta sesiones_clase.fecha AS fecha_clase;
+-- duplicarlas en cada marca abre la puerta a inconsistencias (marca con fecha ≠ sesión).
 --
 -- Al calcular % de asistencia:
 --   - PRESENTE → asistencia completa
@@ -193,12 +276,9 @@ COMMENT='Cancelaciones específicas no cubiertas por actividades_calendario (For
 CREATE TABLE asistencias (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    -- Relación principal
+    -- Relación principal (el día/hora/curso/bimestre derivan de la sesión, no se repiten)
     matricula_materia_id INT NULL COMMENT 'Matrícula a la materia (referencia a matriculas_materia)',
-
-    -- Fecha y hora de la clase
-    fecha_clase DATE NOT NULL COMMENT 'Fecha de la clase',
-    hora_clase TIME NULL COMMENT 'Hora de la clase (opcional)',
+    sesion_clase_id INT NULL COMMENT 'Sesión de clase a la que pertenece la marca (sesiones_clase). Fecha, hora, curso y bimestre derivan de aquí.',
 
     -- Estado de asistencia (3 valores)
     estado ENUM('PRESENTE', 'AUSENTE', 'TARDANZA') NOT NULL DEFAULT 'AUSENTE'
@@ -219,18 +299,19 @@ CREATE TABLE asistencias (
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
     FOREIGN KEY (matricula_materia_id) REFERENCES matriculas_materia(id) ON DELETE SET NULL,
+    FOREIGN KEY (sesion_clase_id) REFERENCES sesiones_clase(id) ON DELETE SET NULL,
 
     INDEX idx_matricula_materia_id (matricula_materia_id) COMMENT 'Búsqueda por matrícula',
-    INDEX idx_fecha_clase (fecha_clase) COMMENT 'Búsqueda por fecha de clase',
+    INDEX idx_sesion_clase_id (sesion_clase_id) COMMENT 'Marcas de una sesión',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_matricula_fecha (matricula_materia_id, fecha_clase, activo, deleted_at) COMMENT 'Asistencia por matrícula y fecha',
-    INDEX idx_fecha_estado (fecha_clase, estado, activo, deleted_at) COMMENT 'Reportes diarios',
+    INDEX idx_sesion_matricula (sesion_clase_id, matricula_materia_id, deleted_at) COMMENT 'Upsert SPARSE: marca de un estudiante en una sesión',
     INDEX idx_matricula_estado (matricula_materia_id, estado, activo, deleted_at) COMMENT 'Cálculo de % de asistencia'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Asistencia por clase (PRESENTE/AUSENTE/TARDANZA). Licencias APROBADAS se cruzan dinámicamente vía inscripcion, sin FK en esta tabla.';
+COMMENT='Asistencia por sesión (SPARSE: solo AUSENTE/TARDANZA; PRESENTE implícito). Fecha/hora/curso/bimestre derivan de sesiones_clase. Licencias APROBADAS se cruzan dinámicamente vía inscripcion, sin FK en esta tabla.';
+
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

@@ -5,7 +5,13 @@
 import { PAGOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListPaymentAccountsUseCase } from '../../../../application/use-cases/pagos/ListPaymentAccountsUseCase.js';
-import { ListCuentasPagoController } from '../../../../presentation/controllers/pagos/index.js';
+import { CreatePaymentAccountUseCase } from '../../../../application/use-cases/pagos/CreatePaymentAccountUseCase.js';
+import { UpdatePaymentAccountUseCase } from '../../../../application/use-cases/pagos/UpdatePaymentAccountUseCase.js';
+import {
+    ListCuentasPagoController,
+    CreateCuentaPagoController,
+    UpdateCuentaPagoController,
+} from '../../../../presentation/controllers/pagos/index.js';
 import { buildCuentasPagoRouter } from '../../../../presentation/routes/cuentas-pago.routes.js';
 
 export function registerCuentasPagoResource(container) {
@@ -15,6 +21,26 @@ export function registerCuentasPagoResource(container) {
         PAGOS_TOKENS.listPaymentAccountsUseCase,
         (c) =>
             new ListPaymentAccountsUseCase({
+                paymentAccountRepository: c.resolve(REPOSITORIOS_TOKENS.paymentAccountRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.createPaymentAccountUseCase,
+        (c) =>
+            new CreatePaymentAccountUseCase({
+                paymentAccountRepository: c.resolve(REPOSITORIOS_TOKENS.paymentAccountRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.updatePaymentAccountUseCase,
+        (c) =>
+            new UpdatePaymentAccountUseCase({
                 paymentAccountRepository: c.resolve(REPOSITORIOS_TOKENS.paymentAccountRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
@@ -32,6 +58,28 @@ export function registerCuentasPagoResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.createCuentaPagoController,
+        (c) =>
+            new CreateCuentaPagoController({
+                createPaymentAccountUseCase: c.resolve(PAGOS_TOKENS.createPaymentAccountUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.updateCuentaPagoController,
+        (c) =>
+            new UpdateCuentaPagoController({
+                updatePaymentAccountUseCase: c.resolve(PAGOS_TOKENS.updatePaymentAccountUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ROUTER
     registerComponent(
         container,
@@ -39,6 +87,8 @@ export function registerCuentasPagoResource(container) {
         (c) => {
             const controllers = {
                 listCuentasPagoController: c.resolve(PAGOS_TOKENS.listCuentasPagoController),
+                createCuentaPagoController: c.resolve(PAGOS_TOKENS.createCuentaPagoController),
+                updateCuentaPagoController: c.resolve(PAGOS_TOKENS.updateCuentaPagoController),
             };
 
             const middlewares = {

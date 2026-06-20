@@ -7,9 +7,6 @@ import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { calcularComponentesEstudiante } from '../../utils/calcularResumenBimestreConCeros.js';
 import { resolverComponentesBimestreConsolidado } from '../../utils/resolverComponentesBimestreConsolidado.js';
-import { calcularNotaBimestre } from '../../utils/cuadernoNotasCalculo.js';
-
-const redondear = (v) => (v == null ? null : Math.round(Number(v) * 100) / 100);
 
 const formatearFecha = (v) => {
   if (v == null || v === '') return null;
@@ -133,19 +130,11 @@ export class GetBimestreConsolidadoUseCase {
       );
 
       const resuelto = resolverComponentesBimestreConsolidado({
-        habilitacionTeorico: row.habilitacion_teorico,
-        habilitacionPractico: row.habilitacion_practico,
         notaTeorico: row.nota_teorico,
         notaPractico: row.nota_practico,
         notaBimestre: row.nota_bimestre,
         calculado,
       });
-
-      const sumaCalculada =
-        calcularNotaBimestre(resuelto.notaTeorico, resuelto.notaPractico) ??
-        calcularNotaBimestre(resuelto.calculadoTeorico, resuelto.calculadoPractico);
-      const tieneAjusteAdmin =
-        resuelto.habilitacionTeorico != null || resuelto.habilitacionPractico != null;
 
       return {
         id: estudianteId,
@@ -157,17 +146,6 @@ export class GetBimestreConsolidadoUseCase {
         teorico: resuelto.teorico,
         practico: resuelto.practico,
         total: resuelto.total,
-        totalCalculado: sumaCalculada,
-        tieneAjusteAdmin,
-        fechaHabilitacion: formatearFecha(row.fecha_habilitacion),
-        habilitacionTeorico: resuelto.habilitacionTeorico,
-        habilitacionPractico: resuelto.habilitacionPractico,
-        notaTeorico: resuelto.notaTeorico,
-        notaPractico: resuelto.notaPractico,
-        calculadoTeorico: resuelto.calculadoTeorico,
-        calculadoPractico: resuelto.calculadoPractico,
-        fuenteTeorico: resuelto.fuenteTeorico,
-        fuentePractico: resuelto.fuentePractico,
         estadoBimestre: row.estado_bimestre ?? null,
       };
     });

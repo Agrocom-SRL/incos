@@ -5,11 +5,12 @@
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Modal, Spin } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, LockOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { BackButton } from '@atoms';
+import { BackButton, ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
+import { useAcciones } from '@application-shared/hooks';
 import { useCuadernoCurso } from '@application-academico/calificaciones/hooks/useCuadernoCurso.js';
 import { useBimestrePagerTeclado } from '@application-academico/calificaciones/hooks/useBimestrePagerTeclado.js';
 import { useNavegacionBimestres } from '@application-academico/calificaciones/hooks/useNavegacionBimestres.js';
@@ -18,6 +19,7 @@ import { usePoliticaInstitucional } from '@application-academico/calificaciones/
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
 import { CALIFICACIONES_VIEW_ROUTE_KEY } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
+import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import {
   CuadernoAutosaveProvider,
   useCuadernoAutosaveRegistry,
@@ -58,8 +60,16 @@ const CuadernoGrilla = ({
   onRefetchCuaderno,
   enteringColumnIds,
   removingColumnId,
+  cuotaTeorico,
+  cuotaPractico,
 }) => {
   const { notification } = App.useApp();
+  const sumaComponente = (comp) =>
+    evaluaciones
+      .filter((ev) => ev.componente === comp)
+      .reduce((acc, ev) => acc + (Number(ev.puntos) || 0), 0);
+  const cuotaCompleta =
+    sumaComponente('TEORICO') >= cuotaTeorico && sumaComponente('PRACTICO') >= cuotaPractico;
   const {
     collectNotasParaGuardar,
     marcarNotasGuardadasEnLote,
@@ -198,6 +208,7 @@ const CuadernoGrilla = ({
       onGuardarBimestre={puedeGuardarBimestre ? handleGuardarBimestre : undefined}
       guardandoBimestre={guardandoBimestre}
       mostrarGuardar={puedeGuardarBimestre && hayCambiosPendientes}
+      ocultarHintAgregar={cuotaCompleta}
       enteringColumnIds={enteringColumnIds}
       removingColumnId={removingColumnId}
     />
@@ -206,10 +217,12 @@ const CuadernoGrilla = ({
 
 const CuadernoPage = () => {
   const navigate = useNavigate();
+  const { notification, modal } = App.useApp();
   const { contextName: docenteNombreCoordinacion } = useRouteViewMode(CALIFICACIONES_VIEW_ROUTE_KEY);
   const { politica } = usePoliticaInstitucional();
   const cuotaTeorico = Number(politica?.cuotaTeorico) || 30;
   const cuotaPractico = Number(politica?.cuotaPractico) || 70;
+  const ajusteAdmin = useAcciones(CALIFICACIONES_PERMISOS.bimestreAjusteAdmin);
   const {
     curso,
     docente,
@@ -220,6 +233,7 @@ const CuadernoPage = () => {
     bimestreTitulo,
     periodoBimestreActivo,
     gestionFechaFin,
+    reabierto,
     modoEdicion,
     puedeCrearEvaluacion,
     puedeEditarEvaluacion,
@@ -240,6 +254,45 @@ const CuadernoPage = () => {
     eliminarEvaluacion,
     resetearNotasEvaluacion,
   } = useCuadernoCurso();
+
+  const [cerrandoBimestre, setCerrandoBimestre] = useState(false);
+  const puedeCerrarBimestre = reabierto && ajusteAdmin.puedeEditar;
+
+  const handleCerrarConsolidar = useCallback(() => {
+    modal.confirm({
+      title: 'Cerrar y consolidar bimestre',
+      okText: 'Cerrar bimestre',
+      okType: 'danger',
+      cancelText: 'Cancelar',
+      content: (
+        <span>
+          Se cerrará nuevamente el <strong>{bimestreTitulo}</strong> y se consolidarán las notas del
+          cuaderno. El docente ya no podrá editarlo hasta una nueva reapertura.
+        </span>
+      ),
+      onOk: async () => {
+        setCerrandoBimestre(true);
+        try {
+          const res = await CalificacionRepository.cerrarBimestreCurso(cursoId, bimestreActivo);
+          if (!res?.success) {
+            throw new Error(res?.error || 'No se pudo cerrar el bimestre');
+          }
+          notification.success({
+            title: 'Bimestre cerrado',
+            description: 'Se consolidaron las notas del bimestre.',
+          });
+          navigate(volverPath);
+        } catch (err) {
+          notification.error({
+            title: 'No se pudo cerrar el bimestre',
+            description:
+              typeof err?.message === 'string' ? err.message : 'Reintentá en unos segundos.',
+          });
+          setCerrandoBimestre(false);
+        }
+      },
+    });
+  }, [modal, notification, navigate, bimestreTitulo, cursoId, bimestreActivo, volverPath]);
 
   const navegacionBimestres = useNavegacionBimestres(cursoId, bimestreActivo, bimestreVigente);
   useBimestrePagerTeclado({
@@ -320,13 +373,27 @@ const CuadernoPage = () => {
       title={tituloHeader}
       breadcrumbItems={breadcrumbItems}
       actions={
-        <BackButton
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(volverPath)}
-          aria-label="Volver al registro académico"
-        >
-          Volver
-        </BackButton>
+        <Flex gap={8} wrap="wrap">
+          {puedeCerrarBimestre ? (
+            <ActionButton
+              permiso={CALIFICACIONES_PERMISOS.bimestreAjusteAdmin}
+              accion="EDITAR"
+              variant="danger"
+              icon={<LockOutlined />}
+              loading={cerrandoBimestre}
+              onClick={handleCerrarConsolidar}
+            >
+              Cerrar y consolidar bimestre
+            </ActionButton>
+          ) : null}
+          <BackButton
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(volverPath)}
+            aria-label="Volver al registro académico"
+          >
+            Volver
+          </BackButton>
+        </Flex>
       }
     />
   );
@@ -379,6 +446,8 @@ const CuadernoPage = () => {
           onRefetchCuaderno={refetch}
           enteringColumnIds={enteringColumnIds}
           removingColumnId={removingColumnId}
+          cuotaTeorico={cuotaTeorico}
+          cuotaPractico={cuotaPractico}
         />
         <CuadernoFooter />
       </div>

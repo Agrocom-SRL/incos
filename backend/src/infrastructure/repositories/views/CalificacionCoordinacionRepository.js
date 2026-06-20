@@ -194,9 +194,6 @@ export class CalificacionCoordinacionRepository extends ICalificacionCoordinacio
         nota_teorico,
         nota_practico,
         nota_bimestre,
-        habilitacion_teorico,
-        habilitacion_practico,
-        fecha_habilitacion,
         estado_bimestre
       FROM vista_base_calificacion_registro_notas_curso
       WHERE asignacion_docente_id = ?

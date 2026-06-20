@@ -33,6 +33,20 @@ import {
 import {
   ListCoordinacionAsistenciaDocentesUseCase,
   ListMisCursosAsistenciaUseCase,
+  GetCalendarioAsistenciaUseCase,
+  GetPlanillaAsistenciaSemanalUseCase,
+  GuardarPlanillaAsistenciaUseCase,
+  CerrarRegistroAsistenciaUseCase,
+  ReabrirRegistroAsistenciaUseCase,
+  CrearSesionEspecialUseCase,
+  EliminarSesionEspecialUseCase,
+  ListarLicenciasUseCase,
+  GetLicenciaByIdUseCase,
+  CrearLicenciaUseCase,
+  DecidirLicenciaUseCase,
+  EditarLicenciaUseCase,
+  CancelarLicenciaUseCase,
+  GetInscripcionVigenteUseCase,
 } from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
@@ -102,6 +116,63 @@ export function registerAcademicoModule(factory) {
 
   factory.listarMisCursosAsistencia = () => {
     return new ListMisCursosAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerCalendarioAsistencia = () => {
+    return new GetCalendarioAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerPlanillaAsistenciaSemanal = () => {
+    return new GetPlanillaAsistenciaSemanalUseCase(AsistenciaRepository);
+  };
+
+  factory.guardarPlanillaAsistencia = () => {
+    return new GuardarPlanillaAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.cerrarRegistroAsistencia = () => {
+    return new CerrarRegistroAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.reabrirRegistroAsistencia = () => {
+    return new ReabrirRegistroAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.crearSesionEspecialAsistencia = () => {
+    return new CrearSesionEspecialUseCase(AsistenciaRepository);
+  };
+
+  factory.eliminarSesionEspecialAsistencia = () => {
+    return new EliminarSesionEspecialUseCase(AsistenciaRepository);
+  };
+
+  // Licencias estudiantiles (página dentro de Asistencia · ACA-ASI-LIC)
+  factory.listarLicencias = () => {
+    return new ListarLicenciasUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerLicenciaPorId = () => {
+    return new GetLicenciaByIdUseCase(AsistenciaRepository);
+  };
+
+  factory.crearLicencia = () => {
+    return new CrearLicenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.decidirLicencia = () => {
+    return new DecidirLicenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.editarLicencia = () => {
+    return new EditarLicenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.cancelarLicencia = () => {
+    return new CancelarLicenciaUseCase(AsistenciaRepository);
+  };
+
+  factory.obtenerInscripcionVigenteLicencia = () => {
+    return new GetInscripcionVigenteUseCase(AsistenciaRepository);
   };
 
   factory.obtenerRegistroNotasCurso = () => {

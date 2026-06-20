@@ -23,7 +23,13 @@ import { DeletePaymentInstallmentUseCase } from '../../../../application/use-cas
 import { UpdatePaymentInstallmentUseCase } from '../../../../application/use-cases/pagos/UpdatePaymentInstallmentUseCase.js';
 import { GenerateReciboPagoUseCase } from '../../../../application/use-cases/pagos/GenerateReciboPagoUseCase.js';
 import { ExportPaymentAporteByCareerExcelUseCase } from '../../../../application/use-cases/pagos/ExportPaymentAporteByCareerExcelUseCase.js';
+import { GetBecasPorCarreraReporteUseCase } from '../../../../application/use-cases/pagos/GetBecasPorCarreraReporteUseCase.js';
 import { SearchStudentsForAporteRegistroUseCase } from '../../../../application/use-cases/pagos/SearchStudentsForAporteRegistroUseCase.js';
+import { GetCompromisoByPagoAporteUseCase } from '../../../../application/use-cases/pagos/GetCompromisoByPagoAporteUseCase.js';
+import { UpsertCompromisoUseCase } from '../../../../application/use-cases/pagos/UpsertCompromisoUseCase.js';
+import { UpdateCompromisoUseCase } from '../../../../application/use-cases/pagos/UpdateCompromisoUseCase.js';
+import { DeleteCompromisoUseCase } from '../../../../application/use-cases/pagos/DeleteCompromisoUseCase.js';
+import { GetCuentasPorCobrarReporteUseCase } from '../../../../application/use-cases/pagos/GetCuentasPorCobrarReporteUseCase.js';
 import {
     RegisterPagoAporteController,
     ListPagosAportesController,
@@ -34,7 +40,13 @@ import {
     UpdatePaymentInstallmentController,
     GenerateReciboPagoController,
     ExportListaAportesPorCarreraExcelController,
+    GetBecasPorCarreraReporteController,
     SearchStudentsForAporteRegistroController,
+    GetCompromisoController,
+    UpsertCompromisoController,
+    UpdateCompromisoController,
+    DeleteCompromisoController,
+    GetCuentasPorCobrarReporteController,
 } from '../../../../presentation/controllers/pagos/index.js';
 import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-aportes.routes.js';
 
@@ -186,10 +198,80 @@ export function registerPagosAportesResource(container) {
 
     registerComponent(
         container,
+        PAGOS_TOKENS.getBecasPorCarreraReporteUseCase,
+        (c) =>
+            new GetBecasPorCarreraReporteUseCase({
+                becasPorCarreraViewRepository: c.resolve(REPOSITORIOS_TOKENS.becasPorCarreraViewRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         PAGOS_TOKENS.searchStudentsForAporteRegistroUseCase,
         (c) =>
             new SearchStudentsForAporteRegistroUseCase({
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    // ---- Compromiso de pago (CRUD) ----
+    registerComponent(
+        container,
+        PAGOS_TOKENS.getCompromisoByPagoAporteUseCase,
+        (c) =>
+            new GetCompromisoByPagoAporteUseCase({
+                compromisoPagoRepository: c.resolve(REPOSITORIOS_TOKENS.compromisoPagoRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.upsertCompromisoUseCase,
+        (c) =>
+            new UpsertCompromisoUseCase({
+                compromisoPagoRepository: c.resolve(REPOSITORIOS_TOKENS.compromisoPagoRepository),
+                contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.updateCompromisoUseCase,
+        (c) =>
+            new UpdateCompromisoUseCase({
+                compromisoPagoRepository: c.resolve(REPOSITORIOS_TOKENS.compromisoPagoRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.deleteCompromisoUseCase,
+        (c) =>
+            new DeleteCompromisoUseCase({
+                compromisoPagoRepository: c.resolve(REPOSITORIOS_TOKENS.compromisoPagoRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    // ---- Cuentas por cobrar (reporte) ----
+    registerComponent(
+        container,
+        PAGOS_TOKENS.getCuentasPorCobrarReporteUseCase,
+        (c) =>
+            new GetCuentasPorCobrarReporteUseCase({
+                cuentasPorCobrarViewRepository: c.resolve(REPOSITORIOS_TOKENS.cuentasPorCobrarViewRepository),
+                compromisoPagoRepository: c.resolve(REPOSITORIOS_TOKENS.compromisoPagoRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                contributionConfigurationRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.contributionConfigurationRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -299,10 +381,78 @@ export function registerPagosAportesResource(container) {
 
     registerComponent(
         container,
+        PAGOS_TOKENS.getBecasPorCarreraReporteController,
+        (c) =>
+            new GetBecasPorCarreraReporteController({
+                getBecasPorCarreraReporteUseCase: c.resolve(PAGOS_TOKENS.getBecasPorCarreraReporteUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         PAGOS_TOKENS.searchStudentsForAporteRegistroController,
         (c) =>
             new SearchStudentsForAporteRegistroController({
                 searchStudentsForAporteRegistroUseCase: c.resolve(PAGOS_TOKENS.searchStudentsForAporteRegistroUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    // ---- Compromiso de pago (CRUD) ----
+    registerComponent(
+        container,
+        PAGOS_TOKENS.getCompromisoController,
+        (c) =>
+            new GetCompromisoController({
+                getCompromisoByPagoAporteUseCase: c.resolve(PAGOS_TOKENS.getCompromisoByPagoAporteUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.upsertCompromisoController,
+        (c) =>
+            new UpsertCompromisoController({
+                upsertCompromisoUseCase: c.resolve(PAGOS_TOKENS.upsertCompromisoUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.updateCompromisoController,
+        (c) =>
+            new UpdateCompromisoController({
+                updateCompromisoUseCase: c.resolve(PAGOS_TOKENS.updateCompromisoUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.deleteCompromisoController,
+        (c) =>
+            new DeleteCompromisoController({
+                deleteCompromisoUseCase: c.resolve(PAGOS_TOKENS.deleteCompromisoUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    // ---- Cuentas por cobrar (reporte) ----
+    registerComponent(
+        container,
+        PAGOS_TOKENS.getCuentasPorCobrarReporteController,
+        (c) =>
+            new GetCuentasPorCobrarReporteController({
+                getCuentasPorCobrarReporteUseCase: c.resolve(PAGOS_TOKENS.getCuentasPorCobrarReporteUseCase),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })
@@ -327,6 +477,16 @@ export function registerPagosAportesResource(container) {
                 generateReciboPagoController: c.resolve(PAGOS_TOKENS.generateReciboPagoController),
                 exportListaAportesPorCarreraExcelController: c.resolve(
                     PAGOS_TOKENS.exportListaAportesPorCarreraExcelController
+                ),
+                getBecasPorCarreraReporteController: c.resolve(
+                    PAGOS_TOKENS.getBecasPorCarreraReporteController
+                ),
+                getCompromisoController: c.resolve(PAGOS_TOKENS.getCompromisoController),
+                upsertCompromisoController: c.resolve(PAGOS_TOKENS.upsertCompromisoController),
+                updateCompromisoController: c.resolve(PAGOS_TOKENS.updateCompromisoController),
+                deleteCompromisoController: c.resolve(PAGOS_TOKENS.deleteCompromisoController),
+                getCuentasPorCobrarReporteController: c.resolve(
+                    PAGOS_TOKENS.getCuentasPorCobrarReporteController
                 ),
             };
 

@@ -40,7 +40,10 @@ SELECT
   est.apellido_materno AS estudiante_apellido_materno,
   -- Gestión
   g.nombre AS gestion_nombre,
-  g.anio AS gestion_anio
+  g.anio AS gestion_anio,
+  -- Beca (nombre y porcentaje del descuento aplicado)
+  bd.nombre AS beca_nombre,
+  bd.porcentaje AS beca_porcentaje
 FROM pago_aporte pa
 INNER JOIN estudiantes est ON est.id = pa.estudiante_id
   AND est.activo = TRUE
@@ -48,5 +51,11 @@ INNER JOIN estudiantes est ON est.id = pa.estudiante_id
 INNER JOIN gestiones g ON g.id = pa.gestion_id
   AND g.activo = TRUE
   AND g.deleted_at IS NULL
+LEFT JOIN estudiantes_becas eb ON eb.id = pa.estudiante_beca_id
+  AND eb.activo = TRUE
+  AND eb.deleted_at IS NULL
+LEFT JOIN becas_descuentos bd ON bd.id = eb.beca_descuento_id
+  AND bd.activo = TRUE
+  AND bd.deleted_at IS NULL
 WHERE pa.activo = TRUE
   AND pa.deleted_at IS NULL;

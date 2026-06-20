@@ -29,17 +29,39 @@ const AsistenciaEntradaConnector = lazy(
 const MisCursosAsistenciaConnector = lazy(
   () => import('./connectors/MisCursosAsistenciaConnector.jsx'),
 );
+const CalendarioAsistenciaConnector = lazy(
+  () => import('./connectors/CalendarioAsistenciaConnector.jsx'),
+);
+const PlanillaAsistenciaSemanalConnector = lazy(
+  () => import('./connectors/PlanillaAsistenciaSemanalConnector.jsx'),
+);
+const LicenciasListConnector = lazy(
+  () => import('./connectors/LicenciasListConnector.jsx'),
+);
+const LicenciaSolicitarConnector = lazy(
+  () => import('./connectors/LicenciaSolicitarConnector.jsx'),
+);
 
 export const asistenciaRoutes = [
   {
     path: '/academico/asistencia/mis-cursos/:asignacionId/planilla',
-    element: <UnderConstruction />,
+    element: <PlanillaAsistenciaSemanalConnector />,
     key: 'ACA-ASI-PLANILLA',
-    breadcrumbLabel: 'Planilla diaria',
+    breadcrumbLabel: 'Planilla semanal',
     permiso: ASISTENCIA_PERMISOS.registroCuaderno,
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'ACA-ASI-MIS-CURSOS',
+  },
+  {
+    path: '/academico/asistencia/mis-cursos/:asignacionId/calendario',
+    element: <CalendarioAsistenciaConnector />,
+    key: 'ACA-ASI-CALENDARIO',
+    breadcrumbLabel: 'Calendario de asistencia',
+    permiso: ASISTENCIA_PERMISOS.registroCuaderno,
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'ACA-ASI-PLANILLA',
   },
   {
     path: '/academico/asistencia/mis-cursos',
@@ -75,7 +97,7 @@ export const asistenciaRoutes = [
   },
   {
     path: '/academico/asistencia/licencias/listar',
-    element: <UnderConstruction />,
+    element: <LicenciasListConnector />,
     key: 'ACA-ASI-LIC',
     breadcrumbLabel: 'Licencias estudiantiles',
     permiso: ASISTENCIA_PERMISOS.licenciaVer,
@@ -85,19 +107,11 @@ export const asistenciaRoutes = [
   },
   {
     path: '/academico/asistencia/licencias/solicitar',
-    element: <UnderConstruction />,
+    element: <LicenciaSolicitarConnector />,
     key: 'ACA-ASI-LIC-SOL',
+    breadcrumbLabel: 'Solicitar licencia',
     permiso: ASISTENCIA_PERMISOS.licenciaCrear,
     accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'ACA-ASI-LIC',
-  },
-  {
-    path: '/academico/asistencia/licencias/aprobar',
-    element: <UnderConstruction />,
-    key: 'ACA-ASI-LIC-APR',
-    permiso: ASISTENCIA_PERMISOS.licenciaAprobar,
-    accion: 'APROBAR',
     menu: null,
     breadcrumbParent: 'ACA-ASI-LIC',
   },

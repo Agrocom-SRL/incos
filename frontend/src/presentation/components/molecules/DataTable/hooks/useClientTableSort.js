@@ -56,27 +56,44 @@ export const useClientTableSort = ({
     return source;
   }, [dataSource, sortState, columns]);
 
-  const rowOffset = (pagState.current - 1) * pagState.pageSize;
+  const serverSide = pagination?.serverPagination === true;
+
+  // En modo server-side `pagState` NUNCA se actualiza (el branch server de
+  // `onChange` no hace `setPagState`), así que la numeración (#) debe derivar de
+  // los valores del servidor (`pagination.current`/`pagination.pageSize`). En
+  // client-side se mantiene el `pagState` interno como hasta ahora.
+  const rowOffset = serverSide
+    ? ((Number(pagination?.current) || 1) - 1) * (Number(pagination?.pageSize) || pagState.pageSize)
+    : (pagState.current - 1) * pagState.pageSize;
+
+  // Orden vigente en server-side ({ field, order: 'ASC'|'DESC' }) para reflejar
+  // la flecha de orden de forma controlada (la fuente de verdad es el provider).
+  const serverSort = serverSide ? pagination?.sort ?? null : null;
 
   const tableColumns = useMemo(
     () =>
       columns.map((col) => {
         const colKey = resolveColumnKey(col);
-        const isSorted = sortState?.columnKey === colKey;
-        const next = {
-          ...col,
-          sortOrder: isSorted ? sortState.order : null,
-        };
+        let sortOrder = null;
+        // Columnas con orden server-side (declaran `sortField`): la flecha la
+        // controla el estado del provider (`serverSort`).
+        if (serverSide && col.sortField != null) {
+          if (serverSort?.field && col.sortField === serverSort.field) {
+            sortOrder = serverSort.order === 'ASC' ? 'ascend' : 'descend';
+          }
+        } else if (sortState?.columnKey === colKey) {
+          // Orden client-side (también server-side sin `sortField`).
+          sortOrder = sortState.order;
+        }
+        const next = { ...col, sortOrder };
         if (colKey === 'nro' && typeof col.render === 'function') {
           next.render = (value, record, index) =>
             col.render(value, record, index, rowOffset);
         }
         return next;
       }),
-    [columns, sortState, rowOffset],
+    [columns, sortState, rowOffset, serverSide, serverSort],
   );
-
-  const serverSide = pagination?.serverPagination === true;
 
   const mergedPagination =
     pagination === false
@@ -107,14 +124,38 @@ export const useClientTableSort = ({
           };
 
   const handleTableChange = (pag, _filters, sorter, onChange) => {
-    if (!serverSide && (pag?.current != null || pag?.pageSize != null)) {
+    const s = Array.isArray(sorter) ? sorter[0] : sorter;
+
+    // ── Orden SERVER-SIDE (opt-in por columna) ────────────────────────────
+    // Solo se delega el orden al servidor cuando la columna declara `sortField`
+    // (campo de vista) y el provider expone `onSortChange`. Así NO se ordena la
+    // página visible en cliente, sino que el provider recarga el dataset completo
+    // ordenado. Las tablas server-side que NO declaran `sortField` (docentes,
+    // estudiantes, pagos legacy) conservan el orden client-side de siempre.
+    const sortedColumnKey = s?.columnKey ?? s?.field ?? null;
+    const sortedCol =
+      sortedColumnKey != null
+        ? columns.find((c) => resolveColumnKey(c) === sortedColumnKey)
+        : null;
+    const onSortChange = pagination?.onSortChange;
+    const useServerSort =
+      serverSide && typeof onSortChange === 'function' && sortedCol?.sortField != null;
+
+    if (useServerSort) {
+      const order = s.order === 'ascend' ? 'ASC' : s.order === 'descend' ? 'DESC' : null;
+      onSortChange(order ? { field: sortedCol.sortField, order } : null);
+      onChange?.(pag, _filters, sorter);
+      return;
+    }
+
+    // ── Modo client-side (comportamiento original; también server sin sortField) ──
+    if (pag?.current != null || pag?.pageSize != null) {
       setPagState({
         current: pag.current ?? pagState.current,
         pageSize: pag.pageSize ?? pagState.pageSize,
       });
     }
 
-    const s = Array.isArray(sorter) ? sorter[0] : sorter;
     if (s && (s.columnKey != null || s.field != null)) {
       const columnKey = s.columnKey ?? s.field;
       if (s.order) {

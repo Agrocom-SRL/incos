@@ -324,10 +324,7 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
             SELECT
               nota_teorico,
               nota_practico,
-              nota_bimestre,
-              habilitacion_teorico,
-              habilitacion_practico,
-              fecha_habilitacion
+              nota_bimestre
             FROM bimestres_matricula
             WHERE id = ?
               AND deleted_at IS NULL
@@ -338,39 +335,131 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
         return rows[0] ?? null;
     }
 
-    /** Carga administrativa rápida: habilitación por componente + nota_bimestre efectiva. @returns {Promise<void>} */
-    async actualizarHabilitacionBimestreMatricula(
-        bimestreMatriculaId,
-        { habilitacionTeorico, habilitacionPractico, notaBimestre, fechaHabilitacion },
-        usuarioId,
-        { transaction } = {},
-    ) {
+    // ============================================
+    // Reabrir / cerrar un bimestre por curso (grano asignacion_docente_id + bimestre).
+    // Join matriculas_materia → oferta_curso → asignaciones_docentes, igual que
+    // asegurarBimestresMatriculaCurso.
+    // ============================================
+
+    /**
+     * Reabre el bimestre del curso: estado='REABIERTO' para las matrículas cuyo estado
+     * actual NO sea 'PENDIENTE'. @returns {Promise<void>}
+     */
+    async reabrirBimestreCurso(asignacionId, bimestreNum, usuarioId, { transaction } = {}) {
         await sequelize.query(
             `
-            UPDATE bimestres_matricula
+            UPDATE bimestres_matricula bm
+            INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+              AND mm.deleted_at IS NULL AND mm.activo = TRUE
+            INNER JOIN asignaciones_docentes ad ON ad.oferta_curso_id = mm.oferta_curso_id
+              AND ad.deleted_at IS NULL AND ad.activo = TRUE
             SET
-              habilitacion_teorico = ?,
-              habilitacion_practico = ?,
-              nota_bimestre = ?,
-              fecha_habilitacion = COALESCE(?, fecha_habilitacion, CURDATE()),
-              updated_by = ?,
-              updated_at = NOW()
-            WHERE id = ?
-              AND deleted_at IS NULL
+              bm.estado = 'REABIERTO',
+              bm.updated_by = ?,
+              bm.updated_at = NOW()
+            WHERE ad.id = ?
+              AND bm.bimestre = ?
+              AND bm.estado <> 'PENDIENTE'
+              AND bm.deleted_at IS NULL
+              AND bm.activo = TRUE
             `,
             {
-                replacements: [
-                    habilitacionTeorico,
-                    habilitacionPractico,
-                    notaBimestre,
-                    fechaHabilitacion ?? null,
-                    usuarioId,
-                    bimestreMatriculaId,
-                ],
+                replacements: [usuarioId, asignacionId, bimestreNum],
                 type: sequelize.QueryTypes.UPDATE,
                 transaction,
             },
         );
+        // Abrir las notas de las evaluaciones del bimestre para que el docente pueda editarlas.
+        await sequelize.query(
+            `
+            UPDATE evaluaciones
+            SET notas_cerradas = FALSE, updated_by = ?, updated_at = NOW()
+            WHERE asignacion_docente_id = ?
+              AND deleted_at IS NULL
+              AND activo = TRUE
+              AND periodo_academico_id IN (
+                SELECT id FROM periodos_academicos
+                WHERE numero_orden = ?
+                  AND division = 'BIMESTRE'
+                  AND deleted_at IS NULL
+              )
+            `,
+            {
+                replacements: [usuarioId, asignacionId, bimestreNum],
+                type: sequelize.QueryTypes.UPDATE,
+                transaction,
+            },
+        );
+    }
+
+    /**
+     * Cierra el bimestre del curso: estado='CERRADO'. @returns {Promise<void>}
+     */
+    async cerrarBimestreCurso(asignacionId, bimestreNum, usuarioId, { transaction } = {}) {
+        await sequelize.query(
+            `
+            UPDATE bimestres_matricula bm
+            INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+              AND mm.deleted_at IS NULL AND mm.activo = TRUE
+            INNER JOIN asignaciones_docentes ad ON ad.oferta_curso_id = mm.oferta_curso_id
+              AND ad.deleted_at IS NULL AND ad.activo = TRUE
+            SET
+              bm.estado = 'CERRADO',
+              bm.updated_by = ?,
+              bm.updated_at = NOW()
+            WHERE ad.id = ?
+              AND bm.bimestre = ?
+              AND bm.deleted_at IS NULL
+              AND bm.activo = TRUE
+            `,
+            {
+                replacements: [usuarioId, asignacionId, bimestreNum],
+                type: sequelize.QueryTypes.UPDATE,
+                transaction,
+            },
+        );
+        // Cerrar las notas de las evaluaciones del bimestre al consolidar.
+        await sequelize.query(
+            `
+            UPDATE evaluaciones
+            SET notas_cerradas = TRUE, updated_by = ?, updated_at = NOW()
+            WHERE asignacion_docente_id = ?
+              AND deleted_at IS NULL
+              AND activo = TRUE
+              AND periodo_academico_id IN (
+                SELECT id FROM periodos_academicos
+                WHERE numero_orden = ?
+                  AND division = 'BIMESTRE'
+                  AND deleted_at IS NULL
+              )
+            `,
+            {
+                replacements: [usuarioId, asignacionId, bimestreNum],
+                type: sequelize.QueryTypes.UPDATE,
+                transaction,
+            },
+        );
+    }
+
+    /** Cantidad de matrículas del curso en estado 'REABIERTO' para el bimestre. @returns {Promise<number>} */
+    async contarBimestreReabiertoCurso(asignacionId, bimestreNum) {
+        const rows = await sequelize.query(
+            `
+            SELECT COUNT(*) AS total
+            FROM bimestres_matricula bm
+            INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+              AND mm.deleted_at IS NULL AND mm.activo = TRUE
+            INNER JOIN asignaciones_docentes ad ON ad.oferta_curso_id = mm.oferta_curso_id
+              AND ad.deleted_at IS NULL AND ad.activo = TRUE
+            WHERE ad.id = ?
+              AND bm.bimestre = ?
+              AND bm.estado = 'REABIERTO'
+              AND bm.deleted_at IS NULL
+              AND bm.activo = TRUE
+            `,
+            { replacements: [asignacionId, bimestreNum], type: sequelize.QueryTypes.SELECT },
+        );
+        return Number(rows[0]?.total ?? 0);
     }
 }
 

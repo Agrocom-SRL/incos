@@ -9,10 +9,8 @@ const toDomainUpdate = (payload = {}) => {
   if ('actividadId' in payload) data.activityId = payload.actividadId ?? null;
   if ('nombrePersonalizado' in payload) data.customName = payload.nombrePersonalizado ?? null;
   if ('fechaInicio' in payload) data.startDate = payload.fechaInicio;
-  if ('fechaFin' in payload) {
-    data.endDate = payload.fechaFin ?? null;
-    data.isAllDay = !payload.fechaFin;
-  }
+  if ('fechaFin' in payload) data.endDate = payload.fechaFin ?? null;
+  if ('suspendeClases' in payload) data.suspendsClasses = payload.suspendeClases ?? false;
   if ('carrerasIds' in payload) data.careerIds = payload.carrerasIds ?? null;
   return data;
 };

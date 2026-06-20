@@ -46,6 +46,46 @@ export class AuthorizedBankRepository extends IAuthorizedBankRepository {
     }
   }
 
+  /**
+   * Crea un banco autorizado.
+   * POST /v1/bancos-autorizados
+   *
+   * @param {Object} payload - { metodo_pago_id?, codigo (req), nombre (req), activo? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>} data.bancoAutorizado
+   */
+  async crear(payload = {}) {
+    try {
+      const response = await apiClient.post(BANCOS_AUTORIZADOS_ENDPOINTS.BASE, payload, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear el banco autorizado');
+    }
+  }
+
+  /**
+   * Actualiza un banco autorizado.
+   * PUT /v1/bancos-autorizados/:id
+   *
+   * @param {string|number} id - ID del banco
+   * @param {Object} payload - { metodo_pago_id?, codigo?, nombre?, activo? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>} data.bancoAutorizado
+   */
+  async actualizar(id, payload = {}) {
+    try {
+      if (!id && id !== 0) {
+        return { success: false, error: 'ID del banco es requerido' };
+      }
+      const response = await apiClient.put(BANCOS_AUTORIZADOS_ENDPOINTS.BY_ID(id), payload, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el banco autorizado');
+    }
+  }
+
 }
 
 export default new AuthorizedBankRepository();
