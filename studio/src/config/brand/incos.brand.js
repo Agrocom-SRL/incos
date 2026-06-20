@@ -46,21 +46,24 @@ export const incosBrand = {
 
   /**
    * Acentos categóricos / de estado por modo.
-   * Se usan como FONDO con texto blanco encima (chips/píldoras) y como texto/borde
-   * sutil. Light = saturados con AA ≥4.5:1 sobre blanco como texto; dark = variantes
-   * más luminosas para legibilidad sobre superficie oscura. Mismo set de claves por
-   * modo (red, gold, sky, teal, violet, orange, pink, lime) → theming simétrico.
+   * Se usan como FONDO con texto encima (chips/píldoras/KPI) y como texto/borde sutil.
+   *   - LIGHT: tonos saturados/oscuros, cada uno con BLANCO encima ≥4.5:1 (texto on-accent
+   *     = `--color-on-accent` = #fff en light) y como texto sobre superficie ≥4.5:1.
+   *   - DARK: variantes luminosas, cada una con TEXTO OSCURO encima ≥4.5:1 (en dark el
+   *     `--color-on-accent` es oscuro porque el acento es claro).
+   * Mismo set de claves por modo (red, gold, sky, teal, violet, orange, pink, lime) →
+   * theming simétrico (el contraste se resuelve por modo en `--color-on-accent`).
    */
   accents: {
     light: {
-      red: '#c0282a',
-      gold: '#b07e10',
-      sky: '#3d6dd0',
-      teal: '#0a8a96',
-      violet: '#7a4cb8',
-      orange: '#c2580f',
-      pink: '#b03a7a',
-      lime: '#5f7c0f',
+      red: '#c0282a', // blanco-encima 5.87:1
+      gold: '#8a6308', // blanco-encima 5.43:1 (antes #b07e10 = 3.60:1, fallaba AA)
+      sky: '#3d6dd0', // blanco-encima 4.89:1
+      teal: '#0a757f', // blanco-encima 5.43:1 (antes #0a8a96 = 4.13:1, fallaba AA)
+      violet: '#7a4cb8', // blanco-encima 5.91:1
+      orange: '#b04f0d', // blanco-encima 5.29:1 (antes #c2580f = 4.47:1, fallaba AA)
+      pink: '#b03a7a', // blanco-encima 5.63:1
+      lime: '#5f7c0f', // blanco-encima 4.80:1
     },
     dark: {
       red: '#e8625f',

@@ -79,6 +79,19 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
 
 ## 5. Estado y progreso (actualizar al cerrar cada tarea)
 
+- [x] studio/ Fases 1+4+5+6 (plan eventual-napping-deer). COMPLETADO (2026-06-20).
+      Fase 1: nav i18n es/en — 6 labels desambiguados (teachersList/reportProgress/
+      academicConfig/reportAttendance/internships/academicHistory), solo valores. Fase 4:
+      ui/templates/ListPage/ → parts/ (ListKpiRow/ListFacets/ListFilterBar/ListDataView/
+      ListSkeleton carpeta-por-componente; ListPage/ListPage.css/useListPage en raíz;
+      ListDataView→../ListSkeleton/ListSkeleton). Fase 5: features/matriculas/lista/ →
+      capas ligeras config/data/model/components/ (sections/ eliminada; EnrollmentsListPage
+      en raíz; careerColor/pagoStatus/historyStates/adaptEnrollment/buildColumns en model/).
+      Fase 6: auditoría color — 0 hex en js/jsx fuera de las 3 fuentes (palette/categorical/
+      brand), 0 literal de color en css sin var(). Gate post-movimiento + final: build ✓ /
+      lint exit 0; 0 imports rotos; dataKey↔accessor 0 desajustes. revisor-ui + verificador
+      APROBADO_CON_OBSERVACIONES; único hallazgo material (AA dark on-accent) RESUELTO por tokens.
+
 - [x] Fase 2 — Ampliación de perceptibilidad motion/hover en `matricula-v2` (pase 2):
       Primario reanclado a brand-500 en `incosTheme.js` + CSS; sombras amplificadas
       (shadow-md/lg con brecha real); hover botón primario con lift+glow; ghost hover
@@ -121,6 +134,11 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       Gate reduced-motion: 3 capas (MotionConfig, useReducedMotion en wrappers, @media CSS global).
       Build: ✓ 51.90s. Lint: exit 0, 0 errores en 19 archivos WS-B. RBAC: application/navigation/ sin diff.
       Observacion menor: bell-tilt usa 0.35s literal (no hay --dur-bell token) en mv2.css y app-topbar.css.
+- [x] studio/ Fix AA on-accent (light+dark) por tokens. COMPLETADO (2026-06-20).
+      --color-on-accent por modo (light #fff / dark #0a1f15); accents light gold/teal/orange
+      oscurecidos (≥4.5 blanco-encima); SEMANTIC.light.warning sincronizado; cat-6/10/11 verdes
+      extra por modo AA-válidos. 8 accents + 12 cat ≥4.5:1 (texto) en AMBOS modos; dots ≥3:1.
+      Build ✓ 6.47s · Lint exit 0. Componentes intactos.
 - [ ] Fase 5: migración módulo a módulo.
 - [x] studio/ Fase 2 (paleta ampliada theme-aware) + Fase 3 (cards híbridas). COMPLETADO (2026-06-20).
       accents 3→8 por modo (red/gold/sky + teal/violet/orange/pink/lime) en incos.brand.js;
@@ -180,6 +198,37 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       archivos tocados (604 total = 534+70 pre-existentes sin cambio).
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
+
+- 2026-06-20 — **Orquestador: cierre plan studio (Fases 1/2/3/4/5/6) — APROBADO.** Plan único
+  por fases (eventual-napping-deer.md) ejecutado y cerrado. Orden: Wave 1 paralela en file sets
+  disjuntos (Fase 5 mover feature, Fase 4 mover template, Fase 1 nav i18n) → gate de build crítico
+  post-movimiento (BUILD/LINT exit 0, 0 imports rotos); Wave 2 serial (Fase 2 paleta theme-aware +
+  Fase 3 cards híbridas, dependía de careerColor en model/); Fase 6 auditoría color (limpia).
+  Corrección de imprecisión del plan: el palette real es design-system/tokens/palette.js (no
+  theme/palette.js). Compuertas finales: revisor-ui APROBADO_CON_OBSERVACIONES (paridad visual
+  intacta, cards híbridas decorativas por token, motion gateado) y verificador
+  APROBADO_CON_OBSERVACIONES (lint 0, build 0/7.47s/5239 mód, dataKey↔accessor 0 desajustes,
+  i18n es+en sin faltantes, AntD6 limpio, estructura parts/ + capas confirmada). Único hallazgo
+  material de ambos gates (contraste AA dark: blanco sobre acentos luminosos 1.78–2.82:1)
+  RESUELTO por tokens (--color-on-accent por modo + gold/teal/orange light oscurecidos +
+  cat-6/10/11 por modo): 8 accents + 12 cat ≥5.0:1 texto en AMBOS modos, dots ≥3:1. Re-gate final:
+  lint exit 0 / build ✓ 6.47s / hex audit limpio. Deuda baja: chunk JS 1.18MB (advisory Vite,
+  code-split al salir de mock-first). 0 cambios de schema/SQL (mock-first). Sin commits ni push.
+
+- 2026-06-20 — **studio/ — fix AA contraste on-accent (light + dark), por tokens.** Cierra el
+  HALLAZGO ALTO de contraste del gate de revisor-ui. (1) `palette.js` MISC: `--color-on-accent`
+  ahora DEPENDE DEL MODO — light `#ffffff` (acentos oscuros), dark `TEXT.light.strong` `#0a1f15`
+  (acentos luminosos; el blanco se quemaba 1.78–2.82:1). `--color-on-accent-soft` dark pasa a
+  rgba(10,31,21,.22). No es `if(mode)` en componente: el token ya es por modo. (2) `incos.brand.js`
+  acentos LIGHT oscurecidos para que BLANCO-encima ≥4.5: gold #b07e10→#8a6308 (3.60→5.43),
+  teal #0a8a96→#0a757f (4.13→5.43), orange #c2580f→#b04f0d (4.47→5.29). `SEMANTIC.light.warning`
+  sincronizado al nuevo gold #8a6308. (3) `categorical.js`: verdes extra por modo (slots 6/10/11)
+  — cat-6=r[500], cat-10=#004830(light)/#2eae79(dark), cat-11=#2e7d52(light)/#7fdcb6(dark);
+  el viejo cat-11 r[300] daba 2.72:1(light)/4.34:1(dark). RESULTADO: los 8 accents + 12 cat
+  pasan ≥4.5:1 (texto on-accent) en AMBOS modos; dots ≥3:1. Build ✓ 6.47s · Lint exit 0. Sin
+  commits, sin tocar componentes (KpiCard/Chip intactos), 0 hex fuera de las 3 fuentes de paleta.
+
+- 2026-06-20 — **revisor-ui (gate contraste/paridad): studio/ Matrículas Fases 2/3/6 → APROBADO_CON_OBSERVACIONES.** Paridad visual intacta (KPIs/facetas/search/segmented/select/toggle/bulk/paginación/estados = mv2; refactor solo de organización+paleta). Motion motivado y gateado en 3 capas (MotionConfig + useReducedMotion en wrappers + @media CSS). Tinte nth-child(2n) correcto: decorativo, color-mix de --surface-alt, theme-aware. HALLAZGO ALTO de contraste: en DARK el texto/glifo BLANCO sobre fondo de acento se quema — KpiCard __icon (white/accent: gold 2.14:1, sky 2.78:1, brand-600 2.82:1) y Chip activo (white sobre --cat-N dark: lime 1.78:1, gold/teal ~2.1:1, sky/violet/orange/pink ~2.4-2.8:1) < AA. En LIGHT: gold como bg con blanco (KpiCard returning) = 3.60:1 < 4.5 texto; --cat-5 EI gold chip activo 3.60:1 y --cat-11 g300 2.72:1 < AA; --cat-11 como dot 2.64:1 < 3:1 decorativo. Fix: en dark usar texto OSCURO sobre acentos luminosos (--color-on-accent dependiente de modo o por-token) y oscurecer gold light, o no usar blanco como on-accent universal. No bloqueante de la entrega de organización; sí de la promesa AA.
 
 - 2026-06-20 — **studio/ Fase 2 (paleta ampliada theme-aware) + Fase 3 (cards híbridas).**
   EXTIENDE el flujo de theme existente (brand → palette.paletteForMode → buildPalette →

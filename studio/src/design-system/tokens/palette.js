@@ -45,7 +45,7 @@ const BORDER = {
 };
 
 const SEMANTIC = {
-  light: { success: '#16a34a', warning: '#b07e10', danger: '#c0282a', info: '#3d6dd0' },
+  light: { success: '#16a34a', warning: '#8a6308', danger: '#c0282a', info: '#3d6dd0' },
   dark: { success: '#34d399', warning: '#fbbf24', danger: '#f87171', info: '#60a5fa' },
 };
 
@@ -93,9 +93,24 @@ const TOOLTIP = {
 };
 
 // Roles auxiliares: texto/relleno sobre superficies de acento y velo modal.
+// `onAccent` es el color del texto/glifo encima de un acento o `--cat-N` (chip activo,
+// icono de KpiCard). DEPENDE DEL MODO porque los acentos cambian de luminosidad:
+//   - LIGHT: acentos saturados/oscuros → texto BLANCO encima (≥4.5:1 garantizado por
+//     los acentos oscurecidos en incos.brand.js).
+//   - DARK: acentos luminosos → texto OSCURO encima (TEXT.light.strong = #0a1f15),
+//     que da ≥4.5:1 sobre cada acento/categórico claro; el blanco se quemaría (<3:1).
+// No es un `if (mode)` en componente: el contraste se resuelve por modo en el token.
 const MISC = {
-  light: { onAccent: '#ffffff', onAccentSoft: 'rgba(255, 255, 255, 0.25)', backdrop: 'rgba(5, 20, 12, 0.45)' },
-  dark: { onAccent: '#ffffff', onAccentSoft: 'rgba(255, 255, 255, 0.22)', backdrop: 'rgba(0, 0, 0, 0.6)' },
+  light: {
+    onAccent: '#ffffff',
+    onAccentSoft: 'rgba(255, 255, 255, 0.25)',
+    backdrop: 'rgba(5, 20, 12, 0.45)',
+  },
+  dark: {
+    onAccent: TEXT.light.strong, // #0a1f15 — texto oscuro sobre acentos luminosos
+    onAccentSoft: 'rgba(10, 31, 21, 0.22)',
+    backdrop: 'rgba(0, 0, 0, 0.6)',
+  },
 };
 
 function paletteForMode(brand, mode) {
