@@ -1,0 +1,60 @@
+/**
+ * Estados compartidos: EmptyState + ErrorState (moléculas).
+ * Réplica del estado vacío de matricula-v2 (.matricula-v2-empty*), promovido a
+ * capa compartida. Todos los valores vienen de tokens (var(--…)).
+ */
+
+/* ── EmptyState ───────────────────────────────────────────────────────────── */
+.incos-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--spacing-xs);
+  padding: var(--state-empty-pad-y) var(--spacing-lg);
+}
+
+.incos-empty__icon {
+  width: var(--state-empty-icon-box);
+  height: var(--state-empty-icon-box);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--state-empty-icon-glyph);
+  color: var(--brand-600);
+  background: color-mix(in srgb, var(--brand-600) 12%, transparent);
+  margin-bottom: var(--spacing-sm);
+}
+
+.incos-empty--no-results .incos-empty__icon {
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+}
+
+.incos-empty__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-strong);
+  color: var(--text);
+}
+
+.incos-empty__hint {
+  font-size: var(--font-size-nav-meta);
+  color: var(--text-muted);
+  max-width: var(--state-empty-hint-max-w);
+  margin: 0;
+}
+
+.incos-empty__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-base);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── ErrorState ───────────────────────────────────────────────────────────── */
+.incos-error {
+  width: 100%;
+}

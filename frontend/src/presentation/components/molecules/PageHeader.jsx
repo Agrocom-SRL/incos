@@ -13,18 +13,28 @@
  * @param {string} title - Título de la página
  * @param {ReactNode} actions - Acciones (botones, etc.) a mostrar a la derecha
  * @param {Array} breadcrumbItems - Items del breadcrumb (opcional)
+ * @param {ReactNode} subtitle - Subtítulo opcional bajo el título (opcional)
+ * @param {ReactNode} description - Descripción/ayuda opcional bajo el título (opcional)
  * @param {string} className - Clase CSS adicional
+ *
+ * Nota: cuando `subtitle`/`description` son undefined, el layout es idéntico al
+ * previo (no se renderiza ningún nodo extra). El título va envuelto en FadeIn
+ * (gateado por useReducedMotion vía el átomo): con reduced-motion es un fade de
+ * opacidad simple, sin desplazamiento.
  */
 
 import React from 'react';
 import { Flex, Space } from 'antd';
 import { allSpacing } from '@theme/tokens';
 import { Heading, Breadcrumb } from '@atoms';
+import { FadeIn } from '@presentation/motion';
 
 const PageHeader = ({
   title,
   actions,
   breadcrumbItems,
+  subtitle,
+  description,
   className = ''
 }) => {
   return (
@@ -45,9 +55,17 @@ const PageHeader = ({
         wrap="wrap"
         gap={allSpacing.margin}
       >
-        <Heading level={3} style={{ margin: 0 }}>
-          {title}
-        </Heading>
+        <FadeIn>
+          <Heading level={3} style={{ margin: 0 }}>
+            {title}
+          </Heading>
+          {subtitle ? (
+            <p className="page-header__subtitle">{subtitle}</p>
+          ) : null}
+          {description ? (
+            <p className="page-header__description">{description}</p>
+          ) : null}
+        </FadeIn>
 
         {actions && (
           <Space>

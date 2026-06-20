@@ -26,5 +26,7 @@ export { default as TableActions, useTableActions, cumplePermisoRef } from './Ta
 export { default as DetailInfoCard } from './DetailInfoCard';
 export { default as DetailTabLabel } from './DetailTabLabel';
 export { default as ListPanelHeader } from './ListPanelHeader';
+export { default as ErrorState } from './ErrorState';
+export { default as EmptyState } from './EmptyState';
 export { default as ParaleloGestionContextHeader } from './ParaleloGestionContextHeader';
 export { useClientTableSort, getSorterFn, resolveColumnKey } from './DataTable';

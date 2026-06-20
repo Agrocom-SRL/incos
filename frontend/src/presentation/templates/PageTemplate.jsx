@@ -27,6 +27,7 @@
  */
 
 import { Flex } from 'antd';
+import { FadeIn } from '@presentation/motion';
 import MainContent from './components/MainContent';
 import InfoSidebar from './components/InfoSidebar';
 import PageHeaderArea from './components/PageHeaderArea';
@@ -55,26 +56,30 @@ const PageTemplate = ({ header, children, sidebar, bottom }) => {
             )}
 
             {/* Nivel 2 y 3: MainContent + InfoSidebar (layout horizontal/vertical según breakpoint) */}
+            {/* Envuelto en FadeIn interno (conservador): con reduced-motion es un
+                fade de opacidad simple, no-op visual. NO añade prop ni cambia firma. */}
             {(children || sidebar) && (
-                <Flex
-                    gap="large"
-                    align="flex-start"
-                    style={{ width: '100%', flex: 1 }}
-                >
-                    {/* Contenido Principal - 70% en lg+, expandible en menores */}
-                    {children && (
-                        <MainContent>
-                            {children}
-                        </MainContent>
-                    )}
+                <FadeIn style={{ width: '100%', flex: 1, display: 'flex' }}>
+                    <Flex
+                        gap="large"
+                        align="flex-start"
+                        style={{ width: '100%', flex: 1 }}
+                    >
+                        {/* Contenido Principal - 70% en lg+, expandible en menores */}
+                        {children && (
+                            <MainContent>
+                                {children}
+                            </MainContent>
+                        )}
 
-                    {/* Resumen de Información - 30% en lg+ (min-width 300px), col-12 en menores */}
-                    {sidebar && (
-                        <InfoSidebar>
-                            {sidebar}
-                        </InfoSidebar>
-                    )}
-                </Flex>
+                        {/* Resumen de Información - 30% en lg+ (min-width 300px), col-12 en menores */}
+                        {sidebar && (
+                            <InfoSidebar>
+                                {sidebar}
+                            </InfoSidebar>
+                        )}
+                    </Flex>
+                </FadeIn>
             )}
 
             {/* Nivel 4: Bottom - Ocupa todo el ancho (independiente de MainContent y Sidebar) */}

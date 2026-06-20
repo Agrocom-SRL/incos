@@ -81,6 +81,19 @@ export const skeletonSizes = {
   skeletonCardHeight: 200,
 };
 
+// Medidas de los estados compartidos (EmptyState / ErrorState).
+// Igualan a matricula-v2 (.matricula-v2-empty*) para fidelidad visual.
+export const stateSizes = {
+  // Círculo del icono del estado vacío (.incos-empty__icon)
+  emptyIconBox: 64,
+  // Tamaño del glifo dentro del círculo
+  emptyIconGlyph: 26,
+  // Ancho máximo del texto de ayuda
+  emptyHintMaxW: 360,
+  // Padding vertical del bloque del estado vacío
+  emptyPadY: 56,
+};
+
 // Espaciado específico de la navegación / chrome del shell
 // Todos los valores igualan a matricula-v2 (mv2) para fidelidad visual.
 export const navSpacing = {
@@ -134,6 +147,7 @@ export const allSpacing = {
   ...zIndex,
   ...motion,
   ...skeletonSizes,
+  ...stateSizes,
   ...navSpacing,
   wireframe: false,
 };

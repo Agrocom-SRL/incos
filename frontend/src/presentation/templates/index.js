@@ -12,6 +12,11 @@ export { default as MainLayout } from './MainLayout';
 export { default as PageTemplate } from './PageTemplate';
 export { default as AuthLayout } from './AuthLayout';
 
+// Plantillas ABM (componen organismos existentes — no reimplementan)
+export { default as ListTemplate } from './ListTemplate';
+export { default as FormTemplate } from './FormTemplate';
+export { default as DetailTemplate } from './DetailTemplate';
+
 // Exportar componentes compartidos entre templates
 // NOTA: Estos componentes son parte de los templates, no son organismos independientes
 export { default as MainContent } from './components/MainContent';

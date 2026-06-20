@@ -28,3 +28,4 @@ export { default as ActionButton } from './ActionButton';
 export { default as DetailField } from './DetailField';
 export { default as StatusPill } from './StatusPill';
 export { default as IdentidadCelda } from './IdentidadCelda';
+export { default as Skeleton } from './Skeleton';

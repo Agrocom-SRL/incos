@@ -32,19 +32,19 @@ export const dominiosRoutes = [
         path: '/finanzas',
         element: null,
         key: 'FIN',
-        menu: { label: 'Finanzas', module: 'FIN', order: 5, group: 'Institucional' },
+        menu: { label: 'Finanzas', module: 'FIN', order: 5, group: 'Institución' },
     },
     {
         path: '/institucional',
         element: null,
         key: 'INST',
-        menu: { label: 'Institucional', module: 'INST', order: 6, group: 'Institucional' },
+        menu: { label: 'Institucional', module: 'INST', order: 6, group: 'Institución' },
     },
     {
         path: '/reportes-dominio',
         element: null,
         key: 'REP',
-        menu: { label: 'Reportes', module: 'REP', order: 7, group: 'Institucional' },
+        menu: { label: 'Reportes', module: 'REP', order: 7, group: 'Institución' },
     },
     {
         path: '/configuracion-sistema',
@@ -66,7 +66,7 @@ export const dominiosRoutes = [
         element: <PerfilPage />,
         permiso: null,
         accion: null,
-        menu: { label: 'Mi perfil', module: 'PERFIL', order: 10, group: 'Administración' },
+        menu: { label: 'Mi perfil', module: 'PERFIL', order: 10, group: 'Cuenta' },
     },
 ];
 

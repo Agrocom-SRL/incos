@@ -14,3 +14,16 @@
     flex: 0 0 auto;
 }
 
+/* Subtítulo / descripción opcionales bajo el título (tokens al origen). */
+.page-header__subtitle {
+    margin: var(--spacing-xs) 0 0;
+    font-size: var(--font-size-base);
+    color: var(--text-2);
+}
+
+.page-header__description {
+    margin: var(--spacing-xs) 0 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+

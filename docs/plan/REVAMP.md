@@ -122,6 +122,24 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       Build: ✓ 51.90s. Lint: exit 0, 0 errores en 19 archivos WS-B. RBAC: application/navigation/ sin diff.
       Observacion menor: bell-tilt usa 0.35s literal (no hay --dur-bell token) en mv2.css y app-topbar.css.
 - [ ] Fase 5: migración módulo a módulo.
+- [x] Fase 1B WS-D: plantillas ABM + estados compartidos. COMPLETADO (2026-06-19).
+      ADITIVO (no se migró ninguna page; eso es WS-F). Estados base: atoms/Skeleton.jsx
+      (variant rows|grid|detail|form, wrapper sobre AntD Skeleton, sin motion JS);
+      molecules/ErrorState.jsx (Alert title/description + Button reintento, FadeIn gateado);
+      molecules/EmptyState.jsx (generaliza MatriculaEmptyState; variant default|no-results,
+      FadeIn gateado). Consolidación: TableListView (error→ErrorState, loading→Skeleton rows,
+      prop opcional emptyState; default idéntico); DetailPageShell (loading→Skeleton detail,
+      error→ErrorState; Empty intacto). PageHeader (props opcionales subtitle/description;
+      título en FadeIn; layout idéntico sin esas props). PageTemplate (FadeIn interno
+      conservador, firma intacta). Plantillas ABM: templates/{ListTemplate,FormTemplate,
+      DetailTemplate}.jsx — COMPONEN organismos existentes (TableListView/WizardForm/
+      DetailPageShell+ProfileCard+TabsPanel), no reimplementan tabla/wizard/estados.
+      Tokens al origen: spacing.js stateSizes (emptyIconBox/Glyph/HintMaxW/PadY) +
+      skeletonCardWidth emitidos como --state-empty-* / --skeleton-card-width en root.js;
+      CSS nuevo styles/components/{atoms/skeleton.css, molecules/state.css} + subtitle/
+      description en page-header.css (todo var(--…)). Build verde por bloque (11.69/11.46/
+      12.55/11.38s). Lint exit 0 en los 15 archivos tocados. RBAC: application/navigation/
+      sin tocar. AntD v6: ErrorState usa title/description (no message).
 - [x] Fase 1B WS-C: shell legacy + tokens centralizados. COMPLETADO (2026-06-15).
       Tokens: brandScale.light/dark en colors.js (única fuente literal); buildAntdTheme
       sin hex hardcodeados; applyThemeVars(mode, overrides) idempotente (reemplaza
@@ -136,6 +154,25 @@ Estos valores son la base de los **tokens** (van al theme de AntD, §2 de
       archivos tocados (604 total = 534+70 pre-existentes sin cambio).
 
 ## 6. Bitácora de cambios (append, lo más reciente arriba)
+
+- 2026-06-19 — Frontend WS-D (plantillas ABM + estados compartidos), ADITIVO.
+  B1 estados base: `atoms/Skeleton.jsx` (paramétrico rows|grid|detail|form sobre AntD
+  Skeleton, shimmer CSS, sin motion JS), `molecules/ErrorState.jsx` (Alert title=/
+  description= + reintento, FadeIn gateado), `molecules/EmptyState.jsx` (promueve
+  MatriculaEmptyState; variant default|no-results). B2 consolidación con default IDÉNTICO:
+  `TableListView` (error→ErrorState, loading inicial→Skeleton rows, prop opcional
+  `emptyState`), `DetailPageShell` (loading→Skeleton detail, error→ErrorState, Empty
+  intacto). B3 punto de control: `PageHeader` (props OPCIONALES subtitle/description,
+  título en FadeIn; sin esas props el layout no cambia) y `PageTemplate` (FadeIn interno
+  conservador, firma {header,children,sidebar,bottom} intacta). B4 plantillas:
+  `templates/{ListTemplate,FormTemplate,DetailTemplate}.jsx` — COMPONEN organismos
+  existentes (no reimplementan tabla/wizard/estados); ListTemplate reusa el shell
+  cfg-academico-workspace. Tokens al origen: `spacing.js` (stateSizes + skeletonCardWidth)
+  → `root.js` emite --state-empty-*/--skeleton-card-width; CSS nuevo en
+  `styles/components/atoms/skeleton.css` y `styles/components/molecules/state.css` +
+  page-header__subtitle/description (todo var(--…), 0 literales nuevos). Build verde por
+  bloque; lint exit 0 en 15 archivos; RBAC application/navigation/ sin tocar; AntD v6 OK.
+  NO se migró ninguna page ABM (WS-F, fuera de alcance).
 
 - 2026-06-15 — Responsive del shell global = paridad mv2 en móvil (≤767px).
   (a) Scroll de documento eliminado: `.app-shell` position:fixed inset:0 (réplica

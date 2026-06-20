@@ -1,0 +1,19 @@
+/**
+ * Skeleton (átomo compartido) — solo layout de la variante 'grid'.
+ * Las variantes rows/detail/form se resuelven con los Skeleton nativos de AntD
+ * (shimmer + colores desde el theme). El shimmer respeta prefers-reduced-motion
+ * global (motion-utilities.css).
+ */
+
+.incos-skeleton--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--skeleton-card-width, 300px), 1fr));
+  gap: var(--spacing-base);
+}
+
+.incos-skeleton__card {
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border, var(--border));
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-container, var(--surface));
+}

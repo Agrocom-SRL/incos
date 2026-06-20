@@ -287,6 +287,15 @@ export function applyThemeVars(mode = 'light', overrides = {}) {
   root.style.setProperty('--font-size-nav-label', `${allThemeTokens.fontSizeNavLabel}px`);
   root.style.setProperty('--font-size-nav-icon',  `${allThemeTokens.fontSizeNavIcon}px`);
 
+  // ── Skeleton (átomo compartido) ───────────────────────────────────────────
+  root.style.setProperty('--skeleton-card-width', `${allThemeTokens.skeletonCardWidth}px`);
+
+  // ── Estados compartidos (EmptyState / ErrorState) ─────────────────────────
+  root.style.setProperty('--state-empty-icon-box',   `${allThemeTokens.emptyIconBox}px`);
+  root.style.setProperty('--state-empty-icon-glyph', `${allThemeTokens.emptyIconGlyph}px`);
+  root.style.setProperty('--state-empty-hint-max-w', `${allThemeTokens.emptyHintMaxW}px`);
+  root.style.setProperty('--state-empty-pad-y',      `${allThemeTokens.emptyPadY}px`);
+
   // ── Espaciado NAV / CHROME (tokens al ORIGEN — contrato shell) ────────────
   root.style.setProperty('--nav-item-gap',            `${allThemeTokens.navItemGap}px`);
   root.style.setProperty('--nav-item-pad-y',          `${allThemeTokens.navItemPadY}px`);

@@ -27,8 +27,8 @@
 
 import React from 'react';
 import { Row, Col, Flex } from 'antd';
-import { DataTable } from '@molecules';
-import { Alert, Card, SearchBar, Spinner, Text } from '@atoms';
+import { DataTable, ErrorState } from '@molecules';
+import { Card, SearchBar, Skeleton, Text } from '@atoms';
 import {
     DATA_TABLE_PAGINATION_BASE,
     resolvePaginationSizeChanger,
@@ -58,17 +58,18 @@ const TableListView = ({
     // Estilos adicionales para la tabla (permite aplicar reglas específicas por módulo)
     tableClassName = '',
 
-    // Loading personalizado
-    loadingTip = 'Cargando...',
-
     // Header interno (dentro del Card)
     title,
     headerActions,
     cardProps,
     /** Sin Card externa — para tabs embebidos en workspace (CFG Académico). */
     embedded = false,
+    /** Estado vacío opcional (ReactNode) cuando no hay datos y no está cargando. */
+    emptyState,
 }) => {
     const isLoading = loading && data.length === 0;
+    const isEmpty = !loading && data.length === 0;
+    const showEmptyState = isEmpty && !!emptyState && !error;
 
     // Evitar paginación controlada por props (pageSize) para que el usuario
     // pueda cambiar libremente la cantidad de registros por página.
@@ -132,41 +133,32 @@ const TableListView = ({
                 </Col>
             </Row>
 
-            <DataTable
-                dataSource={data}
-                columns={columns}
-                loading={loading}
-                rowKey={rowKey}
-                pagination={finalPagination}
-                defaultSort={defaultSort}
-                className={tableClassName}
-            />
+            {showEmptyState ? (
+                emptyState
+            ) : (
+                <DataTable
+                    dataSource={data}
+                    columns={columns}
+                    loading={loading}
+                    rowKey={rowKey}
+                    pagination={finalPagination}
+                    defaultSort={defaultSort}
+                    className={tableClassName}
+                />
+            )}
         </>
     );
 
     return (
         <>
-            {/* Mostrar Spinner cuando está cargando inicialmente */}
-            {isLoading && (
-                <Flex
-                    vertical
-                    align="center"
-                    justify="center"
-                    style={{ minHeight: '400px', padding: '20px' }}
-                >
-                    <Spinner size="large" text={loadingTip} />
-                </Flex>
-            )}
+            {/* Mostrar skeleton de filas cuando está cargando inicialmente */}
+            {isLoading && <Skeleton variant="rows" />}
 
             {/* Mostrar contenido cuando hay datos o no está en loading inicial */}
             {!isLoading && (
                 <>
                     {error && (
-                        <Alert
-                            type="error"
-                            title="Error"
-                            description={error}
-                        />
+                        <ErrorState title="Error" description={error} />
                     )}
 
                     {embedded ? (

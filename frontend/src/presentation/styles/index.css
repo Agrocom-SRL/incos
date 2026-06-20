@@ -41,6 +41,7 @@
 @import './components/atoms/badge.css';
 @import './components/atoms/list-item.css';
 @import './components/atoms/activity-item.css';
+@import './components/atoms/skeleton.css';
 
 /* 5. Components - Molecules */
 @import './components/molecules/navigation-menu.css';
@@ -58,6 +59,7 @@
 @import './components/molecules/data-list.css';
 @import './components/molecules/data-cards.css';
 @import './components/molecules/activity-list.css';
+@import './components/molecules/state.css';
 
 /* 6. Components - Organisms */
 @import './components/organisms/app-topbar.css';
