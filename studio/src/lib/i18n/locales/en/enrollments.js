@@ -52,11 +52,6 @@ export const enrollments = {
     evening: 'Evening',
   },
 
-  payment: {
-    upToDate: 'Up to date',
-    pending: 'Pending',
-  },
-
   actions: {
     newEnrollment: 'New Enrollment',
     export: 'Export',
@@ -100,7 +95,6 @@ export const enrollments = {
     term: 'Term',
     enrolled: 'Enrolled',
     period: 'Period',
-    payment: 'Payment',
     semester: 'Year',
     subjects: 'Subjects',
     average: 'Average',

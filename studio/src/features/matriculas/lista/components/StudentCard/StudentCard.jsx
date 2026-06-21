@@ -15,7 +15,6 @@ import { useTranslation } from '@lib/i18n/useTranslation';
 import { AdmissionTypeTag } from '../AdmissionTypeTag/AdmissionTypeTag';
 import { buildEnrollmentActions } from '../../config/enrollmentActions';
 import { historyStateOf, HISTORY_ICONS } from '../../config/historyStates';
-import { pagoStatusOf } from '../../config/pagoStatus';
 import './StudentCard.css';
 
 export function StudentCard({ row, onOpen, ...actions }) {
@@ -26,9 +25,6 @@ export function StudentCard({ row, onOpen, ...actions }) {
   const histState = historyStateOf(row.historialKey);
   const HistIcon = HISTORY_ICONS[histState.iconKey];
   const periodoLabel = [row.periodoNombre, row.paralelo].filter(Boolean).join(' · ');
-  const pagoLabel = row.estadoPago
-    ? t(pagoStatusOf(row.estadoPago).tone === 'ok' ? 'enrollments.payment.upToDate' : 'enrollments.payment.pending')
-    : null;
 
   return (
     <div
@@ -63,7 +59,6 @@ export function StudentCard({ row, onOpen, ...actions }) {
           <DescriptionRow label={t('enrollments.card.term')} value={row.gestion} />
           <DescriptionRow label={t('enrollments.card.enrolled')} value={row.fecha} />
           <DescriptionRow label={t('enrollments.card.period')} value={periodoLabel} />
-          <DescriptionRow label={t('enrollments.card.payment')} value={pagoLabel} />
         </div>
       </div>
 

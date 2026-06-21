@@ -109,7 +109,6 @@ export function adaptEnrollment(record) {
           estado: record.origen.estado ?? '',
         }
       : null,
-    estadoPago: record.estadoPago ?? null,
     promedio: record.promedio ?? null,
     fecha: formatDate(record.fechaInscripcion),
   };

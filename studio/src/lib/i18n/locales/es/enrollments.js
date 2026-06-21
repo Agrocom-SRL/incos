@@ -50,7 +50,6 @@ export const enrollments = {
     term: 'Gestión',
     enrolled: 'Inscripción',
     period: 'Periodo',
-    payment: 'Pago',
     semester: 'Año',
     subjects: 'Materias',
     average: 'Promedio',
@@ -87,11 +86,6 @@ export const enrollments = {
     morning: 'Mañana',
     afternoon: 'Tarde',
     evening: 'Noche',
-  },
-
-  payment: {
-    upToDate: 'Al día',
-    pending: 'Pendiente',
   },
 
   actions: {
