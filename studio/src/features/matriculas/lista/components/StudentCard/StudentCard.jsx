@@ -21,7 +21,8 @@ import './StudentCard.css';
 export function StudentCard({ row, onOpen, ...actions }) {
   const { t } = useTranslation();
 
-  const progress = Math.min(100, Math.round((Number(row.semestre) / 6) * 100));
+  // Grano ANUAL: la carrera es de 3 años (no 6 semestres) — ver 12-seed-periodos.sql.
+  const progress = Math.min(100, Math.round((Number(row.semestre) / 3) * 100));
   const histState = historyStateOf(row.historialKey);
   const HistIcon = HISTORY_ICONS[histState.iconKey];
   const periodoLabel = [row.periodoNombre, row.paralelo].filter(Boolean).join(' · ');

@@ -12,7 +12,7 @@ export const enrollments = {
     newEntries: 'New entries',
     pendingRecords: 'Pending records',
     ofTotal: '{pct}% of total',
-    firstTerm: 'First term',
+    firstTerm: 'First year',
     needReview: 'Need review',
   },
 
@@ -39,6 +39,17 @@ export const enrollments = {
     observado: 'Flagged',
     revision: 'Under review',
     no_aplica: 'No prior record',
+    // Secondary datum (context by enrollment type) below the status pill.
+    firstEntry: 'First entry',
+    previousSubjects: '{count} prior subjects',
+    transferOrigin: 'Transfer · {carrera} ({anio})',
+    mobilityOrigin: 'Mobility · {carrera} ({anio})',
+  },
+
+  shift: {
+    morning: 'Morning',
+    afternoon: 'Afternoon',
+    evening: 'Evening',
   },
 
   payment: {
@@ -63,12 +74,9 @@ export const enrollments = {
     student: 'Student',
     program: 'Program',
     term: 'Term',
-    type: 'Type',
     record: 'Record',
-    payment: 'Payment',
-    subjects: 'Subjects',
     actions: 'Actions',
-    careerSubtitle: '{semestre} semester · {materias} subjects',
+    careerSubtitle: 'Year {semestre} · {materias} subjects',
   },
 
   filters: {
@@ -93,7 +101,7 @@ export const enrollments = {
     enrolled: 'Enrolled',
     period: 'Period',
     payment: 'Payment',
-    semester: 'Semester',
+    semester: 'Year',
     subjects: 'Subjects',
     average: 'Average',
     progress: 'Academic progress',

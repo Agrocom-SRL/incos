@@ -6,7 +6,9 @@
  * se consume siempre en contexto CSS (style inline / custom property / background).
  * Fallback determinista por id. Total de slots categóricos: 12 (0–11).
  */
-const CAREER_INDEX = { CG: 0, SI: 1, AE: 2, MP: 3, SE: 4, EI: 5 };
+// Códigos REALES de 02-seeders/10-seed-carreras.sql (la institución tiene 3 carreras).
+// Cada una fija su slot categórico para que el color sea intencional (no fallback por id).
+const CAREER_INDEX = { 'SIS-INF': 1, 'ADM-EMP': 2, 'CON-GEN': 0 };
 const CAT_COUNT = 12;
 
 export function careerColor(carrera) {

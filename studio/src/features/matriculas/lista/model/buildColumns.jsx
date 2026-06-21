@@ -9,17 +9,45 @@ import { RowActions } from '@ui/templates/ListPage/parts/RowActions/RowActions';
 import { StudentCell } from '../components/StudentCell/StudentCell';
 import { AdmissionTypeTag } from '../components/AdmissionTypeTag/AdmissionTypeTag';
 import { buildEnrollmentActions } from '../config/enrollmentActions';
-import { pagoStatusOf } from '../config/pagoStatus';
 import { historyStateOf, HISTORY_ICONS } from '../config/historyStates';
 
-/** Render de la píldora de historial (helper, no es un componente exportado). */
-function renderHistoryPill(row, t) {
+/**
+ * Segundo dato (académico) bajo la píldora de historial, según el tipo de
+ * inscripción. Devuelve null cuando no hay contexto que mostrar. Función PURA.
+ */
+function historySubtitle(row, t) {
+  if (row.typeKey === 'new') return t('enrollments.history.firstEntry');
+  if (row.origen) {
+    const key =
+      row.typeKey === 'transfer'
+        ? 'enrollments.history.transferOrigin'
+        : 'enrollments.history.mobilityOrigin';
+    return t(key, { carrera: row.origen.carreraOrigen, anio: row.origen.anioLabel });
+  }
+  if (row.historialPreviasCount > 0) {
+    return t('enrollments.history.previousSubjects', { count: row.historialPreviasCount });
+  }
+  return null;
+}
+
+/** Paralelo · turno del estudiante (helper). null si no hay paralelo asignado. */
+function paraleloLabel(row, t) {
+  if (!row.paralelo || row.paralelo === '—') return null;
+  return row.turnoKey ? `${row.paralelo} · ${t(`enrollments.shift.${row.turnoKey}`)}` : row.paralelo;
+}
+
+/** Celda de historial (helper): píldora de estado + subtítulo de contexto. */
+function renderHistoryCell(row, t) {
   const state = historyStateOf(row.historialKey);
   const Icon = HISTORY_ICONS[state.iconKey];
+  const sub = historySubtitle(row, t);
   return (
-    <StatusPill tone={state.tone} icon={Icon ? <Icon /> : null}>
-      {t(`enrollments.history.${row.historialKey}`)}
-    </StatusPill>
+    <div className="mat-history">
+      <StatusPill tone={state.tone} icon={Icon ? <Icon /> : null}>
+        {t(`enrollments.history.${row.historialKey}`)}
+      </StatusPill>
+      {sub ? <span className="mat-history__sub">{sub}</span> : null}
+    </div>
   );
 }
 
@@ -55,54 +83,44 @@ export function buildColumns(t, handlers) {
       ),
     },
     {
+      // Gestión + tipo unificados en una sola columna: año/fecha arriba, el tipo
+      // como píldora de color debajo (antes era una columna `type` aparte).
       title: t('enrollments.table.term'),
       key: 'term',
-      minWidth: 150, // ancho mínimo de columna (layout), no breakpoint
-      render: (_, row) => (
-        <div className="mat-term">
-          <div className="mat-term__year">{row.gestionYear}</div>
-          <div className="mat-term__date">{row.fecha}</div>
-        </div>
-      ),
+      minWidth: 160, // ancho mínimo de columna (layout), no breakpoint
+      render: (_, row) => {
+        const paralelo = paraleloLabel(row, t);
+        return (
+          <div className="mat-term">
+            <div className="mat-term__year">{row.gestionYear}</div>
+            <div className="mat-term__date">{row.fecha}</div>
+            <AdmissionTypeTag typeKey={row.typeKey} t={t} />
+            {paralelo ? <div className="mat-term__paralelo">{paralelo}</div> : null}
+          </div>
+        );
+      },
       // En la fila collapse (ficha): la celda de tabla apila año GRANDE + fecha,
       // tipografía que rompe la escala del residual. Aquí se presenta inline a la
-      // escala de ficha — el año y la fecha en una sola línea legible.
-      renderResidual: (row) => (
-        <span className="mat-term--residual">
-          {row.gestionYear}
-          <span className="mat-term__date"> · {row.fecha}</span>
-        </span>
-      ),
-    },
-    {
-      title: t('enrollments.table.type'),
-      key: 'type',
-      minWidth: 130, // ancho mínimo de columna (layout), no breakpoint
-      render: (_, row) => <AdmissionTypeTag typeKey={row.typeKey} t={t} />,
+      // escala de ficha — año + fecha en una línea, el tipo y el paralelo debajo.
+      renderResidual: (row) => {
+        const paralelo = paraleloLabel(row, t);
+        return (
+          <div className="mat-term--residual">
+            <span className="mat-term--residual-line">
+              {row.gestionYear}
+              <span className="mat-term__date"> · {row.fecha}</span>
+            </span>
+            <AdmissionTypeTag typeKey={row.typeKey} t={t} />
+            {paralelo ? <span className="mat-term__paralelo">{paralelo}</span> : null}
+          </div>
+        );
+      },
     },
     {
       title: t('enrollments.table.record'),
       key: 'record',
-      minWidth: 150, // ancho mínimo de columna (layout), no breakpoint
-      render: (_, row) => renderHistoryPill(row, t),
-    },
-    {
-      title: t('enrollments.table.payment'),
-      key: 'payment',
-      minWidth: 130, // ancho mínimo de columna (layout), no breakpoint
-      render: (_, row) => {
-        if (!row.estadoPago) return <span className="mat-dash">—</span>;
-        const { tone } = pagoStatusOf(row.estadoPago);
-        const labelKey = tone === 'ok' ? 'enrollments.payment.upToDate' : 'enrollments.payment.pending';
-        return <StatusPill tone={tone}>{t(labelKey)}</StatusPill>;
-      },
-    },
-    {
-      title: t('enrollments.table.subjects'),
-      key: 'subjects',
-      align: 'center',
-      minWidth: 90, // ancho mínimo de columna (layout), no breakpoint
-      render: (_, row) => <span className="mat-subjects">{row.materias}</span>,
+      minWidth: 160, // ancho mínimo de columna (layout), no breakpoint
+      render: (_, row) => renderHistoryCell(row, t),
     },
     {
       title: t('enrollments.table.actions'),

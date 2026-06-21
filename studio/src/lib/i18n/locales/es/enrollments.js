@@ -12,7 +12,7 @@ export const enrollments = {
     newEntries: 'Nuevos ingresos',
     pendingRecords: 'Historiales pendientes',
     ofTotal: '{pct}% del total',
-    firstTerm: 'Primer semestre',
+    firstTerm: 'Primer año',
     needReview: 'Requieren revisión',
   },
 
@@ -24,12 +24,9 @@ export const enrollments = {
     student: 'Estudiante',
     program: 'Carrera',
     term: 'Gestión',
-    type: 'Tipo',
     record: 'Historial',
-    payment: 'Pago',
-    subjects: 'Materias',
     actions: 'Acciones',
-    careerSubtitle: '{semestre}° semestre · {materias} materias',
+    careerSubtitle: '{semestre}° año · {materias} materias',
   },
 
   filters: {
@@ -54,7 +51,7 @@ export const enrollments = {
     enrolled: 'Inscripción',
     period: 'Periodo',
     payment: 'Pago',
-    semester: 'Semestre',
+    semester: 'Año',
     subjects: 'Materias',
     average: 'Promedio',
     progress: 'Progreso académico',
@@ -79,6 +76,17 @@ export const enrollments = {
     observado: 'Observado',
     revision: 'En revisión',
     no_aplica: 'Sin historial previo',
+    // Segundo dato (contexto por tipo de inscripción) bajo la píldora de estado.
+    firstEntry: 'Primer ingreso',
+    previousSubjects: '{count} materias previas',
+    transferOrigin: 'Traspaso · {carrera} ({anio})',
+    mobilityOrigin: 'Transitabilidad · {carrera} ({anio})',
+  },
+
+  shift: {
+    morning: 'Mañana',
+    afternoon: 'Tarde',
+    evening: 'Noche',
   },
 
   payment: {

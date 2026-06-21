@@ -52,11 +52,14 @@
   padding-left: 12px;
 }
 
-.mat-dash {
-  color: var(--text-soft);
+/* --- Celda: gestión + tipo (unificadas) --- */
+.mat-term {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xxs);
 }
 
-/* --- Celda: gestión --- */
 .mat-term__year {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -69,16 +72,38 @@
   color: var(--text-soft);
 }
 
-/* Gestión en la fila collapse (ficha): año + fecha en una línea, a la escala del
-   residual (no el año GRANDE apilado de la celda de tabla). */
-.mat-term--residual {
+/* Paralelo · turno: dato real de la vista 101, debajo del tipo. Tabular + tenue. */
+.mat-term__paralelo {
+  font-size: var(--font-size-xs);
+  color: var(--text-soft);
   font-variant-numeric: tabular-nums;
 }
 
-.mat-subjects {
+/* --- Celda: historial (estado + contexto académico) --- */
+.mat-history {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xxs);
+}
+
+/* Segundo dato del historial (materias previas / primer ingreso / origen). */
+.mat-history__sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-soft);
+}
+
+/* Gestión en la fila collapse (ficha): año + fecha en una línea y el tipo debajo,
+   a la escala del residual (no el año GRANDE apilado de la celda de tabla). */
+.mat-term--residual {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xxs);
+}
+
+.mat-term--residual-line {
   font-variant-numeric: tabular-nums;
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-2);
 }
 
 .mat-row-actions {
@@ -165,22 +190,24 @@
   content: none;
 }
 
+/* Toggle de disclosure SOBRIO: chevron sin caja ni borde, alineado con el resto de
+   glifos de la fila (checkbox + avatar). Solo un halo circular en hover/focus, como
+   cualquier icon-button fantasma. Touch target ≥44px por padding (no caja visible),
+   manteniendo WCAG 2.5.5 sin ruido visual. */
 .mat-table .mat-expand {
-  position: relative; /* ancla el micro-badge de conteo */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: var(--size-control);
   height: var(--size-control);
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface-alt);
-  color: var(--text-muted);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-soft);
   cursor: pointer;
   transition:
     color var(--dur-hover) var(--ease-out),
-    border-color var(--dur-hover) var(--ease-out),
     background var(--dur-hover) var(--ease-out);
 }
 
@@ -202,39 +229,22 @@
   }
 }
 
-/* Descubribilidad: cuando la fila TIENE columnas ocultas, el toggle se tiñe con
-   color de marca (no gris inerte) para leerse como interactivo y señalar que hay
-   campos plegados; el conteo refuerza cuántos. */
+/* Descubribilidad SUTIL: cuando la fila tiene columnas plegadas, el chevron se
+   tiñe con un matiz de marca tenue (no la caja verde llena) para leerse como
+   interactivo sin competir con el checkbox ni el avatar. */
 .mat-table .mat-expand--has-hidden {
   color: var(--brand-600);
-  border-color: var(--brand-500);
-}
-
-/* Micro-indicador del nº de campos plegados (solo en estado colapsado). */
-.mat-table .mat-expand__count {
-  position: absolute;
-  top: calc(-1 * var(--space-xs));
-  right: calc(-1 * var(--space-xs));
-  min-width: var(--font-size-base);
-  height: var(--font-size-base);
-  padding: 0 var(--space-xxs);
-  border-radius: var(--radius-pill);
-  background: var(--brand-600);
-  color: var(--color-on-accent);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .mat-table .mat-expand:hover {
     color: var(--brand-700);
-    border-color: var(--brand-600);
-    background: color-mix(in srgb, var(--brand-500) 8%, var(--surface-alt));
+    background: color-mix(in srgb, var(--brand-500) 10%, transparent);
   }
+}
+
+.mat-table .mat-expand--open {
+  color: var(--brand-700);
 }
 
 .mat-table .mat-expand:focus-visible {

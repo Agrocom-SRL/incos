@@ -31,6 +31,21 @@ function recordState(estado) {
   return { key: 'notApplicable', tone: 'neutral' };
 }
 
+/** turno del paralelo → clave i18n (enrollments.shift.*). null si desconocido. */
+function shiftKey(turno) {
+  switch (String(turno || '').toUpperCase()) {
+    case 'MAÑANA':
+    case 'MANANA':
+      return 'morning';
+    case 'TARDE':
+      return 'afternoon';
+    case 'NOCHE':
+      return 'evening';
+    default:
+      return null;
+  }
+}
+
 /**
  * historialPrevioEstado → clave de historial de la UI (pendiente/completo/
  * observado/revision/no_aplica). Función PURA local (sin i18n).
@@ -81,7 +96,19 @@ export function adaptEnrollment(record) {
     semestre: record.periodo?.numero ?? 1,
     periodoNombre: record.periodo?.nombre ?? '',
     paralelo: record.paralelo?.nombre ?? '—',
+    turnoKey: shiftKey(record.paralelo?.turno),
     materias: record.cantidadMaterias ?? 0,
+    // Segundo dato del historial (académico): nº de materias del registro previo y,
+    // para TRASPASO/TRANSITABILIDAD, el origen real (institución + año convalidado).
+    historialPreviasCount: record.cantidadHistorialPrevio ?? 0,
+    origen: record.origen
+      ? {
+          institucion: record.origen.institucion ?? '',
+          carreraOrigen: record.origen.carreraOrigen ?? '',
+          anioLabel: record.origen.anioLabel ?? '',
+          estado: record.origen.estado ?? '',
+        }
+      : null,
     estadoPago: record.estadoPago ?? null,
     promedio: record.promedio ?? null,
     fecha: formatDate(record.fechaInscripcion),

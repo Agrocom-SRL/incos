@@ -32,11 +32,12 @@ export function useResidualExpandable({ hiddenColumns, getRowKey }) {
     rowExpandable: () => true,
     columnWidth: 48, // ancho de la columna de toggle (layout), no breakpoint
     // El toggle es el ÚNICO acceso a las columnas plegadas en ancho estrecho:
-    // touch target ≥44px (CSS), tinte de marca + conteo cuando hay campos
-    // ocultos (descubribilidad), y aria-expanded/-controls para lectores.
-    // Icono PROPIO (chevron que rota), NO el glifo +/- nativo de AntD (roto):
-    // `mat-expand` no reusa `.ant-table-row-expand-icon` para no heredar sus
-    // pseudo-elementos; el chevron va explícito dentro del button.
+    // touch target ≥44px (CSS), tinte de marca SUTIL cuando hay campos ocultos
+    // (descubribilidad sin caja ni badge), y aria-expanded/-controls para lectores;
+    // el conteo se comunica al lector por aria-label, no con un badge visual que
+    // ensucie la fila. Icono PROPIO (chevron que rota), NO el glifo +/- nativo de
+    // AntD (roto): `mat-expand` no reusa `.ant-table-row-expand-icon` para no
+    // heredar sus pseudo-elementos; el chevron va explícito dentro del button.
     expandIcon: ({ expanded, onExpand, record }) => (
       <button
         type="button"
@@ -52,7 +53,6 @@ export function useResidualExpandable({ hiddenColumns, getRowKey }) {
         }}
       >
         <RightOutlined className="mat-expand__chevron" aria-hidden />
-        {!expanded ? <span className="mat-expand__count" aria-hidden>{hiddenCount}</span> : null}
       </button>
     ),
   };
