@@ -15,7 +15,7 @@ export function StudentCell({ row }) {
         <div className="mat-student__name">{row.fullName}</div>
         <div className="mat-student__meta">
           <span>{row.codigo}</span>
-          <span>{t('enrollments.card.ci')} {row.ci}</span>
+          <span>{t('enrollments.card.ci')}: {row.ci}</span>
         </div>
       </div>
     </div>

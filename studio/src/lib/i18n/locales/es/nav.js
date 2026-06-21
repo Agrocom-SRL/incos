@@ -11,15 +11,15 @@ export const nav = {
   // Matrícula
   enrollment: 'Matrícula',
   newStudent: 'Nuevo estudiante',
-  admission: 'Admisión',
+  admission: 'Admisiones',
   registrations: 'Inscripciones',
   contributions: 'Aportes',
-  scholarships: 'Becas',
+  scholarships: 'Asignaciones de becas',
   internships: 'Pasantías (estudiantes)',
 
   // Académico
   academic: 'Académico',
-  attendance: 'Asistencia',
+  attendance: 'Asistencias',
   grades: 'Calificaciones',
   leveling: 'Nivelaciones',
   transfers: 'Traspasos',
@@ -43,7 +43,7 @@ export const nav = {
 
   // Finanzas
   finance: 'Finanzas',
-  payments: 'Pagos',
+  payments: 'Pagos administrativos',
   additionalPayments: 'Pagos adicionales',
   paymentReports: 'Reportes de pagos',
   paymentSettings: 'Config. de pagos',
@@ -65,7 +65,7 @@ export const nav = {
 
   // Seguridad
   security: 'Seguridad',
-  users: 'Usuarios',
+  users: 'Admin. de usuarios',
   rolesPermissions: 'Roles y permisos',
 
   // Mi perfil

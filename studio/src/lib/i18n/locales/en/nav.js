@@ -11,15 +11,15 @@ export const nav = {
   // Enrollment
   enrollment: 'Enrollment',
   newStudent: 'New student',
-  admission: 'Admission',
+  admission: 'Admissions',
   registrations: 'Registrations',
   contributions: 'Contributions',
-  scholarships: 'Scholarships',
+  scholarships: 'Scholarships assignments',
   internships: 'Student internships',
 
   // Academic
   academic: 'Academic',
-  attendance: 'Attendance',
+  attendance: 'Attendances',
   grades: 'Grades',
   leveling: 'Leveling',
   transfers: 'Transfers',
@@ -43,7 +43,7 @@ export const nav = {
 
   // Finance
   finance: 'Finance',
-  payments: 'Payments',
+  payments: 'Administrative payments',
   additionalPayments: 'Additional payments',
   paymentReports: 'Payment reports',
   paymentSettings: 'Payment settings',
@@ -65,7 +65,7 @@ export const nav = {
 
   // Security
   security: 'Security',
-  users: 'Users',
+  users: 'Users management',
   rolesPermissions: 'Roles & permissions',
 
   // My profile

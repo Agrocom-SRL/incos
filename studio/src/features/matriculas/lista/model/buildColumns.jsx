@@ -43,6 +43,7 @@ function renderHistoryCell(row, t) {
   const sub = historySubtitle(row, t);
   return (
     <div className="mat-history">
+      <AdmissionTypeTag typeKey={row.typeKey} t={t} />
       <StatusPill tone={state.tone} icon={Icon ? <Icon /> : null}>
         {t(`enrollments.history.${row.historialKey}`)}
       </StatusPill>
@@ -94,7 +95,6 @@ export function buildColumns(t, handlers) {
           <div className="mat-term">
             <div className="mat-term__year">{row.gestionYear}</div>
             <div className="mat-term__date">{row.fecha}</div>
-            <AdmissionTypeTag typeKey={row.typeKey} t={t} />
             {paralelo ? <div className="mat-term__paralelo">{paralelo}</div> : null}
           </div>
         );
