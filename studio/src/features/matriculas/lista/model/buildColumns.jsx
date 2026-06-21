@@ -8,9 +8,9 @@ import { StatusPill } from '@ui/atoms/StatusPill/StatusPill';
 import { RowActions } from '@ui/templates/ListPage/parts/RowActions/RowActions';
 import { StudentCell } from '../components/StudentCell/StudentCell';
 import { AdmissionTypeTag } from '../components/AdmissionTypeTag/AdmissionTypeTag';
-import { buildEnrollmentActions } from './enrollmentActions';
-import { pagoStatusOf } from './pagoStatus';
-import { historyStateOf, HISTORY_ICONS } from './historyStates';
+import { buildEnrollmentActions } from '../config/enrollmentActions';
+import { pagoStatusOf } from '../config/pagoStatus';
+import { historyStateOf, HISTORY_ICONS } from '../config/historyStates';
 
 /** Render de la píldora de historial (helper, no es un componente exportado). */
 function renderHistoryPill(row, t) {
@@ -112,6 +112,10 @@ export function buildColumns(t, handlers) {
       // Columna FIJA (nunca se oculta): reserva su ancho de layout en
       // useResponsiveColumns igual que `width`. Espejo de ACTIONS_W.full (140).
       minWidth: 140, // ancho mínimo de columna (layout), no breakpoint
+      // Anclada a la DERECHA: el ⋮ queda siempre pegado al borde y visible por
+      // encima de las columnas de datos aunque la suma de anchos roce el wrapper;
+      // nunca se recorta al borde derecho (era el síntoma del header "A" cortado).
+      fixed: 'right',
       render: actionsCell,
     },
   ];

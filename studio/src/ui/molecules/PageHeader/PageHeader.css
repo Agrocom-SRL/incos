@@ -41,3 +41,14 @@
   align-items: center;
   justify-content: flex-end;
 }
+
+/* En ancho intermedio/estrecho el bloque de acciones (cuando ya wrappeó a su
+   propia fila bajo el título) pasa a ocupar TODO el ancho del header (no solo el
+   de su contenido): así sus hijos que crecen (p. ej. un Select de export con
+   flex-grow) llegan al borde derecho, alineados con las cards de abajo. En
+   desktop el bloque sigue ajustado a su contenido y alineado a la derecha. */
+@container content (max-width: 768px) {
+  .ds-page-header__actions {
+    flex: 1 1 100%;
+  }
+}

@@ -18,7 +18,7 @@ import {
 import { fetchEnrollments } from '../data/enrollments.api';
 import { adaptEnrollments } from '../model/adaptEnrollment';
 import { buildColumns } from '../model/buildColumns';
-import { HISTORY_FILTER_OPTIONS } from '../model/historyStates';
+import { HISTORY_FILTER_OPTIONS } from './historyStates';
 
 const ENROLLMENT_YEAR = 2026;
 

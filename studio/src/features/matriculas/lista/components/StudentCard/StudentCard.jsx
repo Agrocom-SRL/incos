@@ -13,9 +13,9 @@ import { DescriptionRow } from '@ui/molecules/DescriptionRow/DescriptionRow';
 import { RowActions } from '@ui/templates/ListPage/parts/RowActions/RowActions';
 import { useTranslation } from '@lib/i18n/useTranslation';
 import { AdmissionTypeTag } from '../AdmissionTypeTag/AdmissionTypeTag';
-import { buildEnrollmentActions } from '../../model/enrollmentActions';
-import { historyStateOf, HISTORY_ICONS } from '../../model/historyStates';
-import { pagoStatusOf } from '../../model/pagoStatus';
+import { buildEnrollmentActions } from '../../config/enrollmentActions';
+import { historyStateOf, HISTORY_ICONS } from '../../config/historyStates';
+import { pagoStatusOf } from '../../config/pagoStatus';
 import './StudentCard.css';
 
 export function StudentCard({ row, onOpen, ...actions }) {

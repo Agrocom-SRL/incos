@@ -113,6 +113,23 @@
   width: 100%;
 }
 
+/* Columna de acciones SIEMPRE visible al borde derecho. AntD marca la columna
+   `fixed:'right'` con `.ant-table-cell-fix-right`; la anclamos sticky para que el
+   ⋮ quede pegado a la derecha y por encima de las columnas de datos aunque la
+   suma de anchos roce el wrapper (la red de seguridad de overflow-x:hidden no la
+   recorta). Fondo opaco heredado del surface para que las celdas de datos no se
+   transparenten por debajo al solaparse. */
+.mat-table .ant-table-cell-fix-right {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: var(--surface);
+}
+
+.mat-table .ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background: var(--surface-alt);
+}
+
 .mat-table .ant-table-thead > tr > th {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -135,25 +152,51 @@
 
 /* --- Fila collapse (expandable) con las columnas residuales ---
    El toggle es el control MÁS importante en ancho estrecho (único acceso a las
-   columnas plegadas): touch target ≥44px (WCAG 2.5.5), igual que el ⋮. El glifo
-   +/- nativo de AntD (::before/::after) se centra con flex. Tamaño por token
+   columnas plegadas): touch target ≥44px (WCAG 2.5.5), igual que el ⋮. Es un
+   button PROPIO (`.mat-expand`) con forma e icono explícitos — NO reusa
+   `.ant-table-row-expand-icon` para no heredar su glifo +/- nativo (roto). Por si
+   AntD lo envuelve, anulamos cualquier pseudo-elemento nativo. Tamaño por token
    (--size-control en mouse, --size-touch-target en táctil); sin px literales. */
-.mat-table .ant-table-row-expand-icon {
+.mat-table .ant-table-row-expand-icon::before,
+.mat-table .ant-table-row-expand-icon::after,
+.mat-table .mat-expand::before,
+.mat-table .mat-expand::after {
+  display: none;
+  content: none;
+}
+
+.mat-table .mat-expand {
+  position: relative; /* ancla el micro-badge de conteo */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: var(--size-control);
   height: var(--size-control);
-  color: var(--text-muted);
-  border-color: var(--border);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   background: var(--surface-alt);
+  color: var(--text-muted);
+  cursor: pointer;
   transition:
     color var(--dur-hover) var(--ease-out),
-    border-color var(--dur-hover) var(--ease-out);
+    border-color var(--dur-hover) var(--ease-out),
+    background var(--dur-hover) var(--ease-out);
+}
+
+/* Chevron explícito: apunta a la derecha en colapsado, rota 90° al expandir. */
+.mat-table .mat-expand__chevron {
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  transition: transform var(--dur-pop) var(--ease-out);
+}
+
+.mat-table .mat-expand--open .mat-expand__chevron {
+  transform: rotate(90deg);
 }
 
 @media (pointer: coarse) {
-  .mat-table .ant-table-row-expand-icon {
+  .mat-table .mat-expand {
     width: var(--size-touch-target);
     height: var(--size-touch-target);
   }
@@ -187,13 +230,14 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .mat-table .ant-table-row-expand-icon:hover {
+  .mat-table .mat-expand:hover {
     color: var(--brand-700);
     border-color: var(--brand-600);
+    background: color-mix(in srgb, var(--brand-500) 8%, var(--surface-alt));
   }
 }
 
-.mat-table .ant-table-row-expand-icon:focus-visible {
+.mat-table .mat-expand:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 25%, transparent);
 }

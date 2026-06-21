@@ -6,6 +6,7 @@ export const common = {
   moreActions: 'Más opciones',
   expandRow: 'Ver más detalles',
   hiddenFields: 'Ver {count} campos más',
+  hiddenFieldsExpanded: 'Ocultar {count} campos',
 };
 
 export default common;
