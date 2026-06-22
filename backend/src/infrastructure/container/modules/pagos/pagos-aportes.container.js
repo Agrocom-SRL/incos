@@ -24,12 +24,14 @@ import { UpdatePaymentInstallmentUseCase } from '../../../../application/use-cas
 import { GenerateReciboPagoUseCase } from '../../../../application/use-cases/pagos/GenerateReciboPagoUseCase.js';
 import { ExportPaymentAporteByCareerExcelUseCase } from '../../../../application/use-cases/pagos/ExportPaymentAporteByCareerExcelUseCase.js';
 import { GetBecasPorCarreraReporteUseCase } from '../../../../application/use-cases/pagos/GetBecasPorCarreraReporteUseCase.js';
+import { ExportBecasPorCarreraReporteExcelUseCase } from '../../../../application/use-cases/pagos/ExportBecasPorCarreraReporteExcelUseCase.js';
 import { SearchStudentsForAporteRegistroUseCase } from '../../../../application/use-cases/pagos/SearchStudentsForAporteRegistroUseCase.js';
 import { GetCompromisoByPagoAporteUseCase } from '../../../../application/use-cases/pagos/GetCompromisoByPagoAporteUseCase.js';
 import { UpsertCompromisoUseCase } from '../../../../application/use-cases/pagos/UpsertCompromisoUseCase.js';
 import { UpdateCompromisoUseCase } from '../../../../application/use-cases/pagos/UpdateCompromisoUseCase.js';
 import { DeleteCompromisoUseCase } from '../../../../application/use-cases/pagos/DeleteCompromisoUseCase.js';
 import { GetCuentasPorCobrarReporteUseCase } from '../../../../application/use-cases/pagos/GetCuentasPorCobrarReporteUseCase.js';
+import { ExportCuentasPorCobrarReporteExcelUseCase } from '../../../../application/use-cases/pagos/ExportCuentasPorCobrarReporteExcelUseCase.js';
 import {
     RegisterPagoAporteController,
     ListPagosAportesController,
@@ -41,12 +43,14 @@ import {
     GenerateReciboPagoController,
     ExportListaAportesPorCarreraExcelController,
     GetBecasPorCarreraReporteController,
+    ExportBecasPorCarreraReporteExcelController,
     SearchStudentsForAporteRegistroController,
     GetCompromisoController,
     UpsertCompromisoController,
     UpdateCompromisoController,
     DeleteCompromisoController,
     GetCuentasPorCobrarReporteController,
+    ExportCuentasPorCobrarReporteExcelController,
 } from '../../../../presentation/controllers/pagos/index.js';
 import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-aportes.routes.js';
 
@@ -210,6 +214,17 @@ export function registerPagosAportesResource(container) {
 
     registerComponent(
         container,
+        PAGOS_TOKENS.exportBecasPorCarreraReporteExcelUseCase,
+        (c) =>
+            new ExportBecasPorCarreraReporteExcelUseCase({
+                getBecasPorCarreraReporteUseCase: c.resolve(PAGOS_TOKENS.getBecasPorCarreraReporteUseCase),
+                becasReporteExcelGenerator: c.resolve(SERVICIOS_TOKENS.becasReporteExcelGenerator),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         PAGOS_TOKENS.searchStudentsForAporteRegistroUseCase,
         (c) =>
             new SearchStudentsForAporteRegistroUseCase({
@@ -271,6 +286,19 @@ export function registerPagosAportesResource(container) {
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 contributionConfigurationRepository: c.resolve(
                     REPOSITORIOS_TOKENS.contributionConfigurationRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.exportCuentasPorCobrarReporteExcelUseCase,
+        (c) =>
+            new ExportCuentasPorCobrarReporteExcelUseCase({
+                getCuentasPorCobrarReporteUseCase: c.resolve(PAGOS_TOKENS.getCuentasPorCobrarReporteUseCase),
+                cuentasPorCobrarReporteExcelGenerator: c.resolve(
+                    SERVICIOS_TOKENS.cuentasPorCobrarReporteExcelGenerator
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -392,6 +420,18 @@ export function registerPagosAportesResource(container) {
 
     registerComponent(
         container,
+        PAGOS_TOKENS.exportBecasPorCarreraReporteExcelController,
+        (c) =>
+            new ExportBecasPorCarreraReporteExcelController({
+                exportBecasPorCarreraReporteExcelUseCase: c.resolve(
+                    PAGOS_TOKENS.exportBecasPorCarreraReporteExcelUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         PAGOS_TOKENS.searchStudentsForAporteRegistroController,
         (c) =>
             new SearchStudentsForAporteRegistroController({
@@ -458,6 +498,18 @@ export function registerPagosAportesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.exportCuentasPorCobrarReporteExcelController,
+        (c) =>
+            new ExportCuentasPorCobrarReporteExcelController({
+                exportCuentasPorCobrarReporteExcelUseCase: c.resolve(
+                    PAGOS_TOKENS.exportCuentasPorCobrarReporteExcelUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -481,12 +533,18 @@ export function registerPagosAportesResource(container) {
                 getBecasPorCarreraReporteController: c.resolve(
                     PAGOS_TOKENS.getBecasPorCarreraReporteController
                 ),
+                exportBecasPorCarreraReporteExcelController: c.resolve(
+                    PAGOS_TOKENS.exportBecasPorCarreraReporteExcelController
+                ),
                 getCompromisoController: c.resolve(PAGOS_TOKENS.getCompromisoController),
                 upsertCompromisoController: c.resolve(PAGOS_TOKENS.upsertCompromisoController),
                 updateCompromisoController: c.resolve(PAGOS_TOKENS.updateCompromisoController),
                 deleteCompromisoController: c.resolve(PAGOS_TOKENS.deleteCompromisoController),
                 getCuentasPorCobrarReporteController: c.resolve(
                     PAGOS_TOKENS.getCuentasPorCobrarReporteController
+                ),
+                exportCuentasPorCobrarReporteExcelController: c.resolve(
+                    PAGOS_TOKENS.exportCuentasPorCobrarReporteExcelController
                 ),
             };
 

@@ -50,6 +50,16 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
 }
+@media (prefers-reduced-motion: reduce) {
+  .becas-resumen-zone .ant-card,
+  .becas-resumen-zone .fin-kpi {
+    transition: none;
+  }
+  .becas-resumen-zone .ant-card:hover,
+  .becas-resumen-zone .fin-kpi:hover {
+    transform: none;
+  }
+}
 /* El donut y el catálogo deben estirarse a la altura de la columna. */
 .becas-resumen-zone .ant-card {
   height: 100%;

@@ -29,6 +29,7 @@ export const PAGOS_TOKENS = {
     generateReciboPagoUseCase: 'pagos.generateReciboPagoUseCase',
     exportPaymentAporteByCareerExcelUseCase: 'pagos.exportPaymentAporteByCareerExcelUseCase',
     getBecasPorCarreraReporteUseCase: 'pagos.getBecasPorCarreraReporteUseCase',
+    exportBecasPorCarreraReporteExcelUseCase: 'pagos.exportBecasPorCarreraReporteExcelUseCase',
     searchStudentsForAporteRegistroUseCase: 'pagos.searchStudentsForAporteRegistroUseCase',
 
     // Use Cases - Compromiso de pago (CRUD) y Cuentas por cobrar (reporte)
@@ -37,6 +38,7 @@ export const PAGOS_TOKENS = {
     updateCompromisoUseCase: 'pagos.updateCompromisoUseCase',
     deleteCompromisoUseCase: 'pagos.deleteCompromisoUseCase',
     getCuentasPorCobrarReporteUseCase: 'pagos.getCuentasPorCobrarReporteUseCase',
+    exportCuentasPorCobrarReporteExcelUseCase: 'pagos.exportCuentasPorCobrarReporteExcelUseCase',
 
     // Controllers - Lista
     listMetodosPagoController: 'pagos.listMetodosPagoController',
@@ -64,6 +66,7 @@ export const PAGOS_TOKENS = {
     generateReciboPagoController: 'pagos.generateReciboPagoController',
     exportListaAportesPorCarreraExcelController: 'pagos.exportListaAportesPorCarreraExcelController',
     getBecasPorCarreraReporteController: 'pagos.getBecasPorCarreraReporteController',
+    exportBecasPorCarreraReporteExcelController: 'pagos.exportBecasPorCarreraReporteExcelController',
     searchStudentsForAporteRegistroController: 'pagos.searchStudentsForAporteRegistroController',
 
     // Controllers - Compromiso de pago (CRUD) y Cuentas por cobrar (reporte)
@@ -72,6 +75,7 @@ export const PAGOS_TOKENS = {
     updateCompromisoController: 'pagos.updateCompromisoController',
     deleteCompromisoController: 'pagos.deleteCompromisoController',
     getCuentasPorCobrarReporteController: 'pagos.getCuentasPorCobrarReporteController',
+    exportCuentasPorCobrarReporteExcelController: 'pagos.exportCuentasPorCobrarReporteExcelController',
 
     // Routers
     metodosPagoRouter: 'pagos.metodosPagoRouter',

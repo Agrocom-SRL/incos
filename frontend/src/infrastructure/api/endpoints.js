@@ -377,8 +377,12 @@ export const PAGOS_APORTES_ENDPOINTS = {
   EXPORT_LISTA_POR_CARRERA: `${API_BASE}/pagos-aportes/export/lista-por-carrera`,
   // Reporte read-only: planilla de control de becas por carrera (query gestion_id opcional)
   REPORTE_BECAS_POR_CARRERA: `${API_BASE}/pagos-aportes/reportes/becas-por-carrera`,
+  // Exportación Excel de la planilla de becas por carrera (blob xlsx, gestion_id opcional)
+  EXPORT_REPORTE_BECAS_POR_CARRERA: `${API_BASE}/pagos-aportes/reportes/becas-por-carrera/export`,
   // Reporte read-only: planilla de cuentas por cobrar por carrera y paralelo (query gestion_id opcional)
   REPORTE_CUENTAS_POR_COBRAR: `${API_BASE}/pagos-aportes/reportes/cuentas-por-cobrar`,
+  // Exportación Excel de la planilla de cuentas por cobrar (blob xlsx, gestion_id opcional)
+  EXPORT_REPORTE_CUENTAS_POR_COBRAR: `${API_BASE}/pagos-aportes/reportes/cuentas-por-cobrar/export`,
   // Compromiso de pago VIGENTE de una cabecera de aporte (GET vigente / POST upsert)
   COMPROMISO_BY_PAGO: (pagoAporteId) =>
     `${API_BASE}/pagos-aportes/${encodeURIComponent(String(pagoAporteId))}/compromiso`,

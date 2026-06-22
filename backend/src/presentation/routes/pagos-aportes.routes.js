@@ -176,6 +176,25 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.getBecasPorCarreraReporteController.handle(req, res, next)
     );
 
+    /** Exportar planilla de becas por carrera a Excel (EXPORTAR). */
+    const reporteBecasCarreraExport = [
+        authenticate,
+        verificarPermiso('finanzas.beca.reporte', 'EXPORTAR'),
+    ];
+
+    /**
+     * GET /api/v1/pagos-aportes/reportes/becas-por-carrera/export
+     * Excel (.xlsx, una hoja) de la Planilla de Becas por carrera.
+     * Query: gestion_id (opcional; gestión vigente por defecto).
+     * Permiso: finanzas.beca.reporte EXPORTAR.
+     * DECLARADA antes de /:id para evitar colisión de rutas.
+     */
+    router.get(
+        '/reportes/becas-por-carrera/export',
+        ...reporteBecasCarreraExport,
+        (req, res, next) => controllers.exportBecasPorCarreraReporteExcelController.handle(req, res, next)
+    );
+
     /** Planilla de control de Cuentas por cobrar (solo lectura). */
     const reporteCuentasPorCobrar = [
         authenticate,
@@ -193,6 +212,25 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         '/reportes/cuentas-por-cobrar',
         ...reporteCuentasPorCobrar,
         (req, res, next) => controllers.getCuentasPorCobrarReporteController.handle(req, res, next)
+    );
+
+    /** Exportar planilla de cuentas por cobrar a Excel (EXPORTAR). */
+    const reporteCuentasPorCobrarExport = [
+        authenticate,
+        verificarPermiso('finanzas.cuenta-cobrar.reporte', 'EXPORTAR'),
+    ];
+
+    /**
+     * GET /api/v1/pagos-aportes/reportes/cuentas-por-cobrar/export
+     * Excel (.xlsx, una hoja) de la Planilla de Cuentas por Cobrar.
+     * Query: gestion_id (opcional; gestión vigente por defecto).
+     * Permiso: finanzas.cuenta-cobrar.reporte EXPORTAR.
+     * DECLARADA antes de /:id para evitar colisión de rutas.
+     */
+    router.get(
+        '/reportes/cuentas-por-cobrar/export',
+        ...reporteCuentasPorCobrarExport,
+        (req, res, next) => controllers.exportCuentasPorCobrarReporteExcelController.handle(req, res, next)
     );
 
     // ============================================

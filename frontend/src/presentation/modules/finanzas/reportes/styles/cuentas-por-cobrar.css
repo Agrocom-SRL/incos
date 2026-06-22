@@ -123,6 +123,133 @@
   flex-direction: column;
   gap: var(--spacing-md, 16px);
   width: 100%;
+  height: 100%;
+}
+
+/* ============================================================
+   ZONA ESTADÍSTICA (gemela de becas-resumen-zone): bloque teñido verde tenue que
+   agrupa el resumen general + el gráfico de pendiente por carrera + la leyenda,
+   colocándolos ARRIBA y separándolos de las planillas densas de abajo. Las
+   tarjetas blancas van con sombra y micro-elevación al hover.
+   ============================================================ */
+.cobranza-resumen-zone {
+  /* Paleta "cuaderno" (tonos verdes suavizados) del kit de Finanzas. */
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: #196b45;
+  --cuaderno-verde-acento: #134d32;
+
+  background: var(--cuaderno-verde-tenue);
+  border: 1px solid var(--border-200, #e5e7eb);
+  border-radius: var(--radius-xl, 18px);
+  padding: var(--spacing-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 16px);
+}
+/* El separador dentro de la zona: transparente (la zona ya aporta el fondo). */
+.cobranza-resumen-zone__head.fin-separador {
+  padding: 4px 6px 0;
+  border: none;
+  background: transparent;
+}
+/* Tarjetas/KPIs del resumen: superficie blanca con sombra y micro-elevación. */
+.cobranza-resumen-zone .ant-card,
+.cobranza-resumen-zone .fin-kpi {
+  background: var(--surface-0, #fff);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 6px 16px rgba(15, 23, 42, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cobranza-resumen-zone .ant-card:hover,
+.cobranza-resumen-zone .fin-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+}
+/* El gráfico de barras se estira a la altura de su columna. */
+.cobranza-resumen-zone .ant-card {
+  height: 100%;
+}
+.cobranza-resumen-zone .ant-card-head-title {
+  white-space: normal;
+  line-height: 1.25;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cobranza-resumen-zone .ant-card,
+  .cobranza-resumen-zone .fin-kpi {
+    transition: none;
+  }
+  .cobranza-resumen-zone .ant-card:hover,
+  .cobranza-resumen-zone .fin-kpi:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Gráfico SALDO PENDIENTE POR CARRERA (organismo
+   CuentasPorCobrarPendientePorCarrera): barras horizontales nativas, una por
+   carrera, dentro de una Card. Sin librería de gráficos (como el donut de becas).
+   El color de cada barra es data-driven (token categórico) → estilo inline.
+   ============================================================ */
+.cobranza-pendiente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+  width: 100%;
+}
+.cobranza-pendiente__fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 6px);
+  min-width: 0;
+}
+.cobranza-pendiente__cab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+  min-width: 0;
+}
+.cobranza-pendiente__nombre {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  min-width: 0;
+}
+.cobranza-pendiente__nombre .ant-typography {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cobranza-pendiente__swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm, 4px);
+  flex: none;
+}
+.cobranza-pendiente__valor {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.cobranza-pendiente__track {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radius-sm, 999px);
+  background: var(--surface-100, #f0f0f0);
+  overflow: hidden;
+}
+.cobranza-pendiente__bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  min-width: 2px;
+  transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* Respeta la preferencia de movimiento reducido del sistema. */
+@media (prefers-reduced-motion: reduce) {
+  .cobranza-pendiente__bar {
+    transition: none;
+  }
 }
 
 /* ── Leyenda de alertas (dot del kit + etiqueta) ── */

@@ -16,6 +16,55 @@ import { IPagoAporteRepository } from '@domain/repositories';
 import { PAGOS_APORTES_ENDPOINTS } from '@api/endpoints';
 import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
+/**
+ * Extrae el nombre de archivo de una cabecera Content-Disposition (soporta
+ * `filename*=UTF-8''…`, `filename="…"` y `filename=…`). Fuente única para todas
+ * las descargas blob de este repositorio.
+ * @param {string} [disposition]
+ * @param {string} fallback - Nombre por defecto si la cabecera no trae filename.
+ * @returns {string}
+ */
+const extractFileNameFromDisposition = (disposition = '', fallback) => {
+  const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+  const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+  const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+  if (starMatch) {
+    try {
+      return decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+    } catch {
+      return starMatch[1];
+    }
+  }
+  if (quotedMatch) return quotedMatch[1];
+  if (plainMatch) return plainMatch[1].replace(/['"]/g, '');
+  return fallback;
+};
+
+/**
+ * Normaliza un error de descarga blob: si el backend respondió un error como
+ * Blob JSON, lo parsea para extraer el mensaje; en otro caso delega al handler.
+ * @param {*} error - Error de axios.
+ * @param {string} fallbackMsg
+ * @returns {Promise<{success: false, error: string}>}
+ */
+const parseBlobError = async (error, fallbackMsg) => {
+  if (error.response?.data instanceof Blob) {
+    try {
+      const json = JSON.parse(await error.response.data.text());
+      const errObj = json?.error;
+      const msg =
+        typeof errObj === 'string'
+          ? errObj
+          : errObj?.message || json?.message || fallbackMsg;
+      return { success: false, error: msg };
+    } catch {
+      return { success: false, error: fallbackMsg };
+    }
+  }
+  return handleErrorResponse(error, fallbackMsg);
+};
+
 export class PagoAporteRepository extends IPagoAporteRepository {
   /**
    * Registra un nuevo pago de aporte académico
@@ -515,45 +564,82 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         responseType: 'blob',
       });
 
-      const disposition = response.headers['content-disposition'] || '';
-      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
-      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
-      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+      return {
+        success: true,
+        blob: response.data,
+        fileName: extractFileNameFromDisposition(
+          response.headers['content-disposition'],
+          'lista_aportes.xlsx',
+        ),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al exportar lista de aportes');
+    }
+  }
 
-      let fileName = 'lista_aportes.xlsx';
-      if (starMatch) {
-        try {
-          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
-        } catch {
-          fileName = starMatch[1];
-        }
-      } else if (quotedMatch) {
-        fileName = quotedMatch[1];
-      } else if (plainMatch) {
-        fileName = plainMatch[1].replace(/['"]/g, '');
+  /**
+   * Descarga Excel de la planilla de control de becas por carrera (reporte read-only).
+   * GET /v1/pagos-aportes/reportes/becas-por-carrera/export?gestion_id=
+   *
+   * @param {Object} [options]
+   * @param {string|number|null} [options.gestionId] - Gestión a exportar (opcional; vigente por defecto)
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarBecasPorCarreraExcel(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
       }
+
+      const response = await apiClient.get(
+        PAGOS_APORTES_ENDPOINTS.EXPORT_REPORTE_BECAS_POR_CARRERA,
+        { params, responseType: 'blob' },
+      );
 
       return {
         success: true,
         blob: response.data,
-        fileName,
+        fileName: extractFileNameFromDisposition(
+          response.headers['content-disposition'],
+          'becas_por_carrera.xlsx',
+        ),
       };
     } catch (error) {
-      if (error.response?.data instanceof Blob) {
-        try {
-          const text = await error.response.data.text();
-          const json = JSON.parse(text);
-          const errObj = json?.error;
-          const msg =
-            typeof errObj === 'string'
-              ? errObj
-              : errObj?.message || json?.message || 'Error al exportar lista de aportes';
-          return { success: false, error: msg };
-        } catch {
-          return { success: false, error: 'Error al exportar lista de aportes' };
-        }
+      return parseBlobError(error, 'Error al exportar el reporte de becas por carrera');
+    }
+  }
+
+  /**
+   * Descarga Excel de la planilla de cuentas por cobrar (reporte read-only).
+   * GET /v1/pagos-aportes/reportes/cuentas-por-cobrar/export?gestion_id=
+   *
+   * @param {Object} [options]
+   * @param {string|number|null} [options.gestionId] - Gestión a exportar (opcional; vigente por defecto)
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarCuentasPorCobrarExcel(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
       }
-      return handleErrorResponse(error, 'Error al exportar lista de aportes');
+
+      const response = await apiClient.get(
+        PAGOS_APORTES_ENDPOINTS.EXPORT_REPORTE_CUENTAS_POR_COBRAR,
+        { params, responseType: 'blob' },
+      );
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName: extractFileNameFromDisposition(
+          response.headers['content-disposition'],
+          'cuentas_por_cobrar.xlsx',
+        ),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al exportar el reporte de cuentas por cobrar');
     }
   }
 }

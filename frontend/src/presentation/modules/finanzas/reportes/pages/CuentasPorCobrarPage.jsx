@@ -14,17 +14,20 @@
 
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Empty, Flex, Spin, Tabs, Tag, Typography } from 'antd';
-import { ArrowLeftOutlined, BankOutlined } from '@ant-design/icons';
+import { App, Col, Empty, Flex, Row, Spin, Tabs, Tag, Typography } from 'antd';
+import { ArrowLeftOutlined, BankOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { Alert, BackButton } from '@atoms';
+import { Alert, ActionButton, BackButton } from '@atoms';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
 import { useCuentasPorCobrarPage } from '@application-finanzas/hooks/state/useCuentasPorCobrarPage';
+import { useExportCuentasPorCobrarExcel } from '@application-finanzas/hooks/api/useExportCuentasPorCobrarExcel';
+import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import { createCuentasPorCobrarColumns, formatBs, formatFecha } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
 import CuentasPorCobrarCarreraSection from '@finanzas/reportes/components/organisms/CuentasPorCobrarCarreraSection';
 import CuentasPorCobrarResumen from '@finanzas/reportes/components/organisms/CuentasPorCobrarResumen';
+import CuentasPorCobrarPendientePorCarrera from '@finanzas/reportes/components/organisms/CuentasPorCobrarPendientePorCarrera';
 import CuentasPorCobrarLeyenda from '@finanzas/reportes/components/organisms/CuentasPorCobrarLeyenda';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
@@ -75,12 +78,14 @@ const filtrarDeudores = (carreras) =>
 
 const CuentasPorCobrarPage = () => {
   const navigate = useNavigate();
+  const { notification } = App.useApp();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     loading,
     error,
     isEmpty,
     gestion,
+    gestionId,
     montoMaximoPorEstudiante,
     fechaEmision,
     carreras,
@@ -88,6 +93,23 @@ const CuentasPorCobrarPage = () => {
     leyenda,
     observacionesGenerales,
   } = useCuentasPorCobrarPage();
+
+  const { exportar, loading: exportando } = useExportCuentasPorCobrarExcel();
+
+  const handleExportar = useCallback(async () => {
+    const result = await exportar(gestionId);
+    if (result.success) {
+      notification.success({
+        title: 'Reporte exportado',
+        description: 'La planilla de cuentas por cobrar se descargó correctamente.',
+      });
+    } else {
+      notification.error({
+        title: 'No se pudo exportar',
+        description: result.error || 'Reintentá en unos segundos.',
+      });
+    }
+  }, [exportar, gestionId, notification]);
 
   const columns = useMemo(() => createCuentasPorCobrarColumns(), []);
 
@@ -163,10 +185,35 @@ const CuentasPorCobrarPage = () => {
           </span>
         </div>
 
-        {/* Resumen general (KPIs + bloque destacado de pendiente). */}
-        <CuentasPorCobrarResumen resumen={resumen} />
+        {/* ZONA ESTADÍSTICA AL INICIO (igual que en Becas): resumen general (KPIs
+            + bloque destacado de pendiente), gráfico de saldo pendiente por
+            carrera (barras horizontales) y leyenda de alertas. Sobre fondo verde
+            tenue para que las tarjetas blancas con sombra resalten. */}
+        <div className="cobranza-resumen-zone">
+          <div className="fin-separador cobranza-resumen-zone__head">
+            <span className="fin-separador__titulo">Resumen general</span>
+          </div>
 
-        {/* Detalle por carrera en pestañas (solo deudores). */}
+          <Row gutter={[allSpacing.marginLG, allSpacing.marginLG]} align="stretch">
+            <Col xs={24} xl={14}>
+              <CuentasPorCobrarResumen resumen={resumen} />
+            </Col>
+            <Col xs={24} xl={10}>
+              <CuentasPorCobrarPendientePorCarrera
+                carreras={carreras}
+                totalPendiente={resumen?.totalPendientePorCobrar || 0}
+              />
+            </Col>
+          </Row>
+
+          <CuentasPorCobrarLeyenda leyenda={leyenda} observaciones={observacionesGenerales} />
+        </div>
+
+        {/* DETALLE POR CARRERA (planillas densas) ABAJO, en pestañas (solo deudores). */}
+        <div className="fin-separador">
+          <span className="fin-separador__titulo">Detalle por carrera</span>
+        </div>
+
         {tabItems.length ? (
           <div className="sd-tabs-shell cfg-academico-tabs-shell">
             <Tabs
@@ -180,9 +227,6 @@ const CuentasPorCobrarPage = () => {
         ) : (
           <Empty description="No hay cuentas por cobrar pendientes: todos los estudiantes están al día." />
         )}
-
-        {/* Leyenda de alertas + observaciones generales. */}
-        <CuentasPorCobrarLeyenda leyenda={leyenda} observaciones={observacionesGenerales} />
       </Flex>
     );
   }
@@ -194,9 +238,22 @@ const CuentasPorCobrarPage = () => {
           title="Cuentas por cobrar"
           breadcrumbItems={BREADCRUMB}
           actions={
-            <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-              Volver
-            </BackButton>
+            <Flex gap={allSpacing.marginXS} wrap="wrap">
+              <ActionButton
+                permiso={FINANZAS_PERMISOS.cuentaCobrarReporte}
+                accion="EXPORTAR"
+                variant="info"
+                icon={<FileExcelOutlined />}
+                loading={exportando}
+                disabled={loading || isEmpty}
+                onClick={handleExportar}
+              >
+                Exportar Excel
+              </ActionButton>
+              <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+                Volver
+              </BackButton>
+            </Flex>
           }
         />
       </PageHeaderArea>

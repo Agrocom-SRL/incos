@@ -12,14 +12,17 @@
  *     + OBSERVACIONES GENERALES.
  */
 
-import { Alert, Button, Col, Empty, Flex, Popover, Row, Spin, Table, Tag, Typography } from 'antd';
-import { ArrowLeftOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { App, Alert, Button, Col, Empty, Flex, Popover, Row, Spin, Table, Tag, Typography } from 'antd';
+import { ArrowLeftOutlined, FileExcelOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { BackButton } from '@atoms';
+import { ActionButton, BackButton } from '@atoms';
 import { useBecasReportePage } from '@application-finanzas/hooks/state/useBecasReportePage';
+import { useExportBecasReporteExcel } from '@application-finanzas/hooks/api/useExportBecasReporteExcel';
+import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import { becaPorcentajeKey } from '@application-finanzas/mappers/becasReporteMapper';
 import {
   formatPorcentaje,
@@ -106,12 +109,14 @@ const renderTotalesRow = (totales, porcentajes) => {
 
 const BecasReportePage = () => {
   const navigate = useNavigate();
+  const { notification } = App.useApp();
   const {
     loading,
     error,
     isEmpty,
     breadcrumbItems,
     gestion,
+    gestionId,
     porcentajes,
     tableColumns,
     filas,
@@ -121,6 +126,23 @@ const BecasReportePage = () => {
     catalogo,
     catalogoResumen,
   } = useBecasReportePage();
+
+  const { exportar, loading: exportando } = useExportBecasReporteExcel();
+
+  const handleExportar = useCallback(async () => {
+    const result = await exportar(gestionId);
+    if (result.success) {
+      notification.success({
+        title: 'Reporte exportado',
+        description: 'La planilla de becas por carrera se descargó correctamente.',
+      });
+    } else {
+      notification.error({
+        title: 'No se pudo exportar',
+        description: result.error || 'Reintentá en unos segundos.',
+      });
+    }
+  }, [exportar, gestionId, notification]);
 
   let body;
   if (loading) {
@@ -215,9 +237,22 @@ const BecasReportePage = () => {
           title="Becas por carrera"
           breadcrumbItems={breadcrumbItems}
           actions={
-            <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-              Volver
-            </BackButton>
+            <Flex gap={allSpacing.marginXS} wrap="wrap">
+              <ActionButton
+                permiso={FINANZAS_PERMISOS.becaReporte}
+                accion="EXPORTAR"
+                variant="info"
+                icon={<FileExcelOutlined />}
+                loading={exportando}
+                disabled={loading || isEmpty}
+                onClick={handleExportar}
+              >
+                Exportar Excel
+              </ActionButton>
+              <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+                Volver
+              </BackButton>
+            </Flex>
           }
         />
       }
