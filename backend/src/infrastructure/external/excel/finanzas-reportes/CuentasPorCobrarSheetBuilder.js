@@ -38,7 +38,7 @@ export class CuentasPorCobrarSheetBuilder {
    * @param {Object} params.datos - Payload del reporte de cuentas por cobrar.
    */
   static build({ composer: c, datos }) {
-    const { small, body } = EXCEL_FONT_SIZE;
+    const { label, body } = EXCEL_FONT_SIZE;
     const carreras = this._soloDeudores(Array.isArray(datos.carreras) ? datos.carreras : []);
     const resumen = datos.resumen ?? {};
     const montoMaximo = Number(datos.montoMaximoPorEstudiante) || 0;
@@ -56,9 +56,9 @@ export class CuentasPorCobrarSheetBuilder {
     const colObs = 11;
     const lastCol = colObs;
 
-    c.colWidths({ 1: 2, [colCarnet]: 12, [colNombre]: 38, [colMontoTotal]: 13, [colPagos]: 14 });
-    c.colWidths({ [colSaldo]: 14, [colPctPend]: 12, [colFechaComp]: 15, [colDias]: 11 });
-    c.colWidths({ [colEstado]: 14, [colObs]: 24 });
+    c.colWidths({ 1: 3, [colCarnet]: 16, [colNombre]: 48, [colMontoTotal]: 18, [colPagos]: 20 });
+    c.colWidths({ [colSaldo]: 19, [colPctPend]: 15, [colFechaComp]: 19, [colDias]: 14 });
+    c.colWidths({ [colEstado]: 18, [colObs]: 34 });
 
     const money = (row, col, value, style) => {
       const cell = c.cell(row, col, Number(value) || 0, style);
@@ -87,7 +87,7 @@ export class CuentasPorCobrarSheetBuilder {
     const headRow = 6;
     const headStyle = {
       bold: true,
-      size: small,
+      size: label,
       wrap: true,
       fill: EXCEL_COLOR.statHeader,
       fontColor: EXCEL_COLOR.statHeaderText,
@@ -106,8 +106,10 @@ export class CuentasPorCobrarSheetBuilder {
       [colObs, 'OBSERVACIONES'],
     ];
     headers.forEach(([col, text]) => c.cell(headRow, col, text, headStyle));
-    c.ws.getRow(headRow).height = 30;
-    c.freeze(headRow, colNombre);
+    c.ws.getRow(headRow).height = 36;
+    // Congela solo la cabecera (scroll vertical); las columnas NO quedan fijas al
+    // desplazar en horizontal (xSplit = 0).
+    c.freeze(headRow);
 
     // ---- Detalle: carrera → paralelo → estudiantes deudores ----
     let row = headRow + 1;
@@ -117,7 +119,7 @@ export class CuentasPorCobrarSheetBuilder {
       c.merge(
         `${L(colCarnet)}${row}:${L(lastCol)}${row}`,
         `${String(carrera.carreraNombre ?? '').toUpperCase()}   ·   ${deudores} con saldo   ·   Pendiente ${Number(carrera.totalPendiente).toLocaleString('es-BO', { minimumFractionDigits: 2 })} Bs`,
-        { bold: true, align: 'left', fill: EXCEL_COLOR.statHeader, fontColor: EXCEL_COLOR.statHeaderText, size: small }
+        { bold: true, align: 'left', fill: EXCEL_COLOR.statHeader, fontColor: EXCEL_COLOR.statHeaderText, size: label }
       );
       row += 1;
 
@@ -127,7 +129,7 @@ export class CuentasPorCobrarSheetBuilder {
           bold: true,
           align: 'left',
           fill: EXCEL_COLOR.teoricasStrong,
-          size: small,
+          size: label,
         });
         row += 1;
 
@@ -135,21 +137,22 @@ export class CuentasPorCobrarSheetBuilder {
           const zebra = zebraIdx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
           zebraIdx += 1;
           const alerta = ALERTA[est.estado] ?? ALERTA.SIN_COMPROMISO;
-          c.cell(row, colCarnet, est.carnet ?? '—', { fill: zebra, size: small });
-          c.cell(row, colNombre, String(est.nombreCompleto ?? '').toUpperCase(), { fill: zebra, align: 'left', size: small });
-          money(row, colMontoTotal, est.montoTotal, { fill: zebra, size: small });
-          money(row, colPagos, est.totalPagado, { fill: zebra, size: small });
-          money(row, colSaldo, est.saldoPendiente, { fill: zebra, bold: true, size: small });
-          c.cell(row, colPctPend, fmtPct(est.porcentajeSaldo), { fill: zebra, size: small });
-          c.cell(row, colFechaComp, fmtFecha(est.fechaCompromiso), { fill: zebra, size: small });
-          c.cell(row, colDias, est.diasAtraso != null && est.diasAtraso > 0 ? est.diasAtraso : '—', { fill: zebra, size: small });
+          c.cell(row, colCarnet, est.carnet ?? '—', { fill: zebra, size: label });
+          c.cell(row, colNombre, String(est.nombreCompleto ?? '').toUpperCase(), { fill: zebra, align: 'left', size: label });
+          money(row, colMontoTotal, est.montoTotal, { fill: zebra, size: label });
+          money(row, colPagos, est.totalPagado, { fill: zebra, size: label });
+          money(row, colSaldo, est.saldoPendiente, { fill: zebra, bold: true, size: label });
+          c.cell(row, colPctPend, fmtPct(est.porcentajeSaldo), { fill: zebra, size: label });
+          c.cell(row, colFechaComp, fmtFecha(est.fechaCompromiso), { fill: zebra, size: label });
+          c.cell(row, colDias, est.diasAtraso != null && est.diasAtraso > 0 ? est.diasAtraso : '—', { fill: zebra, size: label });
           c.cell(row, colEstado, alerta.label, {
             fill: alerta.fill,
             fontColor: alerta.font,
             bold: true,
-            size: small,
+            size: label,
           });
-          c.cell(row, colObs, est.observacion ?? '', { fill: zebra, align: 'left', size: small });
+          c.cell(row, colObs, est.observacion ?? '', { fill: zebra, align: 'left', size: label });
+          c.ws.getRow(row).height = 24;
           row += 1;
         });
       });
@@ -180,13 +183,13 @@ export class CuentasPorCobrarSheetBuilder {
 
   /** RESUMEN TOTAL POR CARRERA. @returns {number} fila siguiente libre. */
   static _resumenPorCarrera(c, { startRow, carreras }) {
-    const { small } = EXCEL_FONT_SIZE;
+    const { label } = EXCEL_FONT_SIZE;
     const c0 = 2;
     c.merge(`${L(c0)}${startRow}:${L(c0 + 5)}${startRow}`, 'RESUMEN TOTAL POR CARRERA', {
       bold: true,
       fill: EXCEL_COLOR.statHeader,
       fontColor: EXCEL_COLOR.statHeaderText,
-      size: small,
+      size: label,
       borderMedium: true,
     });
     const headRow = startRow + 1;
@@ -201,7 +204,7 @@ export class CuentasPorCobrarSheetBuilder {
     cols.forEach(([col, text]) =>
       c.cell(headRow, col, text, {
         bold: true,
-        size: small,
+        size: label,
         wrap: true,
         fill: EXCEL_COLOR.teoricasStrong,
       })
@@ -218,12 +221,12 @@ export class CuentasPorCobrarSheetBuilder {
     carreras.forEach((carrera, idx) => {
       const row = headRow + 1 + idx;
       const zebra = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
-      c.cell(row, c0, String(carrera.carreraNombre ?? '').toUpperCase(), { align: 'left', fill: zebra, size: small });
-      c.cell(row, c0 + 1, Number(carrera.totalMatriculados) || 0, { fill: zebra, size: small });
-      money(row, c0 + 2, carrera.montoMaximoTotal, { fill: zebra, size: small });
-      money(row, c0 + 3, carrera.totalCancelado, { fill: zebra, size: small });
-      money(row, c0 + 4, carrera.totalPendiente, { fill: zebra, bold: true, size: small });
-      c.cell(row, c0 + 5, fmtPct(carrera.porcentajePendiente), { fill: zebra, size: small });
+      c.cell(row, c0, String(carrera.carreraNombre ?? '').toUpperCase(), { align: 'left', fill: zebra, size: label });
+      c.cell(row, c0 + 1, Number(carrera.totalMatriculados) || 0, { fill: zebra, size: label });
+      money(row, c0 + 2, carrera.montoMaximoTotal, { fill: zebra, size: label });
+      money(row, c0 + 3, carrera.totalCancelado, { fill: zebra, size: label });
+      money(row, c0 + 4, carrera.totalPendiente, { fill: zebra, bold: true, size: label });
+      c.cell(row, c0 + 5, fmtPct(carrera.porcentajePendiente), { fill: zebra, size: label });
       totMatric += Number(carrera.totalMatriculados) || 0;
       totMax += Number(carrera.montoMaximoTotal) || 0;
       totCancel += Number(carrera.totalCancelado) || 0;
@@ -231,15 +234,15 @@ export class CuentasPorCobrarSheetBuilder {
     });
     const totalRow = headRow + 1 + carreras.length;
     const tFill = EXCEL_COLOR.teoricasStrong;
-    c.cell(totalRow, c0, 'TOTALES GENERALES', { bold: true, align: 'left', fill: tFill, size: small });
-    c.cell(totalRow, c0 + 1, totMatric, { bold: true, fill: tFill, size: small });
-    c.cell(totalRow, c0 + 2, totMax, { bold: true, fill: tFill, size: small }).numFmt = '#,##0.00';
-    c.cell(totalRow, c0 + 3, totCancel, { bold: true, fill: tFill, size: small }).numFmt = '#,##0.00';
-    c.cell(totalRow, c0 + 4, totPend, { bold: true, fill: tFill, size: small }).numFmt = '#,##0.00';
+    c.cell(totalRow, c0, 'TOTALES GENERALES', { bold: true, align: 'left', fill: tFill, size: label });
+    c.cell(totalRow, c0 + 1, totMatric, { bold: true, fill: tFill, size: label });
+    c.cell(totalRow, c0 + 2, totMax, { bold: true, fill: tFill, size: label }).numFmt = '#,##0.00';
+    c.cell(totalRow, c0 + 3, totCancel, { bold: true, fill: tFill, size: label }).numFmt = '#,##0.00';
+    c.cell(totalRow, c0 + 4, totPend, { bold: true, fill: tFill, size: label }).numFmt = '#,##0.00';
     c.cell(totalRow, c0 + 5, fmtPct(totMax > 0 ? (totPend / totMax) * 100 : 0), {
       bold: true,
       fill: tFill,
-      size: small,
+      size: label,
     });
     return totalRow + 1;
   }
@@ -271,12 +274,12 @@ export class CuentasPorCobrarSheetBuilder {
 
   /** Leyenda de alertas (al día / próxima / vencida / sin compromiso). */
   static _leyenda(c, { startRow, colDesde, colHasta }) {
-    const { small } = EXCEL_FONT_SIZE;
+    const { label } = EXCEL_FONT_SIZE;
     c.merge(`${L(colDesde)}${startRow}:${L(colHasta)}${startRow}`, 'LEYENDA DE ALERTAS', {
       bold: true,
       fill: EXCEL_COLOR.statHeader,
       fontColor: EXCEL_COLOR.statHeaderText,
-      size: small,
+      size: label,
       borderMedium: true,
     });
     const items = [
@@ -292,9 +295,9 @@ export class CuentasPorCobrarSheetBuilder {
         bold: true,
         fill: alerta.fill,
         fontColor: alerta.font,
-        size: small,
+        size: label,
       });
-      c.merge(`${L(colDesde + 1)}${row}:${L(colHasta)}${row}`, desc, { align: 'left', size: small });
+      c.merge(`${L(colDesde + 1)}${row}:${L(colHasta)}${row}`, desc, { align: 'left', size: label });
     });
   }
 }

@@ -24,7 +24,7 @@ export class BecasReporteSheetBuilder {
    * @param {Object} params.datos - Payload del reporte de becas.
    */
   static build({ composer: c, datos }) {
-    const { small, body } = EXCEL_FONT_SIZE;
+    const { label, body } = EXCEL_FONT_SIZE;
     const porcentajes = Array.isArray(datos.porcentajes) ? datos.porcentajes : [];
     const filas = Array.isArray(datos.filas) ? datos.filas : [];
     const totales = datos.totales ?? {};
@@ -46,9 +46,9 @@ export class BecasReporteSheetBuilder {
     const lastCol = colObs;
 
     // ---- Anchos ----
-    c.colWidths({ 1: 2, [colNro]: 6, [colCarrera]: 34, [colModalidad]: 16, [colMatric]: 14 });
-    for (let col = colTramoStart; col <= colTramoEnd; col += 1) c.colWidths({ [col]: 13 });
-    c.colWidths({ [colTotalBeca]: 14, [colPctBeca]: 14, [colPctCobertura]: 16, [colObs]: 26 });
+    c.colWidths({ 1: 3, [colNro]: 8, [colCarrera]: 44, [colModalidad]: 20, [colMatric]: 18 });
+    for (let col = colTramoStart; col <= colTramoEnd; col += 1) c.colWidths({ [col]: 17 });
+    c.colWidths({ [colTotalBeca]: 19, [colPctBeca]: 18, [colPctCobertura]: 20, [colObs]: 34 });
 
     // ---- Banda de título + cabecera institucional ----
     c.bandTitle(`B1:${L(lastCol)}1`, 'PLANILLA DE CONTROL DE BECAS POR CARRERA (ANUALIZADAS)');
@@ -72,7 +72,7 @@ export class BecasReporteSheetBuilder {
     const rowSub = 6;
     const headStyle = {
       bold: true,
-      size: small,
+      size: label,
       wrap: true,
       fill: EXCEL_COLOR.statHeader,
       fontColor: EXCEL_COLOR.statHeaderText,
@@ -94,34 +94,35 @@ export class BecasReporteSheetBuilder {
     headBox(colPctBeca, '% CON BECA');
     headBox(colPctCobertura, '% COBERTURA');
     headBox(colObs, 'OBSERVACIONES');
-    c.ws.getRow(rowTop).height = 18;
-    c.ws.getRow(rowSub).height = 28;
+    c.ws.getRow(rowTop).height = 20;
+    c.ws.getRow(rowSub).height = 34;
 
     // ---- Filas por carrera ----
     const firstDataRow = rowSub + 1;
     filas.forEach((fila, idx) => {
       const row = firstDataRow + idx;
       const zebra = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
-      c.cell(row, colNro, idx + 1, { fill: zebra, size: small });
+      c.cell(row, colNro, idx + 1, { fill: zebra, size: label });
       c.cell(row, colCarrera, String(fila.carreraNombre ?? '').toUpperCase(), {
         fill: zebra,
         align: 'left',
-        size: small,
+        size: label,
       });
-      c.cell(row, colModalidad, fila.modalidad ?? 'ANUALIZADA', { fill: zebra, size: small });
-      c.cell(row, colMatric, Number(fila.totalMatriculados) || 0, { fill: zebra, size: small });
+      c.cell(row, colModalidad, fila.modalidad ?? 'ANUALIZADA', { fill: zebra, size: label });
+      c.cell(row, colMatric, Number(fila.totalMatriculados) || 0, { fill: zebra, size: label });
       porcentajes.forEach((p, i) => {
         const val = Number(fila.becasPorPorcentaje?.[String(p)]) || 0;
-        c.cell(row, colTramoStart + i, val, { fill: zebra, size: small });
+        c.cell(row, colTramoStart + i, val, { fill: zebra, size: label });
       });
       c.cell(row, colTotalBeca, Number(fila.totalConBeca) || 0, {
         fill: zebra,
         bold: true,
-        size: small,
+        size: label,
       });
-      c.cell(row, colPctBeca, fmtPct(fila.porcentajeConBeca), { fill: zebra, size: small });
-      c.cell(row, colPctCobertura, fmtPct(fila.porcentajeCobertura), { fill: zebra, size: small });
-      c.cell(row, colObs, '', { fill: zebra, size: small });
+      c.cell(row, colPctBeca, fmtPct(fila.porcentajeConBeca), { fill: zebra, size: label });
+      c.cell(row, colPctCobertura, fmtPct(fila.porcentajeCobertura), { fill: zebra, size: label });
+      c.cell(row, colObs, '', { fill: zebra, size: label });
+      c.ws.getRow(row).height = 24;
     });
 
     // ---- Fila de TOTALES GENERALES ----
@@ -131,9 +132,9 @@ export class BecasReporteSheetBuilder {
       bold: true,
       align: 'right',
       fill: totalFill,
-      size: small,
+      size: label,
     });
-    const tStyle = { bold: true, fill: totalFill, size: small };
+    const tStyle = { bold: true, fill: totalFill, size: label };
     c.cell(totalRow, colMatric, Number(totales.totalMatriculados) || 0, tStyle);
     porcentajes.forEach((p, i) => {
       const val = Number(totales.becasPorPorcentaje?.[String(p)]) || 0;
@@ -156,25 +157,27 @@ export class BecasReporteSheetBuilder {
       resumen,
     });
 
-    c.freeze(rowSub, colCarrera);
+    // Congela solo la cabecera (scroll vertical); las columnas NO quedan fijas al
+    // desplazar en horizontal (xSplit = 0).
+    c.freeze(rowSub);
   }
 
   /** RESUMEN GENERAL POR TIPO DE BECA (tipo / beneficiados / % del total con beca). */
   static _resumenPorTipo(c, { startRow, distribucion, totalConBeca }) {
-    const { small } = EXCEL_FONT_SIZE;
+    const { label } = EXCEL_FONT_SIZE;
     const c0 = 2;
     c.merge(`${L(c0)}${startRow}:${L(c0 + 2)}${startRow}`, 'RESUMEN GENERAL POR TIPO DE BECA', {
       bold: true,
       fill: EXCEL_COLOR.statHeader,
       fontColor: EXCEL_COLOR.statHeaderText,
-      size: small,
+      size: label,
       borderMedium: true,
     });
     const headRow = startRow + 1;
     ['TIPO DE BECA', 'BENEFICIADOS', '% DEL TOTAL'].forEach((t, i) =>
       c.cell(headRow, c0 + i, t, {
         bold: true,
-        size: small,
+        size: label,
         wrap: true,
         fill: EXCEL_COLOR.teoricasStrong,
       })
@@ -182,12 +185,12 @@ export class BecasReporteSheetBuilder {
     distribucion.forEach((tramo, idx) => {
       const row = headRow + 1 + idx;
       const zebra = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
-      c.cell(row, c0, tramo.etiqueta ?? `Beca ${tramo.porcentaje}%`, { align: 'left', fill: zebra, size: small });
-      c.cell(row, c0 + 1, Number(tramo.beneficiados) || 0, { fill: zebra, size: small });
-      c.cell(row, c0 + 2, fmtPct(tramo.porcentajeDelTotalConBeca), { fill: zebra, size: small });
+      c.cell(row, c0, tramo.etiqueta ?? `Beca ${tramo.porcentaje}%`, { align: 'left', fill: zebra, size: label });
+      c.cell(row, c0 + 1, Number(tramo.beneficiados) || 0, { fill: zebra, size: label });
+      c.cell(row, c0 + 2, fmtPct(tramo.porcentajeDelTotalConBeca), { fill: zebra, size: label });
     });
     const totalRow = headRow + 1 + distribucion.length;
-    const tStyle = { bold: true, fill: EXCEL_COLOR.teoricasStrong, size: small };
+    const tStyle = { bold: true, fill: EXCEL_COLOR.teoricasStrong, size: label };
     c.cell(totalRow, c0, 'TOTAL GENERAL', { ...tStyle, align: 'left' });
     c.cell(totalRow, c0 + 1, totalConBeca, tStyle);
     c.cell(totalRow, c0 + 2, fmtPct(100), tStyle);
@@ -195,12 +198,12 @@ export class BecasReporteSheetBuilder {
 
   /** RESUMEN GENERAL (matriculados / con beca / % con beca / % sin beca). */
   static _resumenGeneral(c, { startRow, col, resumen }) {
-    const { small } = EXCEL_FONT_SIZE;
+    const { label } = EXCEL_FONT_SIZE;
     c.merge(`${L(col)}${startRow}:${L(col + 1)}${startRow}`, 'RESUMEN GENERAL', {
       bold: true,
       fill: EXCEL_COLOR.statHeader,
       fontColor: EXCEL_COLOR.statHeaderText,
-      size: small,
+      size: label,
       borderMedium: true,
     });
     const filas = [
@@ -209,11 +212,11 @@ export class BecasReporteSheetBuilder {
       ['% general de estudiantes con beca', fmtPct(resumen.porcentajeConBeca)],
       ['% de estudiantes sin beca', fmtPct(resumen.porcentajeSinBeca)],
     ];
-    filas.forEach(([label, value], idx) => {
+    filas.forEach(([rotulo, value], idx) => {
       const row = startRow + 1 + idx;
       const zebra = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
-      c.cell(row, col, label, { align: 'left', fill: zebra, size: small });
-      c.cell(row, col + 1, value, { bold: true, fill: zebra, size: small });
+      c.cell(row, col, rotulo, { align: 'left', fill: zebra, size: label });
+      c.cell(row, col + 1, value, { bold: true, fill: zebra, size: label });
     });
   }
 }
