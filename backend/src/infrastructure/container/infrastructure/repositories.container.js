@@ -137,6 +137,10 @@ import { CronogramaGestionRepository } from '../../repositories/views/Cronograma
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
+import { SesionClaseRepository } from '../../repositories/SesionClaseRepository.js';
+import { AsistenciaSesionViewRepository } from '../../repositories/views/AsistenciaSesionViewRepository.js';
+import { AsistenciaPlanillaViewRepository } from '../../repositories/views/AsistenciaPlanillaViewRepository.js';
+import { AsistenciaRegistroEstadoViewRepository } from '../../repositories/views/AsistenciaRegistroEstadoViewRepository.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
@@ -148,6 +152,9 @@ import { PaymentAccountRepository } from '../../repositories/PaymentAccountRepos
 import { ContributionPaymentRepository } from '../../repositories/ContributionPaymentRepository.js';
 import { ContributionPaymentInstallmentRepository } from '../../repositories/ContributionPaymentInstallmentRepository.js';
 import { PaymentAporteCareerExcelReportRepository } from '../../repositories/views/PaymentAporteCareerExcelReportRepository.js';
+import { BecasPorCarreraViewRepository } from '../../repositories/views/BecasPorCarreraViewRepository.js';
+import { CompromisoPagoRepository } from '../../repositories/CompromisoPagoRepository.js';
+import { CuentasPorCobrarViewRepository } from '../../repositories/views/CuentasPorCobrarViewRepository.js';
 import { DashboardRepository } from '../../repositories/views/DashboardRepository.js';
 import { AulasHorariosSemanaRepository } from '../../repositories/views/AulasHorariosSemanaRepository.js';
 
@@ -376,6 +383,22 @@ export function registerRepositoriesModule(container) {
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.attendanceRepository, AttendanceRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.missedClassRepository, MissedClassRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.sesionClaseRepository, SesionClaseRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.asistenciaSesionViewRepository,
+      AsistenciaSesionViewRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository,
+      AsistenciaPlanillaViewRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.asistenciaRegistroEstadoViewRepository,
+      AsistenciaRegistroEstadoViewRepository,
+    );
 
     // ============================================
     // PAGOS ACADÉMICOS
@@ -387,6 +410,9 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentRepository, ContributionPaymentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository, ContributionPaymentInstallmentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentByCareerExcelReportRepository, PaymentAporteCareerExcelReportRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.becasPorCarreraViewRepository, BecasPorCarreraViewRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.compromisoPagoRepository, CompromisoPagoRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.cuentasPorCobrarViewRepository, CuentasPorCobrarViewRepository);
 
     // ============================================
     // DASHBOARD

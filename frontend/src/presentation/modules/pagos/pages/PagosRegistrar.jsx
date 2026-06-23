@@ -16,12 +16,12 @@
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMemo, useEffect, useState, useRef } from 'react';
-import { Spin, Form, App } from 'antd';
+import { Spin, Form, App, Alert, Segmented } from 'antd';
 import { ArrowLeftOutlined, GiftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { Button, formatFechaCompromiso } from '@atoms';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { usePagosRegistrarContext } from '../../../../application/modules/pagos/hooks';
 import { downloadFile } from '@application/utils';
@@ -31,6 +31,21 @@ import {
   ContributionDetailSummary,
   SelectedPaymentSection,
 } from '../components/organisms';
+
+/**
+ * Plazos del compromiso de pago que el usuario puede elegir al registrar la
+ * PRIMERA cuota (debe coincidir con DIAS_COMPROMISO_PERMITIDOS del backend).
+ */
+const OPCIONES_COMPROMISO = [
+  { value: 15, label: '15 días', sub: '2 semanas' },
+  { value: 30, label: '30 días', sub: '1 mes' },
+  { value: 45, label: '45 días', sub: '1 mes y medio' },
+  { value: 60, label: '60 días', sub: '2 meses' },
+  { value: 90, label: '90 días', sub: '3 meses' },
+];
+
+/** Plazo por defecto del compromiso (alineado con el backend). */
+const DIAS_COMPROMISO_DEFAULT = 90;
 
 const PagosRegistrar = () => {
   const location = useLocation();
@@ -84,6 +99,24 @@ const PagosRegistrar = () => {
   const [formPago] = Form.useForm();
   const formInstance = form || formPago;
 
+  // ── Compromiso de pago (plazo elegible) ───────────────────────────────
+  // En la PRIMERA cuota que NO cancela todo el aporte, el usuario elige en cuántos
+  // días se compromete el estudiante a saldar el resto. El backend crea el
+  // compromiso con esa fecha (fecha de pago + N días). Tras la primera cuota ya no
+  // se vuelve a mostrar. Si se cancela todo o es pago gratuito (beca 100%), no aplica.
+  const [compromisoDias, setCompromisoDias] = useState(DIAS_COMPROMISO_DEFAULT);
+  const fechaPagoWatch = Form.useWatch('fechaPago', formInstance);
+  const esPrimeraCuota = useMemo(() => {
+    if (!estadoActualAporte) return false;
+    const cantidad = Number(estadoActualAporte.cantidad_pagos ?? 0);
+    const cuotas = Array.isArray(estadoActualAporte.cuotas) ? estadoActualAporte.cuotas.length : 0;
+    return cantidad === 0 && cuotas === 0;
+  }, [estadoActualAporte]);
+  const fechaCompromisoProyectada = useMemo(() => {
+    const baseFecha = fechaPagoWatch && dayjs(fechaPagoWatch).isValid() ? dayjs(fechaPagoWatch) : dayjs();
+    return baseFecha.add(compromisoDias, 'day').format('YYYY-MM-DD');
+  }, [fechaPagoWatch, compromisoDias]);
+
   // Obtener configuración de aporte activa (la primera activa/vigente)
   const configuracionAporteActiva = useMemo(() => {
     if (!configuracionAportes?.configuracionAportes || !Array.isArray(configuracionAportes.configuracionAportes)) {
@@ -121,6 +154,16 @@ const PagosRegistrar = () => {
   // Determinar si es pago gratuito real: solo cuando el saldo obligatorio del aporte es 0
   // (caso típico: el aporte quedó totalmente cubierto por beca/condonación)
   const esPagoGratuito = montoPagado === 0;
+
+  // ¿La cuota actual cancela todo el saldo? (se compara en enteros, como el resto del flujo)
+  const cancelaTodo = useMemo(() => {
+    const saldo = Math.floor(Number(montoPagado) || 0);
+    const cuota = Math.floor(Number(montoCuota) || 0);
+    return saldo > 0 && cuota >= saldo;
+  }, [montoPagado, montoCuota]);
+
+  // El selector de compromiso solo aparece en la 1ra cuota, con saldo a financiar y sin pago gratuito.
+  const mostrarSelectorCompromiso = esPrimeraCuota && !esPagoGratuito && !cancelaTodo;
 
   // Si no hay deuda, forzar 0. Si el usuario ingresó más que el saldo real (ej. tras actualizar datos), recortar al saldo. No autocompletar el saldo al cargar.
   useEffect(() => {
@@ -362,6 +405,8 @@ const PagosRegistrar = () => {
         codigoComprobante: codigoComprobante || null, // Requerido para QR/TRANSFERENCIA/DEPOSITO, null para otros
         descripcion: descripcion || null, // Opcional, puede ser null o string vacío
         documentoRespaldo: documentoRespaldo, // Archivo de documento de respaldo (opcional)
+        // Plazo del compromiso: solo cuando aplica (1ra cuota con saldo pendiente); si no, el backend lo ignora.
+        compromisoDias: mostrarSelectorCompromiso ? compromisoDias : undefined,
       };
 
       // Llamar a la función de registro del contexto
@@ -572,6 +617,42 @@ const PagosRegistrar = () => {
               onMontoCuotaChange={setMontoCuota}
               montoObligatorioMax={montoPagado}
             />
+
+            {/* Compromiso de pago: solo en la 1ra cuota que deja saldo pendiente. El
+                usuario elige el plazo; el backend crea el compromiso (fecha de pago + N días). */}
+            {mostrarSelectorCompromiso ? (
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+                title={<strong>Compromiso de pago</strong>}
+                description={
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+                    <span>
+                      Al ser el primer pago y quedar saldo pendiente, elige en cuánto tiempo se compromete el
+                      estudiante a cancelar el resto:
+                    </span>
+                    <Segmented
+                      value={compromisoDias}
+                      onChange={setCompromisoDias}
+                      options={OPCIONES_COMPROMISO.map((o) => ({
+                        value: o.value,
+                        label: (
+                          <div style={{ padding: '2px 4px', textAlign: 'center', lineHeight: 1.25 }}>
+                            <div style={{ fontWeight: 600 }}>{o.label}</div>
+                            <div style={{ fontSize: 12, opacity: 0.65 }}>{o.sub}</div>
+                          </div>
+                        ),
+                      }))}
+                    />
+                    <span>
+                      Vencimiento del compromiso:{' '}
+                      <strong>{formatFechaCompromiso(fechaCompromisoProyectada)}</strong>.
+                    </span>
+                  </div>
+                }
+              />
+            ) : null}
 
             {/* Sección 3: Selección de Método de Pago (solo si NO es pago gratuito) */}
             {!esPagoGratuito ? (

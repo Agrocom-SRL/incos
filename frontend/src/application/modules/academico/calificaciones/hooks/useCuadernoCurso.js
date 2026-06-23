@@ -54,6 +54,7 @@ export const useCuadernoCurso = () => {
 
       let evaluaciones = [];
       let estudiantes = estudiantesBase.map((e) => ({ ...e, notas: {} }));
+      let reabierto = false;
 
       const resCuaderno = await CalificacionRepository.obtenerCuadernoBimestre(
         cursoIdResolved,
@@ -63,6 +64,7 @@ export const useCuadernoCurso = () => {
       if (resCuaderno?.success) {
         evaluaciones = resCuaderno.data?.evaluaciones ?? [];
         estudiantes = mergeNotasEnEstudiantes(estudiantesBase, resCuaderno.data?.notas ?? []);
+        reabierto = Boolean(resCuaderno.data?.reabierto);
         saveEvaluacionesCache(cursoIdResolved, activo, evaluaciones);
       } else {
         const cacheErr = resCuaderno?.error;
@@ -91,7 +93,8 @@ export const useCuadernoCurso = () => {
         bimestreTitulo: tituloBimestre(activo),
         evaluaciones,
         estudiantes,
-        modoEdicion: activo === bimestreVigente,
+        reabierto,
+        modoEdicion: activo === bimestreVigente || reabierto,
       };
     },
     [cursoIdResolved],
@@ -348,6 +351,7 @@ export const useCuadernoCurso = () => {
     bimestreActivo: bimestreActivoResolved,
     periodoBimestreActivo,
     gestionFechaFin: gestionFechas?.fechaFin ?? null,
+    reabierto: Boolean(cuaderno?.reabierto),
     modoEdicion,
     puedeCrearEvaluacion,
     puedeEditarEvaluacion,

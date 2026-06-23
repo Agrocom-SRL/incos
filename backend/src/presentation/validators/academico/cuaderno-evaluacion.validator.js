@@ -23,12 +23,6 @@ export const getCuadernoBimestreValidator = [asignacionParam, bimestreParam];
 
 export const getBimestreConsolidadoValidator = [asignacionParam, bimestreParam];
 
-export const guardarBimestreConsolidadoValidator = [
-  asignacionParam,
-  bimestreParam,
-  body('filas').isArray().withMessage('filas debe ser un arreglo'),
-];
-
 export const createEvaluacionCuadernoValidator = [
   asignacionParam,
   bimestreParam,

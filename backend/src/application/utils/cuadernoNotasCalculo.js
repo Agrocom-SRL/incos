@@ -57,29 +57,14 @@ export const calcularNotaBimestre = (teorico, practico) => {
 };
 
 /**
- * Componente efectivo: habilitación del sector reemplaza la nota del componente.
- */
-export const componenteEfectivo = (habilitacion, notaComponente) => {
-  if (habilitacion != null) return redondear(habilitacion);
-  if (notaComponente != null) return redondear(notaComponente);
-  return null;
-};
-
-/**
- * Nota efectiva del bimestre: nota_bimestre cerrada, o suma de componentes efectivos.
+ * Nota efectiva del bimestre: nota_bimestre cerrada, o suma de componentes (null = 0).
  */
 export const notaEfectivaBimestre = (row) => {
   const bim = row?.notaBimestre ?? row?.nota_bimestre;
   if (bim != null) return redondear(bim);
 
-  const teo = componenteEfectivo(
-    row?.habilitacionTeorico ?? row?.habilitacion_teorico,
-    row?.notaTeorico ?? row?.nota_teorico,
-  );
-  const pra = componenteEfectivo(
-    row?.habilitacionPractico ?? row?.habilitacion_practico,
-    row?.notaPractico ?? row?.nota_practico,
-  );
+  const teo = redondear(row?.notaTeorico ?? row?.nota_teorico);
+  const pra = redondear(row?.notaPractico ?? row?.nota_practico);
   return calcularNotaBimestre(teo, pra);
 };
 

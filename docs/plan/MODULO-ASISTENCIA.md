@@ -321,10 +321,68 @@ módulo Académico: `02-seeders/58-seed-permisos-aca.sql` (permisos + acciones +
      `academico.asistencia.registro.coordinacion` (admin; docente entra a sus cursos). Build + DI verificados.
    - ⏳ **Planilla diaria** + **Consolidado %**: requieren vistas SQL nuevas (reusar `99`–`101`),
      `*ViewRepository`, use-cases, mappers (P/R/F/L + neutros). SQL en archivos + validar en BD.
-3. **Fase 3 — Backend escritura:** `BulkRegistrarAsistencia` + validators + endpoint PUT planilla.
-4. **Fase 4 — CRUD Licencias estudiantiles:** use-cases + frontend (listado/ficha/solicitar/aprobar).
+### 3.5 Refinamiento del modelo `asistencias` (marca ↔ sesión)
+
+Ajuste de grano (no es versión ni V2): la marca de asistencia **cuelga de la sesión**,
+no se redefine cada vez.
+
+- **`asistencias` ya NO almacena `fecha_clase` ni `hora_clase`.** Eran redundancia
+  derivable: la fecha/hora viven en `sesiones_clase` (`sesion_clase_id → sesiones_clase.fecha`
+  / `hora_inicio`). La planilla de lectura (vista `133`) ya proyecta `sc.fecha AS fecha_clase`;
+  duplicar la fecha en cada marca abría la puerta a inconsistencias (marca con fecha ≠ sesión).
+  Camino de escritura: `AttendanceRepository.upsertMarcaSparse` ya no escribe esas columnas;
+  `listarMarcasCursoRango` deriva la fecha con `JOIN sesiones_clase` (`sc.fecha AS fecha_clase`).
+- **Bimestre DIRECTO al periodo académico, no vía `bimestres_matricula`.** La sesión se ata a
+  `asignacion_docente_id` (el curso) y a `periodo_academico_id` (el bimestre,
+  `periodos_academicos.division=BIMESTRE`) — mismo patrón que `evaluaciones.periodo_academico_id`
+  en Calificaciones, que mantiene coherentes las dos planillas hermanas. Gestión y `numero_orden`
+  se derivan del periodo, no se duplican. `bimestres_matricula` queda fuera de esta cadena.
+- **Modelo SPARSE:** PRESENTE es implícito (no se persiste); solo filas AUSENTE/TARDANZA. La
+  existencia de la **sesión** (no de las marcas) prueba el día tomado y da el denominador del %.
+- **Orden de creación en el schema:** `sesiones_clase` se crea **antes** que `asistencias`
+  (FK `asistencias.sesion_clase_id → sesiones_clase.id`); en ejecución por partes / MariaDB el
+  orden inverso da error `#1824 Failed to open the referenced table`.
+
+3. **✅ Fase 3 — Backend toma de asistencia (modelo `sesiones_clase`):** implementado.
+   - **Modelo revisado**: tabla `sesiones_clase` (1 curso × 1 fecha) gobierna día tomado
+     (dot + denominador) y cierre/reapertura (estado ABIERTA/CERRADA); `asistencias` SPARSE
+     (solo AUSENTE/TARDANZA; PRESENTE implícito). `asistencias.sesion_clase_id` cuelga de la sesión.
+   - **Vistas SQL nuevas** (delgadas, patrón 87/114; pendientes de ejecutar en BD):
+     `132 vista_base_asistencia_sesion_dia_tomado` (días tomados),
+     `133 vista_base_asistencia_planilla_celda` (roster 110 × sesiones × licencias aprobadas),
+     `134 vista_base_asistencia_registro_estado_bimestre` (cierre derivado, patrón 114).
+   - **Backend**: constantes `asistencia.constants.js`; modelo `sesion_clase.js`;
+     repos `SesionClaseRepository` (A) + `Asistencia*ViewRepository` (B, views/) +
+     `AttendanceRepository.upsertMarcaSparse`; use-cases `GetCalendarioAsistencia`,
+     `GetPlanillaAsistenciaSemanal`, `BulkRegistrarAsistencia`, `Cerrar/ReabrirRegistroAsistencia`,
+     `CrearSesionEspecial`; mapper `PlanillaAsistenciaPresentationMapper` (P/R/F/L + neutros);
+     util `asistenciaCalendario` (expansión día-de-semana → fechas, lógica de app) y
+     `asistenciaCursoAccess` (acceso docente/coordinación). Endpoints bajo
+     `academico.asistencia.registro.cuaderno` (LISTAR/EDITAR):
+     `GET cursos/:id/calendario`, `GET/PUT cursos/:id/planilla`,
+     `POST cursos/:id/registro/{cerrar,reabrir}`, `POST cursos/:id/sesiones-especiales`.
+     DI en `asistencia.container.js` + `repositories.container.js`. ESLint limpio.
+4. **✅ Fase 4 — CRUD Licencias estudiantiles:** implementado (backend + frontend).
+   - **Backend:** router `/asistencia/licencias` (`GET /`, `GET /:id`, `GET /inscripcion-vigente`,
+     `POST /`, `PUT /:id/decision`); use-cases `Listar/GetById/Crear/Decidir/GetInscripcionVigente`;
+     `LicenseRepository` ampliado con raw queries (estudianteNombre por JOIN en orden institucional,
+     suma de días aprobados para tope 15/gestión, inscripción vigente vía vista 20). Solicitud nace
+     PENDIENTE; aprobar/rechazar solo desde PENDIENTE. RBAC `academico.asistencia.licencia.*`. Sin
+     cambio de schema ni vistas nuevas. DI verificado, lint limpio.
+   - **Frontend:** listado (estilo `CarrerasList`/`DocentesList`), ficha de detalle como **página**
+     (estilo `DocentesDetail`, ruta `ACA-ASI-LIC-DET` → `/licencias/:id`), solicitar como **página de
+     formulario** (estilo `CarreraFormPage`, **no drawer**) con buscador de estudiante que precarga la
+     inscripción vigente, bandeja de pendientes, y decisión vía Modal de confirmación. Build OK.
+   - **Pendiente futuro:** atajo inline desde la planilla (clic en fila del estudiante → solicitar con
+     estudiante/rango precargados). La planilla ya cruza licencias APROBADAS como `L`; la escritura
+     desde la planilla queda para iteración.
 5. **Fase 5 — Licencias de docentes (DOC):** tabla `licencias_docentes` + CRUD + frontend.
 6. **Fase 6 — Clases no dictadas:** CRUD + consumo de licencias docentes (decidir autogenerar vs cruce).
+   - **Entrada decidida (2026-06-17):** **reutilizar la página de Calendario** como superficie de
+     marcado (ya es admin-only y pinta los días de clase): un clic en un **día de clase** abre un drawer
+     "marcar como no dictada" (gemelo inverso de la sesión especial) que escribe en `clases_no_dictadas`.
+     La ruta dedicada `ACA-ASI-CND` queda **delgada** (listado/auditoría), sin duplicar el calendario.
+     Tabla `clases_no_dictadas` ya existe → sin cambio de schema (licencias docentes = Fase 5).
 7. **Fase 7 — Registro diario funcional:** hooks api/state + provider autosave + grilla P/R/F/L (gemelo cuaderno).
 8. **Fase 8 — Consolidado %:** vista de agregación + frontend, respetando jerarquía §3.4.
 9. **Fase 9 — Verificación cruzada:** `dataKey`=`dataFieldName`; cálculo %; orden de nombres; rol sin permiso (403 + sidebar oculto).

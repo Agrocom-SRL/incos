@@ -112,6 +112,10 @@ export const REPOSITORIOS_TOKENS = {
     // ASISTENCIAS
     attendanceRepository: 'attendanceRepository',
     missedClassRepository: 'missedClassRepository',
+    sesionClaseRepository: 'sesionClaseRepository',
+    asistenciaSesionViewRepository: 'asistenciaSesionViewRepository',
+    asistenciaPlanillaViewRepository: 'asistenciaPlanillaViewRepository',
+    asistenciaRegistroEstadoViewRepository: 'asistenciaRegistroEstadoViewRepository',
 
     // PAGOS ACADÉMICOS
     contributionConfigurationRepository: 'contributionConfigurationRepository',
@@ -121,6 +125,9 @@ export const REPOSITORIOS_TOKENS = {
     contributionPaymentRepository: 'contributionPaymentRepository',
     contributionPaymentInstallmentRepository: 'contributionPaymentInstallmentRepository',
     contributionPaymentByCareerExcelReportRepository: 'contributionPaymentByCareerExcelReportRepository',
+    becasPorCarreraViewRepository: 'becasPorCarreraViewRepository',
+    compromisoPagoRepository: 'compromisoPagoRepository',
+    cuentasPorCobrarViewRepository: 'cuentasPorCobrarViewRepository',
 
     // TRANSITABILIDAD Y TRASPASOS
     transitabilityRepository: 'transitabilityRepository',

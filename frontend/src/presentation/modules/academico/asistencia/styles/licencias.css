@@ -1,0 +1,234 @@
+/* Pills de motivo y estado de licencias estudiantiles — misma estética que los pills
+   del cronograma / materias (StatusPill + clase de color). */
+
+.licencia-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Motivos ── */
+.licencia-pill--enfermedad {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.22);
+}
+.licencia-pill--trabajo {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}
+.licencia-pill--familiar {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: rgba(109, 40, 217, 0.22);
+}
+.licencia-pill--viaje {
+  background: #cffafe;
+  color: #0e7490;
+  border-color: rgba(14, 116, 144, 0.22);
+}
+.licencia-pill--academico {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+.licencia-pill--deportivo {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.2);
+}
+.licencia-pill--personal {
+  background: #fce7f3;
+  color: #be185d;
+  border-color: rgba(190, 24, 93, 0.22);
+}
+.licencia-pill--otro {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+/* ── Estado bajo el nombre del estudiante (dot + etiqueta teñidos) ── */
+.licencia-estudiante-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.licencia-estudiante-cell__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.licencia-estudiante-cell__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  flex: none;
+}
+
+.licencia-estado--pendiente {
+  color: #a16207;
+}
+.licencia-estado--aprobada {
+  color: #047857;
+}
+.licencia-estado--rechazada {
+  color: #b91c1c;
+}
+.licencia-estado--cancelada {
+  color: #6b7280;
+}
+
+/* ════════════════════════════════════════════════════════════
+   Drawer de detalle / decisión de licencia.
+   Reutiliza el shell de calificaciones (`cal-ajustes-drawer`): header oscuro,
+   fondo `--cuaderno-fondo`, footer verde y tarjetas `SeccionAjustes` sobre
+   `override-card`. Aquí solo vive lo propio de la licencia: hero del estudiante,
+   grilla de campos y el acento de la tarjeta de decisión.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Hero: avatar + nombre + estado ── */
+.lic-drawer__hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-primary-bg) 0%, #ffffff 100%);
+  border: 1px solid var(--color-primary-border, rgba(0, 0, 0, 0.06));
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.lic-drawer__avatar {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(16, 24, 40, 0.18);
+}
+
+.lic-drawer__hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lic-drawer__hero-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+.lic-drawer__hero-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.lic-drawer__hero-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+/* ── Grilla de campos dentro de cada tarjeta (SeccionAjustes) ── */
+.lic-drawer__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+
+.lic-drawer__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lic-drawer__field--full {
+  grid-column: 1 / -1;
+}
+
+.lic-drawer__field-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--color-text-tertiary);
+}
+
+.lic-drawer__field-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.lic-drawer__inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lic-drawer__inline .anticon {
+  color: var(--color-text-tertiary);
+}
+
+/* ── Acento de la tarjeta de decisión (sobre override-card del shell) ── */
+.ant-drawer.cal-ajustes-drawer .lic-drawer__decision--aprobacion {
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 2px var(--color-success-bg);
+}
+
+.ant-drawer.cal-ajustes-drawer .lic-drawer__decision--rechazo {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 2px var(--color-error-bg);
+}
+
+.ant-drawer.cal-ajustes-drawer .lic-drawer__decision--aprobacion .cal-ajustes-seccion__titulo,
+.ant-drawer.cal-ajustes-drawer .lic-drawer__decision--aprobacion .cal-ajustes-seccion__icon {
+  color: var(--color-success);
+}
+
+.ant-drawer.cal-ajustes-drawer .lic-drawer__decision--rechazo .cal-ajustes-seccion__titulo,
+.ant-drawer.cal-ajustes-drawer .lic-drawer__decision--rechazo .cal-ajustes-seccion__icon {
+  color: var(--color-error);
+}

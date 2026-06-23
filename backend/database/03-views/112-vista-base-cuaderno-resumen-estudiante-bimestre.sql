@@ -22,9 +22,6 @@ SELECT
   bm.nota_teorico,
   bm.nota_practico,
   bm.nota_bimestre,
-  bm.habilitacion_teorico,
-  bm.habilitacion_practico,
-  bm.fecha_habilitacion,
   bm.estado AS estado_bimestre
 FROM vista_base_calificacion_estudiante_matricula_curso emc
 INNER JOIN bimestres_matricula bm

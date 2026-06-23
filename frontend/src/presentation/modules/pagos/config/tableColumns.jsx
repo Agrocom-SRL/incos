@@ -9,7 +9,7 @@
 import { UserOutlined, CalendarOutlined, DollarOutlined, NumberOutlined } from '@ant-design/icons';
 import { Tag, Space, Flex } from 'antd';
 import { TableCell } from '@molecules';
-import { Text } from '@atoms';
+import { Text, CompromisoAlertTag, formatFechaCompromiso, compromisoSortValue } from '@atoms';
 import PagoTableActions from './PagoTableActions';
 
 /**
@@ -123,6 +123,27 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                 );
             },
             sorter: (a, b) => (a.saldo_pendiente ?? 0) - (b.saldo_pendiente ?? 0),
+        },
+        {
+            title: 'Compromiso',
+            dataIndex: 'compromiso',
+            render: (compromiso) => {
+                if (!compromiso) {
+                    return <TableCell fallback="—">{null}</TableCell>;
+                }
+                return (
+                    <TableCell
+                        icon={<CalendarOutlined />}
+                        subtext={<CompromisoAlertTag compromiso={compromiso} />}
+                        fallback="—"
+                    >
+                        {formatFechaCompromiso(compromiso.fechaCompromiso) === '—'
+                            ? 'Sin fecha'
+                            : formatFechaCompromiso(compromiso.fechaCompromiso)}
+                    </TableCell>
+                );
+            },
+            sorter: (a, b) => compromisoSortValue(a?.compromiso) - compromisoSortValue(b?.compromiso),
         },
         {
             title: 'Estado',

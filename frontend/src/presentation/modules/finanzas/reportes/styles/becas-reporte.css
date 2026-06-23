@@ -1,0 +1,273 @@
+/* ============================================================
+   Becas por carrera — ajustes específicos de la planilla.
+   El lenguaje base (cabecera verde, zebra, KPIs, separador) vive en el KIT
+   compartido `styles/finanzas-planilla.css` (clases .fin-*). Aquí solo van
+   detalles propios de ESTE reporte que el kit no cubre. No duplicar el kit.
+   Scope: clases .becas-*.
+   ============================================================ */
+
+/* Paleta "cuaderno" (tonos verdes suavizados) para la zona de resumen. */
+.becas-resumen-zone {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: #196b45;
+  --cuaderno-verde-acento: #134d32;
+}
+
+/* ============================================================
+   ZONA DE RESUMEN: bloque teñido (verde tenue) que separa el resumen de la
+   planilla blanca de abajo; dentro, las tarjetas van en blanco CON SOMBRA
+   (efecto de las hub cards) para que dejen de verse planas.
+   ============================================================ */
+.becas-resumen-zone {
+  background: var(--cuaderno-verde-tenue);
+  border: 1px solid var(--border-200, #e5e7eb);
+  border-radius: var(--radius-xl, 18px);
+  padding: var(--spacing-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 16px);
+}
+/* El separador dentro de la zona: transparente (la zona ya aporta el fondo). */
+.becas-resumen-zone__head.fin-separador {
+  padding: 4px 6px 0;
+  border: none;
+  background: transparent;
+}
+
+/* Tarjetas del resumen (donut + catálogo) y KPIs: superficie blanca con sombra
+   y micro-elevación al hover, igual que las tarjetas del hub de reportes. Solo
+   añadimos sombra/elevación: NO tocamos el borde (preserva el acento lateral
+   verde de los KPIs del kit). */
+.becas-resumen-zone .ant-card,
+.becas-resumen-zone .fin-kpi {
+  background: var(--surface-0, #fff);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 6px 16px rgba(15, 23, 42, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.becas-resumen-zone .ant-card:hover,
+.becas-resumen-zone .fin-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .becas-resumen-zone .ant-card,
+  .becas-resumen-zone .fin-kpi {
+    transition: none;
+  }
+  .becas-resumen-zone .ant-card:hover,
+  .becas-resumen-zone .fin-kpi:hover {
+    transform: none;
+  }
+}
+/* El donut y el catálogo deben estirarse a la altura de la columna. */
+.becas-resumen-zone .ant-card {
+  height: 100%;
+}
+/* Títulos de card que NO se truncan: permiten 2 líneas en columnas estrechas. */
+.becas-resumen-zone .ant-card-head-title {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Botón "Observaciones": chip verde de la paleta cuaderno (antes texto plano). */
+.becas-obs-trigger.ant-btn {
+  color: var(--cuaderno-verde-oscuro);
+  background: var(--cuaderno-verde-tenue);
+  border: 1px solid var(--cuaderno-verde-medio);
+  border-radius: 999px;
+  font-weight: 600;
+  padding-inline: 12px;
+}
+.becas-obs-trigger.ant-btn:hover {
+  color: #fff !important;
+  background: var(--cuaderno-verde-oscuro) !important;
+  border-color: var(--cuaderno-verde-oscuro) !important;
+}
+
+/* Popover de observaciones: más aire (padding generoso, ancho cómodo). */
+.becas-obs-popover .ant-popover-inner {
+  padding: 16px 20px;
+  border-radius: var(--radius-lg, 12px);
+}
+.becas-obs-popover .ant-popover-title {
+  margin-bottom: 10px;
+  font-weight: 700;
+  color: var(--cuaderno-verde-acento, #134d32);
+}
+
+/* Cabecera AGRUPADA "Número de estudiantes con beca por tipo": el grupo padre
+   se diferencia con el verde acento de la paleta cuaderno (más suave que el
+   negro-verdoso previo) para leer la jerarquía sin endurecer el color. */
+.becas-planilla .ant-table-thead > tr:first-child > th {
+  background: var(--primary-dark, #134d32) !important;
+}
+
+/* Headers en MÚLTIPLES líneas (como la planilla oficial): el kit fuerza nowrap;
+   aquí permitimos que los títulos largos se repartan en varias filas, en
+   mayúsculas y compactos, centrados vertical y horizontalmente. */
+.becas-planilla .ant-table-thead > tr > th {
+  white-space: normal !important;
+  vertical-align: middle;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  font-size: var(--font-size-xs, 11px);
+  padding: 14px 10px;
+}
+
+/* Columna identidad de carrera: que no se aplaste, alineada a la izquierda. */
+.becas-planilla .becas-col-carrera {
+  text-align: left !important;
+}
+/* El header de la columna Carrera y Observaciones sí van a la izquierda. */
+.becas-planilla .ant-table-thead > tr > th.becas-col-carrera {
+  text-align: left;
+}
+
+/* Celda de observaciones: texto secundario, no compite con los números. */
+.becas-obs {
+  color: var(--text-500, #6b7280);
+  font-style: italic;
+}
+
+/* Donut: contenedor centrado con su leyenda debajo. */
+.becas-donut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+}
+
+/* Leyenda del donut: una fila por tramo. Layout en grid (swatch a la izquierda
+   ocupando ambas filas; etiqueta arriba y el valor debajo) para que NUNCA se
+   parta letra por letra en columnas estrechas (xl=8). */
+.becas-donut__leyenda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  width: 100%;
+}
+.becas-donut__item {
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  column-gap: var(--spacing-sm, 8px);
+  row-gap: 1px;
+  align-items: center;
+}
+.becas-donut__swatch {
+  grid-row: 1 / span 2;
+  align-self: center;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm, 4px);
+  flex: none;
+}
+.becas-donut__item-label {
+  grid-column: 2;
+  min-width: 0;
+  font-weight: 600;
+}
+.becas-donut__item-valor {
+  grid-column: 2;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs, 12px);
+}
+
+/* ============================================================
+   Cobertura del catálogo de descuentos (organismo BecasCatalogoCobertura).
+   Lista de TODOS los tramos (usados o no) con swatch, nº de tipos, beneficiados
+   y una barra de peso sobre el total con beca. Swatch coincide con el donut.
+   ============================================================ */
+.becas-catalogo__intro {
+  display: block;
+  margin-bottom: var(--spacing-md, 12px);
+  font-size: var(--font-size-xs, 12px);
+}
+.becas-catalogo__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+}
+.becas-catalogo__item--inactivo {
+  opacity: 0.62;
+}
+.becas-catalogo__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px var(--spacing-sm, 8px);
+}
+.becas-catalogo__swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm, 4px);
+  flex: none;
+}
+.becas-catalogo__label {
+  min-width: 64px;
+}
+.becas-catalogo__tipos {
+  font-variant-numeric: tabular-nums;
+}
+.becas-catalogo__valor {
+  margin-left: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* Barra de peso del tramo sobre el total con beca. */
+.becas-catalogo__bar {
+  display: block;
+  margin-top: var(--spacing-xs, 4px);
+  height: 6px;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--surface-100, #f0f0f0);
+  overflow: hidden;
+}
+.becas-catalogo__bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  min-width: 2px;
+  transition: width 0.4s ease;
+}
+
+/* Popover de observaciones generales (antes columna; ahora cuadro informativo). */
+.becas-observaciones__popover {
+  max-width: 320px;
+}
+.becas-observaciones__popover .becas-observaciones__lista {
+  padding-left: var(--spacing-lg, 16px);
+}
+
+/* Bloque de observaciones generales bajo la planilla. */
+.becas-observaciones {
+  border: 1px solid var(--border-200, #e5e7eb);
+  border-left: 4px solid var(--color-primary, #196b45);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--surface-0, #fff);
+  padding: var(--spacing-lg, 16px) var(--spacing-xl, 20px);
+}
+.becas-observaciones__titulo {
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary, #196b45);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+.becas-observaciones__lista {
+  margin: 0;
+  padding-left: var(--spacing-lg, 16px);
+  color: var(--text-600, #4b5563);
+}
+.becas-observaciones__lista li + li {
+  margin-top: var(--spacing-xs, 4px);
+}

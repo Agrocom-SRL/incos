@@ -9,7 +9,9 @@ const toDomain = (payload = {}) => ({
   customName: payload.nombrePersonalizado ?? null,
   startDate: payload.fechaInicio,
   endDate: payload.fechaFin ?? null,
-  isAllDay: !payload.fechaFin,
+  // "Todo el día" se deriva de no tener fechaFin (no se persiste). Solo se guarda si
+  // el día suspende clases (feriado/receso/vacaciones).
+  suspendsClasses: payload.suspendeClases ?? false,
   careerIds: payload.carrerasIds ?? null,
 });
 

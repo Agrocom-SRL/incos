@@ -3,6 +3,8 @@ import { IAsistenciaRepository } from '../../domain/interfaces/repositories/IAsi
 import { Asistencia as AsistenciaModel } from '../database/models/asistencia.js';
 import { BaseRepository } from './BaseRepository.js';
 import { AttendanceMapper } from '../mappers/AttendanceMapper.js';
+import { ESTADOS_ASISTENCIA } from '../../domain/constants/asistencia.constants.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * @implements {IAsistenciaRepository}
@@ -29,19 +31,8 @@ export class AttendanceRepository extends BaseRepository {
             where.matriculaMateriaId = filters.subjectEnrollmentId;
         }
 
-        if (filters.classDate !== undefined) {
-            where.fechaClase = filters.classDate;
-        } else {
-            const dateRange = {};
-            if (filters.classDateFrom) {
-                dateRange[Op.gte] = filters.classDateFrom;
-            }
-            if (filters.classDateTo) {
-                dateRange[Op.lte] = filters.classDateTo;
-            }
-            if (Object.keys(dateRange).length > 0) {
-                where.fechaClase = dateRange;
-            }
+        if (filters.classSessionId !== undefined) {
+            where.sesionClaseId = filters.classSessionId;
         }
 
         if (filters.statuses && Array.isArray(filters.statuses) && filters.statuses.length > 0) {
@@ -62,7 +53,7 @@ export class AttendanceRepository extends BaseRepository {
     }
 
     getDefaultSort() {
-        return [['fechaClase', 'DESC'], ['horaClase', 'ASC'], ['id', 'DESC']];
+        return [['fechaRegistro', 'DESC'], ['id', 'DESC']];
     }
 
     mapDataToModel(data, userId = null) {
@@ -75,6 +66,95 @@ export class AttendanceRepository extends BaseRepository {
 
     getCollectionName() {
         return 'attendances';
+    }
+
+    /**
+     * Upsert SPARSE de una marca ligada a una sesión. Solo persiste AUSENTE/TARDANZA;
+     * si la marca pasa a PRESENTE, BORRA (soft delete) la fila existente.
+     *
+     * @param {Object} params
+     * @param {number} params.sesionClaseId
+     * @param {number} params.matriculaMateriaId
+     * @param {string} params.estado PRESENTE/AUSENTE/TARDANZA
+     * @param {number} params.usuarioId
+     * @param {import('sequelize').Transaction} [transaction]
+     * @returns {Promise<{ accion: 'creada'|'actualizada'|'borrada'|'sin_cambio' }>}
+     */
+    async upsertMarcaSparse(
+        { sesionClaseId, matriculaMateriaId, estado, usuarioId },
+        transaction = null,
+    ) {
+        const existente = await AsistenciaModel.findOne({
+            where: {
+                sesionClaseId,
+                matriculaMateriaId,
+                deletedAt: null,
+            },
+            transaction,
+        });
+
+        // PRESENTE = implícito: no se persiste. Si había fila, se borra.
+        if (estado === ESTADOS_ASISTENCIA.PRESENTE) {
+            if (existente) {
+                await existente.update({ updatedBy: usuarioId }, { transaction });
+                await existente.destroy({ transaction });
+                return { accion: 'borrada' };
+            }
+            return { accion: 'sin_cambio' };
+        }
+
+        if (existente) {
+            if (existente.estado === estado) {
+                return { accion: 'sin_cambio' };
+            }
+            await existente.update({ estado, updatedBy: usuarioId }, { transaction });
+            return { accion: 'actualizada' };
+        }
+
+        await AsistenciaModel.create(
+            {
+                sesionClaseId,
+                matriculaMateriaId,
+                estado,
+                registradoPor: usuarioId,
+                createdBy: usuarioId,
+                updatedBy: usuarioId,
+            },
+            { transaction },
+        );
+        return { accion: 'creada' };
+    }
+
+    /**
+     * Marcas persistidas (AUSENTE/TARDANZA) de un curso en un rango de fechas.
+     * @param {number} asignacionDocenteId
+     * @param {string} desde
+     * @param {string} hasta
+     * @returns {Promise<Array<Object>>}
+     */
+    async listarMarcasCursoRango(asignacionDocenteId, desde, hasta) {
+        return sequelize.query(
+            `
+            SELECT
+              a.id,
+              a.sesion_clase_id,
+              a.matricula_materia_id,
+              sc.fecha AS fecha_clase,
+              a.estado
+            FROM asistencias a
+            INNER JOIN sesiones_clase sc
+              ON sc.id = a.sesion_clase_id
+              AND sc.deleted_at IS NULL
+            WHERE sc.asignacion_docente_id = ?
+              AND sc.fecha BETWEEN ? AND ?
+              AND a.deleted_at IS NULL
+              AND a.activo = TRUE
+            `,
+            {
+                replacements: [asignacionDocenteId, desde, hasta],
+                type: sequelize.QueryTypes.SELECT,
+            },
+        );
     }
 }
 

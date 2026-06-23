@@ -56,8 +56,18 @@ export class IBimestreMatriculaRepository extends IRepository {
         throw new Error('Method obtenerBimestreMatriculaPorId() must be implemented');
     }
 
-    /** @returns {Promise<void>} */
-    async actualizarHabilitacionBimestreMatricula(bimestreMatriculaId, datos, usuarioId, options) {
-        throw new Error('Method actualizarHabilitacionBimestreMatricula() must be implemented');
+    /** Reabre el bimestre del curso (estado REABIERTO) para las matrículas no PENDIENTE. @returns {Promise<void>} */
+    async reabrirBimestreCurso(asignacionId, bimestreNum, usuarioId, options) {
+        throw new Error('Method reabrirBimestreCurso() must be implemented');
+    }
+
+    /** Cierra el bimestre del curso (estado CERRADO). @returns {Promise<void>} */
+    async cerrarBimestreCurso(asignacionId, bimestreNum, usuarioId, options) {
+        throw new Error('Method cerrarBimestreCurso() must be implemented');
+    }
+
+    /** Cantidad de matrículas del curso en estado REABIERTO para el bimestre. @returns {Promise<number>} */
+    async contarBimestreReabiertoCurso(asignacionId, bimestreNum) {
+        throw new Error('Method contarBimestreReabiertoCurso() must be implemented');
     }
 }

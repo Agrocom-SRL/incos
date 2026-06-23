@@ -84,4 +84,22 @@ export const UPLOAD = {
 
   /** Ruta pública relativa para respuesta API */
   carreraImagePublicPath: (filename) => `/uploads/carreras/${filename}`,
+
+  /** Ruta relativa para imágenes QR de cuentas de pago (backend/uploads/cuentas-pago/qr/) */
+  cuentasPagoQr: () => 'cuentas-pago/qr',
+
+  /**
+   * Nombre de archivo del QR: qr_{timestamp}.{ext}
+   * @param {string} originalName - Nombre original del archivo subido
+   */
+  generateCuentaPagoQrFileName: (originalName) => {
+    const ts = Date.now();
+    const ext = path.extname(originalName || '').toLowerCase() || '.png';
+    const allowed = UPLOAD.carreraImageExtensions;
+    const finalExt = allowed.includes(ext) ? ext : '.png';
+    return `qr_${ts}${finalExt}`;
+  },
+
+  /** Ruta pública relativa para respuesta API */
+  cuentaPagoQrPublicPath: (filename) => `/uploads/cuentas-pago/qr/${filename}`,
 };

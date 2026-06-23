@@ -1,8 +1,23 @@
-import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import path from 'path';
 import fs from 'fs';
+import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { UploadsStorageHelper } from '../../../infrastructure/external/storage/UploadsStorageHelper.js';
 import { ESTADOS_PAGO_APORTE } from '../../../domain/constants/pagos.constants.js';
+
+/**
+ * Plazo institucional POR DEFECTO (en días) del compromiso de pago que se genera
+ * automáticamente al registrar la PRIMERA cuota del aporte: la fecha comprometida
+ * es fecha_pago_de_la_cuota + DIAS_COMPROMISO. Se usa cuando el frontend no envía
+ * un plazo válido (ver DIAS_COMPROMISO_PERMITIDOS).
+ */
+const DIAS_COMPROMISO = 90;
+
+/**
+ * Plazos (en días) que el usuario puede elegir al registrar la primera cuota:
+ * 2 semanas, 1 mes, 1 mes y medio, 2 meses, 3 meses. Cualquier valor fuera de
+ * esta lista se ignora y se cae al plazo por defecto (DIAS_COMPROMISO).
+ */
+const DIAS_COMPROMISO_PERMITIDOS = [15, 30, 45, 60, 90];
 
 /**
  * Use Case: RegisterAporteVoluntarioUseCase
@@ -31,6 +46,8 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {Object} params.contributionConfigurationRepository - Repositorio de configuraciones de aportes
      * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes
      * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
+     * @param {Object} params.upsertCompromisoUseCase - Use case para crear/renegociar el compromiso de pago vigente
+     * @param {Object} params.compromisoPagoRepository - Repositorio de compromisos de pago (para marcar CUMPLIDO al saldar)
      * @param {Object} params.pdfGenerator - Generador de PDFs (PDFGenerator)
      * @param {ILogger} params.logger - Logger para registro de eventos
      */
@@ -45,6 +62,8 @@ export class RegisterAporteVoluntarioUseCase {
         contributionConfigurationRepository,
         studentDocumentRepository,
         studentDocumentDeliveryRepository,
+        upsertCompromisoUseCase,
+        compromisoPagoRepository,
         pdfGenerator,
         logger,
     }) {
@@ -58,6 +77,8 @@ export class RegisterAporteVoluntarioUseCase {
         this.contributionConfigurationRepository = contributionConfigurationRepository;
         this.studentDocumentRepository = studentDocumentRepository;
         this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+        this.upsertCompromisoUseCase = upsertCompromisoUseCase;
+        this.compromisoPagoRepository = compromisoPagoRepository;
         this.pdfGenerator = pdfGenerator;
         this.logger = logger;
     }
@@ -90,6 +111,8 @@ export class RegisterAporteVoluntarioUseCase {
         const transactionNumber = data.transaction_number ?? data.transactionNumber ?? null;
         const codigoComprobante = data.codigo_comprobante ?? data.codigoComprobante ?? null;
         const descripcion = data.descripcion ?? data.description ?? null;
+        // Plazo del compromiso elegido en el formulario (solo aplica en la 1ra cuota).
+        const diasCompromiso = this._resolveDiasCompromiso(data.compromiso_dias ?? data.compromisoDias);
 
         if (!paymentDate) {
             throw new ValidationError('La fecha de pago es requerida');
@@ -160,6 +183,21 @@ export class RegisterAporteVoluntarioUseCase {
             }
             await this.contributionPaymentRepository.update(cabecera.id, { state: nuevoEstado });
 
+            // Compromiso de pago (plazo institucional hardcodeado = DIAS_COMPROMISO):
+            // - Primera cuota (no había pagos previos en la cabecera): se auto-genera el
+            //   compromiso con fecha = fecha_pago_de_la_cuota + DIAS_COMPROMISO.
+            // - Si la cuota deja el aporte CANCELADO (saldo 0): el compromiso vigente
+            //   pasa a 'CUMPLIDO'.
+            // Cualquier fallo aquí NO debe romper el registro del pago.
+            await this._gestionarCompromiso({
+                cabeceraId: cabecera.id,
+                esPrimeraCuota: totalPagado === 0,
+                quedaCancelado: nuevoEstado === ESTADOS_PAGO_APORTE.CANCELADO,
+                paymentDate,
+                diasCompromiso,
+                userId: data.userId ?? data.usuarioId ?? null,
+            });
+
             let reciboPDF = null;
             let savedReciboDocument = null;
             const totalAmount = Number(cabecera.baseAmount ?? cabecera.montoBase ?? 0);
@@ -222,6 +260,97 @@ export class RegisterAporteVoluntarioUseCase {
             this.logger.error('[Pagos] Error al registrar cuota', { error: error.message, stack: error.stack, data });
             throw error;
         }
+    }
+
+    /**
+     * Gestiona el compromiso de pago de la cabecera tras registrar una cuota.
+     * Nunca lanza: un fallo se registra con logger.warn y no rompe el pago.
+     *
+     * @private
+     * @param {Object} params
+     * @param {number} params.cabeceraId - ID de pago_aporte (cabecera)
+     * @param {boolean} params.esPrimeraCuota - true si la cabecera no tenía cuotas previas
+     * @param {boolean} params.quedaCancelado - true si el aporte quedó CANCELADO (saldo 0)
+     * @param {string} params.paymentDate - Fecha de la cuota (YYYY-MM-DD)
+     * @param {number} [params.diasCompromiso] - Plazo elegido (días) para el compromiso
+     * @param {number|null} params.userId - Usuario que registra (auditoría)
+     */
+    async _gestionarCompromiso({ cabeceraId, esPrimeraCuota, quedaCancelado, paymentDate, diasCompromiso = DIAS_COMPROMISO, userId }) {
+        try {
+            // 1) Primera cuota que NO salda el aporte → auto-crear compromiso a
+            //    `diasCompromiso` días de la fecha de pago. Si la primera cuota ya
+            //    cancela todo (p. ej. beca 100% o pago único total) no hay compromiso.
+            if (esPrimeraCuota && !quedaCancelado && this.upsertCompromisoUseCase) {
+                const fechaCompromiso = this._addDays(paymentDate, diasCompromiso);
+                if (fechaCompromiso) {
+                    await this.upsertCompromisoUseCase.execute({
+                        pagoAporteId: cabeceraId,
+                        data: {
+                            fechaCompromiso,
+                            observacion: `Generado automáticamente al registrar la primera cuota (plazo de ${diasCompromiso} días)`,
+                        },
+                        userId,
+                    });
+                    this.logger.info('[Pagos] Compromiso de pago auto-generado en la primera cuota', {
+                        cabeceraId,
+                        fechaCompromiso,
+                        diasCompromiso,
+                    });
+                }
+            }
+
+            // 2) El aporte quedó saldado → marcar el compromiso vigente como CUMPLIDO.
+            if (quedaCancelado && this.compromisoPagoRepository) {
+                const vigente = await this.compromisoPagoRepository.findVigenteByPagoAporteId(cabeceraId);
+                if (vigente) {
+                    await this.compromisoPagoRepository.update(vigente.id, { estado: 'CUMPLIDO' }, userId);
+                    this.logger.info('[Pagos] Compromiso de pago marcado como CUMPLIDO (aporte saldado)', {
+                        cabeceraId,
+                        compromisoId: vigente.id,
+                    });
+                }
+            }
+        } catch (error) {
+            this.logger.warn('[Pagos] No se pudo gestionar el compromiso de pago (no bloquea el registro)', {
+                cabeceraId,
+                error: error.message,
+            });
+        }
+    }
+
+    /**
+     * Normaliza el plazo del compromiso recibido del frontend: solo acepta los
+     * valores de DIAS_COMPROMISO_PERMITIDOS; cualquier otro cae al plazo por defecto.
+     * @private
+     * @param {*} value - Valor crudo del body (compromiso_dias / compromisoDias)
+     * @returns {number} Plazo en días válido
+     */
+    _resolveDiasCompromiso(value) {
+        const n = Number(value);
+        if (Number.isFinite(n) && DIAS_COMPROMISO_PERMITIDOS.includes(n)) {
+            return n;
+        }
+        return DIAS_COMPROMISO;
+    }
+
+    /**
+     * Suma días a una fecha YYYY-MM-DD y devuelve YYYY-MM-DD (o null si entrada inválida).
+     * @private
+     */
+    _addDays(dateStr, days) {
+        const str = String(dateStr ?? '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+            return null;
+        }
+        const d = new Date(`${str}T00:00:00`);
+        if (Number.isNaN(d.getTime())) {
+            return null;
+        }
+        d.setDate(d.getDate() + Number(days));
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
     }
 
     /**
@@ -386,7 +515,7 @@ export class RegisterAporteVoluntarioUseCase {
     /**
      * Valida que no exista un pago previo del estudiante para la gestión actual
      * REGLA DE NEGOCIO: Un estudiante solo puede pagar UNA VEZ por gestión académica
-     * 
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @param {number} managementId - ID de la gestión
@@ -409,9 +538,9 @@ export class RegisterAporteVoluntarioUseCase {
 
             const existingPaymentPlain = existingPayment.toPlainObject ? existingPayment.toPlainObject() : existingPayment;
             const existingReceiptNumber = existingPaymentPlain.receiptNumber || existingPaymentPlain.numeroRecibo || existingPaymentPlain.numero_recibo || existingPayment.id;
-            
+
             throw new ValidationError(
-                `El estudiante ya realizó el pago del aporte académico para la gestión actual. ` +
+                'El estudiante ya realizó el pago del aporte académico para la gestión actual. ' +
                 `Número de recibo: ${existingReceiptNumber || 'N/A'}`
             );
         }
@@ -498,8 +627,8 @@ export class RegisterAporteVoluntarioUseCase {
         }
 
         // Obtener el ID de la beca según el mapper, el campo en la entidad es scholarshipId (no becaDescuentoId)
-        const scholarshipId = activeScholarship.scholarshipId 
-            || activeScholarship.becaDescuentoId 
+        const scholarshipId = activeScholarship.scholarshipId
+            || activeScholarship.becaDescuentoId
             || activeScholarship.beca_descuento_id;
 
         if (!scholarshipId) {
@@ -532,8 +661,8 @@ export class RegisterAporteVoluntarioUseCase {
         }
 
         // Obtener el porcentaje según el mapper, el campo en la entidad es percentage (no porcentaje)
-        const percentage = scholarship.percentage 
-            || scholarship.porcentaje 
+        const percentage = scholarship.percentage
+            || scholarship.porcentaje
             || 0;
 
         if (!percentage || percentage === 0) {
@@ -571,17 +700,17 @@ export class RegisterAporteVoluntarioUseCase {
 
     /**
      * Prepara los datos del pago para crear el registro según el nuevo schema (pago_aporte)
-     * 
+     *
      * IMPORTANTE: APLICACIÓN DEL DESCUENTO
      * - monto_total: 400.00 (Aporte académico base, de configuracion_aportes)
      * - descuento_beca: Calculado según beca activa (ej: 50% = 200.00)
      * - monto_pagado: Debe ser igual a (monto_total - descuento_beca)
-     * 
+     *
      * Ejemplo:
      * - monto_total: 400.00
      * - descuento_beca: 200.00 (50%)
      * - monto_pagado: 200.00 (lo que el estudiante paga)
-     * 
+     *
      * @private
      * @param {Object} data - Datos del pago
      * @returns {Object} Datos preparados para el repositorio
@@ -591,7 +720,7 @@ export class RegisterAporteVoluntarioUseCase {
 
         // La fecha de pago es SIEMPRE requerida (validada en el validador)
         // No se asigna por defecto, debe venir en los datos
-        const paymentDate = data.paymentDate;
+        const { paymentDate } = data;
         if (!paymentDate) {
             throw new ValidationError('La fecha de pago es requerida');
         }
@@ -606,7 +735,7 @@ export class RegisterAporteVoluntarioUseCase {
             totalAmount: data.totalAmount, // 400.00 (base)
             scholarshipDiscount: data.scholarshipDiscount || 0.00,
             amountPaid: amountToPay,
-            paymentDate: paymentDate, // Siempre debe tener un valor (NOT NULL en schema)
+            paymentDate, // Siempre debe tener un valor (NOT NULL en schema)
             description: data.description || null, // Opcional, puede ser null
         };
 
@@ -712,7 +841,7 @@ export class RegisterAporteVoluntarioUseCase {
                 filePath: result.filePath,
                 fileName: result.fileName,
                 absolutePath: result.absolutePath,
-                relativePath: relativeScope + '/' + pdfFileName,
+                relativePath: `${relativeScope}/${pdfFileName}`,
             };
         } catch (error) {
             this.logger.error('[Pagos] Error al generar recibo PDF', {
@@ -752,7 +881,7 @@ export class RegisterAporteVoluntarioUseCase {
                 studentId,
                 tipoDocumento: 'PAGO', // El recibo es parte del proceso de pago
                 documentacionId: null, // No hay documento específico en catálogo para "Recibo de Pago"
-                fileName: fileName,
+                fileName,
                 filePath: relativePath, // Guardar sin prefijo /uploads/
                 extension: 'pdf',
                 tipoMime: 'application/pdf',
@@ -767,7 +896,7 @@ export class RegisterAporteVoluntarioUseCase {
             this.logger.info('[Pagos] Recibo PDF guardado como documento', {
                 studentId,
                 documentId: document.id,
-                fileName: fileName,
+                fileName,
                 filePath: relativePath,
             });
 
@@ -801,7 +930,7 @@ export class RegisterAporteVoluntarioUseCase {
         try {
             // Extraer extensión del archivo
             const ext = path.extname(fileInfo.originalname).toLowerCase();
-            
+
             // Construir ruta relativa desde uploads/
             // El archivo está en: uploads/documentos/estudiantes/{studentId}/pagos/{filename}
             // La ruta relativa es: documentos/estudiantes/{studentId}/pagos/{filename}
@@ -849,7 +978,7 @@ export class RegisterAporteVoluntarioUseCase {
     /**
      * Crea un registro en estudiantes_documentos_entrega para el documento de pago
      * Indica que el documento fue entregado digitalmente
-     * 
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @param {number} documentId - ID del documento guardado en documentos_estudiante

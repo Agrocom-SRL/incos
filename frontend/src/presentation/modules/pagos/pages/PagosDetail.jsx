@@ -13,11 +13,13 @@ import { PageHeader } from '@molecules';
 import { usePagosDetailContext, useEstadoAporteRegistro, useDeletePagoAporte } from '@application-pagos/hooks';
 import dayjs from 'dayjs';
 import { Spin, Alert, Empty, Tabs, Tag, Button, Table, Modal, Form, Input, InputNumber, Select, DatePicker } from 'antd';
-import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, ArrowLeftOutlined, DeleteOutlined, DeleteFilled, PlusCircleOutlined, EditOutlined } from '@ant-design/icons';
+import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, ArrowLeftOutlined, DeleteOutlined, DeleteFilled, PlusCircleOutlined, EditOutlined, CalendarOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
 import { useCasesFactory } from '@container';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 import { useAuthContext } from '@application-auth';
+import { CompromisoAlertTag, formatFechaCompromiso } from '@atoms';
+import { useGuardarCompromiso } from '@application-finanzas/hooks/api/useGuardarCompromiso';
 
 const DURACION_MENSAJE_ERROR = 8;
 
@@ -86,6 +88,9 @@ const PagosDetail = () => {
     || hasPermiso('matricula.pago.aporte.ver', 'ELIMINAR');
   const puedeEditarCuota = hasPermiso('finanzas.pago.editar', 'EDITAR')
     || hasPermiso('matricula.pago.aporte.ver', 'EDITAR');
+  // Compromiso de pago: permiso propio (alta = CREAR, edición = EDITAR).
+  const puedeCrearCompromiso = hasPermiso('finanzas.compromiso.gestionar', 'CREAR');
+  const puedeEditarCompromiso = hasPermiso('finanzas.compromiso.gestionar', 'EDITAR');
 
   const {
     pago,
@@ -112,6 +117,56 @@ const PagosDetail = () => {
   const [cuentasPagoOptions, setCuentasPagoOptions] = useState([]);
 
   const paymentMethodIdWatch = Form.useWatch('payment_method_id', editCuotaForm);
+
+  // ── Compromiso de pago ────────────────────────────────────────────────
+  // Viene embebido en el detalle (contrato camelCase): { id, fechaCompromiso,
+  // observacion, estado, diasAtraso, alerta } | null.
+  const compromiso = pago?.compromiso ?? null;
+  const [compromisoModalOpen, setCompromisoModalOpen] = useState(false);
+  const [compromisoForm] = Form.useForm();
+  const { guardar: guardarCompromiso, loading: savingCompromiso } = useGuardarCompromiso();
+
+  const handleOpenCompromisoModal = useCallback(() => {
+    compromisoForm.setFieldsValue({
+      fechaCompromiso: compromiso?.fechaCompromiso ? dayjs(compromiso.fechaCompromiso) : null,
+      observacion: compromiso?.observacion ?? null,
+    });
+    setCompromisoModalOpen(true);
+  }, [compromiso, compromisoForm]);
+
+  const handleCloseCompromisoModal = useCallback(() => {
+    setCompromisoModalOpen(false);
+    compromisoForm.resetFields();
+  }, [compromisoForm]);
+
+  const handleSubmitCompromiso = useCallback(async () => {
+    if (!pago?.id) return;
+    try {
+      const values = await compromisoForm.validateFields();
+      const result = await guardarCompromiso({
+        pagoAporteId: pago.id,
+        compromisoId: compromiso?.id ?? null,
+        values: {
+          fechaCompromiso: values.fechaCompromiso
+            ? dayjs(values.fechaCompromiso).format('YYYY-MM-DD')
+            : null,
+          observacion: (values.observacion || '').trim() || null,
+        },
+      });
+      if (!result?.success) {
+        message.error(result?.error || 'No se pudo guardar el compromiso de pago', DURACION_MENSAJE_ERROR);
+        return;
+      }
+      message.success(compromiso?.id ? 'Compromiso actualizado' : 'Compromiso registrado');
+      handleCloseCompromisoModal();
+      if (typeof refetch === 'function') {
+        await refetch();
+      }
+    } catch (err) {
+      if (err?.errorFields) return;
+      message.error(err?.message || 'Error al guardar el compromiso de pago', DURACION_MENSAJE_ERROR);
+    }
+  }, [pago?.id, compromiso?.id, compromisoForm, guardarCompromiso, message, refetch, handleCloseCompromisoModal]);
 
   const textoRecibosCuotas = useMemo(() => {
     const cuotas = estadoAporte?.cuotas;
@@ -364,6 +419,98 @@ const PagosDetail = () => {
             </Field>
           </InfoCard>
         )}
+        {/* Compromiso de pago: fecha comprometida, semáforo de alerta y observación.
+            Aviso visible cuando ya venció. Editar/crear gateado por permiso propio. */}
+        <InfoCard
+          title="Compromiso de pago"
+          icon={<CalendarOutlined />}
+          cols={3}
+          extra={
+            compromiso
+              ? (puedeEditarCompromiso && (
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={handleOpenCompromisoModal}
+                  >
+                    Editar compromiso
+                  </Button>
+                ))
+              : (puedeCrearCompromiso && (
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<PlusCircleOutlined />}
+                    onClick={handleOpenCompromisoModal}
+                  >
+                    Registrar compromiso
+                  </Button>
+                ))
+          }
+        >
+          {compromiso ? (
+            <>
+              <Field label="Fecha de compromiso">
+                {formatFechaCompromiso(compromiso.fechaCompromiso)}
+              </Field>
+              <Field label="Estado">
+                <CompromisoAlertTag compromiso={compromiso} />
+              </Field>
+              <Field label="Días">
+                {compromiso.diasAtraso == null
+                  ? '—'
+                  : compromiso.diasAtraso > 0
+                    ? `${compromiso.diasAtraso} de atraso`
+                    : `Faltan ${Math.abs(compromiso.diasAtraso)}`}
+              </Field>
+              <Field label="Observación" span={3}>
+                {compromiso.observacion || '—'}
+              </Field>
+              {compromiso.estado !== 'CUMPLIDO' && compromiso.alerta === 'VENCIDA' && (
+                <div className="sd-field sd-field--span-3">
+                  <Alert
+                    type="error"
+                    showIcon
+                    title={<strong>Compromiso de pago vencido</strong>}
+                    description={
+                      compromiso.diasAtraso > 0
+                        ? `El compromiso venció hace ${compromiso.diasAtraso} día(s) (${formatFechaCompromiso(compromiso.fechaCompromiso)}). Regularice el saldo pendiente.`
+                        : `El compromiso (${formatFechaCompromiso(compromiso.fechaCompromiso)}) está vencido. Regularice el saldo pendiente.`
+                    }
+                  />
+                </div>
+              )}
+              {compromiso.estado !== 'CUMPLIDO' && compromiso.alerta === 'PROXIMA' && (
+                <div className="sd-field sd-field--span-3">
+                  <Alert
+                    type="warning"
+                    showIcon
+                    title={<strong>Compromiso próximo a vencer</strong>}
+                    description={`Vence el ${formatFechaCompromiso(compromiso.fechaCompromiso)}${
+                      compromiso.diasAtraso != null && compromiso.diasAtraso <= 0
+                        ? ` · faltan ${Math.abs(compromiso.diasAtraso)} día(s)`
+                        : ''
+                    }.`}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="sd-field sd-field--span-3">
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="Este aporte no tiene un compromiso de pago registrado."
+              >
+                {puedeCrearCompromiso && (
+                  <Button type="primary" icon={<PlusCircleOutlined />} onClick={handleOpenCompromisoModal}>
+                    Registrar compromiso
+                  </Button>
+                )}
+              </Empty>
+            </div>
+          )}
+        </InfoCard>
       </div>
     );
     const cuotasChildren = (
@@ -588,6 +735,10 @@ const PagosDetail = () => {
     puedeEliminarPagoPermiso,
     handleEliminarCuota,
     deletingCuotaId,
+    compromiso,
+    puedeCrearCompromiso,
+    puedeEditarCompromiso,
+    handleOpenCompromisoModal,
   ]);
 
   if (loading) {
@@ -803,6 +954,35 @@ const PagosDetail = () => {
               </Form.Item>
             </Form>
           </Spin>
+        </Modal>
+
+        <Modal
+          title={compromiso?.id ? 'Editar compromiso de pago' : 'Registrar compromiso de pago'}
+          open={compromisoModalOpen}
+          onCancel={handleCloseCompromisoModal}
+          onOk={handleSubmitCompromiso}
+          okText={compromiso?.id ? 'Actualizar' : 'Registrar'}
+          confirmLoading={savingCompromiso}
+          destroyOnHidden
+          width={520}
+        >
+          <Form form={compromisoForm} layout="vertical" style={{ marginTop: 12 }}>
+            <Form.Item
+              name="fechaCompromiso"
+              label="Fecha del compromiso"
+              rules={[{ required: true, message: 'Seleccione la fecha del compromiso de pago' }]}
+            >
+              <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="observacion" label="Observación (opcional)">
+              <Input.TextArea
+                rows={3}
+                maxLength={500}
+                showCount
+                placeholder="Detalle del acuerdo o condición del compromiso de pago"
+              />
+            </Form.Item>
+          </Form>
         </Modal>
 
       </div>

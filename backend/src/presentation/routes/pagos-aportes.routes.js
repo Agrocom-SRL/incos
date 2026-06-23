@@ -87,6 +87,23 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         ]),
     ];
 
+    // ---- Compromiso de pago: permiso propio finanzas.compromiso.gestionar ----
+    /** Ver compromiso vigente de una cabecera (lectura). */
+    const compromisoVer = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.compromiso.gestionar', 'LISTAR'],
+            ['finanzas.compromiso.gestionar', 'DETALLE'],
+            ['matricula.pago.aporte.ver', 'LISTAR'],
+        ]),
+    ];
+    /** Crear/reemplazar compromiso vigente. */
+    const compromisoCrear = [authenticate, verificarPermiso('finanzas.compromiso.gestionar', 'CREAR')];
+    /** Editar compromiso. */
+    const compromisoEditar = [authenticate, verificarPermiso('finanzas.compromiso.gestionar', 'EDITAR')];
+    /** Eliminar (soft delete) compromiso. */
+    const compromisoEliminar = [authenticate, verificarPermiso('finanzas.compromiso.gestionar', 'ELIMINAR')];
+
     // ============================================
     // LISTADO DE CABECERAS DE APORTE
     // ============================================
@@ -138,6 +155,133 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         '/export/lista-por-carrera',
         ...pagoExportar,
         (req, res, next) => controllers.exportListaAportesPorCarreraExcelController.handle(req, res, next)
+    );
+
+    /** Planilla de control de becas por carrera (solo lectura). */
+    const reporteBecasCarrera = [
+        authenticate,
+        verificarPermiso('finanzas.beca.reporte', 'LISTAR'),
+    ];
+
+    /**
+     * GET /api/v1/pagos-aportes/reportes/becas-por-carrera
+     * Planilla de control de Becas por carrera (totales, distribución, resumen).
+     * Query: gestion_id (opcional; gestión vigente por defecto).
+     * Permiso: finanzas.beca.reporte LISTAR.
+     * DECLARADA antes de /:id para evitar colisión de rutas.
+     */
+    router.get(
+        '/reportes/becas-por-carrera',
+        ...reporteBecasCarrera,
+        (req, res, next) => controllers.getBecasPorCarreraReporteController.handle(req, res, next)
+    );
+
+    /** Exportar planilla de becas por carrera a Excel (EXPORTAR). */
+    const reporteBecasCarreraExport = [
+        authenticate,
+        verificarPermiso('finanzas.beca.reporte', 'EXPORTAR'),
+    ];
+
+    /**
+     * GET /api/v1/pagos-aportes/reportes/becas-por-carrera/export
+     * Excel (.xlsx, una hoja) de la Planilla de Becas por carrera.
+     * Query: gestion_id (opcional; gestión vigente por defecto).
+     * Permiso: finanzas.beca.reporte EXPORTAR.
+     * DECLARADA antes de /:id para evitar colisión de rutas.
+     */
+    router.get(
+        '/reportes/becas-por-carrera/export',
+        ...reporteBecasCarreraExport,
+        (req, res, next) => controllers.exportBecasPorCarreraReporteExcelController.handle(req, res, next)
+    );
+
+    /** Planilla de control de Cuentas por cobrar (solo lectura). */
+    const reporteCuentasPorCobrar = [
+        authenticate,
+        verificarPermiso('finanzas.cuenta-cobrar.reporte', 'LISTAR'),
+    ];
+
+    /**
+     * GET /api/v1/pagos-aportes/reportes/cuentas-por-cobrar
+     * Planilla de control de Cuentas por cobrar (CARRERA → PARALELO → ESTUDIANTES, totales).
+     * Query: gestion_id (opcional; gestión vigente por defecto).
+     * Permiso: finanzas.cuenta-cobrar.reporte LISTAR.
+     * DECLARADA antes de /:id para evitar colisión de rutas.
+     */
+    router.get(
+        '/reportes/cuentas-por-cobrar',
+        ...reporteCuentasPorCobrar,
+        (req, res, next) => controllers.getCuentasPorCobrarReporteController.handle(req, res, next)
+    );
+
+    /** Exportar planilla de cuentas por cobrar a Excel (EXPORTAR). */
+    const reporteCuentasPorCobrarExport = [
+        authenticate,
+        verificarPermiso('finanzas.cuenta-cobrar.reporte', 'EXPORTAR'),
+    ];
+
+    /**
+     * GET /api/v1/pagos-aportes/reportes/cuentas-por-cobrar/export
+     * Excel (.xlsx, una hoja) de la Planilla de Cuentas por Cobrar.
+     * Query: gestion_id (opcional; gestión vigente por defecto).
+     * Permiso: finanzas.cuenta-cobrar.reporte EXPORTAR.
+     * DECLARADA antes de /:id para evitar colisión de rutas.
+     */
+    router.get(
+        '/reportes/cuentas-por-cobrar/export',
+        ...reporteCuentasPorCobrarExport,
+        (req, res, next) => controllers.exportCuentasPorCobrarReporteExcelController.handle(req, res, next)
+    );
+
+    // ============================================
+    // COMPROMISO DE PAGO (CRUD)
+    // ============================================
+
+    /**
+     * PUT /api/v1/pagos-aportes/compromiso/:id
+     * Editar un compromiso de pago (id = compromisos_pago.id).
+     * DECLARADA antes de /:id para evitar colisión.
+     */
+    router.put(
+        '/compromiso/:id',
+        ...compromisoEditar,
+        ...idValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateCompromisoController.handle(req, res, next)
+    );
+
+    /**
+     * DELETE /api/v1/pagos-aportes/compromiso/:id
+     * Soft delete de un compromiso de pago (id = compromisos_pago.id).
+     * DECLARADA antes de /:id para evitar colisión.
+     */
+    router.delete(
+        '/compromiso/:id',
+        ...compromisoEliminar,
+        ...idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteCompromisoController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/pagos-aportes/:pagoAporteId/compromiso
+     * Compromiso VIGENTE de la cabecera (o null).
+     */
+    router.get(
+        '/:pagoAporteId/compromiso',
+        ...compromisoVer,
+        (req, res, next) => controllers.getCompromisoController.handle(req, res, next)
+    );
+
+    /**
+     * POST /api/v1/pagos-aportes/:pagoAporteId/compromiso
+     * Crea/reemplaza el compromiso VIGENTE de la cabecera.
+     * Body: fecha_compromiso (req), observacion (opt).
+     */
+    router.post(
+        '/:pagoAporteId/compromiso',
+        ...compromisoCrear,
+        (req, res, next) => controllers.upsertCompromisoController.handle(req, res, next)
     );
 
     // ============================================

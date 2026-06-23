@@ -16,6 +16,55 @@ import { IPagoAporteRepository } from '@domain/repositories';
 import { PAGOS_APORTES_ENDPOINTS } from '@api/endpoints';
 import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
+/**
+ * Extrae el nombre de archivo de una cabecera Content-Disposition (soporta
+ * `filename*=UTF-8''…`, `filename="…"` y `filename=…`). Fuente única para todas
+ * las descargas blob de este repositorio.
+ * @param {string} [disposition]
+ * @param {string} fallback - Nombre por defecto si la cabecera no trae filename.
+ * @returns {string}
+ */
+const extractFileNameFromDisposition = (disposition = '', fallback) => {
+  const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+  const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+  const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+  if (starMatch) {
+    try {
+      return decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+    } catch {
+      return starMatch[1];
+    }
+  }
+  if (quotedMatch) return quotedMatch[1];
+  if (plainMatch) return plainMatch[1].replace(/['"]/g, '');
+  return fallback;
+};
+
+/**
+ * Normaliza un error de descarga blob: si el backend respondió un error como
+ * Blob JSON, lo parsea para extraer el mensaje; en otro caso delega al handler.
+ * @param {*} error - Error de axios.
+ * @param {string} fallbackMsg
+ * @returns {Promise<{success: false, error: string}>}
+ */
+const parseBlobError = async (error, fallbackMsg) => {
+  if (error.response?.data instanceof Blob) {
+    try {
+      const json = JSON.parse(await error.response.data.text());
+      const errObj = json?.error;
+      const msg =
+        typeof errObj === 'string'
+          ? errObj
+          : errObj?.message || json?.message || fallbackMsg;
+      return { success: false, error: msg };
+    } catch {
+      return { success: false, error: fallbackMsg };
+    }
+  }
+  return handleErrorResponse(error, fallbackMsg);
+};
+
 export class PagoAporteRepository extends IPagoAporteRepository {
   /**
    * Registra un nuevo pago de aporte académico
@@ -91,6 +140,9 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         if (data.descripcion) {
           formData.append('descripcion', data.descripcion);
         }
+        if (data.compromiso_dias != null) {
+          formData.append('compromiso_dias', String(data.compromiso_dias));
+        }
         formData.append('documentoRespaldo', data.documentoRespaldo);
 
         console.log('[PagoAporteRepository] Enviando FormData con archivo', {
@@ -112,6 +164,7 @@ export class PagoAporteRepository extends IPagoAporteRepository {
           transaction_number: data.transaction_number || null,
           codigo_comprobante: codigoComprobante || null,
           descripcion: data.descripcion || null,
+          compromiso_dias: data.compromiso_dias != null ? Number(data.compromiso_dias) : undefined,
         };
         headers['Content-Type'] = 'application/json';
       }
@@ -320,6 +373,100 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
+   * Obtiene el compromiso de pago VIGENTE de una cabecera de aporte (o null).
+   * GET /v1/pagos-aportes/:pagoAporteId/compromiso
+   *
+   * @param {string|number} pagoAporteId - ID de la cabecera (pago_aporte)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerCompromiso(pagoAporteId) {
+    try {
+      if (!pagoAporteId || Number(pagoAporteId) < 1) {
+        return { success: false, error: 'pagoAporteId es requerido y debe ser mayor a 0' };
+      }
+      const response = await apiClient.get(
+        PAGOS_APORTES_ENDPOINTS.COMPROMISO_BY_PAGO(pagoAporteId),
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el compromiso de pago');
+    }
+  }
+
+  /**
+   * Crea/reemplaza (UPSERT) el compromiso de pago VIGENTE de una cabecera.
+   * POST /v1/pagos-aportes/:pagoAporteId/compromiso
+   *
+   * @param {string|number} pagoAporteId - ID de la cabecera (pago_aporte)
+   * @param {Object} payload - { fecha_compromiso (req, YYYY-MM-DD), observacion? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async guardarCompromiso(pagoAporteId, payload = {}) {
+    try {
+      if (!pagoAporteId || Number(pagoAporteId) < 1) {
+        return { success: false, error: 'pagoAporteId es requerido y debe ser mayor a 0' };
+      }
+      const body = {
+        fecha_compromiso: payload.fecha_compromiso ?? null,
+        observacion: payload.observacion ?? null,
+      };
+      const response = await apiClient.post(
+        PAGOS_APORTES_ENDPOINTS.COMPROMISO_BY_PAGO(pagoAporteId),
+        body,
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar el compromiso de pago');
+    }
+  }
+
+  /**
+   * Actualiza un compromiso de pago por su id.
+   * PUT /v1/pagos-aportes/compromiso/:id
+   *
+   * @param {string|number} id - ID del compromiso
+   * @param {Object} payload - { fecha_compromiso?, observacion?, estado? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async actualizarCompromiso(id, payload = {}) {
+    try {
+      if (!id || Number(id) < 1) {
+        return { success: false, error: 'ID del compromiso es requerido' };
+      }
+      const body = {};
+      if ('fecha_compromiso' in payload) body.fecha_compromiso = payload.fecha_compromiso;
+      if ('observacion' in payload) body.observacion = payload.observacion;
+      if ('estado' in payload) body.estado = payload.estado;
+      const response = await apiClient.put(PAGOS_APORTES_ENDPOINTS.COMPROMISO_BY_ID(id), body, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el compromiso de pago');
+    }
+  }
+
+  /**
+   * Elimina (soft delete) un compromiso de pago por su id.
+   * DELETE /v1/pagos-aportes/compromiso/:id
+   *
+   * @param {string|number} id - ID del compromiso
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminarCompromiso(id) {
+    try {
+      if (!id || Number(id) < 1) {
+        return { success: false, error: 'ID del compromiso es requerido' };
+      }
+      const response = await apiClient.delete(PAGOS_APORTES_ENDPOINTS.COMPROMISO_BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el compromiso de pago');
+    }
+  }
+
+  /**
    * Genera u obtiene el recibo de pago de un aporte académico
    * GET /v1/pagos-aportes/:id/recibo
    * 
@@ -353,6 +500,53 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
+   * Obtiene la planilla de control de becas por carrera (reporte read-only).
+   * GET /v1/pagos-aportes/reportes/becas-por-carrera?gestion_id=
+   *
+   * @param {Object} [options]
+   * @param {number|string|null} [options.gestionId] - Gestión a consultar (opcional; vigente por defecto)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerReporteBecasPorCarrera(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
+      }
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.REPORTE_BECAS_POR_CARRERA, {
+        params,
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el reporte de becas por carrera');
+    }
+  }
+
+  /**
+   * Obtiene la planilla de control de cuentas por cobrar por carrera y paralelo
+   * (reporte read-only).
+   * GET /v1/pagos-aportes/reportes/cuentas-por-cobrar?gestion_id=
+   *
+   * @param {Object} [options]
+   * @param {number|string|null} [options.gestionId] - Gestión a consultar (opcional; vigente por defecto)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerReporteCuentasPorCobrar(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
+      }
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.REPORTE_CUENTAS_POR_COBRAR, {
+        params,
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el reporte de cuentas por cobrar');
+    }
+  }
+
+  /**
    * Descarga Excel de estado de aporte por carrera (una hoja por paralelo).
    * @param {Object} options
    * @param {string|number} options.carreraId
@@ -374,45 +568,82 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         responseType: 'blob',
       });
 
-      const disposition = response.headers['content-disposition'] || '';
-      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
-      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
-      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+      return {
+        success: true,
+        blob: response.data,
+        fileName: extractFileNameFromDisposition(
+          response.headers['content-disposition'],
+          'lista_aportes.xlsx',
+        ),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al exportar lista de aportes');
+    }
+  }
 
-      let fileName = 'lista_aportes.xlsx';
-      if (starMatch) {
-        try {
-          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
-        } catch {
-          fileName = starMatch[1];
-        }
-      } else if (quotedMatch) {
-        fileName = quotedMatch[1];
-      } else if (plainMatch) {
-        fileName = plainMatch[1].replace(/['"]/g, '');
+  /**
+   * Descarga Excel de la planilla de control de becas por carrera (reporte read-only).
+   * GET /v1/pagos-aportes/reportes/becas-por-carrera/export?gestion_id=
+   *
+   * @param {Object} [options]
+   * @param {string|number|null} [options.gestionId] - Gestión a exportar (opcional; vigente por defecto)
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarBecasPorCarreraExcel(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
       }
+
+      const response = await apiClient.get(
+        PAGOS_APORTES_ENDPOINTS.EXPORT_REPORTE_BECAS_POR_CARRERA,
+        { params, responseType: 'blob' },
+      );
 
       return {
         success: true,
         blob: response.data,
-        fileName,
+        fileName: extractFileNameFromDisposition(
+          response.headers['content-disposition'],
+          'becas_por_carrera.xlsx',
+        ),
       };
     } catch (error) {
-      if (error.response?.data instanceof Blob) {
-        try {
-          const text = await error.response.data.text();
-          const json = JSON.parse(text);
-          const errObj = json?.error;
-          const msg =
-            typeof errObj === 'string'
-              ? errObj
-              : errObj?.message || json?.message || 'Error al exportar lista de aportes';
-          return { success: false, error: msg };
-        } catch {
-          return { success: false, error: 'Error al exportar lista de aportes' };
-        }
+      return parseBlobError(error, 'Error al exportar el reporte de becas por carrera');
+    }
+  }
+
+  /**
+   * Descarga Excel de la planilla de cuentas por cobrar (reporte read-only).
+   * GET /v1/pagos-aportes/reportes/cuentas-por-cobrar/export?gestion_id=
+   *
+   * @param {Object} [options]
+   * @param {string|number|null} [options.gestionId] - Gestión a exportar (opcional; vigente por defecto)
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarCuentasPorCobrarExcel(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
       }
-      return handleErrorResponse(error, 'Error al exportar lista de aportes');
+
+      const response = await apiClient.get(
+        PAGOS_APORTES_ENDPOINTS.EXPORT_REPORTE_CUENTAS_POR_COBRAR,
+        { params, responseType: 'blob' },
+      );
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName: extractFileNameFromDisposition(
+          response.headers['content-disposition'],
+          'cuentas_por_cobrar.xlsx',
+        ),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al exportar el reporte de cuentas por cobrar');
     }
   }
 }

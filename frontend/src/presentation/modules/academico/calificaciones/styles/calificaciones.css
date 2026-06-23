@@ -11,6 +11,14 @@
   --cuaderno-verde-oscuro: var(--color-primary, #196b45);
   --cuaderno-verde-acento: var(--primary-dark, #134d32);
 
+  /* Banda de cabecera por componente — espejo de la paleta del export Excel
+     (ExcelTheme.js: teóricasStrong / practicasStrong) + magenta para asistencia. */
+  --cuaderno-comp-teorico-bg: #c6e0b4; /* verde suave */
+  --cuaderno-comp-practico-bg: #ffe08a; /* ámbar */
+  --cuaderno-comp-asistencia-bg: #f0a6d0; /* magenta */
+  --cuaderno-comp-text: #1f2937; /* texto oscuro legible sobre bandas claras */
+  --cuaderno-comp-text-soft: rgba(31, 41, 55, 0.72);
+
   --cuaderno-papel: var(--color-bg-container, #ffffff);
   --cuaderno-fondo: #fafafa;
   --cuaderno-borde-suave: #f0f0f0;
@@ -26,11 +34,6 @@
   --bimestre-anterior-text: var(--cuaderno-texto-medio);
   --bimestre-futuro-text: #cbd5e1;
   --bimestre-futuro-opacity: 0.55;
-}
-
-/* —— Calificaciones · pantalla de inicio (cursos del docente) —— */
-.cal-calificaciones-inicio__panel .cal-calificaciones-inicio__grid {
-  margin-top: 4px;
 }
 
 /* —— Acciones contextuales por pantalla —— */
@@ -56,219 +59,6 @@
 
 .cal-impersonacion-banner .ant-alert-message {
   color: #92400e;
-}
-
-.cal-docentes-admin__contexto {
-  margin: 0 0 16px;
-  font-size: 14px;
-  color: var(--cuaderno-texto-medio, #6b7280);
-}
-
-.cal-docentes-admin__busqueda {
-  max-width: 360px;
-  margin-bottom: 16px;
-}
-
-.cal-docentes-admin__table .ant-table-thead>tr>th {
-  background: var(--cuaderno-verde-tenue, #e8f5ec) !important;
-}
-
-/* —— Coordinación: celdas con icono —— */
-.cal-coord-celda {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-width: 0;
-}
-
-.cal-coord-celda__icon {
-  flex-shrink: 0;
-  margin-top: 2px;
-  font-size: 16px;
-  color: var(--cuaderno-verde-oscuro, #196b45);
-}
-
-.cal-coord-celda__contenido {
-  min-width: 0;
-  flex: 1;
-}
-
-.cal-coordinacion-table .ant-table-tbody>tr>td {
-  vertical-align: top;
-  padding-top: 14px !important;
-  padding-bottom: 14px !important;
-}
-
-/* Carreras apiladas con viñeta y pill por color de carrera */
-.cal-coord-celda--carreras {
-  align-items: flex-start;
-}
-
-.cal-coord-carreras-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-width: 0;
-}
-
-.cal-coord-carreras-list__item {
-  position: relative;
-  padding-left: 14px;
-  margin-bottom: 8px;
-}
-
-.cal-coord-carreras-list__item:last-child {
-  margin-bottom: 0;
-}
-
-.cal-coord-carreras-list__item::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  top: 8px;
-  font-size: 14px;
-  line-height: 1;
-  color: var(--cuaderno-texto-medio, #6b7280);
-}
-
-.cal-coord-carrera-pill {
-  display: block;
-  padding: 6px 10px 6px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-/* Métricas: materias, cursos, estudiantes en columna */
-.cal-coord-metricas-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.cal-coord-metricas-list__item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cal-coord-metricas-list__icon {
-  flex-shrink: 0;
-  font-size: 16px;
-  color: var(--cuaderno-verde-oscuro, #196b45);
-  width: 18px;
-  display: inline-flex;
-  justify-content: center;
-}
-
-.cal-coord-metricas-list__texto {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  line-height: 1.25;
-}
-
-.cal-coord-metricas-list__label {
-  font-size: 12px !important;
-}
-
-.cal-calificaciones-inicio__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: var(--spacing-md, 16px);
-}
-
-.cal-curso-card.ant-card .ant-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.cal-curso-card--skeleton.ant-card .ant-card-body {
-  padding: 18px;
-}
-
-.cal-curso-card__head {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.cal-curso-card__icon {
-  font-size: 22px;
-  color: var(--cuaderno-verde-oscuro);
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.cal-curso-card__titles {
-  flex: 1;
-  min-width: 0;
-}
-
-.cal-curso-card__materia {
-  margin: 0 0 6px !important;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--cuaderno-texto-fuerte);
-  line-height: 1.35;
-}
-
-.cal-curso-card__carrera-pill {
-  display: inline-block;
-  margin-top: 6px;
-  padding: 2px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid;
-  border-radius: 999px;
-  background: color-mix(in srgb, currentColor 8%, transparent);
-}
-
-.cal-curso-card__meta-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 16px;
-  margin: 0;
-  padding: 12px 0 0;
-  border-top: 1px solid var(--cuaderno-borde-suave, #f0f0f0);
-}
-
-.cal-curso-card__meta-item {
-  margin: 0;
-}
-
-.cal-curso-card__meta-item dt {
-  margin: 0 0 2px;
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cuaderno-texto-tenue, #9ca3af);
-}
-
-.cal-curso-card__meta-item dd {
-  margin: 0;
-  font-size: 13px;
-  color: var(--cuaderno-texto-fuerte);
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.cal-curso-card__meta-item--wide {
-  grid-column: 1 / -1;
-}
-
-.cal-curso-card__ponderacion {
-  font-size: 12px;
-  color: var(--cuaderno-texto-medio);
 }
 
 .cal-curso-card__bimestres {
@@ -382,22 +172,6 @@
   font-size: 11px;
 }
 
-.cal-curso-card__pendientes {
-  margin: 0;
-  font-size: 13px;
-  color: var(--color-warning, #d97706);
-  font-weight: 500;
-}
-
-.cal-curso-card__action {
-  margin-top: 4px;
-}
-
-.cal-curso-card--skeleton {
-  pointer-events: none;
-  padding: 18px;
-}
-
 /* —— Cuaderno: layout general —— */
 .cal-cuaderno {
   display: flex;
@@ -500,12 +274,10 @@
 }
 
 @media (max-width: 900px) {
-
   .cal-cuaderno-contexto__fila--3,
   .cal-cuaderno-contexto__fila--2 {
     grid-template-columns: 1fr 1fr;
   }
-
 }
 
 /* —— Card contexto / card grilla —— */
@@ -513,7 +285,7 @@
   overflow: hidden;
 }
 
-.cal-cuaderno-contexto-card>.ant-card-body {
+.cal-cuaderno-contexto-card > .ant-card-body {
   padding: 0 !important;
 }
 
@@ -657,7 +429,6 @@
 }
 
 @keyframes cal-bimestre-plazo-parpadeo {
-
   0%,
   100% {
     opacity: 1;
@@ -768,7 +539,11 @@
   outline: none;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-eval {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval {
   max-width: var(--cal-col-eval-max, 280px);
 }
 
@@ -783,7 +558,10 @@
   color: var(--cuaderno-verde-medio);
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .cal-notas-grid__col-actions .ant-btn {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .cal-notas-grid__col-actions
+  .ant-btn {
   color: var(--cuaderno-verde-oscuro);
 }
 
@@ -841,7 +619,7 @@
   margin-top: 0;
 }
 
-.cal-cuaderno-hoja-card>.ant-card-body {
+.cal-cuaderno-hoja-card > .ant-card-body {
   padding: 0 !important;
 }
 
@@ -873,22 +651,46 @@
   width: 100% !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.cal-notas-grid__col-nro,
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-nro {
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-nro,
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-nro {
   width: 44px !important;
   max-width: 44px !important;
   min-width: 44px !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.cal-notas-grid__col-estudiante,
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-estudiante {
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-estudiante,
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-estudiante {
   width: 200px !important;
   max-width: 220px !important;
   min-width: 160px !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.cal-notas-grid__col-bim-espacio,
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-bim-espacio {
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-bim-espacio,
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-bim-espacio {
   width: auto !important;
   min-width: 32px;
   padding: 0 !important;
@@ -896,8 +698,16 @@
   border-bottom: 1px solid var(--cuaderno-borde-suave) !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-sub--eval,
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-eval {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-sub--eval,
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval {
   background: var(--cuaderno-verde-acento) !important;
   color: #fff !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
@@ -905,27 +715,109 @@
   overflow: visible;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-sub--eval .ant-table-cell,
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-eval .ant-table-cell {
+/* —— Banda de cabecera por componente (espejo del export Excel) ——
+   Mismo prefijo que la regla base (.ant-table-wrapper.cal-notas-grid--consolidado-style)
+   para que la clase modificadora extra gane en especificidad sobre el verde por defecto. */
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval--teorico {
+  background: var(--cuaderno-comp-teorico-bg) !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval--practico {
+  background: var(--cuaderno-comp-practico-bg) !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval--asistencia {
+  background: var(--cuaderno-comp-asistencia-bg) !important;
+}
+
+/* Texto e iconos oscuros para mantener contraste AA sobre las bandas claras */
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__col-head-text,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__col-head-text,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__col-head-text,
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__eval-menu-btn,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__eval-menu-btn,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__eval-menu-btn {
+  color: var(--cuaderno-comp-text) !important;
+}
+
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__col-ponderacion,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__col-ponderacion,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__col-ponderacion {
+  color: var(--cuaderno-comp-text-soft) !important;
+}
+
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__eval-menu-btn:hover,
+th.cal-notas-grid__col-eval--teorico .cal-notas-grid__eval-menu-btn:focus-visible,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__eval-menu-btn:hover,
+th.cal-notas-grid__col-eval--practico .cal-notas-grid__eval-menu-btn:focus-visible,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__eval-menu-btn:hover,
+th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__eval-menu-btn:focus-visible {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: var(--cuaderno-comp-text) !important;
+}
+
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-sub--eval
+  .ant-table-cell,
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-eval
+  .ant-table-cell {
   white-space: normal !important;
   overflow: visible;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-bim-espacio,
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-sub--hint,
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-hint {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-bim-espacio,
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-sub--hint,
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-hint {
   background: var(--cuaderno-verde-acento) !important;
   color: var(--cuaderno-verde-tenue) !important;
   border-color: rgba(25, 107, 69, 0.12) !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-add {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-add {
   background: var(--cuaderno-verde-acento) !important;
   color: #fff !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
-.cal-notas-grid:not(.cal-notas-grid--consolidado-style) .ant-table-thead>tr>th {
+.cal-notas-grid:not(.cal-notas-grid--consolidado-style)
+  .ant-table-thead
+  > tr
+  > th {
   background: var(--cuaderno-fondo) !important;
   border-bottom: 1px solid var(--cuaderno-verde-medio) !important;
   color: var(--cuaderno-verde-acento) !important;
@@ -936,12 +828,20 @@
 }
 
 /* Cabecera cuaderno alineada al registro consolidado (verde oscuro) */
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th {
   text-align: center;
   white-space: nowrap;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-est {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-est {
   font-size: 15px;
   font-weight: 500;
   padding: 8px 6px !important;
@@ -950,19 +850,31 @@
   border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-sub {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-sub {
   font-size: 12px;
   font-weight: 500;
   padding: 6px 8px !important;
   vertical-align: top !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-bim {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-bim {
   padding: 0 !important;
   vertical-align: top !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__th-bim--activo {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__th-bim--activo {
   background: var(--cuaderno-verde-oscuro) !important;
   color: #fff !important;
   box-shadow: inset 0 -3px 0 var(--cuaderno-verde-medio);
@@ -1041,14 +953,35 @@
   color: #fff;
 }
 
+/* Defensa: el hint de la columna de relleno se recorta dentro de su celda
+   y nunca se desborda sobre la cabecera de la actividad contigua. */
+.cal-notas-grid__col-bim-espacio {
+  overflow: hidden;
+}
+
+.cal-notas-grid__col-bim-espacio .cal-notas-grid__hint-agregar {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* Dropdown gestión de actividades — restablecer en warning (portal fuera del wrap) */
-.cal-notas-grid__eval-menu-dropdown .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning,
-.cal-notas-grid__eval-menu-dropdown .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning .anticon {
+.cal-notas-grid__eval-menu-dropdown
+  .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning,
+.cal-notas-grid__eval-menu-dropdown
+  .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning
+  .anticon {
   color: var(--color-warning, #faad14) !important;
 }
 
-.cal-notas-grid__eval-menu-dropdown .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning:hover,
-.cal-notas-grid__eval-menu-dropdown .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning:hover .anticon {
+.cal-notas-grid__eval-menu-dropdown
+  .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning:hover,
+.cal-notas-grid__eval-menu-dropdown
+  .ant-dropdown-menu-item.cal-notas-grid__menu-item--warning:hover
+  .anticon {
   color: var(--color-warning-text-hover, #faad14) !important;
   background: #d97706 !important;
 }
@@ -1060,17 +993,17 @@
   opacity: 0.9;
 }
 
-.cal-notas-grid .ant-table-tbody>tr>td {
+.cal-notas-grid .ant-table-tbody > tr > td {
   padding: 8px 12px !important;
   border-bottom: 1px solid var(--cuaderno-borde-suave) !important;
   vertical-align: middle !important;
 }
 
-.cal-notas-grid .ant-table-tbody>tr:hover>td {
+.cal-notas-grid .ant-table-tbody > tr:hover > td {
   background: var(--cuaderno-fondo) !important;
 }
 
-.cal-notas-grid .ant-table-tbody>tr:last-child>td {
+.cal-notas-grid .ant-table-tbody > tr:last-child > td {
   border-bottom: none !important;
 }
 
@@ -1117,7 +1050,11 @@
   text-align: center;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper.cal-notas-grid--consolidado-style .ant-table-thead>tr>th.cal-notas-grid__col-add {
+.cal-notas-grid-wrap
+  .ant-table-wrapper.cal-notas-grid--consolidado-style
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-add {
   background: var(--cuaderno-verde-acento) !important;
   border-color: rgba(255, 255, 255, 0.2) !important;
   vertical-align: middle !important;
@@ -1145,7 +1082,8 @@
   opacity: 0.9;
 }
 
-.cal-notas-grid--consolidado-style .cal-notas-grid__add-header--clickable:hover {
+.cal-notas-grid--consolidado-style
+  .cal-notas-grid__add-header--clickable:hover {
   color: #fff;
   opacity: 1;
 }
@@ -1395,7 +1333,7 @@
 }
 
 /* —— Drawers calificaciones (Ant Design 6: rootClassName → .ant-drawer; className → .ant-drawer-section) —— */
-.ant-drawer.cal-ajustes-drawer>.ant-drawer-content-wrapper {
+.ant-drawer.cal-ajustes-drawer > .ant-drawer-content-wrapper {
   top: 0 !important;
   bottom: 0 !important;
   height: auto !important;
@@ -1444,13 +1382,15 @@
   border-color: var(--cuaderno-verde-acento) !important;
 }
 
-.ant-drawer.cal-ajustes-drawer .cal-eval-drawer__btn-eliminar.ant-btn-variant-outlined {
+.ant-drawer.cal-ajustes-drawer
+  .cal-eval-drawer__btn-eliminar.ant-btn-variant-outlined {
   color: #fecaca !important;
   border-color: #f87171 !important;
   background: var(--ant-color-error-active) !important;
 }
 
-.ant-drawer.cal-ajustes-drawer .cal-eval-drawer__btn-eliminar.ant-btn-variant-outlined:hover {
+.ant-drawer.cal-ajustes-drawer
+  .cal-eval-drawer__btn-eliminar.ant-btn-variant-outlined:hover {
   color: #fff !important;
   border-color: #ef4444 !important;
   background: var(--ant-color-error) !important;
@@ -1473,12 +1413,17 @@
 }
 
 .cal-eval-drawer__segmented .ant-segmented-item-selected {
-  background: var(--cuaderno-verde-oscuro, var(--color-primary, #196b45)) !important;
+  background: var(
+    --cuaderno-verde-oscuro,
+    var(--color-primary, #196b45)
+  ) !important;
   color: #fff !important;
   box-shadow: 0 2px 8px rgba(25, 107, 69, 0.28);
 }
 
-.cal-eval-drawer__segmented .ant-segmented-item-selected .ant-segmented-item-label {
+.cal-eval-drawer__segmented
+  .ant-segmented-item-selected
+  .ant-segmented-item-label {
   color: #fff !important;
 }
 
@@ -1496,13 +1441,16 @@
   width: 100%;
 }
 
-.cal-eval-drawer__puntos-compact .cal-eval-drawer__puntos-input.ant-input-number {
+.cal-eval-drawer__puntos-compact
+  .cal-eval-drawer__puntos-input.ant-input-number {
   flex: 1;
   width: 100%;
   min-width: 0;
 }
 
-.cal-eval-drawer__puntos-compact .cal-eval-drawer__puntos-input .ant-input-number-input {
+.cal-eval-drawer__puntos-compact
+  .cal-eval-drawer__puntos-input
+  .ant-input-number-input {
   width: 100%;
 }
 
@@ -1716,7 +1664,8 @@
   color: #fff !important;
 }
 
-.cal-notas-grid--consolidado-style .cal-notas-grid__add-header--clickable:hover:not(:disabled) {
+.cal-notas-grid--consolidado-style
+  .cal-notas-grid__add-header--clickable:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
   opacity: 1;
@@ -1761,7 +1710,7 @@
   }
 }
 
-.ant-table-container table>thead>tr:first-child>*:first-child {
+.ant-table-container table > thead > tr:first-child > *:first-child {
   border-start-start-radius: none !important;
 }
 
@@ -1804,8 +1753,8 @@
   background: var(--cal-ajustes-drawer-bg) !important;
 }
 
-.ant-drawer.cal-ajustes-drawer .ant-drawer-body>.cal-ajustes-drawer__form,
-.ant-drawer.cal-ajustes-drawer .ant-drawer-body>.cal-eval-drawer__form {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .cal-ajustes-drawer__form,
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .cal-eval-drawer__form {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
@@ -1816,8 +1765,8 @@
   border-top-color: #a8cfb8 !important;
 }
 
-.ant-drawer.cal-ajustes-drawer .ant-drawer-body>.ant-skeleton,
-.ant-drawer.cal-ajustes-drawer .ant-drawer-body>.ant-alert {
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .ant-skeleton,
+.ant-drawer.cal-ajustes-drawer .ant-drawer-body > .ant-alert {
   flex-shrink: 0;
 }
 
@@ -1887,7 +1836,9 @@
   color: rgba(255, 255, 255, 0.92) !important;
 }
 
-.ant-drawer.cal-ajustes-drawer .cal-politica-asistencia-radio .ant-form-item-control-input {
+.ant-drawer.cal-ajustes-drawer
+  .cal-politica-asistencia-radio
+  .ant-form-item-control-input {
   min-height: auto;
 }
 
@@ -2005,18 +1956,26 @@
   border: 1px solid var(--cuaderno-borde, #e5e7eb);
   background: #ffffff;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__override-card .cal-ajustes-seccion__header {
+.ant-drawer.cal-ajustes-drawer
+  .cal-ajustes-drawer__override-card
+  .cal-ajustes-seccion__header {
   margin-bottom: 10px;
 }
 
-.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__override-card .cal-ajustes-seccion__titulo {
+.ant-drawer.cal-ajustes-drawer
+  .cal-ajustes-drawer__override-card
+  .cal-ajustes-seccion__titulo {
   color: var(--cuaderno-texto-fuerte, #1f2937);
 }
 
-.ant-drawer.cal-ajustes-drawer .cal-ajustes-drawer__override-card .cal-ajustes-seccion__icon {
+.ant-drawer.cal-ajustes-drawer
+  .cal-ajustes-drawer__override-card
+  .cal-ajustes-seccion__icon {
   color: var(--cuaderno-verde-oscuro, #196b45);
 }
 
@@ -2025,7 +1984,10 @@
 }
 
 .cal-ajustes-drawer__switch.ant-switch {
-  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .cal-ajustes-drawer__cuota-row {
@@ -2142,7 +2104,7 @@
   padding: 5px 0;
 }
 
-.cal-ajustes-inst__fila+.cal-ajustes-inst__fila {
+.cal-ajustes-inst__fila + .cal-ajustes-inst__fila {
   border-top: 0.5px solid #eceef0;
 }
 
@@ -2292,11 +2254,21 @@
   white-space: nowrap;
 }
 
-.ant-table-wrapper .ant-table-container table>thead>tr:first-child>*:first-child {
+.ant-table-wrapper
+  .ant-table-container
+  table
+  > thead
+  > tr:first-child
+  > *:first-child {
   border-start-start-radius: none;
 }
 
-.ant-table-wrapper .ant-table-container table>thead>tr:first-child>*:last-child {
+.ant-table-wrapper
+  .ant-table-container
+  table
+  > thead
+  > tr:first-child
+  > *:last-child {
   border-start-end-radius: none;
 }
 
@@ -2370,16 +2342,28 @@
   font-size: 13px;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th {
   text-align: center;
   white-space: nowrap;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr:first-child>th.cal-consolidado-grid__th-bim--pendiente {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr:first-child
+  > th.cal-consolidado-grid__th-bim--pendiente {
   border-bottom: 1px solid var(--text-400) !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__th-est {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-est {
   font-size: 15px;
   font-weight: 500;
   padding: 8px 6px !important;
@@ -2387,7 +2371,11 @@
   color: #fff !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__th-sub-est {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-sub-est {
   font-size: 13px;
   font-weight: 500;
   padding: 6px 8px !important;
@@ -2395,23 +2383,39 @@
   color: #fff !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__th-bim {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-bim {
   padding: 0 !important;
   vertical-align: top !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__th-bim--cerrado {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-bim--cerrado {
   background: var(--cuaderno-verde-medio) !important;
   color: #fff !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__th-bim--en_curso {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-bim--en_curso {
   background: var(--cuaderno-verde-acento) !important;
   color: #fff !important;
   box-shadow: inset 0 0 0 2px var(--cuaderno-verde-medio);
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__th-bim--pendiente {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__th-bim--pendiente {
   background: var(--cuaderno-verde-tenue) !important;
   color: var(--cuaderno-verde-acento) !important;
 }
@@ -2462,12 +2466,14 @@
   font-weight: 600;
 }
 
-.cal-consolidado-grid__bim-head--cerrado .cal-consolidado-grid__bim-icon-estado {
+.cal-consolidado-grid__bim-head--cerrado
+  .cal-consolidado-grid__bim-icon-estado {
   font-size: 14px;
   color: #fff;
 }
 
-.cal-consolidado-grid__bim-head--pendiente .cal-consolidado-grid__bim-icon-estado {
+.cal-consolidado-grid__bim-head--pendiente
+  .cal-consolidado-grid__bim-icon-estado {
   font-size: 14px;
   color: var(--cuaderno-verde-acento);
 }
@@ -2556,41 +2562,74 @@
   cursor: not-allowed !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr:last-child>th.cal-consolidado-grid__th-sub--cerrado {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr:last-child
+  > th.cal-consolidado-grid__th-sub--cerrado {
   background: var(--cuaderno-verde-acento) !important;
   color: #fff !important;
   font-weight: 500;
   padding: 6px 4px !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr:last-child>th.cal-consolidado-grid__th-sub--en_curso {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr:last-child
+  > th.cal-consolidado-grid__th-sub--en_curso {
   background: var(--cuaderno-verde-oscuro) !important;
   color: #fff !important;
   font-weight: 600;
   padding: 6px 4px !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr:last-child>th.cal-consolidado-grid__th-sub--pendiente {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr:last-child
+  > th.cal-consolidado-grid__th-sub--pendiente {
   background: var(--cuaderno-verde-tenue) !important;
   color: var(--cuaderno-verde-acento) !important;
   padding: 6px 4px !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td {
   border-right: 1px solid var(--text-400) !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__col-bim-pendiente {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__col-bim-pendiente {
   opacity: 0.85;
   border-right: 1px solid var(--text-400) !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__celda-activa {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__celda-activa {
   background: var(--cuaderno-verde-tenue) !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-suma--activa,
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-suma--activa .cal-consolidado-grid__nota {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-suma--activa,
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-suma--activa
+  .cal-consolidado-grid__nota {
   color: var(--cuaderno-verde-acento) !important;
   font-weight: 600;
 }
@@ -2668,17 +2707,33 @@
   overflow: hidden;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td {
   padding: 6px 8px !important;
   vertical-align: middle;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr:nth-child(even)>td:not(.cal-consolidado-grid__celda-activa) {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td:not(.cal-consolidado-grid__celda-activa) {
   background: #fafafa;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-thead>tr>th.cal-consolidado-grid__col-estudiante,
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-estudiante {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-thead
+  > tr
+  > th.cal-consolidado-grid__col-estudiante,
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-estudiante {
   width: 300px !important;
   min-width: 260px !important;
   max-width: 320px !important;
@@ -2688,33 +2743,61 @@
   text-overflow: clip !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-estudiante .ant-table-cell-content {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-estudiante
+  .ant-table-cell-content {
   overflow: visible !important;
   white-space: normal !important;
   text-overflow: clip !important;
 }
 
-.cal-consolidado-grid-wrap .ant-table-wrapper.cal-consolidado-grid .ant-table-tbody>tr>td.cal-consolidado-grid__col-estudiante .cal-celda-estudiante {
+.cal-consolidado-grid-wrap
+  .ant-table-wrapper.cal-consolidado-grid
+  .ant-table-tbody
+  > tr
+  > td.cal-consolidado-grid__col-estudiante
+  .cal-celda-estudiante {
   width: 100%;
   min-width: 0;
 }
 
 /* Celda estudiante — cuaderno y consolidado bimestre (misma columna que NotasGrid) */
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-thead>tr>th.cal-notas-grid__col-estudiante,
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-estudiante {
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th.cal-notas-grid__col-estudiante,
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-estudiante {
   white-space: normal !important;
   overflow: visible !important;
   text-overflow: clip !important;
   vertical-align: middle !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-estudiante .ant-table-cell-content {
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-estudiante
+  .ant-table-cell-content {
   overflow: visible !important;
   white-space: normal !important;
   text-overflow: clip !important;
 }
 
-.cal-notas-grid-wrap .ant-table-wrapper .ant-table-tbody>tr>td.cal-notas-grid__col-estudiante .cal-celda-estudiante {
+.cal-notas-grid-wrap
+  .ant-table-wrapper
+  .ant-table-tbody
+  > tr
+  > td.cal-notas-grid__col-estudiante
+  .cal-celda-estudiante {
   width: 100%;
   min-width: 0;
 }
@@ -2875,7 +2958,7 @@
   color: var(--cuaderno-texto-medio);
 }
 
-.cal-preview-drawer__table .ant-table-thead>tr>th {
+.cal-preview-drawer__table .ant-table-thead > tr > th {
   background: var(--cuaderno-verde-tenue) !important;
   color: var(--cuaderno-verde-oscuro);
   font-weight: 600;

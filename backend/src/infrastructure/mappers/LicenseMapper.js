@@ -19,7 +19,6 @@ export class LicenseMapper {
         if ('motivo' in dataValues) specificFields.reason = dataValues.motivo;
         if ('detalleMotivo' in dataValues) specificFields.reasonDetail = dataValues.detalleMotivo;
         if ('estado' in dataValues) specificFields.state = dataValues.estado;
-        if ('motivoRechazo' in dataValues) specificFields.rejectionReason = dataValues.motivoRechazo;
         if ('observacionesDecision' in dataValues) {
             specificFields.decisionObservations = dataValues.observacionesDecision;
         }
@@ -39,7 +38,6 @@ export class LicenseMapper {
             motivo: data.reason,
             detalleMotivo: data.reasonDetail,
             estado: data.state ?? 'PENDIENTE',
-            motivoRechazo: data.rejectionReason ?? null,
             observacionesDecision: data.decisionObservations ?? null,
         };
     }
@@ -56,7 +54,6 @@ export class LicenseMapper {
         if ('reason' in data) updateData.motivo = data.reason;
         if ('reasonDetail' in data) updateData.detalleMotivo = data.reasonDetail;
         if ('state' in data) updateData.estado = data.state;
-        if ('rejectionReason' in data) updateData.motivoRechazo = data.rejectionReason ?? null;
         if ('decisionObservations' in data) {
             updateData.observacionesDecision = data.decisionObservations ?? null;
         }

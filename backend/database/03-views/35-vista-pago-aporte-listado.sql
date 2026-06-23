@@ -35,6 +35,8 @@ SELECT
   v.estudiante_apellido_materno,
   v.gestion_nombre,
   v.gestion_anio,
+  v.beca_nombre,
+  v.beca_porcentaje,
   -- Agregación de cuotas
   COALESCE(c.total_pagado, 0) AS total_pagado,
   COALESCE(c.cantidad_pagos, 0) AS cantidad_pagos,

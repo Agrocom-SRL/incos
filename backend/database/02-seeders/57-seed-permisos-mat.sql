@@ -165,14 +165,15 @@ FROM (
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;
 
--- 3b) SEC_ACADEMICA · acceso COMPLETO al módulo MAT (todas las acciones de cada permiso)
---     Cubre admisión, matrícula, aportes (registrar/editar/anular), becas
---     (asignar/aprobar), documentos y pasantías. Se genera desde permiso_acciones
---     para garantizar "todo el módulo" sin perder acciones nuevas a futuro.
+-- 3b) SEC_ACADEMICA · matriculación completa (todas las acciones de cada permiso)
+--     Solo los grupos de matriculación: admisión, matrículas, aportes
+--     (registrar/editar/anular) y becas (asignar/aprobar). NO incluye Documentos
+--     ni Pasantías estudiantiles. Se genera desde permiso_acciones para no perder
+--     acciones nuevas que se agreguen a estos grupos.
 INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo, created_at, updated_at)
 SELECT r.id, pa.permiso_id, pa.accion, 1, NOW(), NOW()
 FROM roles r
-JOIN permisos p           ON p.modulo = 'MAT'
+JOIN permisos p           ON p.grupo_ui IN ('mat_admision', 'mat_inscripcion', 'mat_aportes', 'mat_becas')
 JOIN permiso_acciones pa  ON pa.permiso_id = p.id
 WHERE r.codigo = 'SEC_ACADEMICA';
 

@@ -258,6 +258,28 @@ export const ASISTENCIA_ENDPOINTS = {
   MIS_CURSOS: `${API_BASE}/asistencia/mis-cursos`,
   COORDINACION_DOCENTE_CURSOS: (docenteId) =>
     `${API_BASE}/asistencia/coordinacion/docentes/${docenteId}/cursos`,
+  // Toma de asistencia (modelo sesiones_clase)
+  CALENDARIO: (asignacionId) => `${API_BASE}/asistencia/cursos/${asignacionId}/calendario`,
+  PLANILLA: (asignacionId) => `${API_BASE}/asistencia/cursos/${asignacionId}/planilla`,
+  REGISTRO_CERRAR: (asignacionId) =>
+    `${API_BASE}/asistencia/cursos/${asignacionId}/registro/cerrar`,
+  REGISTRO_REABRIR: (asignacionId) =>
+    `${API_BASE}/asistencia/cursos/${asignacionId}/registro/reabrir`,
+  SESIONES_ESPECIALES: (asignacionId) =>
+    `${API_BASE}/asistencia/cursos/${asignacionId}/sesiones-especiales`,
+  SESION_ESPECIAL_ELIMINAR: (asignacionId, fecha) =>
+    `${API_BASE}/asistencia/cursos/${asignacionId}/sesiones-especiales/${fecha}`,
+  // Licencias estudiantiles (página dentro de Asistencia · ACA-ASI-LIC)
+  LICENCIAS: `${API_BASE}/asistencia/licencias`,
+  LICENCIA_BY_ID: (id) => `${API_BASE}/asistencia/licencias/${id}`,
+  /** PUT — editar una licencia PENDIENTE (motivo, detalle, rango). */
+  LICENCIA_UPDATE: (id) => `${API_BASE}/asistencia/licencias/${id}`,
+  LICENCIA_DECISION: (id) => `${API_BASE}/asistencia/licencias/${id}/decision`,
+  /** PUT — cancelar una licencia PENDIENTE o APROBADA. */
+  LICENCIA_CANCEL: (id) => `${API_BASE}/asistencia/licencias/${id}/cancel`,
+  /** Inscripción vigente del estudiante (resuelve estudiante → inscripcionId para la solicitud). */
+  LICENCIA_INSCRIPCION_VIGENTE: (estudianteId) =>
+    `${API_BASE}/asistencia/licencias/inscripcion-vigente?estudianteId=${estudianteId}`,
 };
 
 export const CALIFICACIONES_ENDPOINTS = {
@@ -297,6 +319,10 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/cuaderno/${bimestre}/guardar`,
   BIMESTRE_CONSOLIDADO: (asignacionId, bimestre) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/consolidado`,
+  BIMESTRE_REABRIR: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/reabrir`,
+  BIMESTRE_CERRAR: (asignacionId, bimestre) =>
+    `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/cerrar`,
   EXPORT_REGISTRO_PEDAGOGICO: (asignacionId, bimestre) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/export/registro-pedagogico`,
 };
@@ -349,6 +375,20 @@ export const PAGOS_APORTES_ENDPOINTS = {
   // Endpoint específico para generar/obtener recibo de pago
   GENERATE_RECIBO: (paymentId) => `${API_BASE}/pagos-aportes/${encodeURIComponent(String(paymentId))}/recibo`,
   EXPORT_LISTA_POR_CARRERA: `${API_BASE}/pagos-aportes/export/lista-por-carrera`,
+  // Reporte read-only: planilla de control de becas por carrera (query gestion_id opcional)
+  REPORTE_BECAS_POR_CARRERA: `${API_BASE}/pagos-aportes/reportes/becas-por-carrera`,
+  // Exportación Excel de la planilla de becas por carrera (blob xlsx, gestion_id opcional)
+  EXPORT_REPORTE_BECAS_POR_CARRERA: `${API_BASE}/pagos-aportes/reportes/becas-por-carrera/export`,
+  // Reporte read-only: planilla de cuentas por cobrar por carrera y paralelo (query gestion_id opcional)
+  REPORTE_CUENTAS_POR_COBRAR: `${API_BASE}/pagos-aportes/reportes/cuentas-por-cobrar`,
+  // Exportación Excel de la planilla de cuentas por cobrar (blob xlsx, gestion_id opcional)
+  EXPORT_REPORTE_CUENTAS_POR_COBRAR: `${API_BASE}/pagos-aportes/reportes/cuentas-por-cobrar/export`,
+  // Compromiso de pago VIGENTE de una cabecera de aporte (GET vigente / POST upsert)
+  COMPROMISO_BY_PAGO: (pagoAporteId) =>
+    `${API_BASE}/pagos-aportes/${encodeURIComponent(String(pagoAporteId))}/compromiso`,
+  // Compromiso de pago por su id (PUT actualizar / DELETE anular)
+  COMPROMISO_BY_ID: (id) =>
+    `${API_BASE}/pagos-aportes/compromiso/${encodeURIComponent(String(id))}`,
 };
 
 // ============================================

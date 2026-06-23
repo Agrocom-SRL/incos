@@ -16,14 +16,23 @@
  */
 
 import { ConfigProvider, App as AntApp } from 'antd';
+import esES from 'antd/locale/es_ES';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import { initStyles } from '@theme/init';
 import AppRouter from '@components-router/AppRouter';
+
+// Locale global en español: AntD (textos de DatePicker/Today/etc.) + dayjs (nombres de
+// días y meses de TODOS los DatePicker). Antes solo se fijaba dentro de un hook del
+// dashboard, así que el idioma dependía del orden de carga de módulos.
+dayjs.locale('es');
+
 // Inicializar sistema de estilos (tema + variables CSS + estilos)
 const incosTheme = initStyles();
 
 const App = () => {
     return (
-        <ConfigProvider theme={incosTheme}>
+        <ConfigProvider theme={incosTheme} locale={esES}>
             <AntApp>
                 <AppRouter />
             </AntApp>

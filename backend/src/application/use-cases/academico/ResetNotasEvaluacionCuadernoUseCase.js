@@ -45,8 +45,14 @@ export class ResetNotasEvaluacionCuadernoUseCase {
       asignacionId,
     });
 
-    if (bimestreNum !== bimestreVigente) {
-      throw new ForbiddenError('Solo podés restablecer notas del bimestre vigente.');
+    const reabierto =
+      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+        Number(asignacionId),
+        bimestreNum,
+      )) > 0;
+
+    if (bimestreNum !== bimestreVigente && !reabierto) {
+      throw new ForbiddenError('Solo podés restablecer notas del bimestre vigente o reabierto.');
     }
 
     const existente = await this.cuadernoRepository.obtenerEvaluacionDeAsignacion(
@@ -56,7 +62,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
     if (!existente) {
       throw new NotFoundError('Evaluación');
     }
-    if (existente.notas_cerradas) {
+    if (existente.notas_cerradas && !reabierto) {
       throw new ForbiddenError('Las notas de esta evaluación están cerradas.');
     }
 

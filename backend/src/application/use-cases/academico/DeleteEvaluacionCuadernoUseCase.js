@@ -46,8 +46,14 @@ export class DeleteEvaluacionCuadernoUseCase {
       asignacionId,
     });
 
-    if (bimestreNum !== bimestreVigente) {
-      throw new ForbiddenError('Solo podés eliminar evaluaciones del bimestre vigente.');
+    const reabierto =
+      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+        Number(asignacionId),
+        bimestreNum,
+      )) > 0;
+
+    if (bimestreNum !== bimestreVigente && !reabierto) {
+      throw new ForbiddenError('Solo podés eliminar evaluaciones del bimestre vigente o reabierto.');
     }
 
     const existente = await this.cuadernoRepository.obtenerEvaluacionDeAsignacion(
@@ -57,7 +63,7 @@ export class DeleteEvaluacionCuadernoUseCase {
     if (!existente) {
       throw new NotFoundError('Evaluación');
     }
-    if (existente.notas_cerradas) {
+    if (existente.notas_cerradas && !reabierto) {
       throw new ForbiddenError('Esta evaluación está cerrada y no se puede eliminar.');
     }
 

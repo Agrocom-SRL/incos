@@ -52,7 +52,6 @@
 --      │      ├── nota_teorico   (componente oficial, ≤ cuota teórica)
 --      │      ├── nota_practico  (componente oficial, ≤ cuota práctica)
 --      │      ├── nota_bimestre  = nota_teorico + nota_practico
---      │      ├── habilitacion_teorico / habilitacion_practico (si reprobó un componente)
 --      │      │
 --      │      └── evaluaciones_notas (N celdas, una por evaluación con nota cargada)
 --      │             └── evaluacion_id → evaluaciones (columna del cuaderno)
@@ -89,9 +88,7 @@
 --   - nota_teorico / nota_practico = SUMA de puntos obtenidos por actividad del componente
 --   - nota_bimestre = nota_teorico + nota_practico (≤ 100 puntos)
 --
--- HABILITACIÓN vs RECUPERATORIO:
---   - Habilitación bimestral por componente: habilitacion_teorico / habilitacion_practico
---     en bimestres_matricula. Reemplazan nota_teorico / nota_practico al recalcular nota_bimestre.
+-- RECUPERATORIO Y NIVELACIONES:
 --   - Recuperatorio anual y nivelaciones: tabla nivelaciones (16-nivelaciones.sql).
 --
 -- RESTRICCIONES DE DISEÑO:
@@ -242,10 +239,10 @@ COMMENT='Configuración global de evaluación por gestión (clave-valor). Polít
 --   - nota_practico: suma de puntos obtenidos en actividades PRACTICO (máx. cuota_practico, ej. 70)
 --   - nota_bimestre: nota_teorico + nota_practico (≤ 100)
 --
--- HABILITACIÓN BIMESTRAL (por componente):
---   Si el estudiante reprueba teórico o práctico, rinde habilitación de ese sector.
---   habilitacion_teorico / habilitacion_practico reemplazan el componente al cerrar el bimestre.
---   nota_bimestre = componente_efectivo_teorico + componente_efectivo_practico (≤ 100).
+-- REAPERTURA ADMINISTRATIVA:
+--   Un bimestre cerrado por calendario puede reabrirse (estado = REABIERTO) para que el
+--   docente vuelva a editar el cuaderno; al consolidar vuelve a CERRADO. El ajuste de notas
+--   se hace en el cuaderno, no por carga administrativa directa de componentes.
 --
 -- ESTADO Y CIERRE:
 --   Los bimestres se cierran formalmente en el Consejo de Docentes. Una vez
@@ -268,17 +265,9 @@ CREATE TABLE bimestres_matricula (
     nota_bimestre DECIMAL(5,2) NULL 
         COMMENT 'Nota cerrada del bimestre (0-100). Suma de nota_teorico + nota_practico',
 
-    -- Habilitación bimestral por componente (reemplaza nota_teorico / nota_practico)
-    habilitacion_teorico DECIMAL(5,2) NULL 
-        COMMENT 'Puntos de habilitación teórica (0..cuota_teorico). Reemplaza nota_teorico si aprueba',
-    habilitacion_practico DECIMAL(5,2) NULL 
-        COMMENT 'Puntos de habilitación práctica (0..cuota_practico). Reemplaza nota_practico si aprueba',
-    fecha_habilitacion DATE NULL 
-        COMMENT 'Fecha del primer acto administrativo de habilitación (teórico y/o práctico)',
-
     -- Estado y cierre
-    estado ENUM('PENDIENTE', 'EN_CURSO', 'CERRADO') DEFAULT 'PENDIENTE' 
-        COMMENT 'PENDIENTE (no iniciado), EN_CURSO (evaluaciones en proceso), CERRADO (firmado en Consejo de Docentes)',
+    estado ENUM('PENDIENTE', 'EN_CURSO', 'CERRADO', 'REABIERTO') DEFAULT 'PENDIENTE'
+        COMMENT 'PENDIENTE (no iniciado), EN_CURSO (evaluaciones en proceso), CERRADO (consolidado), REABIERTO (reabierto administrativamente para editar el cuaderno de un bimestre ya cerrado por calendario)',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -302,7 +291,7 @@ CREATE TABLE bimestres_matricula (
         COMMENT 'Búsqueda del bimestre operativo específico de una matrícula'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Bimestre operativo de una matrícula. Contiene los componentes oficiales TEORICO + PRACTICO del boletín y la habilitación bimestral. Padre de evaluaciones_notas del estudiante en ese bimestre.';
+COMMENT='Bimestre operativo de una matrícula. Contiene los componentes oficiales TEORICO + PRACTICO del boletín. Padre de evaluaciones_notas del estudiante en ese bimestre.';
 
 -- ============================================
 -- TABLA: evaluaciones

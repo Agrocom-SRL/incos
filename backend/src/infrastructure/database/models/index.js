@@ -117,6 +117,7 @@ export { Nivelacion } from './nivelacion.js';
 export { Licencia } from './licencia.js';
 export { ClaseNoDictada } from './clase_no_dictada.js';
 export { Asistencia } from './asistencia.js';
+export { SesionClase } from './sesion_clase.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
@@ -127,6 +128,7 @@ export { BancoAutorizado } from './banco_autorizado.js';
 export { CuentaPago } from './cuenta_pago.js';
 export { PagoAporte } from './pago_aporte.js';
 export { PagoCuotas } from './pago_cuotas.js';
+export { CompromisoPago } from './compromiso_pago.js';
 
 // ============================================
 // CONFIGURACIÓN DEL SISTEMA

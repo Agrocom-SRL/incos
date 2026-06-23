@@ -35,6 +35,8 @@ import { DeclaracionJuradaPdfGenerator } from '../../external/pdf/DeclaracionJur
 import { ReciboPagoPdfGenerator } from '../../external/pdf/ReciboPagoPdfGenerator.js';
 import { PDFGenerator } from '../../external/pdf/PDFGenerator.js';
 import { RegistroPedagogicoExcelBuilder } from '../../external/excel/RegistroPedagogicoExcelBuilder.js';
+import { BecasReporteExcelBuilder } from '../../external/excel/finanzas-reportes/BecasReporteExcelBuilder.js';
+import { CuentasPorCobrarExcelBuilder } from '../../external/excel/finanzas-reportes/CuentasPorCobrarExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
 export function registerServicesModule(container) {
@@ -125,6 +127,16 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.registroPedagogicoExcelGenerator,
         () => new RegistroPedagogicoExcelBuilder()
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.becasReporteExcelGenerator,
+        () => new BecasReporteExcelBuilder()
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.cuentasPorCobrarReporteExcelGenerator,
+        () => new CuentasPorCobrarExcelBuilder()
     );
 
     // ============================================
