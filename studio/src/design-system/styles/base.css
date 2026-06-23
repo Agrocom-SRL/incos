@@ -18,6 +18,19 @@
   box-sizing: border-box;
 }
 
+/* Cambio de tema sin "flash": muchos componentes (sobre todo de AntD: inputs,
+   header de tabla, columna fija, ítems del sidebar) traen `transition: all`, así
+   que al cambiar las variables de color su background se ANIMA ~200ms y se ve como
+   si se quedaran con el color anterior. Mientras ThemeProvider marca
+   <html data-theme-switching>, anulamos TODA transición para que todos los
+   componentes salten al nuevo tema en el mismo frame. Se reactiva en el rAF
+   siguiente, sin afectar las transiciones normales (hover, focus, etc.). */
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after {
+  transition: none !important;
+}
+
 html,
 body,
 #root {

@@ -139,20 +139,14 @@
 }
 
 /* Columna de acciones SIEMPRE visible al borde derecho. AntD marca la columna
-   `fixed:'right'` con `.ant-table-cell-fix-right`; la anclamos sticky para que el
-   ⋮ quede pegado a la derecha y por encima de las columnas de datos aunque la
-   suma de anchos roce el wrapper (la red de seguridad de overflow-x:hidden no la
-   recorta). Fondo opaco heredado del surface para que las celdas de datos no se
-   transparenten por debajo al solaparse. */
+   `fixed:'right'` con `.ant-table-cell-fix-right` y le aplica su propio fondo
+   opaco (token de Table, alineado a --surface en buildAntdTheme) además del
+   anclaje sticky. NO fijamos aquí el `background`: dejándolo a AntD, la celda fija
+   sigue el estado de la fila (reposo / hover / seleccionada) en lugar de quedar
+   congelada en un color que en dark se veía "como seleccionado". Solo reforzamos
+   el z-index para que el ⋮ quede por encima de las columnas de datos. */
 .mat-table .ant-table-cell-fix-right {
-  position: sticky;
-  right: 0;
   z-index: 2;
-  background: var(--surface);
-}
-
-.mat-table .ant-table-thead > tr > th.ant-table-cell-fix-right {
-  background: var(--surface-alt);
 }
 
 .mat-table .ant-table-thead > tr > th {
