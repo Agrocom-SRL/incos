@@ -1,8 +1,10 @@
-import { ForbiddenError, ValidationError } from '../../../domain/errors/AppError.js';
+import { ValidationError } from '../../../domain/errors/AppError.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
+import { assertBimestreEditable } from '../../utils/assertBimestreEditable.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { persistirNotaCuadernoCelda } from '../../utils/persistirNotaCuadernoCelda.js';
 import { recalcularNotasBimestreCurso } from '../../utils/recalcularNotasBimestreCurso.js';
+import { recalcularNotasAsistenciaCurso } from '../../utils/recalcularNotasAsistenciaCurso.js';
 import { recalcularNotaFinalMatriculaCurso } from '../../utils/recalcularNotaFinalMatriculaCurso.js';
 
 /**
@@ -16,11 +18,12 @@ export class GuardarNotasCuadernoBimestreUseCase {
     subjectEnrollmentRepository,
     subjectEnrollmentBimesterRepository,
     bimesterEvaluationGradeRepository,
+    asistenciaPlanillaViewRepository,
     evaluationConfigurationRepository,
     teacherRepository,
     userRepository,
     authRepository,
-    logger,
+    logger
   }) {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
@@ -28,6 +31,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
     this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
+    this.asistenciaPlanillaViewRepository = asistenciaPlanillaViewRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
@@ -43,32 +47,29 @@ export class GuardarNotasCuadernoBimestreUseCase {
 
     const notasEntrada = Array.isArray(body?.notas) ? body.notas : [];
 
-    const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
+    const { gestionId } = await assertCuadernoCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
-      asignacionId,
+      asignacionId
     });
 
-    const reabierto =
-      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
-        Number(asignacionId),
-        bimestreNum,
-      )) > 0;
-
-    if (bimestreNum !== bimestreVigente && !reabierto) {
-      throw new ForbiddenError(
-        'Solo podés guardar notas en el bimestre vigente o en un bimestre reabierto.',
-      );
-    }
+    // Compuerta por ESTADO del bimestre (EN_CURSO o REABIERTO), no por fecha vigente.
+    const { reabierto } = await assertBimestreEditable({
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+      gestionId,
+      asignacionId,
+      bimestreNum
+    });
 
     await this.subjectEnrollmentBimesterRepository.asegurarBimestresMatriculaCurso(
       Number(asignacionId),
-      bimestreVigente,
-      usuarioId,
+      bimestreNum,
+      usuarioId
     );
 
     const guardadas = [];
@@ -93,7 +94,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
         evaluacionId,
         notaRaw: item?.nota,
         usuarioId,
-        reabierto,
+        reabierto
       });
       guardadas.push(dto);
     }
@@ -101,7 +102,20 @@ export class GuardarNotasCuadernoBimestreUseCase {
     const { cuotaTeorico, cuotaPractico, pesosBimestres } = await cargarCuotasPoliticaGestion({
       calificacionContextoRepository: this.calificacionContextoRepository,
       evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+      gestionId
+    });
+
+    // Antes de sumar el práctico, recalcular las celdas de la(s) columna(s) ASISTENCIA:
+    // su nota proporcional pondera dentro de la cuota práctica como cualquier columna.
+    const recalculoAsistencia = await recalcularNotasAsistenciaCurso({
+      cuadernoRepository: this.cuadernoRepository,
+      asistenciaPlanillaViewRepository: this.asistenciaPlanillaViewRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+      bimesterEvaluationGradeRepository: this.bimesterEvaluationGradeRepository,
+      asignacionId: Number(asignacionId),
       gestionId,
+      bimestreNumero: bimestreNum,
+      usuarioId
     });
 
     const recalculoBimestre = await recalcularNotasBimestreCurso({
@@ -111,7 +125,7 @@ export class GuardarNotasCuadernoBimestreUseCase {
       bimestreNumero: bimestreNum,
       cuotaTeorico,
       cuotaPractico,
-      usuarioId,
+      usuarioId
     });
 
     const recalculoFinal = await recalcularNotaFinalMatriculaCurso({
@@ -119,22 +133,24 @@ export class GuardarNotasCuadernoBimestreUseCase {
       subjectEnrollmentRepository: this.subjectEnrollmentRepository,
       asignacionId: Number(asignacionId),
       pesosBimestres,
-      usuarioId,
+      usuarioId
     });
 
     this.logger.info('[Calificaciones] Cuaderno guardado y recalculado', {
       asignacionId,
       bimestre: bimestreNum,
       notasGuardadas: guardadas.length,
+      ...recalculoAsistencia,
       ...recalculoBimestre,
-      ...recalculoFinal,
+      ...recalculoFinal
     });
 
     return {
       notas: guardadas,
       notasGuardadas: guardadas.length,
+      ...recalculoAsistencia,
       ...recalculoBimestre,
-      ...recalculoFinal,
+      ...recalculoFinal
     };
   }
 }

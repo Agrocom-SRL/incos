@@ -23,4 +23,19 @@ export class IAsistenciaPlanillaViewRepository {
   async listarRoster(_asignacionDocenteId) {
     throw new Error('Method listarRoster() must be implemented');
   }
+
+  /**
+   * Agregado de asistencia del bimestre por estudiante: sesiones tomadas (denominador)
+   * y faltas no neutralizadas. Insumo del % de asistencia.
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarAsistenciaBimestreCurso(
+    _asignacionDocenteId,
+    _periodoAcademicoId,
+    _gestionId,
+    _desde,
+    _hasta
+  ) {
+    throw new Error('Method listarAsistenciaBimestreCurso() must be implemented');
+  }
 }

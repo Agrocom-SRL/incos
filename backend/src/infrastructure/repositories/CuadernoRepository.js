@@ -24,8 +24,8 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [gestionId, bimestreNumero],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
     return rows[0]?.id != null ? Number(rows[0].id) : null;
   }
@@ -55,8 +55,8 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [asignacionId, periodoAcademicoId],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
   }
 
@@ -77,8 +77,8 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [asignacionId, bimestreNumero],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
   }
 
@@ -108,8 +108,8 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [evaluacionId, asignacionId],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
     return rows[0] ?? null;
   }
@@ -142,15 +142,61 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [asignacionId, bimestreNumero],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
 
     return rows.map((r) => ({
       bimestreMatriculaId: Number(r.bimestre_matricula_id),
       componente: r.componente,
       puntos: r.puntos != null ? Number(r.puntos) : null,
-      nota: r.nota != null ? Number(r.nota) : null,
+      nota: r.nota != null ? Number(r.nota) : null
+    }));
+  }
+
+  /**
+   * Columnas tipo ASISTENCIA del curso en un bimestre (las calcula el sistema).
+   * Cruza tipos_evaluacion por código y la vista de periodos para el rango de fechas
+   * del bimestre (denominador del % de asistencia).
+   *
+   * @param {number} asignacionId
+   * @param {number} gestionId
+   * @param {number} bimestreNumero 1-4
+   * @returns {Promise<Array<{ evaluacion_id:number, puntos:number, periodo_academico_id:number, fecha_inicio:string, fecha_fin:string }>>}
+   */
+  async listarColumnasAsistenciaBimestre(asignacionId, gestionId, bimestreNumero) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        e.id            AS evaluacion_id,
+        e.puntos        AS puntos,
+        e.periodo_academico_id,
+        pb.fecha_inicio,
+        pb.fecha_fin
+      FROM evaluaciones e
+      INNER JOIN tipos_evaluacion te
+        ON te.id = e.tipo_evaluacion_id
+        AND te.codigo = 'ASISTENCIA'
+      INNER JOIN vista_base_calificacion_periodos_bimestre pb
+        ON pb.periodo_academico_id = e.periodo_academico_id
+        AND pb.gestion_id = ?
+        AND pb.numero_orden = ?
+      WHERE e.asignacion_docente_id = ?
+        AND e.deleted_at IS NULL
+        AND e.activo = TRUE
+      ORDER BY e.id ASC
+      `,
+      {
+        replacements: [gestionId, bimestreNumero, asignacionId],
+        type: sequelize.QueryTypes.SELECT
+      }
+    );
+    return rows.map((r) => ({
+      evaluacionId: Number(r.evaluacion_id),
+      puntos: r.puntos != null ? Number(r.puntos) : null,
+      periodoAcademicoId: Number(r.periodo_academico_id),
+      fechaInicio: r.fecha_inicio,
+      fechaFin: r.fecha_fin
     }));
   }
 
@@ -185,8 +231,8 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [asignacionId],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
   }
 
@@ -213,8 +259,8 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [bimestreNumero, asignacionId],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
   }
 
@@ -231,8 +277,8 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [asignacionId, bimestreNumero],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
   }
 
@@ -250,8 +296,8 @@ export class CuadernoRepository extends ICuadernoRepository {
       `,
       {
         replacements: [asignacionId],
-        type: sequelize.QueryTypes.SELECT,
-      },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
   }
 }

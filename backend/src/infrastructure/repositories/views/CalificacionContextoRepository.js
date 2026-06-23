@@ -25,7 +25,7 @@ export class CalificacionContextoRepository extends ICalificacionContextoReposit
       FROM vista_calificacion_contexto_vigente v
       INNER JOIN gestiones g ON g.id = v.gestion_id AND g.deleted_at IS NULL
       `,
-      { type: sequelize.QueryTypes.SELECT },
+      { type: sequelize.QueryTypes.SELECT }
     );
     return rows[0] ?? null;
   }
@@ -47,7 +47,7 @@ export class CalificacionContextoRepository extends ICalificacionContextoReposit
       WHERE gestion_id = ?
       ORDER BY numero_orden ASC
       `,
-      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT }
     );
   }
 
@@ -66,8 +66,28 @@ export class CalificacionContextoRepository extends ICalificacionContextoReposit
       ORDER BY g.anio DESC, g.id DESC
       LIMIT 1
       `,
-      { replacements: [gestionAnio], type: sequelize.QueryTypes.SELECT },
+      { replacements: [gestionAnio], type: sequelize.QueryTypes.SELECT }
     );
     return rows[0] ?? null;
+  }
+
+  /**
+   * Estado institucional agregado del bimestre (vista 114): PENDIENTE / EN_CURSO / CERRADO.
+   * @param {number} gestionId
+   * @param {number} bimestreNumero 1-4
+   * @returns {Promise<string|null>}
+   */
+  async obtenerEstadoInstitucionalBimestre(gestionId, bimestreNumero) {
+    const rows = await sequelize.query(
+      `
+      SELECT estado_institucional
+      FROM vista_base_gestion_bimestre_estado_institucional
+      WHERE gestion_id = ?
+        AND bimestre = ?
+      LIMIT 1
+      `,
+      { replacements: [gestionId, bimestreNumero], type: sequelize.QueryTypes.SELECT }
+    );
+    return rows[0]?.estado_institucional ?? null;
   }
 }

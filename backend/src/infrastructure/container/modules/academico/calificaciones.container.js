@@ -750,6 +750,9 @@ export function registerCalificacionesResource(container) {
         bimesterEvaluationGradeRepository: c.resolve(
           REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository
         ),
+        asistenciaPlanillaViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository
+        ),
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository
         ),
@@ -818,6 +821,12 @@ export function registerCalificacionesResource(container) {
         subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
         subjectEnrollmentBimesterRepository: c.resolve(
           REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository
+        ),
+        bimesterEvaluationGradeRepository: c.resolve(
+          REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository
+        ),
+        asistenciaPlanillaViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository
         ),
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository

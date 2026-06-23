@@ -40,6 +40,11 @@ INSERT INTO tipos_evaluacion (id, codigo, nombre, descripcion, es_recuperatorio,
 (20, 'SEMINARIO', 'Seminario', 'Participación en seminario con lecturas y debate. Suele TEORICO.', FALSE, TRUE),
 
 -- Recuperación bimestral (no se promedia; reemplaza nota del bimestre)
-(7, 'HABILITACION', 'Habilitación bimestral', 'Reemplaza la nota del bimestre si el estudiante reprueba solo ese bimestre.', TRUE, TRUE);
+(7, 'HABILITACION', 'Habilitación bimestral', 'Reemplaza la nota del bimestre si el estudiante reprueba solo ese bimestre.', TRUE, TRUE),
+
+-- Asistencia (componente PRACTICO): nota calculada por el sistema = round(%asistencia × puntos)
+-- a partir de sesiones_clase + asistencias del bimestre. No se carga a mano; sus celdas se
+-- recalculan al guardar/cerrar el cuaderno.
+(21, 'ASISTENCIA', 'Asistencia', 'Puntaje proporcional al porcentaje de asistencia del bimestre (round(%asistencia × puntos)). Lo calcula el sistema; va a componente PRACTICO.', FALSE, TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;

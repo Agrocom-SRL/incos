@@ -1,8 +1,6 @@
-import {
-  ForbiddenError,
-  ValidationError,
-} from '../../../domain/errors/AppError.js';
+import { ValidationError } from '../../../domain/errors/AppError.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
+import { assertBimestreEditable } from '../../utils/assertBimestreEditable.js';
 import { persistirNotaCuadernoCelda } from '../../utils/persistirNotaCuadernoCelda.js';
 
 /**
@@ -18,7 +16,7 @@ export class UpsertNotaCuadernoUseCase {
     teacherRepository,
     userRepository,
     authRepository,
-    logger,
+    logger
   }) {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
@@ -46,27 +44,24 @@ export class UpsertNotaCuadernoUseCase {
       throw new ValidationError('Evaluación requerida');
     }
 
-    const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
+    const { gestionId } = await assertCuadernoCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
-      asignacionId,
+      asignacionId
     });
 
-    const reabierto =
-      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
-        Number(asignacionId),
-        bimestreNum,
-      )) > 0;
-
-    if (bimestreNum !== bimestreVigente && !reabierto) {
-      throw new ForbiddenError(
-        'Solo podés cargar notas en el bimestre vigente o en un bimestre reabierto.',
-      );
-    }
+    // Compuerta por ESTADO del bimestre (EN_CURSO o REABIERTO), no por fecha vigente.
+    const { reabierto } = await assertBimestreEditable({
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+      gestionId,
+      asignacionId,
+      bimestreNum
+    });
 
     const resultado = await persistirNotaCuadernoCelda({
       cuadernoRepository: this.cuadernoRepository,
@@ -79,7 +74,7 @@ export class UpsertNotaCuadernoUseCase {
       evaluacionId,
       notaRaw: body?.nota,
       usuarioId,
-      reabierto,
+      reabierto
     });
 
     this.logger.info('[Calificaciones] Nota guardada', {
@@ -87,7 +82,7 @@ export class UpsertNotaCuadernoUseCase {
       bimestre: bimestreNum,
       estudianteId,
       evaluacionId,
-      nota: resultado.nota,
+      nota: resultado.nota
     });
 
     return resultado;

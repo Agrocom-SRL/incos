@@ -1242,6 +1242,30 @@ th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__eval-menu-btn:focus-vis
   border-radius: 6px;
 }
 
+/* Celda auto-calculada (actividad de asistencia): solo lectura, con sello sutil
+   de que la nota proviene del cálculo de asistencia (no editable a mano). */
+.cal-nota-cell--auto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: help;
+}
+
+.cal-nota-cell__auto-icon {
+  color: var(--cuaderno-comp-text-soft);
+  font-size: 12px;
+}
+
+.cal-nota-cell--auto.cal-nota-cell--empty {
+  color: var(--cuaderno-texto-tenue);
+}
+
+.cal-nota-cell--auto .cal-nota-cell__readonly-valor {
+  border-color: var(--cuaderno-comp-asistencia-bg);
+  background: color-mix(in srgb, var(--cuaderno-comp-asistencia-bg) 16%, #fff);
+}
+
 .cal-notas-grid-wrap--loading .cal-notas-grid {
   opacity: 0.55;
   pointer-events: none;
@@ -1786,6 +1810,12 @@ th.cal-notas-grid__col-eval--asistencia .cal-notas-grid__eval-menu-btn:focus-vis
 .cal-eval-drawer__alert {
   flex-shrink: 0;
   margin: 0 0 12px;
+}
+
+/* Aviso de actividad de asistencia: dentro de la sección Componente, separado
+   del Segmented que queda deshabilitado debajo. */
+.cal-eval-drawer__alert--asistencia {
+  margin-bottom: 16px;
 }
 
 .cal-eval-drawer__form {

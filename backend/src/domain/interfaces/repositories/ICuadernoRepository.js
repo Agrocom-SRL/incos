@@ -37,6 +37,11 @@ export class ICuadernoRepository {
     throw new Error('Method listarFilasCalculoBimestre() must be implemented');
   }
 
+  /** Columnas tipo ASISTENCIA del curso en un bimestre (con rango de fechas). @returns {Promise<Array<Object>>} */
+  async listarColumnasAsistenciaBimestre(_asignacionId, _gestionId, _bimestreNumero) {
+    throw new Error('Method listarColumnasAsistenciaBimestre() must be implemented');
+  }
+
   /** @returns {Promise<Array<Object>>} */
   async listarEstudiantesExportRegistroPedagogico(asignacionId) {
     throw new Error('Method listarEstudiantesExportRegistroPedagogico() must be implemented');

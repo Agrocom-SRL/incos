@@ -1,11 +1,9 @@
-import {
-  ForbiddenError,
-  NotFoundError,
-  ValidationError,
-} from '../../../domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { BimesterEvaluation } from '../../../domain/entities/BimesterEvaluation.js';
 import { mapEvaluacionEntityToDto } from '../../mappers/cuadernoEvaluacionMapper.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
+import { assertBimestreEditable } from '../../utils/assertBimestreEditable.js';
+import { TIPO_EVALUACION_ASISTENCIA } from '../../../domain/constants/evaluaciones.constants.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { validarPuntosActividadEnCuota } from '../../utils/validarPuntosEvaluacion.js';
 
@@ -24,7 +22,7 @@ export class CreateEvaluacionCuadernoUseCase {
     teacherRepository,
     userRepository,
     authRepository,
-    logger,
+    logger
   }) {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
@@ -45,31 +43,28 @@ export class CreateEvaluacionCuadernoUseCase {
       throw new ValidationError('Bimestre inválido');
     }
 
-    const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
+    const { gestionId } = await assertCuadernoCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
       userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
-      asignacionId,
+      asignacionId
     });
 
-    const reabierto =
-      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
-        Number(asignacionId),
-        bimestreNum,
-      )) > 0;
-
-    if (bimestreNum !== bimestreVigente && !reabierto) {
-      throw new ForbiddenError(
-        'Solo podés crear evaluaciones en el bimestre vigente o en un bimestre reabierto.',
-      );
-    }
+    // Compuerta por ESTADO del bimestre (EN_CURSO o REABIERTO), no por fecha vigente.
+    await assertBimestreEditable({
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+      gestionId,
+      asignacionId,
+      bimestreNum
+    });
 
     const periodoId = await this.cuadernoRepository.obtenerPeriodoAcademicoId(
       gestionId,
-      bimestreNum,
+      bimestreNum
     );
     if (!periodoId) {
       throw new NotFoundError('Periodo académico del bimestre');
@@ -89,7 +84,22 @@ export class CreateEvaluacionCuadernoUseCase {
       throw new ValidationError('Nombre descriptivo requerido');
     }
 
-    const componente = body?.componente;
+    // La columna ASISTENCIA siempre es PRACTICO (la nota la calcula el sistema)
+    // y es ÚNICA por bimestre: solo se admite una actividad de asistencia.
+    const esAsistencia = tipo.code === TIPO_EVALUACION_ASISTENCIA;
+    if (esAsistencia) {
+      const columnasAsistencia = await this.cuadernoRepository.listarColumnasAsistenciaBimestre(
+        Number(asignacionId),
+        gestionId,
+        bimestreNum
+      );
+      if (columnasAsistencia && columnasAsistencia.length > 0) {
+        throw new ValidationError(
+          'Ya existe una actividad de asistencia en este bimestre. Solo se permite una.'
+        );
+      }
+    }
+    const componente = esAsistencia ? 'PRACTICO' : body?.componente;
     if (componente !== 'TEORICO' && componente !== 'PRACTICO') {
       throw new ValidationError('Componente inválido');
     }
@@ -97,23 +107,23 @@ export class CreateEvaluacionCuadernoUseCase {
     const cuotas = await cargarCuotasPoliticaGestion({
       calificacionContextoRepository: this.calificacionContextoRepository,
       evaluationConfigurationRepository: this.evaluationConfigurationRepository,
-      gestionId,
+      gestionId
     });
 
     const existentes = await this.cuadernoRepository.listarEvaluaciones(
       Number(asignacionId),
-      periodoId,
+      periodoId
     );
 
     const puntos = validarPuntosActividadEnCuota({
       evaluaciones: existentes.map((e) => ({
         id: e.id,
         componente: e.componente,
-        puntos: e.puntos,
+        puntos: e.puntos
       })),
       componente,
       puntos: body?.puntos,
-      cuotas,
+      cuotas
     });
 
     const entity = new BimesterEvaluation({
@@ -124,7 +134,7 @@ export class CreateEvaluacionCuadernoUseCase {
       evaluationName: nombre,
       points: puntos,
       date: body?.fecha ?? null,
-      gradesClosed: false,
+      gradesClosed: false
     });
 
     const created = await this.bimesterEvaluationRepository.create(entity, usuarioId);
@@ -133,7 +143,7 @@ export class CreateEvaluacionCuadernoUseCase {
     this.logger.info('[Calificaciones] Evaluación creada', {
       asignacionId,
       bimestre: bimestreNum,
-      evaluacionId: dto.id,
+      evaluacionId: dto.id
     });
 
     return dto;
