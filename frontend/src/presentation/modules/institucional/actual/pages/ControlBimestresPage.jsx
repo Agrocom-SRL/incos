@@ -80,10 +80,8 @@ const ControlBimestresPage = () => {
               </Flex>
             )}
           </div>
-        </section>
 
-        {!s.loading && (
-          <section className="cfg-academico-workspace">
+          {!s.loading && (
             <div className="cfg-academico-tab-panel">
               <BimestresAperturaSection
                 iniciada={s.iniciada}
@@ -97,8 +95,8 @@ const ControlBimestresPage = () => {
                 onCerrar={s.handleCerrarBimestre}
               />
             </div>
-          </section>
-        )}
+          )}
+        </section>
       </Flex>
     </PageTemplate>
   );

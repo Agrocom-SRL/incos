@@ -170,7 +170,7 @@ const BimestresAperturaSection = ({
   const { token } = useToken();
 
   return (
-    <Card title="Apertura y cierre de bimestres" size="small">
+    <Card title="Apertura y cierre de bimestres">
       <Flex vertical gap="middle">
         <Text type="secondary">
           {iniciada
