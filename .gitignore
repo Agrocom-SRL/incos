@@ -146,3 +146,7 @@ vite.config.ts.timestamp-*
 .claude/
 .cursor/
 /CLAUDE.md
+
+# Prototipo de rediseño UI/UX (vive en la rama `revamp`). En `development` no se
+# versiona: aquí seguimos con los módulos del frontend principal.
+/studio/

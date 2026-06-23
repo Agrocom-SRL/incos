@@ -12,40 +12,42 @@
 export class IGestionBimestresRepository {
   /**
    * Estados institucionales por bimestre de una gestión.
-   * @param {number} gestionId
    * @returns {Promise<Map<number, string>>}
    */
-  async estadosInstitucionalesBimestres(gestionId) {
+  async estadosInstitucionalesBimestres(_gestionId) {
     throw new Error('Method estadosInstitucionalesBimestres() must be implemented');
   }
 
   /**
    * Métricas agregadas de los bimestres de una gestión.
-   * @param {number} gestionId
    * @returns {Promise<Object>}
    */
-  async obtenerMetricasGestionBimestres(gestionId) {
+  async obtenerMetricasGestionBimestres(_gestionId) {
     throw new Error('Method obtenerMetricasGestionBimestres() must be implemented');
   }
 
   /**
    * Valida si un bimestre puede cerrarse.
-   * @param {number} numeroBimestre
-   * @param {number} gestionId
    * @returns {Promise<Object>}
    */
-  async validarCierreBimestre(numeroBimestre, gestionId) {
+  async validarCierreBimestre(_numeroBimestre, _gestionId) {
     throw new Error('Method validarCierreBimestre() must be implemented');
   }
 
   /**
    * Cierra un bimestre de la gestión vigente.
-   * @param {number} numeroBimestre
-   * @param {number} userId
    * @returns {Promise<Object>}
    */
-  async cerrarBimestreGestion(numeroBimestre, userId) {
+  async cerrarBimestreGestion(_numeroBimestre, _userId) {
     throw new Error('Method cerrarBimestreGestion() must be implemented');
+  }
+
+  /**
+   * Abre un bimestre de la gestión vigente (PENDIENTE → EN_CURSO).
+   * @returns {Promise<Object>}
+   */
+  async abrirBimestreGestion(_numeroBimestre, _userId) {
+    throw new Error('Method abrirBimestreGestion() must be implemented');
   }
 
   /**

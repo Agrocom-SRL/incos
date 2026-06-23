@@ -331,6 +331,28 @@ class CalificacionRepository {
     }
   }
 
+  /** POST /v1/calificaciones/gestion-bimestres/bimestre/:n/abrir */
+  async abrirBimestreGestion(numero) {
+    try {
+      const response = await apiClient.post(
+        CALIFICACIONES_ENDPOINTS.GESTION_BIMESTRES_ABRIR(numero),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return {
+          success: false,
+          error: responseData.error,
+          code: responseData.code,
+        };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      const mapped = handleErrorResponse(error, 'Error al abrir el bimestre');
+      if (error?.response?.data?.code) mapped.code = error.response.data.code;
+      return mapped;
+    }
+  }
+
   /** GET /v1/calificaciones/gestion-bimestres/periodos — periodos/etapas de la gestión vigente. */
   async listarPeriodosGestion() {
     try {

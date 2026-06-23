@@ -15,6 +15,7 @@ import { usePeriodosGestionApi } from '../api/usePeriodosGestionApi.js';
 import { gestionActivacionStatus } from '../../utils/gestionActivacionStatus.js';
 import { resolverFaseGestion } from '../../utils/resolverFaseGestion.js';
 import { mapPeriodoLectura, anioDelCalendario } from '../../utils/periodosCalendario.js';
+import { buildBimestresApertura } from '../../utils/bimestresApertura.js';
 import { actualPaths } from '../../config/paths.js';
 
 export function useControlBimestresState() {
@@ -26,6 +27,7 @@ export function useControlBimestresState() {
     iniciarGestionAcademica,
     validarCierreBimestre,
     cerrarBimestreGestion,
+    abrirBimestreGestion,
   } = useGestionActivacionApi();
   const { fetchPeriodos, actualizarFechasPeriodo, crearEtapaPeriodo, eliminarEtapaPeriodo } =
     usePeriodosGestionApi();
@@ -33,6 +35,11 @@ export function useControlBimestresState() {
   const [loading, setLoading] = useState(true);
   const [estadoPayload, setEstadoPayload] = useState(null);
   const [cerrando, setCerrando] = useState(false);
+  const [abriendo, setAbriendo] = useState(false);
+  // Número del bimestre sobre el que se ejecuta abrir/cerrar (para spinner por fila).
+  const [bimestreEnAccion, setBimestreEnAccion] = useState(null);
+  // Validación de cierre indexada por número de bimestre.
+  const [validacionPorBimestre, setValidacionPorBimestre] = useState({});
   const [validacion, setValidacion] = useState(null);
 
   // Configuración de periodos
@@ -77,6 +84,16 @@ export function useControlBimestresState() {
   );
 
   const anioCalendario = useMemo(() => anioDelCalendario(gestion), [gestion]);
+
+  // Filas de la sección "Apertura y cierre de bimestres": estado de calendario
+  // (por fecha) + estado institucional + habilitación de cada acción.
+  const bimestresApertura = useMemo(
+    () =>
+      buildBimestresApertura(estadoPayload?.bimestres ?? [], {
+        iniciada: Boolean(estadoPayload?.gestionIniciada),
+      }),
+    [estadoPayload],
+  );
 
   // --- Edición de fechas de periodos -----------------------------------------
   const setRangoPeriodo = useCallback((id, fechaInicio, fechaFin) => {
@@ -175,46 +192,106 @@ export function useControlBimestresState() {
     ejecutarIniciarGestion();
   }, [estado.iniciada, ejecutarIniciarGestion]);
 
-  const handleValidarCierre = useCallback(async () => {
-    if (!bimestreVigente) return;
-    const result = await validarCierreBimestre(bimestreVigente);
-    if (result.success) {
-      setValidacion(result.data);
-    } else {
-      message.error(result.error || 'No se pudo validar el cierre del bimestre.');
-    }
-  }, [bimestreVigente, validarCierreBimestre, message]);
+  // Valida si un bimestre puede cerrarse (cursos con notas faltantes). Acepta un
+  // número explícito; si se omite, usa el bimestre vigente (compatibilidad).
+  const handleValidarCierre = useCallback(
+    async (numero = bimestreVigente) => {
+      if (!numero) return;
+      const result = await validarCierreBimestre(numero);
+      if (result.success) {
+        setValidacion(result.data);
+        setValidacionPorBimestre((prev) => ({ ...prev, [numero]: result.data }));
+      } else {
+        message.error(result.error || 'No se pudo validar el cierre del bimestre.');
+      }
+    },
+    [bimestreVigente, validarCierreBimestre, message],
+  );
 
-  const handleCerrarBimestre = useCallback(() => {
-    if (!bimestreVigente) return;
-    modal.confirm({
-      title: `Cerrar bimestre ${bimestreVigente}`,
-      content:
-        'Se consolidará el bimestre y se habilitará el siguiente. Se validará que no haya ' +
-        'notas pendientes. ¿Continuar?',
-      okText: 'Cerrar bimestre',
-      cancelText: 'Cancelar',
-      onOk: async () => {
-        setCerrando(true);
-        try {
-          const result = await cerrarBimestreGestion(bimestreVigente);
-          if (result.success && result.data?.preparacion) {
-            message.info('El cierre de bimestre está en preparación en el servidor.');
-          } else if (result.success) {
-            message.success(`Bimestre ${bimestreVigente} cerrado.`);
-            await cargar();
-          } else if (result.code === 'CIERRE_BLOQUEADO') {
-            setValidacion(result.validacion ?? null);
-            message.error('Hay cursos con notas pendientes que impiden el cierre.');
-          } else {
-            message.error(result.error || 'No se pudo cerrar el bimestre.');
+  // Cierra un bimestre (EN_CURSO → CERRADO). Acepta un número explícito; si se
+  // omite, usa el bimestre vigente (compatibilidad con la pantalla anterior).
+  const handleCerrarBimestre = useCallback(
+    (numero = bimestreVigente) => {
+      if (!numero) return;
+      modal.confirm({
+        title: `Cerrar bimestre ${numero}`,
+        content:
+          'Se consolidará el bimestre y se habilitará el siguiente. Se validará que no haya ' +
+          'notas pendientes. ¿Continuar?',
+        okText: 'Cerrar bimestre',
+        cancelText: 'Cancelar',
+        onOk: async () => {
+          setCerrando(true);
+          setBimestreEnAccion(numero);
+          try {
+            const result = await cerrarBimestreGestion(numero);
+            if (result.success) {
+              const cerrados = result.data?.cerrados ?? 0;
+              message.success(`Bimestre ${numero} cerrado (${cerrados} cursos).`);
+              setValidacion(null);
+              setValidacionPorBimestre((prev) => {
+                const next = { ...prev };
+                delete next[numero];
+                return next;
+              });
+              await cargar();
+            } else if (result.code === 'CIERRE_BLOQUEADO') {
+              setValidacion(result.validacion ?? null);
+              setValidacionPorBimestre((prev) => ({
+                ...prev,
+                [numero]: result.validacion ?? null,
+              }));
+              message.error('Hay cursos con notas pendientes que impiden el cierre.');
+            } else {
+              message.error(result.error || 'No se pudo cerrar el bimestre.');
+            }
+          } finally {
+            setCerrando(false);
+            setBimestreEnAccion(null);
           }
-        } finally {
-          setCerrando(false);
-        }
-      },
-    });
-  }, [bimestreVigente, modal, message, cerrarBimestreGestion, cargar]);
+        },
+      });
+    },
+    [bimestreVigente, modal, message, cerrarBimestreGestion, cargar],
+  );
+
+  // Abre un bimestre (PENDIENTE → EN_CURSO). El backend bloquea con
+  // BIMESTRE_FUTURO si la fecha de inicio del calendario aún no llegó.
+  const handleAbrirBimestre = useCallback(
+    (numero) => {
+      if (!numero) return;
+      modal.confirm({
+        title: `Abrir bimestre ${numero}`,
+        content:
+          'Se habilitará el registro de calificaciones del bimestre para todos los cursos ' +
+          'de la gestión. ¿Continuar?',
+        okText: 'Abrir bimestre',
+        cancelText: 'Cancelar',
+        onOk: async () => {
+          setAbriendo(true);
+          setBimestreEnAccion(numero);
+          try {
+            const result = await abrirBimestreGestion(numero);
+            if (result.success) {
+              const abiertos = result.data?.abiertos ?? 0;
+              message.success(`Bimestre ${numero} abierto (${abiertos} cursos).`);
+              await cargar();
+            } else if (result.code === 'BIMESTRE_FUTURO') {
+              message.warning(
+                result.error || `El bimestre ${numero} aún no inicia según el calendario.`,
+              );
+            } else {
+              message.error(result.error || 'No se pudo abrir el bimestre.');
+            }
+          } finally {
+            setAbriendo(false);
+            setBimestreEnAccion(null);
+          }
+        },
+      });
+    },
+    [modal, message, abrirBimestreGestion, cargar],
+  );
 
   const breadcrumbItems = useMemo(
     () => [
@@ -236,10 +313,15 @@ export function useControlBimestresState() {
     fase,
     iniciando,
     cerrando,
+    abriendo,
+    bimestreEnAccion,
     validacion,
+    validacionPorBimestre,
+    bimestresApertura,
     handleIniciarGestion,
     handleValidarCierre,
     handleCerrarBimestre,
+    handleAbrirBimestre,
     // configuración de periodos
     gestion,
     periodos,

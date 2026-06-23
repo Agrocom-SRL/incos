@@ -15,11 +15,10 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
   constructor({
     calificacionContextoRepository,
     subjectEnrollmentRepository,
-    configuracionSistemaRepository,
+    configuracionSistemaRepository
   } = {}) {
     super();
-    this.contexto =
-      calificacionContextoRepository ?? new CalificacionContextoRepository();
+    this.contexto = calificacionContextoRepository ?? new CalificacionContextoRepository();
     this.subjectEnrollment = subjectEnrollmentRepository ?? null;
     this.configuracion = configuracionSistemaRepository ?? null;
   }
@@ -48,7 +47,7 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       FROM vista_base_gestion_bimestre_estado_institucional
       WHERE gestion_id = ?
       `,
-      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT }
     );
     const map = new Map();
     for (const row of rows) {
@@ -66,7 +65,7 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
         FROM vista_base_calificacion_coordinacion_fila fila
         WHERE fila.gestion_id = ?
         `,
-        { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+        { replacements: [gestionId], type: sequelize.QueryTypes.SELECT }
       ),
       sequelize.query(
         `
@@ -82,8 +81,8 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
             WHERE v.gestion_id = ?
           ) AS notas_faltantes
         `,
-        { replacements: [gestionId, gestionId], type: sequelize.QueryTypes.SELECT },
-      ),
+        { replacements: [gestionId, gestionId], type: sequelize.QueryTypes.SELECT }
+      )
     ]);
 
     const cursosTotal = Number(cursosRows[0]?.total ?? 0);
@@ -94,11 +93,11 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       cursosTotal,
       cursosCompletos: Math.max(
         0,
-        cursosTotal - Math.min(cursosTotal, Math.ceil(notasFaltantes / 4)),
+        cursosTotal - Math.min(cursosTotal, Math.ceil(notasFaltantes / 4))
       ),
       planesSinDefinir: 0,
       notasFaltantes,
-      docentesActivos,
+      docentesActivos
     };
   }
 
@@ -109,25 +108,14 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
     const estadoActual = estados.get(n);
 
     const bloqueos = [];
-    const advertencias = [];
 
     if (estadoActual !== 'EN_CURSO') {
       bloqueos.push(
         estadoActual === 'CERRADO'
           ? `El bimestre ${n} ya está cerrado.`
-          : `El bimestre ${n} no está en curso. Iniciá la gestión o cerrá el bimestre anterior.`,
+          : `El bimestre ${n} no está en curso. Iniciá la gestión o cerrá el bimestre anterior.`
       );
     }
-
-    const pendientes = await sequelize.query(
-      `
-      SELECT COUNT(*) AS total
-      FROM vista_base_gestion_bimestre_cierre_pendiente
-      WHERE gestion_id = ?
-        AND bimestre = ?
-      `,
-      { replacements: [gestionId, n], type: sequelize.QueryTypes.SELECT },
-    );
 
     const cursosRows = await sequelize.query(
       `
@@ -145,7 +133,7 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       ORDER BY faltantes DESC, materia ASC
       LIMIT 50
       `,
-      { replacements: [gestionId, n], type: sequelize.QueryTypes.SELECT },
+      { replacements: [gestionId, n], type: sequelize.QueryTypes.SELECT }
     );
 
     const cursosConNotasFaltantes = cursosRows.map((r) => ({
@@ -153,12 +141,12 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       materia: r.materia,
       docente: r.docente_nombre,
       paralelo: r.paralelo,
-      cantidadFaltantes: Number(r.faltantes),
+      cantidadFaltantes: Number(r.faltantes)
     }));
 
     if (cursosConNotasFaltantes.length > 0) {
       bloqueos.push(
-        `${cursosConNotasFaltantes.length} curso(s) con notas de bimestre sin cerrar impiden el cierre.`,
+        `${cursosConNotasFaltantes.length} curso(s) con notas de bimestre sin cerrar impiden el cierre.`
       );
     }
 
@@ -166,11 +154,19 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       puedeCerrar: bloqueos.length === 0,
       bloqueos,
       advertencias: [],
-      cursosConNotasFaltantes,
+      cursosConNotasFaltantes
     };
   }
 
-  /** @param {number} numeroBimestre @param {number} userId */
+  /**
+   * Cierre institucional de un bimestre de la gestión vigente.
+   * Valida primero (mismo criterio que validarCierreBimestre); si no puede cerrar
+   * lanza CIERRE_BLOQUEADO sin persistir. Si puede: transición masiva
+   * EN_CURSO → CERRADO de bimestres_matricula del bimestre en la gestión, calculando
+   * nota_bimestre = nota_teorico + nota_practico donde falte (respeta las ya fijadas).
+   * @param {number} numeroBimestre @param {number} userId
+   * @returns {Promise<{success:true, data:{numero:number, cerrados:number}}>}
+   */
   async cerrarBimestreGestion(numeroBimestre, userId) {
     const ctx = await this.contexto.obtenerContextoVigente();
     const gestionId = Number(ctx?.gestion_id);
@@ -184,13 +180,85 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       throw err;
     }
 
-    // TODO: cierre masivo con cálculo de nota_teorico/practico/bimestre desde evaluaciones (sprint siguiente)
-    return {
-      preparacion: true,
-      mensaje: 'Funcionalidad en preparación',
-      bimestre: n,
-      bimestreSiguiente: n < 4 ? n + 1 : null,
-    };
+    const cerrados = await sequelize.transaction(async (t) => {
+      const [, meta] = await sequelize.query(
+        `
+        UPDATE bimestres_matricula bm
+        INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+          AND mm.deleted_at IS NULL AND mm.activo = TRUE
+        INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+        INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+        INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
+        SET
+          bm.estado = 'CERRADO',
+          bm.nota_bimestre = COALESCE(
+            bm.nota_bimestre,
+            COALESCE(bm.nota_teorico, 0) + COALESCE(bm.nota_practico, 0)
+          ),
+          bm.updated_by = ?,
+          bm.updated_at = NOW()
+        WHERE gp.gestion_id = ?
+          AND bm.bimestre = ?
+          AND bm.estado = 'EN_CURSO'
+          AND bm.deleted_at IS NULL
+          AND bm.activo = TRUE
+        `,
+        { replacements: [userId ?? null, gestionId, n], transaction: t }
+      );
+      return meta?.affectedRows ?? 0;
+    });
+
+    return { success: true, data: { numero: n, cerrados } };
+  }
+
+  /**
+   * Apertura institucional de un bimestre de la gestión vigente: transición masiva
+   * PENDIENTE → EN_CURSO de bimestres_matricula del bimestre en la gestión.
+   * Bloquea si el bimestre del calendario aún es futuro (CURDATE < fecha_inicio,
+   * vista 105 vía estado_calendario) lanzando BIMESTRE_FUTURO sin persistir.
+   * @param {number} numeroBimestre @param {number} userId
+   * @returns {Promise<{success:true, data:{numero:number, abiertos:number}}>}
+   */
+  async abrirBimestreGestion(numeroBimestre, userId) {
+    const ctx = await this.contexto.obtenerContextoVigente();
+    const gestionId = Number(ctx?.gestion_id);
+    const n = Number(numeroBimestre);
+
+    const periodos = await this.contexto.obtenerPeriodosBimestresGestion(gestionId);
+    const periodo = (periodos ?? []).find((p) => Number(p.numero_orden) === n);
+    if (periodo?.estado_calendario === 'futuro') {
+      const err = new Error(
+        `El bimestre ${n} aún no inicia según el calendario académico (fecha de inicio futura).`
+      );
+      err.code = 'BIMESTRE_FUTURO';
+      throw err;
+    }
+
+    const abiertos = await sequelize.transaction(async (t) => {
+      const [, meta] = await sequelize.query(
+        `
+        UPDATE bimestres_matricula bm
+        INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+          AND mm.deleted_at IS NULL AND mm.activo = TRUE
+        INNER JOIN oferta_cursos oc ON oc.id = mm.oferta_curso_id
+        INNER JOIN paralelos_gestion pg ON pg.id = oc.paralelo_gestion_id
+        INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id
+        SET
+          bm.estado = 'EN_CURSO',
+          bm.updated_by = ?,
+          bm.updated_at = NOW()
+        WHERE gp.gestion_id = ?
+          AND bm.bimestre = ?
+          AND bm.estado = 'PENDIENTE'
+          AND bm.deleted_at IS NULL
+          AND bm.activo = TRUE
+        `,
+        { replacements: [userId ?? null, gestionId, n], transaction: t }
+      );
+      return meta?.affectedRows ?? 0;
+    });
+
+    return { success: true, data: { numero: n, abiertos } };
   }
 
   async _metricasPorBimestre(gestionId) {
@@ -204,14 +272,14 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       FROM vista_base_gestion_metricas_bimestre
       WHERE gestion_id = ?
       `,
-      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT }
     );
     const map = new Map();
     for (const r of rows) {
       map.set(Number(r.bimestre), {
         cursosTotal: Number(r.cursos_total ?? 0),
         cursosConPlanCompleto: Number(r.cursos_plan_completo ?? 0),
-        cursosConNotasFaltantes: Number(r.cursos_notas_faltantes ?? 0),
+        cursosConNotasFaltantes: Number(r.cursos_notas_faltantes ?? 0)
       });
     }
     return map;
@@ -227,12 +295,12 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       FROM vista_base_calificacion_coordinacion_fila fila
       WHERE fila.gestion_id = ?
       `,
-      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT }
     );
     return {
       totalCursos: Number(row?.total_cursos ?? 0),
       totalDocentes: Number(row?.total_docentes ?? 0),
-      totalEstudiantes: Number(row?.total_estudiantes ?? 0),
+      totalEstudiantes: Number(row?.total_estudiantes ?? 0)
     };
   }
 
@@ -262,7 +330,7 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
         this._gestionIniciada(gestionId),
         this.estadosInstitucionalesBimestres(gestionId),
         this._metricasGlobales(gestionId),
-        this._metricasPorBimestre(gestionId),
+        this._metricasPorBimestre(gestionId)
       ]);
 
     const bimestreVigente = ctx.bimestre_vigente != null ? Number(ctx.bimestre_vigente) : null;
@@ -271,17 +339,11 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
       const numero = Number(pa.numero_orden);
       const inst = estadosMap.get(numero);
       const calEstado = pa.estado_calendario;
-      const estado = this._mapEstadoUi(
-        numero,
-        inst,
-        calEstado,
-        bimestreVigente,
-        gestionIniciada,
-      );
+      const estado = this._mapEstadoUi(numero, inst, calEstado, bimestreVigente, gestionIniciada);
       const metricas = metricasBim.get(numero) ?? {
         cursosTotal: 0,
         cursosConPlanCompleto: 0,
-        cursosConNotasFaltantes: 0,
+        cursosConNotasFaltantes: 0
       };
 
       return {
@@ -292,8 +354,7 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
         fechaFin: pa.fecha_fin,
         estado,
         metricas,
-        matriculasTransicionadas:
-          numero === 1 && gestionIniciada ? undefined : numero === 1 ? null : undefined,
+        matriculasTransicionadas: numero === 1 && !gestionIniciada ? null : undefined
       };
     });
 
@@ -308,12 +369,12 @@ export class GestionBimestresRepository extends IGestionBimestresRepository {
         codigo: ctx.gestion_codigo ?? String(gestionId),
         nombre: ctx.gestion_nombre,
         anio: ctx.gestion_anio,
-        vigente: Boolean(ctx.gestion_vigente),
+        vigente: Boolean(ctx.gestion_vigente)
       },
       gestionIniciada,
       bimestreVigente,
       metricasGlobales,
-      bimestres,
+      bimestres
     };
   }
 }

@@ -13,13 +13,12 @@ export class CerrarBimestreGestionUseCase {
     try {
       const result = await this.gestionBimestresRepository.cerrarBimestreGestion(
         numeroBimestre,
-        userId,
+        userId
       );
-      if (result?.preparacion) {
-        this.logger.info('[Calificaciones] Cierre en preparación', { numeroBimestre });
-      } else {
-        this.logger.info('[Calificaciones] Bimestre cerrado', { numeroBimestre, ...result });
-      }
+      this.logger.info('[Calificaciones] Bimestre cerrado', {
+        numeroBimestre,
+        cerrados: result?.data?.cerrados
+      });
       return result;
     } catch (error) {
       if (error.code === 'CIERRE_BLOQUEADO') {
