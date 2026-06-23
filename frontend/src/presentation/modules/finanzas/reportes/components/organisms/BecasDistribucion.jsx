@@ -26,7 +26,7 @@ const CIRCUNFERENCIA = 2 * Math.PI * RADIO;
 const formatPorcentaje = (value) => {
   const n = Number(value);
   const safe = Number.isFinite(n) ? n : 0;
-  return safe.toLocaleString('es-BO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return Math.round(safe).toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
 
 const BecasDistribucion = ({ distribucion = [], totalConBeca = 0, porcentajeConBeca = 0 }) => {

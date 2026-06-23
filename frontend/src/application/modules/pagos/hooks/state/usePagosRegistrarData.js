@@ -187,6 +187,8 @@ export const usePagosRegistrarData = (studentId = null) => {
                 codigo_comprobante: pagoData.codigoComprobante || null, // Requerido para QR/TRANSFERENCIA/DEPOSITO, independiente de transaction_number
                 descripcion: pagoData.descripcion || null, // Opcional
                 documentoRespaldo: pagoData.documentoRespaldo || null, // Archivo de documento de respaldo
+                // Plazo del compromiso de pago elegido en el formulario (solo aplica en la 1ra cuota).
+                compromiso_dias: pagoData.compromisoDias != null ? Number(pagoData.compromisoDias) : undefined,
             };
 
             // Llamar directamente al use case para preservar la estructura completa del error

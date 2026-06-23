@@ -2,17 +2,17 @@
  * Use Case: GetPaymentAporteByIdUseCase
  * Módulo: Pagos
  * Obtiene un pago de aporte por ID con todos sus datos relacionados
- * 
+ *
  * Responsabilidades:
  * - Validar que el pago exista
  * - Obtener el pago principal
  * - Obtener datos relacionados (estudiante, gestión, método de pago, beca, inscripción)
  * - Retornar el pago con todos sus datos relacionados
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la obtención completa de pagos
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -20,6 +20,7 @@
  */
 
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { buildCompromisoContract } from './helpers/compromisoContract.js';
 
 export class GetPaymentAporteByIdUseCase {
   /**
@@ -31,6 +32,7 @@ export class GetPaymentAporteByIdUseCase {
    * @param {Object} params.studentScholarshipRepository - Repositorio de asignaciones de becas
    * @param {Object} params.scholarshipRepository - Repositorio de becas/descuentos
    * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
+   * @param {Object} params.compromisoPagoRepository - Repositorio de compromisos de pago (compromiso vigente)
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -42,6 +44,7 @@ export class GetPaymentAporteByIdUseCase {
     scholarshipRepository,
     enrollmentRepository,
     studentDocumentRepository,
+    compromisoPagoRepository,
     logger,
   }) {
     this.contributionPaymentRepository = contributionPaymentRepository;
@@ -52,12 +55,13 @@ export class GetPaymentAporteByIdUseCase {
     this.scholarshipRepository = scholarshipRepository;
     this.enrollmentRepository = enrollmentRepository;
     this.studentDocumentRepository = studentDocumentRepository;
+    this.compromisoPagoRepository = compromisoPagoRepository;
     this.logger = logger;
   }
 
   /**
    * Ejecuta el caso de uso de obtención de pago por ID
-   * 
+   *
    * @param {number} paymentId - ID del pago a obtener
    * @returns {Promise<Object>} Pago con todos sus datos relacionados
    */
@@ -91,7 +95,16 @@ export class GetPaymentAporteByIdUseCase {
       });
 
       // 3. Obtener datos relacionados
-      const [student, management, paymentMethod, studentScholarship, scholarship, enrollment, reciboDocument] = await Promise.all([
+      const [
+        student,
+        management,
+        paymentMethod,
+        studentScholarship,
+        scholarship,
+        enrollment,
+        reciboDocument,
+        compromiso,
+      ] = await Promise.all([
         this._fetchStudent(paymentPlain.student_id),
         this._fetchManagement(paymentPlain.management_id),
         this._fetchPaymentMethod(paymentPlain.payment_method_id),
@@ -99,6 +112,7 @@ export class GetPaymentAporteByIdUseCase {
         this._fetchScholarship(paymentPlain.student_scholarship_id),
         this._fetchEnrollment(paymentPlain.enrollment_id),
         this._fetchReciboDocument(paymentPlain.student_id, paymentId),
+        this._fetchCompromiso(payment.id),
       ]);
 
       // 4. Construir respuesta enriquecida
@@ -113,6 +127,8 @@ export class GetPaymentAporteByIdUseCase {
         } : null,
         inscripcion: enrollment ? this._mapEnrollment(enrollment) : null,
         reciboDocumento: reciboDocument ? this._mapReciboDocument(reciboDocument) : null,
+        // Compromiso de pago VIGENTE (o null) con la forma del contrato compartido.
+        compromiso: buildCompromisoContract(compromiso),
       };
 
       this.logger.info('[Pagos] Pago obtenido exitosamente', {
@@ -263,7 +279,7 @@ export class GetPaymentAporteByIdUseCase {
       if (!studentScholarship) return null;
 
       const plain = studentScholarship.toPlainObject ? studentScholarship.toPlainObject() : studentScholarship;
-      const scholarshipId = plain.scholarshipId;
+      const { scholarshipId } = plain;
 
       if (!scholarshipId) return null;
 
@@ -316,7 +332,7 @@ export class GetPaymentAporteByIdUseCase {
       }, 1, 10); // page 1, limit 10
 
       const documents = result?.studentDocuments || [];
-      
+
       if (documents.length === 0) {
         return null;
       }
@@ -338,6 +354,23 @@ export class GetPaymentAporteByIdUseCase {
       this.logger.warn('[Pagos] Error al obtener documento del recibo', {
         studentId,
         paymentId,
+        error: err.message,
+      });
+      return null;
+    }
+  }
+
+  /**
+   * Obtiene el compromiso de pago VIGENTE de la cabecera (o null).
+   * @private
+   */
+  async _fetchCompromiso(pagoAporteId) {
+    if (!pagoAporteId || !this.compromisoPagoRepository) return null;
+    try {
+      return await this.compromisoPagoRepository.findVigenteByPagoAporteId(pagoAporteId);
+    } catch (err) {
+      this.logger.warn('[Pagos] Error al obtener compromiso de pago', {
+        pagoAporteId,
         error: err.message,
       });
       return null;
@@ -459,7 +492,7 @@ export class GetPaymentAporteByIdUseCase {
   _mapReciboDocument(document) {
     const plain = document.toPlainObject ? document.toPlainObject() : document;
     let filePath = plain.filePath || '';
-    
+
     // Si el filePath no comienza con /uploads/, agregarlo
     if (filePath && !filePath.startsWith('/uploads/')) {
       // Si no comienza con /, agregar /uploads/
@@ -470,11 +503,11 @@ export class GetPaymentAporteByIdUseCase {
         filePath = `/uploads${filePath}`;
       }
     }
-    
+
     return {
       id: plain.id,
       fileName: plain.fileName,
-      filePath: filePath,
+      filePath,
       extension: plain.extension,
       tipoMime: plain.tipoMime,
     };

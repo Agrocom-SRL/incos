@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { App, Col, Empty, Flex, Row, Spin, Tabs, Tag, Typography } from 'antd';
 import { ArrowLeftOutlined, BankOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -78,6 +78,7 @@ const filtrarDeudores = (carreras) =>
 
 const CuentasPorCobrarPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { notification } = App.useApp();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
@@ -111,7 +112,25 @@ const CuentasPorCobrarPage = () => {
     }
   }, [exportar, gestionId, notification]);
 
-  const columns = useMemo(() => createCuentasPorCobrarColumns(), []);
+  // Ir a saldar la deuda del estudiante en el formulario de registro de pago.
+  // `returnListPath` (ruta actual + tab activa) hace que "Volver" regrese aquí.
+  const handleRegistrarPago = useCallback(
+    (estudianteId) => {
+      if (!estudianteId) return;
+      navigate('/pagos/registrar', {
+        state: {
+          studentId: Number(estudianteId),
+          returnListPath: `${location.pathname}${location.search}`,
+        },
+      });
+    },
+    [navigate, location.pathname, location.search],
+  );
+
+  const columns = useMemo(
+    () => createCuentasPorCobrarColumns(handleRegistrarPago),
+    [handleRegistrarPago],
+  );
 
   const carrerasDeudoras = useMemo(() => filtrarDeudores(carreras), [carreras]);
 

@@ -23,6 +23,9 @@
  * paralelo se pintan en el organismo de sección (filas `fin-planilla__row-*`).
  */
 
+import { DollarOutlined } from '@ant-design/icons';
+import { ActionButton } from '@atoms';
+import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import CobranzaEstudianteCell from '@finanzas/reportes/components/atoms/CobranzaEstudianteCell';
 import {
   formatEstadoCobranza,
@@ -31,13 +34,17 @@ import {
   getSaldoBandaClass,
 } from '@application-finanzas/utils/cuentasPorCobrarPills';
 
-/** Formatea un monto en bolivianos: "1.200,00" (sin símbolo; la columna ya rotula Bs). */
+/**
+ * Formatea un monto en bolivianos a ENTEROS: "1.200" (sin decimales ni símbolo;
+ * la columna ya rotula Bs). Los aportes se manejan en montos enteros, así que la
+ * planilla muestra solo la parte entera para evitar ruido visual.
+ */
 export const formatBs = (value) => {
   const n = Number(value);
   const safe = Number.isFinite(n) ? n : 0;
-  return safe.toLocaleString('es-BO', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+  return Math.round(safe).toLocaleString('es-BO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
 };
 
@@ -60,9 +67,12 @@ export const formatFecha = (value) => {
 };
 
 /**
+ * @param {(estudianteId: number, record: object) => void} [onRegistrarPago] - Callback
+ *   para ir a saldar el pago del estudiante en el formulario de registro. Si se
+ *   provee, se añade una columna de acción (gated por `finanzas.pago.registrar`).
  * @returns {Array} Columnas de AntD Table (grano estudiante).
  */
-export const createCuentasPorCobrarColumns = () => [
+export const createCuentasPorCobrarColumns = (onRegistrarPago) => [
   {
     title: 'Nº',
     key: 'nro',
@@ -160,6 +170,33 @@ export const createCuentasPorCobrarColumns = () => [
       </span>
     ),
   },
+  // Acción: ir a saldar la deuda en el formulario de registro de pago. Al cancelar
+  // el saldo, el backend salda también el compromiso de pago del estudiante.
+  ...(onRegistrarPago
+    ? [
+        {
+          title: 'Acción',
+          key: 'accion',
+          width: 132,
+          align: 'center',
+          render: (_, record) =>
+            record.estudianteId ? (
+              <ActionButton
+                permiso={FINANZAS_PERMISOS.pagoRegistrar}
+                accion="CREAR"
+                variant="primary"
+                size="small"
+                icon={<DollarOutlined />}
+                onClick={() => onRegistrarPago(record.estudianteId, record)}
+              >
+                Saldar
+              </ActionButton>
+            ) : (
+              '—'
+            ),
+        },
+      ]
+    : []),
 ];
 
 export default createCuentasPorCobrarColumns;

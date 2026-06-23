@@ -1,13 +1,13 @@
 /**
  * Registro de dependencias del recurso Pagos de Aportes Académicos
- * 
+ *
  * Responsabilidades:
  * - Registrar Use Cases del recurso Pagos de Aportes
  * - Registrar Controllers del recurso Pagos de Aportes
  * - Construir y registrar el router del recurso Pagos de Aportes
- * 
+ *
  * Principio SRP: Cada container maneja solo UN recurso/entidad
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con recurso Pagos de Aportes registrado
  */
@@ -56,7 +56,7 @@ import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-a
 
 /**
  * Registra el recurso Pagos de Aportes en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
@@ -79,6 +79,8 @@ export function registerPagosAportesResource(container) {
                 contributionConfigurationRepository: c.resolve(REPOSITORIOS_TOKENS.contributionConfigurationRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                upsertCompromisoUseCase: c.resolve(PAGOS_TOKENS.upsertCompromisoUseCase),
+                compromisoPagoRepository: c.resolve(REPOSITORIOS_TOKENS.compromisoPagoRepository),
                 pdfGenerator: c.resolve(SERVICIOS_TOKENS.pdfGenerator),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -90,6 +92,7 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new ListPagosAportesUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                compromisoPagoRepository: c.resolve(REPOSITORIOS_TOKENS.compromisoPagoRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -107,6 +110,7 @@ export function registerPagosAportesResource(container) {
                 scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                compromisoPagoRepository: c.resolve(REPOSITORIOS_TOKENS.compromisoPagoRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

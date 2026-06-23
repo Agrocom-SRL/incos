@@ -30,12 +30,13 @@ import { getCoberturaPillClass } from '@application-finanzas/utils/becasReporteP
 /** Tramos de beca de la planilla oficial: se muestran SIEMPRE como columnas. */
 export const TRAMOS_CANONICOS = [25, 50, 75, 100];
 
+/** Porcentaje redondeado a ENTERO: "13%" (la planilla evita decimales). */
 const formatPorcentaje = (value) => {
   const n = Number(value);
   const safe = Number.isFinite(n) ? n : 0;
-  return `${safe.toLocaleString('es-BO', {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
+  return `${Math.round(safe).toLocaleString('es-BO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   })}%`;
 };
 

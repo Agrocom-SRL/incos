@@ -89,7 +89,13 @@ export class CompromisoPagoRepository extends BaseRepository {
   }
 
   /**
-   * Compromiso VIGENTE y activo de una cabecera de aporte, o null.
+   * Compromiso ABIERTO (en seguimiento) y activo de una cabecera de aporte, o null.
+   *
+   * "Abierto" = todavía no saldado: estado distinto de 'CUMPLIDO'. Incluye tanto
+   * 'VIGENTE' (fecha futura) como 'INCUMPLIDO' (fecha ya vencida): el estado
+   * almacenado NO se recalcula a diario, así que un compromiso vencido sigue
+   * siendo el compromiso vigente de la cabecera hasta que se salde. Los reportes
+   * derivan en vivo (fecha vs hoy) si está vencido/próximo/al día.
    * paranoid: true excluye soft-deleted automáticamente.
    *
    * @param {number} pagoAporteId
@@ -97,14 +103,15 @@ export class CompromisoPagoRepository extends BaseRepository {
    */
   async findVigenteByPagoAporteId(pagoAporteId) {
     const model = await CompromisoPagoModel.findOne({
-      where: { pagoAporteId, estado: 'VIGENTE', activo: true },
+      where: { pagoAporteId, estado: { [Op.ne]: 'CUMPLIDO' }, activo: true },
       order: [['id', 'DESC']],
     });
     return this.toEntity(model);
   }
 
   /**
-   * Compromisos VIGENTES y activos para un conjunto de cabeceras (sin N+1).
+   * Compromisos ABIERTOS (no CUMPLIDO) y activos para un conjunto de cabeceras
+   * (sin N+1). Incluye VIGENTE e INCUMPLIDO (ver findVigenteByPagoAporteId).
    *
    * @param {number[]} pagoAporteIds
    * @returns {Promise<Array<Object>>}
@@ -116,7 +123,7 @@ export class CompromisoPagoRepository extends BaseRepository {
     const models = await CompromisoPagoModel.findAll({
       where: {
         pagoAporteId: { [Op.in]: pagoAporteIds },
-        estado: 'VIGENTE',
+        estado: { [Op.ne]: 'CUMPLIDO' },
         activo: true,
       },
       order: [['id', 'DESC']],

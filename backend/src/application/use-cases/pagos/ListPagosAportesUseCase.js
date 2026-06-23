@@ -13,17 +13,20 @@
  */
 
 import { ContributionPaymentMapper } from '../../mappers/pagos/index.js';
+import { buildCompromisoContract, todayStr } from './helpers/compromisoContract.js';
 
 export class ListPagosAportesUseCase {
     /**
      * @param {Object} params - Dependencias inyectadas
      * @param {Object} params.contributionPaymentRepository - Repositorio (debe tener obtenerListadoPagosAportes)
+     * @param {Object} params.compromisoPagoRepository - Repositorio de compromisos de pago (compromiso vigente por fila)
      * @param {ILogger} params.logger - Logger
      */
-    constructor({ contributionPaymentRepository, logger }) {
+    constructor({ contributionPaymentRepository, compromisoPagoRepository, logger }) {
         if (!contributionPaymentRepository) throw new Error('contributionPaymentRepository es requerido');
         if (!logger) throw new Error('logger es requerido');
         this.repository = contributionPaymentRepository;
+        this.compromisoPagoRepository = compromisoPagoRepository;
         this.logger = logger;
     }
 
@@ -54,6 +57,10 @@ export class ListPagosAportesUseCase {
             const total = result.total ?? 0;
 
             const pagos = ContributionPaymentMapper.entitiesToPresentation(rows);
+
+            // Compromiso VIGENTE por fila (cabecera pago_aporte), sin N+1.
+            await this._attachCompromisos(pagos);
+
             const totalPages = Math.ceil(total / limitNum);
 
             this.logger.info('[Pagos] Pagos de aportes listados exitosamente (vista)', {
@@ -81,6 +88,46 @@ export class ListPagosAportesUseCase {
                 limit: limitNum,
             });
             throw error;
+        }
+    }
+
+    /**
+     * Adjunta `compromiso` (forma del contrato compartido) a cada fila usando el
+     * compromiso VIGENTE de su cabecera. Una sola consulta para todas las filas
+     * (sin N+1). Un fallo aquí deja `compromiso: null` y no rompe el listado.
+     *
+     * @private
+     * @param {Array<Object>} pagos - Filas mapeadas (cada una con `id` = pago_aporte_id)
+     */
+    async _attachCompromisos(pagos) {
+        if (!Array.isArray(pagos) || pagos.length === 0) return;
+
+        // Default: compromiso null en cada fila (contrato siempre presente).
+        for (const p of pagos) {
+            p.compromiso = null;
+        }
+
+        if (!this.compromisoPagoRepository) return;
+
+        try {
+            const ids = pagos.map((p) => p.id).filter((id) => id != null);
+            if (ids.length === 0) return;
+
+            const vigentes = await this.compromisoPagoRepository.findVigentesByPagoAporteIds(ids);
+            const byCabecera = new Map();
+            for (const c of vigentes) {
+                byCabecera.set(Number(c.pagoAporteId), c);
+            }
+
+            const hoy = todayStr();
+            for (const p of pagos) {
+                const entity = byCabecera.get(Number(p.id)) ?? null;
+                p.compromiso = buildCompromisoContract(entity, hoy);
+            }
+        } catch (error) {
+            this.logger.warn('[Pagos] No se pudieron adjuntar compromisos al listado (filas quedan en null)', {
+                error: error.message,
+            });
         }
     }
 }

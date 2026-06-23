@@ -140,6 +140,9 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         if (data.descripcion) {
           formData.append('descripcion', data.descripcion);
         }
+        if (data.compromiso_dias != null) {
+          formData.append('compromiso_dias', String(data.compromiso_dias));
+        }
         formData.append('documentoRespaldo', data.documentoRespaldo);
 
         console.log('[PagoAporteRepository] Enviando FormData con archivo', {
@@ -161,6 +164,7 @@ export class PagoAporteRepository extends IPagoAporteRepository {
           transaction_number: data.transaction_number || null,
           codigo_comprobante: codigoComprobante || null,
           descripcion: data.descripcion || null,
+          compromiso_dias: data.compromiso_dias != null ? Number(data.compromiso_dias) : undefined,
         };
         headers['Content-Type'] = 'application/json';
       }
