@@ -132,4 +132,38 @@ FROM (
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;
 
+-- ============================================================
+-- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
+-- Pagos adicionales: se oculta hasta que la pantalla exista. (Pagos y Reportes
+-- de pagos SÍ están construidos y permanecen activos.)
+-- Se marca activo=0 y deleted_at = fecha de baja en el permiso, sus acciones
+-- (permiso_acciones), sus asignaciones a roles (roles_permisos) y el grupo de
+-- UI. Queda oculta para TODOS los roles, incluido ADMIN_SISTEMA, que hereda
+-- por vista_*_activas (filtra activo=TRUE y deleted_at IS NULL).
+-- Para REHABILITAR: poner activo=1 y deleted_at=NULL en estas mismas filas.
+-- ============================================================
+SET @fecha_baja := '2026-06-24 00:00:00';
+
+-- 1) Permiso de la página no construida
+UPDATE permisos
+SET activo = 0, deleted_at = @fecha_baja
+WHERE codigo IN ('finanzas.pago.adicionales');
+
+-- 2) Cascada: acciones de ese permiso
+UPDATE permiso_acciones pa
+JOIN permisos p ON p.id = pa.permiso_id
+SET pa.activo = 0, pa.deleted_at = @fecha_baja
+WHERE p.modulo = 'FIN' AND p.deleted_at IS NOT NULL;
+
+-- 3) Cascada: asignaciones a roles de ese permiso
+UPDATE roles_permisos rp
+JOIN permisos p ON p.id = rp.permiso_id
+SET rp.activo = 0, rp.deleted_at = @fecha_baja
+WHERE p.modulo = 'FIN' AND p.deleted_at IS NOT NULL;
+
+-- 4) Grupo de UI que queda completamente oculto
+UPDATE grupos_ui
+SET activo = 0, deleted_at = @fecha_baja
+WHERE codigo IN ('fin_adicionales');
+
 SET FOREIGN_KEY_CHECKS = 1;
