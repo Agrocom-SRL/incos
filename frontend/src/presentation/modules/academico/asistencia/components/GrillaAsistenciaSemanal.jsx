@@ -11,16 +11,14 @@
  * cambios. La lógica de marca (P/R/F) se delega en `onToggleCelda` (state hook).
  */
 import {
-  LockFilled,
+  CloudSyncOutlined,
   LockOutlined,
   MedicineBoxOutlined,
   PlusOutlined,
-  SaveOutlined,
-  UnlockFilled,
   UnlockOutlined,
 } from '@ant-design/icons';
 import { Table, Tooltip } from 'antd';
-import { Button, IconButton, IdentidadCelda } from '@atoms';
+import { IconButton, IdentidadCelda } from '@atoms';
 import CeldaAsistencia from './CeldaAsistencia.jsx';
 import {
   etiquetaDiaCorto,
@@ -43,29 +41,24 @@ const claseColumnaDia = (dia) => {
   return 'asi-grid__col-dia--clase';
 };
 
-const SemanaGrupoHead = ({ rango, onGuardar, guardando, mostrarGuardar }) => {
+/**
+ * Cabecera del grupo "Semana". La asistencia se guarda sola, celda por celda, tras una
+ * breve pausa (autoguardado silencioso con reintento en segundo plano); por eso no hay
+ * botón ni indicador de estado. El icono ☁ es solo una pista discreta de que se guarda
+ * automáticamente; cualquier problema real se avisa al cerrar día o salir.
+ */
+const SemanaGrupoHead = ({ rango, puedeEditar }) => {
   const titulo =
     rango?.desde && rango?.hasta ? tituloSemana(rango.desde, rango.hasta) : 'Semana';
   return (
     <div className="asi-grid__bim-head asi-grid__bim-head--activo">
       <span className="asi-grid__bim-titulo-row">
-        <span className="asi-grid__bim-titulo">{titulo}</span>
-        {onGuardar && mostrarGuardar ? (
-          <Tooltip title="Guardar las marcas de asistencia de la semana">
-            <Button
-              variant="warning"
-              icon={<SaveOutlined />}
-              loading={guardando}
-              disabled={guardando}
-              onClick={(e) => {
-                e.stopPropagation();
-                onGuardar();
-              }}
-            >
-              Guardar
-            </Button>
+        {puedeEditar ? (
+          <Tooltip title="La asistencia se guarda automáticamente al marcar cada celda.">
+            <CloudSyncOutlined aria-hidden className="asi-grid__bim-autosave-icon" />
           </Tooltip>
         ) : null}
+        <span className="asi-grid__bim-titulo">{titulo}</span>
       </span>
     </div>
   );
@@ -169,9 +162,6 @@ const GrillaAsistenciaSemanal = ({
   onReabrirDia,
   procesandoCierre = false,
   onSolicitarLicencia,
-  onGuardar,
-  guardando = false,
-  hayCambios = false,
 }) => {
   const fijarColumnaEstudiante = dias.length >= 4;
 
@@ -252,14 +242,7 @@ const GrillaAsistenciaSemanal = ({
   });
 
   const grupoSemana = {
-    title: (
-      <SemanaGrupoHead
-        rango={rangoSemana}
-        onGuardar={onGuardar}
-        guardando={guardando}
-        mostrarGuardar={hayCambios}
-      />
-    ),
+    title: <SemanaGrupoHead rango={rangoSemana} puedeEditar={puedeEditar} />,
     className: 'asi-grid__th-bim asi-grid__th-bim--activo',
     onHeaderCell: () => ({
       className: 'asi-grid__th-bim asi-grid__th-bim--activo',

@@ -526,15 +526,18 @@ const EvaluacionDrawer = ({
       setErrorGuardado(null);
       const payload = construirPayload(values);
 
+      // La actividad de ASISTENCIA tiene nota calculada por el backend (round(%×puntos)):
+      // al crear o cambiar sus puntos hay que recargar el cuaderno para traer las notas
+      // recalculadas (no basta con parchear la columna en local).
       if (esEditar) {
         const actualizada = await editarEvaluacion(evaluacion.id, payload);
         notification.success({ title: 'Actividad actualizada' });
-        onGuardado(actualizada);
+        onGuardado(actualizada, { recalcular: esAsistencia });
         onCerrar();
       } else {
         const creada = await crearEvaluacion(payload);
         notification.success({ title: 'Actividad creada' });
-        onGuardado(creada);
+        onGuardado(creada, { recalcular: esAsistencia });
         onCerrar();
       }
     } catch (err) {

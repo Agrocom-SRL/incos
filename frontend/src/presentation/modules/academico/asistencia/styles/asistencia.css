@@ -734,6 +734,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Pista discreta de autoguardado: icono ☁ junto al título de la semana (sin chip). */
+.asi-grid__bim-autosave-icon {
+  font-size: var(--font-size-sm);
+  opacity: 0.85;
+}
+
 /* —— Columnas fijas de identificación (Nro + Estudiante), banda verde oscuro —— */
 .asi-grid-wrap .ant-table-wrapper.asi-grid--consolidado-style .ant-table-thead>tr>th.asi-grid__th-est {
   background: color-mix(in srgb, var(--color-primary) 88%, #000) !important;

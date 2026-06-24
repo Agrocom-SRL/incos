@@ -7,7 +7,7 @@
  *
  * Reglas de marcado en `asistenciaMarcas.js`. El orden de filas viene del backend.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { App } from 'antd';
 import { useAuth } from '@application-auth';
@@ -37,6 +37,19 @@ import {
 /** Clave estable de una celda (estudiante|fecha) para el mapa de cambios. */
 const claveCelda = (matriculaMateriaId, fecha) => `${matriculaMateriaId}|${fecha}`;
 
+/**
+ * Espera (debounce) tras la última marca antes de persistir automáticamente. El docente
+ * marca varias celdas seguidas; se agrupan en un único guardado al hacer una pausa.
+ */
+const AUTOGUARDADO_DELAY_MS = 1200;
+
+/**
+ * Reintento con backoff: si un autoguardado falla, se reintenta solo en segundo plano
+ * (sin avisar al usuario), espaciando cada intento hasta este techo. La caché sobrevive
+ * mientras tanto; la red de seguridad real está al cerrar día / salir.
+ */
+const AUTOGUARDADO_BACKOFF_MAX_MS = 15000;
+
 export const usePlanillaAsistenciaState = () => {
   const { asignacionId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,16 +58,40 @@ export const usePlanillaAsistenciaState = () => {
 
   const { planilla, loading, error, fetch } = usePlanillaAsistenciaApi();
   const { calendario, fetch: fetchCalendario } = useCalendarioAsistenciaApi();
-  const { guardar, guardando } = useBulkAsistenciaApi();
+  const { guardar } = useBulkAsistenciaApi();
   const { cerrar, reabrir, procesando: procesandoCierre } = useRegistroCierreApi();
   const { crear: crearSesion, creando: creandoSesion } = useSesionEspecialApi();
 
   const puedeEditar = hasPermiso(ASISTENCIA_PERMISOS.registroCuaderno, 'EDITAR');
 
-  // Mapa de celdas modificadas en memoria: clave → estado destino (PRESENTE|AUSENTE|TARDANZA).
+  // Mapa de celdas modificadas en memoria (caché local de marcas SIN persistir):
+  //   clave → estado destino (PRESENTE|AUSENTE|TARDANZA).
+  // Cada entrada es un delta respecto al backend cargado; al autoguardarse con éxito se
+  // recarga la planilla y la entrada se poda (el backend pasa a ser la verdad).
   const [cambios, setCambios] = useState(() => new Map());
   // Modo corrección: se activa al reabrir; habilita el ciclo con TARDANZA.
   const [modoCorreccion, setModoCorreccion] = useState(false);
+
+  // Autoguardado por celda (debounce) SILENCIOSO: no expone estado a la UI. Refs espejo
+  // para leer la caché viva dentro del timer/await sin recrear closures, el handle del
+  // debounce, un cerrojo de envío en curso y el delay actual de backoff de reintento.
+  const cambiosRef = useRef(cambios);
+  const debounceRef = useRef(null);
+  const flushEnCursoRef = useRef(false);
+  const backoffRef = useRef(AUTOGUARDADO_DELAY_MS);
+  const programarRef = useRef(null);
+
+  useEffect(() => {
+    cambiosRef.current = cambios;
+  }, [cambios]);
+
+  // Al desmontar, cancelar cualquier autoguardado pendiente.
+  useEffect(
+    () => () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    },
+    [],
+  );
 
   const desdeQuery = searchParams.get('desde');
   const hastaQuery = searchParams.get('hasta');
@@ -84,8 +121,8 @@ export const usePlanillaAsistenciaState = () => {
   }, [anioCalendario, rangoBimestre]);
 
   const cargarPlanilla = useCallback(() => {
-    if (!asignacionId) return;
-    fetch(asignacionId, { desde: desdeQuery, hasta: hastaQuery });
+    if (!asignacionId) return Promise.resolve();
+    return fetch(asignacionId, { desde: desdeQuery, hasta: hastaQuery });
   }, [asignacionId, desdeQuery, hastaQuery, fetch]);
 
   // El resumen (presentes/atrasados/faltantes/licencias del bimestre) sale del endpoint
@@ -155,21 +192,26 @@ export const usePlanillaAsistenciaState = () => {
       setCambios((prev) => {
         const next = new Map(prev);
         const original = estadoEfectivo(estadoBackend);
-        // Si vuelve al valor del backend, se retira del mapa de cambios.
+        // Si vuelve al valor del backend, se retira de la caché de cambios.
         if (proximo === original) next.delete(clave);
         else next.set(clave, proximo);
         return next;
       });
+
+      // Persistir automáticamente tras una breve pausa (celda por celda agrupada).
+      programarRef.current?.();
     },
     [puedeEditar, diaPorFecha, registroCerrado, cambios, modoCorreccion],
   );
 
   const descartarCambios = useCallback(() => setCambios(new Map()), []);
 
-  /** Arma el payload sparse agrupado por día (solo días con celdas modificadas). */
-  const construirPayloadDias = useCallback(() => {
+  /** Arma el payload sparse agrupado por día a partir de las claves indicadas. */
+  const construirPayloadDias = useCallback((claves) => {
     const porFecha = new Map();
-    for (const [clave, estado] of cambios.entries()) {
+    for (const clave of claves) {
+      if (!cambiosRef.current.has(clave)) continue;
+      const estado = cambiosRef.current.get(clave);
       const [matriculaMateriaIdStr, fecha] = clave.split('|');
       if (!porFecha.has(fecha)) porFecha.set(fecha, []);
       porFecha.get(fecha).push({
@@ -182,32 +224,118 @@ export const usePlanillaAsistenciaState = () => {
       fechaClase,
       marcas,
     }));
-  }, [cambios]);
+  }, []);
 
-  const guardarPlanilla = useCallback(async () => {
-    if (!hayCambios) return;
-    const diasPayload = construirPayloadDias();
-    const res = await guardar(asignacionId, { dias: diasPayload });
-    if (!res?.success) {
-      notification.error({
-        title: 'No se pudo guardar la asistencia',
-        description: res?.error || 'Reintentá en unos segundos.',
-      });
-      return;
+  /**
+   * Persiste la caché de marcas (toda la caché viva o las `claves` indicadas).
+   * Es el motor del autoguardado y del flush forzado:
+   *   1. Envía las celdas sin persistir al endpoint de lote (sparse, celda por celda).
+   *   2. Recarga la planilla para alinear `estadoBackend` (habilita el ciclo de atraso
+   *      y deja la BD como verdad), y recarga el resumen del bimestre (KPIs).
+   *   3. Poda de la caché SOLO las celdas cuyo valor no cambió durante el envío (las
+   *      re-marcadas en vuelo quedan pendientes y se reintentan).
+   * Es SILENCIOSO: no muestra notificación de éxito ni de error. Si falla, la caché
+   * sobrevive y el `finally` reprograma un reintento con backoff. Devuelve `{ success }`
+   * para que el flush forzado (cerrar día / salir) sí pueda avisar en su momento.
+   */
+  const enviarMarcas = useCallback(
+    async (clavesInput) => {
+      const claves = (clavesInput ?? [...cambiosRef.current.keys()]).filter((c) =>
+        cambiosRef.current.has(c),
+      );
+      if (claves.length === 0) return { success: true };
+
+      // Snapshot de lo enviado para podar luego solo lo confirmado.
+      const enviado = new Map(claves.map((c) => [c, cambiosRef.current.get(c)]));
+      const diasPayload = construirPayloadDias(claves);
+
+      flushEnCursoRef.current = true;
+      let ok = false;
+      try {
+        const res = await guardar(asignacionId, { dias: diasPayload });
+        if (!res?.success) return res ?? { success: false };
+        ok = true;
+        // Alinear backend (estadoBackend) tras persistir: ciclo de atraso y BD == caché.
+        await cargarPlanilla();
+        setCambios((prev) => {
+          const next = new Map(prev);
+          for (const [clave, val] of enviado) {
+            if (next.get(clave) === val) next.delete(clave);
+          }
+          return next;
+        });
+        recargarCalendario();
+        return res;
+      } catch (e) {
+        return { success: false, error: e?.message };
+      } finally {
+        flushEnCursoRef.current = false;
+        // Éxito → resetea el backoff; fallo → lo duplica (techo) para espaciar reintentos.
+        backoffRef.current = ok
+          ? AUTOGUARDADO_DELAY_MS
+          : Math.min(backoffRef.current * 2, AUTOGUARDADO_BACKOFF_MAX_MS);
+        // Si quedaron marcas (re-marcadas en vuelo o un envío fallido), reprogramar.
+        if (cambiosRef.current.size > 0) programarRef.current?.(backoffRef.current);
+      }
+    },
+    [asignacionId, guardar, construirPayloadDias, cargarPlanilla, recargarCalendario],
+  );
+
+  /** Programa el autoguardado con debounce; se reprograma si hay un envío en curso. */
+  const programarAutoguardado = useCallback(
+    (delayMs = AUTOGUARDADO_DELAY_MS) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        debounceRef.current = null;
+        // Si hay un envío en curso, se reprogramará al terminar (en el finally de enviarMarcas).
+        if (flushEnCursoRef.current) return;
+        if (cambiosRef.current.size > 0) enviarMarcas();
+      }, delayMs);
+    },
+    [enviarMarcas],
+  );
+
+  useEffect(() => {
+    programarRef.current = programarAutoguardado;
+  }, [programarAutoguardado]);
+
+  /**
+   * Fuerza el guardado inmediato de toda la caché y ESPERA a que termine. Se usa antes
+   * de cerrar/reabrir un día o al salir: garantiza que la BD quede igual a lo marcado en
+   * pantalla aunque algún autoguardado por celda no se hubiera completado. Devuelve `true`
+   * si no quedan marcas sin persistir.
+   */
+  const flushPendientes = useCallback(async () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
     }
-    const m = res.data?.marcas ?? {};
-    notification.success({
-      title: 'Asistencia guardada',
-      description: `Faltas registradas: creadas ${m.creadas ?? 0}, actualizadas ${m.actualizadas ?? 0}, quitadas ${m.borradas ?? 0}.`,
-    });
-    setCambios(new Map());
-    cargarPlanilla();
-    recargarCalendario();
-  }, [hayCambios, construirPayloadDias, guardar, asignacionId, notification, cargarPlanilla, recargarCalendario]);
+    // Esperar a que termine un autoguardado en vuelo para no solapar envíos.
+    for (let i = 0; i < 30 && flushEnCursoRef.current; i += 1) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    if (cambiosRef.current.size === 0) return true;
+    const res = await enviarMarcas();
+    return Boolean(res?.success) && cambiosRef.current.size === 0;
+  }, [enviarMarcas]);
 
   /** Cierra la asistencia de UN día (su sesión → solo lectura). */
   const cerrarDia = useCallback(
     async (fecha) => {
+      // Antes de cerrar, persistir la caché de marcas y verificar que la BD quede igual a
+      // lo que se ve en pantalla: evita cerrar un día con marcas sin guardar (el conflicto
+      // del botón de cierre presionado con registros pendientes).
+      if (cambiosRef.current.size > 0) {
+        const ok = await flushPendientes();
+        if (!ok) {
+          notification.error({
+            title: 'No se cerró el día',
+            description:
+              'Quedaron marcas sin guardar. Reintentá en unos segundos y volvé a cerrar.',
+          });
+          return false;
+        }
+      }
       const res = await cerrar(asignacionId, { bimestre, fecha });
       if (!res?.success) {
         notification.error({
@@ -223,12 +351,24 @@ export const usePlanillaAsistenciaState = () => {
       cargarPlanilla();
       return true;
     },
-    [cerrar, asignacionId, bimestre, notification, cargarPlanilla],
+    [cerrar, asignacionId, bimestre, notification, cargarPlanilla, flushPendientes],
   );
 
   /** Reabre la asistencia de UN día (modo corrección para ese día). */
   const reabrirDia = useCallback(
     async (fecha) => {
+      // Persistir la caché antes de reabrir, para no perder marcas sin guardar.
+      if (cambiosRef.current.size > 0) {
+        const ok = await flushPendientes();
+        if (!ok) {
+          notification.error({
+            title: 'No se reabrió el día',
+            description:
+              'Quedaron marcas sin guardar. Reintentá en unos segundos y volvé a reabrir.',
+          });
+          return false;
+        }
+      }
       const res = await reabrir(asignacionId, { bimestre, fecha });
       if (!res?.success) {
         notification.error({
@@ -245,7 +385,7 @@ export const usePlanillaAsistenciaState = () => {
       cargarPlanilla();
       return true;
     },
-    [reabrir, asignacionId, bimestre, notification, cargarPlanilla],
+    [reabrir, asignacionId, bimestre, notification, cargarPlanilla, flushPendientes],
   );
 
   /** Habilita una sesión especial (taller/recuperación) y salta a su semana. */
@@ -371,9 +511,9 @@ export const usePlanillaAsistenciaState = () => {
     toggleCelda,
     hayCambios,
     descartarCambios,
+    // autoguardado (silencioso): solo se expone el flush forzado para cerrar/salir
+    flushPendientes,
     // acciones
-    guardarPlanilla,
-    guardando,
     cerrarDia,
     reabrirDia,
     procesandoCierre,

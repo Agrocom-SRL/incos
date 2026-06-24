@@ -1,5 +1,6 @@
 import { sequelize } from '../../database/sequelize.js';
 import { IAsistenciaPlanillaViewRepository } from '../../../domain/interfaces/repositories/IAsistenciaPlanillaViewRepository.js';
+import { ESTADOS_SESION_CLASE } from '../../../domain/constants/asistencia.constants.js';
 
 /**
  * Lectura de celdas de la planilla (vista 133) y del roster (vista 110).
@@ -68,9 +69,10 @@ export class AsistenciaPlanillaViewRepository extends IAsistenciaPlanillaViewRep
   /**
    * Agregado de asistencia del BIMESTRE por estudiante, para calcular el % de asistencia.
    *
-   *   sesiones_tomadas           = sesiones del curso en el periodo del bimestre que SÍ cuentan
-   *                                (día no feriado/receso ni clase no dictada). Denominador.
-   *   faltas_no_neutralizadas    = AUSENTE/TARDANZA del estudiante en esas sesiones, descontando
+   *   sesiones_tomadas           = sesiones CERRADAS del curso en el periodo del bimestre que SÍ
+   *                                cuentan (día no feriado/receso ni clase no dictada). Denominador
+   *                                (100%). Las sesiones ABIERTAS no se computan todavía.
+   *   faltas_no_neutralizadas    = AUSENTE/TARDANZA del estudiante en esas sesiones cerradas, descontando
    *                                las que el estudiante neutraliza con licencia APROBADA vigente.
    *
    * Feriados/receso salen del cronograma (suspende_clases = TRUE); clases no dictadas de
@@ -90,14 +92,18 @@ export class AsistenciaPlanillaViewRepository extends IAsistenciaPlanillaViewRep
     desde,
     hasta
   ) {
-    // Sesiones del curso en el bimestre que SÍ cuentan (día no feriado/receso ni clase no
-    // dictada). Subconsulta reutilizada como denominador y como universo de faltas.
+    // Sesiones del curso en el bimestre que SÍ cuentan para el % de asistencia:
+    //   - estado CERRADA (registro firmado): las ABIERTA aún se están tomando y NO
+    //     forman parte del 100% ni descuentan faltas todavía.
+    //   - día no feriado/receso (cronograma) ni clase no dictada.
+    // Subconsulta reutilizada como denominador y como universo de faltas.
     const sesionesValidas = `
       SELECT sc.id AS sesion_clase_id, sc.fecha
       FROM sesiones_clase sc
       WHERE sc.asignacion_docente_id = ?
         AND sc.periodo_academico_id = ?
         AND sc.fecha BETWEEN ? AND ?
+        AND sc.estado = '${ESTADOS_SESION_CLASE.CERRADA}'
         AND sc.activo = TRUE
         AND sc.deleted_at IS NULL
         AND NOT EXISTS (
