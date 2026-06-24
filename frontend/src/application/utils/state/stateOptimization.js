@@ -58,25 +58,23 @@ export const createOptimizedArraySetter = (setState) => {
         return prevData;
       }
 
-      // Verificar si todos los elementos tienen ID
-      const allHaveIds = newData.every(item => item?.id != null);
-      
-      if (!allHaveIds) {
-        // Si no todos tienen ID, comparar por referencia completa
-        // (fallback para casos edge)
+      // Comparar por CONTENIDO (no solo por IDs): si una recarga trae las mismas filas
+      // con un campo cambiado (mismo conjunto de IDs, p. ej. el `estado` de una licencia
+      // tras aprobar/rechazar), el cambio también debe re-renderizar. Comparar solo IDs
+      // descartaba esas actualizaciones in-place. Mantiene el short-circuit cuando el
+      // contenido es idéntico (evita el re-render innecesario que motivó esta utilidad).
+      // Los datos de lista son JSON plano del backend, así que `JSON.stringify` es estable
+      // y barato (corre solo en cada fetch, no por render).
+      try {
+        if (JSON.stringify(prevData) === JSON.stringify(newData)) {
+          return prevData;
+        }
+      } catch {
+        // Datos no serializables (caso muy raro): actualizar por seguridad.
         return newData;
       }
 
-      // Comparar IDs para verificar si realmente cambió
-      const prevIds = prevData.map(item => item.id).sort().join(',');
-      const newIds = newData.map(item => item.id).sort().join(',');
-
-      // Si los IDs son iguales, mantener la referencia anterior (evita re-renders)
-      if (prevIds === newIds) {
-        return prevData;
-      }
-
-      // Si los IDs cambiaron, actualizar con los nuevos datos
+      // El contenido cambió: actualizar con los nuevos datos.
       return newData;
     });
   };
