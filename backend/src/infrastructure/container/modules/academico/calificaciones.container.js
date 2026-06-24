@@ -404,6 +404,16 @@ export function registerCalificacionesResource(container) {
         calificacionCoordinacionRepository: c.resolve(
           REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
+        cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
+        subjectEnrollmentBimesterRepository: c.resolve(
+          REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository
+        ),
+        bimesterEvaluationGradeRepository: c.resolve(
+          REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository
+        ),
+        asistenciaPlanillaViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository
+        ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         evaluationConfigurationRepository: c.resolve(
@@ -610,6 +620,12 @@ export function registerCalificacionesResource(container) {
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         subjectEnrollmentBimesterRepository: c.resolve(
           REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository
+        ),
+        asistenciaPlanillaViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository
+        ),
+        bimesterEvaluationGradeRepository: c.resolve(
+          REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository
         ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),

@@ -1,8 +1,12 @@
 import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
 import { parsePoliticaFromRow } from '../../utils/politicaInstitucionalPayload.js';
 import { tryResolveDocenteIdForUsuario } from '../../utils/resolveDocenteIdForUsuario.js';
-import { calcularNotaBimestre, calcularNotaFinalGestion } from '../../utils/cuadernoNotasCalculo.js';
+import {
+  calcularNotaBimestre,
+  calcularNotaFinalGestion
+} from '../../utils/cuadernoNotasCalculo.js';
 import { obtenerCuotasDesdePolitica } from '../../utils/obtenerCuotasDesdePolitica.js';
+import { sincronizarNotasAsistenciaBimestre } from '../../utils/sincronizarNotasAsistenciaBimestre.js';
 
 const BIMESTRES_TOTAL = 4;
 
@@ -23,7 +27,7 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
         matriculaMateriaId: row.matricula_materia_id,
         notaFinal: redondear(row.nota_final),
         recuperatorio: null,
-        bimestresPorNumero: new Map(),
+        bimestresPorNumero: new Map()
       });
     }
     const est = map.get(id);
@@ -41,13 +45,13 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
       teorico,
       practico,
       suma,
-      estado: row.estado_bimestre ?? null,
+      estado: row.estado_bimestre ?? null
     });
   }
 
   const lista = [...map.values()];
   lista.sort((a, b) =>
-    String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', { sensitivity: 'base' }),
+    String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', { sensitivity: 'base' })
   );
 
   return lista.map((est, index) => {
@@ -59,14 +63,14 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
           teorico: null,
           practico: null,
           suma: null,
-          estado: null,
+          estado: null
         }
       );
     });
 
     const { notaFinal, gestionCompleta } = calcularNotaFinalGestion(
       bimestres.map((b) => ({ numero: b.numero, nota: b.suma })),
-      pesosBimestres,
+      pesosBimestres
     );
     const observacion =
       gestionCompleta && notaFinal != null
@@ -83,7 +87,7 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
       bimestres,
       notaFinal,
       recuperatorio: est.recuperatorio,
-      observacion,
+      observacion
     };
   });
 };
@@ -95,14 +99,22 @@ export class GetRegistroNotasCursoUseCase {
   constructor({
     calificacionContextoRepository,
     calificacionCoordinacionRepository,
+    cuadernoRepository,
+    subjectEnrollmentBimesterRepository,
+    bimesterEvaluationGradeRepository,
+    asistenciaPlanillaViewRepository,
     teacherRepository,
     userRepository,
     evaluationConfigurationRepository,
     authRepository,
-    logger,
+    logger
   }) {
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
+    this.cuadernoRepository = cuadernoRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
+    this.asistenciaPlanillaViewRepository = asistenciaPlanillaViewRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
@@ -129,7 +141,7 @@ export class GetRegistroNotasCursoUseCase {
     const docenteSesion = await tryResolveDocenteIdForUsuario({
       teacherRepository: this.teacherRepository,
       userRepository: this.userRepository,
-      usuarioId,
+      usuarioId
     });
     const esDocenteDelCurso =
       Number.isFinite(docenteSesion) && docenteSesion === docenteIdAsignacion;
@@ -138,7 +150,7 @@ export class GetRegistroNotasCursoUseCase {
       const esCoordinacion = await this.authRepository.tienePermiso(
         usuarioId,
         'academico.calificacion.coordinacion',
-        'LISTAR',
+        'LISTAR'
       );
       if (!esCoordinacion) {
         throw new ForbiddenError('No tenés acceso a este curso.');
@@ -153,16 +165,37 @@ export class GetRegistroNotasCursoUseCase {
     }
 
     const politicaRow = await this.evaluationConfigurationRepository.findActiveRowByGestionId(
-      ctx.gestion_id,
+      ctx.gestion_id
     );
     const politicaParsed = parsePoliticaFromRow(politicaRow) ?? {};
     const notaMinimaAprobacion = Number(politicaParsed.notaMinimaAprobacion) || 61;
     const { pesosBimestres } = obtenerCuotasDesdePolitica(politicaParsed);
 
+    // Recalcular la(s) columna(s) ASISTENCIA de cada bimestre ANTES de leer el
+    // consolidado, para que el registro refleje la asistencia actual sin esperar al
+    // cierre. Side-effect tolerante a fallos con guard de estado por bimestre: los
+    // bimestres CERRADOS/PENDIENTES son no-op (no se pisan notas consolidadas) y los
+    // cursos sin columna ASISTENCIA también (no-op barato en el helper).
+    for (let bimestreNumero = 1; bimestreNumero <= BIMESTRES_TOTAL; bimestreNumero += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await sincronizarNotasAsistenciaBimestre({
+        calificacionContextoRepository: this.calificacionContextoRepository,
+        cuadernoRepository: this.cuadernoRepository,
+        asistenciaPlanillaViewRepository: this.asistenciaPlanillaViewRepository,
+        subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+        bimesterEvaluationGradeRepository: this.bimesterEvaluationGradeRepository,
+        asignacionId: asignacionIdNum,
+        gestionId: ctx.gestion_id,
+        bimestreNumero,
+        usuarioId,
+        logger: this.logger
+      });
+    }
+
     const [docenteRow, filasEstudiantes, periodosCalendario] = await Promise.all([
       this.calificacionCoordinacionRepository.obtenerDocenteCalificaciones(docenteIdAsignacion),
       this.calificacionCoordinacionRepository.listarEstudiantesRegistroNotas(asignacionIdNum),
-      this.calificacionContextoRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id),
+      this.calificacionContextoRepository.obtenerPeriodosBimestresGestion(ctx.gestion_id)
     ]);
 
     const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion, pesosBimestres);
@@ -182,7 +215,7 @@ export class GetRegistroNotasCursoUseCase {
 
     const bimestreVigente = Number(ctx.bimestre_vigente) || null;
     const periodosPorNumero = new Map(
-      (periodosCalendario ?? []).map((p) => [Number(p.numero_orden), p]),
+      (periodosCalendario ?? []).map((p) => [Number(p.numero_orden), p])
     );
     const bimestresCalendario = Array.from({ length: BIMESTRES_TOTAL }, (_, i) => {
       const numero = i + 1;
@@ -196,14 +229,13 @@ export class GetRegistroNotasCursoUseCase {
         fechaFin: p?.fecha_fin ?? null,
         estadoCalendario: tipo,
         reabierto,
-        editable:
-          reabierto || (tipo === 'abierto' && numero <= (bimestreVigente ?? numero)),
+        editable: reabierto || (tipo === 'abierto' && numero <= (bimestreVigente ?? numero))
       };
     });
 
     this.logger.info('[Calificaciones] Registro de notas', {
       asignacionId: asignacionIdNum,
-      estudiantes: estudiantes.length,
+      estudiantes: estudiantes.length
     });
 
     return {
@@ -219,7 +251,7 @@ export class GetRegistroNotasCursoUseCase {
         bimestreVigente,
         bimestreNombre: ctx.bimestre_nombre ?? null,
         notaMinimaAprobacion,
-        pesosBimestres,
+        pesosBimestres
       },
       curso: {
         id: asignacionIdNum,
@@ -230,14 +262,14 @@ export class GetRegistroNotasCursoUseCase {
         periodo: cursoRow.asignatura_periodo_nombre ?? null,
         paralelo: cursoRow.paralelo_nombre ?? '',
         turno: cursoRow.paralelo_turno ?? '',
-        estudiantes: Number(cursoRow.cantidad_estudiantes ?? estudiantes.length),
+        estudiantes: Number(cursoRow.cantidad_estudiantes ?? estudiantes.length)
       },
       estudiantes,
       bimestresCalendario,
       gestion: {
         fechaInicio: ctx.gestion_fecha_inicio ?? null,
-        fechaFin: ctx.gestion_fecha_fin ?? null,
-      },
+        fechaFin: ctx.gestion_fecha_fin ?? null
+      }
     };
   }
 }

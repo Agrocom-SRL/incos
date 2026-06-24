@@ -131,7 +131,9 @@ export class AsistenciaPlanillaViewRepository extends IAsistenciaPlanillaViewRep
                   AND l.deleted_at IS NULL
                   AND sv.fecha BETWEEN l.fecha_inicio AND l.fecha_fin
               )
-            THEN 1 ELSE 0
+            -- AUSENTE penaliza 1 clase completa; TARDANZA media falta (0.5).
+            THEN CASE WHEN asi.estado = 'TARDANZA' THEN 0.5 ELSE 1 END
+            ELSE 0
           END
         ), 0) AS faltas_no_neutralizadas
       FROM vista_base_calificacion_estudiante_matricula_curso r

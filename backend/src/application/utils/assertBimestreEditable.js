@@ -2,6 +2,44 @@ import { ForbiddenError } from '../../domain/errors/AppError.js';
 import { ESTADOS_INSTITUCIONALES_BIMESTRE } from '../../domain/constants/evaluaciones.constants.js';
 
 /**
+ * Versión BOOLEANA (sin throw) de la misma señal de estado que usa
+ * {@link assertBimestreEditable}: el bimestre es editable si fue REABIERTO por
+ * curso o está institucionalmente EN_CURSO (vista 114). PENDIENTE o CERRADO → false.
+ *
+ * Pensada para usarse como GUARD de side-effects tolerantes a fallos (p. ej.
+ * recalcular la columna ASISTENCIA al leer el cuaderno/notas), donde lanzar una
+ * excepción rompería la lectura. NUNCA recalcular si el bimestre está CERRADO:
+ * pisaría las notas ya consolidadas.
+ *
+ * @returns {Promise<boolean>} true si REABIERTO o EN_CURSO.
+ */
+export async function esBimestreEditable({
+  calificacionContextoRepository,
+  subjectEnrollmentBimesterRepository,
+  gestionId,
+  asignacionId,
+  bimestreNum
+}) {
+  const reabierto =
+    (await subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+      Number(asignacionId),
+      Number(bimestreNum)
+    )) > 0;
+
+  if (reabierto) {
+    return true;
+  }
+
+  const estadoInstitucional =
+    await calificacionContextoRepository.obtenerEstadoInstitucionalBimestre(
+      Number(gestionId),
+      Number(bimestreNum)
+    );
+
+  return estadoInstitucional === ESTADOS_INSTITUCIONALES_BIMESTRE.EN_CURSO;
+}
+
+/**
  * Compuerta de edición de notas/actividades del cuaderno por ESTADO del bimestre.
  *
  * La habilitación NO depende de la fecha vigente: se permite escribir si

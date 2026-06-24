@@ -65,6 +65,8 @@ async function recalcularColumnaAsistencia({
  * Para cada columna ASISTENCIA (componente PRACTICO) y cada estudiante del curso:
  *   %asistencia = (sesiones_tomadas - faltas_no_neutralizadas) / sesiones_tomadas
  *   nota        = round(%asistencia × puntos)   (PROPORCIONAL DIRECTO)
+ * donde faltas_no_neutralizadas pondera AUSENTE=1 y TARDANZA=0.5 (media falta), y
+ * descuenta los días cubiertos por licencia APROBADA (ver listarAsistenciaBimestreCurso).
  * y hace upsert en evaluaciones_notas (celda evaluacion × bimestre_matricula).
  *
  * Si el curso no tiene columna ASISTENCIA, no hace nada. Si no hay sesiones tomadas,
