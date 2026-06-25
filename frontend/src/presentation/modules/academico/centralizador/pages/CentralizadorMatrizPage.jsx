@@ -15,6 +15,7 @@ import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useCentralizadorParalelo } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
 import { centralizadorParaleloPath } from '@application-academico/centralizador/utils/centralizadorPaths.js';
+import { nombreBimestre } from '@application-academico/centralizador/utils/centralizadorDoc.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import CentralizadorDocHeader from '../components/CentralizadorDocHeader.jsx';
 import CentralizadorGrid from '../components/CentralizadorGrid.jsx';
@@ -26,8 +27,6 @@ const hojaCardProps = {
   styles: { body: { padding: 0 } },
 };
 
-const BIM_SUFIJO = { 1: '· 1.er bimestre', 2: '· 2.º bimestre', 3: '· 3.er bimestre', 4: '· 4.º bimestre' };
-
 const CentralizadorMatrizPage = () => {
   const navigate = useNavigate();
   const {
@@ -36,12 +35,16 @@ const CentralizadorMatrizPage = () => {
     paraleloSeleccionado,
     asignaturas,
     estudiantes,
-    gestionId,
+    gestionAnio,
+    gestionNombre,
+    notaMinimaAprobacion,
     isLoading,
     error,
     refetch,
     breadcrumbItems,
-  } = useCentralizadorParalelo('ACA-CAL-CENTRALIZADOR-MATRIZ');
+  } = useCentralizadorParalelo('ACA-CENTRALIZADOR-MATRIZ');
+
+  const bimestreNombre = nombreBimestre(bimestreActivo);
 
   const pageHeader = (
     <PageHeader
@@ -99,14 +102,16 @@ const CentralizadorMatrizPage = () => {
       <Flex vertical gap={allSpacing.marginLG}>
         <CentralizadorDocHeader
           paralelo={paraleloSeleccionado}
-          gestionId={gestionId}
-          tituloSufijo={BIM_SUFIJO[bimestreActivo] ?? null}
+          gestionAnio={gestionAnio}
+          gestionNombre={gestionNombre}
+          tituloSufijo={bimestreNombre ? `· ${bimestreNombre}` : null}
         />
         <Card className="cal-centralizador-hoja-card" {...hojaCardProps}>
           <CentralizadorGrid
             asignaturas={asignaturas}
             estudiantes={estudiantes}
             bimestre={bimestreActivo}
+            notaMinimaAprobacion={notaMinimaAprobacion}
           />
         </Card>
       </Flex>

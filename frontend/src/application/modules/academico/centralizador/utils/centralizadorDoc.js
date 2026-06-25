@@ -21,4 +21,19 @@ export const CENTRALIZADOR_DOC = {
   resolucionMinisterial: '0426/2016',
 };
 
+/**
+ * Nombres literales de los bimestres del régimen anual.
+ * Reflejan el seeder `02-seeders/18-seed-periodos_academicos.sql`
+ * (división BIMESTRE, numero_orden 1..4). Índice 0 = 1.er bimestre.
+ */
+export const BIMESTRE_NOMBRES = [
+  'Primer Bimestre',
+  'Segundo Bimestre',
+  'Tercer Bimestre',
+  'Cuarto Bimestre',
+];
+
+/** Nombre literal del bimestre por número (1..4); '' si fuera de rango. */
+export const nombreBimestre = (numero) => BIMESTRE_NOMBRES[Number(numero) - 1] ?? '';
+
 export default CENTRALIZADOR_DOC;

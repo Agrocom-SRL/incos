@@ -38,39 +38,55 @@ CREATE VIEW vista_base_calificacion_centralizador_paralelo_fila AS
 SELECT
   add_.paralelo_gestion_id   AS paralelo_gestion_id,
   add_.gestion_id            AS gestion_id,
+  g.anio                     AS gestion_anio,
+  g.nombre                   AS gestion_nombre,
   add_.oferta_curso_id       AS oferta_curso_id,
   add_.id                    AS asignacion_docente_id,
-  cre.estudiante_id          AS estudiante_id,
-  cre.codigo                 AS codigo_estudiante,
+  emc.estudiante_id          AS estudiante_id,
+  emc.codigo                 AS codigo_estudiante,
   est.ci                     AS ci,
-  cre.nombre                 AS nombre_completo,
+  emc.nombre                 AS nombre_completo,
   add_.materia_sigla         AS asignatura_sigla,
   add_.materia_nombre        AS asignatura_nombre,
   add_.orden_visualizacion   AS asignatura_orden,
   NULLIF(TRIM(CONCAT_WS(' ', add_.docente_apellido_paterno, add_.docente_apellido_materno, add_.docente_nombres)), '') AS docente_nombre,
-  cre.matricula_materia_id   AS matricula_materia_id,
-  MAX(CASE WHEN cre.bimestre = 1 THEN cre.nota_bimestre END) AS bim1,
-  MAX(CASE WHEN cre.bimestre = 2 THEN cre.nota_bimestre END) AS bim2,
-  MAX(CASE WHEN cre.bimestre = 3 THEN cre.nota_bimestre END) AS bim3,
-  MAX(CASE WHEN cre.bimestre = 4 THEN cre.nota_bimestre END) AS bim4,
-  ROUND(AVG(cre.nota_bimestre), 2) AS promedio_anual,
+  emc.matricula_materia_id   AS matricula_materia_id,
+  -- Puntos ACUMULADOS hasta la fecha por bimestre (nota_efectiva = consolidada o,
+  -- si el bimestre sigue abierto, la suma del cuaderno teórico+práctico). Son
+  -- puntos sobre 100, NO porcentaje: si solo se calificaron 10 pts, sale 10.
+  MAX(CASE WHEN r119.bimestre = 1 AND r119.tiene_registro = 1 THEN r119.nota_efectiva END) AS bim1,
+  MAX(CASE WHEN r119.bimestre = 2 AND r119.tiene_registro = 1 THEN r119.nota_efectiva END) AS bim2,
+  MAX(CASE WHEN r119.bimestre = 3 AND r119.tiene_registro = 1 THEN r119.nota_efectiva END) AS bim3,
+  MAX(CASE WHEN r119.bimestre = 4 AND r119.tiene_registro = 1 THEN r119.nota_efectiva END) AS bim4,
+  -- Promedio anual = media de los bimestres con registro (pesos iguales 25/25/25/25).
+  ROUND(AVG(CASE WHEN r119.tiene_registro = 1 THEN r119.nota_efectiva END), 2) AS promedio_anual,
   mm.nota_final              AS nota_final,
   mm.estado                  AS estado
 FROM vista_base_asignacion_docente_detalle add_
-INNER JOIN vista_base_cuaderno_resumen_estudiante_bimestre cre
-  ON cre.asignacion_docente_id = add_.id
+-- Base = matrícula ACTIVA (estudiante × asignatura), NO las notas: incluye a
+-- todos los matriculados (estado INSCRITO/CURSANDO) aunque aún no tengan notas
+-- de bimestre; las notas entran por LEFT JOIN (NULL donde no hay).
+INNER JOIN vista_base_calificacion_estudiante_matricula_curso emc
+  ON emc.asignacion_docente_id = add_.id
 INNER JOIN matriculas_materia mm
-  ON mm.id = cre.matricula_materia_id
+  ON mm.id = emc.matricula_materia_id
   AND mm.deleted_at IS NULL
   AND mm.activo = TRUE
+-- Puntos efectivos por bimestre (consolidado o cuaderno) desde la vista 119;
+-- LEFT JOIN para no excluir matriculados sin notas (quedan en NULL → '—').
+LEFT JOIN vista_base_calificacion_resumen_curso_bimestre_fila r119
+  ON r119.matricula_materia_id = emc.matricula_materia_id
 LEFT JOIN estudiantes est
-  ON est.id = cre.estudiante_id
+  ON est.id = emc.estudiante_id
   AND est.deleted_at IS NULL
+LEFT JOIN gestiones g
+  ON g.id = add_.gestion_id
+  AND g.deleted_at IS NULL
 WHERE add_.activo = TRUE
   AND add_.vigente = TRUE
 GROUP BY
-  add_.paralelo_gestion_id, add_.gestion_id, add_.oferta_curso_id, add_.id,
-  cre.estudiante_id, cre.codigo, est.ci, cre.nombre,
+  add_.paralelo_gestion_id, add_.gestion_id, g.anio, g.nombre, add_.oferta_curso_id, add_.id,
+  emc.estudiante_id, emc.codigo, est.ci, emc.nombre,
   add_.materia_sigla, add_.materia_nombre, add_.orden_visualizacion,
   add_.docente_apellido_paterno, add_.docente_apellido_materno, add_.docente_nombres,
-  cre.matricula_materia_id, mm.nota_final, mm.estado;
+  emc.matricula_materia_id, mm.nota_final, mm.estado;

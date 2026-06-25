@@ -8,11 +8,11 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Flex, Spin } from 'antd';
+import { Alert, Card, Flex, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { BackButton } from '@atoms';
+import { BackButton, Button } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import {
   useCentralizadorParalelo,
@@ -22,6 +22,7 @@ import {
   CENTRALIZADOR_PATH,
   centralizadorMatrizPath,
 } from '@application-academico/centralizador/utils/centralizadorPaths.js';
+import { nombreBimestre } from '@application-academico/centralizador/utils/centralizadorDoc.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import CentralizadorDocHeader from '../components/CentralizadorDocHeader.jsx';
 import CentralizadorBimestresGrid from '../components/CentralizadorBimestresGrid.jsx';
@@ -33,8 +34,6 @@ const hojaCardProps = {
   styles: { body: { padding: 0 } },
 };
 
-const BIM_LABEL = { 1: '1B', 2: '2B', 3: '3B', 4: '4B' };
-
 const CentralizadorBimestresPage = () => {
   const navigate = useNavigate();
   const {
@@ -42,12 +41,14 @@ const CentralizadorBimestresPage = () => {
     paraleloSeleccionado,
     bimestrePromedios,
     estudiantes,
-    gestionId,
+    gestionAnio,
+    gestionNombre,
+    notaMinimaAprobacion,
     isLoading,
     error,
     refetch,
     breadcrumbItems,
-  } = useCentralizadorParalelo('ACA-CAL-CENTRALIZADOR-BIMESTRES');
+  } = useCentralizadorParalelo('ACA-CENTRALIZADOR-BIMESTRES');
 
   const abrirBimestre = (n) => navigate(centralizadorMatrizPath(paraleloGestionId, n));
 
@@ -105,13 +106,17 @@ const CentralizadorBimestresPage = () => {
 
     return (
       <Flex vertical gap={allSpacing.marginLG}>
-        <CentralizadorDocHeader paralelo={paraleloSeleccionado} gestionId={gestionId} />
+        <CentralizadorDocHeader
+          paralelo={paraleloSeleccionado}
+          gestionAnio={gestionAnio}
+          gestionNombre={gestionNombre}
+        />
 
         <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">
           <span className="cal-centralizador-bim__selector-label">Ver matriz del bimestre:</span>
           {BIMESTRES_CENTRALIZADOR.map((n) => (
-            <Button key={n} size="small" onClick={() => abrirBimestre(n)}>
-              {BIM_LABEL[n]}
+            <Button key={n} variant="secondary" size="small" onClick={() => abrirBimestre(n)}>
+              {nombreBimestre(n)}
             </Button>
           ))}
         </Flex>
@@ -120,6 +125,8 @@ const CentralizadorBimestresPage = () => {
           <CentralizadorBimestresGrid
             promedios={bimestrePromedios}
             onAbrirBimestre={abrirBimestre}
+            gestionAnio={gestionAnio}
+            notaMinimaAprobacion={notaMinimaAprobacion}
           />
         </Card>
       </Flex>

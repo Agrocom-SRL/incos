@@ -188,6 +188,8 @@ export class ParallelRepository extends BaseRepository {
         e.conflictos_solape_mismo_bloque,
         e.conflictos_aula,
         e.conflicto_docente_horario,
+        e.cantidad_docentes,
+        e.cantidad_estudiantes,
         e.tablero_grupo
       FROM vista_horarios_paralelo_estado e
       ${where.length ? `WHERE ${where.map((w) => w.replace(/^(\w+)/, 'e.$1')).join(' AND ')}` : ''}

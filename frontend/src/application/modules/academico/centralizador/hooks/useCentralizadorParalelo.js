@@ -16,8 +16,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
 import { useParalelosEstadoApi } from '@application-shared/hooks';
-import { normalizarParalelosCentralizador } from '../utils/paraleloCentralizador.js';
+import {
+  normalizarParalelosCentralizador,
+  etiquetaParalelo,
+} from '../utils/paraleloCentralizador.js';
+import { nombreBimestre } from '../utils/centralizadorDoc.js';
 import { createCentralizadorBreadcrumbItems } from '../utils/centralizadorBreadcrumbs.js';
+
+/** Nota mínima de aprobación por defecto si la política aún no la define. */
+const NOTA_MINIMA_FALLBACK = 61;
 
 /** Bimestres del régimen anual del centralizador. */
 export const BIMESTRES_CENTRALIZADOR = [1, 2, 3, 4];
@@ -76,6 +83,9 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-BIMESTRES
   const [asignaturas, setAsignaturas] = useState([]);
   const [estudiantes, setEstudiantes] = useState([]);
   const [gestionId, setGestionId] = useState(null);
+  const [gestionAnio, setGestionAnio] = useState(null);
+  const [gestionNombre, setGestionNombre] = useState(null);
+  const [notaMinimaAprobacion, setNotaMinimaAprobacion] = useState(NOTA_MINIMA_FALLBACK);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -84,6 +94,9 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-BIMESTRES
       setAsignaturas([]);
       setEstudiantes([]);
       setGestionId(null);
+      setGestionAnio(null);
+      setGestionNombre(null);
+      setNotaMinimaAprobacion(NOTA_MINIMA_FALLBACK);
       setError(null);
       return;
     }
@@ -99,11 +112,19 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-BIMESTRES
       setAsignaturas(Array.isArray(data.asignaturas) ? data.asignaturas : []);
       setEstudiantes(Array.isArray(data.estudiantes) ? data.estudiantes : []);
       setGestionId(data.gestionId ?? null);
+      setGestionAnio(data.gestionAnio ?? null);
+      setGestionNombre(data.gestionNombre ?? null);
+      setNotaMinimaAprobacion(
+        data.notaMinimaAprobacion != null ? Number(data.notaMinimaAprobacion) : NOTA_MINIMA_FALLBACK,
+      );
     } catch (err) {
       setError(err?.message || String(err));
       setAsignaturas([]);
       setEstudiantes([]);
       setGestionId(null);
+      setGestionAnio(null);
+      setGestionNombre(null);
+      setNotaMinimaAprobacion(NOTA_MINIMA_FALLBACK);
     } finally {
       setIsLoading(false);
     }
@@ -120,14 +141,28 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-BIMESTRES
 
   const refetch = useCallback(() => cargar(paraleloGestionId), [cargar, paraleloGestionId]);
 
-  const breadcrumbItems = useMemo(
-    () =>
-      createCentralizadorBreadcrumbItems(routeKey, 'ACA-CENTRALIZADOR', null, {
-        paraleloGestionId,
-        n: bimestreActivo,
-      }),
-    [routeKey, paraleloGestionId, bimestreActivo],
-  );
+  // Migas: Inicio → Académico → Centralizador → (paralelo) → (bimestre en P3).
+  // - La última miga es el paralelo (P2) o el nombre literal del bimestre (P3).
+  // - En P3 además se reetiqueta la miga intermedia "Bimestres" con el paralelo,
+  //   para que la cadena lea el paralelo y luego el bimestre.
+  const breadcrumbItems = useMemo(() => {
+    const esMatriz = routeKey === 'ACA-CENTRALIZADOR-MATRIZ';
+    const paraleloLabel = etiquetaParalelo(paraleloSeleccionado);
+    const currentTitle = esMatriz
+      ? nombreBimestre(bimestreActivo) || null
+      : paraleloLabel;
+    const items = createCentralizadorBreadcrumbItems(routeKey, 'ACA-CENTRALIZADOR', currentTitle, {
+      paraleloGestionId,
+      n: bimestreActivo,
+    });
+    if (esMatriz && paraleloLabel) {
+      // La miga intermedia de P2 (breadcrumbLabel 'Bimestres') pasa a nombrar el paralelo.
+      return items.map((item) =>
+        item.title === 'Bimestres' ? { ...item, title: paraleloLabel } : item,
+      );
+    }
+    return items;
+  }, [routeKey, paraleloGestionId, bimestreActivo, paraleloSeleccionado]);
 
   return {
     paraleloGestionId,
@@ -137,6 +172,9 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-BIMESTRES
     estudiantes,
     bimestrePromedios,
     gestionId,
+    gestionAnio,
+    gestionNombre,
+    notaMinimaAprobacion,
     isLoading,
     error,
     refetch,

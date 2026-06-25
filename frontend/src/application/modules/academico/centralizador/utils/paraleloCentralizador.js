@@ -7,7 +7,8 @@
 /**
  * @param {Object} row fila snake_case del dashboard de paralelos
  * @returns {{ paraleloGestionId:number|null, paraleloNombre, carreraNombre,
- *   carreraColorHex, periodoNombre, turno, asignaturasRequeridas, cursosCreados }}
+ *   carreraColorHex, periodoNombre, turno, asignaturasRequeridas, cursosCreados,
+ *   cantidadDocentes }}
  */
 export const normalizarParaleloCentralizador = (row) => ({
   paraleloGestionId:
@@ -19,7 +20,14 @@ export const normalizarParaleloCentralizador = (row) => ({
   turno: row.turno ?? null,
   asignaturasRequeridas:
     row.asignaturas_requeridas != null ? Number(row.asignaturas_requeridas) : null,
+  // Asignaturas efectivamente ofertadas en el paralelo (oferta_cursos).
   cursosCreados: row.cursos_creados != null ? Number(row.cursos_creados) : null,
+  // Docentes distintos con asignación vigente en el paralelo (vista 87).
+  cantidadDocentes: row.cantidad_docentes != null ? Number(row.cantidad_docentes) : null,
+  // Estudiantes matriculados activos (INSCRITO/CURSANDO). 0 ⇒ paralelo vacío
+  // (la tarjeta se marca inactiva para no entrar a una lista sin alumnos).
+  cantidadEstudiantes:
+    row.cantidad_estudiantes != null ? Number(row.cantidad_estudiantes) : null,
 });
 
 /** Normaliza y filtra la colección, descartando filas sin paralelo_gestion_id. */
@@ -27,3 +35,16 @@ export const normalizarParalelosCentralizador = (rows = []) =>
   (Array.isArray(rows) ? rows : [])
     .map(normalizarParaleloCentralizador)
     .filter((p) => p.paraleloGestionId != null);
+
+/**
+ * Etiqueta corta del paralelo para breadcrumbs / títulos: carrera · curso ·
+ * Paralelo X. Tolerante a campos nulos.
+ */
+export const etiquetaParalelo = (p) => {
+  if (!p) return null;
+  const partes = [];
+  if (p.carreraNombre) partes.push(p.carreraNombre);
+  if (p.periodoNombre) partes.push(p.periodoNombre);
+  if (p.paraleloNombre) partes.push(`Paralelo ${p.paraleloNombre}`);
+  return partes.join(' · ') || null;
+};

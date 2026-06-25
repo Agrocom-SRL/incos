@@ -36,6 +36,8 @@ SELECT
     COALESCE(solape.conflictos_solape_mismo_bloque, 0) AS conflictos_solape_mismo_bloque,
     COALESCE(conf.conflictos_aula, 0) AS conflictos_aula,
     CASE WHEN dchoque.paralelo_gestion_id IS NOT NULL THEN 1 ELSE 0 END AS conflicto_docente_horario,
+    COALESCE(docn.cantidad_docentes, 0) AS cantidad_docentes,
+    COALESCE(estu.cantidad_estudiantes, 0) AS cantidad_estudiantes,
     CASE
         WHEN req.paralelo_aula_id IS NULL THEN 'sin_aulas'
         WHEN COALESCE(sinaula.bloques_sin_aula, 0) > 0 THEN 'sin_aulas'
@@ -60,4 +62,29 @@ LEFT JOIN vista_base_horarios_paralelo_bloques_sin_aula sinaula
 LEFT JOIN vista_base_horarios_paralelo_conflictos_solape_bloque solape
     ON solape.paralelo_gestion_id = req.paralelo_gestion_id
 LEFT JOIN vista_base_horarios_paralelo_docente_choque_horario dchoque
-    ON dchoque.paralelo_gestion_id = req.paralelo_gestion_id;
+    ON dchoque.paralelo_gestion_id = req.paralelo_gestion_id
+-- Docentes distintos con asignación vigente en el paralelo (consumido por la
+-- tarjeta P1 del Centralizador; aditivo, no afecta a los consumidores de horarios).
+LEFT JOIN (
+    SELECT oc.paralelo_gestion_id, COUNT(DISTINCT ad.docente_id) AS cantidad_docentes
+    FROM oferta_cursos oc
+    INNER JOIN asignaciones_docentes ad
+        ON ad.oferta_curso_id = oc.id
+        AND ad.vigente = 1 AND ad.activo = 1 AND ad.deleted_at IS NULL
+        AND ad.docente_id IS NOT NULL
+    WHERE oc.deleted_at IS NULL
+    GROUP BY oc.paralelo_gestion_id
+) docn ON docn.paralelo_gestion_id = req.paralelo_gestion_id
+-- Estudiantes matriculados ACTIVOS (INSCRITO/CURSANDO) distintos en el paralelo
+-- (consumido por la tarjeta P1 del Centralizador para marcar paralelos vacíos).
+LEFT JOIN (
+    SELECT oc.paralelo_gestion_id, COUNT(DISTINCT i.datos_academicos_id) AS cantidad_estudiantes
+    FROM oferta_cursos oc
+    INNER JOIN matriculas_materia mm
+        ON mm.oferta_curso_id = oc.id
+        AND mm.deleted_at IS NULL AND mm.activo = 1
+        AND mm.estado IN ('INSCRITO', 'CURSANDO')
+    INNER JOIN inscripciones i ON i.id = mm.inscripcion_id AND i.deleted_at IS NULL
+    WHERE oc.deleted_at IS NULL
+    GROUP BY oc.paralelo_gestion_id
+) estu ON estu.paralelo_gestion_id = req.paralelo_gestion_id;

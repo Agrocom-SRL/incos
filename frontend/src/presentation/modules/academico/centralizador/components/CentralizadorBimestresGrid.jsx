@@ -1,10 +1,14 @@
 /**
  * P2 del Centralizador — promedios del estudiante por bimestre.
  *
- * Filas = estudiantes del paralelo; columnas = Bim1 · Bim2 · Bim3 · Bim4 · Final.
+ * Filas = estudiantes del paralelo. Columnas fijas a la izquierda
+ * (N° · Estudiante · CI); luego un GRUPO "Gestión {año}" con los 4 bimestres
+ * como subcolumnas (nombres literales del seeder 18); y, fuera del grupo, la
+ * columna Final (resultado anual).
+ *
  * Cada celda es el PROMEDIO del estudiante en ese bimestre (media de las notas
- * de sus asignaturas, calculado en el hook). Las cabeceras de bimestre son
- * clicables y navegan a la matriz por bimestre (P3).
+ * de sus asignaturas, calculado en el hook); '—' donde el estudiante no cursa.
+ * Las cabeceras de bimestre son clicables y navegan a la matriz por bimestre (P3).
  *
  * Solo lectura. Reusa la "hoja" verde del registro académico.
  */
@@ -12,18 +16,14 @@
 import { Button, Table, Tooltip } from 'antd';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
 import { BIMESTRES_CENTRALIZADOR } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
-
-const NOTA_MINIMA_APROBACION = 61;
-
-const BIM_LABEL = { 1: '1B', 2: '2B', 3: '3B', 4: '4B' };
-const BIM_TITULO = { 1: '1.er bimestre', 2: '2.º bimestre', 3: '3.er bimestre', 4: '4.º bimestre' };
+import { nombreBimestre } from '@application-academico/centralizador/utils/centralizadorDoc.js';
 
 /** Celda de promedio: atenuada si no hay nota; danger si reprueba. */
-const CeldaPromedio = ({ valor }) => {
+const CeldaPromedio = ({ valor, notaMinima }) => {
   if (valor == null) {
     return <span className="cal-centralizador-grid__nota cal-centralizador-grid__nota--vacia">—</span>;
   }
-  const reprobado = valor < NOTA_MINIMA_APROBACION;
+  const reprobado = valor < notaMinima;
   return (
     <span
       className={[
@@ -38,32 +38,48 @@ const CeldaPromedio = ({ valor }) => {
   );
 };
 
-/** Cabecera clicable de un bimestre: abre la matriz por bimestre (P3). */
-const CabeceraBimestre = ({ numero, onAbrirBimestre }) => (
-  <Tooltip title={`Ver matriz del ${BIM_TITULO[numero]}`} placement="top">
-    <Button
-      type="text"
-      size="small"
-      className="cal-centralizador-bim__head-btn"
-      onClick={() => onAbrirBimestre?.(numero)}
-    >
-      {BIM_LABEL[numero]}
-    </Button>
-  </Tooltip>
-);
+/** Cabecera clicable de un bimestre (nombre literal): abre la matriz (P3). */
+const CabeceraBimestre = ({ numero, onAbrirBimestre }) => {
+  const nombre = nombreBimestre(numero);
+  return (
+    <Tooltip title={`Ver matriz del ${nombre}`} placement="top">
+      <Button
+        type="text"
+        size="small"
+        className="cal-centralizador-bim__head-btn"
+        onClick={() => onAbrirBimestre?.(numero)}
+      >
+        {nombre}
+      </Button>
+    </Tooltip>
+  );
+};
 
-const CentralizadorBimestresGrid = ({ promedios = [], onAbrirBimestre }) => {
+const CentralizadorBimestresGrid = ({
+  promedios = [],
+  onAbrirBimestre,
+  gestionAnio = null,
+  notaMinimaAprobacion = 61,
+}) => {
   const dataSource = promedios.map((p, i) => ({ ...p, key: p.estudianteId ?? i, nro: i + 1 }));
 
   const columnasBimestre = BIMESTRES_CENTRALIZADOR.map((numero) => ({
     title: <CabeceraBimestre numero={numero} onAbrirBimestre={onAbrirBimestre} />,
     dataIndex: `bim${numero}`,
     key: `bim${numero}`,
-    width: 96,
+    width: 124,
     align: 'center',
     onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-asig' }),
-    render: (valor) => <CeldaPromedio valor={valor} />,
+    render: (valor) => <CeldaPromedio valor={valor} notaMinima={notaMinimaAprobacion} />,
   }));
+
+  const grupoGestion = {
+    title: gestionAnio ? `Gestión ${gestionAnio}` : 'Gestión',
+    key: 'grupo-gestion',
+    align: 'center',
+    onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-asig' }),
+    children: columnasBimestre,
+  };
 
   const columns = [
     {
@@ -89,7 +105,17 @@ const CentralizadorBimestresGrid = ({ promedios = [], onAbrirBimestre }) => {
         <CeldaEstudiante nombre={nombreCompleto} codigo={row.codigoEstudiante} />
       ),
     },
-    ...columnasBimestre,
+    {
+      title: 'Cédula de identidad',
+      dataIndex: 'ci',
+      key: 'ci',
+      width: 132,
+      align: 'center',
+      className: 'cal-centralizador-grid__col-ci',
+      onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-est' }),
+      render: (ci) => <span className="cal-centralizador-grid__ci">{ci ?? '—'}</span>,
+    },
+    grupoGestion,
     {
       title: 'Final',
       dataIndex: 'final',
@@ -99,7 +125,7 @@ const CentralizadorBimestresGrid = ({ promedios = [], onAbrirBimestre }) => {
       fixed: 'right',
       className: 'cal-centralizador-grid__col-estado',
       onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-est' }),
-      render: (valor) => <CeldaPromedio valor={valor} />,
+      render: (valor) => <CeldaPromedio valor={valor} notaMinima={notaMinimaAprobacion} />,
     },
   ];
 
@@ -115,11 +141,13 @@ const CentralizadorBimestresGrid = ({ promedios = [], onAbrirBimestre }) => {
         size="small"
         bordered
         scroll={{ x: 'max-content' }}
-        locale={{ emptyText: 'Sin estudiantes matriculados en el paralelo' }}
+        locale={{ emptyText: 'Sin estudiantes inscritos en el paralelo' }}
       />
       <p className="cal-centralizador-grid__leyenda" role="note">
-        Promedio del estudiante por bimestre (media de sus asignaturas). Tocá un
-        bimestre (1B–4B) para ver la matriz de notas por asignatura.
+        Cada bimestre es el puntaje acumulado del estudiante (teórico + práctico)
+        sobre 100, promediado entre las asignaturas que cursa en el paralelo. El
+        Final es el promedio de los bimestres con registro. Tocá un bimestre para
+        ver la matriz de notas por asignatura.
       </p>
     </div>
   );

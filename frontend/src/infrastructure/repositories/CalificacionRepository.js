@@ -80,6 +80,9 @@ class CalificacionRepository {
         data: {
           paraleloGestionId: payload.paraleloGestionId ?? null,
           gestionId: payload.gestionId ?? null,
+          gestionAnio: payload.gestionAnio ?? null,
+          gestionNombre: payload.gestionNombre ?? null,
+          notaMinimaAprobacion: payload.notaMinimaAprobacion ?? null,
           asignaturas: Array.isArray(payload.asignaturas) ? payload.asignaturas : [],
           estudiantes: Array.isArray(payload.estudiantes) ? payload.estudiantes : [],
         },

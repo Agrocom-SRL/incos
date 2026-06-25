@@ -157,54 +157,47 @@
   color: #fff !important;
 }
 
-/* Cabecera de asignatura: angosta y alta, con el nombre rotado vertical. */
+/* Cabecera de asignatura: 3 filas apiladas (sigla / materia / docente). */
 .cal-centralizador-grid-wrap
   .ant-table-wrapper.cal-centralizador-grid
   .ant-table-thead
   > tr
   > th.cal-centralizador-grid__th-asig {
-  padding: 6px 2px !important;
-  vertical-align: bottom !important;
+  padding: 8px 6px !important;
+  vertical-align: top !important;
 }
 
 .cal-centralizador-grid__asig-head {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  min-height: 132px;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  gap: 3px;
+  /* Altura consistente entre todas las cabeceras de asignatura. */
+  min-height: 64px;
+  text-align: center;
+  /* Las filas de materia/docente pueden envolver (anula el nowrap del th). */
+  white-space: normal;
 }
 
 .cal-centralizador-grid__asig-sigla {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
+  line-height: 1.2;
 }
 
 .cal-centralizador-grid__asig-nombre {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
   font-size: 11px;
   font-weight: 500;
-  line-height: 1.2;
-  max-height: 132px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
   color: rgba(255, 255, 255, 0.92);
 }
 
 .cal-centralizador-grid__asig-docente {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
   font-size: 10px;
   font-weight: 400;
   line-height: 1.2;
-  max-height: 110px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: rgba(255, 255, 255, 0.72);
 }
 
@@ -285,4 +278,38 @@
 /* —— P1: tarjeta de paralelo clicable —— */
 .curso-card.curso-card--clickable {
   cursor: pointer;
+}
+
+/* Efecto de elevación al hover/focus (mismo lenguaje que el hub de reportes):
+   la tarjeta se levanta con sombra y borde primario. */
+.cal-centralizador-pcard {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.cal-centralizador-pcard:hover,
+.cal-centralizador-pcard:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  border-color: var(--ant-color-primary, #196b45);
+  outline: none;
+}
+
+/* Paralelo sin estudiantes matriculados: tarjeta inactiva, no interactiva. */
+.cal-centralizador-pcard--inactivo {
+  opacity: 0.6;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+.cal-centralizador-pcard--inactivo:hover,
+.cal-centralizador-pcard--inactivo:focus-within {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--ant-color-border, #d9d9d9);
+}
+.cal-centralizador-pcard__sin-alumnos {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 600;
+  color: var(--text-400, #9ca3af);
 }

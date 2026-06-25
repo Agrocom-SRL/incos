@@ -20,14 +20,23 @@ const CampoDoc = ({ etiqueta, valor }) => (
 /**
  * @param {Object} props
  * @param {Object} props.paralelo paralelo normalizado (carreraNombre, periodoNombre, …)
- * @param {number|null} props.gestionId
- * @param {string} [props.tituloSufijo] sufijo del título (p.ej. "· 2do bimestre")
+ * @param {number|null} [props.gestionAnio] año de la gestión (ej. 2026)
+ * @param {string|null} [props.gestionNombre] nombre largo (ej. "Gestión Regular 2026")
+ * @param {string} [props.tituloSufijo] sufijo del título (p.ej. el bimestre activo)
  */
-const CentralizadorDocHeader = ({ paralelo, gestionId, tituloSufijo = null }) => {
+const CentralizadorDocHeader = ({
+  paralelo,
+  gestionAnio = null,
+  gestionNombre = null,
+  tituloSufijo = null,
+}) => {
   const p = paralelo ?? {};
   const cursoParalelo = [p.periodoNombre, p.paraleloNombre]
     .filter(Boolean)
     .join(' · Paralelo ');
+  // La gestión se muestra como AÑO (ej. "2026"), igual que el documento oficial;
+  // nunca el id ni el nombre largo. Cae al nombre solo si no hubiera año.
+  const gestionLabel = gestionAnio != null ? String(gestionAnio) : (gestionNombre ?? null);
   return (
     <section className="cal-centralizador-doc">
       <h2 className="cal-centralizador-doc__titulo">
@@ -36,7 +45,7 @@ const CentralizadorDocHeader = ({ paralelo, gestionId, tituloSufijo = null }) =>
       </h2>
       <dl className="cal-centralizador-doc__grid">
         <CampoDoc etiqueta="Institución" valor={CENTRALIZADOR_DOC.institucion} />
-        <CampoDoc etiqueta="Gestión" valor={gestionId} />
+        <CampoDoc etiqueta="Gestión" valor={gestionLabel} />
         <CampoDoc etiqueta="Nivel" valor={CENTRALIZADOR_DOC.nivel} />
         <CampoDoc etiqueta="Carrera" valor={p.carreraNombre} />
         <CampoDoc etiqueta="Régimen" valor={CENTRALIZADOR_DOC.regimen} />

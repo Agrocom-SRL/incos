@@ -8,15 +8,24 @@
  * el estado tal cual los entrega la vista (sin recalcular).
  */
 
+import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
+
 const toNumberOrNull = (value) => (value == null ? null : Number(value));
 
 export class GetCentralizadorParaleloUseCase {
-  constructor({ calificacionCentralizadorRepository, logger }) {
+  constructor({
+    calificacionCentralizadorRepository,
+    calificacionContextoRepository,
+    evaluationConfigurationRepository,
+    logger,
+  }) {
     if (!calificacionCentralizadorRepository) {
       throw new Error('calificacionCentralizadorRepository es requerido');
     }
     if (!logger) throw new Error('logger es requerido');
     this.calificacionCentralizadorRepository = calificacionCentralizadorRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
+    this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.logger = logger;
   }
 
@@ -31,25 +40,37 @@ export class GetCentralizadorParaleloUseCase {
       await this.calificacionCentralizadorRepository.listarFilasCentralizadorPorParaleloGestion(
         pgId,
       );
+    const safeRows = Array.isArray(rows) ? rows : [];
 
-    if (!Array.isArray(rows) || rows.length === 0) {
+    // Cabecera de gestión (todas las filas comparten gestión).
+    const gestionId = safeRows[0]?.gestion_id != null ? Number(safeRows[0].gestion_id) : null;
+    const gestionAnio = safeRows[0]?.gestion_anio != null ? Number(safeRows[0].gestion_anio) : null;
+    const gestionNombre = safeRows[0]?.gestion_nombre ?? null;
+
+    // Nota mínima de aprobación desde la política institucional (no hardcodeada).
+    const cuotas = await cargarCuotasPoliticaGestion({
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+      gestionId,
+    });
+    const notaMinimaAprobacion = cuotas.notaMinimaAprobacion;
+
+    if (safeRows.length === 0) {
       return {
         paraleloGestionId: pgId,
-        gestionId: null,
+        gestionId,
+        gestionAnio,
+        gestionNombre,
+        notaMinimaAprobacion,
         asignaturas: [],
         estudiantes: [],
       };
     }
 
-    let gestionId = null;
     const asignaturasMap = new Map(); // ofertaCursoId -> { ofertaCursoId, sigla, nombre, orden }
     const estudiantesMap = new Map(); // estudianteId -> { ...datos, notas }
 
-    for (const row of rows) {
-      if (gestionId == null && row.gestion_id != null) {
-        gestionId = Number(row.gestion_id);
-      }
-
+    for (const row of safeRows) {
       const ofertaCursoId = Number(row.oferta_curso_id);
       if (!asignaturasMap.has(ofertaCursoId)) {
         asignaturasMap.set(ofertaCursoId, {
@@ -97,6 +118,9 @@ export class GetCentralizadorParaleloUseCase {
     return {
       paraleloGestionId: pgId,
       gestionId,
+      gestionAnio,
+      gestionNombre,
+      notaMinimaAprobacion,
       asignaturas,
       estudiantes,
     };

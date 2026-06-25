@@ -19,8 +19,6 @@ import { Button, Table, Tooltip } from 'antd';
 import { FileTextOutlined } from '@ant-design/icons';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
 
-const NOTA_MINIMA_APROBACION = 61;
-
 /** Nota del bimestre activo para una asignatura. */
 const notaBimestre = (nota, bimestre) => {
   if (!nota || bimestre == null) return null;
@@ -29,11 +27,11 @@ const notaBimestre = (nota, bimestre) => {
 };
 
 /** Celda de nota de bimestre. Atenuada si no hay nota; danger si reprueba. */
-const CeldaNotaBimestre = ({ valor }) => {
+const CeldaNotaBimestre = ({ valor, notaMinima }) => {
   if (valor == null) {
     return <span className="cal-centralizador-grid__nota cal-centralizador-grid__nota--vacia">—</span>;
   }
-  const reprobado = valor < NOTA_MINIMA_APROBACION;
+  const reprobado = valor < notaMinima;
   return (
     <span
       className={[
@@ -48,21 +46,23 @@ const CeldaNotaBimestre = ({ valor }) => {
   );
 };
 
-/** Cabecera de columna de asignatura: sigla en negrita + nombre rotado + docente. */
-const CabeceraAsignatura = ({ sigla, nombre, docenteNombre }) => (
-  <Tooltip
-    title={docenteNombre ? `${nombre} — ${docenteNombre}` : nombre}
-    placement="top"
-  >
-    <span className="cal-centralizador-grid__asig-head">
-      <span className="cal-centralizador-grid__asig-sigla">{sigla ?? nombre}</span>
-      <span className="cal-centralizador-grid__asig-nombre">{nombre}</span>
-      {docenteNombre ? (
-        <span className="cal-centralizador-grid__asig-docente">{docenteNombre}</span>
-      ) : null}
-    </span>
-  </Tooltip>
-);
+/**
+ * Cabecera de columna de asignatura en 3 filas apiladas (horizontales):
+ * sigla (negrita) · nombre de la materia · docente (tenue, '—' si no hay).
+ * Tooltip "sigla — nombre — docente" por si el texto se trunca.
+ */
+const CabeceraAsignatura = ({ sigla, nombre, docenteNombre }) => {
+  const tooltip = [sigla, nombre, docenteNombre].filter(Boolean).join(' — ');
+  return (
+    <Tooltip title={tooltip} placement="top">
+      <span className="cal-centralizador-grid__asig-head">
+        <span className="cal-centralizador-grid__asig-sigla">{sigla ?? nombre}</span>
+        <span className="cal-centralizador-grid__asig-nombre">{nombre}</span>
+        <span className="cal-centralizador-grid__asig-docente">{docenteNombre ?? '—'}</span>
+      </span>
+    </Tooltip>
+  );
+};
 
 /** Leyenda al pie, espejo del documento oficial. */
 const LeyendaCentralizador = () => (
@@ -76,6 +76,9 @@ const LeyendaCentralizador = () => (
     <span className="cal-centralizador-grid__leyenda-item">
       <strong>PRE</strong> = Prerequisito
     </span>
+    <span className="cal-centralizador-grid__leyenda-item">
+      Cada nota es el puntaje acumulado del bimestre (teórico + práctico) sobre 100.
+    </span>
   </div>
 );
 
@@ -84,8 +87,14 @@ const LeyendaCentralizador = () => (
  * @param {Array} props.asignaturas columnas (incluye docenteNombre)
  * @param {Array} props.estudiantes filas (notas por ofertaCursoId)
  * @param {number} props.bimestre bimestre activo (1..4)
+ * @param {number} props.notaMinimaAprobacion umbral de reprobación (desde la política)
  */
-const CentralizadorGrid = ({ asignaturas = [], estudiantes = [], bimestre }) => {
+const CentralizadorGrid = ({
+  asignaturas = [],
+  estudiantes = [],
+  bimestre,
+  notaMinimaAprobacion = 61,
+}) => {
   const dataSource = estudiantes.map((est, i) => ({
     ...est,
     key: est.estudianteId ?? i,
@@ -102,11 +111,14 @@ const CentralizadorGrid = ({ asignaturas = [], estudiantes = [], bimestre }) => 
     ),
     key: `asig-${asig.ofertaCursoId}`,
     align: 'center',
-    width: 56,
+    width: 132,
     className: 'cal-centralizador-grid__col-asig',
     onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-asig' }),
     render: (_, row) => (
-      <CeldaNotaBimestre valor={notaBimestre(row.notas?.[asig.ofertaCursoId], bimestre)} />
+      <CeldaNotaBimestre
+        valor={notaBimestre(row.notas?.[asig.ofertaCursoId], bimestre)}
+        notaMinima={notaMinimaAprobacion}
+      />
     ),
   }));
 

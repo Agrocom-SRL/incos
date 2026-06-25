@@ -118,6 +118,12 @@ export function registerCalificacionesResource(container) {
         calificacionCentralizadorRepository: c.resolve(
           REPOSITORIOS_TOKENS.calificacionCentralizadorRepository
         ),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
+        ),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger)
       })
   );
