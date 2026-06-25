@@ -2,7 +2,7 @@
 /**
  * Centralizador de calificaciones — módulo de menú propio (ACA-CENTRALIZADOR),
  * hermano de Calificaciones. Flujo de 3 niveles:
- *   P1 paralelos → P2 bimestres del paralelo → P3 matriz por bimestre.
+ *   P1 paralelos → P2 resultado anual del paralelo → P3 matriz por bimestre.
  *
  * El permiso es `academico.calificacion.centralizador` (seed 58, vive en BD);
  * el endpoint backend sigue siendo /calificaciones/centralizador.
@@ -11,8 +11,8 @@
 import { lazy } from 'react';
 
 const CentralizadorConnector = lazy(() => import('./connectors/CentralizadorConnector.jsx'));
-const CentralizadorBimestresConnector = lazy(
-  () => import('./connectors/CentralizadorBimestresConnector.jsx'),
+const CentralizadorAnualConnector = lazy(
+  () => import('./connectors/CentralizadorAnualConnector.jsx'),
 );
 const CentralizadorMatrizConnector = lazy(
   () => import('./connectors/CentralizadorMatrizConnector.jsx'),
@@ -28,14 +28,14 @@ export const centralizadorRoutes = [
     permiso: 'academico.calificacion.centralizador',
     accion: 'LISTAR',
     menu: null,
-    breadcrumbParent: 'ACA-CENTRALIZADOR-BIMESTRES',
+    breadcrumbParent: 'ACA-CENTRALIZADOR-ANUAL',
   },
   {
-    // P2 — bimestres del paralelo elegido.
+    // P2 — resultado anual del paralelo elegido.
     path: '/academico/centralizador/:paraleloGestionId',
-    element: <CentralizadorBimestresConnector />,
-    key: 'ACA-CENTRALIZADOR-BIMESTRES',
-    breadcrumbLabel: 'Bimestres',
+    element: <CentralizadorAnualConnector />,
+    key: 'ACA-CENTRALIZADOR-ANUAL',
+    breadcrumbLabel: 'Resultado anual',
     permiso: 'academico.calificacion.centralizador',
     accion: 'LISTAR',
     menu: null,

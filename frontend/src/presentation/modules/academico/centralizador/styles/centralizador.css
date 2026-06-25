@@ -243,6 +243,35 @@
   font-weight: 600;
 }
 
+/* —— Pill de estado de promoción (resultado anual) —— */
+.cal-centralizador-grid__estado {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.cal-centralizador-grid__estado--aprobado {
+  color: var(--color-success, #389e0d);
+  background: color-mix(in srgb, var(--color-success, #389e0d) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-success, #389e0d) 32%, transparent);
+}
+
+.cal-centralizador-grid__estado--reprobado {
+  color: var(--ant-color-error, #cf1322);
+  background: color-mix(in srgb, var(--ant-color-error, #cf1322) 12%, transparent);
+  border-color: color-mix(in srgb, var(--ant-color-error, #cf1322) 32%, transparent);
+}
+
+.cal-centralizador-grid__estado--en-curso {
+  color: var(--cuaderno-texto-medio);
+  background: var(--cuaderno-fondo);
+  border-color: var(--cuaderno-borde);
+}
+
 /* —— Leyenda al pie (espejo del documento oficial) —— */
 .cal-centralizador-grid__leyenda {
   display: flex;

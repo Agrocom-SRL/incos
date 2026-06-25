@@ -18,6 +18,7 @@
 import { Button, Table, Tooltip } from 'antd';
 import { FileTextOutlined } from '@ant-design/icons';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
+import CabeceraAsignatura from './CabeceraAsignatura.jsx';
 
 /** Nota del bimestre activo para una asignatura. */
 const notaBimestre = (nota, bimestre) => {
@@ -43,27 +44,6 @@ const CeldaNotaBimestre = ({ valor, notaMinima }) => {
     >
       {valor}
     </span>
-  );
-};
-
-/**
- * Cabecera de columna de asignatura en 2 bloques separados por un borde blanco:
- *   1) sigla (negrita, grande)
- *   2) nombre de la materia + docente (tenue, '—' si no hay)
- * Tooltip "sigla — nombre — docente" por si el texto se trunca.
- */
-const CabeceraAsignatura = ({ sigla, nombre, docenteNombre }) => {
-  const tooltip = [sigla, nombre, docenteNombre].filter(Boolean).join(' — ');
-  return (
-    <Tooltip title={tooltip} placement="top">
-      <span className="cal-centralizador-grid__asig-head">
-        <span className="cal-centralizador-grid__asig-sigla">{sigla ?? nombre}</span>
-        <span className="cal-centralizador-grid__asig-detalle">
-          <span className="cal-centralizador-grid__asig-nombre">{nombre}</span>
-          <span className="cal-centralizador-grid__asig-docente">{docenteNombre ?? '—'}</span>
-        </span>
-      </span>
-    </Tooltip>
   );
 };
 

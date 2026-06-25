@@ -48,3 +48,10 @@ export const etiquetaParalelo = (p) => {
   if (p.paraleloNombre) partes.push(`Paralelo ${p.paraleloNombre}`);
   return partes.join(' · ') || null;
 };
+
+/**
+ * Etiqueta CORTA del paralelo para breadcrumbs: solo "Paralelo X" (sin carrera
+ * ni curso, que ya viven en la cabecera de contexto). Null si no hay nombre.
+ */
+export const etiquetaParaleloCorta = (p) =>
+  p?.paraleloNombre ? `Paralelo ${p.paraleloNombre}` : null;

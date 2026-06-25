@@ -1,10 +1,14 @@
 /**
- * P2 del Centralizador — bimestres del paralelo.
+ * P2 del Centralizador — RESULTADO ANUAL del paralelo.
  *
- * Filas = estudiantes; columnas = promedio por bimestre (1B–4B) + Final.
- * Selector de bimestre (botones 1B–4B) que navega a la matriz por bimestre (P3).
- * Reusa el endpoint centralizador (useCentralizadorParalelo) y la cabecera tipo
- * documento.
+ * Filas = estudiantes; columnas = todas las asignaturas del paralelo con su nota
+ * anual (final consolidada o promedio de bimestres con registro) + Promedio anual
+ * + Estado de promoción. Es el centralizador propiamente dicho (todas las materias
+ * de la gestión), lector puro de las notas registradas.
+ *
+ * El selector de bimestre (botones 1B–4B) navega al desglose por bimestre (P3).
+ * Reusa el endpoint centralizador (useCentralizadorParalelo) y la cabecera de
+ * contexto.
  */
 
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +29,7 @@ import {
 import { nombreBimestre } from '@application-academico/centralizador/utils/centralizadorDoc.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import CentralizadorContextoHeader from '../components/CentralizadorContextoHeader.jsx';
-import CentralizadorBimestresGrid from '../components/CentralizadorBimestresGrid.jsx';
+import CentralizadorAnualGrid from '../components/CentralizadorAnualGrid.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/centralizador.css';
 
@@ -34,12 +38,12 @@ const hojaCardProps = {
   styles: { body: { padding: 0 } },
 };
 
-const CentralizadorBimestresPage = () => {
+const CentralizadorAnualPage = () => {
   const navigate = useNavigate();
   const {
     paraleloGestionId,
     paraleloSeleccionado,
-    bimestrePromedios,
+    asignaturas,
     estudiantes,
     gestionAnio,
     gestionNombre,
@@ -48,13 +52,13 @@ const CentralizadorBimestresPage = () => {
     error,
     refetch,
     breadcrumbItems,
-  } = useCentralizadorParalelo('ACA-CENTRALIZADOR-BIMESTRES');
+  } = useCentralizadorParalelo('ACA-CENTRALIZADOR-ANUAL');
 
   const abrirBimestre = (n) => navigate(centralizadorMatrizPath(paraleloGestionId, n));
 
   const pageHeader = (
     <PageHeader
-      title="Centralizador · bimestres"
+      title="Centralizador · resultado anual"
       breadcrumbItems={breadcrumbItems}
       actions={
         <BackButton
@@ -113,7 +117,7 @@ const CentralizadorBimestresPage = () => {
         />
 
         <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">
-          <span className="cal-centralizador-bim__selector-label">Ver matriz del bimestre:</span>
+          <span className="cal-centralizador-bim__selector-label">Ver desglose por bimestre:</span>
           {BIMESTRES_CENTRALIZADOR.map((n) => (
             <Button key={n} variant="info" size="small" onClick={() => abrirBimestre(n)}>
               {nombreBimestre(n)}
@@ -122,10 +126,9 @@ const CentralizadorBimestresPage = () => {
         </Flex>
 
         <Card className="cal-centralizador-hoja-card" {...hojaCardProps}>
-          <CentralizadorBimestresGrid
-            promedios={bimestrePromedios}
-            onAbrirBimestre={abrirBimestre}
-            gestionAnio={gestionAnio}
+          <CentralizadorAnualGrid
+            asignaturas={asignaturas}
+            estudiantes={estudiantes}
             notaMinimaAprobacion={notaMinimaAprobacion}
           />
         </Card>
@@ -145,4 +148,4 @@ const CentralizadorBimestresPage = () => {
   );
 };
 
-export default CentralizadorBimestresPage;
+export default CentralizadorAnualPage;
