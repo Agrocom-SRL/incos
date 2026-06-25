@@ -28,12 +28,14 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('aca_traspasos', 'Traspasos', 'ACADEMICO', 16, 1, NOW(), NOW()),
 ('aca_transitabilidad', 'Transitabilidad', 'ACADEMICO', 17, 1, NOW(), NOW()),
 ('aca_historial', 'Historial', 'ACADEMICO', 18, 1, NOW(), NOW()),
-('aca_avance', 'Avance académico', 'ACADEMICO', 19, 1, NOW(), NOW());
+('aca_avance', 'Avance académico', 'ACADEMICO', 19, 1, NOW(), NOW()),
+('aca_cal_centralizador', 'Centralizador de notas', 'ACADEMICO', 20, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo ACA
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('academico.calificacion.ingreso', 'Calificaciones · menú Académico', NULL, 'ACADEMICO', 'ACA', 'aca_cal_ingreso', '/academico/calificaciones', 1, NOW(), NOW()),
 ('academico.calificacion.coordinacion', 'Calificaciones · coordinación docentes', NULL, 'ACADEMICO', 'ACA', 'aca_cal_coordinacion', '/academico/calificaciones', 1, NOW(), NOW()),
+('academico.calificacion.centralizador', 'Centralizador y boletín de estudiantes', NULL, 'ACADEMICO', 'ACA', 'aca_cal_centralizador', '/academico/calificaciones/centralizador', 1, NOW(), NOW()),
 ('academico.calificacion.mis_cursos', 'Calificaciones · mis cursos', NULL, 'ACADEMICO', 'ACA', 'aca_cal_mis_cursos', '/academico/calificaciones/mis-cursos', 1, NOW(), NOW()),
 ('academico.calificacion.cuaderno', 'Calificaciones · cuaderno y registro de notas', NULL, 'ACADEMICO', 'ACA', 'aca_cal_cuaderno', '/academico/calificaciones/mis-cursos/:asignacionId', 1, NOW(), NOW()),
 ('academico.calificacion.politica', 'Calificaciones · política institucional', NULL, 'ACADEMICO', 'ACA', 'aca_cal_politica', '/academico/calificaciones/politica', 1, NOW(), NOW()),
@@ -75,6 +77,7 @@ FROM permisos p
 JOIN (
   SELECT 'academico.calificacion.ingreso' AS codigo, 'LISTAR' AS accion
   UNION ALL SELECT 'academico.calificacion.coordinacion', 'LISTAR'
+  UNION ALL SELECT 'academico.calificacion.centralizador', 'LISTAR'
   UNION ALL SELECT 'academico.calificacion.mis_cursos', 'LISTAR'
   UNION ALL SELECT 'academico.calificacion.mis_cursos', 'DETALLE'
   UNION ALL SELECT 'academico.calificacion.cuaderno', 'LISTAR'
@@ -143,6 +146,8 @@ FROM (
   UNION ALL SELECT 'ESTUDIANTE', 'academico.calificacion.ingreso', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.coordinacion', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.coordinacion', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.calificacion.centralizador', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.centralizador', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.mis_cursos', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.mis_cursos', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.mis_cursos', 'LISTAR'

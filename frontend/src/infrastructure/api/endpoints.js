@@ -284,6 +284,7 @@ export const ASISTENCIA_ENDPOINTS = {
 
 export const CALIFICACIONES_ENDPOINTS = {
   COORDINACION_DOCENTES: `${API_BASE}/calificaciones/coordinacion/docentes`,
+  CENTRALIZADOR: `${API_BASE}/calificaciones/centralizador`,
   MIS_CURSOS: `${API_BASE}/calificaciones/mis-cursos`,
   COORDINACION_DOCENTE_CURSOS: (docenteId) =>
     `${API_BASE}/calificaciones/coordinacion/docentes/${docenteId}/cursos`,

@@ -9,6 +9,7 @@ import {
   listTiposEvaluacionValidator,
   savePoliticaInstitucionalValidator,
   searchCoordinacionDocentesValidator,
+  getCentralizadorParaleloValidator,
   getCuadernoBimestreValidator,
   createEvaluacionCuadernoValidator,
   updateEvaluacionCuadernoValidator,
@@ -61,6 +62,23 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     validateRequest,
     (req, res, next) =>
       controllers.listCoordinacionCalificacionesDocentesController.handle(req, res, next)
+  );
+
+  const centralizadorListar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.centralizador', 'LISTAR')
+  ];
+
+  /**
+   * GET /api/v1/calificaciones/centralizador?paraleloGestionId=<entero>
+   * Centralizador de calificaciones por paralelo (matriz estudiantes × asignaturas).
+   */
+  router.get(
+    '/centralizador',
+    ...centralizadorListar,
+    getCentralizadorParaleloValidator,
+    validateRequest,
+    (req, res, next) => controllers.getCentralizadorParaleloController.handle(req, res, next)
   );
 
   const misCursosListar = [

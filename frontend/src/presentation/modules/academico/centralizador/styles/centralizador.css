@@ -1,0 +1,288 @@
+/* ======================================================================
+   Centralizador de calificaciones por paralelo (matriz estudiantes × materias).
+   Módulo autocontenido: replica la "hoja" verde del registro académico con sus
+   propios tokens locales (espejo de los del cuaderno) y clases con prefijo
+   `cal-centralizador`.
+   ====================================================================== */
+
+/* —— Tokens locales (mapean variables globales del proyecto) —— */
+.cal-centralizador,
+.cal-centralizador-grid-wrap {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: var(--color-primary, #196b45);
+  --cuaderno-verde-acento: var(--primary-dark, #134d32);
+
+  --cuaderno-papel: var(--color-bg-container, #ffffff);
+  --cuaderno-fondo: #fafafa;
+  --cuaderno-borde: #e5e7eb;
+  --cuaderno-texto-tenue: #9ca3af;
+  --cuaderno-texto-medio: var(--text-500, #6b7280);
+  --cuaderno-texto-fuerte: var(--text-800, #1f2937);
+}
+
+/* —— Estado de carga (nest del Spin) —— */
+.cal-centralizador__spin-nest {
+  min-height: 220px;
+}
+
+/* —— Celda de identificación del estudiante (código + nombre) —— */
+.cal-centralizador-estudiante {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cal-centralizador-estudiante__margen {
+  flex-shrink: 0;
+  width: 2px;
+  align-self: stretch;
+  min-height: 28px;
+  border-radius: 2px;
+  background: var(--cuaderno-verde-acento);
+}
+
+.cal-centralizador-estudiante__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cal-centralizador-estudiante__codigo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-centralizador-estudiante__nombre {
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  font-size: 13px;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+/* —— Cabecera tipo documento (institución, gestión, nivel, carrera, …) —— */
+.cal-centralizador-doc {
+  margin: 0;
+  padding: 16px 18px;
+  background: var(--cuaderno-papel);
+  border: 1px solid var(--cuaderno-borde);
+  border-radius: var(--incos-radius-lg, 12px);
+}
+
+.cal-centralizador-doc__titulo {
+  margin: 0 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--cuaderno-verde-oscuro);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--cuaderno-verde-oscuro);
+}
+
+.cal-centralizador-doc__titulo-sufijo {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-centralizador-doc__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px 20px;
+  margin: 0;
+}
+
+.cal-centralizador-doc__item {
+  margin: 0;
+  min-width: 0;
+}
+
+.cal-centralizador-doc__item dt {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-centralizador-doc__item dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+/* —— Tabla matriz —— */
+.cal-centralizador-grid-wrap {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.cal-centralizador-grid-wrap .ant-table-wrapper.cal-centralizador-grid .ant-table {
+  font-size: 13px;
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th {
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-est,
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-asig {
+  font-weight: 500;
+  padding: 8px 6px !important;
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+}
+
+/* Cabecera de asignatura: angosta y alta, con el nombre rotado vertical. */
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-asig {
+  padding: 6px 2px !important;
+  vertical-align: bottom !important;
+}
+
+.cal-centralizador-grid__asig-head {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 132px;
+  justify-content: flex-end;
+}
+
+.cal-centralizador-grid__asig-sigla {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.cal-centralizador-grid__asig-nombre {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  max-height: 132px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.cal-centralizador-grid__asig-docente {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.2;
+  max-height: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-tbody
+  > tr
+  > td {
+  border-right: 1px solid var(--text-400) !important;
+}
+
+.cal-centralizador-grid__ci {
+  font-variant-numeric: tabular-nums;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+.cal-centralizador-grid__nota {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-centralizador-grid__nota--vacia {
+  color: var(--cuaderno-texto-tenue);
+}
+
+.cal-centralizador-grid__nota--reprobado {
+  color: var(--ant-color-error);
+  font-weight: 600;
+}
+
+/* —— Leyenda al pie (espejo del documento oficial) —— */
+.cal-centralizador-grid__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+  padding: 10px 14px 12px;
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  border: 1px solid var(--cuaderno-borde);
+  border-top: none;
+  border-radius: 0 0 var(--incos-radius-lg, 12px) var(--incos-radius-lg, 12px);
+  background: var(--cuaderno-fondo);
+}
+
+.cal-centralizador-grid__leyenda-item strong {
+  color: var(--cuaderno-texto-fuerte);
+  font-weight: 700;
+}
+
+/* —— P2: cabecera de bimestre clicable + selector —— */
+.cal-centralizador-bim__selector-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-asig
+  .cal-centralizador-bim__head-btn {
+  color: #fff;
+  font-weight: 700;
+  padding-inline: 8px;
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-asig
+  .cal-centralizador-bim__head-btn:hover {
+  color: var(--cuaderno-verde-tenue);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* —— P1: tarjeta de paralelo clicable —— */
+.curso-card.curso-card--clickable {
+  cursor: pointer;
+}

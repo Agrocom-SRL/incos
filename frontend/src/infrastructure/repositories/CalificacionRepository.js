@@ -51,6 +51,45 @@ class CalificacionRepository {
   }
 
   /**
+   * GET /v1/calificaciones/centralizador?paraleloGestionId=<entero>
+   *
+   * Matriz estudiantes × asignaturas de un paralelo en gestión.
+   * El backend ya entrega los nombres en camelCase y el nombre completo del
+   * estudiante con el orden canónico (APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES);
+   * este repositorio no transforma el payload.
+   *
+   * @param {Object} options
+   * @param {number} options.paraleloGestionId
+   * @returns {Promise<{success: boolean, data?: { paraleloGestionId, gestionId, asignaturas, estudiantes }, error?: string}>}
+   */
+  async obtenerCentralizador({ paraleloGestionId } = {}) {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.CENTRALIZADOR, {
+        params: { paraleloGestionId },
+      });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      const payload = responseData.data ?? {};
+      return {
+        success: true,
+        data: {
+          paraleloGestionId: payload.paraleloGestionId ?? null,
+          gestionId: payload.gestionId ?? null,
+          asignaturas: Array.isArray(payload.asignaturas) ? payload.asignaturas : [],
+          estudiantes: Array.isArray(payload.estudiantes) ? payload.estudiantes : [],
+        },
+      };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el centralizador del paralelo');
+    }
+  }
+
+  /**
    * GET /v1/calificaciones/politica/catalogo
    */
   async obtenerPoliticaCatalogo() {

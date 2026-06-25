@@ -6,6 +6,7 @@ import { ACADEMICO_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../t
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListCoordinacionCalificacionesDocentesUseCase } from '../../../../application/use-cases/academico/ListCoordinacionCalificacionesDocentesUseCase.js';
 import { ListCursosCalificacionesUseCase } from '../../../../application/use-cases/academico/ListCursosCalificacionesUseCase.js';
+import { GetCentralizadorParaleloUseCase } from '../../../../application/use-cases/academico/GetCentralizadorParaleloUseCase.js';
 import { GetPoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/GetPoliticaInstitucionalUseCase.js';
 import { GetPoliticaCatalogoUseCase } from '../../../../application/use-cases/academico/GetPoliticaCatalogoUseCase.js';
 import { ListTiposEvaluacionUseCase } from '../../../../application/use-cases/academico/ListTiposEvaluacionUseCase.js';
@@ -27,6 +28,7 @@ import { CerrarBimestreGestionUseCase } from '../../../../application/use-cases/
 import { AbrirBimestreGestionUseCase } from '../../../../application/use-cases/academico/AbrirBimestreGestionUseCase.js';
 import { ListCoordinacionCalificacionesDocentesController } from '../../../../presentation/controllers/academico/calificaciones/list-coordinacion-docentes.controller.js';
 import { ListCursosCalificacionesController } from '../../../../presentation/controllers/academico/calificaciones/list-cursos-calificaciones.controller.js';
+import { GetCentralizadorParaleloController } from '../../../../presentation/controllers/academico/calificaciones/get-centralizador-paralelo.controller.js';
 import { GetPoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-institucional.controller.js';
 import { GetPoliticaCatalogoController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-catalogo.controller.js';
 import { ListTiposEvaluacionController } from '../../../../presentation/controllers/academico/calificaciones/list-tipos-evaluacion.controller.js';
@@ -105,6 +107,31 @@ export function registerCalificacionesResource(container) {
           REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getCentralizadorParaleloUseCase,
+    (c) =>
+      new GetCentralizadorParaleloUseCase({
+        calificacionCentralizadorRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCentralizadorRepository
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getCentralizadorParaleloController,
+    (c) =>
+      new GetCentralizadorParaleloController({
+        getCentralizadorParaleloUseCase: c.resolve(
+          ACADEMICO_TOKENS.getCentralizadorParaleloUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
       })
   );
 
@@ -1056,6 +1083,9 @@ export function registerCalificacionesResource(container) {
       ),
       listCoordinacionCalificacionesDocentesController: c.resolve(
         ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController
+      ),
+      getCentralizadorParaleloController: c.resolve(
+        ACADEMICO_TOKENS.getCentralizadorParaleloController
       ),
       getPoliticaInstitucionalController: c.resolve(
         ACADEMICO_TOKENS.getPoliticaInstitucionalController
