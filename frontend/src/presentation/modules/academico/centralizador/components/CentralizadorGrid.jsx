@@ -47,8 +47,9 @@ const CeldaNotaBimestre = ({ valor, notaMinima }) => {
 };
 
 /**
- * Cabecera de columna de asignatura en 3 filas apiladas (horizontales):
- * sigla (negrita) · nombre de la materia · docente (tenue, '—' si no hay).
+ * Cabecera de columna de asignatura en 2 bloques separados por un borde blanco:
+ *   1) sigla (negrita, grande)
+ *   2) nombre de la materia + docente (tenue, '—' si no hay)
  * Tooltip "sigla — nombre — docente" por si el texto se trunca.
  */
 const CabeceraAsignatura = ({ sigla, nombre, docenteNombre }) => {
@@ -57,8 +58,10 @@ const CabeceraAsignatura = ({ sigla, nombre, docenteNombre }) => {
     <Tooltip title={tooltip} placement="top">
       <span className="cal-centralizador-grid__asig-head">
         <span className="cal-centralizador-grid__asig-sigla">{sigla ?? nombre}</span>
-        <span className="cal-centralizador-grid__asig-nombre">{nombre}</span>
-        <span className="cal-centralizador-grid__asig-docente">{docenteNombre ?? '—'}</span>
+        <span className="cal-centralizador-grid__asig-detalle">
+          <span className="cal-centralizador-grid__asig-nombre">{nombre}</span>
+          <span className="cal-centralizador-grid__asig-docente">{docenteNombre ?? '—'}</span>
+        </span>
       </span>
     </Tooltip>
   );
@@ -137,7 +140,7 @@ const CentralizadorGrid = ({
       title: 'Nómina de estudiantes',
       dataIndex: 'nombreCompleto',
       key: 'estudiante',
-      width: 260,
+      width: 360,
       fixed: 'left',
       className: 'cal-centralizador-grid__col-estudiante',
       onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-est' }),
@@ -150,10 +153,12 @@ const CentralizadorGrid = ({
       title: 'Cédula de identidad',
       dataIndex: 'ci',
       key: 'ci',
-      width: 132,
+      width: 120,
       align: 'center',
       className: 'cal-centralizador-grid__col-ci',
-      onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-est' }),
+      onHeaderCell: () => ({
+        className: 'cal-centralizador-grid__th-est cal-centralizador-grid__th-ci',
+      }),
       render: (ci) => <span className="cal-centralizador-grid__ci">{ci ?? '—'}</span>,
     },
     ...columnasAsignatura,
@@ -163,7 +168,6 @@ const CentralizadorGrid = ({
       key: 'boletin',
       width: 116,
       align: 'center',
-      fixed: 'right',
       className: 'cal-centralizador-grid__col-boletin',
       onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-est' }),
       render: () => (

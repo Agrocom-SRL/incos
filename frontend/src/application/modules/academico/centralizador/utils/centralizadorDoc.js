@@ -36,4 +36,14 @@ export const BIMESTRE_NOMBRES = [
 /** Nombre literal del bimestre por número (1..4); '' si fuera de rango. */
 export const nombreBimestre = (numero) => BIMESTRE_NOMBRES[Number(numero) - 1] ?? '';
 
+/**
+ * Color de negocio de cada bimestre del régimen anual. Espejo de la columna
+ * `color_hex` del seeder `02-seeders/18-seed-periodos_academicos.sql`
+ * (división BIMESTRE, numero_orden 1..4). Índice 0 = 1.er bimestre.
+ */
+export const BIMESTRE_COLORES = ['#2196F3', '#FF9800', '#9C27B0', '#F44336'];
+
+/** Color hex del bimestre por número (1..4); null si fuera de rango. */
+export const colorBimestre = (numero) => BIMESTRE_COLORES[Number(numero) - 1] ?? null;
+
 export default CENTRALIZADOR_DOC;

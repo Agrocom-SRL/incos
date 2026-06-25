@@ -24,7 +24,7 @@ import {
 } from '@application-academico/centralizador/utils/centralizadorPaths.js';
 import { nombreBimestre } from '@application-academico/centralizador/utils/centralizadorDoc.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
-import CentralizadorDocHeader from '../components/CentralizadorDocHeader.jsx';
+import CentralizadorContextoHeader from '../components/CentralizadorContextoHeader.jsx';
 import CentralizadorBimestresGrid from '../components/CentralizadorBimestresGrid.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/centralizador.css';
@@ -106,7 +106,7 @@ const CentralizadorBimestresPage = () => {
 
     return (
       <Flex vertical gap={allSpacing.marginLG}>
-        <CentralizadorDocHeader
+        <CentralizadorContextoHeader
           paralelo={paraleloSeleccionado}
           gestionAnio={gestionAnio}
           gestionNombre={gestionNombre}
@@ -115,7 +115,7 @@ const CentralizadorBimestresPage = () => {
         <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">
           <span className="cal-centralizador-bim__selector-label">Ver matriz del bimestre:</span>
           {BIMESTRES_CENTRALIZADOR.map((n) => (
-            <Button key={n} variant="secondary" size="small" onClick={() => abrirBimestre(n)}>
+            <Button key={n} variant="info" size="small" onClick={() => abrirBimestre(n)}>
               {nombreBimestre(n)}
             </Button>
           ))}

@@ -15,9 +15,8 @@ import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useCentralizadorParalelo } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
 import { centralizadorParaleloPath } from '@application-academico/centralizador/utils/centralizadorPaths.js';
-import { nombreBimestre } from '@application-academico/centralizador/utils/centralizadorDoc.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
-import CentralizadorDocHeader from '../components/CentralizadorDocHeader.jsx';
+import CentralizadorContextoHeader from '../components/CentralizadorContextoHeader.jsx';
 import CentralizadorGrid from '../components/CentralizadorGrid.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/centralizador.css';
@@ -43,8 +42,6 @@ const CentralizadorMatrizPage = () => {
     refetch,
     breadcrumbItems,
   } = useCentralizadorParalelo('ACA-CENTRALIZADOR-MATRIZ');
-
-  const bimestreNombre = nombreBimestre(bimestreActivo);
 
   const pageHeader = (
     <PageHeader
@@ -100,11 +97,11 @@ const CentralizadorMatrizPage = () => {
 
     return (
       <Flex vertical gap={allSpacing.marginLG}>
-        <CentralizadorDocHeader
+        <CentralizadorContextoHeader
           paralelo={paraleloSeleccionado}
           gestionAnio={gestionAnio}
           gestionNombre={gestionNombre}
-          tituloSufijo={bimestreNombre ? `· ${bimestreNombre}` : null}
+          bimestre={bimestreActivo}
         />
         <Card className="cal-centralizador-hoja-card" {...hojaCardProps}>
           <CentralizadorGrid
