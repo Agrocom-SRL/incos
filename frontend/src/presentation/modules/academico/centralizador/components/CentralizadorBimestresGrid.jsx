@@ -11,7 +11,7 @@
 
 import { Button, Table, Tooltip } from 'antd';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
-import { BIMESTRES_CENTRALIZADOR } from '@application-academico/calificaciones/hooks/useCentralizadorParalelo.js';
+import { BIMESTRES_CENTRALIZADOR } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
 
 const NOTA_MINIMA_APROBACION = 61;
 

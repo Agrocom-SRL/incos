@@ -25,13 +25,6 @@ const CalificacionesEntradaConnector = lazy(
   () => import('./connectors/CalificacionesEntradaConnector.jsx'),
 );
 const MisCursosConnector = lazy(() => import('./connectors/MisCursosConnector.jsx'));
-const CentralizadorConnector = lazy(() => import('./connectors/CentralizadorConnector.jsx'));
-const CentralizadorBimestresConnector = lazy(
-  () => import('./connectors/CentralizadorBimestresConnector.jsx'),
-);
-const CentralizadorMatrizConnector = lazy(
-  () => import('./connectors/CentralizadorMatrizConnector.jsx'),
-);
 const ConsolidadoConnector = lazy(() => import('./connectors/ConsolidadoConnector.jsx'));
 const CuadernoConnector = lazy(() => import('./connectors/CuadernoConnector.jsx'));
 const BimestreConsolidadoConnector = lazy(
@@ -80,43 +73,6 @@ export const calificacionesRoutes = [
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'ACA-CAL',
-  },
-  {
-    // P3 — matriz estudiantes × asignaturas del bimestre elegido.
-    path: '/academico/calificaciones/centralizador/:paraleloGestionId/bimestre/:n',
-    element: <CentralizadorMatrizConnector />,
-    key: 'ACA-CAL-CENTRALIZADOR-MATRIZ',
-    breadcrumbLabel: 'Matriz por bimestre',
-    permiso: 'academico.calificacion.centralizador',
-    accion: 'LISTAR',
-    menu: null,
-    breadcrumbParent: 'ACA-CAL-CENTRALIZADOR-BIMESTRES',
-  },
-  {
-    // P2 — bimestres del paralelo elegido.
-    path: '/academico/calificaciones/centralizador/:paraleloGestionId',
-    element: <CentralizadorBimestresConnector />,
-    key: 'ACA-CAL-CENTRALIZADOR-BIMESTRES',
-    breadcrumbLabel: 'Bimestres',
-    permiso: 'academico.calificacion.centralizador',
-    accion: 'LISTAR',
-    menu: null,
-    breadcrumbParent: 'ACA-CAL-CENTRALIZADOR',
-  },
-  {
-    // P1 — grilla de paralelos. Ítem de menú propio (hermano de Calificaciones).
-    path: '/academico/calificaciones/centralizador',
-    element: <CentralizadorConnector />,
-    key: 'ACA-CAL-CENTRALIZADOR',
-    breadcrumbLabel: 'Centralizador',
-    permiso: 'academico.calificacion.centralizador',
-    accion: 'LISTAR',
-    menu: {
-      label: 'Centralizador',
-      module: 'ACA',
-      parent: 'ACA',
-      order: 2.5,
-    },
   },
   {
     path: '/academico/calificaciones/mis-cursos/:asignacionId/cuaderno/:n',

@@ -7,7 +7,7 @@
  * LIBRO N° / FOLIO N° del documento oficial se omiten: no existen en el sistema.
  */
 
-import { CENTRALIZADOR_DOC } from '@application-academico/calificaciones/utils/centralizadorDoc.js';
+import { CENTRALIZADOR_DOC } from '@application-academico/centralizador/utils/centralizadorDoc.js';
 
 /** Campo del bloque de cabecera tipo documento. */
 const CampoDoc = ({ etiqueta, valor }) => (

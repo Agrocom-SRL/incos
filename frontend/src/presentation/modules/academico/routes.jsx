@@ -8,6 +8,7 @@
 
 import { UnderConstruction } from '@components/pages';
 import { calificacionesRoutes } from './calificaciones/routes.jsx';
+import { centralizadorRoutes } from './centralizador/routes.jsx';
 import { asistenciaRoutes } from './asistencia/routes.jsx';
 import { nivelacionesRoutes } from './nivelaciones/routes.jsx';
 import { traspasosRoutes } from './traspasos/routes.jsx';
@@ -23,6 +24,7 @@ export const academicoRoutes = [
     menu: null,
   },
   ...calificacionesRoutes,
+  ...centralizadorRoutes,
   ...asistenciaRoutes,
   ...nivelacionesRoutes,
   ...traspasosRoutes,

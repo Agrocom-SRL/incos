@@ -13,16 +13,16 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
-import { useCentralizadorParalelo } from '@application-academico/calificaciones/hooks/useCentralizadorParalelo.js';
-import { centralizadorParaleloPath } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
-import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
+import { useCentralizadorParalelo } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
+import { centralizadorParaleloPath } from '@application-academico/centralizador/utils/centralizadorPaths.js';
+import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import CentralizadorDocHeader from '../components/CentralizadorDocHeader.jsx';
 import CentralizadorGrid from '../components/CentralizadorGrid.jsx';
 import '@presentation/styles/pages/detail-page.css';
-import '../styles/calificaciones.css';
+import '../styles/centralizador.css';
 
 const hojaCardProps = {
-  ...calificacionesSectionCardProps,
+  ...sectionCardProps,
   styles: { body: { padding: 0 } },
 };
 
@@ -79,7 +79,7 @@ const CentralizadorMatrizPage = () => {
     if (isLoading && estudiantes.length === 0) {
       return (
         <Spin tip="Cargando centralizador…" spinning>
-          <div className="cal-consolidado-page__spin-nest" aria-hidden />
+          <div className="cal-centralizador__spin-nest" aria-hidden />
         </Spin>
       );
     }

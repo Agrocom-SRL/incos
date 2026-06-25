@@ -9,7 +9,8 @@
  */
 
 import { Card, Typography } from 'antd';
-import { ApartmentOutlined, TeamOutlined } from '@ant-design/icons';
+import { ApartmentOutlined, TableOutlined, TeamOutlined } from '@ant-design/icons';
+import { Button } from '@atoms';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar.jsx';
 import '@presentation/styles/components/curso-card.css';
@@ -65,6 +66,19 @@ const ParaleloCentralizadorCard = ({ paralelo, onAbrir }) => {
           <dd>{paralelo.cursosCreados ?? '—'}</dd>
         </div>
       </dl>
+
+      <div className="curso-card__action">
+        <Button
+          variant="success"
+          icon={<TableOutlined />}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAbrir?.(paralelo);
+          }}
+        >
+          Abrir centralizador
+        </Button>
+      </div>
     </Card>
   );
 };

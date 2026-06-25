@@ -17,19 +17,19 @@ import { allSpacing } from '@theme/tokens';
 import {
   useCentralizadorParalelo,
   BIMESTRES_CENTRALIZADOR,
-} from '@application-academico/calificaciones/hooks/useCentralizadorParalelo.js';
+} from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
 import {
   CENTRALIZADOR_PATH,
   centralizadorMatrizPath,
-} from '@application-academico/calificaciones/utils/calificacionesPaths.js';
-import { calificacionesSectionCardProps } from '../utils/calificacionesSectionCard.js';
+} from '@application-academico/centralizador/utils/centralizadorPaths.js';
+import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import CentralizadorDocHeader from '../components/CentralizadorDocHeader.jsx';
 import CentralizadorBimestresGrid from '../components/CentralizadorBimestresGrid.jsx';
 import '@presentation/styles/pages/detail-page.css';
-import '../styles/calificaciones.css';
+import '../styles/centralizador.css';
 
 const hojaCardProps = {
-  ...calificacionesSectionCardProps,
+  ...sectionCardProps,
   styles: { body: { padding: 0 } },
 };
 
@@ -87,7 +87,7 @@ const CentralizadorBimestresPage = () => {
     if (isLoading && estudiantes.length === 0) {
       return (
         <Spin tip="Cargando centralizador…" spinning>
-          <div className="cal-consolidado-page__spin-nest" aria-hidden />
+          <div className="cal-centralizador__spin-nest" aria-hidden />
         </Spin>
       );
     }
