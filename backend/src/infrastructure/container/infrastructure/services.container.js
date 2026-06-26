@@ -1,6 +1,6 @@
 /**
  * Registrador de servicios base (infraestructura)
- * 
+ *
  * Servicios registrados:
  * - logger: Sistema de logging (Winston) - Implementa ILogger
  * - errorFormatter: Formateo de errores para respuestas HTTP
@@ -10,16 +10,16 @@
  * - formularioInscripcionPdfGenerator: Generador de formulario de inscripción (pdf-lib, usado por PDFGenerator)
  * - pdfGenerator: Implementa IPDFGenerator, fachada única para generación de PDFs
  * - uploadsStorage: Implementa IUploadsStorage, almacenamiento de archivos en uploads
- * 
+ *
  * Servicios disponibles pero no registrados hasta que se necesiten:
  * - fileUploadService: Servicio de subida de archivos (Multer)
  * - emailService: Envío de emails
- * 
+ *
  * Todos los servicios se registran como singleton ya que:
  * - No mantienen estado mutable por request
  * - Son compartidos entre módulos
  * - Mejora el rendimiento (una sola instancia)
- * 
+ *
  * Nota: El logger implementa ILogger del dominio (backend/src/domain/interfaces/services/ILogger.js)
  */
 
@@ -35,6 +35,7 @@ import { DeclaracionJuradaPdfGenerator } from '../../external/pdf/DeclaracionJur
 import { ReciboPagoPdfGenerator } from '../../external/pdf/ReciboPagoPdfGenerator.js';
 import { PDFGenerator } from '../../external/pdf/PDFGenerator.js';
 import { RegistroPedagogicoExcelBuilder } from '../../external/excel/RegistroPedagogicoExcelBuilder.js';
+import { CentralizadorExcelBuilder } from '../../external/excel/centralizador/CentralizadorExcelBuilder.js';
 import { BecasReporteExcelBuilder } from '../../external/excel/finanzas-reportes/BecasReporteExcelBuilder.js';
 import { CuentasPorCobrarExcelBuilder } from '../../external/excel/finanzas-reportes/CuentasPorCobrarExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
@@ -130,6 +131,11 @@ export function registerServicesModule(container) {
     );
     registerService(
         container,
+        SERVICIOS_TOKENS.centralizadorExcelGenerator,
+        () => new CentralizadorExcelBuilder()
+    );
+    registerService(
+        container,
         SERVICIOS_TOKENS.becasReporteExcelGenerator,
         () => new BecasReporteExcelBuilder()
     );
@@ -156,5 +162,3 @@ export function registerServicesModule(container) {
 
     return container;
 }
-
-

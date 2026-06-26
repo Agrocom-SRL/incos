@@ -10,6 +10,7 @@ import {
   savePoliticaInstitucionalValidator,
   searchCoordinacionDocentesValidator,
   getCentralizadorParaleloValidator,
+  exportCentralizadorParaleloBimestreValidator,
   getCuadernoBimestreValidator,
   createEvaluacionCuadernoValidator,
   updateEvaluacionCuadernoValidator,
@@ -79,6 +80,40 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     getCentralizadorParaleloValidator,
     validateRequest,
     (req, res, next) => controllers.getCentralizadorParaleloController.handle(req, res, next)
+  );
+
+  const centralizadorExportar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.centralizador', 'EXPORTAR')
+  ];
+
+  /**
+   * GET /api/v1/calificaciones/centralizador/:paraleloGestionId/bimestre/:bimestre/export
+   * Descarga Excel del centralizador (un paralelo, un bimestre).
+   */
+  router.get(
+    '/centralizador/:paraleloGestionId/bimestre/:bimestre/export',
+    ...centralizadorExportar,
+    exportCentralizadorParaleloBimestreValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.exportCentralizadorParaleloBimestreController.handle(req, res, next)
+  );
+
+  /**
+   * GET /api/v1/calificaciones/centralizador/carrera-de/:paraleloGestionId/bimestre/:bimestre/export
+   * Descarga Excel MULTI-HOJA del centralizador por carrera (una hoja por paralelo),
+   * para el bimestre indicado. La carrera se deriva del paralelo de origen. El
+   * segmento literal `carrera-de` evita ambigüedad con la ruta de un solo paralelo.
+   * Reusa el mismo validador (paraleloGestionId entero positivo + bimestre 1..4).
+   */
+  router.get(
+    '/centralizador/carrera-de/:paraleloGestionId/bimestre/:bimestre/export',
+    ...centralizadorExportar,
+    exportCentralizadorParaleloBimestreValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.exportCentralizadorCarreraBimestreController.handle(req, res, next)
   );
 
   const misCursosListar = [

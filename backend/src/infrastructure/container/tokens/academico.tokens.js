@@ -27,6 +27,10 @@ export const ACADEMICO_TOKENS = {
     'academico.listCoordinacionCalificacionesDocentesUseCase',
   listCursosCalificacionesUseCase: 'academico.listCursosCalificacionesUseCase',
   getCentralizadorParaleloUseCase: 'academico.getCentralizadorParaleloUseCase',
+  exportCentralizadorParaleloBimestreExcelUseCase:
+    'academico.exportCentralizadorParaleloBimestreExcelUseCase',
+  exportCentralizadorCarreraBimestreExcelUseCase:
+    'academico.exportCentralizadorCarreraBimestreExcelUseCase',
   getMisCursosAsistenciaUseCase: 'academico.getMisCursosAsistenciaUseCase',
   getCalendarioAsistenciaUseCase: 'academico.getCalendarioAsistenciaUseCase',
   getPlanillaAsistenciaSemanalUseCase: 'academico.getPlanillaAsistenciaSemanalUseCase',
@@ -93,6 +97,10 @@ export const ACADEMICO_TOKENS = {
     'academico.listCoordinacionCalificacionesDocentesController',
   listCursosCalificacionesController: 'academico.listCursosCalificacionesController',
   getCentralizadorParaleloController: 'academico.getCentralizadorParaleloController',
+  exportCentralizadorParaleloBimestreController:
+    'academico.exportCentralizadorParaleloBimestreController',
+  exportCentralizadorCarreraBimestreController:
+    'academico.exportCentralizadorCarreraBimestreController',
   getMisCursosAsistenciaController: 'academico.getMisCursosAsistenciaController',
   getCalendarioAsistenciaController: 'academico.getCalendarioAsistenciaController',
   getPlanillaAsistenciaController: 'academico.getPlanillaAsistenciaController',

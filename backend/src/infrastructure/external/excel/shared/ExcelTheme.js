@@ -39,7 +39,10 @@ export const EXCEL_COLOR = {
   obsCell: 'FFEFF6F2',
   zebra: 'FFF3F8F5', // fila par (verde muy tenue)
   headerBorder: 'FF7CA893',
-  gridBorder: 'FFCBD5E1'
+  gridBorder: 'FFCBD5E1',
+  danger: 'FFB91C1C', // texto de nota reprobada (rojo-700) — paridad con la pantalla
+  dangerSoft: 'FFFCE8E8', // relleno muy tenue para celda reprobada (opcional)
+  subtitleBand: 'FF0F5132' // banda secundaria (verde oscuro) bajo el título
 };
 
 /** Estilos de borde reutilizables. */

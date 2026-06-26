@@ -7,6 +7,8 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListCoordinacionCalificacionesDocentesUseCase } from '../../../../application/use-cases/academico/ListCoordinacionCalificacionesDocentesUseCase.js';
 import { ListCursosCalificacionesUseCase } from '../../../../application/use-cases/academico/ListCursosCalificacionesUseCase.js';
 import { GetCentralizadorParaleloUseCase } from '../../../../application/use-cases/academico/GetCentralizadorParaleloUseCase.js';
+import { ExportCentralizadorParaleloBimestreExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorParaleloBimestreExcelUseCase.js';
+import { ExportCentralizadorCarreraBimestreExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorCarreraBimestreExcelUseCase.js';
 import { GetPoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/GetPoliticaInstitucionalUseCase.js';
 import { GetPoliticaCatalogoUseCase } from '../../../../application/use-cases/academico/GetPoliticaCatalogoUseCase.js';
 import { ListTiposEvaluacionUseCase } from '../../../../application/use-cases/academico/ListTiposEvaluacionUseCase.js';
@@ -29,6 +31,8 @@ import { AbrirBimestreGestionUseCase } from '../../../../application/use-cases/a
 import { ListCoordinacionCalificacionesDocentesController } from '../../../../presentation/controllers/academico/calificaciones/list-coordinacion-docentes.controller.js';
 import { ListCursosCalificacionesController } from '../../../../presentation/controllers/academico/calificaciones/list-cursos-calificaciones.controller.js';
 import { GetCentralizadorParaleloController } from '../../../../presentation/controllers/academico/calificaciones/get-centralizador-paralelo.controller.js';
+import { ExportCentralizadorParaleloBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-paralelo-bimestre.controller.js';
+import { ExportCentralizadorCarreraBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-carrera-bimestre.controller.js';
 import { GetPoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-institucional.controller.js';
 import { GetPoliticaCatalogoController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-catalogo.controller.js';
 import { ListTiposEvaluacionController } from '../../../../presentation/controllers/academico/calificaciones/list-tipos-evaluacion.controller.js';
@@ -138,6 +142,58 @@ export function registerCalificacionesResource(container) {
         ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportCentralizadorParaleloBimestreExcelUseCase,
+    (c) =>
+      new ExportCentralizadorParaleloBimestreExcelUseCase({
+        getCentralizadorParaleloUseCase: c.resolve(
+          ACADEMICO_TOKENS.getCentralizadorParaleloUseCase
+        ),
+        parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+        centralizadorExcelGenerator: c.resolve(SERVICIOS_TOKENS.centralizadorExcelGenerator),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportCentralizadorParaleloBimestreController,
+    (c) =>
+      new ExportCentralizadorParaleloBimestreController({
+        exportCentralizadorParaleloBimestreExcelUseCase: c.resolve(
+          ACADEMICO_TOKENS.exportCentralizadorParaleloBimestreExcelUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportCentralizadorCarreraBimestreExcelUseCase,
+    (c) =>
+      new ExportCentralizadorCarreraBimestreExcelUseCase({
+        getCentralizadorParaleloUseCase: c.resolve(
+          ACADEMICO_TOKENS.getCentralizadorParaleloUseCase
+        ),
+        parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+        centralizadorExcelGenerator: c.resolve(SERVICIOS_TOKENS.centralizadorExcelGenerator),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportCentralizadorCarreraBimestreController,
+    (c) =>
+      new ExportCentralizadorCarreraBimestreController({
+        exportCentralizadorCarreraBimestreExcelUseCase: c.resolve(
+          ACADEMICO_TOKENS.exportCentralizadorCarreraBimestreExcelUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
       })
   );
 
@@ -1092,6 +1148,12 @@ export function registerCalificacionesResource(container) {
       ),
       getCentralizadorParaleloController: c.resolve(
         ACADEMICO_TOKENS.getCentralizadorParaleloController
+      ),
+      exportCentralizadorParaleloBimestreController: c.resolve(
+        ACADEMICO_TOKENS.exportCentralizadorParaleloBimestreController
+      ),
+      exportCentralizadorCarreraBimestreController: c.resolve(
+        ACADEMICO_TOKENS.exportCentralizadorCarreraBimestreController
       ),
       getPoliticaInstitucionalController: c.resolve(
         ACADEMICO_TOKENS.getPoliticaInstitucionalController

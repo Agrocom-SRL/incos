@@ -6,14 +6,17 @@
  * Reusa el endpoint centralizador y la cabecera tipo documento.
  */
 
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Flex, Spin } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Alert, App, Button, Card, Flex, Spin } from 'antd';
+import { ArrowLeftOutlined, FileExcelOutlined, ProfileOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { BackButton } from '@atoms';
+import { BackButton, ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useCentralizadorParalelo } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
+import { useExportCentralizadorExcel } from '@application-academico/centralizador/hooks/api/useExportCentralizadorExcel.js';
+import { CENTRALIZADOR_PERMISOS } from '@application-academico/centralizador/utils/centralizadorPermisos.js';
 import { centralizadorParaleloPath } from '@application-academico/centralizador/utils/centralizadorPaths.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import CentralizadorContextoHeader from '../components/CentralizadorContextoHeader.jsx';
@@ -28,6 +31,7 @@ const hojaCardProps = {
 
 const CentralizadorMatrizPage = () => {
   const navigate = useNavigate();
+  const { notification } = App.useApp();
   const {
     paraleloGestionId,
     bimestreActivo,
@@ -43,18 +47,84 @@ const CentralizadorMatrizPage = () => {
     breadcrumbItems,
   } = useCentralizadorParalelo('ACA-CENTRALIZADOR-MATRIZ');
 
+  const {
+    exportar,
+    loading: exportando,
+    exportarCarrera,
+    loadingCarrera,
+  } = useExportCentralizadorExcel();
+
+  const sinDatos = estudiantes.length === 0 || asignaturas.length === 0;
+
+  const handleExportar = useCallback(async () => {
+    const result = await exportar(paraleloGestionId, bimestreActivo);
+    if (result.success) {
+      notification.success({
+        title: 'Centralizador exportado',
+        description: 'La descarga del archivo Excel del paralelo se inició correctamente.',
+      });
+    } else {
+      notification.error({
+        title: 'No se pudo exportar',
+        description: result.error || 'Reintentá en unos segundos.',
+      });
+    }
+  }, [exportar, paraleloGestionId, bimestreActivo, notification]);
+
+  const handleExportarCarrera = useCallback(async () => {
+    const result = await exportarCarrera(paraleloGestionId, bimestreActivo);
+    if (result.success) {
+      notification.success({
+        title: 'Carrera exportada',
+        description:
+          'La descarga del libro Excel con todos los paralelos de la carrera se inició correctamente.',
+      });
+    } else {
+      notification.error({
+        title: 'No se pudo exportar la carrera',
+        description: result.error || 'Reintentá en unos segundos.',
+      });
+    }
+  }, [exportarCarrera, paraleloGestionId, bimestreActivo, notification]);
+
   const pageHeader = (
     <PageHeader
       title="Centralizador · matriz por bimestre"
       breadcrumbItems={breadcrumbItems}
       actions={
-        <BackButton
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(centralizadorParaleloPath(paraleloGestionId))}
-          aria-label="Volver a los bimestres del paralelo"
-        >
-          Volver
-        </BackButton>
+        <Flex gap={allSpacing.marginSM} wrap="wrap">
+          <ActionButton
+            permiso={CENTRALIZADOR_PERMISOS.centralizador}
+            accion="EXPORTAR"
+            variant="info"
+            icon={<FileExcelOutlined />}
+            loading={exportando}
+            disabled={isLoading || sinDatos}
+            onClick={handleExportar}
+            title="Exporta solo este paralelo (una hoja) para el bimestre actual"
+          >
+            Exportar
+          </ActionButton>
+          <ActionButton
+            permiso={CENTRALIZADOR_PERMISOS.centralizador}
+            accion="EXPORTAR"
+            variant="info"
+            icon={<ProfileOutlined />}
+            loading={loadingCarrera}
+            disabled={isLoading || sinDatos}
+            onClick={handleExportarCarrera}
+            title="Exporta toda la carrera (una hoja por paralelo) para el bimestre actual"
+          >
+            Exportar carrera
+          </ActionButton>
+          <BackButton
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(centralizadorParaleloPath(paraleloGestionId))}
+            aria-label="Volver a los bimestres del paralelo"
+          >
+            Volver
+          </BackButton>
+        </Flex>
       }
     />
   );

@@ -328,6 +328,10 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/cerrar`,
   EXPORT_REGISTRO_PEDAGOGICO: (asignacionId, bimestre) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/export/registro-pedagogico`,
+  EXPORT_CENTRALIZADOR: (paraleloGestionId, bimestre) =>
+    `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/bimestre/${bimestre}/export`,
+  EXPORT_CENTRALIZADOR_CARRERA: (paraleloGestionId, bimestre) =>
+    `${API_BASE}/calificaciones/centralizador/carrera-de/${paraleloGestionId}/bimestre/${bimestre}/export`,
 };
 
 // ============================================

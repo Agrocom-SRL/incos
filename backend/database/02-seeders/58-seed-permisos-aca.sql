@@ -78,6 +78,7 @@ JOIN (
   SELECT 'academico.calificacion.ingreso' AS codigo, 'LISTAR' AS accion
   UNION ALL SELECT 'academico.calificacion.coordinacion', 'LISTAR'
   UNION ALL SELECT 'academico.calificacion.centralizador', 'LISTAR'
+  UNION ALL SELECT 'academico.calificacion.centralizador', 'EXPORTAR'
   UNION ALL SELECT 'academico.calificacion.mis_cursos', 'LISTAR'
   UNION ALL SELECT 'academico.calificacion.mis_cursos', 'DETALLE'
   UNION ALL SELECT 'academico.calificacion.cuaderno', 'LISTAR'
@@ -147,7 +148,9 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.coordinacion', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.coordinacion', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.centralizador', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.calificacion.centralizador', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.centralizador', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.centralizador', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.mis_cursos', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.mis_cursos', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.mis_cursos', 'LISTAR'

@@ -421,4 +421,69 @@ export class ParallelRepository extends BaseRepository {
 
     return new Map(rows.map((r) => [Number(r.paralelo_gestion_id), r]));
   }
+
+  /**
+   * Cabecera del paralelo (vista 87) por paralelo_gestion_id — metadatos de
+   * encabezado para reportes (carrera, periodo/curso, paralelo, turno, gestión).
+   * Reutiliza `vista_horarios_paralelo_estado`; no crea ni duplica vistas.
+   * @param {number} paraleloGestionId
+   * @returns {Promise<Object|null>}
+   */
+  async obtenerCabeceraParaleloGestion(paraleloGestionId) {
+    const pgId = Number(paraleloGestionId);
+    if (!Number.isFinite(pgId) || pgId < 1) return null;
+
+    const rows = await sequelize.query(
+      `SELECT
+         e.paralelo_gestion_id,
+         e.paralelo_id,
+         e.paralelo_nombre,
+         e.turno,
+         e.carrera_id,
+         e.carrera_nombre,
+         e.carrera_color_hex,
+         e.periodo_nombre,
+         e.paralelo_gestion_estado
+       FROM vista_horarios_paralelo_estado e
+       WHERE e.paralelo_gestion_id = :pgId
+       LIMIT 1`,
+      { replacements: { pgId }, type: QueryTypes.SELECT }
+    );
+
+    return rows?.[0] ?? null;
+  }
+
+  /**
+   * Paralelos de una carrera en la gestión vigente (vista 87). La vista
+   * `vista_horarios_paralelo_estado` ya está acotada a la gestión vigente (grano
+   * paralelo_gestion), por lo que solo se filtra por carrera. Devuelve los
+   * metadatos de cabecera más los conteos de estudiantes/docentes para que el
+   * consumidor (centralizador por carrera) sepa qué paralelos tienen matrícula.
+   * No crea ni duplica vistas.
+   * @param {number} carreraId
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarParalelosPorCarreraGestionVigente(carreraId) {
+    const cId = Number(carreraId);
+    if (!Number.isFinite(cId) || cId < 1) return [];
+
+    return sequelize.query(
+      `SELECT
+         e.paralelo_gestion_id,
+         e.paralelo_id,
+         e.paralelo_nombre,
+         e.turno,
+         e.carrera_id,
+         e.carrera_nombre,
+         e.periodo_nombre,
+         e.gestion,
+         e.gestion_id,
+         e.cantidad_estudiantes,
+         e.cantidad_docentes
+       FROM vista_horarios_paralelo_estado e
+       WHERE e.carrera_id = :cId
+       ORDER BY e.periodo_nombre ASC, e.paralelo_nombre ASC`,
+      { replacements: { cId }, type: QueryTypes.SELECT }
+    );
+  }
 }

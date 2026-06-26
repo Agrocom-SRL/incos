@@ -7,6 +7,7 @@ export { putParaleloScheduleValidator } from './put-paralelo-schedule.validator.
 export { listMateriasValidator } from './list-materias.validator.js';
 export { searchCoordinacionDocentesValidator } from './search-coordinacion-docentes.validator.js';
 export { getCentralizadorParaleloValidator } from './get-centralizador-paralelo.validator.js';
+export { exportCentralizadorParaleloBimestreValidator } from './export-centralizador-paralelo-bimestre.validator.js';
 export { savePoliticaInstitucionalValidator } from './save-politica-institucional.validator.js';
 export { listTiposEvaluacionValidator } from './list-tipos-evaluacion.validator.js';
 export {

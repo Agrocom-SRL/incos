@@ -101,6 +101,24 @@ export class ExcelSheetComposer {
     return this.cell(start, value, style);
   }
 
+  /**
+   * Fusiona un rango por ÍNDICES (r1,c1) → (r2,c2) y aplica valor + estilo en la
+   * celda ancla, reutilizando el mismo motor de estilo que `merge(range, ...)`.
+   * Evita que los builders perforen la abstracción con `ws.mergeCells(...)`
+   * directo cuando ya conocen las coordenadas numéricas (cabeceras verticales,
+   * bloques que cubren varias filas). Rango de una sola celda: no fusiona.
+   */
+  mergeBox(r1, c1, r2, c2, value, style) {
+    if (r1 !== r2 || c1 !== c2) this.ws.mergeCells(r1, c1, r2, c2);
+    return this.cell(r1, c1, value, style);
+  }
+
+  /** Define el alto (puntos) de una fila por índice 1-based. */
+  rowHeight(rowNumber, height) {
+    this.ws.getRow(rowNumber).height = height;
+    return this;
+  }
+
   /** Banda de título institucional (fondo sólido, texto claro). */
   bandTitle(range, text) {
     return this.merge(range, text, {
