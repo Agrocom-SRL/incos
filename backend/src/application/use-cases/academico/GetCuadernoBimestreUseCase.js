@@ -2,9 +2,10 @@ import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { BimesterEvaluation } from '../../../domain/entities/BimesterEvaluation.js';
 import {
   mapEvaluacionEntityToDto,
-  mapNotaRowToDto,
+  mapNotaRowToDto
 } from '../../mappers/cuadernoEvaluacionMapper.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
+import { sincronizarNotasAsistenciaBimestre } from '../../utils/sincronizarNotasAsistenciaBimestre.js';
 
 /**
  * GET cuaderno — evaluaciones del bimestre y notas ya cargadas.
@@ -15,15 +16,19 @@ export class GetCuadernoBimestreUseCase {
     calificacionContextoRepository,
     cuadernoRepository,
     subjectEnrollmentBimesterRepository,
+    asistenciaPlanillaViewRepository,
+    bimesterEvaluationGradeRepository,
     teacherRepository,
     userRepository,
     authRepository,
-    logger,
+    logger
   }) {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.asistenciaPlanillaViewRepository = asistenciaPlanillaViewRepository;
+    this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
     this.authRepository = authRepository;
@@ -43,20 +48,36 @@ export class GetCuadernoBimestreUseCase {
       userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
-      asignacionId,
+      asignacionId
     });
 
     const periodoId = await this.cuadernoRepository.obtenerPeriodoAcademicoId(
       gestionId,
-      bimestreNum,
+      bimestreNum
     );
     if (!periodoId) {
       throw new NotFoundError('Periodo académico del bimestre');
     }
 
+    // Recalcular la(s) columna(s) ASISTENCIA ANTES de leer las notas, para que la
+    // celda refleje la asistencia actual sin esperar al cierre del bimestre.
+    // Side-effect tolerante a fallos y con guard de estado (solo EN_CURSO/REABIERTO).
+    await sincronizarNotasAsistenciaBimestre({
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      cuadernoRepository: this.cuadernoRepository,
+      asistenciaPlanillaViewRepository: this.asistenciaPlanillaViewRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+      bimesterEvaluationGradeRepository: this.bimesterEvaluationGradeRepository,
+      asignacionId: Number(asignacionId),
+      gestionId,
+      bimestreNumero: bimestreNum,
+      usuarioId,
+      logger: this.logger
+    });
+
     const [filasEval, filasNotas] = await Promise.all([
       this.cuadernoRepository.listarEvaluaciones(Number(asignacionId), periodoId),
-      this.cuadernoRepository.listarNotasCuaderno(Number(asignacionId), bimestreNum),
+      this.cuadernoRepository.listarNotasCuaderno(Number(asignacionId), bimestreNum)
     ]);
 
     const evaluaciones = filasEval.map((row) =>
@@ -70,9 +91,9 @@ export class GetCuadernoBimestreUseCase {
           evaluationName: row.nombre_evaluacion,
           points: row.puntos,
           date: row.fecha,
-          gradesClosed: Boolean(row.notas_cerradas),
-        }),
-      ),
+          gradesClosed: Boolean(row.notas_cerradas)
+        })
+      )
     );
 
     const notas = filasNotas.map(mapNotaRowToDto);
@@ -80,7 +101,7 @@ export class GetCuadernoBimestreUseCase {
     const reabierto =
       (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
         Number(asignacionId),
-        bimestreNum,
+        bimestreNum
       )) > 0;
 
     this.logger.info('[Calificaciones] Cuaderno bimestre', {
@@ -88,7 +109,7 @@ export class GetCuadernoBimestreUseCase {
       bimestre: bimestreNum,
       evaluaciones: evaluaciones.length,
       notas: notas.length,
-      reabierto,
+      reabierto
     });
 
     return { bimestre: bimestreNum, evaluaciones, notas, reabierto };

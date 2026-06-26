@@ -63,6 +63,30 @@ export class IParaleloRepository extends IRepository {
   }
 
   /**
+   * Cabecera del paralelo (vista 87): carrera, periodo/curso, paralelo, turno,
+   * gestión y color de carrera — para encabezados de reportes (p. ej. centralizador).
+   * @param {number} _paraleloGestionId
+   * @returns {Promise<Object|null>}
+   */
+  async obtenerCabeceraParaleloGestion(_paraleloGestionId) {
+    throw new Error('Method obtenerCabeceraParaleloGestion must be implemented by subclass');
+  }
+
+  /**
+   * Lista los paralelos de una carrera en la gestión vigente (vista 87), para
+   * armar el centralizador por carrera (un libro, una hoja por paralelo).
+   * Devuelve por paralelo: paralelo_gestion_id, carrera_id/nombre, periodo_nombre,
+   * paralelo_nombre, turno, gestión y conteos (estudiantes/docentes).
+   * @param {number} _carreraId
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarParalelosPorCarreraGestionVigente(_carreraId) {
+    throw new Error(
+      'Method listarParalelosPorCarreraGestionVigente must be implemented by subclass'
+    );
+  }
+
+  /**
    * Cursos de un paralelo cuya asignación docente vigente participa en choque de franja (misma horario_id con otro curso del mismo docente).
    * @param {number} _paraleloId
    * @returns {Promise<Array<{ curso_id: number }>>}

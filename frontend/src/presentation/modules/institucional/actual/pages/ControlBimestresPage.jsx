@@ -7,6 +7,7 @@ import { BackButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useControlBimestresState } from '@application-institucional/actual';
 import {
+  BimestresAperturaSection,
   BimestresCalendarBoard,
   BimestresConfigAside,
 } from '@institucional/actual/components/organisms';
@@ -79,6 +80,22 @@ const ControlBimestresPage = () => {
               </Flex>
             )}
           </div>
+
+          {!s.loading && (
+            <div className="cfg-academico-tab-panel">
+              <BimestresAperturaSection
+                iniciada={s.iniciada}
+                bimestres={s.bimestresApertura}
+                validacionPorBimestre={s.validacionPorBimestre}
+                bimestreEnAccion={s.bimestreEnAccion}
+                cerrando={s.cerrando}
+                abriendo={s.abriendo}
+                onValidarCierre={s.handleValidarCierre}
+                onAbrir={s.handleAbrirBimestre}
+                onCerrar={s.handleCerrarBimestre}
+              />
+            </div>
+          )}
         </section>
       </Flex>
     </PageTemplate>

@@ -132,6 +132,7 @@ import { BimesterEvaluationGradeRepository } from '../../repositories/BimesterEv
 import { CuadernoRepository } from '../../repositories/CuadernoRepository.js';
 import { CalificacionContextoRepository } from '../../repositories/views/CalificacionContextoRepository.js';
 import { CalificacionCoordinacionRepository } from '../../repositories/views/CalificacionCoordinacionRepository.js';
+import { CalificacionCentralizadorRepository } from '../../repositories/views/CalificacionCentralizadorRepository.js';
 import { GestionBimestresRepository } from '../../repositories/GestionBimestresRepository.js';
 import { CronogramaGestionRepository } from '../../repositories/views/CronogramaGestionRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
@@ -344,6 +345,11 @@ export function registerRepositoriesModule(container) {
       container,
       REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
       CalificacionCoordinacionRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.calificacionCentralizadorRepository,
+      CalificacionCentralizadorRepository,
     );
     registerComponent(
       container,

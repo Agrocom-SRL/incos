@@ -2,6 +2,7 @@ import { ValidationError } from '../../../domain/errors/AppError.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { recalcularNotasBimestreCurso } from '../../utils/recalcularNotasBimestreCurso.js';
+import { recalcularNotasAsistenciaCurso } from '../../utils/recalcularNotasAsistenciaCurso.js';
 import { recalcularNotaFinalMatriculaCurso } from '../../utils/recalcularNotaFinalMatriculaCurso.js';
 
 /**
@@ -15,17 +16,21 @@ export class CerrarBimestreCursoUseCase {
     cuadernoRepository,
     subjectEnrollmentRepository,
     subjectEnrollmentBimesterRepository,
+    bimesterEvaluationGradeRepository,
+    asistenciaPlanillaViewRepository,
     evaluationConfigurationRepository,
     teacherRepository,
     userRepository,
     authRepository,
-    logger,
+    logger
   }) {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.cuadernoRepository = cuadernoRepository;
     this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
+    this.asistenciaPlanillaViewRepository = asistenciaPlanillaViewRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
@@ -46,13 +51,25 @@ export class CerrarBimestreCursoUseCase {
       userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
-      asignacionId,
+      asignacionId
     });
 
     const { cuotaTeorico, cuotaPractico, pesosBimestres } = await cargarCuotasPoliticaGestion({
       calificacionContextoRepository: this.calificacionContextoRepository,
       evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+      gestionId
+    });
+
+    // Recalcular columnas ASISTENCIA antes de consolidar el práctico/bimestre.
+    const recalculoAsistencia = await recalcularNotasAsistenciaCurso({
+      cuadernoRepository: this.cuadernoRepository,
+      asistenciaPlanillaViewRepository: this.asistenciaPlanillaViewRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+      bimesterEvaluationGradeRepository: this.bimesterEvaluationGradeRepository,
+      asignacionId: Number(asignacionId),
       gestionId,
+      bimestreNumero: numero,
+      usuarioId
     });
 
     const recalculoBimestre = await recalcularNotasBimestreCurso({
@@ -62,7 +79,7 @@ export class CerrarBimestreCursoUseCase {
       bimestreNumero: numero,
       cuotaTeorico,
       cuotaPractico,
-      usuarioId,
+      usuarioId
     });
 
     const recalculoFinal = await recalcularNotaFinalMatriculaCurso({
@@ -70,22 +87,29 @@ export class CerrarBimestreCursoUseCase {
       subjectEnrollmentRepository: this.subjectEnrollmentRepository,
       asignacionId: Number(asignacionId),
       pesosBimestres,
-      usuarioId,
+      usuarioId
     });
 
     await this.subjectEnrollmentBimesterRepository.cerrarBimestreCurso(
       Number(asignacionId),
       numero,
-      usuarioId,
+      usuarioId
     );
 
     this.logger.info('[Calificaciones] Bimestre cerrado por curso', {
       asignacionId,
       bimestre: numero,
+      ...recalculoAsistencia,
       ...recalculoBimestre,
-      ...recalculoFinal,
+      ...recalculoFinal
     });
 
-    return { bimestre: numero, cerrado: true, ...recalculoBimestre, ...recalculoFinal };
+    return {
+      bimestre: numero,
+      cerrado: true,
+      ...recalculoAsistencia,
+      ...recalculoBimestre,
+      ...recalculoFinal
+    };
   }
 }

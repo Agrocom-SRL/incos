@@ -35,4 +35,15 @@ export class ICalificacionContextoRepository {
   async obtenerGestionAnteriorPorAnio(gestionAnio) {
     throw new Error('Method obtenerGestionAnteriorPorAnio() must be implemented');
   }
+
+  /**
+   * Estado institucional agregado del bimestre en una gestión (vista 114):
+   * 'PENDIENTE' | 'EN_CURSO' | 'CERRADO', o null si no hay filas.
+   * @param {number} gestionId
+   * @param {number} bimestreNumero 1-4
+   * @returns {Promise<string|null>}
+   */
+  async obtenerEstadoInstitucionalBimestre(_gestionId, _bimestreNumero) {
+    throw new Error('Method obtenerEstadoInstitucionalBimestre() must be implemented');
+  }
 }

@@ -28,12 +28,14 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('aca_traspasos', 'Traspasos', 'ACADEMICO', 16, 1, NOW(), NOW()),
 ('aca_transitabilidad', 'Transitabilidad', 'ACADEMICO', 17, 1, NOW(), NOW()),
 ('aca_historial', 'Historial', 'ACADEMICO', 18, 1, NOW(), NOW()),
-('aca_avance', 'Avance académico', 'ACADEMICO', 19, 1, NOW(), NOW());
+('aca_avance', 'Avance académico', 'ACADEMICO', 19, 1, NOW(), NOW()),
+('aca_cal_centralizador', 'Centralizador de notas', 'ACADEMICO', 20, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo ACA
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('academico.calificacion.ingreso', 'Calificaciones · menú Académico', NULL, 'ACADEMICO', 'ACA', 'aca_cal_ingreso', '/academico/calificaciones', 1, NOW(), NOW()),
 ('academico.calificacion.coordinacion', 'Calificaciones · coordinación docentes', NULL, 'ACADEMICO', 'ACA', 'aca_cal_coordinacion', '/academico/calificaciones', 1, NOW(), NOW()),
+('academico.calificacion.centralizador', 'Centralizador y boletín de estudiantes', NULL, 'ACADEMICO', 'ACA', 'aca_cal_centralizador', '/academico/calificaciones/centralizador', 1, NOW(), NOW()),
 ('academico.calificacion.mis_cursos', 'Calificaciones · mis cursos', NULL, 'ACADEMICO', 'ACA', 'aca_cal_mis_cursos', '/academico/calificaciones/mis-cursos', 1, NOW(), NOW()),
 ('academico.calificacion.cuaderno', 'Calificaciones · cuaderno y registro de notas', NULL, 'ACADEMICO', 'ACA', 'aca_cal_cuaderno', '/academico/calificaciones/mis-cursos/:asignacionId', 1, NOW(), NOW()),
 ('academico.calificacion.politica', 'Calificaciones · política institucional', NULL, 'ACADEMICO', 'ACA', 'aca_cal_politica', '/academico/calificaciones/politica', 1, NOW(), NOW()),
@@ -75,6 +77,8 @@ FROM permisos p
 JOIN (
   SELECT 'academico.calificacion.ingreso' AS codigo, 'LISTAR' AS accion
   UNION ALL SELECT 'academico.calificacion.coordinacion', 'LISTAR'
+  UNION ALL SELECT 'academico.calificacion.centralizador', 'LISTAR'
+  UNION ALL SELECT 'academico.calificacion.centralizador', 'EXPORTAR'
   UNION ALL SELECT 'academico.calificacion.mis_cursos', 'LISTAR'
   UNION ALL SELECT 'academico.calificacion.mis_cursos', 'DETALLE'
   UNION ALL SELECT 'academico.calificacion.cuaderno', 'LISTAR'
@@ -143,6 +147,10 @@ FROM (
   UNION ALL SELECT 'ESTUDIANTE', 'academico.calificacion.ingreso', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.coordinacion', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.coordinacion', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.calificacion.centralizador', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.calificacion.centralizador', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.centralizador', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.centralizador', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.mis_cursos', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.mis_cursos', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.mis_cursos', 'LISTAR'
@@ -289,5 +297,69 @@ FROM (
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;
+
+-- ============================================================
+-- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
+-- Nivelaciones, Traspasos, Transitabilidad, Historial y Avance académico:
+-- se ocultan hasta que las pantallas existan. (Calificaciones y Asistencia
+-- SÍ están construidas y permanecen activas.)
+-- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
+-- (permiso_acciones), sus asignaciones a roles (roles_permisos) y los grupos
+-- de UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que
+-- hereda por vista_*_activas (filtra activo=TRUE y deleted_at IS NULL).
+-- Para REHABILITAR: poner activo=1 y deleted_at=NULL en estas mismas filas.
+-- ============================================================
+SET @fecha_baja := '2026-06-24 00:00:00';
+
+-- 1) Permisos de las páginas no construidas
+UPDATE permisos
+SET activo = 0, deleted_at = @fecha_baja
+WHERE codigo IN (
+  -- Nivelaciones
+  'academico.nivelacion.ver',
+  'academico.nivelacion.inscribir',
+  'academico.nivelacion.aprobar',
+  -- Traspasos
+  'academico.trazabilidad.traspaso.ver',
+  'academico.trazabilidad.traspaso.solicitar',
+  'academico.trazabilidad.traspaso.recibir',
+  'academico.trazabilidad.traspaso.convalidar',
+  'academico.trazabilidad.traspaso.aprobar',
+  -- Transitabilidad
+  'academico.trazabilidad.transitabilidad.ver',
+  'academico.trazabilidad.transitabilidad.solicitar',
+  'academico.trazabilidad.transitabilidad.recibir',
+  'academico.trazabilidad.transitabilidad.convalidar',
+  'academico.trazabilidad.transitabilidad.aprobar',
+  -- Historial
+  'academico.historial.folio',
+  'academico.historial.academico',
+  'academico.historial.validar',
+  -- Avance académico
+  'academico.avance'
+);
+
+-- 2) Cascada: acciones de esos permisos
+UPDATE permiso_acciones pa
+JOIN permisos p ON p.id = pa.permiso_id
+SET pa.activo = 0, pa.deleted_at = @fecha_baja
+WHERE p.modulo = 'ACA' AND p.deleted_at IS NOT NULL;
+
+-- 3) Cascada: asignaciones a roles de esos permisos
+UPDATE roles_permisos rp
+JOIN permisos p ON p.id = rp.permiso_id
+SET rp.activo = 0, rp.deleted_at = @fecha_baja
+WHERE p.modulo = 'ACA' AND p.deleted_at IS NOT NULL;
+
+-- 4) Grupos de UI cuyas páginas quedan completamente ocultas
+UPDATE grupos_ui
+SET activo = 0, deleted_at = @fecha_baja
+WHERE codigo IN (
+  'aca_nivelaciones',
+  'aca_traspasos',
+  'aca_transitabilidad',
+  'aca_historial',
+  'aca_avance'
+);
 
 SET FOREIGN_KEY_CHECKS = 1;

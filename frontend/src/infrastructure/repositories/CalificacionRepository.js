@@ -51,6 +51,48 @@ class CalificacionRepository {
   }
 
   /**
+   * GET /v1/calificaciones/centralizador?paraleloGestionId=<entero>
+   *
+   * Matriz estudiantes × asignaturas de un paralelo en gestión.
+   * El backend ya entrega los nombres en camelCase y el nombre completo del
+   * estudiante con el orden canónico (APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES);
+   * este repositorio no transforma el payload.
+   *
+   * @param {Object} options
+   * @param {number} options.paraleloGestionId
+   * @returns {Promise<{success: boolean, data?: { paraleloGestionId, gestionId, asignaturas, estudiantes }, error?: string}>}
+   */
+  async obtenerCentralizador({ paraleloGestionId } = {}) {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.CENTRALIZADOR, {
+        params: { paraleloGestionId },
+      });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      const payload = responseData.data ?? {};
+      return {
+        success: true,
+        data: {
+          paraleloGestionId: payload.paraleloGestionId ?? null,
+          gestionId: payload.gestionId ?? null,
+          gestionAnio: payload.gestionAnio ?? null,
+          gestionNombre: payload.gestionNombre ?? null,
+          notaMinimaAprobacion: payload.notaMinimaAprobacion ?? null,
+          asignaturas: Array.isArray(payload.asignaturas) ? payload.asignaturas : [],
+          estudiantes: Array.isArray(payload.estudiantes) ? payload.estudiantes : [],
+        },
+      };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el centralizador del paralelo');
+    }
+  }
+
+  /**
    * GET /v1/calificaciones/politica/catalogo
    */
   async obtenerPoliticaCatalogo() {
@@ -331,6 +373,28 @@ class CalificacionRepository {
     }
   }
 
+  /** POST /v1/calificaciones/gestion-bimestres/bimestre/:n/abrir */
+  async abrirBimestreGestion(numero) {
+    try {
+      const response = await apiClient.post(
+        CALIFICACIONES_ENDPOINTS.GESTION_BIMESTRES_ABRIR(numero),
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return {
+          success: false,
+          error: responseData.error,
+          code: responseData.code,
+        };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      const mapped = handleErrorResponse(error, 'Error al abrir el bimestre');
+      if (error?.response?.data?.code) mapped.code = error.response.data.code;
+      return mapped;
+    }
+  }
+
   /** GET /v1/calificaciones/gestion-bimestres/periodos — periodos/etapas de la gestión vigente. */
   async listarPeriodosGestion() {
     try {
@@ -604,6 +668,124 @@ class CalificacionRepository {
         }
       }
       return handleErrorResponse(error, 'Error al exportar registro pedagógico');
+    }
+  }
+
+  /**
+   * GET export del Centralizador de un paralelo para un bimestre (.xlsx).
+   * @param {Object} params
+   * @param {string|number} params.paraleloGestionId
+   * @param {number} params.bimestre - 1..4
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarCentralizadorExcel({ paraleloGestionId, bimestre } = {}) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.EXPORT_CENTRALIZADOR(paraleloGestionId, bimestre),
+        { responseType: 'blob' },
+      );
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'centralizador.xlsx';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName,
+      };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar centralizador';
+          return { success: false, error: msg };
+        } catch {
+          /* fall through */
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar centralizador');
+    }
+  }
+
+  /**
+   * GET export del Centralizador de TODA la carrera para un bimestre (.xlsx multi-hoja).
+   *
+   * Recibe el `paraleloGestionId` del paralelo actual; el backend DERIVA la carrera
+   * y genera una hoja por cada paralelo de esa carrera para el bimestre dado.
+   * Mecánica idéntica a `descargarCentralizadorExcel` (descarga blob, respeta el
+   * filename del header `Content-Disposition`).
+   *
+   * @param {Object} params
+   * @param {string|number} params.paraleloGestionId
+   * @param {number} params.bimestre - 1..4
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarCentralizadorCarreraExcel({ paraleloGestionId, bimestre } = {}) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.EXPORT_CENTRALIZADOR_CARRERA(paraleloGestionId, bimestre),
+        { responseType: 'blob' },
+      );
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'centralizador_carrera.xlsx';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName,
+      };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar centralizador de la carrera';
+          return { success: false, error: msg };
+        } catch {
+          /* fall through */
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar centralizador de la carrera');
     }
   }
 

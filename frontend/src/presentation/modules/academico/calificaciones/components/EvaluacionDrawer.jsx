@@ -18,6 +18,7 @@ import {
 } from 'antd';
 import { FieldTextarea } from '@atoms';
 import {
+  CalculatorOutlined,
   CalendarOutlined,
   CheckOutlined,
   DeleteOutlined,
@@ -31,6 +32,7 @@ import {
   calcularSumaPuntosComponente,
   contarNotasCargadas,
 } from '@application-academico/calificaciones/utils/puntosEvaluaciones.js';
+import { resolverTipoEvaluacionAsistenciaId } from '@application-academico/calificaciones/utils/tipoEvaluacionAsistencia.js';
 import SeccionAjustes from './ajustes/SeccionAjustes.jsx';
 import {
   CALIFICACIONES_DRAWER_Z_INDEX,
@@ -279,14 +281,36 @@ const ComponenteEvaluacionesFields = memo(
     evaluacionesActuales,
     evaluacionIdExcluir,
     onExcedeChange,
+    esAsistencia,
   }) => (
     <>
+      {esAsistencia ? (
+        <Alert
+          type="info"
+          showIcon
+          icon={<CalculatorOutlined />}
+          title="Actividad calculada desde la asistencia"
+          description="La nota de cada estudiante se calcula automáticamente al guardar o cerrar el bimestre (porcentaje de asistencia × puntos) y no se edita a mano en el cuaderno. Esta actividad siempre forma parte del componente práctico; los puntos definen solo cuánto pondera dentro de ese componente."
+          className="cal-eval-drawer__alert cal-eval-drawer__alert--asistencia"
+        />
+      ) : null}
+
       <Form.Item
         name="componente"
         label="Componente"
         rules={[{ required: true, message: 'Seleccioná un componente' }]}
+        extra={
+          esAsistencia
+            ? 'Fijo en práctico: la actividad de asistencia siempre suma al componente práctico.'
+            : undefined
+        }
       >
-        <Segmented options={COMPONENTES} block className="cal-eval-drawer__segmented" />
+        <Segmented
+          options={COMPONENTES}
+          block
+          disabled={esAsistencia}
+          className="cal-eval-drawer__segmented"
+        />
       </Form.Item>
 
       <ComponenteCuotaHint
@@ -389,6 +413,19 @@ const EvaluacionDrawer = ({
   const componentePrevRef = useRef(COMPONENTE_DEFAULT);
   const evaluacionIdExcluir = esEditar ? evaluacion?.id : null;
 
+  // El cuaderno no expone el código del tipo: lo resolvemos cruzando el catálogo.
+  const tipoAsistenciaId = resolverTipoEvaluacionAsistenciaId(tipos);
+  const tipoSeleccionado = Form.useWatch('tipoEvaluacionId', form);
+  const esAsistencia = tipoAsistenciaId != null && tipoSeleccionado === tipoAsistenciaId;
+
+  // La actividad de asistencia es ÚNICA por bimestre: si ya existe una (distinta de
+  // la que se está editando), se OCULTA ese tipo en el selector (no aparece en la lista).
+  const yaExisteAsistencia =
+    tipoAsistenciaId != null &&
+    evaluacionesActuales.some(
+      (ev) => ev.tipoEvaluacionId === tipoAsistenciaId && ev.id !== evaluacionIdExcluir,
+    );
+
   const handleExcedeChange = useCallback((excede) => {
     setExcedeCuota((prev) => (prev === excede ? prev : excede));
   }, []);
@@ -419,6 +456,17 @@ const EvaluacionDrawer = ({
     }
     setExcedeCuota(false);
   }, [abierto, esEditar, evaluacion, form]);
+
+  // Al elegir el tipo ASISTENCIA, el componente queda fijo en PRÁCTICO (lo fuerza el
+  // backend); reflejamos esa regla en el formulario para que el envío sea coherente.
+  useEffect(() => {
+    if (!abierto) return;
+    if (esAsistencia && form.getFieldValue('componente') !== 'PRACTICO') {
+      form.setFieldValue('componente', 'PRACTICO');
+      componentePrevRef.current = 'PRACTICO';
+      form.setFields([{ name: 'puntos', errors: [] }]);
+    }
+  }, [abierto, esAsistencia, form]);
 
   const handleValuesChange = (changed) => {
     if ('componente' in changed) {
@@ -478,15 +526,18 @@ const EvaluacionDrawer = ({
       setErrorGuardado(null);
       const payload = construirPayload(values);
 
+      // La actividad de ASISTENCIA tiene nota calculada por el backend (round(%×puntos)):
+      // al crear o cambiar sus puntos hay que recargar el cuaderno para traer las notas
+      // recalculadas (no basta con parchear la columna en local).
       if (esEditar) {
         const actualizada = await editarEvaluacion(evaluacion.id, payload);
         notification.success({ title: 'Actividad actualizada' });
-        onGuardado(actualizada);
+        onGuardado(actualizada, { recalcular: esAsistencia });
         onCerrar();
       } else {
         const creada = await crearEvaluacion(payload);
         notification.success({ title: 'Actividad creada' });
-        onGuardado(creada);
+        onGuardado(creada, { recalcular: esAsistencia });
         onCerrar();
       }
     } catch (err) {
@@ -603,7 +654,9 @@ const EvaluacionDrawer = ({
                 placeholder={tiposLoading ? 'Cargando…' : 'Seleccionar tipo'}
                 loading={tiposLoading}
                 disabled={tiposLoading}
-                options={tipos.map((t) => ({ value: t.id, label: t.nombre }))}
+                options={tipos
+                  .filter((t) => !(t.id === tipoAsistenciaId && yaExisteAsistencia))
+                  .map((t) => ({ value: t.id, label: t.nombre }))}
               />
             </Form.Item>
 
@@ -642,6 +695,7 @@ const EvaluacionDrawer = ({
               evaluacionesActuales={evaluacionesActuales}
               evaluacionIdExcluir={evaluacionIdExcluir}
               onExcedeChange={handleExcedeChange}
+              esAsistencia={esAsistencia}
             />
           </SeccionAjustes>
 

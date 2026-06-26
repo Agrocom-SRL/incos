@@ -490,7 +490,14 @@ const LicenciaSolicitarPage = () => {
               title="Datos de la licencia"
               descripcion="Define el motivo y las fechas. Por defecto la licencia ocupa un solo día; desactiva el interruptor para indicar una fecha de fin. El tope es de 15 días por gestión (lo valida el sistema)."
             >
-              <Form form={form} layout="vertical" disabled={!formularioHabilitado}>
+              <Form
+                form={form}
+                layout="vertical"
+                disabled={!formularioHabilitado}
+                // En creación, la licencia arranca con la fecha de hoy (un solo día); en
+                // edición las fechas las precarga el efecto de prefill desde la licencia.
+                initialValues={esEdicion ? undefined : { fechaInicio: dayjs() }}
+              >
                 {/* inscripcionId se precarga al resolver la inscripción vigente; oculto al usuario. */}
                 <Form.Item name="inscripcionId" hidden rules={[{ required: true }]}>
                   <Input type="hidden" />

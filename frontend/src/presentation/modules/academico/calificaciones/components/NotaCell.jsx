@@ -3,10 +3,13 @@
  */
 
 import { memo, useCallback, useEffect, useMemo } from 'react';
-import { InputNumber } from 'antd';
+import { InputNumber, Tooltip } from 'antd';
+import { CalculatorOutlined } from '@ant-design/icons';
 import { useNotaAutosave } from '@application-academico/calificaciones/hooks/useNotaAutosave.js';
 import { useCuadernoAutosaveRegistry } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
 import { parseNotaInput } from '@application-academico/calificaciones/utils/parseNotaInput.js';
+
+const TOOLTIP_ASISTENCIA = 'Nota calculada automáticamente desde la asistencia del bimestre.';
 
 const NotaCell = ({
   estudianteId,
@@ -14,6 +17,7 @@ const NotaCell = ({
   puntosMaximos = 100,
   valorInicial,
   soloLectura = false,
+  autoCalculada = false,
 }) => {
   const max = Math.round(Number(puntosMaximos) || 100);
 
@@ -68,26 +72,51 @@ const NotaCell = ({
 
   if (soloLectura && vacio) {
     return (
-      <span className="cal-nota-cell cal-nota-cell--empty" aria-label="Sin nota">
-        —
+      <span
+        className={[
+          'cal-nota-cell',
+          'cal-nota-cell--empty',
+          autoCalculada ? 'cal-nota-cell--auto' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        aria-label={autoCalculada ? `Sin nota. ${TOOLTIP_ASISTENCIA}` : 'Sin nota'}
+      >
+        {autoCalculada ? (
+          <Tooltip title={TOOLTIP_ASISTENCIA}>
+            <CalculatorOutlined className="cal-nota-cell__auto-icon" aria-hidden />
+          </Tooltip>
+        ) : (
+          '—'
+        )}
       </span>
     );
   }
 
   if (soloLectura) {
-    return (
+    const valorReadonly = (
       <span
         className={[
           'cal-nota-cell',
           'cal-nota-cell--filled',
           'cal-nota-cell--readonly',
+          autoCalculada ? 'cal-nota-cell--auto' : '',
           excedeMaximo ? 'cal-nota-cell--error' : '',
         ]
           .filter(Boolean)
           .join(' ')}
       >
+        {autoCalculada ? (
+          <CalculatorOutlined className="cal-nota-cell__auto-icon" aria-hidden />
+        ) : null}
         <span className="cal-nota-cell__readonly-valor">{valor}</span>
       </span>
+    );
+
+    return autoCalculada ? (
+      <Tooltip title={TOOLTIP_ASISTENCIA}>{valorReadonly}</Tooltip>
+    ) : (
+      valorReadonly
     );
   }
 

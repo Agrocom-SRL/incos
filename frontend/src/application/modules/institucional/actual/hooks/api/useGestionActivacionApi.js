@@ -55,9 +55,15 @@ export const useGestionActivacionApi = () => {
     [],
   );
 
-  /** Cierra un bimestre de la gestión (backend en preparación). */
+  /** Cierra un bimestre de la gestión (transición EN_CURSO → CERRADO). */
   const cerrarBimestreGestion = useCallback(
     (numero) => CalificacionRepository.cerrarBimestreGestion(numero),
+    [],
+  );
+
+  /** Abre un bimestre de la gestión (transición PENDIENTE → EN_CURSO). */
+  const abrirBimestreGestion = useCallback(
+    (numero) => CalificacionRepository.abrirBimestreGestion(numero),
     [],
   );
 
@@ -70,5 +76,6 @@ export const useGestionActivacionApi = () => {
     iniciarGestionAcademica,
     validarCierreBimestre,
     cerrarBimestreGestion,
+    abrirBimestreGestion,
   };
 };

@@ -1,6 +1,6 @@
 /**
  * Tokens de Servicios Base (Infraestructura)
- * 
+ *
  * Convenciones:
  * - Servicios base: camelCase (ej: 'logger', 'fileUploadService')
  */
@@ -17,8 +17,8 @@ export const SERVICIOS_TOKENS = {
     reciboPagoPdfGenerator: 'reciboPagoPdfGenerator', // Generador de recibo de pago (pdf-lib)
     pdfGenerator: 'pdfGenerator', // IPDFGenerator (fachada única)
     registroPedagogicoExcelGenerator: 'registroPedagogicoExcelGenerator', // IRegistroPedagogicoExcelGenerator (.xlsx)
+    centralizadorExcelGenerator: 'centralizadorExcelGenerator', // ICentralizadorExcelGenerator (.xlsx)
     becasReporteExcelGenerator: 'becasReporteExcelGenerator', // IBecasReporteExcelGenerator (.xlsx)
     cuentasPorCobrarReporteExcelGenerator: 'cuentasPorCobrarReporteExcelGenerator', // ICuentasPorCobrarReporteExcelGenerator (.xlsx)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
 };
-

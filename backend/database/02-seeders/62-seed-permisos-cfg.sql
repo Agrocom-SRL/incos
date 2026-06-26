@@ -236,4 +236,53 @@ FROM (
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;
 
+-- ============================================================
+-- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
+-- Documentación, Empresas y convenios, e Historial de actividades: se ocultan
+-- hasta que las pantallas existan. (El resto de Configuración académica y de
+-- Datos complementarios / pagos SÍ está construido y permanece activo.)
+-- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
+-- (permiso_acciones), sus asignaciones a roles (roles_permisos) y los grupos
+-- de UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que
+-- hereda por vista_*_activas (filtra activo=TRUE y deleted_at IS NULL).
+-- Para REHABILITAR: poner activo=1 y deleted_at=NULL en estas mismas filas.
+-- ============================================================
+SET @fecha_baja := '2026-06-24 00:00:00';
+
+-- 1) Permisos de las páginas no construidas
+UPDATE permisos
+SET activo = 0, deleted_at = @fecha_baja
+WHERE codigo IN (
+  -- Documentación
+  'configuracion.documentacion.inscripcion',
+  'configuracion.documentacion.becas',
+  'configuracion.documentacion.pasantias',
+  'configuracion.documentacion.traslado',
+  -- Empresas y convenios
+  'configuracion.convenios',
+  -- Historial de actividades
+  'configuracion.historial-actividades'
+);
+
+-- 2) Cascada: acciones de esos permisos
+UPDATE permiso_acciones pa
+JOIN permisos p ON p.id = pa.permiso_id
+SET pa.activo = 0, pa.deleted_at = @fecha_baja
+WHERE p.modulo = 'CFG' AND p.deleted_at IS NOT NULL;
+
+-- 3) Cascada: asignaciones a roles de esos permisos
+UPDATE roles_permisos rp
+JOIN permisos p ON p.id = rp.permiso_id
+SET rp.activo = 0, rp.deleted_at = @fecha_baja
+WHERE p.modulo = 'CFG' AND p.deleted_at IS NOT NULL;
+
+-- 4) Grupos de UI cuyas páginas quedan completamente ocultas
+UPDATE grupos_ui
+SET activo = 0, deleted_at = @fecha_baja
+WHERE codigo IN (
+  'configuracion_documentacion',
+  'configuracion_convenios',
+  'configuracion_historial'
+);
+
 SET FOREIGN_KEY_CHECKS = 1;

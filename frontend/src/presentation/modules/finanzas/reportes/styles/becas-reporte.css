@@ -111,25 +111,91 @@
   vertical-align: middle;
   text-align: center;
   text-transform: uppercase;
-  line-height: 1.2;
-  letter-spacing: 0.01em;
-  font-size: var(--font-size-xs, 11px);
-  padding: 14px 10px;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  /* Headers que SOBRESALEN frente al detalle: más cuerpo, peso y aire vertical. */
+  font-size: var(--font-size-sm, 13px) !important;
+  font-weight: 700 !important;
+  padding-block: var(--spacing-lg, 18px);
+  padding-inline: var(--spacing-md, 12px);
 }
 
-/* Columna identidad de carrera: que no se aplaste, alineada a la izquierda. */
-.becas-planilla .becas-col-carrera {
+/* Columna JERÁRQUICA "Detalle": ancho cómodo y siempre a la izquierda (header y
+   celda), para alojar indentación + caret de expansión del árbol. */
+.becas-planilla .becas-col-detalle {
   text-align: left !important;
+  min-width: 240px;
 }
-/* El header de la columna Carrera y Observaciones sí van a la izquierda. */
-.becas-planilla .ant-table-thead > tr > th.becas-col-carrera {
+.becas-planilla .ant-table-thead > tr > th.becas-col-detalle {
   text-align: left;
 }
 
-/* Celda de observaciones: texto secundario, no compite con los números. */
-.becas-obs {
+/* Etiqueta del nodo del árbol con pista visual por nivel (peso/color por token).
+   carrera → negrita verde · periodo → medio · paralelo → normal atenuado. */
+.becas-nivel {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--spacing-sm, 8px);
+  min-width: 0;
+}
+.becas-nivel__label {
+  min-width: 0;
+  line-height: 1.25;
+}
+.becas-nivel--carrera .becas-nivel__label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--color-primary, #196b45);
+}
+.becas-nivel--periodo .becas-nivel__label {
+  font-weight: 600;
+  color: var(--text-700, #374151);
+}
+.becas-nivel--paralelo .becas-nivel__label {
+  font-weight: 400;
+  color: var(--text-600, #4b5563);
+}
+/* Subtexto contextual (código de carrera / turno de paralelo): chip discreto. */
+.becas-nivel__sub {
+  flex: none;
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--text-500, #6b7280);
-  font-style: italic;
+}
+
+/* ============================================================
+   BLOQUE POR CARRERA: cada fila se tiñe con el color institucional de SU carrera
+   (CSS var `--becas-row-tint` inyectada por fila desde `onRow`). La fila de
+   carrera lleva tinte algo más visible + acento lateral; sus hijas (periodo /
+   paralelo) un tinte más leve del mismo color → se lee el bloque de cada carrera.
+   El caret/indent del árbol sigue visible (solo se tiñe el fondo). La fila de
+   TOTALES es un summary (no pasa por onRow), así que conserva su banda propia.
+   ============================================================ */
+.becas-planilla .ant-table-tbody > tr.becas-row > td {
+  background: var(--becas-row-tint, transparent) !important;
+}
+/* Acento lateral del bloque en la primera celda de la fila de carrera. */
+.becas-planilla .ant-table-tbody > tr.becas-row--carrera > td:first-child {
+  box-shadow: inset 4px 0 0 var(--becas-row-edge, transparent);
+}
+/* Hover por encima del tinte: mantiene el verde tenue del kit (feedback claro). */
+.becas-planilla .ant-table-tbody > tr.becas-row:hover > td {
+  background: var(--fin-verde-tenue) !important;
+}
+
+/* Cabecera del separador "Detalle": título + toggle de expandir/colapsar todo. */
+.becas-detalle__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+}
+.becas-detalle__toggle.ant-btn {
+  color: var(--color-primary, #196b45);
+  font-weight: 600;
 }
 
 /* Donut: contenedor centrado con su leyenda debajo. */
@@ -175,6 +241,328 @@
   grid-column: 2;
   font-variant-numeric: tabular-nums;
   font-size: var(--font-size-xs, 12px);
+}
+
+/* ============================================================
+   GRILLA DE MINI-DONUTS (scope Carrera / Periodo): un mini-donut por entidad.
+   Reflow por auto-fit; el título lleva el color de la carrera como acento
+   (superficie teñida) en el scope Carrera.
+   ============================================================ */
+.becas-mini-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-md, 12px);
+}
+.becas-mini-donut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-sm, 8px);
+  border: 1px solid var(--border-200, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--surface-0, #fff);
+}
+.becas-mini-donut__title {
+  width: 100%;
+  text-align: center;
+  font-size: var(--font-size-xs, 12px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  color: var(--text-700, #374151);
+  padding: 2px var(--spacing-sm, 8px);
+  border-radius: var(--radius-md, 10px);
+}
+.becas-mini-donut__caption {
+  font-size: var(--font-size-xs, 12px);
+  font-variant-numeric: tabular-nums;
+}
+.becas-mini-donut__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px var(--spacing-sm, 8px);
+  width: 100%;
+}
+.becas-mini-donut__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+.becas-mini-donut__legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-sm, 4px);
+  flex: none;
+}
+.becas-mini-donut__legend-text {
+  font-size: var(--font-size-xs, 12px);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   RESUMEN: banda de KPIs (kit `fin-kpis`) + DESTACADOS derivados del árbol
+   (carrera con más becados, periodo de mayor cobertura, paralelo con más
+   becados). Los destacados comparten lenguaje con `fin-kpi` pero con acento
+   propio (color de carrera en el primero).
+   ============================================================ */
+.becas-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+}
+.becas-destacados {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+}
+.becas-destacado {
+  --becas-destacado-accent: var(--color-primary, #196b45);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border: 1px solid var(--border-200, #e5e7eb);
+  border-left: 4px solid var(--becas-destacado-accent);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--surface-0, #fff);
+  min-width: 0;
+}
+.becas-destacado__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md, 10px);
+  background: color-mix(in srgb, var(--becas-destacado-accent) 14%, transparent);
+  color: var(--becas-destacado-accent);
+  font-size: var(--font-size-lg, 18px);
+  flex: none;
+}
+.becas-destacado__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+.becas-destacado__label {
+  font-size: var(--font-size-xs, 12px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-500, #6b7280);
+}
+.becas-destacado__value.ant-typography {
+  margin: 0;
+  font-size: var(--font-size-base, 15px);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-800, #1f2937);
+}
+.becas-destacado__meta {
+  font-size: var(--font-size-sm, 12px);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-600, #4b5563);
+}
+/* Destacados con la misma elevación que el resto de tarjetas de la zona. */
+.becas-resumen-zone .becas-destacado {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 6px 16px rgba(15, 23, 42, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.becas-resumen-zone .becas-destacado:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .becas-resumen-zone .becas-destacado {
+    transition: none;
+  }
+  .becas-resumen-zone .becas-destacado:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   SELECTOR DE SCOPE/NIVEL (molécula BecasScopeSegmented) — compartido por las
+   cards de Distribución y Cobertura. Va a todo el ancho como header limpio bajo
+   el título; pista en verde tenue del kit, pastilla activa en verde primario con
+   texto claro, ícono por opción y press feedback sutil. Responsive: en pantallas
+   chicas el wrapper hace scroll horizontal suave en vez de desbordar.
+   ============================================================ */
+.becas-scope-seg {
+  margin-bottom: var(--spacing-md, 12px);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.becas-scope-seg::-webkit-scrollbar {
+  display: none;
+}
+/* Pista del control: superficie verde tenue del kit cuaderno. */
+.becas-scope-seg .ant-segmented {
+  background: var(--cuaderno-verde-tenue, #e8f5ec);
+}
+
+.becas-scope-seg .ant-segmented-item {
+  color: var(--cuaderno-verde-oscuro, #196b45);
+  font-weight: 600;
+  border-radius: var(--radius-md, 10px);
+  transition:
+    color var(--dur-hover, 0.16s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    transform var(--dur-press, 0.14s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+.becas-scope-seg
+  .ant-segmented-item:hover:not(.ant-segmented-item-selected):not(
+    .ant-segmented-item-disabled
+  ) {
+  color: var(--cuaderno-verde-acento, #134d32);
+  background: transparent;
+}
+.becas-scope-seg .ant-segmented-item-icon {
+  margin-inline-end: var(--spacing-xs, 4px);
+}
+/* Estado activo claramente diferenciado: pastilla verde primaria, texto claro
+   (contraste AA). Reutiliza el thumb animado nativo de AntD para el deslizado. */
+.becas-scope-seg .ant-segmented-thumb,
+.becas-scope-seg .ant-segmented-item-selected {
+  background: var(--color-primary, #196b45);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary, #196b45) 30%, transparent);
+}
+.becas-scope-seg .ant-segmented-item-selected,
+.becas-scope-seg .ant-segmented-item-selected:hover,
+.becas-scope-seg .ant-segmented-item-selected .ant-segmented-item-icon {
+  color: #fff;
+}
+/* Press feedback sutil y motivado, solo en punteros con hover real. */
+@media (hover: hover) {
+  .becas-scope-seg .ant-segmented-item:active {
+    transform: scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .becas-scope-seg .ant-segmented-item {
+    transition: none;
+  }
+  .becas-scope-seg .ant-segmented-item:active {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   COBERTURA POR NIVEL: card propia con selector de grano (BecasScopeSegmented)
+   + barras horizontales por entidad (carrera/periodo/paralelo). Agrupación
+   cross-carrera resuelta en el hook; misma fuente de color por tokens.
+   ============================================================ */
+.becas-nivel-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+}
+.becas-nivel-chart__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+}
+.becas-nivel-chart__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+.becas-nivel-chart__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 8px);
+}
+.becas-nivel-chart__label {
+  min-width: 0;
+  font-weight: 600;
+}
+.becas-nivel-chart__valor {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs, 12px);
+}
+/* Sub-descripción del PARALELO agrupado: lista discreta de las carreras que lo
+   componen (todos los "A" vienen de varias carreras). Puntito del color de cada
+   carrera + nombre en texto secundario; con wrap para no romper la barra. */
+.becas-nivel-chart__carreras {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--spacing-sm, 8px);
+  min-width: 0;
+}
+.becas-nivel-chart__carrera {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  min-width: 0;
+}
+.becas-nivel-chart__carrera-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill, 999px);
+  flex: none;
+}
+.becas-nivel-chart__carrera-text.ant-typography {
+  font-size: var(--font-size-xs, 12px);
+  line-height: 1.2;
+}
+.becas-nivel-chart__bar {
+  display: block;
+  height: 8px;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--surface-100, #f0f0f0);
+  overflow: hidden;
+}
+.becas-nivel-chart__bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  min-width: 2px;
+  /* Motion motivado: al cambiar de nivel la lista se remonta (key=nivel) y las
+     barras entran creciendo desde 0; escalonadas por --bar-index. */
+  transform-origin: left center;
+  animation: becas-bar-in 0.42s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
+  animation-delay: calc(var(--bar-index, 0) * 0.04s);
+  transition: width 0.4s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+@keyframes becas-bar-in {
+  from {
+    transform: scaleX(0);
+    opacity: 0.4;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .becas-nivel-chart__bar-fill {
+    animation: none;
+    transition: none;
+  }
 }
 
 /* ============================================================

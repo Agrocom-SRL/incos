@@ -284,6 +284,7 @@ export const ASISTENCIA_ENDPOINTS = {
 
 export const CALIFICACIONES_ENDPOINTS = {
   COORDINACION_DOCENTES: `${API_BASE}/calificaciones/coordinacion/docentes`,
+  CENTRALIZADOR: `${API_BASE}/calificaciones/centralizador`,
   MIS_CURSOS: `${API_BASE}/calificaciones/mis-cursos`,
   COORDINACION_DOCENTE_CURSOS: (docenteId) =>
     `${API_BASE}/calificaciones/coordinacion/docentes/${docenteId}/cursos`,
@@ -299,6 +300,8 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/validar-cierre`,
   GESTION_BIMESTRES_CERRAR: (numero) =>
     `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/cerrar`,
+  GESTION_BIMESTRES_ABRIR: (numero) =>
+    `${API_BASE}/calificaciones/gestion-bimestres/bimestre/${numero}/abrir`,
   GESTION_PERIODOS: `${API_BASE}/calificaciones/gestion-bimestres/periodos`,
   GESTION_PERIODO_BY_ID: (id) => `${API_BASE}/calificaciones/gestion-bimestres/periodos/${id}`,
   GESTION_PERIODO_FECHAS: (id) =>
@@ -325,6 +328,10 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/cerrar`,
   EXPORT_REGISTRO_PEDAGOGICO: (asignacionId, bimestre) =>
     `${API_BASE}/calificaciones/asignaciones/${asignacionId}/bimestre/${bimestre}/export/registro-pedagogico`,
+  EXPORT_CENTRALIZADOR: (paraleloGestionId, bimestre) =>
+    `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/bimestre/${bimestre}/export`,
+  EXPORT_CENTRALIZADOR_CARRERA: (paraleloGestionId, bimestre) =>
+    `${API_BASE}/calificaciones/centralizador/carrera-de/${paraleloGestionId}/bimestre/${bimestre}/export`,
 };
 
 // ============================================

@@ -36,15 +36,15 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new GetMisCursosAsistenciaUseCase({
         calificacionContextoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
         ),
         calificacionCoordinacionRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      }),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
   );
 
   registerComponent(
@@ -53,26 +53,26 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new GetCalendarioAsistenciaUseCase({
         calificacionCoordinacionRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         calificacionContextoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
         ),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         asistenciaSesionViewRepository: c.resolve(
-          REPOSITORIOS_TOKENS.asistenciaSesionViewRepository,
+          REPOSITORIOS_TOKENS.asistenciaSesionViewRepository
         ),
         asistenciaPlanillaViewRepository: c.resolve(
-          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository,
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository
         ),
         asistenciaRegistroEstadoViewRepository: c.resolve(
-          REPOSITORIOS_TOKENS.asistenciaRegistroEstadoViewRepository,
+          REPOSITORIOS_TOKENS.asistenciaRegistroEstadoViewRepository
         ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      }),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
   );
 
   registerComponent(
@@ -81,26 +81,26 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new GetPlanillaAsistenciaSemanalUseCase({
         calificacionCoordinacionRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         calificacionContextoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
         ),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         asistenciaSesionViewRepository: c.resolve(
-          REPOSITORIOS_TOKENS.asistenciaSesionViewRepository,
+          REPOSITORIOS_TOKENS.asistenciaSesionViewRepository
         ),
         asistenciaPlanillaViewRepository: c.resolve(
-          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository,
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository
         ),
         asistenciaRegistroEstadoViewRepository: c.resolve(
-          REPOSITORIOS_TOKENS.asistenciaRegistroEstadoViewRepository,
+          REPOSITORIOS_TOKENS.asistenciaRegistroEstadoViewRepository
         ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      }),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
   );
 
   registerComponent(
@@ -109,22 +109,31 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new BulkRegistrarAsistenciaUseCase({
         calificacionCoordinacionRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         calificacionContextoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
         ),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         sesionClaseRepository: c.resolve(REPOSITORIOS_TOKENS.sesionClaseRepository),
         attendanceRepository: c.resolve(REPOSITORIOS_TOKENS.attendanceRepository),
         asistenciaSesionViewRepository: c.resolve(
-          REPOSITORIOS_TOKENS.asistenciaSesionViewRepository,
+          REPOSITORIOS_TOKENS.asistenciaSesionViewRepository
+        ),
+        asistenciaPlanillaViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository
+        ),
+        subjectEnrollmentBimesterRepository: c.resolve(
+          REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository
+        ),
+        bimesterEvaluationGradeRepository: c.resolve(
+          REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository
         ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      }),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
   );
 
   registerComponent(
@@ -133,18 +142,18 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new CerrarRegistroAsistenciaUseCase({
         calificacionCoordinacionRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         calificacionContextoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
         ),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         sesionClaseRepository: c.resolve(REPOSITORIOS_TOKENS.sesionClaseRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      }),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
   );
 
   registerComponent(
@@ -153,18 +162,18 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new ReabrirRegistroAsistenciaUseCase({
         calificacionCoordinacionRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         calificacionContextoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
         ),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         sesionClaseRepository: c.resolve(REPOSITORIOS_TOKENS.sesionClaseRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      }),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
   );
 
   registerComponent(
@@ -173,18 +182,18 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new CrearSesionEspecialUseCase({
         calificacionCoordinacionRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         calificacionContextoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
         ),
         cuadernoRepository: c.resolve(REPOSITORIOS_TOKENS.cuadernoRepository),
         sesionClaseRepository: c.resolve(REPOSITORIOS_TOKENS.sesionClaseRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      }),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
   );
 
   registerComponent(
@@ -193,20 +202,20 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new EliminarSesionEspecialUseCase({
         calificacionCoordinacionRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository,
+          REPOSITORIOS_TOKENS.calificacionCoordinacionRepository
         ),
         calificacionContextoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
         ),
         sesionClaseRepository: c.resolve(REPOSITORIOS_TOKENS.sesionClaseRepository),
         asistenciaPlanillaViewRepository: c.resolve(
-          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository,
+          REPOSITORIOS_TOKENS.asistenciaPlanillaViewRepository
         ),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
-        logger: c.resolve(SERVICIOS_TOKENS.logger),
-      }),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
   );
 
   // ============================================
@@ -219,8 +228,8 @@ export function registerAsistenciaResource(container) {
       new GetMisCursosAsistenciaController({
         getMisCursosAsistenciaUseCase: c.resolve(ACADEMICO_TOKENS.getMisCursosAsistenciaUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      }),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
   );
 
   registerComponent(
@@ -230,8 +239,8 @@ export function registerAsistenciaResource(container) {
       new GetCalendarioAsistenciaController({
         getCalendarioAsistenciaUseCase: c.resolve(ACADEMICO_TOKENS.getCalendarioAsistenciaUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      }),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
   );
 
   registerComponent(
@@ -240,11 +249,11 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new GetPlanillaAsistenciaController({
         getPlanillaAsistenciaSemanalUseCase: c.resolve(
-          ACADEMICO_TOKENS.getPlanillaAsistenciaSemanalUseCase,
+          ACADEMICO_TOKENS.getPlanillaAsistenciaSemanalUseCase
         ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      }),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
   );
 
   registerComponent(
@@ -254,8 +263,8 @@ export function registerAsistenciaResource(container) {
       new BulkRegistrarAsistenciaController({
         bulkRegistrarAsistenciaUseCase: c.resolve(ACADEMICO_TOKENS.bulkRegistrarAsistenciaUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      }),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
   );
 
   registerComponent(
@@ -264,11 +273,11 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new CerrarRegistroAsistenciaController({
         cerrarRegistroAsistenciaUseCase: c.resolve(
-          ACADEMICO_TOKENS.cerrarRegistroAsistenciaUseCase,
+          ACADEMICO_TOKENS.cerrarRegistroAsistenciaUseCase
         ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      }),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
   );
 
   registerComponent(
@@ -277,11 +286,11 @@ export function registerAsistenciaResource(container) {
     (c) =>
       new ReabrirRegistroAsistenciaController({
         reabrirRegistroAsistenciaUseCase: c.resolve(
-          ACADEMICO_TOKENS.reabrirRegistroAsistenciaUseCase,
+          ACADEMICO_TOKENS.reabrirRegistroAsistenciaUseCase
         ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      }),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
   );
 
   registerComponent(
@@ -291,8 +300,8 @@ export function registerAsistenciaResource(container) {
       new CrearSesionEspecialController({
         crearSesionEspecialUseCase: c.resolve(ACADEMICO_TOKENS.crearSesionEspecialUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      }),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
   );
 
   registerComponent(
@@ -302,8 +311,8 @@ export function registerAsistenciaResource(container) {
       new EliminarSesionEspecialController({
         eliminarSesionEspecialUseCase: c.resolve(ACADEMICO_TOKENS.eliminarSesionEspecialUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
-        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-      }),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
   );
 
   // ============================================
@@ -313,33 +322,33 @@ export function registerAsistenciaResource(container) {
     buildAsistenciaRouter({
       controllers: {
         getMisCursosAsistenciaController: c.resolve(
-          ACADEMICO_TOKENS.getMisCursosAsistenciaController,
+          ACADEMICO_TOKENS.getMisCursosAsistenciaController
         ),
         coordinacionDocentesController: c.resolve(
-          ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController,
+          ACADEMICO_TOKENS.listCoordinacionCalificacionesDocentesController
         ),
         getCalendarioAsistenciaController: c.resolve(
-          ACADEMICO_TOKENS.getCalendarioAsistenciaController,
+          ACADEMICO_TOKENS.getCalendarioAsistenciaController
         ),
         getPlanillaAsistenciaController: c.resolve(
-          ACADEMICO_TOKENS.getPlanillaAsistenciaController,
+          ACADEMICO_TOKENS.getPlanillaAsistenciaController
         ),
         bulkRegistrarAsistenciaController: c.resolve(
-          ACADEMICO_TOKENS.bulkRegistrarAsistenciaController,
+          ACADEMICO_TOKENS.bulkRegistrarAsistenciaController
         ),
         cerrarRegistroAsistenciaController: c.resolve(
-          ACADEMICO_TOKENS.cerrarRegistroAsistenciaController,
+          ACADEMICO_TOKENS.cerrarRegistroAsistenciaController
         ),
         reabrirRegistroAsistenciaController: c.resolve(
-          ACADEMICO_TOKENS.reabrirRegistroAsistenciaController,
+          ACADEMICO_TOKENS.reabrirRegistroAsistenciaController
         ),
         crearSesionEspecialController: c.resolve(ACADEMICO_TOKENS.crearSesionEspecialController),
         eliminarSesionEspecialController: c.resolve(
-          ACADEMICO_TOKENS.eliminarSesionEspecialController,
-        ),
+          ACADEMICO_TOKENS.eliminarSesionEspecialController
+        )
       },
-      middlewares: { validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest) },
-    }),
+      middlewares: { validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest) }
+    })
   );
 
   return container;

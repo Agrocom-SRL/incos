@@ -65,9 +65,7 @@ const PlanillaAsistenciaSemanalPage = () => {
     estadoCelda,
     toggleCelda,
     hayCambios,
-    descartarCambios,
-    guardarPlanilla,
-    guardando,
+    flushPendientes,
     cerrarDia,
     reabrirDia,
     procesandoCierre,
@@ -134,12 +132,14 @@ const PlanillaAsistenciaSemanalPage = () => {
     setFechaEspecial((prev) => ({ ...prev, abierto: false }));
   }, []);
 
-  const handleVolver = useCallback(() => {
+  const handleVolver = useCallback(async () => {
+    // El autoguardado por celda ya persiste las marcas en segundo plano; al salir forzamos
+    // (best-effort, silencioso) el guardado de lo que quede en caché y navegamos.
     if (hayCambios) {
-      descartarCambios();
+      await flushPendientes();
     }
     navigate(volverPath);
-  }, [hayCambios, descartarCambios, navigate, volverPath]);
+  }, [hayCambios, flushPendientes, navigate, volverPath]);
 
   // Cerrar un día desde la grilla pide confirmación (firma esa fecha en solo lectura).
   const confirmarCerrarDia = useCallback(
@@ -306,9 +306,6 @@ const PlanillaAsistenciaSemanalPage = () => {
             onSolicitarLicencia={
               puedeCrearLicencia ? handleSolicitarLicencia : undefined
             }
-            onGuardar={puedeEditar ? guardarPlanilla : undefined}
-            guardando={guardando}
-            hayCambios={hayCambios}
           />
         )}
       </div>

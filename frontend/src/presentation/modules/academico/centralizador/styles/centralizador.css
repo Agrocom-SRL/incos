@@ -1,0 +1,382 @@
+/* ======================================================================
+   Centralizador de calificaciones por paralelo (matriz estudiantes × materias).
+   Módulo autocontenido: replica la "hoja" verde del registro académico con sus
+   propios tokens locales (espejo de los del cuaderno) y clases con prefijo
+   `cal-centralizador`.
+   ====================================================================== */
+
+/* —— Tokens locales (mapean variables globales del proyecto) —— */
+.cal-centralizador,
+.cal-centralizador-grid-wrap {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-medio: #6db088;
+  --cuaderno-verde-oscuro: var(--color-primary, #196b45);
+  --cuaderno-verde-acento: var(--primary-dark, #134d32);
+
+  --cuaderno-papel: var(--color-bg-container, #ffffff);
+  --cuaderno-fondo: #fafafa;
+  --cuaderno-borde: #e5e7eb;
+  --cuaderno-texto-tenue: #9ca3af;
+  --cuaderno-texto-medio: var(--text-500, #6b7280);
+  --cuaderno-texto-fuerte: var(--text-800, #1f2937);
+}
+
+/* —— Estado de carga (nest del Spin) —— */
+.cal-centralizador__spin-nest {
+  min-height: 220px;
+}
+
+/* —— Celda de identificación del estudiante (código + nombre) —— */
+.cal-centralizador-estudiante {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cal-centralizador-estudiante__margen {
+  flex-shrink: 0;
+  width: 2px;
+  align-self: stretch;
+  min-height: 28px;
+  border-radius: 2px;
+  background: var(--cuaderno-verde-acento);
+}
+
+.cal-centralizador-estudiante__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cal-centralizador-estudiante__codigo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-centralizador-estudiante__nombre {
+  font-weight: 500;
+  color: var(--cuaderno-texto-fuerte);
+  font-size: 13px;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+/* —— Cabecera de contexto (ficha, gemela de CursoContextoAsistencia) —— */
+/* La base la aporta .sd-profile (detail-page.css, ya importado por la página).
+   Aquí solo: el mapeo de variables de diseño a tokens del proyecto (para que la
+   tarjeta funcione sin depender de un ancestro .sd), el avatar con la letra del
+   paralelo y la pill del bimestre (teñida por estilo inline con su color). */
+.cal-centralizador-profile {
+  --surface: var(--color-bg-container);
+  --border: var(--color-border-secondary);
+  --radius-xl: var(--border-radius-lg);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.05);
+  --text-900: var(--color-text);
+  --text-800: var(--color-text);
+  --text-700: var(--color-text);
+  --text-500: var(--color-text-secondary);
+  --primary: var(--color-primary);
+  --primary-dark: var(--color-primary-hover);
+  width: 100%;
+}
+
+.cal-centralizador-profile__avatar {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* Código del paralelo (p. ej. "PRIMERO A"): fuente pequeña que envuelve para
+   caber en el círculo, espejo de la variante sigla de asistencia. */
+.cal-centralizador-profile__avatar--codigo {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  padding: 6px 4px;
+  word-break: break-word;
+  hyphens: auto;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cal-centralizador-profile__bimestre-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* —— Tabla matriz —— */
+.cal-centralizador-grid-wrap {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.cal-centralizador-grid-wrap .ant-table-wrapper.cal-centralizador-grid .ant-table {
+  font-size: 15px;
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th {
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-est,
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-asig {
+  font-weight: 700;
+  padding: 8px 6px !important;
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+}
+
+/* Cabecera de CI: columna angosta, el título "Cédula de identidad" envuelve en
+   varias filas (anula el nowrap general del th). */
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-ci {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Cabecera de asignatura: 3 filas apiladas (sigla / materia / docente). */
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-asig {
+  padding: 12px 6px !important;
+  vertical-align: top !important;
+}
+
+.cal-centralizador-grid__asig-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  /* Altura consistente entre todas las cabeceras de asignatura. */
+  min-height: 64px;
+  text-align: center;
+  /* Las filas de materia/docente pueden envolver (anula el nowrap del th). */
+  white-space: normal;
+}
+
+/* Primera fila: la sigla, separada del resto por un borde inferior blanco. */
+.cal-centralizador-grid__asig-sigla {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+  padding-top: 6px;
+  padding-bottom: 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Segunda fila: nombre de la materia + docente apilados. */
+.cal-centralizador-grid__asig-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cal-centralizador-grid__asig-nombre {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.cal-centralizador-grid__asig-docente {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-tbody
+  > tr
+  > td {
+  border-right: 1px solid var(--text-400) !important;
+}
+
+.cal-centralizador-grid__ci {
+  font-variant-numeric: tabular-nums;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+.cal-centralizador-grid__nota {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-centralizador-grid__nota--vacia {
+  color: var(--cuaderno-texto-tenue);
+}
+
+.cal-centralizador-grid__nota--reprobado {
+  color: var(--ant-color-error);
+  font-weight: 600;
+}
+
+/* —— Pill de estado de promoción (resultado anual) —— */
+.cal-centralizador-grid__estado {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.cal-centralizador-grid__estado--aprobado {
+  color: var(--color-success, #389e0d);
+  background: color-mix(in srgb, var(--color-success, #389e0d) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-success, #389e0d) 32%, transparent);
+}
+
+.cal-centralizador-grid__estado--reprobado {
+  color: var(--ant-color-error, #cf1322);
+  background: color-mix(in srgb, var(--ant-color-error, #cf1322) 12%, transparent);
+  border-color: color-mix(in srgb, var(--ant-color-error, #cf1322) 32%, transparent);
+}
+
+.cal-centralizador-grid__estado--en-curso {
+  color: var(--cuaderno-texto-medio);
+  background: var(--cuaderno-fondo);
+  border-color: var(--cuaderno-borde);
+}
+
+/* —— Leyenda al pie (espejo del documento oficial) —— */
+.cal-centralizador-grid__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+  padding: 10px 14px 12px;
+  font-size: 12px;
+  color: var(--cuaderno-texto-medio);
+  border: 1px solid var(--cuaderno-borde);
+  border-top: none;
+  border-radius: 0 0 var(--incos-radius-lg, 12px) var(--incos-radius-lg, 12px);
+  background: var(--cuaderno-fondo);
+}
+
+.cal-centralizador-grid__leyenda-item strong {
+  color: var(--cuaderno-texto-fuerte);
+  font-weight: 700;
+}
+
+/* —— P2: cabecera de bimestre clicable + selector —— */
+.cal-centralizador-bim__selector-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-asig
+  .cal-centralizador-bim__head-btn {
+  color: #fff;
+  font-weight: 700;
+  padding-inline: 8px;
+}
+
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-thead
+  > tr
+  > th.cal-centralizador-grid__th-asig
+  .cal-centralizador-bim__head-btn:hover {
+  color: var(--cuaderno-verde-tenue);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* —— P1: tarjeta de paralelo clicable —— */
+.curso-card.curso-card--clickable {
+  cursor: pointer;
+}
+
+/* Efecto de elevación al hover/focus (mismo lenguaje que el hub de reportes):
+   la tarjeta se levanta con sombra y borde primario. */
+.cal-centralizador-pcard {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.cal-centralizador-pcard:hover,
+.cal-centralizador-pcard:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  border-color: var(--ant-color-primary, #196b45);
+  outline: none;
+}
+
+/* Paralelo sin estudiantes matriculados: tarjeta inactiva, no interactiva. */
+.cal-centralizador-pcard--inactivo {
+  opacity: 0.6;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+.cal-centralizador-pcard--inactivo:hover,
+.cal-centralizador-pcard--inactivo:focus-within {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--ant-color-border, #d9d9d9);
+}
+.cal-centralizador-pcard__sin-alumnos {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 600;
+  color: var(--text-400, #9ca3af);
+}
+
+/* —— P1: sección de exportación por carrera (formulario) —— */
+.cal-centralizador-export__desc {
+  margin: 0;
+  color: var(--text-500, #6b7280);
+  font-size: var(--font-size-sm, 13px);
+  line-height: 1.45;
+}
+
+/* Punto de color de carrera en las opciones del Select (mismo lenguaje que el
+   selector de aportes de Pagos). El color es dato de negocio (inline). */
+.cal-centralizador-export__dot {
+  display: inline-block;
+  width: var(--font-size-xs, 11px);
+  height: var(--font-size-xs, 11px);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cal-centralizador-export__footer {
+  margin-top: var(--spacing-sm, 8px);
+}

@@ -79,4 +79,51 @@ FROM (
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;
 
+-- ============================================================
+-- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
+-- Reportes (Avance académico, Asistencia, Deserción y Solicitudes): TODO el
+-- módulo de reportes se oculta hasta que las pantallas existan.
+-- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
+-- (permiso_acciones), sus asignaciones a roles (roles_permisos) y los grupos
+-- de UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que
+-- hereda por vista_*_activas (filtra activo=TRUE y deleted_at IS NULL).
+-- Para REHABILITAR: poner activo=1 y deleted_at=NULL en estas mismas filas.
+-- ============================================================
+SET @fecha_baja := '2026-06-24 00:00:00';
+
+-- 1) Permisos de las páginas no construidas (todo el módulo REP)
+UPDATE permisos
+SET activo = 0, deleted_at = @fecha_baja
+WHERE codigo IN (
+  'reportes.avance_academico',
+  'reportes.asistencia',
+  'reportes.desercion',
+  'reportes.solicitudes.general',
+  'reportes.solicitudes.becas',
+  'reportes.solicitudes.traspaso',
+  'reportes.solicitudes.pasantia'
+);
+
+-- 2) Cascada: acciones de esos permisos
+UPDATE permiso_acciones pa
+JOIN permisos p ON p.id = pa.permiso_id
+SET pa.activo = 0, pa.deleted_at = @fecha_baja
+WHERE p.modulo = 'REP' AND p.deleted_at IS NOT NULL;
+
+-- 3) Cascada: asignaciones a roles de esos permisos
+UPDATE roles_permisos rp
+JOIN permisos p ON p.id = rp.permiso_id
+SET rp.activo = 0, rp.deleted_at = @fecha_baja
+WHERE p.modulo = 'REP' AND p.deleted_at IS NOT NULL;
+
+-- 4) Grupos de UI cuyas páginas quedan completamente ocultas
+UPDATE grupos_ui
+SET activo = 0, deleted_at = @fecha_baja
+WHERE codigo IN (
+  'rep_avance',
+  'rep_asistencia',
+  'rep_desercion',
+  'rep_solicitudes'
+);
+
 SET FOREIGN_KEY_CHECKS = 1;

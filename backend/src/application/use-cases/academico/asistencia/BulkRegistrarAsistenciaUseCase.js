@@ -5,12 +5,13 @@ import {
   expandirFechasClase,
   setDiasDesdeHorario,
   toISODate,
-  hoyISO,
+  hoyISO
 } from '../../../utils/asistenciaCalendario.js';
 import {
   ESTADOS_ASISTENCIA_VALUES,
-  ESTADOS_SESION_CLASE,
+  ESTADOS_SESION_CLASE
 } from '../../../../domain/constants/asistencia.constants.js';
+import { sincronizarNotasAsistenciaBimestre } from '../../../utils/sincronizarNotasAsistenciaBimestre.js';
 
 /**
  * Guarda la planilla de uno o varios días (lote, transaccional):
@@ -28,10 +29,13 @@ export class BulkRegistrarAsistenciaUseCase {
     sesionClaseRepository,
     attendanceRepository,
     asistenciaSesionViewRepository,
+    asistenciaPlanillaViewRepository,
+    subjectEnrollmentBimesterRepository,
+    bimesterEvaluationGradeRepository,
     teacherRepository,
     userRepository,
     authRepository,
-    logger,
+    logger
   }) {
     this.calificacionCoordinacionRepository = calificacionCoordinacionRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
@@ -39,6 +43,9 @@ export class BulkRegistrarAsistenciaUseCase {
     this.sesionClaseRepository = sesionClaseRepository;
     this.attendanceRepository = attendanceRepository;
     this.asistenciaSesionViewRepository = asistenciaSesionViewRepository;
+    this.asistenciaPlanillaViewRepository = asistenciaPlanillaViewRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.bimesterEvaluationGradeRepository = bimesterEvaluationGradeRepository;
     this.teacherRepository = teacherRepository;
     this.userRepository = userRepository;
     this.authRepository = authRepository;
@@ -58,7 +65,7 @@ export class BulkRegistrarAsistenciaUseCase {
       userRepository: this.userRepository,
       authRepository: this.authRepository,
       usuarioId,
-      asignacionId,
+      asignacionId
     });
 
     const asignacionIdNum = Number(asignacionId);
@@ -73,11 +80,16 @@ export class BulkRegistrarAsistenciaUseCase {
     const periodos =
       await this.calificacionContextoRepository.obtenerPeriodosBimestresGestion(gestionId);
 
+    // Bimestres (numero_orden) tocados por este lote: para recalcular su columna
+    // ASISTENCIA tras persistir, derivando el bimestre desde la fecha de la sesión.
+    const bimestresAfectados = new Set();
+
     const resolverPeriodoIdPorFecha = async (fecha) => {
       const p = (periodos ?? []).find(
-        (x) => toISODate(x.fecha_inicio) <= fecha && fecha <= toISODate(x.fecha_fin),
+        (x) => toISODate(x.fecha_inicio) <= fecha && fecha <= toISODate(x.fecha_fin)
       );
       if (!p) return null;
+      bimestresAfectados.add(Number(p.numero_orden));
       return this.cuadernoRepository.obtenerPeriodoAcademicoId(gestionId, Number(p.numero_orden));
     };
 
@@ -105,11 +117,10 @@ export class BulkRegistrarAsistenciaUseCase {
         const sesionExistente = await this.sesionClaseRepository.obtenerSesionPorFecha(
           asignacionIdNum,
           fecha,
-          t,
+          t
         );
         const fechasHorario = new Set(expandirFechasClase(fecha, fecha, diasSet));
-        const esDiaValido =
-          fechasHorario.has(fecha) || esEspecial || sesionExistente?.esEspecial;
+        const esDiaValido = fechasHorario.has(fecha) || esEspecial || sesionExistente?.esEspecial;
         if (!esDiaValido) {
           throw new ValidationError(`El día ${fecha} no corresponde a una clase del curso.`);
         }
@@ -118,18 +129,18 @@ export class BulkRegistrarAsistenciaUseCase {
         const cnd = await this.asistenciaSesionViewRepository.listarClasesNoDictadas(
           asignacionIdNum,
           fecha,
-          fecha,
+          fecha
         );
         if ((cnd ?? []).length > 0) {
           throw new ValidationError(
-            `El día ${fecha} está registrado como clase no dictada (neutro).`,
+            `El día ${fecha} está registrado como clase no dictada (neutro).`
           );
         }
 
         // Sesión cerrada → no editable.
         if (sesionExistente && sesionExistente.estado === ESTADOS_SESION_CLASE.CERRADA) {
           throw new ForbiddenError(
-            `El registro del día ${fecha} está cerrado. Reabrí el bimestre para editar.`,
+            `El registro del día ${fecha} está cerrado. Reabrí el bimestre para editar.`
           );
         }
 
@@ -144,10 +155,10 @@ export class BulkRegistrarAsistenciaUseCase {
             motivo: esEspecial ? (dia?.motivo ?? null) : null,
             periodoAcademicoId,
             horaInicio: dia?.horaInicio ?? null,
-            horaFin: dia?.horaFin ?? null,
+            horaFin: dia?.horaFin ?? null
           },
           usuarioId,
-          t,
+          t
         );
         sesionesUpsert += 1;
 
@@ -167,9 +178,9 @@ export class BulkRegistrarAsistenciaUseCase {
               sesionClaseId,
               matriculaMateriaId,
               estado,
-              usuarioId,
+              usuarioId
             },
-            t,
+            t
           );
           marcasResumen[accion] = (marcasResumen[accion] ?? 0) + 1;
         }
@@ -177,10 +188,31 @@ export class BulkRegistrarAsistenciaUseCase {
       /* eslint-enable no-await-in-loop */
     });
 
+    // Tras persistir las sesiones/marcas: recalcular la columna ASISTENCIA del/los
+    // bimestre(s) afectado(s), para que la nota refleje la asistencia actual sin
+    // esperar al cierre. Side-effect tolerante a fallos con guard de estado por
+    // bimestre (solo EN_CURSO/REABIERTO; CERRADO es no-op y no pisa consolidados).
+    for (const bimestreNumero of bimestresAfectados) {
+      // eslint-disable-next-line no-await-in-loop
+      await sincronizarNotasAsistenciaBimestre({
+        calificacionContextoRepository: this.calificacionContextoRepository,
+        cuadernoRepository: this.cuadernoRepository,
+        asistenciaPlanillaViewRepository: this.asistenciaPlanillaViewRepository,
+        subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+        bimesterEvaluationGradeRepository: this.bimesterEvaluationGradeRepository,
+        asignacionId: asignacionIdNum,
+        gestionId,
+        bimestreNumero,
+        usuarioId,
+        logger: this.logger
+      });
+    }
+
     this.logger.info('[Asistencia] Registro masivo guardado', {
       asignacionId: asignacionIdNum,
       sesionesUpsert,
-      ...marcasResumen,
+      bimestresRecalculados: [...bimestresAfectados],
+      ...marcasResumen
     });
 
     return { sesionesUpsert, marcas: marcasResumen };

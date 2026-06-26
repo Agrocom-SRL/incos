@@ -327,12 +327,21 @@ const CuadernoPage = () => {
     setEvaluacionEditar(null);
   }, []);
 
-  const handleGuardado = useCallback((evaluacion) => {
-    setEnteringColumnIds((prev) => [...prev, evaluacion.id]);
-    window.setTimeout(() => {
-      setEnteringColumnIds((prev) => prev.filter((id) => id !== evaluacion.id));
-    }, 300);
-  }, []);
+  const handleGuardado = useCallback(
+    (evaluacion, opts) => {
+      setEnteringColumnIds((prev) => [...prev, evaluacion.id]);
+      window.setTimeout(() => {
+        setEnteringColumnIds((prev) => prev.filter((id) => id !== evaluacion.id));
+      }, 300);
+      // Actividad de asistencia: su nota la recalcula el backend a partir de los puntos.
+      // Tras crear/editar la ponderación recargamos el cuaderno para reflejar las notas
+      // recalculadas sin necesidad de refrescar la pantalla a mano.
+      if (opts?.recalcular) {
+        refetch();
+      }
+    },
+    [refetch],
+  );
 
   const estudiantesFiltrados = useMemo(() => {
     const q = busquedaEstudiante.trim().toLowerCase();

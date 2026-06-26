@@ -19,8 +19,16 @@ export class IBecasReporteExcelGenerator {
    * @param {Object} datos - Payload del reporte (ver GetBecasPorCarreraReporteUseCase).
    * @param {{ id:number, nombre:string|null, anio:number|null }} datos.gestion
    * @param {number[]} datos.porcentajes - Tramos de beca presentes (25, 50, ...).
-   * @param {Array<Object>} datos.filas - Una fila por carrera.
-   * @param {Object} datos.totales - Fila de totales generales.
+   * @param {Array<Object>} datos.filas - ÁRBOL jerárquico de 3 niveles: las raíces
+   *   son las carreras (`nivel:'carrera'`), cada una con `children` de periodos
+   *   (`nivel:'periodo'`, nivel/año del plan) y cada periodo con `children` de
+   *   paralelos hoja (`nivel:'paralelo'`, sin `children`). Cada nodo lleva
+   *   `id`, `label`, los identificadores de su grano (carreraId/periodoId/
+   *   paraleloId, null en los niveles que no apliquen) y las métricas
+   *   `totalMatriculados`, `becasPorPorcentaje`, `totalConBeca`,
+   *   `porcentajeConBeca`, `porcentajeCobertura`. El generador Excel lo aplana a
+   *   una tabla plana a nivel paralelo.
+   * @param {Object} datos.totales - Fila de totales generales (global).
    * @param {Array<Object>} datos.distribucion - Beneficiados por tramo (donut).
    * @param {Object} datos.resumen - Resumen general.
    * @param {string} [datos.fechaEmision] - Fecha de emisión (YYYY-MM-DD).

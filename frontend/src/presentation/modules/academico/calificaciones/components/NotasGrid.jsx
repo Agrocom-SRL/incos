@@ -12,6 +12,11 @@ import {
 } from '@ant-design/icons';
 import { Dropdown, Table, Tooltip } from 'antd';
 import { Button } from '@atoms';
+import { useTiposEvaluacion } from '@application-academico/calificaciones/hooks/useTiposEvaluacion.js';
+import {
+  esEvaluacionAsistencia,
+  resolverTipoEvaluacionAsistenciaId,
+} from '@application-academico/calificaciones/utils/tipoEvaluacionAsistencia.js';
 import NotaCell from './NotaCell.jsx';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
 
@@ -139,8 +144,8 @@ const renderEstudiante = (nombre, row) => (
  * paleta del export Excel (teórico verde, práctico ámbar) más el magenta reservado
  * para la actividad especial calculada por asistencia.
  */
-const componenteHeadClass = (ev) => {
-  if (ev?.tipoCalculo === 'ASISTENCIA') return 'cal-notas-grid__col-eval--asistencia';
+const componenteHeadClass = (ev, esAsistencia) => {
+  if (esAsistencia) return 'cal-notas-grid__col-eval--asistencia';
   if (ev?.componente === 'TEORICO') return 'cal-notas-grid__col-eval--teorico';
   if (ev?.componente === 'PRACTICO') return 'cal-notas-grid__col-eval--practico';
   return '';
@@ -154,8 +159,6 @@ const ANCHO_COL_EVAL_MAX = 300;
 const ANCHO_COL_AGREGAR = 56;
 
 const NotasGrid = ({
-  cursoId,
-  bimestre,
   bimestreTitulo = 'Bimestre',
   estudiantes = [],
   evaluaciones = [],
@@ -179,10 +182,16 @@ const NotasGrid = ({
   const lecturaNotas = soloLecturaNotas ?? soloLectura;
   const permitirAgregar = Boolean(onAgregarEvaluacion);
 
+  // El cuaderno no marca la columna de asistencia; la reconocemos cruzando el
+  // `tipoEvaluacionId` con el catálogo (su nota la calcula y la pisa el backend).
+  const { tipos } = useTiposEvaluacion();
+  const tipoAsistenciaId = resolverTipoEvaluacionAsistenciaId(tipos);
+
   const columnasEval = evaluaciones.map((ev) => {
+    const esAsistencia = esEvaluacionAsistencia(ev, tipoAsistenciaId);
     const colClass = [
       'cal-notas-grid__col-eval',
-      componenteHeadClass(ev),
+      componenteHeadClass(ev, esAsistencia),
       enteringColumnIds.includes(ev.id) ? 'cal-col--enter' : '',
       removingColumnId === ev.id ? 'cal-col--leave' : '',
     ]
@@ -210,7 +219,8 @@ const NotasGrid = ({
           evaluacionId={ev.id}
           puntosMaximos={ev.puntos}
           valorInicial={row.notas?.[ev.id]}
-          soloLectura={lecturaNotas}
+          soloLectura={lecturaNotas || esAsistencia}
+          autoCalculada={esAsistencia}
         />
       ),
     };

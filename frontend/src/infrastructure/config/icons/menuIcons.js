@@ -52,6 +52,7 @@ import {
     FolderOpenOutlined,
     InfoCircleOutlined,
     UserSwitchOutlined,
+    TableOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -83,6 +84,7 @@ export const menuIconMap = {
     // Académico (ACA)
     'ACA-ASI': SolutionOutlined,
     'ACA-CAL': CheckCircleOutlined,
+    'ACA-CENTRALIZADOR': TableOutlined,
     'ACA-NIV': SyncOutlined,
     'ACA-TRASPASOS': TransactionOutlined,
     'ACA-TRANSIT': ReloadOutlined,

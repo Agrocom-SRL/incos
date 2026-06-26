@@ -34,19 +34,41 @@ const mapBecasPorPorcentaje = (porcentajes, becasPorPorcentaje = {}) => {
   return out;
 };
 
-const mapFila = (fila, porcentajes) => {
-  if (!fila) return null;
-  return {
-    carreraId: fila.carreraId ?? null,
-    carreraNombre: fila.carreraNombre ?? 'Sin nombre',
-    carreraCodigo: fila.carreraCodigo ?? null,
-    modalidad: fila.modalidad ?? null,
-    totalMatriculados: toNumber(fila.totalMatriculados),
-    becasPorPorcentaje: mapBecasPorPorcentaje(porcentajes, fila.becasPorPorcentaje),
-    totalConBeca: toNumber(fila.totalConBeca),
-    porcentajeConBeca: toNumber(fila.porcentajeConBeca),
-    porcentajeCobertura: toNumber(fila.porcentajeCobertura),
+/**
+ * Normaliza un NODO del árbol jerárquico (carrera → periodo → paralelo) a un DTO
+ * estable de UI, preservando la estructura `children` recursivamente.
+ *
+ * El backend ya entrega los niveles superiores AGREGADOS (suma de hijos) y el
+ * orden resuelto, por lo que aquí solo se sanea cada nodo y se mapea su
+ * descendencia con el MISMO criterio. `id` es único y estable → se usa como
+ * `rowKey` de la tabla en árbol. La hoja (paralelo) no trae `children`: se omite
+ * la clave para que AntD no pinte un caret de expansión vacío.
+ */
+const mapNodo = (nodo, porcentajes) => {
+  if (!nodo) return null;
+  const dto = {
+    id: nodo.id ?? null,
+    nivel: nodo.nivel ?? null,
+    label: nodo.label ?? 'Sin nombre',
+    carreraId: nodo.carreraId ?? null,
+    carreraNombre: nodo.carreraNombre ?? null,
+    carreraCodigo: nodo.carreraCodigo ?? null,
+    periodoId: nodo.periodoId ?? null,
+    periodoNumero: nodo.periodoNumero ?? null,
+    periodoNombre: nodo.periodoNombre ?? null,
+    paraleloId: nodo.paraleloId ?? null,
+    paraleloNombre: nodo.paraleloNombre ?? null,
+    paraleloTurno: nodo.paraleloTurno ?? null,
+    totalMatriculados: toNumber(nodo.totalMatriculados),
+    becasPorPorcentaje: mapBecasPorPorcentaje(porcentajes, nodo.becasPorPorcentaje),
+    totalConBeca: toNumber(nodo.totalConBeca),
+    porcentajeConBeca: toNumber(nodo.porcentajeConBeca),
+    porcentajeCobertura: toNumber(nodo.porcentajeCobertura),
   };
+  if (Array.isArray(nodo.children) && nodo.children.length > 0) {
+    dto.children = nodo.children.map((hijo) => mapNodo(hijo, porcentajes)).filter(Boolean);
+  }
+  return dto;
 };
 
 const mapDistribucion = (distribucion) => {
@@ -95,7 +117,7 @@ export const mapBecasReporte = (planilla) => {
     },
     porcentajes,
     filas: Array.isArray(planilla.filas)
-      ? planilla.filas.map((fila) => mapFila(fila, porcentajes)).filter(Boolean)
+      ? planilla.filas.map((nodo) => mapNodo(nodo, porcentajes)).filter(Boolean)
       : [],
     totales: {
       totalMatriculados: toNumber(totalesRaw.totalMatriculados),
