@@ -45,4 +45,29 @@ export const getTramoColor = (token, porcentaje, index = 0) => {
   return fallback[index % fallback.length];
 };
 
+/**
+ * Escala CATEGÓRICA por ENTIDAD (carrera/periodo/paralelo) para las barras de
+ * cobertura por nivel. Distinta progresión que la de tramos (arranca en el verde
+ * de marca) y, como todo aquí, derivada de tokens del theme (sin #hex).
+ */
+const buildEntidadScale = (token) => [
+  token.colorPrimary,
+  token.colorSuccess,
+  token.colorWarning,
+  token.colorAccent,
+  token.colorInfo,
+  token.colorError,
+];
+
+/**
+ * Color de una entidad por su posición (estable dentro del mismo nivel).
+ * @param {Object} token - token de `theme.useToken()`.
+ * @param {number} [index=0] - posición de la entidad en la lista.
+ * @returns {string} color CSS.
+ */
+export const getEntidadColor = (token, index = 0) => {
+  const scale = buildEntidadScale(token);
+  return scale[index % scale.length];
+};
+
 export default getTramoColor;

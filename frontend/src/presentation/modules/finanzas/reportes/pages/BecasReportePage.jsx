@@ -13,8 +13,14 @@
  */
 
 import { App, Alert, Button, Col, Empty, Flex, Popover, Row, Spin, Table, Tag, Typography } from 'antd';
-import { ArrowLeftOutlined, FileExcelOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { useCallback } from 'react';
+import {
+  ArrowLeftOutlined,
+  FileExcelOutlined,
+  InfoCircleOutlined,
+  NodeCollapseOutlined,
+  NodeExpandOutlined,
+} from '@ant-design/icons';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -29,8 +35,15 @@ import {
   resolveTramos,
 } from '@finanzas/reportes/config/becasTableColumns';
 import BecasResumenCards from '@finanzas/reportes/components/organisms/BecasResumenCards';
-import BecasDistribucion from '@finanzas/reportes/components/organisms/BecasDistribucion';
+import BecasDistribucionTipo from '@finanzas/reportes/components/organisms/BecasDistribucionTipo';
+import BecasCoberturaNivel from '@finanzas/reportes/components/organisms/BecasCoberturaNivel';
 import BecasCatalogoCobertura from '@finanzas/reportes/components/organisms/BecasCatalogoCobertura';
+import {
+  buildCarreraTint,
+  tintAlphaByNivel,
+  ALPHA_BORDE,
+} from '@finanzas/reportes/config/becasRowTint';
+import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/styles/finanzas-planilla.css';
@@ -64,9 +77,9 @@ const renderGestionTag = (gestion) => {
 
 /**
  * Fila de TOTALES GENERALES de la planilla (Table.Summary).
- * Alineada con la estructura de columnas: Nº+Carrera+Modalidad (colSpan 3),
- * Matriculados, [tramos canónicos+extra], Total con beca, % con beca,
- * % cobertura (vacío), Observaciones (vacío).
+ * Alineada con la nueva grilla del ÁRBOL: Detalle (colSpan 1), Matriculados,
+ * [tramos canónicos+extra], Total con beca, % con beca, % cobertura (vacío: el
+ * agregado de cobertura no es una simple suma y vive en el resumen general).
  */
 const renderTotalesRow = (totales, porcentajes) => {
   if (!totales) return null;
@@ -75,7 +88,7 @@ const renderTotalesRow = (totales, porcentajes) => {
   return (
     <Table.Summary fixed>
       <Table.Summary.Row className="fin-planilla__row-total">
-        <Table.Summary.Cell index={cellIndex++} colSpan={3} align="right">
+        <Table.Summary.Cell index={cellIndex++} align="left">
           <Text strong>TOTALES GENERALES</Text>
         </Table.Summary.Cell>
         <Table.Summary.Cell index={cellIndex++} align="center" className="fin-num fin-num--center">
@@ -101,7 +114,6 @@ const renderTotalesRow = (totales, porcentajes) => {
           <span className="fin-num--strong">{formatPorcentaje(totales.porcentajeConBeca)}</span>
         </Table.Summary.Cell>
         <Table.Summary.Cell index={cellIndex++} align="center" />
-        <Table.Summary.Cell index={cellIndex++} align="left" />
       </Table.Summary.Row>
     </Table.Summary>
   );
@@ -120,12 +132,55 @@ const BecasReportePage = () => {
     porcentajes,
     tableColumns,
     filas,
+    expandableRowKeys,
     totales,
-    distribucion,
+    distribucionTramosPorScope,
+    coberturaPorNivelAgrupado,
+    destacados,
     resumen,
     catalogo,
     catalogoResumen,
   } = useBecasReportePage();
+
+  // Árbol EXPANDIDO por defecto (se ve todo el detalle al inicio). El toggle de
+  // cabecera permite colapsar/expandir todos los nodos con hijos de una vez.
+  const [expandedRowKeys, setExpandedRowKeys] = useState(expandableRowKeys);
+
+  // Si cambian los datos (otra gestión / refetch), reabre todo el árbol. Patrón
+  // de "ajuste de estado en render" (sin efecto) recomendado por React.
+  const [prevFilas, setPrevFilas] = useState(filas);
+  if (filas !== prevFilas) {
+    setPrevFilas(filas);
+    setExpandedRowKeys(expandableRowKeys);
+  }
+
+  const todoExpandido =
+    expandableRowKeys.length > 0 && expandedRowKeys.length === expandableRowKeys.length;
+
+  const handleToggleExpandirTodo = useCallback(() => {
+    setExpandedRowKeys((prev) =>
+      prev.length === expandableRowKeys.length ? [] : expandableRowKeys,
+    );
+  }, [expandableRowKeys]);
+
+  // Tinte por carrera (Bloque por carrera): cada fila se tiñe con el color
+  // institucional de SU carrera, atenuado por nivel (carrera más visible que sus
+  // hijas). Se inyecta como CSS var por fila (`--becas-row-tint`) para que el CSS
+  // pinte el fondo de las celdas sin romper el caret/indent del árbol ni la fila
+  // de TOTALES (que es un summary, no pasa por `onRow`).
+  const handleRowTint = useCallback((record) => {
+    const hex = resolveCarreraDashboardColor({
+      carreraId: record.carreraId,
+      carreraNombre: record.carreraNombre,
+    });
+    if (!hex) return {};
+    const tint = buildCarreraTint(hex, tintAlphaByNivel(record.nivel));
+    const edge = buildCarreraTint(hex, ALPHA_BORDE);
+    return {
+      className: `becas-row becas-row--${record.nivel || 'paralelo'}`,
+      style: { '--becas-row-tint': tint, '--becas-row-edge': edge },
+    };
+  }, []);
 
   const { exportar, loading: exportando } = useExportBecasReporteExcel();
 
@@ -190,16 +245,21 @@ const BecasReportePage = () => {
             </Popover>
           </div>
 
+          {/* RESUMEN (KPIs + destacados) como titular, a todo el ancho. */}
+          <BecasResumenCards resumen={resumen} destacados={destacados} />
+
+          {/* Tres cards hermanas: distribución por tipo · cobertura por nivel ·
+              catálogo de descuentos. */}
           <Row gutter={[allSpacing.marginLG, allSpacing.marginLG]} align="stretch">
             <Col xs={24} lg={12} xl={8}>
-              <BecasDistribucion
-                distribucion={distribucion}
+              <BecasDistribucionTipo
+                distribucionTramosPorScope={distribucionTramosPorScope}
                 totalConBeca={resumen?.totalConBeca || 0}
                 porcentajeConBeca={resumen?.porcentajeConBeca || 0}
               />
             </Col>
             <Col xs={24} lg={12} xl={8}>
-              <BecasResumenCards resumen={resumen} />
+              <BecasCoberturaNivel coberturaPorNivelAgrupado={coberturaPorNivelAgrupado} />
             </Col>
             <Col xs={24} xl={8}>
               <BecasCatalogoCobertura catalogo={catalogo} resumen={catalogoResumen} />
@@ -207,10 +267,21 @@ const BecasReportePage = () => {
           </Row>
         </div>
 
-        {/* DETALLE POR CARRERA (planilla) ABAJO: cabecera verde + bloque agrupado
-            + fila de TOTALES GENERALES. */}
-        <div className="fin-separador">
-          <span className="fin-separador__titulo">Detalle por carrera</span>
+        {/* DETALLE JERÁRQUICO (planilla) ABAJO: árbol expandible carrera → periodo
+            → paralelo, cabecera verde + bloque agrupado + fila de TOTALES. El
+            toggle expande/colapsa todos los nodos con hijos de una vez. */}
+        <div className="fin-separador becas-detalle__head">
+          <span className="fin-separador__titulo">Detalle por carrera, periodo y paralelo</span>
+          <Button
+            type="text"
+            size="small"
+            className="becas-detalle__toggle"
+            icon={todoExpandido ? <NodeCollapseOutlined /> : <NodeExpandOutlined />}
+            onClick={handleToggleExpandirTodo}
+            disabled={expandableRowKeys.length === 0}
+          >
+            {todoExpandido ? 'Colapsar todo' : 'Expandir todo'}
+          </Button>
         </div>
 
         <div className="fin-planilla-wrap">
@@ -218,11 +289,17 @@ const BecasReportePage = () => {
             className="fin-planilla becas-planilla"
             size="small"
             bordered
-            rowKey={(record) => record.carreraId}
+            rowKey={(record) => record.id}
             dataSource={filas}
             columns={tableColumns}
             pagination={false}
             scroll={{ x: 'max-content' }}
+            onRow={handleRowTint}
+            expandable={{
+              expandedRowKeys,
+              onExpandedRowsChange: (keys) => setExpandedRowKeys([...keys]),
+              indentSize: Number(allSpacing.marginLG),
+            }}
             summary={() => renderTotalesRow(totales, porcentajes)}
           />
         </div>

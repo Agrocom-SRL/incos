@@ -2,7 +2,7 @@
  * Organismo: SALDO PENDIENTE POR CARRERA (barras horizontales).
  *
  * El repo NO tiene librería de gráficos (sin recharts / @ant-design/plots). Como
- * el donut de becas (`BecasDistribucion`), el gráfico se dibuja con divs nativos:
+ * los gráficos de becas (`BecasCoberturaNivel`), el gráfico se dibuja con divs nativos:
  * una barra horizontal por carrera, cuyo ancho es proporcional al monto pendiente
  * sobre el máximo de la serie. Cada fila muestra etiqueta (carrera) + valor en Bs
  * + % del total pendiente.

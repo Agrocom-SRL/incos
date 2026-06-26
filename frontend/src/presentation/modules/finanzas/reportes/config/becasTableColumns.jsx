@@ -4,11 +4,16 @@
  * Réplica de la PLANILLA oficial del instituto, con cabecera en VERDE primario
  * (el kit `finanzas-planilla.css` la pinta vía la clase `fin-planilla`).
  *
+ * La planilla es ahora un ÁRBOL EXPANDIBLE (carrera → periodo → paralelo). Por
+ * eso la primera columna es JERÁRQUICA ("Detalle"): renderiza `record.label` con
+ * una pista visual sutil por `record.nivel` (carrera en negrita, periodo medio,
+ * paralelo normal) y AntD aporta indentación + caret de expansión nativos.
+ *
  * `createBecasTableColumns(porcentajes)` arma:
- *   - columnas FIJAS de identidad (Nº, Carrera, Modalidad, Nº matriculados),
+ *   - columna JERÁRQUICA "Detalle" (tree column) + Nº matriculados,
  *   - un bloque AGRUPADO "Número de estudiantes con beca por tipo" con una
  *     columna por tramo de beca (Beca 25% · 50% · 75% · 100% · …),
- *   - columnas de cierre (Total con beca, % con beca, % cobertura, Observaciones).
+ *   - columnas de cierre (Total con beca, % con beca, % cobertura).
  *
  * Los tramos NO se hardcodean en cuanto a DATOS: el backend deriva `porcentajes`
  * dinámicamente (solo los tramos con becas reales). Para que la planilla SIEMPRE
@@ -17,11 +22,10 @@
  * los canónicos se muestran siempre (en 0 si no hay datos) y cualquier tramo
  * extra que el backend envíe se añade tras ellos (no se pierde información).
  *
- * Celdas con `TableCell`; nombres de carrera tal cual vienen (no aplica orden de
+ * Nombres de carrera/periodo/paralelo tal cual vienen (no aplica orden de
  * persona). La fila de TOTALES se pinta con `Table.Summary` en la página.
  */
 
-import { TableCell } from '@molecules';
 import { Text } from '@atoms';
 import StatusPill from '@atoms/StatusPill';
 import { becaPorcentajeKey, becaPorcentajeLabel } from '@application-finanzas/mappers/becasReporteMapper';
@@ -65,6 +69,32 @@ const renderConteo = (value) => {
 };
 
 /**
+ * Subtexto contextual por nivel del árbol (código de carrera / turno de paralelo):
+ * pequeña pista a la derecha de la etiqueta jerárquica.
+ */
+const subtextoNivel = (record) => {
+  if (record.nivel === 'carrera') return record.carreraCodigo || null;
+  if (record.nivel === 'paralelo') return record.paraleloTurno || null;
+  return null;
+};
+
+/**
+ * Celda JERÁRQUICA "Detalle": etiqueta del nodo con peso/color según el nivel
+ * (carrera negrita · periodo medio · paralelo normal) vía clases por token. La
+ * indentación y el caret de expansión los aporta AntD en esta primera columna.
+ */
+const renderDetalle = (_, record) => {
+  const nivel = record.nivel || 'paralelo';
+  const sub = subtextoNivel(record);
+  return (
+    <span className={`becas-nivel becas-nivel--${nivel}`}>
+      <span className="becas-nivel__label">{record.label || 'Sin nombre'}</span>
+      {sub ? <span className="becas-nivel__sub">{sub}</span> : null}
+    </span>
+  );
+};
+
+/**
  * @param {number[]} porcentajes - Tramos de beca reportados por el backend.
  * @returns {Array} Columnas de AntD Table (con bloque agrupado para los tramos).
  */
@@ -73,33 +103,12 @@ export const createBecasTableColumns = (porcentajes = []) => {
 
   const columnasFijasIzquierda = [
     {
-      title: 'Nº',
-      key: 'nro',
-      width: 56,
-      align: 'center',
-      fixed: 'left',
-      render: (_value, _record, index) => index + 1,
-    },
-    {
-      title: 'Carrera',
-      key: 'carrera',
+      title: 'Detalle',
+      key: 'detalle',
       fixed: 'left',
       ellipsis: true,
-      className: 'becas-col-carrera',
-      render: (_, record) => (
-        <TableCell subtext={record.carreraCodigo || null}>
-          {record.carreraNombre || 'Sin nombre'}
-        </TableCell>
-      ),
-    },
-    {
-      title: 'Modalidad',
-      key: 'modalidad',
-      width: 120,
-      align: 'center',
-      render: (_, record) => (
-        <TableCell align="center">{record.modalidad || '—'}</TableCell>
-      ),
+      className: 'becas-col-detalle',
+      render: renderDetalle,
     },
     {
       title: 'Nº total de estudiantes matriculados',
@@ -154,7 +163,7 @@ export const createBecasTableColumns = (porcentajes = []) => {
       ),
     },
     {
-      title: '% de cobertura por carrera',
+      title: '% de cobertura',
       key: 'porcentajeCobertura',
       width: 130,
       align: 'center',
@@ -163,15 +172,6 @@ export const createBecasTableColumns = (porcentajes = []) => {
           label={formatPorcentaje(record.porcentajeCobertura)}
           className={getCoberturaPillClass(record.porcentajeCobertura)}
         />
-      ),
-    },
-    {
-      title: 'Observaciones',
-      key: 'observaciones',
-      width: 160,
-      align: 'left',
-      render: (_, record) => (
-        <span className="becas-obs">{record.observaciones || '—'}</span>
       ),
     },
   ];

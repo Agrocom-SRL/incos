@@ -5,10 +5,17 @@ import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.
  *
  * Lee filas crudas (1 por estudiante matriculado por carrera/gestión) desde la
  * vista 89 reutilizada y construye:
- * - filas por carrera (matriculados, becas por porcentaje, % cobertura),
- * - totales globales,
- * - distribución por porcentaje (para donut),
- * - resumen.
+ * - `filas`: ÁRBOL jerárquico de 3 niveles
+ *   carrera → periodo (nivel/año del plan) → paralelo (hoja). Cada nodo lleva
+ *   matriculados, becas por porcentaje, total con beca y % de cobertura. Las
+ *   raíces son las carreras; los niveles superiores agregan sumando hijos.
+ *   La vista deduplica cada estudiante a una inscripción-paralelo
+ *   representativa, así que cada becado cae en un único (carrera, periodo,
+ *   paralelo) y no hay doble conteo entre nodos hermanos.
+ * - `totales`: globales (igual que antes),
+ * - `distribucion`: por porcentaje (para donut, global),
+ * - `resumen`: resumen general,
+ * - `catalogo` / `catalogoResumen`: cobertura del catálogo de becas.
  *
  * Clasificación 25/50/75/100 se hace por `beca_porcentaje` (NO por código/nombre).
  * Los porcentajes presentes se derivan dinámicamente (no se hardcodean).
@@ -49,71 +56,106 @@ export class GetBecasPorCarreraReporteUseCase {
     // Porcentajes distintos presentes (solo becas reales: beca_porcentaje > 0).
     const porcentajes = this._derivePorcentajes(rows);
 
-    // Agrupar por carrera, deduplicando estudiantes por carrera.
+    // Árbol jerárquico carrera → periodo → paralelo. Cada nodo deduplica sus
+    // estudiantes con un Set (mismo criterio que el grano por carrera de antes);
+    // como la vista deja a cada estudiante en una sola inscripción-paralelo, los
+    // Sets de paralelos hermanos son disjuntos y los niveles superiores agregan
+    // sumando hijos (sin re-deduplicar).
     const carrerasMap = new Map();
 
     for (const row of rows) {
       const carreraId = Number(row.carrera_id);
+      const periodoId = row.periodo_id == null ? null : Number(row.periodo_id);
+      const paraleloId = row.paralelo_id == null ? null : Number(row.paralelo_id);
+      const estudianteId = Number(row.estudiante_id);
+
+      // --- Nodo carrera ---
       if (!carrerasMap.has(carreraId)) {
         carrerasMap.set(carreraId, {
           carreraId,
           carreraNombre: row.carrera_nombre ?? '',
           carreraCodigo: row.carrera_codigo ?? null,
-          estudiantes: new Set(),
-          becasPorPorcentaje: this._zeroCounters(porcentajes),
-          conBeca: new Set(),
+          ...this._newCounters(porcentajes),
+          periodos: new Map(),
         });
       }
-
       const carrera = carrerasMap.get(carreraId);
-      const estudianteId = Number(row.estudiante_id);
-      carrera.estudiantes.add(estudianteId);
 
-      if (this._tieneBeca(row)) {
-        const porcentaje = Number(row.beca_porcentaje);
-        if (!carrera.conBeca.has(estudianteId)) {
-          carrera.conBeca.add(estudianteId);
-          if (carrera.becasPorPorcentaje[porcentaje] != null) {
-            carrera.becasPorPorcentaje[porcentaje] += 1;
-          }
-        }
+      // --- Nodo periodo (nivel/año del plan) ---
+      const periodoKey = periodoId == null ? 'null' : periodoId;
+      if (!carrera.periodos.has(periodoKey)) {
+        carrera.periodos.set(periodoKey, {
+          periodoId,
+          periodoNumero: row.periodo_numero == null ? null : Number(row.periodo_numero),
+          periodoNombre: row.periodo_nombre ?? null,
+          ...this._newCounters(porcentajes),
+          paralelos: new Map(),
+        });
       }
+      const periodo = carrera.periodos.get(periodoKey);
+
+      // --- Nodo paralelo (hoja) ---
+      const paraleloKey = paraleloId == null ? 'null' : paraleloId;
+      if (!periodo.paralelos.has(paraleloKey)) {
+        periodo.paralelos.set(paraleloKey, {
+          paraleloId,
+          paraleloNombre: row.paralelo_nombre ?? null,
+          paraleloTurno: row.paralelo_turno ?? null,
+          ...this._newCounters(porcentajes),
+        });
+      }
+      const paralelo = periodo.paralelos.get(paraleloKey);
+
+      // Acumular estudiante (deduplicado por nodo) en los tres niveles.
+      this._addEstudiante(carrera, estudianteId, row);
+      this._addEstudiante(periodo, estudianteId, row);
+      this._addEstudiante(paralelo, estudianteId, row);
     }
 
-    // Construir filas por carrera.
+    // Construir el árbol de salida y los totales globales en una pasada.
     const filas = [];
     const totalesBecasPorPorcentaje = this._zeroCounters(porcentajes);
     let totalMatriculados = 0;
     let totalConBeca = 0;
 
-    for (const carrera of carrerasMap.values()) {
-      const matriculados = carrera.estudiantes.size;
-      const conBeca = carrera.conBeca.size;
-      const porcentajeConBeca = this._round(this._pct(conBeca, matriculados));
+    const carrerasOrdenadas = Array.from(carrerasMap.values()).sort((a, b) =>
+      String(a.carreraNombre).localeCompare(String(b.carreraNombre), 'es', { sensitivity: 'base' })
+    );
 
-      filas.push({
-        carreraId: carrera.carreraId,
-        carreraNombre: carrera.carreraNombre,
-        carreraCodigo: carrera.carreraCodigo,
-        modalidad: 'ANUALIZADA',
-        totalMatriculados: matriculados,
-        becasPorPorcentaje: this._stringifyKeys(carrera.becasPorPorcentaje),
-        totalConBeca: conBeca,
-        porcentajeConBeca,
-        porcentajeCobertura: porcentajeConBeca,
-      });
+    for (const carrera of carrerasOrdenadas) {
+      const carreraNode = this._carreraNode(carrera);
 
-      totalMatriculados += matriculados;
-      totalConBeca += conBeca;
+      const periodosOrdenados = Array.from(carrera.periodos.values()).sort(
+        (a, b) => (a.periodoNumero ?? 0) - (b.periodoNumero ?? 0)
+      );
+
+      for (const periodo of periodosOrdenados) {
+        const periodoNode = this._periodoNode(carrera, periodo);
+
+        const paralelosOrdenados = Array.from(periodo.paralelos.values()).sort((a, b) =>
+          String(a.paraleloNombre ?? '').localeCompare(
+            String(b.paraleloNombre ?? ''),
+            'es',
+            { sensitivity: 'base' }
+          )
+        );
+
+        for (const paralelo of paralelosOrdenados) {
+          periodoNode.children.push(this._paraleloNode(carrera, periodo, paralelo));
+        }
+
+        carreraNode.children.push(periodoNode);
+      }
+
+      filas.push(carreraNode);
+
+      // Totales globales = suma de carreras.
+      totalMatriculados += carrera.estudiantes.size;
+      totalConBeca += carrera.conBeca.size;
       for (const p of porcentajes) {
         totalesBecasPorPorcentaje[p] += carrera.becasPorPorcentaje[p];
       }
     }
-
-    // Orden estable: por nombre de carrera.
-    filas.sort((a, b) =>
-      String(a.carreraNombre).localeCompare(String(b.carreraNombre), 'es', { sensitivity: 'base' })
-    );
 
     const porcentajeConBecaGlobal = this._round(this._pct(totalConBeca, totalMatriculados));
 
@@ -236,6 +278,123 @@ export class GetBecasPorCarreraReporteUseCase {
       });
       return [];
     }
+  }
+
+  // ============================================
+  // Construcción del árbol carrera → periodo → paralelo
+  // ============================================
+
+  /**
+   * Acumuladores compartidos por cualquier nodo del árbol.
+   * @param {number[]} porcentajes
+   * @returns {{ estudiantes: Set<number>, conBeca: Set<number>, becasPorPorcentaje: Object }}
+   */
+  _newCounters(porcentajes) {
+    return {
+      estudiantes: new Set(),
+      conBeca: new Set(),
+      becasPorPorcentaje: this._zeroCounters(porcentajes),
+    };
+  }
+
+  /**
+   * Acumula un estudiante (deduplicado por nodo vía Set) en los contadores de
+   * un nodo; si tiene beca real, lo cuenta una sola vez en su tramo.
+   * @param {{ estudiantes: Set<number>, conBeca: Set<number>, becasPorPorcentaje: Object }} node
+   * @param {number} estudianteId
+   * @param {Object} row
+   */
+  _addEstudiante(node, estudianteId, row) {
+    node.estudiantes.add(estudianteId);
+    if (this._tieneBeca(row) && !node.conBeca.has(estudianteId)) {
+      node.conBeca.add(estudianteId);
+      const porcentaje = Number(row.beca_porcentaje);
+      if (node.becasPorPorcentaje[porcentaje] != null) {
+        node.becasPorPorcentaje[porcentaje] += 1;
+      }
+    }
+  }
+
+  /**
+   * Métricas comunes a todo nodo (matriculados, becas por tramo, cobertura).
+   * @param {{ estudiantes: Set<number>, conBeca: Set<number>, becasPorPorcentaje: Object }} node
+   */
+  _metrics(node) {
+    const totalMatriculados = node.estudiantes.size;
+    const totalConBeca = node.conBeca.size;
+    const porcentajeConBeca = this._round(this._pct(totalConBeca, totalMatriculados));
+    return {
+      totalMatriculados,
+      becasPorPorcentaje: this._stringifyKeys(node.becasPorPorcentaje),
+      totalConBeca,
+      porcentajeConBeca,
+      porcentajeCobertura: porcentajeConBeca,
+    };
+  }
+
+  /** Nodo raíz (carrera). */
+  _carreraNode(carrera) {
+    return {
+      nivel: 'carrera',
+      id: `c${carrera.carreraId}`,
+      label: carrera.carreraNombre,
+      carreraId: carrera.carreraId,
+      carreraNombre: carrera.carreraNombre,
+      carreraCodigo: carrera.carreraCodigo,
+      periodoId: null,
+      periodoNumero: null,
+      periodoNombre: null,
+      paraleloId: null,
+      paraleloNombre: null,
+      paraleloTurno: null,
+      ...this._metrics(carrera),
+      children: [],
+    };
+  }
+
+  /** Nodo intermedio (periodo = nivel/año del plan). */
+  _periodoNode(carrera, periodo) {
+    const label =
+      periodo.periodoNombre ??
+      (periodo.periodoNumero != null ? `Periodo ${periodo.periodoNumero}` : 'Periodo');
+    return {
+      nivel: 'periodo',
+      id: `c${carrera.carreraId}-p${periodo.periodoId}`,
+      label,
+      carreraId: carrera.carreraId,
+      carreraNombre: carrera.carreraNombre,
+      carreraCodigo: carrera.carreraCodigo,
+      periodoId: periodo.periodoId,
+      periodoNumero: periodo.periodoNumero,
+      periodoNombre: periodo.periodoNombre,
+      paraleloId: null,
+      paraleloNombre: null,
+      paraleloTurno: null,
+      ...this._metrics(periodo),
+      children: [],
+    };
+  }
+
+  /** Nodo hoja (paralelo). Sin `children`. */
+  _paraleloNode(carrera, periodo, paralelo) {
+    const nombre = paralelo.paraleloNombre ?? '';
+    const turno = paralelo.paraleloTurno;
+    const label = turno ? `Paralelo ${nombre} (${turno})` : `Paralelo ${nombre}`;
+    return {
+      nivel: 'paralelo',
+      id: `c${carrera.carreraId}-p${periodo.periodoId}-par${paralelo.paraleloId}`,
+      label,
+      carreraId: carrera.carreraId,
+      carreraNombre: carrera.carreraNombre,
+      carreraCodigo: carrera.carreraCodigo,
+      periodoId: periodo.periodoId,
+      periodoNumero: periodo.periodoNumero,
+      periodoNombre: periodo.periodoNombre,
+      paraleloId: paralelo.paraleloId,
+      paraleloNombre: paralelo.paraleloNombre,
+      paraleloTurno: paralelo.paraleloTurno,
+      ...this._metrics(paralelo),
+    };
   }
 
   // ============================================
