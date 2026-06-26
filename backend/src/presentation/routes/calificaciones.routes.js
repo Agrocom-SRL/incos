@@ -11,6 +11,7 @@ import {
   searchCoordinacionDocentesValidator,
   getCentralizadorParaleloValidator,
   exportCentralizadorParaleloBimestreValidator,
+  exportBoletinEstudianteValidator,
   getCuadernoBimestreValidator,
   createEvaluacionCuadernoValidator,
   updateEvaluacionCuadernoValidator,
@@ -114,6 +115,20 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     validateRequest,
     (req, res, next) =>
       controllers.exportCentralizadorCarreraBimestreController.handle(req, res, next)
+  );
+
+  /**
+   * GET /api/v1/calificaciones/centralizador/:paraleloGestionId/estudiante/:estudianteId/boletin
+   * Descarga el PDF del Boletín de Calificaciones de un estudiante. El segmento
+   * literal `estudiante` evita ambigüedad con las rutas `/bimestre/...` y
+   * `/centralizador/carrera-de/...`. Mismo permiso de exportación del centralizador.
+   */
+  router.get(
+    '/centralizador/:paraleloGestionId/estudiante/:estudianteId/boletin',
+    ...centralizadorExportar,
+    exportBoletinEstudianteValidator,
+    validateRequest,
+    (req, res, next) => controllers.exportBoletinEstudianteController.handle(req, res, next)
   );
 
   const misCursosListar = [

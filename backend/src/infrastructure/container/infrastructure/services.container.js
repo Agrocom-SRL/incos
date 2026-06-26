@@ -36,6 +36,7 @@ import { ReciboPagoPdfGenerator } from '../../external/pdf/ReciboPagoPdfGenerato
 import { PDFGenerator } from '../../external/pdf/PDFGenerator.js';
 import { RegistroPedagogicoExcelBuilder } from '../../external/excel/RegistroPedagogicoExcelBuilder.js';
 import { CentralizadorExcelBuilder } from '../../external/excel/centralizador/CentralizadorExcelBuilder.js';
+import { BoletinPdfGenerator } from '../../external/pdf/boletin/BoletinPdfGenerator.js';
 import { BecasReporteExcelBuilder } from '../../external/excel/finanzas-reportes/BecasReporteExcelBuilder.js';
 import { CuentasPorCobrarExcelBuilder } from '../../external/excel/finanzas-reportes/CuentasPorCobrarExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
@@ -133,6 +134,11 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.centralizadorExcelGenerator,
         () => new CentralizadorExcelBuilder()
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.boletinPdfGenerator,
+        (c) => new BoletinPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
     );
     registerService(
         container,

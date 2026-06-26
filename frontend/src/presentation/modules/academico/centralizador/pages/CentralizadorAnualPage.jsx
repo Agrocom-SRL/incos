@@ -11,8 +11,9 @@
  * contexto.
  */
 
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Card, Flex, Spin } from 'antd';
+import { Alert, App, Card, Flex, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -22,6 +23,7 @@ import {
   useCentralizadorParalelo,
   BIMESTRES_CENTRALIZADOR,
 } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
+import { useExportBoletinEstudiante } from '@application-academico/centralizador/hooks/api/useExportBoletinEstudiante.js';
 import {
   CENTRALIZADOR_PATH,
   centralizadorMatrizPath,
@@ -40,6 +42,7 @@ const hojaCardProps = {
 
 const CentralizadorAnualPage = () => {
   const navigate = useNavigate();
+  const { notification } = App.useApp();
   const {
     paraleloGestionId,
     paraleloSeleccionado,
@@ -54,7 +57,27 @@ const CentralizadorAnualPage = () => {
     breadcrumbItems,
   } = useCentralizadorParalelo('ACA-CENTRALIZADOR-ANUAL');
 
+  const { exportar: exportarBoletin, descargandoId } = useExportBoletinEstudiante();
+
   const abrirBimestre = (n) => navigate(centralizadorMatrizPath(paraleloGestionId, n));
+
+  const handleDescargarBoletin = useCallback(
+    async (estudianteId) => {
+      const result = await exportarBoletin(paraleloGestionId, estudianteId);
+      if (result.success) {
+        notification.success({
+          title: 'Boletín generado',
+          description: 'La descarga del boletín en PDF se inició correctamente.',
+        });
+      } else {
+        notification.error({
+          title: 'No se pudo descargar el boletín',
+          description: result.error || 'Reintentá en unos segundos.',
+        });
+      }
+    },
+    [exportarBoletin, paraleloGestionId, notification],
+  );
 
   const pageHeader = (
     <PageHeader
@@ -130,6 +153,9 @@ const CentralizadorAnualPage = () => {
             asignaturas={asignaturas}
             estudiantes={estudiantes}
             notaMinimaAprobacion={notaMinimaAprobacion}
+            paraleloGestionId={paraleloGestionId}
+            onDescargarBoletin={handleDescargarBoletin}
+            descargandoBoletinId={descargandoId}
           />
         </Card>
       </Flex>
