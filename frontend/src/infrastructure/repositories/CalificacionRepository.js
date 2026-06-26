@@ -789,6 +789,66 @@ class CalificacionRepository {
     }
   }
 
+  /**
+   * GET boletín de calificaciones (PDF) de UN estudiante del paralelo en gestión.
+   *
+   * Mecánica idéntica a `descargarCentralizadorExcel` (descarga blob, respeta el
+   * filename del header `Content-Disposition`), pero el binario es un PDF.
+   *
+   * @param {Object} params
+   * @param {string|number} params.paraleloGestionId
+   * @param {string|number} params.estudianteId
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarBoletinEstudiante({ paraleloGestionId, estudianteId } = {}) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.EXPORT_BOLETIN_ESTUDIANTE(paraleloGestionId, estudianteId),
+        { responseType: 'blob' },
+      );
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'Boletin.pdf';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName,
+      };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar el boletín del estudiante';
+          return { success: false, error: msg };
+        } catch {
+          /* fall through */
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar el boletín del estudiante');
+    }
+  }
+
 }
 
 export default new CalificacionRepository();

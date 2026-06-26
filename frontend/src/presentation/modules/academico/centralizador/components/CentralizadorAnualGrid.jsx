@@ -14,6 +14,9 @@
  */
 
 import { Table } from 'antd';
+import { FilePdfOutlined } from '@ant-design/icons';
+import { ActionButton } from '@atoms';
+import { CENTRALIZADOR_PERMISOS } from '@application-academico/centralizador/utils/centralizadorPermisos.js';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
 import CabeceraAsignatura from './CabeceraAsignatura.jsx';
 
@@ -81,11 +84,19 @@ const resumenAnualEstudiante = (estudiante, asignaturas) => {
  * @param {Array} props.asignaturas columnas (incluye docenteNombre)
  * @param {Array} props.estudiantes filas (notas por ofertaCursoId)
  * @param {number} props.notaMinimaAprobacion umbral de reprobación (desde la política)
+ * @param {string|number} [props.paraleloGestionId] paralelo en gestión (para el boletín)
+ * @param {(estudianteId: string|number) => void} [props.onDescargarBoletin] dispara la
+ *        descarga del boletín PDF de un estudiante; si llega, se añade la columna de acción
+ * @param {string|number|null} [props.descargandoBoletinId] estudiante cuyo boletín se
+ *        está descargando (muestra spinner solo en esa fila)
  */
 const CentralizadorAnualGrid = ({
   asignaturas = [],
   estudiantes = [],
   notaMinimaAprobacion = 61,
+  paraleloGestionId,
+  onDescargarBoletin,
+  descargandoBoletinId = null,
 }) => {
   const dataSource = estudiantes.map((est, i) => {
     const { promedio, estado } = resumenAnualEstudiante(est, asignaturas);
@@ -181,6 +192,35 @@ const CentralizadorAnualGrid = ({
       render: (estado) => <CeldaEstado estado={estado} />,
     },
   ];
+
+  // Columna de acción opcional: descarga del boletín PDF por estudiante. Solo se
+  // agrega cuando la página provee el handler (y el paralelo en gestión), así el
+  // grid sigue sirviendo en contextos sin boletín.
+  if (onDescargarBoletin && paraleloGestionId) {
+    columns.push({
+      title: 'Boletín',
+      key: 'boletin',
+      width: 96,
+      align: 'center',
+      fixed: 'right',
+      className: 'cal-centralizador-grid__col-estado',
+      onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-est' }),
+      render: (_, row) => (
+        <ActionButton
+          permiso={CENTRALIZADOR_PERMISOS.centralizador}
+          accion="EXPORTAR"
+          size="small"
+          variant="info"
+          icon={<FilePdfOutlined />}
+          loading={descargandoBoletinId === row.estudianteId}
+          onClick={() => onDescargarBoletin(row.estudianteId)}
+          title="Descargar boletín del estudiante"
+        >
+          Boletín
+        </ActionButton>
+      ),
+    });
+  }
 
   return (
     <div className="cal-centralizador-grid-wrap">

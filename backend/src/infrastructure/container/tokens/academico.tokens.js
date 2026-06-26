@@ -31,6 +31,7 @@ export const ACADEMICO_TOKENS = {
     'academico.exportCentralizadorParaleloBimestreExcelUseCase',
   exportCentralizadorCarreraBimestreExcelUseCase:
     'academico.exportCentralizadorCarreraBimestreExcelUseCase',
+  exportBoletinEstudiantePdfUseCase: 'academico.exportBoletinEstudiantePdfUseCase',
   getMisCursosAsistenciaUseCase: 'academico.getMisCursosAsistenciaUseCase',
   getCalendarioAsistenciaUseCase: 'academico.getCalendarioAsistenciaUseCase',
   getPlanillaAsistenciaSemanalUseCase: 'academico.getPlanillaAsistenciaSemanalUseCase',
@@ -101,6 +102,7 @@ export const ACADEMICO_TOKENS = {
     'academico.exportCentralizadorParaleloBimestreController',
   exportCentralizadorCarreraBimestreController:
     'academico.exportCentralizadorCarreraBimestreController',
+  exportBoletinEstudianteController: 'academico.exportBoletinEstudianteController',
   getMisCursosAsistenciaController: 'academico.getMisCursosAsistenciaController',
   getCalendarioAsistenciaController: 'academico.getCalendarioAsistenciaController',
   getPlanillaAsistenciaController: 'academico.getPlanillaAsistenciaController',

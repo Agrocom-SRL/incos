@@ -332,6 +332,8 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/bimestre/${bimestre}/export`,
   EXPORT_CENTRALIZADOR_CARRERA: (paraleloGestionId, bimestre) =>
     `${API_BASE}/calificaciones/centralizador/carrera-de/${paraleloGestionId}/bimestre/${bimestre}/export`,
+  EXPORT_BOLETIN_ESTUDIANTE: (paraleloGestionId, estudianteId) =>
+    `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/estudiante/${estudianteId}/boletin`,
 };
 
 // ============================================
