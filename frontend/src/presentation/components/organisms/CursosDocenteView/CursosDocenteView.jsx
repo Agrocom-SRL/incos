@@ -30,6 +30,10 @@ const CursosDocenteView = ({
   panelTitle = 'Cursos asignados',
   skeletonCount = 4,
   renderCard,
+  // Slot opcional renderizado entre el bloque de alerts y la grilla de tarjetas.
+  // Default null ⇒ no afecta a Asistencia/Calificaciones (solo lo usa P1 del
+  // Centralizador para montar la sección de exportación por carrera).
+  topContent = null,
 }) => {
   const header = (
     <PageHeader
@@ -72,6 +76,8 @@ const CursosDocenteView = ({
             {sinCursos ? (
               <Alert type="info" showIcon title={emptyTitle} />
             ) : null}
+
+            {topContent}
 
             {isLoading ? <CursosDocenteSkeleton count={skeletonCount} /> : null}
 

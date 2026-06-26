@@ -74,14 +74,26 @@ export class CentralizadorSheetBuilder {
 
   /** Anchos de columna: identificación fija + bloque por asignatura + estado/obs. */
   static _anchos(c, datos, layout, cfg) {
-    const { COL_NRO, COL_NOMBRE, COL_CI, COL_ESTADO, COL_OBS_START, COL_OBS_END, subjectBlock } =
-      layout;
+    const {
+      COL_NRO,
+      COL_NOMBRE_START,
+      COL_NOMBRE_END,
+      COL_CI,
+      COL_ESTADO,
+      COL_OBS_START,
+      COL_OBS_END,
+      subjectBlock
+    } = layout;
     const { widths, colsPorAsignatura } = cfg;
 
+    const nombreWidths = {};
+    for (let col = COL_NOMBRE_START; col <= COL_NOMBRE_END; col += 1) {
+      nombreWidths[col] = widths.nombreCol;
+    }
     c.colWidths({
       1: widths.margin,
       [COL_NRO]: widths.nro,
-      [COL_NOMBRE]: widths.nombre,
+      ...nombreWidths,
       [COL_CI]: widths.ci
     });
     for (let i = 0; i < datos.asignaturas.length; i += 1) {
@@ -115,33 +127,35 @@ export class CentralizadorSheetBuilder {
   }
 
   /**
-   * Bloque de campos (filas 4-6) + caja N° BIMESTRE destacada.
-   * El bloque de la izquierda (labels/valores) y la caja de BIMESTRE de la
-   * derecha se reparten las columnas SIN solaparse, para cualquier nº de
-   * asignaturas. La caja ocupa las últimas 3 columnas (mín. desde COL_CI+1).
+   * Bloque de campos (filas 4-6) en pares etiqueta/valor alineados al grid, más
+   * la caja N° BIMESTRE destacada a la derecha. Pares: 1.º etiqueta B:C / valor
+   * D:E, 2.º etiqueta H:I / valor desde J. La caja de BIMESTRE ocupa las últimas
+   * columnas (mín. desde la col 11) para no solaparse con el valor del 2.º par.
    */
   static _campos(c, datos, layout, cfg) {
-    const { COL_CI, lastCol } = layout;
+    const { lastCol } = layout;
     const { fonts } = cfg;
     const cab = datos.cabecera;
 
-    const bimStartCol = Math.max(COL_CI + 1, lastCol - 2);
-    const leftValEnd = L(bimStartCol - 1); // fin del valor de los campos izq.
+    // Caja de BIMESTRE a la derecha; arranca como muy pronto en la col 11 (K)
+    // para dejar libre el valor del 2.º par (etiqueta H:I, valor desde J).
+    const bimStartCol = Math.max(11, lastCol - 2);
+    const valEnd = L(bimStartCol - 1); // fin de los valores que se extienden a la derecha.
 
-    c.infoField('B4:C4', 'CARRERA:', `D4:${leftValEnd}4`, cab.carrera);
+    // Fila 4: CARRERA (valor ancho hasta antes de la caja de bimestre).
+    c.infoField('B4:C4', 'CARRERA:', `D4:${valEnd}4`, cab.carrera);
+
+    // Fila 5: PERIODO (1.º par B:C/D:E) + PARALELO (2.º par G:H/I…).
+    c.infoField('B5:C5', 'PERIODO:', 'D5:E5', cab.periodo);
+    c.infoField('G5:H5', 'PARALELO:', `I5:${valEnd}5`, cab.paralelo);
+
+    // Fila 6: TURNO (1.º par B:C/D:E) + GESTIÓN (2.º par G:H/I…).
+    c.infoField('B6:C6', 'TURNO:', 'D6:E6', cab.turno);
     c.infoField(
-      'B5:C5',
-      'CURSO:',
-      `D5:${leftValEnd}5`,
-      `${cab.periodo ?? ''}   PARALELO ${cab.paralelo ?? ''}`.trim()
-    );
-    c.infoField(
-      'B6:C6',
-      'TURNO / GESTIÓN:',
-      `D6:${leftValEnd}6`,
-      `${cab.turno ?? ''}   ·   ${cab.gestionAnio ?? ''}${
-        cab.gestionNombre ? `  ${cab.gestionNombre}` : ''
-      }`.trim()
+      'G6:H6',
+      'GESTIÓN:',
+      `I6:${valEnd}6`,
+      `${cab.gestionAnio ?? ''}${cab.gestionNombre ? `  ${cab.gestionNombre}` : ''}`.trim()
     );
 
     // N° BIMESTRE destacado: bloque verde sobre las últimas columnas (filas 4-6).
@@ -161,8 +175,16 @@ export class CentralizadorSheetBuilder {
    * cada una fusionada en su bloque de 2 columnas.
    */
   static _cabeceraTabla(c, datos, layout, cfg) {
-    const { COL_NRO, COL_NOMBRE, COL_CI, COL_ESTADO, COL_OBS_START, COL_OBS_END, subjectBlock } =
-      layout;
+    const {
+      COL_NRO,
+      COL_NOMBRE_START,
+      COL_NOMBRE_END,
+      COL_CI,
+      COL_ESTADO,
+      COL_OBS_START,
+      COL_OBS_END,
+      subjectBlock
+    } = layout;
     const { fonts, rows, heights, colsPorAsignatura } = cfg;
     const { small } = fonts;
     const { rowSigla, rowNombre, rowDocente } = rows;
@@ -179,7 +201,16 @@ export class CentralizadorSheetBuilder {
       });
     };
     headBoxVertical(COL_NRO, 'Nº');
-    headBoxVertical(COL_NOMBRE, 'NÓMINA DE ESTUDIANTES', { align: 'center' });
+    // NÓMINA DE ESTUDIANTES: cabecera fusionada en las 3 columnas C:E.
+    c.mergeBox(rowSigla, COL_NOMBRE_START, rowDocente, COL_NOMBRE_END, 'NÓMINA DE ESTUDIANTES', {
+      bold: true,
+      size: small,
+      wrap: true,
+      align: 'center',
+      fill: EXCEL_COLOR.statHeader,
+      fontColor: EXCEL_COLOR.statHeaderText,
+      borderMedium: true
+    });
     headBoxVertical(COL_CI, 'CÉDULA DE IDENTIDAD');
     headBoxVertical(COL_ESTADO, 'ESTADO', { fill: EXCEL_COLOR.finalHeader });
     // OBSERVACIONES abarca 2 columnas en las 3 filas de cabecera.
@@ -254,7 +285,8 @@ export class CentralizadorSheetBuilder {
   static _filasEstudiantes(c, datos, layout, cfg) {
     const {
       COL_NRO,
-      COL_NOMBRE,
+      COL_NOMBRE_START,
+      COL_NOMBRE_END,
       COL_CI,
       COL_ESTADO,
       COL_OBS_START,
@@ -273,11 +305,14 @@ export class CentralizadorSheetBuilder {
       c.rowHeight(row, heights.dataRow);
 
       c.cell(row, COL_NRO, est.nro ?? idx + 1, { fill: zebra, size: small });
-      c.cell(row, COL_NOMBRE, String(est.nombreCompleto ?? '').toUpperCase(), {
-        fill: zebra,
-        align: 'left',
-        size: small
-      });
+      c.mergeBox(
+        row,
+        COL_NOMBRE_START,
+        row,
+        COL_NOMBRE_END,
+        String(est.nombreCompleto ?? '').toUpperCase(),
+        { fill: zebra, align: 'left', size: small }
+      );
       c.cell(row, COL_CI, est.ci ?? '', { fill: zebra, size: small });
 
       datos.asignaturas.forEach((asig, i) => {

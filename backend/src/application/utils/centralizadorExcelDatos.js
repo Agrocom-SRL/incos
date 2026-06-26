@@ -61,11 +61,11 @@ export function construirDatosCentralizadorParalelo({ matriz, cabeceraRow, bimes
       celdas[asig.ofertaCursoId] = { nota, aprobado };
     });
 
-    // ESTADO/OBSERVACIONES del bimestre: APROBADO si todas las materias con nota
-    // alcanzan la mínima y no falta ninguna; REPROBADO si hay materias debajo;
-    // vacío si el bimestre aún está incompleto.
+    // ESTADO/OBSERVACIONES del bimestre: CURSANDO mientras el bimestre esté
+    // incompleto (faltan notas); cuando TODAS las materias tienen nota →
+    // APROBADO (0 reprobadas) o REPROBADO (al menos una debajo de la mínima).
     const totalAsig = asignaturas.length;
-    let estado = '';
+    let estado = 'CURSANDO';
     let observacion = '';
     if (totalAsig > 0 && conNota === totalAsig) {
       estado = reprobadas === 0 ? 'APROBADO' : 'REPROBADO';

@@ -18,8 +18,8 @@ export const COLS_POR_ASIGNATURA = 2;
 export const COL_WIDTHS = {
   margin: 3, // col A — margen izquierdo
   nro: 6, // Nº
-  nombre: 46, // NÓMINA DE ESTUDIANTES
-  ci: 18, // CÉDULA DE IDENTIDAD
+  nombreCol: 15, // cada una de las 3 columnas de NÓMINA (C:E ≈ 45 en total)
+  ci: 18, // CÉDULA DE IDENTIDAD (col F)
   asignatura: 11, // cada columna de un bloque de asignatura
   estado: 16, // ESTADO
   obs: 16 // cada columna de OBSERVACIONES
@@ -44,10 +44,13 @@ export const HEADER_ROWS = {
   firstDataRow: 12
 };
 
-/** Color de texto del ESTADO por valor (aprobado / reprobado / abandono). */
+/** Color de texto del ESTADO por valor (aprobado / reprobado / cursando / abandono). */
 export const ESTADO_COLOR = {
   APROBADO: EXCEL_COLOR.finalHeader,
   REPROBADO: EXCEL_COLOR.danger,
+  // CURSANDO: bimestre aún en curso (sin todas las notas). Tono sobrio reutilizado
+  // de la paleta (texto secundario) — sin hex suelto.
+  CURSANDO: EXCEL_COLOR.inkSoft,
   ABANDONO: EXCEL_COLOR.inkSoft
 };
 

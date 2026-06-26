@@ -10,20 +10,26 @@ import { COLS_POR_ASIGNATURA } from './centralizadorSheetConfig.js';
 
 /**
  * Calcula el mapa de columnas de la matriz estudiantes × asignaturas.
+ * NÓMINA DE ESTUDIANTES ocupa 3 columnas físicas combinadas (C:E) para repartir
+ * el ancho del nombre sin una sola columna ancha; CÉDULA queda en F y las
+ * asignaturas arrancan en G (cada una en su bloque de `COLS_POR_ASIGNATURA`).
+ *
  * @param {Array|number} asignaturas - arreglo de asignaturas o su cantidad.
  * @returns {{
- *   COL_NRO:number, COL_NOMBRE:number, COL_CI:number, FIRST_SUBJECT_COL:number,
- *   subjectBlock:(i:number)=>number, lastSubjectCol:number, COL_ESTADO:number,
- *   COL_OBS_START:number, COL_OBS_END:number, lastCol:number
+ *   COL_NRO:number, COL_NOMBRE_START:number, COL_NOMBRE_END:number, COL_CI:number,
+ *   FIRST_SUBJECT_COL:number, subjectBlock:(i:number)=>number,
+ *   lastSubjectCol:number, COL_ESTADO:number, COL_OBS_START:number,
+ *   COL_OBS_END:number, lastCol:number
  * }}
  */
 export const computeColumnMap = (asignaturas) => {
   const count = Array.isArray(asignaturas) ? asignaturas.length : Number(asignaturas) || 0;
 
   const COL_NRO = 2; // B (col A queda como margen)
-  const COL_NOMBRE = 3; // C
-  const COL_CI = 4; // D
-  const FIRST_SUBJECT_COL = 5; // E
+  const COL_NOMBRE_START = 3; // C — NÓMINA DE ESTUDIANTES (C:E combinadas)
+  const COL_NOMBRE_END = 5; // E
+  const COL_CI = 6; // F — CÉDULA DE IDENTIDAD
+  const FIRST_SUBJECT_COL = 7; // G — primera columna de asignaturas
 
   const subjectBlock = (i) => FIRST_SUBJECT_COL + i * COLS_POR_ASIGNATURA;
 
@@ -37,7 +43,8 @@ export const computeColumnMap = (asignaturas) => {
 
   return {
     COL_NRO,
-    COL_NOMBRE,
+    COL_NOMBRE_START,
+    COL_NOMBRE_END,
     COL_CI,
     FIRST_SUBJECT_COL,
     subjectBlock,

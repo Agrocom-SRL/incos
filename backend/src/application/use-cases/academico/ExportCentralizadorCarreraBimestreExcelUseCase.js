@@ -20,33 +20,6 @@ import {
   sanitizarFilePart
 } from '../../utils/centralizadorExcelDatos.js';
 
-/** Abreviatura de periodo para el nombre de pestaña ("Primer Año" → "1RO"). */
-const PERIODO_ABBR = { 1: '1RO', 2: '2DO', 3: '3RO', 4: '4TO', 5: '5TO', 6: '6TO' };
-const PERIODO_PALABRA = {
-  primer: 1,
-  primero: 1,
-  segundo: 2,
-  tercer: 3,
-  tercero: 3,
-  cuarto: 4,
-  quinto: 5,
-  sexto: 6
-};
-
-const abreviarPeriodo = (periodoNombre) => {
-  const texto = String(periodoNombre ?? '').trim();
-  if (!texto) return 'PAR';
-  const porDigito = texto.match(/\d+/);
-  if (porDigito) {
-    const n = Number(porDigito[0]);
-    if (PERIODO_ABBR[n]) return PERIODO_ABBR[n];
-  }
-  const primeraPalabra = texto.toLowerCase().split(/\s+/)[0];
-  const n = PERIODO_PALABRA[primeraPalabra];
-  if (n && PERIODO_ABBR[n]) return PERIODO_ABBR[n];
-  return texto.toUpperCase();
-};
-
 export class ExportCentralizadorCarreraBimestreExcelUseCase {
   constructor({
     getCentralizadorParaleloUseCase,
@@ -104,7 +77,9 @@ export class ExportCentralizadorCarreraBimestreExcelUseCase {
     // 3) Por cada paralelo: matriz + cabecera + armado de `datos` (helper compartido).
     // Secuencial para no saturar la BD (un libro de ~6-10 hojas es lo normal).
     const hojas = [];
-    let gestionAnioLibro = cabeceraOrigen?.gestion ?? '';
+    // El año de gestión sale de la matriz (vista 135) en el loop; la vista 87 no
+    // expone gestión. Arranca vacío y se completa con el primer paralelo leído.
+    let gestionAnioLibro = '';
     let totalEstudiantes = 0;
     for (const p of conMatricula) {
       const subPgId = Number(p.paralelo_gestion_id);
@@ -122,7 +97,7 @@ export class ExportCentralizadorCarreraBimestreExcelUseCase {
       if (gestionAnio) gestionAnioLibro = gestionAnio;
       totalEstudiantes += datos.estudiantes.length;
       hojas.push({
-        nombreHoja: `${abreviarPeriodo(p.periodo_nombre)} ${p.paralelo_nombre ?? ''}`.trim(),
+        nombreHoja: String(p.paralelo_nombre ?? '').trim(),
         datos
       });
     }

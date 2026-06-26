@@ -61,9 +61,7 @@ export class CentralizadorExcelBuilder extends ICentralizadorExcelGenerator {
     workbook.created = new Date();
 
     const cab = datos?.cabecera ?? {};
-    const nombreHoja = sanitizarNombreHoja(
-      `${cab.periodo ?? ''} ${cab.paralelo ? `PAR ${cab.paralelo}` : ''}`.trim() || 'Centralizador'
-    );
+    const nombreHoja = sanitizarNombreHoja(cab.paralelo || 'Centralizador');
 
     CentralizadorSheetBuilder.build({
       composer: new ExcelSheetComposer(workbook.addWorksheet(nombreHoja)),
@@ -96,9 +94,7 @@ export class CentralizadorExcelBuilder extends ICentralizadorExcelGenerator {
 
     for (const hoja of lista) {
       const cab = hoja?.datos?.cabecera ?? {};
-      const autoNombre =
-        `${cab.periodo ?? ''} ${cab.paralelo ? `PAR ${cab.paralelo}` : ''}`.trim();
-      const sugerido = hoja?.nombreHoja || autoNombre || 'Paralelo';
+      const sugerido = hoja?.nombreHoja || cab.paralelo || 'Paralelo';
       const nombre = nombreHojaUnico(sugerido, usados);
 
       CentralizadorSheetBuilder.build({

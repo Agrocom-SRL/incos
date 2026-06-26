@@ -9,7 +9,7 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Spin } from 'antd';
-import { ArrowLeftOutlined, FileExcelOutlined, ProfileOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
@@ -47,12 +47,7 @@ const CentralizadorMatrizPage = () => {
     breadcrumbItems,
   } = useCentralizadorParalelo('ACA-CENTRALIZADOR-MATRIZ');
 
-  const {
-    exportar,
-    loading: exportando,
-    exportarCarrera,
-    loadingCarrera,
-  } = useExportCentralizadorExcel();
+  const { exportar, loading: exportando } = useExportCentralizadorExcel();
 
   const sinDatos = estudiantes.length === 0 || asignaturas.length === 0;
 
@@ -71,22 +66,6 @@ const CentralizadorMatrizPage = () => {
     }
   }, [exportar, paraleloGestionId, bimestreActivo, notification]);
 
-  const handleExportarCarrera = useCallback(async () => {
-    const result = await exportarCarrera(paraleloGestionId, bimestreActivo);
-    if (result.success) {
-      notification.success({
-        title: 'Carrera exportada',
-        description:
-          'La descarga del libro Excel con todos los paralelos de la carrera se inició correctamente.',
-      });
-    } else {
-      notification.error({
-        title: 'No se pudo exportar la carrera',
-        description: result.error || 'Reintentá en unos segundos.',
-      });
-    }
-  }, [exportarCarrera, paraleloGestionId, bimestreActivo, notification]);
-
   const pageHeader = (
     <PageHeader
       title="Centralizador · matriz por bimestre"
@@ -104,18 +83,6 @@ const CentralizadorMatrizPage = () => {
             title="Exporta solo este paralelo (una hoja) para el bimestre actual"
           >
             Exportar
-          </ActionButton>
-          <ActionButton
-            permiso={CENTRALIZADOR_PERMISOS.centralizador}
-            accion="EXPORTAR"
-            variant="info"
-            icon={<ProfileOutlined />}
-            loading={loadingCarrera}
-            disabled={isLoading || sinDatos}
-            onClick={handleExportarCarrera}
-            title="Exporta toda la carrera (una hoja por paralelo) para el bimestre actual"
-          >
-            Exportar carrera
           </ActionButton>
           <BackButton
             icon={<ArrowLeftOutlined />}

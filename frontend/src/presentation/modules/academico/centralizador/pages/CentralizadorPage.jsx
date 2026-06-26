@@ -11,6 +11,7 @@ import CursosDocenteView from '@organisms/CursosDocenteView';
 import { useParalelosCentralizador } from '@application-academico/centralizador/hooks/useParalelosCentralizador.js';
 import { centralizadorParaleloPath } from '@application-academico/centralizador/utils/centralizadorPaths.js';
 import ParaleloCentralizadorCard from '../components/ParaleloCentralizadorCard.jsx';
+import CentralizadorExportSection from '../components/CentralizadorExportSection.jsx';
 import '../styles/centralizador.css';
 
 const CentralizadorPage = () => {
@@ -36,6 +37,7 @@ const CentralizadorPage = () => {
       emptyTitle="No hay paralelos en gestión vigente."
       panelTitle="Paralelos en gestión"
       skeletonCount={6}
+      topContent={<CentralizadorExportSection paralelos={paralelos} />}
       renderCard={(paralelo) => (
         <ParaleloCentralizadorCard
           key={paralelo.paraleloGestionId}

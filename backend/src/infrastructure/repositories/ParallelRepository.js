@@ -476,8 +476,6 @@ export class ParallelRepository extends BaseRepository {
          e.carrera_id,
          e.carrera_nombre,
          e.periodo_nombre,
-         e.gestion,
-         e.gestion_id,
          e.cantidad_estudiantes,
          e.cantidad_docentes
        FROM vista_horarios_paralelo_estado e

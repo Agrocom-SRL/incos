@@ -6,14 +6,17 @@
 
 /**
  * @param {Object} row fila snake_case del dashboard de paralelos
- * @returns {{ paraleloGestionId:number|null, paraleloNombre, carreraNombre,
- *   carreraColorHex, periodoNombre, turno, asignaturasRequeridas, cursosCreados,
- *   cantidadDocentes }}
+ * @returns {{ paraleloGestionId:number|null, paraleloNombre, carreraId,
+ *   carreraNombre, carreraColorHex, periodoNombre, turno, asignaturasRequeridas,
+ *   cursosCreados, cantidadDocentes }}
  */
 export const normalizarParaleloCentralizador = (row) => ({
   paraleloGestionId:
     row.paralelo_gestion_id != null ? Number(row.paralelo_gestion_id) : null,
   paraleloNombre: row.paralelo_nombre ?? null,
+  // Identificador de carrera (la vista 87 trae carrera_id en la fila cruda):
+  // permite agrupar paralelos por carrera en la exportación del centralizador.
+  carreraId: row.carrera_id != null ? Number(row.carrera_id) : null,
   carreraNombre: row.carrera_nombre ?? null,
   carreraColorHex: row.carrera_color_hex ?? null,
   periodoNombre: row.periodo_nombre ?? null,

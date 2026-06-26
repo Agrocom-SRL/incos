@@ -358,3 +358,25 @@
   font-weight: 600;
   color: var(--text-400, #9ca3af);
 }
+
+/* —— P1: sección de exportación por carrera (formulario) —— */
+.cal-centralizador-export__desc {
+  margin: 0;
+  color: var(--text-500, #6b7280);
+  font-size: var(--font-size-sm, 13px);
+  line-height: 1.45;
+}
+
+/* Punto de color de carrera en las opciones del Select (mismo lenguaje que el
+   selector de aportes de Pagos). El color es dato de negocio (inline). */
+.cal-centralizador-export__dot {
+  display: inline-block;
+  width: var(--font-size-xs, 11px);
+  height: var(--font-size-xs, 11px);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cal-centralizador-export__footer {
+  margin-top: var(--spacing-sm, 8px);
+}
