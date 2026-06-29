@@ -12,6 +12,7 @@ import {
   getCentralizadorParaleloValidator,
   exportCentralizadorParaleloBimestreValidator,
   exportBoletinEstudianteValidator,
+  saveObservacionCentralizadorBimestreValidator,
   getCuadernoBimestreValidator,
   createEvaluacionCuadernoValidator,
   updateEvaluacionCuadernoValidator,
@@ -81,6 +82,24 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     getCentralizadorParaleloValidator,
     validateRequest,
     (req, res, next) => controllers.getCentralizadorParaleloController.handle(req, res, next)
+  );
+
+  const centralizadorEditar = [
+    authenticate,
+    verificarPermiso('academico.calificacion.centralizador', 'EDITAR')
+  ];
+
+  /**
+   * PUT /api/v1/calificaciones/centralizador/:paraleloGestionId/bimestre/:bimestre/observaciones/:estudianteId
+   * Guarda la observación del bimestre en bimestres_matricula.observaciones.
+   */
+  router.put(
+    '/centralizador/:paraleloGestionId/bimestre/:bimestre/observaciones/:estudianteId',
+    ...centralizadorEditar,
+    saveObservacionCentralizadorBimestreValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.saveObservacionCentralizadorBimestreController.handle(req, res, next)
   );
 
   const centralizadorExportar = [

@@ -30,7 +30,10 @@ import {
   ObtenerPoliticaInstitucionalUseCase,
   ObtenerRegistroNotasCursoUseCase,
 } from '@useCases/academico/calificaciones';
-import { ObtenerCentralizadorParaleloUseCase } from '@useCases/academico/centralizador';
+import {
+  ObtenerCentralizadorParaleloUseCase,
+  GuardarObservacionCentralizadorBimestreUseCase,
+} from '@useCases/academico/centralizador';
 import {
   ListCoordinacionAsistenciaDocentesUseCase,
   ListMisCursosAsistenciaUseCase,
@@ -182,6 +185,10 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerCentralizadorParalelo = () => {
     return new ObtenerCentralizadorParaleloUseCase(CalificacionRepository);
+  };
+
+  factory.guardarObservacionCentralizadorBimestre = () => {
+    return new GuardarObservacionCentralizadorBimestreUseCase(CalificacionRepository);
   };
 
   factory.obtenerPoliticaInstitucional = () => {

@@ -1,12 +1,11 @@
 /**
  * P3 del Centralizador — matriz estudiantes × asignaturas de un bimestre.
  *
- * La celda muestra la nota del bimestre activo (`bim{n}`); cabeceras rotadas con
- * sigla + nombre + docente; gancho de Boletín por estudiante ("Próximamente").
- * Reusa el endpoint centralizador y la cabecera tipo documento.
+ * Columna Observaciones editable (bimestres_matricula.observaciones).
+ * Boletín por estudiante: CentralizadorAnualPage.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Button, Card, Flex, Spin } from 'antd';
 import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons';
@@ -15,6 +14,7 @@ import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useCentralizadorParalelo } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
+import { useCentralizadorObservacionesBimestre } from '@application-academico/centralizador/hooks/useCentralizadorObservacionesBimestre.js';
 import { useExportCentralizadorExcel } from '@application-academico/centralizador/hooks/api/useExportCentralizadorExcel.js';
 import { CENTRALIZADOR_PERMISOS } from '@application-academico/centralizador/utils/centralizadorPermisos.js';
 import { centralizadorParaleloPath } from '@application-academico/centralizador/utils/centralizadorPaths.js';
@@ -47,7 +47,49 @@ const CentralizadorMatrizPage = () => {
     breadcrumbItems,
   } = useCentralizadorParalelo('ACA-CENTRALIZADOR-MATRIZ');
 
+  const [observacionesLocal, setObservacionesLocal] = useState({});
+
   const { exportar, loading: exportando } = useExportCentralizadorExcel();
+
+  const {
+    puedeEditar: puedeEditarObservaciones,
+    programarGuardado,
+    registrarValorInicial,
+  } = useCentralizadorObservacionesBimestre({
+    paraleloGestionId,
+    bimestre: bimestreActivo,
+  });
+
+  useEffect(() => {
+    if (bimestreActivo == null) return;
+    const next = {};
+    estudiantes.forEach((est) => {
+      const texto = est.observacionesBimestre?.[bimestreActivo] ?? '';
+      next[est.estudianteId] = texto;
+      registrarValorInicial(est.estudianteId, texto);
+    });
+    setObservacionesLocal(next);
+  }, [estudiantes, bimestreActivo, paraleloGestionId, registrarValorInicial]);
+
+  const estudiantesConObs = useMemo(
+    () =>
+      estudiantes.map((est) => ({
+        ...est,
+        observacionBimestre: observacionesLocal[est.estudianteId] ?? '',
+      })),
+    [estudiantes, observacionesLocal],
+  );
+
+  const handleObservacionChange = useCallback((estudianteId, valor) => {
+    setObservacionesLocal((prev) => ({ ...prev, [estudianteId]: valor }));
+  }, []);
+
+  const handleObservacionBlur = useCallback(
+    (estudianteId, valor) => {
+      programarGuardado(estudianteId, valor);
+    },
+    [programarGuardado],
+  );
 
   const sinDatos = estudiantes.length === 0 || asignaturas.length === 0;
 
@@ -143,9 +185,12 @@ const CentralizadorMatrizPage = () => {
         <Card className="cal-centralizador-hoja-card" {...hojaCardProps}>
           <CentralizadorGrid
             asignaturas={asignaturas}
-            estudiantes={estudiantes}
+            estudiantes={estudiantesConObs}
             bimestre={bimestreActivo}
             notaMinimaAprobacion={notaMinimaAprobacion}
+            puedeEditarObservaciones={puedeEditarObservaciones}
+            onObservacionChange={handleObservacionChange}
+            onObservacionBlur={handleObservacionBlur}
           />
         </Card>
       </Flex>

@@ -67,10 +67,13 @@ export function construirDatosCentralizadorParalelo({ matriz, cabeceraRow, bimes
     const totalAsig = asignaturas.length;
     let estado = 'CURSANDO';
     let observacion = '';
+    const obsDocente = String(est.observacionesBimestre?.[bimestreNum] ?? '').trim();
     if (totalAsig > 0 && conNota === totalAsig) {
       estado = reprobadas === 0 ? 'APROBADO' : 'REPROBADO';
     }
-    if (reprobadas > 0) {
+    if (obsDocente) {
+      observacion = obsDocente;
+    } else if (reprobadas > 0) {
       observacion = `${reprobadas} ${reprobadas === 1 ? 'materia' : 'materias'} por debajo de ${notaMin}`;
     }
 

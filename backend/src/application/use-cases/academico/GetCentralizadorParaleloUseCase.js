@@ -21,6 +21,7 @@ export class GetCentralizadorParaleloUseCase {
     calificacionCentralizadorRepository,
     calificacionContextoRepository,
     evaluationConfigurationRepository,
+    subjectEnrollmentBimesterRepository,
     logger,
   }) {
     if (!calificacionCentralizadorRepository) {
@@ -30,6 +31,7 @@ export class GetCentralizadorParaleloUseCase {
     this.calificacionCentralizadorRepository = calificacionCentralizadorRepository;
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
+    this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
     this.logger = logger;
   }
 
@@ -144,6 +146,33 @@ export class GetCentralizadorParaleloUseCase {
     const estudiantes = Array.from(estudiantesMap.values()).sort((a, b) =>
       String(a.nombreCompleto).localeCompare(String(b.nombreCompleto)),
     );
+
+    // Observaciones del bimestre (bimestres_matricula.observaciones), una por estudiante.
+    if (this.subjectEnrollmentBimesterRepository) {
+      const obsRows =
+        await this.subjectEnrollmentBimesterRepository.listarObservacionesBimestrePorParaleloGestion(
+          pgId,
+        );
+      const obsPorEstudiante = new Map();
+      for (const row of obsRows ?? []) {
+        const estId = Number(row.estudiante_id);
+        const bim = Number(row.bimestre);
+        if (!Number.isFinite(estId) || !Number.isFinite(bim)) continue;
+        if (!obsPorEstudiante.has(estId)) {
+          obsPorEstudiante.set(estId, { 1: null, 2: null, 3: null, 4: null });
+        }
+        const texto = row.observacion != null ? String(row.observacion).trim() : '';
+        obsPorEstudiante.get(estId)[bim] = texto || null;
+      }
+      for (const est of estudiantes) {
+        est.observacionesBimestre = obsPorEstudiante.get(est.estudianteId) ?? {
+          1: null,
+          2: null,
+          3: null,
+          4: null,
+        };
+      }
+    }
 
     return {
       paraleloGestionId: pgId,

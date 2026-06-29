@@ -491,6 +491,149 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
         );
         return Number(rows[0]?.total ?? 0);
     }
+
+    // ============================================
+    // Centralizador: observaciones por bimestre (bimestres_matricula.observaciones)
+    // ============================================
+
+    /**
+     * Observaciones guardadas por estudiante × bimestre en un paralelo.
+     * Si el estudiante tiene varias matrículas, toma la primera no vacía.
+     * @param {number} paraleloGestionId
+     * @returns {Promise<Array<{ estudiante_id: number, bimestre: number, observacion: string|null }>>}
+     */
+    async listarObservacionesBimestrePorParaleloGestion(paraleloGestionId) {
+        return sequelize.query(
+            `
+            SELECT
+              eda.estudiante_id AS estudiante_id,
+              bm.bimestre AS bimestre,
+              SUBSTRING_INDEX(
+                GROUP_CONCAT(
+                  NULLIF(TRIM(bm.observaciones), '')
+                  ORDER BY bm.id SEPARATOR '|||'
+                ),
+                '|||',
+                1
+              ) AS observacion
+            FROM bimestres_matricula bm
+            INNER JOIN matriculas_materia mm
+              ON mm.id = bm.matricula_materia_id
+              AND mm.deleted_at IS NULL
+              AND mm.activo = TRUE
+            INNER JOIN oferta_cursos oc
+              ON oc.id = mm.oferta_curso_id
+              AND oc.deleted_at IS NULL
+            INNER JOIN inscripciones ins
+              ON ins.id = mm.inscripcion_id
+              AND ins.deleted_at IS NULL
+            INNER JOIN estudiantes_datos_academicos eda
+              ON eda.id = ins.datos_academicos_id
+              AND eda.deleted_at IS NULL
+            WHERE oc.paralelo_gestion_id = ?
+              AND bm.deleted_at IS NULL
+              AND bm.activo = TRUE
+            GROUP BY eda.estudiante_id, bm.bimestre
+            `,
+            {
+                replacements: [paraleloGestionId],
+                type: sequelize.QueryTypes.SELECT,
+            },
+        );
+    }
+
+    /**
+     * Guarda la observación del bimestre en todas las filas bimestres_matricula del
+     * estudiante dentro del paralelo (idempotente: crea filas faltantes).
+     * @returns {Promise<number>} filas actualizadas
+     */
+    async actualizarObservacionBimestreParaleloEstudiante({
+        paraleloGestionId,
+        estudianteId,
+        bimestre,
+        observacion,
+        usuarioId = null,
+        transaction,
+    }) {
+        const pgId = Number(paraleloGestionId);
+        const estId = Number(estudianteId);
+        const bim = Number(bimestre);
+
+        await sequelize.query(
+            `
+            INSERT INTO bimestres_matricula (
+              matricula_materia_id, bimestre, estado, activo, created_by, updated_by
+            )
+            SELECT
+              mm.id,
+              ?,
+              'EN_CURSO',
+              TRUE,
+              ?,
+              ?
+            FROM matriculas_materia mm
+            INNER JOIN oferta_cursos oc
+              ON oc.id = mm.oferta_curso_id
+              AND oc.deleted_at IS NULL
+            INNER JOIN inscripciones ins
+              ON ins.id = mm.inscripcion_id
+              AND ins.deleted_at IS NULL
+            INNER JOIN estudiantes_datos_academicos eda
+              ON eda.id = ins.datos_academicos_id
+              AND eda.deleted_at IS NULL
+            LEFT JOIN bimestres_matricula bm
+              ON bm.matricula_materia_id = mm.id
+              AND bm.bimestre = ?
+              AND bm.deleted_at IS NULL
+            WHERE oc.paralelo_gestion_id = ?
+              AND eda.estudiante_id = ?
+              AND mm.estado IN ('INSCRITO', 'CURSANDO', 'APROBADO', 'REPROBADO')
+              AND mm.deleted_at IS NULL
+              AND mm.activo = TRUE
+              AND bm.id IS NULL
+            `,
+            {
+                replacements: [bim, usuarioId, usuarioId, bim, pgId, estId],
+                type: sequelize.QueryTypes.INSERT,
+                transaction,
+            },
+        );
+
+        const [, meta] = await sequelize.query(
+            `
+            UPDATE bimestres_matricula bm
+            INNER JOIN matriculas_materia mm
+              ON mm.id = bm.matricula_materia_id
+              AND mm.deleted_at IS NULL
+              AND mm.activo = TRUE
+            INNER JOIN oferta_cursos oc
+              ON oc.id = mm.oferta_curso_id
+              AND oc.deleted_at IS NULL
+            INNER JOIN inscripciones ins
+              ON ins.id = mm.inscripcion_id
+              AND ins.deleted_at IS NULL
+            INNER JOIN estudiantes_datos_academicos eda
+              ON eda.id = ins.datos_academicos_id
+              AND eda.deleted_at IS NULL
+            SET
+              bm.observaciones = ?,
+              bm.updated_by = ?,
+              bm.updated_at = NOW()
+            WHERE oc.paralelo_gestion_id = ?
+              AND eda.estudiante_id = ?
+              AND bm.bimestre = ?
+              AND bm.deleted_at IS NULL
+              AND bm.activo = TRUE
+            `,
+            {
+                replacements: [observacion, usuarioId, pgId, estId, bim],
+                type: sequelize.QueryTypes.UPDATE,
+                transaction,
+            },
+        );
+
+        return Number(meta?.affectedRows ?? 0);
+    }
 }
 
 export default SubjectEnrollmentBimesterRepository;
