@@ -17,6 +17,7 @@ import { ObtenerPermisosUsuarioUseCase } from '../../../../application/use-cases
 import { AgregarOverridePermisoUseCase } from '../../../../application/use-cases/seguridad/AgregarOverridePermisoUseCase.js';
 import { EliminarOverridePermisoUseCase } from '../../../../application/use-cases/seguridad/EliminarOverridePermisoUseCase.js';
 import { ListarRolesUseCase } from '../../../../application/use-cases/seguridad/ListarRolesUseCase.js';
+import { CrearRolUseCase } from '../../../../application/use-cases/seguridad/CrearRolUseCase.js';
 import { ObtenerPermisosRolUseCase } from '../../../../application/use-cases/seguridad/ObtenerPermisosRolUseCase.js';
 import { ObtenerPermisosGrillaRolUseCase } from '../../../../application/use-cases/seguridad/ObtenerPermisosGrillaRolUseCase.js';
 import { ActualizarPermisosRolUseCase } from '../../../../application/use-cases/seguridad/ActualizarPermisosRolUseCase.js';
@@ -154,6 +155,15 @@ export function registerSeguridadModule(container) {
 
   registerComponent(
     container,
+    SEGURIDAD_TOKENS.crearRolUseCase,
+    (c) =>
+      new CrearRolUseCase({
+        rolRepository: c.resolve(REPOSITORIOS_TOKENS.roleRepository),
+      })
+  );
+
+  registerComponent(
+    container,
     SEGURIDAD_TOKENS.obtenerPermisosRolUseCase,
     (c) =>
       new ObtenerPermisosRolUseCase({
@@ -228,6 +238,7 @@ export function registerSeguridadModule(container) {
     (c) =>
       new SeguridadRolesController({
         listarRolesUseCase: c.resolve(SEGURIDAD_TOKENS.listarRolesUseCase),
+        crearRolUseCase: c.resolve(SEGURIDAD_TOKENS.crearRolUseCase),
         obtenerPermisosRolUseCase: c.resolve(SEGURIDAD_TOKENS.obtenerPermisosRolUseCase),
         obtenerPermisosGrillaRolUseCase: c.resolve(
           SEGURIDAD_TOKENS.obtenerPermisosGrillaRolUseCase

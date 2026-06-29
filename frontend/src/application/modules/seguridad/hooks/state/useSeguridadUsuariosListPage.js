@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { useCasesFactory } from '@container';
 import { useServerPaginatedList } from '@application/utils/hooks/useServerPaginatedList.js';
 import { createUsuariosTableColumns } from '@modules/seguridad/config/usuariosTableColumns.jsx';
+import { USUARIOS_CATEGORIA_DEFAULT } from '@modules/seguridad/config/usuariosCategoriaTabs.jsx';
 
 function errorMessage(error) {
   return error?.error?.message || error?.message || 'Error';
@@ -13,12 +14,17 @@ export const useSeguridadUsuariosListPage = () => {
   const navigate = useNavigate();
   const { message } = App.useApp();
 
-  const fetchUsuarios = useCallback(async ({ page, limit, search }) => {
+  // Categoría de rol del tab activo (sistema | estudiante | docente | personal).
+  // Vive aquí para que entre al request server-side y refetchee vía `extra`.
+  const [categoria, setCategoria] = useState(USUARIOS_CATEGORIA_DEFAULT);
+
+  const fetchUsuarios = useCallback(async ({ page, limit, search, categoria: cat }) => {
     try {
       const data = await useCasesFactory.listarUsuariosAdmin().ejecutar({
         page,
         limit,
         search: search || undefined,
+        categoria: cat || undefined,
       });
       return {
         success: true,
@@ -35,6 +41,10 @@ export const useSeguridadUsuariosListPage = () => {
     }
   }, [message]);
 
+  // `extra` es el canal estable de filtros de useServerPaginatedList: al cambiar
+  // su clave (extraKey) refetchea desde la página 1 (cambio de tab de categoría).
+  const listExtra = useMemo(() => ({ categoria }), [categoria]);
+
   const {
     rows: usuarios,
     loading,
@@ -43,7 +53,13 @@ export const useSeguridadUsuariosListPage = () => {
     tablePagination,
   } = useServerPaginatedList({
     fetch: fetchUsuarios,
-    buildRequest: ({ page, limit, search }) => ({ page, limit, search }),
+    buildRequest: ({ page, limit, search, extra }) => ({
+      page,
+      limit,
+      search,
+      categoria: extra?.categoria,
+    }),
+    extra: listExtra,
     initialPageSize: 20,
   });
 
@@ -72,6 +88,8 @@ export const useSeguridadUsuariosListPage = () => {
     columns,
     breadcrumbItems,
     tablePagination,
+    categoria,
+    setCategoria,
     handleCreateUsuario,
     handleSearchChange,
   };

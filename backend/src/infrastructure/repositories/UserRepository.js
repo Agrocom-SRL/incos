@@ -180,15 +180,20 @@ export class UserRepository extends BaseRepository {
   /**
    * Listado paginado para administración (sin password_hash).
    */
-  async findAllPaginatedWithRole({ page, limit, search, sort }) {
+  async findAllPaginatedWithRole({ page, limit, search, sort, rolCodigos = null }) {
     const offset = (page - 1) * limit;
     const orderSql = this._resolveUsuarioListOrder(sort);
     const searchClause = search
       ? 'AND (username LIKE :search OR email LIKE :search)'
       : '';
+    const hasCategoria = Array.isArray(rolCodigos) && rolCodigos.length > 0;
+    const categoriaClause = hasCategoria ? 'AND rol_codigo IN (:rolCodigos)' : '';
     const replacements = { limit, offset };
     if (search) {
       replacements.search = `%${search}%`;
+    }
+    if (hasCategoria) {
+      replacements.rolCodigos = rolCodigos;
     }
 
     const rows = await sequelize.query(
@@ -200,6 +205,7 @@ export class UserRepository extends BaseRepository {
       FROM vista_usuarios_admin_base
       WHERE 1=1
         ${searchClause}
+        ${categoriaClause}
       ORDER BY ${orderSql}
       LIMIT :limit OFFSET :offset
       `,
@@ -209,13 +215,18 @@ export class UserRepository extends BaseRepository {
     return rows;
   }
 
-  async countAllWithRoleSearch({ search }) {
+  async countAllWithRoleSearch({ search, rolCodigos = null }) {
     const searchClause = search
       ? 'AND (username LIKE :search OR email LIKE :search)'
       : '';
+    const hasCategoria = Array.isArray(rolCodigos) && rolCodigos.length > 0;
+    const categoriaClause = hasCategoria ? 'AND rol_codigo IN (:rolCodigos)' : '';
     const replacements = {};
     if (search) {
       replacements.search = `%${search}%`;
+    }
+    if (hasCategoria) {
+      replacements.rolCodigos = rolCodigos;
     }
     const rows = await sequelize.query(
       `
@@ -223,6 +234,7 @@ export class UserRepository extends BaseRepository {
       FROM vista_usuarios_admin_base
       WHERE 1=1
         ${searchClause}
+        ${categoriaClause}
       `,
       { replacements, type: sequelize.QueryTypes.SELECT }
     );

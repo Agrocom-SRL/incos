@@ -6,6 +6,10 @@ export const usuariosListQueryValidator = [
   query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
   query('search').optional().isString().trim(),
   query('sort').optional().isString().trim(),
+  query('categoria')
+    .optional()
+    .isIn(['sistema', 'estudiante', 'docente', 'personal'])
+    .withMessage('categoria debe ser sistema, estudiante, docente o personal'),
 ];
 
 export const usuarioIdParamValidator = [
@@ -108,6 +112,30 @@ export const agregarOverrideValidator = [
     ]),
   body('tipo').notEmpty().isIn(['GRANT', 'REVOKE']),
   body('motivo').optional({ nullable: true }).isString(),
+];
+
+export const crearRolValidator = [
+  body('codigo')
+    .trim()
+    .notEmpty()
+    .withMessage('codigo es requerido')
+    .toUpperCase()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('codigo debe tener entre 2 y 50 caracteres')
+    .matches(/^[A-Z0-9_]+$/)
+    .withMessage('codigo solo admite letras mayúsculas, números y guion bajo'),
+  body('nombre')
+    .trim()
+    .notEmpty()
+    .withMessage('nombre es requerido')
+    .isLength({ min: 2, max: 100 })
+    .withMessage('nombre debe tener entre 2 y 100 caracteres'),
+  body('tipo')
+    .optional({ nullable: true })
+    .isString()
+    .withMessage('tipo debe ser texto')
+    .isLength({ max: 50 })
+    .withMessage('tipo máximo 50 caracteres'),
 ];
 
 export const actualizarPermisosRolValidator = [

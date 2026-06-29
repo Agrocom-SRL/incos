@@ -5,8 +5,7 @@
  */
 import { useMemo } from 'react';
 import { Alert, Col, Flex, Form, Input, Row, Space, Typography } from 'antd';
-import { Card } from '@atoms';
-import { FormSection } from '@molecules';
+import CfgAcademicoFormWorkspace from '@configuracion/academico/components/organisms/CfgAcademicoFormWorkspace';
 import { createUsuarioWizardCredencialesFields } from '@modules/seguridad/config/usuarioWizardCredencialesFields.jsx';
 import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
 import { getWizardRoleResumenVisual } from '@modules/seguridad/constants/usuarioCargoInstitucionalVisual.jsx';
@@ -242,34 +241,33 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
         <Input type="hidden" />
       </Form.Item>
 
-      <Card
-        className="form-section"
-        variant="outlined"
-        shadow={false}
-        headerColor="primary"
+      <CfgAcademicoFormWorkspace
         title="Rol de acceso al sistema"
-      >
-        <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-          {mensajeOrigenRolAsignacion(categoria)}
-        </Paragraph>
-        <Row gutter={[16, 16]} style={{ marginTop: 12 }}>
-          {mostrarResumenVinculo ? (
-            <Col xs={24} md={12}>
-              <Alert
-                type="info"
-                showIcon
-                title={estudianteId ? 'Estudiante vinculado' : 'Docente vinculado'}
-                description={vinculoResumenDescription || 'Se vinculó una persona en el paso anterior.'}
-              />
-            </Col>
-          ) : null}
-          <Col xs={24} md={mostrarResumenVinculo ? 12 : 24}>
-            <CredencialesRolAsignadoPanel role={selectedRole} />
-          </Col>
-        </Row>
-      </Card>
+        beforeFields={
+          <>
+            <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+              {mensajeOrigenRolAsignacion(categoria)}
+            </Paragraph>
+            <Row gutter={[16, 16]} style={{ marginTop: 12 }}>
+              {mostrarResumenVinculo ? (
+                <Col xs={24} md={12}>
+                  <Alert
+                    type="info"
+                    showIcon
+                    title={estudianteId ? 'Estudiante vinculado' : 'Docente vinculado'}
+                    description={vinculoResumenDescription || 'Se vinculó una persona en el paso anterior.'}
+                  />
+                </Col>
+              ) : null}
+              <Col xs={24} md={mostrarResumenVinculo ? 12 : 24}>
+                <CredencialesRolAsignadoPanel role={selectedRole} />
+              </Col>
+            </Row>
+          </>
+        }
+      />
 
-      <FormSection
+      <CfgAcademicoFormWorkspace
         title="Credenciales y acceso al sistema"
         description={credencialesDescription}
         fields={flatFields}

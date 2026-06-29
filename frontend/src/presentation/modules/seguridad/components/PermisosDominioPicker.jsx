@@ -1,5 +1,4 @@
-import { Checkbox, Tooltip } from 'antd';
-import '@modules/seguridad/styles/seguridad.css';
+import { Checkbox, Empty, Table, Tooltip, Typography } from 'antd';
 
 /** Orden de columnas: capa Acceso (1) + Operaciones (5) + Flujos (3) */
 const ACCIONES_GRILLA = [
@@ -27,6 +26,13 @@ const ACCION_AYUDA = {
   GENERAR_PDF: 'Generar documentos PDF según el módulo.',
 };
 
+/** Cabecera de cada capa: tinte semántico desde tokens del tema (sin CSS propio). */
+const CAPA_HEADER_STYLE = {
+  acceso: { background: 'var(--color-info-bg)', color: 'var(--color-info-text)' },
+  ops: { background: 'var(--color-success-bg)', color: 'var(--color-success-text)' },
+  flujos: { background: 'var(--color-warning-bg)', color: 'var(--color-warning-text)' },
+};
+
 /**
  * Nombre amigable del grupo: viene del backend (`grupo.grupoNombre`), tabla `grupos_ui`
  * (fuente única; sembrada por módulo). Fallback al código `grupoUi` si faltara la fila.
@@ -44,7 +50,8 @@ function estaEnDelta(delta, grupo, accion) {
 }
 
 /**
- * Grilla de permisos por dominio (v2): filas = grupos de sidebar, columnas = acciones por capas.
+ * Grilla de permisos por dominio: filas = grupos de sidebar, columnas = acciones por capas.
+ * Usa AntD Table temada (column groups + columna fija), sin CSS propio.
  * @param {Array<{ grupoUi: string, rutaSidebar: string, codigos: string[], accionesValidas: string[], accionesAsignadas: string[] }>} grupos
  * @param {Record<string, { permiso_codigo: string, accion: string, habilitado: boolean }>} delta
  */
@@ -54,76 +61,73 @@ export default function PermisosDominioPicker({
   toggleAccion,
   disabled = false,
 }) {
-  const renderCelda = (grupo, accion) => {
+  if (!grupos.length) {
+    return <Empty description="Sin permisos para este dominio." />;
+  }
+
+  const renderCelda = (accion) => (_, grupo) => {
     if (!(grupo.accionesValidas || []).includes(accion)) {
-      return (
-        <td key={accion} className="seg-grilla__celda-na">
-          —
-        </td>
-      );
+      return <Typography.Text type="secondary" aria-label="No aplica">—</Typography.Text>;
     }
     const asignada =
       estaEnDelta(delta, grupo, accion) ?? (grupo.accionesAsignadas || []).includes(accion);
     return (
-      <td key={accion} className="seg-grilla__celda-check">
-        <Checkbox
-          checked={asignada}
-          disabled={disabled}
-          onChange={() => toggleAccion(grupo, accion)}
-        />
-      </td>
+      <Checkbox checked={asignada} disabled={disabled} onChange={() => toggleAccion(grupo, accion)} />
     );
   };
 
-  if (!grupos.length) {
-    return <div className="seg-picker__empty">Sin permisos para este dominio.</div>;
-  }
+  const accionColumna = ({ key, header, capa }) => ({
+    title: (
+      <Tooltip title={ACCION_AYUDA[key] || key}>
+        <span>{header}</span>
+      </Tooltip>
+    ),
+    key,
+    align: 'center',
+    width: 78,
+    onHeaderCell: () => ({ style: CAPA_HEADER_STYLE[capa] }),
+    render: renderCelda(key),
+  });
+
+  const capaColumna = (capa, title) => ({
+    title,
+    align: 'center',
+    onHeaderCell: () => ({ style: CAPA_HEADER_STYLE[capa] }),
+    children: ACCIONES_GRILLA.filter((a) => a.capa === capa).map(accionColumna),
+  });
+
+  const columns = [
+    {
+      title: 'Funcionalidad',
+      key: 'func',
+      fixed: 'left',
+      width: 240,
+      render: (_, grupo) => (
+        <div>
+          <Typography.Text strong>{labelGrupoUi(grupo)}</Typography.Text>
+          <div>
+            <Typography.Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
+              {grupo.rutaSidebar || '—'}
+            </Typography.Text>
+          </div>
+        </div>
+      ),
+    },
+    capaColumna('acceso', 'Acceso'),
+    capaColumna('ops', 'Operaciones'),
+    capaColumna('flujos', 'Flujos'),
+  ];
 
   return (
-    <div className="seg-picker seg-grilla-v2">
-      <div className="seg-grilla-v2__scroll">
-        <table className="seg-grilla-v2__table">
-          <thead>
-            <tr>
-              <th rowSpan={2} className="seg-grilla-v2__th-func">
-                Funcionalidad
-              </th>
-              <th colSpan={1} className="seg-grilla-v2__capa seg-grilla-v2__capa--acceso">
-                Acceso
-              </th>
-              <th colSpan={5} className="seg-grilla-v2__capa seg-grilla-v2__capa--ops">
-                Operaciones
-              </th>
-              <th colSpan={3} className="seg-grilla-v2__capa seg-grilla-v2__capa--flujos">
-                Flujos
-              </th>
-            </tr>
-            <tr>
-              {ACCIONES_GRILLA.map(({ key, header, capa }) => (
-                <th
-                  key={key}
-                  className={`seg-grilla-v2__th-acc seg-grilla-v2__th-acc--${capa}`}
-                >
-                  <Tooltip title={ACCION_AYUDA[key] || key}>
-                    <span>{header}</span>
-                  </Tooltip>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {grupos.map((grupo) => (
-              <tr key={`${grupo.grupoUi}:${grupo.rutaSidebar || ''}`}>
-                <td className="seg-grilla-v2__td-func">
-                  <div className="seg-grilla__grupo-titulo">{labelGrupoUi(grupo)}</div>
-                  <div className="seg-grilla__grupo-ruta">{grupo.rutaSidebar || '—'}</div>
-                </td>
-                {ACCIONES_GRILLA.map(({ key }) => renderCelda(grupo, key))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Table
+      className="seg-permisos-grilla"
+      size="small"
+      bordered
+      pagination={false}
+      scroll={{ x: 'max-content' }}
+      rowKey={(grupo) => `${grupo.grupoUi}:${grupo.rutaSidebar || ''}`}
+      dataSource={grupos}
+      columns={columns}
+    />
   );
 }

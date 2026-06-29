@@ -32,6 +32,7 @@ JOIN (
   UNION ALL SELECT 'seguridad.usuario.administrar', 'ELIMINAR'
   UNION ALL SELECT 'seguridad.usuario.administrar', 'ACTIVAR'
   UNION ALL SELECT 'seguridad.rol.gestionar', 'LISTAR'
+  UNION ALL SELECT 'seguridad.rol.gestionar', 'CREAR'
   UNION ALL SELECT 'seguridad.rol.gestionar', 'EDITAR'
 ) AS x ON x.codigo = p.codigo;
 
@@ -47,6 +48,7 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'EXPORTAR'

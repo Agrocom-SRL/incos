@@ -221,7 +221,7 @@ export default function UsuarioPermisosTab() {
 
   return (
     <>
-      <Tabs defaultActiveKey="rol" items={tabItems} className="sd-tabs" />
+      <Tabs defaultActiveKey="rol" items={tabItems} type="card" size="small" />
       <AgregarOverrideModal
         open={overrideOpen}
         loading={savingOverride}

@@ -11,6 +11,7 @@ import UsuarioCategoriaCreacionStepContent from '@modules/seguridad/components/o
 import UsuarioWizardPerfilStepContent from '@modules/seguridad/components/organisms/UsuarioWizardPerfilStepContent.jsx';
 import UsuarioWizardCredencialesStepContent from '@modules/seguridad/components/organisms/UsuarioWizardCredencialesStepContent.jsx';
 import '@modules/seguridad/styles/seguridad.css';
+import '@configuracion/academico/styles/academico-form-page.css';
 
 export default function UsuarioCreatePage() {
   const {

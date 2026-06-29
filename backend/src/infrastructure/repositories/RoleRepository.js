@@ -151,5 +151,39 @@ export class RoleRepository extends BaseRepository {
     });
     return rows.map((m) => this.toEntity(m));
   }
+
+  /**
+   * Indica si ya existe un rol con el código dado (comparación exacta).
+   * @param {string} codigo Código del rol (ya normalizado a mayúsculas)
+   * @returns {Promise<boolean>}
+   */
+  async existsCodigo(codigo) {
+    const Model = this.getModel();
+    const row = await Model.findOne({
+      where: { codigo },
+      attributes: ['id'],
+    });
+    return row != null;
+  }
+
+  /**
+   * Crea un rol no protegido del sistema (is_system = false).
+   * @param {Object} data
+   * @param {string} data.codigo Código único (ya normalizado)
+   * @param {string} data.nombre Nombre descriptivo
+   * @param {string|null} [data.tipo] Tipo opcional
+   * @returns {Promise<Role>} Entidad de dominio del rol creado
+   */
+  async crear({ codigo, nombre, tipo = null }) {
+    const Model = this.getModel();
+    const row = await Model.create({
+      codigo,
+      nombre,
+      tipo: tipo ?? null,
+      isSystem: false,
+      activo: true,
+    });
+    return this.toEntity(row);
+  }
 }
 

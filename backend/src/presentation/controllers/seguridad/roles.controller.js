@@ -7,12 +7,14 @@ export class SeguridadRolesController {
    */
   constructor({
     listarRolesUseCase,
+    crearRolUseCase,
     obtenerPermisosRolUseCase,
     obtenerPermisosGrillaRolUseCase,
     actualizarPermisosRolUseCase,
     responseFormatter,
   }) {
     this.listarRolesUseCase = listarRolesUseCase;
+    this.crearRolUseCase = crearRolUseCase;
     this.obtenerPermisosRolUseCase = obtenerPermisosRolUseCase;
     this.obtenerPermisosGrillaRolUseCase = obtenerPermisosGrillaRolUseCase;
     this.actualizarPermisosRolUseCase = actualizarPermisosRolUseCase;
@@ -26,6 +28,20 @@ export class SeguridadRolesController {
         res,
         data,
         { statusCode: 200, message: 'Roles obtenidos correctamente' },
+        req
+      );
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  create = async (req, res, next) => {
+    try {
+      const data = await this.crearRolUseCase.execute(req.body);
+      return this.responseFormatter._success(
+        res,
+        data,
+        { statusCode: 201, message: 'Rol creado correctamente' },
         req
       );
     } catch (e) {

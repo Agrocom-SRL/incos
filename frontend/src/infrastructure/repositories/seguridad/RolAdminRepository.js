@@ -9,6 +9,16 @@ export class RolAdminRepository {
     return json.data?.roles ?? [];
   }
 
+  async create(data) {
+    const res = await apiCall(ROLES_SEG_ENDPOINTS.BASE, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw json;
+    return json.data?.rol ?? json.data;
+  }
+
   async findPermisosById(id) {
     const res = await apiCall(ROLES_SEG_ENDPOINTS.PERMISOS(id));
     const json = await res.json().catch(() => ({}));
