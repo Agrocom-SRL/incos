@@ -64,7 +64,7 @@ export const seguridadRoutes = [
     permiso: 'seguridad.usuario.administrar',
     accion: 'LISTAR',
     menu: {
-      label: 'Usuarios',
+      label: 'Admin. de Usuarios',
       module: 'SEG',
       parent: 'SEG',
       order: 1,

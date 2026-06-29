@@ -3,7 +3,7 @@
  * URL: /seguridad/roles
  */
 
-import { Flex } from 'antd';
+import { Flex, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { useSeguridadRolesListPageContext } from '@/application/modules/seguridad/hooks';
@@ -60,9 +60,13 @@ export default function RolesListPage() {
             <section className="cfg-academico-workspace">
               <header className="cfg-academico-workspace__header">
                 <ListPanelHeader title="Roles del sistema" actions={panelActions} />
+                <Typography.Paragraph type="secondary" className="cfg-academico-workspace__desc">
+                  Catálogo de roles del sistema y su categoría. Los roles de sistema no se eliminan;
+                  cada rol concede un conjunto de permisos que se ajusta en su pantalla de permisos.
+                </Typography.Paragraph>
               </header>
 
-              <div className="cfg-academico-tab-content">
+              <div className="cfg-academico-tab-panel">
                 <TableListView
                   embedded
                   data={filteredRoles}

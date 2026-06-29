@@ -4,6 +4,44 @@
   flex-wrap: wrap;
 }
 
+/* Pill de categoría de rol (StatusPill) — listado de Roles. Solo presentación. */
+.seg-rol-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.seg-rol-pill--sistema {
+  background: var(--color-accent-bg);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent-border);
+}
+
+.seg-rol-pill--institucional {
+  background: var(--color-primary-bg);
+  color: var(--color-primary-text);
+  border-color: var(--color-primary-border);
+}
+
+.seg-rol-pill--academico {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.seg-rol-pill--default {
+  background: var(--color-bg-layout);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
 /* Tab de permisos de usuario: margen lateral en pestañas con tablas */
 .usuario-permisos__tab-gutter.sd-tab-body {
   padding-left: 28px;

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { App, Tag } from 'antd';
+import { App } from 'antd';
 import { KeyOutlined } from '@ant-design/icons';
 import { TableActions } from '@molecules';
-import { IdentidadCelda } from '@atoms';
+import { IdentidadCelda, StatusPill } from '@atoms';
 import { useCasesFactory } from '@container';
 import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
-import { rolColorVar } from '@modules/seguridad/components/atoms/rolColor.js';
+import { rolColorVar, rolPillClass } from '@modules/seguridad/components/atoms/rolColor.js';
 import { useRolesList } from '@/application/modules/seguridad/hooks/state/useRolesList';
 
 function errMsg(json) {
@@ -40,8 +40,16 @@ export const useSeguridadRolesListPage = () => {
 
   const columns = useMemo(() => [
     {
+      title: '#',
+      key: 'nro',
+      width: 56,
+      align: 'center',
+      render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
+    },
+    {
       title: 'Rol',
       key: 'rol',
+      fixed: 'left',
       render: (_, record) => (
         <IdentidadCelda
           codigo={record.codigo}
@@ -55,8 +63,8 @@ export const useSeguridadRolesListPage = () => {
       key: 'tipo',
       width: 180,
       render: (_, record) => {
-        const cfg = TIPO_CONFIG[record.tipo] ?? { color: 'default', label: record.tipo ?? '—' };
-        return <Tag color={cfg.color}>{cfg.label}</Tag>;
+        const cfg = TIPO_CONFIG[record.tipo] ?? { label: record.tipo ?? '—' };
+        return <StatusPill label={cfg.label} className={rolPillClass(record.tipo, record.is_system)} />;
       },
     },
     {

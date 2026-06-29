@@ -63,6 +63,16 @@ export default function UsuarioPermisosTab() {
     removeOverride,
   } = useSeguridadUsuarioPermisosPageContext();
 
+  // Consolidado: una sola tabla con columna Dominio (evita la pared de tarjetas
+  // por dominio, sobre todo para el admin que ve el catálogo completo).
+  const rolFlat = useMemo(
+    () =>
+      rolRows.flatMap((group) =>
+        (group.items || []).map((item) => ({ ...item, dominio: group.dominio })),
+      ),
+    [rolRows],
+  );
+
   const tabItems = useMemo(
     () => [
       {
@@ -86,30 +96,32 @@ export default function UsuarioPermisosTab() {
             {!payloadUsuario?.rol ? (
               <Typography.Text type="secondary">El usuario no tiene un rol asignado.</Typography.Text>
             ) : null}
-            {payloadUsuario?.rol && rolRows.length === 0 && !loading ? (
+            {payloadUsuario?.rol && rolFlat.length === 0 && !loading ? (
               <Typography.Text type="secondary">El rol no tiene permisos configurados.</Typography.Text>
             ) : null}
-            {rolRows.map((group) => (
-              <DetailInfoCard
-                key={group.dominio}
-                title={group.dominio}
-                icon={<LockOutlined />}
-                cols={1}
-              >
+            {rolFlat.length > 0 ? (
+              <DetailInfoCard title="Permisos del rol" icon={<LockOutlined />} cols={1}>
                 <Table
                   className="usuario-permisos__table"
-                  rowKey={(r) => `${group.dominio}-${r.permiso_id ?? r.codigo}-${r.accion}`}
+                  rowKey={(r) => `${r.dominio}-${r.permiso_id ?? r.codigo}-${r.accion}`}
                   size="small"
                   pagination={false}
                   loading={loading}
-                  dataSource={group.items}
+                  dataSource={rolFlat}
+                  scroll={{ y: 420 }}
                   columns={[
+                    {
+                      title: 'Dominio',
+                      dataIndex: 'dominio',
+                      width: 160,
+                      render: (d) => <Tag>{d}</Tag>,
+                    },
                     { title: 'Permiso', key: 'permiso', ellipsis: true, render: celdaPermisoNombreCodigo },
                     { title: 'Acción', dataIndex: 'accion', width: 120, render: tagAccion },
                   ]}
                 />
               </DetailInfoCard>
-            ))}
+            ) : null}
           </div>
         ),
       },
@@ -207,7 +219,7 @@ export default function UsuarioPermisosTab() {
       },
     ],
     [
-      rolRows,
+      rolFlat,
       overrides,
       efectivos,
       loading,
