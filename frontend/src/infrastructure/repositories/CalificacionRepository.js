@@ -93,6 +93,43 @@ class CalificacionRepository {
   }
 
   /**
+   * PUT /v1/calificaciones/centralizador/:paraleloGestionId/bimestre/:bimestre/observaciones/:estudianteId
+   *
+   * @param {Object} options
+   * @param {number} options.paraleloGestionId
+   * @param {number} options.bimestre
+   * @param {number} options.estudianteId
+   * @param {string|null} options.observacion
+   */
+  async guardarObservacionCentralizadorBimestre({
+    paraleloGestionId,
+    bimestre,
+    estudianteId,
+    observacion,
+  } = {}) {
+    try {
+      const response = await apiClient.put(
+        CALIFICACIONES_ENDPOINTS.CENTRALIZADOR_OBSERVACION(
+          paraleloGestionId,
+          bimestre,
+          estudianteId,
+        ),
+        { observacion: observacion ?? null },
+      );
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? {} };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar la observación del bimestre');
+    }
+  }
+
+  /**
    * GET /v1/calificaciones/politica/catalogo
    */
   async obtenerPoliticaCatalogo() {

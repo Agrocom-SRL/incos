@@ -269,6 +269,9 @@ CREATE TABLE bimestres_matricula (
     estado ENUM('PENDIENTE', 'EN_CURSO', 'CERRADO', 'REABIERTO') DEFAULT 'PENDIENTE'
         COMMENT 'PENDIENTE (no iniciado), EN_CURSO (evaluaciones en proceso), CERRADO (consolidado), REABIERTO (reabierto administrativamente para editar el cuaderno de un bimestre ya cerrado por calendario)',
 
+    observaciones TEXT NULL
+        COMMENT 'Observaciones del bimestre (centralizador / boletín). Una fila por matrícula de materia; en el centralizador por paralelo se replica el mismo texto en todas las materias del estudiante.',
+
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',

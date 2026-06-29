@@ -12,10 +12,20 @@ export const ESTADO_BIMESTRE_HEADER = {
  * @param {number} numero — 1..4
  * @param {number} bimestreVigente
  * @param {string} [estadoCalendario] — abierto | cerrado | futuro
+ * @param {boolean} [reabierto] — bimestre reabierto administrativamente para editar el cuaderno
  */
-export const resolverEstadoBimestreHeader = (numero, bimestreVigente, estadoCalendario = 'futuro') => {
+export const resolverEstadoBimestreHeader = (
+  numero,
+  bimestreVigente,
+  estadoCalendario = 'futuro',
+  reabierto = false,
+) => {
   const n = Number(numero);
   const vigente = Number(bimestreVigente) || 1;
+
+  if (reabierto) {
+    return ESTADO_BIMESTRE_HEADER.EN_CURSO;
+  }
 
   if (estadoCalendario === 'futuro' || n > vigente) {
     return ESTADO_BIMESTRE_HEADER.PENDIENTE;
@@ -45,7 +55,10 @@ export const etiquetaEstadoBimestre = (estado) => {
   }
 };
 
-export const tooltipAbrirCuaderno = (numero, estado) => {
+export const tooltipAbrirCuaderno = (numero, estado, reabierto = false) => {
+  if (reabierto || estado === ESTADO_BIMESTRE_HEADER.EN_CURSO) {
+    return `Abrir cuaderno del bimestre ${numero} para registrar notas`;
+  }
   if (estado === ESTADO_BIMESTRE_HEADER.PENDIENTE) {
     return 'Bimestre aún no habilitado en el calendario académico';
   }

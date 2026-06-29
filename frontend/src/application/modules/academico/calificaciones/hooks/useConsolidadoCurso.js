@@ -8,6 +8,7 @@ import { useCasesFactory } from '@container';
 import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
 import { MIS_CURSOS_PATH } from '../utils/calificacionesPaths.js';
 import { BIMESTRE_TITULOS } from '../utils/bimestreTitulos.js';
+import { mapBimestresCalendario } from '../utils/bimestrePlazoUtils.js';
 
 export const useConsolidadoCurso = () => {
   const { asignacionId } = useParams();
@@ -34,9 +35,7 @@ export const useConsolidadoCurso = () => {
       setDocente(data.docente ?? null);
       setCurso(data.curso ?? null);
       setEstudiantes(Array.isArray(data.estudiantes) ? data.estudiantes : []);
-      setBimestresCalendario(
-        Array.isArray(data.bimestresCalendario) ? data.bimestresCalendario : [],
-      );
+      setBimestresCalendario(mapBimestresCalendario(data.bimestresCalendario));
     } catch (err) {
       setError(err?.message || err);
       setCurso(null);

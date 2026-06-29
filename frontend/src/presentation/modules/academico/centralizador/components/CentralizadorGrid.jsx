@@ -1,24 +1,17 @@
 /**
  * P3 del Centralizador — matriz estudiantes × asignaturas de un BIMESTRE.
  *
- * Estructura del documento oficial "Centralizador de calificaciones" con el
- * sistema de diseño del proyecto (la "hoja" verde del registro académico):
+ *   N° · NÓMINA · CÉDULA · [asignaturas] · OBSERVACIONES
  *
- *   N° · NÓMINA DE ESTUDIANTES · CÉDULA DE IDENTIDAD ·
- *   [una columna por asignatura, cabecera rotada: sigla + nombre + docente] ·
- *   BOLETÍN (gancho deshabilitado, "Próximamente")
- *
- * La celda muestra la nota del bimestre activo (`notas[ofertaCursoId].bim{n}`),
- * en danger si < 61 y '—' si null. Solo lectura.
- *
- * Esta vista es POR BIMESTRE: las columnas anuales ESTADO / OBSERVACIONES del
- * documento se omiten (la consolidación anual vive en otra iteración).
+ * La columna Observaciones persiste en bimestres_matricula.observaciones.
+ * La exportación de boletines vive en la vista anual (CentralizadorAnualPage).
  */
 
-import { Button, Table, Tooltip } from 'antd';
-import { FileTextOutlined } from '@ant-design/icons';
+import { Input, Table } from 'antd';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
 import CabeceraAsignatura from './CabeceraAsignatura.jsx';
+
+const { TextArea } = Input;
 
 /** Nota del bimestre activo para una asignatura. */
 const notaBimestre = (nota, bimestre) => {
@@ -47,6 +40,36 @@ const CeldaNotaBimestre = ({ valor, notaMinima }) => {
   );
 };
 
+const CeldaObservacionBimestre = ({
+  valor,
+  editable,
+  estudianteId,
+  onChange,
+  onBlur,
+}) => {
+  if (!editable) {
+    const texto = valor?.trim();
+    return (
+      <span className="cal-centralizador-grid__obs-texto">
+        {texto || <span className="cal-centralizador-grid__obs-vacio">—</span>}
+      </span>
+    );
+  }
+
+  return (
+    <TextArea
+      className="cal-centralizador-grid__obs-input"
+      value={valor ?? ''}
+      onChange={(e) => onChange?.(estudianteId, e.target.value)}
+      onBlur={(e) => onBlur?.(estudianteId, e.target.value)}
+      placeholder="Observación del bimestre…"
+      autoSize={{ minRows: 2, maxRows: 4 }}
+      maxLength={2000}
+      aria-label="Observaciones del bimestre"
+    />
+  );
+};
+
 /** Leyenda al pie, espejo del documento oficial. */
 const LeyendaCentralizador = () => (
   <div className="cal-centralizador-grid__leyenda" role="note" aria-label="Leyenda del centralizador">
@@ -71,17 +94,24 @@ const LeyendaCentralizador = () => (
  * @param {Array} props.estudiantes filas (notas por ofertaCursoId)
  * @param {number} props.bimestre bimestre activo (1..4)
  * @param {number} props.notaMinimaAprobacion umbral de reprobación (desde la política)
+ * @param {boolean} [props.puedeEditarObservaciones]
+ * @param {(estudianteId: number, valor: string) => void} [props.onObservacionChange]
+ * @param {(estudianteId: number, valor: string) => void} [props.onObservacionBlur]
  */
 const CentralizadorGrid = ({
   asignaturas = [],
   estudiantes = [],
   bimestre,
   notaMinimaAprobacion = 61,
+  puedeEditarObservaciones = false,
+  onObservacionChange,
+  onObservacionBlur,
 }) => {
   const dataSource = estudiantes.map((est, i) => ({
     ...est,
     key: est.estudianteId ?? i,
     nro: i + 1,
+    observacionBimestre: est.observacionBimestre ?? est.observacionesBimestre?.[bimestre] ?? '',
   }));
 
   const columnasAsignatura = asignaturas.map((asig) => ({
@@ -143,19 +173,19 @@ const CentralizadorGrid = ({
     },
     ...columnasAsignatura,
     {
-      // Boletín por estudiante: gancho a una iteración futura.
-      title: 'Boletín',
-      key: 'boletin',
-      width: 116,
-      align: 'center',
-      className: 'cal-centralizador-grid__col-boletin',
+      title: 'Observaciones',
+      key: 'observaciones',
+      width: 220,
+      className: 'cal-centralizador-grid__col-obs',
       onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-est' }),
-      render: () => (
-        <Tooltip title="Próximamente">
-          <Button size="small" icon={<FileTextOutlined />} disabled>
-            Boletín
-          </Button>
-        </Tooltip>
+      render: (_, row) => (
+        <CeldaObservacionBimestre
+          valor={row.observacionBimestre}
+          editable={puedeEditarObservaciones}
+          estudianteId={row.estudianteId}
+          onChange={onObservacionChange}
+          onBlur={onObservacionBlur}
+        />
       ),
     },
   ];

@@ -380,3 +380,28 @@
 .cal-centralizador-export__footer {
   margin-top: var(--spacing-sm, 8px);
 }
+
+/* —— Columna Observaciones (matriz por bimestre) —— */
+.cal-centralizador-grid__col-obs {
+  vertical-align: top !important;
+}
+
+.cal-centralizador-grid__obs-input {
+  font-size: 12px;
+  line-height: 1.4;
+  resize: vertical;
+  min-height: 52px;
+}
+
+.cal-centralizador-grid__obs-texto {
+  display: block;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cuaderno-texto-fuerte);
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+.cal-centralizador-grid__obs-vacio {
+  color: var(--cuaderno-texto-tenue);
+}

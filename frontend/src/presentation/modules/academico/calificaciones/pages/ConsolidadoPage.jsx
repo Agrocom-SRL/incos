@@ -60,21 +60,19 @@ const ConsolidadoPage = () => {
       const meta = bimestresCalendario.find(
         (b) => Number(b.numero ?? b.numeroOrden ?? b.numero_orden) === Number(bimestre),
       );
-      // Bimestre reabierto por un administrador: vuelve a ser editable aunque por fechas esté cerrado.
-      if (meta?.reabierto) {
-        navigate(cuadernoBimestrePath(asignacionId, bimestre));
-        return;
-      }
       const estado = resolverEstadoBimestreHeader(
         bimestre,
         bimestreVigente,
         meta?.estadoCalendario ?? meta?.estado_calendario,
+        meta?.reabierto,
       );
       if (estado === ESTADO_BIMESTRE_HEADER.CERRADO) {
         navigate(bimestreConsolidadoPath(asignacionId, bimestre));
         return;
       }
-      navigate(cuadernoBimestrePath(asignacionId, bimestre));
+      if (estado === ESTADO_BIMESTRE_HEADER.EN_CURSO) {
+        navigate(cuadernoBimestrePath(asignacionId, bimestre));
+      }
     },
     [navigate, asignacionId, bimestreVigente, bimestresCalendario],
   );

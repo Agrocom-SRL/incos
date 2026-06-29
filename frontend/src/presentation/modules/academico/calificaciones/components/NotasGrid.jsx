@@ -33,7 +33,6 @@ const BimestreGrupoHead = ({
         <Tooltip title="Guardar notas en la base de datos y recalcular bimestre y nota final">
           <Button
             variant="warning"
-            size="small"
             icon={<SaveOutlined />}
             loading={guardandoBimestre}
             disabled={guardandoBimestre}

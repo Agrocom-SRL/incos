@@ -7,6 +7,7 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListCoordinacionCalificacionesDocentesUseCase } from '../../../../application/use-cases/academico/ListCoordinacionCalificacionesDocentesUseCase.js';
 import { ListCursosCalificacionesUseCase } from '../../../../application/use-cases/academico/ListCursosCalificacionesUseCase.js';
 import { GetCentralizadorParaleloUseCase } from '../../../../application/use-cases/academico/GetCentralizadorParaleloUseCase.js';
+import { SaveObservacionCentralizadorBimestreUseCase } from '../../../../application/use-cases/academico/SaveObservacionCentralizadorBimestreUseCase.js';
 import { ExportCentralizadorParaleloBimestreExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorParaleloBimestreExcelUseCase.js';
 import { ExportCentralizadorCarreraBimestreExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorCarreraBimestreExcelUseCase.js';
 import { ExportBoletinEstudiantePdfUseCase } from '../../../../application/use-cases/academico/ExportBoletinEstudiantePdfUseCase.js';
@@ -32,6 +33,7 @@ import { AbrirBimestreGestionUseCase } from '../../../../application/use-cases/a
 import { ListCoordinacionCalificacionesDocentesController } from '../../../../presentation/controllers/academico/calificaciones/list-coordinacion-docentes.controller.js';
 import { ListCursosCalificacionesController } from '../../../../presentation/controllers/academico/calificaciones/list-cursos-calificaciones.controller.js';
 import { GetCentralizadorParaleloController } from '../../../../presentation/controllers/academico/calificaciones/get-centralizador-paralelo.controller.js';
+import { SaveObservacionCentralizadorBimestreController } from '../../../../presentation/controllers/academico/calificaciones/save-observacion-centralizador-bimestre.controller.js';
 import { ExportCentralizadorParaleloBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-paralelo-bimestre.controller.js';
 import { ExportCentralizadorCarreraBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-carrera-bimestre.controller.js';
 import { ExportBoletinEstudianteController } from '../../../../presentation/controllers/academico/calificaciones/export-boletin-estudiante.controller.js';
@@ -130,6 +132,21 @@ export function registerCalificacionesResource(container) {
         evaluationConfigurationRepository: c.resolve(
           REPOSITORIOS_TOKENS.evaluationConfigurationRepository
         ),
+        subjectEnrollmentBimesterRepository: c.resolve(
+          REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.saveObservacionCentralizadorBimestreUseCase,
+    (c) =>
+      new SaveObservacionCentralizadorBimestreUseCase({
+        subjectEnrollmentBimesterRepository: c.resolve(
+          REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger)
       })
   );
@@ -141,6 +158,19 @@ export function registerCalificacionesResource(container) {
       new GetCentralizadorParaleloController({
         getCentralizadorParaleloUseCase: c.resolve(
           ACADEMICO_TOKENS.getCentralizadorParaleloUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.saveObservacionCentralizadorBimestreController,
+    (c) =>
+      new SaveObservacionCentralizadorBimestreController({
+        saveObservacionCentralizadorBimestreUseCase: c.resolve(
+          ACADEMICO_TOKENS.saveObservacionCentralizadorBimestreUseCase
         ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
@@ -1176,6 +1206,9 @@ export function registerCalificacionesResource(container) {
       ),
       getCentralizadorParaleloController: c.resolve(
         ACADEMICO_TOKENS.getCentralizadorParaleloController
+      ),
+      saveObservacionCentralizadorBimestreController: c.resolve(
+        ACADEMICO_TOKENS.saveObservacionCentralizadorBimestreController
       ),
       exportCentralizadorParaleloBimestreController: c.resolve(
         ACADEMICO_TOKENS.exportCentralizadorParaleloBimestreController

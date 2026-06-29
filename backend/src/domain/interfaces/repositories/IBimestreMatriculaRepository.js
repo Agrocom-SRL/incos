@@ -70,4 +70,14 @@ export class IBimestreMatriculaRepository extends IRepository {
     async contarBimestreReabiertoCurso(asignacionId, bimestreNum) {
         throw new Error('Method contarBimestreReabiertoCurso() must be implemented');
     }
+
+    /** @returns {Promise<Array<{ estudiante_id: number, bimestre: number, observacion: string|null }>>} */
+    async listarObservacionesBimestrePorParaleloGestion(paraleloGestionId) {
+        throw new Error('Method listarObservacionesBimestrePorParaleloGestion() must be implemented');
+    }
+
+    /** @returns {Promise<number>} */
+    async actualizarObservacionBimestreParaleloEstudiante(params) {
+        throw new Error('Method actualizarObservacionBimestreParaleloEstudiante() must be implemented');
+    }
 }

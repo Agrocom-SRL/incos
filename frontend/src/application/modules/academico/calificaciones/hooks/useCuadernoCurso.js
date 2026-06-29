@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@application-auth';
+import { useAcciones } from '@application-shared/hooks';
 import { CALIFICACIONES_PERMISOS } from '../utils/calificacionesPermisos.js';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
@@ -27,11 +28,7 @@ export const useCuadernoCurso = () => {
   const { hasPermiso } = useAuth();
   const { isView } = useRouteViewMode(CALIFICACIONES_VIEW_ROUTE_KEY);
   const esVistaCoordinacion = isView('coordinacion');
-
-  const bimestreVigenteEditable = useCallback(
-    (cuadernoState) => Boolean(cuadernoState?.modoEdicion),
-    [],
-  );
+  const ajusteAdmin = useAcciones(CALIFICACIONES_PERMISOS.bimestreAjusteAdmin);
 
   const [base, setBase] = useState(null);
   const [cuaderno, setCuaderno] = useState(null);
@@ -47,14 +44,16 @@ export const useCuadernoCurso = () => {
   }, [bimestreRuta]);
 
   const construirEstadoBimestre = useCallback(
-    async (ctx, bimestreNum) => {
+    async (ctx, bimestreNum, calendario = []) => {
       const { docente, curso, estudiantesBase } = ctx;
       const bimestreVigente = Number(docente.bimestreVigente) || 1;
       const activo = Math.min(Math.max(bimestreNum, 1), 4);
 
       let evaluaciones = [];
       let estudiantes = estudiantesBase.map((e) => ({ ...e, notas: {} }));
-      let reabierto = false;
+      let reabierto = Boolean(
+        (calendario ?? []).find((b) => Number(b.numero) === activo)?.reabierto,
+      );
 
       const resCuaderno = await CalificacionRepository.obtenerCuadernoBimestre(
         cursoIdResolved,
@@ -64,7 +63,7 @@ export const useCuadernoCurso = () => {
       if (resCuaderno?.success) {
         evaluaciones = resCuaderno.data?.evaluaciones ?? [];
         estudiantes = mergeNotasEnEstudiantes(estudiantesBase, resCuaderno.data?.notas ?? []);
-        reabierto = Boolean(resCuaderno.data?.reabierto);
+        reabierto = Boolean(resCuaderno.data?.reabierto) || reabierto;
         saveEvaluacionesCache(cursoIdResolved, activo, evaluaciones);
       } else {
         const cacheErr = resCuaderno?.error;
@@ -123,7 +122,11 @@ export const useCuadernoCurso = () => {
         setBase(ctx);
 
         const activoInicial = bimestreDesdeUrl ?? registro.bimestreVigente;
-        const estado = await construirEstadoBimestre(ctx, activoInicial);
+        const estado = await construirEstadoBimestre(
+          ctx,
+          activoInicial,
+          registro.bimestresCalendario,
+        );
         if (!cancelled) setCuaderno(estado);
       } catch (err) {
         if (!cancelled) {
@@ -143,7 +146,7 @@ export const useCuadernoCurso = () => {
     return () => {
       cancelled = true;
     };
-  }, [cursoIdResolved, bimestreDesdeUrl, construirEstadoBimestre, navigate]);
+  }, [cursoIdResolved, construirEstadoBimestre, navigate]);
 
   useEffect(() => {
     if (!base || bimestreDesdeUrl == null || isLoading) return;
@@ -154,7 +157,7 @@ export const useCuadernoCurso = () => {
       setIsRefetching(true);
       setError(null);
       try {
-        const estado = await construirEstadoBimestre(base, bimestreDesdeUrl);
+        const estado = await construirEstadoBimestre(base, bimestreDesdeUrl, bimestresCalendario);
         if (!cancelled) setCuaderno(estado);
       } catch (err) {
         if (!cancelled) setError(err?.message || err);
@@ -166,8 +169,9 @@ export const useCuadernoCurso = () => {
     syncBimestre();
     return () => {
       cancelled = true;
+      setIsRefetching(false);
     };
-  }, [bimestreDesdeUrl, base, isLoading, cuaderno?.bimestreActivo, construirEstadoBimestre]);
+  }, [bimestreDesdeUrl, base, isLoading, cuaderno?.bimestreActivo, construirEstadoBimestre, bimestresCalendario]);
 
   const bimestreVigente = Number(base?.docente?.bimestreVigente ?? cuaderno?.bimestreVigente) || 1;
   const bimestreActivoResolved =
@@ -285,14 +289,26 @@ export const useCuadernoCurso = () => {
     setIsRefetching(true);
     setError(null);
     try {
-      const estado = await construirEstadoBimestre(base, bimestreActivoResolved);
+      const registro = await cargarContextoCursoRegistro(cursoIdResolved);
+      setBimestresCalendario(registro.bimestresCalendario);
+      const ctx = {
+        docente: registro.docente,
+        curso: registro.curso,
+        estudiantesBase: registro.estudiantesBase,
+      };
+      setBase(ctx);
+      const estado = await construirEstadoBimestre(
+        ctx,
+        bimestreActivoResolved,
+        registro.bimestresCalendario,
+      );
       setCuaderno(estado);
     } catch (err) {
       setError(err?.message || err);
     } finally {
       setIsRefetching(false);
     }
-  }, [base, bimestreActivoResolved, construirEstadoBimestre]);
+  }, [base, bimestreActivoResolved, construirEstadoBimestre, cursoIdResolved]);
 
   const materiaCurso = cuaderno?.curso?.materia ?? base?.curso?.materia ?? null;
 
@@ -310,27 +326,69 @@ export const useCuadernoCurso = () => {
     ? `Cuaderno · ${cuaderno.bimestreTitulo}`
     : `Cuaderno · Bimestre ${bimestreActivoResolved}`;
 
-  const vigenteEditable = bimestreVigenteEditable(cuaderno);
+  const reabiertoEfectivo = useMemo(
+    () =>
+      Boolean(cuaderno?.reabierto) ||
+      Boolean(
+        bimestresCalendario.find((b) => Number(b.numero) === bimestreActivoResolved)?.reabierto,
+      ),
+    [cuaderno?.reabierto, bimestresCalendario, bimestreActivoResolved],
+  );
+
+  const tienePermisoAlguna = useCallback(
+    (codigo, acciones) => acciones.some((accion) => hasPermiso(codigo, accion)),
+    [hasPermiso],
+  );
+
+  const vigenteEditable = useMemo(() => {
+    if (bimestreActivoResolved === bimestreVigente) return true;
+    if (reabiertoEfectivo) return true;
+    const meta = bimestresCalendario.find(
+      (b) => Number(b.numero) === bimestreActivoResolved,
+    );
+    return Boolean(meta?.editable);
+  }, [bimestreActivoResolved, bimestreVigente, reabiertoEfectivo, bimestresCalendario]);
+
+  const puedeOperarCuaderno = useMemo(() => {
+    if (!vigenteEditable) return false;
+    const permisoDocente =
+      tienePermisoAlguna(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, ['CREAR', 'EDITAR']) ||
+      tienePermisoAlguna(CALIFICACIONES_PERMISOS.cuadernoNotas, ['EDITAR', 'CREAR']) ||
+      tienePermisoAlguna(CALIFICACIONES_PERMISOS.cuadernoGuardar, ['EDITAR', 'CREAR']);
+    const permisoAdminReabierto = reabiertoEfectivo && ajusteAdmin.puedeEditar;
+    return permisoDocente || permisoAdminReabierto;
+  }, [vigenteEditable, reabiertoEfectivo, ajusteAdmin.puedeEditar, tienePermisoAlguna]);
 
   const puedeCrearEvaluacion = useMemo(
-    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, 'CREAR'),
-    [vigenteEditable, hasPermiso],
+    () =>
+      puedeOperarCuaderno &&
+      (tienePermisoAlguna(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, ['CREAR']) ||
+        (reabiertoEfectivo && ajusteAdmin.puedeEditar)),
+    [puedeOperarCuaderno, reabiertoEfectivo, ajusteAdmin.puedeEditar, tienePermisoAlguna],
   );
   const puedeEditarEvaluacion = useMemo(
-    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, 'EDITAR'),
-    [vigenteEditable, hasPermiso],
+    () =>
+      puedeOperarCuaderno &&
+      tienePermisoAlguna(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, ['EDITAR', 'CREAR']),
+    [puedeOperarCuaderno, tienePermisoAlguna],
   );
   const puedeEliminarEvaluacion = useMemo(
-    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, 'ELIMINAR'),
-    [vigenteEditable, hasPermiso],
+    () =>
+      puedeOperarCuaderno &&
+      tienePermisoAlguna(CALIFICACIONES_PERMISOS.cuadernoEvaluaciones, ['ELIMINAR']),
+    [puedeOperarCuaderno, tienePermisoAlguna],
   );
   const puedeEditarNotas = useMemo(
-    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoNotas, 'EDITAR'),
-    [vigenteEditable, hasPermiso],
+    () =>
+      puedeOperarCuaderno &&
+      tienePermisoAlguna(CALIFICACIONES_PERMISOS.cuadernoNotas, ['EDITAR', 'CREAR']),
+    [puedeOperarCuaderno, tienePermisoAlguna],
   );
   const puedeGuardarBimestre = useMemo(
-    () => vigenteEditable && hasPermiso(CALIFICACIONES_PERMISOS.cuadernoGuardar, 'EDITAR'),
-    [vigenteEditable, hasPermiso],
+    () =>
+      puedeOperarCuaderno &&
+      tienePermisoAlguna(CALIFICACIONES_PERMISOS.cuadernoGuardar, ['EDITAR', 'CREAR']),
+    [puedeOperarCuaderno, tienePermisoAlguna],
   );
 
   const modoEdicion =
@@ -351,7 +409,7 @@ export const useCuadernoCurso = () => {
     bimestreActivo: bimestreActivoResolved,
     periodoBimestreActivo,
     gestionFechaFin: gestionFechas?.fechaFin ?? null,
-    reabierto: Boolean(cuaderno?.reabierto),
+    reabierto: reabiertoEfectivo,
     modoEdicion,
     puedeCrearEvaluacion,
     puedeEditarEvaluacion,
@@ -367,6 +425,7 @@ export const useCuadernoCurso = () => {
     volverPath: cursoIdResolved ? notasCursoPath(cursoIdResolved) : MIS_CURSOS_PATH,
     cursoId: cursoIdResolved,
     esVistaCoordinacion,
+    bimestresCalendario,
     crearEvaluacion,
     editarEvaluacion,
     eliminarEvaluacion,

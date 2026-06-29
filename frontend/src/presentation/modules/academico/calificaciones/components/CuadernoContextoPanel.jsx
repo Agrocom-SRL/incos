@@ -16,9 +16,11 @@ const Celda = ({ label, value, compact = false }) => (
   </div>
 );
 
-const etiquetaEstadoBimestre = (bimestreActivo, bimestreVigente, modoEdicion) => {
+const etiquetaEstadoBimestre = (bimestreActivo, bimestreVigente, reabierto, modoEdicion) => {
   if (bimestreActivo == null) return '—';
   if (bimestreActivo > bimestreVigente) return 'Futuro · No disponible';
+  if (reabierto && modoEdicion) return 'Reabierto · En edición';
+  if (reabierto) return 'Reabierto · Solo lectura';
   if (bimestreActivo < bimestreVigente) return 'Histórico · Solo lectura';
   if (modoEdicion) return 'Vigente · En edición';
   return 'Vigente · Solo lectura';
@@ -30,6 +32,7 @@ const CuadernoContextoPanel = ({
   bimestreTitulo,
   bimestreActivo,
   bimestreVigente = 1,
+  reabierto = false,
   modoEdicion = false,
   esVistaCoordinacion,
   docenteNombre,
@@ -39,7 +42,12 @@ const CuadernoContextoPanel = ({
       ? `${docenteNombre} (vista coordinación)`
       : docente?.nombre;
 
-  const estadoBimestre = etiquetaEstadoBimestre(bimestreActivo, bimestreVigente, modoEdicion);
+  const estadoBimestre = etiquetaEstadoBimestre(
+    bimestreActivo,
+    bimestreVigente,
+    reabierto,
+    modoEdicion,
+  );
 
   return (
     <div className="cal-cuaderno-contexto" role="region" aria-label="Datos del curso y bimestre">

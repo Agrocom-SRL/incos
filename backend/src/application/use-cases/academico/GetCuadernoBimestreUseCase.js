@@ -41,7 +41,7 @@ export class GetCuadernoBimestreUseCase {
       throw new NotFoundError('Bimestre');
     }
 
-    const { gestionId } = await assertCuadernoCursoAccess({
+    const { gestionId, bimestreVigente } = await assertCuadernoCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
@@ -50,6 +50,12 @@ export class GetCuadernoBimestreUseCase {
       usuarioId,
       asignacionId
     });
+
+    await this.subjectEnrollmentBimesterRepository.asegurarBimestresMatriculaCurso(
+      Number(asignacionId),
+      bimestreVigente,
+      usuarioId
+    );
 
     const periodoId = await this.cuadernoRepository.obtenerPeriodoAcademicoId(
       gestionId,
