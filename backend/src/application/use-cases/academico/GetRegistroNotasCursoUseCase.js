@@ -12,8 +12,6 @@ const BIMESTRES_TOTAL = 4;
 
 const redondear = (v) => (v == null ? null : Math.round(Number(v) * 100) / 100);
 
-const ESTADO_BIMESTRE_REABIERTO = 'REABIERTO';
-
 const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
   const map = new Map();
   for (const row of filas) {
@@ -200,16 +198,16 @@ export class GetRegistroNotasCursoUseCase {
 
     const estudiantes = agruparEstudiantes(filasEstudiantes, notaMinimaAprobacion, pesosBimestres);
 
-    // Bimestres con alguna matrícula del curso en estado operativo REABIERTO (vista 116):
-    // habilitan la edición del cuaderno fuera del bimestre vigente.
+    // Bimestres REABIERTO por curso (misma señal que GET cuaderno / assertBimestreEditable).
     const bimestresReabiertos = new Set();
-    for (const row of filasEstudiantes) {
-      const num = Number(row.bimestre);
-      if (
-        Number.isFinite(num) &&
-        String(row.estado_bimestre ?? '').toUpperCase() === ESTADO_BIMESTRE_REABIERTO
-      ) {
-        bimestresReabiertos.add(num);
+    for (let numero = 1; numero <= BIMESTRES_TOTAL; numero += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const reabiertos = await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
+        asignacionIdNum,
+        numero,
+      );
+      if (reabiertos > 0) {
+        bimestresReabiertos.add(numero);
       }
     }
 

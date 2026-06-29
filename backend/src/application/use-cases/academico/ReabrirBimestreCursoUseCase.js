@@ -30,7 +30,7 @@ export class ReabrirBimestreCursoUseCase {
       throw new ValidationError('Bimestre inválido');
     }
 
-    await assertCuadernoCursoAccess({
+    const { bimestreVigente } = await assertCuadernoCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
@@ -40,16 +40,32 @@ export class ReabrirBimestreCursoUseCase {
       asignacionId,
     });
 
+    const asignacionIdNum = Number(asignacionId);
+
+    // Sin filas en bimestres_matricula el UPDATE de reabrir no afecta ninguna matrícula.
+    await this.subjectEnrollmentBimesterRepository.asegurarBimestresMatriculaCurso(
+      asignacionIdNum,
+      bimestreVigente,
+      usuarioId,
+    );
+
     await this.subjectEnrollmentBimesterRepository.reabrirBimestreCurso(
-      Number(asignacionId),
+      asignacionIdNum,
       numero,
       usuarioId,
     );
 
     const reabiertos = await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
-      Number(asignacionId),
+      asignacionIdNum,
       numero,
     );
+
+    if (reabiertos === 0) {
+      throw new ValidationError(
+        'No se pudo reabrir el bimestre: no hay matrículas de bimestre en el curso. ' +
+          'Verificá que haya estudiantes inscritos.',
+      );
+    }
 
     this.logger.info('[Calificaciones] Bimestre reabierto', {
       asignacionId,

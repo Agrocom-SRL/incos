@@ -62,8 +62,20 @@ const LeyendaEstados = () => (
   </div>
 );
 
-const TituloBimestre = ({ titulo, numero, estadoCalendario, bimestreVigente, onAbrirCuaderno }) => {
-  const estado = resolverEstadoBimestreHeader(numero, bimestreVigente, estadoCalendario);
+const TituloBimestre = ({
+  titulo,
+  numero,
+  estadoCalendario,
+  bimestreVigente,
+  reabierto = false,
+  onAbrirCuaderno,
+}) => {
+  const estado = resolverEstadoBimestreHeader(
+    numero,
+    bimestreVigente,
+    estadoCalendario,
+    reabierto,
+  );
   const cerrado = estado === ESTADO_BIMESTRE_HEADER.CERRADO;
   const enCurso = estado === ESTADO_BIMESTRE_HEADER.EN_CURSO;
   const pendiente = estado === ESTADO_BIMESTRE_HEADER.PENDIENTE;
@@ -123,7 +135,7 @@ const TituloBimestre = ({ titulo, numero, estadoCalendario, bimestreVigente, onA
   }
 
   return (
-    <Tooltip title={tooltipAbrirCuaderno(numero, estado)} placement="top">
+    <Tooltip title={tooltipAbrirCuaderno(numero, estado, reabierto)} placement="top">
       <div className={['cal-consolidado-grid__bim-head', `cal-consolidado-grid__bim-head--${estado}`].join(' ')}>
         <div className="cal-consolidado-grid__bim-top">
           <span className="cal-consolidado-grid__bim-titulo-row">
@@ -146,10 +158,12 @@ const TituloBimestre = ({ titulo, numero, estadoCalendario, bimestreVigente, onA
 };
 
 const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => {
+  const reabierto = Boolean(meta?.reabierto);
   const estadoUi = resolverEstadoBimestreHeader(
     indice + 1,
     bimestreVigente,
     meta?.estadoCalendario,
+    reabierto,
   );
   const enCurso = estadoUi === ESTADO_BIMESTRE_HEADER.EN_CURSO;
   const pendiente = estadoUi === ESTADO_BIMESTRE_HEADER.PENDIENTE;
@@ -195,6 +209,7 @@ const colBimestre = (titulo, indice, meta, bimestreVigente, onAbrirCuaderno) => 
         numero={indice + 1}
         estadoCalendario={meta?.estadoCalendario}
         bimestreVigente={bimestreVigente}
+        reabierto={reabierto}
         onAbrirCuaderno={onAbrirCuaderno}
       />
     ),

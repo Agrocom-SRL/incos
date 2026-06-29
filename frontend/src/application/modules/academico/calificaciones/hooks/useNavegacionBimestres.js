@@ -6,29 +6,42 @@ import {
 } from '../utils/calificacionesPaths.js';
 
 /**
- * Navegación ◀ ▶ entre bimestres (consolidado histórico vs cuaderno vigente).
+ * Navegación ◀ ▶ entre bimestres (consolidado histórico vs cuaderno vigente / reabierto).
  */
-export function useNavegacionBimestres(asignacionId, bimestreActivo, bimestreVigente) {
+export function useNavegacionBimestres(
+  asignacionId,
+  bimestreActivo,
+  bimestreVigente,
+  { bimestresCalendario = [] } = {},
+) {
   const navigate = useNavigate();
   const n = Number(bimestreActivo) || 1;
   const vigente = Number(bimestreVigente) || 1;
 
+  const metaReabierto = (num) =>
+    Boolean(
+      (bimestresCalendario ?? []).find((b) => Number(b.numero) === Number(num))?.reabierto,
+    );
+
   const puedeAnterior = n > 1;
-  const puedeSiguiente = n < 4 && n < vigente;
+  const puedeSiguiente = n < 4 && (n < vigente || metaReabierto(n + 1));
 
   const irABimestre = useCallback(
     (destino) => {
       const d = Number(destino);
       if (!asignacionId || !Number.isFinite(d) || d < 1 || d > 4) return;
-      if (d < vigente) {
+      const reabierto = Boolean(
+        (bimestresCalendario ?? []).find((b) => Number(b.numero) === d)?.reabierto,
+      );
+      if (d < vigente && !reabierto) {
         navigate(bimestreConsolidadoPath(asignacionId, d));
         return;
       }
-      if (d === vigente) {
+      if (d === vigente || reabierto) {
         navigate(cuadernoBimestrePath(asignacionId, d));
       }
     },
-    [asignacionId, navigate, vigente],
+    [asignacionId, navigate, vigente, bimestresCalendario],
   );
 
   const irAnterior = useCallback(() => {

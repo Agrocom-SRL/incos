@@ -238,6 +238,7 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
      * @returns {Promise<void>}
      */
     async asegurarBimestresMatriculaCurso(asignacionId, bimestreVigenteNum, usuarioId, { transaction } = {}) {
+        const vigente = Number(bimestreVigenteNum) || 1;
         await sequelize.query(
             `
             INSERT INTO bimestres_matricula (
@@ -246,7 +247,11 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
             SELECT
               mm.id,
               nums.n,
-              CASE WHEN nums.n = ? THEN 'EN_CURSO' ELSE 'PENDIENTE' END,
+              CASE
+                WHEN nums.n < ? THEN 'CERRADO'
+                WHEN nums.n = ? THEN 'EN_CURSO'
+                ELSE 'PENDIENTE'
+              END,
               TRUE,
               ?,
               ?
@@ -268,8 +273,33 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
               AND bm.id IS NULL
             `,
             {
-                replacements: [bimestreVigenteNum, usuarioId, usuarioId, asignacionId],
+                replacements: [vigente, vigente, usuarioId, usuarioId, asignacionId],
                 type: sequelize.QueryTypes.INSERT,
+                transaction,
+            },
+        );
+
+        // Corrige filas históricas creadas antes con estado PENDIENTE (deben ser CERRADO).
+        await sequelize.query(
+            `
+            UPDATE bimestres_matricula bm
+            INNER JOIN matriculas_materia mm ON mm.id = bm.matricula_materia_id
+              AND mm.deleted_at IS NULL AND mm.activo = TRUE
+            INNER JOIN asignaciones_docentes ad ON ad.oferta_curso_id = mm.oferta_curso_id
+              AND ad.deleted_at IS NULL AND ad.activo = TRUE
+            SET
+              bm.estado = 'CERRADO',
+              bm.updated_by = ?,
+              bm.updated_at = NOW()
+            WHERE ad.id = ?
+              AND bm.bimestre < ?
+              AND bm.estado = 'PENDIENTE'
+              AND bm.deleted_at IS NULL
+              AND bm.activo = TRUE
+            `,
+            {
+                replacements: [usuarioId, asignacionId, vigente],
+                type: sequelize.QueryTypes.UPDATE,
                 transaction,
             },
         );

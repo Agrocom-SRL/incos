@@ -249,6 +249,7 @@ const CuadernoPage = () => {
     cursoId,
     volverPath,
     esVistaCoordinacion,
+    bimestresCalendario,
     crearEvaluacion,
     editarEvaluacion,
     eliminarEvaluacion,
@@ -294,9 +295,14 @@ const CuadernoPage = () => {
     });
   }, [modal, notification, navigate, bimestreTitulo, cursoId, bimestreActivo, volverPath]);
 
-  const navegacionBimestres = useNavegacionBimestres(cursoId, bimestreActivo, bimestreVigente);
+  const navegacionBimestres = useNavegacionBimestres(
+    cursoId,
+    bimestreActivo,
+    bimestreVigente,
+    { bimestresCalendario },
+  );
   useBimestrePagerTeclado({
-    habilitado: Boolean(cursoId) && !isLoading,
+    habilitado: Boolean(cursoId) && !isLoading && !isRefetching,
     puedeAnterior: navegacionBimestres.puedeAnterior,
     puedeSiguiente: navegacionBimestres.puedeSiguiente,
     onAnterior: navegacionBimestres.irAnterior,
@@ -372,6 +378,7 @@ const CuadernoPage = () => {
         asignacionId={cursoId}
         bimestreActivo={bimestreActivo}
         bimestreVigente={bimestreVigente}
+        bimestresCalendario={bimestresCalendario}
       />
       <span>{tituloPagina}</span>
     </Flex>
@@ -415,6 +422,7 @@ const CuadernoPage = () => {
         bimestreTitulo={bimestreTitulo}
         bimestreActivo={bimestreActivo}
         bimestreVigente={bimestreVigente}
+        reabierto={reabierto}
         modoEdicion={modoEdicion}
         esVistaCoordinacion={esVistaCoordinacion}
         docenteNombre={docenteNombreCoordinacion}

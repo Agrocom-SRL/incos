@@ -145,6 +145,8 @@ export const mapBimestresCalendario = (filas = []) => {
       fechaInicio: b.fechaInicio ?? b.fecha_inicio ?? null,
       fechaFin: b.fechaFin ?? b.fecha_fin ?? null,
       estadoCalendario: b.estadoCalendario ?? b.estado_calendario ?? 'futuro',
+      reabierto: Boolean(b.reabierto),
+      editable: Boolean(b.editable),
     };
   });
 };

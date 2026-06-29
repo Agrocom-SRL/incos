@@ -7,7 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository.js';
 import { createCalificacionesBreadcrumbItems } from '../utils/calificacionesBreadcrumbs.js';
 import { tituloBimestre } from '../utils/bimestreTitulos.js';
-import { MIS_CURSOS_PATH, notasCursoPath, CALIFICACIONES_VIEW_ROUTE_KEY } from '../utils/calificacionesPaths.js';
+import { MIS_CURSOS_PATH, notasCursoPath, cuadernoBimestrePath, CALIFICACIONES_VIEW_ROUTE_KEY } from '../utils/calificacionesPaths.js';
 import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
 import { cargarContextoCursoRegistro } from '../utils/cargarContextoCursoRegistro.js';
 
@@ -42,6 +42,14 @@ export const useBimestreConsolidado = () => {
 
         const ctx = await cargarContextoCursoRegistro(asignacionId);
         if (cancelled) return;
+
+        const metaBimestre = (ctx.bimestresCalendario ?? []).find(
+          (b) => Number(b.numero) === bimestreNum,
+        );
+        if (metaBimestre?.reabierto) {
+          navigate(cuadernoBimestrePath(asignacionId, bimestreNum), { replace: true });
+          return;
+        }
 
         setBase({
           docente: ctx.docente,

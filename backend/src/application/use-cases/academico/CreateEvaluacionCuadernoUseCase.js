@@ -43,7 +43,7 @@ export class CreateEvaluacionCuadernoUseCase {
       throw new ValidationError('Bimestre inválido');
     }
 
-    const { gestionId } = await assertCuadernoCursoAccess({
+    const { gestionId, bimestreVigente } = await assertCuadernoCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
@@ -52,6 +52,12 @@ export class CreateEvaluacionCuadernoUseCase {
       usuarioId,
       asignacionId
     });
+
+    await this.subjectEnrollmentBimesterRepository.asegurarBimestresMatriculaCurso(
+      Number(asignacionId),
+      bimestreVigente,
+      usuarioId
+    );
 
     // Compuerta por ESTADO del bimestre (EN_CURSO o REABIERTO), no por fecha vigente.
     await assertBimestreEditable({

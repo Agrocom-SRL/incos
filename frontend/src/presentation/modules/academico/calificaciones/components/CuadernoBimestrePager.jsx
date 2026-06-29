@@ -9,11 +9,17 @@ import { useNavegacionBimestres } from '@application-academico/calificaciones/ho
 const TOOLTIP_SIGUIENTE_BLOQUEADO =
   'El bimestre siguiente aún no está habilitado en el calendario académico.';
 
-const CuadernoBimestrePager = ({ asignacionId, bimestreActivo, bimestreVigente }) => {
+const CuadernoBimestrePager = ({
+  asignacionId,
+  bimestreActivo,
+  bimestreVigente,
+  bimestresCalendario = [],
+}) => {
   const { puedeAnterior, puedeSiguiente, irAnterior, irSiguiente } = useNavegacionBimestres(
     asignacionId,
     bimestreActivo,
     bimestreVigente,
+    { bimestresCalendario },
   );
 
   const btnSiguiente = (
