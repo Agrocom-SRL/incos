@@ -41,7 +41,6 @@ import {
     HistoryOutlined,
     LineChartOutlined,
     FileTextOutlined,
-    EyeOutlined,
     BankOutlined,
     CreditCardOutlined,
     FileAddOutlined,
@@ -94,8 +93,6 @@ export const menuIconMap = {
     // Docentes (DOC)
     'DOC-LIST': UnorderedListOutlined,
     'DOC-LIC': FileTextOutlined,
-    'DOC-SUP': EyeOutlined,
-    'DOC-PAS': BankOutlined,
 
     // Finanzas (FIN)
     'FIN-PAG': CreditCardOutlined,

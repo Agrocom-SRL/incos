@@ -1,6 +1,10 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { loginValidator, validateLoginRequest } from '../validators/auth/login.validator.js';
+import {
+  cambiarMiPasswordValidator,
+  validateCambiarMiPasswordRequest,
+} from '../validators/auth/cambiar-mi-password.validator.js';
 
 /**
  * @param {Object} params
@@ -16,6 +20,13 @@ export function buildAuthRouter({ authController }) {
     (req, res, next) => authController.login(req, res, next)
   );
   router.get('/me', authenticate, (req, res, next) => authController.me(req, res, next));
+  router.patch(
+    '/me/password',
+    authenticate,
+    cambiarMiPasswordValidator,
+    validateCambiarMiPasswordRequest,
+    (req, res, next) => authController.cambiarMiPassword(req, res, next)
+  );
   router.post('/logout', authenticate, (req, res, next) =>
     authController.logout(req, res, next)
   );

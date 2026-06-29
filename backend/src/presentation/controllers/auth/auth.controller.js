@@ -7,12 +7,14 @@ export class AuthController {
    * @param {import('../../../application/use-cases/auth/LoginUseCase.js').LoginUseCase} deps.loginUseCase
    * @param {import('../../../application/use-cases/auth/LogoutUseCase.js').LogoutUseCase} deps.logoutUseCase
    * @param {import('../../../application/use-cases/auth/MeUseCase.js').MeUseCase} deps.meUseCase
+   * @param {import('../../../application/use-cases/auth/CambiarMiPasswordUseCase.js').CambiarMiPasswordUseCase} deps.cambiarMiPasswordUseCase
    * @param {import('../../../infrastructure/services/ResponseFormatter.js').ResponseFormatter} deps.responseFormatter
    */
-  constructor({ loginUseCase, logoutUseCase, meUseCase, responseFormatter }) {
+  constructor({ loginUseCase, logoutUseCase, meUseCase, cambiarMiPasswordUseCase, responseFormatter }) {
     this.loginUseCase = loginUseCase;
     this.logoutUseCase = logoutUseCase;
     this.meUseCase = meUseCase;
+    this.cambiarMiPasswordUseCase = cambiarMiPasswordUseCase;
     this.responseFormatter = responseFormatter;
   }
 
@@ -51,6 +53,25 @@ export class AuthController {
         res,
         resultado,
         { statusCode: 200, message: 'Perfil obtenido correctamente' },
+        req
+      );
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  cambiarMiPassword = async (req, res, next) => {
+    try {
+      const resultado = await this.cambiarMiPasswordUseCase.execute({
+        usuarioId: req.usuario.id,
+        username: req.usuario.username,
+        passwordActual: req.body.password_actual,
+        passwordNuevo: req.body.password_nuevo,
+      });
+      return this.responseFormatter._success(
+        res,
+        resultado,
+        { statusCode: 200, message: resultado.message },
         req
       );
     } catch (err) {

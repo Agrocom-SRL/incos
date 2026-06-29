@@ -7,9 +7,13 @@ export class MeUseCase {
   /**
    * @param {Object} deps
    * @param {import('../../../domain/interfaces/repositories/IAuthRepository.js').IAuthRepository} deps.authRepository
+   * @param {import('../../../infrastructure/repositories/UserRepository.js').UserRepository} deps.userRepository
+   * @param {import('../../../infrastructure/repositories/views/UsuarioReferenciaVinculoRepository.js').UsuarioReferenciaVinculoRepository} deps.usuarioReferenciaVinculoRepository
    */
-  constructor({ authRepository }) {
+  constructor({ authRepository, userRepository, usuarioReferenciaVinculoRepository }) {
     this.authRepository = authRepository;
+    this.userRepository = userRepository;
+    this.usuarioReferenciaVinculoRepository = usuarioReferenciaVinculoRepository;
   }
 
   /**
@@ -19,6 +23,8 @@ export class MeUseCase {
   async execute(usuarioId, sesionData) {
     const filas = await this.authRepository.findPermisosEfectivos(usuarioId);
     const permisos = mapPermisosEfectivos(filas);
+
+    const vinculoPerfil = await this.resolveVinculoPerfil(usuarioId);
 
     return {
       usuario: {
@@ -33,8 +39,29 @@ export class MeUseCase {
           is_system: Boolean(sesionData.rol_is_system),
           tipo: sesionData.rol_tipo ?? null,
         },
+        vinculo_perfil: vinculoPerfil,
       },
       permisos,
     };
+  }
+
+  /**
+   * Resuelve la persona/ficha vinculada al usuario (mismo shape que el detalle admin).
+   * Aditivo: ante ausencia de vínculo o de repos devuelve null sin romper /me.
+   * @param {number} usuarioId
+   * @returns {Promise<Object|null>}
+   */
+  async resolveVinculoPerfil(usuarioId) {
+    if (!this.userRepository || !this.usuarioReferenciaVinculoRepository) {
+      return null;
+    }
+    const row = await this.userRepository.findByIdWithRoleForAdmin(usuarioId);
+    if (!row) {
+      return null;
+    }
+    return this.usuarioReferenciaVinculoRepository.findPerfilVinculado(
+      row.tipo_referencia,
+      row.referencia_id
+    );
   }
 }

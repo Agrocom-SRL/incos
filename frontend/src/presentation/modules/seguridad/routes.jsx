@@ -8,7 +8,6 @@
 import {
   UsuarioCreateConnector,
   UsuarioDetailConnector,
-  UsuarioPermisosConnector,
   RolPermisosConnector,
   RolesListConnector,
   UsuariosListConnector,
@@ -35,11 +34,12 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/usuarios/:id/permisos',
-    element: <UsuarioPermisosConnector />,
+    element: <UsuarioDetailConnector initialTab="permisos" />,
     key: 'SEG-USUARIO-PERMISOS',
-    permiso: 'seguridad.rol.gestionar',
-    accion: 'EDITAR',
+    permiso: 'seguridad.usuario.administrar',
+    accion: 'DETALLE',
     menu: null,
+    breadcrumbParent: 'SEG-USUARIOS',
   },
   {
     path: '/seguridad/roles/:id/permisos',

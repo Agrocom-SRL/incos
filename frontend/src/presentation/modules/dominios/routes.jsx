@@ -2,9 +2,8 @@
 /**
  * Raíces de dominio de negocio (solo menú; sin página).
  * Orden 2–8: Dashboard conserva order 1.
+ * Nota: la ruta `/perfil` vive en su propio módulo (`@modules/perfil/routes.jsx`).
  */
-
-import PerfilPage from '@modules/perfil/pages/PerfilPage.jsx';
 
 export const dominiosRoutes = [
     {
@@ -56,14 +55,6 @@ export const dominiosRoutes = [
         element: null,
         key: 'SEG',
         menu: { label: 'Seguridad', module: 'SEG', order: 9 },
-    },
-    {
-        path: '/perfil',
-        key: 'PERFIL',
-        element: <PerfilPage />,
-        permiso: null,
-        accion: null,
-        menu: { label: 'Mi perfil', module: 'PERFIL', order: 10 },
     },
 ];
 

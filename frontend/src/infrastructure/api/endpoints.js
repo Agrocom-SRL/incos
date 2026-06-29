@@ -419,6 +419,7 @@ const AUTH_BASE = `${API_BASE}/auth`;
 export const AUTH_ENDPOINTS = {
   LOGIN: `${AUTH_BASE}/login`,
   ME: `${AUTH_BASE}/me`,
+  ME_PASSWORD: `${AUTH_BASE}/me/password`,
   LOGOUT: `${AUTH_BASE}/logout`,
 };
 

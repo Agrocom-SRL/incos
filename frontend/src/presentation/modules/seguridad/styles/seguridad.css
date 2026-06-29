@@ -6,15 +6,6 @@
   flex-wrap: wrap;
 }
 
-.seg-profile__sub {
-  margin: 0;
-  color: var(--text-500, #6b7280);
-}
-
-.seg-profile__stats .sd-stat__value .ant-tag {
-  margin-inline-end: 0;
-}
-
 .seg-actions {
   display: flex;
   gap: 8px;
@@ -62,13 +53,13 @@
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.08),
     0 4px 16px rgba(0, 0, 0, 0.10);
-  background: #f0f4f8;
+  background: var(--color-bg-layout, #f0f4f8);
 }
 
 /* Nav de pestañas: fondo gris base para que los tabs inactivos se vean distintos */
 .seg-picker__tabs.sd-tabs .ant-tabs-nav {
   padding: 8px 16px 0 !important;
-  background: #e8edf2 !important;
+  background: var(--color-bg-layout) !important;
   margin-bottom: 0 !important;
 }
 
@@ -85,7 +76,7 @@
 /* TABS INACTIVOS */
 .seg-picker__tabs.sd-tabs .ant-tabs-tab {
   background: var(--color-bg-layout) !important;
-  border: 1px solid #c8d0da !important;
+  border: 1px solid var(--color-border) !important;
   border-bottom: none !important;
   border-radius: 10px 10px 0 0 !important;
   margin: 0 3px !important;
@@ -102,9 +93,9 @@
 
 /* TAB ACTIVO: elevado sobre los inactivos, fondo blanco, borde superior de acento */
 .seg-picker__tabs.sd-tabs .ant-tabs-tab-active {
-  background: #ffffff !important;
-  border: 1px solid #d0d7de !important;
-  border-bottom: 1px solid #ffffff !important;
+  background: var(--color-bg-container) !important;
+  border: 1px solid var(--color-border) !important;
+  border-bottom: 1px solid var(--color-bg-container) !important;
   border-top: 3px solid var(--seg-ink, var(--primary)) !important;
   border-radius: 10px 10px 0 0 !important;
   box-shadow:
@@ -127,8 +118,8 @@
 /* PANEL del tab activo: conectado con el tab (mismo fondo blanco) */
 .seg-picker__tab-panel {
   padding: 20px 22px 24px;
-  background: #ffffff;
-  border: 1px solid #d0d7de;
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border);
   border-top: none;
   border-radius: 0 0 var(--radius-xl, 16px) var(--radius-xl, 16px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -223,7 +214,7 @@
   font-size: 12px;
 }
 
-/* UsuarioPermisosPage: margen lateral en pestañas con tablas */
+/* Tab de permisos de usuario: margen lateral en pestañas con tablas */
 .usuario-permisos__tab-gutter.sd-tab-body {
   padding-left: 28px;
   padding-right: 28px;
@@ -308,18 +299,18 @@
 }
 
 .seg-grilla-v2__capa--acceso {
-  background: #e3f2fd;
-  color: #0d47a1;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
 }
 
 .seg-grilla-v2__capa--ops {
-  background: #e8f5e9;
-  color: #1b5e20;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .seg-grilla-v2__capa--flujos {
-  background: #fff8e1;
-  color: #f57f17;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .seg-grilla-v2__th-acc {
@@ -331,24 +322,24 @@
 }
 
 .seg-grilla-v2__th-acc--acceso {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
 }
 
 .seg-grilla-v2__th-acc--ops {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .seg-grilla-v2__th-acc--flujos {
-  background: #fff8e1;
-  color: #ef6c00;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .seg-grilla__celda-na {
   text-align: center;
   color: var(--text-400, #9ca3af);
-  background: #f3f4f6;
+  background: var(--color-bg-layout, #f3f4f6);
   user-select: none;
 }
 

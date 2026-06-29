@@ -1,9 +1,9 @@
 import { SeguridadUsuarioDetailProvider } from '@/application/modules/seguridad/providers';
 import UsuarioDetailPage from '@modules/seguridad/pages/UsuarioDetailPage.jsx';
 
-const UsuarioDetailConnector = () => (
+const UsuarioDetailConnector = ({ initialTab = 'info' }) => (
   <SeguridadUsuarioDetailProvider>
-    <UsuarioDetailPage />
+    <UsuarioDetailPage initialTab={initialTab} />
   </SeguridadUsuarioDetailProvider>
 );
 
