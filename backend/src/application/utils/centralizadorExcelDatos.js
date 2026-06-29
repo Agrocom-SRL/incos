@@ -14,6 +14,13 @@
 
 export const BIMESTRE_ORDINAL = ['', 'PRIMER', 'SEGUNDO', 'TERCER', 'CUARTO'];
 
+/** Observación docente del bimestre (bimestres_matricula.observaciones vía matriz). */
+export const observacionBimestreDocente = (obsMap, bimestreNum) => {
+  if (!obsMap || typeof obsMap !== 'object') return '';
+  const raw = obsMap[bimestreNum] ?? obsMap[String(bimestreNum)];
+  return raw == null ? '' : String(raw).trim();
+};
+
 /** Sanea un fragmento para usarlo en el nombre de archivo de descarga. */
 export const sanitizarFilePart = (value) =>
   String(value ?? '')
@@ -61,13 +68,13 @@ export function construirDatosCentralizadorParalelo({ matriz, cabeceraRow, bimes
       celdas[asig.ofertaCursoId] = { nota, aprobado };
     });
 
-    // ESTADO/OBSERVACIONES del bimestre: CURSANDO mientras el bimestre esté
-    // incompleto (faltan notas); cuando TODAS las materias tienen nota →
-    // APROBADO (0 reprobadas) o REPROBADO (al menos una debajo de la mínima).
+    // ESTADO del bimestre + OBSERVACIONES (columna del Excel oficial):
+    //   - Texto docente desde bimestres_matricula.observaciones (misma fuente que la grilla).
+    //   - Si no hay texto docente y hay reprobadas, hint automático de materias bajo la mínima.
     const totalAsig = asignaturas.length;
     let estado = 'CURSANDO';
     let observacion = '';
-    const obsDocente = String(est.observacionesBimestre?.[bimestreNum] ?? '').trim();
+    const obsDocente = observacionBimestreDocente(est.observacionesBimestre, bimestreNum);
     if (totalAsig > 0 && conNota === totalAsig) {
       estado = reprobadas === 0 ? 'APROBADO' : 'REPROBADO';
     }

@@ -55,6 +55,7 @@ const CentralizadorMatrizPage = () => {
     puedeEditar: puedeEditarObservaciones,
     programarGuardado,
     registrarValorInicial,
+    flushPendientes,
   } = useCentralizadorObservacionesBimestre({
     paraleloGestionId,
     bimestre: bimestreActivo,
@@ -64,7 +65,8 @@ const CentralizadorMatrizPage = () => {
     if (bimestreActivo == null) return;
     const next = {};
     estudiantes.forEach((est) => {
-      const texto = est.observacionesBimestre?.[bimestreActivo] ?? '';
+      const obs = est.observacionesBimestre;
+      const texto = obs?.[bimestreActivo] ?? obs?.[String(bimestreActivo)] ?? '';
       next[est.estudianteId] = texto;
       registrarValorInicial(est.estudianteId, texto);
     });
@@ -94,11 +96,27 @@ const CentralizadorMatrizPage = () => {
   const sinDatos = estudiantes.length === 0 || asignaturas.length === 0;
 
   const handleExportar = useCallback(async () => {
+    const flush = await flushPendientes(
+      estudiantesConObs.map((est) => ({
+        estudianteId: est.estudianteId,
+        observacion: est.observacionBimestre,
+      })),
+    );
+    if (!flush?.success) {
+      notification.warning({
+        title: 'Observaciones no guardadas',
+        description:
+          flush?.error ||
+          'No se pudieron guardar todas las observaciones; el Excel puede quedar desactualizado.',
+      });
+    }
+
     const result = await exportar(paraleloGestionId, bimestreActivo);
     if (result.success) {
       notification.success({
         title: 'Centralizador exportado',
-        description: 'La descarga del archivo Excel del paralelo se inició correctamente.',
+        description:
+          'La descarga del Excel incluye notas del bimestre y la columna Observaciones.',
       });
     } else {
       notification.error({
@@ -106,7 +124,14 @@ const CentralizadorMatrizPage = () => {
         description: result.error || 'Reintentá en unos segundos.',
       });
     }
-  }, [exportar, paraleloGestionId, bimestreActivo, notification]);
+  }, [
+    exportar,
+    flushPendientes,
+    estudiantesConObs,
+    paraleloGestionId,
+    bimestreActivo,
+    notification,
+  ]);
 
   const pageHeader = (
     <PageHeader
@@ -122,7 +147,7 @@ const CentralizadorMatrizPage = () => {
             loading={exportando}
             disabled={isLoading || sinDatos}
             onClick={handleExportar}
-            title="Exporta solo este paralelo (una hoja) para el bimestre actual"
+            title="Exporta este paralelo y bimestre a Excel (notas + observaciones)"
           >
             Exportar
           </ActionButton>

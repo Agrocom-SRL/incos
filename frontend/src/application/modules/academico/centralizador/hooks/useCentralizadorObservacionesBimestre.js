@@ -78,10 +78,33 @@ export const useCentralizadorObservacionesBimestre = ({
     ultimoGuardadoRef.current.set(`${estudianteId}`, texto);
   }, []);
 
+  /**
+   * Cancela debounces y persiste observaciones pendientes (p. ej. antes de exportar Excel).
+   * @param {Array<{ estudianteId: number, observacion?: string|null }>} filas
+   */
+  const flushPendientes = useCallback(
+    async (filas = []) => {
+      for (const timer of timersRef.current.values()) {
+        clearTimeout(timer);
+      }
+      timersRef.current.clear();
+
+      if (!filas.length) return { success: true };
+
+      const results = await Promise.all(
+        filas.map(({ estudianteId, observacion }) => guardar(estudianteId, observacion)),
+      );
+      const failed = results.find((r) => r && !r.success && !r.skipped);
+      return failed ?? { success: true };
+    },
+    [guardar],
+  );
+
   return {
     puedeEditar,
     guardar,
     programarGuardado,
     registrarValorInicial,
+    flushPendientes,
   };
 };
