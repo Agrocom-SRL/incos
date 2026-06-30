@@ -140,11 +140,21 @@
   border-radius: 10px;
   border: 2px solid var(--color-border, #e8e8e8);
   background: var(--color-bg-container, #fff);
-  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
-.seg-cargo-radio-group .ant-radio-wrapper:hover .seg-cargo-radio__card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+/* Hover: tinte y borde con el color del cargo (--cargo-color/--cargo-tint inline por tarjeta) + elevación. */
+.seg-cargo-radio-group .ant-radio-wrapper:hover .seg-cargo-radio__card:not(.seg-cargo-radio__card--selected) {
+  border-color: color-mix(in srgb, var(--cargo-color, var(--color-primary)) 55%, var(--color-border));
+  background: color-mix(in srgb, var(--cargo-tint, transparent) 60%, var(--color-bg-container, #fff));
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--cargo-color, #000) 45%, transparent);
+  transform: translateY(-2px);
+}
+
+/* El icono también se realza en hover. */
+.seg-cargo-radio-group .ant-radio-wrapper:hover .seg-cargo-radio__card:not(.seg-cargo-radio__card--selected) .seg-cargo-radio__icon-wrap {
+  transform: scale(1.06);
+  transition: transform 0.18s ease;
 }
 
 /* El estado activo es solo borde/fondo de la tarjeta (inline); sin anillo extra del radio o del navegador. */
@@ -288,15 +298,48 @@
   margin-top: 20px;
 }
 
-/* Resumen inline del vínculo (reemplaza Alert info en el paso credenciales). */
+/* Resumen del vínculo (panel «Estudiante/Docente vinculado» en credenciales):
+   icono + cuerpo, mismo lenguaje que .seg-wizard-rol-asignado-panel. */
 .seg-wizard-vinculo-resumen {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: var(--color-border, #fff);
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.seg-wizard-vinculo-resumen__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  font-size: 24px;
+}
+
+.seg-wizard-vinculo-resumen__body {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border, #e5e7eb);
-  background: var(--border-soft, #f9fafb);
+  min-width: 0;
+}
+
+.seg-wizard-vinculo-resumen__nombre.ant-typography {
+  font-size: 16px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.seg-wizard-vinculo-resumen__detalle.ant-typography {
+  font-size: var(--font-size-sm, 13px);
+  word-break: break-word;
 }
 
 /* Wizard (variant tabs) — índice/check dentro del label de la pestaña. */
@@ -322,4 +365,89 @@
 /* Error puntual del wizard, junto al footer de navegación. */
 .wizard-form__footer-error {
   margin-bottom: 16px;
+}
+
+/* Buscador de vínculo (estudiante/docente) — plano, sin card; input propio + panel de resultados. */
+.seg-vinculo-busqueda {
+  width: 100%;
+}
+
+.seg-vinculo-busqueda__field.ant-form-item {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+/* Input de búsqueda: redondeado a la izquierda; el botón verde a la derecha. La altura
+   la da size="large" (centrado vertical correcto del texto/placeholder, sin hacks). */
+.seg-vinculo-busqueda__input.ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button {
+  border-start-end-radius: 10px;
+  border-end-end-radius: 10px;
+}
+
+.seg-vinculo-busqueda__input.ant-input-search .ant-input-affix-wrapper,
+.seg-vinculo-busqueda__input.ant-input-search>.ant-input-group>.ant-input:first-child {
+  border-start-start-radius: 10px;
+  border-end-start-radius: 10px;
+}
+
+/* Panel de resultados: superficie única (sin doble-card); los ítems van planos dentro. */
+.seg-vinculo-busqueda__results {
+  margin-top: 4px;
+  min-height: 88px;
+}
+
+.seg-vinculo-busqueda__results--filled {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--color-border-secondary, #eee);
+  border-radius: 12px;
+  background: var(--color-bg-container, #fff);
+}
+
+/* Estado vacío (sin búsqueda): aire alrededor de la ilustración, sin borde. */
+.seg-vinculo-busqueda__results:not(.seg-vinculo-busqueda__results--filled) .ant-empty {
+  margin: 16px 0;
+}
+
+/* Ítems de resultado: filas planas (sin la card gris por defecto de .list-item). */
+.seg-vinculo-busqueda__results .list-item {
+  margin-bottom: 2px;
+  padding: 10px 12px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.seg-vinculo-busqueda__results .list-item:last-child {
+  margin-bottom: 0;
+}
+
+.seg-vinculo-busqueda__results .list-item:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
+  border-color: transparent;
+}
+
+/* Seleccionado: tinte suave + acento lateral (no fondo primario sólido). */
+.seg-vinculo-busqueda__results .list-item.active {
+  background-color: color-mix(in srgb, var(--color-primary) 28%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 30%, transparent) !important;
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.seg-vinculo-busqueda__results .list-item.active .ant-typography,
+.seg-vinculo-busqueda__results .list-item.active .ant-typography strong {
+  color: var(--color-primary) !important;
+}
+
+/* Avatar del ítem: círculo con tinte primario. */
+.seg-vinculo-busqueda__results .list-item .list-item-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.seg-vinculo-busqueda__results .list-item .list-item-avatar .anticon {
+  font-size: 20px;
 }

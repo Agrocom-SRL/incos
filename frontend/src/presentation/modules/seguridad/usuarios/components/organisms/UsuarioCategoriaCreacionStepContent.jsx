@@ -16,30 +16,32 @@ import UsuarioFormSection from './UsuarioFormSection.jsx';
 
 const { Text } = Typography;
 
+// Mismos grupos que el listado de Usuarios (Sistema / Estudiante / Docente / Administrativos),
+// para que el tipo de alta se lea según el rol que tendrá la cuenta.
 const OPCIONES = [
   {
     value: 'ACCESO_SISTEMA',
-    label: 'Cuenta solo sistema',
+    label: 'Sistema',
     description: 'Administrador del sistema, sin ficha institucional.',
     icon: SafetyCertificateOutlined,
   },
   {
-    value: 'PERSONAL_INSTITUCIONAL',
-    label: 'Personal institucional',
-    description: 'Cargo en el instituto (rector, directivo o secretaría).',
-    icon: TeamOutlined,
-  },
-  {
     value: 'ASIGNAR_ESTUDIANTE',
-    label: 'Acceso a estudiante',
-    description: 'Estudiante ya registrado, sin usuario de acceso aún.',
+    label: 'Estudiante',
+    description: 'Cuenta para un estudiante ya registrado, sin acceso aún.',
     icon: UserOutlined,
   },
   {
     value: 'ASIGNAR_DOCENTE',
-    label: 'Acceso a docente',
-    description: 'Docente ya registrado, sin usuario de acceso aún.',
+    label: 'Docente',
+    description: 'Cuenta para un docente ya registrado, sin acceso aún.',
     icon: SolutionOutlined,
+  },
+  {
+    value: 'PERSONAL_INSTITUCIONAL',
+    label: 'Administrativos',
+    description: 'Acceso de la administración: rectorado, dirección o secretaría.',
+    icon: TeamOutlined,
   },
 ];
 

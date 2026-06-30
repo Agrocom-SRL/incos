@@ -3,14 +3,18 @@
  * El rol se muestra en panel blanco con borde y textos en color del catálogo (`getWizardRoleResumenVisual`);
  * no hay selector de `rol_id` aquí. El valor queda por el paso perfil o por reglas en `UsuarioCreatePage`.
  */
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Col, Flex, Form, Input, Row, Space, Typography } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import UsuarioFormSection from './UsuarioFormSection.jsx';
 import { createUsuarioWizardCredencialesFields } from '@modules/seguridad/usuarios/config/usuarioWizardCredencialesFields.jsx';
 import { TIPO_CONFIG } from '@modules/seguridad/roles/constants/rolTipoConfig.js';
 import { getWizardRoleResumenVisual } from '@modules/seguridad/usuarios/constants/usuarioCargoInstitucionalVisual.jsx';
 
 const { Paragraph, Text } = Typography;
+
+/** C.I. como credencial por defecto: solo dígitos (sin extensión). */
+const soloDigitosCI = (valor) => String(valor ?? '').replace(/\D/g, '');
 
 function resolveSelectedRole(rolId, rolesCatalog) {
   if (rolId == null || rolId === '') return null;
@@ -167,6 +171,20 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
     [rolId, rolesCatalog]
   );
 
+  // C.I. (sin extensión) como usuario y contraseña por defecto (editable): se rellena al llegar al
+  // paso si los campos están vacíos. Solo para estudiante/docente, donde la regla de contraseña se
+  // relajó a mín. 4 (en admin/personal sigue exigiendo 8 y un C.I. corto fallaría).
+  useEffect(() => {
+    if (isEditMode || !esVinculoReferencia) return;
+    const credencial = soloDigitosCI(vinculoCi);
+    if (credencial.length < 4) return;
+    const patch = {};
+    if (!form.getFieldValue('username')) patch.username = credencial;
+    if (!form.getFieldValue('password')) patch.password = credencial;
+    if (!form.getFieldValue('password_confirm')) patch.password_confirm = credencial;
+    if (Object.keys(patch).length > 0) form.setFieldsValue(patch);
+  }, [isEditMode, esVinculoReferencia, vinculoCi, form]);
+
   const credencialesDescription = useMemo(() => {
     const lines = [];
 
@@ -231,14 +249,13 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
     personalEmail,
   ]);
 
-  const vinculoResumenDescription = useMemo(() => {
-    const lines = [];
-    if (vinculoNombre) lines.push(`Nombre: ${vinculoNombre}`);
-    if (vinculoCi) lines.push(`CI: ${vinculoCi}`);
-    if (vinculoCodigo) lines.push(`Código: ${vinculoCodigo}`);
-    if (vinculoEmail) lines.push(`Correo: ${vinculoEmail}`);
-    return lines.join(' | ');
-  }, [vinculoNombre, vinculoCi, vinculoCodigo, vinculoEmail]);
+  const vinculoDetalle = useMemo(() => {
+    const parts = [];
+    if (vinculoCi) parts.push(`CI ${vinculoCi}`);
+    if (vinculoCodigo) parts.push(`Cód. ${vinculoCodigo}`);
+    if (vinculoEmail) parts.push(vinculoEmail);
+    return parts.join('  ·  ');
+  }, [vinculoCi, vinculoCodigo, vinculoEmail]);
 
   const mostrarResumenVinculo = useMemo(() => {
     if (!esVinculoReferencia) return false;
@@ -251,7 +268,8 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
   );
 
   return (
-    <Space orientation="vertical" size={24} style={{ width: '100%' }} className="usuario-wizard-step">
+    <div className="usuario-wizard-step">
+      {/* Campo oculto fuera del Space: dentro añadiría un gap superior (item vacío). */}
       <Form.Item
         name="rol_id"
         preserve
@@ -266,8 +284,9 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
         <Input type="hidden" />
       </Form.Item>
 
-      <UsuarioFormSection
-        title="Rol de acceso al sistema"
+      <Space orientation="vertical" size={24} style={{ width: '100%' }}>
+        <UsuarioFormSection
+          title="Rol de acceso al sistema"
         beforeFields={
           <>
             <Paragraph type="secondary" style={{ marginBottom: 0 }}>
@@ -277,12 +296,19 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
               {mostrarResumenVinculo ? (
                 <Col xs={24} md={12}>
                   <div className="seg-wizard-vinculo-resumen">
-                    <Text type="secondary">
-                      {estudianteId ? 'Estudiante vinculado' : 'Docente vinculado'}
-                    </Text>
-                    <Text strong>
-                      {vinculoResumenDescription || 'Se vinculó una persona en el paso anterior.'}
-                    </Text>
+                    <span className="seg-wizard-vinculo-resumen__icon">
+                      <UserOutlined />
+                    </span>
+                    <div className="seg-wizard-vinculo-resumen__body">
+                      <Text strong className="seg-wizard-vinculo-resumen__nombre">
+                        {vinculoNombre || 'Persona vinculada'}
+                      </Text>
+                      {vinculoDetalle ? (
+                        <Text type="secondary" className="seg-wizard-vinculo-resumen__detalle">
+                          {vinculoDetalle}
+                        </Text>
+                      ) : null}
+                    </div>
                   </div>
                 </Col>
               ) : null}
@@ -294,13 +320,14 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
         }
       />
 
-      <UsuarioFormSection
-        title="Credenciales y acceso al sistema"
-        description={credencialesDescription}
-        fields={flatFields}
-        form={form}
-        resolveOptions={() => []}
-      />
-    </Space>
+        <UsuarioFormSection
+          title="Credenciales y acceso al sistema"
+          description={credencialesDescription}
+          fields={flatFields}
+          form={form}
+          resolveOptions={() => []}
+        />
+      </Space>
+    </div>
   );
 }

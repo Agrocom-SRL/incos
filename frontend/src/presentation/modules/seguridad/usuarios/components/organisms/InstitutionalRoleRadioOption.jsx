@@ -20,8 +20,10 @@ export default function InstitutionalRoleRadioOption({ role, selected }) {
   return (
     <Radio value={role.id}>
       <div
-        className="seg-cargo-radio__card"
+        className={`seg-cargo-radio__card${selected ? ' seg-cargo-radio__card--selected' : ''}`}
         style={{
+          '--cargo-color': visual.color,
+          '--cargo-tint': visual.tint,
           borderColor: selected ? visual.color : undefined,
           background: selected ? visual.tint : undefined,
         }}

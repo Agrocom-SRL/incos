@@ -5,26 +5,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Form, Input } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { FormSection } from '@molecules';
-import { Text } from '@atoms';
+import { DataList } from '@molecules';
+import { Text, SearchBar } from '@atoms';
 import UsuarioFormSection from './UsuarioFormSection.jsx';
 import usuarioAltaLookupRepository from '@/infrastructure/repositories/seguridad/UsuarioAltaLookupRepository.js';
 import { buildFullName } from '@application/utils/formatters';
 
 const DEBOUNCE_MS = 380;
-
-function labelEstudiante(e) {
-  const cod = e.codigoEstudiante ?? e.codigo_estudiante ?? '';
-  const nom = buildFullName(e.nombres, e.apellidoPaterno, e.apellidoMaterno, '');
-  const ci = e.ci && e.expedicion ? `${e.ci} ${e.expedicion}` : e.ci || '';
-  return [cod && `Cód. ${cod}`, nom || '—', ci && `CI ${ci}`].filter(Boolean).join(' · ');
-}
-
-function labelDocente(d) {
-  const nom = buildFullName(d.nombres, d.apellidoPaterno, d.apellidoMaterno, '');
-  const ci = d.ci && d.expedicion ? `${d.ci} ${d.expedicion}` : d.ci || '';
-  return [nom || '—', ci && `CI ${ci}`].filter(Boolean).join(' · ');
-}
 
 function nombreCompletoReferencia(row) {
   if (!row) return '';
@@ -196,50 +183,29 @@ export default function UsuarioWizardVinculoBusqueda({
 
   const buildListItem = useCallback(
     (row) => {
-      const title = row.etiqueta_prefill || (isEstudiante ? labelEstudiante(row) : labelDocente(row));
-      const extra = [];
-      if (row.ci && row.expedicion) extra.push(`CI: ${row.ci} ${row.expedicion}`);
-      if (isEstudiante && (row.codigoEstudiante || row.codigo_estudiante)) {
-        extra.push(`Código: ${row.codigoEstudiante ?? row.codigo_estudiante}`);
-      }
-      const caption = extra.length > 0 ? extra.join(' | ') : null;
+      const title = row.etiqueta_prefill || nombreCompletoReferencia(row) || '—';
+      const detalles = [];
+      const ci = ciCompletoReferencia(row);
+      if (ci) detalles.push(`CI ${ci}`);
+      const codigo = codigoReferencia(row);
+      if (isEstudiante && codigo) detalles.push(`Cód. ${codigo}`);
+      const email = row.emailPersonal ?? row.email_personal;
+      if (email) detalles.push(email);
       return {
         avatar: <UserOutlined />,
         title,
-        caption: caption ? <Text type="secondary">{caption}</Text> : null,
+        caption: detalles.length > 0 ? <Text type="secondary">{detalles.join('  ·  ')}</Text> : null,
       };
     },
     [isEstudiante]
   );
 
-  const fields = [
-    {
-      name: `${fieldName}_search`,
-      type: 'search',
-      label: isEstudiante ? 'Buscar Estudiante' : 'Buscar Docente',
-      placeholder,
-      required: true,
-      span: 24,
-      allowClear: true,
-      onSearch,
-      disabled: isEditMode,
-    },
-    {
-      name: `${fieldName}_results`,
-      type: 'list',
-      label: '',
-      span: 24,
-      required: false,
-      items: rows,
-      loading: fetching,
-      emptyMessage: `No se encontraron ${isEstudiante ? 'estudiantes' : 'docentes'} sin usuario asociado.`,
-      renderItem: buildListItem,
-      onSelect: onSelectRow,
-      selectedItem: selectedRow,
-      isSelected: (item) => Number(item?.id) === selectedId,
-      disabled: isEditMode,
-    },
-  ];
+  const onSearchInputChange = useCallback(
+    (event) => onSearch(event?.target?.value ?? ''),
+    [onSearch]
+  );
+
+  const tieneResultados = rows.length > 0;
 
   return (
     <div className="usuario-wizard-step">
@@ -264,11 +230,44 @@ export default function UsuarioWizardVinculoBusqueda({
         <Form.Item name="vinculo_codigo_display" preserve hidden>
           <Input type="hidden" />
         </Form.Item>
-        <FormSection title={null} fields={fields} form={form} resolveOptions={() => []} readOnly={false} />
+
+        <div className="seg-vinculo-busqueda">
+          <Form.Item
+            label={isEstudiante ? 'Buscar estudiante' : 'Buscar docente'}
+            required
+            className="seg-vinculo-busqueda__field"
+          >
+            <SearchBar
+              className="seg-vinculo-busqueda__input"
+              size="medium"
+              placeholder={placeholder}
+              allowClear
+              disabled={isEditMode}
+              onSearch={onSearch}
+              onChange={onSearchInputChange}
+            />
+          </Form.Item>
+
+          <div
+            className={`seg-vinculo-busqueda__results${tieneResultados || fetching ? ' seg-vinculo-busqueda__results--filled' : ''}`}
+          >
+            <DataList
+              data={rows}
+              loading={fetching}
+              loadingText={`Buscando ${isEstudiante ? 'estudiantes' : 'docentes'}…`}
+              emptyMessage={`No se encontraron ${isEstudiante ? 'estudiantes' : 'docentes'} sin usuario asociado.`}
+              renderItem={buildListItem}
+              onSelect={isEditMode ? undefined : onSelectRow}
+              selectedItem={selectedRow}
+              isSelected={(item) => Number(item?.id) === selectedId}
+            />
+          </div>
+        </div>
+
         <Text type="secondary">
           {isEditMode
             ? 'En edición no se permite cambiar el vínculo de referencia para mantener consistencia del usuario.'
-            : 'Solo se muestran registros que todavia no tienen usuario asociado para evitar duplicar accesos.'}
+            : 'Solo se muestran registros que todavía no tienen usuario asociado para evitar duplicar accesos.'}
         </Text>
       </UsuarioFormSection>
     </div>

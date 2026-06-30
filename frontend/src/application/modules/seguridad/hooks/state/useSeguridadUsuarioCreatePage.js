@@ -247,7 +247,7 @@ export const useSeguridadUsuarioCreatePage = () => {
     () => [
       { title: 'Tipo de alta', formTitle: isEditMode ? 'Editar usuario' : 'Nuevo usuario', sections: ['categoria'], config: { categoria: {} } },
       { title: 'Datos del perfil', formTitle: 'Ficha o vínculo institucional', sections: ['perfil'], config: { perfil: {} } },
-      { title: 'Credenciales y rol', formTitle: 'Acceso al sistema', sections: ['cuenta'], config: { cuenta: {} } },
+      { title: 'Credenciales', formTitle: 'Acceso al sistema', sections: ['cuenta'], config: { cuenta: {} } },
     ],
     [isEditMode]
   );
