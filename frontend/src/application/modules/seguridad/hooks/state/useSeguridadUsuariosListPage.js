@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { useCasesFactory } from '@container';
 import { useServerPaginatedList } from '@application/utils/hooks/useServerPaginatedList.js';
-import { createUsuariosTableColumns } from '@modules/seguridad/config/usuariosTableColumns.jsx';
-import { USUARIOS_CATEGORIA_DEFAULT } from '@modules/seguridad/config/usuariosCategoriaTabs.jsx';
+import { createUsuariosTableColumns } from '@modules/seguridad/usuarios/config/usuariosTableColumns.jsx';
+import { USUARIOS_CATEGORIA_DEFAULT } from '@modules/seguridad/usuarios/config/usuariosCategoriaTabs.jsx';
 
 function errorMessage(error) {
   return error?.error?.message || error?.message || 'Error';

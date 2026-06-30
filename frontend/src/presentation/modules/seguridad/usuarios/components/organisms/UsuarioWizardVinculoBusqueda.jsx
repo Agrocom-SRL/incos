@@ -5,9 +5,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Form, Input } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { Card } from '@atoms';
 import { FormSection } from '@molecules';
 import { Text } from '@atoms';
+import UsuarioFormSection from './UsuarioFormSection.jsx';
 import usuarioAltaLookupRepository from '@/infrastructure/repositories/seguridad/UsuarioAltaLookupRepository.js';
 import { buildFullName } from '@application/utils/formatters';
 
@@ -59,6 +59,7 @@ export default function UsuarioWizardVinculoBusqueda({
   fieldName,
   placeholder = 'Escriba al menos 2 caracteres para buscar',
   prefillDocenteUsuario,
+  prefillEstudianteUsuario,
   isEditMode = false,
 }) {
   const selectedFieldValue = Form.useWatch(fieldName, form);
@@ -155,6 +156,40 @@ export default function UsuarioWizardVinculoBusqueda({
     }
   }, [kind, fieldName, prefillDocenteUsuario, form]);
 
+  useEffect(() => {
+    if (kind !== 'estudiante' || fieldName !== 'estudiante_id' || !prefillEstudianteUsuario?.estudianteId) return;
+    const id = Number(prefillEstudianteUsuario.estudianteId);
+    if (!Number.isFinite(id) || id < 1) return;
+    const label = [
+      prefillEstudianteUsuario.codigo && `Cód. ${prefillEstudianteUsuario.codigo}`,
+      prefillEstudianteUsuario.nombreCompleto,
+      prefillEstudianteUsuario.ciCompleto && `CI ${prefillEstudianteUsuario.ciCompleto}`,
+    ]
+      .filter(Boolean)
+      .join(' · ') || `Estudiante #${id}`;
+    const opt = {
+      id,
+      nombres: prefillEstudianteUsuario.nombreCompleto || '',
+      apellidoPaterno: '',
+      apellidoMaterno: '',
+      codigo_estudiante: prefillEstudianteUsuario.codigo || null,
+      email_personal: prefillEstudianteUsuario.emailPersonal || null,
+      ci: prefillEstudianteUsuario.ciCompleto || null,
+      etiqueta_prefill: label,
+    };
+    setRows((prev) => (prev.some((o) => Number(o.id) === id) ? prev : [opt, ...prev]));
+    const current = form.getFieldValue(fieldName);
+    if (current !== id) {
+      form.setFieldsValue({
+        [fieldName]: id,
+        vinculo_nombre_display: prefillEstudianteUsuario.nombreCompleto || undefined,
+        vinculo_email_display: prefillEstudianteUsuario.emailPersonal || undefined,
+        vinculo_ci_display: prefillEstudianteUsuario.ciCompleto || undefined,
+        vinculo_codigo_display: prefillEstudianteUsuario.codigo || undefined,
+      });
+    }
+  }, [kind, fieldName, prefillEstudianteUsuario, form]);
+
   const selectedId = Number(selectedFieldValue || 0);
   const isEstudiante = kind === 'estudiante';
   const selectedRow = rows.find((row) => Number(row.id) === selectedId) || null;
@@ -218,7 +253,7 @@ export default function UsuarioWizardVinculoBusqueda({
 
   return (
     <div className="usuario-wizard-step">
-      <Card className="form-section" variant="outlined" shadow={false} headerColor="primary" title={title}>
+      <UsuarioFormSection title={title}>
         <Form.Item
           name={fieldName}
           preserve
@@ -245,7 +280,7 @@ export default function UsuarioWizardVinculoBusqueda({
             ? 'En edición no se permite cambiar el vínculo de referencia para mantener consistencia del usuario.'
             : 'Solo se muestran registros que todavia no tienen usuario asociado para evitar duplicar accesos.'}
         </Text>
-      </Card>
+      </UsuarioFormSection>
     </div>
   );
 }

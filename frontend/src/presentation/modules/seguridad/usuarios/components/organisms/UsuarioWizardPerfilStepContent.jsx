@@ -2,11 +2,11 @@
  * Paso del wizard: ficha personal, vínculo institucional con rol/referencias, o buscador estudiante/docente.
  */
 import { useMemo } from 'react';
-import { Form } from 'antd';
+import { Flex, Form } from 'antd';
 import UsuarioWizardPersonalFichaForm from './UsuarioWizardPersonalFichaForm.jsx';
 import UsuarioWizardCargoInstitucionalBlock from './UsuarioWizardCargoInstitucionalBlock.jsx';
 import UsuarioWizardVinculoBusqueda from './UsuarioWizardVinculoBusqueda.jsx';
-import { INSTITUTIONAL_ROLE_ORDER, sortInstitutionalRoles } from '@modules/seguridad/constants/usuarioCargoInstitucionalVisual.jsx';
+import { INSTITUTIONAL_ROLE_ORDER, sortInstitutionalRoles } from '@modules/seguridad/usuarios/constants/usuarioCargoInstitucionalVisual.jsx';
 
 /** Códigos de rol institucional (tabla `roles` / seeder 53): solo estos, nunca ADMIN/DOCENTE/ESTUDIANTE. */
 const CODIGOS_ROL_INSTITUCIONAL = new Set(INSTITUTIONAL_ROLE_ORDER);
@@ -15,6 +15,7 @@ export default function UsuarioWizardPerfilStepContent({
   form,
   rolesCatalog = [],
   prefillDocenteUsuario,
+  prefillEstudianteUsuario,
   isEditMode = false,
 }) {
   const watchedCategoria = Form.useWatch('categoria_creacion', form);
@@ -32,10 +33,18 @@ export default function UsuarioWizardPerfilStepContent({
         kind="estudiante"
         fieldName="estudiante_id"
         title="Vínculo con estudiante"
+        prefillEstudianteUsuario={prefillEstudianteUsuario}
         intro={
           <>
             Busque al estudiante que ya está registrado y <strong>aún no tiene cuenta de acceso</strong>. Solo
             aparecen candidatos sin usuario asignado.
+            {prefillEstudianteUsuario?.estudianteId ? (
+              <>
+                {' '}
+                Si llegó desde la ficha del estudiante, el vínculo ya viene seleccionado; puede cambiarlo buscando
+                de nuevo.
+              </>
+            ) : null}
           </>
         }
         isEditMode={isEditMode}
@@ -85,7 +94,7 @@ export default function UsuarioWizardPerfilStepContent({
 
   if (categoria === 'PERSONAL_INSTITUCIONAL') {
     return (
-      <>
+      <Flex vertical gap="large">
         <UsuarioWizardPersonalFichaForm
           form={form}
           intro={
@@ -97,7 +106,7 @@ export default function UsuarioWizardPerfilStepContent({
           }
         />
         <UsuarioWizardCargoInstitucionalBlock rolesInstitucional={rolesInstitucional} isEditMode={isEditMode} />
-      </>
+      </Flex>
     );
   }
 

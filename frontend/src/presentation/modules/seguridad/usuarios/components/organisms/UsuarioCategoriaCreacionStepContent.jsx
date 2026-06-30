@@ -12,7 +12,7 @@ import {
   UserOutlined,
   SolutionOutlined,
 } from '@ant-design/icons';
-import { Card } from '@atoms';
+import UsuarioFormSection from './UsuarioFormSection.jsx';
 
 const { Text } = Typography;
 
@@ -61,11 +61,9 @@ export default function UsuarioCategoriaCreacionStepContent({ form, isEditMode =
   }, [form]);
 
   return (
-    <Card
-      className="wizard-selection-cards__section"
-      title={<span className="wizard-selection-cards__card-title">Seleccione el tipo de alta</span>}
-      shadow
-      headerColor="primary"
+    <UsuarioFormSection
+      title="Seleccione el tipo de alta"
+      description="Determina qué datos pedirá el asistente y el rol de acceso que se asignará."
     >
       <Form.Item
         name="categoria_creacion"
@@ -101,6 +99,6 @@ export default function UsuarioCategoriaCreacionStepContent({ form, isEditMode =
           </div>
         </Radio.Group>
       </Form.Item>
-    </Card>
+    </UsuarioFormSection>
   );
 }

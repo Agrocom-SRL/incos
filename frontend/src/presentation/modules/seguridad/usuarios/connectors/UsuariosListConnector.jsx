@@ -1,5 +1,5 @@
 import { SeguridadUsuariosListProvider } from '@/application/modules/seguridad/providers';
-import UsuariosListPage from '@modules/seguridad/pages/UsuariosListPage.jsx';
+import UsuariosListPage from '@modules/seguridad/usuarios/pages/UsuariosListPage.jsx';
 
 const UsuariosListConnector = () => (
   <SeguridadUsuariosListProvider>

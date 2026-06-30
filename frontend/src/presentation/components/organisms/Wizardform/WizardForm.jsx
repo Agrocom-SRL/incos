@@ -31,9 +31,10 @@
  */
 
 import React from 'react';
-import { Steps, Form } from 'antd';
+import { Steps, Form, Tabs, Alert } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
+import ListPanelHeader from '@molecules/ListPanelHeader';
 import { useWizardForm } from './hooks/useWizardForm';
 
 const WizardForm = ({
@@ -61,12 +62,18 @@ const WizardForm = ({
   prevLabel = 'Anterior',
   nextLabel = 'Siguiente',
   finishLabel = 'Finalizar Registro',
+  // ADITIVO: "steps" = Steps clásico dentro de FormCard (comportamiento histórico);
+  // "tabs" = workspace único con pestañas (mismo lenguaje visual que CFG → Académico).
+  variant = 'steps',
+  // Mensaje de error puntual mostrado junto al footer del wizard (no permanente arriba de la página).
+  errorMessage = '',
 }) => {
   // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
   const {
     currentStep,
     next,
     prev,
+    goTo,
     form,
     allFormValues, // Valores actuales del formulario (reactivo)
     currentStepConfig,
@@ -77,6 +84,14 @@ const WizardForm = ({
     conditionalLoaders,
     initialStep,
   });
+
+  // Paso más lejano alcanzado: gobierna qué pestañas son navegables por click (solo visitadas/completadas).
+  // Se inicializa con initialStep para que, al abrir directo en un paso avanzado (vínculo y rol prefijados),
+  // los pasos previos cuenten como completados y el usuario pueda finalizar sin recorrerlos.
+  const [maxStepReached, setMaxStepReached] = React.useState(initialStep);
+  React.useEffect(() => {
+    setMaxStepReached((prevMax) => Math.max(prevMax, currentStep, initialStep));
+  }, [currentStep, initialStep]);
 
   // Notificar cambios en valores del formulario al componente padre
   React.useEffect(() => {
@@ -128,58 +143,68 @@ const WizardForm = ({
     return null;
   }
 
-  return (
-    <FormCard 
-      className={className}
-      title={currentStepConfig.formTitle || null}
-    >
-      {/* Steps indicator */}
-      <Steps
-        current={currentStep}
-        items={steps.map((step) => ({
-          title: step.title,
-        }))}
-        style={{ marginBottom: 32 }}
-      />
+  // Navegación por click de pestaña (solo variant="tabs"):
+  // - hacia un paso ya visitado/completado (<= maxStepReached) → salto directo
+  // - al paso inmediatamente siguiente → pasa por handleNext (respeta onValidateBeforeNext)
+  // - a pasos futuros no adyacentes → se ignora
+  const handleTabChange = (key) => {
+    const target = Number(key);
+    if (!Number.isInteger(target) || target === currentStep) return;
+    if (target <= maxStepReached) {
+      goTo(target);
+      return;
+    }
+    if (target === currentStep + 1) {
+      handleNext();
+    }
+  };
 
-      {/* Contenido del paso actual */}
-      <Form
-        form={form}
-        layout="horizontal"
-        initialValues={initialValues}
-      >
-        {currentStepConfig.sections.map((sectionKey) => {
-          const section = currentStepConfig.config[sectionKey];
-          if (!section) return null;
+  // Cuerpo del paso actual (compartido por ambas variantes).
+  const stepBody = (
+    <Form form={form} layout={variant === 'tabs' ? 'vertical' : 'horizontal'} initialValues={initialValues}>
+      {currentStepConfig.sections.map((sectionKey) => {
+        const section = currentStepConfig.config[sectionKey];
+        if (!section) return null;
 
-          // Usar función helper del hook para verificar si debe mostrarse
-          if (!shouldShowSection(section)) {
-            return null;
+        // Usar función helper del hook para verificar si debe mostrarse
+        if (!shouldShowSection(section)) {
+          return null;
+        }
+
+        // Contenido custom por página: la página construye el panel (inscripciones, estudiantes, etc.)
+        if (typeof renderSectionContent === 'function') {
+          const customContent = renderSectionContent(currentStep, sectionKey, section, form);
+          if (customContent != null) {
+            return <React.Fragment key={sectionKey}>{customContent}</React.Fragment>;
           }
+        }
 
-          // Contenido custom por página: la página construye el panel (inscripciones, estudiantes, etc.)
-          if (typeof renderSectionContent === 'function') {
-            const customContent = renderSectionContent(currentStep, sectionKey, section, form);
-            if (customContent != null) {
-              return <React.Fragment key={sectionKey}>{customContent}</React.Fragment>;
-            }
-          }
+        return (
+          <FormSection
+            key={sectionKey}
+            title={section.title}
+            fields={section.fields}
+            form={form}
+            resolveOptions={resolveOptions}
+            minAge={minAge}
+            readOnly={viewMode}
+          />
+        );
+      })}
+    </Form>
+  );
 
-          return (
-            <FormSection
-              key={sectionKey}
-              title={section.title}
-              fields={section.fields}
-              form={form}
-              resolveOptions={resolveOptions}
-              minAge={minAge}
-              readOnly={viewMode}
-            />
-          );
-        })}
-      </Form>
-
-      {/* Botones de navegación */}
+  // Footer de navegación + error puntual (compartido).
+  const wizardFooter = (
+    <>
+      {errorMessage ? (
+        <Alert
+          type="error"
+          showIcon
+          title={errorMessage}
+          className="wizard-form__footer-error"
+        />
+      ) : null}
       <WizardActions
         currentStep={currentStep}
         totalSteps={steps.length}
@@ -194,6 +219,74 @@ const WizardForm = ({
         nextLabel={nextLabel}
         finishLabel={finishLabel}
       />
+    </>
+  );
+
+  // Variante "tabs": workspace único con pestañas (mismo shell que AcademicoPage).
+  if (variant === 'tabs') {
+    const tabItems = steps.map((step, index) => {
+      const completed = index < maxStepReached;
+      const navigable = index <= maxStepReached || index === currentStep + 1;
+      return {
+        key: String(index),
+        disabled: !navigable,
+        label: (
+          <span className="sd-tab-label">
+            <span className="wizard-form__tab-index" aria-hidden>
+              {completed ? '✓' : index + 1}
+            </span>
+            {step.title}
+          </span>
+        ),
+        children:
+          index === currentStep ? (
+            <div className="cfg-academico-tab-panel">
+              {stepBody}
+              <div className="cfg-academico-form-workspace__footer">{wizardFooter}</div>
+            </div>
+          ) : null,
+      };
+    });
+
+    return (
+      <section className={`cfg-academico-workspace cfg-academico-form-workspace ${className}`.trim()}>
+        <header className="cfg-academico-workspace__header">
+          <ListPanelHeader title={currentStepConfig.formTitle || 'Formulario'} />
+        </header>
+
+        <div className="sd-tabs-shell cfg-academico-tabs-shell">
+          <Tabs
+            className="sd-tabs cfg-academico-workspace__tabs"
+            activeKey={String(currentStep)}
+            items={tabItems}
+            onChange={handleTabChange}
+            destroyOnHidden={false}
+          />
+        </div>
+      </section>
+    );
+  }
+
+  // Variante "steps" (histórica): Steps clásico dentro de FormCard.
+  return (
+    <FormCard
+      className={className}
+      title={currentStepConfig.formTitle || null}
+    >
+      {/* Steps indicator */}
+      <Steps
+        current={currentStep}
+        items={steps.map((step) => ({
+          title: step.title,
+        }))}
+        style={{ marginBottom: 32 }}
+      />
+
+      {/* Contenido del paso actual */}
+      {stepBody}
+
+      {/* Botones de navegación */}
+      {wizardFooter}
     </FormCard>
   );
 };

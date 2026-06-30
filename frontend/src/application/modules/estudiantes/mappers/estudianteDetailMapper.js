@@ -39,6 +39,7 @@ export const estudianteDetailMapper = (dataBackend) => {
     academicData,
     transitability,
     transfer,
+    access,
   } = normalizedData;
 
   // Construir CI completo y nombre completo usando utilidades compartidas
@@ -198,6 +199,8 @@ export const estudianteDetailMapper = (dataBackend) => {
     transfer: transfer || null,
     // Catálogos (managements, scholarships) para mostrar nombres en tab Académico
     catalogs: catalogs || {},
+    // Cuenta de acceso vinculada (mismo contrato que docente): { tieneAcceso, usuarioId, usuario, estadoCuenta, rol }
+    access: access || { tieneAcceso: false },
   };
 };
 

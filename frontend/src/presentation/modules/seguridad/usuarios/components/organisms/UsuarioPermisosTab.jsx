@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Alert, Table, Tabs, Tag, Typography } from 'antd';
+import { Table, Tabs, Tag, Typography } from 'antd';
 import {
   CheckCircleOutlined,
   DeleteOutlined,
@@ -10,7 +10,7 @@ import {
 import { useSeguridadUsuarioPermisosPageContext } from '@/application/modules/seguridad/hooks';
 import { DetailInfoCard } from '@molecules';
 import { Button } from '@atoms';
-import AgregarOverrideModal from '@modules/seguridad/components/modals/AgregarOverrideModal.jsx';
+import AgregarOverrideModal from '@modules/seguridad/usuarios/components/modals/AgregarOverrideModal.jsx';
 
 function tipoOverrideEtiqueta(t) {
   if (t === 'GRANT') return 'Otorgado';
@@ -85,13 +85,10 @@ export default function UsuarioPermisosTab() {
         children: (
           <div className="sd-tab-body usuario-permisos__tab-gutter">
             {esAdminSistema ? (
-              <Alert
-                type="info"
-                showIcon
-                title="Administrador del sistema"
-                description="Este usuario tiene el rol Administrador del sistema. Aquí se muestra el catálogo completo de permisos disponibles en la aplicación."
-                style={{ marginBottom: 16 }}
-              />
+              <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
+                <strong>Administrador del sistema.</strong> Este usuario tiene el rol Administrador del sistema;
+                aquí se muestra el catálogo completo de permisos disponibles en la aplicación.
+              </Typography.Paragraph>
             ) : null}
             {!payloadUsuario?.rol ? (
               <Typography.Text type="secondary">El usuario no tiene un rol asignado.</Typography.Text>

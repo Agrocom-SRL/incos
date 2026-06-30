@@ -6,9 +6,9 @@ import {
   LockOutlined,
 } from '@ant-design/icons';
 import { TableActions } from '@molecules';
-import UsuarioIdentidadCell from '@modules/seguridad/components/atoms/UsuarioIdentidadCell.jsx';
-import RolDotCell from '@modules/seguridad/components/atoms/RolDotCell.jsx';
-import RegistroMetricasCell from '@modules/seguridad/components/atoms/RegistroMetricasCell.jsx';
+import UsuarioIdentidadCell from '@modules/seguridad/usuarios/components/atoms/UsuarioIdentidadCell.jsx';
+import RolDotCell from '@modules/seguridad/usuarios/components/atoms/RolDotCell.jsx';
+import RegistroMetricasCell from '@modules/seguridad/usuarios/components/atoms/RegistroMetricasCell.jsx';
 
 const estadoTag = (estado) => {
   if (!estado) return { color: 'success', text: 'Activo' };

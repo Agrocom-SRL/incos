@@ -19,7 +19,7 @@ import { DashboardPageShell } from '@presentation/modules/dashboard/components/o
 import {
   USUARIOS_CATEGORIA_TABS,
   resolveUsuariosCategoria,
-} from '@modules/seguridad/config/usuariosCategoriaTabs.jsx';
+} from '@modules/seguridad/usuarios/config/usuariosCategoriaTabs.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@modules/seguridad/styles/seguridad.css';

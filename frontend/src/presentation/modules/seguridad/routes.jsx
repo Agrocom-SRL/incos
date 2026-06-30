@@ -1,46 +1,15 @@
 // src/presentation/modules/seguridad/routes.jsx
 /**
- * Rutas del dominio Seguridad (SEG): usuarios, roles, permisos.
+ * Rutas del dominio Seguridad (SEG). Compone:
+ * - `usuariosRoutes` (ítem de menú "Admin. de Usuarios", subdir `usuarios/`).
+ * - rutas de Roles y permisos (este nivel).
  * Paths bajo `/seguridad/...`; menú con `parent: 'SEG'` (dominio en dominios/routes.jsx).
- * Orden: rutas estáticas (`nuevo`) y subpaths (`.../permisos`) antes que `:id`.
  */
 
-import {
-  UsuarioCreateConnector,
-  UsuarioDetailConnector,
-  RolPermisosConnector,
-  RolesListConnector,
-  UsuariosListConnector,
-} from '@modules/seguridad/connectors';
+import { RolPermisosConnector, RolesListConnector } from '@modules/seguridad/connectors';
+import { usuariosRoutes } from '@modules/seguridad/usuarios/routes.jsx';
 
-export const seguridadRoutes = [
-  {
-    path: '/seguridad/usuarios/nuevo',
-    element: <UsuarioCreateConnector />,
-    key: 'SEG-USUARIO-CREAR',
-    permiso: 'seguridad.usuario.crear',
-    accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'SEG-USUARIOS',
-  },
-  {
-    path: '/seguridad/usuarios/:id/editar',
-    element: <UsuarioCreateConnector />,
-    key: 'SEG-USUARIO-EDITAR',
-    permiso: 'seguridad.usuario.administrar',
-    accion: 'EDITAR',
-    menu: null,
-    breadcrumbParent: 'SEG-USUARIOS',
-  },
-  {
-    path: '/seguridad/usuarios/:id/permisos',
-    element: <UsuarioDetailConnector initialTab="permisos" />,
-    key: 'SEG-USUARIO-PERMISOS',
-    permiso: 'seguridad.usuario.administrar',
-    accion: 'DETALLE',
-    menu: null,
-    breadcrumbParent: 'SEG-USUARIOS',
-  },
+const rolesRoutes = [
   {
     path: '/seguridad/roles/:id/permisos',
     element: <RolPermisosConnector />,
@@ -48,27 +17,6 @@ export const seguridadRoutes = [
     permiso: 'seguridad.rol.gestionar',
     accion: 'EDITAR',
     menu: null,
-  },
-  {
-    path: '/seguridad/usuarios/:id',
-    element: <UsuarioDetailConnector />,
-    key: 'SEG-USUARIO-DETALLE',
-    permiso: 'seguridad.usuario.administrar',
-    accion: 'DETALLE',
-    menu: null,
-  },
-  {
-    path: '/seguridad/usuarios',
-    element: <UsuariosListConnector />,
-    key: 'SEG-USUARIOS',
-    permiso: 'seguridad.usuario.administrar',
-    accion: 'LISTAR',
-    menu: {
-      label: 'Admin. de Usuarios',
-      module: 'SEG',
-      parent: 'SEG',
-      order: 1,
-    },
   },
   {
     path: '/seguridad/roles',
@@ -84,5 +32,7 @@ export const seguridadRoutes = [
     },
   },
 ];
+
+export const seguridadRoutes = [...usuariosRoutes, ...rolesRoutes];
 
 export default seguridadRoutes;

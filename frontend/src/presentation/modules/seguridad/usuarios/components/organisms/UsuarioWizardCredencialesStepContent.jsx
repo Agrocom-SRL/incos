@@ -4,11 +4,11 @@
  * no hay selector de `rol_id` aquí. El valor queda por el paso perfil o por reglas en `UsuarioCreatePage`.
  */
 import { useMemo } from 'react';
-import { Alert, Col, Flex, Form, Input, Row, Space, Typography } from 'antd';
-import CfgAcademicoFormWorkspace from '@configuracion/academico/components/organisms/CfgAcademicoFormWorkspace';
-import { createUsuarioWizardCredencialesFields } from '@modules/seguridad/config/usuarioWizardCredencialesFields.jsx';
+import { Col, Flex, Form, Input, Row, Space, Typography } from 'antd';
+import UsuarioFormSection from './UsuarioFormSection.jsx';
+import { createUsuarioWizardCredencialesFields } from '@modules/seguridad/usuarios/config/usuarioWizardCredencialesFields.jsx';
 import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
-import { getWizardRoleResumenVisual } from '@modules/seguridad/constants/usuarioCargoInstitucionalVisual.jsx';
+import { getWizardRoleResumenVisual } from '@modules/seguridad/usuarios/constants/usuarioCargoInstitucionalVisual.jsx';
 
 const { Paragraph, Text } = Typography;
 
@@ -102,10 +102,12 @@ function CredencialesRolAsignadoPanel({ role }) {
   );
 }
 
-function adaptFieldsForEdit(flatFields, isEditMode) {
-  if (!isEditMode) return flatFields;
+function adaptFieldsForEdit(flatFields, isEditMode, esVinculoReferencia = false) {
   return flatFields.map((field) => {
-    if (field.name === 'password' || field.name === 'password_confirm') {
+    const esPassword = field.name === 'password' || field.name === 'password_confirm';
+    if (!esPassword) return field;
+
+    if (isEditMode) {
       return {
         ...field,
         required: false,
@@ -113,6 +115,29 @@ function adaptFieldsForEdit(flatFields, isEditMode) {
         placeholder: field.name === 'password' ? 'Dejar vacío para conservar actual' : 'Solo si cambia contraseña',
       };
     }
+
+    // Alta de estudiante/docente: la credencial por defecto es el C.I. (sin extensión), que puede
+    // tener menos de 8 dígitos. Se relaja el mínimo para que el admin solo confirme; sigue editable.
+    if (esVinculoReferencia) {
+      const confirmRule =
+        field.name === 'password_confirm'
+          ? [
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const pwd = getFieldValue('password');
+                  if (!value || pwd === value) return Promise.resolve();
+                  return Promise.reject(new Error('Las contraseñas no coinciden'));
+                },
+              }),
+            ]
+          : [];
+      return {
+        ...field,
+        rules: [{ min: 4, message: 'Mínimo 4 caracteres' }, ...confirmRule],
+        placeholder: field.name === 'password' ? 'Por defecto el C.I. (editable)' : 'Repita la contraseña',
+      };
+    }
+
     return field;
   });
 }
@@ -221,8 +246,8 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
   }, [esVinculoReferencia, estudianteId, docenteId, vinculoNombre, vinculoEmail, vinculoCi, vinculoCodigo]);
 
   const flatFields = useMemo(
-    () => adaptFieldsForEdit(createUsuarioWizardCredencialesFields(), isEditMode),
-    [isEditMode]
+    () => adaptFieldsForEdit(createUsuarioWizardCredencialesFields(), isEditMode, esVinculoReferencia),
+    [isEditMode, esVinculoReferencia]
   );
 
   return (
@@ -241,7 +266,7 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
         <Input type="hidden" />
       </Form.Item>
 
-      <CfgAcademicoFormWorkspace
+      <UsuarioFormSection
         title="Rol de acceso al sistema"
         beforeFields={
           <>
@@ -251,12 +276,14 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
             <Row gutter={[16, 16]} style={{ marginTop: 12 }}>
               {mostrarResumenVinculo ? (
                 <Col xs={24} md={12}>
-                  <Alert
-                    type="info"
-                    showIcon
-                    title={estudianteId ? 'Estudiante vinculado' : 'Docente vinculado'}
-                    description={vinculoResumenDescription || 'Se vinculó una persona en el paso anterior.'}
-                  />
+                  <div className="seg-wizard-vinculo-resumen">
+                    <Text type="secondary">
+                      {estudianteId ? 'Estudiante vinculado' : 'Docente vinculado'}
+                    </Text>
+                    <Text strong>
+                      {vinculoResumenDescription || 'Se vinculó una persona en el paso anterior.'}
+                    </Text>
+                  </div>
                 </Col>
               ) : null}
               <Col xs={24} md={mostrarResumenVinculo ? 12 : 24}>
@@ -267,7 +294,7 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
         }
       />
 
-      <CfgAcademicoFormWorkspace
+      <UsuarioFormSection
         title="Credenciales y acceso al sistema"
         description={credencialesDescription}
         fields={flatFields}

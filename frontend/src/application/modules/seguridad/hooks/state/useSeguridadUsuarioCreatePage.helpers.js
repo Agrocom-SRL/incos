@@ -27,19 +27,56 @@ const PERSONAL_FIELD_NAMES = [
   ['personal', 'lastName'],
 ];
 
-export function getCreatePageInitialValues(prefillDocenteUsuario) {
+/**
+ * C.I. como credencial por defecto: número de cédula sin extensión (solo dígitos).
+ * Sirve para precargar username/password al alta de estudiantes/docentes; el admin
+ * solo confirma o cambia. Devuelve undefined si no hay dígitos válidos.
+ */
+export function ciCredencialPorDefecto(ci) {
+  const digits = String(ci ?? '').replace(/\D/g, '');
+  return digits.length >= 4 ? digits : undefined;
+}
+
+export function getCreatePageInitialValues({ prefillDocenteUsuario, prefillEstudianteUsuario } = {}) {
   const base = { categoria_creacion: 'ACCESO_SISTEMA' };
-  if (!prefillDocenteUsuario?.docenteId) return base;
-  const id = Number(prefillDocenteUsuario.docenteId);
-  if (!Number.isFinite(id) || id < 1) return base;
-  return {
-    categoria_creacion: 'ASIGNAR_DOCENTE',
-    docente_id: id,
-    vinculo_nombre_display: prefillDocenteUsuario.nombreCompleto || undefined,
-    vinculo_email_display: prefillDocenteUsuario.emailPersonal || undefined,
-    vinculo_ci_display: prefillDocenteUsuario.ciCompleto || undefined,
-    vinculo_codigo_display: undefined,
-  };
+
+  const docenteId = Number(prefillDocenteUsuario?.docenteId);
+  if (Number.isFinite(docenteId) && docenteId >= 1) {
+    const credDocente = ciCredencialPorDefecto(prefillDocenteUsuario.ci ?? prefillDocenteUsuario.ciCompleto);
+    return {
+      categoria_creacion: 'ASIGNAR_DOCENTE',
+      docente_id: docenteId,
+      vinculo_nombre_display: prefillDocenteUsuario.nombreCompleto || undefined,
+      vinculo_email_display: prefillDocenteUsuario.emailPersonal || undefined,
+      vinculo_ci_display: prefillDocenteUsuario.ciCompleto || undefined,
+      vinculo_codigo_display: undefined,
+      // C.I. (sin extensión) como usuario y contraseña por defecto (editable)
+      username: credDocente,
+      password: credDocente,
+      password_confirm: credDocente,
+    };
+  }
+
+  const estudianteId = Number(prefillEstudianteUsuario?.estudianteId);
+  if (Number.isFinite(estudianteId) && estudianteId >= 1) {
+    const credEstudiante = ciCredencialPorDefecto(
+      prefillEstudianteUsuario.ci ?? prefillEstudianteUsuario.ciCompleto
+    );
+    return {
+      categoria_creacion: 'ASIGNAR_ESTUDIANTE',
+      estudiante_id: estudianteId,
+      vinculo_nombre_display: prefillEstudianteUsuario.nombreCompleto || undefined,
+      vinculo_email_display: prefillEstudianteUsuario.emailPersonal || undefined,
+      vinculo_ci_display: prefillEstudianteUsuario.ciCompleto || undefined,
+      vinculo_codigo_display: prefillEstudianteUsuario.codigo || undefined,
+      // C.I. (sin extensión) como usuario y contraseña por defecto (editable)
+      username: credEstudiante,
+      password: credEstudiante,
+      password_confirm: credEstudiante,
+    };
+  }
+
+  return base;
 }
 
 export function getEditPageInitialValues(usuario) {

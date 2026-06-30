@@ -4,7 +4,7 @@
  */
 import { Radio, Typography } from 'antd';
 import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
-import { getInstitutionalCargoVisual } from '@modules/seguridad/constants/usuarioCargoInstitucionalVisual.jsx';
+import { getInstitutionalCargoVisual } from '@modules/seguridad/usuarios/constants/usuarioCargoInstitucionalVisual.jsx';
 
 const { Text } = Typography;
 

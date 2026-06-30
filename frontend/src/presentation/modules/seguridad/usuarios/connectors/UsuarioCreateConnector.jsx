@@ -1,5 +1,5 @@
 import { SeguridadUsuarioCreateProvider } from '@/application/modules/seguridad/providers';
-import UsuarioCreatePage from '@modules/seguridad/pages/UsuarioCreatePage.jsx';
+import UsuarioCreatePage from '@modules/seguridad/usuarios/pages/UsuarioCreatePage.jsx';
 
 const UsuarioCreateConnector = () => (
   <SeguridadUsuarioCreateProvider>

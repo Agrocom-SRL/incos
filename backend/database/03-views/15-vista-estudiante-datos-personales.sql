@@ -67,6 +67,11 @@ SELECT
   r.residencia_departamento_id,
   r.residencia_departamento_nombre,
   r.residencia_departamento_codigo,
+  -- Cuenta de acceso vinculada (mismo patrón que vista 50 docente; alias `rol` porque `r` es residencia)
+  u.username AS usuario_username,
+  u.estado   AS usuario_estado,
+  rol.nombre AS rol_nombre,
+  rol.codigo AS rol_codigo,
   COALESCE(apoderados_agg.apoderados_json, JSON_ARRAY()) AS apoderados,
   COALESCE(origenes_agg.origenes_json, JSON_ARRAY()) AS origenes,
   COALESCE(discapacidades_agg.discapacidades_json, JSON_ARRAY()) AS discapacidades
@@ -166,5 +171,8 @@ LEFT JOIN (
   FROM vista_base_estudiante_discapacidades d
   GROUP BY d.estudiante_id
 ) discapacidades_agg ON discapacidades_agg.estudiante_id = e.id
+-- Usuario de acceso del estudiante (N:1, no duplica filas). LEFT JOIN: no excluye estudiantes sin cuenta.
+LEFT JOIN usuarios u   ON u.id = e.usuario_id AND u.deleted_at IS NULL
+LEFT JOIN roles    rol ON rol.id = u.rol_id   AND rol.deleted_at IS NULL
 WHERE e.activo = TRUE
   AND e.deleted_at IS NULL;

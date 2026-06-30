@@ -16,10 +16,10 @@ import { DetailPageShell, DetailProfileCard } from '@organisms';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { SeguridadUsuarioPermisosProvider } from '@/application/modules/seguridad/providers';
 import { useSeguridadUsuarioDetailPageContext } from '@/application/modules/seguridad/hooks';
-import CambiarPasswordModal from '@modules/seguridad/components/modals/CambiarPasswordModal.jsx';
-import EditarUsuarioModal from '@modules/seguridad/components/modals/EditarUsuarioModal.jsx';
-import CambiarEstadoModal from '@modules/seguridad/components/modals/CambiarEstadoModal.jsx';
-import UsuarioPermisosTab from '@modules/seguridad/components/organisms/UsuarioPermisosTab.jsx';
+import CambiarPasswordModal from '@modules/seguridad/usuarios/components/modals/CambiarPasswordModal.jsx';
+import EditarUsuarioModal from '@modules/seguridad/usuarios/components/modals/EditarUsuarioModal.jsx';
+import CambiarEstadoModal from '@modules/seguridad/usuarios/components/modals/CambiarEstadoModal.jsx';
+import UsuarioPermisosTab from '@modules/seguridad/usuarios/components/organisms/UsuarioPermisosTab.jsx';
 
 function fmtDateTime(value) {
   if (!value) return '—';

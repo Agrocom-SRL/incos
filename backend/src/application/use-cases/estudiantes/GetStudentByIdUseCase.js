@@ -132,7 +132,7 @@ export class GetStudentByIdUseCase {
         throw new Error(`No se encontró un estudiante con ID ${studentId}`);
       }
 
-      const { student, guardians, disabilities, origins } =
+      const { student, guardians, disabilities, origins, access } =
         StudentPersonalDataMapper.entityToPresentation(rows[0]);
 
       this.logger.info('[Estudiantes] Estudiante encontrado (vista)', {
@@ -533,6 +533,8 @@ export class GetStudentByIdUseCase {
         guardians,
         disabilities,
         origins,
+        // Cuenta de acceso vinculada (mismo contrato que docente): { tieneAcceso, usuarioId, usuario, estadoCuenta, rol }
+        access: access ?? { tieneAcceso: false },
         documentDeliveries,
         scholarships: scholarships.map((s) =>
           s.toPlainObject ? s.toPlainObject() : s

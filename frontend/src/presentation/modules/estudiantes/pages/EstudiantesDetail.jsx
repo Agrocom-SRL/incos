@@ -23,6 +23,7 @@ import {
   SwapOutlined,
   EditOutlined,
   ArrowLeftOutlined,
+  IdcardOutlined,
 } from '@ant-design/icons';
 import { useStudentDetailContext, useDeleteBecaAsignada } from '@application-estudiantes/hooks';
 import { useAuthContext } from '@application-auth';
@@ -30,6 +31,7 @@ import {
   GuardiansSection,
   DocumentDeliveriesSection,
   ScholarshipsSection,
+  EstudianteAccessSection,
 } from '@estudiantes/components/organisms';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 import { getAdmissionTypeTagStyle } from '../config/admissionTypeColors';
@@ -74,7 +76,7 @@ const EstudiantesDetail = () => {
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
-    transitability, transfer, academicData, catalogs,
+    transitability, transfer, academicData, catalogs, access,
     breadcrumbItems, avatarInitials, profileSubtitle,
     handleRegistrarPago, handleVerDetallePago, handleGenerateActaCompromiso, handleGenerateDeclaracionJurada,
     handleDownloadActaCompromiso, handleVerInscripcion,
@@ -156,6 +158,8 @@ const EstudiantesDetail = () => {
   const puedeGenerarPdfDocumento = hasPermiso('matricula.documento.ver', 'GENERAR_PDF');
   const puedeEliminarBeca = hasPermiso('matricula.beca.asignar', 'ELIMINAR');
   const puedeEditarEstudiante = hasPermiso('matricula.admision.editar', 'EDITAR');
+  const puedeCrearUsuario = hasPermiso('seguridad.usuario.crear', 'CREAR');
+  const puedeEditarUsuario = hasPermiso('seguridad.usuario.administrar', 'EDITAR');
 
   const residenciaCompleta =
     studentData?.residenceAddressComplete ||
@@ -167,7 +171,6 @@ const EstudiantesDetail = () => {
     const list = Array.isArray(origins) ? origins : [];
     const isPrincipal = (o) => Number(o?.esPrincipal) === 1 || Number(o?.isPrincipal) === 1 || o?.esPrincipal === true || o?.isPrincipal === true;
     const principal = list.find(isPrincipal) || list[0];
-    const secundario = list.find((o) => o !== principal) || null;
 
     let nacionalidadLabel = '—';
     if (list.length === 0) return { nacionalidadLabel: '—', idiomaMaterno: null, idiomaSecundario: null, lugarNacimiento: null, paises: null };
@@ -476,6 +479,24 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }] : []),
+    {
+      key: 'acceso',
+      label: <span className="sd-tab-label"><IdcardOutlined /> Acceso al sistema</span>,
+      children: (
+        <div className="sd-tab-body">
+          <EstudianteAccessSection
+            access={access}
+            estudianteId={studentData?.id}
+            estudianteNombreCompleto={studentData?.nombreCompleto}
+            estudianteCiCompleto={studentData?.ciCompleto}
+            estudianteCodigo={studentData?.codigoEstudiante}
+            estudianteEmailPersonal={studentData?.emailPersonal}
+            puedeCrearUsuario={puedeCrearUsuario}
+            puedeEditarUsuario={puedeEditarUsuario}
+          />
+        </div>
+      ),
+    },
   ], [
     studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins,
     nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion,
@@ -483,6 +504,7 @@ const EstudiantesDetail = () => {
     deletingBecaId, deletingBeca, estadoAporte, loadingEstadoAporte, handleVerDetallePago,
     handleRegistrarPago, puedeVerInscripcion, puedeCrearInscripcion, puedeVerPago, puedeRegistrarPago,
     puedeEliminarBeca, puedeGenerarPdfDocumento, showDeclaracionButton,
+    access, puedeCrearUsuario, puedeEditarUsuario,
   ]);
 
   /* ── Estados de carga / error ── */

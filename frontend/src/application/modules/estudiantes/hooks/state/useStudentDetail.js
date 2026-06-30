@@ -52,6 +52,7 @@ export const useStudentDetail = (studentId) => {
   const transfer = student?.transfer ?? null;
   const academicData = student?.academicData ?? null;
   const catalogs = student?.catalogs ?? {};
+  const access = student?.access ?? { tieneAcceso: false };
 
   const pagoNavState = useCallback(
     (sid) => ({ studentId: sid, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES }),
@@ -217,6 +218,7 @@ export const useStudentDetail = (studentId) => {
     transfer,
     academicData,
     catalogs,
+    access,
     breadcrumbItems,
     avatarInitials,
     profileSubtitle,
