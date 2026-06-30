@@ -1,9 +1,0 @@
-export { default as DashboardOverlappingAvatarRow } from './DashboardOverlappingAvatarRow';
-export { default as DashboardWelcomeBanner } from './DashboardWelcomeBanner';
-export { default as DashboardCarreraCard } from './DashboardCarreraCard';
-export { default as DashboardCarrerasSection } from './DashboardCarrerasSection';
-export { default as DashboardUltimosPersonasBlock } from './DashboardUltimosPersonasBlock';
-export { default as DashboardUltimosRegistrosPanel } from './DashboardUltimosRegistrosPanel';
-export { default as DashboardEstudiantesResumenCard } from './DashboardEstudiantesResumenCard';
-export { default as DashboardActividadesRecientesCard } from './DashboardActividadesRecientesCard';
-export { default as DashboardPersonasOverflowModal } from './DashboardPersonasOverflowModal';

@@ -15,7 +15,7 @@ import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import {
   USUARIOS_CATEGORIA_TABS,
   resolveUsuariosCategoria,

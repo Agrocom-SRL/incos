@@ -33,7 +33,7 @@ import {
   TAB_PARALELOS,
 } from '@configuracion/academico/config/academicoTabs';
 import { ACADEMICO_TAB_PANEL_META } from '@configuracion/academico/config/academicoTabPanels';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/academico-form-page.css';
 

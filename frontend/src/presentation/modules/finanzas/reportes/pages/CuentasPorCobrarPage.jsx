@@ -20,7 +20,7 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { Alert, ActionButton, BackButton } from '@atoms';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useCuentasPorCobrarPage } from '@application-finanzas/hooks/state/useCuentasPorCobrarPage';
 import { useExportCuentasPorCobrarExcel } from '@application-finanzas/hooks/api/useExportCuentasPorCobrarExcel';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';

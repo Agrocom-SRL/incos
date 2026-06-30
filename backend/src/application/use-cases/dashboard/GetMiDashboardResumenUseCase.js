@@ -46,7 +46,8 @@ export class GetMiDashboardResumenUseCase {
    *   carrera: { id, codigo, nombre, colorHex, imagenRuta }|null,
    *   docentes: Array<Object>,
    *   actividades: Array<Object>,
-   *   stats: { sesionesHoy: number, sesionesMes: number }
+   *   stats: { sesionesHoy: number, sesionesMes: number },
+   *   saldoPendiente: number
    * }>}
    */
   async execute({ usuarioId, docentesLimit = 10, actividadesLimit = 10 } = {}) {
@@ -59,13 +60,15 @@ export class GetMiDashboardResumenUseCase {
 
     this.logger.info('[Dashboard] Mi resumen: estudiante resuelto', { usuarioId, estudianteId });
 
-    const [estudiante, carreraRow, docentes, actividades, sesiones] = await Promise.all([
-      this.dashboardRepository.findEstudianteResumen(estudianteId),
-      this.dashboardRepository.findCarreraDeEstudiante(estudianteId),
-      this.dashboardRepository.findDocentesDeEstudiante(estudianteId, docentesLimit),
-      this.dashboardRepository.findActividadesDeEstudiante(estudianteId, actividadesLimit),
-      this.dashboardRepository.countSesionesUsuarioHoyYMes(usuarioId),
-    ]);
+    const [estudiante, carreraRow, docentes, actividades, sesiones, saldoPendiente] =
+      await Promise.all([
+        this.dashboardRepository.findEstudianteResumen(estudianteId),
+        this.dashboardRepository.findCarreraDeEstudiante(estudianteId),
+        this.dashboardRepository.findDocentesDeEstudiante(estudianteId, docentesLimit),
+        this.dashboardRepository.findActividadesDeEstudiante(estudianteId, actividadesLimit),
+        this.dashboardRepository.countSesionesUsuarioHoyYMes(usuarioId),
+        this.dashboardRepository.findSaldoPendienteEstudiante(estudianteId),
+      ]);
 
     const carrera = carreraRow
       ? {
@@ -86,6 +89,7 @@ export class GetMiDashboardResumenUseCase {
         sesionesHoy: sesiones.hoy,
         sesionesMes: sesiones.mes,
       },
+      saldoPendiente: Math.round(Number(saldoPendiente) || 0),
     };
   }
 }

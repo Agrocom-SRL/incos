@@ -48,6 +48,11 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     // "Mis datos" se consume desde "Mi perfil" (autoservicio, sin permiso propio, como /auth/me).
     // El acceso lo blinda resolveEstudianteIdForUsuario: 403 si el usuario no es estudiante.
     const misDatosDetalle = [authenticate];
+    // "Mi matrícula": reutiliza la opción de menú "Matrículas" (matricula.inscribir).
+    // El wrapper de rol decide ver "Mi matrícula" (estudiante) vs el listado de
+    // inscripciones (staff). El acceso real lo blinda resolveEstudianteIdForUsuario
+    // (403 si el usuario no es estudiante).
+    const miMatriculaListar = [authenticate, verificarPermiso('matricula.inscribir', 'LISTAR')];
     const becaListar = [authenticate, verificarPermiso('matricula.beca.ver', 'LISTAR')];
     const becaDetalle = [authenticate, verificarPermiso('matricula.beca.ver', 'DETALLE')];
     const becaAsignarCrear = [authenticate, verificarPermiso('matricula.beca.asignar', 'CREAR')];
@@ -149,6 +154,20 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         '/mis-datos',
         ...misDatosDetalle,
         (req, res, next) => controllers.getMisDatosEstudianteController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/estudiantes/mi-matricula
+     * "Mi matrícula" del estudiante de la sesión: materias matriculadas + horario
+     * semanal (gestión vigente), solo lectura. El estudiante se resuelve desde
+     * req.usuario.id en servidor (anti-IDOR).
+     *
+     * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+     */
+    router.get(
+        '/mi-matricula',
+        ...miMatriculaListar,
+        (req, res, next) => controllers.getMiMatriculaEstudianteController.handle(req, res, next)
     );
 
     // ============================================

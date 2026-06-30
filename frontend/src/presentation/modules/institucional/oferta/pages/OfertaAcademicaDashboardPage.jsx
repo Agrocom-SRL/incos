@@ -5,7 +5,7 @@ import { PageHeader } from '@molecules';
 import { ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useOfertaAcademicaDashboardState } from '@application-institucional/oferta';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/oferta-academica-page.css';
 import {

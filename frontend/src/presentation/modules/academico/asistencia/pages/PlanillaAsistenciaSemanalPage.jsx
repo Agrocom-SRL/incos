@@ -27,7 +27,7 @@ import { asistenciaSectionCardProps } from '../utils/asistenciaSectionCard.js';
 import CursoContextoAsistencia from '../components/CursoContextoAsistencia.jsx';
 import SeparadorSemanaAsistencia from '../components/SeparadorSemanaAsistencia.jsx';
 import GrillaAsistenciaSemanal from '../components/GrillaAsistenciaSemanal.jsx';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import FechaEspecialDrawer from '../components/FechaEspecialDrawer.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/asistencia.css';

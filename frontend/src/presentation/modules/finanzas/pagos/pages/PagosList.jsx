@@ -18,7 +18,7 @@ import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { usePagosListPage } from '@application-finanzas/hooks/state/usePagosListPage';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import { allSpacing } from '@theme/tokens';

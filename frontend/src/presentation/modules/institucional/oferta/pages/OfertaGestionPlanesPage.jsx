@@ -6,7 +6,7 @@ import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useOfertaGestionPlanesState } from '@application-institucional/oferta';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/oferta-academica-page.css';

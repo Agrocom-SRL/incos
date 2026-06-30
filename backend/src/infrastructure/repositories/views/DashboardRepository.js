@@ -8,6 +8,7 @@ const {
   vistaEstudiantePanel,
   tablaEstudiantes,
   vistaEstudianteCarreraReciente,
+  vistaEstudianteAporteSaldoResumen,
   vistaCalificacionEstudianteMatriculaCurso,
   vistaAsignacionDocenteDetalle,
   tablaCarreras,
@@ -375,5 +376,28 @@ export class DashboardRepository extends IDashboardRepository {
       hoy: Number(row.hoy ?? 0),
       mes: Number(row.mes ?? 0),
     };
+  }
+
+  /**
+   * Saldo de aportes pendiente del estudiante de la sesión (vista 37, agregado por
+   * estudiante). Si el estudiante no tiene fila en la vista, devuelve 0.
+   *
+   * @param {number} estudianteId
+   * @returns {Promise<number>} saldo_pendiente_total del estudiante (0 si no hay fila)
+   */
+  async findSaldoPendienteEstudiante(estudianteId) {
+    const query = `
+      SELECT
+        COALESCE(sr.saldo_pendiente_total, 0) AS saldo_pendiente_total
+      FROM ${vistaEstudianteAporteSaldoResumen} sr
+      WHERE sr.estudiante_id = ?
+      LIMIT 1
+    `;
+    const rows = await sequelize.query(query, {
+      replacements: [estudianteId],
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const row = rows[0] || {};
+    return Number(row.saldo_pendiente_total ?? 0);
   }
 }

@@ -14,6 +14,7 @@ const DashboardCarrerasSection = ({
     detalleInteractivo = true,
     title = 'Nuestras Carreras',
     emptyText = 'No hay carreras activas para mostrar.',
+    style,
 }) => {
     return (
         <Card
@@ -22,6 +23,7 @@ const DashboardCarrerasSection = ({
                 boxShadow: shadows.shadowElevation2,
                 border: `1px solid ${allColors.colorBorder}`,
                 backgroundColor: allColors.colorBgContainer,
+                ...style,
             }}
             styles={{ body: { padding: `${componentConfig.Card.paddingLG}px` } }}
         >

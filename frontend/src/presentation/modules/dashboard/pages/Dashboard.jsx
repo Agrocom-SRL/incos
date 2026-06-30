@@ -16,16 +16,14 @@ import {
   PERMISO_ESTUDIANTES_DETALLE,
 } from '@application-dashboard';
 import { MainContent, InfoSidebar } from '@templates';
-import { PERSONAS_VISIBLE } from '../../constants';
-import { DashboardPageShell } from '../../components/organisms';
-import {
-  DashboardWelcomeBanner,
-  DashboardCarrerasSection,
-  DashboardUltimosRegistrosPanel,
-  DashboardEstudiantesResumenCard,
-  DashboardActividadesRecientesCard,
-  DashboardPersonasOverflowModal,
-} from '../../components/molecules';
+import { PERSONAS_VISIBLE } from '../constants';
+import DashboardPageShell from '../components/organisms/DashboardPageShell';
+import DashboardWelcomeBanner from '../components/molecules/DashboardWelcomeBanner';
+import DashboardCarrerasSection from '../components/molecules/DashboardCarrerasSection';
+import DashboardUltimosRegistrosPanel from '../components/molecules/DashboardUltimosRegistrosPanel';
+import DashboardEstudiantesResumenCard from '../components/molecules/DashboardEstudiantesResumenCard';
+import DashboardActividadesRecientesCard from '../components/molecules/DashboardActividadesRecientesCard';
+import DashboardPersonasOverflowModal from '../components/molecules/DashboardPersonasOverflowModal';
 
 const PATH_CARRERAS = '/configuracion/academico?tab=carreras';
 const PATH_DOCENTES = '/docentes/listar';

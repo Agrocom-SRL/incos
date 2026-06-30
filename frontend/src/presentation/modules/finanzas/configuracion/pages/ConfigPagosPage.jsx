@@ -22,7 +22,7 @@ import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { Button } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';
 import { useConfigPagosPage } from '@application-finanzas/hooks/state/useConfigPagosPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';

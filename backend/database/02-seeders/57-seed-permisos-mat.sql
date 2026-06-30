@@ -87,6 +87,8 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'EXPORTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.admision.ver', 'EXPORTAR'
+  -- ESTUDIANTE: el ítem "Admisión" → su ficha propia (wrapper de rol, solo lectura)
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.editar', 'EDITAR'
@@ -101,6 +103,8 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'EXPORTAR'
+  -- ESTUDIANTE: el ítem "Matrículas" → "Mi matrícula" (materias + horario semanal, solo lectura)
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.inscribir', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.inscripcion.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.inscripcion.editar', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscripcion.editar', 'EDITAR'

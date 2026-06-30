@@ -12,7 +12,7 @@ import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import CrearRolModal from '@modules/seguridad/roles/components/modals/CrearRolModal.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';

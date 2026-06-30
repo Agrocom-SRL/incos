@@ -7,7 +7,7 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton } from '@atoms';
 import { WizardForm } from '@organisms';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import UsuarioCategoriaCreacionStepContent from '@modules/seguridad/usuarios/components/organisms/UsuarioCategoriaCreacionStepContent.jsx';
 import UsuarioWizardPerfilStepContent from '@modules/seguridad/usuarios/components/organisms/UsuarioWizardPerfilStepContent.jsx';
 import UsuarioWizardCredencialesStepContent from '@modules/seguridad/usuarios/components/organisms/UsuarioWizardCredencialesStepContent.jsx';

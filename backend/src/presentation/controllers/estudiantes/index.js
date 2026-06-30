@@ -6,6 +6,7 @@ export { RegisterStudentController } from './estudiantes/register.controller.js'
 export { UpdateStudentController } from './estudiantes/update.controller.js';
 export { GetStudentByIdController } from './estudiantes/get-by-id.controller.js';
 export { GetMisDatosEstudianteController } from './estudiantes/get-mis-datos.controller.js';
+export { GetMiMatriculaEstudianteController } from './estudiantes/get-mi-matricula.controller.js';
 export { SearchStudentController } from './estudiantes/search.controller.js';
 export { ActaCompromisoController } from './estudiantes/acta-compromiso.controller.js';
 export { DeclaracionJuradaController } from './estudiantes/declaracion-jurada.controller.js';

@@ -20,7 +20,7 @@ import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useCalendarioAsistenciaState } from '@application-academico/asistencia/hooks/state/useCalendarioAsistenciaState.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
 import { ESTADOS_REGISTRO } from '@application-academico/asistencia/utils/asistenciaEstados.js';

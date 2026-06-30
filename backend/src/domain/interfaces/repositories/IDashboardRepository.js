@@ -56,4 +56,9 @@ export class IDashboardRepository {
   async countSesionesUsuarioHoyYMes(_usuarioId) {
     throw new Error('Method countSesionesUsuarioHoyYMes() must be implemented');
   }
+
+  /** @param {number} _estudianteId @returns {Promise<number>} */
+  async findSaldoPendienteEstudiante(_estudianteId) {
+    throw new Error('Method findSaldoPendienteEstudiante() must be implemented');
+  }
 }

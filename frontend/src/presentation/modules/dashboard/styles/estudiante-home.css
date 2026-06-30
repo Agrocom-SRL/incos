@@ -1,0 +1,99 @@
+/* ============================================================================
+   INICIO DEL ESTUDIANTE
+   ============================================================================
+   Estilos de layout (grid de accesos rápidos + lista de docentes) del panel de
+   inicio del estudiante. Replica el lenguaje visual del hub de reportes
+   (icono en badge, título, descripción, CTA, hover translateY) pero consumiendo
+   SOLO tokens inyectados por el tema (root.js) vía var(): cero literales.
+
+   El acento por tarjeta se inyecta como custom property inline desde tokens
+   (`--acceso-accent` / `--acceso-accent-bg`), no como color hardcodeado.
+   ============================================================================ */
+
+/* Grilla responsive de "Mis docentes" (2 columnas; evita filas muy vacías). */
+.estudiante-docentes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0;
+}
+
+/* Grilla responsive de accesos rápidos (sin breakpoints: auto-fill). */
+.estudiante-accesos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+/* Tarjeta de acceso rápido (navegable). */
+.estudiante-acceso-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-container);
+  min-height: 168px;
+  cursor: pointer;
+  transition:
+    transform var(--transition-base) ease,
+    box-shadow var(--transition-base) ease,
+    border-color var(--transition-base) ease;
+}
+
+.estudiante-acceso-card:hover,
+.estudiante-acceso-card:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-elevation-3);
+  border-color: var(--acceso-accent, var(--color-primary));
+  outline: none;
+}
+
+.estudiante-acceso-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  border-radius: var(--border-radius-md);
+  background: var(--acceso-accent-bg, var(--color-primary-bg));
+  color: var(--acceso-accent, var(--color-primary));
+  font-size: var(--font-size-lg);
+}
+
+.estudiante-acceso-card__title {
+  font-weight: var(--font-weight-strong);
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+  line-height: var(--line-height-sm);
+}
+
+.estudiante-acceso-card__desc {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  flex: 1 1 auto;
+}
+
+.estudiante-acceso-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-strong);
+  color: var(--acceso-accent, var(--color-primary));
+}
+
+/* Respeto a usuarios con movimiento reducido: sin desplazamiento, solo color. */
+@media (prefers-reduced-motion: reduce) {
+  .estudiante-acceso-card {
+    transition: border-color var(--transition-base) ease;
+  }
+
+  .estudiante-acceso-card:hover,
+  .estudiante-acceso-card:focus-visible {
+    transform: none;
+    box-shadow: none;
+  }
+}

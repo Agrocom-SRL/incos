@@ -37,7 +37,7 @@ import { DetailField, Button, BackButton, FieldDatePicker, Text } from '@atoms';
 import IdentidadCelda from '@atoms/IdentidadCelda';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { cfgAcademicoFormColProps } from '@configuracion/academico/components/organisms/CfgAcademicoFormWorkspace';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';
 import { useCasesFactory } from '@container';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';

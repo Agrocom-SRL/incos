@@ -6,6 +6,7 @@ export { RegisterStudentUseCase } from './RegisterStudentUseCase.js';
 export { UpdateStudentUseCase } from './UpdateStudentUseCase.js';
 export { GetStudentByIdUseCase } from './GetStudentByIdUseCase.js';
 export { GetMisDatosEstudianteUseCase } from './GetMisDatosEstudianteUseCase.js';
+export { GetMiMatriculaEstudianteUseCase } from './GetMiMatriculaEstudianteUseCase.js';
 export { SearchStudentUseCase } from './SearchStudentUseCase.js';
 export { GenerateActaCompromisoUseCase } from './GenerateActaCompromisoUseCase.js';
 export { GenerateDeclaracionJuradaUseCase } from './GenerateDeclaracionJuradaUseCase.js';

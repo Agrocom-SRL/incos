@@ -14,7 +14,7 @@ import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
 import { ActionButton, BackButton, Text } from '@atoms';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
 import { useLicenciasListPage } from '@application-academico/asistencia/hooks/state/useLicenciasListPage.js';

@@ -8,7 +8,7 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import { useParaleloForm } from '@application-configuracion/academico/hooks';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import ParaleloFormSections from '../components/organisms/ParaleloFormSections';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/academico-form-page.css';

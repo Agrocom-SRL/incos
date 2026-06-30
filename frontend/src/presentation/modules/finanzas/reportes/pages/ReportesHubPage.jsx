@@ -27,7 +27,7 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import { allSpacing } from '@theme/tokens';
 import ReporteHubCard from '@finanzas/reportes/components/molecules/ReporteHubCard';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/reportes/styles/reportes-hub.css';
 

@@ -1,5 +1,5 @@
 /**
- * Inicio del estudiante — resumen personal para `EstudianteHomePanel`.
+ * Inicio del estudiante — resumen personal para la página `EstudianteDashboard`.
  *
  * Consume `GET /dashboard/mi-resumen` y expone datos ya en forma de vista
  * (reusando los mismos mapeos del dashboard admin): estudiante, carrera,
@@ -18,6 +18,7 @@ const ESTADO_INICIAL = {
   docentes: [],
   actividades: [],
   stats: { sesionesHoy: 0, sesionesMes: 0 },
+  saldoPendiente: 0,
 };
 
 export const useEstudianteHome = () => {
@@ -54,6 +55,7 @@ export const useEstudianteHome = () => {
           sesionesHoy: Number(s.sesionesHoy ?? 0),
           sesionesMes: Number(s.sesionesMes ?? 0),
         },
+        saldoPendiente: Math.round(Number(d.saldoPendiente ?? 0)),
       });
     } else {
       // Tolerancia a fallos: conservamos el nombre del usuario autenticado.
@@ -84,6 +86,7 @@ export const useEstudianteHome = () => {
     docentes: data.docentes,
     actividades: data.actividades,
     stats: data.stats,
+    saldoPendiente: data.saldoPendiente,
     loading,
     error,
     refetch: cargar,
