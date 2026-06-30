@@ -1,6 +1,7 @@
 import {
   ActualizarPermisosRolUseCase,
   ActualizarUsuarioUseCase,
+  EliminarUsuarioUseCase,
   AgregarOverridePermisoUseCase,
   CambiarEstadoUsuarioUseCase,
   CambiarPasswordUseCase,
@@ -24,6 +25,7 @@ export function registerSeguridadModule(factory) {
   factory.obtenerUsuarioAdmin = () => new ObtenerUsuarioUseCase(UsuarioAdminRepository);
   factory.crearUsuarioAdmin = () => new CrearUsuarioUseCase(UsuarioAdminRepository);
   factory.actualizarUsuarioAdmin = () => new ActualizarUsuarioUseCase(UsuarioAdminRepository);
+  factory.eliminarUsuarioAdmin = () => new EliminarUsuarioUseCase(UsuarioAdminRepository);
   factory.cambiarEstadoUsuarioAdmin = () => new CambiarEstadoUsuarioUseCase(UsuarioAdminRepository);
   factory.cambiarPasswordUsuarioAdmin = () => new CambiarPasswordUseCase(UsuarioAdminRepository);
   factory.obtenerPermisosUsuarioAdmin = () => new ObtenerPermisosUsuarioUseCase(UsuarioAdminRepository);

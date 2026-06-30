@@ -168,13 +168,12 @@ export const useSeguridadUsuarioDetailPage = () => {
     savePass,
     saveEdit,
     saveEstado,
-    goToUsuarioEdit: () =>
-      navigate(`/seguridad/usuarios/${uid}/editar`, {
-        state:
-          usuario?.rol?.codigo === 'ADMIN_SISTEMA'
-            ? { editInitialStep: 1 }
-            : undefined,
-      }),
+    goToUsuarioEdit: () => {
+      // Estudiante/Docente: solo credenciales → tab 3 (índice 2). Resto (admin/administrativo): perfil → tab 2 (índice 1).
+      const codigo = usuario?.rol?.codigo;
+      const editInitialStep = codigo === 'ESTUDIANTE' || codigo === 'DOCENTE' ? 2 : 1;
+      navigate(`/seguridad/usuarios/${uid}/editar`, { state: { editInitialStep } });
+    },
     goToUsuariosList: () => navigate('/seguridad/usuarios'),
   };
 };

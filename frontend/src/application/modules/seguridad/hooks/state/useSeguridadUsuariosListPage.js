@@ -51,6 +51,7 @@ export const useSeguridadUsuariosListPage = () => {
     searchText,
     setSearchText,
     tablePagination,
+    refetch,
   } = useServerPaginatedList({
     fetch: fetchUsuarios,
     buildRequest: ({ page, limit, search, extra }) => ({
@@ -68,7 +69,15 @@ export const useSeguridadUsuariosListPage = () => {
     [],
   );
 
-  const columns = useMemo(() => createUsuariosTableColumns(navigate), [navigate]);
+  const eliminarUsuario = useCallback(
+    (id) => useCasesFactory.eliminarUsuarioAdmin().ejecutar(id),
+    [],
+  );
+
+  const columns = useMemo(
+    () => createUsuariosTableColumns(navigate, { eliminarUsuario, refetch }),
+    [navigate, eliminarUsuario, refetch],
+  );
 
   const handleCreateUsuario = useCallback(() => {
     navigate('/seguridad/usuarios/nuevo');

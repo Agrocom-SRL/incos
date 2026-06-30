@@ -2,6 +2,7 @@ export { ListarUsuariosUseCase } from './ListarUsuariosUseCase';
 export { ObtenerUsuarioUseCase } from './ObtenerUsuarioUseCase';
 export { CrearUsuarioUseCase } from './CrearUsuarioUseCase';
 export { ActualizarUsuarioUseCase } from './ActualizarUsuarioUseCase';
+export { EliminarUsuarioUseCase } from './EliminarUsuarioUseCase';
 export { CambiarEstadoUsuarioUseCase } from './CambiarEstadoUsuarioUseCase';
 export { CambiarPasswordUseCase } from './CambiarPasswordUseCase';
 export { ObtenerPermisosUsuarioUseCase } from './ObtenerPermisosUsuarioUseCase';

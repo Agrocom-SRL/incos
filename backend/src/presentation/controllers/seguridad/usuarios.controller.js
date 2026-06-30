@@ -13,6 +13,7 @@ export class SeguridadUsuariosController {
     actualizarUsuarioUseCase,
     cambiarEstadoUsuarioUseCase,
     cambiarPasswordUsuarioUseCase,
+    eliminarUsuarioUseCase,
     obtenerPermisosUsuarioUseCase,
     agregarOverridePermisoUseCase,
     eliminarOverridePermisoUseCase,
@@ -25,6 +26,7 @@ export class SeguridadUsuariosController {
     this.actualizarUsuarioUseCase = actualizarUsuarioUseCase;
     this.cambiarEstadoUsuarioUseCase = cambiarEstadoUsuarioUseCase;
     this.cambiarPasswordUsuarioUseCase = cambiarPasswordUsuarioUseCase;
+    this.eliminarUsuarioUseCase = eliminarUsuarioUseCase;
     this.obtenerPermisosUsuarioUseCase = obtenerPermisosUsuarioUseCase;
     this.agregarOverridePermisoUseCase = agregarOverridePermisoUseCase;
     this.eliminarOverridePermisoUseCase = eliminarOverridePermisoUseCase;
@@ -134,6 +136,17 @@ export class SeguridadUsuariosController {
         req.body.password_nuevo
       );
       return this.responseFormatter.updated(res, data, 'usuario', id, req);
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  delete = async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const actorId = req.user?.id ?? null;
+      await this.eliminarUsuarioUseCase.execute(id, actorId);
+      return this.responseFormatter.deleted(res, 'usuario', id, req);
     } catch (e) {
       next(e);
     }

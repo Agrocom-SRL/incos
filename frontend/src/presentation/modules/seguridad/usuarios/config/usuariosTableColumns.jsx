@@ -1,10 +1,5 @@
 import { Space, Tag } from 'antd';
-import {
-  EditOutlined,
-  InfoCircleOutlined,
-  KeyOutlined,
-  LockOutlined,
-} from '@ant-design/icons';
+import { KeyOutlined } from '@ant-design/icons';
 import { TableActions } from '@molecules';
 import UsuarioIdentidadCell from '@modules/seguridad/usuarios/components/atoms/UsuarioIdentidadCell.jsx';
 import RolDotCell from '@modules/seguridad/usuarios/components/atoms/RolDotCell.jsx';
@@ -18,7 +13,7 @@ const estadoTag = (estado) => {
   return { color: 'default', text: String(estado) };
 };
 
-export const createUsuariosTableColumns = (navigate) => [
+export const createUsuariosTableColumns = (navigate, { eliminarUsuario, refetch } = {}) => [
   {
     title: 'Usuario',
     key: 'usuario',
@@ -87,41 +82,24 @@ export const createUsuariosTableColumns = (navigate) => [
         record={record}
         navigate={navigate}
         viewPath="/seguridad/usuarios/:id"
+        editTitle="Editar datos"
+        onEdit={(rec) => {
+          // Estudiante/Docente: solo se editan credenciales → tab 3 (índice 2).
+          // Admin del sistema / Administrativo: tienen ficha de perfil → tab 2 (índice 1).
+          const codigo = rec?.rol?.codigo;
+          const editInitialStep = codigo === 'ESTUDIANTE' || codigo === 'DOCENTE' ? 2 : 1;
+          navigate(`/seguridad/usuarios/${rec.id}/editar`, { state: { editInitialStep } });
+        }}
+        itemName="el usuario"
+        itemDetails={[{ label: 'Usuario', value: record.username }]}
+        deleteFn={eliminarUsuario}
+        refetch={refetch}
         permisos={{
           ver: { codigo: 'seguridad.usuario.administrar', accion: 'DETALLE' },
           editar: { codigo: 'seguridad.usuario.administrar', accion: 'EDITAR' },
+          eliminar: { codigo: 'seguridad.usuario.administrar', accion: 'ELIMINAR' },
         }}
         extraActions={[
-          {
-            icon: <EditOutlined />,
-            variant: 'primary',
-            tooltip: 'Editar datos',
-            onClick: () =>
-              navigate(`/seguridad/usuarios/${record.id}/editar`, {
-                state:
-                  record?.rol?.codigo === 'ADMIN_SISTEMA'
-                    ? { editInitialStep: 1 }
-                    : undefined,
-              }),
-            permiso: 'seguridad.usuario.administrar',
-            accion: 'EDITAR',
-          },
-          {
-            icon: <InfoCircleOutlined />,
-            variant: 'warning',
-            tooltip: 'Cambiar estado',
-            onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'estado' } }),
-            permiso: 'seguridad.usuario.administrar',
-            accion: 'EDITAR',
-          },
-          {
-            icon: <LockOutlined />,
-            variant: 'default',
-            tooltip: 'Cambiar contraseña',
-            onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'password' } }),
-            permiso: 'seguridad.usuario.administrar',
-            accion: 'EDITAR',
-          },
           {
             icon: <KeyOutlined />,
             variant: 'info',

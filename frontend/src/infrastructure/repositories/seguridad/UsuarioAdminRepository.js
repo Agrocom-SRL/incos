@@ -102,6 +102,16 @@ export class UsuarioAdminRepository {
       throw json;
     }
   }
+
+  async remove(id) {
+    const res = await apiCall(USUARIOS_SEG_ENDPOINTS.BY_ID(id), {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      throw json;
+    }
+  }
 }
 
 export default new UsuarioAdminRepository();

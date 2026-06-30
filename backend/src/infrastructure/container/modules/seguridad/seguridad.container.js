@@ -13,6 +13,7 @@ import { BuscarParaAltaUsuarioVinculosUseCase } from '../../../../application/us
 import { ActualizarUsuarioUseCase } from '../../../../application/use-cases/seguridad/ActualizarUsuarioUseCase.js';
 import { CambiarEstadoUsuarioUseCase } from '../../../../application/use-cases/seguridad/CambiarEstadoUsuarioUseCase.js';
 import { CambiarPasswordUsuarioUseCase } from '../../../../application/use-cases/seguridad/CambiarPasswordUsuarioUseCase.js';
+import { EliminarUsuarioUseCase } from '../../../../application/use-cases/seguridad/EliminarUsuarioUseCase.js';
 import { ObtenerPermisosUsuarioUseCase } from '../../../../application/use-cases/seguridad/ObtenerPermisosUsuarioUseCase.js';
 import { AgregarOverridePermisoUseCase } from '../../../../application/use-cases/seguridad/AgregarOverridePermisoUseCase.js';
 import { EliminarOverridePermisoUseCase } from '../../../../application/use-cases/seguridad/EliminarOverridePermisoUseCase.js';
@@ -107,6 +108,15 @@ export function registerSeguridadModule(container) {
     SEGURIDAD_TOKENS.cambiarPasswordUsuarioUseCase,
     (c) =>
       new CambiarPasswordUsuarioUseCase({
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+      })
+  );
+
+  registerComponent(
+    container,
+    SEGURIDAD_TOKENS.eliminarUsuarioUseCase,
+    (c) =>
+      new EliminarUsuarioUseCase({
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
       })
   );
@@ -219,6 +229,7 @@ export function registerSeguridadModule(container) {
         cambiarPasswordUsuarioUseCase: c.resolve(
           SEGURIDAD_TOKENS.cambiarPasswordUsuarioUseCase
         ),
+        eliminarUsuarioUseCase: c.resolve(SEGURIDAD_TOKENS.eliminarUsuarioUseCase),
         obtenerPermisosUsuarioUseCase: c.resolve(
           SEGURIDAD_TOKENS.obtenerPermisosUsuarioUseCase
         ),

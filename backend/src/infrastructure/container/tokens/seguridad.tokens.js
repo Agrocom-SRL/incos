@@ -10,6 +10,7 @@ export const SEGURIDAD_TOKENS = {
   actualizarUsuarioUseCase: 'seguridad.actualizarUsuarioUseCase',
   cambiarEstadoUsuarioUseCase: 'seguridad.cambiarEstadoUsuarioUseCase',
   cambiarPasswordUsuarioUseCase: 'seguridad.cambiarPasswordUsuarioUseCase',
+  eliminarUsuarioUseCase: 'seguridad.eliminarUsuarioUseCase',
   obtenerPermisosUsuarioUseCase: 'seguridad.obtenerPermisosUsuarioUseCase',
   agregarOverridePermisoUseCase: 'seguridad.agregarOverridePermisoUseCase',
   eliminarOverridePermisoUseCase: 'seguridad.eliminarOverridePermisoUseCase',
