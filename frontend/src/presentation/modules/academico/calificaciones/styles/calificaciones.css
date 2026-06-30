@@ -4,6 +4,8 @@
 .cal-consolidado,
 .cal-consolidado-grid-wrap,
 .cal-bimestre-consolidado-wrap,
+/* Boletín del estudiante: reutiliza la paleta del cuaderno (mismo lenguaje). */
+.mi-boletin-grid,
 /* Drawer en portal (fuera de .cal-cuaderno): necesita los mismos tokens */
 .ant-drawer.cal-ajustes-drawer {
   --cuaderno-verde-tenue: #e8f5ec;

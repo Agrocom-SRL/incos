@@ -3,7 +3,7 @@ import { App } from 'antd';
 import { useAuth } from '@/application/modules/auth/hooks/useAuth.js';
 import { esEstudiante } from '@/application/modules/auth/utils/esEstudiante.js';
 import perfilRepository from '@/infrastructure/repositories/auth/PerfilRepository.js';
-import { useMisDatosEstudiante } from './useMisDatosEstudiante.js';
+import { usePerfilEstudianteResumen } from './usePerfilEstudianteResumen.js';
 
 function errMsg(json) {
   const e = json?.error;
@@ -20,9 +20,9 @@ export const usePerfilPage = () => {
   const [openPass, setOpenPass] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Portal del estudiante: ficha completa SOLO LECTURA (solo si el rol es ESTUDIANTE).
+  // Portal del estudiante: resumen para el hub (solo si el rol es ESTUDIANTE).
   const usuarioEsEstudiante = esEstudiante(usuario);
-  const { misDatos, loadingMisDatos, errorMisDatos } = useMisDatosEstudiante(usuarioEsEstudiante);
+  const resumenEstudiante = usePerfilEstudianteResumen(usuarioEsEstudiante);
 
   const cambiarPassword = useCallback(
     async ({ password_actual, password_nuevo }) => {
@@ -52,9 +52,7 @@ export const usePerfilPage = () => {
     loading: isLoading,
     vinculoPerfil: usuario?.vinculo_perfil ?? null,
     esEstudiante: usuarioEsEstudiante,
-    misDatos,
-    loadingMisDatos,
-    errorMisDatos,
+    resumenEstudiante,
     openPass,
     saving,
     breadcrumbItems,

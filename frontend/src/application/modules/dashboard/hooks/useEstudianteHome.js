@@ -21,16 +21,17 @@ const ESTADO_INICIAL = {
   saldoPendiente: 0,
 };
 
-export const useEstudianteHome = () => {
+export const useEstudianteHome = (enabled = true) => {
   const { usuario } = useAuth();
   const [data, setData] = useState(ESTADO_INICIAL);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState(null);
 
   const fallbackNombre =
     usuario?.vinculo_perfil?.nombre_completo || usuario?.username || 'estudiante';
 
   const cargar = useCallback(async () => {
+    if (!enabled) return;
     setLoading(true);
     setError(null);
 
@@ -66,9 +67,12 @@ export const useEstudianteHome = () => {
     }
 
     setLoading(false);
-  }, [fallbackNombre]);
+  }, [fallbackNombre, enabled]);
 
   useEffect(() => {
+    // Cuando está deshabilitado no se hace fetch (cargar() corta de inmediato) y el
+    // estado inicial ya es vacío con loading=false, así que no hace falta resetear.
+    if (!enabled) return undefined;
     let cancelled = false;
     (async () => {
       if (!cancelled) {
@@ -78,7 +82,7 @@ export const useEstudianteHome = () => {
     return () => {
       cancelled = true;
     };
-  }, [cargar]);
+  }, [cargar, enabled]);
 
   return {
     estudiante: data.estudiante,

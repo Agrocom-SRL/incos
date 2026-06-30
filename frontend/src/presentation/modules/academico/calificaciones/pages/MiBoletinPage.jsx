@@ -1,27 +1,37 @@
 /**
  * MiBoletinPage — portal del estudiante (rama ESTUDIANTE del ítem Calificaciones).
  *
- * SOLO LECTURA salvo la descarga del PDF del boletín (única descarga permitida al
- * estudiante). La lógica vive en `useMiBoletin`.
+ * Se presenta como una FICHA DE DETALLE: cabecera de perfil (sd-profile) con el
+ * estudiante + una tarjeta con sus calificaciones por asignatura, replicando el
+ * look de las grillas del módulo (notas centradas, nota final destacada, Tag de
+ * estado). SOLO LECTURA salvo la descarga del PDF del boletín (única descarga
+ * permitida al estudiante). La lógica vive en `useMiBoletin`.
  */
 
-import {
-  BookOutlined,
-  DownloadOutlined,
-  IdcardOutlined,
-  TrophyOutlined,
-} from '@ant-design/icons';
-import { App, Empty, Statistic } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
+import { App, Empty, Tag } from 'antd';
 import { PageTemplate } from '@templates';
-import { PageHeader, DetailInfoCard, DataTable } from '@molecules';
-import { DetailField, Button } from '@atoms';
-import { DetailPageShell } from '@organisms';
+import { PageHeader, DataTable } from '@molecules';
+import { Button } from '@atoms';
+import { DetailPageShell, DetailProfileCard } from '@organisms';
 import { useMiBoletin } from '@application-academico/calificaciones/hooks/state/useMiBoletin.js';
 import { miBoletinColumns } from '@academico/calificaciones/config/miBoletinColumns.jsx';
+import '@presentation/styles/pages/detail-page.css';
+import '../styles/calificaciones.css';
+import '../styles/mi-boletin.css';
 
+/** Etiqueta legible de la gestión (nombre o año). */
 const gestionLabel = (gestion) => {
-  if (!gestion) return '—';
-  return gestion.nombre || gestion.anio || '—';
+  if (!gestion) return null;
+  return gestion.nombre || gestion.anio || null;
+};
+
+/** Iniciales del estudiante para el avatar (máx. 2 letras). */
+const iniciales = (nombre) => {
+  const partes = String(nombre || '').trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return '—';
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase();
 };
 
 const MiBoletinPage = () => {
@@ -44,7 +54,15 @@ const MiBoletinPage = () => {
   };
 
   const estudiante = boletin?.estudiante;
+  const carrera = boletin?.carrera?.nombre || null;
+  const gestion = gestionLabel(boletin?.gestion);
   const sinNotas = !loading && !error && boletin && asignaturas.length === 0;
+
+  // Subtítulo de la cabecera: "carrera · gestión" (omite las partes ausentes).
+  const subtitulo = [carrera, gestion].filter(Boolean).join(' · ') || null;
+
+  const promedio =
+    boletin?.promedioGeneral != null ? boletin.promedioGeneral : '—';
 
   return (
     <PageTemplate
@@ -76,43 +94,38 @@ const MiBoletinPage = () => {
       >
         {boletin ? (
           <>
-            <DetailInfoCard title="Datos del estudiante" icon={<IdcardOutlined />} cols={3}>
-              <DetailField label="Estudiante">{estudiante?.nombreCompleto || '—'}</DetailField>
-              <DetailField label="Código">{estudiante?.codigo || '—'}</DetailField>
-              <DetailField label="C.I.">{estudiante?.ci || '—'}</DetailField>
-              <DetailField label="Carrera" span={2}>
-                {boletin.carrera?.nombre || '—'}
-              </DetailField>
-              <DetailField label="Gestión">{gestionLabel(boletin.gestion)}</DetailField>
-            </DetailInfoCard>
-
-            <DetailInfoCard
-              title="Calificaciones por asignatura"
-              icon={<BookOutlined />}
-              cols={1}
-              extra={
-                boletin.promedioGeneral != null ? (
-                  <Statistic
-                    title="Promedio general"
-                    value={boletin.promedioGeneral}
-                    prefix={<TrophyOutlined />}
-                    valueStyle={{ fontSize: 'inherit' }}
-                  />
+            <DetailProfileCard
+              avatarInitials={iniciales(estudiante?.nombreCompleto)}
+              avatarClassName="sd-profile__avatar sd-profile__avatar--default"
+              title={estudiante?.nombreCompleto || '—'}
+              subtitle={subtitulo}
+              metaExtra={
+                gestion ? (
+                  <Tag color="green" className="mi-boletin__gestion-tag">
+                    Gestión {gestion}
+                  </Tag>
                 ) : null
               }
-            >
-              {sinNotas ? (
-                <Empty description="Aún no hay notas registradas." />
-              ) : (
-                <DataTable
-                  dataSource={asignaturas}
-                  columns={miBoletinColumns}
-                  rowKey={(record) => record.asignaturaSigla || record.asignaturaNombre}
-                  pagination={false}
-                  size="small"
-                />
-              )}
-            </DetailInfoCard>
+              stats={[
+                { label: 'Código', value: estudiante?.codigo || '—' },
+                { label: 'C.I.', value: estudiante?.ci || '—' },
+                { label: 'Promedio general', value: promedio, primary: true },
+              ]}
+            />
+
+            {sinNotas ? (
+              <Empty description="Aún no hay notas registradas." />
+            ) : (
+              <DataTable
+                className="mi-boletin-grid"
+                dataSource={asignaturas}
+                columns={miBoletinColumns}
+                rowKey={(record) => record.asignaturaSigla || record.asignaturaNombre}
+                pagination={false}
+                bordered
+                scroll={{ x: 'max-content' }}
+              />
+            )}
           </>
         ) : null}
       </DetailPageShell>
