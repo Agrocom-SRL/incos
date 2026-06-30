@@ -105,8 +105,10 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'EXPORTAR'
-  -- ESTUDIANTE: el ítem "Matrículas" → "Mi matrícula" (materias + horario semanal, solo lectura)
+  -- ESTUDIANTE: el ítem "Matrículas" → su propia inscripción (InscripcionesDetail, /inscripciones/:id,
+  -- con materias + horario semanal, solo lectura). DETALLE blindado a su propia inscripción (anti-IDOR).
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.inscribir', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.inscribir', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.inscripcion.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.inscripcion.editar', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscripcion.editar', 'EDITAR'
@@ -149,8 +151,10 @@ FROM (
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'DETALLE'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'EDITAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'EXPORTAR'
-  -- ESTUDIANTE: ve SUS aportes (la misma opción de menú "Aportes" → "Mis aportes" por wrapper de rol)
+  -- ESTUDIANTE: ve SUS aportes (la misma opción de menú "Aportes"). Al entrar se redirige al
+  -- detalle de su aporte (PagosDetail, /pagos/:id), blindado a su propia cabecera en backend.
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.pago.aporte.ver', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.pago.aporte.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.pasantia.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.pasantia.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.pasantia.ver', 'LISTAR'

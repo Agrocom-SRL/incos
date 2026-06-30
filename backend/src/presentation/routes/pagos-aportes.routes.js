@@ -8,6 +8,7 @@ import {
 } from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
+import { aporteSelfOnlyGuard } from '../middleware/aporteSelfOnly.middleware.js';
 
 /**
  * Construye el router del recurso Pagos de Aportes Académicos
@@ -383,6 +384,9 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     router.get(
         '/:id',
         ...pagoDetalle,
+        ...idValidator, // 1. Validar que :id sea numérico
+        validateRequest, // 2. Procesar errores de validación
+        aporteSelfOnlyGuard, // 3. Anti-IDOR: un estudiante solo ve SU propio aporte
         (req, res, next) => controllers.getPaymentAporteByIdController.handle(req, res, next)
     );
 

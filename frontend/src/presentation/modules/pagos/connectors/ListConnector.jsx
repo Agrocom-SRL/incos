@@ -1,29 +1,21 @@
 /**
- * Conector: Nexo entre la Vista (Page) y la Lógica de Negocio (Provider)
- * 
- * Single Responsibility: Solo envuelve la página con su Provider específico
- * 
- * Este patrón permite:
- * - Separación clara: Conectores vs Páginas
- * - Carga lazy del Provider solo cuando se necesita
- * - Arquitectura modular: cada módulo gestiona sus propios conectores
+ * Conector: lista de pagos/aportes (role-aware).
+ *
+ * Patrón portal del estudiante (igual que Admisión → su detalle): un ESTUDIANTE
+ * no ve la lista admin; se redirige al detalle de SU propio aporte
+ * (`/pagos/:id`, reutilizando PagosDetail). El resto de roles ve el listado.
  */
 
 import { PagosListProvider } from '@application-pagos/providers';
 import { useAuth, esEstudiante } from '@application-auth';
 import PagosList from '@pagos/pages/PagosList';
-import MisAportesConnector from './MisAportesConnector.jsx';
+import AportesRedirect from './AportesRedirect.jsx';
 
-/**
- * Role-aware (patrón docente CoordinacionPage→MisCursosPage):
- * - ESTUDIANTE → "Mis aportes" (SOLO LECTURA, sus propios aportes).
- * - Staff → listado administrativo de pagos/aportes (sin cambios).
- */
 const ListConnector = () => {
   const { usuario } = useAuth();
 
   if (esEstudiante(usuario)) {
-    return <MisAportesConnector />;
+    return <AportesRedirect />;
   }
 
   return (

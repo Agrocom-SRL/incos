@@ -68,7 +68,9 @@ export const pagosRoutes = [
     path: '/pagos/:id',
     element: <PagosDetailConnector />,
     key: 'PAG-DETALLE',
-    permiso: 'finanzas.pago.ver',
+    // Staff (finanzas.pago.ver) o estudiante viendo SU aporte (matricula.pago.aporte.ver).
+    // El backend blinda /pagos-aportes/:id a la propia cabecera del estudiante (anti-IDOR).
+    permisoAny: ['finanzas.pago.ver', 'matricula.pago.aporte.ver'],
     accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'PAG-LIST',

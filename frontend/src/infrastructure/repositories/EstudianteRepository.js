@@ -219,20 +219,6 @@ export class EstudianteRepository extends IEstudianteRepository {
   }
 
   /**
-   * Mi matrícula del estudiante autenticado: materias matriculadas + horario semanal.
-   * GET /v1/estudiantes/mi-matricula (solo lectura; el estudiante se resuelve en servidor).
-   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
-   */
-  async obtenerMiMatricula() {
-    try {
-      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.MI_MATRICULA);
-      return handleSuccessResponse(response);
-    } catch (error) {
-      return handleErrorResponse(error, 'Error al obtener tu matrícula');
-    }
-  }
-
-  /**
    * Crea un nuevo estudiante
    * POST /v1/estudiantes
    *

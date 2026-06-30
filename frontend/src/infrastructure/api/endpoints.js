@@ -127,8 +127,6 @@ export const ESTUDIANTES_ENDPOINTS = {
   GENERATE_DECLARACION_JURADA: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/declaracion-jurada`,
   /** GET — Ficha completa (solo lectura) del estudiante autenticado (portal del estudiante). */
   MIS_DATOS: `${API_BASE}/estudiantes/mis-datos`,
-  /** GET — Mi matrícula: materias matriculadas + horario semanal del estudiante autenticado. */
-  MI_MATRICULA: `${API_BASE}/estudiantes/mi-matricula`,
 };
 export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
 export const ESTUDIANTES_BECAS_ENDPOINTS = {

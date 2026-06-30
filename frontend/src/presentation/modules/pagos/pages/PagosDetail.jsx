@@ -17,7 +17,7 @@ import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, Arrow
 import { downloadFile } from '@application/utils';
 import { useCasesFactory } from '@container';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
-import { useAuthContext } from '@application-auth';
+import { useAuthContext, esEstudiante } from '@application-auth';
 import { CompromisoAlertTag, formatFechaCompromiso } from '@atoms';
 import { useGuardarCompromiso } from '@application-finanzas/hooks/api/useGuardarCompromiso';
 
@@ -75,7 +75,10 @@ const PagosDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { message, modal } = App.useApp();
-  const { hasPermiso } = useAuthContext();
+  const { hasPermiso, usuario } = useAuthContext();
+  /** Vista propia del estudiante (reusa esta pantalla como "Mis aportes"). */
+  const esVistaPropiaEstudiante = esEstudiante(usuario);
+  const pageTitle = esVistaPropiaEstudiante ? 'Mis aportes' : 'Detalle del Pago';
 
   const studentIdFromState = location.state?.studentId ?? null;
   const menuSidebarKeyFromState = location.state?.menuSidebarKey;
@@ -650,22 +653,25 @@ const PagosDetail = () => {
                           },
                         ]
                       : []),
-                    {
-                      title: '',
-                      key: 'descargar',
-                      width: 140,
-                      render: (_, record) => (
-                        <Button
-                          type="link"
-                          size="small"
-                          icon={<DownloadOutlined />}
-                          onClick={() => handleDownloadReciboCuota(record.id ?? record.numero_recibo)}
-                          loading={downloadingCuotaId === (record.id ?? record.numero_recibo)}
-                        >
-                          Descargar recibo
-                        </Button>
-                      ),
-                    },
+                    // Descarga de recibo: solo con permiso EXPORTAR (oculto para el estudiante).
+                    ...(puedeExportarPago
+                      ? [{
+                          title: '',
+                          key: 'descargar',
+                          width: 140,
+                          render: (_, record) => (
+                            <Button
+                              type="link"
+                              size="small"
+                              icon={<DownloadOutlined />}
+                              onClick={() => handleDownloadReciboCuota(record.id ?? record.numero_recibo)}
+                              loading={downloadingCuotaId === (record.id ?? record.numero_recibo)}
+                            >
+                              Descargar recibo
+                            </Button>
+                          ),
+                        }]
+                      : []),
                   ]}
                 />
               </InfoCard>
@@ -727,6 +733,7 @@ const PagosDetail = () => {
     estadoAporte,
     loadingEstado,
     handleDownloadReciboCuota,
+    puedeExportarPago,
     downloadingCuotaId,
     studentIdForRegistrar,
     handleRegistrarSiguienteCuota,
@@ -743,7 +750,7 @@ const PagosDetail = () => {
 
   if (loading) {
     return (
-      <PageTemplate header={<PageHeader title="Detalle del Pago" breadcrumbItems={breadcrumbItems} />}>
+      <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
         <div className="sd-loading"><Spin size="large" /><p>Cargando datos del pago…</p></div>
       </PageTemplate>
     );
@@ -751,7 +758,7 @@ const PagosDetail = () => {
 
   if (error) {
     return (
-      <PageTemplate header={<PageHeader title="Detalle del Pago" breadcrumbItems={breadcrumbItems} />}>
+      <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
         <Alert title="Error al cargar el pago" description={error} type="error" showIcon />
       </PageTemplate>
     );
@@ -759,7 +766,7 @@ const PagosDetail = () => {
 
   if (!pago || !pago.id) {
     return (
-      <PageTemplate header={<PageHeader title="Detalle del Pago" breadcrumbItems={breadcrumbItems} />}>
+      <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
         <Empty description="No se encontró información del pago" />
       </PageTemplate>
     );
@@ -775,14 +782,15 @@ const PagosDetail = () => {
     pago.estudiante?.nombreCompleto || pago.estudiante?.codigoEstudiante,
     pago.gestion?.nombre || pago.gestion?.codigo,
   ].filter(Boolean).join(' · ') || 'Pago de aporte';
-  const headerActions = (
+  // En la vista propia del estudiante no hay "Volver" (no viene de un listado admin).
+  const headerActions = esVistaPropiaEstudiante ? null : (
     <button type="button" className="sd-btn sd-btn--outline" onClick={handleBack}>
       <ArrowLeftOutlined /> Volver
     </button>
   );
 
   return (
-    <PageTemplate header={<PageHeader title="Detalle del Pago" breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
       <div className="sd">
 
         {/* ═══ PROFILE CARD ═══ */}

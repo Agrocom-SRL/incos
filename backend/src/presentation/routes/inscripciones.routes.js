@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { inscripcionSelfOnlyGuard } from '../middleware/inscripcionSelfOnly.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
 import {
   createEnrollmentValidator,
@@ -90,6 +91,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
         ...detalleInscripcion,
         idValidator,
         validateRequest,
+        inscripcionSelfOnlyGuard, // Anti-IDOR: un estudiante solo ve SU propia matrícula
         (req, res, next) => controllers.getEnrollmentByIdController.handle(req, res, next)
     );
 
