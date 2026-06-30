@@ -6,6 +6,7 @@ import { DetailField, Button } from '@atoms';
 import { DetailPageShell, DetailProfileCard } from '@organisms';
 import { usePerfilPageContext } from '@/application/modules/perfil/hooks';
 import CambiarMiPasswordModal from '@modules/perfil/components/modals/CambiarMiPasswordModal.jsx';
+import EstudianteFichaSection from '@modules/perfil/components/organisms/EstudianteFichaSection.jsx';
 
 function iniciales(username) {
   const u = (username || '').trim();
@@ -18,6 +19,10 @@ export default function PerfilPage() {
     usuario,
     loading,
     vinculoPerfil,
+    esEstudiante,
+    misDatos,
+    loadingMisDatos,
+    errorMisDatos,
     openPass,
     saving,
     breadcrumbItems,
@@ -82,6 +87,15 @@ export default function PerfilPage() {
                   </DetailField>
                 ))}
               </DetailInfoCard>
+            ) : null}
+
+            {/* Portal del estudiante: ficha completa SOLO LECTURA */}
+            {esEstudiante ? (
+              <EstudianteFichaSection
+                misDatos={misDatos}
+                loading={loadingMisDatos}
+                error={errorMisDatos}
+              />
             ) : null}
           </>
         ) : null}

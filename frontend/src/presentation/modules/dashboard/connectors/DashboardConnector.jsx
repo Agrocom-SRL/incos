@@ -11,9 +11,26 @@
  */
 
 import { DashboardProvider } from '@application-dashboard';
+import { useAuth, esEstudiante } from '@application-auth';
 import Dashboard from '@dashboard/pages/Dashboard';
+import { DashboardPageShell, EstudianteHomePanel } from '@dashboard/components/organisms';
 
+/**
+ * Role-aware (patrón docente CoordinacionPage→MisCursosPage):
+ * - ESTUDIANTE → inicio del estudiante (no monta el provider de resumen admin).
+ * - Staff → dashboard administrativo (sin cambios).
+ */
 const DashboardConnector = () => {
+  const { usuario } = useAuth();
+
+  if (esEstudiante(usuario)) {
+    return (
+      <DashboardPageShell>
+        <EstudianteHomePanel />
+      </DashboardPageShell>
+    );
+  }
+
   return (
     <DashboardProvider>
       <Dashboard />

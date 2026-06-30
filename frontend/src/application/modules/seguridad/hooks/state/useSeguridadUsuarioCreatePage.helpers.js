@@ -94,9 +94,7 @@ export function getEditPageInitialValues(usuario) {
     values.vinculo_nombre_display = usuario?.vinculo_perfil?.nombre_completo || undefined;
     values.vinculo_ci_display = valorLinea(usuario?.vinculo_perfil?.lineas, 'CI');
     values.vinculo_email_display = valorLinea(usuario?.vinculo_perfil?.lineas, 'Email personal');
-    values.vinculo_codigo_display =
-      valorLinea(usuario?.vinculo_perfil?.lineas, 'Código') ||
-      valorLinea(usuario?.vinculo_perfil?.lineas, 'Código de estudiante');
+    values.vinculo_codigo_display = valorLinea(usuario?.vinculo_perfil?.lineas, 'Código estudiante');
   }
   if (categoria === 'ASIGNAR_DOCENTE') {
     values.docente_id = usuario?.referencia_id || undefined;

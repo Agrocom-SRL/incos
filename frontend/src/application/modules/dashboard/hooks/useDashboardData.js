@@ -19,7 +19,7 @@ export const PERMISO_ESTUDIANTES_DETALLE = 'matricula.admision.ver';
 dayjs.extend(relativeTime);
 dayjs.locale('es');
 
-const buildImageUrl = (imagenRuta) => {
+export const buildImageUrl = (imagenRuta) => {
   if (!imagenRuta) {
     return null;
   }
@@ -28,7 +28,7 @@ const buildImageUrl = (imagenRuta) => {
   return `${serverBaseUrl}${imagenRuta}`;
 };
 
-const mapCarreraToDashboard = (carreraBackend) => {
+export const mapCarreraToDashboard = (carreraBackend) => {
   if (!carreraBackend) {
     return null;
   }
@@ -51,7 +51,7 @@ const mapCarreraToDashboard = (carreraBackend) => {
   };
 };
 
-const mapActividad = (row) => {
+export const mapActividad = (row) => {
   if (!row) return null;
   const ocurrido = row.ocurrido_en;
   return {
@@ -64,7 +64,7 @@ const mapActividad = (row) => {
   };
 };
 
-const mapDocente = (row) => {
+export const mapDocente = (row) => {
   if (!row) return null;
   return {
     id: row.id,

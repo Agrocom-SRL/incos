@@ -19,4 +19,16 @@ export class ICalificacionCentralizadorRepository {
   async listarFilasCentralizadorPorParaleloGestion(paraleloGestionId) {
     throw new Error('Method listarFilasCentralizadorPorParaleloGestion() must be implemented');
   }
+
+  /**
+   * Filas del boletín de UN estudiante (mismas columnas de la vista 135, filtrando
+   * por estudiante). La vista ya está acotada a la asignación vigente/activa
+   * (gestión vigente), por lo que devuelve las asignaturas del estudiante en curso.
+   * @param {number} estudianteId
+   * @returns {Promise<Array<Object>>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async listarFilasCentralizadorPorEstudiante(estudianteId) {
+    throw new Error('Method listarFilasCentralizadorPorEstudiante() must be implemented');
+  }
 }

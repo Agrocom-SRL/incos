@@ -15,3 +15,4 @@ export {
   AUTH_NOT_FOUND_PUBLIC_PATH,
 } from './utils/authPaths.js';
 export { AuthContext } from './context';
+export { esEstudiante, ROL_ESTUDIANTE } from './utils/esEstudiante.js';

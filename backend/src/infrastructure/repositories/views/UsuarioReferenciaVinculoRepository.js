@@ -52,7 +52,7 @@ export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVincul
       case TIPOS_REFERENCIA.ESTUDIANTE:
         row = await this.#selectOne(
           `
-          SELECT nombres, apellido_paterno, apellido_materno, ci, expedicion, codigo_estudiante
+          SELECT nombres, apellido_paterno, apellido_materno, ci, expedicion, codigo_estudiante, email_personal
           FROM estudiantes
           WHERE id = :id AND deleted_at IS NULL
           LIMIT 1
@@ -63,7 +63,7 @@ export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVincul
       case TIPOS_REFERENCIA.DOCENTE:
         row = await this.#selectOne(
           `
-          SELECT nombres, apellido_paterno, apellido_materno, ci, expedicion, titulo_profesional
+          SELECT nombres, apellido_paterno, apellido_materno, ci, expedicion, titulo_profesional, email_personal
           FROM docentes
           WHERE id = :id AND deleted_at IS NULL
           LIMIT 1
@@ -94,6 +94,9 @@ export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVincul
     }
     if (tipoReferencia === TIPOS_REFERENCIA.DOCENTE && row.titulo_profesional) {
       lineas.push({ etiqueta: 'Título profesional', valor: String(row.titulo_profesional) });
+    }
+    if (row.email_personal) {
+      lineas.push({ etiqueta: 'Email personal', valor: String(row.email_personal) });
     }
 
     return {

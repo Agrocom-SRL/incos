@@ -110,8 +110,6 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.ver', 'DETALLE'
-  UNION ALL SELECT 'ESTUDIANTE', 'matricula.beca.ver', 'LISTAR'
-  UNION ALL SELECT 'ESTUDIANTE', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'ELIMINAR'
@@ -145,6 +143,7 @@ FROM (
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'DETALLE'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'EDITAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'EXPORTAR'
+  -- ESTUDIANTE: ve SUS aportes (la misma opción de menú "Aportes" → "Mis aportes" por wrapper de rol)
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.pago.aporte.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.pasantia.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.pasantia.ver', 'DETALLE'

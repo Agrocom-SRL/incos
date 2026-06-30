@@ -17,6 +17,8 @@ export { UpdateCuentaPagoController } from './cuentas-pago/update.controller.js'
 export { RegisterPagoAporteController } from './pagos-aportes/register.controller.js';
 export { ListPagosAportesController } from './pagos-aportes/list.controller.js';
 export { GetPaymentAporteByIdController } from './pagos-aportes/detail.controller.js';
+export { MisAportesController } from './pagos-aportes/mis-aportes.controller.js';
+export { MisAporteDetailController } from './pagos-aportes/mis-aporte-detail.controller.js';
 export { GetEstadoAporteRegistroController } from './pagos-aportes/estado-registro.controller.js';
 export { DeletePaymentAporteController } from './pagos-aportes/delete.controller.js';
 export { DeletePaymentInstallmentController } from './pagos-aportes/delete-cuota.controller.js';

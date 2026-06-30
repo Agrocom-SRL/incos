@@ -12,6 +12,8 @@ const DashboardCarrerasSection = ({
     onVerTodas,
     onCarreraClick,
     detalleInteractivo = true,
+    title = 'Nuestras Carreras',
+    emptyText = 'No hay carreras activas para mostrar.',
 }) => {
     return (
         <Card
@@ -34,21 +36,23 @@ const DashboardCarrerasSection = ({
                             margin: 0,
                         }}
                     >
-                        Nuestras Carreras
+                        {title}
                     </Title>
-                    <Typography.Link
-                        style={{
-                            color: allColors.colorPrimary,
-                            fontSize: `${typography.fontSize}px`,
-                            fontWeight: typography.fontWeightStrong,
-                        }}
-                        onClick={onVerTodas}
-                    >
-                        Ver todas
-                    </Typography.Link>
+                    {onVerTodas ? (
+                        <Typography.Link
+                            style={{
+                                color: allColors.colorPrimary,
+                                fontSize: `${typography.fontSize}px`,
+                                fontWeight: typography.fontWeightStrong,
+                            }}
+                            onClick={onVerTodas}
+                        >
+                            Ver todas
+                        </Typography.Link>
+                    ) : null}
                 </Flex>
                 {carreras.length === 0 ? (
-                    <Typography.Text type="secondary">No hay carreras activas para mostrar.</Typography.Text>
+                    <Typography.Text type="secondary">{emptyText}</Typography.Text>
                 ) : (
                     <Flex gap={allSpacing.marginLG} wrap="wrap">
                         {carreras.map((carrera) => (

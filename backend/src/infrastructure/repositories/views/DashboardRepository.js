@@ -2,8 +2,24 @@ import { sequelize } from '../../database/sequelize.js';
 import { DASHBOARD_QUERY_TARGETS } from '../../constants/dashboardQuery.targets.js';
 import { IDashboardRepository } from '../../../domain/interfaces/repositories/IDashboardRepository.js';
 
-const { vistaActividadesRecientes, vistaDocentePanel, vistaEstudiantePanel, tablaEstudiantes } =
-  DASHBOARD_QUERY_TARGETS;
+const {
+  vistaActividadesRecientes,
+  vistaDocentePanel,
+  vistaEstudiantePanel,
+  tablaEstudiantes,
+  vistaEstudianteCarreraReciente,
+  vistaCalificacionEstudianteMatriculaCurso,
+  vistaAsignacionDocenteDetalle,
+  tablaCarreras,
+  tablaSesiones,
+  tablaPagoCuotas,
+  tablaPagoAporte,
+  tablaInscripciones,
+  tablaEstudiantesDatosAcademicos,
+  tablaGestiones,
+  tablaEstudiantesBecas,
+  tablaBecasDescuentos,
+} = DASHBOARD_QUERY_TARGETS;
 
 /**
  * Consultas agregadas para el resumen del panel principal (dashboard).
@@ -139,5 +155,225 @@ export class DashboardRepository extends IDashboardRepository {
       replacements: [lim],
       type: sequelize.QueryTypes.SELECT,
     });
+  }
+
+  // ============================================================================
+  // Portal del estudiante: GET /dashboard/mi-resumen
+  // El estudiante se resuelve SIEMPRE en servidor (anti-IDOR). Estos métodos
+  // reciben el estudianteId/usuarioId ya resuelto desde el use case.
+  // ============================================================================
+
+  /**
+   * Identidad mínima del estudiante de la sesión (torso de la tabla estudiantes).
+   * nombre legible en orden institucional APELLIDOS NOMBRES.
+   *
+   * @param {number} estudianteId
+   * @returns {Promise<{ nombre: string, codigo: string }>}
+   */
+  async findEstudianteResumen(estudianteId) {
+    const query = `
+      SELECT
+        TRIM(CONCAT_WS(' ', e.apellido_paterno, e.apellido_materno, e.nombres)) AS nombre,
+        e.codigo_estudiante AS codigo
+      FROM ${tablaEstudiantes} e
+      WHERE e.id = ?
+        AND e.deleted_at IS NULL
+      LIMIT 1
+    `;
+    const rows = await sequelize.query(query, {
+      replacements: [estudianteId],
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const row = rows[0] || {};
+    return {
+      nombre: row.nombre ?? '',
+      codigo: row.codigo ?? '',
+    };
+  }
+
+  /**
+   * Carrera de la inscripción más reciente del estudiante (vista 38) enriquecida
+   * con id e imagen desde la tabla `carreras` (join por código).
+   *
+   * @param {number} estudianteId
+   * @returns {Promise<{ id, codigo, nombre, color_hex, imagen_ruta }|null>}
+   */
+  async findCarreraDeEstudiante(estudianteId) {
+    const query = `
+      SELECT
+        c.id,
+        c.codigo,
+        c.nombre,
+        c.color_hex,
+        c.imagen_ruta
+      FROM ${vistaEstudianteCarreraReciente} vc
+      INNER JOIN ${tablaCarreras} c
+        ON c.codigo = vc.carrera_codigo
+        AND c.deleted_at IS NULL
+      WHERE vc.estudiante_id = ?
+      LIMIT 1
+    `;
+    const rows = await sequelize.query(query, {
+      replacements: [estudianteId],
+      type: sequelize.QueryTypes.SELECT,
+    });
+    return rows[0] ?? null;
+  }
+
+  /**
+   * Docentes de las asignaturas de la inscripción vigente del estudiante.
+   * Une matrícula del estudiante (vista 110) con el detalle de asignación (vista 130),
+   * un registro por docente (DISTINCT por docente_id, materias agregadas).
+   *
+   * @param {number} estudianteId
+   * @param {number} limit
+   * @returns {Promise<Array<{ id, nombre_completo, titulo_profesional, avatar_seed }>>}
+   */
+  async findDocentesDeEstudiante(estudianteId, limit = 10) {
+    const lim = Math.min(30, Math.max(1, parseInt(limit, 10) || 10));
+    const query = `
+      SELECT
+        vad.docente_id AS id,
+        TRIM(CONCAT_WS(' ',
+          vad.docente_apellido_paterno,
+          vad.docente_apellido_materno,
+          vad.docente_nombres
+        )) AS nombre_completo,
+        GROUP_CONCAT(
+          DISTINCT COALESCE(vad.materia_sigla, vad.materia_nombre)
+          ORDER BY COALESCE(vad.materia_sigla, vad.materia_nombre)
+          SEPARATOR ', '
+        ) AS titulo_profesional,
+        CONCAT('DOCENTE-', vad.docente_id) AS avatar_seed
+      FROM ${vistaCalificacionEstudianteMatriculaCurso} vc
+      INNER JOIN ${vistaAsignacionDocenteDetalle} vad
+        ON vad.id = vc.asignacion_docente_id
+      WHERE vc.estudiante_id = ?
+        AND vad.docente_id IS NOT NULL
+      GROUP BY
+        vad.docente_id,
+        vad.docente_apellido_paterno,
+        vad.docente_apellido_materno,
+        vad.docente_nombres
+      ORDER BY nombre_completo ASC
+      LIMIT ?
+    `;
+    return sequelize.query(query, {
+      replacements: [estudianteId, lim],
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
+
+  /**
+   * Feed PROPIO del estudiante (no el global admin): sus pagos, su matrícula y su
+   * beca, normalizados al shape de actividad (artefacto_tipo, artefacto_id,
+   * link_path, titulo, detalle, avatar_seed, ocurrido_en) y ordenados DESC.
+   *
+   * @param {number} estudianteId
+   * @param {number} limit
+   * @returns {Promise<Array<Record<string, unknown>>>}
+   */
+  async findActividadesDeEstudiante(estudianteId, limit = 10) {
+    const lim = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+    const query = `
+      SELECT * FROM (
+        SELECT
+          'PAGO' AS artefacto_tipo,
+          pc.id AS artefacto_id,
+          '/matricula/aportes/listar' AS link_path,
+          'Pago de aporte' AS titulo,
+          CONCAT('Bs ', FORMAT(pc.monto, 0), ' · recibo ', pc.numero_recibo) AS detalle,
+          CONCAT('PAGO-', pc.id) AS avatar_seed,
+          CAST(pc.fecha_pago AS DATETIME) AS ocurrido_en
+        FROM ${tablaPagoCuotas} pc
+        INNER JOIN ${tablaPagoAporte} pa
+          ON pa.id = pc.pago_aporte_id
+          AND pa.deleted_at IS NULL
+        WHERE pa.estudiante_id = ?
+          AND pc.deleted_at IS NULL
+          AND pc.activo = TRUE
+
+        UNION ALL
+
+        SELECT
+          'MATRICULA' AS artefacto_tipo,
+          ins.id AS artefacto_id,
+          '/perfil' AS link_path,
+          'Matrícula' AS titulo,
+          NULLIF(CONCAT_WS(' · ', g.nombre, c.nombre), '') AS detalle,
+          CONCAT('MATRICULA-', ins.id) AS avatar_seed,
+          CAST(ins.created_at AS DATETIME) AS ocurrido_en
+        FROM ${tablaInscripciones} ins
+        INNER JOIN ${tablaEstudiantesDatosAcademicos} eda
+          ON eda.id = ins.datos_academicos_id
+          AND eda.deleted_at IS NULL
+        LEFT JOIN ${tablaGestiones} g
+          ON g.id = ins.gestion_id
+          AND g.deleted_at IS NULL
+        LEFT JOIN ${tablaCarreras} c
+          ON c.id = eda.carrera_id
+          AND c.deleted_at IS NULL
+        WHERE eda.estudiante_id = ?
+          AND ins.deleted_at IS NULL
+          AND ins.activo = TRUE
+
+        UNION ALL
+
+        SELECT
+          'BECA' AS artefacto_tipo,
+          eb.id AS artefacto_id,
+          '/perfil' AS link_path,
+          'Beca asignada' AS titulo,
+          NULLIF(CONCAT_WS(' · ', COALESCE(bd.nombre, 'Beca'), eb.estado), '') AS detalle,
+          CONCAT('BECA-', eb.id) AS avatar_seed,
+          CAST(eb.created_at AS DATETIME) AS ocurrido_en
+        FROM ${tablaEstudiantesBecas} eb
+        LEFT JOIN ${tablaBecasDescuentos} bd
+          ON bd.id = eb.beca_descuento_id
+          AND bd.deleted_at IS NULL
+        WHERE eb.estudiante_id = ?
+          AND eb.deleted_at IS NULL
+          AND eb.activo = TRUE
+      ) feed
+      ORDER BY ocurrido_en DESC
+      LIMIT ?
+    `;
+    return sequelize.query(query, {
+      replacements: [estudianteId, estudianteId, estudianteId, lim],
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
+
+  /**
+   * Sesiones del usuario de la sesión registradas hoy y en el mes calendario actual.
+   * Mismo patrón que countEstudiantesRegistradosHoyYMes pero filtrado por usuario_id.
+   *
+   * @param {number} usuarioId
+   * @returns {Promise<{ hoy: number, mes: number }>}
+   */
+  async countSesionesUsuarioHoyYMes(usuarioId) {
+    const query = `
+      SELECT
+        SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS hoy,
+        SUM(
+          CASE
+            WHEN YEAR(created_at) = YEAR(CURDATE())
+             AND MONTH(created_at) = MONTH(CURDATE())
+            THEN 1 ELSE 0
+          END
+        ) AS mes
+      FROM ${tablaSesiones}
+      WHERE usuario_id = ?
+        AND deleted_at IS NULL
+    `;
+    const rows = await sequelize.query(query, {
+      replacements: [usuarioId],
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const row = rows[0] || {};
+    return {
+      hoy: Number(row.hoy ?? 0),
+      mes: Number(row.mes ?? 0),
+    };
   }
 }

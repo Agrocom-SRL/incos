@@ -45,6 +45,9 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         ]),
     ];
     const documentoPdf = [authenticate, verificarPermiso('matricula.documento.ver', 'GENERAR_PDF')];
+    // "Mis datos" se consume desde "Mi perfil" (autoservicio, sin permiso propio, como /auth/me).
+    // El acceso lo blinda resolveEstudianteIdForUsuario: 403 si el usuario no es estudiante.
+    const misDatosDetalle = [authenticate];
     const becaListar = [authenticate, verificarPermiso('matricula.beca.ver', 'LISTAR')];
     const becaDetalle = [authenticate, verificarPermiso('matricula.beca.ver', 'DETALLE')];
     const becaAsignarCrear = [authenticate, verificarPermiso('matricula.beca.asignar', 'CREAR')];
@@ -130,6 +133,23 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     validateRequest,  // 2. Middleware que procesa errores
     (req, res, next) => controllers.declaracionJuradaController.handle(req, res, next)  // 3. Controller al final
   );
+
+    // ============================================
+    // PORTAL DEL ESTUDIANTE (datos propios)
+    // ============================================
+
+    /**
+     * GET /api/v1/estudiantes/mis-datos
+     * Datos del estudiante de la sesión (se resuelve desde req.usuario.id en servidor).
+     * Payload recortado: { student, guardians, origins, academicData, inscripcion }.
+     *
+     * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+     */
+    router.get(
+        '/mis-datos',
+        ...misDatosDetalle,
+        (req, res, next) => controllers.getMisDatosEstudianteController.handle(req, res, next)
+    );
 
     // ============================================
     // BÚSQUEDA DE ESTUDIANTE

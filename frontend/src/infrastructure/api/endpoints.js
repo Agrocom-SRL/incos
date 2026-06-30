@@ -125,6 +125,8 @@ export const ESTUDIANTES_ENDPOINTS = {
   GENERATE_ACTA_COMPROMISO: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/acta-compromiso`,
   // Endpoint específico para generar declaración jurada (formulario/boleta)
   GENERATE_DECLARACION_JURADA: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/declaracion-jurada`,
+  /** GET — Ficha completa (solo lectura) del estudiante autenticado (portal del estudiante). */
+  MIS_DATOS: `${API_BASE}/estudiantes/mis-datos`,
 };
 export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
 export const ESTUDIANTES_BECAS_ENDPOINTS = {
@@ -336,6 +338,10 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/bimestre/${bimestre}/observaciones/${estudianteId}`,
   EXPORT_BOLETIN_ESTUDIANTE: (paraleloGestionId, estudianteId) =>
     `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/estudiante/${estudianteId}/boletin`,
+  /** GET — Boletín del estudiante autenticado (portal del estudiante). */
+  MI_BOLETIN: `${API_BASE}/calificaciones/mi-boletin`,
+  /** GET — Boletín del estudiante autenticado en PDF (descarga binaria). */
+  MI_BOLETIN_PDF: `${API_BASE}/calificaciones/mi-boletin/pdf`,
 };
 
 // ============================================
@@ -376,6 +382,10 @@ export const CUENTAS_PAGO_ENDPOINTS = createCRUDEndpoints('/cuentas-pago');
 export const CONFIGURACION_APORTES_ENDPOINTS = createCRUDEndpoints('/configuracion-aportes');
 export const PAGOS_APORTES_ENDPOINTS = {
   ...createCRUDEndpoints('/pagos-aportes'),
+  // Portal del estudiante: sus aportes (resumen + lista) y el detalle (pagos realizados)
+  MIS_APORTES: `${API_BASE}/pagos-aportes/mis-aportes`,
+  MIS_APORTES_DETALLE: (cabeceraId) =>
+    `${API_BASE}/pagos-aportes/mis-aportes/${encodeURIComponent(String(cabeceraId))}`,
   UPDATE_CUOTA: (cuotaId) =>
     `${API_BASE}/pagos-aportes/cuotas/${encodeURIComponent(String(cuotaId))}`,
   DELETE_CUOTA: (cuotaId) =>
@@ -407,6 +417,8 @@ export const PAGOS_APORTES_ENDPOINTS = {
 // ============================================
 export const DASHBOARD_ENDPOINTS = {
   RESUMEN: `${API_BASE}/dashboard/resumen`,
+  /** GET — resumen personal del estudiante autenticado (portal del estudiante). */
+  MI_RESUMEN: `${API_BASE}/dashboard/mi-resumen`,
 };
 
 // ============================================

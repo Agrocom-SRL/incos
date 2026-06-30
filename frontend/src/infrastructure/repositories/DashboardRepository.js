@@ -17,6 +17,19 @@ export class DashboardRepository {
       return handleErrorResponse(error, 'Error al cargar el resumen del dashboard');
     }
   }
+
+  /**
+   * GET /v1/dashboard/mi-resumen
+   * Resumen personal del estudiante autenticado (carrera, docentes, actividades, stats).
+   */
+  async obtenerMiResumen() {
+    try {
+      const response = await apiClient.get(DASHBOARD_ENDPOINTS.MI_RESUMEN);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar tu resumen del dashboard');
+    }
+  }
 }
 
 export default new DashboardRepository();

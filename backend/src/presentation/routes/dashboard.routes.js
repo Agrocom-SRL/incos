@@ -1,5 +1,6 @@
 import express from 'express';
 import { listarCatalogoReferencia } from '../middleware/permisos.middleware.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 /**
  * Rutas del resumen del dashboard (panel principal).
@@ -10,10 +11,19 @@ import { listarCatalogoReferencia } from '../middleware/permisos.middleware.js';
 export function buildDashboardRouter({ controllers }) {
   const router = express.Router();
 
+  // Panel admin (catálogo de referencia). Permiso de dominio.
   router.get(
     '/resumen',
     ...listarCatalogoReferencia,
     (req, res, next) => controllers.getDashboardResumenController.handle(req, res, next)
+  );
+
+  // Panel del estudiante (autoservicio como /auth/me). Gate solo `authenticate`:
+  // el vínculo usuario↔estudiante se resuelve en servidor y blinda el acceso (403).
+  router.get(
+    '/mi-resumen',
+    authenticate,
+    (req, res, next) => controllers.getMiDashboardResumenController.handle(req, res, next)
   );
 
   return router;
