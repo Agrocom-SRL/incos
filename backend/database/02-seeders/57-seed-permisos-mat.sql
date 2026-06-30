@@ -87,8 +87,10 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'EXPORTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.admision.ver', 'EXPORTAR'
-  -- ESTUDIANTE: el ítem "Admisión" → su ficha propia (wrapper de rol, solo lectura)
+  -- ESTUDIANTE: el ítem "Admisión" → SU propio detalle (EstudiantesDetail, solo lectura).
+  -- DETALLE permite GET /estudiantes/:id, blindado en backend a su propio id (anti-IDOR).
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.admision.ver', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.admision.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.editar', 'EDITAR'

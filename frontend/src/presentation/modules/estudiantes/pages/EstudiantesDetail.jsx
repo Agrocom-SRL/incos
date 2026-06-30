@@ -26,7 +26,7 @@ import {
   IdcardOutlined,
 } from '@ant-design/icons';
 import { useStudentDetailContext, useDeleteBecaAsignada } from '@application-estudiantes/hooks';
-import { useAuthContext } from '@application-auth';
+import { useAuthContext, esEstudiante } from '@application-auth';
 import {
   GuardiansSection,
   DocumentDeliveriesSection,
@@ -72,7 +72,10 @@ const InfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
   const { message, modal } = App.useApp();
-  const { hasPermiso } = useAuthContext();
+  const { hasPermiso, usuario } = useAuthContext();
+  /** Vista propia del estudiante (reusa esta pantalla como "Mis datos"). */
+  const esVistaPropiaEstudiante = esEstudiante(usuario);
+  const pageTitle = esVistaPropiaEstudiante ? 'Mis datos' : 'Detalle del Estudiante';
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
@@ -479,7 +482,8 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }] : []),
-    {
+    // "Acceso al sistema": gestión de cuenta — oculto en la vista propia del estudiante.
+    ...(esVistaPropiaEstudiante ? [] : [{
       key: 'acceso',
       label: <span className="sd-tab-label"><IdcardOutlined /> Acceso al sistema</span>,
       children: (
@@ -496,8 +500,9 @@ const EstudiantesDetail = () => {
           />
         </div>
       ),
-    },
+    }]),
   ], [
+    esVistaPropiaEstudiante,
     studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins,
     nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion,
     handleNuevaInscripcion, academicData, catalogs, transitability, transfer, handleDeleteBeca,
@@ -509,24 +514,25 @@ const EstudiantesDetail = () => {
 
   /* ── Estados de carga / error ── */
   if (loading) return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
       <div className="sd-loading"><Spin size="large" /><p>Cargando datos del estudiante…</p></div>
     </PageTemplate>
   );
 
   if (error) return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
       <Alert title="Error al cargar el estudiante" description={error} type="error" showIcon />
     </PageTemplate>
   );
 
   if (!student?.student) return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
       <Empty description="No se encontró información del estudiante" />
     </PageTemplate>
   );
 
-  const headerActions = (
+  // En la vista propia del estudiante no hay "Volver" (no viene de un listado admin).
+  const headerActions = esVistaPropiaEstudiante ? null : (
     <button
       type="button"
       className="sd-btn sd-btn--outline"
@@ -537,7 +543,7 @@ const EstudiantesDetail = () => {
   );
 
   return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
       <div className="sd">
 
         {/* ═══ PROFILE CARD ═══ */}

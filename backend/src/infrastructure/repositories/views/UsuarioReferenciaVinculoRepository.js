@@ -31,7 +31,9 @@ export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVincul
    * @returns {Promise<{
    *   tipo_etiqueta: string,
    *   nombre_completo: string,
-   *   lineas: { etiqueta: string, valor: string }[]
+   *   lineas: { etiqueta: string, valor: string }[],
+   *   referencia_id: number,
+   *   tipo_referencia: string | null
    * } | null>}
    */
   async findPerfilVinculado(tipoReferencia, referenciaId) {
@@ -41,7 +43,7 @@ export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVincul
 
     // Usuario con ficha en personal pero sin tipo_referencia (p. ej. administrador del sistema con simetría de alta)
     if (!tipoReferencia || String(tipoReferencia).trim() === '') {
-      return this.#perfilDesdePersonalId(id, 'Personal');
+      return this.#perfilDesdePersonalId(id, 'Personal', null);
     }
 
     const tipoEtiqueta = TIPO_ETIQUETA[tipoReferencia];
@@ -74,7 +76,7 @@ export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVincul
       case TIPOS_REFERENCIA.RECTOR:
       case TIPOS_REFERENCIA.DIRECTOR:
       case TIPOS_REFERENCIA.SECRETARIA:
-        return this.#perfilDesdePersonalId(id, tipoEtiqueta);
+        return this.#perfilDesdePersonalId(id, tipoEtiqueta, tipoReferencia);
       default:
         return null;
     }
@@ -103,13 +105,15 @@ export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVincul
       tipo_etiqueta: tipoEtiqueta,
       nombre_completo: nombre,
       lineas,
+      referencia_id: id,
+      tipo_referencia: tipoReferencia ?? null,
     };
   }
 
   /**
    * Perfil legible desde tabla personal (misma consulta para RECTOR/DIRECTOR/SECRETARIA y tipo_referencia NULL).
    */
-  async #perfilDesdePersonalId(id, tipoEtiqueta) {
+  async #perfilDesdePersonalId(id, tipoEtiqueta, tipoReferencia = null) {
     const row = await this.#selectOne(
       `
       SELECT nombres, apellido_paterno, apellido_materno, ci, expedicion, email_personal, celular
@@ -135,6 +139,8 @@ export class UsuarioReferenciaVinculoRepository extends IUsuarioReferenciaVincul
       tipo_etiqueta: tipoEtiqueta,
       nombre_completo: nombre,
       lineas,
+      referencia_id: id,
+      tipo_referencia: tipoReferencia ?? null,
     };
   }
 
