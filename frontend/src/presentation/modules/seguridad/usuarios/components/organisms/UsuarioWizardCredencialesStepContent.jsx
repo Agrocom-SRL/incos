@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { Col, Flex, Form, Input, Row, Space, Typography } from 'antd';
 import UsuarioFormSection from './UsuarioFormSection.jsx';
 import { createUsuarioWizardCredencialesFields } from '@modules/seguridad/usuarios/config/usuarioWizardCredencialesFields.jsx';
-import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
+import { TIPO_CONFIG } from '@modules/seguridad/roles/constants/rolTipoConfig.js';
 import { getWizardRoleResumenVisual } from '@modules/seguridad/usuarios/constants/usuarioCargoInstitucionalVisual.jsx';
 
 const { Paragraph, Text } = Typography;
@@ -88,7 +88,7 @@ function CredencialesRolAsignadoPanel({ role }) {
         align="center"
         justify="center"
       >
-        <Icon style={{ fontSize: 24 }} />
+        <Icon className="seg-wizard-rol-asignado-panel__glyph" />
       </Flex>
       <Flex className="seg-wizard-rol-asignado-panel__body" vertical>
         <Text strong className="seg-wizard-rol-asignado-panel__nombre" style={{ color: visual.color }}>

@@ -12,7 +12,7 @@ import UsuarioCategoriaCreacionStepContent from '@modules/seguridad/usuarios/com
 import UsuarioWizardPerfilStepContent from '@modules/seguridad/usuarios/components/organisms/UsuarioWizardPerfilStepContent.jsx';
 import UsuarioWizardCredencialesStepContent from '@modules/seguridad/usuarios/components/organisms/UsuarioWizardCredencialesStepContent.jsx';
 import '@presentation/styles/pages/detail-page.css';
-import '@modules/seguridad/styles/seguridad.css';
+import '@modules/seguridad/usuarios/styles/usuarios.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 export default function UsuarioCreatePage() {

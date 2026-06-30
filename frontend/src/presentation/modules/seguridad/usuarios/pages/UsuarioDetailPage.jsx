@@ -20,6 +20,7 @@ import CambiarPasswordModal from '@modules/seguridad/usuarios/components/modals/
 import EditarUsuarioModal from '@modules/seguridad/usuarios/components/modals/EditarUsuarioModal.jsx';
 import CambiarEstadoModal from '@modules/seguridad/usuarios/components/modals/CambiarEstadoModal.jsx';
 import UsuarioPermisosTab from '@modules/seguridad/usuarios/components/organisms/UsuarioPermisosTab.jsx';
+import '@modules/seguridad/usuarios/styles/usuarios.css';
 
 function fmtDateTime(value) {
   if (!value) return '—';

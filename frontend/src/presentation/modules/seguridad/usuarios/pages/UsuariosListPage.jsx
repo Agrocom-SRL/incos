@@ -22,7 +22,7 @@ import {
 } from '@modules/seguridad/usuarios/config/usuariosCategoriaTabs.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@modules/seguridad/styles/seguridad.css';
+import '@modules/seguridad/usuarios/styles/usuarios.css';
 
 export default function UsuariosListPage() {
   const [searchParams, setSearchParams] = useSearchParams();

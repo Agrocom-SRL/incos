@@ -3,7 +3,7 @@
  * El tamaño lo fija el CSS en rejilla (.seg-cargo-radio-group); aquí solo contenido y estado seleccionado.
  */
 import { Radio, Typography } from 'antd';
-import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
+import { TIPO_CONFIG } from '@modules/seguridad/roles/constants/rolTipoConfig.js';
 import { getInstitutionalCargoVisual } from '@modules/seguridad/usuarios/constants/usuarioCargoInstitucionalVisual.jsx';
 
 const { Text } = Typography;

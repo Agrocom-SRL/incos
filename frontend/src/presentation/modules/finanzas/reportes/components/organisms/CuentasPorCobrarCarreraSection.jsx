@@ -18,7 +18,7 @@
 import { Card, Flex, Table, Tag, Typography } from 'antd';
 import { formatBs, formatPorcentaje } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
 import { allSpacing } from '@theme/tokens';
-import '@finanzas/styles/finanzas-planilla.css';
+import '@finanzas/reportes/styles/finanzas-planilla.css';
 
 const { Title } = Typography;
 

@@ -1,5 +1,5 @@
 import { SeguridadRolPermisosProvider } from '@/application/modules/seguridad/providers';
-import RolPermisosPage from '@modules/seguridad/pages/RolPermisosPage.jsx';
+import RolPermisosPage from '@modules/seguridad/roles/pages/RolPermisosPage.jsx';
 
 const RolPermisosConnector = () => (
   <SeguridadRolPermisosProvider>

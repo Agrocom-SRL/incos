@@ -5,8 +5,8 @@ import { KeyOutlined } from '@ant-design/icons';
 import { TableActions } from '@molecules';
 import { IdentidadCelda, StatusPill } from '@atoms';
 import { useCasesFactory } from '@container';
-import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
-import { rolColorVar, rolPillClass } from '@modules/seguridad/components/atoms/rolColor.js';
+import { TIPO_CONFIG } from '@modules/seguridad/roles/constants/rolTipoConfig.js';
+import { rolColorVar, rolPillClass } from '@modules/seguridad/roles/components/atoms/rolColor.js';
 import { useRolesList } from '@/application/modules/seguridad/hooks/state/useRolesList';
 
 function errMsg(json) {

@@ -219,20 +219,10 @@ export default function UsuarioWizardVinculoBusqueda({
       label: isEstudiante ? 'Buscar Estudiante' : 'Buscar Docente',
       placeholder,
       required: true,
-      span: 12,
+      span: 24,
       allowClear: true,
       onSearch,
       disabled: isEditMode,
-    },
-    {
-      name: `${fieldName}_info`,
-      type: 'alert',
-      label: '',
-      message: `Instrucciones de búsqueda (${isEstudiante ? 'estudiantes' : 'docentes'})`,
-      description: intro,
-      alertType: 'info',
-      span: 12,
-      required: false,
     },
     {
       name: `${fieldName}_results`,
@@ -253,7 +243,7 @@ export default function UsuarioWizardVinculoBusqueda({
 
   return (
     <div className="usuario-wizard-step">
-      <UsuarioFormSection title={title}>
+      <UsuarioFormSection title={title} description={intro}>
         <Form.Item
           name={fieldName}
           preserve

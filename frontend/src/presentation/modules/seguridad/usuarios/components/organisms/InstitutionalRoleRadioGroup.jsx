@@ -1,6 +1,6 @@
 /**
  * Agrupa las opciones de rol institucional: es el control que envuelve Form.Item (value/onChange de Ant Design).
- * Cada opción la renderiza `InstitutionalRoleRadioOption`; el aspecto en rejilla está en `seguridad.css`.
+ * Cada opción la renderiza `InstitutionalRoleRadioOption`; el aspecto en rejilla está en `usuarios/styles/usuarios.css`.
  */
 import { Radio } from 'antd';
 import InstitutionalRoleRadioOption from './InstitutionalRoleRadioOption.jsx';

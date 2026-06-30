@@ -32,7 +32,7 @@ import CuentasPorCobrarLeyenda from '@finanzas/reportes/components/organisms/Cue
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@finanzas/styles/finanzas-planilla.css';
+import '@finanzas/reportes/styles/finanzas-planilla.css';
 import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 
 const { Paragraph, Text } = Typography;

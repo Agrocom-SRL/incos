@@ -13,10 +13,10 @@ import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
 import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
-import CrearRolModal from '@modules/seguridad/components/modals/CrearRolModal.jsx';
+import CrearRolModal from '@modules/seguridad/roles/components/modals/CrearRolModal.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@modules/seguridad/styles/seguridad.css';
+import '@modules/seguridad/roles/styles/roles.css';
 
 export default function RolesListPage() {
   const {

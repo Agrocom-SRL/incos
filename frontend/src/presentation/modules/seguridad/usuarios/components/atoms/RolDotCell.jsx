@@ -2,7 +2,7 @@
  * Celda de rol con indicador de color por categoría (patrón `cfg-carrera-titulo-dot`).
  * Estilos importados por la página de listado.
  */
-import { rolColorVar } from '@modules/seguridad/components/atoms/rolColor.js';
+import { rolColorVar } from '@modules/seguridad/roles/components/atoms/rolColor.js';
 
 const RolDotCell = ({ nombre, tipo, isSystem = false, sub }) => (
   <span className="cfg-carrera-titulo-dot">

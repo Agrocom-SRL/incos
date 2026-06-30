@@ -1,66 +1,10 @@
+/* Estilos del ítem de menú SEG → Administración de Usuarios (ficha, permisos y wizard de alta). */
+
+/* Fila de acciones (compartida con roles; utilidad mínima, duplicada para localidad). */
 .seg-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-/* Pill de categoría de rol (StatusPill) — listado de Roles. Solo presentación. */
-.seg-rol-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: var(--font-size-sm, 12px);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  border: 1px solid transparent;
-  white-space: nowrap;
-}
-
-/* Un hue por categoría (tokens del tema, sin hex). Alineado a rolColor.js / TIPO_CONFIG. */
-.seg-rol-pill--sistema {
-  background: var(--color-accent-bg);
-  color: var(--color-accent-text);
-  border-color: var(--color-accent-border);
-}
-
-.seg-rol-pill--rector {
-  background: var(--color-error-bg);
-  color: var(--color-error-text);
-  border-color: var(--color-error-border);
-}
-
-.seg-rol-pill--directivo {
-  background: var(--color-info-bg);
-  color: var(--color-info-text);
-  border-color: var(--color-info-border);
-}
-
-/* Secretaría: cian/teal sintetizado desde tokens azul + verde (distinto de directivo y docente). */
-.seg-rol-pill--secretaria {
-  background: color-mix(in srgb, var(--color-info-bg) 55%, var(--color-success-bg));
-  color: color-mix(in srgb, var(--color-info-text) 55%, var(--color-success-text));
-  border-color: color-mix(in srgb, var(--color-info-border) 55%, var(--color-success-border));
-}
-
-.seg-rol-pill--docente {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-  border-color: var(--color-success-border);
-}
-
-.seg-rol-pill--estudiante {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-  border-color: var(--color-warning-border);
-}
-
-.seg-rol-pill--default {
-  background: var(--color-bg-layout);
-  color: var(--color-text-secondary);
-  border-color: var(--color-border);
 }
 
 /* Tab de permisos de usuario: margen lateral en pestañas con tablas */
@@ -287,6 +231,10 @@
   background: var(--color-bg-container, #ffffff);
 }
 
+.seg-wizard-rol-asignado-panel__glyph {
+  font-size: 24px;
+}
+
 .seg-wizard-rol-asignado-panel__body {
   min-width: 0;
   flex: 1;
@@ -375,4 +323,3 @@
 .wizard-form__footer-error {
   margin-bottom: 16px;
 }
-

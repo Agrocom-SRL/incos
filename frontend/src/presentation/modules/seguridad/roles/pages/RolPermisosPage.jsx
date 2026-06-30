@@ -1,12 +1,13 @@
 import { Alert, Select, Tag, Typography } from 'antd';
 import { ArrowLeftOutlined, KeyOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
-import PermisosDominioPicker from '@modules/seguridad/components/PermisosDominioPicker.jsx';
+import PermisosDominioPicker from '@modules/seguridad/roles/components/organisms/PermisosDominioPicker.jsx';
 import { useSeguridadRolPermisosPageContext } from '@/application/modules/seguridad/hooks';
 import { PageTemplate } from '@templates';
 import { PageHeader, DetailInfoCard } from '@molecules';
 import { Button } from '@atoms';
 import { DetailPageShell, DetailProfileCard } from '@organisms';
+import '@modules/seguridad/roles/styles/roles.css';
 
 function iniciales(nombre) {
   return String(nombre || 'R').trim().slice(0, 2).toUpperCase();

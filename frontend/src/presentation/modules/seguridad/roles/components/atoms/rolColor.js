@@ -16,7 +16,7 @@ const TIPO_VAR = {
 export const rolColorVar = (tipo, isSystem = false) =>
   TIPO_VAR[tipo] || (isSystem ? 'var(--color-accent)' : 'var(--color-text-secondary)');
 
-/** Variante de pill (StatusPill) por categoría de rol. Clases en seguridad.css. */
+/** Variante de pill (StatusPill) por categoría de rol. Clases en roles/styles/roles.css. */
 const TIPO_PILL = {
   SISTEMA: 'seg-rol-pill--sistema',
   RECTOR: 'seg-rol-pill--rector',

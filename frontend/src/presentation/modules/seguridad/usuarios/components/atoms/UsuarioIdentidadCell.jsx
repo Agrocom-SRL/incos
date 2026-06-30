@@ -4,7 +4,7 @@
  * Estilos: clases `cfg-materia-identidad*` (importadas por la página de listado).
  */
 import { MailOutlined } from '@ant-design/icons';
-import { rolColorVar } from '@modules/seguridad/components/atoms/rolColor.js';
+import { rolColorVar } from '@modules/seguridad/roles/components/atoms/rolColor.js';
 
 const UsuarioIdentidadCell = ({ username, email, rolTipo, rolIsSystem = false }) => (
   <span className="cfg-materia-identidad">

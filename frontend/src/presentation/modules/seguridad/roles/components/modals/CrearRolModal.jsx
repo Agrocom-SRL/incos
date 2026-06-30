@@ -1,5 +1,5 @@
 import { Form, Input, Modal, Select } from 'antd';
-import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
+import { TIPO_CONFIG } from '@modules/seguridad/roles/constants/rolTipoConfig.js';
 
 const TIPO_OPTIONS = Object.entries(TIPO_CONFIG).map(([value, cfg]) => ({
   value,

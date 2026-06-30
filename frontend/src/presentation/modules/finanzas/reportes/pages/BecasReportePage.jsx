@@ -46,7 +46,7 @@ import {
 import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@finanzas/styles/finanzas-planilla.css';
+import '@finanzas/reportes/styles/finanzas-planilla.css';
 import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 import '@finanzas/reportes/styles/becas-reporte.css';
 
