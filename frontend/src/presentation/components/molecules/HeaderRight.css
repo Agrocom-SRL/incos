@@ -1,0 +1,87 @@
+/* ============================================================================
+   HEADER · Menú de usuario (perfil + logout)
+   ============================================================================
+   Estilo del popup del avatar en el header: cabecera con identidad (avatar,
+   nombre, correo, rol) + accesos. Solo tokens globales var(); cero hex nuevos.
+   ============================================================================ */
+
+/* Trigger en el header (avatar + nombre + caret). */
+.header-user__trigger {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-lg);
+  transition: background var(--transition-base) ease;
+}
+.header-user__trigger:hover {
+  background: var(--color-fill-tertiary);
+}
+.header-user__trigger-name {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+}
+.header-user__caret {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+}
+@media (max-width: 640px) {
+  .header-user__trigger-name,
+  .header-user__caret {
+    display: none;
+  }
+}
+
+/* Popup: ancho y sombra coherentes. */
+.header-user__dropdown .ant-dropdown-menu {
+  min-width: 264px;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-elevation-3, 0 8px 24px rgba(15, 23, 42, 0.12));
+}
+
+/* Cuadro de identidad dentro del popup (clickeable → Mi perfil). */
+.header-user__card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+}
+.header-user__avatar {
+  flex-shrink: 0;
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  font-weight: var(--font-weight-strong);
+}
+.header-user__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.header-user__name {
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  max-width: 170px;
+}
+.header-user__email {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  max-width: 170px;
+}
+/* Pill de rol (StatusPill seg-rol-pill--*) alineado a la izquierda. */
+.header-user__meta .seg-rol-pill {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+/* Filas de acción del popup. */
+.header-user__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-xs);
+  font-size: var(--font-size-base);
+}

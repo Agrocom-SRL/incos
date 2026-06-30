@@ -13,7 +13,9 @@ export const perfilRoutes = [
     key: 'PERFIL',
     permiso: null,
     accion: null,
-    menu: { label: 'Mi perfil', module: 'PERFIL', order: 10 },
+    // Sin ítem en el sidebar: el acceso a "Mi perfil" vive en el menú de usuario
+    // del header (HeaderRight). La ruta sigue activa para cualquier sesión válida.
+    menu: null,
   },
 ];
 
