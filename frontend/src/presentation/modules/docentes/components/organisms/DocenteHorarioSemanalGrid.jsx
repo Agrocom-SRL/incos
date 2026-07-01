@@ -468,7 +468,7 @@ const DocenteHorarioSemanalGrid = ({
                       <Popover
                         open
                         placement="top"
-                        overlayClassName="horarios-conflicto-ayuda-popover"
+                        classNames={{ root: 'horarios-conflicto-ayuda-popover' }}
                         title={
                           <Flex align="center" justify="space-between" gap={8}>
                             <span>

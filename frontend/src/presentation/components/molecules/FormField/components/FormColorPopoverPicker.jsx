@@ -76,7 +76,7 @@ const FormColorPopoverPicker = ({ value, onChange, disabled, readOnly, field }) 
           onOpenChange={handleOpenChange}
           placement="bottomLeft"
           destroyOnHidden
-          overlayClassName="form-color-popover-picker__overlay"
+          classNames={{ root: 'form-color-popover-picker__overlay' }}
         >
           <Button
             variant="danger"

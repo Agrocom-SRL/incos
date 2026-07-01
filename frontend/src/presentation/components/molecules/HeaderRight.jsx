@@ -80,7 +80,7 @@ const HeaderRight = () => {
                 menu={{ items: menuItems }}
                 placement="bottomRight"
                 trigger={['click']}
-                overlayClassName="header-user__dropdown"
+                classNames={{ root: 'header-user__dropdown' }}
             >
                 <Flex
                     align="center"
