@@ -20,3 +20,8 @@ export {
   buildPersonDisplayData,
 } from './personFormatters';
 
+export {
+  formatBs,
+  formatBsConSimbolo,
+} from './montoFormatters';
+

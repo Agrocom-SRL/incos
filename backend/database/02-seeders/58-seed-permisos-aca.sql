@@ -145,6 +145,7 @@ FROM (
   SELECT 'RECTOR' AS rol, 'academico.calificacion.ingreso' AS codigo, 'LISTAR' AS accion
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.ingreso', 'LISTAR'
   UNION ALL SELECT 'DOCENTE', 'academico.calificacion.ingreso', 'LISTAR'
+  -- ESTUDIANTE: la misma opción de menú "Calificaciones" → "Mi boletín" por wrapper de rol
   UNION ALL SELECT 'ESTUDIANTE', 'academico.calificacion.ingreso', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.calificacion.coordinacion', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.calificacion.coordinacion', 'LISTAR'
@@ -190,7 +191,6 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'academico.nivelacion.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.nivelacion.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.nivelacion.ver', 'DETALLE'
-  UNION ALL SELECT 'ESTUDIANTE', 'academico.nivelacion.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.nivelacion.inscribir', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.nivelacion.inscribir', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'academico.nivelacion.aprobar', 'APROBAR'
@@ -232,8 +232,6 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.academico', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.academico', 'EXPORTAR'
   UNION ALL SELECT 'DOCENTE', 'academico.historial.academico', 'LISTAR'
-  UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'LISTAR'
-  UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'academico.historial.validar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.validar', 'APROBAR'
   UNION ALL SELECT 'RECTOR', 'academico.avance', 'LISTAR'
@@ -251,13 +249,10 @@ FROM (
   -- DOCENTE: solicita y ve licencias desde su planilla (icon por estudiante); no aprueba.
   UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.ver', 'LISTAR'
   UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.ver', 'DETALLE'
-  UNION ALL SELECT 'ESTUDIANTE', 'academico.asistencia.licencia.ver', 'LISTAR'
-  UNION ALL SELECT 'ESTUDIANTE', 'academico.asistencia.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.crear', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.crear', 'CREAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.crear', 'CREAR'
   UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.crear', 'CREAR'
-  UNION ALL SELECT 'ESTUDIANTE', 'academico.asistencia.licencia.crear', 'CREAR'
   -- Editar (solo PENDIENTE) y cancelar (PENDIENTE|APROBADA): roles que gestionan licencias.
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.crear', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.crear', 'EDITAR'

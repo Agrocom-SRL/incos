@@ -42,6 +42,6 @@ export const updateEnrollmentPriorHistoryValidator = [
       });
     })
     .withMessage(
-      'Cada elemento de prior_history requiere materia_id, period_id y status (APROBADO|CONVALIDADO). APROBADO exige final_grade (0-100).'
+      'Revisa el historial de materias previas: cada materia debe indicar su periodo y estado (Aprobado o Convalidado). Las materias aprobadas requieren una nota entre 0 y 100.'
     ),
 ];

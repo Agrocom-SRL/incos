@@ -7,13 +7,16 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useInscripcionDetailContext } from '@application-inscripciones/hooks';
-import { useAuthContext } from '@application-auth';
+import { useAuthContext, esEstudiante } from '@application-auth';
 import InscripcionProfileSummary from '@inscripciones/components/organisms/InscripcionProfileSummary';
 import InscripcionDetailTabs from '@inscripciones/components/organisms/InscripcionDetailTabs';
 import '@presentation/styles/pages/detail-page.css';
 
 const InscripcionesDetail = () => {
-  const { hasPermiso } = useAuthContext();
+  const { hasPermiso, usuario } = useAuthContext();
+  /** Vista propia del estudiante (reusa esta pantalla como "Mi matrícula"). */
+  const esVistaPropiaEstudiante = esEstudiante(usuario);
+  const pageTitle = esVistaPropiaEstudiante ? 'Mi matrícula' : 'Detalle de la Inscripción';
   const puedeGenerarBoletaPdf = hasPermiso('matricula.documento.ver', 'GENERAR_PDF');
   const puedeEditarInscripcion = hasPermiso('matricula.inscripcion.editar', 'EDITAR');
   const puedeActivarCursado = hasPermiso('matricula.inscripcion.editar', 'EDITAR');
@@ -52,14 +55,15 @@ const InscripcionesDetail = () => {
     handleActivarCursado,
   } = useInscripcionDetailContext();
 
-  const headerActions = (
+  // En la vista propia del estudiante no hay "Volver" (no viene de un listado admin).
+  const headerActions = esVistaPropiaEstudiante ? null : (
     <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolverAtras}>
       <ArrowLeftOutlined /> Volver
     </button>
   );
 
   const pageHeader = (
-    <PageHeader title="Detalle de la Inscripción" breadcrumbItems={breadcrumbItems} actions={headerActions} />
+    <PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={headerActions} />
   );
 
   if (loading) {

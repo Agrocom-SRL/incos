@@ -11,6 +11,8 @@ import { SaveObservacionCentralizadorBimestreUseCase } from '../../../../applica
 import { ExportCentralizadorParaleloBimestreExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorParaleloBimestreExcelUseCase.js';
 import { ExportCentralizadorCarreraBimestreExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorCarreraBimestreExcelUseCase.js';
 import { ExportBoletinEstudiantePdfUseCase } from '../../../../application/use-cases/academico/ExportBoletinEstudiantePdfUseCase.js';
+import { GetMiBoletinEstudianteUseCase } from '../../../../application/use-cases/academico/GetMiBoletinEstudianteUseCase.js';
+import { ExportMiBoletinEstudiantePdfUseCase } from '../../../../application/use-cases/academico/ExportMiBoletinEstudiantePdfUseCase.js';
 import { GetPoliticaInstitucionalUseCase } from '../../../../application/use-cases/academico/GetPoliticaInstitucionalUseCase.js';
 import { GetPoliticaCatalogoUseCase } from '../../../../application/use-cases/academico/GetPoliticaCatalogoUseCase.js';
 import { ListTiposEvaluacionUseCase } from '../../../../application/use-cases/academico/ListTiposEvaluacionUseCase.js';
@@ -37,6 +39,8 @@ import { SaveObservacionCentralizadorBimestreController } from '../../../../pres
 import { ExportCentralizadorParaleloBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-paralelo-bimestre.controller.js';
 import { ExportCentralizadorCarreraBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-carrera-bimestre.controller.js';
 import { ExportBoletinEstudianteController } from '../../../../presentation/controllers/academico/calificaciones/export-boletin-estudiante.controller.js';
+import { GetMiBoletinEstudianteController } from '../../../../presentation/controllers/academico/calificaciones/get-mi-boletin.controller.js';
+import { ExportMiBoletinEstudianteController } from '../../../../presentation/controllers/academico/calificaciones/export-mi-boletin.controller.js';
 import { GetPoliticaInstitucionalController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-institucional.controller.js';
 import { GetPoliticaCatalogoController } from '../../../../presentation/controllers/academico/calificaciones/get-politica-catalogo.controller.js';
 import { ListTiposEvaluacionController } from '../../../../presentation/controllers/academico/calificaciones/list-tipos-evaluacion.controller.js';
@@ -250,6 +254,61 @@ export function registerCalificacionesResource(container) {
       new ExportBoletinEstudianteController({
         exportBoletinEstudiantePdfUseCase: c.resolve(
           ACADEMICO_TOKENS.exportBoletinEstudiantePdfUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getMiBoletinEstudianteUseCase,
+    (c) =>
+      new GetMiBoletinEstudianteUseCase({
+        calificacionCentralizadorRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCentralizadorRepository
+        ),
+        studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportMiBoletinEstudiantePdfUseCase,
+    (c) =>
+      new ExportMiBoletinEstudiantePdfUseCase({
+        calificacionCentralizadorRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCentralizadorRepository
+        ),
+        studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        exportBoletinEstudiantePdfUseCase: c.resolve(
+          ACADEMICO_TOKENS.exportBoletinEstudiantePdfUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getMiBoletinEstudianteController,
+    (c) =>
+      new GetMiBoletinEstudianteController({
+        getMiBoletinEstudianteUseCase: c.resolve(ACADEMICO_TOKENS.getMiBoletinEstudianteUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportMiBoletinEstudianteController,
+    (c) =>
+      new ExportMiBoletinEstudianteController({
+        exportMiBoletinEstudiantePdfUseCase: c.resolve(
+          ACADEMICO_TOKENS.exportMiBoletinEstudiantePdfUseCase
         ),
         logger: c.resolve(SERVICIOS_TOKENS.logger)
       })
@@ -1218,6 +1277,12 @@ export function registerCalificacionesResource(container) {
       ),
       exportBoletinEstudianteController: c.resolve(
         ACADEMICO_TOKENS.exportBoletinEstudianteController
+      ),
+      getMiBoletinEstudianteController: c.resolve(
+        ACADEMICO_TOKENS.getMiBoletinEstudianteController
+      ),
+      exportMiBoletinEstudianteController: c.resolve(
+        ACADEMICO_TOKENS.exportMiBoletinEstudianteController
       ),
       getPoliticaInstitucionalController: c.resolve(
         ACADEMICO_TOKENS.getPoliticaInstitucionalController

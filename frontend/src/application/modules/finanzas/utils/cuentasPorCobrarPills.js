@@ -3,7 +3,7 @@
  * color. Lenguaje de PLANILLA oficial (kit `fin-planilla`): el estado se pinta
  * como DOT de color (`fin-dot--ok/--prox/--venc`) y el saldo como banda teñida
  * en la celda (`fin-banda--ok/--warn/--err`). CSS del dot/banda en el kit
- * `presentation/modules/finanzas/styles/finanzas-planilla.css`; ajustes locales
+ * `presentation/modules/finanzas/reportes/styles/finanzas-planilla.css`; ajustes locales
  * en `cuentas-por-cobrar.css`.
  *
  * Estados de cobranza (del backend):

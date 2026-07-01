@@ -1,0 +1,453 @@
+/* Estilos del ítem de menú SEG → Administración de Usuarios (ficha, permisos y wizard de alta). */
+
+/* Fila de acciones (compartida con roles; utilidad mínima, duplicada para localidad). */
+.seg-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Tab de permisos de usuario: margen lateral en pestañas con tablas */
+.usuario-permisos__tab-gutter.sd-tab-body {
+  padding-left: 28px;
+  padding-right: 28px;
+}
+
+@media (max-width: 600px) {
+  .usuario-permisos__tab-gutter.sd-tab-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.usuario-permisos__permiso-nombre {
+  font-weight: 600;
+  color: var(--text-800, #1f2937);
+}
+
+.usuario-permisos__permiso-codigo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--text-500, #6b7280);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+/* Celdas de tablas en permisos de usuario: aire lateral (nombre/código no pegado al borde) */
+.usuario-permisos__table .ant-table-cell {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+/* Wizard alta usuario: Form.Item sin etiqueta (el título de la card ya orienta). */
+.seg-cargo-form-item.ant-form-item {
+  margin-bottom: 0;
+}
+
+/* Rejilla horizontal de cargos: círculo del radio oculto; la tarjeta es el control visible. */
+.seg-cargo-radio-group.ant-radio-group {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 1199px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-inline-end: 0;
+  margin-bottom: 0;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  cursor: pointer;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper::after {
+  display: none !important;
+}
+
+/* Ocultar solo el control circular; el input sigue en el DOM (accesibilidad / teclado). */
+.seg-cargo-radio-group .ant-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-input {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-input:focus,
+.seg-cargo-radio-group .ant-radio-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-inner {
+  display: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio + span {
+  padding: 0;
+  width: 100%;
+}
+
+.seg-cargo-radio__card {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  gap: 8px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--color-border, #e8e8e8);
+  background: var(--color-bg-container, #fff);
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+/* Hover: tinte y borde con el color del cargo (--cargo-color/--cargo-tint inline por tarjeta) + elevación. */
+.seg-cargo-radio-group .ant-radio-wrapper:hover .seg-cargo-radio__card:not(.seg-cargo-radio__card--selected) {
+  border-color: color-mix(in srgb, var(--cargo-color, var(--color-primary)) 55%, var(--color-border));
+  background: color-mix(in srgb, var(--cargo-tint, transparent) 60%, var(--color-bg-container, #fff));
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--cargo-color, #000) 45%, transparent);
+  transform: translateY(-2px);
+}
+
+/* El icono también se realza en hover. */
+.seg-cargo-radio-group .ant-radio-wrapper:hover .seg-cargo-radio__card:not(.seg-cargo-radio__card--selected) .seg-cargo-radio__icon-wrap {
+  transform: scale(1.06);
+  transition: transform 0.18s ease;
+}
+
+/* El estado activo es solo borde/fondo de la tarjeta (inline); sin anillo extra del radio o del navegador. */
+.seg-cargo-radio-group .ant-radio-wrapper:focus-within .seg-cargo-radio__card {
+  outline: none;
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper:focus-visible .seg-cargo-radio__card {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12);
+}
+
+.seg-cargo-radio__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.seg-cargo-radio__body {
+  width: 100%;
+  min-width: 0;
+}
+
+.seg-cargo-radio__title {
+  display: block;
+  font-size: 13px;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.seg-cargo-radio__tipo {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.seg-cargo-resumen {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--color-border, #e8e8e8);
+  background: var(--color-bg-layout, #fafafa);
+  max-width: 480px;
+}
+
+.seg-cargo-resumen__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* Wizard credenciales — sección «Rol de acceso»: panel blanco, borde y textos en color del rol. */
+.seg-wizard-rol-asignado-panel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 2px solid var(--color-border, #e8e8e8);
+  background: var(--color-bg-container, #ffffff);
+  max-width: 660px;
+  box-sizing: border-box;
+}
+
+.seg-wizard-rol-asignado-panel__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  border: 2px solid;
+  flex-shrink: 0;
+  background: var(--color-bg-container, #ffffff);
+}
+
+.seg-wizard-rol-asignado-panel__glyph {
+  font-size: 24px;
+}
+
+.seg-wizard-rol-asignado-panel__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.seg-wizard-rol-asignado-panel__nombre {
+  display: block;
+  font-size: 16px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.seg-wizard-rol-asignado-panel__tipo {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.3;
+  opacity: 0.88;
+  word-break: break-word;
+}
+
+/* Wizard alta usuario — secciones planas dentro de la pestaña (sin card anidada).
+   La separación entre secciones la aporta el contenedor (Flex/Space gap), no un borde. */
+.seg-usuario-form-section {
+  width: 100%;
+}
+
+.seg-usuario-form-section__header {
+  margin-bottom: 16px;
+}
+
+.seg-usuario-form-section__title.ant-typography {
+  margin: 0 0 4px !important;
+  color: var(--primary-dark, #134d32) !important;
+  font-weight: 700 !important;
+}
+
+.seg-usuario-form-section__desc.ant-typography {
+  margin: 0 !important;
+}
+
+.seg-usuario-form-section__before {
+  margin-bottom: 8px;
+}
+
+.seg-usuario-form-section__before .ant-form-item {
+  margin-bottom: 0;
+}
+
+.seg-usuario-form-section__footer {
+  margin-top: 20px;
+}
+
+/* Resumen del vínculo (panel «Estudiante/Docente vinculado» en credenciales):
+   icono + cuerpo, mismo lenguaje que .seg-wizard-rol-asignado-panel. */
+.seg-wizard-vinculo-resumen {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: var(--color-border, #fff);
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.seg-wizard-vinculo-resumen__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  font-size: 24px;
+}
+
+.seg-wizard-vinculo-resumen__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.seg-wizard-vinculo-resumen__nombre.ant-typography {
+  font-size: 16px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.seg-wizard-vinculo-resumen__detalle.ant-typography {
+  font-size: var(--font-size-sm, 13px);
+  word-break: break-word;
+}
+
+/* Wizard (variant tabs) — índice/check dentro del label de la pestaña. */
+.wizard-form__tab-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 700;
+  line-height: 1;
+  background: color-mix(in srgb, var(--primary, #196b45) 12%, transparent);
+  color: var(--primary, #196b45);
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .wizard-form__tab-index {
+  background: var(--primary, #196b45);
+  color: var(--surface, #fff);
+}
+
+/* Error puntual del wizard, junto al footer de navegación. */
+.wizard-form__footer-error {
+  margin-bottom: 16px;
+}
+
+/* Buscador de vínculo (estudiante/docente) — plano, sin card; input propio + panel de resultados. */
+.seg-vinculo-busqueda {
+  width: 100%;
+}
+
+.seg-vinculo-busqueda__field.ant-form-item {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+/* Input de búsqueda: redondeado a la izquierda; el botón verde a la derecha. La altura
+   la da size="large" (centrado vertical correcto del texto/placeholder, sin hacks). */
+.seg-vinculo-busqueda__input.ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button {
+  border-start-end-radius: 10px;
+  border-end-end-radius: 10px;
+}
+
+.seg-vinculo-busqueda__input.ant-input-search .ant-input-affix-wrapper,
+.seg-vinculo-busqueda__input.ant-input-search>.ant-input-group>.ant-input:first-child {
+  border-start-start-radius: 10px;
+  border-end-start-radius: 10px;
+}
+
+/* Panel de resultados: superficie única (sin doble-card); los ítems van planos dentro. */
+.seg-vinculo-busqueda__results {
+  margin-top: 4px;
+  min-height: 88px;
+}
+
+.seg-vinculo-busqueda__results--filled {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--color-border-secondary, #eee);
+  border-radius: 12px;
+  background: var(--color-bg-container, #fff);
+}
+
+/* Estado vacío (sin búsqueda): aire alrededor de la ilustración, sin borde. */
+.seg-vinculo-busqueda__results:not(.seg-vinculo-busqueda__results--filled) .ant-empty {
+  margin: 16px 0;
+}
+
+/* Ítems de resultado: filas planas (sin la card gris por defecto de .list-item). */
+.seg-vinculo-busqueda__results .list-item {
+  margin-bottom: 2px;
+  padding: 10px 12px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.seg-vinculo-busqueda__results .list-item:last-child {
+  margin-bottom: 0;
+}
+
+.seg-vinculo-busqueda__results .list-item:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
+  border-color: transparent;
+}
+
+/* Seleccionado: tinte suave + acento lateral (no fondo primario sólido). */
+.seg-vinculo-busqueda__results .list-item.active {
+  background-color: color-mix(in srgb, var(--color-primary) 28%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 30%, transparent) !important;
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.seg-vinculo-busqueda__results .list-item.active .ant-typography,
+.seg-vinculo-busqueda__results .list-item.active .ant-typography strong {
+  color: var(--color-primary) !important;
+}
+
+/* Avatar del ítem: círculo con tinte primario. */
+.seg-vinculo-busqueda__results .list-item .list-item-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.seg-vinculo-busqueda__results .list-item .list-item-avatar .anticon {
+  font-size: 20px;
+}

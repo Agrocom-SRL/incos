@@ -28,6 +28,10 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
     authenticate,
     verificarPermiso('seguridad.usuario.administrar', 'EDITAR'),
   ];
+  const adminEliminar = [
+    authenticate,
+    verificarPermiso('seguridad.usuario.administrar', 'ELIMINAR'),
+  ];
   const crearUsuario = [
     authenticate,
     verificarPermiso('seguridad.usuario.crear', 'CREAR'),
@@ -111,6 +115,14 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
     actualizarUsuarioValidator,
     validateSeguridadRequest,
     (req, res, next) => c.update(req, res, next)
+  );
+
+  router.delete(
+    '/:id',
+    ...adminEliminar,
+    usuarioIdParamValidator,
+    validateSeguridadRequest,
+    (req, res, next) => c.delete(req, res, next)
   );
 
   router.patch(

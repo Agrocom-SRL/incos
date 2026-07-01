@@ -1,6 +1,6 @@
 import { Alert, Empty, Flex, Spin } from 'antd';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
-import { DashboardPageShell } from '@dashboard/components/organisms';
+import DashboardPageShell from '@dashboard/components/organisms/DashboardPageShell';
 import { PageHeader } from '@molecules';
 import { useGestionActualState } from '@application-institucional/actual';
 import {

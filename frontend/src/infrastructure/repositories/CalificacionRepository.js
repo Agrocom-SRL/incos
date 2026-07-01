@@ -886,6 +886,84 @@ class CalificacionRepository {
     }
   }
 
+  /**
+   * Portal del estudiante: boletín del estudiante AUTENTICADO.
+   * GET /v1/calificaciones/mi-boletin
+   *
+   * El backend resuelve al estudiante y su paralelo en gestión desde el token.
+   * Entrega el nombre completo y las notas ya calculadas; no se transforma.
+   *
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerMiBoletin() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.MI_BOLETIN);
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      return { success: true, data: responseData.data ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar tu boletín');
+    }
+  }
+
+  /**
+   * Portal del estudiante: boletín del estudiante AUTENTICADO en PDF.
+   * GET /v1/calificaciones/mi-boletin/pdf
+   *
+   * Mecánica idéntica a `descargarBoletinEstudiante` (descarga blob, respeta el
+   * filename del header `Content-Disposition`).
+   *
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarMiBoletin() {
+    try {
+      const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.MI_BOLETIN_PDF, {
+        responseType: 'blob',
+      });
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'Boletin.pdf';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return { success: true, blob: response.data, fileName };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar tu boletín';
+          return { success: false, error: msg };
+        } catch {
+          /* fall through */
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar tu boletín');
+    }
+  }
+
 }
 
 export default new CalificacionRepository();

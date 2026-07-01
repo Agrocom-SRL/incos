@@ -26,7 +26,7 @@ import { parseJsonArray } from '../../../domain/utils/mapUtils.js';
  */
 export function entityToPresentation(row) {
   if (!row) {
-    return { student: null, guardians: [], disabilities: [], origins: [] };
+    return { student: null, guardians: [], disabilities: [], origins: [], access: { tieneAcceso: false } };
   }
 
   // Estudiante: vista (snake_case) → API (camelCase), solo campos que existen
@@ -138,7 +138,20 @@ export function entityToPresentation(row) {
     return originPresentation;
   });
 
-  return { student, guardians, disabilities, origins };
+  // Cuenta de acceso vinculada (mismo contrato que docente: TeacherDetailPresentationMapper.access)
+  const usuarioId =
+    row.usuario_id != null && row.usuario_id !== '' ? Number(row.usuario_id) : null;
+  const access = row.usuario_username
+    ? {
+        tieneAcceso: true,
+        usuarioId: Number.isFinite(usuarioId) ? usuarioId : null,
+        usuario: row.usuario_username,
+        estadoCuenta: row.usuario_estado || 'Activo',
+        rol: row.rol_nombre || row.rol_codigo || null,
+      }
+    : { tieneAcceso: false };
+
+  return { student, guardians, disabilities, origins, access };
 }
 
 /**

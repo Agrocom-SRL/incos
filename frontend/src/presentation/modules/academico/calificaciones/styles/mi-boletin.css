@@ -1,0 +1,80 @@
+/* ============================================================================
+   MI BOLETÍN — portal del estudiante
+   ============================================================================
+   La pantalla reusa el lenguaje de las fichas de detalle (cabecera sd-profile +
+   tarjetas sd-card) y, para las calificaciones, la MISMA paleta del cuaderno de
+   notas: las variables `--cuaderno-*` se definen en `calificaciones.css` y se
+   heredan porque `.mi-boletin-grid` está incluida en ese scope. Aquí solo se
+   consumen vía var() — cero hex nuevos.
+   ============================================================================ */
+
+/* Cabecera de tabla: banda verde SÓLIDA con texto blanco, idéntica al consolidado
+   del cuaderno (calificaciones.css usa var(--cuaderno-verde-oscuro) + #fff). Cubre
+   las dos filas de encabezado (grupo "Notas por bimestre" + columnas hoja). */
+.mi-boletin-grid .ant-table-thead > tr > th,
+.mi-boletin-grid .ant-table-thead > tr > th.ant-table-cell-fix-left,
+.mi-boletin-grid .ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+  font-weight: var(--font-weight-strong);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Sin barrita divisoria gris entre celdas de cabecera (se ve sobre el verde). */
+.mi-boletin-grid .ant-table-thead > tr > th::before {
+  display: none !important;
+}
+
+/* Banda inferior verde medio en la cabecera (acento del cuaderno). */
+.mi-boletin-grid .ant-table-thead > tr:last-child > th {
+  box-shadow: inset 0 -3px 0 var(--cuaderno-verde-medio);
+}
+
+/* Más aire en las celdas (header y cuerpo) — boletín cómodo de leer. */
+.mi-boletin-grid .ant-table-thead > tr > th {
+  padding: 10px 12px !important;
+}
+
+.mi-boletin-grid .ant-table-tbody > tr > td {
+  padding: 8px 12px !important;
+}
+
+/* Notas numéricas: cifras tabulares, ancho mínimo y texto del cuaderno. */
+.mi-boletin-grid__nota {
+  display: inline-block;
+  min-width: 1.5em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+/* Nota final destacada (titular de la fila), neutra por defecto. */
+.mi-boletin-grid__nota-final {
+  font-weight: var(--font-weight-strong);
+  font-size: var(--font-size-lg);
+  font-variant-numeric: tabular-nums;
+  color: var(--cuaderno-texto-fuerte);
+}
+
+/* Color semántico de la nota final — mismos acentos que el cuaderno. */
+.mi-boletin-grid__nota-final--aprobado {
+  color: var(--color-success, #16a34a);
+}
+
+.mi-boletin-grid__nota-final--reprobado {
+  color: var(--color-error, #dc2626);
+}
+
+.mi-boletin-grid__nota-final--cursando {
+  color: var(--bimestre-vigente-text);
+}
+
+/* Recuento de asignaturas en la cabecera de la tarjeta de calificaciones. */
+.mi-boletin__conteo {
+  font-size: var(--font-size-sm);
+  color: var(--cuaderno-texto-medio);
+}
+
+/* Tag de gestión en la meta de la cabecera de perfil. */
+.mi-boletin__gestion-tag {
+  margin: 0;
+}

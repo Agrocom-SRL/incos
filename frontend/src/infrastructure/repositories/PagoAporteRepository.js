@@ -277,6 +277,81 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
+   * Portal del estudiante: aportes del estudiante AUTENTICADO (resumen + lista).
+   * GET /v1/pagos-aportes/mis-aportes
+   *
+   * El backend resuelve al estudiante desde el token; no recibe `estudiante_id`.
+   *
+   * @param {Object} options
+   * @param {Object} [options.params] - Parámetros HTTP opcionales (page, limit, gestion_id)
+   * @returns {Promise<{success: boolean, data?: { aportes: Array, resumen: Object }, pagination?: Object, error?: string}>}
+   */
+  async obtenerMisAportes(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.MIS_APORTES, { params });
+      const responseData = response.data;
+
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+
+      const payload = responseData.data ?? {};
+      return {
+        success: true,
+        data: {
+          aportes: Array.isArray(payload.aportes) ? payload.aportes : [],
+          resumen: payload.resumen ?? null,
+        },
+        pagination: responseData.pagination || null,
+      };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener tus aportes');
+    }
+  }
+
+  /**
+   * Portal del estudiante: detalle de una cabecera de aporte propia (pagos realizados).
+   * GET /v1/pagos-aportes/mis-aportes/:cabeceraId
+   *
+   * @param {string|number} cabeceraId
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   *   data = cabecera enriquecida + `cuotas` (array de pagos realizados).
+   */
+  async obtenerMiAporteDetalle(cabeceraId) {
+    try {
+      if (!cabeceraId && cabeceraId !== 0) {
+        return { success: false, error: 'Identificador del aporte requerido' };
+      }
+      const response = await apiClient.get(
+        PAGOS_APORTES_ENDPOINTS.MIS_APORTES_DETALLE(cabeceraId),
+      );
+      const responseData = response.data;
+
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+
+      const payload = responseData.data ?? {};
+      return {
+        success: true,
+        data: {
+          ...payload,
+          cuotas: Array.isArray(payload.cuotas) ? payload.cuotas : [],
+        },
+      };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el detalle del aporte');
+    }
+  }
+
+  /**
    * Obtiene un pago de aporte por ID con todos sus datos relacionados
    * GET /v1/pagos-aportes/:id
    * 

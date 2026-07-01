@@ -6,11 +6,18 @@ const { Title, Text } = Typography;
 /**
  * Molécula: hero de bienvenida con CTA (dashboard).
  */
+const DEFAULT_TITLE = 'Bienvenido al Instituto INCOS';
+const DEFAULT_DESCRIPTION =
+    'Formamos profesionales competentes en Administración de Empresas, Contaduría y Sistemas ' +
+    'Informáticos. Únete a nuestra comunidad educativa y construye tu futuro profesional.';
+
 const DashboardWelcomeBanner = ({
     onVerCarreras,
     onRegistrarEstudiante,
     showVerCarreras = true,
     showRegistrarEstudiante = true,
+    title = DEFAULT_TITLE,
+    description = DEFAULT_DESCRIPTION,
 }) => {
     const showActions = showVerCarreras || showRegistrarEstudiante;
     return (
@@ -34,7 +41,7 @@ const DashboardWelcomeBanner = ({
                         margin: 0,
                     }}
                 >
-                    Bienvenido al Instituto INCOS
+                    {title}
                 </Title>
                 <Text
                     style={{
@@ -43,8 +50,7 @@ const DashboardWelcomeBanner = ({
                         lineHeight: typography.lineHeight,
                     }}
                 >
-                    Formamos profesionales competentes en Administración de Empresas, Contaduría y Sistemas
-                    Informáticos. Únete a nuestra comunidad educativa y construye tu futuro profesional.
+                    {description}
                 </Text>
                 {showActions ? (
                 <Flex gap={allSpacing.margin}>

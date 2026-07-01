@@ -36,10 +36,12 @@ export class SeguridadAltaUsuarioLookupRepository extends ISeguridadAltaUsuarioL
       WHERE (
         COALESCE(codigo_estudiante, '') LIKE :term
         OR COALESCE(ci, '') LIKE :term
+        OR COALESCE(email_personal, '') LIKE :term
         OR COALESCE(nombres, '') LIKE :term
         OR COALESCE(apellido_paterno, '') LIKE :term
         OR COALESCE(apellido_materno, '') LIKE :term
         OR CONCAT_WS(' ', nombres, apellido_paterno, apellido_materno) LIKE :term
+        OR CONCAT_WS(' ', apellido_paterno, apellido_materno, nombres) LIKE :term
       )
       ORDER BY created_at DESC
       LIMIT :lim
@@ -72,10 +74,12 @@ export class SeguridadAltaUsuarioLookupRepository extends ISeguridadAltaUsuarioL
       FROM vista_seguridad_alta_usuario_docentes_sin_cuenta
       WHERE (
         COALESCE(ci, '') LIKE :term
+        OR COALESCE(email_personal, '') LIKE :term
         OR COALESCE(nombres, '') LIKE :term
         OR COALESCE(apellido_paterno, '') LIKE :term
         OR COALESCE(apellido_materno, '') LIKE :term
         OR CONCAT_WS(' ', nombres, apellido_paterno, apellido_materno) LIKE :term
+        OR CONCAT_WS(' ', apellido_paterno, apellido_materno, nombres) LIKE :term
       )
       ORDER BY created_at DESC
       LIMIT :lim

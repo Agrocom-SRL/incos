@@ -6,7 +6,14 @@ const { Title, Text } = Typography;
 /**
  * Molécula: tarjeta verde con conteo de estudiantes (hoy / mes).
  */
-const DashboardEstudiantesResumenCard = ({ todayCount, monthCount }) => {
+const DashboardEstudiantesResumenCard = ({
+    todayCount,
+    monthCount,
+    title = 'Registro de estudiantes',
+    todayLabel = 'Hoy',
+    monthLabel = 'Este mes',
+    unidad = 'estudiantes',
+}) => {
     return (
         <Card
             style={{
@@ -27,7 +34,7 @@ const DashboardEstudiantesResumenCard = ({ todayCount, monthCount }) => {
                         letterSpacing: '0.02em',
                     }}
                 >
-                    Registro de estudiantes
+                    {title}
                 </Text>
                 <Title
                     level={4}
@@ -39,7 +46,7 @@ const DashboardEstudiantesResumenCard = ({ todayCount, monthCount }) => {
                         lineHeight: 1.35,
                     }}
                 >
-                    Hoy: {todayCount} estudiantes
+                    {todayLabel}: {todayCount} {unidad}
                 </Title>
                 <Title
                     level={4}
@@ -51,7 +58,7 @@ const DashboardEstudiantesResumenCard = ({ todayCount, monthCount }) => {
                         lineHeight: 1.35,
                     }}
                 >
-                    Este mes: {monthCount} estudiantes
+                    {monthLabel}: {monthCount} {unidad}
                 </Title>
             </Flex>
         </Card>

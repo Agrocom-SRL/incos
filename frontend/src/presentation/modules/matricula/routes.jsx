@@ -25,6 +25,7 @@ export const matriculaRoutes = [
       module: 'MAT',
       parent: 'MAT',
       order: 3,
+      labelByRole: { ESTUDIANTE: 'Mi matrícula' },
     },
   },
   {

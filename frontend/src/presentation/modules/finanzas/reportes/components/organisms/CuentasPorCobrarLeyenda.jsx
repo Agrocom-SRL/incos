@@ -16,7 +16,7 @@ import {
   getEstadoDotClass,
 } from '@application-finanzas/utils/cuentasPorCobrarPills';
 import { allSpacing } from '@theme/tokens';
-import '@finanzas/styles/finanzas-planilla.css';
+import '@finanzas/reportes/styles/finanzas-planilla.css';
 import '@finanzas/reportes/styles/cuentas-por-cobrar.css';
 
 const { Text } = Typography;

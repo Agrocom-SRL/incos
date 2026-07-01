@@ -23,13 +23,15 @@ import {
   SwapOutlined,
   EditOutlined,
   ArrowLeftOutlined,
+  IdcardOutlined,
 } from '@ant-design/icons';
 import { useStudentDetailContext, useDeleteBecaAsignada } from '@application-estudiantes/hooks';
-import { useAuthContext } from '@application-auth';
+import { useAuthContext, esEstudiante } from '@application-auth';
 import {
   GuardiansSection,
   DocumentDeliveriesSection,
   ScholarshipsSection,
+  EstudianteAccessSection,
 } from '@estudiantes/components/organisms';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 import { getAdmissionTypeTagStyle } from '../config/admissionTypeColors';
@@ -70,11 +72,14 @@ const InfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
   const { message, modal } = App.useApp();
-  const { hasPermiso } = useAuthContext();
+  const { hasPermiso, usuario } = useAuthContext();
+  /** Vista propia del estudiante (reusa esta pantalla como "Mis datos"). */
+  const esVistaPropiaEstudiante = esEstudiante(usuario);
+  const pageTitle = esVistaPropiaEstudiante ? 'Mis datos' : 'Detalle del Estudiante';
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
-    transitability, transfer, academicData, catalogs,
+    transitability, transfer, academicData, catalogs, access,
     breadcrumbItems, avatarInitials, profileSubtitle,
     handleRegistrarPago, handleVerDetallePago, handleGenerateActaCompromiso, handleGenerateDeclaracionJurada,
     handleDownloadActaCompromiso, handleVerInscripcion,
@@ -156,6 +161,8 @@ const EstudiantesDetail = () => {
   const puedeGenerarPdfDocumento = hasPermiso('matricula.documento.ver', 'GENERAR_PDF');
   const puedeEliminarBeca = hasPermiso('matricula.beca.asignar', 'ELIMINAR');
   const puedeEditarEstudiante = hasPermiso('matricula.admision.editar', 'EDITAR');
+  const puedeCrearUsuario = hasPermiso('seguridad.usuario.crear', 'CREAR');
+  const puedeEditarUsuario = hasPermiso('seguridad.usuario.administrar', 'EDITAR');
 
   const residenciaCompleta =
     studentData?.residenceAddressComplete ||
@@ -167,7 +174,6 @@ const EstudiantesDetail = () => {
     const list = Array.isArray(origins) ? origins : [];
     const isPrincipal = (o) => Number(o?.esPrincipal) === 1 || Number(o?.isPrincipal) === 1 || o?.esPrincipal === true || o?.isPrincipal === true;
     const principal = list.find(isPrincipal) || list[0];
-    const secundario = list.find((o) => o !== principal) || null;
 
     let nacionalidadLabel = '—';
     if (list.length === 0) return { nacionalidadLabel: '—', idiomaMaterno: null, idiomaSecundario: null, lugarNacimiento: null, paises: null };
@@ -476,35 +482,57 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }] : []),
+    // "Acceso al sistema": gestión de cuenta — oculto en la vista propia del estudiante.
+    ...(esVistaPropiaEstudiante ? [] : [{
+      key: 'acceso',
+      label: <span className="sd-tab-label"><IdcardOutlined /> Acceso al sistema</span>,
+      children: (
+        <div className="sd-tab-body">
+          <EstudianteAccessSection
+            access={access}
+            estudianteId={studentData?.id}
+            estudianteNombreCompleto={studentData?.nombreCompleto}
+            estudianteCiCompleto={studentData?.ciCompleto}
+            estudianteCodigo={studentData?.codigoEstudiante}
+            estudianteEmailPersonal={studentData?.emailPersonal}
+            puedeCrearUsuario={puedeCrearUsuario}
+            puedeEditarUsuario={puedeEditarUsuario}
+          />
+        </div>
+      ),
+    }]),
   ], [
+    esVistaPropiaEstudiante,
     studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins,
     nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion,
     handleNuevaInscripcion, academicData, catalogs, transitability, transfer, handleDeleteBeca,
     deletingBecaId, deletingBeca, estadoAporte, loadingEstadoAporte, handleVerDetallePago,
     handleRegistrarPago, puedeVerInscripcion, puedeCrearInscripcion, puedeVerPago, puedeRegistrarPago,
     puedeEliminarBeca, puedeGenerarPdfDocumento, showDeclaracionButton,
+    access, puedeCrearUsuario, puedeEditarUsuario,
   ]);
 
   /* ── Estados de carga / error ── */
   if (loading) return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
       <div className="sd-loading"><Spin size="large" /><p>Cargando datos del estudiante…</p></div>
     </PageTemplate>
   );
 
   if (error) return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
       <Alert title="Error al cargar el estudiante" description={error} type="error" showIcon />
     </PageTemplate>
   );
 
   if (!student?.student) return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}>
       <Empty description="No se encontró información del estudiante" />
     </PageTemplate>
   );
 
-  const headerActions = (
+  // En la vista propia del estudiante no hay "Volver" (no viene de un listado admin).
+  const headerActions = esVistaPropiaEstudiante ? null : (
     <button
       type="button"
       className="sd-btn sd-btn--outline"
@@ -515,7 +543,7 @@ const EstudiantesDetail = () => {
   );
 
   return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+    <PageTemplate header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
       <div className="sd">
 
         {/* ═══ PROFILE CARD ═══ */}

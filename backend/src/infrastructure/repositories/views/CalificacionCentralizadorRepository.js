@@ -24,4 +24,22 @@ export class CalificacionCentralizadorRepository extends ICalificacionCentraliza
       { replacements: [paraleloGestionId], type: sequelize.QueryTypes.SELECT },
     );
   }
+
+  /**
+   * Filas del boletín de UN estudiante (gestión vigente). Reutiliza la misma vista
+   * 135, filtrando por estudiante; el grano y columnas son idénticos al centralizador.
+   * @param {number} estudianteId
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarFilasCentralizadorPorEstudiante(estudianteId) {
+    return sequelize.query(
+      `
+      SELECT *
+      FROM vista_base_calificacion_centralizador_paralelo_fila
+      WHERE estudiante_id = ?
+      ORDER BY asignatura_orden ASC
+      `,
+      { replacements: [estudianteId], type: sequelize.QueryTypes.SELECT },
+    );
+  }
 }

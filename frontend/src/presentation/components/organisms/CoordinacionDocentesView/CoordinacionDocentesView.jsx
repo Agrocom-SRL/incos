@@ -12,7 +12,7 @@ import { PageHeader } from '@molecules';
 import { ActionButton } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import {
   CoordDocCarrerasCelda,
   CoordDocCeldaConIcono,

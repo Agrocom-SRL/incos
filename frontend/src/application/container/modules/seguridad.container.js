@@ -1,9 +1,11 @@
 import {
   ActualizarPermisosRolUseCase,
   ActualizarUsuarioUseCase,
+  EliminarUsuarioUseCase,
   AgregarOverridePermisoUseCase,
   CambiarEstadoUsuarioUseCase,
   CambiarPasswordUseCase,
+  CrearRolUseCase,
   CrearUsuarioUseCase,
   EliminarOverridePermisoUseCase,
   ListarPermisosUseCase,
@@ -23,12 +25,14 @@ export function registerSeguridadModule(factory) {
   factory.obtenerUsuarioAdmin = () => new ObtenerUsuarioUseCase(UsuarioAdminRepository);
   factory.crearUsuarioAdmin = () => new CrearUsuarioUseCase(UsuarioAdminRepository);
   factory.actualizarUsuarioAdmin = () => new ActualizarUsuarioUseCase(UsuarioAdminRepository);
+  factory.eliminarUsuarioAdmin = () => new EliminarUsuarioUseCase(UsuarioAdminRepository);
   factory.cambiarEstadoUsuarioAdmin = () => new CambiarEstadoUsuarioUseCase(UsuarioAdminRepository);
   factory.cambiarPasswordUsuarioAdmin = () => new CambiarPasswordUseCase(UsuarioAdminRepository);
   factory.obtenerPermisosUsuarioAdmin = () => new ObtenerPermisosUsuarioUseCase(UsuarioAdminRepository);
   factory.agregarOverridePermisoAdmin = () => new AgregarOverridePermisoUseCase(UsuarioAdminRepository);
   factory.eliminarOverridePermisoAdmin = () => new EliminarOverridePermisoUseCase(UsuarioAdminRepository);
   factory.listarRolesAdmin = () => new ListarRolesUseCase(RolAdminRepository);
+  factory.crearRolAdmin = () => new CrearRolUseCase(RolAdminRepository);
   factory.obtenerPermisosRolAdmin = () => new ObtenerPermisosRolUseCase(RolAdminRepository);
   factory.obtenerPermisosGrillaRolAdmin = () =>
     new ObtenerPermisosGrillaRolUseCase(RolAdminRepository);

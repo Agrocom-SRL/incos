@@ -25,6 +25,7 @@ const CalificacionesEntradaConnector = lazy(
   () => import('./connectors/CalificacionesEntradaConnector.jsx'),
 );
 const MisCursosConnector = lazy(() => import('./connectors/MisCursosConnector.jsx'));
+const MiBoletinConnector = lazy(() => import('./connectors/MiBoletinConnector.jsx'));
 const ConsolidadoConnector = lazy(() => import('./connectors/ConsolidadoConnector.jsx'));
 const CuadernoConnector = lazy(() => import('./connectors/CuadernoConnector.jsx'));
 const BimestreConsolidadoConnector = lazy(
@@ -105,6 +106,17 @@ export const calificacionesRoutes = [
     breadcrumbParent: 'ACA-CAL-MIS-CURSOS',
   },
   {
+    /** Portal del estudiante: boletín propio (rama ESTUDIANTE de ACA-CAL). Sin ítem de menú. */
+    path: '/academico/mi-boletin',
+    element: <MiBoletinConnector />,
+    key: 'ACA-MI-BOLETIN',
+    breadcrumbLabel: 'Mi boletín',
+    permiso: 'academico.calificacion.ingreso',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'ACA-CAL',
+  },
+  {
     path: '/academico/calificaciones/mis-cursos',
     element: <MisCursosConnector />,
     key: 'ACA-CAL-MIS-CURSOS',
@@ -165,7 +177,7 @@ export const calificacionesRoutes = [
       module: 'ACA',
       parent: 'ACA',
       order: 2,
-      labelByRole: { ESTUDIANTE: 'Mis calificaciones' },
+      labelByRole: { ESTUDIANTE: 'Mi boletín' },
       /** Entrada menú → ModuleEntryConnector (inline coordinación | redirect mis cursos). */
       landingStack: CALIFICACIONES_LANDING_STACK,
     },

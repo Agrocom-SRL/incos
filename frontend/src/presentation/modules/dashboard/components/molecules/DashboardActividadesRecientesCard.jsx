@@ -51,16 +51,18 @@ const DashboardActividadesRecientesCard = ({ actividades, onVerTodas, onRowNavig
                 >
                     Actividades recientes
                 </Title>
-                <Typography.Link
-                    style={{
-                        color: allColors.colorPrimary,
-                        fontSize: `${typography.fontSizeSM}px`,
-                        fontWeight: typography.fontWeightStrong,
-                    }}
-                    onClick={onVerTodas}
-                >
-                    Ver todas
-                </Typography.Link>
+                {onVerTodas ? (
+                    <Typography.Link
+                        style={{
+                            color: allColors.colorPrimary,
+                            fontSize: `${typography.fontSizeSM}px`,
+                            fontWeight: typography.fontWeightStrong,
+                        }}
+                        onClick={onVerTodas}
+                    >
+                        Ver todas
+                    </Typography.Link>
+                ) : null}
             </Flex>
             <Divider style={{ margin: 0 }} />
             <div

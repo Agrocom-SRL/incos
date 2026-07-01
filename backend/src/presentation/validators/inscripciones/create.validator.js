@@ -114,25 +114,26 @@ export const createEnrollmentValidator = [
         const materiaId = row.materia_id ?? row.materiaId;
         const periodId = row.period_id ?? row.periodId;
         const grade = row.final_grade ?? row.finalGrade ?? row.nota_final;
-        const status = row.status ?? row.estado;
-        const gradeNum = Number(grade);
-        const statusOk =
-          status == null ||
-          ['APROBADO', 'CONVALIDADO'].includes(String(status).toUpperCase());
-        return (
+        const status = String(row.status ?? row.estado ?? 'APROBADO').toUpperCase();
+        const statusOk = ['APROBADO', 'CONVALIDADO'].includes(status);
+        if (!statusOk) return false;
+
+        const idsOk =
           Number.isInteger(Number(materiaId)) &&
           Number(materiaId) >= 1 &&
           Number.isInteger(Number(periodId)) &&
-          Number(periodId) >= 1 &&
-          !Number.isNaN(gradeNum) &&
-          gradeNum >= 0 &&
-          gradeNum <= 100 &&
-          statusOk
-        );
+          Number(periodId) >= 1;
+
+        // CONVALIDADO no requiere nota (final_grade puede ser null).
+        if (status === 'CONVALIDADO') return idsOk;
+
+        // APROBADO exige final_grade en rango 0-100.
+        const gradeNum = Number(grade);
+        return idsOk && !Number.isNaN(gradeNum) && gradeNum >= 0 && gradeNum <= 100;
       });
     })
     .withMessage(
-      'Cada elemento de prior_history debe incluir materia_id, period_id, final_grade (0-100) y status opcional (APROBADO|CONVALIDADO)'
+      'Revisa el historial de materias previas: cada materia debe indicar su periodo y estado (Aprobado o Convalidado). Las materias aprobadas requieren una nota entre 0 y 100.'
     ),
 
   body('observations')

@@ -6,7 +6,7 @@
 import { Alert, Flex, Spin } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, CalendarOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
-import { DashboardPageShell } from '@dashboard/components/organisms';
+import DashboardPageShell from '@dashboard/components/organisms/DashboardPageShell';
 import { PageHeader, DetailInfoCard } from '@molecules';
 import { ActionButton, BackButton, DetailField, StatusPill } from '@atoms';
 import { useCronogramaActividadDetail } from '@application-institucional/actual';

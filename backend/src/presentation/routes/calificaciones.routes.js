@@ -155,6 +155,32 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     verificarPermiso('academico.calificacion.mis_cursos', 'LISTAR')
   ];
 
+  // Portal del estudiante: su propio boletín (se resuelve desde req.usuario.id).
+  // Reutiliza la MISMA opción de menú "Calificaciones" (academico.calificacion.ingreso):
+  // el wrapper de rol decide ver boletín (estudiante) vs coordinación/mis-cursos (staff/docente).
+  // El acceso a los datos lo blinda resolveEstudianteIdForUsuario (403 si no hay vínculo).
+  const miBoletinDetalle = [
+    authenticate,
+    verificarPermiso('academico.calificacion.ingreso', 'LISTAR')
+  ];
+  const miBoletinExportar = miBoletinDetalle;
+
+  /**
+   * GET /api/v1/calificaciones/mi-boletin
+   * Boletín del estudiante de la sesión (gestión vigente).
+   */
+  router.get('/mi-boletin', ...miBoletinDetalle, (req, res, next) =>
+    controllers.getMiBoletinEstudianteController.handle(req, res, next)
+  );
+
+  /**
+   * GET /api/v1/calificaciones/mi-boletin/pdf
+   * Descarga el PDF del boletín del estudiante de la sesión.
+   */
+  router.get('/mi-boletin/pdf', ...miBoletinExportar, (req, res, next) =>
+    controllers.exportMiBoletinEstudianteController.handle(req, res, next)
+  );
+
   /**
    * GET /api/v1/calificaciones/mis-cursos
    * Cursos del docente vinculado al usuario logueado (gestión vigente).

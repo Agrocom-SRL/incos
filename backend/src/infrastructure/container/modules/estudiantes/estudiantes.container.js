@@ -12,12 +12,12 @@
  * @returns {Container} Contenedor con recurso Estudiantes registrado
  */
 
-import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS, INSCRIPCIONES_TOKENS } from '../../tokens/index.js';
+import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS, INSCRIPCIONES_TOKENS, ACADEMICO_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, GenerateDeclaracionJuradaUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase, ExportStudentEnrollmentStatisticsExcelUseCase, ExportStudentEnrollmentStudentListExcelUseCase, SearchStudentsForBecaAsignacionUseCase, GetStudentScholarshipByIdUseCase } from '../../../../application/use-cases/estudiantes/index.js';
+import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, GetMisDatosEstudianteUseCase, GetMiMatriculaEstudianteUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, GenerateDeclaracionJuradaUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase, ExportStudentEnrollmentStatisticsExcelUseCase, ExportStudentEnrollmentStudentListExcelUseCase, SearchStudentsForBecaAsignacionUseCase, GetStudentScholarshipByIdUseCase } from '../../../../application/use-cases/estudiantes/index.js';
 import { GetStudentScholarshipsByStudentIdUseCase } from '../../../../application/use-cases/estudiantes/becas/GetStudentScholarshipsByStudentIdUseCase.js';
 import { ListStudentScholarshipsUseCase } from '../../../../application/use-cases/estudiantes/becas/ListStudentScholarshipsUseCase.js';
-import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, DeclaracionJuradaController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController, ExportEstadisticaInscritosExcelController, ExportListaInscritosPorCarreraExcelController, SearchStudentsForBecaAsignacionController, GetStudentScholarshipByIdController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, GetMisDatosEstudianteController, GetMiMatriculaEstudianteController, SearchStudentController, ActaCompromisoController, DeclaracionJuradaController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController, ExportEstadisticaInscritosExcelController, ExportListaInscritosPorCarreraExcelController, SearchStudentsForBecaAsignacionController, GetStudentScholarshipByIdController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { GetStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/get-scholarships.controller.js';
 import { ListStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/list-student-scholarships.controller.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
@@ -118,6 +118,36 @@ export function registerEstudiantesResource(container) {
                 institutionRepository: c.resolve(REPOSITORIOS_TOKENS.institutionRepository),
                 transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
                 transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.getMisDatosEstudianteUseCase,
+        (c) =>
+            new GetMisDatosEstudianteUseCase({
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+                getStudentByIdUseCase: c.resolve(ESTUDIANTES_TOKENS.getStudentByIdUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.getMiMatriculaEstudianteUseCase,
+        (c) =>
+            new GetMiMatriculaEstudianteUseCase({
+                calificacionCentralizadorRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.calificacionCentralizadorRepository
+                ),
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                getParaleloGestionGrillaHorarioUseCase: c.resolve(
+                    ACADEMICO_TOKENS.getParaleloGestionGrillaHorarioUseCase
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -348,6 +378,28 @@ export function registerEstudiantesResource(container) {
 
     registerComponent(
         container,
+        ESTUDIANTES_TOKENS.getMisDatosEstudianteController,
+        (c) =>
+            new GetMisDatosEstudianteController({
+                getMisDatosEstudianteUseCase: c.resolve(ESTUDIANTES_TOKENS.getMisDatosEstudianteUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.getMiMatriculaEstudianteController,
+        (c) =>
+            new GetMiMatriculaEstudianteController({
+                getMiMatriculaEstudianteUseCase: c.resolve(ESTUDIANTES_TOKENS.getMiMatriculaEstudianteUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         ESTUDIANTES_TOKENS.searchStudentController,
         (c) =>
             new SearchStudentController({
@@ -494,6 +546,8 @@ export function registerEstudiantesResource(container) {
                 registerStudentController: c.resolve(ESTUDIANTES_TOKENS.registerStudentController),
                 updateStudentController: c.resolve(ESTUDIANTES_TOKENS.updateStudentController),
                 getStudentByIdController: c.resolve(ESTUDIANTES_TOKENS.getStudentByIdController),
+                getMisDatosEstudianteController: c.resolve(ESTUDIANTES_TOKENS.getMisDatosEstudianteController),
+                getMiMatriculaEstudianteController: c.resolve(ESTUDIANTES_TOKENS.getMiMatriculaEstudianteController),
                 searchStudentController: c.resolve(ESTUDIANTES_TOKENS.searchStudentController),
                 searchStudentsForBecaAsignacionController: c.resolve(
                     ESTUDIANTES_TOKENS.searchStudentsForBecaAsignacionController

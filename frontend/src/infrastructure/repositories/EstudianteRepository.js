@@ -202,9 +202,26 @@ export class EstudianteRepository extends IEstudianteRepository {
   }
 
   /**
+   * Portal del estudiante: ficha completa (solo lectura) del estudiante AUTENTICADO.
+   * GET /v1/estudiantes/mis-datos
+   *
+   * El backend resuelve al estudiante desde el token; no recibe id.
+   *
+   * @returns {Promise<{success: boolean, data?: { student, guardians, origins, academicData, inscripcion }, error?: string}>}
+   */
+  async obtenerMisDatos() {
+    try {
+      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.MIS_DATOS);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener tus datos');
+    }
+  }
+
+  /**
    * Crea un nuevo estudiante
    * POST /v1/estudiantes
-   * 
+   *
    * @param {Object} data - Datos del estudiante a crear
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */

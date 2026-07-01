@@ -10,3 +10,4 @@ export { default as ConfigurationSelectionSection } from './ConfigurationSelecti
 export { default as ConfigurationDetailSection } from './ConfigurationDetailSection';
 export { default as ContributionDetailSummary } from './ContributionDetailSummary';
 export { default as SelectedPaymentSection } from './SelectedPaymentSection';
+export { default as CompromisoPagoModal } from './CompromisoPagoModal';

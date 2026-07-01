@@ -87,6 +87,10 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'EXPORTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.admision.ver', 'EXPORTAR'
+  -- ESTUDIANTE: el ítem "Admisión" → SU propio detalle (EstudiantesDetail, solo lectura).
+  -- DETALLE permite GET /estudiantes/:id, blindado en backend a su propio id (anti-IDOR).
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.admision.ver', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.admision.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.editar', 'EDITAR'
@@ -101,6 +105,10 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscribir', 'EXPORTAR'
+  -- ESTUDIANTE: el ítem "Matrículas" → su propia inscripción (InscripcionesDetail, /inscripciones/:id,
+  -- con materias + horario semanal, solo lectura). DETALLE blindado a su propia inscripción (anti-IDOR).
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.inscribir', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.inscribir', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.inscripcion.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.inscripcion.editar', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.inscripcion.editar', 'EDITAR'
@@ -110,8 +118,6 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.ver', 'DETALLE'
-  UNION ALL SELECT 'ESTUDIANTE', 'matricula.beca.ver', 'LISTAR'
-  UNION ALL SELECT 'ESTUDIANTE', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'ELIMINAR'
@@ -145,7 +151,10 @@ FROM (
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'DETALLE'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'EDITAR'
   UNION ALL SELECT 'SEC_ADMIN', 'matricula.pago.aporte.ver', 'EXPORTAR'
+  -- ESTUDIANTE: ve SUS aportes (la misma opción de menú "Aportes"). Al entrar se redirige al
+  -- detalle de su aporte (PagosDetail, /pagos/:id), blindado a su propia cabecera en backend.
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.pago.aporte.ver', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.pago.aporte.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.pasantia.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'matricula.pasantia.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.pasantia.ver', 'LISTAR'

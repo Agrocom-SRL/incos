@@ -13,10 +13,12 @@ const DashboardUltimosPersonasBlock = ({
     people,
     onOverflowClick,
     overflowTooltip,
-    detalleInteractivo = true,
+    descriptionPrefix = 'Reciente:',
 }) => {
-    const recentLine =
-        people.length > 0 && people[0].description ? `Reciente: ${people[0].description}` : null;
+    const primaryDescription = people.length > 0 ? people[0].description : null;
+    const recentLine = primaryDescription
+        ? `${descriptionPrefix ? `${descriptionPrefix} ` : ''}${primaryDescription}`
+        : null;
 
     return (
         <Flex vertical gap={allSpacing.margin} style={{ flex: '1 1 280px', minWidth: 0 }}>
@@ -32,12 +34,14 @@ const DashboardUltimosPersonasBlock = ({
                 >
                     {title}
                 </Title>
-                <Typography.Link
-                    style={{ color: allColors.colorPrimary, fontSize: `${typography.fontSizeSM}px` }}
-                    onClick={onVerTodos}
-                >
-                    Ver todos
-                </Typography.Link>
+                {onVerTodos ? (
+                    <Typography.Link
+                        style={{ color: allColors.colorPrimary, fontSize: `${typography.fontSizeSM}px` }}
+                        onClick={onVerTodos}
+                    >
+                        Ver todos
+                    </Typography.Link>
+                ) : null}
             </Flex>
             <Flex justify="space-between" align="center" gap={allSpacing.margin}>
                 <DashboardOverlappingAvatarRow

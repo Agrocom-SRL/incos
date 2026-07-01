@@ -14,6 +14,9 @@ export const CALIFICACIONES_GESTION_BIMESTRES_PATH =
 
 export const MIS_CURSOS_PATH = '/academico/calificaciones/mis-cursos';
 
+/** Portal del estudiante: su boletín (rama ESTUDIANTE del ítem Calificaciones). */
+export const MI_BOLETIN_PATH = '/academico/mi-boletin';
+
 /** key de routes.jsx para useRouteViewMode (coordinación vs docente propio). */
 export const CALIFICACIONES_VIEW_ROUTE_KEY = 'ACA-CAL-MIS-CURSOS';
 

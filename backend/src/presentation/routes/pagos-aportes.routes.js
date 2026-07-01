@@ -8,6 +8,7 @@ import {
 } from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
+import { aporteSelfOnlyGuard } from '../middleware/aporteSelfOnly.middleware.js';
 
 /**
  * Construye el router del recurso Pagos de Aportes Académicos
@@ -86,6 +87,13 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
             ['matricula.pago.aporte.ver', 'EXPORTAR'],
         ]),
     ];
+    /**
+     * Portal del estudiante: sus propios aportes (listado y detalle).
+     * Reutiliza la MISMA opción de menú "Aportes" (matricula.pago.aporte.ver): el wrapper de
+     * rol decide ver mis-aportes (estudiante) vs lista admin (staff). El acceso a los datos lo
+     * blinda resolveEstudianteIdForUsuario (403 si el usuario no tiene vínculo de estudiante).
+     */
+    const misAportesListar = [authenticate, verificarPermiso('matricula.pago.aporte.ver', 'LISTAR')];
 
     // ---- Compromiso de pago: permiso propio finanzas.compromiso.gestionar ----
     /** Ver compromiso vigente de una cabecera (lectura). */
@@ -119,6 +127,34 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listPagosAportesController.handle(req, res, next)
+    );
+
+    // ============================================
+    // PORTAL DEL ESTUDIANTE (aportes propios)
+    // ============================================
+
+    /**
+     * GET /api/v1/pagos-aportes/mis-aportes
+     * Aportes del estudiante de la sesión (se fuerza estudiante_id en servidor).
+     * Respuesta: { aportes: [...], resumen: {...} } + pagination.
+     * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+     */
+    router.get(
+        '/mis-aportes',
+        ...misAportesListar,
+        (req, res, next) => controllers.misAportesController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/pagos-aportes/mis-aportes/:cabeceraId
+     * Detalle (cabecera + cuotas) de un aporte propio. Verifica pertenencia al
+     * estudiante de la sesión; no expone el recibo.
+     * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+     */
+    router.get(
+        '/mis-aportes/:cabeceraId',
+        ...misAportesListar,
+        (req, res, next) => controllers.misAporteDetailController.handle(req, res, next)
     );
 
     /**
@@ -348,6 +384,9 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     router.get(
         '/:id',
         ...pagoDetalle,
+        ...idValidator, // 1. Validar que :id sea numérico
+        validateRequest, // 2. Procesar errores de validación
+        aporteSelfOnlyGuard, // 3. Anti-IDOR: un estudiante solo ve SU propio aporte
         (req, res, next) => controllers.getPaymentAporteByIdController.handle(req, res, next)
     );
 

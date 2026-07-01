@@ -30,7 +30,7 @@
 
 .list-item .list-item-avatar .anticon {
   font-size: 32px; /* Aumentar de tamaño por defecto (24px) a 32px */
-  color: var(--color-primary);
+  color: var(--color-item-hover-bg);
 }
 
 /* Título con color primario - ya se aplica en el componente pero asegurar en CSS */

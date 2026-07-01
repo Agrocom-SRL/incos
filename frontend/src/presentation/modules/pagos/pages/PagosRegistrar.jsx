@@ -16,7 +16,7 @@
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMemo, useEffect, useState, useRef } from 'react';
-import { Spin, Form, App, Alert, Segmented } from 'antd';
+import { Spin, Form, App } from 'antd';
 import { ArrowLeftOutlined, GiftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { PageTemplate } from '@templates';
@@ -30,6 +30,7 @@ import {
   PaymentMethodSelectionSection,
   ContributionDetailSummary,
   SelectedPaymentSection,
+  CompromisoPagoModal,
 } from '../components/organisms';
 
 /**
@@ -105,6 +106,10 @@ const PagosRegistrar = () => {
   // compromiso con esa fecha (fecha de pago + N días). Tras la primera cuota ya no
   // se vuelve a mostrar. Si se cancela todo o es pago gratuito (beca 100%), no aplica.
   const [compromisoDias, setCompromisoDias] = useState(DIAS_COMPROMISO_DEFAULT);
+  // Modal de confirmación del compromiso: se abre al guardar cuando la 1ra cuota deja saldo.
+  const [compromisoModalOpen, setCompromisoModalOpen] = useState(false);
+  // Pago ya validado, en espera de que el operador confirme el plazo del compromiso.
+  const [pagoPendiente, setPagoPendiente] = useState(null);
   const fechaPagoWatch = Form.useWatch('fechaPago', formInstance);
   const esPrimeraCuota = useMemo(() => {
     if (!estadoActualAporte) return false;
@@ -162,8 +167,15 @@ const PagosRegistrar = () => {
     return saldo > 0 && cuota >= saldo;
   }, [montoPagado, montoCuota]);
 
-  // El selector de compromiso solo aparece en la 1ra cuota, con saldo a financiar y sin pago gratuito.
+  // El compromiso solo aplica en la 1ra cuota, con saldo a financiar y sin pago gratuito.
   const mostrarSelectorCompromiso = esPrimeraCuota && !esPagoGratuito && !cancelaTodo;
+
+  // Saldo que quedará pendiente tras esta cuota (lo que el estudiante se compromete a cancelar).
+  const saldoRestanteCompromiso = useMemo(() => {
+    const saldo = Math.floor(Number(montoPagado) || 0);
+    const cuota = Math.floor(Number(montoCuota) || 0);
+    return Math.max(0, saldo - cuota);
+  }, [montoPagado, montoCuota]);
 
   // Si no hay deuda, forzar 0. Si el usuario ingresó más que el saldo real (ej. tras actualizar datos), recortar al saldo. No autocompletar el saldo al cargar.
   useEffect(() => {
@@ -409,14 +421,39 @@ const PagosRegistrar = () => {
         compromisoDias: mostrarSelectorCompromiso ? compromisoDias : undefined,
       };
 
-      // Llamar a la función de registro del contexto
-      if (!registrarPago) {
-        message.error('Error: Función de registro no disponible');
+      // Si es la 1ra cuota y queda saldo pendiente, confirmar el plazo del compromiso en un
+      // modal antes de registrar. El plazo definitivo se toma al confirmar (compromisoDias).
+      if (mostrarSelectorCompromiso) {
         setIsSubmitting(false);
         isSubmittingRef.current = false;
+        setPagoPendiente(pagoData);
+        setCompromisoModalOpen(true);
         return;
       }
 
+      await ejecutarRegistro(pagoData);
+    } catch (error) {
+      console.error('Error al registrar pago:', error);
+      message.error('Error inesperado al registrar el pago');
+
+      // Resetear estado en caso de error para permitir reintento
+      setIsSubmitting(false);
+      isSubmittingRef.current = false;
+    }
+  };
+
+  // Ejecuta el registro contra el backend y maneja el resultado (éxito/errores/recibo).
+  // Se llama tanto en el flujo directo como al confirmar el modal de compromiso.
+  const ejecutarRegistro = async (pagoData) => {
+    if (!registrarPago) {
+      message.error('Error: Función de registro no disponible');
+      return;
+    }
+
+    setIsSubmitting(true);
+    isSubmittingRef.current = true;
+
+    try {
       // Realizar la petición de registro (ya estamos protegidos contra múltiples clics)
       const result = await registrarPago(pagoData);
 
@@ -487,6 +524,21 @@ const PagosRegistrar = () => {
       setIsSubmitting(false);
       isSubmittingRef.current = false;
     }
+  };
+
+  // Confirmar el compromiso: registrar con el plazo elegido (compromisoDias actual).
+  const handleConfirmarCompromiso = async () => {
+    if (!pagoPendiente) return;
+    await ejecutarRegistro({ ...pagoPendiente, compromisoDias });
+    setCompromisoModalOpen(false);
+    setPagoPendiente(null);
+  };
+
+  // Cancelar el compromiso: cerrar el modal y volver al formulario sin registrar.
+  const handleCancelarCompromiso = () => {
+    if (isSubmitting) return;
+    setCompromisoModalOpen(false);
+    setPagoPendiente(null);
   };
 
   // Configurar breadcrumb items
@@ -618,42 +670,6 @@ const PagosRegistrar = () => {
               montoObligatorioMax={montoPagado}
             />
 
-            {/* Compromiso de pago: solo en la 1ra cuota que deja saldo pendiente. El
-                usuario elige el plazo; el backend crea el compromiso (fecha de pago + N días). */}
-            {mostrarSelectorCompromiso ? (
-              <Alert
-                type="info"
-                showIcon
-                style={{ marginBottom: 16 }}
-                title={<strong>Compromiso de pago</strong>}
-                description={
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
-                    <span>
-                      Al ser el primer pago y quedar saldo pendiente, elige en cuánto tiempo se compromete el
-                      estudiante a cancelar el resto:
-                    </span>
-                    <Segmented
-                      value={compromisoDias}
-                      onChange={setCompromisoDias}
-                      options={OPCIONES_COMPROMISO.map((o) => ({
-                        value: o.value,
-                        label: (
-                          <div style={{ padding: '2px 4px', textAlign: 'center', lineHeight: 1.25 }}>
-                            <div style={{ fontWeight: 600 }}>{o.label}</div>
-                            <div style={{ fontSize: 12, opacity: 0.65 }}>{o.sub}</div>
-                          </div>
-                        ),
-                      }))}
-                    />
-                    <span>
-                      Vencimiento del compromiso:{' '}
-                      <strong>{formatFechaCompromiso(fechaCompromisoProyectada)}</strong>.
-                    </span>
-                  </div>
-                }
-              />
-            ) : null}
-
             {/* Sección 3: Selección de Método de Pago (solo si NO es pago gratuito) */}
             {!esPagoGratuito ? (
               <PaymentMethodSelectionSection
@@ -695,6 +711,20 @@ const PagosRegistrar = () => {
           </Form>
         )}
       </div>
+
+      {/* Compromiso de pago: confirmación del plazo antes de registrar (solo 1ra cuota con
+          saldo pendiente). El backend crea el compromiso con fecha de pago + N días. */}
+      <CompromisoPagoModal
+        open={compromisoModalOpen}
+        saldoRestante={saldoRestanteCompromiso}
+        opciones={OPCIONES_COMPROMISO}
+        diasSeleccionados={compromisoDias}
+        onChangeDias={setCompromisoDias}
+        fechaCompromiso={formatFechaCompromiso(fechaCompromisoProyectada)}
+        confirmLoading={isSubmitting}
+        onConfirm={handleConfirmarCompromiso}
+        onCancel={handleCancelarCompromiso}
+      />
     </PageTemplate>
   );
 };

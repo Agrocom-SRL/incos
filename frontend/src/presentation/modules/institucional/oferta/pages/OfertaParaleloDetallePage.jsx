@@ -6,7 +6,7 @@ import { PageHeader } from '@molecules';
 import { ActionButton } from '@atoms';
 import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useOfertaParaleloDetalleState } from '@application-institucional/oferta';
-import { DashboardPageShell } from '@presentation/modules/dashboard/components/organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 const DocenteAsignacionCursoModal = lazy(
   () => import('@institucional/horarios/components/organisms/DocenteAsignacionCursoModal'),
 );

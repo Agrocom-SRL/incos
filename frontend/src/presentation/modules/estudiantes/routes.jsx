@@ -28,6 +28,7 @@ export const estudiantesRoutes = [
       module: 'MAT',
       parent: 'MAT',
       order: 2,
+      labelByRole: { ESTUDIANTE: 'Mis datos' },
     },
   },
   {

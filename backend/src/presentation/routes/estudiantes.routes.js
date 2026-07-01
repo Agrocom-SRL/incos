@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
+import { estudianteSelfOnlyGuard } from '../middleware/estudianteSelfOnly.middleware.js';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
 import {
     registerStudentValidator,
@@ -45,6 +46,14 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         ]),
     ];
     const documentoPdf = [authenticate, verificarPermiso('matricula.documento.ver', 'GENERAR_PDF')];
+    // "Mis datos" se consume desde "Mi perfil" (autoservicio, sin permiso propio, como /auth/me).
+    // El acceso lo blinda resolveEstudianteIdForUsuario: 403 si el usuario no es estudiante.
+    const misDatosDetalle = [authenticate];
+    // "Mi matrícula": reutiliza la opción de menú "Matrículas" (matricula.inscribir).
+    // El wrapper de rol decide ver "Mi matrícula" (estudiante) vs el listado de
+    // inscripciones (staff). El acceso real lo blinda resolveEstudianteIdForUsuario
+    // (403 si el usuario no es estudiante).
+    const miMatriculaListar = [authenticate, verificarPermiso('matricula.inscribir', 'LISTAR')];
     const becaListar = [authenticate, verificarPermiso('matricula.beca.ver', 'LISTAR')];
     const becaDetalle = [authenticate, verificarPermiso('matricula.beca.ver', 'DETALLE')];
     const becaAsignarCrear = [authenticate, verificarPermiso('matricula.beca.asignar', 'CREAR')];
@@ -130,6 +139,37 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     validateRequest,  // 2. Middleware que procesa errores
     (req, res, next) => controllers.declaracionJuradaController.handle(req, res, next)  // 3. Controller al final
   );
+
+    // ============================================
+    // PORTAL DEL ESTUDIANTE (datos propios)
+    // ============================================
+
+    /**
+     * GET /api/v1/estudiantes/mis-datos
+     * Datos del estudiante de la sesión (se resuelve desde req.usuario.id en servidor).
+     * Payload recortado: { student, guardians, origins, academicData, inscripcion }.
+     *
+     * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+     */
+    router.get(
+        '/mis-datos',
+        ...misDatosDetalle,
+        (req, res, next) => controllers.getMisDatosEstudianteController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/estudiantes/mi-matricula
+     * "Mi matrícula" del estudiante de la sesión: materias matriculadas + horario
+     * semanal (gestión vigente), solo lectura. El estudiante se resuelve desde
+     * req.usuario.id en servidor (anti-IDOR).
+     *
+     * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+     */
+    router.get(
+        '/mi-matricula',
+        ...miMatriculaListar,
+        (req, res, next) => controllers.getMiMatriculaEstudianteController.handle(req, res, next)
+    );
 
     // ============================================
     // BÚSQUEDA DE ESTUDIANTE
@@ -328,7 +368,8 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         ...admisionDetalle,
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 3. Controller al final
+        estudianteSelfOnlyGuard,  // 3. Anti-IDOR: un estudiante solo ve SU propia ficha
+        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 4. Controller al final
     );
 
     return router;

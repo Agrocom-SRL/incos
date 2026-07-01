@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import {
   actualizarPermisosRolValidator,
+  crearRolValidator,
   rolIdParamValidator,
   validateSeguridadRequest,
 } from '../validators/seguridad/usuarios.validator.js';
@@ -16,12 +17,24 @@ export function buildRolesRouter({ seguridadRolesController }) {
   const c = seguridadRolesController;
 
   const ver = [authenticate, verificarPermiso('seguridad.rol.gestionar', 'LISTAR')];
+  const crear = [
+    authenticate,
+    verificarPermiso('seguridad.rol.gestionar', 'CREAR'),
+  ];
   const editar = [
     authenticate,
     verificarPermiso('seguridad.rol.gestionar', 'EDITAR'),
   ];
 
   router.get('/', ...ver, (req, res, next) => c.list(req, res, next));
+
+  router.post(
+    '/',
+    ...crear,
+    crearRolValidator,
+    validateSeguridadRequest,
+    (req, res, next) => c.create(req, res, next)
+  );
 
   router.get(
     '/:id/permisos',

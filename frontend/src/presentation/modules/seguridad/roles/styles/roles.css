@@ -1,0 +1,68 @@
+/* Estilos del ítem de menú SEG → Roles y permisos. */
+
+/* Fila de acciones (compartida con usuarios; utilidad mínima, duplicada para localidad). */
+.seg-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Pill de categoría de rol (StatusPill) — listado de Roles. Solo presentación.
+   Un hue por categoría (tokens del tema, sin hex). Alineado a roles/components/atoms/rolColor.js / TIPO_CONFIG.
+   Texto = token `*-active` (oscuro) sobre fondo `*-bg` (claro) para contraste AA en pill bold 12px. */
+.seg-rol-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.seg-rol-pill--sistema {
+  background: var(--color-accent-bg);
+  color: var(--color-accent-active);
+  border-color: var(--color-accent-border);
+}
+
+.seg-rol-pill--rector {
+  background: var(--color-error-bg);
+  color: var(--color-error-active);
+  border-color: var(--color-error-border);
+}
+
+.seg-rol-pill--directivo {
+  background: var(--color-info-bg);
+  color: var(--color-info-active);
+  border-color: var(--color-info-border);
+}
+
+/* Secretaría: teal sintetizado desde tokens azul + verde (distinto de directivo y docente). */
+.seg-rol-pill--secretaria {
+  background: color-mix(in srgb, var(--color-info-bg) 50%, var(--color-success-bg));
+  color: color-mix(in srgb, var(--color-info-active) 50%, var(--color-success-active));
+  border-color: color-mix(in srgb, var(--color-info-border) 50%, var(--color-success-border));
+}
+
+.seg-rol-pill--docente {
+  background: var(--color-success-bg);
+  color: var(--color-success-active);
+  border-color: var(--color-success-border);
+}
+
+.seg-rol-pill--estudiante {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-active);
+  border-color: var(--color-warning-border);
+}
+
+.seg-rol-pill--default {
+  background: var(--color-bg-layout);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}

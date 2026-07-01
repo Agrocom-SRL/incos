@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { App, Space, Tag } from 'antd';
-import { KeyOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { App } from 'antd';
+import { KeyOutlined } from '@ant-design/icons';
 import { TableActions } from '@molecules';
-import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
+import { IdentidadCelda, StatusPill } from '@atoms';
+import { useCasesFactory } from '@container';
+import { TIPO_CONFIG } from '@modules/seguridad/roles/constants/rolTipoConfig.js';
+import { rolColorVar, rolPillClass } from '@modules/seguridad/roles/components/atoms/rolColor.js';
 import { useRolesList } from '@/application/modules/seguridad/hooks/state/useRolesList';
 
 function errMsg(json) {
@@ -16,6 +19,8 @@ export const useSeguridadRolesListPage = () => {
   const { message } = App.useApp();
   const { roles: rows, loading, cargar } = useRolesList();
   const [search, setSearch] = useState('');
+  const [crearOpen, setCrearOpen] = useState(false);
+  const [crearSaving, setCrearSaving] = useState(false);
 
   const breadcrumbItems = useMemo(
     () => [{ title: 'Inicio', href: '/' }, { title: 'Seguridad' }, { title: 'Roles' }],
@@ -35,21 +40,31 @@ export const useSeguridadRolesListPage = () => {
 
   const columns = useMemo(() => [
     {
+      title: '#',
+      key: 'nro',
+      width: 56,
+      align: 'center',
+      render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
+    },
+    {
       title: 'Rol',
       key: 'rol',
+      fixed: 'left',
       render: (_, record) => (
-        <Space>
-          <SafetyCertificateOutlined />
-          <strong>{record.nombre}</strong>
-        </Space>
+        <IdentidadCelda
+          codigo={record.codigo}
+          nombre={record.nombre}
+          accentColor={rolColorVar(record.tipo, record.is_system)}
+        />
       ),
     },
     {
       title: 'Tipo',
       key: 'tipo',
+      width: 180,
       render: (_, record) => {
-        const cfg = TIPO_CONFIG[record.tipo] ?? { color: 'default', label: record.tipo ?? '—' };
-        return <Tag color={cfg.color}>{cfg.label}</Tag>;
+        const cfg = TIPO_CONFIG[record.tipo] ?? { label: record.tipo ?? '—' };
+        return <StatusPill label={cfg.label} className={rolPillClass(record.tipo, record.is_system)} />;
       },
     },
     {
@@ -87,6 +102,33 @@ export const useSeguridadRolesListPage = () => {
     setSearch(event.target.value);
   }, []);
 
+  const openCrearRol = useCallback(() => setCrearOpen(true), []);
+  const closeCrearRol = useCallback(() => {
+    if (!crearSaving) setCrearOpen(false);
+  }, [crearSaving]);
+
+  const onCreateRol = useCallback(
+    async (values) => {
+      setCrearSaving(true);
+      try {
+        const rol = await useCasesFactory.crearRolAdmin().ejecutar(values);
+        message.success('Rol creado correctamente');
+        setCrearOpen(false);
+        await cargar();
+        // Si el backend devuelve el id, llevamos al armado de permisos del rol nuevo.
+        if (rol?.id) {
+          navigate(`/seguridad/roles/${rol.id}/permisos`);
+        }
+      } catch (e) {
+        message.error(errMsg(e));
+        throw e;
+      } finally {
+        setCrearSaving(false);
+      }
+    },
+    [message, cargar, navigate],
+  );
+
   return {
     loading,
     columns,
@@ -94,5 +136,10 @@ export const useSeguridadRolesListPage = () => {
     filteredRoles,
     breadcrumbItems,
     onSearchChange,
+    crearOpen,
+    crearSaving,
+    openCrearRol,
+    closeCrearRol,
+    onCreateRol,
   };
 };

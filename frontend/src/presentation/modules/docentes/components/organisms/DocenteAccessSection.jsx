@@ -29,7 +29,7 @@ const DocenteAccessSection = ({
     if (!docenteId) return;
     navigate('/seguridad/usuarios/nuevo', {
       state: {
-        createInitialStep: 1, // abrir en paso 2 (datos del perfil) para confirmar vínculo docente
+        createInitialStep: 2, // ir directo al paso 3 (Credenciales): vínculo y rol ya vienen resueltos
         forceCategoriaCreacion: 'ASIGNAR_DOCENTE',
         forceRoleCode: 'DOCENTE',
         returnToPath: location.pathname,

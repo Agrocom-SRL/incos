@@ -30,10 +30,15 @@ export const useSeguridadUsuarioCreatePage = () => {
   const forcedCategoriaCreacion = location.state?.forceCategoriaCreacion;
   const forcedRoleCode = location.state?.forceRoleCode;
   const prefillDocenteUsuario = location.state?.prefillDocenteUsuario;
+  const prefillEstudianteUsuario = location.state?.prefillEstudianteUsuario;
   const isCreateFromDocenteDetail =
     !isEditMode &&
     forcedCategoriaCreacion === 'ASIGNAR_DOCENTE' &&
     Number.isFinite(Number(prefillDocenteUsuario?.docenteId));
+  const isCreateFromEstudianteDetail =
+    !isEditMode &&
+    forcedCategoriaCreacion === 'ASIGNAR_ESTUDIANTE' &&
+    Number.isFinite(Number(prefillEstudianteUsuario?.estudianteId));
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const { crear, actualizar, cargar } = useUsuarioDetail();
@@ -59,13 +64,18 @@ export const useSeguridadUsuarioCreatePage = () => {
 
   const usuarioAltaInitialValues = useMemo(() => {
     if (isEditMode) return getEditPageInitialValues(usuarioEditando);
-    return getCreatePageInitialValues(location.state?.prefillDocenteUsuario);
-  }, [isEditMode, usuarioEditando, location.state?.prefillDocenteUsuario]);
+    return getCreatePageInitialValues({
+      prefillDocenteUsuario: location.state?.prefillDocenteUsuario,
+      prefillEstudianteUsuario: location.state?.prefillEstudianteUsuario,
+    });
+  }, [isEditMode, usuarioEditando, location.state?.prefillDocenteUsuario, location.state?.prefillEstudianteUsuario]);
 
-  const wizardFormMountKey = useMemo(
-    () => (isEditMode ? `usuario-editar-${editingUserId}` : (prefillDocenteUsuario?.docenteId ? `prefill-docente-${prefillDocenteUsuario.docenteId}` : 'usuario-nuevo')),
-    [isEditMode, editingUserId, prefillDocenteUsuario?.docenteId]
-  );
+  const wizardFormMountKey = useMemo(() => {
+    if (isEditMode) return `usuario-editar-${editingUserId}`;
+    if (prefillDocenteUsuario?.docenteId) return `prefill-docente-${prefillDocenteUsuario.docenteId}`;
+    if (prefillEstudianteUsuario?.estudianteId) return `prefill-estudiante-${prefillEstudianteUsuario.estudianteId}`;
+    return 'usuario-nuevo';
+  }, [isEditMode, editingUserId, prefillDocenteUsuario?.docenteId, prefillEstudianteUsuario?.estudianteId]);
 
   const breadcrumbItems = useMemo(
     () => [
@@ -162,6 +172,40 @@ export const useSeguridadUsuarioCreatePage = () => {
   }, [isCreateFromDocenteDetail, prefillDocenteUsuario, form]);
 
   useEffect(() => {
+    if (!isCreateFromEstudianteDetail) return;
+    const estudianteId = Number(prefillEstudianteUsuario?.estudianteId);
+    if (!Number.isFinite(estudianteId) || estudianteId < 1) return;
+    const patch = {};
+    const currentCategoria = form.getFieldValue('categoria_creacion');
+    const currentEstudianteId = Number(form.getFieldValue('estudiante_id'));
+    const currentNombre = form.getFieldValue('vinculo_nombre_display');
+    const currentEmail = form.getFieldValue('vinculo_email_display');
+    const currentCi = form.getFieldValue('vinculo_ci_display');
+    const currentCodigo = form.getFieldValue('vinculo_codigo_display');
+    if (currentCategoria !== 'ASIGNAR_ESTUDIANTE') {
+      patch.categoria_creacion = 'ASIGNAR_ESTUDIANTE';
+    }
+    if (!Number.isFinite(currentEstudianteId) || currentEstudianteId !== estudianteId) {
+      patch.estudiante_id = estudianteId;
+    }
+    if (!currentNombre && prefillEstudianteUsuario?.nombreCompleto) {
+      patch.vinculo_nombre_display = prefillEstudianteUsuario.nombreCompleto;
+    }
+    if (!currentEmail && prefillEstudianteUsuario?.emailPersonal) {
+      patch.vinculo_email_display = prefillEstudianteUsuario.emailPersonal;
+    }
+    if (!currentCi && prefillEstudianteUsuario?.ciCompleto) {
+      patch.vinculo_ci_display = prefillEstudianteUsuario.ciCompleto;
+    }
+    if (!currentCodigo && prefillEstudianteUsuario?.codigo) {
+      patch.vinculo_codigo_display = prefillEstudianteUsuario.codigo;
+    }
+    if (Object.keys(patch).length > 0) {
+      form.setFieldsValue(patch);
+    }
+  }, [isCreateFromEstudianteDetail, prefillEstudianteUsuario, form]);
+
+  useEffect(() => {
     if (!isEditMode && forcedRoleCode && roles?.length) {
       const forced = roles.find((r) => r.codigo === forcedRoleCode);
       const rid = Number(form.getFieldValue('rol_id'));
@@ -203,7 +247,7 @@ export const useSeguridadUsuarioCreatePage = () => {
     () => [
       { title: 'Tipo de alta', formTitle: isEditMode ? 'Editar usuario' : 'Nuevo usuario', sections: ['categoria'], config: { categoria: {} } },
       { title: 'Datos del perfil', formTitle: 'Ficha o vínculo institucional', sections: ['perfil'], config: { perfil: {} } },
-      { title: 'Credenciales y rol', formTitle: 'Acceso al sistema', sections: ['cuenta'], config: { cuenta: {} } },
+      { title: 'Credenciales', formTitle: 'Acceso al sistema', sections: ['cuenta'], config: { cuenta: {} } },
     ],
     [isEditMode]
   );
@@ -271,6 +315,7 @@ export const useSeguridadUsuarioCreatePage = () => {
     loading,
     submitError,
     prefillDocenteUsuario,
+    prefillEstudianteUsuario,
     isEditMode,
     categoriaFijada,
     wizardInitialStep,
