@@ -1,38 +1,41 @@
 /**
  * tableColumns - Columnas de la tabla de pagos de aportes (vista_pago_aporte_listado).
  *
- * Lenguaje visual del prototipo de listado: `#` numérico + `IdentidadCelda` (estudiante),
- * `InfoLinesCell` (gestión) y `StatusPill` (estado), con las clases del design-system
- * (`styles/components/atoms/table-cells.css`). Las celdas monetarias conservan su formato
- * numérico a la derecha (base/descuento/total, saldo, compromiso).
+ * Lenguaje visual alineado con el listado de Finanzas: `IdentidadCelda` con el ESTADO del
+ * pago (Sin pagos / Parcial / Cancelado) como subtexto bajo el nombre (no columna propia);
+ * montos con jerarquía; carrera como dot de color; y COMPROMISO con su fecha + pill de
+ * alerta (Vencida / Próxima / Al día / Cumplido). El nombre NO se tiñe por carrera.
  */
 
-import { UserOutlined, CalendarOutlined, DollarOutlined } from '@ant-design/icons';
-import { Space, Flex } from 'antd';
-import { TableCell } from '@molecules';
 import {
-  Text, IdentidadCelda, InfoLinesCell, StatusPill,
-  CompromisoAlertTag, formatFechaCompromiso, compromisoSortValue,
+  CalendarOutlined, DollarOutlined, FileDoneOutlined, WalletOutlined,
+} from '@ant-design/icons';
+import { Space, Flex } from 'antd';
+import {
+  Text, IdentidadCelda, InfoLinesCell, StatusPill, CarreraDotCell,
+  formatFechaCompromiso, compromisoSortValue, resolverCompromisoEstado,
 } from '@atoms';
 import PagoTableActions from './PagoTableActions';
 
-/** Punto de color (data-driven) para chip de carrera. */
-const colorDot = (color) => (
-    <span
-        style={{
-            width: 10, height: 10, borderRadius: 999,
-            background: color || 'var(--border, #d1d5db)', display: 'inline-block',
-        }}
-    />
-);
-
-/** Estado del aporte → clase de pill semántica (StatusPill). */
-const getEstadoAportePillClass = (estado) => {
-  const e = String(estado || '').toUpperCase();
-  if (e === 'PENDIENTE') return 'cfg-materia-pill cfg-materia-pill--warning';
-  if (e === 'CANCELADO') return 'cfg-materia-pill cfg-materia-pill--default';
-  return 'cfg-materia-pill cfg-materia-pill--success';
+/** Color semántico del compromiso (AntD) → clase de pill del design-system. */
+const COMPROMISO_PILL = {
+  error: 'cfg-materia-pill cfg-materia-pill--danger',
+  warning: 'cfg-materia-pill cfg-materia-pill--warning',
+  success: 'cfg-materia-pill cfg-materia-pill--success',
+  default: 'cfg-materia-pill cfg-materia-pill--default',
 };
+
+/** Estado del aporte DERIVADO (para el subtexto bajo el nombre, estilo Finanzas). */
+const derivarEstadoAporte = (record) => {
+  const n = Number(record.cantidad_pagos ?? 0);
+  const saldo = Number(record.saldo_pendiente ?? 0);
+  const oblig = Number(record.monto_obligatorio ?? 0);
+  if (saldo <= 0 && (n > 0 || oblig <= 0)) return { label: 'Cancelado', tone: 'success' };
+  if (n === 0) return { label: 'Sin pagos', tone: 'warning' };
+  return { label: 'Pago parcial', tone: 'warning' };
+};
+
+const formatBs = (v) => `Bs. ${Number(v ?? 0).toFixed(2)}`;
 
 /**
  * Crea las columnas de la tabla de pagos de aportes.
@@ -53,23 +56,42 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
             render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
         },
         {
+            title: 'Estudiante',
+            dataIndex: ['estudiante', 'nombreCompleto'],
+            width: 260,
+            ellipsis: true,
+            render: (_, record) => {
+                const estado = derivarEstadoAporte(record);
+                return (
+                    <div>
+                        <IdentidadCelda
+                            codigo={record.estudiante?.codigoEstudiante || null}
+                            nombre={(record.estudiante?.nombreCompleto || record.estudiante?.codigoEstudiante || 'Sin nombre').toUpperCase()}
+                        />
+                        <span className={`cfg-identidad-substate cfg-identidad-substate--${estado.tone}`}>
+                            <span className="cfg-identidad-substate__dot" aria-hidden />
+                            {estado.label}
+                        </span>
+                    </div>
+                );
+            },
+            sorter: (a, b) =>
+                (a.estudiante?.nombreCompleto ?? a.estudiante?.codigoEstudiante ?? '').localeCompare(
+                    b.estudiante?.nombreCompleto ?? b.estudiante?.codigoEstudiante ?? ''
+                ),
+        },
+        {
             title: 'Gestión y carrera',
             dataIndex: 'gestion',
             width: 200,
             render: (gestion, record) => {
                 const g = gestion || record.management;
                 const gestionLabel = g ? (g.nombre || g.anio || String(g.id)) : null;
-                const carrera = record.carrera;
-                const carreraLabel = carrera?.nombre
-                    ? `${carrera.nombre}${carrera.codigo ? ` · ${carrera.codigo}` : ''}`
-                    : null;
                 return (
-                    <InfoLinesCell
-                        lines={[
-                            { icon: <CalendarOutlined />, label: gestionLabel },
-                            { icon: colorDot(carrera?.colorHex), label: carreraLabel },
-                        ]}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <InfoLinesCell lines={[{ icon: <CalendarOutlined />, label: gestionLabel }]} />
+                        <CarreraDotCell nombre={record.carrera?.nombre} colorHex={record.carrera?.colorHex} />
+                    </div>
                 );
             },
             sorter: (a, b) => {
@@ -79,25 +101,9 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
             },
         },
         {
-            title: 'Estudiante',
-            dataIndex: ['estudiante', 'nombreCompleto'],
-            fixed: 'left',
-            ellipsis: true,
-            render: (_, record) => (
-                <IdentidadCelda
-                    codigo={record.estudiante?.codigoEstudiante || null}
-                    nombre={(record.estudiante?.nombreCompleto || record.estudiante?.codigoEstudiante || 'Sin nombre').toUpperCase()}
-                    accentColor={record.carrera?.colorHex || undefined}
-                />
-            ),
-            sorter: (a, b) =>
-                (a.estudiante?.nombreCompleto ?? a.estudiante?.codigoEstudiante ?? '').localeCompare(
-                    b.estudiante?.nombreCompleto ?? b.estudiante?.codigoEstudiante ?? ''
-                ),
-        },
-        {
             title: 'Monto a pagar',
             dataIndex: 'monto_obligatorio',
+            width: 200,
             align: 'right',
             render: (_, record) => {
                 const base = Number(record.monto_base ?? 0);
@@ -110,7 +116,7 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                         <DollarOutlined style={{ marginTop: 4 }} />
                         <Flex vertical align="flex-end" gap={2}>
                             <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                                Base Bs. {base.toFixed(2)}
+                                Base {formatBs(base)}
                             </Text>
                             {desc > 0 ? (
                                 <Flex align="center" gap={6}>
@@ -119,12 +125,12 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                                         className="cfg-materia-pill cfg-materia-pill--info"
                                     />
                                     <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                                        -Bs. {desc.toFixed(2)}
+                                        -{formatBs(desc)}
                                     </Text>
                                 </Flex>
                             ) : null}
                             <Text strong style={{ fontSize: 'var(--font-size-base)' }}>
-                                Bs. {oblig.toFixed(2)}
+                                {formatBs(oblig)}
                             </Text>
                         </Flex>
                     </Space>
@@ -133,38 +139,38 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
             sorter: (a, b) => (a.monto_obligatorio ?? 0) - (b.monto_obligatorio ?? 0),
         },
         {
-            title: 'Detalle del pago',
-            dataIndex: ['total_pagado', 'cantidad_pagos'],
-            align: 'left',
+            title: 'Pagado',
+            dataIndex: 'total_pagado',
+            width: 160,
             render: (_, record) => {
-                const t = record.total_pagado ?? 0;
+                const t = Number(record.total_pagado ?? 0);
                 const n = Number(record.cantidad_pagos ?? 0);
                 if (n === 0) {
-                    return <TableCell fallback="—">sin pagos</TableCell>;
+                    return <span className="cfg-materia-pill cfg-materia-pill--default">Sin pagos</span>;
                 }
                 return (
-                    <TableCell
-                        icon={<DollarOutlined />}
-                        subtext={`${n} pagos`}
-                        fallback="—"
-                    >
-                        Bs. {Number(t).toFixed(2)}
-                    </TableCell>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Text strong style={{ fontSize: 'var(--font-size-base)' }}>{formatBs(t)}</Text>
+                        <InfoLinesCell
+                            lines={[{ icon: <FileDoneOutlined />, label: `${n} ${n === 1 ? 'cuota' : 'cuotas'}` }]}
+                        />
+                    </div>
                 );
             },
             sorter: (a, b) => (a.total_pagado ?? 0) - (b.total_pagado ?? 0),
         },
         {
-            title: 'Saldo pendiente',
+            title: 'Saldo',
             dataIndex: 'saldo_pendiente',
-            align: 'right',
+            width: 150,
             render: (val, record) => {
-                const s = val ?? record.saldo_pendiente ?? 0;
-                const num = Number(s);
+                const saldo = Number(val ?? record.saldo_pendiente ?? 0);
+                const saldado = saldo <= 0;
                 return (
-                    <TableCell icon={<DollarOutlined />} strong={num > 0}>
-                        Bs. {num.toFixed(2)}
-                    </TableCell>
+                    <StatusPill
+                        label={saldado ? 'Cancelado' : formatBs(saldo)}
+                        className={`cfg-materia-pill ${saldado ? 'cfg-materia-pill--success' : 'cfg-materia-pill--danger'}`}
+                    />
                 );
             },
             sorter: (a, b) => (a.saldo_pendiente ?? 0) - (b.saldo_pendiente ?? 0),
@@ -172,33 +178,23 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Compromiso',
             dataIndex: 'compromiso',
+            width: 170,
             render: (compromiso) => {
                 if (!compromiso) {
-                    return <TableCell fallback="—">{null}</TableCell>;
+                    return <span className="cfg-materia-pill cfg-materia-pill--default">—</span>;
                 }
+                const { label, color } = resolverCompromisoEstado(compromiso);
+                const fecha = formatFechaCompromiso(compromiso.fechaCompromiso);
                 return (
-                    <TableCell
-                        icon={<CalendarOutlined />}
-                        subtext={<CompromisoAlertTag compromiso={compromiso} />}
-                        fallback="—"
-                    >
-                        {formatFechaCompromiso(compromiso.fechaCompromiso) === '—'
-                            ? 'Sin fecha'
-                            : formatFechaCompromiso(compromiso.fechaCompromiso)}
-                    </TableCell>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <InfoLinesCell
+                            lines={[{ icon: <WalletOutlined />, label: fecha === '—' ? 'Sin fecha' : fecha }]}
+                        />
+                        <StatusPill label={label} className={COMPROMISO_PILL[color] || COMPROMISO_PILL.default} />
+                    </div>
                 );
             },
             sorter: (a, b) => compromisoSortValue(a?.compromiso) - compromisoSortValue(b?.compromiso),
-        },
-        {
-            title: 'Estado',
-            dataIndex: 'estado',
-            width: 130,
-            render: (estado, record) => {
-                const e = estado ?? record.estado ?? '—';
-                return <StatusPill label={e} className={getEstadoAportePillClass(e)} />;
-            },
-            sorter: (a, b) => (a.estado ?? '').localeCompare(b.estado ?? ''),
         },
         {
             title: 'Acciones',
@@ -221,8 +217,8 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                     { label: 'Estudiante', value: nombre },
                     { label: 'Código', value: codigo },
                     { label: 'Gestión', value: gestionLabel },
-                    { label: 'Monto a pagar', value: `Base Bs. ${base.toFixed(2)} · Descuento Bs. ${desc.toFixed(2)} · Total Bs. ${oblig.toFixed(2)}` },
-                    { label: 'Saldo pendiente', value: `Bs. ${saldo.toFixed(2)}` },
+                    { label: 'Monto a pagar', value: `Base ${formatBs(base)} · Descuento ${formatBs(desc)} · Total ${formatBs(oblig)}` },
+                    { label: 'Saldo pendiente', value: formatBs(saldo) },
                 ].filter((d) => d.value && d.value !== 'N/A' && d.value !== '—');
 
                 return (

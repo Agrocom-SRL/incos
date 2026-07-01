@@ -7,25 +7,15 @@
  * color propio (admissionTypeColors). Sin `Space orientation` (deprecado) ni estilos inline sueltos.
  */
 
-import { Flex, Tag } from 'antd';
+import { Flex } from 'antd';
 import {
   UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined,
   CalendarOutlined, TagOutlined, IdcardOutlined, ManOutlined, WomanOutlined,
 } from '@ant-design/icons';
-import { IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
+import { IdentidadCelda, InfoLinesCell, StatusPill, CarreraDotCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 import { getAdmissionTypeTagStyle } from './admissionTypeColors';
-
-/** Punto de color (data-driven) para chip de carrera. */
-const colorDot = (color) => (
-  <span
-    style={{
-      width: 10, height: 10, borderRadius: 999,
-      background: color || 'var(--border, #d1d5db)', display: 'inline-block',
-    }}
-  />
-);
 
 /** Estado académico → clase de pill semántica (StatusPill). */
 const getEstadoAcadPillClass = (estado) => {
@@ -63,16 +53,17 @@ const getDatosTrabajoText = (record) => {
   return text.length > MAX_TRABAJO_CHARS ? `${text.slice(0, MAX_TRABAJO_CHARS)}…` : text;
 };
 
-/** Icono y color por género (MASCULINO, FEMENINO, OTRO): azul hombre, rosado mujer, gris otro */
-const getGeneroIconAndColor = (genero) => {
+/** Icono, tono (clase global) y etiqueta por género (patrón DocenteReferenciaCell). */
+const getGeneroMeta = (genero) => {
   const g = String(genero || '').toUpperCase();
   if (g === 'MASCULINO' || g === 'M') {
-    return { icon: <ManOutlined />, color: '#1890ff', label: 'Masculino' };
+    return { icon: <ManOutlined />, toneClass: 'cfg-genero-tone--m', label: 'Masculino' };
   }
   if (g === 'FEMENINO' || g === 'F') {
-    return { icon: <WomanOutlined />, color: '#eb2f96', label: 'Femenino' };
+    return { icon: <WomanOutlined />, toneClass: 'cfg-genero-tone--f', label: 'Femenino' };
   }
-  return { icon: <UserOutlined />, color: '#8c8c8c', label: genero || 'Otro' };
+  if (!genero) return null;
+  return { icon: <UserOutlined />, toneClass: 'cfg-genero-tone--o', label: genero };
 };
 
 /**
@@ -161,14 +152,12 @@ export const createEstudiantesTableColumns = (
     {
       title: 'Estudiante',
       key: 'estudiante',
-      fixed: 'left',
       ellipsis: true,
       responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => (
         <IdentidadCelda
           codigo={record.codigoEstudiante || null}
           nombre={getNombreCompleto(record).toUpperCase()}
-          accentColor={record.carreraColorHex || undefined}
         />
       ),
       sorter: (a, b) => getNombreCompleto(a).localeCompare(getNombreCompleto(b)),
@@ -180,22 +169,17 @@ export const createEstudiantesTableColumns = (
       width: 260,
       responsive: ['md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
-        const generoInfo = record.genero ? getGeneroIconAndColor(record.genero) : null;
+        const generoMeta = getGeneroMeta(record.genero);
         const ci = getCiCompleto(record);
         return (
           <InfoLinesCell
             lines={[
-              { icon: <IdcardOutlined />, label: ci ? `CI ${ci}` : null },
-              generoInfo
-                ? {
-                    icon: <span style={{ color: generoInfo.color }}>{generoInfo.icon}</span>,
-                    label: generoInfo.label,
-                    style: { color: generoInfo.color },
-                  }
+              generoMeta
+                ? { icon: generoMeta.icon, label: generoMeta.label, className: generoMeta.toneClass }
                 : null,
-              { icon: <MailOutlined />, label: record.emailPersonal },
+              { icon: <IdcardOutlined />, label: ci ? `CI ${ci}` : null },
               { icon: <PhoneOutlined />, label: record.celular },
-              { icon: <BankOutlined />, label: getDatosTrabajoText(record) },
+              { icon: <MailOutlined />, label: record.emailPersonal },
             ].filter(Boolean)}
           />
         );
@@ -213,17 +197,12 @@ export const createEstudiantesTableColumns = (
       width: 220,
       responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => (
-        <InfoLinesCell
-          lines={[
-            {
-              icon: colorDot(record.carreraColorHex),
-              label: record.carreraNombre
-                ? `${record.carreraNombre}${record.carreraCodigo ? ` · ${record.carreraCodigo}` : ''}`
-                : null,
-            },
-            { icon: <CalendarOutlined />, label: record.gestionIngresoNombre },
-          ]}
-        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <CarreraDotCell nombre={record.carreraNombre} colorHex={record.carreraColorHex} />
+          {record.gestionIngresoNombre ? (
+            <InfoLinesCell lines={[{ icon: <CalendarOutlined />, label: record.gestionIngresoNombre }]} />
+          ) : null}
+        </div>
       ),
       sorter: (a, b) => (a.carreraNombre || '').localeCompare(b.carreraNombre || ''),
     },
@@ -242,7 +221,9 @@ export const createEstudiantesTableColumns = (
             />
           ) : null}
           {record.tipoAdmision ? (
-            <Tag style={getTipoAdmisionTagStyle(record.tipoAdmision)}>{record.tipoAdmision}</Tag>
+            <span className="cfg-materia-pill" style={getTipoAdmisionTagStyle(record.tipoAdmision)}>
+              {record.tipoAdmision}
+            </span>
           ) : null}
           {!record.estadoAcademico && !record.tipoAdmision ? (
             <span className="cfg-materia-pill cfg-materia-pill--default">—</span>

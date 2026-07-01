@@ -164,7 +164,14 @@ export const useClientTableSort = ({
           setPagState((prev) => ({ ...prev, current: 1 }));
         }
       } else {
-        setSortState(null);
+        // AntD intenta "cancelar" el orden en el 3er clic (order=null). En vez de
+        // limpiarlo, alternamos asc↔desc para que al hacer clic el orden NUNCA se
+        // pierda (toggle infinito sobre la misma columna).
+        setSortState((prev) =>
+          prev && prev.columnKey === columnKey
+            ? { columnKey, order: prev.order === 'ascend' ? 'descend' : 'ascend' }
+            : { columnKey, order: 'ascend' },
+        );
       }
     }
 

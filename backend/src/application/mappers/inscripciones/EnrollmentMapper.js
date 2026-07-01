@@ -91,6 +91,7 @@ export function viewRowToPresentation(row) {
   BaseMapper.mapFieldIfExists(row, 'carrera_id', 'id', carrera);
   BaseMapper.mapFieldIfExists(row, 'carrera_codigo', 'codigo', carrera);
   BaseMapper.mapFieldIfExists(row, 'carrera_nombre', 'nombre', carrera);
+  BaseMapper.mapFieldIfExists(row, 'carrera_color_hex', 'colorHex', carrera);
   presentation.carrera = carrera;
 
   const gestion = {};

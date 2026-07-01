@@ -42,6 +42,7 @@ SELECT
   n.carrera_id,
   n.carrera_codigo,
   n.carrera_nombre,
+  n.carrera_color_hex,
 
   p.paralelo_id,
   p.paralelo_nombre,

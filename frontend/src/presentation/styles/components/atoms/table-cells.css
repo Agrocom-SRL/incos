@@ -112,29 +112,131 @@
   border-color: #d1d5db;
 }
 
-/* Variantes semánticas de estado (para StatusPill en cualquier módulo) */
+/* Variantes semánticas de estado (para StatusPill en cualquier módulo).
+   Mismo lenguaje que los pills de Roles (roles.css): tokens bg/active/border del tema. */
 .cfg-materia-pill--success {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: rgba(4, 120, 87, 0.22);
+  background: var(--color-success-bg, #ecfdf5);
+  color: var(--color-success-active, #047857);
+  border-color: var(--color-success-border, rgba(4, 120, 87, 0.22));
 }
 
 .cfg-materia-pill--warning {
-  background: #fff7ed;
-  color: #c2410c;
-  border-color: rgba(194, 65, 12, 0.2);
+  background: var(--color-warning-bg, #fff7ed);
+  color: var(--color-warning-active, #c2410c);
+  border-color: var(--color-warning-border, rgba(194, 65, 12, 0.2));
 }
 
 .cfg-materia-pill--danger {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-color: rgba(185, 28, 28, 0.22);
+  background: var(--color-error-bg, #fef2f2);
+  color: var(--color-error-active, #b91c1c);
+  border-color: var(--color-error-border, rgba(185, 28, 28, 0.22));
 }
 
 .cfg-materia-pill--info {
-  background: #e0f2fe;
-  color: #0369a1;
-  border-color: rgba(3, 105, 161, 0.22);
+  background: var(--color-info-bg, #e0f2fe);
+  color: var(--color-info-active, #0369a1);
+  border-color: var(--color-info-border, rgba(3, 105, 161, 0.22));
+}
+
+/* ── Tono de género (patrón DocenteReferenciaCell) para líneas de InfoLinesCell ── */
+.cfg-genero-tone--m .cfg-academico-metricas-list__icon,
+.cfg-genero-tone--m .cfg-academico-metricas-list__label {
+  color: var(--ant-blue, #1677ff) !important;
+  font-weight: 700;
+  font-size: 14px !important;
+}
+
+.cfg-genero-tone--f .cfg-academico-metricas-list__icon,
+.cfg-genero-tone--f .cfg-academico-metricas-list__label {
+  color: var(--ant-color-magenta, #eb2f96) !important;
+  font-weight: 700;
+  font-size: 14px !important;
+}
+
+.cfg-genero-tone--o .cfg-academico-metricas-list__icon,
+.cfg-genero-tone--o .cfg-academico-metricas-list__label {
+  color: var(--text-500, #6b7280) !important;
+  font-weight: 700;
+}
+
+/* ── Subestado bajo la identidad (patrón PagoEstudianteCell): dot + etiqueta teñida ── */
+.cfg-identidad-substate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.cfg-identidad-substate__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.cfg-identidad-substate--warning { color: var(--color-warning-active, #c2410c); }
+.cfg-identidad-substate--danger { color: var(--color-error-active, #b91c1c); }
+.cfg-identidad-substate--success { color: var(--color-success-active, #047857); }
+
+/* Carrera / título con punto de color (átomo CarreraDotCell / CarreraTituloDotCell) */
+.cfg-carrera-titulo-dot {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cfg-carrera-titulo-dot__swatch {
+  width: 15px;
+  height: 15px;
+  border-radius: 20%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cfg-carrera-titulo-dot__texto {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-800, #1f2937);
+}
+
+/* Ícono + título + descripción a 2 líneas (átomo IconTituloDescCell / CarreraAreaDescripcionCell) */
+.cfg-carrera-area-desc {
+  max-width: 320px;
+}
+
+.cfg-carrera-area-desc__area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-800, #1f2937);
+  font-size: 13px;
+}
+
+.cfg-carrera-area-desc__icon {
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  font-size: 14px;
+}
+
+.cfg-carrera-area-desc__texto {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-500, #6b7280);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cfg-carrera-area-desc__texto--empty {
+  margin-top: 4px;
 }
 
 /* Lista de métricas / datos multi-línea por celda */

@@ -40,6 +40,7 @@ SELECT
   vie.carrera_id,
   c.codigo AS carrera_codigo,
   c.nombre AS carrera_nombre,
+  c.color_hex AS carrera_color_hex,
 
   i.activo,
   i.created_at,

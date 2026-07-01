@@ -1,38 +1,17 @@
 /**
  * becasTableColumns - Columnas de la tabla de becas asignadas a estudiantes.
  *
- * Lenguaje visual del prototipo de listado: `#` numérico + `IdentidadCelda` (estudiante),
- * celda de beca con estilo de descripción (patrón Carreras `cfg-carrera-area-desc`) y
- * `StatusPill` (estado) con el enum REAL del schema (PENDIENTE/ACTIVA/FINALIZADA/RECHAZADA).
- * Consolidado: tipo+% en una celda; estado+gestión juntos; sin columna de fecha de solicitud
- * (dato de trámite → detalle).
+ * Distribución: `#` · Estudiante · Beca (ícono + nombre + descripción, patrón
+ * "Área y descripción" de Carreras) · Gestión y descuento (gestión + 2 pills: % y monto)
+ * · Carrera (dot de color, patrón "Título otorgado") · Acciones.
+ * El nombre del estudiante NO se tiñe por carrera. Sin pill de estado.
  *
  * NOTA: muestra BECAS ASIGNADAS A ESTUDIANTES (estudiantes_becas), no el catálogo.
  */
 
-import { CalendarOutlined } from '@ant-design/icons';
-import { IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
+import { CalendarOutlined, GiftOutlined } from '@ant-design/icons';
+import { IdentidadCelda, StatusPill, CarreraDotCell, IconTituloDescCell, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-
-/** Estado de la beca → clase de pill semántica (enum real: PENDIENTE/ACTIVA/FINALIZADA/RECHAZADA). */
-const ESTADO_BECA_PILL = {
-  ACTIVA: 'cfg-materia-pill cfg-materia-pill--success',
-  PENDIENTE: 'cfg-materia-pill cfg-materia-pill--warning',
-  FINALIZADA: 'cfg-materia-pill cfg-materia-pill--info',
-  RECHAZADA: 'cfg-materia-pill cfg-materia-pill--danger',
-};
-const getEstadoBecaPillClass = (estado) =>
-  ESTADO_BECA_PILL[String(estado || '').toUpperCase()] || 'cfg-materia-pill cfg-materia-pill--default';
-
-/** Punto de color (data-driven) para chip de carrera. */
-const colorDot = (color) => (
-  <span
-    style={{
-      width: 10, height: 10, borderRadius: 999,
-      background: color || 'var(--border, #d1d5db)', display: 'inline-block',
-    }}
-  />
-);
 
 /** Monto Bs con 2 decimales o null. */
 const formatBs = (v) => (v == null || Number.isNaN(Number(v)) ? null : `Bs. ${Number(v).toFixed(2)}`);
@@ -62,13 +41,12 @@ export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = n
     {
       title: 'Estudiante',
       dataIndex: ['student', 'nombreCompleto'],
-      fixed: 'left',
+      width: 240,
       ellipsis: true,
       render: (_, record) => (
         <IdentidadCelda
           codigo={record.student?.codigoEstudiante || null}
           nombre={(record.student?.nombreCompleto || 'Sin nombre').toUpperCase()}
-          accentColor={record.carrera?.colorHex || undefined}
         />
       ),
       sorter: (a, b) =>
@@ -79,64 +57,52 @@ export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = n
     {
       title: 'Beca',
       dataIndex: ['scholarship', 'nombre'],
-      width: 320,
-      render: (_, record) => {
-        const nombre = record.scholarship?.nombre || 'Sin beca';
-        const porcentaje = record.scholarship?.porcentaje;
-        const descripcion = record.scholarship?.descripcion || record.observations || null;
-        const ahorro = formatBs(record.impacto?.descuentoAplicado);
-        return (
-          <div className="cfg-carrera-area-desc">
-            <div className="cfg-carrera-area-desc__area" style={{ flexWrap: 'wrap', gap: 6 }}>
-              <span>{nombre}</span>
-              {porcentaje != null ? (
-                <StatusPill
-                  label={`${porcentaje}%`}
-                  className="cfg-materia-pill cfg-materia-pill--info"
-                />
-              ) : null}
-              {ahorro ? (
-                <StatusPill label={`Ahorro ${ahorro}`} className="cfg-materia-pill cfg-materia-pill--success" />
-              ) : null}
-            </div>
-            {descripcion ? (
-              <p className="cfg-carrera-area-desc__texto" title={descripcion}>
-                {descripcion}
-              </p>
-            ) : (
-              <p className="cfg-carrera-area-desc__texto cfg-carrera-area-desc__texto--empty">—</p>
-            )}
-          </div>
-        );
-      },
+      render: (_, record) => (
+        <IconTituloDescCell
+          icon={<GiftOutlined />}
+          titulo={record.scholarship?.nombre || 'Sin beca'}
+          descripcion={record.scholarship?.descripcion || record.observations || null}
+        />
+      ),
       sorter: (a, b) =>
         (a.scholarship?.nombre || '').localeCompare(b.scholarship?.nombre || '', 'es', {
           sensitivity: 'base',
         }),
     },
     {
-      title: 'Carrera y estado',
-      dataIndex: 'state',
-      width: 220,
+      title: 'Gestión y descuento',
+      dataIndex: ['management', 'codigo'],
+      width: 200,
       render: (_, record) => {
         const m = record.management;
-        const carrera = record.carrera;
-        const carreraLabel = carrera?.nombre
-          ? `${carrera.nombre}${carrera.codigo ? ` · ${carrera.codigo}` : ''}`
-          : null;
+        const porcentaje = record.scholarship?.porcentaje;
+        const ahorro = formatBs(record.impacto?.descuentoAplicado);
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <StatusPill label={record.state || '—'} className={getEstadoBecaPillClass(record.state)} />
             <InfoLinesCell
-              lines={[
-                { icon: colorDot(carrera?.colorHex), label: carreraLabel },
-                { icon: <CalendarOutlined />, label: m?.codigo || m?.nombre || m?.anio },
-              ]}
+              lines={[{ icon: <CalendarOutlined />, label: m?.codigo || m?.nombre || m?.anio }]}
             />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {porcentaje != null ? (
+                <StatusPill label={`${porcentaje}%`} className="cfg-materia-pill cfg-materia-pill--info" />
+              ) : null}
+              {ahorro ? (
+                <StatusPill label={ahorro} className="cfg-materia-pill cfg-materia-pill--success" />
+              ) : null}
+            </div>
           </div>
         );
       },
-      sorter: (a, b) => (a.state || '').localeCompare(b.state || ''),
+      sorter: (a, b) => (a.scholarship?.porcentaje || 0) - (b.scholarship?.porcentaje || 0),
+    },
+    {
+      title: 'Carrera',
+      key: 'carrera',
+      width: 200,
+      render: (_, record) => (
+        <CarreraDotCell nombre={record.carrera?.nombre} colorHex={record.carrera?.colorHex} />
+      ),
+      sorter: (a, b) => (a.carrera?.nombre || '').localeCompare(b.carrera?.nombre || ''),
     },
     {
       title: 'Acciones',

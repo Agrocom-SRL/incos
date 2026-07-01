@@ -7,7 +7,7 @@
  * referencia (CarreraMetricasCell / LicenciaAcademicoCell). Las líneas con
  * `label` vacío/nulo se omiten; si no queda ninguna, muestra un guion.
  *
- * @param {Array<{key?:string|number, icon?:React.ReactNode, label:React.ReactNode, style?:object}>} lines
+ * @param {Array<{key?:string|number, icon?:React.ReactNode, label:React.ReactNode, style?:object, className?:string}>} lines
  */
 
 import { Typography } from 'antd';
@@ -32,7 +32,10 @@ const InfoLinesCell = ({ lines = [] }) => {
   return (
     <ul className="cfg-academico-metricas-list">
       {visibles.map((l, i) => (
-        <li key={l.key ?? i} className="cfg-academico-metricas-list__item">
+        <li
+          key={l.key ?? i}
+          className={`cfg-academico-metricas-list__item${l.className ? ` ${l.className}` : ''}`}
+        >
           {l.icon ? (
             <span className="cfg-academico-metricas-list__icon" aria-hidden>
               {l.icon}

@@ -309,60 +309,8 @@
   background: var(--surface, #fff);
 }
 
-/* Carrera — área + descripción */
-.cfg-carrera-area-desc {
-  max-width: 280px;
-}
-
-.cfg-carrera-area-desc__area {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: var(--text-800, #1f2937);
-  font-size: 13px;
-}
-
-.cfg-carrera-area-desc__icon {
-  color: var(--primary, var(--ant-color-primary, #22854f));
-  font-size: 14px;
-}
-
-.cfg-carrera-area-desc__texto {
-  margin: 6px 0 0;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--text-500, #6b7280);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.cfg-carrera-area-desc__texto--empty {
-  margin-top: 4px;
-}
-
-.cfg-carrera-titulo-dot {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 8px;
-  min-width: 0;
-}
-
-.cfg-carrera-titulo-dot__swatch {
-  width: 15px;
-  height: 15px;
-  border-radius: 20%;
-  flex-shrink: 0;
-}
-
-.cfg-carrera-titulo-dot__texto {
-  font-size: 13px;
-  line-height: 1.35;
-  color: var(--text-800, #1f2937);
-}
+/* NOTA: `.cfg-carrera-area-desc*` y `.cfg-carrera-titulo-dot*` se movieron a
+   `styles/components/atoms/table-cells.css` (átomos globales IconTituloDescCell / CarreraDotCell). */
 
 /* NOTA: `.cfg-academico-metricas-list*` se movió a
    `styles/components/atoms/table-cells.css` (átomo global InfoLinesCell / *MetricasCell). */

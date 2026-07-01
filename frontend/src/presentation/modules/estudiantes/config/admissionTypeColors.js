@@ -18,19 +18,19 @@ const TEXT_700 = '#374151';
 /** Colores del pill de la cabecera en EstudiantesDetail (sd-profile__admission-pill--*) */
 export const ADMISSION_TYPE_COLORS = Object.freeze({
   NUEVO: {
-    color: '#134d32',   // --primary-dark
-    bgColor: '#e8f5e9', // --primary-light
+    color: '#16a34a',   // verde
+    bgColor: '#dcfce7',
   },
   ANTIGUO: {
-    color: '#92400e',
-    bgColor: '#fef3c7',
+    color: '#f97316',   // naranja
+    bgColor: '#ffedd5',
   },
   TRASPASO: {
-    color: '#eb2f96',
+    color: '#eb2f96',   // magenta
     bgColor: '#fff0f6',
   },
   TRANSITABILIDAD: {
-    color: '#722ed1',
+    color: '#722ed1',   // púrpura
     bgColor: '#f9f0ff',
   },
   default: {
