@@ -8,21 +8,27 @@
  * verdad en el provider) y sincroniza la pestaña activa con la URL (`?carrera=`), igual que
  * `AcademicoPage` / `OfertaGestionPlanesPage`.
  *
- * Segundo nivel opcional (`subGroup`): dentro de cada carrera, un filtro segmentado (pills)
+ * Segundo nivel opcional (`subGroup`): dentro de cada carrera, un filtro de CHIPS de color
  * por sub-grupo (p. ej. curso/paralelo), con "Todos" primero y una opción "Sin asignar"
- * dinámica. Si no se pasa `subGroup`, la pestaña muestra directamente la tabla.
+ * dinámica. Cada chip lleva el color del paralelo y el mismo paralelo mantiene el mismo color
+ * en todas las carreras (mapa global). Si no se pasa `subGroup`, la pestaña muestra la tabla.
  *
  * El diseño visual reutiliza las clases del workspace académico
  * (`sd-tabs-shell`, `cfg-academico-tabs-shell`, `sd-tab-label`, `cfg-academico-tab-panel`),
  * de modo que se ve homogéneo con el resto del sistema. Las piezas propias son el punto de
- * color de carrera + contador en cada pestaña y el filtro segmentado del segundo nivel.
+ * color de carrera + contador en cada pestaña y los chips de color del segundo nivel.
  */
 
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Segmented, Tabs } from 'antd';
+import { Tabs } from 'antd';
 import TableListView from '../TableListView';
 import { groupByCarrera, SIN_CARRERA_KEY } from '@application/utils';
+import {
+  buildParaleloColorMap,
+  PARALELO_ALL_COLOR,
+  PARALELO_SIN_COLOR,
+} from './paraleloPalette';
 import './carrera-tabs-list-view.css';
 
 const wrapTabPanel = (node) => <div className="cfg-academico-tab-panel">{node}</div>;
@@ -45,11 +51,28 @@ const CarreraTabLabel = ({ grupo }) => (
   </span>
 );
 
+/** Un chip del filtro por curso/paralelo. Activo = relleno con el color del paralelo. */
+const SubgrupoChip = ({ label, count, color, active, onClick }) => (
+  <button
+    type="button"
+    className={'carrera-chip' + (active ? ' carrera-chip--active' : '')}
+    style={{ '--chip-color': color }}
+    aria-pressed={active}
+    onClick={onClick}
+  >
+    <span className="carrera-chip__dot" aria-hidden />
+    <span className="carrera-chip__text">{label}</span>
+    <span className="carrera-chip__count">{count}</span>
+  </button>
+);
+
 /**
- * Panel de una carrera: filtro segmentado opcional por sub-grupo (curso/paralelo) + tabla.
+ * Panel de una carrera: filtro de chips opcional por sub-grupo (curso/paralelo) + tabla.
  * Cada carrera conserva su propia selección (instancia montada por `destroyOnHidden={false}`).
+ * `colorMap` (colorKey → color) llega del organismo para que el mismo paralelo tenga el
+ * mismo color en todas las carreras.
  */
-const CarreraTabPanel = ({ rows, subGroup, renderTabla }) => {
+const CarreraTabPanel = ({ rows, subGroup, renderTabla, colorMap }) => {
   const [active, setActive] = useState(SUB_ALL);
 
   const subGrupos = useMemo(() => {
@@ -60,13 +83,14 @@ const CarreraTabPanel = ({ rows, subGroup, renderTabla }) => {
       const sub = subGroup.getSubgrupo(row) || null;
       const id = sub?.id ?? null;
       const nombre = sub?.nombre ?? null;
+      const colorKey = sub?.colorKey ?? nombre;
       const rawKey = id != null ? `id:${id}` : nombre;
       if (!rawKey) {
         sin.push(row);
         return;
       }
       const key = String(rawKey);
-      if (!map.has(key)) map.set(key, { key, nombre: nombre || 'Curso', rows: [] });
+      if (!map.has(key)) map.set(key, { key, nombre: nombre || 'Curso', colorKey, rows: [] });
       map.get(key).rows.push(row);
     });
     const ordered = [...map.values()].sort((a, b) =>
@@ -80,15 +104,32 @@ const CarreraTabPanel = ({ rows, subGroup, renderTabla }) => {
     return wrapTabPanel(renderTabla(rows));
   }
 
-  const options = [
-    { label: `${subGroup.allLabel || 'Todos'} (${rows.length})`, value: SUB_ALL },
-    ...subGrupos.ordered.map((g) => ({ label: `${g.nombre} (${g.rows.length})`, value: g.key })),
+  const chips = [
+    {
+      value: SUB_ALL,
+      label: subGroup.allLabel || 'Todos',
+      count: rows.length,
+      color: PARALELO_ALL_COLOR,
+    },
+    ...subGrupos.ordered.map((g) => ({
+      value: g.key,
+      label: g.nombre,
+      count: g.rows.length,
+      color: colorMap?.[g.colorKey] || PARALELO_SIN_COLOR,
+    })),
     ...(subGrupos.sin.length
-      ? [{ label: `${subGroup.sinLabel || 'Sin asignar'} (${subGrupos.sin.length})`, value: SUB_SIN }]
+      ? [
+          {
+            value: SUB_SIN,
+            label: subGroup.sinLabel || 'Sin asignar',
+            count: subGrupos.sin.length,
+            color: PARALELO_SIN_COLOR,
+          },
+        ]
       : []),
   ];
 
-  const activeSafe = options.some((o) => o.value === active) ? active : SUB_ALL;
+  const activeSafe = chips.some((c) => c.value === active) ? active : SUB_ALL;
   const activeRows =
     activeSafe === SUB_ALL
       ? rows
@@ -98,14 +139,17 @@ const CarreraTabPanel = ({ rows, subGroup, renderTabla }) => {
 
   return wrapTabPanel(
     <>
-      <div className="carrera-subfilter">
-        <Segmented
-          className="carrera-subfilter__segmented"
-          options={options}
-          value={activeSafe}
-          onChange={setActive}
-          size="small"
-        />
+      <div className="carrera-subfilter" role="group" aria-label="Filtrar por paralelo">
+        {chips.map((chip) => (
+          <SubgrupoChip
+            key={chip.value}
+            label={chip.label}
+            count={chip.count}
+            color={chip.color}
+            active={chip.value === activeSafe}
+            onClick={() => setActive(chip.value)}
+          />
+        ))}
       </div>
       {renderTabla(activeRows)}
     </>,
@@ -141,6 +185,18 @@ const CarreraTabsListView = ({
 
   const grupos = useMemo(() => groupByCarrera(rows, getCarrera), [rows, getCarrera]);
 
+  // Mapa global colorKey → color: mismo paralelo, mismo color en TODAS las carreras.
+  const colorMap = useMemo(() => {
+    if (!subGroup?.getSubgrupo) return null;
+    const keys = rows
+      .map((row) => {
+        const sub = subGroup.getSubgrupo(row);
+        return sub?.colorKey ?? sub?.nombre ?? null;
+      })
+      .filter(Boolean);
+    return buildParaleloColorMap(keys);
+  }, [rows, subGroup]);
+
   const renderTabla = (data) => (
     <TableListView
       embedded
@@ -167,7 +223,12 @@ const CarreraTabsListView = ({
         key: grupo.key,
         label: <CarreraTabLabel grupo={grupo} />,
         children: (
-          <CarreraTabPanel rows={grupo.rows} subGroup={subGroup} renderTabla={renderTabla} />
+          <CarreraTabPanel
+            rows={grupo.rows}
+            subGroup={subGroup}
+            colorMap={colorMap}
+            renderTabla={renderTabla}
+          />
         ),
       })),
     // renderTabla depende de props de tabla; recalcular con grupos y esas props.
@@ -175,6 +236,7 @@ const CarreraTabsListView = ({
     [
       grupos,
       subGroup,
+      colorMap,
       columns,
       loading,
       error,

@@ -29,6 +29,8 @@ const subGroupParalelo = {
     return {
       id: paralelo.id ?? null,
       nombre: [paralelo.nombre, paralelo.turno].filter(Boolean).join(' · ') || 'Paralelo',
+      // Color por NOMBRE BASE (sin turno): "PRIMERO A" recibe el mismo color en toda carrera.
+      colorKey: paralelo.nombre || null,
     };
   },
 };

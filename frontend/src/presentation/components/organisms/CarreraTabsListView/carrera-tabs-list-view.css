@@ -49,69 +49,104 @@
   background: color-mix(in srgb, var(--color-primary, #196b45) 12%, transparent);
 }
 
-/* Segundo nivel: filtro segmentado por curso/paralelo dentro de cada carrera.
-   Mismo lenguaje visual que el segmentado de Becas/Calificaciones: track verde tenue,
-   ítems verdes en negrita y opción activa como pastilla verde sólida con texto blanco. */
+/* ============================================================
+   Segundo nivel: filtro por curso/paralelo como CHIPS de color.
+   Cada chip lleva su color de paralelo en `--chip-color` (inline). Inactivo: tinte suave
+   del color; activo: relleno sólido del color con texto blanco. El mismo paralelo mantiene
+   el mismo color en todas las carreras (mapa global en el organismo).
+   ============================================================ */
 .carrera-subfilter {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
-.carrera-subfilter__segmented {
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-.carrera-subfilter__segmented.ant-segmented {
-  padding: 4px;
-  background: var(--cuaderno-verde-tenue, #e8f5ec);
-  border-radius: var(--radius-md, 10px);
-}
-
-.carrera-subfilter__segmented .ant-segmented-item {
-  color: var(--cuaderno-verde-oscuro, #196b45);
+.carrera-chip {
+  --chip-color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--chip-color) 32%, transparent);
+  background: color-mix(in srgb, var(--chip-color) 8%, #fff);
+  color: color-mix(in srgb, var(--chip-color) 78%, #111);
+  font-size: 13px;
   font-weight: 600;
-  border-radius: var(--radius-md, 8px);
+  line-height: 1;
+  cursor: pointer;
   transition:
-    color var(--dur-hover, 0.16s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
-    transform var(--dur-press, 0.14s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.14s ease;
 }
 
-.carrera-subfilter__segmented
-  .ant-segmented-item:hover:not(.ant-segmented-item-selected):not(
-    .ant-segmented-item-disabled
-  ) {
-  color: var(--cuaderno-verde-acento, #134d32);
-  background: transparent;
+.carrera-chip:hover {
+  border-color: color-mix(in srgb, var(--chip-color) 55%, transparent);
+  background: color-mix(in srgb, var(--chip-color) 14%, #fff);
 }
 
-/* Estado activo: pastilla verde primaria con texto claro (contraste AA), reutilizando
-   el thumb animado nativo de AntD para el deslizado. */
-.carrera-subfilter__segmented .ant-segmented-thumb,
-.carrera-subfilter__segmented .ant-segmented-item-selected {
-  background: var(--color-primary, #196b45);
-  border-radius: var(--radius-md, 8px);
-  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary, #196b45) 30%, transparent);
+.carrera-chip:active {
+  transform: scale(0.97);
 }
 
-.carrera-subfilter__segmented .ant-segmented-item-selected,
-.carrera-subfilter__segmented .ant-segmented-item-selected:hover,
-.carrera-subfilter__segmented .ant-segmented-item-selected .ant-segmented-item-label {
+.carrera-chip:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--chip-color) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.carrera-chip__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--chip-color);
+}
+
+.carrera-chip__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--chip-color) 82%, #111);
+  background: color-mix(in srgb, var(--chip-color) 16%, #fff);
+}
+
+/* Activo: relleno sólido del color del paralelo, texto e ítems en blanco. */
+.carrera-chip--active {
+  background: var(--chip-color);
+  border-color: var(--chip-color);
   color: #fff;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--chip-color) 32%, transparent);
 }
 
-@media (hover: hover) {
-  .carrera-subfilter__segmented .ant-segmented-item:active {
-    transform: scale(0.97);
-  }
+.carrera-chip--active:hover {
+  background: var(--chip-color);
+  border-color: var(--chip-color);
+}
+
+.carrera-chip--active .carrera-chip__dot {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.carrera-chip--active .carrera-chip__count {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.24);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .carrera-subfilter__segmented .ant-segmented-item {
+  .carrera-chip {
     transition: none;
   }
-  .carrera-subfilter__segmented .ant-segmented-item:active {
+  .carrera-chip:active {
     transform: none;
   }
 }
