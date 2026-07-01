@@ -6,7 +6,7 @@
 import { DownloadOutlined, PlusOutlined } from '@ant-design/icons';
 import { Flex, Select, Space, Tag, Typography } from 'antd';
 import { PageTemplate } from '@templates';
-import { TableListView } from '@organisms';
+import { CarreraTabsListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { Button, ActionButton } from '@atoms';
@@ -15,6 +15,9 @@ import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
+
+/** Accessor de carrera para agrupar por tabs (carrera anidada del listado de matrículas). */
+const getCarreraInscripcion = (record) => record.carrera || record.enrollment?.carrera || {};
 
 const InscripcionesList = () => {
   const {
@@ -134,28 +137,26 @@ const InscripcionesList = () => {
               y estado. Registra nuevas inscripciones y exporta el listado por carrera.
             </Paragraph>
           </header>
-          <div className="cfg-academico-tab-panel">
-            <TableListView
-              embedded
-              data={inscripciones}
-              loading={loading}
-              error={error}
-              searchText={searchText}
-              onSearchChange={(e) => setSearchText(e.target.value)}
-              searchPlaceholder="Buscar por estudiante, código, carrera..."
-              columns={tableColumns}
-              rowKey={(record) => record.id || record.enrollment?.id || Math.random()}
-              searchColSpan={10}
-              searchStyle={{ maxWidth: 520 }}
-              tableClassName="data-table--inscripciones"
-              pagination={tablePagination}
-              defaultSort={{
-                field: 'fechaInscripcion',
-                order: 'descend',
-              }}
-              loadingTip="Cargando inscripciones..."
-            />
-          </div>
+          <CarreraTabsListView
+            rows={inscripciones}
+            getCarrera={getCarreraInscripcion}
+            loading={loading}
+            error={error}
+            searchText={searchText}
+            onSearchChange={(e) => setSearchText(e.target.value)}
+            searchPlaceholder="Buscar por estudiante, código, carrera..."
+            columns={tableColumns}
+            rowKey={(record) => record.id || record.enrollment?.id || Math.random()}
+            searchColSpan={10}
+            searchStyle={{ maxWidth: 520 }}
+            tableClassName="data-table--inscripciones"
+            pagination={tablePagination}
+            defaultSort={{
+              field: 'fechaInscripcion',
+              order: 'descend',
+            }}
+            loadingTip="Cargando inscripciones..."
+          />
         </section>
       </Flex>
     </PageTemplate>

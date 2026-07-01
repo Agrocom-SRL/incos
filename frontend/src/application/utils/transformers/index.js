@@ -13,4 +13,5 @@
 export * from './optionTransformers';
 export * from './filters';
 export * from './responseTransformers';
+export * from './groupByCarrera';
 

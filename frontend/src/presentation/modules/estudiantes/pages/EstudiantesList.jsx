@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { FileExcelOutlined, PlusOutlined } from '@ant-design/icons';
 import { App, Flex, Grid, Typography } from 'antd';
 import { PageTemplate } from '@templates';
-import { TableListView } from '@organisms';
+import { CarreraTabsListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton } from '@atoms';
@@ -31,6 +31,13 @@ import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
+
+/** Accessor de carrera para agrupar por tabs (shape plano del listado de estudiantes). */
+const getCarreraEstudiante = (record) => ({
+    nombre: record.carreraNombre,
+    codigo: record.carreraCodigo,
+    colorHex: record.carreraColorHex,
+});
 
 const EstudiantesList = () => {
     const navigate = useNavigate();
@@ -136,28 +143,26 @@ const EstudiantesList = () => {
                             exportas la estadística de inscritos.
                         </Paragraph>
                     </header>
-                    <div className="cfg-academico-tab-panel">
-                        <TableListView
-                            embedded
-                            data={estudiantes}
-                            loading={loading}
-                            error={error}
-                            searchText={searchText}
-                            onSearchChange={(e) => setSearchText(e.target.value)}
-                            searchPlaceholder="Buscar por código, nombre, CI, contacto, carrera o datos académicos..."
-                            columns={tableColumns}
-                            rowKey={(record) => record.id || record.ciCompleto || Math.random()}
-                            searchColSpan={10}
-                            searchStyle={{ maxWidth: 520 }}
-                            tableClassName="data-table--estudiantes"
-                            pagination={tablePagination}
-                            defaultSort={{
-                                field: 'createdAt',
-                                order: 'descend',
-                            }}
-                            loadingTip="Cargando estudiantes..."
-                        />
-                    </div>
+                    <CarreraTabsListView
+                        rows={estudiantes}
+                        getCarrera={getCarreraEstudiante}
+                        loading={loading}
+                        error={error}
+                        searchText={searchText}
+                        onSearchChange={(e) => setSearchText(e.target.value)}
+                        searchPlaceholder="Buscar por código, nombre, CI, contacto, carrera o datos académicos..."
+                        columns={tableColumns}
+                        rowKey={(record) => record.id || record.ciCompleto || Math.random()}
+                        searchColSpan={10}
+                        searchStyle={{ maxWidth: 520 }}
+                        tableClassName="data-table--estudiantes"
+                        pagination={tablePagination}
+                        defaultSort={{
+                            field: 'createdAt',
+                            order: 'descend',
+                        }}
+                        loadingTip="Cargando estudiantes..."
+                    />
                 </section>
             </Flex>
         </PageTemplate>

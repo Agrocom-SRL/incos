@@ -1,0 +1,50 @@
+/**
+ * CarreraTabsListView — estilos de la etiqueta de pestaña (punto de color + contador).
+ * El resto del look sale de las clases compartidas del workspace académico
+ * (sd-tabs / cfg-academico-tabs-shell). Aquí solo la pieza propia por carrera.
+ */
+
+.carrera-tab-label {
+  gap: 8px;
+}
+
+.carrera-tab-label__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background-color: var(--border, #d1d5db);
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 8%, transparent);
+}
+
+/* "Sin carrera": punto hueco/neutro para diferenciarlo de una carrera real. */
+.carrera-tab-label__dot--empty {
+  background-color: transparent;
+  border: 1.5px dashed var(--border, #d1d5db);
+  box-shadow: none;
+}
+
+.carrera-tab-label__text {
+  font-weight: 600;
+}
+
+.carrera-tab-label__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-500, #6b7280);
+  background: var(--fill-secondary, rgba(0, 0, 0, 0.04));
+}
+
+/* La pestaña activa resalta también su contador. */
+.carrera-tabs .ant-tabs-tab-active .carrera-tab-label__count {
+  color: var(--color-primary, #196b45);
+  background: color-mix(in srgb, var(--color-primary, #196b45) 12%, transparent);
+}
