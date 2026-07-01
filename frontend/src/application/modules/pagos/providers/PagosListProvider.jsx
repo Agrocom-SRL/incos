@@ -20,6 +20,7 @@ export const PagosListProvider = ({ children }) => {
     tablePagination,
     refetch,
   } = useServerPaginatedList({
+    loadAll: true,
     fetch: fetchPagos,
     buildRequest: ({ page, limit, search }) => ({
       params: {

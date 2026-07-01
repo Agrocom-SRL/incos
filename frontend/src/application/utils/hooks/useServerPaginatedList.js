@@ -7,6 +7,9 @@ import { DEFAULT_LIST_LIMIT, DEFAULT_LIST_PAGE } from '@application/constants/li
 
 const SEARCH_DEBOUNCE_MS = 400;
 
+/** Límite para el modo `loadAll`: trae todas las filas y pagina/ordena en cliente. */
+const LOAD_ALL_LIMIT = 10000;
+
 function normalizePagination(result, page, pageSize) {
   const p = result?.pagination;
   return {
@@ -42,6 +45,10 @@ export function useServerPaginatedList({
   extra = null,
   initialPageSize = DEFAULT_LIST_LIMIT,
   enabled = true,
+  // Cuando es true, trae TODAS las filas (limit alto) y expone paginación de CLIENTE, de
+  // modo que el orden/paginado se hace en el navegador sobre el dataset completo (no solo
+  // la página visible). Búsqueda sigue siendo server-side (re-fetch con debounce).
+  loadAll = false,
 }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -76,10 +83,10 @@ export function useServerPaginatedList({
       setError(null);
       try {
         const request = buildRequest({
-          page,
-          limit: pageSize,
+          page: loadAll ? DEFAULT_LIST_PAGE : page,
+          limit: loadAll ? LOAD_ALL_LIMIT : pageSize,
           search,
-          sort: buildSortParam(sortRef.current),
+          sort: loadAll ? undefined : buildSortParam(sortRef.current),
           extra: extra ?? undefined,
         });
         const raw = await fetch(request);
@@ -103,7 +110,7 @@ export function useServerPaginatedList({
         if (seq === fetchSeq.current) setLoading(false);
       }
     },
-    [enabled, fetch, buildRequest, extraKey],
+    [enabled, fetch, buildRequest, extraKey, loadAll],
   );
 
   /**
@@ -140,23 +147,33 @@ export function useServerPaginatedList({
   }, [enabled, debouncedSearch, extraKey]);
 
   const tablePagination = useMemo(
-    () => ({
-      current: pagination.current,
-      pageSize: pagination.pageSize,
-      total: pagination.total,
-      serverPagination: true,
-      showSizeChanger: true,
-      showTotal: (total) => `Total: ${total} registros`,
-      pageSizeOptions: ['10', '20', '50', '100'],
-      onChange: (page, pageSize) => {
-        load(page, pageSize, debouncedSearch);
-      },
-      // Orden server-side: estado vigente + callback para que la tabla notifique
-      // el cambio de sorter (en vez de ordenar la página visible en cliente).
-      sort,
-      onSortChange: handleSortChange,
-    }),
-    [pagination.current, pagination.pageSize, pagination.total, load, debouncedSearch, sort, handleSortChange],
+    () =>
+      loadAll
+        ? {
+            // Paginación de CLIENTE sobre todas las filas cargadas: el orden y el paginado
+            // los resuelve la tabla (useClientTableSort) sobre el dataset completo.
+            pageSize: DEFAULT_LIST_LIMIT >= 50 ? 10 : DEFAULT_LIST_LIMIT,
+            showSizeChanger: true,
+            showTotal: (total) => `Total: ${total} registros`,
+            pageSizeOptions: ['10', '20', '50', '100'],
+          }
+        : {
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            serverPagination: true,
+            showSizeChanger: true,
+            showTotal: (total) => `Total: ${total} registros`,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            onChange: (page, pageSize) => {
+              load(page, pageSize, debouncedSearch);
+            },
+            // Orden server-side: estado vigente + callback para que la tabla notifique
+            // el cambio de sorter (en vez de ordenar la página visible en cliente).
+            sort,
+            onSortChange: handleSortChange,
+          },
+    [loadAll, pagination.current, pagination.pageSize, pagination.total, load, debouncedSearch, sort, handleSortChange],
   );
 
   const refetch = useCallback(() => {

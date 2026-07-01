@@ -351,7 +351,8 @@ const BecaAsignacionDetail = () => {
     <PageTemplate
       header={<PageHeader title="Asignación de beca" breadcrumbItems={breadcrumbItems} actions={headerActions} />}
     >
-      <DetailProfileCard
+      <div className="sd">
+        <DetailProfileCard
         avatarInitials={avatarText}
         avatarClassName="sd-profile__avatar sd-profile__avatar--default"
         title={tituloPrincipal}
@@ -392,7 +393,8 @@ const BecaAsignacionDetail = () => {
           ) : null
         }
       />
-      <DetailTabsPanel items={tabItems} defaultActiveKey="informacion" />
+        <DetailTabsPanel items={tabItems} defaultActiveKey="informacion" />
+      </div>
     </PageTemplate>
   );
 };

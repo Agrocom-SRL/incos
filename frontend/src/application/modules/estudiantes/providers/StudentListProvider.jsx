@@ -21,6 +21,7 @@ export const StudentListProvider = ({ children }) => {
     tablePagination,
     refetch,
   } = useServerPaginatedList({
+    loadAll: true,
     fetch: fetchEstudiantes,
     buildRequest: ({ page, limit, search }) => ({
       params: {

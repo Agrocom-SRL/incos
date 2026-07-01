@@ -138,6 +138,18 @@
   border-color: var(--color-info-border, rgba(3, 105, 161, 0.22));
 }
 
+.cfg-materia-pill--purple {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: rgba(109, 40, 217, 0.22);
+}
+
+.cfg-materia-pill--accent {
+  background: var(--color-accent-bg, #eef2ff);
+  color: var(--color-accent-active, #3730a3);
+  border-color: var(--color-accent-border, rgba(55, 48, 163, 0.22));
+}
+
 /* ── Tono de género (patrón DocenteReferenciaCell) para líneas de InfoLinesCell ── */
 .cfg-genero-tone--m .cfg-academico-metricas-list__icon,
 .cfg-genero-tone--m .cfg-academico-metricas-list__label {

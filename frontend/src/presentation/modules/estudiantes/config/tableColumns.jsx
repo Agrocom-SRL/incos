@@ -184,10 +184,13 @@ export const createEstudiantesTableColumns = (
           />
         );
       },
+      // Orden: primero por género, luego por CI.
       sorter: (a, b) => {
-        const textA = [a.emailPersonal, a.celular, a.telefonoFijo].filter(Boolean).join(' ');
-        const textB = [b.emailPersonal, b.celular, b.telefonoFijo].filter(Boolean).join(' ');
-        return textA.localeCompare(textB);
+        const byGenero = String(a.genero || '').localeCompare(String(b.genero || ''), 'es', {
+          sensitivity: 'base',
+        });
+        if (byGenero !== 0) return byGenero;
+        return getCiCompleto(a).localeCompare(getCiCompleto(b), 'es', { numeric: true });
       },
     },
     // Carrera + gestión de ingreso (chip de color de carrera)
@@ -204,7 +207,16 @@ export const createEstudiantesTableColumns = (
           ) : null}
         </div>
       ),
-      sorter: (a, b) => (a.carreraNombre || '').localeCompare(b.carreraNombre || ''),
+      // Orden: primero por gestión de ingreso, luego por carrera.
+      sorter: (a, b) => {
+        const byGestion = String(a.gestionIngresoNombre || '').localeCompare(
+          String(b.gestionIngresoNombre || ''), 'es', { numeric: true },
+        );
+        if (byGestion !== 0) return byGestion;
+        return (a.carreraNombre || '').localeCompare(b.carreraNombre || '', 'es', {
+          sensitivity: 'base',
+        });
+      },
     },
     // Estado académico + tipo de admisión
     {
@@ -230,7 +242,14 @@ export const createEstudiantesTableColumns = (
           ) : null}
         </Flex>
       ),
-      sorter: (a, b) => (a.estadoAcademico || '').localeCompare(b.estadoAcademico || ''),
+      // Orden: primero por tipo de admisión, luego por estado académico.
+      sorter: (a, b) => {
+        const byTipo = String(a.tipoAdmision || '').localeCompare(String(b.tipoAdmision || ''), 'es', {
+          sensitivity: 'base',
+        });
+        if (byTipo !== 0) return byTipo;
+        return (a.estadoAcademico || '').localeCompare(b.estadoAcademico || '');
+      },
     },
     // Acciones
     {
