@@ -18,14 +18,26 @@
 import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileExcelOutlined, PlusOutlined } from '@ant-design/icons';
-import { App, Grid, Space } from 'antd';
+import { App, Flex, Grid, Typography } from 'antd';
 import { PageTemplate } from '@templates';
-import { TableListView } from '@organisms';
+import { CarreraTabsListView } from '@organisms';
 import { PageHeader } from '@molecules';
+import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton } from '@atoms';
 import { useStudentListContext, useExportEstadisticaInscritosExcel } from '@application-estudiantes/hooks';
 import { usePagosContextOptional } from '@application-pagos/hooks';
 import { createEstudiantesTableColumns } from '@estudiantes/config';
+import { allSpacing } from '@theme/tokens';
+import '@configuracion/academico/styles/academico-form-page.css';
+
+const { Paragraph } = Typography;
+
+/** Accessor de carrera para agrupar por tabs (shape plano del listado de estudiantes). */
+const getCarreraEstudiante = (record) => ({
+    nombre: record.carreraNombre,
+    codigo: record.carreraCodigo,
+    colorHex: record.carreraColorHex,
+});
 
 const EstudiantesList = () => {
     const navigate = useNavigate();
@@ -70,7 +82,7 @@ const EstudiantesList = () => {
                 duration: 5,
             });
         }
-    }, [exportarEstadisticaInscritos]);
+    }, [exportarEstadisticaInscritos, message]);
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
@@ -84,57 +96,75 @@ const EstudiantesList = () => {
         { title: 'Estudiantes' },
     ], []);
 
+    // Exportar → nivel PageHeader (toolbar de la página); crear → dentro del workspace.
+    const exportActions = (
+        <ActionButton
+            permiso="matricula.admision.ver"
+            accion="EXPORTAR"
+            variant="info"
+            icon={<FileExcelOutlined />}
+            loading={exportingExcel}
+            onClick={handleExportarEstadisticaInscritos}
+        >
+            Exportar estadística inscritos
+        </ActionButton>
+    );
+
+    const crearAction = (
+        <ActionButton
+            permiso="matricula.admision.crear"
+            accion="CREAR"
+            variant="primary"
+            icon={<PlusOutlined />}
+            onClick={handleNuevoEstudiante}
+        >
+            Nuevo Estudiante
+        </ActionButton>
+    );
+
     return (
-        <PageTemplate 
+        <PageTemplate
             header={
                 <PageHeader
                     title="Lista de Estudiantes"
                     breadcrumbItems={breadcrumbItems}
-                    actions={
-                        <Space wrap>
-                            <ActionButton
-                                permiso="matricula.admision.ver"
-                                accion="EXPORTAR"
-                                variant="info"
-                                icon={<FileExcelOutlined />}
-                                loading={exportingExcel}
-                                onClick={handleExportarEstadisticaInscritos}
-                            >
-                                Exportar estadística inscritos
-                            </ActionButton>
-                            <ActionButton
-                                permiso="matricula.admision.crear"
-                                accion="CREAR"
-                                variant="primary"
-                                icon={<PlusOutlined />}
-                                onClick={handleNuevoEstudiante}
-                            >
-                                Nuevo Estudiante
-                            </ActionButton>
-                        </Space>
-                    }
+                    actions={exportActions}
                 />
             }
             sidebar={null}
         >
-            {/* Contenido principal - se renderiza en MainContent */}
-            <TableListView
-                data={estudiantes}
-                loading={loading}
-                error={error}
-                searchText={searchText}
-                onSearchChange={(e) => setSearchText(e.target.value)}
-                searchPlaceholder="Buscar por código, nombre, CI, contacto, carrera o datos académicos..."
-                columns={tableColumns}
-                rowKey={(record) => record.id || record.ciCompleto || Math.random()}
-                tableClassName="data-table--estudiantes"
-                pagination={tablePagination}
-                defaultSort={{
-                    field: 'createdAt',
-                    order: 'descend',
-                }}
-                loadingTip="Cargando estudiantes..."
-            />
+            <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+                <section className="cfg-academico-workspace">
+                    <header className="cfg-academico-workspace__header">
+                        <ListPanelHeader title="Lista de estudiantes" actions={crearAction} />
+                        <Paragraph type="secondary" className="cfg-academico-workspace__desc">
+                            Estudiantes registrados en el instituto: código, identidad, contacto,
+                            carrera y estado académico. Desde aquí registras nuevos estudiantes y
+                            exportas la estadística de inscritos.
+                        </Paragraph>
+                    </header>
+                    <CarreraTabsListView
+                        rows={estudiantes}
+                        getCarrera={getCarreraEstudiante}
+                        loading={loading}
+                        error={error}
+                        searchText={searchText}
+                        onSearchChange={(e) => setSearchText(e.target.value)}
+                        searchPlaceholder="Buscar por código, nombre, CI, contacto, carrera o datos académicos..."
+                        columns={tableColumns}
+                        rowKey={(record) => record.id || record.ciCompleto || Math.random()}
+                        searchColSpan={10}
+                        searchStyle={{ maxWidth: 520 }}
+                        tableClassName="data-table--estudiantes"
+                        pagination={tablePagination}
+                        defaultSort={{
+                            field: 'createdAt',
+                            order: 'descend',
+                        }}
+                        loadingTip="Cargando estudiantes..."
+                    />
+                </section>
+            </Flex>
         </PageTemplate>
     );
 };

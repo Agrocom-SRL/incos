@@ -2,7 +2,8 @@
  * Mapper: estudianteListMapper
  *
  * Transforma datos del backend al formato de lista: nombreCompleto, ciCompleto, datos académicos
- * (carreraNombre, gestionIngresoNombre, tipoAdmision) y datos laborales (datosTrabajo).
+ * (carrera nombre/código/color, gestionIngresoNombre, estadoAcademico, tipoAdmision) y datos
+ * laborales (datosTrabajo).
  */
 import { buildPersonDisplayData } from '@application/utils/formatters';
 
@@ -42,7 +43,10 @@ export const estudianteListMapper = (estudianteBackend) => {
     createdAt: estudianteBackend.createdAt,
     // Datos académicos (desde vista_estudiante_datos_academicos en ListStudentsUseCase)
     carreraNombre: estudianteBackend.carreraNombre ?? null,
+    carreraCodigo: estudianteBackend.carreraCodigo ?? null,
+    carreraColorHex: estudianteBackend.carreraColorHex ?? null,
     gestionIngresoNombre: estudianteBackend.gestionIngresoNombre ?? null,
+    estadoAcademico: estudianteBackend.estadoAcademico ?? null,
     tipoAdmision: estudianteBackend.tipoAdmision ?? null,
     // Datos laborales (compuesto + partes)
     datosTrabajo,

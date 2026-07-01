@@ -38,6 +38,7 @@
 @import './components/atoms/badge.css';
 @import './components/atoms/list-item.css';
 @import './components/atoms/activity-item.css';
+@import './components/atoms/table-cells.css';
 
 /* 5. Components - Molecules */
 @import './components/molecules/navigation-menu.css';

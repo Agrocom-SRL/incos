@@ -10,16 +10,21 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 import { PlusOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Grid, Select, Space, Tag } from 'antd';
+import { Flex, Grid, Select, Space, Tag, Typography } from 'antd';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
+import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton, Button } from '@atoms';
+import { allSpacing } from '@theme/tokens';
+import '@configuracion/academico/styles/academico-form-page.css';
 import { usePagosListContext, useExportListaAportesPorCarreraExcel } from '@application-pagos/hooks';
 import { useCarrerasCatalogApi } from '@application-shared/hooks';
 import { useMessage } from '@application/utils';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';
 import { createPagosTableColumns } from '@pagos/config';
+
+const { Paragraph } = Typography;
 
 const PagosList = () => {
   const navigate = useNavigate();
@@ -98,82 +103,84 @@ const PagosList = () => {
     []
   );
 
+  // Exportar → nivel PageHeader (toolbar de la página); crear → dentro del workspace.
+  const exportActions = puedeExportarLista ? (
+    <Space wrap>
+      <Select
+        style={{ minWidth: isSmall ? 220 : 320 }}
+        className="pagos-carrera-select"
+        placeholder="Carrera para exportar estado de aporte"
+        loading={carrerasLoading}
+        value={selectedCarreraId}
+        onChange={(value) => setSelectedCarreraId(value)}
+        allowClear
+        status={selectedCarreraId ? 'success' : undefined}
+        optionFilterProp="label"
+        showSearch
+        options={(carreras || []).map((c) => {
+          const color = c.colorHex || '#1677ff';
+          return {
+            value: c.id,
+            label: (
+              <Space size={10}>
+                <span
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 999,
+                    backgroundColor: color,
+                    display: 'inline-block',
+                  }}
+                />
+                <span style={{ fontWeight: 600 }}>{c.nombre}</span>
+                {c.codigo ? (
+                  <Tag color={color} style={{ marginInlineStart: 0 }}>
+                    {c.codigo}
+                  </Tag>
+                ) : null}
+              </Space>
+            ),
+          };
+        })}
+      />
+      <Button
+        variant={selectedCarreraId ? 'primary' : 'default'}
+        loading={exportLoading}
+        onClick={handleExportLista}
+        disabled={!selectedCarreraId}
+        icon={<DownloadOutlined />}
+        style={
+          selectedCarreraId
+            ? { backgroundColor: carreraColor, borderColor: carreraColor }
+            : undefined
+        }
+      >
+        {selectedCarreraId
+          ? `Excel aportes${selectedCarrera?.codigo ? ` (${selectedCarrera.codigo})` : ''}`
+          : 'Seleccione carrera'}
+      </Button>
+    </Space>
+  ) : null;
+
+  const crearAction = (
+    <ActionButton
+      permiso="finanzas.pago.registrar"
+      accion="CREAR"
+      variant="primary"
+      icon={<PlusOutlined />}
+      onClick={handleNuevoPago}
+    >
+      Nuevo Pago
+    </ActionButton>
+  );
+
   return (
     <PageTemplate
       header={
         <PageHeader
           title="Lista de Pagos"
           breadcrumbItems={breadcrumbItems}
-          actions={
-            <Space wrap>
-              {puedeExportarLista ? (
-                <>
-                  <Select
-                    style={{ minWidth: isSmall ? 220 : 320 }}
-                    className="pagos-carrera-select"
-                    placeholder="Carrera para exportar estado de aporte"
-                    loading={carrerasLoading}
-                    value={selectedCarreraId}
-                    onChange={(value) => setSelectedCarreraId(value)}
-                    allowClear
-                    status={selectedCarreraId ? 'success' : undefined}
-                    optionFilterProp="label"
-                    showSearch
-                    options={(carreras || []).map((c) => {
-                      const color = c.colorHex || '#1677ff';
-                      return {
-                        value: c.id,
-                        label: (
-                          <Space size={10}>
-                            <span
-                              style={{
-                                width: 10,
-                                height: 10,
-                                borderRadius: 999,
-                                backgroundColor: color,
-                                display: 'inline-block',
-                              }}
-                            />
-                            <span style={{ fontWeight: 600 }}>{c.nombre}</span>
-                            {c.codigo ? (
-                              <Tag color={color} style={{ marginInlineStart: 0 }}>
-                                {c.codigo}
-                              </Tag>
-                            ) : null}
-                          </Space>
-                        ),
-                      };
-                    })}
-                  />
-                  <Button
-                    variant={selectedCarreraId ? 'primary' : 'default'}
-                    loading={exportLoading}
-                    onClick={handleExportLista}
-                    disabled={!selectedCarreraId}
-                    icon={<DownloadOutlined />}
-                    style={
-                      selectedCarreraId
-                        ? { backgroundColor: carreraColor, borderColor: carreraColor }
-                        : undefined
-                    }
-                  >
-                    {selectedCarreraId
-                      ? `Excel aportes${selectedCarrera?.codigo ? ` (${selectedCarrera.codigo})` : ''}`
-                      : 'Seleccione carrera'}
-                  </Button>
-                </>
-              ) : null}
-              <ActionButton
-                permiso="finanzas.pago.registrar"
-                accion="CREAR"
-                variant="primary"
-                icon={<PlusOutlined />}
-                onClick={handleNuevoPago}
-              >
-                Nuevo Pago
-              </ActionButton>
-            </Space>
-          }
+          actions={exportActions}
         />
       }
       sidebar={null}
@@ -185,22 +192,38 @@ const PagosList = () => {
           }
         `}</style>
       ) : null}
-      <TableListView
-        data={pagos}
-        loading={loading}
-        error={error}
-        searchText={searchText}
-        onSearchChange={(e) => setSearchText(e.target.value)}
-        searchPlaceholder="Buscar por estudiante, número de recibo, código de comprobante..."
-        columns={tableColumns}
-        rowKey={(record) => record.id || record.numeroRecibo || Math.random()}
-        pagination={tablePagination}
-        defaultSort={{
-          field: 'fechaPago',
-          order: 'descend',
-        }}
-        loadingTip="Cargando pagos..."
-      />
+      <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+        <section className="cfg-academico-workspace">
+          <header className="cfg-academico-workspace__header">
+            <ListPanelHeader title="Lista de pagos" actions={crearAction} />
+            <Paragraph type="secondary" className="cfg-academico-workspace__desc">
+              Aportes académicos y su estado de pago: estudiante, número de recibo, monto y
+              comprobante. Registra nuevos pagos y exporta el estado de aporte por carrera.
+            </Paragraph>
+          </header>
+          <div className="cfg-academico-tab-panel">
+            <TableListView
+              embedded
+              data={pagos}
+              loading={loading}
+              error={error}
+              searchText={searchText}
+              onSearchChange={(e) => setSearchText(e.target.value)}
+              searchPlaceholder="Buscar por estudiante, número de recibo, código de comprobante..."
+              columns={tableColumns}
+              rowKey={(record) => record.id || record.numeroRecibo || Math.random()}
+              searchColSpan={10}
+              searchStyle={{ maxWidth: 520 }}
+              pagination={tablePagination}
+              defaultSort={{
+                field: 'fechaPago',
+                order: 'descend',
+              }}
+              loadingTip="Cargando pagos..."
+            />
+          </div>
+        </section>
+      </Flex>
     </PageTemplate>
   );
 };

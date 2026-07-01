@@ -63,6 +63,14 @@ export function entityToPresentation(row) {
         porcentaje: row.beca_porcentaje != null ? Number(row.beca_porcentaje) : null,
     };
 
+    // Carrera reciente del estudiante (heredada de la vista base vía vista 38).
+    // Siempre presente; campos null cuando el estudiante no tiene carrera reciente.
+    presentation.carrera = {
+        nombre: row.carrera_nombre ?? null,
+        codigo: row.carrera_codigo ?? null,
+        colorHex: row.carrera_color_hex ?? null,
+    };
+
     return presentation;
 }
 

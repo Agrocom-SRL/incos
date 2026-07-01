@@ -21,6 +21,7 @@ export const BecasListProvider = ({ children }) => {
     tablePagination,
     refetch,
   } = useServerPaginatedList({
+    loadAll: true,
     fetch: fetchBecas,
     mapResponse: (raw) => mapNestedListResponse(raw, 'becas'),
     buildRequest: ({ page, limit, search }) => ({

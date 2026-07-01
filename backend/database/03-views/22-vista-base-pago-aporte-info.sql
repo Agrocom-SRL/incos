@@ -11,6 +11,10 @@
 -- - pago_aporte.gestion_id → gestiones.id
 -- - pago_aporte.estudiante_beca_id → estudiantes_becas.id (LEFT)
 -- - estudiantes_becas.beca_descuento_id → becas_descuentos.id (LEFT)
+-- - pago_aporte.estudiante_id → vista_base_estudiante_carrera_reciente (LEFT, carrera reciente)
+--
+-- Dependencias (ejecutar antes):
+-- - 38-vista-base-estudiante-carrera-reciente.sql
 --
 -- Uso:
 -- SELECT * FROM vista_base_pago_aporte_info WHERE id = ?;
@@ -41,6 +45,10 @@ SELECT
   -- Gestión
   g.nombre AS gestion_nombre,
   g.anio AS gestion_anio,
+  -- Carrera reciente (reutiliza vista 38)
+  cr.carrera_nombre,
+  cr.carrera_codigo,
+  cr.carrera_color_hex,
   -- Beca (nombre y porcentaje del descuento aplicado)
   bd.nombre AS beca_nombre,
   bd.porcentaje AS beca_porcentaje
@@ -51,6 +59,7 @@ INNER JOIN estudiantes est ON est.id = pa.estudiante_id
 INNER JOIN gestiones g ON g.id = pa.gestion_id
   AND g.activo = TRUE
   AND g.deleted_at IS NULL
+LEFT JOIN vista_base_estudiante_carrera_reciente cr ON cr.estudiante_id = pa.estudiante_id
 LEFT JOIN estudiantes_becas eb ON eb.id = pa.estudiante_beca_id
   AND eb.activo = TRUE
   AND eb.deleted_at IS NULL

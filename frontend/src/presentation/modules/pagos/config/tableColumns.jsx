@@ -1,125 +1,163 @@
 /**
- * tableColumns - Configuración de columnas para la tabla de pagos de aportes (vista_pago_aporte_listado)
+ * tableColumns - Columnas de la tabla de pagos de aportes (vista_pago_aporte_listado).
  *
- * Campos según vista: estudiante, gestion, monto_base, descuento_beca, monto_obligatorio,
- * total_pagado, cantidad_pagos, saldo_pendiente, estado.
- * Los ítems llegan con estudiante.nombreCompleto desde pagosListMapper.
+ * Lenguaje visual alineado con el listado de Finanzas: `IdentidadCelda` con el ESTADO del
+ * pago (Sin pagos / Parcial / Cancelado) como subtexto bajo el nombre (no columna propia);
+ * montos con jerarquía; carrera como dot de color; y COMPROMISO con su fecha + pill de
+ * alerta (Vencida / Próxima / Al día / Cumplido). El nombre NO se tiñe por carrera.
  */
 
-import { UserOutlined, CalendarOutlined, DollarOutlined, NumberOutlined } from '@ant-design/icons';
-import { Tag, Space, Flex } from 'antd';
-import { TableCell } from '@molecules';
-import { Text, CompromisoAlertTag, formatFechaCompromiso, compromisoSortValue } from '@atoms';
+import { FileDoneOutlined, WalletOutlined } from '@ant-design/icons';
+import { Flex } from 'antd';
+import {
+    IdentidadCelda, InfoLinesCell, StatusPill,
+    formatFechaCompromiso, compromisoSortValue, resolverCompromisoEstado,
+} from '@atoms';
 import PagoTableActions from './PagoTableActions';
+
+/** Color semántico del compromiso (AntD) → clase de pill del design-system. */
+const COMPROMISO_PILL = {
+    error: 'cfg-materia-pill cfg-materia-pill--danger',
+    warning: 'cfg-materia-pill cfg-materia-pill--warning',
+    success: 'cfg-materia-pill cfg-materia-pill--success',
+    default: 'cfg-materia-pill cfg-materia-pill--default',
+};
+
+/** Estado del aporte DERIVADO (para el subtexto bajo el nombre, estilo Finanzas). */
+const derivarEstadoAporte = (record) => {
+    const n = Number(record.cantidad_pagos ?? 0);
+    const saldo = Number(record.saldo_pendiente ?? 0);
+    const oblig = Number(record.monto_obligatorio ?? 0);
+    if (saldo <= 0 && (n > 0 || oblig <= 0)) return { label: 'Cancelado', tone: 'success' };
+    if (n === 0) return { label: 'Sin pagos', tone: 'warning' };
+    return { label: 'Pago parcial', tone: 'warning' };
+};
+
+const formatBs = (v) => `Bs. ${Number(v ?? 0).toFixed(2)}`;
 
 /**
  * Crea las columnas de la tabla de pagos de aportes.
  *
- * @param {Function} navigate - Función de navegación de react-router
- * @param {Function} refetch - Función para recargar con params (page, limit, search, sort, gestion_id, estudiante_id, estado)
- * @param {Function} [deletePago] - Función para eliminar pago
- * @param {Object} [options] - viewNavigateState: estado al abrir detalle desde la tabla (ej. menú Matrícula > Aportes)
+ * @param {Function} navigate
+ * @param {Function} refetch
+ * @param {Function} [deletePago]
+ * @param {Object} [options] - viewNavigateState, returnListPath
  */
 export const createPagosTableColumns = (navigate, refetch = null, deletePago = null, options = {}) => {
     const { viewNavigateState, returnListPath } = options;
     return [
         {
-            title: 'Gestión',
-            dataIndex: 'gestion',
-            render: (gestion, record) => {
-                const g = gestion || record.management;
-                const label = g ? (g.nombre || g.anio || String(g.id)) : 'N/A';
-                return (
-                    <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-                        {label}
-                    </TableCell>
-                );
-            },
-            sorter: (a, b) => {
-                const ga = a.gestion || a.management;
-                const gb = b.gestion || b.management;
-                return (ga?.nombre || ga?.anio || '').localeCompare(gb?.nombre || gb?.anio || '');
-            },
+            title: '#',
+            key: 'nro',
+            width: 56,
+            align: 'center',
+            render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
         },
         {
             title: 'Estudiante',
             dataIndex: ['estudiante', 'nombreCompleto'],
+            width: 260,
             ellipsis: true,
-            render: (_, record) => (
-                <TableCell
-                    strong
-                    icon={<UserOutlined />}
-                    subtext={record.estudiante?.codigoEstudiante ?? '—'}
-                    fallback="Sin nombre"
-                >
-                    {record.estudiante?.nombreCompleto ?? record.estudiante?.codigoEstudiante ?? 'Sin nombre'}
-                </TableCell>
-            ),
+            render: (_, record) => {
+                const estado = derivarEstadoAporte(record);
+                return (
+                    <div>
+                        <IdentidadCelda
+                            codigo={record.estudiante?.codigoEstudiante || null}
+                            nombre={(record.estudiante?.nombreCompleto || record.estudiante?.codigoEstudiante || 'Sin nombre').toUpperCase()}
+                        />
+                        <span className={`cfg-identidad-substate cfg-identidad-substate--${estado.tone}`}>
+                            <span className="cfg-identidad-substate__dot" aria-hidden />
+                            {estado.label}
+                        </span>
+                    </div>
+                );
+            },
             sorter: (a, b) =>
                 (a.estudiante?.nombreCompleto ?? a.estudiante?.codigoEstudiante ?? '').localeCompare(
                     b.estudiante?.nombreCompleto ?? b.estudiante?.codigoEstudiante ?? ''
                 ),
         },
         {
-            title: 'Monto a pagar',
-            dataIndex: 'monto_obligatorio',
+            title: 'Base',
+            dataIndex: 'monto_base',
+            width: 170,
             align: 'right',
             render: (_, record) => {
                 const base = Number(record.monto_base ?? 0);
                 const desc = Number(record.descuento_beca ?? 0);
-                const oblig = Number(record.monto_obligatorio ?? 0);
+                const becaPct = record.beca_porcentaje ?? record.becaPorcentaje
+                    ?? (base > 0 && desc > 0 ? Math.round((desc / base) * 100) : null);
                 return (
-                    <Space align="start" size={8}>
-                        <DollarOutlined style={{ marginTop: 4 }} />
-                        <Flex vertical align="flex-end" gap={2}>
-                            <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                                Base Bs. {base.toFixed(2)}
-                            </Text>
-                            <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                                Descuento Bs. {desc.toFixed(2)}
-                            </Text>
-                            <Text strong style={{ fontSize: 'var(--font-size-base)' }}>
-                                Bs. {oblig.toFixed(2)}
-                            </Text>
-                        </Flex>
-                    </Space>
+                    <Flex vertical align="flex-end" gap={4}>
+                        {/* Monto base (aporte) → purple */}
+                        <StatusPill label={formatBs(base)} className="cfg-materia-pill cfg-materia-pill--purple" />
+                        {/* Descuento de beca → info */}
+                        {desc > 0 ? (
+                            <StatusPill
+                                label={becaPct != null ? `Beca ${becaPct}%` : `−${formatBs(desc)}`}
+                                className="cfg-materia-pill cfg-materia-pill--info"
+                            />
+                        ) : null}
+                    </Flex>
+                );
+            },
+            sorter: (a, b) => (a.monto_base ?? 0) - (b.monto_base ?? 0),
+        },
+        {
+            title: 'Monto a pagar',
+            dataIndex: 'monto_obligatorio',
+            width: 170,
+            align: 'right',
+            render: (_, record) => {
+                const oblig = Number(record.monto_obligatorio ?? 0);
+                // Monto a pagar con el descuento aplicado. Si es 0 → cubierto por beca.
+                return oblig > 0 ? (
+                    <StatusPill label={formatBs(oblig)} className="cfg-materia-pill cfg-materia-pill--success" />
+                ) : (
+                    <StatusPill label="Cubierto por beca" className="cfg-materia-pill cfg-materia-pill--success" />
                 );
             },
             sorter: (a, b) => (a.monto_obligatorio ?? 0) - (b.monto_obligatorio ?? 0),
         },
         {
-            title: 'Detalle del pago',
-            dataIndex: ['total_pagado', 'cantidad_pagos'],
-            align: 'left',
+            title: 'Pagado',
+            dataIndex: 'total_pagado',
+            width: 160,
+            align: 'right',
             render: (_, record) => {
-                const t = record.total_pagado ?? 0;
+                const t = Number(record.total_pagado ?? 0);
                 const n = Number(record.cantidad_pagos ?? 0);
                 if (n === 0) {
-                    return <TableCell fallback="—">sin pagos</TableCell>;
+                    return <span className="cfg-materia-pill cfg-materia-pill--default">Sin pagos</span>;
                 }
+                // Muestra lo REALMENTE pagado + nº de cuotas (aunque sea Bs. 0: solo se registró
+                // la fecha sin abonar). "Cubierto por beca" NO va aquí; vive en Monto a pagar (=0).
                 return (
-                    <TableCell
-                        icon={<DollarOutlined />}
-                        subtext={`${n} pagos`}
-                        fallback="—"
-                    >
-                        Bs. {Number(t).toFixed(2)}
-                    </TableCell>
+                    <Flex vertical align="flex-end" gap={4}>
+                        <InfoLinesCell
+                            lines={[{ icon: <FileDoneOutlined />, label: `${n} ${n === 1 ? 'cuota' : 'cuotas'}` }]}
+                        />
+                        <StatusPill label={formatBs(t)} className="cfg-materia-pill cfg-materia-pill--info" />
+                    </Flex>
                 );
             },
             sorter: (a, b) => (a.total_pagado ?? 0) - (b.total_pagado ?? 0),
         },
         {
-            title: 'Saldo pendiente',
+            title: 'Saldo',
             dataIndex: 'saldo_pendiente',
-            align: 'right',
+            width: 150,
             render: (val, record) => {
-                const s = val ?? record.saldo_pendiente ?? 0;
-                const num = Number(s);
+                const saldo = Number(val ?? record.saldo_pendiente ?? 0);
+                const saldado = saldo <= 0;
                 return (
-                    <TableCell icon={<DollarOutlined />} strong={num > 0}>
-                        Bs. {num.toFixed(2)}
-                    </TableCell>
+                    <Flex vertical align="flex-end" gap={4}>
+                        <StatusPill
+                            label={saldado ? 'Cancelado' : formatBs(saldo)}
+                            className={`cfg-materia-pill ${saldado ? 'cfg-materia-pill--success' : 'cfg-materia-pill--danger'}`}
+                        />
+                    </Flex>
                 );
             },
             sorter: (a, b) => (a.saldo_pendiente ?? 0) - (b.saldo_pendiente ?? 0),
@@ -127,38 +165,27 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Compromiso',
             dataIndex: 'compromiso',
+            width: 170,
             render: (compromiso) => {
                 if (!compromiso) {
-                    return <TableCell fallback="—">{null}</TableCell>;
+                    return <span className="cfg-materia-pill cfg-materia-pill--default">—</span>;
                 }
+                const { label, color } = resolverCompromisoEstado(compromiso);
+                const fecha = formatFechaCompromiso(compromiso.fechaCompromiso);
                 return (
-                    <TableCell
-                        icon={<CalendarOutlined />}
-                        subtext={<CompromisoAlertTag compromiso={compromiso} />}
-                        fallback="—"
-                    >
-                        {formatFechaCompromiso(compromiso.fechaCompromiso) === '—'
-                            ? 'Sin fecha'
-                            : formatFechaCompromiso(compromiso.fechaCompromiso)}
-                    </TableCell>
+                    <Flex vertical align="flex-end" gap={4}>
+                        <InfoLinesCell
+                            lines={[{ icon: <WalletOutlined />, label: fecha === '—' ? 'Sin fecha' : fecha }]}
+                        />
+                        <StatusPill label={label} className={COMPROMISO_PILL[color] || COMPROMISO_PILL.default} />
+                    </Flex>
                 );
             },
             sorter: (a, b) => compromisoSortValue(a?.compromiso) - compromisoSortValue(b?.compromiso),
         },
         {
-            title: 'Estado',
-            dataIndex: 'estado',
-            render: (estado, record) => {
-                const e = estado ?? record.estado ?? 'N/A';
-                const color = e === 'CANCELADO' ? 'default' : e === 'PENDIENTE' ? 'warning' : 'success';
-                return <Tag color={color}>{e}</Tag>;
-            },
-            sorter: (a, b) => (a.estado ?? '').localeCompare(b.estado ?? ''),
-        },
-        {
             title: 'Acciones',
             key: 'acciones',
-            fixed: 'right',
             width: 120,
             align: 'right',
             render: (_, record) => {
@@ -177,8 +204,8 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                     { label: 'Estudiante', value: nombre },
                     { label: 'Código', value: codigo },
                     { label: 'Gestión', value: gestionLabel },
-                    { label: 'Monto a pagar', value: `Base Bs. ${base.toFixed(2)} · Descuento Bs. ${desc.toFixed(2)} · Total Bs. ${oblig.toFixed(2)}` },
-                    { label: 'Saldo pendiente', value: `Bs. ${saldo.toFixed(2)}` },
+                    { label: 'Monto a pagar', value: `Base ${formatBs(base)} · Descuento ${formatBs(desc)} · Total ${formatBs(oblig)}` },
+                    { label: 'Saldo pendiente', value: formatBs(saldo) },
                 ].filter((d) => d.value && d.value !== 'N/A' && d.value !== '—');
 
                 return (

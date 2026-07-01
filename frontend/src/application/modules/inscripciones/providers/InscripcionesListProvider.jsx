@@ -45,6 +45,7 @@ export const InscripcionesListProvider = ({ children }) => {
     refetch,
     pagination,
   } = useServerPaginatedList({
+    loadAll: true,
     fetch: fetchInscripciones,
     extra: listQueryExtra,
     buildRequest: ({ page, limit, search, extra }) => ({

@@ -156,16 +156,22 @@ export const useClientTableSort = ({
       });
     }
 
-    if (s && (s.columnKey != null || s.field != null)) {
+    if (s?.order) {
+      // Clic con dirección explícita (asc/desc).
       const columnKey = s.columnKey ?? s.field;
-      if (s.order) {
-        setSortState({ columnKey, order: s.order });
-        if (pag?.current == null) {
-          setPagState((prev) => ({ ...prev, current: 1 }));
-        }
-      } else {
-        setSortState(null);
+      setSortState({ columnKey, order: s.order });
+      if (pag?.current == null) {
+        setPagState((prev) => ({ ...prev, current: 1 }));
       }
+    } else if (s) {
+      // AntD "cancela" el orden en el 3er clic (order nulo y, a veces, sin columnKey):
+      // en vez de limpiarlo, alternamos asc↔desc sobre la columna que ya estaba
+      // ordenada (estado previo) para que el orden NUNCA se pierda al hacer clic.
+      setSortState((prev) =>
+        prev
+          ? { columnKey: prev.columnKey, order: prev.order === 'ascend' ? 'descend' : 'ascend' }
+          : prev,
+      );
     }
 
     onChange?.(pag, _filters, sorter);

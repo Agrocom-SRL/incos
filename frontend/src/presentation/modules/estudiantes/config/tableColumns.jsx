@@ -1,18 +1,31 @@
 /**
- * tableColumns - Configuración de columnas para la tabla de estudiantes
- * 
- * Single Responsibility: Definir las columnas y su configuración para EstudiantesTable
- * 
- * Este archivo separa la configuración de las columnas de la lógica del componente,
- * permitiendo reutilizar y modificar fácilmente las columnas sin tocar el componente.
+ * tableColumns - Columnas de la tabla de estudiantes.
+ *
+ * Lenguaje visual del prototipo de listado: `#` numérico + `IdentidadCelda` (identidad) +
+ * `InfoLinesCell` (celdas multi-línea) con las clases del design-system
+ * (`styles/components/atoms/table-cells.css`). El tipo de admisión conserva su chip de
+ * color propio (admissionTypeColors). Sin `Space orientation` (deprecado) ni estilos inline sueltos.
  */
 
-import { Space } from 'antd';
-import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined, CalendarOutlined, TagOutlined, IdcardOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
-import { TableCell } from '@molecules';
+import { Flex } from 'antd';
+import {
+  UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined,
+  CalendarOutlined, TagOutlined, IdcardOutlined, ManOutlined, WomanOutlined,
+} from '@ant-design/icons';
+import { IdentidadCelda, InfoLinesCell, StatusPill, CarreraDotCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 import { getAdmissionTypeTagStyle } from './admissionTypeColors';
+
+/** Estado académico → clase de pill semántica (StatusPill). */
+const getEstadoAcadPillClass = (estado) => {
+  const e = String(estado || '').toUpperCase();
+  if (/ACTIV|REGULAR|VIGENTE/.test(e)) return 'cfg-materia-pill cfg-materia-pill--success';
+  if (/EGRES|GRADU|CONCLU/.test(e)) return 'cfg-materia-pill cfg-materia-pill--info';
+  if (/RETIR|ABANDON|BAJA|ANUL/.test(e)) return 'cfg-materia-pill cfg-materia-pill--danger';
+  if (/SUSP|PEND|MORA/.test(e)) return 'cfg-materia-pill cfg-materia-pill--warning';
+  return 'cfg-materia-pill cfg-materia-pill--default';
+};
 
 /** Construye nombre completo desde partes si no viene compuesto */
 const getNombreCompleto = (record) =>
@@ -31,7 +44,7 @@ const getTipoAdmisionTagStyle = (tipoAdmision) => {
   return getAdmissionTypeTagStyle(tipoAdmision);
 };
 
-/** Texto resumido de datos de trabajo (trabaja, empresa, cargo). Máx 120 caracteres + ellipsis. */
+/** Texto resumido de datos de trabajo (trabaja, empresa, cargo). Máx 50 caracteres + ellipsis. */
 const MAX_TRABAJO_CHARS = 50;
 const getDatosTrabajoText = (record) => {
   if (!record.trabaja) return null;
@@ -40,27 +53,28 @@ const getDatosTrabajoText = (record) => {
   return text.length > MAX_TRABAJO_CHARS ? `${text.slice(0, MAX_TRABAJO_CHARS)}…` : text;
 };
 
-/** Icono y color por género (MASCULINO, FEMENINO, OTRO): azul hombre, rosado mujer, gris otro */
-const getGeneroIconAndColor = (genero) => {
+/** Icono, tono (clase global) y etiqueta por género (patrón DocenteReferenciaCell). */
+const getGeneroMeta = (genero) => {
   const g = String(genero || '').toUpperCase();
   if (g === 'MASCULINO' || g === 'M') {
-    return { icon: <ManOutlined />, color: '#1890ff', label: 'Masculino' };
+    return { icon: <ManOutlined />, toneClass: 'cfg-genero-tone--m', label: 'Masculino' };
   }
   if (g === 'FEMENINO' || g === 'F') {
-    return { icon: <WomanOutlined />, color: '#eb2f96', label: 'Femenino' };
+    return { icon: <WomanOutlined />, toneClass: 'cfg-genero-tone--f', label: 'Femenino' };
   }
-  return { icon: <UserOutlined />, color: '#8c8c8c', label: genero || 'Otro' };
+  if (!genero) return null;
+  return { icon: <UserOutlined />, toneClass: 'cfg-genero-tone--o', label: genero };
 };
 
 /**
  * Crea las columnas de la tabla de estudiantes
- * 
- * @param {Function} navigate - Función de navegación de react-router
- * @param {Function} refetch - Función para recargar los datos después de eliminar
- * @param {Function} deleteStudent - Función para eliminar un estudiante
- * @param {Object} pagosContext - Contexto de pagos (opcional) para verificar si el estudiante ya tiene un pago
- * @param {Object} options - Opciones de presentación (ej: { isSmall: boolean })
- * @returns {Array} Array de configuración de columnas para Ant Design Table
+ *
+ * @param {Function} navigate
+ * @param {Function} refetch
+ * @param {Function} deleteStudent
+ * @param {Object} pagosContext
+ * @param {Object} options - { isSmall: boolean }
+ * @returns {Array}
  */
 export const createEstudiantesTableColumns = (
   navigate,
@@ -100,18 +114,15 @@ export const createEstudiantesTableColumns = (
       if (pagosEstudiante.length > 0) {
         // Ordenar por ID descendente (el más reciente primero) o por fecha
         const pagoMasReciente = pagosEstudiante.sort((a, b) => {
-          // Intentar ordenar por ID primero
           const idA = a.id || 0;
           const idB = b.id || 0;
           if (idA !== idB) return idB - idA;
 
-          // Si no hay ID, ordenar por fecha de creación
           const fechaA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const fechaB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return fechaB - fechaA;
         })[0];
 
-        // Navegar al detalle del pago más reciente (state para que Volver vaya al estudiante)
         const pagoId = pagoMasReciente.id;
         if (pagoId) {
           navigate(`/pagos/${pagoId}`, {
@@ -129,176 +140,118 @@ export const createEstudiantesTableColumns = (
   };
 
   return [
-    // 1. Registro: fecha de registro (createdAt) + gestión de ingreso (enriquecido desde vista_estudiante_datos_academicos)
     {
-      title: 'Registro',
-      key: 'registro',
-      ellipsis: true,
-      width: 120,
+      title: '#',
+      key: 'nro',
+      width: 56,
+      align: 'center',
       responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
-      render: (_, record) => {
-        const createdAt = record.createdAt;
-        let fechaRegistro = '—';
-        if (createdAt) {
-          try {
-            const d = new Date(createdAt);
-            if (!isNaN(d.getTime())) {
-              fechaRegistro = d.toLocaleDateString('es-BO', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            }
-          } catch (e) {
-            fechaRegistro = String(createdAt);
-          }
-        }
-        const gestionNombre = record.gestionIngresoNombre || null;
-        return (
-          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-            <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-              {fechaRegistro}
-            </TableCell>
-            {gestionNombre && (
-              <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                {gestionNombre}
-              </TableCell>
-            )}
-          </Space>
-        );
-      },
-      sorter: (a, b) => {
-        const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return tB - tA;
-      },
-      defaultSortOrder: 'descend',
+      render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
     },
-    // 2. Estudiante: nombre, CI, código (datos desde vista_estudiante_datos_personales + mapper)
+    // Estudiante: código + nombre (IdentidadCelda con barra de acento por carrera)
     {
       title: 'Estudiante',
       key: 'estudiante',
       ellipsis: true,
       responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => (
-        <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-          <TableCell strong fallback="Sin nombre" textStyle={{ fontSize: 'var(--font-size-md)' }} size="small">
-            {getNombreCompleto(record)}
-          </TableCell>
-          {getCiCompleto(record) && (
-            <TableCell icon={<UserOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-              CI {getCiCompleto(record)}
-            </TableCell>
-          )}
-          {record.codigoEstudiante && (
-            <TableCell icon={<IdcardOutlined />} textStyle={{ fontFamily: 'monospace', fontSize: 'var(--font-size-sm)' }} size="small">
-              {record.codigoEstudiante}
-            </TableCell>
-          )}
-        </Space>
+        <IdentidadCelda
+          codigo={record.codigoEstudiante || null}
+          nombre={getNombreCompleto(record).toUpperCase()}
+        />
       ),
       sorter: (a, b) => getNombreCompleto(a).localeCompare(getNombreCompleto(b)),
     },
-    // 3. Datos de referencia: género (icono+color), correo, teléfono, trabajo (máx 120 chars + ellipsis)
+    // Contacto: CI, género, correo, teléfonos, trabajo
     {
-      title: 'Datos de referencia',
-      key: 'datosReferencia',
-      ellipsis: true,
-      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
+      title: 'Contacto',
+      key: 'contacto',
+      width: 260,
+      responsive: ['md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
-        const generoInfo = record.genero ? getGeneroIconAndColor(record.genero) : null;
-        const email = record.emailPersonal;
-        const celular = record.celular;
-        const telefonoFijo = record.telefonoFijo;
-        const datosTrabajo = getDatosTrabajoText(record);
-        const hasAny = generoInfo || email || celular || telefonoFijo || datosTrabajo;
+        const generoMeta = getGeneroMeta(record.genero);
+        const ci = getCiCompleto(record);
         return (
-          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-            {generoInfo && (
-              <TableCell
-                icon={<span style={{ color: generoInfo.color }}>{generoInfo.icon}</span>}
-                textStyle={{ fontSize: 'var(--font-size-sm)', color: generoInfo.color }}
-                size="small"
-              >
-                {generoInfo.label}
-              </TableCell>
-            )}
-            {email && (
-              <TableCell icon={<MailOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                {email}
-              </TableCell>
-            )}
-            {celular && (
-              <TableCell icon={<PhoneOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                {celular}
-              </TableCell>
-            )}
-            {telefonoFijo && (
-              <TableCell icon={<PhoneOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                {telefonoFijo}
-              </TableCell>
-            )}
-            {datosTrabajo && (
-              <TableCell
-                icon={<BankOutlined />}
-                textStyle={{ fontSize: 'var(--font-size-sm)', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}
-                size="small"
-              >
-                {datosTrabajo}
-              </TableCell>
-            )}
-            {!hasAny && (
-              <TableCell icon={<UserOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-                —
-              </TableCell>
-            )}
-          </Space>
+          <InfoLinesCell
+            lines={[
+              generoMeta
+                ? { icon: generoMeta.icon, label: generoMeta.label, className: generoMeta.toneClass }
+                : null,
+              { icon: <IdcardOutlined />, label: ci ? `CI ${ci}` : null },
+              { icon: <PhoneOutlined />, label: record.celular },
+              { icon: <MailOutlined />, label: record.emailPersonal },
+            ].filter(Boolean)}
+          />
         );
       },
+      // Orden: primero por género, luego por CI.
       sorter: (a, b) => {
-        const textA = [a.genero, a.emailPersonal, a.celular, a.telefonoFijo].filter(Boolean).join(' ');
-        const textB = [b.genero, b.emailPersonal, b.celular, b.telefonoFijo].filter(Boolean).join(' ');
-        return textA.localeCompare(textB);
+        const byGenero = String(a.genero || '').localeCompare(String(b.genero || ''), 'es', {
+          sensitivity: 'base',
+        });
+        if (byGenero !== 0) return byGenero;
+        return getCiCompleto(a).localeCompare(getCiCompleto(b), 'es', { numeric: true });
       },
     },
-    // 4. Datos académicos: carrera, tipo admisión (enriquecidos por ListStudentsUseCase desde vista_estudiante_datos_academicos)
+    // Carrera + gestión de ingreso (chip de color de carrera)
     {
-      title: 'Datos académicos',
-      key: 'datosAcademicos',
-      ellipsis: true,
+      title: 'Carrera',
+      key: 'carrera',
+      width: 220,
       responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => (
-        <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-          {record.carreraNombre && (
-            <TableCell
-              strong
-              icon={<BookOutlined />}
-              textStyle={{ fontSize: 'var(--font-size-md)' }}
-              size="small"
-            >
-              {record.carreraNombre}
-            </TableCell>
-          )}
-          {record.tipoAdmision && (
-            <TableCell
-              icon={<TagOutlined />}
-              tag={record.tipoAdmision}
-              tagStyle={getTipoAdmisionTagStyle(record.tipoAdmision)}
-              fallback=""
-              textStyle={{ fontSize: 'var(--font-size-sm)' }}
-              size="small"
-            />
-          )}
-          {!record.carreraNombre && !record.tipoAdmision && (
-            <TableCell icon={<BookOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-              —
-            </TableCell>
-          )}
-        </Space>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <CarreraDotCell nombre={record.carreraNombre} colorHex={record.carreraColorHex} />
+          {record.gestionIngresoNombre ? (
+            <InfoLinesCell lines={[{ icon: <CalendarOutlined />, label: record.gestionIngresoNombre }]} />
+          ) : null}
+        </div>
       ),
+      // Orden: primero por gestión de ingreso, luego por carrera.
       sorter: (a, b) => {
-        const textA = [a.carreraNombre, a.tipoAdmision].filter(Boolean).join(' ');
-        const textB = [b.carreraNombre, b.tipoAdmision].filter(Boolean).join(' ');
-        return textA.localeCompare(textB);
+        const byGestion = String(a.gestionIngresoNombre || '').localeCompare(
+          String(b.gestionIngresoNombre || ''), 'es', { numeric: true },
+        );
+        if (byGestion !== 0) return byGestion;
+        return (a.carreraNombre || '').localeCompare(b.carreraNombre || '', 'es', {
+          sensitivity: 'base',
+        });
       },
     },
-    // 5. Acciones (espacio reducido entre botones vía TableActions)
+    // Estado académico + tipo de admisión
+    {
+      title: 'Estado',
+      key: 'estado',
+      width: 160,
+      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
+      render: (_, record) => (
+        <Flex vertical align="flex-start" gap={6}>
+          {record.estadoAcademico ? (
+            <StatusPill
+              label={record.estadoAcademico}
+              className={getEstadoAcadPillClass(record.estadoAcademico)}
+            />
+          ) : null}
+          {record.tipoAdmision ? (
+            <span className="cfg-materia-pill" style={getTipoAdmisionTagStyle(record.tipoAdmision)}>
+              {record.tipoAdmision}
+            </span>
+          ) : null}
+          {!record.estadoAcademico && !record.tipoAdmision ? (
+            <span className="cfg-materia-pill cfg-materia-pill--default">—</span>
+          ) : null}
+        </Flex>
+      ),
+      // Orden: primero por tipo de admisión, luego por estado académico.
+      sorter: (a, b) => {
+        const byTipo = String(a.tipoAdmision || '').localeCompare(String(b.tipoAdmision || ''), 'es', {
+          sensitivity: 'base',
+        });
+        if (byTipo !== 0) return byTipo;
+        return (a.estadoAcademico || '').localeCompare(b.estadoAcademico || '');
+      },
+    },
+    // Acciones
     {
       title: 'Acciones',
       key: 'acciones',
@@ -359,4 +312,3 @@ export const createEstudiantesTableColumns = (
     },
   ];
 };
-

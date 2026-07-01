@@ -1,0 +1,152 @@
+/**
+ * CarreraTabsListView — estilos de la etiqueta de pestaña (punto de color + contador).
+ * El resto del look sale de las clases compartidas del workspace académico
+ * (sd-tabs / cfg-academico-tabs-shell). Aquí solo la pieza propia por carrera.
+ */
+
+.carrera-tab-label {
+  gap: 8px;
+}
+
+.carrera-tab-label__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background-color: var(--border, #d1d5db);
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 8%, transparent);
+}
+
+/* "Sin carrera": punto hueco/neutro para diferenciarlo de una carrera real. */
+.carrera-tab-label__dot--empty {
+  background-color: transparent;
+  border: 1.5px dashed var(--border, #d1d5db);
+  box-shadow: none;
+}
+
+.carrera-tab-label__text {
+  font-weight: 600;
+}
+
+.carrera-tab-label__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-500, #6b7280);
+  background: var(--fill-secondary, rgba(0, 0, 0, 0.04));
+}
+
+/* La pestaña activa resalta también su contador. */
+.carrera-tabs .ant-tabs-tab-active .carrera-tab-label__count {
+  color: var(--color-primary, #196b45);
+  background: color-mix(in srgb, var(--color-primary, #196b45) 12%, transparent);
+}
+
+/* ============================================================
+   Segundo nivel: filtro por curso/paralelo como CHIPS de color.
+   Cada chip lleva su color de paralelo en `--chip-color` (inline). Inactivo: tinte suave
+   del color; activo: relleno sólido del color con texto blanco. El mismo paralelo mantiene
+   el mismo color en todas las carreras (mapa global en el organismo).
+   ============================================================ */
+.carrera-subfilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.carrera-chip {
+  --chip-color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--chip-color) 32%, transparent);
+  background: color-mix(in srgb, var(--chip-color) 8%, #fff);
+  color: color-mix(in srgb, var(--chip-color) 78%, #111);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.14s ease;
+}
+
+.carrera-chip:hover {
+  border-color: color-mix(in srgb, var(--chip-color) 55%, transparent);
+  background: color-mix(in srgb, var(--chip-color) 14%, #fff);
+}
+
+.carrera-chip:active {
+  transform: scale(0.97);
+}
+
+.carrera-chip:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--chip-color) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.carrera-chip__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--chip-color);
+}
+
+.carrera-chip__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--chip-color) 82%, #111);
+  background: color-mix(in srgb, var(--chip-color) 16%, #fff);
+}
+
+/* Activo: relleno sólido del color del paralelo, texto e ítems en blanco. */
+.carrera-chip--active {
+  background: var(--chip-color);
+  border-color: var(--chip-color);
+  color: #fff;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--chip-color) 32%, transparent);
+}
+
+.carrera-chip--active:hover {
+  background: var(--chip-color);
+  border-color: var(--chip-color);
+}
+
+.carrera-chip--active .carrera-chip__dot {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.carrera-chip--active .carrera-chip__count {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carrera-chip {
+    transition: none;
+  }
+  .carrera-chip:active {
+    transform: none;
+  }
+}

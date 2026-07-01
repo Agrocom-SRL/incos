@@ -148,106 +148,8 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-/* Listado materias — celda identidad (patrón calificaciones) */
-.cfg-materia-identidad {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.cfg-materia-identidad__margen {
-  flex-shrink: 0;
-  width: 2px;
-  align-self: stretch;
-  min-height: 28px;
-  border-radius: 2px;
-  background: var(--primary, var(--ant-color-primary, #22854f));
-}
-
-.cfg-materia-identidad__texto {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.cfg-materia-identidad__sigla {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-500, #6b7280);
-  font-variant-numeric: tabular-nums;
-}
-
-.cfg-materia-identidad__nombre {
-  font-weight: 700;
-  color: var(--text-800, #1f2937);
-  font-size: 13px;
-  line-height: 1.35;
-  letter-spacing: 0.02em;
-}
-
-/* Pills tipo / clasificación (distintos a admisión estudiante) */
-.cfg-materia-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  border: 1px solid transparent;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cfg-materia-pill--teorica {
-  background: #e0f2fe;
-  color: #0369a1;
-  border-color: rgba(3, 105, 161, 0.22);
-}
-
-.cfg-materia-pill--practica {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: rgba(4, 120, 87, 0.22);
-}
-
-.cfg-materia-pill--mixta {
-  background: #ede9fe;
-  color: #6d28d9;
-  border-color: rgba(109, 40, 217, 0.22);
-}
-
-.cfg-materia-pill--clasificacion {
-  background: #fff7ed;
-  color: #c2410c;
-  border-color: rgba(194, 65, 12, 0.2);
-}
-
-.cfg-materia-pill--default {
-  background: #f3f4f6;
-  color: var(--text-700, #374151);
-  border-color: #d1d5db;
-}
-
-.cfg-materia-pill--activa {
-  background: #ecfdf5;
-  color: var(--ant-color-primary, #134d32);
-  font-size: 14px;
-  border-color: rgba(4, 120, 87, 0.22);
-}
-
-.cfg-materia-pill--inactiva {
-  background: #f3f4f6;
-  color: #6b7280;
-  border-color: #d1d5db;
-}
+/* NOTA: los estilos de celda `.cfg-materia-identidad*` y `.cfg-materia-pill*` se movieron
+   a `styles/components/atoms/table-cells.css` (átomos globales IdentidadCelda / StatusPill). */
 
 /* Tabs Académico — workspace unificado */
 .cfg-academico-workspace {
@@ -407,90 +309,11 @@
   background: var(--surface, #fff);
 }
 
-/* Carrera — área + descripción */
-.cfg-carrera-area-desc {
-  max-width: 280px;
-}
+/* NOTA: `.cfg-carrera-area-desc*` y `.cfg-carrera-titulo-dot*` se movieron a
+   `styles/components/atoms/table-cells.css` (átomos globales IconTituloDescCell / CarreraDotCell). */
 
-.cfg-carrera-area-desc__area {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: var(--text-800, #1f2937);
-  font-size: 13px;
-}
-
-.cfg-carrera-area-desc__icon {
-  color: var(--primary, var(--ant-color-primary, #22854f));
-  font-size: 14px;
-}
-
-.cfg-carrera-area-desc__texto {
-  margin: 6px 0 0;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--text-500, #6b7280);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.cfg-carrera-area-desc__texto--empty {
-  margin-top: 4px;
-}
-
-.cfg-carrera-titulo-dot {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 8px;
-  min-width: 0;
-}
-
-.cfg-carrera-titulo-dot__swatch {
-  width: 15px;
-  height: 15px;
-  border-radius: 20%;
-  flex-shrink: 0;
-}
-
-.cfg-carrera-titulo-dot__texto {
-  font-size: 13px;
-  line-height: 1.35;
-  color: var(--text-800, #1f2937);
-}
-
-/* Métricas listado carreras */
-.cfg-academico-metricas-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cfg-academico-metricas-list__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cfg-academico-metricas-list__icon {
-  flex-shrink: 0;
-  font-size: 15px;
-  color: var(--primary, var(--ant-color-primary, #22854f));
-  width: 18px;
-  display: inline-flex;
-  justify-content: center;
-}
-
-.cfg-academico-metricas-list__label {
-  font-size: 12px !important;
-  margin: 0 !important;
-}
+/* NOTA: `.cfg-academico-metricas-list*` se movió a
+   `styles/components/atoms/table-cells.css` (átomo global InfoLinesCell / *MetricasCell). */
 
 /* Paralelos — tabla */
 .cfg-paralelo-periodo-cell {

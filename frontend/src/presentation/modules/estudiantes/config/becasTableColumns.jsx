@@ -1,27 +1,30 @@
 /**
- * becasTableColumns - Configuración de columnas para la tabla de becas asignadas
- * 
- * Single Responsibility: Definir las columnas y su configuración para BecasTable
- * 
- * NOTA: Esta tabla muestra BECAS ASIGNADAS A ESTUDIANTES (estudiantes_becas),
- * no el catálogo de becas/descuentos (becas_descuentos).
- * Cada fila representa una beca asignada a un estudiante con datos enriquecidos.
+ * becasTableColumns - Columnas de la tabla de becas asignadas a estudiantes.
+ *
+ * Distribución: `#` · Estudiante · Beca (ícono + nombre + descripción, patrón
+ * "Área y descripción" de Carreras) · Gestión y descuento (gestión + 2 pills: % y monto)
+ * · Carrera (dot de color, patrón "Título otorgado") · Acciones.
+ * El nombre del estudiante NO se tiñe por carrera. Sin pill de estado.
+ *
+ * NOTA: muestra BECAS ASIGNADAS A ESTUDIANTES (estudiantes_becas), no el catálogo.
  */
 
-import { Tag } from 'antd';
-import { DollarOutlined, PercentageOutlined, UserOutlined, CalendarOutlined } from '@ant-design/icons';
-import { TableCell } from '@molecules';
+import { CalendarOutlined, GiftOutlined } from '@ant-design/icons';
+import { IdentidadCelda, StatusPill, CarreraDotCell, IconTituloDescCell, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
 
+/** Monto Bs con 2 decimales o null. */
+const formatBs = (v) => (v == null || Number.isNaN(Number(v)) ? null : `Bs. ${Number(v).toFixed(2)}`);
+
 /**
- * Crea las columnas de la tabla de becas asignadas
- * 
- * @param {Function} navigate - Función de navegación de react-router
- * @param {Function} refetch - Función para recargar los datos después de eliminar
- * @param {Function} deleteBeca - Función para eliminar una beca asignada
+ * Crea las columnas de la tabla de becas asignadas.
+ *
+ * @param {Function} navigate
+ * @param {Function} refetch
+ * @param {Function} deleteBeca
  * @param {Object} [options]
- * @param {Object} [options.viewNavigateState] - Estado para navigate al ver detalle (ej. menuSidebarKey, returnListPath)
- * @returns {Array} Array de configuración de columnas para Ant Design Table
+ * @param {Object} [options.viewNavigateState]
+ * @returns {Array}
  */
 export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = null, options = {}) => {
   const { viewNavigateState } = options;
@@ -29,172 +32,81 @@ export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = n
 
   return [
     {
+      title: '#',
+      key: 'nro',
+      width: 56,
+      align: 'center',
+      render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
+    },
+    {
       title: 'Estudiante',
       dataIndex: ['student', 'nombreCompleto'],
+      width: 240,
       ellipsis: true,
-      render: (_, record) => {
-        const student = record.student;
-        // Los datos vienen del backend en formato de presentación (español)
-        const nombreCompleto = student?.nombreCompleto || 'N/A';
-        const ci = student?.ci || 'N/A';
-        const expedicion = student?.expedicion || '';
-        const codigoEstudiante = student?.codigoEstudiante || null;
-        
-        return (
-          <TableCell>
-            <div>
-              <div style={{ fontWeight: 'bold' }}>
-                {nombreCompleto}
-              </div>
-              <div style={{ fontSize: '12px', color: '#666' }}>
-                CI: {ci} {expedicion ? `(${expedicion})` : ''}
-              </div>
-              {codigoEstudiante && (
-                <div style={{ fontSize: '11px', color: '#999' }}>
-                  Código: {codigoEstudiante}
-                </div>
-              )}
-            </div>
-          </TableCell>
-        );
-      },
-      sorter: (a, b) => {
-        const nameA = a.student?.nombreCompleto || '';
-        const nameB = b.student?.nombreCompleto || '';
-        return nameA.localeCompare(nameB);
-      },
+      render: (_, record) => (
+        <IdentidadCelda
+          codigo={record.student?.codigoEstudiante || null}
+          nombre={(record.student?.nombreCompleto || 'Sin nombre').toUpperCase()}
+        />
+      ),
+      sorter: (a, b) =>
+        (a.student?.nombreCompleto || '').localeCompare(b.student?.nombreCompleto || '', 'es', {
+          sensitivity: 'base',
+        }),
     },
     {
-      title: 'Tipo de Beca',
+      title: 'Beca',
       dataIndex: ['scholarship', 'nombre'],
-      ellipsis: true,
-      render: (_, record) => {
-        const scholarship = record.scholarship;
-        // Los datos vienen del backend en formato de presentación (español)
-        const nombre = scholarship?.nombre || 'N/A';
-        const codigo = scholarship?.codigo || null;
-        
-        return (
-          <TableCell>
-            <div>
-              <div style={{ fontWeight: 'bold' }}>
-                {nombre}
-              </div>
-              {codigo && (
-                <div style={{ fontSize: '11px', color: '#666' }}>
-                  {codigo}
-                </div>
-              )}
-            </div>
-          </TableCell>
-        );
-      },
-      sorter: (a, b) => {
-        const nameA = a.scholarship?.nombre || '';
-        const nameB = b.scholarship?.nombre || '';
-        return nameA.localeCompare(nameB);
-      },
+      render: (_, record) => (
+        <IconTituloDescCell
+          icon={<GiftOutlined />}
+          titulo={record.scholarship?.nombre || 'Sin beca'}
+          descripcion={record.scholarship?.descripcion || record.observations || null}
+        />
+      ),
+      sorter: (a, b) =>
+        (a.scholarship?.nombre || '').localeCompare(b.scholarship?.nombre || '', 'es', {
+          sensitivity: 'base',
+        }),
     },
     {
-      title: 'Descuento',
-      dataIndex: ['scholarship', 'porcentaje'],
-      ellipsis: true,
-      render: (_, record) => {
-        const scholarship = record.scholarship;
-        // Los datos vienen del backend en formato de presentación (español)
-        const porcentaje = scholarship?.porcentaje;
-        
-        if (porcentaje != null && porcentaje !== undefined) {
-          return (
-            <TableCell icon={<PercentageOutlined />}>
-              {porcentaje}%
-            </TableCell>
-          );
-        }
-        return <TableCell>N/A</TableCell>;
-      },
-      sorter: (a, b) => {
-        const percentA = a.scholarship?.porcentaje || 0;
-        const percentB = b.scholarship?.porcentaje || 0;
-        return percentA - percentB;
-      },
-    },
-    {
-      title: 'Gestión',
+      title: 'Gestión y descuento',
       dataIndex: ['management', 'codigo'],
-      ellipsis: true,
+      width: 200,
       render: (_, record) => {
-        const management = record.management;
-        // Los datos vienen del backend en formato de presentación (español)
-        const codigo = management?.codigo || null;
-        const nombre = management?.nombre || null;
-        const anio = management?.anio || null;
-        const gestionDisplay = codigo || nombre || anio || 'N/A';
-        
+        const m = record.management;
+        const porcentaje = record.scholarship?.porcentaje;
+        const ahorro = formatBs(record.impacto?.descuentoAplicado);
         return (
-          <TableCell icon={<CalendarOutlined />}>
-            {gestionDisplay}
-          </TableCell>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <InfoLinesCell
+              lines={[{ icon: <CalendarOutlined />, label: m?.codigo || m?.nombre || m?.anio }]}
+            />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {porcentaje != null ? (
+                <StatusPill label={`${porcentaje}%`} className="cfg-materia-pill cfg-materia-pill--info" />
+              ) : null}
+              {ahorro ? (
+                <StatusPill label={ahorro} className="cfg-materia-pill cfg-materia-pill--success" />
+              ) : null}
+            </div>
+          </div>
         );
       },
-      sorter: (a, b) => {
-        const codeA = a.management?.codigo || '';
-        const codeB = b.management?.codigo || '';
-        return codeA.localeCompare(codeB);
-      },
+      sorter: (a, b) => (a.scholarship?.porcentaje || 0) - (b.scholarship?.porcentaje || 0),
     },
     {
-      title: 'Fecha Solicitud',
-      dataIndex: 'requestDate',
-      ellipsis: true,
-      render: (fecha) => {
-        if (!fecha) return <TableCell>N/A</TableCell>;
-        const date = new Date(fecha);
-        const formatted = date.toLocaleDateString('es-BO', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        });
-        return <TableCell>{formatted}</TableCell>;
-      },
-      sorter: (a, b) => {
-        const dateA = new Date(a.requestDate || 0);
-        const dateB = new Date(b.requestDate || 0);
-        return dateA - dateB;
-      },
-    },
-    {
-      title: 'Estado',
-      dataIndex: 'state',
-      width: 120,
-      render: (estado) => {
-        let color = 'default';
-        let text = estado || 'N/A';
-        
-        if (estado === 'ACTIVA') {
-          color = 'success';
-        } else if (estado === 'PENDIENTE') {
-          color = 'warning';
-        } else if (estado === 'RECHAZADA' || estado === 'ANULADA') {
-          color = 'error';
-        }
-        
-        return (
-          <Tag color={color}>
-            {text}
-          </Tag>
-        );
-      },
-      sorter: (a, b) => {
-        const stateA = a.state || '';
-        const stateB = b.state || '';
-        return stateA.localeCompare(stateB);
-      },
+      title: 'Carrera',
+      key: 'carrera',
+      width: 200,
+      render: (_, record) => (
+        <CarreraDotCell nombre={record.carrera?.nombre} colorHex={record.carrera?.colorHex} />
+      ),
+      sorter: (a, b) => (a.carrera?.nombre || '').localeCompare(b.carrera?.nombre || ''),
     },
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 150,
       align: 'right',
       render: (_, record) => {
