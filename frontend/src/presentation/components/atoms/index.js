@@ -30,3 +30,4 @@ export { default as StatusPill } from './StatusPill';
 export { default as CompromisoAlertTag } from './CompromisoAlertTag';
 export { formatFechaCompromiso, compromisoSortValue } from './compromisoAlerta';
 export { default as IdentidadCelda } from './IdentidadCelda';
+export { default as InfoLinesCell } from './InfoLinesCell';

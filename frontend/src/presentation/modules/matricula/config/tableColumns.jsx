@@ -1,21 +1,24 @@
 /**
- * tableColumns - Configuración de columnas para la tabla de inscripciones
+ * tableColumns - Columnas de la tabla de inscripciones (matrículas).
  *
- * Mismo diseño que lista de estudiantes: columnas con varios datos (Space vertical),
- * responsive y opciones (isSmall) para ancho de acciones.
+ * Lenguaje visual del prototipo de listado: `#` numérico + `IdentidadCelda` (estudiante) +
+ * `InfoLinesCell` (celdas multi-línea), con las clases del design-system
+ * (`styles/components/atoms/table-cells.css`). El tipo de inscripción conserva su chip de
+ * color (reutiliza la paleta de admisión). Sin `Space orientation` (deprecado) ni estilos inline.
  */
 
-import { Tag, Space } from 'antd';
-import { UserOutlined, BookOutlined, CalendarOutlined, TagOutlined, IdcardOutlined, UnorderedListOutlined } from '@ant-design/icons';
-import { TableCell } from '@molecules';
+import { Flex, Tag } from 'antd';
+import {
+  CalendarOutlined, TagOutlined, ApartmentOutlined, ReadOutlined, UnorderedListOutlined,
+} from '@ant-design/icons';
+import { IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
 import { getAdmissionTypeTagStyle } from '../../estudiantes/config/admissionTypeColors';
 import {
-  historialPrevioEstadoLabel,
   isHistorialPrevioPendiente,
 } from '@application-inscripciones/utils/historialPrevioHelpers';
 
-/** Mapear tipo de inscripción → tipo de admisión para reutilizar getAdmissionTypeTagStyle (mismos colores que estudiantes) */
+/** Mapear tipo de inscripción → tipo de admisión para reutilizar getAdmissionTypeTagStyle */
 const mapEstadoToAdmissionType = (valor) => {
   const v = String(valor || '').toUpperCase();
   if (v === 'NUEVO' || v === 'ACTIVA') return 'NUEVO';
@@ -25,92 +28,49 @@ const mapEstadoToAdmissionType = (valor) => {
   return null;
 };
 
+/** Punto de color (data-driven) para chip de carrera. */
+const colorDot = (color) => (
+  <span
+    style={{
+      width: 10, height: 10, borderRadius: 999,
+      background: color || 'var(--border, #d1d5db)', display: 'inline-block',
+    }}
+  />
+);
+
 /**
  * Crea las columnas de la tabla de inscripciones
  *
- * @param {Function} navigate - Función de navegación de react-router
- * @param {Function} refetch - Función para recargar los datos después de eliminar
- * @param {Function} deleteInscripcion - Función personalizada para eliminar (opcional, viene del contexto)
- * @param {Object} options - Opciones de presentación (ej: { isSmall: boolean })
- * @returns {Array} Array de configuración de columnas para Ant Design Table
+ * @param {Function} navigate
+ * @param {Function} refetch
+ * @param {Function} deleteInscripcion
+ * @param {Object} options - { isSmall: boolean }
+ * @returns {Array}
  */
 export const createInscripcionesTableColumns = (navigate, refetch = null, deleteInscripcion = null, options = {}) => {
   const { isSmall = false } = options;
 
   return [
     {
-      title: 'Gestión y fecha',
-      key: 'gestionFecha',
-      ellipsis: true,
-      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
-      render: (_, record) => {
-        const anioValue = record.gestion?.anio || record.anioCarrera || record.enrollment?.anioCarrera || null;
-        const fechaValue = record.fechaInscripcion || record.enrollment?.fechaInscripcion || null;
-        let fechaFormateada = fechaValue;
-        if (fechaValue) {
-          try {
-            const d = new Date(fechaValue);
-            if (!isNaN(d.getTime())) {
-              fechaFormateada = d.toLocaleDateString('es-BO', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            }
-          } catch (e) {
-            fechaFormateada = fechaValue;
-          }
-        }
-        const hasAny = anioValue || fechaFormateada;
-        return (
-          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-            {anioValue && (
-              <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                Gestión {anioValue}
-              </TableCell>
-            )}
-            {fechaFormateada && (
-              <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                {fechaFormateada}
-              </TableCell>
-            )}
-            {!hasAny && (
-              <TableCell icon={<CalendarOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-                —
-              </TableCell>
-            )}
-          </Space>
-        );
-      },
-      sorter: (a, b) => {
-        const fechaA = a.fechaInscripcion || a.enrollment?.fechaInscripcion || '';
-        const fechaB = b.fechaInscripcion || b.enrollment?.fechaInscripcion || '';
-        return new Date(fechaA) - new Date(fechaB);
-      },
+      title: '#',
+      key: 'nro',
+      width: 56,
+      align: 'center',
+      responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
+      render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
     },
     {
       title: 'Estudiante',
       dataIndex: 'estudiante',
+      fixed: 'left',
       ellipsis: true,
       responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (estudiante, record) => {
         const student = estudiante || record.student || record.enrollment?.student;
+        const carreraObj = record.carrera || record.enrollment?.carrera;
         const nombre = student?.nombreCompleto || student?.nombre || 'Sin nombre';
-        const codigo = student?.codigoEstudiante ?? record.estudiante?.codigoEstudiante ?? record.codigo ?? record.enrollment?.codigo ?? (record.id ? `INS-${record.id}` : null) ?? '—';
-        const ci = student?.ci != null ? [student.ci, student.expedicion].filter(Boolean).join(' ') : '—';
-        return (
-          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-            <TableCell strong icon={<UserOutlined />} fallback="Sin estudiante" textStyle={{ fontSize: 'var(--font-size-md)' }} size="small">
-              {nombre}
-            </TableCell>
-            {codigo && codigo !== '—' && (
-              <TableCell icon={<IdcardOutlined />} textStyle={{ fontFamily: 'monospace', fontSize: 'var(--font-size-sm)' }} size="small">
-                {codigo}
-              </TableCell>
-            )}
-            {ci && ci !== '—' && (
-              <TableCell textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                CI {ci}
-              </TableCell>
-            )}
-          </Space>
-        );
+        const codigo = student?.codigoEstudiante ?? record.estudiante?.codigoEstudiante ?? record.codigo ?? record.enrollment?.codigo ?? (record.id ? `INS-${record.id}` : null);
+        return <IdentidadCelda codigo={codigo} nombre={nombre.toUpperCase()} accentColor={carreraObj?.colorHex || undefined} />;
       },
       sorter: (a, b) => {
         const studentA = a.estudiante || a.student || a.enrollment?.student;
@@ -120,67 +80,30 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
         return nombreA.localeCompare(nombreB);
       },
     },
+    // Carrera + tipo de inscripción (chip de color)
     {
-      title: 'Datos de inscripción',
-      key: 'datosInscripcion',
-      ellipsis: true,
+      title: 'Carrera',
+      key: 'carrera',
+      width: 220,
       responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
         const carreraObj = record.carrera || record.enrollment?.carrera;
         const carreraNombre = carreraObj?.nombre || null;
-        const paraleloObj = record.paralelo || record.enrollment?.paralelo;
-        const periodoObj = record.periodo || record.enrollment?.periodo;
-        const paraleloLabel = paraleloObj?.nombre
-          ? [paraleloObj.nombre, paraleloObj.turno].filter(Boolean).join(' · ')
-          : null;
-        const periodoLabel = periodoObj?.nombre || null;
-        const estadoValue = record.tipoInscripcion
-          || record.enrollment?.tipoInscripcion
-          || (record.activo ? 'ACTIVA' : 'INACTIVA')
-          || record.enrollment?.estado
-          || 'N/A';
-        const admissionKey = mapEstadoToAdmissionType(estadoValue);
-        const tagStyle = getAdmissionTypeTagStyle(admissionKey ?? undefined);
-
-        const hasAny = carreraNombre || paraleloLabel || periodoLabel || estadoValue;
+        const carreraCodigo = carreraObj?.codigo || null;
+        const tipo = record.tipoInscripcion || record.enrollment?.tipoInscripcion || null;
+        const tagStyle = getAdmissionTypeTagStyle(mapEstadoToAdmissionType(tipo) ?? undefined);
         return (
-          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-            {carreraNombre && (
-              <TableCell
-                strong
-                icon={<BookOutlined />}
-                textStyle={{ fontSize: 'var(--font-size-md)' }}
-                size="small"
-              >
-                {carreraNombre}
-              </TableCell>
-            )}
-            {paraleloLabel && (
-              <TableCell textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                Paralelo {paraleloLabel}
-              </TableCell>
-            )}
-            {periodoLabel && (
-              <TableCell textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                {periodoLabel}
-              </TableCell>
-            )}
-            {estadoValue && (
-              <TableCell
-                icon={<TagOutlined />}
-                fallback=""
-                textStyle={{ fontSize: 'var(--font-size-sm)' }}
-                size="small"
-              >
-                <Tag style={tagStyle}>{estadoValue}</Tag>
-              </TableCell>
-            )}
-            {!hasAny && (
-              <TableCell icon={<BookOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-                —
-              </TableCell>
-            )}
-          </Space>
+          <InfoLinesCell
+            lines={[
+              {
+                icon: colorDot(carreraObj?.colorHex),
+                label: carreraNombre
+                  ? `${carreraNombre}${carreraCodigo ? ` · ${carreraCodigo}` : ''}`
+                  : null,
+              },
+              { icon: <TagOutlined />, label: tipo ? <Tag style={tagStyle}>{tipo}</Tag> : null },
+            ]}
+          />
         );
       },
       sorter: (a, b) => {
@@ -189,44 +112,56 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
         return carreraA.localeCompare(carreraB);
       },
     },
+    // Paralelo · Periodo · Gestión
     {
-      title: 'Materias',
-      key: 'materias',
-      width: 140,
-      ellipsis: true,
+      title: 'Paralelo y periodo',
+      key: 'paraleloPeriodo',
+      width: 200,
       responsive: ['md', 'lg', 'xl', 'xxl'],
+      render: (_, record) => {
+        const paraleloObj = record.paralelo || record.enrollment?.paralelo;
+        const periodoObj = record.periodo || record.enrollment?.periodo;
+        const paraleloLabel = paraleloObj?.nombre
+          ? [paraleloObj.nombre, paraleloObj.turno].filter(Boolean).join(' · ')
+          : null;
+        const anioValue = record.gestion?.anio || record.anioCarrera || record.enrollment?.anioCarrera || null;
+        return (
+          <InfoLinesCell
+            lines={[
+              { icon: <ApartmentOutlined />, label: paraleloLabel ? `Paralelo ${paraleloLabel}` : null },
+              { icon: <ReadOutlined />, label: periodoObj?.nombre || null },
+              { icon: <CalendarOutlined />, label: anioValue ? `Gestión ${anioValue}` : null },
+            ]}
+          />
+        );
+      },
+    },
+    // Materias + estado real (activo + historial previo)
+    {
+      title: 'Materias y estado',
+      key: 'materiasEstado',
+      width: 170,
+      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
         const cantidad = record.cantidadMaterias ?? record.subjectEnrollments?.length ?? null;
         const historialPendiente = isHistorialPrevioPendiente(record);
-
-        if ((cantidad == null || cantidad === '') && !historialPendiente) {
-          return (
-            <TableCell icon={<UnorderedListOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-              —
-            </TableCell>
-          );
-        }
-
-        const label =
+        const activo = record.activo ?? record.enrollment?.activo ?? true;
+        const materiasLabel =
           cantidad != null && cantidad !== ''
-            ? Number(cantidad) === 1
-              ? '1 materia'
-              : `${cantidad} materias`
+            ? Number(cantidad) === 1 ? '1 materia' : `${cantidad} materias`
             : null;
 
         return (
-          <Space orientation="vertical" size={2} style={{ width: '100%' }}>
-            {label ? (
-              <TableCell icon={<UnorderedListOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-                {label}
-              </TableCell>
-            ) : null}
+          <Flex vertical align="flex-start" gap={6}>
+            <InfoLinesCell lines={[{ icon: <UnorderedListOutlined />, label: materiasLabel }]} />
+            <StatusPill
+              label={activo ? 'ACTIVA' : 'ANULADA'}
+              className={`cfg-materia-pill ${activo ? 'cfg-materia-pill--success' : 'cfg-materia-pill--danger'}`}
+            />
             {historialPendiente ? (
-              <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-warning, #d48806)' }}>
-                Historial pendiente
-              </span>
+              <StatusPill label="Historial pendiente" className="cfg-materia-pill cfg-materia-pill--warning" />
             ) : null}
-          </Space>
+          </Flex>
         );
       },
       sorter: (a, b) => {
@@ -254,10 +189,7 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
         const carreraNombre = carrera?.nombre || 'N/A';
         const gestionAnio = gestion?.anio || gestion?.year || 'N/A';
 
-        // Construir nombre descriptivo para el diálogo
         const itemName = `la inscripción del estudiante ${estudianteNombre}`;
-
-        // Detalles para mostrar en el diálogo
         const itemDetails = [
           { label: 'Estudiante', value: estudianteNombre },
           { label: 'Código', value: codigoEstudiante },
@@ -297,14 +229,14 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
 };
 
 /**
- * Crea las columnas de la tabla de inscripciones para anular
- * Similar a createInscripcionesTableColumns pero enfocada solo en anular
+ * Crea las columnas de la tabla de inscripciones para anular.
+ * Reutiliza createInscripcionesTableColumns y reemplaza la columna de acciones.
  *
- * @param {Function} navigate - Función de navegación de react-router
- * @param {Function} refetch - Función para recargar los datos después de anular
- * @param {Function} deleteInscripcion - Función personalizada para eliminar/anular (opcional, viene del contexto)
- * @param {Object} options - Opciones de presentación (ej: { isSmall: boolean })
- * @returns {Array} Array de configuración de columnas para Ant Design Table
+ * @param {Function} navigate
+ * @param {Function} refetch
+ * @param {Function} deleteInscripcion
+ * @param {Object} options - { isSmall: boolean }
+ * @returns {Array}
  */
 export const createInscripcionesAnularTableColumns = (navigate, refetch = null, deleteInscripcion = null, options = {}) => {
   const baseColumns = createInscripcionesTableColumns(navigate, refetch, deleteInscripcion, options);
@@ -316,13 +248,11 @@ export const createInscripcionesAnularTableColumns = (navigate, refetch = null, 
     baseColumns[accionesIndex] = {
       title: 'Acción',
       key: 'acciones',
-      fixed: 'right',
       width: 120,
       align: 'right',
       render: (_, record) => {
         const inscripcionId = record.id || record.enrollment?.id;
 
-        // Extraer información descriptiva de la inscripción para el diálogo
         const student = record.estudiante || record.student || record.enrollment?.student;
         const carrera = record.carrera || record.enrollment?.carrera;
         const gestion = record.gestion || record.enrollment?.gestion;
@@ -332,10 +262,7 @@ export const createInscripcionesAnularTableColumns = (navigate, refetch = null, 
         const carreraNombre = carrera?.nombre || 'N/A';
         const gestionAnio = gestion?.anio || gestion?.year || 'N/A';
 
-        // Construir nombre descriptivo para el diálogo de anulación
         const itemName = `la inscripción del estudiante ${estudianteNombre}`;
-
-        // Detalles para mostrar en el diálogo
         const itemDetails = [
           { label: 'Estudiante', value: estudianteNombre },
           { label: 'Código', value: codigoEstudiante },

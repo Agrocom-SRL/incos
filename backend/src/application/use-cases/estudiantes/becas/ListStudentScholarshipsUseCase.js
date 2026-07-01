@@ -2,58 +2,41 @@
  * Use Case: ListStudentScholarshipsUseCase
  * Módulo: Estudiantes
  * Lista todas las becas asignadas a estudiantes con datos enriquecidos
- * 
+ *
  * Responsabilidades:
- * - Obtener todas las becas asignadas a estudiantes (estudiantes_becas)
- * - Enriquecer con datos del estudiante (nombres, CI, código)
- * - Enriquecer con datos del tipo de beca (becas_descuentos)
- * - Enriquecer con datos de la gestión
- * - Aplicar filtros y paginación
- * - Retornar lista enriquecida para el listado
- * 
+ * - Obtener las becas asignadas desde vista_beca_asignada_listado en UNA sola
+ *   lectura (elimina el N+1 previo que resolvía estudiante/beca/gestión fila a
+ *   fila con findById).
+ * - Aplicar filtros (studentId, managementId, state), búsqueda y paginación en BD.
+ * - Retornar lista enriquecida (estudiante, beca, gestión, carrera e impacto).
+ *
  * Principios SOLID:
- * - Single Responsibility: Solo maneja el listado de becas asignadas
- * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ * - Single Responsibility: Solo maneja el listado de becas asignadas.
+ * - Dependency Inversion: Depende de abstracciones (repositorio).
+ *
  * Clean Architecture:
- * - Application Layer: Orquesta la lógica de negocio
- * - Depende de Repositories (Infrastructure) a través de abstracciones
+ * - Application Layer: Orquesta la lógica de negocio.
+ * - Depende del Repository (Infrastructure) a través de abstracción.
  */
-
-import { StudentMapper } from '../../../mappers/estudiantes/index.js';
-import { BecaDescuentoMapper } from '../../../mappers/estudiantes/index.js';
-import { ManagementMapper } from '../../../mappers/academico/index.js';
 
 export class ListStudentScholarshipsUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.studentScholarshipRepository - Repositorio de asignaciones de becas
-   * @param {Object} params.studentRepository - Repositorio de estudiantes
-   * @param {Object} params.scholarshipRepository - Repositorio de becas/descuentos
-   * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
-  constructor({
-    studentScholarshipRepository,
-    studentRepository,
-    scholarshipRepository,
-    managementRepository,
-    logger,
-  }) {
+  constructor({ studentScholarshipRepository, logger }) {
     this.studentScholarshipRepository = studentScholarshipRepository;
-    this.studentRepository = studentRepository;
-    this.scholarshipRepository = scholarshipRepository;
-    this.managementRepository = managementRepository;
     this.logger = logger;
   }
 
   /**
    * Ejecuta el caso de uso de listado de becas asignadas
-   * 
-   * @param {Object} filters - Filtros opcionales (studentId, managementId, state, etc.)
+   *
+   * @param {Object} filters - Filtros base (search, etc.)
    * @param {number} page - Número de página (default: 1)
    * @param {number} limit - Límite por página (default: 50)
-   * @param {Object} queryParams - Query parameters originales (para búsqueda)
+   * @param {Object} queryParams - Query parameters originales (filtros específicos)
    * @returns {Promise<Object>} Lista de becas asignadas con datos enriquecidos
    */
   async execute(filters = {}, page = 1, limit = 50, queryParams = {}) {
@@ -64,209 +47,44 @@ export class ListStudentScholarshipsUseCase {
     });
 
     try {
-      // 1. Construir filtros de búsqueda si hay search en queryParams
-      const searchTerm = queryParams.search || filters.search;
-      const finalFilters = { ...filters };
-      
-      // Si hay búsqueda, se aplicará después en el enriquecimiento
-      if (searchTerm) {
-        delete finalFilters.search;
-      }
+      // 1. Resolver filtros específicos (queryParams tiene prioridad sobre filters)
+      const studentId = this._parseId(queryParams.studentId ?? filters.studentId);
+      const managementId = this._parseId(queryParams.managementId ?? filters.managementId);
+      const state = queryParams.state ?? filters.state ?? undefined;
+      const search = queryParams.search ?? filters.search ?? undefined;
 
-      // 2. Obtener todas las becas asignadas con paginación
-      const scholarshipsResult = await this.studentScholarshipRepository.findAll(
-        finalFilters,
-        page,
-        limit
-      );
-      const scholarships = scholarshipsResult.studentScholarships || [];
-      const total = scholarshipsResult.total || 0;
+      const safePage = parseInt(page, 10) || 1;
+      const safeLimit = parseInt(limit, 10) || 50;
 
-      this.logger.info('[Estudiantes] Becas asignadas encontradas', {
-        count: scholarships.length,
-        total,
+      // 2. Lectura única de la vista (arquetipo B, solo lectura)
+      const { rows, total } = await this.studentScholarshipRepository.listarBecasAsignadas({
+        studentId,
+        managementId,
+        state,
+        search,
+        page: safePage,
+        limit: safeLimit,
       });
 
-      // 3. Obtener IDs únicos para enriquecer datos
-      const studentIds = new Set();
-      const scholarshipIds = new Set();
-      const managementIds = new Set();
-      
-      scholarships.forEach((scholarship) => {
-        const scholarshipPlain = scholarship.toPlainObject ? scholarship.toPlainObject() : scholarship;
-        if (scholarshipPlain.studentId) studentIds.add(scholarshipPlain.studentId);
-        if (scholarshipPlain.scholarshipId) scholarshipIds.add(scholarshipPlain.scholarshipId);
-        if (scholarshipPlain.managementId) managementIds.add(scholarshipPlain.managementId);
-      });
+      // 3. Mapear filas planas de la vista al shape del listado
+      const becas = rows.map((row) => this._mapRow(row));
 
-      // 4. Obtener datos de estudiantes y convertir a formato de presentación
-      const students = {};
-      for (const studentId of studentIds) {
-        try {
-          const student = await this.studentRepository.findById(studentId);
-          if (student) {
-            // Convertir entidad a formato de presentación usando el mapper
-            const studentPresentation = StudentMapper.entityToPresentation(student);
-            students[studentId] = studentPresentation;
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener estudiante', {
-            studentId,
-            error: err.message,
-          });
-        }
-      }
+      const totalPages = Math.ceil(total / safeLimit) || 0;
 
-      // 5. Obtener tipos de beca y convertir a formato de presentación
-      const scholarshipsCatalog = {};
-      for (const scholarshipId of scholarshipIds) {
-        try {
-          const scholarship = await this.scholarshipRepository.findById(scholarshipId);
-          if (scholarship) {
-            // Convertir entidad a formato de presentación usando el mapper
-            const scholarshipPresentation = BecaDescuentoMapper.entityToPresentation(scholarship);
-            scholarshipsCatalog[scholarshipId] = scholarshipPresentation;
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener tipo de beca', {
-            scholarshipId,
-            error: err.message,
-          });
-        }
-      }
-
-      // 6. Obtener gestiones y convertir a formato de presentación
-      const managements = {};
-      for (const managementId of managementIds) {
-        try {
-          const management = await this.managementRepository.findById(managementId);
-          if (management) {
-            // Convertir entidad a formato de presentación usando el mapper
-            const managementPresentation = ManagementMapper.entityToPresentation(management);
-            managements[managementId] = managementPresentation;
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener gestión', {
-            managementId,
-            error: err.message,
-          });
-        }
-      }
-
-      // 7. Enriquecer becas con información relacionada
-      let enrichedScholarships = scholarships.map((scholarship) => {
-        const scholarshipPlain = scholarship.toPlainObject ? scholarship.toPlainObject() : scholarship;
-        const student = scholarshipPlain.studentId ? students[scholarshipPlain.studentId] : null;
-        const scholarshipType = scholarshipPlain.scholarshipId 
-          ? scholarshipsCatalog[scholarshipPlain.scholarshipId] 
-          : null;
-        const management = scholarshipPlain.managementId 
-          ? managements[scholarshipPlain.managementId] 
-          : null;
-        
-        // Construir nombre completo del estudiante
-        // Los datos ya están en formato de presentación (español) gracias a los mappers
-        const nombres = student?.nombres || '';
-        const apellidoPaterno = student?.apellidoPaterno || '';
-        const apellidoMaterno = student?.apellidoMaterno || '';
-        const nombreCompleto = student
-          ? `${apellidoPaterno} ${apellidoMaterno} ${nombres}`.trim()
-          : null;
-
-        return {
-          // Datos de la asignación
-          id: scholarshipPlain.id,
-          studentId: scholarshipPlain.studentId,
-          scholarshipId: scholarshipPlain.scholarshipId,
-          managementId: scholarshipPlain.managementId,
-          requestDate: scholarshipPlain.requestDate || scholarshipPlain.fechaSolicitud,
-          state: scholarshipPlain.state || scholarshipPlain.estado,
-          documentsComplete: scholarshipPlain.documentsComplete || scholarshipPlain.documentosCompletos,
-          documentDeliveryStartDate: scholarshipPlain.documentDeliveryStartDate || scholarshipPlain.fechaInicioEntregaDocumentos,
-          documentDeliveryEndDate: scholarshipPlain.documentDeliveryEndDate || scholarshipPlain.fechaFinEntregaDocumentos,
-          observations: scholarshipPlain.observations,
-          createdAt: scholarshipPlain.createdAt,
-          updatedAt: scholarshipPlain.updatedAt,
-          
-          // Datos del estudiante (ya en formato de presentación gracias al mapper)
-          student: student ? {
-            id: student.id,
-            codigoEstudiante: student.codigoEstudiante,
-            nombreCompleto,
-            ci: student.ci,
-            expedicion: student.expedicion,
-          } : null,
-          
-          // Datos del tipo de beca (ya en formato de presentación gracias al mapper)
-          scholarship: scholarshipType ? {
-            id: scholarshipType.id,
-            nombre: scholarshipType.nombre,
-            codigo: scholarshipType.codigo,
-            porcentaje: scholarshipType.porcentaje,
-            descripcion: scholarshipType.descripcion,
-            requiereDocumentacion: scholarshipType.requiereDocumentacion,
-            requiereAprobacionRector: scholarshipType.requiereAprobacionRector,
-            esAutomatica: scholarshipType.esAutomatica,
-            tipoAutomatica: scholarshipType.tipoAutomatica,
-            promedioMinimo: scholarshipType.promedioMinimo,
-          } : null,
-          
-          // Datos de la gestión (ya en formato de presentación gracias al mapper)
-          management: management ? {
-            id: management.id,
-            codigo: management.codigo,
-            nombre: management.nombre,
-            anio: management.anio,
-          } : null,
-        };
-      });
-
-      // 8. Aplicar filtro de búsqueda si existe
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        enrichedScholarships = enrichedScholarships.filter((item) => {
-          const studentName = item.student?.nombreCompleto?.toLowerCase() || '';
-          const studentCode = item.student?.codigoEstudiante?.toLowerCase() || '';
-          const studentCi = item.student?.ci?.toLowerCase() || '';
-          const scholarshipName = item.scholarship?.nombre?.toLowerCase() || '';
-          const scholarshipCode = item.scholarship?.codigo?.toLowerCase() || '';
-          const managementCode = item.management?.codigo?.toLowerCase() || '';
-          
-          return studentName.includes(searchLower) ||
-                 studentCode.includes(searchLower) ||
-                 studentCi.includes(searchLower) ||
-                 scholarshipName.includes(searchLower) ||
-                 scholarshipCode.includes(searchLower) ||
-                 managementCode.includes(searchLower);
-        });
-        
-        // Recalcular total después del filtro
-        const totalAfterSearch = enrichedScholarships.length;
-        this.logger.info('[Estudiantes] Búsqueda aplicada', {
-          searchTerm,
-          totalBefore: total,
-          totalAfter: totalAfterSearch,
-        });
-      }
-
-      // 9. Calcular total de páginas
-      const totalPages = Math.ceil((searchTerm ? enrichedScholarships.length : total) / limit);
-
-      // 10. Retornar respuesta estandarizada
       const result = {
-        becas: enrichedScholarships,
-        total: searchTerm ? enrichedScholarships.length : total,
-        page: parseInt(page) || 1,
-        limit: parseInt(limit) || 50,
+        becas,
+        total,
+        page: safePage,
+        limit: safeLimit,
         totalPages,
       };
 
       this.logger.info('[Estudiantes] Becas asignadas listadas exitosamente', {
-        count: enrichedScholarships.length,
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-        totalPages: result.totalPages,
+        count: becas.length,
+        total,
+        page: safePage,
+        limit: safeLimit,
+        totalPages,
       });
 
       return result;
@@ -280,5 +98,102 @@ export class ListStudentScholarshipsUseCase {
       });
       throw error;
     }
+  }
+
+  /**
+   * Normaliza un id numérico opcional.
+   * @param {*} value
+   * @returns {number|undefined}
+   */
+  _parseId(value) {
+    if (value === undefined || value === null || value === '') return undefined;
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
+
+  /**
+   * Convierte un número opcional (montos) preservando null.
+   * @param {*} value
+   * @returns {number|null}
+   */
+  _toNumberOrNull(value) {
+    if (value === undefined || value === null || value === '') return null;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  /**
+   * Mapea una fila de vista_beca_asignada_listado al ítem del listado.
+   * Mantiene el shape estable que consume el frontend y añade carrera + impacto.
+   * @param {Object} row - Fila plana de la vista
+   * @returns {Object}
+   */
+  _mapRow(row) {
+    // Nombre completo: APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES
+    const nombreCompleto = [row.apellido_paterno, row.apellido_materno, row.nombres]
+      .filter((part) => part && `${part}`.trim() !== '')
+      .join(' ')
+      .trim() || null;
+
+    const student = row.estudiante_id
+      ? {
+          id: row.estudiante_id,
+          codigoEstudiante: row.codigo_estudiante ?? null,
+          nombreCompleto,
+          ci: row.ci ?? null,
+          expedicion: row.expedicion ?? null,
+        }
+      : null;
+
+    const scholarship = row.beca_descuento_id
+      ? {
+          id: row.beca_descuento_id,
+          nombre: row.beca_nombre ?? null,
+          codigo: row.beca_codigo ?? null,
+          porcentaje: this._toNumberOrNull(row.beca_porcentaje),
+          descripcion: row.beca_descripcion ?? null,
+        }
+      : null;
+
+    const management = row.gestion_id
+      ? {
+          id: row.gestion_id,
+          codigo: row.gestion_codigo ?? null,
+          nombre: row.gestion_nombre ?? null,
+          anio: row.gestion_anio ?? null,
+        }
+      : null;
+
+    const carrera = row.carrera_nombre || row.carrera_codigo || row.carrera_color_hex
+      ? {
+          nombre: row.carrera_nombre ?? null,
+          codigo: row.carrera_codigo ?? null,
+          colorHex: row.carrera_color_hex ?? null,
+        }
+      : null;
+
+    const descuentoAplicado = this._toNumberOrNull(row.descuento_aplicado);
+    const montoObligatorio = this._toNumberOrNull(row.monto_obligatorio);
+    const impacto = descuentoAplicado !== null || montoObligatorio !== null
+      ? { descuentoAplicado, montoObligatorio }
+      : null;
+
+    return {
+      id: row.id,
+      studentId: row.estudiante_id,
+      scholarshipId: row.beca_descuento_id,
+      managementId: row.gestion_id,
+      requestDate: row.fecha_solicitud,
+      state: row.estado,
+      documentsComplete: Boolean(row.documentos_completos),
+      observations: row.observaciones ?? null,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      student,
+      scholarship,
+      management,
+      carrera,
+      impacto,
+    };
   }
 }

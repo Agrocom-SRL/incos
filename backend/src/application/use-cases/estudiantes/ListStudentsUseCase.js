@@ -63,7 +63,10 @@ export class ListStudentsUseCase extends BaseListUseCase {
           if (id != null && !academicByStudentId[id]) {
             academicByStudentId[id] = {
               carreraNombre: row.carrera_nombre ?? null,
+              carreraCodigo: row.carrera_codigo ?? null,
+              carreraColorHex: row.carrera_color_hex ?? null,
               gestionIngresoNombre: row.gestion_ingreso_nombre ?? null,
+              estadoAcademico: row.estado_academico ?? null,
               tipoAdmision: row.tipo_admision ?? null,
             };
           }
@@ -72,7 +75,10 @@ export class ListStudentsUseCase extends BaseListUseCase {
       const dataWithAcademic = data.map((item) => ({
         ...item,
         carreraNombre: academicByStudentId[item.id]?.carreraNombre ?? null,
+        carreraCodigo: academicByStudentId[item.id]?.carreraCodigo ?? null,
+        carreraColorHex: academicByStudentId[item.id]?.carreraColorHex ?? null,
         gestionIngresoNombre: academicByStudentId[item.id]?.gestionIngresoNombre ?? null,
+        estadoAcademico: academicByStudentId[item.id]?.estadoAcademico ?? null,
         tipoAdmision: academicByStudentId[item.id]?.tipoAdmision ?? null,
       }));
 

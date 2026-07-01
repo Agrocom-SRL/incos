@@ -13,12 +13,18 @@
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
+import { Flex, Typography } from 'antd';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
+import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton } from '@atoms';
 import { useBecasListContext } from '@application-estudiantes/hooks';
 import { createBecasTableColumns } from '@estudiantes/config';
+import { allSpacing } from '@theme/tokens';
+import '@configuracion/academico/styles/academico-form-page.css';
+
+const { Paragraph } = Typography;
 
 const BecasList = () => {
     const navigate = useNavigate();
@@ -64,44 +70,55 @@ const BecasList = () => {
       { title: 'Becas' },
     ], []);
 
+    const nuevaBecaAction = (
+        <ActionButton
+            permiso="matricula.beca.asignar"
+            accion="CREAR"
+            variant="primary"
+            icon={<PlusOutlined />}
+            onClick={handleNuevaBeca}
+        >
+            Nueva Asignación de Beca
+        </ActionButton>
+    );
+
     return (
-        <PageTemplate 
-            header={
-                <PageHeader
-                    title="Lista de Becas"
-                    breadcrumbItems={breadcrumbItems}
-                    actions={
-                        <ActionButton
-                            permiso="matricula.beca.asignar"
-                            accion="CREAR"
-                            variant="primary"
-                            icon={<PlusOutlined />}
-                            onClick={handleNuevaBeca}
-                        >
-                            Nueva Asignación de Beca
-                        </ActionButton>
-                    }
-                />
-            }
+        <PageTemplate
+            header={<PageHeader title="Lista de Becas" breadcrumbItems={breadcrumbItems} />}
             sidebar={null}
         >
-            {/* Contenido principal - se renderiza en MainContent */}
-            <TableListView
-                data={becas}
-                loading={loading}
-                error={error}
-                searchText={searchText}
-                onSearchChange={(e) => setSearchText(e.target.value)}
-                searchPlaceholder="Buscar por nombre, tipo, descripción..."
-                columns={tableColumns}
-                rowKey={(record) => record.id || Math.random()}
-                pagination={tablePagination}
-                defaultSort={{
-                    field: 'nombre',
-                    order: 'ascend',
-                }}
-                loadingTip="Cargando becas..."
-            />
+            <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+                <section className="cfg-academico-workspace">
+                    <header className="cfg-academico-workspace__header">
+                        <ListPanelHeader title="Lista de becas" actions={nuevaBecaAction} />
+                        <Paragraph type="secondary" className="cfg-academico-workspace__desc">
+                            Becas asignadas a los estudiantes: tipo, porcentaje de descuento,
+                            vigencia y estado. Desde aquí registras nuevas asignaciones de beca.
+                        </Paragraph>
+                    </header>
+                    <div className="cfg-academico-tab-panel">
+                        <TableListView
+                            embedded
+                            data={becas}
+                            loading={loading}
+                            error={error}
+                            searchText={searchText}
+                            onSearchChange={(e) => setSearchText(e.target.value)}
+                            searchPlaceholder="Buscar por nombre, tipo, descripción..."
+                            columns={tableColumns}
+                            rowKey={(record) => record.id || Math.random()}
+                            searchColSpan={10}
+                            searchStyle={{ maxWidth: 520 }}
+                            pagination={tablePagination}
+                            defaultSort={{
+                                field: 'nombre',
+                                order: 'ascend',
+                            }}
+                            loadingTip="Cargando becas..."
+                        />
+                    </div>
+                </section>
+            </Flex>
         </PageTemplate>
     );
 };

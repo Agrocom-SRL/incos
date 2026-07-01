@@ -2,6 +2,7 @@ import { IEstudianteBecaRepository } from '../../domain/interfaces/repositories/
 import { EstudianteBeca as EstudianteBecaModel } from '../database/models/estudiante_beca.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentScholarshipMapper } from '../mappers/StudentScholarshipMapper.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * Implementación del repositorio de becas de estudiantes usando Sequelize
@@ -126,6 +127,94 @@ export class StudentScholarshipRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'studentScholarships';
+  }
+
+  /**
+   * Lista becas asignadas desde vista_beca_asignada_listado en UNA sola lectura.
+   * Consulta cruda (arquetipo B, solo lectura): evita el N+1 de resolver
+   * estudiante/beca/gestión fila por fila. Retorna objetos planos de la vista.
+   *
+   * @param {Object} options - Filtros, búsqueda y paginación
+   *   - studentId: filtra por estudiante_id
+   *   - managementId: filtra por gestion_id
+   *   - state: filtra por estado (PENDIENTE/ACTIVA/FINALIZADA/RECHAZADA)
+   *   - search: término de búsqueda (nombres, apellidos, código, CI, beca, gestión)
+   *   - page: número de página (default 1)
+   *   - limit: registros por página (default 50)
+   * @returns {Promise<{ rows: Array, total: number }>}
+   */
+  async listarBecasAsignadas({
+    studentId,
+    managementId,
+    state,
+    search,
+    page = 1,
+    limit = 50,
+  } = {}) {
+    const whereConditions = [];
+    const replacements = {};
+
+    if (studentId !== undefined && studentId !== null) {
+      whereConditions.push('estudiante_id = :studentId');
+      replacements.studentId = studentId;
+    }
+    if (managementId !== undefined && managementId !== null) {
+      whereConditions.push('gestion_id = :managementId');
+      replacements.managementId = managementId;
+    }
+    if (state !== undefined && state !== null && state !== '') {
+      whereConditions.push('estado = :state');
+      replacements.state = state;
+    }
+    if (search !== undefined && search !== null && `${search}`.trim() !== '') {
+      whereConditions.push(
+        `(
+          nombres LIKE :search
+          OR apellido_paterno LIKE :search
+          OR apellido_materno LIKE :search
+          OR codigo_estudiante LIKE :search
+          OR ci LIKE :search
+          OR beca_nombre LIKE :search
+          OR beca_codigo LIKE :search
+          OR gestion_nombre LIKE :search
+          OR gestion_codigo LIKE :search
+        )`
+      );
+      replacements.search = `%${`${search}`.trim()}%`;
+    }
+
+    const whereClause = whereConditions.length > 0
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM vista_beca_asignada_listado
+      ${whereClause}
+    `;
+    const countResult = await sequelize.query(countQuery, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const total = Number(countResult?.[0]?.total || 0);
+
+    const safeLimit = Math.max(1, parseInt(limit, 10) || 50);
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const offset = (safePage - 1) * safeLimit;
+
+    const dataQuery = `
+      SELECT *
+      FROM vista_beca_asignada_listado
+      ${whereClause}
+      ORDER BY id DESC
+      LIMIT :limit OFFSET :offset
+    `;
+    const rows = await sequelize.query(dataQuery, {
+      replacements: { ...replacements, limit: safeLimit, offset },
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    return { rows, total };
   }
 }
 

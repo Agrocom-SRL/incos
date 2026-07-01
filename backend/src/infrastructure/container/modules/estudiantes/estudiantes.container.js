@@ -257,9 +257,6 @@ export function registerEstudiantesResource(container) {
         (c) =>
             new ListStudentScholarshipsUseCase({
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
-                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
-                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
-                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

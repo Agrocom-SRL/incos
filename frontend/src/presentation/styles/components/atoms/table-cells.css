@@ -1,0 +1,168 @@
+/**
+ * Estilos de celdas de tabla del design-system (átomos GLOBALES).
+ *
+ * Estas clases las consumen átomos compartidos usados por muchos módulos:
+ *   - IdentidadCelda      → .cfg-materia-identidad*
+ *   - StatusPill          → .cfg-materia-pill*
+ *   - InfoLinesCell / *MetricasCell → .cfg-academico-metricas-list*
+ *
+ * Antes vivían acopladas a `configuracion/academico/styles/academico-form-page.css`;
+ * se movieron aquí (cargado por `styles/index.css`) para que cualquier página que
+ * use estos átomos herede su estilo sin depender del CSS del módulo académico.
+ */
+
+/* Identidad (código/sigla arriba + nombre abajo, con barra de acento) */
+.cfg-materia-identidad {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cfg-materia-identidad__margen {
+  flex-shrink: 0;
+  width: 2px;
+  align-self: stretch;
+  min-height: 28px;
+  border-radius: 2px;
+  background: var(--primary, var(--ant-color-primary, #22854f));
+}
+
+.cfg-materia-identidad__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cfg-materia-identidad__sigla {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-500, #6b7280);
+  font-variant-numeric: tabular-nums;
+}
+
+.cfg-materia-identidad__nombre {
+  font-weight: 700;
+  color: var(--text-800, #1f2937);
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+/* Pills de estado / clasificación */
+.cfg-materia-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cfg-materia-pill--teorica {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}
+
+.cfg-materia-pill--practica {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+
+.cfg-materia-pill--mixta {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: rgba(109, 40, 217, 0.22);
+}
+
+.cfg-materia-pill--clasificacion {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.2);
+}
+
+.cfg-materia-pill--default {
+  background: #f3f4f6;
+  color: var(--text-700, #374151);
+  border-color: #d1d5db;
+}
+
+.cfg-materia-pill--activa {
+  background: #ecfdf5;
+  color: var(--ant-color-primary, #134d32);
+  font-size: 14px;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+
+.cfg-materia-pill--inactiva {
+  background: #f3f4f6;
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+/* Variantes semánticas de estado (para StatusPill en cualquier módulo) */
+.cfg-materia-pill--success {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.22);
+}
+
+.cfg-materia-pill--warning {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.2);
+}
+
+.cfg-materia-pill--danger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.22);
+}
+
+.cfg-materia-pill--info {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: rgba(3, 105, 161, 0.22);
+}
+
+/* Lista de métricas / datos multi-línea por celda */
+.cfg-academico-metricas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cfg-academico-metricas-list__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cfg-academico-metricas-list__icon {
+  flex-shrink: 0;
+  font-size: 15px;
+  color: var(--primary, var(--ant-color-primary, #22854f));
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.cfg-academico-metricas-list__label {
+  font-size: 12px !important;
+  margin: 0 !important;
+}

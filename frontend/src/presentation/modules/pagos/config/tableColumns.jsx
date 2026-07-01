@@ -1,38 +1,75 @@
 /**
- * tableColumns - Configuración de columnas para la tabla de pagos de aportes (vista_pago_aporte_listado)
+ * tableColumns - Columnas de la tabla de pagos de aportes (vista_pago_aporte_listado).
  *
- * Campos según vista: estudiante, gestion, monto_base, descuento_beca, monto_obligatorio,
- * total_pagado, cantidad_pagos, saldo_pendiente, estado.
- * Los ítems llegan con estudiante.nombreCompleto desde pagosListMapper.
+ * Lenguaje visual del prototipo de listado: `#` numérico + `IdentidadCelda` (estudiante),
+ * `InfoLinesCell` (gestión) y `StatusPill` (estado), con las clases del design-system
+ * (`styles/components/atoms/table-cells.css`). Las celdas monetarias conservan su formato
+ * numérico a la derecha (base/descuento/total, saldo, compromiso).
  */
 
-import { UserOutlined, CalendarOutlined, DollarOutlined, NumberOutlined } from '@ant-design/icons';
-import { Tag, Space, Flex } from 'antd';
+import { UserOutlined, CalendarOutlined, DollarOutlined } from '@ant-design/icons';
+import { Space, Flex } from 'antd';
 import { TableCell } from '@molecules';
-import { Text, CompromisoAlertTag, formatFechaCompromiso, compromisoSortValue } from '@atoms';
+import {
+  Text, IdentidadCelda, InfoLinesCell, StatusPill,
+  CompromisoAlertTag, formatFechaCompromiso, compromisoSortValue,
+} from '@atoms';
 import PagoTableActions from './PagoTableActions';
+
+/** Punto de color (data-driven) para chip de carrera. */
+const colorDot = (color) => (
+    <span
+        style={{
+            width: 10, height: 10, borderRadius: 999,
+            background: color || 'var(--border, #d1d5db)', display: 'inline-block',
+        }}
+    />
+);
+
+/** Estado del aporte → clase de pill semántica (StatusPill). */
+const getEstadoAportePillClass = (estado) => {
+  const e = String(estado || '').toUpperCase();
+  if (e === 'PENDIENTE') return 'cfg-materia-pill cfg-materia-pill--warning';
+  if (e === 'CANCELADO') return 'cfg-materia-pill cfg-materia-pill--default';
+  return 'cfg-materia-pill cfg-materia-pill--success';
+};
 
 /**
  * Crea las columnas de la tabla de pagos de aportes.
  *
- * @param {Function} navigate - Función de navegación de react-router
- * @param {Function} refetch - Función para recargar con params (page, limit, search, sort, gestion_id, estudiante_id, estado)
- * @param {Function} [deletePago] - Función para eliminar pago
- * @param {Object} [options] - viewNavigateState: estado al abrir detalle desde la tabla (ej. menú Matrícula > Aportes)
+ * @param {Function} navigate
+ * @param {Function} refetch
+ * @param {Function} [deletePago]
+ * @param {Object} [options] - viewNavigateState, returnListPath
  */
 export const createPagosTableColumns = (navigate, refetch = null, deletePago = null, options = {}) => {
     const { viewNavigateState, returnListPath } = options;
     return [
         {
-            title: 'Gestión',
+            title: '#',
+            key: 'nro',
+            width: 56,
+            align: 'center',
+            render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
+        },
+        {
+            title: 'Gestión y carrera',
             dataIndex: 'gestion',
+            width: 200,
             render: (gestion, record) => {
                 const g = gestion || record.management;
-                const label = g ? (g.nombre || g.anio || String(g.id)) : 'N/A';
+                const gestionLabel = g ? (g.nombre || g.anio || String(g.id)) : null;
+                const carrera = record.carrera;
+                const carreraLabel = carrera?.nombre
+                    ? `${carrera.nombre}${carrera.codigo ? ` · ${carrera.codigo}` : ''}`
+                    : null;
                 return (
-                    <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-                        {label}
-                    </TableCell>
+                    <InfoLinesCell
+                        lines={[
+                            { icon: <CalendarOutlined />, label: gestionLabel },
+                            { icon: colorDot(carrera?.colorHex), label: carreraLabel },
+                        ]}
+                    />
                 );
             },
             sorter: (a, b) => {
@@ -44,16 +81,14 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Estudiante',
             dataIndex: ['estudiante', 'nombreCompleto'],
+            fixed: 'left',
             ellipsis: true,
             render: (_, record) => (
-                <TableCell
-                    strong
-                    icon={<UserOutlined />}
-                    subtext={record.estudiante?.codigoEstudiante ?? '—'}
-                    fallback="Sin nombre"
-                >
-                    {record.estudiante?.nombreCompleto ?? record.estudiante?.codigoEstudiante ?? 'Sin nombre'}
-                </TableCell>
+                <IdentidadCelda
+                    codigo={record.estudiante?.codigoEstudiante || null}
+                    nombre={(record.estudiante?.nombreCompleto || record.estudiante?.codigoEstudiante || 'Sin nombre').toUpperCase()}
+                    accentColor={record.carrera?.colorHex || undefined}
+                />
             ),
             sorter: (a, b) =>
                 (a.estudiante?.nombreCompleto ?? a.estudiante?.codigoEstudiante ?? '').localeCompare(
@@ -68,6 +103,8 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                 const base = Number(record.monto_base ?? 0);
                 const desc = Number(record.descuento_beca ?? 0);
                 const oblig = Number(record.monto_obligatorio ?? 0);
+                const becaPct = record.beca_porcentaje ?? record.becaPorcentaje
+                    ?? (base > 0 && desc > 0 ? Math.round((desc / base) * 100) : null);
                 return (
                     <Space align="start" size={8}>
                         <DollarOutlined style={{ marginTop: 4 }} />
@@ -75,9 +112,17 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                             <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
                                 Base Bs. {base.toFixed(2)}
                             </Text>
-                            <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                                Descuento Bs. {desc.toFixed(2)}
-                            </Text>
+                            {desc > 0 ? (
+                                <Flex align="center" gap={6}>
+                                    <StatusPill
+                                        label={`Beca ${becaPct != null ? `${becaPct}%` : ''}`.trim()}
+                                        className="cfg-materia-pill cfg-materia-pill--info"
+                                    />
+                                    <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
+                                        -Bs. {desc.toFixed(2)}
+                                    </Text>
+                                </Flex>
+                            ) : null}
                             <Text strong style={{ fontSize: 'var(--font-size-base)' }}>
                                 Bs. {oblig.toFixed(2)}
                             </Text>
@@ -148,17 +193,16 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Estado',
             dataIndex: 'estado',
+            width: 130,
             render: (estado, record) => {
-                const e = estado ?? record.estado ?? 'N/A';
-                const color = e === 'CANCELADO' ? 'default' : e === 'PENDIENTE' ? 'warning' : 'success';
-                return <Tag color={color}>{e}</Tag>;
+                const e = estado ?? record.estado ?? '—';
+                return <StatusPill label={e} className={getEstadoAportePillClass(e)} />;
             },
             sorter: (a, b) => (a.estado ?? '').localeCompare(b.estado ?? ''),
         },
         {
             title: 'Acciones',
             key: 'acciones',
-            fixed: 'right',
             width: 120,
             align: 'right',
             render: (_, record) => {

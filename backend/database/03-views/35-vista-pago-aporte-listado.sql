@@ -35,6 +35,9 @@ SELECT
   v.estudiante_apellido_materno,
   v.gestion_nombre,
   v.gestion_anio,
+  v.carrera_nombre,
+  v.carrera_codigo,
+  v.carrera_color_hex,
   v.beca_nombre,
   v.beca_porcentaje,
   -- Agregación de cuotas
