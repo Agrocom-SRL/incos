@@ -19,6 +19,20 @@ const { Paragraph } = Typography;
 /** Accessor de carrera para agrupar por tabs (carrera anidada del listado de matrículas). */
 const getCarreraInscripcion = (record) => record.carrera || record.enrollment?.carrera || {};
 
+/** Segundo nivel: curso/paralelo ofertado (filtro segmentado dentro de cada carrera). */
+const subGroupParalelo = {
+  allLabel: 'Todos',
+  sinLabel: 'Sin paralelo',
+  getSubgrupo: (record) => {
+    const paralelo = record.paralelo || record.enrollment?.paralelo;
+    if (!paralelo?.id && !paralelo?.nombre) return null;
+    return {
+      id: paralelo.id ?? null,
+      nombre: [paralelo.nombre, paralelo.turno].filter(Boolean).join(' · ') || 'Paralelo',
+    };
+  },
+};
+
 const InscripcionesList = () => {
   const {
     isSmall,
@@ -140,6 +154,7 @@ const InscripcionesList = () => {
           <CarreraTabsListView
             rows={inscripciones}
             getCarrera={getCarreraInscripcion}
+            subGroup={subGroupParalelo}
             loading={loading}
             error={error}
             searchText={searchText}

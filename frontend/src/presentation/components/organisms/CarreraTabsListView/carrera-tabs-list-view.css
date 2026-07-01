@@ -48,3 +48,70 @@
   color: var(--color-primary, #196b45);
   background: color-mix(in srgb, var(--color-primary, #196b45) 12%, transparent);
 }
+
+/* Segundo nivel: filtro segmentado por curso/paralelo dentro de cada carrera.
+   Mismo lenguaje visual que el segmentado de Becas/Calificaciones: track verde tenue,
+   ítems verdes en negrita y opción activa como pastilla verde sólida con texto blanco. */
+.carrera-subfilter {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.carrera-subfilter__segmented {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.carrera-subfilter__segmented.ant-segmented {
+  padding: 4px;
+  background: var(--cuaderno-verde-tenue, #e8f5ec);
+  border-radius: var(--radius-md, 10px);
+}
+
+.carrera-subfilter__segmented .ant-segmented-item {
+  color: var(--cuaderno-verde-oscuro, #196b45);
+  font-weight: 600;
+  border-radius: var(--radius-md, 8px);
+  transition:
+    color var(--dur-hover, 0.16s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    transform var(--dur-press, 0.14s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.carrera-subfilter__segmented
+  .ant-segmented-item:hover:not(.ant-segmented-item-selected):not(
+    .ant-segmented-item-disabled
+  ) {
+  color: var(--cuaderno-verde-acento, #134d32);
+  background: transparent;
+}
+
+/* Estado activo: pastilla verde primaria con texto claro (contraste AA), reutilizando
+   el thumb animado nativo de AntD para el deslizado. */
+.carrera-subfilter__segmented .ant-segmented-thumb,
+.carrera-subfilter__segmented .ant-segmented-item-selected {
+  background: var(--color-primary, #196b45);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary, #196b45) 30%, transparent);
+}
+
+.carrera-subfilter__segmented .ant-segmented-item-selected,
+.carrera-subfilter__segmented .ant-segmented-item-selected:hover,
+.carrera-subfilter__segmented .ant-segmented-item-selected .ant-segmented-item-label {
+  color: #fff;
+}
+
+@media (hover: hover) {
+  .carrera-subfilter__segmented .ant-segmented-item:active {
+    transform: scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carrera-subfilter__segmented .ant-segmented-item {
+    transition: none;
+  }
+  .carrera-subfilter__segmented .ant-segmented-item:active {
+    transform: none;
+  }
+}
