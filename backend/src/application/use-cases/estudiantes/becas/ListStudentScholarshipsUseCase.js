@@ -172,6 +172,16 @@ export class ListStudentScholarshipsUseCase {
         }
       : null;
 
+    // Paralelo del estudiante en la gestión de la beca (tabs por carrera + chips
+    // por paralelo en el frontend). El color del chip lo deriva el frontend.
+    const paralelo = row.paralelo_id
+      ? {
+          id: row.paralelo_id,
+          nombre: row.paralelo_nombre ?? null,
+          turno: row.paralelo_turno ?? null,
+        }
+      : null;
+
     const descuentoAplicado = this._toNumberOrNull(row.descuento_aplicado);
     const montoObligatorio = this._toNumberOrNull(row.monto_obligatorio);
     const impacto = descuentoAplicado !== null || montoObligatorio !== null
@@ -193,6 +203,7 @@ export class ListStudentScholarshipsUseCase {
       scholarship,
       management,
       carrera,
+      paralelo,
       impacto,
     };
   }

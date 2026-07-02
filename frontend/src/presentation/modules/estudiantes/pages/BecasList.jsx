@@ -15,7 +15,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { Flex, Typography } from 'antd';
 import { PageTemplate } from '@templates';
-import { TableListView } from '@organisms';
+import { CarreraTabsListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton } from '@atoms';
@@ -25,6 +25,25 @@ import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
+
+/** Accessor de carrera para agrupar por tabs (carrera anidada del listado de becas). */
+const getCarreraBeca = (record) => record.carrera || {};
+
+/** Segundo nivel: paralelo asignado (filtro segmentado de chips dentro de cada carrera). */
+const subGroupParalelo = {
+  allLabel: 'Todos',
+  sinLabel: 'Sin paralelo',
+  getSubgrupo: (record) => {
+    const paralelo = record.paralelo;
+    if (!paralelo?.id && !paralelo?.nombre) return null;
+    return {
+      id: paralelo.id ?? null,
+      nombre: [paralelo.nombre, paralelo.turno].filter(Boolean).join(' · ') || 'Paralelo',
+      // Color por NOMBRE BASE (sin turno): "PRIMERO A" recibe el mismo color en toda carrera.
+      colorKey: paralelo.nombre || null,
+    };
+  },
+};
 
 const BecasList = () => {
     const navigate = useNavigate();
@@ -96,27 +115,26 @@ const BecasList = () => {
                             vigencia y estado. Desde aquí registras nuevas asignaciones de beca.
                         </Paragraph>
                     </header>
-                    <div className="cfg-academico-tab-panel">
-                        <TableListView
-                            embedded
-                            data={becas}
-                            loading={loading}
-                            error={error}
-                            searchText={searchText}
-                            onSearchChange={(e) => setSearchText(e.target.value)}
-                            searchPlaceholder="Buscar por nombre, tipo, descripción..."
-                            columns={tableColumns}
-                            rowKey={(record) => record.id || Math.random()}
-                            searchColSpan={10}
-                            searchStyle={{ maxWidth: 520 }}
-                            pagination={tablePagination}
-                            defaultSort={{
-                                field: 'nombre',
-                                order: 'ascend',
-                            }}
-                            loadingTip="Cargando becas..."
-                        />
-                    </div>
+                    <CarreraTabsListView
+                        rows={becas}
+                        getCarrera={getCarreraBeca}
+                        subGroup={subGroupParalelo}
+                        loading={loading}
+                        error={error}
+                        searchText={searchText}
+                        onSearchChange={(e) => setSearchText(e.target.value)}
+                        searchPlaceholder="Buscar por nombre, tipo, descripción..."
+                        columns={tableColumns}
+                        rowKey={(record) => record.id || Math.random()}
+                        searchColSpan={10}
+                        searchStyle={{ maxWidth: 520 }}
+                        pagination={tablePagination}
+                        defaultSort={{
+                            field: 'nombre',
+                            order: 'ascend',
+                        }}
+                        loadingTip="Cargando becas..."
+                    />
                 </section>
             </Flex>
         </PageTemplate>
