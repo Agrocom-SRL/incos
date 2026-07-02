@@ -491,6 +491,25 @@ Permisos: `academico.asistencia.*` — ítem `/academico/asistencia` (gemelo de 
 > `registro.ver` (no hay permiso de coordinación separado), con `useRouteViewMode`.
 > Marca **L** y días neutros (feriado/receso/clase no dictada) se calculan en lectura, no se persisten.
 
+### ACA - Historial académico (kardex FORM-SIE-ITT-04) — construido 2026-07-02
+Permiso: `academico.historial.academico` — menú `/academico/historial/academico` (**reactivado**
+en el bloque de deshabilitación temporal del seed 58; `folio`/`validar` y `academico.avance`
+siguen desactivados hasta construirse).
+
+| Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
+|---|---|---|---|
+| `academico.historial.academico` | LISTAR | Ítem menú Historial → selector/buscador de estudiante ("Mi historial" para EST) | REC, DIRA, SECA, DOC, EST |
+| `academico.historial.academico` | DETALLE | Transcript `/academico/historial/academico/:id` (`GET /estudiantes/:id/historial-academico`) | REC, DIRA, SECA, DOC, EST (solo propio) |
+| `academico.historial.academico` | EXPORTAR | Excel kit planilla verde (`GET .../historial-academico/export`) | REC, DIRA, SECA |
+| `academico.historial.folio` | CREAR, EDITAR, GENERAR_PDF | Folio del egresado (**desactivado**, en construcción) | REC, DIRA |
+| `academico.historial.validar` | APROBAR | Validación para egreso (**desactivado**, en construcción) | REC, DIRA |
+
+> **Anti-IDOR:** ambas rutas llevan `estudianteSelfOnlyGuard` tras `verificarPermiso`: un usuario
+> con vínculo estudiante solo accede a su propio `:id` (resuelto en servidor); staff sin restricción.
+> **Datos:** vista final delgada `141-vista-historial-academico-estudiante-fila` (une bases
+> `138` nota efectiva, `139` detalle asignatura del plan, `140` historial previo). Plan:
+> `docs/plan/HISTORIAL-ACADEMICO.md`.
+
 ### ACA - Nivelaciones, Trazabilidad, Historial
 Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.historial.*`
 

@@ -18,6 +18,7 @@ export const SERVICIOS_TOKENS = {
     pdfGenerator: 'pdfGenerator', // IPDFGenerator (fachada única)
     registroPedagogicoExcelGenerator: 'registroPedagogicoExcelGenerator', // IRegistroPedagogicoExcelGenerator (.xlsx)
     centralizadorExcelGenerator: 'centralizadorExcelGenerator', // ICentralizadorExcelGenerator (.xlsx)
+    historialAcademicoExcelGenerator: 'historialAcademicoExcelGenerator', // IHistorialAcademicoExcelGenerator (.xlsx)
     boletinPdfGenerator: 'boletinPdfGenerator', // IBoletinPdfGenerator (.pdf)
     becasReporteExcelGenerator: 'becasReporteExcelGenerator', // IBecasReporteExcelGenerator (.xlsx)
     cuentasPorCobrarReporteExcelGenerator: 'cuentasPorCobrarReporteExcelGenerator', // ICuentasPorCobrarReporteExcelGenerator (.xlsx)

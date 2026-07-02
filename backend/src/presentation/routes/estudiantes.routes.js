@@ -58,6 +58,8 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     const becaDetalle = [authenticate, verificarPermiso('matricula.beca.ver', 'DETALLE')];
     const becaAsignarCrear = [authenticate, verificarPermiso('matricula.beca.asignar', 'CREAR')];
     const becaAsignarEliminar = [authenticate, verificarPermiso('matricula.beca.asignar', 'ELIMINAR')];
+    const historialDetalle = [authenticate, verificarPermiso('academico.historial.academico', 'DETALLE')];
+    const historialExportar = [authenticate, verificarPermiso('academico.historial.academico', 'EXPORTAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -317,6 +319,43 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.deleteStudentScholarshipController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    // ============================================
+    // HISTORIAL ACADÉMICO (kardex / transcript FORM-SIE-ITT-04)
+    // ============================================
+
+    /**
+     * GET /api/v1/estudiantes/:id/historial-academico/export
+     * Descarga el historial académico del estudiante en Excel.
+     * Permiso: academico.historial.academico EXPORTAR.
+     *
+     * Debe declararse ANTES de GET /:id/historial-academico y de GET /:id.
+     */
+    // anti-IDOR: un estudiante solo exporta SU propio historial
+    router.get(
+        '/:id/historial-academico/export',
+        ...historialExportar,
+        idValidator,
+        validateRequest,
+        estudianteSelfOnlyGuard,
+        (req, res, next) => controllers.exportHistorialAcademicoExcelController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/estudiantes/:id/historial-academico
+     * Historial académico (kardex / transcript) del estudiante: { estudiante, filas, resumen }.
+     * Permiso: academico.historial.academico DETALLE.
+     *
+     * Debe declararse ANTES de GET /:id para evitar conflictos.
+     */
+    router.get(
+        '/:id/historial-academico',
+        ...historialDetalle,
+        idValidator,
+        validateRequest,
+        estudianteSelfOnlyGuard,  // anti-IDOR: un estudiante solo ve SU historial
+        (req, res, next) => controllers.getHistorialAcademicoController.handle(req, res, next)
     );
 
     // ============================================

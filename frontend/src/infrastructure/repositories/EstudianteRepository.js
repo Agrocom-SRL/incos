@@ -219,6 +219,78 @@ export class EstudianteRepository extends IEstudianteRepository {
   }
 
   /**
+   * Historial académico (kardex/transcript FORM-SIE-ITT-04) del estudiante.
+   * GET /v1/estudiantes/:id/historial-academico
+   *
+   * Devuelve el documento completo: cabecera del estudiante, filas por
+   * (materia × gestión) de TODAS las gestiones y el resumen (carga horaria,
+   * aprobadas, promedio). El contrato de campos vive en
+   * `docs/plan/HISTORIAL-ACADEMICO.md`.
+   *
+   * @param {string|number} id - ID del estudiante
+   * @returns {Promise<{success: boolean, data?: { estudiante, filas, resumen }, error?: string}>}
+   */
+  async obtenerHistorialAcademico(id) {
+    try {
+      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.HISTORIAL_ACADEMICO(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el historial académico');
+    }
+  }
+
+  /**
+   * Descarga el historial académico del estudiante en Excel (.xlsx).
+   * GET /v1/estudiantes/:id/historial-academico/export
+   *
+   * @param {string|number} id - ID del estudiante
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarHistorialAcademicoExcel(id) {
+    try {
+      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.HISTORIAL_ACADEMICO_EXPORT(id), {
+        responseType: 'blob',
+      });
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'historial_academico.xlsx';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return { success: true, blob: response.data, fileName };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar el historial académico';
+          return { success: false, error: msg };
+        } catch {
+          return { success: false, error: 'Error al exportar el historial académico' };
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar el historial académico');
+    }
+  }
+
+  /**
    * Crea un nuevo estudiante
    * POST /v1/estudiantes
    *

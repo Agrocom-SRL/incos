@@ -127,6 +127,11 @@ export const ESTUDIANTES_ENDPOINTS = {
   GENERATE_DECLARACION_JURADA: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/declaracion-jurada`,
   /** GET — Ficha completa (solo lectura) del estudiante autenticado (portal del estudiante). */
   MIS_DATOS: `${API_BASE}/estudiantes/mis-datos`,
+  /** GET — Historial académico (kardex/transcript FORM-SIE-ITT-04) del estudiante. */
+  HISTORIAL_ACADEMICO: (studentId) => `${API_BASE}/estudiantes/${studentId}/historial-academico`,
+  /** GET — Exporta el historial académico del estudiante a Excel (.xlsx). */
+  HISTORIAL_ACADEMICO_EXPORT: (studentId) =>
+    `${API_BASE}/estudiantes/${studentId}/historial-academico/export`,
 };
 export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
 export const ESTUDIANTES_BECAS_ENDPOINTS = {

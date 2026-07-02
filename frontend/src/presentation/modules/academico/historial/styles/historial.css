@@ -1,0 +1,214 @@
+/* ============================================================================
+   HISTORIAL ACADÉMICO — transcript oficial (FORM-SIE-ITT-04)
+   ============================================================================
+   Solo layout + consumo de tokens (cero hex/px de color sueltos). La cabecera de
+   la tabla usa el verde de marca (var(--color-primary)) como banda de planilla
+   académica; el texto sobre el verde usa var(--color-text-on-primary).
+   ============================================================================ */
+
+/* ---- Cabecera del documento -------------------------------------------- */
+.historial-doc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.historial-doc__band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-lg) var(--spacing-md);
+  text-align: center;
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-primary-bg);
+}
+
+.historial-doc__eyebrow {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.historial-doc__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.historial-doc__form-code {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.1em;
+  color: var(--color-text-tertiary);
+}
+
+.historial-doc__student-name {
+  font-weight: var(--font-weight-strong);
+  text-transform: uppercase;
+}
+
+.historial-doc__empty {
+  padding: var(--spacing-xl) var(--spacing-md);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-container);
+}
+
+/* ---- Tabla transcript (planilla académica) ----------------------------- */
+.historial-transcript-grid .ant-table-thead > tr > th,
+.historial-transcript-grid .ant-table-thead > tr > th.ant-table-cell-fix-left,
+.historial-transcript-grid .ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background: var(--color-primary) !important;
+  color: var(--color-text-on-primary) !important;
+  font-weight: var(--font-weight-strong);
+  border-color: var(--color-primary-hover) !important;
+}
+
+/* Sin barrita divisoria gris sobre el verde. */
+.historial-transcript-grid .ant-table-thead > tr > th::before {
+  display: none !important;
+}
+
+/* Cifras tabulares para columnas numéricas (alineación uniforme). */
+.historial-transcript-grid__num,
+.historial-transcript-grid__nota {
+  display: inline-block;
+  min-width: 1.5em;
+  font-variant-numeric: tabular-nums;
+}
+
+.historial-transcript-grid__sigla {
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+}
+
+/* Nota destacada (titular de la fila), neutra por defecto. */
+.historial-transcript-grid__nota {
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
+}
+
+.historial-transcript-grid__nota--aprobado {
+  color: var(--color-success);
+}
+
+.historial-transcript-grid__nota--reprobado {
+  color: var(--color-error);
+}
+
+.historial-transcript-grid__nota--convalidado {
+  color: var(--color-primary);
+}
+
+.historial-transcript-grid__nota--inactivo {
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Pie / resumen ----------------------------------------------------- */
+.historial-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.historial-resumen__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.historial-resumen__tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-container);
+}
+
+.historial-resumen__tile--primary {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-bg);
+}
+
+.historial-resumen__tile-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.historial-resumen__tile-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.historial-resumen__tile--primary .historial-resumen__tile-value {
+  color: var(--color-primary);
+}
+
+.historial-resumen__escala {
+  margin: 0;
+}
+
+/* ---- Selector de estudiante (landing) ---------------------------------- */
+.historial-selector__resultados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.historial-selector__resultado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-container);
+  transition:
+    border-color var(--dur-hover, 0.16s) var(--ease-out, ease),
+    background var(--dur-hover, 0.16s) var(--ease-out, ease);
+}
+
+.historial-selector__resultado:hover {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-bg);
+}
+
+.historial-selector__resultado:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.historial-selector__resultado-nombre {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.historial-selector__resultado-meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Accesibilidad: sin transiciones para usuarios con motion reducido
+   (mismo patrón que asistencia.css / finanzas-planilla.css). */
+@media (prefers-reduced-motion: reduce) {
+  .historial-selector__resultado {
+    transition: none;
+  }
+}

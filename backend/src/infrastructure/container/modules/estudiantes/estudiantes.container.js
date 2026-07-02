@@ -16,6 +16,10 @@ import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS, INSCRIPCIONE
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, GetMisDatosEstudianteUseCase, GetMiMatriculaEstudianteUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, GenerateDeclaracionJuradaUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase, ExportStudentEnrollmentStatisticsExcelUseCase, ExportStudentEnrollmentStudentListExcelUseCase, SearchStudentsForBecaAsignacionUseCase, GetStudentScholarshipByIdUseCase } from '../../../../application/use-cases/estudiantes/index.js';
 import { GetStudentScholarshipsByStudentIdUseCase } from '../../../../application/use-cases/estudiantes/becas/GetStudentScholarshipsByStudentIdUseCase.js';
+import { GetHistorialAcademicoUseCase } from '../../../../application/use-cases/estudiantes/GetHistorialAcademicoUseCase.js';
+import { ExportHistorialAcademicoExcelUseCase } from '../../../../application/use-cases/estudiantes/ExportHistorialAcademicoExcelUseCase.js';
+import { GetHistorialAcademicoController } from '../../../../presentation/controllers/estudiantes/estudiantes/get-historial-academico.controller.js';
+import { ExportHistorialAcademicoExcelController } from '../../../../presentation/controllers/estudiantes/estudiantes/export-historial-academico-excel.controller.js';
 import { ListStudentScholarshipsUseCase } from '../../../../application/use-cases/estudiantes/becas/ListStudentScholarshipsUseCase.js';
 import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, GetMisDatosEstudianteController, GetMiMatriculaEstudianteController, SearchStudentController, ActaCompromisoController, DeclaracionJuradaController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController, ExportEstadisticaInscritosExcelController, ExportListaInscritosPorCarreraExcelController, SearchStudentsForBecaAsignacionController, GetStudentScholarshipByIdController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { GetStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/get-scholarships.controller.js';
@@ -326,6 +330,29 @@ export function registerEstudiantesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.getHistorialAcademicoUseCase,
+        (c) =>
+            new GetHistorialAcademicoUseCase({
+                historialAcademicoRepository: c.resolve(REPOSITORIOS_TOKENS.historialAcademicoRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.exportHistorialAcademicoExcelUseCase,
+        (c) =>
+            new ExportHistorialAcademicoExcelUseCase({
+                getHistorialAcademicoUseCase: c.resolve(ESTUDIANTES_TOKENS.getHistorialAcademicoUseCase),
+                historialAcademicoExcelGenerator: c.resolve(
+                    SERVICIOS_TOKENS.historialAcademicoExcelGenerator
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -531,6 +558,29 @@ export function registerEstudiantesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.getHistorialAcademicoController,
+        (c) =>
+            new GetHistorialAcademicoController({
+                getHistorialAcademicoUseCase: c.resolve(ESTUDIANTES_TOKENS.getHistorialAcademicoUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.exportHistorialAcademicoExcelController,
+        (c) =>
+            new ExportHistorialAcademicoExcelController({
+                exportHistorialAcademicoExcelUseCase: c.resolve(
+                    ESTUDIANTES_TOKENS.exportHistorialAcademicoExcelUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -562,6 +612,12 @@ export function registerEstudiantesResource(container) {
                 ),
                 exportListaInscritosPorCarreraExcelController: c.resolve(
                     ESTUDIANTES_TOKENS.exportListaInscritosPorCarreraExcelController
+                ),
+                getHistorialAcademicoController: c.resolve(
+                    ESTUDIANTES_TOKENS.getHistorialAcademicoController
+                ),
+                exportHistorialAcademicoExcelController: c.resolve(
+                    ESTUDIANTES_TOKENS.exportHistorialAcademicoExcelController
                 ),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
