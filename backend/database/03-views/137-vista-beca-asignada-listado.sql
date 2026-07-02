@@ -20,6 +20,9 @@
 --
 -- Dependencias (ejecutar antes):
 -- - 38-vista-base-estudiante-carrera-reciente.sql
+-- - 137-vista-base-estudiante-gestion-paralelo.sql
+--   (que a su vez depende de 03-vista-base-inscripciones-estudiantes.sql
+--    y 100-vista-base-matricula-inscripcion-paralelo.sql)
 --
 -- Uso:
 -- SELECT * FROM vista_beca_asignada_listado WHERE estudiante_id = ? ORDER BY id;
@@ -62,6 +65,11 @@ SELECT
   g.nombre AS gestion_nombre,
   g.anio AS gestion_anio,
   g.codigo AS gestion_codigo,
+  -- Paralelo del estudiante en la gestión de la beca (tabs por carrera + chips por paralelo)
+  pg.paralelo_id,
+  pg.paralelo_nombre,
+  pg.paralelo_turno,
+  pg.paralelo_descripcion,
   -- Impacto en el aporte (cabecera pago_aporte de la beca)
   pa.descuento_beca AS descuento_aplicado,
   pa.monto_obligatorio AS monto_obligatorio
@@ -76,6 +84,9 @@ LEFT JOIN becas_descuentos bd ON bd.id = eb.beca_descuento_id
 LEFT JOIN gestiones g ON g.id = eb.gestion_id
   AND g.activo = TRUE
   AND g.deleted_at IS NULL
+LEFT JOIN vista_base_estudiante_gestion_paralelo pg
+  ON pg.estudiante_id = eb.estudiante_id
+  AND pg.gestion_id = eb.gestion_id
 LEFT JOIN pago_aporte pa ON pa.estudiante_beca_id = eb.id
   AND pa.activo = TRUE
   AND pa.deleted_at IS NULL
