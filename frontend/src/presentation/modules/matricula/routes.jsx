@@ -18,14 +18,17 @@ export const matriculaRoutes = [
     path: '/matricula/listar',
     element: <MatriculaListConnector />,
     key: 'MAT-LISTA',
-    permiso: 'matricula.inscribir',
+    // Rama docente self: el DOCENTE entra con `docentes.ver` y el connector le
+    // monta "Mis estudiantes" (roster de SUS cursos; el backend restringe por
+    // asignación). El staff sigue entrando con `matricula.inscribir`.
+    permisoAny: ['matricula.inscribir', 'docentes.ver'],
     accion: 'LISTAR',
     menu: {
       label: 'Matrículas',
       module: 'MAT',
       parent: 'MAT',
       order: 3,
-      labelByRole: { ESTUDIANTE: 'Mi matrícula' },
+      labelByRole: { ESTUDIANTE: 'Mi matrícula', DOCENTE: 'Mis estudiantes' },
     },
   },
   {

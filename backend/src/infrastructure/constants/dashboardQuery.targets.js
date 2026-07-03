@@ -13,14 +13,8 @@ export const DASHBOARD_QUERY_TARGETS = {
   vistaAsignacionDocenteDetalle: 'vista_base_asignacion_docente_detalle',
   tablaCarreras: 'carreras',
   tablaSesiones: 'sesiones',
-  tablaPagoCuotas: 'pago_cuotas',
-  tablaPagoAporte: 'pago_aporte',
-  tablaInscripciones: 'inscripciones',
-  tablaEstudiantesDatosAcademicos: 'estudiantes_datos_academicos',
-  tablaGestiones: 'gestiones',
-  tablaEstudiantesBecas: 'estudiantes_becas',
-  tablaBecasDescuentos: 'becas_descuentos',
-  // Portal del rol docente (GET /dashboard/mi-resumen-docente)
+  // Portal del rol docente (GET /dashboard/mi-resumen-docente y /docentes/mis-estudiantes)
   vistaDocenteCargaPorGestion: 'vista_docente_carga_por_gestion',
   vistaDocenteCursoBloquesHorario: 'vista_base_docente_curso_bloques_horario',
+  vistaDocenteCursoEstudiantes: 'vista_docente_curso_estudiantes',
 };

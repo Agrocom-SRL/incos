@@ -34,6 +34,24 @@ export class DocenteRepository extends IDocenteRepository {
     }
   }
 
+  /**
+   * Portal del docente: roster de estudiantes por curso del docente AUTENTICADO.
+   * GET /v1/docentes/mis-estudiantes
+   *
+   * El backend resuelve al docente desde el token y limita el roster a SUS
+   * cursos de la gestión vigente (un estudiante puede repetirse entre cursos).
+   *
+   * @returns {Promise<{success: boolean, data?: { docente: object, gestion: object, estudiantes: Array }, error?: string}>}
+   */
+  async obtenerMisEstudiantes() {
+    try {
+      const response = await apiClient.get(DOCENTES_ENDPOINTS.MIS_ESTUDIANTES);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener tus estudiantes');
+    }
+  }
+
   async obtenerTodos(options = {}) {
     try {
       const { params = {} } = options;

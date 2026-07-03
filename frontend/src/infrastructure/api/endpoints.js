@@ -81,6 +81,8 @@ export const DOCENTES_ENDPOINTS = {
   ...createCRUDEndpoints('/docentes'),
   /** GET — identidad del docente AUTENTICADO ({ id, nombreCompleto }); portal del docente */
   MIS_DATOS: `${API_BASE}/docentes/mis-datos`,
+  /** GET — roster de estudiantes por curso del docente AUTENTICADO (gestión vigente) */
+  MIS_ESTUDIANTES: `${API_BASE}/docentes/mis-estudiantes`,
   /** GET (query) / POST — asignaciones docente ↔ curso ↔ plan habilitado */
   ASIGNACIONES: `${API_BASE}/docentes/asignaciones`,
   /** PATCH — actualizar asignación docente */

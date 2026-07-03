@@ -91,6 +91,11 @@ FROM (
   -- DETALLE permite GET /estudiantes/:id, blindado en backend a su propio id (anti-IDOR).
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.admision.ver', 'DETALLE'
+  -- DOCENTE (2026-07-03): ficha SOLO de estudiantes de SUS cursos vigentes
+  -- (desde "Mis estudiantes" del portal docente) — guard de alcance en servidor
+  -- (estudianteAlcanceDocenteGuard sobre GET /estudiantes/:id). Sin LISTAR:
+  -- el docente NO ve el listado general de admisión.
+  UNION ALL SELECT 'DOCENTE', 'matricula.admision.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'matricula.admision.editar', 'EDITAR'

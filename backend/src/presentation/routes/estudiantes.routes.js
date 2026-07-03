@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { estudianteSelfOnlyGuard } from '../middleware/estudianteSelfOnly.middleware.js';
+import { estudianteAlcanceDocenteGuard } from '../middleware/estudianteAlcanceDocente.middleware.js';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
 import {
     registerStudentValidator,
@@ -425,7 +426,8 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         estudianteSelfOnlyGuard,  // 3. Anti-IDOR: un estudiante solo ve SU propia ficha
-        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 4. Controller al final
+        estudianteAlcanceDocenteGuard,  // 4. Anti-IDOR: un docente solo ve estudiantes de SUS cursos vigentes
+        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 5. Controller al final
     );
 
     return router;

@@ -1,7 +1,7 @@
 /**
  * Interfaz de Repositorio (solo lectura): IDashboardRepository
  *
- * Lecturas agregadas del dashboard desde vistas SQL (41–49) y tablas base.
+ * Lecturas agregadas del dashboard desde vistas SQL (41–48, 144–150) y tablas base.
  * NO extiende IRepository: repositorio de SOLO LECTURA.
  */
 export class IDashboardRepository {
@@ -72,5 +72,15 @@ export class IDashboardRepository {
   /** @param {number} _docenteId @param {number} _gestionId @returns {Promise<Array<Object>>} */
   async findHorarioBloquesDocenteGestion(_docenteId, _gestionId) {
     throw new Error('Method findHorarioBloquesDocenteGestion() must be implemented');
+  }
+
+  /** @param {number} _docenteId @param {number} [_limit] @returns {Promise<Array<Object>>} */
+  async findActividadesDeDocente(_docenteId, _limit) {
+    throw new Error('Method findActividadesDeDocente() must be implemented');
+  }
+
+  /** @param {number} _docenteId @param {number} _gestionId @returns {Promise<Array<Object>>} */
+  async findEstudiantesDeDocente(_docenteId, _gestionId) {
+    throw new Error('Method findEstudiantesDeDocente() must be implemented');
   }
 }

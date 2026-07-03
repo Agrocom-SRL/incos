@@ -273,6 +273,11 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.crear', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.crear', 'ELIMINAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.crear', 'ELIMINAR'
+  -- DOCENTE (2026-07-03): el docente edita/cancela SOLO sus propias solicitudes
+  -- pendientes — guard created_by+estado en servidor (EditarLicenciaUseCase /
+  -- CancelarLicenciaUseCase); aprobar sigue en REC/DIRA/SECA.
+  UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.crear', 'EDITAR'
+  UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.crear', 'ELIMINAR'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.aprobar', 'APROBAR'

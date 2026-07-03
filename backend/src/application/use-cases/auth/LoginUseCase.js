@@ -5,17 +5,26 @@ import {
 } from '../../../domain/errors/AppError.js';
 import { calcularFechaExpiracion, generarToken } from '../../../infrastructure/utils/jwt.utils.js';
 import { mapPermisosEfectivos } from './mapPermisosEfectivos.js';
+import { resolveVinculoPerfilUsuario } from './resolveVinculoPerfilUsuario.js';
 
 /**
  * Caso de uso: inicio de sesión (JWT + fila en sesiones).
+ *
+ * La respuesta incluye `vinculo_perfil` (mismo shape que /auth/me) para que el
+ * frontend muestre el nombre de la persona vinculada desde el primer render,
+ * sin esperar al bootstrap de /auth/me.
  */
 export class LoginUseCase {
   /**
    * @param {Object} deps
    * @param {import('../../../domain/interfaces/repositories/IAuthRepository.js').IAuthRepository} deps.authRepository
+   * @param {import('../../../infrastructure/repositories/UserRepository.js').UserRepository} [deps.userRepository]
+   * @param {import('../../../infrastructure/repositories/views/UsuarioReferenciaVinculoRepository.js').UsuarioReferenciaVinculoRepository} [deps.usuarioReferenciaVinculoRepository]
    */
-  constructor({ authRepository }) {
+  constructor({ authRepository, userRepository, usuarioReferenciaVinculoRepository }) {
     this.authRepository = authRepository;
+    this.userRepository = userRepository;
+    this.usuarioReferenciaVinculoRepository = usuarioReferenciaVinculoRepository;
   }
 
   /**
@@ -62,6 +71,18 @@ export class LoginUseCase {
     const filasPermisos = await this.authRepository.findPermisosEfectivos(usuario.id);
     const permisos = mapPermisosEfectivos(filasPermisos);
 
+    // Vínculo persona↔usuario (defensivo: el login nunca falla por esto).
+    let vinculoPerfil = null;
+    try {
+      vinculoPerfil = await resolveVinculoPerfilUsuario({
+        userRepository: this.userRepository,
+        usuarioReferenciaVinculoRepository: this.usuarioReferenciaVinculoRepository,
+        usuarioId: usuario.id,
+      });
+    } catch {
+      vinculoPerfil = null;
+    }
+
     return {
       token,
       permisos,
@@ -77,6 +98,7 @@ export class LoginUseCase {
           is_system: Boolean(usuario.rol_is_system),
           tipo: usuario.rol_tipo ?? null,
         },
+        vinculo_perfil: vinculoPerfil,
       },
     };
   }

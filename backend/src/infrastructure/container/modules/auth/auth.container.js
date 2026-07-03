@@ -19,6 +19,10 @@ export function registerAuthModule(container) {
     (c) =>
       new LoginUseCase({
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        usuarioReferenciaVinculoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.userReferenceLinkRepository
+        ),
       })
   );
 

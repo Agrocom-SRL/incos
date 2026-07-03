@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@application-auth';
 import DashboardRepository from '@infrastructure/repositories/DashboardRepository.js';
+import { mapActividad } from './useDashboardData';
 
 const ESTADO_INICIAL = {
   docente: { id: null, nombre: '' },
@@ -19,11 +20,16 @@ const ESTADO_INICIAL = {
   cursos: [],
   horarioCursos: [],
   totalEstudiantes: 0,
+  // Ampliación aditiva del mi-resumen-docente (mismo shape que el del estudiante).
+  stats: { sesionesHoy: 0, sesionesMes: 0 },
+  actividades: [],
 };
 
 /** Normaliza un curso asignado del resumen (campos pueden venir null). */
 export const mapCursoDocente = (curso) => {
   if (!curso || typeof curso !== 'object') return null;
+  const horasSemana = Number(curso.horasSemana ?? curso.horasSemanales ?? NaN);
+  const bloques = Number(curso.bloques ?? curso.totalBloques ?? NaN);
   return {
     id: curso.id ?? null,
     materia: curso.materia || 'Materia sin nombre',
@@ -35,6 +41,9 @@ export const mapCursoDocente = (curso) => {
     paralelo: curso.paralelo || null,
     turno: curso.turno || null,
     estudiantes: Number(curso.estudiantes ?? 0),
+    // Carga del curso (aditivo — puede no venir aún del backend): horas/bloques semanales.
+    horasSemana: Number.isFinite(horasSemana) && horasSemana > 0 ? horasSemana : null,
+    bloques: Number.isFinite(bloques) && bloques > 0 ? bloques : null,
   };
 };
 
@@ -90,6 +99,7 @@ export const useDocenteHome = (enabled = true) => {
     if (res?.success && res.data) {
       const d = res.data;
       const cursos = Array.isArray(d.cursos) ? d.cursos.map(mapCursoDocente).filter(Boolean) : [];
+      const s = d.stats || {};
       setData({
         docente: {
           id: d.docente?.id ?? null,
@@ -108,6 +118,14 @@ export const useDocenteHome = (enabled = true) => {
         cursos,
         horarioCursos: mapHorarioBloquesToCourseSchedules(d.horarioBloques),
         totalEstudiantes: cursos.reduce((sum, c) => sum + c.estudiantes, 0),
+        stats: {
+          sesionesHoy: Number(s.sesionesHoy ?? 0),
+          sesionesMes: Number(s.sesionesMes ?? 0),
+        },
+        // MISMO mapper que el resto de dashboards (shape backend snake_case).
+        actividades: Array.isArray(d.actividades)
+          ? d.actividades.map(mapActividad).filter(Boolean)
+          : [],
       });
     } else {
       // Tolerancia a fallos: conservamos el nombre del usuario autenticado.
@@ -142,6 +160,8 @@ export const useDocenteHome = (enabled = true) => {
     cursos: data.cursos,
     horarioCursos: data.horarioCursos,
     totalEstudiantes: data.totalEstudiantes,
+    stats: data.stats,
+    actividades: data.actividades,
     loading,
     error,
     refetch: cargar,

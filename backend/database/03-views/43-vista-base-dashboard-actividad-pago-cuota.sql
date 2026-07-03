@@ -1,7 +1,8 @@
 -- ============================================
 -- VISTA BASE: vista_base_dashboard_actividad_pago_cuota
 -- Fila de actividad “pago de aporte” para el dashboard (columnas normalizadas).
--- Consumida por: 45-vista-dashboard-actividades-recientes.sql
+-- Contrato de 10 columnas del feed (incluye estudiante_id/docente_id/usuario_id).
+-- Consumida por: 149-vista-dashboard-actividades-recientes.sql
 -- ============================================
 
 USE instituto_incos;
@@ -16,7 +17,10 @@ SELECT
     TRIM(CONCAT(COALESCE(est.apellido_paterno, ''), ' ', COALESCE(est.apellido_materno, ''), ' ', COALESCE(est.nombres, ''))) AS titulo,
     CONCAT('Pago de aporte · recibo ', pc.numero_recibo, ' · Bs. ', pc.monto) AS detalle,
     CONCAT('PAGO_CUOTA-', pc.id) AS avatar_seed,
-    pc.created_at AS ocurrido_en
+    pc.created_at AS ocurrido_en,
+    pa.estudiante_id,
+    CAST(NULL AS SIGNED) AS docente_id,
+    pc.created_by AS usuario_id
 FROM pago_cuotas pc
 INNER JOIN pago_aporte pa
     ON pa.id = pc.pago_aporte_id

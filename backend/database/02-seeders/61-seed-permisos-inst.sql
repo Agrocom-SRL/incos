@@ -156,6 +156,10 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'institucional.horario.conflictos', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'institucional.horario.conflictos', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'institucional.horario.conflictos', 'EDITAR'
+  -- DOCENTE (2026-07-03): su propia grilla de horario con conflictos
+  -- (GET /horarios/docentes/:docenteId/grilla-conflictos); anti-IDOR
+  -- docenteSelfOnlyGuard en servidor (solo su propio docenteId).
+  UNION ALL SELECT 'DOCENTE', 'institucional.horario.conflictos', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'institucional.horario.publicacion', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'institucional.horario.publicacion', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'institucional.horario.publicacion', 'LISTAR'

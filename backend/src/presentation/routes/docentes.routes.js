@@ -102,6 +102,21 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.getMisDatosDocenteController.handle(req, res, next)
   );
 
+  /**
+   * GET /api/v1/docentes/mis-estudiantes
+   * Roster de estudiantes de los cursos VIGENTES del docente de la sesión en la
+   * gestión vigente (portal del rol docente). Gate solo `authenticate`: la
+   * identidad se resuelve en servidor (resolveDocenteIdForUsuario, anti-IDOR;
+   * 403 si el usuario no está vinculado a un docente).
+   *
+   * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+   */
+  router.get(
+    '/mis-estudiantes',
+    ...misDatosDocente,
+    (req, res, next) => controllers.getMisEstudiantesDocenteController.handle(req, res, next)
+  );
+
   router.post(
     '/',
     ...docenteCrear,

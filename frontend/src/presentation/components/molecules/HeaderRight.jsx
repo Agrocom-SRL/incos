@@ -5,20 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, StatusPill } from '@atoms';
 import { allColors, allSpacing, typography } from '@theme/tokens';
 import { useAuthContext } from '@application-auth';
+import { buildInitials } from '@application/utils/formatters';
 import { rolPillClass } from '@modules/seguridad/roles/components/atoms/rolColor.js';
 import '@modules/seguridad/roles/styles/roles.css';
 import './HeaderRight.css';
 
 const { Text } = Typography;
-
-/** Iniciales (máx. 2) a partir del nombre o username. */
-const iniciales = (texto) => {
-  const limpio = String(texto || '').trim();
-  if (!limpio) return '—';
-  const partes = limpio.split(/\s+/).filter(Boolean);
-  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
-  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
-};
 
 /**
  * HeaderRight — sección derecha del header: menú de usuario.
@@ -46,7 +38,7 @@ const HeaderRight = () => {
             label: (
                 <div className="header-user__card" role="link" aria-label="Ir a mi perfil">
                     <AntAvatar size={44} className="header-user__avatar">
-                        {iniciales(nombre)}
+                        {buildInitials(nombre)}
                     </AntAvatar>
                     <div className="header-user__meta">
                         <Text className="header-user__name" ellipsis={{ tooltip: nombre }}>

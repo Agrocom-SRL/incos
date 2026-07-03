@@ -1,7 +1,8 @@
 -- ============================================
 -- VISTA BASE: vista_base_dashboard_actividad_beca
 -- Fila de actividad “beca asignada” para el dashboard.
--- Consumida por: 45-vista-dashboard-actividades-recientes.sql
+-- Contrato de 10 columnas del feed (incluye estudiante_id/docente_id/usuario_id).
+-- Consumida por: 149-vista-dashboard-actividades-recientes.sql
 -- ============================================
 
 USE instituto_incos;
@@ -21,7 +22,10 @@ SELECT
         COALESCE(eb.estado, '')
     ) AS detalle,
     CONCAT('BECA_ASIGNADA-', eb.id) AS avatar_seed,
-    eb.created_at AS ocurrido_en
+    eb.created_at AS ocurrido_en,
+    eb.estudiante_id,
+    CAST(NULL AS SIGNED) AS docente_id,
+    eb.created_by AS usuario_id
 FROM estudiantes_becas eb
 INNER JOIN estudiantes est
     ON est.id = eb.estudiante_id

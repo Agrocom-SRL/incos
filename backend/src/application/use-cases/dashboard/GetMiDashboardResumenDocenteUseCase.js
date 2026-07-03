@@ -16,6 +16,11 @@
  * - carga: vista 53 `vista_docente_carga_por_gestion` (DashboardRepository).
  * - horarioBloques: vista 128 `vista_base_docente_curso_bloques_horario`
  *   (DashboardRepository).
+ * - actividades: vista 149 `vista_dashboard_actividades_recientes` filtrada por
+ *   docente_id (DashboardRepository.findActividadesDeDocente), mismas claves
+ *   snake_case del feed de mi-resumen del estudiante.
+ * - stats: conteo de sesiones del usuario hoy/mes (countSesionesUsuarioHoyYMes,
+ *   ya existente para el portal del estudiante).
  *
  * Si no hay gestión vigente o el docente no tiene cursos/bloques, devuelve el
  * shape del contrato con arrays vacíos y nulls (nunca 500 por datos faltantes).
@@ -101,7 +106,9 @@ export class GetMiDashboardResumenDocenteUseCase {
    *   gestion: { anio: number|null, nombre: string|null, bimestre: number|null, bimestreNombre: string|null }|null,
    *   carga: { totalAsignaciones: number, horasSemanales: number },
    *   cursos: Array<Object>,
-   *   horarioBloques: Array<Object>
+   *   horarioBloques: Array<Object>,
+   *   actividades: Array<Object>,
+   *   stats: { sesionesHoy: number, sesionesMes: number }
    * }>}
    */
   async execute({ usuarioId } = {}) {
@@ -134,13 +141,15 @@ export class GetMiDashboardResumenDocenteUseCase {
       }
     }
 
-    const [carga, bloques] = await Promise.all([
+    const [carga, bloques, actividades, sesiones] = await Promise.all([
       ctx?.gestion_anio != null
         ? this.dashboardRepository.findCargaDocenteGestion(docenteId, ctx.gestion_anio)
         : Promise.resolve(null),
       ctx?.gestion_id != null
         ? this.dashboardRepository.findHorarioBloquesDocenteGestion(docenteId, ctx.gestion_id)
         : Promise.resolve([]),
+      this.dashboardRepository.findActividadesDeDocente(docenteId),
+      this.dashboardRepository.countSesionesUsuarioHoyYMes(usuarioId),
     ]);
 
     const nombre = base?.docente?.nombre || (await this.resolverNombreDocente(docenteId));
@@ -165,6 +174,13 @@ export class GetMiDashboardResumenDocenteUseCase {
       },
       cursos: base?.cursos ?? [],
       horarioBloques: (bloques ?? []).map(mapBloqueHorario),
+      // Feed propio del docente (claves snake_case, mismo contrato que el
+      // feed de mi-resumen del estudiante: el frontend reusa mapActividad).
+      actividades: actividades ?? [],
+      stats: {
+        sesionesHoy: Number(sesiones?.hoy ?? 0),
+        sesionesMes: Number(sesiones?.mes ?? 0),
+      },
     };
   }
 

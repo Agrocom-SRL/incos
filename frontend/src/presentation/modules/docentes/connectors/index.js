@@ -4,3 +4,4 @@ export const DocentesListConnector = lazy(() => import('@docentes/connectors/Doc
 export const DocentesDetailConnector = lazy(() => import('@docentes/connectors/DocentesDetailConnector'));
 export const DocentesCreateConnector = lazy(() => import('@docentes/connectors/DocentesCreateConnector'));
 export const DocentesEditConnector = lazy(() => import('@docentes/connectors/DocentesEditConnector'));
+export const MiHorarioConnector = lazy(() => import('@docentes/connectors/MiHorarioConnector'));

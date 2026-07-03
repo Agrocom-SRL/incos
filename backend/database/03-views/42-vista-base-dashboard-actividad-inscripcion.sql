@@ -5,7 +5,8 @@
 -- Propósito:
 -- - Normalizar una inscripción como una actividad reciente del dashboard.
 -- - Devuelve columnas comunes: artefacto_tipo, artefacto_id, link_path,
---   titulo, detalle, avatar_seed y ocurrido_en.
+--   titulo, detalle, avatar_seed, ocurrido_en, estudiante_id, docente_id
+--   y usuario_id (contrato de 10 columnas del feed).
 --
 -- Dependencias:
 -- - vista_base_inscripciones_estudiantes
@@ -44,7 +45,11 @@ SELECT
 
   CONCAT('INSCRIPCION-', vb.inscripcion_id) AS avatar_seed,
 
-  COALESCE(i.updated_at, i.created_at) AS ocurrido_en
+  COALESCE(i.updated_at, i.created_at) AS ocurrido_en,
+
+  vb.estudiante_id,
+  CAST(NULL AS SIGNED) AS docente_id,
+  i.created_by AS usuario_id
 
 FROM vista_base_inscripciones_estudiantes vb
 

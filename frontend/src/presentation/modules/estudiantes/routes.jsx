@@ -122,7 +122,10 @@ export const estudiantesRoutes = [
     path: '/estudiantes/:id',
     element: <DetailConnector />,
     key: 'MAT-ADM-DETALLE',
-    permiso: 'matricula.admision.ver',
+    // Rama docente self: el DOCENTE llega con `estudiantes.ver` DETALLE a la
+    // ficha de SUS estudiantes (roster del dashboard); el backend restringe por
+    // asignación. El staff sigue entrando con `matricula.admision.ver`.
+    permisoAny: ['matricula.admision.ver', 'estudiantes.ver'],
     accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'MAT-ADMISION',
