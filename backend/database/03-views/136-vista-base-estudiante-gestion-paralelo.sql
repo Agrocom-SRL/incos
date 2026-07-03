@@ -10,7 +10,10 @@
 -- por estudiante+gestión = MAX(inscripcion_id). Evita duplicar filas cuando un
 -- estudiante tiene más de una inscripción en la misma gestión.
 --
--- Consumidor: vista_beca_asignada_listado (136) → listado de becas asignadas.
+-- Consumidores:
+-- - vista_beca_asignada_listado (137) → listado de becas asignadas.
+-- - vista_estudiante_resumen_academico (143) → periodo/paralelo actual del
+--   listado de estudiantes (landing Historial académico).
 --
 -- Dependencias (ejecutar antes):
 -- - 03-vista-base-inscripciones-estudiantes.sql
@@ -27,7 +30,10 @@ SELECT
   p.paralelo_id,
   p.paralelo_nombre,
   p.paralelo_turno,
-  p.paralelo_descripcion
+  p.paralelo_descripcion,
+  p.periodo_id,
+  p.periodo_numero,
+  p.periodo_nombre
 FROM vista_base_inscripciones_estudiantes vie
 INNER JOIN vista_base_matricula_inscripcion_paralelo p
   ON p.inscripcion_id = vie.inscripcion_id

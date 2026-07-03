@@ -1,4 +1,8 @@
-import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
+import {
+  ValidationError,
+  NotFoundError,
+  ForbiddenError,
+} from '../../../../domain/errors/AppError.js';
 import {
   MOTIVOS_LICENCIAS_VALUES,
   ESTADOS_LICENCIAS,
@@ -27,6 +31,10 @@ function diasInclusivos(inicio, fin) {
  * cambia. No se cambia la inscripción del estudiante. Recalcula totalDias y revalida el
  * tope de 15 días por gestión.
  * Permiso: academico.asistencia.licencia.crear · EDITAR.
+ *
+ * Alcance por rol (2026-07-03): el rol DOCENTE solo edita SUS propias solicitudes
+ * (created_by = usuario de la sesión) y en estado PENDIENTE (403 si no); staff
+ * (REC/DIRA/SECA) sin restricción de autoría. Aprobar sigue en licencia.aprobar.
  */
 export class EditarLicenciaUseCase {
   constructor({ licenseRepository, logger }) {
@@ -37,17 +45,31 @@ export class EditarLicenciaUseCase {
   /**
    * @param {Object} params
    * @param {number} params.usuarioId
+   * @param {string} [params.rolCodigo] - Rol del usuario de la sesión (req.usuario.rolCodigo)
    * @param {number} params.id
    * @param {Object} params.body - { fechaInicio, fechaFin, motivo, detalleMotivo }
    * @returns {Promise<{licencia: Object}>}
    */
-  async execute({ usuarioId, id, body = {} }) {
+  async execute({ usuarioId, rolCodigo, id, body = {} }) {
     const { fechaInicio, fechaFin, motivo, detalleMotivo } = body;
 
     const licencia = await this.licenseRepository.findById(id);
     if (!licencia) {
       throw new NotFoundError('Licencia');
     }
+
+    // Alcance DOCENTE: solo sus propias solicitudes y solo mientras están PENDIENTES.
+    if (rolCodigo === 'DOCENTE') {
+      if (Number(licencia.createdBy) !== Number(usuarioId)) {
+        throw new ForbiddenError('Solo puedes editar las licencias que solicitaste vos.');
+      }
+      if (licencia.state !== ESTADOS_LICENCIAS.PENDIENTE) {
+        throw new ForbiddenError(
+          'Solo puedes editar tus solicitudes mientras están PENDIENTES.',
+        );
+      }
+    }
+
     if (licencia.state !== ESTADOS_LICENCIAS.PENDIENTE) {
       throw new ValidationError('Solo se pueden editar licencias en estado PENDIENTE');
     }

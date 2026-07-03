@@ -1,7 +1,8 @@
 -- ============================================
 -- VISTA BASE: vista_base_dashboard_actividad_docente
 -- Fila de actividad “alta de docente” para el dashboard (columnas normalizadas).
--- Consumida por: 45-vista-dashboard-actividades-recientes.sql
+-- Contrato de 10 columnas del feed (incluye estudiante_id/docente_id/usuario_id).
+-- Consumida por: 149-vista-dashboard-actividades-recientes.sql
 -- ============================================
 
 USE instituto_incos;
@@ -16,7 +17,10 @@ SELECT
     TRIM(CONCAT(COALESCE(d.apellido_paterno, ''), ' ', COALESCE(d.apellido_materno, ''), ' ', COALESCE(d.nombres, ''))) AS titulo,
     CONCAT('Alta de docente · ', COALESCE(NULLIF(TRIM(d.titulo_profesional), ''), 'Sin título declarado')) AS detalle,
     CONCAT('DOCENTE-', d.id) AS avatar_seed,
-    d.created_at AS ocurrido_en
+    d.created_at AS ocurrido_en,
+    CAST(NULL AS SIGNED) AS estudiante_id,
+    d.id AS docente_id,
+    d.created_by AS usuario_id
 FROM docentes d
 WHERE d.deleted_at IS NULL
   AND d.activo = TRUE;

@@ -1,7 +1,7 @@
 /**
  * Interfaz de Repositorio (solo lectura): IDashboardRepository
  *
- * Lecturas agregadas del dashboard desde vistas SQL (41–49) y tablas base.
+ * Lecturas agregadas del dashboard desde vistas SQL (41–48, 144–150) y tablas base.
  * NO extiende IRepository: repositorio de SOLO LECTURA.
  */
 export class IDashboardRepository {
@@ -60,5 +60,27 @@ export class IDashboardRepository {
   /** @param {number} _estudianteId @returns {Promise<number>} */
   async findSaldoPendienteEstudiante(_estudianteId) {
     throw new Error('Method findSaldoPendienteEstudiante() must be implemented');
+  }
+
+  // --- Portal del rol docente (GET /dashboard/mi-resumen-docente) ---
+
+  /** @param {number} _docenteId @param {number} _gestionAnio @returns {Promise<{total_asignaciones: number, horas_semanales: number}>} */
+  async findCargaDocenteGestion(_docenteId, _gestionAnio) {
+    throw new Error('Method findCargaDocenteGestion() must be implemented');
+  }
+
+  /** @param {number} _docenteId @param {number} _gestionId @returns {Promise<Array<Object>>} */
+  async findHorarioBloquesDocenteGestion(_docenteId, _gestionId) {
+    throw new Error('Method findHorarioBloquesDocenteGestion() must be implemented');
+  }
+
+  /** @param {number} _docenteId @param {number} [_limit] @returns {Promise<Array<Object>>} */
+  async findActividadesDeDocente(_docenteId, _limit) {
+    throw new Error('Method findActividadesDeDocente() must be implemented');
+  }
+
+  /** @param {number} _docenteId @param {number} _gestionId @returns {Promise<Array<Object>>} */
+  async findEstudiantesDeDocente(_docenteId, _gestionId) {
+    throw new Error('Method findEstudiantesDeDocente() must be implemented');
   }
 }

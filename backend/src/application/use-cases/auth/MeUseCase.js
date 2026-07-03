@@ -1,4 +1,5 @@
 import { mapPermisosEfectivos } from './mapPermisosEfectivos.js';
+import { resolveVinculoPerfilUsuario } from './resolveVinculoPerfilUsuario.js';
 
 /**
  * Caso de uso: perfil actual + permisos efectivos (vista).
@@ -46,22 +47,16 @@ export class MeUseCase {
   }
 
   /**
-   * Resuelve la persona/ficha vinculada al usuario (mismo shape que el detalle admin).
-   * Aditivo: ante ausencia de vínculo o de repos devuelve null sin romper /me.
+   * Resuelve la persona/ficha vinculada al usuario (mismo shape que el detalle
+   * admin). Delegado al helper compartido con LoginUseCase.
    * @param {number} usuarioId
    * @returns {Promise<Object|null>}
    */
   async resolveVinculoPerfil(usuarioId) {
-    if (!this.userRepository || !this.usuarioReferenciaVinculoRepository) {
-      return null;
-    }
-    const row = await this.userRepository.findByIdWithRoleForAdmin(usuarioId);
-    if (!row) {
-      return null;
-    }
-    return this.usuarioReferenciaVinculoRepository.findPerfilVinculado(
-      row.tipo_referencia,
-      row.referencia_id
-    );
+    return resolveVinculoPerfilUsuario({
+      userRepository: this.userRepository,
+      usuarioReferenciaVinculoRepository: this.usuarioReferenciaVinculoRepository,
+      usuarioId,
+    });
   }
 }

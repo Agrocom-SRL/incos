@@ -12,6 +12,8 @@ export class EditarLicenciaController {
     try {
       const resultado = await this.editarLicenciaUseCase.execute({
         usuarioId: req.usuario.id,
+        // Alcance por rol: DOCENTE solo edita sus propias solicitudes PENDIENTES.
+        rolCodigo: req.usuario.rolCodigo,
         id: Number(req.params.id),
         body: req.body ?? {},
       });

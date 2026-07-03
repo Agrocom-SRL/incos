@@ -16,6 +16,7 @@ import { IRepository } from './IRepository.js';
  * 
  * Métodos específicos:
  * - obtenerDatosAcademicos(filters) - Obtiene datos académicos completos desde vista_estudiante_datos_academicos
+ * - obtenerResumenAcademicoPorEstudianteIds(estudianteIds) - Resumen académico (periodo/paralelo actual, promedio historial) desde vista_estudiante_resumen_academico
  */
 export class IEstudianteDatosAcademicosRepository extends IRepository {
   /**
@@ -36,6 +37,21 @@ export class IEstudianteDatosAcademicosRepository extends IRepository {
    */
   async obtenerDatosAcademicos(filters = {}) {
     throw new Error('Method obtenerDatosAcademicos must be implemented by subclass');
+  }
+
+  /**
+   * Obtiene el resumen académico por estudiante desde vista_estudiante_resumen_academico
+   * (grano: una fila por estudiante).
+   *
+   * Campos: estudiante_id, periodo_actual_numero, periodo_actual_nombre,
+   * paralelo_actual (gestión vigente) y promedio_historial (entero, misma regla
+   * que resumen.promedioGeneral del historial académico).
+   *
+   * @param {number[]} _estudianteIds - IDs de estudiantes
+   * @returns {Promise<Array>} Array de objetos planos (una fila por estudiante)
+   */
+  async obtenerResumenAcademicoPorEstudianteIds(_estudianteIds) {
+    throw new Error('Method obtenerResumenAcademicoPorEstudianteIds must be implemented by subclass');
   }
 }
 

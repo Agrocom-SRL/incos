@@ -214,4 +214,35 @@ export class StudentAcademicDataRepository extends BaseRepository {
   async obtenerDatosAcademicosPorEstudianteIds(estudianteIds) {
     return this.obtenerDatosAcademicos({}, estudianteIds);
   }
+
+  /**
+   * Obtiene el resumen académico por estudiante desde vista_estudiante_resumen_academico
+   * (una fila por estudiante: periodo/paralelo actual en la gestión vigente +
+   * promedio entero del historial académico).
+   *
+   * @param {number[]} estudianteIds - IDs de estudiantes
+   * @returns {Promise<Array>} Array de objetos planos con el resumen académico
+   */
+  async obtenerResumenAcademicoPorEstudianteIds(estudianteIds) {
+    if (!Array.isArray(estudianteIds) || estudianteIds.length === 0) {
+      return [];
+    }
+
+    const placeholders = estudianteIds.map(() => '?').join(', ');
+    const query = `
+      SELECT
+        estudiante_id,
+        periodo_actual_numero,
+        periodo_actual_nombre,
+        paralelo_actual,
+        promedio_historial
+      FROM vista_estudiante_resumen_academico
+      WHERE estudiante_id IN (${placeholders})
+    `;
+
+    return sequelize.query(query, {
+      replacements: estudianteIds,
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
 }

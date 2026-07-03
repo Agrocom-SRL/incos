@@ -48,6 +48,13 @@ export const estudianteListMapper = (estudianteBackend) => {
     gestionIngresoNombre: estudianteBackend.gestionIngresoNombre ?? null,
     estadoAcademico: estudianteBackend.estadoAcademico ?? null,
     tipoAdmision: estudianteBackend.tipoAdmision ?? null,
+    // Landing enriquecida del Historial académico (contrato aditivo en
+    // docs/plan/HISTORIAL-ACADEMICO.md; null hasta que el backend los exponga)
+    gestionIngresoAnio: estudianteBackend.gestionIngresoAnio ?? null,
+    periodoActualNumero: estudianteBackend.periodoActualNumero ?? null,
+    periodoActualNombre: estudianteBackend.periodoActualNombre ?? null,
+    paraleloActual: estudianteBackend.paraleloActual ?? null,
+    promedioHistorial: estudianteBackend.promedioHistorial ?? null,
     // Datos laborales (compuesto + partes)
     datosTrabajo,
     trabaja: estudianteBackend.trabaja,

@@ -231,7 +231,20 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.academico', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.academico', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.academico', 'EXPORTAR'
-  UNION ALL SELECT 'DOCENTE', 'academico.historial.academico', 'LISTAR'
+  -- DOCENTE sin historial (decisión 2026-07-02): el kardex es administración
+  -- académica (REC, DIRA, SECA) + el propio estudiante; el docente ya tiene
+  -- sus notas en Calificaciones/Centralizador.
+  -- SEC_ACADEMICA: operación completa del historial (matriz: REC, DIRA, SECA).
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.historial.academico', 'LISTAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.historial.academico', 'DETALLE'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.historial.academico', 'EXPORTAR'
+  -- ESTUDIANTE: "Mi historial" (menú) + su propio transcript; el backend
+  -- fuerza el id propio en servidor (estudianteSelfOnlyGuard, anti-IDOR).
+  -- EXPORTAR (2026-07-03): descarga de su propio historial — la UI del portal
+  -- solo ofrece el PDF (FORM-SIE-ITT-04), espejo del criterio de Mi boletín.
+  UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'DETALLE'
+  UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'academico.historial.validar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.validar', 'APROBAR'
   UNION ALL SELECT 'RECTOR', 'academico.avance', 'LISTAR'
@@ -260,6 +273,11 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.crear', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.crear', 'ELIMINAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.crear', 'ELIMINAR'
+  -- DOCENTE (2026-07-03): el docente edita/cancela SOLO sus propias solicitudes
+  -- pendientes — guard created_by+estado en servidor (EditarLicenciaUseCase /
+  -- CancelarLicenciaUseCase); aprobar sigue en REC/DIRA/SECA.
+  UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.crear', 'EDITAR'
+  UNION ALL SELECT 'DOCENTE', 'academico.asistencia.licencia.crear', 'ELIMINAR'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.asistencia.licencia.aprobar', 'APROBAR'
@@ -329,9 +347,10 @@ WHERE codigo IN (
   'academico.trazabilidad.transitabilidad.recibir',
   'academico.trazabilidad.transitabilidad.convalidar',
   'academico.trazabilidad.transitabilidad.aprobar',
-  -- Historial
+  -- Historial: la pantalla del kardex (academico.historial.academico) ya
+  -- está construida (2026-07-02) y queda ACTIVA; solo folio/validar siguen
+  -- en construcción.
   'academico.historial.folio',
-  'academico.historial.academico',
   'academico.historial.validar',
   -- Avance académico
   'academico.avance'
@@ -356,7 +375,7 @@ WHERE codigo IN (
   'aca_nivelaciones',
   'aca_traspasos',
   'aca_transitabilidad',
-  'aca_historial',
+  -- 'aca_historial' reactivado (2026-07-02): la pantalla de historial existe.
   'aca_avance'
 );
 

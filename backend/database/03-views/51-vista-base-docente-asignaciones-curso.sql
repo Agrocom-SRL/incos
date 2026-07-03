@@ -28,7 +28,13 @@ SELECT
   gp.nombre AS gestion_plan_nombre,
   g.nombre AS gestion_nombre,
   g.anio AS gestion_anio,
-  ap.horas_semanales AS horas_plan
+  ap.horas_semanales AS horas_plan,
+  -- Columnas aditivas (2026-07-03): contexto de carrera/gestión para las vistas
+  -- de actividad del docente (145/147) y el roster de mis-estudiantes (150).
+  -- Los consumidores existentes seleccionan por nombre; no se altera nada previo.
+  car.id AS carrera_id,
+  car.codigo AS carrera_codigo,
+  gp.gestion_id AS gestion_id
 FROM asignaciones_docentes ad
 INNER JOIN oferta_cursos oc
   ON oc.id = ad.oferta_curso_id

@@ -36,7 +36,9 @@ import { ReciboPagoPdfGenerator } from '../../external/pdf/ReciboPagoPdfGenerato
 import { PDFGenerator } from '../../external/pdf/PDFGenerator.js';
 import { RegistroPedagogicoExcelBuilder } from '../../external/excel/RegistroPedagogicoExcelBuilder.js';
 import { CentralizadorExcelBuilder } from '../../external/excel/centralizador/CentralizadorExcelBuilder.js';
+import { HistorialAcademicoExcelBuilder } from '../../external/excel/historial-academico/HistorialAcademicoExcelBuilder.js';
 import { BoletinPdfGenerator } from '../../external/pdf/boletin/BoletinPdfGenerator.js';
+import { HistorialAcademicoPdfGenerator } from '../../external/pdf/historial-academico/HistorialAcademicoPdfGenerator.js';
 import { BecasReporteExcelBuilder } from '../../external/excel/finanzas-reportes/BecasReporteExcelBuilder.js';
 import { CuentasPorCobrarExcelBuilder } from '../../external/excel/finanzas-reportes/CuentasPorCobrarExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
@@ -137,8 +139,18 @@ export function registerServicesModule(container) {
     );
     registerService(
         container,
+        SERVICIOS_TOKENS.historialAcademicoExcelGenerator,
+        () => new HistorialAcademicoExcelBuilder()
+    );
+    registerService(
+        container,
         SERVICIOS_TOKENS.boletinPdfGenerator,
         (c) => new BoletinPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.historialAcademicoPdfGenerator,
+        (c) => new HistorialAcademicoPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
     );
     registerService(
         container,

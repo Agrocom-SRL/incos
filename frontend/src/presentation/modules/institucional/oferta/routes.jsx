@@ -77,7 +77,10 @@ export const ofertaRoutes = [
     path: '/institucional/oferta/docente/:docenteId/asignaciones',
     element: <DocenteAsignacionesConnector />,
     key: 'INST-OFERTA-DOCENTE-ASIGNACIONES',
-    permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+    // Rama docente self: el DOCENTE entra con `docentes.ver` a SUS asignaciones
+    // (el backend restringe los datos a su propio id); la edición (color) queda
+    // fail-closed tras `docentes.editar` en la UI.
+    permisoAny: [...INST_OFERTA_ACADEMICA_PERMISOS, 'docentes.ver'],
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'INST-OFERTA-ACADEMICA',
@@ -116,13 +119,17 @@ export const ofertaRoutes = [
     path: '/institucional/oferta',
     element: <OfertaDashboardConnector />,
     key: 'INST-OFERTA-ACADEMICA',
-    permisoAny: INST_OFERTA_ACADEMICA_PERMISOS,
+    // Rama docente self: el DOCENTE entra con `docentes.ver` y el connector lo
+    // redirige a SUS asignaciones (DocenteAsignacionesPage, solo lectura); el
+    // staff sigue entrando con los permisos de oferta.
+    permisoAny: [...INST_OFERTA_ACADEMICA_PERMISOS, 'docentes.ver'],
     accion: 'LISTAR',
     menu: {
       label: 'Oferta Académica',
       module: 'INST',
       parent: 'INST',
       order: 2,
+      labelByRole: { DOCENTE: 'Mis asignaciones' },
     },
   },
 ];

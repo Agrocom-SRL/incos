@@ -19,3 +19,5 @@ export { GetDocenteCargaGestionController } from './get-carga-gestion.controller
 export { UpdateDocenteColorController } from './put-docente-color.controller.js';
 export { GetDocenteColoresEnUsoController } from './get-colores-en-uso.controller.js';
 export { GetDocenteColoresSugeridosController } from './get-colores-sugeridos.controller.js';
+export { GetMisDatosDocenteController } from './get-mis-datos-docente.controller.js';
+export { GetMisEstudiantesDocenteController } from './get-mis-estudiantes-docente.controller.js';

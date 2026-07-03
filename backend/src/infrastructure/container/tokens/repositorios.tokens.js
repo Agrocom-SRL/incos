@@ -104,6 +104,7 @@ export const REPOSITORIOS_TOKENS = {
     calificacionContextoRepository: 'calificacionContextoRepository',
     calificacionCoordinacionRepository: 'calificacionCoordinacionRepository',
     calificacionCentralizadorRepository: 'calificacionCentralizadorRepository',
+    historialAcademicoRepository: 'historialAcademicoRepository',
     gestionBimestresRepository: 'gestionBimestresRepository',
     cronogramaGestionRepository: 'cronogramaGestionRepository',
 

@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import apiClient from '@api-client';
 import { HORARIOS_DOCENTE_ENDPOINTS } from '@api/endpoints';
 import { handleErrorResponse, handleSuccessResponse } from '@api/responseHandler';
+import { useAuth, esDocente } from '@application-auth';
 import { useGestionesCatalogApi } from '@application-shared/hooks';
 import { useGetDocenteById } from '@application-docentes/hooks/api';
 import { useDocenteColorApi } from '@application-docentes/hooks/api/useDocenteColorApi';
@@ -28,6 +29,11 @@ export function useDocenteAsignacionesState() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { notification } = App.useApp();
   const [form] = Form.useForm();
+
+  // Rama docente self (entra por el ítem "Mis asignaciones"): el breadcrumb del
+  // ítem debe reflejar la etiqueta con la que entró, no la administrativa.
+  const { usuario } = useAuth();
+  const esVistaDocente = esDocente(usuario);
 
   const tab = normalizeDocenteAsignacionesTab(searchParams.get('tab'));
 
@@ -200,10 +206,10 @@ export function useDocenteAsignacionesState() {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Institucional', href: '/institucional' },
-      { title: 'Oferta Académica', href: OFERTA_BASE },
+      { title: esVistaDocente ? 'Mis asignaciones' : 'Oferta Académica', href: OFERTA_BASE },
       { title: docenteNombre },
     ],
-    [docenteNombre],
+    [docenteNombre, esVistaDocente],
   );
 
   const pageTitle = `Asignaciones — ${docenteNombre}`;

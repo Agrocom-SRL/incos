@@ -2,23 +2,14 @@
 import { App, Flex, Dropdown, Typography, Avatar as AntAvatar } from 'antd';
 import { UserOutlined, LogoutOutlined, DownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, StatusPill } from '@atoms';
+import { Avatar } from '@atoms';
 import { allColors, allSpacing, typography } from '@theme/tokens';
 import { useAuthContext } from '@application-auth';
-import { rolPillClass } from '@modules/seguridad/roles/components/atoms/rolColor.js';
-import '@modules/seguridad/roles/styles/roles.css';
+import { buildInitials } from '@application/utils/formatters';
+import RolPill from './RolPill';
 import './HeaderRight.css';
 
 const { Text } = Typography;
-
-/** Iniciales (máx. 2) a partir del nombre o username. */
-const iniciales = (texto) => {
-  const limpio = String(texto || '').trim();
-  if (!limpio) return '—';
-  const partes = limpio.split(/\s+/).filter(Boolean);
-  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
-  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
-};
 
 /**
  * HeaderRight — sección derecha del header: menú de usuario.
@@ -31,9 +22,6 @@ const HeaderRight = () => {
 
     const nombre = user?.vinculo_perfil?.nombre_completo || user?.username || 'Usuario';
     const correo = user?.email || '—';
-    const rol = user?.rol?.nombre || null;
-    // Pill de rol con el mismo color por categoría que el módulo de Seguridad.
-    const pillClass = rolPillClass(user?.rol?.tipo, Boolean(user?.rol?.is_system));
 
     const handleLogout = async () => {
         message.success('Sesión cerrada correctamente');
@@ -46,7 +34,7 @@ const HeaderRight = () => {
             label: (
                 <div className="header-user__card" role="link" aria-label="Ir a mi perfil">
                     <AntAvatar size={44} className="header-user__avatar">
-                        {iniciales(nombre)}
+                        {buildInitials(nombre)}
                     </AntAvatar>
                     <div className="header-user__meta">
                         <Text className="header-user__name" ellipsis={{ tooltip: nombre }}>
@@ -55,7 +43,7 @@ const HeaderRight = () => {
                         <Text className="header-user__email" ellipsis={{ tooltip: correo }}>
                             {correo}
                         </Text>
-                        {rol ? <StatusPill label={rol} className={pillClass} /> : null}
+                        <RolPill rol={user?.rol} />
                     </div>
                 </div>
             ),

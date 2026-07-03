@@ -76,6 +76,12 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.ver', 'EXPORTAR'
+  -- DOCENTE (2026-07-03): portal docente — el ítem Docentes salta a SU propia ficha
+  -- vía wrapper; anti-IDOR docenteSelfOnlyGuard en servidor (GET /docentes/:id solo
+  -- acepta el id propio del docente de la sesión; staff sin restricción).
+  -- La ficha DocentesDetail solo consume GET /docentes/:id (DETALLE); sin escritura.
+  UNION ALL SELECT 'DOCENTE', 'docentes.ver', 'LISTAR'
+  UNION ALL SELECT 'DOCENTE', 'docentes.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'docentes.crear', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'docentes.asignar', 'CREAR'

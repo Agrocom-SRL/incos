@@ -255,6 +255,56 @@ export class TeacherAssignmentRepository extends BaseRepository {
   }
 
   /**
+   * ¿El estudiante está matriculado en algún curso VIGENTE del docente?
+   *
+   * Guard de alcance anti-IDOR de la ficha de estudiante para el rol DOCENTE
+   * (GET /estudiantes/:id): el docente solo puede abrir fichas de estudiantes
+   * de SUS cursos vigentes. Cadena: asignaciones_docentes → oferta_cursos ←
+   * matriculas_materia → inscripciones → estudiantes_datos_academicos.
+   *
+   * @param {number} docenteId
+   * @param {number} estudianteId
+   * @returns {Promise<boolean>}
+   */
+  async docenteTieneEstudianteVigente(docenteId, estudianteId) {
+    const docId = Number(docenteId);
+    const estId = Number(estudianteId);
+    if (!Number.isFinite(docId) || docId < 1 || !Number.isFinite(estId) || estId < 1) {
+      return false;
+    }
+
+    const rows = await sequelize.query(
+      `
+      SELECT 1 AS ok
+      FROM asignaciones_docentes ad
+      INNER JOIN matriculas_materia mm
+        ON mm.oferta_curso_id = ad.oferta_curso_id
+        AND mm.deleted_at IS NULL
+        AND mm.activo = TRUE
+      INNER JOIN inscripciones i
+        ON i.id = mm.inscripcion_id
+        AND i.deleted_at IS NULL
+        AND i.activo = TRUE
+      INNER JOIN estudiantes_datos_academicos eda
+        ON eda.id = i.datos_academicos_id
+        AND eda.deleted_at IS NULL
+      WHERE ad.docente_id = :docenteId
+        AND ad.vigente = TRUE
+        AND ad.activo = TRUE
+        AND ad.deleted_at IS NULL
+        AND eda.estudiante_id = :estudianteId
+      LIMIT 1
+      `,
+      {
+        replacements: { docenteId: docId, estudianteId: estId },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    return rows.length > 0;
+  }
+
+  /**
    * Resumen de carga horaria por docente en una gestión (dashboard).
    * @param {number} gestionId — PK de gestiones
    */

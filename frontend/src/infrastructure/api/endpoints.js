@@ -79,6 +79,10 @@ const createCRUDEndpoints = (basePath) => {
 // ============================================
 export const DOCENTES_ENDPOINTS = {
   ...createCRUDEndpoints('/docentes'),
+  /** GET — identidad del docente AUTENTICADO ({ id, nombreCompleto }); portal del docente */
+  MIS_DATOS: `${API_BASE}/docentes/mis-datos`,
+  /** GET — roster de estudiantes por curso del docente AUTENTICADO (gestión vigente) */
+  MIS_ESTUDIANTES: `${API_BASE}/docentes/mis-estudiantes`,
   /** GET (query) / POST — asignaciones docente ↔ curso ↔ plan habilitado */
   ASIGNACIONES: `${API_BASE}/docentes/asignaciones`,
   /** PATCH — actualizar asignación docente */
@@ -127,6 +131,14 @@ export const ESTUDIANTES_ENDPOINTS = {
   GENERATE_DECLARACION_JURADA: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/declaracion-jurada`,
   /** GET — Ficha completa (solo lectura) del estudiante autenticado (portal del estudiante). */
   MIS_DATOS: `${API_BASE}/estudiantes/mis-datos`,
+  /** GET — Historial académico (kardex/transcript FORM-SIE-ITT-04) del estudiante. */
+  HISTORIAL_ACADEMICO: (studentId) => `${API_BASE}/estudiantes/${studentId}/historial-academico`,
+  /** GET — Exporta el historial académico del estudiante a Excel (.xlsx). */
+  HISTORIAL_ACADEMICO_EXPORT: (studentId) =>
+    `${API_BASE}/estudiantes/${studentId}/historial-academico/export`,
+  /** GET — Exporta el historial académico del estudiante a PDF (FORM-SIE-ITT-04). */
+  HISTORIAL_ACADEMICO_EXPORT_PDF: (studentId) =>
+    `${API_BASE}/estudiantes/${studentId}/historial-academico/export-pdf`,
 };
 export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
 export const ESTUDIANTES_BECAS_ENDPOINTS = {
@@ -419,6 +431,8 @@ export const DASHBOARD_ENDPOINTS = {
   RESUMEN: `${API_BASE}/dashboard/resumen`,
   /** GET — resumen personal del estudiante autenticado (portal del estudiante). */
   MI_RESUMEN: `${API_BASE}/dashboard/mi-resumen`,
+  /** GET — resumen personal del docente autenticado (portal del docente). */
+  MI_RESUMEN_DOCENTE: `${API_BASE}/dashboard/mi-resumen-docente`,
 };
 
 // ============================================

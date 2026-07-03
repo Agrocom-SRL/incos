@@ -16,6 +16,7 @@ import {
   DocentesDetailConnector,
   DocentesCreateConnector,
   DocentesEditConnector,
+  MiHorarioConnector,
 } from '@docentes/connectors';
 
 const DocenteAsignacionesLegacyRedirect = () => {
@@ -35,6 +36,7 @@ export const docentesRoutes = [
       module: 'DOC',
       parent: 'DOC',
       order: 1,
+      labelByRole: { DOCENTE: 'Mi ficha' },
     },
   },
   {
@@ -82,6 +84,16 @@ export const docentesRoutes = [
     accion: 'APROBAR',
     menu: null,
     breadcrumbParent: 'DOC-LIC',
+  },
+  {
+    // Portal del docente: calendario semanal propio (identidad resuelta en servidor).
+    // Ruta literal ANTES de `/docentes/:id` para que React Router no la capture como id.
+    path: '/docentes/mi-horario',
+    element: <MiHorarioConnector />,
+    key: 'DOC-MI-HORARIO',
+    permiso: 'docentes.ver',
+    accion: 'LISTAR',
+    menu: null,
   },
   {
     path: '/docentes/:id/asignaciones',

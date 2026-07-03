@@ -122,6 +122,9 @@ export const estudiantesRoutes = [
     path: '/estudiantes/:id',
     element: <DetailConnector />,
     key: 'MAT-ADM-DETALLE',
+    // El DOCENTE también entra aquí (ficha SOLO LECTURA de SUS estudiantes desde
+    // "Mis estudiantes"): tiene `matricula.admision.ver` DETALLE sin LISTAR; el
+    // backend restringe por asignación.
     permiso: 'matricula.admision.ver',
     accion: 'DETALLE',
     menu: null,

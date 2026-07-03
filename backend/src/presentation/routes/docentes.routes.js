@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
+import { docenteSelfOnlyGuard } from '../middleware/docenteSelfOnly.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
 import {
   createTeacherValidator,
@@ -74,12 +75,46 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     ]),
   ];
 
+  // "Mis datos" se consume desde el portal del rol docente (autoservicio, sin
+  // permiso propio, como /auth/me). El acceso lo blinda resolveDocenteIdForUsuario:
+  // 403 si el usuario no está vinculado a un docente.
+  const misDatosDocente = [authenticate];
+
   router.get(
     '/',
     ...docentesListar,
     listValidator,
     validateRequest,
     (req, res, next) => controllers.listTeachersController.handle(req, res, next)
+  );
+
+  /**
+   * GET /api/v1/docentes/mis-datos
+   * Identidad mínima del docente de la sesión (se resuelve desde req.usuario.id
+   * en servidor). Payload: { id, nombreCompleto }. El frontend lo usa para
+   * redirigir al docente a SU propia ficha /docentes/:id.
+   *
+   * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+   */
+  router.get(
+    '/mis-datos',
+    ...misDatosDocente,
+    (req, res, next) => controllers.getMisDatosDocenteController.handle(req, res, next)
+  );
+
+  /**
+   * GET /api/v1/docentes/mis-estudiantes
+   * Roster de estudiantes de los cursos VIGENTES del docente de la sesión en la
+   * gestión vigente (portal del rol docente). Gate solo `authenticate`: la
+   * identidad se resuelve en servidor (resolveDocenteIdForUsuario, anti-IDOR;
+   * 403 si el usuario no está vinculado a un docente).
+   *
+   * IMPORTANTE: debe ir ANTES de /:id para evitar conflictos.
+   */
+  router.get(
+    '/mis-estudiantes',
+    ...misDatosDocente,
+    (req, res, next) => controllers.getMisEstudiantesDocenteController.handle(req, res, next)
   );
 
   router.post(
@@ -199,11 +234,14 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.getDocenteColoresSugeridosController.handle(req, res, next)
   );
 
+  // Lectura por :id consumida por la ficha; anti-IDOR: un usuario con vínculo
+  // docente solo puede consultar SU propio id (docenteSelfOnlyGuard).
   router.get(
     '/:id/carga-gestion',
     ...docenteCargaListar,
     ...getDocenteCargaGestionValidator,
     validateRequest,
+    docenteSelfOnlyGuard,
     (req, res, next) => controllers.getDocenteCargaGestionController.handle(req, res, next)
   );
 
@@ -233,11 +271,15 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.deleteTeacherController.handle(req, res, next)
   );
 
+  // Ficha del docente. El rol DOCENTE tiene DETALLE para ver SU propia ficha
+  // (portal del rol docente); docenteSelfOnlyGuard fuerza :id = docente propio
+  // (anti-IDOR). Staff sin vínculo docente pasa sin restricción.
   router.get(
     '/:id',
     ...docenteDetalle,
     ...idValidator,
     validateRequest,
+    docenteSelfOnlyGuard,
     (req, res, next) => controllers.getTeacherByIdController.handle(req, res, next)
   );
 

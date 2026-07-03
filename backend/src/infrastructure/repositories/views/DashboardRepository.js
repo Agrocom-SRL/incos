@@ -13,13 +13,9 @@ const {
   vistaAsignacionDocenteDetalle,
   tablaCarreras,
   tablaSesiones,
-  tablaPagoCuotas,
-  tablaPagoAporte,
-  tablaInscripciones,
-  tablaEstudiantesDatosAcademicos,
-  tablaGestiones,
-  tablaEstudiantesBecas,
-  tablaBecasDescuentos,
+  vistaDocenteCargaPorGestion,
+  vistaDocenteCursoBloquesHorario,
+  vistaDocenteCursoEstudiantes,
 } = DASHBOARD_QUERY_TARGETS;
 
 /**
@@ -266,9 +262,17 @@ export class DashboardRepository extends IDashboardRepository {
   }
 
   /**
-   * Feed PROPIO del estudiante (no el global admin): sus pagos, su matrícula y su
-   * beca, normalizados al shape de actividad (artefacto_tipo, artefacto_id,
-   * link_path, titulo, detalle, avatar_seed, ocurrido_en) y ordenados DESC.
+   * Feed PROPIO del estudiante (no el global admin), leído de la vista unificada
+   * `vista_dashboard_actividades_recientes` (149) filtrando por estudiante_id.
+   *
+   * Compatibilidad con el contrato previo del portal del estudiante:
+   * - artefacto_tipo se remapea: PAGO_CUOTA→PAGO, INSCRIPCION→MATRICULA,
+   *   BECA_ASIGNADA→BECA (el frontend ya mapea esos 3 tipos a iconos).
+   * - titulo y link_path se normalizan al shape del portal (etiqueta corta +
+   *   ruta accesible para el rol ESTUDIANTE); en la vista el titulo es el nombre
+   *   del propio estudiante, redundante en su feed personal.
+   * - Se filtra a los tipos que el estudiante debe ver: los 3 previos +
+   *   NOTA_REGISTRADA + LICENCIA (novedades de la segunda ola).
    *
    * @param {number} estudianteId
    * @param {number} limit
@@ -277,70 +281,129 @@ export class DashboardRepository extends IDashboardRepository {
   async findActividadesDeEstudiante(estudianteId, limit = 10) {
     const lim = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
     const query = `
-      SELECT * FROM (
-        SELECT
-          'PAGO' AS artefacto_tipo,
-          pc.id AS artefacto_id,
-          '/matricula/aportes/listar' AS link_path,
-          'Pago de aporte' AS titulo,
-          CONCAT('Bs ', FORMAT(pc.monto, 0), ' · recibo ', pc.numero_recibo) AS detalle,
-          CONCAT('PAGO-', pc.id) AS avatar_seed,
-          CAST(pc.fecha_pago AS DATETIME) AS ocurrido_en
-        FROM ${tablaPagoCuotas} pc
-        INNER JOIN ${tablaPagoAporte} pa
-          ON pa.id = pc.pago_aporte_id
-          AND pa.deleted_at IS NULL
-        WHERE pa.estudiante_id = ?
-          AND pc.deleted_at IS NULL
-          AND pc.activo = TRUE
+      SELECT
+        CASE va.artefacto_tipo
+          WHEN 'PAGO_CUOTA' THEN 'PAGO'
+          WHEN 'INSCRIPCION' THEN 'MATRICULA'
+          WHEN 'BECA_ASIGNADA' THEN 'BECA'
+          ELSE va.artefacto_tipo
+        END AS artefacto_tipo,
+        va.artefacto_id,
+        CASE va.artefacto_tipo
+          WHEN 'PAGO_CUOTA' THEN '/matricula/aportes/listar'
+          WHEN 'NOTA_REGISTRADA' THEN '/academico/mi-boletin'
+          ELSE '/perfil'
+        END AS link_path,
+        CASE va.artefacto_tipo
+          WHEN 'PAGO_CUOTA' THEN 'Pago de aporte'
+          WHEN 'INSCRIPCION' THEN 'Matrícula'
+          WHEN 'BECA_ASIGNADA' THEN 'Beca asignada'
+          WHEN 'NOTA_REGISTRADA' THEN 'Nota registrada'
+          WHEN 'LICENCIA' THEN 'Licencia'
+          ELSE va.titulo
+        END AS titulo,
+        va.detalle,
+        va.avatar_seed,
+        va.ocurrido_en
+      FROM ${vistaActividadesRecientes} va
+      WHERE va.estudiante_id = ?
+        AND va.artefacto_tipo IN (
+          'PAGO_CUOTA', 'INSCRIPCION', 'BECA_ASIGNADA', 'NOTA_REGISTRADA', 'LICENCIA'
+        )
+      ORDER BY va.ocurrido_en DESC
+      LIMIT ?
+    `;
+    return sequelize.query(query, {
+      replacements: [estudianteId, lim],
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
 
-        UNION ALL
-
-        SELECT
-          'MATRICULA' AS artefacto_tipo,
-          ins.id AS artefacto_id,
-          '/perfil' AS link_path,
-          'Matrícula' AS titulo,
-          NULLIF(CONCAT_WS(' · ', g.nombre, c.nombre), '') AS detalle,
-          CONCAT('MATRICULA-', ins.id) AS avatar_seed,
-          CAST(ins.created_at AS DATETIME) AS ocurrido_en
-        FROM ${tablaInscripciones} ins
-        INNER JOIN ${tablaEstudiantesDatosAcademicos} eda
-          ON eda.id = ins.datos_academicos_id
-          AND eda.deleted_at IS NULL
-        LEFT JOIN ${tablaGestiones} g
-          ON g.id = ins.gestion_id
-          AND g.deleted_at IS NULL
-        LEFT JOIN ${tablaCarreras} c
-          ON c.id = eda.carrera_id
-          AND c.deleted_at IS NULL
-        WHERE eda.estudiante_id = ?
-          AND ins.deleted_at IS NULL
-          AND ins.activo = TRUE
-
-        UNION ALL
-
-        SELECT
-          'BECA' AS artefacto_tipo,
-          eb.id AS artefacto_id,
-          '/perfil' AS link_path,
-          'Beca asignada' AS titulo,
-          NULLIF(CONCAT_WS(' · ', COALESCE(bd.nombre, 'Beca'), eb.estado), '') AS detalle,
-          CONCAT('BECA-', eb.id) AS avatar_seed,
-          CAST(eb.created_at AS DATETIME) AS ocurrido_en
-        FROM ${tablaEstudiantesBecas} eb
-        LEFT JOIN ${tablaBecasDescuentos} bd
-          ON bd.id = eb.beca_descuento_id
-          AND bd.deleted_at IS NULL
-        WHERE eb.estudiante_id = ?
-          AND eb.deleted_at IS NULL
-          AND eb.activo = TRUE
-      ) feed
+  /**
+   * Feed PROPIO del docente: sus sesiones de asistencia, clases no dictadas,
+   * asignaciones vigentes, notas registradas en sus cursos y su alta como
+   * docente, desde la vista unificada 149 filtrando por docente_id.
+   *
+   * Mismo shape snake_case del feed del estudiante: artefacto_tipo,
+   * artefacto_id, link_path, titulo, detalle, avatar_seed, ocurrido_en.
+   *
+   * @param {number} docenteId
+   * @param {number} limit
+   * @returns {Promise<Array<Record<string, unknown>>>}
+   */
+  async findActividadesDeDocente(docenteId, limit = 10) {
+    const lim = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+    const query = `
+      SELECT
+        artefacto_tipo,
+        artefacto_id,
+        link_path,
+        titulo,
+        detalle,
+        avatar_seed,
+        ocurrido_en
+      FROM ${vistaActividadesRecientes}
+      WHERE docente_id = ?
+        AND artefacto_tipo IN (
+          'ASISTENCIA_TOMADA', 'CLASE_NO_DICTADA', 'ASIGNACION_DOCENTE',
+          'NOTA_REGISTRADA', 'DOCENTE'
+        )
       ORDER BY ocurrido_en DESC
       LIMIT ?
     `;
     return sequelize.query(query, {
-      replacements: [estudianteId, estudianteId, estudianteId, lim],
+      replacements: [docenteId, lim],
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
+
+  /**
+   * Roster de estudiantes de los cursos VIGENTES del docente en una gestión
+   * (vista 150, `vista_docente_curso_estudiantes`): una fila por estudiante
+   * matriculado × curso asignado, ordenado por carrera, materia y apellidos.
+   *
+   * @param {number} docenteId
+   * @param {number} gestionId - Gestión vigente (contexto de calificaciones)
+   * @returns {Promise<Array<Record<string, unknown>>>}
+   */
+  async findEstudiantesDeDocente(docenteId, gestionId) {
+    const query = `
+      SELECT
+        asignacion_docente_id,
+        oferta_curso_id,
+        materia_sigla,
+        materia_nombre,
+        carrera_id,
+        carrera_codigo,
+        carrera_nombre,
+        carrera_color_hex,
+        paralelo_nombre,
+        paralelo_turno,
+        asignatura_periodo_nombre,
+        matricula_materia_id,
+        estado_matricula,
+        tipo_inscripcion,
+        estudiante_id,
+        codigo_estudiante,
+        ci,
+        expedicion,
+        apellido_paterno,
+        apellido_materno,
+        nombres,
+        genero
+      FROM ${vistaDocenteCursoEstudiantes}
+      WHERE docente_id = ?
+        AND gestion_id = ?
+        AND vigente = TRUE
+      ORDER BY
+        carrera_nombre ASC,
+        materia_sigla ASC,
+        apellido_paterno ASC,
+        apellido_materno ASC,
+        nombres ASC
+    `;
+    return sequelize.query(query, {
+      replacements: [docenteId, gestionId],
       type: sequelize.QueryTypes.SELECT,
     });
   }
@@ -399,5 +462,83 @@ export class DashboardRepository extends IDashboardRepository {
     });
     const row = rows[0] || {};
     return Number(row.saldo_pendiente_total ?? 0);
+  }
+
+  // ============================================================================
+  // Portal del rol docente: GET /dashboard/mi-resumen-docente
+  // El docente se resuelve SIEMPRE en servidor (anti-IDOR). Estos métodos
+  // reciben el docenteId y el contexto de gestión ya resueltos desde el use case.
+  // ============================================================================
+
+  /**
+   * Carga académica del docente en la gestión indicada (vista 53,
+   * `vista_docente_carga_por_gestion`). La vista trae una fila por gestión + plan
+   * habilitado, por eso se agrega con SUM.
+   *
+   * Mapeo vista → contrato del panel:
+   * - num_asignaciones_vigentes → total_asignaciones (el panel refleja la carga
+   *   ACTUAL: asignaciones vigentes de la gestión, no las históricas/no vigentes)
+   * - horas_semanales_vigentes  → horas_semanales (SUM de COALESCE(carga_horaria, horas_plan))
+   *
+   * @param {number} docenteId
+   * @param {number} gestionAnio - Año de la gestión vigente (contexto de calificaciones)
+   * @returns {Promise<{ total_asignaciones: number, horas_semanales: number }>}
+   */
+  async findCargaDocenteGestion(docenteId, gestionAnio) {
+    const query = `
+      SELECT
+        COALESCE(SUM(num_asignaciones_vigentes), 0) AS total_asignaciones,
+        COALESCE(SUM(horas_semanales_vigentes), 0) AS horas_semanales
+      FROM ${vistaDocenteCargaPorGestion}
+      WHERE docente_id = ?
+        AND gestion_anio = ?
+    `;
+    const rows = await sequelize.query(query, {
+      replacements: [docenteId, gestionAnio],
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const row = rows[0] || {};
+    return {
+      total_asignaciones: Number(row.total_asignaciones ?? 0),
+      horas_semanales: Number(row.horas_semanales ?? 0),
+    };
+  }
+
+  /**
+   * Bloques de horario del docente en la gestión vigente (vista 128,
+   * `vista_base_docente_curso_bloques_horario`), ordenados por día y hora.
+   *
+   * Columnas recortadas al contrato del panel (el use case las pasa a camelCase):
+   * - hora_inicio / hora_fin se normalizan a HH:MM con TIME_FORMAT.
+   * - aula = COALESCE(aula_codigo, aula_nombre): la vista expone el aula del
+   *   paralelo; si el paralelo no tiene aula asignada, queda NULL (el contrato
+   *   admite aula null; NO se toca la vista).
+   *
+   * @param {number} docenteId
+   * @param {number} gestionId - Gestión vigente (contexto de calificaciones)
+   * @returns {Promise<Array<Record<string, unknown>>>}
+   */
+  async findHorarioBloquesDocenteGestion(docenteId, gestionId) {
+    const query = `
+      SELECT
+        dia,
+        TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio,
+        TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin,
+        materia_sigla,
+        materia_nombre,
+        paralelo_nombre,
+        COALESCE(aula_codigo, aula_nombre) AS aula,
+        curso_color_hex
+      FROM ${vistaDocenteCursoBloquesHorario}
+      WHERE docente_id = ?
+        AND gestion_id = ?
+      ORDER BY
+        FIELD(dia, 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'),
+        hora_inicio ASC
+    `;
+    return sequelize.query(query, {
+      replacements: [docenteId, gestionId],
+      type: sequelize.QueryTypes.SELECT,
+    });
   }
 }

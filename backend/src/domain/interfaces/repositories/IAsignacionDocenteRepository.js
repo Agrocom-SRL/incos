@@ -42,4 +42,9 @@ export class IAsignacionDocenteRepository extends IRepository {
   async findEnrichedById(id) {
     throw new Error('Method findEnrichedById() must be implemented');
   }
+
+  /** ¿El estudiante está matriculado en algún curso VIGENTE del docente? (guard de alcance). */
+  async docenteTieneEstudianteVigente(_docenteId, _estudianteId) {
+    throw new Error('Method docenteTieneEstudianteVigente() must be implemented');
+  }
 }

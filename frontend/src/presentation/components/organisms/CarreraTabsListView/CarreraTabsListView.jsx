@@ -173,6 +173,7 @@ const CarreraTabsListView = ({
   searchText = '',
   onSearchChange,
   searchPlaceholder = 'Buscar...',
+  showSearch = true,
   rowKey,
   searchColSpan = 10,
   searchStyle,
@@ -206,6 +207,7 @@ const CarreraTabsListView = ({
       searchText={searchText}
       onSearchChange={onSearchChange}
       searchPlaceholder={searchPlaceholder}
+      showSearch={showSearch}
       columns={columns}
       rowKey={rowKey}
       searchColSpan={searchColSpan}
@@ -242,6 +244,7 @@ const CarreraTabsListView = ({
       error,
       searchText,
       onSearchChange,
+      showSearch,
       pagination,
       defaultSort,
       tableClassName,

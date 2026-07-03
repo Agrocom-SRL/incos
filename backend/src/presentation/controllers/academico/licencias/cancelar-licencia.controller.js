@@ -12,6 +12,8 @@ export class CancelarLicenciaController {
     try {
       const resultado = await this.cancelarLicenciaUseCase.execute({
         usuarioId: req.usuario.id,
+        // Alcance por rol: DOCENTE solo cancela sus propias solicitudes PENDIENTES.
+        rolCodigo: req.usuario.rolCodigo,
         id: Number(req.params.id),
         observacionesDecision: req.body?.observacionesDecision,
       });
