@@ -132,6 +132,9 @@ export const ESTUDIANTES_ENDPOINTS = {
   /** GET — Exporta el historial académico del estudiante a Excel (.xlsx). */
   HISTORIAL_ACADEMICO_EXPORT: (studentId) =>
     `${API_BASE}/estudiantes/${studentId}/historial-academico/export`,
+  /** GET — Exporta el historial académico del estudiante a PDF (FORM-SIE-ITT-04). */
+  HISTORIAL_ACADEMICO_EXPORT_PDF: (studentId) =>
+    `${API_BASE}/estudiantes/${studentId}/historial-academico/export-pdf`,
 };
 export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
 export const ESTUDIANTES_BECAS_ENDPOINTS = {

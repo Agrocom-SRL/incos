@@ -1,14 +1,10 @@
 /**
- * Pie/resumen del Historial académico (FORM-SIE-ITT-04).
- *
- * Replica el pie del transcript: escala de valoración (61-100 APROBADO,
- * 0-60 REPROBADO, nota mínima 61), carga horaria total, asignaturas aprobadas
- * (X/Y) y promedio de calificaciones.
+ * Resumen del Historial académico (FORM-SIE-ITT-04): carga horaria total,
+ * asignaturas aprobadas (X/Y) y promedio de calificaciones. Se muestra ARRIBA
+ * de la tabla transcript (los totales del documento oficial, como tiles).
  *
  * Recibe el resumen ya calculado por el backend. Solo composición + tokens.
  */
-
-import { Alert } from 'antd';
 
 /** Muestra un valor numérico o "—" cuando está vacío. */
 const dash = (value) => (value == null || value === '' ? '—' : value);
@@ -40,14 +36,6 @@ const HistorialResumen = ({ resumen }) => {
           </div>
         ))}
       </div>
-
-      <Alert
-        type="info"
-        showIcon
-        className="historial-resumen__escala"
-        title="Escala de valoración"
-        description="61 a 100: APROBADO · 0 a 60: REPROBADO · Nota mínima de aprobación: 61."
-      />
     </section>
   );
 };

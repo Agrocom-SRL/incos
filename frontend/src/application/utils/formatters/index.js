@@ -17,6 +17,7 @@
 export {
   buildCompleteCI,
   buildFullName,
+  buildInitials,
   buildPersonDisplayData,
 } from './personFormatters';
 

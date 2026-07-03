@@ -13,8 +13,14 @@ import { buildFullName } from '@application/utils/formatters';
 
 /**
  * Normaliza una fila de la búsqueda de estudiantes al DTO de selección.
+ * Passthrough aditivo de las columnas académicas de la landing enriquecida
+ * (contrato `docs/plan/HISTORIAL-ACADEMICO.md` §"Landing enriquecida"):
+ * `null` cuando el backend aún no las expone (la UI muestra "—").
  * @param {Object} row - Fila cruda de `GET /estudiantes/search`.
- * @returns {{ id: number, codigoEstudiante: string|null, ci: string|null, nombreCompleto: string }|null}
+ * @returns {{ id: number, codigoEstudiante: string|null, ci: string|null, nombreCompleto: string,
+ *   gestionIngresoAnio: number|null, periodoActualNumero: number|null,
+ *   periodoActualNombre: string|null, paraleloActual: string|null,
+ *   promedioHistorial: number|null }|null}
  */
 export const mapEstudianteBusqueda = (row) => {
   if (!row || row.id == null) return null;
@@ -28,6 +34,12 @@ export const mapEstudianteBusqueda = (row) => {
       row.apellidoMaterno,
       row.nombreCompleto || 'Sin nombre',
     ),
+    // Landing enriquecida (mismos dataKey que el listado completo)
+    gestionIngresoAnio: row.gestionIngresoAnio ?? null,
+    periodoActualNumero: row.periodoActualNumero ?? null,
+    periodoActualNombre: row.periodoActualNombre ?? null,
+    paraleloActual: row.paraleloActual ?? null,
+    promedioHistorial: row.promedioHistorial ?? null,
   };
 };
 

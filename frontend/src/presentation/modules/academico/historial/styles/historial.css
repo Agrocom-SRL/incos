@@ -1,57 +1,33 @@
 /* ============================================================================
    HISTORIAL ACADÉMICO — transcript oficial (FORM-SIE-ITT-04)
    ============================================================================
-   Solo layout + consumo de tokens (cero hex/px de color sueltos). La cabecera de
-   la tabla usa el verde de marca (var(--color-primary)) como banda de planilla
-   académica; el texto sobre el verde usa var(--color-text-on-primary).
+   Layout + consumo de tokens. La tabla replica el KIT DE PLANILLA académico
+   (mismo lenguaje que calificaciones/asistencia/centralizador): cabecera en
+   verde primario con texto blanco y tokens locales --cuaderno-* espejo de
+   centralizador.css.
    ============================================================================ */
 
-/* ---- Cabecera del documento -------------------------------------------- */
-.historial-doc {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
+/* ---- Cabecera de contexto (ficha, gemela de cal-centralizador-profile) --
+   La base la aporta .sd-profile (detail-page.css, ya importado por la página).
+   Aquí solo el avatar con las iniciales del estudiante (teñido de marca) y la
+   pill del régimen (tinte primario vía color-mix, cero hex sueltos). */
+.historial-profile__avatar {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-hover) 100%
+  );
 }
 
-.historial-doc__band {
-  display: flex;
-  flex-direction: column;
+.historial-profile__pill {
+  display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: var(--spacing-lg) var(--spacing-md);
-  text-align: center;
-  border: 1px solid var(--color-primary-border);
-  border-radius: var(--border-radius-lg);
-  background: var(--color-primary-bg);
-}
-
-.historial-doc__eyebrow {
-  font-size: var(--font-size-sm);
+  letter-spacing: 0.02em;
   font-weight: var(--font-weight-bold);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--color-primary);
-}
-
-.historial-doc__title {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-strong);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text);
-}
-
-.historial-doc__form-code {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.1em;
-  color: var(--color-text-tertiary);
-}
-
-.historial-doc__student-name {
-  font-weight: var(--font-weight-strong);
-  text-transform: uppercase;
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg-container));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 38%, transparent);
 }
 
 .historial-doc__empty {
@@ -61,19 +37,74 @@
   background: var(--color-bg-container);
 }
 
-/* ---- Tabla transcript (planilla académica) ----------------------------- */
+/* ---- Tabla transcript — KIT DE PLANILLA académico -----------------------
+   Espejo del kit del cuaderno/centralizador (calificaciones, asistencia,
+   centralizador): cabecera VERDE PRIMARIO con texto blanco, celdas compactas
+   con borde suave y cifras tabulares. Tokens locales idénticos a los de
+   centralizador.css (mapean variables globales del proyecto).
+   La tabla vive dentro de la "hoja" (Card sin padding, gemela de la del
+   centralizador); la hoja recorta la tabla a su radio y aporta el scroll. */
+.historial-hoja-card .ant-card-body {
+  overflow-x: auto;
+  border-radius: inherit;
+}
+
+.historial-transcript-grid {
+  --cuaderno-verde-tenue: #e8f5ec;
+  --cuaderno-verde-oscuro: var(--color-primary, #196b45);
+  --cuaderno-fondo: #fafafa;
+  --cuaderno-borde: #e5e7eb;
+  --cuaderno-texto-tenue: #9ca3af;
+  --cuaderno-texto-medio: var(--text-500, #6b7280);
+  --cuaderno-texto-fuerte: var(--text-800, #1f2937);
+}
+
+/* Mismo cuerpo de letra que la grilla del centralizador. */
+.historial-transcript-grid .ant-table {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cabecera: banda verde primario + texto blanco (kit de planilla). */
 .historial-transcript-grid .ant-table-thead > tr > th,
 .historial-transcript-grid .ant-table-thead > tr > th.ant-table-cell-fix-left,
 .historial-transcript-grid .ant-table-thead > tr > th.ant-table-cell-fix-right {
-  background: var(--color-primary) !important;
-  color: var(--color-text-on-primary) !important;
-  font-weight: var(--font-weight-strong);
+  background: var(--cuaderno-verde-oscuro) !important;
+  color: #fff !important;
+  font-weight: 700;
+  padding: 8px 6px !important;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: bottom;
   border-color: var(--color-primary-hover) !important;
 }
 
 /* Sin barrita divisoria gris sobre el verde. */
 .historial-transcript-grid .ant-table-thead > tr > th::before {
   display: none !important;
+}
+
+/* Celdas del cuerpo: separador vertical suave (mismo trazo que el centralizador)
+   y hover verde tenue del kit. */
+.historial-transcript-grid .ant-table-tbody > tr > td {
+  border-right: 1px solid var(--text-400) !important;
+}
+
+.historial-transcript-grid .ant-table-tbody > tr:hover > td {
+  background: var(--cuaderno-verde-tenue) !important;
+}
+
+/* Fila de materia REPROBADA: tinte de error suave en toda la fila (el historial
+   debe evidenciar las reprobadas, no solo la cifra de la nota). */
+.historial-transcript-grid .ant-table-tbody > tr.historial-transcript-grid__row--reprobado > td {
+  background: color-mix(in srgb, var(--color-error) 7%, var(--color-bg-container));
+}
+
+.historial-transcript-grid
+  .ant-table-tbody
+  > tr.historial-transcript-grid__row--reprobado:hover
+  > td {
+  background: color-mix(in srgb, var(--color-error) 12%, var(--color-bg-container)) !important;
 }
 
 /* Cifras tabulares para columnas numéricas (alineación uniforme). */
@@ -155,60 +186,30 @@
   color: var(--color-primary);
 }
 
-.historial-resumen__escala {
-  margin: 0;
+/* ---- Selector de estudiante (landing) ----------------------------------
+   Buscador único de la página (dentro del header del workspace); la lista
+   (tabs por carrera / resultados de búsqueda) la resuelven los organismos
+   CarreraTabsListView / TableListView con sus propios estilos. */
+.historial-selector__buscar {
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
 }
 
-/* ---- Selector de estudiante (landing) ---------------------------------- */
-.historial-selector__resultados {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
+/* Tono semántico del promedio en el selector (patrón cfg-genero-tone de las
+   tablas hermanas: tiñe icono + label de la línea de InfoLinesCell). Éxito con
+   promedio ≥ nota mínima de aprobación; advertencia por debajo. Los !important
+   son necesarios porque el label es Typography secondary (mismo trade-off que
+   cfg-genero-tone en table-cells.css). */
+.historial-promedio-tone--aprobado .cfg-academico-metricas-list__icon,
+.historial-promedio-tone--aprobado .cfg-academico-metricas-list__label {
+  color: var(--color-success) !important;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
 }
 
-.historial-selector__resultado {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  width: 100%;
-  padding: var(--spacing-md) var(--spacing-lg);
-  text-align: left;
-  cursor: pointer;
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
-  background: var(--color-bg-container);
-  transition:
-    border-color var(--dur-hover, 0.16s) var(--ease-out, ease),
-    background var(--dur-hover, 0.16s) var(--ease-out, ease);
-}
-
-.historial-selector__resultado:hover {
-  border-color: var(--color-primary-border);
-  background: var(--color-primary-bg);
-}
-
-.historial-selector__resultado:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-.historial-selector__resultado-nombre {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text);
-}
-
-.historial-selector__resultado-meta {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-/* Accesibilidad: sin transiciones para usuarios con motion reducido
-   (mismo patrón que asistencia.css / finanzas-planilla.css). */
-@media (prefers-reduced-motion: reduce) {
-  .historial-selector__resultado {
-    transition: none;
-  }
+.historial-promedio-tone--riesgo .cfg-academico-metricas-list__icon,
+.historial-promedio-tone--riesgo .cfg-academico-metricas-list__label {
+  color: var(--color-warning) !important;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
 }

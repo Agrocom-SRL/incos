@@ -1,54 +1,66 @@
 /**
- * Cabecera del documento de Historial académico (FORM-SIE-ITT-04).
+ * Cabecera de contexto del Historial académico (FORM-SIE-ITT-04).
  *
- * Replica la cabecera del transcript oficial: banda del instituto + título del
- * documento + código de formulario, y una rejilla de datos del estudiante
- * (CARRERA, NIVEL DE FORMACIÓN, RÉGIMEN, FECHA DE ADMISIÓN/CONCLUSIÓN, MATRÍCULA,
- * ESTUDIANTE, CÉDULA DE IDENTIDAD).
+ * Mismo lenguaje visual que CentralizadorContextoHeader / CursoContextoAsistencia:
+ * ficha a TODO el ancho (sd-profile vía DetailProfileCard) con avatar de iniciales
+ * del estudiante, carrera como subtítulo, pill del régimen y la rejilla de stats
+ * del documento (C.I., matrícula, nivel, admisión/conclusión, formulario).
  *
  * Recibe el estudiante ya mapeado (nombre en orden canónico desde el backend). No
  * llama hooks de fetch. Solo composición + tokens (sin hex/px inline).
  */
 
-import { DetailInfoCard } from '@molecules';
-import { DetailField } from '@atoms';
+import { BookOutlined, CalendarOutlined } from '@ant-design/icons';
+import { DetailProfileCard } from '@organisms';
+import { buildCompleteCI, buildInitials } from '@application/utils/formatters';
+
+/** Identidad del documento oficial (transcript). */
+const HISTORIAL_DOC = {
+  formulario: 'FORM-SIE-ITT-04',
+  regimenFallback: 'ANUAL',
+};
 
 /** Muestra un valor o "—" cuando está vacío. */
 const dash = (value) => (value == null || value === '' ? '—' : value);
 
-/** C.I. con expedición opcional: "4741310 CB". */
-const formatCedula = (ci, expedicion) =>
-  [ci, expedicion].filter(Boolean).join(' ') || '—';
-
 /** Carrera con su código: "SISTEMAS INFORMATICOS · SIS-INF". */
 const formatCarrera = (nombre, codigo) =>
-  [nombre, codigo].filter(Boolean).join(' · ') || '—';
+  [nombre, codigo].filter(Boolean).join(' · ') || null;
 
-const HistorialCabecera = ({ estudiante }) => (
-  <section className="historial-doc" aria-label="Cabecera del historial académico">
-    <header className="historial-doc__band">
-      <span className="historial-doc__eyebrow">INCOS</span>
-      <h2 className="historial-doc__title">Historial académico</h2>
-      <span className="historial-doc__form-code">FORM-SIE-ITT-04</span>
-    </header>
+const HistorialCabecera = ({ estudiante }) => {
+  const est = estudiante ?? {};
+  const carrera = formatCarrera(est.carreraNombre, est.carreraCodigo);
+  const regimen = est.regimen || HISTORIAL_DOC.regimenFallback;
 
-    <DetailInfoCard title="Datos del estudiante" cols={3}>
-      <DetailField label="Estudiante" span={3}>
-        <span className="historial-doc__student-name">{dash(estudiante?.nombreCompleto)}</span>
-      </DetailField>
-      <DetailField label="Cédula de identidad">
-        {formatCedula(estudiante?.ci, estudiante?.expedicion)}
-      </DetailField>
-      <DetailField label="Matrícula">{dash(estudiante?.matricula)}</DetailField>
-      <DetailField label="Régimen">{dash(estudiante?.regimen)}</DetailField>
-      <DetailField label="Carrera" span={2}>
-        {formatCarrera(estudiante?.carreraNombre, estudiante?.carreraCodigo)}
-      </DetailField>
-      <DetailField label="Nivel de formación">{dash(estudiante?.nivelFormacion)}</DetailField>
-      <DetailField label="Fecha de admisión">{dash(estudiante?.fechaAdmision)}</DetailField>
-      <DetailField label="Fecha de conclusión">{dash(estudiante?.fechaConclusion)}</DetailField>
-    </DetailInfoCard>
-  </section>
-);
+  const stats = [
+    { label: 'Cédula de identidad', value: buildCompleteCI(est.ci, est.expedicion) || '—' },
+    { label: 'Matrícula', value: dash(est.matricula) },
+    { label: 'Nivel', value: dash(est.nivelFormacion) },
+    { label: 'Admisión', value: dash(est.fechaAdmision) },
+    { label: 'Conclusión', value: dash(est.fechaConclusion) },
+    { label: 'Formulario', value: HISTORIAL_DOC.formulario },
+  ].map((stat) => ({ ...stat, primary: true }));
+
+  return (
+    <DetailProfileCard
+      avatarInitials={buildInitials(est.nombreCompleto)}
+      avatarClassName="sd-profile__avatar historial-profile__avatar"
+      title={dash(est.nombreCompleto)}
+      subtitle={
+        <>
+          <BookOutlined aria-hidden />
+          {carrera || 'Historial académico'}
+        </>
+      }
+      metaExtra={
+        <span className="sd-profile__admission-pill historial-profile__pill">
+          <CalendarOutlined aria-hidden />
+          {regimen}
+        </span>
+      }
+      stats={stats}
+    />
+  );
+};
 
 export default HistorialCabecera;

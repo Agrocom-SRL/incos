@@ -94,6 +94,28 @@ export const buildFullName = (nombres, apellidoPaterno, apellidoMaterno, fallbac
  * })
  * // { ciCompleto: '8159625 LP', nombreCompleto: 'Pérez González Juan' }
  */
+/**
+ * Iniciales de una persona para avatares (máx. 2 letras).
+ * Toma la primera letra de la primera y de la última palabra del nombre
+ * mostrado (con el orden canónico apellidos-primero equivale a
+ * APELLIDO_PATERNO + NOMBRES).
+ *
+ * @param {string|null|undefined} nombre - Nombre completo mostrado
+ * @param {string} fallback - Texto por defecto si no hay nombre (default: '—')
+ * @returns {string} Iniciales en mayúsculas
+ *
+ * @example
+ * buildInitials('Pérez González Juan') // 'PJ'
+ * buildInitials('Pérez') // 'PÉ'
+ * buildInitials(null) // '—'
+ */
+export const buildInitials = (nombre, fallback = '—') => {
+  const partes = String(nombre || '').trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return fallback;
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase();
+};
+
 export const buildPersonDisplayData = (personData, nameFallback = 'Sin nombre') => {
   if (!personData) {
     return {

@@ -7,6 +7,10 @@
 
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { StudentMapper } from '../../mappers/estudiantes/index.js';
+import {
+  applyResumenAcademico,
+  buildResumenAcademicoByStudentId,
+} from './support/resumenAcademicoEnricher.js';
 
 export class ListStudentsUseCase extends BaseListUseCase {
   /**
@@ -54,10 +58,16 @@ export class ListStudentsUseCase extends BaseListUseCase {
       const data = StudentMapper.viewRowsToPresentation(result.students || []);
 
       // Enriquecer con datos académicos (carrera, gestión ingreso, tipo admisión) desde vista_estudiante_datos_academicos
+      // + resumen académico (periodo/paralelo actual, promedio historial) desde vista_estudiante_resumen_academico
       const studentIds = data.map((s) => s.id).filter((id) => id != null);
       let academicByStudentId = {};
+      let resumenByStudentId = {};
       if (studentIds.length > 0 && this.studentAcademicDataRepository) {
-        const academicRows = await this.studentAcademicDataRepository.obtenerDatosAcademicosPorEstudianteIds(studentIds);
+        const [academicRows, resumenMap] = await Promise.all([
+          this.studentAcademicDataRepository.obtenerDatosAcademicosPorEstudianteIds(studentIds),
+          buildResumenAcademicoByStudentId(this.studentAcademicDataRepository, studentIds),
+        ]);
+        resumenByStudentId = resumenMap;
         academicRows.forEach((row) => {
           const id = row.estudiante_id;
           if (id != null && !academicByStudentId[id]) {
@@ -66,21 +76,26 @@ export class ListStudentsUseCase extends BaseListUseCase {
               carreraCodigo: row.carrera_codigo ?? null,
               carreraColorHex: row.carrera_color_hex ?? null,
               gestionIngresoNombre: row.gestion_ingreso_nombre ?? null,
+              gestionIngresoAnio: row.gestion_ingreso_anio ?? null,
               estadoAcademico: row.estado_academico ?? null,
               tipoAdmision: row.tipo_admision ?? null,
             };
           }
         });
       }
-      const dataWithAcademic = data.map((item) => ({
-        ...item,
-        carreraNombre: academicByStudentId[item.id]?.carreraNombre ?? null,
-        carreraCodigo: academicByStudentId[item.id]?.carreraCodigo ?? null,
-        carreraColorHex: academicByStudentId[item.id]?.carreraColorHex ?? null,
-        gestionIngresoNombre: academicByStudentId[item.id]?.gestionIngresoNombre ?? null,
-        estadoAcademico: academicByStudentId[item.id]?.estadoAcademico ?? null,
-        tipoAdmision: academicByStudentId[item.id]?.tipoAdmision ?? null,
-      }));
+      const dataWithAcademic = applyResumenAcademico(
+        data.map((item) => ({
+          ...item,
+          carreraNombre: academicByStudentId[item.id]?.carreraNombre ?? null,
+          carreraCodigo: academicByStudentId[item.id]?.carreraCodigo ?? null,
+          carreraColorHex: academicByStudentId[item.id]?.carreraColorHex ?? null,
+          gestionIngresoNombre: academicByStudentId[item.id]?.gestionIngresoNombre ?? null,
+          gestionIngresoAnio: academicByStudentId[item.id]?.gestionIngresoAnio ?? null,
+          estadoAcademico: academicByStudentId[item.id]?.estadoAcademico ?? null,
+          tipoAdmision: academicByStudentId[item.id]?.tipoAdmision ?? null,
+        })),
+        resumenByStudentId
+      );
 
       const enrichedData = await this.enrichData(dataWithAcademic, result);
       const totalPages = Math.ceil(result.total / limitNum);

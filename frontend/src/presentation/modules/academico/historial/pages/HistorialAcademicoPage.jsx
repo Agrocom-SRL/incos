@@ -1,18 +1,19 @@
 /**
  * HistorialAcademicoPage — detalle del Historial académico (permiso DETALLE).
  *
- * Documento FORM-SIE-ITT-04 del estudiante `:id`: cabecera (datos del estudiante)
- * + tabla transcript (todas las gestiones) + pie resumen (escala de valoración,
- * carga horaria, aprobadas, promedio). Botón Exportar (Excel) con ActionButton
- * (permiso academico.historial.academico · acción EXPORTAR).
+ * Documento FORM-SIE-ITT-04 del estudiante `:id`, con el mismo lenguaje visual
+ * que el Centralizador: ficha de contexto (sd-profile con datos del estudiante)
+ * + tiles del resumen (carga horaria, aprobadas, promedio) ARRIBA de la tabla
+ * transcript, que vive dentro de la "hoja" (Card sin padding). Botón Exportar
+ * con ActionButton (permiso academico.historial.academico · EXPORTAR).
  *
  * Página "dumb": compone template + organismos y consume el contexto que publica
  * `HistorialAcademicoProvider` (estado en hooks/state). Cubre carga/vacío/error.
  */
 
 import { useNavigate } from 'react-router-dom';
-import { App, Empty, Flex } from 'antd';
-import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { App, Card, Empty, Flex } from 'antd';
+import { ArrowLeftOutlined, FileExcelOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
@@ -20,11 +21,18 @@ import { DetailPageShell } from '@organisms';
 import { allSpacing } from '@theme/tokens';
 import { useHistorialAcademicoContext } from '@application-academico/historial/hooks/context/useHistorialAcademicoContext.js';
 import { HISTORIAL_SELECTOR_PATH } from '@application-academico/historial/utils/historialPaths.js';
+import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import HistorialCabecera from '../components/HistorialCabecera.jsx';
-import HistorialTranscriptTable from '../components/HistorialTranscriptTable.jsx';
 import HistorialResumen from '../components/HistorialResumen.jsx';
+import HistorialTranscriptTable from '../components/HistorialTranscriptTable.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/historial.css';
+
+/** "Hoja" de planilla: card sin padding, gemela de cal-centralizador-hoja-card. */
+const hojaCardProps = {
+  ...sectionCardProps,
+  styles: { body: { padding: 0 } },
+};
 
 const HistorialAcademicoPage = () => {
   const navigate = useNavigate();
@@ -37,7 +45,9 @@ const HistorialAcademicoPage = () => {
     error,
     sinFilas,
     descargando,
+    descargandoPdf,
     exportarExcel,
+    exportarPdf,
     breadcrumbItems,
     refetch,
   } = useHistorialAcademicoContext();
@@ -57,8 +67,36 @@ const HistorialAcademicoPage = () => {
     }
   };
 
+  const handleExportarPdf = async () => {
+    const result = await exportarPdf();
+    if (result.success) {
+      notification.success({
+        title: 'Historial exportado',
+        description:
+          'La descarga del PDF del historial académico (FORM-SIE-ITT-04) comenzará en unos segundos.',
+      });
+    } else {
+      notification.error({
+        title: 'No se pudo exportar',
+        description: result.error || 'Reintentá en unos segundos.',
+      });
+    }
+  };
+
   const actions = (
     <Flex gap={allSpacing.marginSM} wrap="wrap">
+      <ActionButton
+        permiso="academico.historial.academico"
+        accion="EXPORTAR"
+        variant="primary"
+        icon={<FilePdfOutlined />}
+        loading={descargandoPdf}
+        disabled={loading || !!error || sinFilas}
+        onClick={handleExportarPdf}
+        title="Exporta el historial académico oficial (FORM-SIE-ITT-04) en PDF"
+      >
+        PDF
+      </ActionButton>
       <ActionButton
         permiso="academico.historial.academico"
         accion="EXPORTAR"
@@ -69,7 +107,7 @@ const HistorialAcademicoPage = () => {
         onClick={handleExportar}
         title="Exporta el historial académico del estudiante a Excel"
       >
-        Exportar
+        Excel
       </ActionButton>
       <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(HISTORIAL_SELECTOR_PATH)}>
         Volver
@@ -99,14 +137,16 @@ const HistorialAcademicoPage = () => {
         {estudiante ? (
           <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
             <HistorialCabecera estudiante={estudiante} />
+            <HistorialResumen resumen={resumen} />
             {sinFilas ? (
               <div className="historial-doc__empty">
                 <Empty description="Aún no hay asignaturas registradas en el historial." />
               </div>
             ) : (
-              <HistorialTranscriptTable filas={filas} />
+              <Card className="historial-hoja-card" {...hojaCardProps}>
+                <HistorialTranscriptTable filas={filas} />
+              </Card>
             )}
-            <HistorialResumen resumen={resumen} />
           </Flex>
         ) : null}
       </DetailPageShell>

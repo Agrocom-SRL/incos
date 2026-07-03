@@ -14,6 +14,7 @@ import { PageTemplate } from '@templates';
 import { PageHeader, DataTable } from '@molecules';
 import { Button } from '@atoms';
 import { DetailPageShell, DetailProfileCard } from '@organisms';
+import { buildInitials } from '@application/utils/formatters';
 import { useMiBoletin } from '@application-academico/calificaciones/hooks/state/useMiBoletin.js';
 import { miBoletinColumns } from '@academico/calificaciones/config/miBoletinColumns.jsx';
 import '@presentation/styles/pages/detail-page.css';
@@ -24,14 +25,6 @@ import '../styles/mi-boletin.css';
 const gestionLabel = (gestion) => {
   if (!gestion) return null;
   return gestion.nombre || gestion.anio || null;
-};
-
-/** Iniciales del estudiante para el avatar (máx. 2 letras). */
-const iniciales = (nombre) => {
-  const partes = String(nombre || '').trim().split(/\s+/).filter(Boolean);
-  if (partes.length === 0) return '—';
-  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
-  return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase();
 };
 
 const MiBoletinPage = () => {
@@ -95,7 +88,7 @@ const MiBoletinPage = () => {
         {boletin ? (
           <>
             <DetailProfileCard
-              avatarInitials={iniciales(estudiante?.nombreCompleto)}
+              avatarInitials={buildInitials(estudiante?.nombreCompleto)}
               avatarClassName="sd-profile__avatar sd-profile__avatar--default"
               title={estudiante?.nombreCompleto || '—'}
               subtitle={subtitulo}

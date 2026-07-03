@@ -34,6 +34,7 @@ export const ESTUDIANTES_TOKENS = {
     exportStudentEnrollmentStudentListExcelUseCase: 'estudiantes.exportStudentEnrollmentStudentListExcelUseCase',
     getHistorialAcademicoUseCase: 'estudiantes.getHistorialAcademicoUseCase',
     exportHistorialAcademicoExcelUseCase: 'estudiantes.exportHistorialAcademicoExcelUseCase',
+    exportHistorialAcademicoPdfUseCase: 'estudiantes.exportHistorialAcademicoPdfUseCase',
 
     // CONTROLLERS
     listStudentsController: 'estudiantes.listStudentsController',
@@ -57,6 +58,7 @@ export const ESTUDIANTES_TOKENS = {
     exportListaInscritosPorCarreraExcelController: 'estudiantes.exportListaInscritosPorCarreraExcelController',
     getHistorialAcademicoController: 'estudiantes.getHistorialAcademicoController',
     exportHistorialAcademicoExcelController: 'estudiantes.exportHistorialAcademicoExcelController',
+    exportHistorialAcademicoPdfController: 'estudiantes.exportHistorialAcademicoPdfController',
 
     // ROUTERS
     estudiantesRouter: 'estudiantes.estudiantesRouter',

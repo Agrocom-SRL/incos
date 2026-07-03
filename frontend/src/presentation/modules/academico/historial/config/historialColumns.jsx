@@ -64,7 +64,7 @@ export const historialColumns = [
     render: (_, record) => dash(record.periodoNombre),
   },
   {
-    title: 'Código',
+    title: 'Sigla',
     key: 'asignaturaSigla',
     width: 96,
     fixed: 'left',

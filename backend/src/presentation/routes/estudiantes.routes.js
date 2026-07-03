@@ -343,6 +343,23 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     );
 
     /**
+     * GET /api/v1/estudiantes/:id/historial-academico/export-pdf
+     * Descarga el historial académico del estudiante en PDF (FORM-SIE-ITT-04).
+     * Permiso: academico.historial.academico EXPORTAR.
+     *
+     * Debe declararse ANTES de GET /:id/historial-academico y de GET /:id.
+     */
+    // anti-IDOR: un estudiante solo exporta SU propio historial
+    router.get(
+        '/:id/historial-academico/export-pdf',
+        ...historialExportar,
+        idValidator,
+        validateRequest,
+        estudianteSelfOnlyGuard,
+        (req, res, next) => controllers.exportHistorialAcademicoPdfController.handle(req, res, next)
+    );
+
+    /**
      * GET /api/v1/estudiantes/:id/historial-academico
      * Historial académico (kardex / transcript) del estudiante: { estudiante, filas, resumen }.
      * Permiso: academico.historial.academico DETALLE.

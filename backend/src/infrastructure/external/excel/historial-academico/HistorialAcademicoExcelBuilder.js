@@ -45,6 +45,9 @@ const ESTADO_COLOR = {
   RETIRADO: EXCEL_COLOR.danger,
 };
 
+/** Estados que tiñen TODA la fila con el relleno tenue de error (paridad con la pantalla). */
+const ESTADOS_REPROBATORIOS = new Set(['REPROBADO', 'ABANDONO', 'RETIRADO']);
+
 const fmtNota = (n) => (n == null || Number.isNaN(Number(n)) ? '—' : String(n));
 
 export class HistorialAcademicoExcelBuilder extends IHistorialAcademicoExcelGenerator {
@@ -188,7 +191,7 @@ export class HistorialAcademicoExcelBuilder extends IHistorialAcademicoExcelGene
     head(COL.prereq, 'PRE-REQ.');
     head(COL.nota, 'NOTA FINAL');
     head(COL.recup, 'PRUEBA RECUP.');
-    head(COL.estado, 'ESTADO');
+    head(COL.estado, 'OBSERVACIONES');
     head(COL.origen, 'ORIGEN');
     c.rowHeight(r, 30);
     return r + 1;
@@ -207,7 +210,10 @@ export class HistorialAcademicoExcelBuilder extends IHistorialAcademicoExcelGene
 
     rows.forEach((f, idx) => {
       const r = startRow + idx;
-      const zebra = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
+      // Materia reprobada/baja: toda la fila con relleno tenue de error (paridad
+      // con el tinte de fila de la pantalla); el resto alterna zebra.
+      const zebraBase = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
+      const zebra = ESTADOS_REPROBATORIOS.has(f.estado) ? EXCEL_COLOR.dangerSoft : zebraBase;
       const { small } = EXCEL_FONT_SIZE;
 
       c.cell(r, COL.nro, f.nro ?? idx + 1, { fill: zebra, size: small });

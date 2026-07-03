@@ -498,14 +498,16 @@ siguen desactivados hasta construirse).
 
 | Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
 |---|---|---|---|
-| `academico.historial.academico` | LISTAR | Ítem menú Historial → selector/buscador de estudiante ("Mi historial" para EST) | REC, DIRA, SECA, DOC, EST |
-| `academico.historial.academico` | DETALLE | Transcript `/academico/historial/academico/:id` (`GET /estudiantes/:id/historial-academico`) | REC, DIRA, SECA, DOC, EST (solo propio) |
+| `academico.historial.academico` | LISTAR | Ítem menú Historial → lista de estudiantes + buscador ("Mi historial" para EST) | REC, DIRA, SECA, EST |
+| `academico.historial.academico` | DETALLE | Transcript `/academico/historial/academico/:id` (`GET /estudiantes/:id/historial-academico`) | REC, DIRA, SECA, EST (solo propio) |
 | `academico.historial.academico` | EXPORTAR | Excel kit planilla verde (`GET .../historial-academico/export`) | REC, DIRA, SECA |
 | `academico.historial.folio` | CREAR, EDITAR, GENERAR_PDF | Folio del egresado (**desactivado**, en construcción) | REC, DIRA |
 | `academico.historial.validar` | APROBAR | Validación para egreso (**desactivado**, en construcción) | REC, DIRA |
 
 > **Anti-IDOR:** ambas rutas llevan `estudianteSelfOnlyGuard` tras `verificarPermiso`: un usuario
 > con vínculo estudiante solo accede a su propio `:id` (resuelto en servidor); staff sin restricción.
+> **DOCENTE sin historial** (decisión 2026-07-02): el kardex es administración académica + el
+> propio estudiante; el docente consulta notas en Calificaciones/Centralizador.
 > **Datos:** vista final delgada `141-vista-historial-academico-estudiante-fila` (une bases
 > `138` nota efectiva, `139` detalle asignatura del plan, `140` historial previo). Plan:
 > `docs/plan/HISTORIAL-ACADEMICO.md`.

@@ -6,17 +6,22 @@
  * nombre completo en orden canónico (mapper). Búsqueda DEBOUNCED por texto libre
  * (mín. 2 caracteres), con descarte de respuestas obsoletas (race conditions).
  *
- * Espeja el patrón de `useBuscarEstudiantesRegistro` (Finanzas) pero sin acoplarse
- * a datos financieros: aquí solo se necesita identificar al estudiante.
+ * Contrato del endpoint (BaseSearchController.formatSearchResponse): el `data`
+ * llega ENVUELTO como `{ student: [...] }` con varios resultados y `{ student: {...} }`
+ * (objeto suelto) con uno solo. Se normaliza SIEMPRE a array con el transformador
+ * genérico `normalizeFieldToArray` (mismo patrón que `useSearchStudent`).
+ * "Sin resultados" llega como 404 NOT_FOUND del backend: se trata como lista
+ * vacía (estado empty), no como error.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import EstudianteRepository from '@infrastructure/repositories/EstudianteRepository.js';
+import { normalizeFieldToArray } from '@application/utils';
 import { mapEstudianteBusqueda } from '@application-academico/historial/mappers/historialMapper.js';
 
 /** Retardo del debounce (ms) y mínimo de caracteres para disparar la búsqueda. */
 const DEBOUNCE_MS = 350;
-const MIN_QUERY_LENGTH = 2;
+export const MIN_QUERY_LENGTH = 2;
 const DEFAULT_LIMIT = 25;
 
 export const useBuscarEstudiantesHistorial = () => {
@@ -41,13 +46,18 @@ export const useBuscarEstudiantesHistorial = () => {
     if (requestId !== requestIdRef.current) return;
 
     if (!result?.success) {
+      // 404 NOT_FOUND del BaseSearchController = búsqueda sin coincidencias → empty, no error.
+      const sinResultados = result?.errorDetails?.code === 'NOT_FOUND';
       setEstudiantes([]);
-      setError(result?.error || 'No se pudieron buscar los estudiantes');
+      setError(sinResultados ? null : result?.error || 'No se pudieron buscar los estudiantes');
       setLoading(false);
       return;
     }
 
-    const rows = Array.isArray(result.data) ? result.data.map(mapEstudianteBusqueda).filter(Boolean) : [];
+    // Desenvuelve `{ student: [...] | {...} }` y garantiza array antes de mapear.
+    const rows = normalizeFieldToArray(result.data, 'student')
+      .map(mapEstudianteBusqueda)
+      .filter(Boolean);
     setEstudiantes(rows);
     setLoading(false);
   }, []);

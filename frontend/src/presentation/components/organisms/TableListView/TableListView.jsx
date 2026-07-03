@@ -46,6 +46,8 @@ const TableListView = ({
     searchPlaceholder = 'Buscar...',
     searchColSpan = 8,
     searchStyle,
+    /** Oculta la barra de búsqueda interna (cuando la página ya tiene buscador propio). */
+    showSearch = true,
 
     // Configuración de tabla
     columns = [],
@@ -122,15 +124,17 @@ const TableListView = ({
                 </Flex>
             ) : null}
 
-            <Row justify="end" className="table-list-view__search-row" style={{ marginBottom: 12 }}>
-                <Col span={searchColSpan} style={searchStyle}>
-                    <SearchBar
-                        placeholder={searchPlaceholder}
-                        value={searchText}
-                        onChange={onSearchChange}
-                    />
-                </Col>
-            </Row>
+            {showSearch ? (
+                <Row justify="end" className="table-list-view__search-row" style={{ marginBottom: 12 }}>
+                    <Col span={searchColSpan} style={searchStyle}>
+                        <SearchBar
+                            placeholder={searchPlaceholder}
+                            value={searchText}
+                            onChange={onSearchChange}
+                        />
+                    </Col>
+                </Row>
+            ) : null}
 
             <DataTable
                 dataSource={data}

@@ -247,8 +247,37 @@ export class EstudianteRepository extends IEstudianteRepository {
    * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
    */
   async descargarHistorialAcademicoExcel(id) {
+    return this._descargarHistorialAcademico(
+      ESTUDIANTES_ENDPOINTS.HISTORIAL_ACADEMICO_EXPORT(id),
+      'historial_academico.xlsx',
+    );
+  }
+
+  /**
+   * Descarga el historial académico del estudiante en PDF (FORM-SIE-ITT-04).
+   * GET /v1/estudiantes/:id/historial-academico/export-pdf
+   *
+   * @param {string|number} id - ID del estudiante
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarHistorialAcademicoPdf(id) {
+    return this._descargarHistorialAcademico(
+      ESTUDIANTES_ENDPOINTS.HISTORIAL_ACADEMICO_EXPORT_PDF(id),
+      'historial_academico.pdf',
+    );
+  }
+
+  /**
+   * Descarga binaria del historial académico (Excel o PDF): resuelve el nombre
+   * de archivo desde Content-Disposition y normaliza los errores blob del backend.
+   *
+   * @param {string} url - Endpoint de exportación
+   * @param {string} defaultFileName - Nombre por defecto si el header no lo trae
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async _descargarHistorialAcademico(url, defaultFileName) {
     try {
-      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.HISTORIAL_ACADEMICO_EXPORT(id), {
+      const response = await apiClient.get(url, {
         responseType: 'blob',
       });
 
@@ -257,7 +286,7 @@ export class EstudianteRepository extends IEstudianteRepository {
       const quotedMatch = disposition.match(/filename="([^"]+)"/i);
       const plainMatch = disposition.match(/filename=([^;\s]+)/i);
 
-      let fileName = 'historial_academico.xlsx';
+      let fileName = defaultFileName;
       if (starMatch) {
         try {
           fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));

@@ -231,9 +231,9 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.academico', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.academico', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.academico', 'EXPORTAR'
-  UNION ALL SELECT 'DOCENTE', 'academico.historial.academico', 'LISTAR'
-  -- DOCENTE abre el transcript del estudiante elegido (sin EXPORTAR).
-  UNION ALL SELECT 'DOCENTE', 'academico.historial.academico', 'DETALLE'
+  -- DOCENTE sin historial (decisión 2026-07-02): el kardex es administración
+  -- académica (REC, DIRA, SECA) + el propio estudiante; el docente ya tiene
+  -- sus notas en Calificaciones/Centralizador.
   -- SEC_ACADEMICA: operación completa del historial (matriz: REC, DIRA, SECA).
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.historial.academico', 'LISTAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.historial.academico', 'DETALLE'
