@@ -240,8 +240,11 @@ FROM (
   UNION ALL SELECT 'SEC_ACADEMICA', 'academico.historial.academico', 'EXPORTAR'
   -- ESTUDIANTE: "Mi historial" (menú) + su propio transcript; el backend
   -- fuerza el id propio en servidor (estudianteSelfOnlyGuard, anti-IDOR).
+  -- EXPORTAR (2026-07-03): descarga de su propio historial — la UI del portal
+  -- solo ofrece el PDF (FORM-SIE-ITT-04), espejo del criterio de Mi boletín.
   UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'DETALLE'
+  UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'academico.historial.validar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.validar', 'APROBAR'
   UNION ALL SELECT 'RECTOR', 'academico.avance', 'LISTAR'

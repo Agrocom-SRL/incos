@@ -4,8 +4,12 @@
  * Documento FORM-SIE-ITT-04 del estudiante `:id`, con el mismo lenguaje visual
  * que el Centralizador: ficha de contexto (sd-profile con datos del estudiante)
  * + tiles del resumen (carga horaria, aprobadas, promedio) ARRIBA de la tabla
- * transcript, que vive dentro de la "hoja" (Card sin padding). Botón Exportar
+ * transcript, que vive dentro de la "hoja" (Card sin padding). Botones Exportar
  * con ActionButton (permiso academico.historial.academico · EXPORTAR).
+ *
+ * Rama ESTUDIANTE (portal, "Mi historial"): solo la descarga en PDF — sin Excel
+ * ni Volver (llega directo desde el menú, sin selector). Espejo del criterio de
+ * Mi boletín (única descarga permitida al estudiante, en PDF).
  *
  * Página "dumb": compone template + organismos y consume el contexto que publica
  * `HistorialAcademicoProvider` (estado en hooks/state). Cubre carga/vacío/error.
@@ -19,6 +23,7 @@ import { PageHeader } from '@molecules';
 import { BackButton, ActionButton } from '@atoms';
 import { DetailPageShell } from '@organisms';
 import { allSpacing } from '@theme/tokens';
+import { useAuth, esEstudiante } from '@application-auth';
 import { useHistorialAcademicoContext } from '@application-academico/historial/hooks/context/useHistorialAcademicoContext.js';
 import { HISTORIAL_SELECTOR_PATH } from '@application-academico/historial/utils/historialPaths.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
@@ -37,6 +42,9 @@ const hojaCardProps = {
 const HistorialAcademicoPage = () => {
   const navigate = useNavigate();
   const { notification } = App.useApp();
+  const { usuario } = useAuth();
+  // Portal del estudiante ("Mi historial"): solo PDF, sin Excel ni Volver.
+  const esPortalEstudiante = esEstudiante(usuario);
   const {
     estudiante,
     filas,
@@ -95,23 +103,27 @@ const HistorialAcademicoPage = () => {
         onClick={handleExportarPdf}
         title="Exporta el historial académico oficial (FORM-SIE-ITT-04) en PDF"
       >
-        PDF
+        Descargar PDF
       </ActionButton>
-      <ActionButton
-        permiso="academico.historial.academico"
-        accion="EXPORTAR"
-        variant="info"
-        icon={<FileExcelOutlined />}
-        loading={descargando}
-        disabled={loading || !!error || sinFilas}
-        onClick={handleExportar}
-        title="Exporta el historial académico del estudiante a Excel"
-      >
-        Excel
-      </ActionButton>
-      <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(HISTORIAL_SELECTOR_PATH)}>
-        Volver
-      </BackButton>
+      {!esPortalEstudiante && (
+        <ActionButton
+          permiso="academico.historial.academico"
+          accion="EXPORTAR"
+          variant="info"
+          icon={<FileExcelOutlined />}
+          loading={descargando}
+          disabled={loading || !!error || sinFilas}
+          onClick={handleExportar}
+          title="Exporta el historial académico del estudiante a Excel"
+        >
+          Descargar Excel
+        </ActionButton>
+      )}
+      {!esPortalEstudiante && (
+        <BackButton icon={<ArrowLeftOutlined />} onClick={() => navigate(HISTORIAL_SELECTOR_PATH)}>
+          Volver
+        </BackButton>
+      )}
     </Flex>
   );
 

@@ -498,9 +498,9 @@ siguen desactivados hasta construirse).
 
 | Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
 |---|---|---|---|
-| `academico.historial.academico` | LISTAR | Ítem menú Historial → lista de estudiantes + buscador ("Mi historial" para EST) | REC, DIRA, SECA, EST |
+| `academico.historial.academico` | LISTAR | Ítem menú Historial → lista de estudiantes + buscador ("Mi historial" para EST: redirige a su transcript) | REC, DIRA, SECA, EST |
 | `academico.historial.academico` | DETALLE | Transcript `/academico/historial/academico/:id` (`GET /estudiantes/:id/historial-academico`) | REC, DIRA, SECA, EST (solo propio) |
-| `academico.historial.academico` | EXPORTAR | Excel kit planilla verde (`GET .../historial-academico/export`) | REC, DIRA, SECA |
+| `academico.historial.academico` | EXPORTAR | Excel kit planilla verde (`GET .../export`) + PDF FORM-SIE-ITT-04 (`GET .../export-pdf`, plantilla boletín). La UI del portal EST solo ofrece PDF | REC, DIRA, SECA, EST (solo propio) |
 | `academico.historial.folio` | CREAR, EDITAR, GENERAR_PDF | Folio del egresado (**desactivado**, en construcción) | REC, DIRA |
 | `academico.historial.validar` | APROBAR | Validación para egreso (**desactivado**, en construcción) | REC, DIRA |
 
