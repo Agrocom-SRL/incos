@@ -5,9 +5,9 @@
  * Lenguaje visual del prototipo de listado (incos-ui-system §4): `#` numérico +
  * `IdentidadCelda` (código + APELLIDOS NOMBRES, ya compuestos por el hook con
  * `buildFullName`) + `InfoLinesCell` (C.I.) + `StatusPill` (estado de matrícula)
- * + `TableActions` con única acción "ver" fail-closed (`estudiantes.ver` DETALLE:
- * el docente solo accede a la ficha de SUS estudiantes; el guard fino vive en el
- * backend). Sin estilos inline sueltos ni `Space orientation` (deprecado).
+ * + `TableActions` con única acción "ver" fail-closed (`matricula.admision.ver`
+ * DETALLE: el docente solo accede a la ficha de SUS estudiantes; el guard fino
+ * vive en el backend). Sin estilos inline sueltos ni `Space orientation` (deprecado).
  */
 
 import { IdcardOutlined } from '@ant-design/icons';
@@ -102,9 +102,10 @@ export const createMisEstudiantesDocenteColumns = (navigate) => [
         navigate={navigate}
         viewPath="/estudiantes/:id"
         permisos={{
-          // Rama docente: `estudiantes.ver` DETALLE (ficha de SUS estudiantes;
-          // el backend restringe por asignación). Fail-closed sin el permiso.
-          ver: { codigo: 'estudiantes.ver', accion: 'DETALLE' },
+          // Rama docente: el DOCENTE tiene `matricula.admision.ver` DETALLE
+          // (sin LISTAR) para la ficha de SUS estudiantes; el backend restringe
+          // por asignación. Fail-closed sin el permiso.
+          ver: { codigo: 'matricula.admision.ver', accion: 'DETALLE' },
         }}
       />
     ),

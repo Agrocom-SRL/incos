@@ -28,6 +28,9 @@ export function buildGestionesRouter({ controllers, middlewares }) {
         verificarPermisoCualquiera([
             ['institucional.gestion.actual', 'LISTAR'],
             ['institucional.oferta.gestion-plan', 'LISTAR'],
+            // Rama docente self (2026-07-03): el catálogo de gestiones es solo
+            // lectura y lo necesita su grilla de asignaciones (gestión vigente).
+            ['docentes.ver', 'LISTAR'],
         ]),
     ];
     const permisoOfertaGestion = 'institucional.oferta.gestion-plan';

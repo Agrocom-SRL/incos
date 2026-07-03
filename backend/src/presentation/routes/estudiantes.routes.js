@@ -426,7 +426,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         estudianteSelfOnlyGuard,  // 3. Anti-IDOR: un estudiante solo ve SU propia ficha
-        estudianteAlcanceDocenteGuard,  // 4. Anti-IDOR: un docente solo ve estudiantes de SUS cursos vigentes
+        estudianteAlcanceDocenteGuard, // 4. Anti-IDOR: docente solo ve estudiantes de SUS cursos
         (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 5. Controller al final
     );
 

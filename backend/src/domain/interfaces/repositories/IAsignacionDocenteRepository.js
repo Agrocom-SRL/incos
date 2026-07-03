@@ -44,7 +44,7 @@ export class IAsignacionDocenteRepository extends IRepository {
   }
 
   /** ¿El estudiante está matriculado en algún curso VIGENTE del docente? (guard de alcance). */
-  async docenteTieneEstudianteVigente(docenteId, estudianteId) {
+  async docenteTieneEstudianteVigente(_docenteId, _estudianteId) {
     throw new Error('Method docenteTieneEstudianteVigente() must be implemented');
   }
 }

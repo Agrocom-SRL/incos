@@ -26,7 +26,7 @@ import {
   IdcardOutlined,
 } from '@ant-design/icons';
 import { useStudentDetailContext, useDeleteBecaAsignada } from '@application-estudiantes/hooks';
-import { useAuthContext, esEstudiante } from '@application-auth';
+import { useAuthContext, esEstudiante, esDocente } from '@application-auth';
 import {
   GuardiansSection,
   DocumentDeliveriesSection,
@@ -75,6 +75,8 @@ const EstudiantesDetail = () => {
   const { hasPermiso, usuario } = useAuthContext();
   /** Vista propia del estudiante (reusa esta pantalla como "Mis datos"). */
   const esVistaPropiaEstudiante = esEstudiante(usuario);
+  /** Rama docente (ficha de SUS estudiantes desde "Mis estudiantes"): SOLO LECTURA. */
+  const esVistaDocente = esDocente(usuario);
   const pageTitle = esVistaPropiaEstudiante ? 'Mis datos' : 'Detalle del Estudiante';
   const {
     loading, error, student, studentData,
@@ -482,8 +484,9 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }] : []),
-    // "Acceso al sistema": gestión de cuenta — oculto en la vista propia del estudiante.
-    ...(esVistaPropiaEstudiante ? [] : [{
+    // "Acceso al sistema": gestión de cuenta (info administrativa) — oculto en la
+    // vista propia del estudiante y en la rama docente (solo lectura académica).
+    ...(esVistaPropiaEstudiante || esVistaDocente ? [] : [{
       key: 'acceso',
       label: <span className="sd-tab-label"><IdcardOutlined /> Acceso al sistema</span>,
       children: (
@@ -509,7 +512,7 @@ const EstudiantesDetail = () => {
     deletingBecaId, deletingBeca, estadoAporte, loadingEstadoAporte, handleVerDetallePago,
     handleRegistrarPago, puedeVerInscripcion, puedeCrearInscripcion, puedeVerPago, puedeRegistrarPago,
     puedeEliminarBeca, puedeGenerarPdfDocumento, showDeclaracionButton,
-    access, puedeCrearUsuario, puedeEditarUsuario,
+    access, puedeCrearUsuario, puedeEditarUsuario, esVistaDocente,
   ]);
 
   /* ── Estados de carga / error ── */
@@ -532,11 +535,14 @@ const EstudiantesDetail = () => {
   );
 
   // En la vista propia del estudiante no hay "Volver" (no viene de un listado admin).
+  // Rama docente: vuelve a SU roster ("Mis estudiantes" en /matricula/listar), no al
+  // listado administrativo de Admisión (que no puede ver).
+  const volverPath = esVistaDocente ? '/matricula/listar' : '/estudiantes/listar';
   const headerActions = esVistaPropiaEstudiante ? null : (
     <button
       type="button"
       className="sd-btn sd-btn--outline"
-      onClick={() => navigate('/estudiantes/listar')}
+      onClick={() => navigate(volverPath)}
     >
       <ArrowLeftOutlined /> Volver
     </button>

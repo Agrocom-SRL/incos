@@ -177,6 +177,15 @@ Reglas:
 | Carreras, docentes, estudiantes, actividades, conteos | `GET /dashboard/resumen` | `sistema.catalogo.referencia` + LISTAR | Requiere permiso del modulo (`cfg.academico.carreras`, `docentes.ver`, `matricula.admision.ver`, etc.) |
 | ABM carreras | `GET /carreras` | `cfg.academico.carreras` + LISTAR | No usar en dashboard; solo administracion |
 
+> **Feed de actividades ampliado (2026-07-03):** `vista_dashboard_actividades_recientes`
+> (archivo `149`, reemplaza al `49`) une ahora **10 bases** con contrato de 10 columnas
+> (`… , estudiante_id, docente_id, usuario_id`): 41 estudiante, 42 inscripción, 43 pago,
+> 44 docente, 47 beca + nuevas 144 nota registrada, 145 asistencia tomada, 146 licencia,
+> 147 clase no dictada, 148 asignación docente. El feed global admin no cambia de shape;
+> el feed del estudiante (`/dashboard/mi-resumen`) filtra por `estudiante_id` (tipos
+> PAGO/MATRICULA/BECA remapeados por compatibilidad + NOTA_REGISTRADA + LICENCIA) y el del
+> docente (`/dashboard/mi-resumen-docente`) por `docente_id`.
+
 Frontend: `useDashboardData` carga solo `/dashboard/resumen`. `useDashboardGuardedNavigate` muestra notificacion de acceso denegado si el usuario pulsa "Ver todas", tarjeta o actividad sin permiso de detalle (misma notificacion que `PrivateRoute`).
 
 Ejemplo conector del modulo:
@@ -239,12 +248,14 @@ Fuente: `55-seed-roles.sql` (ids de rol fijos 1-8).
 | `docentes.routes.js` | GET | `/api/v1/docentes` | LISTAR |
 | `docentes.routes.js` | GET | `/api/v1/docentes/:id` | DETALLE ficha (anti-IDOR `docenteSelfOnlyGuard`) |
 | `docentes.routes.js` | GET | `/api/v1/docentes/mis-datos` | Portal docente: id + nombre propio (solo `authenticate`) |
-| `dashboard.routes.js` | GET | `/api/v1/dashboard/mi-resumen-docente` | Portal docente: panel de inicio (solo `authenticate`) |
+| `docentes.routes.js` | GET | `/api/v1/docentes/mis-estudiantes` | Portal docente: roster de SUS cursos vigentes (solo `authenticate`; vista 150) |
+| `dashboard.routes.js` | GET | `/api/v1/dashboard/mi-resumen-docente` | Portal docente: panel de inicio (solo `authenticate`; incluye `stats` + `actividades` desde vista 149) |
+| `horarios-docente.routes.js` | GET | `/api/v1/horarios/docentes/:docenteId/grilla-conflictos` | Grilla semanal del docente (`institucional.horario.conflictos` LISTAR; DOCENTE solo la propia vía `docenteSelfOnlyGuard('docenteId')`) |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes` | VER listado |
 | `estudiantes.routes.js` | POST | `/api/v1/estudiantes` | CREAR |
 | `estudiantes.routes.js` | PUT | `/api/v1/estudiantes/:id` | EDITAR |
 | `estudiantes.routes.js` | DELETE | `/api/v1/estudiantes/:id` | ELIMINAR |
-| `estudiantes.routes.js` | GET | `/api/v1/estudiantes/:id` | VER detalle |
+| `estudiantes.routes.js` | GET | `/api/v1/estudiantes/:id` | VER detalle (anti-IDOR: `estudianteSelfOnlyGuard` + `estudianteAlcanceDocenteGuard`) |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes/search` | VER/consulta |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes/export/estadistica-inscritos` | EXPORTAR |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes/export/lista-inscritos-por-carrera` | EXPORTAR |
@@ -352,11 +363,18 @@ Endpoint(s): `GET /estudiantes`, `GET /estudiantes/:id`, `GET /estudiantes/expor
 
 | Accion | Descripcion | Endpoint | Roles |
 |---|---|---|---|
-| VER | Ver listado/detalle de estudiantes | GET | ADM, REC, DIRA, DIRM, SECA, SECADM, EST |
+| VER | Ver listado/detalle de estudiantes | GET | ADM, REC, DIRA, DIRM, SECA, SECADM, EST, DOC (solo DETALLE) |
 | CREAR | Nuevo estudiante | POST | ADM, REC, DIRA, SECA |
 | EDITAR | Editar estudiante | PUT | ADM, REC, DIRA, SECA |
 | ELIMINAR | Eliminar estudiante | DELETE | ADM, REC (si se habilita), DIRM (si se habilita) |
 | EXPORTAR | Exportar estadisticas/listas | GET `/export/...` | ADM, REC, DIRA, DIRM |
+
+> **DOCENTE (2026-07-03):** `matricula.admision.ver` **DETALLE sin LISTAR** — la ficha
+> `EstudiantesDetail` se abre desde "Mis estudiantes" del portal docente; el guard de alcance
+> `estudianteAlcanceDocenteGuard` (GET `/estudiantes/:id`) exige que el estudiante pertenezca a
+> algún curso VIGENTE del docente (EXISTS sobre asignaciones → matrículas → inscripción → datos
+> académicos). El docente NO ve el listado general de admisión. ESTUDIANTE-self y staff no cambian
+> (se compone con `estudianteSelfOnlyGuard`).
 
 ### MAT - Matriculas (`/matricula/listar`, `/matricula/nueva`)
 Permisos: `matricula.inscribir`, `matricula.inscripcion.editar`
@@ -485,9 +503,15 @@ Permisos: `academico.asistencia.*` — ítem `/academico/asistencia` (gemelo de 
 | `academico.asistencia.registro.cuaderno` | LISTAR, EDITAR | Planilla diaria del curso (toma P/R/F/L) | REC, DIRA, SECA (LISTAR), DOC (LISTAR+EDITAR) |
 | `academico.asistencia.clase_no_dictada.ver` | LISTAR, CREAR, EDITAR | Clases no dictadas (cancelaciones por asignación docente) | REC, DIRA, SECA, DOC |
 | `academico.asistencia.consolidado.ver` | LISTAR, EXPORTAR | Consolidado % por estudiante/curso | REC, DIRA, SECA (LISTAR+EXPORTAR), DOC (LISTAR) |
-| `academico.asistencia.licencia.ver` | LISTAR, DETALLE | Licencias estudiantiles (página dentro de Asistencia) | REC, DIRA, SECA, EST |
-| `academico.asistencia.licencia.crear` | CREAR | Solicitar licencia estudiantil | REC, DIRA, SECA, EST |
-| `academico.asistencia.licencia.aprobar` | APROBAR | Aprobar licencia estudiantil | REC, DIRA |
+| `academico.asistencia.licencia.ver` | LISTAR, DETALLE | Licencias estudiantiles (página dentro de Asistencia) | REC, DIRA, SECA, DOC |
+| `academico.asistencia.licencia.crear` | CREAR, EDITAR, ELIMINAR | Solicitar / editar (PENDIENTE) / cancelar licencia estudiantil | REC, DIRA, SECA, DOC |
+| `academico.asistencia.licencia.aprobar` | APROBAR | Aprobar licencia estudiantil | REC, DIRA, SECA |
+
+> **DOCENTE en licencias (2026-07-03):** el docente edita (`PUT /asistencia/licencias/:id`) y
+> cancela (`PUT /:id/cancel`) **solo sus propias solicitudes** (`created_by = usuario de la
+> sesión`) **y solo en estado PENDIENTE** — guard en servidor (Editar/CancelarLicenciaUseCase,
+> 403 con mensaje claro). Staff (REC/DIRA/SECA) sin restricción de autoría; aprobar sigue en
+> `licencia.aprobar` (REC/DIRA/SECA).
 
 > Modo coordinación (ver cualquier docente) vs propio: se resuelve por rol sobre el mismo
 > `registro.ver` (no hay permiso de coordinación separado), con `useRouteViewMode`.
@@ -548,6 +572,19 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 - Panel de inicio: `GET /dashboard/mi-resumen-docente` (gate solo `authenticate`, sin permiso propio, como
   `/auth/me`): identidad + gestión/bimestre vigentes + carga (vista 53) + cursos (composición de mis-cursos)
   + bloques de horario (vista 128). El docente se resuelve SIEMPRE en servidor (`resolveDocenteIdForUsuario`).
+  **Segunda ola (2026-07-03), ADITIVO:** `stats { sesionesHoy, sesionesMes }` (conteo de sesiones del
+  usuario) y `actividades[]` — feed propio del docente desde la vista 149
+  (`vista_dashboard_actividades_recientes` WHERE `docente_id`; tipos ASISTENCIA_TOMADA, CLASE_NO_DICTADA,
+  ASIGNACION_DOCENTE, NOTA_REGISTRADA, DOCENTE), mismas claves snake_case del feed del estudiante.
+- "Mis estudiantes": `GET /docentes/mis-estudiantes` (gate solo `authenticate`; identidad vía
+  `resolveDocenteIdForUsuario`): roster de estudiantes matriculados en SUS cursos vigentes de la
+  gestión vigente (vista 150 `vista_docente_curso_estudiantes`). Sin gestión vigente → `estudiantes: []`.
+  Desde ahí abre la ficha `GET /estudiantes/:id` (`matricula.admision.ver` DETALLE +
+  `estudianteAlcanceDocenteGuard`, ver MAT-Admisiones).
+- Grilla de horario propia: `GET /horarios/docentes/:docenteId/grilla-conflictos` con
+  `institucional.horario.conflictos` LISTAR + `docenteSelfOnlyGuard('docenteId')` (solo su propia grilla).
+- Licencias estudiantiles: `academico.asistencia.licencia.crear` EDITAR + ELIMINAR con guard
+  created_by + estado PENDIENTE en servidor (ver ACA-Asistencia).
 - `docentes.licencia.ver` LISTAR + `docentes.licencia.crear` CREAR (menú Licencias docentes). Pasantías
   docentes: `docentes.supervision.pasantia` LISTAR + CREAR + EDITAR (menú `/supervision/pasantias`; sin
   supervisión ni listado de plantilla). (Deshabilitados temporalmente: páginas en construcción.)
@@ -618,6 +655,11 @@ Permisos por etapa (en `61-seed-permisos-inst.sql`):
 - `institucional.horario.armado`
 - `institucional.horario.conflictos`
 - `institucional.horario.publicacion`
+
+> **DOCENTE (2026-07-03):** `institucional.horario.conflictos` **LISTAR** para su propia grilla
+> semanal (`GET /horarios/docentes/:docenteId/grilla-conflictos`, portal docente); anti-IDOR
+> `docenteSelfOnlyGuard('docenteId')` en servidor (solo su propio id; staff sin restricción).
+> Sin EDITAR: la resolución de conflictos sigue siendo staff (REC/DIRA).
 
 #### Oferta académica (Sprint 3)
 
