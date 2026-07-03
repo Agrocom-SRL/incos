@@ -45,5 +45,7 @@ export const DOCENTES_TOKENS = {
   getDocenteColoresSugeridosUseCase: 'docentes.getDocenteColoresSugeridosUseCase',
   getDocenteColoresSugeridosController: 'docentes.getDocenteColoresSugeridosController',
   getTeacherAssignmentByIdUseCase: 'docentes.getTeacherAssignmentByIdUseCase',
+  getMisDatosDocenteUseCase: 'docentes.getMisDatosDocenteUseCase',
+  getMisDatosDocenteController: 'docentes.getMisDatosDocenteController',
   docentesRouter: 'docentes.docentesRouter',
 };

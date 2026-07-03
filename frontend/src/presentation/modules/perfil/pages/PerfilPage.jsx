@@ -1,16 +1,19 @@
 /**
  * PerfilPage — "Mi perfil".
  *
- * Dos comportamientos según el rol:
- *  - NO estudiantes: ficha de cuenta/rol + persona/ficha (igual que siempre).
+ * Tres comportamientos según el rol:
+ *  - Staff/admin: ficha de cuenta/rol + persona/ficha (igual que siempre).
  *  - ESTUDIANTE: hub de portal — cabecera compacta + tarjeta de cuenta + una grilla
  *    de accesos (resumen + navegación) a Mis datos, Mi matrícula, Mis aportes y Mi
  *    boletín. SOLO LECTURA salvo "Cambiar contraseña" (self-service).
+ *  - DOCENTE: hub análogo — cabecera con título profesional y métricas de carga
+ *    (cursos, horas, gestión) + accesos a Mi ficha, Mis cursos y Asistencia.
  */
 
 import { useNavigate } from 'react-router-dom';
 import {
   BookOutlined,
+  CarryOutOutlined,
   DollarOutlined,
   IdcardOutlined,
   LockOutlined,
@@ -23,7 +26,7 @@ import { PageTemplate } from '@templates';
 import { PageHeader, DetailInfoCard } from '@molecules';
 import { DetailField, Button } from '@atoms';
 import { DetailPageShell, DetailProfileCard } from '@organisms';
-import { formatBsConSimbolo } from '@application/utils/formatters';
+import { buildInitials, formatBsConSimbolo } from '@application/utils/formatters';
 import { usePerfilPageContext } from '@/application/modules/perfil/hooks';
 import CambiarMiPasswordModal from '@modules/perfil/components/modals/CambiarMiPasswordModal.jsx';
 import DashboardAccesoHubCard from '@dashboard/components/molecules/DashboardAccesoHubCard.jsx';
@@ -37,18 +40,20 @@ const PATH_MATRICULA = '/matricula/listar';
 const PATH_APORTES = '/matricula/aportes/listar';
 const PATH_BOLETIN = '/academico/mi-boletin';
 
-/** Iniciales para el avatar (máx. 2 letras) a partir de un nombre o username. */
-function iniciales(texto) {
-  const partes = String(texto || '').trim().split(/\s+/).filter(Boolean);
-  if (partes.length === 0) return '—';
-  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
-  return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase();
-}
+/** Rutas internas del portal del docente (navegación segura). */
+const PATH_MI_FICHA = '/docentes/listar';
+const PATH_MIS_CURSOS = '/academico/calificaciones';
+const PATH_ASISTENCIA = '/academico/asistencia';
 
 /** Une partes de un resumen omitiendo las ausentes; cae a un texto guía. */
 function resumen(partes, fallback) {
   const texto = partes.filter(Boolean).join(' · ');
   return texto || fallback;
+}
+
+/** Valor de una línea del `vinculo_perfil` por etiqueta (backend /auth/me). */
+function lineaValor(lineas, etiqueta) {
+  return lineas?.find((ln) => ln?.etiqueta === etiqueta)?.valor || null;
 }
 
 export default function PerfilPage() {
@@ -58,7 +63,9 @@ export default function PerfilPage() {
     loading,
     vinculoPerfil,
     esEstudiante,
+    esDocente,
     resumenEstudiante,
+    resumenDocente,
     openPass,
     saving,
     breadcrumbItems,
@@ -102,7 +109,7 @@ export default function PerfilPage() {
             /* ── Hub del estudiante ── */
             <>
               <DetailProfileCard
-                avatarInitials={iniciales(nombreMostrado)}
+                avatarInitials={buildInitials(nombreMostrado)}
                 avatarClassName="sd-profile__avatar sd-profile__avatar--default"
                 title={nombreMostrado}
                 subtitle={correo}
@@ -193,11 +200,89 @@ export default function PerfilPage() {
                 </div>
               </Flex>
             </>
-          ) : (
-            /* ── Perfil estándar (no estudiantes) ── */
+          ) : esDocente ? (
+            /* ── Hub del docente ── */
             <>
               <DetailProfileCard
-                avatarInitials={iniciales(usuario.username)}
+                avatarInitials={buildInitials(nombreMostrado)}
+                avatarClassName="sd-profile__avatar sd-profile__avatar--default"
+                title={nombreMostrado}
+                subtitle={resumen(
+                  ['Docente', lineaValor(vinculoPerfil?.lineas, 'Título profesional')],
+                  'Docente',
+                )}
+                metaExtra={rol?.nombre ? <Tag color="green">{rol.nombre}</Tag> : null}
+                stats={[
+                  { label: 'Cursos', value: resumenDocente?.cursos ?? '—', primary: true },
+                  { label: 'Horas semanales', value: resumenDocente?.horasSemanales ?? '—' },
+                  { label: 'Gestión', value: resumenDocente?.gestion ?? '—' },
+                ]}
+              />
+
+              <DetailInfoCard title="Cuenta" icon={<UserOutlined />} cols={2}>
+                <DetailField label="Usuario">{usuario.username}</DetailField>
+                <DetailField label="Correo">{usuario.email || '—'}</DetailField>
+                <DetailField label="Rol">{rol?.nombre || '—'}</DetailField>
+              </DetailInfoCard>
+
+              <Flex vertical gap={allSpacing.margin}>
+                <Title
+                  level={4}
+                  style={{
+                    color: allColors.colorPrimary,
+                    fontSize: `${typography.fontSizeHeading4}px`,
+                    fontWeight: typography.fontWeightStrong,
+                    margin: 0,
+                  }}
+                >
+                  Accesos
+                </Title>
+                <div className="estudiante-accesos-grid">
+                  <DashboardAccesoHubCard
+                    icon={<IdcardOutlined />}
+                    accent={allColors.colorPrimary}
+                    accentBg={allColors.colorPrimaryBg}
+                    title="Mi ficha"
+                    description="Consulta tus datos personales, formación y condición laboral."
+                    actionLabel="Ver mi ficha"
+                    onClick={() => navegarSeguro(PATH_MI_FICHA)}
+                  />
+                  <DashboardAccesoHubCard
+                    icon={<BookOutlined />}
+                    accent={allColors.colorInfo}
+                    accentBg={allColors.colorInfoBg}
+                    title="Mis cursos"
+                    description={resumen(
+                      [
+                        resumenDocente?.cursos != null && `${resumenDocente.cursos} cursos`,
+                        resumenDocente?.horasSemanales != null &&
+                          `${resumenDocente.horasSemanales} h/semana`,
+                      ],
+                      'Cuaderno de calificaciones por curso y bimestre.',
+                    )}
+                    actionLabel="Ver mis cursos"
+                    onClick={() => navegarSeguro(PATH_MIS_CURSOS)}
+                  />
+                  <DashboardAccesoHubCard
+                    icon={<CarryOutOutlined />}
+                    accent={allColors.colorWarning}
+                    accentBg={allColors.colorWarningBg}
+                    title="Asistencia"
+                    description={resumen(
+                      [resumenDocente?.bimestreNombre],
+                      'Registra la asistencia diaria de tus cursos.',
+                    )}
+                    actionLabel="Tomar asistencia"
+                    onClick={() => navegarSeguro(PATH_ASISTENCIA)}
+                  />
+                </div>
+              </Flex>
+            </>
+          ) : (
+            /* ── Perfil estándar (staff/admin) ── */
+            <>
+              <DetailProfileCard
+                avatarInitials={buildInitials(usuario.username)}
                 title={usuario.username}
                 subtitle={usuario.email || 'Sin correo'}
                 metaExtra={rol?.nombre ? <Tag color="green">{rol.nombre}</Tag> : null}

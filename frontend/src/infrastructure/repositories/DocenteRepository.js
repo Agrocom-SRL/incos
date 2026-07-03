@@ -17,6 +17,23 @@ export class DocenteRepository extends IDocenteRepository {
     }
   }
 
+  /**
+   * Portal del docente: identidad del docente AUTENTICADO.
+   * GET /v1/docentes/mis-datos
+   *
+   * El backend resuelve al docente desde el token; no recibe id.
+   *
+   * @returns {Promise<{success: boolean, data?: { id: number, nombreCompleto: string }, error?: string}>}
+   */
+  async obtenerMisDatos() {
+    try {
+      const response = await apiClient.get(DOCENTES_ENDPOINTS.MIS_DATOS);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener tus datos de docente');
+    }
+  }
+
   async obtenerTodos(options = {}) {
     try {
       const { params = {} } = options;

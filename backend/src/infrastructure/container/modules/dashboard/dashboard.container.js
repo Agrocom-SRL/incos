@@ -1,13 +1,20 @@
 /**
  * Registro de dependencias del resumen del dashboard.
  */
-import { DASHBOARD_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import {
+  ACADEMICO_TOKENS,
+  DASHBOARD_TOKENS,
+  REPOSITORIOS_TOKENS,
+  SERVICIOS_TOKENS,
+} from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
 import { GetDashboardResumenUseCase } from '../../../../application/use-cases/dashboard/GetDashboardResumenUseCase.js';
 import { GetMiDashboardResumenUseCase } from '../../../../application/use-cases/dashboard/GetMiDashboardResumenUseCase.js';
+import { GetMiDashboardResumenDocenteUseCase } from '../../../../application/use-cases/dashboard/GetMiDashboardResumenDocenteUseCase.js';
 import {
   GetDashboardResumenController,
   GetMiDashboardResumenController,
+  GetMiDashboardResumenDocenteController,
 } from '../../../../presentation/controllers/dashboard/index.js';
 import { buildDashboardRouter } from '../../../../presentation/routes/dashboard.routes.js';
 
@@ -56,6 +63,37 @@ export function registerDashboardModule(container) {
       })
   );
 
+  // Portal del rol docente: reusa la composición docente+cursos de mis-cursos
+  // (GetMisCursosAsistenciaUseCase, módulo académico) en lugar de duplicar queries.
+  registerComponent(
+    container,
+    DASHBOARD_TOKENS.getMiDashboardResumenDocenteUseCase,
+    (c) =>
+      new GetMiDashboardResumenDocenteUseCase({
+        dashboardRepository: c.resolve(REPOSITORIOS_TOKENS.dashboardRepository),
+        getMisCursosAsistenciaUseCase: c.resolve(ACADEMICO_TOKENS.getMisCursosAsistenciaUseCase),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
+        ),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DASHBOARD_TOKENS.getMiDashboardResumenDocenteController,
+    (c) =>
+      new GetMiDashboardResumenDocenteController({
+        getMiDashboardResumenDocenteUseCase: c.resolve(
+          DASHBOARD_TOKENS.getMiDashboardResumenDocenteUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
   registerComponent(
     container,
     DASHBOARD_TOKENS.dashboardRouter,
@@ -64,6 +102,9 @@ export function registerDashboardModule(container) {
         getDashboardResumenController: c.resolve(DASHBOARD_TOKENS.getDashboardResumenController),
         getMiDashboardResumenController: c.resolve(
           DASHBOARD_TOKENS.getMiDashboardResumenController
+        ),
+        getMiDashboardResumenDocenteController: c.resolve(
+          DASHBOARD_TOKENS.getMiDashboardResumenDocenteController
         ),
       };
       return buildDashboardRouter({ controllers });

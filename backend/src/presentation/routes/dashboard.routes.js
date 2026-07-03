@@ -26,5 +26,14 @@ export function buildDashboardRouter({ controllers }) {
     (req, res, next) => controllers.getMiDashboardResumenController.handle(req, res, next)
   );
 
+  // Panel del docente (portal del rol docente). Gate solo `authenticate`:
+  // el vínculo usuario↔docente se resuelve en servidor (resolveDocenteIdForUsuario)
+  // y blinda el acceso (403 si el usuario no tiene vínculo docente).
+  router.get(
+    '/mi-resumen-docente',
+    authenticate,
+    (req, res, next) => controllers.getMiDashboardResumenDocenteController.handle(req, res, next)
+  );
+
   return router;
 }

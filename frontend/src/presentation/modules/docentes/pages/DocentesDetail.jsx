@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { useAuthContext } from '@application-auth';
+import { useAuthContext, esDocente } from '@application-auth';
 import { useDocentesDetailContext } from '@application-docentes/hooks';
 import DetailField from '@docentes/components/atoms/DetailField';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
@@ -37,7 +37,7 @@ const fmtDate = (v) => {
 };
 
 const DocentesDetail = () => {
-  const { hasPermiso } = useAuthContext();
+  const { hasPermiso, usuario } = useAuthContext();
   const {
     docenteId,
     loading,
@@ -65,7 +65,12 @@ const DocentesDetail = () => {
 
   const hasMateriasAsignadas = assignments.length > 0;
 
-  const headerActions = (
+  // Portal del docente: llega directo a SU ficha desde el menú ("Mi ficha"),
+  // no hay listado al que volver — se oculta el botón. Editar/eliminar ya se
+  // ocultan solos por permisos (fail-closed).
+  const esMiFicha = esDocente(usuario);
+
+  const headerActions = esMiFicha ? null : (
     <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
       <ArrowLeftOutlined /> Volver
     </button>

@@ -20,6 +20,8 @@ const {
   tablaGestiones,
   tablaEstudiantesBecas,
   tablaBecasDescuentos,
+  vistaDocenteCargaPorGestion,
+  vistaDocenteCursoBloquesHorario,
 } = DASHBOARD_QUERY_TARGETS;
 
 /**
@@ -399,5 +401,83 @@ export class DashboardRepository extends IDashboardRepository {
     });
     const row = rows[0] || {};
     return Number(row.saldo_pendiente_total ?? 0);
+  }
+
+  // ============================================================================
+  // Portal del rol docente: GET /dashboard/mi-resumen-docente
+  // El docente se resuelve SIEMPRE en servidor (anti-IDOR). Estos métodos
+  // reciben el docenteId y el contexto de gestión ya resueltos desde el use case.
+  // ============================================================================
+
+  /**
+   * Carga académica del docente en la gestión indicada (vista 53,
+   * `vista_docente_carga_por_gestion`). La vista trae una fila por gestión + plan
+   * habilitado, por eso se agrega con SUM.
+   *
+   * Mapeo vista → contrato del panel:
+   * - num_asignaciones_vigentes → total_asignaciones (el panel refleja la carga
+   *   ACTUAL: asignaciones vigentes de la gestión, no las históricas/no vigentes)
+   * - horas_semanales_vigentes  → horas_semanales (SUM de COALESCE(carga_horaria, horas_plan))
+   *
+   * @param {number} docenteId
+   * @param {number} gestionAnio - Año de la gestión vigente (contexto de calificaciones)
+   * @returns {Promise<{ total_asignaciones: number, horas_semanales: number }>}
+   */
+  async findCargaDocenteGestion(docenteId, gestionAnio) {
+    const query = `
+      SELECT
+        COALESCE(SUM(num_asignaciones_vigentes), 0) AS total_asignaciones,
+        COALESCE(SUM(horas_semanales_vigentes), 0) AS horas_semanales
+      FROM ${vistaDocenteCargaPorGestion}
+      WHERE docente_id = ?
+        AND gestion_anio = ?
+    `;
+    const rows = await sequelize.query(query, {
+      replacements: [docenteId, gestionAnio],
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const row = rows[0] || {};
+    return {
+      total_asignaciones: Number(row.total_asignaciones ?? 0),
+      horas_semanales: Number(row.horas_semanales ?? 0),
+    };
+  }
+
+  /**
+   * Bloques de horario del docente en la gestión vigente (vista 128,
+   * `vista_base_docente_curso_bloques_horario`), ordenados por día y hora.
+   *
+   * Columnas recortadas al contrato del panel (el use case las pasa a camelCase):
+   * - hora_inicio / hora_fin se normalizan a HH:MM con TIME_FORMAT.
+   * - aula = COALESCE(aula_codigo, aula_nombre): la vista expone el aula del
+   *   paralelo; si el paralelo no tiene aula asignada, queda NULL (el contrato
+   *   admite aula null; NO se toca la vista).
+   *
+   * @param {number} docenteId
+   * @param {number} gestionId - Gestión vigente (contexto de calificaciones)
+   * @returns {Promise<Array<Record<string, unknown>>>}
+   */
+  async findHorarioBloquesDocenteGestion(docenteId, gestionId) {
+    const query = `
+      SELECT
+        dia,
+        TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio,
+        TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin,
+        materia_sigla,
+        materia_nombre,
+        paralelo_nombre,
+        COALESCE(aula_codigo, aula_nombre) AS aula,
+        curso_color_hex
+      FROM ${vistaDocenteCursoBloquesHorario}
+      WHERE docente_id = ?
+        AND gestion_id = ?
+      ORDER BY
+        FIELD(dia, 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'),
+        hora_inicio ASC
+    `;
+    return sequelize.query(query, {
+      replacements: [docenteId, gestionId],
+      type: sequelize.QueryTypes.SELECT,
+    });
   }
 }

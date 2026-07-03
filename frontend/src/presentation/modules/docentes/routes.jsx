@@ -35,6 +35,7 @@ export const docentesRoutes = [
       module: 'DOC',
       parent: 'DOC',
       order: 1,
+      labelByRole: { DOCENTE: 'Mi ficha' },
     },
   },
   {

@@ -16,3 +16,4 @@ export {
 } from './utils/authPaths.js';
 export { AuthContext } from './context';
 export { esEstudiante, ROL_ESTUDIANTE } from './utils/esEstudiante.js';
+export { esDocente, ROL_DOCENTE } from './utils/esDocente.js';

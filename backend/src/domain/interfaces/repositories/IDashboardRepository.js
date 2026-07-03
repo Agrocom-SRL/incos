@@ -61,4 +61,16 @@ export class IDashboardRepository {
   async findSaldoPendienteEstudiante(_estudianteId) {
     throw new Error('Method findSaldoPendienteEstudiante() must be implemented');
   }
+
+  // --- Portal del rol docente (GET /dashboard/mi-resumen-docente) ---
+
+  /** @param {number} _docenteId @param {number} _gestionAnio @returns {Promise<{total_asignaciones: number, horas_semanales: number}>} */
+  async findCargaDocenteGestion(_docenteId, _gestionAnio) {
+    throw new Error('Method findCargaDocenteGestion() must be implemented');
+  }
+
+  /** @param {number} _docenteId @param {number} _gestionId @returns {Promise<Array<Object>>} */
+  async findHorarioBloquesDocenteGestion(_docenteId, _gestionId) {
+    throw new Error('Method findHorarioBloquesDocenteGestion() must be implemented');
+  }
 }

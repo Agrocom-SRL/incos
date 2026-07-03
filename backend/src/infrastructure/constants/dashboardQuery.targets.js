@@ -20,4 +20,7 @@ export const DASHBOARD_QUERY_TARGETS = {
   tablaGestiones: 'gestiones',
   tablaEstudiantesBecas: 'estudiantes_becas',
   tablaBecasDescuentos: 'becas_descuentos',
+  // Portal del rol docente (GET /dashboard/mi-resumen-docente)
+  vistaDocenteCargaPorGestion: 'vista_docente_carga_por_gestion',
+  vistaDocenteCursoBloquesHorario: 'vista_base_docente_curso_bloques_horario',
 };

@@ -79,6 +79,8 @@ const createCRUDEndpoints = (basePath) => {
 // ============================================
 export const DOCENTES_ENDPOINTS = {
   ...createCRUDEndpoints('/docentes'),
+  /** GET — identidad del docente AUTENTICADO ({ id, nombreCompleto }); portal del docente */
+  MIS_DATOS: `${API_BASE}/docentes/mis-datos`,
   /** GET (query) / POST — asignaciones docente ↔ curso ↔ plan habilitado */
   ASIGNACIONES: `${API_BASE}/docentes/asignaciones`,
   /** PATCH — actualizar asignación docente */
@@ -427,6 +429,8 @@ export const DASHBOARD_ENDPOINTS = {
   RESUMEN: `${API_BASE}/dashboard/resumen`,
   /** GET — resumen personal del estudiante autenticado (portal del estudiante). */
   MI_RESUMEN: `${API_BASE}/dashboard/mi-resumen`,
+  /** GET — resumen personal del docente autenticado (portal del docente). */
+  MI_RESUMEN_DOCENTE: `${API_BASE}/dashboard/mi-resumen-docente`,
 };
 
 // ============================================

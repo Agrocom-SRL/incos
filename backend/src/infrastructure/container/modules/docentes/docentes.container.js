@@ -31,7 +31,9 @@ import {
   UpdateDocenteColorController,
   GetDocenteColoresEnUsoController,
   GetDocenteColoresSugeridosController,
+  GetMisDatosDocenteController,
 } from '../../../../presentation/controllers/docentes/index.js';
+import { GetMisDatosDocenteUseCase } from '../../../../application/use-cases/docentes/GetMisDatosDocenteUseCase.js';
 import { GetDocentesConflictoBloquesCursoUseCase } from '../../../../application/use-cases/docentes/GetDocentesConflictoBloquesCursoUseCase.js';
 import { GetDocenteCargaGestionUseCase } from '../../../../application/use-cases/docentes/GetDocenteCargaGestionUseCase.js';
 import { GetTeacherAssignmentByIdUseCase } from '../../../../application/use-cases/docentes/GetTeacherAssignmentByIdUseCase.js';
@@ -531,6 +533,30 @@ export function registerDocentesModule(container) {
       })
   );
 
+  // Portal del rol docente: identidad mínima del docente de la sesión
+  // (GET /docentes/mis-datos, gate solo authenticate; anti-IDOR en el resolver).
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getMisDatosDocenteUseCase,
+    (c) =>
+      new GetMisDatosDocenteUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getMisDatosDocenteController,
+    (c) =>
+      new GetMisDatosDocenteController({
+        getMisDatosDocenteUseCase: c.resolve(DOCENTES_TOKENS.getMisDatosDocenteUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
   registerComponent(
     container,
     DOCENTES_TOKENS.docentesRouter,
@@ -557,6 +583,7 @@ export function registerDocentesModule(container) {
         updateDocenteColorController: c.resolve(DOCENTES_TOKENS.updateDocenteColorController),
         getDocenteColoresEnUsoController: c.resolve(DOCENTES_TOKENS.getDocenteColoresEnUsoController),
         getDocenteColoresSugeridosController: c.resolve(DOCENTES_TOKENS.getDocenteColoresSugeridosController),
+        getMisDatosDocenteController: c.resolve(DOCENTES_TOKENS.getMisDatosDocenteController),
       };
       const middlewares = {
         validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),

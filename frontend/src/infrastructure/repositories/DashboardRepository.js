@@ -30,6 +30,20 @@ export class DashboardRepository {
       return handleErrorResponse(error, 'Error al cargar tu resumen del dashboard');
     }
   }
+
+  /**
+   * GET /v1/dashboard/mi-resumen-docente
+   * Resumen personal del docente autenticado (gestión vigente, carga, cursos,
+   * bloques de horario). La identidad se resuelve en servidor desde el token.
+   */
+  async obtenerMiResumenDocente() {
+    try {
+      const response = await apiClient.get(DASHBOARD_ENDPOINTS.MI_RESUMEN_DOCENTE);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar tu resumen del dashboard');
+    }
+  }
 }
 
 export default new DashboardRepository();

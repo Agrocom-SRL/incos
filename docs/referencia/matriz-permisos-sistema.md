@@ -237,7 +237,9 @@ Fuente: `55-seed-roles.sql` (ids de rol fijos 1-8).
 | `auth.routes.js` | GET | `/api/v1/auth/me` | Perfil + permisos |
 | `auth.routes.js` | POST | `/api/v1/auth/logout` | Cerrar sesion |
 | `docentes.routes.js` | GET | `/api/v1/docentes` | LISTAR |
-| `docentes.routes.js` | GET | `/api/v1/docentes/:id` | DETALLE ficha |
+| `docentes.routes.js` | GET | `/api/v1/docentes/:id` | DETALLE ficha (anti-IDOR `docenteSelfOnlyGuard`) |
+| `docentes.routes.js` | GET | `/api/v1/docentes/mis-datos` | Portal docente: id + nombre propio (solo `authenticate`) |
+| `dashboard.routes.js` | GET | `/api/v1/dashboard/mi-resumen-docente` | Portal docente: panel de inicio (solo `authenticate`) |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes` | VER listado |
 | `estudiantes.routes.js` | POST | `/api/v1/estudiantes` | CREAR |
 | `estudiantes.routes.js` | PUT | `/api/v1/estudiantes/:id` | EDITAR |
@@ -527,19 +529,33 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 
 | Codigo (seed) | Acciones v2 (`permiso_acciones`) | Uso principal (UI) |
 |---|---|---|
-| `docentes.ver` | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista) |
+| `docentes.ver` | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista). DOCENTE: LISTAR + DETALLE **solo ficha propia** (portal docente) |
 | `docentes.crear` | CREAR | Alta `/docentes/registrar` |
 | `docentes.editar` | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
 | `docentes.asignar` | CREAR, EDITAR, ELIMINAR | Asignacion docente-curso (`/docentes/asignar`, API `POST /docentes/asignaciones/curso`, modal en armado paralelo) |
 
 | Accion | Descripcion | Roles |
 |---|---|---|
-| VER | Ver docentes/supervision | ADM, REC, DIRA, DIRM, DOC |
+| VER | Ver docentes/supervision | ADM, REC, DIRA, DIRM, DOC (solo ficha propia) |
 | CREAR | Nuevo docente/licencias/fichas | ADM, REC, DIRA |
 | EDITAR | Ajustes supervision | ADM, REC, DIRA |
 | APROBAR | Licencias docentes | ADM, REC, DIRA |
 
-**Rol DOCENTE (7) — alcance propio:** `docentes.licencia.ver` LISTAR + `docentes.licencia.crear` CREAR (menú Licencias docentes; sin `docentes.ver`). Pasantías docentes: `docentes.supervision.pasantia` LISTAR + CREAR + EDITAR (menú `/supervision/pasantias`; sin supervisión ni listado de plantilla).
+**Rol DOCENTE (7) — alcance propio (portal del rol docente, 2026-07-03):**
+- `docentes.ver` LISTAR + DETALLE: el ítem Docentes salta a **SU propia ficha** `/docentes/:id` vía wrapper
+  de rol (sin listado de plantilla ni escritura). El id propio se obtiene con `GET /docentes/mis-datos`
+  (`{ id, nombreCompleto }`, gate solo `authenticate`; 403 si el usuario no tiene vínculo docente).
+- Panel de inicio: `GET /dashboard/mi-resumen-docente` (gate solo `authenticate`, sin permiso propio, como
+  `/auth/me`): identidad + gestión/bimestre vigentes + carga (vista 53) + cursos (composición de mis-cursos)
+  + bloques de horario (vista 128). El docente se resuelve SIEMPRE en servidor (`resolveDocenteIdForUsuario`).
+- `docentes.licencia.ver` LISTAR + `docentes.licencia.crear` CREAR (menú Licencias docentes). Pasantías
+  docentes: `docentes.supervision.pasantia` LISTAR + CREAR + EDITAR (menú `/supervision/pasantias`; sin
+  supervisión ni listado de plantilla). (Deshabilitados temporalmente: páginas en construcción.)
+
+> **Anti-IDOR (docentes):** `GET /docentes/:id` y `GET /docentes/:id/carga-gestion` llevan
+> `docenteSelfOnlyGuard` tras `verificarPermiso` (espejo de `estudianteSelfOnlyGuard`): un usuario
+> con vínculo docente solo accede a su propio `:id` (resuelto en servidor); staff sin restricción.
+> Los endpoints de escritura de Docentes NO se abren al rol DOCENTE.
 
 > **Licencias de docentes (pendiente):** los permisos `docentes.licencia.*` existen, pero la
 > **tabla `licencias_docentes` aún no está creada** (solo licencias de estudiante en schema 17).
