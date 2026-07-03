@@ -2,12 +2,11 @@
 import { App, Flex, Dropdown, Typography, Avatar as AntAvatar } from 'antd';
 import { UserOutlined, LogoutOutlined, DownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, StatusPill } from '@atoms';
+import { Avatar } from '@atoms';
 import { allColors, allSpacing, typography } from '@theme/tokens';
 import { useAuthContext } from '@application-auth';
 import { buildInitials } from '@application/utils/formatters';
-import { rolPillClass } from '@modules/seguridad/roles/components/atoms/rolColor.js';
-import '@modules/seguridad/roles/styles/roles.css';
+import RolPill from './RolPill';
 import './HeaderRight.css';
 
 const { Text } = Typography;
@@ -23,9 +22,6 @@ const HeaderRight = () => {
 
     const nombre = user?.vinculo_perfil?.nombre_completo || user?.username || 'Usuario';
     const correo = user?.email || '—';
-    const rol = user?.rol?.nombre || null;
-    // Pill de rol con el mismo color por categoría que el módulo de Seguridad.
-    const pillClass = rolPillClass(user?.rol?.tipo, Boolean(user?.rol?.is_system));
 
     const handleLogout = async () => {
         message.success('Sesión cerrada correctamente');
@@ -47,7 +43,7 @@ const HeaderRight = () => {
                         <Text className="header-user__email" ellipsis={{ tooltip: correo }}>
                             {correo}
                         </Text>
-                        {rol ? <StatusPill label={rol} className={pillClass} /> : null}
+                        <RolPill rol={user?.rol} />
                     </div>
                 </div>
             ),

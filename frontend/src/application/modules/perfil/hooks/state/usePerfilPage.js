@@ -53,6 +53,12 @@ export const usePerfilPage = () => {
     []
   );
 
+  // Datos derivados de la cuenta (mapeo, no presentación): rol, tipo y nombre a mostrar.
+  const rol = usuario?.rol ?? null;
+  const tipoRol = !rol ? '—' : rol.is_system ? 'Sistema' : 'Personalizado';
+  const nombreMostrado = usuario?.vinculo_perfil?.nombre_completo || usuario?.username;
+  const correo = usuario?.email || 'Sin correo';
+
   return {
     usuario,
     loading: isLoading,
@@ -61,6 +67,10 @@ export const usePerfilPage = () => {
     esDocente: usuarioEsDocente,
     resumenEstudiante,
     resumenDocente,
+    rol,
+    tipoRol,
+    nombreMostrado,
+    correo,
     openPass,
     saving,
     breadcrumbItems,
