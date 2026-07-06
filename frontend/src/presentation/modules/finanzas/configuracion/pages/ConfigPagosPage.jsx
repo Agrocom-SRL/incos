@@ -1,16 +1,19 @@
 /**
- * Config. de pagos (Finanzas) — gestión vigente, en un sistema de TABS.
+ * Config. de pagos (Finanzas) — métodos, bancos y cuentas, en un sistema de TABS.
  *
  * Página "dumb" (espejo de `AcademicoPage`): compone `PageHeaderArea` +
  * `DashboardPageShell` + `MainContent` + el workspace `cfg-academico-workspace`
- * con `Tabs` (`?tab=aporte|metodos|bancos|cuentas`). Cada tab = una entidad
- * (aporte, métodos, bancos, cuentas) con título + descripción breve y su propio
- * panel. Toda la orquestación (fetch, upsert aporte, PUT métodos, POST/PUT bancos y
- * cuentas con QR) vive en `useConfigPagosPage` + el provider; aquí no se hace fetch.
+ * con `Tabs` (`?tab=metodos|bancos|cuentas`). Cada tab = una entidad (métodos,
+ * bancos, cuentas) con título + descripción breve y su propio panel. Toda la
+ * orquestación (fetch, PUT métodos, POST/PUT bancos y cuentas con QR) vive en
+ * `useConfigPagosPage` + el provider; aquí no se hace fetch.
  *
- * RBAC: la ruta FIN-CFG es `configuracion.pagos` LISTAR. El alta (bancos/cuentas)
- * usa CREAR (PermisoGuard en la cabecera del workspace) y edición/toggle usan EDITAR
- * (en los paneles/columnas). No se cambian permisos.
+ * El aporte de la gestión vigente se promovió a página propia
+ * `/finanzas/aportes` (permiso `finanzas.aporte`, ver `finanzas/aportes/pages/AportePage.jsx`).
+ *
+ * RBAC: la ruta FIN-CFG es `finanzas.configuracion.pago` LISTAR. El alta
+ * (bancos/cuentas) usa CREAR (PermisoGuard en la cabecera del workspace) y
+ * edición/toggle usan EDITAR (en los paneles/columnas).
  */
 
 import { useCallback, useMemo } from 'react';
@@ -29,12 +32,10 @@ import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagos
 import {
   CONFIG_PAGOS_TAB_KEYS,
   CONFIG_PAGOS_TAB_META,
-  TAB_APORTE,
   TAB_BANCOS,
   TAB_CUENTAS,
   TAB_METODOS,
 } from '@finanzas/configuracion/config/configPagosTabs';
-import AporteTabPanel from '@finanzas/configuracion/components/AporteTabPanel.jsx';
 import MetodosTabPanel from '@finanzas/configuracion/components/MetodosTabPanel.jsx';
 import BancosTabPanel from '@finanzas/configuracion/components/BancosTabPanel.jsx';
 import CuentasTabPanel from '@finanzas/configuracion/components/CuentasTabPanel.jsx';
@@ -58,9 +59,7 @@ const renderTabLabel = (meta) => {
 const ConfigPagosPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const {
-    gestionVigente,
     breadcrumbItems,
-    aporteVigente,
     metodos,
     bancos,
     cuentas,
@@ -68,8 +67,6 @@ const ConfigPagosPage = () => {
     error,
     refetch,
     saving,
-    // Aporte
-    guardarAporte,
     // Métodos
     metodoEnEdicion,
     metodoModalAbierto,
@@ -101,18 +98,6 @@ const ConfigPagosPage = () => {
 
   const tabItems = useMemo(
     () => [
-      {
-        key: TAB_APORTE,
-        label: renderTabLabel(CONFIG_PAGOS_TAB_META[TAB_APORTE]),
-        children: wrapTabPanel(
-          <AporteTabPanel
-            aporteVigente={aporteVigente}
-            gestionVigente={gestionVigente}
-            saving={saving}
-            onGuardar={guardarAporte}
-          />,
-        ),
-      },
       {
         key: TAB_METODOS,
         label: renderTabLabel(CONFIG_PAGOS_TAB_META[TAB_METODOS]),
@@ -168,10 +153,7 @@ const ConfigPagosPage = () => {
       },
     ],
     [
-      aporteVigente,
-      gestionVigente,
       saving,
-      guardarAporte,
       metodos,
       toggleMetodoActivo,
       metodoModalAbierto,
@@ -202,7 +184,7 @@ const ConfigPagosPage = () => {
     if (requested && CONFIG_PAGOS_TAB_KEYS.includes(requested)) {
       return requested;
     }
-    return TAB_APORTE;
+    return TAB_METODOS;
   }, [searchParams]);
 
   const activePanel = CONFIG_PAGOS_TAB_META[activeKey];
@@ -265,12 +247,7 @@ const ConfigPagosPage = () => {
         }
       />
     );
-  } else if (
-    metodos.length === 0 &&
-    bancos.length === 0 &&
-    cuentas.length === 0 &&
-    !aporteVigente
-  ) {
+  } else if (metodos.length === 0 && bancos.length === 0 && cuentas.length === 0) {
     body = <Empty description="No hay datos de configuración de pagos" />;
   } else {
     body = (

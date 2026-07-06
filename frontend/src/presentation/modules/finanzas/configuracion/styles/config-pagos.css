@@ -3,7 +3,8 @@
  *
  * El shell de workspace/tabs se reutiliza de `academico-form-page.css`
  * (clases `cfg-academico-workspace*`, importadas por la página). Aquí solo viven
- * los pills de estado y los ajustes finos del panel de aporte / filas de métodos.
+ * los pills de estado y los ajustes finos del panel / filas de métodos.
+ * (El formulario del tab "Aporte" se movió a `finanzas/aportes/styles/aporte-page.css`.)
  * Todo consume CSS vars del theme (sin `#hex` propios de marca).
  */
 
@@ -44,12 +45,6 @@
 .cfg-pagos-panel {
   width: 100%;
   min-width: 0;
-}
-
-/* Tab Aporte — formulario centrado y acotado, no a ancho completo de la tabla */
-.cfg-pagos-aporte-form {
-  width: 100%;
-  max-width: var(--cfg-pagos-form-max, 560px);
 }
 
 /* Fila de método de pago (lista, no <List>) */

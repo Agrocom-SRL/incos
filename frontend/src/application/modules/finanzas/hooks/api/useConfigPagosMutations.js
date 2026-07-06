@@ -1,21 +1,21 @@
 /**
  * Hook de API: mutaciones de la configuración de pagos — módulo Finanzas.
  *
- * Agrupa las escrituras de las 4 secciones sobre la infraestructura compartida
+ * Agrupa las escrituras de las 3 secciones sobre la infraestructura compartida
  * (módulo independiente del legacy `@pagos`):
- *   - Aporte (UPSERT): si NO existe configuración para la gestión vigente → POST;
- *     si existe → PUT por id. La decisión la toma `guardarConfiguracionAporte`
- *     según el `id` recibido.
  *   - Método de pago: PUT (los 4 son fijos; solo nombre/activo).
  *   - Banco autorizado: POST (alta) / PUT (edición/toggle).
  *   - Cuenta de pago: POST/PUT con FormData (QR opcional) en el repositorio.
+ *
+ * El UPSERT del aporte de la gestión vigente se movió a su propia página
+ * `/finanzas/aportes` (permiso `finanzas.aporte`, ver
+ * `application/modules/finanzas/aportes/hooks/api/useAporteMutations.js`).
  *
  * Cada acción devuelve `{ success, data?, error? }`. Un único `saving` cubre la
  * pantalla (solo se guarda una sección a la vez).
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import contributionConfigurationRepository from '@implementations/ContributionConfigurationRepository';
 import paymentMethodRepository from '@implementations/PaymentMethodRepository';
 import authorizedBankRepository from '@implementations/AuthorizedBankRepository';
 import paymentAccountRepository from '@implementations/PaymentAccountRepository';
@@ -32,22 +32,6 @@ export const useConfigPagosMutations = () => {
       setSaving(false);
     }
   }, []);
-
-  /**
-   * UPSERT de la configuración de aporte de la gestión vigente.
-   * @param {Object} args
-   * @param {number|null} [args.id] - Si viene → PUT; si es null → POST.
-   * @param {Object} args.payload - Cuerpo (snake_case) ya construido por el state.
-   */
-  const guardarConfiguracionAporte = useCallback(
-    ({ id, payload }) =>
-      ejecutar(() =>
-        id != null
-          ? contributionConfigurationRepository.actualizar(id, payload)
-          : contributionConfigurationRepository.crear(payload),
-      ),
-    [ejecutar],
-  );
 
   /** PUT de un método de pago (nombre/activo). */
   const actualizarMetodoPago = useCallback(
@@ -80,12 +64,11 @@ export const useConfigPagosMutations = () => {
   return useMemo(
     () => ({
       saving,
-      guardarConfiguracionAporte,
       actualizarMetodoPago,
       guardarBanco,
       guardarCuenta,
     }),
-    [saving, guardarConfiguracionAporte, actualizarMetodoPago, guardarBanco, guardarCuenta],
+    [saving, actualizarMetodoPago, guardarBanco, guardarCuenta],
   );
 };
 

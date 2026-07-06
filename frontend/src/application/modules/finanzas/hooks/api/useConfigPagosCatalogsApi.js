@@ -1,29 +1,26 @@
 /**
  * Hook de API: catálogos de la configuración de pagos — módulo Finanzas.
  *
- * Lee de forma transparente las 4 entidades que componen la pantalla
+ * Lee de forma transparente las 3 entidades que componen la pantalla
  * "Config. de pagos" sobre la INFRAESTRUCTURA compartida (módulo independiente
  * del legacy `@pagos`):
- *   - configuracion_aportes → `ContributionConfigurationRepository`
  *   - metodos_pago          → `PaymentMethodRepository`
  *   - bancos_autorizados    → `AuthorizedBankRepository`
  *   - cuentas_pago          → `PaymentAccountRepository`
  *
- * Resuelve además la configuración de aporte de la GESTIÓN VIGENTE (para el
- * upsert: si existe → PUT por id; si no → POST). La gestión vigente se obtiene
- * del catálogo compartido (`vigente: 1`).
+ * El aporte de la gestión vigente se movió a su propia página
+ * `/finanzas/aportes` (permiso `finanzas.aporte`, ver
+ * `application/modules/finanzas/aportes/hooks/api/useAporteCatalogApi.js`).
  *
- * `dataKey` (front) coincide con `dataFieldName` (back): configuracionAporte,
- * metodoPago, bancoAutorizado, cuentaPago.
+ * `dataKey` (front) coincide con `dataFieldName` (back): metodoPago,
+ * bancoAutorizado, cuentaPago.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import contributionConfigurationRepository from '@implementations/ContributionConfigurationRepository';
 import paymentMethodRepository from '@implementations/PaymentMethodRepository';
 import authorizedBankRepository from '@implementations/AuthorizedBankRepository';
 import paymentAccountRepository from '@implementations/PaymentAccountRepository';
 import {
-  mapConfiguracionAporte,
   mapMetodoPago,
   mapBancoAutorizado,
   mapCuentaPago,
@@ -34,31 +31,24 @@ import {
 /** Límite alto: el universo de catálogos es pequeño y se filtra en cliente. */
 const CATALOG_PARAMS = { params: { pagina: 1, limite: 200 } };
 
-export const useConfigPagosCatalogsApi = (gestionVigente = null) => {
-  const [aportes, setAportes] = useState([]);
+export const useConfigPagosCatalogsApi = () => {
   const [metodos, setMetodos] = useState([]);
   const [bancos, setBancos] = useState([]);
   const [cuentas, setCuentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const gestionVigenteId = useMemo(() => {
-    const id = gestionVigente?.id;
-    return id != null && Number.isFinite(Number(id)) ? Number(id) : null;
-  }, [gestionVigente]);
-
-  /** Lectura pura de las 4 entidades (sin setState): segura para el efecto. */
+  /** Lectura pura de las 3 entidades (sin setState): segura para el efecto. */
   const fetchCatalogos = useCallback(async () => {
-    const [aportesRes, metodosRes, bancosRes, cuentasRes] = await Promise.all([
-      contributionConfigurationRepository.obtenerTodos(CATALOG_PARAMS),
+    const [metodosRes, bancosRes, cuentasRes] = await Promise.all([
       paymentMethodRepository.obtenerTodos(CATALOG_PARAMS),
       authorizedBankRepository.obtenerTodos(CATALOG_PARAMS),
       paymentAccountRepository.obtenerTodos(CATALOG_PARAMS),
     ]);
-    return { aportesRes, metodosRes, bancosRes, cuentasRes };
+    return { metodosRes, bancosRes, cuentasRes };
   }, []);
 
-  const aplicarResultado = useCallback(({ aportesRes, metodosRes, bancosRes, cuentasRes }) => {
+  const aplicarResultado = useCallback(({ metodosRes, bancosRes, cuentasRes }) => {
     if (!metodosRes?.success) {
       setError(metodosRes?.error || 'No se pudieron cargar los catálogos de pago');
       setLoading(false);
@@ -80,12 +70,6 @@ export const useConfigPagosCatalogsApi = (gestionVigente = null) => {
       ? ordenarMetodos(metodosRes.data.map(mapMetodoPago).filter(Boolean))
       : [];
 
-    const aportesList =
-      aportesRes?.success && Array.isArray(aportesRes.data)
-        ? aportesRes.data.map(mapConfiguracionAporte).filter(Boolean)
-        : [];
-
-    setAportes(aportesList);
     setMetodos(metodosList);
     setBancos(bancosList);
     setCuentas(cuentasList);
@@ -93,7 +77,7 @@ export const useConfigPagosCatalogsApi = (gestionVigente = null) => {
     setLoading(false);
   }, []);
 
-  /** Recarga manual (refetch): muestra loading y vuelve a leer las 4 entidades. */
+  /** Recarga manual (refetch): muestra loading y vuelve a leer las 3 entidades. */
   const refetch = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -113,27 +97,8 @@ export const useConfigPagosCatalogsApi = (gestionVigente = null) => {
     };
   }, [fetchCatalogos, aplicarResultado]);
 
-  /**
-   * Aporte de la GESTIÓN VIGENTE (clave del upsert):
-   *   - con gestionVigenteId → busca el aporte de esa gestión.
-   *   - si ningún aporte tiene gestionId (config heredada/global) → toma el primero.
-   * `null` ⇒ no existe configuración para la gestión vigente (alta vía POST).
-   */
-  const aporteVigente = useMemo(() => {
-    if (!aportes.length) return null;
-    if (gestionVigenteId != null) {
-      const porGestion = aportes.find((a) => Number(a.gestionId) === gestionVigenteId);
-      if (porGestion) return porGestion;
-      const sinGestion = aportes.find((a) => a.gestionId == null);
-      return sinGestion ?? null;
-    }
-    return aportes[0] ?? null;
-  }, [aportes, gestionVigenteId]);
-
   return useMemo(
     () => ({
-      aportes,
-      aporteVigente,
       metodos,
       bancos,
       cuentas,
@@ -141,7 +106,7 @@ export const useConfigPagosCatalogsApi = (gestionVigente = null) => {
       error,
       refetch,
     }),
-    [aportes, aporteVigente, metodos, bancos, cuentas, loading, error, refetch],
+    [metodos, bancos, cuentas, loading, error, refetch],
   );
 };
 

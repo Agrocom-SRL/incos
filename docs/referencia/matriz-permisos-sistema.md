@@ -768,14 +768,17 @@ Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requi
 
 **Roles:** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio de `configuracion.*`; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales. **Nota:** RECTOR incluye `DETALLE` en materia; DIR_ACADEMICO incluye `DETALLE` en plan para abrir matriz; edición de celdas sigue requiriendo `configuracion.plan-estudio.asignaturas` `EDITAR`.
 
-#### Datos complementarios (tabs)
+#### Datos complementarios (tabs + ABM/detalle de página completa)
 
 | Ruta UI canonica | Permiso | Notas |
 |------------------|---------|--------|
 | `/configuracion/complementarios` | `permisoAny` (complementario.*) | Menu "Datos complementarios" |
-| `?tab=discapacidad` | `configuracion.complementario.discapacidad` | Listado operativo |
-| `?tab=apoderados` | `configuracion.complementario.apoderados` | Placeholder / pendiente ABM |
-| `?tab=idiomas` | `configuracion.complementario.idiomas` | Placeholder / pendiente ABM |
+| `?tab=discapacidad` | `configuracion.complementario.discapacidad` | Listado (`createSimpleCatalogTableColumns`) |
+| `?tab=apoderados` | `configuracion.complementario.apoderados` | Listado (tipos de parentesco) |
+| `?tab=idiomas` | `configuracion.complementario.idiomas` | Listado (incluye `codigoIso`) |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma}/nueva` | mismo codigo, accion `CREAR` | Alta (página completa, patrón CFG académico) |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma}/:id/editar` | mismo codigo, accion `EDITAR` | Edición |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma}/:id` | mismo codigo, accion `DETALLE` | Ficha |
 
 `ruta_sidebar` del permiso aún apunta `/configuracion/datos-complementarios`; la app redirige a `/configuracion/complementarios`. Alinear en el archivo de permisos CFG.
 
@@ -783,9 +786,10 @@ Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requi
 
 | Menu | Ruta | Permiso (codigo) |
 |------|------|------------------|
-| Documentacion | `/configuracion/documentacion` | `configuracion.documentacion.*` |
+| Documentacion | `/configuracion/documentacion` | Entrada: `permisoAny` (`documentacion.inscripcion\|becas\|pasantias\|traslado`) + `landingStack` → primera lista con permiso |
+| Documentacion · Inscripción/Becas/Pasantías/Traslado | `/configuracion/documentacion/{inscripcion\|becas\|pasantias\|traslado}` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.documentacion.{inscripcion\|becas\|pasantias\|traslado}` (LISTAR/CREAR/EDITAR/DETALLE); backend resuelve el permiso por `tipoDocumento`, ver `resolverPermisoDocumentacion` |
 | Convenios | `/configuracion/convenios` | `configuracion.convenios` |
-| Historial actividades | `/configuracion/historial-actividades` | `configuracion.historial-actividades` |
+| Actividades | `/configuracion/actividades` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.actividad` (renombrado desde `configuracion.historial-actividades`; LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR) |
 | Pagos config | `/pagos/configuracion` | `configuracion.pagos` (LISTAR/CREAR/EDITAR: RECTOR, DIR_ADMIN) |
 
 Codigos legacy `cfg.academico.*` **no** deben usarse en codigo nuevo; fueron reemplazados por `configuracion.*`.

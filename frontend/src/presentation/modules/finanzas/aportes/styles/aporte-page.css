@@ -1,0 +1,18 @@
+/**
+ * Estilos de la página "Aporte" (Finanzas).
+ *
+ * El shell de workspace se reutiliza de `academico-form-page.css` (clases
+ * `cfg-academico-workspace*`, importadas por la página). Aquí solo vive el
+ * ancho acotado del formulario (no a ancho completo de la tabla). Todo
+ * consume CSS vars del theme (sin `#hex` propios de marca).
+ */
+
+.aporte-page-panel {
+  width: 100%;
+  min-width: 0;
+}
+
+.aporte-page-form {
+  width: 100%;
+  max-width: var(--aporte-form-max, 560px);
+}

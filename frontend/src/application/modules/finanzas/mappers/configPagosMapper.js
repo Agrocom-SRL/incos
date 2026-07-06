@@ -1,20 +1,17 @@
 /**
  * Mapper: configuración de pagos (API → DTO UI, módulo Finanzas).
  *
- * Normaliza las 4 entidades que componen la pantalla "Config. de pagos":
- *   - configuracionAporte (configuracion_aportes) → aporte de la gestión vigente.
+ * Normaliza las 3 entidades que componen la pantalla "Config. de pagos":
  *   - metodoPago         (metodos_pago)          → los 4 fijos.
  *   - bancoAutorizado    (bancos_autorizados)    → bancos.
  *   - cuentaPago         (cuentas_pago)          → cuentas + QR.
  *
+ * El aporte de la gestión vigente (configuracionAporte) se movió a
+ * `aportes/mappers/aporteMapper.js` (página propia `/finanzas/aportes`).
+ *
  * Módulo independiente del legacy `@pagos`. `dataKey` (front) coincide con el
- * `dataFieldName` (back): configuracionAporte / metodoPago / bancoAutorizado / cuentaPago.
+ * `dataFieldName` (back): metodoPago / bancoAutorizado / cuentaPago.
  */
-
-const toNumber = (value) => {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-};
 
 const cleanText = (value) => {
   if (value == null) return null;
@@ -26,26 +23,6 @@ const toBool = (value, fallback = false) => (value == null ? fallback : value ==
 
 /** Orden canónico de los 4 métodos fijos. */
 export const METODOS_ORDEN = ['EFECTIVO', 'QR', 'TRANSFERENCIA', 'DEPOSITO'];
-
-/**
- * Normaliza la configuración de aporte (item de `configuracionesAportes`).
- * Campos del backend (ContributionConfigurationMapper):
- *   { id, gestionId, montoBase, aporteActivo, fechaInicio, fechaFin, activo, createdAt }
- * @param {Object} raw
- * @returns {Object|null}
- */
-export const mapConfiguracionAporte = (raw) => {
-  if (!raw || typeof raw !== 'object') return null;
-  return {
-    id: raw.id ?? null,
-    gestionId: raw.gestionId ?? raw.gestion_id ?? null,
-    montoBase: toNumber(raw.montoBase ?? raw.monto_base),
-    aporteActivo: toBool(raw.aporteActivo ?? raw.aporte_activo, true),
-    fechaInicio: raw.fechaInicio ?? raw.fecha_inicio ?? null,
-    fechaFin: raw.fechaFin ?? raw.fecha_fin ?? null,
-    activo: toBool(raw.activo, true),
-  };
-};
 
 /**
  * Mapea un método de pago (item de `metodosPago`).

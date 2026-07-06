@@ -1,30 +1,20 @@
 /**
  * Tabs de la pantalla "Config. de pagos" (Finanzas).
  * Una URL base (/finanzas/configuracion) con `?tab=` (espejo de AcademicoPage):
- * aporte · métodos · bancos · cuentas. Cada tab = una entidad con título + descripción.
+ * métodos · bancos · cuentas. Cada tab = una entidad con título + descripción.
+ *
+ * El tab "Aporte" se promovió a página propia `/finanzas/aportes` (permiso
+ * `finanzas.aporte`, ver `finanzas/aportes/routes.jsx`).
  */
 
-import {
-  BankOutlined,
-  CreditCardOutlined,
-  GoldOutlined,
-  WalletOutlined,
-} from '@ant-design/icons';
+import { BankOutlined, CreditCardOutlined, WalletOutlined } from '@ant-design/icons';
 
-export const TAB_APORTE = 'aporte';
 export const TAB_METODOS = 'metodos';
 export const TAB_BANCOS = 'bancos';
 export const TAB_CUENTAS = 'cuentas';
 
 /** Metadatos por tab: etiqueta corta (chip del tab) + título y descripción del panel. */
 export const CONFIG_PAGOS_TAB_META = {
-  [TAB_APORTE]: {
-    shortLabel: 'Aporte',
-    title: 'Aporte de la gestión vigente',
-    description:
-      'Monto base, vigencia y estado del aporte que se cobra a los estudiantes en la gestión actual.',
-    icon: GoldOutlined,
-  },
   [TAB_METODOS]: {
     shortLabel: 'Métodos de pago',
     title: 'Métodos de pago',
@@ -48,4 +38,4 @@ export const CONFIG_PAGOS_TAB_META = {
   },
 };
 
-export const CONFIG_PAGOS_TAB_KEYS = [TAB_APORTE, TAB_METODOS, TAB_BANCOS, TAB_CUENTAS];
+export const CONFIG_PAGOS_TAB_KEYS = [TAB_METODOS, TAB_BANCOS, TAB_CUENTAS];

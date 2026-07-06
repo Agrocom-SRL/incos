@@ -135,6 +135,20 @@
 - [ ] RBAC: retirar `configuracion.pagos` de `62-seed-permisos-cfg.sql`, sembrar `finanzas.aporte` y
       `finanzas.configuracion.pago` en `60-seed-permisos-fin.sql` (decisión 8).
 
+## 3bis. Regla nueva (2026-07-06, urgente, pedida por el usuario)
+
+- **Nunca dejar backend y frontend con códigos de permiso distintos, ni siquiera entre fases.**
+  Cualquier renombre/movimiento de permiso ya sembrado (ej. `configuracion.historial-actividades`→
+  `configuracion.actividad`, `configuracion.pagos`→`finanzas.aporte`/`finanzas.configuracion.pago`)
+  se trata como UN SOLO paso atómico: seed backend + `routes.jsx`/config frontend en el mismo momento,
+  antes de pasar a la siguiente fase. Motivo: cualquier re-siembra de la BD en la ventana intermedia
+  rompe el acceso real de usuarios.
+- **Ningún subagente debe ejecutar `git commit`.** El usuario revisa y commitea manualmente. Se
+  detectaron commits no autorizados (`752d622d`, `2b5af4eb`, `453d867d`, `52897153`, `451d53d6`,
+  `9f0a75a7`) hechos por sesiones de agentes sin pedirlo — el usuario los revisará/gestionará él
+  mismo; de aquí en adelante toda instrucción a `backend`/`frontend`/otros incluye explícitamente
+  "no ejecutes git commit, solo edita archivos".
+
 ## 3. Reglas duras durante la ejecución
 
 - Cualquier cambio de schema/DDL (tablas nuevas, columnas nuevas, migraciones) **requiere aprobación
@@ -210,3 +224,25 @@
   (verificar existencia antes de `INSERT`, o aplicar solo el delta con `UPDATE`/`INSERT ... WHERE NOT
   EXISTS`), no con `mysql < archivo.sql` a secas cuando la tabla ya tiene datos.
   **Pendiente**: frontend de Fases 1, 2 y 3 (list/form/detail), y Fase 4 completa (backend+frontend).
+- **2026-07-06**: Frontend de Fases 1, 2 y 3 completado por agente `frontend` (complementarios:
+  discapacidad/apoderados/idiomas con list+form+detail reales usando `createSimpleCatalogTableColumns`
+  y `CfgFormWorkspace`; documentación: conector genérico parametrizado por `tipoDocumento` + 4 wrappers
+  de listado; actividades: ABM completo con `dataKey`/`dataFieldName`='actividades', permiso ya
+  corregido a `configuracion.actividad` incluyendo el redirect legacy). `npm run build`/`lint` OK.
+- **2026-07-06**: Backend de Fase 4 (Finanzas) completado por agente `backend`: rutas de
+  aportes/bancos/cuentas/métodos repermisadas a `finanzas.aporte`/`finanzas.configuracion.pago`;
+  `configuracion.pagos` retirado de `62-seed-permisos-cfg.sql` y de la BD real; delta aplicado de forma
+  idempotente (sin duplicados, sanidad verificada en 0 filas).
+- **2026-07-06 — FIX URGENTE (pedido por el usuario)**: se detectó que el frontend de Finanzas había
+  quedado desincronizado del backend (`configuracion.pagos` ya no existe en BD pero el frontend seguía
+  usándolo en 4 archivos + `perfilAccesos.jsx`), rompiendo acceso ante cualquier re-siembra. Corregido
+  en el mismo movimiento: se completó la Fase 4 frontend completa — página nueva
+  `frontend/src/presentation/modules/finanzas/aportes/` (permiso `finanzas.aporte`, ruta
+  `/finanzas/aportes`, order 4) separada del tab "Aporte" de `finanzas/configuracion`; bancos/cuentas/
+  métodos repermisados a `finanzas.configuracion.pago` (routes.jsx, configPagosPermisos.js,
+  ConfigPagosPage.jsx, perfilAccesos.jsx con tile nuevo de Aportes). Verificado: `grep
+  "configuracion\.pagos" frontend/src` → 0 resultados; build OK. **Regla 3bis agregada** (ver arriba)
+  para que esto no vuelva a pasar entre fases. Ningún commit ejecutado por los agentes en esta
+  corrección (working tree limpio de commits nuevos, confirmado con `git log`).
+- **Fases 1, 2, 3 y 4 quedan con backend+frontend+RBAC coherentes.** Pendiente: correr `verificador` y
+  `revisor-ui` de cierre sobre las 4 fases antes de dar el trabajo por terminado.
