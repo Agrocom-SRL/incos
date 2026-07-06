@@ -82,10 +82,14 @@ function verificarPermisoDocumentacionExistente(accion) {
     return async (req, res, next) => {
         try {
             const id = parseInt(req.params.id, 10);
-            const documentacionRepository = getAppContainer().resolve(REPOSITORIOS_TOKENS.documentationRepository);
+            const documentacionRepository = getAppContainer().resolve(
+                REPOSITORIOS_TOKENS.documentationRepository
+            );
             const registro = await documentacionRepository.findById(id, { paranoid: false });
             if (!registro) {
-                return res.status(404).json({ error: 'Recurso no encontrado', resource: 'tipo de documentación', id });
+                return res
+                    .status(404)
+                    .json({ error: 'Recurso no encontrado', resource: 'tipo de documentación', id });
             }
             return verificarAccionPorTipoDocumento(registro.documentType, accion)(req, res, next);
         } catch (error) {
