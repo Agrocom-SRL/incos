@@ -11,7 +11,7 @@ export class UpdateDiscapacidadController {
       const body = req.body || {};
       const userId = req.usuario?.id ?? null;
       const result = await this.updateDiscapacidadUseCase.execute(id, body, userId);
-      const discapacidad = result.discapacidad;
+      const { discapacidad } = result;
       return this.responseFormatter.updated(res, discapacidad, 'tipo de discapacidad', discapacidad.id, req);
     } catch (error) {
       return next(error);

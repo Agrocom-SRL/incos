@@ -11,7 +11,7 @@ export class UpdateActividadController {
       const body = req.body || {};
       const userId = req.usuario?.id ?? null;
       const result = await this.updateActividadUseCase.execute(id, body, userId);
-      const actividad = result.actividad;
+      const { actividad } = result;
       return this.responseFormatter.updated(res, actividad, 'actividad', actividad.id, req);
     } catch (error) {
       return next(error);

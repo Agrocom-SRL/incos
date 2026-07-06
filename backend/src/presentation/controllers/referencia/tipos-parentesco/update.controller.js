@@ -11,7 +11,7 @@ export class UpdateTipoParentescoController {
       const body = req.body || {};
       const userId = req.usuario?.id ?? null;
       const result = await this.updateTipoParentescoUseCase.execute(id, body, userId);
-      const tipoParentesco = result.tipoParentesco;
+      const { tipoParentesco } = result;
       return this.responseFormatter.updated(res, tipoParentesco, 'tipo de parentesco', tipoParentesco.id, req);
     } catch (error) {
       return next(error);

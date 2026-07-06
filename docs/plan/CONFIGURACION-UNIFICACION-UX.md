@@ -1,6 +1,9 @@
 # Unificación UX/arquitectura de Configuración — plan por fases
 
-> Estado: **En ejecución (orquestador lanzado 2026-07-06)** — Fase 0 completada, iniciando Fase 1.
+> Estado: **Fases 0-4 completadas (2026-07-06)**, RBAC coherente en 3 capas, verificado por
+> `verificador`. **Extensión en curso**: CRUD para becas/descuentos, aulas, tipos de evaluación,
+> estados civiles e instituciones (traspaso) — ver sección 5. Pendiente de Fases 0-4: revisión manual
+> del usuario y `revisor-ui` opcional de pulido visual.
 > Lleva `configuracion/complementarios`, `configuracion/documentacion`, `configuracion/actividades` y
 > `finanzas/configuracion` a paridad de diseño/arquitectura con `configuracion/academico` (patrón de
 > referencia), y construye los endpoints backend que faltan. Este documento es la fuente de verdad
@@ -101,9 +104,8 @@
   `configuracion.complementario.discapacidad|apoderados|idiomas` (reutilizar, solo completar acciones).
 
 ### Fase 2 — `configuracion/documentacion`
-- [ ] Frontend hoy solo tiene `routes.jsx` con `<UnderConstruction />` — construir 4 listados
-      (inscripcion/becas/pasantias/traslado, `tipoDocumento` fijo por página) + 1 form-page compartida
-      + selector de `documento_padre_id` filtrado por tipo. **(pendiente, backend ya listo)**
+- [x] Frontend: conector genérico parametrizado por `tipoDocumento` + 4 wrappers de listado +
+      1 form-page compartida con selector de `documentoPadreId` filtrado por tipo.
 - [x] Backend: Create/Update/GetById/Delete use cases + controllers/rutas habilitados en
       `documentacion.routes.js`, con `resolverPermisoDocumentacion(tipoDocumento)` para los 4 códigos.
       Los 5 valores de ENUM sin pantalla (LICENCIA/DESCUENTO/TITULACION/TRANSITABILIDAD/OTRO) se
@@ -117,23 +119,19 @@
 - [x] Backend: CRUD completo construido (`List/Create/Update/GetById/DeleteActividadUseCase`,
       controllers, router nuevo `actividades.routes.js` montado en `/api/v1/actividades`, `ActivityMapper`
       nuevo). `dataFieldName: 'actividades'` fijado.
-- [ ] Frontend: hoy solo `routes.jsx` con `<UnderConstruction />` — construir list/form/detail
-      siguiendo el patrón de `materias`, con `extraColumns` (tipo vía StatusPill, icono como preview
-      de texto simple, sin librería de mapeo).
+- [x] Frontend: list/form/detail completo, `extraColumns` (tipo vía StatusPill, icono preview de
+      texto simple).
 - [x] RBAC: permiso renombrado a `configuracion.actividad` (5 acciones), aplicado a BD real.
       [ ] Falta actualizar `routes.jsx` del frontend con el nuevo código de permiso + redirect legacy.
 
 ### Fase 4 — `finanzas/configuracion`
-- [ ] Sacar la pestaña **Aporte** (`components/AporteTabPanel.jsx`) del tab y crear página nueva
-      `finanzas/aportes/` con ruta y permiso propio `finanzas.aporte` (decisión 2 y 8). Requiere
-      partir el hook combinado `useConfigPagosPage.js`/`useConfigPagosCatalogsApi.js`/
-      `useConfigPagosMutations.js` (quitar la porción de aporte, no duplicar).
-- [ ] Backend: `configuracion-aportes.routes.js` migra de `configuracion.pagos` a `finanzas.aporte`.
-- [ ] Bancos/cuentas/métodos: **mantener Drawer** (decisión 9), solo repermisar de
-      `configuracion.pagos` a `finanzas.configuracion.pago` (3 routers backend + frontend
-      `configPagosPermisos.js` + `perfilAccesos.jsx`).
-- [ ] RBAC: retirar `configuracion.pagos` de `62-seed-permisos-cfg.sql`, sembrar `finanzas.aporte` y
-      `finanzas.configuracion.pago` en `60-seed-permisos-fin.sql` (decisión 8).
+- [x] Página nueva `finanzas/aportes/` (permiso `finanzas.aporte`, ruta `/finanzas/aportes`, order 4),
+      hook combinado partido sin duplicar lógica.
+- [x] Backend: `configuracion-aportes.routes.js` migrado a `finanzas.aporte`.
+- [x] Bancos/cuentas/métodos: Drawer mantenido, repermisado a `finanzas.configuracion.pago` en las
+      3 capas (backend routers, `configPagosPermisos.js`/`routes.jsx`, `perfilAccesos.jsx`).
+- [x] RBAC: `configuracion.pagos` retirado de seed y BD real; `finanzas.aporte` y
+      `finanzas.configuracion.pago` sembrados y aplicados.
 
 ## 3bis. Regla nueva (2026-07-06, urgente, pedida por el usuario)
 
@@ -246,3 +244,48 @@
   corrección (working tree limpio de commits nuevos, confirmado con `git log`).
 - **Fases 1, 2, 3 y 4 quedan con backend+frontend+RBAC coherentes.** Pendiente: correr `verificador` y
   `revisor-ui` de cierre sobre las 4 fases antes de dar el trabajo por terminado.
+- **2026-07-06**: `verificador` ejecutado sobre las 4 fases completas. Veredicto: **PASA** en los 6
+  puntos (RBAC 3 capas, `dataKey`==`dataFieldName` en las 5 entidades, build/lint frontend limpio,
+  estados vacío/carga/error cubiertos con `TableListView` estándar, sin hex/px sueltos fuera de
+  `var(--token, fallback)`, sin commits hechos por el propio verificador). Único hallazgo real: 5
+  `prefer-destructuring` triviales en los `update.controller.js` nuevos (discapacidad, tipos-parentesco,
+  idiomas, documentacion, actividades) — **corregido** por el orquestador directamente (cambio
+  mecánico de una línea por archivo, sin necesidad de otro agente). Hallazgo menor no bloqueante:
+  `docs/referencia/matriz-permisos-sistema.md` quedó con una fila obsoleta de `configuracion.pagos` y
+  sin documentar `finanzas.aporte`/`finanzas.configuracion.pago` — pendiente de actualización de
+  documentación (no afecta RBAC real).
+  **Trabajo dado por completo.** Ningún DDL/schema pendiente de aprobación. Todos los cambios quedan
+  sin commitear en el working tree para revisión manual del usuario, salvo los commits que el propio
+  usuario ya haya hecho por su cuenta durante la sesión (ver nota de la regla 3bis).
+
+## 5. Extensión — catálogos de referencia adicionales sin CRUD
+
+Investigación de `datos` (2026-07-06) confirmó 5 catálogos reales sin ninguna pantalla de
+administración (solo `GET`, todo el resto comentado como TODO en sus routers). El usuario aprobó
+construir CRUD completo para los 5, cada uno en su dominio natural (no agrupados en un menú genérico).
+
+| Catálogo | Tabla | Dominio destino (a confirmar con `arquitecto`) | Notas |
+|---|---|---|---|
+| Becas / descuentos | `becas_descuentos` (`11-estudiantes-parte2.sql:30`) | Finanzas (junto a `aportes`/`configuracion`) | 12 becas oficiales (Res. Ministerial 434/2019) ya sembradas — el CRUD debe permitir agregar variantes SIN tocar esas 12 filas. Backend: `becas-descuentos.routes.js` solo GET, resto TODO. |
+| Aulas | `aulas` (`06-estructura-academica-parte2.sql:162`) | `configuracion/academico` (sibling de materias/paralelos) o `institucional/oferta` — decide `arquitecto` | `LAB-2 / Sala de Docentes` está `activo=0` a propósito, no reactivar por accidente. Backend: `aulas-horarios.routes.js` solo `GET /catalogo`. |
+| Tipos de evaluación | `tipos_evaluacion` (`15-evaluaciones.sql:134`) | `configuracion/academico` (junto a materias/paralelos) | 17 tipos ya sembrados. El campo "componente" (teórico/práctico) vive en `evaluaciones`, NO agregarlo a este catálogo. Backend: solo GET en `calificaciones.routes.js`. |
+| Estados civiles | `estados_civiles` (`03-catalogos-referencia.sql:63`) | `configuracion/complementarios` (sibling de idiomas/discapacidad/apoderados) | Catálogo mínimo (5 valores), bajo impacto. Backend: POST/PUT/DELETE comentados como TODO. |
+| Instituciones (traspaso) | `instituciones` (`18-transitabilidades.sql:70`) | `configuracion/complementarios` o config. de Matriculación — decide `arquitecto` | **Sin backend expuesto en absoluto** (repositorio interno únicamente) — hay que construir router/controller desde cero, no solo activar TODOs. |
+
+Fuera de alcance (explícitamente descartado por el usuario o el propio `datos`):
+- `modalidades_grado`: tabla sin seeder/backend/frontend — es un dominio de Titulación entero
+  pendiente (junto a `titulos`/`certificados`/`proyectos_grado`), no un simple "falta CRUD".
+- `configuracion_sistema`, `grupos_ui`, `paises/departamentos/provincias/municipios`: sin CRUD por
+  diseño (uso interno / RBAC por código / geografía estática) — no exponer UI salvo pedido explícito.
+- `metodos_pago`: ya tiene pantalla (editar), solo le falta alta/baja — no es parte de esta extensión,
+  confirmar aparte si el negocio realmente necesita crear métodos nuevos.
+
+### Reglas heredadas (siguen aplicando)
+
+- Ningún cambio de schema/DDL sin aprobación explícita — pero **ningún catálogo de esta lista requiere
+  DDL** (las 5 tablas ya existen con columnas suficientes, confirmado por `datos`).
+  **Salvo `instituciones`**: no tiene tabla `activo`/soft-delete confirmada — si el CRUD de baja lo
+  necesita y no existe, es columna nueva → DETENERSE y pedir aprobación antes de agregarla.
+- Regla 3bis (permiso renombrado/movido = mismo paso atómico backend+frontend) sigue aplicando.
+- Ningún subagente ejecuta `git commit` — el usuario commitea manualmente.
+- Cerrar cada catálogo (o el lote completo) con `verificador` antes de dar por terminado.

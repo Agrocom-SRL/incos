@@ -11,7 +11,7 @@ export class UpdateIdiomaController {
       const body = req.body || {};
       const userId = req.usuario?.id ?? null;
       const result = await this.updateIdiomaUseCase.execute(id, body, userId);
-      const idioma = result.idioma;
+      const { idioma } = result;
       return this.responseFormatter.updated(res, idioma, 'idioma', idioma.id, req);
     } catch (error) {
       return next(error);

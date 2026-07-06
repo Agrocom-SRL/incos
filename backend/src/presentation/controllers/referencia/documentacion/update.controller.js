@@ -11,7 +11,7 @@ export class UpdateDocumentacionController {
       const body = req.body || {};
       const userId = req.usuario?.id ?? null;
       const result = await this.updateDocumentacionUseCase.execute(id, body, userId);
-      const documentacion = result.documentacion;
+      const { documentacion } = result;
       return this.responseFormatter.updated(res, documentacion, 'tipo de documentación', documentacion.id, req);
     } catch (error) {
       return next(error);
