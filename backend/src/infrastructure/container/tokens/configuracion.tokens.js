@@ -46,6 +46,12 @@ export const CONFIGURACION_TOKENS = {
     createPrerrequisitoUseCase: 'configuracion.createPrerrequisitoUseCase',
     deletePrerrequisitoUseCase: 'configuracion.deletePrerrequisitoUseCase',
 
+    listActividadesUseCase: 'configuracion.listActividadesUseCase',
+    getActividadByIdUseCase: 'configuracion.getActividadByIdUseCase',
+    createActividadUseCase: 'configuracion.createActividadUseCase',
+    updateActividadUseCase: 'configuracion.updateActividadUseCase',
+    deleteActividadUseCase: 'configuracion.deleteActividadUseCase',
+
     // CONTROLLERS
     listCarrerasController: 'configuracion.listCarrerasController',
     getCarreraByIdController: 'configuracion.getCarreraByIdController',
@@ -84,6 +90,12 @@ export const CONFIGURACION_TOKENS = {
     createPrerrequisitoController: 'configuracion.createPrerrequisitoController',
     deletePrerrequisitoController: 'configuracion.deletePrerrequisitoController',
 
+    listActividadesController: 'configuracion.listActividadesController',
+    getActividadByIdController: 'configuracion.getActividadByIdController',
+    createActividadController: 'configuracion.createActividadController',
+    updateActividadController: 'configuracion.updateActividadController',
+    deleteActividadController: 'configuracion.deleteActividadController',
+
     // ROUTERS
     carrerasRouter: 'configuracion.carrerasRouter',
     materiasRouter: 'configuracion.materiasRouter',
@@ -91,5 +103,6 @@ export const CONFIGURACION_TOKENS = {
     periodosRouter: 'configuracion.periodosRouter',
     asignaturasPlanRouter: 'configuracion.asignaturasPlanRouter',
     prerrequisitosRouter: 'configuracion.prerrequisitosRouter',
+    actividadesRouter: 'configuracion.actividadesRouter',
 };
 

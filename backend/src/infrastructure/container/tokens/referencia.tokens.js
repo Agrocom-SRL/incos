@@ -10,17 +10,57 @@
 export const REFERENCIA_TOKENS = {
     // USE CASES
     listIdiomasUseCase: 'referencia.listIdiomasUseCase',
+    createIdiomaUseCase: 'referencia.createIdiomaUseCase',
+    updateIdiomaUseCase: 'referencia.updateIdiomaUseCase',
+    getIdiomaByIdUseCase: 'referencia.getIdiomaByIdUseCase',
+    deleteIdiomaUseCase: 'referencia.deleteIdiomaUseCase',
+
     listEstadosCivilesUseCase: 'referencia.listEstadosCivilesUseCase',
+
     listTiposParentescoUseCase: 'referencia.listTiposParentescoUseCase',
+    createTipoParentescoUseCase: 'referencia.createTipoParentescoUseCase',
+    updateTipoParentescoUseCase: 'referencia.updateTipoParentescoUseCase',
+    getTipoParentescoByIdUseCase: 'referencia.getTipoParentescoByIdUseCase',
+    deleteTipoParentescoUseCase: 'referencia.deleteTipoParentescoUseCase',
+
     listDocumentacionUseCase: 'referencia.listDocumentacionUseCase',
+    createDocumentacionUseCase: 'referencia.createDocumentacionUseCase',
+    updateDocumentacionUseCase: 'referencia.updateDocumentacionUseCase',
+    getDocumentacionByIdUseCase: 'referencia.getDocumentacionByIdUseCase',
+    deleteDocumentacionUseCase: 'referencia.deleteDocumentacionUseCase',
+
     listDiscapacidadUseCase: 'referencia.listDiscapacidadUseCase',
+    createDiscapacidadUseCase: 'referencia.createDiscapacidadUseCase',
+    updateDiscapacidadUseCase: 'referencia.updateDiscapacidadUseCase',
+    getDiscapacidadByIdUseCase: 'referencia.getDiscapacidadByIdUseCase',
+    deleteDiscapacidadUseCase: 'referencia.deleteDiscapacidadUseCase',
 
     // CONTROLLERS
     listIdiomasController: 'referencia.listIdiomasController',
+    createIdiomaController: 'referencia.createIdiomaController',
+    updateIdiomaController: 'referencia.updateIdiomaController',
+    getIdiomaByIdController: 'referencia.getIdiomaByIdController',
+    deleteIdiomaController: 'referencia.deleteIdiomaController',
+
     listEstadosCivilesController: 'referencia.listEstadosCivilesController',
+
     listTiposParentescoController: 'referencia.listTiposParentescoController',
+    createTipoParentescoController: 'referencia.createTipoParentescoController',
+    updateTipoParentescoController: 'referencia.updateTipoParentescoController',
+    getTipoParentescoByIdController: 'referencia.getTipoParentescoByIdController',
+    deleteTipoParentescoController: 'referencia.deleteTipoParentescoController',
+
     listDocumentacionController: 'referencia.listDocumentacionController',
+    createDocumentacionController: 'referencia.createDocumentacionController',
+    updateDocumentacionController: 'referencia.updateDocumentacionController',
+    getDocumentacionByIdController: 'referencia.getDocumentacionByIdController',
+    deleteDocumentacionController: 'referencia.deleteDocumentacionController',
+
     listDiscapacidadController: 'referencia.listDiscapacidadController',
+    createDiscapacidadController: 'referencia.createDiscapacidadController',
+    updateDiscapacidadController: 'referencia.updateDiscapacidadController',
+    getDiscapacidadByIdController: 'referencia.getDiscapacidadByIdController',
+    deleteDiscapacidadController: 'referencia.deleteDiscapacidadController',
 
     // ROUTERS
     idiomasRouter: 'referencia.idiomasRouter',

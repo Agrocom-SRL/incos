@@ -16,10 +16,11 @@
 import { registerCarrerasResource } from './carreras.container.js';
 import { registerMateriasResource } from './materias.container.js';
 import { registerPlanesEstudiosResource } from './planes-estudios.container.js';
+import { registerActividadesResource } from './actividades.container.js';
 
 /**
  * Registra el módulo completo de Configuración en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
@@ -28,6 +29,7 @@ export function registerConfiguracionModule(container) {
     registerCarrerasResource(container);
     registerMateriasResource(container);
     registerPlanesEstudiosResource(container);
+    registerActividadesResource(container);
 
     return container;
 }

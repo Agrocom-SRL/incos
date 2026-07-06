@@ -54,3 +54,12 @@ export {
     DeletePrerrequisitoController,
 } from './planes-estudios/prerrequisitos.controllers.js';
 
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - ACTIVIDADES (catálogo maestro)
+// ============================================
+export { ListActividadesController } from './actividades/list.controller.js';
+export { CreateActividadController } from './actividades/create.controller.js';
+export { GetActividadByIdController } from './actividades/get-by-id.controller.js';
+export { UpdateActividadController } from './actividades/update.controller.js';
+export { DeleteActividadController } from './actividades/delete.controller.js';
+
