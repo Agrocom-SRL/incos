@@ -18,7 +18,11 @@ import { IBecasPorCarreraViewRepository } from '../../../domain/interfaces/repos
  * columna de salida; el indicador fiable de "tiene beca" es
  * `beca_porcentaje > 0` (la vista hace COALESCE(porcentaje, 0)) confirmado
  * por `beca_tipo_nombre <> 'NO APLICA'`. Se selecciona `beca_tipo_nombre`
- * como señal de presencia de beca para el use case.
+ * como señal de presencia de beca para el use case. Además, ahora también
+ * trae datos identificatorios del estudiante (código, apellidos, nombres,
+ * CI) y el detalle económico de su beca (nombre del descuento, monto de
+ * descuento y monto base del aporte) para que el use case pueda exponer el
+ * detalle de estudiantes por paralelo, sin afectar los agregados existentes.
  *
  * Repositorio de SOLO LECTURA para reportes (arquetipo B / `views/`).
  */
@@ -41,7 +45,15 @@ export class BecasPorCarreraViewRepository extends IBecasPorCarreraViewRepositor
         paralelo_turno,
         estudiante_id,
         beca_porcentaje,
-        beca_tipo_nombre
+        beca_tipo_nombre,
+        codigo_estudiante,
+        apellido_paterno,
+        apellido_materno,
+        nombres,
+        ci,
+        beca_descuento_nombre,
+        descuento_beca,
+        aporte_monto_base
       FROM vista_base_reporte_excel_lista_aportes_por_carrera_filas
       WHERE gestion_id = :gestionId
       ORDER BY carrera_nombre, periodo_numero, paralelo_nombre, estudiante_id

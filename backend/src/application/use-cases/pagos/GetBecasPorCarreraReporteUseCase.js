@@ -20,6 +20,13 @@ import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.
  * Clasificación 25/50/75/100 se hace por `beca_porcentaje` (NO por código/nombre).
  * Los porcentajes presentes se derivan dinámicamente (no se hardcodean).
  *
+ * Además, cada nodo `paralelo` (hoja del árbol) expone `estudiantes[]` con el
+ * detalle individual (código, nombres/apellidos, CI, beca y montos) SOLO de
+ * los estudiantes BECADOS de ese paralelo (el listado de detalle es de
+ * becados, no de todos los matriculados). Este detalle NO afecta los
+ * agregados/conteos existentes (que se siguen calculando igual con los Sets
+ * `estudiantes`/`conBeca`, sobre TODOS los matriculados).
+ *
  * El negocio vive aquí (no en controller ni repo).
  */
 export class GetBecasPorCarreraReporteUseCase {
@@ -102,6 +109,7 @@ export class GetBecasPorCarreraReporteUseCase {
           paraleloNombre: row.paralelo_nombre ?? null,
           paraleloTurno: row.paralelo_turno ?? null,
           ...this._newCounters(porcentajes),
+          estudiantesDetalle: new Map(),
         });
       }
       const paralelo = periodo.paralelos.get(paraleloKey);
@@ -299,8 +307,12 @@ export class GetBecasPorCarreraReporteUseCase {
 
   /**
    * Acumula un estudiante (deduplicado por nodo vía Set) en los contadores de
-   * un nodo; si tiene beca real, lo cuenta una sola vez en su tramo.
-   * @param {{ estudiantes: Set<number>, conBeca: Set<number>, becasPorPorcentaje: Object }} node
+   * un nodo; si tiene beca real, lo cuenta una sola vez en su tramo Y, si el
+   * nodo lleva `estudiantesDetalle` (solo nodos paralelo), guarda también su
+   * detalle individual. El detalle SOLO se guarda para becados: la planilla
+   * de detalle es un listado de becados, no de todos los matriculados (el
+   * conteo de matriculados en `estudiantes` no se ve afectado).
+   * @param {{ estudiantes: Set<number>, conBeca: Set<number>, becasPorPorcentaje: Object, estudiantesDetalle?: Map<number, Object> }} node
    * @param {number} estudianteId
    * @param {Object} row
    */
@@ -312,7 +324,33 @@ export class GetBecasPorCarreraReporteUseCase {
       if (node.becasPorPorcentaje[porcentaje] != null) {
         node.becasPorPorcentaje[porcentaje] += 1;
       }
+      if (node.estudiantesDetalle && !node.estudiantesDetalle.has(estudianteId)) {
+        node.estudiantesDetalle.set(estudianteId, this._buildEstudianteDetalle(estudianteId, row));
+      }
     }
+  }
+
+  /**
+   * Construye el detalle individual de un estudiante BECADO (para el listado
+   * por paralelo), a partir de una fila cruda de la vista 89. Solo se invoca
+   * cuando `_tieneBeca(row)` ya es verdadero (ver `_addEstudiante`).
+   * @param {number} estudianteId
+   * @param {Object} row
+   * @returns {Object}
+   */
+  _buildEstudianteDetalle(estudianteId, row) {
+    return {
+      estudianteId,
+      codigo: row.codigo_estudiante ?? null,
+      apellidoPaterno: row.apellido_paterno ?? null,
+      apellidoMaterno: row.apellido_materno ?? null,
+      nombres: row.nombres ?? null,
+      ci: row.ci ?? null,
+      becaNombre: row.beca_descuento_nombre ?? null,
+      becaPorcentaje: Number(row.beca_porcentaje) || 0,
+      montoDescuento: this._round(Number(row.descuento_beca) || 0),
+      montoBase: this._round(Number(row.aporte_monto_base) || 0),
+    };
   }
 
   /**
@@ -375,7 +413,13 @@ export class GetBecasPorCarreraReporteUseCase {
     };
   }
 
-  /** Nodo hoja (paralelo). Sin `children`. */
+  /**
+   * Nodo hoja (paralelo). Sin `children`. Expone `estudiantes[]` con el
+   * detalle individual (código, apellidos, nombres, CI, beca y montos) SOLO
+   * de los BECADOS de ese paralelo, ordenado por
+   * APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES (convención del proyecto).
+   * No afecta los agregados/conteos existentes (matriculados totales).
+   */
   _paraleloNode(carrera, periodo, paralelo) {
     const nombre = paralelo.paraleloNombre ?? '';
     const turno = paralelo.paraleloTurno;
@@ -394,6 +438,23 @@ export class GetBecasPorCarreraReporteUseCase {
       paraleloNombre: paralelo.paraleloNombre,
       paraleloTurno: paralelo.paraleloTurno,
       ...this._metrics(paralelo),
+      estudiantes: Array.from(paralelo.estudiantesDetalle.values()).sort((a, b) => {
+        const cmpPaterno = String(a.apellidoPaterno ?? '').localeCompare(
+          String(b.apellidoPaterno ?? ''),
+          'es',
+          { sensitivity: 'base' }
+        );
+        if (cmpPaterno !== 0) return cmpPaterno;
+        const cmpMaterno = String(a.apellidoMaterno ?? '').localeCompare(
+          String(b.apellidoMaterno ?? ''),
+          'es',
+          { sensitivity: 'base' }
+        );
+        if (cmpMaterno !== 0) return cmpMaterno;
+        return String(a.nombres ?? '').localeCompare(String(b.nombres ?? ''), 'es', {
+          sensitivity: 'base',
+        });
+      }),
     };
   }
 

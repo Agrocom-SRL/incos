@@ -2,9 +2,9 @@
  * Hook de pantalla: planilla de control de becas por carrera (Finanzas, read-only).
  *
  * Espejo de `usePagosListPage`: consume el contexto del provider y devuelve props
- * listas para la página "dumb": breadcrumbs, columnas DINÁMICAS (derivadas de
- * `porcentajes`, no hardcodeadas), filas de la tabla, datos de la fila de totales,
- * datos del donut/distribución y el resumen general. No hace fetch.
+ * listas para la página "dumb": breadcrumbs, el árbol `filas` y `carreras`
+ * (raíces, para las pestañas por carrera), datos del donut/distribución y el
+ * resumen general. No hace fetch.
  *
  * Toda la lógica de AGRUPACIÓN y DERIVACIÓN del árbol jerárquico (carrera →
  * periodo → paralelo) vive aquí (capa de estado), no en los componentes:
@@ -23,7 +23,6 @@ import {
   becaPorcentajeLabel,
 } from '@application-finanzas/mappers/becasReporteMapper';
 import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
-import { createBecasTableColumns } from '@finanzas/reportes/config/becasTableColumns';
 
 /** Cobertura (% becados sobre matriculados), entero seguro ante divisor 0. */
 const calcularCobertura = (conBeca, matriculados) =>
@@ -138,11 +137,6 @@ export const useBecasReportePage = () => {
   const { reporte, loading, error, gestionId, refetch } = useBecasReporteContext();
 
   const porcentajes = useMemo(() => reporte?.porcentajes ?? [], [reporte]);
-
-  const tableColumns = useMemo(
-    () => createBecasTableColumns(porcentajes),
-    [porcentajes],
-  );
 
   const filas = useMemo(() => reporte?.filas ?? [], [reporte]);
 
@@ -280,26 +274,6 @@ export const useBecasReportePage = () => {
     };
   }, [coberturaPorNivelAgrupado]);
 
-  /**
-   * Ids de TODOS los nodos con hijos (carreras + periodos): permite "expandir
-   * todo" sin recalcular en el componente. Las hojas (paralelos) no entran.
-   */
-  const expandableRowKeys = useMemo(() => {
-    const keys = [];
-    const recorrer = (nodos) => {
-      nodos.forEach((nodo) => {
-        if (Array.isArray(nodo.children) && nodo.children.length > 0) {
-          keys.push(nodo.id);
-          recorrer(nodo.children);
-        }
-      });
-    };
-    recorrer(filas);
-    return keys;
-  }, [filas]);
-
-  const totales = useMemo(() => reporte?.totales ?? null, [reporte]);
-
   const resumen = useMemo(() => reporte?.resumen ?? null, [reporte]);
 
   const catalogo = useMemo(() => reporte?.catalogo ?? [], [reporte]);
@@ -328,10 +302,8 @@ export const useBecasReportePage = () => {
     gestionId,
     refetch,
     porcentajes,
-    tableColumns,
     filas,
-    expandableRowKeys,
-    totales,
+    carreras,
     distribucion,
     distribucionTramosPorScope,
     coberturaPorNivelAgrupado,
