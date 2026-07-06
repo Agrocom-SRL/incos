@@ -2,7 +2,7 @@
  * PUT /api/v1/configuracion-aportes/:id
  * Edita una configuración de aporte académico.
  *
- * Permiso: configuracion.pagos (EDITAR).
+ * Permiso: finanzas.aporte (EDITAR).
  * Body: monto_base?, aporte_activo?, fecha_inicio?, fecha_fin?, activo?
  * Contrato: data.configuracionAporte = configuración actualizada.
  */

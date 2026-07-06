@@ -2,7 +2,7 @@
  * POST /api/v1/bancos-autorizados
  * Crea un banco autorizado.
  *
- * Permiso: configuracion.pagos (CREAR).
+ * Permiso: finanzas.configuracion.pago (CREAR).
  * Body: metodo_pago_id?, codigo (req), nombre (req), activo?
  * Contrato: data.bancoAutorizado = banco creado.
  */

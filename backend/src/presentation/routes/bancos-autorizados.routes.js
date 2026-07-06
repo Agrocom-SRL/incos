@@ -14,8 +14,8 @@ export function buildBancosAutorizadosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
     // Catálogo de referencia: `sistema.catalogo.referencia` + LISTAR (seed 101)
-    const configCrear = [authenticate, verificarPermiso('configuracion.pagos', 'CREAR')];
-    const configEditar = [authenticate, verificarPermiso('configuracion.pagos', 'EDITAR')];
+    const configCrear = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'CREAR')];
+    const configEditar = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'EDITAR')];
 
     router.get(
         '/',

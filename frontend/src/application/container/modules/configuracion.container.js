@@ -25,10 +25,48 @@ import {
   EliminarParaleloUseCase,
 } from '@useCases/configuracion/academico/paralelos';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
-import { GetTodasDiscapacidadesUseCase } from '@useCases/configuracion/complementario/discapacidad';
+import {
+  GetTodasDiscapacidadesUseCase,
+  GetDiscapacidadPorIdUseCase,
+  CrearDiscapacidadUseCase,
+  ActualizarDiscapacidadUseCase,
+  EliminarDiscapacidadUseCase,
+} from '@useCases/configuracion/complementario/discapacidad';
+import {
+  GetTodosTiposParentescoUseCase,
+  GetTipoParentescoPorIdUseCase,
+  CrearTipoParentescoUseCase,
+  ActualizarTipoParentescoUseCase,
+  EliminarTipoParentescoUseCase,
+} from '@useCases/configuracion/complementario/tipoParentesco';
+import {
+  GetTodosIdiomasUseCase,
+  GetIdiomaPorIdUseCase,
+  CrearIdiomaUseCase,
+  ActualizarIdiomaUseCase,
+  EliminarIdiomaUseCase,
+} from '@useCases/configuracion/complementario/idioma';
+import {
+  GetTodaDocumentacionUseCase,
+  GetDocumentacionPorIdUseCase,
+  CrearDocumentacionUseCase,
+  ActualizarDocumentacionUseCase,
+  EliminarDocumentacionUseCase,
+} from '@useCases/configuracion/documentacion';
+import {
+  GetTodasActividadesUseCase,
+  GetActividadPorIdUseCase,
+  CrearActividadUseCase,
+  ActualizarActividadUseCase,
+  EliminarActividadUseCase,
+} from '@useCases/configuracion/actividades';
 import CarreraRepository from '@infrastructure/repositories/CarreraRepository';
 import MateriaRepository from '@infrastructure/repositories/MateriaRepository';
 import DiscapacidadRepository from '@infrastructure/repositories/DiscapacidadRepository';
+import TipoParentescoRepository from '@infrastructure/repositories/TipoParentescoRepository';
+import IdiomaRepository from '@infrastructure/repositories/IdiomaRepository';
+import DocumentacionRepository from '@infrastructure/repositories/DocumentacionRepository';
+import ActividadRepository from '@infrastructure/repositories/ActividadRepository';
 
 /**
  * Registra los Use Cases del módulo de configuración académica
@@ -39,6 +77,10 @@ export function registerConfiguracionModule(factory) {
   const carreraRepository = CarreraRepository;
   const materiaRepository = MateriaRepository;
   const discapacidadRepository = DiscapacidadRepository;
+  const tipoParentescoRepository = TipoParentescoRepository;
+  const idiomaRepository = IdiomaRepository;
+  const documentacionRepository = DocumentacionRepository;
+  const actividadRepository = ActividadRepository;
 
   factory.obtenerTodasCarreras = () => new GetTodasCarrerasUseCase(carreraRepository);
   factory.obtenerCarreraPorId = () => new GetCarreraPorIdUseCase(carreraRepository);
@@ -60,6 +102,34 @@ export function registerConfiguracionModule(factory) {
   factory.eliminarParalelo = () => new EliminarParaleloUseCase(paraleloRepository);
 
   factory.obtenerTodasDiscapacidades = () => new GetTodasDiscapacidadesUseCase(discapacidadRepository);
+  factory.obtenerDiscapacidadPorId = () => new GetDiscapacidadPorIdUseCase(discapacidadRepository);
+  factory.crearDiscapacidad = () => new CrearDiscapacidadUseCase(discapacidadRepository);
+  factory.actualizarDiscapacidad = () => new ActualizarDiscapacidadUseCase(discapacidadRepository);
+  factory.eliminarDiscapacidad = () => new EliminarDiscapacidadUseCase(discapacidadRepository);
+
+  factory.obtenerTodosTiposParentesco = () => new GetTodosTiposParentescoUseCase(tipoParentescoRepository);
+  factory.obtenerTipoParentescoPorId = () => new GetTipoParentescoPorIdUseCase(tipoParentescoRepository);
+  factory.crearTipoParentesco = () => new CrearTipoParentescoUseCase(tipoParentescoRepository);
+  factory.actualizarTipoParentesco = () => new ActualizarTipoParentescoUseCase(tipoParentescoRepository);
+  factory.eliminarTipoParentesco = () => new EliminarTipoParentescoUseCase(tipoParentescoRepository);
+
+  factory.obtenerTodosIdiomas = () => new GetTodosIdiomasUseCase(idiomaRepository);
+  factory.obtenerIdiomaPorId = () => new GetIdiomaPorIdUseCase(idiomaRepository);
+  factory.crearIdioma = () => new CrearIdiomaUseCase(idiomaRepository);
+  factory.actualizarIdioma = () => new ActualizarIdiomaUseCase(idiomaRepository);
+  factory.eliminarIdioma = () => new EliminarIdiomaUseCase(idiomaRepository);
+
+  factory.obtenerTodaDocumentacion = () => new GetTodaDocumentacionUseCase(documentacionRepository);
+  factory.obtenerDocumentacionPorId = () => new GetDocumentacionPorIdUseCase(documentacionRepository);
+  factory.crearDocumentacion = () => new CrearDocumentacionUseCase(documentacionRepository);
+  factory.actualizarDocumentacion = () => new ActualizarDocumentacionUseCase(documentacionRepository);
+  factory.eliminarDocumentacion = () => new EliminarDocumentacionUseCase(documentacionRepository);
+
+  factory.obtenerTodasActividades = () => new GetTodasActividadesUseCase(actividadRepository);
+  factory.obtenerActividadPorId = () => new GetActividadPorIdUseCase(actividadRepository);
+  factory.crearActividad = () => new CrearActividadUseCase(actividadRepository);
+  factory.actualizarActividad = () => new ActualizarActividadUseCase(actividadRepository);
+  factory.eliminarActividad = () => new EliminarActividadUseCase(actividadRepository);
 
   return factory;
 }

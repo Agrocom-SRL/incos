@@ -38,6 +38,8 @@ export { ICarreraRepository } from './ICarreraRepository';
 export { IMateriaRepository } from './IMateriaRepository';
 // Complementario
 export { IDiscapacidadRepository } from './IDiscapacidadRepository';
+// Actividades (catálogo maestro)
+export { IActividadRepository } from './IActividadRepository';
 
 // ============================================
 // MÓDULO: ACADÉMICO

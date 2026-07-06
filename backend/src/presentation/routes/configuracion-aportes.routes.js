@@ -13,9 +13,9 @@ import {
 export function buildConfiguracionAportesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const configListar = [authenticate, verificarPermiso('configuracion.pagos', 'LISTAR')];
-    const configCrear = [authenticate, verificarPermiso('configuracion.pagos', 'CREAR')];
-    const configEditar = [authenticate, verificarPermiso('configuracion.pagos', 'EDITAR')];
+    const configListar = [authenticate, verificarPermiso('finanzas.aporte', 'LISTAR')];
+    const configCrear = [authenticate, verificarPermiso('finanzas.aporte', 'CREAR')];
+    const configEditar = [authenticate, verificarPermiso('finanzas.aporte', 'EDITAR')];
 
     router.get(
         '/',

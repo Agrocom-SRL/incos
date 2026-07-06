@@ -46,6 +46,62 @@ export class IdiomaRepository extends IIdiomaRepository {
     }
   }
 
+  /**
+   * Obtiene un idioma por ID
+   * GET /v1/idiomas/:id
+   */
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(IDIOMAS_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      // El backend puede devolver el registro plano (sin envolver en { idioma })
+      if (result.success && result.data && !result.data.idioma) {
+        result.data = { idioma: result.data };
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el idioma');
+    }
+  }
+
+  /**
+   * Crea un idioma
+   * POST /v1/idiomas
+   */
+  async crear(data) {
+    try {
+      const response = await apiClient.post(IDIOMAS_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear el idioma');
+    }
+  }
+
+  /**
+   * Actualiza un idioma
+   * PUT /v1/idiomas/:id
+   */
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(IDIOMAS_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el idioma');
+    }
+  }
+
+  /**
+   * Elimina (soft delete) un idioma
+   * DELETE /v1/idiomas/:id
+   */
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(IDIOMAS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el idioma');
+    }
+  }
 }
 
 export default new IdiomaRepository();

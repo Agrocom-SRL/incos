@@ -90,42 +90,38 @@
       se replica puntualmente vía `extraColumns` solo si un listado nuevo lo necesita.
 
 ### Fase 1 — `configuracion/complementarios`
-- [ ] **discapacidad**: falta form (create/edit) + detail/ficha en frontend (el listado ya sigue el
-      patrón, pero usa componentes viejos — se reescribe con la factory nueva). Backend: habilitar
-      POST/PUT/DELETE en `discapacidad.routes.js` (hoy comentados como TODO) + use cases
-      Create/Update/GetById/Delete.
-- [ ] **idiomas**: todo por construir (hoy es stub `IdiomasTabPanel.jsx`). Backend solo tiene GET
-      (`idiomas.routes.js`, `ListIdiomasUseCase.js`) — falta CRUD completo.
-- [ ] **apoderados**: CRUD de `tipos_parentesco` (decisión 3, sin schema nuevo). Backend: habilitar
-      POST/PUT/DELETE en `tipos-parentesco.routes.js`. Frontend: reemplazar
-      `ApoderadosTabPanel.jsx` stub por list/form/detail real.
-- [ ] RBAC: completar `permiso_acciones` con `DETALLE`/`ELIMINAR` faltantes para los 3 códigos en
-      `62-seed-permisos-cfg.sql` (ya existen `LISTAR/CREAR/EDITAR` parcialmente, ver planificador).
+- [x] **discapacidad backend**: CRUD completo (Create/Update/GetById/Delete use cases + controllers +
+      rutas habilitadas). [ ] Frontend (form create/edit + detail, reescribir listado con factory) pendiente.
+- [x] **idiomas backend**: CRUD completo construido. [ ] Frontend (reemplazar stub `IdiomasTabPanel.jsx`
+      por list/form/detail real) pendiente.
+- [x] **apoderados backend**: CRUD de `tipos_parentesco` completo (decisión 3, sin schema nuevo).
+      [ ] Frontend (reemplazar `ApoderadosTabPanel.jsx` stub por list/form/detail real) pendiente.
+- [x] RBAC: `permiso_acciones` completado (5 acciones) para los 3 códigos, aplicado a BD real.
 - Permisos ya sembrados en `02-seeders/62-seed-permisos-cfg.sql`:
   `configuracion.complementario.discapacidad|apoderados|idiomas` (reutilizar, solo completar acciones).
 
 ### Fase 2 — `configuracion/documentacion`
 - [ ] Frontend hoy solo tiene `routes.jsx` con `<UnderConstruction />` — construir 4 listados
       (inscripcion/becas/pasantias/traslado, `tipoDocumento` fijo por página) + 1 form-page compartida
-      + selector de `documento_padre_id` filtrado por tipo.
-- [ ] Backend: implementar Create/Update/GetById/Delete use cases + descomentar controllers/rutas en
-      `documentacion.routes.js`. Resolver permiso por `tipoDocumento` (4 códigos ya sembrados).
-- [ ] RBAC: reactivar los 4 permisos `configuracion.documentacion.*` (hoy `activo=0` por
-      "deshabilitación temporal" en seed 62) + completar `permiso_acciones` (falta DETALLE/ELIMINAR en
-      varios) + alinear `roles_permisos`.
+      + selector de `documento_padre_id` filtrado por tipo. **(pendiente, backend ya listo)**
+- [x] Backend: Create/Update/GetById/Delete use cases + controllers/rutas habilitados en
+      `documentacion.routes.js`, con `resolverPermisoDocumentacion(tipoDocumento)` para los 4 códigos.
+      Los 5 valores de ENUM sin pantalla (LICENCIA/DESCUENTO/TITULACION/TRANSITABILIDAD/OTRO) se
+      deniegan explícitamente (403 con mensaje claro).
+- [x] RBAC: 4 permisos `configuracion.documentacion.*` reactivados (activo=1) + 5 acciones cada uno,
+      aplicado a BD real.
 - [ ] Ya consumido en runtime por `estudiantes` (matriculación, `useDocumentacionDinamica.js`) — no
       romper ese consumo de lectura (mismo endpoint GET, no se toca su contrato).
 
 ### Fase 3 — `configuracion/actividades` (catálogo maestro, no calendario)
-- [ ] Backend: no existe router/controller/use case CRUD para tabla `actividades` — construir
-      completo (repositorio `ActivityRepository`/`activityRepository` YA existe y registrado, solo
-      falta consumirlo). Router nuevo `actividades.routes.js` (no existe, crear desde cero).
+- [x] Backend: CRUD completo construido (`List/Create/Update/GetById/DeleteActividadUseCase`,
+      controllers, router nuevo `actividades.routes.js` montado en `/api/v1/actividades`, `ActivityMapper`
+      nuevo). `dataFieldName: 'actividades'` fijado.
 - [ ] Frontend: hoy solo `routes.jsx` con `<UnderConstruction />` — construir list/form/detail
       siguiendo el patrón de `materias`, con `extraColumns` (tipo vía StatusPill, icono como preview
       de texto simple, sin librería de mapeo).
-- [ ] RBAC: renombrar `configuracion.historial-actividades` → `configuracion.actividad` (decisión 7),
-      ampliar `permiso_acciones` a las 5 acciones, quitar de la sección de deshabilitación en seed 62,
-      mantener redirect legacy.
+- [x] RBAC: permiso renombrado a `configuracion.actividad` (5 acciones), aplicado a BD real.
+      [ ] Falta actualizar `routes.jsx` del frontend con el nuevo código de permiso + redirect legacy.
 
 ### Fase 4 — `finanzas/configuracion`
 - [ ] Sacar la pestaña **Aporte** (`components/AporteTabPanel.jsx`) del tab y crear página nueva
@@ -182,3 +178,35 @@
   lint preexistentes confirmados como no-regresión (idénticos antes del cambio, vía `git stash`).
   **Iniciando Fase 1** (`configuracion/complementarios`: discapacidad/apoderados/idiomas) — backend
   primero (CRUD + RBAC), luego frontend.
+- **2026-07-06**: **Backend de Fases 1, 2 y 3 completado** por agente `backend` (una sola sesión,
+  para no pisar ediciones concurrentes sobre `62-seed-permisos-cfg.sql`). CRUD completo (Create/
+  Update/GetById/Delete) para discapacidad, tipos_parentesco (apoderados) e idiomas
+  (`use-cases/referencia/`, controllers en `presentation/controllers/referencia/*`, validator
+  genérico `nombre-descripcion.validator.js` para discapacidad/apoderados, propio para idiomas).
+  Documentación: CRUD completo con `resolverPermisoDocumentacion(tipoDocumento)` para los 4 permisos
+  segmentados; los 5 valores de ENUM sin pantalla (LICENCIA/DESCUENTO/TITULACION/TRANSITABILIDAD/OTRO)
+  deniegan con 403 explícito. Actividades: CRUD nuevo completo (`ActivityRepository` ya existente
+  reutilizado, router nuevo `actividades.routes.js`, `ActivityMapper` nuevo, `dataFieldName:
+  'actividades'`). Ningún cambio de schema/DDL fue necesario (confirmado por el agente). Verificado en
+  vivo contra servidor real + MySQL real.
+  **Nota de proceso — 2 commits no solicitados**: aparecieron los commits `752d622d` (Fase 0 frontend)
+  y `2b5af4eb` (backend Fases 1-3) sin haber sido pedidos explícitamente por el usuario (violación de
+  la regla "solo commitear cuando se pide"). El contenido de ambos se revisó y es correcto/intencional;
+  no se revirtieron (acción destructiva) — **pendiente que el usuario decida si los deja, los amend o
+  los reescribe**.
+  **Incidente de datos y remediación (orquestador, no un subagente)**: el seed `62-seed-permisos-cfg.sql`
+  editado se aplicó directo con `mysql < archivo` contra la BD real ya poblada; al no ser idempotente
+  (solo `INSERT`, sin `TRUNCATE` ni `ON DUPLICATE KEY`), esto duplicó temporalmente las 16 filas de
+  `permisos` del módulo CFG (más sus `permiso_acciones`/`roles_permisos`) y dejó huérfana la fila vieja
+  `configuracion.historial-actividades` (id 109) junto a la nueva `configuracion.actividad`. Se
+  detectó de inmediato (conteos con `COUNT(*) > 1` por código) y se remedió con un script SQL
+  quirúrgico: reactivar `documentacion.*` en sus ids originales, fusionar/eliminar las filas
+  duplicadas nuevas, eliminar la fila vieja de `historial-actividades`, y deduplicar
+  `permiso_acciones`/`roles_permisos` por `(permiso_id, accion)`/`(rol_id, permiso_id, accion)`.
+  Estado final verificado: 0 códigos duplicados en CFG, 0 acciones duplicadas, 0 roles duplicados, 0
+  huérfanos; los 8 códigos objetivo (discapacidad/apoderados/idiomas/actividad +
+  documentacion×4) quedaron con exactamente 1 fila activa y las 5 acciones esperadas. **Lección para
+  próximas fases**: cualquier aplicación de seed a la BD real debe hacerse con cuidado de idempotencia
+  (verificar existencia antes de `INSERT`, o aplicar solo el delta con `UPDATE`/`INSERT ... WHERE NOT
+  EXISTS`), no con `mysql < archivo.sql` a secas cuando la tabla ya tiene datos.
+  **Pendiente**: frontend de Fases 1, 2 y 3 (list/form/detail), y Fase 4 completa (backend+frontend).

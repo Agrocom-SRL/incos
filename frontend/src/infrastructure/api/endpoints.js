@@ -187,6 +187,9 @@ export const PRERREQUISITOS_ENDPOINTS = {
 // Complementario
 export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 
+// Actividades (catálogo maestro reutilizable entre gestiones)
+export const ACTIVIDADES_ENDPOINTS = createCRUDEndpoints('/actividades');
+
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================

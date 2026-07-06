@@ -46,6 +46,62 @@ export class TipoParentescoRepository extends ITipoParentescoRepository {
     }
   }
 
+  /**
+   * Obtiene un tipo de parentesco por ID
+   * GET /v1/tipos-parentesco/:id
+   */
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(TIPOS_PARENTESCO_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      // El backend puede devolver el registro plano (sin envolver en { tipoParentesco })
+      if (result.success && result.data && !result.data.tipoParentesco) {
+        result.data = { tipoParentesco: result.data };
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el tipo de parentesco');
+    }
+  }
+
+  /**
+   * Crea un tipo de parentesco
+   * POST /v1/tipos-parentesco
+   */
+  async crear(data) {
+    try {
+      const response = await apiClient.post(TIPOS_PARENTESCO_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear el tipo de parentesco');
+    }
+  }
+
+  /**
+   * Actualiza un tipo de parentesco
+   * PUT /v1/tipos-parentesco/:id
+   */
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(TIPOS_PARENTESCO_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el tipo de parentesco');
+    }
+  }
+
+  /**
+   * Elimina (soft delete) un tipo de parentesco
+   * DELETE /v1/tipos-parentesco/:id
+   */
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(TIPOS_PARENTESCO_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el tipo de parentesco');
+    }
+  }
 }
 
 export default new TipoParentescoRepository();

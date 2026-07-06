@@ -20,8 +20,7 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('configuracion_complementario', 'Datos complementarios', 'CONFIGURACION', 8, 1, NOW(), NOW()),
 ('configuracion_documentacion', 'Documentación', 'CONFIGURACION', 9, 1, NOW(), NOW()),
 ('configuracion_convenios', 'Convenios', 'CONFIGURACION', 10, 1, NOW(), NOW()),
-('configuracion_actividad', 'Actividades', 'CONFIGURACION', 11, 1, NOW(), NOW()),
-('configuracion_pagos', 'Configuración de pagos', 'CONFIGURACION', 12, 1, NOW(), NOW());
+('configuracion_actividad', 'Actividades', 'CONFIGURACION', 11, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo CFG
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -40,7 +39,6 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('configuracion.complementario.apoderados', 'Complementarios: apoderados', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
 ('configuracion.complementario.idiomas', 'Complementarios: idiomas', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
 ('configuracion.convenios', 'Empresas y convenios', NULL, 'CONFIGURACION', 'CFG', 'configuracion_convenios', '/configuracion/convenios', 1, NOW(), NOW()),
-('configuracion.pagos', 'Configuración de pagos y aranceles', NULL, 'CONFIGURACION', 'CFG', 'configuracion_pagos', '/pagos/configuracion', 1, NOW(), NOW()),
 ('configuracion.actividad', 'Actividades', NULL, 'CONFIGURACION', 'CFG', 'configuracion_actividad', '/configuracion/historial-actividades', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo CFG
@@ -119,9 +117,6 @@ JOIN (
   UNION ALL SELECT 'configuracion.convenios', 'LISTAR'
   UNION ALL SELECT 'configuracion.convenios', 'CREAR'
   UNION ALL SELECT 'configuracion.convenios', 'EDITAR'
-  UNION ALL SELECT 'configuracion.pagos', 'LISTAR'
-  UNION ALL SELECT 'configuracion.pagos', 'CREAR'
-  UNION ALL SELECT 'configuracion.pagos', 'EDITAR'
   UNION ALL SELECT 'configuracion.actividad', 'LISTAR'
   UNION ALL SELECT 'configuracion.actividad', 'DETALLE'
   UNION ALL SELECT 'configuracion.actividad', 'CREAR'
@@ -255,12 +250,6 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.convenios', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.pagos', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.pagos', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.pagos', 'EDITAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'configuracion.pagos', 'LISTAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'configuracion.pagos', 'CREAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'configuracion.pagos', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'CREAR'
