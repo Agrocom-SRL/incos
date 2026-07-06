@@ -1,18 +1,18 @@
 /**
  * BecasReporteSheetBuilder — construye la ÚNICA hoja de la Planilla de Control de
- * Becas por carrera. El reporte llega como ÁRBOL (carrera → periodo → paralelo);
- * aquí se APLANA en preorden a una sola tabla plana donde cada fila es un
- * PARALELO (la hoja del árbol) con columnas explícitas de grano
- * (CARRERA · PERIODO · PARALELO), seguida de la fila TOTALES GENERALES y, debajo,
- * los bloques de estadística (RESUMEN POR TIPO DE BECA + RESUMEN GENERAL).
+ * Becas por carrera, agrupada por CARRERA → PARALELO → ESTUDIANTES BECADOS (mismo
+ * concepto que `CuentasPorCobrarSheetBuilder`: banda de carrera (merge) → banda de
+ * paralelo (merge) → filas de estudiante becado), seguida de RESUMEN TOTAL POR
+ * CARRERA, RESUMEN GENERAL POR TIPO DE BECA y RESUMEN GENERAL.
  *
- * Se muestra TODO desplegado (sin agrupar/colapsar): el árbol expandible es solo
- * para la UI web. Para que la lectura sea limpia, el texto de CARRERA y PERIODO
- * se fusiona verticalmente (rowSpan visual) sobre sus paralelos.
+ * El árbol llega como carrera → periodo → paralelo; el nivel PERIODO no se pinta
+ * como banda propia (el nombre del paralelo ya distingue el año, p. ej.
+ * "PRIMERO A"), igual que la pantalla (`BecasCarreraSection`). Solo se listan
+ * paralelos/carreras con al menos un estudiante BECADO — el use case ya entrega
+ * `estudiantes[]` filtrado a becados por paralelo.
  *
- * Solo construcción + estilos (vía ExcelSheetComposer + ExcelTheme). Las columnas
- * de tramo se derivan de `porcentajes` (no se hardcodean). Cabecera institucional
- * en VERDE primario (#196B45 = EXCEL_COLOR.statHeader/band).
+ * Solo construcción + estilos (vía ExcelSheetComposer + ExcelTheme). Cabecera
+ * institucional en VERDE primario (#196B45 = EXCEL_COLOR.statHeader/band).
  */
 
 import { EXCEL_COLOR, EXCEL_FONT_SIZE, colLetter as L } from '../shared/index.js';
@@ -23,48 +23,31 @@ const fmtPct = (value) => {
   return `${safe.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 };
 
+/** Nombre completo del estudiante (apellidos + nombres), en mayúsculas. */
+const nombreCompleto = (est) => {
+  const apellidos = [est.apellidoPaterno, est.apellidoMaterno].filter(Boolean).join(' ');
+  const partes = [apellidos, est.nombres].filter(Boolean).join(' ');
+  return partes ? partes.toUpperCase() : 'SIN NOMBRE';
+};
+
 /**
- * Aplana el árbol de carreras a filas de paralelo (preorden), conservando la
- * identidad de carrera/periodo en cada fila para pintar la tabla plana.
- * @param {Array<Object>} filas - raíces (carreras) del árbol del reporte.
- * @returns {Array<{ carrera: Object, periodo: Object, paralelo: Object }>}
+ * Aplana periodos → paralelos de una carrera (se omite el nivel periodo como
+ * banda propia). Conserva solo paralelos con al menos un becado.
+ * @param {Object} carrera
+ * @returns {Array<Object>} paralelos con `estudiantes` (becados) no vacío.
  */
-const flattenParalelos = (filas) => {
+const paralelosBecados = (carrera) => {
+  const periodos = Array.isArray(carrera.children) ? carrera.children : [];
   const out = [];
-  for (const carrera of Array.isArray(filas) ? filas : []) {
-    const periodos = Array.isArray(carrera.children) ? carrera.children : [];
-    if (periodos.length === 0) {
-      out.push({ carrera, periodo: null, paralelo: null });
-    } else {
-      for (const periodo of periodos) {
-        const paralelos = Array.isArray(periodo.children) ? periodo.children : [];
-        if (paralelos.length === 0) {
-          out.push({ carrera, periodo, paralelo: null });
-        } else {
-          for (const paralelo of paralelos) {
-            out.push({ carrera, periodo, paralelo });
-          }
-        }
+  periodos.forEach((periodo) => {
+    const paralelos = Array.isArray(periodo.children) ? periodo.children : [];
+    paralelos.forEach((paralelo) => {
+      if (Array.isArray(paralelo.estudiantes) && paralelo.estudiantes.length > 0) {
+        out.push(paralelo);
       }
-    }
-  }
+    });
+  });
   return out;
-};
-
-/** Texto del periodo para la columna PERIODO (usa nombre o `Periodo {n}`). */
-const periodoLabel = (periodo) => {
-  if (!periodo) return '—';
-  if (periodo.periodoNombre) return String(periodo.periodoNombre).toUpperCase();
-  if (periodo.periodoNumero != null) return `PERIODO ${periodo.periodoNumero}`;
-  return '—';
-};
-
-/** Texto del paralelo para la columna PARALELO (nombre + turno entre paréntesis). */
-const paraleloLabel = (paralelo) => {
-  if (!paralelo) return '—';
-  const nombre = paralelo.paraleloNombre ? String(paralelo.paraleloNombre).toUpperCase() : '';
-  const turno = paralelo.paraleloTurno ? ` (${String(paralelo.paraleloTurno).toUpperCase()})` : '';
-  return `${nombre}${turno}`.trim() || '—';
 };
 
 export class BecasReporteSheetBuilder {
@@ -75,41 +58,34 @@ export class BecasReporteSheetBuilder {
    */
   static build({ composer: c, datos }) {
     const { label, body } = EXCEL_FONT_SIZE;
-    const porcentajes = Array.isArray(datos.porcentajes) ? datos.porcentajes : [];
-    const filas = Array.isArray(datos.filas) ? datos.filas : [];
-    const totales = datos.totales ?? {};
     const distribucion = Array.isArray(datos.distribucion) ? datos.distribucion : [];
     const resumen = datos.resumen ?? {};
 
-    // Aplanar el árbol a filas de paralelo (preorden): una fila por hoja.
-    const planas = flattenParalelos(filas);
+    // Solo carreras con al menos un paralelo con becados.
+    const carreras = (Array.isArray(datos.filas) ? datos.filas : [])
+      .map((carrera) => ({ carrera, paralelos: paralelosBecados(carrera) }))
+      .filter((item) => item.paralelos.length > 0);
 
     // ---- Mapa de columnas (1-based; col 1 = margen) ----
     const colNro = 2;
-    const colCarrera = 3;
-    const colPeriodo = 4;
-    const colParalelo = 5;
-    const colMatric = 6;
-    const colTramoStart = 7;
-    const colTramoEnd = colTramoStart + Math.max(porcentajes.length - 1, 0);
-    const hayTramos = porcentajes.length > 0;
-    const colTotalBeca = (hayTramos ? colTramoEnd : colMatric) + 1;
-    const colPctBeca = colTotalBeca + 1;
-    const colPctCobertura = colPctBeca + 1;
-    const colObs = colPctCobertura + 1;
-    const lastCol = colObs;
+    const colEstudiante = 3;
+    const colCi = 4;
+    const colBeca = 5;
+    const colPctBeca = 6;
+    const colDescuento = 7;
+    const colMontoBase = 8;
+    const lastCol = colMontoBase;
 
-    // ---- Anchos (holgados: dimensiones de texto largo + columnas numéricas con aire) ----
     c.colWidths({
       1: 4,
-      [colNro]: 9,
-      [colCarrera]: 48,
-      [colPeriodo]: 28,
-      [colParalelo]: 32,
-      [colMatric]: 21,
+      [colNro]: 8,
+      [colEstudiante]: 48,
+      [colCi]: 16,
+      [colBeca]: 40,
+      [colPctBeca]: 14,
+      [colDescuento]: 20,
+      [colMontoBase]: 20,
     });
-    for (let col = colTramoStart; col <= colTramoEnd; col += 1) c.colWidths({ [col]: 19 });
-    c.colWidths({ [colTotalBeca]: 22, [colPctBeca]: 20, [colPctCobertura]: 22, [colObs]: 40 });
 
     // ---- Banda de título + cabecera institucional ----
     c.bandTitle(`B1:${L(lastCol)}1`, 'PLANILLA DE CONTROL DE BECAS POR CARRERA (ANUALIZADAS)');
@@ -120,17 +96,16 @@ export class BecasReporteSheetBuilder {
       border: false,
     });
     const gestionLabel = datos.gestion?.nombre ?? datos.gestion?.anio ?? '';
-    c.infoField('B3:C3', 'GESTIÓN:', `D3:${L(colMatric)}3`, String(gestionLabel || '—'));
+    c.infoField('B3:C3', 'GESTIÓN:', `D3:${L(colBeca)}3`, String(gestionLabel || '—'));
     c.infoField(
-      `${L(colTotalBeca)}3:${L(colTotalBeca)}3`,
+      `${L(colPctBeca)}3:${L(colPctBeca)}3`,
       'FECHA EMISIÓN:',
-      `${L(colPctBeca)}3:${L(colObs)}3`,
+      `${L(colDescuento)}3:${L(colMontoBase)}3`,
       datos.fechaEmision ?? ''
     );
 
-    // ---- Cabecera de tabla (filas 5-6) ----
-    const rowTop = 5;
-    const rowSub = 6;
+    // ---- Cabecera de columnas ----
+    const headRow = 5;
     const headStyle = {
       bold: true,
       size: label,
@@ -139,140 +114,135 @@ export class BecasReporteSheetBuilder {
       fontColor: EXCEL_COLOR.statHeaderText,
       borderMedium: true,
     };
-    const headBox = (col, text) => {
-      c.ws.mergeCells(rowTop, col, rowSub, col);
-      c.cell(rowTop, col, text, headStyle);
-    };
-    headBox(colNro, 'Nº');
-    headBox(colCarrera, 'CARRERA');
-    headBox(colPeriodo, 'PERIODO');
-    headBox(colParalelo, 'PARALELO');
-    headBox(colMatric, 'Nº MATRICULADOS');
-    if (hayTramos) {
-      c.merge(`${L(colTramoStart)}${rowTop}:${L(colTramoEnd)}${rowTop}`, 'ESTUDIANTES CON BECA POR TIPO', headStyle);
-      porcentajes.forEach((p, i) => c.cell(rowSub, colTramoStart + i, `BECA ${p}%`, headStyle));
-    }
-    headBox(colTotalBeca, 'TOTAL CON BECA');
-    headBox(colPctBeca, '% CON BECA');
-    headBox(colPctCobertura, '% COBERTURA');
-    headBox(colObs, 'OBSERVACIONES');
-    // Cabecera con más aire: filas altas + alineación vertical centrada (vía composer)
-    // y wrap activo para que los encabezados respiren y resalten.
-    c.ws.getRow(rowTop).height = 28;
-    c.ws.getRow(rowSub).height = 46;
+    const headers = [
+      [colNro, 'Nº'],
+      [colEstudiante, 'ESTUDIANTE'],
+      [colCi, 'CI'],
+      [colBeca, 'TIPO DE BECA'],
+      [colPctBeca, '% BECA'],
+      [colDescuento, 'DESCUENTO (Bs)'],
+      [colMontoBase, 'MONTO BASE (Bs)'],
+    ];
+    headers.forEach(([col, text]) => c.cell(headRow, col, text, headStyle));
+    c.ws.getRow(headRow).height = 30;
+    // Congela solo la cabecera (scroll vertical); las columnas NO quedan fijas al
+    // desplazar en horizontal (xSplit = 0).
+    c.freeze(headRow);
 
-    // ---- Filas planas (una por paralelo) ----
-    const firstDataRow = rowSub + 1;
-    planas.forEach((item, idx) => {
-      const row = firstDataRow + idx;
+    const money = (row, col, value, style) => {
+      const cell = c.cell(row, col, Number(value) || 0, style);
+      cell.numFmt = '#,##0.00';
+      return cell;
+    };
+
+    // ---- Detalle: carrera → paralelo → estudiantes becados ----
+    let row = headRow + 1;
+    let zebraIdx = 0;
+    carreras.forEach(({ carrera, paralelos }) => {
+      c.merge(
+        `${L(colNro)}${row}:${L(lastCol)}${row}`,
+        `${String(carrera.carreraNombre ?? '').toUpperCase()}   ·   ${Number(carrera.totalConBeca) || 0} con beca   ·   Cobertura ${fmtPct(carrera.porcentajeCobertura)}`,
+        { bold: true, align: 'left', fill: EXCEL_COLOR.statHeader, fontColor: EXCEL_COLOR.statHeaderText, size: label }
+      );
+      row += 1;
+
+      paralelos.forEach((paralelo) => {
+        const turno = paralelo.paraleloTurno ? ` · ${paralelo.paraleloTurno}` : '';
+        c.merge(
+          `${L(colNro)}${row}:${L(lastCol)}${row}`,
+          `Paralelo ${paralelo.paraleloNombre ?? '—'}${turno}   ·   Nº matriculados: ${Number(paralelo.totalMatriculados) || 0}   ·   Con beca: ${Number(paralelo.totalConBeca) || 0}   ·   Cobertura: ${fmtPct(paralelo.porcentajeCobertura)}`,
+          { bold: true, align: 'left', fill: EXCEL_COLOR.teoricasStrong, size: label }
+        );
+        row += 1;
+
+        (paralelo.estudiantes || []).forEach((est, idx) => {
+          const zebra = zebraIdx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
+          zebraIdx += 1;
+          c.cell(row, colNro, idx + 1, { fill: zebra, size: label });
+          c.cell(row, colEstudiante, nombreCompleto(est), { fill: zebra, align: 'left', size: label });
+          c.cell(row, colCi, est.ci ?? '—', { fill: zebra, size: label });
+          c.cell(row, colBeca, est.becaNombre ?? 'Con beca', { fill: zebra, align: 'left', size: label });
+          c.cell(row, colPctBeca, fmtPct(est.becaPorcentaje), { fill: zebra, size: label });
+          money(row, colDescuento, est.montoDescuento, { fill: zebra, size: label });
+          money(row, colMontoBase, est.montoBase, { fill: zebra, size: label });
+          c.ws.getRow(row).height = 22;
+          row += 1;
+        });
+      });
+    });
+
+    // ---- Resúmenes ----
+    row += 1;
+    row = this._resumenPorCarrera(c, {
+      startRow: row,
+      carreras: carreras.map((item) => item.carrera),
+    });
+    row += 1;
+    this._resumenPorTipo(c, {
+      startRow: row,
+      distribucion,
+      totalConBeca: Number(resumen.totalConBeca) || 0,
+    });
+    this._resumenGeneral(c, {
+      startRow: row,
+      col: colBeca,
+      resumen,
+    });
+  }
+
+  /** RESUMEN TOTAL POR CARRERA (matriculados / con beca / % con beca / % cobertura). @returns {number} fila siguiente libre. */
+  static _resumenPorCarrera(c, { startRow, carreras }) {
+    const { label } = EXCEL_FONT_SIZE;
+    const c0 = 2;
+    c.merge(`${L(c0)}${startRow}:${L(c0 + 3)}${startRow}`, 'RESUMEN TOTAL POR CARRERA', {
+      bold: true,
+      fill: EXCEL_COLOR.statHeader,
+      fontColor: EXCEL_COLOR.statHeaderText,
+      size: label,
+      borderMedium: true,
+    });
+    const headRow = startRow + 1;
+    const cols = [
+      [c0, 'CARRERA', 'left'],
+      [c0 + 1, 'Nº MATRICULADOS', 'center'],
+      [c0 + 2, 'TOTAL CON BECA', 'center'],
+      [c0 + 3, '% COBERTURA', 'center'],
+    ];
+    cols.forEach(([col, text]) =>
+      c.cell(headRow, col, text, {
+        bold: true,
+        size: label,
+        wrap: true,
+        fill: EXCEL_COLOR.teoricasStrong,
+      })
+    );
+    let totMatric = 0;
+    let totConBeca = 0;
+    carreras.forEach((carrera, idx) => {
+      const row = headRow + 1 + idx;
       const zebra = idx % 2 === 1 ? EXCEL_COLOR.zebra : EXCEL_COLOR.white;
-      // Métricas del grano más fino disponible (paralelo; periodo/carrera si falta).
-      const m = item.paralelo ?? item.periodo ?? item.carrera ?? {};
-      c.cell(row, colNro, idx + 1, { fill: zebra, size: label });
-      c.cell(row, colCarrera, String(item.carrera?.carreraNombre ?? '').toUpperCase(), {
-        fill: zebra,
-        align: 'left',
-        size: label,
-      });
-      c.cell(row, colPeriodo, periodoLabel(item.periodo), { fill: zebra, align: 'left', size: label });
-      c.cell(row, colParalelo, paraleloLabel(item.paralelo), {
-        fill: zebra,
-        align: 'left',
-        size: label,
-      });
-      c.cell(row, colMatric, Number(m.totalMatriculados) || 0, { fill: zebra, size: label });
-      porcentajes.forEach((p, i) => {
-        const val = Number(m.becasPorPorcentaje?.[String(p)]) || 0;
-        c.cell(row, colTramoStart + i, val, { fill: zebra, size: label });
-      });
-      c.cell(row, colTotalBeca, Number(m.totalConBeca) || 0, {
+      c.cell(row, c0, String(carrera.carreraNombre ?? '').toUpperCase(), { align: 'left', fill: zebra, size: label });
+      c.cell(row, c0 + 1, Number(carrera.totalMatriculados) || 0, { fill: zebra, size: label });
+      c.cell(row, c0 + 2, Number(carrera.totalConBeca) || 0, {
         fill: zebra,
         bold: true,
         size: label,
       });
-      c.cell(row, colPctBeca, fmtPct(m.porcentajeConBeca), { fill: zebra, size: label });
-      c.cell(row, colPctCobertura, fmtPct(m.porcentajeCobertura), { fill: zebra, size: label });
-      c.cell(row, colObs, '', { fill: zebra, size: label });
-      c.ws.getRow(row).height = 24;
+      c.cell(row, c0 + 3, fmtPct(carrera.porcentajeCobertura), { fill: zebra, size: label });
+      totMatric += Number(carrera.totalMatriculados) || 0;
+      totConBeca += Number(carrera.totalConBeca) || 0;
     });
-
-    // ---- Fusión vertical de CARRERA y PERIODO (rowSpan visual) ----
-    this._mergeRuns(c, planas, firstDataRow, colCarrera, (item) => item.carrera?.id ?? '∅');
-    this._mergeRuns(
-      c,
-      planas,
-      firstDataRow,
-      colPeriodo,
-      (item) => `${item.carrera?.id ?? '∅'}|${item.periodo?.id ?? '∅'}`
-    );
-
-    // ---- Fila de TOTALES GENERALES ----
-    const totalRow = firstDataRow + Math.max(planas.length, 0);
-    const totalFill = EXCEL_COLOR.teoricasStrong;
-    const tStyle = { bold: true, fill: totalFill, size: label };
-    // Celda Nº del total (sin rótulo) para mantener la banda continua.
-    c.cell(totalRow, colNro, '', tStyle);
-    // El rótulo arranca en la columna CARRERA (ancha) y se extiende hasta justo
-    // antes de Nº MATRICULADOS, aprovechando ese ancho con alineación a la izquierda.
-    c.merge(`${L(colCarrera)}${totalRow}:${L(colParalelo)}${totalRow}`, 'TOTALES GENERALES', {
+    const totalRow = headRow + 1 + carreras.length;
+    const tFill = EXCEL_COLOR.teoricasStrong;
+    c.cell(totalRow, c0, 'TOTALES GENERALES', { bold: true, align: 'left', fill: tFill, size: label });
+    c.cell(totalRow, c0 + 1, totMatric, { bold: true, fill: tFill, size: label });
+    c.cell(totalRow, c0 + 2, totConBeca, { bold: true, fill: tFill, size: label });
+    c.cell(totalRow, c0 + 3, fmtPct(totMatric > 0 ? (totConBeca / totMatric) * 100 : 0), {
       bold: true,
-      align: 'left',
-      fill: totalFill,
+      fill: tFill,
       size: label,
     });
-    c.cell(totalRow, colMatric, Number(totales.totalMatriculados) || 0, tStyle);
-    porcentajes.forEach((p, i) => {
-      const val = Number(totales.becasPorPorcentaje?.[String(p)]) || 0;
-      c.cell(totalRow, colTramoStart + i, val, tStyle);
-    });
-    c.cell(totalRow, colTotalBeca, Number(totales.totalConBeca) || 0, tStyle);
-    c.cell(totalRow, colPctBeca, fmtPct(totales.porcentajeConBeca), tStyle);
-    c.cell(totalRow, colPctCobertura, fmtPct(totales.porcentajeConBeca), tStyle);
-    c.cell(totalRow, colObs, '', tStyle);
-
-    // ---- Bloques de estadística ----
-    this._resumenPorTipo(c, {
-      startRow: totalRow + 3,
-      distribucion,
-      totalConBeca: Number(totales.totalConBeca) || 0,
-    });
-    this._resumenGeneral(c, {
-      startRow: totalRow + 3,
-      col: colTotalBeca,
-      resumen,
-    });
-
-    // Congela solo la cabecera (scroll vertical); las columnas NO quedan fijas al
-    // desplazar en horizontal (xSplit = 0).
-    c.freeze(rowSub);
-  }
-
-  /**
-   * Fusiona verticalmente las celdas consecutivas de una columna cuya clave
-   * (carrera, o carrera+periodo) coincide, para que la dimensión se lea una sola
-   * vez por bloque (rowSpan visual) sin ocultar ninguna fila de paralelo.
-   * @param {import('../shared/ExcelSheetComposer.js').ExcelSheetComposer} c
-   * @param {Array<Object>} planas
-   * @param {number} firstDataRow
-   * @param {number} col
-   * @param {(item:Object)=>string} keyOf
-   */
-  static _mergeRuns(c, planas, firstDataRow, col, keyOf) {
-    let i = 0;
-    while (i < planas.length) {
-      const key = keyOf(planas[i]);
-      let j = i;
-      while (j + 1 < planas.length && keyOf(planas[j + 1]) === key) j += 1;
-      if (j > i) {
-        const top = firstDataRow + i;
-        const bottom = firstDataRow + j;
-        c.ws.mergeCells(top, col, bottom, col);
-        // El valor ya está en la celda ancla; solo re-anclar alineación superior.
-        const cell = c.ws.getCell(top, col);
-        cell.alignment = { ...cell.alignment, vertical: 'top' };
-      }
-      i = j + 1;
-    }
+    return totalRow + 1;
   }
 
   /** RESUMEN GENERAL POR TIPO DE BECA (tipo / beneficiados / % del total con beca). */

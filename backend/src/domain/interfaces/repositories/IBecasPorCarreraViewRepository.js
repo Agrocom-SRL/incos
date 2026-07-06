@@ -11,8 +11,12 @@
 export class IBecasPorCarreraViewRepository {
   /**
    * Devuelve filas crudas por gestión:
-   * carrera_id, carrera_nombre, carrera_codigo, estudiante_id,
-   * beca_porcentaje (0 si no aplica), beca_tipo_nombre ('NO APLICA' si no hay beca).
+   * carrera_id, carrera_nombre, carrera_codigo, periodo_id, periodo_numero,
+   * periodo_nombre, paralelo_id, paralelo_nombre, paralelo_turno,
+   * estudiante_id, beca_porcentaje (0 si no aplica),
+   * beca_tipo_nombre ('NO APLICA' si no hay beca), codigo_estudiante,
+   * apellido_paterno, apellido_materno, nombres, ci,
+   * beca_descuento_nombre, descuento_beca, aporte_monto_base.
    *
    * @param {number} gestionId
    * @returns {Promise<Array<Object>>}

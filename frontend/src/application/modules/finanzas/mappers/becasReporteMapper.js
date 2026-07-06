@@ -68,6 +68,23 @@ const mapNodo = (nodo, porcentajes) => {
   if (Array.isArray(nodo.children) && nodo.children.length > 0) {
     dto.children = nodo.children.map((hijo) => mapNodo(hijo, porcentajes)).filter(Boolean);
   }
+  if (Array.isArray(nodo.estudiantes) && nodo.estudiantes.length > 0) {
+    // El backend solo envía aquí estudiantes BECADOS (ver
+    // `GetBecasPorCarreraReporteUseCase._addEstudiante`): no hace falta
+    // filtrar ni marcar "tiene beca" en el frontend.
+    dto.estudiantes = nodo.estudiantes.map((estudiante) => ({
+      estudianteId: estudiante?.estudianteId ?? null,
+      codigo: estudiante?.codigo ?? null,
+      apellidoPaterno: estudiante?.apellidoPaterno ?? null,
+      apellidoMaterno: estudiante?.apellidoMaterno ?? null,
+      nombres: estudiante?.nombres ?? null,
+      ci: estudiante?.ci ?? null,
+      becaNombre: estudiante?.becaNombre ?? null,
+      becaPorcentaje: toNumber(estudiante?.becaPorcentaje),
+      montoDescuento: toNumber(estudiante?.montoDescuento),
+      montoBase: toNumber(estudiante?.montoBase),
+    }));
+  }
   return dto;
 };
 

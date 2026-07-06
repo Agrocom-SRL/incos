@@ -44,6 +44,22 @@
   color: #374151;
   border-color: #d1d5db;
 }
+/* Tipo de beca (planilla de BECAS): color primario institucional, texto tal
+   cual (sin mayúsculas forzadas, es una etiqueta legible, no un estado).
+   `display: inline-block` + `text-align: left` (no el `inline-flex` centrado
+   de `.cobranza-pill`): con flex, `text-overflow: ellipsis` no aplica y el
+   contenido centrado se recorta por AMBOS lados; en block sí trunca al
+   final, dejando el Tooltip con un cuadro de hover que coincide con lo visible. */
+.cobranza-pill--beca {
+  display: inline-block;
+  text-align: left;
+  background: color-mix(in srgb, var(--color-primary, #196b45) 12%, transparent);
+  color: var(--color-primary, #196b45);
+  border-color: color-mix(in srgb, var(--color-primary, #196b45) 28%, transparent);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+}
 
 /* La celda de identidad del estudiante reutiliza IdentidadCelda con su estilo
    base (cfg-materia-identidad, cargado por academico-form-page.css). */
