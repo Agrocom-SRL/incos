@@ -8,7 +8,7 @@
 import { Col, Form, Input, Row, Select, Switch, Typography } from 'antd';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { FieldDatePicker } from '@atoms';
-import { cfgAcademicoFormColProps } from '@configuracion/academico/components/organisms/CfgAcademicoFormWorkspace';
+import { cfgFormColProps } from '@organisms/CfgFormWorkspace';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import CronogramaActividadSelectorField from '@institucional/actual/components/atoms/CronogramaActividadSelectorField';
 
@@ -43,7 +43,7 @@ const CronogramaActividadFormSections = ({
 }) => {
   const tieneActividad = actividadId != null && actividadId !== '';
   const mostrarNombre = sobrescribirNombre && tieneActividad;
-  const col = cfgAcademicoFormColProps(12);
+  const col = cfgFormColProps(12);
 
   const periodoOptions = periodos.map((p) => ({
     value: p.periodoAcademicoId,

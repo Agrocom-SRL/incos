@@ -1,5 +1,14 @@
 /**
- * Tarjeta de formulario CFG Académico — mismo shell que AcademicoPage (workspace + header/body).
+ * Tarjeta de formulario CFG — mismo shell "workspace" que las listas en tabs
+ * (header con ListPanelHeader + body). Promovido desde `configuracion/academico`
+ * a organismo compartido: lo usan los ABM de Configuración → Académico y otros
+ * formularios que replican el mismo patrón visual (licencias, cronograma,
+ * wizard de usuario, pagos/compromiso).
+ *
+ * Estilos: las clases `cfg-academico-workspace*` / `cfg-academico-form-workspace*`
+ * viven en `configuracion/academico/styles/academico-form-page.css`. Ese CSS ya es
+ * importado directamente por cada página consumidora (patrón existente compartido
+ * entre módulos) — no se duplica aquí.
  */
 import { Col, Row, Typography } from 'antd';
 import { FormField } from '@molecules';
@@ -9,14 +18,14 @@ import { fieldRowKey } from '@molecules/FormSection/utils/fieldColumns';
 const { Paragraph } = Typography;
 
 /** Columnas 2× desde tablet; ancho completo si span 24 */
-export const cfgAcademicoFormColProps = (span = 12) => {
+export const cfgFormColProps = (span = 12) => {
   if (!span || span >= 24) {
     return { xs: 24 };
   }
   return { xs: 24, sm: 24, md: 12, lg: 12, xl: 12, xxl: 12 };
 };
 
-export const CfgAcademicoFormFieldGrid = ({
+export const CfgFormFieldGrid = ({
   fields = [],
   form,
   resolveOptions = () => [],
@@ -48,7 +57,7 @@ export const CfgAcademicoFormFieldGrid = ({
           return (
             <Col
               key={fieldRowKey(field, index)}
-              {...cfgAcademicoFormColProps(field.span)}
+              {...cfgFormColProps(field.span)}
               className={field.type === 'imageUpload' ? 'cfg-academico-form-col--image' : undefined}
             >
               <FormField
@@ -67,7 +76,7 @@ export const CfgAcademicoFormFieldGrid = ({
   );
 };
 
-const CfgAcademicoFormWorkspace = ({
+const CfgFormWorkspace = ({
   title,
   description = null,
   headerActions = null,
@@ -93,7 +102,7 @@ const CfgAcademicoFormWorkspace = ({
       {beforeFields ? (
         <div className="cfg-academico-form-workspace__before-fields">{beforeFields}</div>
       ) : null}
-      <CfgAcademicoFormFieldGrid
+      <CfgFormFieldGrid
         fields={fields}
         form={form}
         resolveOptions={resolveOptions}
@@ -105,4 +114,4 @@ const CfgAcademicoFormWorkspace = ({
   </section>
 );
 
-export default CfgAcademicoFormWorkspace;
+export default CfgFormWorkspace;

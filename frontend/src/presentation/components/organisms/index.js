@@ -11,3 +11,4 @@ export { default as DetailPageShell } from './DetailPageShell';
 export { default as DetailPageHeaderActions } from './DetailPageHeaderActions';
 export { default as CoordinacionDocentesView } from './CoordinacionDocentesView';
 export { default as CursosDocenteView } from './CursosDocenteView';
+export { default as CfgFormWorkspace, CfgFormFieldGrid, cfgFormColProps } from './CfgFormWorkspace';

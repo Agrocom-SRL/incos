@@ -1,5 +1,5 @@
 import { Alert, Form } from 'antd';
-import CfgAcademicoFormWorkspace from './CfgAcademicoFormWorkspace';
+import { CfgFormWorkspace } from '@organisms';
 import ParaleloCarreraFormControl from './ParaleloCarreraFormControl';
 import ParaleloTurnoHorarioInfo from '../atoms/ParaleloTurnoHorarioInfo';
 
@@ -37,7 +37,7 @@ const ParaleloFormSections = ({
   ) : null;
 
   return (
-    <CfgAcademicoFormWorkspace
+    <CfgFormWorkspace
       title={datosParalelo.title}
       description={datosParalelo.description}
       fields={datosParalelo.fields}

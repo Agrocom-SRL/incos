@@ -1,5 +1,5 @@
 /**
- * Ficha personal del wizard de usuario (SEG) vía CfgAcademicoFormWorkspace + config de campos,
+ * Ficha personal del wizard de usuario (SEG) vía CfgFormWorkspace + config de campos,
  * mismo workspace de formulario que los ABM de Configuración → Académico.
  */
 import { useMemo } from 'react';

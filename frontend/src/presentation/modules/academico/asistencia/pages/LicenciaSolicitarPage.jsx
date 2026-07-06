@@ -36,7 +36,7 @@ import ListPanelHeader from '@molecules/ListPanelHeader';
 import { DetailField, Button, BackButton, FieldDatePicker, Text } from '@atoms';
 import IdentidadCelda from '@atoms/IdentidadCelda';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
-import { cfgAcademicoFormColProps } from '@configuracion/academico/components/organisms/CfgAcademicoFormWorkspace';
+import { cfgFormColProps } from '@organisms/CfgFormWorkspace';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';
 import { useCasesFactory } from '@container';
@@ -301,7 +301,7 @@ const LicenciaSolicitarPage = () => {
 
   const esBusquedaActiva = busquedaDebounced.length >= BUSQUEDA_MIN_CHARS;
   const formularioHabilitado = esEdicion ? !enviando : tieneInscripcion && !enviando;
-  const col = cfgAcademicoFormColProps(12);
+  const col = cfgFormColProps(12);
 
   // Bloques excluyentes: en edición o con estudiante fijado se ocultan el buscador; sin
   // estudiante elegido se muestra SOLO el buscador; al elegir uno aparecen los datos.

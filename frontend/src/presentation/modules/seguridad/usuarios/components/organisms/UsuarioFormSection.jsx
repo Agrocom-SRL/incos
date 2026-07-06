@@ -1,14 +1,14 @@
 /**
  * Sección plana del wizard de usuario (SEG): encabezado simple (título + descripción)
- * y rejilla de campos reutilizando `CfgAcademicoFormFieldGrid` (FormField labelLayout vertical).
+ * y rejilla de campos reutilizando `CfgFormFieldGrid` (FormField labelLayout vertical).
  *
- * A diferencia de `CfgAcademicoFormWorkspace`, NO envuelve en tarjeta (sin borde/sombra):
+ * A diferencia de `CfgFormWorkspace`, NO envuelve en tarjeta (sin borde/sombra):
  * el contenedor visual es el workspace/pestaña del wizard, evitando "card dentro de card".
  *
  * Atomic Design: organismo del módulo Seguridad (compone la molécula de grid de campos).
  */
 import { Typography } from 'antd';
-import { CfgAcademicoFormFieldGrid } from '@configuracion/academico/components/organisms/CfgAcademicoFormWorkspace';
+import { CfgFormFieldGrid } from '@organisms/CfgFormWorkspace';
 
 const { Title, Paragraph } = Typography;
 
@@ -45,7 +45,7 @@ export default function UsuarioFormSection({
         <div className="seg-usuario-form-section__before">{beforeFields}</div>
       ) : null}
 
-      <CfgAcademicoFormFieldGrid
+      <CfgFormFieldGrid
         fields={fields}
         form={form}
         resolveOptions={resolveOptions}
