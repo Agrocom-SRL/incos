@@ -23,7 +23,7 @@ import {
   CrearParaleloUseCase,
   ActualizarParaleloUseCase,
   EliminarParaleloUseCase,
-} from '@useCases/configuracion/academico/paralelos';
+} from '@useCases/configuracion/recursos/paralelos';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import {
   GetTodasDiscapacidadesUseCase,

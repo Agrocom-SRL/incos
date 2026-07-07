@@ -298,6 +298,49 @@
   aplicar el delta (a mano vía `INSERT ... WHERE NOT EXISTS`, o re-siembra completa controlada del
   módulo CFG). Frontend (list/form/detail de administración) sigue pendiente, igual que el resto de la
   sección 5.
+- **2026-07-07**: Backend de **Aulas** y **Tipos de evaluación** (sección 5) completado por agente
+  `backend`, en una sola sesión para no pisar ediciones concurrentes sobre `62-seed-permisos-cfg.sql`
+  (se detectó además una sesión concurrente activa moviendo Paralelo a `configuracion/recursos` y
+  construyendo Estados civiles — ver nota de proceso abajo). **Aulas**: reutiliza `IAulaRepository`/
+  `ClassroomRepository`/`Classroom` (ya existían con CRUD completo); nuevo mapper de aplicación
+  `application/mappers/configuracion/ClassroomMapper.js` (presentación es-ES); 5 use cases
+  (`{List,Create,Update,GetById,Delete}AulaUseCase.js` en `use-cases/configuracion/`, `ListAulasUseCase`
+  soporta `?categoria=` y `?incluirInactivos=` vía `buildSpecificFilters`); 5 controllers en
+  `presentation/controllers/configuracion/aulas/`; validator propio `aulas.validator.js` (codigo+nombre+
+  categoria enum+capacidad+observaciones); router nuevo `aulas.routes.js` en `/api/v1/aulas`, con LISTAR
+  gateado por `configuracion.aula` (no por el catálogo transparente, siguiendo el patrón de
+  `actividades`/`paralelos`, no el de `idiomas`/`estados-civiles`). **Conflicto de ruteo resuelto**:
+  `aulas.routes.js` comparte prefijo `/aulas` con `aulas-horarios.routes.js` (picker GET `/catalogo`,
+  solo lectura, NO tocado); como este último define una ruta literal y el nuevo router define `GET
+  /:id` genérico, el orden de montaje en `routes/index.js` importa — se montó
+  `AULAS_HORARIOS_TOKENS.aulasHorariosRouter` ANTES que `CONFIGURACION_TOKENS.aulasRouter` (comentado
+  in-line) para que `/catalogo` no sea capturado como un `id` inválido. **Tipos de evaluación**: NO se
+  duplicó el listado — `tipos-evaluacion.routes.js` (router nuevo en `/api/v1/tipos-evaluacion`) resuelve
+  el `ListTiposEvaluacionUseCase`/`ListTiposEvaluacionController` YA registrados en
+  `academico/calificaciones.container.js` para su GET `/`, solo con el permiso nuevo
+  `configuracion.tipo-evaluacion` en vez de `sistema.catalogo.referencia` (endpoint de lectura del
+  cuaderno en `calificaciones.routes.js`, sin tocar). Create/Update/GetById/Delete son nuevos
+  (`use-cases/configuracion/*TipoEvaluacionUseCase.js`), reutilizando `EvaluationTypeRepository`
+  (ya soportaba escritura completa por herencia de `BaseRepository`, solo faltaba cablear) y el mapper
+  de presentación `EvaluationTypePresentationMapper` ya existente. Ambos recursos registrados en
+  `infrastructure/container/modules/configuracion/{aulas,tipos-evaluacion}.container.js`, tokens nuevos
+  en `CONFIGURACION_TOKENS`. Smoke-test end-to-end sin tocar BD: `buildContainer()` + resolver ambos
+  routers + listar sus 5 rutas cada uno, y cargar `routes/index.js` completo (46 sub-routers) sin error.
+  `npm run lint` limpio en los ~30 archivos tocados/creados. RBAC: `configuracion.aula` y
+  `configuracion.tipo-evaluacion` (5 acciones cada uno, RECTOR+DIR_ACADEMICO, mismos roles que
+  `configuracion.paralelo`) agregados a `62-seed-permisos-cfg.sql` (+2 filas nuevas en `grupos_ui`:
+  `configuracion_recursos_aula`, `configuracion_recursos_tipo_evaluacion`; `ruta_sidebar` =
+  `/configuracion/recursos` para ambos, alineado con el movimiento de Paralelo) — **NO aplicado a la BD
+  real** (mismo motivo que Estados civiles: el archivo no es idempotente y ya tiene datos en
+  producción). **Pendiente: aprobación explícita del usuario** para aplicar el delta. Frontend (tabs 2 y
+  3 de `configuracion/recursos`) sigue pendiente.
+  **Nota de proceso — concurrencia detectada**: durante esta sesión se detectó un commit no solicitado
+  (`9f0c2c10`, hecho por otro proceso/sesión en paralelo, no por este agente) que incluyó de forma
+  incidental los primeros archivos de Aulas ya escritos en disco en ese momento (mappers, use cases,
+  controllers y validator de Aulas, `aulas.routes.js`) junto con trabajo de frontend de Estados civiles
+  y el movimiento de Paralelo a `configuracion/recursos`. Este agente no ejecutó `git commit` en ningún
+  momento; el resto del trabajo de esta sesión (tokens, containers, router de Tipos de evaluación,
+  mount en `routes/index.js`, seed 62) permanece sin commitear para revisión manual del usuario.
 - **2026-07-07**: Frontend de **Estados civiles** completado por agente `frontend`, clonando EXACTO
   el patrón de `idioma` (elegido como plantilla por tener el shape más parecido: nombre + campo corto
   opcional). Creados: 4ta pestaña `TAB_ESTADOS_CIVILES` en `complementarioTabs.js`/
@@ -329,6 +372,67 @@
   `@application-auth`, `@application/utils`) están todos registrados en `vite.config.js` y coinciden
   con los ya usados por `idioma` (que sí compilaba). **Pendiente: re-correr `npm run build` completo**
   una vez termine/se commitee el refactor de Paralelo en curso.
+- **2026-07-07 — Refactor Paralelo → `configuracion/recursos` completado** por agente `frontend` (esta
+  es "la otra tarea concurrente" mencionada arriba en la entrada de Estados civiles; corrió en paralelo
+  sobre el mismo working tree). **Refactor puro**: se movió el tab «Paralelos» completo desde
+  `configuracion/academico` al módulo nuevo `configuracion/recursos` (menú "Recursos académicos", tab
+  base único por ahora — Aulas/Tipos de evaluación se cablean como tabs 2/3 en la sesión siguiente,
+  backend ya construido en paralelo). **Sin cambio de lógica de negocio ni de permiso RBAC**:
+  `configuracion.paralelo` conserva su código en las 3 capas.
+  - **Archivos movidos con `git mv`** (32, preservando historial): 4 use cases + `index.js` en
+    `domain/useCases/configuracion/{academico→recursos}/paralelos/`; `context/ParaleloContext.js`,
+    `hooks/{api,context,features,state}/Paralelo*.js` (5), `mappers/paraleloFormMapper.js`,
+    `providers/ParaleloProvider.jsx`, `config/paralelo{FormFields,PeriodoPill,TurnoHorarioInfo,
+    TurnoOptions}.js` (4) en `application/modules/configuracion/{academico→recursos}/`;
+    `components/atoms/Paralelo{PeriodoCell,TurnoHorarioInfo}.jsx` (2),
+    `components/organisms/Paralelo{CarreraFormControl,CarreraPicker,DetailOfertaSection,
+    DetalleInstanciaCard,FormSections}.jsx` (5), `config/paralelosTableColumns.jsx`,
+    `connectors/Paralelo{DetailConnector,FormCreateConnector,FormEditConnector}.jsx` (3),
+    `pages/Paralelo{DetailPage,FormPage}.jsx`+`pages/ParalelosList.jsx` (3) en
+    `presentation/modules/configuracion/{academico→recursos}/`.
+  - **Archivos nuevos**: `application/modules/configuracion/recursos/config/{tabs,paths,navigation}.js`
+    (fuente de verdad de tabs/rutas/nav-state, gemelo de `complementarios`) + barrels
+    `hooks/index.js`/`providers/index.js`/`mappers/index.js`; `presentation/modules/configuracion/
+    recursos/{routes.jsx, connectors/RecursosConnector.jsx, pages/RecursosPage.jsx,
+    config/recursosTabs.js, config/recursosTabPanels.js}` (clon exacto del patrón `ComplementariosPage`/
+    `ComplementariosConnector`, con 1 solo tab por ahora). Rutas legacy de redirect
+    `/configuracion/academico/paralelo/...` → `/configuracion/recursos/paralelo/...` (mismo idioma
+    `useParams` + `Navigate` que ya usa `docentes/routes.jsx`). Alias nuevos `@configuracion-recursos` /
+    `@application-configuracion-recursos` en `vite.config.js`+`jsconfig.json` (igual que
+    `complementarios`). Menú `order: 6` (siguiente disponible tras Actividades=5).
+  - **Imports corregidos** (cruce con lo que se queda en `academico`): `useCarrerasApi`/
+    `usePlanesEstudiosApi` (siguen en `academico/hooks/api/`, ahora importados por alias absoluto en
+    vez de relativo); `mapPeriodosPlanList`/`buildCarreraImageUrl`/`materiaTipoPill` (utils genéricos de
+    Plan/Carrera que se quedan en `academico`, ya eran alias absolutos, sin cambio);
+    `formPillSelectResolvers.js` (molécula compartida) y `configuracion.container.js` (DI) actualizados
+    al nuevo path `@application-configuracion/recursos/...` / `@useCases/configuracion/recursos/
+    paralelos`. CSS compartido `academico-form-page.css` **no se movió** (import cambiado de relativo
+    `../styles/...` a alias `@configuracion/academico/styles/academico-form-page.css`, mismo patrón que
+    ya usa `ComplementariosPage.jsx`). Limpieza en `academico`: `routes.jsx` (rutas de paralelo +
+    permiso `configuracion.paralelo` fuera de `CFG_ACADEMICO_PERMISOS`), `academicoTabs.js`/
+    `academicoTabPanels.js` (sin `TAB_PARALELOS`), `AcademicoConnector.jsx` (sin `ParaleloProvider`),
+    `AcademicoPage.jsx` (sin tab/acción de paralelo), `paths.js`/`academicoNavigation.js` (sin
+    `PARALELOS_LIST_PATH`/`paralelosListNavigationState`), barrels `hooks/index.js`/`providers/
+    index.js` (sin exports de Paralelo).
+  - **Hallazgo durante la verificación**: los commits de la tarea concurrente (`8e6aea67`, pure
+    `git mv` de estos mismos 32 archivos) habían dejado el build roto — `AcademicoPage.jsx`,
+    `AcademicoConnector.jsx`, `academico/hooks/index.js` y `academico/providers/index.js` seguían
+    referenciando `ParaleloProvider`/`useParaleloContext`/`ParalelosList` en rutas que ya no existían
+    tras el `git mv` (confirmado con `git show HEAD:...` antes de editar). Este refactor corrige esa
+    inconsistencia además de completar el resto del checklist (tabs/paths/navigation nuevos en
+    `recursos`, alias, seed).
+  - **Seed** `62-seed-permisos-cfg.sql`: solo `ruta_sidebar` de `configuracion.paralelo` actualizada de
+    `/configuracion/academico` → `/configuracion/recursos` (código/acciones/roles sin cambio, regla
+    3bis). **No aplicado a BD real** (edición de archivo solamente, según instrucción de la tarea).
+  - Verificado: `npm run build` OK (frontend completo); `npx eslint` acotado a los ~40 archivos
+    tocados/creados sin errores nuevos (2 hallazgos preexistentes confirmados no-regresión, con
+    `git log --follow`: `Form.useWatch` condicional en `ParaleloFormSections.jsx` desde su commit
+    original; patrón `react-refresh/only-export-components` en `recursos/routes.jsx`, mismo perfil que
+    `docentes/routes.jsx` con su `LegacyRedirect` inline). `grep` de rutas/imports viejos → 0
+    resultados en todo `frontend/src`. Ningún commit ejecutado por este agente.
+  - **Pendiente siguiente sesión**: cablear Aulas (backend ya listo, `configuracion.aula`) y Tipos de
+    evaluación (backend ya listo, `configuracion.tipo-evaluacion`) como tabs 2/3 de
+    `RecursosPage.jsx`/`RecursosConnector.jsx`/`recursosTabs.js`/`recursosTabPanels.js`.
 
 ## 5bis. Ajuste de estilo de tablas + Aportes deja de ser menú (2026-07-07)
 
@@ -387,8 +491,8 @@ construir CRUD completo para los 5, cada uno en su dominio natural (no agrupados
 | Catálogo | Tabla | Dominio destino | Estado | Notas |
 |---|---|---|---|---|
 | Becas / descuentos | `becas_descuentos` (`11-estudiantes-parte2.sql:30`) | Finanzas (junto a `aportes`/`configuracion`) | ✅ **HECHO** (commits `fbd59861`/`8e983264`) | CRUD completo backend (`becas-descuentos.routes.js`) + frontend list/form/detail en `finanzas/configuracion/`, permiso `finanzas.beca-descuento` (5 acciones) sembrado en `60-seed-permisos-fin.sql`. Las 12 becas oficiales (Res. Ministerial 434/2019) no se tocaron. |
-| Aulas | `aulas` (`06-estructura-academica-parte2.sql:162`) | **`configuracion/academico`** (4ta pestaña, confirmado 2026-07-07 por `datos`+`arquitecto`: catálogo maestro puro, igual patrón que carreras/materias/paralelos; lo operativo -asignación a paralelo_gestion- sigue en institucional/oferta vía `aulas-horarios.routes.js` GET-only y no se toca) | ⏳ Pendiente | `LAB-2 / Sala de Docentes` (id 2, capacidad=0, activo=0) está desactivado A PROPÓSITO — no reactivar ni excluir del listado admin, debe verse con StatusPill inactivo. Backend: router NUEVO `aulas.routes.js` en `/api/v1/aulas`, reutilizando `IAulaRepository`/`ClassroomRepository` (ya implementa CRUD completo por herencia de `IRepository`) — no tocar `aulas-horarios.routes.js`. Permiso: `configuracion.aula`. Columnas propias (categoría+capacidad), NO usa `createSimpleCatalogTableColumns`. |
-| Tipos de evaluación | `tipos_evaluacion` (`15-evaluaciones.sql:134`) | `configuracion/academico` (junto a materias/paralelos; confirmado 2026-07-07: catálogo que parametriza `evaluaciones`, igual que materias parametriza `oferta_cursos` — la lectura operativa del cuaderno vía `GetTiposEvaluacionUseCase`/`calificaciones.routes.js` no se toca) | ⏳ Pendiente | 17 tipos ya sembrados (seed 53). El campo "componente" (teórico/práctico) vive en `evaluaciones`, NO agregarlo a este catálogo. Permiso nuevo: `configuracion.tipo-evaluacion` (distinto del permiso de lectura del cuaderno, no reutilizar). |
+| Aulas | `aulas` (`06-estructura-academica-parte2.sql:162`) | **`configuracion/recursos`** (tab 2, junto a Paralelo ya movido; catálogo maestro puro, igual patrón que carreras/materias/paralelos; lo operativo -asignación a paralelo_gestion- sigue en institucional/oferta vía `aulas-horarios.routes.js` GET-only y no se toca) | ✅ **Backend hecho (2026-07-07)** — [ ] Frontend pendiente | `LAB-2 / Sala de Docentes` (id 2, capacidad=0, activo=0) está desactivado A PROPÓSITO — no reactivado ni excluido del listado admin (query `incluirInactivos` soportado, igual que el resto). Backend: router NUEVO `aulas.routes.js` en `/api/v1/aulas`, montado DESPUÉS de `aulas-horarios.routes.js` en `routes/index.js` a propósito (su `/catalogo` literal debe resolverse antes que el `/:id` genérico de este CRUD, mismo prefijo). Reutiliza `IAulaRepository`/`ClassroomRepository` (ya implementaba CRUD completo por herencia de `BaseRepository`) — no se tocó `aulas-horarios.routes.js`. Permiso: `configuracion.aula` (5 acciones, RECTOR+DIR_ACADEMICO). Columnas propias (categoría+capacidad) vía mapper `ClassroomMapper` nuevo en `application/mappers/configuracion/`, NO usa `createSimpleCatalogTableColumns`. |
+| Tipos de evaluación | `tipos_evaluacion` (`15-evaluaciones.sql:134`) | `configuracion/recursos` (tab 3; catálogo que parametriza `evaluaciones`, igual que materias parametriza `oferta_cursos` — la lectura operativa del cuaderno vía `GetTiposEvaluacionUseCase`/`calificaciones.routes.js` no se toca) | ✅ **Backend hecho (2026-07-07)** — [ ] Frontend pendiente | 17 tipos ya sembrados (seed 53), no se tocó ese seed. El campo "componente" (teórico/práctico) vive en `evaluaciones`, no se agregó a este catálogo. Backend: router NUEVO `tipos-evaluacion.routes.js` en `/api/v1/tipos-evaluacion`; el LISTAR reutiliza el `ListTiposEvaluacionUseCase`/`ListTiposEvaluacionController` YA registrados por `calificaciones.container.js` (mismo catálogo, sin duplicar consulta), solo Create/Update/GetById/Delete son nuevos (repositorio `EvaluationTypeRepository` ya soportaba escritura completa por herencia). Permiso nuevo: `configuracion.tipo-evaluacion` (5 acciones, RECTOR+DIR_ACADEMICO), distinto del permiso de lectura del cuaderno (`sistema.catalogo.referencia`, no reutilizado). |
 | Estados civiles | `estados_civiles` (`03-catalogos-referencia.sql:63`) | `configuracion/complementarios` (sibling de idiomas/discapacidad/apoderados) | ✅ **Backend+Frontend hecho (2026-07-07)** | Catálogo mínimo (5 valores: `id, nombre, abreviatura`). FK activa desde `estudiantes.estado_civil_id`, `20-personal-usuarios.sql` (docentes/personal) y `06-estructura-academica-parte2.sql:96` — se consume ya en 3 formularios (`estudianteDatosPersonalesFields.js`, `docenteDatosPersonalesFields.js`, `usuarioWizardPersonalFields.js`) vía combo. Backend: CRUD completo (Create/Update/GetById/Delete use cases + controllers + rutas habilitadas en `estados-civiles.routes.js`, mismo shape que idiomas: nombre+abreviatura). Frontend: 4ta pestaña "Estados civiles" en `configuracion/complementarios`, clon exacto del patrón `idioma` (list vía `createSimpleCatalogTableColumns` con `abreviatura` como `extraColumns`, form `CfgFormWorkspace`, detalle `DetailProfileCard`+`DetailInfoCard`). Permiso: `configuracion.complementario.estado-civil` (5 acciones, RECTOR+DIR_ACADEMICO) agregado a `62-seed-permisos-cfg.sql` — **pendiente de aplicar en BD real** (archivo no es idempotente, no se ejecutó para evitar duplicar filas ya existentes de ese seed). |
 
 **Instituciones — retirada de esta sección (2026-07-07, decisión del usuario).** La tabla `instituciones`

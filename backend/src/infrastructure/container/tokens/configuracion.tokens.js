@@ -1,6 +1,6 @@
 /**
  * Tokens del Módulo Configuración
- * 
+ *
  * Convenciones:
  * - Use Cases: {modulo}_list{Entity}UseCase (ej: 'configuracion.listCarrerasUseCase')
  * - Controllers: {modulo}_list{Entity}Controller (ej: 'configuracion.listCarrerasController')
@@ -52,6 +52,17 @@ export const CONFIGURACION_TOKENS = {
     updateActividadUseCase: 'configuracion.updateActividadUseCase',
     deleteActividadUseCase: 'configuracion.deleteActividadUseCase',
 
+    listAulasUseCase: 'configuracion.listAulasUseCase',
+    getAulaByIdUseCase: 'configuracion.getAulaByIdUseCase',
+    createAulaUseCase: 'configuracion.createAulaUseCase',
+    updateAulaUseCase: 'configuracion.updateAulaUseCase',
+    deleteAulaUseCase: 'configuracion.deleteAulaUseCase',
+
+    createTipoEvaluacionUseCase: 'configuracion.createTipoEvaluacionUseCase',
+    getTipoEvaluacionByIdUseCase: 'configuracion.getTipoEvaluacionByIdUseCase',
+    updateTipoEvaluacionUseCase: 'configuracion.updateTipoEvaluacionUseCase',
+    deleteTipoEvaluacionUseCase: 'configuracion.deleteTipoEvaluacionUseCase',
+
     // CONTROLLERS
     listCarrerasController: 'configuracion.listCarrerasController',
     getCarreraByIdController: 'configuracion.getCarreraByIdController',
@@ -96,6 +107,17 @@ export const CONFIGURACION_TOKENS = {
     updateActividadController: 'configuracion.updateActividadController',
     deleteActividadController: 'configuracion.deleteActividadController',
 
+    listAulasController: 'configuracion.listAulasController',
+    getAulaByIdController: 'configuracion.getAulaByIdController',
+    createAulaController: 'configuracion.createAulaController',
+    updateAulaController: 'configuracion.updateAulaController',
+    deleteAulaController: 'configuracion.deleteAulaController',
+
+    createTipoEvaluacionController: 'configuracion.createTipoEvaluacionController',
+    getTipoEvaluacionByIdController: 'configuracion.getTipoEvaluacionByIdController',
+    updateTipoEvaluacionController: 'configuracion.updateTipoEvaluacionController',
+    deleteTipoEvaluacionController: 'configuracion.deleteTipoEvaluacionController',
+
     // ROUTERS
     carrerasRouter: 'configuracion.carrerasRouter',
     materiasRouter: 'configuracion.materiasRouter',
@@ -104,5 +126,6 @@ export const CONFIGURACION_TOKENS = {
     asignaturasPlanRouter: 'configuracion.asignaturasPlanRouter',
     prerrequisitosRouter: 'configuracion.prerrequisitosRouter',
     actividadesRouter: 'configuracion.actividadesRouter',
+    aulasRouter: 'configuracion.aulasRouter',
+    tiposEvaluacionRouter: 'configuracion.tiposEvaluacionRouter',
 };
-

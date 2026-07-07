@@ -190,6 +190,12 @@ export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 // Actividades (catálogo maestro reutilizable entre gestiones)
 export const ACTIVIDADES_ENDPOINTS = createCRUDEndpoints('/actividades');
 
+/**
+ * CRUD de administración del catálogo Tipos de evaluación (CFG → Recursos académicos).
+ * Distinto de `CALIFICACIONES_ENDPOINTS.TIPOS_EVALUACION` (combo GET-only del cuaderno).
+ */
+export const TIPOS_EVALUACION_ENDPOINTS = createCRUDEndpoints('/tipos-evaluacion');
+
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================
@@ -247,6 +253,12 @@ export const OFERTA_CURSOS_ENDPOINTS = {
 };
 
 export const AULAS_CATALOGO_ENDPOINT = `${API_BASE}/aulas/catalogo`;
+
+/**
+ * CRUD de administración del catálogo Aulas (CFG → Recursos académicos).
+ * Distinto de `AULAS_CATALOGO_ENDPOINT` (picker GET-only de Institucional/Oferta).
+ */
+export const AULAS_ENDPOINTS = createCRUDEndpoints('/aulas');
 
 export const HORARIOS_DOCENTE_ENDPOINTS = {
   GRILLA_CONFLICTOS: (docenteId, gestionId) => {

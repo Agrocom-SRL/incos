@@ -41,6 +41,8 @@ router.get('/', (req, res) => {
             asignaturasPlan: '/api/v1/asignaturas-plan',
             prerrequisitos: '/api/v1/prerrequisitos',
             actividades: '/api/v1/actividades',
+            aulas: '/api/v1/aulas',
+            tiposEvaluacion: '/api/v1/tipos-evaluacion',
             // Módulo: Académico
             paralelos: '/api/v1/paralelos',
             gestiones: '/api/v1/gestiones',
@@ -115,6 +117,13 @@ router.use('/periodos', container.resolve(CONFIGURACION_TOKENS.periodosRouter));
 router.use('/asignaturas-plan', container.resolve(CONFIGURACION_TOKENS.asignaturasPlanRouter));
 router.use('/prerrequisitos', container.resolve(CONFIGURACION_TOKENS.prerrequisitosRouter));
 router.use('/actividades', container.resolve(CONFIGURACION_TOKENS.actividadesRouter));
+// Administración del catálogo Tipos de Evaluación (CRUD); distinto de
+// GET /calificaciones/tipos-evaluacion (combo de solo lectura del cuaderno)
+router.use('/tipos-evaluacion', container.resolve(CONFIGURACION_TOKENS.tiposEvaluacionRouter));
+// Nota: la administración CRUD del catálogo Aulas (CONFIGURACION_TOKENS.aulasRouter)
+// se monta más abajo, DESPUÉS de AULAS_HORARIOS_TOKENS.aulasHorariosRouter (módulo
+// Docentes) — ambos comparten el prefijo '/aulas' y el picker tiene la ruta
+// literal '/catalogo' que debe resolverse antes que el '/:id' genérico del CRUD.
 
 // ============================================
 // 3. MÓDULO: ACADÉMICO
@@ -176,6 +185,11 @@ router.use(
   container.resolve(ASIGNACIONES_DOCENTES_TOKENS.asignacionesDocentesRouter)
 );
 router.use('/aulas', container.resolve(AULAS_HORARIOS_TOKENS.aulasHorariosRouter));
+// CRUD de administración del catálogo Aulas — montado DESPUÉS del router anterior
+// a propósito: aulasHorariosRouter solo define GET '/catalogo' (ruta literal), y
+// este router define GET '/:id' (genérico). Si se montara antes, '/:id' capturaría
+// '/catalogo' como si fuera un id y rompería el picker de oferta académica.
+router.use('/aulas', container.resolve(CONFIGURACION_TOKENS.aulasRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

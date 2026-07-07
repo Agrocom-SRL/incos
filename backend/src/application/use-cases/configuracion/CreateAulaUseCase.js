@@ -15,7 +15,9 @@ export class CreateAulaUseCase {
     if (!nombre) throw new ValidationError('nombre es requerido');
 
     const categoria = body.categoria ?? body.category ?? undefined;
-    if (categoria !== undefined && categoria !== null && !CATEGORIAS_AULA_VALUES.includes(categoria)) {
+    const categoriaInvalida =
+      categoria !== undefined && categoria !== null && !CATEGORIAS_AULA_VALUES.includes(categoria);
+    if (categoriaInvalida) {
       throw new ValidationError(
         `categoria inválida. Valores permitidos: ${CATEGORIAS_AULA_VALUES.join(', ')}`
       );

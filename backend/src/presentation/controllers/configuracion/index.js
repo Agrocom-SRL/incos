@@ -79,4 +79,3 @@ export { CreateTipoEvaluacionController } from './tipos-evaluacion/create.contro
 export { GetTipoEvaluacionByIdController } from './tipos-evaluacion/get-by-id.controller.js';
 export { UpdateTipoEvaluacionController } from './tipos-evaluacion/update.controller.js';
 export { DeleteTipoEvaluacionController } from './tipos-evaluacion/delete.controller.js';
-

@@ -6,7 +6,6 @@ import {
   CARRERAS_LIST_PATH,
   MATERIAS_LIST_PATH,
   PLANES_LIST_PATH,
-  PARALELOS_LIST_PATH,
 } from './paths';
 
 export const CFG_ACADEMICO_MENU_KEY = 'CFG-ACADEMICO';
@@ -25,12 +24,6 @@ export const materiasListNavigationState = (overrides = {}) => ({
 
 export const planesListNavigationState = (overrides = {}) => ({
   returnListPath: PLANES_LIST_PATH,
-  menuSidebarKey: CFG_ACADEMICO_MENU_KEY,
-  ...overrides,
-});
-
-export const paralelosListNavigationState = (overrides = {}) => ({
-  returnListPath: PARALELOS_LIST_PATH,
   menuSidebarKey: CFG_ACADEMICO_MENU_KEY,
   ...overrides,
 });
