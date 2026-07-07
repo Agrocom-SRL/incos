@@ -38,6 +38,7 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('configuracion.complementario.discapacidad', 'Complementarios: discapacidad', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
 ('configuracion.complementario.apoderados', 'Complementarios: apoderados', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
 ('configuracion.complementario.idiomas', 'Complementarios: idiomas', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
+('configuracion.complementario.estado-civil', 'Complementarios: estado civil', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
 ('configuracion.convenios', 'Empresas y convenios', NULL, 'CONFIGURACION', 'CFG', 'configuracion_convenios', '/configuracion/convenios', 1, NOW(), NOW()),
 ('configuracion.actividad', 'Actividades', NULL, 'CONFIGURACION', 'CFG', 'configuracion_actividad', '/configuracion/historial-actividades', 1, NOW(), NOW());
 
@@ -114,6 +115,11 @@ JOIN (
   UNION ALL SELECT 'configuracion.complementario.idiomas', 'CREAR'
   UNION ALL SELECT 'configuracion.complementario.idiomas', 'EDITAR'
   UNION ALL SELECT 'configuracion.complementario.idiomas', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'LISTAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'DETALLE'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'CREAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'EDITAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'ELIMINAR'
   UNION ALL SELECT 'configuracion.convenios', 'LISTAR'
   UNION ALL SELECT 'configuracion.convenios', 'CREAR'
   UNION ALL SELECT 'configuracion.convenios', 'EDITAR'
@@ -245,6 +251,16 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'ELIMINAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'EDITAR'

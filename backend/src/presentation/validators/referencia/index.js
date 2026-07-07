@@ -17,3 +17,9 @@ export {
 
 // Idiomas: shape distinto (nombre + codigoIso, sin descripcion), validator propio.
 export { createIdiomaValidator, updateIdiomaValidator } from './idiomas.validator.js';
+
+// Estados civiles: shape distinto (nombre + abreviatura, sin descripcion), validator propio.
+export {
+  createEstadoCivilValidator,
+  updateEstadoCivilValidator,
+} from './estados-civiles.validator.js';

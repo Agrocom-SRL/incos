@@ -1,6 +1,6 @@
 /**
  * Tokens del Módulo Referencia
- * 
+ *
  * Convenciones:
  * - Use Cases: {modulo}_list{Entity}UseCase (ej: 'referencia.listIdiomasUseCase')
  * - Controllers: {modulo}_list{Entity}Controller (ej: 'referencia.listIdiomasController')
@@ -16,6 +16,10 @@ export const REFERENCIA_TOKENS = {
     deleteIdiomaUseCase: 'referencia.deleteIdiomaUseCase',
 
     listEstadosCivilesUseCase: 'referencia.listEstadosCivilesUseCase',
+    createEstadoCivilUseCase: 'referencia.createEstadoCivilUseCase',
+    updateEstadoCivilUseCase: 'referencia.updateEstadoCivilUseCase',
+    getEstadoCivilByIdUseCase: 'referencia.getEstadoCivilByIdUseCase',
+    deleteEstadoCivilUseCase: 'referencia.deleteEstadoCivilUseCase',
 
     listTiposParentescoUseCase: 'referencia.listTiposParentescoUseCase',
     createTipoParentescoUseCase: 'referencia.createTipoParentescoUseCase',
@@ -43,6 +47,10 @@ export const REFERENCIA_TOKENS = {
     deleteIdiomaController: 'referencia.deleteIdiomaController',
 
     listEstadosCivilesController: 'referencia.listEstadosCivilesController',
+    createEstadoCivilController: 'referencia.createEstadoCivilController',
+    updateEstadoCivilController: 'referencia.updateEstadoCivilController',
+    getEstadoCivilByIdController: 'referencia.getEstadoCivilByIdController',
+    deleteEstadoCivilController: 'referencia.deleteEstadoCivilController',
 
     listTiposParentescoController: 'referencia.listTiposParentescoController',
     createTipoParentescoController: 'referencia.createTipoParentescoController',
@@ -69,4 +77,3 @@ export const REFERENCIA_TOKENS = {
     documentacionRouter: 'referencia.documentacionRouter',
     discapacidadRouter: 'referencia.discapacidadRouter',
 };
-

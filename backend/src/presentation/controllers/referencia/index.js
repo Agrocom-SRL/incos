@@ -11,7 +11,10 @@ export { DeleteIdiomaController } from './idiomas/delete.controller.js';
 // CONTROLLERS IMPLEMENTADOS - ESTADOS CIVILES
 // ============================================
 export { ListEstadosCivilesController } from './estados-civiles/list.controller.js';
-// TODO: Agregar otros controllers cuando se implementen sus endpoints
+export { CreateEstadoCivilController } from './estados-civiles/create.controller.js';
+export { GetEstadoCivilByIdController } from './estados-civiles/get-by-id.controller.js';
+export { UpdateEstadoCivilController } from './estados-civiles/update.controller.js';
+export { DeleteEstadoCivilController } from './estados-civiles/delete.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - TIPOS PARENTESCO
@@ -39,4 +42,3 @@ export { CreateDiscapacidadController } from './discapacidad/create.controller.j
 export { GetDiscapacidadByIdController } from './discapacidad/get-by-id.controller.js';
 export { UpdateDiscapacidadController } from './discapacidad/update.controller.js';
 export { DeleteDiscapacidadController } from './discapacidad/delete.controller.js';
-

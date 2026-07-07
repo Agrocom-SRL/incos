@@ -1,17 +1,30 @@
 # Unificación UX/arquitectura de Configuración — plan por fases
 
 > Estado: **Fases 0-4 completadas (2026-07-06)**, RBAC coherente en 3 capas, verificado por
-> `verificador`. **Extensión en curso**: CRUD para becas/descuentos, aulas, tipos de evaluación,
-> estados civiles e instituciones (traspaso) — ver sección 5. Pendiente de Fases 0-4: revisión manual
-> del usuario y `revisor-ui` opcional de pulido visual.
+> `verificador`. **Extensión en curso (sección 5)**: `becas_descuentos` **completo** (commits
+> `fbd59861`/`8e983264`, verificado en código). **Instituciones se retira del alcance de este
+> documento** (2026-07-07, decisión del usuario): pertenece al dominio futuro de
+> transitabilidad/traspasos (`incos-dominios-sin-construir.md`), donde requiere UI propia con filtro
+> por tipo de admisión — no un tab genérico de complementarios. Queda solo `aulas`, `tipos_evaluacion`
+> y `estados_civiles` en esta sección. Pendiente de Fases 0-4: revisión manual del usuario y
+> `revisor-ui` opcional de pulido visual.
 >
-> **PAUSADO (2026-07-06), retomar 2026-07-07**: sección 5 (extensión de 5 catálogos) con las 2
-> ubicaciones ya decididas por `arquitecto` (aulas → `configuracion/academico`; instituciones →
-> `configuracion/complementarios`). **Siguiente paso al retomar**: lanzar `planificador` para el
-> checklist ejecutable de los 5 catálogos (becas/descuentos, aulas, tipos de evaluación, estados
-> civiles, instituciones), luego repartir a `backend` (2 sesiones en paralelo: CFG y Finanzas, ver
-> nota al final de la sección 5) y `frontend`. Fases 0-4 siguen sin commitear, a la espera de revisión
-> manual del usuario.
+> **RETOMADO 2026-07-07**: se confirma con `datos`+`arquitecto` que `aulas` y `tipos_evaluacion` son
+> catálogos de referencia (no diseño curricular). **Backend de `estados_civiles` completado** (CRUD +
+> permiso `configuracion.complementario.estado-civil` en seed 62, pendiente aplicar a BD real).
+>
+> **AJUSTE DE ARQUITECTURA (2026-07-07, decisión del usuario)**: `configuracion/academico` mezclaba
+> nivel curricular (Planes/Carreras/Materias) con catálogos de referencia (Paralelos, y ahí se iban a
+> sumar Aulas/Tipos de evaluación) — un nivel conceptual distinto. Se crea un módulo **nuevo**,
+> hermano de Académico y Complementarios: **`configuracion/recursos`** (label de menú **"Recursos
+> académicos"**, elegido por el usuario sobre "Catálogos"/"Estructura académica"/"Parámetros
+> académicos"), que agrupa **Paralelos (movido) + Aulas + Tipos de evaluación** (extensible a futuro).
+> `configuracion/academico` queda solo con Planes | Carreras | Materias. Nombre elegido para evitar
+> choque semántico con `institucional/oferta-academica` (paralelo EN GESTIÓN, instancia por periodo —
+> dominio distinto del Paralelo maestro que se mueve aquí). Permiso `configuracion.paralelo` **no
+> cambia de código**, solo de ubicación en el menú (ver `arquitecto`, 2026-07-07). **Orden de
+> ejecución**: 1) mover Paralelo (refactor puro, sin funcionalidad nueva) a `configuracion/recursos`,
+> 2) construir Aulas y Tipos de evaluación como tabs 2 y 3 del módulo ya reubicado.
 > Lleva `configuracion/complementarios`, `configuracion/documentacion`, `configuracion/actividades` y
 > `finanzas/configuracion` a paridad de diseño/arquitectura con `configuracion/academico` (patrón de
 > referencia), y construye los endpoints backend que faltan. Este documento es la fuente de verdad
@@ -265,6 +278,26 @@
   **Trabajo dado por completo.** Ningún DDL/schema pendiente de aprobación. Todos los cambios quedan
   sin commitear en el working tree para revisión manual del usuario, salvo los commits que el propio
   usuario ya haya hecho por su cuenta durante la sesión (ver nota de la regla 3bis).
+- **2026-07-07**: Backend de **Estados civiles** (sección 5) completado por agente `backend`, siguiendo
+  exactamente el patrón de `idiomas` (mismo shape nombre+abreviatura). Creados: 4 use cases
+  (`{Create,Update,GetById,Delete}EstadoCivilUseCase.js` en `use-cases/referencia/`), 4 controllers en
+  `presentation/controllers/referencia/estados-civiles/`, validator propio
+  `estados-civiles.validator.js` (nombre 2-20 + abreviatura 1-5 opcional). El repositorio
+  (`CivilStatusRepository`/`IEstadoCivilRepository`), modelo Sequelize, mapper y `ListEstadosCivilesUseCase`
+  ya existían de una fase anterior — solo faltaba cablear escritura. Rutas POST/GET:id/PUT/DELETE
+  descomentadas y protegidas con `verificarPermiso('configuracion.complementario.estado-civil', ACCION)`
+  (mismo patrón que `idiomas.routes.js`). DI: tokens + container de `estados-civiles` actualizados;
+  smoke-test end-to-end (`buildContainer()` + resolver el router + listar sus 5 rutas) confirmado sin
+  tocar BD. `npm run lint` limpio en los 14 archivos tocados/creados (autofix de trailing
+  spaces/blank-lines preexistentes en el patrón copiado; 2 líneas de `max-len` en el container
+  reenvueltas a mano). RBAC: permiso `configuracion.complementario.estado-civil` + 5 acciones +
+  asignación a `RECTOR`/`DIR_ACADEMICO` (mismos roles que `idiomas`) agregados a
+  `62-seed-permisos-cfg.sql` **pero NO aplicados a la BD real** — el archivo sigue sin ser idempotente
+  (solo `INSERT`, ver incidente 2026-07-06 arriba) y ya tiene datos en producción, así que aplicarlo tal
+  cual duplicaría las filas existentes. **Pendiente: aprobación explícita del usuario** para decidir cómo
+  aplicar el delta (a mano vía `INSERT ... WHERE NOT EXISTS`, o re-siembra completa controlada del
+  módulo CFG). Frontend (list/form/detail de administración) sigue pendiente, igual que el resto de la
+  sección 5.
 
 ## 5bis. Ajuste de estilo de tablas + Aportes deja de ser menú (2026-07-07)
 
@@ -320,13 +353,20 @@ Investigación de `datos` (2026-07-06) confirmó 5 catálogos reales sin ninguna
 administración (solo `GET`, todo el resto comentado como TODO en sus routers). El usuario aprobó
 construir CRUD completo para los 5, cada uno en su dominio natural (no agrupados en un menú genérico).
 
-| Catálogo | Tabla | Dominio destino (a confirmar con `arquitecto`) | Notas |
-|---|---|---|---|
-| Becas / descuentos | `becas_descuentos` (`11-estudiantes-parte2.sql:30`) | Finanzas (junto a `aportes`/`configuracion`) | 12 becas oficiales (Res. Ministerial 434/2019) ya sembradas — el CRUD debe permitir agregar variantes SIN tocar esas 12 filas. Backend: `becas-descuentos.routes.js` solo GET, resto TODO. |
-| Aulas | `aulas` (`06-estructura-academica-parte2.sql:162`) | **`configuracion/academico`** (4ta pestaña, decidido por `arquitecto`: catálogo maestro puro, igual patrón que carreras/materias/paralelos; lo operativo -asignación a paralelo_gestion- sigue en institucional/oferta y no se toca) | `LAB-2 / Sala de Docentes` (id 2, capacidad=0, activo=0) está desactivado A PROPÓSITO — no reactivar ni excluir del listado admin, debe verse con StatusPill inactivo. Backend: router NUEVO `aulas.routes.js` en `/api/v1/aulas` (no tocar `aulas-horarios.routes.js`, que sigue sirviendo el tablero). Permiso: `configuracion.aula`. Columnas propias (categoría+capacidad), NO usa `createSimpleCatalogTableColumns`. |
-| Tipos de evaluación | `tipos_evaluacion` (`15-evaluaciones.sql:134`) | `configuracion/academico` (junto a materias/paralelos) | 17 tipos ya sembrados. El campo "componente" (teórico/práctico) vive en `evaluaciones`, NO agregarlo a este catálogo. Backend: solo GET en `calificaciones.routes.js`. |
-| Estados civiles | `estados_civiles` (`03-catalogos-referencia.sql:63`) | `configuracion/complementarios` (sibling de idiomas/discapacidad/apoderados) | Catálogo mínimo (5 valores), bajo impacto. Backend: POST/PUT/DELETE comentados como TODO. |
-| Instituciones (traspaso) | `instituciones` (`18-transitabilidades.sql:70`) | **`configuracion/complementarios`** (4ta pestaña, decidido por `arquitecto`: alimenta form de Estudiantes/Transitabilidad igual que discapacidad/idiomas/apoderados) | **Confirmado por `arquitecto`: SÍ tiene `activo`+`deleted_at` (líneas 84-90) — NINGÚN DDL nuevo necesario**, descarta la alerta previa de posible columna faltante. Sin backend expuesto en absoluto — construir router/controller/use case desde cero (no hay TODOs que activar). Permiso: `configuracion.complementario.institucion`. Reutilizar `GET /api/v1/departamentos` ya existente para el selector geográfico (no duplicar). Vigilar duplicados por texto libre del flujo find-or-create en matriculación (normalizar `nombre` con trim en el validator). |
+| Catálogo | Tabla | Dominio destino | Estado | Notas |
+|---|---|---|---|---|
+| Becas / descuentos | `becas_descuentos` (`11-estudiantes-parte2.sql:30`) | Finanzas (junto a `aportes`/`configuracion`) | ✅ **HECHO** (commits `fbd59861`/`8e983264`) | CRUD completo backend (`becas-descuentos.routes.js`) + frontend list/form/detail en `finanzas/configuracion/`, permiso `finanzas.beca-descuento` (5 acciones) sembrado en `60-seed-permisos-fin.sql`. Las 12 becas oficiales (Res. Ministerial 434/2019) no se tocaron. |
+| Aulas | `aulas` (`06-estructura-academica-parte2.sql:162`) | **`configuracion/academico`** (4ta pestaña, confirmado 2026-07-07 por `datos`+`arquitecto`: catálogo maestro puro, igual patrón que carreras/materias/paralelos; lo operativo -asignación a paralelo_gestion- sigue en institucional/oferta vía `aulas-horarios.routes.js` GET-only y no se toca) | ⏳ Pendiente | `LAB-2 / Sala de Docentes` (id 2, capacidad=0, activo=0) está desactivado A PROPÓSITO — no reactivar ni excluir del listado admin, debe verse con StatusPill inactivo. Backend: router NUEVO `aulas.routes.js` en `/api/v1/aulas`, reutilizando `IAulaRepository`/`ClassroomRepository` (ya implementa CRUD completo por herencia de `IRepository`) — no tocar `aulas-horarios.routes.js`. Permiso: `configuracion.aula`. Columnas propias (categoría+capacidad), NO usa `createSimpleCatalogTableColumns`. |
+| Tipos de evaluación | `tipos_evaluacion` (`15-evaluaciones.sql:134`) | `configuracion/academico` (junto a materias/paralelos; confirmado 2026-07-07: catálogo que parametriza `evaluaciones`, igual que materias parametriza `oferta_cursos` — la lectura operativa del cuaderno vía `GetTiposEvaluacionUseCase`/`calificaciones.routes.js` no se toca) | ⏳ Pendiente | 17 tipos ya sembrados (seed 53). El campo "componente" (teórico/práctico) vive en `evaluaciones`, NO agregarlo a este catálogo. Permiso nuevo: `configuracion.tipo-evaluacion` (distinto del permiso de lectura del cuaderno, no reutilizar). |
+| Estados civiles | `estados_civiles` (`03-catalogos-referencia.sql:63`) | `configuracion/complementarios` (sibling de idiomas/discapacidad/apoderados) | ✅ **Backend hecho (2026-07-07)** — [ ] Frontend pendiente | Catálogo mínimo (5 valores: `id, nombre, abreviatura`). FK activa desde `estudiantes.estado_civil_id`, `20-personal-usuarios.sql` (docentes/personal) y `06-estructura-academica-parte2.sql:96` — se consume ya en 3 formularios (`estudianteDatosPersonalesFields.js`, `docenteDatosPersonalesFields.js`, `usuarioWizardPersonalFields.js`) vía combo, sin UI de administración. Backend: CRUD completo (Create/Update/GetById/Delete use cases + controllers + rutas habilitadas en `estados-civiles.routes.js`, mismo shape que idiomas: nombre+abreviatura). Permiso: `configuracion.complementario.estado-civil` (5 acciones, RECTOR+DIR_ACADEMICO) agregado a `62-seed-permisos-cfg.sql` — **pendiente de aplicar en BD real** (archivo no es idempotente, no se ejecutó para evitar duplicar filas ya existentes de ese seed). |
+
+**Instituciones — retirada de esta sección (2026-07-07, decisión del usuario).** La tabla `instituciones`
+(`18-transitabilidades.sql:70`) pertenece al dominio de **transitabilidad/traspasos** (ver memoria
+`incos-dominios-sin-construir.md`: dominio sin construir), no a un tab genérico de
+`configuracion/complementarios`. Cuando se aborde ese dominio, su UI necesita un filtro por **tipo de
+admisión** que no tiene sentido en un catálogo simple de complementarios — se diseñará junto con el
+resto de transitabilidad/traspasos, no aquí. Investigación previa (`arquitecto`, 2026-07-06) confirmó
+que la tabla ya tiene `activo`+`deleted_at`, así que no hay bloqueo de schema cuando se retome.
 
 Fuera de alcance (explícitamente descartado por el usuario o el propio `datos`):
 - `modalidades_grado`: tabla sin seeder/backend/frontend — es un dominio de Titulación entero
