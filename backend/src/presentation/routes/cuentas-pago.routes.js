@@ -21,6 +21,7 @@ export function buildCuentasPagoRouter({ controllers, middlewares }) {
     // Catálogo de referencia: `sistema.catalogo.referencia` + LISTAR (seed 101)
     const configCrear = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'CREAR')];
     const configEditar = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'EDITAR')];
+    const configEliminar = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'ELIMINAR')];
 
     router.get(
         '/',
@@ -47,6 +48,14 @@ export function buildCuentasPagoRouter({ controllers, middlewares }) {
         updateCuentaPagoValidator,
         validateRequest,
         (req, res, next) => controllers.updateCuentaPagoController.handle(req, res, next)
+    );
+
+    router.delete(
+        '/:id',
+        ...configEliminar,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteCuentaPagoController.handle(req, res, next)
     );
 
     return router;

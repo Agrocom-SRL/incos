@@ -1,0 +1,182 @@
+/**
+ * ScholarshipsSection — estilo moderno HRment
+ * Cards con campos label-arriba/valor-abajo, badge de estado prominente.
+ * Ver: presentation/modules/estudiantes/components/organisms/ScholarshipsSection.jsx
+ */
+
+.sc__header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: #9ca3af;
+}
+
+.sc__header-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: #e8f5e9;
+  color: #196b45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.sc__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sc__card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow .18s, border-color .18s;
+}
+
+.sc__card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,.07);
+  border-color: #d1d5db;
+}
+
+.sc__card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fafafa;
+}
+
+.sc__trophy-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: #196b45;
+  flex-shrink: 0;
+}
+
+.sc__head-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sc__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc__code {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.sc__estado-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  border: 1px solid;
+}
+
+.sc__card-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px 24px;
+  padding: 16px 20px;
+}
+
+.sc__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sc__field-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .55px;
+  color: #9ca3af;
+}
+
+.sc__field-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.sc__pct {
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #196b45;
+  background: #e8f5e9;
+  border: 1px solid rgba(25,107,69,.2);
+  padding: 2px 12px;
+  border-radius: 20px;
+}
+
+.sc__docs-ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #196b45;
+}
+
+.sc__docs-no {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #d97706;
+}
+
+.sc__obs {
+  padding: 10px 20px 14px;
+  font-size: 13.5px;
+  color: #6b7280;
+  border-top: 1px dashed #f3f4f6;
+  font-style: italic;
+}
+
+.sc__card-actions {
+  padding: 12px 20px;
+  border-top: 1px solid #f3f4f6;
+  background: #fafafa;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 500px) {
+  .sc__card-body { grid-template-columns: repeat(2, 1fr); }
+  .sc__card-head { flex-wrap: wrap; }
+}

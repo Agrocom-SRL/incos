@@ -1,12 +1,18 @@
 /**
- * Config. de pagos (Finanzas) — métodos, bancos y cuentas, en un sistema de TABS.
+ * Config. de pagos (Finanzas) — métodos, bancos, cuentas y becas/descuentos,
+ * en un sistema de TABS.
  *
  * Página "dumb" (espejo de `AcademicoPage`): compone `PageHeaderArea` +
  * `DashboardPageShell` + `MainContent` + el workspace `cfg-academico-workspace`
- * con `Tabs` (`?tab=metodos|bancos|cuentas`). Cada tab = una entidad (métodos,
- * bancos, cuentas) con título + descripción breve y su propio panel. Toda la
- * orquestación (fetch, PUT métodos, POST/PUT bancos y cuentas con QR) vive en
- * `useConfigPagosPage` + el provider; aquí no se hace fetch.
+ * con `Tabs` (`?tab=metodos|bancos|cuentas|becas-descuentos`). Cada tab = una
+ * entidad con título + descripción breve y su propio panel. Toda la
+ * orquestación de métodos/bancos/cuentas (fetch, PUT métodos, POST/PUT bancos
+ * y cuentas con QR) vive en `useConfigPagosPage` + `ConfigPagosProvider`; aquí
+ * no se hace fetch. El tab "Becas y descuentos" es AUTO-CONTENIDO
+ * (`BecasDescuentosTabPanel` monta su propio `BecaDescuentoProvider`, catálogo
+ * independiente — permiso `finanzas.beca-descuento`). Ver/editar/activar de
+ * bancos/cuentas/métodos vive en su ficha de detalle propia
+ * (`/finanzas/configuracion/{bancos,cuentas,metodos}/:id`), ya no en la tabla.
  *
  * El aporte de la gestión vigente vive como página HIJA sin ítem de menú
  * propio, `/finanzas/configuracion/aportes` (permiso `finanzas.aporte`, ver
@@ -14,8 +20,10 @@
  * desde el botón "Configuración de aportes" en `PageHeader`.
  *
  * RBAC: la ruta FIN-CFG es `finanzas.configuracion.pago` LISTAR. El alta
- * (bancos/cuentas) usa CREAR (PermisoGuard en la cabecera del workspace) y
- * edición/toggle usan EDITAR (en los paneles/columnas).
+ * (bancos/cuentas) usa CREAR (PermisoGuard en la cabecera del workspace);
+ * ver/editar/activar/eliminar viven en la ficha (`finanzas.configuracion.pago`
+ * DETALLE/EDITAR/ELIMINAR). Becas y descuentos usa su propio permiso
+ * `finanzas.beca-descuento` (LISTAR/CREAR/EDITAR/DETALLE/ELIMINAR).
  */
 
 import { useCallback, useMemo } from 'react';
@@ -35,12 +43,14 @@ import {
   CONFIG_PAGOS_TAB_KEYS,
   CONFIG_PAGOS_TAB_META,
   TAB_BANCOS,
+  TAB_BECAS_DESCUENTOS,
   TAB_CUENTAS,
   TAB_METODOS,
 } from '@finanzas/configuracion/config/configPagosTabs';
 import MetodosTabPanel from '@finanzas/configuracion/components/MetodosTabPanel.jsx';
 import BancosTabPanel from '@finanzas/configuracion/components/BancosTabPanel.jsx';
 import CuentasTabPanel from '@finanzas/configuracion/components/CuentasTabPanel.jsx';
+import BecasDescuentosTabPanel from '@finanzas/configuracion/components/BecasDescuentosTabPanel.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/configuracion/styles/config-pagos.css';
@@ -75,7 +85,6 @@ const ConfigPagosPage = () => {
     metodoModalAbierto,
     abrirMetodoModal,
     cerrarMetodoModal,
-    toggleMetodoActivo,
     guardarMetodo,
     // Bancos
     bancoEnEdicion,
@@ -83,14 +92,12 @@ const ConfigPagosPage = () => {
     abrirBancoModal,
     cerrarBancoModal,
     guardarBancoSubmit,
-    toggleBancoActivo,
     // Cuentas
     cuentaEnEdicion,
     cuentaModalAbierto,
     abrirCuentaModal,
     cerrarCuentaModal,
     guardarCuentaSubmit,
-    toggleCuentaActiva,
   } = useConfigPagosPage();
 
   /** Resuelve el nombre del método por id (para las tablas de bancos/cuentas). */
@@ -108,7 +115,6 @@ const ConfigPagosPage = () => {
           <MetodosTabPanel
             metodos={metodos}
             saving={saving}
-            onToggleActivo={toggleMetodoActivo}
             drawerAbierto={metodoModalAbierto}
             metodoEnEdicion={metodoEnEdicion}
             onAbrirDrawer={abrirMetodoModal}
@@ -131,7 +137,6 @@ const ConfigPagosPage = () => {
             onAbrirDrawer={abrirBancoModal}
             onCerrarDrawer={cerrarBancoModal}
             onGuardar={guardarBancoSubmit}
-            onToggleActivo={toggleBancoActivo}
           />,
         ),
       },
@@ -150,15 +155,18 @@ const ConfigPagosPage = () => {
             onAbrirDrawer={abrirCuentaModal}
             onCerrarDrawer={cerrarCuentaModal}
             onGuardar={guardarCuentaSubmit}
-            onToggleActivo={toggleCuentaActiva}
           />,
         ),
+      },
+      {
+        key: TAB_BECAS_DESCUENTOS,
+        label: renderTabLabel(CONFIG_PAGOS_TAB_META[TAB_BECAS_DESCUENTOS]),
+        children: wrapTabPanel(<BecasDescuentosTabPanel />),
       },
     ],
     [
       saving,
       metodos,
-      toggleMetodoActivo,
       metodoModalAbierto,
       metodoEnEdicion,
       abrirMetodoModal,
@@ -171,14 +179,12 @@ const ConfigPagosPage = () => {
       abrirBancoModal,
       cerrarBancoModal,
       guardarBancoSubmit,
-      toggleBancoActivo,
       cuentas,
       cuentaModalAbierto,
       cuentaEnEdicion,
       abrirCuentaModal,
       cerrarCuentaModal,
       guardarCuentaSubmit,
-      toggleCuentaActiva,
     ],
   );
 

@@ -149,26 +149,18 @@ export function useControlBimestresState() {
     [crearEtapaPeriodo, message, cargar],
   );
 
+  // Nota: sin confirmación ni notificación propias — el diálogo de confirmación y el
+  // feedback de éxito/error los resuelve TableActions (useTableActionsDelete), que
+  // requiere el contrato { success, error? } como retorno.
   const eliminarEtapa = useCallback(
-    (periodo) => {
-      modal.confirm({
-        title: `Eliminar etapa “${periodo.nombre}”`,
-        content: 'La etapa se quitará del calendario. Las actividades asociadas no se borran.',
-        okText: 'Eliminar',
-        okButtonProps: { danger: true },
-        cancelText: 'Cancelar',
-        onOk: async () => {
-          const result = await eliminarEtapaPeriodo(periodo.id);
-          if (result.success) {
-            message.success('Etapa eliminada.');
-            await cargar();
-          } else {
-            message.error(result.error || 'No se pudo eliminar la etapa.');
-          }
-        },
-      });
+    async (periodo) => {
+      const result = await eliminarEtapaPeriodo(periodo.id);
+      if (result.success) {
+        await cargar();
+      }
+      return result;
     },
-    [modal, message, eliminarEtapaPeriodo, cargar],
+    [eliminarEtapaPeriodo, cargar],
   );
 
   // --- Activación / cierre (existente) ---------------------------------------

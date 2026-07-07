@@ -47,9 +47,70 @@ export class BecaDescuentoRepository extends IBecaDescuentoRepository {
   }
 
   /**
+   * Obtiene una beca o descuento por ID
+   * GET /v1/becas-descuentos/:id
+   *
+   * @param {string|number} id
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(BECAS_DESCUENTOS_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      // El backend puede devolver el registro plano (sin envolver en { becaDescuento })
+      if (result.success && result.data && !result.data.becaDescuento) {
+        result.data = { becaDescuento: result.data };
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener la beca o descuento');
+    }
+  }
+
+  /**
+   * Crea una beca o descuento del catálogo maestro
+   * POST /v1/becas-descuentos
+   *
+   * @param {Object} payload
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>} data.becaDescuento
+   */
+  async crear(payload = {}) {
+    try {
+      const response = await apiClient.post(BECAS_DESCUENTOS_ENDPOINTS.BASE, payload, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear la beca o descuento');
+    }
+  }
+
+  /**
+   * Actualiza una beca o descuento (actualización parcial)
+   * PUT /v1/becas-descuentos/:id
+   *
+   * @param {string|number} id
+   * @param {Object} payload
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>} data.becaDescuento
+   */
+  async actualizar(id, payload = {}) {
+    try {
+      if (!id && id !== 0) {
+        return { success: false, error: 'ID de la beca es requerido' };
+      }
+      const response = await apiClient.put(BECAS_DESCUENTOS_ENDPOINTS.BY_ID(id), payload, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar la beca o descuento');
+    }
+  }
+
+  /**
    * Elimina una beca por ID (soft delete)
    * DELETE /v1/becas-descuentos/:id
-   * 
+   *
    * @param {string|number} id - ID de la beca a eliminar
    * @returns {Promise<{success: boolean, error?: string}>}
    */

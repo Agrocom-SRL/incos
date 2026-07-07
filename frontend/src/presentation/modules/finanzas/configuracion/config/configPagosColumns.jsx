@@ -2,21 +2,24 @@
  * Columnas de las tablas de "Config. de pagos" (Finanzas): métodos de pago,
  * bancos autorizados y cuentas de pago.
  *
- * Lenguaje visual canónico (CarrerasList / licencias): celdas `TableCell`,
- * datos apilados en una misma columna cuando se consolidan (Ant Design `Flex`),
- * estado con `StatusPill` (activo/inactivo) y acciones con `TableActions`
- * (editar + activar/desactivar como acción extra). Máximo 6 columnas por tabla,
- * sin `fixed` (patrón de `pagos/config/tableColumns.jsx` /
- * `becasTableColumns.jsx`). La config no decide permisos: recibe `puedeEditar`
- * ya resuelto y los handlers desde la página.
+ * Lenguaje visual canónico (CarrerasList / licencias): identidad con
+ * `IdentidadCelda`, datos apilados en una misma columna cuando se consolidan
+ * (Ant Design `Flex`) y acciones con `TableActions` (ver/editar/eliminar).
+ * Máximo 4 columnas por tabla, sin `fixed`. La config no decide permisos:
+ * recibe `puedeEditar` ya resuelto y los handlers desde el panel.
+ *
+ * El toggle activo/inactivo YA NO vive en la tabla: se gestiona desde la
+ * ficha de detalle de cada banco/cuenta/método (`BancoDetailPage` /
+ * `CuentaDetailPage` / `MetodoDetailPage`). Por eso las 3 tablas pierden la
+ * columna "Estado" (se ve en la ficha) y ganan `IdentidadCelda` en su lugar.
+ * Bancos y cuentas tienen ficha + eliminar real; métodos (catálogo fijo de 4)
+ * solo tienen ficha de ver+editar, sin eliminar.
  */
 
-import { CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { Flex } from 'antd';
+import { IdentidadCelda, StatusPill, Text } from '@atoms';
 import { TableActions, TableCell } from '@molecules';
-import { Text } from '@atoms';
-import StatusPill from '@atoms/StatusPill';
-import { getActivoPill, CFG_PAGOS_PILL_NEUTRAL } from './configPagosPills';
+import { CFG_PAGOS_PILL_NEUTRAL } from './configPagosPills';
 import { CONFIG_PAGOS_PERMISO } from './configPagosPermisos';
 
 /** Etiqueta del método de pago asociado (por id) o guion. */
@@ -27,34 +30,23 @@ const renderMetodo = (metodoNombre) =>
     <Text type="secondary">—</Text>
   );
 
-/** Acción extra de activar/desactivar para `TableActions` (gobernada por permiso EDITAR). */
-const buildToggleAction = ({ record, onToggleActivo, puedeEditar, saving }) => {
-  const activo = !!record.activo;
-  return {
-    key: 'toggle-activo',
-    tooltip: activo ? 'Desactivar' : 'Activar',
-    icon: activo ? <StopOutlined /> : <CheckCircleOutlined />,
-    variant: activo ? 'warning' : 'success',
-    disabled: !puedeEditar || saving,
-    onClick: () => onToggleActivo?.(record, !activo),
-  };
-};
-
 /**
  * Columnas de la tabla de BANCOS autorizados.
  * @param {Object} args
+ * @param {Function} args.onVer - (banco) => void (navega a la ficha de detalle)
  * @param {Function} args.onEditar - (banco) => void (abre drawer)
- * @param {Function} args.onToggleActivo - (banco, activo) => void
  * @param {boolean} args.puedeEditar - permiso EDITAR (gobierna acciones).
- * @param {boolean} args.saving - deshabilita controles mientras guarda.
  * @param {Function} args.metodoNombrePorId - (id) => string|null
+ * @param {Function} [args.refetch] - recarga el catálogo tras eliminar.
+ * @param {Function} [args.eliminarBanco] - (id) => Promise<{success, error?}>
  */
 export const createBancosColumns = ({
+  onVer,
   onEditar,
-  onToggleActivo,
   puedeEditar,
-  saving,
   metodoNombrePorId,
+  refetch,
+  eliminarBanco,
 }) => [
   {
     title: '#',
@@ -64,17 +56,13 @@ export const createBancosColumns = ({
     render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
   },
   {
-    title: 'Código',
-    dataIndex: 'codigo',
-    key: 'codigo',
-    render: (codigo) => <TableCell>{codigo || '—'}</TableCell>,
-  },
-  {
-    title: 'Nombre',
+    title: 'Identidad',
     dataIndex: 'nombre',
-    key: 'nombre',
+    key: 'identidad',
     ellipsis: true,
-    render: (nombre) => <TableCell>{nombre || '—'}</TableCell>,
+    render: (_nombre, record) => (
+      <IdentidadCelda codigo={record.codigo} nombre={(record.nombre || '—').toUpperCase()} />
+    ),
     sorter: true,
     sortCompare: (a, b) =>
       (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }),
@@ -88,32 +76,24 @@ export const createBancosColumns = ({
     ),
   },
   {
-    title: 'Estado',
-    dataIndex: 'activo',
-    key: 'activo',
-    width: 120,
-    align: 'center',
-    sorter: true,
-    sortCompare: (a, b) => Number(!!a.activo) - Number(!!b.activo),
-    render: (activo) => {
-      const pill = getActivoPill(!!activo);
-      return <StatusPill label={pill.label} className={pill.className} />;
-    },
-  },
-  {
     title: 'Acciones',
     key: 'acciones',
-    width: 130,
+    width: 150,
     align: 'right',
     render: (_, record) => (
       <TableActions
         record={record}
+        refetch={refetch}
+        onView={() => onVer?.(record)}
         onEdit={() => onEditar?.(record)}
         editTitle="Editar banco"
         editDisabled={!puedeEditar}
-        extraActions={[buildToggleAction({ record, onToggleActivo, puedeEditar, saving })]}
+        deleteFn={eliminarBanco ? (id) => eliminarBanco(id) : null}
+        itemName={record.nombre ? `el banco ${record.nombre}` : 'este banco'}
         permisos={{
+          ver: { codigo: CONFIG_PAGOS_PERMISO, accion: 'DETALLE' },
           editar: { codigo: CONFIG_PAGOS_PERMISO, accion: 'EDITAR' },
+          eliminar: { codigo: CONFIG_PAGOS_PERMISO, accion: 'ELIMINAR' },
         }}
       />
     ),
@@ -123,13 +103,15 @@ export const createBancosColumns = ({
 /**
  * Columnas de la tabla de CUENTAS de pago.
  * @param {Object} args - mismas dependencias que bancos.
+ * @param {Function} [args.eliminarCuenta] - (id) => Promise<{success, error?}>
  */
 export const createCuentasColumns = ({
+  onVer,
   onEditar,
-  onToggleActivo,
   puedeEditar,
-  saving,
   metodoNombrePorId,
+  refetch,
+  eliminarCuenta,
 }) => [
   {
     title: '#',
@@ -139,20 +121,16 @@ export const createCuentasColumns = ({
     render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
   },
   {
-    title: 'Titular',
-    dataIndex: 'nombreTitular',
-    key: 'nombreTitular',
+    title: 'Identidad',
+    dataIndex: 'numeroCuenta',
+    key: 'identidad',
     ellipsis: true,
-    render: (nombreTitular) => <TableCell>{nombreTitular || '—'}</TableCell>,
+    render: (_numeroCuenta, record) => (
+      <IdentidadCelda codigo={record.numeroCuenta} nombre={(record.nombreTitular || '—').toUpperCase()} />
+    ),
     sorter: true,
     sortCompare: (a, b) =>
       (a.nombreTitular || '').localeCompare(b.nombreTitular || '', 'es', { sensitivity: 'base' }),
-  },
-  {
-    title: 'N.° de cuenta',
-    dataIndex: 'numeroCuenta',
-    key: 'numeroCuenta',
-    render: (numeroCuenta) => <TableCell>{numeroCuenta || '—'}</TableCell>,
   },
   {
     title: 'Banco y método',
@@ -162,6 +140,9 @@ export const createCuentasColumns = ({
       <Flex vertical align="flex-start" gap={4}>
         <Text ellipsis>{bancoNombre || <Text type="secondary">—</Text>}</Text>
         {renderMetodo(metodoNombrePorId?.(record.metodoPagoId))}
+        {record.qrImagenUrl ? (
+          <StatusPill label="QR cargado" className={CFG_PAGOS_PILL_NEUTRAL} />
+        ) : null}
       </Flex>
     ),
     sorter: true,
@@ -169,39 +150,24 @@ export const createCuentasColumns = ({
       (a.bancoNombre || '').localeCompare(b.bancoNombre || '', 'es', { sensitivity: 'base' }),
   },
   {
-    title: 'Estado',
-    dataIndex: 'activo',
-    key: 'activo',
-    width: 140,
-    align: 'center',
-    sorter: true,
-    sortCompare: (a, b) => Number(!!a.activo) - Number(!!b.activo),
-    render: (activo, record) => {
-      const pill = getActivoPill(!!activo);
-      return (
-        <Flex vertical align="flex-start" gap={4}>
-          <StatusPill label={pill.label} className={pill.className} />
-          {record.qrImagenUrl ? (
-            <StatusPill label="QR cargado" className={CFG_PAGOS_PILL_NEUTRAL} />
-          ) : null}
-        </Flex>
-      );
-    },
-  },
-  {
     title: 'Acciones',
     key: 'acciones',
-    width: 130,
+    width: 150,
     align: 'right',
     render: (_, record) => (
       <TableActions
         record={record}
+        refetch={refetch}
+        onView={() => onVer?.(record)}
         onEdit={() => onEditar?.(record)}
         editTitle="Editar cuenta"
         editDisabled={!puedeEditar}
-        extraActions={[buildToggleAction({ record, onToggleActivo, puedeEditar, saving })]}
+        deleteFn={eliminarCuenta ? (id) => eliminarCuenta(id) : null}
+        itemName={record.nombreTitular ? `la cuenta de ${record.nombreTitular}` : 'esta cuenta'}
         permisos={{
+          ver: { codigo: CONFIG_PAGOS_PERMISO, accion: 'DETALLE' },
           editar: { codigo: CONFIG_PAGOS_PERMISO, accion: 'EDITAR' },
+          eliminar: { codigo: CONFIG_PAGOS_PERMISO, accion: 'ELIMINAR' },
         }}
       />
     ),
@@ -210,10 +176,14 @@ export const createCuentasColumns = ({
 
 /**
  * Columnas de la tabla de MÉTODOS de pago (catálogo fijo: EFECTIVO/QR/
- * TRANSFERENCIA/DEPOSITO). Sin eliminar: solo editar nombre y activar/desactivar.
- * @param {Object} args - mismas dependencias que bancos/cuentas.
+ * TRANSFERENCIA/DEPOSITO). Sin eliminar: solo ver y editar nombre (el estado
+ * activo/inactivo se gestiona desde la ficha de detalle).
+ * @param {Object} args
+ * @param {Function} args.onVer - (metodo) => void (navega a la ficha de detalle)
+ * @param {Function} args.onEditar - (metodo) => void (abre drawer)
+ * @param {boolean} args.puedeEditar - permiso EDITAR (gobierna acciones).
  */
-export const createMetodosColumns = ({ onEditar, onToggleActivo, puedeEditar, saving }) => [
+export const createMetodosColumns = ({ onVer, onEditar, puedeEditar }) => [
   {
     title: '#',
     key: 'nro',
@@ -222,34 +192,16 @@ export const createMetodosColumns = ({ onEditar, onToggleActivo, puedeEditar, sa
     render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
   },
   {
-    title: 'Código',
-    dataIndex: 'codigo',
-    key: 'codigo',
-    width: 160,
-    render: (codigo) => <TableCell>{codigo || '—'}</TableCell>,
-  },
-  {
-    title: 'Nombre',
+    title: 'Identidad',
     dataIndex: 'nombre',
-    key: 'nombre',
+    key: 'identidad',
     ellipsis: true,
-    render: (nombre) => <TableCell>{nombre || '—'}</TableCell>,
+    render: (_nombre, record) => (
+      <IdentidadCelda codigo={record.codigo} nombre={(record.nombre || '—').toUpperCase()} />
+    ),
     sorter: true,
     sortCompare: (a, b) =>
       (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }),
-  },
-  {
-    title: 'Estado',
-    dataIndex: 'activo',
-    key: 'activo',
-    width: 120,
-    align: 'center',
-    sorter: true,
-    sortCompare: (a, b) => Number(!!a.activo) - Number(!!b.activo),
-    render: (activo) => {
-      const pill = getActivoPill(!!activo);
-      return <StatusPill label={pill.label} className={pill.className} />;
-    },
   },
   {
     title: 'Acciones',
@@ -259,11 +211,12 @@ export const createMetodosColumns = ({ onEditar, onToggleActivo, puedeEditar, sa
     render: (_, record) => (
       <TableActions
         record={record}
+        onView={() => onVer?.(record)}
         onEdit={() => onEditar?.(record)}
         editTitle="Editar método"
         editDisabled={!puedeEditar}
-        extraActions={[buildToggleAction({ record, onToggleActivo, puedeEditar, saving })]}
         permisos={{
+          ver: { codigo: CONFIG_PAGOS_PERMISO, accion: 'DETALLE' },
           editar: { codigo: CONFIG_PAGOS_PERMISO, accion: 'EDITAR' },
         }}
       />

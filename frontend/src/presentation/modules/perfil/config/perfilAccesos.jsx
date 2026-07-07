@@ -370,6 +370,16 @@ const accesosDireccionAdministrativa = () => [
     path: '/finanzas/configuracion',
     permiso: { codigo: 'finanzas.configuracion.pago', accion: 'LISTAR' },
   },
+  {
+    key: 'becas-descuentos-catalogo',
+    icon: <FileProtectOutlined />,
+    ...ACCENT.info,
+    title: 'Becas y descuentos (catálogo)',
+    description: 'Catálogo maestro: porcentaje, reglas de aplicación y asignación automática.',
+    actionLabel: 'Ver catálogo',
+    path: '/finanzas/configuracion?tab=becas-descuentos',
+    permiso: { codigo: 'finanzas.beca-descuento', accion: 'LISTAR' },
+  },
 ];
 
 /** SEC_ADMIN — caja y operación administrativa. */

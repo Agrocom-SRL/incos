@@ -110,15 +110,18 @@ export const useSeguridadUsuarioPermisosPage = () => {
     }
   }, [agregarOverride, uid, message, loadUsuarioPermisos]);
 
+  // Nota: sin confirmación ni notificación propias — el diálogo de confirmación y el
+  // feedback de éxito/error los resuelve TableActions (useTableActionsDelete), que
+  // requiere el contrato { success, error? } como retorno.
   const removeOverride = useCallback(async (overrideId) => {
     try {
       await eliminarOverride(uid, overrideId);
-      message.success('Eliminado');
       await loadUsuarioPermisos();
+      return { success: true };
     } catch (error) {
-      message.error(errMsg(error));
+      return { success: false, error: errMsg(error) };
     }
-  }, [uid, eliminarOverride, message, loadUsuarioPermisos]);
+  }, [uid, eliminarOverride, loadUsuarioPermisos]);
 
   return {
     uid,

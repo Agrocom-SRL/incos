@@ -12,8 +12,10 @@ export { UpdateConfiguracionAporteController } from './configuracion-aportes/upd
 export { UpdateMetodoPagoController } from './metodos-pago/update.controller.js';
 export { CreateBancoAutorizadoController } from './bancos-autorizados/create.controller.js';
 export { UpdateBancoAutorizadoController } from './bancos-autorizados/update.controller.js';
+export { DeleteBancoAutorizadoController } from './bancos-autorizados/delete.controller.js';
 export { CreateCuentaPagoController } from './cuentas-pago/create.controller.js';
 export { UpdateCuentaPagoController } from './cuentas-pago/update.controller.js';
+export { DeleteCuentaPagoController } from './cuentas-pago/delete.controller.js';
 export { RegisterPagoAporteController } from './pagos-aportes/register.controller.js';
 export { ListPagosAportesController } from './pagos-aportes/list.controller.js';
 export { GetPaymentAporteByIdController } from './pagos-aportes/detail.controller.js';

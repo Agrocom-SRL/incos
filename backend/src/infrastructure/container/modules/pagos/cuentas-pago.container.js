@@ -7,10 +7,12 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListPaymentAccountsUseCase } from '../../../../application/use-cases/pagos/ListPaymentAccountsUseCase.js';
 import { CreatePaymentAccountUseCase } from '../../../../application/use-cases/pagos/CreatePaymentAccountUseCase.js';
 import { UpdatePaymentAccountUseCase } from '../../../../application/use-cases/pagos/UpdatePaymentAccountUseCase.js';
+import { DeletePaymentAccountUseCase } from '../../../../application/use-cases/pagos/DeletePaymentAccountUseCase.js';
 import {
     ListCuentasPagoController,
     CreateCuentaPagoController,
     UpdateCuentaPagoController,
+    DeleteCuentaPagoController,
 } from '../../../../presentation/controllers/pagos/index.js';
 import { buildCuentasPagoRouter } from '../../../../presentation/routes/cuentas-pago.routes.js';
 
@@ -41,6 +43,16 @@ export function registerCuentasPagoResource(container) {
         PAGOS_TOKENS.updatePaymentAccountUseCase,
         (c) =>
             new UpdatePaymentAccountUseCase({
+                paymentAccountRepository: c.resolve(REPOSITORIOS_TOKENS.paymentAccountRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.deletePaymentAccountUseCase,
+        (c) =>
+            new DeletePaymentAccountUseCase({
                 paymentAccountRepository: c.resolve(REPOSITORIOS_TOKENS.paymentAccountRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
@@ -80,6 +92,17 @@ export function registerCuentasPagoResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.deleteCuentaPagoController,
+        (c) =>
+            new DeleteCuentaPagoController({
+                deletePaymentAccountUseCase: c.resolve(PAGOS_TOKENS.deletePaymentAccountUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ROUTER
     registerComponent(
         container,
@@ -89,6 +112,7 @@ export function registerCuentasPagoResource(container) {
                 listCuentasPagoController: c.resolve(PAGOS_TOKENS.listCuentasPagoController),
                 createCuentaPagoController: c.resolve(PAGOS_TOKENS.createCuentaPagoController),
                 updateCuentaPagoController: c.resolve(PAGOS_TOKENS.updateCuentaPagoController),
+                deleteCuentaPagoController: c.resolve(PAGOS_TOKENS.deleteCuentaPagoController),
             };
 
             const middlewares = {

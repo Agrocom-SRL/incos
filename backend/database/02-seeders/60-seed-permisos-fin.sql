@@ -14,7 +14,8 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('fin_adicionales', 'Pagos adicionales', 'FINANZAS', 2, 1, NOW(), NOW()),
 ('fin_reportes', 'Reportes de pagos', 'FINANZAS', 3, 1, NOW(), NOW()),
 ('fin_aportes', 'Configuración de aportes', 'FINANZAS', 4, 1, NOW(), NOW()),
-('fin_config_pagos', 'Configuración de pagos', 'FINANZAS', 5, 1, NOW(), NOW());
+('fin_config_pagos', 'Configuración de pagos', 'FINANZAS', 5, 1, NOW(), NOW()),
+('fin_becas_descuentos', 'Becas y descuentos', 'FINANZAS', 6, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo FIN
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -29,7 +30,8 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('finanzas.beca.reporte', 'Reportes de pagos: control de becas por carrera', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
 ('finanzas.cuenta-cobrar.reporte', 'Reportes de pagos: cuentas por cobrar', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
 ('finanzas.aporte', 'Aportes: monto y vigencia por gestión', NULL, 'FINANZAS', 'FIN', 'fin_aportes', '/finanzas/configuracion/aportes', 1, NOW(), NOW()),
-('finanzas.configuracion.pago', 'Config. de pagos: bancos, cuentas y métodos', NULL, 'FINANZAS', 'FIN', 'fin_config_pagos', '/finanzas/configuracion', 1, NOW(), NOW());
+('finanzas.configuracion.pago', 'Config. de pagos: bancos, cuentas y métodos', NULL, 'FINANZAS', 'FIN', 'fin_config_pagos', '/finanzas/configuracion', 1, NOW(), NOW()),
+('finanzas.beca-descuento', 'Becas y descuentos: catálogo maestro (alta, edición, baja de variantes)', NULL, 'FINANZAS', 'FIN', 'fin_becas_descuentos', '/finanzas/configuracion/becas-descuentos', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo FIN
 INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)
@@ -68,6 +70,17 @@ JOIN (
   UNION ALL SELECT 'finanzas.configuracion.pago', 'LISTAR'
   UNION ALL SELECT 'finanzas.configuracion.pago', 'CREAR'
   UNION ALL SELECT 'finanzas.configuracion.pago', 'EDITAR'
+  -- DETALLE/ELIMINAR: ELIMINAR de este permiso solo aplica a bancos/cuentas —
+  -- Métodos de pago no expone endpoint DELETE (catálogo fijo de 4 códigos
+  -- referenciado por FK real desde pago_cuotas/bancos_autorizados/cuentas_pago);
+  -- la UI no muestra el ícono eliminar para métodos aunque el permiso lo conceda.
+  UNION ALL SELECT 'finanzas.configuracion.pago', 'DETALLE'
+  UNION ALL SELECT 'finanzas.configuracion.pago', 'ELIMINAR'
+  UNION ALL SELECT 'finanzas.beca-descuento', 'LISTAR'
+  UNION ALL SELECT 'finanzas.beca-descuento', 'CREAR'
+  UNION ALL SELECT 'finanzas.beca-descuento', 'EDITAR'
+  UNION ALL SELECT 'finanzas.beca-descuento', 'DETALLE'
+  UNION ALL SELECT 'finanzas.beca-descuento', 'ELIMINAR'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo FIN (roles 2-8; ADMIN_SISTEMA hereda por vista)
@@ -147,9 +160,26 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'finanzas.configuracion.pago', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.configuracion.pago', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.configuracion.pago', 'EDITAR'
+  -- DETALLE/ELIMINAR: ELIMINAR de este permiso solo aplica a bancos/cuentas —
+  -- Métodos de pago no expone endpoint DELETE (catálogo fijo), la UI no
+  -- muestra el ícono eliminar para métodos aunque el permiso lo conceda.
+  UNION ALL SELECT 'RECTOR', 'finanzas.configuracion.pago', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'finanzas.configuracion.pago', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'CREAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'EDITAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'DETALLE'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'LISTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'CREAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'EDITAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'DETALLE'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'ELIMINAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

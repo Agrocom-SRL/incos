@@ -4,8 +4,8 @@
  * Agrupa las escrituras de las 3 secciones sobre la infraestructura compartida
  * (módulo independiente del legacy `@pagos`):
  *   - Método de pago: PUT (los 4 son fijos; solo nombre/activo).
- *   - Banco autorizado: POST (alta) / PUT (edición/toggle).
- *   - Cuenta de pago: POST/PUT con FormData (QR opcional) en el repositorio.
+ *   - Banco autorizado: POST (alta) / PUT (edición/toggle) / DELETE (baja real).
+ *   - Cuenta de pago: POST/PUT con FormData (QR opcional) / DELETE (baja real).
  *
  * El UPSERT del aporte de la gestión vigente vive en la página
  * `/finanzas/configuracion/aportes` (sin ítem de menú propio, permiso
@@ -13,7 +13,8 @@
  * `application/modules/finanzas/aportes/hooks/api/useAporteMutations.js`).
  *
  * Cada acción devuelve `{ success, data?, error? }`. Un único `saving` cubre la
- * pantalla (solo se guarda una sección a la vez).
+ * pantalla (solo se guarda una sección a la vez). Eliminar (bancos/cuentas) usa
+ * el mismo `saving`; métodos son catálogo fijo, sin eliminar.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -62,14 +63,28 @@ export const useConfigPagosMutations = () => {
     [ejecutar],
   );
 
+  /** DELETE de un banco autorizado (baja real, desde su ficha de detalle). */
+  const eliminarBanco = useCallback(
+    (id) => ejecutar(() => authorizedBankRepository.eliminar(id)),
+    [ejecutar],
+  );
+
+  /** DELETE de una cuenta de pago (baja real, desde su ficha de detalle). */
+  const eliminarCuenta = useCallback(
+    (id) => ejecutar(() => paymentAccountRepository.eliminar(id)),
+    [ejecutar],
+  );
+
   return useMemo(
     () => ({
       saving,
       actualizarMetodoPago,
       guardarBanco,
       guardarCuenta,
+      eliminarBanco,
+      eliminarCuenta,
     }),
-    [saving, actualizarMetodoPago, guardarBanco, guardarCuenta],
+    [saving, actualizarMetodoPago, guardarBanco, guardarCuenta, eliminarBanco, eliminarCuenta],
   );
 };
 

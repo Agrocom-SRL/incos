@@ -2,11 +2,11 @@
  * Columnas — listado de actividades (catálogo maestro). Usa el factory
  * compartido `createSimpleCatalogTableColumns` (ver `incos-ui-system`).
  *
- * Extras: "Tipo" (StatusPill mapeado por `actividadTipoPill.js`) e "Icono"
- * (preview de texto simple — el campo es texto libre kebab-case, no se mapea
- * a un set de iconos AntD).
+ * Suprime la columna "Descripción" genérica del factory (`descripcionField: null`)
+ * para reemplazarla por una propia que combina el ícono real (dot circular,
+ * mapeado por `actividadIconMap.js`) con el texto truncado — ya no hay columna
+ * "Icono" separada. Extra restante: "Tipo" (StatusPill vía `actividadTipoPill.js`).
  */
-import { Typography } from 'antd';
 import StatusPill from '@atoms/StatusPill';
 import { createSimpleCatalogTableColumns } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import {
@@ -17,8 +17,20 @@ import {
   getActividadTipoLabel,
   getActividadTipoPillClass,
 } from '@application-configuracion/actividades/config/actividadTipoPill';
+import ActividadDescripcionCell from '@configuracion/actividades/components/atoms/ActividadDescripcionCell';
 
-const { Text } = Typography;
+const descripcionColumn = {
+  title: 'Descripción',
+  dataIndex: 'descripcion',
+  width: 280,
+  ellipsis: false,
+  render: (descripcion, record) => (
+    <ActividadDescripcionCell icono={record.icono} descripcion={descripcion} />
+  ),
+  sorter: true,
+  sortCompare: (a, b) =>
+    (a.descripcion || '').localeCompare(b.descripcion || '', 'es', { sensitivity: 'base' }),
+};
 
 const tipoColumn = {
   title: 'Tipo',
@@ -28,13 +40,6 @@ const tipoColumn = {
   sorter: true,
   sortCompare: (a, b) =>
     getActividadTipoLabel(a.tipo).localeCompare(getActividadTipoLabel(b.tipo), 'es', { sensitivity: 'base' }),
-};
-
-const iconoColumn = {
-  title: 'Icono',
-  dataIndex: 'icono',
-  width: 160,
-  render: (icono) => (icono ? <Text code>{icono}</Text> : <Text type="secondary">—</Text>),
 };
 
 export const createActividadesTableColumns = ({ navigate, listNavState, refetch }) =>
@@ -47,8 +52,10 @@ export const createActividadesTableColumns = ({ navigate, listNavState, refetch 
     getDetallePath: (record) => actividadDetallePath(record.id),
     getEditarPath: (record) => actividadEditarPath(record.id),
     useCaseKey: 'eliminarActividad',
-    extraColumns: [tipoColumn, iconoColumn],
+    descripcionField: null,
+    extraColumns: [descripcionColumn, tipoColumn],
     itemDetailsExtra: (record) => [
+      { label: 'Descripción', value: record.descripcion },
       { label: 'Tipo', value: getActividadTipoLabel(record.tipo) },
       { label: 'Icono', value: record.icono },
     ],

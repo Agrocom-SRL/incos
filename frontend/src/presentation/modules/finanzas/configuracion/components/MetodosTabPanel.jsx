@@ -3,17 +3,20 @@
  *
  * Tabla de métodos con el lenguaje visual canónico (TableListView embebido, como
  * BancosTabPanel / CuentasTabPanel / CarrerasList): columnas con numeración,
- * `StatusPill` de estado y `TableActions` (editar + activar/desactivar como
- * acción extra). Sin crear/eliminar (los 4 métodos EFECTIVO/QR/TRANSFERENCIA/
- * DEPOSITO son fijos). Los controles se gobiernan por permiso EDITAR. Recibe
- * props ya mapeadas; no hace fetch.
+ * `IdentidadCelda` y `TableActions` (ver/editar). Sin crear/eliminar (los 4
+ * métodos EFECTIVO/QR/TRANSFERENCIA/DEPOSITO son fijos). Ver navega a la ficha
+ * de detalle (`MetodoDetailPage`), donde también se gestiona el toggle
+ * activo/inactivo. Los controles se gobiernan por permiso EDITAR. Recibe props
+ * ya mapeadas; no hace fetch.
  */
 
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TableListView } from '@organisms';
 import { usePermiso } from '@application-auth';
 import { createMetodosColumns } from '@finanzas/configuracion/config/configPagosColumns';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
+import { metodoDetallePath } from '@application-finanzas/config/paths';
 import MetodoDrawer from './MetodoDrawer.jsx';
 import '../styles/config-pagos.css';
 
@@ -28,21 +31,20 @@ const normalizar = (valor) =>
 const MetodosTabPanel = ({
   metodos = [],
   saving,
-  onToggleActivo,
   drawerAbierto,
   metodoEnEdicion,
   onAbrirDrawer,
   onCerrarDrawer,
   onGuardar,
 }) => {
+  const navigate = useNavigate();
   const puedeEditar = usePermiso(CONFIG_PAGOS_PERMISO, 'EDITAR');
   const [searchText, setSearchText] = useState('');
 
   const columns = createMetodosColumns({
+    onVer: (record) => navigate(metodoDetallePath(record.id)),
     onEditar: onAbrirDrawer,
-    onToggleActivo,
     puedeEditar,
-    saving,
   });
 
   const metodosFiltrados = useMemo(() => {

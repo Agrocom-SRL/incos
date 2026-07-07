@@ -33,3 +33,4 @@ export { default as IdentidadCelda } from './IdentidadCelda';
 export { default as InfoLinesCell } from './InfoLinesCell';
 export { default as CarreraDotCell } from './CarreraDotCell';
 export { default as IconTituloDescCell } from './IconTituloDescCell';
+export { default as TruncatedTextCell } from './TruncatedTextCell';

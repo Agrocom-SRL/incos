@@ -15,8 +15,10 @@ export const PAGOS_TOKENS = {
     updatePaymentMethodUseCase: 'pagos.updatePaymentMethodUseCase',
     createAuthorizedBankUseCase: 'pagos.createAuthorizedBankUseCase',
     updateAuthorizedBankUseCase: 'pagos.updateAuthorizedBankUseCase',
+    deleteAuthorizedBankUseCase: 'pagos.deleteAuthorizedBankUseCase',
     createPaymentAccountUseCase: 'pagos.createPaymentAccountUseCase',
     updatePaymentAccountUseCase: 'pagos.updatePaymentAccountUseCase',
+    deletePaymentAccountUseCase: 'pagos.deletePaymentAccountUseCase',
 
     // Use Cases - Registro de Pago
     registerPagoAporteUseCase: 'pagos.registerPagoAporteUseCase',
@@ -53,8 +55,10 @@ export const PAGOS_TOKENS = {
     updateMetodoPagoController: 'pagos.updateMetodoPagoController',
     createBancoAutorizadoController: 'pagos.createBancoAutorizadoController',
     updateBancoAutorizadoController: 'pagos.updateBancoAutorizadoController',
+    deleteBancoAutorizadoController: 'pagos.deleteBancoAutorizadoController',
     createCuentaPagoController: 'pagos.createCuentaPagoController',
     updateCuentaPagoController: 'pagos.updateCuentaPagoController',
+    deleteCuentaPagoController: 'pagos.deleteCuentaPagoController',
 
     // Controllers - Registro de Pago
     registerPagoAporteController: 'pagos.registerPagoAporteController',

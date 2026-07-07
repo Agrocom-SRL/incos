@@ -10,8 +10,8 @@
  * Si el catálogo tiene columnas de negocio (estado, tipo, clasificación…), pásalas
  * en `extraColumns` (se insertan entre la identidad y las acciones).
  */
-import { IdentidadCelda } from '@atoms';
-import { TableActions, TableCell } from '@molecules';
+import { IdentidadCelda, TruncatedTextCell } from '@atoms';
+import { TableActions } from '@molecules';
 
 /**
  * @param {Object} params
@@ -62,8 +62,9 @@ export const createSimpleCatalogTableColumns = ({
     ? {
         title: 'Descripción',
         dataIndex: descripcionField,
-        ellipsis: true,
-        render: (valor) => <TableCell fallback="—">{valor}</TableCell>,
+        width: 280,
+        ellipsis: false,
+        render: (valor) => <TruncatedTextCell text={valor} />,
         sorter: true,
         sortCompare: (a, b) =>
           (a[descripcionField] || '').localeCompare(b[descripcionField] || '', 'es', {

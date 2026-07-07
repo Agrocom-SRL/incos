@@ -3,18 +3,23 @@
  *
  * Tabla de cuentas con el lenguaje visual canónico (TableListView embebido, como
  * PagosList / CarrerasList / licencias): buscador a la derecha + columnas con
- * numeración, `StatusPill` de estado, indicador de QR y `TableActions` (editar +
- * activar/desactivar). El alta ("Agregar cuenta") vive en la cabecera del workspace
- * (la monta la página). El drawer de alta/edición incluye la subida del QR. "Quitar"
- * una cuenta = desactivarla, no hay eliminar. Recibe props ya mapeadas; no hace fetch.
- * El filtro por texto es local (catálogo corto, sin paginación).
+ * numeración, `IdentidadCelda`, indicador de QR y `TableActions` (ver/editar/
+ * eliminar). El alta ("Agregar cuenta") vive en la cabecera del workspace (la
+ * monta la página). El drawer de alta/edición incluye la subida del QR. Ver
+ * navega a la ficha de detalle (`CuentaDetailPage`), donde también se gestiona
+ * el toggle activo/inactivo. Recibe props ya mapeadas; no hace fetch (eliminar y
+ * refetch salen del contexto). El filtro por texto es local (catálogo corto,
+ * sin paginación).
  */
 
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TableListView } from '@organisms';
 import { usePermiso } from '@application-auth';
+import { useConfigPagosContext } from '@application-finanzas/hooks/context/useConfigPagosContext';
 import { createCuentasColumns } from '@finanzas/configuracion/config/configPagosColumns';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
+import { cuentaDetallePath } from '@application-finanzas/config/paths';
 import CuentaDrawer from './CuentaDrawer.jsx';
 
 /** Normaliza para comparar sin acentos ni mayúsculas. */
@@ -36,17 +41,19 @@ const CuentasTabPanel = ({
   onAbrirDrawer,
   onCerrarDrawer,
   onGuardar,
-  onToggleActivo,
 }) => {
+  const navigate = useNavigate();
+  const { refetch, eliminarCuenta } = useConfigPagosContext();
   const puedeEditar = usePermiso(CONFIG_PAGOS_PERMISO, 'EDITAR');
   const [searchText, setSearchText] = useState('');
 
   const columns = createCuentasColumns({
+    onVer: (record) => navigate(cuentaDetallePath(record.id)),
     onEditar: onAbrirDrawer,
-    onToggleActivo,
     puedeEditar,
-    saving,
     metodoNombrePorId,
+    refetch,
+    eliminarCuenta,
   });
 
   const cuentasFiltradas = useMemo(() => {

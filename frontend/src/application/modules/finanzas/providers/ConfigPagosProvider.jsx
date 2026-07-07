@@ -35,6 +35,8 @@ export const ConfigPagosProvider = ({ children }) => {
       actualizarMetodoPago: mutaciones.actualizarMetodoPago,
       guardarBanco: mutaciones.guardarBanco,
       guardarCuenta: mutaciones.guardarCuenta,
+      eliminarBanco: mutaciones.eliminarBanco,
+      eliminarCuenta: mutaciones.eliminarCuenta,
     }),
     [catalogos, mutaciones],
   );
