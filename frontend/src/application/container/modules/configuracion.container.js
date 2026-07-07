@@ -47,6 +47,13 @@ import {
   EliminarIdiomaUseCase,
 } from '@useCases/configuracion/complementario/idioma';
 import {
+  GetTodosEstadosCivilesUseCase,
+  GetEstadoCivilPorIdUseCase,
+  CrearEstadoCivilUseCase,
+  ActualizarEstadoCivilUseCase,
+  EliminarEstadoCivilUseCase,
+} from '@useCases/configuracion/complementario/estadoCivil';
+import {
   GetTodaDocumentacionUseCase,
   GetDocumentacionPorIdUseCase,
   CrearDocumentacionUseCase,
@@ -65,6 +72,7 @@ import MateriaRepository from '@infrastructure/repositories/MateriaRepository';
 import DiscapacidadRepository from '@infrastructure/repositories/DiscapacidadRepository';
 import TipoParentescoRepository from '@infrastructure/repositories/TipoParentescoRepository';
 import IdiomaRepository from '@infrastructure/repositories/IdiomaRepository';
+import EstadoCivilRepository from '@infrastructure/repositories/EstadoCivilRepository';
 import DocumentacionRepository from '@infrastructure/repositories/DocumentacionRepository';
 import ActividadRepository from '@infrastructure/repositories/ActividadRepository';
 
@@ -79,6 +87,7 @@ export function registerConfiguracionModule(factory) {
   const discapacidadRepository = DiscapacidadRepository;
   const tipoParentescoRepository = TipoParentescoRepository;
   const idiomaRepository = IdiomaRepository;
+  const estadoCivilRepository = EstadoCivilRepository;
   const documentacionRepository = DocumentacionRepository;
   const actividadRepository = ActividadRepository;
 
@@ -118,6 +127,12 @@ export function registerConfiguracionModule(factory) {
   factory.crearIdioma = () => new CrearIdiomaUseCase(idiomaRepository);
   factory.actualizarIdioma = () => new ActualizarIdiomaUseCase(idiomaRepository);
   factory.eliminarIdioma = () => new EliminarIdiomaUseCase(idiomaRepository);
+
+  factory.obtenerTodosEstadosCiviles = () => new GetTodosEstadosCivilesUseCase(estadoCivilRepository);
+  factory.obtenerEstadoCivilPorId = () => new GetEstadoCivilPorIdUseCase(estadoCivilRepository);
+  factory.crearEstadoCivil = () => new CrearEstadoCivilUseCase(estadoCivilRepository);
+  factory.actualizarEstadoCivil = () => new ActualizarEstadoCivilUseCase(estadoCivilRepository);
+  factory.eliminarEstadoCivil = () => new EliminarEstadoCivilUseCase(estadoCivilRepository);
 
   factory.obtenerTodaDocumentacion = () => new GetTodaDocumentacionUseCase(documentacionRepository);
   factory.obtenerDocumentacionPorId = () => new GetDocumentacionPorIdUseCase(documentacionRepository);

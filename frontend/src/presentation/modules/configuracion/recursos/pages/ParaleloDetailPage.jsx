@@ -15,22 +15,22 @@ import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
 import DetailInfoCard from '@molecules/DetailInfoCard';
 import DetailField from '@atoms/DetailField';
 import { useAuthContext } from '@application-auth';
-import { useParaleloDetallePage } from '@application-configuracion/academico/hooks';
+import { useParaleloDetallePage } from '@application-configuracion/recursos/hooks';
 import {
   getMateriaEstadoLabel,
   getMateriaEstadoPillClass,
 } from '@application-configuracion/academico/config/materiaTipoPill';
-import { getParaleloTurnoPillClass } from '@application-configuracion/academico/config/paraleloTurnoOptions';
+import { getParaleloTurnoPillClass } from '@application-configuracion/recursos/config/paraleloTurnoOptions';
 import {
   getParaleloPeriodoLabel,
   getParaleloPeriodoPillClass,
-} from '@application-configuracion/academico/config/paraleloPeriodoPill';
-import { getParaleloTurnoHorarioInfo } from '@application-configuracion/academico/config/paraleloTurnoHorarioInfo';
+} from '@application-configuracion/recursos/config/paraleloPeriodoPill';
+import { getParaleloTurnoHorarioInfo } from '@application-configuracion/recursos/config/paraleloTurnoHorarioInfo';
 import ParaleloPeriodoCell from '../components/atoms/ParaleloPeriodoCell';
 import ParaleloTurnoHorarioInfo from '../components/atoms/ParaleloTurnoHorarioInfo';
 import ParaleloDetailOfertaSection from '../components/organisms/ParaleloDetailOfertaSection';
 import '@presentation/styles/pages/detail-page.css';
-import '../styles/academico-form-page.css';
+import '@configuracion/academico/styles/academico-form-page.css';
 
 const ParaleloDetailPage = () => {
   const { hasPermiso } = useAuthContext();

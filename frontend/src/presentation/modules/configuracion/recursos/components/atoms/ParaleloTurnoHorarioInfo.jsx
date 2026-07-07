@@ -3,7 +3,7 @@
  */
 import { Typography } from 'antd';
 import { ClockCircleOutlined, CalendarOutlined } from '@ant-design/icons';
-import { getParaleloTurnoHorarioInfoNormalized } from '@application-configuracion/academico/config/paraleloTurnoHorarioInfo';
+import { getParaleloTurnoHorarioInfoNormalized } from '@application-configuracion/recursos/config/paraleloTurnoHorarioInfo';
 
 const { Text } = Typography;
 

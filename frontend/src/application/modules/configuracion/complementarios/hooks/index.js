@@ -15,3 +15,9 @@ export { useIdiomasApi } from './api/useIdiomasApi';
 export { useIdiomasList } from './features/useIdiomasList';
 export { useIdiomaForm } from './state/useIdiomaForm';
 export { useIdiomaDetallePage } from './state/useIdiomaDetallePage';
+
+export { useEstadoCivilContext } from './context/useEstadoCivilContext';
+export { useEstadosCivilesApi } from './api/useEstadosCivilesApi';
+export { useEstadosCivilesList } from './features/useEstadosCivilesList';
+export { useEstadoCivilForm } from './state/useEstadoCivilForm';
+export { useEstadoCivilDetallePage } from './state/useEstadoCivilDetallePage';

@@ -8,6 +8,7 @@ import { documentacionRoutes } from './documentacion/routes.jsx';
 import { complementariosRoutes } from './complementarios/routes.jsx';
 import { conveniosRoutes } from './convenios/routes.jsx';
 import { actividadesRoutes } from './actividades/routes.jsx';
+import { recursosRoutes } from './recursos/routes.jsx';
 
 export const configuracionRoutes = [
   {
@@ -21,6 +22,7 @@ export const configuracionRoutes = [
   ...complementariosRoutes,
   ...conveniosRoutes,
   ...actividadesRoutes,
+  ...recursosRoutes,
 ];
 
 export default configuracionRoutes;

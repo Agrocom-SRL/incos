@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useParalelosCfgApi } from '../api/useParalelosCfgApi';
-import { useCarrerasApi } from '../api/useCarrerasApi';
+import { useCarrerasApi } from '@application-configuracion/academico/hooks/api/useCarrerasApi';
 import { useTableData } from '@molecules';
 
 export const useParalelosList = () => {

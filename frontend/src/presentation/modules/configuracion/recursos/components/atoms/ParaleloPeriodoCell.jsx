@@ -7,7 +7,7 @@ import {
   getParaleloPeriodoLabel,
   getParaleloPeriodoNumero,
   getParaleloPeriodoPillClass,
-} from '@application-configuracion/academico/config/paraleloPeriodoPill';
+} from '@application-configuracion/recursos/config/paraleloPeriodoPill';
 
 const ParaleloPeriodoCell = ({ record, showDescripcion = true }) => {
   const numero = getParaleloPeriodoNumero(record);

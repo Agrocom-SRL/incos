@@ -63,3 +63,20 @@ export { GetActividadByIdController } from './actividades/get-by-id.controller.j
 export { UpdateActividadController } from './actividades/update.controller.js';
 export { DeleteActividadController } from './actividades/delete.controller.js';
 
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - AULAS (catálogo maestro de espacios físicos)
+// ============================================
+export { ListAulasController } from './aulas/list.controller.js';
+export { CreateAulaController } from './aulas/create.controller.js';
+export { GetAulaByIdController } from './aulas/get-by-id.controller.js';
+export { UpdateAulaController } from './aulas/update.controller.js';
+export { DeleteAulaController } from './aulas/delete.controller.js';
+
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - TIPOS DE EVALUACIÓN (catálogo maestro; escritura)
+// ============================================
+export { CreateTipoEvaluacionController } from './tipos-evaluacion/create.controller.js';
+export { GetTipoEvaluacionByIdController } from './tipos-evaluacion/get-by-id.controller.js';
+export { UpdateTipoEvaluacionController } from './tipos-evaluacion/update.controller.js';
+export { DeleteTipoEvaluacionController } from './tipos-evaluacion/delete.controller.js';
+

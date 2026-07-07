@@ -46,6 +46,62 @@ export class EstadoCivilRepository extends IEstadoCivilRepository {
     }
   }
 
+  /**
+   * Obtiene un estado civil por ID
+   * GET /v1/estados-civiles/:id
+   */
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(ESTADOS_CIVILES_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      // El backend puede devolver el registro plano (sin envolver en { estadoCivil })
+      if (result.success && result.data && !result.data.estadoCivil) {
+        result.data = { estadoCivil: result.data };
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el estado civil');
+    }
+  }
+
+  /**
+   * Crea un estado civil
+   * POST /v1/estados-civiles
+   */
+  async crear(data) {
+    try {
+      const response = await apiClient.post(ESTADOS_CIVILES_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear el estado civil');
+    }
+  }
+
+  /**
+   * Actualiza un estado civil
+   * PUT /v1/estados-civiles/:id
+   */
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(ESTADOS_CIVILES_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el estado civil');
+    }
+  }
+
+  /**
+   * Elimina (soft delete) un estado civil
+   * DELETE /v1/estados-civiles/:id
+   */
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(ESTADOS_CIVILES_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el estado civil');
+    }
+  }
 }
 
 export default new EstadoCivilRepository();

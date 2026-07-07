@@ -1,16 +1,16 @@
 /**
- * Listado de paralelos maestro — tab «Paralelos» en AcademicoPage.
+ * Listado de paralelos maestro — tab «Paralelos» en RecursosPage.
  */
 
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex } from 'antd';
 import { TableListView } from '@organisms';
-import { useParaleloContext } from '@application-configuracion/academico/hooks';
-import { paralelosListNavigationState } from '@application-configuracion/academico/config/academicoNavigation';
-import { createParalelosTableColumns } from '@configuracion/academico/config/paralelosTableColumns';
+import { useParaleloContext } from '@application-configuracion/recursos/hooks';
+import { paralelosListNavigationState } from '@application-configuracion/recursos/config/navigation';
+import { createParalelosTableColumns } from '@configuracion/recursos/config/paralelosTableColumns';
 import { allSpacing } from '@theme/tokens';
-import '../styles/academico-form-page.css';
+import '@configuracion/academico/styles/academico-form-page.css';
 
 const ParalelosList = ({ embedded = false }) => {
   const navigate = useNavigate();

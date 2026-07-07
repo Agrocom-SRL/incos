@@ -4,12 +4,12 @@ import { useCasesFactory } from '@container';
 import {
   PARALELOS_LIST_PATH,
   paraleloEditarPath,
-} from '@application-configuracion/academico/config/paths';
+} from '@application-configuracion/recursos/config/paths';
 import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
-} from '@application-configuracion/academico/config/academicoNavigation';
-import { useCarrerasApi } from '../api/useCarrerasApi';
+} from '@application-configuracion/recursos/config/navigation';
+import { useCarrerasApi } from '@application-configuracion/academico/hooks/api/useCarrerasApi';
 import { useParaleloInstanciasGestionApi } from '../api/useParaleloInstanciasGestionApi';
 
 export const useParaleloDetallePage = () => {
@@ -77,7 +77,7 @@ export const useParaleloDetallePage = () => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
-      { title: 'Académico', href: returnListPath },
+      { title: 'Recursos académicos', href: returnListPath },
       { title: 'Paralelos', href: returnListPath },
       { title: 'Detalle de paralelo' },
     ],

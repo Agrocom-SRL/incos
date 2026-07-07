@@ -9,21 +9,21 @@ import apiClient from '@api-client';
 import { PLANES_ESTUDIOS_ENDPOINTS } from '@api/endpoints';
 import { handleErrorResponse, handleSuccessResponse } from '@api/responseHandler';
 import { useCasesFactory } from '@container';
-import { useCarrerasApi } from '../api/useCarrerasApi';
-import { usePlanesEstudiosApi } from '../api/usePlanesEstudiosApi';
+import { useCarrerasApi } from '@application-configuracion/academico/hooks/api/useCarrerasApi';
+import { usePlanesEstudiosApi } from '@application-configuracion/academico/hooks/api/usePlanesEstudiosApi';
 import {
   mapFormValuesToParaleloPayload,
   mapParaleloToFormValues,
-} from '@application-configuracion/academico/mappers/paraleloFormMapper';
+} from '@application-configuracion/recursos/mappers/paraleloFormMapper';
 import {
   PARALELOS_LIST_PATH,
   paraleloDetallePath,
-} from '@application-configuracion/academico/config/paths';
+} from '@application-configuracion/recursos/config/paths';
 import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
-} from '@application-configuracion/academico/config/academicoNavigation';
-import { createParaleloFormSections } from '@application-configuracion/academico/config/paraleloFormFields';
+} from '@application-configuracion/recursos/config/navigation';
+import { createParaleloFormSections } from '@application-configuracion/recursos/config/paraleloFormFields';
 import { mapPeriodosPlanList } from '@application-configuracion/academico/utils/mapPeriodosPlanList';
 
 export const useParaleloForm = (mode = 'create') => {
@@ -131,7 +131,7 @@ export const useParaleloForm = (mode = 'create') => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
-      { title: 'Académico', href: returnListPath },
+      { title: 'Recursos académicos', href: returnListPath },
       { title: 'Paralelos', href: returnListPath },
       { title: pageTitle },
     ],

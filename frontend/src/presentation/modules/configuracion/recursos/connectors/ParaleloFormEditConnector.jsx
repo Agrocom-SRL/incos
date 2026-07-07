@@ -1,4 +1,4 @@
-import ParaleloFormPage from '@configuracion/academico/pages/ParaleloFormPage';
+import ParaleloFormPage from '@configuracion/recursos/pages/ParaleloFormPage';
 
 const ParaleloFormEditConnector = () => <ParaleloFormPage mode="edit" />;
 

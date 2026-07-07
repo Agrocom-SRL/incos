@@ -3,8 +3,13 @@
  * Gemelo de `academico/config/academicoTabPanels.js`.
  */
 
-import { GlobalOutlined, SolutionOutlined, TeamOutlined } from '@ant-design/icons';
-import { TAB_APODERADOS, TAB_DISCAPACIDAD, TAB_IDIOMAS } from './complementarioTabs';
+import { GlobalOutlined, HeartOutlined, SolutionOutlined, TeamOutlined } from '@ant-design/icons';
+import {
+  TAB_APODERADOS,
+  TAB_DISCAPACIDAD,
+  TAB_ESTADOS_CIVILES,
+  TAB_IDIOMAS,
+} from './complementarioTabs';
 
 export const COMPLEMENTARIO_TAB_PANEL_META = {
   [TAB_DISCAPACIDAD]: {
@@ -25,5 +30,11 @@ export const COMPLEMENTARIO_TAB_PANEL_META = {
     description: 'Catálogo de idiomas del instituto usado en la ficha del estudiante.',
     shortLabel: 'Idiomas',
     icon: GlobalOutlined,
+  },
+  [TAB_ESTADOS_CIVILES]: {
+    title: 'Estados civiles',
+    description: 'Catálogo de estados civiles usado en la ficha del estudiante.',
+    shortLabel: 'Estados civiles',
+    icon: HeartOutlined,
   },
 };

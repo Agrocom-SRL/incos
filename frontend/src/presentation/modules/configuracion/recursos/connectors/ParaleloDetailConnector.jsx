@@ -1,4 +1,4 @@
-import ParaleloDetailPage from '@configuracion/academico/pages/ParaleloDetailPage';
+import ParaleloDetailPage from '@configuracion/recursos/pages/ParaleloDetailPage';
 
 const ParaleloDetailConnector = () => <ParaleloDetailPage />;
 

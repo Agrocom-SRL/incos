@@ -19,18 +19,22 @@ import {
   discapacidadNuevaPath,
   apoderadoNuevaPath,
   idiomaNuevaPath,
+  estadoCivilNuevaPath,
 } from '@application-configuracion/complementarios/config/paths';
 import {
   discapacidadesListNavigationState,
   apoderadosListNavigationState,
   idiomasListNavigationState,
+  estadosCivilesListNavigationState,
 } from '@application-configuracion/complementarios/config/navigation';
 import DiscapacidadesList from './DiscapacidadesList';
 import ApoderadosTabPanel from './ApoderadosTabPanel';
 import IdiomasTabPanel from './IdiomasTabPanel';
+import EstadosCivilesTabPanel from './EstadosCivilesTabPanel';
 import {
   TAB_APODERADOS,
   TAB_DISCAPACIDAD,
+  TAB_ESTADOS_CIVILES,
   TAB_IDIOMAS,
 } from '@configuracion/complementarios/config/complementarioTabs';
 import { COMPLEMENTARIO_TAB_PANEL_META } from '@configuracion/complementarios/config/complementarioTabPanels';
@@ -56,10 +60,12 @@ const ComplementariosPage = () => {
   const puedeDiscapacidad = hasPermiso('configuracion.complementario.discapacidad', 'LISTAR');
   const puedeApoderados = hasPermiso('configuracion.complementario.apoderados', 'LISTAR');
   const puedeIdiomas = hasPermiso('configuracion.complementario.idiomas', 'LISTAR');
+  const puedeEstadosCiviles = hasPermiso('configuracion.complementario.estado-civil', 'LISTAR');
 
   const discapacidadNavState = useMemo(() => discapacidadesListNavigationState(), []);
   const apoderadosNavState = useMemo(() => apoderadosListNavigationState(), []);
   const idiomasNavState = useMemo(() => idiomasListNavigationState(), []);
+  const estadosCivilesNavState = useMemo(() => estadosCivilesListNavigationState(), []);
 
   const tabItems = useMemo(() => {
     const items = [];
@@ -102,8 +108,21 @@ const ComplementariosPage = () => {
         children: wrapTabPanel(<IdiomasTabPanel embedded />),
       });
     }
+    if (puedeEstadosCiviles) {
+      const meta = COMPLEMENTARIO_TAB_PANEL_META[TAB_ESTADOS_CIVILES];
+      const Icon = meta.icon;
+      items.push({
+        key: TAB_ESTADOS_CIVILES,
+        label: (
+          <span className="sd-tab-label">
+            <Icon /> {meta.shortLabel}
+          </span>
+        ),
+        children: wrapTabPanel(<EstadosCivilesTabPanel embedded />),
+      });
+    }
     return items;
-  }, [puedeDiscapacidad, puedeApoderados, puedeIdiomas]);
+  }, [puedeDiscapacidad, puedeApoderados, puedeIdiomas, puedeEstadosCiviles]);
 
   const activeKey = useMemo(() => {
     const requested = searchParams.get('tab');
@@ -156,8 +175,28 @@ const ComplementariosPage = () => {
         </ActionButton>
       );
     }
+    if (activeKey === TAB_ESTADOS_CIVILES) {
+      return (
+        <ActionButton
+          permiso="configuracion.complementario.estado-civil"
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(estadoCivilNuevaPath, { state: estadosCivilesNavState })}
+        >
+          Nuevo estado civil
+        </ActionButton>
+      );
+    }
     return null;
-  }, [activeKey, navigate, discapacidadNavState, apoderadosNavState, idiomasNavState]);
+  }, [
+    activeKey,
+    navigate,
+    discapacidadNavState,
+    apoderadosNavState,
+    idiomasNavState,
+    estadosCivilesNavState,
+  ]);
 
   const onTabChange = useCallback(
     (key) => {

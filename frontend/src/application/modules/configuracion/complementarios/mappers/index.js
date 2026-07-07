@@ -18,3 +18,10 @@ export {
   mapFormValuesToIdiomaPayload,
   mapIdiomaDetail,
 } from './idiomaFormMapper';
+
+export { estadoCivilListMapper, mapEstadosCivilesList } from './estadoCivilListMapper';
+export {
+  mapEstadoCivilToFormValues,
+  mapFormValuesToEstadoCivilPayload,
+  mapEstadoCivilDetail,
+} from './estadoCivilFormMapper';

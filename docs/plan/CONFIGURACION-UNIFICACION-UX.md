@@ -298,6 +298,37 @@
   aplicar el delta (a mano vía `INSERT ... WHERE NOT EXISTS`, o re-siembra completa controlada del
   módulo CFG). Frontend (list/form/detail de administración) sigue pendiente, igual que el resto de la
   sección 5.
+- **2026-07-07**: Frontend de **Estados civiles** completado por agente `frontend`, clonando EXACTO
+  el patrón de `idioma` (elegido como plantilla por tener el shape más parecido: nombre + campo corto
+  opcional). Creados: 4ta pestaña `TAB_ESTADOS_CIVILES` en `complementarioTabs.js`/
+  `complementarioTabPanels.js` (icono `HeartOutlined`); `EstadosCivilesTabPanel.jsx` + `estadosCivilesTableColumns.jsx`
+  (usa `createSimpleCatalogTableColumns` con `abreviatura` como `extraColumns`, `descripcionField: null`,
+  sin `fixed`, 6 columnas: `#`/Nombre/Abreviatura/Acciones); `EstadoCivilFormPage.jsx` (`CfgFormWorkspace`,
+  campos nombre 2-20 requerido + abreviatura 1-5 opcional) y `EstadoCivilDetailPage.jsx`
+  (`DetailProfileCard`+`DetailInfoCard`); 3 connectors (`EstadoCivilForm{Create,Edit}Connector`,
+  `EstadoCivilDetailConnector`) + rutas `/configuracion/complementarios/estado-civil/{nueva,:id,:id/editar}`
+  en `routes.jsx` (permiso agregado a `CFG_COMPLEMENTARIO_PERMISOS`). Capa `application/modules/configuracion/
+  complementarios/`: context/provider/mappers (`estadoCivilListMapper`/`estadoCivilFormMapper`)/hooks
+  (api/context/features/state) — gemelos 1:1 de los de `idioma`, sumados a los barrels `hooks/index.js`,
+  `mappers/index.js`, `providers/index.js`; `ComplementariosConnector.jsx` envuelto con
+  `EstadoCivilProvider`; `ComplementariosPage.jsx` con el 4to tab item + acción "Nuevo estado civil".
+  Capa `domain/useCases/configuracion/complementario/estadoCivil/` (5 use cases nuevos) + registrados en
+  `application/container/modules/configuracion.container.js`. `EstadoCivilRepository` (infrastructure) ya
+  existía solo con `obtenerTodos` (usado por el catálogo de estudiantes) — se completó con
+  `obtenerPorId`/`crear`/`actualizar`/`eliminar` (mismo patrón que `IdiomaRepository`); endpoint
+  `ESTADOS_CIVILES_ENDPOINTS` ya existía en `endpoints.js`. Contrato `dataKey`==`dataFieldName` verificado
+  leyendo el backend: listado `estadosCiviles` (`ListEstadosCivilesUseCase`), detalle/crear/actualizar
+  `estadoCivil` (`GetEstadoCivilByIdController`/`CreateEstadoCivilController`) — ambos ya coinciden con lo
+  implementado. `npm run lint` (acotado a los ~30 archivos tocados/creados) limpio, cero errores/warnings.
+  `npm run build`: **no verificable en esta sesión** — otra tarea concurrente movía en vivo
+  `configuracion/academico/**Paralelo*` → `configuracion/recursos/` en el mismo working tree (mtimes de
+  minutos antes/durante esta sesión, `routes.jsx` de académico quedó apuntando a un connector movido),
+  rompiendo el build por un módulo no relacionado con esta tarea. Verificado que los alias usados
+  (`@configuracion`, `@application-configuracion`, `@container`, `@repositories`, `@domain/repositories`,
+  `@infrastructure/repositories`, `@theme`, `@organisms`, `@molecules`, `@atoms`, `@templates`,
+  `@application-auth`, `@application/utils`) están todos registrados en `vite.config.js` y coinciden
+  con los ya usados por `idioma` (que sí compilaba). **Pendiente: re-correr `npm run build` completo**
+  una vez termine/se commitee el refactor de Paralelo en curso.
 
 ## 5bis. Ajuste de estilo de tablas + Aportes deja de ser menú (2026-07-07)
 
@@ -358,7 +389,7 @@ construir CRUD completo para los 5, cada uno en su dominio natural (no agrupados
 | Becas / descuentos | `becas_descuentos` (`11-estudiantes-parte2.sql:30`) | Finanzas (junto a `aportes`/`configuracion`) | ✅ **HECHO** (commits `fbd59861`/`8e983264`) | CRUD completo backend (`becas-descuentos.routes.js`) + frontend list/form/detail en `finanzas/configuracion/`, permiso `finanzas.beca-descuento` (5 acciones) sembrado en `60-seed-permisos-fin.sql`. Las 12 becas oficiales (Res. Ministerial 434/2019) no se tocaron. |
 | Aulas | `aulas` (`06-estructura-academica-parte2.sql:162`) | **`configuracion/academico`** (4ta pestaña, confirmado 2026-07-07 por `datos`+`arquitecto`: catálogo maestro puro, igual patrón que carreras/materias/paralelos; lo operativo -asignación a paralelo_gestion- sigue en institucional/oferta vía `aulas-horarios.routes.js` GET-only y no se toca) | ⏳ Pendiente | `LAB-2 / Sala de Docentes` (id 2, capacidad=0, activo=0) está desactivado A PROPÓSITO — no reactivar ni excluir del listado admin, debe verse con StatusPill inactivo. Backend: router NUEVO `aulas.routes.js` en `/api/v1/aulas`, reutilizando `IAulaRepository`/`ClassroomRepository` (ya implementa CRUD completo por herencia de `IRepository`) — no tocar `aulas-horarios.routes.js`. Permiso: `configuracion.aula`. Columnas propias (categoría+capacidad), NO usa `createSimpleCatalogTableColumns`. |
 | Tipos de evaluación | `tipos_evaluacion` (`15-evaluaciones.sql:134`) | `configuracion/academico` (junto a materias/paralelos; confirmado 2026-07-07: catálogo que parametriza `evaluaciones`, igual que materias parametriza `oferta_cursos` — la lectura operativa del cuaderno vía `GetTiposEvaluacionUseCase`/`calificaciones.routes.js` no se toca) | ⏳ Pendiente | 17 tipos ya sembrados (seed 53). El campo "componente" (teórico/práctico) vive en `evaluaciones`, NO agregarlo a este catálogo. Permiso nuevo: `configuracion.tipo-evaluacion` (distinto del permiso de lectura del cuaderno, no reutilizar). |
-| Estados civiles | `estados_civiles` (`03-catalogos-referencia.sql:63`) | `configuracion/complementarios` (sibling de idiomas/discapacidad/apoderados) | ✅ **Backend hecho (2026-07-07)** — [ ] Frontend pendiente | Catálogo mínimo (5 valores: `id, nombre, abreviatura`). FK activa desde `estudiantes.estado_civil_id`, `20-personal-usuarios.sql` (docentes/personal) y `06-estructura-academica-parte2.sql:96` — se consume ya en 3 formularios (`estudianteDatosPersonalesFields.js`, `docenteDatosPersonalesFields.js`, `usuarioWizardPersonalFields.js`) vía combo, sin UI de administración. Backend: CRUD completo (Create/Update/GetById/Delete use cases + controllers + rutas habilitadas en `estados-civiles.routes.js`, mismo shape que idiomas: nombre+abreviatura). Permiso: `configuracion.complementario.estado-civil` (5 acciones, RECTOR+DIR_ACADEMICO) agregado a `62-seed-permisos-cfg.sql` — **pendiente de aplicar en BD real** (archivo no es idempotente, no se ejecutó para evitar duplicar filas ya existentes de ese seed). |
+| Estados civiles | `estados_civiles` (`03-catalogos-referencia.sql:63`) | `configuracion/complementarios` (sibling de idiomas/discapacidad/apoderados) | ✅ **Backend+Frontend hecho (2026-07-07)** | Catálogo mínimo (5 valores: `id, nombre, abreviatura`). FK activa desde `estudiantes.estado_civil_id`, `20-personal-usuarios.sql` (docentes/personal) y `06-estructura-academica-parte2.sql:96` — se consume ya en 3 formularios (`estudianteDatosPersonalesFields.js`, `docenteDatosPersonalesFields.js`, `usuarioWizardPersonalFields.js`) vía combo. Backend: CRUD completo (Create/Update/GetById/Delete use cases + controllers + rutas habilitadas en `estados-civiles.routes.js`, mismo shape que idiomas: nombre+abreviatura). Frontend: 4ta pestaña "Estados civiles" en `configuracion/complementarios`, clon exacto del patrón `idioma` (list vía `createSimpleCatalogTableColumns` con `abreviatura` como `extraColumns`, form `CfgFormWorkspace`, detalle `DetailProfileCard`+`DetailInfoCard`). Permiso: `configuracion.complementario.estado-civil` (5 acciones, RECTOR+DIR_ACADEMICO) agregado a `62-seed-permisos-cfg.sql` — **pendiente de aplicar en BD real** (archivo no es idempotente, no se ejecutó para evitar duplicar filas ya existentes de ese seed). |
 
 **Instituciones — retirada de esta sección (2026-07-07, decisión del usuario).** La tabla `instituciones`
 (`18-transitabilidades.sql:70`) pertenece al dominio de **transitabilidad/traspasos** (ver memoria

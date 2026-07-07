@@ -3,4 +3,5 @@ export {
   TAB_DISCAPACIDAD,
   TAB_APODERADOS,
   TAB_IDIOMAS,
+  TAB_ESTADOS_CIVILES,
 } from '@application-configuracion/complementarios/config/tabs';

@@ -1,16 +1,16 @@
 /**
- * Columnas — tab Paralelos maestro (CFG Académico).
+ * Columnas — tab Paralelos maestro (CFG Recursos académicos).
  */
 
 import { ReadOutlined, TagOutlined } from '@ant-design/icons';
 import {
   paraleloDetallePath,
   paraleloEditarPath,
-} from '@application-configuracion/academico/config/paths';
+} from '@application-configuracion/recursos/config/paths';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import IdentidadCelda from '@atoms/IdentidadCelda';
 import { TableActions } from '@molecules';
-import ParaleloPeriodoCell from '@configuracion/academico/components/atoms/ParaleloPeriodoCell';
+import ParaleloPeriodoCell from '@configuracion/recursos/components/atoms/ParaleloPeriodoCell';
 
 export const createParalelosTableColumns = ({ navigate, listNavState, refetch }) => [
   {

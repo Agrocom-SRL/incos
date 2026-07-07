@@ -1,0 +1,1 @@
+export { ParaleloProvider } from './ParaleloProvider';

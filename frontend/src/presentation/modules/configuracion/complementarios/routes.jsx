@@ -1,13 +1,14 @@
 /**
- * Complementarios — menú CFG (tabs: discapacidad, apoderados, idiomas) + ABM y
- * detalle de página completa por entidad (patrón CFG Académico):
+ * Complementarios — menú CFG (tabs: discapacidad, apoderados, idiomas, estados
+ * civiles) + ABM y detalle de página completa por entidad (patrón CFG Académico):
  *
- *   /configuracion/complementarios                        → tabs (discapacidad | apoderados | idiomas)
+ *   /configuracion/complementarios                        → tabs (discapacidad | apoderados | idiomas | estados-civiles)
  *   /configuracion/complementarios/discapacidad/nueva      → crear tipo de discapacidad
  *   /configuracion/complementarios/discapacidad/:id/editar → editar tipo de discapacidad
  *   /configuracion/complementarios/discapacidad/:id        → detalle tipo de discapacidad
  *   /configuracion/complementarios/apoderado/...           → análogo apoderado (tipo de parentesco)
  *   /configuracion/complementarios/idioma/...              → análogo idioma
+ *   /configuracion/complementarios/estado-civil/...         → análogo estado civil
  */
 
 import { lazy } from 'react';
@@ -22,6 +23,7 @@ const CFG_COMPLEMENTARIO_PERMISOS = [
   'configuracion.complementario.discapacidad',
   'configuracion.complementario.apoderados',
   'configuracion.complementario.idiomas',
+  'configuracion.complementario.estado-civil',
 ];
 
 const ComplementariosConnector = lazy(
@@ -53,6 +55,15 @@ const IdiomaFormEditConnector = lazy(
 );
 const IdiomaDetailConnector = lazy(
   () => import('@configuracion/complementarios/connectors/IdiomaDetailConnector.jsx'),
+);
+const EstadoCivilFormCreateConnector = lazy(
+  () => import('@configuracion/complementarios/connectors/EstadoCivilFormCreateConnector.jsx'),
+);
+const EstadoCivilFormEditConnector = lazy(
+  () => import('@configuracion/complementarios/connectors/EstadoCivilFormEditConnector.jsx'),
+);
+const EstadoCivilDetailConnector = lazy(
+  () => import('@configuracion/complementarios/connectors/EstadoCivilDetailConnector.jsx'),
 );
 
 export const complementariosRoutes = [
@@ -150,6 +161,38 @@ export const complementariosRoutes = [
     menu: null,
     breadcrumbParent: 'CFG-COMPLEMENTARIO',
     breadcrumbLabel: 'Detalle de idioma',
+  },
+
+  // Estado civil — ABM y detalle
+  {
+    path: '/configuracion/complementarios/estado-civil/nueva',
+    element: <EstadoCivilFormCreateConnector />,
+    key: 'CFG-ESTADO-CIVIL-NUEVA',
+    permiso: 'configuracion.complementario.estado-civil',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'CFG-COMPLEMENTARIO',
+    breadcrumbLabel: 'Nuevo estado civil',
+  },
+  {
+    path: '/configuracion/complementarios/estado-civil/:id/editar',
+    element: <EstadoCivilFormEditConnector />,
+    key: 'CFG-ESTADO-CIVIL-EDITAR',
+    permiso: 'configuracion.complementario.estado-civil',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'CFG-COMPLEMENTARIO',
+    breadcrumbLabel: 'Editar estado civil',
+  },
+  {
+    path: '/configuracion/complementarios/estado-civil/:id',
+    element: <EstadoCivilDetailConnector />,
+    key: 'CFG-ESTADO-CIVIL-DETALLE',
+    permiso: 'configuracion.complementario.estado-civil',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'CFG-COMPLEMENTARIO',
+    breadcrumbLabel: 'Detalle de estado civil',
   },
 
   // Legacy

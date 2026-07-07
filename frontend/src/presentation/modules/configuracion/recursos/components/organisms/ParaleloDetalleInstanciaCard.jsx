@@ -12,7 +12,7 @@ import {
   getSabadoArmadoGridRangeMinutes,
   getTurnoGridRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
-import { getParaleloTurnoPillClass } from '@application-configuracion/academico/config/paraleloTurnoOptions';
+import { getParaleloTurnoPillClass } from '@application-configuracion/recursos/config/paraleloTurnoOptions';
 import StatusPill from '@atoms/StatusPill';
 import ParaleloPlanSemanaCell from '@institucional/horarios/components/atoms/ParaleloPlanSemanaCell';
 
