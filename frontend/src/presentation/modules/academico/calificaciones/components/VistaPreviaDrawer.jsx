@@ -105,7 +105,7 @@ const VistaPreviaDrawer = ({
   return (
     <Drawer
       title={`Vista previa · Bimestre ${bimestre ?? '—'}`}
-      width={640}
+      size={640}
       open={abierto}
       onClose={onCerrar}
       destroyOnClose

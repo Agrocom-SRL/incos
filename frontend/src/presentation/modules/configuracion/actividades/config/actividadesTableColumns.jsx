@@ -22,7 +22,6 @@ import ActividadDescripcionCell from '@configuracion/actividades/components/atom
 const descripcionColumn = {
   title: 'Descripción',
   dataIndex: 'descripcion',
-  width: 280,
   ellipsis: false,
   render: (descripcion, record) => (
     <ActividadDescripcionCell icono={record.icono} descripcion={descripcion} />
@@ -35,7 +34,6 @@ const descripcionColumn = {
 const tipoColumn = {
   title: 'Tipo',
   dataIndex: 'tipo',
-  width: 170,
   render: (tipo) => <StatusPill label={getActividadTipoLabel(tipo)} className={getActividadTipoPillClass(tipo)} />,
   sorter: true,
   sortCompare: (a, b) =>

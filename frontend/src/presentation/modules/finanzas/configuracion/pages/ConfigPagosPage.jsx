@@ -33,12 +33,14 @@ import { GoldOutlined, PlusOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { Button } from '@atoms';
+import { Button, ActionButton } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';
 import { useConfigPagosPage } from '@application-finanzas/hooks/state/useConfigPagosPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
+import { BECA_DESCUENTO_PERMISO } from '@finanzas/configuracion/config/becaDescuentoPermisos';
+import { becaDescuentoNuevaPath } from '@application-finanzas/config/paths';
 import {
   CONFIG_PAGOS_TAB_KEYS,
   CONFIG_PAGOS_TAB_META,
@@ -225,8 +227,21 @@ const ConfigPagosPage = () => {
         </PermisoGuard>
       );
     }
+    if (activeKey === TAB_BECAS_DESCUENTOS) {
+      return (
+        <ActionButton
+          permiso={BECA_DESCUENTO_PERMISO}
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(becaDescuentoNuevaPath)}
+        >
+          Nueva beca o descuento
+        </ActionButton>
+      );
+    }
     return null;
-  }, [activeKey, abrirBancoModal, abrirCuentaModal]);
+  }, [activeKey, abrirBancoModal, abrirCuentaModal, navigate]);
 
   /** Acción de página (no por-tab): ir a la configuración del aporte de la gestión vigente. */
   const pageHeaderActions = (

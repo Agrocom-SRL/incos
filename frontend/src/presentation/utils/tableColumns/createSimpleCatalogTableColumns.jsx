@@ -62,7 +62,7 @@ export const createSimpleCatalogTableColumns = ({
     ? {
         title: 'Descripción',
         dataIndex: descripcionField,
-        width: 280,
+        width: 380,
         ellipsis: false,
         render: (valor) => <TruncatedTextCell text={valor} />,
         sorter: true,

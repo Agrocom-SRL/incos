@@ -13,7 +13,6 @@ import {
 const requeridoColumn = {
   title: 'Requerido',
   dataIndex: 'requerido',
-  width: 120,
   align: 'center',
   render: (requerido) => (
     <StatusPill
@@ -28,7 +27,6 @@ const requeridoColumn = {
 const aceptaFotocopiaColumn = {
   title: 'Fotocopia',
   dataIndex: 'aceptaFotocopia',
-  width: 120,
   align: 'center',
   render: (aceptaFotocopia) => (
     <StatusPill

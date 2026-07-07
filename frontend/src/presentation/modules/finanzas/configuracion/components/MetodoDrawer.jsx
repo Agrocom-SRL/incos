@@ -42,7 +42,7 @@ const MetodoDrawer = ({ open, metodo, saving, onGuardar, onCancelar }) => {
   return (
     <Drawer
       title={`Editar método${metodo?.codigo ? ` · ${metodo.codigo}` : ''}`}
-      width={520}
+      size={520}
       open={open}
       onClose={handleCerrar}
       destroyOnHidden

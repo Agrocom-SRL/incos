@@ -748,8 +748,9 @@ CREAR/EDITAR/ELIMINAR de la tabla de cursos en armado acepta `institucional.gest
 
 **Arquitectura frontend:** skill `incos-frontend-module`. Permisos del módulo en
 `62-seed-permisos-cfg.sql` (códigos `configuracion.*`: plan-estudio, carrera, materia,
-plan-estudio.{periodos,asignaturas,prerrequisitos}, paralelo, complementario.*, documentacion.*,
-convenios, pagos, historial-actividades), cada uno con sus acciones y grants en el mismo archivo.
+plan-estudio.{periodos,asignaturas,prerrequisitos}, paralelo, aula, tipo-evaluacion,
+complementario.* (discapacidad, apoderados, idiomas, estado-civil), documentacion.*, convenios,
+pagos, historial-actividades), cada uno con sus acciones y grants en el mismo archivo.
 
 #### Académico — Plan de estudio (menu unico, tabs + subruta)
 
@@ -768,6 +769,21 @@ Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requi
 
 **Roles:** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio de `configuracion.*`; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales. **Nota:** RECTOR incluye `DETALLE` en materia; DIR_ACADEMICO incluye `DETALLE` en plan para abrir matriz; edición de celdas sigue requiriendo `configuracion.plan-estudio.asignaturas` `EDITAR`.
 
+#### Recursos académicos (`/configuracion/recursos`, tabs)
+
+Menú "Recursos académicos": tab 1 Paralelos (maestro, movido desde `configuracion/academico` el
+2026-07-07, mismo código de permiso `configuracion.paralelo` sin cambios de negocio/RBAC), tab 2
+Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
+
+| Ruta UI | Permiso (codigo) | Acciones tipicas | Uso |
+|---------|------------------|------------------|-----|
+| `/configuracion/recursos` | Entrada: `permisoAny` (paralelo, aula, tipo-evaluacion) | LISTAR en cada tab visible | Menu "Recursos académicos"; tabs filtrados por permiso |
+| `?tab=paralelos` | `configuracion.paralelo` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Tab paralelos (catálogo maestro); `ruta_sidebar` actualizada de `/configuracion/academico` a `/configuracion/recursos` |
+| `?tab=aulas` | `configuracion.aula` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab aulas (catálogo maestro; distinto del picker de solo lectura de Institucional/Oferta) |
+| `?tab=tipos-evaluacion` | `configuracion.tipo-evaluacion` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab tipos de evaluación (catálogo maestro; distinto de `sistema.catalogo.referencia`, el combo de solo lectura del cuaderno de calificaciones) |
+
+**Roles:** RECTOR y DIR_ACADEMICO con bloque completo en `aula` y `tipo-evaluacion` (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR); `paralelo` conserva su grant previo (RECTOR con ACTIVAR adicional).
+
 #### Datos complementarios (tabs + ABM/detalle de página completa)
 
 | Ruta UI canonica | Permiso | Notas |
@@ -776,9 +792,10 @@ Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requi
 | `?tab=discapacidad` | `configuracion.complementario.discapacidad` | Listado (`createSimpleCatalogTableColumns`) |
 | `?tab=apoderados` | `configuracion.complementario.apoderados` | Listado (tipos de parentesco) |
 | `?tab=idiomas` | `configuracion.complementario.idiomas` | Listado (incluye `codigoIso`) |
-| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma}/nueva` | mismo codigo, accion `CREAR` | Alta (página completa, patrón CFG académico) |
-| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma}/:id/editar` | mismo codigo, accion `EDITAR` | Edición |
-| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma}/:id` | mismo codigo, accion `DETALLE` | Ficha |
+| `?tab=estado-civil` | `configuracion.complementario.estado-civil` | Listado (`createSimpleCatalogTableColumns`, catálogo `estados_civiles`, 2026-07-07) |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/nueva` | mismo codigo, accion `CREAR` | Alta (página completa, patrón CFG académico) |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/:id/editar` | mismo codigo, accion `EDITAR` | Edición |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/:id` | mismo codigo, accion `DETALLE` | Ficha |
 
 `ruta_sidebar` del permiso aún apunta `/configuracion/datos-complementarios`; la app redirige a `/configuracion/complementarios`. Alinear en el archivo de permisos CFG.
 
