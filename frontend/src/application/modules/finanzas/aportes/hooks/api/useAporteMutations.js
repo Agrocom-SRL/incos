@@ -4,7 +4,8 @@
  * UPSERT: si NO existe configuración para la gestión vigente → POST; si
  * existe → PUT por id. La decisión la toma `guardarConfiguracionAporte`
  * según el `id` recibido (lo resuelve `useAportePage`). Sin ELIMINAR: el
- * permiso `finanzas.aporte` solo tiene LISTAR/CREAR/EDITAR.
+ * permiso `finanzas.aporte` solo tiene LISTAR/CREAR/EDITAR. Página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio).
  */
 
 import { useCallback, useMemo, useState } from 'react';

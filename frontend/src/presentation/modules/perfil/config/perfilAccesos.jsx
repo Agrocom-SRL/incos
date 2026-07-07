@@ -357,7 +357,7 @@ const accesosDireccionAdministrativa = () => [
     title: 'Aporte de la gestión',
     description: 'Monto base, vigencia y estado del aporte académico vigente.',
     actionLabel: 'Ver aporte',
-    path: '/finanzas/aportes',
+    path: '/finanzas/configuracion/aportes',
     permiso: { codigo: 'finanzas.aporte', accion: 'LISTAR' },
   },
   {

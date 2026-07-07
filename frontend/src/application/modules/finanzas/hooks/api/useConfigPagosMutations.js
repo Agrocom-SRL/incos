@@ -7,8 +7,9 @@
  *   - Banco autorizado: POST (alta) / PUT (edición/toggle).
  *   - Cuenta de pago: POST/PUT con FormData (QR opcional) en el repositorio.
  *
- * El UPSERT del aporte de la gestión vigente se movió a su propia página
- * `/finanzas/aportes` (permiso `finanzas.aporte`, ver
+ * El UPSERT del aporte de la gestión vigente vive en la página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio, permiso
+ * `finanzas.aporte`, ver
  * `application/modules/finanzas/aportes/hooks/api/useAporteMutations.js`).
  *
  * Cada acción devuelve `{ success, data?, error? }`. Un único `saving` cubre la

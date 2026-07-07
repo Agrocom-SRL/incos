@@ -1,9 +1,9 @@
 /**
  * Hook de pantalla: Aporte de la gestión vigente (Finanzas).
  *
- * Orquesta la página `/finanzas/aportes` (antes tab "Aporte" de "Config. de
- * pagos"; promovida a página propia con su permiso `finanzas.aporte` —
- * LISTAR/CREAR/EDITAR, sin ELIMINAR). Consume el contexto del provider,
+ * Orquesta la página `/finanzas/configuracion/aportes` (sin ítem de menú
+ * propio; antes tab "Aporte" de "Config. de pagos") con su permiso
+ * `finanzas.aporte` — LISTAR/CREAR/EDITAR, sin ELIMINAR). Consume el contexto del provider,
  * expone breadcrumbs y el handler de guardado (UPSERT + feedback + refetch).
  * No hace fetch (eso vive en el provider).
  *

@@ -8,8 +8,10 @@
  * orquestación (fetch, PUT métodos, POST/PUT bancos y cuentas con QR) vive en
  * `useConfigPagosPage` + el provider; aquí no se hace fetch.
  *
- * El aporte de la gestión vigente se promovió a página propia
- * `/finanzas/aportes` (permiso `finanzas.aporte`, ver `finanzas/aportes/pages/AportePage.jsx`).
+ * El aporte de la gestión vigente vive como página HIJA sin ítem de menú
+ * propio, `/finanzas/configuracion/aportes` (permiso `finanzas.aporte`, ver
+ * `finanzas/configuracion/pages/AporteConfigPage.jsx`), a la que se llega
+ * desde el botón "Configuración de aportes" en `PageHeader`.
  *
  * RBAC: la ruta FIN-CFG es `finanzas.configuracion.pago` LISTAR. El alta
  * (bancos/cuentas) usa CREAR (PermisoGuard en la cabecera del workspace) y
@@ -17,9 +19,9 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Empty, Flex, Spin, Tabs, Typography } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { GoldOutlined, PlusOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
@@ -57,6 +59,7 @@ const renderTabLabel = (meta) => {
 };
 
 const ConfigPagosPage = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     breadcrumbItems,
@@ -219,6 +222,19 @@ const ConfigPagosPage = () => {
     return null;
   }, [activeKey, abrirBancoModal, abrirCuentaModal]);
 
+  /** Acción de página (no por-tab): ir a la configuración del aporte de la gestión vigente. */
+  const pageHeaderActions = (
+    <PermisoGuard codigo="finanzas.aporte" accion="LISTAR">
+      <Button
+        variant="secondary"
+        icon={<GoldOutlined />}
+        onClick={() => navigate('/finanzas/configuracion/aportes')}
+      >
+        Configuración de aportes
+      </Button>
+    </PermisoGuard>
+  );
+
   let body;
   if (loading) {
     body = (
@@ -277,7 +293,11 @@ const ConfigPagosPage = () => {
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
-        <PageHeader title="Config. de pagos" breadcrumbItems={breadcrumbItems} />
+        <PageHeader
+          title="Config. de pagos"
+          breadcrumbItems={breadcrumbItems}
+          actions={pageHeaderActions}
+        />
       </PageHeaderArea>
       <DashboardPageShell>
         <MainContent>{body}</MainContent>

@@ -3,8 +3,9 @@
  * Una URL base (/finanzas/configuracion) con `?tab=` (espejo de AcademicoPage):
  * métodos · bancos · cuentas. Cada tab = una entidad con título + descripción.
  *
- * El tab "Aporte" se promovió a página propia `/finanzas/aportes` (permiso
- * `finanzas.aporte`, ver `finanzas/aportes/routes.jsx`).
+ * El tab "Aporte" se promovió a página hija sin ítem de menú propio,
+ * `/finanzas/configuracion/aportes` (permiso `finanzas.aporte`, ver
+ * `finanzas/configuracion/routes.jsx`).
  */
 
 import { BankOutlined, CreditCardOutlined, WalletOutlined } from '@ant-design/icons';

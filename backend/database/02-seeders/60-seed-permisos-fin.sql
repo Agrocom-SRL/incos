@@ -28,7 +28,7 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('finanzas.pago.reporte.gestion', 'Reportes de pagos: por gestión', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
 ('finanzas.beca.reporte', 'Reportes de pagos: control de becas por carrera', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
 ('finanzas.cuenta-cobrar.reporte', 'Reportes de pagos: cuentas por cobrar', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
-('finanzas.aporte', 'Aportes: monto y vigencia por gestión', NULL, 'FINANZAS', 'FIN', 'fin_aportes', '/finanzas/aportes', 1, NOW(), NOW()),
+('finanzas.aporte', 'Aportes: monto y vigencia por gestión', NULL, 'FINANZAS', 'FIN', 'fin_aportes', '/finanzas/configuracion/aportes', 1, NOW(), NOW()),
 ('finanzas.configuracion.pago', 'Config. de pagos: bancos, cuentas y métodos', NULL, 'FINANZAS', 'FIN', 'fin_config_pagos', '/finanzas/configuracion', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo FIN

@@ -3,8 +3,8 @@
  *
  * Normaliza `configuracionAporte` (configuracion_aportes). Antes vivía en
  * `configPagosMapper.js` como tab de "Config. de pagos"; se movió aquí al
- * separar el aporte en su propia página `/finanzas/aportes` (permiso
- * `finanzas.aporte`, sin ELIMINAR).
+ * separar el aporte en su página `/finanzas/configuracion/aportes` (sin
+ * ítem de menú propio, permiso `finanzas.aporte`, sin ELIMINAR).
  *
  * `dataKey` (front) coincide con el `dataFieldName` (back): configuracionAporte.
  */

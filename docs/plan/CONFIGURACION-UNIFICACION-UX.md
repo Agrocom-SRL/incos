@@ -4,6 +4,14 @@
 > `verificador`. **Extensión en curso**: CRUD para becas/descuentos, aulas, tipos de evaluación,
 > estados civiles e instituciones (traspaso) — ver sección 5. Pendiente de Fases 0-4: revisión manual
 > del usuario y `revisor-ui` opcional de pulido visual.
+>
+> **PAUSADO (2026-07-06), retomar 2026-07-07**: sección 5 (extensión de 5 catálogos) con las 2
+> ubicaciones ya decididas por `arquitecto` (aulas → `configuracion/academico`; instituciones →
+> `configuracion/complementarios`). **Siguiente paso al retomar**: lanzar `planificador` para el
+> checklist ejecutable de los 5 catálogos (becas/descuentos, aulas, tipos de evaluación, estados
+> civiles, instituciones), luego repartir a `backend` (2 sesiones en paralelo: CFG y Finanzas, ver
+> nota al final de la sección 5) y `frontend`. Fases 0-4 siguen sin commitear, a la espera de revisión
+> manual del usuario.
 > Lleva `configuracion/complementarios`, `configuracion/documentacion`, `configuracion/actividades` y
 > `finanzas/configuracion` a paridad de diseño/arquitectura con `configuracion/academico` (patrón de
 > referencia), y construye los endpoints backend que faltan. Este documento es la fuente de verdad
@@ -258,6 +266,54 @@
   sin commitear en el working tree para revisión manual del usuario, salvo los commits que el propio
   usuario ya haya hecho por su cuenta durante la sesión (ver nota de la regla 3bis).
 
+## 5bis. Ajuste de estilo de tablas + Aportes deja de ser menú (2026-07-07)
+
+El usuario detectó 2 problemas sobre lo entregado en las Fases 1-4:
+
+1. **Regla nueva de columnas**: ninguna tabla de "datos de referencia" debe usar `fixed`
+   (ni `'left'` ni `'right'`) y el total de columnas (contando `#` y `Acciones`) no debe superar
+   **6**. Si hay más datos, se apilan dentro de la misma celda (`Flex vertical`, `InfoLinesCell`,
+   varios `StatusPill` apilados), como ya hacen `pagos/config/tableColumns.jsx`,
+   `matricula/config/tableColumns.jsx`, `estudiantes/config/tableColumns.jsx` y
+   `becasTableColumns.jsx`. **Carreras/Materias/Paralelos NO se tocan** (conservan `fixed`, son
+   catálogos maestros con columnas de negocio propias, fuera de alcance de esta regla).
+2. **"Aporte" deja de ser ítem de menú propio.** Pasa a ser una página hija dentro de
+   `finanzas/configuracion` (Config. de pagos), sin `menu:` propio, accedida por un botón
+   "Configuración de aportes" en la cabecera de `ConfigPagosPage`.
+
+**Hecho:**
+- `createSimpleCatalogTableColumns.jsx` (factory compartida de discapacidad/apoderados/idiomas/
+  documentación/actividades): removidos `fixed: 'left'` (Nombre) y `fixed: 'right'` (Acciones).
+  Corrige los 5 consumidores de una sola vez; ninguno excedía 6 columnas.
+- `configPagosColumns.jsx`: removido `fixed: 'right'` de Bancos/Cuentas/Métodos. `createCuentasColumns`
+  bajó de 8 a 6 columnas fusionando "Banco"+"Método" → "Banco y método" y "QR"+"Estado" → "Estado"
+  (pills apiladas). Agregada `createMetodosColumns` (nueva, #/Código/Nombre/Estado/Acciones).
+- `MetodosTabPanel.jsx`: reescrito de `Switch`+`Button` custom a tabla (`TableListView` embebido) con
+  `TableActions` (editar + toggle activo/inactivo vía `extraActions`), igual patrón que Bancos/Cuentas.
+- **Aportes movido**: `finanzas/aportes/` (routes.jsx, connector, page, permisos, estilos) borrado
+  por completo. Recreado bajo `finanzas/configuracion/{pages/AporteConfigPage.jsx,
+  connectors/AporteConfigConnector.jsx, config/aportePermisos.js, styles/aporte-page.css}`. Nueva
+  ruta hija `/finanzas/configuracion/aportes` (`key: FIN-CFG-APORTES`, `menu: null`,
+  `breadcrumbParent: 'FIN-CFG'`, mismo patrón que `finanzas/reportes/routes.jsx`). Botón
+  "Configuración de aportes" en `PageHeader actions` de `ConfigPagosPage.jsx`
+  (`PermisoGuard finanzas.aporte/LISTAR`). `perfilAccesos.jsx` actualizado
+  (`path: '/finanzas/configuracion/aportes'`). Capa de aplicación
+  (`application/modules/finanzas/aportes/*`) **no se movió** (decisión de `arquitecto`: ya es plana
+  por feature, no espeja la carpeta de presentación; solo se actualizaron comentarios).
+  Permiso `finanzas.aporte` **sin cambios de código/acciones** (regla 3bis) — solo dejó de tener
+  `menu:` en frontend.
+- Verificado: `grep "finanzas/aportes" frontend/src` sin referencias rotas (solo capa de aplicación,
+  que no se mueve, y comentarios ya actualizados). `npm run build` OK. Lint acotado a los archivos
+  tocados: sin errores/warnings nuevos.
+- **Pendiente de aprobación del usuario**: el seed `backend/database/02-seeders/60-seed-permisos-fin.sql`
+  se editó (columna `ruta_sidebar` de `finanzas.aporte`: `/finanzas/aportes` →
+  `/finanzas/configuracion/aportes`, cosmético, solo alimenta la grilla de Seguridad, no el sidebar
+  real que es 100% frontend) pero **no se ejecutó contra la BD real** — requiere confirmación
+  explícita antes de resembrar (regla del proyecto).
+- Aulas / tipos_evaluación / estados_civiles / instituciones / becas_descuentos (sección 5) siguen
+  sin frontend construido — no había nada que corregir ahí; cuando se construyan deben nacer ya
+  sin `fixed` y con máximo 6 columnas.
+
 ## 5. Extensión — catálogos de referencia adicionales sin CRUD
 
 Investigación de `datos` (2026-07-06) confirmó 5 catálogos reales sin ninguna pantalla de
@@ -267,10 +323,10 @@ construir CRUD completo para los 5, cada uno en su dominio natural (no agrupados
 | Catálogo | Tabla | Dominio destino (a confirmar con `arquitecto`) | Notas |
 |---|---|---|---|
 | Becas / descuentos | `becas_descuentos` (`11-estudiantes-parte2.sql:30`) | Finanzas (junto a `aportes`/`configuracion`) | 12 becas oficiales (Res. Ministerial 434/2019) ya sembradas — el CRUD debe permitir agregar variantes SIN tocar esas 12 filas. Backend: `becas-descuentos.routes.js` solo GET, resto TODO. |
-| Aulas | `aulas` (`06-estructura-academica-parte2.sql:162`) | `configuracion/academico` (sibling de materias/paralelos) o `institucional/oferta` — decide `arquitecto` | `LAB-2 / Sala de Docentes` está `activo=0` a propósito, no reactivar por accidente. Backend: `aulas-horarios.routes.js` solo `GET /catalogo`. |
+| Aulas | `aulas` (`06-estructura-academica-parte2.sql:162`) | **`configuracion/academico`** (4ta pestaña, decidido por `arquitecto`: catálogo maestro puro, igual patrón que carreras/materias/paralelos; lo operativo -asignación a paralelo_gestion- sigue en institucional/oferta y no se toca) | `LAB-2 / Sala de Docentes` (id 2, capacidad=0, activo=0) está desactivado A PROPÓSITO — no reactivar ni excluir del listado admin, debe verse con StatusPill inactivo. Backend: router NUEVO `aulas.routes.js` en `/api/v1/aulas` (no tocar `aulas-horarios.routes.js`, que sigue sirviendo el tablero). Permiso: `configuracion.aula`. Columnas propias (categoría+capacidad), NO usa `createSimpleCatalogTableColumns`. |
 | Tipos de evaluación | `tipos_evaluacion` (`15-evaluaciones.sql:134`) | `configuracion/academico` (junto a materias/paralelos) | 17 tipos ya sembrados. El campo "componente" (teórico/práctico) vive en `evaluaciones`, NO agregarlo a este catálogo. Backend: solo GET en `calificaciones.routes.js`. |
 | Estados civiles | `estados_civiles` (`03-catalogos-referencia.sql:63`) | `configuracion/complementarios` (sibling de idiomas/discapacidad/apoderados) | Catálogo mínimo (5 valores), bajo impacto. Backend: POST/PUT/DELETE comentados como TODO. |
-| Instituciones (traspaso) | `instituciones` (`18-transitabilidades.sql:70`) | `configuracion/complementarios` o config. de Matriculación — decide `arquitecto` | **Sin backend expuesto en absoluto** (repositorio interno únicamente) — hay que construir router/controller desde cero, no solo activar TODOs. |
+| Instituciones (traspaso) | `instituciones` (`18-transitabilidades.sql:70`) | **`configuracion/complementarios`** (4ta pestaña, decidido por `arquitecto`: alimenta form de Estudiantes/Transitabilidad igual que discapacidad/idiomas/apoderados) | **Confirmado por `arquitecto`: SÍ tiene `activo`+`deleted_at` (líneas 84-90) — NINGÚN DDL nuevo necesario**, descarta la alerta previa de posible columna faltante. Sin backend expuesto en absoluto — construir router/controller/use case desde cero (no hay TODOs que activar). Permiso: `configuracion.complementario.institucion`. Reutilizar `GET /api/v1/departamentos` ya existente para el selector geográfico (no duplicar). Vigilar duplicados por texto libre del flujo find-or-create en matriculación (normalizar `nombre` con trim en el validator). |
 
 Fuera de alcance (explícitamente descartado por el usuario o el propio `datos`):
 - `modalidades_grado`: tabla sin seeder/backend/frontend — es un dominio de Titulación entero
@@ -289,3 +345,17 @@ Fuera de alcance (explícitamente descartado por el usuario o el propio `datos`)
 - Regla 3bis (permiso renombrado/movido = mismo paso atómico backend+frontend) sigue aplicando.
 - Ningún subagente ejecuta `git commit` — el usuario commitea manualmente.
 - Cerrar cada catálogo (o el lote completo) con `verificador` antes de dar por terminado.
+- **2026-07-06**: `arquitecto` resolvió las 2 ubicaciones pendientes de la extensión (sección 5).
+  **Aulas** → `configuracion/academico` (4ta pestaña, permiso `configuracion.aula`, router nuevo
+  `aulas.routes.js`, columnas propias por tener categoría+capacidad). **Instituciones** →
+  `configuracion/complementarios` (4ta pestaña, permiso `configuracion.complementario.institucion`,
+  confirmado que SÍ tiene `activo`+`deleted_at` así que **no hace falta ninguna aprobación de schema**
+  para ningún catálogo de la extensión). Tabla de la sección 5 actualizada con las decisiones. Todos
+  los códigos de permiso nuevos (`configuracion.aula`, `configuracion.complementario.institucion`) se
+  suman a los ya conocidos para becas/descuentos (Finanzas, decisión ya dada por el usuario),
+  `tipos_evaluacion` (`configuracion/academico`) y `estados_civiles`
+  (`configuracion.complementario.estado-civil`, `configuracion/complementarios`).
+  Siguiente paso: `planificador` para el checklist de los 5 catálogos, luego backend (2 sesiones en
+  paralelo: una para CFG —aulas+tipos_evaluacion+estados_civiles+instituciones, mismo seed
+  `62-seed-permisos-cfg.sql`— y otra para Finanzas —becas_descuentos, seed `60-seed-permisos-fin.sql`—)
+  y frontend.

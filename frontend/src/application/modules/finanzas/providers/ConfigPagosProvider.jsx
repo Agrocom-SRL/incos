@@ -7,8 +7,9 @@
  * guardado por sección, estado de modales, feedback + refetch) vive en
  * `useConfigPagosPage` (hooks/state), no aquí.
  *
- * El aporte de la gestión vigente se movió a su propia página
- * `/finanzas/aportes` (permiso `finanzas.aporte`, `AporteProvider`).
+ * El aporte de la gestión vigente vive en la página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio, permiso
+ * `finanzas.aporte`, `AporteProvider`).
  */
 
 import { useMemo } from 'react';

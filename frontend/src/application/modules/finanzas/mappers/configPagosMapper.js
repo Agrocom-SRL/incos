@@ -7,7 +7,8 @@
  *   - cuentaPago         (cuentas_pago)          → cuentas + QR.
  *
  * El aporte de la gestión vigente (configuracionAporte) se movió a
- * `aportes/mappers/aporteMapper.js` (página propia `/finanzas/aportes`).
+ * `aportes/mappers/aporteMapper.js` (página
+ * `/finanzas/configuracion/aportes`, sin ítem de menú propio).
  *
  * Módulo independiente del legacy `@pagos`. `dataKey` (front) coincide con el
  * `dataFieldName` (back): metodoPago / bancoAutorizado / cuentaPago.

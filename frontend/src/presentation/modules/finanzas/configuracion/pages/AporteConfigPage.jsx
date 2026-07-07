@@ -1,10 +1,10 @@
 /**
- * Aporte de la gestión vigente (Finanzas) — página propia (ítem de menú FIN,
- * order 4).
+ * Aporte de la gestión vigente (Finanzas) — página dentro de "Config. de pagos",
+ * sin ítem de menú propio (accesible desde el botón "Configuración de aportes"
+ * de `ConfigPagosPage`).
  *
- * Antes era el tab "Aporte" de "Config. de pagos"; se promovió a página
- * top-level con su propio permiso `finanzas.aporte` (LISTAR/CREAR/EDITAR, sin
- * ELIMINAR), separado de `finanzas.configuracion.pago` (bancos/cuentas/métodos).
+ * Permiso propio `finanzas.aporte` (LISTAR/CREAR/EDITAR, sin ELIMINAR),
+ * separado de `finanzas.configuracion.pago` (bancos/cuentas/métodos).
  *
  * Página "dumb" (espejo de `ConfigPagosPage`, sin tabs): compone
  * `PageHeaderArea` + `DashboardPageShell` + `MainContent` + el workspace
@@ -24,10 +24,10 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';
 import { useAportePage } from '@application-finanzas/aportes/hooks/state/useAportePage';
-import { APORTE_PERMISO } from '@finanzas/aportes/config/aportePermisos';
+import { APORTE_PERMISO } from '@finanzas/configuracion/config/aportePermisos';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@finanzas/aportes/styles/aporte-page.css';
+import '@finanzas/configuracion/styles/aporte-page.css';
 
 const { Paragraph, Text } = Typography;
 
@@ -44,7 +44,7 @@ const MONTO_RULES = [
   },
 ];
 
-const AportePage = () => {
+const AporteConfigPage = () => {
   const [form] = Form.useForm();
   const { gestionVigente, breadcrumbItems, aporteVigente, loading, error, refetch, saving, guardarAporte } =
     useAportePage();
@@ -180,4 +180,4 @@ const AportePage = () => {
   );
 };
 
-export default AportePage;
+export default AporteConfigPage;

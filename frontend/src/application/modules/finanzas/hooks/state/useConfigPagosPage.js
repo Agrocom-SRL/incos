@@ -11,8 +11,9 @@
  *   - Bancos/Cuentas: alta y edición; "quitar" = desactivar (switch activo).
  *   - Cuenta: el QR se envía como archivo (`qr`) → FormData en el repositorio.
  *
- * El aporte de la gestión vigente (UPSERT) se movió a su propia página
- * `/finanzas/aportes` (`useAportePage`), con su permiso `finanzas.aporte`.
+ * El aporte de la gestión vigente (UPSERT) vive en la página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio, `useAportePage`),
+ * con su permiso `finanzas.aporte`.
  */
 
 import { useCallback, useMemo, useState } from 'react';

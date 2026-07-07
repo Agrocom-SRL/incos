@@ -2,10 +2,10 @@
  * Hook de API: aporte de la gestión vigente — módulo Finanzas.
  *
  * Lee `configuracion_aportes` sobre la infraestructura compartida (mismo
- * repositorio que usaba el tab "Aporte" de "Config. de pagos"; promovido a
- * página propia `/finanzas/aportes` con su permiso `finanzas.aporte`,
- * independiente de `finanzas.configuracion.pago` que quedó con
- * bancos/cuentas/métodos).
+ * repositorio que usaba el tab "Aporte" de "Config. de pagos"; ahora página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio) con su permiso
+ * `finanzas.aporte`, independiente de `finanzas.configuracion.pago` que
+ * quedó con bancos/cuentas/métodos).
  *
  * Resuelve el aporte de la GESTIÓN VIGENTE (para el upsert del hook de
  * mutación: si existe → PUT por id; si no → POST). La gestión vigente se

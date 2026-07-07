@@ -8,8 +8,9 @@
  *   - bancos_autorizados    → `AuthorizedBankRepository`
  *   - cuentas_pago          → `PaymentAccountRepository`
  *
- * El aporte de la gestión vigente se movió a su propia página
- * `/finanzas/aportes` (permiso `finanzas.aporte`, ver
+ * El aporte de la gestión vigente vive en la página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio, permiso
+ * `finanzas.aporte`, ver
  * `application/modules/finanzas/aportes/hooks/api/useAporteCatalogApi.js`).
  *
  * `dataKey` (front) coincide con `dataFieldName` (back): metodoPago,

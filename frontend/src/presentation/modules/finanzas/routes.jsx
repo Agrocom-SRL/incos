@@ -6,15 +6,15 @@
  * del submenú tiene su directorio y routes.jsx propio (mismo patrón que
  * academico/asistencia, institucional/horarios, …).
  *
- * Menú FIN: Pagos · Pagos adicionales · Reportes de pagos · Aportes ·
- * Config. de pagos.
+ * Menú FIN: Pagos · Pagos adicionales · Reportes de pagos · Config. de pagos.
+ * Aportes ya no es ítem de menú propio: vive como página hija de Config. de
+ * pagos (`/finanzas/configuracion/aportes`, ver `configuracion/routes.jsx`).
  */
 
 import { UnderConstruction } from '@components/pages';
 import { finanzasPagosRoutes } from './pagos/routes.jsx';
 import { finanzasPagosAdicionalesRoutes } from './adicional/routes.jsx';
 import { finanzasReportesRoutes } from './reportes/routes.jsx';
-import { finanzasAportesRoutes } from './aportes/routes.jsx';
 import { finanzasConfiguracionRoutes } from './configuracion/routes.jsx';
 
 export const finanzasRoutes = [
@@ -27,7 +27,6 @@ export const finanzasRoutes = [
   ...finanzasPagosRoutes,
   ...finanzasPagosAdicionalesRoutes,
   ...finanzasReportesRoutes,
-  ...finanzasAportesRoutes,
   ...finanzasConfiguracionRoutes,
 ];
 
