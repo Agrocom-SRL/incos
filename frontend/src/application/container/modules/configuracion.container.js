@@ -67,6 +67,20 @@ import {
   ActualizarActividadUseCase,
   EliminarActividadUseCase,
 } from '@useCases/configuracion/actividades';
+import {
+  GetTodasAulasUseCase,
+  GetAulaPorIdUseCase,
+  CrearAulaUseCase,
+  ActualizarAulaUseCase,
+  EliminarAulaUseCase,
+} from '@useCases/configuracion/recursos/aula';
+import {
+  GetTodosTiposEvaluacionUseCase,
+  GetTipoEvaluacionPorIdUseCase,
+  CrearTipoEvaluacionUseCase,
+  ActualizarTipoEvaluacionUseCase,
+  EliminarTipoEvaluacionUseCase,
+} from '@useCases/configuracion/recursos/tipoEvaluacion';
 import CarreraRepository from '@infrastructure/repositories/CarreraRepository';
 import MateriaRepository from '@infrastructure/repositories/MateriaRepository';
 import DiscapacidadRepository from '@infrastructure/repositories/DiscapacidadRepository';
@@ -75,6 +89,8 @@ import IdiomaRepository from '@infrastructure/repositories/IdiomaRepository';
 import EstadoCivilRepository from '@infrastructure/repositories/EstadoCivilRepository';
 import DocumentacionRepository from '@infrastructure/repositories/DocumentacionRepository';
 import ActividadRepository from '@infrastructure/repositories/ActividadRepository';
+import AulaRepository from '@infrastructure/repositories/AulaRepository';
+import TipoEvaluacionAdminRepository from '@infrastructure/repositories/TipoEvaluacionAdminRepository';
 
 /**
  * Registra los Use Cases del módulo de configuración académica
@@ -90,6 +106,8 @@ export function registerConfiguracionModule(factory) {
   const estadoCivilRepository = EstadoCivilRepository;
   const documentacionRepository = DocumentacionRepository;
   const actividadRepository = ActividadRepository;
+  const aulaRepository = AulaRepository;
+  const tipoEvaluacionAdminRepository = TipoEvaluacionAdminRepository;
 
   factory.obtenerTodasCarreras = () => new GetTodasCarrerasUseCase(carreraRepository);
   factory.obtenerCarreraPorId = () => new GetCarreraPorIdUseCase(carreraRepository);
@@ -145,6 +163,22 @@ export function registerConfiguracionModule(factory) {
   factory.crearActividad = () => new CrearActividadUseCase(actividadRepository);
   factory.actualizarActividad = () => new ActualizarActividadUseCase(actividadRepository);
   factory.eliminarActividad = () => new EliminarActividadUseCase(actividadRepository);
+
+  factory.obtenerTodasAulas = () => new GetTodasAulasUseCase(aulaRepository);
+  factory.obtenerAulaPorId = () => new GetAulaPorIdUseCase(aulaRepository);
+  factory.crearAula = () => new CrearAulaUseCase(aulaRepository);
+  factory.actualizarAula = () => new ActualizarAulaUseCase(aulaRepository);
+  factory.eliminarAula = () => new EliminarAulaUseCase(aulaRepository);
+
+  factory.obtenerTodosTiposEvaluacion = () =>
+    new GetTodosTiposEvaluacionUseCase(tipoEvaluacionAdminRepository);
+  factory.obtenerTipoEvaluacionPorId = () =>
+    new GetTipoEvaluacionPorIdUseCase(tipoEvaluacionAdminRepository);
+  factory.crearTipoEvaluacion = () => new CrearTipoEvaluacionUseCase(tipoEvaluacionAdminRepository);
+  factory.actualizarTipoEvaluacion = () =>
+    new ActualizarTipoEvaluacionUseCase(tipoEvaluacionAdminRepository);
+  factory.eliminarTipoEvaluacion = () =>
+    new EliminarTipoEvaluacionUseCase(tipoEvaluacionAdminRepository);
 
   return factory;
 }

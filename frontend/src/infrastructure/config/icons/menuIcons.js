@@ -52,6 +52,7 @@ import {
     InfoCircleOutlined,
     UserSwitchOutlined,
     TableOutlined,
+    AppstoreOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -114,6 +115,7 @@ export const menuIconMap = {
 
     // Configuración (CFG)
     'CFG-ACADEMICO': BookOutlined,
+    'CFG-RECURSOS': AppstoreOutlined,
     'CFG-DOCUMENTACION': FolderOpenOutlined,
     'CFG-COMPLEMENTARIO': InfoCircleOutlined,
     'CFG-CONVENIOS': BankOutlined,

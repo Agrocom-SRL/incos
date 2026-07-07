@@ -3,12 +3,24 @@
  * Gemelo de `complementarios/config/navigation.js` / `academico/config/academicoNavigation.js`.
  */
 
-import { PARALELOS_LIST_PATH } from './paths';
+import { PARALELOS_LIST_PATH, AULAS_LIST_PATH, TIPOS_EVALUACION_LIST_PATH } from './paths';
 
 export const CFG_RECURSOS_MENU_KEY = 'CFG-RECURSOS';
 
 export const paralelosListNavigationState = (overrides = {}) => ({
   returnListPath: PARALELOS_LIST_PATH,
+  menuSidebarKey: CFG_RECURSOS_MENU_KEY,
+  ...overrides,
+});
+
+export const aulasListNavigationState = (overrides = {}) => ({
+  returnListPath: AULAS_LIST_PATH,
+  menuSidebarKey: CFG_RECURSOS_MENU_KEY,
+  ...overrides,
+});
+
+export const tiposEvaluacionListNavigationState = (overrides = {}) => ({
+  returnListPath: TIPOS_EVALUACION_LIST_PATH,
   menuSidebarKey: CFG_RECURSOS_MENU_KEY,
   ...overrides,
 });

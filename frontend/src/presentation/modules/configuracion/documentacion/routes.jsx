@@ -115,7 +115,7 @@ export const documentacionRoutes = [
       label: 'Documentación',
       module: 'CFG',
       parent: 'CFG',
-      order: 2,
+      order: 3,
       /** Entrada de menú → primera lista con permiso (inscripción, becas, pasantías, traslado). */
       landingStack: Object.values(DOCUMENTACION_TIPOS).map(({ permisoCodigo, tipoKey }) => ({
         permiso: permisoCodigo,

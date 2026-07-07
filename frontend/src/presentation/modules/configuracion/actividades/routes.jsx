@@ -77,7 +77,7 @@ export const actividadesRoutes = [
       label: 'Historial de Actividades',
       module: 'CFG',
       parent: 'CFG',
-      order: 5,
+      order: 6,
     },
   },
 ];

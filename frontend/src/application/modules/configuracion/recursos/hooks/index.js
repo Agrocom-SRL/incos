@@ -11,3 +11,15 @@ export { useParalelosList } from './features/useParalelosList';
 
 export { useParaleloForm } from './state/useParaleloForm';
 export { useParaleloDetallePage } from './state/useParaleloDetallePage';
+
+export { useAulaContext } from './context/useAulaContext';
+export { useAulasApi } from './api/useAulasApi';
+export { useAulasList } from './features/useAulasList';
+export { useAulaForm } from './state/useAulaForm';
+export { useAulaDetallePage } from './state/useAulaDetallePage';
+
+export { useTipoEvaluacionContext } from './context/useTipoEvaluacionContext';
+export { useTiposEvaluacionAdminApi } from './api/useTiposEvaluacionAdminApi';
+export { useTiposEvaluacionList } from './features/useTiposEvaluacionList';
+export { useTipoEvaluacionForm } from './state/useTipoEvaluacionForm';
+export { useTipoEvaluacionDetallePage } from './state/useTipoEvaluacionDetallePage';

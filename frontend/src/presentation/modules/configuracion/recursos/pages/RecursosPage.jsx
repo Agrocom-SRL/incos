@@ -1,7 +1,7 @@
 /**
  * Menú CFG → Recursos académicos: catálogos de referencia usados por Oferta académica
- * (Paralelos maestro; a futuro Aulas y Tipos de evaluación como tabs 2 y 3).
- * URL: /configuracion/recursos?tab=paralelos
+ * (Paralelos maestro, Aulas y Tipos de evaluación).
+ * URL: /configuracion/recursos?tab=paralelos|aulas|tipos-evaluacion
  *
  * Mismo shell "workspace" que AcademicoPage/ComplementariosPage: header con
  * ListPanelHeader (título + botón crear del tab activo) + Tabs; cada tab embebe
@@ -17,10 +17,20 @@ import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton } from '@atoms';
 import { useAuthContext } from '@application-auth';
-import { paraleloNuevaPath } from '@application-configuracion/recursos/config/paths';
-import { paralelosListNavigationState } from '@application-configuracion/recursos/config/navigation';
+import {
+  paraleloNuevaPath,
+  aulaNuevaPath,
+  tipoEvaluacionNuevaPath,
+} from '@application-configuracion/recursos/config/paths';
+import {
+  paralelosListNavigationState,
+  aulasListNavigationState,
+  tiposEvaluacionListNavigationState,
+} from '@application-configuracion/recursos/config/navigation';
 import ParalelosList from './ParalelosList';
-import { TAB_PARALELOS } from '@configuracion/recursos/config/recursosTabs';
+import AulasList from './AulasList';
+import TiposEvaluacionList from './TiposEvaluacionList';
+import { TAB_PARALELOS, TAB_AULAS, TAB_TIPOS_EVALUACION } from '@configuracion/recursos/config/recursosTabs';
 import { RECURSOS_TAB_PANEL_META } from '@configuracion/recursos/config/recursosTabPanels';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import '@presentation/styles/pages/detail-page.css';
@@ -42,8 +52,12 @@ const RecursosPage = () => {
   const { hasPermiso } = useAuthContext();
 
   const puedeParalelos = hasPermiso('configuracion.paralelo', 'LISTAR');
+  const puedeAulas = hasPermiso('configuracion.aula', 'LISTAR');
+  const puedeTiposEvaluacion = hasPermiso('configuracion.tipo-evaluacion', 'LISTAR');
 
   const paralelosNavState = useMemo(() => paralelosListNavigationState(), []);
+  const aulasNavState = useMemo(() => aulasListNavigationState(), []);
+  const tiposEvaluacionNavState = useMemo(() => tiposEvaluacionListNavigationState(), []);
 
   const tabItems = useMemo(() => {
     const items = [];
@@ -60,8 +74,34 @@ const RecursosPage = () => {
         children: wrapTabPanel(<ParalelosList embedded />),
       });
     }
+    if (puedeAulas) {
+      const meta = RECURSOS_TAB_PANEL_META[TAB_AULAS];
+      const Icon = meta.icon;
+      items.push({
+        key: TAB_AULAS,
+        label: (
+          <span className="sd-tab-label">
+            <Icon /> {meta.shortLabel}
+          </span>
+        ),
+        children: wrapTabPanel(<AulasList embedded />),
+      });
+    }
+    if (puedeTiposEvaluacion) {
+      const meta = RECURSOS_TAB_PANEL_META[TAB_TIPOS_EVALUACION];
+      const Icon = meta.icon;
+      items.push({
+        key: TAB_TIPOS_EVALUACION,
+        label: (
+          <span className="sd-tab-label">
+            <Icon /> {meta.shortLabel}
+          </span>
+        ),
+        children: wrapTabPanel(<TiposEvaluacionList embedded />),
+      });
+    }
     return items;
-  }, [puedeParalelos]);
+  }, [puedeParalelos, puedeAulas, puedeTiposEvaluacion]);
 
   const activeKey = useMemo(() => {
     const requested = searchParams.get('tab');
@@ -88,8 +128,34 @@ const RecursosPage = () => {
         </ActionButton>
       );
     }
+    if (activeKey === TAB_AULAS) {
+      return (
+        <ActionButton
+          permiso="configuracion.aula"
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(aulaNuevaPath, { state: aulasNavState })}
+        >
+          Nueva aula
+        </ActionButton>
+      );
+    }
+    if (activeKey === TAB_TIPOS_EVALUACION) {
+      return (
+        <ActionButton
+          permiso="configuracion.tipo-evaluacion"
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(tipoEvaluacionNuevaPath, { state: tiposEvaluacionNavState })}
+        >
+          Nuevo tipo de evaluación
+        </ActionButton>
+      );
+    }
     return null;
-  }, [activeKey, navigate, paralelosNavState]);
+  }, [activeKey, navigate, paralelosNavState, aulasNavState, tiposEvaluacionNavState]);
 
   const onTabChange = useCallback(
     (key) => {

@@ -234,7 +234,7 @@ export const complementariosRoutes = [
       label: 'Datos Complementarios',
       module: 'CFG',
       parent: 'CFG',
-      order: 3,
+      order: 4,
     },
   },
 ];

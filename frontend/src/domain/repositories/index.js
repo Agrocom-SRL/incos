@@ -40,6 +40,9 @@ export { IMateriaRepository } from './IMateriaRepository';
 export { IDiscapacidadRepository } from './IDiscapacidadRepository';
 // Actividades (catálogo maestro)
 export { IActividadRepository } from './IActividadRepository';
+// Recursos académicos (catálogos de referencia usados por Oferta académica)
+export { IAulaRepository } from './IAulaRepository';
+export { ITipoEvaluacionAdminRepository } from './ITipoEvaluacionAdminRepository';
 
 // ============================================
 // MÓDULO: ACADÉMICO
