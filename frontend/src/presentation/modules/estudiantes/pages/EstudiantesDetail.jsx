@@ -3,9 +3,8 @@
  * Layout limpio: perfil compacto arriba + tabs con cards de 2 columnas abajo.
  */
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Spin, Alert, Empty, Tabs, Tag, Tooltip } from 'antd';
@@ -33,10 +32,7 @@ import {
   ScholarshipsSection,
   EstudianteAccessSection,
 } from '@estudiantes/components/organisms';
-import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 import { getAdmissionTypeTagStyle } from '../config/admissionTypeColors';
-
-const DURACION_MENSAJE_ERROR = 8;
 
 /* ─────────────────────────────────────────
    Átomo: Field — label arriba, valor abajo
@@ -71,7 +67,6 @@ const InfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
 ───────────────────────────────────────── */
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
-  const { message, modal } = App.useApp();
   const { hasPermiso, usuario } = useAuthContext();
   /** Vista propia del estudiante (reusa esta pantalla como "Mis datos"). */
   const esVistaPropiaEstudiante = esEstudiante(usuario);
@@ -90,35 +85,18 @@ const EstudiantesDetail = () => {
     estadoAporte, loadingEstadoAporte,
     refetch,
   } = useStudentDetailContext();
-  const { deleteBecaAsignada, loading: deletingBeca } = useDeleteBecaAsignada();
-  const [deletingBecaId, setDeletingBecaId] = useState(null);
+  const { deleteBecaAsignada } = useDeleteBecaAsignada();
 
+  // Nota: sin confirmación ni notificación propias — el diálogo de confirmación y el
+  // feedback de éxito/error los resuelve TableActions (useTableActionsDelete) dentro
+  // de ScholarshipsSection, que requiere el contrato { success, error? } como retorno.
   const handleDeleteBeca = useCallback(async (beca) => {
     const becaId = beca?.id;
-    if (!becaId) return;
-    await showDeleteConfirm({
-      modal,
-      itemName: 'la asignación de beca',
-      itemDetails: [
-        { label: 'Tipo', value: beca?.scholarshipName || beca?.tipoBeca?.nombre || '—' },
-        { label: 'Estado', value: beca?.state ?? beca?.estado ?? '—' },
-      ],
-      onConfirm: async () => {
-        setDeletingBecaId(becaId);
-        try {
-          const result = await deleteBecaAsignada(becaId);
-          if (result?.success) {
-            message.success('Asignación de beca eliminada correctamente');
-            if (typeof refetch === 'function') refetch();
-          } else {
-            message.error(result?.error || 'Error al eliminar la beca. Debe eliminar primero el pago si está vinculado.', DURACION_MENSAJE_ERROR);
-          }
-        } finally {
-          setDeletingBecaId(null);
-        }
-      },
-    });
-  }, [modal, deleteBecaAsignada, message, refetch]);
+    if (!becaId) return { success: false, error: 'ID de la beca asignada es requerido' };
+    const result = await deleteBecaAsignada(becaId);
+    if (result?.success && typeof refetch === 'function') refetch();
+    return result;
+  }, [deleteBecaAsignada, refetch]);
 
   const tipoAdmision = studentData?.tipoAdmision;
   const tipoAdmisionUpper = (tipoAdmision || '').toString().toUpperCase();
@@ -469,8 +447,6 @@ const EstudiantesDetail = () => {
           <ScholarshipsSection
             scholarships={scholarships}
             onDeleteBeca={puedeEliminarBeca ? handleDeleteBeca : undefined}
-            deletingBecaId={deletingBecaId}
-            deletingBeca={deletingBeca}
           />
         </div>
       ),
@@ -509,7 +485,7 @@ const EstudiantesDetail = () => {
     studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins,
     nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion,
     handleNuevaInscripcion, academicData, catalogs, transitability, transfer, handleDeleteBeca,
-    deletingBecaId, deletingBeca, estadoAporte, loadingEstadoAporte, handleVerDetallePago,
+    estadoAporte, loadingEstadoAporte, handleVerDetallePago,
     handleRegistrarPago, puedeVerInscripcion, puedeCrearInscripcion, puedeVerPago, puedeRegistrarPago,
     puedeEliminarBeca, puedeGenerarPdfDocumento, showDeclaracionButton,
     access, puedeCrearUsuario, puedeEditarUsuario, esVistaDocente,

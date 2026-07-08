@@ -2,8 +2,8 @@
  * Metadatos de paneles por tab en AcademicoPage (título toolbar + descripción).
  */
 
-import { BookOutlined, PartitionOutlined, ReadOutlined, TeamOutlined } from '@ant-design/icons';
-import { TAB_CARRERAS, TAB_MATERIAS, TAB_PARALELOS, TAB_PLANES } from './academicoTabs';
+import { BookOutlined, ReadOutlined, TeamOutlined } from '@ant-design/icons';
+import { TAB_CARRERAS, TAB_MATERIAS, TAB_PLANES } from './academicoTabs';
 
 export const ACADEMICO_TAB_PANEL_META = {
   [TAB_PLANES]: {
@@ -23,12 +23,5 @@ export const ACADEMICO_TAB_PANEL_META = {
     description: 'Catálogo maestro de materias reutilizables en los planes de estudio.',
     shortLabel: 'Materias',
     icon: BookOutlined,
-  },
-  [TAB_PARALELOS]: {
-    title: 'Paralelos maestro',
-    description:
-      'Plantillas por carrera, periodo del plan y turno. Se reutilizan al generar paralelos de gestión en Oferta académica.',
-    shortLabel: 'Paralelos',
-    icon: PartitionOutlined,
   },
 };

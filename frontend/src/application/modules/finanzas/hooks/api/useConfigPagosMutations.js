@@ -1,21 +1,23 @@
 /**
  * Hook de API: mutaciones de la configuración de pagos — módulo Finanzas.
  *
- * Agrupa las escrituras de las 4 secciones sobre la infraestructura compartida
+ * Agrupa las escrituras de las 3 secciones sobre la infraestructura compartida
  * (módulo independiente del legacy `@pagos`):
- *   - Aporte (UPSERT): si NO existe configuración para la gestión vigente → POST;
- *     si existe → PUT por id. La decisión la toma `guardarConfiguracionAporte`
- *     según el `id` recibido.
- *   - Método de pago: PUT (los 4 son fijos; solo nombre/activo).
- *   - Banco autorizado: POST (alta) / PUT (edición/toggle).
- *   - Cuenta de pago: POST/PUT con FormData (QR opcional) en el repositorio.
+ *   - Método de pago: PUT (los 4 son fijos; solo nombre) + PATCH /:id/estado (toggle).
+ *   - Banco autorizado: POST (alta) / PUT (edición) / PATCH /:id/estado / DELETE (baja real).
+ *   - Cuenta de pago: POST/PUT con FormData (QR opcional) / PATCH /:id/estado / DELETE.
+ *
+ * El UPSERT del aporte de la gestión vigente vive en la página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio, permiso
+ * `finanzas.aporte`, ver
+ * `application/modules/finanzas/aportes/hooks/api/useAporteMutations.js`).
  *
  * Cada acción devuelve `{ success, data?, error? }`. Un único `saving` cubre la
- * pantalla (solo se guarda una sección a la vez).
+ * pantalla (solo se guarda una sección a la vez). Eliminar (bancos/cuentas) usa
+ * el mismo `saving`; métodos son catálogo fijo, sin eliminar.
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import contributionConfigurationRepository from '@implementations/ContributionConfigurationRepository';
 import paymentMethodRepository from '@implementations/PaymentMethodRepository';
 import authorizedBankRepository from '@implementations/AuthorizedBankRepository';
 import paymentAccountRepository from '@implementations/PaymentAccountRepository';
@@ -32,22 +34,6 @@ export const useConfigPagosMutations = () => {
       setSaving(false);
     }
   }, []);
-
-  /**
-   * UPSERT de la configuración de aporte de la gestión vigente.
-   * @param {Object} args
-   * @param {number|null} [args.id] - Si viene → PUT; si es null → POST.
-   * @param {Object} args.payload - Cuerpo (snake_case) ya construido por el state.
-   */
-  const guardarConfiguracionAporte = useCallback(
-    ({ id, payload }) =>
-      ejecutar(() =>
-        id != null
-          ? contributionConfigurationRepository.actualizar(id, payload)
-          : contributionConfigurationRepository.crear(payload),
-      ),
-    [ejecutar],
-  );
 
   /** PUT de un método de pago (nombre/activo). */
   const actualizarMetodoPago = useCallback(
@@ -77,15 +63,59 @@ export const useConfigPagosMutations = () => {
     [ejecutar],
   );
 
+  /** DELETE de un banco autorizado (baja real, desde su ficha de detalle). */
+  const eliminarBanco = useCallback(
+    (id) => ejecutar(() => authorizedBankRepository.eliminar(id)),
+    [ejecutar],
+  );
+
+  /** DELETE de una cuenta de pago (baja real, desde su ficha de detalle). */
+  const eliminarCuenta = useCallback(
+    (id) => ejecutar(() => paymentAccountRepository.eliminar(id)),
+    [ejecutar],
+  );
+
+  /** PATCH /:id/estado de un método de pago (toggle activo/inactivo de la ficha). */
+  const cambiarEstadoMetodo = useCallback(
+    (id, activo) => ejecutar(() => paymentMethodRepository.cambiarEstado(id, activo)),
+    [ejecutar],
+  );
+
+  /** PATCH /:id/estado de un banco autorizado (toggle activo/inactivo de la ficha). */
+  const cambiarEstadoBanco = useCallback(
+    (id, activo) => ejecutar(() => authorizedBankRepository.cambiarEstado(id, activo)),
+    [ejecutar],
+  );
+
+  /** PATCH /:id/estado de una cuenta de pago (toggle activo/inactivo de la ficha). */
+  const cambiarEstadoCuenta = useCallback(
+    (id, activo) => ejecutar(() => paymentAccountRepository.cambiarEstado(id, activo)),
+    [ejecutar],
+  );
+
   return useMemo(
     () => ({
       saving,
-      guardarConfiguracionAporte,
       actualizarMetodoPago,
       guardarBanco,
       guardarCuenta,
+      eliminarBanco,
+      eliminarCuenta,
+      cambiarEstadoMetodo,
+      cambiarEstadoBanco,
+      cambiarEstadoCuenta,
     }),
-    [saving, guardarConfiguracionAporte, actualizarMetodoPago, guardarBanco, guardarCuenta],
+    [
+      saving,
+      actualizarMetodoPago,
+      guardarBanco,
+      guardarCuenta,
+      eliminarBanco,
+      eliminarCuenta,
+      cambiarEstadoMetodo,
+      cambiarEstadoBanco,
+      cambiarEstadoCuenta,
+    ],
   );
 };
 

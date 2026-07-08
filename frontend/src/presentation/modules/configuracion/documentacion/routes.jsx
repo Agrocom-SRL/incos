@@ -1,65 +1,88 @@
 /**
- * Documentación — menú CFG (subrutas en construcción).
+ * Configuración → Documentación (catálogo único de los 9 tipos de documento
+ * del ENUM `tipo_documento`). Patrón ABM clásico (como Actividades), sin tabs:
+ *
+ *   /configuracion/documentacion              → listado (entrada de menú directa)
+ *   /configuracion/documentacion/nueva        → crear
+ *   /configuracion/documentacion/:id/editar   → editar
+ *   /configuracion/documentacion/:id          → detalle
+ *
+ * Permiso único `configuracion.documentacion` (reemplaza los permisos
+ * segmentados `configuracion.documentacion.{inscripcion,becas,pasantias,traslado}`,
+ * ya retirados del backend). Las 4 URLs por tipo quedan como redirects legacy
+ * al listado unificado.
  */
 
-import { UnderConstruction } from '@components/pages';
+import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
+import { DOCUMENTACION_BASE } from '@application-configuracion/documentacion/config/paths';
 
-const CFG_DOCUMENTACION_PERMISOS = [
-  'configuracion.documentacion.inscripcion',
-  'configuracion.documentacion.becas',
-  'configuracion.documentacion.pasantias',
-  'configuracion.documentacion.traslado',
-];
+const DocumentacionListConnector = lazy(
+  () => import('@configuracion/documentacion/connectors/DocumentacionListConnector.jsx'),
+);
+const DocumentacionFormCreateConnector = lazy(
+  () => import('@configuracion/documentacion/connectors/DocumentacionFormCreateConnector.jsx'),
+);
+const DocumentacionFormEditConnector = lazy(
+  () => import('@configuracion/documentacion/connectors/DocumentacionFormEditConnector.jsx'),
+);
+const DocumentacionDetailConnector = lazy(
+  () => import('@configuracion/documentacion/connectors/DocumentacionDetailConnector.jsx'),
+);
+
+/** URLs de las 4 pantallas por tipo retiradas (redirect al listado unificado). */
+const TIPO_PATHS_LEGACY = ['inscripcion', 'becas', 'pasantias', 'traslado'];
 
 export const documentacionRoutes = [
-  {
-    path: '/configuracion/documentacion/inscripcion',
-    element: <UnderConstruction />,
-    key: 'CFG-DOCUMENTACION-INSCRIPCION',
-    permiso: 'configuracion.documentacion.inscripcion',
+  ...TIPO_PATHS_LEGACY.map((tipoKey) => ({
+    path: `${DOCUMENTACION_BASE}/${tipoKey}`,
+    element: <Navigate to={DOCUMENTACION_BASE} replace />,
+    key: `CFG-DOCUMENTACION-${tipoKey.toUpperCase()}-LEGACY`,
+    permiso: 'configuracion.documentacion',
     accion: 'LISTAR',
     menu: null,
-    breadcrumbParent: 'CFG-DOCUMENTACION',
-  },
+  })),
   {
-    path: '/configuracion/documentacion/becas',
-    element: <UnderConstruction />,
-    key: 'CFG-DOCUMENTACION-BECAS',
-    permiso: 'configuracion.documentacion.becas',
-    accion: 'LISTAR',
+    path: `${DOCUMENTACION_BASE}/nueva`,
+    element: <DocumentacionFormCreateConnector />,
+    key: 'CFG-DOCUMENTACION-NUEVA',
+    permiso: 'configuracion.documentacion',
+    accion: 'CREAR',
     menu: null,
     breadcrumbParent: 'CFG-DOCUMENTACION',
+    breadcrumbLabel: 'Nuevo documento',
   },
   {
-    path: '/configuracion/documentacion/pasantias',
-    element: <UnderConstruction />,
-    key: 'CFG-DOCUMENTACION-PASANTIAS',
-    permiso: 'configuracion.documentacion.pasantias',
-    accion: 'LISTAR',
+    path: `${DOCUMENTACION_BASE}/:id/editar`,
+    element: <DocumentacionFormEditConnector />,
+    key: 'CFG-DOCUMENTACION-EDITAR',
+    permiso: 'configuracion.documentacion',
+    accion: 'EDITAR',
     menu: null,
     breadcrumbParent: 'CFG-DOCUMENTACION',
+    breadcrumbLabel: 'Editar documento',
   },
   {
-    path: '/configuracion/documentacion/traslado',
-    element: <UnderConstruction />,
-    key: 'CFG-DOCUMENTACION-TRASLADO',
-    permiso: 'configuracion.documentacion.traslado',
-    accion: 'LISTAR',
+    path: `${DOCUMENTACION_BASE}/:id`,
+    element: <DocumentacionDetailConnector />,
+    key: 'CFG-DOCUMENTACION-DETALLE',
+    permiso: 'configuracion.documentacion',
+    accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'CFG-DOCUMENTACION',
+    breadcrumbLabel: 'Detalle de documento',
   },
   {
-    path: '/configuracion/documentacion',
-    element: <UnderConstruction />,
+    path: DOCUMENTACION_BASE,
+    element: <DocumentacionListConnector />,
     key: 'CFG-DOCUMENTACION',
-    permiso: null,
-    permisoAny: CFG_DOCUMENTACION_PERMISOS,
+    permiso: 'configuracion.documentacion',
     accion: 'LISTAR',
     menu: {
       label: 'Documentación',
       module: 'CFG',
       parent: 'CFG',
-      order: 2,
+      order: 3,
     },
   },
 ];

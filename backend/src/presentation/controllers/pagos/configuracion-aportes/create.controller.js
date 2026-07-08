@@ -2,7 +2,7 @@
  * POST /api/v1/configuracion-aportes
  * Crea una configuración de aporte académico.
  *
- * Permiso: configuracion.pagos (CREAR).
+ * Permiso: finanzas.aporte (CREAR).
  * Body: monto_base (req), gestion_id?, aporte_activo?, fecha_inicio (req), fecha_fin?
  * Contrato: data.configuracionAporte = configuración creada.
  */

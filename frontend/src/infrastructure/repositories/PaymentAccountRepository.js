@@ -128,6 +128,41 @@ export class PaymentAccountRepository extends IPaymentAccountRepository {
     }
   }
 
+  /**
+   * Elimina (soft delete) una cuenta de pago.
+   * DELETE /v1/cuentas-pago/:id
+   *
+   * @param {string|number} id - ID de la cuenta
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminar(id) {
+    try {
+      if (!id && id !== 0) {
+        return { success: false, error: 'ID de la cuenta es requerido' };
+      }
+      const response = await apiClient.delete(CUENTAS_PAGO_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la cuenta de pago');
+    }
+  }
+
+  /**
+   * Cambia el estado activo/inactivo de una cuenta de pago
+   * PATCH /v1/cuentas-pago/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(CUENTAS_PAGO_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado de la cuenta de pago');
+    }
+  }
+
 }
 
 export default new PaymentAccountRepository();

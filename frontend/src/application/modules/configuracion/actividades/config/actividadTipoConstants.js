@@ -1,0 +1,35 @@
+/**
+ * Constantes de tipo de actividad — deben coincidir 1:1 con
+ * `TIPOS_ACTIVIDAD` en `backend/src/domain/constants/gestion.constants.js`.
+ */
+
+export const TIPOS_ACTIVIDAD = {
+  INSCRIPCION: 'INSCRIPCION',
+  PLANIFICACION: 'PLANIFICACION',
+  ACADEMICA: 'ACADEMICA',
+  EVALUACION: 'EVALUACION',
+  ADMINISTRATIVA: 'ADMINISTRATIVA',
+  FERIADO: 'FERIADO',
+  EVENTO_INSTITUCIONAL: 'EVENTO_INSTITUCIONAL',
+  FERIA: 'FERIA',
+  MODALIDAD_GRADO: 'MODALIDAD_GRADO',
+  OTRO: 'OTRO',
+};
+
+export const TIPO_ACTIVIDAD_LABEL = {
+  [TIPOS_ACTIVIDAD.INSCRIPCION]: 'Inscripción',
+  [TIPOS_ACTIVIDAD.PLANIFICACION]: 'Planificación',
+  [TIPOS_ACTIVIDAD.ACADEMICA]: 'Académica',
+  [TIPOS_ACTIVIDAD.EVALUACION]: 'Evaluación',
+  [TIPOS_ACTIVIDAD.ADMINISTRATIVA]: 'Administrativa',
+  [TIPOS_ACTIVIDAD.FERIADO]: 'Feriado',
+  [TIPOS_ACTIVIDAD.EVENTO_INSTITUCIONAL]: 'Evento institucional',
+  [TIPOS_ACTIVIDAD.FERIA]: 'Feria',
+  [TIPOS_ACTIVIDAD.MODALIDAD_GRADO]: 'Modalidad de grado',
+  [TIPOS_ACTIVIDAD.OTRO]: 'Otro',
+};
+
+export const TIPOS_ACTIVIDAD_OPTIONS = Object.values(TIPOS_ACTIVIDAD).map((value) => ({
+  value,
+  label: TIPO_ACTIVIDAD_LABEL[value],
+}));

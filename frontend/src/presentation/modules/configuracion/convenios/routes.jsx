@@ -11,7 +11,7 @@ export const conveniosRoutes = [
       label: 'Empresas y Convenios',
       module: 'CFG',
       parent: 'CFG',
-      order: 4,
+      order: 5,
     },
   },
 ];

@@ -47,6 +47,78 @@ export class DocumentacionRepository extends IDocumentacionRepository {
     }
   }
 
+  /**
+   * Obtiene un tipo de documentación por ID
+   * GET /v1/documentacion/:id
+   */
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(DOCUMENTACION_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      // El backend puede devolver el registro plano (sin envolver en { documentacion })
+      if (result.success && result.data && !result.data.documentacion) {
+        result.data = { documentacion: result.data };
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el tipo de documentación');
+    }
+  }
+
+  /**
+   * Crea un tipo de documentación
+   * POST /v1/documentacion
+   */
+  async crear(data) {
+    try {
+      const response = await apiClient.post(DOCUMENTACION_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear el tipo de documentación');
+    }
+  }
+
+  /**
+   * Actualiza un tipo de documentación
+   * PUT /v1/documentacion/:id
+   */
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(DOCUMENTACION_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el tipo de documentación');
+    }
+  }
+
+  /**
+   * Cambia el estado activo/inactivo de un tipo de documentación
+   * PATCH /v1/documentacion/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(DOCUMENTACION_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del tipo de documentación');
+    }
+  }
+
+  /**
+   * Elimina (soft delete) un tipo de documentación
+   * DELETE /v1/documentacion/:id
+   */
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(DOCUMENTACION_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el tipo de documentación');
+    }
+  }
 }
 
 export default new DocumentacionRepository();

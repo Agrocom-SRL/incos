@@ -35,4 +35,9 @@ export const listParalelosValidator = [
     .isInt({ min: 1 })
     .withMessage('carrera_id debe ser un número entero mayor a 0')
     .toInt(),
+
+  query('incluirInactivos')
+    .optional()
+    .isIn(['true', 'false', '0', '1'])
+    .withMessage('incluirInactivos debe ser true o false'),
 ];

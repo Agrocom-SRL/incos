@@ -1,0 +1,1 @@
+export { ActividadProvider } from './ActividadProvider';

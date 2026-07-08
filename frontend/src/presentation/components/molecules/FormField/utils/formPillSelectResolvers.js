@@ -5,8 +5,8 @@ import {
   getMateriaClasificacionPillClass,
   getMateriaTipoPillClass,
 } from '@application-configuracion/academico/config/materiaTipoPill';
-import { getParaleloTurnoFormPillClass } from '@application-configuracion/academico/config/paraleloTurnoOptions';
-import { getParaleloPeriodoPillClass } from '@application-configuracion/academico/config/paraleloPeriodoPill';
+import { getParaleloTurnoFormPillClass } from '@application-configuracion/recursos/config/paraleloTurnoOptions';
+import { getParaleloPeriodoPillClass } from '@application-configuracion/recursos/config/paraleloPeriodoPill';
 
 const DEFAULT_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--default';
 

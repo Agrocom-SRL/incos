@@ -24,6 +24,10 @@ export const discapacidadListMapper = (discapacidadBackend) => {
     nombre: discapacidadBackend.nombre,
     descripcion: discapacidadBackend.descripcion,
     activo: discapacidadBackend.activo,
+    // Conteos de uso del catálogo (columna "Usos"), 0 por defecto
+    cantidadEstudiantes: discapacidadBackend.cantidadEstudiantes ?? 0,
+    cantidadDocentes: discapacidadBackend.cantidadDocentes ?? 0,
+    cantidadPersonal: discapacidadBackend.cantidadPersonal ?? 0,
   };
 };
 

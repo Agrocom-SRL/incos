@@ -7,10 +7,14 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListAuthorizedBanksUseCase } from '../../../../application/use-cases/pagos/ListAuthorizedBanksUseCase.js';
 import { CreateAuthorizedBankUseCase } from '../../../../application/use-cases/pagos/CreateAuthorizedBankUseCase.js';
 import { UpdateAuthorizedBankUseCase } from '../../../../application/use-cases/pagos/UpdateAuthorizedBankUseCase.js';
+import { DeleteAuthorizedBankUseCase } from '../../../../application/use-cases/pagos/DeleteAuthorizedBankUseCase.js';
+import { SetEstadoBancoAutorizadoUseCase } from '../../../../application/use-cases/pagos/SetEstadoBancoAutorizadoUseCase.js';
 import {
     ListBancosAutorizadosController,
     CreateBancoAutorizadoController,
     UpdateBancoAutorizadoController,
+    DeleteBancoAutorizadoController,
+    SetEstadoBancoAutorizadoController,
 } from '../../../../presentation/controllers/pagos/index.js';
 import { buildBancosAutorizadosRouter } from '../../../../presentation/routes/bancos-autorizados.routes.js';
 
@@ -22,6 +26,9 @@ export function registerBancosAutorizadosResource(container) {
         (c) =>
             new ListAuthorizedBanksUseCase({
                 authorizedBankRepository: c.resolve(REPOSITORIOS_TOKENS.authorizedBankRepository),
+                finanzasUsosViewRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.finanzasUsosViewRepository,
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );
@@ -41,6 +48,26 @@ export function registerBancosAutorizadosResource(container) {
         PAGOS_TOKENS.updateAuthorizedBankUseCase,
         (c) =>
             new UpdateAuthorizedBankUseCase({
+                authorizedBankRepository: c.resolve(REPOSITORIOS_TOKENS.authorizedBankRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.deleteAuthorizedBankUseCase,
+        (c) =>
+            new DeleteAuthorizedBankUseCase({
+                authorizedBankRepository: c.resolve(REPOSITORIOS_TOKENS.authorizedBankRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.setEstadoBancoAutorizadoUseCase,
+        (c) =>
+            new SetEstadoBancoAutorizadoUseCase({
                 authorizedBankRepository: c.resolve(REPOSITORIOS_TOKENS.authorizedBankRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
@@ -80,6 +107,30 @@ export function registerBancosAutorizadosResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.deleteBancoAutorizadoController,
+        (c) =>
+            new DeleteBancoAutorizadoController({
+                deleteAuthorizedBankUseCase: c.resolve(PAGOS_TOKENS.deleteAuthorizedBankUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.setEstadoBancoAutorizadoController,
+        (c) =>
+            new SetEstadoBancoAutorizadoController({
+                setEstadoBancoAutorizadoUseCase: c.resolve(
+                    PAGOS_TOKENS.setEstadoBancoAutorizadoUseCase,
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ROUTER
     registerComponent(
         container,
@@ -89,6 +140,10 @@ export function registerBancosAutorizadosResource(container) {
                 listBancosAutorizadosController: c.resolve(PAGOS_TOKENS.listBancosAutorizadosController),
                 createBancoAutorizadoController: c.resolve(PAGOS_TOKENS.createBancoAutorizadoController),
                 updateBancoAutorizadoController: c.resolve(PAGOS_TOKENS.updateBancoAutorizadoController),
+                deleteBancoAutorizadoController: c.resolve(PAGOS_TOKENS.deleteBancoAutorizadoController),
+                setEstadoBancoAutorizadoController: c.resolve(
+                    PAGOS_TOKENS.setEstadoBancoAutorizadoController,
+                ),
             };
 
             const middlewares = {

@@ -20,8 +20,9 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('configuracion_complementario', 'Datos complementarios', 'CONFIGURACION', 8, 1, NOW(), NOW()),
 ('configuracion_documentacion', 'Documentación', 'CONFIGURACION', 9, 1, NOW(), NOW()),
 ('configuracion_convenios', 'Convenios', 'CONFIGURACION', 10, 1, NOW(), NOW()),
-('configuracion_historial', 'Historial de actividades', 'CONFIGURACION', 11, 1, NOW(), NOW()),
-('configuracion_pagos', 'Configuración de pagos', 'CONFIGURACION', 12, 1, NOW(), NOW());
+('configuracion_actividad', 'Actividades', 'CONFIGURACION', 11, 1, NOW(), NOW()),
+('configuracion_recursos_aula', 'Recursos académicos · aulas', 'CONFIGURACION', 12, 1, NOW(), NOW()),
+('configuracion_recursos_tipo_evaluacion', 'Recursos académicos · tipos de evaluación', 'CONFIGURACION', 13, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo CFG
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -31,17 +32,16 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('configuracion.plan-estudio.periodos', 'Plan: periodos (años)', NULL, 'CONFIGURACION', 'CFG', 'configuracion_plan_periodos', '/configuracion/academico', 1, NOW(), NOW()),
 ('configuracion.plan-estudio.asignaturas', 'Plan: asignaturas por periodo', NULL, 'CONFIGURACION', 'CFG', 'configuracion_plan_asignaturas', '/configuracion/academico', 1, NOW(), NOW()),
 ('configuracion.plan-estudio.prerrequisitos', 'Académico: prerrequisitos', NULL, 'CONFIGURACION', 'CFG', 'configuracion_academico_prerrequisitos', '/configuracion/academico', 1, NOW(), NOW()),
-('configuracion.paralelo', 'Académico: paralelos maestro', NULL, 'CONFIGURACION', 'CFG', 'configuracion_academico_paralelo', '/configuracion/academico', 1, NOW(), NOW()),
-('configuracion.documentacion.inscripcion', 'Documentación: inscripción', NULL, 'CONFIGURACION', 'CFG', 'configuracion_documentacion', '/configuracion/documentacion', 1, NOW(), NOW()),
-('configuracion.documentacion.becas', 'Documentación: becas', NULL, 'CONFIGURACION', 'CFG', 'configuracion_documentacion', '/configuracion/documentacion', 1, NOW(), NOW()),
-('configuracion.documentacion.pasantias', 'Documentación: pasantías', NULL, 'CONFIGURACION', 'CFG', 'configuracion_documentacion', '/configuracion/documentacion', 1, NOW(), NOW()),
-('configuracion.documentacion.traslado', 'Documentación: traslado', NULL, 'CONFIGURACION', 'CFG', 'configuracion_documentacion', '/configuracion/documentacion', 1, NOW(), NOW()),
+('configuracion.paralelo', 'Académico: paralelos maestro', NULL, 'CONFIGURACION', 'CFG', 'configuracion_academico_paralelo', '/configuracion/recursos', 1, NOW(), NOW()),
+('configuracion.documentacion', 'Documentación', NULL, 'CONFIGURACION', 'CFG', 'configuracion_documentacion', '/configuracion/documentacion', 1, NOW(), NOW()),
 ('configuracion.complementario.discapacidad', 'Complementarios: discapacidad', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
 ('configuracion.complementario.apoderados', 'Complementarios: apoderados', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
 ('configuracion.complementario.idiomas', 'Complementarios: idiomas', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
+('configuracion.complementario.estado-civil', 'Complementarios: estado civil', NULL, 'CONFIGURACION', 'CFG', 'configuracion_complementario', '/configuracion/datos-complementarios', 1, NOW(), NOW()),
 ('configuracion.convenios', 'Empresas y convenios', NULL, 'CONFIGURACION', 'CFG', 'configuracion_convenios', '/configuracion/convenios', 1, NOW(), NOW()),
-('configuracion.pagos', 'Configuración de pagos y aranceles', NULL, 'CONFIGURACION', 'CFG', 'configuracion_pagos', '/pagos/configuracion', 1, NOW(), NOW()),
-('configuracion.historial-actividades', 'Historial de actividades', NULL, 'CONFIGURACION', 'CFG', 'configuracion_historial', '/configuracion/historial-actividades', 1, NOW(), NOW());
+('configuracion.actividad', 'Actividades', NULL, 'CONFIGURACION', 'CFG', 'configuracion_actividad', '/configuracion/historial-actividades', 1, NOW(), NOW()),
+('configuracion.aula', 'Recursos académicos: aulas', NULL, 'CONFIGURACION', 'CFG', 'configuracion_recursos_aula', '/configuracion/recursos', 1, NOW(), NOW()),
+('configuracion.tipo-evaluacion', 'Recursos académicos: tipos de evaluación', NULL, 'CONFIGURACION', 'CFG', 'configuracion_recursos_tipo_evaluacion', '/configuracion/recursos', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo CFG
 INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)
@@ -81,36 +81,57 @@ JOIN (
   UNION ALL SELECT 'configuracion.paralelo', 'EDITAR'
   UNION ALL SELECT 'configuracion.paralelo', 'ELIMINAR'
   UNION ALL SELECT 'configuracion.paralelo', 'ACTIVAR'
-  UNION ALL SELECT 'configuracion.documentacion.inscripcion', 'LISTAR'
-  UNION ALL SELECT 'configuracion.documentacion.inscripcion', 'CREAR'
-  UNION ALL SELECT 'configuracion.documentacion.inscripcion', 'EDITAR'
-  UNION ALL SELECT 'configuracion.documentacion.becas', 'LISTAR'
-  UNION ALL SELECT 'configuracion.documentacion.becas', 'CREAR'
-  UNION ALL SELECT 'configuracion.documentacion.becas', 'EDITAR'
-  UNION ALL SELECT 'configuracion.documentacion.pasantias', 'LISTAR'
-  UNION ALL SELECT 'configuracion.documentacion.pasantias', 'CREAR'
-  UNION ALL SELECT 'configuracion.documentacion.pasantias', 'EDITAR'
-  UNION ALL SELECT 'configuracion.documentacion.traslado', 'LISTAR'
-  UNION ALL SELECT 'configuracion.documentacion.traslado', 'CREAR'
-  UNION ALL SELECT 'configuracion.documentacion.traslado', 'EDITAR'
+  UNION ALL SELECT 'configuracion.documentacion', 'LISTAR'
+  UNION ALL SELECT 'configuracion.documentacion', 'DETALLE'
+  UNION ALL SELECT 'configuracion.documentacion', 'CREAR'
+  UNION ALL SELECT 'configuracion.documentacion', 'EDITAR'
+  UNION ALL SELECT 'configuracion.documentacion', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.documentacion', 'ACTIVAR'
   UNION ALL SELECT 'configuracion.complementario.discapacidad', 'LISTAR'
+  UNION ALL SELECT 'configuracion.complementario.discapacidad', 'DETALLE'
   UNION ALL SELECT 'configuracion.complementario.discapacidad', 'CREAR'
   UNION ALL SELECT 'configuracion.complementario.discapacidad', 'EDITAR'
   UNION ALL SELECT 'configuracion.complementario.discapacidad', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.complementario.discapacidad', 'ACTIVAR'
   UNION ALL SELECT 'configuracion.complementario.apoderados', 'LISTAR'
+  UNION ALL SELECT 'configuracion.complementario.apoderados', 'DETALLE'
   UNION ALL SELECT 'configuracion.complementario.apoderados', 'CREAR'
   UNION ALL SELECT 'configuracion.complementario.apoderados', 'EDITAR'
+  UNION ALL SELECT 'configuracion.complementario.apoderados', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.complementario.apoderados', 'ACTIVAR'
   UNION ALL SELECT 'configuracion.complementario.idiomas', 'LISTAR'
+  UNION ALL SELECT 'configuracion.complementario.idiomas', 'DETALLE'
   UNION ALL SELECT 'configuracion.complementario.idiomas', 'CREAR'
   UNION ALL SELECT 'configuracion.complementario.idiomas', 'EDITAR'
   UNION ALL SELECT 'configuracion.complementario.idiomas', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.complementario.idiomas', 'ACTIVAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'LISTAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'DETALLE'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'CREAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'EDITAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.complementario.estado-civil', 'ACTIVAR'
   UNION ALL SELECT 'configuracion.convenios', 'LISTAR'
   UNION ALL SELECT 'configuracion.convenios', 'CREAR'
   UNION ALL SELECT 'configuracion.convenios', 'EDITAR'
-  UNION ALL SELECT 'configuracion.pagos', 'LISTAR'
-  UNION ALL SELECT 'configuracion.pagos', 'CREAR'
-  UNION ALL SELECT 'configuracion.pagos', 'EDITAR'
-  UNION ALL SELECT 'configuracion.historial-actividades', 'LISTAR'
+  UNION ALL SELECT 'configuracion.actividad', 'LISTAR'
+  UNION ALL SELECT 'configuracion.actividad', 'DETALLE'
+  UNION ALL SELECT 'configuracion.actividad', 'CREAR'
+  UNION ALL SELECT 'configuracion.actividad', 'EDITAR'
+  UNION ALL SELECT 'configuracion.actividad', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.actividad', 'ACTIVAR'
+  UNION ALL SELECT 'configuracion.aula', 'LISTAR'
+  UNION ALL SELECT 'configuracion.aula', 'DETALLE'
+  UNION ALL SELECT 'configuracion.aula', 'CREAR'
+  UNION ALL SELECT 'configuracion.aula', 'EDITAR'
+  UNION ALL SELECT 'configuracion.aula', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.aula', 'ACTIVAR'
+  UNION ALL SELECT 'configuracion.tipo-evaluacion', 'LISTAR'
+  UNION ALL SELECT 'configuracion.tipo-evaluacion', 'DETALLE'
+  UNION ALL SELECT 'configuracion.tipo-evaluacion', 'CREAR'
+  UNION ALL SELECT 'configuracion.tipo-evaluacion', 'EDITAR'
+  UNION ALL SELECT 'configuracion.tipo-evaluacion', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.tipo-evaluacion', 'ACTIVAR'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo CFG (roles 2-8; ADMIN_SISTEMA hereda por vista)
@@ -176,71 +197,108 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.paralelo', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.paralelo', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.paralelo', 'ELIMINAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.inscripcion', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.inscripcion', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.inscripcion', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.inscripcion', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.inscripcion', 'ACTIVAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion.inscripcion', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion.inscripcion', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.becas', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.becas', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.becas', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.becas', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.becas', 'ELIMINAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion.becas', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion.becas', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.pasantias', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.pasantias', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.pasantias', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.pasantias', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.pasantias', 'ELIMINAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion.pasantias', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.traslado', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.traslado', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.traslado', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.traslado', 'ELIMINAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion.traslado', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.paralelo', 'ACTIVAR'
+  -- Documentación: catálogo único (consolidación de los 4 códigos segmentados
+  -- inscripcion/becas/pasantias/traslado — unión de las asignaciones que tenían)
+  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.documentacion', 'ACTIVAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.documentacion', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.discapacidad', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.discapacidad', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.discapacidad', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.discapacidad', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.discapacidad', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.discapacidad', 'ACTIVAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.discapacidad', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.discapacidad', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.discapacidad', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.discapacidad', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.apoderados', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.apoderados', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.apoderados', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.apoderados', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.apoderados', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.apoderados', 'ACTIVAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.apoderados', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.apoderados', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.apoderados', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.apoderados', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.complementario.idiomas', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.idiomas', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.idiomas', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.idiomas', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.idiomas', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.idiomas', 'ACTIVAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.idiomas', 'ACTIVAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.complementario.estado-civil', 'ACTIVAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.complementario.estado-civil', 'ACTIVAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.convenios', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.convenios', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.pagos', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.pagos', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.pagos', 'EDITAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'configuracion.pagos', 'LISTAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'configuracion.pagos', 'CREAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'configuracion.pagos', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.historial-actividades', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.historial-actividades', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'configuracion.historial-actividades', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.actividad', 'ACTIVAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.actividad', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.actividad', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'ACTIVAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'ACTIVAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'ACTIVAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'ACTIVAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;
 
 -- ============================================================
 -- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
--- Documentación, Empresas y convenios, e Historial de actividades: se ocultan
--- hasta que las pantallas existan. (El resto de Configuración académica y de
--- Datos complementarios / pagos SÍ está construido y permanece activo.)
+-- Empresas y convenios: se oculta hasta que la pantalla exista. (El resto de
+-- Configuración académica, Datos complementarios, Documentación, Actividades
+-- y pagos SÍ está construido y permanece activo.)
 -- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
 -- (permiso_acciones), sus asignaciones a roles (roles_permisos) y los grupos
 -- de UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que
@@ -253,15 +311,8 @@ SET @fecha_baja := '2026-06-24 00:00:00';
 UPDATE permisos
 SET activo = 0, deleted_at = @fecha_baja
 WHERE codigo IN (
-  -- Documentación
-  'configuracion.documentacion.inscripcion',
-  'configuracion.documentacion.becas',
-  'configuracion.documentacion.pasantias',
-  'configuracion.documentacion.traslado',
   -- Empresas y convenios
-  'configuracion.convenios',
-  -- Historial de actividades
-  'configuracion.historial-actividades'
+  'configuracion.convenios'
 );
 
 -- 2) Cascada: acciones de esos permisos
@@ -280,9 +331,7 @@ WHERE p.modulo = 'CFG' AND p.deleted_at IS NOT NULL;
 UPDATE grupos_ui
 SET activo = 0, deleted_at = @fecha_baja
 WHERE codigo IN (
-  'configuracion_documentacion',
-  'configuracion_convenios',
-  'configuracion_historial'
+  'configuracion_convenios'
 );
 
 SET FOREIGN_KEY_CHECKS = 1;

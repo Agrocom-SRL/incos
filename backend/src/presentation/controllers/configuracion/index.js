@@ -45,6 +45,7 @@ export { CreateParaleloController } from './paralelos/create.controller.js';
 export { GetParaleloByIdController } from './paralelos/get-by-id.controller.js';
 export { UpdateParaleloController } from './paralelos/update.controller.js';
 export { DeleteParaleloController } from './paralelos/delete.controller.js';
+export { SetEstadoParaleloController } from './paralelos/set-estado.controller.js';
 export { ListParalelosGestionByParaleloController } from './paralelos/list-paralelos-gestion-by-paralelo.controller.js';
 
 export {
@@ -54,3 +55,31 @@ export {
     DeletePrerrequisitoController,
 } from './planes-estudios/prerrequisitos.controllers.js';
 
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - ACTIVIDADES (catálogo maestro)
+// ============================================
+export { ListActividadesController } from './actividades/list.controller.js';
+export { CreateActividadController } from './actividades/create.controller.js';
+export { GetActividadByIdController } from './actividades/get-by-id.controller.js';
+export { UpdateActividadController } from './actividades/update.controller.js';
+export { DeleteActividadController } from './actividades/delete.controller.js';
+export { SetEstadoActividadController } from './actividades/set-estado.controller.js';
+
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - AULAS (catálogo maestro de espacios físicos)
+// ============================================
+export { ListAulasController } from './aulas/list.controller.js';
+export { CreateAulaController } from './aulas/create.controller.js';
+export { GetAulaByIdController } from './aulas/get-by-id.controller.js';
+export { UpdateAulaController } from './aulas/update.controller.js';
+export { DeleteAulaController } from './aulas/delete.controller.js';
+export { SetEstadoAulaController } from './aulas/set-estado.controller.js';
+
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - TIPOS DE EVALUACIÓN (catálogo maestro; escritura)
+// ============================================
+export { CreateTipoEvaluacionController } from './tipos-evaluacion/create.controller.js';
+export { GetTipoEvaluacionByIdController } from './tipos-evaluacion/get-by-id.controller.js';
+export { UpdateTipoEvaluacionController } from './tipos-evaluacion/update.controller.js';
+export { DeleteTipoEvaluacionController } from './tipos-evaluacion/delete.controller.js';
+export { SetEstadoTipoEvaluacionController } from './tipos-evaluacion/set-estado.controller.js';

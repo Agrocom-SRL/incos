@@ -85,6 +85,12 @@
             "@application-configuracion-complementarios/*": [
                 "./src/application/modules/configuracion/complementarios/*"
             ],
+            "@application-configuracion-recursos": [
+                "./src/application/modules/configuracion/recursos"
+            ],
+            "@application-configuracion-recursos/*": [
+                "./src/application/modules/configuracion/recursos/*"
+            ],
             "@application-inscripciones": [
                 "./src/application/modules/inscripciones"
             ],
@@ -236,6 +242,12 @@
             ],
             "@configuracion-actividades/*": [
                 "./src/presentation/modules/configuracion/actividades/*"
+            ],
+            "@configuracion-recursos": [
+                "./src/presentation/modules/configuracion/recursos"
+            ],
+            "@configuracion-recursos/*": [
+                "./src/presentation/modules/configuracion/recursos/*"
             ],
             "@academico": [
                 "./src/presentation/modules/academico"

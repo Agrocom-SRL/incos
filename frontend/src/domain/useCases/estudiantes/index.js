@@ -12,6 +12,7 @@ export { ObtenerBecaAsignadaPorIdUseCase } from './ObtenerBecaAsignadaPorIdUseCa
 export { CrearAsignarBecaUseCase } from './CrearAsignarBecaUseCase';
 export { EliminarEstudianteUseCase } from './EliminarEstudianteUseCase';
 export { EliminarBecaDescuentoUseCase } from './EliminarBecaDescuentoUseCase';
+export { CambiarEstadoBecaDescuentoUseCase } from './CambiarEstadoBecaDescuentoUseCase';
 export { EliminarBecaAsignadaUseCase } from './EliminarBecaAsignadaUseCase';
 export { ExportarEstadisticaInscritosExcelUseCase } from './ExportarEstadisticaInscritosExcelUseCase';
 export { ExportarListaInscritosPorCarreraExcelUseCase } from './ExportarListaInscritosPorCarreraExcelUseCase';

@@ -2,7 +2,7 @@
  * PUT /api/v1/metodos-pago/:id
  * Edita un método de pago (nombre y/o estado activo).
  *
- * Permiso: configuracion.pagos (EDITAR).
+ * Permiso: finanzas.configuracion.pago (EDITAR).
  * Body: nombre?, activo?
  * Contrato: data.metodoPago = método de pago actualizado.
  */

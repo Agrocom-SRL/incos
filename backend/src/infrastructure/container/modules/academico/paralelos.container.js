@@ -19,12 +19,14 @@ import { CreateParaleloUseCase } from '../../../../application/use-cases/configu
 import { GetParaleloByIdUseCase } from '../../../../application/use-cases/configuracion/GetParaleloByIdUseCase.js';
 import { UpdateParaleloUseCase } from '../../../../application/use-cases/configuracion/UpdateParaleloUseCase.js';
 import { DeleteParaleloUseCase } from '../../../../application/use-cases/configuracion/DeleteParaleloUseCase.js';
+import { SetEstadoParaleloUseCase } from '../../../../application/use-cases/configuracion/SetEstadoParaleloUseCase.js';
 import { ListParalelosGestionByParaleloUseCase } from '../../../../application/use-cases/configuracion/ListParalelosGestionByParaleloUseCase.js';
 import {
     CreateParaleloController,
     DeleteParaleloController,
     GetParaleloByIdController,
     ListParalelosGestionByParaleloController,
+    SetEstadoParaleloController,
     UpdateParaleloController,
 } from '../../../../presentation/controllers/configuracion/index.js';
 import { GetAsignaturasSinCursoDashboardUseCase } from '../../../../application/use-cases/academico/GetAsignaturasSinCursoDashboardUseCase.js';
@@ -113,6 +115,16 @@ export function registerParalelosResource(container) {
             new DeleteParaleloUseCase({
                 parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
                 parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.setEstadoParaleloUseCase,
+        (c) =>
+            new SetEstadoParaleloUseCase({
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -268,6 +280,17 @@ export function registerParalelosResource(container) {
 
     registerComponent(
         container,
+        ACADEMICO_TOKENS.setEstadoParaleloController,
+        (c) =>
+            new SetEstadoParaleloController({
+                setEstadoParaleloUseCase: c.resolve(ACADEMICO_TOKENS.setEstadoParaleloUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         ACADEMICO_TOKENS.listParalelosGestionByParaleloController,
         (c) =>
             new ListParalelosGestionByParaleloController({
@@ -369,6 +392,9 @@ export function registerParalelosResource(container) {
                 getParaleloByIdController: c.resolve(ACADEMICO_TOKENS.getParaleloByIdController),
                 updateParaleloController: c.resolve(ACADEMICO_TOKENS.updateParaleloController),
                 deleteParaleloController: c.resolve(ACADEMICO_TOKENS.deleteParaleloController),
+                setEstadoParaleloController: c.resolve(
+                    ACADEMICO_TOKENS.setEstadoParaleloController,
+                ),
                 listParalelosGestionByParaleloController: c.resolve(
                     ACADEMICO_TOKENS.listParalelosGestionByParaleloController,
                 ),

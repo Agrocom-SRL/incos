@@ -14,4 +14,5 @@ export { createEstudianteDiscapacidadFields } from './estudianteDiscapacidadFiel
 // Breadcrumbs se definen directamente en cada página
 export { createCamposContactosEmergenciaDinamicos } from './estudianteContactoEmergenciaFields';
 export { createCamposDocumentacionDinamicos } from './estudianteDocumentacionFields';
+export { ESTADO, DEFAULT_ESTADO_CFG, getEstadoBecaCfg, formatDate } from './scholarshipsSectionConfig';
 

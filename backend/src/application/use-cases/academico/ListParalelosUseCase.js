@@ -77,6 +77,13 @@ export class ListParalelosUseCase extends BaseListUseCase {
       filters.careerId = parseInt(queryParams.carrera_id);
     }
 
+    // incluirInactivos → includeInactive (mismo patrón que ListAulasUseCase /
+    // catálogos de referencia): permite administrar ítems desactivados desde CFG
+    if (queryParams.incluirInactivos !== undefined) {
+      filters.includeInactive =
+        queryParams.incluirInactivos === 'true' || queryParams.incluirInactivos === true;
+    }
+
     return filters;
   }
 

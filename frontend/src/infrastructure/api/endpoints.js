@@ -140,7 +140,10 @@ export const ESTUDIANTES_ENDPOINTS = {
   HISTORIAL_ACADEMICO_EXPORT_PDF: (studentId) =>
     `${API_BASE}/estudiantes/${studentId}/historial-academico/export-pdf`,
 };
-export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
+export const BECAS_DESCUENTOS_ENDPOINTS = {
+  ...createCRUDEndpoints('/becas-descuentos'),
+  ESTADO: (id) => `${API_BASE}/becas-descuentos/${id}/estado`, // PATCH: activar/desactivar
+};
 export const ESTUDIANTES_BECAS_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),
   // Endpoint para listar todas las becas asignadas a estudiantes
@@ -185,13 +188,33 @@ export const PRERREQUISITOS_ENDPOINTS = {
 };
 
 // Complementario
-export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
+export const DISCAPACIDAD_ENDPOINTS = {
+  ...createCRUDEndpoints('/discapacidad'),
+  ESTADO: (id) => `${API_BASE}/discapacidad/${id}/estado`, // PATCH: activar/desactivar
+};
+
+// Actividades (catálogo maestro reutilizable entre gestiones)
+export const ACTIVIDADES_ENDPOINTS = {
+  ...createCRUDEndpoints('/actividades'),
+  ESTADO: (id) => `${API_BASE}/actividades/${id}/estado`, // PATCH: activar/desactivar
+};
+
+/**
+ * CRUD de administración del catálogo Tipos de evaluación (CFG → Recursos académicos).
+ * Distinto de `CALIFICACIONES_ENDPOINTS.TIPOS_EVALUACION` (combo GET-only del cuaderno).
+ */
+export const TIPOS_EVALUACION_ENDPOINTS = {
+  ...createCRUDEndpoints('/tipos-evaluacion'),
+  ESTADO: (id) => `${API_BASE}/tipos-evaluacion/${id}/estado`, // PATCH: activar/desactivar
+};
 
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================
 export const PARALELOS_ENDPOINTS = {
   ...createCRUDEndpoints('/paralelos'),
+  // PATCH: activar/desactivar el paralelo maestro (CFG → Recursos académicos)
+  ESTADO: (id) => `${API_BASE}/paralelos/${id}/estado`,
   // Endpoint específico para obtener horarios de un paralelo
   SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
   // PUT /v1/paralelos/:id/schedule — persistir plan semanal
@@ -244,6 +267,15 @@ export const OFERTA_CURSOS_ENDPOINTS = {
 };
 
 export const AULAS_CATALOGO_ENDPOINT = `${API_BASE}/aulas/catalogo`;
+
+/**
+ * CRUD de administración del catálogo Aulas (CFG → Recursos académicos).
+ * Distinto de `AULAS_CATALOGO_ENDPOINT` (picker GET-only de Institucional/Oferta).
+ */
+export const AULAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/aulas'),
+  ESTADO: (id) => `${API_BASE}/aulas/${id}/estado`, // PATCH: activar/desactivar
+};
 
 export const HORARIOS_DOCENTE_ENDPOINTS = {
   GRILLA_CONFLICTOS: (docenteId, gestionId) => {
@@ -367,10 +399,22 @@ export const MUNICIPIOS_ENDPOINTS = createCRUDEndpoints('/municipios');
 // ============================================
 // MÓDULO: REFERENCIA
 // ============================================
-export const IDIOMAS_ENDPOINTS = createCRUDEndpoints('/idiomas');
-export const ESTADOS_CIVILES_ENDPOINTS = createCRUDEndpoints('/estados-civiles');
-export const TIPOS_PARENTESCO_ENDPOINTS = createCRUDEndpoints('/tipos-parentesco');
-export const DOCUMENTACION_ENDPOINTS = createCRUDEndpoints('/documentacion');
+export const IDIOMAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/idiomas'),
+  ESTADO: (id) => `${API_BASE}/idiomas/${id}/estado`, // PATCH: activar/desactivar
+};
+export const ESTADOS_CIVILES_ENDPOINTS = {
+  ...createCRUDEndpoints('/estados-civiles'),
+  ESTADO: (id) => `${API_BASE}/estados-civiles/${id}/estado`, // PATCH: activar/desactivar
+};
+export const TIPOS_PARENTESCO_ENDPOINTS = {
+  ...createCRUDEndpoints('/tipos-parentesco'),
+  ESTADO: (id) => `${API_BASE}/tipos-parentesco/${id}/estado`, // PATCH: activar/desactivar
+};
+export const DOCUMENTACION_ENDPOINTS = {
+  ...createCRUDEndpoints('/documentacion'),
+  ESTADO: (id) => `${API_BASE}/documentacion/${id}/estado`, // PATCH: activar/desactivar
+};
 
 // ============================================
 // MÓDULO: INSCRIPCIONES
@@ -388,9 +432,18 @@ export const INSCRIPCIONES_ENDPOINTS = {
 // ============================================
 // MÓDULO: PAGOS
 // ============================================
-export const METODOS_PAGO_ENDPOINTS = createCRUDEndpoints('/metodos-pago');
-export const BANCOS_AUTORIZADOS_ENDPOINTS = createCRUDEndpoints('/bancos-autorizados');
-export const CUENTAS_PAGO_ENDPOINTS = createCRUDEndpoints('/cuentas-pago');
+export const METODOS_PAGO_ENDPOINTS = {
+  ...createCRUDEndpoints('/metodos-pago'),
+  ESTADO: (id) => `${API_BASE}/metodos-pago/${id}/estado`, // PATCH: activar/desactivar
+};
+export const BANCOS_AUTORIZADOS_ENDPOINTS = {
+  ...createCRUDEndpoints('/bancos-autorizados'),
+  ESTADO: (id) => `${API_BASE}/bancos-autorizados/${id}/estado`, // PATCH: activar/desactivar
+};
+export const CUENTAS_PAGO_ENDPOINTS = {
+  ...createCRUDEndpoints('/cuentas-pago'),
+  ESTADO: (id) => `${API_BASE}/cuentas-pago/${id}/estado`, // PATCH: activar/desactivar
+};
 export const CONFIGURACION_APORTES_ENDPOINTS = createCRUDEndpoints('/configuracion-aportes');
 export const PAGOS_APORTES_ENDPOINTS = {
   ...createCRUDEndpoints('/pagos-aportes'),

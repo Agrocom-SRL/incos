@@ -14,7 +14,7 @@ import { PrivateRoute } from '@/presentation/guards/PrivateRoute.jsx';
 import RootAuthOutlet from '@components-router/RootAuthOutlet';
 import LoadingFallback from '@components-router/LoadingFallback';
 import NotFoundRouteError from '@modules/auth/pages/NotFoundRouteError.jsx';
-import { AUTH_PUBLIC_PATHS } from '@application-auth';
+import { AUTH_PUBLIC_PATHS, AuthProvider } from '@application-auth';
 
 const NotFoundAuthenticatedPage = lazy(
   () => import('@modules/auth/pages/NotFoundAuthenticatedPage.jsx'),
@@ -32,9 +32,11 @@ export const createAppRouter = () => {
     {
       element: <RootAuthOutlet />,
       errorElement: (
-        <Suspense fallback={<LoadingFallback />}>
-          <NotFoundRouteError />
-        </Suspense>
+        <AuthProvider>
+          <Suspense fallback={<LoadingFallback />}>
+            <NotFoundRouteError />
+          </Suspense>
+        </AuthProvider>
       ),
       children: [
         ...publicRoutes.map((route) => ({

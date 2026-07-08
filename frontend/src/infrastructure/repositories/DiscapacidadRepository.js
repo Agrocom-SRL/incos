@@ -54,6 +54,81 @@ export class DiscapacidadRepository extends IDiscapacidadRepository {
     }
   }
 
+  /**
+   * Obtiene un tipo de discapacidad por ID
+   * GET /v1/discapacidad/:id
+   *
+   * @param {string|number} id
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(DISCAPACIDAD_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      // El backend puede devolver el registro plano (sin envolver en { discapacidad })
+      if (result.success && result.data && !result.data.discapacidad) {
+        result.data = { discapacidad: result.data };
+      }
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el tipo de discapacidad');
+    }
+  }
+
+  /**
+   * Crea un tipo de discapacidad
+   * POST /v1/discapacidad
+   */
+  async crear(data) {
+    try {
+      const response = await apiClient.post(DISCAPACIDAD_ENDPOINTS.BASE, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear el tipo de discapacidad');
+    }
+  }
+
+  /**
+   * Actualiza un tipo de discapacidad
+   * PUT /v1/discapacidad/:id
+   */
+  async actualizar(id, data) {
+    try {
+      const response = await apiClient.put(DISCAPACIDAD_ENDPOINTS.BY_ID(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar el tipo de discapacidad');
+    }
+  }
+
+  /**
+   * Cambia el estado activo/inactivo de un tipo de discapacidad
+   * PATCH /v1/discapacidad/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(DISCAPACIDAD_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del tipo de discapacidad');
+    }
+  }
+
+  /**
+   * Elimina (soft delete) un tipo de discapacidad
+   * DELETE /v1/discapacidad/:id
+   */
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(DISCAPACIDAD_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el tipo de discapacidad');
+    }
+  }
 }
 
 export default new DiscapacidadRepository();

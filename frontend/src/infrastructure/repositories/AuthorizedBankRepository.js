@@ -86,6 +86,41 @@ export class AuthorizedBankRepository extends IAuthorizedBankRepository {
     }
   }
 
+  /**
+   * Elimina (soft delete) un banco autorizado.
+   * DELETE /v1/bancos-autorizados/:id
+   *
+   * @param {string|number} id - ID del banco
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminar(id) {
+    try {
+      if (!id && id !== 0) {
+        return { success: false, error: 'ID del banco es requerido' };
+      }
+      const response = await apiClient.delete(BANCOS_AUTORIZADOS_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el banco autorizado');
+    }
+  }
+
+  /**
+   * Cambia el estado activo/inactivo de un banco autorizado
+   * PATCH /v1/bancos-autorizados/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(BANCOS_AUTORIZADOS_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del banco autorizado');
+    }
+  }
+
 }
 
 export default new AuthorizedBankRepository();

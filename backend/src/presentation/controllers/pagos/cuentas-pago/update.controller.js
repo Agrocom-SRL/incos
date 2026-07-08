@@ -2,7 +2,7 @@
  * PUT /api/v1/cuentas-pago/:id
  * Edita una cuenta de pago. Acepta multipart con archivo opcional `qr`.
  *
- * Permiso: configuracion.pagos (EDITAR).
+ * Permiso: finanzas.configuracion.pago (EDITAR).
  * Body: metodo_pago_id?, banco_id?, nombre_titular?, numero_cuenta?,
  *       numero_celular?, qr_imagen_url?, activo?  +  archivo `qr` (opcional).
  * Contrato: data.cuentaPago = cuenta actualizada.

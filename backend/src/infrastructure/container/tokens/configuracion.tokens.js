@@ -1,6 +1,6 @@
 /**
  * Tokens del Módulo Configuración
- * 
+ *
  * Convenciones:
  * - Use Cases: {modulo}_list{Entity}UseCase (ej: 'configuracion.listCarrerasUseCase')
  * - Controllers: {modulo}_list{Entity}Controller (ej: 'configuracion.listCarrerasController')
@@ -46,6 +46,26 @@ export const CONFIGURACION_TOKENS = {
     createPrerrequisitoUseCase: 'configuracion.createPrerrequisitoUseCase',
     deletePrerrequisitoUseCase: 'configuracion.deletePrerrequisitoUseCase',
 
+    listActividadesUseCase: 'configuracion.listActividadesUseCase',
+    getActividadByIdUseCase: 'configuracion.getActividadByIdUseCase',
+    createActividadUseCase: 'configuracion.createActividadUseCase',
+    updateActividadUseCase: 'configuracion.updateActividadUseCase',
+    deleteActividadUseCase: 'configuracion.deleteActividadUseCase',
+    setEstadoActividadUseCase: 'configuracion.setEstadoActividadUseCase',
+
+    listAulasUseCase: 'configuracion.listAulasUseCase',
+    getAulaByIdUseCase: 'configuracion.getAulaByIdUseCase',
+    createAulaUseCase: 'configuracion.createAulaUseCase',
+    updateAulaUseCase: 'configuracion.updateAulaUseCase',
+    deleteAulaUseCase: 'configuracion.deleteAulaUseCase',
+    setEstadoAulaUseCase: 'configuracion.setEstadoAulaUseCase',
+
+    createTipoEvaluacionUseCase: 'configuracion.createTipoEvaluacionUseCase',
+    getTipoEvaluacionByIdUseCase: 'configuracion.getTipoEvaluacionByIdUseCase',
+    updateTipoEvaluacionUseCase: 'configuracion.updateTipoEvaluacionUseCase',
+    deleteTipoEvaluacionUseCase: 'configuracion.deleteTipoEvaluacionUseCase',
+    setEstadoTipoEvaluacionUseCase: 'configuracion.setEstadoTipoEvaluacionUseCase',
+
     // CONTROLLERS
     listCarrerasController: 'configuracion.listCarrerasController',
     getCarreraByIdController: 'configuracion.getCarreraByIdController',
@@ -84,6 +104,26 @@ export const CONFIGURACION_TOKENS = {
     createPrerrequisitoController: 'configuracion.createPrerrequisitoController',
     deletePrerrequisitoController: 'configuracion.deletePrerrequisitoController',
 
+    listActividadesController: 'configuracion.listActividadesController',
+    getActividadByIdController: 'configuracion.getActividadByIdController',
+    createActividadController: 'configuracion.createActividadController',
+    updateActividadController: 'configuracion.updateActividadController',
+    deleteActividadController: 'configuracion.deleteActividadController',
+    setEstadoActividadController: 'configuracion.setEstadoActividadController',
+
+    listAulasController: 'configuracion.listAulasController',
+    getAulaByIdController: 'configuracion.getAulaByIdController',
+    createAulaController: 'configuracion.createAulaController',
+    updateAulaController: 'configuracion.updateAulaController',
+    deleteAulaController: 'configuracion.deleteAulaController',
+    setEstadoAulaController: 'configuracion.setEstadoAulaController',
+
+    createTipoEvaluacionController: 'configuracion.createTipoEvaluacionController',
+    getTipoEvaluacionByIdController: 'configuracion.getTipoEvaluacionByIdController',
+    updateTipoEvaluacionController: 'configuracion.updateTipoEvaluacionController',
+    deleteTipoEvaluacionController: 'configuracion.deleteTipoEvaluacionController',
+    setEstadoTipoEvaluacionController: 'configuracion.setEstadoTipoEvaluacionController',
+
     // ROUTERS
     carrerasRouter: 'configuracion.carrerasRouter',
     materiasRouter: 'configuracion.materiasRouter',
@@ -91,5 +131,7 @@ export const CONFIGURACION_TOKENS = {
     periodosRouter: 'configuracion.periodosRouter',
     asignaturasPlanRouter: 'configuracion.asignaturasPlanRouter',
     prerrequisitosRouter: 'configuracion.prerrequisitosRouter',
+    actividadesRouter: 'configuracion.actividadesRouter',
+    aulasRouter: 'configuracion.aulasRouter',
+    tiposEvaluacionRouter: 'configuracion.tiposEvaluacionRouter',
 };
-

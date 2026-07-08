@@ -38,6 +38,8 @@ import { DisabilityTypeRepository } from '../../repositories/DisabilityTypeRepos
 import { RelationshipTypeRepository } from '../../repositories/RelationshipTypeRepository.js';
 import { DocumentacionRepository } from '../../repositories/DocumentacionRepository.js';
 import { InstitutionRepository } from '../../repositories/InstitutionRepository.js';
+import { ComplementariosUsosViewRepository } from '../../repositories/views/ComplementariosUsosViewRepository.js';
+import { FinanzasUsosViewRepository } from '../../repositories/views/FinanzasUsosViewRepository.js';
 
 // ============================================
 // CONFIGURACIÓN DEL SISTEMA
@@ -184,6 +186,11 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.relationshipTypeRepository, RelationshipTypeRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.documentationRepository, DocumentacionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.institutionRepository, InstitutionRepository);
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.complementariosUsosViewRepository,
+        ComplementariosUsosViewRepository,
+    );
 
     // ============================================
     // CONFIGURACIÓN DEL SISTEMA
@@ -425,6 +432,11 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.becasPorCarreraViewRepository, BecasPorCarreraViewRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.compromisoPagoRepository, CompromisoPagoRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.cuentasPorCobrarViewRepository, CuentasPorCobrarViewRepository);
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.finanzasUsosViewRepository,
+        FinanzasUsosViewRepository,
+    );
 
     // ============================================
     // DASHBOARD

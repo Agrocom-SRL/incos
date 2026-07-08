@@ -2,7 +2,7 @@
  * POST /api/v1/cuentas-pago
  * Crea una cuenta de pago. Acepta multipart con archivo opcional `qr`.
  *
- * Permiso: configuracion.pagos (CREAR).
+ * Permiso: finanzas.configuracion.pago (CREAR).
  * Body: metodo_pago_id?, banco_id?, nombre_titular (req), numero_cuenta?,
  *       numero_celular?, qr_imagen_url?, activo?  +  archivo `qr` (opcional).
  * Contrato: data.cuentaPago = cuenta creada.

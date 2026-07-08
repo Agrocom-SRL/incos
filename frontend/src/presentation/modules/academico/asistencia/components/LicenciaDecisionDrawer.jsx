@@ -253,7 +253,7 @@ const LicenciaDecisionDrawer = ({
   return (
     <Drawer
       title="Detalle de la licencia"
-      width={540}
+      size={540}
       open={open}
       onClose={handleCerrar}
       destroyOnHidden

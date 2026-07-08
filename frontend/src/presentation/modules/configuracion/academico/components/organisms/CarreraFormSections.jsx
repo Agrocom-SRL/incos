@@ -1,7 +1,7 @@
 /**
  * Formulario ABM carrera — workspace alineado a AcademicoPage.
  */
-import CfgAcademicoFormWorkspace from './CfgAcademicoFormWorkspace';
+import { CfgFormWorkspace } from '@organisms';
 
 const CarreraFormSections = ({ form, formSections, footer = null }) => {
   const { datosCarrera } = formSections ?? {};
@@ -11,7 +11,7 @@ const CarreraFormSections = ({ form, formSections, footer = null }) => {
   }
 
   return (
-    <CfgAcademicoFormWorkspace
+    <CfgFormWorkspace
       title={datosCarrera.title}
       description={datosCarrera.description}
       fields={datosCarrera.fields}

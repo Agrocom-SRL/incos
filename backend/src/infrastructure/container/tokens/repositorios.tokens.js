@@ -20,6 +20,7 @@ export const REPOSITORIOS_TOKENS = {
     relationshipTypeRepository: 'relationshipTypeRepository',
     documentationRepository: 'documentationRepository',
     institutionRepository: 'institutionRepository',
+    complementariosUsosViewRepository: 'complementariosUsosViewRepository',
 
     // CONFIGURACIÓN DEL SISTEMA
     systemConfigurationRepository: 'systemConfigurationRepository',
@@ -130,6 +131,7 @@ export const REPOSITORIOS_TOKENS = {
     becasPorCarreraViewRepository: 'becasPorCarreraViewRepository',
     compromisoPagoRepository: 'compromisoPagoRepository',
     cuentasPorCobrarViewRepository: 'cuentasPorCobrarViewRepository',
+    finanzasUsosViewRepository: 'finanzasUsosViewRepository',
 
     // TRANSITABILIDAD Y TRASPASOS
     transitabilityRepository: 'transitabilityRepository',

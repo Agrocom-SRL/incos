@@ -2,7 +2,7 @@
  * PUT /api/v1/bancos-autorizados/:id
  * Edita un banco autorizado (nombre, codigo, metodoPagoId y/o estado activo).
  *
- * Permiso: configuracion.pagos (EDITAR).
+ * Permiso: finanzas.configuracion.pago (EDITAR).
  * Body: metodo_pago_id?, codigo?, nombre?, activo?
  * Contrato: data.bancoAutorizado = banco actualizado.
  */

@@ -454,6 +454,27 @@ Permisos propios (antes ambos reportes compartían `finanzas.pago.reporte.carrer
 
 > SEC_ADMIN **no** recibe estos reportes de control.
 
+### FIN - Configuración de Finanzas (catálogos: pagos y becas/descuentos)
+
+Dos permisos gobiernan los 4 catálogos de Finanzas → Configuración. Grupos UI `fin_config_pagos` y `fin_becas_descuentos`.
+
+| Permiso (codigo) | Acciones | Recursos / endpoints | Roles |
+|---|---|---|---|
+| `finanzas.configuracion.pago` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `/metodos-pago`, `/bancos-autorizados`, `/cuentas-pago` (GET de listado como catálogo de referencia transparente `sistema.catalogo.referencia`) | RECTOR, DIR_ADMIN |
+| `finanzas.beca-descuento` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `/becas-descuentos` (catálogo maestro; GET de listado como catálogo de referencia transparente) | RECTOR, DIR_ADMIN |
+
+> **Activación rápida de catálogos de Finanzas (`ACTIVAR`, 2026-07-08):** los 4 catálogos exponen
+> `PATCH /api/v1/{metodos-pago|bancos-autorizados|cuentas-pago|becas-descuentos}/:id/estado` con body
+> `{ "activo": boolean }` y `verificarPermiso('finanzas.configuracion.pago'|'finanzas.beca-descuento', 'ACTIVAR')`
+> (mismo patrón que los complementarios de CFG). Funciona también sobre ítems ya inactivos (reactivar);
+> el soft-delete (`deleted_at`) sigue siendo exclusivo de ELIMINAR. Los 4 GET de listado aceptan
+> `?incluirInactivos=true` y cada ítem expone `activo` (boolean) más los conteos de uso
+> `cantidadPagos` / `cantidadCuentas` / `cantidadAsignaciones` / `totalReferencias`
+> (vista `vista_catalogos_finanzas_usos`, 152). Roles con ACTIVAR: RECTOR y DIR_ADMIN (los mismos
+> que ya tienen el resto del bloque); ADMIN_SISTEMA hereda por vista (sin filas en `roles_permisos`).
+> Métodos de pago sigue **sin** endpoint DELETE (catálogo fijo de 4 códigos referenciado por FK).
+> Seed: `60-seed-permisos-fin.sql` (requiere re-siembra).
+
 ### ACA - Académico (`/academico/*`)
 Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 
@@ -748,8 +769,9 @@ CREAR/EDITAR/ELIMINAR de la tabla de cursos en armado acepta `institucional.gest
 
 **Arquitectura frontend:** skill `incos-frontend-module`. Permisos del módulo en
 `62-seed-permisos-cfg.sql` (códigos `configuracion.*`: plan-estudio, carrera, materia,
-plan-estudio.{periodos,asignaturas,prerrequisitos}, paralelo, complementario.*, documentacion.*,
-convenios, pagos, historial-actividades), cada uno con sus acciones y grants en el mismo archivo.
+plan-estudio.{periodos,asignaturas,prerrequisitos}, paralelo, aula, tipo-evaluacion,
+complementario.* (discapacidad, apoderados, idiomas, estado-civil), documentacion.*, convenios,
+pagos, historial-actividades), cada uno con sus acciones y grants en el mismo archivo.
 
 #### Académico — Plan de estudio (menu unico, tabs + subruta)
 
@@ -768,14 +790,54 @@ Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requi
 
 **Roles:** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio de `configuracion.*`; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales. **Nota:** RECTOR incluye `DETALLE` en materia; DIR_ACADEMICO incluye `DETALLE` en plan para abrir matriz; edición de celdas sigue requiriendo `configuracion.plan-estudio.asignaturas` `EDITAR`.
 
-#### Datos complementarios (tabs)
+#### Recursos académicos (`/configuracion/recursos`, tabs)
+
+Menú "Recursos académicos": tab 1 Paralelos (maestro, movido desde `configuracion/academico` el
+2026-07-07, mismo código de permiso `configuracion.paralelo` sin cambios de negocio/RBAC), tab 2
+Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
+
+| Ruta UI | Permiso (codigo) | Acciones tipicas | Uso |
+|---------|------------------|------------------|-----|
+| `/configuracion/recursos` | Entrada: `permisoAny` (paralelo, aula, tipo-evaluacion) | LISTAR en cada tab visible | Menu "Recursos académicos"; tabs filtrados por permiso |
+| `?tab=paralelos` | `configuracion.paralelo` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Tab paralelos (catálogo maestro); `ruta_sidebar` actualizada de `/configuracion/academico` a `/configuracion/recursos` |
+| `?tab=aulas` | `configuracion.aula` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Tab aulas (catálogo maestro; distinto del picker de solo lectura de Institucional/Oferta) |
+| `?tab=tipos-evaluacion` | `configuracion.tipo-evaluacion` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Tab tipos de evaluación (catálogo maestro; distinto de `sistema.catalogo.referencia`, el combo de solo lectura del cuaderno de calificaciones) |
+
+**Roles:** RECTOR y DIR_ACADEMICO con bloque completo en `aula` y `tipo-evaluacion` (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR); en `paralelo` ambos con bloque completo (DIR_ACADEMICO igualado con ACTIVAR el 2026-07-08, simetría con su ELIMINAR).
+
+> **Activación rápida de recursos académicos (`ACTIVAR`, 2026-07-08):** los 3 catálogos maestros exponen
+> `PATCH /api/v1/{aulas|paralelos|tipos-evaluacion}/:id/estado` con body `{ "activo": boolean }` y
+> `verificarPermiso('configuracion.{aula|paralelo|tipo-evaluacion}', 'ACTIVAR')` (mismo patrón que los
+> catálogos complementarios). Funciona también sobre ítems ya inactivos (reactivar); el soft-delete
+> (`deleted_at`) sigue siendo exclusivo de ELIMINAR. Los 3 GET de listado aceptan
+> `?incluirInactivos=true` para incluir ítems con `activo=false` (`deleted_at IS NULL`); cada ítem del
+> listado expone el campo `activo` (boolean). Roles con ACTIVAR (simetría con ELIMINAR por código):
+> los 3 códigos → RECTOR y DIR_ACADEMICO. ADMIN_SISTEMA hereda por vista (sin filas en
+> `roles_permisos`). Seed: `62-seed-permisos-cfg.sql` (requiere re-siembra).
+
+#### Datos complementarios (tabs + ABM/detalle de página completa)
 
 | Ruta UI canonica | Permiso | Notas |
 |------------------|---------|--------|
 | `/configuracion/complementarios` | `permisoAny` (complementario.*) | Menu "Datos complementarios" |
-| `?tab=discapacidad` | `configuracion.complementario.discapacidad` | Listado operativo |
-| `?tab=apoderados` | `configuracion.complementario.apoderados` | Placeholder / pendiente ABM |
-| `?tab=idiomas` | `configuracion.complementario.idiomas` | Placeholder / pendiente ABM |
+| `?tab=discapacidad` | `configuracion.complementario.discapacidad` | Listado (`createSimpleCatalogTableColumns`) |
+| `?tab=apoderados` | `configuracion.complementario.apoderados` | Listado (tipos de parentesco) |
+| `?tab=idiomas` | `configuracion.complementario.idiomas` | Listado (incluye `codigoIso`) |
+| `?tab=estado-civil` | `configuracion.complementario.estado-civil` | Listado (`createSimpleCatalogTableColumns`, catálogo `estados_civiles`, 2026-07-07) |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/nueva` | mismo codigo, accion `CREAR` | Alta (página completa, patrón CFG académico) |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/:id/editar` | mismo codigo, accion `EDITAR` | Edición |
+| `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/:id` | mismo codigo, accion `DETALLE` | Ficha |
+| Switch activar/desactivar en cada tab | mismo codigo, accion `ACTIVAR` (2026-07-08) | PATCH `/{discapacidad\|tipos-parentesco\|idiomas\|estados-civiles}/:id/estado` body `{ activo: boolean }` |
+
+> **Activación rápida de catálogos (`ACTIVAR`, 2026-07-08):** los 4 catálogos complementarios exponen
+> `PATCH /api/v1/{discapacidad|tipos-parentesco|idiomas|estados-civiles}/:id/estado` con body
+> `{ "activo": boolean }` y `verificarPermiso('<codigo complementario>', 'ACTIVAR')`. Funciona también
+> sobre ítems ya inactivos (reactivar); el soft-delete (`deleted_at`) sigue siendo exclusivo de ELIMINAR.
+> Los 4 GET de listado aceptan `?incluirInactivos=true` para incluir ítems con `activo=false`
+> (`deleted_at IS NULL`); cada ítem del listado expone el campo `activo` (boolean). Roles con ACTIVAR
+> (simetría con ELIMINAR por código): discapacidad y apoderados → RECTOR; idiomas y estado-civil →
+> RECTOR y DIR_ACADEMICO. ADMIN_SISTEMA hereda por vista (sin filas en `roles_permisos`). Seed:
+> `62-seed-permisos-cfg.sql` (requiere re-siembra).
 
 `ruta_sidebar` del permiso aún apunta `/configuracion/datos-complementarios`; la app redirige a `/configuracion/complementarios`. Alinear en el archivo de permisos CFG.
 
@@ -783,10 +845,10 @@ Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requi
 
 | Menu | Ruta | Permiso (codigo) |
 |------|------|------------------|
-| Documentacion | `/configuracion/documentacion` | `configuracion.documentacion.*` |
+| Documentacion | `/configuracion/documentacion` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.documentacion` (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR) — catálogo ÚNICO de los 9 tipos de documento (ENUM `tipo_documento`); consolida los códigos segmentados `configuracion.documentacion.{inscripcion\|becas\|pasantias\|traslado}` (eliminados junto con `resolverPermisoDocumentacion`). GET de listado sigue como catálogo de referencia transparente (`sistema.catalogo.referencia`) y acepta `?incluirInactivos=true`; `PATCH /:id/estado` usa ACTIVAR. Roles: RECTOR (todas), DIR_ACADEMICO (LISTAR/DETALLE/EDITAR) |
 | Convenios | `/configuracion/convenios` | `configuracion.convenios` |
-| Historial actividades | `/configuracion/historial-actividades` | `configuracion.historial-actividades` |
-| Pagos config | `/pagos/configuracion` | `configuracion.pagos` (LISTAR/CREAR/EDITAR: RECTOR, DIR_ADMIN) |
+| Actividades | `/configuracion/actividades` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.actividad` (renombrado desde `configuracion.historial-actividades`; LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR — ACTIVAR solo RECTOR, `PATCH /:id/estado`; GET acepta `?incluirInactivos=true`) |
+| Pagos config | `/pagos/configuracion` | ~~`configuracion.pagos`~~ **legacy** — el código real sembrado y usado por los routers es `finanzas.configuracion.pago` (módulo FIN, ver "FIN - Configuración de Finanzas"; hoy con LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR para RECTOR y DIR_ADMIN) |
 
 Codigos legacy `cfg.academico.*` **no** deben usarse en codigo nuevo; fueron reemplazados por `configuracion.*`.
 

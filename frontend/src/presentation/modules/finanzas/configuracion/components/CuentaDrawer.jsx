@@ -91,7 +91,7 @@ const CuentaDrawer = ({
   return (
     <Drawer
       title={esEdicion ? 'Editar cuenta de pago' : 'Agregar cuenta de pago'}
-      width={560}
+      size={560}
       open={open}
       onClose={handleCerrar}
       destroyOnHidden

@@ -7,6 +7,7 @@ import {
     createCuentaPagoValidator,
     updateCuentaPagoValidator,
 } from '../validators/pagos/index.js';
+import { setEstadoCatalogoValidator } from '../validators/referencia/index.js';
 
 /**
  * Construye el router del módulo Cuentas de Pago
@@ -19,8 +20,10 @@ export function buildCuentasPagoRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
     // Catálogo de referencia: `sistema.catalogo.referencia` + LISTAR (seed 101)
-    const configCrear = [authenticate, verificarPermiso('configuracion.pagos', 'CREAR')];
-    const configEditar = [authenticate, verificarPermiso('configuracion.pagos', 'EDITAR')];
+    const configCrear = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'CREAR')];
+    const configEditar = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'EDITAR')];
+    const configEliminar = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'ELIMINAR')];
+    const configActivar = [authenticate, verificarPermiso('finanzas.configuracion.pago', 'ACTIVAR')];
 
     router.get(
         '/',
@@ -47,6 +50,24 @@ export function buildCuentasPagoRouter({ controllers, middlewares }) {
         updateCuentaPagoValidator,
         validateRequest,
         (req, res, next) => controllers.updateCuentaPagoController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar cuenta de pago (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...configActivar,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoCuentaPagoController.handle(req, res, next)
+    );
+
+    router.delete(
+        '/:id',
+        ...configEliminar,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteCuentaPagoController.handle(req, res, next)
     );
 
     return router;

@@ -2,8 +2,8 @@
  * Use Case: ListDocumentacionUseCase
  * Módulo: Referencia
  * Lista tipos de documentación con filtros, paginación y ordenamiento
- * 
- * Filtros específicos: tipoDocumento
+ *
+ * Filtros específicos: tipoDocumento, incluirInactivos
  */
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { DocumentacionMapper } from '../../mappers/referencia/index.js';
@@ -46,11 +46,19 @@ export class ListDocumentacionUseCase extends BaseListUseCase {
   buildSpecificFilters(queryParams = {}, baseFilters = {}) {
     const filters = { ...baseFilters };
 
+    // tipoDocumento (API español) → documentType (filtro de dominio que el
+    // repositorio traduce a la columna tipo_documento en buildWhereClause)
     if (queryParams.tipoDocumento) {
-      filters.tipoDocumento = queryParams.tipoDocumento;
+      filters.documentType = queryParams.tipoDocumento;
+    }
+
+    // incluirInactivos → includeInactive (mismo patrón que ListAulasUseCase /
+    // catálogos complementarios): sin el flag, BaseRepository filtra activo=true.
+    if (queryParams.incluirInactivos !== undefined) {
+      filters.includeInactive =
+        queryParams.incluirInactivos === 'true' || queryParams.incluirInactivos === true;
     }
 
     return filters;
   }
 }
-

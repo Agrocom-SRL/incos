@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listParalelosValidator, putParaleloScheduleValidator } from '../validators/academico/index.js';
 import { createParaleloValidator, updateParaleloValidator } from '../validators/configuracion/paralelos.validator.js';
+import { setEstadoCatalogoValidator } from '../validators/configuracion/set-estado.validator.js';
 import { idValidator } from '../validators/common/index.js';
 
 /**
@@ -28,6 +29,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
     const detalleParalelo = [authenticate, verificarPermiso(permisoCfg, 'DETALLE')];
     const editarParalelo = [authenticate, verificarPermiso(permisoCfg, 'EDITAR')];
     const eliminarParalelo = [authenticate, verificarPermiso(permisoCfg, 'ELIMINAR')];
+    const activarParalelo = [authenticate, verificarPermiso(permisoCfg, 'ACTIVAR')];
 
     router.get(
         '/',
@@ -120,6 +122,16 @@ export function buildParalelosRouter({ controllers, middlewares }) {
         updateParaleloValidator,
         validateRequest,
         (req, res, next) => controllers.updateParaleloController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar paralelo maestro (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarParalelo,
+        ...idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoParaleloController.handle(req, res, next)
     );
 
     router.delete(

@@ -3,18 +3,27 @@
  *
  * Tabla de cuentas con el lenguaje visual canónico (TableListView embebido, como
  * PagosList / CarrerasList / licencias): buscador a la derecha + columnas con
- * numeración, `StatusPill` de estado, indicador de QR y `TableActions` (editar +
- * activar/desactivar). El alta ("Agregar cuenta") vive en la cabecera del workspace
- * (la monta la página). El drawer de alta/edición incluye la subida del QR. "Quitar"
- * una cuenta = desactivarla, no hay eliminar. Recibe props ya mapeadas; no hace fetch.
- * El filtro por texto es local (catálogo corto, sin paginación).
+ * numeración, identidad «Cuenta» (número + banco), titular con método debajo,
+ * contacto (celular + QR), concurrencia «Pagos recibidos», toggle de la columna
+ * "Estado" (`useToggleEstadoCatalogo`, PATCH /:id/estado, ACTIVAR) y
+ * `TableActions` (ver/editar/eliminar). El alta ("Agregar cuenta") vive en la
+ * cabecera del workspace (la monta la página). El drawer de alta/edición
+ * incluye la subida del QR. Ver navega a la ficha de detalle
+ * (`CuentaDetailPage`). Recibe props ya mapeadas; no hace fetch (eliminar y
+ * refetch salen del contexto). El filtro por texto es local (catálogo corto,
+ * sin paginación). Filas inactivas atenuadas (`catalogoEstadoRowClassName`).
  */
 
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TableListView } from '@organisms';
 import { usePermiso } from '@application-auth';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
+import { useConfigPagosContext } from '@application-finanzas/hooks/context/useConfigPagosContext';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { createCuentasColumns } from '@finanzas/configuracion/config/configPagosColumns';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
+import { cuentaDetallePath } from '@application-finanzas/config/paths';
 import CuentaDrawer from './CuentaDrawer.jsx';
 
 /** Normaliza para comparar sin acentos ni mayúsculas. */
@@ -29,6 +38,8 @@ const CuentasTabPanel = ({
   cuentas = [],
   metodos = [],
   bancos = [],
+  loading = false,
+  error = null,
   saving,
   metodoNombrePorId,
   drawerAbierto,
@@ -36,17 +47,27 @@ const CuentasTabPanel = ({
   onAbrirDrawer,
   onCerrarDrawer,
   onGuardar,
-  onToggleActivo,
 }) => {
+  const navigate = useNavigate();
+  const { refetch, eliminarCuenta } = useConfigPagosContext();
   const puedeEditar = usePermiso(CONFIG_PAGOS_PERMISO, 'EDITAR');
   const [searchText, setSearchText] = useState('');
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoCuentaPago',
+    entidad: 'la cuenta',
+    refetch,
+  });
+
   const columns = createCuentasColumns({
+    onVer: (record) => navigate(cuentaDetallePath(record.id)),
     onEditar: onAbrirDrawer,
-    onToggleActivo,
     puedeEditar,
-    saving,
     metodoNombrePorId,
+    refetch,
+    eliminarCuenta,
+    onToggleEstado: toggleEstado,
   });
 
   const cuentasFiltradas = useMemo(() => {
@@ -69,16 +90,18 @@ const CuentasTabPanel = ({
       <TableListView
         embedded
         data={cuentasFiltradas}
-        loading={saving}
+        loading={loading || saving}
+        error={error}
         searchText={searchText}
         onSearchChange={(event) => setSearchText(event.target.value)}
         searchPlaceholder="Buscar por titular, cuenta, banco o método…"
         columns={columns}
         rowKey="id"
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={false}
-        loadingTip="Guardando…"
+        loadingTip={saving ? 'Guardando…' : 'Cargando cuentas…'}
       />
 
       <CuentaDrawer

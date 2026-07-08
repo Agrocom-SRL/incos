@@ -7,27 +7,23 @@
  * estado de los modales de banco/cuenta. No hace fetch (eso vive en el provider).
  *
  * Reglas de negocio:
- *   - Aporte (UPSERT): si `aporteVigente` existe → PUT por id; si no → POST. El
- *     backend asocia la gestión vigente cuando no se envía `gestion_id`.
  *   - Métodos: solo nombre/activo (los 4 son fijos).
  *   - Bancos/Cuentas: alta y edición; "quitar" = desactivar (switch activo).
  *   - Cuenta: el QR se envía como archivo (`qr`) → FormData en el repositorio.
+ *
+ * El aporte de la gestión vigente (UPSERT) vive en la página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio, `useAportePage`),
+ * con su permiso `finanzas.aporte`.
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import { App } from 'antd';
-import dayjs from 'dayjs';
 import { useConfigPagosContext } from '@application-finanzas/hooks/context/useConfigPagosContext';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
-
-/** Formato de fecha que espera el backend (DATEONLY). */
-const toFechaBackend = (value) => (value ? dayjs(value).format('YYYY-MM-DD') : null);
 
 export const useConfigPagosPage = () => {
   const { message } = App.useApp();
   const {
-    gestionVigente,
-    aporteVigente,
     metodos,
     bancos,
     cuentas,
@@ -35,7 +31,6 @@ export const useConfigPagosPage = () => {
     error,
     refetch,
     saving,
-    guardarConfiguracionAporte,
     actualizarMetodoPago,
     guardarBanco,
     guardarCuenta,
@@ -68,26 +63,7 @@ export const useConfigPagosPage = () => {
     [message, refetch],
   );
 
-  // ── Sección 1: Aporte de la gestión vigente (UPSERT) ──────────────────────
-  const guardarAporte = useCallback(
-    async (values) => {
-      const payload = {
-        monto_base: Number(values.montoBase),
-        aporte_activo: !!values.aporteActivo,
-        fecha_inicio: toFechaBackend(values.fechaInicio),
-        fecha_fin: toFechaBackend(values.fechaFin),
-      };
-      // UPSERT: con id existente → PUT; sin id → POST (gestión vigente la pone el back).
-      const resultado = await guardarConfiguracionAporte({
-        id: aporteVigente?.id ?? null,
-        payload,
-      });
-      return resolver(resultado, 'Aporte de la gestión guardado');
-    },
-    [aporteVigente, guardarConfiguracionAporte, resolver],
-  );
-
-  // ── Sección 2: Métodos de pago (modal de nombre + toggle activo) ──────────
+  // ── Sección 1: Métodos de pago (modal de nombre + toggle activo) ──────────
   const abrirMetodoModal = useCallback((metodo) => {
     setMetodoEnEdicion(metodo);
     setMetodoModalAbierto(true);
@@ -116,7 +92,7 @@ export const useConfigPagosPage = () => {
     [actualizarMetodoPago, resolver],
   );
 
-  // ── Sección 3: Bancos autorizados (modal + toggle) ────────────────────────
+  // ── Sección 2: Bancos autorizados (modal + toggle) ────────────────────────
   const abrirBancoModal = useCallback((banco = null) => {
     setBancoEnEdicion(banco);
     setBancoModalAbierto(true);
@@ -152,7 +128,7 @@ export const useConfigPagosPage = () => {
     [guardarBanco, resolver],
   );
 
-  // ── Sección 4: Cuentas de pago (modal + QR + toggle) ──────────────────────
+  // ── Sección 3: Cuentas de pago (modal + QR + toggle) ──────────────────────
   const abrirCuentaModal = useCallback((cuenta = null) => {
     setCuentaEnEdicion(cuenta);
     setCuentaModalAbierto(true);
@@ -194,10 +170,8 @@ export const useConfigPagosPage = () => {
 
   return {
     // Contexto
-    gestionVigente,
     breadcrumbItems,
     // Datos
-    aporteVigente,
     metodos,
     bancos,
     cuentas,
@@ -205,8 +179,6 @@ export const useConfigPagosPage = () => {
     error,
     refetch,
     saving,
-    // Aporte
-    guardarAporte,
     // Métodos
     metodoEnEdicion,
     metodoModalAbierto,

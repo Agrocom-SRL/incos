@@ -7,6 +7,8 @@
  * academico/asistencia, institucional/horarios, …).
  *
  * Menú FIN: Pagos · Pagos adicionales · Reportes de pagos · Config. de pagos.
+ * Aportes ya no es ítem de menú propio: vive como página hija de Config. de
+ * pagos (`/finanzas/configuracion/aportes`, ver `configuracion/routes.jsx`).
  */
 
 import { UnderConstruction } from '@components/pages';

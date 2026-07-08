@@ -8,6 +8,8 @@
  * @param {string} [descripcion] - Texto secundario truncado a 2 líneas.
  */
 
+import TruncatedTextCell from './TruncatedTextCell';
+
 const IconTituloDescCell = ({ icon, titulo, descripcion }) => (
   <div className="cfg-carrera-area-desc">
     <div className="cfg-carrera-area-desc__area">
@@ -18,13 +20,7 @@ const IconTituloDescCell = ({ icon, titulo, descripcion }) => (
       ) : null}
       <span>{titulo || '—'}</span>
     </div>
-    {descripcion ? (
-      <p className="cfg-carrera-area-desc__texto" title={descripcion}>
-        {descripcion}
-      </p>
-    ) : (
-      <p className="cfg-carrera-area-desc__texto cfg-carrera-area-desc__texto--empty">—</p>
-    )}
+    <TruncatedTextCell text={descripcion} />
   </div>
 );
 

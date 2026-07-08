@@ -7,3 +7,4 @@ export { useCursosHorariosApi } from './useCursosHorariosApi';
 export { useParalelosEstadoApi } from './useParalelosEstadoApi';
 export { useAsignaturasSinCursoApi } from './useAsignaturasSinCursoApi';
 export { useCapacidadTurnoApi } from './useCapacidadTurnoApi';
+export { useToggleEstadoCatalogo } from './useToggleEstadoCatalogo';

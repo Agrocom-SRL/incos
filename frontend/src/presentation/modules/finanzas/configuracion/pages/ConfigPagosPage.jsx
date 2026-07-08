@@ -1,48 +1,60 @@
 /**
- * Config. de pagos (Finanzas) — gestión vigente, en un sistema de TABS.
+ * Config. de pagos (Finanzas) — métodos, bancos, cuentas y becas/descuentos,
+ * en un sistema de TABS.
  *
- * Página "dumb" (espejo de `AcademicoPage`): compone `PageHeaderArea` +
- * `DashboardPageShell` + `MainContent` + el workspace `cfg-academico-workspace`
- * con `Tabs` (`?tab=aporte|metodos|bancos|cuentas`). Cada tab = una entidad
- * (aporte, métodos, bancos, cuentas) con título + descripción breve y su propio
- * panel. Toda la orquestación (fetch, upsert aporte, PUT métodos, POST/PUT bancos y
- * cuentas con QR) vive en `useConfigPagosPage` + el provider; aquí no se hace fetch.
+ * Página "dumb" (espejo de `ComplementariosPage` / `AcademicoPage`): compone
+ * `PageHeaderArea` + `DashboardPageShell` + workspace con tabs siempre visibles.
+ * El loading vive en cada `TableListView` del tab (no spinner de página completa),
+ * igual que Complementarios — el toggle de estado recarga en background sin
+ * desmontar tabs.
+ * (`BecasDescuentosTabPanel` monta su propio `BecaDescuentoProvider`, catálogo
+ * independiente — permiso `finanzas.beca-descuento`). Ver/editar/activar de
+ * bancos/cuentas/métodos vive en su ficha de detalle propia
+ * (`/finanzas/configuracion/{bancos,cuentas,metodos}/:id`), ya no en la tabla.
  *
- * RBAC: la ruta FIN-CFG es `configuracion.pagos` LISTAR. El alta (bancos/cuentas)
- * usa CREAR (PermisoGuard en la cabecera del workspace) y edición/toggle usan EDITAR
- * (en los paneles/columnas). No se cambian permisos.
+ * El aporte de la gestión vigente vive como página HIJA sin ítem de menú
+ * propio, `/finanzas/configuracion/aportes` (permiso `finanzas.aporte`, ver
+ * `finanzas/configuracion/pages/AporteConfigPage.jsx`), a la que se llega
+ * desde el botón "Configuración de aportes" en `PageHeader`.
+ *
+ * RBAC: la ruta FIN-CFG es `finanzas.configuracion.pago` LISTAR. El alta
+ * (bancos/cuentas) usa CREAR (PermisoGuard en la cabecera del workspace);
+ * ver/editar/activar/eliminar viven en la ficha (`finanzas.configuracion.pago`
+ * DETALLE/EDITAR/ELIMINAR). Becas y descuentos usa su propio permiso
+ * `finanzas.beca-descuento` (LISTAR/CREAR/EDITAR/DETALLE/ELIMINAR).
  */
 
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Alert, Empty, Flex, Spin, Tabs, Typography } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Alert, Flex, Tabs, Typography } from 'antd';
+import { GoldOutlined, PlusOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { Button } from '@atoms';
+import { Button, ActionButton } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import { allSpacing } from '@theme/tokens';
 import { useConfigPagosPage } from '@application-finanzas/hooks/state/useConfigPagosPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
+import { BECA_DESCUENTO_PERMISO } from '@finanzas/configuracion/config/becaDescuentoPermisos';
+import { becaDescuentoNuevaPath } from '@application-finanzas/config/paths';
 import {
   CONFIG_PAGOS_TAB_KEYS,
   CONFIG_PAGOS_TAB_META,
-  TAB_APORTE,
   TAB_BANCOS,
+  TAB_BECAS_DESCUENTOS,
   TAB_CUENTAS,
   TAB_METODOS,
 } from '@finanzas/configuracion/config/configPagosTabs';
-import AporteTabPanel from '@finanzas/configuracion/components/AporteTabPanel.jsx';
 import MetodosTabPanel from '@finanzas/configuracion/components/MetodosTabPanel.jsx';
 import BancosTabPanel from '@finanzas/configuracion/components/BancosTabPanel.jsx';
 import CuentasTabPanel from '@finanzas/configuracion/components/CuentasTabPanel.jsx';
+import BecasDescuentosTabPanel from '@finanzas/configuracion/components/BecasDescuentosTabPanel.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/configuracion/styles/config-pagos.css';
 
-const { Paragraph, Text } = Typography;
+const { Paragraph } = Typography;
 
 const wrapTabPanel = (node) => <div className="cfg-academico-tab-panel">{node}</div>;
 
@@ -56,11 +68,10 @@ const renderTabLabel = (meta) => {
 };
 
 const ConfigPagosPage = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
-    gestionVigente,
     breadcrumbItems,
-    aporteVigente,
     metodos,
     bancos,
     cuentas,
@@ -68,14 +79,11 @@ const ConfigPagosPage = () => {
     error,
     refetch,
     saving,
-    // Aporte
-    guardarAporte,
     // Métodos
     metodoEnEdicion,
     metodoModalAbierto,
     abrirMetodoModal,
     cerrarMetodoModal,
-    toggleMetodoActivo,
     guardarMetodo,
     // Bancos
     bancoEnEdicion,
@@ -83,14 +91,12 @@ const ConfigPagosPage = () => {
     abrirBancoModal,
     cerrarBancoModal,
     guardarBancoSubmit,
-    toggleBancoActivo,
     // Cuentas
     cuentaEnEdicion,
     cuentaModalAbierto,
     abrirCuentaModal,
     cerrarCuentaModal,
     guardarCuentaSubmit,
-    toggleCuentaActiva,
   } = useConfigPagosPage();
 
   /** Resuelve el nombre del método por id (para las tablas de bancos/cuentas). */
@@ -102,25 +108,14 @@ const ConfigPagosPage = () => {
   const tabItems = useMemo(
     () => [
       {
-        key: TAB_APORTE,
-        label: renderTabLabel(CONFIG_PAGOS_TAB_META[TAB_APORTE]),
-        children: wrapTabPanel(
-          <AporteTabPanel
-            aporteVigente={aporteVigente}
-            gestionVigente={gestionVigente}
-            saving={saving}
-            onGuardar={guardarAporte}
-          />,
-        ),
-      },
-      {
         key: TAB_METODOS,
         label: renderTabLabel(CONFIG_PAGOS_TAB_META[TAB_METODOS]),
         children: wrapTabPanel(
           <MetodosTabPanel
             metodos={metodos}
+            loading={loading}
+            error={error}
             saving={saving}
-            onToggleActivo={toggleMetodoActivo}
             drawerAbierto={metodoModalAbierto}
             metodoEnEdicion={metodoEnEdicion}
             onAbrirDrawer={abrirMetodoModal}
@@ -136,6 +131,8 @@ const ConfigPagosPage = () => {
           <BancosTabPanel
             bancos={bancos}
             metodos={metodos}
+            loading={loading}
+            error={error}
             saving={saving}
             metodoNombrePorId={metodoNombrePorId}
             drawerAbierto={bancoModalAbierto}
@@ -143,7 +140,6 @@ const ConfigPagosPage = () => {
             onAbrirDrawer={abrirBancoModal}
             onCerrarDrawer={cerrarBancoModal}
             onGuardar={guardarBancoSubmit}
-            onToggleActivo={toggleBancoActivo}
           />,
         ),
       },
@@ -155,6 +151,8 @@ const ConfigPagosPage = () => {
             cuentas={cuentas}
             metodos={metodos}
             bancos={bancos}
+            loading={loading}
+            error={error}
             saving={saving}
             metodoNombrePorId={metodoNombrePorId}
             drawerAbierto={cuentaModalAbierto}
@@ -162,18 +160,20 @@ const ConfigPagosPage = () => {
             onAbrirDrawer={abrirCuentaModal}
             onCerrarDrawer={cerrarCuentaModal}
             onGuardar={guardarCuentaSubmit}
-            onToggleActivo={toggleCuentaActiva}
           />,
         ),
       },
+      {
+        key: TAB_BECAS_DESCUENTOS,
+        label: renderTabLabel(CONFIG_PAGOS_TAB_META[TAB_BECAS_DESCUENTOS]),
+        children: wrapTabPanel(<BecasDescuentosTabPanel />),
+      },
     ],
     [
-      aporteVigente,
-      gestionVigente,
+      loading,
+      error,
       saving,
-      guardarAporte,
       metodos,
-      toggleMetodoActivo,
       metodoModalAbierto,
       metodoEnEdicion,
       abrirMetodoModal,
@@ -186,14 +186,12 @@ const ConfigPagosPage = () => {
       abrirBancoModal,
       cerrarBancoModal,
       guardarBancoSubmit,
-      toggleBancoActivo,
       cuentas,
       cuentaModalAbierto,
       cuentaEnEdicion,
       abrirCuentaModal,
       cerrarCuentaModal,
       guardarCuentaSubmit,
-      toggleCuentaActiva,
     ],
   );
 
@@ -202,7 +200,7 @@ const ConfigPagosPage = () => {
     if (requested && CONFIG_PAGOS_TAB_KEYS.includes(requested)) {
       return requested;
     }
-    return TAB_APORTE;
+    return TAB_METODOS;
   }, [searchParams]);
 
   const activePanel = CONFIG_PAGOS_TAB_META[activeKey];
@@ -234,24 +232,43 @@ const ConfigPagosPage = () => {
         </PermisoGuard>
       );
     }
+    if (activeKey === TAB_BECAS_DESCUENTOS) {
+      return (
+        <ActionButton
+          permiso={BECA_DESCUENTO_PERMISO}
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(becaDescuentoNuevaPath)}
+        >
+          Nueva beca o descuento
+        </ActionButton>
+      );
+    }
     return null;
-  }, [activeKey, abrirBancoModal, abrirCuentaModal]);
+  }, [activeKey, abrirBancoModal, abrirCuentaModal, navigate]);
+
+  /**
+   * Acción de página (no por-tab): ir a la configuración del aporte de la
+   * gestión vigente. Propaga la pestaña activa como `returnTab` para que el
+   * botón "volver" de esa página regrese al mismo tab, no siempre a métodos.
+   */
+  const pageHeaderActions = (
+    <PermisoGuard codigo="finanzas.aporte" accion="LISTAR">
+      <Button
+        variant="primary"
+        icon={<GoldOutlined />}
+        onClick={() =>
+          navigate('/finanzas/configuracion/aportes', { state: { returnTab: activeKey } })
+        }
+      >
+        Configuración de aportes
+      </Button>
+    </PermisoGuard>
+  );
 
   let body;
-  if (loading) {
-    body = (
-      <Flex
-        vertical
-        align="center"
-        justify="center"
-        gap={allSpacing.marginSM}
-        style={{ minHeight: allSpacing.skeletonCardHeight }}
-      >
-        <Spin size="large" />
-        <Text type="secondary">Cargando configuración de pagos...</Text>
-      </Flex>
-    );
-  } else if (error) {
+  if (error) {
     body = (
       <Alert
         type="error"
@@ -265,13 +282,6 @@ const ConfigPagosPage = () => {
         }
       />
     );
-  } else if (
-    metodos.length === 0 &&
-    bancos.length === 0 &&
-    cuentas.length === 0 &&
-    !aporteVigente
-  ) {
-    body = <Empty description="No hay datos de configuración de pagos" />;
   } else {
     body = (
       <section className="cfg-academico-workspace">
@@ -300,7 +310,11 @@ const ConfigPagosPage = () => {
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
-        <PageHeader title="Config. de pagos" breadcrumbItems={breadcrumbItems} />
+        <PageHeader
+          title="Config. de pagos"
+          breadcrumbItems={breadcrumbItems}
+          actions={pageHeaderActions}
+        />
       </PageHeaderArea>
       <DashboardPageShell>
         <MainContent>{body}</MainContent>

@@ -4,7 +4,6 @@
 
 export { useCarreraContext } from './context/useCarreraContext';
 export { useMateriaContext } from './context/useMateriaContext';
-export { useParaleloContext } from './context/useParaleloContext';
 
 export { useCarrerasApi } from './api/useCarrerasApi';
 export { useMateriasApi } from './api/useMateriasApi';
@@ -19,6 +18,3 @@ export { useCarreraForm } from './state/useCarreraForm';
 export { useMateriaForm } from './state/useMateriaForm';
 export { useCarreraDetallePage } from './state/useCarreraDetallePage';
 export { useMateriaDetallePage } from './state/useMateriaDetallePage';
-export { useParaleloForm } from './state/useParaleloForm';
-export { useParaleloDetallePage } from './state/useParaleloDetallePage';
-export { useParaleloInstanciasGestionApi } from './api/useParaleloInstanciasGestionApi';

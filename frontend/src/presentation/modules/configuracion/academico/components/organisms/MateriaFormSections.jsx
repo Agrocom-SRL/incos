@@ -1,7 +1,7 @@
 /**
  * Formulario ABM materia — workspace alineado a AcademicoPage.
  */
-import CfgAcademicoFormWorkspace from './CfgAcademicoFormWorkspace';
+import { CfgFormWorkspace } from '@organisms';
 
 const MateriaFormSections = ({ form, formSections, footer = null }) => {
   const { datosMateria } = formSections ?? {};
@@ -11,7 +11,7 @@ const MateriaFormSections = ({ form, formSections, footer = null }) => {
   }
 
   return (
-    <CfgAcademicoFormWorkspace
+    <CfgFormWorkspace
       title={datosMateria.title}
       description={datosMateria.description}
       fields={datosMateria.fields}

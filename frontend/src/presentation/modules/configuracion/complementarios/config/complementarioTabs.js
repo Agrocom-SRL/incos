@@ -1,3 +1,7 @@
-export const TAB_DISCAPACIDAD = 'discapacidad';
-export const TAB_APODERADOS = 'apoderados';
-export const TAB_IDIOMAS = 'idiomas';
+/** Re-exporta la fuente única (application layer) para no duplicar claves de tab. */
+export {
+  TAB_DISCAPACIDAD,
+  TAB_APODERADOS,
+  TAB_IDIOMAS,
+  TAB_ESTADOS_CIVILES,
+} from '@application-configuracion/complementarios/config/tabs';

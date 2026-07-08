@@ -59,6 +59,8 @@ const TableListView = ({
 
     // Estilos adicionales para la tabla (permite aplicar reglas específicas por módulo)
     tableClassName = '',
+    /** (record, index) => string — clase por fila (ej. atenuar catálogos inactivos). */
+    rowClassName,
 
     // Loading personalizado
     loadingTip = 'Cargando...',
@@ -144,6 +146,7 @@ const TableListView = ({
                 pagination={finalPagination}
                 defaultSort={defaultSort}
                 className={tableClassName}
+                rowClassName={rowClassName}
             />
         </>
     );

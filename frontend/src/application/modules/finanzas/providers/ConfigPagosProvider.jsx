@@ -2,36 +2,28 @@
  * Provider: configuración de pagos (Finanzas).
  *
  * Provider DELGADO (espejo de `PagosRegistrarProvider`): ensambla las lecturas
- * — gestión vigente (catálogo compartido), las 4 entidades de configuración — y
- * las mutaciones, y publica su contrato. La orquestación de pantalla (handlers de
+ * de las 3 entidades de configuración (métodos, bancos, cuentas) y las
+ * mutaciones, y publica su contrato. La orquestación de pantalla (handlers de
  * guardado por sección, estado de modales, feedback + refetch) vive en
  * `useConfigPagosPage` (hooks/state), no aquí.
+ *
+ * El aporte de la gestión vigente vive en la página
+ * `/finanzas/configuracion/aportes` (sin ítem de menú propio, permiso
+ * `finanzas.aporte`, `AporteProvider`).
  */
 
 import { useMemo } from 'react';
-import { useGestionesCatalogApi } from '@application-shared/hooks';
 import { useConfigPagosCatalogsApi } from '@application-finanzas/hooks/api/useConfigPagosCatalogsApi';
 import { useConfigPagosMutations } from '@application-finanzas/hooks/api/useConfigPagosMutations';
 import { ConfigPagosContext } from '@application-finanzas/context/ConfigPagosContext';
 
 export const ConfigPagosProvider = ({ children }) => {
-  // El catálogo compartido ya filtra `vigente: 1`: el primero es la gestión vigente.
-  const { gestiones } = useGestionesCatalogApi();
-  const gestionVigente = useMemo(() => {
-    const list = Array.isArray(gestiones) ? gestiones : [];
-    return list.find((g) => g.vigente) ?? list[0] ?? null;
-  }, [gestiones]);
-
-  const catalogos = useConfigPagosCatalogsApi(gestionVigente);
+  const catalogos = useConfigPagosCatalogsApi();
   const mutaciones = useConfigPagosMutations();
 
   const value = useMemo(
     () => ({
-      // Contexto de gestión
-      gestionVigente,
-      // Lecturas (4 entidades)
-      aportes: catalogos.aportes,
-      aporteVigente: catalogos.aporteVigente,
+      // Lecturas (3 entidades)
       metodos: catalogos.metodos,
       bancos: catalogos.bancos,
       cuentas: catalogos.cuentas,
@@ -40,12 +32,16 @@ export const ConfigPagosProvider = ({ children }) => {
       refetch: catalogos.refetch,
       // Mutaciones
       saving: mutaciones.saving,
-      guardarConfiguracionAporte: mutaciones.guardarConfiguracionAporte,
       actualizarMetodoPago: mutaciones.actualizarMetodoPago,
       guardarBanco: mutaciones.guardarBanco,
       guardarCuenta: mutaciones.guardarCuenta,
+      eliminarBanco: mutaciones.eliminarBanco,
+      eliminarCuenta: mutaciones.eliminarCuenta,
+      cambiarEstadoMetodo: mutaciones.cambiarEstadoMetodo,
+      cambiarEstadoBanco: mutaciones.cambiarEstadoBanco,
+      cambiarEstadoCuenta: mutaciones.cambiarEstadoCuenta,
     }),
-    [gestionVigente, catalogos, mutaciones],
+    [catalogos, mutaciones],
   );
 
   return <ConfigPagosContext.Provider value={value}>{children}</ConfigPagosContext.Provider>;

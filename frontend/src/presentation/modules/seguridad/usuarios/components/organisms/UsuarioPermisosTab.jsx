@@ -2,13 +2,12 @@ import { useMemo } from 'react';
 import { Table, Tabs, Tag, Typography } from 'antd';
 import {
   CheckCircleOutlined,
-  DeleteOutlined,
   KeyOutlined,
   LockOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
 import { useSeguridadUsuarioPermisosPageContext } from '@/application/modules/seguridad/hooks';
-import { DetailInfoCard } from '@molecules';
+import { DetailInfoCard, TableActions } from '@molecules';
 import { Button } from '@atoms';
 import AgregarOverrideModal from '@modules/seguridad/usuarios/components/modals/AgregarOverrideModal.jsx';
 
@@ -164,11 +163,20 @@ export default function UsuarioPermisosTab() {
                     ? {
                         title: '',
                         key: 'x',
-                        width: 120,
+                        width: 72,
+                        align: 'right',
                         render: (_, row) => (
-                          <Button icon={<DeleteOutlined />} variant="error" onClick={() => removeOverride(row.id)}>
-                            Quitar
-                          </Button>
+                          <TableActions
+                            record={row}
+                            deleteFn={() => removeOverride(row.id)}
+                            itemName={`el ajuste de ${row.codigo} (${row.accion})`}
+                            itemDetails={[
+                              { label: 'Código', value: row.codigo },
+                              { label: 'Acción', value: row.accion },
+                              { label: 'Tipo', value: tipoOverrideEtiqueta(row.tipo) },
+                            ]}
+                            permisos={{ eliminar: { codigo: 'seguridad.rol.gestionar', accion: 'EDITAR' } }}
+                          />
                         ),
                       }
                     : null,
