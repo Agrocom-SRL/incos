@@ -2,25 +2,17 @@
  * Columnas — listado de idiomas (catálogo simple).
  * Usa el factory compartido `createSimpleCatalogTableColumns` (ver `incos-ui-system`).
  *
- * Idiomas no tiene `descripcion`; en su lugar muestra `codigoIso` como columna
- * propia (extraColumns), por eso se suprime la columna "Descripción" por defecto
- * (`descripcionField: null`).
+ * Idiomas no tiene `descripcion` (`descripcionField: null`); el código ISO se
+ * muestra dentro de la celda de nombre vía `codigoField` (`IdentidadCelda`,
+ * mismo look que la columna Carrera del tab Académico). El factory ya incluye
+ * la fila "Código" en el diálogo de borrado, sin `itemDetailsExtra`.
  */
-import { TableCell } from '@molecules';
 import { createSimpleCatalogTableColumns } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import {
   idiomaDetallePath,
   idiomaEditarPath,
 } from '@application-configuracion/complementarios/config/paths';
-
-const codigoIsoColumn = {
-  title: 'Código ISO',
-  dataIndex: 'codigoIso',
-  width: 140,
-  render: (codigoIso) => <TableCell fallback="—">{codigoIso}</TableCell>,
-  sorter: true,
-  sortCompare: (a, b) => (a.codigoIso || '').localeCompare(b.codigoIso || '', 'es', { sensitivity: 'base' }),
-};
+import { usosColumn } from './usosColumn';
 
 export const createIdiomasTableColumns = ({ navigate, listNavState, refetch }) =>
   createSimpleCatalogTableColumns({
@@ -32,7 +24,7 @@ export const createIdiomasTableColumns = ({ navigate, listNavState, refetch }) =
     getDetallePath: (record) => idiomaDetallePath(record.id),
     getEditarPath: (record) => idiomaEditarPath(record.id),
     useCaseKey: 'eliminarIdioma',
+    codigoField: 'codigoIso',
     descripcionField: null,
-    extraColumns: [codigoIsoColumn],
-    itemDetailsExtra: (record) => [{ label: 'Código ISO', value: record.codigoIso }],
+    extraColumns: [usosColumn],
   });

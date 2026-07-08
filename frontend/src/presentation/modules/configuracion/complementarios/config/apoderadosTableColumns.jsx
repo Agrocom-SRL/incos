@@ -7,6 +7,7 @@ import {
   apoderadoDetallePath,
   apoderadoEditarPath,
 } from '@application-configuracion/complementarios/config/paths';
+import { usosColumn } from './usosColumn';
 
 export const createApoderadosTableColumns = ({ navigate, listNavState, refetch }) =>
   createSimpleCatalogTableColumns({
@@ -18,4 +19,5 @@ export const createApoderadosTableColumns = ({ navigate, listNavState, refetch }
     getDetallePath: (record) => apoderadoDetallePath(record.id),
     getEditarPath: (record) => apoderadoEditarPath(record.id),
     useCaseKey: 'eliminarTipoParentesco',
+    extraColumns: [usosColumn],
   });

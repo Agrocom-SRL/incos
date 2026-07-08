@@ -5,15 +5,16 @@
  */
 
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
-import { RelationshipTypeMapper } from '../../mappers/referencia/index.js';
+import { RelationshipTypeMapper, mergeUsosComplementarios } from '../../mappers/referencia/index.js';
 
 export class ListTiposParentescoUseCase extends BaseListUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.relationshipTypeRepository - Repositorio de tipos de parentesco
+   * @param {IComplementariosUsosViewRepository} params.complementariosUsosViewRepository - Conteos de uso (vista 151)
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
-  constructor({ relationshipTypeRepository, logger }) {
+  constructor({ relationshipTypeRepository, complementariosUsosViewRepository, logger }) {
     super({
       repository: relationshipTypeRepository,
       logger,
@@ -26,6 +27,7 @@ export class ListTiposParentescoUseCase extends BaseListUseCase {
       // Este es el nombre que verá el cliente en la respuesta JSON
       dataFieldName: 'tiposParentesco',
     });
+    this.complementariosUsosViewRepository = complementariosUsosViewRepository;
   }
 
   /**
@@ -35,5 +37,15 @@ export class ListTiposParentescoUseCase extends BaseListUseCase {
   getMapper() {
     return RelationshipTypeMapper;
   }
-}
 
+  /**
+   * Enriquece cada ítem con los conteos de uso del catálogo
+   * (cantidadEstudiantes / cantidadDocentes / cantidadPersonal, 0 por defecto)
+   * @param {Object[]} data - Ítems en formato de presentación
+   * @returns {Promise<Object[]>}
+   */
+  async enrichData(data) {
+    const usos = await this.complementariosUsosViewRepository.getUsosByCatalogo('PARENTESCO');
+    return mergeUsosComplementarios(data, usos);
+  }
+}

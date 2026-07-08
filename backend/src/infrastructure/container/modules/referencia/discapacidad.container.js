@@ -44,6 +44,9 @@ export function registerDiscapacidadResource(container) {
         (c) =>
             new ListDiscapacidadUseCase({
                 disabilityTypeRepository: c.resolve(REPOSITORIOS_TOKENS.disabilityTypeRepository),
+                complementariosUsosViewRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.complementariosUsosViewRepository,
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );

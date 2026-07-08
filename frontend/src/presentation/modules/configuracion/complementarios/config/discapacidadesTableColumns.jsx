@@ -7,6 +7,7 @@ import {
   discapacidadDetallePath,
   discapacidadEditarPath,
 } from '@application-configuracion/complementarios/config/paths';
+import { usosColumn } from './usosColumn';
 
 export const createDiscapacidadesTableColumns = ({ navigate, listNavState, refetch }) =>
   createSimpleCatalogTableColumns({
@@ -18,4 +19,5 @@ export const createDiscapacidadesTableColumns = ({ navigate, listNavState, refet
     getDetallePath: (record) => discapacidadDetallePath(record.id),
     getEditarPath: (record) => discapacidadEditarPath(record.id),
     useCaseKey: 'eliminarDiscapacidad',
+    extraColumns: [usosColumn],
   });

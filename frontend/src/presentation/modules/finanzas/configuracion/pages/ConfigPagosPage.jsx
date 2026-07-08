@@ -247,7 +247,7 @@ const ConfigPagosPage = () => {
   const pageHeaderActions = (
     <PermisoGuard codigo="finanzas.aporte" accion="LISTAR">
       <Button
-        variant="secondary"
+        variant="primary"
         icon={<GoldOutlined />}
         onClick={() => navigate('/finanzas/configuracion/aportes')}
       >

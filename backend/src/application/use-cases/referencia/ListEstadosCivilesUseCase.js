@@ -5,15 +5,16 @@
  */
 
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
-import { CivilStatusMapper } from '../../mappers/referencia/index.js';
+import { CivilStatusMapper, mergeUsosComplementarios } from '../../mappers/referencia/index.js';
 
 export class ListEstadosCivilesUseCase extends BaseListUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.civilStatusRepository - Repositorio de estados civiles
+   * @param {IComplementariosUsosViewRepository} params.complementariosUsosViewRepository - Conteos de uso (vista 151)
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
-  constructor({ civilStatusRepository, logger }) {
+  constructor({ civilStatusRepository, complementariosUsosViewRepository, logger }) {
     super({
       repository: civilStatusRepository,
       logger,
@@ -26,6 +27,7 @@ export class ListEstadosCivilesUseCase extends BaseListUseCase {
       // Este es el nombre que verá el cliente en la respuesta JSON
       dataFieldName: 'estadosCiviles',
     });
+    this.complementariosUsosViewRepository = complementariosUsosViewRepository;
   }
 
   /**
@@ -35,5 +37,15 @@ export class ListEstadosCivilesUseCase extends BaseListUseCase {
   getMapper() {
     return CivilStatusMapper;
   }
-}
 
+  /**
+   * Enriquece cada ítem con los conteos de uso del catálogo
+   * (cantidadEstudiantes / cantidadDocentes / cantidadPersonal, 0 por defecto)
+   * @param {Object[]} data - Ítems en formato de presentación
+   * @returns {Promise<Object[]>}
+   */
+  async enrichData(data) {
+    const usos = await this.complementariosUsosViewRepository.getUsosByCatalogo('ESTADO_CIVIL');
+    return mergeUsosComplementarios(data, usos);
+  }
+}

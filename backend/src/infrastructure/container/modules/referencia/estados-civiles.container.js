@@ -44,6 +44,9 @@ export function registerEstadosCivilesResource(container) {
         (c) =>
             new ListEstadosCivilesUseCase({
                 civilStatusRepository: c.resolve(REPOSITORIOS_TOKENS.civilStatusRepository),
+                complementariosUsosViewRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.complementariosUsosViewRepository,
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );

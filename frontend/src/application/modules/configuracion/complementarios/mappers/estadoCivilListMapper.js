@@ -19,6 +19,10 @@ export const estadoCivilListMapper = (estadoCivilBackend) => {
     nombre: estadoCivilBackend.nombre,
     abreviatura: estadoCivilBackend.abreviatura,
     activo: estadoCivilBackend.activo,
+    // Conteos de uso del catálogo (columna "Usos"), 0 por defecto
+    cantidadEstudiantes: estadoCivilBackend.cantidadEstudiantes ?? 0,
+    cantidadDocentes: estadoCivilBackend.cantidadDocentes ?? 0,
+    cantidadPersonal: estadoCivilBackend.cantidadPersonal ?? 0,
   };
 };
 

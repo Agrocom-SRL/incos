@@ -19,6 +19,10 @@ export const apoderadoListMapper = (tipoParentescoBackend) => {
     nombre: tipoParentescoBackend.nombre,
     descripcion: tipoParentescoBackend.descripcion,
     activo: tipoParentescoBackend.activo,
+    // Conteos de uso del catálogo (columna "Usos"), 0 por defecto
+    cantidadEstudiantes: tipoParentescoBackend.cantidadEstudiantes ?? 0,
+    cantidadDocentes: tipoParentescoBackend.cantidadDocentes ?? 0,
+    cantidadPersonal: tipoParentescoBackend.cantidadPersonal ?? 0,
   };
 };
 

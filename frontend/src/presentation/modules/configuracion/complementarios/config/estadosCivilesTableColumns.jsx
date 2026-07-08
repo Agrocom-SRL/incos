@@ -2,26 +2,17 @@
  * Columnas — listado de estados civiles (catálogo simple).
  * Usa el factory compartido `createSimpleCatalogTableColumns` (ver `incos-ui-system`).
  *
- * Estados civiles no tiene `descripcion`; en su lugar muestra `abreviatura` como
- * columna propia (extraColumns), por eso se suprime la columna "Descripción" por
- * defecto (`descripcionField: null`). Gemelo de `idiomasTableColumns.jsx`.
+ * Estados civiles no tiene `descripcion` (`descripcionField: null`); la
+ * abreviatura actúa como código dentro de la celda de nombre vía `codigoField`
+ * (`IdentidadCelda`). El factory ya incluye la fila "Código" en el diálogo de
+ * borrado, sin `itemDetailsExtra`. Gemelo de `idiomasTableColumns.jsx`.
  */
-import { TableCell } from '@molecules';
 import { createSimpleCatalogTableColumns } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import {
   estadoCivilDetallePath,
   estadoCivilEditarPath,
 } from '@application-configuracion/complementarios/config/paths';
-
-const abreviaturaColumn = {
-  title: 'Abreviatura',
-  dataIndex: 'abreviatura',
-  width: 140,
-  render: (abreviatura) => <TableCell fallback="—">{abreviatura}</TableCell>,
-  sorter: true,
-  sortCompare: (a, b) =>
-    (a.abreviatura || '').localeCompare(b.abreviatura || '', 'es', { sensitivity: 'base' }),
-};
+import { usosColumn } from './usosColumn';
 
 export const createEstadosCivilesTableColumns = ({ navigate, listNavState, refetch }) =>
   createSimpleCatalogTableColumns({
@@ -33,7 +24,7 @@ export const createEstadosCivilesTableColumns = ({ navigate, listNavState, refet
     getDetallePath: (record) => estadoCivilDetallePath(record.id),
     getEditarPath: (record) => estadoCivilEditarPath(record.id),
     useCaseKey: 'eliminarEstadoCivil',
+    codigoField: 'abreviatura',
     descripcionField: null,
-    extraColumns: [abreviaturaColumn],
-    itemDetailsExtra: (record) => [{ label: 'Abreviatura', value: record.abreviatura }],
+    extraColumns: [usosColumn],
   });

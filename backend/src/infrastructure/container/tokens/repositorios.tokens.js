@@ -20,6 +20,7 @@ export const REPOSITORIOS_TOKENS = {
     relationshipTypeRepository: 'relationshipTypeRepository',
     documentationRepository: 'documentationRepository',
     institutionRepository: 'institutionRepository',
+    complementariosUsosViewRepository: 'complementariosUsosViewRepository',
 
     // CONFIGURACIÓN DEL SISTEMA
     systemConfigurationRepository: 'systemConfigurationRepository',

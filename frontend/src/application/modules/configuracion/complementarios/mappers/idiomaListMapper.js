@@ -19,6 +19,10 @@ export const idiomaListMapper = (idiomaBackend) => {
     nombre: idiomaBackend.nombre,
     codigoIso: idiomaBackend.codigoIso,
     activo: idiomaBackend.activo,
+    // Conteos de uso del catálogo (columna "Usos"), 0 por defecto
+    cantidadEstudiantes: idiomaBackend.cantidadEstudiantes ?? 0,
+    cantidadDocentes: idiomaBackend.cantidadDocentes ?? 0,
+    cantidadPersonal: idiomaBackend.cantidadPersonal ?? 0,
   };
 };
 

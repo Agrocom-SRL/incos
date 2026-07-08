@@ -38,6 +38,7 @@ import { DisabilityTypeRepository } from '../../repositories/DisabilityTypeRepos
 import { RelationshipTypeRepository } from '../../repositories/RelationshipTypeRepository.js';
 import { DocumentacionRepository } from '../../repositories/DocumentacionRepository.js';
 import { InstitutionRepository } from '../../repositories/InstitutionRepository.js';
+import { ComplementariosUsosViewRepository } from '../../repositories/views/ComplementariosUsosViewRepository.js';
 
 // ============================================
 // CONFIGURACIÓN DEL SISTEMA
@@ -184,6 +185,11 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.relationshipTypeRepository, RelationshipTypeRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.documentationRepository, DocumentacionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.institutionRepository, InstitutionRepository);
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.complementariosUsosViewRepository,
+        ComplementariosUsosViewRepository,
+    );
 
     // ============================================
     // CONFIGURACIÓN DEL SISTEMA
