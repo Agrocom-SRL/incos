@@ -3,17 +3,22 @@
  *
  * Tabla de métodos con el lenguaje visual canónico (TableListView embebido, como
  * BancosTabPanel / CuentasTabPanel / CarrerasList): columnas con numeración,
- * `IdentidadCelda` y `TableActions` (ver/editar). Sin crear/eliminar (los 4
- * métodos EFECTIVO/QR/TRANSFERENCIA/DEPOSITO son fijos). Ver navega a la ficha
- * de detalle (`MetodoDetailPage`), donde también se gestiona el toggle
- * activo/inactivo. Los controles se gobiernan por permiso EDITAR. Recibe props
- * ya mapeadas; no hace fetch.
+ * `IdentidadCelda`, concurrencia «Pagos registrados», toggle de la columna
+ * "Estado" (`useToggleEstadoCatalogo`, PATCH /:id/estado, ACTIVAR) y
+ * `TableActions` (ver/editar). Sin crear/eliminar (los 4 métodos
+ * EFECTIVO/QR/TRANSFERENCIA/DEPOSITO son fijos, sin DELETE en backend). Ver
+ * navega a la ficha de detalle (`MetodoDetailPage`). Los controles se gobiernan
+ * por permiso EDITAR/ACTIVAR. Recibe props ya mapeadas; no hace fetch (refetch
+ * sale del contexto). Filas inactivas atenuadas (`catalogoEstadoRowClassName`).
  */
 
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TableListView } from '@organisms';
 import { usePermiso } from '@application-auth';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
+import { useConfigPagosContext } from '@application-finanzas/hooks/context/useConfigPagosContext';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { createMetodosColumns } from '@finanzas/configuracion/config/configPagosColumns';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
 import { metodoDetallePath } from '@application-finanzas/config/paths';
@@ -38,13 +43,22 @@ const MetodosTabPanel = ({
   onGuardar,
 }) => {
   const navigate = useNavigate();
+  const { refetch } = useConfigPagosContext();
   const puedeEditar = usePermiso(CONFIG_PAGOS_PERMISO, 'EDITAR');
   const [searchText, setSearchText] = useState('');
+
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoMetodoPago',
+    entidad: 'el método de pago',
+    refetch,
+  });
 
   const columns = createMetodosColumns({
     onVer: (record) => navigate(metodoDetallePath(record.id)),
     onEditar: onAbrirDrawer,
     puedeEditar,
+    onToggleEstado: toggleEstado,
   });
 
   const metodosFiltrados = useMemo(() => {
@@ -66,6 +80,7 @@ const MetodosTabPanel = ({
         searchPlaceholder="Buscar por código o nombre…"
         columns={columns}
         rowKey="id"
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={false}

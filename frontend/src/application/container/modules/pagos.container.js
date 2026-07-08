@@ -14,6 +14,9 @@ import {
   GetTodasPaymentAccountsUseCase,
   GetTodosAuthorizedBanksUseCase,
   GetTodosPaymentMethodsUseCase,
+  CambiarEstadoMetodoPagoUseCase,
+  CambiarEstadoBancoAutorizadoUseCase,
+  CambiarEstadoCuentaPagoUseCase,
   GetTodasContributionConfigurationsUseCase,
   RegisterPagoAporteUseCase,
   ObtenerTodosPagosAportesUseCase,
@@ -58,6 +61,19 @@ export function registerPagosModule(factory) {
   // Registrar Use Cases de Métodos de Pago
   factory.listarMetodosPago = () => {
     return new GetTodosPaymentMethodsUseCase(paymentMethodRepository);
+  };
+
+  // Toggle activo/inactivo (columna "Estado" de Config. de pagos, PATCH /:id/estado)
+  factory.cambiarEstadoMetodoPago = () => {
+    return new CambiarEstadoMetodoPagoUseCase(paymentMethodRepository);
+  };
+
+  factory.cambiarEstadoBancoAutorizado = () => {
+    return new CambiarEstadoBancoAutorizadoUseCase(authorizedBankRepository);
+  };
+
+  factory.cambiarEstadoCuentaPago = () => {
+    return new CambiarEstadoCuentaPagoUseCase(paymentAccountRepository);
   };
 
   // Registrar Use Cases de Configuraciones de Aportes

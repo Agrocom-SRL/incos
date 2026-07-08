@@ -24,7 +24,7 @@ export const useMetodoDetailPage = () => {
   const { message } = App.useApp();
   const isInvalidId = !Number.isFinite(metodoId) || metodoId < 1;
 
-  const { metodos, loading, error, refetch, saving, actualizarMetodoPago } =
+  const { metodos, loading, error, refetch, saving, actualizarMetodoPago, cambiarEstadoMetodo } =
     useConfigPagosContext();
 
   const metodo = useMemo(
@@ -56,14 +56,15 @@ export const useMetodoDetailPage = () => {
   const handleToggleActivo = useCallback(async () => {
     if (!metodo) return;
     const activo = !metodo.activo;
-    const resultado = await actualizarMetodoPago(metodo.id, { activo });
+    // PATCH /:id/estado (acción ACTIVAR), mismo endpoint que el toggle del listado.
+    const resultado = await cambiarEstadoMetodo(metodo.id, activo);
     if (resultado?.success) {
       message.success(activo ? 'Método activado' : 'Método desactivado');
       await refetch();
     } else {
       message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
     }
-  }, [metodo, actualizarMetodoPago, message, refetch]);
+  }, [metodo, cambiarEstadoMetodo, message, refetch]);
 
   const avatarInitials = useMemo(
     () => (metodo?.nombre || '?').trim().slice(0, 2).toUpperCase(),

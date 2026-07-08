@@ -243,13 +243,19 @@ const ConfigPagosPage = () => {
     return null;
   }, [activeKey, abrirBancoModal, abrirCuentaModal, navigate]);
 
-  /** Acción de página (no por-tab): ir a la configuración del aporte de la gestión vigente. */
+  /**
+   * Acción de página (no por-tab): ir a la configuración del aporte de la
+   * gestión vigente. Propaga la pestaña activa como `returnTab` para que el
+   * botón "volver" de esa página regrese al mismo tab, no siempre a métodos.
+   */
   const pageHeaderActions = (
     <PermisoGuard codigo="finanzas.aporte" accion="LISTAR">
       <Button
         variant="primary"
         icon={<GoldOutlined />}
-        onClick={() => navigate('/finanzas/configuracion/aportes')}
+        onClick={() =>
+          navigate('/finanzas/configuracion/aportes', { state: { returnTab: activeKey } })
+        }
       >
         Configuración de aportes
       </Button>

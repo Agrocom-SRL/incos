@@ -147,6 +147,22 @@ export class PaymentAccountRepository extends IPaymentAccountRepository {
     }
   }
 
+  /**
+   * Cambia el estado activo/inactivo de una cuenta de pago
+   * PATCH /v1/cuentas-pago/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(CUENTAS_PAGO_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado de la cuenta de pago');
+    }
+  }
+
 }
 
 export default new PaymentAccountRepository();

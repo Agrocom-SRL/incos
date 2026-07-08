@@ -21,6 +21,7 @@ import {
   CrearAsignarBecaUseCase,
   EliminarEstudianteUseCase,
   EliminarBecaDescuentoUseCase,
+  CambiarEstadoBecaDescuentoUseCase,
   EliminarBecaAsignadaUseCase,
   ExportarEstadisticaInscritosExcelUseCase,
   ExportarListaInscritosPorCarreraExcelUseCase,
@@ -141,6 +142,13 @@ export function registerEstudiantesModule(factory) {
   // Use Case para eliminar beca/descuento
   factory.eliminarBecaDescuento = () => {
     return new EliminarBecaDescuentoUseCase({ becaDescuentoRepository: BecaDescuentoRepository });
+  };
+
+  // Use Case para activar/desactivar beca/descuento (toggle del listado de Config. de pagos)
+  factory.cambiarEstadoBecaDescuento = () => {
+    return new CambiarEstadoBecaDescuentoUseCase({
+      becaDescuentoRepository: BecaDescuentoRepository,
+    });
   };
 
   // Use Case para eliminar beca asignada a estudiante

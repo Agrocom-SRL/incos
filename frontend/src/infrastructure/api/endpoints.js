@@ -140,7 +140,10 @@ export const ESTUDIANTES_ENDPOINTS = {
   HISTORIAL_ACADEMICO_EXPORT_PDF: (studentId) =>
     `${API_BASE}/estudiantes/${studentId}/historial-academico/export-pdf`,
 };
-export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
+export const BECAS_DESCUENTOS_ENDPOINTS = {
+  ...createCRUDEndpoints('/becas-descuentos'),
+  ESTADO: (id) => `${API_BASE}/becas-descuentos/${id}/estado`, // PATCH: activar/desactivar
+};
 export const ESTUDIANTES_BECAS_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),
   // Endpoint para listar todas las becas asignadas a estudiantes
@@ -429,9 +432,18 @@ export const INSCRIPCIONES_ENDPOINTS = {
 // ============================================
 // MÓDULO: PAGOS
 // ============================================
-export const METODOS_PAGO_ENDPOINTS = createCRUDEndpoints('/metodos-pago');
-export const BANCOS_AUTORIZADOS_ENDPOINTS = createCRUDEndpoints('/bancos-autorizados');
-export const CUENTAS_PAGO_ENDPOINTS = createCRUDEndpoints('/cuentas-pago');
+export const METODOS_PAGO_ENDPOINTS = {
+  ...createCRUDEndpoints('/metodos-pago'),
+  ESTADO: (id) => `${API_BASE}/metodos-pago/${id}/estado`, // PATCH: activar/desactivar
+};
+export const BANCOS_AUTORIZADOS_ENDPOINTS = {
+  ...createCRUDEndpoints('/bancos-autorizados'),
+  ESTADO: (id) => `${API_BASE}/bancos-autorizados/${id}/estado`, // PATCH: activar/desactivar
+};
+export const CUENTAS_PAGO_ENDPOINTS = {
+  ...createCRUDEndpoints('/cuentas-pago'),
+  ESTADO: (id) => `${API_BASE}/cuentas-pago/${id}/estado`, // PATCH: activar/desactivar
+};
 export const CONFIGURACION_APORTES_ENDPOINTS = createCRUDEndpoints('/configuracion-aportes');
 export const PAGOS_APORTES_ENDPOINTS = {
   ...createCRUDEndpoints('/pagos-aportes'),

@@ -1,53 +1,46 @@
 /**
- * Aporte de la gestión vigente (Finanzas) — página dentro de "Config. de pagos",
- * sin ítem de menú propio (accesible desde el botón "Configuración de aportes"
- * de `ConfigPagosPage`).
+ * Aporte de la gestión vigente (Finanzas) — página HIJA de "Config. de pagos"
+ * (sin ítem de menú propio, se llega desde el botón "Configuración de
+ * aportes" de `ConfigPagosPage`). Workspace alineado a CFG Académico
+ * (`CarreraFormPage`/`MateriaFormPage`): `PageHeader` + `BackButton` +
+ * `Form` + organism `AporteFormSections` (`CfgFormWorkspace` data-driven).
  *
  * Permiso propio `finanzas.aporte` (LISTAR/CREAR/EDITAR, sin ELIMINAR),
  * separado de `finanzas.configuracion.pago` (bancos/cuentas/métodos).
- *
- * Página "dumb" (espejo de `ConfigPagosPage`, sin tabs): compone
- * `PageHeaderArea` + `DashboardPageShell` + `MainContent` + el workspace
- * `cfg-academico-workspace` con el formulario de monto base, vigencia y
- * estado del aporte. Toda la orquestación (fetch, upsert) vive en
- * `useAportePage` + el provider; aquí no se hace fetch.
  */
 
 import { useEffect } from 'react';
-import { Alert, DatePicker, Empty, Flex, Form, InputNumber, Spin, Switch, Tag, Typography } from 'antd';
+import { Alert, Empty, Flex, Form, Spin, Typography } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import ListPanelHeader from '@molecules/ListPanelHeader';
-import { Button } from '@atoms';
-import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
+import { ActionButton, BackButton, Button } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';
 import { useAportePage } from '@application-finanzas/aportes/hooks/state/useAportePage';
 import { APORTE_PERMISO } from '@finanzas/configuracion/config/aportePermisos';
+import AporteFormSections from '@finanzas/configuracion/components/organisms/AporteFormSections';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/configuracion/styles/aporte-page.css';
 
-const { Paragraph, Text } = Typography;
-
-const MONTO_RULES = [
-  { required: true, message: 'Ingrese el monto base del aporte' },
-  {
-    validator: (_, value) => {
-      const monto = Number(value);
-      if (!Number.isFinite(monto) || monto <= 0) {
-        return Promise.reject(new Error('El monto debe ser mayor a 0'));
-      }
-      return Promise.resolve();
-    },
-  },
-];
+const { Text } = Typography;
 
 const AporteConfigPage = () => {
   const [form] = Form.useForm();
-  const { gestionVigente, breadcrumbItems, aporteVigente, loading, error, refetch, saving, guardarAporte } =
-    useAportePage();
+  const {
+    gestionVigente,
+    breadcrumbItems,
+    aporteVigente,
+    loading,
+    error,
+    refetch,
+    saving,
+    formSections,
+    handleVolver,
+    guardarAporte,
+  } = useAportePage();
 
   // Precarga el formulario con el aporte vigente (o valores por defecto para alta).
   useEffect(() => {
@@ -65,6 +58,19 @@ const AporteConfigPage = () => {
   };
 
   const gestionLabel = gestionVigente?.nombre || gestionVigente?.gestion || gestionVigente?.anio;
+
+  const saveButton = (
+    <ActionButton
+      permiso={APORTE_PERMISO}
+      accion="EDITAR"
+      variant="primary"
+      size="large"
+      loading={saving}
+      onClick={handleGuardar}
+    >
+      Guardar aporte
+    </ActionButton>
+  );
 
   let body;
   if (loading) {
@@ -98,80 +104,30 @@ const AporteConfigPage = () => {
     body = <Empty description="No hay una gestión vigente para configurar el aporte" />;
   } else {
     body = (
-      <section className="cfg-academico-workspace cfg-academico-form-workspace">
-        <header className="cfg-academico-workspace__header">
-          <ListPanelHeader title="Aporte de la gestión vigente" />
-          <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-            Monto base, vigencia y estado del aporte que se cobra a los estudiantes en la gestión
-            actual.
-          </Paragraph>
-        </header>
-        <div className="cfg-academico-form-workspace__body">
-          <div className="aporte-page-panel">
-            <Form form={form} layout="vertical" className="aporte-page-form">
-              {gestionLabel ? (
-                <Form.Item label="Gestión vigente">
-                  <Tag color="processing">Gestión {gestionLabel}</Tag>
-                </Form.Item>
-              ) : null}
-
-              <Form.Item name="montoBase" label="Monto base del aporte (Bs)" rules={MONTO_RULES}>
-                <InputNumber
-                  size="large"
-                  min={0}
-                  step={50}
-                  prefix="Bs"
-                  style={{ width: '100%' }}
-                  placeholder="0.00"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="fechaInicio"
-                label="Fecha de inicio de vigencia"
-                rules={[{ required: true, message: 'Seleccione la fecha de inicio' }]}
-              >
-                <DatePicker size="large" format="DD/MM/YYYY" style={{ width: '100%' }} />
-              </Form.Item>
-
-              <Form.Item
-                name="fechaFin"
-                label="Fecha de fin (opcional)"
-                tooltip="Déjelo vacío si el aporte no tiene fecha límite."
-              >
-                <DatePicker size="large" format="DD/MM/YYYY" style={{ width: '100%' }} allowClear />
-              </Form.Item>
-
-              <Form.Item name="aporteActivo" label="Aporte activo" valuePropName="checked">
-                <Switch checkedChildren="Activo" unCheckedChildren="Inactivo" />
-              </Form.Item>
-
-              <div style={{ marginTop: allSpacing.marginLG }}>
-                <PermisoGuard
-                  codigo={APORTE_PERMISO}
-                  accion="EDITAR"
-                  fallback={
-                    <Button variant="primary" disabled>
-                      Sin permiso para editar
-                    </Button>
-                  }
-                >
-                  <Button variant="primary" loading={saving} onClick={handleGuardar}>
-                    Guardar aporte
-                  </Button>
-                </PermisoGuard>
-              </div>
-            </Form>
-          </div>
-        </div>
-      </section>
+      <Form
+        form={form}
+        layout="vertical"
+        className="cfg-academico-form aporte-page-form"
+        disabled={loading || saving}
+      >
+        <AporteFormSections
+          form={form}
+          formSections={formSections}
+          gestionLabel={gestionLabel}
+          footer={saveButton}
+        />
+      </Form>
     );
   }
 
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
-        <PageHeader title="Aportes" breadcrumbItems={breadcrumbItems} />
+        <PageHeader
+          title="Configuración de pagos · Aportes"
+          breadcrumbItems={breadcrumbItems}
+          actions={<BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />}
+        />
       </PageHeaderArea>
       <DashboardPageShell>
         <MainContent>{body}</MainContent>

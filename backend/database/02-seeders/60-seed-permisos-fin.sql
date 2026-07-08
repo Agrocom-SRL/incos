@@ -76,11 +76,17 @@ JOIN (
   -- la UI no muestra el ícono eliminar para métodos aunque el permiso lo conceda.
   UNION ALL SELECT 'finanzas.configuracion.pago', 'DETALLE'
   UNION ALL SELECT 'finanzas.configuracion.pago', 'ELIMINAR'
+  -- ACTIVAR: switch activar/desactivar de los catálogos de configuración
+  -- (PATCH /{metodos-pago|bancos-autorizados|cuentas-pago}/:id/estado)
+  UNION ALL SELECT 'finanzas.configuracion.pago', 'ACTIVAR'
   UNION ALL SELECT 'finanzas.beca-descuento', 'LISTAR'
   UNION ALL SELECT 'finanzas.beca-descuento', 'CREAR'
   UNION ALL SELECT 'finanzas.beca-descuento', 'EDITAR'
   UNION ALL SELECT 'finanzas.beca-descuento', 'DETALLE'
   UNION ALL SELECT 'finanzas.beca-descuento', 'ELIMINAR'
+  -- ACTIVAR: switch activar/desactivar del catálogo maestro
+  -- (PATCH /becas-descuentos/:id/estado)
+  UNION ALL SELECT 'finanzas.beca-descuento', 'ACTIVAR'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo FIN (roles 2-8; ADMIN_SISTEMA hereda por vista)
@@ -165,21 +171,25 @@ FROM (
   -- muestra el ícono eliminar para métodos aunque el permiso lo conceda.
   UNION ALL SELECT 'RECTOR', 'finanzas.configuracion.pago', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'finanzas.configuracion.pago', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.configuracion.pago', 'ACTIVAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'CREAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'EDITAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.configuracion.pago', 'ACTIVAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'finanzas.beca-descuento', 'ACTIVAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'CREAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'EDITAR'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'finanzas.beca-descuento', 'ACTIVAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

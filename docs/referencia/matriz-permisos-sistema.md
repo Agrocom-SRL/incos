@@ -454,6 +454,27 @@ Permisos propios (antes ambos reportes compartían `finanzas.pago.reporte.carrer
 
 > SEC_ADMIN **no** recibe estos reportes de control.
 
+### FIN - Configuración de Finanzas (catálogos: pagos y becas/descuentos)
+
+Dos permisos gobiernan los 4 catálogos de Finanzas → Configuración. Grupos UI `fin_config_pagos` y `fin_becas_descuentos`.
+
+| Permiso (codigo) | Acciones | Recursos / endpoints | Roles |
+|---|---|---|---|
+| `finanzas.configuracion.pago` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `/metodos-pago`, `/bancos-autorizados`, `/cuentas-pago` (GET de listado como catálogo de referencia transparente `sistema.catalogo.referencia`) | RECTOR, DIR_ADMIN |
+| `finanzas.beca-descuento` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `/becas-descuentos` (catálogo maestro; GET de listado como catálogo de referencia transparente) | RECTOR, DIR_ADMIN |
+
+> **Activación rápida de catálogos de Finanzas (`ACTIVAR`, 2026-07-08):** los 4 catálogos exponen
+> `PATCH /api/v1/{metodos-pago|bancos-autorizados|cuentas-pago|becas-descuentos}/:id/estado` con body
+> `{ "activo": boolean }` y `verificarPermiso('finanzas.configuracion.pago'|'finanzas.beca-descuento', 'ACTIVAR')`
+> (mismo patrón que los complementarios de CFG). Funciona también sobre ítems ya inactivos (reactivar);
+> el soft-delete (`deleted_at`) sigue siendo exclusivo de ELIMINAR. Los 4 GET de listado aceptan
+> `?incluirInactivos=true` y cada ítem expone `activo` (boolean) más los conteos de uso
+> `cantidadPagos` / `cantidadCuentas` / `cantidadAsignaciones` / `totalReferencias`
+> (vista `vista_catalogos_finanzas_usos`, 152). Roles con ACTIVAR: RECTOR y DIR_ADMIN (los mismos
+> que ya tienen el resto del bloque); ADMIN_SISTEMA hereda por vista (sin filas en `roles_permisos`).
+> Métodos de pago sigue **sin** endpoint DELETE (catálogo fijo de 4 códigos referenciado por FK).
+> Seed: `60-seed-permisos-fin.sql` (requiere re-siembra).
+
 ### ACA - Académico (`/academico/*`)
 Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 
@@ -827,7 +848,7 @@ Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
 | Documentacion | `/configuracion/documentacion` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.documentacion` (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR) — catálogo ÚNICO de los 9 tipos de documento (ENUM `tipo_documento`); consolida los códigos segmentados `configuracion.documentacion.{inscripcion\|becas\|pasantias\|traslado}` (eliminados junto con `resolverPermisoDocumentacion`). GET de listado sigue como catálogo de referencia transparente (`sistema.catalogo.referencia`) y acepta `?incluirInactivos=true`; `PATCH /:id/estado` usa ACTIVAR. Roles: RECTOR (todas), DIR_ACADEMICO (LISTAR/DETALLE/EDITAR) |
 | Convenios | `/configuracion/convenios` | `configuracion.convenios` |
 | Actividades | `/configuracion/actividades` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.actividad` (renombrado desde `configuracion.historial-actividades`; LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR — ACTIVAR solo RECTOR, `PATCH /:id/estado`; GET acepta `?incluirInactivos=true`) |
-| Pagos config | `/pagos/configuracion` | `configuracion.pagos` (LISTAR/CREAR/EDITAR: RECTOR, DIR_ADMIN) |
+| Pagos config | `/pagos/configuracion` | ~~`configuracion.pagos`~~ **legacy** — el código real sembrado y usado por los routers es `finanzas.configuracion.pago` (módulo FIN, ver "FIN - Configuración de Finanzas"; hoy con LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR para RECTOR y DIR_ADMIN) |
 
 Codigos legacy `cfg.academico.*` **no** deben usarse en codigo nuevo; fueron reemplazados por `configuracion.*`.
 

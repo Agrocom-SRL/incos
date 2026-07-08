@@ -3,9 +3,9 @@
  *
  * Agrupa las escrituras de las 3 secciones sobre la infraestructura compartida
  * (módulo independiente del legacy `@pagos`):
- *   - Método de pago: PUT (los 4 son fijos; solo nombre/activo).
- *   - Banco autorizado: POST (alta) / PUT (edición/toggle) / DELETE (baja real).
- *   - Cuenta de pago: POST/PUT con FormData (QR opcional) / DELETE (baja real).
+ *   - Método de pago: PUT (los 4 son fijos; solo nombre) + PATCH /:id/estado (toggle).
+ *   - Banco autorizado: POST (alta) / PUT (edición) / PATCH /:id/estado / DELETE (baja real).
+ *   - Cuenta de pago: POST/PUT con FormData (QR opcional) / PATCH /:id/estado / DELETE.
  *
  * El UPSERT del aporte de la gestión vigente vive en la página
  * `/finanzas/configuracion/aportes` (sin ítem de menú propio, permiso
@@ -75,6 +75,24 @@ export const useConfigPagosMutations = () => {
     [ejecutar],
   );
 
+  /** PATCH /:id/estado de un método de pago (toggle activo/inactivo de la ficha). */
+  const cambiarEstadoMetodo = useCallback(
+    (id, activo) => ejecutar(() => paymentMethodRepository.cambiarEstado(id, activo)),
+    [ejecutar],
+  );
+
+  /** PATCH /:id/estado de un banco autorizado (toggle activo/inactivo de la ficha). */
+  const cambiarEstadoBanco = useCallback(
+    (id, activo) => ejecutar(() => authorizedBankRepository.cambiarEstado(id, activo)),
+    [ejecutar],
+  );
+
+  /** PATCH /:id/estado de una cuenta de pago (toggle activo/inactivo de la ficha). */
+  const cambiarEstadoCuenta = useCallback(
+    (id, activo) => ejecutar(() => paymentAccountRepository.cambiarEstado(id, activo)),
+    [ejecutar],
+  );
+
   return useMemo(
     () => ({
       saving,
@@ -83,8 +101,21 @@ export const useConfigPagosMutations = () => {
       guardarCuenta,
       eliminarBanco,
       eliminarCuenta,
+      cambiarEstadoMetodo,
+      cambiarEstadoBanco,
+      cambiarEstadoCuenta,
     }),
-    [saving, actualizarMetodoPago, guardarBanco, guardarCuenta, eliminarBanco, eliminarCuenta],
+    [
+      saving,
+      actualizarMetodoPago,
+      guardarBanco,
+      guardarCuenta,
+      eliminarBanco,
+      eliminarCuenta,
+      cambiarEstadoMetodo,
+      cambiarEstadoBanco,
+      cambiarEstadoCuenta,
+    ],
   );
 };
 

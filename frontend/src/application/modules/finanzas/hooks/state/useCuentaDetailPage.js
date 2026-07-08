@@ -36,6 +36,7 @@ export const useCuentaDetailPage = () => {
     saving,
     guardarCuenta,
     eliminarCuenta,
+    cambiarEstadoCuenta,
   } = useConfigPagosContext();
 
   const cuenta = useMemo(
@@ -81,14 +82,15 @@ export const useCuentaDetailPage = () => {
   const handleToggleActivo = useCallback(async () => {
     if (!cuenta) return;
     const activo = !cuenta.activo;
-    const resultado = await guardarCuenta({ id: cuenta.id, payload: { activo } });
+    // PATCH /:id/estado (acción ACTIVAR), mismo endpoint que el toggle del listado.
+    const resultado = await cambiarEstadoCuenta(cuenta.id, activo);
     if (resultado?.success) {
       message.success(activo ? 'Cuenta activada' : 'Cuenta desactivada');
       await refetch();
     } else {
       message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
     }
-  }, [cuenta, guardarCuenta, message, refetch]);
+  }, [cuenta, cambiarEstadoCuenta, message, refetch]);
 
   const { deleteItem, loading: eliminando } = useDeleteItem({
     deleteFn: eliminarCuenta,

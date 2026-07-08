@@ -105,6 +105,22 @@ export class AuthorizedBankRepository extends IAuthorizedBankRepository {
     }
   }
 
+  /**
+   * Cambia el estado activo/inactivo de un banco autorizado
+   * PATCH /v1/bancos-autorizados/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(BANCOS_AUTORIZADOS_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del banco autorizado');
+    }
+  }
+
 }
 
 export default new AuthorizedBankRepository();

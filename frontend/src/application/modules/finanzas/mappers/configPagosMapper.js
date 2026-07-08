@@ -22,12 +22,18 @@ const cleanText = (value) => {
 
 const toBool = (value, fallback = false) => (value == null ? fallback : value === true || value === 1 || value === '1');
 
+/** Conteo de referencias (columna de concurrencia): número entero, 0 si no viene. */
+const toCount = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
 /** Orden canónico de los 4 métodos fijos. */
 export const METODOS_ORDEN = ['EFECTIVO', 'QR', 'TRANSFERENCIA', 'DEPOSITO'];
 
 /**
  * Mapea un método de pago (item de `metodosPago`).
- * Entidad backend: { id, code, name, active }.
+ * Entidad backend: { id, code, name, active, cantidadPagos, totalReferencias }.
  * @param {Object} raw
  * @returns {Object|null}
  */
@@ -39,6 +45,9 @@ export const mapMetodoPago = (raw) => {
     codigo,
     nombre: cleanText(raw.name ?? raw.nombre) || codigo,
     activo: toBool(raw.active ?? raw.activo, true),
+    // Concurrencia (columna "Pagos registrados"): pagos que referencian el método.
+    cantidadPagos: toCount(raw.cantidadPagos),
+    totalReferencias: toCount(raw.totalReferencias),
   };
 };
 
@@ -52,7 +61,8 @@ export const ordenarMetodos = (metodos = []) =>
 
 /**
  * Mapea un banco autorizado (item de `bancosAutorizados`).
- * Entidad backend: { id, paymentMethodId, code, name, active }.
+ * Entidad backend: { id, paymentMethodId, code, name, active, cantidadPagos,
+ *   cantidadCuentas, totalReferencias }.
  * @param {Object} raw
  * @returns {Object|null}
  */
@@ -64,13 +74,17 @@ export const mapBancoAutorizado = (raw) => {
     codigo: cleanText(raw.code ?? raw.codigo),
     nombre: cleanText(raw.name ?? raw.nombre),
     activo: toBool(raw.active ?? raw.activo, true),
+    // Concurrencia (columna "Transacciones"): pagos + cuentas que referencian el banco.
+    cantidadPagos: toCount(raw.cantidadPagos),
+    cantidadCuentas: toCount(raw.cantidadCuentas),
+    totalReferencias: toCount(raw.totalReferencias),
   };
 };
 
 /**
  * Mapea una cuenta de pago (item de `cuentasPago`), resolviendo el nombre del banco.
  * Entidad backend: { id, paymentMethodId, bankId, accountHolderName, accountNumber,
- *   phoneNumber, qrImageUrl, active }.
+ *   phoneNumber, qrImageUrl, active, cantidadPagos, totalReferencias }.
  * @param {Object} raw
  * @param {Object} bancosMap - { [bancoId]: { nombre, codigo } }
  * @returns {Object|null}
@@ -92,6 +106,9 @@ export const mapCuentaPago = (raw, bancosMap = {}) => {
     numeroCelular: cleanText(raw.phoneNumber ?? raw.numeroCelular ?? raw.numero_celular),
     qrImagenUrl: cleanText(raw.qrImageUrl ?? raw.qrImagenUrl ?? raw.qr_imagen_url),
     activo: toBool(raw.active ?? raw.activo, true),
+    // Concurrencia (columna "Pagos recibidos"): pagos que referencian la cuenta.
+    cantidadPagos: toCount(raw.cantidadPagos),
+    totalReferencias: toCount(raw.totalReferencias),
   };
 };
 

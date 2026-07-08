@@ -68,6 +68,22 @@ export class PaymentMethodRepository extends IPaymentMethodRepository {
     }
   }
 
+  /**
+   * Cambia el estado activo/inactivo de un método de pago
+   * PATCH /v1/metodos-pago/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(METODOS_PAGO_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del método de pago');
+    }
+  }
+
 }
 
 export default new PaymentMethodRepository();

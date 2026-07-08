@@ -7,6 +7,9 @@
 export { GetTodasPaymentAccountsUseCase } from './GetTodasPaymentAccountsUseCase';
 export { GetTodosAuthorizedBanksUseCase } from './GetTodosAuthorizedBanksUseCase';
 export { GetTodosPaymentMethodsUseCase } from './GetTodosPaymentMethodsUseCase';
+export { CambiarEstadoMetodoPagoUseCase } from './CambiarEstadoMetodoPagoUseCase';
+export { CambiarEstadoBancoAutorizadoUseCase } from './CambiarEstadoBancoAutorizadoUseCase';
+export { CambiarEstadoCuentaPagoUseCase } from './CambiarEstadoCuentaPagoUseCase';
 export { GetTodasContributionConfigurationsUseCase } from './GetTodasContributionConfigurationsUseCase';
 export { RegisterPagoAporteUseCase } from './RegisterPagoAporteUseCase';
 export { ObtenerTodosPagosAportesUseCase } from './ObtenerTodosPagosAportesUseCase';

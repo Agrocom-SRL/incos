@@ -28,8 +28,17 @@ export const useBancoDetailPage = () => {
   const { message } = App.useApp();
   const isInvalidId = !Number.isFinite(bancoId) || bancoId < 1;
 
-  const { bancos, metodos, loading, error, refetch, saving, guardarBanco, eliminarBanco } =
-    useConfigPagosContext();
+  const {
+    bancos,
+    metodos,
+    loading,
+    error,
+    refetch,
+    saving,
+    guardarBanco,
+    eliminarBanco,
+    cambiarEstadoBanco,
+  } = useConfigPagosContext();
 
   const banco = useMemo(
     () => (isInvalidId ? null : (bancos.find((b) => b.id === bancoId) ?? null)),
@@ -71,14 +80,15 @@ export const useBancoDetailPage = () => {
   const handleToggleActivo = useCallback(async () => {
     if (!banco) return;
     const activo = !banco.activo;
-    const resultado = await guardarBanco({ id: banco.id, payload: { activo } });
+    // PATCH /:id/estado (acción ACTIVAR), mismo endpoint que el toggle del listado.
+    const resultado = await cambiarEstadoBanco(banco.id, activo);
     if (resultado?.success) {
       message.success(activo ? 'Banco activado' : 'Banco desactivado');
       await refetch();
     } else {
       message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
     }
-  }, [banco, guardarBanco, message, refetch]);
+  }, [banco, cambiarEstadoBanco, message, refetch]);
 
   const { deleteItem, loading: eliminando } = useDeleteItem({
     deleteFn: eliminarBanco,

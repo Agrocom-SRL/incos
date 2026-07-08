@@ -6,49 +6,22 @@
  * — para las becas ASIGNADAS a estudiantes; este es el CATÁLOGO maestro).
  *
  * Columnas propias (no `createSimpleCatalogTableColumns`: hay campos de
- * negocio ricos), máx 6, sin `fixed`: # · Identidad · Porcentaje · Reglas ·
- * Estado · Acciones.
+ * negocio ricos), sin `fixed`: # · Identidad · Descripción · Porcentaje ·
+ * Reglas · Asignaciones · Estado · Acciones. Porcentaje con pill semántica
+ * POR RANGO (`getPorcentajePill`), Reglas apiladas (`BecaReglasCell`, gemela
+ * de DocumentacionRequisitosCell), «Asignaciones» = concurrencia de
+ * estudiantes con la beca (`cantidadAsignaciones` del backend) y Estado con
+ * toggle rápido (`createCatalogoEstadoColumn`, PATCH /:id/estado, ACTIVAR).
  */
 
-import { Flex } from 'antd';
-import { IdentidadCelda, StatusPill } from '@atoms';
+import { TeamOutlined } from '@ant-design/icons';
+import { IdentidadCelda, StatusPill, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { getActivoPill } from './configPagosPills';
+import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
+import ConcurrenciaCell from '@finanzas/configuracion/components/atoms/ConcurrenciaCell';
+import BecaReglasCell from '@finanzas/configuracion/components/atoms/BecaReglasCell';
+import { getPorcentajePill } from './configPagosPills';
 import { BECA_DESCUENTO_PERMISO } from './becaDescuentoPermisos';
-
-const TIPO_AUTOMATICA_LABEL = {
-  PROMEDIO_90: 'Por promedio (≥ 90)',
-  MANUAL: 'Manual',
-};
-
-/** Pills de reglas de aplicación (solo las que apliquen). */
-const renderReglas = (record) => {
-  const pills = [
-    record.requiereDocumentacion
-      ? { key: 'doc', label: 'Requiere documentación', className: 'cfg-pagos-pill cfg-pagos-pill--neutral' }
-      : null,
-    record.requiereAprobacionRector
-      ? { key: 'rector', label: 'Requiere Rector', className: 'cfg-pagos-pill cfg-pagos-pill--neutral' }
-      : null,
-    record.esAutomatica
-      ? {
-          key: 'auto',
-          label: `Automática: ${TIPO_AUTOMATICA_LABEL[record.tipoAutomatica] || record.tipoAutomatica || '—'}`,
-          className: 'cfg-pagos-pill cfg-pagos-pill--activo',
-        }
-      : null,
-  ].filter(Boolean);
-
-  if (!pills.length) return <span className="sd-field__value">—</span>;
-
-  return (
-    <Flex vertical align="flex-start" gap={4}>
-      {pills.map((pill) => (
-        <StatusPill key={pill.key} label={pill.label} className={pill.className} />
-      ))}
-    </Flex>
-  );
-};
 
 /**
  * Crea las columnas del catálogo maestro de becas y descuentos.
@@ -57,9 +30,16 @@ const renderReglas = (record) => {
  * @param {Function} args.onEditar - (record) => void (navega al formulario de edición)
  * @param {Function} [args.eliminarBeca] - (id) => Promise<{success, error?}>
  * @param {Function} [args.refetch] - recarga el catálogo tras eliminar.
+ * @param {Function} [args.onToggleEstado] - (record, nuevoActivo) => Promise (toggle de la columna Estado)
  * @returns {Array}
  */
-export const createBecaDescuentoCatalogoColumns = ({ onVer, onEditar, eliminarBeca, refetch }) => [
+export const createBecaDescuentoCatalogoColumns = ({
+  onVer,
+  onEditar,
+  eliminarBeca,
+  refetch,
+  onToggleEstado,
+}) => [
   {
     title: '#',
     key: 'nro',
@@ -80,38 +60,71 @@ export const createBecaDescuentoCatalogoColumns = ({ onVer, onEditar, eliminarBe
       (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }),
   },
   {
+    title: 'Descripción',
+    dataIndex: 'descripcion',
+    key: 'descripcion',
+    width: 260,
+    ellipsis: false,
+    render: (descripcion) => <TruncatedTextCell text={descripcion} />,
+    sorter: true,
+    sortCompare: (a, b) =>
+      (a.descripcion || '').localeCompare(b.descripcion || '', 'es', { sensitivity: 'base' }),
+  },
+  {
     title: 'Porcentaje',
     dataIndex: 'porcentaje',
     key: 'porcentaje',
-    width: 130,
+    width: 120,
     align: 'center',
     sorter: true,
     sortCompare: (a, b) => (a.porcentaje ?? 0) - (b.porcentaje ?? 0),
-    render: (porcentaje) =>
-      porcentaje != null ? (
-        <StatusPill label={`${porcentaje}%`} className="cfg-pagos-pill cfg-pagos-pill--neutral" />
-      ) : (
-        '—'
-      ),
+    render: (porcentaje) => {
+      const pill = getPorcentajePill(porcentaje);
+      return pill ? <StatusPill label={pill.label} className={pill.className} /> : '—';
+    },
   },
   {
     title: 'Reglas',
     key: 'reglas',
-    render: (_, record) => renderReglas(record),
+    render: (_, record) => (
+      <BecaReglasCell
+        esAutomatica={record.esAutomatica}
+        promedioMinimo={record.promedioMinimo}
+        tipoAutomatica={record.tipoAutomatica}
+        requiereDocumentacion={record.requiereDocumentacion}
+        requiereAprobacionRector={record.requiereAprobacionRector}
+      />
+    ),
   },
   {
-    title: 'Estado',
-    dataIndex: 'activo',
-    key: 'activo',
-    width: 120,
-    align: 'center',
+    title: 'Asignaciones',
+    key: 'asignaciones',
+    width: 160,
+    render: (_, record) => (
+      <ConcurrenciaCell
+        lineas={[
+          {
+            key: 'estudiantes',
+            icon: <TeamOutlined />,
+            cantidad: record.cantidadAsignaciones,
+            singular: 'estudiante',
+            plural: 'estudiantes',
+          },
+        ]}
+      />
+    ),
     sorter: true,
-    sortCompare: (a, b) => Number(!!a.activo) - Number(!!b.activo),
-    render: (activo) => {
-      const pill = getActivoPill(!!activo);
-      return <StatusPill label={pill.label} className={pill.className} />;
-    },
+    sortCompare: (a, b) =>
+      (Number(a.cantidadAsignaciones) || 0) - (Number(b.cantidadAsignaciones) || 0),
   },
+  ...(onToggleEstado
+    ? [
+        createCatalogoEstadoColumn({
+          permisoCodigo: BECA_DESCUENTO_PERMISO,
+          onToggle: onToggleEstado,
+        }),
+      ]
+    : []),
   {
     title: 'Acciones',
     key: 'acciones',

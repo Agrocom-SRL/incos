@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { TableListView } from '@organisms';
 import { BecaDescuentoProvider } from '@application-finanzas/becas-descuentos/providers/BecaDescuentoProvider';
 import { useBecaDescuentoListPage } from '@application-finanzas/becas-descuentos/hooks/state/useBecaDescuentoListPage';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { createBecaDescuentoCatalogoColumns } from '@finanzas/configuracion/config/becaDescuentoCatalogoColumns';
 import {
   becaDescuentoDetallePath,
@@ -22,14 +23,23 @@ import {
 
 const BecaDescuentoTabContent = () => {
   const navigate = useNavigate();
-  const { becasDescuentos, loading, error, refetch, eliminar, searchText, setSearchText } =
-    useBecaDescuentoListPage();
+  const {
+    becasDescuentos,
+    loading,
+    error,
+    refetch,
+    eliminar,
+    searchText,
+    setSearchText,
+    toggleEstado,
+  } = useBecaDescuentoListPage();
 
   const columns = createBecaDescuentoCatalogoColumns({
     onVer: (record) => navigate(becaDescuentoDetallePath(record.id)),
     onEditar: (record) => navigate(becaDescuentoEditarPath(record.id)),
     eliminarBeca: eliminar,
     refetch,
+    onToggleEstado: toggleEstado,
   });
 
   return (
@@ -44,6 +54,7 @@ const BecaDescuentoTabContent = () => {
         searchPlaceholder="Buscar por nombre, código o descripción…"
         columns={columns}
         rowKey="id"
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={{

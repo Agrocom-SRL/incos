@@ -6,6 +6,7 @@ import {
     createBecaDescuentoValidator,
     updateBecaDescuentoValidator,
 } from '../validators/estudiantes/index.js';
+import { setEstadoCatalogoValidator } from '../validators/referencia/index.js';
 
 /**
  * Construye el router del módulo Becas y Descuentos
@@ -33,6 +34,7 @@ export function buildBecasDescuentosRouter({ controllers, middlewares }) {
     const detalleBeca = [authenticate, verificarPermiso('finanzas.beca-descuento', 'DETALLE')];
     const editarBeca = [authenticate, verificarPermiso('finanzas.beca-descuento', 'EDITAR')];
     const eliminarBeca = [authenticate, verificarPermiso('finanzas.beca-descuento', 'ELIMINAR')];
+    const activarBeca = [authenticate, verificarPermiso('finanzas.beca-descuento', 'ACTIVAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -83,6 +85,16 @@ export function buildBecasDescuentosRouter({ controllers, middlewares }) {
         updateBecaDescuentoValidator,
         validateRequest,
         (req, res, next) => controllers.updateBecaDescuentoController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar beca/descuento (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarBeca,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoBecaDescuentoController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar beca/descuento (soft delete)

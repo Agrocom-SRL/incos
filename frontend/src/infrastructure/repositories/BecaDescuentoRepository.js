@@ -130,6 +130,22 @@ export class BecaDescuentoRepository extends IBecaDescuentoRepository {
     }
   }
 
+  /**
+   * Cambia el estado activo/inactivo de una beca o descuento
+   * PATCH /v1/becas-descuentos/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(BECAS_DESCUENTOS_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado de la beca o descuento');
+    }
+  }
+
 }
 
 export default new BecaDescuentoRepository();

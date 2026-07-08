@@ -131,6 +131,7 @@ export const REPOSITORIOS_TOKENS = {
     becasPorCarreraViewRepository: 'becasPorCarreraViewRepository',
     compromisoPagoRepository: 'compromisoPagoRepository',
     cuentasPorCobrarViewRepository: 'cuentasPorCobrarViewRepository',
+    finanzasUsosViewRepository: 'finanzasUsosViewRepository',
 
     // TRANSITABILIDAD Y TRASPASOS
     transitabilityRepository: 'transitabilityRepository',

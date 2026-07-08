@@ -29,8 +29,12 @@ import {
   indexarBancos,
 } from '@application-finanzas/mappers/configPagosMapper';
 
-/** Límite alto: el universo de catálogos es pequeño y se filtra en cliente. */
-const CATALOG_PARAMS = { params: { pagina: 1, limite: 200 } };
+/**
+ * Límite alto: el universo de catálogos es pequeño y se filtra en cliente.
+ * `incluirInactivos`: la pantalla de configuración gestiona el toggle
+ * activo/inactivo (columna "Estado"), así que lista TODO el catálogo.
+ */
+const CATALOG_PARAMS = { params: { pagina: 1, limite: 200, incluirInactivos: true } };
 
 export const useConfigPagosCatalogsApi = () => {
   const [metodos, setMetodos] = useState([]);

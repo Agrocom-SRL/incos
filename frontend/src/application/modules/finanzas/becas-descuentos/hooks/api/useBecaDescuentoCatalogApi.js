@@ -10,8 +10,12 @@ import { useCallback, useEffect, useState } from 'react';
 import becaDescuentoRepository from '@implementations/BecaDescuentoRepository';
 import { mapBecasDescuentosList } from '@application-finanzas/becas-descuentos/mappers/becaDescuentoListMapper';
 
-/** Límite alto: el universo del catálogo maestro es pequeño y se filtra en cliente. */
-const CATALOG_PARAMS = { params: { pagina: 1, limite: 200 } };
+/**
+ * Límite alto: el universo del catálogo maestro es pequeño y se filtra en cliente.
+ * `incluirInactivos`: la pantalla de configuración gestiona el toggle
+ * activo/inactivo (columna "Estado"), así que lista TODO el catálogo.
+ */
+const CATALOG_PARAMS = { params: { pagina: 1, limite: 200, incluirInactivos: true } };
 
 export const useBecaDescuentoCatalogApi = () => {
   const [becasDescuentos, setBecasDescuentos] = useState([]);

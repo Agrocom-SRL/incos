@@ -13,12 +13,15 @@ export const PAGOS_TOKENS = {
     createContributionConfigurationUseCase: 'pagos.createContributionConfigurationUseCase',
     updateContributionConfigurationUseCase: 'pagos.updateContributionConfigurationUseCase',
     updatePaymentMethodUseCase: 'pagos.updatePaymentMethodUseCase',
+    setEstadoMetodoPagoUseCase: 'pagos.setEstadoMetodoPagoUseCase',
     createAuthorizedBankUseCase: 'pagos.createAuthorizedBankUseCase',
     updateAuthorizedBankUseCase: 'pagos.updateAuthorizedBankUseCase',
     deleteAuthorizedBankUseCase: 'pagos.deleteAuthorizedBankUseCase',
+    setEstadoBancoAutorizadoUseCase: 'pagos.setEstadoBancoAutorizadoUseCase',
     createPaymentAccountUseCase: 'pagos.createPaymentAccountUseCase',
     updatePaymentAccountUseCase: 'pagos.updatePaymentAccountUseCase',
     deletePaymentAccountUseCase: 'pagos.deletePaymentAccountUseCase',
+    setEstadoCuentaPagoUseCase: 'pagos.setEstadoCuentaPagoUseCase',
 
     // Use Cases - Registro de Pago
     registerPagoAporteUseCase: 'pagos.registerPagoAporteUseCase',
@@ -53,12 +56,15 @@ export const PAGOS_TOKENS = {
     createConfiguracionAporteController: 'pagos.createConfiguracionAporteController',
     updateConfiguracionAporteController: 'pagos.updateConfiguracionAporteController',
     updateMetodoPagoController: 'pagos.updateMetodoPagoController',
+    setEstadoMetodoPagoController: 'pagos.setEstadoMetodoPagoController',
     createBancoAutorizadoController: 'pagos.createBancoAutorizadoController',
     updateBancoAutorizadoController: 'pagos.updateBancoAutorizadoController',
     deleteBancoAutorizadoController: 'pagos.deleteBancoAutorizadoController',
+    setEstadoBancoAutorizadoController: 'pagos.setEstadoBancoAutorizadoController',
     createCuentaPagoController: 'pagos.createCuentaPagoController',
     updateCuentaPagoController: 'pagos.updateCuentaPagoController',
     deleteCuentaPagoController: 'pagos.deleteCuentaPagoController',
+    setEstadoCuentaPagoController: 'pagos.setEstadoCuentaPagoController',
 
     // Controllers - Registro de Pago
     registerPagoAporteController: 'pagos.registerPagoAporteController',

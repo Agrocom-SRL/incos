@@ -6,9 +6,11 @@ import { PAGOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../token
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListPaymentMethodsUseCase } from '../../../../application/use-cases/pagos/ListPaymentMethodsUseCase.js';
 import { UpdatePaymentMethodUseCase } from '../../../../application/use-cases/pagos/UpdatePaymentMethodUseCase.js';
+import { SetEstadoMetodoPagoUseCase } from '../../../../application/use-cases/pagos/SetEstadoMetodoPagoUseCase.js';
 import {
     ListMetodosPagoController,
     UpdateMetodoPagoController,
+    SetEstadoMetodoPagoController,
 } from '../../../../presentation/controllers/pagos/index.js';
 import { buildMetodosPagoRouter } from '../../../../presentation/routes/metodos-pago.routes.js';
 
@@ -20,6 +22,9 @@ export function registerMetodosPagoResource(container) {
         (c) =>
             new ListPaymentMethodsUseCase({
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
+                finanzasUsosViewRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.finanzasUsosViewRepository,
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );
@@ -29,6 +34,16 @@ export function registerMetodosPagoResource(container) {
         PAGOS_TOKENS.updatePaymentMethodUseCase,
         (c) =>
             new UpdatePaymentMethodUseCase({
+                paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.setEstadoMetodoPagoUseCase,
+        (c) =>
+            new SetEstadoMetodoPagoUseCase({
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
@@ -57,6 +72,17 @@ export function registerMetodosPagoResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.setEstadoMetodoPagoController,
+        (c) =>
+            new SetEstadoMetodoPagoController({
+                setEstadoMetodoPagoUseCase: c.resolve(PAGOS_TOKENS.setEstadoMetodoPagoUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ROUTER
     registerComponent(
         container,
@@ -65,6 +91,9 @@ export function registerMetodosPagoResource(container) {
             const controllers = {
                 listMetodosPagoController: c.resolve(PAGOS_TOKENS.listMetodosPagoController),
                 updateMetodoPagoController: c.resolve(PAGOS_TOKENS.updateMetodoPagoController),
+                setEstadoMetodoPagoController: c.resolve(
+                    PAGOS_TOKENS.setEstadoMetodoPagoController,
+                ),
             };
 
             const middlewares = {

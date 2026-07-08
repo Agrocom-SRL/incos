@@ -19,12 +19,14 @@ import { CreateBecaDescuentoUseCase } from '../../../../application/use-cases/es
 import { UpdateBecaDescuentoUseCase } from '../../../../application/use-cases/estudiantes/UpdateBecaDescuentoUseCase.js';
 import { GetBecaDescuentoByIdUseCase } from '../../../../application/use-cases/estudiantes/GetBecaDescuentoByIdUseCase.js';
 import { DeleteBecaDescuentoUseCase } from '../../../../application/use-cases/estudiantes/DeleteBecaDescuentoUseCase.js';
+import { SetEstadoBecaDescuentoUseCase } from '../../../../application/use-cases/estudiantes/SetEstadoBecaDescuentoUseCase.js';
 import {
     ListBecasDescuentosController,
     CreateBecaDescuentoController,
     UpdateBecaDescuentoController,
     GetBecaDescuentoByIdController,
     DeleteBecaDescuentoController,
+    SetEstadoBecaDescuentoController,
 } from '../../../../presentation/controllers/estudiantes/becas/index.js';
 import { buildBecasDescuentosRouter } from '../../../../presentation/routes/becas-descuentos.routes.js';
 
@@ -45,6 +47,9 @@ export function registerBecasDescuentosResource(container) {
         (c) =>
             new ListBecasDescuentosUseCase({
                 scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
+                finanzasUsosViewRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.finanzasUsosViewRepository,
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -84,6 +89,16 @@ export function registerBecasDescuentosResource(container) {
         ESTUDIANTES_TOKENS.deleteBecaDescuentoUseCase,
         (c) =>
             new DeleteBecaDescuentoUseCase({
+                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.setEstadoBecaDescuentoUseCase,
+        (c) =>
+            new SetEstadoBecaDescuentoUseCase({
                 scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -147,6 +162,19 @@ export function registerBecasDescuentosResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.setEstadoBecaDescuentoController,
+        (c) =>
+            new SetEstadoBecaDescuentoController({
+                setEstadoBecaDescuentoUseCase: c.resolve(
+                    ESTUDIANTES_TOKENS.setEstadoBecaDescuentoUseCase,
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -160,6 +188,9 @@ export function registerBecasDescuentosResource(container) {
                 updateBecaDescuentoController: c.resolve(ESTUDIANTES_TOKENS.updateBecaDescuentoController),
                 getBecaDescuentoByIdController: c.resolve(ESTUDIANTES_TOKENS.getBecaDescuentoByIdController),
                 deleteBecaDescuentoController: c.resolve(ESTUDIANTES_TOKENS.deleteBecaDescuentoController),
+                setEstadoBecaDescuentoController: c.resolve(
+                    ESTUDIANTES_TOKENS.setEstadoBecaDescuentoController,
+                ),
             };
 
             const middlewares = {
