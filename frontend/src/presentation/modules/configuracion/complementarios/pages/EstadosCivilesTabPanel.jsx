@@ -14,6 +14,7 @@ import { useEstadoCivilContext } from '@application-configuracion/complementario
 import { estadoCivilNuevaPath } from '@application-configuracion/complementarios/config/paths';
 import { estadosCivilesListNavigationState } from '@application-configuracion/complementarios/config/navigation';
 import { createEstadosCivilesTableColumns } from '@configuracion/complementarios/config/estadosCivilesTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -28,11 +29,12 @@ const EstadosCivilesTabPanel = ({ embedded = false }) => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useEstadoCivilContext();
 
   const tableColumns = useMemo(
-    () => createEstadosCivilesTableColumns({ navigate, listNavState, refetch }),
-    [navigate, listNavState, refetch],
+    () => createEstadosCivilesTableColumns({ navigate, listNavState, refetch, toggleEstado }),
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   const nuevoEstadoCivilAction = (
@@ -66,6 +68,7 @@ const EstadosCivilesTabPanel = ({ embedded = false }) => {
         searchPlaceholder="Buscar por nombre o abreviatura..."
         columns={tableColumns}
         rowKey={(record) => record.id}
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={{

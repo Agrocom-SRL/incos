@@ -19,12 +19,14 @@ import { CreateDiscapacidadUseCase } from '../../../../application/use-cases/ref
 import { UpdateDiscapacidadUseCase } from '../../../../application/use-cases/referencia/UpdateDiscapacidadUseCase.js';
 import { GetDiscapacidadByIdUseCase } from '../../../../application/use-cases/referencia/GetDiscapacidadByIdUseCase.js';
 import { DeleteDiscapacidadUseCase } from '../../../../application/use-cases/referencia/DeleteDiscapacidadUseCase.js';
+import { SetEstadoDiscapacidadUseCase } from '../../../../application/use-cases/referencia/SetEstadoDiscapacidadUseCase.js';
 import {
     ListDiscapacidadController,
     CreateDiscapacidadController,
     UpdateDiscapacidadController,
     GetDiscapacidadByIdController,
     DeleteDiscapacidadController,
+    SetEstadoDiscapacidadController,
 } from '../../../../presentation/controllers/referencia/index.js';
 import { buildDiscapacidadRouter } from '../../../../presentation/routes/discapacidad.routes.js';
 
@@ -91,6 +93,16 @@ export function registerDiscapacidadResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoDiscapacidadUseCase,
+        (c) =>
+            new SetEstadoDiscapacidadUseCase({
+                disabilityTypeRepository: c.resolve(REPOSITORIOS_TOKENS.disabilityTypeRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -149,6 +161,19 @@ export function registerDiscapacidadResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoDiscapacidadController,
+        (c) =>
+            new SetEstadoDiscapacidadController({
+                setEstadoDiscapacidadUseCase: c.resolve(
+                    REFERENCIA_TOKENS.setEstadoDiscapacidadUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -158,10 +183,21 @@ export function registerDiscapacidadResource(container) {
         (c) => {
             const controllers = {
                 listDiscapacidadController: c.resolve(REFERENCIA_TOKENS.listDiscapacidadController),
-                createDiscapacidadController: c.resolve(REFERENCIA_TOKENS.createDiscapacidadController),
-                updateDiscapacidadController: c.resolve(REFERENCIA_TOKENS.updateDiscapacidadController),
-                getDiscapacidadByIdController: c.resolve(REFERENCIA_TOKENS.getDiscapacidadByIdController),
-                deleteDiscapacidadController: c.resolve(REFERENCIA_TOKENS.deleteDiscapacidadController),
+                createDiscapacidadController: c.resolve(
+                    REFERENCIA_TOKENS.createDiscapacidadController
+                ),
+                updateDiscapacidadController: c.resolve(
+                    REFERENCIA_TOKENS.updateDiscapacidadController
+                ),
+                getDiscapacidadByIdController: c.resolve(
+                    REFERENCIA_TOKENS.getDiscapacidadByIdController
+                ),
+                deleteDiscapacidadController: c.resolve(
+                    REFERENCIA_TOKENS.deleteDiscapacidadController
+                ),
+                setEstadoDiscapacidadController: c.resolve(
+                    REFERENCIA_TOKENS.setEstadoDiscapacidadController
+                ),
             };
 
             const middlewares = {

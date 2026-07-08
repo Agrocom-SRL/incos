@@ -39,6 +39,25 @@ export class ListEstadosCivilesUseCase extends BaseListUseCase {
   }
 
   /**
+   * Construye filtros específicos adicionales a partir de los query parameters
+   * (mismo patrón que ListAulasUseCase: incluirInactivos → includeInactive,
+   * BaseRepository deja de filtrar por activo=true; soft-deleted siguen fuera).
+   * @param {Object} queryParams - Query parameters de Express (req.query)
+   * @param {Object} baseFilters - Filtros base ya extraídos por ListRequestDTO (search, sort)
+   * @returns {Object} Filtros combinados con filtros específicos normalizados
+   */
+  buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+    const filters = { ...baseFilters };
+
+    if (queryParams.incluirInactivos !== undefined) {
+      filters.includeInactive =
+        queryParams.incluirInactivos === 'true' || queryParams.incluirInactivos === true;
+    }
+
+    return filters;
+  }
+
+  /**
    * Enriquece cada ítem con los conteos de uso del catálogo
    * (cantidadEstudiantes / cantidadDocentes / cantidadPersonal, 0 por defecto)
    * @param {Object[]} data - Ítems en formato de presentación

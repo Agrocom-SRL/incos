@@ -19,12 +19,14 @@ import { CreateTipoParentescoUseCase } from '../../../../application/use-cases/r
 import { UpdateTipoParentescoUseCase } from '../../../../application/use-cases/referencia/UpdateTipoParentescoUseCase.js';
 import { GetTipoParentescoByIdUseCase } from '../../../../application/use-cases/referencia/GetTipoParentescoByIdUseCase.js';
 import { DeleteTipoParentescoUseCase } from '../../../../application/use-cases/referencia/DeleteTipoParentescoUseCase.js';
+import { SetEstadoTipoParentescoUseCase } from '../../../../application/use-cases/referencia/SetEstadoTipoParentescoUseCase.js';
 import {
     ListTiposParentescoController,
     CreateTipoParentescoController,
     UpdateTipoParentescoController,
     GetTipoParentescoByIdController,
     DeleteTipoParentescoController,
+    SetEstadoTipoParentescoController,
 } from '../../../../presentation/controllers/referencia/index.js';
 import { buildTiposParentescoRouter } from '../../../../presentation/routes/tipos-parentesco.routes.js';
 
@@ -43,7 +45,9 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.listTiposParentescoUseCase,
         (c) =>
             new ListTiposParentescoUseCase({
-                relationshipTypeRepository: c.resolve(REPOSITORIOS_TOKENS.relationshipTypeRepository),
+                relationshipTypeRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.relationshipTypeRepository
+                ),
                 complementariosUsosViewRepository: c.resolve(
                     REPOSITORIOS_TOKENS.complementariosUsosViewRepository,
                 ),
@@ -56,7 +60,9 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.createTipoParentescoUseCase,
         (c) =>
             new CreateTipoParentescoUseCase({
-                relationshipTypeRepository: c.resolve(REPOSITORIOS_TOKENS.relationshipTypeRepository),
+                relationshipTypeRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.relationshipTypeRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );
@@ -66,7 +72,9 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.updateTipoParentescoUseCase,
         (c) =>
             new UpdateTipoParentescoUseCase({
-                relationshipTypeRepository: c.resolve(REPOSITORIOS_TOKENS.relationshipTypeRepository),
+                relationshipTypeRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.relationshipTypeRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );
@@ -76,7 +84,9 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.getTipoParentescoByIdUseCase,
         (c) =>
             new GetTipoParentescoByIdUseCase({
-                relationshipTypeRepository: c.resolve(REPOSITORIOS_TOKENS.relationshipTypeRepository),
+                relationshipTypeRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.relationshipTypeRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );
@@ -86,7 +96,21 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.deleteTipoParentescoUseCase,
         (c) =>
             new DeleteTipoParentescoUseCase({
-                relationshipTypeRepository: c.resolve(REPOSITORIOS_TOKENS.relationshipTypeRepository),
+                relationshipTypeRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.relationshipTypeRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoTipoParentescoUseCase,
+        (c) =>
+            new SetEstadoTipoParentescoUseCase({
+                relationshipTypeRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.relationshipTypeRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );
@@ -110,7 +134,9 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.createTipoParentescoController,
         (c) =>
             new CreateTipoParentescoController({
-                createTipoParentescoUseCase: c.resolve(REFERENCIA_TOKENS.createTipoParentescoUseCase),
+                createTipoParentescoUseCase: c.resolve(
+                    REFERENCIA_TOKENS.createTipoParentescoUseCase
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
@@ -121,7 +147,9 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.updateTipoParentescoController,
         (c) =>
             new UpdateTipoParentescoController({
-                updateTipoParentescoUseCase: c.resolve(REFERENCIA_TOKENS.updateTipoParentescoUseCase),
+                updateTipoParentescoUseCase: c.resolve(
+                    REFERENCIA_TOKENS.updateTipoParentescoUseCase
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
@@ -132,7 +160,9 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.getTipoParentescoByIdController,
         (c) =>
             new GetTipoParentescoByIdController({
-                getTipoParentescoByIdUseCase: c.resolve(REFERENCIA_TOKENS.getTipoParentescoByIdUseCase),
+                getTipoParentescoByIdUseCase: c.resolve(
+                    REFERENCIA_TOKENS.getTipoParentescoByIdUseCase
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
@@ -143,7 +173,22 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.deleteTipoParentescoController,
         (c) =>
             new DeleteTipoParentescoController({
-                deleteTipoParentescoUseCase: c.resolve(REFERENCIA_TOKENS.deleteTipoParentescoUseCase),
+                deleteTipoParentescoUseCase: c.resolve(
+                    REFERENCIA_TOKENS.deleteTipoParentescoUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoTipoParentescoController,
+        (c) =>
+            new SetEstadoTipoParentescoController({
+                setEstadoTipoParentescoUseCase: c.resolve(
+                    REFERENCIA_TOKENS.setEstadoTipoParentescoUseCase
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
@@ -157,11 +202,24 @@ export function registerTiposParentescoResource(container) {
         REFERENCIA_TOKENS.tiposParentescoRouter,
         (c) => {
             const controllers = {
-                listTiposParentescoController: c.resolve(REFERENCIA_TOKENS.listTiposParentescoController),
-                createTipoParentescoController: c.resolve(REFERENCIA_TOKENS.createTipoParentescoController),
-                updateTipoParentescoController: c.resolve(REFERENCIA_TOKENS.updateTipoParentescoController),
-                getTipoParentescoByIdController: c.resolve(REFERENCIA_TOKENS.getTipoParentescoByIdController),
-                deleteTipoParentescoController: c.resolve(REFERENCIA_TOKENS.deleteTipoParentescoController),
+                listTiposParentescoController: c.resolve(
+                    REFERENCIA_TOKENS.listTiposParentescoController
+                ),
+                createTipoParentescoController: c.resolve(
+                    REFERENCIA_TOKENS.createTipoParentescoController
+                ),
+                updateTipoParentescoController: c.resolve(
+                    REFERENCIA_TOKENS.updateTipoParentescoController
+                ),
+                getTipoParentescoByIdController: c.resolve(
+                    REFERENCIA_TOKENS.getTipoParentescoByIdController
+                ),
+                deleteTipoParentescoController: c.resolve(
+                    REFERENCIA_TOKENS.deleteTipoParentescoController
+                ),
+                setEstadoTipoParentescoController: c.resolve(
+                    REFERENCIA_TOKENS.setEstadoTipoParentescoController
+                ),
             };
 
             const middlewares = {

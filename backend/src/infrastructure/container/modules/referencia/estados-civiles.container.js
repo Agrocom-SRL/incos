@@ -19,12 +19,14 @@ import { CreateEstadoCivilUseCase } from '../../../../application/use-cases/refe
 import { UpdateEstadoCivilUseCase } from '../../../../application/use-cases/referencia/UpdateEstadoCivilUseCase.js';
 import { GetEstadoCivilByIdUseCase } from '../../../../application/use-cases/referencia/GetEstadoCivilByIdUseCase.js';
 import { DeleteEstadoCivilUseCase } from '../../../../application/use-cases/referencia/DeleteEstadoCivilUseCase.js';
+import { SetEstadoEstadoCivilUseCase } from '../../../../application/use-cases/referencia/SetEstadoEstadoCivilUseCase.js';
 import {
     ListEstadosCivilesController,
     CreateEstadoCivilController,
     UpdateEstadoCivilController,
     GetEstadoCivilByIdController,
     DeleteEstadoCivilController,
+    SetEstadoEstadoCivilController,
 } from '../../../../presentation/controllers/referencia/index.js';
 import { buildEstadosCivilesRouter } from '../../../../presentation/routes/estados-civiles.routes.js';
 
@@ -91,6 +93,16 @@ export function registerEstadosCivilesResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoEstadoCivilUseCase,
+        (c) =>
+            new SetEstadoEstadoCivilUseCase({
+                civilStatusRepository: c.resolve(REPOSITORIOS_TOKENS.civilStatusRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -149,6 +161,19 @@ export function registerEstadosCivilesResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoEstadoCivilController,
+        (c) =>
+            new SetEstadoEstadoCivilController({
+                setEstadoEstadoCivilUseCase: c.resolve(
+                    REFERENCIA_TOKENS.setEstadoEstadoCivilUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -171,6 +196,9 @@ export function registerEstadosCivilesResource(container) {
                 ),
                 deleteEstadoCivilController: c.resolve(
                     REFERENCIA_TOKENS.deleteEstadoCivilController
+                ),
+                setEstadoEstadoCivilController: c.resolve(
+                    REFERENCIA_TOKENS.setEstadoEstadoCivilController
                 ),
             };
 

@@ -3,4 +3,5 @@ export { GetDiscapacidadPorIdUseCase } from './GetDiscapacidadPorIdUseCase';
 export { CrearDiscapacidadUseCase } from './CrearDiscapacidadUseCase';
 export { ActualizarDiscapacidadUseCase } from './ActualizarDiscapacidadUseCase';
 export { EliminarDiscapacidadUseCase } from './EliminarDiscapacidadUseCase';
+export { CambiarEstadoDiscapacidadUseCase } from './CambiarEstadoDiscapacidadUseCase';
 

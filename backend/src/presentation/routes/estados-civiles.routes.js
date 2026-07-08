@@ -5,6 +5,7 @@ import { idValidator, listValidator } from '../validators/common/index.js';
 import {
     createEstadoCivilValidator,
     updateEstadoCivilValidator,
+    setEstadoCatalogoValidator,
 } from '../validators/referencia/index.js';
 
 /**
@@ -33,6 +34,7 @@ export function buildEstadosCivilesRouter({ controllers, middlewares }) {
     const crearEstadosCiviles = [authenticate, verificarPermiso('configuracion.complementario.estado-civil', 'CREAR')];
     const editarEstadosCiviles = [authenticate, verificarPermiso('configuracion.complementario.estado-civil', 'EDITAR')];
     const eliminarEstadosCiviles = [authenticate, verificarPermiso('configuracion.complementario.estado-civil', 'ELIMINAR')];
+    const activarEstadosCiviles = [authenticate, verificarPermiso('configuracion.complementario.estado-civil', 'ACTIVAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -83,6 +85,16 @@ export function buildEstadosCivilesRouter({ controllers, middlewares }) {
         updateEstadoCivilValidator,
         validateRequest,
         (req, res, next) => controllers.updateEstadoCivilController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar estado civil (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarEstadosCiviles,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoEstadoCivilController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar estado civil (soft delete)

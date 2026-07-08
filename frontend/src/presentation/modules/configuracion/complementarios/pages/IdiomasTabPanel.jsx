@@ -14,6 +14,7 @@ import { useIdiomaContext } from '@application-configuracion/complementarios/hoo
 import { idiomaNuevaPath } from '@application-configuracion/complementarios/config/paths';
 import { idiomasListNavigationState } from '@application-configuracion/complementarios/config/navigation';
 import { createIdiomasTableColumns } from '@configuracion/complementarios/config/idiomasTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -28,11 +29,12 @@ const IdiomasTabPanel = ({ embedded = false }) => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useIdiomaContext();
 
   const tableColumns = useMemo(
-    () => createIdiomasTableColumns({ navigate, listNavState, refetch }),
-    [navigate, listNavState, refetch],
+    () => createIdiomasTableColumns({ navigate, listNavState, refetch, toggleEstado }),
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   const nuevoIdiomaAction = (
@@ -66,6 +68,7 @@ const IdiomasTabPanel = ({ embedded = false }) => {
         searchPlaceholder="Buscar por nombre o código ISO..."
         columns={tableColumns}
         rowKey={(record) => record.id}
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={{

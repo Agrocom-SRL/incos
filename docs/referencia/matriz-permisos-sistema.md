@@ -796,6 +796,17 @@ Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
 | `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/nueva` | mismo codigo, accion `CREAR` | Alta (página completa, patrón CFG académico) |
 | `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/:id/editar` | mismo codigo, accion `EDITAR` | Edición |
 | `/configuracion/complementarios/{discapacidad\|apoderado\|idioma\|estado-civil}/:id` | mismo codigo, accion `DETALLE` | Ficha |
+| Switch activar/desactivar en cada tab | mismo codigo, accion `ACTIVAR` (2026-07-08) | PATCH `/{discapacidad\|tipos-parentesco\|idiomas\|estados-civiles}/:id/estado` body `{ activo: boolean }` |
+
+> **Activación rápida de catálogos (`ACTIVAR`, 2026-07-08):** los 4 catálogos complementarios exponen
+> `PATCH /api/v1/{discapacidad|tipos-parentesco|idiomas|estados-civiles}/:id/estado` con body
+> `{ "activo": boolean }` y `verificarPermiso('<codigo complementario>', 'ACTIVAR')`. Funciona también
+> sobre ítems ya inactivos (reactivar); el soft-delete (`deleted_at`) sigue siendo exclusivo de ELIMINAR.
+> Los 4 GET de listado aceptan `?incluirInactivos=true` para incluir ítems con `activo=false`
+> (`deleted_at IS NULL`); cada ítem del listado expone el campo `activo` (boolean). Roles con ACTIVAR
+> (simetría con ELIMINAR por código): discapacidad y apoderados → RECTOR; idiomas y estado-civil →
+> RECTOR y DIR_ACADEMICO. ADMIN_SISTEMA hereda por vista (sin filas en `roles_permisos`). Seed:
+> `62-seed-permisos-cfg.sql` (requiere re-siembra).
 
 `ruta_sidebar` del permiso aún apunta `/configuracion/datos-complementarios`; la app redirige a `/configuracion/complementarios`. Alinear en el archivo de permisos CFG.
 

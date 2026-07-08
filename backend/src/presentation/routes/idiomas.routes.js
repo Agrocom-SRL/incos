@@ -5,6 +5,7 @@ import { idValidator, listValidator } from '../validators/common/index.js';
 import {
     createIdiomaValidator,
     updateIdiomaValidator,
+    setEstadoCatalogoValidator,
 } from '../validators/referencia/index.js';
 
 /**
@@ -33,6 +34,7 @@ export function buildIdiomasRouter({ controllers, middlewares }) {
     const crearIdiomas = [authenticate, verificarPermiso('configuracion.complementario.idiomas', 'CREAR')];
     const editarIdiomas = [authenticate, verificarPermiso('configuracion.complementario.idiomas', 'EDITAR')];
     const eliminarIdiomas = [authenticate, verificarPermiso('configuracion.complementario.idiomas', 'ELIMINAR')];
+    const activarIdiomas = [authenticate, verificarPermiso('configuracion.complementario.idiomas', 'ACTIVAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -83,6 +85,16 @@ export function buildIdiomasRouter({ controllers, middlewares }) {
         updateIdiomaValidator,
         validateRequest,
         (req, res, next) => controllers.updateIdiomaController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar idioma (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarIdiomas,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoIdiomaController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar idioma (soft delete)

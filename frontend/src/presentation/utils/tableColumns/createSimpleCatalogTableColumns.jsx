@@ -10,8 +10,19 @@
  * Si el catálogo tiene columnas de negocio (estado, tipo, clasificación…), pásalas
  * en `extraColumns` (se insertan entre la identidad y las acciones).
  */
-import { IdentidadCelda, TruncatedTextCell } from '@atoms';
+import { EstadoTogglePill, IdentidadCelda, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
+
+/** Un registro de catálogo se considera activo salvo `activo` explícitamente falso. */
+const esRegistroActivo = (record) => record?.activo !== false && record?.activo !== 0;
+
+/**
+ * rowClassName para el TableListView de los catálogos con toggle de estado:
+ * atenúa las filas inactivas (clase global `cfg-table-row--inactiva`, ver
+ * `styles/components/atoms/table-cells.css`).
+ */
+export const catalogoEstadoRowClassName = (record) =>
+  esRegistroActivo(record) ? '' : 'cfg-table-row--inactiva';
 
 /**
  * @param {Object} params
@@ -28,6 +39,13 @@ import { TableActions } from '@molecules';
  *   (no reemplaza el nombre principal: `IdentidadCelda` siempre usa `record.nombre`)
  * @param {Array} [params.extraColumns] - Column defs adicionales, insertadas entre identidad y acciones
  * @param {Function} [params.itemDetailsExtra] - (record) => Array de detalles extra para el diálogo de borrado
+ * @param {Object} [params.estadoToggle] - Opt-in de la columna "Estado" con toggle rápido
+ *   activo/inactivo (átomo `EstadoTogglePill`, `PATCH /:id/estado` en el backend):
+ *   `{ permisoCodigo?, onToggle }` donde `onToggle(record, nuevoActivo) => Promise` persiste
+ *   el cambio y recarga el listado (viene del feature hook de la página). `permisoCodigo`
+ *   (acción ACTIVAR) usa `params.permisoCodigo` por defecto. Sin permiso ACTIVAR la pill se
+ *   renderiza estática. La columna se inserta entre `extraColumns` y "Acciones"; combinar
+ *   con `catalogoEstadoRowClassName` en el `TableListView` para atenuar las filas inactivas.
  */
 export const createSimpleCatalogTableColumns = ({
   navigate,
@@ -42,6 +60,7 @@ export const createSimpleCatalogTableColumns = ({
   descripcionField = 'descripcion',
   extraColumns = [],
   itemDetailsExtra = () => [],
+  estadoToggle = null,
 }) => {
   const nombreColumn = {
     title: 'Nombre',
@@ -70,6 +89,28 @@ export const createSimpleCatalogTableColumns = ({
           (a[descripcionField] || '').localeCompare(b[descripcionField] || '', 'es', {
             sensitivity: 'base',
           }),
+      }
+    : null;
+
+  const estadoColumn = estadoToggle
+    ? {
+        title: 'Estado',
+        key: 'estado',
+        width: 120,
+        align: 'center',
+        // `cfg-estado-col`: la celda de Estado no se atenúa en filas inactivas
+        // (conserva la affordance de reactivación; ver table-cells.css).
+        className: 'cfg-estado-col',
+        render: (_, record) => (
+          <EstadoTogglePill
+            activo={esRegistroActivo(record)}
+            permiso={estadoToggle.permisoCodigo || permisoCodigo}
+            accion="ACTIVAR"
+            onToggle={(nuevoActivo) => estadoToggle.onToggle(record, nuevoActivo)}
+          />
+        ),
+        sorter: true,
+        sortCompare: (a, b) => Number(esRegistroActivo(b)) - Number(esRegistroActivo(a)),
       }
     : null;
 
@@ -122,6 +163,7 @@ export const createSimpleCatalogTableColumns = ({
     nombreColumn,
     ...(descripcionColumn ? [descripcionColumn] : []),
     ...extraColumns,
+    ...(estadoColumn ? [estadoColumn] : []),
     accionesColumn,
   ];
 };

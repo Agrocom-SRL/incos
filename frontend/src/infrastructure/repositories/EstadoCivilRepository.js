@@ -91,6 +91,22 @@ export class EstadoCivilRepository extends IEstadoCivilRepository {
   }
 
   /**
+   * Cambia el estado activo/inactivo de un estado civil
+   * PATCH /v1/estados-civiles/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(ESTADOS_CIVILES_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del estado civil');
+    }
+  }
+
+  /**
    * Elimina (soft delete) un estado civil
    * DELETE /v1/estados-civiles/:id
    */

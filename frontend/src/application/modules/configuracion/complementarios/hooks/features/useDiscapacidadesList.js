@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useDiscapacidadesApi } from '../api/useDiscapacidadesApi';
+import { useToggleEstadoCatalogo } from './useToggleEstadoCatalogo';
 import { useTableData } from '@molecules';
 
 export const useDiscapacidadesList = () => {
@@ -12,6 +13,13 @@ export const useDiscapacidadesList = () => {
 
   const { searchText, setSearchText, filteredData } = useTableData(discapacidades, getSearchFields);
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoDiscapacidad',
+    entidad: 'el tipo de discapacidad',
+    refetch,
+  });
+
   return {
     discapacidades: filteredData,
     loading,
@@ -19,5 +27,6 @@ export const useDiscapacidadesList = () => {
     refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

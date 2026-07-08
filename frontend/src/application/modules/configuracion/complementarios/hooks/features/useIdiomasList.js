@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useIdiomasApi } from '../api/useIdiomasApi';
+import { useToggleEstadoCatalogo } from './useToggleEstadoCatalogo';
 import { useTableData } from '@molecules';
 
 export const useIdiomasList = () => {
@@ -12,6 +13,13 @@ export const useIdiomasList = () => {
 
   const { searchText, setSearchText, filteredData } = useTableData(idiomas, getSearchFields);
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoIdioma',
+    entidad: 'el idioma',
+    refetch,
+  });
+
   return {
     idiomas: filteredData,
     loading,
@@ -19,5 +27,6 @@ export const useIdiomasList = () => {
     refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

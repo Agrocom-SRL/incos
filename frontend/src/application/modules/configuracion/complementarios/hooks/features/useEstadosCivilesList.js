@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useEstadosCivilesApi } from '../api/useEstadosCivilesApi';
+import { useToggleEstadoCatalogo } from './useToggleEstadoCatalogo';
 import { useTableData } from '@molecules';
 
 export const useEstadosCivilesList = () => {
@@ -12,6 +13,13 @@ export const useEstadosCivilesList = () => {
 
   const { searchText, setSearchText, filteredData } = useTableData(estadosCiviles, getSearchFields);
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoEstadoCivil',
+    entidad: 'el estado civil',
+    refetch,
+  });
+
   return {
     estadosCiviles: filteredData,
     loading,
@@ -19,5 +27,6 @@ export const useEstadosCivilesList = () => {
     refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

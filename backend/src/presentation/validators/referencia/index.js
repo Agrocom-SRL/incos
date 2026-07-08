@@ -23,3 +23,6 @@ export {
   createEstadoCivilValidator,
   updateEstadoCivilValidator,
 } from './estados-civiles.validator.js';
+
+// Activar/desactivar (PATCH /:id/estado): body { activo: boolean }, compartido por los 4 catálogos.
+export { setEstadoCatalogoValidator } from './set-estado.validator.js';

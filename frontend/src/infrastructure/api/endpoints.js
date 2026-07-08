@@ -185,7 +185,10 @@ export const PRERREQUISITOS_ENDPOINTS = {
 };
 
 // Complementario
-export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
+export const DISCAPACIDAD_ENDPOINTS = {
+  ...createCRUDEndpoints('/discapacidad'),
+  ESTADO: (id) => `${API_BASE}/discapacidad/${id}/estado`, // PATCH: activar/desactivar
+};
 
 // Actividades (catálogo maestro reutilizable entre gestiones)
 export const ACTIVIDADES_ENDPOINTS = createCRUDEndpoints('/actividades');
@@ -382,9 +385,18 @@ export const MUNICIPIOS_ENDPOINTS = createCRUDEndpoints('/municipios');
 // ============================================
 // MÓDULO: REFERENCIA
 // ============================================
-export const IDIOMAS_ENDPOINTS = createCRUDEndpoints('/idiomas');
-export const ESTADOS_CIVILES_ENDPOINTS = createCRUDEndpoints('/estados-civiles');
-export const TIPOS_PARENTESCO_ENDPOINTS = createCRUDEndpoints('/tipos-parentesco');
+export const IDIOMAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/idiomas'),
+  ESTADO: (id) => `${API_BASE}/idiomas/${id}/estado`, // PATCH: activar/desactivar
+};
+export const ESTADOS_CIVILES_ENDPOINTS = {
+  ...createCRUDEndpoints('/estados-civiles'),
+  ESTADO: (id) => `${API_BASE}/estados-civiles/${id}/estado`, // PATCH: activar/desactivar
+};
+export const TIPOS_PARENTESCO_ENDPOINTS = {
+  ...createCRUDEndpoints('/tipos-parentesco'),
+  ESTADO: (id) => `${API_BASE}/tipos-parentesco/${id}/estado`, // PATCH: activar/desactivar
+};
 export const DOCUMENTACION_ENDPOINTS = createCRUDEndpoints('/documentacion');
 
 // ============================================

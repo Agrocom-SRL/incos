@@ -5,6 +5,7 @@ import { idValidator, listValidator } from '../validators/common/index.js';
 import {
     createTipoParentescoValidator,
     updateTipoParentescoValidator,
+    setEstadoCatalogoValidator,
 } from '../validators/referencia/index.js';
 
 /**
@@ -33,6 +34,7 @@ export function buildTiposParentescoRouter({ controllers, middlewares }) {
     const crearTiposParentesco = [authenticate, verificarPermiso('configuracion.complementario.apoderados', 'CREAR')];
     const editarTiposParentesco = [authenticate, verificarPermiso('configuracion.complementario.apoderados', 'EDITAR')];
     const eliminarTiposParentesco = [authenticate, verificarPermiso('configuracion.complementario.apoderados', 'ELIMINAR')];
+    const activarTiposParentesco = [authenticate, verificarPermiso('configuracion.complementario.apoderados', 'ACTIVAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -83,6 +85,16 @@ export function buildTiposParentescoRouter({ controllers, middlewares }) {
         updateTipoParentescoValidator,
         validateRequest,
         (req, res, next) => controllers.updateTipoParentescoController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar tipo de parentesco (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarTiposParentesco,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoTipoParentescoController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar tipo de parentesco (soft delete)

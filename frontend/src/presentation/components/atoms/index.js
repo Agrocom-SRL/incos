@@ -27,6 +27,7 @@ export { default as ActivityItem } from './ActivityItem';
 export { default as ActionButton } from './ActionButton';
 export { default as DetailField } from './DetailField';
 export { default as StatusPill } from './StatusPill';
+export { default as EstadoTogglePill } from './EstadoTogglePill';
 export { default as CompromisoAlertTag } from './CompromisoAlertTag';
 export { formatFechaCompromiso, compromisoSortValue, resolverCompromisoEstado } from './compromisoAlerta';
 export { default as IdentidadCelda } from './IdentidadCelda';

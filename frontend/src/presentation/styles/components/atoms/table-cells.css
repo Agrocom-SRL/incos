@@ -138,6 +138,14 @@
   border-color: var(--color-info-border, rgba(3, 105, 161, 0.22));
 }
 
+/* Variante primaria institucional (misma receta token que --success, con la escala primary
+   que `injectCSSVariables` deriva del theme). La usa EstadoTogglePill para el estado ACTIVO. */
+.cfg-materia-pill--primary {
+  background: var(--color-primary-bg);
+  color: var(--color-primary-active);
+  border-color: var(--color-primary-border);
+}
+
 .cfg-materia-pill--purple {
   background: #f5f3ff;
   color: #6d28d9;
@@ -148,6 +156,22 @@
   background: var(--color-accent-bg, #eef2ff);
   color: var(--color-accent-active, #3730a3);
   border-color: var(--color-accent-border, rgba(55, 48, 163, 0.22));
+}
+
+/* ── Celda de estado con toggle (átomo EstadoTogglePill) ─────────────────────────
+   Switch de AntD (theme primario) + pill estática cfg-materia-pill--{primary|inactiva}
+   como etiqueta, lado a lado. El motion del switch lo aporta AntD (respeta el theme). */
+.estado-toggle-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Fila de catálogo inactiva (rowClassName de los listados de Configuración):
+   atenuación sutil de todas las celdas salvo la de Estado, que conserva su
+   affordance de reactivación. */
+.cfg-table-row--inactiva > .ant-table-cell:not(.cfg-estado-col) {
+  opacity: 0.55;
 }
 
 /* ── Tono de género (patrón DocenteReferenciaCell) para líneas de InfoLinesCell ── */

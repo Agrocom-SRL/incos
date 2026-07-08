@@ -14,18 +14,21 @@ export const REFERENCIA_TOKENS = {
     updateIdiomaUseCase: 'referencia.updateIdiomaUseCase',
     getIdiomaByIdUseCase: 'referencia.getIdiomaByIdUseCase',
     deleteIdiomaUseCase: 'referencia.deleteIdiomaUseCase',
+    setEstadoIdiomaUseCase: 'referencia.setEstadoIdiomaUseCase',
 
     listEstadosCivilesUseCase: 'referencia.listEstadosCivilesUseCase',
     createEstadoCivilUseCase: 'referencia.createEstadoCivilUseCase',
     updateEstadoCivilUseCase: 'referencia.updateEstadoCivilUseCase',
     getEstadoCivilByIdUseCase: 'referencia.getEstadoCivilByIdUseCase',
     deleteEstadoCivilUseCase: 'referencia.deleteEstadoCivilUseCase',
+    setEstadoEstadoCivilUseCase: 'referencia.setEstadoEstadoCivilUseCase',
 
     listTiposParentescoUseCase: 'referencia.listTiposParentescoUseCase',
     createTipoParentescoUseCase: 'referencia.createTipoParentescoUseCase',
     updateTipoParentescoUseCase: 'referencia.updateTipoParentescoUseCase',
     getTipoParentescoByIdUseCase: 'referencia.getTipoParentescoByIdUseCase',
     deleteTipoParentescoUseCase: 'referencia.deleteTipoParentescoUseCase',
+    setEstadoTipoParentescoUseCase: 'referencia.setEstadoTipoParentescoUseCase',
 
     listDocumentacionUseCase: 'referencia.listDocumentacionUseCase',
     createDocumentacionUseCase: 'referencia.createDocumentacionUseCase',
@@ -38,6 +41,7 @@ export const REFERENCIA_TOKENS = {
     updateDiscapacidadUseCase: 'referencia.updateDiscapacidadUseCase',
     getDiscapacidadByIdUseCase: 'referencia.getDiscapacidadByIdUseCase',
     deleteDiscapacidadUseCase: 'referencia.deleteDiscapacidadUseCase',
+    setEstadoDiscapacidadUseCase: 'referencia.setEstadoDiscapacidadUseCase',
 
     // CONTROLLERS
     listIdiomasController: 'referencia.listIdiomasController',
@@ -45,18 +49,21 @@ export const REFERENCIA_TOKENS = {
     updateIdiomaController: 'referencia.updateIdiomaController',
     getIdiomaByIdController: 'referencia.getIdiomaByIdController',
     deleteIdiomaController: 'referencia.deleteIdiomaController',
+    setEstadoIdiomaController: 'referencia.setEstadoIdiomaController',
 
     listEstadosCivilesController: 'referencia.listEstadosCivilesController',
     createEstadoCivilController: 'referencia.createEstadoCivilController',
     updateEstadoCivilController: 'referencia.updateEstadoCivilController',
     getEstadoCivilByIdController: 'referencia.getEstadoCivilByIdController',
     deleteEstadoCivilController: 'referencia.deleteEstadoCivilController',
+    setEstadoEstadoCivilController: 'referencia.setEstadoEstadoCivilController',
 
     listTiposParentescoController: 'referencia.listTiposParentescoController',
     createTipoParentescoController: 'referencia.createTipoParentescoController',
     updateTipoParentescoController: 'referencia.updateTipoParentescoController',
     getTipoParentescoByIdController: 'referencia.getTipoParentescoByIdController',
     deleteTipoParentescoController: 'referencia.deleteTipoParentescoController',
+    setEstadoTipoParentescoController: 'referencia.setEstadoTipoParentescoController',
 
     listDocumentacionController: 'referencia.listDocumentacionController',
     createDocumentacionController: 'referencia.createDocumentacionController',
@@ -69,6 +76,7 @@ export const REFERENCIA_TOKENS = {
     updateDiscapacidadController: 'referencia.updateDiscapacidadController',
     getDiscapacidadByIdController: 'referencia.getDiscapacidadByIdController',
     deleteDiscapacidadController: 'referencia.deleteDiscapacidadController',
+    setEstadoDiscapacidadController: 'referencia.setEstadoDiscapacidadController',
 
     // ROUTERS
     idiomasRouter: 'referencia.idiomasRouter',

@@ -91,6 +91,22 @@ export class IdiomaRepository extends IIdiomaRepository {
   }
 
   /**
+   * Cambia el estado activo/inactivo de un idioma
+   * PATCH /v1/idiomas/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(IDIOMAS_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del idioma');
+    }
+  }
+
+  /**
    * Elimina (soft delete) un idioma
    * DELETE /v1/idiomas/:id
    */

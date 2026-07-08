@@ -6,6 +6,7 @@ export { CreateIdiomaController } from './idiomas/create.controller.js';
 export { GetIdiomaByIdController } from './idiomas/get-by-id.controller.js';
 export { UpdateIdiomaController } from './idiomas/update.controller.js';
 export { DeleteIdiomaController } from './idiomas/delete.controller.js';
+export { SetEstadoIdiomaController } from './idiomas/set-estado.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - ESTADOS CIVILES
@@ -15,6 +16,7 @@ export { CreateEstadoCivilController } from './estados-civiles/create.controller
 export { GetEstadoCivilByIdController } from './estados-civiles/get-by-id.controller.js';
 export { UpdateEstadoCivilController } from './estados-civiles/update.controller.js';
 export { DeleteEstadoCivilController } from './estados-civiles/delete.controller.js';
+export { SetEstadoEstadoCivilController } from './estados-civiles/set-estado.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - TIPOS PARENTESCO
@@ -24,6 +26,7 @@ export { CreateTipoParentescoController } from './tipos-parentesco/create.contro
 export { GetTipoParentescoByIdController } from './tipos-parentesco/get-by-id.controller.js';
 export { UpdateTipoParentescoController } from './tipos-parentesco/update.controller.js';
 export { DeleteTipoParentescoController } from './tipos-parentesco/delete.controller.js';
+export { SetEstadoTipoParentescoController } from './tipos-parentesco/set-estado.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - DOCUMENTACIÓN
@@ -42,3 +45,4 @@ export { CreateDiscapacidadController } from './discapacidad/create.controller.j
 export { GetDiscapacidadByIdController } from './discapacidad/get-by-id.controller.js';
 export { UpdateDiscapacidadController } from './discapacidad/update.controller.js';
 export { DeleteDiscapacidadController } from './discapacidad/delete.controller.js';
+export { SetEstadoDiscapacidadController } from './discapacidad/set-estado.controller.js';

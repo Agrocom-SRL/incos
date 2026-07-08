@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useApoderadosApi } from '../api/useApoderadosApi';
+import { useToggleEstadoCatalogo } from './useToggleEstadoCatalogo';
 import { useTableData } from '@molecules';
 
 export const useApoderadosList = () => {
@@ -15,6 +16,13 @@ export const useApoderadosList = () => {
     getSearchFields,
   );
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoTipoParentesco',
+    entidad: 'el tipo de parentesco',
+    refetch,
+  });
+
   return {
     apoderados: filteredData,
     loading,
@@ -22,5 +30,6 @@ export const useApoderadosList = () => {
     refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

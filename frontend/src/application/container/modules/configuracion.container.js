@@ -31,6 +31,7 @@ import {
   CrearDiscapacidadUseCase,
   ActualizarDiscapacidadUseCase,
   EliminarDiscapacidadUseCase,
+  CambiarEstadoDiscapacidadUseCase,
 } from '@useCases/configuracion/complementario/discapacidad';
 import {
   GetTodosTiposParentescoUseCase,
@@ -38,6 +39,7 @@ import {
   CrearTipoParentescoUseCase,
   ActualizarTipoParentescoUseCase,
   EliminarTipoParentescoUseCase,
+  CambiarEstadoTipoParentescoUseCase,
 } from '@useCases/configuracion/complementario/tipoParentesco';
 import {
   GetTodosIdiomasUseCase,
@@ -45,6 +47,7 @@ import {
   CrearIdiomaUseCase,
   ActualizarIdiomaUseCase,
   EliminarIdiomaUseCase,
+  CambiarEstadoIdiomaUseCase,
 } from '@useCases/configuracion/complementario/idioma';
 import {
   GetTodosEstadosCivilesUseCase,
@@ -52,6 +55,7 @@ import {
   CrearEstadoCivilUseCase,
   ActualizarEstadoCivilUseCase,
   EliminarEstadoCivilUseCase,
+  CambiarEstadoEstadoCivilUseCase,
 } from '@useCases/configuracion/complementario/estadoCivil';
 import {
   GetTodaDocumentacionUseCase,
@@ -133,24 +137,28 @@ export function registerConfiguracionModule(factory) {
   factory.crearDiscapacidad = () => new CrearDiscapacidadUseCase(discapacidadRepository);
   factory.actualizarDiscapacidad = () => new ActualizarDiscapacidadUseCase(discapacidadRepository);
   factory.eliminarDiscapacidad = () => new EliminarDiscapacidadUseCase(discapacidadRepository);
+  factory.cambiarEstadoDiscapacidad = () => new CambiarEstadoDiscapacidadUseCase(discapacidadRepository);
 
   factory.obtenerTodosTiposParentesco = () => new GetTodosTiposParentescoUseCase(tipoParentescoRepository);
   factory.obtenerTipoParentescoPorId = () => new GetTipoParentescoPorIdUseCase(tipoParentescoRepository);
   factory.crearTipoParentesco = () => new CrearTipoParentescoUseCase(tipoParentescoRepository);
   factory.actualizarTipoParentesco = () => new ActualizarTipoParentescoUseCase(tipoParentescoRepository);
   factory.eliminarTipoParentesco = () => new EliminarTipoParentescoUseCase(tipoParentescoRepository);
+  factory.cambiarEstadoTipoParentesco = () => new CambiarEstadoTipoParentescoUseCase(tipoParentescoRepository);
 
   factory.obtenerTodosIdiomas = () => new GetTodosIdiomasUseCase(idiomaRepository);
   factory.obtenerIdiomaPorId = () => new GetIdiomaPorIdUseCase(idiomaRepository);
   factory.crearIdioma = () => new CrearIdiomaUseCase(idiomaRepository);
   factory.actualizarIdioma = () => new ActualizarIdiomaUseCase(idiomaRepository);
   factory.eliminarIdioma = () => new EliminarIdiomaUseCase(idiomaRepository);
+  factory.cambiarEstadoIdioma = () => new CambiarEstadoIdiomaUseCase(idiomaRepository);
 
   factory.obtenerTodosEstadosCiviles = () => new GetTodosEstadosCivilesUseCase(estadoCivilRepository);
   factory.obtenerEstadoCivilPorId = () => new GetEstadoCivilPorIdUseCase(estadoCivilRepository);
   factory.crearEstadoCivil = () => new CrearEstadoCivilUseCase(estadoCivilRepository);
   factory.actualizarEstadoCivil = () => new ActualizarEstadoCivilUseCase(estadoCivilRepository);
   factory.eliminarEstadoCivil = () => new EliminarEstadoCivilUseCase(estadoCivilRepository);
+  factory.cambiarEstadoEstadoCivil = () => new CambiarEstadoEstadoCivilUseCase(estadoCivilRepository);
 
   factory.obtenerTodaDocumentacion = () => new GetTodaDocumentacionUseCase(documentacionRepository);
   factory.obtenerDocumentacionPorId = () => new GetDocumentacionPorIdUseCase(documentacionRepository);

@@ -14,6 +14,7 @@ import { useDiscapacidadContext } from '@application-configuracion/complementari
 import { discapacidadNuevaPath } from '@application-configuracion/complementarios/config/paths';
 import { discapacidadesListNavigationState } from '@application-configuracion/complementarios/config/navigation';
 import { createDiscapacidadesTableColumns } from '@configuracion/complementarios/config/discapacidadesTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -28,11 +29,12 @@ const DiscapacidadesList = ({ embedded = false }) => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useDiscapacidadContext();
 
   const tableColumns = useMemo(
-    () => createDiscapacidadesTableColumns({ navigate, listNavState, refetch }),
-    [navigate, listNavState, refetch],
+    () => createDiscapacidadesTableColumns({ navigate, listNavState, refetch, toggleEstado }),
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   const nuevoTipoAction = (
@@ -68,6 +70,7 @@ const DiscapacidadesList = ({ embedded = false }) => {
         searchPlaceholder="Buscar por nombre o descripción..."
         columns={tableColumns}
         rowKey={(record) => record.id}
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={{

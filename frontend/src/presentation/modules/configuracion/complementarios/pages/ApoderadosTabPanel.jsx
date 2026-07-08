@@ -14,6 +14,7 @@ import { useApoderadoContext } from '@application-configuracion/complementarios/
 import { apoderadoNuevaPath } from '@application-configuracion/complementarios/config/paths';
 import { apoderadosListNavigationState } from '@application-configuracion/complementarios/config/navigation';
 import { createApoderadosTableColumns } from '@configuracion/complementarios/config/apoderadosTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -28,11 +29,12 @@ const ApoderadosTabPanel = ({ embedded = false }) => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useApoderadoContext();
 
   const tableColumns = useMemo(
-    () => createApoderadosTableColumns({ navigate, listNavState, refetch }),
-    [navigate, listNavState, refetch],
+    () => createApoderadosTableColumns({ navigate, listNavState, refetch, toggleEstado }),
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   const nuevoApoderadoAction = (
@@ -66,6 +68,7 @@ const ApoderadosTabPanel = ({ embedded = false }) => {
         searchPlaceholder="Buscar por nombre o descripción..."
         columns={tableColumns}
         rowKey={(record) => record.id}
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={{

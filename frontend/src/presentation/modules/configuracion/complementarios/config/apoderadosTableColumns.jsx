@@ -9,7 +9,7 @@ import {
 } from '@application-configuracion/complementarios/config/paths';
 import { usosColumn } from './usosColumn';
 
-export const createApoderadosTableColumns = ({ navigate, listNavState, refetch }) =>
+export const createApoderadosTableColumns = ({ navigate, listNavState, refetch, toggleEstado }) =>
   createSimpleCatalogTableColumns({
     navigate,
     listNavState,
@@ -20,4 +20,6 @@ export const createApoderadosTableColumns = ({ navigate, listNavState, refetch }
     getEditarPath: (record) => apoderadoEditarPath(record.id),
     useCaseKey: 'eliminarTipoParentesco',
     extraColumns: [usosColumn],
+    // Columna "Estado" con toggle rápido (permiso ACTIVAR de permisoCodigo)
+    estadoToggle: toggleEstado ? { onToggle: toggleEstado } : null,
   });

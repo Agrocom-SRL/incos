@@ -9,7 +9,12 @@ import {
 } from '@application-configuracion/complementarios/config/paths';
 import { usosColumn } from './usosColumn';
 
-export const createDiscapacidadesTableColumns = ({ navigate, listNavState, refetch }) =>
+export const createDiscapacidadesTableColumns = ({
+  navigate,
+  listNavState,
+  refetch,
+  toggleEstado,
+}) =>
   createSimpleCatalogTableColumns({
     navigate,
     listNavState,
@@ -20,4 +25,6 @@ export const createDiscapacidadesTableColumns = ({ navigate, listNavState, refet
     getEditarPath: (record) => discapacidadEditarPath(record.id),
     useCaseKey: 'eliminarDiscapacidad',
     extraColumns: [usosColumn],
+    // Columna "Estado" con toggle rápido (permiso ACTIVAR de permisoCodigo)
+    estadoToggle: toggleEstado ? { onToggle: toggleEstado } : null,
   });

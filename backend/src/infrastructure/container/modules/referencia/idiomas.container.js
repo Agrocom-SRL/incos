@@ -19,12 +19,14 @@ import { CreateIdiomaUseCase } from '../../../../application/use-cases/referenci
 import { UpdateIdiomaUseCase } from '../../../../application/use-cases/referencia/UpdateIdiomaUseCase.js';
 import { GetIdiomaByIdUseCase } from '../../../../application/use-cases/referencia/GetIdiomaByIdUseCase.js';
 import { DeleteIdiomaUseCase } from '../../../../application/use-cases/referencia/DeleteIdiomaUseCase.js';
+import { SetEstadoIdiomaUseCase } from '../../../../application/use-cases/referencia/SetEstadoIdiomaUseCase.js';
 import {
     ListIdiomasController,
     CreateIdiomaController,
     UpdateIdiomaController,
     GetIdiomaByIdController,
     DeleteIdiomaController,
+    SetEstadoIdiomaController,
 } from '../../../../presentation/controllers/referencia/index.js';
 import { buildIdiomasRouter } from '../../../../presentation/routes/idiomas.routes.js';
 
@@ -91,6 +93,16 @@ export function registerIdiomasResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoIdiomaUseCase,
+        (c) =>
+            new SetEstadoIdiomaUseCase({
+                languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -149,6 +161,17 @@ export function registerIdiomasResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoIdiomaController,
+        (c) =>
+            new SetEstadoIdiomaController({
+                setEstadoIdiomaUseCase: c.resolve(REFERENCIA_TOKENS.setEstadoIdiomaUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -162,6 +185,7 @@ export function registerIdiomasResource(container) {
                 updateIdiomaController: c.resolve(REFERENCIA_TOKENS.updateIdiomaController),
                 getIdiomaByIdController: c.resolve(REFERENCIA_TOKENS.getIdiomaByIdController),
                 deleteIdiomaController: c.resolve(REFERENCIA_TOKENS.deleteIdiomaController),
+                setEstadoIdiomaController: c.resolve(REFERENCIA_TOKENS.setEstadoIdiomaController),
             };
 
             const middlewares = {

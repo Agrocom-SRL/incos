@@ -91,6 +91,22 @@ export class TipoParentescoRepository extends ITipoParentescoRepository {
   }
 
   /**
+   * Cambia el estado activo/inactivo de un tipo de parentesco
+   * PATCH /v1/tipos-parentesco/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(TIPOS_PARENTESCO_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del tipo de parentesco');
+    }
+  }
+
+  /**
    * Elimina (soft delete) un tipo de parentesco
    * DELETE /v1/tipos-parentesco/:id
    */

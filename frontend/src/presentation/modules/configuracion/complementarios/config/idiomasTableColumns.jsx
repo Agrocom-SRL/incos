@@ -14,7 +14,7 @@ import {
 } from '@application-configuracion/complementarios/config/paths';
 import { usosColumn } from './usosColumn';
 
-export const createIdiomasTableColumns = ({ navigate, listNavState, refetch }) =>
+export const createIdiomasTableColumns = ({ navigate, listNavState, refetch, toggleEstado }) =>
   createSimpleCatalogTableColumns({
     navigate,
     listNavState,
@@ -27,4 +27,6 @@ export const createIdiomasTableColumns = ({ navigate, listNavState, refetch }) =
     codigoField: 'codigoIso',
     descripcionField: null,
     extraColumns: [usosColumn],
+    // Columna "Estado" con toggle rápido (permiso ACTIVAR de permisoCodigo)
+    estadoToggle: toggleEstado ? { onToggle: toggleEstado } : null,
   });

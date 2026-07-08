@@ -5,6 +5,7 @@ import { idValidator, listValidator } from '../validators/common/index.js';
 import {
     createDiscapacidadValidator,
     updateDiscapacidadValidator,
+    setEstadoCatalogoValidator,
 } from '../validators/referencia/index.js';
 
 /**
@@ -33,6 +34,7 @@ export function buildDiscapacidadRouter({ controllers, middlewares }) {
     const crearDiscapacidad = [authenticate, verificarPermiso('configuracion.complementario.discapacidad', 'CREAR')];
     const editarDiscapacidad = [authenticate, verificarPermiso('configuracion.complementario.discapacidad', 'EDITAR')];
     const eliminarDiscapacidad = [authenticate, verificarPermiso('configuracion.complementario.discapacidad', 'ELIMINAR')];
+    const activarDiscapacidad = [authenticate, verificarPermiso('configuracion.complementario.discapacidad', 'ACTIVAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -83,6 +85,16 @@ export function buildDiscapacidadRouter({ controllers, middlewares }) {
         updateDiscapacidadValidator,
         validateRequest,
         (req, res, next) => controllers.updateDiscapacidadController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar tipo de discapacidad (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarDiscapacidad,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoDiscapacidadController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar tipo de discapacidad (soft delete)
