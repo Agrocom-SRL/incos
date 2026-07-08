@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useDiscapacidadesApi } from '../api/useDiscapacidadesApi';
-import { useToggleEstadoCatalogo } from './useToggleEstadoCatalogo';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
 import { useTableData } from '@molecules';
 
 export const useDiscapacidadesList = () => {

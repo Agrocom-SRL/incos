@@ -25,6 +25,37 @@ export const catalogoEstadoRowClassName = (record) =>
   esRegistroActivo(record) ? '' : 'cfg-table-row--inactiva';
 
 /**
+ * Columna "Estado" con toggle rápido activo/inactivo (átomo `EstadoTogglePill`,
+ * `PATCH /:id/estado` en el backend). Única fuente de la column def: la usa este
+ * factory y los configs de columnas propias (Aulas, Paralelos) que no pasan por
+ * `createSimpleCatalogTableColumns`.
+ *
+ * @param {Object} params
+ * @param {string} params.permisoCodigo - Código de permiso (acción ACTIVAR), ej. 'configuracion.aula'
+ * @param {Function} params.onToggle - (record, nuevoActivo) => Promise; persiste y recarga
+ *   (viene del feature hook de la página). Sin permiso ACTIVAR la pill se renderiza estática.
+ */
+export const createCatalogoEstadoColumn = ({ permisoCodigo, onToggle }) => ({
+  title: 'Estado',
+  key: 'estado',
+  width: 150,
+  align: 'center',
+  // `cfg-estado-col`: la celda de Estado no se atenúa en filas inactivas
+  // (conserva la affordance de reactivación; ver table-cells.css).
+  className: 'cfg-estado-col',
+  render: (_, record) => (
+    <EstadoTogglePill
+      activo={esRegistroActivo(record)}
+      permiso={permisoCodigo}
+      accion="ACTIVAR"
+      onToggle={(nuevoActivo) => onToggle(record, nuevoActivo)}
+    />
+  ),
+  sorter: true,
+  sortCompare: (a, b) => Number(esRegistroActivo(b)) - Number(esRegistroActivo(a)),
+});
+
+/**
  * @param {Object} params
  * @param {Function} params.navigate - Navegación (react-router)
  * @param {Object} [params.listNavState] - Estado a propagar al navegar a detalle/editar
@@ -81,7 +112,7 @@ export const createSimpleCatalogTableColumns = ({
     ? {
         title: 'Descripción',
         dataIndex: descripcionField,
-        width: 380,
+        width: 420,
         ellipsis: false,
         render: (valor) => <TruncatedTextCell text={valor} />,
         sorter: true,
@@ -93,25 +124,10 @@ export const createSimpleCatalogTableColumns = ({
     : null;
 
   const estadoColumn = estadoToggle
-    ? {
-        title: 'Estado',
-        key: 'estado',
-        width: 120,
-        align: 'center',
-        // `cfg-estado-col`: la celda de Estado no se atenúa en filas inactivas
-        // (conserva la affordance de reactivación; ver table-cells.css).
-        className: 'cfg-estado-col',
-        render: (_, record) => (
-          <EstadoTogglePill
-            activo={esRegistroActivo(record)}
-            permiso={estadoToggle.permisoCodigo || permisoCodigo}
-            accion="ACTIVAR"
-            onToggle={(nuevoActivo) => estadoToggle.onToggle(record, nuevoActivo)}
-          />
-        ),
-        sorter: true,
-        sortCompare: (a, b) => Number(esRegistroActivo(b)) - Number(esRegistroActivo(a)),
-      }
+    ? createCatalogoEstadoColumn({
+        permisoCodigo: estadoToggle.permisoCodigo || permisoCodigo,
+        onToggle: estadoToggle.onToggle,
+      })
     : null;
 
   const accionesColumn = {

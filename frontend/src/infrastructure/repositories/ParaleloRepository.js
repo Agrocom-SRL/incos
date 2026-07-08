@@ -194,6 +194,22 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
+  /**
+   * Cambia el estado activo/inactivo de un paralelo maestro
+   * PATCH /v1/paralelos/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(PARALELOS_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del paralelo');
+    }
+  }
+
   async asignarAulaHorario(options = {}) {
     try {
       const { cursoHorarioId, aulaId } = options;

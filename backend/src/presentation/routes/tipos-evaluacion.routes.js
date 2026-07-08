@@ -7,6 +7,7 @@ import {
     createTipoEvaluacionValidator,
     updateTipoEvaluacionValidator,
 } from '../validators/configuracion/tipos-evaluacion.validator.js';
+import { setEstadoCatalogoValidator } from '../validators/configuracion/set-estado.validator.js';
 
 /**
  * Construye el router de administración del catálogo Tipos de Evaluación (CFG).
@@ -38,6 +39,7 @@ export function buildTiposEvaluacionRouter({ controllers, middlewares }) {
     const crearTiposEvaluacion = [authenticate, verificarPermiso('configuracion.tipo-evaluacion', 'CREAR')];
     const editarTiposEvaluacion = [authenticate, verificarPermiso('configuracion.tipo-evaluacion', 'EDITAR')];
     const eliminarTiposEvaluacion = [authenticate, verificarPermiso('configuracion.tipo-evaluacion', 'ELIMINAR')];
+    const activarTiposEvaluacion = [authenticate, verificarPermiso('configuracion.tipo-evaluacion', 'ACTIVAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -82,6 +84,16 @@ export function buildTiposEvaluacionRouter({ controllers, middlewares }) {
         updateTipoEvaluacionValidator,
         validateRequest,
         (req, res, next) => controllers.updateTipoEvaluacionController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar tipo de evaluación (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarTiposEvaluacion,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoTipoEvaluacionController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar tipo de evaluación (soft delete)

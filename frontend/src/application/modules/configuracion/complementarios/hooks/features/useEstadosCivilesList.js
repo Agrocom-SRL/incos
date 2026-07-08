@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useEstadosCivilesApi } from '../api/useEstadosCivilesApi';
-import { useToggleEstadoCatalogo } from './useToggleEstadoCatalogo';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
 import { useTableData } from '@molecules';
 
 export const useEstadosCivilesList = () => {

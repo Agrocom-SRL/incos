@@ -82,6 +82,22 @@ export class TipoEvaluacionAdminRepository extends ITipoEvaluacionAdminRepositor
   }
 
   /**
+   * Cambia el estado activo/inactivo de un tipo de evaluación
+   * PATCH /v1/tipos-evaluacion/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(TIPOS_EVALUACION_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del tipo de evaluación');
+    }
+  }
+
+  /**
    * Elimina (soft delete) un tipo de evaluación
    * DELETE /v1/tipos-evaluacion/:id
    */

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useAulasApi } from '../api/useAulasApi';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
 import { useTableData } from '@molecules';
 
 export const useAulasList = () => {
@@ -12,6 +13,13 @@ export const useAulasList = () => {
 
   const { searchText, setSearchText, filteredData } = useTableData(aulas, getSearchFields);
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoAula',
+    entidad: 'el aula',
+    refetch,
+  });
+
   return {
     aulas: filteredData,
     loading,
@@ -19,5 +27,6 @@ export const useAulasList = () => {
     refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

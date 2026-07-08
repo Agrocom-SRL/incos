@@ -1,34 +1,39 @@
 /**
  * Columnas — tab Tipos de evaluación (CFG Recursos académicos).
  * Usa el factory compartido `createSimpleCatalogTableColumns` (ver `incos-ui-system`):
- * # · Identidad (código+nombre) · Descripción · Recuperatorio · Acciones.
+ * # · Identidad (código+nombre) · Descripción (pill recuperatorio + texto) · Estado · Acciones.
+ *
+ * La modalidad (Recuperatorio/Regular) va fusionada con la descripción en el
+ * átomo `TipoEvaluacionRecuperatorioCell` (gemelo de la columna "Periodo" de
+ * paralelos), no como columna separada.
  *
  * El campo "componente" (teórico/práctico) NO vive en este catálogo — vive en
  * la tabla `evaluaciones`, no se agrega aquí.
  */
-import StatusPill from '@atoms/StatusPill';
 import { createSimpleCatalogTableColumns } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import {
   tipoEvaluacionDetallePath,
   tipoEvaluacionEditarPath,
 } from '@application-configuracion/recursos/config/paths';
+import TipoEvaluacionRecuperatorioCell from '@configuracion/recursos/components/atoms/TipoEvaluacionRecuperatorioCell';
 
-const recuperatorioColumn = {
-  title: 'Recuperatorio',
-  dataIndex: 'esRecuperatorio',
-  width: 150,
-  align: 'center',
-  render: (esRecuperatorio) =>
-    esRecuperatorio ? (
-      <StatusPill label="Recuperatorio" className="cfg-materia-pill cfg-materia-pill--info" />
-    ) : (
-      <StatusPill label="Regular" className="cfg-materia-pill cfg-materia-pill--default" />
-    ),
+// Descripción + modalidad fusionadas (reemplaza a la columna "Descripción" del factory)
+const descripcionRecuperatorioColumn = {
+  title: 'Descripción',
+  key: 'descripcion',
+  width: 420,
+  ellipsis: false,
+  render: (_, record) => <TipoEvaluacionRecuperatorioCell record={record} />,
   sorter: true,
   sortCompare: (a, b) => Number(!!a.esRecuperatorio) - Number(!!b.esRecuperatorio),
 };
 
-export const createTiposEvaluacionTableColumns = ({ navigate, listNavState, refetch }) =>
+export const createTiposEvaluacionTableColumns = ({
+  navigate,
+  listNavState,
+  refetch,
+  toggleEstado,
+}) =>
   createSimpleCatalogTableColumns({
     navigate,
     listNavState,
@@ -39,8 +44,12 @@ export const createTiposEvaluacionTableColumns = ({ navigate, listNavState, refe
     getEditarPath: (record) => tipoEvaluacionEditarPath(record.id),
     useCaseKey: 'eliminarTipoEvaluacion',
     codigoField: 'codigo',
-    extraColumns: [recuperatorioColumn],
+    descripcionField: null,
+    extraColumns: [descripcionRecuperatorioColumn],
+    // Columna "Estado" con toggle rápido (permiso ACTIVAR de configuracion.tipo-evaluacion)
+    estadoToggle: toggleEstado ? { onToggle: toggleEstado } : null,
     itemDetailsExtra: (record) => [
+      { label: 'Descripción', value: record.descripcion },
       { label: 'Recuperatorio', value: record.esRecuperatorio ? 'Sí' : 'No' },
     ],
   });

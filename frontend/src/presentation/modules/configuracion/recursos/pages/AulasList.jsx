@@ -9,6 +9,7 @@ import { TableListView } from '@organisms';
 import { useAulaContext } from '@application-configuracion/recursos/hooks';
 import { aulasListNavigationState } from '@application-configuracion/recursos/config/navigation';
 import { createAulasTableColumns } from '@configuracion/recursos/config/aulasTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -23,11 +24,12 @@ const AulasList = ({ embedded = false }) => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useAulaContext();
 
   const tableColumns = useMemo(
-    () => createAulasTableColumns({ navigate, listNavState, refetch }),
-    [navigate, listNavState, refetch],
+    () => createAulasTableColumns({ navigate, listNavState, refetch, toggleEstado }),
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   return (
@@ -47,6 +49,7 @@ const AulasList = ({ embedded = false }) => {
         searchPlaceholder="Buscar por código, nombre, categoría u observaciones..."
         columns={tableColumns}
         rowKey={(record) => record.id}
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={{

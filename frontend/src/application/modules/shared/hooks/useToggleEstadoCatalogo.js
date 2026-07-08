@@ -1,9 +1,10 @@
 /**
- * Toggle rápido del campo `activo` para los catálogos de Complementarios
+ * Toggle rápido del campo `activo` para los catálogos de Configuración
  * (columna "Estado" del listado, átomo `EstadoTogglePill`).
  *
- * Compartido por los 4 feature hooks de listado (discapacidades, apoderados,
- * idiomas, estados civiles): ejecuta el use case `cambiarEstado*` del container
+ * Compartido por los feature hooks de listado de Complementarios (discapacidades,
+ * apoderados, idiomas, estados civiles) y Recursos académicos (aulas, paralelos,
+ * tipos de evaluación): ejecuta el use case `cambiarEstado*` del container
  * (PATCH /:id/estado), da feedback con message (App.useApp, AntD 6) y recarga
  * el listado si tuvo éxito. En error NO relanza: el feedback ya se dio aquí y
  * la pill solo apaga su loading.

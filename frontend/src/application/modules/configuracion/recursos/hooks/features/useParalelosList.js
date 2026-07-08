@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useParalelosCfgApi } from '../api/useParalelosCfgApi';
 import { useCarrerasApi } from '@application-configuracion/academico/hooks/api/useCarrerasApi';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
 import { useTableData } from '@molecules';
 
 export const useParalelosList = () => {
@@ -42,6 +43,13 @@ export const useParalelosList = () => {
 
   const { searchText, setSearchText, filteredData } = useTableData(paralelosEnriquecidos, getSearchFields);
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoParalelo',
+    entidad: 'el paralelo',
+    refetch,
+  });
+
   return {
     paralelos: filteredData,
     carreras,
@@ -50,5 +58,6 @@ export const useParalelosList = () => {
     refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

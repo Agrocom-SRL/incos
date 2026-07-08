@@ -57,11 +57,13 @@ export const CONFIGURACION_TOKENS = {
     createAulaUseCase: 'configuracion.createAulaUseCase',
     updateAulaUseCase: 'configuracion.updateAulaUseCase',
     deleteAulaUseCase: 'configuracion.deleteAulaUseCase',
+    setEstadoAulaUseCase: 'configuracion.setEstadoAulaUseCase',
 
     createTipoEvaluacionUseCase: 'configuracion.createTipoEvaluacionUseCase',
     getTipoEvaluacionByIdUseCase: 'configuracion.getTipoEvaluacionByIdUseCase',
     updateTipoEvaluacionUseCase: 'configuracion.updateTipoEvaluacionUseCase',
     deleteTipoEvaluacionUseCase: 'configuracion.deleteTipoEvaluacionUseCase',
+    setEstadoTipoEvaluacionUseCase: 'configuracion.setEstadoTipoEvaluacionUseCase',
 
     // CONTROLLERS
     listCarrerasController: 'configuracion.listCarrerasController',
@@ -112,11 +114,13 @@ export const CONFIGURACION_TOKENS = {
     createAulaController: 'configuracion.createAulaController',
     updateAulaController: 'configuracion.updateAulaController',
     deleteAulaController: 'configuracion.deleteAulaController',
+    setEstadoAulaController: 'configuracion.setEstadoAulaController',
 
     createTipoEvaluacionController: 'configuracion.createTipoEvaluacionController',
     getTipoEvaluacionByIdController: 'configuracion.getTipoEvaluacionByIdController',
     updateTipoEvaluacionController: 'configuracion.updateTipoEvaluacionController',
     deleteTipoEvaluacionController: 'configuracion.deleteTipoEvaluacionController',
+    setEstadoTipoEvaluacionController: 'configuracion.setEstadoTipoEvaluacionController',
 
     // ROUTERS
     carrerasRouter: 'configuracion.carrerasRouter',

@@ -23,6 +23,7 @@ import {
   CrearParaleloUseCase,
   ActualizarParaleloUseCase,
   EliminarParaleloUseCase,
+  CambiarEstadoParaleloUseCase,
 } from '@useCases/configuracion/recursos/paralelos';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import {
@@ -77,6 +78,7 @@ import {
   CrearAulaUseCase,
   ActualizarAulaUseCase,
   EliminarAulaUseCase,
+  CambiarEstadoAulaUseCase,
 } from '@useCases/configuracion/recursos/aula';
 import {
   GetTodosTiposEvaluacionUseCase,
@@ -84,6 +86,7 @@ import {
   CrearTipoEvaluacionUseCase,
   ActualizarTipoEvaluacionUseCase,
   EliminarTipoEvaluacionUseCase,
+  CambiarEstadoTipoEvaluacionUseCase,
 } from '@useCases/configuracion/recursos/tipoEvaluacion';
 import CarreraRepository from '@infrastructure/repositories/CarreraRepository';
 import MateriaRepository from '@infrastructure/repositories/MateriaRepository';
@@ -131,6 +134,7 @@ export function registerConfiguracionModule(factory) {
   factory.crearParalelo = () => new CrearParaleloUseCase(paraleloRepository);
   factory.actualizarParalelo = () => new ActualizarParaleloUseCase(paraleloRepository);
   factory.eliminarParalelo = () => new EliminarParaleloUseCase(paraleloRepository);
+  factory.cambiarEstadoParalelo = () => new CambiarEstadoParaleloUseCase(paraleloRepository);
 
   factory.obtenerTodasDiscapacidades = () => new GetTodasDiscapacidadesUseCase(discapacidadRepository);
   factory.obtenerDiscapacidadPorId = () => new GetDiscapacidadPorIdUseCase(discapacidadRepository);
@@ -177,6 +181,7 @@ export function registerConfiguracionModule(factory) {
   factory.crearAula = () => new CrearAulaUseCase(aulaRepository);
   factory.actualizarAula = () => new ActualizarAulaUseCase(aulaRepository);
   factory.eliminarAula = () => new EliminarAulaUseCase(aulaRepository);
+  factory.cambiarEstadoAula = () => new CambiarEstadoAulaUseCase(aulaRepository);
 
   factory.obtenerTodosTiposEvaluacion = () =>
     new GetTodosTiposEvaluacionUseCase(tipoEvaluacionAdminRepository);
@@ -187,6 +192,8 @@ export function registerConfiguracionModule(factory) {
     new ActualizarTipoEvaluacionUseCase(tipoEvaluacionAdminRepository);
   factory.eliminarTipoEvaluacion = () =>
     new EliminarTipoEvaluacionUseCase(tipoEvaluacionAdminRepository);
+  factory.cambiarEstadoTipoEvaluacion = () =>
+    new CambiarEstadoTipoEvaluacionUseCase(tipoEvaluacionAdminRepository);
 
   return factory;
 }

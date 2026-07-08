@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useIdiomasApi } from '../api/useIdiomasApi';
-import { useToggleEstadoCatalogo } from './useToggleEstadoCatalogo';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
 import { useTableData } from '@molecules';
 
 export const useIdiomasList = () => {

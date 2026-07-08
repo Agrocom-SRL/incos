@@ -779,10 +779,20 @@ Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
 |---------|------------------|------------------|-----|
 | `/configuracion/recursos` | Entrada: `permisoAny` (paralelo, aula, tipo-evaluacion) | LISTAR en cada tab visible | Menu "Recursos académicos"; tabs filtrados por permiso |
 | `?tab=paralelos` | `configuracion.paralelo` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Tab paralelos (catálogo maestro); `ruta_sidebar` actualizada de `/configuracion/academico` a `/configuracion/recursos` |
-| `?tab=aulas` | `configuracion.aula` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab aulas (catálogo maestro; distinto del picker de solo lectura de Institucional/Oferta) |
-| `?tab=tipos-evaluacion` | `configuracion.tipo-evaluacion` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab tipos de evaluación (catálogo maestro; distinto de `sistema.catalogo.referencia`, el combo de solo lectura del cuaderno de calificaciones) |
+| `?tab=aulas` | `configuracion.aula` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Tab aulas (catálogo maestro; distinto del picker de solo lectura de Institucional/Oferta) |
+| `?tab=tipos-evaluacion` | `configuracion.tipo-evaluacion` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | Tab tipos de evaluación (catálogo maestro; distinto de `sistema.catalogo.referencia`, el combo de solo lectura del cuaderno de calificaciones) |
 
-**Roles:** RECTOR y DIR_ACADEMICO con bloque completo en `aula` y `tipo-evaluacion` (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR); `paralelo` conserva su grant previo (RECTOR con ACTIVAR adicional).
+**Roles:** RECTOR y DIR_ACADEMICO con bloque completo en `aula` y `tipo-evaluacion` (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR); en `paralelo` ambos con bloque completo (DIR_ACADEMICO igualado con ACTIVAR el 2026-07-08, simetría con su ELIMINAR).
+
+> **Activación rápida de recursos académicos (`ACTIVAR`, 2026-07-08):** los 3 catálogos maestros exponen
+> `PATCH /api/v1/{aulas|paralelos|tipos-evaluacion}/:id/estado` con body `{ "activo": boolean }` y
+> `verificarPermiso('configuracion.{aula|paralelo|tipo-evaluacion}', 'ACTIVAR')` (mismo patrón que los
+> catálogos complementarios). Funciona también sobre ítems ya inactivos (reactivar); el soft-delete
+> (`deleted_at`) sigue siendo exclusivo de ELIMINAR. Los 3 GET de listado aceptan
+> `?incluirInactivos=true` para incluir ítems con `activo=false` (`deleted_at IS NULL`); cada ítem del
+> listado expone el campo `activo` (boolean). Roles con ACTIVAR (simetría con ELIMINAR por código):
+> los 3 códigos → RECTOR y DIR_ACADEMICO. ADMIN_SISTEMA hereda por vista (sin filas en
+> `roles_permisos`). Seed: `62-seed-permisos-cfg.sql` (requiere re-siembra).
 
 #### Datos complementarios (tabs + ABM/detalle de página completa)
 

@@ -5,8 +5,9 @@ import { mapAulasList } from '@application-configuracion/recursos/mappers';
  * dataKey='aulas' — debe coincidir con el `dataFieldName` fijado por
  * `ListAulasController` en el backend (contrato front↔back).
  *
- * `incluirInactivos: true` para que el aula desactivada a propósito
- * (LAB-2 / Sala de Docentes) se vea en el listado admin con `StatusPill` inactivo.
+ * `incluirInactivos: true` SOLO en este listado de configuración (administra el
+ * catálogo completo, con toggle de estado `EstadoTogglePill`). El picker de
+ * Institucional/Oferta consume `AULAS_CATALOGO_ENDPOINT` y sigue viendo solo activas.
  */
 export const useAulasApi = createApiHook({
   name: 'useAulasApi',

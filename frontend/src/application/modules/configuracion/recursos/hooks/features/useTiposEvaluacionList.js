@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTiposEvaluacionAdminApi } from '../api/useTiposEvaluacionAdminApi';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
 import { useTableData } from '@molecules';
 
 export const useTiposEvaluacionList = () => {
@@ -12,6 +13,13 @@ export const useTiposEvaluacionList = () => {
 
   const { searchText, setSearchText, filteredData } = useTableData(tiposEvaluacion, getSearchFields);
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoTipoEvaluacion',
+    entidad: 'el tipo de evaluación',
+    refetch,
+  });
+
   return {
     tiposEvaluacion: filteredData,
     loading,
@@ -19,5 +27,6 @@ export const useTiposEvaluacionList = () => {
     refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

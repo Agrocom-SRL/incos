@@ -141,11 +141,13 @@ JOIN (
   UNION ALL SELECT 'configuracion.aula', 'CREAR'
   UNION ALL SELECT 'configuracion.aula', 'EDITAR'
   UNION ALL SELECT 'configuracion.aula', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.aula', 'ACTIVAR'
   UNION ALL SELECT 'configuracion.tipo-evaluacion', 'LISTAR'
   UNION ALL SELECT 'configuracion.tipo-evaluacion', 'DETALLE'
   UNION ALL SELECT 'configuracion.tipo-evaluacion', 'CREAR'
   UNION ALL SELECT 'configuracion.tipo-evaluacion', 'EDITAR'
   UNION ALL SELECT 'configuracion.tipo-evaluacion', 'ELIMINAR'
+  UNION ALL SELECT 'configuracion.tipo-evaluacion', 'ACTIVAR'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo CFG (roles 2-8; ADMIN_SISTEMA hereda por vista)
@@ -211,6 +213,7 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.paralelo', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.paralelo', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.paralelo', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.paralelo', 'ACTIVAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.inscripcion', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.inscripcion', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'configuracion.documentacion.inscripcion', 'CREAR'
@@ -302,21 +305,25 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.aula', 'ACTIVAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.aula', 'ACTIVAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'configuracion.tipo-evaluacion', 'ACTIVAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'configuracion.tipo-evaluacion', 'ACTIVAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

@@ -30,11 +30,13 @@ import { CreateTipoEvaluacionUseCase } from '../../../../application/use-cases/c
 import { UpdateTipoEvaluacionUseCase } from '../../../../application/use-cases/configuracion/UpdateTipoEvaluacionUseCase.js';
 import { GetTipoEvaluacionByIdUseCase } from '../../../../application/use-cases/configuracion/GetTipoEvaluacionByIdUseCase.js';
 import { DeleteTipoEvaluacionUseCase } from '../../../../application/use-cases/configuracion/DeleteTipoEvaluacionUseCase.js';
+import { SetEstadoTipoEvaluacionUseCase } from '../../../../application/use-cases/configuracion/SetEstadoTipoEvaluacionUseCase.js';
 import {
     CreateTipoEvaluacionController,
     UpdateTipoEvaluacionController,
     GetTipoEvaluacionByIdController,
     DeleteTipoEvaluacionController,
+    SetEstadoTipoEvaluacionController,
 } from '../../../../presentation/controllers/configuracion/index.js';
 import { buildTiposEvaluacionRouter } from '../../../../presentation/routes/tipos-evaluacion.routes.js';
 
@@ -83,6 +85,16 @@ export function registerTiposEvaluacionResource(container) {
         CONFIGURACION_TOKENS.deleteTipoEvaluacionUseCase,
         (c) =>
             new DeleteTipoEvaluacionUseCase({
+                evaluationTypeRepository: c.resolve(REPOSITORIOS_TOKENS.evaluationTypeRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.setEstadoTipoEvaluacionUseCase,
+        (c) =>
+            new SetEstadoTipoEvaluacionUseCase({
                 evaluationTypeRepository: c.resolve(REPOSITORIOS_TOKENS.evaluationTypeRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -143,6 +155,19 @@ export function registerTiposEvaluacionResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.setEstadoTipoEvaluacionController,
+        (c) =>
+            new SetEstadoTipoEvaluacionController({
+                setEstadoTipoEvaluacionUseCase: c.resolve(
+                    CONFIGURACION_TOKENS.setEstadoTipoEvaluacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -167,6 +192,9 @@ export function registerTiposEvaluacionResource(container) {
                 ),
                 deleteTipoEvaluacionController: c.resolve(
                     CONFIGURACION_TOKENS.deleteTipoEvaluacionController
+                ),
+                setEstadoTipoEvaluacionController: c.resolve(
+                    CONFIGURACION_TOKENS.setEstadoTipoEvaluacionController
                 ),
             };
 

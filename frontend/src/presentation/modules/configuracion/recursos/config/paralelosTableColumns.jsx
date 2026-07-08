@@ -1,5 +1,8 @@
 /**
  * Columnas — tab Paralelos maestro (CFG Recursos académicos).
+ *
+ * Columna "Estado" = toggle rápido activo/inactivo (`createCatalogoEstadoColumn`,
+ * átomo `EstadoTogglePill`, permiso ACTIVAR de `configuracion.paralelo`).
  */
 
 import { ReadOutlined, TagOutlined } from '@ant-design/icons';
@@ -10,9 +13,10 @@ import {
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import IdentidadCelda from '@atoms/IdentidadCelda';
 import { TableActions } from '@molecules';
+import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import ParaleloPeriodoCell from '@configuracion/recursos/components/atoms/ParaleloPeriodoCell';
 
-export const createParalelosTableColumns = ({ navigate, listNavState, refetch }) => [
+export const createParalelosTableColumns = ({ navigate, listNavState, refetch, toggleEstado }) => [
   {
     title: '#',
     key: 'nro',
@@ -62,6 +66,15 @@ export const createParalelosTableColumns = ({ navigate, listNavState, refetch })
     sortCompare: (a, b) =>
       (Number(a.periodoNumero) || 0) - (Number(b.periodoNumero) || 0),
   },
+  // Columna "Estado" con toggle rápido (permiso ACTIVAR de configuracion.paralelo)
+  ...(toggleEstado
+    ? [
+        createCatalogoEstadoColumn({
+          permisoCodigo: 'configuracion.paralelo',
+          onToggle: toggleEstado,
+        }),
+      ]
+    : []),
   {
     title: 'Acciones',
     key: 'acciones',

@@ -197,13 +197,18 @@ export const ACTIVIDADES_ENDPOINTS = createCRUDEndpoints('/actividades');
  * CRUD de administración del catálogo Tipos de evaluación (CFG → Recursos académicos).
  * Distinto de `CALIFICACIONES_ENDPOINTS.TIPOS_EVALUACION` (combo GET-only del cuaderno).
  */
-export const TIPOS_EVALUACION_ENDPOINTS = createCRUDEndpoints('/tipos-evaluacion');
+export const TIPOS_EVALUACION_ENDPOINTS = {
+  ...createCRUDEndpoints('/tipos-evaluacion'),
+  ESTADO: (id) => `${API_BASE}/tipos-evaluacion/${id}/estado`, // PATCH: activar/desactivar
+};
 
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================
 export const PARALELOS_ENDPOINTS = {
   ...createCRUDEndpoints('/paralelos'),
+  // PATCH: activar/desactivar el paralelo maestro (CFG → Recursos académicos)
+  ESTADO: (id) => `${API_BASE}/paralelos/${id}/estado`,
   // Endpoint específico para obtener horarios de un paralelo
   SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
   // PUT /v1/paralelos/:id/schedule — persistir plan semanal
@@ -261,7 +266,10 @@ export const AULAS_CATALOGO_ENDPOINT = `${API_BASE}/aulas/catalogo`;
  * CRUD de administración del catálogo Aulas (CFG → Recursos académicos).
  * Distinto de `AULAS_CATALOGO_ENDPOINT` (picker GET-only de Institucional/Oferta).
  */
-export const AULAS_ENDPOINTS = createCRUDEndpoints('/aulas');
+export const AULAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/aulas'),
+  ESTADO: (id) => `${API_BASE}/aulas/${id}/estado`, // PATCH: activar/desactivar
+};
 
 export const HORARIOS_DOCENTE_ENDPOINTS = {
   GRILLA_CONFLICTOS: (docenteId, gestionId) => {

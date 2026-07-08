@@ -24,12 +24,14 @@ import { CreateAulaUseCase } from '../../../../application/use-cases/configuraci
 import { UpdateAulaUseCase } from '../../../../application/use-cases/configuracion/UpdateAulaUseCase.js';
 import { GetAulaByIdUseCase } from '../../../../application/use-cases/configuracion/GetAulaByIdUseCase.js';
 import { DeleteAulaUseCase } from '../../../../application/use-cases/configuracion/DeleteAulaUseCase.js';
+import { SetEstadoAulaUseCase } from '../../../../application/use-cases/configuracion/SetEstadoAulaUseCase.js';
 import {
     ListAulasController,
     CreateAulaController,
     UpdateAulaController,
     GetAulaByIdController,
     DeleteAulaController,
+    SetEstadoAulaController,
 } from '../../../../presentation/controllers/configuracion/index.js';
 import { buildAulasRouter } from '../../../../presentation/routes/aulas.routes.js';
 
@@ -93,6 +95,16 @@ export function registerAulasResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.setEstadoAulaUseCase,
+        (c) =>
+            new SetEstadoAulaUseCase({
+                classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -151,6 +163,17 @@ export function registerAulasResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.setEstadoAulaController,
+        (c) =>
+            new SetEstadoAulaController({
+                setEstadoAulaUseCase: c.resolve(CONFIGURACION_TOKENS.setEstadoAulaUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -164,6 +187,7 @@ export function registerAulasResource(container) {
                 createAulaController: c.resolve(CONFIGURACION_TOKENS.createAulaController),
                 updateAulaController: c.resolve(CONFIGURACION_TOKENS.updateAulaController),
                 deleteAulaController: c.resolve(CONFIGURACION_TOKENS.deleteAulaController),
+                setEstadoAulaController: c.resolve(CONFIGURACION_TOKENS.setEstadoAulaController),
             };
 
             const middlewares = {

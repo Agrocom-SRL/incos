@@ -4,17 +4,18 @@
  * capacidad, observaciones), máx 6 columnas, sin `fixed`:
  * # · Identidad · Categoría y capacidad · Observaciones · Estado · Acciones.
  *
- * El aula desactivada a propósito (`LAB-2 / Sala de Docentes`, capacidad=0)
- * se muestra con `StatusPill` inactivo (el listado ya pide `incluirInactivos`),
- * nunca se oculta.
+ * Columna "Estado" = toggle rápido activo/inactivo (`createCatalogoEstadoColumn`,
+ * átomo `EstadoTogglePill`, permiso ACTIVAR de `configuracion.aula`). El aula
+ * desactivada nunca se oculta (el listado pide `incluirInactivos`).
  */
 import { TagOutlined, TeamOutlined } from '@ant-design/icons';
-import { IdentidadCelda, InfoLinesCell, StatusPill, TruncatedTextCell } from '@atoms';
+import { IdentidadCelda, InfoLinesCell, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
+import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { aulaDetallePath, aulaEditarPath } from '@application-configuracion/recursos/config/paths';
 import { getAulaCategoriaLabel } from '@application-configuracion/recursos/config/aulaCategoriaOptions';
 
-export const createAulasTableColumns = ({ navigate, listNavState, refetch }) => [
+export const createAulasTableColumns = ({ navigate, listNavState, refetch, toggleEstado }) => [
   {
     title: '#',
     key: 'nro',
@@ -54,25 +55,14 @@ export const createAulasTableColumns = ({ navigate, listNavState, refetch }) => 
   {
     title: 'Observaciones',
     dataIndex: 'observaciones',
-    width: 260,
+    width: 360,
     ellipsis: false,
     render: (observaciones) => <TruncatedTextCell text={observaciones} />,
   },
-  {
-    title: 'Estado',
-    dataIndex: 'activo',
-    key: 'activo',
-    width: 110,
-    align: 'center',
-    sorter: true,
-    sortCompare: (a, b) => Number(!!a.activo) - Number(!!b.activo),
-    render: (activo) => (
-      <StatusPill
-        label={activo ? 'Activa' : 'Inactiva'}
-        className={activo ? 'cfg-materia-pill cfg-materia-pill--activa' : 'cfg-materia-pill cfg-materia-pill--inactiva'}
-      />
-    ),
-  },
+  // Columna "Estado" con toggle rápido (permiso ACTIVAR de configuracion.aula)
+  ...(toggleEstado
+    ? [createCatalogoEstadoColumn({ permisoCodigo: 'configuracion.aula', onToggle: toggleEstado })]
+    : []),
   {
     title: 'Acciones',
     key: 'acciones',

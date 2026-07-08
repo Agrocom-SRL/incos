@@ -45,6 +45,7 @@ export { CreateParaleloController } from './paralelos/create.controller.js';
 export { GetParaleloByIdController } from './paralelos/get-by-id.controller.js';
 export { UpdateParaleloController } from './paralelos/update.controller.js';
 export { DeleteParaleloController } from './paralelos/delete.controller.js';
+export { SetEstadoParaleloController } from './paralelos/set-estado.controller.js';
 export { ListParalelosGestionByParaleloController } from './paralelos/list-paralelos-gestion-by-paralelo.controller.js';
 
 export {
@@ -71,6 +72,7 @@ export { CreateAulaController } from './aulas/create.controller.js';
 export { GetAulaByIdController } from './aulas/get-by-id.controller.js';
 export { UpdateAulaController } from './aulas/update.controller.js';
 export { DeleteAulaController } from './aulas/delete.controller.js';
+export { SetEstadoAulaController } from './aulas/set-estado.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - TIPOS DE EVALUACIÓN (catálogo maestro; escritura)
@@ -79,3 +81,4 @@ export { CreateTipoEvaluacionController } from './tipos-evaluacion/create.contro
 export { GetTipoEvaluacionByIdController } from './tipos-evaluacion/get-by-id.controller.js';
 export { UpdateTipoEvaluacionController } from './tipos-evaluacion/update.controller.js';
 export { DeleteTipoEvaluacionController } from './tipos-evaluacion/delete.controller.js';
+export { SetEstadoTipoEvaluacionController } from './tipos-evaluacion/set-estado.controller.js';

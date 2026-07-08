@@ -83,6 +83,22 @@ export class AulaRepository extends IAulaRepository {
   }
 
   /**
+   * Cambia el estado activo/inactivo de un aula
+   * PATCH /v1/aulas/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(AULAS_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del aula');
+    }
+  }
+
+  /**
    * Elimina (soft delete) un aula
    * DELETE /v1/aulas/:id
    */

@@ -7,6 +7,7 @@ import {
     createAulaValidator,
     updateAulaValidator,
 } from '../validators/configuracion/aulas.validator.js';
+import { setEstadoCatalogoValidator } from '../validators/configuracion/set-estado.validator.js';
 
 /**
  * Construye el router de administración del catálogo Aulas (CFG).
@@ -39,6 +40,7 @@ export function buildAulasRouter({ controllers, middlewares }) {
     const crearAulas = [authenticate, verificarPermiso('configuracion.aula', 'CREAR')];
     const editarAulas = [authenticate, verificarPermiso('configuracion.aula', 'EDITAR')];
     const eliminarAulas = [authenticate, verificarPermiso('configuracion.aula', 'ELIMINAR')];
+    const activarAulas = [authenticate, verificarPermiso('configuracion.aula', 'ACTIVAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -89,6 +91,16 @@ export function buildAulasRouter({ controllers, middlewares }) {
         updateAulaValidator,
         validateRequest,
         (req, res, next) => controllers.updateAulaController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar aula (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarAulas,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoAulaController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar aula (soft delete)

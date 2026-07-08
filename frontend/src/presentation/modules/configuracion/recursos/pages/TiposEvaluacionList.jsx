@@ -9,6 +9,7 @@ import { TableListView } from '@organisms';
 import { useTipoEvaluacionContext } from '@application-configuracion/recursos/hooks';
 import { tiposEvaluacionListNavigationState } from '@application-configuracion/recursos/config/navigation';
 import { createTiposEvaluacionTableColumns } from '@configuracion/recursos/config/tiposEvaluacionTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -23,11 +24,12 @@ const TiposEvaluacionList = ({ embedded = false }) => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useTipoEvaluacionContext();
 
   const tableColumns = useMemo(
-    () => createTiposEvaluacionTableColumns({ navigate, listNavState, refetch }),
-    [navigate, listNavState, refetch],
+    () => createTiposEvaluacionTableColumns({ navigate, listNavState, refetch, toggleEstado }),
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   return (
@@ -47,6 +49,7 @@ const TiposEvaluacionList = ({ embedded = false }) => {
         searchPlaceholder="Buscar por código, nombre o descripción..."
         columns={tableColumns}
         rowKey={(record) => record.id}
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={{

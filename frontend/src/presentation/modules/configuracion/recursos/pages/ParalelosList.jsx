@@ -9,6 +9,7 @@ import { TableListView } from '@organisms';
 import { useParaleloContext } from '@application-configuracion/recursos/hooks';
 import { paralelosListNavigationState } from '@application-configuracion/recursos/config/navigation';
 import { createParalelosTableColumns } from '@configuracion/recursos/config/paralelosTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -23,6 +24,7 @@ const ParalelosList = ({ embedded = false }) => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useParaleloContext();
 
   const tableColumns = useMemo(
@@ -31,8 +33,9 @@ const ParalelosList = ({ embedded = false }) => {
         navigate,
         listNavState,
         refetch,
+        toggleEstado,
       }),
-    [navigate, listNavState, refetch],
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   return (
@@ -52,6 +55,7 @@ const ParalelosList = ({ embedded = false }) => {
         searchPlaceholder="Buscar por nombre, carrera, periodo o turno..."
         columns={tableColumns}
         rowKey={(record) => record.id}
+        rowClassName={catalogoEstadoRowClassName}
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={{

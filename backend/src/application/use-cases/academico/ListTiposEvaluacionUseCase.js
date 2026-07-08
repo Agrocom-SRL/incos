@@ -21,6 +21,16 @@ export class ListTiposEvaluacionUseCase extends BaseListUseCase {
   }
 
   buildSpecificFilters(queryParams = {}, baseFilters = {}) {
-    return { ...baseFilters };
+    const filters = { ...baseFilters };
+
+    // incluirInactivos → includeInactive (mismo patrón que ListAulasUseCase /
+    // catálogos de referencia): permite administrar ítems desactivados desde CFG.
+    // El combo del cuaderno de calificaciones no envía el flag → sigue viendo solo activos.
+    if (queryParams.incluirInactivos !== undefined) {
+      filters.includeInactive =
+        queryParams.incluirInactivos === 'true' || queryParams.incluirInactivos === true;
+    }
+
+    return filters;
   }
 }
