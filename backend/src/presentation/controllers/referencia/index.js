@@ -36,6 +36,7 @@ export { CreateDocumentacionController } from './documentacion/create.controller
 export { GetDocumentacionByIdController } from './documentacion/get-by-id.controller.js';
 export { UpdateDocumentacionController } from './documentacion/update.controller.js';
 export { DeleteDocumentacionController } from './documentacion/delete.controller.js';
+export { SetEstadoDocumentacionController } from './documentacion/set-estado.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - DISCAPACIDAD

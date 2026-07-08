@@ -1,8 +1,11 @@
 /**
- * Detalle de un documento — 1 sola página compartida por los 4 tipos de
- * documentación. Gemelo de `DiscapacidadDetailPage.jsx` (complementarios).
+ * Detalle de un documento — pantalla única para los 9 tipos del ENUM.
+ * Gemelo de `actividades/pages/ActividadDetailPage.jsx`: subtítulo = tipo con
+ * su ícono (documentacionTipoIconMap), pills de nivel (base/reemplazo) y
+ * requisitos, y ficha con nivel («Reemplaza a …»), orden y estado.
  */
 
+import { createElement } from 'react';
 import { FileTextOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import { PageTemplate } from '@templates';
@@ -15,13 +18,16 @@ import DetailPageShell from '@organisms/DetailPageShell';
 import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
 import { useAuthContext } from '@application-auth';
 import { useDocumentacionDetallePage } from '@application-configuracion/documentacion/hooks';
+import { getDocumentacionTipoIcon } from '@configuracion/documentacion/config/documentacionTipoIconMap';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
-const DocumentacionDetailPage = ({ tipoConfig }) => {
+const DocumentacionDetailPage = () => {
   const { hasPermiso } = useAuthContext();
   const {
     documento,
+    documentoPadreNombre,
+    tipoLabel,
     loading,
     error,
     isInvalidId,
@@ -30,22 +36,30 @@ const DocumentacionDetailPage = ({ tipoConfig }) => {
     handleVolver,
     handleEditar,
     refetch,
-  } = useDocumentacionDetallePage(tipoConfig);
+  } = useDocumentacionDetallePage();
 
-  const puedeEditar = hasPermiso(tipoConfig.permisoCodigo, 'EDITAR');
+  const puedeEditar = hasPermiso('configuracion.documentacion', 'EDITAR');
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
-  const tituloFicha = `Detalle de documento · ${tipoConfig.label}`;
 
   if (isInvalidId) {
     return (
-      <PageTemplate header={<PageHeader title={tituloFicha} breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+      <PageTemplate
+        header={<PageHeader title="Detalle de documento" breadcrumbItems={breadcrumbItems} actions={headerActions} />}
+      >
         <Alert type="error" showIcon title="Identificador de documento inválido" />
       </PageTemplate>
     );
   }
 
+  const esBase = documento?.documentoPadreId == null;
+  const reemplazaALabel = esBase
+    ? 'Documento base (primer orden)'
+    : `Reemplaza a «${documentoPadreNombre ?? `#${documento?.documentoPadreId}`}»`;
+
   return (
-    <PageTemplate header={<PageHeader title={tituloFicha} breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+    <PageTemplate
+      header={<PageHeader title="Detalle de documento" breadcrumbItems={breadcrumbItems} actions={headerActions} />}
+    >
       <DetailPageShell
         loading={loading}
         loadingTip="Cargando documento…"
@@ -61,23 +75,38 @@ const DocumentacionDetailPage = ({ tipoConfig }) => {
               avatarClassName="sd-profile__avatar sd-profile__avatar--default"
               active={documento.activo !== false}
               title={(documento.nombre || '—').toUpperCase()}
-              subtitle={<><FileTextOutlined /> {tipoConfig.label}</>}
+              subtitle={
+                <>
+                  {createElement(getDocumentacionTipoIcon(documento.tipoDocumento), {
+                    'aria-hidden': true,
+                  })}{' '}
+                  {tipoLabel}
+                </>
+              }
               metaExtra={
                 <>
+                  <StatusPill
+                    label={esBase ? 'Documento base' : 'Reemplazo'}
+                    className={
+                      esBase
+                        ? 'cfg-materia-pill cfg-materia-pill--primary'
+                        : 'cfg-materia-pill cfg-materia-pill--info'
+                    }
+                  />
                   <StatusPill
                     label={documento.requerido ? 'Requerido' : 'Opcional'}
                     className={
                       documento.requerido
-                        ? 'cfg-materia-pill cfg-materia-pill--activa'
+                        ? 'cfg-materia-pill cfg-materia-pill--danger'
                         : 'cfg-materia-pill cfg-materia-pill--default'
                     }
                   />
                   <StatusPill
-                    label={documento.aceptaFotocopia ? 'Acepta fotocopia' : 'No acepta fotocopia'}
+                    label={documento.aceptaFotocopia ? 'Acepta fotocopia' : 'Solo original'}
                     className={
                       documento.aceptaFotocopia
-                        ? 'cfg-materia-pill cfg-materia-pill--activa'
-                        : 'cfg-materia-pill cfg-materia-pill--inactiva'
+                        ? 'cfg-materia-pill cfg-materia-pill--success'
+                        : 'cfg-materia-pill cfg-materia-pill--default'
                     }
                   />
                 </>
@@ -90,10 +119,13 @@ const DocumentacionDetailPage = ({ tipoConfig }) => {
 
             <DetailInfoCard title="Información" icon={<FileTextOutlined />}>
               <DetailField label="Nombre">{documento.nombre || '—'}</DetailField>
-              <DetailField label="Orden">{documento.orden ?? '—'}</DetailField>
-              <DetailField label="Documento padre">
-                {documento.documentoPadreId ? `#${documento.documentoPadreId}` : 'Ninguno'}
+              <DetailField label="Tipo de documento">{tipoLabel}</DetailField>
+              <DetailField label="Nivel">{reemplazaALabel}</DetailField>
+              <DetailField label="Requerido">{documento.requerido ? 'Sí' : 'No'}</DetailField>
+              <DetailField label="Acepta fotocopia">
+                {documento.aceptaFotocopia ? 'Sí' : 'No'}
               </DetailField>
+              <DetailField label="Orden">{documento.orden ?? '—'}</DetailField>
               <DetailField label="Documento del sistema">
                 {documento.esDocumentoSistema ? 'Sí' : 'No'}
               </DetailField>

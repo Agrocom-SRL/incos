@@ -19,12 +19,14 @@ import { CreateDocumentacionUseCase } from '../../../../application/use-cases/re
 import { UpdateDocumentacionUseCase } from '../../../../application/use-cases/referencia/UpdateDocumentacionUseCase.js';
 import { GetDocumentacionByIdUseCase } from '../../../../application/use-cases/referencia/GetDocumentacionByIdUseCase.js';
 import { DeleteDocumentacionUseCase } from '../../../../application/use-cases/referencia/DeleteDocumentacionUseCase.js';
+import { SetEstadoDocumentacionUseCase } from '../../../../application/use-cases/referencia/SetEstadoDocumentacionUseCase.js';
 import {
     ListDocumentacionController,
     CreateDocumentacionController,
     UpdateDocumentacionController,
     GetDocumentacionByIdController,
     DeleteDocumentacionController,
+    SetEstadoDocumentacionController,
 } from '../../../../presentation/controllers/referencia/index.js';
 import { buildDocumentacionRouter } from '../../../../presentation/routes/documentacion.routes.js';
 
@@ -88,6 +90,16 @@ export function registerDocumentacionResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoDocumentacionUseCase,
+        (c) =>
+            new SetEstadoDocumentacionUseCase({
+                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentationRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            }),
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -146,6 +158,19 @@ export function registerDocumentacionResource(container) {
             }),
     );
 
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.setEstadoDocumentacionController,
+        (c) =>
+            new SetEstadoDocumentacionController({
+                setEstadoDocumentacionUseCase: c.resolve(
+                    REFERENCIA_TOKENS.setEstadoDocumentacionUseCase,
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            }),
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -159,6 +184,9 @@ export function registerDocumentacionResource(container) {
                 updateDocumentacionController: c.resolve(REFERENCIA_TOKENS.updateDocumentacionController),
                 getDocumentacionByIdController: c.resolve(REFERENCIA_TOKENS.getDocumentacionByIdController),
                 deleteDocumentacionController: c.resolve(REFERENCIA_TOKENS.deleteDocumentacionController),
+                setEstadoDocumentacionController: c.resolve(
+                    REFERENCIA_TOKENS.setEstadoDocumentacionController,
+                ),
             };
 
             const middlewares = {

@@ -46,7 +46,7 @@ export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) 
     {
       title: 'Área y descripción',
       key: 'areaDescripcion',
-      width: 280,
+      width: 380,
       ellipsis: false,
       render: (_, record) => (
         <CarreraAreaDescripcionCell
@@ -61,7 +61,7 @@ export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) 
     {
       title: 'Título otorgado',
       dataIndex: 'tituloOtorgado',
-      width: 220,
+      width: 150,
       ellipsis: true,
       render: (titulo, record) => (
         <CarreraTituloDotCell tituloOtorgado={titulo} colorHex={record.colorHex} />
@@ -73,7 +73,7 @@ export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) 
     {
       title: 'Carga académica',
       key: 'resumen',
-      width: 160,
+      width: 140,
       render: (_, record) => (
         <CarreraMetricasCell
           cantidadMaterias={record.cantidadMaterias ?? 0}
@@ -87,7 +87,6 @@ export const createCarrerasTableColumns = ({ navigate, listNavState, refetch }) 
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 140,
       align: 'right',
       render: (_, record) => {

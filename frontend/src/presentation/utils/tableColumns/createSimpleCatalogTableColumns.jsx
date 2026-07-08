@@ -66,6 +66,9 @@ export const createCatalogoEstadoColumn = ({ permisoCodigo, onToggle }) => ({
  * @param {Function} params.getEditarPath - (record) => string, ruta de edición
  * @param {string} params.useCaseKey - Clave del use case de eliminación en el container
  * @param {string|null} [params.codigoField] - Campo de código mostrado en `IdentidadCelda` (si aplica)
+ * @param {number} [params.nombreWidth] - Ancho de la columna "Nombre" (por defecto 300). Acota la
+ *   columna para que los nombres largos se partan en 2 líneas (clamp `cfg-identidad-clamp2`) en
+ *   lugar de estirar la fila; sin ancho la tabla ensancharía la columna hasta que quepa una línea.
  * @param {string|null} [params.descripcionField] - Campo de la columna secundaria "Descripción"
  *   (no reemplaza el nombre principal: `IdentidadCelda` siempre usa `record.nombre`)
  * @param {Array} [params.extraColumns] - Column defs adicionales, insertadas entre identidad y acciones
@@ -88,6 +91,7 @@ export const createSimpleCatalogTableColumns = ({
   getEditarPath,
   useCaseKey,
   codigoField = null,
+  nombreWidth = 360,
   descripcionField = 'descripcion',
   extraColumns = [],
   itemDetailsExtra = () => [],
@@ -96,12 +100,17 @@ export const createSimpleCatalogTableColumns = ({
   const nombreColumn = {
     title: 'Nombre',
     dataIndex: 'nombre',
-    ellipsis: true,
+    width: nombreWidth,
+    // Sin `ellipsis` de AntD (fuerza una sola línea nowrap): los nombres largos
+    // se cortan a 2 líneas vía clamp (`cfg-identidad-clamp2`, table-cells.css)
+    // y el nombre completo queda disponible en el title.
     render: (_nombre, record) => (
-      <IdentidadCelda
-        codigo={codigoField ? record[codigoField] : undefined}
-        nombre={(record.nombre || 'Sin nombre').toUpperCase()}
-      />
+      <div className="cfg-identidad-clamp2" title={record.nombre || undefined}>
+        <IdentidadCelda
+          codigo={codigoField ? record[codigoField] : undefined}
+          nombre={(record.nombre || 'Sin nombre').toUpperCase()}
+        />
+      </div>
     ),
     sorter: true,
     sortCompare: (a, b) =>
@@ -112,7 +121,7 @@ export const createSimpleCatalogTableColumns = ({
     ? {
         title: 'Descripción',
         dataIndex: descripcionField,
-        width: 420,
+        width: 390,
         ellipsis: false,
         render: (valor) => <TruncatedTextCell text={valor} />,
         sorter: true,

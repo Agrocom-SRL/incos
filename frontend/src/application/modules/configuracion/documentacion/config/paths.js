@@ -1,17 +1,15 @@
-/** Rutas CFG → Documentación (una pantalla por tipo, patrón CFG Académico). */
+/** Rutas CFG → Documentación (una sola pantalla, patrón ABM clásico tipo Actividades). */
 
 export const DOCUMENTACION_BASE = '/configuracion/documentacion';
 
-export const documentacionListPath = (tipoKey) => `${DOCUMENTACION_BASE}/${tipoKey}`;
-export const documentacionNuevaPath = (tipoKey) => `${DOCUMENTACION_BASE}/${tipoKey}/nueva`;
-export const documentacionDetallePath = (tipoKey, id) => `${DOCUMENTACION_BASE}/${tipoKey}/${id}`;
-export const documentacionEditarPath = (tipoKey, id) =>
-  `${DOCUMENTACION_BASE}/${tipoKey}/${id}/editar`;
+export const documentacionNuevaPath = `${DOCUMENTACION_BASE}/nueva`;
+export const documentacionDetallePath = (id) => `${DOCUMENTACION_BASE}/${id}`;
+export const documentacionEditarPath = (id) => `${DOCUMENTACION_BASE}/${id}/editar`;
 
 export const CFG_DOCUMENTACION_MENU_KEY = 'CFG-DOCUMENTACION';
 
-export const documentacionListNavigationState = (tipoKey, overrides = {}) => ({
-  returnListPath: documentacionListPath(tipoKey),
+export const documentacionListNavigationState = (overrides = {}) => ({
+  returnListPath: DOCUMENTACION_BASE,
   menuSidebarKey: CFG_DOCUMENTACION_MENU_KEY,
   ...overrides,
 });

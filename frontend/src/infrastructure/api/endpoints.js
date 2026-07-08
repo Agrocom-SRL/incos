@@ -191,7 +191,10 @@ export const DISCAPACIDAD_ENDPOINTS = {
 };
 
 // Actividades (catálogo maestro reutilizable entre gestiones)
-export const ACTIVIDADES_ENDPOINTS = createCRUDEndpoints('/actividades');
+export const ACTIVIDADES_ENDPOINTS = {
+  ...createCRUDEndpoints('/actividades'),
+  ESTADO: (id) => `${API_BASE}/actividades/${id}/estado`, // PATCH: activar/desactivar
+};
 
 /**
  * CRUD de administración del catálogo Tipos de evaluación (CFG → Recursos académicos).
@@ -405,7 +408,10 @@ export const TIPOS_PARENTESCO_ENDPOINTS = {
   ...createCRUDEndpoints('/tipos-parentesco'),
   ESTADO: (id) => `${API_BASE}/tipos-parentesco/${id}/estado`, // PATCH: activar/desactivar
 };
-export const DOCUMENTACION_ENDPOINTS = createCRUDEndpoints('/documentacion');
+export const DOCUMENTACION_ENDPOINTS = {
+  ...createCRUDEndpoints('/documentacion'),
+  ESTADO: (id) => `${API_BASE}/documentacion/${id}/estado`, // PATCH: activar/desactivar
+};
 
 // ============================================
 // MÓDULO: INSCRIPCIONES

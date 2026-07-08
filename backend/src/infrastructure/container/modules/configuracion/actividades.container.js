@@ -22,12 +22,14 @@ import { CreateActividadUseCase } from '../../../../application/use-cases/config
 import { UpdateActividadUseCase } from '../../../../application/use-cases/configuracion/UpdateActividadUseCase.js';
 import { GetActividadByIdUseCase } from '../../../../application/use-cases/configuracion/GetActividadByIdUseCase.js';
 import { DeleteActividadUseCase } from '../../../../application/use-cases/configuracion/DeleteActividadUseCase.js';
+import { SetEstadoActividadUseCase } from '../../../../application/use-cases/configuracion/SetEstadoActividadUseCase.js';
 import {
     ListActividadesController,
     CreateActividadController,
     UpdateActividadController,
     GetActividadByIdController,
     DeleteActividadController,
+    SetEstadoActividadController,
 } from '../../../../presentation/controllers/configuracion/index.js';
 import { buildActividadesRouter } from '../../../../presentation/routes/actividades.routes.js';
 
@@ -91,6 +93,16 @@ export function registerActividadesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.setEstadoActividadUseCase,
+        (c) =>
+            new SetEstadoActividadUseCase({
+                activityRepository: c.resolve(REPOSITORIOS_TOKENS.activityRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -149,6 +161,19 @@ export function registerActividadesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.setEstadoActividadController,
+        (c) =>
+            new SetEstadoActividadController({
+                setEstadoActividadUseCase: c.resolve(
+                    CONFIGURACION_TOKENS.setEstadoActividadUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -162,6 +187,9 @@ export function registerActividadesResource(container) {
                 createActividadController: c.resolve(CONFIGURACION_TOKENS.createActividadController),
                 updateActividadController: c.resolve(CONFIGURACION_TOKENS.updateActividadController),
                 deleteActividadController: c.resolve(CONFIGURACION_TOKENS.deleteActividadController),
+                setEstadoActividadController: c.resolve(
+                    CONFIGURACION_TOKENS.setEstadoActividadController
+                ),
             };
 
             const middlewares = {

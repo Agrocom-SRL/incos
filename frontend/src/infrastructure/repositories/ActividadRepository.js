@@ -88,6 +88,22 @@ export class ActividadRepository extends IActividadRepository {
   }
 
   /**
+   * Cambia el estado activo/inactivo de una actividad
+   * PATCH /v1/actividades/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(ACTIVIDADES_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado de la actividad');
+    }
+  }
+
+  /**
    * Elimina (soft delete) una actividad
    * DELETE /v1/actividades/:id
    */

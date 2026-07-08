@@ -7,6 +7,7 @@ import {
     createActividadValidator,
     updateActividadValidator,
 } from '../validators/configuracion/actividades.validator.js';
+import { setEstadoCatalogoValidator } from '../validators/configuracion/set-estado.validator.js';
 
 /**
  * Construye el router del módulo Actividades (catálogo maestro)
@@ -33,6 +34,7 @@ export function buildActividadesRouter({ controllers, middlewares }) {
     const crearActividades = [authenticate, verificarPermiso('configuracion.actividad', 'CREAR')];
     const editarActividades = [authenticate, verificarPermiso('configuracion.actividad', 'EDITAR')];
     const eliminarActividades = [authenticate, verificarPermiso('configuracion.actividad', 'ELIMINAR')];
+    const activarActividades = [authenticate, verificarPermiso('configuracion.actividad', 'ACTIVAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -84,6 +86,16 @@ export function buildActividadesRouter({ controllers, middlewares }) {
         updateActividadValidator,
         validateRequest,
         (req, res, next) => controllers.updateActividadController.handle(req, res, next)
+    );
+
+    // PATCH /:id/estado - Activar/desactivar actividad (body: { activo: boolean })
+    router.patch(
+        '/:id/estado',
+        ...activarActividades,
+        idValidator,
+        setEstadoCatalogoValidator,
+        validateRequest,
+        (req, res, next) => controllers.setEstadoActividadController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar actividad (soft delete)

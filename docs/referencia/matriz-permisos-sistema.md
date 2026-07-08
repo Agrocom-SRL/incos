@@ -824,10 +824,9 @@ Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
 
 | Menu | Ruta | Permiso (codigo) |
 |------|------|------------------|
-| Documentacion | `/configuracion/documentacion` | Entrada: `permisoAny` (`documentacion.inscripcion\|becas\|pasantias\|traslado`) + `landingStack` → primera lista con permiso |
-| Documentacion · Inscripción/Becas/Pasantías/Traslado | `/configuracion/documentacion/{inscripcion\|becas\|pasantias\|traslado}` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.documentacion.{inscripcion\|becas\|pasantias\|traslado}` (LISTAR/CREAR/EDITAR/DETALLE); backend resuelve el permiso por `tipoDocumento`, ver `resolverPermisoDocumentacion` |
+| Documentacion | `/configuracion/documentacion` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.documentacion` (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR) — catálogo ÚNICO de los 9 tipos de documento (ENUM `tipo_documento`); consolida los códigos segmentados `configuracion.documentacion.{inscripcion\|becas\|pasantias\|traslado}` (eliminados junto con `resolverPermisoDocumentacion`). GET de listado sigue como catálogo de referencia transparente (`sistema.catalogo.referencia`) y acepta `?incluirInactivos=true`; `PATCH /:id/estado` usa ACTIVAR. Roles: RECTOR (todas), DIR_ACADEMICO (LISTAR/DETALLE/EDITAR) |
 | Convenios | `/configuracion/convenios` | `configuracion.convenios` |
-| Actividades | `/configuracion/actividades` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.actividad` (renombrado desde `configuracion.historial-actividades`; LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR) |
+| Actividades | `/configuracion/actividades` (+ `/nueva`, `/:id/editar`, `/:id`) | `configuracion.actividad` (renombrado desde `configuracion.historial-actividades`; LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR — ACTIVAR solo RECTOR, `PATCH /:id/estado`; GET acepta `?incluirInactivos=true`) |
 | Pagos config | `/pagos/configuracion` | `configuracion.pagos` (LISTAR/CREAR/EDITAR: RECTOR, DIR_ADMIN) |
 
 Codigos legacy `cfg.academico.*` **no** deben usarse en codigo nuevo; fueron reemplazados por `configuracion.*`.

@@ -1,6 +1,10 @@
 /**
- * Detalle de un documento — orquestación UI (ficha sd-profile), parametrizada
- * por `tipoConfig`. Gemelo de `academico/hooks/state/useMateriaDetallePage.js`.
+ * Detalle de un documento — orquestación UI (ficha sd-profile), pantalla única
+ * para los 9 tipos. Gemelo de `actividades/hooks/state/useActividadDetallePage.js`.
+ *
+ * Si el documento es de SEGUNDO ORDEN (tiene `documentoPadreId`), resuelve el
+ * nombre del documento base al que reemplaza con un `GET /:id` adicional
+ * (mismo permiso DETALLE de la página; fallo no fatal — se muestra `#id`).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,27 +12,27 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useCasesFactory } from '@container';
 import { mapDocumentacionDetail } from '@application-configuracion/documentacion/mappers';
 import {
-  documentacionListPath,
+  DOCUMENTACION_BASE,
   documentacionEditarPath,
   resolveMenuSidebarKey,
   resolveReturnListPath,
 } from '@application-configuracion/documentacion/config/paths';
+import { getTipoDocumentoLabel } from '@application-configuracion/documentacion/config/tipos';
 
 const initialsFromNombre = (nombre) => (nombre || '?').trim().slice(0, 2).toUpperCase();
 
-export const useDocumentacionDetallePage = (tipoConfig) => {
-  const { tipoKey, label } = tipoConfig ?? {};
+export const useDocumentacionDetallePage = () => {
   const { id } = useParams();
   const documentacionId = Number(id);
   const navigate = useNavigate();
   const location = useLocation();
   const isInvalidId = !Number.isFinite(documentacionId) || documentacionId < 1;
 
-  const listPath = documentacionListPath(tipoKey);
-  const returnListPath = resolveReturnListPath(location, listPath);
+  const returnListPath = resolveReturnListPath(location, DOCUMENTACION_BASE);
   const menuSidebarKey = resolveMenuSidebarKey(location);
 
   const [documento, setDocumento] = useState(null);
+  const [documentoPadreNombre, setDocumentoPadreNombre] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -39,12 +43,21 @@ export const useDocumentacionDetallePage = (tipoConfig) => {
     }
     setLoading(true);
     setError(null);
+    setDocumentoPadreNombre(null);
     try {
       const result = await useCasesFactory.obtenerDocumentacionPorId().ejecutar(documentacionId);
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo cargar el documento');
       }
-      setDocumento(mapDocumentacionDetail(result.data));
+      const detalle = mapDocumentacionDetail(result.data);
+      setDocumento(detalle);
+      if (detalle?.documentoPadreId) {
+        const padreResult = await useCasesFactory
+          .obtenerDocumentacionPorId()
+          .ejecutar(detalle.documentoPadreId);
+        const padre = padreResult?.success ? mapDocumentacionDetail(padreResult.data) : null;
+        setDocumentoPadreNombre(padre?.nombre ?? null);
+      }
     } catch (e) {
       setError(e?.message || 'Error al cargar el documento');
       setDocumento(null);
@@ -58,15 +71,19 @@ export const useDocumentacionDetallePage = (tipoConfig) => {
   }, [load]);
 
   const avatarInitials = useMemo(() => initialsFromNombre(documento?.nombre), [documento?.nombre]);
+  const tipoLabel = useMemo(
+    () => getTipoDocumentoLabel(documento?.tipoDocumento),
+    [documento?.tipoDocumento],
+  );
 
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
       { title: 'Documentación', href: returnListPath },
-      { title: label },
+      { title: 'Detalle de documento' },
     ],
-    [returnListPath, label],
+    [returnListPath],
   );
 
   const handleVolver = useCallback(() => {
@@ -75,13 +92,15 @@ export const useDocumentacionDetallePage = (tipoConfig) => {
 
   const handleEditar = useCallback(() => {
     if (!documento?.id) return;
-    navigate(documentacionEditarPath(tipoKey, documento.id), {
+    navigate(documentacionEditarPath(documento.id), {
       state: { returnListPath, menuSidebarKey },
     });
-  }, [documento?.id, navigate, returnListPath, menuSidebarKey, tipoKey]);
+  }, [documento?.id, navigate, returnListPath, menuSidebarKey]);
 
   return {
     documento,
+    documentoPadreNombre,
+    tipoLabel,
     loading,
     error,
     isInvalidId,

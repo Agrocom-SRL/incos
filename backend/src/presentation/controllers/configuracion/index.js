@@ -63,6 +63,7 @@ export { CreateActividadController } from './actividades/create.controller.js';
 export { GetActividadByIdController } from './actividades/get-by-id.controller.js';
 export { UpdateActividadController } from './actividades/update.controller.js';
 export { DeleteActividadController } from './actividades/delete.controller.js';
+export { SetEstadoActividadController } from './actividades/set-estado.controller.js';
 
 // ============================================
 // CONTROLLERS IMPLEMENTADOS - AULAS (catálogo maestro de espacios físicos)

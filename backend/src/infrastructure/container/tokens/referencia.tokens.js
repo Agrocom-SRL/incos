@@ -35,6 +35,7 @@ export const REFERENCIA_TOKENS = {
     updateDocumentacionUseCase: 'referencia.updateDocumentacionUseCase',
     getDocumentacionByIdUseCase: 'referencia.getDocumentacionByIdUseCase',
     deleteDocumentacionUseCase: 'referencia.deleteDocumentacionUseCase',
+    setEstadoDocumentacionUseCase: 'referencia.setEstadoDocumentacionUseCase',
 
     listDiscapacidadUseCase: 'referencia.listDiscapacidadUseCase',
     createDiscapacidadUseCase: 'referencia.createDiscapacidadUseCase',
@@ -70,6 +71,7 @@ export const REFERENCIA_TOKENS = {
     updateDocumentacionController: 'referencia.updateDocumentacionController',
     getDocumentacionByIdController: 'referencia.getDocumentacionByIdController',
     deleteDocumentacionController: 'referencia.deleteDocumentacionController',
+    setEstadoDocumentacionController: 'referencia.setEstadoDocumentacionController',
 
     listDiscapacidadController: 'referencia.listDiscapacidadController',
     createDiscapacidadController: 'referencia.createDiscapacidadController',

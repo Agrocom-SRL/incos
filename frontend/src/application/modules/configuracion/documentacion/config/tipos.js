@@ -1,46 +1,44 @@
 /**
- * Configuración canónica de los 4 tipos de documentación con pantalla propia.
+ * Catálogo de los 9 tipos de documento del ENUM `tipo_documento` (tabla
+ * `documentacion`, ver `03-catalogos-referencia.sql`). Documentación se
+ * administra ahora en UNA sola pantalla (permiso único
+ * `configuracion.documentacion`), así que este archivo ya no segmenta por
+ * pantalla/permiso: es la ÚNICA fuente de verdad de labels y opciones del
+ * tipo en el frontend. Lo consumen la columna "Tipo y descripción" del
+ * listado, el Select del formulario y la ficha de detalle.
  *
- * El modelo `documentacion` es UNA sola tabla con un ENUM `tipoDocumento` de 9
- * valores (ver `TIPOS_DOCUMENTO_SISTEMA` en el backend), pero solo 4 tienen
- * pantalla de administración + permiso propio (los otros 5 los deniega el
- * backend explícitamente — ver `resolverPermisoDocumentacion` en
- * `documentacion.routes.js`). Esta es la ÚNICA fuente de verdad de esos 4 tipos
- * en el frontend: páginas, conectores y rutas leen de aquí (no se repite el
- * ENUM/permiso suelto en cada archivo).
+ * Los íconos por tipo (presentación) viven en
+ * `@configuracion/documentacion/config/documentacionTipoIconMap.js`
+ * (mismo reparto de capas que actividades: labels aquí, íconos en presentation).
  */
 
-export const DOCUMENTACION_TIPOS = {
-  inscripcion: {
-    tipoKey: 'inscripcion',
-    tipoDocumento: 'INSCRIPCION',
-    permisoCodigo: 'configuracion.documentacion.inscripcion',
-    label: 'Inscripción',
-    entidadLabel: 'el documento de inscripción',
-  },
-  becas: {
-    tipoKey: 'becas',
-    tipoDocumento: 'BECA',
-    permisoCodigo: 'configuracion.documentacion.becas',
-    label: 'Becas',
-    entidadLabel: 'el documento de becas',
-  },
-  pasantias: {
-    tipoKey: 'pasantias',
-    tipoDocumento: 'PASANTIA',
-    permisoCodigo: 'configuracion.documentacion.pasantias',
-    label: 'Pasantías',
-    entidadLabel: 'el documento de pasantías',
-  },
-  traslado: {
-    tipoKey: 'traslado',
-    tipoDocumento: 'TRASPASO',
-    permisoCodigo: 'configuracion.documentacion.traslado',
-    label: 'Traslado',
-    entidadLabel: 'el documento de traslado',
-  },
+export const TIPOS_DOCUMENTO = {
+  INSCRIPCION: 'INSCRIPCION',
+  LICENCIA: 'LICENCIA',
+  PASANTIA: 'PASANTIA',
+  DESCUENTO: 'DESCUENTO',
+  TITULACION: 'TITULACION',
+  TRASPASO: 'TRASPASO',
+  TRANSITABILIDAD: 'TRANSITABILIDAD',
+  BECA: 'BECA',
+  OTRO: 'OTRO',
 };
 
-export const DOCUMENTACION_TIPO_KEYS = Object.keys(DOCUMENTACION_TIPOS);
+export const TIPO_DOCUMENTO_LABEL = {
+  [TIPOS_DOCUMENTO.INSCRIPCION]: 'Inscripción',
+  [TIPOS_DOCUMENTO.LICENCIA]: 'Licencia',
+  [TIPOS_DOCUMENTO.PASANTIA]: 'Pasantía',
+  [TIPOS_DOCUMENTO.DESCUENTO]: 'Descuento',
+  [TIPOS_DOCUMENTO.TITULACION]: 'Titulación',
+  [TIPOS_DOCUMENTO.TRASPASO]: 'Traspaso',
+  [TIPOS_DOCUMENTO.TRANSITABILIDAD]: 'Transitabilidad',
+  [TIPOS_DOCUMENTO.BECA]: 'Beca',
+  [TIPOS_DOCUMENTO.OTRO]: 'Otro',
+};
 
-export const getDocumentacionTipoConfig = (tipoKey) => DOCUMENTACION_TIPOS[tipoKey] ?? null;
+/** Opciones del Select "Tipo de documento" del formulario (9 valores del ENUM). */
+export const TIPOS_DOCUMENTO_OPTIONS = Object.entries(TIPO_DOCUMENTO_LABEL).map(
+  ([value, label]) => ({ value, label }),
+);
+
+export const getTipoDocumentoLabel = (tipo) => TIPO_DOCUMENTO_LABEL[tipo] ?? tipo ?? '—';

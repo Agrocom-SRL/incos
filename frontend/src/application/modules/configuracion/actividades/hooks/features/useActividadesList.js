@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useActividadesApi } from '../api/useActividadesApi';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
 import { useTableData } from '@molecules';
 
 export const useActividadesList = () => {
@@ -12,6 +13,13 @@ export const useActividadesList = () => {
 
   const { searchText, setSearchText, filteredData } = useTableData(actividades, getSearchFields);
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoActividad',
+    entidad: 'la actividad',
+    refetch,
+  });
+
   return {
     actividades: filteredData,
     loading,
@@ -19,5 +27,6 @@ export const useActividadesList = () => {
     refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

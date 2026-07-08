@@ -4,7 +4,7 @@
  * Lista actividades (catálogo maestro reutilizable entre gestiones) con
  * filtros, paginación y ordenamiento.
  *
- * Filtros específicos: tipo, esDestacada
+ * Filtros específicos: tipo, esDestacada, incluirInactivos
  */
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { ActivityMapper } from '../../mappers/configuracion/index.js';
@@ -52,6 +52,13 @@ export class ListActividadesUseCase extends BaseListUseCase {
     }
     if (queryParams.esDestacada !== undefined) {
       filters.isHighlighted = queryParams.esDestacada === 'true' || queryParams.esDestacada === true;
+    }
+
+    // incluirInactivos → includeInactive (mismo patrón que ListAulasUseCase /
+    // catálogos complementarios): sin el flag, BaseRepository filtra activo=true.
+    if (queryParams.incluirInactivos !== undefined) {
+      filters.includeInactive =
+        queryParams.incluirInactivos === 'true' || queryParams.incluirInactivos === true;
     }
 
     return filters;

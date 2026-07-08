@@ -217,6 +217,30 @@
 .cfg-identidad-substate--warning { color: var(--color-warning-active, #c2410c); }
 .cfg-identidad-substate--danger { color: var(--color-error-active, #b91c1c); }
 .cfg-identidad-substate--success { color: var(--color-success-active, #047857); }
+.cfg-identidad-substate--info { color: var(--color-info-active, #0369a1); }
+.cfg-identidad-substate--primary { color: var(--color-primary-active); }
+
+/* ── Wrapper de IdentidadCelda para nombres largos: clamp a máximo 2 líneas
+   (mismo clamp que cfg-carrera-area-desc__texto). Lo usan la columna Nombre de
+   los catálogos simples (createSimpleCatalogTableColumns) y celdas propias como
+   DocumentacionNombreCell. ── */
+.cfg-identidad-clamp2 .cfg-materia-identidad__nombre {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* ── Requisito del documento (columna "Requisitos" de CFG Documentación):
+   la línea "Requerido" de InfoLinesCell se tiñe en tono error (mismo patrón
+   de tono por línea que cfg-genero-tone). ── */
+.cfg-doc-requisito--requerido .cfg-academico-metricas-list__icon,
+.cfg-doc-requisito--requerido .cfg-academico-metricas-list__label {
+  color: var(--color-error-active, #b91c1c) !important;
+  font-weight: 700;
+}
 
 /* Carrera / título con punto de color (átomo CarreraDotCell / CarreraTituloDotCell) */
 .cfg-carrera-titulo-dot {
@@ -280,7 +304,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm, 8px);
-  max-width: 320px;
+  max-width: 420px;
 }
 
 .cfg-actividad-desc__dot {

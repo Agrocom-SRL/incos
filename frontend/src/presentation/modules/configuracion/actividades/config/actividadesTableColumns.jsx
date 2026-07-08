@@ -40,7 +40,7 @@ const tipoColumn = {
     getActividadTipoLabel(a.tipo).localeCompare(getActividadTipoLabel(b.tipo), 'es', { sensitivity: 'base' }),
 };
 
-export const createActividadesTableColumns = ({ navigate, listNavState, refetch }) =>
+export const createActividadesTableColumns = ({ navigate, listNavState, refetch, toggleEstado }) =>
   createSimpleCatalogTableColumns({
     navigate,
     listNavState,
@@ -52,6 +52,8 @@ export const createActividadesTableColumns = ({ navigate, listNavState, refetch 
     useCaseKey: 'eliminarActividad',
     descripcionField: null,
     extraColumns: [descripcionColumn, tipoColumn],
+    // Columna "Estado" con toggle rápido (permiso ACTIVAR de permisoCodigo)
+    estadoToggle: toggleEstado ? { onToggle: toggleEstado } : null,
     itemDetailsExtra: (record) => [
       { label: 'Descripción', value: record.descripcion },
       { label: 'Tipo', value: getActividadTipoLabel(record.tipo) },

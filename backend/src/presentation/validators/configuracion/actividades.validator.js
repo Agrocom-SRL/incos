@@ -13,6 +13,10 @@ export const listActividadesValidator = [
     .isIn(TIPOS_ACTIVIDAD_VALUES)
     .withMessage(`tipo debe ser uno de: ${TIPOS_ACTIVIDAD_VALUES.join(', ')}`),
   query('esDestacada').optional().isBoolean().withMessage('esDestacada debe ser boolean'),
+  query('incluirInactivos')
+    .optional()
+    .isIn(['true', 'false', '0', '1'])
+    .withMessage('incluirInactivos debe ser true o false'),
 ];
 
 export const createActividadValidator = [

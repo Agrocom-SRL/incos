@@ -51,6 +51,7 @@ export const CONFIGURACION_TOKENS = {
     createActividadUseCase: 'configuracion.createActividadUseCase',
     updateActividadUseCase: 'configuracion.updateActividadUseCase',
     deleteActividadUseCase: 'configuracion.deleteActividadUseCase',
+    setEstadoActividadUseCase: 'configuracion.setEstadoActividadUseCase',
 
     listAulasUseCase: 'configuracion.listAulasUseCase',
     getAulaByIdUseCase: 'configuracion.getAulaByIdUseCase',
@@ -108,6 +109,7 @@ export const CONFIGURACION_TOKENS = {
     createActividadController: 'configuracion.createActividadController',
     updateActividadController: 'configuracion.updateActividadController',
     deleteActividadController: 'configuracion.deleteActividadController',
+    setEstadoActividadController: 'configuracion.setEstadoActividadController',
 
     listAulasController: 'configuracion.listAulasController',
     getAulaByIdController: 'configuracion.getAulaByIdController',

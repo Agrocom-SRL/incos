@@ -64,6 +64,7 @@ import {
   CrearDocumentacionUseCase,
   ActualizarDocumentacionUseCase,
   EliminarDocumentacionUseCase,
+  CambiarEstadoDocumentacionUseCase,
 } from '@useCases/configuracion/documentacion';
 import {
   GetTodasActividadesUseCase,
@@ -71,6 +72,7 @@ import {
   CrearActividadUseCase,
   ActualizarActividadUseCase,
   EliminarActividadUseCase,
+  CambiarEstadoActividadUseCase,
 } from '@useCases/configuracion/actividades';
 import {
   GetTodasAulasUseCase,
@@ -169,12 +171,15 @@ export function registerConfiguracionModule(factory) {
   factory.crearDocumentacion = () => new CrearDocumentacionUseCase(documentacionRepository);
   factory.actualizarDocumentacion = () => new ActualizarDocumentacionUseCase(documentacionRepository);
   factory.eliminarDocumentacion = () => new EliminarDocumentacionUseCase(documentacionRepository);
+  factory.cambiarEstadoDocumentacion = () =>
+    new CambiarEstadoDocumentacionUseCase(documentacionRepository);
 
   factory.obtenerTodasActividades = () => new GetTodasActividadesUseCase(actividadRepository);
   factory.obtenerActividadPorId = () => new GetActividadPorIdUseCase(actividadRepository);
   factory.crearActividad = () => new CrearActividadUseCase(actividadRepository);
   factory.actualizarActividad = () => new ActualizarActividadUseCase(actividadRepository);
   factory.eliminarActividad = () => new EliminarActividadUseCase(actividadRepository);
+  factory.cambiarEstadoActividad = () => new CambiarEstadoActividadUseCase(actividadRepository);
 
   factory.obtenerTodasAulas = () => new GetTodasAulasUseCase(aulaRepository);
   factory.obtenerAulaPorId = () => new GetAulaPorIdUseCase(aulaRepository);

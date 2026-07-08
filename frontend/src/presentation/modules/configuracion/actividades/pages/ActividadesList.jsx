@@ -18,6 +18,7 @@ import {
   actividadesListNavigationState,
 } from '@application-configuracion/actividades/config/paths';
 import { createActividadesTableColumns } from '@configuracion/actividades/config/actividadesTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -40,11 +41,12 @@ const ActividadesList = () => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useActividadContext();
 
   const tableColumns = useMemo(
-    () => createActividadesTableColumns({ navigate, listNavState, refetch }),
-    [navigate, listNavState, refetch],
+    () => createActividadesTableColumns({ navigate, listNavState, refetch, toggleEstado }),
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   const nuevaActividadAction = (
@@ -80,6 +82,7 @@ const ActividadesList = () => {
               searchPlaceholder="Buscar por nombre, descripción o icono..."
               columns={tableColumns}
               rowKey={(record) => record.id}
+              rowClassName={catalogoEstadoRowClassName}
               searchColSpan={10}
               searchStyle={{ maxWidth: 520 }}
               pagination={{

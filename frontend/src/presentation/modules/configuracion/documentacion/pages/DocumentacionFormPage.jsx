@@ -1,8 +1,6 @@
 /**
- * ABM de un documento — 1 sola página compartida por los 4 tipos de
- * documentación (inscripción/becas/pasantías/traslado). `tipoConfig` fija el
- * `tipoDocumento` (constante, no editable en el form); lo entrega el conector.
- * Gemelo de `academico/pages/MateriaFormPage.jsx`.
+ * ABM de un documento — pantalla única para los 9 tipos del ENUM (el tipo se
+ * elige en el formulario). Gemelo de `actividades/pages/ActividadFormPage.jsx`.
  */
 
 import { Alert, Flex, Form, Spin } from 'antd';
@@ -16,7 +14,7 @@ import DashboardPageShell from '@presentation/modules/dashboard/components/organ
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
-const DocumentacionFormPage = ({ mode = 'create', tipoConfig }) => {
+const DocumentacionFormPage = ({ mode = 'create' }) => {
   const {
     form,
     pageTitle,
@@ -30,13 +28,13 @@ const DocumentacionFormPage = ({ mode = 'create', tipoConfig }) => {
     handleVolver,
     handleSubmit,
     isInvalidEditId,
-  } = useDocumentacionForm(mode, tipoConfig);
+  } = useDocumentacionForm(mode);
 
   const { datosDocumentacion } = formSections ?? {};
 
   const saveButton = (
     <ActionButton
-      permiso={tipoConfig.permisoCodigo}
+      permiso="configuracion.documentacion"
       accion={permisoAccion}
       variant="primary"
       size="large"

@@ -1,8 +1,7 @@
 /**
- * Listado de documentación de UN tipo (inscripción/becas/pasantías/traslado).
- * Página completa (patrón `DocentesList`/CFG académico), no un tab: cada tipo
- * tiene su propia URL y permiso. Recibe `tipoConfig` (constante, no
- * seleccionable por el usuario) desde el conector.
+ * Listado unificado de documentación — página completa (patrón ABM clásico,
+ * como Actividades): UNA sola pantalla para los 9 tipos de documento del ENUM,
+ * permiso único `configuracion.documentacion`.
  */
 
 import { useMemo } from 'react';
@@ -20,15 +19,21 @@ import {
   documentacionListNavigationState,
 } from '@application-configuracion/documentacion/config/paths';
 import { createDocumentacionTableColumns } from '@configuracion/documentacion/config/documentacionTableColumns';
+import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { allSpacing } from '@theme/tokens';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
 
-const DocumentacionListPage = ({ tipoConfig }) => {
+const BREADCRUMB = [
+  { title: 'Inicio', href: '/' },
+  { title: 'Configuración', href: '/configuracion' },
+  { title: 'Documentación' },
+];
+
+const DocumentacionListPage = () => {
   const navigate = useNavigate();
-  const { tipoKey, permisoCodigo, label, entidadLabel } = tipoConfig;
-  const listNavState = useMemo(() => documentacionListNavigationState(tipoKey), [tipoKey]);
+  const listNavState = useMemo(() => documentacionListNavigationState(), []);
 
   const {
     documentacion = [],
@@ -37,54 +42,36 @@ const DocumentacionListPage = ({ tipoConfig }) => {
     searchText = '',
     setSearchText,
     refetch,
+    toggleEstado,
   } = useDocumentacionContext();
 
   const tableColumns = useMemo(
-    () =>
-      createDocumentacionTableColumns({
-        navigate,
-        listNavState,
-        refetch,
-        tipoKey,
-        entidad: entidadLabel,
-      }),
-    [navigate, listNavState, refetch, tipoKey, entidadLabel],
-  );
-
-  const breadcrumbItems = useMemo(
-    () => [
-      { title: 'Inicio', href: '/' },
-      { title: 'Configuración', href: '/configuracion' },
-      { title: 'Documentación' },
-      { title: label },
-    ],
-    [label],
+    () => createDocumentacionTableColumns({ navigate, listNavState, refetch, toggleEstado }),
+    [navigate, listNavState, refetch, toggleEstado],
   );
 
   const nuevoDocumentoAction = (
     <ActionButton
-      permiso={permisoCodigo}
+      permiso="configuracion.documentacion"
       accion="CREAR"
       variant="primary"
       icon={<PlusOutlined />}
-      onClick={() => navigate(documentacionNuevaPath(tipoKey), { state: listNavState })}
+      onClick={() => navigate(documentacionNuevaPath, { state: listNavState })}
     >
       Nuevo documento
     </ActionButton>
   );
 
   return (
-    <PageTemplate
-      header={<PageHeader title={`Documentación · ${label}`} breadcrumbItems={breadcrumbItems} />}
-      sidebar={null}
-    >
+    <PageTemplate header={<PageHeader title="Documentación" breadcrumbItems={BREADCRUMB} />} sidebar={null}>
       <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
         <section className="cfg-academico-workspace">
           <header className="cfg-academico-workspace__header">
-            <ListPanelHeader title={`Lista de documentos · ${label}`} actions={nuevoDocumentoAction} />
+            <ListPanelHeader title="Lista de documentos" actions={nuevoDocumentoAction} />
             <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-              Documentos requeridos en el trámite de {label.toLowerCase()}: orden, si es obligatorio y si
-              acepta fotocopia.
+              Catálogo de tipos de documentos del instituto para todos los trámites (inscripción,
+              becas, pasantías, titulación…): tipo, si es obligatorio, si acepta fotocopia y qué
+              documento base reemplaza.
             </Paragraph>
           </header>
           <div className="cfg-academico-tab-panel">
@@ -95,9 +82,10 @@ const DocumentacionListPage = ({ tipoConfig }) => {
               error={error}
               searchText={searchText}
               onSearchChange={(e) => setSearchText(e.target.value)}
-              searchPlaceholder="Buscar por nombre o descripción..."
+              searchPlaceholder="Buscar por nombre, tipo o descripción..."
               columns={tableColumns}
               rowKey={(record) => record.id}
+              rowClassName={catalogoEstadoRowClassName}
               searchColSpan={10}
               searchStyle={{ maxWidth: 520 }}
               pagination={{

@@ -1,40 +1,24 @@
 /**
- * Documentación — 4 pantallas independientes (inscripción/becas/pasantías/
- * traslado), UN modelo/endpoint compartido filtrado por `tipoDocumento`.
+ * Configuración → Documentación (catálogo único de los 9 tipos de documento
+ * del ENUM `tipo_documento`). Patrón ABM clásico (como Actividades), sin tabs:
  *
- *   /configuracion/documentacion                          → entrada de menú (landingStack → 1ra lista con permiso)
- *   /configuracion/documentacion/inscripcion               → listado
- *   /configuracion/documentacion/inscripcion/nueva         → crear
- *   /configuracion/documentacion/inscripcion/:id/editar    → editar
- *   /configuracion/documentacion/inscripcion/:id           → detalle
- *   /configuracion/documentacion/{becas|pasantias|traslado}/... → análogo
+ *   /configuracion/documentacion              → listado (entrada de menú directa)
+ *   /configuracion/documentacion/nueva        → crear
+ *   /configuracion/documentacion/:id/editar   → editar
+ *   /configuracion/documentacion/:id          → detalle
  *
- * Decisión de reutilización (evitar 12 archivos casi idénticos): 1 form-page
- * compartida (`DocumentacionFormPage`) + 1 detail-page compartida
- * (`DocumentacionDetailPage`) + 1 list-page compartida
- * (`DocumentacionListPage`), todas parametrizadas por `tipoConfig`
- * (`@application-configuracion/documentacion/config/tipos`). Los conectores de
- * alta/edición/detalle son genéricos (`tipoKey` como prop); solo el LISTADO
- * mantiene 4 archivos de página nombrados (pedido explícito, más claros en
- * breadcrumbs/lazy-loading), pero delegan en el mismo `DocumentacionListConnector`.
+ * Permiso único `configuracion.documentacion` (reemplaza los permisos
+ * segmentados `configuracion.documentacion.{inscripcion,becas,pasantias,traslado}`,
+ * ya retirados del backend). Las 4 URLs por tipo quedan como redirects legacy
+ * al listado unificado.
  */
 
 import { lazy } from 'react';
-import ModuleEntryConnector from '@navigation/components/ModuleEntryConnector.jsx';
-import { DOCUMENTACION_TIPOS } from '@application-configuracion/documentacion/config/tipos';
-import { DOCUMENTACION_BASE, documentacionListPath } from '@application-configuracion/documentacion/config/paths';
+import { Navigate } from 'react-router-dom';
+import { DOCUMENTACION_BASE } from '@application-configuracion/documentacion/config/paths';
 
-const DocumentacionInscripcionList = lazy(
-  () => import('@configuracion/documentacion/pages/DocumentacionInscripcionList.jsx'),
-);
-const DocumentacionBecasList = lazy(
-  () => import('@configuracion/documentacion/pages/DocumentacionBecasList.jsx'),
-);
-const DocumentacionPasantiasList = lazy(
-  () => import('@configuracion/documentacion/pages/DocumentacionPasantiasList.jsx'),
-);
-const DocumentacionTrasladoList = lazy(
-  () => import('@configuracion/documentacion/pages/DocumentacionTrasladoList.jsx'),
+const DocumentacionListConnector = lazy(
+  () => import('@configuracion/documentacion/connectors/DocumentacionListConnector.jsx'),
 );
 const DocumentacionFormCreateConnector = lazy(
   () => import('@configuracion/documentacion/connectors/DocumentacionFormCreateConnector.jsx'),
@@ -46,82 +30,59 @@ const DocumentacionDetailConnector = lazy(
   () => import('@configuracion/documentacion/connectors/DocumentacionDetailConnector.jsx'),
 );
 
-const LIST_CONNECTOR_BY_TIPO = {
-  inscripcion: DocumentacionInscripcionList,
-  becas: DocumentacionBecasList,
-  pasantias: DocumentacionPasantiasList,
-  traslado: DocumentacionTrasladoList,
-};
-
-const CFG_DOCUMENTACION_PERMISOS = Object.values(DOCUMENTACION_TIPOS).map((t) => t.permisoCodigo);
-
-/** Rutas nueva/:id/editar/:id + listado por cada tipo (mismos conectores genéricos). */
-const rutasPorTipo = Object.values(DOCUMENTACION_TIPOS).flatMap(({ tipoKey, permisoCodigo, label }) => {
-  const ListConnector = LIST_CONNECTOR_BY_TIPO[tipoKey];
-  const keyBase = `CFG-DOCUMENTACION-${tipoKey.toUpperCase()}`;
-  return [
-    {
-      path: documentacionListPath(tipoKey),
-      element: <ListConnector />,
-      key: keyBase,
-      permiso: permisoCodigo,
-      accion: 'LISTAR',
-      menu: null,
-      breadcrumbParent: 'CFG-DOCUMENTACION',
-    },
-    {
-      path: `${documentacionListPath(tipoKey)}/nueva`,
-      element: <DocumentacionFormCreateConnector tipoKey={tipoKey} />,
-      key: `${keyBase}-NUEVA`,
-      permiso: permisoCodigo,
-      accion: 'CREAR',
-      menu: null,
-      breadcrumbParent: keyBase,
-      breadcrumbLabel: `Nuevo documento (${label})`,
-    },
-    {
-      path: `${documentacionListPath(tipoKey)}/:id/editar`,
-      element: <DocumentacionFormEditConnector tipoKey={tipoKey} />,
-      key: `${keyBase}-EDITAR`,
-      permiso: permisoCodigo,
-      accion: 'EDITAR',
-      menu: null,
-      breadcrumbParent: keyBase,
-      breadcrumbLabel: `Editar documento (${label})`,
-    },
-    {
-      path: `${documentacionListPath(tipoKey)}/:id`,
-      element: <DocumentacionDetailConnector tipoKey={tipoKey} />,
-      key: `${keyBase}-DETALLE`,
-      permiso: permisoCodigo,
-      accion: 'DETALLE',
-      menu: null,
-      breadcrumbParent: keyBase,
-      breadcrumbLabel: `Detalle de documento (${label})`,
-    },
-  ];
-});
+/** URLs de las 4 pantallas por tipo retiradas (redirect al listado unificado). */
+const TIPO_PATHS_LEGACY = ['inscripcion', 'becas', 'pasantias', 'traslado'];
 
 export const documentacionRoutes = [
-  ...rutasPorTipo,
+  ...TIPO_PATHS_LEGACY.map((tipoKey) => ({
+    path: `${DOCUMENTACION_BASE}/${tipoKey}`,
+    element: <Navigate to={DOCUMENTACION_BASE} replace />,
+    key: `CFG-DOCUMENTACION-${tipoKey.toUpperCase()}-LEGACY`,
+    permiso: 'configuracion.documentacion',
+    accion: 'LISTAR',
+    menu: null,
+  })),
+  {
+    path: `${DOCUMENTACION_BASE}/nueva`,
+    element: <DocumentacionFormCreateConnector />,
+    key: 'CFG-DOCUMENTACION-NUEVA',
+    permiso: 'configuracion.documentacion',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'CFG-DOCUMENTACION',
+    breadcrumbLabel: 'Nuevo documento',
+  },
+  {
+    path: `${DOCUMENTACION_BASE}/:id/editar`,
+    element: <DocumentacionFormEditConnector />,
+    key: 'CFG-DOCUMENTACION-EDITAR',
+    permiso: 'configuracion.documentacion',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'CFG-DOCUMENTACION',
+    breadcrumbLabel: 'Editar documento',
+  },
+  {
+    path: `${DOCUMENTACION_BASE}/:id`,
+    element: <DocumentacionDetailConnector />,
+    key: 'CFG-DOCUMENTACION-DETALLE',
+    permiso: 'configuracion.documentacion',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'CFG-DOCUMENTACION',
+    breadcrumbLabel: 'Detalle de documento',
+  },
   {
     path: DOCUMENTACION_BASE,
-    element: <ModuleEntryConnector menuKey="CFG-DOCUMENTACION" fallbackPath="/configuracion" />,
+    element: <DocumentacionListConnector />,
     key: 'CFG-DOCUMENTACION',
-    permiso: null,
-    permisoAny: CFG_DOCUMENTACION_PERMISOS,
+    permiso: 'configuracion.documentacion',
     accion: 'LISTAR',
     menu: {
       label: 'Documentación',
       module: 'CFG',
       parent: 'CFG',
       order: 3,
-      /** Entrada de menú → primera lista con permiso (inscripción, becas, pasantías, traslado). */
-      landingStack: Object.values(DOCUMENTACION_TIPOS).map(({ permisoCodigo, tipoKey }) => ({
-        permiso: permisoCodigo,
-        accion: 'LISTAR',
-        redirectTo: documentacionListPath(tipoKey),
-      })),
     },
   },
 ];

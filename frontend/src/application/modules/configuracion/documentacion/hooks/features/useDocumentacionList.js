@@ -1,39 +1,37 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import { useTableData } from '@molecules';
+import { useMemo } from 'react';
 import { useDocumentacionApi } from '../api/useDocumentacionApi';
+import { useToggleEstadoCatalogo } from '@application-shared/hooks';
+import { useTableData } from '@molecules';
+import { getTipoDocumentoLabel } from '@application-configuracion/documentacion/config/tipos';
 
 /**
- * Listado de documentación filtrado por `tipoDocumento` (constante fijada por
- * la pantalla, no seleccionable por el usuario).
- *
- * @param {string} tipoDocumento - Valor del ENUM (INSCRIPCION | BECA | PASANTIA | TRASPASO)
+ * Listado unificado de documentación (los 9 tipos del ENUM en una sola tabla;
+ * la búsqueda cubre también el label humano del tipo).
  */
-export const useDocumentacionList = (tipoDocumento) => {
-  const { documentacion, loading, error, fetch } = useDocumentacionApi();
-
-  const load = useCallback(() => {
-    if (!tipoDocumento) return;
-    fetch({ params: { tipoDocumento, limit: 10000 } });
-  }, [fetch, tipoDocumento]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+export const useDocumentacionList = () => {
+  const { documentacion, loading, error, refetch } = useDocumentacionApi();
 
   const getSearchFields = useMemo(
-    () => (doc) => [doc.nombre, doc.descripcion],
+    () => (doc) => [doc.nombre, doc.descripcion, getTipoDocumentoLabel(doc.tipoDocumento)],
     [],
   );
 
   const { searchText, setSearchText, filteredData } = useTableData(documentacion, getSearchFields);
 
+  // Toggle rápido activo/inactivo (columna "Estado" del listado)
+  const toggleEstado = useToggleEstadoCatalogo({
+    useCaseKey: 'cambiarEstadoDocumentacion',
+    entidad: 'el documento',
+    refetch,
+  });
+
   return {
     documentacion: filteredData,
-    documentacionCompleta: documentacion,
     loading,
     error,
-    refetch: load,
+    refetch,
     searchText,
     setSearchText,
+    toggleEstado,
   };
 };

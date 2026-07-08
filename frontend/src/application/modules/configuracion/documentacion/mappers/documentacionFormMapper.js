@@ -2,6 +2,7 @@ import { documentacionListMapper } from './documentacionListMapper';
 
 const DOCUMENTACION_FORM_EMPTY = {
   nombre: '',
+  tipoDocumento: undefined,
   documentoPadreId: undefined,
   aceptaFotocopia: false,
   requerido: true,
@@ -9,13 +10,14 @@ const DOCUMENTACION_FORM_EMPTY = {
   descripcion: '',
 };
 
-/** API → valores de formulario (tipoDocumento NO se edita: viene fijo del conector) */
+/** API → valores de formulario (pantalla única: el tipo se edita en el form) */
 export const mapDocumentacionToFormValues = (raw) => {
   const d = documentacionListMapper(raw) || raw;
   if (!d) return { ...DOCUMENTACION_FORM_EMPTY };
   return {
     ...DOCUMENTACION_FORM_EMPTY,
     nombre: d.nombre ?? '',
+    tipoDocumento: d.tipoDocumento ?? undefined,
     documentoPadreId: d.documentoPadreId ?? undefined,
     aceptaFotocopia: Boolean(d.aceptaFotocopia),
     requerido: d.requerido !== false,
@@ -24,10 +26,10 @@ export const mapDocumentacionToFormValues = (raw) => {
   };
 };
 
-/** Formulario → payload API (agrega tipoDocumento fijo del conector) */
-export const mapFormValuesToDocumentacionPayload = (values, tipoDocumento) => ({
+/** Formulario → payload API (tipoDocumento sale del Select del form) */
+export const mapFormValuesToDocumentacionPayload = (values) => ({
   nombre: values.nombre?.trim(),
-  tipoDocumento,
+  tipoDocumento: values.tipoDocumento,
   documentoPadreId: values.documentoPadreId || undefined,
   aceptaFotocopia: Boolean(values.aceptaFotocopia),
   requerido: values.requerido !== false,

@@ -92,6 +92,22 @@ export class DocumentacionRepository extends IDocumentacionRepository {
   }
 
   /**
+   * Cambia el estado activo/inactivo de un tipo de documentación
+   * PATCH /v1/documentacion/:id/estado
+   *
+   * @param {string|number} id
+   * @param {boolean} activo - Nuevo estado (true = activo)
+   */
+  async cambiarEstado(id, activo) {
+    try {
+      const response = await apiClient.patch(DOCUMENTACION_ENDPOINTS.ESTADO(id), { activo });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cambiar el estado del tipo de documentación');
+    }
+  }
+
+  /**
    * Elimina (soft delete) un tipo de documentación
    * DELETE /v1/documentacion/:id
    */
