@@ -35,6 +35,8 @@ const normalizar = (valor) =>
 
 const MetodosTabPanel = ({
   metodos = [],
+  loading = false,
+  error = null,
   saving,
   drawerAbierto,
   metodoEnEdicion,
@@ -74,7 +76,8 @@ const MetodosTabPanel = ({
       <TableListView
         embedded
         data={metodosFiltrados}
-        loading={saving}
+        loading={loading || saving}
+        error={error}
         searchText={searchText}
         onSearchChange={(event) => setSearchText(event.target.value)}
         searchPlaceholder="Buscar por código o nombre…"
@@ -84,7 +87,7 @@ const MetodosTabPanel = ({
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={false}
-        loadingTip="Guardando…"
+        loadingTip={saving ? 'Guardando…' : 'Cargando métodos de pago…'}
       />
 
       <MetodoDrawer

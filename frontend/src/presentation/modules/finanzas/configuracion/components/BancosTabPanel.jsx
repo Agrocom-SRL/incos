@@ -36,6 +36,8 @@ const normalizar = (valor) =>
 const BancosTabPanel = ({
   bancos = [],
   metodos = [],
+  loading = false,
+  error = null,
   saving,
   metodoNombrePorId,
   drawerAbierto,
@@ -81,7 +83,8 @@ const BancosTabPanel = ({
       <TableListView
         embedded
         data={bancosFiltrados}
-        loading={saving}
+        loading={loading || saving}
+        error={error}
         searchText={searchText}
         onSearchChange={(event) => setSearchText(event.target.value)}
         searchPlaceholder="Buscar por código, nombre o método…"
@@ -91,7 +94,7 @@ const BancosTabPanel = ({
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={false}
-        loadingTip="Guardando…"
+        loadingTip={saving ? 'Guardando…' : 'Cargando bancos…'}
       />
 
       <BancoDrawer

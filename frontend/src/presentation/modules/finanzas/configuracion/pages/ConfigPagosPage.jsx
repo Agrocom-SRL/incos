@@ -2,13 +2,11 @@
  * Config. de pagos (Finanzas) — métodos, bancos, cuentas y becas/descuentos,
  * en un sistema de TABS.
  *
- * Página "dumb" (espejo de `AcademicoPage`): compone `PageHeaderArea` +
- * `DashboardPageShell` + `MainContent` + el workspace `cfg-academico-workspace`
- * con `Tabs` (`?tab=metodos|bancos|cuentas|becas-descuentos`). Cada tab = una
- * entidad con título + descripción breve y su propio panel. Toda la
- * orquestación de métodos/bancos/cuentas (fetch, PUT métodos, POST/PUT bancos
- * y cuentas con QR) vive en `useConfigPagosPage` + `ConfigPagosProvider`; aquí
- * no se hace fetch. El tab "Becas y descuentos" es AUTO-CONTENIDO
+ * Página "dumb" (espejo de `ComplementariosPage` / `AcademicoPage`): compone
+ * `PageHeaderArea` + `DashboardPageShell` + workspace con tabs siempre visibles.
+ * El loading vive en cada `TableListView` del tab (no spinner de página completa),
+ * igual que Complementarios — el toggle de estado recarga en background sin
+ * desmontar tabs.
  * (`BecasDescuentosTabPanel` monta su propio `BecaDescuentoProvider`, catálogo
  * independiente — permiso `finanzas.beca-descuento`). Ver/editar/activar de
  * bancos/cuentas/métodos vive en su ficha de detalle propia
@@ -28,7 +26,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Alert, Empty, Flex, Spin, Tabs, Typography } from 'antd';
+import { Alert, Flex, Tabs, Typography } from 'antd';
 import { GoldOutlined, PlusOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -36,7 +34,6 @@ import ListPanelHeader from '@molecules/ListPanelHeader';
 import { Button, ActionButton } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import { allSpacing } from '@theme/tokens';
 import { useConfigPagosPage } from '@application-finanzas/hooks/state/useConfigPagosPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
 import { BECA_DESCUENTO_PERMISO } from '@finanzas/configuracion/config/becaDescuentoPermisos';
@@ -57,7 +54,7 @@ import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/configuracion/styles/config-pagos.css';
 
-const { Paragraph, Text } = Typography;
+const { Paragraph } = Typography;
 
 const wrapTabPanel = (node) => <div className="cfg-academico-tab-panel">{node}</div>;
 
@@ -116,6 +113,8 @@ const ConfigPagosPage = () => {
         children: wrapTabPanel(
           <MetodosTabPanel
             metodos={metodos}
+            loading={loading}
+            error={error}
             saving={saving}
             drawerAbierto={metodoModalAbierto}
             metodoEnEdicion={metodoEnEdicion}
@@ -132,6 +131,8 @@ const ConfigPagosPage = () => {
           <BancosTabPanel
             bancos={bancos}
             metodos={metodos}
+            loading={loading}
+            error={error}
             saving={saving}
             metodoNombrePorId={metodoNombrePorId}
             drawerAbierto={bancoModalAbierto}
@@ -150,6 +151,8 @@ const ConfigPagosPage = () => {
             cuentas={cuentas}
             metodos={metodos}
             bancos={bancos}
+            loading={loading}
+            error={error}
             saving={saving}
             metodoNombrePorId={metodoNombrePorId}
             drawerAbierto={cuentaModalAbierto}
@@ -167,6 +170,8 @@ const ConfigPagosPage = () => {
       },
     ],
     [
+      loading,
+      error,
       saving,
       metodos,
       metodoModalAbierto,
@@ -263,20 +268,7 @@ const ConfigPagosPage = () => {
   );
 
   let body;
-  if (loading) {
-    body = (
-      <Flex
-        vertical
-        align="center"
-        justify="center"
-        gap={allSpacing.marginSM}
-        style={{ minHeight: allSpacing.skeletonCardHeight }}
-      >
-        <Spin size="large" />
-        <Text type="secondary">Cargando configuración de pagos...</Text>
-      </Flex>
-    );
-  } else if (error) {
+  if (error) {
     body = (
       <Alert
         type="error"
@@ -290,8 +282,6 @@ const ConfigPagosPage = () => {
         }
       />
     );
-  } else if (metodos.length === 0 && bancos.length === 0 && cuentas.length === 0) {
-    body = <Empty description="No hay datos de configuración de pagos" />;
   } else {
     body = (
       <section className="cfg-academico-workspace">

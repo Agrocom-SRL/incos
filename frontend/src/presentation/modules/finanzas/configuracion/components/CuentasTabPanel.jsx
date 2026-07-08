@@ -38,6 +38,8 @@ const CuentasTabPanel = ({
   cuentas = [],
   metodos = [],
   bancos = [],
+  loading = false,
+  error = null,
   saving,
   metodoNombrePorId,
   drawerAbierto,
@@ -88,7 +90,8 @@ const CuentasTabPanel = ({
       <TableListView
         embedded
         data={cuentasFiltradas}
-        loading={saving}
+        loading={loading || saving}
+        error={error}
         searchText={searchText}
         onSearchChange={(event) => setSearchText(event.target.value)}
         searchPlaceholder="Buscar por titular, cuenta, banco o método…"
@@ -98,7 +101,7 @@ const CuentasTabPanel = ({
         searchColSpan={10}
         searchStyle={{ maxWidth: 520 }}
         pagination={false}
-        loadingTip="Guardando…"
+        loadingTip={saving ? 'Guardando…' : 'Cargando cuentas…'}
       />
 
       <CuentaDrawer

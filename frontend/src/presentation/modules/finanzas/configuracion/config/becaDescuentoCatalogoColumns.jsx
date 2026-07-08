@@ -6,14 +6,16 @@
  * — para las becas ASIGNADAS a estudiantes; este es el CATÁLOGO maestro).
  *
  * Columnas propias (no `createSimpleCatalogTableColumns`: hay campos de
- * negocio ricos), sin `fixed`: # · Identidad · Descripción · Porcentaje ·
- * Reglas · Asignaciones · Estado · Acciones. Porcentaje con pill semántica
- * POR RANGO (`getPorcentajePill`), Reglas apiladas (`BecaReglasCell`, gemela
+ * negocio ricos), sin `fixed`: # · Identidad · Porcentaje (+ descripción
+ * apilada) · Reglas · Asignaciones · Estado · Acciones. Porcentaje con pill
+ * semántica POR RANGO (`getPorcentajePill`) y debajo `TruncatedTextCell`,
+ * Reglas apiladas (`BecaReglasCell`, gemela
  * de DocumentacionRequisitosCell), «Asignaciones» = concurrencia de
  * estudiantes con la beca (`cantidadAsignaciones` del backend) y Estado con
  * toggle rápido (`createCatalogoEstadoColumn`, PATCH /:id/estado, ACTIVAR).
  */
 
+import { Flex } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 import { IdentidadCelda, StatusPill, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
@@ -60,37 +62,31 @@ export const createBecaDescuentoCatalogoColumns = ({
         (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }),
     },
     {
-      title: 'Descripción',
-      dataIndex: 'descripcion',
-      key: 'descripcion',
-      width: 260,
-      ellipsis: false,
-      render: (descripcion) => <TruncatedTextCell text={descripcion} />,
-      sorter: true,
-      sortCompare: (a, b) =>
-        (a.descripcion || '').localeCompare(b.descripcion || '', 'es', { sensitivity: 'base' }),
-    },
-    {
       title: 'Porcentaje',
       dataIndex: 'porcentaje',
       key: 'porcentaje',
-      width: 120,
-      align: 'center',
+      width: 280,
+      align: 'left',
       sorter: true,
       sortCompare: (a, b) => (a.porcentaje ?? 0) - (b.porcentaje ?? 0),
-      render: (porcentaje, descripcion) => {
+      render: (porcentaje, record) => {
         const pill = getPorcentajePill(porcentaje);
-        return pill ?
-          <>
-            <TruncatedTextCell text={descripcion} />
-            <StatusPill label={pill.label} className={pill.className} />
-          </>
-          : '—';
+        return (
+          <Flex vertical align="flex-start" gap="small">
+            {pill ? (
+              <StatusPill label={pill.label} className={pill.className} />
+            ) : (
+              '—'
+            )}
+            <TruncatedTextCell text={record.descripcion} />
+          </Flex>
+        );
       },
     },
     {
       title: 'Reglas',
       key: 'reglas',
+      width: 220,
       render: (_, record) => (
         <BecaReglasCell
           esAutomatica={record.esAutomatica}

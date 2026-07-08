@@ -82,7 +82,8 @@ export const useConfigPagosCatalogsApi = () => {
     setLoading(false);
   }, []);
 
-  /** Recarga manual (refetch): muestra loading y vuelve a leer las 3 entidades. */
+  /** Recarga manual (refetch): actualiza datos en background; el loading lo
+   * consume cada tab vía `TableListView` (no bloquea la página). */
   const refetch = useCallback(async () => {
     setLoading(true);
     setError(null);
