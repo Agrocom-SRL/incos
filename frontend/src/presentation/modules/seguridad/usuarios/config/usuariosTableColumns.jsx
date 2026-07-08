@@ -15,6 +15,13 @@ const estadoTag = (estado) => {
 
 export const createUsuariosTableColumns = (navigate, { eliminarUsuario, refetch } = {}) => [
   {
+    title: '#',
+    key: 'nro',
+    width: 56,
+    align: 'center',
+    render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
+  },
+  {
     title: 'Usuario',
     key: 'usuario',
     fixed: 'left',
