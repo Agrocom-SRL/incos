@@ -85,6 +85,40 @@
   font-size: var(--font-size-sm, 12px);
 }
 
+/* Chip de acción (modal de ajuste individual): mismo lenguaje pill que .seg-rol-pill,
+   coloreado por capa (acceso/ops/flujos) igual que las cabeceras de la grilla de permisos. */
+.seg-accion-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.seg-accion-pill--acceso {
+  background: var(--color-info-bg);
+  color: var(--color-info-active);
+  border-color: var(--color-info-border);
+}
+
+.seg-accion-pill--ops {
+  background: var(--color-success-bg);
+  color: var(--color-success-active);
+  border-color: var(--color-success-border);
+}
+
+.seg-accion-pill--flujos {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-active);
+  border-color: var(--color-warning-border);
+}
+
 /* Celda con alta/baja de override en curso: feedback LOCAL (opacidad + spinner chico),
    sin depender del spinner de página completa. */
 .seg-accesos-celda--toggling {

@@ -13,8 +13,8 @@ import {
  * Acceso/Operaciones/Flujos — pero la celda tiene 4 estados en vez de 2, porque
  * un usuario puede tener overrides individuales sobre lo heredado del rol:
  *
- * - `heredado`: el rol ya lo asigna y no hay override → checkbox marcado, bloqueado, con
- *   candado (glifo, no solo color).
+ * - `heredado`: el rol ya lo asigna y no hay override → checkbox marcado, con candado
+ *   (glifo, no solo color); clicable para crear un override REVOKE puntual sobre este usuario.
  * - `otorgado`: override GRANT (el usuario lo tiene aunque el rol no lo dé, o lo reafirma)
  *   → checkbox marcado + tinte verde.
  * - `revocado`: override REVOKE (el rol lo daría, pero se le quitó a este usuario puntual)
@@ -65,12 +65,12 @@ export default function AccesosUsuarioDominioPicker({
     const override = overrideDeCelda?.(grupo, accion);
     const toggling = Boolean(isToggling?.(grupo, accion));
     const checked = estado === 'heredado' || estado === 'otorgado';
-    const cellDisabled = disabled || estado === 'heredado' || toggling;
+    const cellDisabled = disabled || toggling;
     const checkbox = (
       <Checkbox
         checked={checked}
         disabled={cellDisabled}
-        onChange={() => !disabled && estado !== 'heredado' && !toggling && onToggle(grupo, accion)}
+        onChange={() => !disabled && !toggling && onToggle(grupo, accion)}
       />
     );
     const claseCelda = ['seg-accesos-celda', toggling ? 'seg-accesos-celda--toggling' : null]

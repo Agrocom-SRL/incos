@@ -83,6 +83,7 @@ export function useRolPermisos() {
   const [codigoToPermisoId, setCodigoToPermisoId] = useState(() => new Map());
   const [delta, setDelta] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const hayaCambios = useMemo(() => Object.keys(delta).length > 0, [delta]);
@@ -98,18 +99,26 @@ export function useRolPermisos() {
     async (rolId, dominio) => {
       if (!rolId || !dominio) return null;
       ultimoDominioRef.current = dominio;
-      setLoading(true);
       setDelta({});
-      try {
-        const mismoRol = Number(rol?.id) === Number(rolId);
-        if (mismoRol) {
+      const mismoRol = Number(rol?.id) === Number(rolId);
+      // Solo la carga INICIAL (rol distinto al ya cargado) bloquea `DetailPageShell` — un
+      // simple cambio de pestaña de dominio reusa el mismo rol y no debe desmontar toda la
+      // página (perfil + tabs), solo mostrar un spinner local sobre la grilla.
+      if (mismoRol) {
+        setLoadingGrupos(true);
+        try {
           const grilla = await useCasesFactory
             .obtenerPermisosGrillaRolAdmin()
             .ejecutar(rolId, dominio);
           setGrupos(Array.isArray(grilla) ? grilla : []);
           return { grilla };
+        } finally {
+          setLoadingGrupos(false);
         }
+      }
 
+      setLoading(true);
+      try {
         const [full, grilla] = await Promise.all([
           useCasesFactory.obtenerPermisosRolAdmin().ejecutar(rolId),
           useCasesFactory.obtenerPermisosGrillaRolAdmin().ejecutar(rolId, dominio),
@@ -180,6 +189,7 @@ export function useRolPermisos() {
     grupos,
     delta,
     loading,
+    loadingGrupos,
     saving,
     hayaCambios,
     cargar,

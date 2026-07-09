@@ -288,7 +288,9 @@ export const useSeguridadUsuarioPermisosPage = () => {
         accion,
         tipo,
         permiso_id,
-        permisoLabel: `${grupo.grupoNombre || grupo.grupoUi} · ${grupo.rutaSidebar || ''}`.trim(),
+        // Solo el nombre amigable del grupo (tabla `grupos_ui`) — la ruta de sidebar cruda
+        // (con placeholders tipo `:asignacionId`) no aporta al admin y se veía técnica.
+        permisoLabel: grupo.grupoNombre || grupo.grupoUi || '',
       });
       setOverrideOpen(true);
     },

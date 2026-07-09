@@ -1,18 +1,15 @@
-import { Alert, Form, Input, Modal, Radio, Select, Tag } from 'antd';
+import { Alert, Flex, Form, Input, Modal, Radio, Select } from 'antd';
+import { ACCIONES_GRILLA, ACCION_AYUDA } from '@modules/seguridad/roles/constants/permisosGrillaConfig.js';
+import '@modules/seguridad/usuarios/styles/usuarios.css';
 
-const ACCIONES = [
-  'LISTAR',
-  'DETALLE',
-  'CREAR',
-  'EDITAR',
-  'ELIMINAR',
-  'ACTIVAR',
-  'APROBAR',
-  'EXPORTAR',
-  'GENERAR_PDF',
-];
+const ACCIONES = ACCIONES_GRILLA.map((a) => a.key);
 
 const TIPO_ETIQUETA = { GRANT: 'OTORGAR', REVOKE: 'REVOCAR' };
+
+/** Capa (acceso/ops/flujos) de una acción — mismo catálogo que la grilla de permisos. */
+function capaDeAccion(accion) {
+  return ACCIONES_GRILLA.find((a) => a.key === accion)?.capa || 'ops';
+}
 
 /**
  * Modal de ajuste individual (override) de un usuario.
@@ -70,11 +67,17 @@ export default function AgregarOverrideModal({
           showIcon
           style={{ marginBottom: 16 }}
           title={
-            <span>
-              Vas a {TIPO_ETIQUETA[fixedValues.tipo] || fixedValues.tipo}: <strong>{fixedValues.permisoLabel}</strong>{' '}
-              <Tag>{fixedValues.accion}</Tag>
-            </span>
+            <Flex vertical gap={6}>
+              <span>
+                Vas a {TIPO_ETIQUETA[fixedValues.tipo] || fixedValues.tipo} este permiso para el usuario:{' '}
+                <strong>{fixedValues.permisoLabel}</strong>&nbsp;
+                <span className={`seg-accion-pill seg-accion-pill--${capaDeAccion(fixedValues.accion)}`}>
+                  {fixedValues.accion}
+                </span>
+              </span>
+            </Flex>
           }
+          description={ACCION_AYUDA[fixedValues.accion] || null}
         />
       ) : null}
       <Form form={form} layout="vertical" initialValues={{ tipo: 'GRANT' }}>

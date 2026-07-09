@@ -1,4 +1,4 @@
-import { Alert, Tabs, Tag, Typography } from 'antd';
+import { Alert, Spin, Tabs, Tag, Typography } from 'antd';
 import { ArrowLeftOutlined, KeyOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
@@ -21,6 +21,7 @@ export default function RolPermisosPage() {
     delta,
     dominios,
     loading,
+    loadingGrupos,
     saving,
     hasChanges,
     esAdminSistema,
@@ -106,12 +107,17 @@ export default function RolPermisosPage() {
                   <Alert type="info" title="Hay cambios sin guardar" showIcon style={{ marginBottom: allSpacing.margin }} />
                 ) : null}
 
-                <PermisosDominioPicker
-                  grupos={grupos}
-                  delta={delta}
-                  toggleAccion={toggleAccion}
-                  disabled={esAdminSistema}
-                />
+                {/* `spinning` cubre el cambio de tab: sin esto, la grilla completa (junto
+                    con perfil y tabs) se desmontaba en cada cambio de dominio — mismo fix
+                    ya aplicado en `UsuarioAccesosPage`. */}
+                <Spin spinning={loadingGrupos}>
+                  <PermisosDominioPicker
+                    grupos={grupos}
+                    delta={delta}
+                    toggleAccion={toggleAccion}
+                    disabled={esAdminSistema}
+                  />
+                </Spin>
 
                 {!esAdminSistema && hasChanges ? (
                   <div className="seg-actions" style={{ marginTop: allSpacing.margin }}>
