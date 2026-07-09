@@ -24,6 +24,7 @@ export const useSeguridadUsuarioDetailPage = () => {
     loading,
     cargar,
     actualizar,
+    cambiarEstado,
     cambiarPassword,
   } = useUsuarioDetail();
   const { roles, cargar: cargarRoles } = useRolesList();
@@ -33,8 +34,10 @@ export const useSeguridadUsuarioDetailPage = () => {
 
   const [savingPass, setSavingPass] = useState(false);
   const [savingAccion, setSavingAccion] = useState(false);
+  const [savingEstado, setSavingEstado] = useState(false);
   const [openPass, setOpenPass] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const [openEstado, setOpenEstado] = useState(false);
 
   const uid = Number.parseInt(id, 10);
 
@@ -98,6 +101,32 @@ export const useSeguridadUsuarioDetailPage = () => {
     }
   }, [actualizar, uid, message, loadUsuario]);
 
+  // "Cambiar estado" vive en la ficha (no en el listado): estado es un ENUM de
+  // negocio NULL(=activo)|BLOQUEADO|SUSPENDIDO|RETIRADO con motivo obligatorio
+  // para los 3 valores restrictivos, no un toggle simple (ver CambiarEstadoUsuarioUseCase).
+  const estadoInitialValues = useMemo(
+    () => ({
+      estado: usuario?.estado ?? null,
+      motivo: usuario?.motivo_cambio_estado ?? '',
+    }),
+    [usuario],
+  );
+
+  const saveEstado = useCallback(async ({ estado, motivo }) => {
+    if (!uid) return;
+    setSavingEstado(true);
+    try {
+      await cambiarEstado(uid, estado, motivo);
+      setOpenEstado(false);
+      message.success('Estado actualizado');
+      await loadUsuario();
+    } catch (error) {
+      message.error(errMsg(error));
+    } finally {
+      setSavingEstado(false);
+    }
+  }, [cambiarEstado, uid, message, loadUsuario]);
+
   const rolesParaSelect = useMemo(() => {
     if (roles?.length) return roles;
     if (usuario?.rol) {
@@ -130,18 +159,23 @@ export const useSeguridadUsuarioDetailPage = () => {
     loading,
     savingPass,
     savingAccion,
+    savingEstado,
     openPass,
     openEdit,
+    openEstado,
     puedeEditar,
     puedeVerPermisos,
     rolesParaSelect,
     editInitialValues,
+    estadoInitialValues,
     breadcrumbItems,
     setOpenPass,
     setOpenEdit,
+    setOpenEstado,
     openEditModal,
     savePass,
     saveEdit,
+    saveEstado,
     goToUsuarioEdit: () => {
       // Estudiante/Docente: solo credenciales → tab 3 (índice 2). Resto (admin/administrativo): perfil → tab 2 (índice 1).
       const codigo = usuario?.rol?.codigo;

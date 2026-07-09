@@ -72,6 +72,11 @@ const ApoderadoDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar apoderado"
               editAriaLabel="Editar apoderado"
+              stats={[
+                { label: 'Estudiantes', value: apoderado.cantidadEstudiantes ?? 0, primary: true },
+                { label: 'Docentes', value: apoderado.cantidadDocentes ?? 0 },
+                { label: 'Personal', value: apoderado.cantidadPersonal ?? 0 },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<TeamOutlined />}>
@@ -79,12 +84,6 @@ const ApoderadoDetailPage = () => {
               <DetailField label="Descripción" span={2}>
                 {apoderado.descripcion || '—'}
               </DetailField>
-            </DetailInfoCard>
-
-            <DetailInfoCard title="Uso en el sistema" icon={<TeamOutlined />} cols={3}>
-              <DetailField label="Estudiantes">{apoderado.cantidadEstudiantes ?? 0}</DetailField>
-              <DetailField label="Docentes">{apoderado.cantidadDocentes ?? 0}</DetailField>
-              <DetailField label="Personal">{apoderado.cantidadPersonal ?? 0}</DetailField>
             </DetailInfoCard>
           </>
         ) : null}

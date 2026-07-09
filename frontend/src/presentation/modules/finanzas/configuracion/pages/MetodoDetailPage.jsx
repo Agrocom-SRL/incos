@@ -9,10 +9,10 @@
  */
 
 import { BankOutlined, CreditCardOutlined, WalletOutlined } from '@ant-design/icons';
-import { Alert, Typography } from 'antd';
+import { Alert } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
+import { PageHeader, DetailRelatedList } from '@molecules';
 import DetailInfoCard from '@molecules/DetailInfoCard';
 import DetailField from '@atoms/DetailField';
 import DetailProfileCard from '@organisms/DetailProfileCard';
@@ -94,48 +94,31 @@ const MetodoDetailPage = () => {
               <DetailField label="Nombre visible">{metodo.nombre || '—'}</DetailField>
             </DetailInfoCard>
 
-            <DetailInfoCard title="Bancos que usan este método" icon={<BankOutlined />}>
-              {bancosDelMetodo.length > 0 ? (
-                bancosDelMetodo.map((banco) => (
-                  <DetailField key={banco.id} label={banco.codigo || 'Banco'} span={2}>
-                    {puedeVerDetalle ? (
-                      <Typography.Link onClick={() => navigate(bancoDetallePath(banco.id))}>
-                        {banco.nombre || `Banco #${banco.id}`}
-                      </Typography.Link>
-                    ) : (
-                      banco.nombre || '—'
-                    )}
-                  </DetailField>
-                ))
-              ) : (
-                <DetailField label="Bancos" span={2}>
-                  Ningún banco usa este método de pago
-                </DetailField>
-              )}
+            <DetailInfoCard title="Bancos que usan este método" icon={<BankOutlined />} cols={1}>
+              <DetailRelatedList
+                items={bancosDelMetodo.map((banco) => ({
+                  key: banco.id,
+                  icon: <BankOutlined />,
+                  label: banco.nombre || `Banco #${banco.id}`,
+                  caption: banco.codigo || null,
+                  onClick: puedeVerDetalle ? () => navigate(bancoDetallePath(banco.id)) : undefined,
+                }))}
+                emptyText="Ningún banco usa este método de pago"
+              />
             </DetailInfoCard>
 
-            <DetailInfoCard title="Cuentas que usan este método" icon={<WalletOutlined />}>
-              {cuentasDelMetodo.length > 0 ? (
-                cuentasDelMetodo.map((cuenta) => (
-                  <DetailField
-                    key={cuenta.id}
-                    label={cuenta.nombreTitular || cuenta.numeroCuenta || 'Cuenta'}
-                    span={2}
-                  >
-                    {puedeVerDetalle ? (
-                      <Typography.Link onClick={() => navigate(cuentaDetallePath(cuenta.id))}>
-                        {cuenta.numeroCuenta || cuenta.nombreTitular || `Cuenta #${cuenta.id}`}
-                      </Typography.Link>
-                    ) : (
-                      cuenta.numeroCuenta || cuenta.nombreTitular || '—'
-                    )}
-                  </DetailField>
-                ))
-              ) : (
-                <DetailField label="Cuentas" span={2}>
-                  Ninguna cuenta usa este método de pago
-                </DetailField>
-              )}
+            <DetailInfoCard title="Cuentas que usan este método" icon={<WalletOutlined />} cols={1}>
+              <DetailRelatedList
+                items={cuentasDelMetodo.map((cuenta) => ({
+                  key: cuenta.id,
+                  icon: <WalletOutlined />,
+                  label: cuenta.numeroCuenta || cuenta.nombreTitular || `Cuenta #${cuenta.id}`,
+                  caption:
+                    cuenta.nombreTitular && cuenta.numeroCuenta ? cuenta.nombreTitular : null,
+                  onClick: puedeVerDetalle ? () => navigate(cuentaDetallePath(cuenta.id)) : undefined,
+                }))}
+                emptyText="Ninguna cuenta usa este método de pago"
+              />
             </DetailInfoCard>
           </>
         ) : null}

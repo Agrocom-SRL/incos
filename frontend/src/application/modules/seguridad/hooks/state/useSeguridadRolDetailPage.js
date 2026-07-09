@@ -62,9 +62,11 @@ export const useSeguridadRolDetailPage = () => {
   const {
     rows: usuarios,
     loading: loadingUsuarios,
+    error: errorUsuarios,
     searchText,
     setSearchText,
     tablePagination,
+    refetch: refetchUsuarios,
   } = useServerPaginatedList({
     fetch: fetchUsuarios,
     buildRequest: ({ page, limit, search }) => ({ page, limit, search }),
@@ -109,6 +111,8 @@ export const useSeguridadRolDetailPage = () => {
     puedeGestionarPermisos,
     usuarios,
     loadingUsuarios,
+    errorUsuarios,
+    refetchUsuarios,
     searchText,
     handleSearchChange,
     tablePagination,

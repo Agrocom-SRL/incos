@@ -1,23 +1,27 @@
 import { useMemo, useState } from 'react';
-import { Tag } from 'antd';
+import { Flex, Tag } from 'antd';
 import {
   EditOutlined,
   IdcardOutlined,
   KeyOutlined,
   LockOutlined,
   SafetyCertificateOutlined,
+  StopOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader, DetailInfoCard, DetailTabLabel } from '@molecules';
 import { Button, ActionButton, DetailField } from '@atoms';
-import { DetailPageShell, DetailProfileCard, DetailTabsPanel } from '@organisms';
+import { DetailPageShell, DetailProfileCard, DetailTabsPanel, DetailPageHeaderActions } from '@organisms';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { SeguridadUsuarioPermisosProvider } from '@/application/modules/seguridad/providers';
 import { useSeguridadUsuarioDetailPageContext } from '@/application/modules/seguridad/hooks';
 import CambiarPasswordModal from '@modules/seguridad/usuarios/components/modals/CambiarPasswordModal.jsx';
 import EditarUsuarioModal from '@modules/seguridad/usuarios/components/modals/EditarUsuarioModal.jsx';
+import CambiarEstadoModal from '@modules/seguridad/usuarios/components/modals/CambiarEstadoModal.jsx';
 import UsuarioPermisosTab from '@modules/seguridad/usuarios/components/organisms/UsuarioPermisosTab.jsx';
+import UsuarioEstadoTag from '@modules/seguridad/usuarios/components/atoms/UsuarioEstadoTag.jsx';
 import '@modules/seguridad/usuarios/styles/usuarios.css';
 
 function fmtDateTime(value) {
@@ -31,32 +35,29 @@ function iniciales(username) {
   return String(username || 'U').slice(0, 2).toUpperCase();
 }
 
-function estadoTag(estado) {
-  if (!estado) return <Tag color="success">Activo</Tag>;
-  if (estado === 'BLOQUEADO') return <Tag color="error">BLOQUEADO</Tag>;
-  if (estado === 'SUSPENDIDO') return <Tag color="warning">SUSPENDIDO</Tag>;
-  if (estado === 'RETIRADO') return <Tag>RETIRADO</Tag>;
-  return <Tag>{estado}</Tag>;
-}
-
 export default function UsuarioDetailPage({ initialTab = 'info' }) {
   const {
     usuario,
     loading,
     savingPass,
     savingAccion,
+    savingEstado,
     openPass,
     openEdit,
+    openEstado,
     puedeEditar,
     puedeVerPermisos,
     rolesParaSelect,
     editInitialValues,
+    estadoInitialValues,
     breadcrumbItems,
     setOpenPass,
     setOpenEdit,
+    setOpenEstado,
     openEditModal,
     savePass,
     saveEdit,
+    saveEstado,
     goToUsuarioEdit,
     goToUsuariosList,
   } = useSeguridadUsuarioDetailPageContext();
@@ -82,8 +83,10 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
             {usuario?.vinculo_perfil ? (
               <DetailInfoCard title="Perfil en la institución" icon={<IdcardOutlined />} cols={1}>
                 <DetailField label="Vinculación">
-                  <Tag color="blue">{usuario.vinculo_perfil.tipo_etiqueta}</Tag>
-                  <strong style={{ marginLeft: 8 }}>{usuario.vinculo_perfil.nombre_completo}</strong>
+                  <Flex align="center" gap={allSpacing.marginSM}>
+                    <Tag color="blue">{usuario.vinculo_perfil.tipo_etiqueta}</Tag>
+                    <strong>{usuario.vinculo_perfil.nombre_completo}</strong>
+                  </Flex>
                 </DetailField>
                 {(usuario.vinculo_perfil.lineas || []).map((ln, idx) => (
                   <DetailField key={`${ln.etiqueta}-${idx}`} label={ln.etiqueta}>
@@ -124,6 +127,14 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
                     >
                       Cambiar contraseña
                     </ActionButton>
+                    <ActionButton
+                      permiso="seguridad.usuario.administrar"
+                      accion="EDITAR"
+                      icon={<StopOutlined />}
+                      onClick={() => setOpenEstado(true)}
+                    >
+                      Cambiar estado
+                    </ActionButton>
                   </div>
                 ) : null
               }
@@ -138,14 +149,14 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
                   <Tag>Personalizado</Tag>
                 )}
               </DetailField>
-              <DetailField label="Estado">{estadoTag(usuario?.estado)}</DetailField>
+              <DetailField label="Estado"><UsuarioEstadoTag estado={usuario?.estado} /></DetailField>
               <DetailField label="Motivo u observación" span={3}>
                 {usuario?.motivo_cambio_estado || 'Usuario activo sin restricciones'}
               </DetailField>
             </DetailInfoCard>
 
             {puedeEditar ? (
-              <div className="seg-actions" style={{ marginTop: 16 }}>
+              <div className="seg-actions seg-actions--spaced">
                 <Button variant="back" icon={<EditOutlined />} onClick={goToUsuarioEdit}>
                   Editar perfil completo
                 </Button>
@@ -177,6 +188,7 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
     puedeVerPermisos,
     openEditModal,
     setOpenPass,
+    setOpenEstado,
     goToUsuarioEdit,
   ]);
 
@@ -194,7 +206,7 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
           <PageHeader
             title={usuario ? `Usuario ${usuario.username}` : 'Usuario'}
             breadcrumbItems={breadcrumbItems}
-            actions={<Button variant="back" onClick={goToUsuariosList}>Volver</Button>}
+            actions={<DetailPageHeaderActions onVolver={goToUsuariosList} />}
           />
         }
       >
@@ -215,7 +227,7 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
                 stats={[
                   { label: 'Rol', value: usuario.rol?.nombre || '—', primary: true },
                   { label: 'Tipo', value: tipoRol },
-                  { label: 'Estado', value: estadoTag(usuario.estado) },
+                  { label: 'Estado', value: <UsuarioEstadoTag estado={usuario.estado} /> },
                 ]}
               />
 
@@ -237,6 +249,13 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
           initialValues={editInitialValues}
           onCancel={() => setOpenEdit(false)}
           onSubmit={saveEdit}
+        />
+        <CambiarEstadoModal
+          open={openEstado}
+          loading={savingEstado}
+          initialValues={estadoInitialValues}
+          onCancel={() => setOpenEstado(false)}
+          onSubmit={saveEstado}
         />
       </PageTemplate>
     </PermisoGuard>

@@ -15,4 +15,14 @@ export class IAulasHorariosSemanaRepository {
   async findAll(filters = {}, page = null, limit = null) {
     throw new Error('Method findAll() must be implemented');
   }
+
+  /**
+   * Paralelos/cursos que usan un aula (bloques reales, sin depender de semana/gestión).
+   * @param {number} aulaId
+   * @returns {Promise<Array<Object>>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async findByAulaId(aulaId) {
+    throw new Error('Method findByAulaId() must be implemented');
+  }
 }

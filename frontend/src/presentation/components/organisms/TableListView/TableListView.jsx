@@ -26,7 +26,7 @@
  */
 
 import React from 'react';
-import { Row, Col, Flex } from 'antd';
+import { Row, Col, Flex, Empty } from 'antd';
 import { DataTable } from '@molecules';
 import { Alert, Card, SearchBar, Spinner, Text } from '@atoms';
 import {
@@ -65,6 +65,11 @@ const TableListView = ({
     // Loading personalizado
     loadingTip = 'Cargando...',
 
+    /** Texto de estado vacío (sin resultados), en español y contextual al dominio.
+     * Si no se pasa, se usa el `locale` por defecto de AntD (ya en español vía
+     * `ConfigProvider locale={esES}` en `App.jsx`). */
+    emptyText,
+
     // Header interno (dentro del Card)
     title,
     headerActions,
@@ -93,6 +98,10 @@ const TableListView = ({
     };
 
     const sanitized = sanitizePagination(pagination);
+
+    const tableLocale = emptyText
+        ? { emptyText: <Empty description={emptyText} image={Empty.PRESENTED_IMAGE_SIMPLE} /> }
+        : undefined;
 
     const finalPagination = {
         ...basePagination,
@@ -147,6 +156,7 @@ const TableListView = ({
                 defaultSort={defaultSort}
                 className={tableClassName}
                 rowClassName={rowClassName}
+                locale={tableLocale}
             />
         </>
     );

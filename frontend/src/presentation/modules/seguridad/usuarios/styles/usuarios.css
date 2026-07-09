@@ -3,8 +3,19 @@
 /* Fila de acciones (compartida con roles; utilidad mínima, duplicada para localidad). */
 .seg-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm, 8px);
   flex-wrap: wrap;
+}
+
+/* Modificador: separación superior cuando la fila va debajo de una card (ej. "Editar perfil completo"). */
+.seg-actions--spaced {
+  margin-top: var(--spacing-base, 16px);
+}
+
+/* Motivo del cambio de estado (segunda línea, bajo el Tag de estado en el listado). */
+.usuarios-estado-motivo {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 12px);
 }
 
 /* Tab de permisos de usuario: margen lateral en pestañas con tablas */

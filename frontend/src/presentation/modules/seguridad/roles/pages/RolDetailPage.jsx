@@ -33,6 +33,8 @@ export default function RolDetailPage() {
     puedeGestionarPermisos,
     usuarios,
     loadingUsuarios,
+    errorUsuarios,
+    refetchUsuarios,
     searchText,
     handleSearchChange,
     tablePagination,
@@ -93,6 +95,8 @@ export default function RolDetailPage() {
             <RolUsuariosSection
               usuarios={usuarios}
               loading={loadingUsuarios}
+              error={errorUsuarios}
+              onRetry={refetchUsuarios}
               searchText={searchText}
               onSearchChange={handleSearchChange}
               tablePagination={tablePagination}
@@ -109,6 +113,8 @@ export default function RolDetailPage() {
     goToGestionarPermisos,
     usuarios,
     loadingUsuarios,
+    errorUsuarios,
+    refetchUsuarios,
     searchText,
     handleSearchChange,
     tablePagination,

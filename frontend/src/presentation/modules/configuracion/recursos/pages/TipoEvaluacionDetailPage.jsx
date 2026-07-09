@@ -3,7 +3,7 @@
  * Gemelo de `IdiomaDetailPage.jsx`.
  */
 
-import { FileDoneOutlined, BarChartOutlined } from '@ant-design/icons';
+import { FileDoneOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -80,6 +80,9 @@ const TipoEvaluacionDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar tipo de evaluación"
               editAriaLabel="Editar tipo de evaluación"
+              stats={[
+                { label: 'Evaluaciones registradas', value: tipoEvaluacion.cantidadEvaluaciones ?? 0, primary: true },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<FileDoneOutlined />}>
@@ -88,12 +91,6 @@ const TipoEvaluacionDetailPage = () => {
               <DetailField label="Descripción">{tipoEvaluacion.descripcion || '—'}</DetailField>
               <DetailField label="Recuperatorio">
                 {tipoEvaluacion.esRecuperatorio ? 'Sí' : 'No'}
-              </DetailField>
-            </DetailInfoCard>
-
-            <DetailInfoCard title="Uso en el sistema" icon={<BarChartOutlined />}>
-              <DetailField label="Evaluaciones registradas">
-                {tipoEvaluacion.cantidadEvaluaciones ?? 0}
               </DetailField>
             </DetailInfoCard>
           </>

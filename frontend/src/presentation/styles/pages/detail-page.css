@@ -708,6 +708,22 @@
   text-align: center;
 }
 
+/* Lista de registros relacionados dentro de una ficha (ver DetailRelatedList) */
+.sd-related-list__item {
+  padding: var(--spacing-xs, 4px) 0;
+}
+
+.sd-related-list__icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-500);
+}
+
+.sd-related-list__caption {
+  color: var(--text-500);
+  font-size: var(--font-size-sm, 13px);
+}
+
 .sd-empty__icon {
   font-size: 36px !important;
   color: var(--text-300) !important;

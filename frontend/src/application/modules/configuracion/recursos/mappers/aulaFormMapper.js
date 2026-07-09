@@ -36,8 +36,10 @@ export const mapAulaDetail = (raw) => {
   const payload = raw?.aula ?? raw;
   const base = aulaListMapper(payload) || payload;
   if (!base) return null;
+  const paralelosQueUsanAula = payload?.paralelosQueUsanAula ?? raw?.paralelosQueUsanAula ?? [];
   return {
     ...base,
     activo: (payload?.activo ?? raw?.activo) !== false,
+    paralelosQueUsanAula: Array.isArray(paralelosQueUsanAula) ? paralelosQueUsanAula : [],
   };
 };

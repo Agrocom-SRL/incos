@@ -12,7 +12,7 @@ import { BankOutlined, DeleteOutlined, WalletOutlined } from '@ant-design/icons'
 import { Alert, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
+import { PageHeader, DetailRelatedList } from '@molecules';
 import DetailInfoCard from '@molecules/DetailInfoCard';
 import DetailField from '@atoms/DetailField';
 import DetailProfileCard from '@organisms/DetailProfileCard';
@@ -116,28 +116,18 @@ const BancoDetailPage = () => {
               </DetailField>
             </DetailInfoCard>
 
-            <DetailInfoCard title="Cuentas de este banco" icon={<WalletOutlined />}>
-              {cuentasDelBanco.length > 0 ? (
-                cuentasDelBanco.map((cuenta) => (
-                  <DetailField
-                    key={cuenta.id}
-                    label={cuenta.nombreTitular || cuenta.numeroCuenta || 'Cuenta'}
-                    span={2}
-                  >
-                    {puedeVerDetalle ? (
-                      <Typography.Link onClick={() => navigate(cuentaDetallePath(cuenta.id))}>
-                        {cuenta.numeroCuenta || cuenta.nombreTitular || `Cuenta #${cuenta.id}`}
-                      </Typography.Link>
-                    ) : (
-                      cuenta.numeroCuenta || cuenta.nombreTitular || '—'
-                    )}
-                  </DetailField>
-                ))
-              ) : (
-                <DetailField label="Cuentas" span={2}>
-                  Este banco aún no tiene cuentas registradas
-                </DetailField>
-              )}
+            <DetailInfoCard title="Cuentas de este banco" icon={<WalletOutlined />} cols={1}>
+              <DetailRelatedList
+                items={cuentasDelBanco.map((cuenta) => ({
+                  key: cuenta.id,
+                  icon: <WalletOutlined />,
+                  label: cuenta.numeroCuenta || cuenta.nombreTitular || `Cuenta #${cuenta.id}`,
+                  caption:
+                    cuenta.nombreTitular && cuenta.numeroCuenta ? cuenta.nombreTitular : null,
+                  onClick: puedeVerDetalle ? () => navigate(cuentaDetallePath(cuenta.id)) : undefined,
+                }))}
+                emptyText="Este banco aún no tiene cuentas registradas"
+              />
             </DetailInfoCard>
           </>
         ) : null}

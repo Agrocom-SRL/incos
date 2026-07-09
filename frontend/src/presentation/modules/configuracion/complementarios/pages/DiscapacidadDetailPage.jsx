@@ -4,7 +4,7 @@
  * sin tabs: una sola sección de información).
  */
 
-import { SolutionOutlined, TeamOutlined } from '@ant-design/icons';
+import { SolutionOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -81,6 +81,11 @@ const DiscapacidadDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar tipo de discapacidad"
               editAriaLabel="Editar tipo de discapacidad"
+              stats={[
+                { label: 'Estudiantes', value: discapacidad.cantidadEstudiantes ?? 0, primary: true },
+                { label: 'Docentes', value: discapacidad.cantidadDocentes ?? 0 },
+                { label: 'Personal', value: discapacidad.cantidadPersonal ?? 0 },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<SolutionOutlined />}>
@@ -88,12 +93,6 @@ const DiscapacidadDetailPage = () => {
               <DetailField label="Descripción" span={2}>
                 {discapacidad.descripcion || '—'}
               </DetailField>
-            </DetailInfoCard>
-
-            <DetailInfoCard title="Uso en el sistema" icon={<TeamOutlined />} cols={3}>
-              <DetailField label="Estudiantes">{discapacidad.cantidadEstudiantes ?? 0}</DetailField>
-              <DetailField label="Docentes">{discapacidad.cantidadDocentes ?? 0}</DetailField>
-              <DetailField label="Personal">{discapacidad.cantidadPersonal ?? 0}</DetailField>
             </DetailInfoCard>
           </>
         ) : null}

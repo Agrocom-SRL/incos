@@ -61,6 +61,9 @@ export function registerAulasResource(container) {
         (c) =>
             new GetAulaByIdUseCase({
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
+                aulasHorariosSemanaRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.weeklyClassroomScheduleRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

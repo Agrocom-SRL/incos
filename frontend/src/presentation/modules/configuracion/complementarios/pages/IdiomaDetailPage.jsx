@@ -3,7 +3,7 @@
  * Gemelo de `DiscapacidadDetailPage.jsx`.
  */
 
-import { GlobalOutlined, TeamOutlined } from '@ant-design/icons';
+import { GlobalOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -72,17 +72,16 @@ const IdiomaDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar idioma"
               editAriaLabel="Editar idioma"
+              stats={[
+                { label: 'Estudiantes', value: idioma.cantidadEstudiantes ?? 0, primary: true },
+                { label: 'Docentes', value: idioma.cantidadDocentes ?? 0 },
+                { label: 'Personal', value: idioma.cantidadPersonal ?? 0 },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<GlobalOutlined />}>
               <DetailField label="Nombre">{idioma.nombre || '—'}</DetailField>
               <DetailField label="Código ISO">{idioma.codigoIso || '—'}</DetailField>
-            </DetailInfoCard>
-
-            <DetailInfoCard title="Uso en el sistema" icon={<TeamOutlined />} cols={3}>
-              <DetailField label="Estudiantes">{idioma.cantidadEstudiantes ?? 0}</DetailField>
-              <DetailField label="Docentes">{idioma.cantidadDocentes ?? 0}</DetailField>
-              <DetailField label="Personal">{idioma.cantidadPersonal ?? 0}</DetailField>
             </DetailInfoCard>
           </>
         ) : null}
