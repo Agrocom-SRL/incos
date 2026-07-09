@@ -4,9 +4,14 @@
  *
  * Consume `ConfigPagosContext` directamente (no crea provider propio). Modo
  * edición: resuelve la cuenta por `id` desde el catálogo ya cargado
- * (`cuentas`), sin GET /:id (mismo criterio que `useCuentaDetailPage`). El
- * campo `qr` NO es data-driven: la página lo renderiza manualmente (bloque
- * trasladado de `CuentaDrawer.jsx`, ver `CuentaFormPage.jsx`).
+ * (`cuentas`), sin GET /:id (mismo criterio que `useCuentaDetailPage`).
+ *
+ * `numeroCelular` y `qr` son OPCIONALES y están gobernados por sus propios
+ * switches (`tieneNumeroCelular`/`tieneQr`, mismo patrón que `tieneFechaFin`
+ * de `useAportePage.js`): el campo real solo aparece en `formSections` cuando
+ * el switch está en `true`. `qr` es data-driven (`type: 'imageUpload'`, con
+ * `previewField`/`buildPreviewUrl` propios — `qrImagenUrl` del backend ya es
+ * una URL completa, a diferencia de `imagenRuta` de Carrera).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -23,8 +28,8 @@ import { CONFIGURACION_PATH, cuentaDetallePath } from '@application-finanzas/con
 const CUENTAS_TAB_PATH = `${CONFIGURACION_PATH}?tab=cuentas`;
 
 /** Construye las secciones del formulario; `activo` solo en modo edición. */
-const createCuentaFormSections = ({ metodos, bancos, isEditMode }) => {
-  const fields = [
+const createCuentaFormSections = ({ metodos, bancos, isEditMode, tieneNumeroCelular, tieneQr }) => {
+  const datosFields = [
     {
       name: 'nombreTitular',
       label: 'Nombre del titular',
@@ -59,25 +64,72 @@ const createCuentaFormSections = ({ metodos, bancos, isEditMode }) => {
       maxLength: 50,
     },
     {
-      name: 'numeroCelular',
-      label: 'N.° de celular (opcional)',
-      type: 'input',
+      name: 'tieneNumeroCelular',
+      label: '¿Desea agregar número de celular?',
+      type: 'switch',
       span: 12,
-      placeholder: 'Número de celular',
-      maxLength: 20,
+      checkedChildren: 'Sí',
+      unCheckedChildren: 'No',
     },
+    ...(tieneNumeroCelular
+      ? [
+          {
+            name: 'numeroCelular',
+            label: 'N.° de celular',
+            type: 'input',
+            required: true,
+            span: 12,
+            placeholder: 'Número de celular',
+            maxLength: 20,
+          },
+        ]
+      : []),
   ];
 
   // `activo` solo en modo edición: se asigna al crear, se gestiona después (ficha).
   if (isEditMode) {
-    fields.push({ name: 'activo', label: 'Estado activo', type: 'switch', span: 12 });
+    datosFields.push({ name: 'activo', label: 'Estado activo', type: 'switch', span: 12 });
   }
+
+  const qrFields = [
+    // Registra `qrImagenUrl` como campo real (oculto) para que `Form.useWatch`
+    // lo observe de forma confiable — mismo patrón que `imagenRuta` en Carrera.
+    { name: 'qrImagenUrl', type: 'hidden', preserve: true },
+    {
+      name: 'tieneQr',
+      label: '¿Desea agregar un QR de cobro?',
+      type: 'switch',
+      span: 24,
+      checkedChildren: 'Sí',
+      unCheckedChildren: 'No',
+    },
+    ...(tieneQr
+      ? [
+          {
+            name: 'qr',
+            label: 'Imagen QR',
+            type: 'imageUpload',
+            span: 24,
+            previewField: 'qrImagenUrl',
+            buildPreviewUrl: (url) => url || null,
+            previewAlt: 'Vista previa del QR de cobro',
+            formatsHint: 'Formatos: JPG, PNG',
+            accept: '.jpg,.jpeg,.png',
+          },
+        ]
+      : []),
+  ];
 
   return {
     datosCuenta: {
       title: 'Datos de la cuenta',
       description: 'Titular, método de pago asociado, banco y datos de contacto.',
-      fields,
+      fields: datosFields,
+    },
+    qrCuenta: {
+      title: 'QR de cobro',
+      description: 'QR con el que los estudiantes realizarán el pago (opcional).',
+      fields: qrFields,
     },
   };
 };
@@ -105,6 +157,9 @@ export const useCuentaForm = (mode = 'create') => {
   const permisoAccion = isEditMode ? 'EDITAR' : 'CREAR';
   const isInvalidEditId = isEditMode && (!Number.isFinite(cuentaId) || cuentaId < 1);
   const loading = isEditMode && !isInvalidEditId ? catalogLoading : false;
+
+  const tieneNumeroCelular = Form.useWatch('tieneNumeroCelular', form);
+  const tieneQr = Form.useWatch('tieneQr', form);
 
   const cuentaActual = useMemo(
     () => (isEditMode && !isInvalidEditId ? (cuentas.find((c) => c.id === cuentaId) ?? null) : null),
@@ -170,8 +225,8 @@ export const useCuentaForm = (mode = 'create') => {
 
   const initialValues = useMemo(() => mapCuentaToFormValues(null), []);
   const formSections = useMemo(
-    () => createCuentaFormSections({ metodos, bancos, isEditMode }),
-    [metodos, bancos, isEditMode],
+    () => createCuentaFormSections({ metodos, bancos, isEditMode, tieneNumeroCelular, tieneQr }),
+    [metodos, bancos, isEditMode, tieneNumeroCelular, tieneQr],
   );
 
   return {

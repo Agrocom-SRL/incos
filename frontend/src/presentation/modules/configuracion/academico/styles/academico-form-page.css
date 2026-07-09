@@ -507,6 +507,30 @@
   margin-bottom: 20px;
 }
 
+/* Secciones planas dentro de una sola tarjeta (prop `sections` de
+   CfgFormWorkspace) — mismo patrón visual que `seg-usuario-form-section`. */
+.cfg-academico-form-workspace__section {
+  width: 100%;
+}
+
+.cfg-academico-form-workspace__section:not(:first-child) {
+  padding-top: var(--spacing-lg, 20px);
+  border-top: 1px solid var(--color-border-secondary, var(--border-soft, #f0f0f0));
+}
+
+.cfg-academico-form-workspace__section-header {
+  margin-bottom: 16px;
+}
+
+.cfg-academico-form-workspace__section-title.ant-typography {
+  margin: 0 0 4px !important;
+  font-weight: 700 !important;
+}
+
+.cfg-academico-form-workspace__section-desc.ant-typography {
+  margin: 0 !important;
+}
+
 .cfg-paralelo-detalle-oferta__loading {
   padding: 48px 16px;
 }

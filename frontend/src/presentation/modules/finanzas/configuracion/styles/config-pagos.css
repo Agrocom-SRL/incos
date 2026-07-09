@@ -4,9 +4,9 @@
  * El shell de workspace/tabs se reutiliza de `academico-form-page.css`
  * (clases `cfg-academico-workspace*`, importadas por la página). Los pills
  * usan las variantes GLOBALES `cfg-materia-pill--*` (table-cells.css) — aquí
- * solo viven ajustes propios del módulo.
- * (El formulario de la página hija "Aportes" vive en
- * `finanzas/configuracion/styles/aporte-page.css`.)
+ * solo viven ajustes propios del módulo. (El formulario de la página hija
+ * "Aportes" no tiene estilos propios: usa `cfg-academico-form` a ancho
+ * completo, igual que el resto de páginas CFG.)
  * Todo consume CSS vars del theme (sin `#hex` propios de marca).
  */
 

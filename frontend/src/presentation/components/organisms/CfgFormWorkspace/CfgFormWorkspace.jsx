@@ -10,12 +10,12 @@
  * importado directamente por cada página consumidora (patrón existente compartido
  * entre módulos) — no se duplica aquí.
  */
-import { Col, Row, Typography } from 'antd';
+import { Col, Flex, Row, Typography } from 'antd';
 import { FormField } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { fieldRowKey } from '@molecules/FormSection/utils/fieldColumns';
 
-const { Paragraph } = Typography;
+const { Paragraph, Title } = Typography;
 
 /** Columnas 2× desde tablet; ancho completo si span 24 */
 export const cfgFormColProps = (span = 12) => {
@@ -76,11 +76,62 @@ export const CfgFormFieldGrid = ({
   );
 };
 
+/**
+ * Sección plana dentro de un `CfgFormWorkspace` (sin tarjeta propia — el
+ * contenedor visual es la tarjeta del workspace padre). Mismo patrón que
+ * `seguridad/usuarios/components/organisms/UsuarioFormSection.jsx`, para
+ * evitar "card dentro de card" cuando un formulario agrupa varios sectores
+ * de campos dentro de una única tarjeta (ver prop `sections`).
+ */
+const CfgFormWorkspaceSection = ({
+  title,
+  description = null,
+  fields = [],
+  form,
+  resolveOptions,
+  readOnly = false,
+  afterField = {},
+  beforeFields = null,
+  children = null,
+}) => (
+  <div className="cfg-academico-form-workspace__section">
+    {title || description ? (
+      <header className="cfg-academico-form-workspace__section-header">
+        {title ? (
+          <Title level={5} className="cfg-academico-form-workspace__section-title">
+            {title}
+          </Title>
+        ) : null}
+        {description ? (
+          <Paragraph type="secondary" className="cfg-academico-form-workspace__section-desc">
+            {description}
+          </Paragraph>
+        ) : null}
+      </header>
+    ) : null}
+
+    {beforeFields ? (
+      <div className="cfg-academico-form-workspace__before-fields">{beforeFields}</div>
+    ) : null}
+
+    <CfgFormFieldGrid
+      fields={fields}
+      form={form}
+      resolveOptions={resolveOptions}
+      readOnly={readOnly}
+      afterField={afterField}
+    />
+
+    {children}
+  </div>
+);
+
 const CfgFormWorkspace = ({
   title,
   description = null,
   headerActions = null,
   fields = [],
+  sections = null,
   form,
   resolveOptions,
   readOnly = false,
@@ -102,13 +153,33 @@ const CfgFormWorkspace = ({
       {beforeFields ? (
         <div className="cfg-academico-form-workspace__before-fields">{beforeFields}</div>
       ) : null}
-      <CfgFormFieldGrid
-        fields={fields}
-        form={form}
-        resolveOptions={resolveOptions}
-        readOnly={readOnly}
-        afterField={afterField}
-      />
+      {Array.isArray(sections) && sections.length ? (
+        <Flex vertical gap="large" className="cfg-academico-form-workspace__sections">
+          {sections.map((section, index) => (
+            <CfgFormWorkspaceSection
+              key={section.key ?? section.title ?? index}
+              title={section.title}
+              description={section.description}
+              fields={section.fields}
+              form={form}
+              resolveOptions={resolveOptions}
+              readOnly={readOnly}
+              afterField={section.afterField ?? afterField}
+              beforeFields={section.beforeFields}
+            >
+              {section.children}
+            </CfgFormWorkspaceSection>
+          ))}
+        </Flex>
+      ) : (
+        <CfgFormFieldGrid
+          fields={fields}
+          form={form}
+          resolveOptions={resolveOptions}
+          readOnly={readOnly}
+          afterField={afterField}
+        />
+      )}
       {footer ? <div className="cfg-academico-form-workspace__footer">{footer}</div> : null}
     </div>
   </section>

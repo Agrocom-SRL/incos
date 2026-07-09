@@ -47,7 +47,6 @@ export const useCarreraForm = (mode = 'create') => {
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
       { title: 'Académico', href: returnListPath },
-      { title: 'Carreras', href: returnListPath },
       { title: pageTitle },
     ],
     [pageTitle, returnListPath],

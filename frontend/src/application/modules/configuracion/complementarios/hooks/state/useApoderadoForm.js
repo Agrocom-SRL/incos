@@ -33,7 +33,7 @@ const createApoderadoFormSections = () => ({
         label: 'Nombre',
         type: 'input',
         required: true,
-        span: 12,
+        span: 24,
         placeholder: 'Ej. Padre, Madre, Tutor legal',
         maxLength: 255,
         rules: [MIN_TEXT],

@@ -10,7 +10,10 @@ const CUENTA_FORM_EMPTY = {
   bancoId: undefined,
   numeroCuenta: '',
   numeroCelular: '',
+  tieneNumeroCelular: false,
   qr: [],
+  qrImagenUrl: null,
+  tieneQr: false,
 };
 
 /** API (catálogo del contexto) → valores de formulario. */
@@ -22,7 +25,10 @@ export const mapCuentaToFormValues = (cuenta) => {
     bancoId: cuenta.bancoId ?? undefined,
     numeroCuenta: cuenta.numeroCuenta ?? '',
     numeroCelular: cuenta.numeroCelular ?? '',
+    tieneNumeroCelular: Boolean(cuenta.numeroCelular),
     qr: [],
+    qrImagenUrl: cuenta.qrImagenUrl ?? null,
+    tieneQr: Boolean(cuenta.qrImagenUrl),
     // `activo` solo aplica en modo edición (se asigna al crear, ver formSections).
     ...(cuenta.activo != null ? { activo: cuenta.activo } : {}),
   };
@@ -41,9 +47,12 @@ export const mapFormValuesToCuentaPayload = (values, { isEditMode = false } = {}
   metodo_pago_id: values.metodoPagoId ?? null,
   banco_id: values.bancoId ?? null,
   numero_cuenta: values.numeroCuenta?.trim() || null,
-  numero_celular: values.numeroCelular?.trim() || null,
+  // El switch "¿Desea agregar número de celular?" gobierna el campo: apagado limpia el dato.
+  numero_celular: values.tieneNumeroCelular ? values.numeroCelular?.trim() || null : null,
   activo: isEditMode ? (values.activo == null ? true : !!values.activo) : true,
-  qr: extraerArchivoQr(values.qr),
+  // El switch "¿Desea agregar un QR de cobro?" solo habilita el campo de archivo; si está
+  // apagado no se envía archivo nuevo (no se toca un QR ya guardado, sin borrado implícito).
+  qr: values.tieneQr ? extraerArchivoQr(values.qr) : undefined,
 });
 
 export default mapCuentaToFormValues;

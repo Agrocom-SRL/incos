@@ -65,10 +65,14 @@ const FormImageUploadDragger = ({
   const previewField = field.previewField || 'imagenRuta';
   const storedPath = form ? Form.useWatch(previewField, form) : null;
   const hasLocalFile = Boolean(fileList[0]);
+  // Por defecto resuelve rutas de Carrera (`uploads/carreras/...`); otros
+  // consumidores (p. ej. QR de cuenta, que ya guarda una URL completa) pasan
+  // `field.buildPreviewUrl` propio en vez de acoplarse a Carrera.
+  const resolvePreviewUrl = field.buildPreviewUrl || buildCarreraImageUrl;
 
   const previewUrl = useImageUploadPreviewUrl(
     fileList,
-    hasLocalFile ? null : () => buildCarreraImageUrl(storedPath),
+    hasLocalFile ? null : () => resolvePreviewUrl(storedPath),
   );
   const hasPreview = Boolean(previewUrl);
 

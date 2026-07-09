@@ -18,9 +18,9 @@
  * defecto (métodos).
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { App } from 'antd';
+import { App, Form } from 'antd';
 import dayjs from 'dayjs';
 import { useAporteContext } from '@application-finanzas/aportes/hooks/context/useAporteContext';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
@@ -42,7 +42,7 @@ const MONTO_RULES = [
 ];
 
 /** Campos del formulario (patrón data-driven de `CfgFormWorkspace`, ver `createCarreraFormSections`). */
-const createAporteFormSections = () => ({
+const createAporteFormSections = (tieneFechaFin) => ({
   datosAporte: {
     title: 'Aporte de la gestión',
     description:
@@ -68,12 +68,24 @@ const createAporteFormSections = () => ({
         span: 12,
       },
       {
-        name: 'fechaFin',
-        label: 'Fecha de fin de vigencia (opcional)',
-        type: 'date',
+        name: 'tieneFechaFin',
+        label: '¿Tiene fecha de fin de vigencia?',
+        type: 'switch',
         span: 12,
-        extra: 'Déjelo vacío si el aporte no tiene fecha límite dentro de la gestión.',
+        checkedChildren: 'Sí',
+        unCheckedChildren: 'No',
       },
+      ...(tieneFechaFin
+        ? [
+            {
+              name: 'fechaFin',
+              label: 'Fecha de fin de vigencia',
+              type: 'date',
+              required: true,
+              span: 12,
+            },
+          ]
+        : []),
       {
         name: 'aporteActivo',
         label: 'Aporte activo',
@@ -90,6 +102,7 @@ export const useAportePage = () => {
   const { message } = App.useApp();
   const navigate = useNavigate();
   const location = useLocation();
+  const [form] = Form.useForm();
   const { gestionVigente, aporteVigente, loading, error, refetch, saving, guardarConfiguracionAporte } =
     useAporteContext();
 
@@ -98,7 +111,19 @@ export const useAportePage = () => {
     [],
   );
 
-  const formSections = useMemo(() => createAporteFormSections(), []);
+  const tieneFechaFin = Form.useWatch('tieneFechaFin', form);
+  const formSections = useMemo(() => createAporteFormSections(tieneFechaFin), [tieneFechaFin]);
+
+  // Precarga el formulario con el aporte vigente (o valores por defecto para alta).
+  useEffect(() => {
+    form.setFieldsValue({
+      montoBase: aporteVigente?.montoBase ?? null,
+      aporteActivo: aporteVigente?.aporteActivo ?? true,
+      fechaInicio: aporteVigente?.fechaInicio ? dayjs(aporteVigente.fechaInicio) : null,
+      tieneFechaFin: Boolean(aporteVigente?.fechaFin),
+      fechaFin: aporteVigente?.fechaFin ? dayjs(aporteVigente.fechaFin) : null,
+    });
+  }, [aporteVigente, form]);
 
   const handleVolver = useCallback(() => {
     const returnTab = location.state?.returnTab;
@@ -111,7 +136,7 @@ export const useAportePage = () => {
         monto_base: Number(values.montoBase),
         aporte_activo: !!values.aporteActivo,
         fecha_inicio: toFechaBackend(values.fechaInicio),
-        fecha_fin: toFechaBackend(values.fechaFin),
+        fecha_fin: values.tieneFechaFin ? toFechaBackend(values.fechaFin) : null,
       };
       // UPSERT: con id existente → PUT; sin id → POST (gestión vigente la pone el back).
       const resultado = await guardarConfiguracionAporte({
@@ -130,6 +155,7 @@ export const useAportePage = () => {
   );
 
   return {
+    form,
     gestionVigente,
     breadcrumbItems,
     aporteVigente,

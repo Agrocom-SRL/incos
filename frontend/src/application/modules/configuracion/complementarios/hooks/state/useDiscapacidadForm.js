@@ -33,7 +33,7 @@ const createDiscapacidadFormSections = () => ({
         label: 'Nombre',
         type: 'input',
         required: true,
-        span: 12,
+        span: 24,
         placeholder: 'Ej. Discapacidad visual',
         maxLength: 255,
         rules: [MIN_TEXT],

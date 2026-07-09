@@ -9,8 +9,7 @@ export const createParaleloFormSections = () => ({
       {
         name: 'periodo_id',
         label: 'Periodo del plan',
-        type: 'pillSelect',
-        pillVariant: 'paraleloPeriodo',
+        type: 'select',
         required: true,
         span: 12,
         placeholder: 'Seleccione periodo',

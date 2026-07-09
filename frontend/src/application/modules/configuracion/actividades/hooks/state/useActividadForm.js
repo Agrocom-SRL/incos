@@ -1,7 +1,8 @@
 /**
  * Orquestación ABM actividad (página completa crear/editar). Gemelo de
- * `academico/hooks/state/useMateriaForm.js`. Campo `icono` es texto libre
- * (kebab-case); no se mapea a un set de iconos AntD, solo preview de texto.
+ * `academico/hooks/state/useMateriaForm.js`. Campo `icono` es un selector
+ * visual (grilla de íconos AntD vía `ACTIVIDAD_ICON_MAP`); guarda el string
+ * kebab-case elegido, mismo shape de dato que antes.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -51,11 +52,9 @@ const createActividadFormSections = () => ({
       {
         name: 'icono',
         label: 'Icono',
-        type: 'input',
+        type: 'iconPicker',
         span: 12,
-        placeholder: 'Ej. calendar-check (kebab-case)',
-        maxLength: 100,
-        extra: 'Texto libre; se usa como referencia visual, no un set de iconos AntD.',
+        helperText: 'Se guarda el nombre del ícono seleccionado; se usa como referencia visual en las actividades del cronograma.',
       },
       {
         name: 'esDestacada',

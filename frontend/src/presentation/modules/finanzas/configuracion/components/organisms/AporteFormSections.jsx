@@ -1,13 +1,11 @@
 /**
  * Formulario Aporte de la gestión vigente — workspace alineado a CFG Académico
- * (gemelo de `CarreraFormSections`/`MateriaFormSections`). `beforeFields`
- * muestra la gestión vigente como contexto fijo (no editable: el aporte
- * siempre se configura para la gestión actual, la asocia el backend).
+ * (gemelo de `CarreraFormSections`/`MateriaFormSections`). La gestión vigente
+ * se muestra como badge en la cabecera de la página (`AporteConfigPage`), no aquí.
  */
-import { Tag } from 'antd';
 import { CfgFormWorkspace } from '@organisms';
 
-const AporteFormSections = ({ form, formSections, gestionLabel, footer = null }) => {
+const AporteFormSections = ({ form, formSections, footer = null }) => {
   const { datosAporte } = formSections ?? {};
 
   if (!datosAporte?.fields?.length) {
@@ -21,9 +19,6 @@ const AporteFormSections = ({ form, formSections, gestionLabel, footer = null })
       fields={datosAporte.fields}
       form={form}
       footer={footer}
-      beforeFields={
-        gestionLabel ? <Tag color="processing">Configurando la gestión {gestionLabel}</Tag> : null
-      }
     />
   );
 };
