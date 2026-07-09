@@ -1,11 +1,13 @@
 /**
  * Detalle de método de pago — orquestación UI (ficha sd-profile). Catálogo fijo
  * (EFECTIVO/QR/TRANSFERENCIA/DEPOSITO): sin eliminar, solo ver/editar el nombre
- * y activar/desactivar. Gemelo simplificado de `BancoDetailPage.jsx`.
+ * y activar/desactivar. Gemelo simplificado de `BancoDetailPage.jsx`. La
+ * edición navega a la página completa `MetodoFormPage`.
  */
 
 import { CheckCircleOutlined, CreditCardOutlined, StopOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import DetailInfoCard from '@molecules/DetailInfoCard';
@@ -18,12 +20,13 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { useAuthContext } from '@application-auth';
 import { useMetodoDetailPage } from '@application-finanzas/hooks/state/useMetodoDetailPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import MetodoDrawer from '@finanzas/configuracion/components/MetodoDrawer.jsx';
+import { metodoEditarPath } from '@application-finanzas/config/paths';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const MetodoDetailPage = () => {
   const { hasPermiso } = useAuthContext();
+  const navigate = useNavigate();
   const {
     metodo,
     loading,
@@ -32,10 +35,6 @@ const MetodoDetailPage = () => {
     avatarInitials,
     breadcrumbItems,
     saving,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarMetodo,
     handleToggleActivo,
     handleVolver,
     refetch,
@@ -96,7 +95,7 @@ const MetodoDetailPage = () => {
                 </>
               }
               showEdit={puedeEditar}
-              onEdit={abrirDrawer}
+              onEdit={() => navigate(metodoEditarPath(metodo.id))}
               editTooltip="Editar método"
               editAriaLabel="Editar método"
               actions={profileActions}
@@ -109,14 +108,6 @@ const MetodoDetailPage = () => {
           </>
         ) : null}
       </DetailPageShell>
-
-      <MetodoDrawer
-        open={drawerAbierto}
-        metodo={metodo}
-        saving={saving}
-        onGuardar={guardarMetodo}
-        onCancelar={cerrarDrawer}
-      />
     </PageTemplate>
   );
 };

@@ -4,14 +4,13 @@
  *
  * Sin GET /:id: resuelve el registro por `id` desde el catálogo ya cargado en
  * `ConfigPagosContext` (catálogo corto, sin paginación — mismo criterio que
- * `useConfigPagosCatalogsApi`). Maneja el Drawer de edición LOCAL llamando
- * directo a `guardarBanco` del contexto (NO reutiliza `useConfigPagosPage`,
- * que es de la pantalla de tabs). Expone también el toggle activo/inactivo
- * (que se movió de la tabla a la ficha) y eliminar (con confirmación vía
- * `useDeleteItem`, mismo patrón que `TableActions`).
+ * `useConfigPagosCatalogsApi`). La edición vive en su propia página
+ * (`BancoFormPage`/`useBancoForm`, navegación completa, ya no Drawer). Expone
+ * el toggle activo/inactivo (que se movió de la tabla a la ficha) y eliminar
+ * (con confirmación vía `useDeleteItem`, mismo patrón que `TableActions`).
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { useConfigPagosContext } from '@application-finanzas/hooks/context/useConfigPagosContext';
@@ -28,17 +27,8 @@ export const useBancoDetailPage = () => {
   const { message } = App.useApp();
   const isInvalidId = !Number.isFinite(bancoId) || bancoId < 1;
 
-  const {
-    bancos,
-    metodos,
-    loading,
-    error,
-    refetch,
-    saving,
-    guardarBanco,
-    eliminarBanco,
-    cambiarEstadoBanco,
-  } = useConfigPagosContext();
+  const { bancos, metodos, loading, error, refetch, saving, eliminarBanco, cambiarEstadoBanco } =
+    useConfigPagosContext();
 
   const banco = useMemo(
     () => (isInvalidId ? null : (bancos.find((b) => b.id === bancoId) ?? null)),
@@ -50,32 +40,7 @@ export const useBancoDetailPage = () => {
     return metodo?.nombre ?? null;
   }, [metodos, banco?.metodoPagoId]);
 
-  const [drawerAbierto, setDrawerAbierto] = useState(false);
-  const abrirDrawer = useCallback(() => setDrawerAbierto(true), []);
-  const cerrarDrawer = useCallback(() => setDrawerAbierto(false), []);
-
   const handleVolver = useCallback(() => navigate(BANCOS_TAB_PATH), [navigate]);
-
-  const guardarBancoSubmit = useCallback(
-    async (values) => {
-      const payload = {
-        codigo: values.codigo?.trim(),
-        nombre: values.nombre?.trim(),
-        metodo_pago_id: values.metodoPagoId ?? null,
-        activo: values.activo == null ? true : !!values.activo,
-      };
-      const resultado = await guardarBanco({ id: bancoId, payload });
-      if (resultado?.success) {
-        message.success('Banco actualizado');
-        await refetch();
-        cerrarDrawer();
-        return true;
-      }
-      message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
-      return false;
-    },
-    [guardarBanco, bancoId, message, refetch, cerrarDrawer],
-  );
 
   const handleToggleActivo = useCallback(async () => {
     if (!banco) return;
@@ -123,10 +88,6 @@ export const useBancoDetailPage = () => {
     breadcrumbItems,
     saving,
     eliminando,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarBancoSubmit,
     handleToggleActivo,
     handleEliminar,
     handleVolver,

@@ -3,13 +3,14 @@
  * Finanzas).
  *
  * Sin GET /:id: resuelve el registro por `id` desde el catálogo ya cargado en
- * `ConfigPagosContext` (catálogo corto, sin paginación). Maneja el Drawer de
- * edición LOCAL llamando directo a `guardarCuenta` del contexto (NO reutiliza
- * `useConfigPagosPage`). Expone también el toggle activo/inactivo y eliminar
- * (con confirmación vía `useDeleteItem`, mismo patrón que `TableActions`).
+ * `ConfigPagosContext` (catálogo corto, sin paginación). La edición (incluido
+ * el QR) vive en su propia página (`CuentaFormPage`/`useCuentaForm`,
+ * navegación completa, ya no Drawer). Expone el toggle activo/inactivo y
+ * eliminar (con confirmación vía `useDeleteItem`, mismo patrón que
+ * `TableActions`).
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { useConfigPagosContext } from '@application-finanzas/hooks/context/useConfigPagosContext';
@@ -34,7 +35,6 @@ export const useCuentaDetailPage = () => {
     error,
     refetch,
     saving,
-    guardarCuenta,
     eliminarCuenta,
     cambiarEstadoCuenta,
   } = useConfigPagosContext();
@@ -49,35 +49,7 @@ export const useCuentaDetailPage = () => {
     return metodo?.nombre ?? null;
   }, [metodos, cuenta?.metodoPagoId]);
 
-  const [drawerAbierto, setDrawerAbierto] = useState(false);
-  const abrirDrawer = useCallback(() => setDrawerAbierto(true), []);
-  const cerrarDrawer = useCallback(() => setDrawerAbierto(false), []);
-
   const handleVolver = useCallback(() => navigate(CUENTAS_TAB_PATH), [navigate]);
-
-  const guardarCuentaSubmit = useCallback(
-    async (values) => {
-      const payload = {
-        nombre_titular: values.nombreTitular?.trim(),
-        metodo_pago_id: values.metodoPagoId ?? null,
-        banco_id: values.bancoId ?? null,
-        numero_cuenta: values.numeroCuenta?.trim() || null,
-        numero_celular: values.numeroCelular?.trim() || null,
-        activo: values.activo == null ? true : !!values.activo,
-        qr: values.qr instanceof File ? values.qr : undefined,
-      };
-      const resultado = await guardarCuenta({ id: cuentaId, payload });
-      if (resultado?.success) {
-        message.success('Cuenta actualizada');
-        await refetch();
-        cerrarDrawer();
-        return true;
-      }
-      message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
-      return false;
-    },
-    [guardarCuenta, cuentaId, message, refetch, cerrarDrawer],
-  );
 
   const handleToggleActivo = useCallback(async () => {
     if (!cuenta) return;
@@ -126,10 +98,6 @@ export const useCuentaDetailPage = () => {
     breadcrumbItems,
     saving,
     eliminando,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarCuentaSubmit,
     handleToggleActivo,
     handleEliminar,
     handleVolver,

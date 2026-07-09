@@ -33,6 +33,11 @@ const AporteConfigConnector = lazy(() => import('./connectors/AporteConfigConnec
 const BancoDetailConnector = lazy(() => import('./connectors/BancoDetailConnector.jsx'));
 const CuentaDetailConnector = lazy(() => import('./connectors/CuentaDetailConnector.jsx'));
 const MetodoDetailConnector = lazy(() => import('./connectors/MetodoDetailConnector.jsx'));
+const BancoFormCreateConnector = lazy(() => import('./connectors/BancoFormCreateConnector.jsx'));
+const BancoFormEditConnector = lazy(() => import('./connectors/BancoFormEditConnector.jsx'));
+const CuentaFormCreateConnector = lazy(() => import('./connectors/CuentaFormCreateConnector.jsx'));
+const CuentaFormEditConnector = lazy(() => import('./connectors/CuentaFormEditConnector.jsx'));
+const MetodoFormEditConnector = lazy(() => import('./connectors/MetodoFormEditConnector.jsx'));
 const BecaDescuentoFormCreateConnector = lazy(
   () => import('./connectors/BecaDescuentoFormCreateConnector.jsx'),
 );
@@ -68,7 +73,28 @@ export const finanzasConfiguracionRoutes = [
     breadcrumbParent: 'FIN-CFG',
   },
 
-  // Fichas de detalle de bancos/cuentas/métodos (toggle activo/inactivo aquí).
+  // Bancos autorizados: alta/edición (páginas completas) + ficha de detalle
+  // (toggle activo/inactivo y eliminar viven en la ficha).
+  {
+    path: '/finanzas/configuracion/bancos/nuevo',
+    element: <BancoFormCreateConnector />,
+    key: 'FIN-CFG-BANCO-NUEVO',
+    breadcrumbLabel: 'Nuevo banco',
+    permiso: 'finanzas.configuracion.pago',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'FIN-CFG',
+  },
+  {
+    path: '/finanzas/configuracion/bancos/:id/editar',
+    element: <BancoFormEditConnector />,
+    key: 'FIN-CFG-BANCO-EDITAR',
+    breadcrumbLabel: 'Editar banco',
+    permiso: 'finanzas.configuracion.pago',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'FIN-CFG',
+  },
   {
     path: '/finanzas/configuracion/bancos/:id',
     element: <BancoDetailConnector />,
@@ -79,6 +105,28 @@ export const finanzasConfiguracionRoutes = [
     menu: null,
     breadcrumbParent: 'FIN-CFG',
   },
+
+  // Cuentas de pago: alta/edición (páginas completas) + ficha de detalle.
+  {
+    path: '/finanzas/configuracion/cuentas/nueva',
+    element: <CuentaFormCreateConnector />,
+    key: 'FIN-CFG-CUENTA-NUEVA',
+    breadcrumbLabel: 'Nueva cuenta',
+    permiso: 'finanzas.configuracion.pago',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'FIN-CFG',
+  },
+  {
+    path: '/finanzas/configuracion/cuentas/:id/editar',
+    element: <CuentaFormEditConnector />,
+    key: 'FIN-CFG-CUENTA-EDITAR',
+    breadcrumbLabel: 'Editar cuenta',
+    permiso: 'finanzas.configuracion.pago',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'FIN-CFG',
+  },
   {
     path: '/finanzas/configuracion/cuentas/:id',
     element: <CuentaDetailConnector />,
@@ -86,6 +134,18 @@ export const finanzasConfiguracionRoutes = [
     breadcrumbLabel: 'Cuenta',
     permiso: 'finanzas.configuracion.pago',
     accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'FIN-CFG',
+  },
+
+  // Métodos de pago: catálogo fijo (sin alta), solo edición + ficha de detalle.
+  {
+    path: '/finanzas/configuracion/metodos/:id/editar',
+    element: <MetodoFormEditConnector />,
+    key: 'FIN-CFG-METODO-EDITAR',
+    breadcrumbLabel: 'Editar método de pago',
+    permiso: 'finanzas.configuracion.pago',
+    accion: 'EDITAR',
     menu: null,
     breadcrumbParent: 'FIN-CFG',
   },

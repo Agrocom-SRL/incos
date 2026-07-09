@@ -3,12 +3,12 @@
  * Finanzas). Catálogo fijo (EFECTIVO/QR/TRANSFERENCIA/DEPOSITO): sin eliminar.
  *
  * Sin GET /:id: resuelve el registro por `id` desde el catálogo ya cargado en
- * `ConfigPagosContext`. Maneja el Drawer de edición LOCAL llamando directo a
- * `actualizarMetodoPago` del contexto (NO reutiliza `useConfigPagosPage`).
+ * `ConfigPagosContext`. La edición del nombre vive en su propia página
+ * (`MetodoFormPage`/`useMetodoForm`, navegación completa, ya no Drawer).
  * Expone también el toggle activo/inactivo (movido de la tabla a la ficha).
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { useConfigPagosContext } from '@application-finanzas/hooks/context/useConfigPagosContext';
@@ -24,7 +24,7 @@ export const useMetodoDetailPage = () => {
   const { message } = App.useApp();
   const isInvalidId = !Number.isFinite(metodoId) || metodoId < 1;
 
-  const { metodos, loading, error, refetch, saving, actualizarMetodoPago, cambiarEstadoMetodo } =
+  const { metodos, loading, error, refetch, saving, cambiarEstadoMetodo } =
     useConfigPagosContext();
 
   const metodo = useMemo(
@@ -32,26 +32,7 @@ export const useMetodoDetailPage = () => {
     [metodos, metodoId, isInvalidId],
   );
 
-  const [drawerAbierto, setDrawerAbierto] = useState(false);
-  const abrirDrawer = useCallback(() => setDrawerAbierto(true), []);
-  const cerrarDrawer = useCallback(() => setDrawerAbierto(false), []);
-
   const handleVolver = useCallback(() => navigate(METODOS_TAB_PATH), [navigate]);
-
-  const guardarMetodo = useCallback(
-    async (metodoIdParam, payload) => {
-      const resultado = await actualizarMetodoPago(metodoIdParam, payload);
-      if (resultado?.success) {
-        message.success('Método de pago actualizado');
-        await refetch();
-        cerrarDrawer();
-        return true;
-      }
-      message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
-      return false;
-    },
-    [actualizarMetodoPago, message, refetch, cerrarDrawer],
-  );
 
   const handleToggleActivo = useCallback(async () => {
     if (!metodo) return;
@@ -89,10 +70,6 @@ export const useMetodoDetailPage = () => {
     avatarInitials,
     breadcrumbItems,
     saving,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarMetodo,
     handleToggleActivo,
     handleVolver,
     refetch,

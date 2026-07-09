@@ -1,12 +1,13 @@
 /**
  * Detalle de banco autorizado — orquestación UI (ficha sd-profile).
  * Gemelo simplificado de `configuracion/complementarios/pages/DiscapacidadDetailPage.jsx`,
- * con acciones extra en `DetailProfileCard` (activar/desactivar + eliminar) y el
- * Drawer de edición reutilizado (`BancoDrawer`).
+ * con acciones extra en `DetailProfileCard` (activar/desactivar + eliminar). La
+ * edición navega a la página completa `BancoFormPage`.
  */
 
 import { BankOutlined, CheckCircleOutlined, DeleteOutlined, StopOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import DetailInfoCard from '@molecules/DetailInfoCard';
@@ -19,15 +20,15 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { useAuthContext } from '@application-auth';
 import { useBancoDetailPage } from '@application-finanzas/hooks/state/useBancoDetailPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import BancoDrawer from '@finanzas/configuracion/components/BancoDrawer.jsx';
+import { bancoEditarPath } from '@application-finanzas/config/paths';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const BancoDetailPage = () => {
   const { hasPermiso } = useAuthContext();
+  const navigate = useNavigate();
   const {
     banco,
-    metodos,
     metodoNombre,
     loading,
     error,
@@ -36,10 +37,6 @@ const BancoDetailPage = () => {
     breadcrumbItems,
     saving,
     eliminando,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarBancoSubmit,
     handleToggleActivo,
     handleEliminar,
     handleVolver,
@@ -108,7 +105,7 @@ const BancoDetailPage = () => {
                 </>
               }
               showEdit={puedeEditar}
-              onEdit={abrirDrawer}
+              onEdit={() => navigate(bancoEditarPath(banco.id))}
               editTooltip="Editar banco"
               editAriaLabel="Editar banco"
               actions={profileActions}
@@ -122,15 +119,6 @@ const BancoDetailPage = () => {
           </>
         ) : null}
       </DetailPageShell>
-
-      <BancoDrawer
-        open={drawerAbierto}
-        banco={banco}
-        metodos={metodos}
-        saving={saving}
-        onGuardar={guardarBancoSubmit}
-        onCancelar={cerrarDrawer}
-      />
     </PageTemplate>
   );
 };

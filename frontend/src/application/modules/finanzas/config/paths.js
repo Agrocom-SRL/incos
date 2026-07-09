@@ -27,6 +27,13 @@ export const bancoDetallePath = (id) => `${CONFIGURACION_PATH}/bancos/${id}`;
 export const cuentaDetallePath = (id) => `${CONFIGURACION_PATH}/cuentas/${id}`;
 export const metodoDetallePath = (id) => `${CONFIGURACION_PATH}/metodos/${id}`;
 
+/** Alta/edición de bancos y cuentas; métodos son catálogo fijo, solo edición. */
+export const bancoNuevoPath = `${CONFIGURACION_PATH}/bancos/nuevo`;
+export const bancoEditarPath = (id) => `${CONFIGURACION_PATH}/bancos/${id}/editar`;
+export const cuentaNuevoPath = `${CONFIGURACION_PATH}/cuentas/nueva`;
+export const cuentaEditarPath = (id) => `${CONFIGURACION_PATH}/cuentas/${id}/editar`;
+export const metodoEditarPath = (id) => `${CONFIGURACION_PATH}/metodos/${id}/editar`;
+
 /** Catálogo maestro de becas y descuentos (embebido como tab de Config. de pagos). */
 export const BECA_DESCUENTO_BASE = `${CONFIGURACION_PATH}/becas-descuentos`;
 export const becaDescuentoNuevaPath = `${BECA_DESCUENTO_BASE}/nueva`;

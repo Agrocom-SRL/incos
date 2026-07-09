@@ -1,7 +1,8 @@
 /**
  * Detalle de cuenta de pago — orquestación UI (ficha sd-profile).
  * Gemelo de `BancoDetailPage.jsx`, con la imagen QR (si existe) mostrada vía
- * `Image` de Ant Design (preview nativo) y el Drawer reutilizado (`CuentaDrawer`).
+ * `Image` de Ant Design (preview nativo). La edición (incluido el QR) navega
+ * a la página completa `CuentaFormPage`.
  */
 
 import {
@@ -12,6 +13,7 @@ import {
   WalletOutlined,
 } from '@ant-design/icons';
 import { Alert, Image } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import DetailInfoCard from '@molecules/DetailInfoCard';
@@ -24,16 +26,15 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { useAuthContext } from '@application-auth';
 import { useCuentaDetailPage } from '@application-finanzas/hooks/state/useCuentaDetailPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import CuentaDrawer from '@finanzas/configuracion/components/CuentaDrawer.jsx';
+import { cuentaEditarPath } from '@application-finanzas/config/paths';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const CuentaDetailPage = () => {
   const { hasPermiso } = useAuthContext();
+  const navigate = useNavigate();
   const {
     cuenta,
-    metodos,
-    bancos,
     metodoNombre,
     loading,
     error,
@@ -42,10 +43,6 @@ const CuentaDetailPage = () => {
     breadcrumbItems,
     saving,
     eliminando,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarCuentaSubmit,
     handleToggleActivo,
     handleEliminar,
     handleVolver,
@@ -114,7 +111,7 @@ const CuentaDetailPage = () => {
                 </>
               }
               showEdit={puedeEditar}
-              onEdit={abrirDrawer}
+              onEdit={() => navigate(cuentaEditarPath(cuenta.id))}
               editTooltip="Editar cuenta"
               editAriaLabel="Editar cuenta"
               actions={profileActions}
@@ -139,16 +136,6 @@ const CuentaDetailPage = () => {
           </>
         ) : null}
       </DetailPageShell>
-
-      <CuentaDrawer
-        open={drawerAbierto}
-        cuenta={cuenta}
-        metodos={metodos}
-        bancos={bancos}
-        saving={saving}
-        onGuardar={guardarCuentaSubmit}
-        onCancelar={cerrarDrawer}
-      />
     </PageTemplate>
   );
 };

@@ -4,9 +4,18 @@
  * Paths bajo `/seguridad/roles/...`. Orden: subpath (`.../permisos`) antes que la lista.
  */
 
-import { RolPermisosConnector, RolesListConnector } from '@modules/seguridad/roles/connectors';
+import { RolFormConnector, RolPermisosConnector, RolesListConnector } from '@modules/seguridad/roles/connectors';
 
 export const rolesRoutes = [
+  {
+    path: '/seguridad/roles/nuevo',
+    element: <RolFormConnector />,
+    key: 'SEG-ROL-NUEVO',
+    permiso: 'seguridad.rol.gestionar',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'SEG-ROLES',
+  },
   {
     path: '/seguridad/roles/:id/permisos',
     element: <RolPermisosConnector />,

@@ -6,11 +6,11 @@
  * numeración, `IdentidadCelda`, pill de método, concurrencia «Transacciones»,
  * toggle de la columna "Estado" (`useToggleEstadoCatalogo`, PATCH /:id/estado,
  * ACTIVAR) y `TableActions` (ver/editar/eliminar). El alta ("Agregar banco")
- * vive en la cabecera del workspace (la monta la página). Ver navega a la ficha
- * de detalle (`BancoDetailPage`). Recibe props ya mapeadas; no hace fetch
- * (eliminar y refetch salen del contexto). El filtro por texto es local
- * (catálogo corto, sin paginación). Filas inactivas atenuadas
- * (`catalogoEstadoRowClassName`).
+ * vive en la cabecera del workspace (la monta la página). Ver/editar navegan a
+ * páginas completas (`BancoDetailPage`/`BancoFormPage`). Recibe props ya
+ * mapeadas; no hace fetch (eliminar y refetch salen del contexto). El filtro
+ * por texto es local (catálogo corto, sin paginación). Filas inactivas
+ * atenuadas (`catalogoEstadoRowClassName`).
  */
 
 import { useMemo, useState } from 'react';
@@ -22,8 +22,7 @@ import { useConfigPagosContext } from '@application-finanzas/hooks/context/useCo
 import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { createBancosColumns } from '@finanzas/configuracion/config/configPagosColumns';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import { bancoDetallePath } from '@application-finanzas/config/paths';
-import BancoDrawer from './BancoDrawer.jsx';
+import { bancoDetallePath, bancoEditarPath } from '@application-finanzas/config/paths';
 
 /** Normaliza para comparar sin acentos ni mayúsculas. */
 const normalizar = (valor) =>
@@ -35,16 +34,10 @@ const normalizar = (valor) =>
 
 const BancosTabPanel = ({
   bancos = [],
-  metodos = [],
   loading = false,
   error = null,
   saving,
   metodoNombrePorId,
-  drawerAbierto,
-  bancoEnEdicion,
-  onAbrirDrawer,
-  onCerrarDrawer,
-  onGuardar,
 }) => {
   const navigate = useNavigate();
   const { refetch, eliminarBanco } = useConfigPagosContext();
@@ -60,7 +53,7 @@ const BancosTabPanel = ({
 
   const columns = createBancosColumns({
     onVer: (record) => navigate(bancoDetallePath(record.id)),
-    onEditar: onAbrirDrawer,
+    onEditar: (record) => navigate(bancoEditarPath(record.id)),
     puedeEditar,
     metodoNombrePorId,
     refetch,
@@ -95,15 +88,6 @@ const BancosTabPanel = ({
         searchStyle={{ maxWidth: 520 }}
         pagination={false}
         loadingTip={saving ? 'Guardando…' : 'Cargando bancos…'}
-      />
-
-      <BancoDrawer
-        open={drawerAbierto}
-        banco={bancoEnEdicion}
-        metodos={metodos}
-        saving={saving}
-        onGuardar={onGuardar}
-        onCancelar={onCerrarDrawer}
       />
     </div>
   );
