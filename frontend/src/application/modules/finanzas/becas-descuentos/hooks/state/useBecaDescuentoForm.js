@@ -97,12 +97,14 @@ const createBecaDescuentoFormSections = ({ esAutomatica, tipoAutomatica, isEditM
         {
           name: 'porcentaje',
           label: 'Porcentaje de descuento',
-          type: 'number',
+          type: 'slider',
           required: true,
-          span: 12,
+          span: 24,
           min: 0,
           max: 100,
-          addonAfter: '%',
+          step: 1,
+          suffix: '%',
+          marks: { 25: '25%', 50: '50%', 75: '75%' },
         },
         {
           name: 'descripcion',

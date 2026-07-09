@@ -22,6 +22,7 @@ import FormColorPopoverPicker from '../components/FormColorPopoverPicker';
 import FormImageUploadDragger from '../components/FormImageUploadDragger';
 import FormPillSelect from '../components/FormPillSelect';
 import FormIconPicker from '../components/FormIconPicker';
+import FormSlider from '../components/FormSlider';
 import { resolveFormPillClassName } from './formPillSelectResolvers';
 import {
   FieldInput,
@@ -87,6 +88,10 @@ const renderImageUpload = (field, disabled, readOnly, form) => (
 
 const renderIconPicker = (field, disabled, readOnly) => (
   <FormIconPicker field={field} disabled={disabled} readOnly={readOnly} />
+);
+
+const renderSlider = (field, disabled, readOnly) => (
+  <FormSlider field={field} disabled={disabled} readOnly={readOnly} />
 );
 
 /**
@@ -433,6 +438,7 @@ export const fieldRenderers = {
   color: renderColor,
   imageUpload: renderImageUpload,
   iconPicker: renderIconPicker,
+  slider: renderSlider,
   search: renderSearch,
   select: renderSelect,
   pillSelect: renderPillSelect,
@@ -457,6 +463,7 @@ const fieldRendererParams = {
   number: ['field', 'disabled', 'readOnly'],
   color: ['field', 'disabled', 'readOnly'],
   iconPicker: ['field', 'disabled', 'readOnly'],
+  slider: ['field', 'disabled', 'readOnly'],
   search: ['field', 'disabled', 'readOnly'],
   switch: ['field', 'disabled', 'readOnly'],
   textarea: ['field', 'disabled', 'readOnly'],

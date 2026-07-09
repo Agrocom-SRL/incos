@@ -82,7 +82,7 @@ export const documentacionRoutes = [
       label: 'Documentación',
       module: 'CFG',
       parent: 'CFG',
-      order: 3,
+      order: 4,
     },
   },
 ];

@@ -86,14 +86,6 @@ const createAporteFormSections = (tieneFechaFin) => ({
             },
           ]
         : []),
-      {
-        name: 'aporteActivo',
-        label: 'Aporte activo',
-        type: 'switch',
-        span: 12,
-        checkedChildren: 'Activo',
-        unCheckedChildren: 'Inactivo',
-      },
     ],
   },
 });
@@ -115,10 +107,13 @@ export const useAportePage = () => {
   const formSections = useMemo(() => createAporteFormSections(tieneFechaFin), [tieneFechaFin]);
 
   // Precarga el formulario con el aporte vigente (o valores por defecto para alta).
+  // El estado activo/inactivo NO se precarga como campo editable: se muestra
+  // como pill de solo lectura en `AporteFormSections` y se preserva tal cual
+  // al guardar (ver `guardarAporte`), para no sobrescribirlo sin querer junto
+  // con el resto de la configuración.
   useEffect(() => {
     form.setFieldsValue({
       montoBase: aporteVigente?.montoBase ?? null,
-      aporteActivo: aporteVigente?.aporteActivo ?? true,
       fechaInicio: aporteVigente?.fechaInicio ? dayjs(aporteVigente.fechaInicio) : null,
       tieneFechaFin: Boolean(aporteVigente?.fechaFin),
       fechaFin: aporteVigente?.fechaFin ? dayjs(aporteVigente.fechaFin) : null,
@@ -134,7 +129,9 @@ export const useAportePage = () => {
     async (values) => {
       const payload = {
         monto_base: Number(values.montoBase),
-        aporte_activo: !!values.aporteActivo,
+        // No editable desde este formulario: se preserva el valor actual (o
+        // `true` por defecto al crear el primer aporte de la gestión).
+        aporte_activo: aporteVigente?.aporteActivo ?? true,
         fecha_inicio: toFechaBackend(values.fechaInicio),
         fecha_fin: values.tieneFechaFin ? toFechaBackend(values.fechaFin) : null,
       };

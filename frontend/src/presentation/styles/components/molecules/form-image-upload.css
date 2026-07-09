@@ -273,3 +273,12 @@
 .form-color-popover-picker__hex-panel {
   font-size: 12px;
 }
+
+/* Slider con valor en vivo (FormSlider) — hereda el color del tema (sin acento propio). */
+.form-slider .ant-slider {
+  margin: 6px 6px 12px;
+}
+
+.form-slider__value {
+  font-size: var(--font-size-sm, 12px);
+}

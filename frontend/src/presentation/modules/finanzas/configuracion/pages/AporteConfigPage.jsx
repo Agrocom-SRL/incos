@@ -9,7 +9,7 @@
  * separado de `finanzas.configuracion.pago` (bancos/cuentas/métodos).
  */
 
-import { Alert, Empty, Flex, Form, Spin, Tag, Typography } from 'antd';
+import { Alert, Empty, Flex, Form, Spin, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -28,6 +28,7 @@ const AporteConfigPage = () => {
   const {
     form,
     gestionVigente,
+    aporteVigente,
     breadcrumbItems,
     loading,
     error,
@@ -96,7 +97,13 @@ const AporteConfigPage = () => {
         className="cfg-academico-form"
         disabled={loading || saving}
       >
-        <AporteFormSections form={form} formSections={formSections} footer={saveButton} />
+        <AporteFormSections
+          form={form}
+          formSections={formSections}
+          gestionLabel={gestionLabel}
+          activo={aporteVigente?.aporteActivo ?? true}
+          footer={saveButton}
+        />
       </Form>
     );
   }
@@ -105,12 +112,7 @@ const AporteConfigPage = () => {
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
         <PageHeader
-          title={
-            <Flex align="center" gap={allSpacing.marginSM} wrap="wrap">
-              <span>Configuración de pagos · Aportes</span>
-              {gestionLabel ? <Tag color="processing">{gestionLabel}</Tag> : null}
-            </Flex>
-          }
+          title="Configuración de pagos · Aportes"
           breadcrumbItems={breadcrumbItems}
           actions={<BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />}
         />
