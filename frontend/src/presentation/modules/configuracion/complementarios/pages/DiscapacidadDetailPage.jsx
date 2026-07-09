@@ -4,7 +4,7 @@
  * sin tabs: una sola sección de información).
  */
 
-import { SolutionOutlined } from '@ant-design/icons';
+import { SolutionOutlined, TeamOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -88,6 +88,12 @@ const DiscapacidadDetailPage = () => {
               <DetailField label="Descripción" span={2}>
                 {discapacidad.descripcion || '—'}
               </DetailField>
+            </DetailInfoCard>
+
+            <DetailInfoCard title="Uso en el sistema" icon={<TeamOutlined />} cols={3}>
+              <DetailField label="Estudiantes">{discapacidad.cantidadEstudiantes ?? 0}</DetailField>
+              <DetailField label="Docentes">{discapacidad.cantidadDocentes ?? 0}</DetailField>
+              <DetailField label="Personal">{discapacidad.cantidadPersonal ?? 0}</DetailField>
             </DetailInfoCard>
           </>
         ) : null}

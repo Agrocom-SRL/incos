@@ -33,10 +33,10 @@ export class ListStudentScholarshipsUseCase {
   /**
    * Ejecuta el caso de uso de listado de becas asignadas
    *
-   * @param {Object} filters - Filtros base (search, etc.)
+   * @param {Object} filters - Filtros base (search, studentId, managementId, scholarshipId, state)
    * @param {number} page - Número de página (default: 1)
    * @param {number} limit - Límite por página (default: 50)
-   * @param {Object} queryParams - Query parameters originales (filtros específicos)
+   * @param {Object} queryParams - Query parameters originales (filtros específicos, tienen prioridad sobre filters)
    * @returns {Promise<Object>} Lista de becas asignadas con datos enriquecidos
    */
   async execute(filters = {}, page = 1, limit = 50, queryParams = {}) {
@@ -50,6 +50,7 @@ export class ListStudentScholarshipsUseCase {
       // 1. Resolver filtros específicos (queryParams tiene prioridad sobre filters)
       const studentId = this._parseId(queryParams.studentId ?? filters.studentId);
       const managementId = this._parseId(queryParams.managementId ?? filters.managementId);
+      const scholarshipId = this._parseId(queryParams.scholarshipId ?? filters.scholarshipId);
       const state = queryParams.state ?? filters.state ?? undefined;
       const search = queryParams.search ?? filters.search ?? undefined;
 
@@ -60,6 +61,7 @@ export class ListStudentScholarshipsUseCase {
       const { rows, total } = await this.studentScholarshipRepository.listarBecasAsignadas({
         studentId,
         managementId,
+        scholarshipId,
         state,
         search,
         page: safePage,

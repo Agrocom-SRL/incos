@@ -1,8 +1,13 @@
 /**
  * Provider: becas asignadas — paginación y búsqueda en servidor.
+ *
+ * Filtro inicial `scholarshipId` (opcional): llega por querystring cuando se
+ * navega desde la ficha de la beca del catálogo maestro
+ * (`BecaDescuentoDetailPage` → "Ver asignaciones", `?scholarshipId={id}`).
  */
 
 import { useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useBecasAsignadasApi } from '@application-estudiantes/hooks/api/useBecasAsignadasApi';
 import { useDeleteBecaAsignada } from '@application-estudiantes/hooks/api/useDeleteBecaAsignada';
 import { useServerPaginatedList, mapNestedListResponse } from '@application/utils';
@@ -11,6 +16,8 @@ import { BecasListContext } from '@application-estudiantes/context/BecasListCont
 export const BecasListProvider = ({ children }) => {
   const { fetch: fetchBecas } = useBecasAsignadasApi();
   const { deleteBecaAsignada: deleteBecaApi, loading: deleting } = useDeleteBecaAsignada();
+  const [searchParams] = useSearchParams();
+  const scholarshipId = searchParams.get('scholarshipId') || undefined;
 
   const {
     rows,
@@ -24,11 +31,13 @@ export const BecasListProvider = ({ children }) => {
     loadAll: true,
     fetch: fetchBecas,
     mapResponse: (raw) => mapNestedListResponse(raw, 'becas'),
-    buildRequest: ({ page, limit, search }) => ({
+    extra: scholarshipId ? { scholarshipId } : null,
+    buildRequest: ({ page, limit, search, extra }) => ({
       params: {
         page,
         limit,
         search: search || undefined,
+        ...extra,
       },
     }),
   });

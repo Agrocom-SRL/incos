@@ -44,6 +44,8 @@ export const useEstadoCivilDetallePage = () => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo cargar el estado civil');
       }
+      // El objeto mapeado ya incluye cantidadEstudiantes/cantidadDocentes/cantidadPersonal
+      // ("Uso en el sistema"); se exponen junto al resto de campos vía `estadoCivil`.
       setEstadoCivil(mapEstadoCivilDetail(result.data));
     } catch (e) {
       setError(e?.message || 'Error al cargar el estado civil');

@@ -18,6 +18,14 @@ export const useSeguridadUsuariosListPage = () => {
   // Vive aquí para que entre al request server-side y refetchee vía `extra`.
   const [categoria, setCategoria] = useState(USUARIOS_CATEGORIA_DEFAULT);
 
+  // Modal "Cambiar estado": acción de fila (ver useSeguridadRolesListPage para el
+  // patrón de extraActions). El estado ACTIVO/BLOQUEADO/SUSPENDIDO/RETIRADO con
+  // motivo obligatorio no es un toggle simple, por eso vive en un modal disparado
+  // desde el listado (ver ficha del usuario para el detalle, ya no dispara aquí).
+  const [usuarioEstadoSeleccionado, setUsuarioEstadoSeleccionado] = useState(null);
+  const [openEstado, setOpenEstado] = useState(false);
+  const [savingEstado, setSavingEstado] = useState(false);
+
   const fetchUsuarios = useCallback(async ({ page, limit, search, categoria: cat }) => {
     try {
       const data = await useCasesFactory.listarUsuariosAdmin().ejecutar({
@@ -74,9 +82,39 @@ export const useSeguridadUsuariosListPage = () => {
     [],
   );
 
+  const abrirCambiarEstado = useCallback((record) => {
+    setUsuarioEstadoSeleccionado(record);
+    setOpenEstado(true);
+  }, []);
+
+  const estadoInitialValues = useMemo(
+    () => ({
+      estado: usuarioEstadoSeleccionado?.estado ?? null,
+      motivo: usuarioEstadoSeleccionado?.motivo_cambio_estado ?? '',
+    }),
+    [usuarioEstadoSeleccionado],
+  );
+
+  const saveEstado = useCallback(async ({ estado, motivo }) => {
+    if (!usuarioEstadoSeleccionado?.id) return;
+    setSavingEstado(true);
+    try {
+      await useCasesFactory
+        .cambiarEstadoUsuarioAdmin()
+        .ejecutar(usuarioEstadoSeleccionado.id, estado, motivo);
+      setOpenEstado(false);
+      message.success('Estado actualizado');
+      await refetch();
+    } catch (error) {
+      message.error(errorMessage(error));
+    } finally {
+      setSavingEstado(false);
+    }
+  }, [usuarioEstadoSeleccionado, message, refetch]);
+
   const columns = useMemo(
-    () => createUsuariosTableColumns(navigate, { eliminarUsuario, refetch }),
-    [navigate, eliminarUsuario, refetch],
+    () => createUsuariosTableColumns(navigate, { eliminarUsuario, refetch, onCambiarEstado: abrirCambiarEstado }),
+    [navigate, eliminarUsuario, refetch, abrirCambiarEstado],
   );
 
   const handleCreateUsuario = useCallback(() => {
@@ -101,5 +139,10 @@ export const useSeguridadUsuariosListPage = () => {
     setCategoria,
     handleCreateUsuario,
     handleSearchChange,
+    openEstado,
+    setOpenEstado,
+    savingEstado,
+    estadoInitialValues,
+    saveEstado,
   };
 };

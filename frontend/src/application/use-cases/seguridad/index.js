@@ -10,6 +10,8 @@ export { AgregarOverridePermisoUseCase } from './AgregarOverridePermisoUseCase';
 export { EliminarOverridePermisoUseCase } from './EliminarOverridePermisoUseCase';
 export { ListarRolesUseCase } from './ListarRolesUseCase';
 export { CrearRolUseCase } from './CrearRolUseCase';
+export { ObtenerRolUseCase } from './ObtenerRolUseCase';
+export { ListarUsuariosPorRolUseCase } from './ListarUsuariosPorRolUseCase';
 export { ObtenerPermisosRolUseCase } from './ObtenerPermisosRolUseCase';
 export { ObtenerPermisosGrillaRolUseCase } from './ObtenerPermisosGrillaRolUseCase';
 export { ActualizarPermisosRolUseCase } from './ActualizarPermisosRolUseCase';

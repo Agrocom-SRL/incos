@@ -3,7 +3,7 @@
  * Gemelo de `IdiomaDetailPage.jsx`.
  */
 
-import { HeartOutlined } from '@ant-design/icons';
+import { HeartOutlined, TeamOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -77,6 +77,12 @@ const EstadoCivilDetailPage = () => {
             <DetailInfoCard title="Información" icon={<HeartOutlined />}>
               <DetailField label="Nombre">{estadoCivil.nombre || '—'}</DetailField>
               <DetailField label="Abreviatura">{estadoCivil.abreviatura || '—'}</DetailField>
+            </DetailInfoCard>
+
+            <DetailInfoCard title="Uso en el sistema" icon={<TeamOutlined />} cols={3}>
+              <DetailField label="Estudiantes">{estadoCivil.cantidadEstudiantes ?? 0}</DetailField>
+              <DetailField label="Docentes">{estadoCivil.cantidadDocentes ?? 0}</DetailField>
+              <DetailField label="Personal">{estadoCivil.cantidadPersonal ?? 0}</DetailField>
             </DetailInfoCard>
           </>
         ) : null}

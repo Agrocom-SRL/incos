@@ -3,7 +3,7 @@
  * Gemelo de `DiscapacidadDetailPage.jsx`.
  */
 
-import { GlobalOutlined } from '@ant-design/icons';
+import { GlobalOutlined, TeamOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -77,6 +77,12 @@ const IdiomaDetailPage = () => {
             <DetailInfoCard title="Información" icon={<GlobalOutlined />}>
               <DetailField label="Nombre">{idioma.nombre || '—'}</DetailField>
               <DetailField label="Código ISO">{idioma.codigoIso || '—'}</DetailField>
+            </DetailInfoCard>
+
+            <DetailInfoCard title="Uso en el sistema" icon={<TeamOutlined />} cols={3}>
+              <DetailField label="Estudiantes">{idioma.cantidadEstudiantes ?? 0}</DetailField>
+              <DetailField label="Docentes">{idioma.cantidadDocentes ?? 0}</DetailField>
+              <DetailField label="Personal">{idioma.cantidadPersonal ?? 0}</DetailField>
             </DetailInfoCard>
           </>
         ) : null}

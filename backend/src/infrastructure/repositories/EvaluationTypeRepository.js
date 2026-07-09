@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 import { ITipoEvaluacionRepository } from '../../domain/interfaces/repositories/ITipoEvaluacionRepository.js';
 import { TipoEvaluacion as TipoEvaluacionModel } from '../database/models/tipo_evaluacion.js';
+import { Evaluacion as EvaluacionModel } from '../database/models/evaluacion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { EvaluationTypeMapper } from '../mappers/EvaluationTypeMapper.js';
 
@@ -50,6 +51,19 @@ export class EvaluationTypeRepository extends BaseRepository {
 
     getCollectionName() {
         return 'evaluationTypes';
+    }
+
+    /**
+     * Cuenta cuántas evaluaciones (columnas del cuaderno) usan un tipo de
+     * evaluación dado. Dato informativo para la ficha del catálogo, sin
+     * necesidad de una vista SQL (conteo simple sobre `evaluaciones`).
+     *
+     * @param {number} tipoEvaluacionId - ID del tipo de evaluación
+     * @returns {Promise<number>} Cantidad de evaluaciones asociadas
+     */
+    async contarPorTipoEvaluacion(tipoEvaluacionId) {
+        if (tipoEvaluacionId === undefined || tipoEvaluacionId === null) return 0;
+        return EvaluacionModel.count({ where: { tipoEvaluacionId } });
     }
 }
 

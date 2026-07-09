@@ -1,24 +1,22 @@
 import { useMemo, useState } from 'react';
-import { Tabs, Tag } from 'antd';
+import { Tag } from 'antd';
 import {
   EditOutlined,
   IdcardOutlined,
   KeyOutlined,
   LockOutlined,
   SafetyCertificateOutlined,
-  StopOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
-import { PageHeader, DetailInfoCard } from '@molecules';
+import { PageHeader, DetailInfoCard, DetailTabLabel } from '@molecules';
 import { Button, ActionButton, DetailField } from '@atoms';
-import { DetailPageShell, DetailProfileCard } from '@organisms';
+import { DetailPageShell, DetailProfileCard, DetailTabsPanel } from '@organisms';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { SeguridadUsuarioPermisosProvider } from '@/application/modules/seguridad/providers';
 import { useSeguridadUsuarioDetailPageContext } from '@/application/modules/seguridad/hooks';
 import CambiarPasswordModal from '@modules/seguridad/usuarios/components/modals/CambiarPasswordModal.jsx';
 import EditarUsuarioModal from '@modules/seguridad/usuarios/components/modals/EditarUsuarioModal.jsx';
-import CambiarEstadoModal from '@modules/seguridad/usuarios/components/modals/CambiarEstadoModal.jsx';
 import UsuarioPermisosTab from '@modules/seguridad/usuarios/components/organisms/UsuarioPermisosTab.jsx';
 import '@modules/seguridad/usuarios/styles/usuarios.css';
 
@@ -41,12 +39,6 @@ function estadoTag(estado) {
   return <Tag>{estado}</Tag>;
 }
 
-const tabLabel = (icon, text) => (
-  <span className="sd-tab-label">
-    {icon} {text}
-  </span>
-);
-
 export default function UsuarioDetailPage({ initialTab = 'info' }) {
   const {
     usuario,
@@ -55,20 +47,16 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
     savingAccion,
     openPass,
     openEdit,
-    openEstado,
     puedeEditar,
     puedeVerPermisos,
     rolesParaSelect,
     editInitialValues,
-    estadoInitialValues,
     breadcrumbItems,
     setOpenPass,
     setOpenEdit,
-    setOpenEstado,
     openEditModal,
     savePass,
     saveEdit,
-    saveEstado,
     goToUsuarioEdit,
     goToUsuariosList,
   } = useSeguridadUsuarioDetailPageContext();
@@ -79,7 +67,7 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
     const items = [
       {
         key: 'info',
-        label: tabLabel(<UserOutlined />, 'Información'),
+        label: <DetailTabLabel icon={<UserOutlined />}>Información</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
             <DetailInfoCard title="Datos de la cuenta" icon={<UserOutlined />} cols={3}>
@@ -109,7 +97,7 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
       },
       {
         key: 'acceso',
-        label: tabLabel(<KeyOutlined />, 'Rol y acceso'),
+        label: <DetailTabLabel icon={<KeyOutlined />}>Rol y acceso</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
             <DetailInfoCard
@@ -127,14 +115,6 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
                       onClick={openEditModal}
                     >
                       Cambiar rol y datos
-                    </ActionButton>
-                    <ActionButton
-                      permiso="seguridad.usuario.administrar"
-                      accion="EDITAR"
-                      icon={<StopOutlined />}
-                      onClick={() => setOpenEstado(true)}
-                    >
-                      Cambiar estado
                     </ActionButton>
                     <ActionButton
                       permiso="seguridad.usuario.administrar"
@@ -179,7 +159,7 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
     if (puedeVerPermisos) {
       items.push({
         key: 'permisos',
-        label: tabLabel(<SafetyCertificateOutlined />, 'Permisos'),
+        label: <DetailTabLabel icon={<SafetyCertificateOutlined />}>Permisos</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
             <SeguridadUsuarioPermisosProvider>
@@ -196,7 +176,6 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
     puedeEditar,
     puedeVerPermisos,
     openEditModal,
-    setOpenEstado,
     setOpenPass,
     goToUsuarioEdit,
   ]);
@@ -240,15 +219,7 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
                 ]}
               />
 
-              <div className="sd-tabs-shell">
-                <Tabs
-                  className="sd-tabs"
-                  activeKey={activeKey}
-                  onChange={setActiveKey}
-                  items={tabItems}
-                  destroyInactiveTabPane={false}
-                />
-              </div>
+              <DetailTabsPanel items={tabItems} activeKey={activeKey} onChange={setActiveKey} />
             </>
           ) : null}
         </DetailPageShell>
@@ -266,13 +237,6 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
           initialValues={editInitialValues}
           onCancel={() => setOpenEdit(false)}
           onSubmit={saveEdit}
-        />
-        <CambiarEstadoModal
-          open={openEstado}
-          loading={savingAccion}
-          initialValues={estadoInitialValues}
-          onCancel={() => setOpenEstado(false)}
-          onSubmit={saveEstado}
         />
       </PageTemplate>
     </PermisoGuard>

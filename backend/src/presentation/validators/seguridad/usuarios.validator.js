@@ -20,6 +20,13 @@ export const rolIdParamValidator = [
   param('id').isInt({ min: 1 }).withMessage('id debe ser un entero positivo'),
 ];
 
+export const rolUsuariosListQueryValidator = [
+  query('page').optional().isInt({ min: 1 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+  query('search').optional().isString().trim(),
+  query('sort').optional().isString().trim(),
+];
+
 export const overrideIdParamValidator = [
   param('overrideId').isInt({ min: 1 }).withMessage('overrideId debe ser un entero positivo'),
 ];

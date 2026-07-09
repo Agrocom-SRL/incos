@@ -10,6 +10,12 @@ export class GetTipoEvaluacionByIdUseCase {
     const entity = await this.evaluationTypeRepository.findById(id, { paranoid: false });
     if (!entity) return null;
 
-    return EvaluationTypePresentationMapper.entityToPresentation(entity);
+    const presentation = EvaluationTypePresentationMapper.entityToPresentation(entity);
+
+    // Dato informativo de la ficha del catálogo: cuántas evaluaciones
+    // (columnas del cuaderno) usan este tipo. Conteo simple, sin vista SQL.
+    const cantidadEvaluaciones = await this.evaluationTypeRepository.contarPorTipoEvaluacion(id);
+
+    return { ...presentation, cantidadEvaluaciones };
   }
 }

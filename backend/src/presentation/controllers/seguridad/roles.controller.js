@@ -11,6 +11,8 @@ export class SeguridadRolesController {
     obtenerPermisosRolUseCase,
     obtenerPermisosGrillaRolUseCase,
     actualizarPermisosRolUseCase,
+    getRolByIdUseCase,
+    listarUsuariosPorRolUseCase,
     responseFormatter,
   }) {
     this.listarRolesUseCase = listarRolesUseCase;
@@ -18,6 +20,8 @@ export class SeguridadRolesController {
     this.obtenerPermisosRolUseCase = obtenerPermisosRolUseCase;
     this.obtenerPermisosGrillaRolUseCase = obtenerPermisosGrillaRolUseCase;
     this.actualizarPermisosRolUseCase = actualizarPermisosRolUseCase;
+    this.getRolByIdUseCase = getRolByIdUseCase;
+    this.listarUsuariosPorRolUseCase = listarUsuariosPorRolUseCase;
     this.responseFormatter = responseFormatter;
   }
 
@@ -88,6 +92,36 @@ export class SeguridadRolesController {
         res,
         data,
         { statusCode: 200, message: 'Permisos del rol actualizados correctamente' },
+        req
+      );
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  getById = async (req, res, next) => {
+    try {
+      const rolId = parseInt(req.params.id, 10);
+      const data = await this.getRolByIdUseCase.execute(rolId);
+      return this.responseFormatter._success(
+        res,
+        data,
+        { statusCode: 200, message: 'Rol obtenido correctamente' },
+        req
+      );
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  getUsuarios = async (req, res, next) => {
+    try {
+      const rolId = parseInt(req.params.id, 10);
+      const data = await this.listarUsuariosPorRolUseCase.execute(rolId, req.query);
+      return this.responseFormatter._success(
+        res,
+        data,
+        { statusCode: 200, message: 'Usuarios del rol obtenidos correctamente' },
         req
       );
     } catch (e) {

@@ -87,6 +87,9 @@ export function registerTiposParentescoResource(container) {
                 relationshipTypeRepository: c.resolve(
                     REPOSITORIOS_TOKENS.relationshipTypeRepository
                 ),
+                complementariosUsosViewRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.complementariosUsosViewRepository,
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );

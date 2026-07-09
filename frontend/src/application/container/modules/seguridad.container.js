@@ -10,10 +10,12 @@ import {
   EliminarOverridePermisoUseCase,
   ListarPermisosUseCase,
   ListarRolesUseCase,
+  ListarUsuariosPorRolUseCase,
   ListarUsuariosUseCase,
   ObtenerPermisosRolUseCase,
   ObtenerPermisosGrillaRolUseCase,
   ObtenerPermisosUsuarioUseCase,
+  ObtenerRolUseCase,
   ObtenerUsuarioUseCase,
 } from '@/application/use-cases/seguridad';
 import UsuarioAdminRepository from '@/infrastructure/repositories/seguridad/UsuarioAdminRepository';
@@ -33,6 +35,8 @@ export function registerSeguridadModule(factory) {
   factory.eliminarOverridePermisoAdmin = () => new EliminarOverridePermisoUseCase(UsuarioAdminRepository);
   factory.listarRolesAdmin = () => new ListarRolesUseCase(RolAdminRepository);
   factory.crearRolAdmin = () => new CrearRolUseCase(RolAdminRepository);
+  factory.obtenerRolAdmin = () => new ObtenerRolUseCase(RolAdminRepository);
+  factory.listarUsuariosPorRolAdmin = () => new ListarUsuariosPorRolUseCase(RolAdminRepository);
   factory.obtenerPermisosRolAdmin = () => new ObtenerPermisosRolUseCase(RolAdminRepository);
   factory.obtenerPermisosGrillaRolAdmin = () =>
     new ObtenerPermisosGrillaRolUseCase(RolAdminRepository);

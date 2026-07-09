@@ -1,18 +1,15 @@
 /**
  * Detalle de cuenta de pago — orquestación UI (ficha sd-profile).
  * Gemelo de `BancoDetailPage.jsx`, con la imagen QR (si existe) mostrada vía
- * `Image` de Ant Design (preview nativo). La edición (incluido el QR) navega
- * a la página completa `CuentaFormPage`.
+ * `Image` de Ant Design (preview nativo). El toggle activo/inactivo vive solo
+ * en el listado (`EstadoTogglePill`); esta ficha es de solo lectura +
+ * Editar/Eliminar. La edición (incluido el QR) navega a la página completa
+ * `CuentaFormPage`. Incluye navegación cruzada al banco y al método de pago
+ * asociados (mismo catálogo en memoria de `ConfigPagosContext`).
  */
 
-import {
-  CheckCircleOutlined,
-  DeleteOutlined,
-  QrcodeOutlined,
-  StopOutlined,
-  WalletOutlined,
-} from '@ant-design/icons';
-import { Alert, Image } from 'antd';
+import { DeleteOutlined, QrcodeOutlined, WalletOutlined } from '@ant-design/icons';
+import { Alert, Image, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -26,7 +23,7 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { useAuthContext } from '@application-auth';
 import { useCuentaDetailPage } from '@application-finanzas/hooks/state/useCuentaDetailPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import { cuentaEditarPath } from '@application-finanzas/config/paths';
+import { cuentaEditarPath, bancoDetallePath, metodoDetallePath } from '@application-finanzas/config/paths';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -41,15 +38,14 @@ const CuentaDetailPage = () => {
     isInvalidId,
     avatarInitials,
     breadcrumbItems,
-    saving,
     eliminando,
-    handleToggleActivo,
     handleEliminar,
     handleVolver,
     refetch,
   } = useCuentaDetailPage();
 
   const puedeEditar = hasPermiso(CONFIG_PAGOS_PERMISO, 'EDITAR');
+  const puedeVerDetalle = hasPermiso(CONFIG_PAGOS_PERMISO, 'DETALLE');
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
 
   if (isInvalidId) {
@@ -65,23 +61,11 @@ const CuentaDetailPage = () => {
   }
 
   const profileActions = cuenta ? (
-    <>
-      <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="EDITAR">
-        <Button
-          variant={cuenta.activo ? 'warning' : 'success'}
-          icon={cuenta.activo ? <StopOutlined /> : <CheckCircleOutlined />}
-          loading={saving}
-          onClick={handleToggleActivo}
-        >
-          {cuenta.activo ? 'Desactivar' : 'Activar'}
-        </Button>
-      </PermisoGuard>
-      <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="ELIMINAR">
-        <Button variant="danger" icon={<DeleteOutlined />} loading={eliminando} onClick={handleEliminar}>
-          Eliminar
-        </Button>
-      </PermisoGuard>
-    </>
+    <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="ELIMINAR">
+      <Button variant="danger" icon={<DeleteOutlined />} loading={eliminando} onClick={handleEliminar}>
+        Eliminar
+      </Button>
+    </PermisoGuard>
   ) : null;
 
   return (
@@ -120,8 +104,24 @@ const CuentaDetailPage = () => {
             <DetailInfoCard title="Información" icon={<WalletOutlined />}>
               <DetailField label="N.° de cuenta">{cuenta.numeroCuenta || '—'}</DetailField>
               <DetailField label="N.° de celular">{cuenta.numeroCelular || '—'}</DetailField>
-              <DetailField label="Banco">{cuenta.bancoNombre || '—'}</DetailField>
-              <DetailField label="Método de pago">{metodoNombre || '—'}</DetailField>
+              <DetailField label="Banco">
+                {cuenta.bancoNombre && puedeVerDetalle && cuenta.bancoId ? (
+                  <Typography.Link onClick={() => navigate(bancoDetallePath(cuenta.bancoId))}>
+                    {cuenta.bancoNombre}
+                  </Typography.Link>
+                ) : (
+                  cuenta.bancoNombre || '—'
+                )}
+              </DetailField>
+              <DetailField label="Método de pago">
+                {metodoNombre && puedeVerDetalle && cuenta.metodoPagoId ? (
+                  <Typography.Link onClick={() => navigate(metodoDetallePath(cuenta.metodoPagoId))}>
+                    {metodoNombre}
+                  </Typography.Link>
+                ) : (
+                  metodoNombre || '—'
+                )}
+              </DetailField>
             </DetailInfoCard>
 
             <DetailInfoCard title="QR de cobro" icon={<QrcodeOutlined />}>

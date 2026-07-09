@@ -24,7 +24,6 @@ export const useSeguridadUsuarioDetailPage = () => {
     loading,
     cargar,
     actualizar,
-    cambiarEstado,
     cambiarPassword,
   } = useUsuarioDetail();
   const { roles, cargar: cargarRoles } = useRolesList();
@@ -36,7 +35,6 @@ export const useSeguridadUsuarioDetailPage = () => {
   const [savingAccion, setSavingAccion] = useState(false);
   const [openPass, setOpenPass] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [openEstado, setOpenEstado] = useState(false);
 
   const uid = Number.parseInt(id, 10);
 
@@ -100,20 +98,6 @@ export const useSeguridadUsuarioDetailPage = () => {
     }
   }, [actualizar, uid, message, loadUsuario]);
 
-  const saveEstado = useCallback(async ({ estado, motivo }) => {
-    setSavingAccion(true);
-    try {
-      await cambiarEstado(uid, estado, motivo);
-      setOpenEstado(false);
-      message.success('Estado actualizado');
-      await loadUsuario();
-    } catch (error) {
-      message.error(errMsg(error));
-    } finally {
-      setSavingAccion(false);
-    }
-  }, [cambiarEstado, uid, message, loadUsuario]);
-
   const rolesParaSelect = useMemo(() => {
     if (roles?.length) return roles;
     if (usuario?.rol) {
@@ -131,16 +115,10 @@ export const useSeguridadUsuarioDetailPage = () => {
     [usuario]
   );
 
-  const estadoInitialValues = useMemo(
-    () => ({ estado: usuario?.estado ?? null, motivo: usuario?.motivo_cambio_estado ?? '' }),
-    [usuario]
-  );
-
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Seguridad', href: '/seguridad/usuarios' },
-      { title: 'Usuarios', href: '/seguridad/usuarios' },
       { title: usuario?.username || `Usuario ${uid}` },
     ],
     [usuario, uid]
@@ -154,20 +132,16 @@ export const useSeguridadUsuarioDetailPage = () => {
     savingAccion,
     openPass,
     openEdit,
-    openEstado,
     puedeEditar,
     puedeVerPermisos,
     rolesParaSelect,
     editInitialValues,
-    estadoInitialValues,
     breadcrumbItems,
     setOpenPass,
     setOpenEdit,
-    setOpenEstado,
     openEditModal,
     savePass,
     saveEdit,
-    saveEstado,
     goToUsuarioEdit: () => {
       // Estudiante/Docente: solo credenciales → tab 3 (índice 2). Resto (admin/administrativo): perfil → tab 2 (índice 1).
       const codigo = usuario?.rol?.codigo;

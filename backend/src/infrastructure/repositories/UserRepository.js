@@ -180,7 +180,7 @@ export class UserRepository extends BaseRepository {
   /**
    * Listado paginado para administración (sin password_hash).
    */
-  async findAllPaginatedWithRole({ page, limit, search, sort, rolCodigos = null }) {
+  async findAllPaginatedWithRole({ page, limit, search, sort, rolCodigos = null, rolId = null }) {
     const offset = (page - 1) * limit;
     const orderSql = this._resolveUsuarioListOrder(sort);
     const searchClause = search
@@ -188,12 +188,17 @@ export class UserRepository extends BaseRepository {
       : '';
     const hasCategoria = Array.isArray(rolCodigos) && rolCodigos.length > 0;
     const categoriaClause = hasCategoria ? 'AND rol_codigo IN (:rolCodigos)' : '';
+    const hasRolId = rolId !== null && rolId !== undefined;
+    const rolIdClause = hasRolId ? 'AND rol_id = :rolId' : '';
     const replacements = { limit, offset };
     if (search) {
       replacements.search = `%${search}%`;
     }
     if (hasCategoria) {
       replacements.rolCodigos = rolCodigos;
+    }
+    if (hasRolId) {
+      replacements.rolId = rolId;
     }
 
     const rows = await sequelize.query(
@@ -206,6 +211,7 @@ export class UserRepository extends BaseRepository {
       WHERE 1=1
         ${searchClause}
         ${categoriaClause}
+        ${rolIdClause}
       ORDER BY ${orderSql}
       LIMIT :limit OFFSET :offset
       `,
@@ -215,18 +221,23 @@ export class UserRepository extends BaseRepository {
     return rows;
   }
 
-  async countAllWithRoleSearch({ search, rolCodigos = null }) {
+  async countAllWithRoleSearch({ search, rolCodigos = null, rolId = null }) {
     const searchClause = search
       ? 'AND (username LIKE :search OR email LIKE :search)'
       : '';
     const hasCategoria = Array.isArray(rolCodigos) && rolCodigos.length > 0;
     const categoriaClause = hasCategoria ? 'AND rol_codigo IN (:rolCodigos)' : '';
+    const hasRolId = rolId !== null && rolId !== undefined;
+    const rolIdClause = hasRolId ? 'AND rol_id = :rolId' : '';
     const replacements = {};
     if (search) {
       replacements.search = `%${search}%`;
     }
     if (hasCategoria) {
       replacements.rolCodigos = rolCodigos;
+    }
+    if (hasRolId) {
+      replacements.rolId = rolId;
     }
     const rows = await sequelize.query(
       `
@@ -235,6 +246,7 @@ export class UserRepository extends BaseRepository {
       WHERE 1=1
         ${searchClause}
         ${categoriaClause}
+        ${rolIdClause}
       `,
       { replacements, type: sequelize.QueryTypes.SELECT }
     );

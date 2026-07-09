@@ -28,13 +28,22 @@ export const mapFormValuesToTipoEvaluacionPayload = (values) => ({
   esRecuperatorio: Boolean(values.esRecuperatorio),
 });
 
-/** API detalle → modelo UI */
+/**
+ * API detalle → modelo UI.
+ *
+ * `cantidadEvaluaciones` (uso en el sistema, solo lectura): cuántas
+ * evaluaciones/columnas del cuaderno usan este tipo. Lo agrega
+ * `GetTipoEvaluacionByIdUseCase` en el objeto raíz `tipoEvaluacion` (no viene
+ * en el listado, solo en el GET /:id).
+ */
 export const mapTipoEvaluacionDetail = (raw) => {
   const payload = raw?.tipoEvaluacion ?? raw;
   const base = tipoEvaluacionListMapper(payload) || payload;
   if (!base) return null;
+  const cantidadEvaluaciones = Number(payload?.cantidadEvaluaciones);
   return {
     ...base,
     activo: (payload?.activo ?? raw?.activo) !== false,
+    cantidadEvaluaciones: Number.isFinite(cantidadEvaluaciones) ? cantidadEvaluaciones : 0,
   };
 };
