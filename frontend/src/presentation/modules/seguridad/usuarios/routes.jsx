@@ -7,6 +7,7 @@
  */
 
 import {
+  UsuarioAccesosConnector,
   UsuarioCreateConnector,
   UsuarioDetailConnector,
   UsuariosListConnector,
@@ -32,11 +33,18 @@ export const usuariosRoutes = [
     breadcrumbParent: 'SEG-USUARIOS',
   },
   {
+    // Ficha "Accesos del usuario" (grilla de 3 vías rol+overrides), reemplaza la
+    // antigua pestaña "Permisos" de UsuarioDetailConnector. `accion: 'EDITAR'` (no
+    // 'DETALLE') por el mismo criterio que `/seguridad/roles/:id/permisos`: gestionar
+    // overrides es una función de edición, y el guard interno de la página usa la
+    // misma acción (coherencia ruta↔UI). La grilla en sí (ver/togglear) queda además
+    // gobernada por `seguridad.rol.gestionar` LISTAR/EDITAR (mismo permiso que protege
+    // los endpoints `/usuarios/:id/permisos` y `/roles/:id/permisos-grilla` en backend).
     path: '/seguridad/usuarios/:id/permisos',
-    element: <UsuarioDetailConnector initialTab="permisos" />,
-    key: 'SEG-USUARIO-PERMISOS',
+    element: <UsuarioAccesosConnector />,
+    key: 'SEG-USUARIO-ACCESOS',
     permiso: 'seguridad.usuario.administrar',
-    accion: 'DETALLE',
+    accion: 'EDITAR',
     menu: null,
     breadcrumbParent: 'SEG-USUARIOS',
   },

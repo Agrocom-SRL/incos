@@ -50,6 +50,70 @@
   padding-right: 20px !important;
 }
 
+/* Grilla de Accesos del usuario (AccesosUsuarioDominioPicker): celda de 3 vías
+   (heredado/otorgado/revocado) sobre la grilla base de PermisosDominioPicker.
+   Borde/fondo sutil por estado desde tokens de color (visible en ambos temas). */
+.seg-accesos-celda {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs, 4px);
+  padding: 2px var(--spacing-xs, 6px);
+  border-radius: var(--border-radius-sm, 6px);
+  border: 1px solid transparent;
+}
+
+.seg-accesos-celda--heredado .seg-accesos-celda__lock {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 12px);
+}
+
+.seg-accesos-celda--otorgado {
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+}
+
+.seg-accesos-celda--revocado {
+  background: var(--color-error-bg);
+  border-color: var(--color-error-border);
+}
+
+/* Glifo de "revocado" (StopOutlined): la distinción con "ninguno" no depende solo del
+   color de fondo — a11y para daltonismo/bajo contraste (hallazgo de auditoría). */
+.seg-accesos-celda__stop {
+  color: var(--color-error-text);
+  font-size: var(--font-size-sm, 12px);
+}
+
+/* Celda con alta/baja de override en curso: feedback LOCAL (opacidad + spinner chico),
+   sin depender del spinner de página completa. */
+.seg-accesos-celda--toggling {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.seg-accesos-celda__spin.ant-spin {
+  display: inline-flex;
+  margin-inline-start: var(--spacing-xs, 4px);
+}
+
+/* Leyenda de los 4 estados de celda (arriba de la grilla, dentro de la misma
+   DetailInfoCard): reutiliza las clases .seg-accesos-celda* de la grilla como "swatch",
+   sin inventar colores nuevos. */
+.seg-accesos-leyenda {
+  margin-bottom: var(--spacing-base, 16px);
+}
+
+.seg-accesos-leyenda__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 6px);
+}
+
+.seg-accesos-leyenda__swatch.seg-accesos-celda {
+  pointer-events: none;
+}
+
 /* Wizard alta usuario: Form.Item sin etiqueta (el título de la card ya orienta). */
 .seg-cargo-form-item.ant-form-item {
   margin-bottom: 0;

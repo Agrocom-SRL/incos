@@ -96,7 +96,7 @@ export const createUsuariosTableColumns = (navigate, { eliminarUsuario, refetch 
           {
             icon: <KeyOutlined />,
             variant: 'info',
-            tooltip: 'Permisos',
+            tooltip: 'Accesos',
             onClick: () => navigate(`/seguridad/usuarios/${record.id}/permisos`),
             permiso: 'seguridad.rol.gestionar',
             accion: 'LISTAR',

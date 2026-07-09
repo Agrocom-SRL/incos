@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Flex, Tag } from 'antd';
 import {
-  EditOutlined,
   IdcardOutlined,
   KeyOutlined,
   LockOutlined,
@@ -12,15 +11,12 @@ import {
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader, DetailInfoCard, DetailTabLabel } from '@molecules';
-import { Button, ActionButton, DetailField } from '@atoms';
+import { ActionButton, DetailField } from '@atoms';
 import { DetailPageShell, DetailProfileCard, DetailTabsPanel, DetailPageHeaderActions } from '@organisms';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
-import { SeguridadUsuarioPermisosProvider } from '@/application/modules/seguridad/providers';
 import { useSeguridadUsuarioDetailPageContext } from '@/application/modules/seguridad/hooks';
 import CambiarPasswordModal from '@modules/seguridad/usuarios/components/modals/CambiarPasswordModal.jsx';
-import EditarUsuarioModal from '@modules/seguridad/usuarios/components/modals/EditarUsuarioModal.jsx';
 import CambiarEstadoModal from '@modules/seguridad/usuarios/components/modals/CambiarEstadoModal.jsx';
-import UsuarioPermisosTab from '@modules/seguridad/usuarios/components/organisms/UsuarioPermisosTab.jsx';
 import UsuarioEstadoTag from '@modules/seguridad/usuarios/components/atoms/UsuarioEstadoTag.jsx';
 import '@modules/seguridad/usuarios/styles/usuarios.css';
 
@@ -40,25 +36,20 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
     usuario,
     loading,
     savingPass,
-    savingAccion,
     savingEstado,
     openPass,
-    openEdit,
     openEstado,
     puedeEditar,
     puedeVerPermisos,
-    rolesParaSelect,
-    editInitialValues,
+    permisosEfectivosCount,
     estadoInitialValues,
     breadcrumbItems,
     setOpenPass,
-    setOpenEdit,
     setOpenEstado,
-    openEditModal,
     savePass,
-    saveEdit,
     saveEstado,
     goToUsuarioEdit,
+    goToUsuarioPermisos,
     goToUsuariosList,
   } = useSeguridadUsuarioDetailPageContext();
 
@@ -108,35 +99,39 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
               icon={<KeyOutlined />}
               cols={3}
               extra={
-                puedeEditar ? (
-                  <div className="seg-actions">
-                    <ActionButton
-                      permiso="seguridad.usuario.administrar"
-                      accion="EDITAR"
-                      variant="primary"
-                      icon={<EditOutlined />}
-                      onClick={openEditModal}
-                    >
-                      Cambiar rol y datos
-                    </ActionButton>
-                    <ActionButton
-                      permiso="seguridad.usuario.administrar"
-                      accion="EDITAR"
-                      icon={<LockOutlined />}
-                      onClick={() => setOpenPass(true)}
-                    >
-                      Cambiar contraseña
-                    </ActionButton>
-                    <ActionButton
-                      permiso="seguridad.usuario.administrar"
-                      accion="EDITAR"
-                      icon={<StopOutlined />}
-                      onClick={() => setOpenEstado(true)}
-                    >
-                      Cambiar estado
-                    </ActionButton>
-                  </div>
-                ) : null
+                <div className="seg-actions">
+                  <ActionButton
+                    permiso="seguridad.usuario.administrar"
+                    accion="DETALLE"
+                    variant="primary"
+                    icon={<SafetyCertificateOutlined />}
+                    onClick={goToUsuarioPermisos}
+                  >
+                    Ver accesos
+                  </ActionButton>
+                  {puedeEditar ? (
+                    <>
+                      <ActionButton
+                        variant="error"
+                        permiso="seguridad.usuario.administrar"
+                        accion="EDITAR"
+                        icon={<LockOutlined />}
+                        onClick={() => setOpenPass(true)}
+                      >
+                        Cambiar contraseña
+                      </ActionButton>
+                      <ActionButton
+                        variant="info"
+                        permiso="seguridad.usuario.administrar"
+                        accion="EDITAR"
+                        icon={<StopOutlined />}
+                        onClick={() => setOpenEstado(true)}
+                      >
+                        Cambiar estado
+                      </ActionButton>
+                    </>
+                  ) : null}
+                </div>
               }
             >
               <DetailField label="Rol">{usuario?.rol?.nombre || '—'}</DetailField>
@@ -154,46 +149,21 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
                 {usuario?.motivo_cambio_estado || 'Usuario activo sin restricciones'}
               </DetailField>
             </DetailInfoCard>
-
-            {puedeEditar ? (
-              <div className="seg-actions seg-actions--spaced">
-                <Button variant="back" icon={<EditOutlined />} onClick={goToUsuarioEdit}>
-                  Editar perfil completo
-                </Button>
-              </div>
-            ) : null}
           </div>
         ),
       },
     ];
 
-    if (puedeVerPermisos) {
-      items.push({
-        key: 'permisos',
-        label: <DetailTabLabel icon={<SafetyCertificateOutlined />}>Permisos</DetailTabLabel>,
-        children: (
-          <div className="sd-tab-body">
-            <SeguridadUsuarioPermisosProvider>
-              <UsuarioPermisosTab />
-            </SeguridadUsuarioPermisosProvider>
-          </div>
-        ),
-      });
-    }
-
     return items;
   }, [
     usuario,
     puedeEditar,
-    puedeVerPermisos,
-    openEditModal,
     setOpenPass,
     setOpenEstado,
-    goToUsuarioEdit,
+    goToUsuarioPermisos,
   ]);
 
-  const initialActiveKey = initialTab === 'permisos' && !puedeVerPermisos ? 'info' : initialTab;
-  const [activeKey, setActiveKey] = useState(initialActiveKey);
+  const [activeKey, setActiveKey] = useState(initialTab);
 
   return (
     <PermisoGuard
@@ -224,10 +194,17 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
                 title={usuario.username}
                 subtitle={usuario.email || 'Sin correo'}
                 metaExtra={usuario.rol?.nombre ? <Tag color="green">{usuario.rol.nombre}</Tag> : null}
+                showEdit={puedeEditar}
+                onEdit={goToUsuarioEdit}
+                editTooltip="Editar perfil completo"
+                editAriaLabel="Editar perfil completo del usuario"
                 stats={[
                   { label: 'Rol', value: usuario.rol?.nombre || '—', primary: true },
                   { label: 'Tipo', value: tipoRol },
                   { label: 'Estado', value: <UsuarioEstadoTag estado={usuario.estado} /> },
+                  ...(puedeVerPermisos
+                    ? [{ label: 'Permisos efectivos', value: permisosEfectivosCount ?? 0 }]
+                    : []),
                 ]}
               />
 
@@ -241,14 +218,6 @@ export default function UsuarioDetailPage({ initialTab = 'info' }) {
           loading={savingPass}
           onCancel={() => setOpenPass(false)}
           onSubmit={savePass}
-        />
-        <EditarUsuarioModal
-          open={openEdit}
-          loading={savingAccion}
-          roles={rolesParaSelect}
-          initialValues={editInitialValues}
-          onCancel={() => setOpenEdit(false)}
-          onSubmit={saveEdit}
         />
         <CambiarEstadoModal
           open={openEstado}

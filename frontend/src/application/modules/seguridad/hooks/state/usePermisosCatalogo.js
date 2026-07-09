@@ -1,7 +1,12 @@
 import { useCallback, useState } from 'react';
 import { useCasesFactory } from '@container';
 
-/** Dominios del schema v2 (selector de grilla y sidebar). */
+/**
+ * Dominios del schema v2 (selector de grilla y sidebar).
+ * REPORTES (módulo REP) queda fuera: el seeder 63-seed-permisos-rep.sql lo
+ * desactiva por completo (activo=0) hasta que existan las pantallas; mostrarlo
+ * aquí dejaría una pestaña vacía. Reincorporar cuando se reactive el seeder.
+ */
 export const DOMINIOS_V2 = [
   { value: 'MATRICULA', label: 'Matrícula', module: 'MAT' },
   { value: 'ACADEMICO', label: 'Académico', module: 'ACA' },
@@ -9,7 +14,6 @@ export const DOMINIOS_V2 = [
   { value: 'FINANZAS', label: 'Finanzas', module: 'FIN' },
   { value: 'INSTITUCIONAL', label: 'Institucional', module: 'INST' },
   { value: 'CONFIGURACION', label: 'Configuración', module: 'CFG' },
-  { value: 'REPORTES', label: 'Reportes', module: 'REP' },
   { value: 'SEGURIDAD', label: 'Seguridad', module: 'SEG' },
 ];
 
