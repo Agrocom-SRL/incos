@@ -519,9 +519,20 @@ export const USUARIOS_SEG_ENDPOINTS = {
 
 export const ROLES_SEG_ENDPOINTS = {
   BASE: `${API_BASE}/roles`,
+  BY_ID: (rolId) => `${API_BASE}/roles/${rolId}`,
   PERMISOS: (rolId) => `${API_BASE}/roles/${rolId}/permisos`,
   PERMISOS_GRILLA: (rolId, dominio) =>
     `${API_BASE}/roles/${rolId}/permisos-grilla?${new URLSearchParams({ dominio }).toString()}`,
+  /** GET paginado — usuarios con este rol (ficha de detalle). Query: page, limit, search, sort. */
+  USUARIOS: (rolId, params = {}) => {
+    const safeParams = Object.entries(params).reduce((acc, [key, value]) => {
+      if (value === undefined || value === null || value === '') return acc;
+      acc[key] = String(value);
+      return acc;
+    }, {});
+    const query = new URLSearchParams(safeParams).toString();
+    return `${API_BASE}/roles/${rolId}/usuarios${query ? `?${query}` : ''}`;
+  },
 };
 
 export const PERMISOS_CATALOGO_ENDPOINTS = {

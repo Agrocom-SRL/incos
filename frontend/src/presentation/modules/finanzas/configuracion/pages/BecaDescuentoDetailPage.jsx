@@ -7,7 +7,7 @@
  * (`BecaDescuentoFormPage` modo edit), no hay drawer.
  */
 
-import { DeleteOutlined, GiftOutlined } from '@ant-design/icons';
+import { DeleteOutlined, GiftOutlined, TeamOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -42,10 +42,14 @@ const BecaDescuentoDetailPage = () => {
     handleVolver,
     handleEditar,
     handleEliminar,
+    handleVerAsignaciones,
     refetch,
   } = useBecaDescuentoDetallePage();
 
   const puedeEditar = hasPermiso(BECA_DESCUENTO_PERMISO, 'EDITAR');
+  // Cross-navegación al listado de becas asignadas de estudiantes (módulo Matrícula):
+  // mismo permiso que protege esa ruta (`MAT-BEC-LISTAR`, ver routes.jsx).
+  const puedeVerAsignaciones = hasPermiso('matricula.beca.ver', 'LISTAR');
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
 
   if (isInvalidId) {
@@ -137,6 +141,20 @@ const BecaDescuentoDetailPage = () => {
               {beca.esAutomatica && beca.tipoAutomatica === 'PROMEDIO_90' ? (
                 <DetailField label="Promedio mínimo">{beca.promedioMinimo ?? '—'}</DetailField>
               ) : null}
+            </DetailInfoCard>
+
+            <DetailInfoCard
+              title="Estudiantes con esta beca"
+              icon={<TeamOutlined />}
+              extra={
+                puedeVerAsignaciones ? (
+                  <Button variant="info" size="small" onClick={handleVerAsignaciones}>
+                    Ver asignaciones
+                  </Button>
+                ) : null
+              }
+            >
+              <DetailField label="Estudiantes asignados">{beca.cantidadAsignaciones ?? 0}</DetailField>
             </DetailInfoCard>
           </>
         ) : null}

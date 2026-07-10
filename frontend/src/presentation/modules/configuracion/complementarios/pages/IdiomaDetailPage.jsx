@@ -72,6 +72,11 @@ const IdiomaDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar idioma"
               editAriaLabel="Editar idioma"
+              stats={[
+                { label: 'Estudiantes', value: idioma.cantidadEstudiantes ?? 0, primary: true },
+                { label: 'Docentes', value: idioma.cantidadDocentes ?? 0 },
+                { label: 'Personal', value: idioma.cantidadPersonal ?? 0 },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<GlobalOutlined />}>

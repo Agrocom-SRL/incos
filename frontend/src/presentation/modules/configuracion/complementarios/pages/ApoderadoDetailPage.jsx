@@ -72,6 +72,11 @@ const ApoderadoDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar apoderado"
               editAriaLabel="Editar apoderado"
+              stats={[
+                { label: 'Estudiantes', value: apoderado.cantidadEstudiantes ?? 0, primary: true },
+                { label: 'Docentes', value: apoderado.cantidadDocentes ?? 0 },
+                { label: 'Personal', value: apoderado.cantidadPersonal ?? 0 },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<TeamOutlined />}>

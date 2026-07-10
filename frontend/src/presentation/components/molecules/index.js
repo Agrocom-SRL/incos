@@ -18,6 +18,7 @@ export { default as TimetableCell } from './TimetableCell';
 export { default as showDeleteConfirm } from './DeleteConfirmModal';
 export { default as TableActions, useTableActions, cumplePermisoRef } from './TableActions';
 export { default as DetailInfoCard } from './DetailInfoCard';
+export { default as DetailRelatedList } from './DetailRelatedList';
 export { default as DetailTabLabel } from './DetailTabLabel';
 export { default as ListPanelHeader } from './ListPanelHeader';
 export { default as RolPill } from './RolPill';

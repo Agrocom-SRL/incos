@@ -6,10 +6,11 @@
  * `IdentidadCelda`, concurrencia «Pagos registrados», toggle de la columna
  * "Estado" (`useToggleEstadoCatalogo`, PATCH /:id/estado, ACTIVAR) y
  * `TableActions` (ver/editar). Sin crear/eliminar (los 4 métodos
- * EFECTIVO/QR/TRANSFERENCIA/DEPOSITO son fijos, sin DELETE en backend). Ver
- * navega a la ficha de detalle (`MetodoDetailPage`). Los controles se gobiernan
- * por permiso EDITAR/ACTIVAR. Recibe props ya mapeadas; no hace fetch (refetch
- * sale del contexto). Filas inactivas atenuadas (`catalogoEstadoRowClassName`).
+ * EFECTIVO/QR/TRANSFERENCIA/DEPOSITO son fijos, sin DELETE en backend). Ver/
+ * editar navegan a páginas completas (`MetodoDetailPage`/`MetodoFormPage`).
+ * Los controles se gobiernan por permiso EDITAR/ACTIVAR. Recibe props ya
+ * mapeadas; no hace fetch (refetch sale del contexto). Filas inactivas
+ * atenuadas (`catalogoEstadoRowClassName`).
  */
 
 import { useMemo, useState } from 'react';
@@ -21,8 +22,7 @@ import { useConfigPagosContext } from '@application-finanzas/hooks/context/useCo
 import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { createMetodosColumns } from '@finanzas/configuracion/config/configPagosColumns';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import { metodoDetallePath } from '@application-finanzas/config/paths';
-import MetodoDrawer from './MetodoDrawer.jsx';
+import { metodoDetallePath, metodoEditarPath } from '@application-finanzas/config/paths';
 import '../styles/config-pagos.css';
 
 /** Normaliza para comparar sin acentos ni mayúsculas. */
@@ -33,17 +33,7 @@ const normalizar = (valor) =>
     .toLowerCase()
     .trim();
 
-const MetodosTabPanel = ({
-  metodos = [],
-  loading = false,
-  error = null,
-  saving,
-  drawerAbierto,
-  metodoEnEdicion,
-  onAbrirDrawer,
-  onCerrarDrawer,
-  onGuardar,
-}) => {
+const MetodosTabPanel = ({ metodos = [], loading = false, error = null, saving }) => {
   const navigate = useNavigate();
   const { refetch } = useConfigPagosContext();
   const puedeEditar = usePermiso(CONFIG_PAGOS_PERMISO, 'EDITAR');
@@ -58,7 +48,7 @@ const MetodosTabPanel = ({
 
   const columns = createMetodosColumns({
     onVer: (record) => navigate(metodoDetallePath(record.id)),
-    onEditar: onAbrirDrawer,
+    onEditar: (record) => navigate(metodoEditarPath(record.id)),
     puedeEditar,
     onToggleEstado: toggleEstado,
   });
@@ -88,14 +78,6 @@ const MetodosTabPanel = ({
         searchStyle={{ maxWidth: 520 }}
         pagination={false}
         loadingTip={saving ? 'Guardando…' : 'Cargando métodos de pago…'}
-      />
-
-      <MetodoDrawer
-        open={drawerAbierto}
-        metodo={metodoEnEdicion}
-        saving={saving}
-        onGuardar={onGuardar}
-        onCancelar={onCerrarDrawer}
       />
     </div>
   );

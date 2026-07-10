@@ -80,6 +80,9 @@ const TipoEvaluacionDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar tipo de evaluación"
               editAriaLabel="Editar tipo de evaluación"
+              stats={[
+                { label: 'Evaluaciones registradas', value: tipoEvaluacion.cantidadEvaluaciones ?? 0, primary: true },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<FileDoneOutlined />}>

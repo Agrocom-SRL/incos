@@ -3,8 +3,19 @@
 /* Fila de acciones (compartida con roles; utilidad mínima, duplicada para localidad). */
 .seg-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm, 8px);
   flex-wrap: wrap;
+}
+
+/* Modificador: separación superior cuando la fila va debajo de una card (ej. "Editar perfil completo"). */
+.seg-actions--spaced {
+  margin-top: var(--spacing-base, 16px);
+}
+
+/* Motivo del cambio de estado (segunda línea, bajo el Tag de estado en el listado). */
+.usuarios-estado-motivo {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 12px);
 }
 
 /* Tab de permisos de usuario: margen lateral en pestañas con tablas */
@@ -37,6 +48,104 @@
 .usuario-permisos__table .ant-table-cell {
   padding-left: 20px !important;
   padding-right: 20px !important;
+}
+
+/* Grilla de Accesos del usuario (AccesosUsuarioDominioPicker): celda de 3 vías
+   (heredado/otorgado/revocado) sobre la grilla base de PermisosDominioPicker.
+   Borde/fondo sutil por estado desde tokens de color (visible en ambos temas). */
+.seg-accesos-celda {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs, 4px);
+  padding: 2px var(--spacing-xs, 6px);
+  border-radius: var(--border-radius-sm, 6px);
+  border: 1px solid transparent;
+}
+
+.seg-accesos-celda--heredado .seg-accesos-celda__lock {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 12px);
+}
+
+.seg-accesos-celda--otorgado {
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+}
+
+.seg-accesos-celda--revocado {
+  background: var(--color-error-bg);
+  border-color: var(--color-error-border);
+}
+
+/* Glifo de "revocado" (StopOutlined): la distinción con "ninguno" no depende solo del
+   color de fondo — a11y para daltonismo/bajo contraste (hallazgo de auditoría). */
+.seg-accesos-celda__stop {
+  color: var(--color-error-text);
+  font-size: var(--font-size-sm, 12px);
+}
+
+/* Chip de acción (modal de ajuste individual): mismo lenguaje pill que .seg-rol-pill,
+   coloreado por capa (acceso/ops/flujos) igual que las cabeceras de la grilla de permisos. */
+.seg-accion-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.seg-accion-pill--acceso {
+  background: var(--color-info-bg);
+  color: var(--color-info-active);
+  border-color: var(--color-info-border);
+}
+
+.seg-accion-pill--ops {
+  background: var(--color-success-bg);
+  color: var(--color-success-active);
+  border-color: var(--color-success-border);
+}
+
+.seg-accion-pill--flujos {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-active);
+  border-color: var(--color-warning-border);
+}
+
+/* Celda con alta/baja de override en curso: feedback LOCAL (opacidad + spinner chico),
+   sin depender del spinner de página completa. */
+.seg-accesos-celda--toggling {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.seg-accesos-celda__spin.ant-spin {
+  display: inline-flex;
+  margin-inline-start: var(--spacing-xs, 4px);
+}
+
+/* Leyenda de los 4 estados de celda (arriba de la grilla, dentro de la misma
+   DetailInfoCard): reutiliza las clases .seg-accesos-celda* de la grilla como "swatch",
+   sin inventar colores nuevos. */
+.seg-accesos-leyenda {
+  margin-bottom: var(--spacing-base, 16px);
+}
+
+.seg-accesos-leyenda__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 6px);
+}
+
+.seg-accesos-leyenda__swatch.seg-accesos-celda {
+  pointer-events: none;
 }
 
 /* Wizard alta usuario: Form.Item sin etiqueta (el título de la card ya orienta). */

@@ -72,6 +72,11 @@ const EstadoCivilDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar estado civil"
               editAriaLabel="Editar estado civil"
+              stats={[
+                { label: 'Estudiantes', value: estadoCivil.cantidadEstudiantes ?? 0, primary: true },
+                { label: 'Docentes', value: estadoCivil.cantidadDocentes ?? 0 },
+                { label: 'Personal', value: estadoCivil.cantidadPersonal ?? 0 },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<HeartOutlined />}>

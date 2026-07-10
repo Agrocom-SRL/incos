@@ -1,47 +1,48 @@
 /**
  * Detalle de método de pago — orquestación UI (ficha sd-profile). Catálogo fijo
- * (EFECTIVO/QR/TRANSFERENCIA/DEPOSITO): sin eliminar, solo ver/editar el nombre
- * y activar/desactivar. Gemelo simplificado de `BancoDetailPage.jsx`.
+ * (EFECTIVO/QR/TRANSFERENCIA/DEPOSITO): sin eliminar, solo ver/editar el nombre.
+ * El toggle activo/inactivo vive únicamente en el listado (`EstadoTogglePill`);
+ * esta ficha es de solo lectura + Editar. Gemelo simplificado de
+ * `BancoDetailPage.jsx`. La edición navega a la página completa
+ * `MetodoFormPage`. Incluye navegación cruzada a los bancos/cuentas que usan
+ * este método (mismo catálogo en memoria de `ConfigPagosContext`).
  */
 
-import { CheckCircleOutlined, CreditCardOutlined, StopOutlined } from '@ant-design/icons';
+import { BankOutlined, CreditCardOutlined, WalletOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
+import { PageHeader, DetailRelatedList } from '@molecules';
 import DetailInfoCard from '@molecules/DetailInfoCard';
 import DetailField from '@atoms/DetailField';
 import DetailProfileCard from '@organisms/DetailProfileCard';
 import DetailPageShell from '@organisms/DetailPageShell';
 import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
-import { Button } from '@atoms';
-import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { useAuthContext } from '@application-auth';
 import { useMetodoDetailPage } from '@application-finanzas/hooks/state/useMetodoDetailPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import MetodoDrawer from '@finanzas/configuracion/components/MetodoDrawer.jsx';
+import { metodoEditarPath, bancoDetallePath, cuentaDetallePath } from '@application-finanzas/config/paths';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const MetodoDetailPage = () => {
   const { hasPermiso } = useAuthContext();
+  const navigate = useNavigate();
   const {
     metodo,
+    bancosDelMetodo,
+    cuentasDelMetodo,
     loading,
     error,
     isInvalidId,
     avatarInitials,
     breadcrumbItems,
-    saving,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarMetodo,
-    handleToggleActivo,
     handleVolver,
     refetch,
   } = useMetodoDetailPage();
 
   const puedeEditar = hasPermiso(CONFIG_PAGOS_PERMISO, 'EDITAR');
+  const puedeVerDetalle = hasPermiso(CONFIG_PAGOS_PERMISO, 'DETALLE');
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
 
   if (isInvalidId) {
@@ -55,19 +56,6 @@ const MetodoDetailPage = () => {
       </PageTemplate>
     );
   }
-
-  const profileActions = metodo ? (
-    <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="EDITAR">
-      <Button
-        variant={metodo.activo ? 'warning' : 'success'}
-        icon={metodo.activo ? <StopOutlined /> : <CheckCircleOutlined />}
-        loading={saving}
-        onClick={handleToggleActivo}
-      >
-        {metodo.activo ? 'Desactivar' : 'Activar'}
-      </Button>
-    </PermisoGuard>
-  ) : null;
 
   return (
     <PageTemplate
@@ -96,27 +84,45 @@ const MetodoDetailPage = () => {
                 </>
               }
               showEdit={puedeEditar}
-              onEdit={abrirDrawer}
+              onEdit={() => navigate(metodoEditarPath(metodo.id))}
               editTooltip="Editar método"
               editAriaLabel="Editar método"
-              actions={profileActions}
             />
 
             <DetailInfoCard title="Información" icon={<CreditCardOutlined />}>
               <DetailField label="Código">{metodo.codigo || '—'}</DetailField>
               <DetailField label="Nombre visible">{metodo.nombre || '—'}</DetailField>
             </DetailInfoCard>
+
+            <DetailInfoCard title="Bancos que usan este método" icon={<BankOutlined />} cols={1}>
+              <DetailRelatedList
+                items={bancosDelMetodo.map((banco) => ({
+                  key: banco.id,
+                  icon: <BankOutlined />,
+                  label: banco.nombre || `Banco #${banco.id}`,
+                  caption: banco.codigo || null,
+                  onClick: puedeVerDetalle ? () => navigate(bancoDetallePath(banco.id)) : undefined,
+                }))}
+                emptyText="Ningún banco usa este método de pago"
+              />
+            </DetailInfoCard>
+
+            <DetailInfoCard title="Cuentas que usan este método" icon={<WalletOutlined />} cols={1}>
+              <DetailRelatedList
+                items={cuentasDelMetodo.map((cuenta) => ({
+                  key: cuenta.id,
+                  icon: <WalletOutlined />,
+                  label: cuenta.numeroCuenta || cuenta.nombreTitular || `Cuenta #${cuenta.id}`,
+                  caption:
+                    cuenta.nombreTitular && cuenta.numeroCuenta ? cuenta.nombreTitular : null,
+                  onClick: puedeVerDetalle ? () => navigate(cuentaDetallePath(cuenta.id)) : undefined,
+                }))}
+                emptyText="Ninguna cuenta usa este método de pago"
+              />
+            </DetailInfoCard>
           </>
         ) : null}
       </DetailPageShell>
-
-      <MetodoDrawer
-        open={drawerAbierto}
-        metodo={metodo}
-        saving={saving}
-        onGuardar={guardarMetodo}
-        onCancelar={cerrarDrawer}
-      />
     </PageTemplate>
   );
 };

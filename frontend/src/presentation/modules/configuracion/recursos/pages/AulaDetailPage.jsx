@@ -3,10 +3,11 @@
  * Gemelo de `IdiomaDetailPage.jsx`.
  */
 
-import { BankOutlined } from '@ant-design/icons';
+import { ApartmentOutlined, BankOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
+import { PageHeader, DetailRelatedList } from '@molecules';
 import DetailInfoCard from '@molecules/DetailInfoCard';
 import DetailField from '@atoms/DetailField';
 import DetailProfileCard from '@organisms/DetailProfileCard';
@@ -15,11 +16,13 @@ import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
 import { useAuthContext } from '@application-auth';
 import { useAulaDetallePage } from '@application-configuracion/recursos/hooks';
 import { getAulaCategoriaLabel } from '@application-configuracion/recursos/config/aulaCategoriaOptions';
+import { paraleloDetallePath } from '@application-configuracion/recursos/config/paths';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const AulaDetailPage = () => {
   const { hasPermiso } = useAuthContext();
+  const navigate = useNavigate();
   const {
     aula,
     loading,
@@ -33,6 +36,8 @@ const AulaDetailPage = () => {
   } = useAulaDetallePage();
 
   const puedeEditar = hasPermiso('configuracion.aula', 'EDITAR');
+  const puedeVerParalelo = hasPermiso('configuracion.paralelo', 'DETALLE');
+  const paralelosQueUsanAula = aula?.paralelosQueUsanAula ?? [];
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
 
   if (isInvalidId) {
@@ -73,6 +78,9 @@ const AulaDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar aula"
               editAriaLabel="Editar aula"
+              stats={[
+                { label: 'Paralelos que usan esta aula', value: paralelosQueUsanAula.length, primary: true },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<BankOutlined />}>
@@ -83,6 +91,22 @@ const AulaDetailPage = () => {
                 {aula.capacidad != null ? `${aula.capacidad} personas` : '—'}
               </DetailField>
               <DetailField label="Observaciones">{aula.observaciones || '—'}</DetailField>
+            </DetailInfoCard>
+
+            <DetailInfoCard title="Paralelos que usan esta aula" icon={<ApartmentOutlined />} cols={1}>
+              <DetailRelatedList
+                items={paralelosQueUsanAula.map((p) => ({
+                  key: p.paraleloId,
+                  icon: <ApartmentOutlined />,
+                  label: p.paraleloNombre || `Paralelo #${p.paraleloId}`,
+                  caption: [p.materiaNombre, p.carreraNombre, p.docenteNombre].filter(Boolean).join(' · ') || null,
+                  onClick:
+                    puedeVerParalelo && p.paraleloId
+                      ? () => navigate(paraleloDetallePath(p.paraleloId))
+                      : undefined,
+                }))}
+                emptyText="Ningún paralelo usa esta aula actualmente"
+              />
             </DetailInfoCard>
           </>
         ) : null}

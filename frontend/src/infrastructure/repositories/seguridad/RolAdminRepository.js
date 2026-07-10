@@ -19,6 +19,27 @@ export class RolAdminRepository {
     return json.data?.rol ?? json.data;
   }
 
+  async findById(id) {
+    const res = await apiCall(ROLES_SEG_ENDPOINTS.BY_ID(id));
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw json;
+    return json.data?.rol ?? json.data;
+  }
+
+  async findUsuariosByRolId(id, params = {}) {
+    const res = await apiCall(ROLES_SEG_ENDPOINTS.USUARIOS(id, params));
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw json;
+    const payload = json.data ?? {};
+    const usuarios = Array.isArray(payload) ? payload : (payload.usuarios ?? []);
+    const pagination = json.pagination ?? payload.pagination ?? null;
+    return {
+      usuarios: Array.isArray(usuarios) ? usuarios : [],
+      total: pagination?.total ?? 0,
+      pagination,
+    };
+  }
+
   async findPermisosById(id) {
     const res = await apiCall(ROLES_SEG_ENDPOINTS.PERMISOS(id));
     const json = await res.json().catch(() => ({}));

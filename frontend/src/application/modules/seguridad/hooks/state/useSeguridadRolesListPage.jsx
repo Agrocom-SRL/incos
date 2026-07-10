@@ -4,7 +4,6 @@ import { App } from 'antd';
 import { KeyOutlined } from '@ant-design/icons';
 import { TableActions } from '@molecules';
 import { IdentidadCelda, StatusPill } from '@atoms';
-import { useCasesFactory } from '@container';
 import { TIPO_CONFIG } from '@modules/seguridad/roles/constants/rolTipoConfig.js';
 import { rolColorVar, rolPillClass } from '@modules/seguridad/roles/components/atoms/rolColor.js';
 import { useRolesList } from '@/application/modules/seguridad/hooks/state/useRolesList';
@@ -19,8 +18,6 @@ export const useSeguridadRolesListPage = () => {
   const { message } = App.useApp();
   const { roles: rows, loading, cargar } = useRolesList();
   const [search, setSearch] = useState('');
-  const [crearOpen, setCrearOpen] = useState(false);
-  const [crearSaving, setCrearSaving] = useState(false);
 
   const breadcrumbItems = useMemo(
     () => [{ title: 'Inicio', href: '/' }, { title: 'Seguridad' }, { title: 'Roles' }],
@@ -75,6 +72,7 @@ export const useSeguridadRolesListPage = () => {
         <TableActions
           record={record}
           navigate={navigate}
+          onView={(row) => navigate(`/seguridad/roles/${row.id}`)}
           extraActions={[
             {
               icon: <KeyOutlined />,
@@ -86,7 +84,7 @@ export const useSeguridadRolesListPage = () => {
             },
           ]}
           permisos={{
-            ver: { codigo: 'seguridad.rol.gestionar', accion: 'LISTAR' },
+            ver: { codigo: 'seguridad.rol.gestionar', accion: 'DETALLE' },
           }}
         />
       ),
@@ -102,33 +100,6 @@ export const useSeguridadRolesListPage = () => {
     setSearch(event.target.value);
   }, []);
 
-  const openCrearRol = useCallback(() => setCrearOpen(true), []);
-  const closeCrearRol = useCallback(() => {
-    if (!crearSaving) setCrearOpen(false);
-  }, [crearSaving]);
-
-  const onCreateRol = useCallback(
-    async (values) => {
-      setCrearSaving(true);
-      try {
-        const rol = await useCasesFactory.crearRolAdmin().ejecutar(values);
-        message.success('Rol creado correctamente');
-        setCrearOpen(false);
-        await cargar();
-        // Si el backend devuelve el id, llevamos al armado de permisos del rol nuevo.
-        if (rol?.id) {
-          navigate(`/seguridad/roles/${rol.id}/permisos`);
-        }
-      } catch (e) {
-        message.error(errMsg(e));
-        throw e;
-      } finally {
-        setCrearSaving(false);
-      }
-    },
-    [message, cargar, navigate],
-  );
-
   return {
     loading,
     columns,
@@ -136,10 +107,5 @@ export const useSeguridadRolesListPage = () => {
     filteredRoles,
     breadcrumbItems,
     onSearchChange,
-    crearOpen,
-    crearSaving,
-    openCrearRol,
-    closeCrearRol,
-    onCreateRol,
   };
 };

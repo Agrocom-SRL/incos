@@ -1,14 +1,18 @@
 /**
  * Detalle de banco autorizado — orquestación UI (ficha sd-profile).
  * Gemelo simplificado de `configuracion/complementarios/pages/DiscapacidadDetailPage.jsx`,
- * con acciones extra en `DetailProfileCard` (activar/desactivar + eliminar) y el
- * Drawer de edición reutilizado (`BancoDrawer`).
+ * con acción de eliminar en `DetailProfileCard` (el toggle activo/inactivo vive
+ * solo en el listado, `EstadoTogglePill`; esta ficha es de solo lectura +
+ * Editar/Eliminar). La edición navega a la página completa `BancoFormPage`.
+ * Incluye navegación cruzada al método de pago asociado y a las cuentas de
+ * este banco (mismo catálogo en memoria de `ConfigPagosContext`).
  */
 
-import { BankOutlined, CheckCircleOutlined, DeleteOutlined, StopOutlined } from '@ant-design/icons';
-import { Alert } from 'antd';
+import { BankOutlined, DeleteOutlined, WalletOutlined } from '@ant-design/icons';
+import { Alert, Typography } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
+import { PageHeader, DetailRelatedList } from '@molecules';
 import DetailInfoCard from '@molecules/DetailInfoCard';
 import DetailField from '@atoms/DetailField';
 import DetailProfileCard from '@organisms/DetailProfileCard';
@@ -19,34 +23,30 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { useAuthContext } from '@application-auth';
 import { useBancoDetailPage } from '@application-finanzas/hooks/state/useBancoDetailPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import BancoDrawer from '@finanzas/configuracion/components/BancoDrawer.jsx';
+import { bancoEditarPath, metodoDetallePath, cuentaDetallePath } from '@application-finanzas/config/paths';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const BancoDetailPage = () => {
   const { hasPermiso } = useAuthContext();
+  const navigate = useNavigate();
   const {
     banco,
-    metodos,
     metodoNombre,
+    cuentasDelBanco,
     loading,
     error,
     isInvalidId,
     avatarInitials,
     breadcrumbItems,
-    saving,
     eliminando,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarBancoSubmit,
-    handleToggleActivo,
     handleEliminar,
     handleVolver,
     refetch,
   } = useBancoDetailPage();
 
   const puedeEditar = hasPermiso(CONFIG_PAGOS_PERMISO, 'EDITAR');
+  const puedeVerDetalle = hasPermiso(CONFIG_PAGOS_PERMISO, 'DETALLE');
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
 
   if (isInvalidId) {
@@ -62,23 +62,11 @@ const BancoDetailPage = () => {
   }
 
   const profileActions = banco ? (
-    <>
-      <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="EDITAR">
-        <Button
-          variant={banco.activo ? 'warning' : 'success'}
-          icon={banco.activo ? <StopOutlined /> : <CheckCircleOutlined />}
-          loading={saving}
-          onClick={handleToggleActivo}
-        >
-          {banco.activo ? 'Desactivar' : 'Activar'}
-        </Button>
-      </PermisoGuard>
-      <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="ELIMINAR">
-        <Button variant="danger" icon={<DeleteOutlined />} loading={eliminando} onClick={handleEliminar}>
-          Eliminar
-        </Button>
-      </PermisoGuard>
-    </>
+    <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="ELIMINAR">
+      <Button variant="danger" icon={<DeleteOutlined />} loading={eliminando} onClick={handleEliminar}>
+        Eliminar
+      </Button>
+    </PermisoGuard>
   ) : null;
 
   return (
@@ -108,7 +96,7 @@ const BancoDetailPage = () => {
                 </>
               }
               showEdit={puedeEditar}
-              onEdit={abrirDrawer}
+              onEdit={() => navigate(bancoEditarPath(banco.id))}
               editTooltip="Editar banco"
               editAriaLabel="Editar banco"
               actions={profileActions}
@@ -117,20 +105,33 @@ const BancoDetailPage = () => {
             <DetailInfoCard title="Información" icon={<BankOutlined />}>
               <DetailField label="Código">{banco.codigo || '—'}</DetailField>
               <DetailField label="Nombre">{banco.nombre || '—'}</DetailField>
-              <DetailField label="Método de pago asociado">{metodoNombre || '—'}</DetailField>
+              <DetailField label="Método de pago asociado">
+                {metodoNombre && puedeVerDetalle && banco.metodoPagoId ? (
+                  <Typography.Link onClick={() => navigate(metodoDetallePath(banco.metodoPagoId))}>
+                    {metodoNombre}
+                  </Typography.Link>
+                ) : (
+                  metodoNombre || '—'
+                )}
+              </DetailField>
+            </DetailInfoCard>
+
+            <DetailInfoCard title="Cuentas de este banco" icon={<WalletOutlined />} cols={1}>
+              <DetailRelatedList
+                items={cuentasDelBanco.map((cuenta) => ({
+                  key: cuenta.id,
+                  icon: <WalletOutlined />,
+                  label: cuenta.numeroCuenta || cuenta.nombreTitular || `Cuenta #${cuenta.id}`,
+                  caption:
+                    cuenta.nombreTitular && cuenta.numeroCuenta ? cuenta.nombreTitular : null,
+                  onClick: puedeVerDetalle ? () => navigate(cuentaDetallePath(cuenta.id)) : undefined,
+                }))}
+                emptyText="Este banco aún no tiene cuentas registradas"
+              />
             </DetailInfoCard>
           </>
         ) : null}
       </DetailPageShell>
-
-      <BancoDrawer
-        open={drawerAbierto}
-        banco={banco}
-        metodos={metodos}
-        saving={saving}
-        onGuardar={guardarBancoSubmit}
-        onCancelar={cerrarDrawer}
-      />
     </PageTemplate>
   );
 };

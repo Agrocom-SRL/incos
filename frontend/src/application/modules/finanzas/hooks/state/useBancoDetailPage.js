@@ -4,16 +4,16 @@
  *
  * Sin GET /:id: resuelve el registro por `id` desde el catálogo ya cargado en
  * `ConfigPagosContext` (catálogo corto, sin paginación — mismo criterio que
- * `useConfigPagosCatalogsApi`). Maneja el Drawer de edición LOCAL llamando
- * directo a `guardarBanco` del contexto (NO reutiliza `useConfigPagosPage`,
- * que es de la pantalla de tabs). Expone también el toggle activo/inactivo
- * (que se movió de la tabla a la ficha) y eliminar (con confirmación vía
- * `useDeleteItem`, mismo patrón que `TableActions`).
+ * `useConfigPagosCatalogsApi`). La edición vive en su propia página
+ * (`BancoFormPage`/`useBancoForm`, navegación completa, ya no Drawer). El
+ * toggle activo/inactivo vive solo en el listado (`EstadoTogglePill`); esta
+ * ficha es de solo lectura + Editar/Eliminar (con confirmación vía
+ * `useDeleteItem`, mismo patrón que `TableActions`). También resuelve la
+ * navegación cruzada (cuentas de este banco) desde el mismo catálogo en memoria.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { App } from 'antd';
 import { useConfigPagosContext } from '@application-finanzas/hooks/context/useConfigPagosContext';
 import { useDeleteItem } from '@application/utils/useDeleteItem';
 import { CONFIGURACION_PATH } from '@application-finanzas/config/paths';
@@ -25,20 +25,10 @@ export const useBancoDetailPage = () => {
   const { id } = useParams();
   const bancoId = Number(id);
   const navigate = useNavigate();
-  const { message } = App.useApp();
   const isInvalidId = !Number.isFinite(bancoId) || bancoId < 1;
 
-  const {
-    bancos,
-    metodos,
-    loading,
-    error,
-    refetch,
-    saving,
-    guardarBanco,
-    eliminarBanco,
-    cambiarEstadoBanco,
-  } = useConfigPagosContext();
+  const { bancos, metodos, cuentas, loading, error, refetch, eliminarBanco } =
+    useConfigPagosContext();
 
   const banco = useMemo(
     () => (isInvalidId ? null : (bancos.find((b) => b.id === bancoId) ?? null)),
@@ -50,45 +40,13 @@ export const useBancoDetailPage = () => {
     return metodo?.nombre ?? null;
   }, [metodos, banco?.metodoPagoId]);
 
-  const [drawerAbierto, setDrawerAbierto] = useState(false);
-  const abrirDrawer = useCallback(() => setDrawerAbierto(true), []);
-  const cerrarDrawer = useCallback(() => setDrawerAbierto(false), []);
-
-  const handleVolver = useCallback(() => navigate(BANCOS_TAB_PATH), [navigate]);
-
-  const guardarBancoSubmit = useCallback(
-    async (values) => {
-      const payload = {
-        codigo: values.codigo?.trim(),
-        nombre: values.nombre?.trim(),
-        metodo_pago_id: values.metodoPagoId ?? null,
-        activo: values.activo == null ? true : !!values.activo,
-      };
-      const resultado = await guardarBanco({ id: bancoId, payload });
-      if (resultado?.success) {
-        message.success('Banco actualizado');
-        await refetch();
-        cerrarDrawer();
-        return true;
-      }
-      message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
-      return false;
-    },
-    [guardarBanco, bancoId, message, refetch, cerrarDrawer],
+  // Navegación cruzada: cuentas de pago que pertenecen a este banco.
+  const cuentasDelBanco = useMemo(
+    () => (banco ? cuentas.filter((c) => c.bancoId === banco.id) : []),
+    [cuentas, banco],
   );
 
-  const handleToggleActivo = useCallback(async () => {
-    if (!banco) return;
-    const activo = !banco.activo;
-    // PATCH /:id/estado (acción ACTIVAR), mismo endpoint que el toggle del listado.
-    const resultado = await cambiarEstadoBanco(banco.id, activo);
-    if (resultado?.success) {
-      message.success(activo ? 'Banco activado' : 'Banco desactivado');
-      await refetch();
-    } else {
-      message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
-    }
-  }, [banco, cambiarEstadoBanco, message, refetch]);
+  const handleVolver = useCallback(() => navigate(BANCOS_TAB_PATH), [navigate]);
 
   const { deleteItem, loading: eliminando } = useDeleteItem({
     deleteFn: eliminarBanco,
@@ -116,18 +74,13 @@ export const useBancoDetailPage = () => {
     banco,
     metodos,
     metodoNombre,
+    cuentasDelBanco,
     loading,
     error,
     isInvalidId,
     avatarInitials,
     breadcrumbItems,
-    saving,
     eliminando,
-    drawerAbierto,
-    abrirDrawer,
-    cerrarDrawer,
-    guardarBancoSubmit,
-    handleToggleActivo,
     handleEliminar,
     handleVolver,
     refetch,

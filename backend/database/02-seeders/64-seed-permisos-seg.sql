@@ -34,6 +34,7 @@ JOIN (
   UNION ALL SELECT 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'seguridad.rol.gestionar', 'CREAR'
   UNION ALL SELECT 'seguridad.rol.gestionar', 'EDITAR'
+  UNION ALL SELECT 'seguridad.rol.gestionar', 'DETALLE'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo SEG (roles 2-8; ADMIN_SISTEMA hereda por vista)
@@ -50,10 +51,13 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'EXPORTAR'
+  UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'DETALLE'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

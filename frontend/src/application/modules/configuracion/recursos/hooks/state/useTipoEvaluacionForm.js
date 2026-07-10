@@ -50,6 +50,13 @@ const createTipoEvaluacionFormSections = () => ({
         rules: [MIN_TEXT],
       },
       {
+        name: 'esRecuperatorio',
+        label: 'Es recuperatorio',
+        type: 'switch',
+        span: 8,
+        extra: 'Las actividades de calificación creadas con este tipo se marcarán como recuperatorio en el cuaderno, en vez de una evaluación regular.',
+      },
+      {
         name: 'descripcion',
         label: 'Descripción',
         type: 'textarea',
@@ -57,12 +64,6 @@ const createTipoEvaluacionFormSections = () => ({
         rows: 3,
         maxLength: 2000,
         placeholder: 'Detalle u observación del tipo de evaluación (opcional)',
-      },
-      {
-        name: 'esRecuperatorio',
-        label: 'Es recuperatorio',
-        type: 'switch',
-        span: 8,
       },
     ],
   },

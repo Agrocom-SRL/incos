@@ -1,0 +1,75 @@
+/* Selector visual del campo `icono` (Actividad): fila swatch + código + botón
+   (mismo patrón que `form-color-popover-picker`) + grilla en Popover. */
+.form-icon-picker {
+  width: 100%;
+}
+
+.form-icon-picker__row {
+  width: 100%;
+}
+
+.form-icon-picker__swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-accent-border);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.form-icon-picker__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+}
+
+.form-icon-picker__hint {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: 13px;
+}
+
+.form-icon-picker__overlay .ant-popover-inner {
+  padding: var(--spacing-sm);
+}
+
+.form-icon-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(6, 48px);
+  gap: var(--spacing-xs);
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.form-icon-picker__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-accent-border);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-hover, 0.16s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    background var(--dur-hover, 0.16s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    color var(--dur-hover, 0.16s) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.form-icon-picker__cell:hover {
+  border-color: var(--color-accent);
+}
+
+.form-icon-picker__cell--selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-bg);
+}

@@ -1,17 +1,10 @@
-import { Space, Tag } from 'antd';
+import { Flex } from 'antd';
 import { KeyOutlined } from '@ant-design/icons';
 import { TableActions } from '@molecules';
 import UsuarioIdentidadCell from '@modules/seguridad/usuarios/components/atoms/UsuarioIdentidadCell.jsx';
 import RolDotCell from '@modules/seguridad/usuarios/components/atoms/RolDotCell.jsx';
 import RegistroMetricasCell from '@modules/seguridad/usuarios/components/atoms/RegistroMetricasCell.jsx';
-
-const estadoTag = (estado) => {
-  if (!estado) return { color: 'success', text: 'Activo' };
-  if (estado === 'BLOQUEADO') return { color: 'error', text: 'BLOQUEADO' };
-  if (estado === 'SUSPENDIDO') return { color: 'warning', text: 'SUSPENDIDO' };
-  if (estado === 'RETIRADO') return { color: 'default', text: 'RETIRADO' };
-  return { color: 'default', text: String(estado) };
-};
+import UsuarioEstadoTag from '@modules/seguridad/usuarios/components/atoms/UsuarioEstadoTag.jsx';
 
 export const createUsuariosTableColumns = (navigate, { eliminarUsuario, refetch } = {}) => [
   {
@@ -51,21 +44,14 @@ export const createUsuariosTableColumns = (navigate, { eliminarUsuario, refetch 
     title: 'Estado',
     key: 'estado',
     width: 180,
-    render: (_, record) => {
-      const st = estadoTag(record.estado);
-      return (
-        <Space orientation="vertical" size={2}>
-          <Tag color={st.color} style={{ marginInlineEnd: 0 }}>
-            {st.text}
-          </Tag>
-          {record.motivo_cambio_estado ? (
-            <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-              {record.motivo_cambio_estado}
-            </span>
-          ) : null}
-        </Space>
-      );
-    },
+    render: (_, record) => (
+      <Flex vertical gap={2}>
+        <UsuarioEstadoTag estado={record.estado} />
+        {record.motivo_cambio_estado ? (
+          <span className="usuarios-estado-motivo">{record.motivo_cambio_estado}</span>
+        ) : null}
+      </Flex>
+    ),
   },
   {
     title: 'Registro',
@@ -110,7 +96,7 @@ export const createUsuariosTableColumns = (navigate, { eliminarUsuario, refetch 
           {
             icon: <KeyOutlined />,
             variant: 'info',
-            tooltip: 'Permisos',
+            tooltip: 'Accesos',
             onClick: () => navigate(`/seguridad/usuarios/${record.id}/permisos`),
             permiso: 'seguridad.rol.gestionar',
             accion: 'LISTAR',

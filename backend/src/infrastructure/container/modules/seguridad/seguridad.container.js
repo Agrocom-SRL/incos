@@ -23,6 +23,8 @@ import { ObtenerPermisosRolUseCase } from '../../../../application/use-cases/seg
 import { ObtenerPermisosGrillaRolUseCase } from '../../../../application/use-cases/seguridad/ObtenerPermisosGrillaRolUseCase.js';
 import { ActualizarPermisosRolUseCase } from '../../../../application/use-cases/seguridad/ActualizarPermisosRolUseCase.js';
 import { ListarPermisosUseCase } from '../../../../application/use-cases/seguridad/ListarPermisosUseCase.js';
+import { GetRolByIdUseCase } from '../../../../application/use-cases/seguridad/GetRolByIdUseCase.js';
+import { ListarUsuariosPorRolUseCase } from '../../../../application/use-cases/seguridad/ListarUsuariosPorRolUseCase.js';
 
 import { SeguridadUsuariosController } from '../../../../presentation/controllers/seguridad/usuarios.controller.js';
 import { SeguridadRolesController } from '../../../../presentation/controllers/seguridad/roles.controller.js';
@@ -215,6 +217,27 @@ export function registerSeguridadModule(container) {
 
   registerComponent(
     container,
+    SEGURIDAD_TOKENS.getRolByIdUseCase,
+    (c) =>
+      new GetRolByIdUseCase({
+        roleRepository: c.resolve(REPOSITORIOS_TOKENS.roleRepository),
+        rolePermissionRepository: c.resolve(REPOSITORIOS_TOKENS.rolePermissionRepository),
+        permissionRepository: c.resolve(REPOSITORIOS_TOKENS.permissionRepository),
+      })
+  );
+
+  registerComponent(
+    container,
+    SEGURIDAD_TOKENS.listarUsuariosPorRolUseCase,
+    (c) =>
+      new ListarUsuariosPorRolUseCase({
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        roleRepository: c.resolve(REPOSITORIOS_TOKENS.roleRepository),
+      })
+  );
+
+  registerComponent(
+    container,
     SEGURIDAD_TOKENS.seguridadUsuariosController,
     (c) =>
       new SeguridadUsuariosController({
@@ -256,6 +279,10 @@ export function registerSeguridadModule(container) {
         ),
         actualizarPermisosRolUseCase: c.resolve(
           SEGURIDAD_TOKENS.actualizarPermisosRolUseCase
+        ),
+        getRolByIdUseCase: c.resolve(SEGURIDAD_TOKENS.getRolByIdUseCase),
+        listarUsuariosPorRolUseCase: c.resolve(
+          SEGURIDAD_TOKENS.listarUsuariosPorRolUseCase
         ),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       })

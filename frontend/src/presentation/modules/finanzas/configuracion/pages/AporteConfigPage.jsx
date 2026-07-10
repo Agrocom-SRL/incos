@@ -9,10 +9,8 @@
  * separado de `finanzas.configuracion.pago` (bancos/cuentas/métodos).
  */
 
-import { useEffect } from 'react';
 import { Alert, Empty, Flex, Form, Spin, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, BackButton, Button } from '@atoms';
@@ -23,16 +21,15 @@ import { APORTE_PERMISO } from '@finanzas/configuracion/config/aportePermisos';
 import AporteFormSections from '@finanzas/configuracion/components/organisms/AporteFormSections';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@finanzas/configuracion/styles/aporte-page.css';
 
 const { Text } = Typography;
 
 const AporteConfigPage = () => {
-  const [form] = Form.useForm();
   const {
+    form,
     gestionVigente,
-    breadcrumbItems,
     aporteVigente,
+    breadcrumbItems,
     loading,
     error,
     refetch,
@@ -41,16 +38,6 @@ const AporteConfigPage = () => {
     handleVolver,
     guardarAporte,
   } = useAportePage();
-
-  // Precarga el formulario con el aporte vigente (o valores por defecto para alta).
-  useEffect(() => {
-    form.setFieldsValue({
-      montoBase: aporteVigente?.montoBase ?? null,
-      aporteActivo: aporteVigente?.aporteActivo ?? true,
-      fechaInicio: aporteVigente?.fechaInicio ? dayjs(aporteVigente.fechaInicio) : null,
-      fechaFin: aporteVigente?.fechaFin ? dayjs(aporteVigente.fechaFin) : null,
-    });
-  }, [aporteVigente, form]);
 
   const handleGuardar = async () => {
     const values = await form.validateFields();
@@ -107,13 +94,14 @@ const AporteConfigPage = () => {
       <Form
         form={form}
         layout="vertical"
-        className="cfg-academico-form aporte-page-form"
+        className="cfg-academico-form"
         disabled={loading || saving}
       >
         <AporteFormSections
           form={form}
           formSections={formSections}
           gestionLabel={gestionLabel}
+          activo={aporteVigente?.aporteActivo ?? true}
           footer={saveButton}
         />
       </Form>

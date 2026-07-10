@@ -81,6 +81,11 @@ const DiscapacidadDetailPage = () => {
               onEdit={handleEditar}
               editTooltip="Editar tipo de discapacidad"
               editAriaLabel="Editar tipo de discapacidad"
+              stats={[
+                { label: 'Estudiantes', value: discapacidad.cantidadEstudiantes ?? 0, primary: true },
+                { label: 'Docentes', value: discapacidad.cantidadDocentes ?? 0 },
+                { label: 'Personal', value: discapacidad.cantidadPersonal ?? 0 },
+              ]}
             />
 
             <DetailInfoCard title="Información" icon={<SolutionOutlined />}>

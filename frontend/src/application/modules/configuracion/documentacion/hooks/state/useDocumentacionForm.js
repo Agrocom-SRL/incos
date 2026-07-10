@@ -54,12 +54,12 @@ const createDocumentacionFormSections = (documentoPadreOptions) => ({
       {
         name: 'tipoDocumento',
         label: 'Tipo de documento',
-        type: 'select',
+        type: 'pillSelect',
+        pillVariant: 'documentacionTipo',
         required: true,
         span: 12,
         placeholder: 'Seleccione…',
         options: TIPOS_DOCUMENTO_OPTIONS,
-        showSearch: true,
       },
       {
         name: 'documentoPadreId',

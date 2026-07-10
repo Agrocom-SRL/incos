@@ -193,6 +193,7 @@ export function injectCSSVariables() {
 
   // Control heights (para botones y menús)
   root.style.setProperty('--control-height', `${allThemeTokens.controlHeight}px`);
+  root.style.setProperty('--control-height-sm', `${allThemeTokens.controlHeightSM}px`);
 
   // ========================================
   // LOGO - Tamaños

@@ -41,4 +41,30 @@ export class AulasHorariosSemanaRepository extends IAulasHorariosSemanaRepositor
     const bloques = await sequelize.query(sql, { replacements, type: QueryTypes.SELECT });
     return { bloques, total: bloques.length, page: 1, limit: bloques.length };
   }
+
+  /**
+   * Paralelos/cursos que usan un aula (bloques reales asignados, sin depender
+   * de semana/gestión). Filtra `tiene_aula = 1` y descarta `es_sin_aula`.
+   * La deduplicación por paralelo_id se hace en el use case consumidor.
+   */
+  async findByAulaId(aulaId) {
+    const sql = `
+      SELECT DISTINCT
+        paralelo_id,
+        paralelo_nombre,
+        paralelo_turno,
+        materia_id,
+        materia_sigla,
+        materia_nombre,
+        carrera_id,
+        carrera_nombre,
+        docente_nombre
+      FROM vista_aulas_horarios_semana
+      WHERE aula_id = :aulaId
+        AND tiene_aula = 1
+        AND es_sin_aula = 0
+      ORDER BY paralelo_nombre ASC
+    `;
+    return sequelize.query(sql, { replacements: { aulaId }, type: QueryTypes.SELECT });
+  }
 }

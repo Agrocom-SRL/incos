@@ -5,6 +5,7 @@ import {
   actualizarPermisosRolValidator,
   crearRolValidator,
   rolIdParamValidator,
+  rolUsuariosListQueryValidator,
   validateSeguridadRequest,
 } from '../validators/seguridad/usuarios.validator.js';
 
@@ -24,6 +25,10 @@ export function buildRolesRouter({ seguridadRolesController }) {
   const editar = [
     authenticate,
     verificarPermiso('seguridad.rol.gestionar', 'EDITAR'),
+  ];
+  const detalle = [
+    authenticate,
+    verificarPermiso('seguridad.rol.gestionar', 'DETALLE'),
   ];
 
   router.get('/', ...ver, (req, res, next) => c.list(req, res, next));
@@ -67,6 +72,23 @@ export function buildRolesRouter({ seguridadRolesController }) {
     actualizarPermisosRolValidator,
     validateSeguridadRequest,
     (req, res, next) => c.putPermisos(req, res, next)
+  );
+
+  router.get(
+    '/:id/usuarios',
+    ...detalle,
+    rolIdParamValidator,
+    rolUsuariosListQueryValidator,
+    validateSeguridadRequest,
+    (req, res, next) => c.getUsuarios(req, res, next)
+  );
+
+  router.get(
+    '/:id',
+    ...detalle,
+    rolIdParamValidator,
+    validateSeguridadRequest,
+    (req, res, next) => c.getById(req, res, next)
   );
 
   return router;

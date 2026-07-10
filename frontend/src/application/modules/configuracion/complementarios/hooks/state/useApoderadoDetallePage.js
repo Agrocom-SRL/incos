@@ -44,6 +44,8 @@ export const useApoderadoDetallePage = () => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo cargar el apoderado');
       }
+      // El objeto mapeado ya incluye cantidadEstudiantes/cantidadDocentes/cantidadPersonal
+      // ("Uso en el sistema"); se exponen junto al resto de campos vía `apoderado`.
       setApoderado(mapApoderadoDetail(result.data));
     } catch (e) {
       setError(e?.message || 'Error al cargar el apoderado');

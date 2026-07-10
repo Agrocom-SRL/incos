@@ -1,7 +1,7 @@
 /**
  * ABM actividad — workspace alineado al catálogo académico.
- * Gemelo de `academico/pages/MateriaFormPage.jsx`. Campo `icono`: Input simple
- * + preview inline del string (sin librería de iconos).
+ * Gemelo de `academico/pages/MateriaFormPage.jsx`. Campo `icono`: selector
+ * visual (`FormIconPicker`) + preview inline del string kebab-case guardado.
  */
 
 import { Alert, Flex, Form, Spin, Typography } from 'antd';
@@ -14,6 +14,7 @@ import { useActividadForm } from '@application-configuracion/actividades/hooks';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
+import '@configuracion/actividades/styles/form-icon-picker.css';
 
 const { Text } = Typography;
 

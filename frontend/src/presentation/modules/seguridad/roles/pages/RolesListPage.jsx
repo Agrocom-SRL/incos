@@ -5,6 +5,7 @@
 
 import { Flex, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { useSeguridadRolesListPageContext } from '@/application/modules/seguridad/hooks';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -13,12 +14,12 @@ import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import CrearRolModal from '@modules/seguridad/roles/components/modals/CrearRolModal.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@modules/seguridad/roles/styles/roles.css';
 
 export default function RolesListPage() {
+  const navigate = useNavigate();
   const {
     loading,
     columns,
@@ -26,11 +27,6 @@ export default function RolesListPage() {
     filteredRoles,
     breadcrumbItems,
     onSearchChange,
-    crearOpen,
-    crearSaving,
-    openCrearRol,
-    closeCrearRol,
-    onCreateRol,
   } = useSeguridadRolesListPageContext();
 
   const panelActions = (
@@ -39,7 +35,7 @@ export default function RolesListPage() {
       accion="CREAR"
       variant="primary"
       icon={<PlusOutlined />}
-      onClick={openCrearRol}
+      onClick={() => navigate('/seguridad/roles/nuevo')}
     >
       Nuevo rol
     </ActionButton>
@@ -91,13 +87,6 @@ export default function RolesListPage() {
           </MainContent>
         </DashboardPageShell>
       </Flex>
-
-      <CrearRolModal
-        open={crearOpen}
-        loading={crearSaving}
-        onCancel={closeCrearRol}
-        onSubmit={onCreateRol}
-      />
     </PermisoGuard>
   );
 }

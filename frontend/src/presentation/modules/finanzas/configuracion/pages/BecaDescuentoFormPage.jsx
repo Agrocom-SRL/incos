@@ -1,8 +1,9 @@
 /**
  * ABM catálogo maestro Becas y descuentos — workspace alineado a CFG Académico.
  * Gemelo de `configuracion/complementarios/pages/DiscapacidadFormPage.jsx`, con
- * dos secciones (`Datos` + `Reglas de aplicación`) apiladas: cada una es un
- * `CfgFormWorkspace` propio (el botón de guardado va en el footer de la última).
+ * dos sectores (`Datos` + `Reglas de aplicación`) dentro de una MISMA tarjeta
+ * (prop `sections` de `CfgFormWorkspace`, mismo patrón visual que la pestaña
+ * de datos del perfil en `UsuarioCreatePage`), en vez de dos cards apiladas.
  */
 
 import { Alert, Flex, Form, Spin } from 'antd';
@@ -94,18 +95,21 @@ const BecaDescuentoFormPage = ({ mode = 'create' }) => {
                   <CfgFormWorkspace
                     title={datosBeca.title}
                     description={datosBeca.description}
-                    fields={datosBeca.fields}
-                    form={form}
-                  />
-                ) : null}
-
-                {reglasAplicacion?.fields?.length ? (
-                  <CfgFormWorkspace
-                    title={reglasAplicacion.title}
-                    description={reglasAplicacion.description}
-                    fields={reglasAplicacion.fields}
                     form={form}
                     footer={saveButton}
+                    sections={[
+                      { key: 'datosBeca', fields: datosBeca.fields },
+                      ...(reglasAplicacion?.fields?.length
+                        ? [
+                            {
+                              key: 'reglasAplicacion',
+                              title: reglasAplicacion.title,
+                              description: reglasAplicacion.description,
+                              fields: reglasAplicacion.fields,
+                            },
+                          ]
+                        : []),
+                    ]}
                   />
                 ) : null}
               </Form>

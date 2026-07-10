@@ -1,5 +1,6 @@
-import { Alert, Select, Tag, Typography } from 'antd';
+import { Alert, Spin, Tabs, Tag, Typography } from 'antd';
 import { ArrowLeftOutlined, KeyOutlined } from '@ant-design/icons';
+import { allSpacing } from '@theme/tokens';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import PermisosDominioPicker from '@modules/seguridad/roles/components/organisms/PermisosDominioPicker.jsx';
 import { useSeguridadRolPermisosPageContext } from '@/application/modules/seguridad/hooks';
@@ -15,12 +16,12 @@ function iniciales(nombre) {
 
 export default function RolPermisosPage() {
   const {
-    rolId,
     rolInfo,
     grupos,
     delta,
     dominios,
     loading,
+    loadingGrupos,
     saving,
     hasChanges,
     esAdminSistema,
@@ -79,44 +80,47 @@ export default function RolPermisosPage() {
                 ]}
               />
 
-              <DetailInfoCard
-                title="Asignación de permisos"
-                icon={<KeyOutlined />}
-                cols={1}
-                extra={
-                  <Select
-                    value={dominioSeleccionado}
+              <DetailInfoCard title="Asignación de permisos" icon={<KeyOutlined />} cols={1}>
+                {dominios.length > 0 ? (
+                  // `rolId` siempre existe aquí: este bloque solo se renderiza dentro de
+                  // `rolInfo` truthy (rolInfo se carga a partir de `rolId`), así que no hace
+                  // falta `disabled` en los items del Tabs.
+                  <Tabs
+                    activeKey={dominioSeleccionado}
                     onChange={setDominioSeleccionado}
-                    options={dominios.map((d) => ({ value: d.value, label: d.label }))}
-                    style={{ minWidth: 260, maxWidth: '100%' }}
-                    disabled={!rolId}
-                    placeholder="Dominio"
+                    items={dominios.map((d) => ({ key: d.value, label: d.label }))}
+                    style={{ marginBottom: allSpacing.margin }}
                   />
-                }
-              >
+                ) : null}
+
                 {esAdminSistema ? (
                   <Alert
                     type="info"
                     showIcon
                     title="Rol protegido"
                     description="Los permisos del Administrador del Sistema no pueden modificarse desde el panel. Las casillas reflejan el catálogo permiso_acciones (acciones de pantallas y flujos). Los catálogos de combos en formularios (países, idiomas, etc.) no se listan aquí: se conceden automáticamente a cualquier usuario con rol."
-                    style={{ marginBottom: 16 }}
+                    style={{ marginBottom: allSpacing.margin }}
                   />
                 ) : null}
 
                 {!esAdminSistema && hasChanges ? (
-                  <Alert type="info" title="Hay cambios sin guardar" showIcon style={{ marginBottom: 16 }} />
+                  <Alert type="info" title="Hay cambios sin guardar" showIcon style={{ marginBottom: allSpacing.margin }} />
                 ) : null}
 
-                <PermisosDominioPicker
-                  grupos={grupos}
-                  delta={delta}
-                  toggleAccion={toggleAccion}
-                  disabled={esAdminSistema}
-                />
+                {/* `spinning` cubre el cambio de tab: sin esto, la grilla completa (junto
+                    con perfil y tabs) se desmontaba en cada cambio de dominio — mismo fix
+                    ya aplicado en `UsuarioAccesosPage`. */}
+                <Spin spinning={loadingGrupos}>
+                  <PermisosDominioPicker
+                    grupos={grupos}
+                    delta={delta}
+                    toggleAccion={toggleAccion}
+                    disabled={esAdminSistema}
+                  />
+                </Spin>
 
                 {!esAdminSistema && hasChanges ? (
-                  <div className="seg-actions" style={{ marginTop: 16 }}>
+                  <div className="seg-actions" style={{ marginTop: allSpacing.margin }}>
                     <Button variant="default" onClick={cancelarCambios}>
                       Cancelar
                     </Button>

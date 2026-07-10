@@ -5,7 +5,9 @@
  * Resuelve el registro por `id` desde el catálogo ya cargado en
  * `BecaDescuentoContext` (mismo criterio que el resto del feature: sin
  * segunda estrategia de carga vía GET /:id, aunque el repositorio ya lo
- * soporta). Expone eliminar (con confirmación, `useDeleteItem`).
+ * soporta). Expone eliminar (con confirmación, `useDeleteItem`) y navegar al
+ * listado de becas asignadas de estudiantes filtrado por esta beca
+ * (`handleVerAsignaciones`, sección "Estudiantes con esta beca" de la ficha).
  */
 
 import { useCallback, useMemo } from 'react';
@@ -16,6 +18,13 @@ import { CONFIGURACION_PATH, becaDescuentoEditarPath } from '@application-finanz
 
 /** Tab de origen en "Config. de pagos" (ver `configPagosTabs.js`, TAB_BECAS_DESCUENTOS). */
 const BECAS_TAB_PATH = `${CONFIGURACION_PATH}?tab=becas-descuentos`;
+
+/**
+ * Listado de becas asignadas a estudiantes (módulo Matrícula, legacy
+ * `estudiantes/`), filtrable por `scholarshipId` (ver
+ * `ListStudentScholarshipsController.buildFilters`).
+ */
+const ESTUDIANTES_BECAS_LISTAR_PATH = '/estudiantes/becas/listar';
 
 const initialsFromNombre = (nombre) => (nombre || '?').trim().slice(0, 2).toUpperCase();
 
@@ -51,6 +60,12 @@ export const useBecaDescuentoDetallePage = () => {
     navigate(becaDescuentoEditarPath(beca.id));
   }, [beca, navigate]);
 
+  /** Navega al listado de becas asignadas de estudiantes, filtrado por esta beca. */
+  const handleVerAsignaciones = useCallback(() => {
+    if (!beca?.id) return;
+    navigate(`${ESTUDIANTES_BECAS_LISTAR_PATH}?scholarshipId=${beca.id}`);
+  }, [beca, navigate]);
+
   const { deleteItem, loading: eliminando } = useDeleteItem({
     deleteFn: eliminar,
     itemName: beca?.nombre ? `la beca o descuento ${beca.nombre}` : 'esta beca o descuento',
@@ -69,6 +84,7 @@ export const useBecaDescuentoDetallePage = () => {
     handleVolver,
     handleEditar,
     handleEliminar,
+    handleVerAsignaciones,
     refetch,
   };
 };

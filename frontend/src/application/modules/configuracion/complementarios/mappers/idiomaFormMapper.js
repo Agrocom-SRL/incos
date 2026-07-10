@@ -30,5 +30,8 @@ export const mapIdiomaDetail = (raw) => {
   return {
     ...base,
     activo: (payload?.activo ?? raw?.activo) !== false,
+    cantidadEstudiantes: payload?.cantidadEstudiantes ?? 0,
+    cantidadDocentes: payload?.cantidadDocentes ?? 0,
+    cantidadPersonal: payload?.cantidadPersonal ?? 0,
   };
 };

@@ -79,6 +79,9 @@ export function registerIdiomasResource(container) {
         (c) =>
             new GetIdiomaByIdUseCase({
                 languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
+                complementariosUsosViewRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.complementariosUsosViewRepository,
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );

@@ -8,9 +8,10 @@
  * igual que Complementarios — el toggle de estado recarga en background sin
  * desmontar tabs.
  * (`BecasDescuentosTabPanel` monta su propio `BecaDescuentoProvider`, catálogo
- * independiente — permiso `finanzas.beca-descuento`). Ver/editar/activar de
- * bancos/cuentas/métodos vive en su ficha de detalle propia
- * (`/finanzas/configuracion/{bancos,cuentas,metodos}/:id`), ya no en la tabla.
+ * independiente — permiso `finanzas.beca-descuento`). Alta/edición/ver/activar
+ * de bancos/cuentas/métodos son páginas completas de navegación
+ * (`/finanzas/configuracion/{bancos,cuentas,metodos}/...`, ver
+ * `BancoFormPage`/`CuentaFormPage`/`MetodoFormPage`), ya no drawers/modales.
  *
  * El aporte de la gestión vigente vive como página HIJA sin ítem de menú
  * propio, `/finanzas/configuracion/aportes` (permiso `finanzas.aporte`, ver
@@ -18,10 +19,11 @@
  * desde el botón "Configuración de aportes" en `PageHeader`.
  *
  * RBAC: la ruta FIN-CFG es `finanzas.configuracion.pago` LISTAR. El alta
- * (bancos/cuentas) usa CREAR (PermisoGuard en la cabecera del workspace);
- * ver/editar/activar/eliminar viven en la ficha (`finanzas.configuracion.pago`
- * DETALLE/EDITAR/ELIMINAR). Becas y descuentos usa su propio permiso
- * `finanzas.beca-descuento` (LISTAR/CREAR/EDITAR/DETALLE/ELIMINAR).
+ * (bancos/cuentas) usa CREAR (`ActionButton` en la cabecera del workspace);
+ * ver/editar/activar/eliminar viven en la ficha/página de edición
+ * (`finanzas.configuracion.pago` DETALLE/EDITAR/ELIMINAR). Becas y descuentos
+ * usa su propio permiso `finanzas.beca-descuento` (LISTAR/CREAR/EDITAR/
+ * DETALLE/ELIMINAR).
  */
 
 import { useCallback, useMemo } from 'react';
@@ -37,7 +39,11 @@ import DashboardPageShell from '@presentation/modules/dashboard/components/organ
 import { useConfigPagosPage } from '@application-finanzas/hooks/state/useConfigPagosPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
 import { BECA_DESCUENTO_PERMISO } from '@finanzas/configuracion/config/becaDescuentoPermisos';
-import { becaDescuentoNuevaPath } from '@application-finanzas/config/paths';
+import {
+  becaDescuentoNuevaPath,
+  bancoNuevoPath,
+  cuentaNuevoPath,
+} from '@application-finanzas/config/paths';
 import {
   CONFIG_PAGOS_TAB_KEYS,
   CONFIG_PAGOS_TAB_META,
@@ -70,34 +76,8 @@ const renderTabLabel = (meta) => {
 const ConfigPagosPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const {
-    breadcrumbItems,
-    metodos,
-    bancos,
-    cuentas,
-    loading,
-    error,
-    refetch,
-    saving,
-    // Métodos
-    metodoEnEdicion,
-    metodoModalAbierto,
-    abrirMetodoModal,
-    cerrarMetodoModal,
-    guardarMetodo,
-    // Bancos
-    bancoEnEdicion,
-    bancoModalAbierto,
-    abrirBancoModal,
-    cerrarBancoModal,
-    guardarBancoSubmit,
-    // Cuentas
-    cuentaEnEdicion,
-    cuentaModalAbierto,
-    abrirCuentaModal,
-    cerrarCuentaModal,
-    guardarCuentaSubmit,
-  } = useConfigPagosPage();
+  const { breadcrumbItems, metodos, bancos, cuentas, loading, error, refetch, saving } =
+    useConfigPagosPage();
 
   /** Resuelve el nombre del método por id (para las tablas de bancos/cuentas). */
   const metodoNombrePorId = useMemo(() => {
@@ -111,17 +91,7 @@ const ConfigPagosPage = () => {
         key: TAB_METODOS,
         label: renderTabLabel(CONFIG_PAGOS_TAB_META[TAB_METODOS]),
         children: wrapTabPanel(
-          <MetodosTabPanel
-            metodos={metodos}
-            loading={loading}
-            error={error}
-            saving={saving}
-            drawerAbierto={metodoModalAbierto}
-            metodoEnEdicion={metodoEnEdicion}
-            onAbrirDrawer={abrirMetodoModal}
-            onCerrarDrawer={cerrarMetodoModal}
-            onGuardar={guardarMetodo}
-          />,
+          <MetodosTabPanel metodos={metodos} loading={loading} error={error} saving={saving} />,
         ),
       },
       {
@@ -130,16 +100,10 @@ const ConfigPagosPage = () => {
         children: wrapTabPanel(
           <BancosTabPanel
             bancos={bancos}
-            metodos={metodos}
             loading={loading}
             error={error}
             saving={saving}
             metodoNombrePorId={metodoNombrePorId}
-            drawerAbierto={bancoModalAbierto}
-            bancoEnEdicion={bancoEnEdicion}
-            onAbrirDrawer={abrirBancoModal}
-            onCerrarDrawer={cerrarBancoModal}
-            onGuardar={guardarBancoSubmit}
           />,
         ),
       },
@@ -149,17 +113,10 @@ const ConfigPagosPage = () => {
         children: wrapTabPanel(
           <CuentasTabPanel
             cuentas={cuentas}
-            metodos={metodos}
-            bancos={bancos}
             loading={loading}
             error={error}
             saving={saving}
             metodoNombrePorId={metodoNombrePorId}
-            drawerAbierto={cuentaModalAbierto}
-            cuentaEnEdicion={cuentaEnEdicion}
-            onAbrirDrawer={abrirCuentaModal}
-            onCerrarDrawer={cerrarCuentaModal}
-            onGuardar={guardarCuentaSubmit}
           />,
         ),
       },
@@ -169,30 +126,7 @@ const ConfigPagosPage = () => {
         children: wrapTabPanel(<BecasDescuentosTabPanel />),
       },
     ],
-    [
-      loading,
-      error,
-      saving,
-      metodos,
-      metodoModalAbierto,
-      metodoEnEdicion,
-      abrirMetodoModal,
-      cerrarMetodoModal,
-      guardarMetodo,
-      bancos,
-      metodoNombrePorId,
-      bancoModalAbierto,
-      bancoEnEdicion,
-      abrirBancoModal,
-      cerrarBancoModal,
-      guardarBancoSubmit,
-      cuentas,
-      cuentaModalAbierto,
-      cuentaEnEdicion,
-      abrirCuentaModal,
-      cerrarCuentaModal,
-      guardarCuentaSubmit,
-    ],
+    [loading, error, saving, metodos, bancos, metodoNombrePorId, cuentas],
   );
 
   const activeKey = useMemo(() => {
@@ -212,24 +146,32 @@ const ConfigPagosPage = () => {
     [setSearchParams],
   );
 
-  /** Acción de alta (solo bancos/cuentas), envuelta en PermisoGuard CREAR. */
+  /** Acción de alta (solo bancos/cuentas), navega a la página completa de alta. */
   const panelActions = useMemo(() => {
     if (activeKey === TAB_BANCOS) {
       return (
-        <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="CREAR">
-          <Button variant="primary" icon={<PlusOutlined />} onClick={() => abrirBancoModal(null)}>
-            Agregar banco
-          </Button>
-        </PermisoGuard>
+        <ActionButton
+          permiso={CONFIG_PAGOS_PERMISO}
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(bancoNuevoPath)}
+        >
+          Agregar banco
+        </ActionButton>
       );
     }
     if (activeKey === TAB_CUENTAS) {
       return (
-        <PermisoGuard codigo={CONFIG_PAGOS_PERMISO} accion="CREAR">
-          <Button variant="primary" icon={<PlusOutlined />} onClick={() => abrirCuentaModal(null)}>
-            Agregar cuenta
-          </Button>
-        </PermisoGuard>
+        <ActionButton
+          permiso={CONFIG_PAGOS_PERMISO}
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(cuentaNuevoPath)}
+        >
+          Agregar cuenta
+        </ActionButton>
       );
     }
     if (activeKey === TAB_BECAS_DESCUENTOS) {
@@ -246,7 +188,7 @@ const ConfigPagosPage = () => {
       );
     }
     return null;
-  }, [activeKey, abrirBancoModal, abrirCuentaModal, navigate]);
+  }, [activeKey, navigate]);
 
   /**
    * Acción de página (no por-tab): ir a la configuración del aporte de la

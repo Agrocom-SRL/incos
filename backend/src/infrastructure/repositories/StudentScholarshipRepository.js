@@ -137,6 +137,7 @@ export class StudentScholarshipRepository extends BaseRepository {
    * @param {Object} options - Filtros, búsqueda y paginación
    *   - studentId: filtra por estudiante_id
    *   - managementId: filtra por gestion_id
+   *   - scholarshipId: filtra por beca_descuento_id
    *   - state: filtra por estado (PENDIENTE/ACTIVA/FINALIZADA/RECHAZADA)
    *   - search: término de búsqueda (nombres, apellidos, código, CI, beca, gestión)
    *   - page: número de página (default 1)
@@ -146,6 +147,7 @@ export class StudentScholarshipRepository extends BaseRepository {
   async listarBecasAsignadas({
     studentId,
     managementId,
+    scholarshipId,
     state,
     search,
     page = 1,
@@ -161,6 +163,10 @@ export class StudentScholarshipRepository extends BaseRepository {
     if (managementId !== undefined && managementId !== null) {
       whereConditions.push('gestion_id = :managementId');
       replacements.managementId = managementId;
+    }
+    if (scholarshipId !== undefined && scholarshipId !== null) {
+      whereConditions.push('beca_descuento_id = :scholarshipId');
+      replacements.scholarshipId = scholarshipId;
     }
     if (state !== undefined && state !== null && state !== '') {
       whereConditions.push('estado = :state');

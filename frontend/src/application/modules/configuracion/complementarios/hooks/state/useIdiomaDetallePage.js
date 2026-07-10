@@ -44,6 +44,8 @@ export const useIdiomaDetallePage = () => {
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo cargar el idioma');
       }
+      // El objeto mapeado ya incluye cantidadEstudiantes/cantidadDocentes/cantidadPersonal
+      // ("Uso en el sistema"); se exponen junto al resto de campos vía `idioma`.
       setIdioma(mapIdiomaDetail(result.data));
     } catch (e) {
       setError(e?.message || 'Error al cargar el idioma');

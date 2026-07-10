@@ -21,6 +21,8 @@ import { HexColorPicker } from 'react-colorful';
 import FormColorPopoverPicker from '../components/FormColorPopoverPicker';
 import FormImageUploadDragger from '../components/FormImageUploadDragger';
 import FormPillSelect from '../components/FormPillSelect';
+import FormIconPicker from '../components/FormIconPicker';
+import FormSlider from '../components/FormSlider';
 import { resolveFormPillClassName } from './formPillSelectResolvers';
 import {
   FieldInput,
@@ -84,6 +86,14 @@ const renderImageUpload = (field, disabled, readOnly, form) => (
   <FormImageUploadDragger disabled={disabled} readOnly={readOnly} field={field} form={form} />
 );
 
+const renderIconPicker = (field, disabled, readOnly) => (
+  <FormIconPicker field={field} disabled={disabled} readOnly={readOnly} />
+);
+
+const renderSlider = (field, disabled, readOnly) => (
+  <FormSlider field={field} disabled={disabled} readOnly={readOnly} />
+);
+
 /**
  * Renderer para números enteros (cupo, cantidades) con InputNumber de Ant Design
  */
@@ -97,7 +107,8 @@ const renderNumber = (field, disabled, readOnly) => (
     max={field.max}
     step={field.step ?? 1}
     precision={field.precision}
-    addonAfter={field.addonAfter}
+    prefix={field.addonBefore}
+    suffix={field.addonAfter}
   />
 );
 
@@ -426,6 +437,8 @@ export const fieldRenderers = {
   number: renderNumber,
   color: renderColor,
   imageUpload: renderImageUpload,
+  iconPicker: renderIconPicker,
+  slider: renderSlider,
   search: renderSearch,
   select: renderSelect,
   pillSelect: renderPillSelect,
@@ -449,6 +462,8 @@ const fieldRendererParams = {
   input: ['field', 'disabled', 'readOnly'],
   number: ['field', 'disabled', 'readOnly'],
   color: ['field', 'disabled', 'readOnly'],
+  iconPicker: ['field', 'disabled', 'readOnly'],
+  slider: ['field', 'disabled', 'readOnly'],
   search: ['field', 'disabled', 'readOnly'],
   switch: ['field', 'disabled', 'readOnly'],
   textarea: ['field', 'disabled', 'readOnly'],
