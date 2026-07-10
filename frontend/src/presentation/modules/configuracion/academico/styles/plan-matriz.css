@@ -1,0 +1,29 @@
+/**
+ * Ficha-hub del plan de estudio — matriz editable y prerrequisitos (Fase 8).
+ * Solo layout (gap/align); color y tipografía vienen del theme AntD.
+ */
+
+.cfg-plan-matriz__row-actions,
+.cfg-plan-matriz__periodo-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.cfg-plan-matriz__periodo-horas {
+  margin-right: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.cfg-plan-prereq__asignatura {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.cfg-plan-prereq__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+}

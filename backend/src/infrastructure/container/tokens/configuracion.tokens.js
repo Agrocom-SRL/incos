@@ -29,6 +29,7 @@ export const CONFIGURACION_TOKENS = {
     createPlanEstudiosUseCase: 'configuracion.createPlanEstudiosUseCase',
     updatePlanEstudiosUseCase: 'configuracion.updatePlanEstudiosUseCase',
     marcarPlanEstudiosVigenteUseCase: 'configuracion.marcarPlanEstudiosVigenteUseCase',
+    clonarPlanEstudiosUseCase: 'configuracion.clonarPlanEstudiosUseCase',
 
     listPeriodosByPlanUseCase: 'configuracion.listPeriodosByPlanUseCase',
     createPeriodoUseCase: 'configuracion.createPeriodoUseCase',
@@ -87,6 +88,7 @@ export const CONFIGURACION_TOKENS = {
     createPlanEstudiosController: 'configuracion.createPlanEstudiosController',
     updatePlanEstudiosController: 'configuracion.updatePlanEstudiosController',
     marcarPlanEstudiosVigenteController: 'configuracion.marcarPlanEstudiosVigenteController',
+    clonarPlanEstudiosController: 'configuracion.clonarPlanEstudiosController',
 
     listPeriodosByPlanController: 'configuracion.listPeriodosByPlanController',
     createPeriodoController: 'configuracion.createPeriodoController',

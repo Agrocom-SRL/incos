@@ -128,20 +128,28 @@ export class BaseRepository extends IRepository {
    * @param {number} id - ID del registro a buscar
    * @param {Object} options - Opciones opcionales
    *   - attributes: Array de campos a seleccionar (opcional, ej: ['id', 'nombre'])
+   *   - transaction: Transacción Sequelize activa (opcional, para lecturas dentro de una transacción)
+   *   - Cualquier otra opción soportada por `Model.findByPk` se pasa tal cual (ej: `lock`)
    * @returns {Promise<Object|null>} Entidad encontrada o null
    */
   async findById(id, options = {}) {
     const Model = this.getModel();
-    const queryOptions = {};
-    
+    // Se parte de `options` completo (incluye p. ej. `transaction`) y se aplican
+    // los ajustes puntuales que ya manejaba este método (attributes/paranoid).
+    const queryOptions = { ...options };
+
     // Agregar attributes si se especifican (optimización para traer solo campos necesarios)
     if (options.attributes && Array.isArray(options.attributes) && options.attributes.length > 0) {
       queryOptions.attributes = options.attributes;
+    } else {
+      // Evitar que un `attributes` inválido/vacío llegado por el spread termine
+      // seleccionando cero columnas (comportamiento previo: se ignoraba).
+      delete queryOptions.attributes;
     }
     if (options.paranoid === false) {
       queryOptions.paranoid = false;
     }
-    
+
     // findByPk con paranoid: true automáticamente excluye deletedAt !== null
     const model = await Model.findByPk(id, queryOptions);
     return this.toEntity(model);
@@ -268,9 +276,10 @@ export class BaseRepository extends IRepository {
    * 
    * @param {Object} data - Datos para crear el registro
    * @param {number} userId - ID del usuario que crea (opcional)
+   * @param {Object} options - Opciones opcionales para `Model.create` (ej: `{ transaction }`)
    * @returns {Promise<Object>} Entidad creada
    */
-  async create(data, userId = null) {
+  async create(data, userId = null, options = {}) {
     const Model = this.getModel();
     const modelData = {
       ...this.mapDataToModel(data, userId),
@@ -278,7 +287,7 @@ export class BaseRepository extends IRepository {
       createdBy: userId,
     };
 
-    const model = await Model.create(modelData);
+    const model = await Model.create(modelData, options);
     return this.toEntity(model);
   }
 
@@ -289,9 +298,10 @@ export class BaseRepository extends IRepository {
    * @param {number} id - ID del registro a actualizar
    * @param {Object} data - Datos para actualizar
    * @param {number} userId - ID del usuario que actualiza (opcional)
+   * @param {Object} options - Opciones opcionales para `Model.update` (ej: `{ transaction }`)
    * @returns {Promise<Object>} Entidad actualizada
    */
-  async update(id, data, userId = null) {
+  async update(id, data, userId = null, options = {}) {
     const Model = this.getModel();
     const updateData = {
       ...this.mapDataToUpdate(data, userId),
@@ -300,9 +310,12 @@ export class BaseRepository extends IRepository {
 
     await Model.update(updateData, {
       where: { id },
+      ...options,
     });
 
-    return this.findById(id);
+    // Se reenvían las mismas `options` (p. ej. `transaction`) para que la lectura
+    // de confirmación vea el registro recién actualizado dentro de la misma transacción.
+    return this.findById(id, options);
   }
 
   /**

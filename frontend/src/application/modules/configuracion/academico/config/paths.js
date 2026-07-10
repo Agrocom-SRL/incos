@@ -18,4 +18,9 @@ export const materiaNuevaPath = `${ACADEMICO_BASE}/materia/nueva`;
 export const materiaDetallePath = (materiaId) => `${ACADEMICO_BASE}/materia/${materiaId}`;
 export const materiaEditarPath = (materiaId) => `${ACADEMICO_BASE}/materia/${materiaId}/editar`;
 
+/** ABM y detalle plan de estudio (clonar vigente = "nueva versión por RM", editar copia, ficha-hub) */
+export const planNuevaPath = `${ACADEMICO_BASE}/plan/nuevo`;
+export const planDetallePath = (planId) => `${ACADEMICO_BASE}/plan/${planId}`;
+export const planEditarPath = (planId) => `${ACADEMICO_BASE}/plan/${planId}/editar`;
+
 /** ABM y detalle paralelo maestro — movido a `configuracion/recursos/config/paths.js`. */

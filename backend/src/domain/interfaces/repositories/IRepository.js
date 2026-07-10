@@ -39,9 +39,10 @@ export class IRepository {
    * Crear un nuevo registro
    * @param {Object} data - Datos del registro
    * @param {number} userId - ID del usuario que crea (opcional)
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
    * @returns {Promise<Object>}
    */
-  async create(data, userId = null) {
+  async create(data, userId = null, options = {}) {
     throw new Error('Method create must be implemented');
   }
 
@@ -50,9 +51,10 @@ export class IRepository {
    * @param {number} id - ID del registro
    * @param {Object} data - Datos a actualizar
    * @param {number} userId - ID del usuario que actualiza (opcional)
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
    * @returns {Promise<Object>}
    */
-  async update(id, data, userId = null) {
+  async update(id, data, userId = null, options = {}) {
     throw new Error('Method update must be implemented');
   }
 

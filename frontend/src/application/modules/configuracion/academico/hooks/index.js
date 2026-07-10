@@ -16,5 +16,8 @@ export { usePlanesTabPanel } from './features/usePlanesTabPanel';
 
 export { useCarreraForm } from './state/useCarreraForm';
 export { useMateriaForm } from './state/useMateriaForm';
+export { usePlanForm } from './state/usePlanForm';
 export { useCarreraDetallePage } from './state/useCarreraDetallePage';
 export { useMateriaDetallePage } from './state/useMateriaDetallePage';
+export { usePlanDetallePage } from './state/usePlanDetallePage';
+export { usePlanNuevaVersion } from './state/usePlanNuevaVersion';

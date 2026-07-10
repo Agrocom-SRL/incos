@@ -84,6 +84,15 @@ export function buildPlanesEstudiosRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.marcarPlanEstudiosVigenteController.handle(req, res, next)
   );
 
+  router.post(
+    '/:id/clonar',
+    authenticate,
+    verificarPermiso(permisoPlan, 'CREAR'),
+    idValidator,
+    validateRequest,
+    (req, res, next) => controllers.clonarPlanEstudiosController.handle(req, res, next)
+  );
+
   // -----------------------------
   // Periodos
   // -----------------------------

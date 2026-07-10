@@ -6,6 +6,9 @@
  *   /configuracion/academico/carrera/:id/editar → editar carrera
  *   /configuracion/academico/carrera/:id        → detalle carrera
  *   /configuracion/academico/materia/...        → análogo materia
+ *   /configuracion/academico/plan/nuevo         → crear plan de estudio (datos generales)
+ *   /configuracion/academico/plan/:id/editar    → editar datos generales del plan
+ *   /configuracion/academico/plan/:id           → ficha-hub del plan (tabs; publicar)
  *
  * El tab «Paralelos» se movió a `configuracion/recursos` (catálogo de referencia,
  * ver `docs/plan/CONFIGURACION-UNIFICACION-UX.md` §5); las rutas legacy
@@ -44,6 +47,15 @@ const MateriaFormEditConnector = lazy(
 const MateriaDetailConnector = lazy(
   () => import('@configuracion/academico/connectors/MateriaDetailConnector.jsx'),
 );
+const PlanFormCreateConnector = lazy(
+  () => import('@configuracion/academico/connectors/PlanFormCreateConnector.jsx'),
+);
+const PlanFormEditConnector = lazy(
+  () => import('@configuracion/academico/connectors/PlanFormEditConnector.jsx'),
+);
+const PlanDetailConnector = lazy(
+  () => import('@configuracion/academico/connectors/PlanDetailConnector.jsx'),
+);
 export const academicoConfigRoutes = [
   {
     path: '/configuracion/academico/carrera/nueva',
@@ -66,6 +78,16 @@ export const academicoConfigRoutes = [
     breadcrumbLabel: 'Nueva materia',
   },
   {
+    path: '/configuracion/academico/plan/nuevo',
+    element: <PlanFormCreateConnector />,
+    key: 'CFG-PLAN-NUEVA',
+    permiso: 'configuracion.plan-estudio',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'CFG-ACADEMICO',
+    breadcrumbLabel: 'Nuevo plan de estudio',
+  },
+  {
     path: '/configuracion/academico/carrera/:id/editar',
     element: <CarreraFormEditConnector />,
     key: 'CFG-CARRERA-EDITAR',
@@ -86,6 +108,16 @@ export const academicoConfigRoutes = [
     breadcrumbLabel: 'Editar materia',
   },
   {
+    path: '/configuracion/academico/plan/:id/editar',
+    element: <PlanFormEditConnector />,
+    key: 'CFG-PLAN-EDITAR',
+    permiso: 'configuracion.plan-estudio',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'CFG-ACADEMICO',
+    breadcrumbLabel: 'Editar plan',
+  },
+  {
     path: '/configuracion/academico/carrera/:id',
     element: <CarreraDetailConnector />,
     key: 'CFG-CARRERA-DETALLE',
@@ -104,6 +136,16 @@ export const academicoConfigRoutes = [
     menu: null,
     breadcrumbParent: 'CFG-ACADEMICO',
     breadcrumbLabel: 'Detalle de materia',
+  },
+  {
+    path: '/configuracion/academico/plan/:id',
+    element: <PlanDetailConnector />,
+    key: 'CFG-PLAN-DETALLE',
+    permiso: 'configuracion.plan-estudio',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'CFG-ACADEMICO',
+    breadcrumbLabel: 'Detalle de plan',
   },
   {
     path: '/configuracion/academico/carreras',
