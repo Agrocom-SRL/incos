@@ -22,6 +22,9 @@ import {
 } from '@application-configuracion/academico/config/academicoNavigation';
 import { createPlanFormSections } from '@application-configuracion/academico/config/planFormFields';
 
+/** "1º Año", "2º Año"… — nombre por defecto del periodo autogenerado según `duracion_anios`. */
+const buildPeriodoNombre = (numero) => `${numero}º Año`;
+
 export const usePlanForm = (mode = 'create') => {
   const isEditMode = mode === 'edit';
   const { id } = useParams();
@@ -31,7 +34,7 @@ export const usePlanForm = (mode = 'create') => {
   const { notification } = App.useApp();
   const [form] = Form.useForm();
 
-  const { fetchPlanById, crearPlan, actualizarPlan } = usePlanEstudiosDetalleApi();
+  const { fetchPlanById, crearPlan, actualizarPlan, crearPeriodo } = usePlanEstudiosDetalleApi();
   const { carreras = [], loading: carrerasLoading, error: carrerasError } = useCarrerasApi();
 
   const returnListPath = resolveReturnListPath(location, PLANES_LIST_PATH);
@@ -108,6 +111,30 @@ export const usePlanForm = (mode = 'create') => {
         title: isEditMode ? 'Plan de estudio actualizado' : 'Plan de estudio creado',
       });
       const savedId = result.data?.id ?? planId;
+
+      // Alta: la duración (años) es la única fuente de la cantidad de periodos —
+      // se generan automáticamente 1º Año…Nº Año. Edición nunca re-genera (el
+      // plan editado ya tiene sus periodos, gestionados desde su matriz).
+      if (!isEditMode && savedId && Number(payload.duracion_anios) > 0) {
+        const totalPeriodos = Number(payload.duracion_anios);
+        let periodosConError = 0;
+        for (let numero = 1; numero <= totalPeriodos; numero += 1) {
+          // Alta secuencial de periodos (orden 1..N) — resultado de cada uno no
+          // depende de los otros, pero se evita disparar N requests en paralelo.
+          const periodoResult = await crearPeriodo(savedId, {
+            numero,
+            nombre: buildPeriodoNombre(numero),
+          });
+          if (!periodoResult?.success) periodosConError += 1;
+        }
+        if (periodosConError > 0) {
+          notification.error({
+            title: 'Periodos no generados',
+            description: `${periodosConError} de ${totalPeriodos} periodos no se pudieron crear. Agréguelos desde la ficha del plan.`,
+          });
+        }
+      }
+
       if (savedId) {
         navigate(planDetallePath(savedId), {
           state: { returnListPath, menuSidebarKey },
@@ -132,6 +159,7 @@ export const usePlanForm = (mode = 'create') => {
     }
   }, [
     actualizarPlan,
+    crearPeriodo,
     crearPlan,
     form,
     handleVolver,
@@ -146,24 +174,9 @@ export const usePlanForm = (mode = 'create') => {
   const initialValues = useMemo(() => mapPlanToFormValues(null), []);
   const formSections = useMemo(() => createPlanFormSections(), []);
 
-  const carreraOptions = useMemo(
-    () =>
-      carreras
-        .filter((c) => c.activo !== false)
-        .map((c) => ({
-          value: c.id,
-          label: c.codigo ? `${c.codigo} — ${c.nombre}` : c.nombre,
-        })),
-    [carreras],
-  );
-
-  const resolveOptions = useCallback(
-    (key) => {
-      if (key === 'carreras') return carreraOptions;
-      return [];
-    },
-    [carreraOptions],
-  );
+  // Sin campos `select` en el form: la carrera se elige con el picker visual
+  // (`PlanCarreraPeriodosSection`), que recibe `carreras` directo, no vía `resolveOptions`.
+  const resolveOptions = useCallback(() => [], []);
 
   return {
     form,
@@ -180,5 +193,8 @@ export const usePlanForm = (mode = 'create') => {
     handleVolver,
     handleSubmit,
     isInvalidEditId,
+    carreras,
+    carrerasLoading,
+    carrerasError,
   };
 };

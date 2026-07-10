@@ -1,5 +1,5 @@
 /**
- * Ficha-hub del plan de estudio — orquestación UI (Fase 8).
+ * Ficha-hub del plan de estudio — orquestación UI (Fase 8, documento en Fase 10).
  *
  * Carga plan (`fetchPlanById`) + matriz (`fetchMatriz`) en paralelo y las
  * fusiona (mismo patrón que `usePlanesTabDocumento.js`, gemelo de solo
@@ -7,15 +7,20 @@
  *   - Ficha: datos generales, carrera, estado vigente/borrador.
  *   - Acciones de cabecera: publicar vigente (`marcarVigente`) y nueva
  *     versión por RM (delegada en `usePlanNuevaVersion`, ver nota abajo).
- *   - CRUD de periodos y asignaturas de la matriz (recarga tras cada mutación).
- *   - CRUD de prerrequisitos del plan.
+ *   - Datos para `PlanEstudioDocumentoView` (documento con columnas por
+ *     periodo): `planMetaRaw` (snake_case, mismo shape que consume la vista
+ *     documento del tab «Planes») y `prereqSiglaByAsignaturaId`.
+ *   - Alta rápida de periodo (`handleCrearPeriodo`, botón «+ Periodo»); la
+ *     edición/baja de un periodo y el CRUD de sus asignaturas y
+ *     prerrequisitos viven en el builder por periodo (`usePlanBuilder.js`,
+ *     alcanzado desde el lápiz de cada columna del documento).
  *
  * Decisión (deviation documentada): NO se llaman `listarPrerrequisitos` /
  * `listarEsPrerrequisitoDe` por asignatura. `fetchPlanById` ya devuelve el
  * array plano de TODOS los prerrequisitos del plan (mismo filtro por
  * `studyPlanId` que usan esos endpoints por `subjectId`/`prerequisiteId`,
  * ver `ListPrerrequisitosByAsignaturaUseCase` / `ListEsPrerrequisitoDeUseCase`
- * en backend) — se deriva "requiere" / "es prerrequisito de" con `useMemo`
+ * en backend) — se deriva el mapa de siglas de prerrequisito con `useMemo`
  * desde ese array ya cargado, evitando N llamadas HTTP redundantes.
  *
  * "Nueva versión (RM)" (Fase 9): la llamada a `clonarPlan` + notificación +
@@ -28,12 +33,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { usePlanEstudiosDetalleApi } from '@application-configuracion/academico/hooks/api/usePlanEstudiosDetalleApi';
-import { useMateriasApi } from '@application-configuracion/academico/hooks/api/useMateriasApi';
 import { usePlanNuevaVersion } from '@application-configuracion/academico/hooks/state/usePlanNuevaVersion';
 import { mapPlanDetail, mapCarreraResumen } from '@application-configuracion/academico/mappers';
+import { buildPrerrequisitoSiglaMap } from '@application-configuracion/academico/utils/buildPrerrequisitoSiglaMap';
 import {
   PLANES_LIST_PATH,
   planEditarPath,
+  planPeriodoAsignaturasPath,
 } from '@application-configuracion/academico/config/paths';
 import {
   resolveMenuSidebarKey,
@@ -57,23 +63,10 @@ export const usePlanDetallePage = () => {
   const returnListPath = resolveReturnListPath(location, PLANES_LIST_PATH);
   const menuSidebarKey = resolveMenuSidebarKey(location);
 
-  const {
-    fetchPlanById,
-    fetchMatriz,
-    marcarVigente,
-    crearPeriodo,
-    actualizarPeriodo,
-    eliminarPeriodo,
-    crearAsignaturaPlan,
-    actualizarAsignatura,
-    eliminarAsignaturaPlan,
-    crearPrerrequisito,
-    eliminarPrerrequisito,
-  } = usePlanEstudiosDetalleApi();
-
-  const { materias = [], loading: materiasLoading } = useMateriasApi();
+  const { fetchPlanById, fetchMatriz, marcarVigente, crearPeriodo } = usePlanEstudiosDetalleApi();
 
   const [plan, setPlan] = useState(null);
+  const [planMetaRaw, setPlanMetaRaw] = useState(null);
   const [carrera, setCarrera] = useState(null);
   const [periodos, setPeriodos] = useState([]);
   const [horasTotalPlan, setHorasTotalPlan] = useState(0);
@@ -83,7 +76,7 @@ export const usePlanDetallePage = () => {
 
   // Acciones de cabecera
   const [publicando, setPublicando] = useState(false);
-  // Mutaciones de matriz / prerrequisitos (spinner compartido en modales/acciones puntuales)
+  // Alta de periodo (spinner del modal «+ Periodo»)
   const [guardando, setGuardando] = useState(false);
 
   const load = useCallback(async () => {
@@ -111,10 +104,19 @@ export const usePlanDetallePage = () => {
         setPeriodos(matrizData.periodos ?? []);
         setHorasTotalPlan(matrizData.horas_total_plan ?? 0);
         setCarrera(mapCarreraResumen(matrizData.plan?.carrera));
+        // `planMetaRaw` — mismo shape snake_case que consume `PlanEstudioDocumentoView`
+        // en el tab «Planes» (ver `usePlanesTabDocumento.js`): fusiona el detalle
+        // (`resolucion_ministerial`, `horas_semana`, …) con el plan anidado en la matriz.
+        setPlanMetaRaw({
+          ...detalleRes.data,
+          ...(matrizData.plan ?? {}),
+          id: matrizData.plan?.id ?? detalleRes.data?.id ?? planId,
+        });
       } else {
         setPeriodos([]);
         setHorasTotalPlan(0);
         setCarrera(null);
+        setPlanMetaRaw(null);
       }
     } catch (e) {
       setError(e?.message || 'Error al cargar el plan de estudios');
@@ -122,6 +124,7 @@ export const usePlanDetallePage = () => {
       setPeriodos([]);
       setPrerrequisitos([]);
       setCarrera(null);
+      setPlanMetaRaw(null);
     } finally {
       setLoading(false);
     }
@@ -135,32 +138,10 @@ export const usePlanDetallePage = () => {
   // Derivados
   // ---------------------------------------------------------------------
 
-  /** Lista plana de asignaturas de la matriz (para selects de prerrequisito). */
-  const asignaturasFlat = useMemo(
-    () =>
-      periodos.flatMap((periodo) =>
-        (periodo.asignaturas ?? []).map((asig) => ({
-          id: asig.id,
-          sigla: asig.materia?.sigla ?? null,
-          nombre: asig.materia?.nombre ?? null,
-          horasSemanales: asig.horas_semanales ?? null,
-          periodoId: periodo.id,
-          periodoNombre: periodo.nombre || `Año ${periodo.numero}`,
-        })),
-      ),
-    [periodos],
-  );
-
-  /** Materias del catálogo aún no asignadas al periodo (por sigla, ver nota en handleCrearAsignatura). */
-  const materiasDisponiblesPorPeriodo = useCallback(
-    (periodoId) => {
-      const periodo = periodos.find((p) => p.id === periodoId);
-      const siglasUsadas = new Set(
-        (periodo?.asignaturas ?? []).map((a) => a.materia?.sigla).filter(Boolean),
-      );
-      return materias.filter((m) => m.activo !== false && !siglasUsadas.has(m.sigla));
-    },
-    [periodos, materias],
+  /** Mapa asignatura_plan_id → sigla del prerrequisito, para las celdas «PRE REQUISITO» del documento. */
+  const prereqSiglaByAsignaturaId = useMemo(
+    () => buildPrerrequisitoSiglaMap(periodos, prerrequisitos),
+    [periodos, prerrequisitos],
   );
 
   const avatarInitials = useMemo(() => initialsFromPlan(plan, carrera), [plan, carrera]);
@@ -196,6 +177,15 @@ export const usePlanDetallePage = () => {
     if (!plan?.id) return;
     navigate(planEditarPath(plan.id), { state: navState });
   }, [plan?.id, navigate, navState]);
+
+  /** Lápiz de cabecera de columna del documento → builder drag & drop de ese periodo. */
+  const handleEditarPeriodo = useCallback(
+    (periodoId) => {
+      if (!plan?.id || !periodoId) return;
+      navigate(planPeriodoAsignaturasPath(plan.id, periodoId), { state: navState });
+    },
+    [plan?.id, navigate, navState],
+  );
 
   // ---------------------------------------------------------------------
   // Publicar vigente / nueva versión (RM)
@@ -249,158 +239,14 @@ export const usePlanDetallePage = () => {
     [crearPeriodo, plan?.id, notification, load],
   );
 
-  const handleActualizarPeriodo = useCallback(
-    async (periodoId, payload) => {
-      setGuardando(true);
-      try {
-        const result = await actualizarPeriodo(periodoId, payload);
-        if (!result.success) throw new Error(result.error || 'No se pudo actualizar el periodo');
-        notification.success({ title: 'Periodo actualizado' });
-        await load();
-        return true;
-      } catch (e) {
-        notification.error({ title: 'Error al actualizar periodo', description: e?.message });
-        return false;
-      } finally {
-        setGuardando(false);
-      }
-    },
-    [actualizarPeriodo, notification, load],
-  );
-
-  const handleEliminarPeriodo = useCallback(
-    async (periodoId) => {
-      setGuardando(true);
-      try {
-        const result = await eliminarPeriodo(periodoId);
-        if (!result.success) throw new Error(result.error || 'No se pudo eliminar el periodo');
-        notification.success({ title: 'Periodo eliminado' });
-        await load();
-      } catch (e) {
-        notification.error({ title: 'Error al eliminar periodo', description: e?.message });
-      } finally {
-        setGuardando(false);
-      }
-    },
-    [eliminarPeriodo, notification, load],
-  );
-
-  // ---------------------------------------------------------------------
-  // CRUD asignaturas del periodo
-  // ---------------------------------------------------------------------
-
-  const handleCrearAsignatura = useCallback(
-    async (periodoId, payload) => {
-      setGuardando(true);
-      try {
-        const result = await crearAsignaturaPlan({
-          plan_estudio_id: plan.id,
-          periodo_id: periodoId,
-          ...payload,
-        });
-        if (!result.success) throw new Error(result.error || 'No se pudo agregar la asignatura');
-        notification.success({ title: 'Asignatura agregada al periodo' });
-        await load();
-        return true;
-      } catch (e) {
-        notification.error({ title: 'Error al agregar asignatura', description: e?.message });
-        return false;
-      } finally {
-        setGuardando(false);
-      }
-    },
-    [crearAsignaturaPlan, plan?.id, notification, load],
-  );
-
-  const handleActualizarAsignatura = useCallback(
-    async (asignaturaId, payload) => {
-      setGuardando(true);
-      try {
-        const result = await actualizarAsignatura(asignaturaId, payload);
-        if (!result.success) throw new Error(result.error || 'No se pudo actualizar la asignatura');
-        notification.success({ title: 'Asignatura actualizada' });
-        await load();
-        return true;
-      } catch (e) {
-        notification.error({ title: 'Error al actualizar asignatura', description: e?.message });
-        return false;
-      } finally {
-        setGuardando(false);
-      }
-    },
-    [actualizarAsignatura, notification, load],
-  );
-
-  const handleEliminarAsignatura = useCallback(
-    async (asignaturaId) => {
-      setGuardando(true);
-      try {
-        const result = await eliminarAsignaturaPlan(asignaturaId);
-        if (!result.success) throw new Error(result.error || 'No se pudo eliminar la asignatura');
-        notification.success({ title: 'Asignatura eliminada del periodo' });
-        await load();
-      } catch (e) {
-        notification.error({ title: 'Error al eliminar asignatura', description: e?.message });
-      } finally {
-        setGuardando(false);
-      }
-    },
-    [eliminarAsignaturaPlan, notification, load],
-  );
-
-  // ---------------------------------------------------------------------
-  // CRUD prerrequisitos
-  // ---------------------------------------------------------------------
-
-  const handleCrearPrerrequisito = useCallback(
-    async ({ asignaturaId, prerrequisitoId }) => {
-      setGuardando(true);
-      try {
-        const result = await crearPrerrequisito({
-          plan_estudio_id: plan.id,
-          asignatura_id: asignaturaId,
-          prerrequisito_id: prerrequisitoId,
-        });
-        if (!result.success) throw new Error(result.error || 'No se pudo crear el prerrequisito');
-        notification.success({ title: 'Prerrequisito agregado' });
-        await load();
-        return true;
-      } catch (e) {
-        notification.error({ title: 'Error al agregar prerrequisito', description: e?.message });
-        return false;
-      } finally {
-        setGuardando(false);
-      }
-    },
-    [crearPrerrequisito, plan?.id, notification, load],
-  );
-
-  const handleEliminarPrerrequisito = useCallback(
-    async (prerrequisitoRowId) => {
-      setGuardando(true);
-      try {
-        const result = await eliminarPrerrequisito(prerrequisitoRowId);
-        if (!result.success) throw new Error(result.error || 'No se pudo eliminar el prerrequisito');
-        notification.success({ title: 'Prerrequisito eliminado' });
-        await load();
-      } catch (e) {
-        notification.error({ title: 'Error al eliminar prerrequisito', description: e?.message });
-      } finally {
-        setGuardando(false);
-      }
-    },
-    [eliminarPrerrequisito, notification, load],
-  );
-
   return {
     plan,
+    planMetaRaw,
     carrera,
     periodos,
     horasTotalPlan,
     prerrequisitos,
-    asignaturasFlat,
-    materiasDisponiblesPorPeriodo,
-    materiasLoading,
+    prereqSiglaByAsignaturaId,
     loading,
     error,
     isInvalidId,
@@ -412,16 +258,10 @@ export const usePlanDetallePage = () => {
     guardando,
     handleVolver,
     handleEditar,
+    handleEditarPeriodo,
     handlePublicar,
     handleNuevaVersion,
     handleCrearPeriodo,
-    handleActualizarPeriodo,
-    handleEliminarPeriodo,
-    handleCrearAsignatura,
-    handleActualizarAsignatura,
-    handleEliminarAsignatura,
-    handleCrearPrerrequisito,
-    handleEliminarPrerrequisito,
     refetch: load,
   };
 };

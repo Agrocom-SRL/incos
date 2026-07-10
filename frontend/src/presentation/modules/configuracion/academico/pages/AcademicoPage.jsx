@@ -6,7 +6,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Flex, Tabs, Typography } from 'antd';
-import { CopyOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
@@ -15,7 +15,6 @@ import { useAuthContext } from '@application-auth';
 import {
   carreraNuevaPath,
   materiaNuevaPath,
-  planDetallePath,
   planNuevaPath,
 } from '@application-configuracion/academico/config/paths';
 import {
@@ -24,7 +23,7 @@ import {
   planesListNavigationState,
 } from '@application-configuracion/academico/config/academicoNavigation';
 import { PLAN_ESTUDIO_PERMISO } from '@application-configuracion/academico/config/planEstudioPermisos';
-import { usePlanesTabPanel, usePlanNuevaVersion } from '@application-configuracion/academico/hooks';
+import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
 import PlanesTabPanel from './PlanesTabPanel';
 import CarrerasList from './CarrerasList';
 import MateriasList from './MateriasList';
@@ -68,25 +67,9 @@ const AcademicoPage = () => {
     loading: planesLoading,
     error: planesError,
     refetch: refetchPlanesCatalog,
-    selectedCarreraId: planesSelectedCarreraId,
-    setSelectedCarreraId: setPlanesSelectedCarreraId,
-    carreraSeleccionada: planesCarreraSeleccionada,
-    planVigente,
+    searchText: planesSearchText,
+    setSearchText: setPlanesSearchText,
   } = usePlanesTabPanel({ enabled: puedePlanes });
-
-  const { creandoVersion, crearNuevaVersion } = usePlanNuevaVersion({ navState: planesNavState });
-
-  const planVigenteId = planVigente?.id ?? null;
-
-  const handleVerFichaCompletaPlan = useCallback(() => {
-    if (!planVigenteId) return;
-    navigate(planDetallePath(planVigenteId), { state: planesNavState });
-  }, [navigate, planVigenteId, planesNavState]);
-
-  const handleNuevaVersionPlan = useCallback(() => {
-    if (!planVigenteId) return;
-    crearNuevaVersion(planVigenteId);
-  }, [crearNuevaVersion, planVigenteId]);
 
   const handleNuevoPlan = useCallback(() => {
     navigate(planNuevaPath, { state: planesNavState });
@@ -107,14 +90,14 @@ const AcademicoPage = () => {
         children: wrapTabPanel(
           <PlanesTabPanel
             embedded
+            navigate={navigate}
+            listNavState={planesNavState}
             carreras={planesCarreras}
             loading={planesLoading}
             error={planesError}
             refetch={refetchPlanesCatalog}
-            selectedCarreraId={planesSelectedCarreraId}
-            setSelectedCarreraId={setPlanesSelectedCarreraId}
-            carreraSeleccionada={planesCarreraSeleccionada}
-            planVigente={planVigente}
+            searchText={planesSearchText}
+            setSearchText={setPlanesSearchText}
           />,
         ),
       });
@@ -150,14 +133,14 @@ const AcademicoPage = () => {
     puedePlanes,
     puedeCarreras,
     puedeMaterias,
+    navigate,
+    planesNavState,
     planesCarreras,
     planesLoading,
     planesError,
     refetchPlanesCatalog,
-    planesSelectedCarreraId,
-    setPlanesSelectedCarreraId,
-    planesCarreraSeleccionada,
-    planVigente,
+    planesSearchText,
+    setPlanesSearchText,
   ]);
 
   const activeKey = useMemo(() => {
@@ -177,43 +160,15 @@ const AcademicoPage = () => {
   const panelActions = useMemo(() => {
     if (activeKey === TAB_PLANES) {
       return (
-        <Flex wrap="wrap" gap="small">
-          {planVigenteId != null ? (
-            <ActionButton
-              permiso={PLAN_ESTUDIO_PERMISO}
-              accion="DETALLE"
-              icon={<EyeOutlined />}
-              onClick={handleVerFichaCompletaPlan}
-            >
-              Ver ficha completa
-            </ActionButton>
-          ) : null}
-
-          {planVigente ? (
-            <ActionButton
-              permiso={PLAN_ESTUDIO_PERMISO}
-              accion="CREAR"
-              variant="alternative"
-              icon={<CopyOutlined />}
-              loading={creandoVersion}
-              onClick={handleNuevaVersionPlan}
-            >
-              Nueva versión (RM)
-            </ActionButton>
-          ) : null}
-
-          {planesCarreraSeleccionada && !planVigente ? (
-            <ActionButton
-              permiso={PLAN_ESTUDIO_PERMISO}
-              accion="CREAR"
-              variant="primary"
-              icon={<PlusOutlined />}
-              onClick={handleNuevoPlan}
-            >
-              Nuevo plan
-            </ActionButton>
-          ) : null}
-        </Flex>
+        <ActionButton
+          permiso={PLAN_ESTUDIO_PERMISO}
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={handleNuevoPlan}
+        >
+          Nuevo plan
+        </ActionButton>
       );
     }
     if (activeKey === TAB_CARRERAS) {
@@ -243,19 +198,7 @@ const AcademicoPage = () => {
       );
     }
     return null;
-  }, [
-    activeKey,
-    navigate,
-    carrerasNavState,
-    materiasNavState,
-    planVigenteId,
-    planVigente,
-    planesCarreraSeleccionada,
-    creandoVersion,
-    handleVerFichaCompletaPlan,
-    handleNuevaVersionPlan,
-    handleNuevoPlan,
-  ]);
+  }, [activeKey, navigate, carrerasNavState, materiasNavState, handleNuevoPlan]);
 
   const onTabChange = useCallback(
     (key) => {

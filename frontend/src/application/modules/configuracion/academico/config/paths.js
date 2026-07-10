@@ -23,4 +23,8 @@ export const planNuevaPath = `${ACADEMICO_BASE}/plan/nuevo`;
 export const planDetallePath = (planId) => `${ACADEMICO_BASE}/plan/${planId}`;
 export const planEditarPath = (planId) => `${ACADEMICO_BASE}/plan/${planId}/editar`;
 
+/** Builder drag & drop de asignaturas/prerrequisitos de UN periodo del plan (desde el lápiz del documento). */
+export const planPeriodoAsignaturasPath = (planId, periodoId) =>
+  `${ACADEMICO_BASE}/plan/${planId}/periodo/${periodoId}/asignaturas`;
+
 /** ABM y detalle paralelo maestro — movido a `configuracion/recursos/config/paths.js`. */

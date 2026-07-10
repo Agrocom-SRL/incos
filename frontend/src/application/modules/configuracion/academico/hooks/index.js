@@ -21,3 +21,4 @@ export { useCarreraDetallePage } from './state/useCarreraDetallePage';
 export { useMateriaDetallePage } from './state/useMateriaDetallePage';
 export { usePlanDetallePage } from './state/usePlanDetallePage';
 export { usePlanNuevaVersion } from './state/usePlanNuevaVersion';
+export { usePlanBuilder } from './state/usePlanBuilder';

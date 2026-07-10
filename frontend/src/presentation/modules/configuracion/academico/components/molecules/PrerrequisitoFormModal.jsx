@@ -2,7 +2,8 @@
  * Molécula: alta de prerrequisito — "<asignatura> requiere haber cursado <prerrequisito>".
  * La asignatura de origen llega fija desde la fila seleccionada; solo se elige
  * el prerrequisito entre el resto de asignaturas del plan (ya excluidas las
- * que generarían un par duplicado, ver `PlanPrerrequisitosSection`).
+ * que generarían un par duplicado). Fallback sin drag del Flujo B del builder
+ * (`PlanPeriodoAsignaturasPage`, `PlanBuilderPrerrequisitoSlot`).
  */
 
 import { useEffect } from 'react';

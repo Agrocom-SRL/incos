@@ -28,6 +28,9 @@ const PlanFormPage = ({ mode = 'create' }) => {
     handleVolver,
     handleSubmit,
     isInvalidEditId,
+    carreras,
+    carrerasLoading,
+    carrerasError,
   } = usePlanForm(mode);
 
   const saveButton = (
@@ -90,6 +93,10 @@ const PlanFormPage = ({ mode = 'create' }) => {
                   formSections={formSections}
                   resolveOptions={resolveOptions}
                   footer={saveButton}
+                  carreras={carreras}
+                  carrerasLoading={carrerasLoading}
+                  carrerasError={carrerasError}
+                  fieldsDisabled={loading || submitLoading}
                 />
               </Form>
             </Flex>

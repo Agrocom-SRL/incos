@@ -8,7 +8,9 @@
  *   /configuracion/academico/materia/...        → análogo materia
  *   /configuracion/academico/plan/nuevo         → crear plan de estudio (datos generales)
  *   /configuracion/academico/plan/:id/editar    → editar datos generales del plan
- *   /configuracion/academico/plan/:id           → ficha-hub del plan (tabs; publicar)
+ *   /configuracion/academico/plan/:id           → ficha-hub del plan (documento; publicar)
+ *   /configuracion/academico/plan/:id/periodo/:periodoId/asignaturas
+ *                                                → builder drag & drop de asignaturas/prerrequisitos
  *
  * El tab «Paralelos» se movió a `configuracion/recursos` (catálogo de referencia,
  * ver `docs/plan/CONFIGURACION-UNIFICACION-UX.md` §5); las rutas legacy
@@ -55,6 +57,9 @@ const PlanFormEditConnector = lazy(
 );
 const PlanDetailConnector = lazy(
   () => import('@configuracion/academico/connectors/PlanDetailConnector.jsx'),
+);
+const PlanPeriodoAsignaturasConnector = lazy(
+  () => import('@configuracion/academico/connectors/PlanPeriodoAsignaturasConnector.jsx'),
 );
 export const academicoConfigRoutes = [
   {
@@ -136,6 +141,16 @@ export const academicoConfigRoutes = [
     menu: null,
     breadcrumbParent: 'CFG-ACADEMICO',
     breadcrumbLabel: 'Detalle de materia',
+  },
+  {
+    path: '/configuracion/academico/plan/:id/periodo/:periodoId/asignaturas',
+    element: <PlanPeriodoAsignaturasConnector />,
+    key: 'CFG-PLAN-PERIODO-ASIGNATURAS',
+    permiso: 'configuracion.plan-estudio.asignaturas',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'CFG-ACADEMICO',
+    breadcrumbLabel: 'Asignaturas del periodo',
   },
   {
     path: '/configuracion/academico/plan/:id',

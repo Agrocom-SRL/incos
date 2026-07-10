@@ -8,19 +8,8 @@ export const createPlanFormSections = () => ({
   datosPlan: {
     title: 'Datos del plan de estudio',
     description:
-      'Carrera, resolución ministerial y carga horaria. El estado vigente se gestiona desde la ficha del plan.',
+      'Resolución ministerial y carga horaria. El estado vigente se gestiona desde la ficha del plan.',
     fields: [
-      {
-        name: 'carreraId',
-        label: 'Carrera',
-        type: 'select',
-        required: true,
-        span: 12,
-        placeholder: 'Seleccione la carrera',
-        options: 'carreras',
-        allowClear: false,
-        showSearch: true,
-      },
       {
         name: 'nombrePlan',
         label: 'Nombre del plan',
@@ -38,16 +27,6 @@ export const createPlanFormSections = () => ({
         span: 12,
         placeholder: 'Ej. No.0210/2023',
         maxLength: 100,
-      },
-      {
-        name: 'duracionAnios',
-        label: 'Duración (años)',
-        type: 'number',
-        required: true,
-        span: 12,
-        min: 1,
-        max: 10,
-        placeholder: 'Ej. 3',
       },
       {
         name: 'cargaHorariaTotal',
@@ -96,6 +75,24 @@ export const createPlanFormSections = () => ({
         span: 24,
         rows: 4,
         placeholder: 'Cambios o características del plan (opcional)',
+      },
+    ],
+  },
+  carreraPeriodos: {
+    title: 'Carrera y periodos',
+    description:
+      'Carrera a la que pertenece el plan. La duración determina cuántos periodos (años) se generan al crear el plan.',
+    fields: [
+      {
+        name: 'duracionAnios',
+        label: 'Duración (años)',
+        type: 'number',
+        required: true,
+        span: 12,
+        min: 1,
+        max: 10,
+        placeholder: 'Ej. 3',
+        extra: 'Se generará 1 periodo por cada año de duración.',
       },
     ],
   },
