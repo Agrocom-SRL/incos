@@ -1,41 +1,34 @@
 /**
  * Tab «Planes de estudio» — selector horizontal + documento a ancho completo.
+ *
+ * Presentacional: el catálogo de carreras/plan vigente (`usePlanesTabPanel`) y
+ * la acción "Nueva versión (RM)" (`usePlanNuevaVersion`) se resuelven en
+ * `AcademicoPage` (Fase 9), que también renderiza los botones de cabecera
+ * ("Ver ficha completa" / "Nueva versión (RM)" / "Nuevo plan") en el
+ * `ListPanelHeader` del workspace, junto a "Nueva carrera"/"Nueva materia".
  */
 
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Flex, Spin } from 'antd';
-import { CopyOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
-import { usePlanesTabPanel, usePlanNuevaVersion } from '@application-configuracion/academico/hooks';
 import { usePlanesTabDocumento } from '@application-configuracion/academico/hooks/features/usePlanesTabDocumento';
 import { buildPlanDocumentoThemeVars } from '@application-configuracion/academico/utils/planDocumentoTheme';
-import {
-  planDetallePath,
-  planNuevaPath,
-} from '@application-configuracion/academico/config/paths';
-import { planesListNavigationState } from '@application-configuracion/academico/config/academicoNavigation';
-import { PLAN_ESTUDIO_PERMISO } from '@application-configuracion/academico/config/planEstudioPermisos';
 import PlanesCarreraSidebar from '@configuracion/academico/components/organisms/PlanesCarreraSidebar';
 import PlanEstudioDocumentoView from '@configuracion/academico/components/organisms/PlanEstudioDocumentoView';
-import { ActionButton, Text } from '@atoms';
+import { Text } from '@atoms';
 import '../styles/planes-tab.css';
 import '../styles/plan-documento.css';
 
-const PlanesTabPanel = ({ embedded = false }) => {
-  const navigate = useNavigate();
-  const listNavState = useMemo(() => planesListNavigationState(), []);
-
-  const {
-    carreras,
-    loading: loadingCatalog,
-    error: catalogError,
-    refetch: refetchCatalog,
-    selectedCarreraId,
-    setSelectedCarreraId,
-    carreraSeleccionada,
-    planVigente,
-  } = usePlanesTabPanel();
-
+const PlanesTabPanel = ({
+  embedded = false,
+  carreras,
+  loading: loadingCatalog,
+  error: catalogError,
+  refetch: refetchCatalog,
+  selectedCarreraId,
+  setSelectedCarreraId,
+  carreraSeleccionada,
+  planVigente,
+}) => {
   const planId = planVigente?.id ?? null;
 
   const {
@@ -47,28 +40,12 @@ const PlanesTabPanel = ({ embedded = false }) => {
     refetch: refetchDocumento,
   } = usePlanesTabDocumento(planId);
 
-  const { creandoVersion, crearNuevaVersion } = usePlanNuevaVersion({ navState: listNavState });
-
   const themeVars = useMemo(
     () => buildPlanDocumentoThemeVars(carreraSeleccionada?.colorHex),
     [carreraSeleccionada?.colorHex],
   );
 
   const error = catalogError || documentoError;
-
-  const handleVerFichaCompleta = () => {
-    if (!planId) return;
-    navigate(planDetallePath(planId), { state: listNavState });
-  };
-
-  const handleNuevaVersion = () => {
-    if (!planId) return;
-    crearNuevaVersion(planId);
-  };
-
-  const handleNuevoPlan = () => {
-    navigate(planNuevaPath, { state: listNavState });
-  };
 
   return (
     <div className={`cfg-planes-tab${embedded ? ' cfg-planes-tab--embedded' : ''}`}>
@@ -93,49 +70,9 @@ const PlanesTabPanel = ({ embedded = false }) => {
       ) : null}
 
       <div className="cfg-planes-selector-wrap">
-        <div className="cfg-planes-selector-wrap__header">
-          <Text strong className="cfg-planes-selector-wrap__label">
-            Carrera
-          </Text>
-
-          <div className="cfg-planes-selector-wrap__actions">
-            {planId != null ? (
-              <ActionButton
-                permiso={PLAN_ESTUDIO_PERMISO}
-                accion="DETALLE"
-                icon={<EyeOutlined />}
-                onClick={handleVerFichaCompleta}
-              >
-                Ver ficha completa
-              </ActionButton>
-            ) : null}
-
-            {planVigente ? (
-              <ActionButton
-                permiso={PLAN_ESTUDIO_PERMISO}
-                accion="CREAR"
-                variant="alternative"
-                icon={<CopyOutlined />}
-                loading={creandoVersion}
-                onClick={handleNuevaVersion}
-              >
-                Nueva versión (RM)
-              </ActionButton>
-            ) : null}
-
-            {carreraSeleccionada && !planVigente ? (
-              <ActionButton
-                permiso={PLAN_ESTUDIO_PERMISO}
-                accion="CREAR"
-                variant="primary"
-                icon={<PlusOutlined />}
-                onClick={handleNuevoPlan}
-              >
-                Nuevo plan
-              </ActionButton>
-            ) : null}
-          </div>
-        </div>
+        <Text strong className="cfg-planes-selector-wrap__label">
+          Carrera
+        </Text>
 
         {loadingCatalog ? (
           <Flex justify="center" className="cfg-planes-carrera-list__empty">

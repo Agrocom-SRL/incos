@@ -19,23 +19,10 @@
   min-width: 0;
 }
 
-.cfg-planes-selector-wrap__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-}
-
 .cfg-planes-selector-wrap__label {
-  font-size: 14px;
-}
-
-.cfg-planes-selector-wrap__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
+  display: block;
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-sm);
 }
 
 /* Tarjetas carrera — patrón cal-politica-asistencia */

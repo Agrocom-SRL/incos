@@ -6,9 +6,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { useCarrerasApi } from '../api/useCarrerasApi';
 import { usePlanesEstudiosApi } from '../api/usePlanesEstudiosApi';
 
-export const usePlanesTabPanel = () => {
-  const { carreras = [], loading: loadingCarreras } = useCarrerasApi();
-  const { planes = [], loading: loadingPlanes, error, refetch } = usePlanesEstudiosApi();
+/**
+ * @param {Object} [options]
+ * @param {boolean} [options.enabled=true] - Si `false`, no dispara el fetch de
+ *   carreras/planes (ej. el tab de Planes no se renderiza por falta de permiso).
+ */
+export const usePlanesTabPanel = ({ enabled = true } = {}) => {
+  const { carreras = [], loading: loadingCarreras } = useCarrerasApi({ autoFetch: enabled });
+  const {
+    planes = [],
+    loading: loadingPlanes,
+    error,
+    refetch,
+  } = usePlanesEstudiosApi({ autoFetch: enabled });
 
   const [selectedCarreraId, setSelectedCarreraId] = useState(null);
 
