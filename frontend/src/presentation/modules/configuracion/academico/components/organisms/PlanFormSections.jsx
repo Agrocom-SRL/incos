@@ -1,8 +1,10 @@
 /**
  * Formulario ABM plan de estudio — workspace alineado a AcademicoPage.
  * Dos sectores dentro de UNA misma tarjeta (prop `sections` de `CfgFormWorkspace`,
- * mismo patrón que `BecaDescuentoFormPage`): "Datos del plan" y "Carrera y
- * periodos" (selector visual de carrera + duración → cantidad de periodos).
+ * mismo patrón que `BecaDescuentoFormPage`), en orden de llenado: primero
+ * "Carrera y periodos" (selector visual de carrera + duración → cantidad de
+ * periodos), que da título a la tarjeta (primer nivel), y debajo "Datos del
+ * plan" como sección interna (segundo nivel) con los datos complementarios.
  */
 import { CfgFormWorkspace } from '@organisms';
 import PlanCarreraPeriodosSection from './PlanCarreraPeriodosSection';
@@ -25,19 +27,16 @@ const PlanFormSections = ({
 
   return (
     <CfgFormWorkspace
-      title={datosPlan.title}
-      description={datosPlan.description}
+      title={carreraPeriodos?.title ?? datosPlan.title}
+      description={carreraPeriodos?.description ?? datosPlan.description}
       form={form}
       resolveOptions={resolveOptions}
       footer={footer}
       sections={[
-        { key: 'datosPlan', fields: datosPlan.fields },
         ...(carreraPeriodos?.fields?.length
           ? [
               {
                 key: 'carreraPeriodos',
-                title: carreraPeriodos.title,
-                description: carreraPeriodos.description,
                 fields: carreraPeriodos.fields,
                 beforeFields: (
                   <PlanCarreraPeriodosSection
@@ -50,6 +49,12 @@ const PlanFormSections = ({
               },
             ]
           : []),
+        {
+          key: 'datosPlan',
+          title: datosPlan.title,
+          description: datosPlan.description,
+          fields: datosPlan.fields,
+        },
       ]}
     />
   );

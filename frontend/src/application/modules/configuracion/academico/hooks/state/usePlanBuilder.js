@@ -190,9 +190,12 @@ export const usePlanBuilder = () => {
   const horasDisponibles = horasSemana != null ? horasSemana - horasAsignadas : Infinity;
 
   /**
-   * Catálogo completo (materias activas) anotado contra el plan:
-   * `enPeriodoActual` (ya en el borrador), `asignadaEn` (otro periodo) y
-   * `esPrerrequisitoValido` (asignada a un periodo estrictamente anterior).
+   * Catálogo de materias activas anotado contra el plan: `enPeriodoActual`
+   * (ya en el borrador), `asignadaEn` (otro periodo) y `esPrerrequisitoValido`
+   * (asignada a un periodo estrictamente anterior → fuente de prerrequisito).
+   * Las materias asignadas a otro periodo que NO sirven como prerrequisito
+   * (periodos posteriores, o cualquiera en el primer año) se EXCLUYEN: no
+   * aportan nada en esta pantalla.
    */
   const materiasCatalogo = useMemo(() => {
     const porSigla = new Map();
@@ -221,7 +224,8 @@ export const usePlanBuilder = () => {
             asignadaEn && periodoActual && esPeriodoAnterior(asignadaEn.periodoNumero, periodoActual.numero),
           ),
         };
-      });
+      })
+      .filter((m) => !m.asignadaEn || m.esPrerrequisitoValido);
   }, [materias, periodos, periodoIdNum, draftFilas, periodoActual]);
 
   // ---------------------------------------------------------------------
@@ -295,6 +299,46 @@ export const usePlanBuilder = () => {
         }),
       );
       return true;
+    },
+    [notification],
+  );
+
+  /**
+   * Mueve un prerrequisito ya colocado a OTRA fila del periodo (drag del tag
+   * entre filas): en el borrador sale de la fila origen y entra como nuevo en
+   * la destino; al guardar, el diff lo resuelve como baja + alta.
+   */
+  const moverPrerrequisito = useCallback(
+    (origenKey, destinoKey, prereqKey) => {
+      if (origenKey === destinoKey) return;
+      setDraftFilas((prev) => {
+        const origen = prev.find((f) => f.key === origenKey);
+        const destino = prev.find((f) => f.key === destinoKey);
+        const prereq = origen?.prereqs.find((p) => p.key === prereqKey);
+        if (!origen || !destino || !prereq) return prev;
+        if (destino.prereqs.some((p) => p.prerrequisitoId === prereq.prerrequisitoId)) {
+          notification.warning({
+            title: 'Prerrequisito repetido',
+            description: `${destino.sigla ?? 'La asignatura'} ya tiene ese prerrequisito.`,
+          });
+          return prev;
+        }
+        return prev.map((f) => {
+          if (f.key === origenKey) {
+            return { ...f, prereqs: f.prereqs.filter((p) => p.key !== prereqKey) };
+          }
+          if (f.key === destinoKey) {
+            return {
+              ...f,
+              prereqs: [
+                ...f.prereqs,
+                { ...prereq, id: null, key: `new-prereq-${prereq.prerrequisitoId}` },
+              ],
+            };
+          }
+          return f;
+        });
+      });
     },
     [notification],
   );
@@ -490,6 +534,7 @@ export const usePlanBuilder = () => {
     quitarFila,
     cambiarHoras,
     agregarPrerrequisito,
+    moverPrerrequisito,
     quitarPrerrequisito,
     descartarCambios,
     guardarCambios,

@@ -587,7 +587,7 @@
 .sd-card__body {
   padding: 20px;
   display: grid;
-  gap: 20px 32px;
+  gap: 2px 32px;
   background: linear-gradient(180deg, #fafcfb 0%, var(--surface) 100%);
 }
 
