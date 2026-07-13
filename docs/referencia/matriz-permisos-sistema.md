@@ -782,11 +782,21 @@ pagos, historial-actividades), cada uno con sus acciones y grants en el mismo ar
 | `?tab=carreras` | `configuracion.carrera` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab carreras |
 | `?tab=materias` | `configuracion.materia` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | Tab materias |
 | `/configuracion/academico/plan/:planId` | `configuracion.plan-estudio` | DETALLE (+ EDITAR matriz vía `…asignaturas`) | Matriz del plan; prerrequisitos usan `…prerrequisitos` |
+| `/configuracion/academico/plan/nuevo` (`CFG-PLAN-NUEVA`) | `configuracion.plan-estudio` | CREAR | Formulario de alta de plan |
+| `/configuracion/academico/plan/:id/editar` (`CFG-PLAN-EDITAR`) | `configuracion.plan-estudio` | EDITAR | Formulario de edición de plan |
+| `/configuracion/academico/plan/:id` (`CFG-PLAN-DETALLE`) | `configuracion.plan-estudio` | DETALLE | Ficha-hub del plan (tabs Información / Periodos y asignaturas / Prerrequisitos) |
 | (API periodos) | `configuracion.plan-estudio.periodos` | LISTAR, CREAR, EDITAR, ELIMINAR | Anios del plan |
 | (API asignaturas) | `configuracion.plan-estudio.asignaturas` | LISTAR, CREAR, EDITAR, ELIMINAR | Celdas matriz |
 | (API prerrequisitos) | `configuracion.plan-estudio.prerrequisitos` | LISTAR, DETALLE, CREAR, ELIMINAR | Editor en detalle de plan |
 
 Redirects legacy: `/configuracion/academico/carreras|materias` → tab; no requieren permiso distinto.
+
+**Clonado de plan ("nueva versión por RM"):** `POST /planes-estudios/:id/clonar` reutiliza la acción
+`CREAR` ya existente de `configuracion.plan-estudio` (no agrega una acción nueva). Copia
+periodos + asignaturas_plan + prerrequisitos del plan origen hacia un plan destino que nace
+`vigente=false`; el plan origen queda intacto. Flujo de negocio: clonar → editar la copia
+(`CFG-PLAN-EDITAR`) → publicar marcándola vigente (acción `ACTIVAR`, desmarca el plan anterior),
+sin afectar a estudiantes ya inscritos en el plan previo.
 
 **Roles:** RECTOR (2), DIR_ACADEMICO (3) y SEC_ACADEMICA (5) tienen bloque amplio de `configuracion.*`; DIR_ADMIN y SEC_ADMIN sin CFG academico salvo casos puntuales. **Nota:** RECTOR incluye `DETALLE` en materia; DIR_ACADEMICO incluye `DETALLE` en plan para abrir matriz; edición de celdas sigue requiriendo `configuracion.plan-estudio.asignaturas` `EDITAR`.
 

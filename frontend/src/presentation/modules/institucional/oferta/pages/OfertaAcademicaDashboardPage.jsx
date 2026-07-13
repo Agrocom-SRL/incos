@@ -1,4 +1,4 @@
-import { CalendarOutlined, ScheduleOutlined } from '@ant-design/icons';
+import { CalendarOutlined, ScheduleOutlined, SyncOutlined } from '@ant-design/icons';
 import { Alert, Flex, Spin, Typography } from 'antd';
 import { MainContent, InfoSidebar, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -38,6 +38,15 @@ const OfertaAcademicaDashboardPage = () => {
           breadcrumbItems={breadcrumbItems}
           actions={
             <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
+              <ActionButton
+                permiso="institucional.oferta.gestion-plan"
+                accion="CREAR"
+                variant="info"
+                icon={<SyncOutlined />}
+                onClick={s.navigateRenovarOferta}
+              >
+                Renovar oferta
+              </ActionButton>
               <ActionButton
                 permiso="institucional.gestion.pasadas"
                 accion="LISTAR"

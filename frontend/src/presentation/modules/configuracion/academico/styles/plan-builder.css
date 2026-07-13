@@ -1,0 +1,534 @@
+/**
+ * Builder drag & drop de asignaturas/prerrequisitos por periodo
+ * (`PlanPeriodoAsignaturasPage.jsx`). Estilo curriculum builder sobre el
+ * lenguaje planilla/cuaderno de Calificaciones: columnas como tarjetas con
+ * cabecera verde primario y título claro, catálogo en grid de tiles (sigla /
+ * nombre / pill de tipo), filas contiguas con zebra y acento de identidad,
+ * celda de horas gemela de `.cal-nota-cell` y celdas-etiqueta (sigla de
+ * prerrequisito) como la ficha del cuaderno. Acciones en el toolbar del
+ * header (sin footer flotante). Color y tipografía consumen las CSS vars del
+ * theme (única fuente — ver `incos-ui-system`).
+ */
+
+.cfg-plan-builder__body {
+  padding-top: 20px;
+}
+
+.cfg-plan-builder__header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cfg-plan-builder__periodo-title {
+  font-size: var(--font-size-lg, 16px);
+  color: var(--color-primary, #196b45);
+}
+
+.cfg-plan-builder__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: var(--spacing-base, 16px);
+  align-items: start;
+}
+
+/* Columna derecha: Asignaturas del periodo + Prerrequisitos apilados */
+
+.cfg-plan-builder__col-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-base, 16px);
+  min-width: 0;
+}
+
+/* Columna = tarjeta contenida (borde visible + cabecera primaria) */
+
+.cfg-plan-builder__col {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-lg, 14px);
+  overflow: hidden;
+  background: var(--surface, #fff);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.04));
+}
+
+.cfg-plan-builder__col .sd-card__head {
+  background: var(--color-primary, #196b45);
+  border-bottom-color: var(--primary-dark, #134d32);
+}
+
+.cfg-plan-builder__col .sd-card__title {
+  color: var(--color-white, #ffffff);
+}
+
+.cfg-plan-builder__col--main .sd-card__body {
+  min-height: 320px;
+}
+
+/* Controles del catálogo — clasificación y buscador lado a lado (estilo formulario) */
+
+.cfg-plan-builder__catalogo-controles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--spacing-sm, 10px);
+  margin-bottom: var(--spacing-sm, 10px);
+}
+
+.cfg-plan-builder__control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  min-width: 0;
+}
+
+.cfg-plan-builder__control-label {
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 600;
+  color: var(--color-primary, #196b45);
+}
+
+.cfg-plan-builder__filtro-select {
+  width: 100%;
+}
+
+/* Opción del select de clasificación — punto de color (patrón EtapaOption del cronograma) */
+
+.cfg-plan-builder__clasif-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  min-width: 0;
+}
+
+.cfg-plan-builder__clasif-option-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Catálogo — grid de tiles arrastrables (curriculum builder) */
+
+.cfg-plan-builder__chip-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--spacing-sm, 8px);
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.cfg-plan-builder-chip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-sm, 8px) var(--spacing-sm, 10px);
+  border-radius: var(--border-radius-md, 10px);
+  border: 1px solid var(--color-border-secondary, #e5e7eb);
+  background: var(--color-bg-container, #fff);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  font-size: var(--font-size-sm, 13px);
+  cursor: grab;
+  touch-action: none;
+  transition: transform var(--dur-hover, 0.16s) var(--ease-out, ease-out),
+    box-shadow var(--dur-hover, 0.16s) var(--ease-out, ease-out),
+    border-color var(--dur-hover, 0.16s) var(--ease-out, ease-out),
+    opacity var(--dur-base, 0.26s) var(--ease-out, ease-out);
+}
+
+/* Acento superior por tipo pedagógico — misma paleta que los pills
+   `cfg-materia-pill--{teorica,practica,mixta}` de table-cells.css */
+
+.cfg-plan-builder-chip--catalogo {
+  border-top: 3px solid var(--color-border-secondary, #e5e7eb);
+}
+
+.cfg-plan-builder-chip--tipo-teorica {
+  border-top-color: #0369a1;
+}
+
+.cfg-plan-builder-chip--tipo-practica {
+  border-top-color: #047857;
+}
+
+.cfg-plan-builder-chip--tipo-mixta {
+  border-top-color: #6d28d9;
+}
+
+@starting-style {
+  .cfg-plan-builder-chip {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.cfg-plan-builder-chip:hover {
+  border-color: var(--color-primary-border, var(--color-primary, #196b45));
+  box-shadow: var(--shadow-elevation-1, 0 2px 6px rgba(0, 0, 0, 0.08));
+  transform: translateY(-2px);
+}
+
+.cfg-plan-builder-chip--dragging {
+  opacity: 0.4;
+}
+
+.cfg-plan-builder-chip--overlay {
+  cursor: grabbing;
+  max-width: 220px;
+  border-color: var(--color-primary-border, var(--color-primary, #196b45));
+  box-shadow: var(--shadow-elevation-2, 0 8px 20px rgba(0, 0, 0, 0.15));
+  transform: rotate(-1.5deg);
+}
+
+.cfg-plan-builder-chip--disabled {
+  cursor: default;
+}
+
+.cfg-plan-builder-chip--disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-border-secondary, #e5e7eb);
+}
+
+.cfg-plan-builder-chip__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 4px);
+  min-width: 0;
+}
+
+.cfg-plan-builder-chip__sigla {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--color-primary, #196b45);
+}
+
+.cfg-plan-builder-chip__nombre {
+  min-width: 0;
+  font-size: var(--font-size-xs, 12px);
+  line-height: 1.35;
+  color: var(--color-text, #1f2937);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cfg-plan-builder-chip__tipo {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+/* Badge «ya asignada en <año>» — identifica la fuente de prerrequisitos */
+
+.cfg-plan-builder-chip__badge {
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  padding: 0 var(--spacing-xs, 6px);
+  border-radius: 999px;
+  color: var(--color-primary, #196b45);
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.08));
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Dropzone del periodo */
+
+.cfg-plan-builder__dropzone {
+  border-radius: var(--border-radius-md, 10px);
+  transition: background var(--transition-base, 0.2s), border-color var(--transition-base, 0.2s);
+  border: 2px dashed transparent;
+  padding: var(--spacing-xs, 4px);
+}
+
+.cfg-plan-builder__dropzone--over {
+  border-color: var(--color-primary-border, var(--color-primary, #196b45));
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+}
+
+/* Placeholder de drop vacío — gemelo del «Presioná + para agregar» del cuaderno */
+
+.cfg-plan-builder__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 8px);
+  min-height: 140px;
+  border: 1px dashed var(--color-border-secondary, #d1d5db);
+  border-radius: var(--border-radius-sm, 6px);
+  font-style: italic;
+  color: var(--color-text-tertiary, #9ca3af);
+}
+
+/* Filas del periodo — tabla contigua con zebra (planilla) */
+
+.cfg-plan-builder__rows {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border-secondary, #e5e7eb);
+  border-radius: var(--border-radius-sm, 6px);
+  overflow: hidden;
+}
+
+.cfg-plan-builder__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-bottom: 1px solid var(--color-border-secondary, #e5e7eb);
+  background: var(--color-bg-container, #fff);
+  transition: background var(--dur-hover, 0.16s) var(--ease-out, ease-out),
+    opacity var(--dur-base, 0.26s) var(--ease-out, ease-out);
+}
+
+@starting-style {
+  .cfg-plan-builder__row {
+    opacity: 0;
+  }
+}
+
+.cfg-plan-builder__row:last-child {
+  border-bottom: none;
+}
+
+.cfg-plan-builder__row:nth-child(even) {
+  background: var(--color-bg-layout, #fafafa);
+}
+
+.cfg-plan-builder__row:hover {
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+}
+
+/* Celda de identidad de la fila — acento primario como la celda de estudiante */
+
+.cfg-plan-builder__row .cfg-plan-builder-chip--asignatura {
+  flex-direction: row;
+  align-items: center;
+  border: none;
+  border-left: 3px solid var(--color-primary, #196b45);
+  border-radius: 0;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  background: transparent;
+  cursor: default;
+  transition: none;
+}
+
+.cfg-plan-builder__row .cfg-plan-builder-chip--asignatura:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-primary, #196b45);
+}
+
+.cfg-plan-builder__row .cfg-plan-builder-chip--asignatura .cfg-plan-builder-chip__nombre {
+  font-size: var(--font-size-sm, 13px);
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Fila de total de horas (lenguaje planilla) + progreso */
+
+.cfg-plan-builder__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--spacing-sm, 8px);
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-top: 2px solid var(--color-primary, #196b45);
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+}
+
+.cfg-plan-builder__total-label {
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary, #196b45);
+}
+
+.cfg-plan-builder__total-valor {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary, #196b45);
+}
+
+.cfg-plan-builder__total--excedido .cfg-plan-builder__total-label,
+.cfg-plan-builder__total--excedido .cfg-plan-builder__total-valor {
+  color: var(--color-error, #cf1322);
+}
+
+.cfg-plan-builder__total--excedido {
+  border-top-color: var(--color-error, #cf1322);
+  background: var(--color-error-bg, #fff1f0);
+}
+
+/* Celda de horas — gemela de .cal-nota-cell del cuaderno de calificaciones */
+
+.cfg-plan-horas-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.cfg-plan-horas-cell__input {
+  width: 56px !important;
+}
+
+.cfg-plan-horas-cell__input.ant-input-number {
+  border: 1px solid var(--color-border-secondary, #e5e7eb);
+  border-radius: var(--border-radius-md, 6px);
+  background: var(--color-bg-layout, #f9f9f9);
+}
+
+.cfg-plan-horas-cell__input .ant-input-number-input {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--color-text, #1f2937);
+  height: 30px;
+  padding: 0 var(--spacing-sm, 8px);
+  background: transparent;
+}
+
+.cfg-plan-horas-cell__input.ant-input-number:focus-within {
+  border-color: var(--color-primary, #196b45);
+  box-shadow: 0 0 0 2px var(--color-primary-bg, rgba(25, 107, 69, 0.15));
+}
+
+.cfg-plan-horas-cell__suffix {
+  font-size: var(--font-size-xs, 11px);
+  color: var(--color-text-tertiary, #9ca3af);
+}
+
+.cfg-plan-horas-cell--disabled .cfg-plan-horas-cell__suffix {
+  opacity: 0.6;
+}
+
+/* Columna «Prerrequisitos» — celda-etiqueta (sigla) + slot droppable */
+
+.cfg-plan-builder__prereq-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.cfg-plan-builder__prereq-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--spacing-xs, 4px);
+}
+
+/* Sigla de la fila de prerrequisito — MISMO lenguaje que la celda de
+   identidad de «Asignaturas del periodo» (acento primario + sigla verde) */
+
+.cfg-plan-builder__prereq-sigla {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-left: 3px solid var(--color-primary, #196b45);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 700;
+  color: var(--color-primary, #196b45);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfg-plan-builder-prereq-slot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  min-height: 36px;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-radius: var(--border-radius-sm, 6px);
+  border: 1px dashed var(--color-border-secondary, #d1d5db);
+  transition: background var(--transition-base, 0.2s), border-color var(--transition-base, 0.2s);
+}
+
+.cfg-plan-builder-prereq-slot__empty {
+  font-size: var(--font-size-xs, 11px);
+  font-style: italic;
+  color: var(--color-text-tertiary, #9ca3af);
+}
+
+.cfg-plan-builder-prereq-slot--over {
+  border-color: var(--color-primary-border, var(--color-primary, #196b45));
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+}
+
+.cfg-plan-builder-prereq-tag {
+  margin-inline-end: 0;
+  border-color: var(--color-primary-border, var(--color-primary, #196b45));
+  color: var(--color-primary, #196b45);
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+}
+
+/* Tag arrastrable entre filas (mover un prerrequisito a su fila correcta) */
+
+.cfg-plan-builder-prereq-tag-wrap {
+  display: inline-flex;
+  touch-action: none;
+}
+
+.cfg-plan-builder-prereq-tag-wrap--draggable .cfg-plan-builder-prereq-tag {
+  cursor: grab;
+}
+
+.cfg-plan-builder-prereq-tag-wrap--dragging {
+  opacity: 0.4;
+}
+
+.cfg-plan-builder-prereq-tag--overlay {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--spacing-sm, 8px);
+  border-radius: var(--border-radius-sm, 4px);
+  border: 1px solid var(--color-primary-border, var(--color-primary, #196b45));
+  color: var(--color-primary, #196b45);
+  background: var(--color-primary-bg, #e8f5ec);
+  font-size: var(--font-size-xs, 12px);
+  cursor: grabbing;
+  box-shadow: var(--shadow-elevation-2, 0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+/* Accesibilidad — sin desplazamientos para quien pide menos motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .cfg-plan-builder-chip,
+  .cfg-plan-builder__row {
+    transition: opacity var(--dur-base, 0.26s) var(--ease-out, ease-out);
+    transform: none;
+  }
+
+  .cfg-plan-builder-chip:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .cfg-plan-builder__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cfg-plan-builder__chip-list {
+    max-height: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cfg-plan-builder__row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .cfg-plan-builder__prereq-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,108 +1,59 @@
 /**
- * Tab «Planes de estudio» — selector horizontal + documento a ancho completo.
+ * Tab «Planes de estudio» — listado tipo tabla (mismo patrón que
+ * `CarrerasList`/`MateriasList`): una fila por carrera con su plan vigente.
+ *
+ * Presentacional: el catálogo carreras+plan vigente y la búsqueda
+ * (`usePlanesTabPanel`) se resuelven en `AcademicoPage`, que también
+ * renderiza el botón de cabecera "Nuevo plan" en el `ListPanelHeader` del
+ * workspace, junto a "Nueva carrera"/"Nueva materia".
  */
 
 import { useMemo } from 'react';
-import { Alert, Button, Flex, Spin } from 'antd';
-import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
-import { usePlanesTabDocumento } from '@application-configuracion/academico/hooks/features/usePlanesTabDocumento';
-import { buildPlanDocumentoThemeVars } from '@application-configuracion/academico/utils/planDocumentoTheme';
-import PlanesCarreraSidebar from '@configuracion/academico/components/organisms/PlanesCarreraSidebar';
-import PlanEstudioDocumentoView from '@configuracion/academico/components/organisms/PlanEstudioDocumentoView';
-import { Text } from '@atoms';
-import '../styles/planes-tab.css';
-import '../styles/plan-documento.css';
+import { TableListView } from '@organisms';
+import { createPlanesTableColumns } from '@configuracion/academico/config/planesTableColumns';
 
-const PlanesTabPanel = ({ embedded = false }) => {
-  const {
-    carreras,
-    loading: loadingCatalog,
-    error: catalogError,
-    refetch: refetchCatalog,
-    selectedCarreraId,
-    setSelectedCarreraId,
-    carreraSeleccionada,
-    planVigente,
-  } = usePlanesTabPanel();
-
-  const planId = planVigente?.id ?? null;
-
-  const {
-    periodos,
-    planMeta,
-    prereqSiglaByAsignaturaId,
-    loading: loadingDocumento,
-    error: documentoError,
-    refetch: refetchDocumento,
-  } = usePlanesTabDocumento(planId);
-
-  const themeVars = useMemo(
-    () => buildPlanDocumentoThemeVars(carreraSeleccionada?.colorHex),
-    [carreraSeleccionada?.colorHex],
+const PlanesTabPanel = ({
+  embedded = false,
+  navigate,
+  listNavState,
+  carreras = [],
+  loading = false,
+  error = null,
+  refetch,
+  searchText = '',
+  setSearchText,
+}) => {
+  const tableColumns = useMemo(
+    () =>
+      createPlanesTableColumns({
+        navigate,
+        listNavState,
+        refetch,
+      }),
+    [navigate, listNavState, refetch],
   );
 
-  const error = catalogError || documentoError;
-
   return (
-    <div className={`cfg-planes-tab${embedded ? ' cfg-planes-tab--embedded' : ''}`}>
-      {error ? (
-        <Alert
-          type="error"
-          showIcon
-          className="cfg-planes-tab__alert"
-          title={typeof error === 'string' ? error : 'Error al cargar planes'}
-          action={
-            <Button
-              size="small"
-              onClick={() => {
-                refetchCatalog();
-                refetchDocumento();
-              }}
-            >
-              Reintentar
-            </Button>
-          }
-        />
-      ) : null}
-
-      <div className="cfg-planes-selector-wrap">
-        <Text strong className="cfg-planes-selector-wrap__label">
-          Carrera
-        </Text>
-        {loadingCatalog ? (
-          <Flex justify="center" className="cfg-planes-carrera-list__empty">
-            <Spin size="small" />
-          </Flex>
-        ) : carreras.length === 0 ? (
-          <Text type="secondary" className="cfg-planes-carrera-list__empty">
-            Sin carreras
-          </Text>
-        ) : (
-          <PlanesCarreraSidebar
-            carreras={carreras}
-            selectedCarreraId={selectedCarreraId}
-            onSelectCarrera={setSelectedCarreraId}
-          />
-        )}
-      </div>
-
-      <div className="cfg-planes-document">
-        {carreraSeleccionada ? (
-          <PlanEstudioDocumentoView
-            carrera={carreraSeleccionada}
-            planMeta={planMeta ?? planVigente}
-            periodos={periodos}
-            prereqSiglaByAsignaturaId={prereqSiglaByAsignaturaId}
-            themeVars={themeVars}
-            loading={planId != null && loadingDocumento}
-          />
-        ) : (
-          <Flex align="center" justify="center" className="cfg-planes-main__placeholder">
-            <Text type="secondary">Seleccione una carrera</Text>
-          </Flex>
-        )}
-      </div>
-    </div>
+    <TableListView
+      embedded={embedded}
+      data={carreras}
+      loading={loading}
+      error={error}
+      searchText={searchText}
+      onSearchChange={(e) => setSearchText(e.target.value)}
+      searchPlaceholder="Buscar por código, nombre de carrera o RM..."
+      columns={tableColumns}
+      rowKey={(record) => record.id || record.codigo}
+      searchColSpan={10}
+      searchStyle={{ maxWidth: 520 }}
+      pagination={{
+        pageSize: 10,
+        showSizeChanger: true,
+        showTotal: (total) => `Total: ${total} carreras`,
+        pageSizeOptions: ['10', '20', '50', '100'],
+      }}
+      loadingTip="Cargando planes de estudio..."
+    />
   );
 };
 

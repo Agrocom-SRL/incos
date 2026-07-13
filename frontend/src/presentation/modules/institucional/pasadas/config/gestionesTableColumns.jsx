@@ -1,7 +1,8 @@
 import IdentidadCelda from '@atoms/IdentidadCelda';
 import StatusPill from '@atoms/StatusPill';
 import { ActionButton } from '@atoms';
-import { Typography } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
+import { Flex, Typography } from 'antd';
 import GestionPlanesResumenCell from '../components/atoms/GestionPlanesResumenCell';
 
 const { Text } = Typography;
@@ -9,6 +10,7 @@ const { Text } = Typography;
 export function buildGestionesTableColumns({
   onVerPlanes,
   onHabilitarPlan,
+  onEditarGestion,
   planesResumenByGestionId = {},
   planesResumenLoading = false,
   habilitandoPlanes = false,
@@ -77,19 +79,18 @@ export function buildGestionesTableColumns({
     {
       title: '',
       key: 'acciones',
-      width: 160,
+      width: 260,
       align: 'right',
       render: (_, row) => {
         const resumen = planesResumenByGestionId[row.id];
         const planesCount = resumen?.count ?? 0;
         const resumenListo = resumen != null;
 
-        if (!resumenListo) {
-          return null;
-        }
-
-        if (row.vigente && planesCount === 0 && onHabilitarPlan) {
-          return (
+        // La acción de planes depende del resumen; Editar está siempre
+        // disponible (fail-closed por permiso), incluida la gestión vigente.
+        let planesAction = null;
+        if (resumenListo && row.vigente && planesCount === 0 && onHabilitarPlan) {
+          planesAction = (
             <ActionButton
               permiso="institucional.oferta.gestion-plan"
               accion="CREAR"
@@ -101,22 +102,36 @@ export function buildGestionesTableColumns({
               Habilitar planes
             </ActionButton>
           );
-        }
-
-        if (planesCount === 0) {
-          return null;
+        } else if (resumenListo && planesCount > 0) {
+          planesAction = (
+            <ActionButton
+              permiso="institucional.oferta.gestion-plan"
+              accion="LISTAR"
+              variant="primary"
+              size="small"
+              onClick={() => onVerPlanes(row.id)}
+            >
+              Ver planes
+            </ActionButton>
+          );
         }
 
         return (
-          <ActionButton
-            permiso="institucional.oferta.gestion-plan"
-            accion="LISTAR"
-            variant="primary"
-            size="small"
-            onClick={() => onVerPlanes(row.id)}
-          >
-            Ver planes
-          </ActionButton>
+          <Flex gap="small" justify="flex-end" wrap="wrap">
+            {onEditarGestion ? (
+              <ActionButton
+                permiso="institucional.oferta.gestion-plan"
+                accion="EDITAR"
+                variant="warning"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => onEditarGestion(row.id)}
+              >
+                Editar
+              </ActionButton>
+            ) : null}
+            {planesAction}
+          </Flex>
         );
       },
     },

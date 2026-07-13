@@ -171,8 +171,15 @@ export const PLANES_ESTUDIOS_ENDPOINTS = {
   MATRIZ: (id) => `${API_BASE}/planes-estudios/${id}/matriz`,
   VALIDAR: (id) => `${API_BASE}/planes-estudios/${id}/validar`,
   MARCAR_VIGENTE: (id) => `${API_BASE}/planes-estudios/${id}/marcar-vigente`,
+  CLONAR: (id) => `${API_BASE}/planes-estudios/${id}/clonar`,
   PERIODOS: (planId) => `${API_BASE}/planes-estudios/${planId}/periodos`,
   ASIGNATURAS: (planId) => `${API_BASE}/planes-estudios/${planId}/asignaturas`,
+};
+
+// Periodos del plan a nivel de recurso propio (PUT/DELETE por :id);
+// la lista/creación por plan vive en PLANES_ESTUDIOS_ENDPOINTS.PERIODOS(planId)
+export const PERIODOS_ENDPOINTS = {
+  BY_ID: (id) => `${API_BASE}/periodos/${id}`,
 };
 
 export const ASIGNATURAS_PLAN_ENDPOINTS = {
@@ -234,6 +241,7 @@ export const AULAS_HORARIOS_ENDPOINTS = {
 export const GESTIONES_ENDPOINTS = {
   ...createCRUDEndpoints('/gestiones'),
   MARCAR_VIGENTE: (id) => `${API_BASE}/gestiones/${id}/marcar-vigente`,
+  RENOVAR_OFERTA: (id) => `${API_BASE}/gestiones/${id}/renovar-oferta`,
   PLANES_HABILITADOS: (id) => `${API_BASE}/gestiones/${id}/planes-habilitados`,
   CARGA_DOCENTES: (id) => `${API_BASE}/gestiones/${id}/carga-docentes`,
   CONFLICTOS: (id) => `${API_BASE}/gestiones/${id}/conflictos`,

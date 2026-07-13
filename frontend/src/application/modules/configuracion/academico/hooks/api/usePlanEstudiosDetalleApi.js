@@ -6,6 +6,7 @@ import { useCallback, useMemo } from 'react';
 import apiClient from '@api-client';
 import {
   ASIGNATURAS_PLAN_ENDPOINTS,
+  PERIODOS_ENDPOINTS,
   PLANES_ESTUDIOS_ENDPOINTS,
   PRERREQUISITOS_ENDPOINTS,
 } from '@api/endpoints';
@@ -59,6 +60,34 @@ export const usePlanEstudiosDetalleApi = () => {
     }
   }, []);
 
+  const crearPlan = useCallback(async (payload) => {
+    try {
+      const response = await apiClient.post(PLANES_ESTUDIOS_ENDPOINTS.BASE, payload);
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo crear el plan de estudios' };
+      }
+      return { success: true, data: result.data?.plan_estudio ?? result.data };
+    } catch (error) {
+      const fail = handleErrorResponse(error, 'Error al crear plan de estudios');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
+  const clonarPlan = useCallback(async (planId) => {
+    try {
+      const response = await apiClient.post(PLANES_ESTUDIOS_ENDPOINTS.CLONAR(planId));
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo clonar el plan de estudios' };
+      }
+      return { success: true, data: result.data?.plan_estudio ?? result.data };
+    } catch (error) {
+      const fail = handleErrorResponse(error, 'Error al clonar plan de estudios');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
   const marcarVigente = useCallback(async (planId) => {
     try {
       const response = await apiClient.post(PLANES_ESTUDIOS_ENDPOINTS.MARCAR_VIGENTE(planId));
@@ -83,6 +112,76 @@ export const usePlanEstudiosDetalleApi = () => {
       return { success: true, data: result.data };
     } catch (error) {
       const fail = handleErrorResponse(error, 'Error al actualizar asignatura del plan');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
+  const crearAsignaturaPlan = useCallback(async (payload) => {
+    try {
+      const response = await apiClient.post(ASIGNATURAS_PLAN_ENDPOINTS.BASE, payload);
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo crear la asignatura del plan' };
+      }
+      return { success: true, data: result.data?.asignatura ?? result.data };
+    } catch (error) {
+      const fail = handleErrorResponse(error, 'Error al crear asignatura del plan');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
+  const eliminarAsignaturaPlan = useCallback(async (asignaturaId) => {
+    try {
+      const response = await apiClient.delete(ASIGNATURAS_PLAN_ENDPOINTS.BY_ID(asignaturaId));
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo eliminar la asignatura del plan' };
+      }
+      return { success: true };
+    } catch (error) {
+      const fail = handleErrorResponse(error, 'Error al eliminar asignatura del plan');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
+  const crearPeriodo = useCallback(async (planId, payload) => {
+    try {
+      const response = await apiClient.post(PLANES_ESTUDIOS_ENDPOINTS.PERIODOS(planId), payload);
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo crear el periodo' };
+      }
+      return { success: true, data: result.data?.periodo ?? result.data };
+    } catch (error) {
+      const fail = handleErrorResponse(error, 'Error al crear periodo del plan');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
+  const actualizarPeriodo = useCallback(async (periodoId, payload) => {
+    try {
+      const response = await apiClient.put(PERIODOS_ENDPOINTS.BY_ID(periodoId), payload);
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo actualizar el periodo' };
+      }
+      return { success: true, data: result.data?.periodo ?? result.data };
+    } catch (error) {
+      const fail = handleErrorResponse(error, 'Error al actualizar periodo del plan');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
+  const eliminarPeriodo = useCallback(async (periodoId) => {
+    try {
+      const response = await apiClient.delete(PERIODOS_ENDPOINTS.BY_ID(periodoId));
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo eliminar el periodo' };
+      }
+      return { success: true };
+    } catch (error) {
+      const fail = handleErrorResponse(error, 'Error al eliminar periodo del plan');
       return { success: false, error: fail.error };
     }
   }, []);
@@ -162,9 +261,16 @@ export const usePlanEstudiosDetalleApi = () => {
       fetchPlanById,
       fetchMatriz,
       fetchValidacion,
+      crearPlan,
+      clonarPlan,
       marcarVigente,
       actualizarPlan,
       actualizarAsignatura,
+      crearAsignaturaPlan,
+      eliminarAsignaturaPlan,
+      crearPeriodo,
+      actualizarPeriodo,
+      eliminarPeriodo,
       listarPrerrequisitos,
       listarEsPrerrequisitoDe,
       crearPrerrequisito,
@@ -174,9 +280,16 @@ export const usePlanEstudiosDetalleApi = () => {
       fetchPlanById,
       fetchMatriz,
       fetchValidacion,
+      crearPlan,
+      clonarPlan,
       marcarVigente,
       actualizarPlan,
       actualizarAsignatura,
+      crearAsignaturaPlan,
+      eliminarAsignaturaPlan,
+      crearPeriodo,
+      actualizarPeriodo,
+      eliminarPeriodo,
       listarPrerrequisitos,
       listarEsPrerrequisitoDe,
       crearPrerrequisito,

@@ -158,6 +158,10 @@ export function useOfertaAcademicaDashboardState() {
     [navigate, gestionVigenteId]
   );
   const navigateHorarios = useCallback(() => navigate('/institucional/horarios'), [navigate]);
+  const navigateRenovarOferta = useCallback(
+    () => navigate(ofertaPaths.renovarOferta()),
+    [navigate]
+  );
 
   const sinPlanesHabilitados =
     Boolean(gestionVigente?.vigente) &&
@@ -233,6 +237,7 @@ export function useOfertaAcademicaDashboardState() {
     navigatePlanesVigente,
     navigateParalelosPlan,
     navigateHorarios,
+    navigateRenovarOferta,
     sinPlanesHabilitados,
     habilitandoPlanes,
     onHabilitarTodosPlanes,

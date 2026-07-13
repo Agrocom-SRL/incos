@@ -51,30 +51,12 @@ INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo, created_at, upda
 SELECT r.id, p.id, g.accion, 1, NOW(), NOW()
 FROM (
   SELECT 'RECTOR' AS rol, 'reportes.avance_academico' AS codigo, 'LISTAR' AS accion
-  UNION ALL SELECT 'RECTOR', 'reportes.avance_academico', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.avance_academico', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'reportes.asistencia', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.asistencia', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.asistencia', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'reportes.desercion', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.desercion', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.desercion', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.desercion', 'ELIMINAR'
   UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.general', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.general', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.general', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.becas', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.becas', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.becas', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.becas', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.becas', 'ELIMINAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.traspaso', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.pasantia', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.pasantia', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.pasantia', 'EDITAR'
   UNION ALL SELECT 'DIR_ADMIN', 'reportes.solicitudes.pasantia', 'LISTAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'reportes.solicitudes.pasantia', 'CREAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'reportes.solicitudes.pasantia', 'EDITAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

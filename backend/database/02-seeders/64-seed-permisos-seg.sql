@@ -41,22 +41,15 @@ JOIN (
 INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo, created_at, updated_at)
 SELECT r.id, p.id, g.accion, 1, NOW(), NOW()
 FROM (
-  SELECT 'RECTOR' AS rol, 'seguridad.usuario.crear' AS codigo, 'LISTAR' AS accion
-  UNION ALL SELECT 'RECTOR', 'seguridad.usuario.administrar', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'seguridad.usuario.administrar', 'EXPORTAR'
+  SELECT 'RECTOR' AS rol, 'seguridad.usuario.administrar' AS codigo, 'LISTAR' AS accion
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.usuario.administrar', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.usuario.administrar', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'LISTAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'LISTAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'DETALLE'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
@@ -79,11 +72,8 @@ INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo, created_at, upda
 SELECT r.id, p.id, g.accion, 1, NOW(), NOW()
 FROM (
   SELECT 'RECTOR' AS rol, 'sistema.catalogo.referencia' AS codigo, 'LISTAR' AS accion
-  UNION ALL SELECT 'RECTOR', 'sistema.catalogo.referencia', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'sistema.catalogo.referencia', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'sistema.catalogo.referencia', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'sistema.catalogo.referencia', 'LISTAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'sistema.catalogo.referencia', 'EXPORTAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

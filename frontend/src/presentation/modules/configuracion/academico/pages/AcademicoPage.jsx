@@ -15,11 +15,15 @@ import { useAuthContext } from '@application-auth';
 import {
   carreraNuevaPath,
   materiaNuevaPath,
+  planNuevaPath,
 } from '@application-configuracion/academico/config/paths';
 import {
   carrerasListNavigationState,
   materiasListNavigationState,
+  planesListNavigationState,
 } from '@application-configuracion/academico/config/academicoNavigation';
+import { PLAN_ESTUDIO_PERMISO } from '@application-configuracion/academico/config/planEstudioPermisos';
+import { usePlanesTabPanel } from '@application-configuracion/academico/hooks';
 import PlanesTabPanel from './PlanesTabPanel';
 import CarrerasList from './CarrerasList';
 import MateriasList from './MateriasList';
@@ -56,6 +60,20 @@ const AcademicoPage = () => {
 
   const carrerasNavState = useMemo(() => carrerasListNavigationState(), []);
   const materiasNavState = useMemo(() => materiasListNavigationState(), []);
+  const planesNavState = useMemo(() => planesListNavigationState(), []);
+
+  const {
+    carreras: planesCarreras,
+    loading: planesLoading,
+    error: planesError,
+    refetch: refetchPlanesCatalog,
+    searchText: planesSearchText,
+    setSearchText: setPlanesSearchText,
+  } = usePlanesTabPanel({ enabled: puedePlanes });
+
+  const handleNuevoPlan = useCallback(() => {
+    navigate(planNuevaPath, { state: planesNavState });
+  }, [navigate, planesNavState]);
 
   const tabItems = useMemo(() => {
     const items = [];
@@ -69,7 +87,19 @@ const AcademicoPage = () => {
             <Icon /> {meta.shortLabel}
           </span>
         ),
-        children: wrapTabPanel(<PlanesTabPanel embedded />),
+        children: wrapTabPanel(
+          <PlanesTabPanel
+            embedded
+            navigate={navigate}
+            listNavState={planesNavState}
+            carreras={planesCarreras}
+            loading={planesLoading}
+            error={planesError}
+            refetch={refetchPlanesCatalog}
+            searchText={planesSearchText}
+            setSearchText={setPlanesSearchText}
+          />,
+        ),
       });
     }
     if (puedeCarreras) {
@@ -99,7 +129,19 @@ const AcademicoPage = () => {
       });
     }
     return items;
-  }, [puedePlanes, puedeCarreras, puedeMaterias]);
+  }, [
+    puedePlanes,
+    puedeCarreras,
+    puedeMaterias,
+    navigate,
+    planesNavState,
+    planesCarreras,
+    planesLoading,
+    planesError,
+    refetchPlanesCatalog,
+    planesSearchText,
+    setPlanesSearchText,
+  ]);
 
   const activeKey = useMemo(() => {
     let requested = searchParams.get('tab');
@@ -116,6 +158,19 @@ const AcademicoPage = () => {
   const activePanel = ACADEMICO_TAB_PANEL_META[activeKey];
 
   const panelActions = useMemo(() => {
+    if (activeKey === TAB_PLANES) {
+      return (
+        <ActionButton
+          permiso={PLAN_ESTUDIO_PERMISO}
+          accion="CREAR"
+          variant="primary"
+          icon={<PlusOutlined />}
+          onClick={handleNuevoPlan}
+        >
+          Nuevo plan
+        </ActionButton>
+      );
+    }
     if (activeKey === TAB_CARRERAS) {
       return (
         <ActionButton
@@ -143,7 +198,7 @@ const AcademicoPage = () => {
       );
     }
     return null;
-  }, [activeKey, navigate, carrerasNavState, materiasNavState]);
+  }, [activeKey, navigate, carrerasNavState, materiasNavState, handleNuevoPlan]);
 
   const onTabChange = useCallback(
     (key) => {

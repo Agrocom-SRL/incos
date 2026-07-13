@@ -4,12 +4,15 @@
 
 import { useMemo } from 'react';
 import { Empty, Flex, Spin, Typography } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
+import { ActionButton } from '@atoms';
 import { formatResolucionLabel } from '@application-configuracion/academico/utils/planDocumentoTheme';
 import {
   getMaxAsignaturasPorPeriodo,
   materiaNombreSizeClass,
   padAsignaturasPeriodo,
 } from '@application-configuracion/academico/utils/planDocumentoRows';
+import { PLAN_ASIGNATURAS_PERMISO } from '@application-configuracion/academico/config/planEstudioPermisos';
 
 const { Text, Title } = Typography;
 
@@ -20,6 +23,8 @@ const PlanEstudioDocumentoView = ({
   prereqSiglaByAsignaturaId,
   themeVars,
   loading = false,
+  editable = false,
+  onEditarPeriodo,
 }) => {
   const maxFilas = useMemo(() => getMaxAsignaturasPorPeriodo(periodos), [periodos]);
 
@@ -101,7 +106,21 @@ const PlanEstudioDocumentoView = ({
                 style={{ '--cfg-plan-year-rows': String(Math.max(maxFilas, 1)) }}
               >
                 <header className="cfg-plan-doc__year-head">
-                  {(periodo.nombre || `Año ${periodo.numero}`).toUpperCase()}
+                  <span className="cfg-plan-doc__year-head-label">
+                    {(periodo.nombre || `Año ${periodo.numero}`).toUpperCase()}
+                  </span>
+                  {editable ? (
+                    <ActionButton
+                      permiso={PLAN_ASIGNATURAS_PERMISO}
+                      accion="EDITAR"
+                      variant="alternative"
+                      size="small"
+                      className="cfg-plan-doc__year-head-edit"
+                      icon={<EditOutlined />}
+                      onClick={() => onEditarPeriodo?.(periodo.id)}
+                      aria-label={`Editar asignaturas de ${periodo.nombre || `Año ${periodo.numero}`}`}
+                    />
+                  ) : null}
                 </header>
                 <div className="cfg-plan-doc__year-body">
                   <table className="cfg-plan-doc__table">

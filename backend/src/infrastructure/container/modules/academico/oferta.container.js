@@ -5,6 +5,7 @@ import { ACADEMICO_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../t
 import { registerComponent } from '../../utils/container.helpers.js';
 
 import { MarcarGestionVigenteUseCase } from '../../../../application/use-cases/oferta/MarcarGestionVigenteUseCase.js';
+import { RenovarOfertaGestionUseCase } from '../../../../application/use-cases/oferta/RenovarOfertaGestionUseCase.js';
 import { ListPlanesHabilitadosByGestionUseCase } from '../../../../application/use-cases/oferta/ListPlanesHabilitadosByGestionUseCase.js';
 import { CreateGestionPlanUseCase } from '../../../../application/use-cases/oferta/CreateGestionPlanUseCase.js';
 import { UpdateGestionPlanEstadoUseCase } from '../../../../application/use-cases/oferta/UpdateGestionPlanEstadoUseCase.js';
@@ -26,6 +27,7 @@ import { GetParaleloGestionGrillaHorarioUseCase } from '../../../../application/
 
 import {
   MarcarGestionVigenteController,
+  RenovarOfertaGestionController,
   ListPlanesHabilitadosByGestionController,
   CreateGestionPlanController,
   UpdateGestionPlanEstadoController,
@@ -55,6 +57,23 @@ function registerOfertaUseCases(container) {
   registerComponent(container, ACADEMICO_TOKENS.marcarGestionVigenteUseCase, (c) =>
     new MarcarGestionVigenteUseCase({
       managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+      logger: c.resolve(SERVICIOS_TOKENS.logger),
+    })
+  );
+
+  registerComponent(container, ACADEMICO_TOKENS.renovarOfertaGestionUseCase, (c) =>
+    new RenovarOfertaGestionUseCase({
+      managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+      managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
+      parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
+      courseOfferRepository: c.resolve(REPOSITORIOS_TOKENS.courseOfferRepository),
+      teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+      asignacionHorarioRepository: c.resolve(REPOSITORIOS_TOKENS.asignacionHorarioRepository),
+      studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
+      planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+      periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+      subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+      teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
       logger: c.resolve(SERVICIOS_TOKENS.logger),
     })
   );
@@ -217,6 +236,16 @@ function registerOfertaControllers(container) {
     (c) =>
       new MarcarGestionVigenteController({
         useCase: c.resolve(ACADEMICO_TOKENS.marcarGestionVigenteUseCase),
+        responseFormatter: rf(c),
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.renovarOfertaGestionController,
+    (c) =>
+      new RenovarOfertaGestionController({
+        useCase: c.resolve(ACADEMICO_TOKENS.renovarOfertaGestionUseCase),
         responseFormatter: rf(c),
       })
   );
@@ -482,6 +511,9 @@ export function getOfertaGestionesControllers(container) {
   return {
     marcarGestionVigenteController: container.resolve(
       ACADEMICO_TOKENS.marcarGestionVigenteController
+    ),
+    renovarOfertaGestionController: container.resolve(
+      ACADEMICO_TOKENS.renovarOfertaGestionController
     ),
     listPlanesHabilitadosByGestionController: container.resolve(
       ACADEMICO_TOKENS.listPlanesHabilitadosByGestionController

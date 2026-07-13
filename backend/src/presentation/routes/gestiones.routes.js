@@ -2,20 +2,22 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { idValidator, listValidator } from '../validators/common/index.js';
+import { createGestionValidator, updateGestionValidator } from '../validators/academico/index.js';
+import { renovarOfertaGestionValidator } from '../validators/oferta/oferta.validator.js';
 
 /**
  * Construye el router del módulo Gestiones (Académico)
- * 
+ *
  * Responsabilidades:
  * - Definir rutas y métodos HTTP
  * - Vincular validators y middlewares
  * - Delegar lógica a controllers inyectados
- * 
+ *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
  * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
  * @returns {Router} Router configurado de Express
- * 
+ *
  * @example
  * const router = buildGestionesRouter({ controllers, middlewares });
  * app.use('/api/v1/gestiones', router);
@@ -42,7 +44,7 @@ export function buildGestionesRouter({ controllers, middlewares }) {
     /**
      * GET /api/v1/gestiones
      * Listar todas las gestiones con filtros y paginación
-     * 
+     *
      * Query params según IBaseRepository.obtenerTodos:
      * - pagina: número de página (paginación)
      * - limite: cantidad por página (paginación)
@@ -57,6 +59,48 @@ export function buildGestionesRouter({ controllers, middlewares }) {
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listGestionesController.handle(req, res, next)
+    );
+
+    /**
+     * POST /api/v1/gestiones
+     * Crear gestión académica (nace vigente=false; marcar-vigente es aparte)
+     */
+    router.post(
+        '/',
+        authenticate,
+        verificarPermiso(permisoOfertaGestion, 'CREAR'),
+        createGestionValidator,
+        validateRequest,
+        (req, res, next) => controllers.createGestionController.handle(req, res, next)
+    );
+
+    /**
+     * POST /api/v1/gestiones/:id/renovar-oferta
+     * Renovar la oferta de la gestión destino :id copiando la cadena
+     * gestiones_planes → paralelos_gestion → oferta_cursos →
+     * asignaciones_docentes → asignacion_horarios desde una gestión origen.
+     */
+    router.post(
+        '/:id/renovar-oferta',
+        authenticate,
+        verificarPermiso(permisoOfertaGestion, 'CREAR'),
+        renovarOfertaGestionValidator,
+        validateRequest,
+        (req, res, next) => controllers.renovarOfertaGestionController.handle(req, res, next)
+    );
+
+    /**
+     * PUT /api/v1/gestiones/:id
+     * Actualizar gestión académica (campos parciales; `vigente` NO es editable
+     * por esta vía: usar POST /:id/marcar-vigente)
+     */
+    router.put(
+        '/:id',
+        authenticate,
+        verificarPermiso(permisoOfertaGestion, 'EDITAR'),
+        updateGestionValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateGestionController.handle(req, res, next)
     );
 
     router.post(
@@ -113,28 +157,12 @@ export function buildGestionesRouter({ controllers, middlewares }) {
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================
 
-    // POST / - Crear gestión
-    // router.post(
-    //     '/',
-    //     createGestionValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.createGestionController.handle(req, res, next)
-    // );
-
     // GET /:id - Obtener gestión por ID
     // router.get(
     //     '/:id',
     //     getGestionByIdValidator,
     //     validateRequest,
     //     (req, res, next) => controllers.getGestionByIdController.handle(req, res, next)
-    // );
-
-    // PUT /:id - Actualizar gestión
-    // router.put(
-    //     '/:id',
-    //     updateGestionValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.updateGestionController.handle(req, res, next)
     // );
 
     // DELETE /:id - Eliminar gestión (soft delete)

@@ -4,8 +4,8 @@
 
 import { Flex } from 'antd';
 
-const DetailInfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
-  <section className="sd-card">
+const DetailInfoCard = ({ title, icon, extra, children, cols = 2, headVariant, className }) => (
+  <section className={`sd-card${className ? ` ${className}` : ''}`}>
     <Flex
       className={`sd-card__head${headVariant ? ` sd-card__head--${headVariant}` : ''}`}
       justify="space-between"

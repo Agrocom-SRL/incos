@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App, message } from 'antd';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
 import {
   buildSetupKpis,
@@ -15,8 +15,13 @@ export function useOfertaGestionPlanesState() {
   const { gestionId: gestionIdParam } = useParams();
   const gestionId = Number(gestionIdParam);
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { modal, notification } = App.useApp();
+
+  // «Volver» regresa al LUGAR DE ORIGEN (p. ej. Gestiones Pasadas navega aquí
+  // con returnListPath en location.state); por defecto, al panel de oferta.
+  const returnListPath = location.state?.returnListPath ?? ofertaPaths.dashboard();
 
   const {
     loading: mutationLoading,
@@ -203,18 +208,24 @@ export function useOfertaGestionPlanesState() {
     }
   }, [planesHabilitadosLoaded, esGestionOperativa, sinPlanesHabilitados, navigate]);
 
+  // setSearchParams navega y PIERDE location.state salvo que se reenvíe: sin
+  // esto, el returnListPath de Gestiones Pasadas se borra al auto-seleccionar
+  // el plan y el «Volver» cae al dashboard.
   useEffect(() => {
     if (!planesHabilitadosLoaded || !planesHabilitados.length) return;
     const keys = planesHabilitados.map((p) => String(p.id));
     if (activePlanKey && keys.includes(activePlanKey)) return;
-    setSearchParams({ plan: String(planesHabilitados[0].id) }, { replace: true });
-  }, [planesHabilitados, planesHabilitadosLoaded, activePlanKey, setSearchParams]);
+    setSearchParams(
+      { plan: String(planesHabilitados[0].id) },
+      { replace: true, state: location.state }
+    );
+  }, [planesHabilitados, planesHabilitadosLoaded, activePlanKey, setSearchParams, location.state]);
 
   const onTabChange = useCallback(
     (planId) => {
-      setSearchParams({ plan: String(planId) }, { replace: true });
+      setSearchParams({ plan: String(planId) }, { replace: true, state: location.state });
     },
-    [setSearchParams]
+    [setSearchParams, location.state]
   );
 
   const navigateGestionVigente = useCallback(() => {
@@ -506,7 +517,7 @@ export function useOfertaGestionPlanesState() {
     onInhabilitarParalelo,
     onHabilitarParalelo,
     onNavigateDetalle,
-    navigateBack: () => navigate(ofertaPaths.dashboard()),
+    navigateBack: () => navigate(returnListPath),
     navigateDashboard: () => navigate(ofertaPaths.dashboard()),
     navigateGestionVigente,
   };

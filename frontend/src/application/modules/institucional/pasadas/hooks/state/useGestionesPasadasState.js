@@ -79,9 +79,22 @@ export function useGestionesPasadasState() {
     loadGestiones();
   }, [loadGestiones]);
 
+  // Se navega con returnListPath para que el «Volver» de las pantallas hijas
+  // regrese a este listado (patrón CFG académico).
   const onVerPlanes = useCallback(
     (gestionId) => {
-      navigate(ofertaPaths.gestionPlanes(gestionId));
+      navigate(ofertaPaths.gestionPlanes(gestionId), {
+        state: { returnListPath: pasadasPaths.list() },
+      });
+    },
+    [navigate]
+  );
+
+  const onEditarGestion = useCallback(
+    (gestionId) => {
+      navigate(ofertaPaths.gestionEditar(gestionId), {
+        state: { returnListPath: pasadasPaths.list() },
+      });
     },
     [navigate]
   );
@@ -158,6 +171,7 @@ export function useGestionesPasadasState() {
       buildGestionesTableColumns({
         onVerPlanes,
         onHabilitarPlan: onHabilitarTodosPlanes,
+        onEditarGestion,
         planesResumenByGestionId,
         planesResumenLoading,
         habilitandoPlanes,
@@ -165,6 +179,7 @@ export function useGestionesPasadasState() {
     [
       onVerPlanes,
       onHabilitarTodosPlanes,
+      onEditarGestion,
       planesResumenByGestionId,
       planesResumenLoading,
       habilitandoPlanes,
