@@ -1,9 +1,9 @@
 /**
  * Átomo: chip arrastrable del catálogo de materias (builder de periodo).
- * Fuente del Flujo A (agregar asignatura al periodo por drag & drop, ver
- * `PlanPeriodoAsignaturasPage.jsx`). Solo presentación + `useDraggable`; la
- * validación de cupo de horas y el alta (con horas por defecto, sin modal)
- * viven en la página/hook.
+ * Muestra solo sigla + nombre; si la materia ya está asignada a OTRO periodo
+ * del plan, un badge con ese año la identifica como fuente de prerrequisito
+ * (Flujo B). Solo presentación + `useDraggable`; validaciones y borrador en
+ * `usePlanBuilder` / `PlanPeriodoAsignaturasPage.jsx`.
  */
 
 import { useDraggable } from '@dnd-kit/core';
@@ -32,6 +32,9 @@ const MateriaCatalogoChip = ({ materia, disabled = false }) => {
       {!disabled ? <HolderOutlined className="cfg-plan-builder-chip__handle" /> : null}
       <span className="cfg-plan-builder-chip__sigla">{materia.sigla || '—'}</span>
       <span className="cfg-plan-builder-chip__nombre">{materia.nombre}</span>
+      {materia.asignadaEn ? (
+        <span className="cfg-plan-builder-chip__badge">{materia.asignadaEn.periodoNombre}</span>
+      ) : null}
     </div>
   );
 };

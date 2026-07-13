@@ -1,30 +1,28 @@
 /**
  * Builder drag & drop de asignaturas/prerrequisitos de UN periodo del plan.
  * Se alcanza desde el lápiz de columna del documento en `PlanDetailPage.jsx`
- * (`onEditarPeriodo` → `planPeriodoAsignaturasPath`). Tres columnas:
+ * (`onEditarPeriodo` → `planPeriodoAsignaturasPath`). Tres cuadros:
  *
- *   Catálogo de materias — filtrable por clasificación; excluye materias ya
- *   asignadas a CUALQUIER periodo del plan (no solo el actual, ver
- *   `usePlanBuilder.materiasDisponibles`). Arrastrar una `MateriaCatalogoChip`
- *   hacia el periodo (o su botón «+») la agrega de inmediato con una carga
- *   horaria por defecto, sin modal — las horas se ajustan en línea en la fila.
+ *   Catálogo de materias — TODAS las materias activas, filtrables por
+ *   clasificación (pill-select). Una materia libre se arrastra al periodo;
+ *   una ya asignada a un año ANTERIOR (badge con el año) se arrastra a la
+ *   fila de prerrequisitos de una asignatura. Sin botones «+» ni modales.
  *
- *   Periodo en edición — una fila por asignatura ya colocada (materia, horas
- *   editables en línea, celda «PRE-REQUISITO», editar/eliminar).
+ *   Asignaturas del periodo — una fila por asignatura del borrador (chip
+ *   sigla+nombre, celda de horas estilo cuaderno de calificaciones, quitar)
+ *   y una fila de total de horas del periodo al pie.
  *
- *   Periodos anteriores (panel colapsable) — única fuente de arrastre para el
- *   prerrequisito cross-periodo: arrastrar una `PlanBuilderAsignaturaChip`
- *   hacia el `PlanBuilderPrerrequisitoSlot` de una fila (o su botón «+»).
+ *   Prerrequisitos — se muestra solo si hay años anteriores: una fila por
+ *   asignatura del periodo con su slot droppable.
  *
- * Fallback sin drag (accesibilidad/teclado): el botón «+» de cada materia del
- * catálogo y el «+» de cada slot de prerrequisito realizan la misma acción
- * que el drop correspondiente. Todas las validaciones de negocio (cupo de
- * horas, periodo anterior) son SOLO client-side — ver `utils/planBuilderRules.js`.
+ * TODO es borrador en memoria (`usePlanBuilder.draftFilas`); la barra
+ * «Guardar cambios» aparece únicamente cuando hay cambios y recién ahí se
+ * llama a los endpoints. Validaciones client-side en `utils/planBuilderRules.js`.
  */
 
 import { useMemo, useState } from 'react';
-import { App, Alert, Empty, Flex, InputNumber, Popconfirm, Spin, Typography } from 'antd';
-import { ArrowLeftOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { App, Alert, Button, Empty, Flex, Popconfirm, Spin, Typography } from 'antd';
+import { ArrowLeftOutlined, DeleteOutlined, InboxOutlined, SaveOutlined } from '@ant-design/icons';
 import {
   DndContext,
   DragOverlay,
@@ -46,12 +44,9 @@ import {
   PLAN_PRERREQUISITOS_PERMISO,
 } from '@application-configuracion/academico/config/planEstudioPermisos';
 import MateriaCatalogoChip from '@configuracion/academico/components/atoms/MateriaCatalogoChip';
-import PlanBuilderAsignaturaChip from '@configuracion/academico/components/atoms/PlanBuilderAsignaturaChip';
-import PlanBuilderPrerrequisitoSlot from '@configuracion/academico/components/molecules/PlanBuilderPrerrequisitoSlot';
+import PlanPeriodoAsignaturaRow from '@configuracion/academico/components/molecules/PlanPeriodoAsignaturaRow';
+import PlanPrerrequisitoRow from '@configuracion/academico/components/molecules/PlanPrerrequisitoRow';
 import MateriaClasificacionFilter from '@configuracion/academico/components/molecules/MateriaClasificacionFilter';
-import PeriodosAnterioresPanel from '@configuracion/academico/components/molecules/PeriodosAnterioresPanel';
-import AsignaturaPlanFormModal from '@configuracion/academico/components/molecules/AsignaturaPlanFormModal';
-import PrerrequisitoFormModal from '@configuracion/academico/components/molecules/PrerrequisitoFormModal';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/academico-form-page.css';
 import '../styles/plan-builder.css';
@@ -78,113 +73,63 @@ const PeriodoDropZone = ({ disabled, children }) => {
 };
 
 const PlanPeriodoAsignaturasPage = () => {
-  const { notification } = App.useApp();
+  const { notification, modal } = App.useApp();
   const { hasPermiso } = useAuthContext();
   const puedeCrearAsignatura = hasPermiso(PLAN_ASIGNATURAS_PERMISO, 'CREAR');
+  const puedeEliminarAsignatura = hasPermiso(PLAN_ASIGNATURAS_PERMISO, 'ELIMINAR');
   const puedeCrearPrerrequisito = hasPermiso(PLAN_PRERREQUISITOS_PERMISO, 'CREAR');
 
   const {
-    plan,
     periodoActual,
+    periodoNombre,
     periodoNoEncontrado,
-    gruposPeriodosAnteriores,
-    asignaturaLabelById,
-    materiasDisponibles,
+    tienePeriodosAnteriores,
+    materiasCatalogo,
     materiasLoading,
+    draftFilas,
+    hayCambios,
+    horasAsignadas,
+    horasSemana,
     horasDisponibles,
-    prerrequisitosDe,
-    puedeSerPrerrequisito,
     breadcrumbItems,
     loading,
     error,
     isInvalidId,
     guardando,
+    agregarMateria,
+    quitarFila,
+    cambiarHoras,
+    agregarPrerrequisito,
+    quitarPrerrequisito,
+    descartarCambios,
+    guardarCambios,
     handleVolver,
     handleEliminarPeriodo,
-    handleCrearAsignatura,
-    handleActualizarAsignatura,
-    handleEliminarAsignatura,
-    handleCrearPrerrequisito,
-    handleEliminarPrerrequisito,
   } = usePlanBuilder();
 
-  const [editModal, setEditModal] = useState(null);
-  const [prerrequisitoModal, setPrerrequisitoModal] = useState(null);
   const [activeDrag, setActiveDrag] = useState(null);
   const [clasificacionFiltro, setClasificacionFiltro] = useState(null);
-  const [horasEdit, setHorasEdit] = useState({});
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
 
-  const periodoNombre = periodoActual ? periodoActual.nombre || `Año ${periodoActual.numero}` : '';
-
   const clasificaciones = useMemo(() => {
-    const set = new Set(materiasDisponibles.map((m) => m.clasificacion || SIN_CLASIFICACION));
+    const set = new Set(materiasCatalogo.map((m) => m.clasificacion || SIN_CLASIFICACION));
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [materiasDisponibles]);
+  }, [materiasCatalogo]);
 
+  /** Catálogo visible: fuera las que ya están en el borrador del periodo. */
   const materiasFiltradas = useMemo(() => {
-    if (!clasificacionFiltro) return materiasDisponibles;
-    return materiasDisponibles.filter((m) => (m.clasificacion || SIN_CLASIFICACION) === clasificacionFiltro);
-  }, [materiasDisponibles, clasificacionFiltro]);
+    const visibles = materiasCatalogo.filter((m) => !m.enPeriodoActual);
+    if (!clasificacionFiltro) return visibles;
+    return visibles.filter((m) => (m.clasificacion || SIN_CLASIFICACION) === clasificacionFiltro);
+  }, [materiasCatalogo, clasificacionFiltro]);
 
-  const abrirEditarAsignatura = (asignatura) =>
-    setEditModal({
-      asignaturaId: asignatura.id,
-      initialValues: { horasSemanales: asignatura.horas_semanales, modalidad: asignatura.modalidad },
-      materiaLabel: asignatura.materia?.sigla
-        ? `${asignatura.materia.sigla} — ${asignatura.materia.nombre}`
-        : asignatura.materia?.nombre,
-    });
-  const cerrarEditModal = () => setEditModal(null);
-
-  const handleSubmitEdit = async (payload) => {
-    const ok = await handleActualizarAsignatura(editModal.asignaturaId, payload);
-    if (ok) cerrarEditModal();
-    return ok;
-  };
-
-  /** Alta directa (drag o click «+») — misma acción, sin modal; horas por defecto editables en línea. */
-  const crearAsignaturaConDefault = (materia) => {
-    if (horasDisponibles <= 0) {
-      notification.warning({
-        title: 'Sin cupo de horas',
-        description: `${periodoNombre} ya usa las ${plan?.horasSemana ?? '—'} h/semana del plan.`,
-      });
-      return;
-    }
-    const horasDefault = Math.max(1, Math.min(4, horasDisponibles));
-    handleCrearAsignatura({ materia_id: materia.id, horas_semanales: horasDefault });
-  };
-
-  const handleCambiarHoras = (asignaturaId, valor) => {
-    setHorasEdit((prev) => ({ ...prev, [asignaturaId]: valor }));
-  };
-
-  const handleGuardarHoras = async (asig) => {
-    const valor = horasEdit[asig.id];
-    setHorasEdit((prev) => {
-      const next = { ...prev };
-      delete next[asig.id];
-      return next;
-    });
-    if (valor != null && valor !== asig.horas_semanales) {
-      await handleActualizarAsignatura(asig.id, { horas_semanales: valor });
-    }
-  };
-
-  const opcionesPrerrequisitoPara = useMemo(() => {
-    if (!prerrequisitoModal) return [];
-    const yaAgregados = new Set(prerrequisitosDe(prerrequisitoModal).map((p) => p.prerrequisito_id));
-    return gruposPeriodosAnteriores.flatMap((g) => g.asignaturas).filter((a) => !yaAgregados.has(a.id));
-  }, [prerrequisitoModal, gruposPeriodosAnteriores, prerrequisitosDe]);
-
-  const handleSubmitPrerrequisito = async ({ prerrequisitoId }) => {
-    const ok = await handleCrearPrerrequisito({ asignaturaId: prerrequisitoModal, prerrequisitoId });
-    if (ok) setPrerrequisitoModal(null);
-    return ok;
+  /** Una materia solo se puede arrastrar si sirve para algo en este periodo. */
+  const puedeArrastrar = (materia) => {
+    if (materia.asignadaEn) return materia.esPrerrequisitoValido && puedeCrearPrerrequisito;
+    return puedeCrearAsignatura;
   };
 
   // -----------------------------------------------------------------------
@@ -200,30 +145,43 @@ const PlanPeriodoAsignaturasPage = () => {
     setActiveDrag(null);
     if (!over) return;
 
-    const activeData = active.data.current;
+    const materia = active.data.current?.materia;
     const overData = over.data.current;
+    if (!materia || !overData) return;
 
-    if (activeData?.type === 'materia' && overData?.type === 'periodo-zone') {
-      crearAsignaturaConDefault(activeData.materia);
-      return;
-    }
-
-    if (activeData?.type === 'asignatura' && overData?.type === 'prereq-slot') {
-      if (!puedeSerPrerrequisito(activeData.asignatura, overData.asignaturaId)) {
+    if (overData.type === 'periodo-zone') {
+      if (materia.asignadaEn) {
         notification.warning({
-          title: 'Prerrequisito inválido',
-          description: 'El prerrequisito debe pertenecer a un periodo estrictamente anterior.',
+          title: 'Materia ya asignada',
+          description: `${materia.sigla ?? materia.nombre} ya pertenece a ${materia.asignadaEn.periodoNombre}.`,
         });
         return;
       }
-      handleCrearPrerrequisito({
-        asignaturaId: overData.asignaturaId,
-        prerrequisitoId: activeData.asignatura.id,
-      });
+      agregarMateria(materia);
+      return;
+    }
+
+    if (overData.type === 'prereq-slot') {
+      agregarPrerrequisito(overData.filaKey, materia);
     }
   };
 
-  const headerActions = <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />;
+  const confirmarVolver = () => {
+    if (!hayCambios) {
+      handleVolver();
+      return;
+    }
+    modal.confirm({
+      title: 'Cambios sin guardar',
+      content: 'Si vuelves ahora se perderán los cambios del periodo.',
+      okText: 'Salir sin guardar',
+      cancelText: 'Seguir editando',
+      okButtonProps: { danger: true },
+      onOk: handleVolver,
+    });
+  };
+
+  const headerActions = <BackButton icon={<ArrowLeftOutlined />} onClick={confirmarVolver} />;
 
   if (isInvalidId) {
     return (
@@ -268,18 +226,9 @@ const PlanPeriodoAsignaturasPage = () => {
                 <section className="cfg-academico-workspace cfg-plan-builder">
                   <header className="cfg-academico-workspace__header">
                     <Flex align="center" justify="space-between" wrap="wrap" gap={8}>
-                      <Flex align="center" gap={8}>
-                        <Text strong className="cfg-plan-builder__periodo-title">
-                          {periodoNombre}
-                        </Text>
-                        <span
-                          className={`cfg-plan-builder__horas-badge${
-                            horasDisponibles <= 0 ? ' cfg-plan-builder__horas-badge--full' : ''
-                          }`}
-                        >
-                          {horasDisponibles} / {plan?.horasSemana ?? '—'} h/sem
-                        </span>
-                      </Flex>
+                      <Text strong className="cfg-plan-builder__periodo-title">
+                        {periodoNombre}
+                      </Text>
                       <Popconfirm
                         title="Eliminar periodo"
                         description="Se eliminará el periodo y debe estar sin asignaturas. ¿Continuar?"
@@ -300,13 +249,19 @@ const PlanPeriodoAsignaturasPage = () => {
                       </Popconfirm>
                     </Flex>
                     <Text type="secondary" className="cfg-academico-workspace__desc">
-                      Arrastra una materia del catálogo hacia el periodo para agregarla (o usa su botón «+»);
-                      arrastra una asignatura de un periodo anterior hacia la columna PRE-REQUISITO de una fila
-                      (o usa su botón «+»).
+                      Arrastra materias del catálogo hacia el periodo.
+                      {tienePeriodosAnteriores
+                        ? ' Para un prerrequisito, arrastra una materia de un año anterior (con etiqueta de año) hacia la fila de la asignatura.'
+                        : ''}
+                      {' '}Los cambios se aplican al presionar «Guardar cambios».
                     </Text>
                   </header>
 
-                  <div className="cfg-plan-builder__grid">
+                  <div
+                    className={`cfg-plan-builder__grid${
+                      tienePeriodosAnteriores ? '' : ' cfg-plan-builder__grid--sin-prereqs'
+                    }`}
+                  >
                     <DetailInfoCard title="Catálogo de materias" cols={1} className="cfg-plan-builder__col">
                       <MateriaClasificacionFilter
                         clasificaciones={clasificaciones}
@@ -320,111 +275,96 @@ const PlanPeriodoAsignaturasPage = () => {
                       ) : (
                         <div className="cfg-plan-builder__chip-list">
                           {materiasFiltradas.map((materia) => (
-                            <div key={materia.id} className="cfg-plan-builder__catalogo-row">
-                              <MateriaCatalogoChip materia={materia} disabled={!puedeCrearAsignatura} />
-                              <ActionButton
-                                permiso={PLAN_ASIGNATURAS_PERMISO}
-                                accion="CREAR"
-                                variant="info"
-                                size="small"
-                                icon={<PlusOutlined />}
-                                onClick={() => crearAsignaturaConDefault(materia)}
-                                aria-label={`Agregar ${materia.nombre} al periodo`}
-                              />
-                            </div>
+                            <MateriaCatalogoChip
+                              key={materia.id}
+                              materia={materia}
+                              disabled={!puedeArrastrar(materia)}
+                            />
                           ))}
                         </div>
                       )}
                     </DetailInfoCard>
 
                     <DetailInfoCard
-                      title={periodoNombre}
+                      title="Asignaturas del periodo"
                       cols={1}
                       className="cfg-plan-builder__col cfg-plan-builder__col--main"
                     >
                       <PeriodoDropZone disabled={!puedeCrearAsignatura}>
-                        {(periodoActual.asignaturas ?? []).length === 0 ? (
-                          <Empty
-                            description="Sin asignaturas — arrastra una materia del catálogo"
-                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                          />
+                        {draftFilas.length === 0 ? (
+                          <div className="cfg-plan-builder__placeholder">
+                            <InboxOutlined aria-hidden />
+                            <span>Arrastra aquí una materia del catálogo</span>
+                          </div>
                         ) : (
                           <div className="cfg-plan-builder__rows">
-                            {(periodoActual.asignaturas ?? []).map((asig) => {
-                              const prereqTags = prerrequisitosDe(asig.id).map((p) => {
-                                const info = asignaturaLabelById.get(p.prerrequisito_id);
-                                const label = info?.sigla
-                                  ? `${info.sigla} — ${info.nombre}`
-                                  : info?.nombre || `#${p.prerrequisito_id}`;
-                                return { id: p.id, label };
-                              });
-
-                              return (
-                                <div key={asig.id} className="cfg-plan-builder__row">
-                                  <PlanBuilderAsignaturaChip
-                                    asignatura={{
-                                      sigla: asig.materia?.sigla,
-                                      nombre: asig.materia?.nombre,
-                                    }}
-                                    disabled
-                                  />
-                                  <InputNumber
-                                    size="small"
-                                    min={1}
-                                    max={60}
-                                    value={horasEdit[asig.id] ?? asig.horas_semanales}
-                                    onChange={(valor) => handleCambiarHoras(asig.id, valor)}
-                                    onBlur={() => handleGuardarHoras(asig)}
-                                    disabled={!puedeCrearAsignatura}
-                                    addonAfter="h"
-                                    className="cfg-plan-builder__row-horas-input"
-                                  />
-                                  <PlanBuilderPrerrequisitoSlot
-                                    asignaturaId={asig.id}
-                                    prerrequisitos={prereqTags}
-                                    disabled={!puedeCrearPrerrequisito}
-                                    onEliminar={handleEliminarPrerrequisito}
-                                    onAgregarClick={() => setPrerrequisitoModal(asig.id)}
-                                  />
-                                  <ActionButton
-                                    permiso={PLAN_ASIGNATURAS_PERMISO}
-                                    accion="EDITAR"
-                                    variant="warning"
-                                    size="small"
-                                    icon={<EditOutlined />}
-                                    onClick={() => abrirEditarAsignatura(asig)}
-                                  />
-                                  <Popconfirm
-                                    title="Eliminar asignatura del periodo"
-                                    description="Se quitará esta asignatura de la matriz del plan. ¿Continuar?"
-                                    okText="Eliminar"
-                                    okButtonProps={{ danger: true }}
-                                    cancelText="Cancelar"
-                                    onConfirm={() => handleEliminarAsignatura(asig.id)}
-                                  >
-                                    <ActionButton
-                                      permiso={PLAN_ASIGNATURAS_PERMISO}
-                                      accion="ELIMINAR"
-                                      variant="danger"
-                                      size="small"
-                                      icon={<DeleteOutlined />}
-                                    />
-                                  </Popconfirm>
-                                </div>
-                              );
-                            })}
+                            {draftFilas.map((fila) => (
+                              <PlanPeriodoAsignaturaRow
+                                key={fila.key}
+                                fila={fila}
+                                horasDisponibles={horasDisponibles}
+                                puedeEditar={puedeCrearAsignatura}
+                                puedeEliminar={puedeEliminarAsignatura}
+                                onCambiarHoras={cambiarHoras}
+                                onQuitar={quitarFila}
+                              />
+                            ))}
                           </div>
                         )}
                       </PeriodoDropZone>
+                      <div
+                        className={`cfg-plan-builder__total${
+                          horasDisponibles < 0 ? ' cfg-plan-builder__total--excedido' : ''
+                        }`}
+                      >
+                        <span className="cfg-plan-builder__total-label">Horas semanales</span>
+                        <span className="cfg-plan-builder__total-valor">
+                          {horasAsignadas} / {horasSemana ?? '—'}
+                        </span>
+                      </div>
                     </DetailInfoCard>
 
-                    <div className="cfg-plan-builder__col">
-                      <PeriodosAnterioresPanel
-                        grupos={gruposPeriodosAnteriores}
-                        disabled={!puedeCrearPrerrequisito}
-                      />
-                    </div>
+                    {tienePeriodosAnteriores ? (
+                      <DetailInfoCard title="Prerrequisitos" cols={1} className="cfg-plan-builder__col">
+                        {draftFilas.length === 0 ? (
+                          <Empty
+                            description="Agrega asignaturas al periodo"
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          />
+                        ) : (
+                          <div className="cfg-plan-builder__prereq-rows">
+                            {draftFilas.map((fila) => (
+                              <PlanPrerrequisitoRow
+                                key={fila.key}
+                                fila={fila}
+                                disabled={!puedeCrearPrerrequisito}
+                                onEliminar={(prereqKey) => quitarPrerrequisito(fila.key, prereqKey)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </DetailInfoCard>
+                    ) : null}
                   </div>
+
+                  {hayCambios ? (
+                    <footer className="cfg-plan-builder__savebar">
+                      <Text type="secondary">Tienes cambios sin guardar</Text>
+                      <Flex gap={8}>
+                        <Button onClick={descartarCambios} disabled={guardando}>
+                          Descartar
+                        </Button>
+                        <Button
+                          type="primary"
+                          icon={<SaveOutlined />}
+                          loading={guardando}
+                          onClick={guardarCambios}
+                        >
+                          Guardar cambios
+                        </Button>
+                      </Flex>
+                    </footer>
+                  ) : null}
                 </section>
               ) : null}
             </Spin>
@@ -433,44 +373,16 @@ const PlanPeriodoAsignaturasPage = () => {
       </Flex>
 
       <DragOverlay>
-        {activeDrag?.type === 'materia' ? (
+        {activeDrag?.materia ? (
           <div className="cfg-plan-builder-chip cfg-plan-builder-chip--catalogo cfg-plan-builder-chip--overlay">
             <span className="cfg-plan-builder-chip__sigla">{activeDrag.materia.sigla || '—'}</span>
             <span className="cfg-plan-builder-chip__nombre">{activeDrag.materia.nombre}</span>
-          </div>
-        ) : null}
-        {activeDrag?.type === 'asignatura' ? (
-          <div className="cfg-plan-builder-chip cfg-plan-builder-chip--asignatura cfg-plan-builder-chip--overlay">
-            <span className="cfg-plan-builder-chip__sigla">{activeDrag.asignatura.sigla || '—'}</span>
-            <span className="cfg-plan-builder-chip__nombre">{activeDrag.asignatura.nombre}</span>
+            {activeDrag.materia.asignadaEn ? (
+              <span className="cfg-plan-builder-chip__badge">{activeDrag.materia.asignadaEn.periodoNombre}</span>
+            ) : null}
           </div>
         ) : null}
       </DragOverlay>
-
-      <AsignaturaPlanFormModal
-        open={Boolean(editModal)}
-        loading={guardando}
-        initialValues={editModal?.initialValues}
-        materiaLabel={editModal?.materiaLabel}
-        onCancel={cerrarEditModal}
-        onSubmit={handleSubmitEdit}
-      />
-
-      <PrerrequisitoFormModal
-        open={Boolean(prerrequisitoModal)}
-        loading={guardando}
-        asignaturaLabel={
-          prerrequisitoModal
-            ? (() => {
-                const info = asignaturaLabelById.get(prerrequisitoModal);
-                return info?.sigla ? `${info.sigla} — ${info.nombre}` : info?.nombre;
-              })()
-            : ''
-        }
-        opcionesPrerrequisito={opcionesPrerrequisitoPara}
-        onCancel={() => setPrerrequisitoModal(null)}
-        onSubmit={handleSubmitPrerrequisito}
-      />
     </DndContext>
   );
 };

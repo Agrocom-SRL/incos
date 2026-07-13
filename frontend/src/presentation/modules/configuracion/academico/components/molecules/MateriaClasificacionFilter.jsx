@@ -1,27 +1,26 @@
 /**
  * Molécula: filtro por clasificación del catálogo de materias del builder de
- * periodo (`PlanPeriodoAsignaturasPage.jsx`). Chips checkeables — «Todas» +
- * una por cada `clasificacion` presente en las materias aún disponibles.
+ * periodo (`PlanPeriodoAsignaturasPage.jsx`). Mismo lenguaje que los campos de
+ * formulario del módulo (label arriba + Select de ancho completo, ver
+ * `CarreraFormPage`/`Nueva actividad`): limpiar el Select vuelve a «Todas».
  */
 
-import { Tag } from 'antd';
-
-const { CheckableTag } = Tag;
+import { Select } from 'antd';
 
 const MateriaClasificacionFilter = ({ clasificaciones = [], value, onChange }) => (
-  <div className="cfg-plan-builder__clasificacion-filter">
-    <CheckableTag checked={!value} onChange={() => onChange(null)}>
-      Todas
-    </CheckableTag>
-    {clasificaciones.map((clasificacion) => (
-      <CheckableTag
-        key={clasificacion}
-        checked={value === clasificacion}
-        onChange={(checked) => onChange(checked ? clasificacion : null)}
-      >
-        {clasificacion}
-      </CheckableTag>
-    ))}
+  <div className="cfg-plan-builder__filtro">
+    <span className="cfg-plan-builder__filtro-label" id="cfg-plan-builder-filtro-label">
+      Clasificación
+    </span>
+    <Select
+      allowClear
+      placeholder="Todas"
+      value={value ?? undefined}
+      onChange={(v) => onChange(v ?? null)}
+      className="cfg-plan-builder__filtro-select"
+      aria-labelledby="cfg-plan-builder-filtro-label"
+      options={clasificaciones.map((c) => ({ value: c, label: c }))}
+    />
   </div>
 );
 

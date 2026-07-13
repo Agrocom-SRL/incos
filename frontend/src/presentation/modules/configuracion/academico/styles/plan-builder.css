@@ -1,15 +1,22 @@
 /**
  * Builder drag & drop de asignaturas/prerrequisitos por periodo
- * (`PlanPeriodoAsignaturasPage.jsx`). Layout + estados de chip/slot; el color
- * y la tipografía consumen las CSS vars inyectadas por
- * `infrastructure/config/theme/root.js` (única fuente — ver `incos-ui-system`).
+ * (`PlanPeriodoAsignaturasPage.jsx`). Réplica del lenguaje planilla/cuaderno
+ * de Calificaciones: cabeceras de columna en verde primario con título claro,
+ * filas contiguas tipo tabla con zebra y acento de identidad, celda de horas
+ * gemela de `.cal-nota-cell` y celdas-etiqueta (sigla de prerrequisito) como
+ * la ficha GESTIÓN/CARRERA del cuaderno. Color y tipografía consumen las CSS
+ * vars del theme (única fuente — ver `incos-ui-system`).
  */
 
 .cfg-plan-builder__grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1fr);
   gap: var(--spacing-base, 16px);
   align-items: start;
+}
+
+.cfg-plan-builder__grid--sin-prereqs {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
 }
 
 .cfg-plan-builder__col--main .sd-card__body {
@@ -18,57 +25,71 @@
 
 .cfg-plan-builder__periodo-title {
   font-size: var(--font-size-lg, 16px);
+  color: var(--color-primary, #196b45);
 }
 
-.cfg-plan-builder__horas-badge {
-  font-size: var(--font-size-xs, 11px);
-  font-weight: 600;
-  padding: 2px var(--spacing-sm, 8px);
-  border-radius: var(--border-radius-sm, 4px);
-  color: var(--color-success, #196b45);
-  background: var(--color-success-bg, rgba(25, 107, 69, 0.08));
-  white-space: nowrap;
+/* Cabecera de columna — banda verde primario con título claro (planilla) */
+
+.cfg-plan-builder__col .sd-card__head {
+  background: var(--color-primary, #196b45);
+  border-bottom-color: var(--primary-dark, #134d32);
 }
 
-.cfg-plan-builder__horas-badge--full {
-  color: var(--color-error, #cf1322);
-  background: var(--color-error-bg, #fff1f0);
+.cfg-plan-builder__col .sd-card__title {
+  color: var(--color-white, #ffffff);
 }
 
-.cfg-plan-builder__clasificacion-filter {
+/* Filtro por clasificación — campo de formulario (label arriba + Select) */
+
+.cfg-plan-builder__filtro {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: var(--spacing-xs, 4px);
   margin-bottom: var(--spacing-sm, 8px);
 }
 
+.cfg-plan-builder__filtro-label {
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+
+.cfg-plan-builder__filtro-select {
+  width: 100%;
+}
+
+/* Catálogo — lista contigua tipo tabla (filas arrastrables) */
+
 .cfg-plan-builder__chip-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs, 4px);
+  border: 1px solid var(--color-border-secondary, #e5e7eb);
+  border-radius: var(--border-radius-sm, 4px);
+  max-height: 520px;
+  overflow-y: auto;
 }
 
-.cfg-plan-builder__catalogo-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm, 8px);
+.cfg-plan-builder__chip-list .cfg-plan-builder-chip {
+  border: none;
+  border-bottom: 1px solid var(--color-border-secondary, #e5e7eb);
+  border-radius: 0;
+  padding: var(--spacing-sm, 8px);
 }
 
-.cfg-plan-builder__catalogo-row .cfg-plan-builder-chip {
-  flex: 1;
-  min-width: 0;
+.cfg-plan-builder__chip-list .cfg-plan-builder-chip:last-child {
+  border-bottom: none;
 }
 
-.cfg-plan-builder__anteriores-collapse {
+.cfg-plan-builder__chip-list .cfg-plan-builder-chip:hover {
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+  box-shadow: none;
+}
+
+.cfg-plan-builder__chip-list .cfg-plan-builder-chip--disabled:hover {
   background: transparent;
 }
 
-.cfg-plan-builder__grupos {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md, 20px);
-}
+/* Dropzone del periodo */
 
 .cfg-plan-builder__dropzone {
   border-radius: var(--border-radius-md, 10px);
@@ -82,28 +103,148 @@
   background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
 }
 
+/* Placeholder de drop vacío — gemelo del «Presioná + para agregar» del cuaderno */
+
+.cfg-plan-builder__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 8px);
+  min-height: 120px;
+  border: 1px dashed var(--color-border-secondary, #d1d5db);
+  border-radius: var(--border-radius-sm, 4px);
+  font-style: italic;
+  color: var(--color-text-tertiary, #9ca3af);
+}
+
+/* Filas del periodo — tabla contigua con zebra (planilla) */
+
 .cfg-plan-builder__rows {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs, 4px);
+  border: 1px solid var(--color-border-secondary, #e5e7eb);
+  border-radius: var(--border-radius-sm, 4px);
+  overflow: hidden;
 }
 
 .cfg-plan-builder__row {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1.6fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--spacing-sm, 8px);
   padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
-  border-radius: var(--border-radius-sm, 4px);
-  border: 1px solid var(--color-border-secondary, #e5e7eb);
+  border-bottom: 1px solid var(--color-border-secondary, #e5e7eb);
   background: var(--color-bg-container, #fff);
 }
 
-.cfg-plan-builder__row-horas-input {
-  width: 84px;
+.cfg-plan-builder__row:last-child {
+  border-bottom: none;
 }
 
-/* Chip (materia de catálogo o asignatura ya colocada) */
+.cfg-plan-builder__row:nth-child(even) {
+  background: var(--color-bg-layout, #fafafa);
+}
+
+.cfg-plan-builder__row:hover {
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+}
+
+/* Celda de identidad de la fila — acento primario como la celda de estudiante */
+
+.cfg-plan-builder__row .cfg-plan-builder-chip--asignatura {
+  border: none;
+  border-left: 3px solid var(--color-primary, #196b45);
+  border-radius: 0;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  background: transparent;
+  cursor: default;
+}
+
+.cfg-plan-builder__row .cfg-plan-builder-chip--asignatura:hover {
+  box-shadow: none;
+  border-color: var(--color-primary, #196b45);
+}
+
+/* Fila de total de horas (lenguaje planilla) */
+
+.cfg-plan-builder__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--spacing-sm, 8px);
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-top: 2px solid var(--color-primary, #196b45);
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+  border-radius: 0 0 var(--border-radius-sm, 4px) var(--border-radius-sm, 4px);
+}
+
+.cfg-plan-builder__total-label {
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary, #196b45);
+}
+
+.cfg-plan-builder__total-valor {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary, #196b45);
+}
+
+.cfg-plan-builder__total--excedido .cfg-plan-builder__total-label,
+.cfg-plan-builder__total--excedido .cfg-plan-builder__total-valor {
+  color: var(--color-error, #cf1322);
+}
+
+.cfg-plan-builder__total--excedido {
+  border-top-color: var(--color-error, #cf1322);
+  background: var(--color-error-bg, #fff1f0);
+}
+
+/* Celda de horas — gemela de .cal-nota-cell del cuaderno de calificaciones */
+
+.cfg-plan-horas-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.cfg-plan-horas-cell__input {
+  width: 56px !important;
+}
+
+.cfg-plan-horas-cell__input.ant-input-number {
+  border: 1px solid var(--color-border-secondary, #e5e7eb);
+  border-radius: var(--border-radius-md, 6px);
+  background: var(--color-bg-layout, #f9f9f9);
+}
+
+.cfg-plan-horas-cell__input .ant-input-number-input {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--color-text, #1f2937);
+  height: 30px;
+  padding: 0 var(--spacing-sm, 8px);
+  background: transparent;
+}
+
+.cfg-plan-horas-cell__input.ant-input-number:focus-within {
+  border-color: var(--color-primary, #196b45);
+  box-shadow: 0 0 0 2px var(--color-primary-bg, rgba(25, 107, 69, 0.15));
+}
+
+.cfg-plan-horas-cell__suffix {
+  font-size: var(--font-size-xs, 11px);
+  color: var(--color-text-tertiary, #9ca3af);
+}
+
+.cfg-plan-horas-cell--disabled .cfg-plan-horas-cell__suffix {
+  opacity: 0.6;
+}
+
+/* Chip (materia del catálogo / asignatura del periodo) */
 
 .cfg-plan-builder-chip {
   display: flex;
@@ -116,12 +257,8 @@
   font-size: var(--font-size-sm, 13px);
   cursor: grab;
   touch-action: none;
-  transition: box-shadow var(--transition-base, 0.2s), border-color var(--transition-base, 0.2s);
-}
-
-.cfg-plan-builder-chip:hover {
-  border-color: var(--color-primary-border, var(--color-primary, #196b45));
-  box-shadow: var(--shadow-elevation-1, 0 1px 2px rgba(0, 0, 0, 0.06));
+  transition: background var(--transition-base, 0.2s), box-shadow var(--transition-base, 0.2s),
+    border-color var(--transition-base, 0.2s);
 }
 
 .cfg-plan-builder-chip--dragging {
@@ -130,22 +267,22 @@
 
 .cfg-plan-builder-chip--overlay {
   cursor: grabbing;
+  border: 1px solid var(--color-primary-border, var(--color-primary, #196b45));
   box-shadow: var(--shadow-elevation-2, 0 4px 12px rgba(0, 0, 0, 0.12));
 }
 
 .cfg-plan-builder-chip--disabled {
   cursor: default;
-  opacity: 0.85;
-}
-
-.cfg-plan-builder-chip--small {
-  padding: 2px var(--spacing-xs, 4px);
-  font-size: var(--font-size-xs, 11px);
+  opacity: 0.6;
 }
 
 .cfg-plan-builder-chip__handle {
   color: var(--color-text-tertiary, #9ca3af);
   flex-shrink: 0;
+}
+
+.cfg-plan-builder-chip:hover .cfg-plan-builder-chip__handle {
+  color: var(--color-primary, #196b45);
 }
 
 .cfg-plan-builder-chip__sigla {
@@ -163,22 +300,70 @@
   color: var(--color-text, #1f2937);
 }
 
-/* Slot «PRE-REQUISITO» (droppable) */
+/* Badge «ya asignada en <año>» — identifica la fuente de prerrequisitos */
+
+.cfg-plan-builder-chip__badge {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  padding: 0 var(--spacing-xs, 4px);
+  border-radius: var(--border-radius-sm, 4px);
+  color: var(--color-primary, #196b45);
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.08));
+  white-space: nowrap;
+}
+
+.cfg-plan-builder-chip--disabled .cfg-plan-builder-chip__badge {
+  color: var(--color-text-tertiary, #9ca3af);
+  background: var(--color-bg-layout, #f5f5f5);
+}
+
+/* Columna «Prerrequisitos» — celda-etiqueta (sigla) + slot droppable */
+
+.cfg-plan-builder__prereq-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.cfg-plan-builder__prereq-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--spacing-xs, 4px);
+}
+
+.cfg-plan-builder__prereq-sigla {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-primary, #196b45);
+  color: var(--color-white, #ffffff);
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .cfg-plan-builder-prereq-slot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--spacing-xs, 4px);
-  min-height: 32px;
-  padding: var(--spacing-xs, 4px);
+  min-height: 36px;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
   border-radius: var(--border-radius-sm, 4px);
-  border: 1px dashed var(--color-border-secondary, #e5e7eb);
+  border: 1px dashed var(--color-border-secondary, #d1d5db);
   transition: background var(--transition-base, 0.2s), border-color var(--transition-base, 0.2s);
 }
 
 .cfg-plan-builder-prereq-slot__empty {
   font-size: var(--font-size-xs, 11px);
+  font-style: italic;
   color: var(--color-text-tertiary, #9ca3af);
 }
 
@@ -187,14 +372,64 @@
   background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
 }
 
+.cfg-plan-builder-prereq-tag {
+  margin-inline-end: 0;
+  border-color: var(--color-primary-border, var(--color-primary, #196b45));
+  color: var(--color-primary, #196b45);
+  background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
+}
+
+/* Barra «Guardar cambios» — aparece solo con cambios pendientes */
+
+.cfg-plan-builder__savebar {
+  position: sticky;
+  bottom: var(--spacing-base, 16px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 8px);
+  margin-top: var(--spacing-base, 16px);
+  padding: var(--spacing-sm, 8px) var(--spacing-base, 16px);
+  border-radius: var(--border-radius-md, 10px);
+  border: 1px solid var(--color-primary-border, var(--color-primary, #196b45));
+  background: var(--color-bg-container, #fff);
+  box-shadow: var(--shadow-elevation-2, 0 4px 12px rgba(0, 0, 0, 0.12));
+  transition: opacity var(--dur-base, 0.26s) var(--ease-out, ease-out),
+    translate var(--dur-base, 0.26s) var(--ease-out, ease-out);
+}
+
+@starting-style {
+  .cfg-plan-builder__savebar {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfg-plan-builder__savebar {
+    transition: opacity var(--dur-base, 0.26s) var(--ease-out, ease-out);
+    translate: none;
+  }
+}
+
 @media (max-width: 1200px) {
-  .cfg-plan-builder__grid {
+  .cfg-plan-builder__grid,
+  .cfg-plan-builder__grid--sin-prereqs {
     grid-template-columns: 1fr;
+  }
+
+  .cfg-plan-builder__chip-list {
+    max-height: 320px;
   }
 }
 
 @media (max-width: 768px) {
   .cfg-plan-builder__row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .cfg-plan-builder__prereq-row {
     grid-template-columns: minmax(0, 1fr);
   }
 }
