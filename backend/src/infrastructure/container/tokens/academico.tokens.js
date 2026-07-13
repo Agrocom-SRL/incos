@@ -17,6 +17,8 @@ export const ACADEMICO_TOKENS = {
   setEstadoParaleloUseCase: 'academico.setEstadoParaleloUseCase',
   listParalelosGestionByParaleloUseCase: 'academico.listParalelosGestionByParaleloUseCase',
   listGestionesUseCase: 'academico.listGestionesUseCase',
+  createGestionUseCase: 'academico.createGestionUseCase',
+  updateGestionUseCase: 'academico.updateGestionUseCase',
   getParalelosEstadoDashboardUseCase: 'academico.getParalelosEstadoDashboardUseCase',
   getAsignaturasSinCursoDashboardUseCase: 'academico.getAsignaturasSinCursoDashboardUseCase',
   getCapacidadTurnoDashboardUseCase: 'academico.getCapacidadTurnoDashboardUseCase',
@@ -92,6 +94,8 @@ export const ACADEMICO_TOKENS = {
   setEstadoParaleloController: 'academico.setEstadoParaleloController',
   listParalelosGestionByParaleloController: 'academico.listParalelosGestionByParaleloController',
   listGestionesController: 'academico.listGestionesController',
+  createGestionController: 'academico.createGestionController',
+  updateGestionController: 'academico.updateGestionController',
   getDashboardParalelosEstadoController: 'academico.getDashboardParalelosEstadoController',
   getDashboardAsignaturasSinCursoController: 'academico.getDashboardAsignaturasSinCursoController',
   getDashboardCapacidadTurnoController: 'academico.getDashboardCapacidadTurnoController',
@@ -161,6 +165,7 @@ export const ACADEMICO_TOKENS = {
     'academico.exportRegistroPedagogicoBimestreController',
 
   marcarGestionVigenteUseCase: 'academico.marcarGestionVigenteUseCase',
+  renovarOfertaGestionUseCase: 'academico.renovarOfertaGestionUseCase',
   listPlanesHabilitadosByGestionUseCase: 'academico.listPlanesHabilitadosByGestionUseCase',
   createGestionPlanUseCase: 'academico.createGestionPlanUseCase',
   updateGestionPlanEstadoUseCase: 'academico.updateGestionPlanEstadoUseCase',
@@ -194,6 +199,7 @@ export const ACADEMICO_TOKENS = {
   getDocenteGrillaConflictosUseCase: 'academico.getDocenteGrillaConflictosUseCase',
 
   marcarGestionVigenteController: 'academico.marcarGestionVigenteController',
+  renovarOfertaGestionController: 'academico.renovarOfertaGestionController',
   listPlanesHabilitadosByGestionController: 'academico.listPlanesHabilitadosByGestionController',
   createGestionPlanController: 'academico.createGestionPlanController',
   updateGestionPlanEstadoController: 'academico.updateGestionPlanEstadoController',

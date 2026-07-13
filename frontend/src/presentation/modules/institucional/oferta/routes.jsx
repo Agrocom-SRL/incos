@@ -30,6 +30,12 @@ const OfertaParaleloDetalleConnector = lazy(
 const DocenteAsignacionesConnector = lazy(
   () => import('@institucional/oferta/connectors/DocenteAsignacionesConnector'),
 );
+const RenovarOfertaConnector = lazy(
+  () => import('@institucional/oferta/connectors/RenovarOfertaConnector'),
+);
+const GestionFormConnector = lazy(
+  () => import('@institucional/oferta/connectors/GestionFormConnector'),
+);
 
 /** Ruta legacy …/planes/:gestionPlanId/paralelos → resumen por tabs (?plan=). */
 function OfertaParalelosLegacyRedirect() {
@@ -40,6 +46,26 @@ function OfertaParalelosLegacyRedirect() {
 }
 
 export const ofertaRoutes = [
+  // Estática ANTES de las rutas /gestiones/:gestionId/* para que el router no
+  // capture «nueva» como id de gestión.
+  {
+    path: '/institucional/oferta/gestiones/nueva',
+    element: <GestionFormConnector />,
+    key: 'INST-OFERTA-GESTION-NUEVA',
+    permiso: 'institucional.oferta.gestion-plan',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
+  {
+    path: '/institucional/oferta/gestiones/:gestionId/editar',
+    element: <GestionFormConnector mode="edit" />,
+    key: 'INST-OFERTA-GESTION-EDITAR',
+    permiso: 'institucional.oferta.gestion-plan',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
+  },
   {
     path: '/institucional/oferta/gestiones/:gestionId/planes/:gestionPlanId/paralelos',
     element: <OfertaParalelosLegacyRedirect />,
@@ -63,6 +89,15 @@ export const ofertaRoutes = [
     element: <Navigate to="/institucional/pasadas" replace />,
     key: 'INST-OFERTA-GESTIONES-REDIRECT',
     menu: null,
+  },
+  {
+    path: '/institucional/oferta/renovar',
+    element: <RenovarOfertaConnector />,
+    key: 'INST-OFERTA-RENOVAR',
+    permiso: 'institucional.oferta.gestion-plan',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'INST-OFERTA-ACADEMICA',
   },
   {
     path: '/institucional/oferta/paralelo/:paraleloGestionId',

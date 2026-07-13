@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App, message } from 'antd';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ofertaPaths } from '../../config/paths.js';
 import {
   buildSetupKpis,
@@ -15,8 +15,13 @@ export function useOfertaGestionPlanesState() {
   const { gestionId: gestionIdParam } = useParams();
   const gestionId = Number(gestionIdParam);
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { modal, notification } = App.useApp();
+
+  // «Volver» regresa al LUGAR DE ORIGEN (p. ej. Gestiones Pasadas navega aquí
+  // con returnListPath en location.state); por defecto, al panel de oferta.
+  const returnListPath = location.state?.returnListPath ?? ofertaPaths.dashboard();
 
   const {
     loading: mutationLoading,
@@ -506,7 +511,7 @@ export function useOfertaGestionPlanesState() {
     onInhabilitarParalelo,
     onHabilitarParalelo,
     onNavigateDetalle,
-    navigateBack: () => navigate(ofertaPaths.dashboard()),
+    navigateBack: () => navigate(returnListPath),
     navigateDashboard: () => navigate(ofertaPaths.dashboard()),
     navigateGestionVigente,
   };

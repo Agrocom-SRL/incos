@@ -100,7 +100,7 @@ const OfertaGestionPlanesPage = () => {
                         variant="primary"
                         onClick={s.navigateGestionVigente}
                       >
-                        volver
+                        Ir a la gestión actual
                       </ActionButton>
                     ) : null
                   }

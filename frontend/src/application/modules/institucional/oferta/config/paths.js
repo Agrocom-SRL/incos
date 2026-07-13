@@ -9,6 +9,9 @@ export const DOCENTE_ASIGNACIONES_TABS = {
 
 export const ofertaPaths = {
   dashboard: () => OFERTA_BASE,
+  renovarOferta: () => `${OFERTA_BASE}/renovar`,
+  nuevaGestion: () => `${OFERTA_BASE}/gestiones/nueva`,
+  gestionEditar: (gestionId) => `${OFERTA_BASE}/gestiones/${gestionId}/editar`,
   gestionPlanes: (gestionId) => `${OFERTA_BASE}/gestiones/${gestionId}/planes`,
   gestionPlanesConPlan: (gestionId, gestionPlanId) =>
     `${OFERTA_BASE}/gestiones/${gestionId}/planes?plan=${gestionPlanId}`,

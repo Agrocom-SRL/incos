@@ -87,6 +87,36 @@ export function useOfertaAcademicaApi() {
     [run]
   );
 
+  /** POST /gestiones — alta de gestión (destino de la renovación de oferta). */
+  const crearGestion = useCallback(
+    (body) =>
+      run(
+        () => apiClient.post(GESTIONES_ENDPOINTS.BASE, body),
+        'No se pudo crear la gestión'
+      ),
+    [run]
+  );
+
+  /** PUT /gestiones/:id — edición de datos base (vigente NO se edita aquí). */
+  const actualizarGestion = useCallback(
+    (gestionId, body) =>
+      run(
+        () => apiClient.put(GESTIONES_ENDPOINTS.BY_ID(gestionId), body),
+        'No se pudo actualizar la gestión'
+      ),
+    [run]
+  );
+
+  /** POST /gestiones/:idDestino/renovar-oferta — copia paralelos/ofertas/asignaciones/bloques. */
+  const renovarOferta = useCallback(
+    (gestionDestinoId, body) =>
+      run(
+        () => apiClient.post(GESTIONES_ENDPOINTS.RENOVAR_OFERTA(gestionDestinoId), body),
+        'No se pudo renovar la oferta académica'
+      ),
+    [run]
+  );
+
   const fetchPlanesHabilitados = useCallback(
     (gestionId) =>
       run(
@@ -336,6 +366,9 @@ export function useOfertaAcademicaApi() {
     fetchGestiones,
     fetchGestionesSilent,
     marcarGestionVigente,
+    crearGestion,
+    actualizarGestion,
+    renovarOferta,
     fetchPlanesHabilitados,
     fetchPlanesHabilitadosSilent,
     fetchPlanesVigentesCatalogo,

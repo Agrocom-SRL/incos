@@ -241,6 +241,7 @@ export const AULAS_HORARIOS_ENDPOINTS = {
 export const GESTIONES_ENDPOINTS = {
   ...createCRUDEndpoints('/gestiones'),
   MARCAR_VIGENTE: (id) => `${API_BASE}/gestiones/${id}/marcar-vigente`,
+  RENOVAR_OFERTA: (id) => `${API_BASE}/gestiones/${id}/renovar-oferta`,
   PLANES_HABILITADOS: (id) => `${API_BASE}/gestiones/${id}/planes-habilitados`,
   CARGA_DOCENTES: (id) => `${API_BASE}/gestiones/${id}/carga-docentes`,
   CONFLICTOS: (id) => `${API_BASE}/gestiones/${id}/conflictos`,

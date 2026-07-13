@@ -1,6 +1,5 @@
 import { body, param } from 'express-validator';
-import { ESTADOS_GESTION_PLAN_VALUES } from '../../../domain/constants/cursos.constants.js';
-import { TURNOS_VALUES } from '../../../domain/constants/cursos.constants.js';
+import { ESTADOS_GESTION_PLAN_VALUES, TURNOS_VALUES } from '../../../domain/constants/cursos.constants.js';
 import {
   ESTADOS_PARALELO_GESTION_VALUES,
   ESTADOS_OFERTA_CURSO_VALUES,
@@ -61,4 +60,14 @@ export const createOfertaCursoValidator = [
 export const updateOfertaCursoEstadoValidator = [
   param('id').isInt({ min: 1 }),
   body('estado').isIn(ESTADOS_OFERTA_CURSO_VALUES),
+];
+
+export const renovarOfertaGestionValidator = [
+  param('id').isInt({ min: 1 }),
+  body('gestion_origen_id').isInt({ min: 1 }),
+  body('incluir_asignaciones').optional().isBoolean(),
+  body('incluir_horarios').optional().isBoolean(),
+  body('gestiones_planes').isArray({ min: 1 }),
+  body('gestiones_planes.*.gestion_plan_origen_id').isInt({ min: 1 }),
+  body('gestiones_planes.*.plan_estudio_destino_id').optional({ nullable: true }).isInt({ min: 1 }),
 ];

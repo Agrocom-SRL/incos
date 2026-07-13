@@ -7,6 +7,7 @@ export class MarcarGestionVigenteController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -23,6 +24,7 @@ export class ListPlanesHabilitadosByGestionController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -39,6 +41,7 @@ export class CreateGestionPlanController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const result = await this.useCase.execute(req.body, req.usuario?.id ?? null);
@@ -55,6 +58,7 @@ export class UpdateGestionPlanEstadoController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -71,6 +75,7 @@ export class ListParalelosGestionByGestionPlanController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -87,6 +92,7 @@ export class GenerarParalelosGestionController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -103,6 +109,7 @@ export class GetParaleloGestionByIdController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -119,6 +126,7 @@ export class UpdateParaleloGestionController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -135,6 +143,7 @@ export class CambiarTurnoParaleloGestionController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -151,6 +160,7 @@ export class UpdateParaleloGestionEstadoController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -167,6 +177,7 @@ export class ValidarOfertaParaleloGestionController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -183,6 +194,7 @@ export class ListOfertaCursosByParaleloGestionController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -199,6 +211,7 @@ export class GenerarOfertaCursosController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -215,6 +228,7 @@ export class CreateOfertaCursoController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const result = await this.useCase.execute(req.body, req.usuario?.id ?? null);
@@ -231,6 +245,7 @@ export class UpdateOfertaCursoEstadoController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -247,6 +262,7 @@ export class DeleteOfertaCursoController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -263,6 +279,7 @@ export class GetParaleloGestionCoberturaDocenteController {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -274,11 +291,29 @@ export class GetParaleloGestionCoberturaDocenteController {
   }
 }
 
+export class RenovarOfertaGestionController {
+  constructor({ useCase, responseFormatter }) {
+    this.useCase = useCase;
+    this.responseFormatter = responseFormatter;
+  }
+
+  async handle(req, res, next) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const result = await this.useCase.execute(id, req.body, req.usuario?.id ?? null);
+      return this.responseFormatter._success(res, result, {}, req);
+    } catch (e) {
+      return next(e);
+    }
+  }
+}
+
 export class GetGestionCargaDocentesController {
   constructor({ useCase, responseFormatter }) {
     this.useCase = useCase;
     this.responseFormatter = responseFormatter;
   }
+
   async handle(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);
