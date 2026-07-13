@@ -208,18 +208,24 @@ export function useOfertaGestionPlanesState() {
     }
   }, [planesHabilitadosLoaded, esGestionOperativa, sinPlanesHabilitados, navigate]);
 
+  // setSearchParams navega y PIERDE location.state salvo que se reenvíe: sin
+  // esto, el returnListPath de Gestiones Pasadas se borra al auto-seleccionar
+  // el plan y el «Volver» cae al dashboard.
   useEffect(() => {
     if (!planesHabilitadosLoaded || !planesHabilitados.length) return;
     const keys = planesHabilitados.map((p) => String(p.id));
     if (activePlanKey && keys.includes(activePlanKey)) return;
-    setSearchParams({ plan: String(planesHabilitados[0].id) }, { replace: true });
-  }, [planesHabilitados, planesHabilitadosLoaded, activePlanKey, setSearchParams]);
+    setSearchParams(
+      { plan: String(planesHabilitados[0].id) },
+      { replace: true, state: location.state }
+    );
+  }, [planesHabilitados, planesHabilitadosLoaded, activePlanKey, setSearchParams, location.state]);
 
   const onTabChange = useCallback(
     (planId) => {
-      setSearchParams({ plan: String(planId) }, { replace: true });
+      setSearchParams({ plan: String(planId) }, { replace: true, state: location.state });
     },
-    [setSearchParams]
+    [setSearchParams, location.state]
   );
 
   const navigateGestionVigente = useCallback(() => {

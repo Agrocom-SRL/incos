@@ -10,6 +10,11 @@
 --   - 63  vista_docente_resumen_conflictos                 (conteo por docente)
 --   - 95  vista_base_dashboard_detalle_conflicto_docente_aula (detalle)
 -- Solape intra-paralelo: vista_base_horarios_paralelo_conflictos_solape_bloque (86).
+--
+-- Cruce solo INTRA-gestión: la renovación de oferta copia bloques idénticos
+-- entre gestiones (misma aula + mismo horario) y dos gestiones nunca corren
+-- simultáneamente; ambos lados exigen misma gestion_id (vía
+-- asignaciones_docentes.gestion_plan_id, mismo criterio que el primitivo 36).
 -- ============================================
 
 USE instituto_incos;
@@ -36,11 +41,18 @@ INNER JOIN oferta_cursos oc2
 INNER JOIN paralelos_gestion pg2
   ON pg2.id = oc2.paralelo_gestion_id
   AND pg2.deleted_at IS NULL
+INNER JOIN gestiones_planes gplan2
+  ON gplan2.id = ad2.gestion_plan_id
+  AND gplan2.deleted_at IS NULL
 INNER JOIN asignaciones_docentes ad3
   ON ad3.id <> ad2.id
   AND ad3.deleted_at IS NULL
   AND ad3.activo = TRUE
   AND ad3.vigente = TRUE
+INNER JOIN gestiones_planes gplan3
+  ON gplan3.id = ad3.gestion_plan_id
+  AND gplan3.gestion_id = gplan2.gestion_id
+  AND gplan3.deleted_at IS NULL
 INNER JOIN asignacion_horarios ah3
   ON ah3.asignacion_docente_id = ad3.id
   AND ah3.deleted_at IS NULL

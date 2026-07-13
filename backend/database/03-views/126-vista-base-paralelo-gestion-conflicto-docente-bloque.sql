@@ -5,6 +5,11 @@
 --
 -- Reutiliza lógica alineada a vista_base_docente_asignacion_conflicto_horario (65)
 -- con alcance operativo por instancia paralelo_gestion.
+--
+-- Conflicto solo INTRA-gestión: la renovación de oferta copia bloques idénticos
+-- entre gestiones y dos gestiones nunca corren simultáneamente, por lo que el
+-- par exige misma gestion_id en ambos lados (vía asignaciones_docentes.gestion_plan_id,
+-- mismo criterio que el primitivo 36).
 -- ============================================
 
 USE instituto_incos;
@@ -33,6 +38,9 @@ INNER JOIN asignaciones_docentes ad1
   AND ad1.activo = TRUE
   AND ad1.vigente = TRUE
   AND ad1.docente_id IS NOT NULL
+INNER JOIN gestiones_planes gp1
+  ON gp1.id = ad1.gestion_plan_id
+  AND gp1.deleted_at IS NULL
 INNER JOIN oferta_cursos oc1
   ON oc1.id = ad1.oferta_curso_id
   AND oc1.deleted_at IS NULL
@@ -44,6 +52,10 @@ INNER JOIN asignaciones_docentes ad2
   AND ad2.activo = TRUE
   AND ad2.vigente = TRUE
   AND ad2.docente_id IS NOT NULL
+INNER JOIN gestiones_planes gp2
+  ON gp2.id = ad2.gestion_plan_id
+  AND gp2.gestion_id = gp1.gestion_id
+  AND gp2.deleted_at IS NULL
 INNER JOIN asignacion_horarios ah2
   ON ah2.asignacion_docente_id = ad2.id
   AND ah2.horario_id = ah1.horario_id

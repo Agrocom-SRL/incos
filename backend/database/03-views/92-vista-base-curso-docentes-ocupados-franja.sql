@@ -10,6 +10,11 @@
 --
 -- Consumidor: TeacherRepository.getDocentesConChoqueBloques()
 --   → GET /api/v1/docentes/conflicto-bloques?cursoId=X
+--
+-- Ocupación solo INTRA-gestión: la renovación de oferta copia bloques idénticos
+-- entre gestiones y dos gestiones nunca corren simultáneamente; el docente solo
+-- cuenta como ocupado si su asignación es de la MISMA gestión que el curso
+-- (vía asignaciones_docentes.gestion_plan_id, mismo criterio que el primitivo 36).
 -- ============================================
 
 USE instituto_incos;
@@ -21,6 +26,9 @@ SELECT DISTINCT
   ad.docente_id AS docente_id,
   ad2.oferta_curso_id AS curso_id
 FROM asignaciones_docentes ad
+INNER JOIN gestiones_planes gp_a
+  ON gp_a.id = ad.gestion_plan_id
+  AND gp_a.deleted_at IS NULL
 INNER JOIN asignacion_horarios ah
   ON ah.asignacion_docente_id = ad.id
   AND ah.deleted_at IS NULL
@@ -36,6 +44,10 @@ INNER JOIN asignaciones_docentes ad2
   AND ad2.deleted_at IS NULL
   AND ad2.activo = TRUE
   AND ad2.vigente = TRUE
+INNER JOIN gestiones_planes gp_b
+  ON gp_b.id = ad2.gestion_plan_id
+  AND gp_b.gestion_id = gp_a.gestion_id
+  AND gp_b.deleted_at IS NULL
 WHERE ad.deleted_at IS NULL
   AND ad.activo = TRUE
   AND ad.vigente = TRUE;

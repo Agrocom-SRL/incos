@@ -184,7 +184,7 @@ export const createDocentesTableColumns = ({ navigate, listNavState, refetch, de
                 icon: <ApartmentOutlined />,
                 variant: 'default',
                 tooltip: 'Oferta y asignación docente',
-                permiso: 'institucional.oferta',
+                permiso: 'institucional.oferta.gestion-plan',
                 accion: 'LISTAR',
                 onClick: () =>
                   navigate('/institucional/oferta', {
