@@ -1,9 +1,8 @@
 /**
  * Molécula: celda «PRE-REQUISITO» de una fila del periodo en edición (builder).
  * Droppable del Flujo B (drag & drop cross-periodo, ver
- * `PlanPeriodoAsignaturasPage.jsx`): al arrastrar una `PlanBuilderAsignaturaChip`
- * encima, `invalid` (calculado por el padre con `puedeSerPrerrequisito`)
- * pinta el slot en rojo — bloquea el `onDragEnd`, no solo lo advierte tarde.
+ * `PlanPeriodoAsignaturasPage.jsx` / `PeriodosAnterioresPanel`, única fuente
+ * ya filtrada a periodos anteriores — no requiere feedback de "drop inválido").
  * Los prerrequisitos ya asignados se muestran como `Tag` cerrable; el botón
  * «+» es el fallback accesible sin drag (abre `PrerrequisitoFormModal`).
  */
@@ -17,7 +16,6 @@ import { PLAN_PRERREQUISITOS_PERMISO } from '@application-configuracion/academic
 const PlanBuilderPrerrequisitoSlot = ({
   asignaturaId,
   prerrequisitos = [],
-  invalid = false,
   disabled = false,
   onEliminar,
   onAgregarClick,
@@ -28,14 +26,10 @@ const PlanBuilderPrerrequisitoSlot = ({
     disabled,
   });
 
-  const showInvalid = isOver && invalid;
-
   return (
     <div
       ref={setNodeRef}
-      className={`cfg-plan-builder-prereq-slot${isOver ? ' cfg-plan-builder-prereq-slot--over' : ''}${
-        showInvalid ? ' cfg-plan-builder-prereq-slot--invalid' : ''
-      }`}
+      className={`cfg-plan-builder-prereq-slot${isOver ? ' cfg-plan-builder-prereq-slot--over' : ''}`}
     >
       {prerrequisitos.length === 0 ? (
         <span className="cfg-plan-builder-prereq-slot__empty">Arrastra un prerrequisito</span>

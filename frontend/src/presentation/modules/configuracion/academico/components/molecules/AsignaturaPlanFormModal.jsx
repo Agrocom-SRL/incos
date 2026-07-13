@@ -1,30 +1,20 @@
 /**
- * Molécula: alta/edición de una asignatura del plan dentro de un periodo.
- * En alta se elige la materia del catálogo (no asignada aún al periodo);
- * en edición la materia queda fija — solo se ajustan horas semanales y modalidad
- * (mismo límite que `UpdateAsignaturaPlanUseCase`, que no permite reasignar materia).
+ * Molécula: edición de horas semanales/modalidad de una asignatura ya
+ * colocada en un periodo. La materia queda fija (mismo límite que
+ * `UpdateAsignaturaPlanUseCase`, que no permite reasignar materia); las horas
+ * ya son editables en línea desde la fila del builder — este modal cubre el
+ * ajuste de `modalidad` y sirve de respaldo para las horas.
  */
 
 import { useEffect } from 'react';
-import { Form, Input, InputNumber, Modal, Select } from 'antd';
+import { Form, Input, InputNumber, Modal } from 'antd';
 
-const AsignaturaPlanFormModal = ({
-  open,
-  mode = 'create',
-  loading = false,
-  initialValues,
-  materiasOptions = [],
-  materiaLabel,
-  onCancel,
-  onSubmit,
-}) => {
+const AsignaturaPlanFormModal = ({ open, loading = false, initialValues, materiaLabel, onCancel, onSubmit }) => {
   const [form] = Form.useForm();
-  const isEdit = mode === 'edit';
 
   useEffect(() => {
     if (open) {
       form.setFieldsValue({
-        materiaId: initialValues?.materiaId ?? undefined,
         horasSemanales: initialValues?.horasSemanales ?? undefined,
         modalidad: initialValues?.modalidad ?? '',
       });
@@ -34,7 +24,6 @@ const AsignaturaPlanFormModal = ({
   const handleOk = async () => {
     const values = await form.validateFields();
     const ok = await onSubmit({
-      materia_id: !isEdit ? Number(values.materiaId) : undefined,
       horas_semanales: Number(values.horasSemanales),
       modalidad: values.modalidad?.trim() || undefined,
     });
@@ -43,38 +32,19 @@ const AsignaturaPlanFormModal = ({
 
   return (
     <Modal
-      title={isEdit ? 'Editar asignatura del periodo' : 'Agregar asignatura al periodo'}
+      title="Editar asignatura del periodo"
       open={open}
       onCancel={onCancel}
       onOk={handleOk}
-      okText={isEdit ? 'Guardar' : 'Agregar'}
+      okText="Guardar"
       cancelText="Cancelar"
       confirmLoading={loading}
       destroyOnHidden
     >
       <Form form={form} layout="vertical">
-        {isEdit ? (
-          <Form.Item label="Materia">
-            <Input value={materiaLabel} disabled />
-          </Form.Item>
-        ) : (
-          <Form.Item
-            name="materiaId"
-            label="Materia"
-            rules={[{ required: true, message: 'Seleccione la materia' }]}
-          >
-            <Select
-              showSearch
-              placeholder="Seleccione una materia del catálogo"
-              optionFilterProp="label"
-              options={materiasOptions.map((m) => ({
-                value: m.id,
-                label: m.sigla ? `${m.sigla} — ${m.nombre}` : m.nombre,
-              }))}
-              notFoundContent="No hay materias disponibles para este periodo"
-            />
-          </Form.Item>
-        )}
+        <Form.Item label="Materia">
+          <Input value={materiaLabel} disabled />
+        </Form.Item>
         <Form.Item
           name="horasSemanales"
           label="Horas semanales"

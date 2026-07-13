@@ -92,7 +92,9 @@ export const createPlanFormSections = () => ({
         min: 1,
         max: 10,
         placeholder: 'Ej. 3',
-        extra: 'Se generará 1 periodo por cada año de duración.',
+        extra:
+          'Se genera 1 periodo por cada año de duración. Al editar, se agregan los periodos que falten; ' +
+          'para reducir, primero elimine las asignaturas de los periodos a quitar.',
       },
     ],
   },

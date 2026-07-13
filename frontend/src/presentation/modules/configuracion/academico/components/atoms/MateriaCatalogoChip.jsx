@@ -2,7 +2,8 @@
  * Átomo: chip arrastrable del catálogo de materias (builder de periodo).
  * Fuente del Flujo A (agregar asignatura al periodo por drag & drop, ver
  * `PlanPeriodoAsignaturasPage.jsx`). Solo presentación + `useDraggable`; la
- * validación de cupo de horas y el alta viven en la página/hook.
+ * validación de cupo de horas y el alta (con horas por defecto, sin modal)
+ * viven en la página/hook.
  */
 
 import { useDraggable } from '@dnd-kit/core';

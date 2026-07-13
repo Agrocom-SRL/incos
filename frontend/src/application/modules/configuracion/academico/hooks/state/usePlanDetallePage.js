@@ -10,10 +10,11 @@
  *   - Datos para `PlanEstudioDocumentoView` (documento con columnas por
  *     periodo): `planMetaRaw` (snake_case, mismo shape que consume la vista
  *     documento del tab «Planes») y `prereqSiglaByAsignaturaId`.
- *   - Alta rápida de periodo (`handleCrearPeriodo`, botón «+ Periodo»); la
- *     edición/baja de un periodo y el CRUD de sus asignaturas y
- *     prerrequisitos viven en el builder por periodo (`usePlanBuilder.js`,
- *     alcanzado desde el lápiz de cada columna del documento).
+ *   - El número de periodos se gestiona desde el formulario del plan
+ *     (campo «Duración (años)», ver `usePlanForm.js`); la edición/baja de un
+ *     periodo y el CRUD de sus asignaturas y prerrequisitos viven en el
+ *     builder por periodo (`usePlanBuilder.js`, alcanzado desde el lápiz de
+ *     cada columna del documento).
  *
  * Decisión (deviation documentada): NO se llaman `listarPrerrequisitos` /
  * `listarEsPrerrequisitoDe` por asignatura. `fetchPlanById` ya devuelve el
@@ -38,6 +39,7 @@ import { mapPlanDetail, mapCarreraResumen } from '@application-configuracion/aca
 import { buildPrerrequisitoSiglaMap } from '@application-configuracion/academico/utils/buildPrerrequisitoSiglaMap';
 import {
   PLANES_LIST_PATH,
+  planDetallePath,
   planEditarPath,
   planPeriodoAsignaturasPath,
 } from '@application-configuracion/academico/config/paths';
@@ -63,7 +65,7 @@ export const usePlanDetallePage = () => {
   const returnListPath = resolveReturnListPath(location, PLANES_LIST_PATH);
   const menuSidebarKey = resolveMenuSidebarKey(location);
 
-  const { fetchPlanById, fetchMatriz, marcarVigente, crearPeriodo } = usePlanEstudiosDetalleApi();
+  const { fetchPlanById, fetchMatriz, marcarVigente } = usePlanEstudiosDetalleApi();
 
   const [plan, setPlan] = useState(null);
   const [planMetaRaw, setPlanMetaRaw] = useState(null);
@@ -76,8 +78,6 @@ export const usePlanDetallePage = () => {
 
   // Acciones de cabecera
   const [publicando, setPublicando] = useState(false);
-  // Alta de periodo (spinner del modal «+ Periodo»)
-  const [guardando, setGuardando] = useState(false);
 
   const load = useCallback(async () => {
     if (isInvalidId) {
@@ -151,7 +151,6 @@ export const usePlanDetallePage = () => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
-      { title: 'Académico', href: returnListPath },
       { title: 'Planes de estudio', href: returnListPath },
       { title: plan?.nombrePlan || 'Detalle de plan' },
     ],
@@ -159,8 +158,12 @@ export const usePlanDetallePage = () => {
   );
 
   const navState = useMemo(
-    () => ({ returnListPath, menuSidebarKey }),
-    [returnListPath, menuSidebarKey],
+    () => ({
+      returnListPath,
+      menuSidebarKey,
+      returnDetailPath: plan?.id ? planDetallePath(plan.id) : undefined,
+    }),
+    [returnListPath, menuSidebarKey, plan?.id],
   );
 
   const { creandoVersion, crearNuevaVersion } = usePlanNuevaVersion({ navState });
@@ -216,29 +219,6 @@ export const usePlanDetallePage = () => {
     crearNuevaVersion(plan.id);
   }, [plan?.id, crearNuevaVersion]);
 
-  // ---------------------------------------------------------------------
-  // CRUD periodos
-  // ---------------------------------------------------------------------
-
-  const handleCrearPeriodo = useCallback(
-    async (payload) => {
-      setGuardando(true);
-      try {
-        const result = await crearPeriodo(plan.id, payload);
-        if (!result.success) throw new Error(result.error || 'No se pudo crear el periodo');
-        notification.success({ title: 'Periodo creado' });
-        await load();
-        return true;
-      } catch (e) {
-        notification.error({ title: 'Error al crear periodo', description: e?.message });
-        return false;
-      } finally {
-        setGuardando(false);
-      }
-    },
-    [crearPeriodo, plan?.id, notification, load],
-  );
-
   return {
     plan,
     planMetaRaw,
@@ -255,13 +235,11 @@ export const usePlanDetallePage = () => {
     breadcrumbItems,
     publicando,
     creandoVersion,
-    guardando,
     handleVolver,
     handleEditar,
     handleEditarPeriodo,
     handlePublicar,
     handleNuevaVersion,
-    handleCrearPeriodo,
     refetch: load,
   };
 };

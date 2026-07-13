@@ -18,6 +18,7 @@ import {
 } from '@application-configuracion/academico/config/paths';
 import {
   resolveMenuSidebarKey,
+  resolveReturnDetailPath,
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
 import { createPlanFormSections } from '@application-configuracion/academico/config/planFormFields';
@@ -34,10 +35,12 @@ export const usePlanForm = (mode = 'create') => {
   const { notification } = App.useApp();
   const [form] = Form.useForm();
 
-  const { fetchPlanById, crearPlan, actualizarPlan, crearPeriodo } = usePlanEstudiosDetalleApi();
+  const { fetchPlanById, fetchMatriz, crearPlan, actualizarPlan, crearPeriodo, eliminarPeriodo } =
+    usePlanEstudiosDetalleApi();
   const { carreras = [], loading: carrerasLoading, error: carrerasError } = useCarrerasApi();
 
   const returnListPath = resolveReturnListPath(location, PLANES_LIST_PATH);
+  const returnDetailPath = resolveReturnDetailPath(location);
   const menuSidebarKey = resolveMenuSidebarKey(location);
 
   const [loading, setLoading] = useState(isEditMode);
@@ -52,7 +55,6 @@ export const usePlanForm = (mode = 'create') => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
-      { title: 'Académico', href: returnListPath },
       { title: 'Planes de estudio', href: returnListPath },
       { title: pageTitle },
     ],
@@ -90,10 +92,10 @@ export const usePlanForm = (mode = 'create') => {
 
   const handleVolver = useCallback(() => {
     navigate(
-      returnListPath,
+      returnDetailPath || returnListPath,
       menuSidebarKey != null ? { state: { menuSidebarKey } } : undefined,
     );
-  }, [navigate, returnListPath, menuSidebarKey]);
+  }, [navigate, returnDetailPath, returnListPath, menuSidebarKey]);
 
   const handleSubmit = useCallback(async () => {
     setSubmitLoading(true);
@@ -101,6 +103,30 @@ export const usePlanForm = (mode = 'create') => {
     try {
       const values = await form.validateFields();
       const payload = mapFormValuesToPlanPayload(values);
+      const totalPeriodosNuevo = Number(payload.duracion_anios) || 0;
+
+      // Edición: la duración (años) también gobierna el número de periodos —
+      // se valida ANTES de guardar que ningún periodo a eliminar tenga
+      // asignaturas cargadas (no se permite perder datos silenciosamente).
+      let periodosActuales = [];
+      let periodosASincronizar = false;
+      if (isEditMode) {
+        const matrizResult = await fetchMatriz(planId);
+        if (!matrizResult?.success) {
+          throw new Error(matrizResult?.error || 'No se pudo verificar los periodos actuales del plan');
+        }
+        periodosActuales = matrizResult.data?.periodos ?? [];
+        const periodosAEliminar = periodosActuales.filter((p) => p.numero > totalPeriodosNuevo);
+        const periodosConDatos = periodosAEliminar.filter((p) => (p.asignaturas ?? []).length > 0);
+        if (periodosConDatos.length > 0) {
+          const lista = periodosConDatos.map((p) => p.nombre || `Periodo ${p.numero}`).join(', ');
+          throw new Error(
+            `No se puede reducir la duración a ${totalPeriodosNuevo} año(s): ${lista} ya tiene(n) asignaturas cargadas. Elimínelas primero desde su matriz.`,
+          );
+        }
+        periodosASincronizar = totalPeriodosNuevo !== periodosActuales.length || periodosAEliminar.length > 0;
+      }
+
       const result = isEditMode
         ? await actualizarPlan(planId, payload)
         : await crearPlan(payload);
@@ -113,12 +139,10 @@ export const usePlanForm = (mode = 'create') => {
       const savedId = result.data?.id ?? planId;
 
       // Alta: la duración (años) es la única fuente de la cantidad de periodos —
-      // se generan automáticamente 1º Año…Nº Año. Edición nunca re-genera (el
-      // plan editado ya tiene sus periodos, gestionados desde su matriz).
-      if (!isEditMode && savedId && Number(payload.duracion_anios) > 0) {
-        const totalPeriodos = Number(payload.duracion_anios);
+      // se generan automáticamente 1º Año…Nº Año.
+      if (!isEditMode && savedId && totalPeriodosNuevo > 0) {
         let periodosConError = 0;
-        for (let numero = 1; numero <= totalPeriodos; numero += 1) {
+        for (let numero = 1; numero <= totalPeriodosNuevo; numero += 1) {
           // Alta secuencial de periodos (orden 1..N) — resultado de cada uno no
           // depende de los otros, pero se evita disparar N requests en paralelo.
           const periodoResult = await crearPeriodo(savedId, {
@@ -130,7 +154,35 @@ export const usePlanForm = (mode = 'create') => {
         if (periodosConError > 0) {
           notification.error({
             title: 'Periodos no generados',
-            description: `${periodosConError} de ${totalPeriodos} periodos no se pudieron crear. Agréguelos desde la ficha del plan.`,
+            description: `${periodosConError} de ${totalPeriodosNuevo} periodos no se pudieron crear. Agréguelos desde la ficha del plan.`,
+          });
+        }
+      }
+
+      // Edición: reconcilia periodos existentes contra el nuevo total —
+      // elimina los sobrantes (ya validados sin asignaturas) y crea los que falten.
+      if (isEditMode && savedId && periodosASincronizar) {
+        let periodosConError = 0;
+        const periodosAEliminar = periodosActuales.filter((p) => p.numero > totalPeriodosNuevo);
+        for (const periodo of periodosAEliminar) {
+          const periodoResult = await eliminarPeriodo(periodo.id);
+          if (!periodoResult?.success) periodosConError += 1;
+        }
+        const numerosExistentes = new Set(
+          periodosActuales.filter((p) => p.numero <= totalPeriodosNuevo).map((p) => p.numero),
+        );
+        for (let numero = 1; numero <= totalPeriodosNuevo; numero += 1) {
+          if (numerosExistentes.has(numero)) continue;
+          const periodoResult = await crearPeriodo(savedId, {
+            numero,
+            nombre: buildPeriodoNombre(numero),
+          });
+          if (!periodoResult?.success) periodosConError += 1;
+        }
+        if (periodosConError > 0) {
+          notification.error({
+            title: 'Periodos no sincronizados',
+            description: 'Algunos periodos no se pudieron actualizar. Revíselos desde la ficha del plan.',
           });
         }
       }
@@ -161,6 +213,8 @@ export const usePlanForm = (mode = 'create') => {
     actualizarPlan,
     crearPeriodo,
     crearPlan,
+    eliminarPeriodo,
+    fetchMatriz,
     form,
     handleVolver,
     isEditMode,

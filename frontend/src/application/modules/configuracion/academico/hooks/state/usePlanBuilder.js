@@ -147,13 +147,19 @@ export const usePlanBuilder = () => {
     return map;
   }, [periodos]);
 
-  /** Materias del catálogo aún no asignadas al periodo en edición (por sigla). */
+  /** Materias del catálogo aún no asignadas a NINGÚN periodo del plan (por sigla) — el plan no repite materias entre periodos. */
   const materiasDisponibles = useMemo(() => {
     const siglasUsadas = new Set(
-      (periodoActual?.asignaturas ?? []).map((a) => a.materia?.sigla).filter(Boolean),
+      periodos.flatMap((p) => (p.asignaturas ?? []).map((a) => a.materia?.sigla)).filter(Boolean),
     );
     return materias.filter((m) => m.activo !== false && !siglasUsadas.has(m.sigla));
-  }, [materias, periodoActual]);
+  }, [materias, periodos]);
+
+  /** Asignaturas de periodos ESTRICTAMENTE ANTERIORES — única fuente válida de prerrequisito. */
+  const gruposPeriodosAnteriores = useMemo(
+    () => gruposOtrosPeriodos.filter((g) => g.esAnterior && g.asignaturas.length > 0),
+    [gruposOtrosPeriodos],
+  );
 
   const horasDisponibles = useMemo(
     () => horasDisponiblesPeriodo(periodoActual, plan?.horasSemana),
@@ -183,7 +189,6 @@ export const usePlanBuilder = () => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Configuración', href: '/configuracion' },
-      { title: 'Académico', href: returnListPath },
       { title: 'Planes de estudio', href: returnListPath },
       { title: plan?.nombrePlan || 'Plan', href: planId ? planDetallePath(planId) : undefined },
       { title: periodoActual ? periodoActual.nombre || `Año ${periodoActual.numero}` : 'Periodo' },
@@ -352,6 +357,7 @@ export const usePlanBuilder = () => {
     periodoActual,
     periodoNoEncontrado,
     gruposOtrosPeriodos,
+    gruposPeriodosAnteriores,
     asignaturaLabelById,
     materiasDisponibles,
     materiasLoading,

@@ -7,7 +7,7 @@
 
 .cfg-plan-builder__grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr) minmax(0, 0.85fr);
   gap: var(--spacing-base, 16px);
   align-items: start;
 }
@@ -16,27 +16,58 @@
   min-height: 320px;
 }
 
+.cfg-plan-builder__periodo-title {
+  font-size: var(--font-size-lg, 16px);
+}
+
+.cfg-plan-builder__horas-badge {
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  padding: 2px var(--spacing-sm, 8px);
+  border-radius: var(--border-radius-sm, 4px);
+  color: var(--color-success, #196b45);
+  background: var(--color-success-bg, rgba(25, 107, 69, 0.08));
+  white-space: nowrap;
+}
+
+.cfg-plan-builder__horas-badge--full {
+  color: var(--color-error, #cf1322);
+  background: var(--color-error-bg, #fff1f0);
+}
+
+.cfg-plan-builder__clasificacion-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 4px);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
 .cfg-plan-builder__chip-list {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs, 4px);
 }
 
+.cfg-plan-builder__catalogo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 8px);
+}
+
+.cfg-plan-builder__catalogo-row .cfg-plan-builder-chip {
+  flex: 1;
+  min-width: 0;
+}
+
+.cfg-plan-builder__anteriores-collapse {
+  background: transparent;
+}
+
 .cfg-plan-builder__grupos {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md, 20px);
-}
-
-.cfg-plan-builder__grupo-head {
-  margin-bottom: var(--spacing-xs, 4px);
-}
-
-.cfg-plan-builder__grupo-tag {
-  font-size: var(--font-size-xs, 11px);
-  color: var(--color-text-tertiary, #9ca3af);
-  background: var(--color-bg-container, #fff);
-  border-color: var(--color-border-secondary, #e5e7eb);
 }
 
 .cfg-plan-builder__dropzone {
@@ -68,11 +99,8 @@
   background: var(--color-bg-container, #fff);
 }
 
-.cfg-plan-builder__row-horas {
-  font-size: var(--font-size-sm, 13px);
-  font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
-  white-space: nowrap;
+.cfg-plan-builder__row-horas-input {
+  width: 84px;
 }
 
 /* Chip (materia de catálogo o asignatura ya colocada) */
@@ -107,12 +135,7 @@
 
 .cfg-plan-builder-chip--disabled {
   cursor: default;
-  opacity: 0.7;
-}
-
-.cfg-plan-builder-chip--locked {
-  opacity: 0.55;
-  border-style: dashed;
+  opacity: 0.85;
 }
 
 .cfg-plan-builder-chip--small {
@@ -140,11 +163,6 @@
   color: var(--color-text, #1f2937);
 }
 
-.cfg-plan-builder-chip__lock {
-  flex-shrink: 0;
-  color: var(--color-text-tertiary, #9ca3af);
-}
-
 /* Slot «PRE-REQUISITO» (droppable) */
 
 .cfg-plan-builder-prereq-slot {
@@ -167,12 +185,6 @@
 .cfg-plan-builder-prereq-slot--over {
   border-color: var(--color-primary-border, var(--color-primary, #196b45));
   background: var(--color-primary-bg, rgba(25, 107, 69, 0.06));
-}
-
-.cfg-plan-builder-prereq-slot--invalid {
-  border-color: var(--color-error-border, #ffa39e);
-  background: var(--color-error-bg, #fff1f0);
-  cursor: not-allowed;
 }
 
 @media (max-width: 1200px) {

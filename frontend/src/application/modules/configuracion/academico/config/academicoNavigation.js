@@ -31,4 +31,6 @@ export const planesListNavigationState = (overrides = {}) => ({
 export const resolveReturnListPath = (location, fallback) =>
   location.state?.returnListPath || fallback;
 
+export const resolveReturnDetailPath = (location) => location.state?.returnDetailPath || null;
+
 export const resolveMenuSidebarKey = (location) => location.state?.menuSidebarKey;
