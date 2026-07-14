@@ -26,6 +26,7 @@ import {
   ExportarEstadisticaInscritosExcelUseCase,
   ExportarListaInscritosPorCarreraExcelUseCase,
   BuscarEstudiantesAsignacionBecaUseCase,
+  BuscarEstudiantesParaInscripcionUseCase,
 } from '@useCases/estudiantes';
 
 // Repositorio principal
@@ -166,6 +167,10 @@ export function registerEstudiantesModule(factory) {
 
   factory.buscarEstudiantesAsignacionBeca = () => {
     return new BuscarEstudiantesAsignacionBecaUseCase(estudianteRepository);
+  };
+
+  factory.buscarEstudiantesParaInscripcion = () => {
+    return new BuscarEstudiantesParaInscripcionUseCase(estudianteRepository);
   };
 
   return factory;

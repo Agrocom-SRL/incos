@@ -8,6 +8,7 @@ export { registerStudentValidator } from './register.validator.js';
 export { updateStudentValidator } from './update.validator.js';
 export { assignBecaValidator } from './assign-beca.validator.js';
 export { searchStudentsAsignacionBecaValidator } from './search-students-asignacion-beca.validator.js';
+export { searchStudentsInscripcionValidator } from './search-students-inscripcion.validator.js';
 export { createBecaDescuentoValidator, updateBecaDescuentoValidator } from './beca-descuento.validator.js';
 
 // TODO: Agregar otros validators cuando se implementen sus endpoints

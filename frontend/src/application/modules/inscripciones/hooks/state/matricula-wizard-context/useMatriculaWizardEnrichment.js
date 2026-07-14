@@ -112,6 +112,7 @@ export const useMatriculaWizardEnrichment = ({
         loading: studentSearch.loading,
         error: studentSearch.error,
         selectedStudent: studentSearch.selectedStudent,
+        selectionBlockedMessage: studentSearch.selectionBlockedMessage,
       },
       carrerasData: {
         carreras: carrerasData.carreras,

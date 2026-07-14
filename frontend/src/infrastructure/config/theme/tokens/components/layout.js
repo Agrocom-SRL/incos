@@ -17,8 +17,8 @@ export const Layout = {
   siderBg: allColors.colorBgContainer,  // Blanco
   headerBg: allColors.colorBgContainer,  // Blanco
 
-  // Content: Gris más oscuro para diferenciarse del fondo blanco
-  bodyBg: allColors.colorAccentBrownBg,  // Marrón oscuro
+  // Content: gris claro neutro para diferenciarse del fondo blanco
+  bodyBg: allColors.colorBgLayout,
 
   // Altura real del Header de Ant Design. Es el ÚNICO nombre de token que
   // Ant Design realmente lee para esto (vive en el namespace "Layout", no

@@ -64,12 +64,24 @@ export const enrichStudentSearchField = (field, context = {}) => {
  */
 export const enrichStudentInfoField = (field, context = {}) => {
     const { studentSearch } = context;
-    
+
     // Si es el campo de información de búsqueda
     if (field.name === 'infoBusqueda' && field.type === 'alert') {
+        // Prioridad: si el usuario intentó seleccionar a alguien ya matriculado en la
+        // gestión vigente, mostrar el aviso de bloqueo en vez de las instrucciones.
+        if (studentSearch?.selectionBlockedMessage) {
+            return {
+                ...field,
+                hidden: false,
+                alertType: 'error',
+                message: 'Estudiante ya matriculado',
+                description: studentSearch.selectionBlockedMessage,
+            };
+        }
+
         const hasStudents = studentSearch?.students && studentSearch.students.length > 0;
         const isLoading = studentSearch?.loading || false;
-        
+
         // Ocultar si hay estudiantes o si está cargando (para evitar parpadeo)
         // Mostrar si no hay estudiantes y no está cargando
         return {
@@ -77,7 +89,7 @@ export const enrichStudentInfoField = (field, context = {}) => {
             hidden: hasStudents || isLoading,
         };
     }
-    
+
     return field;
 };
 

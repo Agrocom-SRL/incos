@@ -13,7 +13,6 @@
  * @param {Object} bancosAutorizadosData - Datos de bancos autorizados (opcional)
  * @param {Object} becaActiva - Beca activa del estudiante (opcional)
  * @param {Object} form - Instancia del formulario de Ant Design
- * @param {Function} onFinish - Callback cuando se envía el formulario
  * @param {Function} onCancel - Callback cuando se cancela
  * @param {boolean} disabled - Si el formulario no puede enviarse (validación / carga de datos)
  * @param {boolean} submitting - Si el envío al servidor está en curso (spinner en el botón)
@@ -48,16 +47,12 @@ const SelectedPaymentSection = ({
   becaActiva,
   montoCuota,
   form,
-  onFinish,
   onCancel,
   disabled = false,
   submitting = false
 }) => {
-  // Si no hay configuración, no mostrar
-  if (!selectedConfiguracion) return null;
-
   // Calcular descuento automáticamente basado en beca activa
-  const montoTotal = Number(selectedConfiguracion.montoBase) || 0;
+  const montoTotal = Number(selectedConfiguracion?.montoBase) || 0;
 
   // Verificar si hay beca aplicable (ACTIVA o PENDIENTE con porcentaje)
   // Para mostrar el descuento, aceptamos becas ACTIVA o PENDIENTE que tengan porcentaje
@@ -94,7 +89,6 @@ const SelectedPaymentSection = ({
   const esTransferencia = codigoMetodo === 'TRANSFERENCIA';
   const esQR = codigoMetodo === 'QR';
   const esDeposito = codigoMetodo === 'DEPOSITO';
-  const esTigoMoney = codigoMetodo === 'TIGO_MONEY';
 
   const requiereCuenta = !esPagoGratuito && codigoMetodo && ['TRANSFERENCIA', 'DEPOSITO', 'TIGO_MONEY'].includes(codigoMetodo);
   const requiereFechaPago = !esPagoGratuito;
@@ -112,28 +106,22 @@ const SelectedPaymentSection = ({
   useEffect(() => {
     if (form && !esPagoGratuito && selectedMetodoPago) {
       if (esEfectivo) {
+        // EFECTIVO no usa cuenta/comprobante/transacción, pero sí requiere fecha de pago.
         form.setFieldsValue({
-          fechaPago: undefined,
           numeroTransaccion: undefined,
           codigoComprobante: undefined,
           documentoRespaldo: undefined,
         });
-      } else {
-        if (!form.getFieldValue('fechaPago')) {
-          form.setFieldsValue({ fechaPago: dayjs() });
-        }
+      }
+      if (!form.getFieldValue('fechaPago')) {
+        form.setFieldsValue({ fechaPago: dayjs() });
       }
     }
   }, [codigoMetodo, form, esEfectivo, esPagoGratuito, selectedMetodoPago]);
 
-  useEffect(() => {
-    if (form && requiereFechaPago) {
-      const actual = form.getFieldValue('fechaPago');
-      if (!actual) {
-        form.setFieldsValue({ fechaPago: dayjs() });
-      }
-    }
-  }, [form, requiereFechaPago]);
+  // Si no hay configuración, no mostrar (el early return va DESPUÉS de los hooks:
+  // deben llamarse siempre en el mismo orden en cada render)
+  if (!selectedConfiguracion) return null;
 
   // El padre solo renderiza este componente cuando esPagoGratuito || selectedMetodoPago
   return (

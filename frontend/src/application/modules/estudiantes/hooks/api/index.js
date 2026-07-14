@@ -12,6 +12,7 @@ export { useStudentReferenceApi } from './useStudentReferenceApi';
 export { useRegisterStudent } from './useRegisterStudent';
 export { useUpdateStudent } from './useUpdateStudent';
 export { useSearchStudent } from './useSearchStudent';
+export { useSearchStudentsForInscripcion } from './useSearchStudentsForInscripcion';
 export { useBecasDescuentosApi } from './useBecasDescuentosApi';
 export { useBecasAsignadasApi } from './useBecasAsignadasApi';
 export { useCreateAsignarBeca } from './useCreateAsignarBeca';

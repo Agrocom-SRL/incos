@@ -17,4 +17,5 @@ export { EliminarBecaAsignadaUseCase } from './EliminarBecaAsignadaUseCase';
 export { ExportarEstadisticaInscritosExcelUseCase } from './ExportarEstadisticaInscritosExcelUseCase';
 export { ExportarListaInscritosPorCarreraExcelUseCase } from './ExportarListaInscritosPorCarreraExcelUseCase';
 export { BuscarEstudiantesAsignacionBecaUseCase } from './BuscarEstudiantesAsignacionBecaUseCase';
+export { BuscarEstudiantesParaInscripcionUseCase } from './BuscarEstudiantesParaInscripcionUseCase';
 

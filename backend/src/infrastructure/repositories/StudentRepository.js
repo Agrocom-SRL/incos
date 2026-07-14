@@ -461,5 +461,97 @@ export class StudentRepository extends BaseRepository {
       type: sequelize.QueryTypes.SELECT,
     });
   }
+
+  /**
+   * Búsqueda o muestra previa para el wizard de Inscripción nueva
+   * (vista_estudiante_busqueda_inscripcion).
+   * NO excluye a los ya matriculados en la gestión vigente: los prioriza al
+   * final (ORDER BY) y la vista expone inscripcion_gestion_actual_id para que
+   * el use case anote yaMatriculadoGestionActual.
+   *
+   * @param {Object} options
+   * @param {boolean} [options.preliminar=false] - Si true: muestra recientes sin texto de búsqueda
+   * @param {string} [options.q] - Término LIKE; mín. 2 caracteres si no es preliminar
+   * @param {number} [options.limit=50] - Máximo de filas (1–100)
+   * @returns {Promise<Array<Object>>}
+   */
+  async buscarParaInscripcion(options = {}) {
+    const { preliminar = false, q, limit = 50 } = options;
+    const lim = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+
+    if (preliminar) {
+      const queryPrelim = `
+        SELECT *
+        FROM vista_estudiante_busqueda_inscripcion b
+        ORDER BY CASE WHEN b.inscripcion_gestion_actual_id IS NULL THEN 0 ELSE 1 END, b.created_at DESC
+        LIMIT ?
+      `;
+      return sequelize.query(queryPrelim, {
+        replacements: [lim],
+        type: sequelize.QueryTypes.SELECT,
+      });
+    }
+
+    const raw = String(q ?? '').trim();
+    if (raw.length < 2) {
+      return [];
+    }
+    const safe = raw.replace(/%/g, '').replace(/_/g, '');
+    const term = `%${safe}%`;
+    const tokens = safe
+      .split(/\s+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 2)
+      .slice(0, 6);
+    const tokenClauses = tokens.map(
+      () =>
+        `(COALESCE(b.nombres, '') LIKE ? OR COALESCE(b.apellido_paterno, '') LIKE ? OR COALESCE(b.apellido_materno, '') LIKE ? OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, '') LIKE ? OR COALESCE(b.carrera_codigo, '') LIKE ? OR COALESCE(b.codigo_estudiante, '') LIKE ? OR COALESCE(b.ci, '') LIKE ?)`
+    );
+    const tokenSql = tokenClauses.length > 0 ? ` AND ${tokenClauses.join(' AND ')}` : '';
+
+    const querySql = `
+      SELECT *
+      FROM vista_estudiante_busqueda_inscripcion b
+      WHERE (
+          COALESCE(b.email_personal, '') LIKE ?
+          OR COALESCE(b.celular, '') LIKE ?
+          OR COALESCE(b.telefono_fijo, '') LIKE ?
+          OR COALESCE(b.codigo_estudiante, '') LIKE ?
+          OR COALESCE(b.ci, '') LIKE ?
+          OR COALESCE(b.nombres, '') LIKE ?
+          OR COALESCE(b.apellido_paterno, '') LIKE ?
+          OR COALESCE(b.apellido_materno, '') LIKE ?
+          OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ?
+          OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ?
+          OR COALESCE(b.carrera_nombre, '') LIKE ?
+          OR COALESCE(b.carrera_codigo, '') LIKE ?
+        )
+      ${tokenSql}
+      ORDER BY CASE WHEN b.inscripcion_gestion_actual_id IS NULL THEN 0 ELSE 1 END, b.created_at DESC
+      LIMIT ?
+    `;
+
+    const replacements = [term, term, term, term, term, term, term, term, term, term, term, term];
+    for (const tk of tokens) {
+      const tokenLike = `%${tk}%`;
+      replacements.push(
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike
+      );
+    }
+    replacements.push(lim);
+
+    return sequelize.query(querySql, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
 }
 

@@ -21,8 +21,14 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { useSearchStudent, useGetStudentById } from '@application-estudiantes/hooks/api';
+import { useSearchStudentsForInscripcion, useGetStudentById } from '@application-estudiantes/hooks/api';
 import { buildPersonDisplayData } from '@application/utils/formatters';
+
+/** Mensaje de bloqueo cuando se intenta seleccionar un estudiante ya matriculado en la gestión vigente. */
+const buildYaMatriculadoMessage = (student) => {
+  const gestion = student?.gestionActualNombre || (student?.gestionActualAnio ? `gestión ${student.gestionActualAnio}` : 'la gestión vigente');
+  return `${student?.nombreCompleto || 'Este estudiante'} ya está matriculado en ${gestion}. No puede volver a matricularlo.`;
+};
 
 /**
  * Hook para buscar y seleccionar estudiantes en el contexto de inscripción nueva
@@ -34,15 +40,25 @@ import { buildPersonDisplayData } from '@application/utils/formatters';
 export const useInscripcionNuevaStudentSearch = (options = {}) => {
   const { studentId = null } = options;
   
-  // Usar el hook genérico de búsqueda de estudiantes
-  const { students, loading, error, searchStudent, refetch } = useSearchStudent();
-  
+  // Búsqueda de estudiantes para el wizard de inscripción: no excluye a los ya
+  // matriculados en la gestión vigente, los anota con yaMatriculadoGestionActual.
+  const { students, loading, error, searchStudent, refetch } = useSearchStudentsForInscripcion();
+
   // Hook para obtener estudiante por ID (si se proporciona studentId)
   const { student: studentById, loading: loadingById, getStudentById } = useGetStudentById();
 
   // Estado para el estudiante seleccionado (se usará en step2 para cargar datos académicos)
   const [selectedStudent, setSelectedStudent] = useState(null);
-  
+
+  // Mensaje de bloqueo cuando se intenta seleccionar a alguien ya matriculado en la
+  // gestión vigente (no se permite avanzar el wizard con ese estudiante).
+  const [selectionBlockedMessage, setSelectionBlockedMessage] = useState(null);
+
+  // Nueva búsqueda (cambia la lista de resultados) → limpiar un aviso de bloqueo previo.
+  useEffect(() => {
+    setSelectionBlockedMessage(null);
+  }, [students]);
+
   // Cargar estudiante automáticamente si se proporciona studentId
   useEffect(() => {
     if (studentId) {
@@ -138,6 +154,13 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
    */
   const onSelectStudent = useCallback((student) => {
     if (student && student.id) {
+      // Ya matriculado en la gestión vigente: bloquear la selección (no avanzar el
+      // wizard con este estudiante) y avisar en vez de guardarlo como seleccionado.
+      if (student.yaMatriculadoGestionActual) {
+        setSelectionBlockedMessage(buildYaMatriculadoMessage(student));
+        return;
+      }
+      setSelectionBlockedMessage(null);
       setSelectedStudent(prev => {
         if (prev?.id === student.id) {
           return prev;
@@ -175,9 +198,6 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
     }
   }, [getStudentById]);
 
-  // TODO: Aquí se puede agregar lógica específica de inscripciones si es necesario
-  // Por ejemplo: filtrar estudiantes que ya están inscritos, validaciones específicas, etc.
-
   // MANTENER REFERENCIA ESTABLE
   // Comparar valores, no solo referencias, para evitar recálculos innecesarios
   const prevResultRef = useRef(null);
@@ -194,10 +214,11 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
       refetch,
       selectedStudent,
       onSelectStudent,
+      selectionBlockedMessage,
     };
 
     const prev = prevResultRef.current;
-    
+
     // Comparar valores, no referencias
     if (prev &&
         prev.loading === current.loading &&
@@ -206,11 +227,12 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
         prev.refetch === current.refetch &&
         prev.students === current.students &&
         prev.selectedStudent?.id === current.selectedStudent?.id &&
-        prev.onSelectStudent === current.onSelectStudent) {
+        prev.onSelectStudent === current.onSelectStudent &&
+        prev.selectionBlockedMessage === current.selectionBlockedMessage) {
       return prev;
     }
 
     prevResultRef.current = current;
     return current;
-  }, [students, combinedLoading, error, searchStudent, refetch, selectedStudent, onSelectStudent]);
+  }, [students, combinedLoading, error, searchStudent, refetch, selectedStudent, onSelectStudent, selectionBlockedMessage]);
 };

@@ -5,36 +5,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Input, Space, Table, Tag, Typography } from 'antd';
-import {
-  ArrowLeftOutlined,
-  BookOutlined,
-  CalendarOutlined,
-  IdcardOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { Alert, Input, Table, Typography } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button, ActionButton } from '@atoms';
 import { useCasesFactory } from '@container';
+import { createPagosSeleccionEstudianteTableColumns } from '@pagos/config/pagosSeleccionEstudianteTableColumns';
 
 const { Text } = Typography;
 
 const PRELIM_LIMIT = 10;
 const BUSQUEDA_DEBOUNCE_MS = 400;
 const BUSQUEDA_MIN_CHARS = 2;
-
-const formatFechaCreacion = (fecha) => {
-  if (!fecha) return '—';
-  const d = dayjs(fecha);
-  return d.isValid() ? d.format('DD/MM/YYYY HH:mm') : String(fecha);
-};
-
-const formatMoney = (value) =>
-  `Bs. ${Number(value ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const PagosRegistrarSeleccion = () => {
   const navigate = useNavigate();
@@ -122,140 +104,7 @@ const PagosRegistrarSeleccion = () => {
   );
 
   const columnasTabla = useMemo(
-    () => [
-      {
-        title: 'Fecha de registro',
-        key: 'created_at',
-        width: 168,
-        render: (_, r) => (
-          <Space size={6}>
-            <CalendarOutlined />
-            <Text>{formatFechaCreacion(r.createdAt)}</Text>
-          </Space>
-        ),
-      },
-      {
-        title: 'Estudiante',
-        key: 'nombre',
-        render: (_, r) => (
-          <Space>
-            <UserOutlined />
-            <div>
-              <Text strong>{r.nombreCompleto ?? '—'}</Text>
-              <div>
-                <Space size={8} style={{ fontSize: 12 }} wrap>
-                  <Text type="secondary">
-                    <IdcardOutlined style={{ marginRight: 6 }} />
-                    {r.codigoEstudiante ?? '—'}
-                  </Text>
-                  {r.ci ? (
-                    <Text type="secondary">
-                      <IdcardOutlined style={{ marginRight: 6 }} />
-                      CI {r.ci}
-                    </Text>
-                  ) : null}
-                </Space>
-              </div>
-            </div>
-          </Space>
-        ),
-      },
-      {
-        title: 'Contacto',
-        key: 'contacto',
-        width: 200,
-        render: (_, r) => (
-          <div style={{ fontSize: 13 }}>
-            {r.emailPersonal ? (
-              <div>
-                <MailOutlined style={{ marginRight: 8 }} />
-                {r.emailPersonal}
-              </div>
-            ) : null}
-            {r.celular ? (
-              <div>
-                <PhoneOutlined style={{ marginRight: 8 }} />
-                {r.celular}
-              </div>
-            ) : null}
-            {r.telefonoFijo ? (
-              <div>
-                <PhoneOutlined style={{ marginRight: 8 }} />
-                {r.telefonoFijo}
-              </div>
-            ) : null}
-            {!r.emailPersonal && !r.celular && !r.telefonoFijo ? (
-              <div>
-                <PhoneOutlined style={{ marginRight: 8 }} />
-                —
-              </div>
-            ) : null}
-          </div>
-        ),
-      },
-      {
-        title: 'Carrera',
-        key: 'carrera',
-        ellipsis: true,
-        render: (_, r) => (
-          <Space size={6}>
-            <BookOutlined />
-            <span>{r.carreraNombre ?? '—'}</span>
-          </Space>
-        ),
-      },
-      {
-        title: 'Aporte',
-        key: 'aporte',
-        width: 230,
-        render: (_, r) => {
-          const cub = r?.aporteRegistro?.aporteTotalmenteCubierto;
-          const saldoPendiente = Number(r?.aporteRegistro?.saldoPendienteTotal ?? 0);
-          if (cub) {
-            return (
-              <div>
-                <Tag color="success">Sin saldo pendiente</Tag>
-                <div>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Saldo: {formatMoney(0)}
-                  </Text>
-                </div>
-              </div>
-            );
-          }
-          if (!r?.aporteRegistro?.tieneCabeceraAporte) return <Tag>Primera cuota</Tag>;
-          return (
-            <div>
-              <Tag color="processing">Con saldo</Tag>
-              <div>
-                <Text style={{ fontSize: 12 }}>Saldo: {formatMoney(saldoPendiente)}</Text>
-              </div>
-            </div>
-          );
-        },
-      },
-      {
-        title: '',
-        key: 'accion',
-        width: 160,
-        render: (_, r) => {
-          const sid = r.id;
-          const cub = r?.aporteRegistro?.aporteTotalmenteCubierto;
-          if (cub) return null;
-          return (
-            <ActionButton
-              permiso="finanzas.pago.registrar"
-              accion="CREAR"
-              variant="primary"
-              size="small"
-              onClick={() => irARegistrar(sid)}
-            >
-              Registrar pago
-            </ActionButton>
-          );
-        },
-      },
-    ],
+    () => createPagosSeleccionEstudianteTableColumns({ onRegistrarPago: irARegistrar }),
     [irARegistrar]
   );
 
@@ -357,6 +206,7 @@ const PagosRegistrarSeleccion = () => {
               loading={tablaLoading}
               columns={columnasTabla}
               dataSource={tablaFilas}
+              scroll={{ x: 'max-content' }}
               pagination={
                 esBusquedaActiva
                   ? { pageSize: 10, showSizeChanger: true, hideOnSinglePage: true }
