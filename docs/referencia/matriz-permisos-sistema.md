@@ -1,7 +1,65 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-06-12
+## Ultima actualizacion: 2026-07-14
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Changelog 2026-07-14 — auditoría RBAC de los 8 módulos (57-64) + correcciones
+
+Auditoría completa (8 agentes, uno por módulo MAT/ACA/DOC/FIN/INST/CFG/REP/SEG-SYS)
+cruzando `routes.jsx`, controles UI (`ActionButton`/`TableActions`/`PermisoGuard`/`useAcciones`)
+y `verificarPermiso` backend contra cada seed `57-64`, previa a retomar desarrollo de
+nuevas funciones. Cambios aplicados:
+
+- **`61-seed-permisos-inst.sql`:** faltaba CREAR/EDITAR/ACTIVAR de
+  `institucional.oferta.gestion-plan`, DETALLE/CREAR/EDITAR/ACTIVAR de
+  `institucional.oferta.paralelo-gestion` y CREAR/EDITAR/ELIMINAR de
+  `institucional.oferta.cursos` para RECTOR/DIR_ACADEMICO/DIR_ADMIN (el seed solo
+  tenía LISTAR pese a que la renovación de oferta gestión→gestión ya está construida
+  en frontend/backend). Agregado.
+- **`64-seed-permisos-seg.sql`:** `seguridad.usuario.administrar` solo tenía LISTAR
+  para RECTOR/DIR_ACADEMICO/DIR_ADMIN pese a que la ficha-hub de usuarios (DETALLE/
+  EDITAR/ELIMINAR/ACTIVAR) ya está activa desde el refactor de 2026-07-09; agregado
+  espejo completo. También `seguridad.usuario.crear` (CREAR) y `seguridad.rol.gestionar`
+  (EDITAR), sin ninguna asignación de rol, agregados a los mismos 3 roles.
+- **`59-seed-permisos-doc.sql`:** DIR_ADMIN no tenía `docentes.asignar` (CREAR/EDITAR/
+  ELIMINAR), a diferencia de RECTOR/DIR_ACADEMICO — le impedía operar asignación
+  docente/color/carga desde Institucional → Oferta. Agregado.
+- **`63-seed-permisos-rep.sql`:** `reportes.solicitudes.traspaso` no tenía ninguna fila
+  de rol (a diferencia de sus hermanos general/becas). Agregado RECTOR/LISTAR.
+- **Código (no-seed):** `pagos/routes.jsx` (PAG-EDITAR sin `permisoAny`, producía 403
+  con botón visible para DIR_ACADEMICO/SEC_ACADEMICA); `DocenteAsignacionesColorSection.jsx`
+  gateaba con `docentes.editar` cuando el backend solo acepta `docentes.asignar`/
+  `institucional.horarios.color-docente`; `docentes.routes.js` (`POST /asignaciones` y
+  `/asignaciones/curso` solo aceptaban EDITAR, se agregó CREAR como alternativa válida);
+  `AporteConfigPage.jsx` (botón fijo en EDITAR, ahora condicional CREAR/EDITAR según
+  `aporteVigente?.id`); `institucional/horarios/routes.jsx` (`INST-HORARIO-CONFLICTOS`
+  usaba el código `institucional.horario.armado`, distinto al que exige el fetch real
+  de esa pantalla; alineado a `institucional.horario.conflictos`).
+- **Decisión de producto — catálogo abierto en Finanzas:** `GET /bancos-autorizados`,
+  `/cuentas-pago` y `/metodos-pago` siguen resolviéndose vía el catálogo de referencia
+  transversal (`sistema.catalogo.referencia`, cualquier autenticado), no vía
+  `finanzas.configuracion.pago DETALLE`. Es **intencional** (igual que el patrón de
+  `configuracion.documentacion`/complementarios): otros combos del sistema (registro de
+  pagos, matrícula) dependen de ese catálogo abierto. No se restringe.
+- **Pendiente real (NO implementado, requiere feature propia):** self-service "Mi beca"
+  para ESTUDIANTE (`labelByRole` en `MAT-BEC-LISTAR`, `estudiantes/routes.jsx`) está
+  declarado en frontend pero sin permiso de rol, sin auto-filtrado por estudiante en
+  `GET /estudiantes/becas` y sin guard anti-IDOR en `/becas/:id` ni `/:id/scholarships`
+  (a diferencia de "Mis aportes", que sí tiene guard `aporteSelfOnlyGuard`). No se
+  otorgó el permiso: hacerlo hoy expondría el listado completo de becas de todos los
+  estudiantes. Construir junto con el resto (permiso + self-scope + guards) como una
+  sola iteración futura.
+- **Hallazgo descartado (falso positivo):** un agente reportó que `SEC_ACADEMICA` no
+  tenía `matricula.admision.ver LISTAR` (bloqueando la búsqueda en Historial académico).
+  Verificado directamente en `57-seed-permisos-mat.sql` bloque "3b": SEC_ACADEMICA SÍ
+  recibe esa fila vía el mirror por `grupo_ui IN ('mat_admision', ...)`. Sin acción.
+- **No tocado (candidatos de limpieza, solo reportados, ver auditorías por dominio):**
+  acciones/permisos sembrados sin ningún consumidor real (`docentes.ver EXPORTAR`,
+  `matricula.admision.editar ACTIVAR`, `matricula.beca.asignar EDITAR`,
+  `academico.calificacion.cuaderno GENERAR_PDF`, `institucional.horario.plantilla`,
+  `institucional.gestion.oferta`, filas de `sistema.catalogo.referencia` en
+  `roles_permisos` pese a que el middleware no las consulta) — no se borran sin
+  aprobación explícita adicional.
 
 > **IMPORTANTE (seeds RBAC por módulo, sin ids fijos):** Los seeders de permisos están
 > **separados por módulo** en `02-seeders/`: `55-seed-roles.sql` → `56-seed-usuarios-admin.sql`

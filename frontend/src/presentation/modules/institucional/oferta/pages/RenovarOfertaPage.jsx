@@ -34,7 +34,7 @@ import {
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { ActionButton, BackButton, Button } from '@atoms';
+import { ActionButton, BackButton } from '@atoms';
 import { cfgFormColProps } from '@organisms/CfgFormWorkspace';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';
@@ -169,13 +169,15 @@ const RenovarOfertaPage = () => {
                       </Col>
                     </Row>
                     <Flex justify="flex-end" style={{ marginTop: allSpacing.marginSM }}>
-                      <Button
+                      <ActionButton
+                        permiso="institucional.oferta.gestion-plan"
+                        accion="CREAR"
                         variant="info"
                         icon={<PlusCircleOutlined />}
                         onClick={s.navigateNuevaGestion}
                       >
                         Crear una gestión nueva
-                      </Button>
+                      </ActionButton>
                     </Flex>
                   </Seccion>
 

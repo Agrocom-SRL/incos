@@ -460,9 +460,10 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }] : []),
-    // "Acceso al sistema": gestión de cuenta (info administrativa) — oculto en la
-    // vista propia del estudiante y en la rama docente (solo lectura académica).
-    ...(esVistaPropiaEstudiante || esVistaDocente ? [] : [{
+    // "Acceso al sistema": gestión de cuenta (info administrativa) — visible solo con
+    // permiso real de gestión de usuarios (nunca lo tienen ESTUDIANTE/DOCENTE viendo
+    // su propia ficha o la de sus estudiantes, pero se resuelve por permiso, no por rol).
+    ...(!(puedeCrearUsuario || puedeEditarUsuario) ? [] : [{
       key: 'acceso',
       label: <span className="sd-tab-label"><IdcardOutlined /> Acceso al sistema</span>,
       children: (
@@ -488,7 +489,7 @@ const EstudiantesDetail = () => {
     estadoAporte, loadingEstadoAporte, handleVerDetallePago,
     handleRegistrarPago, puedeVerInscripcion, puedeCrearInscripcion, puedeVerPago, puedeRegistrarPago,
     puedeEliminarBeca, puedeGenerarPdfDocumento, showDeclaracionButton,
-    access, puedeCrearUsuario, puedeEditarUsuario, esVistaDocente,
+    access, puedeCrearUsuario, puedeEditarUsuario,
   ]);
 
   /* ── Estados de carga / error ── */

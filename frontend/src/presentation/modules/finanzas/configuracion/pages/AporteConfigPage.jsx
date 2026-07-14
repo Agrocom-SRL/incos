@@ -49,7 +49,7 @@ const AporteConfigPage = () => {
   const saveButton = (
     <ActionButton
       permiso={APORTE_PERMISO}
-      accion="EDITAR"
+      accion={aporteVigente?.id ? 'EDITAR' : 'CREAR'}
       variant="primary"
       size="large"
       loading={saving}

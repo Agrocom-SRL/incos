@@ -124,6 +124,8 @@ export const createCuotasTableColumns = ({
                   icon: <FilePdfOutlined />,
                   variant: 'view',
                   tooltip: 'Descargar recibo PDF',
+                  permiso: FINANZAS_PERMISOS.pagoVer,
+                  accion: 'EXPORTAR',
                   disabled: descargandoRecibo && reciboCuotaId === reciboKey,
                   onClick: () => onGenerarRecibo(record),
                 },

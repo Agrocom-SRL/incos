@@ -15,6 +15,23 @@ export const configuracionRoutes = [
     path: '/configuracion',
     element: <UnderConstruction />,
     key: 'CFG-ROOT',
+    // Sin permiso único de menú (agrupa submódulos): exige al menos uno de sus
+    // permisos de entrada, igual que el resto de rutas protegidas del sistema.
+    permisoAny: [
+      'configuracion.carrera',
+      'configuracion.materia',
+      'configuracion.plan-estudio',
+      'configuracion.documentacion',
+      'configuracion.complementario.discapacidad',
+      'configuracion.complementario.apoderados',
+      'configuracion.complementario.idiomas',
+      'configuracion.complementario.estado-civil',
+      'configuracion.actividad',
+      'configuracion.paralelo',
+      'configuracion.aula',
+      'configuracion.tipo-evaluacion',
+    ],
+    accion: 'LISTAR',
     menu: null,
   },
   ...academicoConfigRoutes,

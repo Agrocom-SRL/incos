@@ -5,6 +5,7 @@ import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Flex, Spin, Tag, Typography } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
+import { usePermiso } from '@application-auth';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 import { useParaleloGestionGrillaHorarioApi } from '@application-institucional/horarios/hooks/api/useParaleloGestionGrillaHorarioApi';
 import { grillaHorarioToCourseSchedules } from '@application-institucional/horarios/mappers/grillaHorarioMapper';
@@ -36,6 +37,7 @@ const estadoTag = (estado) => {
 
 const ParaleloDetalleInstanciaCard = ({ instancia, paraleloNombre }) => {
   const navigate = useNavigate();
+  const puedeEditarHorario = usePermiso('institucional.horario.armado', 'EDITAR');
   const { fetchGrillaHorario, grillaHorario, loading: grillaLoading } =
     useParaleloGestionGrillaHorarioApi();
 
@@ -92,7 +94,7 @@ const ParaleloDetalleInstanciaCard = ({ instancia, paraleloNombre }) => {
               {instancia?.ofertaActual != null ? ` · ${instancia.ofertaActual} cursos` : ''}
             </Text>
           </div>
-          {pgId ? (
+          {pgId && puedeEditarHorario ? (
             <button
               type="button"
               className="sd-profile__edit-btn"

@@ -143,6 +143,7 @@ export const useCalendarioAsistenciaState = () => {
 
   const habilitarFechaEspecial = useCallback(
     async ({ fecha, motivo, horaInicio, horaFin }) => {
+      if (!puedeEditar) return false;
       const res = await crearSesion(asignacionId, { fecha, motivo, horaInicio, horaFin });
       if (!res?.success) {
         notification.error({
@@ -158,11 +159,12 @@ export const useCalendarioAsistenciaState = () => {
       await cargar();
       return true;
     },
-    [crearSesion, asignacionId, notification, cargar],
+    [puedeEditar, crearSesion, asignacionId, notification, cargar],
   );
 
   const eliminarFechaEspecial = useCallback(
     async (fecha) => {
+      if (!puedeEditar) return false;
       const res = await eliminarSesion(asignacionId, fecha);
       if (!res?.success) {
         notification.error({
@@ -178,7 +180,7 @@ export const useCalendarioAsistenciaState = () => {
       await cargar();
       return true;
     },
-    [eliminarSesion, asignacionId, notification, cargar],
+    [puedeEditar, eliminarSesion, asignacionId, notification, cargar],
   );
 
   return {

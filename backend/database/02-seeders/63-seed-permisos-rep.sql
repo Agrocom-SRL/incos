@@ -55,6 +55,9 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'reportes.desercion', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.general', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.becas', 'LISTAR'
+  -- 2026-07-14: faltaba por completo (huérfano de rol) a diferencia de sus
+  -- hermanos general/becas; mismo criterio (RECTOR) mientras se construye la pantalla.
+  UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.traspaso', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'reportes.solicitudes.pasantia', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'reportes.solicitudes.pasantia', 'LISTAR'
 ) AS g

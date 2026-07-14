@@ -210,7 +210,7 @@ const GrillaAsistenciaSemanal = ({
 
         const celda = row.diasPorFecha.get(dia.fechaClase) ?? null;
         const estadoBackend = celda?.estado ?? null;
-        const editable = celdaEditable({
+        const editable = puedeEditar && celdaEditable({
           esDiaClase: dia.esDiaClase,
           neutro: celda?.neutro ?? dia.neutro,
           esFuturo: dia.esFuturo,

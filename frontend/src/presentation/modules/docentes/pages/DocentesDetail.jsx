@@ -66,8 +66,9 @@ const DocentesDetail = () => {
   const hasMateriasAsignadas = assignments.length > 0;
 
   // Portal del docente: llega directo a SU ficha desde el menú ("Mi ficha"),
-  // no hay listado al que volver — se oculta el botón. Editar/eliminar ya se
-  // ocultan solos por permisos (fail-closed).
+  // sin haber pasado por un listado — se oculta el botón "Volver" por no tener
+  // un destino de navegación con sentido en ese flujo (no es una decisión de
+  // autorización: editar/eliminar ya se ocultan solos por permiso, fail-closed).
   const esMiFicha = esDocente(usuario);
 
   const headerActions = esMiFicha ? null : (

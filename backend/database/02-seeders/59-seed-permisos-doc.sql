@@ -90,6 +90,12 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.asignar', 'CREAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.asignar', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.asignar', 'ELIMINAR'
+  -- DIR_ADMIN (2026-07-14): paridad con RECTOR/DIR_ACADEMICO para operar
+  -- asignación docente/color/carga desde Institucional → Oferta (fallback real
+  -- de institucional.horarios.asignacion-docente y color-docente en backend).
+  UNION ALL SELECT 'DIR_ADMIN', 'docentes.asignar', 'CREAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'docentes.asignar', 'EDITAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'docentes.asignar', 'ELIMINAR'
   UNION ALL SELECT 'RECTOR', 'docentes.licencia.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'docentes.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.licencia.ver', 'LISTAR'

@@ -44,13 +44,33 @@ FROM (
   SELECT 'RECTOR' AS rol, 'seguridad.usuario.administrar' AS codigo, 'LISTAR' AS accion
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.usuario.administrar', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'LISTAR'
+  -- 2026-07-14: espejo completo — quien ve el módulo (LISTAR) lo opera completo
+  -- (ficha-hub de usuarios: DETALLE/EDITAR/ELIMINAR/ACTIVAR ya construidos y activos).
+  UNION ALL SELECT 'RECTOR', 'seguridad.usuario.administrar', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'seguridad.usuario.administrar', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'seguridad.usuario.administrar', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'seguridad.usuario.administrar', 'ACTIVAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.usuario.administrar', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.usuario.administrar', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.usuario.administrar', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.usuario.administrar', 'ACTIVAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'DETALLE'
+  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'EDITAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.administrar', 'ACTIVAR'
+  UNION ALL SELECT 'RECTOR', 'seguridad.usuario.crear', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.usuario.crear', 'CREAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.usuario.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'seguridad.rol.gestionar', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'seguridad.rol.gestionar', 'EDITAR'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'DETALLE'
+  UNION ALL SELECT 'DIR_ADMIN', 'seguridad.rol.gestionar', 'EDITAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

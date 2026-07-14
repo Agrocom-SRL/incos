@@ -59,7 +59,10 @@ export const pagosRoutes = [
     path: '/pagos/:id/editar',
     element: <PagosEditarCuotaConnector />,
     key: 'PAG-EDITAR',
-    permiso: 'finanzas.pago.editar',
+    // Staff (finanzas.pago.editar) o SEC_ACADEMICA/DIR_ACADEMICO vía matricula.pago.aporte.ver
+    // (mismo par que ya aceptan UI y backend; antes solo exigía finanzas.pago.editar y
+    // producía 403 con botón visible para esos roles).
+    permisoAny: ['finanzas.pago.editar', 'matricula.pago.aporte.ver'],
     accion: 'EDITAR',
     menu: null,
     breadcrumbParent: 'PAG-LIST',
