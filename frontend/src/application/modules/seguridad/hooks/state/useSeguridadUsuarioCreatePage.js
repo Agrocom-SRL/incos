@@ -240,6 +240,12 @@ export const useSeguridadUsuarioCreatePage = () => {
     const prev = prevCategoriaRef.current;
     prevCategoriaRef.current = categoria;
     if (isEditMode) return;
+    // `categoria` viene de Form.useWatch: en el primer render tras montar aún
+    // no está sincronizado con el valor real del form (llega undefined un
+    // render antes de tiempo). Si aplicáramos el reset aquí, el catch-all de
+    // getCategoriaResetPatch borraría docente_id/estudiante_id recién
+    // prefilled por el efecto de isCreateFromDocenteDetail/EstudianteDetail.
+    if (categoria === undefined) return;
     form.setFieldsValue(getCategoriaResetPatch(categoria, prev));
   }, [categoria, form, isEditMode, categoriaFijada]);
 
