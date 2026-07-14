@@ -41,7 +41,7 @@ const EstadoTogglePill = ({ activo, onToggle, permiso, accion = 'ACTIVAR' }) => 
 
   // Fail-closed (mismo criterio que ActionButton/TableActions): sin permiso
   // ACTIVAR o sin handler, solo la pill informativa.
-  const interactiva = Boolean(onToggle) && (!permiso || hasPermiso(permiso, accion));
+  const interactiva = Boolean(onToggle) && Boolean(permiso) && hasPermiso(permiso, accion);
   if (!interactiva) {
     return pill;
   }

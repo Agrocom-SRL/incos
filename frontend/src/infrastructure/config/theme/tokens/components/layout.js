@@ -19,6 +19,15 @@ export const Layout = {
 
   // Content: Gris más oscuro para diferenciarse del fondo blanco
   bodyBg: allColors.colorAccentBrownBg,  // Marrón oscuro
+
+  // Altura real del Header de Ant Design. Es el ÚNICO nombre de token que
+  // Ant Design realmente lee para esto (vive en el namespace "Layout", no
+  // "Header" — ver antd/es/layout/style/index.js). `Header.height` de más
+  // abajo NO tiene efecto: Ant Design no reconoce "Header" como componente
+  // temático propio, cae al default `controlHeight * 2` y por eso el header
+  // medía 80px aunque este token dijera 56 — desalineando el `top` fijo del
+  // Sider (que sí lee `--header-height` vía CSS) con la altura real.
+  headerHeight: allSpacing.headerHeight,
 };
 
 /**
@@ -42,7 +51,6 @@ export const Header = {
   colorText: allColors.colorText,
   colorTextSecondary: allColors.colorTextSecondary,
   colorBorder: allColors.colorBorder,
-  height: allSpacing.headerHeight,
   padding: `0 ${allSpacing.marginLG}px`,
   borderRadius: 0,
   boxShadow: shadows.shadowElevation1,

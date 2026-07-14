@@ -4,7 +4,7 @@
  * preparación).
  */
 
-import { Alert, Button, Card, Flex, Typography } from 'antd';
+import { Alert, Card, Flex, Typography } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 import { ActionButton } from '@atoms';
 
@@ -55,9 +55,14 @@ const CerrarBimestreCard = ({
       ) : null}
 
       <Flex gap="small" wrap>
-        <Button onClick={onValidarCierre} disabled={!iniciada || !bimestreVigente}>
+        <ActionButton
+          permiso="institucional.gestion.actual"
+          accion="EDITAR"
+          onClick={onValidarCierre}
+          disabled={!iniciada || !bimestreVigente}
+        >
           Validar cierre
-        </Button>
+        </ActionButton>
         <ActionButton
           permiso="institucional.gestion.actual"
           accion="EDITAR"

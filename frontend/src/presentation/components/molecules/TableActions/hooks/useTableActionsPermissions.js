@@ -12,10 +12,12 @@ export function useTableActionsPermissions({ permisos, extraActions = [] }) {
   const puedeEditar = cumplePermisoRef(permisos?.editar, hasPermiso);
   const puedeEliminar = cumplePermisoRef(permisos?.eliminar, hasPermiso);
 
+  // Fail-closed: una extraAction sin `permiso` explícito NO se muestra (antes se
+  // mostraba por defecto). Todo caller debe declarar su propio permiso+acción.
   const extraActionsPermitidas = useMemo(
     () =>
       extraActions.filter((action) => {
-        if (!action?.permiso) return true;
+        if (!action?.permiso) return false;
         return hasPermiso(action.permiso, action.accion || 'LISTAR');
       }),
     [extraActions, hasPermiso],

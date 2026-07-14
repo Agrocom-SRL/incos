@@ -21,7 +21,6 @@
   --text-400: #9ca3af;
   --text-300: #d1d5db;
   --surface: #ffffff;
-  --bg: #f3f4f6;
   --border: #e5e7eb;
   --border-soft: #f3f4f6;
   --radius-sm: 6px;
@@ -33,9 +32,10 @@
   --shadow-focus: 0 0 0 3px rgba(25, 107, 69, .15);
 
   font-family: 'DM Sans', 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
-  background: var(--bg);
+  /* Sin fondo propio: se apoya en el fondo de `.content` (Layout.bodyBg),
+     igual que DashboardPageShell — evita apilar un tercer tono de gris. */
   min-height: 100%;
-  padding: 24px;
+  padding: 4px;
   display: flex;
   flex-direction: column;
   gap: 16px;

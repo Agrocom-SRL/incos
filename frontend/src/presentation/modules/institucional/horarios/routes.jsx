@@ -71,7 +71,10 @@ export const horariosRoutes = [
     path: '/institucional/horarios/conflictos',
     element: <GestionHorariosConflictosConnector />,
     key: 'INST-HORARIO-CONFLICTOS',
-    permiso: 'institucional.horario.armado',
+    // Alineado al permiso que exige de verdad el fetch de esta pantalla
+    // (GET /paralelos-gestion/:id/conflictos y /gestiones/:id/conflictos),
+    // antes usaba institucional.horario.armado (código distinto al del backend).
+    permiso: 'institucional.horario.conflictos',
     accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'INST-HORARIOS',

@@ -16,8 +16,10 @@
     bottom: 0;
     z-index: var(--z-fixed);
     box-shadow: var(--sombra-sider);
-    overflow-y: auto;
-    overflow-x: hidden;
+    /* El Sider no scrollea como bloque: el scroll interno vive en
+       `.sidebar-nav` (ver components/organisms/sidebar.css) para que el pie
+       de usuario/rol quede siempre visible debajo del menú. */
+    overflow: hidden;
 }
 
 /* ============================================================================

@@ -49,6 +49,7 @@ const CalendarioAsistenciaPage = () => {
     actividadesSinClase,
     rango,
     registroEstado,
+    puedeEditar,
     isLoading,
     error,
     refetch,
@@ -190,8 +191,8 @@ const CalendarioAsistenciaPage = () => {
             anioCalendario={anioCalendario}
             hoy={hoy}
             onElegirDia={irAPlanilla}
-            onDiaEspecial={abrirFechaEspecial}
-            onEditarEspecial={abrirEditarFechaEspecial}
+            onDiaEspecial={puedeEditar ? abrirFechaEspecial : undefined}
+            onEditarEspecial={puedeEditar ? abrirEditarFechaEspecial : undefined}
           />
         </Card>
       )}

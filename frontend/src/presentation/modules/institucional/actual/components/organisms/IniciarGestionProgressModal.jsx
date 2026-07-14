@@ -44,12 +44,12 @@ const IniciarGestionProgressModal = ({ open }) => {
     >
       <Flex vertical gap="large" style={{ paddingTop: 8 }}>
         <Steps
-          direction="vertical"
+          orientation="vertical"
           size="small"
           current={step}
           items={PASOS.map((p, i) => ({
             title: p.title,
-            description: p.description,
+            content: p.description,
             icon: i === step ? <LoadingOutlined /> : undefined,
           }))}
         />

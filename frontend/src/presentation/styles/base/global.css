@@ -16,7 +16,10 @@ body {
   color: var(--color-content-text);
 }
 
-/* Contenedor principal */
+/* Contenedor principal — altura fija al viewport: el único scroll de la
+   aplicación vive en `.content` (ver layout/content.css), nunca en el
+   documento, para evitar doble scroll (documento + área de contenido). */
 #root {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }

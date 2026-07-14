@@ -21,7 +21,7 @@ import { ArrowLeftOutlined, GiftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button, formatFechaCompromiso } from '@atoms';
+import { ActionButton, Button, formatFechaCompromiso } from '@atoms';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { usePagosRegistrarContext } from '../../../../application/modules/pagos/hooks';
 import { downloadFile } from '@application/utils';
@@ -618,14 +618,16 @@ const PagosRegistrar = () => {
           actions={
             <>
               {!ocultarBotonAsignarBeca && (
-                <Button
+                <ActionButton
+                  permiso="matricula.beca.asignar"
+                  accion="CREAR"
                   variant="success"
                   icon={<GiftOutlined />}
                   onClick={handleAsignarBeca}
                   style={{ marginRight: 8 }}
                 >
                   Asignar Beca
-                </Button>
+                </ActionButton>
               )}
               <Button
                 icon={<ArrowLeftOutlined />}

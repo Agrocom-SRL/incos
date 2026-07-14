@@ -21,6 +21,11 @@ html {
 }
 
 body {
+  /* El user-agent stylesheet trae margin:8px por defecto en <body>. Con
+     #root a height:100vh (ver base/global.css) ese margen sobrante hacía
+     que <html> completo tuviera scrollHeight > clientHeight y mostrara un
+     segundo scroll de toda la página además del de `.content`. */
+  margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

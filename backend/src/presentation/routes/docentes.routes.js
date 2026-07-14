@@ -51,6 +51,18 @@ export function buildDocentesRouter({ controllers, middlewares }) {
       ['docentes.asignar', 'ELIMINAR'],
     ]),
   ];
+  // Alta de una nueva asignación (docente + materia + paralelo). El seed y la UI
+  // (ActionButton/PermisoGuard "Asignar materias y paralelos") usan CREAR; antes
+  // este gate solo aceptaba EDITAR, lo que dejaba CREAR huérfano en las 3 capas.
+  const docenteAsignarCrear = [
+    authenticate,
+    verificarPermisoCualquiera([
+      ['institucional.horarios.asignacion-docente', 'CREAR'],
+      ['institucional.horarios.asignacion-docente', 'EDITAR'],
+      ['docentes.asignar', 'CREAR'],
+      ['docentes.asignar', 'EDITAR'],
+    ]),
+  ];
   const docenteColorListar = [
     authenticate,
     verificarPermisoCualquiera([
@@ -189,7 +201,7 @@ export function buildDocentesRouter({ controllers, middlewares }) {
 
   router.post(
     '/asignaciones',
-    ...docenteAsignar,
+    ...docenteAsignarCrear,
     ...createTeacherAssignmentValidator,
     validateRequest,
     (req, res, next) => controllers.createTeacherAssignmentController.handle(req, res, next)
@@ -197,7 +209,7 @@ export function buildDocentesRouter({ controllers, middlewares }) {
 
   router.post(
     '/asignaciones/curso',
-    ...docenteAsignar,
+    ...docenteAsignarCrear,
     ...assignTeacherToCourseValidator,
     validateRequest,
     (req, res, next) => controllers.assignTeacherToCourseController.handle(req, res, next)
