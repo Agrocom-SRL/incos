@@ -10,8 +10,19 @@
     /* Solo posicionamiento y márgenes - los colores vienen del tema de Ant Design */
     margin-top: calc(var(--header-height) + var(--spacing-xl));
     margin-left: calc(var(--sidebar-width) + var(--spacing-base));
-    margin-right: var(--spacing-base);
+    /* Sin margin-right: el borde derecho del content llega hasta el borde de
+       la ventana para que su scrollbar (única región con scroll, ver abajo)
+       quede pegado al borde real del viewport, no "flotando" en medio de la
+       página. El espaciado visual se logra con padding-right, no margin. */
+    margin-right: 0;
+    padding-right: var(--spacing-base);
     transition: margin-left var(--transition-base), padding var(--transition-base);
+
+    /* Única región con scroll de toda la app: el documento (#root) no
+       scrollea (ver base/global.css), así se evita el doble scroll entre
+       la página y los contenedores internos (page-container, etc.) */
+    height: calc(100vh - var(--header-height) - var(--spacing-xl));
+    overflow-y: auto;
 
     /* Prevenir overflow horizontal */
     overflow-x: hidden;

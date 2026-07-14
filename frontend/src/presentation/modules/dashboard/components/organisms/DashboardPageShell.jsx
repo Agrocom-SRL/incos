@@ -11,7 +11,7 @@ const DashboardPageShell = ({ children }) => {
             align="flex-start"
             style={{
                 width: '100%',
-                height: '100%',
+                minHeight: '100%',
                 backgroundColor: allColors.colorBgLayout,
                 padding: `${allSpacing.marginMD}px`,
                 borderRadius: `${componentConfig.Card.borderRadiusLG}px`,

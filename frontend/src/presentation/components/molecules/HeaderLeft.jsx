@@ -12,7 +12,12 @@ import { allSpacing } from '@theme/tokens';
 const HeaderLeft = ({ collapsed, onToggle }) => {
     return (
         <Flex align="center" gap={allSpacing.margin}>
-            <Logo variant="horizontal" size="medium" />
+            <Logo
+                variant={collapsed ? 'icon' : 'horizontal'}
+                size="medium"
+                onClick={onToggle}
+                className="header-logo-trigger"
+            />
             <IconButton
                 icon={<MenuOutlined />}
                 onClick={onToggle}
