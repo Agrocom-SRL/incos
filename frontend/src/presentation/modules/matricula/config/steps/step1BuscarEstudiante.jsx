@@ -6,7 +6,8 @@
  */
 
 import { UserOutlined } from '@ant-design/icons';
-import { Text } from '@atoms';
+import { Flex } from 'antd';
+import { StatusPill, Text } from '@atoms';
 
 const BUSCAR_ESTUDIANTE_HEADER = {
   title: 'Datos del Estudiante',
@@ -44,9 +45,20 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
       if (student.ciCompleto) data.push(`CI: ${student.ciCompleto}`);
       if (student.codigoEstudiante) data.push(`Código: ${student.codigoEstudiante}`);
       const caption = data.length > 0 ? data.join(' | ') : null;
+      const yaMatriculado = !!student.yaMatriculadoGestionActual;
       return {
         avatar: <UserOutlined />,
-        title: student.nombreCompleto || 'Sin nombre',
+        title: (
+          <Flex align="center" gap={8}>
+            <span>{student.nombreCompleto || 'Sin nombre'}</span>
+            {yaMatriculado ? (
+              <StatusPill
+                label={`Ya matriculado${student.gestionActualAnio ? ` (${student.gestionActualAnio})` : ''}`}
+                className="cfg-materia-pill cfg-materia-pill--danger"
+              />
+            ) : null}
+          </Flex>
+        ),
         caption: caption ? <Text type="secondary">{caption}</Text> : null,
       };
     },

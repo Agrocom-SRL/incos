@@ -8,6 +8,7 @@ export { GetStudentByIdUseCase } from './GetStudentByIdUseCase.js';
 export { GetMisDatosEstudianteUseCase } from './GetMisDatosEstudianteUseCase.js';
 export { GetMiMatriculaEstudianteUseCase } from './GetMiMatriculaEstudianteUseCase.js';
 export { SearchStudentUseCase } from './SearchStudentUseCase.js';
+export { SearchStudentsForInscripcionUseCase } from './SearchStudentsForInscripcionUseCase.js';
 export { GenerateActaCompromisoUseCase } from './GenerateActaCompromisoUseCase.js';
 export { GenerateDeclaracionJuradaUseCase } from './GenerateDeclaracionJuradaUseCase.js';
 export { DeleteStudentUseCase } from './DeleteStudentUseCase.js';

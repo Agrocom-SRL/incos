@@ -14,7 +14,7 @@
 
 import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS, INSCRIPCIONES_TOKENS, ACADEMICO_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, GetMisDatosEstudianteUseCase, GetMiMatriculaEstudianteUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, GenerateDeclaracionJuradaUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase, ExportStudentEnrollmentStatisticsExcelUseCase, ExportStudentEnrollmentStudentListExcelUseCase, SearchStudentsForBecaAsignacionUseCase, GetStudentScholarshipByIdUseCase } from '../../../../application/use-cases/estudiantes/index.js';
+import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, GetMisDatosEstudianteUseCase, GetMiMatriculaEstudianteUseCase, SearchStudentUseCase, SearchStudentsForInscripcionUseCase, GenerateActaCompromisoUseCase, GenerateDeclaracionJuradaUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase, ExportStudentEnrollmentStatisticsExcelUseCase, ExportStudentEnrollmentStudentListExcelUseCase, SearchStudentsForBecaAsignacionUseCase, GetStudentScholarshipByIdUseCase } from '../../../../application/use-cases/estudiantes/index.js';
 import { GetStudentScholarshipsByStudentIdUseCase } from '../../../../application/use-cases/estudiantes/becas/GetStudentScholarshipsByStudentIdUseCase.js';
 import { GetHistorialAcademicoUseCase } from '../../../../application/use-cases/estudiantes/GetHistorialAcademicoUseCase.js';
 import { ExportHistorialAcademicoExcelUseCase } from '../../../../application/use-cases/estudiantes/ExportHistorialAcademicoExcelUseCase.js';
@@ -23,7 +23,7 @@ import { GetHistorialAcademicoController } from '../../../../presentation/contro
 import { ExportHistorialAcademicoExcelController } from '../../../../presentation/controllers/estudiantes/estudiantes/export-historial-academico-excel.controller.js';
 import { ExportHistorialAcademicoPdfController } from '../../../../presentation/controllers/estudiantes/estudiantes/export-historial-academico-pdf.controller.js';
 import { ListStudentScholarshipsUseCase } from '../../../../application/use-cases/estudiantes/becas/ListStudentScholarshipsUseCase.js';
-import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, GetMisDatosEstudianteController, GetMiMatriculaEstudianteController, SearchStudentController, ActaCompromisoController, DeclaracionJuradaController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController, ExportEstadisticaInscritosExcelController, ExportListaInscritosPorCarreraExcelController, SearchStudentsForBecaAsignacionController, GetStudentScholarshipByIdController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, GetMisDatosEstudianteController, GetMiMatriculaEstudianteController, SearchStudentController, SearchStudentsForInscripcionController, ActaCompromisoController, DeclaracionJuradaController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController, ExportEstadisticaInscritosExcelController, ExportListaInscritosPorCarreraExcelController, SearchStudentsForBecaAsignacionController, GetStudentScholarshipByIdController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { GetStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/get-scholarships.controller.js';
 import { ListStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/list-student-scholarships.controller.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
@@ -174,6 +174,16 @@ export function registerEstudiantesResource(container) {
         ESTUDIANTES_TOKENS.searchStudentsForBecaAsignacionUseCase,
         (c) =>
             new SearchStudentsForBecaAsignacionUseCase({
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.searchStudentsForInscripcionUseCase,
+        (c) =>
+            new SearchStudentsForInscripcionUseCase({
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -466,6 +476,19 @@ export function registerEstudiantesResource(container) {
 
     registerComponent(
         container,
+        ESTUDIANTES_TOKENS.searchStudentsForInscripcionController,
+        (c) =>
+            new SearchStudentsForInscripcionController({
+                searchStudentsForInscripcionUseCase: c.resolve(
+                    ESTUDIANTES_TOKENS.searchStudentsForInscripcionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         ESTUDIANTES_TOKENS.actaCompromisoController,
         (c) =>
             new ActaCompromisoController({
@@ -628,6 +651,9 @@ export function registerEstudiantesResource(container) {
                 searchStudentController: c.resolve(ESTUDIANTES_TOKENS.searchStudentController),
                 searchStudentsForBecaAsignacionController: c.resolve(
                     ESTUDIANTES_TOKENS.searchStudentsForBecaAsignacionController
+                ),
+                searchStudentsForInscripcionController: c.resolve(
+                    ESTUDIANTES_TOKENS.searchStudentsForInscripcionController
                 ),
                 actaCompromisoController: c.resolve(ESTUDIANTES_TOKENS.actaCompromisoController),
                 declaracionJuradaController: c.resolve(ESTUDIANTES_TOKENS.declaracionJuradaController),

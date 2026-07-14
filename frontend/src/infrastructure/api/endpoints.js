@@ -121,6 +121,8 @@ export const ESTUDIANTES_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),
   /** GET — Estudiantes sin beca vigente (preliminar=1 o q + limit) para asignar beca */
   BUSCAR_ASIGNACION_BECA: `${API_BASE}/estudiantes/buscar-asignacion-beca`,
+  /** GET — Estudiantes para el wizard de Inscripción nueva (q + limit); anota yaMatriculadoGestionActual, no excluye */
+  BUSCAR_PARA_INSCRIPCION: `${API_BASE}/estudiantes/buscar-para-inscripcion`,
   /** GET — Excel estadística inscritos (query gestion_id opcional) */
   EXPORT_ESTADISTICA_INSCRITOS: `${API_BASE}/estudiantes/export/estadistica-inscritos`,
   /** GET — Excel lista inscritos por carrera (query carrera_id requerido; gestion_id opcional) */

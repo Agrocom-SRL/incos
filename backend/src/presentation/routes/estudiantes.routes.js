@@ -9,6 +9,7 @@ import {
     updateStudentValidator,
     assignBecaValidator,
     searchStudentsAsignacionBecaValidator,
+    searchStudentsInscripcionValidator,
 } from '../validators/estudiantes/index.js';
 
 /**
@@ -59,6 +60,8 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     const becaDetalle = [authenticate, verificarPermiso('matricula.beca.ver', 'DETALLE')];
     const becaAsignarCrear = [authenticate, verificarPermiso('matricula.beca.asignar', 'CREAR')];
     const becaAsignarEliminar = [authenticate, verificarPermiso('matricula.beca.asignar', 'ELIMINAR')];
+    /** Búsqueda de estudiante para el wizard de Inscripción nueva: mismo permiso que crear la inscripción. */
+    const inscripcionCrear = [authenticate, verificarPermiso('matricula.inscribir', 'CREAR')];
     const historialDetalle = [authenticate, verificarPermiso('academico.historial.academico', 'DETALLE')];
     const historialExportar = [authenticate, verificarPermiso('academico.historial.academico', 'EXPORTAR')];
 
@@ -204,6 +207,20 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         ...searchStudentsAsignacionBecaValidator,
         validateRequest,
         (req, res, next) => controllers.searchStudentsForBecaAsignacionController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/estudiantes/buscar-para-inscripcion
+     * Muestra previa o búsqueda de estudiantes para el wizard de Inscripción nueva.
+     * No excluye a los ya matriculados en la gestión vigente (yaMatriculadoGestionActual).
+     * Debe ir antes de rutas con /:id.
+     */
+    router.get(
+        '/buscar-para-inscripcion',
+        ...inscripcionCrear,
+        ...searchStudentsInscripcionValidator,
+        validateRequest,
+        (req, res, next) => controllers.searchStudentsForInscripcionController.handle(req, res, next)
     );
 
     /**
