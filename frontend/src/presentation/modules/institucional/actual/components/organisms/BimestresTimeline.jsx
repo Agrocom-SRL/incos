@@ -23,12 +23,12 @@ const BimestresTimeline = ({ timeline = [] }) => {
         <Tag color={b.tag.color}>{b.tag.label}</Tag>
       </Flex>
     ),
-    description: <Text type="secondary">{b.rango}</Text>,
+    content: <Text type="secondary">{b.rango}</Text>,
   }));
 
   return (
     <Card title="Línea de tiempo de bimestres">
-      <Steps direction="vertical" size="small" items={items} />
+      <Steps orientation="vertical" size="small" items={items} />
     </Card>
   );
 };

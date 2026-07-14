@@ -24,7 +24,7 @@ const actividadesTimeline = (actividades = []) => (
   <Timeline
     items={actividades.map((a) => ({
       color: estadoDot(a.estado),
-      children: (
+      content: (
         <Flex vertical gap={allSpacing.marginXS}>
           <Flex align="center" gap="small" wrap>
             {renderActividadIcono(a.icono)}

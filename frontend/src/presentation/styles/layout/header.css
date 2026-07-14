@@ -18,6 +18,15 @@
     align-items: center;
     justify-content: space-between; /* Separar izquierda y derecha */
     padding: 0 var(--spacing-base);
+
+    /* Altura fijada por nosotros, no por Ant Design: en modo cssVar de AntD 6
+       la regla `.ant-layout-header{height:var(--ant-layout-header-height)}`
+       no siempre resuelve esa variable (queda inválida → altura auto, pegada
+       al contenido, sin aire). `--header-height` es la MISMA variable que ya
+       usan `.sider`/`.content` para su propio cálculo, así los tres coinciden
+       siempre sin depender de que Ant Design se mida solo. */
+    height: var(--header-height);
+    box-sizing: border-box;
 }
 
 /* ============================================================================

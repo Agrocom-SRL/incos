@@ -12,6 +12,8 @@ import { allSpacing } from '../spacing';
  * Usa colores del Sider como base y verde primario para estados activos/seleccionados
  */
 export const Menu = {
+  // Sin borde derecho del panel del menú (línea vertical junto al Sider)
+  activeBarBorderWidth: 0,
   // Color de texto: mismo que Sider
   itemColor: allColors.colorText,
   // Items seleccionados (solo hijos finales)
