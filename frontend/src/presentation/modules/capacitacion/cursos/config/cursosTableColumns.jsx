@@ -50,7 +50,6 @@ export const createCursosCapacitacionTableColumns = ({
     {
       title: 'Curso',
       key: 'curso',
-      fixed: 'left',
       width: 260,
       render: (_, record) => (
         <div className="cfg-identidad-clamp2" title={record.titulo || undefined}>
@@ -142,7 +141,6 @@ export const createCursosCapacitacionTableColumns = ({
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 140,
       align: 'right',
       render: (_, record) => {

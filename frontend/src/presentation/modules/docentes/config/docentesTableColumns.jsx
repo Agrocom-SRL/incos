@@ -43,7 +43,6 @@ export const createDocentesTableColumns = ({ navigate, listNavState, refetch, de
     {
       title: 'Docente',
       dataIndex: 'nombreCompleto',
-      fixed: 'left',
       ellipsis: true,
       render: (_nombre, record) => {
         const ci = getCiCompleto(record);

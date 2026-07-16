@@ -17,7 +17,6 @@ export const createUsuariosTableColumns = (navigate, { eliminarUsuario, refetch 
   {
     title: 'Usuario',
     key: 'usuario',
-    fixed: 'left',
     render: (_, record) => (
       <UsuarioIdentidadCell
         username={record.username}
@@ -67,7 +66,6 @@ export const createUsuariosTableColumns = (navigate, { eliminarUsuario, refetch 
   {
     title: 'Acciones',
     key: 'acciones',
-    fixed: 'right',
     align: 'right',
     width: 120,
     render: (_, record) => (

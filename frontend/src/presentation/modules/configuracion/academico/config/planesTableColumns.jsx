@@ -36,7 +36,6 @@ export const createPlanesTableColumns = ({ navigate, listNavState, refetch }) =>
     {
       title: 'Carrera',
       dataIndex: 'nombre',
-      fixed: 'left',
       ellipsis: true,
       render: (_nombre, record) => (
         <IdentidadCelda

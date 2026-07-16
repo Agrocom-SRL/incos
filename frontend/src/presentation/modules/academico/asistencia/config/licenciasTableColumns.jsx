@@ -97,7 +97,6 @@ export const createLicenciasTableColumns = ({ onVer, onEditar, onCancelar } = {}
   {
     title: 'Acciones',
     key: 'acciones',
-    fixed: 'right',
     width: 140,
     align: 'right',
     render: (_, record) => {

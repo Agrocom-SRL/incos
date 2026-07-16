@@ -24,14 +24,12 @@ export const createBecasEstudianteColumns = () => [
     key: 'nro',
     width: 44,
     align: 'center',
-    fixed: 'left',
     className: 'fin-num--center',
   },
   {
     title: 'Estudiante',
     key: 'estudiante',
     width: 260,
-    fixed: 'left',
     ellipsis: true,
     render: (_, record) =>
       buildFullName(record.nombres, record.apellidoPaterno, record.apellidoMaterno, 'Sin nombre'),

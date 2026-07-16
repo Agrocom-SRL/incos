@@ -26,7 +26,6 @@ export const createParticipantesTableColumns = ({ onEditar }) => {
     {
       title: 'Participante',
       key: 'participante',
-      fixed: 'left',
       width: 280,
       render: (_, record) => (
         <div className="cfg-identidad-clamp2" title={record.nombreCompleto || undefined}>
@@ -74,7 +73,6 @@ export const createParticipantesTableColumns = ({ onEditar }) => {
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 110,
       align: 'right',
       render: (_, record) => (

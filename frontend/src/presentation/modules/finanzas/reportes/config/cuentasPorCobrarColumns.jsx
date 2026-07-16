@@ -78,7 +78,6 @@ export const createCuentasPorCobrarColumns = (onRegistrarPago) => [
     key: 'nro',
     width: 44,
     align: 'center',
-    fixed: 'left',
     className: 'fin-num--center',
     render: (_value, _record, index) => index + 1,
   },
@@ -86,7 +85,6 @@ export const createCuentasPorCobrarColumns = (onRegistrarPago) => [
     title: 'Estudiante',
     key: 'estudiante',
     width: 260,
-    fixed: 'left',
     ellipsis: true,
     render: (_, record) => (
       <CobranzaEstudianteCell carnet={record.carnet} nombreCompleto={record.nombreCompleto} />

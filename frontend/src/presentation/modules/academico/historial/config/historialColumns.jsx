@@ -37,7 +37,6 @@ export const historialColumns = [
     key: 'nro',
     width: 56,
     align: 'center',
-    fixed: 'left',
     render: (_, record, index) => record.nro ?? index + 1,
   },
   {
@@ -67,7 +66,6 @@ export const historialColumns = [
     title: 'Sigla',
     key: 'asignaturaSigla',
     width: 96,
-    fixed: 'left',
     render: (_, record) => (
       <span className="historial-transcript-grid__sigla">{dash(record.asignaturaSigla)}</span>
     ),
@@ -76,7 +74,6 @@ export const historialColumns = [
     title: 'Asignatura',
     key: 'asignaturaNombre',
     width: 260,
-    fixed: 'left',
     ellipsis: true,
     render: (_, record) => dash(record.asignaturaNombre),
   },

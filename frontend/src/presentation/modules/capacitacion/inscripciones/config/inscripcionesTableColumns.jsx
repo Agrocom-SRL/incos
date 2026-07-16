@@ -43,7 +43,6 @@ export const createInscripcionesCapTableColumns = ({
     {
       title: 'Participante',
       key: 'participante',
-      fixed: 'left',
       width: 260,
       render: (_, record) => (
         <div className="cfg-identidad-clamp2" title={record.participanteNombreCompleto || undefined}>
@@ -136,7 +135,6 @@ export const createInscripcionesCapTableColumns = ({
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 120,
       align: 'right',
       render: (_, record) => {

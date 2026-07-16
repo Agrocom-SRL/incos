@@ -393,12 +393,18 @@ reimplementar el fetch).
   `capacitacion.participante`, `capacitacion.inscripcion`,
   `capacitacion.pago`) con sus acciones, y asignación a
   RECTOR/DIR_ADMIN/SEC_ADMIN.
-- `backend/database/02-seeders/66-seed-horarios-capacitacion.sql` — 14 bloques
-  nuevos en `horarios` con `tipo_horario='CAPACITACION'`, IDs fijos 61-74
-  (continúa el rango 1-60 del seeder 24): L-V tarde 15:00-17:00, L-V noche
-  19:00-21:00 y sábado 08:00-12:00 / 14:00-18:00 (bloques de 2 h, `turno=NULL`
-  como los sábados de CLASES). Idempotente: `DELETE ... WHERE
-  tipo_horario='CAPACITACION'` antes de insertar. *(Redactado 2026-07-16.)*
+- `backend/database/02-seeders/66-seed-horarios-capacitacion.sql` —
+  **PENDIENTE DE DECISIÓN (2026-07-16):** se redactó una primera versión
+  (14 bloques nuevos en `horarios` con `tipo_horario='CAPACITACION'`, IDs
+  fijos 61-74 continuando el rango 1-60 del seeder 24: L-V 15:00-17:00,
+  L-V 19:00-21:00 y sábado 08-12 / 14-18, `turno=NULL`, idempotente con
+  `DELETE ... WHERE tipo_horario='CAPACITACION'`), pero el archivo fue
+  **eliminado por el usuario** tras cuestionarlo — falta definir con él el
+  set real de bloques (días/horas) antes de recrearlo. Sin este seeder, el
+  selector de horarios del form de curso no tiene bloques que ofrecer, y el
+  catálogo transitorio del frontend
+  (`application/modules/capacitacion/cursos/config/bloquesHorarioCapacitacion.js`,
+  espejo de los IDs 61-74) debe sincronizarse con la versión final.
 - `backend/database/03-views/154-vista-base-cursos-capacitacion-horarios.sql` —
   vista base: una fila por bloque de cada capacitación
   (`capacitacion_horarios → horarios` + aula desde `capacitaciones.aula_id`),
