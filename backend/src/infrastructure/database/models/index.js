@@ -134,3 +134,12 @@ export { CompromisoPago } from './compromiso_pago.js';
 // CONFIGURACIÓN DEL SISTEMA
 // ============================================
 export { ConfiguracionSistema } from './configuracion_sistema.js';
+
+// ============================================
+// CAPACITACIÓN (módulo CAP)
+// ============================================
+export { Participante } from './participante.js';
+export { CursoCapacitacion } from './curso_capacitacion.js';
+export { BloqueCapacitacion } from './bloque_capacitacion.js';
+export { InscripcionCapacitacion } from './inscripcion_capacitacion.js';
+export { PagoCapacitacion } from './pago_capacitacion.js';
