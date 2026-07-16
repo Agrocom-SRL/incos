@@ -10,7 +10,16 @@
     justify-content: center;
 }
 
-.logo img {
+/* AntD <Image> interpone un wrapper .ant-image y fija height:auto en
+   .ant-image-img con especificidad (0,2,0); se necesita (0,3,0) para
+   que la caja del logo (tokens --logo-*) gobierne el tamaño real. */
+.logo .ant-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.logo .ant-image .ant-image-img {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -19,6 +28,11 @@
 /* ========================================
    VARIANTE: ICONO (Cuadrado)
    ======================================== */
+
+.logo--icon {
+    box-sizing: border-box;
+    padding: var(--spacing-xs);
+}
 
 .logo--icon.logo--small {
     width: var(--logo-icon-small);
