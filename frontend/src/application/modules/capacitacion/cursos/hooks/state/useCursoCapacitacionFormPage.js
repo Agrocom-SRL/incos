@@ -56,6 +56,7 @@ const createCursoFormSections = ({ aulas, aulasDisponible, loadingAulas }) => ({
         required: true,
         span: 12,
         min: 0,
+        addonBefore: 'Bs',
         placeholder: '0',
       },
       {

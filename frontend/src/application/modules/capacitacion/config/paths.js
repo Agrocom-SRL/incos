@@ -16,7 +16,7 @@ export const INSCRIPCIONES_CAP_LIST_PATH = `${CAPACITACION_BASE}/inscripciones`;
 export const inscripcionCapInscribirPath = `${CAPACITACION_BASE}/inscripciones/inscribir`;
 export const inscripcionCapDetallePath = (id) => `${CAPACITACION_BASE}/inscripciones/${id}`;
 
-/** Keys de menú (sidebar) — deben coincidir con las rutas de `@capacitacion/*/routes.jsx`. */
+/** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */
 export const CAP_CURSOS_MENU_KEY = 'CAP-CURSOS';
 export const CAP_PARTICIPANTES_MENU_KEY = 'CAP-PARTICIPANTES';
 export const CAP_INSCRIPCIONES_MENU_KEY = 'CAP-INSCRIPCIONES';

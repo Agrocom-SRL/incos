@@ -927,6 +927,24 @@ Permisos: `reportes.*`
 |---|---|---|
 | VER | Ver reportes y solicitudes | ADM, REC, DIRA, DIRM |
 
+### CAP - Capacitación (`/capacitacion/*`) — módulo nuevo 2026-07-16
+Dominio `CAPACITACION`, módulo `CAP` (cursos cortos a público externo, sin login). Seed: `65-seed-permisos-cap.sql` (**pendiente de siembra en BD**, junto al schema `25-cursos-capacitacion.sql`, el seeder `66-seed-horarios-capacitacion.sql` y las vistas 154/155). Grupos UI: `cap_cursos`, `cap_participantes`, `cap_inscripciones`. Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN; ADMIN_SISTEMA hereda por vista.
+
+| Permiso (codigo) | Acciones | Ruta sidebar | Endpoints | Roles |
+|---|---|---|---|---|
+| `capacitacion.curso` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `/capacitacion/cursos` | `GET/POST /cursos-capacitacion`, `GET/PUT/DELETE /cursos-capacitacion/:id`, `PATCH /cursos-capacitacion/:id/estado` | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR/ACTIVAR) |
+| `capacitacion.participante` | LISTAR, DETALLE, CREAR, EDITAR | `/capacitacion/participantes` | `GET/POST /participantes`, `GET/PUT /participantes/:id` | RECTOR, DIR_ADMIN, SEC_ADMIN |
+| `capacitacion.inscripcion` | LISTAR, DETALLE, CREAR, ELIMINAR | `/capacitacion/inscripciones` | `GET/POST /inscripciones-capacitacion`, `GET/DELETE /inscripciones-capacitacion/:id` | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR) |
+| `capacitacion.pago` | CREAR, EXPORTAR | `/capacitacion/inscripciones` | `POST /inscripciones-capacitacion/:id/pagos` (CREAR; EXPORTAR sembrado, sin endpoint aún) | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** EXPORTAR) |
+
+> Aislamiento: tablas propias (`participantes`, `capacitaciones`, `capacitacion_*`) sin FK hacia
+> `estudiantes`/`usuarios`; reutiliza solo catálogos `aulas`, `horarios` (`tipo_horario='CAPACITACION'`),
+> `metodos_pago`, `cuentas_pago`. `DELETE /inscripciones-capacitacion/:id` marca RETIRADO + soft-delete
+> en cascada de pagos. Recibo PDF (GENERAR_PDF) diferido a una segunda iteración.
+> Gap conocido: el picker de aulas del form de curso reutiliza `GET /aulas/catalogo`
+> (`institucional.oferta.paralelo-gestion` LISTAR) que SEC_ADMIN no tiene — la UI degrada con select
+> deshabilitado; candidato a `sistema.catalogo.referencia` (`listarCatalogoReferencia`).
+
 ### SEG - Seguridad (`/seguridad/*`)
 Permisos: `seguridad.usuario.crear`, `seguridad.usuario.administrar`, `seguridad.rol.gestionar`
 Endpoint(s): `GET/POST/PUT/PATCH/DELETE /usuarios`, `GET/PUT /roles/:id/permisos`

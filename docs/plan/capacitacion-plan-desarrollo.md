@@ -1,6 +1,25 @@
 # Plan de desarrollo — Módulo "Cursos de Capacitación"
 
-> **Estado (2026-07-16): BACKEND COMPLETO implementado (paso 6 del checklist §5).**
+> **Estado (2026-07-16, tarde): FRONTEND COMPLETO implementado (paso 9 del
+> checklist §5).** Módulo `capacitacion/` en `application/` y `presentation/`
+> (alias `@application-capacitacion` / `@capacitacion` en vite+jsconfig),
+> 3 ítems de menú bajo el dominio CAP (order 8, tras Reportes): Cursos (listado con toggle
+> EstadoTogglePill + ficha con tab Horarios + form crear/editar con
+> horarioIds), Participantes (listado + modal alta/edición) e Inscripciones
+> (listado ≈ PagosList con estado de pago, InscribirParticipantePage con
+> participante nuevo/existente + curso + pago inicial opcional, ficha con
+> historial de pagos y modal Registrar pago sobre los catálogos compartidos
+> `usePaymentCatalogsApi`). `dataKey`==`dataFieldName` verificado en las 5
+> pantallas. Build de Vite y ESLint limpios. **Pendientes:** ejecutar en BD
+> schema 25 + seeders 65/66 + vistas 154/155 (pasos 2-5 y 7) y las pruebas
+> manuales con rol (pasos 10-12). **Gap conocido:** no existe endpoint de
+> catálogo de bloques `horarios` tipo CAPACITACION — el picker del form usa
+> la constante transitoria `bloquesHorarioCapacitacion.js` (espejo del seeder
+> 66, IDs 61-74; el backend re-valida); el picker de aulas reutiliza
+> `GET /aulas/catalogo` (permiso institucional) con degradación si el rol no
+> lo tiene.
+>
+> Estado previo (2026-07-16): BACKEND COMPLETO implementado (paso 6 del checklist §5).
 > Capas completas por recurso (modelos → interfaces → repos → mappers → use
 > cases → controllers → validators → routers → tokens/containers → montaje en
 > `routes/index.js`). Repositorios del módulo registrados con tokens scoped
@@ -14,6 +33,15 @@
 > Frontend (§4) NO iniciado.
 >
 > Bitácora:
+> - 2026-07-16 (tarde) · frontend: módulo CAP completo (§4) — repos de
+>   infraestructura + interfaces de dominio, `application/modules/capacitacion`
+>   ({cursos,participantes,inscripciones} con hooks api/state, providers,
+>   contexts, mappers, config/paths, utils permisos/pills),
+>   `presentation/modules/capacitacion` (routes.jsx por ítem, connectors lazy,
+>   páginas, organismos, configs de columnas), registro en
+>   `dominios/routes.jsx` (CAP tras Reportes, order 8 — CFG/SEG renumerados a
+>   9/10), `modules/index.js`, iconos de sidebar
+>   (`menuIcons.js`) y endpoints CAP en `api/endpoints.js`. Build+lint OK.
 > - 2026-07-16 · backend: módulo CAP completo en `backend/src` (15 endpoints,
 >   RBAC `capacitacion.*` por acción, transacciones en crear curso+horarios,
 >   inscribir+pago inicial y eliminar inscripción+pagos; recibo = ID a 6
