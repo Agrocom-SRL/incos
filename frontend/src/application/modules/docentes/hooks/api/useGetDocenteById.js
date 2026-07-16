@@ -12,7 +12,7 @@ export const useGetDocenteById = createApiHook({
   initialLoading: false,
   validate: (docenteId) => {
     if (docenteId == null || docenteId === '') {
-      return 'ID del docente es requerido';
+      return 'Se requiere el ID del docente';
     }
     return null;
   },

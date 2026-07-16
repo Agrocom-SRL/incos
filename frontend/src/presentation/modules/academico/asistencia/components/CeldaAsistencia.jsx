@@ -126,7 +126,7 @@ const CeldaAsistencia = ({
       type="button"
       className={className}
       onClick={onToggle}
-      aria-label={`${label}. Tocá para cambiar`}
+      aria-label={`${label}. Toque para cambiar`}
     >
       <ContenidoCelda marca={marca} />
     </button>

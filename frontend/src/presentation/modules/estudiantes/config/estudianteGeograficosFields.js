@@ -70,7 +70,7 @@ const createCamposExtranjera = (prefix = '') => {
   return [
     {
       name: prefix ? `${prefix}PaisId` : 'paisId',
-      label: 'País de Nacimiento',
+      label: 'País de nacimiento',
       type: 'select',
       required: true,
       span: 12,
@@ -79,7 +79,7 @@ const createCamposExtranjera = (prefix = '') => {
     },
     {
       name: prefix ? `${prefix}CiudadNacimiento` : 'ciudadNacimiento',
-      label: 'Ciudad de Nacimiento',
+      label: 'Ciudad de nacimiento',
       type: 'input',
       required: true,
       span: 12,
@@ -93,11 +93,11 @@ const createCamposExtranjera = (prefix = '') => {
  * Crea la configuración de campos geográficos de origen para el registro de estudiantes
  * 
  * Los campos geográficos incluyen:
- * - Idioma Más Hablado (select) - idioma que más habla
- * - Idioma Secundario (select) - segundo idioma que más habla
- * - Tipo de Origen/Nacionalidad (radio) - BOLIVIANA, EXTRANJERA, DOBLE_NACIONALIDAD
- * - Doble Nacionalidad (switch) - indica si tiene doble nacionalidad
- * - Primera Nacionalidad (radio) - BOLIVIANA o EXTRANJERA (solo si es doble nacionalidad)
+ * - Idioma más hablado (select) - idioma que más habla
+ * - Idioma secundario (select) - segundo idioma que más habla
+ * - Tipo de origen/Nacionalidad (radio) - BOLIVIANA, EXTRANJERA, DOBLE_NACIONALIDAD
+ * - Doble nacionalidad (switch) - indica si tiene doble nacionalidad
+ * - Primera nacionalidad (radio) - BOLIVIANA o EXTRANJERA (solo si es doble nacionalidad)
  * 
  * Nota: Los idiomas tienen exclusión mutua (el seleccionado en uno no aparece en el otro)
  * 
@@ -108,10 +108,10 @@ export const createEstudianteGeograficosFields = () => {
     geograficos: {
       title: 'DATOS GEOGRÁFICOS DE ORIGEN',
       fields: [
-        // Idioma Más Hablado (idioma que más habla)
+        // Idioma más hablado (idioma que más habla)
         {
           name: 'idiomaMaternoId',
-          label: 'Idioma Más Hablado',
+          label: 'Idioma más hablado',
           type: 'select',
           required: false,
           span: 12,
@@ -119,10 +119,10 @@ export const createEstudianteGeograficosFields = () => {
           placeholder: 'Seleccione idioma más hablado',
           excludeFrom: 'idiomaSecundarioId', // Excluir el valor seleccionado de este campo en idiomaSecundarioId
         },
-        // Idioma Secundario (segundo idioma más hablado)
+        // Idioma secundario (segundo idioma más hablado)
         {
           name: 'idiomaSecundarioId',
-          label: 'Idioma Secundario',
+          label: 'Idioma secundario',
           type: 'select',
           required: false,
           span: 12,
@@ -130,7 +130,7 @@ export const createEstudianteGeograficosFields = () => {
           placeholder: 'Seleccione idioma secundario',
           excludeFrom: 'idiomaMaternoId', // Excluir el valor seleccionado de este campo en idiomaMaternoId
         },
-        // Tipo de Origen/Nacionalidad
+        // Tipo de origen/Nacionalidad
         {
           name: 'tipoOrigen',
           label: 'Nacionalidad',
@@ -139,10 +139,10 @@ export const createEstudianteGeograficosFields = () => {
           span: 12,
           options: 'tiposOrigen', // Debe incluir: BOLIVIANA, EXTRANJERA, DOBLE_NACIONALIDAD
         },
-        // Primera Nacionalidad (solo visible si tipoOrigen es DOBLE_NACIONALIDAD)
+        // Primera nacionalidad (solo visible si tipoOrigen es DOBLE_NACIONALIDAD)
         {
           name: 'primeraNacionalidad',
-          label: 'Primera Nacionalidad',
+          label: 'Primera nacionalidad',
           type: 'radio',
           required: true,
           span: 12,
@@ -154,7 +154,7 @@ export const createEstudianteGeograficosFields = () => {
         // Sub-sección condicional para Nacionalidad Boliviana (caso simple, no doble)
         {
           type: 'subsection',
-          subsectionTitle: 'Datos de Nacionalidad Boliviana',
+          subsectionTitle: 'Datos de nacionalidad boliviana',
           conditional: true,
           dependsOn: 'tipoOrigen',
           showIf: (tipoOrigen) => tipoOrigen === 'BOLIVIANA',
@@ -163,17 +163,17 @@ export const createEstudianteGeograficosFields = () => {
         // Sub-sección condicional para Nacionalidad Extranjera (caso simple, no doble)
         {
           type: 'subsection',
-          subsectionTitle: 'Datos de Nacionalidad Extranjera',
+          subsectionTitle: 'Datos de nacionalidad extranjera',
           conditional: true,
           dependsOn: 'tipoOrigen',
           showIf: (tipoOrigen) => tipoOrigen === 'EXTRANJERA',
           fields: createCamposExtranjera(),
         },
-        // Sub-sección para Primera Nacionalidad - Boliviana (doble nacionalidad)
+        // Sub-sección para Primera nacionalidad - Boliviana (doble nacionalidad)
         // Si primeraNacionalidad = BOLIVIANA, mostrar campos bolivianos como primera
         {
           type: 'subsection',
-          subsectionTitle: 'Datos de la Primera Nacionalidad',
+          subsectionTitle: 'Datos de la primera nacionalidad',
           conditional: true,
           dependsOn: ['tipoOrigen', 'primeraNacionalidad'],
           showIf: (allFormValues) => {
@@ -182,11 +182,11 @@ export const createEstudianteGeograficosFields = () => {
           },
           fields: createCamposBoliviana(),
         },
-        // Sub-sección para Primera Nacionalidad - Extranjera (doble nacionalidad)
+        // Sub-sección para Primera nacionalidad - Extranjera (doble nacionalidad)
         // Si primeraNacionalidad = EXTRANJERA, mostrar campos extranjeros como primera
         {
           type: 'subsection',
-          subsectionTitle: 'Datos de la Primera Nacionalidad',
+          subsectionTitle: 'Datos de la primera nacionalidad',
           conditional: true,
           dependsOn: ['tipoOrigen', 'primeraNacionalidad'],
           showIf: (allFormValues) => {
@@ -199,7 +199,7 @@ export const createEstudianteGeograficosFields = () => {
         // Si primeraNacionalidad = BOLIVIANA, la segunda es EXTRANJERA (automáticamente)
         {
           type: 'subsection',
-          subsectionTitle: 'Datos de Segunda Nacionalidad',
+          subsectionTitle: 'Datos de segunda nacionalidad',
           conditional: true,
           dependsOn: ['tipoOrigen', 'primeraNacionalidad'],
           showIf: (allFormValues) => {
@@ -212,7 +212,7 @@ export const createEstudianteGeograficosFields = () => {
         // Si primeraNacionalidad = EXTRANJERA, la segunda es BOLIVIANA (automáticamente)
         {
           type: 'subsection',
-          subsectionTitle: 'Datos de Segunda Nacionalidad',
+          subsectionTitle: 'Datos de segunda nacionalidad',
           conditional: true,
           dependsOn: ['tipoOrigen', 'primeraNacionalidad'],
           showIf: (allFormValues) => {

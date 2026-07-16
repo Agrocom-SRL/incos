@@ -46,6 +46,6 @@ export const GRADO_DISCAPACIDAD = [
 export const TIPO_ORIGEN = [
   { label: 'Boliviana', value: 'BOLIVIANA' },
   { label: 'Extranjera', value: 'EXTRANJERA' },
-  { label: 'Doble Nacionalidad', value: 'DOBLE_NACIONALIDAD' },
+  { label: 'Doble nacionalidad', value: 'DOBLE_NACIONALIDAD' },
 ];
 

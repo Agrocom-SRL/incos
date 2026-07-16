@@ -111,7 +111,7 @@ export default function UsuariosListPage() {
       icon={<PlusOutlined />}
       onClick={handleCreateUsuario}
     >
-      Nuevo Usuario
+      Nuevo usuario
     </ActionButton>
   );
 
@@ -123,7 +123,7 @@ export default function UsuariosListPage() {
     >
       <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
         <PageHeaderArea>
-          <PageHeader title="Administración de Usuarios" breadcrumbItems={breadcrumbItems} />
+          <PageHeader title="Administración de usuarios" breadcrumbItems={breadcrumbItems} />
         </PageHeaderArea>
         <DashboardPageShell>
           <MainContent>

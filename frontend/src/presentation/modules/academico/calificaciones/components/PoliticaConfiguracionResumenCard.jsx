@@ -176,7 +176,7 @@ const ResumenHeader = ({
     </div>
     {esReferenciaAnterior ? (
       <Paragraph type="secondary" className="cal-politica-resumen__desc-anterior">
-        Referencia de <Text strong>{gestionNombre}</Text>. Podés copiar y guardar la misma configuración
+        Referencia de <Text strong>{gestionNombre}</Text>. Puede copiar y guardar la misma configuración
         en <Text strong>{gestionVigenteNombre}</Text> con un solo clic.
       </Paragraph>
     ) : null}

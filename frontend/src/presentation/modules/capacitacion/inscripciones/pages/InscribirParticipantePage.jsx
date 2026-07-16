@@ -103,7 +103,7 @@ const InscribirParticipantePage = () => {
                 }
               />
               <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                Busque a un participante ya registrado o capture los datos mínimos de una persona
+                Busque a un participante ya registrado o ingrese los datos mínimos de una persona
                 nueva (se registra junto con la inscripción, en una sola operación).
               </Paragraph>
             </header>

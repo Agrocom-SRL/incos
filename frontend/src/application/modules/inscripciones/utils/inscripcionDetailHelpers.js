@@ -36,6 +36,20 @@ export const getSubjectStatusColor = (status) => {
   return statusColors[status] || 'default';
 };
 
+/** Etiqueta legible del estado de una materia inscrita (nunca mostrar el enum crudo). */
+export const getSubjectStatusLabel = (status) => {
+  const statusLabels = {
+    INSCRITO: 'Inscrito',
+    CURSANDO: 'Cursando',
+    EN_CURSO: 'En curso',
+    APROBADO: 'Aprobado',
+    REPROBADO: 'Reprobado',
+    ABANDONO: 'Abandono',
+    RETIRADO: 'Retirado',
+  };
+  return statusLabels[String(status ?? '').toUpperCase()] ?? status ?? '—';
+};
+
 export const getEnrollmentTypeColor = (type) => {
   const typeColors = {
     NUEVO: 'green',

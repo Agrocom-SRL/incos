@@ -21,13 +21,13 @@ export const useMisDatosEstudiante = (enabled = false) => {
       const result = await EstudianteRepository.obtenerMisDatos();
       if (!result?.success) {
         setMisDatos(null);
-        setError(result?.error || 'No se pudieron cargar tus datos');
+        setError(result?.error || 'No se pudieron cargar sus datos');
         return;
       }
       setMisDatos(result.data ?? null);
     } catch (err) {
       setMisDatos(null);
-      setError(err?.message || 'No se pudieron cargar tus datos');
+      setError(err?.message || 'No se pudieron cargar sus datos');
     } finally {
       setLoading(false);
     }

@@ -7,7 +7,7 @@
  */
 export function notifyAccessDenied(
   notificationApi,
-  description = 'No tenés permiso para acceder a esta sección.',
+  description = 'No tiene permiso para acceder a esta sección.',
 ) {
   notificationApi.error({
     title: 'Acceso denegado',

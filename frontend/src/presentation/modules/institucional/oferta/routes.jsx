@@ -160,7 +160,7 @@ export const ofertaRoutes = [
     permisoAny: [...INST_OFERTA_ACADEMICA_PERMISOS, 'docentes.ver'],
     accion: 'LISTAR',
     menu: {
-      label: 'Oferta Académica',
+      label: 'Oferta académica',
       module: 'INST',
       parent: 'INST',
       order: 2,

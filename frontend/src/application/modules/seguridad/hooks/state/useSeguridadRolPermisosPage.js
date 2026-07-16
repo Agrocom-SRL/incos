@@ -40,7 +40,7 @@ export const useSeguridadRolPermisosPage = () => {
       { title: 'Inicio', href: '/' },
       { title: 'Seguridad', href: '/seguridad/roles' },
       { title: 'Roles', href: '/seguridad/roles' },
-      { title: rolInfo?.nombre || 'Permisos de Rol' },
+      { title: rolInfo?.nombre || 'Permisos del rol' },
     ],
     [rolInfo]
   );

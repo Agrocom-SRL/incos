@@ -24,13 +24,13 @@ export const useMiBoletin = () => {
       const result = await CalificacionRepository.obtenerMiBoletin();
       if (!result?.success) {
         setBoletin(null);
-        setError(result?.error || 'No se pudo cargar tu boletín');
+        setError(result?.error || 'No se pudo cargar su boletín');
         return;
       }
       setBoletin(result.data ?? null);
     } catch (err) {
       setBoletin(null);
-      setError(err?.message || 'No se pudo cargar tu boletín');
+      setError(err?.message || 'No se pudo cargar su boletín');
     } finally {
       setLoading(false);
     }

@@ -17,13 +17,13 @@ import { getStep4Fields } from './steps/step4Paralelo.js';
 import { getStepHistorialPrevioFields } from './steps/step5HistorialPrevio.js';
 
 const STEP0_HEADER = {
-  title: 'Buscar Estudiante',
-  formTitle: 'Información del Estudiante',
+  title: 'Buscar estudiante',
+  formTitle: 'Información del estudiante',
   sections: ['buscarEstudiante'],
 };
 
 const STEP1_HEADER = {
-  title: 'Seleccionar Carrera',
+  title: 'Seleccionar carrera',
   formTitle: 'Carrera',
   sections: ['carrera'],
 };

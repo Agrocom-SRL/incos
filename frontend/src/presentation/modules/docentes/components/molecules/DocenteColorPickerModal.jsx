@@ -102,7 +102,7 @@ const DocenteColorPickerModal = ({
         type="info"
         showIcon
         style={{ marginBottom: allSpacing.marginMD }}
-        title="El color debe ser único entre docentes activos. Los bloques ocupados muestran quién lo usa."
+        title="El color debe ser único entre docentes activos. Los colores ocupados muestran qué docente los usa."
       />
 
       <Flex justify="space-between" align="center" style={{ marginBottom: allSpacing.marginSM }}>

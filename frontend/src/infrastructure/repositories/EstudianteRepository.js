@@ -214,7 +214,7 @@ export class EstudianteRepository extends IEstudianteRepository {
       const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.MIS_DATOS);
       return handleSuccessResponse(response);
     } catch (error) {
-      return handleErrorResponse(error, 'Error al obtener tus datos');
+      return handleErrorResponse(error, 'Error al obtener sus datos');
     }
   }
 

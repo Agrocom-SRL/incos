@@ -37,7 +37,7 @@ export const useMatriculaDetailActivation = ({
     modal.confirm({
       title: 'Activar cursado del estudiante',
       content:
-        'Las materias inscritas pasarán a CURSANDO y se abrirán sus bimestres. ' +
+        'Las materias inscritas pasarán al estado «Cursando» y se abrirán sus bimestres. ' +
         'El estudiante podrá ver su horario y registrar calificaciones. ¿Desea continuar?',
       okText: 'Activar cursado',
       cancelText: 'Cancelar',

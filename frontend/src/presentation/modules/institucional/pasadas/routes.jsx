@@ -16,7 +16,7 @@ export const pasadasRoutes = [
     permiso: 'institucional.gestion.pasadas',
     accion: 'LISTAR',
     menu: {
-      label: 'Gestiones Pasadas',
+      label: 'Gestiones pasadas',
       module: 'INST',
       parent: 'INST',
       order: 4,

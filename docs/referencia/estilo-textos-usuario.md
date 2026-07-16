@@ -115,19 +115,53 @@ rules[].message`, `placeholder`, párrafos `Typography`/banners.
 | `pagos/connectors/AportesRedirect.jsx:25,32,46,53,56` | No se pudo cargar tu aporte / Abriendo mis aportes… / No se pudieron abrir tus aportes / Aún no tienes aportes... | No se pudo cargar su aporte / Abriendo sus aportes… / No se pudieron abrir sus aportes / Aún no tiene aportes... |
 | `pagos/components/organisms/CompromisoPagoModal.jsx:91` | Elige en cuánto tiempo se compromete el estudiante... | Elija en cuánto tiempo se compromete el estudiante... |
 
-## Pendiente (fuera del alcance de esta pasada)
+## Continuación 2026-07-16 (segunda pasada, tras corte de sesión)
 
-Los agentes se limitaron a `Alert`/`notification`/`Modal.confirm`/
-`Popconfirm`/`description`/`tip`/párrafos sueltos detectados en el camino.
-Quedó señalado pero **sin revisar**:
+La sesión "Revisar textos y títulos" se cortó con 117 archivos ya
+modificados (quedaron staged). Esta continuación cerró lo restante:
 
-- `Form.Item rules[].message` y `placeholder` en formularios de `academico/`
-  (asistencia: `LicenciaDecisionDrawer.jsx`, `LicenciaSolicitarPage.jsx`,
-  `PoliticaAsistenciaPanel.jsx`, `EvaluacionDrawer.jsx`,
-  `CuadernoGrillaSeparador.jsx`, `PoliticaInstitucionalSidebarResumen.jsx`,
-  `MisCursosAsistenciaPage.jsx`) — mismo patrón de voseo probable.
-- `description` de campos de formulario en
-  `application/modules/configuracion/**/config/*FormFields.js` (fuera del
-  árbol `presentation/` auditado).
+### Restos de voseo/tuteo fuera de `presentation/modules/`
 
-Si se retoma, aplicar la misma regla de §4c con estos dos focos.
+| Archivo | Antes | Después |
+|---|---|---|
+| `infrastructure/navigation/utils/notifyAccessDenied.js` | No tenés permiso... | No tiene permiso... |
+| `infrastructure/navigation/components/ModuleEntryConnector.jsx` | No tenés permiso... | No tiene permiso... |
+| `presentation/guards/PrivateRoute.jsx` (×2) | No tenés permiso... | No tiene permiso... |
+| `infrastructure/repositories/*.js` (Docente, Asistencia, Estudiante, PagoAporte, Calificacion, Dashboard) | Error al cargar tus cursos / tu boletín / tus aportes / tu resumen... | Error al cargar sus cursos / su boletín / sus aportes / su resumen... |
+
+### Title Case → sentence case (~80 cadenas, ~45 archivos)
+
+Labels de formularios de estudiantes (`Apellido Paterno` → `Apellido
+paterno`, `Fecha de Nacimiento` → `Fecha de nacimiento`, etc.), wizard
+steps de estudiantes y matrícula (`Datos Generales`, `Buscar Estudiante`,
+`Seleccionar Carrera`...), títulos de página y breadcrumbs (`Lista de
+Estudiantes`, `Editar Inscripción`, `Asignar Beca`, `Detalle del
+Estudiante`...), labels de menú (`Oferta Académica` → `Oferta académica`,
+`Gestión Actual`, `Gestiones Pasadas`, `Gestión de Horarios`, `Datos
+Complementarios`, `Empresas y Convenios`, `Historial de Actividades`) y
+componentes compartidos (`Confirmar Eliminación`, `Finalizar Registro`,
+`Guardar y Continuar Después`, `Página en Construcción`, `Sistema de
+Gestión Académica`).
+
+**No se tocan** (excluidos a propósito): nombres propios (carreras
+«Sistemas Informáticos», instituciones, personas en mocks), términos
+oficiales (`Técnico Superior`, `Técnico Medio UETHP/CEA`), literales que
+espejan seeders de BD (`BIMESTRE_NOMBRES` en `centralizadorDoc.js`),
+identificadores de código, comentarios técnicos.
+
+### API Ant Design 6 detectada de paso
+
+`notification.*({ message: ... })` no existe en antd 6 (es `title`, igual
+que `Alert`). Corregido en `useGestionFormPage.js`,
+`useOfertaGestionPlanesState.js` y `useRenovarOfertaPage.js`; el campo
+interno `gestionContextAlert.message` se renombró a `title` para que no
+se confunda con la API v5 en futuras auditorías. El renderer data-driven
+(`fieldRenderers.jsx`) ya acepta `field.message || field.title`.
+
+### Pendientes anteriores — cerrados
+
+Los dos focos señalados en la primera pasada (`Form.Item rules[].message`
+/ `placeholder` en `academico/` y `description` en
+`configuracion/**/config/*FormFields.js`) quedaron cubiertos entre la
+sesión interrumpida y esta continuación; los barridos globales de
+voseo/tuteo sobre `frontend/src` terminan sin resultados.

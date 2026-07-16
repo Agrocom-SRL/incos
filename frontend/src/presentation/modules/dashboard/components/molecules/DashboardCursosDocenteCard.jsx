@@ -111,7 +111,7 @@ const DashboardCursosDocenteCard = ({ cursos = [], headerAction = null }) => {
         <div style={{ padding: `${allSpacing.marginLG}px` }}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="Aún no tienes cursos asignados en la gestión vigente."
+            description="Aún no tiene cursos asignados en la gestión vigente."
           />
         </div>
       ) : (

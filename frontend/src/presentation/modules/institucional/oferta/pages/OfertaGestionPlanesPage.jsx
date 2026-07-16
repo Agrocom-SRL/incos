@@ -89,7 +89,7 @@ const OfertaGestionPlanesPage = () => {
                 <Alert
                   type={contextAlert.type}
                   showIcon
-                  title={contextAlert.message}
+                  title={contextAlert.title}
                   description={contextAlert.description}
                   action={
                     contextAlert.showIrGestionVigente ? (

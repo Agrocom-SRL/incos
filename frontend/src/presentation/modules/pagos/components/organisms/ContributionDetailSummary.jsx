@@ -125,10 +125,10 @@ const ContributionDetailSummary = ({
     if (usaEstadoActual && estadoActualAporte.gestion) {
       const g = estadoActualAporte.gestion;
       const name = g.nombre ?? g.name ?? g.anio ?? g.year;
-      return name ? `Aporte Académico - Gestión ${name}` : 'Aporte Académico';
+      return name ? `Aporte académico - Gestión ${name}` : 'Aporte académico';
     }
     const gestionName = configuracionAporte?.gestionName || configuracionAporte?.gestion?.name || configuracionAporte?.gestion?.year;
-    return gestionName ? `Aporte Académico - Gestión ${gestionName}` : 'Aporte Académico';
+    return gestionName ? `Aporte académico - Gestión ${gestionName}` : 'Aporte académico';
   })();
 
   return (
@@ -147,7 +147,7 @@ const ContributionDetailSummary = ({
         color: '#262626',
         marginBottom: '24px'
       }}>
-        Detalle del Aporte
+        Detalle del aporte
       </div>
 
       {/* Item/Concepto */}

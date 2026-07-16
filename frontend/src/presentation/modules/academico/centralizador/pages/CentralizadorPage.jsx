@@ -29,7 +29,7 @@ const CentralizadorPage = () => {
       infoTitle="Centralizador por paralelo"
       infoDescription={
         <span>
-          Elegí un paralelo en gestión vigente para ver el centralizador de
+          Elija un paralelo en gestión vigente para ver el centralizador de
           calificaciones. El centralizador se arma por paralelo: cada asignatura
           es una columna de la matriz.
         </span>

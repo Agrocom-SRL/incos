@@ -80,7 +80,7 @@ const MiBoletinPage = () => {
     >
       <DetailPageShell
         loading={loading}
-        loadingTip="Cargando tu boletín…"
+        loadingTip="Cargando su boletín…"
         error={error}
         showEmpty={!loading && !error && !boletin}
         emptyDescription="No se encontró su boletín."

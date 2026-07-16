@@ -29,5 +29,5 @@ export const createBreadcrumbItems = (routeKey, currentTitle = null) => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createDetailBreadcrumbItems = () => {
-  return createBreadcrumbItems('MAT-INS-DETALLE', 'Detalle de la Inscripción');
+  return createBreadcrumbItems('MAT-INS-DETALLE', 'Detalle de la inscripción');
 };

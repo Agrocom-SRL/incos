@@ -390,7 +390,7 @@ const PagosEditarCuota = () => {
     <PageTemplate
       header={
         <PageHeader
-          title={`Editar Pago${pago?.estudiante?.nombreCompleto ? ` - ${pago.estudiante.nombreCompleto}` : ''}`}
+          title={`Editar pago${pago?.estudiante?.nombreCompleto ? ` - ${pago.estudiante.nombreCompleto}` : ''}`}
           breadcrumbItems={breadcrumbItems}
           actions={
             <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
@@ -437,10 +437,10 @@ const PagosEditarCuota = () => {
           <Alert showIcon type="info" title="Seleccione una cuota para editar" />
         ) : (
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Card title="Detalle del Aporte" headerColor="primary" style={{ marginBottom: 24 }}>
+            <Card title="Detalle del aporte" headerColor="primary" style={{ marginBottom: 24 }}>
               <div style={{ display: 'grid', gap: 14 }}>
                 <Text strong>
-                  Aporte Académico — Gestión {pago?.gestion?.nombre || pago?.gestion?.codigo || '—'}
+                  Aporte académico — Gestión {pago?.gestion?.nombre || pago?.gestion?.codigo || '—'}
                 </Text>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Text>Monto base</Text>

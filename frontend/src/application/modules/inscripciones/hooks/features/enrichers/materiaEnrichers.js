@@ -75,8 +75,8 @@ export const enrichMateriaListField = (field, context = {}) => {
             emptyMessage: !hasCarrera
                 ? 'Seleccione una carrera para ver las materias disponibles.'
                 : !hasParalelos
-                ? 'No hay paralelos disponibles para esta carrera en el período actual.'
-                : (field.emptyMessage || 'No hay materias disponibles para este período.'),
+                ? 'No hay paralelos disponibles para esta carrera en el periodo actual.'
+                : (field.emptyMessage || 'No hay materias disponibles para este periodo.'),
             // NO se pasa onItemClick porque las materias NO son clickeables
             // Ocultar si no hay carrera o paralelo seleccionado
             hidden: !canShowMaterias,

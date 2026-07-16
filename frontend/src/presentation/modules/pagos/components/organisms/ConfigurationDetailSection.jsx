@@ -34,7 +34,7 @@ const ConfigurationDetailSection = ({
   if (loading) {
     return (
       <Card
-        title="Configuración de Aporte"
+        title="Configuración de aporte"
         style={{ marginTop: '24px', marginBottom: '24px' }}
         headerColor="primary"
       >
@@ -53,7 +53,7 @@ const ConfigurationDetailSection = ({
   if (error) {
     return (
       <Card
-        title="Configuración de Aporte"
+        title="Configuración de aporte"
         style={{ marginTop: '24px', marginBottom: '24px' }}
         headerColor="primary"
       >
@@ -81,7 +81,7 @@ const ConfigurationDetailSection = ({
 
   return (
     <Card
-      title="Configuración de Aporte"
+      title="Configuración de aporte"
       style={{ marginTop: '24px', marginBottom: '24px' }}
       headerColor="primary"
     >
@@ -101,7 +101,7 @@ const ConfigurationDetailSection = ({
           borderBottom: '1px solid var(--color-border-secondary, #e8e8e8)'
         }}>
           <div style={{ fontSize: '16px', fontWeight: '500', color: 'var(--color-text, #262626)' }}>
-            Monto Base
+            Monto base
           </div>
           <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-text, #262626)' }}>
             {formatMonto(montoBase)}
@@ -121,7 +121,7 @@ const ConfigurationDetailSection = ({
             }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <div style={{ fontSize: '16px', fontWeight: '500', color: 'var(--color-text, #262626)' }}>
-                  Descuento por Beca
+                  Descuento por beca
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--color-text-secondary, #8c8c8c)' }}>
                   {becaActiva.scholarshipName || `Beca ${porcentajeDescuento}%`}
@@ -152,7 +152,7 @@ const ConfigurationDetailSection = ({
           backgroundColor: 'var(--color-warning-light, #fffbe6)'
         }}>
           <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--color-text, #262626)' }}>
-            Saldo a Pagar
+            Saldo a pagar
           </div>
           <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--color-warning, #faad14)' }}>
             {formatMonto(saldoAPagar)}
@@ -181,7 +181,7 @@ const ConfigurationDetailSection = ({
           <InfoCircleOutlined style={{ fontSize: '20px', color: 'var(--color-primary, #1890ff)', marginTop: '2px' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-              Información del Aporte
+              Información del aporte
             </div>
             <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #8c8c8c)', lineHeight: '1.6' }}>
               {configuracionAporte.descripcion || 

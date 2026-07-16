@@ -62,7 +62,7 @@ const CuadernoGrillaSeparador = ({
               {rangoFechas}.
             </>
           ) : (
-            'Agregá evaluaciones y registrá las notas de cada estudiante.'
+            'Agregue evaluaciones y registre las notas de cada estudiante.'
           )}
         </span>
         <BimestrePlazoCountdown

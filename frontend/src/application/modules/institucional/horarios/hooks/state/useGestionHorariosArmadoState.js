@@ -327,7 +327,7 @@ export const useGestionHorariosArmadoState = (notification) => {
             notification.warning({
                 title: 'Plan incompleto',
                 description:
-                    'Algunos bloques no tienen docente o franja válida. Revisá la asignación docente y el turno del paralelo antes de guardar.',
+                    'Algunos bloques no tienen docente o franja válida. Revise la asignación docente y el turno del paralelo antes de guardar.',
             });
             setBulkSaved(false);
             return;
@@ -430,7 +430,7 @@ export const useGestionHorariosArmadoState = (notification) => {
                 return {
                     ok: false,
                     message:
-                        'Asigná un docente a esta materia en Institucional → Oferta académica antes de colocar bloques en el plan.',
+                        'Asigne un docente a esta materia en Institucional → Oferta académica antes de colocar bloques en el plan.',
                 };
             }
 
@@ -438,7 +438,7 @@ export const useGestionHorariosArmadoState = (notification) => {
                 return {
                     ok: false,
                     message:
-                        'No se encontró el horario del catálogo para esa franja. Verificá el turno del paralelo (NOCHE/TARDE) y la hora elegida.',
+                        'No se encontró el horario del catálogo para esa franja. Verifique el turno del paralelo (NOCHE/TARDE) y la hora elegida.',
                 };
             }
 
@@ -460,7 +460,7 @@ export const useGestionHorariosArmadoState = (notification) => {
             const conflictoParalelo = res.conflictos?.find((c) => c?.tipo === 'PARALELO');
             const msg =
                 conflictoParalelo?.mensaje
-                    ? `${conflictoParalelo.mensaje} Cada franja del paralelo admite una sola clase: elegí una franja libre, o primero mové a otro horario el bloque que ya está ahí.`
+                    ? `${conflictoParalelo.mensaje} Cada franja del paralelo admite una sola clase: elija una franja libre, o primero mueva a otro horario el bloque que ya está ahí.`
                     : res.conflictos?.map((c) => c.mensaje).filter(Boolean).join(' ') ||
                       res.error ||
                       'El bloque genera un conflicto de horario';
@@ -507,7 +507,7 @@ export const useGestionHorariosArmadoState = (notification) => {
                 return {
                     success: false,
                     error:
-                        'Algunos bloques no tienen docente o franja válida. Revisá la asignación docente y el turno del paralelo.',
+                        'Algunos bloques no tienen docente o franja válida. Revise la asignación docente y el turno del paralelo.',
                 };
             }
 
@@ -566,7 +566,7 @@ export const useGestionHorariosArmadoState = (notification) => {
                 } else {
                     notification.success({
                         title: 'Horario generado',
-                        description: `Se generaron ${result.placed} bloque(s) de 45 min. Revisá el plan y guardá los cambios.`,
+                        description: `Se generaron ${result.placed} bloque(s) de 45 min. Revise el plan y guarde los cambios.`,
                     });
                 }
                 setTab('plan');
@@ -634,7 +634,7 @@ export const useGestionHorariosArmadoState = (notification) => {
                     title: 'No se pudo guardar',
                     description:
                         persistRes.error ||
-                        'Se calculó el reajuste pero no se pudo persistir. Revisá conflictos o permisos.',
+                        'Se calculó el reajuste pero no se pudo persistir. Revise conflictos o permisos.',
                 });
                 return { ok: false, ...result };
             }
@@ -717,7 +717,7 @@ export const useGestionHorariosArmadoState = (notification) => {
         }
 
         const sinDocenteMsg = sinDocente.length
-            ? ` Sin docente (asigná en Oferta académica): ${sinDocente.join(', ')}.`
+            ? ` Sin docente (asigne uno en Oferta académica): ${sinDocente.join(', ')}.`
             : '';
 
         if (totalRemoved === 0 && totalPlaced === 0) {
@@ -737,7 +737,7 @@ export const useGestionHorariosArmadoState = (notification) => {
                 title: 'No se pudo guardar',
                 description:
                     persistRes.error ||
-                    'Se calculó la cobertura de la semana pero no se pudo persistir. Revisá conflictos o permisos.',
+                    'Se calculó la cobertura de la semana pero no se pudo persistir. Revise conflictos o permisos.',
             });
             return { ok: false };
         }
@@ -804,8 +804,8 @@ export const useGestionHorariosArmadoState = (notification) => {
         if (!Number.isFinite(pgId) || pgId < 1) return { ok: false };
         if (planSemanalDirty) {
             notification.warning({
-                title: 'Guardá los cambios',
-                description: 'Guardá el plan semanal antes de publicar el paralelo.',
+                title: 'Guarde los cambios',
+                description: 'Guarde el plan semanal antes de publicar el paralelo.',
             });
             return { ok: false };
         }
@@ -820,7 +820,7 @@ export const useGestionHorariosArmadoState = (notification) => {
                         title: 'No se pudo ofertar el paralelo',
                         description:
                             ofertaRes.error ||
-                            'Verificá que tenga aula asignada y la oferta de cursos completa.',
+                            'Verifique que tenga aula asignada y la oferta de cursos completa.',
                     });
                     return { ok: false };
                 }
@@ -837,7 +837,7 @@ export const useGestionHorariosArmadoState = (notification) => {
                     title: 'No se pudo publicar',
                     description:
                         detalle ||
-                        'Revisá cobertura, conflictos y docentes antes de publicar el paralelo.',
+                        'Revise cobertura, conflictos y docentes antes de publicar el paralelo.',
                 });
                 return { ok: false };
             }

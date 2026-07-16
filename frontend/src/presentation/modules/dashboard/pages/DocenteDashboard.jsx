@@ -88,7 +88,7 @@ const DocenteDashboard = () => {
   // Banner: descripción personalizada con la gestión/bimestre vigente (si llegan).
   const gestionLabel = [gestion.nombre, gestion.bimestreNombre].filter(Boolean).join(' · ');
   const bannerDescription = gestionLabel
-    ? `Está dictando clases en la ${gestionLabel} del Instituto INCOS. ${TEXTO_INSTITUCIONAL}`
+    ? `Está dictando clases en el Instituto INCOS (${gestionLabel}). ${TEXTO_INSTITUCIONAL}`
     : TEXTO_INSTITUCIONAL;
 
   // Rama docente de llegada a Oferta → Asignaciones: SIEMPRE su propio id

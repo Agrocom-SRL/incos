@@ -6,7 +6,7 @@
  *     /institucional/oferta/renovar con la gestión preseleccionada.
  *   edit:   /institucional/oferta/gestiones/:gestionId/editar (EDITAR) —
  *     edición de datos base; al guardar (o Volver) regresa al origen
- *     (location.state.returnListPath, default Gestiones Pasadas).
+ *     (location.state.returnListPath, default Gestiones pasadas).
  *
  * Shell canónico de formulario (CarreraFormPage): Flex.page-container →
  * PageHeaderArea(PageHeader + BackButton) → DashboardPageShell → MainContent

@@ -51,7 +51,7 @@ const PaymentAmountDisplay = ({
           color: '#fff',
           opacity: 0.95
         }}>
-          Saldo a Pagar
+          Saldo a pagar
         </Text>
       </div>
       <Title level={3} style={{ 

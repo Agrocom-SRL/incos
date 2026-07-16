@@ -57,7 +57,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
         },
         {
             name: [...basePath, 'tipoParentescoId'],
-            label: 'Tipo de Parentesco',
+            label: 'Tipo de parentesco',
             type: 'select',
             required: false,
             span: 12,
@@ -67,7 +67,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
         },
         {
             name: [...basePath, 'viveConEstudiante'],
-            label: 'Vive con el Estudiante',
+            label: 'Vive con el estudiante',
             type: 'switch',
             required: false,
             span: 12,
@@ -134,7 +134,7 @@ export const createCamposContactosEmergenciaDinamicos = (contactosIndices, elimi
 
         campos.push({
             type: 'subsection',
-            subsectionTitle: `Contacto de Emergencia ${numeroContacto}`,
+            subsectionTitle: `Contacto de emergencia ${numeroContacto}`,
             subsectionIndex: index, // Índice único para identificar el contacto
             fields: createCamposContactoEmergencia(index),
             // Agregar botón de eliminar si no es el primero
@@ -148,7 +148,7 @@ export const createCamposContactosEmergenciaDinamicos = (contactosIndices, elimi
         type: 'button',
         name: 'agregarContactoEmergencia',
         label: '',
-        buttonText: '+ Agregar Otro Contacto de Emergencia',
+        buttonText: '+ Agregar Otro Contacto de emergencia',
         variant: 'info',
         style: 'outlined',
         span: 24,
@@ -162,7 +162,7 @@ export const createCamposContactosEmergenciaDinamicos = (contactosIndices, elimi
  * Crea la configuración de campos de contacto de emergencia para el registro de estudiantes
  * 
  * Los campos de contacto de emergencia incluyen:
- * - Tipo de Parentesco (select con descripción)
+ * - Tipo de parentesco (select con descripción)
  * - Botón para agregar más contactos
  * - Subsection con campos del contacto de emergencia
  * 

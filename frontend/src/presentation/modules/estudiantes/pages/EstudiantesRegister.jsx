@@ -573,15 +573,15 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
 
   // Determinar el título según los parámetros (memoizado)
   const pageTitle = useMemo(() => {
-    if (isEditMode) return 'Editar Estudiante';
-    if (completarMode) return 'Completar Registro de Admisión';
-    return 'Registrar Nueva Admisión';
+    if (isEditMode) return 'Editar estudiante';
+    if (completarMode) return 'Completar registro de admisión';
+    return 'Registrar nueva admisión';
   }, [isEditMode, completarMode]);
 
   // Pasos visibles: 4 (NUEVO/ANTIGUO) o 5 (TRANSITABILIDAD o TRASPASO con paso dinámico de datos de tabla transitabilidades/traspasos)
   const wizardSteps = useMemo(() => {
     const allSteps = createEstudianteWizardSteps(completarMode);
-    // allSteps: [0]=Tipo+Datos académicos, [1]=Datos Generales, [2]=Transitabilidad, [3]=Traspaso, [4]=Contacto, [5]=Documentación
+    // allSteps: [0]=Tipo+Datos académicos, [1]=Datos generales, [2]=Transitabilidad, [3]=Traspaso, [4]=Contacto, [5]=Documentación
 
     const camposDinamicos = createCamposContactosEmergenciaDinamicos(
       contactosIndices,
@@ -618,7 +618,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionParaStep);
     const subseccionObservaciones = {
       type: 'subsection',
-      subsectionTitle: 'Observaciones del Estudiante',
+      subsectionTitle: 'Observaciones del estudiante',
       conditional: false,
       fields: [
         {
@@ -642,14 +642,14 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     }
 
     // Insertar paso dinámico solo para TRANSITABILIDAD o TRASPASO; NUEVO y ANTIGUO no lo muestran.
-    // allSteps[1]=Datos Generales, [2]=Transitabilidad, [3]=Traspaso. Usamos tipoAdmisionForSteps (estado estable).
+    // allSteps[1]=Datos generales, [2]=Transitabilidad, [3]=Traspaso. Usamos tipoAdmisionForSteps (estado estable).
     if (tipoAdmisionForSteps === 'TRANSITABILIDAD') {
       return [allSteps[0], allSteps[1], allSteps[2], allSteps[4], allSteps[5]];
     }
     if (tipoAdmisionForSteps === 'TRASPASO') {
       return [allSteps[0], allSteps[1], allSteps[3], allSteps[4], allSteps[5]];
     }
-    // NUEVO/ANTIGUO: Tipo, Datos Generales, Contacto, Documentación (sin paso Transitabilidad ni Traspaso)
+    // NUEVO/ANTIGUO: Tipo, Datos generales, Contacto, Documentación (sin paso Transitabilidad ni Traspaso)
     return [allSteps[0], allSteps[1], allSteps[4], allSteps[5]];
   }, [completarMode, tipoAdmisionForSteps, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, documentacionTraspasoProcesada]);
 
@@ -711,7 +711,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
-    { title: 'Listar Admisiones', href: '/estudiantes/listar' },
+    { title: 'Listar admisiones', href: '/estudiantes/listar' },
     { title: pageTitle },
   ], [pageTitle]);
 

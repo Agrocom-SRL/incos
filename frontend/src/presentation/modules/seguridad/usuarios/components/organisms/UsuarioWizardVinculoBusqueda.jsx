@@ -266,7 +266,7 @@ export default function UsuarioWizardVinculoBusqueda({
 
         <Text type="secondary">
           {isEditMode
-            ? 'En edición no se permite cambiar el vínculo de referencia para mantener consistencia del usuario.'
+            ? 'En edición no se permite cambiar el vínculo de referencia para mantener la consistencia del usuario.'
             : 'Solo se muestran registros que todavía no tienen usuario asociado para evitar duplicar accesos.'}
         </Text>
       </UsuarioFormSection>

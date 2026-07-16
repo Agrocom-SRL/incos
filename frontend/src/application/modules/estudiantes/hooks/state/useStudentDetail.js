@@ -62,8 +62,8 @@ export const useStudentDetail = (studentId) => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Listar Admisiones', href: '/estudiantes/listar' },
-      { title: 'Detalle del Estudiante' },
+      { title: 'Listar admisiones', href: '/estudiantes/listar' },
+      { title: 'Detalle del estudiante' },
     ],
     []
   );

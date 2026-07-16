@@ -85,7 +85,7 @@ const BecasDistribucionTipo = ({
         options={SCOPE_OPCIONES}
         value={scope}
         onChange={setScope}
-        ariaLabel="Scope de la distribución por tipo de beca"
+        ariaLabel="Nivel de la distribución por tipo de beca"
       />
       {scope === 'gestion' ? (
         hayGestion ? (
@@ -153,7 +153,7 @@ const BecasDistribucionTipo = ({
           })}
         </ul>
       ) : (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sin datos para este scope" />
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sin datos para este nivel" />
       )}
     </Card>
   );

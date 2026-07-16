@@ -1,5 +1,5 @@
 /**
- * Cliente API — Oferta Académica (Sprint 3).
+ * Cliente API — Oferta académica (Sprint 3).
  */
 
 import { useCallback, useState } from 'react';

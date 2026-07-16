@@ -108,7 +108,7 @@ const OfertaKpiStrip = ({ kpis, variant = 'details' }) => {
       </Col>
       <Col xs={24} md={12} xxl={6}>
         <KpiCard
-          label="Listos OFERTADO"
+          label="Listos para OFERTADO"
           value={kpis.listosOfertado}
           sub="Oferta completa + aula"
           badgeText="Listos"

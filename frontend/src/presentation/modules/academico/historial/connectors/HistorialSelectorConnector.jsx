@@ -19,7 +19,7 @@ const MiHistorialRedirect = () => {
   const { estudianteId, loading, error } = useMiEstudianteId();
 
   if (loading) {
-    return <Spin spinning size="large" tip="Abriendo tu historial…" style={{ width: '100%' }} />;
+    return <Spin spinning size="large" tip="Abriendo su historial…" style={{ width: '100%' }} />;
   }
   if (error || !estudianteId) {
     return (

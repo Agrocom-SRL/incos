@@ -72,7 +72,7 @@ const EstudiantesDetail = () => {
   const esVistaPropiaEstudiante = esEstudiante(usuario);
   /** Rama docente (ficha de SUS estudiantes desde "Mis estudiantes"): SOLO LECTURA. */
   const esVistaDocente = esDocente(usuario);
-  const pageTitle = esVistaPropiaEstudiante ? 'Mis datos' : 'Detalle del Estudiante';
+  const pageTitle = esVistaPropiaEstudiante ? 'Mis datos' : 'Detalle del estudiante';
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
@@ -223,7 +223,7 @@ const EstudiantesDetail = () => {
           {(origins?.length > 0) && (
             <InfoCard title="Nacionalidad e idiomas" icon={<GlobalOutlined />} cols={3}>
               <Field label="Nacionalidad">{nacionalidadLabel}</Field>
-              {paises && <Field label="País(s)">{paises}</Field>}
+              {paises && <Field label="País(es)">{paises}</Field>}
               <Field label="Idioma materno">{idiomaMaterno}</Field>
               <Field label="Idioma secundario">{idiomaSecundario}</Field>
               {lugarNacimiento && (
@@ -414,8 +414,8 @@ const EstudiantesDetail = () => {
             >
               <Field label="Concepto">
                 {estadoAporte.gestion
-                  ? `Aporte Académico - Gestión ${estadoAporte.gestion.nombre || ''}`.trim()
-                  : 'Aporte Académico'}
+                  ? `Aporte académico - Gestión ${estadoAporte.gestion.nombre || ''}`.trim()
+                  : 'Aporte académico'}
               </Field>
               <Field label="Monto base / obligatorio">
                 Bs. {Number(estadoAporte.monto_base ?? estadoAporte.monto_obligatorio ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

@@ -21,7 +21,7 @@ const MatriculaRedirect = () => {
 
   if (loadingMisDatos) {
     return (
-      <Spin spinning tip="Abriendo mi matrícula…">
+      <Spin spinning tip="Abriendo su matrícula…">
         <div style={{ minHeight: 160 }} aria-hidden />
       </Spin>
     );

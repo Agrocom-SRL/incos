@@ -388,7 +388,7 @@ const DocenteAsignacionCursoModal = ({
                     });
                     return false;
                 }
-                messageApi.error(result?.error || 'No se pudo guardar la asignacion docente.');
+                messageApi.error(result?.error || 'No se pudo guardar la asignación docente.');
                 return false;
             }
 
@@ -466,7 +466,7 @@ const DocenteAsignacionCursoModal = ({
                 open={open}
                 onCancel={onClose}
                 destroyOnHidden
-                okText="Guardar asignacion"
+                okText="Guardar asignación"
                 onOk={handleConfirm}
                 okButtonProps={{
                     disabled:

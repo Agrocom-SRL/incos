@@ -342,7 +342,7 @@ const HorariosGestionSidebarResumen = ({
                 etiqueta: 'Alertas',
                 valor: counts.docentesConflictos,
                 titulo: 'Docentes con conflictos',
-                detalle: 'Choque de franja, aula u asignación duplicada al mismo curso',
+                detalle: 'Choque de franja, aula o asignación duplicada al mismo curso',
             })}
 
             <Modal

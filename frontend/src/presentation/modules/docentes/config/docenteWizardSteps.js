@@ -35,7 +35,7 @@ export function createDocenteWizardSteps() {
       },
     },
     {
-      title: 'Formación y laboral',
+      title: 'Formación y labor',
       formTitle: 'Formación académica y condición laboral',
       sections: ['formacionAcademica', 'condicionLaboral'],
       config: {

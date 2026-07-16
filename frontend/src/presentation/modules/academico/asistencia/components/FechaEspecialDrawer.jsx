@@ -174,19 +174,19 @@ const FechaEspecialDrawer = ({
             className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
-              Confirmá el día de la sesión especial y describí el motivo con el que quedará
+              Confirme el día de la sesión especial y describa el motivo con el que quedará
               registrada.
             </p>
 
             <Form.Item
               name="fecha"
               label="Fecha de la sesión"
-              rules={[{ required: true, message: 'Elegí la fecha de la sesión' }]}
+              rules={[{ required: true, message: 'Elija la fecha de la sesión' }]}
             >
               <DatePicker
                 style={{ width: '100%' }}
                 format="DD/MM/YYYY"
-                placeholder="Seleccioná un día"
+                placeholder="Seleccione un día"
                 disabled={esEdicion}
               />
             </Form.Item>
@@ -194,7 +194,7 @@ const FechaEspecialDrawer = ({
             <Form.Item
               name="motivo"
               label="Motivo"
-              rules={[{ required: true, message: 'Indicá el motivo (taller, recuperación, …)' }]}
+              rules={[{ required: true, message: 'Indique el motivo (taller, recuperación, …)' }]}
             >
               <Input maxLength={120} placeholder="Taller de recuperación" />
             </Form.Item>
@@ -206,7 +206,7 @@ const FechaEspecialDrawer = ({
             className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
-              Si la sesión tiene un horario definido, indicalo para que figure en la planilla. Podés
+              Si la sesión tiene un horario definido, indíquelo para que figure en la planilla. Puede
               dejarlo en blanco.
             </p>
 

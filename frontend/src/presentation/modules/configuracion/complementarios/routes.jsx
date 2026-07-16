@@ -231,7 +231,7 @@ export const complementariosRoutes = [
     permisoAny: CFG_COMPLEMENTARIO_PERMISOS,
     accion: 'LISTAR',
     menu: {
-      label: 'Datos Complementarios',
+      label: 'Datos complementarios',
       module: 'CFG',
       parent: 'CFG',
       order: 3,

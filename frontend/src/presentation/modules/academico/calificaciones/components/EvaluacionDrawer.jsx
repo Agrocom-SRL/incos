@@ -139,11 +139,11 @@ const CuotaActividadProgress = memo(({
           </>
         ) : (
           <>
-            Podés asignar hasta <strong>{maxParaEsta} pts</strong> en esta evaluación
+            Puede asignar hasta <strong>{maxParaEsta} pts</strong> en esta evaluación
             {restanteEsta > 0 ? (
               <>
                 {' '}
-                · te quedan{' '}
+                · le quedan{' '}
                 <strong className="cal-eval-drawer__cuota-disponible">
                   {Math.round(restanteEsta)} pts
                 </strong>
@@ -214,7 +214,7 @@ const EvaluacionPuntosField = memo(
               name="puntos"
               noStyle
               validateTrigger={['onSubmit']}
-              rules={[{ required: true, message: 'Ingresá los puntos' }]}
+              rules={[{ required: true, message: 'Ingrese los puntos' }]}
             >
               <InputNumber
                 min={1}
@@ -298,7 +298,7 @@ const ComponenteEvaluacionesFields = memo(
       <Form.Item
         name="componente"
         label="Componente"
-        rules={[{ required: true, message: 'Seleccioná un componente' }]}
+        rules={[{ required: true, message: 'Seleccione un componente' }]}
         extra={
           esAsistencia
             ? 'Fijo en práctico: la actividad de asistencia siempre suma al componente práctico.'
@@ -543,7 +543,7 @@ const EvaluacionDrawer = ({
     } catch (err) {
       if (err?.errorFields) return;
       setErrorGuardado(
-        typeof err?.message === 'string' ? err.message : 'No se pudo guardar. Reintentar.',
+        typeof err?.message === 'string' ? err.message : 'No se pudo guardar. Reintente.',
       );
     } finally {
       setGuardando(false);
@@ -578,7 +578,7 @@ const EvaluacionDrawer = ({
           onCerrar();
         } catch (err) {
           setErrorGuardado(
-            typeof err?.message === 'string' ? err.message : 'No se pudo eliminar. Reintentar.',
+            typeof err?.message === 'string' ? err.message : 'No se pudo eliminar. Reintente.',
           );
         } finally {
           setEliminando(false);
@@ -640,7 +640,7 @@ const EvaluacionDrawer = ({
             className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
-              Definí el tipo institucional y el nombre con el que aparecerá la columna en el
+              Defina el tipo institucional y el nombre con el que aparecerá la columna en el
               cuaderno
               {cursoId && bimestre ? ` (bimestre ${bimestre})` : ''}.
             </p>
@@ -648,7 +648,7 @@ const EvaluacionDrawer = ({
             <Form.Item
               name="tipoEvaluacionId"
               label="Tipo de actividad"
-              rules={[{ required: true, message: 'Seleccioná un tipo' }]}
+              rules={[{ required: true, message: 'Seleccione un tipo' }]}
             >
               <Select
                 placeholder={tiposLoading ? 'Cargando…' : 'Seleccionar tipo'}
@@ -664,7 +664,7 @@ const EvaluacionDrawer = ({
               name="nombre"
               label="Nombre descriptivo"
               rules={[
-                { required: true, message: 'Ingresá un nombre' },
+                { required: true, message: 'Ingrese un nombre' },
                 { max: 200, message: 'Máximo 200 caracteres' },
               ]}
             >
@@ -683,7 +683,7 @@ const EvaluacionDrawer = ({
             className={calificacionesDrawerTarjetaClassName}
           >
             <p className="cal-ajustes-drawer__section-desc">
-              Indicá si la actividad suma al bloque práctico ({cuotaPractico} pts) o teórico (
+              Indique si la actividad suma al bloque práctico ({cuotaPractico} pts) o teórico (
               {cuotaTeorico} pts) del bimestre, y cuántos puntos aporta esta columna. La suma de
               actividades de cada componente no debe superar su cuota.
             </p>

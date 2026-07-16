@@ -26,8 +26,16 @@ const DocenteCargaCell = ({ totalMaterias = 0, totalParalelos = 0, hasAsignacion
 
   return (
     <ul className="cfg-academico-metricas-list">
-      <Linea icon={<ReadOutlined />} valor={totalMaterias} etiqueta="materias" />
-      <Linea icon={<ApartmentOutlined />} valor={totalParalelos} etiqueta="paralelos" />
+      <Linea
+        icon={<ReadOutlined />}
+        valor={totalMaterias}
+        etiqueta={totalMaterias === 1 ? 'materia' : 'materias'}
+      />
+      <Linea
+        icon={<ApartmentOutlined />}
+        valor={totalParalelos}
+        etiqueta={totalParalelos === 1 ? 'paralelo' : 'paralelos'}
+      />
     </ul>
   );
 };

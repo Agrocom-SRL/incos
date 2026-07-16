@@ -63,7 +63,7 @@ const EstudiantesAsignarBeca = () => {
       <PageTemplate
         header={
           <PageHeader
-            title={pageTitle || "Asignar Beca"}
+            title={pageTitle || "Asignar beca"}
             breadcrumbItems={breadcrumbItems || []}
             actions={
               <Button
@@ -88,7 +88,7 @@ const EstudiantesAsignarBeca = () => {
               onClick={() => window.location.href = '/estudiantes/listar'}
               variant="default"
             >
-              Ir a Lista de Estudiantes
+              Ir a Lista de estudiantes
             </Button>
           }
         />
@@ -100,7 +100,7 @@ const EstudiantesAsignarBeca = () => {
     <PageTemplate
       header={
         <PageHeader
-          title={pageTitle || `Asignar Beca${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
+          title={pageTitle || `Asignar beca${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
           breadcrumbItems={breadcrumbItems || []}
           actions={
             <Button
@@ -129,7 +129,7 @@ const EstudiantesAsignarBeca = () => {
             onFinish={(values) => handleFinish(values, becasDescuentosData.selectedBecaDescuento)}
             layout="vertical"
           >
-            {/* Sección 1: Información del Estudiante */}
+            {/* Sección 1: Información del estudiante */}
             <StudentInfoSection student={student} />
 
             {/* Sección 2: Selección de Beca/Descuento */}

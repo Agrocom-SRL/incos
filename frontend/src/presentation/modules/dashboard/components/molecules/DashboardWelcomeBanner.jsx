@@ -75,7 +75,7 @@ const DashboardWelcomeBanner = ({
                             e.currentTarget.style.backgroundColor = componentConfig.Button.colorPrimary;
                         }}
                     >
-                        Ver Carreras
+                        Ver carreras
                     </Button>
                     ) : null}
                     {showRegistrarEstudiante ? (
@@ -99,7 +99,7 @@ const DashboardWelcomeBanner = ({
                             e.currentTarget.style.borderColor = allColors.colorBorder;
                         }}
                     >
-                        Registrar Estudiante
+                        Registrar estudiante
                     </Button>
                     ) : null}
                 </Flex>

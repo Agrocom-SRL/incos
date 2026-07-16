@@ -138,7 +138,7 @@ export function generarBloquesAutomaticosCurso({
             schedules,
             placed: 0,
             faltante: 0,
-            message: 'Asigná un docente en Oferta académica antes de generar bloques.',
+            message: 'Asigne un docente en Oferta académica antes de generar bloques.',
         };
     }
 
@@ -251,7 +251,7 @@ export function reajustarCoberturaCurso(params) {
             removed: 0,
             placed: 0,
             faltante: 0,
-            message: 'Asigná un docente en Oferta académica antes de reajustar bloques.',
+            message: 'Asigne un docente en Oferta académica antes de reajustar bloques.',
         };
     }
 

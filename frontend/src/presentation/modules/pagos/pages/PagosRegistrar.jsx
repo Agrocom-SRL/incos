@@ -153,7 +153,7 @@ const PagosRegistrar = () => {
     return Math.max(0, montoBase - descuentoBeca);
   }, [configuracionAporteActiva, becaActiva, estadoActualAporte]);
 
-  // Si ya tiene descuento aplicado en la cabecera, ocultar botón "Asignar Beca"
+  // Si ya tiene descuento aplicado en la cabecera, ocultar botón "Asignar beca"
   const ocultarBotonAsignarBeca = !!(estadoActualAporte && estadoActualAporte.tiene_descuento_aplicado);
 
   // Determinar si es pago gratuito real: solo cuando el saldo obligatorio del aporte es 0
@@ -214,7 +214,7 @@ const PagosRegistrar = () => {
     // IDEMPOTENCIA: Prevenir múltiples clics simultáneos
     if (isSubmittingRef.current || isSubmitting) {
       console.warn('[PagosRegistrar] Intento de pago duplicado bloqueado (idempotencia)');
-      message.warning('El pago ya está siendo procesado. Por favor espere...');
+      message.warning('El pago ya se está procesando. Espere un momento, por favor.');
       return;
     }
 
@@ -229,7 +229,7 @@ const PagosRegistrar = () => {
 
       // 1. Validar student_id (requerido, número entero > 0)
       if (!studentId || !Number.isInteger(Number(studentId)) || Number(studentId) < 1) {
-        message.error('El ID del estudiante es requerido y debe ser un número válido');
+        message.error('El ID del estudiante es obligatorio y debe ser un número válido');
         // Resetear estado si falla validación temprana
         setIsSubmitting(false);
         isSubmittingRef.current = false;
@@ -277,7 +277,7 @@ const PagosRegistrar = () => {
 
         metodoPagoId = Number(metodosPago.selectedMetodoPago.id);
         if (![1, 2, 3, 4].includes(metodoPagoId)) {
-          message.error('El método de pago debe ser: EFECTIVO (1), QR (2), TRANSFERENCIA (3) o DEPOSITO (4)');
+          message.error('Método de pago no válido. Seleccione efectivo, QR, transferencia o depósito.');
           setIsSubmitting(false);
           isSubmittingRef.current = false;
           return;
@@ -294,7 +294,7 @@ const PagosRegistrar = () => {
         if (values.fechaPago) {
           paymentDate = dayjs(values.fechaPago).format('YYYY-MM-DD');
         } else {
-          message.error('La fecha de pago es requerida');
+          message.error('La fecha de pago es obligatoria');
           setIsSubmitting(false);
           isSubmittingRef.current = false;
           return;
@@ -331,8 +331,8 @@ const PagosRegistrar = () => {
           // Para TRANSFERENCIA y DEPOSITO, la cuenta es REQUERIDA
           paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id;
           if (!paymentAccountId || !Number.isInteger(Number(paymentAccountId)) || Number(paymentAccountId) < 1) {
-            const metodoNombre = esTransferencia ? 'TRANSFERENCIA' : 'DEPOSITO';
-            message.error(`La cuenta de pago es requerida para método ${metodoNombre}`);
+            const metodoNombre = esTransferencia ? 'Transferencia' : 'Depósito';
+            message.error(`La cuenta de pago es obligatoria para el método ${metodoNombre}`);
             setIsSubmitting(false);
             isSubmittingRef.current = false;
             return;
@@ -361,8 +361,8 @@ const PagosRegistrar = () => {
           // Para QR, TRANSFERENCIA y DEPOSITO, el código de comprobante es REQUERIDO
           codigoComprobante = (values.codigoComprobante || '').trim();
           if (!codigoComprobante || codigoComprobante.length === 0) {
-            const metodoNombre = esQR ? 'QR' : esTransferencia ? 'TRANSFERENCIA' : 'DEPOSITO';
-            message.error(`El código de comprobante es requerido para método ${metodoNombre}`);
+            const metodoNombre = esQR ? 'QR' : esTransferencia ? 'Transferencia' : 'Depósito';
+            message.error(`El código de comprobante es obligatorio para el método ${metodoNombre}`);
             setIsSubmitting(false);
             isSubmittingRef.current = false;
             return;
@@ -545,7 +545,7 @@ const PagosRegistrar = () => {
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
     { title: 'Pagos', href: '/pagos' },
-    { title: 'Registrar Pago' },
+    { title: 'Registrar pago' },
   ], []);
 
   // Sin estudiante no hay formulario: volver a la lista que originó el flujo (finanzas o matrícula/aportes)
@@ -576,7 +576,7 @@ const PagosRegistrar = () => {
       <PageTemplate
         header={
           <PageHeader
-            title="Registrar Pago"
+            title="Registrar pago"
             breadcrumbItems={breadcrumbItems}
           />
         }
@@ -597,7 +597,7 @@ const PagosRegistrar = () => {
   const redirigirADetalle = estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && !pendienteDescargaReciboRef.current;
   if (redirigirADetalle) {
     return (
-      <PageTemplate header={<PageHeader title="Registrar Pago" breadcrumbItems={breadcrumbItems} />}>
+      <PageTemplate header={<PageHeader title="Registrar pago" breadcrumbItems={breadcrumbItems} />}>
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <Spin size="large">
             <div style={{ minHeight: '120px' }}>
@@ -613,7 +613,7 @@ const PagosRegistrar = () => {
     <PageTemplate
       header={
         <PageHeader
-          title={`Registrar Pago${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
+          title={`Registrar pago${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
           breadcrumbItems={breadcrumbItems}
           actions={
             <>
@@ -626,7 +626,7 @@ const PagosRegistrar = () => {
                   onClick={handleAsignarBeca}
                   style={{ marginRight: 8 }}
                 >
-                  Asignar Beca
+                  Asignar beca
                 </ActionButton>
               )}
               <Button
@@ -657,7 +657,7 @@ const PagosRegistrar = () => {
             layout="vertical"
             data-section="pagos-registrar-form"
           >
-            {/* Sección 1: Información del Estudiante */}
+            {/* Sección 1: Información del estudiante */}
             {student ? <StudentInfoSection student={student} /> : null}
 
             {/* Sección 2: Detalle del Aporte (Resumen tipo recibo; usa estado actual si existe para saldo real y cuotas pagadas) */}

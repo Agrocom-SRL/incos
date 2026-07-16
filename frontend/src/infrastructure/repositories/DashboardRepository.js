@@ -27,7 +27,7 @@ export class DashboardRepository {
       const response = await apiClient.get(DASHBOARD_ENDPOINTS.MI_RESUMEN);
       return handleSuccessResponse(response);
     } catch (error) {
-      return handleErrorResponse(error, 'Error al cargar tu resumen del dashboard');
+      return handleErrorResponse(error, 'Error al cargar su resumen del dashboard');
     }
   }
 
@@ -41,7 +41,7 @@ export class DashboardRepository {
       const response = await apiClient.get(DASHBOARD_ENDPOINTS.MI_RESUMEN_DOCENTE);
       return handleSuccessResponse(response);
     } catch (error) {
-      return handleErrorResponse(error, 'Error al cargar tu resumen del dashboard');
+      return handleErrorResponse(error, 'Error al cargar su resumen del dashboard');
     }
   }
 }

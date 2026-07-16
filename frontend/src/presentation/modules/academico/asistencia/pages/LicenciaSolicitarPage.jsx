@@ -343,8 +343,8 @@ const LicenciaSolicitarPage = () => {
                   style={{ display: 'block', marginBottom: allSpacing.marginSM }}
                 >
                   {esBusquedaActiva
-                    ? `Búsqueda por similitud. Borrá el texto para volver a la muestra.`
-                    : `Muestra de hasta ${PRELIM_LIMIT} estudiantes. Escribí al menos ${BUSQUEDA_MIN_CHARS} caracteres para buscar.`}
+                    ? `Búsqueda por similitud. Borre el texto para volver a la muestra.`
+                    : `Muestra de hasta ${PRELIM_LIMIT} estudiantes. Escriba al menos ${BUSQUEDA_MIN_CHARS} caracteres para buscar.`}
                 </Text>
                 <Table
                   rowKey={(r) => r.id}
@@ -414,7 +414,7 @@ const LicenciaSolicitarPage = () => {
                   </Col>
                 </Row>
               ) : !estudianteSel ? (
-                <Text type="secondary">Elegí primero un estudiante de la tabla anterior.</Text>
+                <Text type="secondary">Elija primero un estudiante de la tabla anterior.</Text>
               ) : cargandoInscripcion ? (
                 <Text type="secondary">Consultando inscripción vigente…</Text>
               ) : inscripcionError ? (
@@ -488,7 +488,7 @@ const LicenciaSolicitarPage = () => {
 
             <Seccion
               title="Datos de la licencia"
-              descripcion="Define el motivo y las fechas. Por defecto la licencia ocupa un solo día; desactiva el interruptor para indicar una fecha de fin. El tope es de 15 días por gestión (lo valida el sistema)."
+              descripcion="Defina el motivo y las fechas. Por defecto la licencia ocupa un solo día; desactive el interruptor para indicar una fecha de fin. El tope es de 15 días por gestión (lo valida el sistema)."
             >
               <Form
                 form={form}
@@ -508,10 +508,10 @@ const LicenciaSolicitarPage = () => {
                     <Form.Item
                       name="motivo"
                       label="Motivo"
-                      rules={[{ required: true, message: 'Elegí el motivo de la licencia' }]}
+                      rules={[{ required: true, message: 'Elija el motivo de la licencia' }]}
                       className="form-field form-field--vertical"
                     >
-                      <Select placeholder="Seleccioná un motivo" options={MOTIVO_LICENCIA_OPTIONS} />
+                      <Select placeholder="Seleccione un motivo" options={MOTIVO_LICENCIA_OPTIONS} />
                     </Form.Item>
                   </Col>
 
@@ -537,7 +537,7 @@ const LicenciaSolicitarPage = () => {
                     <Form.Item
                       name="fechaInicio"
                       label="Inicio de la licencia"
-                      rules={[{ required: true, message: 'Elegí la fecha de inicio' }]}
+                      rules={[{ required: true, message: 'Elija la fecha de inicio' }]}
                       className="form-field form-field--vertical"
                     >
                       <FieldDatePicker placeholder="dd-mm-aaaa" style={{ width: '100%' }} />
@@ -549,7 +549,7 @@ const LicenciaSolicitarPage = () => {
                       <Form.Item
                         name="fechaFin"
                         label="Fin del periodo de la licencia"
-                        rules={[{ required: true, message: 'Elegí la fecha de fin' }]}
+                        rules={[{ required: true, message: 'Elija la fecha de fin' }]}
                         className="form-field form-field--vertical"
                       >
                         <FieldDatePicker placeholder="dd-mm-aaaa" style={{ width: '100%' }} />
@@ -561,14 +561,14 @@ const LicenciaSolicitarPage = () => {
                     <Form.Item
                       name="detalleMotivo"
                       label="Detalle del motivo"
-                      rules={[{ required: true, message: 'Describí el motivo de la licencia' }]}
+                      rules={[{ required: true, message: 'Describa el motivo de la licencia' }]}
                       className="form-field form-field--vertical"
                     >
                       <Input.TextArea
                         rows={3}
                         maxLength={300}
                         showCount
-                        placeholder="Describí brevemente el motivo de la solicitud."
+                        placeholder="Describa brevemente el motivo de la solicitud."
                       />
                     </Form.Item>
                   </Col>

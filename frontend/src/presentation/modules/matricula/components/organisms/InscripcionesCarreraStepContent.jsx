@@ -1,5 +1,5 @@
 /**
- * InscripcionesCarreraStepContent - Contenido completo del paso "Seleccionar Carrera" (step 1)
+ * InscripcionesCarreraStepContent - Contenido completo del paso "Seleccionar carrera" (step 1)
  *
  * Responsabilidad del módulo inscripciones: Card + fila de dos alertas + selección de carrera.
  * El WizardForm genérico solo invoca renderSectionContent; no conoce esta UI.

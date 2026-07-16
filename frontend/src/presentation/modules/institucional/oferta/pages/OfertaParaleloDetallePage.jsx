@@ -39,7 +39,7 @@ const OfertaParaleloDetallePage = () => {
   const breadcrumbItems = [
     { title: 'Inicio', href: '/' },
     { title: 'Institucional', href: '/institucional' },
-    { title: 'Oferta Académica', href: '/institucional/oferta' },
+    { title: 'Oferta académica', href: '/institucional/oferta' },
     { title: s.detalle?.paraleloNombre ?? `Paralelo #${s.paraleloGestionId}` },
   ];
 

@@ -461,14 +461,14 @@ export const useGestionHorariosConflictosState = () => {
                 return {
                     ok: false,
                     message:
-                        'Sin asignación docente vigente para esta materia. Revisá la oferta académica del paralelo.',
+                        'Sin asignación docente vigente para esta materia. Revise la oferta académica del paralelo.',
                 };
             }
             if (!horarioId) {
                 return {
                     ok: false,
                     message:
-                        'Franja horaria no reconocida en el catálogo del turno. Elegí un horario válido de la grilla (filas del turno TARDE/NOCHE).',
+                        'Franja horaria no reconocida en el catálogo del turno. Elija un horario válido de la grilla (filas del turno TARDE/NOCHE).',
                 };
             }
 
@@ -494,19 +494,19 @@ export const useGestionHorariosConflictosState = () => {
             if (conflictoDocente) {
                 return {
                     ok: false,
-                    message: `${conflictoDocente.mensaje}. Elegí una celda vacía o intercambiá con otro bloque del docente.`,
+                    message: `${conflictoDocente.mensaje}. Elija una celda vacía o intercambie con otro bloque del docente.`,
                 };
             }
             if (conflictoParalelo) {
                 return {
                     ok: false,
-                    message: `${conflictoParalelo.mensaje} Elegí otra franja libre o intercalá con la materia que ocupa ese horario.`,
+                    message: `${conflictoParalelo.mensaje} Elija otra franja libre o intercale con la materia que ocupa ese horario.`,
                 };
             }
             if (conflictoAula) {
                 return {
                     ok: false,
-                    message: `${conflictoAula.mensaje} Revisá la asignación de aulas o elegí otra franja.`,
+                    message: `${conflictoAula.mensaje} Revise la asignación de aulas o elija otra franja.`,
                 };
             }
 
@@ -532,7 +532,7 @@ export const useGestionHorariosConflictosState = () => {
             notification.info({
                 title: 'Edición por paralelo',
                 description:
-                    'Elegí la pestaña del paralelo que querés ajustar. Los cambios se guardan solo en ese paralelo.',
+                    'Elija la pestaña del paralelo que desea ajustar. Los cambios se guardan solo en ese paralelo.',
             });
             return;
         }
@@ -586,7 +586,7 @@ export const useGestionHorariosConflictosState = () => {
         if (incomplete) {
             notification.warning({
                 title: 'Datos incompletos',
-                description: 'Algunos bloques no tienen franja válida. Revisá antes de guardar.',
+                description: 'Algunos bloques no tienen franja válida. Revise antes de guardar.',
             });
             return;
         }

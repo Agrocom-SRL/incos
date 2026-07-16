@@ -107,7 +107,7 @@ export const horariosRoutes = [
     permiso: 'institucional.gestion.horarios',
     accion: 'LISTAR',
     menu: {
-      label: 'Gestión de Horarios',
+      label: 'Gestión de horarios',
       module: 'INST',
       parent: 'INST',
       order: 3,

@@ -23,7 +23,7 @@ const OfertaAcademicaDashboardPage = () => {
   const breadcrumbItems = [
     { title: 'Inicio', href: '/' },
     { title: 'Institucional', href: '/institucional' },
-    { title: 'Oferta Académica' },
+    { title: 'Oferta académica' },
   ];
 
   const showAlert =

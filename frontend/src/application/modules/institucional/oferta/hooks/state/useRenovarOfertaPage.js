@@ -181,7 +181,7 @@ export function useRenovarOfertaPage() {
       });
       if (!res.success) {
         notification.error({
-          message: 'No se pudo renovar la oferta',
+          title: 'No se pudo renovar la oferta',
           description: res.error || 'Intente nuevamente o revise la gestión destino.',
         });
         return;
@@ -189,7 +189,7 @@ export function useRenovarOfertaPage() {
       setResumen(res.data?.resumen ?? null);
       setVigenteMarcada(false);
       notification.success({
-        message: 'Oferta renovada en la gestión destino',
+        title: 'Oferta renovada en la gestión destino',
         description:
           'Revise el resumen por plan. Nada se publica hasta marcar vigente la nueva gestión.',
       });
@@ -266,7 +266,7 @@ export function useRenovarOfertaPage() {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Institucional', href: '/institucional' },
-      { title: 'Oferta Académica', href: ofertaPaths.dashboard() },
+      { title: 'Oferta académica', href: ofertaPaths.dashboard() },
       { title: 'Renovación de oferta' },
     ],
     []

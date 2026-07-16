@@ -103,7 +103,7 @@ const BecasList = () => {
 
     return (
         <PageTemplate
-            header={<PageHeader title="Lista de Becas" breadcrumbItems={breadcrumbItems} />}
+            header={<PageHeader title="Lista de becas" breadcrumbItems={breadcrumbItems} />}
             sidebar={null}
         >
             <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
@@ -112,7 +112,7 @@ const BecasList = () => {
                         <ListPanelHeader title="Lista de becas" actions={nuevaBecaAction} />
                         <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                             Becas asignadas a los estudiantes: tipo, porcentaje de descuento,
-                            vigencia y estado. Desde aquí registras nuevas asignaciones de beca.
+                            vigencia y estado. Desde aquí puede registrar nuevas asignaciones de beca.
                         </Paragraph>
                     </header>
                     <CarreraTabsListView

@@ -127,7 +127,7 @@ const LoginFormCard = ({
         </Form>
 
         <div className="login-footer">
-          <Text className="login-footer-text">Sistema de Gestión Académica</Text>
+          <Text className="login-footer-text">Sistema de gestión académica</Text>
         </div>
       </Space>
     </Card>

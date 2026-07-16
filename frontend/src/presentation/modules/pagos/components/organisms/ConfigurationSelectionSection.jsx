@@ -30,7 +30,7 @@ const ConfigurationSelectionSection = ({
 }) => {
   return (
     <Card
-      title="Seleccionar Configuración de Aporte"
+      title="Seleccionar configuración de aporte"
       style={{ marginTop: '24px', marginBottom: '24px' }}
       headerColor="primary"
     >

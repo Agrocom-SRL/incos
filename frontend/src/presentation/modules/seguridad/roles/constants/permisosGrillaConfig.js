@@ -24,7 +24,7 @@ export const ACCIONES_GRILLA = [
 export const ACCION_AYUDA = {
   LISTAR: 'Ver listados y buscar; no implica abrir ficha ni modificar datos.',
   DETALLE: 'Abrir ficha o detalle de un registro concreto.',
-  CREAR: 'Registrar registros nuevos (alta). No cubre modificar algo que ya existe.',
+  CREAR: 'Crear registros nuevos (alta). No cubre modificar algo que ya existe.',
   EDITAR:
     'Guardar cambios sobre registros ya existentes (incluye el “Guardar” del formulario de edición). No es lo mismo que CREAR.',
   ELIMINAR: 'Borrar o anular registros según las reglas del módulo.',

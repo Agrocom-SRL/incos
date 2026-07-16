@@ -4,7 +4,7 @@
  * Single Responsibility: Obtener el estado actual del aporte de un estudiante para el formulario de registro de pago.
  *
  * Retorna: saldo_pendiente, total_pagado, cantidad_pagos, cuotas, tiene_descuento_aplicado, gestion, etc.
- * Usado por usePagosRegistrarData y PagosRegistrar para mostrar saldo real, cuotas ya pagadas y ocultar "Asignar Beca" si ya hay descuento aplicado.
+ * Usado por usePagosRegistrarData y PagosRegistrar para mostrar saldo real, cuotas ya pagadas y ocultar "Asignar beca" si ya hay descuento aplicado.
  */
 
 import { useState, useEffect, useCallback } from 'react';

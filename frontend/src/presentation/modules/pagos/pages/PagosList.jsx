@@ -170,7 +170,7 @@ const PagosList = () => {
       icon={<PlusOutlined />}
       onClick={handleNuevoPago}
     >
-      Nuevo Pago
+      Nuevo pago
     </ActionButton>
   );
 
@@ -178,7 +178,7 @@ const PagosList = () => {
     <PageTemplate
       header={
         <PageHeader
-          title="Lista de Pagos"
+          title="Lista de pagos"
           breadcrumbItems={breadcrumbItems}
           actions={exportActions}
         />
@@ -198,7 +198,7 @@ const PagosList = () => {
             <ListPanelHeader title="Lista de pagos" actions={crearAction} />
             <Paragraph type="secondary" className="cfg-academico-workspace__desc">
               Aportes académicos y su estado de pago: estudiante, número de recibo, monto y
-              comprobante. Registra nuevos pagos y exporta el estado de aporte por carrera.
+              comprobante. Registre nuevos pagos y exporte el estado de aporte por carrera.
             </Paragraph>
           </header>
           <div className="cfg-academico-tab-panel">

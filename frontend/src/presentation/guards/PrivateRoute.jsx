@@ -34,7 +34,7 @@ export function PrivateRoute({
   if (permiso && !hasPermiso(permiso, accion ?? 'LISTAR')) {
     return (
       <AccessDeniedRedirect
-        description="No tenés permiso para ver esta página."
+        description="No tiene permiso para ver esta página."
       />
     );
   }
@@ -42,7 +42,7 @@ export function PrivateRoute({
   if (!permiso && permisoAny?.length && !hasAnyPermiso(permisoAny, hasPermiso, accion ?? 'LISTAR')) {
     return (
       <AccessDeniedRedirect
-        description="No tenés permiso para ver esta página."
+        description="No tiene permiso para ver esta página."
       />
     );
   }

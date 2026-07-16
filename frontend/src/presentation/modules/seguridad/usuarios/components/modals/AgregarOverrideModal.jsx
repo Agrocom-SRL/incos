@@ -4,7 +4,7 @@ import '@modules/seguridad/usuarios/styles/usuarios.css';
 
 const ACCIONES = ACCIONES_GRILLA.map((a) => a.key);
 
-const TIPO_ETIQUETA = { GRANT: 'OTORGAR', REVOKE: 'REVOCAR' };
+const TIPO_ETIQUETA = { GRANT: 'otorgar', REVOKE: 'revocar' };
 
 /** Capa (acceso/ops/flujos) de una acción — mismo catálogo que la grilla de permisos. */
 function capaDeAccion(accion) {
@@ -69,7 +69,7 @@ export default function AgregarOverrideModal({
           title={
             <Flex vertical gap={6}>
               <span>
-                Va a {TIPO_ETIQUETA[fixedValues.tipo] || fixedValues.tipo} este permiso para el usuario:{' '}
+                Va a {TIPO_ETIQUETA[fixedValues.tipo] || fixedValues.tipo} este permiso al usuario:{' '}
                 <strong>{fixedValues.permisoLabel}</strong>&nbsp;
                 <span className={`seg-accion-pill seg-accion-pill--${capaDeAccion(fixedValues.accion)}`}>
                   {fixedValues.accion}

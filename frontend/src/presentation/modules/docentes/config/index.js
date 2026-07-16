@@ -8,4 +8,7 @@ export {
 export {
   createDocenteFormacionLaboralFields,
   DOCENTE_FORMACION_LABORAL_FIELD_NAMES,
+  formatNivelAcademicoDocente,
+  formatTipoContratoDocente,
+  formatEstadoLaboralDocente,
 } from './docenteFormacionLaboralFields';

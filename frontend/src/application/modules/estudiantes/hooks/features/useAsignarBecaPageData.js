@@ -37,16 +37,16 @@ export const useAsignarBecaPageData = (options = {}) => {
 
   const pageTitle = useMemo(() => {
     if (studentName) {
-      return `${isEditMode ? 'Editar asignación de beca' : 'Asignar Beca'} - ${studentName}`;
+      return `${isEditMode ? 'Editar asignación de beca' : 'Asignar beca'} - ${studentName}`;
     }
-    return isEditMode ? 'Editar asignación de beca' : 'Asignar Beca';
+    return isEditMode ? 'Editar asignación de beca' : 'Asignar beca';
   }, [studentName, isEditMode]);
 
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Becas', href: '/estudiantes/becas/listar' },
-      { title: isEditMode ? 'Editar asignación de beca' : 'Asignar Beca' },
+      { title: isEditMode ? 'Editar asignación de beca' : 'Asignar beca' },
     ],
     [isEditMode]
   );

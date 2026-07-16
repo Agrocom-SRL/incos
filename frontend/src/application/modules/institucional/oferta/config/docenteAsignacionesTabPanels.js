@@ -7,7 +7,7 @@ export const DOCENTE_ASIGNACIONES_TAB_PANEL_META = {
     shortLabel: 'Horario semanal',
     title: 'Horario semanal del docente',
     description:
-      'Vista de lectura de los bloques asignados en la gestión vigente. Para resolver choques de franja usá Gestión de horarios → Resolver conflictos.',
+      'Vista de lectura de los bloques asignados en la gestión vigente. Para resolver choques de franja utilice Gestión de horarios → Resolver conflictos.',
     icon: ScheduleOutlined,
   },
   [DOCENTE_ASIGNACIONES_TABS.COLOR]: {
@@ -15,7 +15,7 @@ export const DOCENTE_ASIGNACIONES_TAB_PANEL_META = {
     shortLabel: 'Carga horaria',
     title: 'Carga horaria asignada',
     description:
-      'Configurá la carga horaria del docente en la grilla y revisá el detalle de materias ofertadas en la gestión vigente.',
+      'Configure la carga horaria del docente en la grilla y revise el detalle de materias ofertadas en la gestión vigente.',
     icon: BgColorsOutlined,
   },
 };

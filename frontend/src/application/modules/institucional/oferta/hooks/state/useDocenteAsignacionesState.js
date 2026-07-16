@@ -173,7 +173,7 @@ export function useDocenteAsignacionesState() {
     if (!hex) {
       notification.warning({
         title: 'Color requerido',
-        description: 'Elegí un color en formato #RRGGBB antes de guardar.',
+        description: 'Elija un color en formato #RRGGBB antes de guardar.',
       });
       return;
     }
@@ -206,7 +206,7 @@ export function useDocenteAsignacionesState() {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Institucional', href: '/institucional' },
-      { title: esVistaDocente ? 'Mis asignaciones' : 'Oferta Académica', href: OFERTA_BASE },
+      { title: esVistaDocente ? 'Mis asignaciones' : 'Oferta académica', href: OFERTA_BASE },
       { title: docenteNombre },
     ],
     [docenteNombre, esVistaDocente],

@@ -19,7 +19,7 @@ export function useOfertaGestionPlanesState() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { modal, notification } = App.useApp();
 
-  // «Volver» regresa al LUGAR DE ORIGEN (p. ej. Gestiones Pasadas navega aquí
+  // «Volver» regresa al LUGAR DE ORIGEN (p. ej. Gestiones pasadas navega aquí
   // con returnListPath en location.state); por defecto, al panel de oferta.
   const returnListPath = location.state?.returnListPath ?? ofertaPaths.dashboard();
 
@@ -72,7 +72,7 @@ export function useOfertaGestionPlanesState() {
       if (sinPlanesHabilitados) {
         return {
           type: 'warning',
-          message: 'Gestión histórica sin planes habilitados',
+          title: 'Gestión histórica sin planes habilitados',
           description: codigoVigente
             ? `La gestión ${codigoActual} no tiene oferta configurada y no admite cambios. Vuelva a la gestión vigente (${codigoVigente}) para operar planes y paralelos.`
             : `La gestión ${codigoActual} no tiene oferta configurada y no admite cambios. Marque una gestión vigente para continuar.`,
@@ -81,7 +81,7 @@ export function useOfertaGestionPlanesState() {
       }
       return {
         type: 'info',
-        message: 'Gestión histórica (solo consulta)',
+        title: 'Gestión histórica (solo consulta)',
         description: codigoVigente
           ? `Los paralelos de ${codigoActual} son referencia histórica. Para habilitar planes o generar paralelos, use la gestión vigente (${codigoVigente}).`
           : `Los paralelos de ${codigoActual} son referencia histórica. Para operar la oferta, use la gestión vigente del instituto.`,
@@ -209,7 +209,7 @@ export function useOfertaGestionPlanesState() {
   }, [planesHabilitadosLoaded, esGestionOperativa, sinPlanesHabilitados, navigate]);
 
   // setSearchParams navega y PIERDE location.state salvo que se reenvíe: sin
-  // esto, el returnListPath de Gestiones Pasadas se borra al auto-seleccionar
+  // esto, el returnListPath de Gestiones pasadas se borra al auto-seleccionar
   // el plan y el «Volver» cae al dashboard.
   useEffect(() => {
     if (!planesHabilitadosLoaded || !planesHabilitados.length) return;
@@ -325,7 +325,7 @@ export function useOfertaGestionPlanesState() {
 
       if (erroresPlanes.length && !totalParalelosCreados && !totalCursos) {
         notification.warning({
-          message: 'No se generó la oferta',
+          title: 'No se generó la oferta',
           description:
             'Revise plantillas en Configuración → Académico → Paralelos y asignaturas del plan de estudio.',
           duration: 8,
@@ -349,12 +349,12 @@ export function useOfertaGestionPlanesState() {
 
       if (partes.length) {
         notification.success({
-          message: 'Oferta preparada en la gestión',
+          title: 'Oferta preparada en la gestión',
           description: `${partes.join('. ')}.`,
         });
       } else {
         notification.success({
-          message: 'Oferta al día',
+          title: 'Oferta al día',
           description:
             'Los paralelos y las materias del periodo ya estaban generados en todos los planes habilitados.',
         });
@@ -363,7 +363,7 @@ export function useOfertaGestionPlanesState() {
       if (erroresPlanes.length || erroresOferta.length) {
         const detalle = [...new Set([...erroresPlanes, ...erroresOferta])].join(', ');
         notification.warning({
-          message: 'Algunos ítems no se procesaron',
+          title: 'Algunos ítems no se procesaron',
           description: detalle,
           duration: 8,
         });
@@ -468,7 +468,7 @@ export function useOfertaGestionPlanesState() {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Institucional', href: '/institucional' },
-      { title: 'Oferta Académica', href: ofertaPaths.dashboard() },
+      { title: 'Oferta académica', href: ofertaPaths.dashboard() },
       { title: gestionSeleccionada ? gestionLabel(gestionSeleccionada) : 'Gestión' },
     ],
     [gestionSeleccionada]

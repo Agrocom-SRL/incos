@@ -16,7 +16,7 @@ const InscripcionesDetail = () => {
   const { hasPermiso, usuario } = useAuthContext();
   /** Vista propia del estudiante (reusa esta pantalla como "Mi matrícula"). */
   const esVistaPropiaEstudiante = esEstudiante(usuario);
-  const pageTitle = esVistaPropiaEstudiante ? 'Mi matrícula' : 'Detalle de la Inscripción';
+  const pageTitle = esVistaPropiaEstudiante ? 'Mi matrícula' : 'Detalle de la inscripción';
   const puedeGenerarBoletaPdf = hasPermiso('matricula.documento.ver', 'GENERAR_PDF');
   const puedeEditarInscripcion = hasPermiso('matricula.inscripcion.editar', 'EDITAR');
   const puedeActivarCursado = hasPermiso('matricula.inscripcion.editar', 'EDITAR');

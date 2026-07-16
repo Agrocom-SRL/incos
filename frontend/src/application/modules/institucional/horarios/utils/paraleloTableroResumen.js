@@ -29,7 +29,7 @@ export function resumenTableroParaleloCard(p) {
                 return `Faltan ${falta} curso(s) del plan de estudio por crear en este paralelo.`;
             }
             if (solape > 0) {
-                return 'Hay solapes de franja entre materias del grupo; corregí el plan semanal.';
+                return 'Hay solapes de franja entre materias del grupo; corrija el plan semanal.';
             }
             if (coberturaInc > 0) {
                 return `${coberturaInc} materia(s) con bloques insuficientes para cubrir las horas semanales del plan.`;
@@ -38,21 +38,21 @@ export function resumenTableroParaleloCard(p) {
                 return `${sinBloques} materia(s) sin cobertura horaria completa en el plan semanal.`;
             }
             if (confAula > 0) {
-                return `Hay ${confAula} cruce(s) de aula con otro paralelo; reasigná override por bloque en Horarios en aulas.`;
+                return `Hay ${confAula} cruce(s) de aula con otro paralelo; reasigne el override por bloque en Horarios en aulas.`;
             }
-            return 'Completá cursos y el plan semanal (franjas) antes de publicar.';
+            return 'Complete los cursos y el plan semanal (franjas) antes de publicar.';
         case 'sin_docentes':
             if (sinDoc > 0) return `${sinDoc} materia(s) aún sin docente asignado.`;
-            return 'Hay choque de horario de docente entre materias; reasigná o mové franjas.';
+            return 'Hay choque de horario de docente entre materias; reasigne el docente o mueva las franjas.';
         case 'sin_aulas':
             if (sinAulaBase) {
-                return 'El paralelo no tiene aula base en Oferta académica; asigná aula al paralelo o por bloque.';
+                return 'El paralelo no tiene aula base en Oferta académica; asigne un aula al paralelo o por bloque.';
             }
             if (bloquesSinAula > 0) {
                 return `${bloquesSinAula} bloque(s) sin aula efectiva (sin base en paralelo ni override por bloque).`;
             }
-            return 'Asigná aula base en Oferta académica o override por bloque en el plan.';
+            return 'Asigne un aula base en Oferta académica o un override por bloque en el plan.';
         default:
-            return 'Revisá el armado del plan en gestión de horarios.';
+            return 'Revise el armado del plan en Gestión de horarios.';
     }
 }

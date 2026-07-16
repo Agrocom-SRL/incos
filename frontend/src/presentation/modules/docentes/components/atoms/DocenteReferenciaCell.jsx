@@ -7,7 +7,8 @@ import { Typography } from 'antd';
 
 const { Text } = Typography;
 
-const getGeneroMeta = (genero) => {
+/** ENUM de género → icono, tono y etiqueta legible (listado y ficha). */
+export const getGeneroMeta = (genero) => {
   const g = String(genero || '').toUpperCase();
   if (g === 'MASCULINO' || g === 'M') {
     return {

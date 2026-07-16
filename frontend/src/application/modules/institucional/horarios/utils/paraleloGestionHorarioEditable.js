@@ -41,7 +41,7 @@ export function mensajeParaleloGestionCoberturaNoReajustable(estado) {
 export function mensajeParaleloGestionNoEditable(estado) {
   const s = normalizeEstado(estado);
   if (s === 'PUBLICADO') {
-    return 'Este paralelo ya está PUBLICADO: no se pueden generar bloques nuevos desde Cobertura. En Plan semanal podés reubicar bloques existentes y guardar los cambios.';
+    return 'Este paralelo ya está PUBLICADO: no se pueden generar bloques nuevos desde Cobertura. En Plan semanal puede reubicar bloques existentes y guardar los cambios.';
   }
   if (s === 'CERRADO') {
     return 'Este paralelo está CERRADO: el plan semanal ya no admite cambios.';

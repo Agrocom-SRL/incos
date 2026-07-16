@@ -11,7 +11,7 @@ import { findBestMatchingRoute } from '@navigation-services/routeMapper';
 import { notifyAccessDenied } from '@navigation/utils/notifyAccessDenied.js';
 
 const DETALLE_DENEGADO =
-  'No tenés permiso para abrir el detalle de esta sección.';
+  'No tiene permiso para abrir el detalle de esta sección.';
 
 export const useDashboardGuardedNavigate = () => {
   const navigate = useNavigate();

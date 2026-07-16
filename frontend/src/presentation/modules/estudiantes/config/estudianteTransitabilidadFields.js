@@ -4,7 +4,7 @@
  * Single Responsibility: Definir la configuración de campos de transitabilidad para FormSection/FormField.
  *
  * Solo se muestra cuando tipo de admisión es TRANSITABILIDAD.
- * La carrera en INCOS ya se eligió en el paso "Tipo de Admisión"; no se repite aquí.
+ * La carrera en INCOS ya se eligió en el paso "Tipo de admisión"; no se repite aquí.
  *
  * Secciones según 15-transitabilidades.sql:
  * - Formación académica: datos de institución de origen (tabla instituciones) + carrera_origen, anio_conclusion (tabla transitabilidades).

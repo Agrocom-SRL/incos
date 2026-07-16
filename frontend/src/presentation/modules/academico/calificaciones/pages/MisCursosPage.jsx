@@ -87,12 +87,12 @@ const MisCursosPage = () => {
       isLoading={isLoading}
       error={error}
       refetch={refetch}
-      infoTitle={esVistaCoordinacion ? 'Cursos del docente' : 'Tus cursos'}
+      infoTitle={esVistaCoordinacion ? 'Cursos del docente' : 'Sus cursos'}
       infoDescription={infoDescription}
       emptyTitle={
         esVistaCoordinacion
           ? 'Este docente no tiene cursos asignados en la gestión.'
-          : 'No tenés cursos asignados en la gestión vigente.'
+          : 'No tiene cursos asignados en la gestión vigente.'
       }
       skeletonCount={esVistaCoordinacion ? 3 : 4}
       renderCard={(curso) => (

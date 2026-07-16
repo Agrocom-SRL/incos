@@ -28,7 +28,7 @@ export const createEstudianteDatosAcademicosInicialesFields = () => {
       fields: [
         {
           name: 'gestionIngresoId',
-          label: 'Gestión de Ingreso',
+          label: 'Gestión de ingreso',
           type: 'select',
           required: true,
           span: 12,

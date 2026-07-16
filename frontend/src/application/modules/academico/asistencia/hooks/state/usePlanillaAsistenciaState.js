@@ -331,7 +331,7 @@ export const usePlanillaAsistenciaState = () => {
           notification.error({
             title: 'No se cerró el día',
             description:
-              'Quedaron marcas sin guardar. Reintentá en unos segundos y volvé a cerrar.',
+              'Quedaron marcas sin guardar. Reintente en unos segundos y vuelva a cerrar.',
           });
           return false;
         }
@@ -340,7 +340,7 @@ export const usePlanillaAsistenciaState = () => {
       if (!res?.success) {
         notification.error({
           title: 'No se pudo cerrar el día',
-          description: res?.error || 'Reintentá en unos segundos.',
+          description: res?.error || 'Reintente en unos segundos.',
         });
         return false;
       }
@@ -364,7 +364,7 @@ export const usePlanillaAsistenciaState = () => {
           notification.error({
             title: 'No se reabrió el día',
             description:
-              'Quedaron marcas sin guardar. Reintentá en unos segundos y volvé a reabrir.',
+              'Quedaron marcas sin guardar. Reintente en unos segundos y vuelva a reabrir.',
           });
           return false;
         }
@@ -373,14 +373,14 @@ export const usePlanillaAsistenciaState = () => {
       if (!res?.success) {
         notification.error({
           title: 'No se pudo reabrir el día',
-          description: res?.error || 'Reintentá en unos segundos.',
+          description: res?.error || 'Reintente en unos segundos.',
         });
         return false;
       }
       setModoCorreccion(true);
       notification.success({
         title: 'Día reabierto',
-        description: 'Modo corrección activo: tocá una falta para marcar atraso.',
+        description: 'Modo corrección activo: toque una falta para marcar atraso.',
       });
       cargarPlanilla();
       return true;
@@ -395,13 +395,13 @@ export const usePlanillaAsistenciaState = () => {
       if (!res?.success) {
         notification.error({
           title: 'No se pudo habilitar la fecha',
-          description: res?.error || 'Reintentá en unos segundos.',
+          description: res?.error || 'Reintente en unos segundos.',
         });
         return false;
       }
       notification.success({
         title: 'Fecha especial habilitada',
-        description: 'Ya podés tomar asistencia en ese día.',
+        description: 'Ya puede tomar asistencia en ese día.',
       });
       // Saltar a la semana de la fecha habilitada (recarga implícita por el cambio de query).
       if (fecha && rangoBimestre) {

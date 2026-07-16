@@ -126,7 +126,7 @@ const EstudiantesList = () => {
         <PageTemplate
             header={
                 <PageHeader
-                    title="Lista de Estudiantes"
+                    title="Lista de estudiantes"
                     breadcrumbItems={breadcrumbItems}
                     actions={exportActions}
                 />
@@ -139,8 +139,8 @@ const EstudiantesList = () => {
                         <ListPanelHeader title="Lista de estudiantes" actions={crearAction} />
                         <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                             Estudiantes registrados en el instituto: código, identidad, contacto,
-                            carrera y estado académico. Desde aquí registras nuevos estudiantes y
-                            exportas la estadística de inscritos.
+                            carrera y estado académico. Desde aquí puede registrar nuevos estudiantes
+                            y exportar la estadística de inscritos.
                         </Paragraph>
                     </header>
                     <CarreraTabsListView

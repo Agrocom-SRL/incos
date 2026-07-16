@@ -3,7 +3,10 @@
  */
 
 import { Tag } from 'antd';
-import { getSubjectStatusColor } from '@application-inscripciones/utils/inscripcionDetailHelpers';
+import {
+  getSubjectStatusColor,
+  getSubjectStatusLabel,
+} from '@application-inscripciones/utils/inscripcionDetailHelpers';
 
 const historialEstadoTag = (estado) => {
   const e = String(estado ?? '').toUpperCase();
@@ -32,7 +35,7 @@ export const createMateriasInscritasColumns = () => [
     key: 'status',
     width: 130,
     render: (status) =>
-      status ? <Tag color={getSubjectStatusColor(status)}>{status}</Tag> : '—',
+      status ? <Tag color={getSubjectStatusColor(status)}>{getSubjectStatusLabel(status)}</Tag> : '—',
   },
   {
     title: 'Paralelo',

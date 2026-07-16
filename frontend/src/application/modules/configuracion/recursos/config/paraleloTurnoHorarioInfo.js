@@ -89,7 +89,7 @@ export const getParaleloTurnoHorarioInfo = (turno) => {
     slots,
     sinCatalogo: Boolean(meta.sinCatalogo),
     nota: meta.sinCatalogo
-      ? 'Aún no hay bloques de MAÑANA en el catálogo institucional; rango referencial para planificación.'
+      ? 'Aún no hay bloques del turno MAÑANA en el catálogo institucional; rango referencial para planificación.'
       : null,
   };
 };

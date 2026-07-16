@@ -33,8 +33,8 @@ const WizardActions = ({
   showSaveButton = true,
   prevLabel = 'Anterior',
   nextLabel = 'Siguiente',
-  finishLabel = 'Finalizar Registro',
-  saveLabel = 'Guardar y Continuar Después',
+  finishLabel = 'Finalizar registro',
+  saveLabel = 'Guardar y continuar después',
   className = '',
 }) => {
   // Hook que compone toda la lógica de acciones del wizard
@@ -63,7 +63,7 @@ const WizardActions = ({
         </Button>
       )}
 
-      {/* Botón Guardar y Continuar Después (no se muestra en el último paso; solo Finalizar) */}
+      {/* Botón Guardar y continuar después (no se muestra en el último paso; solo Finalizar) */}
       {showSave && (
         <Button 
           htmlType="button"
