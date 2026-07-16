@@ -27,6 +27,22 @@ Aplica a: `Alert`, `notification.*`, `Modal.confirm/warning/error/success/
 info`, `Popconfirm`, `Empty description`, `Spin tip`, `Form.Item
 rules[].message`, `placeholder`, párrafos `Typography`/banners.
 
+### «No puede...» (usted) vs «No se puede...» (impersonal)
+
+Ambas formas son válidas; el criterio es a quién apunta la restricción:
+
+- **«Usted» («No puede...», «Solo puede...»)** cuando la restricción depende
+  de quién es el usuario o le pide una acción: permisos, alcances self-only
+  con posesivo («No puede eliminar **su propia** cuenta», «Solo puede ver la
+  ficha de estudiantes de **sus** cursos», «Revise el historial...»).
+- **Impersonal («No se puede...»)** cuando la regla es del sistema y aplica
+  a cualquiera: estados y reglas de negocio («No se puede cambiar el turno
+  cuando el paralelo está PUBLICADO», «No se pueden ver los datos de otro
+  estudiante»). Con objeto plural el verbo concuerda: «No se **pueden** ver
+  **los datos/los aportes**»; en singular, «No se puede ver la matrícula».
+  Si la frase lleva posesivo de 2ª persona («su propia cuenta»), usar la
+  forma «usted», no la impersonal.
+
 ## Catálogo de conversiones aplicadas (por módulo)
 
 ### `academico/` (21 cambios, 12 archivos)
@@ -157,6 +173,53 @@ que `Alert`). Corregido en `useGestionFormPage.js`,
 interno `gestionContextAlert.message` se renombró a `title` para que no
 se confunda con la API v5 en futuras auditorías. El renderer data-driven
 (`fieldRenderers.jsx`) ya acepta `field.message || field.title`.
+
+## Backend 2026-07-16 (misma regla, mensajes de API)
+
+Los mensajes de error que el backend devuelve al frontend (y que la UI
+muestra en `Alert`/`notification`) tenían el mismo vicio. Corregidos
+21 mensajes en 19 archivos:
+
+| Área | Antes | Después |
+|---|---|---|
+| `application/utils/{cuaderno,asistencia}CursoAccess.js` + `GetRegistroNotasCursoUseCase.js` | No tenés acceso a este curso. | No tiene acceso a este curso. |
+| `Update/Delete/ResetNotas EvaluacionCuadernoUseCase.js` | Solo podés editar/eliminar/restablecer... | Solo puede editar/eliminar/restablecer... |
+| `licencias/{Cancelar,Editar}LicenciaUseCase.js` | Solo puedes cancelar las licencias que solicitaste vos. / ...tus solicitudes... | Solo puede cancelar las licencias que usted solicitó. / ...sus solicitudes... |
+| `EliminarUsuarioUseCase.js` | No puedes eliminar tu propia cuenta... | No puede eliminar su propia cuenta... |
+| `middleware/*SelfOnly` + `estudianteAlcanceDocente` (5) | No puedes ver los datos de otro... / ...de tus cursos. | No puede ver los datos de otro... / ...de sus cursos. |
+| `validators/inscripciones/{create,prior-history}.validator.js` | Revisa el historial de materias previas... | Revise el historial de materias previas... |
+| `pagos/{GenerateReciboPago,RegisterAporteVoluntario}UseCase.js` | concepto: 'Aporte Académico' / 'Aporte Voluntario Anual' | 'Aporte académico' / 'Aporte voluntario anual' (alineado con la UI) |
+
+**No se tocan en backend:** JSDoc («Verifica si...», tercera persona,
+docs de desarrollador), errores de configuración interna
+(`PDFGenerator.js`, `Container.js` — «Asegúrate de registrar...», solo
+los ve el desarrollador), labels de los PDFs oficiales
+(`IncosPDFBase.js`, `FormularioInscripcionPdfGenerator.js`,
+`DeclaracionJuradaPdfGenerator.js` — formato del documento impreso),
+`swagger.config.js` y comentarios de modelos que espejan el schema
+(`prerrequisito.js`).
+
+## Cobertura y límite del análisis (2026-07-16)
+
+Con las tres pasadas (117 archivos + continuación frontend + backend), el
+**código** de `frontend/src` y `backend/src` queda barrido por completo
+para: registro «usted» (voseo/tuteo), Title Case → sentence case y API
+antd 6 (`message` → `title`). Los barridos globales terminan sin
+resultados.
+
+**Fuera del código queda una sola categoría: textos sembrados en BD**
+(`02-seeders`), que la UI muestra como catálogos y sin voseo/tuteo, pero
+con Title Case: métodos de pago («Pago en Efectivo», «Transferencia
+Bancaria»), roles («Director Académico», «Administrador del Sistema»),
+aulas («Sala de Docentes») y actividades del calendario. Cambiarlos es un
+cambio de **datos** (requiere aprobación + resembrar), no de código —
+decisión pendiente. Los nombres propios (bancos, personas, carreras) no
+se tocan en ningún caso.
+
+Límite inherente: los barridos son por patrones sobre literales; una
+cadena construida por concatenación o una forma verbal muy inusual
+podría escapar. El costo/beneficio de perseguirlas es alto; se corrigen
+al verlas (como el `Alert` que originó la regla).
 
 ### Pendientes anteriores — cerrados
 

@@ -54,7 +54,7 @@ export async function aporteSelfOnlyGuard(req, res, next) {
     const dueñoId = Number(plain.studentId ?? plain.estudianteId ?? plain.estudiante_id);
 
     if (dueñoId !== suEstudianteId) {
-      throw new ForbiddenError('No puedes ver los aportes de otro estudiante.');
+      throw new ForbiddenError('No se pueden ver los aportes de otro estudiante.');
     }
 
     return next();

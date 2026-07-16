@@ -403,7 +403,7 @@ export class GenerateReciboPagoUseCase {
             totalPagadoAntes,
             montoPagado: montoEstaCuota,
             saldoPendiente,
-            concepto: 'Aporte Académico',
+            concepto: 'Aporte académico',
             metodoPago: paymentMethod?.nombre ?? paymentMethod?.name ?? 'N/A',
             numeroTransaccion: cuotaPlain.transactionNumber ?? cuotaPlain.numeroTransaccion ?? cuotaPlain.numero_transaccion ?? null,
             becaInfo: scholarshipInfo ? { nombre: scholarshipInfo.nombre ?? scholarshipInfo.name, porcentaje: scholarshipInfo.porcentaje ?? scholarshipInfo.percentage } : null,
@@ -581,7 +581,7 @@ export class GenerateReciboPagoUseCase {
                 montoTotal: totalAmount || 400.00,
                 descuentoBeca: scholarshipDiscount || 0,
                 montoPagado: amountToPay || totalAmount || 400.00,
-                concepto: paymentPlain.concepto || paymentPlain.concept || 'Aporte Voluntario Anual',
+                concepto: paymentPlain.concepto || paymentPlain.concept || 'Aporte voluntario anual',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
                 numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
 

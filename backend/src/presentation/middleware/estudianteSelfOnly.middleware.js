@@ -36,7 +36,7 @@ export async function estudianteSelfOnlyGuard(req, res, next) {
     }
 
     if (Number(req.params.id) !== suEstudianteId) {
-      throw new ForbiddenError('No puedes ver los datos de otro estudiante.');
+      throw new ForbiddenError('No se pueden ver los datos de otro estudiante.');
     }
 
     return next();

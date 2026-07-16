@@ -61,11 +61,11 @@ export class EditarLicenciaUseCase {
     // Alcance DOCENTE: solo sus propias solicitudes y solo mientras están PENDIENTES.
     if (rolCodigo === 'DOCENTE') {
       if (Number(licencia.createdBy) !== Number(usuarioId)) {
-        throw new ForbiddenError('Solo puedes editar las licencias que solicitaste vos.');
+        throw new ForbiddenError('Solo puede editar las licencias que usted solicitó.');
       }
       if (licencia.state !== ESTADOS_LICENCIAS.PENDIENTE) {
         throw new ForbiddenError(
-          'Solo puedes editar tus solicitudes mientras están PENDIENTES.',
+          'Solo puede editar sus solicitudes mientras están PENDIENTES.',
         );
       }
     }

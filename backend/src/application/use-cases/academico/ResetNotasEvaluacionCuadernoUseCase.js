@@ -52,7 +52,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
       )) > 0;
 
     if (bimestreNum !== bimestreVigente && !reabierto) {
-      throw new ForbiddenError('Solo podés restablecer notas del bimestre vigente o reabierto.');
+      throw new ForbiddenError('Solo puede restablecer notas del bimestre vigente o reabierto.');
     }
 
     const existente = await this.cuadernoRepository.obtenerEvaluacionDeAsignacion(

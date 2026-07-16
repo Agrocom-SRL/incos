@@ -805,7 +805,7 @@ export class RegisterAporteVoluntarioUseCase {
                 montoPagado: montoEstaCuota ?? 0,
                 saldoPendiente: saldoPendiente ?? 0,
 
-                concepto: 'Aporte Académico',
+                concepto: 'Aporte académico',
                 observacion: (paymentPlain.description ?? paymentPlain.descripcion ?? '').toString().trim() || '',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
                 numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
@@ -997,7 +997,7 @@ export class RegisterAporteVoluntarioUseCase {
                 entregado: true, // El documento fue entregado digitalmente
                 enTramite: false, // No está en trámite, ya fue entregado
                 fechaEntrega: paymentDate, // Fecha de entrega = fecha del pago
-                observaciones: `Comprobante de pago de aporte académico: ${descripcion || 'Aporte Académico'}.`,
+                observaciones: `Comprobante de pago de aporte académico: ${descripcion || 'Aporte académico'}.`,
             };
 
             // Crear el registro de entrega

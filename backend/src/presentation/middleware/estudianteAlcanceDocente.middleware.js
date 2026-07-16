@@ -49,7 +49,7 @@ export async function estudianteAlcanceDocenteGuard(req, res, next) {
     );
 
     if (!esSuEstudiante) {
-      throw new ForbiddenError('Solo puedes ver la ficha de estudiantes de tus cursos.');
+      throw new ForbiddenError('Solo se puede ver la ficha de estudiantes de sus cursos.');
     }
 
     return next();
