@@ -44,7 +44,8 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
         ...listar,
         listInscripcionesCapacitacionValidator,
         validateRequest,
-        (req, res, next) => controllers.listInscripcionesCapacitacionController.handle(req, res, next)
+        (req, res, next) =>
+            controllers.listInscripcionesCapacitacionController.handle(req, res, next)
     );
 
     /**
@@ -58,7 +59,8 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
         ...crear,
         createInscripcionCapacitacionValidator,
         validateRequest,
-        (req, res, next) => controllers.createInscripcionCapacitacionController.handle(req, res, next)
+        (req, res, next) =>
+            controllers.createInscripcionCapacitacionController.handle(req, res, next)
     );
 
     // GET /:id - Ficha de la inscripción (participante + curso + historial de pagos)
@@ -67,7 +69,8 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
         ...detalle,
         idValidator,
         validateRequest,
-        (req, res, next) => controllers.getInscripcionCapacitacionByIdController.handle(req, res, next)
+        (req, res, next) =>
+            controllers.getInscripcionCapacitacionByIdController.handle(req, res, next)
     );
 
     // POST /:id/pagos - Registrar pago (permiso capacitacion.pago CREAR)
@@ -86,7 +89,8 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
         ...eliminar,
         idValidator,
         validateRequest,
-        (req, res, next) => controllers.deleteInscripcionCapacitacionController.handle(req, res, next)
+        (req, res, next) =>
+            controllers.deleteInscripcionCapacitacionController.handle(req, res, next)
     );
 
     return router;

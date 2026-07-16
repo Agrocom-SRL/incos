@@ -31,7 +31,8 @@ export const listParticipantesValidator = [
  * @returns {Array} Cadena de validators de express-validator
  */
 export function buildParticipanteFieldValidators(prefix = '', required = true) {
-  const req = (chain, message) => (required ? chain.notEmpty().withMessage(message) : chain.optional());
+  const req = (chain, message) =>
+    (required ? chain.notEmpty().withMessage(message) : chain.optional());
 
   return [
     req(body(`${prefix}ci`), `${prefix}ci es requerido`)

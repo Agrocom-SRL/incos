@@ -1,6 +1,25 @@
 # Plan de desarrollo — Módulo "Cursos de Capacitación"
 
-> Estado (2026-07-15): decisiones del §6 resueltas. **Nombres de tabla
+> **Estado (2026-07-16): BACKEND COMPLETO implementado (paso 6 del checklist §5).**
+> Capas completas por recurso (modelos → interfaces → repos → mappers → use
+> cases → controllers → validators → routers → tokens/containers → montaje en
+> `routes/index.js`). Repositorios del módulo registrados con tokens scoped
+> `CAPACITACION_TOKENS.*` dentro de `registerCapacitacionModule` (diff mínimo:
+> solo se tocaron `tokens/index.js`, `modules/index.js`,
+> `presentation/routes/index.js` + exports en `models/index.js`). Lint limpio
+> en los archivos del módulo y arranque en seco verificado (el container DI
+> resuelve y los 3 routers montan sin BD). **Sigue pendiente ejecutar en BD**
+> el schema 25, seeders 65/66 y vistas 154/155 (pasos 2-5 y 7, requieren
+> aprobación) — sin eso los endpoints devolverán errores de tabla inexistente.
+> Frontend (§4) NO iniciado.
+>
+> Bitácora:
+> - 2026-07-16 · backend: módulo CAP completo en `backend/src` (15 endpoints,
+>   RBAC `capacitacion.*` por acción, transacciones en crear curso+horarios,
+>   inscribir+pago inicial y eliminar inscripción+pagos; recibo = ID a 6
+>   dígitos, patrón aportes; cupo informativo §6.9; sin PDF §6.5).
+>
+> Estado previo (2026-07-15): decisiones del §6 resueltas. **Nombres de tabla
 > definitivos**: raíz `capacitaciones` (plural, sin prefijo, como
 > `cursos`/`carreras`) y todo lo que depende de ella con prefijo
 > `capacitacion_`: `participantes`, `capacitaciones`, `capacitacion_horarios`,

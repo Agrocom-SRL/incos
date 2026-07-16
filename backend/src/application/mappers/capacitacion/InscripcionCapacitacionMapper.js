@@ -116,8 +116,19 @@ export function entityToPresentation(entity) {
  * Clase mapper para InscripcionCapacitacion (patrón del módulo)
  */
 export class InscripcionCapacitacionMapper {
-  static rowToPresentation = rowToPresentation;
-  static rowsToPresentation = rowsToPresentation;
-  static entityToPresentation = entityToPresentation;
-  static deriveEstadoPago = deriveEstadoPago;
+  static rowToPresentation(row) {
+    return rowToPresentation(row);
+  }
+
+  static rowsToPresentation(rows) {
+    return rowsToPresentation(rows);
+  }
+
+  static entityToPresentation(entity) {
+    return entityToPresentation(entity);
+  }
+
+  static deriveEstadoPago(costo, totalPagado) {
+    return deriveEstadoPago(costo, totalPagado);
+  }
 }

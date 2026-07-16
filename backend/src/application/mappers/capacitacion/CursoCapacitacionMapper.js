@@ -111,9 +111,23 @@ export function entityToPresentation(entity) {
  * Clase mapper para CursoCapacitacion (patrón del módulo)
  */
 export class CursoCapacitacionMapper {
-  static viewRowToPresentation = viewRowToPresentation;
-  static viewRowsToPresentation = viewRowsToPresentation;
-  static horarioRowToPresentation = horarioRowToPresentation;
-  static horarioRowsToPresentation = horarioRowsToPresentation;
-  static entityToPresentation = entityToPresentation;
+  static viewRowToPresentation(row) {
+    return viewRowToPresentation(row);
+  }
+
+  static viewRowsToPresentation(rows) {
+    return viewRowsToPresentation(rows);
+  }
+
+  static horarioRowToPresentation(row) {
+    return horarioRowToPresentation(row);
+  }
+
+  static horarioRowsToPresentation(rows) {
+    return horarioRowsToPresentation(rows);
+  }
+
+  static entityToPresentation(entity) {
+    return entityToPresentation(entity);
+  }
 }

@@ -64,7 +64,15 @@ export function entityToPresentation(entity) {
  * Clase mapper para PagoCapacitacion (patrón del módulo)
  */
 export class PagoCapacitacionMapper {
-  static rowToPresentation = rowToPresentation;
-  static rowsToPresentation = rowsToPresentation;
-  static entityToPresentation = entityToPresentation;
+  static rowToPresentation(row) {
+    return rowToPresentation(row);
+  }
+
+  static rowsToPresentation(rows) {
+    return rowsToPresentation(rows);
+  }
+
+  static entityToPresentation(entity) {
+    return entityToPresentation(entity);
+  }
 }

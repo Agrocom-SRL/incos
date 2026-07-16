@@ -14,6 +14,7 @@ import {
     DOCENTES_TOKENS,
     ASIGNACIONES_DOCENTES_TOKENS,
     AULAS_HORARIOS_TOKENS,
+    CAPACITACION_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
 const router = express.Router();
@@ -80,6 +81,10 @@ router.get('/', (req, res) => {
             docentesCursoHorarios: '/api/v1/docentes/cursos/:cursoId/horarios',
             aulasCatalogo: '/api/v1/aulas/catalogo',
             aulasHorarios: '/api/v1/aulas/horarios',
+            // Módulo: Capacitación (CAP)
+            cursosCapacitacion: '/api/v1/cursos-capacitacion',
+            participantes: '/api/v1/participantes',
+            inscripcionesCapacitacion: '/api/v1/inscripciones-capacitacion',
         },
     });
 });
@@ -190,6 +195,16 @@ router.use('/aulas', container.resolve(AULAS_HORARIOS_TOKENS.aulasHorariosRouter
 // este router define GET '/:id' (genérico). Si se montara antes, '/:id' capturaría
 // '/catalogo' como si fuera un id y rompería el picker de oferta académica.
 router.use('/aulas', container.resolve(CONFIGURACION_TOKENS.aulasRouter));
+
+// ============================================
+// 10. MÓDULO: CAPACITACIÓN (CAP)
+// ============================================
+router.use('/cursos-capacitacion', container.resolve(CAPACITACION_TOKENS.cursosCapacitacionRouter));
+router.use('/participantes', container.resolve(CAPACITACION_TOKENS.participantesRouter));
+router.use(
+  '/inscripciones-capacitacion',
+  container.resolve(CAPACITACION_TOKENS.inscripcionesCapacitacionRouter)
+);
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

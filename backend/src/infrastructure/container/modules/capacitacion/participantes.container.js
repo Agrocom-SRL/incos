@@ -92,7 +92,9 @@ export function registerParticipantesResource(container) {
         CAPACITACION_TOKENS.getParticipanteByIdController,
         (c) =>
             new GetParticipanteByIdController({
-                getParticipanteByIdUseCase: c.resolve(CAPACITACION_TOKENS.getParticipanteByIdUseCase),
+                getParticipanteByIdUseCase: c.resolve(
+                    CAPACITACION_TOKENS.getParticipanteByIdUseCase
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })
@@ -128,12 +130,18 @@ export function registerParticipantesResource(container) {
         CAPACITACION_TOKENS.participantesRouter,
         (c) => {
             const controllers = {
-                listParticipantesController: c.resolve(CAPACITACION_TOKENS.listParticipantesController),
+                listParticipantesController: c.resolve(
+                    CAPACITACION_TOKENS.listParticipantesController
+                ),
                 getParticipanteByIdController: c.resolve(
                     CAPACITACION_TOKENS.getParticipanteByIdController
                 ),
-                createParticipanteController: c.resolve(CAPACITACION_TOKENS.createParticipanteController),
-                updateParticipanteController: c.resolve(CAPACITACION_TOKENS.updateParticipanteController),
+                createParticipanteController: c.resolve(
+                    CAPACITACION_TOKENS.createParticipanteController
+                ),
+                updateParticipanteController: c.resolve(
+                    CAPACITACION_TOKENS.updateParticipanteController
+                ),
             };
 
             const middlewares = {

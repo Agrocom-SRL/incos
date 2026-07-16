@@ -182,7 +182,8 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     }
     if (filters.search) {
       whereConditions.push(
-        `(p.ci LIKE ? OR p.nombres LIKE ? OR p.apellido_paterno LIKE ? OR p.apellido_materno LIKE ? OR c.titulo LIKE ?)`
+        '(p.ci LIKE ? OR p.nombres LIKE ? OR p.apellido_paterno LIKE ?'
+          + ' OR p.apellido_materno LIKE ? OR c.titulo LIKE ?)'
       );
       const like = `%${filters.search}%`;
       replacements.push(like, like, like, like, like);

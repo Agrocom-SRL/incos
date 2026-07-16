@@ -53,7 +53,7 @@ export class RegisterPagoCapacitacionUseCase {
    * @returns {Promise<{pagoCapacitacion: Object}>}
    */
   async execute(capacitacionInscritoId, body = {}, userId = null, options = {}) {
-    const transaction = options.transaction;
+    const { transaction } = options;
 
     // 1. Inscripción vigente
     const inscripcion = await this.inscripcionCapacitacionRepository.findById(

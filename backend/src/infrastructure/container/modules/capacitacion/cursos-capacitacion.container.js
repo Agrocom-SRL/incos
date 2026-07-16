@@ -67,7 +67,9 @@ export function registerCursosCapacitacionResource(container) {
         CAPACITACION_TOKENS.createCursoCapacitacionUseCase,
         (c) =>
             new CreateCursoCapacitacionUseCase({
-                cursoCapacitacionRepository: c.resolve(CAPACITACION_TOKENS.cursoCapacitacionRepository),
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -79,7 +81,9 @@ export function registerCursosCapacitacionResource(container) {
         CAPACITACION_TOKENS.updateCursoCapacitacionUseCase,
         (c) =>
             new UpdateCursoCapacitacionUseCase({
-                cursoCapacitacionRepository: c.resolve(CAPACITACION_TOKENS.cursoCapacitacionRepository),
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -91,7 +95,9 @@ export function registerCursosCapacitacionResource(container) {
         CAPACITACION_TOKENS.deleteCursoCapacitacionUseCase,
         (c) =>
             new DeleteCursoCapacitacionUseCase({
-                cursoCapacitacionRepository: c.resolve(CAPACITACION_TOKENS.cursoCapacitacionRepository),
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
                 inscripcionCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.inscripcionCapacitacionRepository
                 ),
@@ -104,7 +110,9 @@ export function registerCursosCapacitacionResource(container) {
         CAPACITACION_TOKENS.setEstadoCursoCapacitacionUseCase,
         (c) =>
             new SetEstadoCursoCapacitacionUseCase({
-                cursoCapacitacionRepository: c.resolve(CAPACITACION_TOKENS.cursoCapacitacionRepository),
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -117,7 +125,9 @@ export function registerCursosCapacitacionResource(container) {
         CAPACITACION_TOKENS.listCursosCapacitacionController,
         (c) =>
             new ListCursosCapacitacionController({
-                listCursosCapacitacionUseCase: c.resolve(CAPACITACION_TOKENS.listCursosCapacitacionUseCase),
+                listCursosCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.listCursosCapacitacionUseCase
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })

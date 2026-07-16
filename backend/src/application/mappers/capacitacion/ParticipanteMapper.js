@@ -54,6 +54,11 @@ export function entitiesToPresentation(entities) {
  * Clase mapper para Participante (patrón del módulo)
  */
 export class ParticipanteMapper {
-  static entityToPresentation = entityToPresentation;
-  static entitiesToPresentation = entitiesToPresentation;
+  static entityToPresentation(entity) {
+    return entityToPresentation(entity);
+  }
+
+  static entitiesToPresentation(entities) {
+    return entitiesToPresentation(entities);
+  }
 }

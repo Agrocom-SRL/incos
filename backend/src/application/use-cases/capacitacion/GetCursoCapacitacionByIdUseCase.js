@@ -30,9 +30,8 @@ export class GetCursoCapacitacionByIdUseCase {
 
     const presentation = CursoCapacitacionMapper.viewRowToPresentation(row);
 
-    const horarioRows = await this.cursoCapacitacionFichaViewRepository.findHorariosByCapacitacionId(
-      id
-    );
+    const horarioRows =
+      await this.cursoCapacitacionFichaViewRepository.findHorariosByCapacitacionId(id);
     presentation.horarios = CursoCapacitacionMapper.horarioRowsToPresentation(horarioRows);
     presentation.horarioIds = presentation.horarios.map((bloque) => bloque.horarioId);
 

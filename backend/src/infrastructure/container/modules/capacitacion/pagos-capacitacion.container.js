@@ -27,11 +27,15 @@ export function registerPagosCapacitacionResource(container) {
         CAPACITACION_TOKENS.registerPagoCapacitacionUseCase,
         (c) =>
             new RegisterPagoCapacitacionUseCase({
-                pagoCapacitacionRepository: c.resolve(CAPACITACION_TOKENS.pagoCapacitacionRepository),
+                pagoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.pagoCapacitacionRepository
+                ),
                 inscripcionCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.inscripcionCapacitacionRepository
                 ),
-                cursoCapacitacionRepository: c.resolve(CAPACITACION_TOKENS.cursoCapacitacionRepository),
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
                 paymentAccountRepository: c.resolve(REPOSITORIOS_TOKENS.paymentAccountRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),

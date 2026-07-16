@@ -127,7 +127,7 @@ export class CursoCapacitacionRepository extends BaseRepository {
    * @returns {Promise<void>}
    */
   async replaceHorarios(capacitacionId, horarioIds = [], userId = null, options = {}) {
-    const transaction = options.transaction;
+    const { transaction } = options;
 
     // 1. Soft-delete de los bloques vigentes (activo=false + deleted_at)
     await BloqueCapacitacionModel.update(

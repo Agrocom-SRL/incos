@@ -141,17 +141,19 @@ export class UpdateCursoCapacitacionUseCase {
    * @private
    */
   async _validateHorarios(horarioIds) {
-    for (const horarioId of horarioIds) {
-      const horario = await this.scheduleRepository.findById(horarioId);
-      if (!horario) throw new NotFoundError(`horario con ID ${horarioId}`);
+    await Promise.all(
+      horarioIds.map(async (horarioId) => {
+        const horario = await this.scheduleRepository.findById(horarioId);
+        if (!horario) throw new NotFoundError(`horario con ID ${horarioId}`);
 
-      const plain = horario.toPlainObject ? horario.toPlainObject() : horario;
-      const tipo = plain.scheduleType ?? plain.tipoHorario ?? null;
-      if (tipo && tipo !== 'CAPACITACION') {
-        throw new ValidationError(
-          `El horario ${horarioId} no es de tipo CAPACITACION (tipo actual: ${tipo})`
-        );
-      }
-    }
+        const plain = horario.toPlainObject ? horario.toPlainObject() : horario;
+        const tipo = plain.scheduleType ?? plain.tipoHorario ?? null;
+        if (tipo && tipo !== 'CAPACITACION') {
+          throw new ValidationError(
+            `El horario ${horarioId} no es de tipo CAPACITACION (tipo actual: ${tipo})`
+          );
+        }
+      })
+    );
   }
 }

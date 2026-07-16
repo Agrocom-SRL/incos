@@ -53,9 +53,9 @@ export class DeleteInscripcionCapacitacionUseCase {
       );
 
       // 2. Soft-delete en cascada de los pagos
-      for (const pago of pagosVigentes) {
-        await this.pagoCapacitacionRepository.delete(pago.id, userId);
-      }
+      await Promise.all(
+        pagosVigentes.map((pago) => this.pagoCapacitacionRepository.delete(pago.id, userId))
+      );
 
       // 3. Soft-delete de la inscripción
       await this.inscripcionCapacitacionRepository.delete(id, userId);
