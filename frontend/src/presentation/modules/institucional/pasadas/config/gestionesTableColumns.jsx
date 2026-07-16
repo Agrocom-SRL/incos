@@ -26,7 +26,6 @@ export function buildGestionesTableColumns({
     {
       title: 'Gestión',
       key: 'gestion',
-      fixed: 'left',
       ellipsis: true,
       render: (_, row) => (
         <IdentidadCelda

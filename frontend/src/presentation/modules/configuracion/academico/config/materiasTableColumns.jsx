@@ -33,7 +33,6 @@ export const createMateriasTableColumns = ({ navigate, listNavState, refetch }) 
     {
       title: 'Materia',
       dataIndex: 'nombre',
-      fixed: 'left',
       ellipsis: true,
       render: (_nombre, record) => (
         <IdentidadCelda
@@ -73,7 +72,6 @@ export const createMateriasTableColumns = ({ navigate, listNavState, refetch }) 
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 140,
       align: 'right',
       render: (_, record) => {

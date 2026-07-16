@@ -83,7 +83,7 @@ const MiBoletinPage = () => {
         loadingTip="Cargando tu boletín…"
         error={error}
         showEmpty={!loading && !error && !boletin}
-        emptyDescription="No se encontró tu boletín."
+        emptyDescription="No se encontró su boletín."
       >
         {boletin ? (
           <>

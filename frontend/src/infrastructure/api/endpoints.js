@@ -553,6 +553,28 @@ export const PERMISOS_CATALOGO_ENDPOINTS = {
   },
 };
 
+// ============================================
+// MÓDULO: CAPACITACIÓN (CAP)
+// ============================================
+// Cursos cortos a público externo (dominio CAPACITACION), independiente de la
+// cadena formal de matrícula. Permisos `capacitacion.*` (seed 65).
+
+export const CURSOS_CAPACITACION_ENDPOINTS = {
+  ...createCRUDEndpoints('/cursos-capacitacion'),
+  /** PATCH — activar/desactivar curso (body { activo }, acción ACTIVAR) */
+  ESTADO: (id) => `${API_BASE}/cursos-capacitacion/${id}/estado`,
+};
+
+export const PARTICIPANTES_CAPACITACION_ENDPOINTS = {
+  ...createCRUDEndpoints('/participantes'),
+};
+
+export const INSCRIPCIONES_CAPACITACION_ENDPOINTS = {
+  ...createCRUDEndpoints('/inscripciones-capacitacion'),
+  /** POST — registrar pago de una inscripción (permiso capacitacion.pago CREAR) */
+  PAGOS: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/pagos`,
+};
+
 /**
  * Rutas definidas aquí con prefijo `/v1` (API_BASE) encajan con axios: baseURL termina en `/api`.
  * Para `fetch` con `getApiBaseUrl()` (…/api/v1), convierte `/v1/foo` → `/foo`.

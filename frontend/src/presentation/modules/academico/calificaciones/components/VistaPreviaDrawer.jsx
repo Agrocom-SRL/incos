@@ -157,7 +157,7 @@ const VistaPreviaDrawer = ({
           showIcon
           className="cal-preview-drawer__alert"
           title={`${resumen.conFaltantes} estudiante${resumen.conFaltantes > 1 ? 's' : ''} con notas faltantes`}
-          description="Completá las celdas vacías en el cuaderno para ver el bimestre calculado."
+          description="Complete las celdas vacías en el cuaderno para ver el bimestre calculado."
         />
       ) : null}
 

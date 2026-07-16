@@ -94,7 +94,7 @@ const GestionHorariosConflictosPage = () => {
             partes.push(`Gestión: ${gestionLabel}`);
         }
         partes.push(
-            'Las celdas en rojo marcan la misma franja horaria en choque. Reubicá un bloque en la pestaña del paralelo y guardá para resolver el solape.',
+            'Las celdas en rojo marcan la misma franja horaria en choque. Reubique un bloque en la pestaña del paralelo y guarde para resolver el solape.',
         );
         return partes.join(' · ');
     }, [conflictoResuelto, docenteId, docenteNombre, gestionLabel]);
@@ -125,7 +125,7 @@ const GestionHorariosConflictosPage = () => {
                             <>
                                 Muestra la semana completa del docente; las celdas en rojo son las
                                 franjas en choque. El choque se resuelve en las pestañas de paralelo de
-                                arriba: abrí una y mové uno de los bloques en rojo a una franja libre.
+                                arriba: abra una y mueva uno de los bloques en rojo a una franja libre.
                                 {lineasDocente.length ? (
                                     <ul style={{ margin: '8px 0 0', paddingInlineStart: 18 }}>
                                         {lineasDocente.map((linea, idx) => (
@@ -215,9 +215,9 @@ const GestionHorariosConflictosPage = () => {
                                       <strong>{r.miNombre}</strong> choca con{' '}
                                       <strong>{r.otroNombre}</strong>
                                       {r.otroParalelo ? ` (paralelo ${r.otroParalelo})` : ''} ·{' '}
-                                      {r.franja}. Para resolverlo: mové este bloque a una franja
-                                      libre, intercambialo con otra materia, o eliminálo; luego
-                                      guardá.
+                                      {r.franja}. Para resolverlo: mueva este bloque a una franja
+                                      libre, intercámbielo con otra materia, o elimínelo; luego
+                                      guarde.
                                   </span>
                               );
                               map.set(r.slotKey, map.has(r.slotKey) ? map.get(r.slotKey) : nodo);
@@ -303,7 +303,7 @@ const GestionHorariosConflictosPage = () => {
 
                     {!docenteId ? (
                         <Text type="secondary">
-                            Abrí esta pantalla desde el panel lateral del tablero de horarios.
+                            Abra esta pantalla desde el panel lateral del tablero de horarios.
                         </Text>
                     ) : null}
 
@@ -313,7 +313,7 @@ const GestionHorariosConflictosPage = () => {
                             showIcon
                             icon={<CheckCircleOutlined />}
                             title="El docente ya no tiene choques de horario en esta gestión"
-                            description="Podés volver al tablero de horarios o revisar la grilla semanal del docente abajo."
+                            description="Puede volver al tablero de horarios o revisar la grilla semanal del docente abajo."
                         />
                     ) : null}
 

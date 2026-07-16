@@ -34,7 +34,7 @@ const { Title } = Typography;
 /** Texto institucional del banner (compartido con el dashboard admin). */
 const TEXTO_INSTITUCIONAL =
   'Formamos profesionales competentes en Administración de Empresas, Contaduría y ' +
-  'Sistemas Informáticos. Únete a nuestra comunidad educativa y construye tu futuro profesional.';
+  'Sistemas Informáticos. Únase a nuestra comunidad educativa y construya su futuro profesional.';
 
 /** Rutas internas del portal del estudiante. */
 const PATH_APORTES = '/matricula/aportes/listar';
@@ -56,7 +56,7 @@ const EstudianteDashboard = () => {
 
   // Banner: título + descripción personalizada con su carrera (si la tiene).
   const bannerDescription = carrera?.label
-    ? `Estás cursando ${carrera.label} en el Instituto INCOS. ${TEXTO_INSTITUCIONAL}`
+    ? `Está cursando ${carrera.label} en el Instituto INCOS. ${TEXTO_INSTITUCIONAL}`
     : TEXTO_INSTITUCIONAL;
 
   return (
@@ -68,7 +68,7 @@ const EstudianteDashboard = () => {
               <Alert
                 type="warning"
                 showIcon
-                title="No se pudo cargar tu resumen en vivo"
+                title="No se pudo cargar su resumen en vivo"
                 description={error}
               />
             ) : null}
@@ -98,7 +98,7 @@ const EstudianteDashboard = () => {
                   accent={allColors.colorPrimary}
                   accentBg={allColors.colorPrimaryBg}
                   title="Mi perfil"
-                  description="Revisa tu cuenta y cambia tu contraseña."
+                  description="Revise su cuenta y cambie su contraseña."
                   actionLabel="Ir a mi perfil"
                   onClick={() => navegarSeguro(PATH_PERFIL)}
                 />
@@ -107,7 +107,7 @@ const EstudianteDashboard = () => {
                   accent={allColors.colorInfo}
                   accentBg={allColors.colorInfoBg}
                   title="Mis datos"
-                  description="Consulta tu ficha personal y académica."
+                  description="Consulte su ficha personal y académica."
                   actionLabel="Ver mis datos"
                   onClick={() => navegarSeguro(PATH_MIS_DATOS)}
                 />
@@ -116,7 +116,7 @@ const EstudianteDashboard = () => {
                   accent={allColors.colorWarning}
                   accentBg={allColors.colorWarningBg}
                   title="Mi boletín"
-                  description="Consulta tus calificaciones por bimestre y materia."
+                  description="Consulte sus calificaciones por bimestre y materia."
                   actionLabel="Ver mi boletín"
                   onClick={() => navegarSeguro(PATH_BOLETIN)}
                 />

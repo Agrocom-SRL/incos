@@ -211,7 +211,7 @@ const PlanPeriodoAsignaturasPage = () => {
     }
     modal.confirm({
       title: 'Cambios sin guardar',
-      content: 'Si vuelves ahora se perderán los cambios del periodo.',
+      content: 'Si vuelve ahora se perderán los cambios del periodo.',
       okText: 'Salir sin guardar',
       cancelText: 'Seguir editando',
       okButtonProps: { danger: true },
@@ -271,9 +271,9 @@ const PlanPeriodoAsignaturasPage = () => {
                           {periodoNombre}
                         </Text>
                         <Text type="secondary" className="cfg-academico-workspace__desc">
-                          Arrastra materias del catálogo hacia el periodo.
+                          Arrastre materias del catálogo hacia el periodo.
                           {tienePeriodosAnteriores
-                            ? ' Para un prerrequisito, arrastra una materia de un año anterior (con etiqueta de año) hacia la fila de la asignatura.'
+                            ? ' Para un prerrequisito, arrastre una materia de un año anterior (con etiqueta de año) hacia la fila de la asignatura.'
                             : ''}
                         </Text>
                       </div>
@@ -392,7 +392,7 @@ const PlanPeriodoAsignaturasPage = () => {
                           {draftFilas.length === 0 ? (
                             <div className="cfg-plan-builder__placeholder">
                               <InboxOutlined aria-hidden />
-                              <span>Arrastra aquí una materia del catálogo</span>
+                              <span>Arrastre aquí una materia del catálogo</span>
                             </div>
                           ) : (
                             <div className="cfg-plan-builder__rows">
@@ -433,7 +433,7 @@ const PlanPeriodoAsignaturasPage = () => {
                         <DetailInfoCard title="Prerrequisitos" cols={1} className="cfg-plan-builder__col">
                           {draftFilas.length === 0 ? (
                             <Empty
-                              description="Agrega asignaturas al periodo"
+                              description="Agregue asignaturas al periodo"
                               image={Empty.PRESENTED_IMAGE_SIMPLE}
                             />
                           ) : (

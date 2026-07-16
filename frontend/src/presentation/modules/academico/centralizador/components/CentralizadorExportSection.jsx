@@ -101,7 +101,7 @@ const CentralizadorExportSection = ({ paralelos = [] }) => {
     } else {
       notification.error({
         title: 'No se pudo exportar la carrera',
-        description: result.error || 'Reintentá en unos segundos.',
+        description: result.error || 'Reintente en unos segundos.',
       });
     }
   };

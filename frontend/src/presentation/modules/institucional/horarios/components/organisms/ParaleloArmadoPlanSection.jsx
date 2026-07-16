@@ -187,14 +187,14 @@ const ParaleloArmadoPlanSection = ({
                         ) : null}
                         {soloReubicacion ? (
                             <Text type="secondary" style={{ display: 'block' }}>
-                                Paralelo publicado: podés reubicar bloques existentes; no se pueden agregar ni quitar
+                                Paralelo publicado: puede reubicar bloques existentes; no se pueden agregar ni quitar
                                 desde la grilla.
                             </Text>
                         ) : null}
                         {editable && !hayCambios ? (
                             <Text type="secondary" style={{ display: 'block' }}>
-                                Arrastrá los bloques en la grilla para reubicarlos. El botón «Guardar
-                                cambios» aparecerá cuando muevas un bloque.
+                                Arrastre los bloques en la grilla para reubicarlos. El botón «Guardar
+                                cambios» aparecerá cuando mueva un bloque.
                             </Text>
                         ) : null}
                     </div>

@@ -115,6 +115,12 @@
             "@application-finanzas/*": [
                 "./src/application/modules/finanzas/*"
             ],
+            "@application-capacitacion": [
+                "./src/application/modules/capacitacion"
+            ],
+            "@application-capacitacion/*": [
+                "./src/application/modules/capacitacion/*"
+            ],
             "@application-academico": [
                 "./src/application/modules/academico"
             ],
@@ -302,6 +308,12 @@
             ],
             "@finanzas/*": [
                 "./src/presentation/modules/finanzas/*"
+            ],
+            "@capacitacion": [
+                "./src/presentation/modules/capacitacion"
+            ],
+            "@capacitacion/*": [
+                "./src/presentation/modules/capacitacion/*"
             ],
             "@reportes": [
                 "./src/presentation/modules/reportes"

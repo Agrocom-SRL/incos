@@ -26,8 +26,8 @@ const MiHistorialRedirect = () => {
       <Alert
         type="error"
         showIcon
-        title="No se pudo abrir tu historial"
-        description={error || 'No se encontró tu registro de estudiante.'}
+        title="No se pudo abrir su historial"
+        description={error || 'No se encontró su registro de estudiante.'}
         style={{ margin: 'var(--spacing-lg)' }}
       />
     );

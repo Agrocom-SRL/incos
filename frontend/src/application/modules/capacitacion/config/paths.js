@@ -1,0 +1,22 @@
+/** Rutas del dominio Capacitación (CAP) — fuente única de URLs del módulo. */
+
+export const CAPACITACION_BASE = '/capacitacion';
+
+/** Cursos de capacitación */
+export const CURSOS_CAP_LIST_PATH = `${CAPACITACION_BASE}/cursos`;
+export const cursoCapRegistrarPath = `${CAPACITACION_BASE}/cursos/registrar`;
+export const cursoCapDetallePath = (id) => `${CAPACITACION_BASE}/cursos/${id}`;
+export const cursoCapEditarPath = (id) => `${CAPACITACION_BASE}/cursos/${id}/editar`;
+
+/** Participantes */
+export const PARTICIPANTES_CAP_LIST_PATH = `${CAPACITACION_BASE}/participantes`;
+
+/** Inscripciones y pagos */
+export const INSCRIPCIONES_CAP_LIST_PATH = `${CAPACITACION_BASE}/inscripciones`;
+export const inscripcionCapInscribirPath = `${CAPACITACION_BASE}/inscripciones/inscribir`;
+export const inscripcionCapDetallePath = (id) => `${CAPACITACION_BASE}/inscripciones/${id}`;
+
+/** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */
+export const CAP_CURSOS_MENU_KEY = 'CAP-CURSOS';
+export const CAP_PARTICIPANTES_MENU_KEY = 'CAP-PARTICIPANTES';
+export const CAP_INSCRIPCIONES_MENU_KEY = 'CAP-INSCRIPCIONES';

@@ -150,7 +150,7 @@ const CuadernoGrilla = ({
       notification.error({
         title: 'Notas fuera de rango',
         description:
-          'Hay puntos que superan la calificación asignada a una actividad. Corregí las celdas en rojo antes de guardar.',
+          'Hay puntos que superan la calificación asignada a una actividad. Corrija las celdas en rojo antes de guardar.',
       });
       return;
     }
@@ -177,7 +177,7 @@ const CuadernoGrilla = ({
     } catch (err) {
       notification.error({
         title: 'Error al guardar',
-        description: typeof err?.message === 'string' ? err.message : 'Reintentá en unos segundos.',
+        description: typeof err?.message === 'string' ? err.message : 'Reintente en unos segundos.',
       });
     } finally {
       setGuardandoBimestre(false);
@@ -287,7 +287,7 @@ const CuadernoPage = () => {
           notification.error({
             title: 'No se pudo cerrar el bimestre',
             description:
-              typeof err?.message === 'string' ? err.message : 'Reintentá en unos segundos.',
+              typeof err?.message === 'string' ? err.message : 'Reintente en unos segundos.',
           });
           setCerrandoBimestre(false);
         }

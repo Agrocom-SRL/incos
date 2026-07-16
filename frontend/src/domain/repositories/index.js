@@ -80,6 +80,13 @@ export { IPaymentMethodRepository } from './IPaymentMethodRepository';
 export { IContributionConfigurationRepository } from './IContributionConfigurationRepository';
 export { IPagoAporteRepository } from './IPagoAporteRepository';
 // ============================================
+// MÓDULO: CAPACITACIÓN (CAP)
+// ============================================
+export { ICursoCapacitacionRepository } from './ICursoCapacitacionRepository';
+export { IParticipanteCapacitacionRepository } from './IParticipanteCapacitacionRepository';
+export { IInscripcionCapacitacionRepository } from './IInscripcionCapacitacionRepository';
+
+// ============================================
 // MÓDULO: SEGURIDAD
 // ============================================
 export { IUsuarioAdminRepository } from './IUsuarioAdminRepository';

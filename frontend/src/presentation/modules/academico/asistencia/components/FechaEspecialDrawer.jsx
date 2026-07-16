@@ -160,8 +160,8 @@ const FechaEspecialDrawer = ({
         title="Sesión fuera del horario habitual"
         description={
           esEdicion
-            ? 'Editá el motivo o el horario de esta sesión especial, o eliminala si la creaste por error (solo si todavía no tiene asistencia tomada).'
-            : 'Habilitá un día que no figura en el horario del curso (taller, recuperación o reposición) para poder tomar lista en esa fecha.'
+            ? 'Edite el motivo o el horario de esta sesión especial, o elimínela si la creó por error (solo si todavía no tiene asistencia tomada).'
+            : 'Habilite un día que no figura en el horario del curso (taller, recuperación o reposición) para poder tomar lista en esa fecha.'
         }
         className="asi-fecha-especial__alert"
       />

@@ -43,7 +43,6 @@ export const createParalelosTableColumns = ({ navigate, listNavState, refetch, t
     title: 'Carrera',
     key: 'carrera',
     width: 240,
-    fixed: 'left',
     ellipsis: true,
     render: (_, record) => (
       <IdentidadCelda
@@ -78,7 +77,6 @@ export const createParalelosTableColumns = ({ navigate, listNavState, refetch, t
   {
     title: 'Acciones',
     key: 'acciones',
-    fixed: 'right',
     width: 140,
     align: 'right',
     render: (_, record) => {

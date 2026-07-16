@@ -70,7 +70,7 @@ const MisEstudiantesDocentePage = () => {
           <header className="cfg-academico-workspace__header">
             <ListPanelHeader title="Mis estudiantes" />
             <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-              Estudiantes matriculados en tus cursos
+              Estudiantes matriculados en sus cursos
               {gestion.nombre ? ` de la ${gestion.nombre}` : ' de la gestión vigente'}. Un mismo
               estudiante puede aparecer en más de un curso.
             </Paragraph>
@@ -79,7 +79,7 @@ const MisEstudiantesDocentePage = () => {
             <Alert
               type="warning"
               showIcon
-              title="No se pudo cargar tu lista de estudiantes"
+              title="No se pudo cargar su lista de estudiantes"
               description={error}
               action={
                 <Button size="small" onClick={refetch}>
@@ -91,7 +91,7 @@ const MisEstudiantesDocentePage = () => {
             <div className="cfg-academico-tab-panel">
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Aún no tienes estudiantes en la gestión vigente."
+                description="Aún no tiene estudiantes en la gestión vigente."
               />
             </div>
           ) : (

@@ -107,7 +107,6 @@ export const createCuotasTableColumns = ({
     columns.push({
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 160,
       align: 'right',
       render: (_, record) => {

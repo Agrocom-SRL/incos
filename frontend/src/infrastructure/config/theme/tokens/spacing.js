@@ -47,15 +47,15 @@ export const layoutHeights = {
 
 // Tamaños del logo
 export const logoSizes = {
-  // Logo icono (cuadrado)
-  logoIconSmall: 32,
-  logoIconMedium: 40,
-  logoIconLarge: 48,
+  // Logo icono (cuadrado) — incluye el aire interno (padding --spacing-xs en logo.css)
+  logoIconSmall: 40,
+  logoIconMedium: 48,
+  logoIconLarge: 56,
   // Logo horizontal
   logoHorizontalSmall: 100,
   logoHorizontalSmallHeight: 32,
   logoHorizontalMedium: 140,
-  logoHorizontalMediumHeight: 48,
+  logoHorizontalMediumHeight: 56, // = headerHeight: el logo llena la altura del header sin recortarse
   logoHorizontalLarge: 220,
   logoHorizontalLargeHeight: 64,
 };

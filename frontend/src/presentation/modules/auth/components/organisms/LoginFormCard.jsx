@@ -49,7 +49,7 @@ const LoginFormCard = ({
             <Logo variant="horizontal" size="large" />
           </div>
           <div className="login-institute-name">
-            El Instituto Comercial Superior de la Nación INCOS Santa Cruz
+            Instituto Comercial Superior de la Nación INCOS Santa Cruz
           </div>
           <div className="login-tagline">PIONEROS EN EDUCACIÓN SUPERIOR</div>
         </div>

@@ -47,7 +47,6 @@ export const createPagosSeleccionEstudianteTableColumns = ({ onRegistrarPago }) 
     title: 'Estudiante',
     key: 'nombre',
     width: 240,
-    fixed: 'left',
     render: (_, r) => (
       <IdentidadCelda
         codigo={r.codigoEstudiante || null}

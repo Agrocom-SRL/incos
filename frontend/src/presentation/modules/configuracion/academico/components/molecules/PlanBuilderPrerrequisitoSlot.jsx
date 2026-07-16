@@ -60,7 +60,7 @@ const PlanBuilderPrerrequisitoSlot = ({ filaKey, prerrequisitos = [], disabled =
       className={`cfg-plan-builder-prereq-slot${isOver ? ' cfg-plan-builder-prereq-slot--over' : ''}`}
     >
       {prerrequisitos.length === 0 ? (
-        <span className="cfg-plan-builder-prereq-slot__empty">Arrastra aquí</span>
+        <span className="cfg-plan-builder-prereq-slot__empty">Arrastre aquí</span>
       ) : (
         prerrequisitos.map((p) => (
           <PrereqTagDraggable

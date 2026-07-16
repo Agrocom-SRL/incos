@@ -53,6 +53,7 @@ import {
     UserSwitchOutlined,
     TableOutlined,
     AppstoreOutlined,
+    ScheduleOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -71,6 +72,7 @@ export const menuIconMap = {
     'REP': BarChartOutlined,
     'CFG': SettingOutlined,
     'SEG': SafetyOutlined,
+    'CAP': ScheduleOutlined,
     'PERFIL': UserOutlined,
 
     // Matrícula (MAT)
@@ -124,4 +126,9 @@ export const menuIconMap = {
     // Seguridad (SEG)
     'SEG-USUARIOS': SettingOutlined,
     'SEG-ROLES': UserSwitchOutlined,
+
+    // Capacitación (CAP)
+    'CAP-CURSOS': BookOutlined,
+    'CAP-PARTICIPANTES': TeamOutlined,
+    'CAP-INSCRIPCIONES': SolutionOutlined,
 };

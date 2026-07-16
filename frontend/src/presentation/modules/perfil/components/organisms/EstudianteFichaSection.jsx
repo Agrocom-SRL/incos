@@ -60,18 +60,18 @@ const GuardianCard = ({ guardian }) => {
 const EstudianteFichaSection = ({ misDatos, loading = false, error = null }) => {
   if (loading) {
     return (
-      <Spin spinning tip="Cargando tus datos…">
+      <Spin spinning tip="Cargando sus datos…">
         <div className="sd-spin-body" style={{ minHeight: 120 }} aria-hidden />
       </Spin>
     );
   }
 
   if (error) {
-    return <Alert type="warning" showIcon title="No se pudieron cargar tus datos" description={error} />;
+    return <Alert type="warning" showIcon title="No se pudieron cargar sus datos" description={error} />;
   }
 
   if (!misDatos?.student) {
-    return <Empty description="No se encontró tu ficha de estudiante." />;
+    return <Empty description="No se encontró su ficha de estudiante." />;
   }
 
   const { student, guardians = [], academicData, inscripcion } = misDatos;

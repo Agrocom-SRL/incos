@@ -42,6 +42,7 @@ export default defineConfig({
             '@application-auth': path.resolve(__dirname, './src/application/modules/auth'),
             '@application-docentes': path.resolve(__dirname, './src/application/modules/docentes'),
             '@application-institucional': path.resolve(__dirname, './src/application/modules/institucional'),
+            '@application-capacitacion': path.resolve(__dirname, './src/application/modules/capacitacion'),
             '@application-shared': path.resolve(__dirname, './src/application/modules/shared'),
 
             // Infrastructure Layer
@@ -79,6 +80,7 @@ export default defineConfig({
             '@nivelaciones': path.resolve(__dirname, './src/presentation/modules/academico/nivelaciones'),
             '@pagos': path.resolve(__dirname, './src/presentation/modules/pagos'),
             '@finanzas': path.resolve(__dirname, './src/presentation/modules/finanzas'),
+            '@capacitacion': path.resolve(__dirname, './src/presentation/modules/capacitacion'),
             '@reportes': path.resolve(__dirname, './src/presentation/modules/reportes'),
             '@supervision': path.resolve(__dirname, './src/presentation/modules/supervision'),
             '@trazabilidad': path.resolve(__dirname, './src/presentation/modules/academico/traspasos'),

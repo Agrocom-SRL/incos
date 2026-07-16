@@ -150,7 +150,7 @@ const PlanillaAsistenciaSemanalPage = () => {
         okType: 'danger',
         cancelText: 'Cancelar',
         content:
-          'La asistencia de ese día quedará en solo lectura. Podrás reabrirla para corregir.',
+          'La asistencia de ese día quedará en solo lectura. Podrá reabrirla para corregir.',
         onOk: () => cerrarDia(fecha),
       });
     },
@@ -287,7 +287,7 @@ const PlanillaAsistenciaSemanalPage = () => {
               type="info"
               showIcon
               title="Semana sin días de clase"
-              description="Esta semana no tiene días de clase. Probá con otra semana o usá «Ir a fecha»."
+              description="Esta semana no tiene días de clase. Pruebe con otra semana o utilice «Ir a fecha»."
             />
           </div>
         ) : (

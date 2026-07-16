@@ -59,7 +59,7 @@ const DashboardDocentesListCard = ({ docentes = [] }) => {
             fontSize: `${typography.fontSizeSM}px`,
           }}
         >
-          Aún no tienes docentes asignados en tu inscripción vigente.
+          Aún no tiene docentes asignados en su inscripción vigente.
         </Text>
       ) : (
         <div className="estudiante-docentes-grid">

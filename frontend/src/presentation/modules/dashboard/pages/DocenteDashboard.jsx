@@ -88,7 +88,7 @@ const DocenteDashboard = () => {
   // Banner: descripción personalizada con la gestión/bimestre vigente (si llegan).
   const gestionLabel = [gestion.nombre, gestion.bimestreNombre].filter(Boolean).join(' · ');
   const bannerDescription = gestionLabel
-    ? `Estás dictando clases en la ${gestionLabel} del Instituto INCOS. ${TEXTO_INSTITUCIONAL}`
+    ? `Está dictando clases en la ${gestionLabel} del Instituto INCOS. ${TEXTO_INSTITUCIONAL}`
     : TEXTO_INSTITUCIONAL;
 
   // Rama docente de llegada a Oferta → Asignaciones: SIEMPRE su propio id
@@ -127,7 +127,7 @@ const DocenteDashboard = () => {
               <Alert
                 type="warning"
                 showIcon
-                title="No se pudo cargar tu resumen en vivo"
+                title="No se pudo cargar su resumen en vivo"
                 description={error}
                 action={
                   <Button size="small" onClick={refetch}>
@@ -152,7 +152,7 @@ const DocenteDashboard = () => {
                   accent={allColors.colorPrimary}
                   accentBg={allColors.colorPrimaryBg}
                   title="Mi perfil"
-                  description="Revisa tu cuenta y cambia tu contraseña."
+                  description="Revise su cuenta y cambie su contraseña."
                   actionLabel="Ir a mi perfil"
                   onClick={() => navegarSeguro(PATH_PERFIL)}
                 />
@@ -170,7 +170,7 @@ const DocenteDashboard = () => {
                   accent={allColors.colorWarning}
                   accentBg={allColors.colorWarningBg}
                   title="Asistencia"
-                  description="Registra la asistencia diaria de tus cursos."
+                  description="Registre la asistencia diaria de sus cursos."
                   actionLabel="Tomar asistencia"
                   onClick={() => navegarSeguro(PATH_ASISTENCIA)}
                 />
@@ -188,7 +188,7 @@ const DocenteDashboard = () => {
                   accent={allColors.colorSuccess}
                   accentBg={allColors.colorSuccessBg}
                   title="Mi ficha"
-                  description="Consulta tus datos personales y laborales."
+                  description="Consulte sus datos personales y laborales."
                   actionLabel="Ver mi ficha"
                   onClick={() => navegarSeguro(PATH_MI_FICHA)}
                 />
@@ -217,7 +217,7 @@ const DocenteDashboard = () => {
               accent={allColors.colorInfo}
               accentBg={allColors.colorInfoBg}
               title="Mi horario"
-              description="Tu calendario semanal de clases en la gestión vigente."
+              description="Su calendario semanal de clases en la gestión vigente."
               actionLabel="Ver mi horario"
               onClick={() => navegarSeguro(PATH_MI_HORARIO)}
             />

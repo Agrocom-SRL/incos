@@ -85,7 +85,6 @@ export const createPagosTableColumns = ({ navigate, listNavState, refetch }) => 
     {
       title: 'Estudiante',
       key: 'estudiante',
-      fixed: 'left',
       ellipsis: true,
       render: (_, record) => (
         <PagoEstudianteCell
@@ -157,7 +156,6 @@ export const createPagosTableColumns = ({ navigate, listNavState, refetch }) => 
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
       width: 140,
       align: 'right',
       render: (_, record) => {

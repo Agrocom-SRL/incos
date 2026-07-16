@@ -85,7 +85,7 @@ const DashboardMiSaldoCard = ({ saldoPendiente = 0, onVerAportes }) => {
             Bs {formatBs(saldoPendiente)}
           </Text>
           <Text type="secondary" style={{ fontSize: `${typography.fontSizeSM}px` }}>
-            {tieneDeuda ? 'Tienes un saldo por cubrir.' : 'Estás al día con tus aportes.'}
+            {tieneDeuda ? 'Tiene un saldo por cubrir.' : 'Está al día con sus aportes.'}
           </Text>
         </Flex>
 

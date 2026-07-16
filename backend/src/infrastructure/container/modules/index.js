@@ -20,6 +20,7 @@ import { registerSeguridadModule } from './seguridad/index.js';
 import { registerDashboardModule } from './dashboard/index.js';
 import { registerDocentesModule } from './docentes/index.js';
 import { registerAulasHorariosModule } from './aulas-horarios/index.js';
+import { registerCapacitacionModule } from './capacitacion/index.js';
 
 /**
  * Registra todos los módulos de dominio en el contenedor
@@ -44,6 +45,7 @@ export function registerAllModules(container) {
     registerDashboardModule(container);
     registerDocentesModule(container);
     registerAulasHorariosModule(container);
+    registerCapacitacionModule(container);
 
     return container;
 }

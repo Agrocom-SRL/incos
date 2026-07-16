@@ -9,8 +9,10 @@
  */
 
 import { Image } from 'antd';
-import logoIcon from '@assets/images/branding/logo-icon.webp';
 import logoHorizontal from '@assets/images/branding/logo-horizontal.webp';
+
+// Escudo institucional servido desde public/ (mismo asset que el favicon)
+const logoIcon = '/incos/inco-512.png';
 
 const Logo = ({
     variant = 'horizontal',

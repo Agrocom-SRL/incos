@@ -29,11 +29,11 @@ const MatriculaRedirect = () => {
 
   if (errorMisDatos) {
     return (
-      <Alert type="warning" showIcon title="No se pudo abrir tu matrícula" description={errorMisDatos} />
+      <Alert type="warning" showIcon title="No se pudo abrir su matrícula" description={errorMisDatos} />
     );
   }
 
-  return <Empty description="Aún no tienes una matrícula registrada en la gestión vigente." />;
+  return <Empty description="Aún no tiene una matrícula registrada en la gestión vigente." />;
 };
 
 export default MatriculaRedirect;

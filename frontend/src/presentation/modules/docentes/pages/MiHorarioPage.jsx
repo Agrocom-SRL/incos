@@ -29,13 +29,13 @@ const MiHorarioPage = () => {
       header={<PageHeader title="Mi horario" breadcrumbItems={BREADCRUMB_ITEMS} />}
       sidebar={null}
     >
-      <Spin spinning={loading} size="large" tip="Cargando tu horario…">
+      <Spin spinning={loading} size="large" tip="Cargando su horario…">
         <Flex vertical gap={allSpacing.margin} style={{ width: '100%', minWidth: 0 }}>
           {error ? (
             <Alert
               type="warning"
               showIcon
-              title="No se pudo cargar tu horario"
+              title="No se pudo cargar su horario"
               description={error}
               action={
                 <Button size="small" onClick={refetch}>
@@ -65,7 +65,7 @@ const MiHorarioPage = () => {
               ) : (
                 <Empty
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description="Aún no tienes bloques de horario publicados en la gestión vigente."
+                  description="Aún no tiene bloques de horario publicados en la gestión vigente."
                 />
               )}
             </Flex>
