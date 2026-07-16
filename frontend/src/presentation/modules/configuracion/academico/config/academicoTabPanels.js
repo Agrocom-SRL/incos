@@ -13,13 +13,13 @@ export const ACADEMICO_TAB_PANEL_META = {
     icon: ReadOutlined,
   },
   [TAB_CARRERAS]: {
-    title: 'Listado de Carreras',
+    title: 'Listado de carreras',
     description: 'Catálogo de carreras del instituto: código, área, título otorgado y carga académica.',
     shortLabel: 'Carreras',
     icon: TeamOutlined,
   },
   [TAB_MATERIAS]: {
-    title: 'Listado de Materias',
+    title: 'Listado de materias',
     description: 'Catálogo maestro de materias reutilizables en los planes de estudio.',
     shortLabel: 'Materias',
     icon: BookOutlined,

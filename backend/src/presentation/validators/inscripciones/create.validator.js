@@ -133,7 +133,7 @@ export const createEnrollmentValidator = [
       });
     })
     .withMessage(
-      'Revisa el historial de materias previas: cada materia debe indicar su periodo y estado (Aprobado o Convalidado). Las materias aprobadas requieren una nota entre 0 y 100.'
+      'Revise el historial de materias previas: cada materia debe indicar su periodo y estado (Aprobado o Convalidado). Las materias aprobadas requieren una nota entre 0 y 100.'
     ),
 
   body('observations')

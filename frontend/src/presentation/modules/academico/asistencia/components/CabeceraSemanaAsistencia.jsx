@@ -69,7 +69,7 @@ const CabeceraSemanaAsistencia = ({
         <Tooltip
           title={
             esSemanaActual
-              ? 'Estás en la semana actual'
+              ? 'Está en la semana actual'
               : 'Ir a la semana actual'
           }
         >

@@ -26,7 +26,7 @@ const CuadernoFooter = () => {
     mensajeIzq = (
       <>
         {icono}
-        {footerState.cantidad} cambio{footerState.cantidad > 1 ? 's' : ''} sin guardar — usá Guardar
+        {footerState.cantidad} cambio{footerState.cantidad > 1 ? 's' : ''} sin guardar — use Guardar
         notas
       </>
     );

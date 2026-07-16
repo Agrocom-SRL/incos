@@ -22,33 +22,33 @@ import { createEstudianteTraspasoFields } from './estudianteTraspasoFields';
 
 const BASE_TITLES = {
   step0: {
-    title: 'Tipo de Admisión',
-    formTitle: 'Seleccione el Tipo de Admisión',
+    title: 'Tipo de admisión',
+    formTitle: 'Seleccione el tipo de admisión',
     sectionTitle: 'TIPO DE ADMISIÓN',
   },
   stepTransitabilidad: {
-    title: 'Datos de Transitabilidad',
-    formTitle: 'Formulario de Transitabilidad',
+    title: 'Datos de transitabilidad',
+    formTitle: 'Formulario de transitabilidad',
     sectionTitle: 'DATOS DE TRANSITABILIDAD',
   },
   stepTraspaso: {
-    title: 'Datos de Traspaso',
-    formTitle: 'Formulario de Traspaso',
+    title: 'Datos de traspaso',
+    formTitle: 'Formulario de traspaso',
     sectionTitle: 'DATOS DE TRASPASO',
   },
   step1: {
-    title: 'Datos Generales',
-    formTitle: 'Información Personal del Estudiante',
+    title: 'Datos generales',
+    formTitle: 'Información personal del estudiante',
     sectionTitle: 'DATOS PERSONALES',
   },
   step2: {
-    title: 'Contacto de Emergencia',
-    formTitle: 'Datos de Contacto de Emergencia',
+    title: 'Contacto de emergencia',
+    formTitle: 'Datos de contacto de emergencia',
     sectionTitle: 'DATOS DE CONTACTO DE EMERGENCIA',
   },
   step3: {
     title: 'Documentación',
-    formTitle: 'Documentación del Estudiante',
+    formTitle: 'Documentación del estudiante',
     sectionTitle: 'DOCUMENTACIÓN REQUERIDA',
   },
 };
@@ -102,7 +102,7 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
   const traspasoFields = createEstudianteTraspasoFields();
 
   return [
-    // STEP 0: Tipo de Admisión + Datos Académicos Iniciales (gestión y carrera se muestran en este mismo paso cuando tipo es ANTIGUO/TRANSITABILIDAD/TRASPASO)
+    // STEP 0: Tipo de admisión + Datos Académicos Iniciales (gestión y carrera se muestran en este mismo paso cuando tipo es ANTIGUO/TRANSITABILIDAD/TRASPASO)
     {
       title: titles.step0.title,
       formTitle: titles.step0.formTitle,
@@ -121,7 +121,7 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
         },
       },
     },
-    // STEP 1: Datos Personales (Datos Generales)
+    // STEP 1: Datos Personales (Datos generales)
     {
       title: titles.step1.title,
       formTitle: titles.step1.formTitle,
@@ -147,7 +147,7 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
         },
       },
     },
-    // STEP 2 (dinámico): Datos de Transitabilidad. Solo visible cuando tipoAdmision === 'TRANSITABILIDAD'. Sin sección Cumplimiento de requisitos.
+    // STEP 2 (dinámico): Datos de transitabilidad. Solo visible cuando tipoAdmision === 'TRANSITABILIDAD'. Sin sección Cumplimiento de requisitos.
     {
       title: titles.stepTransitabilidad.title,
       formTitle: titles.stepTransitabilidad.formTitle,
@@ -156,7 +156,7 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
         formacionAcademica: transitabilidadFields.formacionAcademica,
       },
     },
-    // STEP 2 (dinámico): Datos de Traspaso. Solo visible cuando tipoAdmision === 'TRASPASO'. Sin sección Cumplimiento de requisitos.
+    // STEP 2 (dinámico): Datos de traspaso. Solo visible cuando tipoAdmision === 'TRASPASO'. Sin sección Cumplimiento de requisitos.
     {
       title: titles.stepTraspaso.title,
       formTitle: titles.stepTraspaso.formTitle,
@@ -165,7 +165,7 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
         formacionAcademica: traspasoFields.formacionAcademica,
       },
     },
-    // STEP 2: Contacto de Emergencia
+    // STEP 2: Contacto de emergencia
     {
       title: titles.step2.title,
       formTitle: titles.step2.formTitle,

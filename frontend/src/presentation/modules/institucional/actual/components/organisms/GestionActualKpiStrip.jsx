@@ -14,9 +14,9 @@ const GestionActualKpiStrip = ({ kpis, iniciada }) => {
     <Row gutter={[12, 12]} align="stretch">
       <Col xs={24} sm={12} xl={6}>
         <KpiCard
-          label="Matrículas en cursado"
+          label="Matrículas en curso"
           value={fmt(kpis?.matriculasCursando)}
-          sub={iniciada ? 'Estado CURSANDO' : 'Cursado no iniciado'}
+          sub={iniciada ? 'Estudiantes con estado CURSANDO' : 'Cursado no iniciado'}
           badgeText={iniciada ? 'Cursando' : 'Pendiente'}
           intent={iniciada ? 'success' : 'neutral'}
           percent={iniciada ? 100 : 0}

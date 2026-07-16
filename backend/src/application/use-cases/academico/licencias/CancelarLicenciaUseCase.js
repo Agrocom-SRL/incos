@@ -42,11 +42,11 @@ export class CancelarLicenciaUseCase {
     // (una APROBADA ya es acto administrativo: la cancela staff).
     if (rolCodigo === 'DOCENTE') {
       if (Number(licencia.createdBy) !== Number(usuarioId)) {
-        throw new ForbiddenError('Solo puedes cancelar las licencias que solicitaste vos.');
+        throw new ForbiddenError('Solo puede cancelar las licencias que usted solicitó.');
       }
       if (licencia.state !== ESTADOS_LICENCIAS.PENDIENTE) {
         throw new ForbiddenError(
-          'Solo puedes cancelar tus solicitudes mientras están PENDIENTES.',
+          'Solo puede cancelar sus solicitudes mientras están PENDIENTES.',
         );
       }
     }

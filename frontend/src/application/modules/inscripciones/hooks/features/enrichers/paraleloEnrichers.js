@@ -73,7 +73,7 @@ export const enrichParaleloListField = (field, context = {}) => {
 
         let emptyMessage = 'Seleccione un periodo (paso anterior) y una carrera para ver los paralelos disponibles.';
         if (hasPeriodo && !hasCarrera) emptyMessage = 'Seleccione una carrera para ver los paralelos disponibles.';
-        if (hasCarrera && hasPeriodo) emptyMessage = field.emptyMessage || 'No hay paralelos disponibles para esta carrera en el período seleccionado.';
+        if (hasCarrera && hasPeriodo) emptyMessage = field.emptyMessage || 'No hay paralelos disponibles para esta carrera en el periodo seleccionado.';
 
         return {
             ...field,

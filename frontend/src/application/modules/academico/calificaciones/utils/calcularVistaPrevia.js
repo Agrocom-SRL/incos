@@ -22,7 +22,7 @@ export const validarPuntosBimestre = (evaluaciones = [], cuota = { teorico: 30, 
     if (suma > cuotaMax) {
       return `El componente ${componente} suma ${suma} pts (supera ${cuotaMax} pts). Ajustá los puntos de las actividades.`;
     }
-    return `El componente ${componente} suma ${suma} de ${cuotaMax} pts. Agregá actividades o completá la distribución antes del cierre.`;
+    return `El componente ${componente} suma ${suma} de ${cuotaMax} pts. Agregue actividades o complete la distribución antes del cierre.`;
   };
 
   return {

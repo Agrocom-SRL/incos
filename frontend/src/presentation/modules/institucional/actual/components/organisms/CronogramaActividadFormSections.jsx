@@ -56,8 +56,8 @@ const CronogramaActividadFormSections = ({
       <header className="cfg-academico-workspace__header">
         <ListPanelHeader title="Datos de la actividad" />
         <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-          Programa una actividad dentro de una etapa de la gestión vigente. Elige una actividad del
-          catálogo o personaliza su nombre, e indica si ocupa un solo día o un rango de fechas.
+          Programe una actividad dentro de una etapa de la gestión vigente. Elija una actividad del
+          catálogo o personalice su nombre, e indique si ocupa un solo día o un rango de fechas.
         </Paragraph>
       </header>
 
@@ -71,7 +71,7 @@ const CronogramaActividadFormSections = ({
               className="form-field form-field--vertical"
             >
               <Select
-                placeholder="Selecciona la etapa"
+                placeholder="Seleccione la etapa"
                 options={periodoOptions}
                 optionRender={(option) => (
                   <EtapaOption nombre={option.data.label} color={option.data.color} />
@@ -88,8 +88,8 @@ const CronogramaActividadFormSections = ({
             <Form.Item
               name="actividadId"
               label="Actividad del catálogo"
-              tooltip="Búscala en el catálogo maestro. El nombre puede personalizarse después."
-              rules={[{ required: true, message: 'Selecciona una actividad del catálogo.' }]}
+              tooltip="Búsquela en el catálogo maestro. El nombre puede personalizarse después."
+              rules={[{ required: true, message: 'Seleccione una actividad del catálogo.' }]}
               className="form-field form-field--vertical"
             >
               <CronogramaActividadSelectorField
@@ -113,7 +113,7 @@ const CronogramaActividadFormSections = ({
                 <Text type="secondary">
                   {tieneActividad
                     ? 'Sobrescribir el nombre del catálogo con uno personalizado'
-                    : 'Selecciona una actividad para poder personalizar su nombre'}
+                    : 'Seleccione una actividad para poder personalizar su nombre'}
                 </Text>
               </span>
             </Form.Item>
@@ -124,7 +124,7 @@ const CronogramaActividadFormSections = ({
               <Form.Item
                 name="nombrePersonalizado"
                 label="Nombre personalizado"
-                rules={[{ required: true, message: 'Escribe el nombre de la actividad.' }]}
+                rules={[{ required: true, message: 'Escriba el nombre de la actividad.' }]}
                 extra="Este nombre se mostrará en el cronograma en lugar del nombre del catálogo (sugerido a partir de la actividad elegida)."
                 className="form-field form-field--vertical"
               >

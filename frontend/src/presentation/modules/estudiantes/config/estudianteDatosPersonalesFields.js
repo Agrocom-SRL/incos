@@ -21,12 +21,12 @@
  * 
  * Los campos de datos personales incluyen:
  * - CI (Cédula de Identidad) y Expedición
- * - Fecha de Nacimiento
- * - Nombres, Apellido Paterno, Apellido Materno
+ * - Fecha de nacimiento
+ * - Nombres, Apellido paterno, Apellido materno
  * - Género
- * - Estado Civil
- * - Tipo de Sangre
- * - Tiene Discapacidad
+ * - Estado civil
+ * - Tipo de sangre
+ * - Tiene discapacidad
  * 
  * @returns {Object} Configuración de campos organizados por sección
  */
@@ -56,10 +56,10 @@ export const createEstudianteDatosPersonalesFields = () => {
           options: 'expediciones',
           placeholder: 'Seleccione expedición',
         },
-        // Apellido Paterno (PRIMERO)
+        // Apellido paterno (PRIMERO)
         {
           name: 'apellidoPaterno',
-          label: 'Apellido Paterno',
+          label: 'Apellido paterno',
           type: 'input',
           inputType: 'text',
           required: false,
@@ -68,10 +68,10 @@ export const createEstudianteDatosPersonalesFields = () => {
           maxLength: 100,
           capitalize: true, // Capitaliza automáticamente la primera letra
         },
-        // Apellido Materno (NO REQUERIDO)
+        // Apellido materno (NO REQUERIDO)
         {
           name: 'apellidoMaterno',
-          label: 'Apellido Materno',
+          label: 'Apellido materno',
           type: 'input',
           inputType: 'text',
           required: false,
@@ -92,10 +92,10 @@ export const createEstudianteDatosPersonalesFields = () => {
           maxLength: 100,
           capitalize: true, // Capitaliza automáticamente la primera letra
         },
-        // Fecha de Nacimiento
+        // Fecha de nacimiento
         {
           name: 'fechaNacimiento',
-          label: 'Fecha de Nacimiento',
+          label: 'Fecha de nacimiento',
           type: 'date',
           required: true,
           span: 12,
@@ -184,30 +184,30 @@ export const createEstudianteDatosPersonalesFields = () => {
           options: 'generos',
           placeholder: 'Seleccione género',
         },
-        // Estado Civil (OPCIONAL según schema)
+        // Estado civil (OPCIONAL según schema)
         {
           name: 'estadoCivilId',
-          label: 'Estado Civil',
+          label: 'Estado civil',
           type: 'select',
           required: false,
           span: 12,
           options: 'estadosCiviles',
           placeholder: 'Seleccione estado civil',
         },
-        // Tipo de Sangre (OPCIONAL según schema)
+        // Tipo de sangre (OPCIONAL según schema)
         {
           name: 'tipoSangre',
-          label: 'Tipo de Sangre',
+          label: 'Tipo de sangre',
           type: 'select',
           required: false,
           span: 12,
           options: 'tiposSangre',
           placeholder: 'Seleccione tipo de sangre',
         },
-        // Tiene Discapacidad (OPCIONAL según schema, tiene DEFAULT FALSE)
+        // Tiene discapacidad (OPCIONAL según schema, tiene DEFAULT FALSE)
         {
           name: 'tieneDiscapacidad',
-          label: 'Tiene Discapacidad',
+          label: 'Tiene discapacidad',
           type: 'switch',
           required: false,
           span: 12,

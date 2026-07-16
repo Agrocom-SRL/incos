@@ -92,7 +92,7 @@ const TipoAdmisionSelectionSection = ({
   return (
     <Card
       className="wizard-selection-cards__section"
-      title={<span className="wizard-selection-cards__card-title">Seleccione el Tipo de Admisión</span>}
+      title={<span className="wizard-selection-cards__card-title">Seleccione el tipo de admisión</span>}
       shadow
       headerColor="primary"
     >

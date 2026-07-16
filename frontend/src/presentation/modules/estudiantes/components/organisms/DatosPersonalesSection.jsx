@@ -39,7 +39,7 @@ const DatosPersonalesSection = ({ studentData }) => {
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<BarcodeOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Código de Estudiante"
+            label="Código de estudiante"
             value={studentData.codigoEstudiante}
           />
         </Col>
@@ -60,28 +60,28 @@ const DatosPersonalesSection = ({ studentData }) => {
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<UserOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Apellido Paterno"
+            label="Apellido paterno"
             value={studentData.apellidoPaterno}
           />
         </Col>
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<UserOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Apellido Materno"
+            label="Apellido materno"
             value={studentData.apellidoMaterno}
           />
         </Col>
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<UserOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Nombre Completo"
+            label="Nombre completo"
             value={studentData.nombreCompleto}
           />
         </Col>
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<CalendarOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Fecha de Nacimiento"
+            label="Fecha de nacimiento"
             value={studentData.fechaNacimiento}
           />
         </Col>
@@ -95,21 +95,21 @@ const DatosPersonalesSection = ({ studentData }) => {
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<UserOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Estado Civil"
+            label="Estado civil"
             value={studentData.estadoCivilName || studentData.estadoCivilId}
           />
         </Col>
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<HeartOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Tipo de Sangre"
+            label="Tipo de sangre"
             value={studentData.tipoSangre}
           />
         </Col>
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<MailOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Email Personal"
+            label="Email personal"
             value={studentData.emailPersonal}
           />
         </Col>
@@ -123,7 +123,7 @@ const DatosPersonalesSection = ({ studentData }) => {
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<PhoneOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Teléfono Fijo"
+            label="Teléfono fijo"
             value={studentData.telefonoFijo}
           />
         </Col>
@@ -144,7 +144,7 @@ const DatosPersonalesSection = ({ studentData }) => {
         <Col xs={24}>
           <StudentInfoItem
             icon={<EnvironmentOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Residencia Completa"
+            label="Residencia completa"
             value={studentData.residenceAddressComplete || 
                    (studentData.municipioResidenciaName ? 
                      `${studentData.municipioResidenciaName}${studentData.provinciaResidenciaName ? `, ${studentData.provinciaResidenciaName}` : ''}${studentData.departamentoResidenciaName ? `, ${studentData.departamentoResidenciaName}` : ''}` 

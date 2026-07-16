@@ -23,13 +23,13 @@ export const useMiDocenteId = () => {
       const id = result?.success ? result.data?.id ?? null : null;
       if (!id) {
         setDocenteId(null);
-        setError(result?.error || 'No se pudo identificar tu registro de docente');
+        setError(result?.error || 'No se pudo identificar su registro de docente');
         return;
       }
       setDocenteId(id);
     } catch (err) {
       setDocenteId(null);
-      setError(err?.message || 'No se pudo identificar tu registro de docente');
+      setError(err?.message || 'No se pudo identificar su registro de docente');
     } finally {
       setLoading(false);
     }

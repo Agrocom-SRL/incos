@@ -33,7 +33,7 @@ const DisabilitiesSection = ({ disabilities }) => {
             <Col xs={24} sm={12}>
               <StudentInfoItem
                 icon={<InfoCircleOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Tipo de Discapacidad"
+                label="Tipo de discapacidad"
                 value={disability.disabilityTypeName || disability.disabilityTypeId}
               />
             </Col>

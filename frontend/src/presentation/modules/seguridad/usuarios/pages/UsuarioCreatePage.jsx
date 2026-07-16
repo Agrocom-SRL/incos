@@ -85,7 +85,7 @@ export default function UsuarioCreatePage() {
       <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
         <PageHeaderArea>
           <PageHeader
-            title={isEditMode ? 'Editar Usuario' : 'Nuevo Usuario'}
+            title={isEditMode ? 'Editar usuario' : 'Nuevo usuario'}
             breadcrumbItems={breadcrumbItems}
             actions={
               <BackButton icon={<ArrowLeftOutlined />} onClick={goToUsuariosList}>

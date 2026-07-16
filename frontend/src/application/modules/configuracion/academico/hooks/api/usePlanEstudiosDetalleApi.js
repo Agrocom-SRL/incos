@@ -205,7 +205,7 @@ export const usePlanEstudiosDetalleApi = () => {
       const response = await apiClient.get(ASIGNATURAS_PLAN_ENDPOINTS.ES_PRERREQUISITO_DE(asignaturaId));
       const result = handleSuccessResponse(response);
       if (!result.success) {
-        return { success: false, error: result.error || 'No se pudo cargar dependientes' };
+        return { success: false, error: result.error || 'No se pudieron cargar los dependientes' };
       }
       return { success: true, data: result.data?.es_prerrequisito_de ?? [] };
     } catch (error) {

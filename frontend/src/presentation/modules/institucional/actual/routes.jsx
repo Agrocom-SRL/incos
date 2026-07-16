@@ -39,7 +39,7 @@ export const actualRoutes = [
     permiso: 'institucional.gestion.actual',
     accion: 'LISTAR',
     menu: {
-      label: 'Gestión Actual',
+      label: 'Gestión actual',
       module: 'INST',
       parent: 'INST',
       order: 1,

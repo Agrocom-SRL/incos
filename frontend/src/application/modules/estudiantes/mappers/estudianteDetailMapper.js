@@ -194,7 +194,7 @@ export const estudianteDetailMapper = (dataBackend) => {
     inscripcion: normalizedInscripcion,
     // Datos académicos (tipoAdmision, gestionIngresoId, carreraId) para formulario de edición / paso 1
     academicData: academicData || null,
-    // Datos de Transitabilidad o Traspaso (para vista detalle y formularios)
+    // Datos de transitabilidad o Traspaso (para vista detalle y formularios)
     transitability: transitability || null,
     transfer: transfer || null,
     // Catálogos (managements, scholarships) para mostrar nombres en tab Académico

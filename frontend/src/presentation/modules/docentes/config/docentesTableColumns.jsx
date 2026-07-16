@@ -139,10 +139,9 @@ export const createDocentesTableColumns = ({ navigate, listNavState, refetch, de
           },
           {
             label: 'Carga asignada',
-            value:
-              record.teachingStats?.hasAsignaciones
-                ? `${record.teachingStats.totalMaterias ?? 0} materias · ${record.teachingStats.totalParalelos ?? 0} paralelos`
-                : null,
+            value: record.teachingStats?.hasAsignaciones
+              ? `${record.teachingStats.totalMaterias ?? 0} ${Number(record.teachingStats.totalMaterias) === 1 ? 'materia' : 'materias'} · ${record.teachingStats.totalParalelos ?? 0} ${Number(record.teachingStats.totalParalelos) === 1 ? 'paralelo' : 'paralelos'}`
+              : null,
             icon: <ReadOutlined />,
           },
         ].filter((d) => d.value != null && d.value !== '' && d.value !== '—');

@@ -50,7 +50,7 @@ const DocumentacionStepContent = ({
     const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionProcesada);
     const subseccionObservaciones = {
       type: 'subsection',
-      subsectionTitle: 'Observaciones del Estudiante',
+      subsectionTitle: 'Observaciones del estudiante',
       conditional: false,
       fields: [
         {

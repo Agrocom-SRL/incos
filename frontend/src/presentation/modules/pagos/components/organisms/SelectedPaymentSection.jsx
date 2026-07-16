@@ -129,7 +129,7 @@ const SelectedPaymentSection = ({
       title={
         <Space>
           <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '20px' }} />
-          <span style={{ fontSize: '18px', fontWeight: 600 }}>Detalles del Pago</span>
+          <span style={{ fontSize: '18px', fontWeight: 600 }}>Detalles del pago</span>
         </Space>
       }
       style={{
@@ -158,7 +158,7 @@ const SelectedPaymentSection = ({
                 borderRadius: '6px'
               }}
             >
-              Pago Gratuito
+              Pago gratuito
             </Tag>
           </div>
 
@@ -237,7 +237,7 @@ const SelectedPaymentSection = ({
                 boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
               }}
             >
-              {submitting ? 'Registrando...' : 'Registrar Pago'}
+              {submitting ? 'Registrando…' : 'Registrar pago'}
             </Button>
           </div>
         </div>
@@ -273,7 +273,7 @@ const SelectedPaymentSection = ({
               fontWeight: 600,
               color: '#262626'
             }}>
-              Completar Información del Pago
+              Completar información del pago
             </Title>
             {/* No usar Form aquí: ya estamos dentro del Form del padre; solo contenido para no anidar <form> */}
             <PaymentFormFields
@@ -327,7 +327,7 @@ const SelectedPaymentSection = ({
                 boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
               }}
             >
-              {submitting ? 'Registrando...' : 'Registrar Pago'}
+              {submitting ? 'Registrando…' : 'Registrar pago'}
             </Button>
           </div>
         </>

@@ -23,13 +23,13 @@ export const useMiEstudianteId = () => {
       const id = result?.success ? result.data?.student?.id ?? null : null;
       if (!id) {
         setEstudianteId(null);
-        setError(result?.error || 'No se pudo identificar tu registro de estudiante');
+        setError(result?.error || 'No se pudo identificar su registro de estudiante');
         return;
       }
       setEstudianteId(id);
     } catch (err) {
       setEstudianteId(null);
-      setError(err?.message || 'No se pudo identificar tu registro de estudiante');
+      setError(err?.message || 'No se pudo identificar su registro de estudiante');
     } finally {
       setLoading(false);
     }

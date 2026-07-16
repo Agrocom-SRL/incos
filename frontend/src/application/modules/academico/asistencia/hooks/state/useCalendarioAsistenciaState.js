@@ -112,7 +112,7 @@ export const useCalendarioAsistenciaState = () => {
     if (!res?.success) {
       notification.error({
         title: 'No se pudo cerrar el registro',
-        description: res?.error || 'Reintentá en unos segundos.',
+        description: res?.error || 'Reintente en unos segundos.',
       });
       return false;
     }
@@ -129,13 +129,13 @@ export const useCalendarioAsistenciaState = () => {
     if (!res?.success) {
       notification.error({
         title: 'No se pudo reabrir el registro',
-        description: res?.error || 'Reintentá en unos segundos.',
+        description: res?.error || 'Reintente en unos segundos.',
       });
       return false;
     }
     notification.success({
       title: 'Registro reabierto',
-      description: 'Podés corregir la asistencia del bimestre.',
+      description: 'Puede corregir la asistencia del bimestre.',
     });
     await cargar();
     return true;
@@ -148,13 +148,13 @@ export const useCalendarioAsistenciaState = () => {
       if (!res?.success) {
         notification.error({
           title: 'No se pudo habilitar la fecha',
-          description: res?.error || 'Reintentá en unos segundos.',
+          description: res?.error || 'Reintente en unos segundos.',
         });
         return false;
       }
       notification.success({
         title: 'Fecha especial habilitada',
-        description: 'Ya podés tomar asistencia en ese día.',
+        description: 'Ya puede tomar asistencia en ese día.',
       });
       await cargar();
       return true;
@@ -169,7 +169,7 @@ export const useCalendarioAsistenciaState = () => {
       if (!res?.success) {
         notification.error({
           title: 'No se pudo eliminar la fecha',
-          description: res?.error || 'Reintentá en unos segundos.',
+          description: res?.error || 'Reintente en unos segundos.',
         });
         return false;
       }

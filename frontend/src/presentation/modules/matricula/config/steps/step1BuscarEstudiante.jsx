@@ -2,7 +2,7 @@
  * step1BuscarEstudiante - Paso 1 del wizard de inscripción (Paso visual 1)
  *
  * Orden del wizard visual: 1=Buscar estudiante, 2=Carrera, 3=Periodo y materias, 4=Paralelo.
- * Single Responsibility: Definir los campos del paso "Buscar Estudiante".
+ * Single Responsibility: Definir los campos del paso "Buscar estudiante".
  */
 
 import { UserOutlined } from '@ant-design/icons';
@@ -10,14 +10,14 @@ import { Flex } from 'antd';
 import { StatusPill, Text } from '@atoms';
 
 const BUSCAR_ESTUDIANTE_HEADER = {
-  title: 'Datos del Estudiante',
+  title: 'Datos del estudiante',
 };
 
 const BUSCAR_ESTUDIANTE_FIELDS = [
   {
     name: 'buscarEstudiante',
     type: 'search',
-    label: 'Buscar Estudiante',
+    label: 'Buscar estudiante',
     placeholder: 'Ej: 1234567, EST-2025-0001, Juan Pérez, etc.',
     required: true,
     span: 12,
@@ -28,7 +28,7 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
     type: 'alert',
     label: '',
     message: 'Instrucciones de búsqueda',
-    description: 'Puede buscar estudiantes por: Cédula de Identidad (CI), Código de Estudiante, Nombres, Apellido Paterno o Apellido Materno. Una vez encontrado el estudiante, se mostrarán sus datos académicos y podrá continuar al siguiente paso.',
+    description: 'Puede buscar estudiantes por: Cédula de Identidad (CI), Código de estudiante, Nombres, Apellido paterno o Apellido materno. Una vez encontrado el estudiante, se mostrarán sus datos académicos y podrá continuar al siguiente paso.',
     alertType: 'info',
     span: 12,
     required: false,
@@ -65,7 +65,7 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
   },
 ];
 
-/** Retorna la configuración del paso 1: Buscar Estudiante */
+/** Retorna la configuración del paso 1: Buscar estudiante */
 export const getStep1Fields = () => ({
   buscarEstudiante: {
     ...BUSCAR_ESTUDIANTE_HEADER,

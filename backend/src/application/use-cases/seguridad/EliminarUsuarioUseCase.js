@@ -31,7 +31,7 @@ export class EliminarUsuarioUseCase {
     }
 
     if (actorId != null && Number(actorId) === id) {
-      throw new ConflictError('No puedes eliminar tu propia cuenta de usuario');
+      throw new ConflictError('No puede eliminar su propia cuenta de usuario');
     }
 
     const deleted = await this.userRepository.delete(id, actorId);

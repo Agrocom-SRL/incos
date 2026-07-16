@@ -65,13 +65,13 @@ const PoliticaAsistenciaPanel = ({ form, disabled = false }) => {
       shadow={false}
     >
       <Paragraph type="secondary" className="cal-politica-panel-card__desc">
-        Define qué ocurre con la asistencia a nivel institucional. Los docentes pueden ajustarla por
+        Defina qué ocurre con la asistencia a nivel institucional. Los docentes pueden ajustarla por
         curso.
       </Paragraph>
 
       <Form.Item
         name={['politicaAsistenciaDefault', 'politica']}
-        rules={[{ required: true, message: 'Seleccioná una política' }]}
+        rules={[{ required: true, message: 'Seleccione una política' }]}
         className="cal-politica-asistencia-radio"
       >
         <Radio.Group disabled={disabled} style={{ width: '100%' }} onChange={handlePoliticaChange}>
@@ -111,7 +111,7 @@ const PoliticaAsistenciaPanel = ({ form, disabled = false }) => {
           <Text className="cal-politica-asistencia-campos__titulo">Parámetros — aporta a la nota final</Text>
           <Form.Item
             name={['politicaAsistenciaDefault', 'pesoAsistencia']}
-            rules={[{ required: true, message: 'Indicá el peso' }]}
+            rules={[{ required: true, message: 'Indique el peso' }]}
           >
             <PoliticaPorcentajeSlider
               label="Porcentaje de la nota que proviene de asistencia"
@@ -129,7 +129,7 @@ const PoliticaAsistenciaPanel = ({ form, disabled = false }) => {
           </Text>
           <Form.Item
             name={['politicaAsistenciaDefault', 'minimoAsistencia']}
-            rules={[{ required: true, message: 'Indicá el mínimo' }]}
+            rules={[{ required: true, message: 'Indique el mínimo' }]}
           >
             <PoliticaPorcentajeSlider
               label="Asistencia mínima exigida"
@@ -139,7 +139,7 @@ const PoliticaAsistenciaPanel = ({ form, disabled = false }) => {
           </Form.Item>
           <Form.Item
             name={['politicaAsistenciaDefault', 'notaReprobada']}
-            rules={[{ required: true, message: 'Indicá la nota' }]}
+            rules={[{ required: true, message: 'Indique la nota' }]}
           >
             <PoliticaPorcentajeSlider
               label="Nota asignada si no alcanza la asistencia mínima"

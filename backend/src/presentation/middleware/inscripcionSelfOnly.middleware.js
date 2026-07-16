@@ -76,7 +76,7 @@ export async function inscripcionSelfOnlyGuard(req, res, next) {
     }
 
     if (dueñoId !== suEstudianteId) {
-      throw new ForbiddenError('No puedes ver la matrícula de otro estudiante.');
+      throw new ForbiddenError('No se puede ver la matrícula de otro estudiante.');
     }
 
     return next();

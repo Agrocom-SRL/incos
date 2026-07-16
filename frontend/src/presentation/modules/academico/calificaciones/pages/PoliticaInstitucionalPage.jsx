@@ -144,7 +144,7 @@ const PoliticaInstitucionalPage = () => {
       });
     } catch (err) {
       if (err?.errorFields) return;
-      setErrorGuardado(err?.message || 'No se pudo guardar. Reintentar.');
+      setErrorGuardado(err?.message || 'No se pudo guardar. Reintente.');
     }
   };
 
@@ -165,7 +165,7 @@ const PoliticaInstitucionalPage = () => {
         description: `Se aplicó la configuración de ${politicaGestionAnterior.gestionNombre} a ${gestionVigente ?? politica?.gestionNombre}.`,
       });
     } catch (err) {
-      setErrorGuardado(err?.message || 'No se pudo copiar la configuración. Reintentar.');
+      setErrorGuardado(err?.message || 'No se pudo copiar la configuración. Reintente.');
     }
   }, [
     politicaGestionAnterior,

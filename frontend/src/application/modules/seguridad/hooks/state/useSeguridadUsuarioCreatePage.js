@@ -82,7 +82,7 @@ export const useSeguridadUsuarioCreatePage = () => {
       { title: 'Inicio', href: '/' },
       { title: 'Seguridad', href: '/seguridad/usuarios' },
       { title: 'Usuarios', href: '/seguridad/usuarios' },
-      { title: isEditMode ? `Editar Usuario #${editingUserId}` : 'Nuevo Usuario' },
+      { title: isEditMode ? `Editar usuario #${editingUserId}` : 'Nuevo usuario' },
     ],
     [isEditMode, editingUserId]
   );

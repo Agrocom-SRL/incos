@@ -1,5 +1,5 @@
 /**
- * Campos del paso «Formación y laboral» del wizard docente (FormSection por sección en el wizard).
+ * Campos del paso «Formación y labor» del wizard docente (FormSection por sección en el wizard).
  * Opciones alineadas a ENUM del backend (docentes.constants / modelo Sequelize).
  */
 
@@ -25,6 +25,21 @@ const ESTADO_LABORAL_OPTIONS = [
   { value: 'RETIRADO', label: 'Retirado' },
   { value: 'SUSPENDIDO', label: 'Suspendido' },
 ];
+
+/** ENUM → etiqueta legible (fallback al valor crudo si el catálogo cambia). */
+const labelFromOptions = (options, value) =>
+  options.find((option) => option.value === value)?.label ?? value ?? null;
+
+/** Etiqueta legible del nivel académico (ficha / celdas). */
+export const formatNivelAcademicoDocente = (value) =>
+  labelFromOptions(NIVEL_ACADEMICO_OPTIONS, value);
+
+/** Etiqueta legible del tipo de contrato (ficha / celdas). */
+export const formatTipoContratoDocente = (value) => labelFromOptions(TIPO_CONTRATO_OPTIONS, value);
+
+/** Etiqueta legible del estado laboral (ficha / pill de cabecera). */
+export const formatEstadoLaboralDocente = (value) =>
+  labelFromOptions(ESTADO_LABORAL_OPTIONS, value);
 
 /** Nombres en el formulario (paso 2), incluidos los de subsecciones. */
 export const DOCENTE_FORMACION_LABORAL_FIELD_NAMES = [

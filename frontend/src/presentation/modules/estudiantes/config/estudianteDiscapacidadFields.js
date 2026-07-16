@@ -20,9 +20,9 @@
  * Crea la configuración de campos de discapacidad para el registro de estudiantes
  * 
  * Los campos de discapacidad incluyen:
- * - Tipo de Discapacidad (select)
+ * - Tipo de discapacidad (select)
  * - Descripción (textarea)
- * - Grado de Discapacidad (radio)
+ * - Grado de discapacidad (radio)
  * - Causa (textarea)
  * 
  * @returns {Object} Configuración de campos organizados por sección
@@ -32,20 +32,20 @@ export const createEstudianteDiscapacidadFields = () => {
     discapacidad: {
       title: 'DATOS DE DISCAPACIDAD',
       fields: [
-        // Tipo de Discapacidad
+        // Tipo de discapacidad
         {
           name: 'tipoDiscapacidadId',
-          label: 'Tipo de Discapacidad',
+          label: 'Tipo de discapacidad',
           type: 'select',
           required: true,
           span: 12,
           options: 'discapacidades',
           placeholder: 'Seleccione tipo de discapacidad',
         },
-        // Grado de Discapacidad
+        // Grado de discapacidad
         {
           name: 'gradoDiscapacidad',
-          label: 'Grado de Discapacidad',
+          label: 'Grado de discapacidad',
           type: 'radio',
           required: true,
           span: 12,

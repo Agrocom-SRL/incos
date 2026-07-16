@@ -40,7 +40,7 @@ const CoordinacionPage = () => {
       infoDescription={
         <span>
           Periodo lectivo <strong>{periodoLabel}</strong>. Docentes con cursos
-          que tienen estudiantes matriculados. Seleccioná uno para revisar sus
+          que tienen estudiantes matriculados. Seleccione uno para revisar sus
           materias y el cuaderno de notas; el avance por bimestre lo define cada
           docente en su curso.
         </span>

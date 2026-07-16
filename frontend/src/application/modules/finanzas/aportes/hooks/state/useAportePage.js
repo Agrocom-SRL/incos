@@ -145,7 +145,7 @@ export const useAportePage = () => {
         await refetch();
         return true;
       }
-      message.error(resultado?.error || 'No se pudo guardar. Reintentar.');
+      message.error(resultado?.error || 'No se pudo guardar. Reintente en unos segundos.');
       return false;
     },
     [aporteVigente, guardarConfiguracionAporte, message, refetch],

@@ -40,7 +40,7 @@ const MisCursosAsistenciaPage = () => {
 
   const infoDescription = !isLoading ? (
     <span>
-      Periodo lectivo <strong>{docente?.gestionVigente ?? '—'}</strong>. Elegí
+      Periodo lectivo <strong>{docente?.gestionVigente ?? '—'}</strong>. Elija
       un curso para tomar la asistencia diaria de sus estudiantes.
     </span>
   ) : null;

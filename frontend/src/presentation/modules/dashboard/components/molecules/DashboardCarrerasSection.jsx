@@ -12,7 +12,7 @@ const DashboardCarrerasSection = ({
     onVerTodas,
     onCarreraClick,
     detalleInteractivo = true,
-    title = 'Nuestras Carreras',
+    title = 'Nuestras carreras',
     emptyText = 'No hay carreras activas para mostrar.',
     style,
 }) => {

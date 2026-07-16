@@ -31,7 +31,7 @@ const { Text, Paragraph } = Typography;
  */
 export const showDeleteConfirm = ({
   modal,
-  title = 'Confirmar Eliminación',
+  title = 'Confirmar eliminación',
   content,
   itemName = 'este elemento',
   itemDetails = [],

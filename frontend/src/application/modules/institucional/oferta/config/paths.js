@@ -1,4 +1,4 @@
-/** Rutas del módulo Institucional → Oferta Académica */
+/** Rutas del módulo Institucional → Oferta académica */
 
 export const OFERTA_BASE = '/institucional/oferta';
 

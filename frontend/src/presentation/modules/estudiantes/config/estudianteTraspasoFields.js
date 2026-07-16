@@ -4,7 +4,7 @@
  * Single Responsibility: Definir la configuración de campos de traspaso para FormSection/FormField.
  *
  * Solo se muestra cuando tipo de admisión es TRASPASO.
- * La carrera en INCOS ya se eligió en el paso "Tipo de Admisión"; no se repite aquí.
+ * La carrera en INCOS ya se eligió en el paso "Tipo de admisión"; no se repite aquí.
  * Los 5 documentos del traspaso se gestionan en el step Documentación (desde el seed).
  *
  * Secciones según 16-traspasos.sql e instituciones (15-transitabilidades.sql):

@@ -73,7 +73,7 @@ const SelectedBecaSection = ({
 
   return (
     <Card
-      title="Beca/Descuento Seleccionada"
+      title="Beca o descuento seleccionado"
       style={{ marginTop: '24px', marginBottom: '24px' }}
       headerColor="primary"
     >
@@ -89,7 +89,7 @@ const SelectedBecaSection = ({
         <Col xs={24} sm={12}>
           <SelectedBecaInfoItem
             icon={<PercentageOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Porcentaje de Descuento"
+            label="Porcentaje de descuento"
             value={`${selectedBecaDescuento.porcentaje || 'N/A'}%`}
             valueColor="var(--color-primary-hover, #196b45)"
             valueFontSize="20px"
@@ -110,7 +110,7 @@ const SelectedBecaSection = ({
         <Col xs={24} sm={12}>
           <SelectedBecaInfoItem
             icon={<CalendarOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Fecha de Solicitud"
+            label="Fecha de solicitud"
             value={formatDate(new Date().toISOString())}
           />
         </Col>

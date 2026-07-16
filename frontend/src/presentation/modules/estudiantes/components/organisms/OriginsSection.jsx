@@ -34,7 +34,7 @@ const OriginsSection = ({ origins }) => {
             <Col xs={24} sm={12}>
               <StudentInfoItem
                 icon={<GlobalOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Tipo de Origen"
+                label="Tipo de origen"
                 value={origin.originType || origin.tipoOrigen}
               />
             </Col>
@@ -55,21 +55,21 @@ const OriginsSection = ({ origins }) => {
             <Col xs={24}>
               <StudentInfoItem
                 icon={<EnvironmentOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Lugar de Nacimiento"
+                label="Lugar de nacimiento"
                 value={origin.originAddressComplete || origin.birthCity}
               />
             </Col>
             <Col xs={24} sm={12}>
               <StudentInfoItem
                 icon={<TranslationOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Idioma Materno"
+                label="Idioma materno"
                 value={origin.motherTongueName || origin.motherTongueId}
               />
             </Col>
             <Col xs={24} sm={12}>
               <StudentInfoItem
                 icon={<TranslationOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Idioma Secundario"
+                label="Idioma secundario"
                 value={origin.secondaryLanguageName || origin.secondaryLanguageId}
               />
             </Col>

@@ -99,8 +99,8 @@ const PoliticaInstitucionalSidebarResumen = ({ politica, gestionVigente }) => {
       ) : (
         <Card {...cardProps}>
           <Text type="secondary" style={{ fontSize: 13 }}>
-            Aún no hay configuración persistida para esta gestión. Completá el formulario y guardá,
-            o copiá la política de la gestión anterior si está disponible.
+            Aún no hay configuración persistida para esta gestión. Complete el formulario y guarde,
+            o copie la política de la gestión anterior si está disponible.
           </Text>
         </Card>
       )}

@@ -56,7 +56,7 @@ export class UpdateEvaluacionCuadernoUseCase {
       )) > 0;
 
     if (bimestreNum !== bimestreVigente && !reabierto) {
-      throw new ForbiddenError('Solo podés editar evaluaciones del bimestre vigente o reabierto.');
+      throw new ForbiddenError('Solo puede editar evaluaciones del bimestre vigente o reabierto.');
     }
 
     const existente = await this.cuadernoRepository.obtenerEvaluacionDeAsignacion(

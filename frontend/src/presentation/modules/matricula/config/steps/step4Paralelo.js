@@ -12,7 +12,7 @@
 
 /**
  * Retorna la configuración de campos para el paso 4: Paralelo
- * - Sección resumen: Resumen de Inscripción (estudiante, carrera, paralelo) arriba
+ * - Sección resumen: Resumen de inscripción (estudiante, carrera, paralelo) arriba
  * - Sección paralelos: lista de paralelos por periodo (enriquecida con datos y renderItem)
  *
  * @returns {Object} Configuración de campos para las secciones resumen y paralelos
@@ -20,13 +20,13 @@
 export const getStep4Fields = () => {
   return {
     resumen: {
-      title: 'Resumen de Inscripción',
+      title: 'Resumen de inscripción',
       fields: [
         {
           name: 'resumenInscripcion',
           type: 'alert',
           label: '',
-          message: 'Resumen de Inscripción',
+          message: 'Resumen de inscripción',
           description: '', // Se enriquecerá dinámicamente por el enricher con los datos seleccionados
           alertType: 'info',
           span: 24,

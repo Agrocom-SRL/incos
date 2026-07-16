@@ -41,7 +41,7 @@ export async function assertCuadernoCursoAccess({
       'LISTAR',
     );
     if (!esCoordinacion) {
-      throw new ForbiddenError('No tenés acceso a este curso.');
+      throw new ForbiddenError('No tiene acceso a este curso.');
     }
   }
 

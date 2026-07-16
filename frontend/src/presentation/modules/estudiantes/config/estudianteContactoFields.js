@@ -28,7 +28,7 @@ const createCamposResidencia = () => {
   return [
     {
       name: 'provinciaResidenciaId',
-      label: 'Provincia de Residencia',
+      label: 'Provincia de residencia',
       type: 'select',
       required: false,
       span: 12,
@@ -37,7 +37,7 @@ const createCamposResidencia = () => {
     },
     {
       name: 'municipioResidenciaId',
-      label: 'Municipio de Residencia',
+      label: 'Municipio de residencia',
       type: 'select',
       required: false,
       span: 12,
@@ -51,9 +51,9 @@ const createCamposResidencia = () => {
  * Crea la configuración de campos de contacto para el registro de estudiantes
  * 
  * Los campos de contacto incluyen:
- * - Email Personal (input email)
+ * - Email personal (input email)
  * - Celular (input tel)
- * - Teléfono Fijo (input tel)
+ * - Teléfono fijo (input tel)
  * - División Política de Residencia (departamento, provincia, municipio)
  * - Dirección (textarea)
  * - Zona (input)
@@ -67,10 +67,10 @@ export const createEstudianteContactoFields = () => {
     contacto: {
       title: 'DATOS REFERENCIALES DEL ESTUDIANTE',
       fields: [
-        // Email Personal
+        // Email personal
         {
           name: 'emailPersonal',
-          label: 'Email Personal',
+          label: 'Email personal',
           type: 'input',
           inputType: 'email',
           required: false,
@@ -89,10 +89,10 @@ export const createEstudianteContactoFields = () => {
           placeholder: 'Ej: 70000000',
           maxLength: 20,
         },
-        // Teléfono Fijo
+        // Teléfono fijo
         {
           name: 'telefonoFijo',
-          label: 'Teléfono Fijo',
+          label: 'Teléfono fijo',
           type: 'input',
           inputType: 'tel',
           required: false,

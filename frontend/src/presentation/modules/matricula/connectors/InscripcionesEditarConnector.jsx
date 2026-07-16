@@ -1,5 +1,5 @@
 /**
- * Conector: Editar Inscripción
+ * Conector: Editar inscripción
  *
  * Single Responsibility: Cargar la inscripción por ID y mostrar el formulario en modo edición
  *
@@ -116,7 +116,7 @@ function InscripcionesEditarContent() {
   if (loading) {
     return (
       <PageTemplate
-        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de Matrículas', href: '/matricula/listar' }, { title: 'Editar Inscripción' }]} />}
+        header={<PageHeader title="Editar inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de matrículas', href: '/matricula/listar' }, { title: 'Editar inscripción' }]} />}
       >
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <Spin size="large">
@@ -132,7 +132,7 @@ function InscripcionesEditarContent() {
   if (error) {
     return (
       <PageTemplate
-        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de Matrículas', href: '/matricula/listar' }, { title: 'Editar Inscripción' }]} />}
+        header={<PageHeader title="Editar inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de matrículas', href: '/matricula/listar' }, { title: 'Editar inscripción' }]} />}
       >
         <Alert type="error" showIcon title="Error al cargar la inscripción" description={error} />
       </PageTemplate>
@@ -142,7 +142,7 @@ function InscripcionesEditarContent() {
   if (!inscripcion || !editData) {
     return (
       <PageTemplate
-        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de Matrículas', href: '/matricula/listar' }, { title: 'Editar Inscripción' }]} />}
+        header={<PageHeader title="Editar inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de matrículas', href: '/matricula/listar' }, { title: 'Editar inscripción' }]} />}
       >
         <Alert type="warning" showIcon title="No se encontró la inscripción" />
       </PageTemplate>

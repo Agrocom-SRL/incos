@@ -49,7 +49,7 @@ export default function RolesListPage() {
     >
       <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
         <PageHeaderArea>
-          <PageHeader title="Roles y Permisos" breadcrumbItems={breadcrumbItems} />
+          <PageHeader title="Roles y permisos" breadcrumbItems={breadcrumbItems} />
         </PageHeaderArea>
         <DashboardPageShell>
           <MainContent>

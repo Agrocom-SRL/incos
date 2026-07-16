@@ -62,14 +62,14 @@ const NotFoundResult = ({ variant, onGoHome, onGoBack }) => {
       >
         {isPanel ? (
           <>
-            La dirección que abriste no existe en el sistema o el enlace está incompleto.
-            Podés usar el <strong>menú lateral</strong> para ir a otra sección o volver al
+            La dirección que abrió no existe en el sistema o el enlace está incompleto.
+            Puede usar el <strong>menú lateral</strong> para ir a otra sección o volver al
             inicio del panel.
           </>
         ) : (
           <>
-            Este enlace no es válido o la página ya no está disponible. Si tenés usuario en
-            el instituto, iniciá sesión para entrar al panel de gestión.
+            Este enlace no es válido o la página ya no está disponible. Si tiene usuario en
+            el instituto, inicie sesión para entrar al panel de gestión.
           </>
         )}
       </Text>

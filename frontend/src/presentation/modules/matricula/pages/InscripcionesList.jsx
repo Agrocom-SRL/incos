@@ -122,7 +122,7 @@ const InscripcionesList = () => {
       icon={<PlusOutlined />}
       onClick={handleNuevaInscripcion}
     >
-      Nueva Inscripción
+      Nueva inscripción
     </ActionButton>
   );
 
@@ -130,7 +130,7 @@ const InscripcionesList = () => {
     <PageTemplate
       header={
         <PageHeader
-          title="Lista de Inscripciones"
+          title="Lista de inscripciones"
           breadcrumbItems={breadcrumbItems}
           actions={exportActions}
         />
@@ -150,7 +150,7 @@ const InscripcionesList = () => {
             <ListPanelHeader title="Lista de inscripciones" actions={crearAction} />
             <Paragraph type="secondary" className="cfg-academico-workspace__desc">
               Matrículas de los estudiantes por gestión: estudiante, carrera, tipo de inscripción
-              y estado. Registra nuevas inscripciones y exporta el listado por carrera.
+              y estado. Registre nuevas inscripciones y exporte el listado por carrera.
             </Paragraph>
           </header>
           <CarreraTabsListView

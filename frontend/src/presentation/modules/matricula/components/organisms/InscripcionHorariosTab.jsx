@@ -18,7 +18,7 @@ const InscripcionHorariosTab = ({
         </h2>
       </header>
       <p className="da-cal-semanal-section__lede">
-        Cada bloque muestra hora, sigla, nombre de la materia, paralelo, turno, docente y aula para que puedas ubicarte
+        Cada bloque muestra hora, sigla, nombre de la materia, paralelo, turno, docente y aula para que pueda ubicarse
         en la semana.
       </p>
       {courseSchedules.length > 0 ? (

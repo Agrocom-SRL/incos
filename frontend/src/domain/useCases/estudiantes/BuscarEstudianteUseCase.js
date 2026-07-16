@@ -1,5 +1,5 @@
 /**
- * Use Case: Buscar Estudiante
+ * Use Case: Buscar estudiante
  * 
  * Single Responsibility: Orquestar la búsqueda de estudiantes por término de búsqueda
  * Dependency Inversion: Depende de la abstracción IEstudianteRepository

@@ -43,7 +43,7 @@ const CoordinacionAsistenciaPage = () => {
       infoDescription={
         <span>
           Periodo lectivo <strong>{vista.gestionVigente ?? '—'}</strong>.
-          Docentes con cursos que tienen estudiantes matriculados. Seleccioná
+          Docentes con cursos que tienen estudiantes matriculados. Seleccione
           uno para revisar sus materias y tomar asistencia.
         </span>
       }

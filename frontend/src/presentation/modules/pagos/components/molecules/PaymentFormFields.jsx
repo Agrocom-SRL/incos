@@ -90,7 +90,7 @@ const PaymentFormFields = ({
             label={
               <span style={{ fontWeight: 500, fontSize: '14px' }}>
                 <CalendarOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
-                Fecha de Pago
+                Fecha de pago
               </span>
             }
             rules={[
@@ -120,7 +120,7 @@ const PaymentFormFields = ({
             label={
               <span style={{ fontWeight: 500, fontSize: '14px' }}>
                 <BankOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
-                Cuenta de Pago
+                Cuenta de pago
               </span>
             }
             rules={[
@@ -170,7 +170,7 @@ const PaymentFormFields = ({
             label={
               <span style={{ fontWeight: 500, fontSize: '14px' }}>
                 <QrcodeOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
-                Código del Comprobante
+                Código del comprobante
               </span>
             }
             tooltip={esQR ? "Ingrese el código del comprobante QR" : "Ingrese el código del comprobante de transferencia o depósito"}
@@ -196,7 +196,7 @@ const PaymentFormFields = ({
             label={
               <span style={{ fontWeight: 500, fontSize: '14px' }}>
                 <FileTextOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
-                Número de Transacción
+                Número de transacción
               </span>
             }
             tooltip="Ingrese el número de transacción bancaria (opcional)"
@@ -229,7 +229,7 @@ const PaymentFormFields = ({
             label={
               <span style={{ fontWeight: 500, fontSize: '14px' }}>
                 <UploadOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
-                Documento de Respaldo
+                Documento de respaldo
               </span>
             }
             tooltip="Arrastre y suelte un archivo o haga clic para seleccionar (imagen, PDF, etc.) - Opcional"

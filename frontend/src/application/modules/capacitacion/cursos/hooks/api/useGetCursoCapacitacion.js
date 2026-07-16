@@ -17,8 +17,8 @@ export const useGetCursoCapacitacion = () => {
 
   const cargar = useCallback(async (id) => {
     if (id == null || id === '') {
-      setError('ID del curso es requerido');
-      return { success: false, error: 'ID del curso es requerido' };
+      setError('Se requiere el ID del curso');
+      return { success: false, error: 'Se requiere el ID del curso' };
     }
     setLoading(true);
     setError(null);

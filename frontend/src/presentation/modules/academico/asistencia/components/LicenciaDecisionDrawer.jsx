@@ -62,7 +62,7 @@ const PANEL = {
     icon: CheckOutlined,
     titulo: 'Aprobar solicitud',
     acento: 'lic-drawer__decision--aprobacion',
-    desc: 'Confirmá la aprobación. Podés registrar una observación (por qué se aprueba).',
+    desc: 'Confirme la aprobación. Puede registrar una observación (por qué se aprueba).',
     label: 'Observaciones (opcional)',
     requerido: false,
     placeholder: 'Ej.: documentación de respaldo verificada.',
@@ -74,7 +74,7 @@ const PANEL = {
     icon: CloseOutlined,
     titulo: 'Rechazar solicitud',
     acento: 'lic-drawer__decision--rechazo',
-    desc: 'Indicá el motivo del rechazo.',
+    desc: 'Indique el motivo del rechazo.',
     label: 'Motivo del rechazo',
     requerido: true,
     placeholder: 'Ej.: la documentación de respaldo no fue presentada.',
@@ -86,7 +86,7 @@ const PANEL = {
     icon: StopOutlined,
     titulo: 'Cancelar solicitud',
     acento: 'lic-drawer__decision--rechazo',
-    desc: 'Indicá el motivo de la cancelación. La licencia dejará de reflejarse en la planilla.',
+    desc: 'Indique el motivo de la cancelación. La licencia dejará de reflejarse en la planilla.',
     label: 'Motivo de la cancelación',
     requerido: true,
     placeholder: 'Ej.: el estudiante retomó asistencia antes de lo previsto.',
@@ -363,7 +363,7 @@ const LicenciaDecisionDrawer = ({
                   label={panel.label}
                   rules={
                     panel.requerido
-                      ? [{ required: true, message: 'Indicá el motivo' }]
+                      ? [{ required: true, message: 'Indique el motivo' }]
                       : undefined
                   }
                 >

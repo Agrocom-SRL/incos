@@ -66,12 +66,12 @@ export function buildHorariosDashboardAlertLineas(paralelos, extras = {}) {
     if (paralelosSinAulas > 0) {
         if (paralelosSinAulaBase > 0) {
             lines.push(
-                `${paralelosSinAulaBase} paralelo(s) sin aula base en Oferta académica; asigná aula al paralelo o en cada bloque del armado.`,
+                `${paralelosSinAulaBase} paralelo(s) sin aula base en Oferta académica; asigne un aula al paralelo o en cada bloque del armado.`,
             );
         }
         if (bloquesSinAula > 0) {
             lines.push(
-                `${bloquesSinAula} bloque(s) sin aula efectiva en ${paralelosSinAulas} paralelo(s); usá Horarios en aulas o override en el armado.`,
+                `${bloquesSinAula} bloque(s) sin aula efectiva en ${paralelosSinAulas} paralelo(s); utilice Horarios en aulas o un override en el armado.`,
             );
         }
     }
@@ -79,12 +79,12 @@ export function buildHorariosDashboardAlertLineas(paralelos, extras = {}) {
     if (paralelosSinDocentes > 0) {
         if (materiasSinDocente > 0) {
             lines.push(
-                `${paralelosSinDocentes} paralelo(s) con ${materiasSinDocente} materia(s) sin docente; asigná docente y carga desde el detalle del paralelo en planificación.`,
+                `${paralelosSinDocentes} paralelo(s) con ${materiasSinDocente} materia(s) sin docente; asigne docente y carga desde el detalle del paralelo en planificación.`,
             );
         }
         if (paralelosChoqueDocente > 0) {
             lines.push(
-                `${paralelosChoqueDocente} paralelo(s) con choque de horario del mismo docente entre materias; reasigná docente o mové franjas en el armado.`,
+                `${paralelosChoqueDocente} paralelo(s) con choque de horario del mismo docente entre materias; reasigne el docente o mueva las franjas en el armado.`,
             );
         }
         if (materiasSinDocente <= 0 && paralelosChoqueDocente <= 0) {
@@ -100,22 +100,22 @@ export function buildHorariosDashboardAlertLineas(paralelos, extras = {}) {
         }
         if (ofertasCoberturaIncompleta > 0) {
             lines.push(
-                `${ofertasCoberturaIncompleta} oferta(s) con bloques insuficientes respecto a las horas semanales del plan; completá franjas en el armado.`,
+                `${ofertasCoberturaIncompleta} oferta(s) con bloques insuficientes respecto a las horas semanales del plan; complete las franjas en el armado.`,
             );
         }
         if (materiasSinBloques > 0 && ofertasCoberturaIncompleta <= 0) {
             lines.push(
-                `${materiasSinBloques} materia(s) en ${paralelosSinHorarios} paralelo(s) sin cobertura horaria completa; abrí el armado y asigná bloques hasta cubrir la carga.`,
+                `${materiasSinBloques} materia(s) en ${paralelosSinHorarios} paralelo(s) sin cobertura horaria completa; abra el armado y asigne bloques hasta cubrir la carga.`,
             );
         }
         if (paralelosConSolape > 0) {
             lines.push(
-                `${paralelosConSolape} paralelo(s) con solapes de franja entre materias del mismo grupo; corregí el plan en el armado antes de publicar.`,
+                `${paralelosConSolape} paralelo(s) con solapes de franja entre materias del mismo grupo; corrija el plan en el armado antes de publicar.`,
             );
         }
         if (crucesAula > 0) {
             lines.push(
-                `${crucesAula} cruce(s) de ocupación de aula entre paralelos; revisá Horarios en aulas (override por bloque).`,
+                `${crucesAula} cruce(s) de ocupación de aula entre paralelos; revise Horarios en aulas (override por bloque).`,
             );
         }
         if (
@@ -134,7 +134,7 @@ export function buildHorariosDashboardAlertLineas(paralelos, extras = {}) {
     const docConflictos = Number(extras.docentesConConflictos) || 0;
     if (docConflictos > 0) {
         lines.push(
-            `${docConflictos} docente(s) con conflictos operativos de horario (solapes entre asignaciones); revisá el resumen lateral o el armado del paralelo afectado.`,
+            `${docConflictos} docente(s) con conflictos operativos de horario (solapes entre asignaciones); revise el resumen lateral o el armado del paralelo afectado.`,
         );
     }
 

@@ -57,7 +57,7 @@ const MateriaDetailPage = () => {
       },
       {
         key: 'asignaturas',
-        label: <DetailTabLabel icon={<ApartmentOutlined />}>Asignatura de materia</DetailTabLabel>,
+        label: <DetailTabLabel icon={<ApartmentOutlined />}>Asignaturas de la materia</DetailTabLabel>,
         children: (
           <div className="sd-tab-body">
             <MateriaDetailAsignaturasSection asignaturas={asignaturas} />

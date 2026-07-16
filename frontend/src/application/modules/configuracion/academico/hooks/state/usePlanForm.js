@@ -113,7 +113,7 @@ export const usePlanForm = (mode = 'create') => {
       if (isEditMode) {
         const matrizResult = await fetchMatriz(planId);
         if (!matrizResult?.success) {
-          throw new Error(matrizResult?.error || 'No se pudo verificar los periodos actuales del plan');
+          throw new Error(matrizResult?.error || 'No se pudieron verificar los periodos actuales del plan');
         }
         periodosActuales = matrizResult.data?.periodos ?? [];
         const periodosAEliminar = periodosActuales.filter((p) => p.numero > totalPeriodosNuevo);

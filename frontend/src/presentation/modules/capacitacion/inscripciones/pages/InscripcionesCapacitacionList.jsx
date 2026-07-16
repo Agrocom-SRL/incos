@@ -61,7 +61,7 @@ const InscripcionesCapacitacionList = () => {
                 <ListPanelHeader title="Lista de inscripciones" actions={inscribirAction} />
                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                   Participantes inscritos a cursos de capacitación con su estado de pago (total
-                  pagado vs costo del curso). Los pagos se registran desde la ficha de cada
+                  pagado frente al costo del curso). Los pagos se registran desde la ficha de cada
                   inscripción.
                 </Paragraph>
               </header>

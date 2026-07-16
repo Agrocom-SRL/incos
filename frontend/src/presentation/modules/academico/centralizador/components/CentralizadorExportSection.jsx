@@ -117,7 +117,7 @@ const CentralizadorExportSection = ({ paralelos = [] }) => {
         disabled={sinCarreras}
       >
         <p className="cal-centralizador-export__desc">
-          Elegí una carrera y un bimestre para descargar el centralizador
+          Elija una carrera y un bimestre para descargar el centralizador
           completo de la carrera en un libro Excel (una hoja por paralelo).
         </p>
 

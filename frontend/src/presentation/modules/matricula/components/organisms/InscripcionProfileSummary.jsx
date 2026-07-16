@@ -10,7 +10,10 @@ import {
   EditOutlined,
   FileTextOutlined,
 } from '@ant-design/icons';
-import { getSubjectStatusColor } from '@application-inscripciones/utils/inscripcionDetailHelpers';
+import {
+  getSubjectStatusColor,
+  getSubjectStatusLabel,
+} from '@application-inscripciones/utils/inscripcionDetailHelpers';
 
 const InscripcionProfileSummary = ({
   avatarText,
@@ -96,7 +99,7 @@ const InscripcionProfileSummary = ({
           <span className="sd-stat__label">Estado de cursado</span>
           <span className="sd-stat__value">
             <Tag color={getSubjectStatusColor(estadoCursado)} style={{ margin: 0 }}>
-              {estadoCursado}
+              {getSubjectStatusLabel(estadoCursado)}
             </Tag>
           </span>
         </div>

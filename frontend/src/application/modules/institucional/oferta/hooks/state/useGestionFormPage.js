@@ -10,7 +10,7 @@
  *     Edición de datos base (vigente NO se edita aquí): prefill buscando la
  *     gestión por id en GET /gestiones (no hay GET by id), PUT /gestiones/:id
  *     y vuelve al ORIGEN — location.state.returnListPath, por defecto
- *     Gestiones Pasadas (/institucional/pasadas).
+ *     Gestiones pasadas (/institucional/pasadas).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -44,7 +44,7 @@ export function useGestionFormPage({ mode = 'create' } = {}) {
   const [cargando, setCargando] = useState(esEdicion);
   const [loadError, setLoadError] = useState(null);
 
-  /** Retorno en edición: al lugar de origen (Gestiones Pasadas por defecto). */
+  /** Retorno en edición: al lugar de origen (Gestiones pasadas por defecto). */
   const returnListPath = location.state?.returnListPath ?? pasadasPaths.list();
 
   /** Alta pensada para la gestión siguiente: año próximo, tipo REGULAR. */
@@ -126,7 +126,7 @@ export function useGestionFormPage({ mode = 'create' } = {}) {
       }
       const nueva = res.data?.gestion ?? null;
       notification.success({
-        message: 'Gestión creada',
+        title: 'Gestión creada',
         description: 'Quedó seleccionada como destino de la renovación de oferta.',
       });
       navigate(ofertaPaths.renovarOferta(), {
@@ -166,7 +166,7 @@ export function useGestionFormPage({ mode = 'create' } = {}) {
     }
     return [
       ...base,
-      { title: 'Oferta Académica', href: ofertaPaths.dashboard() },
+      { title: 'Oferta académica', href: ofertaPaths.dashboard() },
       { title: 'Renovación de oferta', href: ofertaPaths.renovarOferta() },
       { title: 'Nueva gestión' },
     ];

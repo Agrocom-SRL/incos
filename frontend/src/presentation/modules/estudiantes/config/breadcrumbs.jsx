@@ -39,7 +39,7 @@ export const createListBreadcrumbItems = () => {
 /**
  * Crea breadcrumb para la página de registro/edición de estudiante
  * 
- * @param {string} title - Título de la página (ej: 'Registrar Nuevo Estudiante', 'Editar Estudiante')
+ * @param {string} title - Título de la página (ej: 'Registrar Nuevo Estudiante', 'Editar estudiante')
  * @returns {Array} Array de items del breadcrumb
  */
 export const createRegisterBreadcrumbItems = (title) => {
@@ -52,7 +52,7 @@ export const createRegisterBreadcrumbItems = (title) => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createDetailBreadcrumbItems = () => {
-  return createBreadcrumbItems('MAT-ADM-DETALLE', 'Detalle del Estudiante');
+  return createBreadcrumbItems('MAT-ADM-DETALLE', 'Detalle del estudiante');
 };
 
 /**
@@ -61,6 +61,6 @@ export const createDetailBreadcrumbItems = () => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createAsignarBecaBreadcrumbItems = () => {
-  return createBreadcrumbItems('MAT-BEC-ASIGNAR', 'Asignar Beca');
+  return createBreadcrumbItems('MAT-BEC-ASIGNAR', 'Asignar beca');
 };
 

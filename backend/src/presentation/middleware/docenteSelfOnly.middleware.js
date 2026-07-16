@@ -40,7 +40,7 @@ export function buildDocenteSelfOnlyGuard(paramName = 'id') {
       }
 
       if (Number(req.params[paramName]) !== suDocenteId) {
-        throw new ForbiddenError('No puedes ver los datos de otro docente.');
+        throw new ForbiddenError('No se pueden ver los datos de otro docente.');
       }
 
       return next();

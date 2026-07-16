@@ -22,7 +22,7 @@ const StudentInfoSection = ({ student }) => {
 
   return (
     <Card
-      title="Información del Estudiante"
+      title="Información del estudiante"
       style={{ marginBottom: '24px' }}
       headerColor="primary"
     >
@@ -30,14 +30,14 @@ const StudentInfoSection = ({ student }) => {
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<BarcodeOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Código de Estudiante"
+            label="Código de estudiante"
             value={student.codigoEstudiante}
           />
         </Col>
         <Col xs={24} sm={12}>
           <StudentInfoItem
             icon={<UserOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Nombre Completo"
+            label="Nombre completo"
             value={student.nombreCompleto}
           />
         </Col>

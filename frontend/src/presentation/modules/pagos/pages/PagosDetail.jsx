@@ -28,6 +28,17 @@ const formatMonto = (monto) => {
   return Number(monto).toFixed(2);
 };
 
+/**
+ * Humaniza un estado del backend para mostrarlo al usuario (solo presentación;
+ * las comparaciones siguen usando el enum crudo): 'CANCELADO' → 'Cancelado',
+ * 'SIN_PAGOS' → 'Sin pagos'.
+ */
+const formatEstadoLabel = (estado) => {
+  if (!estado) return estado;
+  const texto = String(estado).replace(/_/g, ' ').toLowerCase();
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+};
+
 const formatFecha = (fecha) => {
   if (!fecha) return 'N/A';
   try {
@@ -78,7 +89,7 @@ const PagosDetail = () => {
   const { hasPermiso, usuario } = useAuthContext();
   /** Vista propia del estudiante (reusa esta pantalla como "Mis aportes"). */
   const esVistaPropiaEstudiante = esEstudiante(usuario);
-  const pageTitle = esVistaPropiaEstudiante ? 'Mis aportes' : 'Detalle del Pago';
+  const pageTitle = esVistaPropiaEstudiante ? 'Mis aportes' : 'Detalle del pago';
 
   const studentIdFromState = location.state?.studentId ?? null;
   const menuSidebarKeyFromState = location.state?.menuSidebarKey;
@@ -278,7 +289,7 @@ const PagosDetail = () => {
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
     { title: 'Pagos', href: '/pagos' },
-    { title: 'Detalle del Pago' },
+    { title: 'Detalle del pago' },
   ], []);
 
   const handleBack = useCallback(() => {
@@ -402,8 +413,8 @@ const PagosDetail = () => {
           <InfoCard title="Resumen del aporte" icon={<DollarOutlined />} cols={2} headVariant="resumen">
             <Field label="Concepto">
               {estadoAporte.gestion
-                ? `Aporte Académico - Gestión ${estadoAporte.gestion.nombre || ''}`.trim()
-                : 'Aporte Académico'}
+                ? `Aporte académico - Gestión ${estadoAporte.gestion.nombre || ''}`.trim()
+                : 'Aporte académico'}
             </Field>
             <Field label="Monto base / obligatorio">
               Bs. {Number(estadoAporte.monto_base ?? estadoAporte.monto_obligatorio ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -523,7 +534,7 @@ const PagosDetail = () => {
           <Field label="Estado">
             {estadoPagoVal ? (
               <Tag color={estadoPagoVal === 'CANCELADO' ? 'success' : estadoPagoVal === 'PARCIAL' ? 'processing' : 'default'}>
-                {estadoPagoVal}
+                {formatEstadoLabel(estadoPagoVal)}
               </Tag>
             ) : '—'}
           </Field>
@@ -688,7 +699,7 @@ const PagosDetail = () => {
         <InfoCard title="Asignación de beca" icon={<DollarOutlined />} cols={3}>
           <Field label="Estado">
             {pago.beca.estado ? (
-              <Tag color={pago.beca.estado === 'ACTIVA' ? 'success' : 'default'}>{pago.beca.estado}</Tag>
+              <Tag color={pago.beca.estado === 'ACTIVA' ? 'success' : 'default'}>{formatEstadoLabel(pago.beca.estado)}</Tag>
             ) : '—'}
           </Field>
           <Field label="Fecha de solicitud">{formatFecha(pago.beca.fechaSolicitud)}</Field>
@@ -710,7 +721,7 @@ const PagosDetail = () => {
           <Field label="Fecha">{formatFecha(pago.inscripcion.fechaInscripcion)}</Field>
           <Field label="Estado">
             {pago.inscripcion.estado ? (
-              <Tag color={pago.inscripcion.estado === 'ACTIVA' ? 'success' : 'default'}>{pago.inscripcion.estado}</Tag>
+              <Tag color={pago.inscripcion.estado === 'ACTIVA' ? 'success' : 'default'}>{formatEstadoLabel(pago.inscripcion.estado)}</Tag>
             ) : '—'}
           </Field>
         </InfoCard>

@@ -148,7 +148,7 @@ const accesosDocente = ({ resumenDocente }) => [
     icon: <TeamOutlined />,
     ...ACCENT.success,
     title: 'Mis estudiantes',
-    description: 'Roster de estudiantes inscritos en sus cursos, por carrera y paralelo.',
+    description: 'Nómina de estudiantes inscritos en sus cursos, por carrera y paralelo.',
     actionLabel: 'Ver mis estudiantes',
     path: '/matricula/listar',
   },

@@ -116,7 +116,7 @@ function adaptFieldsForEdit(flatFields, isEditMode, esVinculoReferencia = false)
         ...field,
         required: false,
         rules: [],
-        placeholder: field.name === 'password' ? 'Dejar vacío para conservar actual' : 'Solo si cambia contraseña',
+        placeholder: field.name === 'password' ? 'Deje vacío para conservar la actual' : 'Solo si cambia la contraseña',
       };
     }
 
@@ -192,7 +192,7 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
       <Paragraph key="intro" type="secondary" style={{ marginBottom: 0 }}>
         {esVinculoReferencia
           ? 'Defina el usuario y la contraseña de acceso. El correo de contacto es el de la ficha de la persona elegida en el paso anterior (no se guarda en la cuenta).'
-          : 'Defina el usuario y la contraseña con la que ingresará al sistema. El correo de contacto queda en la ficha personal del paso anterior, si lo registró.'}
+          : 'Defina el usuario y la contraseña con los que ingresará al sistema. El correo de contacto queda en la ficha personal del paso anterior, si lo registró.'}
       </Paragraph>
     );
     if (isEditMode) {

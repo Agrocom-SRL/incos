@@ -12,8 +12,8 @@ export const useMatriculaDetailNavigation = (inscripcionId, inscripcion) => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Lista de Matrículas', href: '/matricula/listar' },
-      { title: 'Detalle de la Inscripción' },
+      { title: 'Lista de matrículas', href: '/matricula/listar' },
+      { title: 'Detalle de la inscripción' },
     ],
     [],
   );

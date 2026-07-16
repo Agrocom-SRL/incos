@@ -20,6 +20,13 @@ const toLabelValueOptions = (values = []) =>
     value: String(value),
   }));
 
+/** ENUM en MAYÚSCULAS → etiqueta legible (solo display; el value no cambia). */
+const toCapitalizedLabelOptions = (values = []) =>
+  (Array.isArray(values) ? values : []).map((value) => ({
+    label: `${String(value).charAt(0)}${String(value).slice(1).toLowerCase()}`,
+    value: String(value),
+  }));
+
 const toDayjs = (value) => {
   if (!value) return null;
   const d = dayjs(value);
@@ -161,7 +168,7 @@ export const useDocentesFormPage = (mode = 'create') => {
     (key) => {
       if (key === 'estadosCivilesDocente') return estadosCiviles.map((x) => ({ value: x.id, label: x.nombre }));
       if (key === 'expedicionesDocente') return toLabelValueOptions(EXPEDICIONES);
-      if (key === 'generosDocente') return toLabelValueOptions(GENEROS);
+      if (key === 'generosDocente') return toCapitalizedLabelOptions(GENEROS);
       if (key === 'docenteProvinciasResidencia') return provinciasResidencia.map((x) => ({ value: x.id, label: x.nombre }));
       if (key === 'docenteMunicipiosResidencia') return municipiosResidencia.map((x) => ({ value: x.id, label: x.nombre }));
       return [];

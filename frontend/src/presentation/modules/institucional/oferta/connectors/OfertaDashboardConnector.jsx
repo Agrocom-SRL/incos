@@ -1,5 +1,5 @@
 /**
- * Conector: entrada del ítem Institucional → Oferta Académica (role-aware).
+ * Conector: entrada del ítem Institucional → Oferta académica (role-aware).
  *
  * Rama docente self (ítem relabelado "Mis asignaciones" vía labelByRole): el
  * DOCENTE no ve el dashboard administrativo de oferta; se resuelve su id en

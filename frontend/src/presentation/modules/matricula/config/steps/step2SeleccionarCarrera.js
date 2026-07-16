@@ -7,7 +7,7 @@
  */
 
 const CARRERA_HEADER = {
-  title: 'Seleccionar Carrera',
+  title: 'Seleccionar carrera',
 };
 
 const CARRERA_FIELDS = [
@@ -15,7 +15,7 @@ const CARRERA_FIELDS = [
     name: 'estudianteSeleccionado',
     type: 'alert',
     label: '',
-    message: 'Estudiante Seleccionado',
+    message: 'Estudiante seleccionado',
     description: '',
     alertType: 'success',
     span: 24,

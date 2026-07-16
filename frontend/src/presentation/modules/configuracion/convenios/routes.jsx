@@ -8,7 +8,7 @@ export const conveniosRoutes = [
     permiso: 'configuracion.convenios',
     accion: 'LISTAR',
     menu: {
-      label: 'Empresas y Convenios',
+      label: 'Empresas y convenios',
       module: 'CFG',
       parent: 'CFG',
       order: 5,

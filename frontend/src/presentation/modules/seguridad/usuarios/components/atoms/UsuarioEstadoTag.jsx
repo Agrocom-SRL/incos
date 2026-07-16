@@ -6,9 +6,9 @@
 import { Tag } from 'antd';
 
 const ESTADO_CONFIG = {
-  BLOQUEADO: { color: 'error', text: 'BLOQUEADO' },
-  SUSPENDIDO: { color: 'warning', text: 'SUSPENDIDO' },
-  RETIRADO: { color: undefined, text: 'RETIRADO' },
+  BLOQUEADO: { color: 'error', text: 'Bloqueado' },
+  SUSPENDIDO: { color: 'warning', text: 'Suspendido' },
+  RETIRADO: { color: undefined, text: 'Retirado' },
 };
 
 const UsuarioEstadoTag = ({ estado }) => {

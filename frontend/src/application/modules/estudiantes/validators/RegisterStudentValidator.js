@@ -105,7 +105,7 @@ export function validateRegisterStudent(datosEstudiante) {
     if (!Array.isArray(datosEstudiante.contactosEmergencia)) {
       errors.push({
         field: 'contactosEmergencia',
-        message: 'Contactos de emergencia debe ser un array',
+        message: 'Los contactos de emergencia deben ser una lista',
       });
     } else {
       // Validar cada contacto
@@ -127,13 +127,13 @@ export function validateRegisterStudent(datosEstudiante) {
         if (contacto.nombres && (contacto.nombres.length < 2 || contacto.nombres.length > 150)) {
           errors.push({
             field: `contactosEmergencia[${index}].nombres`,
-            message: 'Nombres debe tener entre 2 y 150 caracteres',
+            message: 'Los nombres deben tener entre 2 y 150 caracteres',
           });
         }
         if (contacto.apellidos && (contacto.apellidos.length < 2 || contacto.apellidos.length > 150)) {
           errors.push({
             field: `contactosEmergencia[${index}].apellidos`,
-            message: 'Apellidos debe tener entre 2 y 150 caracteres',
+            message: 'Los apellidos deben tener entre 2 y 150 caracteres',
           });
         }
       });

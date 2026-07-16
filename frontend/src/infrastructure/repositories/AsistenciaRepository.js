@@ -62,7 +62,7 @@ class AsistenciaRepository {
       }
       return { success: true, data: responseData.data ?? {} };
     } catch (error) {
-      return handleErrorResponse(error, 'Error al cargar tus cursos');
+      return handleErrorResponse(error, 'Error al cargar sus cursos');
     }
   }
 

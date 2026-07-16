@@ -20,6 +20,12 @@ import { useAuthContext, esDocente } from '@application-auth';
 import { useDocentesDetailContext } from '@application-docentes/hooks';
 import DetailField from '@docentes/components/atoms/DetailField';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
+import { getGeneroMeta } from '@docentes/components/atoms/DocenteReferenciaCell';
+import {
+  formatNivelAcademicoDocente,
+  formatTipoContratoDocente,
+  formatEstadoLaboralDocente,
+} from '@docentes/config';
 import DocenteProfileSummary from '@docentes/components/organisms/DocenteProfileSummary';
 import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAssignmentsSection';
 import DocenteAccessSection from '@docentes/components/organisms/DocenteAccessSection';
@@ -91,7 +97,7 @@ const DocentesDetail = () => {
             <DetailInfoCard title="Datos personales" icon={<UserOutlined />} cols={3}>
               <DetailField label="Nombre completo">{profile.nombreCompleto}</DetailField>
               <DetailField label="CI">{profile.ciCompleto}</DetailField>
-              <DetailField label="Género">{profile.genero}</DetailField>
+              <DetailField label="Género">{getGeneroMeta(profile.genero)?.label}</DetailField>
               <DetailField label="Fecha de nacimiento">{fmtDate(profile.fechaNacimiento)}</DetailField>
               <DetailField label="Estado civil">{profile.estadoCivil}</DetailField>
               <DetailField label="Correo personal">{profile.emailPersonal}</DetailField>
@@ -121,14 +127,20 @@ const DocentesDetail = () => {
             <DetailInfoCard title="Formación y trayectoria" icon={<BookOutlined />} cols={3} headVariant="labor">
               <DetailField label="Título profesional">{profile.tituloProfesional}</DetailField>
               <DetailField label="Especialidad">{profile.especialidad}</DetailField>
-              <DetailField label="Nivel académico">{profile.nivelAcademico}</DetailField>
+              <DetailField label="Nivel académico">
+                {formatNivelAcademicoDocente(profile.nivelAcademico)}
+              </DetailField>
               <DetailField label="Institución de egreso">{profile.institucionEgreso}</DetailField>
               <DetailField label="Año de egreso">{profile.anioEgreso}</DetailField>
               <DetailField label="Años de experiencia">{profile.aniosExperiencia}</DetailField>
             </DetailInfoCard>
             <DetailInfoCard title="Condición laboral" icon={<CarryOutOutlined />} cols={3} headVariant="labor">
-              <DetailField label="Tipo de contrato">{profile.tipoContrato}</DetailField>
-              <DetailField label="Estado laboral">{profile.estadoLaboral}</DetailField>
+              <DetailField label="Tipo de contrato">
+                {formatTipoContratoDocente(profile.tipoContrato)}
+              </DetailField>
+              <DetailField label="Estado laboral">
+                {formatEstadoLaboralDocente(profile.estadoLaboral)}
+              </DetailField>
               <DetailField label="Fecha de contratación">{fmtDate(profile.fechaContratacion)}</DetailField>
               <DetailField label="Fecha de retiro">{fmtDate(profile.fechaRetiro)}</DetailField>
               <DetailField label="Máx. horas / semana">{profile.maxHorasSemana ?? '—'}</DetailField>
@@ -213,7 +225,7 @@ const DocentesDetail = () => {
                 nombreCompleto={nombreCompleto}
                 iniciales={iniciales}
                 tituloProfesional={profile.tituloProfesional}
-                estadoLaboral={profile.estadoLaboral}
+                estadoLaboral={formatEstadoLaboralDocente(profile.estadoLaboral)}
                 ciCompleto={profile.ciCompleto}
                 celular={profile.celular}
                 emailPersonal={profile.emailPersonal}

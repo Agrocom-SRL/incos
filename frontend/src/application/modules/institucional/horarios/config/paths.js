@@ -79,12 +79,12 @@ export function docenteSoloConflictoDuplicado(docenteRow = {}) {
 /** Texto de ayuda del modal según tipos de conflicto del docente. */
 export function hintModalConflictoDocente(docenteRow = {}) {
     if (docenteSoloConflictoAula(docenteRow)) {
-        return 'Otro paralelo ocupa la misma aula en esa franja. Asigná override por bloque en Horarios en aulas o ajustá la aula base en Oferta académica.';
+        return 'Otro paralelo ocupa la misma aula en esa franja. Asigne un override por bloque en Horarios en aulas o ajuste el aula base en Oferta académica.';
     }
     if (docenteSoloConflictoDuplicado(docenteRow)) {
-        return 'Hay más de una asignación vigente del mismo docente al mismo curso; revisá la oferta del paralelo.';
+        return 'Hay más de una asignación vigente del mismo docente al mismo curso; revise la oferta del paralelo.';
     }
-    return 'Mové al menos uno de los bloques en rojo a otra franja. La asignación docente ↔ materia se ajusta en Oferta académica si hace falta cambiar quién dicta la materia.';
+    return 'Mueva al menos uno de los bloques en rojo a otra franja. La asignación docente ↔ materia se ajusta en Oferta académica si hace falta cambiar quién dicta la materia.';
 }
 
 /**

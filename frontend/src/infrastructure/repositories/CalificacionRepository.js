@@ -187,7 +187,7 @@ class CalificacionRepository {
       }
       return { success: true, data: responseData.data ?? {} };
     } catch (error) {
-      return handleErrorResponse(error, 'Error al cargar tus cursos');
+      return handleErrorResponse(error, 'Error al cargar sus cursos');
     }
   }
 
@@ -907,7 +907,7 @@ class CalificacionRepository {
       }
       return { success: true, data: responseData.data ?? null };
     } catch (error) {
-      return handleErrorResponse(error, 'Error al cargar tu boletín');
+      return handleErrorResponse(error, 'Error al cargar su boletín');
     }
   }
 
@@ -954,13 +954,13 @@ class CalificacionRepository {
           const msg =
             typeof errObj === 'string'
               ? errObj
-              : errObj?.message || json?.message || 'Error al exportar tu boletín';
+              : errObj?.message || json?.message || 'Error al exportar su boletín';
           return { success: false, error: msg };
         } catch {
           /* fall through */
         }
       }
-      return handleErrorResponse(error, 'Error al exportar tu boletín');
+      return handleErrorResponse(error, 'Error al exportar su boletín');
     }
   }
 

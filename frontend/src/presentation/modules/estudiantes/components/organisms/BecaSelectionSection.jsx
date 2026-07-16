@@ -32,7 +32,7 @@ const BecaSelectionSection = ({
 }) => {
   return (
     <Card
-      title="Seleccionar Beca o Descuento"
+      title="Seleccionar beca o descuento"
       style={{ marginTop: '24px', marginBottom: '24px' }}
       headerColor="primary"
     >

@@ -15,7 +15,7 @@ const UnderConstruction = () => {
   return (
     <Result
       icon={<ToolOutlined style={{ color: '#196b45' }} />}
-      title="Página en Construcción"
+      title="Página en construcción"
       subTitle="Estamos trabajando en esta funcionalidad. Pronto estará disponible."
     />
   );

@@ -30,7 +30,7 @@ export class DocenteRepository extends IDocenteRepository {
       const response = await apiClient.get(DOCENTES_ENDPOINTS.MIS_DATOS);
       return handleSuccessResponse(response);
     } catch (error) {
-      return handleErrorResponse(error, 'Error al obtener tus datos de docente');
+      return handleErrorResponse(error, 'Error al obtener sus datos de docente');
     }
   }
 
@@ -48,7 +48,7 @@ export class DocenteRepository extends IDocenteRepository {
       const response = await apiClient.get(DOCENTES_ENDPOINTS.MIS_ESTUDIANTES);
       return handleSuccessResponse(response);
     } catch (error) {
-      return handleErrorResponse(error, 'Error al obtener tus estudiantes');
+      return handleErrorResponse(error, 'Error al obtener sus estudiantes');
     }
   }
 

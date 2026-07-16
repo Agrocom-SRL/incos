@@ -309,7 +309,7 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         pagination: responseData.pagination || null,
       };
     } catch (error) {
-      return handleErrorResponse(error, 'Error al obtener tus aportes');
+      return handleErrorResponse(error, 'Error al obtener sus aportes');
     }
   }
 

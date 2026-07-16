@@ -29,7 +29,7 @@ const EstudianteAdmisionRedirect = () => {
 
   if (loadingMisDatos || (!errorMisDatos && !idSesion)) {
     return (
-      <Spin spinning tip="Abriendo mis datos…">
+      <Spin spinning tip="Abriendo sus datos…">
         <div style={{ minHeight: 160 }} aria-hidden />
       </Spin>
     );

@@ -35,15 +35,15 @@ export const useInscripcionNuevaPageData = (options = {}) => {
     const pageTitle = useMemo(() => {
         // Por ahora es estático, pero puede ser dinámico según mode u otros parámetros
         if (mode === 'editar') {
-            return 'Editar Inscripción';
+            return 'Editar inscripción';
         }
-        return 'Inscribir Estudiantes Nuevos';
+        return 'Inscribir estudiantes nuevos';
     }, [mode]);
 
     // Breadcrumb items
     const breadcrumbItems = useMemo(() => [
         { title: 'Inicio', href: '/' },
-        { title: 'Lista de Matrículas', href: '/matricula/listar' },
+        { title: 'Lista de matrículas', href: '/matricula/listar' },
         { title: pageTitle },
     ], [pageTitle]);
 

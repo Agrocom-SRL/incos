@@ -110,7 +110,7 @@ const PaymentMethodSelectionSection = ({
     <Card
       title={
         <span style={{ fontSize: '18px', fontWeight: 600 }}>
-          Seleccionar Método de Pago
+          Seleccionar método de pago
         </span>
       }
       style={{

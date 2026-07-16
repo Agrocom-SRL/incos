@@ -217,7 +217,7 @@ export const useParaleloForm = (mode = 'create') => {
         throw new Error(result?.error || 'No se pudo guardar el paralelo');
       }
       notification.success({
-        message: isEditMode ? 'Paralelo actualizado' : 'Paralelo creado',
+        title: isEditMode ? 'Paralelo actualizado' : 'Paralelo creado',
       });
       const savedId = result.data?.paralelo?.id ?? result.data?.data?.paralelo?.id ?? paraleloId;
       if (savedId) {

@@ -33,7 +33,7 @@ const ModuleEntryConnector = ({
   return (
     <AccessDeniedRedirect
       to={fallbackPath}
-      description="No tenés permiso para abrir ninguna pantalla de este módulo."
+      description="No tiene permiso para abrir ninguna pantalla de este módulo."
     />
   );
 };

@@ -2,9 +2,9 @@ import { Form, Input, Modal, Select } from 'antd';
 
 const ESTADOS = [
   { value: '__ACTIVO__', label: 'Activo' },
-  { value: 'BLOQUEADO', label: 'BLOQUEADO' },
-  { value: 'SUSPENDIDO', label: 'SUSPENDIDO' },
-  { value: 'RETIRADO', label: 'RETIRADO' },
+  { value: 'BLOQUEADO', label: 'Bloqueado' },
+  { value: 'SUSPENDIDO', label: 'Suspendido' },
+  { value: 'RETIRADO', label: 'Retirado' },
 ];
 
 export default function CambiarEstadoModal({ open, loading, initialValues, onCancel, onSubmit }) {
@@ -56,7 +56,7 @@ export default function CambiarEstadoModal({ open, loading, initialValues, onCan
               <Form.Item
                 name="motivo"
                 label="Motivo"
-                rules={estado ? [{ required: true, message: 'Motivo requerido' }] : []}
+                rules={estado ? [{ required: true, message: 'El motivo es obligatorio' }] : []}
               >
                 <Input.TextArea rows={3} placeholder="Motivo del cambio de estado" />
               </Form.Item>

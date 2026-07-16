@@ -59,7 +59,7 @@ const PaymentMethodInfo = ({
         </div>
         <div>
           <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
-            Método de Pago
+            Método de pago
           </Text>
           <Text strong style={{ fontSize: '16px' }}>
             {selectedMetodoPago?.nombre || 'N/A'}
@@ -97,7 +97,7 @@ const PaymentMethodInfo = ({
             </div>
             <div style={{ flex: 1 }}>
               <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
-                Cuenta de Pago
+                Cuenta de pago
               </Text>
               <Text strong style={{ fontSize: '16px', display: 'block' }}>
                 {nombreTitular || 'N/A'}
