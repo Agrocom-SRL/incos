@@ -484,7 +484,7 @@ const DocenteAsignacionCursoModal = ({
                             type="warning"
                             showIcon
                             title="Sin permiso para asignar docente"
-                            description="Se requiere permiso de asignación docente (EDITAR). Podés revisar el horario; para guardar cambios pedí acceso al administrador."
+                            description="Se requiere permiso de asignación docente (EDITAR). Puede revisar el horario; para guardar cambios, solicite acceso al administrador."
                         />
                     ) : null}
                     <Text type="secondary">

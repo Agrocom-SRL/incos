@@ -22,14 +22,14 @@ const AportesRedirect = () => {
         const result = await PagoAporteRepository.obtenerMisAportes();
         if (!activo) return;
         if (!result?.success) {
-          setEstado({ loading: false, cabeceraId: null, error: result?.error || 'No se pudo cargar tu aporte' });
+          setEstado({ loading: false, cabeceraId: null, error: result?.error || 'No se pudo cargar su aporte' });
           return;
         }
         const aportes = result?.data?.aportes ?? result?.aportes ?? [];
         const cabeceraId = aportes[0]?.id ?? null;
         setEstado({ loading: false, cabeceraId, error: null });
       } catch (err) {
-        if (activo) setEstado({ loading: false, cabeceraId: null, error: err?.message || 'No se pudo cargar tu aporte' });
+        if (activo) setEstado({ loading: false, cabeceraId: null, error: err?.message || 'No se pudo cargar su aporte' });
       }
     })();
     return () => {
@@ -43,17 +43,17 @@ const AportesRedirect = () => {
 
   if (estado.loading) {
     return (
-      <Spin spinning tip="Abriendo mis aportes…">
+      <Spin spinning tip="Abriendo sus aportes…">
         <div style={{ minHeight: 160 }} aria-hidden />
       </Spin>
     );
   }
 
   if (estado.error) {
-    return <Alert type="warning" showIcon title="No se pudieron abrir tus aportes" description={estado.error} />;
+    return <Alert type="warning" showIcon title="No se pudieron abrir sus aportes" description={estado.error} />;
   }
 
-  return <Empty description="Aún no tienes aportes registrados en la gestión vigente." />;
+  return <Empty description="Aún no tiene aportes registrados en la gestión vigente." />;
 };
 
 export default AportesRedirect;

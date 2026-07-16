@@ -68,7 +68,7 @@ export default function PerfilPage() {
         loading={loading}
         loadingTip="Cargando perfil…"
         showEmpty={!loading && !usuario}
-        emptyDescription="No se pudo cargar tu perfil"
+        emptyDescription="No se pudo cargar su perfil"
       >
         {usuario ? (
           esEstudiante ? (

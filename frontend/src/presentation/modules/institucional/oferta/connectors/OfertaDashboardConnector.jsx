@@ -22,7 +22,7 @@ const OfertaDocenteAsignacionesRedirect = () => {
   if (loading) {
     return (
       <Flex justify="center" align="center" style={{ minHeight: '40vh' }}>
-        <Spin size="large" tip="Identificando tu registro de docente…">
+        <Spin size="large" tip="Identificando su registro de docente…">
           <span aria-hidden style={{ display: 'block', minWidth: 200, minHeight: 60 }} />
         </Spin>
       </Flex>
@@ -34,8 +34,8 @@ const OfertaDocenteAsignacionesRedirect = () => {
       <Alert
         type="warning"
         showIcon
-        title="No se pudo identificar tu registro de docente"
-        description={error || 'Vuelve a intentarlo o contacta con administración.'}
+        title="No se pudo identificar su registro de docente"
+        description={error || 'Vuelva a intentarlo o contacte con administración.'}
       />
     );
   }

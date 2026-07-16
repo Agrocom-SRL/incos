@@ -72,7 +72,7 @@ const CentralizadorAnualPage = () => {
       } else {
         notification.error({
           title: 'No se pudo descargar el boletín',
-          description: result.error || 'Reintentá en unos segundos.',
+          description: result.error || 'Reintente en unos segundos.',
         });
       }
     },

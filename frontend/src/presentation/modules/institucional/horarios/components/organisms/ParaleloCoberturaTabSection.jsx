@@ -117,7 +117,7 @@ const ParaleloCoberturaTabSection = ({
         return (
             <Flex vertical gap={8} align="flex-start">
                 <Text type="secondary">
-                    No hay cursos de oferta para este paralelo. Completá la oferta académica antes de
+                    No hay cursos de oferta para este paralelo. Complete la oferta académica antes de
                     armar bloques horarios.
                 </Text>
                 {Number.isFinite(pgId) && pgId > 0 ? (

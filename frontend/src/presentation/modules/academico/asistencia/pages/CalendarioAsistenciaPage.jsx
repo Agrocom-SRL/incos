@@ -168,7 +168,7 @@ const CalendarioAsistenciaPage = () => {
           type="warning"
           showIcon
           title="Registro cerrado (solo lectura)"
-          description="La asistencia de este bimestre está cerrada. Reabrila desde la planilla para corregir."
+          description="La asistencia de este bimestre está cerrada. Reábrala desde la planilla para corregir."
         />
       ) : null}
 

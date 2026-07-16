@@ -57,8 +57,8 @@ const CronogramaActividadSelectorModal = ({
     >
       <Flex vertical gap="middle" style={{ width: '100%' }}>
         <Paragraph type="secondary" className="crono-selector__desc">
-          Busca y elige una actividad del catálogo maestro. Las que ya están programadas en esta
-          gestión muestran su fecha de inicio: puedes reutilizarlas si corresponde.
+          Busque y elija una actividad del catálogo maestro. Las que ya están programadas en esta
+          gestión muestran su fecha de inicio: puede reutilizarlas si corresponde.
         </Paragraph>
 
         <Flex gap="small" align="center" wrap>

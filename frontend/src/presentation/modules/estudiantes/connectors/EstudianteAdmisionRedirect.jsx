@@ -39,8 +39,8 @@ const EstudianteAdmisionRedirect = () => {
     <Alert
       type="warning"
       showIcon
-      title="No se pudieron abrir tus datos"
-      description={errorMisDatos || 'Tu usuario no está vinculado a un estudiante.'}
+      title="No se pudieron abrir sus datos"
+      description={errorMisDatos || 'Su usuario no está vinculado a un estudiante.'}
     />
   );
 };

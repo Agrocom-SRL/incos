@@ -69,7 +69,7 @@ export default function AgregarOverrideModal({
           title={
             <Flex vertical gap={6}>
               <span>
-                Vas a {TIPO_ETIQUETA[fixedValues.tipo] || fixedValues.tipo} este permiso para el usuario:{' '}
+                Va a {TIPO_ETIQUETA[fixedValues.tipo] || fixedValues.tipo} este permiso para el usuario:{' '}
                 <strong>{fixedValues.permisoLabel}</strong>&nbsp;
                 <span className={`seg-accion-pill seg-accion-pill--${capaDeAccion(fixedValues.accion)}`}>
                   {fixedValues.accion}

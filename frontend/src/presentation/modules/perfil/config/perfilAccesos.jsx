@@ -65,7 +65,7 @@ const accesosEstudiante = ({ resumenEstudiante }) => [
         resumenEstudiante?.codigo && `Cód. ${resumenEstudiante.codigo}`,
         resumenEstudiante?.ci && `C.I. ${resumenEstudiante.ci}`,
       ],
-      'Consulta tu ficha personal y académica.',
+      'Consulte su ficha personal y académica.',
     ),
     actionLabel: 'Ver mis datos',
     path: '/estudiantes/listar',
@@ -75,7 +75,7 @@ const accesosEstudiante = ({ resumenEstudiante }) => [
     icon: <SolutionOutlined />,
     ...ACCENT.info,
     title: 'Mi matrícula',
-    description: resumen([resumenEstudiante?.carrera], 'Revisa tu inscripción y materias.'),
+    description: resumen([resumenEstudiante?.carrera], 'Revise su inscripción y materias.'),
     actionLabel: 'Ver mi matrícula',
     path: '/matricula/listar',
   },
@@ -99,7 +99,7 @@ const accesosEstudiante = ({ resumenEstudiante }) => [
     description:
       resumenEstudiante?.promedioGeneral != null
         ? `Promedio general: ${resumenEstudiante.promedioGeneral}`
-        : 'Consulta tus calificaciones por bimestre y materia.',
+        : 'Consulte sus calificaciones por bimestre y materia.',
     actionLabel: 'Ver mi boletín',
     path: '/academico/mi-boletin',
   },
@@ -112,7 +112,7 @@ const accesosDocente = ({ resumenDocente }) => [
     icon: <IdcardOutlined />,
     ...ACCENT.primary,
     title: 'Mi ficha',
-    description: 'Consulta tus datos personales, formación y condición laboral.',
+    description: 'Consulte sus datos personales, formación y condición laboral.',
     actionLabel: 'Ver mi ficha',
     path: '/docentes/listar',
   },
@@ -138,7 +138,7 @@ const accesosDocente = ({ resumenDocente }) => [
     title: 'Asistencia',
     description: resumen(
       [resumenDocente?.bimestreNombre],
-      'Registra la asistencia diaria de tus cursos.',
+      'Registre la asistencia diaria de sus cursos.',
     ),
     actionLabel: 'Tomar asistencia',
     path: '/academico/asistencia',
@@ -148,7 +148,7 @@ const accesosDocente = ({ resumenDocente }) => [
     icon: <TeamOutlined />,
     ...ACCENT.success,
     title: 'Mis estudiantes',
-    description: 'Roster de estudiantes inscritos en tus cursos, por carrera y paralelo.',
+    description: 'Roster de estudiantes inscritos en sus cursos, por carrera y paralelo.',
     actionLabel: 'Ver mis estudiantes',
     path: '/matricula/listar',
   },
@@ -159,7 +159,7 @@ const accesosDocente = ({ resumenDocente }) => [
     title: 'Mi horario',
     description: resumen(
       [resumenDocente?.gestion],
-      'Tu grilla semanal de clases por curso y aula.',
+      'Su grilla semanal de clases por curso y aula.',
     ),
     actionLabel: 'Ver mi horario',
     path: '/docentes/mi-horario',

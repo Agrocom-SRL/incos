@@ -21,7 +21,7 @@ import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 
 const ARMADO_CONTEXT_HINT =
-    'Revisá la cobertura horaria, generá horarios por materia y afiná el plan semanal en la grilla. Docentes y oferta de cursos se gestionan en Institucional → Oferta académica.';
+    'Revise la cobertura horaria, genere horarios por materia y afine el plan semanal en la grilla. Docentes y oferta de cursos se gestionan en Institucional → Oferta académica.';
 
 const sectionCardProps = {
     style: {
@@ -186,7 +186,7 @@ const GestionHorariosArmadoPage = () => {
         <Result
             status="warning"
             title="Paralelo no indicado"
-            subTitle="Abrí esta pantalla desde el tablero de Gestión de horarios o usá un enlace con ?pg= (paralelo en gestión) en la URL."
+            subTitle="Abra esta pantalla desde el tablero de Gestión de horarios o use un enlace con ?pg= (paralelo en gestión) en la URL."
             extra={
                 <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
                     Volver al tablero

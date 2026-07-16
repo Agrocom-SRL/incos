@@ -9,7 +9,7 @@ const { Title, Text } = Typography;
 const DEFAULT_TITLE = 'Bienvenido al Instituto INCOS';
 const DEFAULT_DESCRIPTION =
     'Formamos profesionales competentes en Administración de Empresas, Contaduría y Sistemas ' +
-    'Informáticos. Únete a nuestra comunidad educativa y construye tu futuro profesional.';
+    'Informáticos. Únase a nuestra comunidad educativa y construya su futuro profesional.';
 
 const DashboardWelcomeBanner = ({
     onVerCarreras,

@@ -88,7 +88,7 @@ const CompromisoPagoModal = ({
       </div>
 
       <p style={{ margin: '0 0 12px', color: token.colorTextSecondary }}>
-        Elige en cuánto tiempo se compromete el estudiante a cancelar el resto:
+        Elija en cuánto tiempo se compromete el estudiante a cancelar el resto:
       </p>
 
       {/* Tarjetas de plazo (grilla responsive; sin estirar como el Segmented) */}

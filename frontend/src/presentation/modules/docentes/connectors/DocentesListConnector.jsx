@@ -19,15 +19,15 @@ const MiFichaDocenteRedirect = () => {
   const { docenteId, loading, error } = useMiDocenteId();
 
   if (loading) {
-    return <Spin spinning size="large" tip="Abriendo tu ficha…" style={{ width: '100%' }} />;
+    return <Spin spinning size="large" tip="Abriendo su ficha…" style={{ width: '100%' }} />;
   }
   if (error || !docenteId) {
     return (
       <Alert
         type="error"
         showIcon
-        title="No se pudo abrir tu ficha"
-        description={error || 'No se encontró tu registro de docente.'}
+        title="No se pudo abrir su ficha"
+        description={error || 'No se encontró su registro de docente.'}
         style={{ margin: 'var(--spacing-lg)' }}
       />
     );

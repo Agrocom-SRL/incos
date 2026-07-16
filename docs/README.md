@@ -26,6 +26,7 @@ Dos capas con distinto ciclo de vida: **permanente** (reglas + guías + referenc
 |---------|-----------|
 | `matriz-permisos-sistema.md` | Pantalla ↔ `permisos.codigo` ↔ API ↔ acción |
 | `flujo-operativo-gestion-academica.md` | Orden operativo CFG→INST→MAT→ACA; smoke E2E pantalla por pantalla |
+| `estilo-textos-usuario.md` | Catálogo de conversiones voseo/tuteo → "usted" formal (regla en `incos-ui-system` §4c) |
 
 **No hay copia de las reglas en `docs/`** — solo `.cursor/rules/`.
 

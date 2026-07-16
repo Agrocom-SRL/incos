@@ -121,7 +121,7 @@ const CentralizadorMatrizPage = () => {
     } else {
       notification.error({
         title: 'No se pudo exportar',
-        description: result.error || 'Reintentá en unos segundos.',
+        description: result.error || 'Reintente en unos segundos.',
       });
     }
   }, [

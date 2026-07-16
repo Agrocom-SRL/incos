@@ -74,7 +74,7 @@ const BimestreConsolidadoPage = () => {
     if (!result.success) {
       notification.error({
         title: 'No se pudo exportar',
-        description: result.error || 'Reintentá en unos segundos.',
+        description: result.error || 'Reintente en unos segundos.',
       });
     }
   }, [exportarRegistroPedagogico, cursoId, bimestreActivo, notification]);
@@ -114,7 +114,7 @@ const BimestreConsolidadoPage = () => {
     } catch (err) {
       notification.error({
         title: 'No se pudo reabrir el bimestre',
-        description: typeof err?.message === 'string' ? err.message : 'Reintentá en unos segundos.',
+        description: typeof err?.message === 'string' ? err.message : 'Reintente en unos segundos.',
       });
       setReabriendo(false);
     }
@@ -130,7 +130,7 @@ const BimestreConsolidadoPage = () => {
         content: (
           <span>
             El bimestre quedará <strong>abierto para edición</strong>: el docente podrá modificar
-            evaluaciones y notas del cuaderno de {bimestreTitulo}. Deberás cerrarlo nuevamente para
+            evaluaciones y notas del cuaderno de {bimestreTitulo}. Deberá cerrarlo nuevamente para
             consolidarlo.
           </span>
         ),
