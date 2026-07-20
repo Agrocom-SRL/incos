@@ -15,11 +15,13 @@ const InscribirParticipanteSeccionParticipante = ({
   participantes,
   loadingBusqueda,
   errorBusqueda,
+  searchText,
   searchAttempted,
   onBuscarParticipantes,
+  sugeridos,
+  loadingSugeridos,
   participanteSeleccionado,
   onSeleccionarParticipante,
-  onCambiarParticipante,
   disabled = false,
 }) => {
   if (modoParticipante === MODO_PARTICIPANTE.EXISTENTE) {
@@ -29,10 +31,12 @@ const InscribirParticipanteSeccionParticipante = ({
         loading={loadingBusqueda}
         error={errorBusqueda}
         onBuscar={onBuscarParticipantes}
+        searchText={searchText}
         searchAttempted={searchAttempted}
+        sugeridos={sugeridos}
+        loadingSugeridos={loadingSugeridos}
         participanteSeleccionado={participanteSeleccionado}
         onSeleccionar={onSeleccionarParticipante}
-        onCambiar={onCambiarParticipante}
       />
     );
   }

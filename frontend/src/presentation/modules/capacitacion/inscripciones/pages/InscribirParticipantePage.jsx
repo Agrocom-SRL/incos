@@ -16,9 +16,14 @@
  * nuevo, "Buscar participante" para volver) — ver `handleCrearNuevoParticipante`/
  * `handleVolverABusqueda` del hook. Este botón se inyecta en `wizardSteps[0]`
  * como `headerActions` aquí en la página (JSX no vive en el hook de estado).
+ *
+ * Elegir un participante de la tabla avanza directo al paso 2 (sin pasar por
+ * el botón "Siguiente"): usa la API imperativa de `WizardForm`
+ * (`wizardRef.current.goToStep`) porque seleccionar una fila YA es una
+ * selección válida — no hace falta repetir la validación del paso.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { Flex, Switch, Typography } from 'antd';
 import { ArrowLeftOutlined, SearchOutlined, UserAddOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
@@ -38,6 +43,7 @@ import InscribirParticipanteSeccionPago from '@capacitacion/inscripciones/compon
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/pagos/styles/pagos-registrar.css';
+import '../styles/inscribir-participante.css';
 
 const InscribirParticipantePage = () => {
   const {
@@ -55,11 +61,13 @@ const InscribirParticipantePage = () => {
     participantes,
     loadingBusqueda,
     errorBusqueda,
+    searchText,
     searchAttempted,
     buscarParticipantes,
+    sugeridos,
+    loadingSugeridos,
     participanteSeleccionado,
     handleSeleccionarParticipante,
-    handleCambiarParticipante,
     cursos,
     loadingCursos,
     errorCursos,
@@ -78,6 +86,17 @@ const InscribirParticipantePage = () => {
     handleFinish,
     inscribiendo,
   } = useInscribirParticipantePage();
+
+  const wizardRef = useRef(null);
+
+  /** Seleccionar de la tabla ya es una elección válida: avanza directo al paso 2. */
+  const handleSeleccionarYAvanzar = useCallback(
+    (participante) => {
+      handleSeleccionarParticipante(participante);
+      wizardRef.current?.goToStep(1);
+    },
+    [handleSeleccionarParticipante],
+  );
 
   const participanteHeaderActions = useMemo(() => {
     if (modoParticipante === MODO_PARTICIPANTE.NUEVO) {
@@ -120,11 +139,13 @@ const InscribirParticipantePage = () => {
             participantes={participantes}
             loadingBusqueda={loadingBusqueda}
             errorBusqueda={errorBusqueda}
+            searchText={searchText}
             searchAttempted={searchAttempted}
             onBuscarParticipantes={buscarParticipantes}
+            sugeridos={sugeridos}
+            loadingSugeridos={loadingSugeridos}
             participanteSeleccionado={participanteSeleccionado}
-            onSeleccionarParticipante={handleSeleccionarParticipante}
-            onCambiarParticipante={handleCambiarParticipante}
+            onSeleccionarParticipante={handleSeleccionarYAvanzar}
             disabled={inscribiendo}
           />
         );
@@ -176,11 +197,13 @@ const InscribirParticipantePage = () => {
       participantes,
       loadingBusqueda,
       errorBusqueda,
+      searchText,
       searchAttempted,
       buscarParticipantes,
+      sugeridos,
+      loadingSugeridos,
       participanteSeleccionado,
-      handleSeleccionarParticipante,
-      handleCambiarParticipante,
+      handleSeleccionarYAvanzar,
       inscribiendo,
       cursos,
       loadingCursos,
@@ -222,6 +245,7 @@ const InscribirParticipantePage = () => {
         <DashboardPageShell>
           <MainContent>
             <WizardForm
+              ref={wizardRef}
               variant="tabs"
               steps={stepsWithHeaderActions}
               form={form}

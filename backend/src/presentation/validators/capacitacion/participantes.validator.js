@@ -20,6 +20,10 @@ export const listParticipantesValidator = [
     .optional()
     .isIn(['true', 'false', '0', '1'])
     .withMessage('incluirInactivos debe ser true o false'),
+  query('sinInscripcionActiva')
+    .optional()
+    .isIn(['true', 'false', '0', '1'])
+    .withMessage('sinInscripcionActiva debe ser true o false'),
 ];
 
 /**

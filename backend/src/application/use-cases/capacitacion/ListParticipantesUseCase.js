@@ -37,7 +37,9 @@ export class ListParticipantesUseCase extends BaseListUseCase {
   }
 
   /**
-   * Filtros específicos: ci (búsqueda exacta) e incluirInactivos.
+   * Filtros específicos: ci (búsqueda exacta), incluirInactivos y
+   * sinInscripcionActiva (paso 1 del wizard "Inscribir participante": solo
+   * candidatos sin inscripción vigente en `capacitacion_inscritos`).
    * @param {Object} queryParams
    * @param {Object} baseFilters
    * @returns {Object}
@@ -52,6 +54,11 @@ export class ListParticipantesUseCase extends BaseListUseCase {
     if (queryParams.incluirInactivos !== undefined) {
       filters.includeInactive =
         queryParams.incluirInactivos === 'true' || queryParams.incluirInactivos === true;
+    }
+
+    if (queryParams.sinInscripcionActiva !== undefined) {
+      filters.sinInscripcionActiva =
+        queryParams.sinInscripcionActiva === 'true' || queryParams.sinInscripcionActiva === true;
     }
 
     return filters;

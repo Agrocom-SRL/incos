@@ -87,7 +87,7 @@ const CursoCapacitacionDetail = () => {
             <>
               <CursoCapacitacionFichaHeader curso={curso} />
               <div className="sd-tabs-shell">
-                <Tabs defaultActiveKey="informacion" items={tabItems} />
+                <Tabs defaultActiveKey="informacion" items={tabItems} className="sd-tabs" />
               </div>
             </>
           )}

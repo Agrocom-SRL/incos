@@ -15,7 +15,7 @@
  * perder los campos del participante nuevo, capturados en el paso 1.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useInscribirParticipanteContext } from '@application-capacitacion/inscripciones/hooks/context/useInscribirParticipanteContext';
@@ -47,7 +47,9 @@ export const useInscribirParticipantePage = () => {
     loadingBusqueda,
     errorBusqueda,
     buscarParticipantes,
-    limpiarBusqueda,
+    sugeridos,
+    loadingSugeridos,
+    cargarSugeridos,
     cursos,
     loadingCursos,
     errorCursos,
@@ -71,6 +73,15 @@ export const useInscribirParticipantePage = () => {
 
   const returnListPath = location.state?.returnListPath || INSCRIPCIONES_CAP_LIST_PATH;
   const menuSidebarKey = location.state?.menuSidebarKey ?? CAP_INSCRIPCIONES_MENU_KEY;
+
+  /**
+   * Landing del paso 1: se dispara una sola vez al montar el hook (el wizard
+   * arranca siempre en modo búsqueda/EXISTENTE), no en cada cambio de modo.
+   */
+  useEffect(() => {
+    cargarSugeridos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const breadcrumbItems = useMemo(
     () => [
@@ -99,12 +110,6 @@ export const useInscribirParticipantePage = () => {
     if (!participante?.id) return;
     setParticipanteSeleccionado(participante);
   }, []);
-
-  const handleCambiarParticipante = useCallback(() => {
-    setParticipanteSeleccionado(null);
-    setSearchText('');
-    limpiarBusqueda();
-  }, [limpiarBusqueda]);
 
   /**
    * Sin tabs: el paso "Participante" arranca siempre en búsqueda. Si la
@@ -368,11 +373,13 @@ export const useInscribirParticipantePage = () => {
     participantes,
     loadingBusqueda,
     errorBusqueda,
+    searchText,
     searchAttempted: searchText.length >= 2,
     buscarParticipantes: handleBuscarParticipantes,
+    sugeridos,
+    loadingSugeridos,
     participanteSeleccionado,
     handleSeleccionarParticipante,
-    handleCambiarParticipante,
     // Paso 2: curso
     cursos,
     loadingCursos,

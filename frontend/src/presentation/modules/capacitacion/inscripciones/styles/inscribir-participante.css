@@ -1,0 +1,12 @@
+/**
+ * Fila resaltada del selector de participante (paso 1, Inscribir participante):
+ * al volver del paso 2 la tabla sigue mostrando la selección hecha, en vez de
+ * una tarjeta de resumen aparte. Mismos tokens que `cfg-materia-pill--primary`.
+ */
+.ant-table-tbody > tr.participante-selector__row--selected > td {
+  background: var(--color-primary-bg, #ecfdf5);
+}
+
+.ant-table-tbody > tr.participante-selector__row--selected:hover > td {
+  background: var(--color-primary-bg, #ecfdf5);
+}
