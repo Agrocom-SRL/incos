@@ -29,6 +29,7 @@ const CursoCapacitacionFormPage = ({ mode = 'create' }) => {
     submitLoading,
     error,
     formSections,
+    horarioTurnoById,
     handleVolver,
     handleSubmit,
     isInvalidEditId,
@@ -92,6 +93,7 @@ const CursoCapacitacionFormPage = ({ mode = 'create' }) => {
                 <CursoCapacitacionFormSections
                   form={form}
                   formSections={formSections}
+                  horarioTurnoById={horarioTurnoById}
                   footer={saveButton}
                 />
               </Form>

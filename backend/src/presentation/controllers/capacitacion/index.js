@@ -4,6 +4,7 @@
 
 // Cursos de capacitación
 export { ListCursosCapacitacionController } from './list-cursos-capacitacion.controller.js';
+export { ListHorariosDisponiblesCapacitacionController } from './list-horarios-disponibles-capacitacion.controller.js';
 export { GetCursoCapacitacionByIdController } from './get-curso-capacitacion-by-id.controller.js';
 export { CreateCursoCapacitacionController } from './create-curso-capacitacion.controller.js';
 export { UpdateCursoCapacitacionController } from './update-curso-capacitacion.controller.js';

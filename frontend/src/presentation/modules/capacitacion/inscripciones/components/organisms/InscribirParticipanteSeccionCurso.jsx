@@ -42,7 +42,6 @@ const InscribirParticipanteSeccionCurso = ({
         <Empty description="No hay cursos de capacitación disponibles." />
       ) : (
         <Select
-          size="large"
           style={{ width: '100%' }}
           loading={loadingCursos}
           placeholder="Seleccione el curso"

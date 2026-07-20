@@ -4,6 +4,7 @@ import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { idValidator } from '../validators/common/index.js';
 import {
     listCursosCapacitacionValidator,
+    listHorariosDisponiblesCapacitacionValidator,
     createCursoCapacitacionValidator,
     updateCursoCapacitacionValidator,
     setEstadoCatalogoValidator,
@@ -56,6 +57,21 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
         createCursoCapacitacionValidator,
         validateRequest,
         (req, res, next) => controllers.createCursoCapacitacionController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/cursos-capacitacion/horarios-disponibles?aulaId=X&excludeCursoId=Y
+     * Bloques `horarios` (tipo_horario='CLASES') con flag `ocupado` por aula
+     * (choque con paralelos académicos u otros cursos de capacitación).
+     * Ruta estática: va ANTES de GET /:id para no chocar con el parámetro.
+     */
+    router.get(
+        '/horarios-disponibles',
+        ...listar,
+        listHorariosDisponiblesCapacitacionValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.listHorariosDisponiblesCapacitacionController.handle(req, res, next)
     );
 
     // GET /:id - Ficha del curso (vista 155 + bloques de la vista 154)

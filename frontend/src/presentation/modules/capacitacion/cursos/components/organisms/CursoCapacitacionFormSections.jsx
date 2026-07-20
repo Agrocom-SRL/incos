@@ -4,10 +4,32 @@
  * `CfgFormWorkspace`, mismo patrón que `PlanFormSections`): "Datos del curso"
  * da título a la tarjeta (primer nivel) y "Horario y aula" queda como sección
  * interna (segundo nivel) debajo.
+ *
+ * El campo `horarioIds` (multi-select) recibe aquí su `tagRender` (JSX) para
+ * pintar los tags como pill de color en vez del tag gris por defecto — el
+ * hook de estado solo declara datos (`fields[]`/`horarioTurnoById`), no JSX.
  */
 import { CfgFormWorkspace } from '@organisms';
+import BloqueHorarioTag from '../atoms/BloqueHorarioTag';
 
-const CursoCapacitacionFormSections = ({ form, formSections, footer = null }) => {
+const withHorarioTagRender = (fields = [], horarioTurnoById = {}) =>
+  fields.map((field) =>
+    field.name === 'horarioIds'
+      ? {
+          ...field,
+          tagRender: (tagProps) => (
+            <BloqueHorarioTag {...tagProps} turno={horarioTurnoById[tagProps.value]} />
+          ),
+        }
+      : field,
+  );
+
+const CursoCapacitacionFormSections = ({
+  form,
+  formSections,
+  horarioTurnoById = {},
+  footer = null,
+}) => {
   const { datosCurso, horarioAula } = formSections ?? {};
 
   if (!datosCurso?.fields?.length) {
@@ -31,7 +53,7 @@ const CursoCapacitacionFormSections = ({ form, formSections, footer = null }) =>
                 key: 'horarioAula',
                 title: horarioAula.title,
                 description: horarioAula.description,
-                fields: horarioAula.fields,
+                fields: withHorarioTagRender(horarioAula.fields, horarioTurnoById),
               },
             ]
           : []),

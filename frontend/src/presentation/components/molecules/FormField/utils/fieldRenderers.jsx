@@ -170,6 +170,7 @@ const renderSelect = (field, disabled, readOnly, selectOptions, form) => {
       showSearch={field.showSearch}
       mode={field.mode}
       maxCount={field.maxCount}
+      tagRender={field.tagRender}
     />
   );
 };

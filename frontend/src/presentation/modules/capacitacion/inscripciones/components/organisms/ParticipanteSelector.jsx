@@ -48,7 +48,6 @@ const ParticipanteSelector = ({
   return (
     <Flex vertical gap="middle" style={{ width: '100%' }}>
       <Input
-        size="large"
         allowClear
         prefix={<SearchOutlined />}
         placeholder="Buscar por CI, nombre o celular (mín. 2 caracteres)…"

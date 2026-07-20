@@ -4,9 +4,9 @@ import { IRepository } from './IRepository.js';
  * Interfaz de Repositorio CRUD: ICursoCapacitacionRepository
  *
  * Cursos de capacitación (tabla raíz `capacitaciones`, módulo CAP) y su
- * junction de bloques horarios (`capacitacion_horarios` → catálogo `horarios`
- * con tipo_horario='CAPACITACION'). El aula vive en `capacitaciones.aula_id`
- * (igual que `paralelos_gestion.aula_id`).
+ * junction de bloques horarios (`capacitacion_horarios` → catálogo `horarios`,
+ * reutiliza los mismos bloques tipo_horario='CLASES' del sistema académico).
+ * El aula vive en `capacitaciones.aula_id` (igual que `paralelos_gestion.aula_id`).
  *
  * Arquetipo A (CRUD): EXTIENDE IRepository. La junction no tiene repositorio
  * propio: sus operaciones (leer/reemplazar bloques de UN curso) son parte del
@@ -35,5 +35,19 @@ export class ICursoCapacitacionRepository extends IRepository {
    */
   async replaceHorarios(_capacitacionId, _horarioIds, _userId = null, _options = {}) {
     throw new Error('Method replaceHorarios() must be implemented');
+  }
+
+  /**
+   * Los bloques `horarios` (tipo_horario='CLASES') con flag `ocupado`
+   * calculado para un aula (choque con paralelos académicos u otros cursos
+   * de capacitación en esa misma aula).
+   *
+   * @param {Object} params
+   * @param {number} params.aulaId
+   * @param {number|null} [params.excludeCursoId]
+   * @returns {Promise<Array<Object>>}
+   */
+  async listHorariosDisponibles(_params) {
+    throw new Error('Method listHorariosDisponibles() must be implemented');
   }
 }

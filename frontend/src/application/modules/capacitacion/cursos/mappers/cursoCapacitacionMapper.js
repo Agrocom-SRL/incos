@@ -111,6 +111,36 @@ export const mapCursoCapacitacionDetail = (raw) => {
 };
 
 /**
+ * Bloque de disponibilidad de horario (GET /cursos-capacitacion/horarios-disponibles).
+ * `turno` (MAÑANA/TARDE/NOCHE) es el real de la vista de `horarios`, no un
+ * catálogo local; `ocupado` deshabilita el bloque en el picker sin ocultarlo.
+ * @param {Object} raw
+ * @returns {Object|null}
+ */
+const mapHorarioDisponible = (raw) => {
+  if (!raw || typeof raw !== 'object' || raw.horarioId == null) return null;
+  const dia = cleanText(raw.dia);
+  const horaInicio = cleanText(raw.horaInicio)?.slice(0, 5) ?? null;
+  const horaFin = cleanText(raw.horaFin)?.slice(0, 5) ?? null;
+  return {
+    horarioId: Number(raw.horarioId),
+    dia,
+    horaInicio,
+    horaFin,
+    turno: cleanText(raw.turno),
+    numeroBloque: raw.numeroBloque != null ? toNumber(raw.numeroBloque) : null,
+    ocupado: raw.ocupado === true,
+    bloqueLabel:
+      [dia, horaInicio && horaFin ? `${horaInicio}-${horaFin}` : null].filter(Boolean).join(' ') ||
+      `Bloque ${raw.horarioId}`,
+  };
+};
+
+/** Mapea la lista de disponibilidad (dataKey `horarios`). */
+export const mapHorariosDisponibles = (rawList) =>
+  Array.isArray(rawList) ? rawList.map(mapHorarioDisponible).filter(Boolean) : [];
+
+/**
  * Valores del formulario (AntD Form) → payload del backend
  * (`createCursoCapacitacionValidator` / `updateCursoCapacitacionValidator`).
  * @param {Object} values
@@ -128,15 +158,26 @@ export const mapFormValuesToCursoPayload = (values = {}) => ({
   horarioIds: Array.isArray(values.horarioIds) ? values.horarioIds.map(Number) : [],
 });
 
-/** Ficha → valores iniciales del formulario de edición. */
+/**
+ * Ficha → valores iniciales del formulario (alta y edición).
+ *
+ * `fechaInicio`/`fechaFin` en alta (`curso` null) se precargan con hoy/mañana
+ * como valor REAL del `Form` (no solo visual): `FieldDatePicker` muestra hoy
+ * como `defaultValue` no controlado cuando el campo no tiene `minAge` ni
+ * `defaultValue` propio (`useFieldDatePicker.dayjsDefaultValue`), pero eso
+ * nunca queda registrado en el store hasta que el usuario interactúa — por
+ * eso `validateFields()` seguía marcando el campo como vacío aunque se viera
+ * "20-07-2026". Setear el valor aquí (vía `form.setFieldsValue` en el hook de
+ * pantalla) lo deja realmente cargado.
+ */
 export const mapCursoToFormValues = (curso) => ({
   titulo: curso?.titulo ?? '',
   descripcion: curso?.descripcion ?? '',
   costo: curso?.costo ?? 0,
   cupoMaximo: curso?.cupoMaximo ?? 30,
   aulaId: curso?.aulaId ?? undefined,
-  fechaInicio: curso?.fechaInicio ? dayjs(curso.fechaInicio) : undefined,
-  fechaFin: curso?.fechaFin ? dayjs(curso.fechaFin) : undefined,
+  fechaInicio: curso?.fechaInicio ? dayjs(curso.fechaInicio) : dayjs(),
+  fechaFin: curso?.fechaFin ? dayjs(curso.fechaFin) : dayjs().add(1, 'day'),
   estado: curso?.estado ?? 'PROPUESTO',
   horarioIds: Array.isArray(curso?.horarioIds) ? curso.horarioIds : [],
 });

@@ -16,6 +16,7 @@ export const CAPACITACION_TOKENS = {
 
   // Use Cases — Cursos de capacitación
   listCursosCapacitacionUseCase: 'capacitacion.listCursosCapacitacionUseCase',
+  listHorariosDisponiblesCapacitacionUseCase: 'capacitacion.listHorariosDisponiblesCapacitacionUseCase',
   getCursoCapacitacionByIdUseCase: 'capacitacion.getCursoCapacitacionByIdUseCase',
   createCursoCapacitacionUseCase: 'capacitacion.createCursoCapacitacionUseCase',
   updateCursoCapacitacionUseCase: 'capacitacion.updateCursoCapacitacionUseCase',
@@ -37,6 +38,8 @@ export const CAPACITACION_TOKENS = {
 
   // Controllers — Cursos de capacitación
   listCursosCapacitacionController: 'capacitacion.listCursosCapacitacionController',
+  listHorariosDisponiblesCapacitacionController:
+    'capacitacion.listHorariosDisponiblesCapacitacionController',
   getCursoCapacitacionByIdController: 'capacitacion.getCursoCapacitacionByIdController',
   createCursoCapacitacionController: 'capacitacion.createCursoCapacitacionController',
   updateCursoCapacitacionController: 'capacitacion.updateCursoCapacitacionController',

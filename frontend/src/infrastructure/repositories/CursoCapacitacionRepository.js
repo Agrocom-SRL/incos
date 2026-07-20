@@ -101,6 +101,24 @@ export class CursoCapacitacionRepository extends ICursoCapacitacionRepository {
   }
 
   /**
+   * Bloques `horarios` (tipo_horario='CLASES') disponibles para un aula, con
+   * `ocupado` si ya los usa un paralelo académico u otro curso de capacitación
+   * en esa misma aula. `excludeCursoId` (modo edición) evita marcar como
+   * ocupados los bloques ya elegidos por el propio curso.
+   * GET /v1/cursos-capacitacion/horarios-disponibles?aulaId=&excludeCursoId=
+   */
+  async obtenerHorariosDisponibles({ aulaId, excludeCursoId } = {}) {
+    try {
+      const response = await apiClient.get(
+        CURSOS_CAPACITACION_ENDPOINTS.HORARIOS_DISPONIBLES(aulaId, excludeCursoId),
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener los horarios disponibles');
+    }
+  }
+
+  /**
    * Elimina (soft delete) un curso; el backend bloquea si tiene inscritos vigentes.
    * DELETE /v1/cursos-capacitacion/:id
    */

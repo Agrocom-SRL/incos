@@ -17,7 +17,6 @@ import {
   mapFormValuesToCursoPayload,
 } from '@application-capacitacion/cursos/mappers/cursoCapacitacionMapper';
 import { ESTADO_CURSO_OPTIONS } from '@application-capacitacion/utils/capacitacionPills';
-import { BLOQUES_HORARIO_OPTIONS } from '@application-capacitacion/cursos/config/bloquesHorarioCapacitacion';
 import {
   CURSOS_CAP_LIST_PATH,
   CAP_CURSOS_MENU_KEY,
@@ -25,7 +24,14 @@ import {
 } from '@application-capacitacion/config/paths';
 
 /** Secciones declarativas del formulario (CfgFormWorkspace). */
-const createCursoFormSections = ({ aulas, aulasDisponible, loadingAulas }) => ({
+const createCursoFormSections = ({
+  aulas,
+  aulasDisponible,
+  loadingAulas,
+  horarioOptions,
+  loadingHorarios,
+  aulaSeleccionada,
+}) => ({
   datosCurso: {
     title: 'Datos del curso',
     description:
@@ -110,17 +116,8 @@ const createCursoFormSections = ({ aulas, aulasDisponible, loadingAulas }) => ({
   horarioAula: {
     title: 'Horario y aula',
     description:
-      'Bloques del catálogo de capacitación (tarde, noche y sábado). El aula es opcional y se comparte con la oferta formal.',
+      'El aula determina qué bloques de horario están disponibles. Seleccione primero el aula; los bloques ya ocupados por un paralelo académico u otro curso quedan deshabilitados. El aula es opcional y se comparte con la oferta formal.',
     fields: [
-      {
-        name: 'horarioIds',
-        label: 'Bloques de horario',
-        type: 'select',
-        mode: 'multiple',
-        span: 12,
-        options: BLOQUES_HORARIO_OPTIONS,
-        placeholder: 'Seleccione uno o más bloques',
-      },
       {
         name: 'aulaId',
         label: 'Aula (opcional)',
@@ -133,6 +130,19 @@ const createCursoFormSections = ({ aulas, aulasDisponible, loadingAulas }) => ({
         placeholder: aulasDisponible
           ? 'Seleccione un aula'
           : 'Catálogo de aulas no disponible para su rol',
+      },
+      {
+        name: 'horarioIds',
+        label: 'Bloques de horario',
+        type: 'select',
+        mode: 'multiple',
+        span: 12,
+        options: horarioOptions,
+        loading: loadingHorarios,
+        disabled: !aulaSeleccionada,
+        placeholder: aulaSeleccionada
+          ? 'Seleccione uno o más bloques'
+          : 'Seleccione primero un aula',
       },
     ],
   },
@@ -155,9 +165,47 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     aulas,
     loadingAulas,
     aulasDisponible,
+    horariosDisponibles,
+    loadingHorarios,
+    cargarHorariosDisponibles,
   } = useCursoCapacitacionFormContext();
 
   const [error, setError] = useState(null);
+
+  // El aula gobierna la disponibilidad de bloques de horario: se recarga al
+  // elegirla/cambiarla y también al montar si ya viene precargada (edición).
+  const aulaId = Form.useWatch('aulaId', form);
+  useEffect(() => {
+    cargarHorariosDisponibles(aulaId, isEditMode ? cursoId : undefined);
+  }, [aulaId, isEditMode, cursoId, cargarHorariosDisponibles]);
+
+  const aulaSeleccionada = aulaId != null && aulaId !== '';
+
+  const horarioOptions = useMemo(() => {
+    const porTurno = new Map();
+    for (const h of horariosDisponibles) {
+      const turno = h.turno || 'Sin turno';
+      if (!porTurno.has(turno)) porTurno.set(turno, []);
+      porTurno.get(turno).push({
+        value: h.horarioId,
+        label: h.ocupado ? `${h.bloqueLabel} · Ocupado` : h.bloqueLabel,
+        disabled: h.ocupado,
+      });
+    }
+    return Array.from(porTurno.entries()).map(([turno, options]) => ({
+      label: turno,
+      title: turno,
+      options,
+    }));
+  }, [horariosDisponibles]);
+
+  const horarioTurnoById = useMemo(() => {
+    const map = {};
+    for (const h of horariosDisponibles) {
+      map[h.horarioId] = h.turno;
+    }
+    return map;
+  }, [horariosDisponibles]);
 
   const pageTitle = isEditMode ? 'Editar curso de capacitación' : 'Nuevo curso de capacitación';
   const permisoAccion = isEditMode ? 'EDITAR' : 'CREAR';
@@ -235,8 +283,16 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
   ]);
 
   const formSections = useMemo(
-    () => createCursoFormSections({ aulas, aulasDisponible, loadingAulas }),
-    [aulas, aulasDisponible, loadingAulas],
+    () =>
+      createCursoFormSections({
+        aulas,
+        aulasDisponible,
+        loadingAulas,
+        horarioOptions,
+        loadingHorarios,
+        aulaSeleccionada,
+      }),
+    [aulas, aulasDisponible, loadingAulas, horarioOptions, loadingHorarios, aulaSeleccionada],
   );
 
   return {
@@ -249,6 +305,7 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     submitLoading: saving,
     error: error || (isEditMode ? errorCurso : null),
     formSections,
+    horarioTurnoById,
     handleVolver,
     handleSubmit,
     isInvalidEditId,

@@ -21,4 +21,14 @@ export class ICursoCapacitacionRepository extends IBaseRepository {
   async cambiarEstado(_id, _activo) {
     throw new Error('Método cambiarEstado debe ser implementado');
   }
+
+  /**
+   * Bloques `horarios` (tipo_horario='CLASES') disponibles para un aula, con
+   * `ocupado` por paralelo académico u otro curso de capacitación.
+   * @param {{aulaId: string|number, excludeCursoId?: string|number}} _params
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerHorariosDisponibles(_params) {
+    throw new Error('Método obtenerHorariosDisponibles debe ser implementado');
+  }
 }

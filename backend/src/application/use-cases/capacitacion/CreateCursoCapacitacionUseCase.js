@@ -12,7 +12,9 @@ import { CursoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
  *
  * Crea un curso de capacitación y su junction de bloques horarios
  * (`capacitacion_horarios`) en UNA transacción. Valida aula (catálogo `aulas`)
- * y bloques (catálogo `horarios`, tipo_horario='CAPACITACION').
+ * y bloques (catálogo `horarios`, reutiliza los mismos bloques
+ * tipo_horario='CLASES' que usa el sistema académico; el frontend ofrece
+ * solo los bloques libres del aula elegida vía GET /horarios-disponibles).
  */
 export class CreateCursoCapacitacionUseCase {
   /**
@@ -132,7 +134,9 @@ export class CreateCursoCapacitacionUseCase {
   }
 
   /**
-   * Valida que cada bloque exista y sea del tipo CAPACITACION.
+   * Valida que cada bloque exista en el catálogo `horarios`. Los bloques de
+   * capacitación reutilizan los mismos bloques `tipo_horario='CLASES'` que
+   * usa el sistema académico (el picker del frontend solo ofrece esos).
    * @private
    */
   async _validateHorarios(horarioIds) {
@@ -140,14 +144,6 @@ export class CreateCursoCapacitacionUseCase {
       horarioIds.map(async (horarioId) => {
         const horario = await this.scheduleRepository.findById(horarioId);
         if (!horario) throw new NotFoundError(`horario con ID ${horarioId}`);
-
-        const plain = horario.toPlainObject ? horario.toPlainObject() : horario;
-        const tipo = plain.scheduleType ?? plain.tipoHorario ?? null;
-        if (tipo && tipo !== 'CAPACITACION') {
-          throw new ValidationError(
-            `El horario ${horarioId} no es de tipo CAPACITACION (tipo actual: ${tipo})`
-          );
-        }
       })
     );
   }

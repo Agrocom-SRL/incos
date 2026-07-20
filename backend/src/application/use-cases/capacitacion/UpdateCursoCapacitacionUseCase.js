@@ -137,7 +137,9 @@ export class UpdateCursoCapacitacionUseCase {
   }
 
   /**
-   * Valida que cada bloque exista y sea del tipo CAPACITACION.
+   * Valida que cada bloque exista en el catálogo `horarios`. Los bloques de
+   * capacitación reutilizan los mismos bloques `tipo_horario='CLASES'` que
+   * usa el sistema académico (el picker del frontend solo ofrece esos).
    * @private
    */
   async _validateHorarios(horarioIds) {
@@ -145,14 +147,6 @@ export class UpdateCursoCapacitacionUseCase {
       horarioIds.map(async (horarioId) => {
         const horario = await this.scheduleRepository.findById(horarioId);
         if (!horario) throw new NotFoundError(`horario con ID ${horarioId}`);
-
-        const plain = horario.toPlainObject ? horario.toPlainObject() : horario;
-        const tipo = plain.scheduleType ?? plain.tipoHorario ?? null;
-        if (tipo && tipo !== 'CAPACITACION') {
-          throw new ValidationError(
-            `El horario ${horarioId} no es de tipo CAPACITACION (tipo actual: ${tipo})`
-          );
-        }
       })
     );
   }

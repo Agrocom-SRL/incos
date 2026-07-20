@@ -21,6 +21,18 @@ export const listCursosCapacitacionValidator = [
     .withMessage('incluirInactivos debe ser true o false'),
 ];
 
+export const listHorariosDisponiblesCapacitacionValidator = [
+  query('aulaId')
+    .notEmpty()
+    .withMessage('aulaId es requerido')
+    .isInt({ min: 1 })
+    .withMessage('aulaId debe ser un entero positivo'),
+  query('excludeCursoId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('excludeCursoId debe ser un entero positivo'),
+];
+
 export const createCursoCapacitacionValidator = [
   body('titulo')
     .notEmpty()
