@@ -6,7 +6,7 @@
  * NOMBRES vía buildFullName del mapper) + InfoLinesCell + TableActions.
  *
  * El recurso no tiene ficha propia ni ELIMINAR (seed 65): la única acción de
- * fila es EDITAR (abre el modal de la pantalla). Orden en cliente (loadAll).
+ * fila es EDITAR (navega a `/participantes/:id/editar`). Orden en cliente (loadAll).
  */
 
 import { CalendarOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';

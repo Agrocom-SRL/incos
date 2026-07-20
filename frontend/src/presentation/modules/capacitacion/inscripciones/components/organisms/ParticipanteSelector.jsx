@@ -17,6 +17,7 @@ const ParticipanteSelector = ({
   loading = false,
   error = null,
   onBuscar,
+  searchAttempted = false,
   participanteSeleccionado,
   onSeleccionar,
   onCambiar,
@@ -65,7 +66,13 @@ const ParticipanteSelector = ({
 
       <Spin spinning={loading}>
         {participantes.length === 0 && !loading ? (
-          <Empty description="Escriba para buscar un participante registrado" />
+          <Empty
+            description={
+              searchAttempted
+                ? 'No se encontraron participantes con esos datos. Use «Crear nuevo participante» arriba para registrarlo.'
+                : 'Escriba para buscar un participante registrado'
+            }
+          />
         ) : (
           <div className="fin-pago-reg-resultados">
             {participantes.map((participante) => (

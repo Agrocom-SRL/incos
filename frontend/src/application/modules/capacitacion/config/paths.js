@@ -10,11 +10,15 @@ export const cursoCapEditarPath = (id) => `${CAPACITACION_BASE}/cursos/${id}/edi
 
 /** Participantes */
 export const PARTICIPANTES_CAP_LIST_PATH = `${CAPACITACION_BASE}/participantes`;
+export const participanteCapRegistrarPath = `${CAPACITACION_BASE}/participantes/nuevo`;
+export const participanteCapEditarPath = (id) => `${CAPACITACION_BASE}/participantes/${id}/editar`;
 
 /** Inscripciones y pagos */
 export const INSCRIPCIONES_CAP_LIST_PATH = `${CAPACITACION_BASE}/inscripciones`;
 export const inscripcionCapInscribirPath = `${CAPACITACION_BASE}/inscripciones/inscribir`;
 export const inscripcionCapDetallePath = (id) => `${CAPACITACION_BASE}/inscripciones/${id}`;
+export const inscripcionCapRegistrarPagoPath = (id) =>
+  `${CAPACITACION_BASE}/inscripciones/${id}/pagos/registrar`;
 
 /** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */
 export const CAP_CURSOS_MENU_KEY = 'CAP-CURSOS';

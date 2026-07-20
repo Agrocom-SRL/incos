@@ -1,7 +1,8 @@
 /**
  * ABM de curso de capacitación (alta y edición) — workspace alineado a CFG
- * Académico. Gemelo de `BancoFormPage` (Finanzas): `CfgFormWorkspace` con
- * secciones declarativas y botón guardar en el footer de la última sección.
+ * Académico. Gemelo de `PlanFormPage`: UNA tarjeta con secciones internas
+ * (`CursoCapacitacionFormSections`, prop `sections` de `CfgFormWorkspace`),
+ * botón guardar en el footer de la tarjeta.
  *
  * Página "dumb": la orquestación vive en `useCursoCapacitacionFormPage`.
  */
@@ -11,10 +12,10 @@ import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
-import { CfgFormWorkspace } from '@organisms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useCursoCapacitacionFormPage } from '@application-capacitacion/cursos/hooks/state/useCursoCapacitacionFormPage';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
+import CursoCapacitacionFormSections from '../components/organisms/CursoCapacitacionFormSections';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -32,8 +33,6 @@ const CursoCapacitacionFormPage = ({ mode = 'create' }) => {
     handleSubmit,
     isInvalidEditId,
   } = useCursoCapacitacionFormPage(mode);
-
-  const { datosCurso, horarioAula } = formSections ?? {};
 
   const saveButton = (
     <ActionButton
@@ -90,23 +89,11 @@ const CursoCapacitacionFormPage = ({ mode = 'create' }) => {
                 className="cfg-academico-form"
                 disabled={loading || submitLoading}
               >
-                {datosCurso?.fields?.length ? (
-                  <CfgFormWorkspace
-                    title={datosCurso.title}
-                    description={datosCurso.description}
-                    fields={datosCurso.fields}
-                    form={form}
-                  />
-                ) : null}
-                {horarioAula?.fields?.length ? (
-                  <CfgFormWorkspace
-                    title={horarioAula.title}
-                    description={horarioAula.description}
-                    fields={horarioAula.fields}
-                    form={form}
-                    footer={saveButton}
-                  />
-                ) : null}
+                <CursoCapacitacionFormSections
+                  form={form}
+                  formSections={formSections}
+                  footer={saveButton}
+                />
               </Form>
             </Flex>
           </Spin>

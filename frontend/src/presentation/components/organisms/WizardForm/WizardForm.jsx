@@ -31,7 +31,7 @@
  */
 
 import React from 'react';
-import { Steps, Form, Tabs, Alert } from 'antd';
+import { Steps, Form, Tabs, Alert, Typography } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
@@ -251,7 +251,15 @@ const WizardForm = ({
     return (
       <section className={`cfg-academico-workspace cfg-academico-form-workspace ${className}`.trim()}>
         <header className="cfg-academico-workspace__header">
-          <ListPanelHeader title={currentStepConfig.formTitle || 'Formulario'} />
+          <ListPanelHeader
+            title={currentStepConfig.formTitle || 'Formulario'}
+            actions={currentStepConfig.headerActions ?? null}
+          />
+          {currentStepConfig.description ? (
+            <Typography.Paragraph type="secondary" className="cfg-academico-workspace__desc">
+              {currentStepConfig.description}
+            </Typography.Paragraph>
+          ) : null}
         </header>
 
         <div className="sd-tabs-shell cfg-academico-tabs-shell">
