@@ -9,9 +9,8 @@
  * modal "Registrar pago" de la ficha y el paso "pago inicial" de inscribir.
  */
 
-import { Alert, Col, DatePicker, Form, Input, InputNumber, Row, Select } from 'antd';
+import { Col, DatePicker, Form, Input, InputNumber, Row, Select } from 'antd';
 import { formatBs } from '@application/utils/formatters';
-import { allSpacing } from '@theme/tokens';
 
 const { TextArea } = Input;
 
@@ -19,7 +18,6 @@ const PagoCapacitacionFormFields = ({
   metodosPago = [],
   cuentasPago = [],
   loadingCatalogos = false,
-  metodoPagoId,
   reglasMetodo,
   saldo = 0,
   onMetodoPagoChange,
@@ -121,16 +119,6 @@ const PagoCapacitacionFormFields = ({
           </Form.Item>
         </Col>
       </Row>
-
-      {!metodoPagoId ? (
-        <Alert
-          type="info"
-          showIcon
-          title="Seleccione un método de pago"
-          description="La cuenta de pago se habilita según el método elegido."
-          style={{ marginBottom: allSpacing.marginSM }}
-        />
-      ) : null}
     </>
   );
 };

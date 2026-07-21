@@ -1,8 +1,5 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
-import {
-  ESTADOS_CAPACITACION,
-  ESTADOS_CAPACITACION_VALUES,
-} from '../../../domain/constants/capacitacion.constants.js';
+import { ESTADOS_CAPACITACION } from '../../../domain/constants/capacitacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { CursoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
 
@@ -15,6 +12,11 @@ import { CursoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
  * y bloques (catálogo `horarios`, reutiliza los mismos bloques
  * tipo_horario='CLASES' que usa el sistema académico; el frontend ofrece
  * solo los bloques libres del aula elegida vía GET /horarios-disponibles).
+ *
+ * `estado` SIEMPRE se crea como PROPUESTO (máquina de estados de negocio):
+ * cualquier `estado` recibido en el body se ignora. Las transiciones son
+ * manuales vía `AbrirCursoCapacitacionUseCase`/`CancelarCursoCapacitacionUseCase`
+ * o automáticas por fecha (ver `helpers/cursoEstadoEfectivo.js`).
  */
 export class CreateCursoCapacitacionUseCase {
   /**
@@ -86,13 +88,6 @@ export class CreateCursoCapacitacionUseCase {
       throw new ValidationError('costo debe ser un número mayor o igual a 0');
     }
 
-    const estado = body.estado ?? ESTADOS_CAPACITACION.PROPUESTO;
-    if (!ESTADOS_CAPACITACION_VALUES.includes(estado)) {
-      throw new ValidationError(
-        `estado inválido. Valores permitidos: ${ESTADOS_CAPACITACION_VALUES.join(', ')}`
-      );
-    }
-
     return {
       titulo: String(body.titulo).trim(),
       descripcion: body.descripcion ?? null,
@@ -102,7 +97,8 @@ export class CreateCursoCapacitacionUseCase {
       aulaId: body.aulaId ?? null,
       fechaInicio: body.fechaInicio,
       fechaFin: body.fechaFin,
-      estado,
+      // Siempre PROPUESTO al crear: ignora cualquier `estado` del body.
+      estado: ESTADOS_CAPACITACION.PROPUESTO,
       ...(body.activo !== undefined ? { activo: body.activo } : {}),
     };
   }

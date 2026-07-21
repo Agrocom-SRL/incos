@@ -10,3 +10,21 @@
 .ant-table-tbody > tr.participante-selector__row--selected:hover > td {
   background: var(--color-primary-bg, #ecfdf5);
 }
+
+/* Resumen del curso elegido (paso "Pago inicial") — ver CursoCapacitacionResumen.
+   Mismos tokens/fallbacks que `.fin-pago-reg-resumen__item` (pagos-registrar.css),
+   una sola caja (no 4 de ancho fijo) para que el detalle de horarios, más largo,
+   no desentone. */
+.curso-cap-resumen {
+  padding: var(--spacing-md, 14px) var(--spacing-lg, 16px);
+  background: var(--border-soft, #f9fafb);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.curso-cap-resumen__title {
+  font-weight: 600;
+  font-size: var(--font-size-md, 14px);
+  color: var(--text-800, #1f2937);
+  margin-bottom: var(--spacing-sm, 8px);
+}

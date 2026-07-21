@@ -563,6 +563,10 @@ export const CURSOS_CAPACITACION_ENDPOINTS = {
   ...createCRUDEndpoints('/cursos-capacitacion'),
   /** PATCH — activar/desactivar curso (body { activo }, acción ACTIVAR) */
   ESTADO: (id) => `${API_BASE}/cursos-capacitacion/${id}/estado`,
+  /** POST — abrir inscripciones: PROPUESTO→ABIERTO (acción EDITAR) */
+  ABRIR: (id) => `${API_BASE}/cursos-capacitacion/${id}/abrir`,
+  /** POST — cancelar curso: PROPUESTO/ABIERTO→CANCELADO (acción EDITAR) */
+  CANCELAR: (id) => `${API_BASE}/cursos-capacitacion/${id}/cancelar`,
   /**
    * GET — los 60 bloques `horarios` (tipo_horario='CLASES') de un aula, con
    * `ocupado` según paralelo académico u otro curso de capacitación.

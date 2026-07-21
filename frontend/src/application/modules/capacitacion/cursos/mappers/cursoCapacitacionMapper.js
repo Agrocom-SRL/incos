@@ -154,7 +154,6 @@ export const mapFormValuesToCursoPayload = (values = {}) => ({
   aulaId: values.aulaId != null ? Number(values.aulaId) : null,
   fechaInicio: values.fechaInicio ? dayjs(values.fechaInicio).format('YYYY-MM-DD') : undefined,
   fechaFin: values.fechaFin ? dayjs(values.fechaFin).format('YYYY-MM-DD') : undefined,
-  estado: values.estado || undefined,
   horarioIds: Array.isArray(values.horarioIds) ? values.horarioIds.map(Number) : [],
 });
 
@@ -178,6 +177,5 @@ export const mapCursoToFormValues = (curso) => ({
   aulaId: curso?.aulaId ?? undefined,
   fechaInicio: curso?.fechaInicio ? dayjs(curso.fechaInicio) : dayjs(),
   fechaFin: curso?.fechaFin ? dayjs(curso.fechaFin) : dayjs().add(1, 'day'),
-  estado: curso?.estado ?? 'PROPUESTO',
   horarioIds: Array.isArray(curso?.horarioIds) ? curso.horarioIds : [],
 });

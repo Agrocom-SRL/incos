@@ -8,11 +8,11 @@
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { DetailField, StatusPill } from '@atoms';
-import { formatBs } from '@application/utils/formatters';
 import {
   formatEstadoCurso,
   getEstadoCursoPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
+import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
 const CursoInformacionSection = ({ curso }) => (
   <div className="sd-tab-body">
@@ -23,7 +23,9 @@ const CursoInformacionSection = ({ curso }) => (
           className={getEstadoCursoPillClass(curso.estado)}
         />
       </DetailField>
-      <DetailField label="Costo">Bs {formatBs(curso.costo)}</DetailField>
+      <DetailField label="Costo">
+        <CostoCursoLabel costo={curso.costo} />
+      </DetailField>
       <DetailField label="Cupo máximo">
         {curso.cupoMaximo != null ? curso.cupoMaximo : '—'}
       </DetailField>

@@ -5,11 +5,13 @@
  *
  * Página "dumb": la orquestación (pasos, validación, submit) vive en
  * `useInscribirParticipantePage`. El contenido de cada paso (selector/
- * formulario de participante, selector de curso + resumen, campos de pago)
- * vive en organismos propios `InscribirParticipanteSeccion*`, que esta
- * página compone vía `renderSectionContent`. Reusa `fin-pago-reg-*`
- * (pagos-registrar.css) para el selector de participante y el resumen del
- * curso.
+ * formulario de participante, selector de curso, campos de pago) vive en
+ * organismos propios `InscribirParticipanteSeccion*`, que esta página compone
+ * vía `renderSectionContent`. Reusa `fin-pago-reg-*` (pagos-registrar.css)
+ * solo para el resaltado del selector de participante; en el paso "Pago
+ * inicial" el resumen del curso elegido (costo/cupo/fechas/horarios) es la
+ * molécula `CursoCapacitacionResumen` (icono+texto, mismo lenguaje que la
+ * tarjeta del paso "Curso"), no cajas de ancho fijo.
  *
  * Paso 1 sin tabs internas: arranca en búsqueda; si no encuentra a nadie, el
  * header de la tarjeta ofrece "Crear nuevo participante" (y, ya en modo
@@ -40,6 +42,7 @@ import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitac
 import InscribirParticipanteSeccionParticipante from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionParticipante';
 import InscribirParticipanteSeccionCurso from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionCurso';
 import InscribirParticipanteSeccionPago from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionPago';
+import CursoCapacitacionResumen from '@capacitacion/inscripciones/components/molecules/CursoCapacitacionResumen';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/pagos/styles/pagos-registrar.css';
@@ -74,6 +77,7 @@ const InscribirParticipantePage = () => {
     cursoSeleccionadoId,
     cursoSeleccionado,
     handleCursoChange,
+    requierePago,
     conPagoInicial,
     handleConPagoInicialChange,
     metodosPago,
@@ -96,6 +100,15 @@ const InscribirParticipantePage = () => {
       wizardRef.current?.goToStep(1);
     },
     [handleSeleccionarParticipante],
+  );
+
+  /** Elegir una tarjeta de curso ya es una elección válida: avanza directo al paso 3. */
+  const handleCursoSeleccionarYAvanzar = useCallback(
+    (value) => {
+      handleCursoChange(value);
+      wizardRef.current?.goToStep(2);
+    },
+    [handleCursoChange],
   );
 
   const participanteHeaderActions = useMemo(() => {
@@ -159,8 +172,7 @@ const InscribirParticipantePage = () => {
             loadingCursos={loadingCursos}
             errorCursos={errorCursos}
             cursoSeleccionadoId={cursoSeleccionadoId}
-            cursoSeleccionado={cursoSeleccionado}
-            onCursoChange={handleCursoChange}
+            onCursoChange={handleCursoSeleccionarYAvanzar}
           />
         );
       }
@@ -168,24 +180,35 @@ const InscribirParticipantePage = () => {
       if (sectionKey === 'pago') {
         return (
           <Flex vertical gap="middle" key="pago">
-            <Switch
-              checked={conPagoInicial}
-              onChange={handleConPagoInicialChange}
-              checkedChildren="Con pago"
-              unCheckedChildren="Sin pago"
-            />
-            <InscribirParticipanteSeccionPago
-              conPagoInicial={conPagoInicial}
-              errorCatalogos={errorCatalogos}
-              metodosPago={metodosPago}
-              cuentasPago={cuentasPago}
-              loadingCatalogos={loadingCatalogos}
-              metodoPagoId={metodoPagoId}
-              reglasMetodo={reglasMetodo}
-              saldo={cursoSeleccionado?.costo ?? 0}
-              onMetodoPagoChange={handleMetodoPagoChange}
-              disabled={inscribiendo}
-            />
+            <CursoCapacitacionResumen curso={cursoSeleccionado} />
+            {requierePago ? (
+              <>
+                <Switch
+                  checked={conPagoInicial}
+                  onChange={handleConPagoInicialChange}
+                  checkedChildren="Con pago"
+                  unCheckedChildren="Sin pago"
+                  style={{ alignSelf: 'flex-start' }}
+                />
+                <InscribirParticipanteSeccionPago
+                  conPagoInicial={conPagoInicial}
+                  errorCatalogos={errorCatalogos}
+                  metodosPago={metodosPago}
+                  cuentasPago={cuentasPago}
+                  loadingCatalogos={loadingCatalogos}
+                  metodoPagoId={metodoPagoId}
+                  reglasMetodo={reglasMetodo}
+                  saldo={cursoSeleccionado?.costo ?? 0}
+                  onMetodoPagoChange={handleMetodoPagoChange}
+                  disabled={inscribiendo}
+                />
+              </>
+            ) : (
+              <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                Este curso no tiene costo asociado (Bs 0): la inscripción no requiere
+                registrar ningún pago.
+              </Typography.Paragraph>
+            )}
           </Flex>
         );
       }
@@ -210,7 +233,8 @@ const InscribirParticipantePage = () => {
       errorCursos,
       cursoSeleccionadoId,
       cursoSeleccionado,
-      handleCursoChange,
+      handleCursoSeleccionarYAvanzar,
+      requierePago,
       conPagoInicial,
       handleConPagoInicialChange,
       errorCatalogos,

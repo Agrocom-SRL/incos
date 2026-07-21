@@ -7,11 +7,12 @@
  */
 
 import { Alert, Empty, Flex, Spin, Tabs } from 'antd';
-import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
+import { usePermiso } from '@application-auth';
 import { useCursoCapacitacionDetailPage } from '@application-capacitacion/cursos/hooks/state/useCursoCapacitacionDetailPage';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import CursoCapacitacionFichaHeader from '@capacitacion/cursos/components/organisms/CursoCapacitacionFichaHeader';
@@ -20,20 +21,47 @@ import CursoHorariosSection from '@capacitacion/cursos/components/organisms/Curs
 import '@presentation/styles/pages/detail-page.css';
 
 const CursoCapacitacionDetail = () => {
-  const { curso, loading, error, breadcrumbItems, handleVolver, handleEditar } =
-    useCursoCapacitacionDetailPage();
+  const {
+    curso,
+    loading,
+    error,
+    breadcrumbItems,
+    handleVolver,
+    handleEditar,
+    puedeAbrir,
+    puedeCancelar,
+    handleAbrirInscripciones,
+    handleCancelarCurso,
+    procesandoTransicion,
+  } = useCursoCapacitacionDetailPage();
+  const puedeEditar = usePermiso(CAPACITACION_PERMISOS.curso, 'EDITAR');
 
   const headerActions = (
     <Flex gap="small" wrap>
-      <ActionButton
-        permiso={CAPACITACION_PERMISOS.curso}
-        accion="EDITAR"
-        variant="primary"
-        icon={<EditOutlined />}
-        onClick={handleEditar}
-      >
-        Editar curso
-      </ActionButton>
+      {puedeAbrir && (
+        <ActionButton
+          permiso={CAPACITACION_PERMISOS.curso}
+          accion="EDITAR"
+          variant="success"
+          icon={<PlayCircleOutlined />}
+          loading={procesandoTransicion}
+          onClick={handleAbrirInscripciones}
+        >
+          Abrir inscripciones
+        </ActionButton>
+      )}
+      {puedeCancelar && (
+        <ActionButton
+          permiso={CAPACITACION_PERMISOS.curso}
+          accion="EDITAR"
+          variant="danger"
+          icon={<StopOutlined />}
+          loading={procesandoTransicion}
+          onClick={handleCancelarCurso}
+        >
+          Cancelar curso
+        </ActionButton>
+      )}
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
         Volver
       </BackButton>
@@ -85,7 +113,11 @@ const CursoCapacitacionDetail = () => {
           )}
           {!loading && !error && curso && (
             <>
-              <CursoCapacitacionFichaHeader curso={curso} />
+              <CursoCapacitacionFichaHeader
+                curso={curso}
+                puedeEditar={puedeEditar}
+                onEditar={handleEditar}
+              />
               <div className="sd-tabs-shell">
                 <Tabs defaultActiveKey="informacion" items={tabItems} className="sd-tabs" />
               </div>

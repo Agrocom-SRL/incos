@@ -1,92 +1,100 @@
 /**
  * Organismo: contenido del paso "Curso" de Inscribir participante (CAP).
- * Selector del curso de capacitación activo y resumen de costo/cupo/fechas/
- * horarios del curso elegido (reusa `fin-pago-reg-resumen` de
- * pagos-registrar.css). Recibe props ya mapeadas del hook; no llama hooks
- * de fetch.
+ * Grilla de tarjetas seleccionables (un curso por tarjeta) en vez de un
+ * `<Select>` de texto — mismo patrón visual que `TipoAdmisionSelectionSection`/
+ * `UsuarioCategoriaCreacionStepContent` (`Radio.Group` > `Radio.Button` como
+ * tarjeta, estilos centralizados en `wizard-selection-cards.css`). `Radio.Group`
+ * queda CONTROLADO por `cursoSeleccionadoId` (estado plano del hook, no es un
+ * campo de `Form` — no hace falta `Form.Item` para reusar el mismo CSS/JSX).
+ *
+ * La tarjeta ya muestra costo/cupo/fechas de un vistazo (`InfoLinesCell`); el
+ * resumen con el detalle de horarios se muestra en el paso "Pago inicial"
+ * (`InscribirParticipantePage`), no aquí, para no duplicar los mismos datos.
+ *
+ * Recibe props ya mapeadas del hook; no llama hooks de fetch.
  */
 
-import { Alert, Empty, Select, Typography } from 'antd';
-import { formatBs } from '@application/utils/formatters';
-import { formatEstadoCurso } from '@application-capacitacion/utils/capacitacionPills';
+import { Alert, Empty, Radio } from 'antd';
+import { CalendarOutlined, DollarOutlined, ReadOutlined, TeamOutlined } from '@ant-design/icons';
+import { InfoLinesCell, StatusPill } from '@atoms';
+import { formatEstadoCurso, getEstadoCursoPillClass } from '@application-capacitacion/utils/capacitacionPills';
 import { allSpacing } from '@theme/tokens';
-
-const { Text } = Typography;
+import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
+import '@presentation/styles/components/molecules/wizard-selection-cards.css';
 
 const InscribirParticipanteSeccionCurso = ({
   cursos,
   loadingCursos,
   errorCursos,
   cursoSeleccionadoId,
-  cursoSeleccionado,
   onCursoChange,
-}) => {
-  const cursoOptions = cursos.map((curso) => ({
-    value: curso.id,
-    label: `${curso.titulo} · Bs ${formatBs(curso.costo)} · ${formatEstadoCurso(curso.estado)}`,
-  }));
+}) => (
+  <>
+    {errorCursos ? (
+      <Alert
+        type="error"
+        showIcon
+        title="No se pudieron cargar los cursos"
+        description={errorCursos}
+        style={{ marginBottom: allSpacing.marginSM }}
+      />
+    ) : null}
 
-  return (
-    <>
-      {errorCursos ? (
-        <Alert
-          type="error"
-          showIcon
-          title="No se pudieron cargar los cursos"
-          description={errorCursos}
-          style={{ marginBottom: allSpacing.marginSM }}
-        />
-      ) : null}
-
-      {!loadingCursos && !errorCursos && cursos.length === 0 ? (
-        <Empty description="No hay cursos de capacitación disponibles." />
-      ) : (
-        <Select
-          style={{ width: '100%' }}
-          loading={loadingCursos}
-          placeholder="Seleccione el curso"
-          options={cursoOptions}
-          value={cursoSeleccionadoId ?? undefined}
-          onChange={onCursoChange}
-          showSearch
-          optionFilterProp="label"
-        />
-      )}
-
-      {cursoSeleccionado ? (
-        <div className="fin-pago-reg-resumen" style={{ marginTop: allSpacing.marginSM }}>
-          <div className="fin-pago-reg-resumen__item">
-            <Text type="secondary" className="fin-pago-reg-resumen__label">
-              Costo
-            </Text>
-            <Text strong>Bs {formatBs(cursoSeleccionado.costo)}</Text>
-          </div>
-          <div className="fin-pago-reg-resumen__item">
-            <Text type="secondary" className="fin-pago-reg-resumen__label">
-              Cupo
-            </Text>
-            <Text strong>
-              {cursoSeleccionado.cupoMaximo != null
-                ? `${cursoSeleccionado.inscritosCount} / ${cursoSeleccionado.cupoMaximo}`
-                : `${cursoSeleccionado.inscritosCount} inscritos`}
-            </Text>
-          </div>
-          <div className="fin-pago-reg-resumen__item">
-            <Text type="secondary" className="fin-pago-reg-resumen__label">
-              Fechas
-            </Text>
-            <Text strong>{cursoSeleccionado.fechasLabel || '—'}</Text>
-          </div>
-          <div className="fin-pago-reg-resumen__item">
-            <Text type="secondary" className="fin-pago-reg-resumen__label">
-              Horarios
-            </Text>
-            <Text strong>{cursoSeleccionado.horariosDetalle || 'Por definir'}</Text>
-          </div>
+    {!loadingCursos && !errorCursos && cursos.length === 0 ? (
+      <Empty description="No hay cursos de capacitación disponibles." />
+    ) : (
+      <Radio.Group
+        value={cursoSeleccionadoId ?? undefined}
+        onChange={(event) => onCursoChange(event.target.value)}
+        disabled={loadingCursos}
+        style={{ width: '100%' }}
+      >
+        <div className="wizard-selection-cards__grid">
+          {cursos.map((curso) => {
+            const isSelected = cursoSeleccionadoId === curso.id;
+            return (
+              <Radio.Button key={curso.id} value={curso.id} className="wizard-selection-cards__radio">
+                <div className="wizard-selection-cards__inner">
+                  <div className="wizard-selection-cards__icon-wrap">
+                    <ReadOutlined className="wizard-selection-cards__icon" />
+                  </div>
+                  <div className="wizard-selection-cards__body">
+                    <div className="wizard-selection-cards__label">{curso.titulo}</div>
+                    <StatusPill
+                      label={formatEstadoCurso(curso.estado)}
+                      className={getEstadoCursoPillClass(curso.estado)}
+                    />
+                    <div className="wizard-selection-cards__metrics">
+                      <InfoLinesCell
+                        lines={[
+                          { icon: <DollarOutlined />, label: <CostoCursoLabel costo={curso.costo} /> },
+                          {
+                            icon: <TeamOutlined />,
+                            label:
+                              curso.cupoMaximo != null
+                                ? `${curso.inscritosCount} / ${curso.cupoMaximo} inscritos`
+                                : `${curso.inscritosCount} inscritos`,
+                          },
+                          curso.fechasLabel
+                            ? { icon: <CalendarOutlined />, label: curso.fechasLabel }
+                            : null,
+                        ].filter(Boolean)}
+                      />
+                    </div>
+                  </div>
+                  {isSelected ? (
+                    <div className="wizard-selection-cards__check" aria-hidden>
+                      ✓
+                    </div>
+                  ) : null}
+                </div>
+              </Radio.Button>
+            );
+          })}
         </div>
-      ) : null}
-    </>
-  );
-};
+      </Radio.Group>
+    )}
+  </>
+);
 
 export default InscribirParticipanteSeccionCurso;

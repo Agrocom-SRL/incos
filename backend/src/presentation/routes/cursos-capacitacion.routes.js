@@ -83,6 +83,24 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.getCursoCapacitacionByIdController.handle(req, res, next)
     );
 
+    // POST /:id/abrir - Transición manual PROPUESTO → ABIERTO (abrir inscripciones)
+    router.post(
+        '/:id/abrir',
+        ...editar,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.abrirCursoCapacitacionController.handle(req, res, next)
+    );
+
+    // POST /:id/cancelar - Transición manual hacia CANCELADO (desde PROPUESTO o ABIERTO)
+    router.post(
+        '/:id/cancelar',
+        ...editar,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.cancelarCursoCapacitacionController.handle(req, res, next)
+    );
+
     // PUT /:id - Actualizar curso; si trae horarioIds REEMPLAZA la junction
     router.put(
         '/:id',

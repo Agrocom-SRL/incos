@@ -10,6 +10,8 @@ export { CreateCursoCapacitacionController } from './create-curso-capacitacion.c
 export { UpdateCursoCapacitacionController } from './update-curso-capacitacion.controller.js';
 export { DeleteCursoCapacitacionController } from './delete-curso-capacitacion.controller.js';
 export { SetEstadoCursoCapacitacionController } from './set-estado-curso-capacitacion.controller.js';
+export { AbrirCursoCapacitacionController } from './abrir-curso-capacitacion.controller.js';
+export { CancelarCursoCapacitacionController } from './cancelar-curso-capacitacion.controller.js';
 
 // Participantes
 export { ListParticipantesController } from './list-participantes.controller.js';

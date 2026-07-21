@@ -31,4 +31,24 @@ export class ICursoCapacitacionRepository extends IBaseRepository {
   async obtenerHorariosDisponibles(_params) {
     throw new Error('Método obtenerHorariosDisponibles debe ser implementado');
   }
+
+  /**
+   * Abre las inscripciones del curso: PROPUESTO→ABIERTO (POST /:id/abrir, acción EDITAR).
+   * Rechaza (409) si el estado efectivo no es PROPUESTO.
+   * @param {string|number} _id
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async abrirInscripciones(_id) {
+    throw new Error('Método abrirInscripciones debe ser implementado');
+  }
+
+  /**
+   * Cancela el curso: PROPUESTO/ABIERTO→CANCELADO (POST /:id/cancelar, acción EDITAR).
+   * Rechaza (409) si el curso ya está EN_CURSO/CERRADO.
+   * @param {string|number} _id
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async cancelarCurso(_id) {
+    throw new Error('Método cancelarCurso debe ser implementado');
+  }
 }

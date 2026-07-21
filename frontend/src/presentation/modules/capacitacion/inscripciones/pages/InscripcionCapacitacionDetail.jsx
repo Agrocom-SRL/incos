@@ -4,7 +4,8 @@
  *
  * Página "dumb": compone template + organismos y consume el hook de pantalla.
  * El botón "Registrar pago" navega a su propia página y valida
- * `capacitacion.pago CREAR` (fail-closed).
+ * `capacitacion.pago CREAR` (fail-closed). No se muestra si el curso no tiene
+ * costo asociado (gratuito): no hay nada que cobrar.
  */
 
 import { Alert, Empty, Flex, Spin } from 'antd';
@@ -15,6 +16,7 @@ import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import { useInscripcionCapacitacionDetailPage } from '@application-capacitacion/inscripciones/hooks/state/useInscripcionCapacitacionDetailPage';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
+import { esCursoGratuito } from '@application-capacitacion/utils/capacitacionPills';
 import InscripcionFichaHeader from '@capacitacion/inscripciones/components/organisms/InscripcionFichaHeader';
 import InscripcionPagosSection from '@capacitacion/inscripciones/components/organisms/InscripcionPagosSection';
 import '@presentation/styles/pages/detail-page.css';
@@ -25,16 +27,18 @@ const InscripcionCapacitacionDetail = () => {
 
   const headerActions = (
     <Flex gap="small" wrap>
-      <ActionButton
-        permiso={CAPACITACION_PERMISOS.pago}
-        accion="CREAR"
-        variant="primary"
-        icon={<DollarOutlined />}
-        onClick={handleIrARegistrarPago}
-        disabled={!inscripcion}
-      >
-        Registrar pago
-      </ActionButton>
+      {!esCursoGratuito(inscripcion?.costo) ? (
+        <ActionButton
+          permiso={CAPACITACION_PERMISOS.pago}
+          accion="CREAR"
+          variant="primary"
+          icon={<DollarOutlined />}
+          onClick={handleIrARegistrarPago}
+          disabled={!inscripcion}
+        >
+          Registrar pago
+        </ActionButton>
+      ) : null}
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
         Volver
       </BackButton>

@@ -2,7 +2,8 @@
  * Hook de API: mutaciones de cursos de capacitación (módulo CAP).
  *
  * Crear (POST, acepta horarioIds[]), actualizar (PUT, reemplaza horarioIds[]),
- * cambiar estado activo (PATCH /:id/estado, acción ACTIVAR) y eliminar (DELETE,
+ * cambiar estado activo (PATCH /:id/estado, acción ACTIVAR), transiciones de la
+ * máquina de estados (abrir/cancelar, POST, acción EDITAR) y eliminar (DELETE,
  * soft delete). Solo HTTP + estado de guardado; el feedback vive en hooks/state.
  */
 
@@ -30,8 +31,22 @@ export const useCursoCapacitacionMutations = () => {
 
   const eliminarCurso = useCallback((id) => cursoCapacitacionRepository.eliminar(id), []);
 
+  const abrirInscripciones = useCallback(
+    (id) => cursoCapacitacionRepository.abrirInscripciones(id),
+    [],
+  );
+
+  const cancelarCurso = useCallback((id) => cursoCapacitacionRepository.cancelarCurso(id), []);
+
   return useMemo(
-    () => ({ saving, guardarCurso, cambiarEstadoCurso, eliminarCurso }),
-    [saving, guardarCurso, cambiarEstadoCurso, eliminarCurso],
+    () => ({
+      saving,
+      guardarCurso,
+      cambiarEstadoCurso,
+      eliminarCurso,
+      abrirInscripciones,
+      cancelarCurso,
+    }),
+    [saving, guardarCurso, cambiarEstadoCurso, eliminarCurso, abrirInscripciones, cancelarCurso],
   );
 };

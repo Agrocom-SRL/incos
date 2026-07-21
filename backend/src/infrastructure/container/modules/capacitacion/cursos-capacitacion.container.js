@@ -25,6 +25,8 @@ import { CreateCursoCapacitacionUseCase } from '../../../../application/use-case
 import { UpdateCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/UpdateCursoCapacitacionUseCase.js';
 import { DeleteCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/DeleteCursoCapacitacionUseCase.js';
 import { SetEstadoCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/SetEstadoCursoCapacitacionUseCase.js';
+import { AbrirCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/AbrirCursoCapacitacionUseCase.js';
+import { CancelarCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CancelarCursoCapacitacionUseCase.js';
 import {
     ListCursosCapacitacionController,
     ListHorariosDisponiblesCapacitacionController,
@@ -33,6 +35,8 @@ import {
     UpdateCursoCapacitacionController,
     DeleteCursoCapacitacionController,
     SetEstadoCursoCapacitacionController,
+    AbrirCursoCapacitacionController,
+    CancelarCursoCapacitacionController,
 } from '../../../../presentation/controllers/capacitacion/index.js';
 import { buildCursosCapacitacionRouter } from '../../../../presentation/routes/cursos-capacitacion.routes.js';
 
@@ -124,6 +128,30 @@ export function registerCursosCapacitacionResource(container) {
         CAPACITACION_TOKENS.setEstadoCursoCapacitacionUseCase,
         (c) =>
             new SetEstadoCursoCapacitacionUseCase({
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.abrirCursoCapacitacionUseCase,
+        (c) =>
+            new AbrirCursoCapacitacionUseCase({
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.cancelarCursoCapacitacionUseCase,
+        (c) =>
+            new CancelarCursoCapacitacionUseCase({
                 cursoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.cursoCapacitacionRepository
                 ),
@@ -225,6 +253,32 @@ export function registerCursosCapacitacionResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.abrirCursoCapacitacionController,
+        (c) =>
+            new AbrirCursoCapacitacionController({
+                abrirCursoCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.abrirCursoCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.cancelarCursoCapacitacionController,
+        (c) =>
+            new CancelarCursoCapacitacionController({
+                cancelarCursoCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.cancelarCursoCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -253,6 +307,12 @@ export function registerCursosCapacitacionResource(container) {
                 ),
                 setEstadoCursoCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.setEstadoCursoCapacitacionController
+                ),
+                abrirCursoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.abrirCursoCapacitacionController
+                ),
+                cancelarCursoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.cancelarCursoCapacitacionController
                 ),
             };
 

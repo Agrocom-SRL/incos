@@ -16,7 +16,6 @@ import {
   mapCursoToFormValues,
   mapFormValuesToCursoPayload,
 } from '@application-capacitacion/cursos/mappers/cursoCapacitacionMapper';
-import { ESTADO_CURSO_OPTIONS } from '@application-capacitacion/utils/capacitacionPills';
 import {
   CURSOS_CAP_LIST_PATH,
   CAP_CURSOS_MENU_KEY,
@@ -45,15 +44,6 @@ const createCursoFormSections = ({
         span: 12,
         placeholder: 'Ej. Word avanzado',
         maxLength: 200,
-      },
-      {
-        name: 'estado',
-        label: 'Estado del curso',
-        type: 'select',
-        required: true,
-        span: 12,
-        options: ESTADO_CURSO_OPTIONS,
-        placeholder: 'Estado de la oferta',
       },
       {
         name: 'costo',

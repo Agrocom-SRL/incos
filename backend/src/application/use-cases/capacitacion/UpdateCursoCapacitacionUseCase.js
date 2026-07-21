@@ -1,5 +1,4 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
-import { ESTADOS_CAPACITACION_VALUES } from '../../../domain/constants/capacitacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { CursoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
 
@@ -10,6 +9,12 @@ import { CursoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
  * Actualiza un curso de capacitación. Si el payload trae `horarioIds`,
  * REEMPLAZA la junction `capacitacion_horarios` (soft-delete de los bloques
  * vigentes + alta de los nuevos), todo en UNA transacción.
+ *
+ * `estado` (máquina de estados de negocio) NO se puede mutar por este endpoint
+ * bajo ninguna circunstancia: cualquier `estado` recibido en el body se
+ * ignora. Las únicas vías son las transiciones manuales
+ * `AbrirCursoCapacitacionUseCase`/`CancelarCursoCapacitacionUseCase` o el
+ * cálculo automático por fecha (ver `helpers/cursoEstadoEfectivo.js`).
  */
 export class UpdateCursoCapacitacionUseCase {
   /**
@@ -100,14 +105,8 @@ export class UpdateCursoCapacitacionUseCase {
     if ('aulaId' in body) data.aulaId = body.aulaId ?? null;
     if ('fechaInicio' in body) data.fechaInicio = body.fechaInicio;
     if ('fechaFin' in body) data.fechaFin = body.fechaFin;
-    if ('estado' in body) {
-      if (!ESTADOS_CAPACITACION_VALUES.includes(body.estado)) {
-        throw new ValidationError(
-          `estado inválido. Valores permitidos: ${ESTADOS_CAPACITACION_VALUES.join(', ')}`
-        );
-      }
-      data.estado = body.estado;
-    }
+    // `estado` NUNCA se muta por PUT/:id (ver máquina de estados de negocio en
+    // el docblock de la clase); se ignora silenciosamente si llega en el body.
     if ('activo' in body) data.activo = body.activo;
 
     // Coherencia de fechas usando los valores finales (payload o existentes)

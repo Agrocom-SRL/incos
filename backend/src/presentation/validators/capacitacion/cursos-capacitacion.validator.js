@@ -69,10 +69,6 @@ export const createCursoCapacitacionValidator = [
     .withMessage('fechaFin es requerida')
     .isISO8601()
     .withMessage('fechaFin debe ser una fecha válida (YYYY-MM-DD)'),
-  body('estado')
-    .optional()
-    .isIn(ESTADOS_CAPACITACION_VALUES)
-    .withMessage(`estado debe ser uno de: ${ESTADOS_CAPACITACION_VALUES.join(', ')}`),
   body('horarioIds')
     .optional()
     .isArray()
@@ -117,10 +113,6 @@ export const updateCursoCapacitacionValidator = [
     .optional()
     .isISO8601()
     .withMessage('fechaFin debe ser una fecha válida (YYYY-MM-DD)'),
-  body('estado')
-    .optional()
-    .isIn(ESTADOS_CAPACITACION_VALUES)
-    .withMessage(`estado debe ser uno de: ${ESTADOS_CAPACITACION_VALUES.join(', ')}`),
   body('horarioIds')
     .optional({ nullable: true })
     .isArray()

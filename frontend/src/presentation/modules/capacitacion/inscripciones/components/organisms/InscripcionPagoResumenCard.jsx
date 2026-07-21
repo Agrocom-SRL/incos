@@ -9,12 +9,15 @@ import { DetailInfoCard } from '@molecules';
 import { DetailField, StatusPill } from '@atoms';
 import { formatBs } from '@application/utils/formatters';
 import { getSaldoCapPillClass } from '@application-capacitacion/utils/capacitacionPills';
+import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
 const InscripcionPagoResumenCard = ({ inscripcion }) => (
   <DetailInfoCard title="Inscripción" icon={<UserOutlined />} cols={3}>
     <DetailField label="Participante">{inscripcion.participanteNombreCompleto}</DetailField>
     <DetailField label="Curso">{inscripcion.capacitacionTitulo}</DetailField>
-    <DetailField label="Costo del curso">Bs {formatBs(inscripcion.costo)}</DetailField>
+    <DetailField label="Costo del curso">
+      <CostoCursoLabel costo={inscripcion.costo} />
+    </DetailField>
     <DetailField label="Total pagado">Bs {formatBs(inscripcion.totalPagado)}</DetailField>
     <DetailField label="Saldo">
       <StatusPill

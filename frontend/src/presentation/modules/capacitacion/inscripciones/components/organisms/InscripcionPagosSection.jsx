@@ -19,6 +19,7 @@ import {
   getSaldoCapPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
 import { createPagosCapacitacionTableColumns } from '@capacitacion/inscripciones/config/pagosCapacitacionTableColumns';
+import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
 const InscripcionPagosSection = ({ inscripcion }) => {
   const columns = createPagosCapacitacionTableColumns();
@@ -47,7 +48,9 @@ const InscripcionPagosSection = ({ inscripcion }) => {
           {formatEstadoCurso(inscripcion.capacitacionEstado)}
         </DetailField>
         <DetailField label="Fechas">{inscripcion.capacitacionFechasLabel || '—'}</DetailField>
-        <DetailField label="Costo">Bs {formatBs(inscripcion.costo)}</DetailField>
+        <DetailField label="Costo">
+          <CostoCursoLabel costo={inscripcion.costo} />
+        </DetailField>
         <DetailField label="Total pagado">Bs {formatBs(inscripcion.totalPagado)}</DetailField>
         <DetailField label="Saldo">
           <StatusPill

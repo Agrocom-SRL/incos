@@ -171,6 +171,21 @@ export const useInscribirParticipantePage = () => {
     [form],
   );
 
+  /**
+   * Un curso sin costo (Bs 0) no tiene nada que cobrar: no tiene sentido
+   * ofrecer el switch «Con pago» ni habilitar método/cuenta de pago. Si el
+   * participante cambia a un curso gratuito mientras el switch seguía
+   * encendido (de un curso con costo elegido antes), se apaga solo.
+   */
+  const requierePago = Number(cursoSeleccionado?.costo ?? 0) > 0;
+
+  useEffect(() => {
+    if (!requierePago && conPagoInicial) {
+      handleConPagoInicialChange(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requierePago]);
+
   /** Al cambiar de método, limpia la cuenta (deja de aplicar). */
   const handleMetodoPagoChange = useCallback(
     (value) => {
@@ -388,6 +403,7 @@ export const useInscribirParticipantePage = () => {
     cursoSeleccionado,
     handleCursoChange,
     // Paso 3: pago inicial opcional
+    requierePago,
     conPagoInicial,
     handleConPagoInicialChange,
     metodosPago,

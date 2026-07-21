@@ -3,22 +3,38 @@
  *
  * Reusa el shell compartido `sd-profile` (detail-page.css, prefijos sd-* solo
  * para layout), gemelo de `PagoFichaHeader`. Estado del curso con `StatusPill`
- * y métricas de costo/cupo/bloques. Recibe props ya mapeadas; no llama hooks.
+ * y métricas de costo/cupo/bloques. Botón editar (`sd-profile__edit-btn`)
+ * igual al de `EstudiantesDetail`/`ParaleloDetalleInstanciaCard`. Recibe props
+ * ya mapeadas; no llama hooks (el gate de permiso se resuelve en la página).
  */
 
-import { ReadOutlined } from '@ant-design/icons';
+import { Tooltip } from 'antd';
+import { EditOutlined, ReadOutlined } from '@ant-design/icons';
 import { StatusPill } from '@atoms';
-import { formatBs } from '@application/utils/formatters';
 import {
   formatEstadoCurso,
   getEstadoCursoPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
+import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
-const CursoCapacitacionFichaHeader = ({ curso }) => {
+const CursoCapacitacionFichaHeader = ({ curso, puedeEditar = false, onEditar }) => {
   const subtitleParts = [curso.fechasLabel, curso.aulaLabel].filter(Boolean);
 
   return (
     <div className="sd-profile">
+      {puedeEditar && onEditar ? (
+        <Tooltip title="Editar datos del curso">
+          <button
+            type="button"
+            className="sd-profile__edit-btn"
+            onClick={onEditar}
+            aria-label="Editar curso"
+          >
+            <EditOutlined />
+          </button>
+        </Tooltip>
+      ) : null}
+
       <div className="sd-profile__identity">
         <div className="sd-profile__avatar-wrap">
           <div className="sd-profile__avatar sd-profile__avatar--default" aria-hidden>
@@ -45,7 +61,9 @@ const CursoCapacitacionFichaHeader = ({ curso }) => {
       <div className="sd-profile__stats">
         <div className="sd-stat">
           <span className="sd-stat__label">Costo</span>
-          <span className="sd-stat__value sd-stat__value--primary">Bs {formatBs(curso.costo)}</span>
+          <span className="sd-stat__value sd-stat__value--primary">
+            <CostoCursoLabel costo={curso.costo} />
+          </span>
         </div>
         <div className="sd-stat">
           <span className="sd-stat__label">Inscritos</span>
