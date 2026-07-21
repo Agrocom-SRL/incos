@@ -1,9 +1,9 @@
 /**
  * Listado de participantes de capacitación (Capacitación · CAP-PARTICIPANTES · LISTAR).
  *
- * Mismo shell que CursosCapacitacionList / PagosList. Alta y edición se
- * resuelven en un MODAL (el recurso no tiene ficha propia; seed 65 solo da
- * LISTAR/DETALLE/CREAR/EDITAR). Página "dumb": consume el hook de pantalla.
+ * Mismo shell que CursosCapacitacionList / PagosList. Alta y edición navegan a
+ * páginas completas (`/participantes/nuevo`, `/participantes/:id/editar`), sin
+ * modal. Página "dumb": consume el hook de pantalla.
  */
 
 import { Flex, Typography } from 'antd';
@@ -16,7 +16,6 @@ import { ActionButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useParticipantesListPage } from '@application-capacitacion/participantes/hooks/state/useParticipantesListPage';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
-import ParticipanteFormModal from '@capacitacion/participantes/components/organisms/ParticipanteFormModal';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
@@ -33,12 +32,7 @@ const ParticipantesList = () => {
     breadcrumbItems,
     handleSearchChange,
     tablePagination,
-    participanteEnEdicion,
-    isEditando,
-    abrirNuevo,
-    cerrarModal,
-    guardarDesdeModal,
-    saving,
+    handleNuevo,
   } = useParticipantesListPage();
 
   const nuevoAction = (
@@ -47,7 +41,7 @@ const ParticipantesList = () => {
       accion="CREAR"
       variant="primary"
       icon={<PlusOutlined />}
-      onClick={abrirNuevo}
+      onClick={handleNuevo}
     >
       Nuevo participante
     </ActionButton>
@@ -92,14 +86,6 @@ const ParticipantesList = () => {
           </Flex>
         </MainContent>
       </DashboardPageShell>
-
-      <ParticipanteFormModal
-        open={participanteEnEdicion !== null}
-        participante={isEditando ? participanteEnEdicion : null}
-        saving={saving}
-        onGuardar={guardarDesdeModal}
-        onCancelar={cerrarModal}
-      />
     </Flex>
   );
 };

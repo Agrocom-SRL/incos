@@ -1,54 +1,83 @@
 /**
- * Inscribir participante a un curso de capacitación (CAP · CREAR) — flujo
- * INLINE (≈ PagosRegistrar de Finanzas): participante (existente o nuevo) →
- * curso → pago inicial opcional. Shell de formulario CFG Académico.
+ * Inscribir participante a un curso de capacitación (CAP · CREAR) — wizard
+ * por pestañas (`WizardForm variant="tabs"`, gemelo de `UsuarioCreatePage`):
+ * participante (existente o nuevo) → curso → pago inicial opcional.
  *
- * Página "dumb": la orquestación vive en `useInscribirParticipantePage`.
- * Reusa `fin-pago-reg-*` (pagos-registrar.css) para el selector y el resumen.
+ * Página "dumb": la orquestación (pasos, validación, submit) vive en
+ * `useInscribirParticipantePage`. El contenido de cada paso (selector/
+ * formulario de participante, selector de curso, campos de pago) vive en
+ * organismos propios `InscribirParticipanteSeccion*`, que esta página compone
+ * vía `renderSectionContent`. Reusa `fin-pago-reg-*` (pagos-registrar.css)
+ * solo para el resaltado del selector de participante; en el paso "Pago
+ * inicial" el resumen del curso elegido (costo/cupo/fechas/horarios) es la
+ * molécula `CursoCapacitacionResumen` (icono+texto, mismo lenguaje que la
+ * tarjeta del paso "Curso"), no cajas de ancho fijo.
+ *
+ * Paso 1 sin tabs internas: arranca en búsqueda; si no encuentra a nadie, el
+ * header de la tarjeta ofrece "Crear nuevo participante" (y, ya en modo
+ * nuevo, "Buscar participante" para volver) — ver `handleCrearNuevoParticipante`/
+ * `handleVolverABusqueda` del hook. Este botón se inyecta en `wizardSteps[0]`
+ * como `headerActions` aquí en la página (JSX no vive en el hook de estado).
+ *
+ * Elegir un participante de la tabla avanza directo al paso 2 (sin pasar por
+ * el botón "Siguiente"): usa la API imperativa de `WizardForm`
+ * (`wizardRef.current.goToStep`) porque seleccionar una fila YA es una
+ * selección válida — no hace falta repetir la validación del paso.
  */
 
-import { Alert, Empty, Flex, Form, Segmented, Select, Switch, Typography } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
-import { PageTemplate } from '@templates';
+import { useCallback, useMemo, useRef } from 'react';
+import { Flex, Switch, Typography } from 'antd';
+import { ArrowLeftOutlined, SearchOutlined, UserAddOutlined } from '@ant-design/icons';
+import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
+import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import ListPanelHeader from '@molecules/ListPanelHeader';
-import { ActionButton, BackButton } from '@atoms';
-import { formatBs } from '@application/utils/formatters';
-import { allSpacing } from '@theme/tokens';
+import { BackButton, Button } from '@atoms';
+import { WizardForm } from '@organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import {
   useInscribirParticipantePage,
   MODO_PARTICIPANTE,
 } from '@application-capacitacion/inscripciones/hooks/state/useInscribirParticipantePage';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
-import { formatEstadoCurso } from '@application-capacitacion/utils/capacitacionPills';
-import ParticipanteSelector from '@capacitacion/inscripciones/components/organisms/ParticipanteSelector';
-import ParticipanteFormFields from '@capacitacion/components/organisms/ParticipanteFormFields';
-import PagoCapacitacionFormFields from '@capacitacion/inscripciones/components/organisms/PagoCapacitacionFormFields';
+import InscribirParticipanteSeccionParticipante from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionParticipante';
+import InscribirParticipanteSeccionCurso from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionCurso';
+import InscribirParticipanteSeccionPago from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionPago';
+import CursoCapacitacionResumen from '@capacitacion/inscripciones/components/molecules/CursoCapacitacionResumen';
+import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/pagos/styles/pagos-registrar.css';
-
-const { Paragraph, Text } = Typography;
+import '../styles/inscribir-participante.css';
 
 const InscribirParticipantePage = () => {
   const {
     breadcrumbItems,
     handleVolver,
     form,
+    wizardSteps,
+    onValidateBeforeNext,
+    handleValidationError,
+    stepError,
     modoParticipante,
-    handleModoParticipanteChange,
+    participanteNoEncontrado,
+    handleCrearNuevoParticipante,
+    handleVolverABusqueda,
     participantes,
     loadingBusqueda,
     errorBusqueda,
+    searchText,
+    searchAttempted,
     buscarParticipantes,
+    sugeridos,
+    loadingSugeridos,
     participanteSeleccionado,
     handleSeleccionarParticipante,
-    handleCambiarParticipante,
     cursos,
     loadingCursos,
     errorCursos,
     cursoSeleccionadoId,
     cursoSeleccionado,
     handleCursoChange,
+    requierePago,
     conPagoInicial,
     handleConPagoInicialChange,
     metodosPago,
@@ -62,205 +91,206 @@ const InscribirParticipantePage = () => {
     inscribiendo,
   } = useInscribirParticipantePage();
 
-  const volverAction = (
-    <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
-      Volver
-    </BackButton>
+  const wizardRef = useRef(null);
+
+  /** Seleccionar de la tabla ya es una elección válida: avanza directo al paso 2. */
+  const handleSeleccionarYAvanzar = useCallback(
+    (participante) => {
+      handleSeleccionarParticipante(participante);
+      wizardRef.current?.goToStep(1);
+    },
+    [handleSeleccionarParticipante],
   );
 
-  const cursoOptions = cursos.map((curso) => ({
-    value: curso.id,
-    label: `${curso.titulo} · Bs ${formatBs(curso.costo)} · ${formatEstadoCurso(curso.estado)}`,
-  }));
+  /** Elegir una tarjeta de curso ya es una elección válida: avanza directo al paso 3. */
+  const handleCursoSeleccionarYAvanzar = useCallback(
+    (value) => {
+      handleCursoChange(value);
+      wizardRef.current?.goToStep(2);
+    },
+    [handleCursoChange],
+  );
+
+  const participanteHeaderActions = useMemo(() => {
+    if (modoParticipante === MODO_PARTICIPANTE.NUEVO) {
+      return (
+        <Button variant="back" size="middle" icon={<SearchOutlined />} onClick={handleVolverABusqueda}>
+          Buscar participante
+        </Button>
+      );
+    }
+    if (participanteNoEncontrado) {
+      return (
+        <Button
+          variant="alternative"
+          size="middle"
+          icon={<UserAddOutlined />}
+          onClick={handleCrearNuevoParticipante}
+        >
+          Crear nuevo participante
+        </Button>
+      );
+    }
+    return null;
+  }, [modoParticipante, participanteNoEncontrado, handleVolverABusqueda, handleCrearNuevoParticipante]);
+
+  const stepsWithHeaderActions = useMemo(
+    () =>
+      wizardSteps.map((step, index) =>
+        index === 0 ? { ...step, headerActions: participanteHeaderActions } : step,
+      ),
+    [wizardSteps, participanteHeaderActions],
+  );
+
+  const renderSectionContent = useCallback(
+    (_stepIndex, sectionKey) => {
+      if (sectionKey === 'participante') {
+        return (
+          <InscribirParticipanteSeccionParticipante
+            key="participante"
+            modoParticipante={modoParticipante}
+            participantes={participantes}
+            loadingBusqueda={loadingBusqueda}
+            errorBusqueda={errorBusqueda}
+            searchText={searchText}
+            searchAttempted={searchAttempted}
+            onBuscarParticipantes={buscarParticipantes}
+            sugeridos={sugeridos}
+            loadingSugeridos={loadingSugeridos}
+            participanteSeleccionado={participanteSeleccionado}
+            onSeleccionarParticipante={handleSeleccionarYAvanzar}
+            disabled={inscribiendo}
+          />
+        );
+      }
+
+      if (sectionKey === 'curso') {
+        return (
+          <InscribirParticipanteSeccionCurso
+            key="curso"
+            cursos={cursos}
+            loadingCursos={loadingCursos}
+            errorCursos={errorCursos}
+            cursoSeleccionadoId={cursoSeleccionadoId}
+            onCursoChange={handleCursoSeleccionarYAvanzar}
+          />
+        );
+      }
+
+      if (sectionKey === 'pago') {
+        return (
+          <Flex vertical gap="middle" key="pago">
+            <CursoCapacitacionResumen curso={cursoSeleccionado} />
+            {requierePago ? (
+              <>
+                <Switch
+                  checked={conPagoInicial}
+                  onChange={handleConPagoInicialChange}
+                  checkedChildren="Con pago"
+                  unCheckedChildren="Sin pago"
+                  style={{ alignSelf: 'flex-start' }}
+                />
+                <InscribirParticipanteSeccionPago
+                  conPagoInicial={conPagoInicial}
+                  errorCatalogos={errorCatalogos}
+                  metodosPago={metodosPago}
+                  cuentasPago={cuentasPago}
+                  loadingCatalogos={loadingCatalogos}
+                  metodoPagoId={metodoPagoId}
+                  reglasMetodo={reglasMetodo}
+                  saldo={cursoSeleccionado?.costo ?? 0}
+                  onMetodoPagoChange={handleMetodoPagoChange}
+                  disabled={inscribiendo}
+                />
+              </>
+            ) : (
+              <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                Este curso no tiene costo asociado (Bs 0): la inscripción no requiere
+                registrar ningún pago.
+              </Typography.Paragraph>
+            )}
+          </Flex>
+        );
+      }
+
+      return null;
+    },
+    [
+      modoParticipante,
+      participantes,
+      loadingBusqueda,
+      errorBusqueda,
+      searchText,
+      searchAttempted,
+      buscarParticipantes,
+      sugeridos,
+      loadingSugeridos,
+      participanteSeleccionado,
+      handleSeleccionarYAvanzar,
+      inscribiendo,
+      cursos,
+      loadingCursos,
+      errorCursos,
+      cursoSeleccionadoId,
+      cursoSeleccionado,
+      handleCursoSeleccionarYAvanzar,
+      requierePago,
+      conPagoInicial,
+      handleConPagoInicialChange,
+      errorCatalogos,
+      metodosPago,
+      cuentasPago,
+      loadingCatalogos,
+      metodoPagoId,
+      reglasMetodo,
+      handleMetodoPagoChange,
+    ],
+  );
 
   return (
-    <PageTemplate
-      header={
-        <PageHeader
-          title="Inscribir participante"
-          breadcrumbItems={breadcrumbItems}
-          actions={volverAction}
-        />
+    <PermisoGuard
+      codigo={CAPACITACION_PERMISOS.inscripcion}
+      accion="CREAR"
+      fallback={
+        <Typography.Text type="danger">
+          No tiene permiso para inscribir participantes.
+        </Typography.Text>
       }
-      sidebar={null}
     >
-      <Form form={form} layout="vertical" disabled={inscribiendo}>
-        <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-          {/* Paso 1: participante (existente o nuevo) */}
-          <section className="cfg-academico-workspace cfg-academico-form-workspace">
-            <header className="cfg-academico-workspace__header">
-              <ListPanelHeader
-                title="Participante"
-                actions={
-                  <Segmented
-                    value={modoParticipante}
-                    onChange={handleModoParticipanteChange}
-                    options={[
-                      { value: MODO_PARTICIPANTE.EXISTENTE, label: 'Buscar existente' },
-                      { value: MODO_PARTICIPANTE.NUEVO, label: 'Nuevo participante' },
-                    ]}
-                  />
-                }
-              />
-              <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                Busque a un participante ya registrado o ingrese los datos mínimos de una persona
-                nueva (se registra junto con la inscripción, en una sola operación).
-              </Paragraph>
-            </header>
-            <div className="cfg-academico-form-workspace__body">
-              {modoParticipante === MODO_PARTICIPANTE.EXISTENTE ? (
-                <ParticipanteSelector
-                  participantes={participantes}
-                  loading={loadingBusqueda}
-                  error={errorBusqueda}
-                  onBuscar={buscarParticipantes}
-                  participanteSeleccionado={participanteSeleccionado}
-                  onSeleccionar={handleSeleccionarParticipante}
-                  onCambiar={handleCambiarParticipante}
-                />
-              ) : (
-                <ParticipanteFormFields disabled={inscribiendo} />
-              )}
-            </div>
-          </section>
+      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+        <PageHeaderArea>
+          <PageHeader
+            title="Inscribir participante"
+            breadcrumbItems={breadcrumbItems}
+            actions={<BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />}
+          />
+        </PageHeaderArea>
 
-          {/* Paso 2: curso */}
-          <section className="cfg-academico-workspace cfg-academico-form-workspace">
-            <header className="cfg-academico-workspace__header">
-              <ListPanelHeader title="Curso de capacitación" />
-              <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                Solo se ofertan los cursos activos. El cupo es informativo: no bloquea la
-                inscripción.
-              </Paragraph>
-            </header>
-            <div className="cfg-academico-form-workspace__body">
-              {errorCursos ? (
-                <Alert
-                  type="error"
-                  showIcon
-                  title="No se pudieron cargar los cursos"
-                  description={errorCursos}
-                  style={{ marginBottom: allSpacing.marginSM }}
-                />
-              ) : null}
-              {!loadingCursos && !errorCursos && cursos.length === 0 ? (
-                <Empty description="No hay cursos de capacitación disponibles." />
-              ) : (
-                <Select
-                  size="large"
-                  style={{ width: '100%' }}
-                  loading={loadingCursos}
-                  placeholder="Seleccione el curso"
-                  options={cursoOptions}
-                  value={cursoSeleccionadoId ?? undefined}
-                  onChange={handleCursoChange}
-                  showSearch
-                  optionFilterProp="label"
-                />
-              )}
-              {cursoSeleccionado ? (
-                <div className="fin-pago-reg-resumen" style={{ marginTop: allSpacing.marginSM }}>
-                  <div className="fin-pago-reg-resumen__item">
-                    <Text type="secondary" className="fin-pago-reg-resumen__label">
-                      Costo
-                    </Text>
-                    <Text strong>Bs {formatBs(cursoSeleccionado.costo)}</Text>
-                  </div>
-                  <div className="fin-pago-reg-resumen__item">
-                    <Text type="secondary" className="fin-pago-reg-resumen__label">
-                      Cupo
-                    </Text>
-                    <Text strong>
-                      {cursoSeleccionado.cupoMaximo != null
-                        ? `${cursoSeleccionado.inscritosCount} / ${cursoSeleccionado.cupoMaximo}`
-                        : `${cursoSeleccionado.inscritosCount} inscritos`}
-                    </Text>
-                  </div>
-                  <div className="fin-pago-reg-resumen__item">
-                    <Text type="secondary" className="fin-pago-reg-resumen__label">
-                      Fechas
-                    </Text>
-                    <Text strong>{cursoSeleccionado.fechasLabel || '—'}</Text>
-                  </div>
-                  <div className="fin-pago-reg-resumen__item">
-                    <Text type="secondary" className="fin-pago-reg-resumen__label">
-                      Horarios
-                    </Text>
-                    <Text strong>{cursoSeleccionado.horariosDetalle || 'Por definir'}</Text>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </section>
-
-          {/* Paso 3: pago inicial opcional */}
-          <section className="cfg-academico-workspace cfg-academico-form-workspace">
-            <header className="cfg-academico-workspace__header">
-              <ListPanelHeader
-                title="Pago inicial (opcional)"
-                actions={
-                  <Switch
-                    checked={conPagoInicial}
-                    onChange={handleConPagoInicialChange}
-                    checkedChildren="Con pago"
-                    unCheckedChildren="Sin pago"
-                  />
-                }
-              />
-              <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                Puede registrar el primer pago junto con la inscripción (misma transacción) o
-                dejarlo pendiente y cobrarlo después desde la ficha.
-              </Paragraph>
-            </header>
-            <div className="cfg-academico-form-workspace__body">
-              {conPagoInicial ? (
-                <>
-                  {errorCatalogos ? (
-                    <Alert
-                      type="error"
-                      showIcon
-                      title="No se pudieron cargar los catálogos de pago"
-                      description={errorCatalogos}
-                      style={{ marginBottom: allSpacing.marginSM }}
-                    />
-                  ) : null}
-                  <PagoCapacitacionFormFields
-                    metodosPago={metodosPago}
-                    cuentasPago={cuentasPago}
-                    loadingCatalogos={loadingCatalogos}
-                    metodoPagoId={metodoPagoId}
-                    reglasMetodo={reglasMetodo}
-                    saldo={cursoSeleccionado?.costo ?? 0}
-                    onMetodoPagoChange={handleMetodoPagoChange}
-                    disabled={inscribiendo}
-                  />
-                </>
-              ) : (
-                <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                  La inscripción quedará con estado de pago «Sin pagos».
-                </Paragraph>
-              )}
-
-              <div className="cfg-academico-form-workspace__footer">
-                <Flex gap="small" justify="flex-end" wrap>
-                  <BackButton onClick={handleVolver}>Cancelar</BackButton>
-                  <ActionButton
-                    permiso={CAPACITACION_PERMISOS.inscripcion}
-                    accion="CREAR"
-                    variant="primary"
-                    icon={<SaveOutlined />}
-                    loading={inscribiendo}
-                    onClick={handleFinish}
-                  >
-                    Registrar inscripción
-                  </ActionButton>
-                </Flex>
-              </div>
-            </div>
-          </section>
-        </Flex>
-      </Form>
-    </PageTemplate>
+        <DashboardPageShell>
+          <MainContent>
+            <WizardForm
+              ref={wizardRef}
+              variant="tabs"
+              steps={stepsWithHeaderActions}
+              form={form}
+              loading={inscribiendo}
+              viewMode={false}
+              resolveOptions={() => []}
+              initialStep={0}
+              onFinish={handleFinish}
+              showSaveButton={false}
+              renderSectionContent={renderSectionContent}
+              onValidateBeforeNext={onValidateBeforeNext}
+              onValidationError={handleValidationError}
+              errorMessage={stepError}
+              finishLabel="Registrar inscripción"
+              nextLabel="Siguiente"
+              prevLabel="Anterior"
+            />
+          </MainContent>
+        </DashboardPageShell>
+      </Flex>
+    </PermisoGuard>
   );
 };
 

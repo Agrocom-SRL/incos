@@ -19,18 +19,24 @@
 import { CAPACITACION_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListCursosCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/ListCursosCapacitacionUseCase.js';
+import { ListHorariosDisponiblesCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/ListHorariosDisponiblesCapacitacionUseCase.js';
 import { GetCursoCapacitacionByIdUseCase } from '../../../../application/use-cases/capacitacion/GetCursoCapacitacionByIdUseCase.js';
 import { CreateCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CreateCursoCapacitacionUseCase.js';
 import { UpdateCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/UpdateCursoCapacitacionUseCase.js';
 import { DeleteCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/DeleteCursoCapacitacionUseCase.js';
 import { SetEstadoCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/SetEstadoCursoCapacitacionUseCase.js';
+import { AbrirCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/AbrirCursoCapacitacionUseCase.js';
+import { CancelarCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CancelarCursoCapacitacionUseCase.js';
 import {
     ListCursosCapacitacionController,
+    ListHorariosDisponiblesCapacitacionController,
     GetCursoCapacitacionByIdController,
     CreateCursoCapacitacionController,
     UpdateCursoCapacitacionController,
     DeleteCursoCapacitacionController,
     SetEstadoCursoCapacitacionController,
+    AbrirCursoCapacitacionController,
+    CancelarCursoCapacitacionController,
 } from '../../../../presentation/controllers/capacitacion/index.js';
 import { buildCursosCapacitacionRouter } from '../../../../presentation/routes/cursos-capacitacion.routes.js';
 
@@ -45,6 +51,18 @@ export function registerCursosCapacitacionResource(container) {
             new ListCursosCapacitacionUseCase({
                 cursoCapacitacionFichaViewRepository: c.resolve(
                     CAPACITACION_TOKENS.cursoCapacitacionFichaViewRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.listHorariosDisponiblesCapacitacionUseCase,
+        (c) =>
+            new ListHorariosDisponiblesCapacitacionUseCase({
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -117,6 +135,30 @@ export function registerCursosCapacitacionResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.abrirCursoCapacitacionUseCase,
+        (c) =>
+            new AbrirCursoCapacitacionUseCase({
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.cancelarCursoCapacitacionUseCase,
+        (c) =>
+            new CancelarCursoCapacitacionUseCase({
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -127,6 +169,19 @@ export function registerCursosCapacitacionResource(container) {
             new ListCursosCapacitacionController({
                 listCursosCapacitacionUseCase: c.resolve(
                     CAPACITACION_TOKENS.listCursosCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.listHorariosDisponiblesCapacitacionController,
+        (c) =>
+            new ListHorariosDisponiblesCapacitacionController({
+                listHorariosDisponiblesCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.listHorariosDisponiblesCapacitacionUseCase
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
@@ -198,6 +253,32 @@ export function registerCursosCapacitacionResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.abrirCursoCapacitacionController,
+        (c) =>
+            new AbrirCursoCapacitacionController({
+                abrirCursoCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.abrirCursoCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.cancelarCursoCapacitacionController,
+        (c) =>
+            new CancelarCursoCapacitacionController({
+                cancelarCursoCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.cancelarCursoCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -208,6 +289,9 @@ export function registerCursosCapacitacionResource(container) {
             const controllers = {
                 listCursosCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.listCursosCapacitacionController
+                ),
+                listHorariosDisponiblesCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.listHorariosDisponiblesCapacitacionController
                 ),
                 getCursoCapacitacionByIdController: c.resolve(
                     CAPACITACION_TOKENS.getCursoCapacitacionByIdController
@@ -223,6 +307,12 @@ export function registerCursosCapacitacionResource(container) {
                 ),
                 setEstadoCursoCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.setEstadoCursoCapacitacionController
+                ),
+                abrirCursoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.abrirCursoCapacitacionController
+                ),
+                cancelarCursoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.cancelarCursoCapacitacionController
                 ),
             };
 

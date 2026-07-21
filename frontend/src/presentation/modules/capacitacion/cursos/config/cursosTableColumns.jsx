@@ -23,6 +23,7 @@ import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/cre
 import { formatBs } from '@application/utils/formatters';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import {
+  esCursoGratuito,
   formatEstadoCurso,
   getEstadoCursoPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
@@ -31,6 +32,7 @@ import {
   cursoCapDetallePath,
   cursoCapEditarPath,
 } from '@application-capacitacion/config/paths';
+import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
 export const createCursosCapacitacionTableColumns = ({
   navigate,
@@ -81,7 +83,7 @@ export const createCursosCapacitacionTableColumns = ({
       render: (_, record) => (
         <InfoLinesCell
           lines={[
-            { icon: <DollarOutlined />, label: `Bs ${formatBs(record.costo)}` },
+            { icon: <DollarOutlined />, label: <CostoCursoLabel costo={record.costo} /> },
             record.fechasLabel
               ? { icon: <CalendarOutlined />, label: record.fechasLabel }
               : null,
@@ -148,7 +150,11 @@ export const createCursosCapacitacionTableColumns = ({
         const itemDetails = [
           { label: 'Curso', value: record.titulo },
           { label: 'Estado', value: formatEstadoCurso(record.estado) },
-          { label: 'Costo', value: `Bs ${formatBs(record.costo)}`, icon: <DollarOutlined /> },
+          {
+            label: 'Costo',
+            value: esCursoGratuito(record.costo) ? 'Gratis' : `Bs ${formatBs(record.costo)}`,
+            icon: <DollarOutlined />,
+          },
           { label: 'Fechas', value: record.fechasLabel, icon: <CalendarOutlined /> },
           {
             label: 'Inscritos',

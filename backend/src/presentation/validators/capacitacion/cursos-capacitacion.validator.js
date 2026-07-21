@@ -21,6 +21,18 @@ export const listCursosCapacitacionValidator = [
     .withMessage('incluirInactivos debe ser true o false'),
 ];
 
+export const listHorariosDisponiblesCapacitacionValidator = [
+  query('aulaId')
+    .notEmpty()
+    .withMessage('aulaId es requerido')
+    .isInt({ min: 1 })
+    .withMessage('aulaId debe ser un entero positivo'),
+  query('excludeCursoId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('excludeCursoId debe ser un entero positivo'),
+];
+
 export const createCursoCapacitacionValidator = [
   body('titulo')
     .notEmpty()
@@ -57,10 +69,6 @@ export const createCursoCapacitacionValidator = [
     .withMessage('fechaFin es requerida')
     .isISO8601()
     .withMessage('fechaFin debe ser una fecha válida (YYYY-MM-DD)'),
-  body('estado')
-    .optional()
-    .isIn(ESTADOS_CAPACITACION_VALUES)
-    .withMessage(`estado debe ser uno de: ${ESTADOS_CAPACITACION_VALUES.join(', ')}`),
   body('horarioIds')
     .optional()
     .isArray()
@@ -105,10 +113,6 @@ export const updateCursoCapacitacionValidator = [
     .optional()
     .isISO8601()
     .withMessage('fechaFin debe ser una fecha válida (YYYY-MM-DD)'),
-  body('estado')
-    .optional()
-    .isIn(ESTADOS_CAPACITACION_VALUES)
-    .withMessage(`estado debe ser uno de: ${ESTADOS_CAPACITACION_VALUES.join(', ')}`),
   body('horarioIds')
     .optional({ nullable: true })
     .isArray()

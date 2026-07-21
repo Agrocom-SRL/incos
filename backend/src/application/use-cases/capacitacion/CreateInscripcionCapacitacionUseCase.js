@@ -1,10 +1,14 @@
 import { ConflictError, NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
-import { ESTADOS_INSCRIPCION_CAPACITACION } from '../../../domain/constants/capacitacion.constants.js';
+import {
+  ESTADOS_CAPACITACION,
+  ESTADOS_INSCRIPCION_CAPACITACION,
+} from '../../../domain/constants/capacitacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import {
   InscripcionCapacitacionMapper,
   ParticipanteMapper,
 } from '../../mappers/capacitacion/index.js';
+import { resolveEstadoEfectivoCurso } from './helpers/cursoEstadoEfectivo.js';
 
 /**
  * Use Case: CreateInscripcionCapacitacionUseCase
@@ -18,6 +22,15 @@ import {
  * 3. Crea la inscripción (fecha_inscripcion = hoy si no se envía).
  * 4. Registra el pago inicial OPCIONAL delegando en
  *    RegisterPagoCapacitacionUseCase (misma transacción).
+ *
+ * El curso acepta inscripciones mientras esté ABIERTO o EN_CURSO (estado
+ * EFECTIVO, calculado por fecha vs `fecha_inicio`/`fecha_fin` en
+ * `resolveEstadoEfectivoCurso`) — el corte real es `fecha_fin`: recién al
+ * pasarla el curso pasa a CERRADO y deja de aceptar inscripciones. PROPUESTO
+ * (aún no abierto) y CANCELADO se rechazan con ConflictError. El frontend ya
+ * filtra por estos mismos 2 estados al listar cursos en el wizard
+ * (useCursosCapacitacionOptions); esta validación es la defensa real, por si
+ * se llama a la API directamente.
  *
  * El cupo del curso es INFORMATIVO en el MVP (decisión §6.9 del plan): no
  * bloquea la inscripción al llegar a cupo_maximo (solo se registra en el log).
@@ -58,6 +71,20 @@ export class CreateInscripcionCapacitacionUseCase {
     }
     const curso = await this.cursoCapacitacionRepository.findById(capacitacionId);
     if (!curso) throw new NotFoundError('curso de capacitación');
+    const estadoEfectivo = resolveEstadoEfectivoCurso(
+      curso.estado,
+      curso.fechaInicio,
+      curso.fechaFin
+    );
+    const ESTADOS_QUE_ACEPTAN_INSCRIPCION = [
+      ESTADOS_CAPACITACION.ABIERTO,
+      ESTADOS_CAPACITACION.EN_CURSO,
+    ];
+    if (!ESTADOS_QUE_ACEPTAN_INSCRIPCION.includes(estadoEfectivo)) {
+      throw new ConflictError(
+        `El curso "${curso.titulo}" no acepta inscripciones en su estado actual (${estadoEfectivo})`
+      );
+    }
 
     // 2. Cupo informativo (decisión §6.9: NO bloquea)
     const inscritosVigentes = await this.inscripcionCapacitacionRepository.count({

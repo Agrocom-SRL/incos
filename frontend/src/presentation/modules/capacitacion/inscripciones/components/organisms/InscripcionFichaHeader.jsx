@@ -14,6 +14,7 @@ import {
   getEstadoPagoCapPillClass,
   getSaldoCapPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
+import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
 const InscripcionFichaHeader = ({ inscripcion }) => {
   const subtitleParts = [
@@ -52,7 +53,7 @@ const InscripcionFichaHeader = ({ inscripcion }) => {
         <div className="sd-stat">
           <span className="sd-stat__label">Costo del curso</span>
           <span className="sd-stat__value sd-stat__value--primary">
-            Bs {formatBs(inscripcion.costo)}
+            <CostoCursoLabel costo={inscripcion.costo} />
           </span>
         </div>
         <div className="sd-stat">

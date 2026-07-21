@@ -6,6 +6,13 @@
  * está protegido por `institucional.oferta.paralelo-gestion LISTAR`, que no
  * todos los roles de CAP tienen: la carga DEGRADA con gracia (aulas = [] y
  * `disponible=false`) sin bloquear el formulario — el aula es opcional.
+ *
+ * El backend envuelve el listado en `{ aulas: [...] }` (ver
+ * `ListAulasCatalogUseCase`), no un array plano — hay que desenvolverlo antes
+ * de usarlo, igual que ya hace `useOfertaParaleloDetalleState.ensureAulasCatalogo`
+ * (`res.data?.aulas ?? res.data`). Sin ese desenvolvimiento, `Array.isArray`
+ * siempre da `false` y el picker se ve deshabilitado para CUALQUIER rol,
+ * incluido ADMIN_SISTEMA — no es un problema de permisos.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -38,8 +45,9 @@ export const useAulasCatalogoCapApi = () => {
         result = handleErrorResponse(error, 'No se pudo cargar el catálogo de aulas');
       }
       if (!activo) return;
-      if (result.success && Array.isArray(result.data)) {
-        setAulas(result.data.map(mapAulaOption).filter(Boolean));
+      const raw = result.success ? (result.data?.aulas ?? result.data) : null;
+      if (result.success && Array.isArray(raw)) {
+        setAulas(raw.map(mapAulaOption).filter(Boolean));
         setDisponible(true);
       } else {
         // Sin permiso institucional (403) u otro error: picker deshabilitado, sin bloquear.

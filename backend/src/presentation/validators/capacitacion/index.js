@@ -4,6 +4,7 @@
 
 export {
   listCursosCapacitacionValidator,
+  listHorariosDisponiblesCapacitacionValidator,
   createCursoCapacitacionValidator,
   updateCursoCapacitacionValidator,
 } from './cursos-capacitacion.validator.js';

@@ -1,21 +1,24 @@
 /**
  * Hook de pantalla: listado de participantes (CAP · LISTAR).
  *
- * Espejo de `usePagosListPage`: columnas, breadcrumb, búsqueda y el modal de
- * alta/edición (el recurso no tiene página de detalle propia — LISTAR/CREAR/
- * EDITAR viven en esta pantalla; sin ELIMINAR por seed 65).
+ * Espejo de `usePagosListPage`: columnas, breadcrumb y búsqueda. Alta y
+ * edición navegan a páginas completas (`/participantes/nuevo`,
+ * `/participantes/:id/editar`), sin modal.
  */
 
-import { useCallback, useMemo, useState } from 'react';
-import { App } from 'antd';
+import { useCallback, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useParticipantesListContext } from '@application-capacitacion/participantes/hooks/context/useParticipantesListContext';
-import { mapFormValuesToParticipantePayload } from '@application-capacitacion/participantes/mappers/participanteMapper';
 import { createParticipantesTableColumns } from '@capacitacion/participantes/config/participantesTableColumns';
-
-const DURACION_MENSAJE_ERROR = 8;
+import {
+  participanteCapRegistrarPath,
+  participanteCapEditarPath,
+  CAP_PARTICIPANTES_MENU_KEY,
+} from '@application-capacitacion/config/paths';
 
 export const useParticipantesListPage = () => {
-  const { message } = App.useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     participantes = [],
@@ -23,44 +26,28 @@ export const useParticipantesListPage = () => {
     error = null,
     searchText = '',
     setSearchText,
-    refetch,
     tablePagination,
-    saving,
-    guardarParticipante,
   } = useParticipantesListContext();
 
-  /** Participante en edición (objeto) | null (modal cerrado) | 'nuevo' (alta). */
-  const [participanteEnEdicion, setParticipanteEnEdicion] = useState(null);
+  const navigationState = useMemo(
+    () => ({ returnListPath: location.pathname, menuSidebarKey: CAP_PARTICIPANTES_MENU_KEY }),
+    [location.pathname],
+  );
 
-  const abrirNuevo = useCallback(() => setParticipanteEnEdicion('nuevo'), []);
-  const abrirEditar = useCallback((record) => setParticipanteEnEdicion(record), []);
-  const cerrarModal = useCallback(() => setParticipanteEnEdicion(null), []);
+  const handleNuevo = useCallback(() => {
+    navigate(participanteCapRegistrarPath, { state: navigationState });
+  }, [navigate, navigationState]);
 
-  const isEditando = participanteEnEdicion !== null && participanteEnEdicion !== 'nuevo';
-
-  /** Submit del modal: UPSERT (POST/PUT) + feedback + recarga del listado. */
-  const guardarDesdeModal = useCallback(
-    async (values) => {
-      const payload = mapFormValuesToParticipantePayload(values);
-      const id = isEditando ? participanteEnEdicion.id : null;
-      const result = await guardarParticipante({ id, payload });
-      if (!result?.success) {
-        message.error(
-          result?.error || 'No se pudo guardar el participante',
-          DURACION_MENSAJE_ERROR,
-        );
-        return;
-      }
-      message.success(id != null ? 'Participante actualizado' : 'Participante registrado');
-      setParticipanteEnEdicion(null);
-      await refetch();
+  const handleEditar = useCallback(
+    (id) => {
+      navigate(participanteCapEditarPath(id), { state: navigationState });
     },
-    [isEditando, participanteEnEdicion, guardarParticipante, message, refetch],
+    [navigate, navigationState],
   );
 
   const tableColumns = useMemo(
-    () => createParticipantesTableColumns({ onEditar: abrirEditar }),
-    [abrirEditar],
+    () => createParticipantesTableColumns({ onEditar: (record) => handleEditar(record.id) }),
+    [handleEditar],
   );
 
   const breadcrumbItems = useMemo(
@@ -84,12 +71,6 @@ export const useParticipantesListPage = () => {
     breadcrumbItems,
     handleSearchChange,
     tablePagination,
-    // Modal de alta/edición
-    participanteEnEdicion,
-    isEditando,
-    abrirNuevo,
-    cerrarModal,
-    guardarDesdeModal,
-    saving,
+    handleNuevo,
   };
 };

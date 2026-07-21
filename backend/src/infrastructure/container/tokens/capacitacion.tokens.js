@@ -16,11 +16,14 @@ export const CAPACITACION_TOKENS = {
 
   // Use Cases — Cursos de capacitación
   listCursosCapacitacionUseCase: 'capacitacion.listCursosCapacitacionUseCase',
+  listHorariosDisponiblesCapacitacionUseCase: 'capacitacion.listHorariosDisponiblesCapacitacionUseCase',
   getCursoCapacitacionByIdUseCase: 'capacitacion.getCursoCapacitacionByIdUseCase',
   createCursoCapacitacionUseCase: 'capacitacion.createCursoCapacitacionUseCase',
   updateCursoCapacitacionUseCase: 'capacitacion.updateCursoCapacitacionUseCase',
   deleteCursoCapacitacionUseCase: 'capacitacion.deleteCursoCapacitacionUseCase',
   setEstadoCursoCapacitacionUseCase: 'capacitacion.setEstadoCursoCapacitacionUseCase',
+  abrirCursoCapacitacionUseCase: 'capacitacion.abrirCursoCapacitacionUseCase',
+  cancelarCursoCapacitacionUseCase: 'capacitacion.cancelarCursoCapacitacionUseCase',
 
   // Use Cases — Participantes
   listParticipantesUseCase: 'capacitacion.listParticipantesUseCase',
@@ -37,11 +40,15 @@ export const CAPACITACION_TOKENS = {
 
   // Controllers — Cursos de capacitación
   listCursosCapacitacionController: 'capacitacion.listCursosCapacitacionController',
+  listHorariosDisponiblesCapacitacionController:
+    'capacitacion.listHorariosDisponiblesCapacitacionController',
   getCursoCapacitacionByIdController: 'capacitacion.getCursoCapacitacionByIdController',
   createCursoCapacitacionController: 'capacitacion.createCursoCapacitacionController',
   updateCursoCapacitacionController: 'capacitacion.updateCursoCapacitacionController',
   deleteCursoCapacitacionController: 'capacitacion.deleteCursoCapacitacionController',
   setEstadoCursoCapacitacionController: 'capacitacion.setEstadoCursoCapacitacionController',
+  abrirCursoCapacitacionController: 'capacitacion.abrirCursoCapacitacionController',
+  cancelarCursoCapacitacionController: 'capacitacion.cancelarCursoCapacitacionController',
 
   // Controllers — Participantes
   listParticipantesController: 'capacitacion.listParticipantesController',

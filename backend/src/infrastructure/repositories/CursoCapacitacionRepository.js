@@ -1,4 +1,5 @@
 import { BaseRepository } from './BaseRepository.js';
+import { sequelize } from '../database/sequelize.js';
 import { CursoCapacitacion as CursoCapacitacionModel } from '../database/models/curso_capacitacion.js';
 import { BloqueCapacitacion as BloqueCapacitacionModel } from '../database/models/bloque_capacitacion.js';
 
@@ -147,5 +148,78 @@ export class CursoCapacitacionRepository extends BaseRepository {
       }));
       await BloqueCapacitacionModel.bulkCreate(rows, { transaction });
     }
+  }
+
+  // ============================================
+  // CATÁLOGO: bloques horarios (tipo_horario='CLASES') LIBRES por aula
+  // ============================================
+
+  /**
+   * Los 60 bloques `horarios` (tipo_horario='CLASES', mismo catálogo que
+   * arma horarios de paralelos académicos) con un flag `ocupado` calculado
+   * para un aula: choca con paralelos académicos vigentes en esa aula
+   * (cadena asignacion_horarios → asignaciones_docentes → oferta_cursos →
+   * paralelos_gestion.aula_id, igual que la vista 54) O con otro curso de
+   * capacitación vigente en esa misma aula (capacitacion_horarios →
+   * capacitaciones.aula_id), excluyendo opcionalmente el propio curso en
+   * edición (`excludeCursoId`).
+   *
+   * Query ad-hoc parametrizada (no vista SQL): el filtro por aula + exclusión
+   * del curso propio es dinámico por request.
+   *
+   * @param {Object} params
+   * @param {number} params.aulaId - Aula a consultar (catálogo `aulas`)
+   * @param {number|null} [params.excludeCursoId] - Curso a excluir (modo edición)
+   * @returns {Promise<Array<Object>>} Filas camelCase con `ocupado` 0|1
+   */
+  async listHorariosDisponibles({ aulaId, excludeCursoId = null }) {
+    const query = `
+      SELECT
+        h.id AS horarioId,
+        h.nombre AS nombre,
+        h.dia AS dia,
+        h.hora_inicio AS horaInicio,
+        h.hora_fin AS horaFin,
+        h.turno AS turno,
+        h.numero_bloque AS numeroBloque,
+        CASE WHEN op.horario_id IS NOT NULL OR ocap.horario_id IS NOT NULL THEN 1 ELSE 0 END AS ocupado
+      FROM horarios h
+      LEFT JOIN (
+        SELECT DISTINCT ah.horario_id
+        FROM asignacion_horarios ah
+        INNER JOIN asignaciones_docentes ad
+          ON ad.id = ah.asignacion_docente_id AND ad.deleted_at IS NULL AND ad.activo = TRUE
+        INNER JOIN oferta_cursos oc
+          ON oc.id = ad.oferta_curso_id AND oc.deleted_at IS NULL AND oc.activo = TRUE
+        INNER JOIN paralelos_gestion pg
+          ON pg.id = oc.paralelo_gestion_id AND pg.deleted_at IS NULL AND pg.activo = TRUE
+          AND pg.aula_id = :aulaId
+        WHERE ah.deleted_at IS NULL AND ah.activo = TRUE
+      ) op ON op.horario_id = h.id
+      LEFT JOIN (
+        SELECT DISTINCT ch.horario_id
+        FROM capacitacion_horarios ch
+        INNER JOIN capacitaciones c
+          ON c.id = ch.capacitacion_id AND c.deleted_at IS NULL AND c.activo = TRUE
+          AND c.aula_id = :aulaId
+          AND (:excludeCursoId IS NULL OR c.id <> :excludeCursoId)
+        WHERE ch.deleted_at IS NULL AND ch.activo = TRUE
+      ) ocap ON ocap.horario_id = h.id
+      WHERE h.tipo_horario = 'CLASES'
+        AND h.activo = TRUE
+        AND h.deleted_at IS NULL
+      ORDER BY
+        CASE h.dia
+          WHEN 'LUNES' THEN 1 WHEN 'MARTES' THEN 2 WHEN 'MIERCOLES' THEN 3 WHEN 'MIÉRCOLES' THEN 3
+          WHEN 'JUEVES' THEN 4 WHEN 'VIERNES' THEN 5 WHEN 'SABADO' THEN 6 WHEN 'SÁBADO' THEN 6
+          WHEN 'DOMINGO' THEN 7 ELSE 8
+        END,
+        h.hora_inicio
+    `;
+
+    return sequelize.query(query, {
+      replacements: { aulaId, excludeCursoId: excludeCursoId ?? null },
+      type: sequelize.QueryTypes.SELECT,
+    });
   }
 }

@@ -31,13 +31,13 @@
  */
 
 import React from 'react';
-import { Steps, Form, Tabs, Alert } from 'antd';
+import { Steps, Form, Tabs, Alert, Typography } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { useWizardForm } from './hooks/useWizardForm';
 
-const WizardForm = ({
+const WizardForm = React.forwardRef(({
   steps = [],
   viewMode = false,
   loading = false,
@@ -67,7 +67,7 @@ const WizardForm = ({
   variant = 'steps',
   // Mensaje de error puntual mostrado junto al footer del wizard (no permanente arriba de la página).
   errorMessage = '',
-}) => {
+}, ref) => {
   // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
   const {
     currentStep,
@@ -84,6 +84,12 @@ const WizardForm = ({
     conditionalLoaders,
     initialStep,
   });
+
+  // API imperativa opcional (ej. avanzar de paso al elegir un ítem de una lista,
+  // sin pasar por el botón "Siguiente" — goToStep NO corre onValidateBeforeNext,
+  // úsala solo cuando el propio evento que dispara el salto ya garantiza que el
+  // paso queda válido, como seleccionar una fila de una tabla).
+  React.useImperativeHandle(ref, () => ({ goToStep: goTo }), [goTo]);
 
   // Paso más lejano alcanzado: gobierna qué pestañas son navegables por click (solo visitadas/completadas).
   // Se inicializa con initialStep para que, al abrir directo en un paso avanzado (vínculo y rol prefijados),
@@ -251,7 +257,15 @@ const WizardForm = ({
     return (
       <section className={`cfg-academico-workspace cfg-academico-form-workspace ${className}`.trim()}>
         <header className="cfg-academico-workspace__header">
-          <ListPanelHeader title={currentStepConfig.formTitle || 'Formulario'} />
+          <ListPanelHeader
+            title={currentStepConfig.formTitle || 'Formulario'}
+            actions={currentStepConfig.headerActions ?? null}
+          />
+          {currentStepConfig.description ? (
+            <Typography.Paragraph type="secondary" className="cfg-academico-workspace__desc">
+              {currentStepConfig.description}
+            </Typography.Paragraph>
+          ) : null}
         </header>
 
         <div className="sd-tabs-shell cfg-academico-tabs-shell">
@@ -289,6 +303,8 @@ const WizardForm = ({
       {wizardFooter}
     </FormCard>
   );
-};
+});
+
+WizardForm.displayName = 'WizardForm';
 
 export default WizardForm;

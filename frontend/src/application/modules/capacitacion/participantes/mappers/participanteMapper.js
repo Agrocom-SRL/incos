@@ -4,6 +4,12 @@
  * El backend ya entrega camelCase con `nombreCompleto`; se reconstruye igual
  * con `buildFullName` (orden canónico APELLIDO_PATERNO APELLIDO_MATERNO
  * NOMBRES) para mantener una sola convención, y se arma el CI completo.
+ *
+ * `cursoActualId`/`cursoActualTitulo`: inscripción vigente del participante
+ * (si la tiene), expuesta por `GET /participantes` — `null` cuando no está
+ * inscrito actualmente. Se usa en el selector de "Inscribir participante"
+ * (sugeridos y resultados de búsqueda) para advertir de antemano si ya cursa
+ * algo antes de decidir la nueva inscripción.
  */
 
 import dayjs from 'dayjs';
@@ -41,6 +47,8 @@ export const mapParticipante = (raw) => {
     ),
     celular: cleanText(raw.celular),
     email: cleanText(raw.email),
+    cursoActualId: raw.cursoActualId ?? null,
+    cursoActualTitulo: cleanText(raw.cursoActualTitulo),
     activo: raw.activo !== false && raw.activo !== 0,
     createdAt: raw.createdAt ?? null,
     registradoLabel: raw.createdAt ? dayjs(raw.createdAt).format('DD/MM/YYYY') : null,

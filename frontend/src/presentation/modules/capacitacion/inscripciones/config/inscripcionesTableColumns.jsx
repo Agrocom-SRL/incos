@@ -19,12 +19,14 @@ import { TableActions } from '@molecules';
 import { formatBs } from '@application/utils/formatters';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import {
+  esCursoGratuito,
   formatEstadoCurso,
   formatEstadoPagoCap,
   getEstadoPagoCapPillClass,
   getSaldoCapPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
 import { inscripcionCapDetallePath } from '@application-capacitacion/config/paths';
+import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
 export const createInscripcionesCapTableColumns = ({
   navigate,
@@ -92,7 +94,11 @@ export const createInscripcionesCapTableColumns = ({
           lines={[
             {
               icon: <DollarOutlined />,
-              label: `Bs ${formatBs(record.totalPagado)} de Bs ${formatBs(record.costo)}`,
+              label: esCursoGratuito(record.costo) ? (
+                <CostoCursoLabel costo={record.costo} />
+              ) : (
+                `Bs ${formatBs(record.totalPagado)} de Bs ${formatBs(record.costo)}`
+              ),
             },
             {
               icon: <NumberOutlined />,

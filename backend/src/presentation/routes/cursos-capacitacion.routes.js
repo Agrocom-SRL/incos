@@ -4,6 +4,7 @@ import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { idValidator } from '../validators/common/index.js';
 import {
     listCursosCapacitacionValidator,
+    listHorariosDisponiblesCapacitacionValidator,
     createCursoCapacitacionValidator,
     updateCursoCapacitacionValidator,
     setEstadoCatalogoValidator,
@@ -58,6 +59,21 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.createCursoCapacitacionController.handle(req, res, next)
     );
 
+    /**
+     * GET /api/v1/cursos-capacitacion/horarios-disponibles?aulaId=X&excludeCursoId=Y
+     * Bloques `horarios` (tipo_horario='CLASES') con flag `ocupado` por aula
+     * (choque con paralelos académicos u otros cursos de capacitación).
+     * Ruta estática: va ANTES de GET /:id para no chocar con el parámetro.
+     */
+    router.get(
+        '/horarios-disponibles',
+        ...listar,
+        listHorariosDisponiblesCapacitacionValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.listHorariosDisponiblesCapacitacionController.handle(req, res, next)
+    );
+
     // GET /:id - Ficha del curso (vista 155 + bloques de la vista 154)
     router.get(
         '/:id',
@@ -65,6 +81,24 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
         idValidator,
         validateRequest,
         (req, res, next) => controllers.getCursoCapacitacionByIdController.handle(req, res, next)
+    );
+
+    // POST /:id/abrir - Transición manual PROPUESTO → ABIERTO (abrir inscripciones)
+    router.post(
+        '/:id/abrir',
+        ...editar,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.abrirCursoCapacitacionController.handle(req, res, next)
+    );
+
+    // POST /:id/cancelar - Transición manual hacia CANCELADO (desde PROPUESTO o ABIERTO)
+    router.post(
+        '/:id/cancelar',
+        ...editar,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.cancelarCursoCapacitacionController.handle(req, res, next)
     );
 
     // PUT /:id - Actualizar curso; si trae horarioIds REEMPLAZA la junction

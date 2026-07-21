@@ -7,7 +7,12 @@
  * - Filas de la vista 154 (`vista_base_cursos_capacitacion_horarios`) →
  *   bloques horarios de la ficha.
  * - Entidades del repositorio CRUD → presentación (respuestas de crear/editar).
+ *
+ * El campo `estado` expuesto es SIEMPRE el estado EFECTIVO (ver
+ * `resolveEstadoEfectivoCurso`), nunca el crudo de BD.
  */
+
+import { resolveEstadoEfectivoCurso } from '../../use-cases/capacitacion/helpers/cursoEstadoEfectivo.js';
 
 /**
  * Convierte una fila de la vista 155 a formato de presentación.
@@ -25,7 +30,7 @@ export function viewRowToPresentation(row) {
     cupoMaximo: row.cupo_maximo,
     fechaInicio: row.fecha_inicio,
     fechaFin: row.fecha_fin,
-    estado: row.estado,
+    estado: resolveEstadoEfectivoCurso(row.estado, row.fecha_inicio, row.fecha_fin),
     aulaId: row.aula_id ?? null,
     aulaCodigo: row.aula_codigo ?? null,
     aulaNombre: row.aula_nombre ?? null,
@@ -100,7 +105,7 @@ export function entityToPresentation(entity) {
     cupoMaximo: entity.cupoMaximo,
     fechaInicio: entity.fechaInicio,
     fechaFin: entity.fechaFin,
-    estado: entity.estado,
+    estado: resolveEstadoEfectivoCurso(entity.estado, entity.fechaInicio, entity.fechaFin),
     aulaId: entity.aulaId ?? null,
     activo: entity.activo,
     createdAt: entity.createdAt,

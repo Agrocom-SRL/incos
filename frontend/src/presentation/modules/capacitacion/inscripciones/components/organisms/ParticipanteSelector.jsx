@@ -1,100 +1,81 @@
 /**
  * Organismo: buscador/selector de participante para inscribir (CAP).
  *
- * Adaptación de `EstudianteSelector` (Finanzas · PagosRegistrar): dos estados —
- * búsqueda con lista de resultados / tarjeta del seleccionado con "Cambiar".
- * Reusa las clases `fin-pago-reg-*` de `pagos-registrar.css` (fuente única de
- * ese layout, solo tokens). Nombre completo en orden canónico (mapper).
- * Recibe props ya mapeadas; no llama hooks de fetch.
+ * Lenguaje visual "config" de la landing de Historial académico
+ * (`HistorialSelectorPage`/`historialSelectorColumns`): tabla `TableListView`
+ * con su buscador nativo (`searchColSpan`, alineado a la derecha), sin tabs
+ * por carrera. Siempre muestra la tabla (nunca una tarjeta de resumen
+ * aparte): elegir una fila selecciona y avanza el wizard de inmediato (ver
+ * `InscribirParticipantePage.handleSeleccionarYAvanzar`), y si el usuario
+ * vuelve al paso 1 la fila ya elegida queda resaltada (`rowClassName`) para
+ * que pueda confirmar o cambiarla con un clic, sin un botón "Cambiar" aparte.
+ *
+ * Dos fuentes de datos según haya búsqueda activa (`searchAttempted`):
+ * - Sin búsqueda → landing con hasta 10 sugeridos sin inscripción vigente.
+ * - Con búsqueda (≥2 caracteres) → resultados de `GET /participantes?search=`.
+ *
+ * Recibe props ya mapeadas del hook; no llama hooks de fetch.
  */
 
-import { Alert, Empty, Flex, Input, Spin } from 'antd';
-import { SearchOutlined, UserOutlined } from '@ant-design/icons';
-import { Button } from '@atoms';
+import { useMemo } from 'react';
+import { Alert } from 'antd';
+import { TableListView } from '@organisms';
+import { createParticipanteSelectorColumns } from '@capacitacion/inscripciones/config/participanteSelectorColumns.jsx';
 
 const ParticipanteSelector = ({
   participantes = [],
   loading = false,
   error = null,
   onBuscar,
+  searchText = '',
+  searchAttempted = false,
+  sugeridos = [],
+  loadingSugeridos = false,
   participanteSeleccionado,
   onSeleccionar,
-  onCambiar,
 }) => {
-  if (participanteSeleccionado) {
-    return (
-      <div className="fin-pago-reg-seleccion">
-        <div className="fin-pago-reg-seleccion__info">
-          <span className="fin-pago-reg-seleccion__nombre">
-            {participanteSeleccionado.nombreCompleto}
-          </span>
-          <span className="fin-pago-reg-seleccion__meta">
-            {[
-              participanteSeleccionado.ciCompleto ? `CI ${participanteSeleccionado.ciCompleto}` : null,
-              participanteSeleccionado.celular,
-            ]
-              .filter(Boolean)
-              .join(' · ') || 'Participante seleccionado'}
-          </span>
-        </div>
-        <Button variant="back" onClick={onCambiar}>
-          Cambiar participante
-        </Button>
-      </div>
-    );
-  }
+  const columns = useMemo(
+    () => createParticipanteSelectorColumns({ onSeleccionar }),
+    [onSeleccionar],
+  );
+
+  const data = searchAttempted ? participantes : sugeridos;
+  const tableLoading = searchAttempted ? loading : loadingSugeridos;
+  const emptyText = searchAttempted
+    ? 'No se encontraron participantes con esos datos. Use «Crear nuevo participante» arriba para registrarlo.'
+    : 'No hay participantes sin inscripción activa para sugerir — use el buscador.';
 
   return (
-    <Flex vertical gap="middle" style={{ width: '100%' }}>
-      <Input
-        size="large"
-        allowClear
-        prefix={<SearchOutlined />}
-        placeholder="Buscar por CI, nombre o celular (mín. 2 caracteres)…"
-        onChange={(event) => onBuscar?.(event.target.value)}
-      />
-
+    <>
       {error ? (
         <Alert
           type="error"
           showIcon
           title="No se pudieron buscar los participantes"
           description={error}
+          style={{ marginBottom: 12 }}
         />
       ) : null}
 
-      <Spin spinning={loading}>
-        {participantes.length === 0 && !loading ? (
-          <Empty description="Escriba para buscar un participante registrado" />
-        ) : (
-          <div className="fin-pago-reg-resultados">
-            {participantes.map((participante) => (
-              <button
-                key={participante.id}
-                type="button"
-                className="fin-pago-reg-resultado"
-                onClick={() => onSeleccionar?.(participante)}
-              >
-                <span className="fin-pago-reg-resultado__info">
-                  <span className="fin-pago-reg-resultado__nombre">
-                    <UserOutlined /> {participante.nombreCompleto}
-                  </span>
-                  <span className="fin-pago-reg-resultado__meta">
-                    {[
-                      participante.ciCompleto ? `CI ${participante.ciCompleto}` : null,
-                      participante.celular,
-                      participante.email,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ') || 'Sin datos de contacto'}
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </Spin>
-    </Flex>
+      <TableListView
+        embedded
+        data={data}
+        loading={tableLoading}
+        columns={columns}
+        rowKey={(record) => record.id}
+        rowClassName={(record) =>
+          record.id === participanteSeleccionado?.id
+            ? 'participante-selector__row--selected'
+            : ''
+        }
+        searchText={searchText}
+        onSearchChange={(event) => onBuscar?.(event.target.value)}
+        searchPlaceholder="Buscar por CI, nombre o celular (mín. 2 caracteres)…"
+        searchColSpan={12}
+        loadingTip={searchAttempted ? 'Buscando participantes...' : 'Cargando sugerencias...'}
+        emptyText={emptyText}
+      />
+    </>
   );
 };
 

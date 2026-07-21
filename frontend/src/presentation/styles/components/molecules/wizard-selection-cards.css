@@ -22,7 +22,10 @@
 
 .wizard-selection-cards__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  /* Tope de ancho fijo (no 1fr): evita que 1-2 tarjetas se estiren a todo el
+     contenedor en pantallas grandes. En viewports angostos (móvil) el mínimo
+     de 250px ya ocupa el ancho disponible, sin necesidad de media query. */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 380px));
   gap: var(--spacing-md);
   width: 100%;
 }
@@ -146,4 +149,16 @@
   color: var(--color-white, #fff);
   font-size: 14px;
   line-height: 1;
+}
+
+/* Métricas (costo/cupo/fechas) dentro de la tarjeta de selección: el átomo
+   `InfoLinesCell` (`cfg-academico-metricas-list`) es vertical por defecto para
+   celdas de tabla angostas; aquí hay más ancho (~380px de tarjeta), así que se
+   reflow en fila con wrap. Scoped al contenedor nuevo — no afecta las tablas
+   que ya usan `cfg-academico-metricas-list` en columna. */
+.wizard-selection-cards__metrics .cfg-academico-metricas-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 6px) var(--spacing-lg);
+  margin-top: var(--spacing-xs, 6px);
 }

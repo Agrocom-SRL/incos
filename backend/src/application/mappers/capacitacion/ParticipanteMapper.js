@@ -37,6 +37,9 @@ export function entityToPresentation(entity) {
     email: entity.email ?? null,
     activo: entity.activo,
     createdAt: entity.createdAt,
+    // Inscripción vigente más reciente (estado='INSCRITO', activa, no eliminada); `null` si no tiene.
+    cursoActualId: entity.cursoActualId ?? null,
+    cursoActualTitulo: entity.cursoActualTitulo ?? null,
   };
 }
 

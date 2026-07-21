@@ -50,3 +50,9 @@ export const getEstadoPagoCapPillClass = (estadoPago) =>
 /** Saldo pendiente → pill por severidad (saldado = success, debe = danger). */
 export const getSaldoCapPillClass = (saldo) =>
   `cfg-materia-pill ${Number(saldo) > 0 ? 'cfg-materia-pill--danger' : 'cfg-materia-pill--success'}`;
+
+/** Curso sin costo asociado (Bs 0): en toda vista se muestra pill "Gratis", no "Bs 0". */
+export const esCursoGratuito = (costo) => Number(costo ?? 0) <= 0;
+
+/** Clase del StatusPill "Gratis" (mismo verde que ABIERTO/PAGADO/Saldado). */
+export const COSTO_GRATUITO_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--success';

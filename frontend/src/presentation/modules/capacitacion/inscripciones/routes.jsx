@@ -18,6 +18,9 @@ const InscribirParticipanteConnector = lazy(
 const InscripcionCapacitacionDetailConnector = lazy(
   () => import('./connectors/InscripcionCapacitacionDetailConnector.jsx'),
 );
+const InscripcionCapRegistrarPagoConnector = lazy(
+  () => import('./connectors/InscripcionCapRegistrarPagoConnector.jsx'),
+);
 
 export const capacitacionInscripcionesRoutes = [
   {
@@ -29,6 +32,16 @@ export const capacitacionInscripcionesRoutes = [
     accion: 'CREAR',
     menu: null,
     breadcrumbParent: 'CAP-INSCRIPCIONES',
+  },
+  {
+    path: '/capacitacion/inscripciones/:id/pagos/registrar',
+    element: <InscripcionCapRegistrarPagoConnector />,
+    key: 'CAP-INSCRIPCIONES-PAGO-REGISTRAR',
+    breadcrumbLabel: 'Registrar pago',
+    permiso: 'capacitacion.pago',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'CAP-INSCRIPCIONES-DETALLE',
   },
   {
     path: '/capacitacion/inscripciones/:id',
