@@ -15,6 +15,7 @@ import {
   ClockCircleOutlined,
   DollarOutlined,
   EnvironmentOutlined,
+  FileExcelOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
@@ -39,6 +40,8 @@ export const createCursosCapacitacionTableColumns = ({
   listNavState,
   refetch,
   onToggleEstado,
+  onExportarInscritos,
+  exportandoInscritosId,
   deleteFn,
 }) => {
   return [
@@ -163,6 +166,21 @@ export const createCursosCapacitacionTableColumns = ({
           },
         ].filter((d) => d.value != null && d.value !== '');
 
+        const extraActions = onExportarInscritos
+          ? [
+              {
+                key: 'exportarInscritos',
+                icon: <FileExcelOutlined />,
+                variant: 'view',
+                tooltip: 'Exportar lista de inscritos',
+                permiso: CAPACITACION_PERMISOS.inscripcion,
+                accion: 'EXPORTAR',
+                disabled: exportandoInscritosId === record.id,
+                onClick: () => onExportarInscritos(record),
+              },
+            ]
+          : [];
+
         return (
           <TableActions
             record={record}
@@ -178,6 +196,7 @@ export const createCursosCapacitacionTableColumns = ({
               })
             }
             editTitle="Editar curso"
+            extraActions={extraActions}
             permisos={{
               ver: { codigo: CAPACITACION_PERMISOS.curso, accion: 'DETALLE' },
               editar: { codigo: CAPACITACION_PERMISOS.curso, accion: 'EDITAR' },

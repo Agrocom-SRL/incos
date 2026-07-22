@@ -142,4 +142,5 @@ export { Participante } from './participante.js';
 export { CursoCapacitacion } from './curso_capacitacion.js';
 export { BloqueCapacitacion } from './bloque_capacitacion.js';
 export { InscripcionCapacitacion } from './inscripcion_capacitacion.js';
+export { CapacitacionCompromiso } from './capacitacion_compromiso.js';
 export { PagoCapacitacion } from './pago_capacitacion.js';

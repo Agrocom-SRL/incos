@@ -3,9 +3,17 @@
  *
  * Espejo de `usePagosListPage`: columnas (participante + curso + estado de
  * pago), breadcrumb y handlers (inscribir, eliminar). La página es "dumb".
+ *
+ * Filtro "Solo con pago vencido" (regla de negocio §7 del módulo): combina
+ * `estadoPago === 'PARCIAL'` (todavía debe, dato real) con la fecha de
+ * compromiso vencida — ambas ya resueltas en `record.pagoVencido` por el
+ * mapper (`mapInscripcionCapacitacion`). Se filtra en cliente porque el
+ * provider ya carga todo el listado (`loadAll`); NO se usa `compromisoEstado`
+ * del backend solo, porque puede quedar en INCUMPLIDO para siempre aunque la
+ * deuda ya esté saldada.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useInscripcionesCapacitacionListContext } from '@application-capacitacion/inscripciones/hooks/context/useInscripcionesCapacitacionListContext';
 import { createInscripcionesCapTableColumns } from '@capacitacion/inscripciones/config/inscripcionesTableColumns';
@@ -20,7 +28,7 @@ export const useInscripcionesCapacitacionListPage = () => {
   const { pathname } = useLocation();
 
   const {
-    inscripciones = [],
+    inscripciones: inscripcionesCargadas = [],
     loading = false,
     error = null,
     searchText = '',
@@ -29,6 +37,16 @@ export const useInscripcionesCapacitacionListPage = () => {
     tablePagination,
     eliminarInscripcion,
   } = useInscripcionesCapacitacionListContext();
+
+  const [soloVencidos, setSoloVencidos] = useState(false);
+
+  const inscripciones = useMemo(
+    () =>
+      soloVencidos
+        ? inscripcionesCargadas.filter((inscripcion) => inscripcion.pagoVencido)
+        : inscripcionesCargadas,
+    [inscripcionesCargadas, soloVencidos],
+  );
 
   const listNavState = useMemo(
     () => ({
@@ -85,5 +103,7 @@ export const useInscripcionesCapacitacionListPage = () => {
     handleInscribir,
     handleSearchChange,
     tablePagination,
+    soloVencidos,
+    setSoloVencidos,
   };
 };

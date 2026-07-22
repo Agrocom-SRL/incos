@@ -33,11 +33,18 @@ export const ESTADOS_CAPACITACION_VALUES = Object.values(ESTADOS_CAPACITACION);
 // ============================================
 
 /**
- * Estados de la inscripción de un participante a una capacitación
+ * Estados de la inscripción de un participante a una capacitación.
+ * PENDIENTE: pago parcial, aún no completa el monto obligatorio (default) |
+ * INSCRITO: monto obligatorio cancelado (a tiempo o con pago atrasado, ambos
+ * se tratan exactamente igual, sin penalización) | RETIRADO: se retiró
+ * estando inscrito | ANULADO: decisión administrativa MANUAL (nunca
+ * automática por incumplir el compromiso de pago).
  */
 export const ESTADOS_INSCRIPCION_CAPACITACION = {
+  PENDIENTE: 'PENDIENTE',
   INSCRITO: 'INSCRITO',
   RETIRADO: 'RETIRADO',
+  ANULADO: 'ANULADO',
 };
 
 /**
@@ -48,20 +55,47 @@ export const ESTADOS_INSCRIPCION_CAPACITACION_VALUES = Object.values(
 );
 
 // ============================================
-// ESTADO DE PAGO (derivado, no persistido)
+// ESTADO DE PAGO DE LA INSCRIPCIÓN (persistido, tabla `capacitacion_inscritos`)
 // ============================================
 
 /**
- * Estado de pago de una inscripción, derivado de SUM(capacitacion_pagos.monto)
- * vs `capacitaciones.costo`. No se persiste: se calcula en lectura.
+ * Estado de pago de una inscripción — PERSISTIDO (columna `estado_pago`), no
+ * derivado: cachea si SUM(capacitacion_pagos.monto activos) cubre o no
+ * `monto_obligatorio`. Nunca existe el valor "sin pagos": toda fila de
+ * `capacitacion_inscritos` con costo > 0 nace con al menos el pago inicial.
  */
-export const ESTADOS_PAGO_CAPACITACION = {
-  PENDIENTE: 'PENDIENTE',
+export const ESTADOS_PAGO_INSCRITO_CAPACITACION = {
   PARCIAL: 'PARCIAL',
-  PAGADO: 'PAGADO',
+  CANCELADO: 'CANCELADO',
 };
 
 /**
- * Array de estados de pago derivados (útil para el frontend/filters)
+ * Array de estados de pago de inscripción válidos (útil para validators)
  */
-export const ESTADOS_PAGO_CAPACITACION_VALUES = Object.values(ESTADOS_PAGO_CAPACITACION);
+export const ESTADOS_PAGO_INSCRITO_CAPACITACION_VALUES = Object.values(
+  ESTADOS_PAGO_INSCRITO_CAPACITACION
+);
+
+// ============================================
+// COMPROMISOS DE PAGO (tabla `capacitacion_compromisos`)
+// ============================================
+
+/**
+ * Estado del compromiso de pago de una inscripción con saldo parcial.
+ * VIGENTE: en plazo | CUMPLIDO: saldo cancelado (a tiempo o tarde, no
+ * distingue) | INCUMPLIDO: venció sin cancelar — puramente informativo para
+ * reportes administrativos, NUNCA dispara cambios automáticos en
+ * `capacitacion_inscritos`.
+ */
+export const ESTADOS_COMPROMISO_CAPACITACION = {
+  VIGENTE: 'VIGENTE',
+  CUMPLIDO: 'CUMPLIDO',
+  INCUMPLIDO: 'INCUMPLIDO',
+};
+
+/**
+ * Array de estados de compromiso válidos (útil para validators)
+ */
+export const ESTADOS_COMPROMISO_CAPACITACION_VALUES = Object.values(
+  ESTADOS_COMPROMISO_CAPACITACION
+);

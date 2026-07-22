@@ -1,11 +1,16 @@
 -- ============================================
 -- MÓDULO DE CURSOS DE CAPACITACIÓN
 -- Sistema de Gestión Académica - Instituto INCOS
--- 5 Tablas: participantes, capacitaciones, capacitacion_horarios,
---           capacitacion_inscritos, capacitacion_pagos
+-- 6 Tablas: participantes, capacitaciones, capacitacion_horarios,
+--           capacitacion_inscritos, capacitacion_pagos, capacitacion_compromisos
 -- Dominio independiente de la matrícula formal del instituto: cursos cortos
 -- (ej. "Word avanzado") abiertos a cualquier persona (colegio, público en
 -- general o estudiantes del instituto), sin acceso al sistema (sin usuario/rol).
+-- Pago por cuotas: capacitacion_pagos es el historial de pagos (mismo rol
+-- que pago_cuotas); capacitacion_inscritos cachea el monto objetivo y un
+-- estado de pago; capacitacion_compromisos es informativo para la
+-- administración (quién no pagó en la fecha acordada) y NO bloquea ni anula
+-- nada de forma automática — un pago atrasado se acepta con normalidad.
 -- Convención de nombres: tabla raíz `capacitaciones` (plural, sin prefijo,
 -- como `cursos`/`carreras`/`paralelos`); todo lo que depende de ella usa el
 -- prefijo `capacitacion_` (verificado sin colisión con el resto del esquema
@@ -25,6 +30,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
 DROP TABLE IF EXISTS capacitacion_pagos;
+DROP TABLE IF EXISTS capacitacion_compromisos;
 DROP TABLE IF EXISTS capacitacion_inscritos;
 DROP TABLE IF EXISTS capacitacion_horarios;
 DROP TABLE IF EXISTS capacitaciones;
@@ -165,7 +171,15 @@ CREATE TABLE capacitacion_inscritos (
     participante_id INT NULL COMMENT 'Participante inscrito',
     capacitacion_id INT NULL COMMENT 'Curso de capacitación',
     fecha_inscripcion DATE NOT NULL COMMENT 'Fecha en que se registró la inscripción',
-    estado ENUM('INSCRITO', 'RETIRADO') NOT NULL DEFAULT 'INSCRITO' COMMENT 'Estado de la inscripción',
+    estado ENUM('PENDIENTE', 'INSCRITO', 'RETIRADO', 'ANULADO') NOT NULL DEFAULT 'PENDIENTE'
+        COMMENT 'PENDIENTE: pago parcial, aun no completa el monto obligatorio | INSCRITO: monto obligatorio cancelado (a tiempo o con pago atrasado, ambos se aceptan igual) | RETIRADO: se retiro estando inscrito | ANULADO: decision administrativa manual (no automatica por incumplir el compromiso de pago)',
+
+    -- Pago por cuotas: el detalle de cada pago vive en capacitacion_pagos
+    -- (historial, sin límite de filas); aquí solo se cachea el objetivo y
+    -- el estado para no tener que sumar capacitacion_pagos en cada listado
+    monto_obligatorio DECIMAL(10,2) NOT NULL COMMENT 'Snapshot de capacitaciones.costo al momento de inscribirse (protege de cambios de precio posteriores)',
+    estado_pago ENUM('PARCIAL', 'CANCELADO') NOT NULL DEFAULT 'PARCIAL'
+        COMMENT 'PARCIAL: aun debe saldo (siempre existe al menos el primer pago al crear la fila) | CANCELADO: SUM(capacitacion_pagos.monto) >= monto_obligatorio',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -188,19 +202,70 @@ CREATE TABLE capacitacion_inscritos (
     INDEX idx_participante_id (participante_id) COMMENT 'Búsqueda por participante',
     INDEX idx_capacitacion_id (capacitacion_id) COMMENT 'Búsqueda por curso',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado de inscripción',
+    INDEX idx_estado_pago (estado_pago) COMMENT 'Filtrado por estado de pago',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_capacitacion_estado (capacitacion_id, estado, activo, deleted_at)
-        COMMENT 'Inscritos activos por curso'
+        COMMENT 'Inscritos activos por curso',
+    INDEX idx_capacitacion_estado_pago (capacitacion_id, estado_pago, activo, deleted_at)
+        COMMENT 'Pendientes de pago por curso'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Inscripción de un participante a una capacitación.';
+COMMENT='Inscripción de un participante a una capacitación. Pago por cuotas: monto_obligatorio y estado_pago cachean el objetivo y avance; el detalle vive en capacitacion_pagos.';
+
+-- ============================================
+-- TABLA: capacitacion_compromisos
+-- Compromiso de pago del participante: fecha acordada para cancelar el
+-- saldo pendiente de una inscripción con pago parcial. Uso administrativo
+-- (saber quién no pagó en la fecha acordada) — NO bloquea ni anula nada de
+-- forma automática: un pago atrasado se acepta con normalidad y sigue el
+-- ciclo normal de cuotas. Mismo patrón que compromisos_pago (14-pagos-
+-- academicos.sql) pero colgado de capacitacion_inscritos en vez de
+-- pago_aporte (una capacitación no tiene gestión y el participante puede no
+-- ser estudiante).
+-- ============================================
+
+CREATE TABLE capacitacion_compromisos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    capacitacion_inscrito_id INT NULL COMMENT 'Inscripción a la que aplica el compromiso',
+
+    fecha_compromiso DATE NOT NULL COMMENT 'Fecha acordada para cancelar el saldo',
+    observacion VARCHAR(500) NULL COMMENT 'Nota del compromiso (condiciones, respaldo)',
+    estado ENUM('VIGENTE', 'CUMPLIDO', 'INCUMPLIDO') DEFAULT 'VIGENTE'
+        COMMENT 'VIGENTE=en plazo | CUMPLIDO=saldo cancelado a tiempo | INCUMPLIDO=venció sin cancelar (solo informativo para reportes administrativos)',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+
+    FOREIGN KEY (capacitacion_inscrito_id) REFERENCES capacitacion_inscritos(id) ON DELETE SET NULL,
+
+    -- Sin UNIQUE en capacitacion_inscrito_id: la "un compromiso VIGENTE por inscripción" se garantiza en lógica de negocio (soft delete + histórico)
+    INDEX idx_capacitacion_inscrito_id (capacitacion_inscrito_id) COMMENT 'Búsqueda por inscripción',
+    INDEX idx_fecha_compromiso (fecha_compromiso) COMMENT 'Búsqueda/orden por fecha de compromiso',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado del compromiso',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_inscrito_vigente (capacitacion_inscrito_id, estado, activo, deleted_at) COMMENT 'Compromiso vigente por inscripción'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Compromiso de pago de un participante: fecha acordada para cancelar el saldo. Uso administrativo/reportes; incumplirlo NO anula la inscripción automáticamente ni bloquea el pago atrasado.';
 
 -- ============================================
 -- TABLA: capacitacion_pagos
--- Pago único de matrícula/inscripción a la capacitación (sin cuotas).
--- Reutiliza los catálogos metodos_pago/cuentas_pago, sin extender
--- pago_cuotas/compromisos_pago (acoplados a estudiante+gestión).
+-- Historial de pagos (cuotas) de una inscripción a capacitación — mismo rol
+-- que pago_cuotas en el módulo de Pagos, pero sin acoplarse a
+-- pago_aporte/compromisos_pago (esos dependen de estudiante+gestión; una
+-- capacitación no tiene gestión y el participante puede no ser estudiante).
+-- Reutiliza los catálogos metodos_pago/cuentas_pago.
 -- ============================================
 
 CREATE TABLE capacitacion_pagos (
@@ -238,7 +303,7 @@ CREATE TABLE capacitacion_pagos (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Pago único de matrícula/inscripción a una capacitación. Sin cuotas: un pago por inscripción.';
+COMMENT='Historial de pagos (cuotas) de una inscripción a capacitación. Sin límite de filas: SUM(monto) WHERE activo=1 AND deleted_at IS NULL se compara contra capacitacion_inscritos.monto_obligatorio.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

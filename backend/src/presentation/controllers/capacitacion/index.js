@@ -12,6 +12,7 @@ export { DeleteCursoCapacitacionController } from './delete-curso-capacitacion.c
 export { SetEstadoCursoCapacitacionController } from './set-estado-curso-capacitacion.controller.js';
 export { AbrirCursoCapacitacionController } from './abrir-curso-capacitacion.controller.js';
 export { CancelarCursoCapacitacionController } from './cancelar-curso-capacitacion.controller.js';
+export { ExportListadoInscritosCapacitacionController } from './export-listado-inscritos-capacitacion.controller.js';
 
 // Participantes
 export { ListParticipantesController } from './list-participantes.controller.js';
@@ -24,4 +25,5 @@ export { ListInscripcionesCapacitacionController } from './list-inscripciones-ca
 export { GetInscripcionCapacitacionByIdController } from './get-inscripcion-capacitacion-by-id.controller.js';
 export { CreateInscripcionCapacitacionController } from './create-inscripcion-capacitacion.controller.js';
 export { DeleteInscripcionCapacitacionController } from './delete-inscripcion-capacitacion.controller.js';
+export { AnularInscripcionCapacitacionController } from './anular-inscripcion-capacitacion.controller.js';
 export { RegisterPagoCapacitacionController } from './register-pago-capacitacion.controller.js';

@@ -6,10 +6,11 @@
  * eliminar) y devuelve props listas para la página "dumb".
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { useCursosCapacitacionListContext } from '@application-capacitacion/cursos/hooks/context/useCursosCapacitacionListContext';
+import { useExportarInscritosCapacitacionExcel } from '@application-capacitacion/cursos/hooks/api/useExportarInscritosCapacitacionExcel';
 import { createCursosCapacitacionTableColumns } from '@capacitacion/cursos/config/cursosTableColumns';
 import {
   CURSOS_CAP_LIST_PATH,
@@ -21,6 +22,8 @@ export const useCursosCapacitacionListPage = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { message } = App.useApp();
+  const [exportandoInscritosId, setExportandoInscritosId] = useState(null);
+  const { exportar: exportarInscritos } = useExportarInscritosCapacitacionExcel();
 
   const {
     cursos = [],
@@ -68,6 +71,19 @@ export const useCursosCapacitacionListPage = () => {
     [eliminarCurso],
   );
 
+  /** Exporta el listado de inscritos vigentes del curso a Excel. */
+  const handleExportarInscritos = useCallback(
+    async (record) => {
+      setExportandoInscritosId(record.id);
+      const result = await exportarInscritos(record.id);
+      setExportandoInscritosId(null);
+      if (!result?.success) {
+        message.error(result?.error || 'No se pudo exportar el listado de inscritos');
+      }
+    },
+    [exportarInscritos, message],
+  );
+
   const tableColumns = useMemo(
     () =>
       createCursosCapacitacionTableColumns({
@@ -75,9 +91,19 @@ export const useCursosCapacitacionListPage = () => {
         listNavState,
         refetch,
         onToggleEstado: handleToggleEstado,
+        onExportarInscritos: handleExportarInscritos,
+        exportandoInscritosId,
         deleteFn: handleEliminar,
       }),
-    [navigate, listNavState, refetch, handleToggleEstado, handleEliminar],
+    [
+      navigate,
+      listNavState,
+      refetch,
+      handleToggleEstado,
+      handleExportarInscritos,
+      exportandoInscritosId,
+      handleEliminar,
+    ],
   );
 
   const breadcrumbItems = useMemo(

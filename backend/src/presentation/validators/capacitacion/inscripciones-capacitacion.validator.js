@@ -93,6 +93,30 @@ export const createInscripcionCapacitacionValidator = [
     .isObject()
     .withMessage('pagoInicial debe ser un objeto { monto, metodoPagoId, ... }'),
   ...buildPagoFieldValidators('pagoInicial.', false),
+  // El validator no conoce el costo del curso (no sabe si es obligatorio ni si
+  // el pago queda parcial): esa validación de negocio vive en el use case.
+  // Aquí solo se valida la FORMA de la fecha si viene presente.
+  body('pagoInicial.fechaCompromiso')
+    .optional({ nullable: true })
+    .isISO8601()
+    .withMessage('pagoInicial.fechaCompromiso debe ser una fecha válida (YYYY-MM-DD)'),
 ];
 
 export const registerPagoCapacitacionValidator = [...buildPagoFieldValidators('', true)];
+
+/**
+ * POST /:id/anular — decisión administrativa manual (permiso
+ * capacitacion.inscripcion ACCIÓN EDITAR — no existe acción ANULAR en el
+ * vocabulario cerrado de permiso_acciones/roles_permisos). `observacion` es
+ * opcional: el
+ * schema de `capacitacion_inscritos` no tiene columna propia para guardarla,
+ * queda solo en el log de auditoría del use case.
+ */
+export const anularInscripcionCapacitacionValidator = [
+  body('observacion')
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('observacion no debe superar los 500 caracteres'),
+];

@@ -36,6 +36,7 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
     const editar = [authenticate, verificarPermiso('capacitacion.curso', 'EDITAR')];
     const eliminar = [authenticate, verificarPermiso('capacitacion.curso', 'ELIMINAR')];
     const activar = [authenticate, verificarPermiso('capacitacion.curso', 'ACTIVAR')];
+    const exportarInscritos = [authenticate, verificarPermiso('capacitacion.inscripcion', 'EXPORTAR')];
 
     /**
      * GET /api/v1/cursos-capacitacion
@@ -81,6 +82,16 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
         idValidator,
         validateRequest,
         (req, res, next) => controllers.getCursoCapacitacionByIdController.handle(req, res, next)
+    );
+
+    // GET /:id/inscritos/exportar - Excel (.xlsx) del listado de inscritos vigentes del curso
+    router.get(
+        '/:id/inscritos/exportar',
+        ...exportarInscritos,
+        idValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.exportListadoInscritosCapacitacionController.handle(req, res, next)
     );
 
     // POST /:id/abrir - Transición manual PROPUESTO → ABIERTO (abrir inscripciones)

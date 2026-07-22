@@ -1,9 +1,18 @@
 /**
  * Mapper: inscripciones de capacitación (API → DTO de UI, módulo CAP).
  *
- * El backend ya deriva `estadoPago` (PENDIENTE/PARCIAL/PAGADO) y `saldo`
- * (InscripcionCapacitacionMapper) y arma `participanteNombreCompleto` en orden
- * canónico. Aquí se normaliza defensivamente y se derivan etiquetas de UI.
+ * El backend expone `estadoPago` (PARCIAL/CANCELADO, PERSISTIDO, no derivado)
+ * y `saldo` (`montoObligatorio` snapshot − total pagado, calculado en
+ * `InscripcionCapacitacionMapper` del backend) y arma
+ * `participanteNombreCompleto` en orden canónico. Aquí se normaliza
+ * defensivamente y se derivan etiquetas de UI.
+ *
+ * `pagoVencido` es un flag derivado EN EL FRONTEND (no confiar en
+ * `compromisoEstado`): el backend marca el compromiso `INCUMPLIDO` de forma
+ * perezosa al listar y, si ya quedó así antes de que el participante pagara,
+ * se queda `INCUMPLIDO` para siempre aunque la deuda esté saldada. Por eso acá
+ * se cruza SIEMPRE `estadoPago === 'PARCIAL'` (todavía debe, dato real) con la
+ * fecha de compromiso vencida, sin mirar `compromisoEstado`.
  */
 
 import dayjs from 'dayjs';
@@ -67,12 +76,23 @@ export const mapInscripcionCapacitacion = (raw) => {
       fechaInicioLabel && fechaFinLabel
         ? `${fechaInicioLabel} – ${fechaFinLabel}`
         : fechaInicioLabel,
-    // Pago (derivado por el backend)
+    // Pago (persistido/calculado por el backend)
     costo: toNumber(raw.costo),
+    montoObligatorio: toNumber(raw.montoObligatorio),
     totalPagado: toNumber(raw.totalPagado),
     saldo: toNumber(raw.saldo),
     estadoPago: raw.estadoPago ?? null,
     pagosCount: toNumber(raw.pagosCount),
+    // Compromiso de pago (solo existe si la inscripción quedó con saldo parcial)
+    compromisoId: raw.compromisoId ?? null,
+    fechaCompromiso: raw.fechaCompromiso ?? null,
+    fechaCompromisoLabel: formatFecha(raw.fechaCompromiso),
+    compromisoEstado: raw.compromisoEstado ?? null,
+    compromisoObservacion: cleanText(raw.compromisoObservacion),
+    // Derivado en cliente: aún debe (estadoPago PARCIAL) Y ya venció la fecha
+    // comprometida. No se basa en `compromisoEstado` (ver nota del mapper).
+    pagoVencido:
+      raw.estadoPago === 'PARCIAL' && !!raw.fechaCompromiso && dayjs(raw.fechaCompromiso).isBefore(dayjs(), 'day'),
     createdAt: raw.createdAt ?? null,
   };
 };
@@ -134,3 +154,22 @@ export const mapFormValuesToPagoPayload = (values = {}) => ({
   fechaPago: values.fechaPago ? dayjs(values.fechaPago).format('YYYY-MM-DD') : undefined,
   observaciones: (values.observaciones || '').trim() || null,
 });
+
+/**
+ * Valores del formulario del paso "Pago inicial" del wizard de inscripción →
+ * payload `pagoInicial` (`createInscripcionCapacitacionValidator`). Extiende
+ * `mapFormValuesToPagoPayload` con `fechaCompromiso`: solo se incluye cuando
+ * el usuario la eligió (campo visible únicamente si el monto ingresado queda
+ * por debajo del costo del curso — ver `PagoCapacitacionFormFields`). Nunca se
+ * usa para el registro de una cuota posterior (`POST /:id/pagos` no acepta
+ * `fechaCompromiso`, el compromiso ya existe o no aplica).
+ * @param {Object} values - { monto, fechaPago, metodoPagoId, cuentaPagoId?, observaciones?, fechaCompromiso? }
+ * @returns {Object}
+ */
+export const mapFormValuesToPagoInicialPayload = (values = {}) => {
+  const base = mapFormValuesToPagoPayload(values);
+  const fechaCompromiso = values.fechaCompromiso
+    ? dayjs(values.fechaCompromiso).format('YYYY-MM-DD')
+    : undefined;
+  return fechaCompromiso ? { ...base, fechaCompromiso } : base;
+};

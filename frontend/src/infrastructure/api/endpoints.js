@@ -580,6 +580,8 @@ export const CURSOS_CAPACITACION_ENDPOINTS = {
     const qs = q.toString();
     return `${API_BASE}/cursos-capacitacion/horarios-disponibles${qs ? `?${qs}` : ''}`;
   },
+  /** GET — Excel (.xlsx) del listado de inscritos vigentes del curso (permiso capacitacion.inscripcion EXPORTAR) */
+  EXPORTAR_INSCRITOS: (id) => `${API_BASE}/cursos-capacitacion/${id}/inscritos/exportar`,
 };
 
 export const PARTICIPANTES_CAPACITACION_ENDPOINTS = {
@@ -590,6 +592,8 @@ export const INSCRIPCIONES_CAPACITACION_ENDPOINTS = {
   ...createCRUDEndpoints('/inscripciones-capacitacion'),
   /** POST — registrar pago de una inscripción (permiso capacitacion.pago CREAR) */
   PAGOS: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/pagos`,
+  /** POST — anular inscripción, decisión administrativa manual (permiso capacitacion.inscripcion EDITAR — no existe acción ANULAR en el vocabulario cerrado de permisos) */
+  ANULAR: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/anular`,
 };
 
 /**

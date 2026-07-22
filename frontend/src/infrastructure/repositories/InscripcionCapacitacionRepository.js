@@ -103,6 +103,28 @@ export class InscripcionCapacitacionRepository extends IInscripcionCapacitacionR
       return handleErrorResponse(error, 'Error al eliminar la inscripción de capacitación');
     }
   }
+
+  /**
+   * Anula la inscripción — decisión administrativa manual, nunca automática
+   * (permiso capacitacion.inscripcion EDITAR — no existe acción ANULAR en el
+   * vocabulario cerrado de permisos). El monto ya pagado NO se devuelve; solo
+   * cambia el estado a ANULADO. Solo aplica desde PENDIENTE o INSCRITO.
+   * POST /v1/inscripciones-capacitacion/:id/anular
+   *
+   * @param {string|number} id
+   * @param {Object} [payload] - { observacion? }
+   */
+  async anular(id, payload = {}) {
+    try {
+      const response = await apiClient.post(
+        INSCRIPCIONES_CAPACITACION_ENDPOINTS.ANULAR(id),
+        payload,
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al anular la inscripción de capacitación');
+    }
+  }
 }
 
 export default new InscripcionCapacitacionRepository();

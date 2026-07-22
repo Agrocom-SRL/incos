@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { BaseRepository } from './BaseRepository.js';
 import { sequelize } from '../database/sequelize.js';
 import { InscripcionCapacitacion as InscripcionCapacitacionModel } from '../database/models/inscripcion_capacitacion.js';
@@ -33,6 +34,11 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
       capacitacionId: v.capacitacionId ?? null,
       fechaInscripcion: v.fechaInscripcion ?? null,
       estado: v.estado ?? null,
+      montoObligatorio:
+        v.montoObligatorio !== undefined && v.montoObligatorio !== null
+          ? Number(v.montoObligatorio)
+          : null,
+      estadoPago: v.estadoPago ?? null,
       activo: v.activo ?? null,
       createdAt: v.createdAt ?? null,
       updatedAt: v.updatedAt ?? null,
@@ -67,6 +73,10 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     if ('capacitacionId' in data) model.capacitacionId = data.capacitacionId;
     if ('fechaInscripcion' in data) model.fechaInscripcion = data.fechaInscripcion;
     if ('estado' in data) model.estado = data.estado;
+    // Snapshot inmutable (no se toca en mapDataToUpdate): protege de cambios
+    // de precio posteriores al momento de la inscripción.
+    if ('montoObligatorio' in data) model.montoObligatorio = data.montoObligatorio;
+    if ('estadoPago' in data) model.estadoPago = data.estadoPago;
     return model;
   }
 
@@ -74,6 +84,7 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     const model = {};
     if ('fechaInscripcion' in data) model.fechaInscripcion = data.fechaInscripcion;
     if ('estado' in data) model.estado = data.estado;
+    if ('estadoPago' in data) model.estadoPago = data.estadoPago;
     return model;
   }
 
@@ -82,7 +93,9 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
   }
 
   /**
-   * Inscripción activa (estado='INSCRITO') de un participante a un curso, o null.
+   * Inscripción vigente (estado PENDIENTE o INSCRITO — ambas mantienen "ocupado"
+   * el cupo del participante en el curso, con o sin saldo pendiente) de un
+   * participante a un curso, o null.
    *
    * @param {number} participanteId
    * @param {number} capacitacionId
@@ -94,7 +107,12 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
       where: {
         participanteId,
         capacitacionId,
-        estado: ESTADOS_INSCRIPCION_CAPACITACION.INSCRITO,
+        estado: {
+          [Op.in]: [
+            ESTADOS_INSCRIPCION_CAPACITACION.PENDIENTE,
+            ESTADOS_INSCRIPCION_CAPACITACION.INSCRITO,
+          ],
+        },
         activo: true,
       },
       ...options,
@@ -104,7 +122,12 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
 
   /**
    * SELECT base del listado/ficha: inscripción + participante + curso +
-   * agregado de pagos vigentes. Filas crudas snake_case.
+   * agregado de pagos vigentes + compromiso "abierto" (VIGENTE/INCUMPLIDO) más
+   * reciente. Filas crudas snake_case.
+   *
+   * El saldo se calcula contra `ci.monto_obligatorio` (snapshot al
+   * inscribirse), NO contra `c.costo` (que puede cambiar después y no debe
+   * afectar inscripciones ya creadas).
    * @private
    */
   _buildListadoSelect() {
@@ -113,6 +136,8 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
         ci.id,
         ci.fecha_inscripcion,
         ci.estado,
+        ci.monto_obligatorio,
+        ci.estado_pago,
         ci.activo,
         ci.created_at,
         p.id AS participante_id,
@@ -130,8 +155,12 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
         c.fecha_fin AS capacitacion_fecha_fin,
         c.costo,
         COALESCE(pg.total_pagado, 0) AS total_pagado,
-        c.costo - COALESCE(pg.total_pagado, 0) AS saldo,
-        COALESCE(pg.pagos_count, 0) AS pagos_count
+        ci.monto_obligatorio - COALESCE(pg.total_pagado, 0) AS saldo,
+        COALESCE(pg.pagos_count, 0) AS pagos_count,
+        cc.id AS compromiso_id,
+        cc.fecha_compromiso AS compromiso_fecha,
+        cc.estado AS compromiso_estado,
+        cc.observacion AS compromiso_observacion
       FROM capacitacion_inscritos ci
       INNER JOIN participantes p
         ON p.id = ci.participante_id
@@ -149,6 +178,11 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
           AND cp.deleted_at IS NULL
         GROUP BY cp.capacitacion_inscrito_id
       ) pg ON pg.capacitacion_inscrito_id = ci.id
+      LEFT JOIN capacitacion_compromisos cc
+        ON cc.capacitacion_inscrito_id = ci.id
+        AND cc.estado IN ('VIGENTE', 'INCUMPLIDO')
+        AND cc.activo = TRUE
+        AND cc.deleted_at IS NULL
     `;
   }
 

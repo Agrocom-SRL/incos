@@ -15,11 +15,18 @@ export class GetInscripcionCapacitacionByIdUseCase {
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.inscripcionCapacitacionRepository
    * @param {Object} params.pagoCapacitacionRepository
+   * @param {Object} params.capacitacionCompromisoRepository
    * @param {ILogger} params.logger
    */
-  constructor({ inscripcionCapacitacionRepository, pagoCapacitacionRepository, logger }) {
+  constructor({
+    inscripcionCapacitacionRepository,
+    pagoCapacitacionRepository,
+    capacitacionCompromisoRepository,
+    logger,
+  }) {
     this.inscripcionCapacitacionRepository = inscripcionCapacitacionRepository;
     this.pagoCapacitacionRepository = pagoCapacitacionRepository;
+    this.capacitacionCompromisoRepository = capacitacionCompromisoRepository;
     this.logger = logger;
   }
 
@@ -28,6 +35,10 @@ export class GetInscripcionCapacitacionByIdUseCase {
    * @returns {Promise<Object|null>} Ficha en formato de presentación o null
    */
   async execute(id) {
+    // UPDATE perezoso: marca INCUMPLIDO los compromisos VIGENTE ya vencidos
+    // (puramente informativo, no toca capacitacion_inscritos).
+    await this.capacitacionCompromisoRepository.marcarVencidosComoIncumplidos();
+
     const row = await this.inscripcionCapacitacionRepository.findListadoRowById(id);
     if (!row) return null;
 

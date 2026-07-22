@@ -156,6 +156,56 @@ export class CursoCapacitacionRepository extends ICursoCapacitacionRepository {
       return handleErrorResponse(error, 'Error al eliminar el curso de capacitación');
     }
   }
+
+  /**
+   * Descarga el Excel (.xlsx) del listado de inscritos vigentes del curso
+   * (permiso capacitacion.inscripcion EXPORTAR).
+   * GET /v1/cursos-capacitacion/:id/inscritos/exportar
+   *
+   * @param {string|number} id
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async exportarInscritos(id) {
+    try {
+      const response = await apiClient.get(CURSOS_CAPACITACION_ENDPOINTS.EXPORTAR_INSCRITOS(id), {
+        responseType: 'blob',
+      });
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'inscritos_capacitacion.xlsx';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return { success: true, blob: response.data, fileName };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string' ? errObj : errObj?.message || json?.message;
+          return { success: false, error: msg || 'Error al exportar el listado de inscritos' };
+        } catch {
+          return { success: false, error: 'Error al exportar el listado de inscritos' };
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar el listado de inscritos');
+    }
+  }
 }
 
 export default new CursoCapacitacionRepository();

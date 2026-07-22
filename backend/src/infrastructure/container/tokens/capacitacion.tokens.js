@@ -12,6 +12,7 @@ export const CAPACITACION_TOKENS = {
   cursoCapacitacionRepository: 'capacitacion.cursoCapacitacionRepository',
   inscripcionCapacitacionRepository: 'capacitacion.inscripcionCapacitacionRepository',
   pagoCapacitacionRepository: 'capacitacion.pagoCapacitacionRepository',
+  capacitacionCompromisoRepository: 'capacitacion.capacitacionCompromisoRepository',
   cursoCapacitacionFichaViewRepository: 'capacitacion.cursoCapacitacionFichaViewRepository',
 
   // Use Cases — Cursos de capacitación
@@ -24,6 +25,7 @@ export const CAPACITACION_TOKENS = {
   setEstadoCursoCapacitacionUseCase: 'capacitacion.setEstadoCursoCapacitacionUseCase',
   abrirCursoCapacitacionUseCase: 'capacitacion.abrirCursoCapacitacionUseCase',
   cancelarCursoCapacitacionUseCase: 'capacitacion.cancelarCursoCapacitacionUseCase',
+  exportListadoInscritosCapacitacionUseCase: 'capacitacion.exportListadoInscritosCapacitacionUseCase',
 
   // Use Cases — Participantes
   listParticipantesUseCase: 'capacitacion.listParticipantesUseCase',
@@ -36,6 +38,7 @@ export const CAPACITACION_TOKENS = {
   getInscripcionCapacitacionByIdUseCase: 'capacitacion.getInscripcionCapacitacionByIdUseCase',
   createInscripcionCapacitacionUseCase: 'capacitacion.createInscripcionCapacitacionUseCase',
   deleteInscripcionCapacitacionUseCase: 'capacitacion.deleteInscripcionCapacitacionUseCase',
+  anularInscripcionCapacitacionUseCase: 'capacitacion.anularInscripcionCapacitacionUseCase',
   registerPagoCapacitacionUseCase: 'capacitacion.registerPagoCapacitacionUseCase',
 
   // Controllers — Cursos de capacitación
@@ -49,6 +52,7 @@ export const CAPACITACION_TOKENS = {
   setEstadoCursoCapacitacionController: 'capacitacion.setEstadoCursoCapacitacionController',
   abrirCursoCapacitacionController: 'capacitacion.abrirCursoCapacitacionController',
   cancelarCursoCapacitacionController: 'capacitacion.cancelarCursoCapacitacionController',
+  exportListadoInscritosCapacitacionController: 'capacitacion.exportListadoInscritosCapacitacionController',
 
   // Controllers — Participantes
   listParticipantesController: 'capacitacion.listParticipantesController',
@@ -61,6 +65,7 @@ export const CAPACITACION_TOKENS = {
   getInscripcionCapacitacionByIdController: 'capacitacion.getInscripcionCapacitacionByIdController',
   createInscripcionCapacitacionController: 'capacitacion.createInscripcionCapacitacionController',
   deleteInscripcionCapacitacionController: 'capacitacion.deleteInscripcionCapacitacionController',
+  anularInscripcionCapacitacionController: 'capacitacion.anularInscripcionCapacitacionController',
   registerPagoCapacitacionController: 'capacitacion.registerPagoCapacitacionController',
 
   // Routers

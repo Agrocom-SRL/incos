@@ -51,4 +51,14 @@ export class ICursoCapacitacionRepository extends IBaseRepository {
   async cancelarCurso(_id) {
     throw new Error('Método cancelarCurso debe ser implementado');
   }
+
+  /**
+   * Descarga el Excel (.xlsx) del listado de inscritos vigentes del curso
+   * (GET /:id/inscritos/exportar, permiso capacitacion.inscripcion EXPORTAR).
+   * @param {string|number} _id
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async exportarInscritos(_id) {
+    throw new Error('Método exportarInscritos debe ser implementado');
+  }
 }
