@@ -42,6 +42,9 @@ JOIN (
   UNION ALL SELECT 'capacitacion.inscripcion', 'DETALLE'
   UNION ALL SELECT 'capacitacion.inscripcion', 'CREAR'
   UNION ALL SELECT 'capacitacion.inscripcion', 'ELIMINAR'
+  -- ANULAR: decisión administrativa manual (POST /inscripciones-capacitacion/:id/anular),
+  -- nunca automática por incumplir el compromiso de pago
+  UNION ALL SELECT 'capacitacion.inscripcion', 'ANULAR'
   UNION ALL SELECT 'capacitacion.pago', 'CREAR'
   UNION ALL SELECT 'capacitacion.pago', 'EXPORTAR'
 ) AS x ON x.codigo = p.codigo;
@@ -82,13 +85,16 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'capacitacion.inscripcion', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'capacitacion.inscripcion', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'capacitacion.inscripcion', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'capacitacion.inscripcion', 'ANULAR'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.inscripcion', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.inscripcion', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.inscripcion', 'CREAR'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.inscripcion', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.inscripcion', 'ANULAR'
   UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.inscripcion', 'LISTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.inscripcion', 'DETALLE'
   UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.inscripcion', 'CREAR'
+  UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.inscripcion', 'ANULAR'
   UNION ALL SELECT 'RECTOR', 'capacitacion.pago', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'capacitacion.pago', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.pago', 'CREAR'

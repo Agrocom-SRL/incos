@@ -1,6 +1,58 @@
 # Plan de desarrollo — Módulo "Cursos de Capacitación"
 
-> **Estado (2026-07-16, tarde): FRONTEND COMPLETO implementado (paso 9 del
+> **Estado (2026-07-22): PAGO POR CUOTAS — schema editado y aprobado,
+> backend en implementación.** El negocio pidió que el pago de una
+> capacitación se pueda hacer en cuotas (primera cuota parcial permitida) y
+> preguntó por nota/certificado de finalización — **notas y certificado se
+> descartaron de este alcance** (sin umbral de aprobación configurado, ver
+> §6 decisión 14). Cambios ya escritos en
+> `01-schemas/25-cursos-capacitacion.sql` (aprobados, archivo editado, **NO
+> ejecutados en BD todavía**):
+> - `capacitacion_inscritos.estado` pasa de `ENUM('INSCRITO','RETIRADO')` a
+>   `ENUM('PENDIENTE','INSCRITO','RETIRADO','ANULADO')`.
+> - `capacitacion_inscritos` gana `monto_obligatorio` (snapshot de
+>   `capacitaciones.costo` al inscribirse) y `estado_pago
+>   ENUM('PARCIAL','CANCELADO')`.
+> - Tabla nueva `capacitacion_compromisos` (mismo patrón que
+>   `compromisos_pago` de Pagos académicos, colgada de
+>   `capacitacion_inscritos` en vez de `pago_aporte`) — **puramente
+>   informativa/administrativa**, nunca bloquea ni anula nada automáticamente.
+> - `capacitacion_pagos` no cambió de estructura (ya era tabla de cuotas).
+>
+> Ver §1 (modelo actualizado), §3 (RBAC: acción `ANULAR` nueva) y §6
+> (decisiones 11-14: curso gratuito sin pago, fecha de compromiso elegida a
+> mano sin cálculo de días, roles de `ANULAR` = mismos que
+> `capacitacion.participante` CREAR, notas/certificado fuera de alcance).
+> **Agente `backend` lanzado (2026-07-22) para implementar** modelos,
+> repositorios, use cases, controllers y RBAC alineados al schema nuevo —
+> en curso, sin ejecutar DDL/seeds contra BD real (eso queda pendiente de
+> aprobación explícita adicional, incluyendo confirmar si el participante de
+> prueba en BD de desarrollo sigue existiendo antes de correr el schema, que
+> hace `DROP TABLE`).
+>
+> **Backend completado (2026-07-22, agente `backend`):** capas completas
+> alineadas al schema nuevo — modelo `inscripcion_capacitacion.js`
+> (`estado` 4 valores, `montoObligatorio`/`estadoPago`), modelo +
+> interfaz + repositorio nuevos `CapacitacionCompromiso*`
+> (`findVigenteByInscripcionId`, `marcarVencidosComoIncumplidos` — UPDATE
+> perezoso a INCUMPLIDO ejecutado desde List/GetInscripcionCapacitacionByIdUseCase),
+> `CreateInscripcionCapacitacionUseCase` (curso gratuito → INSCRITO/CANCELADO
+> directo sin pago ni compromiso; curso con costo → pago inicial obligatorio +
+> compromiso VIGENTE si queda parcial, `fechaCompromiso` tal cual del payload,
+> sin cálculo de plazo), `RegisterPagoCapacitacionUseCase` (acepta
+> PENDIENTE/INSCRITO, saldo contra `montoObligatorio` snapshot, cierra
+> compromiso VIGENTE a CUMPLIDO sin penalizar atraso), `AnularInscripcionCapacitacionUseCase`
+> nuevo (POST `/inscripciones-capacitacion/:id/anular`, permiso
+> `capacitacion.inscripcion` ACCIÓN `ANULAR` sembrada en RECTOR/DIR_ADMIN/SEC_ADMIN).
+> Decisión no explícita en el encargo: `findActivaByParticipanteAndCapacitacion`
+> y los literales de `ParticipanteRepository` (curso actual / sin inscripción
+> activa) se ampliaron de `estado='INSCRITO'` a `estado IN ('PENDIENTE','INSCRITO')`
+> (PENDIENTE también ocupa cupo). Lint limpio, `routes/index.js` importa y
+> resuelve el container sin BD. **NO se ejecutó ningún DDL/seed contra la BD
+> real** — sigue pendiente de aprobación (schema 25, seed 65, seed 66 de
+> horarios, vistas 154/155) antes de poder probar los endpoints en caliente.
+>
+> Estado previo (2026-07-16, tarde): FRONTEND COMPLETO implementado (paso 9 del
 > checklist §5).** Módulo `capacitacion/` en `application/` y `presentation/`
 > (alias `@application-capacitacion` / `@capacitacion` en vite+jsconfig),
 > 3 ítems de menú bajo el dominio CAP (order 8, tras Reportes): Cursos (listado con toggle
@@ -115,8 +167,9 @@ sin colisión con ninguna tabla existente — sí existen `inscripciones` y
 | `participantes` | `id`, `ci`+`expedicion` (patrón `estudiantes`, sin UNIQUE), `nombres`, `apellido_paterno`, `apellido_materno`, `celular`, `email` (opcional), `procedencia` (opcional, texto libre) + campos base (activo/auditoría) | Ninguna hacia `estudiantes`/`usuarios` — independiente, sin login |
 | `capacitaciones` | `id`, `titulo`, `descripcion`, `costo` (DECIMAL, Bs), `cupo_maximo`, `aula_id` (FK `aulas.id`, nullable), `fecha_inicio`, `fecha_fin`, `estado` (ENUM propio `PROPUESTO/ABIERTO/EN_CURSO/CERRADO/CANCELADO`) | `aula_id → aulas.id` (reutilizado) |
 | `capacitacion_horarios` | `id`, `capacitacion_id` (FK `capacitaciones.id`), `horario_id` (FK `horarios.id`, filtrado `tipo_horario='CAPACITACION'`), `orden_secuencia` | Junction — aula vive en `capacitaciones.aula_id`, igual que `paralelos_gestion.aula_id` |
-| `capacitacion_inscritos` | `id`, `participante_id` (FK), `capacitacion_id` (FK), `fecha_inscripcion`, `estado` (ENUM `INSCRITO/RETIRADO`) | Sin UNIQUE en `(participante_id, capacitacion_id)` (mismo criterio que `pago_aporte`) |
-| `capacitacion_pagos` | `id`, `capacitacion_inscrito_id` (FK `capacitacion_inscritos.id`), `metodo_pago_id` (FK reutilizada), `cuenta_pago_id` (FK reutilizada, nullable), `monto` (DECIMAL, Bs), `fecha_pago`, `numero_recibo`, `observaciones` | Tabla propia — **no** extiende `pago_cuotas`/`compromisos_pago` |
+| `capacitacion_inscritos` | `id`, `participante_id` (FK), `capacitacion_id` (FK), `fecha_inscripcion`, `estado` (ENUM `PENDIENTE/INSCRITO/RETIRADO/ANULADO`, **actualizado 2026-07-22**), `monto_obligatorio` (DECIMAL, snapshot de `capacitaciones.costo` al inscribirse, **nuevo**), `estado_pago` (ENUM `PARCIAL/CANCELADO`, cache, **nuevo**) | Sin UNIQUE en `(participante_id, capacitacion_id)` (mismo criterio que `pago_aporte`) |
+| `capacitacion_pagos` | `id`, `capacitacion_inscrito_id` (FK `capacitacion_inscritos.id`), `metodo_pago_id` (FK reutilizada), `cuenta_pago_id` (FK reutilizada, nullable), `monto` (DECIMAL, Bs), `fecha_pago`, `numero_recibo`, `observaciones` | Historial de cuotas (sin límite de filas) — **no** extiende `pago_cuotas`/`compromisos_pago` de Pagos académicos |
+| `capacitacion_compromisos` **(nueva, 2026-07-22)** | `id`, `capacitacion_inscrito_id` (FK), `fecha_compromiso` (DATE, elegida a mano por el usuario, sin cálculo automático de días), `observacion`, `estado` (ENUM `VIGENTE/CUMPLIDO/INCUMPLIDO`) | Mismo patrón que `compromisos_pago`, pero colgada de `capacitacion_inscritos` en vez de `pago_aporte` — **puramente informativa/administrativa**, nunca bloquea ni anula la inscripción automáticamente (ver §6 decisión 12-13) |
 
 **Seeds de datos** (no RBAC):
 `backend/database/02-seeders/66-seed-horarios-capacitacion.sql` (filas nuevas
@@ -229,7 +282,7 @@ Archivo nuevo: `backend/database/02-seeders/65-seed-permisos-cap.sql`
 |---|---|---|
 | `capacitacion.curso` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `cap_cursos` |
 | `capacitacion.participante` | LISTAR, DETALLE, CREAR, EDITAR | `cap_participantes` |
-| `capacitacion.inscripcion` | LISTAR, DETALLE, CREAR, ELIMINAR | `cap_inscripciones` |
+| `capacitacion.inscripcion` | LISTAR, DETALLE, CREAR, ELIMINAR, ANULAR **(nueva, 2026-07-22)** | `cap_inscripciones` |
 | `capacitacion.pago` | CREAR, EXPORTAR, GENERAR_PDF (recibo) | `cap_inscripciones` |
 
 Estructura del archivo: igual que `60-seed-permisos-fin.sql` (permisos →
@@ -346,7 +399,11 @@ reimplementar el fetch).
    defecto**, ajustable si se prefiere otra posición.
 3. **Modelo de pago:** tabla `capacitacion_pagos` standalone, pago único por
    inscripción (sin cuotas/compromiso). Reutiliza solo los catálogos
-   `metodos_pago`/`cuentas_pago`. **Confirmado.**
+   `metodos_pago`/`cuentas_pago`. **SUPERADO 2026-07-22** — el negocio pidió
+   pago por cuotas; ver decisiones 11-14 más abajo. `capacitacion_pagos` no
+   cambió de estructura (ya era estructuralmente una tabla de cuotas), lo
+   que cambió es que ahora se usa como tal y se agregó
+   `capacitacion_compromisos`.
 4. **CI en `participantes`:** se replica exactamente el patrón ya usado en
    `estudiantes`/`personal_usuarios` (`ci VARCHAR(20) NOT NULL`,
    `expedicion VARCHAR(5) NULL`, `INDEX idx_ci_expedicion`, **sin** UNIQUE
@@ -378,15 +435,57 @@ reimplementar el fetch).
     otro significado; por eso NO se usó `capacitacion_inscripciones`).
     **Confirmado 2026-07-15** (segunda vuelta de naming, tras revisar la
     primera propuesta de nombres de una sola palabra a secas).
+11. **Curso gratuito (`capacitaciones.costo <= 0`):** la inscripción pasa
+    DIRECTO a `estado='INSCRITO'`/`estado_pago='CANCELADO'`, sin exigir ni
+    crear ningún registro en `capacitacion_pagos` ni en
+    `capacitacion_compromisos`. No es "un pago de Bs 0", es ausencia total
+    de pago. **Confirmado 2026-07-22.**
+12. **Fecha de compromiso: sin cálculo automático de plazo.** Se descartó
+    un "N días por defecto" (tipo `DIAS_COMPROMISO` de aportes académicos,
+    que son 90 días — no calza con un curso corto de semanas). El
+    funcionario del instituto elige la fecha directamente en un
+    `DatePicker` al registrar un pago parcial; si se equivoca de fecha es
+    su responsabilidad, el sistema no valida contra la duración del curso.
+    **Confirmado 2026-07-22.**
+13. **El compromiso de pago es informativo, no restrictivo.** Un pago
+    atrasado (después de `fecha_compromiso`) se acepta con total
+    normalidad y sigue el ciclo normal de cuotas — NO hay penalización,
+    NO se anula la inscripción automáticamente, NO se retiene nada por
+    incumplir la fecha. Marcar un compromiso `INCUMPLIDO` es solo para que
+    administración sepa quién no pagó a tiempo (reporte). Anular una
+    inscripción (`estado='ANULADO'`, con el monto ya pagado retenido sin
+    devolución) es **siempre una decisión administrativa manual** (tras
+    hablar con decanatura), nunca un efecto automático. **Confirmado
+    2026-07-22.**
+14. **RBAC de la acción `ANULAR`:** mismos 3 roles que ya tienen
+    `capacitacion.participante` CREAR — RECTOR, DIR_ADMIN, SEC_ADMIN (los
+    tres, sin restringir a solo RECTOR/DIR_ADMIN pese a que la anulación
+    retiene dinero sin devolución — decisión explícita del usuario).
+    **Confirmado 2026-07-22.**
+15. **Nota/calificación del participante y certificado de finalización:
+    FUERA de alcance, no solo pospuestos.** Se propuso primero nota+
+    resultado inline en `capacitacion_inscritos`, luego una tabla
+    `capacitacion_certificados` (nota + URL de PDF autogenerado + código +
+    fecha de egreso, con `capacitaciones`/`participantes` marcando si el
+    curso entrega certificado) — y se decidió omitir todo el tema. Razón:
+    un resultado APROBADO/REPROBADO no sirve sin un umbral de nota de
+    aprobación configurado, y esa configuración depende de una propuesta de
+    certificación que el cliente aún no ha definido en alcance. **No se
+    agregó ninguna columna de nota/certificado al schema.** Si se retoma en
+    el futuro, partir de la tabla `capacitacion_certificados` propuesta acá
+    en vez de columnas inline. **Confirmado 2026-07-22.**
 
 ## 6.1 Artefactos SQL ya redactados (pendientes de ejecución en BD)
 
-- `backend/database/01-schemas/25-cursos-capacitacion.sql` — 5 tablas
+- `backend/database/01-schemas/25-cursos-capacitacion.sql` — **6 tablas**
   (`participantes`, `capacitaciones`, `capacitacion_horarios`,
-  `capacitacion_inscritos`, `capacitacion_pagos`), con el mismo patrón
+  `capacitacion_inscritos`, `capacitacion_pagos`,
+  `capacitacion_compromisos` **agregada 2026-07-22**), con el mismo patrón
   DROP+CREATE, campos de auditoría estándar e índices que el resto de
   `01-schemas/`. FK de solo lectura hacia `aulas`, `horarios`,
   `metodos_pago`, `cuentas_pago` (sin tocar esas tablas).
+  `capacitacion_inscritos` ganó `monto_obligatorio`/`estado_pago` y su
+  `estado` pasó a 4 valores (ver §1 y §6 decisiones 11-14).
 - `backend/database/02-seeders/65-seed-permisos-cap.sql` — RBAC completo del
   módulo `CAP`: 3 grupos UI (`cap_cursos`, `cap_participantes`,
   `cap_inscripciones`), 4 permisos (`capacitacion.curso`,

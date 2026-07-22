@@ -4,6 +4,8 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 import {
   ESTADOS_INSCRIPCION_CAPACITACION,
   ESTADOS_INSCRIPCION_CAPACITACION_VALUES,
+  ESTADOS_PAGO_INSCRITO_CAPACITACION,
+  ESTADOS_PAGO_INSCRITO_CAPACITACION_VALUES,
 } from '../../../domain/constants/capacitacion.constants.js';
 
 /**
@@ -38,8 +40,24 @@ export const InscripcionCapacitacion = sequelize.define(
     estado: {
       type: DataTypes.ENUM(...ESTADOS_INSCRIPCION_CAPACITACION_VALUES),
       allowNull: false,
-      defaultValue: ESTADOS_INSCRIPCION_CAPACITACION.INSCRITO,
-      comment: 'Estado de la inscripción (INSCRITO/RETIRADO)',
+      defaultValue: ESTADOS_INSCRIPCION_CAPACITACION.PENDIENTE,
+      comment:
+        'PENDIENTE: pago parcial, aún no completa el monto obligatorio | INSCRITO: monto obligatorio cancelado (a tiempo o con pago atrasado, ambos se aceptan igual) | RETIRADO: se retiró estando inscrito | ANULADO: decisión administrativa manual (no automática por incumplir el compromiso de pago)',
+    },
+    montoObligatorio: {
+      type: DataTypes.DECIMAL(10, 2),
+      field: 'monto_obligatorio',
+      allowNull: false,
+      comment:
+        'Snapshot de capacitaciones.costo al momento de inscribirse (protege de cambios de precio posteriores)',
+    },
+    estadoPago: {
+      type: DataTypes.ENUM(...ESTADOS_PAGO_INSCRITO_CAPACITACION_VALUES),
+      field: 'estado_pago',
+      allowNull: false,
+      defaultValue: ESTADOS_PAGO_INSCRITO_CAPACITACION.PARCIAL,
+      comment:
+        'PARCIAL: aún debe saldo (siempre existe al menos el primer pago al crear la fila) | CANCELADO: SUM(capacitacion_pagos.monto) >= monto_obligatorio',
     },
   },
   {

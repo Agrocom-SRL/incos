@@ -12,6 +12,7 @@ export const CAPACITACION_TOKENS = {
   cursoCapacitacionRepository: 'capacitacion.cursoCapacitacionRepository',
   inscripcionCapacitacionRepository: 'capacitacion.inscripcionCapacitacionRepository',
   pagoCapacitacionRepository: 'capacitacion.pagoCapacitacionRepository',
+  capacitacionCompromisoRepository: 'capacitacion.capacitacionCompromisoRepository',
   cursoCapacitacionFichaViewRepository: 'capacitacion.cursoCapacitacionFichaViewRepository',
 
   // Use Cases — Cursos de capacitación
@@ -36,6 +37,7 @@ export const CAPACITACION_TOKENS = {
   getInscripcionCapacitacionByIdUseCase: 'capacitacion.getInscripcionCapacitacionByIdUseCase',
   createInscripcionCapacitacionUseCase: 'capacitacion.createInscripcionCapacitacionUseCase',
   deleteInscripcionCapacitacionUseCase: 'capacitacion.deleteInscripcionCapacitacionUseCase',
+  anularInscripcionCapacitacionUseCase: 'capacitacion.anularInscripcionCapacitacionUseCase',
   registerPagoCapacitacionUseCase: 'capacitacion.registerPagoCapacitacionUseCase',
 
   // Controllers — Cursos de capacitación
@@ -61,6 +63,7 @@ export const CAPACITACION_TOKENS = {
   getInscripcionCapacitacionByIdController: 'capacitacion.getInscripcionCapacitacionByIdController',
   createInscripcionCapacitacionController: 'capacitacion.createInscripcionCapacitacionController',
   deleteInscripcionCapacitacionController: 'capacitacion.deleteInscripcionCapacitacionController',
+  anularInscripcionCapacitacionController: 'capacitacion.anularInscripcionCapacitacionController',
   registerPagoCapacitacionController: 'capacitacion.registerPagoCapacitacionController',
 
   // Routers

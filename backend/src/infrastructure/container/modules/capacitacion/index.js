@@ -19,6 +19,7 @@ import { ParticipanteRepository } from '../../../repositories/ParticipanteReposi
 import { CursoCapacitacionRepository } from '../../../repositories/CursoCapacitacionRepository.js';
 import { InscripcionCapacitacionRepository } from '../../../repositories/InscripcionCapacitacionRepository.js';
 import { PagoCapacitacionRepository } from '../../../repositories/PagoCapacitacionRepository.js';
+import { CapacitacionCompromisoRepository } from '../../../repositories/CapacitacionCompromisoRepository.js';
 import { CursoCapacitacionFichaViewRepository } from '../../../repositories/views/CursoCapacitacionFichaViewRepository.js';
 import { registerCursosCapacitacionResource } from './cursos-capacitacion.container.js';
 import { registerParticipantesResource } from './participantes.container.js';
@@ -48,6 +49,11 @@ export function registerCapacitacionModule(container) {
         container,
         CAPACITACION_TOKENS.pagoCapacitacionRepository,
         PagoCapacitacionRepository
+    );
+    registerRepository(
+        container,
+        CAPACITACION_TOKENS.capacitacionCompromisoRepository,
+        CapacitacionCompromisoRepository
     );
     registerRepository(
         container,

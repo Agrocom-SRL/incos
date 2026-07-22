@@ -7,13 +7,14 @@ import { Participante as ParticipanteModel } from '../database/models/participan
  * reciente del participante (`NULL` si no tiene ninguna).
  * "Vigente" = mismo criterio que `ESTADOS_INSCRIPCION_CAPACITACION` /
  * `InscripcionCapacitacionRepository.findActivaByParticipanteAndCapacitacion`:
- * estado='INSCRITO' AND activo=TRUE AND deleted_at IS NULL.
+ * estado IN ('PENDIENTE', 'INSCRITO') AND activo=TRUE AND deleted_at IS NULL
+ * (PENDIENTE = pago parcial, sigue ocupando el cupo igual que INSCRITO).
  */
 const CURSO_ACTUAL_TITULO_LITERAL = literal(`(
   SELECT c.titulo FROM capacitacion_inscritos ci
   INNER JOIN capacitaciones c ON c.id = ci.capacitacion_id AND c.deleted_at IS NULL
   WHERE ci.participante_id = \`Participante\`.\`id\`
-    AND ci.estado = 'INSCRITO' AND ci.activo = TRUE AND ci.deleted_at IS NULL
+    AND ci.estado IN ('PENDIENTE', 'INSCRITO') AND ci.activo = TRUE AND ci.deleted_at IS NULL
   ORDER BY ci.fecha_inscripcion DESC LIMIT 1
 )`);
 
@@ -21,7 +22,7 @@ const CURSO_ACTUAL_TITULO_LITERAL = literal(`(
 const CURSO_ACTUAL_ID_LITERAL = literal(`(
   SELECT ci.capacitacion_id FROM capacitacion_inscritos ci
   WHERE ci.participante_id = \`Participante\`.\`id\`
-    AND ci.estado = 'INSCRITO' AND ci.activo = TRUE AND ci.deleted_at IS NULL
+    AND ci.estado IN ('PENDIENTE', 'INSCRITO') AND ci.activo = TRUE AND ci.deleted_at IS NULL
   ORDER BY ci.fecha_inscripcion DESC LIMIT 1
 )`);
 
@@ -29,7 +30,7 @@ const CURSO_ACTUAL_ID_LITERAL = literal(`(
 const SIN_INSCRIPCION_ACTIVA_LITERAL = literal(`NOT EXISTS (
   SELECT 1 FROM capacitacion_inscritos ci
   WHERE ci.participante_id = \`Participante\`.\`id\`
-    AND ci.estado = 'INSCRITO' AND ci.activo = TRUE AND ci.deleted_at IS NULL
+    AND ci.estado IN ('PENDIENTE', 'INSCRITO') AND ci.activo = TRUE AND ci.deleted_at IS NULL
 )`);
 
 /**

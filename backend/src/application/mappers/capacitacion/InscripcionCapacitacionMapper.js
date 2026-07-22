@@ -1,32 +1,12 @@
-import { ESTADOS_PAGO_CAPACITACION } from '../../../domain/constants/capacitacion.constants.js';
-
 /**
  * Mapper de aplicación: InscripcionCapacitacion (módulo CAP)
  *
  * Convierte las filas crudas del listado/ficha (inscripción + participante +
- * curso + total pagado, snake_case) a formato de presentación (camelCase),
- * derivando el estado de pago (PENDIENTE/PARCIAL/PAGADO) de
- * total_pagado vs costo del curso.
+ * curso + total pagado + compromiso, snake_case) a formato de presentación
+ * (camelCase). El estado de pago (`estadoPago`) y el monto objetivo
+ * (`montoObligatorio`) vienen PERSISTIDOS de `capacitacion_inscritos`, no se
+ * derivan aquí (ver reglas de negocio del módulo CAP).
  */
-
-/**
- * Deriva el estado de pago de una inscripción.
- * - PAGADO: total pagado cubre el costo (incluye cursos con costo 0)
- * - PARCIAL: hay pagos pero no cubren el costo
- * - PENDIENTE: sin pagos
- *
- * @param {number} costo
- * @param {number} totalPagado
- * @returns {string}
- */
-export function deriveEstadoPago(costo, totalPagado) {
-  const costoNum = Number(costo ?? 0);
-  const pagadoNum = Number(totalPagado ?? 0);
-
-  if (pagadoNum >= costoNum) return ESTADOS_PAGO_CAPACITACION.PAGADO;
-  if (pagadoNum > 0) return ESTADOS_PAGO_CAPACITACION.PARCIAL;
-  return ESTADOS_PAGO_CAPACITACION.PENDIENTE;
-}
 
 /**
  * Nombre completo en orden APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES.
@@ -52,6 +32,10 @@ export function rowToPresentation(row) {
   if (!row) return null;
 
   const costo = row.costo !== null && row.costo !== undefined ? Number(row.costo) : 0;
+  const montoObligatorio =
+    row.monto_obligatorio !== null && row.monto_obligatorio !== undefined
+      ? Number(row.monto_obligatorio)
+      : 0;
   const totalPagado = Number(row.total_pagado ?? 0);
 
   return {
@@ -74,10 +58,15 @@ export function rowToPresentation(row) {
     capacitacionFechaInicio: row.capacitacion_fecha_inicio,
     capacitacionFechaFin: row.capacitacion_fecha_fin,
     costo,
+    montoObligatorio,
     totalPagado,
-    saldo: Math.max(0, costo - totalPagado),
-    estadoPago: deriveEstadoPago(costo, totalPagado),
+    saldo: Math.max(0, montoObligatorio - totalPagado),
+    estadoPago: row.estado_pago,
     pagosCount: Number(row.pagos_count ?? 0),
+    compromisoId: row.compromiso_id ?? null,
+    fechaCompromiso: row.compromiso_fecha ?? null,
+    compromisoEstado: row.compromiso_estado ?? null,
+    compromisoObservacion: row.compromiso_observacion ?? null,
     createdAt: row.created_at,
   };
 }
@@ -107,6 +96,8 @@ export function entityToPresentation(entity) {
     capacitacionId: entity.capacitacionId,
     fechaInscripcion: entity.fechaInscripcion,
     estado: entity.estado,
+    montoObligatorio: entity.montoObligatorio ?? null,
+    estadoPago: entity.estadoPago ?? null,
     activo: entity.activo,
     createdAt: entity.createdAt,
   };
@@ -126,9 +117,5 @@ export class InscripcionCapacitacionMapper {
 
   static entityToPresentation(entity) {
     return entityToPresentation(entity);
-  }
-
-  static deriveEstadoPago(costo, totalPagado) {
-    return deriveEstadoPago(costo, totalPagado);
   }
 }

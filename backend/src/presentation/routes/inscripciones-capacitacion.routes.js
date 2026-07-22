@@ -6,6 +6,7 @@ import {
     listInscripcionesCapacitacionValidator,
     createInscripcionCapacitacionValidator,
     registerPagoCapacitacionValidator,
+    anularInscripcionCapacitacionValidator,
 } from '../validators/capacitacion/index.js';
 
 /**
@@ -13,7 +14,7 @@ import {
  *
  * Recurso `capacitacion_inscritos` (participante ↔ capacitación) + pagos.
  * Permisos:
- * - `capacitacion.inscripcion` (LISTAR/DETALLE/CREAR/ELIMINAR)
+ * - `capacitacion.inscripcion` (LISTAR/DETALLE/CREAR/ELIMINAR/ANULAR)
  * - `capacitacion.pago` CREAR para POST /:id/pagos (mismo grupo UI
  *   cap_inscripciones, permiso separado para poder dar caja sin alta).
  *
@@ -31,6 +32,7 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
     const detalle = [authenticate, verificarPermiso('capacitacion.inscripcion', 'DETALLE')];
     const crear = [authenticate, verificarPermiso('capacitacion.inscripcion', 'CREAR')];
     const eliminar = [authenticate, verificarPermiso('capacitacion.inscripcion', 'ELIMINAR')];
+    const anular = [authenticate, verificarPermiso('capacitacion.inscripcion', 'ANULAR')];
     const registrarPago = [authenticate, verificarPermiso('capacitacion.pago', 'CREAR')];
 
     /**
@@ -91,6 +93,18 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
         validateRequest,
         (req, res, next) =>
             controllers.deleteInscripcionCapacitacionController.handle(req, res, next)
+    );
+
+    // POST /:id/anular - Decisión administrativa manual (nunca automática); el pago
+    // ya registrado no se toca (sin reembolso). Solo desde PENDIENTE o INSCRITO.
+    router.post(
+        '/:id/anular',
+        ...anular,
+        idValidator,
+        anularInscripcionCapacitacionValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.anularInscripcionCapacitacionController.handle(req, res, next)
     );
 
     return router;

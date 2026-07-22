@@ -20,6 +20,7 @@ export {
   listInscripcionesCapacitacionValidator,
   createInscripcionCapacitacionValidator,
   registerPagoCapacitacionValidator,
+  anularInscripcionCapacitacionValidator,
 } from './inscripciones-capacitacion.validator.js';
 
 export { setEstadoCatalogoValidator } from './set-estado.validator.js';

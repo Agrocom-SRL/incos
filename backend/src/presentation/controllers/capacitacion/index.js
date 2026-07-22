@@ -24,4 +24,5 @@ export { ListInscripcionesCapacitacionController } from './list-inscripciones-ca
 export { GetInscripcionCapacitacionByIdController } from './get-inscripcion-capacitacion-by-id.controller.js';
 export { CreateInscripcionCapacitacionController } from './create-inscripcion-capacitacion.controller.js';
 export { DeleteInscripcionCapacitacionController } from './delete-inscripcion-capacitacion.controller.js';
+export { AnularInscripcionCapacitacionController } from './anular-inscripcion-capacitacion.controller.js';
 export { RegisterPagoCapacitacionController } from './register-pago-capacitacion.controller.js';

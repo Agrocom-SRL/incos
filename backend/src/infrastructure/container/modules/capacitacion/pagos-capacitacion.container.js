@@ -33,8 +33,8 @@ export function registerPagosCapacitacionResource(container) {
                 inscripcionCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.inscripcionCapacitacionRepository
                 ),
-                cursoCapacitacionRepository: c.resolve(
-                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                capacitacionCompromisoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionCompromisoRepository
                 ),
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
                 paymentAccountRepository: c.resolve(REPOSITORIOS_TOKENS.paymentAccountRepository),

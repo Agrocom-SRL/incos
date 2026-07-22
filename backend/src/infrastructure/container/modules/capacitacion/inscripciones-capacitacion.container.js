@@ -19,11 +19,13 @@ import { ListInscripcionesCapacitacionUseCase } from '../../../../application/us
 import { GetInscripcionCapacitacionByIdUseCase } from '../../../../application/use-cases/capacitacion/GetInscripcionCapacitacionByIdUseCase.js';
 import { CreateInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CreateInscripcionCapacitacionUseCase.js';
 import { DeleteInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/DeleteInscripcionCapacitacionUseCase.js';
+import { AnularInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/AnularInscripcionCapacitacionUseCase.js';
 import {
     ListInscripcionesCapacitacionController,
     GetInscripcionCapacitacionByIdController,
     CreateInscripcionCapacitacionController,
     DeleteInscripcionCapacitacionController,
+    AnularInscripcionCapacitacionController,
 } from '../../../../presentation/controllers/capacitacion/index.js';
 import { buildInscripcionesCapacitacionRouter } from '../../../../presentation/routes/inscripciones-capacitacion.routes.js';
 
@@ -38,6 +40,9 @@ export function registerInscripcionesCapacitacionResource(container) {
             new ListInscripcionesCapacitacionUseCase({
                 inscripcionCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.inscripcionCapacitacionRepository
+                ),
+                capacitacionCompromisoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionCompromisoRepository
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -54,6 +59,9 @@ export function registerInscripcionesCapacitacionResource(container) {
                 pagoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.pagoCapacitacionRepository
                 ),
+                capacitacionCompromisoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionCompromisoRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -69,6 +77,9 @@ export function registerInscripcionesCapacitacionResource(container) {
                 participanteRepository: c.resolve(CAPACITACION_TOKENS.participanteRepository),
                 cursoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                capacitacionCompromisoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionCompromisoRepository
                 ),
                 registerPagoCapacitacionUseCase: c.resolve(
                     CAPACITACION_TOKENS.registerPagoCapacitacionUseCase
@@ -87,6 +98,18 @@ export function registerInscripcionesCapacitacionResource(container) {
                 ),
                 pagoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.pagoCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.anularInscripcionCapacitacionUseCase,
+        (c) =>
+            new AnularInscripcionCapacitacionUseCase({
+                inscripcionCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.inscripcionCapacitacionRepository
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -147,6 +170,19 @@ export function registerInscripcionesCapacitacionResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.anularInscripcionCapacitacionController,
+        (c) =>
+            new AnularInscripcionCapacitacionController({
+                anularInscripcionCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.anularInscripcionCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -166,6 +202,9 @@ export function registerInscripcionesCapacitacionResource(container) {
                 ),
                 deleteInscripcionCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.deleteInscripcionCapacitacionController
+                ),
+                anularInscripcionCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.anularInscripcionCapacitacionController
                 ),
                 registerPagoCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.registerPagoCapacitacionController
