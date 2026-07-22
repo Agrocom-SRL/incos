@@ -27,6 +27,7 @@ import { DeleteCursoCapacitacionUseCase } from '../../../../application/use-case
 import { SetEstadoCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/SetEstadoCursoCapacitacionUseCase.js';
 import { AbrirCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/AbrirCursoCapacitacionUseCase.js';
 import { CancelarCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CancelarCursoCapacitacionUseCase.js';
+import { ExportListadoInscritosCapacitacionExcelUseCase } from '../../../../application/use-cases/capacitacion/ExportListadoInscritosCapacitacionExcelUseCase.js';
 import {
     ListCursosCapacitacionController,
     ListHorariosDisponiblesCapacitacionController,
@@ -37,6 +38,7 @@ import {
     SetEstadoCursoCapacitacionController,
     AbrirCursoCapacitacionController,
     CancelarCursoCapacitacionController,
+    ExportListadoInscritosCapacitacionController,
 } from '../../../../presentation/controllers/capacitacion/index.js';
 import { buildCursosCapacitacionRouter } from '../../../../presentation/routes/cursos-capacitacion.routes.js';
 
@@ -154,6 +156,24 @@ export function registerCursosCapacitacionResource(container) {
             new CancelarCursoCapacitacionUseCase({
                 cursoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.exportListadoInscritosCapacitacionUseCase,
+        (c) =>
+            new ExportListadoInscritosCapacitacionExcelUseCase({
+                cursoCapacitacionFichaViewRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionFichaViewRepository
+                ),
+                inscripcionCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.inscripcionCapacitacionRepository
+                ),
+                listadoInscritosCapacitacionExcelGenerator: c.resolve(
+                    SERVICIOS_TOKENS.listadoInscritosCapacitacionExcelGenerator
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -279,6 +299,18 @@ export function registerCursosCapacitacionResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.exportListadoInscritosCapacitacionController,
+        (c) =>
+            new ExportListadoInscritosCapacitacionController({
+                exportListadoInscritosCapacitacionExcelUseCase: c.resolve(
+                    CAPACITACION_TOKENS.exportListadoInscritosCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -313,6 +345,9 @@ export function registerCursosCapacitacionResource(container) {
                 ),
                 cancelarCursoCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.cancelarCursoCapacitacionController
+                ),
+                exportListadoInscritosCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.exportListadoInscritosCapacitacionController
                 ),
             };
 

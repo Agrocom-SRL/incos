@@ -23,5 +23,6 @@ export const SERVICIOS_TOKENS = {
     historialAcademicoPdfGenerator: 'historialAcademicoPdfGenerator', // IHistorialAcademicoPdfGenerator (.pdf)
     becasReporteExcelGenerator: 'becasReporteExcelGenerator', // IBecasReporteExcelGenerator (.xlsx)
     cuentasPorCobrarReporteExcelGenerator: 'cuentasPorCobrarReporteExcelGenerator', // ICuentasPorCobrarReporteExcelGenerator (.xlsx)
+    listadoInscritosCapacitacionExcelGenerator: 'listadoInscritosCapacitacionExcelGenerator', // IListadoInscritosCapacitacionExcelGenerator (.xlsx)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
 };

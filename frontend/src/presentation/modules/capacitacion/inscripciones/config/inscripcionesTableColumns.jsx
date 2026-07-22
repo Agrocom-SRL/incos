@@ -35,8 +35,12 @@ import {
   getEstadoInscripcionCapPillClass,
   getEstadoPagoCapPillClass,
   getSaldoCapPillClass,
+  ESTADOS_INSCRIPCION_CAP_VIGENTES,
 } from '@application-capacitacion/utils/capacitacionPills';
-import { inscripcionCapDetallePath } from '@application-capacitacion/config/paths';
+import {
+  inscripcionCapDetallePath,
+  inscripcionCapRegistrarPagoPath,
+} from '@application-capacitacion/config/paths';
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
 export const createInscripcionesCapTableColumns = ({
@@ -193,6 +197,25 @@ export const createInscripcionesCapTableColumns = ({
           },
         ].filter((d) => d.value != null && d.value !== '');
 
+        const puedeIrAPagar =
+          !esCursoGratuito(record.costo) &&
+          Number(record.saldo) > 0 &&
+          ESTADOS_INSCRIPCION_CAP_VIGENTES.includes(record.estado);
+        const extraActions = puedeIrAPagar
+          ? [
+              {
+                key: 'pagar',
+                icon: <DollarOutlined />,
+                variant: 'view',
+                tooltip: 'Registrar pago',
+                permiso: CAPACITACION_PERMISOS.pago,
+                accion: 'CREAR',
+                onClick: () =>
+                  navigate(inscripcionCapRegistrarPagoPath(record.id), { state: listNavState }),
+              },
+            ]
+          : [];
+
         return (
           <TableActions
             record={record}
@@ -204,6 +227,7 @@ export const createInscripcionesCapTableColumns = ({
             onView={() =>
               navigate(inscripcionCapDetallePath(record.id), { state: listNavState })
             }
+            extraActions={extraActions}
             permisos={{
               ver: { codigo: CAPACITACION_PERMISOS.inscripcion, accion: 'DETALLE' },
               eliminar: { codigo: CAPACITACION_PERMISOS.inscripcion, accion: 'ELIMINAR' },

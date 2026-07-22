@@ -46,6 +46,7 @@ const PagoCapacitacionFormFields = ({
             name="monto"
             label="Monto del pago"
             extra={saldo > 0 ? `Saldo pendiente: Bs ${formatBs(saldo)}` : undefined}
+            validateTrigger={['onChange', 'onBlur']}
             rules={[
               { required: true, message: 'Ingrese el monto del pago' },
               {
@@ -53,6 +54,11 @@ const PagoCapacitacionFormFields = ({
                   const monto = Number(value);
                   if (!Number.isFinite(monto) || monto <= 0) {
                     return Promise.reject(new Error('El monto debe ser mayor a 0'));
+                  }
+                  if (saldo > 0 && monto > Number(saldo)) {
+                    return Promise.reject(
+                      new Error(`El monto no puede superar el saldo pendiente (Bs ${formatBs(saldo)})`),
+                    );
                   }
                   return Promise.resolve();
                 },
@@ -74,6 +80,7 @@ const PagoCapacitacionFormFields = ({
           <Form.Item
             name="fechaPago"
             label="Fecha de pago"
+            initialValue={dayjs()}
             rules={[{ required: true, message: 'Seleccione la fecha del pago' }]}
           >
             <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} disabled={disabled} />

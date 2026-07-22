@@ -18,7 +18,7 @@ import DashboardPageShell from '@presentation/modules/dashboard/components/organ
 import { useInscripcionCapRegistrarPagoPage } from '@application-capacitacion/inscripciones/hooks/state/useInscripcionCapRegistrarPagoPage';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import PagoCapacitacionFormFields from '@capacitacion/inscripciones/components/organisms/PagoCapacitacionFormFields';
-import InscripcionPagoResumenCard from '@capacitacion/inscripciones/components/organisms/InscripcionPagoResumenCard';
+import InscripcionFichaHeader from '@capacitacion/inscripciones/components/organisms/InscripcionFichaHeader';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -91,7 +91,11 @@ const InscripcionCapRegistrarPagoPage = () => {
                 <Empty description="No se encontró la inscripción solicitada." />
               ) : null}
 
-              {!loading && inscripcion ? <InscripcionPagoResumenCard inscripcion={inscripcion} /> : null}
+              {!loading && inscripcion ? (
+                <div className="sd">
+                  <InscripcionFichaHeader inscripcion={inscripcion} />
+                </div>
+              ) : null}
 
               {!loading && inscripcion ? (
                 <Form

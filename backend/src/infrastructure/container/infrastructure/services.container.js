@@ -41,6 +41,7 @@ import { BoletinPdfGenerator } from '../../external/pdf/boletin/BoletinPdfGenera
 import { HistorialAcademicoPdfGenerator } from '../../external/pdf/historial-academico/HistorialAcademicoPdfGenerator.js';
 import { BecasReporteExcelBuilder } from '../../external/excel/finanzas-reportes/BecasReporteExcelBuilder.js';
 import { CuentasPorCobrarExcelBuilder } from '../../external/excel/finanzas-reportes/CuentasPorCobrarExcelBuilder.js';
+import { ListadoInscritosCapacitacionExcelBuilder } from '../../external/excel/capacitacion/ListadoInscritosCapacitacionExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
 export function registerServicesModule(container) {
@@ -161,6 +162,11 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.cuentasPorCobrarReporteExcelGenerator,
         () => new CuentasPorCobrarExcelBuilder()
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.listadoInscritosCapacitacionExcelGenerator,
+        () => new ListadoInscritosCapacitacionExcelBuilder()
     );
 
     // ============================================

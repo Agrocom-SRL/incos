@@ -25,6 +25,7 @@ export const CAPACITACION_TOKENS = {
   setEstadoCursoCapacitacionUseCase: 'capacitacion.setEstadoCursoCapacitacionUseCase',
   abrirCursoCapacitacionUseCase: 'capacitacion.abrirCursoCapacitacionUseCase',
   cancelarCursoCapacitacionUseCase: 'capacitacion.cancelarCursoCapacitacionUseCase',
+  exportListadoInscritosCapacitacionUseCase: 'capacitacion.exportListadoInscritosCapacitacionUseCase',
 
   // Use Cases — Participantes
   listParticipantesUseCase: 'capacitacion.listParticipantesUseCase',
@@ -51,6 +52,7 @@ export const CAPACITACION_TOKENS = {
   setEstadoCursoCapacitacionController: 'capacitacion.setEstadoCursoCapacitacionController',
   abrirCursoCapacitacionController: 'capacitacion.abrirCursoCapacitacionController',
   cancelarCursoCapacitacionController: 'capacitacion.cancelarCursoCapacitacionController',
+  exportListadoInscritosCapacitacionController: 'capacitacion.exportListadoInscritosCapacitacionController',
 
   // Controllers — Participantes
   listParticipantesController: 'capacitacion.listParticipantesController',
