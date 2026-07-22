@@ -2,7 +2,8 @@
  * Organismo: cabecera de la ficha de inscripción de capacitación (CAP).
  *
  * Gemelo de `PagoFichaHeader` (shell compartido `sd-profile`): participante +
- * curso, estado de pago (StatusPill derivado por el backend) y métricas de
+ * curso, estado de la inscripción y estado de pago (StatusPill, resolver
+ * único del módulo — ver `capacitacionPills.js`) y métricas de
  * costo/pagado/saldo. Montos Bs sin decimales. Recibe props ya mapeadas.
  */
 
@@ -10,7 +11,9 @@ import { DollarOutlined } from '@ant-design/icons';
 import { StatusPill } from '@atoms';
 import { formatBs } from '@application/utils/formatters';
 import {
+  formatEstadoInscripcionCap,
   formatEstadoPagoCap,
+  getEstadoInscripcionCapPillClass,
   getEstadoPagoCapPillClass,
   getSaldoCapPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
@@ -37,12 +40,13 @@ const InscripcionFichaHeader = ({ inscripcion }) => {
               {subtitleParts.join(' · ') || 'Inscripción de capacitación'}
             </p>
             <StatusPill
+              label={formatEstadoInscripcionCap(inscripcion.estado)}
+              className={getEstadoInscripcionCapPillClass(inscripcion.estado)}
+            />
+            <StatusPill
               label={formatEstadoPagoCap(inscripcion.estadoPago)}
               className={getEstadoPagoCapPillClass(inscripcion.estadoPago)}
             />
-            {inscripcion.estado === 'RETIRADO' ? (
-              <StatusPill label="Retirado" className="cfg-materia-pill cfg-materia-pill--inactiva" />
-            ) : null}
           </div>
         </div>
       </div>

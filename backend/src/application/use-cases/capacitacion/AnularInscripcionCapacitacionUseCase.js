@@ -8,8 +8,9 @@ import { InscripcionCapacitacionMapper } from '../../mappers/capacitacion/index.
  *
  * Transición manual de negocio hacia ANULADO (POST
  * /inscripciones-capacitacion/:id/anular, permiso capacitacion.inscripcion
- * ACCIÓN ANULAR). SIEMPRE es una decisión administrativa explícita — nunca un
- * efecto automático de que un compromiso quede INCUMPLIDO.
+ * ACCIÓN EDITAR — no existe acción ANULAR en el vocabulario cerrado de
+ * permiso_acciones/roles_permisos). SIEMPRE es una decisión administrativa
+ * explícita — nunca un efecto automático de que un compromiso quede INCUMPLIDO.
  *
  * Al anular: el monto ya pagado en `capacitacion_pagos` NO se toca (sin
  * reembolso, sin borrar el pago); solo cambia `capacitacion_inscritos.estado`.

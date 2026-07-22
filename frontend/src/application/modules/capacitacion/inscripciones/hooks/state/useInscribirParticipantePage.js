@@ -4,11 +4,19 @@
  *
  * Wizard por pestañas (`WizardForm variant="tabs"`, gemelo de
  * `useSeguridadUsuarioCreatePage`): participante (existente por búsqueda O
- * nuevo con datos mínimos) → curso → pago inicial OPCIONAL (switch) → submit
- * en UNA transacción del backend (`createInscripcionCapacitacionValidator`:
- * participanteId XOR participante, capacitacionId, pagoInicial?).
+ * nuevo con datos mínimos) → curso → pago inicial → submit en UNA transacción
+ * del backend (`createInscripcionCapacitacionValidator`: participanteId XOR
+ * participante, capacitacionId, pagoInicial?).
  *
- * Los tres pasos comparten un único `Form` de AntD (`WizardForm` lo crea y
+ * Reglas de pago por cuotas (definitivas, ver backend
+ * `CreateInscripcionCapacitacionUseCase`):
+ * - Curso GRATUITO (costo ≤ 0): el paso "Pago inicial" NO EXISTE en el wizard
+ *   (se omite del todo, `wizardSteps` no lo incluye) — no hay nada que cobrar.
+ * - Curso CON COSTO: el pago inicial es OBLIGATORIO, ya no existe la opción
+ *   de omitirlo. Si el monto ingresado no cubre el costo total, el propio
+ *   formulario (`PagoCapacitacionFormFields`) exige una fecha de compromiso.
+ *
+ * Los pasos comparten un único `Form` de AntD (`WizardForm` lo crea y
  * desmonta del DOM el contenido de los pasos no activos, pero conserva sus
  * valores en el store del form). Por eso el submit final usa
  * `form.getFieldsValue(true)` (no `validateFields()` sin argumentos) para no
@@ -19,7 +27,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useInscribirParticipanteContext } from '@application-capacitacion/inscripciones/hooks/context/useInscribirParticipanteContext';
-import { mapFormValuesToPagoPayload } from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
+import { mapFormValuesToPagoInicialPayload } from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
 import { mapFormValuesToParticipantePayload } from '@application-capacitacion/participantes/mappers/participanteMapper';
 import {
   buildReglasMetodo,
@@ -66,7 +74,6 @@ export const useInscribirParticipantePage = () => {
   const [participanteSeleccionado, setParticipanteSeleccionado] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [cursoSeleccionadoId, setCursoSeleccionadoId] = useState(null);
-  const [conPagoInicial, setConPagoInicial] = useState(false);
   const [metodoPagoId, setMetodoPagoId] = useState(null);
   /** Error puntual del paso actual (validación al avanzar), mostrado por WizardForm. */
   const [stepError, setStepError] = useState('');
@@ -153,38 +160,12 @@ export const useInscribirParticipantePage = () => {
     setCursoSeleccionadoId(value ?? null);
   }, []);
 
-  /** Toggle del pago inicial (opcional); al apagarlo limpia sus campos. */
-  const handleConPagoInicialChange = useCallback(
-    (checked) => {
-      setConPagoInicial(checked);
-      if (!checked) {
-        setMetodoPagoId(null);
-        form.setFieldsValue({
-          monto: undefined,
-          fechaPago: undefined,
-          metodoPagoId: undefined,
-          cuentaPagoId: undefined,
-          observaciones: undefined,
-        });
-      }
-    },
-    [form],
-  );
-
   /**
-   * Un curso sin costo (Bs 0) no tiene nada que cobrar: no tiene sentido
-   * ofrecer el switch «Con pago» ni habilitar método/cuenta de pago. Si el
-   * participante cambia a un curso gratuito mientras el switch seguía
-   * encendido (de un curso con costo elegido antes), se apaga solo.
+   * Un curso sin costo (Bs 0) no tiene nada que cobrar: el paso "Pago
+   * inicial" del wizard directamente no se incluye (ver `wizardSteps`). Un
+   * curso con costo siempre exige el pago inicial (ya no es opcional).
    */
   const requierePago = Number(cursoSeleccionado?.costo ?? 0) > 0;
-
-  useEffect(() => {
-    if (!requierePago && conPagoInicial) {
-      handleConPagoInicialChange(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requierePago]);
 
   /** Al cambiar de método, limpia la cuenta (deja de aplicar). */
   const handleMetodoPagoChange = useCallback(
@@ -208,9 +189,14 @@ export const useInscribirParticipantePage = () => {
    * `headerActions` (botón "Crear nuevo participante" / "Buscar participante")
    * y lo inyecta sobre el paso 1 antes de pasarlo a `WizardForm`, para no
    * mezclar JSX en este hook de estado.
+   *
+   * El paso "Pago inicial" SOLO se incluye si el curso elegido tiene costo
+   * (`requierePago`): un curso gratuito no tiene nada que cobrar, así que el
+   * wizard queda en 2 pasos y "Curso" pasa a ser el último (la página no
+   * intenta avanzar más allá de él, ver `handleCursoSeleccionarYAvanzar`).
    */
-  const wizardSteps = useMemo(
-    () => [
+  const wizardSteps = useMemo(() => {
+    const steps = [
       {
         title: 'Participante',
         formTitle: 'Inscribir participante',
@@ -229,17 +215,19 @@ export const useInscribirParticipantePage = () => {
         sections: ['curso'],
         config: { curso: {} },
       },
-      {
+    ];
+    if (requierePago) {
+      steps.push({
         title: 'Pago inicial',
         formTitle: 'Inscribir participante',
         description:
-          'Puede registrar el primer pago junto con la inscripción, o dejarlo pendiente y cobrarlo después desde la ficha.',
+          'El curso tiene costo: registre el pago inicial (puede ser parcial). Si no cubre el costo total, indique la fecha de compromiso para cancelar el saldo.',
         sections: ['pago'],
         config: { pago: {} },
-      },
-    ],
-    [modoParticipante],
-  );
+      });
+    }
+    return steps;
+  }, [modoParticipante, requierePago]);
 
   /**
    * Validación al avanzar de paso (`WizardForm` la invoca antes de "Siguiente").
@@ -306,9 +294,11 @@ export const useInscribirParticipantePage = () => {
       return;
     }
 
-    if (conPagoInicial) {
+    if (requierePago) {
       try {
-        await form.validateFields(['monto', 'fechaPago', 'metodoPagoId', 'cuentaPagoId']);
+        // 'fechaCompromiso' solo está montado si el monto ingresado queda parcial
+        // (ver PagoCapacitacionFormFields); validarlo aquí no falla si no aplica.
+        await form.validateFields(['monto', 'fechaPago', 'metodoPagoId', 'cuentaPagoId', 'fechaCompromiso']);
       } catch {
         message.error('Revise los campos obligatorios del pago inicial');
         return;
@@ -323,10 +313,18 @@ export const useInscribirParticipantePage = () => {
     } else {
       payload.participante = mapFormValuesToParticipantePayload(values);
     }
-    if (conPagoInicial) {
-      const pagoInicial = mapFormValuesToPagoPayload(values);
+    if (requierePago) {
+      const pagoInicial = mapFormValuesToPagoInicialPayload(values);
       if (!Number.isFinite(pagoInicial.monto) || pagoInicial.monto <= 0) {
         message.error('Indique un monto válido para el pago inicial');
+        return;
+      }
+      const costoCurso = Number(cursoSeleccionado?.costo ?? 0);
+      const quedaParcial = pagoInicial.monto < costoCurso;
+      if (quedaParcial && !pagoInicial.fechaCompromiso) {
+        message.error(
+          'Indique la fecha de compromiso: el pago inicial no cubre el costo total del curso',
+        );
         return;
       }
       payload.pagoInicial = pagoInicial;
@@ -342,7 +340,7 @@ export const useInscribirParticipantePage = () => {
     }
 
     message.success(
-      conPagoInicial
+      requierePago
         ? 'Inscripción y pago inicial registrados'
         : 'Inscripción registrada correctamente',
     );
@@ -360,7 +358,8 @@ export const useInscribirParticipantePage = () => {
     cursoSeleccionadoId,
     modoParticipante,
     participanteSeleccionado,
-    conPagoInicial,
+    requierePago,
+    cursoSeleccionado,
     form,
     inscribir,
     message,
@@ -402,10 +401,8 @@ export const useInscribirParticipantePage = () => {
     cursoSeleccionadoId,
     cursoSeleccionado,
     handleCursoChange,
-    // Paso 3: pago inicial opcional
+    // Paso 3: pago inicial (obligatorio si el curso tiene costo; omitido si es gratuito)
     requierePago,
-    conPagoInicial,
-    handleConPagoInicialChange,
     metodosPago,
     cuentasPago,
     loadingCatalogos,

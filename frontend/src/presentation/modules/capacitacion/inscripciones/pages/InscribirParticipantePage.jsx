@@ -1,7 +1,8 @@
 /**
  * Inscribir participante a un curso de capacitación (CAP · CREAR) — wizard
  * por pestañas (`WizardForm variant="tabs"`, gemelo de `UsuarioCreatePage`):
- * participante (existente o nuevo) → curso → pago inicial opcional.
+ * participante (existente o nuevo) → curso → pago inicial (obligatorio si el
+ * curso tiene costo; el paso no existe si el curso es gratuito).
  *
  * Página "dumb": la orquestación (pasos, validación, submit) vive en
  * `useInscribirParticipantePage`. El contenido de cada paso (selector/
@@ -23,10 +24,15 @@
  * el botón "Siguiente"): usa la API imperativa de `WizardForm`
  * (`wizardRef.current.goToStep`) porque seleccionar una fila YA es una
  * selección válida — no hace falta repetir la validación del paso.
+ *
+ * Elegir un curso avanza directo al paso "Pago inicial" SOLO si ese curso
+ * tiene costo (el paso no existe para cursos gratuitos, ver
+ * `useInscribirParticipantePage`): si el curso elegido es gratuito, "Curso"
+ * ya es el último paso y no hace falta saltar a ningún lado.
  */
 
 import { useCallback, useMemo, useRef } from 'react';
-import { Flex, Switch, Typography } from 'antd';
+import { Flex, Typography } from 'antd';
 import { ArrowLeftOutlined, SearchOutlined, UserAddOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -77,9 +83,6 @@ const InscribirParticipantePage = () => {
     cursoSeleccionadoId,
     cursoSeleccionado,
     handleCursoChange,
-    requierePago,
-    conPagoInicial,
-    handleConPagoInicialChange,
     metodosPago,
     cuentasPago,
     loadingCatalogos,
@@ -102,13 +105,22 @@ const InscribirParticipantePage = () => {
     [handleSeleccionarParticipante],
   );
 
-  /** Elegir una tarjeta de curso ya es una elección válida: avanza directo al paso 3. */
+  /**
+   * Elegir una tarjeta de curso ya es una elección válida: avanza directo al
+   * paso "Pago inicial" SOLO si ese curso tiene costo (el paso no existe para
+   * cursos gratuitos). Se resuelve el costo con el `value` recién elegido
+   * (no con `cursoSeleccionado` del hook, que todavía no se actualizó en este
+   * mismo ciclo síncrono) para no saltar a un índice de paso inexistente.
+   */
   const handleCursoSeleccionarYAvanzar = useCallback(
     (value) => {
       handleCursoChange(value);
-      wizardRef.current?.goToStep(2);
+      const curso = cursos.find((c) => c.id === value);
+      if (Number(curso?.costo ?? 0) > 0) {
+        wizardRef.current?.goToStep(2);
+      }
     },
-    [handleCursoChange],
+    [handleCursoChange, cursos],
   );
 
   const participanteHeaderActions = useMemo(() => {
@@ -178,37 +190,24 @@ const InscribirParticipantePage = () => {
       }
 
       if (sectionKey === 'pago') {
+        // Este paso solo existe en `wizardSteps` cuando el curso tiene costo
+        // (`requierePago`): el pago inicial es siempre obligatorio aquí, ya
+        // no hay switch para omitirlo. Un curso gratuito nunca llega a este
+        // sectionKey (el paso completo se omite del wizard).
         return (
           <Flex vertical gap="middle" key="pago">
             <CursoCapacitacionResumen curso={cursoSeleccionado} />
-            {requierePago ? (
-              <>
-                <Switch
-                  checked={conPagoInicial}
-                  onChange={handleConPagoInicialChange}
-                  checkedChildren="Con pago"
-                  unCheckedChildren="Sin pago"
-                  style={{ alignSelf: 'flex-start' }}
-                />
-                <InscribirParticipanteSeccionPago
-                  conPagoInicial={conPagoInicial}
-                  errorCatalogos={errorCatalogos}
-                  metodosPago={metodosPago}
-                  cuentasPago={cuentasPago}
-                  loadingCatalogos={loadingCatalogos}
-                  metodoPagoId={metodoPagoId}
-                  reglasMetodo={reglasMetodo}
-                  saldo={cursoSeleccionado?.costo ?? 0}
-                  onMetodoPagoChange={handleMetodoPagoChange}
-                  disabled={inscribiendo}
-                />
-              </>
-            ) : (
-              <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                Este curso no tiene costo asociado (Bs 0): la inscripción no requiere
-                registrar ningún pago.
-              </Typography.Paragraph>
-            )}
+            <InscribirParticipanteSeccionPago
+              errorCatalogos={errorCatalogos}
+              metodosPago={metodosPago}
+              cuentasPago={cuentasPago}
+              loadingCatalogos={loadingCatalogos}
+              metodoPagoId={metodoPagoId}
+              reglasMetodo={reglasMetodo}
+              costoCurso={cursoSeleccionado?.costo ?? 0}
+              onMetodoPagoChange={handleMetodoPagoChange}
+              disabled={inscribiendo}
+            />
           </Flex>
         );
       }
@@ -234,9 +233,6 @@ const InscribirParticipantePage = () => {
       cursoSeleccionadoId,
       cursoSeleccionado,
       handleCursoSeleccionarYAvanzar,
-      requierePago,
-      conPagoInicial,
-      handleConPagoInicialChange,
       errorCatalogos,
       metodosPago,
       cuentasPago,

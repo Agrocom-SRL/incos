@@ -6,10 +6,18 @@
  * El botón "Registrar pago" navega a su propia página y valida
  * `capacitacion.pago CREAR` (fail-closed). No se muestra si el curso no tiene
  * costo asociado (gratuito): no hay nada que cobrar.
+ *
+ * "Anular inscripción" (capacitacion.inscripcion ACCIÓN EDITAR — no existe
+ * ANULAR en el vocabulario cerrado de acciones RBAC; se reutiliza EDITAR en
+ * vez de ELIMINAR para no mezclarla con el "retiro" voluntario, que ya usa
+ * ELIMINAR) es una decisión administrativa sensible: vive en la ficha (con
+ * todo el contexto de la inscripción a la vista), no en la tabla de listado.
+ * Confirmación con `Popconfirm` que deja explícito que el monto ya pagado no
+ * se devuelve; solo se ofrece si la inscripción sigue PENDIENTE o INSCRITA.
  */
 
-import { Alert, Empty, Flex, Spin } from 'antd';
-import { ArrowLeftOutlined, DollarOutlined } from '@ant-design/icons';
+import { Alert, Empty, Flex, Popconfirm, Spin } from 'antd';
+import { ArrowLeftOutlined, DollarOutlined, StopOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -22,8 +30,17 @@ import InscripcionPagosSection from '@capacitacion/inscripciones/components/orga
 import '@presentation/styles/pages/detail-page.css';
 
 const InscripcionCapacitacionDetail = () => {
-  const { inscripcion, loading, error, breadcrumbItems, handleVolver, handleIrARegistrarPago } =
-    useInscripcionCapacitacionDetailPage();
+  const {
+    inscripcion,
+    loading,
+    error,
+    breadcrumbItems,
+    handleVolver,
+    handleIrARegistrarPago,
+    puedeAnular,
+    handleAnular,
+    anulando,
+  } = useInscripcionCapacitacionDetailPage();
 
   const headerActions = (
     <Flex gap="small" wrap>
@@ -38,6 +55,27 @@ const InscripcionCapacitacionDetail = () => {
         >
           Registrar pago
         </ActionButton>
+      ) : null}
+      {puedeAnular ? (
+        <Popconfirm
+          title="Anular esta inscripción"
+          description="El monto ya pagado no se devuelve. ¿Confirma que desea anular la inscripción?"
+          okText="Anular inscripción"
+          okButtonProps={{ danger: true, loading: anulando }}
+          cancelText="Cancelar"
+          onConfirm={handleAnular}
+        >
+          <ActionButton
+            permiso={CAPACITACION_PERMISOS.inscripcion}
+            accion="EDITAR"
+            variant="danger"
+            icon={<StopOutlined />}
+            loading={anulando}
+            disabled={!inscripcion}
+          >
+            Anular inscripción
+          </ActionButton>
+        </Popconfirm>
       ) : null}
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
         Volver

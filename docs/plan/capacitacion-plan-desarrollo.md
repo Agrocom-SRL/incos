@@ -282,7 +282,23 @@ Archivo nuevo: `backend/database/02-seeders/65-seed-permisos-cap.sql`
 |---|---|---|
 | `capacitacion.curso` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `cap_cursos` |
 | `capacitacion.participante` | LISTAR, DETALLE, CREAR, EDITAR | `cap_participantes` |
-| `capacitacion.inscripcion` | LISTAR, DETALLE, CREAR, ELIMINAR, ANULAR **(nueva, 2026-07-22)** | `cap_inscripciones` |
+| `capacitacion.inscripcion` | LISTAR, DETALLE, CREAR, ELIMINAR, EDITAR **(reutilizada para "anular", 2026-07-22)** | `cap_inscripciones` |
+
+> **Corrección 2026-07-22 (bug real al ejecutar el seed):** se había sembrado
+> una acción `'ANULAR'` que NO existe en el ENUM cerrado de
+> `permiso_acciones`/`roles_permisos` (`04-sistema-seguridad.sql`: solo
+> `LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/ACTIVAR/APROBAR/EXPORTAR/GENERAR_PDF`)
+> — MySQL rechazó el INSERT con `#1265 Data truncated for column 'accion'`.
+> El vocabulario de acciones es **cerrado a nivel de sistema**, nunca se
+> inventa una acción por módulo. Se remapeó "anular inscripción" a la acción
+> **`EDITAR`** (no `ELIMINAR`, porque ese ya está tomado por el "retiro"
+> voluntario y solo lo tienen RECTOR/DIR_ADMIN — asignarlo también a
+> SEC_ADMIN para "anular" le habría dado de regalo la capacidad de retirar).
+> Precedente ya existente en el sistema: `pagos-aportes.routes.js` resuelve
+> "anular cuota" reutilizando `ELIMINAR` (caso distinto, sin el conflicto de
+> arriba). Corregido en el seed 65 y en los 2 puntos donde el RBAC se valida
+> de verdad (`inscripciones-capacitacion.routes.js`,
+> `InscripcionCapacitacionDetail.jsx`).
 | `capacitacion.pago` | CREAR, EXPORTAR, GENERAR_PDF (recibo) | `cap_inscripciones` |
 
 Estructura del archivo: igual que `60-seed-permisos-fin.sql` (permisos →

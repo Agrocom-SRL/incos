@@ -590,6 +590,8 @@ export const INSCRIPCIONES_CAPACITACION_ENDPOINTS = {
   ...createCRUDEndpoints('/inscripciones-capacitacion'),
   /** POST — registrar pago de una inscripción (permiso capacitacion.pago CREAR) */
   PAGOS: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/pagos`,
+  /** POST — anular inscripción, decisión administrativa manual (permiso capacitacion.inscripcion EDITAR — no existe acción ANULAR en el vocabulario cerrado de permisos) */
+  ANULAR: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/anular`,
 };
 
 /**

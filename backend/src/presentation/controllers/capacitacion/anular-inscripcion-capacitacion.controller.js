@@ -1,8 +1,9 @@
 /**
  * POST /api/v1/inscripciones-capacitacion/:id/anular
  * Transición manual de negocio hacia ANULADO (permiso capacitacion.inscripcion
- * ACCIÓN ANULAR) — decisión administrativa explícita, solo desde PENDIENTE o
- * INSCRITO. El pago ya registrado NO se toca (sin reembolso).
+ * ACCIÓN EDITAR — no existe acción ANULAR en el vocabulario cerrado de
+ * permiso_acciones/roles_permisos) — decisión administrativa explícita, solo
+ * desde PENDIENTE o INSCRITO. El pago ya registrado NO se toca (sin reembolso).
  */
 export class AnularInscripcionCapacitacionController {
   constructor({ anularInscripcionCapacitacionUseCase, logger, responseFormatter }) {

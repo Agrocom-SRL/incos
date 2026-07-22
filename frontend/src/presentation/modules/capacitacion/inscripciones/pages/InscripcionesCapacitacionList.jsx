@@ -4,9 +4,14 @@
  *
  * Página "dumb": solo compone template + organismos y consume el hook de
  * pantalla. No hace fetch ni orquesta.
+ *
+ * Filtro "Solo con pago vencido" (regla §7 del módulo): un `Switch` sobre el
+ * historial YA cargado (no requiere pantalla nueva) — cruza `estadoPago`
+ * PARCIAL con la fecha de compromiso vencida (`record.pagoVencido`, derivado
+ * en el mapper del frontend).
  */
 
-import { Flex, Typography } from 'antd';
+import { Flex, Switch, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -20,7 +25,7 @@ import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 const InscripcionesCapacitacionList = () => {
   const {
@@ -33,6 +38,8 @@ const InscripcionesCapacitacionList = () => {
     handleInscribir,
     handleSearchChange,
     tablePagination,
+    soloVencidos,
+    setSoloVencidos,
   } = useInscripcionesCapacitacionListPage();
 
   const inscribirAction = (
@@ -45,6 +52,18 @@ const InscripcionesCapacitacionList = () => {
     >
       Inscribir participante
     </ActionButton>
+  );
+
+  const filtroVencidosAction = (
+    <Flex align="center" gap={8}>
+      <Switch
+        checked={soloVencidos}
+        onChange={setSoloVencidos}
+        size="small"
+        aria-label="Solo con pago vencido"
+      />
+      <Text type="secondary">Solo con pago vencido</Text>
+    </Flex>
   );
 
   return (
@@ -80,7 +99,12 @@ const InscripcionesCapacitacionList = () => {
                   searchStyle={{ maxWidth: 520 }}
                   pagination={tablePagination}
                   loadingTip="Cargando inscripciones…"
-                  emptyText="Aún no hay inscripciones registradas."
+                  emptyText={
+                    soloVencidos
+                      ? 'No hay inscripciones con pago vencido.'
+                      : 'Aún no hay inscripciones registradas.'
+                  }
+                  headerActions={filtroVencidosAction}
                 />
               </div>
             </section>

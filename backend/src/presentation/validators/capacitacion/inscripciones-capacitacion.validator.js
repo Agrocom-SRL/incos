@@ -106,7 +106,9 @@ export const registerPagoCapacitacionValidator = [...buildPagoFieldValidators(''
 
 /**
  * POST /:id/anular — decisión administrativa manual (permiso
- * capacitacion.inscripcion ACCIÓN ANULAR). `observacion` es opcional: el
+ * capacitacion.inscripcion ACCIÓN EDITAR — no existe acción ANULAR en el
+ * vocabulario cerrado de permiso_acciones/roles_permisos). `observacion` es
+ * opcional: el
  * schema de `capacitacion_inscritos` no tiene columna propia para guardarla,
  * queda solo en el log de auditoría del use case.
  */

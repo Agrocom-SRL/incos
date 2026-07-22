@@ -14,7 +14,11 @@ import {
  *
  * Recurso `capacitacion_inscritos` (participante ↔ capacitación) + pagos.
  * Permisos:
- * - `capacitacion.inscripcion` (LISTAR/DETALLE/CREAR/ELIMINAR/ANULAR)
+ * - `capacitacion.inscripcion` (LISTAR/DETALLE/CREAR/ELIMINAR/EDITAR). EDITAR
+ *   se reutiliza para "anular" (POST /:id/anular) — no existe acción ANULAR
+ *   en el vocabulario cerrado de permiso_acciones/roles_permisos; se evitó
+ *   reusar ELIMINAR (ya asignado al "retiro" voluntario) para no otorgar esa
+ *   capacidad de regalo a quien solo debía poder anular.
  * - `capacitacion.pago` CREAR para POST /:id/pagos (mismo grupo UI
  *   cap_inscripciones, permiso separado para poder dar caja sin alta).
  *
@@ -32,7 +36,7 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
     const detalle = [authenticate, verificarPermiso('capacitacion.inscripcion', 'DETALLE')];
     const crear = [authenticate, verificarPermiso('capacitacion.inscripcion', 'CREAR')];
     const eliminar = [authenticate, verificarPermiso('capacitacion.inscripcion', 'ELIMINAR')];
-    const anular = [authenticate, verificarPermiso('capacitacion.inscripcion', 'ANULAR')];
+    const anular = [authenticate, verificarPermiso('capacitacion.inscripcion', 'EDITAR')];
     const registrarPago = [authenticate, verificarPermiso('capacitacion.pago', 'CREAR')];
 
     /**

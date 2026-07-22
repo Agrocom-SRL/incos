@@ -21,4 +21,16 @@ export class IInscripcionCapacitacionRepository extends IBaseRepository {
   async registrarPago(_inscripcionId, _payload) {
     throw new Error('Método registrarPago debe ser implementado');
   }
+
+  /**
+   * Anula la inscripción (POST /:id/anular, permiso capacitacion.inscripcion
+   * EDITAR — no existe acción ANULAR en el vocabulario cerrado de permisos).
+   * Decisión administrativa manual: el monto ya pagado no se devuelve.
+   * @param {string|number} _inscripcionId
+   * @param {Object} [_payload] - { observacion? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async anular(_inscripcionId, _payload) {
+    throw new Error('Método anular debe ser implementado');
+  }
 }

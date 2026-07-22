@@ -16,6 +16,8 @@ import { DetailField, StatusPill } from '@atoms';
 import { formatBs } from '@application/utils/formatters';
 import {
   formatEstadoCurso,
+  formatEstadoInscripcionCap,
+  getEstadoInscripcionCapPillClass,
   getSaldoCapPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
 import { createPagosCapacitacionTableColumns } from '@capacitacion/inscripciones/config/pagosCapacitacionTableColumns';
@@ -38,7 +40,10 @@ const InscripcionPagosSection = ({ inscripcion }) => {
           {inscripcion.fechaInscripcionLabel || '—'}
         </DetailField>
         <DetailField label="Estado de la inscripción">
-          {inscripcion.estado === 'RETIRADO' ? 'Retirado' : 'Inscrito'}
+          <StatusPill
+            label={formatEstadoInscripcionCap(inscripcion.estado)}
+            className={getEstadoInscripcionCapPillClass(inscripcion.estado)}
+          />
         </DetailField>
       </DetailInfoCard>
 
@@ -58,6 +63,16 @@ const InscripcionPagosSection = ({ inscripcion }) => {
             className={getSaldoCapPillClass(inscripcion.saldo)}
           />
         </DetailField>
+        {inscripcion.fechaCompromisoLabel ? (
+          <DetailField label="Compromiso de pago">
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              {inscripcion.fechaCompromisoLabel}
+              {inscripcion.pagoVencido ? (
+                <StatusPill label="Vencido" className="cfg-materia-pill cfg-materia-pill--danger" />
+              ) : null}
+            </span>
+          </DetailField>
+        ) : null}
       </DetailInfoCard>
 
       <DetailInfoCard

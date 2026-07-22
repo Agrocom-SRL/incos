@@ -3,10 +3,19 @@
  *
  * Lenguaje visual de PagosList: numeración + IdentidadCelda (CI + nombre en
  * orden canónico, ya resuelto por el mapper vía buildFullName) + InfoLinesCell
- * + StatusPill de estado de pago (derivado por el backend). Montos Bs SIN
- * decimales (formatBs). Orden en cliente (modo loadAll del provider).
+ * + StatusPill de estado de la inscripción y de estado de pago (resolvers
+ * únicos del módulo, ver `capacitacionPills.js`). Montos Bs SIN decimales
+ * (formatBs). Orden en cliente (modo loadAll del provider).
+ *
+ * La columna "Saldo" suma un tag "Vencido" cuando `record.pagoVencido` es
+ * true (derivado en el mapper del frontend: `estadoPago === 'PARCIAL'` Y la
+ * fecha de compromiso ya pasó — NUNCA se confía solo en `compromisoEstado`
+ * del backend, que puede quedar en INCUMPLIDO para siempre aunque la deuda ya
+ * se haya saldado). El filtro "Solo con pago vencido" del listado
+ * (`useInscripcionesCapacitacionListPage`) usa el mismo flag.
  */
 
+import { Flex } from 'antd';
 import {
   BookOutlined,
   CalendarOutlined,
@@ -21,7 +30,9 @@ import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitac
 import {
   esCursoGratuito,
   formatEstadoCurso,
+  formatEstadoInscripcionCap,
   formatEstadoPagoCap,
+  getEstadoInscripcionCapPillClass,
   getEstadoPagoCapPillClass,
   getSaldoCapPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
@@ -86,6 +97,20 @@ export const createInscripcionesCapTableColumns = ({
         }),
     },
     {
+      title: 'Estado',
+      key: 'estado',
+      width: 140,
+      align: 'center',
+      render: (_, record) => (
+        <StatusPill
+          label={formatEstadoInscripcionCap(record.estado)}
+          className={getEstadoInscripcionCapPillClass(record.estado)}
+        />
+      ),
+      sorter: true,
+      sortCompare: (a, b) => (a.estado || '').localeCompare(b.estado || ''),
+    },
+    {
       title: 'Pagado',
       key: 'pagado',
       width: 190,
@@ -113,13 +138,18 @@ export const createInscripcionesCapTableColumns = ({
     {
       title: 'Saldo',
       key: 'saldo',
-      width: 140,
+      width: 150,
       align: 'center',
       render: (_, record) => (
-        <StatusPill
-          label={record.saldo > 0 ? `Bs ${formatBs(record.saldo)}` : 'Saldado'}
-          className={getSaldoCapPillClass(record.saldo)}
-        />
+        <Flex vertical gap={2} align="center">
+          <StatusPill
+            label={record.saldo > 0 ? `Bs ${formatBs(record.saldo)}` : 'Saldado'}
+            className={getSaldoCapPillClass(record.saldo)}
+          />
+          {record.pagoVencido ? (
+            <StatusPill label="Vencido" className="cfg-materia-pill cfg-materia-pill--danger" />
+          ) : null}
+        </Flex>
       ),
       sorter: true,
       sortCompare: (a, b) => (Number(a.saldo) || 0) - (Number(b.saldo) || 0),

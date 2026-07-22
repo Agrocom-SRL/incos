@@ -15,7 +15,8 @@ import { InscripcionCapacitacionDetailContext } from '@application-capacitacion/
 
 export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId }) => {
   const { inscripcion, loading, error, cargar } = useGetInscripcionCapacitacion();
-  const { registrandoPago, registrarPago } = useInscripcionCapacitacionMutations();
+  const { registrandoPago, registrarPago, anulando, anularInscripcion } =
+    useInscripcionCapacitacionMutations();
   const {
     metodosPago,
     cuentasPago,
@@ -45,6 +46,17 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
     [idValido, id, registrarPago],
   );
 
+  /** Anular (decisión administrativa manual): refetch de la ficha en éxito. */
+  const anularInscripcionActual = useCallback(
+    async (payload) => {
+      if (!idValido) return { success: false, error: 'Inscripción inválida' };
+      const result = await anularInscripcion(id, payload);
+      if (result?.success) await cargar(id);
+      return result;
+    },
+    [idValido, id, anularInscripcion, cargar],
+  );
+
   const value = useMemo(
     () => ({
       inscripcionId: idValido ? id : null,
@@ -55,6 +67,9 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
       // Registro de pago
       registrarPago: registrarPagoInscripcion,
       registrandoPago,
+      // Anular inscripción (decisión administrativa manual)
+      anularInscripcion: anularInscripcionActual,
+      anulando,
       // Catálogos de pago (compartidos con Finanzas)
       metodosPago,
       cuentasPago,
@@ -70,6 +85,8 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
       refetch,
       registrarPagoInscripcion,
       registrandoPago,
+      anularInscripcionActual,
+      anulando,
       metodosPago,
       cuentasPago,
       loadingCatalogos,

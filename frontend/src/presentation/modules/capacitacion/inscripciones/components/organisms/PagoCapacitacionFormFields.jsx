@@ -5,11 +5,21 @@
  * cuentaPagoId (visible/requerida según método, reglas compartidas de
  * Finanzas) y observaciones. Sin comprobante/upload (no existen en CAP).
  *
- * Se monta DENTRO de un <Form layout="vertical"> del consumidor: lo usan el
- * modal "Registrar pago" de la ficha y el paso "pago inicial" de inscribir.
+ * Se monta DENTRO de un <Form layout="vertical"> del consumidor: lo usan la
+ * página "Registrar pago" de la ficha (cuota adicional, `permiteCompromiso`
+ * queda en `false`) y el paso "Pago inicial" del wizard de inscribir
+ * (`permiteCompromiso` en `true`).
+ *
+ * Campo "Fecha de compromiso" (solo si `permiteCompromiso`): el pago inicial
+ * de un curso con costo es OBLIGATORIO y ya no admite omitirse; si el monto
+ * ingresado queda por debajo de `costoCurso` (pago parcial), aparece este
+ * `DatePicker` — SIN selector de días ni cálculo automático de plazo (a
+ * diferencia del compromiso de Aportes/Finanzas): la fecha la elige
+ * directamente el usuario. Reactivo al valor de `monto` vía `shouldUpdate`.
  */
 
 import { Col, DatePicker, Form, Input, InputNumber, Row, Select } from 'antd';
+import dayjs from 'dayjs';
 import { formatBs } from '@application/utils/formatters';
 
 const { TextArea } = Input;
@@ -22,6 +32,8 @@ const PagoCapacitacionFormFields = ({
   saldo = 0,
   onMetodoPagoChange,
   disabled = false,
+  permiteCompromiso = false,
+  costoCurso = null,
 }) => {
   const metodoOptions = metodosPago.map((metodo) => ({ value: metodo.id, label: metodo.nombre }));
   const cuentaOptions = cuentasPago.map((cuenta) => ({ value: cuenta.id, label: cuenta.label }));
@@ -119,6 +131,38 @@ const PagoCapacitacionFormFields = ({
           </Form.Item>
         </Col>
       </Row>
+
+      {permiteCompromiso ? (
+        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.monto !== curr.monto}>
+          {({ getFieldValue }) => {
+            const monto = Number(getFieldValue('monto'));
+            const quedaParcial =
+              Number.isFinite(monto) && monto > 0 && costoCurso != null && monto < Number(costoCurso);
+            if (!quedaParcial) return null;
+            return (
+              <Row gutter={[24, 0]}>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    name="fechaCompromiso"
+                    label="Fecha de compromiso de pago"
+                    extra="El pago inicial no cubre el costo total del curso: elija hasta cuándo se compromete el participante a cancelar el saldo."
+                    rules={[
+                      { required: true, message: 'Seleccione la fecha de compromiso de pago' },
+                    ]}
+                  >
+                    <DatePicker
+                      format="DD/MM/YYYY"
+                      style={{ width: '100%' }}
+                      disabled={disabled}
+                      disabledDate={(date) => !!date && date.isBefore(dayjs().startOf('day'))}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            );
+          }}
+        </Form.Item>
+      ) : null}
     </>
   );
 };
