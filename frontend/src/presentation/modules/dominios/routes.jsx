@@ -49,18 +49,24 @@ export const dominiosRoutes = [
         menu: { label: 'Capacitación', module: 'CAP', order: 8 },
     },
     {
+        path: '/tutorias',
+        element: null,
+        key: 'TUT',
+        menu: { label: 'Tutorías', module: 'TUT', order: 9 },
+    },
+    {
         path: '/configuracion-sistema',
         key: 'CFG',
         element: null,
         permiso: null,
         accion: null,
-        menu: { label: 'Configuración', module: 'CFG', order: 9 },
+        menu: { label: 'Configuración', module: 'CFG', order: 10 },
     },
     {
         path: '/seguridad',
         element: null,
         key: 'SEG',
-        menu: { label: 'Seguridad', module: 'SEG', order: 10 },
+        menu: { label: 'Seguridad', module: 'SEG', order: 11 },
     },
 ];
 

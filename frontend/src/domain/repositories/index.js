@@ -92,3 +92,10 @@ export { IInscripcionCapacitacionRepository } from './IInscripcionCapacitacionRe
 export { IUsuarioAdminRepository } from './IUsuarioAdminRepository';
 export { IRolAdminRepository } from './IRolAdminRepository';
 export { IPermisoRepository } from './IPermisoRepository';
+// ============================================
+// MÓDULO: TUTORÍAS Y ACOMPAÑAMIENTO (TUT)
+// ============================================
+export { IProyectoGradoRepository } from './IProyectoGradoRepository';
+export { IAlertaRiesgoRepository } from './IAlertaRiesgoRepository';
+export { ISesionReforzamientoRepository } from './ISesionReforzamientoRepository';
+export { IPanelAcompanamientoRepository } from './IPanelAcompanamientoRepository';

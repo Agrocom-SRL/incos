@@ -596,6 +596,82 @@ export const INSCRIPCIONES_CAPACITACION_ENDPOINTS = {
   ANULAR: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/anular`,
 };
 
+// ============================================
+// MÓDULO: TUTORÍAS Y ACOMPAÑAMIENTO ACADÉMICO (TUT)
+// ============================================
+// Contrato T1-T23 / A1-A11 (docs/plan/tutorias-plan-desarrollo.md). Rutas
+// estáticas SIEMPRE antes de `/:id` en el backend; aquí solo construimos URLs.
+// Permisos `tutorias.*` (seed 66).
+
+export const PROYECTOS_GRADO_ENDPOINTS = {
+  ...createCRUDEndpoints('/proyectos-grado'),
+  /** GET — catálogo de modalidades de grado (T2, dataFieldName `modalidadesGrado`) */
+  MODALIDADES: `${API_BASE}/proyectos-grado/modalidades`,
+  /** GET — bandeja del docente tutor autenticado (T3, `misTutorados`) */
+  MIS_TUTORADOS: `${API_BASE}/proyectos-grado/mis-tutorados`,
+  /** GET — proyecto del estudiante autenticado (T4, `proyectoGrado`) */
+  MI_PROYECTO: `${API_BASE}/proyectos-grado/mi-proyecto`,
+  /** GET — PDF de bitácora mensual del tutor (T5, res.download) */
+  REPORTE_BITACORA_MENSUAL: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.mes != null) q.set('mes', String(params.mes));
+    if (params.gestionId != null) q.set('gestionId', String(params.gestionId));
+    const qs = q.toString();
+    return `${API_BASE}/proyectos-grado/reportes/bitacora-mensual${qs ? `?${qs}` : ''}`;
+  },
+  /** POST — asignar tutor; genera PDF de designación oficial (T10, proyecto·APROBAR) */
+  TUTOR: (id) => `${API_BASE}/proyectos-grado/${id}/tutor`,
+  /** POST — transición de estado del proyecto (T11, proyecto·APROBAR) */
+  TRANSICIONES: (id) => `${API_BASE}/proyectos-grado/${id}/transiciones`,
+  /** POST — agregar integrante (T12, proyecto·EDITAR) */
+  INTEGRANTES: (id) => `${API_BASE}/proyectos-grado/${id}/integrantes`,
+  /** PATCH — actualizar integrante (rol/estado, T13, proyecto·EDITAR) */
+  INTEGRANTE: (id, integranteId) =>
+    `${API_BASE}/proyectos-grado/${id}/integrantes/${integranteId}`,
+  /** GET/POST — bitácora del proyecto (T14 `bitacoraEntradas` / T15 `bitacoraEntrada`) */
+  BITACORA: (id) => `${API_BASE}/proyectos-grado/${id}/bitacora`,
+  /** PUT — editar entrada de bitácora (T16, bitacora·EDITAR) */
+  BITACORA_ENTRADA: (id, entradaId) =>
+    `${API_BASE}/proyectos-grado/${id}/bitacora/${entradaId}`,
+  /** POST — confirmación del estudiante (firma digital, T17, guard de pertenencia) */
+  BITACORA_CONFIRMAR: (id, entradaId) =>
+    `${API_BASE}/proyectos-grado/${id}/bitacora/${entradaId}/confirmar`,
+  /** GET/POST(multipart) — avances del proyecto (T18 `avances` / T20 `avance`) */
+  AVANCES: (id) => `${API_BASE}/proyectos-grado/${id}/avances`,
+  /** GET — detalle de un avance (T19, `avance`) */
+  AVANCE: (id, avanceId) => `${API_BASE}/proyectos-grado/${id}/avances/${avanceId}`,
+  /** GET — descarga del archivo del avance (T21, res.download; blob autenticado) */
+  AVANCE_ARCHIVO: (id, avanceId) =>
+    `${API_BASE}/proyectos-grado/${id}/avances/${avanceId}/archivo`,
+  /** GET — dictámenes del proyecto (T22, `dictamenes`) */
+  DICTAMENES: (id) => `${API_BASE}/proyectos-grado/${id}/dictamenes`,
+  /** GET — PDF del dictamen (T23, proyecto·EXPORTAR; blob autenticado) */
+  DICTAMEN_ARCHIVO: (id, dictamenId) =>
+    `${API_BASE}/proyectos-grado/${id}/dictamenes/${dictamenId}/archivo`,
+};
+
+export const ACOMPANAMIENTO_ENDPOINTS = {
+  /** GET — alertas de riesgo pedagógico, vista 156 (A1, `alertasRiesgo`) */
+  ALERTAS: `${API_BASE}/acompanamiento/alertas`,
+  /** GET — alumnos en riesgo de los cursos del docente autenticado (A2, `misAlumnosEnRiesgo`) */
+  ALERTAS_MIS_ALUMNOS: `${API_BASE}/acompanamiento/alertas/mis-alumnos`,
+  /** GET — detalle de riesgo de un estudiante (A3, `alertaEstudiante`) */
+  ALERTA_ESTUDIANTE: (estudianteId) =>
+    `${API_BASE}/acompanamiento/alertas/estudiante/${estudianteId}`,
+  /** GET/POST — sesiones de reforzamiento (A4 `sesionesReforzamiento` / A6 `sesionReforzamiento`) */
+  SESIONES: `${API_BASE}/acompanamiento/sesiones`,
+  /** GET/PUT/DELETE — una sesión (A5/A7/A8, `sesionReforzamiento`) */
+  SESION: (id) => `${API_BASE}/acompanamiento/sesiones/${id}`,
+  /** PUT — registro batch de asistencia/progreso (A9, `participantes`) */
+  SESION_PARTICIPANTES: (id) => `${API_BASE}/acompanamiento/sesiones/${id}/participantes`,
+  /** GET — panel de acompañamiento (A10, `panelAcompanamiento`) */
+  PANEL: (gestionId) =>
+    `${API_BASE}/acompanamiento/panel${gestionId != null ? `?gestionId=${gestionId}` : ''}`,
+  /** GET — PDF del panel (A11, panel·EXPORTAR; blob autenticado) */
+  PANEL_EXPORTAR: (gestionId) =>
+    `${API_BASE}/acompanamiento/panel/exportar${gestionId != null ? `?gestionId=${gestionId}` : ''}`,
+};
+
 /**
  * Rutas definidas aquí con prefijo `/v1` (API_BASE) encajan con axios: baseURL termina en `/api`.
  * Para `fetch` con `getApiBaseUrl()` (…/api/v1), convierte `/v1/foo` → `/foo`.

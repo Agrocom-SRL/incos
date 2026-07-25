@@ -144,3 +144,15 @@ export { BloqueCapacitacion } from './bloque_capacitacion.js';
 export { InscripcionCapacitacion } from './inscripcion_capacitacion.js';
 export { CapacitacionCompromiso } from './capacitacion_compromiso.js';
 export { PagoCapacitacion } from './pago_capacitacion.js';
+
+// ============================================
+// TUTORÍAS Y ACOMPAÑAMIENTO (módulo TUT)
+// ============================================
+export { ModalidadGrado } from './modalidad_grado.js';
+export { ProyectoGrado } from './proyecto_grado.js';
+export { TutoriaIntegrante } from './tutoria_integrante.js';
+export { TutoriaAvance } from './tutoria_avance.js';
+export { TutoriaBitacora } from './tutoria_bitacora.js';
+export { TutoriaDictamen } from './tutoria_dictamen.js';
+export { SesionReforzamiento } from './sesion_reforzamiento.js';
+export { SesionReforzamientoParticipante } from './sesion_reforzamiento_participante.js';

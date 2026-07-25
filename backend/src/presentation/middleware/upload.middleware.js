@@ -237,6 +237,79 @@ export const uploadCuentaPagoQr = (req, res, next) => {
   });
 };
 
+/**
+ * Upload de archivo de AVANCE de proyecto de grado (módulo TUT).
+ * Destino: uploads/documentos/proyectos-grado/{proyectoId}/ (el proyectoId sale
+ * de req.params.id de la ruta POST /proyectos-grado/:id/avances).
+ * Solo PDF/Word (.pdf, .doc, .docx). La descarga es SOLO vía endpoint
+ * autenticado con res.download, nunca URL estática /uploads.
+ */
+const AVANCE_PROYECTO_MIME_TYPES = [
+  'application/pdf',
+  'application/msword', // .doc
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+];
+
+export function createAvanceProyectoUploadMiddleware(fieldName = 'archivo') {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const proyectoId = req.params?.id || 'temp';
+      const relativePath = UPLOAD.proyectosGrado(proyectoId);
+      const uploadPath = path.isAbsolute(multerConfig.uploadDir)
+        ? path.join(multerConfig.uploadDir, relativePath)
+        : path.resolve(serverConfig.backendRoot, multerConfig.uploadDir, relativePath);
+
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      cb(null, UPLOAD.generateAvanceProyectoFileName(file.originalname));
+    },
+  });
+
+  const fileFilter = (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!UPLOAD.avanceProyectoExtensions.includes(ext)) {
+      return cb(
+        new Error(
+          `Tipo de archivo no permitido. Tipos permitidos: ${UPLOAD.avanceProyectoExtensions.join(', ')}`
+        ),
+        false
+      );
+    }
+    if (!AVANCE_PROYECTO_MIME_TYPES.includes(file.mimetype)) {
+      return cb(new Error('Tipo MIME no permitido (solo PDF o Word)'), false);
+    }
+    cb(null, true);
+  };
+
+  const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+      fileSize: getEnvAsNumber('MAX_AVANCE_PROYECTO_SIZE', multerConfig.maxFileSize),
+      files: 1,
+    },
+  });
+
+  return upload.single(fieldName);
+}
+
+/**
+ * Middleware de upload de avance de proyecto (campo multipart `archivo`).
+ */
+export const uploadAvanceProyecto = (req, res, next) => {
+  const middleware = createAvanceProyectoUploadMiddleware('archivo');
+  middleware(req, res, (err) => {
+    if (err) {
+      return next(err);
+    }
+    next();
+  });
+};
+
 export const uploadPaymentDocument = (req, res, next) => {
     // Log antes de procesar el upload
     console.log('[Upload] Iniciando procesamiento de archivo', {

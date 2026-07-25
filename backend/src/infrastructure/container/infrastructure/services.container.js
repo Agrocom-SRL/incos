@@ -42,6 +42,10 @@ import { HistorialAcademicoPdfGenerator } from '../../external/pdf/historial-aca
 import { BecasReporteExcelBuilder } from '../../external/excel/finanzas-reportes/BecasReporteExcelBuilder.js';
 import { CuentasPorCobrarExcelBuilder } from '../../external/excel/finanzas-reportes/CuentasPorCobrarExcelBuilder.js';
 import { ListadoInscritosCapacitacionExcelBuilder } from '../../external/excel/capacitacion/ListadoInscritosCapacitacionExcelBuilder.js';
+import { DesignacionTutorPdfGenerator } from '../../external/pdf/tutorias/DesignacionTutorPdfGenerator.js';
+import { ViabilidadProyectoPdfGenerator } from '../../external/pdf/tutorias/ViabilidadProyectoPdfGenerator.js';
+import { BitacoraMensualTutorPdfGenerator } from '../../external/pdf/tutorias/BitacoraMensualTutorPdfGenerator.js';
+import { PanelAcompanamientoPdfGenerator } from '../../external/pdf/tutorias/PanelAcompanamientoPdfGenerator.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
 export function registerServicesModule(container) {
@@ -167,6 +171,30 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.listadoInscritosCapacitacionExcelGenerator,
         () => new ListadoInscritosCapacitacionExcelBuilder()
+    );
+
+    // ============================================
+    // PDF GENERATORS DEL MÓDULO TUTORÍAS (TUT)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.designacionTutorPdfGenerator,
+        (c) => new DesignacionTutorPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.viabilidadProyectoPdfGenerator,
+        (c) => new ViabilidadProyectoPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.bitacoraMensualTutorPdfGenerator,
+        (c) => new BitacoraMensualTutorPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.panelAcompanamientoPdfGenerator,
+        (c) => new PanelAcompanamientoPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
     );
 
     // ============================================

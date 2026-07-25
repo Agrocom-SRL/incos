@@ -25,4 +25,8 @@ export const SERVICIOS_TOKENS = {
     cuentasPorCobrarReporteExcelGenerator: 'cuentasPorCobrarReporteExcelGenerator', // ICuentasPorCobrarReporteExcelGenerator (.xlsx)
     listadoInscritosCapacitacionExcelGenerator: 'listadoInscritosCapacitacionExcelGenerator', // IListadoInscritosCapacitacionExcelGenerator (.xlsx)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
+    designacionTutorPdfGenerator: 'designacionTutorPdfGenerator', // IDesignacionTutorPdfGenerator (.pdf, módulo TUT)
+    viabilidadProyectoPdfGenerator: 'viabilidadProyectoPdfGenerator', // IViabilidadProyectoPdfGenerator (.pdf, módulo TUT)
+    bitacoraMensualTutorPdfGenerator: 'bitacoraMensualTutorPdfGenerator', // IBitacoraMensualTutorPdfGenerator (.pdf, módulo TUT)
+    panelAcompanamientoPdfGenerator: 'panelAcompanamientoPdfGenerator', // IPanelAcompanamientoPdfGenerator (.pdf, módulo TUT)
 };

@@ -54,6 +54,9 @@ import {
     TableOutlined,
     AppstoreOutlined,
     ScheduleOutlined,
+    BulbOutlined,
+    AlertOutlined,
+    FundOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -73,6 +76,7 @@ export const menuIconMap = {
     'CFG': SettingOutlined,
     'SEG': SafetyOutlined,
     'CAP': ScheduleOutlined,
+    'TUT': BulbOutlined,
     'PERFIL': UserOutlined,
 
     // Matrícula (MAT)
@@ -131,4 +135,10 @@ export const menuIconMap = {
     'CAP-CURSOS': BookOutlined,
     'CAP-PARTICIPANTES': TeamOutlined,
     'CAP-INSCRIPCIONES': SolutionOutlined,
+
+    // Tutorías (TUT)
+    'TUT-TITULACION': FileDoneOutlined,
+    'TUT-ALERTAS': AlertOutlined,
+    'TUT-SESIONES': ScheduleOutlined,
+    'TUT-PANEL': FundOutlined,
 };

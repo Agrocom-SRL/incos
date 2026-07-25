@@ -44,4 +44,5 @@ export { DOCENTES_TOKENS } from './docentes.tokens.js';
 export { ASIGNACIONES_DOCENTES_TOKENS } from './asignaciones-docentes.tokens.js';
 export { AULAS_HORARIOS_TOKENS } from './aulas-horarios.tokens.js';
 export { CAPACITACION_TOKENS } from './capacitacion.tokens.js';
+export { TUTORIAS_TOKENS } from './tutorias.tokens.js';
 
