@@ -23,7 +23,12 @@ export class UpdateBitacoraEntradaUseCase {
    * @param {Object} params.tutoriaAvanceRepository
    * @param {ILogger} params.logger
    */
-  constructor({ proyectoGradoRepository, tutoriaBitacoraRepository, tutoriaAvanceRepository, logger }) {
+  constructor({
+    proyectoGradoRepository,
+    tutoriaBitacoraRepository,
+    tutoriaAvanceRepository,
+    logger,
+  }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
     this.tutoriaBitacoraRepository = tutoriaBitacoraRepository;
     this.tutoriaAvanceRepository = tutoriaAvanceRepository;

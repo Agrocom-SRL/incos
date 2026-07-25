@@ -79,10 +79,12 @@ export class RegisterAsistenciaSesionUseCase {
           observaciones: participante.observaciones ?? null,
         };
         if (existente) {
+          // eslint-disable-next-line no-await-in-loop
           await this.sesionReforzamientoParticipanteRepository.update(existente.id, data, userId, {
             transaction,
           });
         } else {
+          // eslint-disable-next-line no-await-in-loop
           await this.sesionReforzamientoParticipanteRepository.create(
             {
               sesionReforzamientoId: sesionId,
@@ -98,6 +100,7 @@ export class RegisterAsistenciaSesionUseCase {
       // 2. Retiro (soft) de los vigentes que no vienen en el batch.
       for (const vigente of vigentes) {
         if (!batchMatriculas.has(Number(vigente.matriculaMateriaId))) {
+          // eslint-disable-next-line no-await-in-loop
           await this.sesionReforzamientoParticipanteRepository.delete(vigente.id, userId);
         }
       }
@@ -106,10 +109,11 @@ export class RegisterAsistenciaSesionUseCase {
     const rosterRows =
       await this.acompanamientoSesionViewRepository.findParticipantesBySesionId(sesionId);
 
+    const conservados = [...batchMatriculas].filter((id) => vigentesPorMatricula.has(id)).length;
     this.logger.info('[Tutorías] Asistencia de sesión registrada (batch)', {
       sesionId,
       participantes: batch.length,
-      retirados: vigentes.length - [...batchMatriculas].filter((id) => vigentesPorMatricula.has(id)).length,
+      retirados: vigentes.length - conservados,
     });
 
     return {
@@ -149,6 +153,7 @@ export class RegisterAsistenciaSesionUseCase {
     const ofertaCursoId = Number(plainAsignacion.offerCourseId ?? plainAsignacion.ofertaCursoId);
 
     for (const participante of batch) {
+      // eslint-disable-next-line no-await-in-loop
       const matricula = await this.subjectEnrollmentRepository.findById(
         participante.matriculaMateriaId
       );

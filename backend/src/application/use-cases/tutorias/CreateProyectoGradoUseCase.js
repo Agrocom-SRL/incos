@@ -76,7 +76,10 @@ export class CreateProyectoGradoUseCase {
     let created = null;
     await sequelize.transaction(async (transaction) => {
       created = await this.proyectoGradoRepository.create(data, userId, { transaction });
+      const fechaIncorporacion =
+        body.fechaPresentacionPerfil ?? new Date().toISOString().slice(0, 10);
       for (const estudianteId of estudianteIds) {
+        // eslint-disable-next-line no-await-in-loop
         await this.tutoriaIntegranteRepository.create(
           {
             proyectoGradoId: created.id,
@@ -86,7 +89,7 @@ export class CreateProyectoGradoUseCase {
                 ? ROLES_INTEGRANTE_TUTORIA.TITULAR
                 : ROLES_INTEGRANTE_TUTORIA.INTEGRANTE,
             estado: ESTADOS_INTEGRANTE_TUTORIA.ACTIVO,
-            fechaIncorporacion: body.fechaPresentacionPerfil ?? new Date().toISOString().slice(0, 10),
+            fechaIncorporacion,
           },
           userId,
           { transaction }
@@ -148,10 +151,12 @@ export class CreateProyectoGradoUseCase {
   /** @private */
   async _validateEstudiantes(estudianteIds) {
     for (const estudianteId of estudianteIds) {
+      // eslint-disable-next-line no-await-in-loop
       const estudiante = await this.studentRepository.findById(estudianteId);
       if (!estudiante) {
         throw new NotFoundError(`estudiante con ID ${estudianteId}`);
       }
+      // eslint-disable-next-line no-await-in-loop
       await assertEstudianteSinProyectoVigente({
         tutoriaIntegranteRepository: this.tutoriaIntegranteRepository,
         proyectoGradoRepository: this.proyectoGradoRepository,

@@ -16,7 +16,12 @@ export class GetAvanceByIdUseCase {
    * @param {Object} params.tutoriaBitacoraRepository
    * @param {ILogger} params.logger
    */
-  constructor({ proyectoGradoRepository, tutoriaAvanceRepository, tutoriaBitacoraRepository, logger }) {
+  constructor({
+    proyectoGradoRepository,
+    tutoriaAvanceRepository,
+    tutoriaBitacoraRepository,
+    logger,
+  }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
     this.tutoriaAvanceRepository = tutoriaAvanceRepository;
     this.tutoriaBitacoraRepository = tutoriaBitacoraRepository;

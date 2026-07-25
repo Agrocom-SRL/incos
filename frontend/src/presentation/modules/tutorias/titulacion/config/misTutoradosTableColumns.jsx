@@ -47,8 +47,8 @@ export const createMisTutoradosTableColumns = ({
       render: (_, record) => (
         <div className="cfg-identidad-clamp2" title={record.titulo || undefined}>
           <IdentidadCelda
+            codigo={record.modalidadCodigo || record.modalidadNombre || undefined}
             nombre={(record.titulo || 'Sin título').toUpperCase()}
-            descripcion={record.modalidadNombre || record.modalidadCodigo || undefined}
           />
         </div>
       ),
@@ -136,7 +136,7 @@ export const createMisTutoradosTableColumns = ({
             {
               key: 'bitacora',
               icon: <FileAddOutlined />,
-              variant: 'view',
+              variant: 'info',
               tooltip: 'Registrar entrada de bitácora',
               permiso: TUTORIAS_PERMISOS.bitacora,
               accion: 'CREAR',

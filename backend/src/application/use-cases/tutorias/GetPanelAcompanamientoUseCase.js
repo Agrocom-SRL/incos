@@ -39,7 +39,8 @@ export class GetPanelAcompanamientoUseCase {
   async resolverGestion(gestionIdParam = null) {
     const ctx = await this.calificacionContextoRepository.obtenerContextoVigente();
     if (gestionIdParam) {
-      const esVigente = ctx?.gestion_id != null && Number(ctx.gestion_id) === Number(gestionIdParam);
+      const esVigente =
+        ctx?.gestion_id != null && Number(ctx.gestion_id) === Number(gestionIdParam);
       return {
         gestionId: Number(gestionIdParam),
         gestionAnio: esVigente && ctx?.gestion_anio != null ? Number(ctx.gestion_anio) : null,
@@ -73,7 +74,8 @@ export class GetPanelAcompanamientoUseCase {
       ),
     ]);
 
-    const riesgoPorCarrera = RiesgoAcademicoMapper.riesgoCarreraRowsToPresentation(riesgoCarreraRows);
+    const riesgoPorCarrera =
+      RiesgoAcademicoMapper.riesgoCarreraRowsToPresentation(riesgoCarreraRows);
 
     const panelAcompanamiento = {
       gestion,

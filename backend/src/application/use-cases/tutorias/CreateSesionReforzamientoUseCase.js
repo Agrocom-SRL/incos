@@ -75,6 +75,7 @@ export class CreateSesionReforzamientoUseCase {
     await sequelize.transaction(async (transaction) => {
       created = await this.sesionReforzamientoRepository.create(data, userId, { transaction });
       for (const participante of participantes) {
+        // eslint-disable-next-line no-await-in-loop
         await this.sesionReforzamientoParticipanteRepository.create(
           {
             sesionReforzamientoId: created.id,
@@ -158,6 +159,7 @@ export class CreateSesionReforzamientoUseCase {
   async _validateParticipantes(participantes, asignacion) {
     const ofertaCursoId = Number(asignacion.offerCourseId ?? asignacion.ofertaCursoId);
     for (const participante of participantes) {
+      // eslint-disable-next-line no-await-in-loop
       const matricula = await this.subjectEnrollmentRepository.findById(
         participante.matriculaMateriaId
       );

@@ -48,8 +48,8 @@ export const createProyectosGradoTableColumns = ({
       render: (_, record) => (
         <div className="cfg-identidad-clamp2" title={record.titulo || undefined}>
           <IdentidadCelda
+            codigo={record.modalidadCodigo || record.modalidadNombre || undefined}
             nombre={(record.titulo || 'Sin título').toUpperCase()}
-            descripcion={record.modalidadNombre || record.modalidadCodigo || undefined}
           />
         </div>
       ),

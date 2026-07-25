@@ -1,0 +1,139 @@
+/**
+ * Columnas de los avances de un proyecto de grado (módulo TUT · T18-T21).
+ *
+ * Se usa en DOS pantallas:
+ *  - Ficha-hub (tutor/admin): descargar (avance·DETALLE, T21) + revisar →
+ *    entrada REVISION_AVANCE en la bitácora (bitacora·CREAR, T15).
+ *  - Mi proyecto (estudiante): solo descarga (sin `onRevisar`).
+ * Descarga SIEMPRE por endpoint autenticado (blob) — nunca URL /uploads.
+ */
+
+import { AuditOutlined, CalendarOutlined, DownloadOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
+import { TableActions } from '@molecules';
+import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import {
+  formatEstadoAvance,
+  getEstadoAvancePillClass,
+} from '@application-tutorias/utils/tutoriasPills';
+
+export const createAvancesTableColumns = ({
+  onDescargar,
+  descargandoId = null,
+  onRevisar = null,
+} = {}) => {
+  return [
+    {
+      title: '#',
+      key: 'nro',
+      width: 56,
+      align: 'center',
+      render: (_value, _record, index, rowOffset = 0) => rowOffset + index + 1,
+    },
+    {
+      title: 'Avance',
+      key: 'avance',
+      width: 240,
+      render: (_, record) => (
+        <IdentidadCelda
+          codigo={record.numeroAvance != null ? `Avance ${record.numeroAvance}` : undefined}
+          nombre={record.titulo || record.nombreArchivo || 'Avance sin título'}
+        />
+      ),
+      sorter: true,
+      sortCompare: (a, b) => (a.numeroAvance || 0) - (b.numeroAvance || 0),
+    },
+    {
+      title: 'Archivo',
+      key: 'archivo',
+      width: 220,
+      render: (_, record) => (
+        <InfoLinesCell
+          lines={[
+            { icon: <PaperClipOutlined />, label: record.nombreArchivo || 'Sin archivo' },
+            record.tamanoLabel || record.extension
+              ? {
+                  label: [record.extension?.toUpperCase(), record.tamanoLabel]
+                    .filter(Boolean)
+                    .join(' · '),
+                }
+              : null,
+          ].filter(Boolean)}
+        />
+      ),
+    },
+    {
+      title: 'Subido por',
+      key: 'subidoPor',
+      width: 200,
+      render: (_, record) => (
+        <InfoLinesCell
+          lines={[
+            record.subidoPorNombre ? { label: record.subidoPorNombre } : null,
+            {
+              icon: <CalendarOutlined />,
+              label: record.fechaSubidaLabel || 'Sin fecha',
+            },
+          ].filter(Boolean)}
+        />
+      ),
+    },
+    {
+      title: 'Revisión',
+      key: 'revision',
+      width: 170,
+      align: 'center',
+      render: (_, record) => (
+        <InfoLinesCell
+          lines={[
+            {
+              label: (
+                <StatusPill
+                  label={formatEstadoAvance(record.estadoRevision)}
+                  className={getEstadoAvancePillClass(record.estadoRevision)}
+                />
+              ),
+            },
+            record.fechaRevisionLabel ? { label: record.fechaRevisionLabel } : null,
+          ].filter(Boolean)}
+        />
+      ),
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      width: 100,
+      align: 'right',
+      render: (_, record) => (
+        <TableActions
+          record={record}
+          extraActions={[
+            {
+              key: 'descargar',
+              icon: <DownloadOutlined />,
+              variant: 'info',
+              tooltip: 'Descargar archivo',
+              permiso: TUTORIAS_PERMISOS.avance,
+              accion: 'DETALLE',
+              disabled: descargandoId === record.id,
+              onClick: () => onDescargar(record),
+            },
+            ...(onRevisar
+              ? [
+                  {
+                    key: 'revisar',
+                    icon: <AuditOutlined />,
+                    variant: 'warning',
+                    tooltip: 'Revisar avance (entrada de bitácora)',
+                    permiso: TUTORIAS_PERMISOS.bitacora,
+                    accion: 'CREAR',
+                    onClick: () => onRevisar(record),
+                  },
+                ]
+              : []),
+          ]}
+        />
+      ),
+    },
+  ];
+};

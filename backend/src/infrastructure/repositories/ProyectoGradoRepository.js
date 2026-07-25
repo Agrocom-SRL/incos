@@ -40,7 +40,9 @@ export class ProyectoGradoRepository extends BaseRepository {
       fechaAprobacion: v.fechaAprobacion ?? null,
       notaPerfil: v.notaPerfil !== undefined && v.notaPerfil !== null ? Number(v.notaPerfil) : null,
       notaPredefensa:
-        v.notaPredefensa !== undefined && v.notaPredefensa !== null ? Number(v.notaPredefensa) : null,
+        v.notaPredefensa !== undefined && v.notaPredefensa !== null
+          ? Number(v.notaPredefensa)
+          : null,
       notaDefensa:
         v.notaDefensa !== undefined && v.notaDefensa !== null ? Number(v.notaDefensa) : null,
       notaFinal: v.notaFinal !== undefined && v.notaFinal !== null ? Number(v.notaFinal) : null,

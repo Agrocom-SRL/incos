@@ -90,6 +90,7 @@ export class ViabilidadProyectoPdfGenerator extends IncosPDFLibBase {
     for (const integrante of integrantes) {
       const codigo = integrante.codigoEstudiante ? ` (${integrante.codigoEstudiante})` : '';
       const rol = integrante.rol === 'TITULAR' ? ' — Titular' : '';
+      // eslint-disable-next-line no-await-in-loop
       await this._addBulletPoint(`${integrante.estudianteNombre || ''}${codigo}${rol}`);
     }
     this._addSpace();

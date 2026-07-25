@@ -59,7 +59,7 @@ export class AsignarTutorProyectoUseCase {
       throw new ValidationError('tutorId es requerido');
     }
 
-    const proyecto = await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
+    await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
 
     const docente = await this.teacherRepository.findById(Number(body.tutorId));
     if (!docente) {

@@ -104,7 +104,11 @@ export class AprobarEtapaProyectoUseCase {
     if (campoNota && body.nota !== undefined && body.nota !== null) {
       data[campoNota] = Number(body.nota);
     }
-    if (destino === ESTADOS_PROYECTO_GRADO.APROBADO && body.nota !== undefined && body.nota !== null) {
+    if (
+      destino === ESTADOS_PROYECTO_GRADO.APROBADO &&
+      body.nota !== undefined &&
+      body.nota !== null
+    ) {
       data.notaFinal = Number(body.nota);
     }
     if (body.observaciones !== undefined) {

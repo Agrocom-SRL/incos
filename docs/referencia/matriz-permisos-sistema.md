@@ -1,7 +1,34 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-07-14
+## Ultima actualizacion: 2026-07-25
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Changelog 2026-07-25 — módulo nuevo Tutorías y Acompañamiento (TUT, seed 66)
+
+Dominio propio `TUT` (menú "Tutorías", order 9; CFG→10, SEG→11), decisión cerrada del
+plan `docs/plan/tutorias-plan-desarrollo.md`. No estaba contemplado en esta matriz
+(anterior al diseño del módulo): agrupa 4 ítems de menú en 2 grupos_ui
+(`tut_titulacion`, `tut_acompanamiento`) y no cabía como un solo ítem de otro módulo.
+
+- **Permisos (modulo TUT, seed `66-seed-permisos-tut.sql`):**
+  - `tutorias.titulacion.proyecto` (`/tutorias/titulacion`): LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/APROBAR/EXPORTAR
+  - `tutorias.titulacion.bitacora`: LISTAR/CREAR/EDITAR
+  - `tutorias.titulacion.avance`: LISTAR/DETALLE/CREAR
+  - `tutorias.acompanamiento.alerta` (`/tutorias/acompanamiento/alertas`): LISTAR/DETALLE
+  - `tutorias.acompanamiento.sesion` (`/tutorias/acompanamiento/sesiones`): LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR
+  - `tutorias.acompanamiento.panel` (`/tutorias/acompanamiento/panel`): LISTAR/EXPORTAR
+- **Roles:** DIR_ACADEMICO y RECTOR = todo; SEC_ACADEMICA = proyecto L/D/C/E/EXPORTAR +
+  bitacora L + avance L/D + alerta L/D; DOCENTE = proyecto L/D + bitacora L/C/E +
+  avance L/D + alerta L/D + sesion L/D/C/E; ESTUDIANTE = proyecto DETALLE + bitacora
+  LISTAR + avance L/D/CREAR. ADMIN_SISTEMA hereda por vista (no se siembra).
+- **Portal por rol (patrón historial/asistencia, mismos ítems y permisos, sin permisos nuevos):**
+  DOCENTE ve los mismos ítems con connector que bifurca (`esDocente`) → Mis tutorados /
+  Mis alumnos en riesgo, con `labelByRole` en el menú. ESTUDIANTE no tiene LISTAR de
+  nada → no ve el menú TUT; su página es `/tutorias/mi-proyecto` (`TUT-MI-PROYECTO`,
+  `menu: null`, DETALLE, guard de pertenencia en servidor vía
+  `resolveEstudianteIdForUsuario`) con acceso desde tarjeta en `EstudianteDashboard`
+  (patrón ACA-MI-BOLETIN). T17 (confirmar bitácora) = bitacora·LISTAR + guard
+  integrante ACTIVO en servidor.
 
 ## Changelog 2026-07-14 — auditoría RBAC de los 8 módulos (57-64) + correcciones
 

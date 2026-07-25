@@ -40,8 +40,16 @@ export function registerTutoriasModule(container) {
     TutoriaIntegranteRepository
   );
   registerRepository(container, TUTORIAS_TOKENS.tutoriaAvanceRepository, TutoriaAvanceRepository);
-  registerRepository(container, TUTORIAS_TOKENS.tutoriaBitacoraRepository, TutoriaBitacoraRepository);
-  registerRepository(container, TUTORIAS_TOKENS.tutoriaDictamenRepository, TutoriaDictamenRepository);
+  registerRepository(
+    container,
+    TUTORIAS_TOKENS.tutoriaBitacoraRepository,
+    TutoriaBitacoraRepository
+  );
+  registerRepository(
+    container,
+    TUTORIAS_TOKENS.tutoriaDictamenRepository,
+    TutoriaDictamenRepository
+  );
   registerRepository(
     container,
     TUTORIAS_TOKENS.sesionReforzamientoRepository,

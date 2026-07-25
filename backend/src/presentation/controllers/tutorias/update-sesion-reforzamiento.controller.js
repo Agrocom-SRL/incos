@@ -15,7 +15,11 @@ export class UpdateSesionReforzamientoController {
       const userId = req.usuario?.id ?? null;
       this.logger.info('[Tutorías] Request de actualización de sesión de reforzamiento', { id });
 
-      const result = await this.updateSesionReforzamientoUseCase.execute(id, req.body || {}, userId);
+      const result = await this.updateSesionReforzamientoUseCase.execute(
+        id,
+        req.body || {},
+        userId
+      );
 
       return this.responseFormatter.updated(
         res,

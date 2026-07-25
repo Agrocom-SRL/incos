@@ -15,6 +15,7 @@ import {
     ASIGNACIONES_DOCENTES_TOKENS,
     AULAS_HORARIOS_TOKENS,
     CAPACITACION_TOKENS,
+    TUTORIAS_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
 const router = express.Router();
@@ -85,6 +86,9 @@ router.get('/', (req, res) => {
             cursosCapacitacion: '/api/v1/cursos-capacitacion',
             participantes: '/api/v1/participantes',
             inscripcionesCapacitacion: '/api/v1/inscripciones-capacitacion',
+            // Módulo: Tutorías y Acompañamiento (TUT)
+            proyectosGrado: '/api/v1/proyectos-grado',
+            acompanamiento: '/api/v1/acompanamiento',
         },
     });
 });
@@ -205,6 +209,12 @@ router.use(
   '/inscripciones-capacitacion',
   container.resolve(CAPACITACION_TOKENS.inscripcionesCapacitacionRouter)
 );
+
+// ============================================
+// 11. MÓDULO: TUTORÍAS Y ACOMPAÑAMIENTO (TUT)
+// ============================================
+router.use('/proyectos-grado', container.resolve(TUTORIAS_TOKENS.proyectosGradoRouter));
+router.use('/acompanamiento', container.resolve(TUTORIAS_TOKENS.acompanamientoRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

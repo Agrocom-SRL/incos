@@ -69,17 +69,17 @@ export async function assertEstudianteSinProyectoVigente({
 }) {
   const membresias = await tutoriaIntegranteRepository.findActivosByEstudianteId(estudianteId);
   for (const membresia of membresias) {
-    if (
+    const esProyectoExcluido =
       excludeProyectoGradoId !== null &&
-      Number(membresia.proyectoGradoId) === Number(excludeProyectoGradoId)
-    ) {
-      continue;
-    }
-    const proyecto = await proyectoGradoRepository.findById(membresia.proyectoGradoId);
-    if (proyecto && ESTADOS_PROYECTO_GRADO_VIGENTES.includes(proyecto.estado)) {
-      throw new ConflictError(
-        `El estudiante con ID ${estudianteId} ya es integrante activo de un proyecto de grado vigente (ID ${proyecto.id}).`
-      );
+      Number(membresia.proyectoGradoId) === Number(excludeProyectoGradoId);
+    if (!esProyectoExcluido) {
+      // eslint-disable-next-line no-await-in-loop
+      const proyecto = await proyectoGradoRepository.findById(membresia.proyectoGradoId);
+      if (proyecto && ESTADOS_PROYECTO_GRADO_VIGENTES.includes(proyecto.estado)) {
+        throw new ConflictError(
+          `El estudiante con ID ${estudianteId} ya es integrante activo de un proyecto de grado vigente (ID ${proyecto.id}).`
+        );
+      }
     }
   }
 }

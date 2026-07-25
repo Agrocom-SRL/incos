@@ -90,6 +90,7 @@ export class DesignacionTutorPdfGenerator extends IncosPDFLibBase {
     for (const integrante of integrantes) {
       const codigo = integrante.codigoEstudiante ? ` (${integrante.codigoEstudiante})` : '';
       const rol = integrante.rol === 'TITULAR' ? ' — Titular' : '';
+      // eslint-disable-next-line no-await-in-loop
       await this._addBulletPoint(`${integrante.estudianteNombre || ''}${codigo}${rol}`);
     }
     this._addSpace();
@@ -99,10 +100,10 @@ export class DesignacionTutorPdfGenerator extends IncosPDFLibBase {
   async _buildDesignacion(options) {
     await this._addSection('DESIGNACIÓN');
     await this._addParagraph(
-      `Por medio del presente informe se designa oficialmente como TUTOR del proyecto de grado ` +
+      'Por medio del presente informe se designa oficialmente como TUTOR del proyecto de grado ' +
         `al docente ${options.tutorNombre || ''}, quien asumirá el seguimiento académico del ` +
-        `proyecto conforme a la normativa institucional y al reglamento de modalidades de ` +
-        `graduación vigente.`
+        'proyecto conforme a la normativa institucional y al reglamento de modalidades de ' +
+        'graduación vigente.'
     );
     await this._addSignatureBlock({
       lines: ['DIRECCIÓN ACADÉMICA', 'Instituto INCOS'],

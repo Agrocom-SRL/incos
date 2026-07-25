@@ -27,7 +27,8 @@ export class TutoriaAvanceRepository extends BaseRepository {
       rutaArchivo: v.rutaArchivo ?? null,
       extension: v.extension ?? null,
       tipoMime: v.tipoMime ?? null,
-      tamanoBytes: v.tamanoBytes !== undefined && v.tamanoBytes !== null ? Number(v.tamanoBytes) : null,
+      tamanoBytes:
+        v.tamanoBytes !== undefined && v.tamanoBytes !== null ? Number(v.tamanoBytes) : null,
       estadoRevision: v.estadoRevision ?? null,
       fechaRevision: v.fechaRevision ?? null,
       activo: v.activo ?? null,
