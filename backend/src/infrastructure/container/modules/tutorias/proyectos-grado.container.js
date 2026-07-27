@@ -157,7 +157,7 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new CreateProyectoGradoUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaIntegranteRepository: c.resolve(TUTORIAS_TOKENS.tutoriaIntegranteRepository),
+        integranteProyectoRepository: c.resolve(TUTORIAS_TOKENS.integranteProyectoRepository),
         modalidadGradoRepository: c.resolve(TUTORIAS_TOKENS.modalidadGradoRepository),
         studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -193,7 +193,7 @@ export function registerProyectosGradoResource(container) {
         proyectoGradoListadoViewRepository: c.resolve(
           TUTORIAS_TOKENS.proyectoGradoListadoViewRepository
         ),
-        tutoriaDictamenRepository: c.resolve(TUTORIAS_TOKENS.tutoriaDictamenRepository),
+        dictamenProyectoRepository: c.resolve(TUTORIAS_TOKENS.dictamenProyectoRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
         designacionTutorPdfGenerator: c.resolve(SERVICIOS_TOKENS.designacionTutorPdfGenerator),
@@ -211,7 +211,7 @@ export function registerProyectosGradoResource(container) {
         proyectoGradoListadoViewRepository: c.resolve(
           TUTORIAS_TOKENS.proyectoGradoListadoViewRepository
         ),
-        tutoriaDictamenRepository: c.resolve(TUTORIAS_TOKENS.tutoriaDictamenRepository),
+        dictamenProyectoRepository: c.resolve(TUTORIAS_TOKENS.dictamenProyectoRepository),
         managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
         viabilidadProyectoPdfGenerator: c.resolve(SERVICIOS_TOKENS.viabilidadProyectoPdfGenerator),
         uploadsStorage: c.resolve(SERVICIOS_TOKENS.uploadsStorage),
@@ -225,7 +225,7 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new AddIntegranteProyectoUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaIntegranteRepository: c.resolve(TUTORIAS_TOKENS.tutoriaIntegranteRepository),
+        integranteProyectoRepository: c.resolve(TUTORIAS_TOKENS.integranteProyectoRepository),
         modalidadGradoRepository: c.resolve(TUTORIAS_TOKENS.modalidadGradoRepository),
         studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -238,7 +238,7 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new UpdateIntegranteProyectoUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaIntegranteRepository: c.resolve(TUTORIAS_TOKENS.tutoriaIntegranteRepository),
+        integranteProyectoRepository: c.resolve(TUTORIAS_TOKENS.integranteProyectoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -249,7 +249,7 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new ListBitacoraProyectoUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaBitacoraRepository: c.resolve(TUTORIAS_TOKENS.tutoriaBitacoraRepository),
+        bitacoraProyectoRepository: c.resolve(TUTORIAS_TOKENS.bitacoraProyectoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -260,8 +260,8 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new CreateBitacoraEntradaUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaBitacoraRepository: c.resolve(TUTORIAS_TOKENS.tutoriaBitacoraRepository),
-        tutoriaAvanceRepository: c.resolve(TUTORIAS_TOKENS.tutoriaAvanceRepository),
+        bitacoraProyectoRepository: c.resolve(TUTORIAS_TOKENS.bitacoraProyectoRepository),
+        avanceProyectoRepository: c.resolve(TUTORIAS_TOKENS.avanceProyectoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -272,8 +272,8 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new UpdateBitacoraEntradaUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaBitacoraRepository: c.resolve(TUTORIAS_TOKENS.tutoriaBitacoraRepository),
-        tutoriaAvanceRepository: c.resolve(TUTORIAS_TOKENS.tutoriaAvanceRepository),
+        bitacoraProyectoRepository: c.resolve(TUTORIAS_TOKENS.bitacoraProyectoRepository),
+        avanceProyectoRepository: c.resolve(TUTORIAS_TOKENS.avanceProyectoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -284,8 +284,8 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new ConfirmarBitacoraEstudianteUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaBitacoraRepository: c.resolve(TUTORIAS_TOKENS.tutoriaBitacoraRepository),
-        tutoriaIntegranteRepository: c.resolve(TUTORIAS_TOKENS.tutoriaIntegranteRepository),
+        bitacoraProyectoRepository: c.resolve(TUTORIAS_TOKENS.bitacoraProyectoRepository),
+        integranteProyectoRepository: c.resolve(TUTORIAS_TOKENS.integranteProyectoRepository),
         studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -298,7 +298,7 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new ListAvancesProyectoUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaAvanceRepository: c.resolve(TUTORIAS_TOKENS.tutoriaAvanceRepository),
+        avanceProyectoRepository: c.resolve(TUTORIAS_TOKENS.avanceProyectoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -309,8 +309,8 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new GetAvanceByIdUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaAvanceRepository: c.resolve(TUTORIAS_TOKENS.tutoriaAvanceRepository),
-        tutoriaBitacoraRepository: c.resolve(TUTORIAS_TOKENS.tutoriaBitacoraRepository),
+        avanceProyectoRepository: c.resolve(TUTORIAS_TOKENS.avanceProyectoRepository),
+        bitacoraProyectoRepository: c.resolve(TUTORIAS_TOKENS.bitacoraProyectoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -321,8 +321,8 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new CreateAvanceProyectoUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaAvanceRepository: c.resolve(TUTORIAS_TOKENS.tutoriaAvanceRepository),
-        tutoriaIntegranteRepository: c.resolve(TUTORIAS_TOKENS.tutoriaIntegranteRepository),
+        avanceProyectoRepository: c.resolve(TUTORIAS_TOKENS.avanceProyectoRepository),
+        integranteProyectoRepository: c.resolve(TUTORIAS_TOKENS.integranteProyectoRepository),
         studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -335,8 +335,8 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new DownloadAvanceArchivoUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaAvanceRepository: c.resolve(TUTORIAS_TOKENS.tutoriaAvanceRepository),
-        tutoriaIntegranteRepository: c.resolve(TUTORIAS_TOKENS.tutoriaIntegranteRepository),
+        avanceProyectoRepository: c.resolve(TUTORIAS_TOKENS.avanceProyectoRepository),
+        integranteProyectoRepository: c.resolve(TUTORIAS_TOKENS.integranteProyectoRepository),
         studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -349,7 +349,7 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new ListDictamenesProyectoUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaDictamenRepository: c.resolve(TUTORIAS_TOKENS.tutoriaDictamenRepository),
+        dictamenProyectoRepository: c.resolve(TUTORIAS_TOKENS.dictamenProyectoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -360,7 +360,7 @@ export function registerProyectosGradoResource(container) {
     (c) =>
       new ExportDictamenPdfUseCase({
         proyectoGradoRepository: c.resolve(TUTORIAS_TOKENS.proyectoGradoRepository),
-        tutoriaDictamenRepository: c.resolve(TUTORIAS_TOKENS.tutoriaDictamenRepository),
+        dictamenProyectoRepository: c.resolve(TUTORIAS_TOKENS.dictamenProyectoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );

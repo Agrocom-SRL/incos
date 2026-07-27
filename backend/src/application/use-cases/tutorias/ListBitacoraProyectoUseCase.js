@@ -12,12 +12,12 @@ export class ListBitacoraProyectoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaBitacoraRepository
+   * @param {Object} params.bitacoraProyectoRepository
    * @param {ILogger} params.logger
    */
-  constructor({ proyectoGradoRepository, tutoriaBitacoraRepository, logger }) {
+  constructor({ proyectoGradoRepository, bitacoraProyectoRepository, logger }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaBitacoraRepository = tutoriaBitacoraRepository;
+    this.bitacoraProyectoRepository = bitacoraProyectoRepository;
     this.logger = logger;
   }
 
@@ -28,7 +28,7 @@ export class ListBitacoraProyectoUseCase {
   async execute(proyectoGradoId) {
     await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
     const bitacoraEntradas =
-      await this.tutoriaBitacoraRepository.findByProyectoGradoId(proyectoGradoId);
+      await this.bitacoraProyectoRepository.findByProyectoGradoId(proyectoGradoId);
 
     this.logger.info('[Tutorías] Bitácora del proyecto listada', {
       proyectoGradoId,

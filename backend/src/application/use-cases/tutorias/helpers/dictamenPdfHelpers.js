@@ -53,11 +53,11 @@ export async function buildContextoDictamenPdf({
 
 /**
  * Guarda el PDF del dictamen en uploads (carpeta del proyecto) y registra la
- * fila en tutoria_dictamenes con la ruta del archivo.
+ * fila en dictamenes_proyecto con la ruta del archivo.
  *
  * @param {Object} params
  * @param {Object} params.uploadsStorage - IUploadsStorage
- * @param {Object} params.tutoriaDictamenRepository
+ * @param {Object} params.dictamenProyectoRepository
  * @param {number} params.proyectoGradoId
  * @param {Buffer} params.buffer - Contenido del PDF
  * @param {string} params.fileName - Nombre del archivo (ej: designacion_tutor_5.pdf)
@@ -68,7 +68,7 @@ export async function buildContextoDictamenPdf({
  */
 export async function guardarDictamenConPdf({
   uploadsStorage,
-  tutoriaDictamenRepository,
+  dictamenProyectoRepository,
   proyectoGradoId,
   buffer,
   fileName,
@@ -82,7 +82,7 @@ export async function guardarDictamenConPdf({
     buffer
   );
 
-  return tutoriaDictamenRepository.create(
+  return dictamenProyectoRepository.create(
     {
       proyectoGradoId,
       ...dictamenData,

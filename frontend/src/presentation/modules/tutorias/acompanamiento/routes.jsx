@@ -3,7 +3,7 @@
  * su directorio y routes.jsx (patrón `configuracion/routes.jsx`):
  *
  *   alertas/  → Alumnos en riesgo (order 2, connector role-aware docente)
- *   sesiones/ → Sesiones de reforzamiento (order 3, ABM + ficha)
+ *   sesiones/ → Sesiones de refuerzo (order 3, ABM + ficha)
  *   panel/    → Panel de acompañamiento (order 4, indicadores + export PDF)
  *
  * El routes.jsx raíz del módulo Tutorías compone `acompanamientoRoutes` junto

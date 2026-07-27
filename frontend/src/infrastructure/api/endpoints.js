@@ -658,12 +658,12 @@ export const ACOMPANAMIENTO_ENDPOINTS = {
   /** GET — detalle de riesgo de un estudiante (A3, `alertaEstudiante`) */
   ALERTA_ESTUDIANTE: (estudianteId) =>
     `${API_BASE}/acompanamiento/alertas/estudiante/${estudianteId}`,
-  /** GET/POST — sesiones de reforzamiento (A4 `sesionesReforzamiento` / A6 `sesionReforzamiento`) */
+  /** GET/POST — sesiones de refuerzo (A4 `sesionesRefuerzo` / A6 `sesionRefuerzo`) */
   SESIONES: `${API_BASE}/acompanamiento/sesiones`,
-  /** GET/PUT/DELETE — una sesión (A5/A7/A8, `sesionReforzamiento`) */
+  /** GET/PUT/DELETE — una sesión (A5/A7/A8, `sesionRefuerzo`) */
   SESION: (id) => `${API_BASE}/acompanamiento/sesiones/${id}`,
-  /** PUT — registro batch de asistencia/progreso (A9, `participantes`) */
-  SESION_PARTICIPANTES: (id) => `${API_BASE}/acompanamiento/sesiones/${id}/participantes`,
+  /** PUT — registro batch de asistencia/progreso (A9, `estudiantes`) */
+  SESION_ESTUDIANTES: (id) => `${API_BASE}/acompanamiento/sesiones/${id}/participantes`,
   /** GET — panel de acompañamiento (A10, `panelAcompanamiento`) */
   PANEL: (gestionId) =>
     `${API_BASE}/acompanamiento/panel${gestionId != null ? `?gestionId=${gestionId}` : ''}`,

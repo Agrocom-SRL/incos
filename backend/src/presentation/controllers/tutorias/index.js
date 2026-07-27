@@ -36,12 +36,12 @@ export { ListAlertasRiesgoController } from './list-alertas-riesgo.controller.js
 export { ListMisAlertasRiesgoDocenteController } from './list-mis-alertas-riesgo-docente.controller.js';
 export { GetAlertaRiesgoEstudianteController } from './get-alerta-riesgo-estudiante.controller.js';
 
-// Acompañamiento — sesiones de reforzamiento
-export { ListSesionesReforzamientoController } from './list-sesiones-reforzamiento.controller.js';
-export { GetSesionReforzamientoByIdController } from './get-sesion-reforzamiento-by-id.controller.js';
-export { CreateSesionReforzamientoController } from './create-sesion-reforzamiento.controller.js';
-export { UpdateSesionReforzamientoController } from './update-sesion-reforzamiento.controller.js';
-export { DeleteSesionReforzamientoController } from './delete-sesion-reforzamiento.controller.js';
+// Acompañamiento — sesiones de refuerzo
+export { ListSesionesRefuerzoController } from './list-sesiones-refuerzo.controller.js';
+export { GetSesionRefuerzoByIdController } from './get-sesion-refuerzo-by-id.controller.js';
+export { CreateSesionRefuerzoController } from './create-sesion-refuerzo.controller.js';
+export { UpdateSesionRefuerzoController } from './update-sesion-refuerzo.controller.js';
+export { DeleteSesionRefuerzoController } from './delete-sesion-refuerzo.controller.js';
 export { RegisterAsistenciaSesionController } from './register-asistencia-sesion.controller.js';
 
 // Acompañamiento — panel

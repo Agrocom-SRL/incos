@@ -59,7 +59,7 @@ export function listadoRowsToPresentation(rows) {
 export function integranteRowToPresentation(row) {
   if (!row) return null;
   return {
-    id: row.tutoria_integrante_id,
+    id: row.integrante_proyecto_id,
     proyectoGradoId: row.proyecto_grado_id,
     rol: row.integrante_rol,
     estado: row.integrante_estado,

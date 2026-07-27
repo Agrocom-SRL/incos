@@ -2,7 +2,7 @@
  * PanelAcompanamientoPdfGenerator (módulo TUT · acompañamiento)
  *
  * Genera el PDF del PANEL DE ACOMPAÑAMIENTO PEDAGÓGICO (riesgo por carrera,
- * materias críticas y resumen de sesiones de reforzamiento) a partir de la
+ * materias críticas y resumen de sesiones de refuerzo) a partir de la
  * plantilla institucional (Plantilla.pdf) con pdf-lib. Fuentes: vistas
  * 157/158/162, mapeadas por el caso de uso.
  *
@@ -98,7 +98,7 @@ export class PanelAcompanamientoPdfGenerator extends IncosPDFLibBase {
   async _buildSesionesResumen(options) {
     const filas = Array.isArray(options.sesionesResumen) ? options.sesionesResumen : [];
     if (filas.length === 0) return;
-    await this._addSection('SESIONES DE REFORZAMIENTO POR MES');
+    await this._addSection('SESIONES DE REFUERZO POR MES');
     await this._addTable(
       ['Mes', 'Carrera', 'Program.', 'Realizadas', '% asist.'],
       [70, 190, 70, 80, 70],

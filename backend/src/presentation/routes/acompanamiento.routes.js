@@ -6,9 +6,9 @@ import {
   estudianteIdParamValidator,
   listAlertasRiesgoValidator,
   alertaEstudianteValidator,
-  listSesionesReforzamientoValidator,
-  createSesionReforzamientoValidator,
-  updateSesionReforzamientoValidator,
+  listSesionesRefuerzoValidator,
+  createSesionRefuerzoValidator,
+  updateSesionRefuerzoValidator,
   registerAsistenciaSesionValidator,
   panelAcompanamientoValidator,
 } from '../validators/tutorias/index.js';
@@ -17,7 +17,7 @@ import {
  * Construye el router de Acompañamiento Pedagógico (módulo TUT).
  *
  * Sub-recursos: alertas de riesgo (vista 156, calculada — sin tabla),
- * sesiones de reforzamiento (ancladas en asignaciones_docentes) y panel.
+ * sesiones de refuerzo (ancladas en asignaciones_docentes) y panel.
  * Permisos: tutorias.acompanamiento.alerta / .sesion / .panel (acciones v2).
  *
  * Rutas estáticas SIEMPRE antes de /:id (alertas/mis-alumnos,
@@ -71,30 +71,30 @@ export function buildAcompanamientoRouter({ controllers, middlewares }) {
   );
 
   // ============================================
-  // SESIONES DE REFORZAMIENTO
+  // SESIONES DE REFUERZO
   // ============================================
 
   // A4 GET /sesiones - Listado de sesiones (vista 161)
   router.get(
     '/sesiones',
     ...sesionListar,
-    listSesionesReforzamientoValidator,
+    listSesionesRefuerzoValidator,
     validateRequest,
-    (req, res, next) => controllers.listSesionesReforzamientoController.handle(req, res, next)
+    (req, res, next) => controllers.listSesionesRefuerzoController.handle(req, res, next)
   );
 
-  // A6 POST /sesiones - Crear sesión + participantes iniciales
+  // A6 POST /sesiones - Crear sesión + estudiantes iniciales
   router.post(
     '/sesiones',
     ...sesionCrear,
-    createSesionReforzamientoValidator,
+    createSesionRefuerzoValidator,
     validateRequest,
-    (req, res, next) => controllers.createSesionReforzamientoController.handle(req, res, next)
+    (req, res, next) => controllers.createSesionRefuerzoController.handle(req, res, next)
   );
 
-  // A5 GET /sesiones/:id - Ficha de la sesión (vista 161 + participantes)
+  // A5 GET /sesiones/:id - Ficha de la sesión (vista 161 + estudiantes)
   router.get('/sesiones/:id', ...sesionDetalle, idValidator, validateRequest, (req, res, next) =>
-    controllers.getSesionReforzamientoByIdController.handle(req, res, next)
+    controllers.getSesionRefuerzoByIdController.handle(req, res, next)
   );
 
   // A7 PUT /sesiones/:id - Actualizar sesión
@@ -102,14 +102,14 @@ export function buildAcompanamientoRouter({ controllers, middlewares }) {
     '/sesiones/:id',
     ...sesionEditar,
     idValidator,
-    updateSesionReforzamientoValidator,
+    updateSesionRefuerzoValidator,
     validateRequest,
-    (req, res, next) => controllers.updateSesionReforzamientoController.handle(req, res, next)
+    (req, res, next) => controllers.updateSesionRefuerzoController.handle(req, res, next)
   );
 
   // A8 DELETE /sesiones/:id - Eliminar sesión (soft)
   router.delete('/sesiones/:id', ...sesionEliminar, idValidator, validateRequest, (req, res, next) =>
-    controllers.deleteSesionReforzamientoController.handle(req, res, next)
+    controllers.deleteSesionRefuerzoController.handle(req, res, next)
   );
 
   // A9 PUT /sesiones/:id/participantes - Registro batch de asistencia/progreso

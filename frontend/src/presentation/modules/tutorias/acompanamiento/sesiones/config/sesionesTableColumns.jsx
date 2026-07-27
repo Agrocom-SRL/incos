@@ -1,6 +1,6 @@
 /**
- * Columnas del listado de sesiones de reforzamiento (módulo TUT ·
- * `sesionesReforzamiento`, vista 161).
+ * Columnas del listado de sesiones de refuerzo (módulo TUT ·
+ * `sesionesRefuerzo`, vista 161).
  *
  * Lenguaje visual de CursosCapacitacionList (CAP): numeración +
  * IdentidadCelda (tema) + celdas multi-línea (InfoLinesCell) + StatusPill del
@@ -95,8 +95,8 @@ export const createSesionesTableColumns = ({ navigate, listNavState, refetch, de
     sortCompare: (a, b) => (a.modalidad || '').localeCompare(b.modalidad || ''),
   },
   {
-    title: 'Participantes',
-    key: 'participantes',
+    title: 'Estudiantes',
+    key: 'estudiantes',
     width: 150,
     render: (_, record) => (
       <InfoLinesCell

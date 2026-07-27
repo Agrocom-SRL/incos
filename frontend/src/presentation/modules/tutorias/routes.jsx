@@ -4,7 +4,7 @@
  * → key TUT (order 9).
  *
  * Submódulos: Titulación (proyectos de grado, bitácora, avances, dictámenes)
- * y Acompañamiento (alertas de riesgo, sesiones de reforzamiento, panel).
+ * y Acompañamiento (alertas de riesgo, sesiones de refuerzo, panel).
  * Permisos del seed 66 (`tutorias.*`).
  */
 

@@ -4,7 +4,7 @@
  * Genera el INFORME DE DESIGNACIÓN OFICIAL DE TUTOR a partir de la plantilla
  * institucional (Plantilla.pdf) con pdf-lib. Patrón ActaCompromisoPdfGenerator:
  * extiende IncosPDFLibBase, retorna Buffer (el guardado en uploads y el
- * registro en tutoria_dictamenes los hace el caso de uso).
+ * registro en dictamenes_proyecto los hace el caso de uso).
  *
  * @implements {IDesignacionTutorPdfGenerator}
  */

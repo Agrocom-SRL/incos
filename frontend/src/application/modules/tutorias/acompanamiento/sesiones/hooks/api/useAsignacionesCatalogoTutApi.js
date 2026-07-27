@@ -1,6 +1,6 @@
 /**
  * Hook de API: catálogo de cursos (asignaciones docentes, vista 130) para el
- * selector del formulario de sesión de reforzamiento (módulo TUT).
+ * selector del formulario de sesión de refuerzo (módulo TUT).
  *
  * REUTILIZA `GET /asignaciones-docentes` (catálogo del plan: no se crean
  * catálogos nuevos). Degrada con gracia si el rol no tiene el permiso del

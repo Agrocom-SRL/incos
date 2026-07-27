@@ -13,12 +13,12 @@ export class ExportDictamenPdfUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaDictamenRepository
+   * @param {Object} params.dictamenProyectoRepository
    * @param {ILogger} params.logger
    */
-  constructor({ proyectoGradoRepository, tutoriaDictamenRepository, logger }) {
+  constructor({ proyectoGradoRepository, dictamenProyectoRepository, logger }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaDictamenRepository = tutoriaDictamenRepository;
+    this.dictamenProyectoRepository = dictamenProyectoRepository;
     this.logger = logger;
   }
 
@@ -29,7 +29,7 @@ export class ExportDictamenPdfUseCase {
   async execute({ proyectoGradoId, dictamenId } = {}) {
     await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
 
-    const dictamen = await this.tutoriaDictamenRepository.findById(dictamenId);
+    const dictamen = await this.dictamenProyectoRepository.findById(dictamenId);
     if (!dictamen || Number(dictamen.proyectoGradoId) !== Number(proyectoGradoId)) {
       throw new NotFoundError(`dictamen con ID ${dictamenId} del proyecto ${proyectoGradoId}`);
     }

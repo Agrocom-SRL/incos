@@ -30,17 +30,17 @@ export async function getProyectoOrFail(proyectoGradoRepository, proyectoGradoId
  * pertenencia en servidor). Lanza ForbiddenError si no pertenece.
  *
  * @param {Object} params
- * @param {Object} params.tutoriaIntegranteRepository
+ * @param {Object} params.integranteProyectoRepository
  * @param {number} params.proyectoGradoId
  * @param {number} params.estudianteId
  * @returns {Promise<Object>} Integrante vigente
  */
 export async function assertIntegranteActivo({
-  tutoriaIntegranteRepository,
+  integranteProyectoRepository,
   proyectoGradoId,
   estudianteId,
 }) {
-  const integrante = await tutoriaIntegranteRepository.findActivoByProyectoAndEstudiante(
+  const integrante = await integranteProyectoRepository.findActivoByProyectoAndEstudiante(
     proyectoGradoId,
     estudianteId
   );
@@ -55,19 +55,19 @@ export async function assertIntegranteActivo({
  * en un proyecto con estado vigente). Lanza ConflictError si ya tiene uno.
  *
  * @param {Object} params
- * @param {Object} params.tutoriaIntegranteRepository
+ * @param {Object} params.integranteProyectoRepository
  * @param {Object} params.proyectoGradoRepository
  * @param {number} params.estudianteId
  * @param {number|null} [params.excludeProyectoGradoId] - Proyecto a excluir
  * @returns {Promise<void>}
  */
 export async function assertEstudianteSinProyectoVigente({
-  tutoriaIntegranteRepository,
+  integranteProyectoRepository,
   proyectoGradoRepository,
   estudianteId,
   excludeProyectoGradoId = null,
 }) {
-  const membresias = await tutoriaIntegranteRepository.findActivosByEstudianteId(estudianteId);
+  const membresias = await integranteProyectoRepository.findActivosByEstudianteId(estudianteId);
   for (const membresia of membresias) {
     const esProyectoExcluido =
       excludeProyectoGradoId !== null &&

@@ -42,7 +42,7 @@ const PanelKpiStrip = ({ totales }) => {
       </Col>
       <Col xs={24} sm={12} xl={6}>
         <KpiCard
-          label="Sesiones de reforzamiento"
+          label="Sesiones de refuerzo"
           value={`${realizadas} / ${programadas}`}
           sub="Realizadas de programadas"
           badgeText="Sesiones"

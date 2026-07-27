@@ -126,7 +126,7 @@ const PanelAcompanamientoPage = () => {
                       <ListPanelHeader title="Reprobación por materia" />
                       <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                         Cursos con mayor porcentaje de riesgo y reprobación, insumo para priorizar
-                        las sesiones de reforzamiento.
+                        las sesiones de refuerzo.
                       </Paragraph>
                     </header>
                     <div className="cfg-academico-tab-panel">

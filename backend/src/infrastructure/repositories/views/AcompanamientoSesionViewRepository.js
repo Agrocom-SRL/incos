@@ -2,13 +2,13 @@ import { sequelize } from '../../database/sequelize.js';
 import { IAcompanamientoSesionViewRepository } from '../../../domain/interfaces/repositories/IAcompanamientoSesionViewRepository.js';
 
 /**
- * Lecturas de sesiones de reforzamiento (módulo TUT · acompañamiento).
+ * Lecturas de sesiones de refuerzo (módulo TUT · acompañamiento).
  *
  * Consume las vistas SQL:
  * - `vista_base_acompanamiento_sesion_fila` (161): 1 fila por sesión con
- *   curso/docente/materia/paralelo + agregados de participantes.
+ *   curso/docente/materia/paralelo + agregados de estudiantes.
  * - `vista_acompanamiento_sesiones_resumen` (162): agregado mensual/carrera.
- * - participantes de UNA sesión: sesion_reforzamiento_participantes ⋈
+ * - estudiantes de UNA sesión: sesion_refuerzo_estudiantes ⋈
  *   vista 156 (datos del estudiante y sus notas en la materia reforzada;
  *   reutiliza la vista de riesgo, no duplica joins).
  *
@@ -99,35 +99,35 @@ export class AcompanamientoSesionViewRepository extends IAcompanamientoSesionVie
   }
 
   /**
-   * Participantes vigentes de la sesión con datos del estudiante y sus notas
+   * Estudiantes vigentes de la sesión con sus datos y sus notas
    * en la materia reforzada (LEFT JOIN a la vista 156 por matricula_materia_id).
    *
    * @param {number} sesionId
    * @returns {Promise<Array<Object>>}
    */
-  async findParticipantesBySesionId(sesionId) {
+  async findEstudiantesBySesionId(sesionId) {
     return sequelize.query(
       `SELECT
-         sp.id                    AS participante_id,
-         sp.sesion_reforzamiento_id AS sesion_reforzamiento_id,
-         sp.matricula_materia_id  AS matricula_materia_id,
-         sp.origen                AS origen,
-         sp.asistio               AS asistio,
-         sp.progreso              AS progreso,
-         sp.observaciones         AS observaciones,
+         se.id                    AS sesion_refuerzo_estudiante_id,
+         se.sesion_refuerzo_id    AS sesion_refuerzo_id,
+         se.matricula_materia_id  AS matricula_materia_id,
+         se.origen                AS origen,
+         se.asistio               AS asistio,
+         se.progreso              AS progreso,
+         se.observaciones         AS observaciones,
          r.estudiante_id          AS estudiante_id,
          r.codigo_estudiante      AS codigo_estudiante,
          r.nombre_completo        AS nombre_completo,
          r.nota_ultimo_bimestre   AS nota_ultimo_bimestre,
          r.promedio_anual         AS promedio_anual,
          r.en_riesgo              AS en_riesgo
-       FROM sesion_reforzamiento_participantes sp
+       FROM sesion_refuerzo_estudiantes se
        LEFT JOIN vista_base_acompanamiento_riesgo_fila r
-         ON r.matricula_materia_id = sp.matricula_materia_id
-       WHERE sp.sesion_reforzamiento_id = :sesionId
-         AND sp.activo = TRUE
-         AND sp.deleted_at IS NULL
-       ORDER BY r.nombre_completo, sp.id`,
+         ON r.matricula_materia_id = se.matricula_materia_id
+       WHERE se.sesion_refuerzo_id = :sesionId
+         AND se.activo = TRUE
+         AND se.deleted_at IS NULL
+       ORDER BY r.nombre_completo, se.id`,
       {
         replacements: { sesionId },
         type: sequelize.QueryTypes.SELECT,

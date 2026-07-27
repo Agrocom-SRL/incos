@@ -19,11 +19,11 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListAlertasRiesgoUseCase } from '../../../../application/use-cases/tutorias/ListAlertasRiesgoUseCase.js';
 import { ListMisAlertasRiesgoDocenteUseCase } from '../../../../application/use-cases/tutorias/ListMisAlertasRiesgoDocenteUseCase.js';
 import { GetAlertaRiesgoEstudianteUseCase } from '../../../../application/use-cases/tutorias/GetAlertaRiesgoEstudianteUseCase.js';
-import { ListSesionesReforzamientoUseCase } from '../../../../application/use-cases/tutorias/ListSesionesReforzamientoUseCase.js';
-import { GetSesionReforzamientoByIdUseCase } from '../../../../application/use-cases/tutorias/GetSesionReforzamientoByIdUseCase.js';
-import { CreateSesionReforzamientoUseCase } from '../../../../application/use-cases/tutorias/CreateSesionReforzamientoUseCase.js';
-import { UpdateSesionReforzamientoUseCase } from '../../../../application/use-cases/tutorias/UpdateSesionReforzamientoUseCase.js';
-import { DeleteSesionReforzamientoUseCase } from '../../../../application/use-cases/tutorias/DeleteSesionReforzamientoUseCase.js';
+import { ListSesionesRefuerzoUseCase } from '../../../../application/use-cases/tutorias/ListSesionesRefuerzoUseCase.js';
+import { GetSesionRefuerzoByIdUseCase } from '../../../../application/use-cases/tutorias/GetSesionRefuerzoByIdUseCase.js';
+import { CreateSesionRefuerzoUseCase } from '../../../../application/use-cases/tutorias/CreateSesionRefuerzoUseCase.js';
+import { UpdateSesionRefuerzoUseCase } from '../../../../application/use-cases/tutorias/UpdateSesionRefuerzoUseCase.js';
+import { DeleteSesionRefuerzoUseCase } from '../../../../application/use-cases/tutorias/DeleteSesionRefuerzoUseCase.js';
 import { RegisterAsistenciaSesionUseCase } from '../../../../application/use-cases/tutorias/RegisterAsistenciaSesionUseCase.js';
 import { GetPanelAcompanamientoUseCase } from '../../../../application/use-cases/tutorias/GetPanelAcompanamientoUseCase.js';
 import { ExportPanelAcompanamientoPdfUseCase } from '../../../../application/use-cases/tutorias/ExportPanelAcompanamientoPdfUseCase.js';
@@ -31,11 +31,11 @@ import {
   ListAlertasRiesgoController,
   ListMisAlertasRiesgoDocenteController,
   GetAlertaRiesgoEstudianteController,
-  ListSesionesReforzamientoController,
-  GetSesionReforzamientoByIdController,
-  CreateSesionReforzamientoController,
-  UpdateSesionReforzamientoController,
-  DeleteSesionReforzamientoController,
+  ListSesionesRefuerzoController,
+  GetSesionRefuerzoByIdController,
+  CreateSesionRefuerzoController,
+  UpdateSesionRefuerzoController,
+  DeleteSesionRefuerzoController,
   RegisterAsistenciaSesionController,
   GetPanelAcompanamientoController,
   ExportPanelAcompanamientoController,
@@ -80,9 +80,9 @@ export function registerAcompanamientoResource(container) {
 
   registerComponent(
     container,
-    TUTORIAS_TOKENS.listSesionesReforzamientoUseCase,
+    TUTORIAS_TOKENS.listSesionesRefuerzoUseCase,
     (c) =>
-      new ListSesionesReforzamientoUseCase({
+      new ListSesionesRefuerzoUseCase({
         acompanamientoSesionViewRepository: c.resolve(
           TUTORIAS_TOKENS.acompanamientoSesionViewRepository
         ),
@@ -92,9 +92,9 @@ export function registerAcompanamientoResource(container) {
 
   registerComponent(
     container,
-    TUTORIAS_TOKENS.getSesionReforzamientoByIdUseCase,
+    TUTORIAS_TOKENS.getSesionRefuerzoByIdUseCase,
     (c) =>
-      new GetSesionReforzamientoByIdUseCase({
+      new GetSesionRefuerzoByIdUseCase({
         acompanamientoSesionViewRepository: c.resolve(
           TUTORIAS_TOKENS.acompanamientoSesionViewRepository
         ),
@@ -104,12 +104,12 @@ export function registerAcompanamientoResource(container) {
 
   registerComponent(
     container,
-    TUTORIAS_TOKENS.createSesionReforzamientoUseCase,
+    TUTORIAS_TOKENS.createSesionRefuerzoUseCase,
     (c) =>
-      new CreateSesionReforzamientoUseCase({
-        sesionReforzamientoRepository: c.resolve(TUTORIAS_TOKENS.sesionReforzamientoRepository),
-        sesionReforzamientoParticipanteRepository: c.resolve(
-          TUTORIAS_TOKENS.sesionReforzamientoParticipanteRepository
+      new CreateSesionRefuerzoUseCase({
+        sesionRefuerzoRepository: c.resolve(TUTORIAS_TOKENS.sesionRefuerzoRepository),
+        sesionRefuerzoEstudianteRepository: c.resolve(
+          TUTORIAS_TOKENS.sesionRefuerzoEstudianteRepository
         ),
         teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
         subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
@@ -120,10 +120,10 @@ export function registerAcompanamientoResource(container) {
 
   registerComponent(
     container,
-    TUTORIAS_TOKENS.updateSesionReforzamientoUseCase,
+    TUTORIAS_TOKENS.updateSesionRefuerzoUseCase,
     (c) =>
-      new UpdateSesionReforzamientoUseCase({
-        sesionReforzamientoRepository: c.resolve(TUTORIAS_TOKENS.sesionReforzamientoRepository),
+      new UpdateSesionRefuerzoUseCase({
+        sesionRefuerzoRepository: c.resolve(TUTORIAS_TOKENS.sesionRefuerzoRepository),
         classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
@@ -131,10 +131,10 @@ export function registerAcompanamientoResource(container) {
 
   registerComponent(
     container,
-    TUTORIAS_TOKENS.deleteSesionReforzamientoUseCase,
+    TUTORIAS_TOKENS.deleteSesionRefuerzoUseCase,
     (c) =>
-      new DeleteSesionReforzamientoUseCase({
-        sesionReforzamientoRepository: c.resolve(TUTORIAS_TOKENS.sesionReforzamientoRepository),
+      new DeleteSesionRefuerzoUseCase({
+        sesionRefuerzoRepository: c.resolve(TUTORIAS_TOKENS.sesionRefuerzoRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -144,9 +144,9 @@ export function registerAcompanamientoResource(container) {
     TUTORIAS_TOKENS.registerAsistenciaSesionUseCase,
     (c) =>
       new RegisterAsistenciaSesionUseCase({
-        sesionReforzamientoRepository: c.resolve(TUTORIAS_TOKENS.sesionReforzamientoRepository),
-        sesionReforzamientoParticipanteRepository: c.resolve(
-          TUTORIAS_TOKENS.sesionReforzamientoParticipanteRepository
+        sesionRefuerzoRepository: c.resolve(TUTORIAS_TOKENS.sesionRefuerzoRepository),
+        sesionRefuerzoEstudianteRepository: c.resolve(
+          TUTORIAS_TOKENS.sesionRefuerzoEstudianteRepository
         ),
         acompanamientoSesionViewRepository: c.resolve(
           TUTORIAS_TOKENS.acompanamientoSesionViewRepository
@@ -222,55 +222,55 @@ export function registerAcompanamientoResource(container) {
         }),
     ],
     [
-      TUTORIAS_TOKENS.listSesionesReforzamientoController,
+      TUTORIAS_TOKENS.listSesionesRefuerzoController,
       (c) =>
-        new ListSesionesReforzamientoController({
-          listSesionesReforzamientoUseCase: c.resolve(
-            TUTORIAS_TOKENS.listSesionesReforzamientoUseCase
+        new ListSesionesRefuerzoController({
+          listSesionesRefuerzoUseCase: c.resolve(
+            TUTORIAS_TOKENS.listSesionesRefuerzoUseCase
           ),
           logger: c.resolve(SERVICIOS_TOKENS.logger),
           responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
         }),
     ],
     [
-      TUTORIAS_TOKENS.getSesionReforzamientoByIdController,
+      TUTORIAS_TOKENS.getSesionRefuerzoByIdController,
       (c) =>
-        new GetSesionReforzamientoByIdController({
-          getSesionReforzamientoByIdUseCase: c.resolve(
-            TUTORIAS_TOKENS.getSesionReforzamientoByIdUseCase
+        new GetSesionRefuerzoByIdController({
+          getSesionRefuerzoByIdUseCase: c.resolve(
+            TUTORIAS_TOKENS.getSesionRefuerzoByIdUseCase
           ),
           logger: c.resolve(SERVICIOS_TOKENS.logger),
           responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
         }),
     ],
     [
-      TUTORIAS_TOKENS.createSesionReforzamientoController,
+      TUTORIAS_TOKENS.createSesionRefuerzoController,
       (c) =>
-        new CreateSesionReforzamientoController({
-          createSesionReforzamientoUseCase: c.resolve(
-            TUTORIAS_TOKENS.createSesionReforzamientoUseCase
+        new CreateSesionRefuerzoController({
+          createSesionRefuerzoUseCase: c.resolve(
+            TUTORIAS_TOKENS.createSesionRefuerzoUseCase
           ),
           logger: c.resolve(SERVICIOS_TOKENS.logger),
           responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
         }),
     ],
     [
-      TUTORIAS_TOKENS.updateSesionReforzamientoController,
+      TUTORIAS_TOKENS.updateSesionRefuerzoController,
       (c) =>
-        new UpdateSesionReforzamientoController({
-          updateSesionReforzamientoUseCase: c.resolve(
-            TUTORIAS_TOKENS.updateSesionReforzamientoUseCase
+        new UpdateSesionRefuerzoController({
+          updateSesionRefuerzoUseCase: c.resolve(
+            TUTORIAS_TOKENS.updateSesionRefuerzoUseCase
           ),
           logger: c.resolve(SERVICIOS_TOKENS.logger),
           responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
         }),
     ],
     [
-      TUTORIAS_TOKENS.deleteSesionReforzamientoController,
+      TUTORIAS_TOKENS.deleteSesionRefuerzoController,
       (c) =>
-        new DeleteSesionReforzamientoController({
-          deleteSesionReforzamientoUseCase: c.resolve(
-            TUTORIAS_TOKENS.deleteSesionReforzamientoUseCase
+        new DeleteSesionRefuerzoController({
+          deleteSesionRefuerzoUseCase: c.resolve(
+            TUTORIAS_TOKENS.deleteSesionRefuerzoUseCase
           ),
           logger: c.resolve(SERVICIOS_TOKENS.logger),
           responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
@@ -324,20 +324,20 @@ export function registerAcompanamientoResource(container) {
       getAlertaRiesgoEstudianteController: c.resolve(
         TUTORIAS_TOKENS.getAlertaRiesgoEstudianteController
       ),
-      listSesionesReforzamientoController: c.resolve(
-        TUTORIAS_TOKENS.listSesionesReforzamientoController
+      listSesionesRefuerzoController: c.resolve(
+        TUTORIAS_TOKENS.listSesionesRefuerzoController
       ),
-      getSesionReforzamientoByIdController: c.resolve(
-        TUTORIAS_TOKENS.getSesionReforzamientoByIdController
+      getSesionRefuerzoByIdController: c.resolve(
+        TUTORIAS_TOKENS.getSesionRefuerzoByIdController
       ),
-      createSesionReforzamientoController: c.resolve(
-        TUTORIAS_TOKENS.createSesionReforzamientoController
+      createSesionRefuerzoController: c.resolve(
+        TUTORIAS_TOKENS.createSesionRefuerzoController
       ),
-      updateSesionReforzamientoController: c.resolve(
-        TUTORIAS_TOKENS.updateSesionReforzamientoController
+      updateSesionRefuerzoController: c.resolve(
+        TUTORIAS_TOKENS.updateSesionRefuerzoController
       ),
-      deleteSesionReforzamientoController: c.resolve(
-        TUTORIAS_TOKENS.deleteSesionReforzamientoController
+      deleteSesionRefuerzoController: c.resolve(
+        TUTORIAS_TOKENS.deleteSesionRefuerzoController
       ),
       registerAsistenciaSesionController: c.resolve(
         TUTORIAS_TOKENS.registerAsistenciaSesionController

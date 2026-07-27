@@ -1,10 +1,10 @@
 /**
- * Organismo: cabecera de la ficha de sesión de reforzamiento (TUT).
+ * Organismo: cabecera de la ficha de sesión de refuerzo (TUT).
  *
  * Reusa el shell compartido `sd-profile` (detail-page.css, prefijos sd-* solo
  * para layout), gemelo de `CursoCapacitacionFichaHeader`. Estado de la sesión
  * con `StatusPill` del kit y métricas de fecha/horario, modalidad y
- * participantes. Botón editar (`sd-profile__edit-btn`) solo cuando la sesión
+ * estudiantes. Botón editar (`sd-profile__edit-btn`) solo cuando la sesión
  * sigue programada. Recibe props ya mapeadas; no llama hooks (el gate de
  * permiso se resuelve en la página).
  */
@@ -46,10 +46,10 @@ const SesionFichaHeader = ({ sesion, puedeEditar = false, onEditar }) => {
           </div>
         </div>
         <div className="sd-profile__name-block">
-          <h1 className="sd-profile__name">{sesion.tema || 'Sesión de reforzamiento'}</h1>
+          <h1 className="sd-profile__name">{sesion.tema || 'Sesión de refuerzo'}</h1>
           <div className="sd-profile__meta">
             <p className="sd-profile__sub">
-              {subtitleParts.join(' · ') || 'Sesión de reforzamiento'}
+              {subtitleParts.join(' · ') || 'Sesión de refuerzo'}
             </p>
             <StatusPill
               label={formatEstadoSesion(sesion.estado)}
@@ -73,7 +73,7 @@ const SesionFichaHeader = ({ sesion, puedeEditar = false, onEditar }) => {
           <span className="sd-stat__value">{lugarLabel}</span>
         </div>
         <div className="sd-stat">
-          <span className="sd-stat__label">Participantes</span>
+          <span className="sd-stat__label">Estudiantes</span>
           <span className="sd-stat__value">
             {sesion.estado === 'REALIZADA'
               ? `${sesion.participantesAsistieron} / ${sesion.participantesTotal} asistieron`

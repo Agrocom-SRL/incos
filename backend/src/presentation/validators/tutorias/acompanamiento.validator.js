@@ -1,15 +1,15 @@
 import { body, param, query } from 'express-validator';
 import { listValidator } from '../common/list.validator.js';
 import {
-  MODALIDADES_SESION_REFORZAMIENTO_VALUES,
-  ESTADOS_SESION_REFORZAMIENTO_VALUES,
-  ORIGENES_PARTICIPANTE_SESION_VALUES,
-  PROGRESOS_PARTICIPANTE_SESION_VALUES,
+  MODALIDADES_SESION_REFUERZO_VALUES,
+  ESTADOS_SESION_REFUERZO_VALUES,
+  ORIGENES_ESTUDIANTE_SESION_VALUES,
+  PROGRESOS_ESTUDIANTE_SESION_VALUES,
 } from '../../../domain/constants/tutorias.constants.js';
 
 /**
  * Validators del sub-módulo Acompañamiento (módulo TUT):
- * alertas de riesgo (vista 156, sin tabla), sesiones de reforzamiento y panel.
+ * alertas de riesgo (vista 156, sin tabla), sesiones de refuerzo y panel.
  */
 
 /** Param :estudianteId (detalle de alerta por estudiante). */
@@ -40,7 +40,7 @@ export const alertaEstudianteValidator = [
   query('gestionId').optional().isInt({ min: 1 }).withMessage('gestionId debe ser un entero positivo'),
 ];
 
-export const listSesionesReforzamientoValidator = [
+export const listSesionesRefuerzoValidator = [
   ...listValidator,
   query('gestionId').optional().isInt({ min: 1 }).withMessage('gestionId debe ser un entero positivo'),
   query('docenteId').optional().isInt({ min: 1 }).withMessage('docenteId debe ser un entero positivo'),
@@ -50,27 +50,27 @@ export const listSesionesReforzamientoValidator = [
     .withMessage('asignacionDocenteId debe ser un entero positivo'),
   query('estado')
     .optional()
-    .isIn(ESTADOS_SESION_REFORZAMIENTO_VALUES)
-    .withMessage(`estado debe ser uno de: ${ESTADOS_SESION_REFORZAMIENTO_VALUES.join(', ')}`),
+    .isIn(ESTADOS_SESION_REFUERZO_VALUES)
+    .withMessage(`estado debe ser uno de: ${ESTADOS_SESION_REFUERZO_VALUES.join(', ')}`),
   query('modalidad')
     .optional()
-    .isIn(MODALIDADES_SESION_REFORZAMIENTO_VALUES)
-    .withMessage(`modalidad debe ser una de: ${MODALIDADES_SESION_REFORZAMIENTO_VALUES.join(', ')}`),
+    .isIn(MODALIDADES_SESION_REFUERZO_VALUES)
+    .withMessage(`modalidad debe ser una de: ${MODALIDADES_SESION_REFUERZO_VALUES.join(', ')}`),
 ];
 
-const participanteFieldValidators = (prefix) => [
+const estudianteFieldValidators = (prefix) => [
   body(`${prefix}.matriculaMateriaId`)
     .notEmpty()
-    .withMessage('cada participante requiere matriculaMateriaId')
+    .withMessage('cada estudiante requiere matriculaMateriaId')
     .isInt({ min: 1 })
     .withMessage('matriculaMateriaId debe ser un entero positivo'),
   body(`${prefix}.origen`)
     .optional()
-    .isIn(ORIGENES_PARTICIPANTE_SESION_VALUES)
-    .withMessage(`origen debe ser uno de: ${ORIGENES_PARTICIPANTE_SESION_VALUES.join(', ')}`),
+    .isIn(ORIGENES_ESTUDIANTE_SESION_VALUES)
+    .withMessage(`origen debe ser uno de: ${ORIGENES_ESTUDIANTE_SESION_VALUES.join(', ')}`),
 ];
 
-export const createSesionReforzamientoValidator = [
+export const createSesionRefuerzoValidator = [
   body('asignacionDocenteId')
     .notEmpty()
     .withMessage('asignacionDocenteId es requerido')
@@ -91,8 +91,8 @@ export const createSesionReforzamientoValidator = [
     .withMessage('horaFin debe tener formato HH:mm'),
   body('modalidad')
     .optional()
-    .isIn(MODALIDADES_SESION_REFORZAMIENTO_VALUES)
-    .withMessage(`modalidad debe ser una de: ${MODALIDADES_SESION_REFORZAMIENTO_VALUES.join(', ')}`),
+    .isIn(MODALIDADES_SESION_REFUERZO_VALUES)
+    .withMessage(`modalidad debe ser una de: ${MODALIDADES_SESION_REFUERZO_VALUES.join(', ')}`),
   body('aulaId').optional({ nullable: true }).isInt({ min: 1 }).withMessage('aulaId debe ser un entero positivo'),
   body('enlaceVirtual')
     .optional({ nullable: true })
@@ -107,11 +107,11 @@ export const createSesionReforzamientoValidator = [
     .isLength({ max: 255 })
     .withMessage('tema no debe superar los 255 caracteres'),
   body('observaciones').optional({ nullable: true }).isString(),
-  body('participantes').optional().isArray().withMessage('participantes debe ser un array'),
-  ...participanteFieldValidators('participantes.*'),
+  body('estudiantes').optional().isArray().withMessage('estudiantes debe ser un array'),
+  ...estudianteFieldValidators('estudiantes.*'),
 ];
 
-export const updateSesionReforzamientoValidator = [
+export const updateSesionRefuerzoValidator = [
   body('fecha')
     .optional()
     .isISO8601()
@@ -126,8 +126,8 @@ export const updateSesionReforzamientoValidator = [
     .withMessage('horaFin debe tener formato HH:mm'),
   body('modalidad')
     .optional()
-    .isIn(MODALIDADES_SESION_REFORZAMIENTO_VALUES)
-    .withMessage(`modalidad debe ser una de: ${MODALIDADES_SESION_REFORZAMIENTO_VALUES.join(', ')}`),
+    .isIn(MODALIDADES_SESION_REFUERZO_VALUES)
+    .withMessage(`modalidad debe ser una de: ${MODALIDADES_SESION_REFUERZO_VALUES.join(', ')}`),
   body('aulaId').optional({ nullable: true }).isInt({ min: 1 }).withMessage('aulaId debe ser un entero positivo'),
   body('enlaceVirtual')
     .optional({ nullable: true })
@@ -143,25 +143,25 @@ export const updateSesionReforzamientoValidator = [
     .withMessage('tema no debe superar los 255 caracteres'),
   body('estado')
     .optional()
-    .isIn(ESTADOS_SESION_REFORZAMIENTO_VALUES)
-    .withMessage(`estado debe ser uno de: ${ESTADOS_SESION_REFORZAMIENTO_VALUES.join(', ')}`),
+    .isIn(ESTADOS_SESION_REFUERZO_VALUES)
+    .withMessage(`estado debe ser uno de: ${ESTADOS_SESION_REFUERZO_VALUES.join(', ')}`),
   body('observaciones').optional({ nullable: true }).isString(),
 ];
 
 export const registerAsistenciaSesionValidator = [
-  body('participantes')
+  body('estudiantes')
     .isArray()
-    .withMessage('participantes debe ser un array (puede ser vacío para retirar a todos)'),
-  ...participanteFieldValidators('participantes.*'),
-  body('participantes.*.asistio')
+    .withMessage('estudiantes debe ser un array (puede ser vacío para retirar a todos)'),
+  ...estudianteFieldValidators('estudiantes.*'),
+  body('estudiantes.*.asistio')
     .optional({ nullable: true })
     .isBoolean()
     .withMessage('asistio debe ser boolean'),
-  body('participantes.*.progreso')
+  body('estudiantes.*.progreso')
     .optional()
-    .isIn(PROGRESOS_PARTICIPANTE_SESION_VALUES)
-    .withMessage(`progreso debe ser uno de: ${PROGRESOS_PARTICIPANTE_SESION_VALUES.join(', ')}`),
-  body('participantes.*.observaciones').optional({ nullable: true }).isString(),
+    .isIn(PROGRESOS_ESTUDIANTE_SESION_VALUES)
+    .withMessage(`progreso debe ser uno de: ${PROGRESOS_ESTUDIANTE_SESION_VALUES.join(', ')}`),
+  body('estudiantes.*.observaciones').optional({ nullable: true }).isString(),
 ];
 
 export const panelAcompanamientoValidator = [

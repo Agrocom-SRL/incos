@@ -17,23 +17,23 @@ export class DownloadAvanceArchivoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaAvanceRepository
-   * @param {Object} params.tutoriaIntegranteRepository
+   * @param {Object} params.avanceProyectoRepository
+   * @param {Object} params.integranteProyectoRepository
    * @param {Object} params.studentRepository
    * @param {Object} params.userRepository
    * @param {ILogger} params.logger
    */
   constructor({
     proyectoGradoRepository,
-    tutoriaAvanceRepository,
-    tutoriaIntegranteRepository,
+    avanceProyectoRepository,
+    integranteProyectoRepository,
     studentRepository,
     userRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaAvanceRepository = tutoriaAvanceRepository;
-    this.tutoriaIntegranteRepository = tutoriaIntegranteRepository;
+    this.avanceProyectoRepository = avanceProyectoRepository;
+    this.integranteProyectoRepository = integranteProyectoRepository;
     this.studentRepository = studentRepository;
     this.userRepository = userRepository;
     this.logger = logger;
@@ -46,7 +46,7 @@ export class DownloadAvanceArchivoUseCase {
   async execute({ proyectoGradoId, avanceId, usuarioId } = {}) {
     await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
 
-    const avance = await this.tutoriaAvanceRepository.findById(avanceId);
+    const avance = await this.avanceProyectoRepository.findById(avanceId);
     if (!avance || Number(avance.proyectoGradoId) !== Number(proyectoGradoId)) {
       throw new NotFoundError(`avance con ID ${avanceId} del proyecto ${proyectoGradoId}`);
     }
@@ -58,7 +58,7 @@ export class DownloadAvanceArchivoUseCase {
     });
     if (estudianteId !== null) {
       await assertIntegranteActivo({
-        tutoriaIntegranteRepository: this.tutoriaIntegranteRepository,
+        integranteProyectoRepository: this.integranteProyectoRepository,
         proyectoGradoId,
         estudianteId,
       });

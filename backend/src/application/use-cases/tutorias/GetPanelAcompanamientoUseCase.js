@@ -1,4 +1,4 @@
-import { RiesgoAcademicoMapper, SesionReforzamientoMapper } from '../../mappers/tutorias/index.js';
+import { RiesgoAcademicoMapper, SesionRefuerzoMapper } from '../../mappers/tutorias/index.js';
 
 /** Tamaño del top de casos críticos (filas de la vista 156 en riesgo). */
 const TOP_CASOS_CRITICOS = 20;
@@ -93,7 +93,7 @@ export class GetPanelAcompanamientoUseCase {
       },
       riesgoPorCarrera,
       materiasCriticas: RiesgoAcademicoMapper.reprobacionMateriaRowsToPresentation(materiaRows),
-      sesionesResumen: SesionReforzamientoMapper.resumenRowsToPresentation(sesionesRows),
+      sesionesResumen: SesionRefuerzoMapper.resumenRowsToPresentation(sesionesRows),
       casosCriticos: RiesgoAcademicoMapper.alertaRowsToPresentation(criticosResult.rows),
     };
 

@@ -1,7 +1,7 @@
 /**
  * PUT /api/v1/acompanamiento/sesiones/:id/participantes (A9)
- * Registro batch de participantes/asistencia/progreso de la sesión.
- * dataFieldName: 'participantes'.
+ * Registro batch de estudiantes/asistencia/progreso de la sesión.
+ * dataFieldName: 'estudiantes'.
  */
 export class RegisterAsistenciaSesionController {
   constructor({ registerAsistenciaSesionUseCase, logger, responseFormatter }) {
@@ -14,11 +14,9 @@ export class RegisterAsistenciaSesionController {
     try {
       const sesionId = parseInt(req.params.id, 10);
       const userId = req.usuario?.id ?? null;
-      this.logger.info('[Tutorías] Request de registro batch de participantes', {
+      this.logger.info('[Tutorías] Request de registro batch de estudiantes', {
         sesionId,
-        participantes: Array.isArray(req.body?.participantes)
-          ? req.body.participantes.length
-          : 0,
+        estudiantes: Array.isArray(req.body?.estudiantes) ? req.body.estudiantes.length : 0,
       });
 
       const result = await this.registerAsistenciaSesionUseCase.execute(
@@ -30,12 +28,12 @@ export class RegisterAsistenciaSesionController {
       return this.responseFormatter.updated(
         res,
         result,
-        'participantes de la sesión',
+        'estudiantes de la sesión',
         sesionId,
         req
       );
     } catch (error) {
-      this.logger.error('[Tutorías] Error al registrar participantes de la sesión', {
+      this.logger.error('[Tutorías] Error al registrar estudiantes de la sesión', {
         error: error.message,
         stack: error.stack,
         id: req.params?.id,

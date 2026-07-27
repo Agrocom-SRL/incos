@@ -88,7 +88,7 @@ export const mapProyectoGrado = (raw) => {
 export const mapProyectosGradoList = (rawList) =>
   Array.isArray(rawList) ? rawList.map(mapProyectoGrado).filter(Boolean) : [];
 
-/** Integrante del proyecto (tutoria_integrantes, dataKey `integrante`). */
+/** Integrante del proyecto (integrantes_proyecto, dataKey `integrante`). */
 export const mapIntegrante = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
   return {
@@ -103,13 +103,13 @@ export const mapIntegrante = (raw) => {
   };
 };
 
-/** Entrada de bitácora (tutoria_bitacora, dataKey `bitacoraEntradas`/`bitacoraEntrada`). */
+/** Entrada de bitácora (bitacora_proyecto, dataKey `bitacoraEntradas`/`bitacoraEntrada`). */
 export const mapBitacoraEntrada = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
   return {
     id: raw.id,
     tipo: raw.tipo ?? 'REUNION',
-    tutoriaAvanceId: raw.tutoriaAvanceId ?? null,
+    avanceProyectoId: raw.avanceProyectoId ?? null,
     fecha: raw.fecha ?? null,
     fechaLabel: formatFecha(raw.fecha),
     actividad: cleanText(raw.actividad),
@@ -133,7 +133,7 @@ const formatTamano = (bytes) => {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-/** Avance del proyecto (tutoria_avances, dataKey `avances`/`avance`). */
+/** Avance del proyecto (avances_proyecto, dataKey `avances`/`avance`). */
 export const mapAvance = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
   return {
@@ -155,7 +155,7 @@ export const mapAvance = (raw) => {
 export const mapAvancesList = (rawList) =>
   Array.isArray(rawList) ? rawList.map(mapAvance).filter(Boolean) : [];
 
-/** Dictamen (tutoria_dictamenes, dataKey `dictamenes`). */
+/** Dictamen (dictamenes_proyecto, dataKey `dictamenes`). */
 export const mapDictamen = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
   return {

@@ -39,14 +39,14 @@ const NOTA_POR_ESTADO = {
  * TRANSICIONES_PROYECTO_GRADO). Fija automáticamente la fecha de la etapa y,
  * cuando la transición es a APROBADO (aprobación final), emite el INFORME DE
  * VIABILIDAD TÉCNICA: PDF guardado en uploads y registrado en
- * tutoria_dictamenes (tipo VIABILIDAD_TECNICA).
+ * dictamenes_proyecto (tipo VIABILIDAD_TECNICA).
  */
 export class AprobarEtapaProyectoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
    * @param {Object} params.proyectoGradoListadoViewRepository - Vistas 159/160
-   * @param {Object} params.tutoriaDictamenRepository
+   * @param {Object} params.dictamenProyectoRepository
    * @param {Object} params.managementRepository - Año de gestión para el PDF
    * @param {Object} params.viabilidadProyectoPdfGenerator - IViabilidadProyectoPdfGenerator
    * @param {Object} params.uploadsStorage - IUploadsStorage
@@ -55,7 +55,7 @@ export class AprobarEtapaProyectoUseCase {
   constructor({
     proyectoGradoRepository,
     proyectoGradoListadoViewRepository,
-    tutoriaDictamenRepository,
+    dictamenProyectoRepository,
     managementRepository,
     viabilidadProyectoPdfGenerator,
     uploadsStorage,
@@ -63,7 +63,7 @@ export class AprobarEtapaProyectoUseCase {
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
     this.proyectoGradoListadoViewRepository = proyectoGradoListadoViewRepository;
-    this.tutoriaDictamenRepository = tutoriaDictamenRepository;
+    this.dictamenProyectoRepository = dictamenProyectoRepository;
     this.managementRepository = managementRepository;
     this.viabilidadProyectoPdfGenerator = viabilidadProyectoPdfGenerator;
     this.uploadsStorage = uploadsStorage;
@@ -153,7 +153,7 @@ export class AprobarEtapaProyectoUseCase {
 
     await guardarDictamenConPdf({
       uploadsStorage: this.uploadsStorage,
-      tutoriaDictamenRepository: this.tutoriaDictamenRepository,
+      dictamenProyectoRepository: this.dictamenProyectoRepository,
       proyectoGradoId: proyecto.id,
       buffer,
       fileName: `viabilidad_tecnica_${proyecto.id}_${Date.now()}.pdf`,

@@ -14,14 +14,14 @@ import {
  * Asigna (o reasigna) el tutor del proyecto de grado y emite el INFORME DE
  * DESIGNACIÓN OFICIAL: genera el PDF (IncosPDFLibBase + Plantilla.pdf), lo
  * guarda en uploads/documentos/proyectos-grado/:id/ y lo registra en
- * tutoria_dictamenes (tipo DESIGNACION_OFICIAL) para su envío a la DDE.
+ * dictamenes_proyecto (tipo DESIGNACION_OFICIAL) para su envío a la DDE.
  */
 export class AsignarTutorProyectoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
    * @param {Object} params.proyectoGradoListadoViewRepository - Vistas 159/160
-   * @param {Object} params.tutoriaDictamenRepository
+   * @param {Object} params.dictamenProyectoRepository
    * @param {Object} params.teacherRepository - Validación del docente tutor
    * @param {Object} params.managementRepository - Año de gestión para el PDF
    * @param {Object} params.designacionTutorPdfGenerator - IDesignacionTutorPdfGenerator
@@ -31,7 +31,7 @@ export class AsignarTutorProyectoUseCase {
   constructor({
     proyectoGradoRepository,
     proyectoGradoListadoViewRepository,
-    tutoriaDictamenRepository,
+    dictamenProyectoRepository,
     teacherRepository,
     managementRepository,
     designacionTutorPdfGenerator,
@@ -40,7 +40,7 @@ export class AsignarTutorProyectoUseCase {
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
     this.proyectoGradoListadoViewRepository = proyectoGradoListadoViewRepository;
-    this.tutoriaDictamenRepository = tutoriaDictamenRepository;
+    this.dictamenProyectoRepository = dictamenProyectoRepository;
     this.teacherRepository = teacherRepository;
     this.managementRepository = managementRepository;
     this.designacionTutorPdfGenerator = designacionTutorPdfGenerator;
@@ -93,7 +93,7 @@ export class AsignarTutorProyectoUseCase {
 
     await guardarDictamenConPdf({
       uploadsStorage: this.uploadsStorage,
-      tutoriaDictamenRepository: this.tutoriaDictamenRepository,
+      dictamenProyectoRepository: this.dictamenProyectoRepository,
       proyectoGradoId,
       buffer,
       fileName: `designacion_tutor_${proyectoGradoId}_${Date.now()}.pdf`,

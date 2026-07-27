@@ -2,7 +2,7 @@
  * Modal: asignar/cambiar tutor del proyecto de grado (TUT · T10, proyecto·APROBAR).
  *
  * Al confirmar, el backend registra la designación y genera el informe
- * oficial (PDF DESIGNACION_OFICIAL → tutoria_dictamenes). Patrón de modal
+ * oficial (PDF DESIGNACION_OFICIAL → dictamenes_proyecto). Patrón de modal
  * con formulario de `CambiarPasswordModal` (seguridad/usuarios).
  */
 

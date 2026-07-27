@@ -5,7 +5,7 @@
  *
  * Mismo lenguaje visual que la lista institucional, sin la columna de carrera
  * (los cursos del docente) y con la acción propia del rol: "Programar sesión"
- * de reforzamiento con el alumno preseleccionado (sesion·CREAR, fail-closed).
+ * de refuerzo con el alumno preseleccionado (sesion·CREAR, fail-closed).
  */
 
 import { BookOutlined, CalendarOutlined, TeamOutlined } from '@ant-design/icons';
@@ -110,7 +110,7 @@ export const createMisAlumnosEnRiesgoTableColumns = ({ onProgramarSesion }) => [
             key: 'programarSesion',
             icon: <CalendarOutlined />,
             variant: 'view',
-            tooltip: 'Programar sesión de reforzamiento',
+            tooltip: 'Programar sesión de refuerzo',
             permiso: TUTORIAS_PERMISOS.sesion,
             accion: 'CREAR',
             onClick: () => onProgramarSesion(record),

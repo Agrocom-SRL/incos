@@ -1,5 +1,5 @@
 /**
- * Conector: listado de sesiones de reforzamiento (TUT) — provider + página.
+ * Conector: listado de sesiones de refuerzo (TUT) — provider + página.
  * Punto de entrada lazy de la ruta TUT-SESIONES (/tutorias/acompanamiento/sesiones).
  */
 

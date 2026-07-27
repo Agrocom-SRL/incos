@@ -1,5 +1,5 @@
 /**
- * Tutorías → Acompañamiento → Sesiones de reforzamiento (ítem de menú TUT,
+ * Tutorías → Acompañamiento → Sesiones de refuerzo (ítem de menú TUT,
  * order 3).
  *
  * Permiso `tutorias.acompanamiento.sesion` (seed 66). Rutas estáticas ANTES
@@ -15,20 +15,20 @@ import {
 import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
 
 const SesionesListConnector = lazy(() => import('./connectors/SesionesListConnector.jsx'));
-const SesionReforzamientoFormCreateConnector = lazy(
-  () => import('./connectors/SesionReforzamientoFormCreateConnector.jsx'),
+const SesionRefuerzoFormCreateConnector = lazy(
+  () => import('./connectors/SesionRefuerzoFormCreateConnector.jsx'),
 );
-const SesionReforzamientoFormEditConnector = lazy(
-  () => import('./connectors/SesionReforzamientoFormEditConnector.jsx'),
+const SesionRefuerzoFormEditConnector = lazy(
+  () => import('./connectors/SesionRefuerzoFormEditConnector.jsx'),
 );
-const SesionReforzamientoDetailConnector = lazy(
-  () => import('./connectors/SesionReforzamientoDetailConnector.jsx'),
+const SesionRefuerzoDetailConnector = lazy(
+  () => import('./connectors/SesionRefuerzoDetailConnector.jsx'),
 );
 
 export const sesionesRoutes = [
   {
     path: sesionProgramarPath,
-    element: <SesionReforzamientoFormCreateConnector />,
+    element: <SesionRefuerzoFormCreateConnector />,
     key: 'TUT-SESIONES-PROGRAMAR',
     breadcrumbLabel: 'Programar sesión',
     permiso: TUTORIAS_PERMISOS.sesion,
@@ -38,7 +38,7 @@ export const sesionesRoutes = [
   },
   {
     path: `${SESIONES_LIST_PATH}/:id/editar`,
-    element: <SesionReforzamientoFormEditConnector />,
+    element: <SesionRefuerzoFormEditConnector />,
     key: 'TUT-SESIONES-EDITAR',
     breadcrumbLabel: 'Editar sesión',
     permiso: TUTORIAS_PERMISOS.sesion,
@@ -48,7 +48,7 @@ export const sesionesRoutes = [
   },
   {
     path: `${SESIONES_LIST_PATH}/:id`,
-    element: <SesionReforzamientoDetailConnector />,
+    element: <SesionRefuerzoDetailConnector />,
     key: 'TUT-SESIONES-DETALLE',
     breadcrumbLabel: 'Detalle de sesión',
     permiso: TUTORIAS_PERMISOS.sesion,
@@ -63,7 +63,7 @@ export const sesionesRoutes = [
     permiso: TUTORIAS_PERMISOS.sesion,
     accion: 'LISTAR',
     menu: {
-      label: 'Sesiones de reforzamiento',
+      label: 'Sesiones de refuerzo',
       module: 'TUT',
       parent: 'TUT',
       order: 3,

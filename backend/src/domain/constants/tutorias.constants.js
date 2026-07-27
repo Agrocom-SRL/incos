@@ -2,9 +2,9 @@
  * Constantes del dominio Tutorías y Acompañamiento Académico (módulo TUT)
  *
  * Dos sub-módulos:
- * - Titulación: proyectos_grado (raíz legacy) + satélites tutoria_* (schema 26).
+ * - Titulación: proyectos_grado (raíz legacy) + satélites tutoria_* (schema 22).
  * - Acompañamiento: riesgo pedagógico (vista 156, sin tabla) + sesiones de
- *   reforzamiento ancladas en asignaciones_docentes.
+ *   refuerzo ancladas en asignaciones_docentes.
  */
 
 // ============================================
@@ -89,7 +89,7 @@ export const TRANSICIONES_PROYECTO_GRADO = {
 export const MODALIDAD_GRUPAL_CODIGO = 'PSP';
 
 // ============================================
-// INTEGRANTES (tabla `tutoria_integrantes`)
+// INTEGRANTES (tabla `integrantes_proyecto`)
 // ============================================
 
 export const ROLES_INTEGRANTE_TUTORIA = {
@@ -107,7 +107,7 @@ export const ESTADOS_INTEGRANTE_TUTORIA = {
 export const ESTADOS_INTEGRANTE_TUTORIA_VALUES = Object.values(ESTADOS_INTEGRANTE_TUTORIA);
 
 // ============================================
-// AVANCES (tabla `tutoria_avances`)
+// AVANCES (tabla `avances_proyecto`)
 // ============================================
 
 export const ESTADOS_REVISION_AVANCE = {
@@ -120,7 +120,7 @@ export const ESTADOS_REVISION_AVANCE = {
 export const ESTADOS_REVISION_AVANCE_VALUES = Object.values(ESTADOS_REVISION_AVANCE);
 
 // ============================================
-// BITÁCORA (tabla `tutoria_bitacora`)
+// BITÁCORA (tabla `bitacora_proyecto`)
 // ============================================
 
 export const TIPOS_BITACORA_TUTORIA = {
@@ -138,7 +138,7 @@ export const ESTADOS_BITACORA_TUTORIA = {
 export const ESTADOS_BITACORA_TUTORIA_VALUES = Object.values(ESTADOS_BITACORA_TUTORIA);
 
 // ============================================
-// DICTÁMENES (tabla `tutoria_dictamenes`)
+// DICTÁMENES (tabla `dictamenes_proyecto`)
 // ============================================
 
 export const TIPOS_DICTAMEN_TUTORIA = {
@@ -157,43 +157,41 @@ export const RESULTADOS_DICTAMEN_TUTORIA = {
 export const RESULTADOS_DICTAMEN_TUTORIA_VALUES = Object.values(RESULTADOS_DICTAMEN_TUTORIA);
 
 // ============================================
-// SESIONES DE REFORZAMIENTO (tabla `sesiones_reforzamiento`)
+// SESIONES DE REFUERZO (tabla `sesiones_refuerzo`)
 // ============================================
 
-export const MODALIDADES_SESION_REFORZAMIENTO = {
+export const MODALIDADES_SESION_REFUERZO = {
   PRESENCIAL: 'PRESENCIAL',
   VIRTUAL: 'VIRTUAL',
 };
 
-export const MODALIDADES_SESION_REFORZAMIENTO_VALUES = Object.values(
-  MODALIDADES_SESION_REFORZAMIENTO
-);
+export const MODALIDADES_SESION_REFUERZO_VALUES = Object.values(MODALIDADES_SESION_REFUERZO);
 
-export const ESTADOS_SESION_REFORZAMIENTO = {
+export const ESTADOS_SESION_REFUERZO = {
   PROGRAMADA: 'PROGRAMADA',
   REALIZADA: 'REALIZADA',
   CANCELADA: 'CANCELADA',
 };
 
-export const ESTADOS_SESION_REFORZAMIENTO_VALUES = Object.values(ESTADOS_SESION_REFORZAMIENTO);
+export const ESTADOS_SESION_REFUERZO_VALUES = Object.values(ESTADOS_SESION_REFUERZO);
 
 // ============================================
-// PARTICIPANTES DE SESIÓN (tabla `sesion_reforzamiento_participantes`)
+// ESTUDIANTES DE SESIÓN (tabla `sesion_refuerzo_estudiantes`)
 // ============================================
 
-export const ORIGENES_PARTICIPANTE_SESION = {
+export const ORIGENES_ESTUDIANTE_SESION = {
   RIESGO: 'RIESGO',
   DOCENTE: 'DOCENTE',
   VOLUNTARIO: 'VOLUNTARIO',
 };
 
-export const ORIGENES_PARTICIPANTE_SESION_VALUES = Object.values(ORIGENES_PARTICIPANTE_SESION);
+export const ORIGENES_ESTUDIANTE_SESION_VALUES = Object.values(ORIGENES_ESTUDIANTE_SESION);
 
-export const PROGRESOS_PARTICIPANTE_SESION = {
+export const PROGRESOS_ESTUDIANTE_SESION = {
   SIN_EVALUAR: 'SIN_EVALUAR',
   EN_PROGRESO: 'EN_PROGRESO',
   MEJORADO: 'MEJORADO',
   SIN_MEJORA: 'SIN_MEJORA',
 };
 
-export const PROGRESOS_PARTICIPANTE_SESION_VALUES = Object.values(PROGRESOS_PARTICIPANTE_SESION);
+export const PROGRESOS_ESTUDIANTE_SESION_VALUES = Object.values(PROGRESOS_ESTUDIANTE_SESION);

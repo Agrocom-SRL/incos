@@ -13,25 +13,25 @@ import { hoyISO } from './helpers/dictamenPdfHelpers.js';
  *
  * Actualiza una entrada de bitácora del proyecto. Si la entrada pasa a
  * SUBSANADO y está vinculada a un avance, sincroniza
- * tutoria_avances.estado_revision = SUBSANADO en la misma transacción.
+ * avances_proyecto.estado_revision = SUBSANADO en la misma transacción.
  */
 export class UpdateBitacoraEntradaUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaBitacoraRepository
-   * @param {Object} params.tutoriaAvanceRepository
+   * @param {Object} params.bitacoraProyectoRepository
+   * @param {Object} params.avanceProyectoRepository
    * @param {ILogger} params.logger
    */
   constructor({
     proyectoGradoRepository,
-    tutoriaBitacoraRepository,
-    tutoriaAvanceRepository,
+    bitacoraProyectoRepository,
+    avanceProyectoRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaBitacoraRepository = tutoriaBitacoraRepository;
-    this.tutoriaAvanceRepository = tutoriaAvanceRepository;
+    this.bitacoraProyectoRepository = bitacoraProyectoRepository;
+    this.avanceProyectoRepository = avanceProyectoRepository;
     this.logger = logger;
   }
 
@@ -45,7 +45,7 @@ export class UpdateBitacoraEntradaUseCase {
   async execute(proyectoGradoId, entradaId, body = {}, userId = null) {
     await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
 
-    const entrada = await this.tutoriaBitacoraRepository.findById(entradaId);
+    const entrada = await this.bitacoraProyectoRepository.findById(entradaId);
     if (!entrada || Number(entrada.proyectoGradoId) !== Number(proyectoGradoId)) {
       throw new NotFoundError(
         `entrada de bitácora con ID ${entradaId} del proyecto ${proyectoGradoId}`
@@ -62,17 +62,17 @@ export class UpdateBitacoraEntradaUseCase {
     const pasaASubsanado =
       body.estado === ESTADOS_BITACORA_TUTORIA.SUBSANADO &&
       entrada.estado !== ESTADOS_BITACORA_TUTORIA.SUBSANADO &&
-      entrada.tutoriaAvanceId != null;
+      entrada.avanceProyectoId != null;
 
     let bitacoraEntrada = null;
     await sequelize.transaction(async (transaction) => {
-      bitacoraEntrada = await this.tutoriaBitacoraRepository.update(entradaId, data, userId, {
+      bitacoraEntrada = await this.bitacoraProyectoRepository.update(entradaId, data, userId, {
         transaction,
       });
 
       if (pasaASubsanado) {
-        await this.tutoriaAvanceRepository.update(
-          entrada.tutoriaAvanceId,
+        await this.avanceProyectoRepository.update(
+          entrada.avanceProyectoId,
           { estadoRevision: ESTADOS_REVISION_AVANCE.SUBSANADO, fechaRevision: hoyISO() },
           userId,
           { transaction }

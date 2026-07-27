@@ -9,11 +9,11 @@ import {
 /**
  * Proyecto de grado (módulo TUT · titulación) — tabla raíz `proyectos_grado`
  * (23-modalidades-grado.sql). NO se duplica: los satélites del schema 26
- * (tutoria_integrantes, tutoria_avances, tutoria_bitacora, tutoria_dictamenes)
+ * (integrantes_proyecto, avances_proyecto, bitacora_proyecto, dictamenes_proyecto)
  * cuelgan de esta raíz.
  *
  * `estudiante_id` queda LEGACY: titular en proyectos individuales, NULL en
- * grupales; los consumidores nuevos leen tutoria_integrantes.
+ * grupales; los consumidores nuevos leen integrantes_proyecto.
  */
 export const ProyectoGrado = sequelize.define(
   'ProyectoGrado',
@@ -23,7 +23,7 @@ export const ProyectoGrado = sequelize.define(
       type: DataTypes.INTEGER,
       field: 'estudiante_id',
       allowNull: true,
-      comment: 'LEGACY: titular en proyectos individuales; NULL en grupales (usar tutoria_integrantes)',
+      comment: 'LEGACY: titular en proyectos individuales; NULL en grupales (usar integrantes_proyecto)',
     },
     modalidadId: {
       type: DataTypes.INTEGER,

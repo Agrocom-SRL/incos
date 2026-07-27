@@ -14,34 +14,34 @@ import { hoyISO } from './helpers/dictamenPdfHelpers.js';
  * Módulo: Tutorías (TUT · titulación)
  *
  * Crea una entrada de bitácora del proyecto. Si tipo = REVISION_AVANCE:
- * - requiere tutoriaAvanceId de un avance del MISMO proyecto, y
- * - actualiza tutoria_avances.estado_revision (body.estadoRevisionAvance,
+ * - requiere avanceProyectoId de un avance del MISMO proyecto, y
+ * - actualiza avances_proyecto.estado_revision (body.estadoRevisionAvance,
  *   default OBSERVADO) + fecha_revision, en la misma transacción.
  */
 export class CreateBitacoraEntradaUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaBitacoraRepository
-   * @param {Object} params.tutoriaAvanceRepository
+   * @param {Object} params.bitacoraProyectoRepository
+   * @param {Object} params.avanceProyectoRepository
    * @param {ILogger} params.logger
    */
   constructor({
     proyectoGradoRepository,
-    tutoriaBitacoraRepository,
-    tutoriaAvanceRepository,
+    bitacoraProyectoRepository,
+    avanceProyectoRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaBitacoraRepository = tutoriaBitacoraRepository;
-    this.tutoriaAvanceRepository = tutoriaAvanceRepository;
+    this.bitacoraProyectoRepository = bitacoraProyectoRepository;
+    this.avanceProyectoRepository = avanceProyectoRepository;
     this.logger = logger;
   }
 
   /**
    * @param {number} proyectoGradoId
    * @param {Object} body - { tipo?, fecha?, actividad?, observaciones?,
-   *   porcentajeAvance?, tutoriaAvanceId?, estadoRevisionAvance? }
+   *   porcentajeAvance?, avanceProyectoId?, estadoRevisionAvance? }
    * @param {number|null} userId
    * @returns {Promise<{bitacoraEntrada: Object}>}
    */
@@ -53,13 +53,13 @@ export class CreateBitacoraEntradaUseCase {
 
     let avance = null;
     if (esRevision) {
-      if (!body.tutoriaAvanceId) {
-        throw new ValidationError('tutoriaAvanceId es requerido para entradas de tipo REVISION_AVANCE');
+      if (!body.avanceProyectoId) {
+        throw new ValidationError('avanceProyectoId es requerido para entradas de tipo REVISION_AVANCE');
       }
-      avance = await this.tutoriaAvanceRepository.findById(Number(body.tutoriaAvanceId));
+      avance = await this.avanceProyectoRepository.findById(Number(body.avanceProyectoId));
       if (!avance || Number(avance.proyectoGradoId) !== Number(proyectoGradoId)) {
         throw new NotFoundError(
-          `avance con ID ${body.tutoriaAvanceId} del proyecto ${proyectoGradoId}`
+          `avance con ID ${body.avanceProyectoId} del proyecto ${proyectoGradoId}`
         );
       }
     }
@@ -75,10 +75,10 @@ export class CreateBitacoraEntradaUseCase {
     let bitacoraEntrada = null;
 
     await sequelize.transaction(async (transaction) => {
-      bitacoraEntrada = await this.tutoriaBitacoraRepository.create(
+      bitacoraEntrada = await this.bitacoraProyectoRepository.create(
         {
           proyectoGradoId,
-          tutoriaAvanceId: esRevision ? Number(body.tutoriaAvanceId) : null,
+          avanceProyectoId: esRevision ? Number(body.avanceProyectoId) : null,
           tipo,
           fecha,
           actividad: body.actividad ?? null,
@@ -91,7 +91,7 @@ export class CreateBitacoraEntradaUseCase {
       );
 
       if (esRevision) {
-        await this.tutoriaAvanceRepository.update(
+        await this.avanceProyectoRepository.update(
           avance.id,
           { estadoRevision: estadoRevisionAvance, fechaRevision: fecha },
           userId,

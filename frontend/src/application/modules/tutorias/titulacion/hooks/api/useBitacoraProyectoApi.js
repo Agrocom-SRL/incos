@@ -2,7 +2,7 @@
  * Hook de API: bitácora de tutoría de un proyecto (módulo TUT · T14-T17).
  *
  * Lectura (T14) + mutaciones: crear entrada (T15, bitacora·CREAR — una
- * REVISION_AVANCE actualiza además tutoria_avances.estado_revision en el
+ * REVISION_AVANCE actualiza además avances_proyecto.estado_revision en el
  * backend), editar (T16, bitacora·EDITAR) y confirmación del estudiante
  * (T17 — firma digital de la planilla; guard de pertenencia en el servidor).
  *

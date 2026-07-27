@@ -1,7 +1,7 @@
 /**
  * Interfaz del generador PDF del Informe de Designación Oficial de Tutor
  * (módulo TUT · titulación). El PDF se guarda en uploads y se registra en
- * tutoria_dictamenes (tipo DESIGNACION_OFICIAL) para su envío a la DDE.
+ * dictamenes_proyecto (tipo DESIGNACION_OFICIAL) para su envío a la DDE.
  */
 export class IDesignacionTutorPdfGenerator {
   /**

@@ -11,13 +11,13 @@ import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
 
-/** Rol del integrante → etiqueta + clase de StatusPill (ENUM tutoria_integrantes.rol). */
+/** Rol del integrante → etiqueta + clase de StatusPill (ENUM integrantes_proyecto.rol). */
 const ROL_INTEGRANTE_META = {
   TITULAR: { label: 'Titular', pill: 'cfg-materia-pill--info' },
   INTEGRANTE: { label: 'Integrante', pill: 'cfg-materia-pill--default' },
 };
 
-/** Estado del integrante → etiqueta + clase (ENUM tutoria_integrantes.estado). */
+/** Estado del integrante → etiqueta + clase (ENUM integrantes_proyecto.estado). */
 const ESTADO_INTEGRANTE_META = {
   ACTIVO: { label: 'Activo', pill: 'cfg-materia-pill--success' },
   RETIRADO: { label: 'Retirado', pill: 'cfg-materia-pill--inactiva' },

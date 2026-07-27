@@ -2,7 +2,7 @@
  * MisAlumnosEnRiesgoPage — rama DOCENTE del ítem "Alumnos en riesgo"
  * (TUT · A2). Página GEMELA del listado institucional, con los alumnos en
  * riesgo de SUS cursos (identidad resuelta en servidor) y la acción propia
- * del rol: programar una sesión de reforzamiento con el alumno preseleccionado.
+ * del rol: programar una sesión de refuerzo con el alumno preseleccionado.
  *
  * Rama self SIN provider admin (patrón `MisEstudiantesDocentePage`): el hook
  * de pantalla consume A2 directamente. Página "dumb".
@@ -68,7 +68,7 @@ const MisAlumnosEnRiesgoPage = () => {
                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                   Estudiantes de sus cursos con nota por debajo del umbral de riesgo en el último
                   bimestre o en el promedio de la gestión. Desde cada fila puede programar una
-                  sesión de reforzamiento con el alumno ya convocado.
+                  sesión de refuerzo con el alumno ya convocado.
                 </Paragraph>
               </header>
               {error ? (

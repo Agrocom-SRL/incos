@@ -3,8 +3,8 @@
  *
  * Tres modos según props (mismo formulario, payloads del contrato):
  *  - Nueva REUNION (sin `entrada` ni `avance`): tipo REUNION.
- *  - Revisión de avance (`avance`): tipo REVISION_AVANCE + tutoriaAvanceId +
- *    resultado de revisión (actualiza tutoria_avances.estado_revision).
+ *  - Revisión de avance (`avance`): tipo REVISION_AVANCE + avanceProyectoId +
+ *    resultado de revisión (actualiza avances_proyecto.estado_revision).
  *  - Edición (`entrada`): fecha/actividad/observaciones/porcentaje/estado.
  *
  * Réplica digital de la planilla de seguimiento DDE (FECHA · ACTIVIDAD ·
@@ -85,7 +85,7 @@ const BitacoraEntradaDrawer = ({
       await onSubmit({
         ...base,
         tipo: 'REVISION_AVANCE',
-        tutoriaAvanceId: avance.id,
+        avanceProyectoId: avance.id,
         estadoRevisionAvance: values.estadoRevisionAvance,
       });
       return;

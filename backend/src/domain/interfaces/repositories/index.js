@@ -165,12 +165,12 @@ export { IDashboardRepository } from './IDashboardRepository.js';
 // ============================================
 export { IModalidadGradoRepository } from './IModalidadGradoRepository.js';
 export { IProyectoGradoRepository } from './IProyectoGradoRepository.js';
-export { ITutoriaIntegranteRepository } from './ITutoriaIntegranteRepository.js';
-export { ITutoriaAvanceRepository } from './ITutoriaAvanceRepository.js';
-export { ITutoriaBitacoraRepository } from './ITutoriaBitacoraRepository.js';
-export { ITutoriaDictamenRepository } from './ITutoriaDictamenRepository.js';
-export { ISesionReforzamientoRepository } from './ISesionReforzamientoRepository.js';
-export { ISesionReforzamientoParticipanteRepository } from './ISesionReforzamientoParticipanteRepository.js';
+export { IIntegranteProyectoRepository } from './IIntegranteProyectoRepository.js';
+export { IAvanceProyectoRepository } from './IAvanceProyectoRepository.js';
+export { IBitacoraProyectoRepository } from './IBitacoraProyectoRepository.js';
+export { IDictamenProyectoRepository } from './IDictamenProyectoRepository.js';
+export { ISesionRefuerzoRepository } from './ISesionRefuerzoRepository.js';
+export { ISesionRefuerzoEstudianteRepository } from './ISesionRefuerzoEstudianteRepository.js';
 export { IProyectoGradoListadoViewRepository } from './IProyectoGradoListadoViewRepository.js';
 export { IRiesgoAcademicoViewRepository } from './IRiesgoAcademicoViewRepository.js';
 export { IAcompanamientoSesionViewRepository } from './IAcompanamientoSesionViewRepository.js';

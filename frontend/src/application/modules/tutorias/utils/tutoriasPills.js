@@ -5,10 +5,10 @@
  * `cfg-materia-pill--*` (styles/components/atoms/table-cells.css), sin CSS
  * propio del módulo. Cinco vocabularios:
  *   - estado del PROYECTO de grado (ENUM proyectos_grado.estado, schema 23)
- *   - estado de REVISIÓN de un avance (ENUM tutoria_avances.estado_revision)
- *   - estado de una entrada de BITÁCORA (ENUM tutoria_bitacora.estado)
- *   - estado de la SESIÓN de reforzamiento (ENUM sesiones_reforzamiento.estado)
- *   - PROGRESO del participante (ENUM sesion_reforzamiento_participantes.progreso)
+ *   - estado de REVISIÓN de un avance (ENUM avances_proyecto.estado_revision)
+ *   - estado de una entrada de BITÁCORA (ENUM bitacora_proyecto.estado)
+ *   - estado de la SESIÓN de refuerzo (ENUM sesiones_refuerzo.estado)
+ *   - PROGRESO del estudiante (ENUM sesion_refuerzo_estudiantes.progreso)
  *
  * Semántica de color del kit: PENDIENTE = ámbar (warning), SUBSANADO/APROBADO
  * = verde (success), riesgo = rojo SEMÁNTICO del theme (danger — la clase usa
@@ -64,7 +64,7 @@ export const TRANSICIONES_PROYECTO = {
   CANCELADO: [],
 };
 
-/** ENUM del backend (tutoria_avances.estado_revision). */
+/** ENUM del backend (avances_proyecto.estado_revision). */
 export const ESTADOS_REVISION_AVANCE = [
   'PENDIENTE_REVISION',
   'OBSERVADO',
@@ -86,7 +86,7 @@ export const formatEstadoAvance = (estado) => AVANCE_ESTADO_META[estado]?.label 
 export const getEstadoAvancePillClass = (estado) =>
   `cfg-materia-pill ${AVANCE_ESTADO_META[estado]?.pill ?? 'cfg-materia-pill--default'}`;
 
-/** ENUM del backend (tutoria_bitacora.estado). */
+/** ENUM del backend (bitacora_proyecto.estado). */
 export const ESTADOS_BITACORA = ['PENDIENTE', 'SUBSANADO'];
 
 const BITACORA_ESTADO_META = {
@@ -102,7 +102,7 @@ export const formatEstadoBitacora = (estado) =>
 export const getEstadoBitacoraPillClass = (estado) =>
   `cfg-materia-pill ${BITACORA_ESTADO_META[estado]?.pill ?? 'cfg-materia-pill--default'}`;
 
-/** ENUM del backend (tutoria_bitacora.tipo). */
+/** ENUM del backend (bitacora_proyecto.tipo). */
 const BITACORA_TIPO_META = {
   REUNION: 'Reunión de tutoría',
   REVISION_AVANCE: 'Revisión de avance',
@@ -111,7 +111,7 @@ const BITACORA_TIPO_META = {
 /** Etiqueta legible del tipo de entrada de bitácora. */
 export const formatTipoBitacora = (tipo) => BITACORA_TIPO_META[tipo] ?? tipo ?? '—';
 
-/** ENUM del backend (tutoria_dictamenes.tipo). */
+/** ENUM del backend (dictamenes_proyecto.tipo). */
 const DICTAMEN_TIPO_META = {
   VIABILIDAD_TECNICA: 'Viabilidad técnica',
   DESIGNACION_OFICIAL: 'Designación oficial de tutor',
@@ -134,7 +134,7 @@ export const formatResultadoDictamen = (resultado) =>
 export const getResultadoDictamenPillClass = (resultado) =>
   `cfg-materia-pill ${DICTAMEN_RESULTADO_META[resultado]?.pill ?? 'cfg-materia-pill--default'}`;
 
-/** ENUM del backend (sesiones_reforzamiento.estado). */
+/** ENUM del backend (sesiones_refuerzo.estado). */
 export const ESTADOS_SESION = ['PROGRAMADA', 'REALIZADA', 'CANCELADA'];
 
 const SESION_ESTADO_META = {
@@ -150,8 +150,8 @@ export const formatEstadoSesion = (estado) => SESION_ESTADO_META[estado]?.label 
 export const getEstadoSesionPillClass = (estado) =>
   `cfg-materia-pill ${SESION_ESTADO_META[estado]?.pill ?? 'cfg-materia-pill--default'}`;
 
-/** ENUM del backend (sesion_reforzamiento_participantes.progreso). */
-export const PROGRESOS_PARTICIPANTE = ['SIN_EVALUAR', 'EN_PROGRESO', 'MEJORADO', 'SIN_MEJORA'];
+/** ENUM del backend (sesion_refuerzo_estudiantes.progreso). */
+export const PROGRESOS_ESTUDIANTE = ['SIN_EVALUAR', 'EN_PROGRESO', 'MEJORADO', 'SIN_MEJORA'];
 
 const PROGRESO_META = {
   SIN_EVALUAR: { label: 'Sin evaluar', pill: 'cfg-materia-pill--default' },
@@ -160,29 +160,29 @@ const PROGRESO_META = {
   SIN_MEJORA: { label: 'Sin mejora', pill: 'cfg-materia-pill--danger' },
 };
 
-/** Etiqueta legible del progreso del participante. */
-export const formatProgresoParticipante = (progreso) =>
+/** Etiqueta legible del progreso del estudiante. */
+export const formatProgresoEstudiante = (progreso) =>
   PROGRESO_META[progreso]?.label ?? progreso ?? '—';
 
-/** Clase completa del StatusPill para el progreso del participante. */
-export const getProgresoParticipantePillClass = (progreso) =>
+/** Clase completa del StatusPill para el progreso del estudiante. */
+export const getProgresoEstudiantePillClass = (progreso) =>
   `cfg-materia-pill ${PROGRESO_META[progreso]?.pill ?? 'cfg-materia-pill--default'}`;
 
 /** Opciones del select de progreso (registro de asistencia, A9). */
-export const PROGRESO_PARTICIPANTE_OPTIONS = PROGRESOS_PARTICIPANTE.map((progreso) => ({
+export const PROGRESO_ESTUDIANTE_OPTIONS = PROGRESOS_ESTUDIANTE.map((progreso) => ({
   value: progreso,
-  label: formatProgresoParticipante(progreso),
+  label: formatProgresoEstudiante(progreso),
 }));
 
-/** ENUM del backend (sesion_reforzamiento_participantes.origen). */
-const ORIGEN_PARTICIPANTE_META = {
+/** ENUM del backend (sesion_refuerzo_estudiantes.origen). */
+const ORIGEN_ESTUDIANTE_META = {
   RIESGO: 'Alerta de riesgo',
   DOCENTE: 'Invitado por el docente',
   VOLUNTARIO: 'Voluntario',
 };
 
-/** Etiqueta legible del origen del participante. */
-export const formatOrigenParticipante = (origen) => ORIGEN_PARTICIPANTE_META[origen] ?? origen ?? '—';
+/** Etiqueta legible del origen del estudiante. */
+export const formatOrigenEstudiante = (origen) => ORIGEN_ESTUDIANTE_META[origen] ?? origen ?? '—';
 
 /** Pill de riesgo pedagógico (vista 156): SIEMPRE el rojo semántico del kit. */
 export const RIESGO_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--danger';

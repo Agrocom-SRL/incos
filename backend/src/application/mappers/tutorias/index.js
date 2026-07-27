@@ -4,4 +4,4 @@
 
 export { ProyectoGradoMapper } from './ProyectoGradoMapper.js';
 export { RiesgoAcademicoMapper } from './RiesgoAcademicoMapper.js';
-export { SesionReforzamientoMapper } from './SesionReforzamientoMapper.js';
+export { SesionRefuerzoMapper } from './SesionRefuerzoMapper.js';

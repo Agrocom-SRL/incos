@@ -14,7 +14,7 @@ export const MI_PROYECTO_GRADO_PATH = `${TUTORIAS_BASE}/mi-proyecto`;
 /** Acompañamiento — alertas de riesgo pedagógico */
 export const ALERTAS_RIESGO_LIST_PATH = `${TUTORIAS_BASE}/acompanamiento/alertas`;
 
-/** Acompañamiento — sesiones de reforzamiento */
+/** Acompañamiento — sesiones de refuerzo */
 export const SESIONES_LIST_PATH = `${TUTORIAS_BASE}/acompanamiento/sesiones`;
 export const sesionProgramarPath = `${TUTORIAS_BASE}/acompanamiento/sesiones/programar`;
 export const sesionDetallePath = (id) => `${TUTORIAS_BASE}/acompanamiento/sesiones/${id}`;

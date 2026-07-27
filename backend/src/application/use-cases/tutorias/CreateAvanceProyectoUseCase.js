@@ -20,23 +20,23 @@ export class CreateAvanceProyectoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaAvanceRepository
-   * @param {Object} params.tutoriaIntegranteRepository
+   * @param {Object} params.avanceProyectoRepository
+   * @param {Object} params.integranteProyectoRepository
    * @param {Object} params.studentRepository
    * @param {Object} params.userRepository
    * @param {ILogger} params.logger
    */
   constructor({
     proyectoGradoRepository,
-    tutoriaAvanceRepository,
-    tutoriaIntegranteRepository,
+    avanceProyectoRepository,
+    integranteProyectoRepository,
     studentRepository,
     userRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaAvanceRepository = tutoriaAvanceRepository;
-    this.tutoriaIntegranteRepository = tutoriaIntegranteRepository;
+    this.avanceProyectoRepository = avanceProyectoRepository;
+    this.integranteProyectoRepository = integranteProyectoRepository;
     this.studentRepository = studentRepository;
     this.userRepository = userRepository;
     this.logger = logger;
@@ -65,16 +65,16 @@ export class CreateAvanceProyectoUseCase {
     });
     if (estudianteId !== null) {
       await assertIntegranteActivo({
-        tutoriaIntegranteRepository: this.tutoriaIntegranteRepository,
+        integranteProyectoRepository: this.integranteProyectoRepository,
         proyectoGradoId,
         estudianteId,
       });
     }
 
     const numeroAvance =
-      (await this.tutoriaAvanceRepository.findMaxNumeroAvance(proyectoGradoId)) + 1;
+      (await this.avanceProyectoRepository.findMaxNumeroAvance(proyectoGradoId)) + 1;
 
-    const avance = await this.tutoriaAvanceRepository.create(
+    const avance = await this.avanceProyectoRepository.create(
       {
         proyectoGradoId,
         subidoPorEstudianteId: estudianteId,

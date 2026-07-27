@@ -13,8 +13,8 @@ import { assertEstudianteSinProyectoVigente } from './helpers/proyectoTutoriaGua
  * Módulo: Tutorías (TUT · titulación)
  *
  * Crea el proyecto de grado (raíz proyectos_grado) y sus integrantes
- * (tutoria_integrantes) en UNA transacción:
- * - Siempre se crea el TITULAR en tutoria_integrantes (también en proyectos
+ * (integrantes_proyecto) en UNA transacción:
+ * - Siempre se crea el TITULAR en integrantes_proyecto (también en proyectos
  *   individuales; los consumidores nuevos leen la satélite, no la raíz).
  * - Solo la modalidad PSP (MODALIDAD_GRUPAL_CODIGO) admite varios integrantes.
  * - Regla: un estudiante solo puede tener UN proyecto vigente.
@@ -25,20 +25,20 @@ export class CreateProyectoGradoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaIntegranteRepository
+   * @param {Object} params.integranteProyectoRepository
    * @param {Object} params.modalidadGradoRepository
    * @param {Object} params.studentRepository - Validación de estudiantes
    * @param {ILogger} params.logger
    */
   constructor({
     proyectoGradoRepository,
-    tutoriaIntegranteRepository,
+    integranteProyectoRepository,
     modalidadGradoRepository,
     studentRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaIntegranteRepository = tutoriaIntegranteRepository;
+    this.integranteProyectoRepository = integranteProyectoRepository;
     this.modalidadGradoRepository = modalidadGradoRepository;
     this.studentRepository = studentRepository;
     this.logger = logger;
@@ -80,7 +80,7 @@ export class CreateProyectoGradoUseCase {
         body.fechaPresentacionPerfil ?? new Date().toISOString().slice(0, 10);
       for (const estudianteId of estudianteIds) {
         // eslint-disable-next-line no-await-in-loop
-        await this.tutoriaIntegranteRepository.create(
+        await this.integranteProyectoRepository.create(
           {
             proyectoGradoId: created.id,
             estudianteId,
@@ -158,7 +158,7 @@ export class CreateProyectoGradoUseCase {
       }
       // eslint-disable-next-line no-await-in-loop
       await assertEstudianteSinProyectoVigente({
-        tutoriaIntegranteRepository: this.tutoriaIntegranteRepository,
+        integranteProyectoRepository: this.integranteProyectoRepository,
         proyectoGradoRepository: this.proyectoGradoRepository,
         estudianteId,
       });

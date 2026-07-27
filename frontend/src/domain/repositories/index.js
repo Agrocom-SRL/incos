@@ -97,5 +97,5 @@ export { IPermisoRepository } from './IPermisoRepository';
 // ============================================
 export { IProyectoGradoRepository } from './IProyectoGradoRepository';
 export { IAlertaRiesgoRepository } from './IAlertaRiesgoRepository';
-export { ISesionReforzamientoRepository } from './ISesionReforzamientoRepository';
+export { ISesionRefuerzoRepository } from './ISesionRefuerzoRepository';
 export { IPanelAcompanamientoRepository } from './IPanelAcompanamientoRepository';

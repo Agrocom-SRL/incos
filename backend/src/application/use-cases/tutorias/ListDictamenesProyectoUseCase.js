@@ -11,12 +11,12 @@ export class ListDictamenesProyectoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaDictamenRepository
+   * @param {Object} params.dictamenProyectoRepository
    * @param {ILogger} params.logger
    */
-  constructor({ proyectoGradoRepository, tutoriaDictamenRepository, logger }) {
+  constructor({ proyectoGradoRepository, dictamenProyectoRepository, logger }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaDictamenRepository = tutoriaDictamenRepository;
+    this.dictamenProyectoRepository = dictamenProyectoRepository;
     this.logger = logger;
   }
 
@@ -26,7 +26,7 @@ export class ListDictamenesProyectoUseCase {
    */
   async execute(proyectoGradoId) {
     await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
-    const dictamenes = await this.tutoriaDictamenRepository.findByProyectoGradoId(proyectoGradoId);
+    const dictamenes = await this.dictamenProyectoRepository.findByProyectoGradoId(proyectoGradoId);
 
     this.logger.info('[Tutorías] Dictámenes del proyecto listados', {
       proyectoGradoId,

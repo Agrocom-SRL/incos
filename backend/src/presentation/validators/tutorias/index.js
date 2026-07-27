@@ -24,9 +24,9 @@ export {
   estudianteIdParamValidator,
   listAlertasRiesgoValidator,
   alertaEstudianteValidator,
-  listSesionesReforzamientoValidator,
-  createSesionReforzamientoValidator,
-  updateSesionReforzamientoValidator,
+  listSesionesRefuerzoValidator,
+  createSesionRefuerzoValidator,
+  updateSesionRefuerzoValidator,
   registerAsistenciaSesionValidator,
   panelAcompanamientoValidator,
 } from './acompanamiento.validator.js';

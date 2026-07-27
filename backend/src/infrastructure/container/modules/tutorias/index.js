@@ -16,12 +16,12 @@ import { TUTORIAS_TOKENS } from '../../tokens/index.js';
 import { registerRepository } from '../../utils/container.helpers.js';
 import { ModalidadGradoRepository } from '../../../repositories/ModalidadGradoRepository.js';
 import { ProyectoGradoRepository } from '../../../repositories/ProyectoGradoRepository.js';
-import { TutoriaIntegranteRepository } from '../../../repositories/TutoriaIntegranteRepository.js';
-import { TutoriaAvanceRepository } from '../../../repositories/TutoriaAvanceRepository.js';
-import { TutoriaBitacoraRepository } from '../../../repositories/TutoriaBitacoraRepository.js';
-import { TutoriaDictamenRepository } from '../../../repositories/TutoriaDictamenRepository.js';
-import { SesionReforzamientoRepository } from '../../../repositories/SesionReforzamientoRepository.js';
-import { SesionReforzamientoParticipanteRepository } from '../../../repositories/SesionReforzamientoParticipanteRepository.js';
+import { IntegranteProyectoRepository } from '../../../repositories/IntegranteProyectoRepository.js';
+import { AvanceProyectoRepository } from '../../../repositories/AvanceProyectoRepository.js';
+import { BitacoraProyectoRepository } from '../../../repositories/BitacoraProyectoRepository.js';
+import { DictamenProyectoRepository } from '../../../repositories/DictamenProyectoRepository.js';
+import { SesionRefuerzoRepository } from '../../../repositories/SesionRefuerzoRepository.js';
+import { SesionRefuerzoEstudianteRepository } from '../../../repositories/SesionRefuerzoEstudianteRepository.js';
 import { ProyectoGradoListadoViewRepository } from '../../../repositories/views/ProyectoGradoListadoViewRepository.js';
 import { RiesgoAcademicoViewRepository } from '../../../repositories/views/RiesgoAcademicoViewRepository.js';
 import { AcompanamientoSesionViewRepository } from '../../../repositories/views/AcompanamientoSesionViewRepository.js';
@@ -36,29 +36,29 @@ export function registerTutoriasModule(container) {
   registerRepository(container, TUTORIAS_TOKENS.proyectoGradoRepository, ProyectoGradoRepository);
   registerRepository(
     container,
-    TUTORIAS_TOKENS.tutoriaIntegranteRepository,
-    TutoriaIntegranteRepository
+    TUTORIAS_TOKENS.integranteProyectoRepository,
+    IntegranteProyectoRepository
   );
-  registerRepository(container, TUTORIAS_TOKENS.tutoriaAvanceRepository, TutoriaAvanceRepository);
+  registerRepository(container, TUTORIAS_TOKENS.avanceProyectoRepository, AvanceProyectoRepository);
   registerRepository(
     container,
-    TUTORIAS_TOKENS.tutoriaBitacoraRepository,
-    TutoriaBitacoraRepository
-  );
-  registerRepository(
-    container,
-    TUTORIAS_TOKENS.tutoriaDictamenRepository,
-    TutoriaDictamenRepository
+    TUTORIAS_TOKENS.bitacoraProyectoRepository,
+    BitacoraProyectoRepository
   );
   registerRepository(
     container,
-    TUTORIAS_TOKENS.sesionReforzamientoRepository,
-    SesionReforzamientoRepository
+    TUTORIAS_TOKENS.dictamenProyectoRepository,
+    DictamenProyectoRepository
   );
   registerRepository(
     container,
-    TUTORIAS_TOKENS.sesionReforzamientoParticipanteRepository,
-    SesionReforzamientoParticipanteRepository
+    TUTORIAS_TOKENS.sesionRefuerzoRepository,
+    SesionRefuerzoRepository
+  );
+  registerRepository(
+    container,
+    TUTORIAS_TOKENS.sesionRefuerzoEstudianteRepository,
+    SesionRefuerzoEstudianteRepository
   );
   registerRepository(
     container,

@@ -12,19 +12,19 @@ export class GetAvanceByIdUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaAvanceRepository
-   * @param {Object} params.tutoriaBitacoraRepository
+   * @param {Object} params.avanceProyectoRepository
+   * @param {Object} params.bitacoraProyectoRepository
    * @param {ILogger} params.logger
    */
   constructor({
     proyectoGradoRepository,
-    tutoriaAvanceRepository,
-    tutoriaBitacoraRepository,
+    avanceProyectoRepository,
+    bitacoraProyectoRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaAvanceRepository = tutoriaAvanceRepository;
-    this.tutoriaBitacoraRepository = tutoriaBitacoraRepository;
+    this.avanceProyectoRepository = avanceProyectoRepository;
+    this.bitacoraProyectoRepository = bitacoraProyectoRepository;
     this.logger = logger;
   }
 
@@ -36,13 +36,13 @@ export class GetAvanceByIdUseCase {
   async execute(proyectoGradoId, avanceId) {
     await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
 
-    const avance = await this.tutoriaAvanceRepository.findById(avanceId);
+    const avance = await this.avanceProyectoRepository.findById(avanceId);
     if (!avance || Number(avance.proyectoGradoId) !== Number(proyectoGradoId)) {
       throw new NotFoundError(`avance con ID ${avanceId} del proyecto ${proyectoGradoId}`);
     }
 
-    const revisionesResult = await this.tutoriaBitacoraRepository.findAll({
-      tutoriaAvanceId: avanceId,
+    const revisionesResult = await this.bitacoraProyectoRepository.findAll({
+      avanceProyectoId: avanceId,
     });
     avance.revisiones = revisionesResult.bitacoraEntradas ?? [];
 

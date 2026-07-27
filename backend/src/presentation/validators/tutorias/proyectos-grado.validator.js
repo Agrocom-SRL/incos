@@ -230,10 +230,10 @@ export const createBitacoraEntradaValidator = [
     .optional({ nullable: true })
     .isInt({ min: 0, max: 100 })
     .withMessage('porcentajeAvance debe estar entre 0 y 100'),
-  body('tutoriaAvanceId')
+  body('avanceProyectoId')
     .optional({ nullable: true })
     .isInt({ min: 1 })
-    .withMessage('tutoriaAvanceId debe ser un entero positivo'),
+    .withMessage('avanceProyectoId debe ser un entero positivo'),
   body('estado')
     .optional()
     .isIn(ESTADOS_BITACORA_TUTORIA_VALUES)

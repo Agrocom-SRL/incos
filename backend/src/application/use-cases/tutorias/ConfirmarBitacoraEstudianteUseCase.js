@@ -19,23 +19,23 @@ export class ConfirmarBitacoraEstudianteUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaBitacoraRepository
-   * @param {Object} params.tutoriaIntegranteRepository
+   * @param {Object} params.bitacoraProyectoRepository
+   * @param {Object} params.integranteProyectoRepository
    * @param {Object} params.studentRepository
    * @param {Object} params.userRepository
    * @param {ILogger} params.logger
    */
   constructor({
     proyectoGradoRepository,
-    tutoriaBitacoraRepository,
-    tutoriaIntegranteRepository,
+    bitacoraProyectoRepository,
+    integranteProyectoRepository,
     studentRepository,
     userRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaBitacoraRepository = tutoriaBitacoraRepository;
-    this.tutoriaIntegranteRepository = tutoriaIntegranteRepository;
+    this.bitacoraProyectoRepository = bitacoraProyectoRepository;
+    this.integranteProyectoRepository = integranteProyectoRepository;
     this.studentRepository = studentRepository;
     this.userRepository = userRepository;
     this.logger = logger;
@@ -54,19 +54,19 @@ export class ConfirmarBitacoraEstudianteUseCase {
 
     await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
     await assertIntegranteActivo({
-      tutoriaIntegranteRepository: this.tutoriaIntegranteRepository,
+      integranteProyectoRepository: this.integranteProyectoRepository,
       proyectoGradoId,
       estudianteId,
     });
 
-    const entrada = await this.tutoriaBitacoraRepository.findById(entradaId);
+    const entrada = await this.bitacoraProyectoRepository.findById(entradaId);
     if (!entrada || Number(entrada.proyectoGradoId) !== Number(proyectoGradoId)) {
       throw new NotFoundError(
         `entrada de bitácora con ID ${entradaId} del proyecto ${proyectoGradoId}`
       );
     }
 
-    const bitacoraEntrada = await this.tutoriaBitacoraRepository.update(entradaId, {
+    const bitacoraEntrada = await this.bitacoraProyectoRepository.update(entradaId, {
       confirmadoEstudiante: true,
       fechaConfirmacion: hoyISO(),
     });

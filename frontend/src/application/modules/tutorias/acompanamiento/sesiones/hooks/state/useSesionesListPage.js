@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: listado de sesiones de reforzamiento (TUT · sesion·LISTAR).
+ * Hook de pantalla: listado de sesiones de refuerzo (TUT · sesion·LISTAR).
  *
  * Consume el contexto del provider (A4), aplica el filtro de estado en
  * cliente, genera columnas, breadcrumb y handlers (programar, eliminar).
@@ -76,7 +76,7 @@ export const useSesionesListPage = () => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Tutorías' },
-      { title: 'Sesiones de reforzamiento' },
+      { title: 'Sesiones de refuerzo' },
     ],
     [],
   );

@@ -150,9 +150,9 @@ export { PagoCapacitacion } from './pago_capacitacion.js';
 // ============================================
 export { ModalidadGrado } from './modalidad_grado.js';
 export { ProyectoGrado } from './proyecto_grado.js';
-export { TutoriaIntegrante } from './tutoria_integrante.js';
-export { TutoriaAvance } from './tutoria_avance.js';
-export { TutoriaBitacora } from './tutoria_bitacora.js';
-export { TutoriaDictamen } from './tutoria_dictamen.js';
-export { SesionReforzamiento } from './sesion_reforzamiento.js';
-export { SesionReforzamientoParticipante } from './sesion_reforzamiento_participante.js';
+export { IntegranteProyecto } from './integrante_proyecto.js';
+export { AvanceProyecto } from './avance_proyecto.js';
+export { BitacoraProyecto } from './bitacora_proyecto.js';
+export { DictamenProyecto } from './dictamen_proyecto.js';
+export { SesionRefuerzo } from './sesion_refuerzo.js';
+export { SesionRefuerzoEstudiante } from './sesion_refuerzo_estudiante.js';

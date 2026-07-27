@@ -12,12 +12,12 @@ export class UpdateIntegranteProyectoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaIntegranteRepository
+   * @param {Object} params.integranteProyectoRepository
    * @param {ILogger} params.logger
    */
-  constructor({ proyectoGradoRepository, tutoriaIntegranteRepository, logger }) {
+  constructor({ proyectoGradoRepository, integranteProyectoRepository, logger }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaIntegranteRepository = tutoriaIntegranteRepository;
+    this.integranteProyectoRepository = integranteProyectoRepository;
     this.logger = logger;
   }
 
@@ -31,7 +31,7 @@ export class UpdateIntegranteProyectoUseCase {
   async execute(proyectoGradoId, integranteId, body = {}, userId = null) {
     await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
 
-    const integrante = await this.tutoriaIntegranteRepository.findById(integranteId);
+    const integrante = await this.integranteProyectoRepository.findById(integranteId);
     if (!integrante || Number(integrante.proyectoGradoId) !== Number(proyectoGradoId)) {
       throw new NotFoundError(
         `integrante con ID ${integranteId} del proyecto ${proyectoGradoId}`
@@ -44,7 +44,7 @@ export class UpdateIntegranteProyectoUseCase {
     if ('fechaIncorporacion' in body) data.fechaIncorporacion = body.fechaIncorporacion;
     if ('observaciones' in body) data.observaciones = body.observaciones;
 
-    const updated = await this.tutoriaIntegranteRepository.update(integranteId, data, userId);
+    const updated = await this.integranteProyectoRepository.update(integranteId, data, userId);
 
     this.logger.info('[Tutorías] Integrante del proyecto actualizado', {
       proyectoGradoId,

@@ -1,5 +1,5 @@
 /**
- * Listado de sesiones de reforzamiento (TUT · TUT-SESIONES · sesion·LISTAR).
+ * Listado de sesiones de refuerzo (TUT · TUT-SESIONES · sesion·LISTAR).
  *
  * Lenguaje visual de CursosCapacitacionList / LicenciasListPage: shell
  * Flex.page-container → PageHeaderArea(PageHeader) → DashboardPageShell →
@@ -70,7 +70,7 @@ const SesionesList = () => {
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
-        <PageHeader title="Sesiones de reforzamiento" breadcrumbItems={breadcrumbItems} />
+        <PageHeader title="Sesiones de refuerzo" breadcrumbItems={breadcrumbItems} />
       </PageHeaderArea>
 
       <DashboardPageShell>
@@ -81,7 +81,7 @@ const SesionesList = () => {
                 <ListPanelHeader title="Lista de sesiones" actions={headerActions} />
                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                   Sesiones complementarias programadas por curso para estudiantes con riesgo
-                  pedagógico: fecha, horario, modalidad y participantes convocados. La asistencia
+                  pedagógico: fecha, horario, modalidad y estudiantes convocados. La asistencia
                   se registra en la ficha de cada sesión.
                 </Paragraph>
               </header>
@@ -100,7 +100,7 @@ const SesionesList = () => {
                   searchStyle={{ maxWidth: 520 }}
                   pagination={tablePagination}
                   loadingTip="Cargando sesiones…"
-                  emptyText="Aún no hay sesiones de reforzamiento programadas."
+                  emptyText="Aún no hay sesiones de refuerzo programadas."
                 />
               </div>
             </section>

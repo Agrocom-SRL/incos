@@ -22,20 +22,20 @@ export class AddIntegranteProyectoUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.proyectoGradoRepository
-   * @param {Object} params.tutoriaIntegranteRepository
+   * @param {Object} params.integranteProyectoRepository
    * @param {Object} params.modalidadGradoRepository
    * @param {Object} params.studentRepository
    * @param {ILogger} params.logger
    */
   constructor({
     proyectoGradoRepository,
-    tutoriaIntegranteRepository,
+    integranteProyectoRepository,
     modalidadGradoRepository,
     studentRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
-    this.tutoriaIntegranteRepository = tutoriaIntegranteRepository;
+    this.integranteProyectoRepository = integranteProyectoRepository;
     this.modalidadGradoRepository = modalidadGradoRepository;
     this.studentRepository = studentRepository;
     this.logger = logger;
@@ -61,7 +61,7 @@ export class AddIntegranteProyectoUseCase {
     }
 
     // Duplicado en el mismo proyecto.
-    const existente = await this.tutoriaIntegranteRepository.findActivoByProyectoAndEstudiante(
+    const existente = await this.integranteProyectoRepository.findActivoByProyectoAndEstudiante(
       proyectoGradoId,
       estudianteId
     );
@@ -70,7 +70,7 @@ export class AddIntegranteProyectoUseCase {
     }
 
     // Grupalidad: solo PSP admite más de un integrante activo.
-    const activos = await this.tutoriaIntegranteRepository.findByProyectoGradoId(proyectoGradoId);
+    const activos = await this.integranteProyectoRepository.findByProyectoGradoId(proyectoGradoId);
     const activosCount = activos.filter(
       (integrante) => integrante.estado === ESTADOS_INTEGRANTE_TUTORIA.ACTIVO
     ).length;
@@ -87,12 +87,12 @@ export class AddIntegranteProyectoUseCase {
 
     // Un solo proyecto vigente por estudiante.
     await assertEstudianteSinProyectoVigente({
-      tutoriaIntegranteRepository: this.tutoriaIntegranteRepository,
+      integranteProyectoRepository: this.integranteProyectoRepository,
       proyectoGradoRepository: this.proyectoGradoRepository,
       estudianteId,
     });
 
-    const integrante = await this.tutoriaIntegranteRepository.create(
+    const integrante = await this.integranteProyectoRepository.create(
       {
         proyectoGradoId,
         estudianteId,

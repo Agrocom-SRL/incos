@@ -1,11 +1,11 @@
 /**
  * Interfaz de Repositorio (solo lectura): IAcompanamientoSesionViewRepository
  *
- * Lecturas de sesiones de reforzamiento (módulo TUT · acompañamiento) desde:
+ * Lecturas de sesiones de refuerzo (módulo TUT · acompañamiento) desde:
  * - `vista_base_acompanamiento_sesion_fila` (161): 1 fila por sesión con
- *   curso/docente/materia/paralelo + agregados de participantes.
+ *   curso/docente/materia/paralelo + agregados de estudiantes.
  * - `vista_acompanamiento_sesiones_resumen` (162): agregado mensual por carrera.
- * - participantes de UNA sesión enriquecidos con la vista 156 (datos del
+ * - estudiantes de UNA sesión enriquecidos con la vista 156 (datos del
  *   estudiante y sus notas en la materia reforzada).
  *
  * NO extiende IRepository: repositorio de SOLO LECTURA (arquetipo B / `views/`).
@@ -36,14 +36,14 @@ export class IAcompanamientoSesionViewRepository {
   }
 
   /**
-   * Participantes vigentes de la sesión con datos del estudiante
-   * (sesion_reforzamiento_participantes ⋈ vista 156 por matricula_materia_id).
+   * Estudiantes vigentes de la sesión con sus datos
+   * (sesion_refuerzo_estudiantes ⋈ vista 156 por matricula_materia_id).
    *
    * @param {number} sesionId
    * @returns {Promise<Array<Object>>}
    */
-  async findParticipantesBySesionId(_sesionId) {
-    throw new Error('Method findParticipantesBySesionId() must be implemented');
+  async findEstudiantesBySesionId(_sesionId) {
+    throw new Error('Method findEstudiantesBySesionId() must be implemented');
   }
 
   /**

@@ -1,7 +1,7 @@
 /**
  * Interfaz del generador PDF del Informe de Viabilidad Técnica del proyecto
  * de grado (módulo TUT · titulación). El PDF se guarda en uploads y se
- * registra en tutoria_dictamenes (tipo VIABILIDAD_TECNICA).
+ * registra en dictamenes_proyecto (tipo VIABILIDAD_TECNICA).
  */
 export class IViabilidadProyectoPdfGenerator {
   /**
