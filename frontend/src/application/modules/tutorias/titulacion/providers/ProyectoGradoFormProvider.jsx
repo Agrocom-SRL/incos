@@ -18,7 +18,7 @@ import { ProyectoGradoFormContext } from '@application-tutorias/titulacion/conte
 
 export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
   const { proyecto, loading: loadingProyecto, error: errorProyecto, cargar } = useGetProyectoGrado();
-  const { saving, guardarProyecto } = useProyectoGradoMutations();
+  const { saving, guardarProyecto, asignarTutor } = useProyectoGradoMutations();
   const modalidades = useModalidadesGradoApi();
   const carrerasCatalogo = useCarrerasCatalogoTutApi();
   const docentesCatalogo = useDocentesCatalogoTutApi();
@@ -41,6 +41,7 @@ export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
       errorProyecto,
       saving,
       guardarProyecto,
+      asignarTutor,
       // Catálogos
       modalidadOptions: modalidades.options,
       modalidadById: modalidades.modalidadById,
@@ -60,6 +61,7 @@ export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
       errorProyecto,
       saving,
       guardarProyecto,
+      asignarTutor,
       modalidades,
       carrerasCatalogo,
       docentesCatalogo,

@@ -21,7 +21,9 @@ const cleanText = (value) => {
 };
 
 const resolveEstudianteNombre = (raw) => {
-  const armado = cleanText(raw?.estudianteNombre ?? raw?.estudianteNombreCompleto);
+  const armado = cleanText(
+    raw?.estudianteNombre ?? raw?.estudianteNombreCompleto ?? raw?.nombreCompleto,
+  );
   if (armado) return armado;
   return (
     buildFullName(
@@ -46,7 +48,7 @@ export const mapAlertaRiesgo = (raw) => {
     carreraNombre: cleanText(raw.carreraNombre),
     carreraColorHex: cleanText(raw.carreraColorHex ?? raw.colorHex),
     materiaId: raw.materiaId ?? null,
-    materiaNombre: cleanText(raw.materiaNombre),
+    materiaNombre: cleanText(raw.materiaNombre ?? raw.asignaturaNombre ?? raw.asignaturaSigla),
     paraleloLabel: cleanText(raw.paraleloNombre ?? raw.paraleloCodigo),
     anio: raw.anio ?? raw.cursoAnio ?? null,
     docenteNombre: cleanText(raw.docenteNombre),

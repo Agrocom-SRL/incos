@@ -11,7 +11,7 @@
  * Solo la modalidad PSP (grupal) muestra el multi-select de integrantes.
  */
 
-import { Col, Form, Row, Select, Spin, Typography } from 'antd';
+import { Alert, Col, Form, Row, Select, Spin, Typography } from 'antd';
 import { CfgFormWorkspace } from '@organisms';
 
 const { Text } = Typography;
@@ -71,37 +71,47 @@ const ProyectoGradoFormSections = ({
             : 'Registre al estudiante titular del proyecto. Busque por nombre o C.I.',
           fields: [],
           children: (
-            <Row gutter={[24, 20]} className="cfg-academico-form-workspace__grid">
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="estudianteId"
-                  label="Estudiante titular"
-                  rules={[{ required: true, message: 'Seleccione al estudiante titular' }]}
-                >
-                  <Select
-                    {...commonSearchProps}
-                    allowClear
-                    placeholder="Busque por nombre o C.I."
-                  />
-                </Form.Item>
-              </Col>
-              {modalidadGrupal ? (
+            <>
+              {!modalidadGrupal ? (
+                <Alert
+                  type="info"
+                  showIcon
+                  title="Esta modalidad admite un solo estudiante"
+                  description="Para registrar un proyecto con varios integrantes seleccione la modalidad PSP."
+                />
+              ) : null}
+              <Row gutter={[24, 20]} className="cfg-academico-form-workspace__grid">
                 <Col xs={24} md={12}>
                   <Form.Item
-                    name="integranteIds"
-                    label="Integrantes del grupo"
-                    tooltip="Solo la modalidad PSP admite integrantes adicionales"
+                    name="estudianteId"
+                    label="Estudiante titular"
+                    rules={[{ required: true, message: 'Seleccione al estudiante titular' }]}
                   >
                     <Select
                       {...commonSearchProps}
-                      mode="multiple"
-                      options={integranteOptions}
-                      placeholder="Agregue integrantes (busque por nombre o C.I.)"
+                      allowClear
+                      placeholder="Busque por nombre o C.I."
                     />
                   </Form.Item>
                 </Col>
-              ) : null}
-            </Row>
+                {modalidadGrupal ? (
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      name="integranteIds"
+                      label="Integrantes del grupo"
+                      tooltip="Cada estudiante seleccionado se agrega a la lista del proyecto"
+                    >
+                      <Select
+                        {...commonSearchProps}
+                        mode="multiple"
+                        options={integranteOptions}
+                        placeholder="Busque y agregue varios integrantes"
+                      />
+                    </Form.Item>
+                  </Col>
+                ) : null}
+              </Row>
+            </>
           ),
         },
       ]}

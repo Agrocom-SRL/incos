@@ -94,7 +94,10 @@ export const mapIntegrante = (raw) => {
   return {
     id: raw.id,
     estudianteId: raw.estudianteId ?? null,
-    nombreCompleto: resolvePersonaNombre(raw, 'integrante') || resolvePersonaNombre(raw, 'estudiante'),
+    nombreCompleto:
+      resolvePersonaNombre(raw, 'integrante') ||
+      resolvePersonaNombre(raw, 'estudiante') ||
+      cleanText(raw.nombreCompleto),
     ci: cleanText(raw.ci ?? raw.numeroDocumento),
     rol: raw.rol ?? 'INTEGRANTE',
     estado: raw.estado ?? 'ACTIVO',
@@ -217,17 +220,31 @@ export const mapModalidadesGradoList = (rawList) =>
  * Valores del formulario (AntD Form) → payload del backend (T7/T8).
  * `integranteIds` solo aplica a modalidades grupales (PSP).
  */
-export const mapFormValuesToProyectoPayload = (values = {}) => ({
-  titulo: (values.titulo || '').trim(),
-  descripcion: (values.descripcion || '').trim() || null,
-  objetivos: (values.objetivos || '').trim() || null,
-  modalidadId: values.modalidadId != null ? Number(values.modalidadId) : null,
-  carreraId: values.carreraId != null ? Number(values.carreraId) : null,
-  gestionId: values.gestionId != null ? Number(values.gestionId) : undefined,
-  tutorId: values.tutorId != null ? Number(values.tutorId) : null,
-  estudianteId: values.estudianteId != null ? Number(values.estudianteId) : null,
-  integranteIds: Array.isArray(values.integranteIds) ? values.integranteIds.map(Number) : [],
-});
+export const mapFormValuesToProyectoPayload = (values = {}) => {
+  const titularEstudianteId =
+    values.estudianteId != null ? Number(values.estudianteId) : null;
+  const integranteIds = Array.isArray(values.integranteIds)
+    ? values.integranteIds.map(Number)
+    : [];
+  const estudianteIds = [
+    ...new Set([
+      ...(titularEstudianteId != null ? [titularEstudianteId] : []),
+      ...integranteIds,
+    ]),
+  ];
+
+  return {
+    titulo: (values.titulo || '').trim(),
+    descripcion: (values.descripcion || '').trim() || null,
+    objetivos: (values.objetivos || '').trim() || null,
+    modalidadId: values.modalidadId != null ? Number(values.modalidadId) : null,
+    carreraId: values.carreraId != null ? Number(values.carreraId) : null,
+    gestionId: values.gestionId != null ? Number(values.gestionId) : undefined,
+    tutorId: values.tutorId != null ? Number(values.tutorId) : null,
+    titularEstudianteId,
+    estudianteIds,
+  };
+};
 
 /** Ficha → valores iniciales del formulario (alta y edición). */
 export const mapProyectoToFormValues = (proyecto) => ({

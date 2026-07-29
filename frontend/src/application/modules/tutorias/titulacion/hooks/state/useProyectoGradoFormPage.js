@@ -126,6 +126,7 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
     errorProyecto,
     saving,
     guardarProyecto,
+    asignarTutor,
     modalidadOptions,
     modalidadById,
     loadingModalidades,
@@ -199,8 +200,8 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
       const values = await form.validateFields();
       const payload = mapFormValuesToProyectoPayload(values);
       if (!modalidadGrupal) {
-        // Modalidad individual: nunca enviar integrantes adicionales.
-        payload.integranteIds = [];
+        // Modalidad individual: el contrato T7 recibe solo al titular.
+        payload.estudianteIds = [payload.titularEstudianteId];
       }
       const resultado = await guardarProyecto({ id: isEditMode ? proyectoId : null, payload });
       if (!resultado?.success) {
@@ -212,6 +213,17 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
       });
       const raw = resultado.data?.proyectoGrado ?? resultado.data;
       const savedId = raw?.id ?? proyectoId;
+      if (!isEditMode && savedId && payload.tutorId) {
+        const tutorResult = await asignarTutor(savedId, payload.tutorId);
+        if (!tutorResult?.success) {
+          notification.warning({
+            title: 'Proyecto registrado; revise la designación del tutor',
+            description:
+              tutorResult?.error ||
+              'El proyecto fue creado, pero no se pudo completar la designación oficial.',
+          });
+        }
+      }
       if (savedId) {
         navigate(proyectoGradoDetallePath(savedId), {
           replace: !isEditMode,
@@ -235,6 +247,7 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
     isEditMode,
     proyectoId,
     guardarProyecto,
+    asignarTutor,
     notification,
     navigate,
     returnListPath,
