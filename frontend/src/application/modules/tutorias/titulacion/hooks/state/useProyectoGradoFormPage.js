@@ -155,7 +155,7 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Tutorías' },
+      { title: 'Titulación' },
       { title: 'Proyectos de grado', href: returnListPath },
       { title: pageTitle },
     ],

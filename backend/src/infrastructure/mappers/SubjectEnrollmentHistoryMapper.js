@@ -10,6 +10,8 @@ import { BaseMapper } from './BaseMapper.js';
  *
  * Mapeo:
  * matriculaMateriaId  → subjectEnrollmentId
+ * inscripcionId       → enrollmentId (ancla alternativa sin matrícula)
+ * asignaturaPlanId    → planSubjectId (ancla alternativa sin matrícula)
  * tipoEstado          → stateType
  * fechaTransicion     → transitionDate
  * notaResultante      → resultingGrade
@@ -32,6 +34,14 @@ export class SubjectEnrollmentHistoryMapper {
 
         if ('matriculaMateriaId' in dataValues && dataValues.matriculaMateriaId !== undefined) {
             specificFields.subjectEnrollmentId = dataValues.matriculaMateriaId;
+        }
+
+        if ('inscripcionId' in dataValues && dataValues.inscripcionId !== undefined) {
+            specificFields.enrollmentId = dataValues.inscripcionId;
+        }
+
+        if ('asignaturaPlanId' in dataValues && dataValues.asignaturaPlanId !== undefined) {
+            specificFields.planSubjectId = dataValues.asignaturaPlanId;
         }
 
         if ('tipoEstado' in dataValues && dataValues.tipoEstado !== undefined) {
@@ -77,6 +87,8 @@ export class SubjectEnrollmentHistoryMapper {
 
         return {
             matriculaMateriaId: data.subjectEnrollmentId ?? null,
+            inscripcionId: data.enrollmentId ?? null,
+            asignaturaPlanId: data.planSubjectId ?? null,
             tipoEstado: data.stateType,
             fechaTransicion: data.transitionDate ?? null,
             notaResultante: data.resultingGrade ?? null,
@@ -102,6 +114,14 @@ export class SubjectEnrollmentHistoryMapper {
 
         if ('subjectEnrollmentId' in data) {
             updateData.matriculaMateriaId = data.subjectEnrollmentId ?? null;
+        }
+
+        if ('enrollmentId' in data) {
+            updateData.inscripcionId = data.enrollmentId ?? null;
+        }
+
+        if ('planSubjectId' in data) {
+            updateData.asignaturaPlanId = data.planSubjectId ?? null;
         }
 
         if ('stateType' in data) {

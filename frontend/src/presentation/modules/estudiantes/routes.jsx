@@ -45,20 +45,8 @@ export const estudiantesRoutes = [
       tipo: 'ACCION_DIRECTA',
     },
   },
-  {
-    path: '/pasantias/listar',
-    element: <UnderConstruction />,
-    key: 'MAT-PAS-LISTA',
-    permiso: 'matricula.pasantia.ver',
-    accion: 'LISTAR',
-    menu: {
-      label: 'Pasantías',
-      module: 'MAT',
-      parent: 'MAT',
-      order: 6,
-      labelByRole: { ESTUDIANTE: 'Mi pasantía' },
-    },
-  },
+  // Pasantías: retiradas de MAT 2026-07-29 — el dominio pasa al módulo
+  // Titulación (TUT) sobre el schema 24 (docs/plan/titulacion-y-dominios-pendientes.md).
   {
     path: '/estudiantes/becas/listar',
     element: <BecasListConnector />,
@@ -138,33 +126,6 @@ export const estudiantesRoutes = [
     accion: 'GENERAR_PDF',
     menu: null,
     breadcrumbParent: 'MAT-ADMISION',
-  },
-  {
-    path: '/pasantias/solicitar',
-    element: <UnderConstruction />,
-    key: 'MAT-PAS-SOLICITAR',
-    permiso: 'matricula.pasantia.solicitar',
-    accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'MAT-PAS-LISTA',
-  },
-  {
-    path: '/pasantias/:id/editar',
-    element: <UnderConstruction />,
-    key: 'MAT-PAS-EDITAR',
-    permiso: 'matricula.pasantia.evaluar',
-    accion: 'EDITAR',
-    menu: null,
-    breadcrumbParent: 'MAT-PAS-LISTA',
-  },
-  {
-    path: '/pasantias/:id',
-    element: <UnderConstruction />,
-    key: 'MAT-PAS-DETALLE',
-    permiso: 'matricula.pasantia.ver',
-    accion: 'DETALLE',
-    menu: null,
-    breadcrumbParent: 'MAT-PAS-LISTA',
   },
 ];
 

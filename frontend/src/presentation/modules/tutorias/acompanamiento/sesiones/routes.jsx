@@ -65,8 +65,8 @@ export const sesionesRoutes = [
     menu: {
       label: 'Sesiones de refuerzo',
       module: 'TUT',
-      parent: 'TUT',
-      order: 3,
+      parent: 'ACA',
+      order: 9,
     },
   },
 ];

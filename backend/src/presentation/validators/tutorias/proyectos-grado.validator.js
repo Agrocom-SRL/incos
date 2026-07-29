@@ -12,8 +12,8 @@ import {
 /**
  * Validators del sub-módulo Titulación (proyectos de grado, módulo TUT)
  *
- * Shape raíz: proyectos_grado (23-modalidades-grado.sql); satélites del
- * schema 26 (integrantes, bitácora, avances, dictámenes).
+ * Shape raíz: proyectos_grado (22-modalidades-grado.sql); satélites del
+ * schema 23 (integrantes, bitácora, avances, dictámenes).
  */
 
 /** Param :integranteId (rutas anidadas). */

@@ -2,13 +2,13 @@
  * Constantes del dominio Tutorías y Acompañamiento Académico (módulo TUT)
  *
  * Dos sub-módulos:
- * - Titulación: proyectos_grado (raíz legacy) + satélites tutoria_* (schema 22).
+ * - Titulación: proyectos_grado (raíz legacy) + satélites tutoria_* (schema 23).
  * - Acompañamiento: riesgo pedagógico (vista 156, sin tabla) + sesiones de
  *   refuerzo ancladas en asignaciones_docentes.
  */
 
 // ============================================
-// PROYECTOS DE GRADO (tabla `proyectos_grado`, 23-modalidades-grado.sql)
+// PROYECTOS DE GRADO (tabla `proyectos_grado`, 22-modalidades-grado.sql)
 // ============================================
 
 /**

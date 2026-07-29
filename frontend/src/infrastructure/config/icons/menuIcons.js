@@ -54,7 +54,7 @@ import {
     TableOutlined,
     AppstoreOutlined,
     ScheduleOutlined,
-    BulbOutlined,
+    SafetyCertificateOutlined,
     AlertOutlined,
     FundOutlined,
 } from '@ant-design/icons';
@@ -76,7 +76,8 @@ export const menuIconMap = {
     'CFG': SettingOutlined,
     'SEG': SafetyOutlined,
     'CAP': ScheduleOutlined,
-    'TUT': BulbOutlined,
+    // Titulación (label del dominio TUT desde 2026-07-29)
+    'TUT': SafetyCertificateOutlined,
     'PERFIL': UserOutlined,
 
     // Matrícula (MAT)
@@ -85,7 +86,6 @@ export const menuIconMap = {
     'MAT-LISTA': UnorderedListOutlined,
     'MAT-APO-LISTA': DollarOutlined,
     'MAT-BEC-LISTAR': GiftOutlined,
-    'MAT-PAS-LISTA': SolutionOutlined,
 
     // Académico (ACA)
     'ACA-ASI': SolutionOutlined,

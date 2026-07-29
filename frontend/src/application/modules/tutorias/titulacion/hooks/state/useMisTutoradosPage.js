@@ -146,7 +146,7 @@ export const useMisTutoradosPage = () => {
   );
 
   const breadcrumbItems = useMemo(
-    () => [{ title: 'Inicio', href: '/' }, { title: 'Tutorías' }, { title: 'Mis tutorados' }],
+    () => [{ title: 'Inicio', href: '/' }, { title: 'Titulación' }, { title: 'Mis tutorados' }],
     [],
   );
 

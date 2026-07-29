@@ -46,7 +46,7 @@ export const useProyectoGradoDetailPage = () => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Tutorías' },
+      { title: 'Titulación' },
       { title: 'Proyectos de grado', href: returnListPath },
       { title: 'Detalle de proyecto' },
     ],

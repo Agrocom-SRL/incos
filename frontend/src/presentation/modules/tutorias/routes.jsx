@@ -1,11 +1,13 @@
 /**
- * Rutas del módulo Tutorías (TUT) — cada ítem de menú tiene su directorio y
+ * Rutas del módulo Titulación (TUT) — cada ítem de menú tiene su directorio y
  * routes.jsx (patrón configuracion/routes.jsx). Raíz de menú: dominios/routes.jsx
- * → key TUT (order 9).
+ * → key TUT, label "Titulación" (order 9).
  *
- * Submódulos: Titulación (proyectos de grado, bitácora, avances, dictámenes)
- * y Acompañamiento (alertas de riesgo, sesiones de refuerzo, panel).
- * Permisos del seed 66 (`tutorias.*`).
+ * Submódulos: Titulación (proyectos de grado, bitácora, avances, dictámenes;
+ * menú TUT) y Acompañamiento (alertas de riesgo, sesiones de refuerzo, panel;
+ * sus ítems cuelgan del menú ACADÉMICO — decisión 2026-07-29, ver
+ * docs/plan/titulacion-y-dominios-pendientes.md). Permisos del seed 66
+ * (`tutorias.*`, identificadores estables).
  */
 
 import { UnderConstruction } from '@components/pages';

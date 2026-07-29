@@ -40,7 +40,7 @@ export const useSesionRefuerzoDetailPage = () => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Tutorías' },
+      { title: 'Académico' },
       { title: 'Sesiones de refuerzo', href: returnListPath },
       { title: 'Detalle de sesión' },
     ],

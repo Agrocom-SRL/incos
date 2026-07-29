@@ -8,7 +8,7 @@ import {
 
 /**
  * Proyecto de grado (módulo TUT · titulación) — tabla raíz `proyectos_grado`
- * (23-modalidades-grado.sql). NO se duplica: los satélites del schema 26
+ * (22-modalidades-grado.sql). NO se duplica: los satélites del schema 23
  * (integrantes_proyecto, avances_proyecto, bitacora_proyecto, dictamenes_proyecto)
  * cuelgan de esta raíz.
  *

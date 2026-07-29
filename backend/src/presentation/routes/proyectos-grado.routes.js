@@ -24,8 +24,8 @@ import {
 /**
  * Construye el router de Proyectos de Grado (módulo TUT · titulación).
  *
- * Raíz: proyectos_grado (23-modalidades-grado.sql) + satélites tutoria_*
- * (schema 26). Permisos: tutorias.titulacion.proyecto / .bitacora / .avance
+ * Raíz: proyectos_grado (22-modalidades-grado.sql) + satélites tutoria_*
+ * (schema 23). Permisos: tutorias.titulacion.proyecto / .bitacora / .avance
  * con vocabulario de acciones v2.
  *
  * Rutas estáticas SIEMPRE antes de /:id (modalidades, mis-tutorados,

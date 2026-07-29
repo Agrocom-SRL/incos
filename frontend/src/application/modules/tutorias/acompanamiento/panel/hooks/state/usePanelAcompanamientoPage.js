@@ -24,7 +24,7 @@ export const usePanelAcompanamientoPage = () => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Tutorías' },
+      { title: 'Académico' },
       { title: 'Panel de acompañamiento' },
     ],
     [],

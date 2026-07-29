@@ -12,8 +12,11 @@ SET FOREIGN_KEY_CHECKS = 0;
 INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
 ('doc_docentes', 'Docentes', 'DOCENTES', 1, 1, NOW(), NOW()),
 ('doc_licencias', 'Licencias docentes', 'DOCENTES', 2, 1, NOW(), NOW()),
-('doc_supervision', 'Supervisión', 'DOCENTES', 3, 1, NOW(), NOW()),
-('doc_pasantias', 'Pasantías docentes', 'DOCENTES', 4, 1, NOW(), NOW());
+('doc_supervision', 'Supervisión', 'DOCENTES', 3, 1, NOW(), NOW());
+-- Pasantías docentes: retiradas 2026-07-29. Eran códigos anteriores al schema
+-- 24; las pasantías (estudiantiles) pasan al módulo Titulación (TUT) y lo
+-- docente entra por wrappers del portal, sin permisos propios
+-- (ver docs/plan/titulacion-y-dominios-pendientes.md).
 
 -- 1) Permisos del módulo DOC
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -28,9 +31,6 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('docentes.supervision.programar', 'Supervisión: programar sesión', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
 ('docentes.supervision.ficha.crear', 'Supervisión: crear ficha de evaluación', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
 ('docentes.supervision.ficha.editar', 'Supervisión: editar ficha de evaluación', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
-('docentes.supervision.pasantia.solicitar', 'Pasantías docentes: solicitar', NULL, 'DOCENTES', 'DOC', 'doc_pasantias', '/supervision/pasantias', 1, NOW(), NOW()),
-('docentes.supervision.pasantia.seguimiento', 'Pasantías docentes: seguimiento', NULL, 'DOCENTES', 'DOC', 'doc_pasantias', '/supervision/pasantias', 1, NOW(), NOW()),
-('docentes.supervision.pasantia.evaluar', 'Pasantías docentes: evaluación final', NULL, 'DOCENTES', 'DOC', 'doc_pasantias', '/supervision/pasantias', 1, NOW(), NOW()),
 ('docentes.editar', 'Docentes: editar ficha y eliminar o desactivar registro', NULL, 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo DOC
@@ -57,11 +57,6 @@ JOIN (
   UNION ALL SELECT 'docentes.supervision.programar', 'CREAR'
   UNION ALL SELECT 'docentes.supervision.ficha.crear', 'CREAR'
   UNION ALL SELECT 'docentes.supervision.ficha.editar', 'EDITAR'
-  UNION ALL SELECT 'docentes.supervision.pasantia.solicitar', 'LISTAR'
-  UNION ALL SELECT 'docentes.supervision.pasantia.solicitar', 'DETALLE'
-  UNION ALL SELECT 'docentes.supervision.pasantia.solicitar', 'CREAR'
-  UNION ALL SELECT 'docentes.supervision.pasantia.seguimiento', 'EDITAR'
-  UNION ALL SELECT 'docentes.supervision.pasantia.evaluar', 'APROBAR'
   UNION ALL SELECT 'docentes.editar', 'EDITAR'
   UNION ALL SELECT 'docentes.editar', 'ELIMINAR'
 ) AS x ON x.codigo = p.codigo;
@@ -122,19 +117,6 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha.editar', 'EDITAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha.editar', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.solicitar', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.solicitar', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.solicitar', 'CREAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.solicitar', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.solicitar', 'DETALLE'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.solicitar', 'CREAR'
-  UNION ALL SELECT 'DOCENTE', 'docentes.supervision.pasantia.solicitar', 'LISTAR'
-  UNION ALL SELECT 'DOCENTE', 'docentes.supervision.pasantia.solicitar', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.seguimiento', 'EDITAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.seguimiento', 'EDITAR'
-  UNION ALL SELECT 'DOCENTE', 'docentes.supervision.pasantia.seguimiento', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.pasantia.evaluar', 'APROBAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.pasantia.evaluar', 'APROBAR'
   UNION ALL SELECT 'RECTOR', 'docentes.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'docentes.editar', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.editar', 'EDITAR'
@@ -145,9 +127,11 @@ JOIN permisos p ON p.codigo = g.codigo;
 
 -- ============================================================
 -- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
--- Licencias docentes, Supervisión y Pasantías docentes: se ocultan hasta que
--- las pantallas existan. (El listado/ficha de Docentes SÍ está construido y
--- permanece activo.)
+-- Licencias docentes y Supervisión: se ocultan hasta que las pantallas
+-- existan. (El listado/ficha de Docentes SÍ está construido y permanece
+-- activo. Pasantías docentes eliminadas del seed 2026-07-29 — el dominio
+-- pasantías vive en Titulación/TUT; la supervisión se rediseñará contra el
+-- schema 27 fichas_seguimiento_clase en su fase.)
 -- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
 -- (permiso_acciones), sus asignaciones a roles (roles_permisos) y los grupos
 -- de UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que
@@ -169,11 +153,7 @@ WHERE codigo IN (
   'docentes.supervision.reporte',
   'docentes.supervision.programar',
   'docentes.supervision.ficha.crear',
-  'docentes.supervision.ficha.editar',
-  -- Pasantías docentes
-  'docentes.supervision.pasantia.solicitar',
-  'docentes.supervision.pasantia.seguimiento',
-  'docentes.supervision.pasantia.evaluar'
+  'docentes.supervision.ficha.editar'
 );
 
 -- 2) Cascada: acciones de esos permisos
@@ -191,6 +171,6 @@ WHERE p.modulo = 'DOC' AND p.deleted_at IS NOT NULL;
 -- 4) Grupos de UI cuyas páginas quedan completamente ocultas
 UPDATE grupos_ui
 SET activo = 0, deleted_at = @fecha_baja
-WHERE codigo IN ('doc_licencias', 'doc_supervision', 'doc_pasantias');
+WHERE codigo IN ('doc_licencias', 'doc_supervision');
 
 SET FOREIGN_KEY_CHECKS = 1;

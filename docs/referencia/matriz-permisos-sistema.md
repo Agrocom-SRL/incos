@@ -1,7 +1,37 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-07-25
+## Ultima actualizacion: 2026-07-29
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Changelog 2026-07-29 — dominio TUT re-etiquetado "Titulación" + dueños de menú
+
+Decisión de diseño aprobada (cierra §6.7 de `docs/plan/auditoria-modelo-datos.md`;
+detalle y plan por fases en `docs/plan/titulacion-y-dominios-pendientes.md`).
+Los CÓDIGOS de permiso `tutorias.*`, el module code `TUT` y los paths
+`/tutorias/*` NO cambian (identificadores estables); cambia lo visible:
+
+- **Label del dominio TUT:** "Tutorías" → **"Titulación"** (`dominios/routes.jsx`,
+  icono `SafetyCertificateOutlined`). Agrupará: Proyectos de grado (existente),
+  Pasantías (Fase 2, schema 24, códigos `tutorias.pasantia.*`) y Títulos y
+  certificados (Fase 5, schema 26, gated por documentación real).
+- **Acompañamiento pedagógico → menú Académico:** los 3 ítems (Alumnos en
+  riesgo order 8, Sesiones de refuerzo order 9, Panel order 10) cuelgan de
+  `parent: 'ACA'`; en el seed 66 el grupo `tut_acompanamiento` y sus 3 permisos
+  pasan a `dominio='ACADEMICO'` (pestaña Académico de la grilla; `modulo` sigue
+  `TUT`). Paths y códigos intactos.
+- **Grilla de Seguridad:** `DOMINIOS_V2` (`usePermisosCatalogo.js`) incorpora
+  las pestañas CAPACITACION ("Capacitación") y TUTORIAS ("Titulación").
+- **Pasantías legacy eliminadas:** seed 57 ya no siembra `matricula.pasantia.*`
+  ni `mat_pasantias` (y desaparece su bloque de deshabilitación); rutas
+  placeholder `MAT-PAS-*` retiradas de `estudiantes/routes.jsx`. Seed 59 ya no
+  siembra `docentes.supervision.pasantia.*` ni `doc_pasantias`. Lo docente
+  entrará por wrappers del portal (sin permisos nuevos).
+- **Dueños de menú restantes:** Libros de registro (25) → ACA
+  (`academico.libro.*`, ampliar seed 58); Supervisión docente (27) → DOC
+  (rediseñar bloque `docentes.supervision.*` del seed 59 contra
+  `fichas_seguimiento_clase`).
+- Seeder `67-seed-modalidades-grado.sql` renombrado a
+  `67-seed-titulacion-modalidades-grado.sql`.
 
 ## Changelog 2026-07-25 — módulo nuevo Tutorías y Acompañamiento (TUT, seed 66)
 

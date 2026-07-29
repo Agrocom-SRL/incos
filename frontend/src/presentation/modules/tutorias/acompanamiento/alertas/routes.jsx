@@ -1,5 +1,6 @@
 /**
- * Tutorías → Acompañamiento → Alumnos en riesgo (ítem de menú TUT, order 2).
+ * Acompañamiento → Alumnos en riesgo (ítem del menú Académico, order 8;
+ * módulo TUT, decisión 2026-07-29 en docs/plan/titulacion-y-dominios-pendientes.md).
  *
  * Permiso `tutorias.acompanamiento.alerta` (seed 66). Entrada única de menú:
  * el connector bifurca por rol (docente → "Mis alumnos en riesgo"); el drawer
@@ -25,8 +26,8 @@ export const alertasRoutes = [
     menu: {
       label: 'Alumnos en riesgo',
       module: 'TUT',
-      parent: 'TUT',
-      order: 2,
+      parent: 'ACA',
+      order: 8,
       labelByRole: { DOCENTE: 'Mis alumnos en riesgo' },
     },
   },

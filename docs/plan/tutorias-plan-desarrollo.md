@@ -8,7 +8,7 @@
 ## Decisiones cerradas
 
 - **Dominio propio `TUT`** (menú "Tutorías", `path: '/tutorias'`, order 9; CFG pasa a 10, SEG a 11 en `frontend/src/presentation/modules/dominios/routes.jsx`).
-- **Raíz de titulación = tablas existentes** `modalidades_grado` + `proyectos_grado` (`01-schemas/23-modalidades-grado.sql`). NO se duplican; el módulo añade 6 tablas satélite (schema 26).
+- **Raíz de titulación = tablas existentes** `modalidades_grado` + `proyectos_grado` (`01-schemas/22-modalidades-grado.sql`). NO se duplican; el módulo añade 6 tablas satélite (schema 23).
 - **Riesgo pedagógico = vista calculada** (156, sobre la vista 135 centralizador), NO tabla. Umbral parametrizable en `configuracion_evaluacion` clave `ACOMPANAMIENTO_PEDAGOGICO` (fallback 61).
 - **`proyectos_grado.estudiante_id` queda legacy**: titular en proyectos individuales, NULL en grupales; los consumidores nuevos leen `tutoria_integrantes`.
 - **PDFs en backend** con `IncosPDFLibBase` + `infrastructure/external/templates/Plantilla.pdf` (patrón `ActaCompromisoPdfGenerator`); pdfkit/pdf-lib ya instalados. PDF generado se registra en `tutoria_dictamenes`.
@@ -21,7 +21,7 @@
 
 ## Fase A — SQL (solo escribir archivos; ejecución requiere aprobación)
 
-### A1. `backend/database/01-schemas/26-tutorias-acompanamiento.sql`
+### A1. `backend/database/01-schemas/23-tutorias-acompanamiento.sql`
 
 DDL propuesto por `datos` (estilo del 25; el agente backend lo copia y puede pulir comentarios, no la estructura):
 
@@ -32,7 +32,7 @@ DDL propuesto por `datos` (estilo del 25; el agente backend lo copia y puede pul
 -- 6 Tablas: tutoria_integrantes, tutoria_avances, tutoria_bitacora,
 --           tutoria_dictamenes, sesiones_reforzamiento,
 --           sesion_reforzamiento_participantes
--- Raíz del sub-módulo de titulación: proyectos_grado (23-modalidades-grado.sql).
+-- Raíz del sub-módulo de titulación: proyectos_grado (22-modalidades-grado.sql).
 -- No se duplica el proyecto: estas tablas son satélites con prefijo tutoria_.
 -- Sub-módulo de acompañamiento: ancla en asignaciones_docentes (curso) y
 -- matriculas_materia (estudiante en la materia). El riesgo pedagógico NO es
@@ -288,7 +288,7 @@ Documentar en cabecera de cada vista sus bases y consumidor (patrón de la 135).
 ### A3. Seeders `backend/database/02-seeders/`
 
 - `66-seed-permisos-tut.sql` — patrón LITERAL del 65 (grupos_ui → permisos → permiso_acciones → roles_permisos; sin ids, refs por código; ADMIN_SISTEMA no se siembra). Detalle en Fase D.
-- `67-seed-modalidades-grado.sql` — 4 modalidades: `PSP` Proyecto Socio-comunitario Productivo (grupal), `PG` Proyecto de Grado, `PE` Proyecto de Emprendimiento, `TD` Trabajo Dirigido; flags requiere_tutor/requiere_proyecto/requiere_defensa = TRUE, requiere_examen = FALSE (ajustar a columnas reales de la tabla).
+- `67-seed-titulacion-modalidades-grado.sql` (renombrado 2026-07-29, ver `docs/plan/titulacion-y-dominios-pendientes.md`) — 4 modalidades: `PSP` Proyecto Socio-comunitario Productivo (grupal), `PG` Proyecto de Grado, `PE` Proyecto de Emprendimiento, `TD` Trabajo Dirigido; flags requiere_tutor/requiere_proyecto/requiere_defensa = TRUE, requiere_examen = FALSE (ajustar a columnas reales de la tabla).
 - EDITAR `54-seed-configuracion-evaluacion.sql` — fila nueva (sigue su formato con ids explícitos): clave `ACOMPANAMIENTO_PEDAGOGICO`, valor `{"umbralRiesgo":61,"criterio":"ULTIMO_BIMESTRE_O_ACUMULADO"}`, tipo JSON, vigente TRUE.
 
 ## Fases B/C/D — contrato de API y checklist
@@ -375,16 +375,16 @@ UI: buildFullName (APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES), textos "usted", A
 - [x] Diseño de datos (agente datos)
 - [x] Decisiones de arquitectura (agente arquitecto)
 - [x] Plan ejecutable + contrato de API (agente planificador)
-- [x] Fase A: archivos SQL escritos (schema 26, vistas 156-163, seeders 66/67, edición 54)
+- [x] Fase A: archivos SQL escritos (schema 23 —ex 26/22—, vistas 156-163, seeders 66/67, edición 54)
 - [x] Fase B: backend implementado (use cases, controllers, routers, DI registrado en container y montado en routes/index.js; lint limpio)
 - [x] Fase C: frontend implementado (capas application y presentation completas; `npm run build` OK)
 - [x] Fase D/E: verificación (lint/build, dataKey==dataFieldName, RBAC 3 capas) — veredicto APROBADO (verificador, 2026-07-25)
-- [ ] APROBACIÓN DEL USUARIO + ejecución en BD (schema 26 → vistas 156-163 → seed 54 → 66 → 67; resembrar RBAC 57-66 completo)
+- [ ] APROBACIÓN DEL USUARIO + ejecución en BD (schemas 22+23 → vistas 156-163 → seed 54 → 66 → 67; resembrar RBAC 57-66 completo)
 
 ## Bitácora de cambios
 
 - 2026-07-24 · orquestador · Diseño consolidado (datos+arquitecto+planificador); contrato de API cerrado; T17 = LISTAR + guard de pertenencia. Nota: docs/plan/REVAMP.md no existe en la rama development (vive en revamp); la memoria del módulo TUT se lleva en este documento.
 - 2026-07-25 · frontend · Capa de presentación del submódulo ACOMPAÑAMIENTO completa (`presentation/modules/tutorias/acompanamiento/**`): alertas (lista admin + rama docente + drawer A3), sesiones (lista, form A6/A7 con TimePickers, ficha con batch A9 y transiciones), panel (KPI strip + Progress por carrera + tablas 156/158 + export A11) y `acompanamientoRoutes`. Fix compartido: `fieldRenderers.jsx` ahora reenvía `optionFilterProp` al Select (los hooks TUT lo declaran para búsqueda por label). Alert reservado a errores bloqueantes (indicación del usuario); riesgo con pills/tokens semánticos.
-- 2026-07-25 · verificador · Fase D/E: lint frontend scope (`presentation/modules/tutorias/**/*.jsx`) limpio (exit 0); build OK; lint backend TUT limpio; dataKey==dataFieldName verificado en los 16 literales del contrato (incluye fallback `result.data?.[KEY] ?? result.data`, patrón ya usado en el repo); RBAC verificado en 3 capas (seed 66, routers Express, routes.jsx/ActionButton/TableActions); rutas estáticas antes de /:id en ambos lados; UI sin hex/px hardcodeados, Alert solo bloqueante, estados vacío/carga/error cubiertos, textos en "usted". Veredicto: APROBADO. Nota: 4 errores `react-hooks/set-state-in-effect` en application/modules/tutorias/**, fuera del scope de lint exigido y consistentes con 23 ocurrencias preexistentes del mismo patrón en el resto del repo (deuda no introducida por este módulo). Pendiente: ejecución en BD (schema 26, vistas 156-163, seeders 66/67/54, resembrado RBAC 57-66) requiere aprobación explícita del usuario.
+- 2026-07-25 · verificador · Fase D/E: lint frontend scope (`presentation/modules/tutorias/**/*.jsx`) limpio (exit 0); build OK; lint backend TUT limpio; dataKey==dataFieldName verificado en los 16 literales del contrato (incluye fallback `result.data?.[KEY] ?? result.data`, patrón ya usado en el repo); RBAC verificado en 3 capas (seed 66, routers Express, routes.jsx/ActionButton/TableActions); rutas estáticas antes de /:id en ambos lados; UI sin hex/px hardcodeados, Alert solo bloqueante, estados vacío/carga/error cubiertos, textos en "usted". Veredicto: APROBADO. Nota: 4 errores `react-hooks/set-state-in-effect` en application/modules/tutorias/**, fuera del scope de lint exigido y consistentes con 23 ocurrencias preexistentes del mismo patrón en el resto del repo (deuda no introducida por este módulo). Pendiente: ejecución en BD (schemas 22+23, vistas 156-163, seeders 66/67/54, resembrado RBAC 57-66) requiere aprobación explícita del usuario.
 - 2026-07-25 · ajustes de portal por rol (pedido del usuario, patrón historial/asistencia): `labelByRole { DOCENTE }` en menús TUT-TITULACION («Mis tutorados») y TUT-ALERTAS («Mis alumnos en riesgo»); tarjeta «Mi proyecto de grado» en `EstudianteDashboard` → `/tutorias/mi-proyecto` (patrón ACA-MI-BOLETIN; ESTUDIANTE no ve menú TUT por carecer de LISTAR). Sección TUT documentada en `docs/referencia/matriz-permisos-sistema.md` (changelog 2026-07-25) — la matriz previa (2026-07-14) no contemplaba tutorías. Build OK tras los ajustes. Drawer de detalle de alerta (solo lectura) aprobado por el usuario.
 - 2026-07-25 · reanudación · La sesión anterior agotó tokens con Fase A y Fase B escritas pero SIN cablear: se registró `registerTutoriasModule` en `container/modules/index.js` y se montaron `/proyectos-grado` y `/acompanamiento` en `presentation/routes/index.js`; lint del módulo backend corregido (28 errores: max-len, no-await-in-loop con disable puntual como el resto del repo, no-continue, unused-var). Container resuelve ambos routers. Fase C: capa application frontend ya existía completa; capa presentation delegada a 2 agentes frontend en paralelo (titulacion + routes raíz / acompanamiento), con el módulo `configuracion` como referencia de UI (configs de tablas, form sections/wizard) por instrucción del usuario.

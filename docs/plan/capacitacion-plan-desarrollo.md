@@ -151,7 +151,7 @@ para esto — se reutiliza en vez de crear una tabla de horarios paralela.
 ## 1. Modelo de datos propuesto (schema nuevo — requiere aprobación explícita)
 
 Archivo nuevo: `backend/database/01-schemas/25-cursos-capacitacion.sql`
-(el máximo actual es `24-titulos-certificados.sql`; sigue la convención de
+(el máximo actual es `27-supervision-docente.sql`; sigue la convención de
 "1 archivo = 1 dominio autocontenido con DROP+CREATE", ver
 `backend/database/01-schemas/21-pasantias.sql` como plantilla).
 

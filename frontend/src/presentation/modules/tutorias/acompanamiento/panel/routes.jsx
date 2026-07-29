@@ -25,8 +25,8 @@ export const panelRoutes = [
     menu: {
       label: 'Panel de acompañamiento',
       module: 'TUT',
-      parent: 'TUT',
-      order: 4,
+      parent: 'ACA',
+      order: 10,
     },
   },
 ];

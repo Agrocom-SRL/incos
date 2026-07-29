@@ -5,7 +5,7 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 /**
  * Modelo Sequelize: Transitabilidad
  * Tabla: transitabilidades
- * Basado en 15-transitabilidades.sql
+ * Basado en 18-transitabilidades.sql
  */
 export const Transitabilidad = sequelize.define(
   'Transitabilidad',
@@ -16,6 +16,13 @@ export const Transitabilidad = sequelize.define(
       field: 'estudiante_id',
       allowNull: true,
       comment: 'Estudiante postulante (referencia a estudiantes)',
+    },
+    codigoRude: {
+      type: DataTypes.STRING(50),
+      field: 'codigo_rude',
+      allowNull: true,
+      comment:
+        'Código RUDE o RUDEAL del postulante (registro único del sistema educativo boliviano). El ANEXO 2 de transitabilidad lo solicita igual que el formulario de traspaso.',
     },
     institucionOrigenId: {
       type: DataTypes.INTEGER,
@@ -87,4 +94,3 @@ export const Transitabilidad = sequelize.define(
 );
 
 export default Transitabilidad;
-

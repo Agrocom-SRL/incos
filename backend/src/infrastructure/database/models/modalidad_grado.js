@@ -4,7 +4,7 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 
 /**
  * Modalidad de grado (módulo TUT · titulación) — catálogo `modalidades_grado`
- * (23-modalidades-grado.sql). La grupalidad NO es columna: criterio por
+ * (22-modalidades-grado.sql). La grupalidad NO es columna: criterio por
  * codigo = MODALIDAD_GRUPAL_CODIGO ('PSP') en tutorias.constants.js.
  */
 export const ModalidadGrado = sequelize.define(

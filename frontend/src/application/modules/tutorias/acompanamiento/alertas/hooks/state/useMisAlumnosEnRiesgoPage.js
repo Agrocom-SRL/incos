@@ -69,7 +69,7 @@ export const useMisAlumnosEnRiesgoPage = () => {
   );
 
   const breadcrumbItems = useMemo(
-    () => [{ title: 'Inicio', href: '/' }, { title: 'Tutorías' }, { title: 'Mis alumnos en riesgo' }],
+    () => [{ title: 'Inicio', href: '/' }, { title: 'Académico' }, { title: 'Mis alumnos en riesgo' }],
     [],
   );
 

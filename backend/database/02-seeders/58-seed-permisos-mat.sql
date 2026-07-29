@@ -14,8 +14,10 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('mat_inscripcion', 'Matrículas', 'MATRICULA', 2, 1, NOW(), NOW()),
 ('mat_aportes', 'Aportes', 'MATRICULA', 3, 1, NOW(), NOW()),
 ('mat_becas', 'Becas', 'MATRICULA', 4, 1, NOW(), NOW()),
-('mat_documentos', 'Documentos', 'MATRICULA', 5, 1, NOW(), NOW()),
-('mat_pasantias', 'Pasantías estudiantiles', 'MATRICULA', 6, 1, NOW(), NOW());
+('mat_documentos', 'Documentos', 'MATRICULA', 5, 1, NOW(), NOW());
+-- Pasantías estudiantiles: retiradas de MAT 2026-07-29. El dominio pasa al
+-- módulo Titulación (TUT) con códigos tutorias.pasantia.* sobre el schema 24
+-- (ver docs/plan/titulacion-y-dominios-pendientes.md, Fase 2).
 
 -- 1) Permisos del módulo MAT
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -28,11 +30,7 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('matricula.beca.asignar', 'Becas: asignar, ajustar o quitar', NULL, 'MATRICULA', 'MAT', 'mat_becas', '/estudiantes/becas/listar', 1, NOW(), NOW()),
 ('matricula.beca.aprobar', 'Becas: aprobar solicitudes', NULL, 'MATRICULA', 'MAT', 'mat_becas', '/estudiantes/becas/listar', 1, NOW(), NOW()),
 ('matricula.documento.ver', 'Documentos: ver y generar PDFs (acta, declaración, formulario)', NULL, 'MATRICULA', 'MAT', 'mat_documentos', '/estudiantes/documentos', 1, NOW(), NOW()),
-('matricula.pago.aporte.ver', 'Aportes: listar, detalle, editar cuotas, anular, exportar recibo PDF y Excel estado por carrera', NULL, 'MATRICULA', 'MAT', 'mat_aportes', '/matricula/aportes/listar', 1, NOW(), NOW()),
-('matricula.pasantia.ver', 'Pasantías estudiantiles: listar y ver', NULL, 'MATRICULA', 'MAT', 'mat_pasantias', '/pasantias/listar', 1, NOW(), NOW()),
-('matricula.pasantia.solicitar', 'Pasantías estudiantiles: solicitar', NULL, 'MATRICULA', 'MAT', 'mat_pasantias', '/pasantias/listar', 1, NOW(), NOW()),
-('matricula.pasantia.aprobar', 'Pasantías estudiantiles: aprobar', NULL, 'MATRICULA', 'MAT', 'mat_pasantias', '/pasantias/listar', 1, NOW(), NOW()),
-('matricula.pasantia.evaluar', 'Pasantías estudiantiles: evaluación final', NULL, 'MATRICULA', 'MAT', 'mat_pasantias', '/pasantias/listar', 1, NOW(), NOW());
+('matricula.pago.aporte.ver', 'Aportes: listar, detalle, editar cuotas, anular, exportar recibo PDF y Excel estado por carrera', NULL, 'MATRICULA', 'MAT', 'mat_aportes', '/matricula/aportes/listar', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo MAT
 INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)
@@ -65,11 +63,6 @@ JOIN (
   UNION ALL SELECT 'matricula.pago.aporte.ver', 'EDITAR'
   UNION ALL SELECT 'matricula.pago.aporte.ver', 'ELIMINAR'
   UNION ALL SELECT 'matricula.pago.aporte.ver', 'EXPORTAR'
-  UNION ALL SELECT 'matricula.pasantia.ver', 'LISTAR'
-  UNION ALL SELECT 'matricula.pasantia.ver', 'DETALLE'
-  UNION ALL SELECT 'matricula.pasantia.solicitar', 'CREAR'
-  UNION ALL SELECT 'matricula.pasantia.aprobar', 'APROBAR'
-  UNION ALL SELECT 'matricula.pasantia.evaluar', 'EDITAR'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo MAT (roles 2-8; ADMIN_SISTEMA hereda por vista)
@@ -160,30 +153,15 @@ FROM (
   -- detalle de su aporte (PagosDetail, /pagos/:id), blindado a su propia cabecera en backend.
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.pago.aporte.ver', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'matricula.pago.aporte.ver', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'matricula.pasantia.ver', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'matricula.pasantia.ver', 'DETALLE'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.pasantia.ver', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.pasantia.ver', 'DETALLE'
-  UNION ALL SELECT 'DIR_ADMIN', 'matricula.pasantia.ver', 'LISTAR'
-  UNION ALL SELECT 'DIR_ADMIN', 'matricula.pasantia.ver', 'DETALLE'
-  UNION ALL SELECT 'ESTUDIANTE', 'matricula.pasantia.ver', 'LISTAR'
-  UNION ALL SELECT 'ESTUDIANTE', 'matricula.pasantia.ver', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'matricula.pasantia.solicitar', 'CREAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.pasantia.solicitar', 'CREAR'
-  UNION ALL SELECT 'ESTUDIANTE', 'matricula.pasantia.solicitar', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'matricula.pasantia.aprobar', 'APROBAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.pasantia.aprobar', 'APROBAR'
-  UNION ALL SELECT 'RECTOR', 'matricula.pasantia.evaluar', 'EDITAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.pasantia.evaluar', 'EDITAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;
 
 -- 3b) SEC_ACADEMICA · matriculación completa (todas las acciones de cada permiso)
 --     Solo los grupos de matriculación: admisión, matrículas, aportes
---     (registrar/editar/anular) y becas (asignar/aprobar). NO incluye Documentos
---     ni Pasantías estudiantiles. Se genera desde permiso_acciones para no perder
---     acciones nuevas que se agreguen a estos grupos.
+--     (registrar/editar/anular) y becas (asignar/aprobar). NO incluye Documentos.
+--     Se genera desde permiso_acciones para no perder acciones nuevas que se
+--     agreguen a estos grupos.
 INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo, created_at, updated_at)
 SELECT r.id, pa.permiso_id, pa.accion, 1, NOW(), NOW()
 FROM roles r
@@ -191,42 +169,8 @@ JOIN permisos p           ON p.grupo_ui IN ('mat_admision', 'mat_inscripcion', '
 JOIN permiso_acciones pa  ON pa.permiso_id = p.id
 WHERE r.codigo = 'SEC_ACADEMICA';
 
--- ============================================================
--- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
--- Pasantías estudiantiles: se ocultan hasta que la pantalla exista.
--- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
--- (permiso_acciones), sus asignaciones a roles (roles_permisos) y el grupo de
--- UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que hereda
--- por vista_*_activas (filtra activo=TRUE y deleted_at IS NULL).
--- Para REHABILITAR: poner activo=1 y deleted_at=NULL en estas mismas filas.
--- ============================================================
-SET @fecha_baja := '2026-06-24 00:00:00';
-
--- 1) Permisos de las páginas no construidas
-UPDATE permisos
-SET activo = 0, deleted_at = @fecha_baja
-WHERE codigo IN (
-  'matricula.pasantia.ver',
-  'matricula.pasantia.solicitar',
-  'matricula.pasantia.aprobar',
-  'matricula.pasantia.evaluar'
-);
-
--- 2) Cascada: acciones de esos permisos
-UPDATE permiso_acciones pa
-JOIN permisos p ON p.id = pa.permiso_id
-SET pa.activo = 0, pa.deleted_at = @fecha_baja
-WHERE p.modulo = 'MAT' AND p.deleted_at IS NOT NULL;
-
--- 3) Cascada: asignaciones a roles de esos permisos
-UPDATE roles_permisos rp
-JOIN permisos p ON p.id = rp.permiso_id
-SET rp.activo = 0, rp.deleted_at = @fecha_baja
-WHERE p.modulo = 'MAT' AND p.deleted_at IS NOT NULL;
-
--- 4) Grupo de UI cuyas páginas quedan completamente ocultas
-UPDATE grupos_ui
-SET activo = 0, deleted_at = @fecha_baja
-WHERE codigo IN ('mat_pasantias');
+-- (2026-07-29) Se eliminó el bloque de deshabilitación temporal de Pasantías
+-- estudiantiles: los códigos matricula.pasantia.* ya no se siembran (dominio
+-- movido a Titulación/TUT, schema 24).
 
 SET FOREIGN_KEY_CHECKS = 1;

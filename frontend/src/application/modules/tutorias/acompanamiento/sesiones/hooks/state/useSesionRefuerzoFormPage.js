@@ -202,7 +202,7 @@ export const useSesionRefuerzoFormPage = (mode = 'create') => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Tutorías' },
+      { title: 'Académico' },
       { title: 'Sesiones de refuerzo', href: returnListPath },
       { title: pageTitle },
     ],
