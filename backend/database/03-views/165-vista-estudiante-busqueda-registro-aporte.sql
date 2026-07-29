@@ -3,13 +3,13 @@
 -- Fila lista para búsqueda / muestra previa al registro de cuota de aporte
 --
 -- Propósito: Une datos personales del estudiante (15) con carrera reciente (38)
--- y resumen de cabeceras de aporte (37). El backend consulta esta vista con LIKE
+-- y resumen de cabeceras de aporte (164). El backend consulta esta vista con LIKE
 -- o con filtro cabeceras_con_saldo > 0 para la muestra inicial.
 --
 -- Dependencias (orden sugerido):
 -- 1. 15-vista-estudiante-datos-personales.sql
--- 2. 37-vista-base-estudiante-aporte-saldo-resumen.sql
--- 3. 38-vista-base-estudiante-carrera-reciente.sql
+-- 2. 38-vista-base-estudiante-carrera-reciente.sql
+-- 3. 164-vista-base-estudiante-aporte-saldo-resumen.sql
 -- 4. Esta vista
 -- ============================================
 

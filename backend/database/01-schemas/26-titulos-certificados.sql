@@ -2,6 +2,20 @@
 -- MÓDULO DE TÍTULOS Y CERTIFICADOS
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 2 Tablas: titulos, certificados
+-- PENDIENTE DE DOCUMENTACIÓN REAL: no se encontró ningún formulario oficial
+-- de emisión de título, registro nacional o certificado en la documentación
+-- revisada (/Users/miguel/Documents/incos/). Este schema sigue siendo una
+-- PROPUESTA sin base documental — no inventar más estructura; ajustar recién
+-- cuando exista el formato real del instituto.
+-- Ajustes de integridad YA APLICADOS (necesarios para que la cadena de
+-- schemas ejecute en orden numérico):
+--   1) pasantia_id (FK a pasantias, 24-pasantias.sql): la práctica laboral
+--      (R.M. 487/2023) es un requisito de titulación paralelo a la modalidad
+--      de graduación — el título depende de ambos cumplimientos.
+--   2) folio_estudiante_id (FK a folio_estudiantes, 25-libros-registro.sql):
+--      reemplaza al antiguo folio_id → folios_estudiantes (tabla eliminada
+--      en el refactor de libros); apunta a la fila del estudiante en el
+--      folio del centralizador.
 -- ============================================
 
 USE instituto_incos;
@@ -32,8 +46,9 @@ CREATE TABLE titulos (
     -- Relaciones
     estudiante_id INT NULL COMMENT 'Estudiante que recibe el título (referencia a estudiantes)',
     carrera_id INT NULL COMMENT 'Carrera del título (referencia a carreras)',
-    folio_id INT NULL COMMENT 'Folio oficial donde se registra (referencia a folios_estudiantes)',
+    folio_estudiante_id INT NULL COMMENT 'Fila del estudiante en el folio del centralizador (referencia a folio_estudiantes, 25-libros-registro.sql)',
     proyecto_grado_id INT NULL COMMENT 'Proyecto de grado aprobado (referencia a proyectos_grado, si aplica)',
+    pasantia_id INT NULL COMMENT 'Práctica laboral cumplida o convalidada (referencia a pasantias, 24-pasantias.sql). Requisito paralelo a la modalidad de graduación según R.M. 487/2023',
     gestion_egreso_id INT NULL COMMENT 'Gestión en que egresó (referencia a gestiones)',
     
     -- Datos del título
@@ -75,8 +90,9 @@ CREATE TABLE titulos (
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
-    FOREIGN KEY (folio_id) REFERENCES folios_estudiantes(id) ON DELETE SET NULL,
+    FOREIGN KEY (folio_estudiante_id) REFERENCES folio_estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (proyecto_grado_id) REFERENCES proyectos_grado(id) ON DELETE SET NULL,
+    FOREIGN KEY (pasantia_id) REFERENCES pasantias(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_egreso_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (documento_titulo_id) REFERENCES documentos_estudiante(id) ON DELETE SET NULL,
     

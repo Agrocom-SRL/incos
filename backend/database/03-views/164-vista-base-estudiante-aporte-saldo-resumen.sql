@@ -6,7 +6,7 @@
 -- Usada por vista_estudiante_busqueda_registro_aporte y por el repositorio (sin SQL inline).
 --
 -- Dependencias (ejecutar antes):
--- - 35-vista-pago-aporte-listado.sql
+-- - 49-vista-pago-aporte-listado.sql
 -- ============================================
 
 USE instituto_incos;

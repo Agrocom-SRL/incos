@@ -2,6 +2,14 @@
 -- MÓDULO DE MODALIDADES DE GRADO
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 2 Tablas: modalidades_grado, proyectos_grado
+-- NOTA DOCUMENTAL (verificado contra FORMULARIO 01 DE MODALIDAD DE
+-- GRADUACION y el "INFORME DE VERIFICACIÓN DE LA EMPRESA..." en
+-- /Users/miguel/Documents/incos/pasantia/): la pasantía/práctica laboral
+-- (Resolución Ministerial No. 487/2023, 300-360 horas) NO es una modalidad
+-- de graduación: es un requisito paralelo, modelado en 24-pasantias.sql con
+-- FK directa a estudiantes (desacoplado de proyectos_grado). El seeder 67
+-- (PSP/PG/PE/TD) no contempla pasantía a propósito. No añadir un código de
+-- modalidad para pasantía salvo que la lista oficial del FMDG-1 lo exija.
 -- ============================================
 
 USE instituto_incos;
