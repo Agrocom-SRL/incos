@@ -68,8 +68,7 @@ export class PasantiaInformeRepository extends BaseRepository {
     if ('fechaEmision' in data) model.fechaEmision = data.fechaEmision ?? null;
     if ('destinatario' in data) model.destinatario = data.destinatario ?? null;
     if ('areaRelacionada' in data) model.areaRelacionada = data.areaRelacionada ?? null;
-    if ('evaluacionCualitativa' in data)
-      model.evaluacionCualitativa = data.evaluacionCualitativa ?? null;
+    if ('evaluacionCualitativa' in data) model.evaluacionCualitativa = data.evaluacionCualitativa ?? null;
     if ('resultado' in data) model.resultado = data.resultado ?? null;
     if ('contenido' in data) model.contenido = data.contenido ?? null;
     if ('nombreArchivo' in data) model.nombreArchivo = data.nombreArchivo ?? null;

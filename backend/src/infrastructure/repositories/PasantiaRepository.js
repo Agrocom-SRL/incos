@@ -59,8 +59,9 @@ export class PasantiaRepository extends BaseRepository {
     if (filters.empresaId !== undefined) where.empresaId = filters.empresaId;
     if (filters.carreraId !== undefined) where.carreraId = filters.carreraId;
     if (filters.gestionId !== undefined) where.gestionId = filters.gestionId;
-    if (filters.docenteSupervisorId !== undefined)
+    if (filters.docenteSupervisorId !== undefined) {
       where.docenteSupervisorId = filters.docenteSupervisorId;
+    }
     if (filters.tipo !== undefined) where.tipo = filters.tipo;
     if (filters.estado !== undefined) where.estado = filters.estado;
     return where;
@@ -80,8 +81,7 @@ export class PasantiaRepository extends BaseRepository {
     if ('empresaId' in data) model.empresaId = data.empresaId ?? null;
     if ('carreraId' in data) model.carreraId = data.carreraId ?? null;
     if ('gestionId' in data) model.gestionId = data.gestionId ?? null;
-    if ('docenteSupervisorId' in data)
-      model.docenteSupervisorId = data.docenteSupervisorId ?? null;
+    if ('docenteSupervisorId' in data) model.docenteSupervisorId = data.docenteSupervisorId ?? null;
     if ('tipo' in data) model.tipo = data.tipo;
     if ('areaDepartamento' in data) model.areaDepartamento = data.areaDepartamento ?? null;
     if ('cargoPuesto' in data) model.cargoPuesto = data.cargoPuesto ?? null;
@@ -91,12 +91,10 @@ export class PasantiaRepository extends BaseRepository {
     if ('horasRequeridas' in data) model.horasRequeridas = data.horasRequeridas ?? null;
     if ('horasCumplidas' in data) model.horasCumplidas = data.horasCumplidas ?? null;
     if ('tipoContrato' in data) model.tipoContrato = data.tipoContrato ?? null;
-    if ('tipoContratoDetalle' in data)
-      model.tipoContratoDetalle = data.tipoContratoDetalle ?? null;
+    if ('tipoContratoDetalle' in data) model.tipoContratoDetalle = data.tipoContratoDetalle ?? null;
     if ('responsableEmpresa' in data) model.responsableEmpresa = data.responsableEmpresa ?? null;
     if ('cargoResponsable' in data) model.cargoResponsable = data.cargoResponsable ?? null;
-    if ('telefonoResponsable' in data)
-      model.telefonoResponsable = data.telefonoResponsable ?? null;
+    if ('telefonoResponsable' in data) model.telefonoResponsable = data.telefonoResponsable ?? null;
     if ('estado' in data) model.estado = data.estado;
     if ('observaciones' in data) model.observaciones = data.observaciones ?? null;
     return model;

@@ -52,7 +52,7 @@ export class PasantiaInformePdfGenerator extends IncosPDFLibBase {
    */
   async generate(options = {}) {
     try {
-      const tipo = options.tipo;
+      const { tipo } = options;
       const pdfDoc = await this._loadTemplate('Plantilla.pdf');
       const firstPage = pdfDoc.getPages()[0];
       this._initializeDocumentState(pdfDoc, firstPage, true);

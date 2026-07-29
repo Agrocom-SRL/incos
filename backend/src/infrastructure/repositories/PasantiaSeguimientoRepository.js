@@ -63,8 +63,7 @@ export class PasantiaSeguimientoRepository extends BaseRepository {
     if ('pasantiaId' in data) model.pasantiaId = data.pasantiaId ?? null;
     if ('fecha' in data) model.fecha = data.fecha ?? null;
     if ('descripcionTrabajo' in data) model.descripcionTrabajo = data.descripcionTrabajo ?? null;
-    if ('principalesActividades' in data)
-      model.principalesActividades = data.principalesActividades ?? null;
+    if ('principalesActividades' in data) model.principalesActividades = data.principalesActividades ?? null;
     if ('nivelDesempeno' in data) model.nivelDesempeno = data.nivelDesempeno ?? null;
     if ('fortalezas' in data) model.fortalezas = data.fortalezas ?? null;
     if ('areasMejorar' in data) model.areasMejorar = data.areasMejorar ?? null;

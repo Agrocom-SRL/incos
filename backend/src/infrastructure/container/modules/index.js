@@ -1,9 +1,9 @@
 /**
  * Punto de entrada del registro de módulos de dominio
- * 
+ *
  * Responsabilidades:
  * - Registrar módulos de dominio (estudiantes, configuración, geográficos, referencia)
- * 
+ *
  * Orden de registro (esta capa asume que infraestructura ya fue registrada):
  * 1. Módulos de dominio (dependen de repositorios y servicios)
  */
@@ -22,10 +22,11 @@ import { registerDocentesModule } from './docentes/index.js';
 import { registerAulasHorariosModule } from './aulas-horarios/index.js';
 import { registerCapacitacionModule } from './capacitacion/index.js';
 import { registerTutoriasModule } from './tutorias/index.js';
+import { registerPasantiasModule } from './pasantias/index.js';
 
 /**
  * Registra todos los módulos de dominio en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con todos los módulos registrados
  */
@@ -48,6 +49,7 @@ export function registerAllModules(container) {
     registerAulasHorariosModule(container);
     registerCapacitacionModule(container);
     registerTutoriasModule(container);
+    registerPasantiasModule(container);
 
     return container;
 }
