@@ -108,6 +108,13 @@ export const UPLOAD = {
     return `avance_${ts}_${nameWithoutExt}${ext}`;
   },
 
+  /**
+   * Ruta base para documentos de un trámite de pasantía (módulo TUT)
+   * @param {number|string} pasantiaId - ID del trámite de pasantía
+   * @returns {string} Ruta relativa (ej: 'documentos/pasantias/1')
+   */
+  pasantias: (pasantiaId) => `documentos/pasantias/${pasantiaId}`,
+
   /** Ruta relativa para imágenes QR de cuentas de pago (backend/uploads/cuentas-pago/qr/) */
   cuentasPagoQr: () => 'cuentas-pago/qr',
 

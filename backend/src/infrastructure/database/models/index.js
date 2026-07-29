@@ -156,3 +156,11 @@ export { BitacoraProyecto } from './bitacora_proyecto.js';
 export { DictamenProyecto } from './dictamen_proyecto.js';
 export { SesionRefuerzo } from './sesion_refuerzo.js';
 export { SesionRefuerzoEstudiante } from './sesion_refuerzo_estudiante.js';
+
+// ============================================
+// PASANTÍAS (módulo TUT)
+// ============================================
+export { PasantiaEmpresa } from './pasantia_empresa.js';
+export { Pasantia } from './pasantia.js';
+export { PasantiaInforme } from './pasantia_informe.js';
+export { PasantiaSeguimiento } from './pasantia_seguimiento.js';
