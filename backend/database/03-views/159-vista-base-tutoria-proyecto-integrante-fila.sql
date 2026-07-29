@@ -46,8 +46,11 @@ SELECT
   ti.id                     AS integrante_proyecto_id,
   ti.rol                    AS integrante_rol,
   ti.estado                 AS integrante_estado,
+  ti.fecha_incorporacion    AS fecha_incorporacion,
+  ti.observaciones          AS integrante_observaciones,
   est.id                    AS estudiante_id,
   est.codigo_estudiante     AS codigo_estudiante,
+  est.ci                    AS estudiante_ci,
   NULLIF(TRIM(CONCAT_WS(' ', est.apellido_paterno, est.apellido_materno, est.nombres)), '') AS estudiante_nombre
 FROM proyectos_grado p
 INNER JOIN integrantes_proyecto ti

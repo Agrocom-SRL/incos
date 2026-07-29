@@ -65,7 +65,11 @@ export function integranteRowToPresentation(row) {
     estado: row.integrante_estado,
     estudianteId: row.estudiante_id ?? null,
     codigoEstudiante: row.codigo_estudiante ?? null,
+    nombreCompleto: row.estudiante_nombre ?? null,
     estudianteNombre: row.estudiante_nombre ?? null,
+    ci: row.estudiante_ci ?? null,
+    fechaIncorporacion: row.fecha_incorporacion ?? null,
+    observaciones: row.integrante_observaciones ?? null,
   };
 }
 

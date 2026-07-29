@@ -35,12 +35,11 @@ const formatFecha = (value) => {
 const resolvePersonaNombre = (raw, prefijo) => {
   const armado = cleanText(raw?.[`${prefijo}Nombre`] ?? raw?.[`${prefijo}NombreCompleto`]);
   if (armado) return armado;
-  return (
-    buildFullName(
-      raw?.[`${prefijo}Nombres`] ?? raw?.nombres,
-      raw?.[`${prefijo}ApellidoPaterno`] ?? raw?.apellidoPaterno,
-      raw?.[`${prefijo}ApellidoMaterno`] ?? raw?.apellidoMaterno,
-    ) || null
+  return buildFullName(
+    raw?.[`${prefijo}Nombres`] ?? raw?.nombres,
+    raw?.[`${prefijo}ApellidoPaterno`] ?? raw?.apellidoPaterno,
+    raw?.[`${prefijo}ApellidoMaterno`] ?? raw?.apellidoMaterno,
+    null,
   );
 };
 
@@ -95,9 +94,9 @@ export const mapIntegrante = (raw) => {
     id: raw.id,
     estudianteId: raw.estudianteId ?? null,
     nombreCompleto:
+      cleanText(raw.nombreCompleto) ||
       resolvePersonaNombre(raw, 'integrante') ||
-      resolvePersonaNombre(raw, 'estudiante') ||
-      cleanText(raw.nombreCompleto),
+      resolvePersonaNombre(raw, 'estudiante'),
     ci: cleanText(raw.ci ?? raw.numeroDocumento),
     rol: raw.rol ?? 'INTEGRANTE',
     estado: raw.estado ?? 'ACTIVO',
