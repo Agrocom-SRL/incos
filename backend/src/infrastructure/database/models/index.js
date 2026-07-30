@@ -169,3 +169,10 @@ export { PasantiaSeguimiento } from './pasantia_seguimiento.js';
 // SUPERVISIÓN DOCENTE (módulo DOC)
 // ============================================
 export { FichaSeguimientoClase } from './ficha_seguimiento_clase.js';
+
+// ============================================
+// LIBROS DE REGISTRO (módulo ACA, schema 25)
+// ============================================
+export { LibroRegistro } from './libro_registro.js';
+export { FolioLibro } from './folio_libro.js';
+export { FolioEstudiante } from './folio_estudiante.js';

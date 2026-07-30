@@ -32,7 +32,10 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('aca_cal_centralizador', 'Centralizador de notas', 'ACADEMICO', 20, 1, NOW(), NOW()),
 -- 2026-07-29 (disolución REP): la deserción vive en ACA (pestaña de la página
 -- Avance académico) con permiso propio — roles más restringidos que el avance.
-('aca_desercion', 'Deserción estudiantil', 'ACADEMICO', 21, 1, NOW(), NOW());
+('aca_desercion', 'Deserción estudiantil', 'ACADEMICO', 21, 1, NOW(), NOW()),
+-- 2026-07-30 (Fase 4, schema 25): libros físicos del centralizador (LIBRO N° /
+-- FOLIO N°), un libro por carrera y gestión con folios por paralelo.
+('aca_libros', 'Libros de registro', 'ACADEMICO', 22, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo ACA
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -60,9 +63,14 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('academico.trazabilidad.transitabilidad.recibir', 'Transitabilidad: recibir', NULL, 'ACADEMICO', 'ACA', 'aca_transitabilidad', '/academico/transitabilidad/listar', 1, NOW(), NOW()),
 ('academico.trazabilidad.transitabilidad.convalidar', 'Transitabilidad: convalidar notas', NULL, 'ACADEMICO', 'ACA', 'aca_transitabilidad', '/academico/transitabilidad/listar', 1, NOW(), NOW()),
 ('academico.trazabilidad.transitabilidad.aprobar', 'Transitabilidad: aprobar', NULL, 'ACADEMICO', 'ACA', 'aca_transitabilidad', '/academico/transitabilidad/listar', 1, NOW(), NOW()),
-('academico.historial.folio', 'Historial: gestionar folio del egresado', NULL, 'ACADEMICO', 'ACA', 'aca_historial', '/academico/historial/academico', 1, NOW(), NOW()),
+-- 2026-07-30 (Fase 4): retirados los códigos apagados `academico.historial.folio`
+-- (folio del egresado, concepto anterior al schema 25 → reemplazado por
+-- `academico.libro`) y `academico.historial.validar` (la validación de egreso
+-- pasa a la Fase 5, `tutorias.titulo.*`).
 ('academico.historial.academico', 'Historial: ver historial académico del alumno', NULL, 'ACADEMICO', 'ACA', 'aca_historial', '/academico/historial/academico', 1, NOW(), NOW()),
-('academico.historial.validar', 'Historial: validar para egreso', NULL, 'ACADEMICO', 'ACA', 'aca_historial', '/academico/historial/academico', 1, NOW(), NOW()),
+-- Libros de registro del centralizador (Fase 4, schema 25): sin ELIMINAR — un
+-- folio no se borra, se ANULA (transición de estado con EDITAR/APROBAR).
+('academico.libro', 'Libros de registro del centralizador', NULL, 'ACADEMICO', 'ACA', 'aca_libros', '/academico/libros', 1, NOW(), NOW()),
 ('academico.avance', 'Avance académico: ver progreso del estudiante en su carrera', NULL, 'ACADEMICO', 'ACA', 'aca_avance', '/academico/avance', 1, NOW(), NOW()),
 -- 2026-07-29 (disolución REP): reemplaza a reportes.desercion. Pestaña "Deserción"
 -- de la página /academico/avance (PermisoGuard por pestaña); métrica ANUAL por
@@ -118,13 +126,15 @@ JOIN (
   UNION ALL SELECT 'academico.trazabilidad.transitabilidad.recibir', 'CREAR'
   UNION ALL SELECT 'academico.trazabilidad.transitabilidad.convalidar', 'EDITAR'
   UNION ALL SELECT 'academico.trazabilidad.transitabilidad.aprobar', 'APROBAR'
-  UNION ALL SELECT 'academico.historial.folio', 'CREAR'
-  UNION ALL SELECT 'academico.historial.folio', 'EDITAR'
-  UNION ALL SELECT 'academico.historial.folio', 'GENERAR_PDF'
   UNION ALL SELECT 'academico.historial.academico', 'LISTAR'
   UNION ALL SELECT 'academico.historial.academico', 'DETALLE'
   UNION ALL SELECT 'academico.historial.academico', 'EXPORTAR'
-  UNION ALL SELECT 'academico.historial.validar', 'APROBAR'
+  UNION ALL SELECT 'academico.libro', 'LISTAR'
+  UNION ALL SELECT 'academico.libro', 'DETALLE'
+  UNION ALL SELECT 'academico.libro', 'CREAR'
+  UNION ALL SELECT 'academico.libro', 'EDITAR'
+  UNION ALL SELECT 'academico.libro', 'APROBAR'
+  UNION ALL SELECT 'academico.libro', 'EXPORTAR'
   UNION ALL SELECT 'academico.avance', 'LISTAR'
   UNION ALL SELECT 'academico.avance', 'EXPORTAR'
   UNION ALL SELECT 'academico.desercion', 'LISTAR'
@@ -224,12 +234,6 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.trazabilidad.transitabilidad.convalidar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'academico.trazabilidad.transitabilidad.aprobar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.trazabilidad.transitabilidad.aprobar', 'APROBAR'
-  UNION ALL SELECT 'RECTOR', 'academico.historial.folio', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'academico.historial.folio', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'academico.historial.folio', 'GENERAR_PDF'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.folio', 'CREAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.folio', 'EDITAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.folio', 'GENERAR_PDF'
   UNION ALL SELECT 'RECTOR', 'academico.historial.academico', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.historial.academico', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'academico.historial.academico', 'EXPORTAR'
@@ -250,8 +254,26 @@ FROM (
   UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'DETALLE'
   UNION ALL SELECT 'ESTUDIANTE', 'academico.historial.academico', 'EXPORTAR'
-  UNION ALL SELECT 'RECTOR', 'academico.historial.validar', 'APROBAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.historial.validar', 'APROBAR'
+  -- Libros de registro (2026-07-30, Fase 4): RECTOR y DIR_ACADEMICO operan y
+  -- FIRMAN (APROBAR = firmar/anular folio); SEC_ACADEMICA prepara el libro
+  -- (abre, genera folios, edita, exporta) pero NO firma. DOCENTE/ESTUDIANTE: nada.
+  UNION ALL SELECT 'RECTOR', 'academico.libro', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.libro', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'academico.libro', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'academico.libro', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'academico.libro', 'APROBAR'
+  UNION ALL SELECT 'RECTOR', 'academico.libro', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.libro', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.libro', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.libro', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.libro', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.libro', 'APROBAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.libro', 'EXPORTAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.libro', 'LISTAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.libro', 'DETALLE'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.libro', 'CREAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.libro', 'EDITAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.libro', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'academico.avance', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.avance', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.avance', 'LISTAR'
@@ -362,12 +384,13 @@ WHERE codigo IN (
   'academico.trazabilidad.transitabilidad.solicitar',
   'academico.trazabilidad.transitabilidad.recibir',
   'academico.trazabilidad.transitabilidad.convalidar',
-  'academico.trazabilidad.transitabilidad.aprobar',
+  'academico.trazabilidad.transitabilidad.aprobar'
   -- Historial: la pantalla del kardex (academico.historial.academico) ya
-  -- está construida (2026-07-02) y queda ACTIVA; solo folio/validar siguen
-  -- en construcción.
-  'academico.historial.folio',
-  'academico.historial.validar'
+  -- está construida (2026-07-02) y queda ACTIVA.
+  -- 'academico.historial.folio' y 'academico.historial.validar' RETIRADOS del
+  -- seed (2026-07-30, Fase 4): el folio del egresado fue reemplazado por
+  -- `academico.libro` (schema 25) y la validación de egreso pasa a la Fase 5
+  -- (`tutorias.titulo.*`). Ya no se siembran, por eso tampoco se apagan aquí.
   -- 'academico.avance' rehabilitado (2026-07-29): backend construido (REP disuelto).
 );
 

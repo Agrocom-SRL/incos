@@ -178,12 +178,11 @@ matriz gemela del centralizador). Limpieza REP: borrar
 iconos `REP-*` de `menuIcons.js`. Nombres siempre APELLIDO_PATERNO
 APELLIDO_MATERNO NOMBRES (ya resuelto en vistas/Excel).
 
-### Pendiente BD (gated — requiere aprobación explícita)
+### Pendiente BD — EJECUTADO (2026-07-30, aprobado por el usuario)
 
-1. Recrear vistas **138, 139, 141** (columnas aditivas) y crear **169–173**
-   (orden: 138/139 → 141 → 169, 170 → 171, 172 → 173).
-2. Resembrar seeds **59** (avance rehabilitado + desercion) y **63**
-   (tombstone: limpia filas REP residuales).
+Vistas 138/139/141 recreadas y 169–173 creadas en BD con datos reales; seeds
+59 y 63 resembrados (`academico.avance` activo, `academico.desercion`
+sembrado, códigos `reportes.*` eliminados). Nada pendiente en BD.
 
 ### Verificación iteración 1
 
@@ -195,3 +194,61 @@ APELLIDO_MATERNO NOMBRES (ya resuelto en vistas/Excel).
   `GET /asistencia/consolidado(/export)`.
 - Coherencia seed ↔ router verificada (mismos códigos y acciones
   LISTAR/EXPORTAR en 59 y en `verificarPermiso`).
+
+## Estado (2026-07-30) — Iteración 2 (frontend) HECHA
+
+Pantallas ACA construidas contra el contrato de la iteración 1 y esqueleto REP
+retirado. Lint dirigido 0 errores en archivos nuevos/tocados; `npm run build`
+OK (chunks lazy `AvanceAcademicoConnector` y `ConsolidadoAsistenciaConnector`
+emitidos). Con la BD ya sembrada, las tres pantallas quedan operativas.
+
+### Pantallas
+
+- **`/academico/avance?tab=avance|desercion`** (`modules/academico/avance/`):
+  página con shell del prototipo CFG (workspace + tabs), pestañas gateadas por
+  `hasPermiso` + `PermisoGuard`:
+  - «Avance» (`academico.avance` LISTAR): tabla estudiante × plan
+    (`IdentidadCelda`/`InfoLinesCell`/`Progress`), filtro de carrera y búsqueda
+    en cliente (opciones derivadas del propio listado, sin fetch de catálogos
+    con RBAC ajeno), resumen del backend; EXPORTAR con el mismo `carreraId`.
+  - «Deserción» (`academico.desercion` LISTAR): agregado carrera × gestión
+    (vista 173, `Progress` con rojo semántico `allColors.colorError`) +
+    detalle de desertores (vista 172, pills Abandono/Retiro), Selects de
+    gestión/carrera que filtran ambas tablas y el resumen; EXPORTAR con los
+    mismos filtros.
+  - Rol ESTUDIANTE (`alcance: 'PROPIO'` del backend): degrada a la ficha
+    «Mi avance» (anillo `Progress` + `DetailInfoCard`), sin tabs ni export.
+- **`/academico/asistencia/consolidado`** (ACA-ASI-CONS): matriz gemela del
+  Centralizador sobre el shell verde de la grilla de asistencia (clases
+  `asi-grid` reutilizadas + sección `asi-consolidado` nueva en
+  `asistencia.css`), Select de paralelo (dashboard de paralelos, mismo origen
+  del Centralizador P1) + `Segmented` Anual/Bimestre 1..4 (omitido = anual),
+  tooltip por celda con sesiones/faltas, riesgo < 61 en rojo semántico,
+  leyenda espejo del Excel; EXPORTAR con el mismo alcance. Acceso
+  descubrible: botón «Consolidado %» en Coordinación de asistencia
+  (fail-closed por permiso).
+
+### Capas (dataKey == dataFieldName literal del contrato)
+
+- Infra: `AVANCE_ACADEMICO_ENDPOINTS`/`DESERCION_ENDPOINTS` + consolidado en
+  `ASISTENCIA_ENDPOINTS`; repos `AvanceAcademicoRepository`,
+  `DesercionRepository` y `AsistenciaRepository.obtenerConsolidado/
+  descargarConsolidadoExcel`; helper compartido nuevo
+  `infrastructure/api/binaryDownload.js` (Content-Disposition + error Blob).
+- Dominio: `useCases/academico/avance/` (Get{AvanceAcademico,Desercion}) y
+  `GetConsolidadoAsistenciaUseCase` en asistencia; registrados en
+  `academico.container.js`.
+- Aplicación: `application/modules/academico/avance/` (utils `AVANCE_PERMISOS`,
+  hooks state `useAvanceAcademicoPage`/`useDesercionPage`, api de export) y en
+  asistencia `useConsolidadoAsistenciaPage` + export + util
+  `asistenciaConsolidado.js` (umbral 61 espejo de la nota mínima y formato %).
+
+### Limpieza REP (verificada por grep)
+
+`presentation/modules/reportes/` borrado; import/spread retirado de
+`presentation/modules/index.js`; iconos `REP-*` y el dominio `REP` fuera de
+`menuIcons.js` (incl. import `FallOutlined` sin uso) y de
+`dominios/routes.jsx`; alias `@reportes` retirado de `vite.config.js` y
+`jsconfig.json`. Solo quedan menciones documentales (`reportes.*` como código
+retirado en JSDoc). La matriz ya reflejaba la disolución desde la iteración 1
+(sección REP → punteros a dueños); no requirió cambios.

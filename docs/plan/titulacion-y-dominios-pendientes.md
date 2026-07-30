@@ -80,7 +80,7 @@ Cero cambio, pero el menú no reflejará la centralización de graduación pedid
 | 22+23 titulación | Proyectos de grado (+ Mi proyecto portal) | **TUT "Titulación"** | `tutorias.titulacion.*` (existentes) | 66 ✔ |
 | 23 acompañamiento | Alumnos en riesgo · Sesiones · Panel | **ACA (menú)** | `tutorias.acompanamiento.*` (existentes) | 66 (grupo_ui→ACADEMICO) |
 | 24 pasantías | Pasantías | **TUT "Titulación"** | `tutorias.pasantia.*` (nuevos) | 66 (ampliar) |
-| 25 libros | Libros de registro | **ACA** (junto a Centralizador; es el registro oficial de calificaciones por carrera-gestión, de todos los años, no solo egresos) | `academico.libro.*` (nuevos) | 58 (ampliar) |
+| 25 libros | Libros de registro | **ACA** (junto a Centralizador; es el registro oficial de calificaciones por carrera-gestión, de todos los años, no solo egresos) | `academico.libro` ✔ (2026-07-30) | 59 (ampliado ✔; el ACA es el 59, no el 58) |
 | 26 títulos/certificados | Títulos y certificados | **TUT "Titulación"** (cierre de la cadena: consume `pasantia_id` + `folio_estudiante_id`) | `tutorias.titulo.*` (nuevos) | 66 (ampliar, Fase 5) |
 | 27 supervisión | Supervisión docente | **DOC** (la ficha la emite Dirección Académica sobre un docente; códigos `docentes.supervision.*` ya existen apagados) | `docentes.supervision.ficha` (rediseñar) | 59 (rediseñar bloque) |
 | `modalidades_grado` ABM | catálogo | **CFG** (catálogos pendientes de parametrizar) | `configuracion.*` | 62 (futuro) |
@@ -232,15 +232,23 @@ ejecutada). Resta, en orden:
 - Frontend bajo DOC (`/docentes/supervision`), ficha campo a campo del
   formulario real; el docente ve sus fichas en su portal (lectura).
 
-### Fase 4 — Libros de registro (schema 25; ítem de ACA)
+### Fase 4 — Libros de registro (schema 25; ítem de ACA) — ITERACIÓN 1 HECHA (2026-07-30)
 
-- Seed 58: `academico.libro` (LISTAR/DETALLE/CREAR/EDITAR/APROBAR/EXPORTAR).
-- Backend: apertura de libro por carrera+gestión (UNIQUE ya en schema),
-  generación de folios por paralelo (hasta 10 estudiantes/página) tomando
-  notas de la vista 135 (no se copian: se derivan), numeración de folio
-  continua por libro.
-- Frontend bajo ACA junto a Centralizador: listado de libros → folios →
-  impresión (kit de planilla académico).
+- ✔ Seed **59** (el seeder ACA es el 59, no el 58): `academico.libro`
+  (LISTAR/DETALLE/CREAR/EDITAR/APROBAR/EXPORTAR, sin ELIMINAR); retirados
+  `academico.historial.folio` (reemplazado por `academico.libro`) y
+  `academico.historial.validar` (pasa a Fase 5, `tutorias.titulo.*`).
+- ✔ Backend `/api/v1/libros`: apertura de libro por carrera+gestión (UNIQUE;
+  `numeroLibro` se INGRESA cada gestión, mismo número entre carreras),
+  generación de folios por paralelo (10 estudiantes/página) con notas
+  derivadas de la vista 135 (no se copian) y **numeración de folio continua
+  POR GESTIÓN cruzando todas las carreras** (transaccional, FOR UPDATE);
+  export Excel del libro completo (hoja por paralelo, folios apilados,
+  firmas de docentes, logo MINEDU, margen de encuadernado). Vistas 175-177.
+  ⛔ Pendiente BD: ejecutar vistas 175-177 + resembrar seed 59.
+- Iteración 2 (pendiente): frontend bajo ACA junto a Centralizador
+  (listado de libros → folios → impresión, kit de planilla académico) +
+  limpieza de `ACA-HIS-FOLIO`/`ACA-HIS-VALIDAR` en `historial/routes.jsx`.
 
 ### Fase 5 — Títulos y certificados (schema 26; ítem de Titulación) — GATED
 

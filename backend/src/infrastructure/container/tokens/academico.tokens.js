@@ -90,6 +90,17 @@ export const ACADEMICO_TOKENS = {
   reabrirBimestreCursoUseCase: 'academico.reabrirBimestreCursoUseCase',
   cerrarBimestreCursoUseCase: 'academico.cerrarBimestreCursoUseCase',
   exportRegistroPedagogicoBimestreUseCase: 'academico.exportRegistroPedagogicoBimestreUseCase',
+  // Libros de registro (schema 25 — Fase 4)
+  listLibrosUseCase: 'academico.listLibrosUseCase',
+  abrirLibroUseCase: 'academico.abrirLibroUseCase',
+  getLibroByIdUseCase: 'academico.getLibroByIdUseCase',
+  editarLibroUseCase: 'academico.editarLibroUseCase',
+  listParalelosLibroUseCase: 'academico.listParalelosLibroUseCase',
+  generarFoliosParaleloUseCase: 'academico.generarFoliosParaleloUseCase',
+  getFolioByIdUseCase: 'academico.getFolioByIdUseCase',
+  cambiarEstadoFolioUseCase: 'academico.cambiarEstadoFolioUseCase',
+  editarFolioEstudianteUseCase: 'academico.editarFolioEstudianteUseCase',
+  exportLibroExcelUseCase: 'academico.exportLibroExcelUseCase',
 
   // CONTROLLERS
   listParalelosController: 'academico.listParalelosController',
@@ -175,6 +186,17 @@ export const ACADEMICO_TOKENS = {
   cerrarBimestreCursoController: 'academico.cerrarBimestreCursoController',
   exportRegistroPedagogicoBimestreController:
     'academico.exportRegistroPedagogicoBimestreController',
+  // Libros de registro (schema 25 — Fase 4)
+  listLibrosController: 'academico.listLibrosController',
+  abrirLibroController: 'academico.abrirLibroController',
+  getLibroByIdController: 'academico.getLibroByIdController',
+  editarLibroController: 'academico.editarLibroController',
+  listParalelosLibroController: 'academico.listParalelosLibroController',
+  generarFoliosParaleloController: 'academico.generarFoliosParaleloController',
+  getFolioByIdController: 'academico.getFolioByIdController',
+  cambiarEstadoFolioController: 'academico.cambiarEstadoFolioController',
+  editarFolioEstudianteController: 'academico.editarFolioEstudianteController',
+  exportLibroExcelController: 'academico.exportLibroExcelController',
 
   marcarGestionVigenteUseCase: 'academico.marcarGestionVigenteUseCase',
   renovarOfertaGestionUseCase: 'academico.renovarOfertaGestionUseCase',
@@ -259,5 +281,6 @@ export const ACADEMICO_TOKENS = {
   conflictosRouter: 'academico.conflictosRouter',
   horariosDocenteRouter: 'academico.horariosDocenteRouter',
   avanceAcademicoRouter: 'academico.avanceAcademicoRouter',
-  desercionRouter: 'academico.desercionRouter'
+  desercionRouter: 'academico.desercionRouter',
+  librosRouter: 'academico.librosRouter'
 };

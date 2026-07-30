@@ -3,6 +3,35 @@
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
+## Changelog 2026-07-30 — Libros de registro (Fase 4, iteración 1 backend): permiso único en seed 59
+
+Módulo nuevo contra el schema 25 (`libros_registro` + `folios_libro` +
+`folio_estudiantes`; libro físico real «LIBRO LLENADO SISTEMAS 11 dic 2025»).
+Backend completo montado en `/api/v1/libros` (vistas **175**
+`vista_libros_registro_listado`, **176** `vista_base_libro_folio_fila`
+reutilizando la 127, **177** `vista_base_libro_paralelo_estudiante` sobre las
+bases 03/04; notas por materia SIN vista nueva: se leen de la **135** vía
+`calificacionCentralizadorRepository`). **Pendiente BD:** ejecutar vistas
+175-177 + resembrar `59-seed-permisos-aca.sql`.
+
+- **Seed 59 (ACA):** permiso ÚNICO por ítem `academico.libro`
+  («Libros de registro del centralizador»), grupo `aca_libros` (orden 22),
+  ruta `/academico/libros`. Acciones: LISTAR, DETALLE, CREAR, EDITAR, APROBAR,
+  EXPORTAR — **sin ELIMINAR** (un folio no se borra: se ANULA con motivo).
+- **Roles:** RECTOR y DIR_ACADEMICO las 6 (firman); SEC_ACADEMICA todas menos
+  APROBAR (prepara el libro, no firma). DOCENTE/ESTUDIANTE: sin filas.
+- **Retirados del seed 59** (nota de reemplazo): `academico.historial.folio`
+  (folio del egresado, concepto anterior al schema 25 → **reemplazado por
+  `academico.libro`**) y `academico.historial.validar` (la validación de
+  egreso **pasa a la Fase 5**, `tutorias.titulo.*`). La limpieza de sus rutas
+  frontend (`ACA-HIS-FOLIO`/`ACA-HIS-VALIDAR` en `historial/routes.jsx`) va en
+  la iteración 2, junto con la resiembra.
+- **Regla de numeración (corrección 2026-07-30):** `numero_folio` es
+  correlativo POR GESTIÓN cruzando TODAS las carreras (contador compartido
+  1..N, asignado en transacción con FOR UPDATE); `numero_libro` se INGRESA
+  cada gestión (mismo número para todas las carreras de la gestión; sin
+  auto-sugerencia por carrera).
+
 ## Changelog 2026-07-30 — Supervisión docente (Fase 3, iteración 1 backend): permiso único en seed 60
 
 Rediseño del bloque supervisión del módulo DOC contra el schema 27
@@ -459,6 +488,16 @@ Fuente: `55-seed-roles.sql` (ids de rol fijos 1-8).
 | `supervision-docente.routes.js` | GET | `/api/v1/supervision-docente/:id` | DETALLE ficha |
 | `supervision-docente.routes.js` | PUT | `/api/v1/supervision-docente/:id` | EDITAR ficha |
 | `supervision-docente.routes.js` | GET | `/api/v1/supervision-docente/:id/pdf` | EXPORTAR PDF (réplica del formulario) |
+| `libros.routes.js` | GET | `/api/v1/libros` | LISTAR libros de registro (`academico.libro`; vista 175) |
+| `libros.routes.js` | POST | `/api/v1/libros` | CREAR (abrir libro; `numeroLibro` requerido) |
+| `libros.routes.js` | GET | `/api/v1/libros/:id` | DETALLE ficha (cabecera + folios, vista 176) |
+| `libros.routes.js` | PATCH | `/api/v1/libros/:id` | EDITAR / cerrar libro |
+| `libros.routes.js` | GET | `/api/v1/libros/:id/paralelos` | CREAR (apoyo generador: paralelos candidatos) |
+| `libros.routes.js` | POST | `/api/v1/libros/:id/folios` | CREAR (generar folios del paralelo, numeración por gestión) |
+| `libros.routes.js` | GET | `/api/v1/libros/:id/folios/:folioId` | DETALLE folio (nómina + celdas 135) |
+| `libros.routes.js` | PATCH | `/api/v1/libros/:id/folios/:folioId/estado` | APROBAR (BORRADOR→IMPRESO→FIRMADO/ANULADO) |
+| `libros.routes.js` | PATCH | `/api/v1/libros/:id/folios/:folioId/estudiantes/:filaId` | EDITAR fila (si NO FIRMADO) |
+| `libros.routes.js` | GET | `/api/v1/libros/:id/export` | EXPORTAR Excel del libro completo |
 | `dashboard.routes.js` | GET | `/api/v1/dashboard/mi-resumen-docente` | Portal docente: panel de inicio (solo `authenticate`; incluye `stats` + `actividades` desde vista 149) |
 | `horarios-docente.routes.js` | GET | `/api/v1/horarios/docentes/:docenteId/grilla-conflictos` | Grilla semanal del docente (`institucional.horario.conflictos` LISTAR; DOCENTE solo la propia vía `docenteSelfOnlyGuard('docenteId')`) |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes` | VER listado |
@@ -697,6 +736,7 @@ Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 | Transitabilidad | `/academico/transitabilidad/listar` | `academico.trazabilidad.transitabilidad.*` |
 | Historial | `/academico/historial/academico` | `academico.historial.*` |
 | Avance académico | `/academico/avance` | `academico.avance` + `academico.desercion` (pestaña Deserción) |
+| Libros de registro | `/academico/libros` | `academico.libro` (frontend en iteración 2) |
 
 > **Licencias estudiantiles** ya **no** es un ítem propio: pasó a ser una **página dentro de
 > Asistencia** (`/academico/asistencia/licencias/listar`), permisos renombrados
@@ -750,16 +790,20 @@ Permisos: `academico.asistencia.*` — ítem `/academico/asistencia` (gemelo de 
 
 ### ACA - Historial académico (kardex FORM-SIE-ITT-04) — construido 2026-07-02
 Permiso: `academico.historial.academico` — menú `/academico/historial/academico` (**reactivado**
-en el bloque de deshabilitación temporal del seed 59; `folio`/`validar` siguen desactivados
-hasta construirse; `academico.avance` fue rehabilitado el 2026-07-29 — ver sección Avance).
+en el bloque de deshabilitación temporal del seed 59; `academico.avance` fue
+rehabilitado el 2026-07-29 — ver sección Avance).
 
 | Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
 |---|---|---|---|
 | `academico.historial.academico` | LISTAR | Ítem menú Historial → lista de estudiantes + buscador ("Mi historial" para EST: redirige a su transcript) | REC, DIRA, SECA, EST |
 | `academico.historial.academico` | DETALLE | Transcript `/academico/historial/academico/:id` (`GET /estudiantes/:id/historial-academico`) | REC, DIRA, SECA, EST (solo propio) |
 | `academico.historial.academico` | EXPORTAR | Excel kit planilla verde (`GET .../export`) + PDF FORM-SIE-ITT-04 (`GET .../export-pdf`, plantilla boletín). La UI del portal EST solo ofrece PDF | REC, DIRA, SECA, EST (solo propio) |
-| `academico.historial.folio` | CREAR, EDITAR, GENERAR_PDF | Folio del egresado (**desactivado**, en construcción) | REC, DIRA |
-| `academico.historial.validar` | APROBAR | Validación para egreso (**desactivado**, en construcción) | REC, DIRA |
+
+> **Retirados 2026-07-30 (Fase 4):** `academico.historial.folio` (folio del
+> egresado, concepto anterior al schema 25) fue **reemplazado por
+> `academico.libro`** (sección ACA - Libros de registro); la validación de
+> egreso de `academico.historial.validar` **pasa a la Fase 5**
+> (`tutorias.titulo.*`). Ya no se siembran en el seed 59.
 
 > **Anti-IDOR:** ambas rutas llevan `estudianteSelfOnlyGuard` tras `verificarPermiso`: un usuario
 > con vínculo estudiante solo accede a su propio `:id` (resuelto en servidor); staff sin restricción.
@@ -785,6 +829,28 @@ iteración siguiente; hoy la ruta sigue en `UnderConstruction`). Grupos UI:
 > **Deserción ≠ riesgo:** la métrica ACA mide abandono CONSUMADO (estados de
 > matrícula, histórico anual); el riesgo pedagógico por notas es del módulo TUT
 > (vistas 156/157, gestión vigente). Consumidores distintos, sin duplicar vistas.
+
+### ACA - Libros de registro (`/academico/libros`) — backend 2026-07-30 (Fase 4, schema 25)
+Permiso ÚNICO por ítem: `academico.libro` (grupo `aca_libros`, seed 59). Libro
+físico del centralizador: uno por carrera+gestión; folio = página de un
+paralelo con hasta 10 estudiantes; `numero_folio` correlativo POR GESTIÓN
+cruzando todas las carreras. Frontend en la iteración 2 (hoy sin ruta en menú).
+
+| Permiso (codigo) | Acciones | Pantalla / endpoint | Roles |
+|---|---|---|---|
+| `academico.libro` | LISTAR | Listado de libros — `GET /libros[?carreraId][&gestionId]` (vista 175) | REC, DIRA, SECA |
+| `academico.libro` | DETALLE | Ficha del libro (`GET /libros/:id`, cabecera + folios vista 176) y folio (`GET /libros/:id/folios/:folioId`, nómina congelada + celdas de la 135) | REC, DIRA, SECA |
+| `academico.libro` | CREAR | Abrir libro (`POST /libros`; `numeroLibro` se INGRESA, mismo número para todas las carreras de la gestión) · paralelos candidatos (`GET /libros/:id/paralelos`) · generar folios (`POST /libros/:id/folios`, páginas de 10, numeración transaccional por gestión) | REC, DIRA, SECA |
+| `academico.libro` | EDITAR | Editar/cerrar libro (`PATCH /libros/:id`) · editar fila ESTADO/OBSERVACIONES (`PATCH /libros/:id/folios/:folioId/estudiantes/:filaId`, solo si el folio NO está FIRMADO/ANULADO) | REC, DIRA, SECA |
+| `academico.libro` | APROBAR | Transición de estado del folio (`PATCH /libros/:id/folios/:folioId/estado`): BORRADOR→IMPRESO→FIRMADO / ANULADO (con motivo); FIRMADO inmutable | REC, DIRA |
+| `academico.libro` | EXPORTAR | Excel del libro completo (`GET /libros/:id/export`): una hoja por paralelo, folios apilados + página de firmas de docentes, logo MINEDU, margen de encuadernado | REC, DIRA, SECA |
+
+> **Sin ELIMINAR:** un folio no se borra — se ANULA (motivo obligatorio) y el
+> paralelo se regenera con numeración nueva (los números anulados no se
+> reutilizan). **Notas por materia:** sin vista propia — se derivan de la 135
+> (asignación docente VIGENTE): el libro se genera al cierre de la gestión
+> mientras es vigente; el folio solo congela ESTADO y OBSERVACIONES.
+> Reimpresión de gestiones pasadas = evolución futura (parametrizar la 135).
 
 ### ACA - Nivelaciones, Trazabilidad, Historial
 Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.historial.*`

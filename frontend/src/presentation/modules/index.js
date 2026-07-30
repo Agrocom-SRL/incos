@@ -23,7 +23,6 @@ import { docentesRoutes } from './docentes/routes.jsx';
 import { institucionalRoutes } from './institucional/routes.jsx';
 import { pagosRoutes } from './pagos/routes.jsx';
 import { finanzasRoutes } from './finanzas/routes.jsx';
-import { reportesRoutes } from './reportes/routes.jsx';
 import { configuracionRoutes } from './configuracion/routes.jsx';
 import { seguridadRoutes } from './seguridad/routes.jsx';
 import { perfilRoutes } from './perfil/routes.jsx';
@@ -46,7 +45,6 @@ export const getAllRoutes = () => {
         ...institucionalRoutes,
         ...pagosRoutes,
         ...finanzasRoutes,
-        ...reportesRoutes,
         ...configuracionRoutes,
         ...seguridadRoutes,
         ...perfilRoutes,

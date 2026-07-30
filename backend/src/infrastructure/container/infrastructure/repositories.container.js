@@ -148,6 +148,8 @@ import { AsistenciaRegistroEstadoViewRepository } from '../../repositories/views
 import { AsistenciaConsolidadoViewRepository } from '../../repositories/views/AsistenciaConsolidadoViewRepository.js';
 import { AvanceAcademicoViewRepository } from '../../repositories/views/AvanceAcademicoViewRepository.js';
 import { DesercionViewRepository } from '../../repositories/views/DesercionViewRepository.js';
+import { LibroRegistroRepository } from '../../repositories/LibroRegistroRepository.js';
+import { LibroRegistroViewRepository } from '../../repositories/views/LibroRegistroViewRepository.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
@@ -439,6 +441,20 @@ export function registerRepositoriesModule(container) {
       container,
       REPOSITORIOS_TOKENS.desercionViewRepository,
       DesercionViewRepository,
+    );
+
+    // ============================================
+    // LIBROS DE REGISTRO (ACA, schema 25 — Fase 4)
+    // ============================================
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.libroRegistroRepository,
+      LibroRegistroRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.libroRegistroViewRepository,
+      LibroRegistroViewRepository,
     );
 
     // ============================================

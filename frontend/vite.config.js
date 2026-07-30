@@ -83,7 +83,6 @@ export default defineConfig({
             '@finanzas': path.resolve(__dirname, './src/presentation/modules/finanzas'),
             '@capacitacion': path.resolve(__dirname, './src/presentation/modules/capacitacion'),
             '@tutorias': path.resolve(__dirname, './src/presentation/modules/tutorias'),
-            '@reportes': path.resolve(__dirname, './src/presentation/modules/reportes'),
             '@supervision': path.resolve(__dirname, './src/presentation/modules/supervision'),
             '@trazabilidad': path.resolve(__dirname, './src/presentation/modules/academico/traspasos'),
             '@usuarios': path.resolve(__dirname, './src/presentation/modules/usuarios'),

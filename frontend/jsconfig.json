@@ -327,12 +327,6 @@
             "@tutorias/*": [
                 "./src/presentation/modules/tutorias/*"
             ],
-            "@reportes": [
-                "./src/presentation/modules/reportes"
-            ],
-            "@reportes/*": [
-                "./src/presentation/modules/reportes/*"
-            ],
             "@supervision": [
                 "./src/presentation/modules/supervision"
             ],

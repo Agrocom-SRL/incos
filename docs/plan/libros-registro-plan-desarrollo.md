@@ -6,6 +6,57 @@
 > (bloques D, F). Los hitos de BD (ejecutar vistas A6, resembrar seed B3)
 > requieren aprobación explícita del usuario en cualquiera de las iteraciones.
 > Prerrequisitos: Fases 2 y 3 integradas (números de vista y archivos compartidos).
+>
+> **✔ ITERACIÓN 1 HECHA (2026-07-30):** A1-A5 (vistas **175/176/177** en disco),
+> B1-B2 (seed 59 ampliado con `academico.libro` + retiro de
+> `historial.folio`/`historial.validar`), C1-C11 (backend `/api/v1/libros`
+> completo: modelos, repos A+B, 10 use cases, Excel builder con firmas de
+> docentes + logo MINEDU + margen de encuadernado, router, DI, montaje) y E
+> (matriz + este doc). ⛔ Pendiente BD (aprobación): A6 ejecutar vistas 175-177
+> + B3 resembrar seed 59. **Correcciones de regla de negocio incorporadas
+> (2026-07-30):** `numero_folio` correlativo POR GESTIÓN cruzando TODAS las
+> carreras (asignado en transacción con FOR UPDATE, no por libro/carrera);
+> `numero_libro` se INGRESA cada gestión (requerido en el payload, sin
+> auto-sugerencia MAX+1 por carrera; mismo número entre carreras);
+> `folio_actual` queda como informativo del último folio de ESTE libro.
+> Iteración 2 (D, F) pendiente.
+
+## 0.0 Corrección de negocio 2026-07-30 (aplica sobre C — backend en curso)
+
+El usuario, con conocimiento operativo real del centralizador, corrigió dos
+reglas que el plan original interpretó distinto:
+
+1. **`numero_folio` es correlativo POR GESTIÓN, cruzando TODAS LAS CARRERAS**
+   — no reinicia en 1 por cada libro/carrera. Ejemplo real: una gestión con
+   3 carreras numera sus folios de corrido 1..68 (no 1..20 por carrera). Cada
+   10 estudiantes = 1 folio nuevo sobre ese contador COMPARTIDO de la gestión.
+   Sin cambio de schema: `libros_registro` sigue UNIQUE(carrera_id,
+   gestion_id) y `folios_libro` sigue UNIQUE(libro_id, numero_folio); el
+   siguiente `numero_folio` se calcula como
+   `MAX(fl.numero_folio) FROM folios_libro fl JOIN libros_registro lr ON
+   lr.id=fl.libro_id WHERE lr.gestion_id=? AND activo=1 AND deleted_at IS
+   NULL` + 1 (transaccional, cruzando todos los libros de esa gestión), NO
+   `libro.folio_actual + 1` scoped a un solo libro/carrera.
+2. **`numero_libro` se ingresa manualmente y es (en la práctica) el mismo
+   valor para todas las carreras de una gestión** — NO se auto-sugiere por
+   MAX+1 **por carrera** (eso daría números distintos por carrera, que es
+   justo lo que no se quiere). `codigo_registro` también se ingresa (el
+   frontend puede prellenar "81981609" como sugerencia, pero el backend no
+   lo fuerza).
+3. **Nuevo en el export Excel** (aplica al bloque C7 cuando se implemente):
+   - Página/hoja adicional por paralelo con las firmas de TODOS los
+     docentes de ese paralelo, al final de sus folios — NO incrementa
+     `numero_folio` (artefacto de impresión, no fila de `folios_libro`).
+   - Logo del Ministerio de Educación en la cabecera (si no existe el asset
+     en el repo, queda documentado como pendiente de que el usuario lo
+     provea — no bloquea el resto).
+   - Márgenes de página pensando en encuadernado (margen izquierdo más
+     ancho, solo en este builder).
+
+Corrección enviada en caliente al agente backend que ya tenía escrita la
+lógica anterior (`AbrirLibroUseCase`, `GenerarFoliosParaleloUseCase` con el
+bug exacto de numeración por-carrera) — ver bitácora al pie del documento
+para el resultado aplicado.
 
 ## 0. Correcciones al enunciado (verificadas en repo)
 
@@ -234,3 +285,26 @@ B (seed 59, HITO re-siembra) ──┼→ C (backend) → D (frontend) → E (do
 el sistema": al existir este módulo, la cabecera del Centralizador (pantalla y
 Excel) puede mostrar LIBRO/FOLIO reales consultando `folios_libro` por
 `paralelo_gestion_id` — mejora pequeña fuera de alcance que cierra ese comentario.
+
+## Bitácora de cambios
+
+- **2026-07-30 (backend, iteración 1):** implementados A1-A5, B1-B2, C1-C11 y E.
+  La corrección §0.0 quedó APLICADA en código:
+  1. `LibroRegistroRepository.getMaxNumeroFolioByGestion(gestionId, {transaction,
+     lock})` (MAX cross-carrera por gestión) y `crearFoliosConEstudiantes` ahora
+     ASIGNA `numero_folio` dentro de la transacción (lectura `FOR UPDATE`,
+     arranque en `folio_inicial` solo si la gestión no tiene folios);
+     `folio_actual` quedó como informativo del último folio de ESTE libro.
+     `GenerarFoliosParaleloUseCase` ya no calcula números fuera de la transacción.
+  2. `AbrirLibroUseCase` exige `numeroLibro` (validator `.isInt({min:1})`
+     requerido); eliminado `getMaxNumeroLibroByCarrera` y toda auto-sugerencia
+     MAX+1 por carrera. `codigoRegistro` sigue opcional (default institucional
+     81981609 solo si no llega).
+  3. Export Excel (`LibroRegistroExcelBuilder`/`SheetBuilder`): página de
+     FIRMAS DE DOCENTES al final de cada hoja de paralelo (una fila por
+     materia+docente, fuente vista 135; sin numero_folio), logo del Ministerio
+     embebido desde `infrastructure/external/templates/ministerio.png` (asset
+     ya existente en el repo — no quedó pendiente) y `pageSetup` propio con
+     margen izquierdo de encuadernado (0.9" vs 0.3", landscape, page break por
+     folio). Smoke test con exceljs OK (folios apilados en bloques de 34 filas).
+  - ⛔ Pendiente BD (aprobación): ejecutar vistas 175-177 + resembrar seed 59.

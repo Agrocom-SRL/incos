@@ -1,0 +1,82 @@
+/**
+ * Constantes del dominio Libros de registro (schema 25, módulo ACA).
+ *
+ * Base documental: "LIBRO LLENADO SISTEMAS 11 dic 2025" (libro físico real del
+ * centralizador de calificaciones). Un LIBRO es por carrera y gestión; un
+ * FOLIO = una página del centralizador de un paralelo (hasta 10 estudiantes).
+ */
+
+/**
+ * Código de Registro institucional impreso en cada página del libro
+ * (cabecera "Código de Registro: 81981609"). Default editable en el alta del
+ * libro (columna libros_registro.codigo_registro).
+ */
+export const CODIGO_REGISTRO_INSTITUCIONAL = '81981609';
+
+/** Máximo de estudiantes por página/folio del centralizador (formato real). */
+export const ESTUDIANTES_POR_FOLIO = 10;
+
+/** Estados del libro (libros_registro.estado). */
+export const ESTADOS_LIBRO = {
+  ABIERTO: 'ABIERTO',
+  CERRADO: 'CERRADO',
+};
+export const ESTADOS_LIBRO_VALUES = Object.values(ESTADOS_LIBRO);
+
+/** Estados del folio (folios_libro.estado). */
+export const ESTADOS_FOLIO = {
+  BORRADOR: 'BORRADOR',
+  IMPRESO: 'IMPRESO',
+  FIRMADO: 'FIRMADO',
+  ANULADO: 'ANULADO',
+};
+export const ESTADOS_FOLIO_VALUES = Object.values(ESTADOS_FOLIO);
+
+/**
+ * Máquina de estados del folio: BORRADOR → IMPRESO → FIRMADO / ANULADO.
+ * FIRMADO es inmutable (página con firmas de autoridades); ANULADO es terminal
+ * y exige motivo. Un folio NO se elimina: se anula.
+ */
+export const TRANSICIONES_FOLIO = {
+  [ESTADOS_FOLIO.BORRADOR]: [ESTADOS_FOLIO.IMPRESO, ESTADOS_FOLIO.ANULADO],
+  [ESTADOS_FOLIO.IMPRESO]: [ESTADOS_FOLIO.FIRMADO, ESTADOS_FOLIO.ANULADO],
+  [ESTADOS_FOLIO.FIRMADO]: [],
+  [ESTADOS_FOLIO.ANULADO]: [],
+};
+
+/** Columna ESTADO de la nómina del folio (folio_estudiantes.estado_academico). */
+export const ESTADOS_ACADEMICOS_FOLIO = {
+  APROBADO: 'APROBADO',
+  REPROBADO: 'REPROBADO',
+  ABANDONO: 'ABANDONO',
+};
+export const ESTADOS_ACADEMICOS_FOLIO_VALUES = Object.values(ESTADOS_ACADEMICOS_FOLIO);
+
+/**
+ * Metadatos de cabecera del documento oficial (espejo del CENTRALIZADOR_DOC del
+ * frontend + campos propios del libro físico). NO viven en tablas: son
+ * parametrizables el día que el instituto los gestione desde Configuración.
+ */
+export const LIBRO_REGISTRO_DOC = {
+  titulo: 'CENTRALIZADOR DE CALIFICACIONES',
+  institucion: 'INSTITUTO TÉCNICO INCOS SANTA CRUZ',
+  ciudad: 'Santa Cruz - Bolivia',
+  nivel: 'TÉCNICO SUPERIOR',
+  regimen: 'ANUAL',
+  caracter: 'FISCAL',
+  resolucionMinisterial: '0426/2016',
+  firmas: ['JEFE(A) DE CARRERA', 'DIRECTOR(A) ACADÉMICO(A)', 'RECTOR(A)'],
+};
+
+export default {
+  CODIGO_REGISTRO_INSTITUCIONAL,
+  ESTUDIANTES_POR_FOLIO,
+  ESTADOS_LIBRO,
+  ESTADOS_LIBRO_VALUES,
+  ESTADOS_FOLIO,
+  ESTADOS_FOLIO_VALUES,
+  TRANSICIONES_FOLIO,
+  ESTADOS_ACADEMICOS_FOLIO,
+  ESTADOS_ACADEMICOS_FOLIO_VALUES,
+  LIBRO_REGISTRO_DOC,
+};

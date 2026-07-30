@@ -1317,3 +1317,104 @@
     transform: none;
   }
 }
+/* ============================================================
+   CONSOLIDADO % POR PARALELO (ACA-ASI-CONS)
+   Matriz gemela del Centralizador sobre el shell verde de la grilla
+   semanal (reusa asi-grid-wrap / asi-grid__th-est / asi-grid__th-bim).
+   ============================================================ */
+
+/* Cabecera de asignatura: 3 filas apiladas (sigla / materia / docente),
+   sobre la banda primaria (asi-grid__th-bim--activo aporta fondo/blanco). */
+.asi-grid-wrap .ant-table-wrapper.asi-consolidado .ant-table-thead>tr>th.asi-consolidado__th-asig {
+  padding: var(--spacing-sm) var(--spacing-xs) !important;
+  vertical-align: top !important;
+}
+
+.asi-consolidado__asig-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 64px;
+  text-align: center;
+  white-space: normal;
+}
+
+.asi-consolidado__asig-sigla {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+  padding-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-bg-container) 60%, transparent);
+}
+
+.asi-consolidado__asig-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.asi-consolidado__asig-nombre {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1.3;
+  color: color-mix(in srgb, var(--color-bg-container) 95%, transparent);
+}
+
+.asi-consolidado__asig-docente {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  line-height: 1.25;
+  color: color-mix(in srgb, var(--color-bg-container) 78%, transparent);
+}
+
+/* Aviso de registro ABIERTO (solo con bimestre fijo): el % aún puede cambiar. */
+.asi-consolidado__asig-estado {
+  font-size: var(--font-size-xs);
+  font-style: italic;
+  color: color-mix(in srgb, var(--color-warning) 70%, var(--color-bg-container));
+}
+
+/* —— Celdas de % (tabular, riesgo con el token semántico de error) —— */
+.asi-consolidado__pct {
+  font-variant-numeric: tabular-nums;
+}
+
+.asi-consolidado__pct--vacia {
+  color: var(--color-text-tertiary);
+}
+
+.asi-consolidado__pct--riesgo {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.asi-consolidado__pct--prom {
+  font-weight: 700;
+}
+
+/* Columna Promedio: tinte primario suave para destacarla del resto. */
+.asi-grid-wrap .ant-table-wrapper.asi-consolidado .ant-table-tbody>tr>td.asi-consolidado__col-prom {
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-bg-container));
+}
+
+/* —— Leyenda al pie (espejo de la del Centralizador, con tokens del tema) —— */
+.asi-consolidado__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-lg);
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-top: none;
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+  background: var(--color-fill-quaternary);
+}
+
+.asi-consolidado__leyenda-item strong {
+  color: var(--color-text);
+  font-weight: 700;
+}

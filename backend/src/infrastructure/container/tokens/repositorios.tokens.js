@@ -125,6 +125,10 @@ export const REPOSITORIOS_TOKENS = {
     avanceAcademicoViewRepository: 'avanceAcademicoViewRepository',
     desercionViewRepository: 'desercionViewRepository',
 
+    // LIBROS DE REGISTRO (ACA, schema 25 — Fase 4)
+    libroRegistroRepository: 'libroRegistroRepository',
+    libroRegistroViewRepository: 'libroRegistroViewRepository',
+
     // PAGOS ACADÉMICOS
     contributionConfigurationRepository: 'contributionConfigurationRepository',
     paymentMethodRepository: 'paymentMethodRepository',

@@ -56,6 +56,7 @@ router.get('/', (req, res) => {
             asistencia: '/api/v1/asistencia',
             avanceAcademico: '/api/v1/avance-academico',
             desercion: '/api/v1/desercion',
+            libros: '/api/v1/libros',
             // Módulo: Geográficos
             paises: '/api/v1/paises',
             departamentos: '/api/v1/departamentos',
@@ -154,6 +155,8 @@ router.use('/asistencia/licencias', container.resolve(ACADEMICO_TOKENS.licencias
 // Avance académico + Deserción (nacen con la disolución del módulo REP, 2026-07-29)
 router.use('/avance-academico', container.resolve(ACADEMICO_TOKENS.avanceAcademicoRouter));
 router.use('/desercion', container.resolve(ACADEMICO_TOKENS.desercionRouter));
+// Libros de registro del centralizador (ACA, schema 25 — Fase 4)
+router.use('/libros', container.resolve(ACADEMICO_TOKENS.librosRouter));
 router.use('/asignacion-horarios', container.resolve(ACADEMICO_TOKENS.asignacionHorariosRouter));
 router.use('/conflictos', container.resolve(ACADEMICO_TOKENS.conflictosRouter));
 router.use('/horarios/docentes', container.resolve(ACADEMICO_TOKENS.horariosDocenteRouter));

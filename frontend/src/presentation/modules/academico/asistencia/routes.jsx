@@ -41,6 +41,9 @@ const LicenciasListConnector = lazy(
 const LicenciaSolicitarConnector = lazy(
   () => import('./connectors/LicenciaSolicitarConnector.jsx'),
 );
+const ConsolidadoAsistenciaConnector = lazy(
+  () => import('./connectors/ConsolidadoAsistenciaConnector.jsx'),
+);
 
 export const asistenciaRoutes = [
   {
@@ -87,7 +90,7 @@ export const asistenciaRoutes = [
   },
   {
     path: '/academico/asistencia/consolidado',
-    element: <UnderConstruction />,
+    element: <ConsolidadoAsistenciaConnector />,
     key: 'ACA-ASI-CONS',
     breadcrumbLabel: 'Consolidado %',
     permiso: ASISTENCIA_PERMISOS.consolidadoVer,

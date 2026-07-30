@@ -43,6 +43,7 @@ import { BecasReporteExcelBuilder } from '../../external/excel/finanzas-reportes
 import { CuentasPorCobrarExcelBuilder } from '../../external/excel/finanzas-reportes/CuentasPorCobrarExcelBuilder.js';
 import { ListadoInscritosCapacitacionExcelBuilder } from '../../external/excel/capacitacion/ListadoInscritosCapacitacionExcelBuilder.js';
 import { AsistenciaConsolidadoExcelBuilder } from '../../external/excel/asistencia-consolidado/AsistenciaConsolidadoExcelBuilder.js';
+import { LibroRegistroExcelBuilder } from '../../external/excel/libro-registro/LibroRegistroExcelBuilder.js';
 import { AvanceAcademicoExcelBuilder } from '../../external/excel/avance-academico/AvanceAcademicoExcelBuilder.js';
 import { DesercionExcelBuilder } from '../../external/excel/desercion/DesercionExcelBuilder.js';
 import { DesignacionTutorPdfGenerator } from '../../external/pdf/tutorias/DesignacionTutorPdfGenerator.js';
@@ -191,6 +192,12 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.desercionExcelGenerator,
         () => new DesercionExcelBuilder()
+    );
+    // Libro de registro del centralizador (ACA, schema 25 — Fase 4)
+    registerService(
+        container,
+        SERVICIOS_TOKENS.libroRegistroExcelGenerator,
+        () => new LibroRegistroExcelBuilder()
     );
 
     // ============================================

@@ -32,3 +32,15 @@ export {
   postPeriodoEtapaValidator,
   periodoIdValidator,
 } from './periodos-gestion.validator.js';
+export {
+  listLibrosValidator,
+  abrirLibroValidator,
+  getLibroByIdValidator,
+  editarLibroValidator,
+  listParalelosLibroValidator,
+  generarFoliosParaleloValidator,
+  getFolioByIdValidator,
+  cambiarEstadoFolioValidator,
+  editarFolioEstudianteValidator,
+  exportLibroExcelValidator,
+} from './libros.validator.js';

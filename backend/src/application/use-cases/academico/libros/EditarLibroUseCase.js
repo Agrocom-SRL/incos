@@ -1,0 +1,93 @@
+import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
+import {
+  ESTADOS_LIBRO,
+  ESTADOS_LIBRO_VALUES,
+} from '../../../../domain/constants/libros.constants.js';
+import { toLibroDTO } from '../../../mappers/academico/LibroRegistroPresentationMapper.js';
+
+/**
+ * Edita la cabecera del libro (PATCH /libros/:id), incluido el cierre
+ * (estado CERRADO + fecha_cierre) y la reapertura administrativa.
+ * Permiso: academico.libro · EDITAR.
+ *
+ * numero_libro / carrera / gestión NO se editan: identifican el libro físico
+ * (UNIQUE carrera+gestión); un error de identidad se resuelve anulando folios
+ * y abriendo el libro correcto.
+ */
+export class EditarLibroUseCase {
+  constructor({ libroRegistroRepository, libroRegistroViewRepository, logger }) {
+    this.libroRegistroRepository = libroRegistroRepository;
+    this.libroRegistroViewRepository = libroRegistroViewRepository;
+    this.logger = logger;
+  }
+
+  /**
+   * @param {Object} params
+   * @param {number} params.usuarioId
+   * @param {number} params.id
+   * @param {Object} params.body - { codigoRegistro?, folioFinal?, fechaApertura?,
+   *   observaciones?, estado? }
+   * @returns {Promise<{libro: Object}>}
+   */
+  async execute({ usuarioId, id, body = {} }) {
+    const libroId = Number(id);
+    const libro = await this.libroRegistroRepository.findById(libroId);
+    if (!libro) {
+      throw new NotFoundError('Libro de registro');
+    }
+
+    const cambios = {};
+
+    if (body.codigoRegistro !== undefined) {
+      const codigo = String(body.codigoRegistro ?? '').trim();
+      if (!codigo) {
+        throw new ValidationError('El código de registro no puede quedar vacío');
+      }
+      cambios.codigoRegistro = codigo;
+    }
+
+    if (body.folioFinal !== undefined) {
+      const folioFinal = body.folioFinal != null ? Number(body.folioFinal) : null;
+      if (folioFinal != null && folioFinal < (libro.folioInicial ?? 1)) {
+        throw new ValidationError('El folio final no puede ser menor al folio inicial');
+      }
+      cambios.folioFinal = folioFinal;
+    }
+
+    if (body.fechaApertura !== undefined) {
+      cambios.fechaApertura = body.fechaApertura ?? null;
+    }
+
+    if (body.observaciones !== undefined) {
+      cambios.observaciones =
+        body.observaciones != null ? String(body.observaciones).trim() : null;
+    }
+
+    if (body.estado !== undefined) {
+      const { estado } = body;
+      if (!ESTADOS_LIBRO_VALUES.includes(estado)) {
+        throw new ValidationError('Estado de libro inválido (ABIERTO o CERRADO)');
+      }
+      if (estado !== libro.estado) {
+        cambios.estado = estado;
+        // Cierre del libro (la gestión terminó y el libro se completó);
+        // reabrir limpia la fecha de cierre.
+        cambios.fechaCierre =
+          estado === ESTADOS_LIBRO.CERRADO ? new Date().toISOString().slice(0, 10) : null;
+      }
+    }
+
+    if (Object.keys(cambios).length === 0) {
+      throw new ValidationError('No hay cambios para aplicar');
+    }
+
+    await this.libroRegistroRepository.update(libroId, cambios, usuarioId);
+
+    this.logger?.info('[Libros] Libro editado', { id: libroId, cambios: Object.keys(cambios) });
+
+    const row = await this.libroRegistroViewRepository.obtenerLibroPorId(libroId);
+    return { libro: toLibroDTO(row) };
+  }
+}
+
+export default EditarLibroUseCase;

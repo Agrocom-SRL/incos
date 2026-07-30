@@ -37,12 +37,6 @@ export const dominiosRoutes = [
         menu: { label: 'Institucional', module: 'INST', order: 6 },
     },
     {
-        path: '/reportes-dominio',
-        element: null,
-        key: 'REP',
-        menu: { label: 'Reportes', module: 'REP', order: 7 },
-    },
-    {
         path: '/capacitacion',
         element: null,
         key: 'CAP',

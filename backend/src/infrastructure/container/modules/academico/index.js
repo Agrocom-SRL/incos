@@ -20,6 +20,7 @@ import { registerCalificacionesResource } from './calificaciones.container.js';
 import { registerAsistenciaResource } from './asistencia.container.js';
 import { registerAvanceResource } from './avance.container.js';
 import { registerLicenciasResource } from './licencias.container.js';
+import { registerLibrosResource } from './libros.container.js';
 import { registerHorariosResource } from './horarios.container.js';
 
 /**
@@ -38,6 +39,7 @@ export function registerAcademicoModule(container) {
     registerAsistenciaResource(container);
     registerAvanceResource(container);
     registerLicenciasResource(container);
+    registerLibrosResource(container);
 
     return container;
 }

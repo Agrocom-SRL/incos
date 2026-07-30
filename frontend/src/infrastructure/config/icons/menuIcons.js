@@ -46,7 +46,6 @@ import {
     FileAddOutlined,
     CalendarOutlined,
     BookOutlined,
-    FallOutlined,
     FileDoneOutlined,
     FolderOpenOutlined,
     InfoCircleOutlined,
@@ -73,7 +72,6 @@ export const menuIconMap = {
     'DOC': UsergroupAddOutlined,
     'FIN': DollarOutlined,
     'INST': HomeOutlined,
-    'REP': BarChartOutlined,
     'CFG': SettingOutlined,
     'SEG': SafetyOutlined,
     'CAP': ScheduleOutlined,
@@ -113,12 +111,6 @@ export const menuIconMap = {
     'INST-OFERTA-ACADEMICA': BookOutlined,
     'INST-HORARIOS': CalendarOutlined,
     'INST-GESTIONES-PASADAS': UnorderedListOutlined,
-
-    // Reportes (REP)
-    'REP-AVANCE-ACADEMICO': LineChartOutlined,
-    'REP-ASISTENCIA': UserOutlined,
-    'REP-DESERCION': FallOutlined,
-    'REP-SOLICITUDES': FileDoneOutlined,
 
     // Configuración (CFG)
     'CFG-ACADEMICO': BookOutlined,

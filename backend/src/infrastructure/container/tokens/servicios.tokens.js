@@ -25,6 +25,7 @@ export const SERVICIOS_TOKENS = {
     cuentasPorCobrarReporteExcelGenerator: 'cuentasPorCobrarReporteExcelGenerator', // ICuentasPorCobrarReporteExcelGenerator (.xlsx)
     listadoInscritosCapacitacionExcelGenerator: 'listadoInscritosCapacitacionExcelGenerator', // IListadoInscritosCapacitacionExcelGenerator (.xlsx)
     asistenciaConsolidadoExcelGenerator: 'asistenciaConsolidadoExcelGenerator', // IAsistenciaConsolidadoExcelGenerator (.xlsx)
+    libroRegistroExcelGenerator: 'libroRegistroExcelGenerator', // ILibroRegistroExcelGenerator (.xlsx, libros de registro ACA)
     avanceAcademicoExcelGenerator: 'avanceAcademicoExcelGenerator', // IAvanceAcademicoExcelGenerator (.xlsx)
     desercionExcelGenerator: 'desercionExcelGenerator', // IDesercionExcelGenerator (.xlsx)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
