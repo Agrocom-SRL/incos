@@ -43,7 +43,18 @@
 
 ---
 
-## ITERACIÓN 1 — datos + RBAC + backend + documentación
+## ITERACIÓN 1 — datos + RBAC + backend + documentación ✅ HECHA (2026-07-30, código en repo)
+
+> **Estado:** A1 (vista **174** `174-vista-supervision-fichas-listado.sql`), B1
+> (seed 60 rediseñado: permiso único `docentes.supervision.ficha`), C1-C12
+> (backend completo montado en `/api/v1/supervision-docente`) y E1 (matriz)
+> ejecutados. **Pendiente de aprobación/ejecución del usuario:** A2 (crear la
+> vista 174 en BD) y B2 (resiembra del seed 60). Contrato:
+> `dataFieldName: 'fichasSeguimiento'` (GET / y GET /mis-fichas) /
+> `'fichaSeguimiento'` (GET /:id, POST /, PUT /:id). Router verificado en seco
+> (rutas en orden: /, /mis-fichas, POST /, /:id/pdf, /:id, PUT /:id).
+> E2 (titulacion-y-dominios-pendientes.md) quedó fuera: el archivo está siendo
+> trabajado por otra tarea en paralelo — anotar la vista 174 allí al retomarlo.
 
 ### Bloque A — Datos: vista SQL de listado ⛔ ejecución en BD requiere aprobación
 

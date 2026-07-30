@@ -164,3 +164,8 @@ export { PasantiaEmpresa } from './pasantia_empresa.js';
 export { Pasantia } from './pasantia.js';
 export { PasantiaInforme } from './pasantia_informe.js';
 export { PasantiaSeguimiento } from './pasantia_seguimiento.js';
+
+// ============================================
+// SUPERVISIÓN DOCENTE (módulo DOC)
+// ============================================
+export { FichaSeguimientoClase } from './ficha_seguimiento_clase.js';

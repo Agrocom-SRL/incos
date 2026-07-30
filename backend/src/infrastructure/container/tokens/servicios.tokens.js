@@ -24,9 +24,13 @@ export const SERVICIOS_TOKENS = {
     becasReporteExcelGenerator: 'becasReporteExcelGenerator', // IBecasReporteExcelGenerator (.xlsx)
     cuentasPorCobrarReporteExcelGenerator: 'cuentasPorCobrarReporteExcelGenerator', // ICuentasPorCobrarReporteExcelGenerator (.xlsx)
     listadoInscritosCapacitacionExcelGenerator: 'listadoInscritosCapacitacionExcelGenerator', // IListadoInscritosCapacitacionExcelGenerator (.xlsx)
+    asistenciaConsolidadoExcelGenerator: 'asistenciaConsolidadoExcelGenerator', // IAsistenciaConsolidadoExcelGenerator (.xlsx)
+    avanceAcademicoExcelGenerator: 'avanceAcademicoExcelGenerator', // IAvanceAcademicoExcelGenerator (.xlsx)
+    desercionExcelGenerator: 'desercionExcelGenerator', // IDesercionExcelGenerator (.xlsx)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
     designacionTutorPdfGenerator: 'designacionTutorPdfGenerator', // IDesignacionTutorPdfGenerator (.pdf, módulo TUT)
     viabilidadProyectoPdfGenerator: 'viabilidadProyectoPdfGenerator', // IViabilidadProyectoPdfGenerator (.pdf, módulo TUT)
     bitacoraMensualTutorPdfGenerator: 'bitacoraMensualTutorPdfGenerator', // IBitacoraMensualTutorPdfGenerator (.pdf, módulo TUT)
     panelAcompanamientoPdfGenerator: 'panelAcompanamientoPdfGenerator', // IPanelAcompanamientoPdfGenerator (.pdf, módulo TUT)
+    fichaSeguimientoClasePdfGenerator: 'fichaSeguimientoClasePdfGenerator', // IFichaSeguimientoClasePdfGenerator (.pdf, módulo DOC · supervisión)
 };

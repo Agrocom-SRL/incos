@@ -6,6 +6,10 @@
 import apiClient from '@api-client';
 import { ASISTENCIA_ENDPOINTS } from '@api/endpoints';
 import { handleErrorResponse } from '@api/responseHandler';
+import {
+  extractFileNameFromDisposition,
+  readBlobErrorMessage,
+} from '@api/binaryDownload';
 
 class AsistenciaRepository {
   /**
@@ -394,6 +398,87 @@ class AsistenciaRepository {
       return { success: true, data: responseData.data ?? {} };
     } catch (error) {
       return handleErrorResponse(error, 'Error al consultar la inscripción vigente del estudiante');
+    }
+  }
+
+  /**
+   * GET /v1/asistencia/consolidado?paraleloGestionId=<id>[&bimestre=1..4]
+   *
+   * Consolidado % del paralelo (patrón centralizador): `asignaturas` = columnas
+   * (identidad ofertaCursoId), `estudiantes` = filas con
+   * `asistencia[ofertaCursoId] = { sesiones, faltas, …, pctAsistencia }` y
+   * `promedioPct`. Sin `bimestre` = acumulado anual. Payload directo del
+   * backend (dataKeys == dataFieldNames); no se transforma.
+   *
+   * @param {Object} options
+   * @param {number} options.paraleloGestionId
+   * @param {number|null} [options.bimestre] - 1..4; null = acumulado anual.
+   * @returns {Promise<{success: boolean, data?: { paraleloGestionId, gestionId, gestionAnio, bimestre, asignaturas: Array, estudiantes: Array }, error?: string}>}
+   */
+  async obtenerConsolidado({ paraleloGestionId, bimestre = null } = {}) {
+    try {
+      const params = { paraleloGestionId };
+      if (bimestre != null) params.bimestre = bimestre;
+
+      const response = await apiClient.get(ASISTENCIA_ENDPOINTS.CONSOLIDADO, { params });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      const payload = responseData.data ?? {};
+      return {
+        success: true,
+        data: {
+          paraleloGestionId: payload.paraleloGestionId ?? null,
+          gestionId: payload.gestionId ?? null,
+          gestionAnio: payload.gestionAnio ?? null,
+          bimestre: payload.bimestre ?? null,
+          asignaturas: Array.isArray(payload.asignaturas) ? payload.asignaturas : [],
+          estudiantes: Array.isArray(payload.estudiantes) ? payload.estudiantes : [],
+        },
+      };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el consolidado de asistencia');
+    }
+  }
+
+  /**
+   * GET /v1/asistencia/consolidado/export (mismos query) — descarga .xlsx
+   * (1 hoja, planilla verde).
+   *
+   * @param {Object} options
+   * @param {number} options.paraleloGestionId
+   * @param {number|null} [options.bimestre]
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarConsolidadoExcel({ paraleloGestionId, bimestre = null } = {}) {
+    try {
+      const params = { paraleloGestionId };
+      if (bimestre != null) params.bimestre = bimestre;
+
+      const response = await apiClient.get(ASISTENCIA_ENDPOINTS.CONSOLIDADO_EXPORT, {
+        params,
+        responseType: 'blob',
+      });
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName: extractFileNameFromDisposition(
+          response.headers['content-disposition'],
+          'consolidado_asistencia.xlsx',
+        ),
+      };
+    } catch (error) {
+      const blobMessage = await readBlobErrorMessage(
+        error,
+        'Error al exportar el consolidado de asistencia',
+      );
+      if (blobMessage) return { success: false, error: blobMessage };
+      return handleErrorResponse(error, 'Error al exportar el consolidado de asistencia');
     }
   }
 }

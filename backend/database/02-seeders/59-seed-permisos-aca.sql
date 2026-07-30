@@ -29,7 +29,10 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('aca_transitabilidad', 'Transitabilidad', 'ACADEMICO', 17, 1, NOW(), NOW()),
 ('aca_historial', 'Historial', 'ACADEMICO', 18, 1, NOW(), NOW()),
 ('aca_avance', 'Avance académico', 'ACADEMICO', 19, 1, NOW(), NOW()),
-('aca_cal_centralizador', 'Centralizador de notas', 'ACADEMICO', 20, 1, NOW(), NOW());
+('aca_cal_centralizador', 'Centralizador de notas', 'ACADEMICO', 20, 1, NOW(), NOW()),
+-- 2026-07-29 (disolución REP): la deserción vive en ACA (pestaña de la página
+-- Avance académico) con permiso propio — roles más restringidos que el avance.
+('aca_desercion', 'Deserción estudiantil', 'ACADEMICO', 21, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo ACA
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -61,6 +64,10 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('academico.historial.academico', 'Historial: ver historial académico del alumno', NULL, 'ACADEMICO', 'ACA', 'aca_historial', '/academico/historial/academico', 1, NOW(), NOW()),
 ('academico.historial.validar', 'Historial: validar para egreso', NULL, 'ACADEMICO', 'ACA', 'aca_historial', '/academico/historial/academico', 1, NOW(), NOW()),
 ('academico.avance', 'Avance académico: ver progreso del estudiante en su carrera', NULL, 'ACADEMICO', 'ACA', 'aca_avance', '/academico/avance', 1, NOW(), NOW()),
+-- 2026-07-29 (disolución REP): reemplaza a reportes.desercion. Pestaña "Deserción"
+-- de la página /academico/avance (PermisoGuard por pestaña); métrica ANUAL por
+-- estados ABANDONO/RETIRADO de matriculas_materia (vistas 172/173).
+('academico.desercion', 'Deserción estudiantil: métrica anual de abandono por carrera', NULL, 'ACADEMICO', 'ACA', 'aca_desercion', '/academico/avance', 1, NOW(), NOW()),
 ('academico.asistencia.licencia.ver', 'Asistencia · Licencias estudiantiles: listar y ver', NULL, 'ACADEMICO', 'ACA', 'aca_asi_licencias', '/academico/asistencia/licencias/listar', 1, NOW(), NOW()),
 ('academico.asistencia.licencia.crear', 'Asistencia · Licencias estudiantiles: solicitar', NULL, 'ACADEMICO', 'ACA', 'aca_asi_licencias', '/academico/asistencia/licencias/listar', 1, NOW(), NOW()),
 ('academico.asistencia.licencia.aprobar', 'Asistencia · Licencias estudiantiles: aprobar', NULL, 'ACADEMICO', 'ACA', 'aca_asi_licencias', '/academico/asistencia/licencias/listar', 1, NOW(), NOW()),
@@ -120,6 +127,8 @@ JOIN (
   UNION ALL SELECT 'academico.historial.validar', 'APROBAR'
   UNION ALL SELECT 'academico.avance', 'LISTAR'
   UNION ALL SELECT 'academico.avance', 'EXPORTAR'
+  UNION ALL SELECT 'academico.desercion', 'LISTAR'
+  UNION ALL SELECT 'academico.desercion', 'EXPORTAR'
   UNION ALL SELECT 'academico.asistencia.licencia.ver', 'LISTAR'
   UNION ALL SELECT 'academico.asistencia.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'academico.asistencia.licencia.crear', 'CREAR'
@@ -247,8 +256,15 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'academico.avance', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.avance', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.avance', 'EXPORTAR'
+  -- DOCENTE/ESTUDIANTE en avance: LISTAR; el backend acota en servidor al
+  -- estudiante vinculado si el usuario tiene vínculo EST (anti-IDOR, "Mi avance").
   UNION ALL SELECT 'DOCENTE', 'academico.avance', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'academico.avance', 'LISTAR'
+  -- Deserción (2026-07-29): métrica institucional — solo dirección.
+  UNION ALL SELECT 'RECTOR', 'academico.desercion', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.desercion', 'EXPORTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.desercion', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.desercion', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.ver', 'LISTAR'
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.licencia.ver', 'LISTAR'
@@ -312,9 +328,13 @@ JOIN permisos p ON p.codigo = g.codigo;
 
 -- ============================================================
 -- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
--- Nivelaciones, Traspasos, Transitabilidad, Historial y Avance académico:
--- se ocultan hasta que las pantallas existan. (Calificaciones y Asistencia
--- SÍ están construidas y permanecen activas.)
+-- Nivelaciones, Traspasos y Transitabilidad: se ocultan hasta que las
+-- pantallas existan. (Calificaciones y Asistencia SÍ están construidas y
+-- permanecen activas.)
+-- 2026-07-29 (disolución REP): `academico.avance` y su grupo `aca_avance`
+-- REHABILITADOS — el backend de Avance/Deserción existe (vistas 170-173,
+-- endpoints /avance-academico y /desercion); la página con tabs es la
+-- iteración frontend siguiente. `academico.desercion` nace activo.
 -- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
 -- (permiso_acciones), sus asignaciones a roles (roles_permisos) y los grupos
 -- de UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que
@@ -347,9 +367,8 @@ WHERE codigo IN (
   -- está construida (2026-07-02) y queda ACTIVA; solo folio/validar siguen
   -- en construcción.
   'academico.historial.folio',
-  'academico.historial.validar',
-  -- Avance académico
-  'academico.avance'
+  'academico.historial.validar'
+  -- 'academico.avance' rehabilitado (2026-07-29): backend construido (REP disuelto).
 );
 
 -- 2) Cascada: acciones de esos permisos
@@ -370,9 +389,9 @@ SET activo = 0, deleted_at = @fecha_baja
 WHERE codigo IN (
   'aca_nivelaciones',
   'aca_traspasos',
-  'aca_transitabilidad',
+  'aca_transitabilidad'
   -- 'aca_historial' reactivado (2026-07-02): la pantalla de historial existe.
-  'aca_avance'
+  -- 'aca_avance' reactivado (2026-07-29): backend Avance/Deserción construido.
 );
 
 SET FOREIGN_KEY_CHECKS = 1;

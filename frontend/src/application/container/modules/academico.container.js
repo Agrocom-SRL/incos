@@ -35,6 +35,10 @@ import {
   GuardarObservacionCentralizadorBimestreUseCase,
 } from '@useCases/academico/centralizador';
 import {
+  GetAvanceAcademicoUseCase,
+  GetDesercionUseCase,
+} from '@useCases/academico/avance';
+import {
   ListCoordinacionAsistenciaDocentesUseCase,
   ListMisCursosAsistenciaUseCase,
   GetCalendarioAsistenciaUseCase,
@@ -51,11 +55,14 @@ import {
   EditarLicenciaUseCase,
   CancelarLicenciaUseCase,
   GetInscripcionVigenteUseCase,
+  GetConsolidadoAsistenciaUseCase,
 } from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository';
 import AsistenciaRepository from '@infrastructure/repositories/AsistenciaRepository';
+import AvanceAcademicoRepository from '@infrastructure/repositories/AvanceAcademicoRepository';
+import DesercionRepository from '@infrastructure/repositories/DesercionRepository';
 import TipoEvaluacionRepository from '@infrastructure/repositories/TipoEvaluacionRepository';
 
 /**
@@ -185,6 +192,20 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerCentralizadorParalelo = () => {
     return new ObtenerCentralizadorParaleloUseCase(CalificacionRepository);
+  };
+
+  // Consolidado % de asistencia por paralelo (ACA-ASI-CONS)
+  factory.obtenerConsolidadoAsistencia = () => {
+    return new GetConsolidadoAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  // Avance académico + Deserción (ítem ACA-AVANCE; reemplazo del módulo REP disuelto)
+  factory.obtenerAvanceAcademico = () => {
+    return new GetAvanceAcademicoUseCase(AvanceAcademicoRepository);
+  };
+
+  factory.obtenerDesercion = () => {
+    return new GetDesercionUseCase(DesercionRepository);
   };
 
   factory.guardarObservacionCentralizadorBimestre = () => {

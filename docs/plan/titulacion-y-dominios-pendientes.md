@@ -146,27 +146,81 @@ ejecutada). Resta, en orden:
 
 ### Fase 2 — Pasantías (schema 24 listo; módulo de referencia: titulación TUT)
 
-1. **Datos:** vistas de lectura 166+ (listado por carrera/gestión con estado y
-   horas; detalle con informes y seguimientos). Seeder de catálogo
-   `pasantias_empresas` arranca vacío (ABM propio; la ruta CFG reservada de
-   catálogos queda para el catálogo de empresas).
-2. **RBAC (ampliar seed 66):** `tutorias.pasantia`
-   (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/APROBAR/EXPORTAR) +
-   `tutorias.pasantia.informe` y `.seguimiento` si la grilla lo pide como
-   fila aparte. Roles: DIR_ACADEMICO/RECTOR todo; SEC_ACADEMICA gestión
-   administrativa; DOCENTE informes/seguimientos de sus supervisados;
-   ESTUDIANTE detalle propio (guard de pertenencia).
-3. **Backend:** capas completas (constants, use cases, mappers, controllers,
-   validators, routes `/api/v1/pasantias`, container/tokens, repos de vista).
-   Dos caminos del schema: `PASANTIA` y `CONVALIDACION` (R.M. 487, 300–360 h).
-   PDFs de informes con el patrón `IncosPDFLibBase`.
-4. **Frontend:** `modules/tutorias/pasantias/` (listado + ficha con tabs
-   informes/seguimientos + registrar/convalidar), `paths.js` y
-   `tutoriasPermisos.js` ampliados, ítem menú parent TUT order 2, icono.
-   Wrappers: docente "Mis pasantías supervisadas", estudiante "Mi pasantía"
-   (tarjeta portal, patrón TUT-MI-PROYECTO).
-5. **Verificación:** dataKey==dataFieldName, prueba con rol sin permiso,
-   `verificador`.
+> **ITERACIÓN BACKEND COMPLETA (2026-07-29)** — commits `60c0ca0f` +
+> `ff904fd4`. Verificado: lint limpio, container resuelve el router en seco
+> (19 rutas), seed↔router coherente en los 4 códigos. **Pendiente de
+> aprobación BD:** ejecutar vistas 166–168 y resembrar seed **65** (TUT; la
+> numeración corrió — 66 es hoy CFG). **Frontend: ✔ completo (2026-07-30)**
+> — módulo `modules/tutorias/pasantias/` con las 7 pantallas + wrappers de
+> portal (ver punto 4); dataKey==dataFieldName verificado contra la tabla
+> P1-P19.
+
+1. **Datos (✔ hecho):** vistas `166-vista-base-pasantia-fila`,
+   `167-vista-pasantias-listado`, `168-vista-pasantia-detalle`. Catálogo
+   `pasantias_empresas` arranca vacío (ABM propio vía `/pasantias/empresas`).
+2. **RBAC (✔ hecho, seed 65):** 4 códigos — `tutorias.pasantia`
+   (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/APROBAR/EXPORTAR),
+   `tutorias.pasantia.empresa` (LISTAR/CREAR/EDITAR/ACTIVAR),
+   `tutorias.pasantia.informe` (LISTAR/CREAR/EDITAR),
+   `tutorias.pasantia.seguimiento` (LISTAR/CREAR/EDITAR). Roles:
+   DIR_ACADEMICO/RECTOR control total; SEC_ACADEMICA pasantia
+   L/D/C/E/EXPORTAR + empresa completa + informe/seguimiento L; DOCENTE
+   pasantia L/D/EXPORTAR + informe y seguimiento L/C/E; ESTUDIANTE pasantia
+   DETALLE (solo `/mi-pasantia`).
+3. **Backend (✔ hecho):** capas completas montadas en `/api/v1/pasantias`
+   (19 rutas, estáticas antes de `/:id`). Dos caminos `PASANTIA` /
+   `CONVALIDACION` (R.M. 487/2023, 300–360 h; escala ALTO/MEDIO/BAJO),
+   transiciones vía `POST /:id/transiciones` (APROBAR), PDF de informes con
+   `IncosPDFLibBase` (`PasantiaInformePdfGenerator`). Rutas `mis-*` anti-IDOR
+   (`resolveDocenteIdForUsuario`/`resolveEstudianteIdForUsuario`).
+
+#### Contrato de handoff frontend (dataKey == dataFieldName literal)
+
+| # | Método + Ruta | Permiso · Acción | dataFieldName |
+|---|---|---|---|
+| P1 | GET `/pasantias` | pasantia·LISTAR | `pasantias` |
+| P7 | GET `/pasantias/empresas` (incluirInactivos) | empresa·LISTAR | `pasantiasEmpresas` |
+| P8 | POST `/pasantias/empresas` | empresa·CREAR | `pasantiaEmpresa` |
+| P9 | PUT `/pasantias/empresas/:empresaId` | empresa·EDITAR | `pasantiaEmpresa` |
+| P10 | PATCH `/pasantias/empresas/:empresaId/estado` | empresa·ACTIVAR | `pasantiaEmpresa` |
+| P18 | GET `/pasantias/mis-pasantias` (docente sesión) | pasantia·LISTAR | `misPasantias` |
+| P19 | GET `/pasantias/mi-pasantia` (estudiante sesión) | pasantia·DETALLE | objeto compuesto `{ pasantia, informes, seguimientos }` (pasantia=null si no hay trámite) |
+| P3 | POST `/pasantias` (PASANTIA \| CONVALIDACION) | pasantia·CREAR | `pasantia` |
+| P2 | GET `/pasantias/:id` (ficha, vista 168) | pasantia·DETALLE | `pasantia` |
+| P4 | PUT `/pasantias/:id` | pasantia·EDITAR | `pasantia` |
+| P5 | DELETE `/pasantias/:id` (soft) | pasantia·ELIMINAR | mensaje |
+| P6 | POST `/pasantias/:id/transiciones` | pasantia·APROBAR | `pasantia` |
+| P11 | GET `/pasantias/:id/informes` | informe·LISTAR | `informes` |
+| P12 | POST `/pasantias/:id/informes` (genera PDF) | informe·CREAR | `informe` |
+| P13 | PUT `/pasantias/:id/informes/:informeId` (regenera PDF) | informe·EDITAR | `informe` |
+| P14 | GET `/pasantias/:id/informes/:informeId/pdf` | pasantia·EXPORTAR | — (res.download) |
+| P15 | GET `/pasantias/:id/seguimientos` | seguimiento·LISTAR | `seguimientos` |
+| P16 | POST `/pasantias/:id/seguimientos` | seguimiento·CREAR | `seguimiento` |
+| P17 | PUT `/pasantias/:id/seguimientos/:seguimientoId` | seguimiento·EDITAR | `seguimiento` |
+
+(Prefijo de permiso: `tutorias.pasantia[.empresa|.informe|.seguimiento]`.)
+
+4. **Frontend (✔ hecho 2026-07-30):**
+   `modules/tutorias/pasantias/` (application + presentation) — listado admin
+   (filtros gestión/carrera/camino/estado en cliente, CTA «Registrar
+   trámite») + ABM de empresas en páginas propias (`/tutorias/pasantias/
+   empresas[/registrar|/:empresaId/editar]`, EstadoTogglePill P10, inactivas
+   en gris) + ficha-hub con tabs Datos/Informes/Seguimientos (transición P6
+   modal APROBAR, informes P12/P13 drawer + PDF P14 blob, seguimientos
+   P16/P17 drawer) + formulario página completa PASANTIA/CONVALIDACION
+   (CfgFormWorkspace; la convalidación agrega la sección de contrato).
+   `paths.js`, `tutoriasPermisos.js` y `pasantiasPills.js` ampliados; ítem
+   menú TUT-PASANTIAS (parent TUT, order 2, icono ShopOutlined);
+   `PASANTIAS_ENDPOINTS` + `IPasantiaRepository`/`PasantiaRepository`.
+   Wrappers: docente «Mis pasantías supervisadas» (labelByRole en
+   TUT-PASANTIAS + bifurcación `esDocente` del connector hacia P18, con
+   seguimiento rápido en drawer), estudiante «Mi pasantía»
+   (`/tutorias/mi-pasantia`, key TUT-MI-PASANTIA sin menú, P19 compuesto con
+   Empty si `pasantia=null`, solo lectura) + tarjeta en EstudianteDashboard.
+5. **Verificación frontend:** dataKey==dataFieldName verificado archivo por
+   archivo contra la tabla P1-P19 (✔, 2026-07-30; lint y build limpios).
+   PENDIENTE: prueba en vivo con rol sin permiso (requiere BD con vistas
+   166-168 + seed 65 resembrado) y pasada del `verificador`.
 
 ### Fase 3 — Supervisión docente (schema 27; ítem de DOC)
 

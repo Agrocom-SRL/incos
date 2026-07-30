@@ -19,6 +19,8 @@ import {
  * Toma de asistencia (modelo sesiones_clase):
  *   - calendario / planilla (registro.cuaderno · LISTAR)
  *   - registrar planilla, cerrar/reabrir, sesión especial (registro.cuaderno · EDITAR)
+ * Consolidado % (página Consolidado — REP disuelto 2026-07-29):
+ *   - matriz % por paralelo (consolidado.ver · LISTAR) + export Excel (· EXPORTAR)
  *
  * @param {Object} params
  * @param {Object} params.controllers
@@ -45,6 +47,14 @@ export function buildAsistenciaRouter({ controllers, middlewares }) {
     authenticate,
     verificarPermiso('academico.asistencia.registro.cuaderno', 'EDITAR'),
   ];
+  const consolidadoListar = [
+    authenticate,
+    verificarPermiso('academico.asistencia.consolidado.ver', 'LISTAR'),
+  ];
+  const consolidadoExportar = [
+    authenticate,
+    verificarPermiso('academico.asistencia.consolidado.ver', 'EXPORTAR'),
+  ];
 
   /**
    * GET /api/v1/asistencia/coordinacion/docentes
@@ -69,6 +79,26 @@ export function buildAsistenciaRouter({ controllers, middlewares }) {
    */
   router.get('/mis-cursos', ...registroListar, (req, res, next) =>
     controllers.getMisCursosAsistenciaController.handle(req, res, next),
+  );
+
+  // ============================================
+  // Consolidado % (matriz estudiantes × asignaturas del paralelo)
+  // ============================================
+
+  /**
+   * GET /api/v1/asistencia/consolidado?paraleloGestionId=<id>[&bimestre=1..4]
+   * Matriz % de asistencia del paralelo (sin bimestre = acumulado anual).
+   */
+  router.get('/consolidado', ...consolidadoListar, (req, res, next) =>
+    controllers.getConsolidadoAsistenciaController.handle(req, res, next),
+  );
+
+  /**
+   * GET /api/v1/asistencia/consolidado/export?paraleloGestionId=<id>[&bimestre=1..4]
+   * Descarga Excel del consolidado (1 hoja, planilla verde).
+   */
+  router.get('/consolidado/export', ...consolidadoExportar, (req, res, next) =>
+    controllers.exportConsolidadoAsistenciaController.handle(req, res, next),
   );
 
   // ============================================

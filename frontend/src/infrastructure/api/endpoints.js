@@ -336,6 +336,28 @@ export const ASISTENCIA_ENDPOINTS = {
   /** Inscripción vigente del estudiante (resuelve estudiante → inscripcionId para la solicitud). */
   LICENCIA_INSCRIPCION_VIGENTE: (estudianteId) =>
     `${API_BASE}/asistencia/licencias/inscripcion-vigente?estudianteId=${estudianteId}`,
+  /** Consolidado % por paralelo (query: paraleloGestionId, bimestre opcional = anual). */
+  CONSOLIDADO: `${API_BASE}/asistencia/consolidado`,
+  CONSOLIDADO_EXPORT: `${API_BASE}/asistencia/consolidado/export`,
+};
+
+/**
+ * Avance académico por estudiante × plan (Académico · /academico/avance).
+ * Reemplaza al retirado módulo REP (`reportes.avance_academico`); el permiso
+ * dueño es `academico.avance` (LISTAR/EXPORTAR).
+ */
+export const AVANCE_ACADEMICO_ENDPOINTS = {
+  BASE: `${API_BASE}/avance-academico`,
+  EXPORT: `${API_BASE}/avance-academico/export`,
+};
+
+/**
+ * Deserción estudiantil ANUAL (pestaña Deserción de /academico/avance).
+ * Reemplaza al retirado `reportes.desercion`; permiso dueño `academico.desercion`.
+ */
+export const DESERCION_ENDPOINTS = {
+  BASE: `${API_BASE}/desercion`,
+  EXPORT: `${API_BASE}/desercion/export`,
 };
 
 export const CALIFICACIONES_ENDPOINTS = {
@@ -670,6 +692,36 @@ export const ACOMPANAMIENTO_ENDPOINTS = {
   /** GET — PDF del panel (A11, panel·EXPORTAR; blob autenticado) */
   PANEL_EXPORTAR: (gestionId) =>
     `${API_BASE}/acompanamiento/panel/exportar${gestionId != null ? `?gestionId=${gestionId}` : ''}`,
+};
+
+// Contrato P1-P19 (docs/plan/titulacion-y-dominios-pendientes.md §Fase 2).
+// Pasantías / práctica laboral (schema 24, vistas 166-168). Rutas estáticas
+// (empresas, mis-pasantias, mi-pasantia) SIEMPRE antes de `/:id` en el
+// backend; aquí solo construimos URLs. Permisos `tutorias.pasantia.*` (seed 65).
+export const PASANTIAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/pasantias'),
+  /** GET/POST — catálogo de empresas (P7 `pasantiasEmpresas` / P8 `pasantiaEmpresa`) */
+  EMPRESAS: `${API_BASE}/pasantias/empresas`,
+  /** PUT — edición de una empresa (P9, `pasantiaEmpresa`) */
+  EMPRESA: (empresaId) => `${API_BASE}/pasantias/empresas/${empresaId}`,
+  /** PATCH — activar/desactivar empresa, body { activo } (P10, empresa·ACTIVAR) */
+  EMPRESA_ESTADO: (empresaId) => `${API_BASE}/pasantias/empresas/${empresaId}/estado`,
+  /** GET — bandeja del docente supervisor autenticado (P18, `misPasantias`) */
+  MIS_PASANTIAS: `${API_BASE}/pasantias/mis-pasantias`,
+  /** GET — trámite compuesto del estudiante autenticado (P19, `{ pasantia, informes, seguimientos }`) */
+  MI_PASANTIA: `${API_BASE}/pasantias/mi-pasantia`,
+  /** POST — transición de estado del trámite (P6, pasantia·APROBAR) */
+  TRANSICIONES: (id) => `${API_BASE}/pasantias/${id}/transiciones`,
+  /** GET/POST — informes del trámite (P11 `informes` / P12 `informe`, genera PDF) */
+  INFORMES: (id) => `${API_BASE}/pasantias/${id}/informes`,
+  /** PUT — editar informe; regenera su PDF (P13, `informe`) */
+  INFORME: (id, informeId) => `${API_BASE}/pasantias/${id}/informes/${informeId}`,
+  /** GET — descarga del PDF del informe (P14, pasantia·EXPORTAR; blob autenticado) */
+  INFORME_PDF: (id, informeId) => `${API_BASE}/pasantias/${id}/informes/${informeId}/pdf`,
+  /** GET/POST — seguimientos del trámite (P15 `seguimientos` / P16 `seguimiento`) */
+  SEGUIMIENTOS: (id) => `${API_BASE}/pasantias/${id}/seguimientos`,
+  /** PUT — editar seguimiento (P17, `seguimiento`) */
+  SEGUIMIENTO: (id, seguimientoId) => `${API_BASE}/pasantias/${id}/seguimientos/${seguimientoId}`,
 };
 
 /**

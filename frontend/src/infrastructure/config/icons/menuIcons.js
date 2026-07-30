@@ -57,6 +57,7 @@ import {
     SafetyCertificateOutlined,
     AlertOutlined,
     FundOutlined,
+    ShopOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -138,6 +139,7 @@ export const menuIconMap = {
 
     // Tutorías (TUT)
     'TUT-TITULACION': FileDoneOutlined,
+    'TUT-PASANTIAS': ShopOutlined,
     'TUT-ALERTAS': AlertOutlined,
     'TUT-SESIONES': ScheduleOutlined,
     'TUT-PANEL': FundOutlined,

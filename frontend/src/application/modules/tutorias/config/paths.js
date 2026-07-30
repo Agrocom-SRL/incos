@@ -11,6 +11,21 @@ export const proyectoGradoEditarPath = (id) => `${TUTORIAS_BASE}/titulacion/${id
 /** Portal del estudiante: su propio proyecto (wrapper TUT-MI-PROYECTO, patrón ACA-MI-BOLETIN). */
 export const MI_PROYECTO_GRADO_PATH = `${TUTORIAS_BASE}/mi-proyecto`;
 
+/** Pasantías — trámites de práctica laboral (P1-P19, schema 24) */
+export const PASANTIAS_LIST_PATH = `${TUTORIAS_BASE}/pasantias`;
+export const pasantiaRegistrarPath = `${TUTORIAS_BASE}/pasantias/registrar`;
+export const pasantiaDetallePath = (id) => `${TUTORIAS_BASE}/pasantias/${id}`;
+export const pasantiaEditarPath = (id) => `${TUTORIAS_BASE}/pasantias/${id}/editar`;
+
+/** Pasantías — catálogo de empresas (ABM propio, empresa·LISTAR/CREAR/EDITAR/ACTIVAR) */
+export const PASANTIAS_EMPRESAS_PATH = `${TUTORIAS_BASE}/pasantias/empresas`;
+export const pasantiaEmpresaRegistrarPath = `${TUTORIAS_BASE}/pasantias/empresas/registrar`;
+export const pasantiaEmpresaEditarPath = (empresaId) =>
+  `${TUTORIAS_BASE}/pasantias/empresas/${empresaId}/editar`;
+
+/** Portal del estudiante: su trámite de pasantía (wrapper TUT-MI-PASANTIA, patrón TUT-MI-PROYECTO). */
+export const MI_PASANTIA_PATH = `${TUTORIAS_BASE}/mi-pasantia`;
+
 /** Acompañamiento — alertas de riesgo pedagógico */
 export const ALERTAS_RIESGO_LIST_PATH = `${TUTORIAS_BASE}/acompanamiento/alertas`;
 
@@ -25,8 +40,10 @@ export const PANEL_ACOMPANAMIENTO_PATH = `${TUTORIAS_BASE}/acompanamiento/panel`
 
 /** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */
 export const TUT_TITULACION_MENU_KEY = 'TUT-TITULACION';
+export const TUT_PASANTIAS_MENU_KEY = 'TUT-PASANTIAS';
 export const TUT_ALERTAS_MENU_KEY = 'TUT-ALERTAS';
 export const TUT_SESIONES_MENU_KEY = 'TUT-SESIONES';
 export const TUT_PANEL_MENU_KEY = 'TUT-PANEL';
-/** Ruta sin ítem de menú (portal del estudiante). */
+/** Rutas sin ítem de menú (portal del estudiante). */
 export const TUT_MI_PROYECTO_KEY = 'TUT-MI-PROYECTO';
+export const TUT_MI_PASANTIA_KEY = 'TUT-MI-PASANTIA';

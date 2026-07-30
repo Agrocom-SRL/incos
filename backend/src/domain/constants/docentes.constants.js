@@ -1,6 +1,6 @@
 /**
  * Constantes del dominio relacionadas con Docentes y Personal
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio relacionados con docentes.
  */
@@ -169,3 +169,22 @@ export const DOCENTE_COLOR_PALETTE = [
   '#808080',
 ];
 
+// ============================================
+// SUPERVISIÓN DOCENTE (schema 27 · fichas_seguimiento_clase)
+// ============================================
+
+/**
+ * Clase observada en la ficha de seguimiento. El formulario 2026 solo
+ * contempla PRESENCIAL (ampliar si aparece formato virtual).
+ */
+export const CLASES_OBSERVADAS_FICHA = {
+  PRESENCIAL: 'PRESENCIAL',
+};
+
+export const CLASES_OBSERVADAS_FICHA_VALUES = Object.values(CLASES_OBSERVADAS_FICHA);
+
+/**
+ * Cantidad de ítems SI/NO de la sección "Documentación lista de asistencia"
+ * de la ficha (denominador del resultado derivado «n/4»).
+ */
+export const FICHA_SEGUIMIENTO_DOCS_TOTAL = 4;

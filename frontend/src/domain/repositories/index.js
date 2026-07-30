@@ -96,6 +96,7 @@ export { IPermisoRepository } from './IPermisoRepository';
 // MÓDULO: TUTORÍAS Y ACOMPAÑAMIENTO (TUT)
 // ============================================
 export { IProyectoGradoRepository } from './IProyectoGradoRepository';
+export { IPasantiaRepository } from './IPasantiaRepository';
 export { IAlertaRiesgoRepository } from './IAlertaRiesgoRepository';
 export { ISesionRefuerzoRepository } from './ISesionRefuerzoRepository';
 export { IPanelAcompanamientoRepository } from './IPanelAcompanamientoRepository';

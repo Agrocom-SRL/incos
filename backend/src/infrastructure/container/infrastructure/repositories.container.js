@@ -145,6 +145,9 @@ import { SesionClaseRepository } from '../../repositories/SesionClaseRepository.
 import { AsistenciaSesionViewRepository } from '../../repositories/views/AsistenciaSesionViewRepository.js';
 import { AsistenciaPlanillaViewRepository } from '../../repositories/views/AsistenciaPlanillaViewRepository.js';
 import { AsistenciaRegistroEstadoViewRepository } from '../../repositories/views/AsistenciaRegistroEstadoViewRepository.js';
+import { AsistenciaConsolidadoViewRepository } from '../../repositories/views/AsistenciaConsolidadoViewRepository.js';
+import { AvanceAcademicoViewRepository } from '../../repositories/views/AvanceAcademicoViewRepository.js';
+import { DesercionViewRepository } from '../../repositories/views/DesercionViewRepository.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
@@ -417,6 +420,25 @@ export function registerRepositoriesModule(container) {
       container,
       REPOSITORIOS_TOKENS.asistenciaRegistroEstadoViewRepository,
       AsistenciaRegistroEstadoViewRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.asistenciaConsolidadoViewRepository,
+      AsistenciaConsolidadoViewRepository,
+    );
+
+    // ============================================
+    // AVANCE ACADÉMICO / DESERCIÓN (ACA, disolución REP 2026-07-29)
+    // ============================================
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.avanceAcademicoViewRepository,
+      AvanceAcademicoViewRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.desercionViewRepository,
+      DesercionViewRepository,
     );
 
     // ============================================

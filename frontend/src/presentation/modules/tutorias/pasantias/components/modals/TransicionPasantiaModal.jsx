@@ -1,0 +1,88 @@
+/**
+ * Modal: transición de estado del trámite de pasantía (TUT · P6,
+ * pasantia·APROBAR).
+ *
+ * El select solo ofrece los estados destino válidos desde el estado actual
+ * SEGÚN EL CAMINO (TRANSICIONES_PASANTIA — el backend valida igual): una
+ * CONVALIDACION nunca pasa a EN_CURSO/FINALIZADA y una PASANTIA nunca a
+ * CONVALIDADA. Patrón `AprobarEtapaModal` (TUT · Titulación).
+ */
+
+import { useEffect, useMemo } from 'react';
+import { Empty, Form, Input, Modal, Select } from 'antd';
+import { formatEstadoPasantia } from '@application-tutorias/utils/pasantiasPills';
+
+const TransicionPasantiaModal = ({
+  open,
+  onCancel,
+  onSubmit,
+  saving = false,
+  transiciones = [],
+  estadoActual = null,
+}) => {
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (open) {
+      form.resetFields();
+    }
+  }, [open, form]);
+
+  const opciones = useMemo(
+    () => transiciones.map((estado) => ({ value: estado, label: formatEstadoPasantia(estado) })),
+    [transiciones],
+  );
+
+  const sinTransiciones = opciones.length === 0;
+
+  const handleOk = async () => {
+    const values = await form.validateFields();
+    await onSubmit({
+      estado: values.estado,
+      observaciones: (values.observaciones || '').trim() || undefined,
+    });
+  };
+
+  return (
+    <Modal
+      title="Transición de estado del trámite"
+      open={open}
+      onCancel={onCancel}
+      onOk={handleOk}
+      okText="Registrar transición"
+      cancelText="Volver"
+      confirmLoading={saving}
+      okButtonProps={{ disabled: sinTransiciones }}
+      destroyOnHidden
+    >
+      {sinTransiciones ? (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={`El trámite se encuentra en estado «${formatEstadoPasantia(estadoActual)}» y no admite más transiciones.`}
+        />
+      ) : (
+        <Form form={form} layout="vertical">
+          <Form.Item label="Estado actual">
+            <Input value={formatEstadoPasantia(estadoActual)} disabled />
+          </Form.Item>
+          <Form.Item
+            name="estado"
+            label="Nuevo estado"
+            rules={[{ required: true, message: 'Seleccione el estado destino' }]}
+          >
+            <Select options={opciones} placeholder="Seleccione el estado destino" />
+          </Form.Item>
+          <Form.Item name="observaciones" label="Observaciones (opcional)">
+            <Input.TextArea
+              rows={3}
+              maxLength={2000}
+              placeholder="Registre observaciones de la transición si corresponde"
+            />
+          </Form.Item>
+        </Form>
+      )}
+    </Modal>
+  );
+};
+
+export default TransicionPasantiaModal;

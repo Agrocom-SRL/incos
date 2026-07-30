@@ -50,4 +50,28 @@ export const DOCENTES_TOKENS = {
   getMisEstudiantesDocenteUseCase: 'docentes.getMisEstudiantesDocenteUseCase',
   getMisEstudiantesDocenteController: 'docentes.getMisEstudiantesDocenteController',
   docentesRouter: 'docentes.docentesRouter',
+
+  // ============================================
+  // SUPERVISIÓN DOCENTE (fichas_seguimiento_clase, schema 27)
+  // Repositorios con tokens scoped del módulo (patrón Pasantías: diff mínimo,
+  // no se tocan repositorios.tokens.js ni repositories.container.js).
+  // ============================================
+  fichaSeguimientoClaseRepository: 'docentes.fichaSeguimientoClaseRepository',
+  fichaSeguimientoListadoViewRepository: 'docentes.fichaSeguimientoListadoViewRepository',
+
+  listFichasSeguimientoUseCase: 'docentes.listFichasSeguimientoUseCase',
+  getFichaSeguimientoByIdUseCase: 'docentes.getFichaSeguimientoByIdUseCase',
+  createFichaSeguimientoUseCase: 'docentes.createFichaSeguimientoUseCase',
+  updateFichaSeguimientoUseCase: 'docentes.updateFichaSeguimientoUseCase',
+  listMisFichasSeguimientoDocenteUseCase: 'docentes.listMisFichasSeguimientoDocenteUseCase',
+  exportFichaSeguimientoPdfUseCase: 'docentes.exportFichaSeguimientoPdfUseCase',
+
+  listFichasSeguimientoController: 'docentes.listFichasSeguimientoController',
+  getFichaSeguimientoByIdController: 'docentes.getFichaSeguimientoByIdController',
+  createFichaSeguimientoController: 'docentes.createFichaSeguimientoController',
+  updateFichaSeguimientoController: 'docentes.updateFichaSeguimientoController',
+  listMisFichasSeguimientoController: 'docentes.listMisFichasSeguimientoController',
+  exportFichaSeguimientoPdfController: 'docentes.exportFichaSeguimientoPdfController',
+
+  supervisionDocenteRouter: 'docentes.supervisionDocenteRouter',
 };

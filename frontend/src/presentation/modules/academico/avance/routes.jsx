@@ -1,16 +1,26 @@
 // src/presentation/modules/academico/avance/routes.jsx
 /**
- * Avance académico (ítem de menú ACA).
+ * Avance académico (ítem de menú ACA · ACA-AVANCE).
+ *
+ * Una página con pestañas gateadas por permiso (disolución del módulo REP):
+ * «Avance» (`academico.avance`) y «Deserción» (`academico.desercion`).
+ * El rol ESTUDIANTE entra con labelByRole "Mi avance" y el backend acota el
+ * listado a su propia fila (alcance PROPIO resuelto en servidor).
  */
 
-import { UnderConstruction } from '@components/pages';
+import { lazy } from 'react';
+import { AVANCE_PERMISOS } from '@application-academico/avance/utils/avancePermisos.js';
+
+const AvanceAcademicoConnector = lazy(
+  () => import('./connectors/AvanceAcademicoConnector.jsx'),
+);
 
 export const avanceRoutes = [
   {
     path: '/academico/avance',
-    element: <UnderConstruction />,
+    element: <AvanceAcademicoConnector />,
     key: 'ACA-AVANCE',
-    permiso: 'academico.avance',
+    permiso: AVANCE_PERMISOS.avance,
     accion: 'LISTAR',
     menu: {
       label: 'Avance académico',

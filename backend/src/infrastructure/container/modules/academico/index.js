@@ -18,6 +18,7 @@ import { registerOfertaResource } from './oferta.container.js';
 import { registerGestionesResource } from './gestiones.container.js';
 import { registerCalificacionesResource } from './calificaciones.container.js';
 import { registerAsistenciaResource } from './asistencia.container.js';
+import { registerAvanceResource } from './avance.container.js';
 import { registerLicenciasResource } from './licencias.container.js';
 import { registerHorariosResource } from './horarios.container.js';
 
@@ -35,6 +36,7 @@ export function registerAcademicoModule(container) {
     registerGestionesResource(container);
     registerCalificacionesResource(container);
     registerAsistenciaResource(container);
+    registerAvanceResource(container);
     registerLicenciasResource(container);
 
     return container;

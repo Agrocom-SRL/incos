@@ -17,6 +17,12 @@
 -- NO filtra a la gestión vigente (a diferencia de la 135, atada a la asignación
 -- docente vigente y al grano paralelo).
 --
+-- 2026-07-29 (ajuste aditivo, disolución REP): se proyectan asignatura_plan_id
+-- y plan_estudio_id (ya presentes en las bases 138/140/139) para que el Avance
+-- académico (vista 170) cuente materias avanzadas por estudiante × plan sobre
+-- ESTE mismo universo de filas (paridad transcript ↔ avance). Consumidores
+-- previos (HistorialAcademicoRepository, 142) no se ven afectados.
+--
 -- Uso:
 --   SELECT * FROM vista_historial_academico_estudiante_fila
 --   WHERE estudiante_id = ?
@@ -31,6 +37,8 @@ CREATE VIEW vista_historial_academico_estudiante_fila AS
 SELECT
   nef.estudiante_id        AS estudiante_id,
   nef.gestion_anio         AS gestion_anio,
+  nef.asignatura_plan_id   AS asignatura_plan_id,
+  apd.plan_estudio_id      AS plan_estudio_id,
   apd.carga_horaria        AS carga_horaria,
   apd.periodo_numero       AS periodo_numero,
   apd.periodo_nombre       AS periodo_nombre,
@@ -51,6 +59,8 @@ UNION ALL
 SELECT
   hp.estudiante_id         AS estudiante_id,
   hp.gestion_anio          AS gestion_anio,
+  hp.asignatura_plan_id    AS asignatura_plan_id,
+  apd.plan_estudio_id      AS plan_estudio_id,
   apd.carga_horaria        AS carga_horaria,
   apd.periodo_numero       AS periodo_numero,
   apd.periodo_nombre       AS periodo_nombre,

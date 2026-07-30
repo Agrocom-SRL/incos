@@ -121,3 +121,77 @@ trasladada a RBAC.
   (ABANDONO/RETIRADO de `matriculas_materia`, vistas espejo de 156/157).
   La variante intra-gestión por asistencia queda como evolución futura si el
   instituto la pide.
+
+## Estado (2026-07-29) — Iteración 1 (backend) HECHA
+
+Implementado por capas (routes → controllers → use-cases → repositories
+arquetipo B), DI registrada, seeds editados. **NADA ejecutado en BD** (gated,
+ver "Pendiente BD" abajo). Frontend intacto (`modules/reportes/` sigue igual;
+se borra en la iteración 2).
+
+### Vistas SQL (archivos en `backend/database/03-views/`)
+
+| Vista | Contenido | Bases |
+|---|---|---|
+| 169 `vista_asistencia_consolidado_bimestre_fila` | % asistencia estudiante × curso × bimestre (denominador = sesiones CERRADAS válidas; AUSENTE 1 / TARDANZA 0.5 / licencia neutraliza — misma regla que la actividad ASISTENCIA) | 133 + 130 + 134 + 129 |
+| 170 `vista_base_avance_academico_conteo` | numerador estudiante × plan (DISTINCT APROBADO/CONVALIDADO) | GROUP BY sobre la 141 |
+| 171 `vista_avance_academico_estudiante` | avance final (identidad + denominador `asignaturas_plan` + promedio) | 170 + 142 + tablas |
+| 172 `vista_base_desercion_matricula_fila` | universo de matrícula con flag `es_desercion` (espejo 156; consumidor distinto documentado) | 138 + 139 + tablas |
+| 173 `vista_desercion_carrera_gestion` | agregado carrera × gestión con denominadores y % (espejo 157) | 172 |
+
+Ajustes ADITIVOS a vistas existentes (recrear en BD): **138** (+
+`matricula_materia_id`, `carrera_id`), **139** (+ `plan_estudio_id`), **141**
+(+ `asignatura_plan_id`, `plan_estudio_id`). Consumidores previos no cambian.
+La 143 NO traía el numerador del avance (solo promedio vía 142) — por eso la
+170 agrega sobre la 141; el consolidado NO salió de un simple GROUP BY de la
+133 porque necesita el detalle del curso (130), el estado del registro (134) y
+la exclusión de feriados/clases no dictadas (129) para igualar la regla del %.
+
+### RBAC
+
+- Seed 59: `academico.avance` rehabilitado (grupo `aca_avance`); NUEVO
+  `academico.desercion` (grupo propio `aca_desercion`, ruta `/academico/avance`,
+  LISTAR/EXPORTAR para RECTOR/DIR_ACADEMICO).
+- Seed 63: tombstone (solo DELETEs de limpieza + tabla de reemplazos en la
+  cabecera). Los EXPORTAR huérfanos (`docentes.ver`,
+  `docentes.supervision.reporte`, `capacitacion.pago`) quedan como deuda
+  anotada (§2), sin tocar.
+
+### Contrato de handoff → frontend (iteración 2)
+
+| Endpoint | Permiso · acción | `data` (dataKey) |
+|---|---|---|
+| `GET /api/v1/asistencia/consolidado?paraleloGestionId=<id>[&bimestre=1..4]` | `academico.asistencia.consolidado.ver` · LISTAR | payload directo patrón centralizador: `{ paraleloGestionId, gestionId, gestionAnio, bimestre, asignaturas[], estudiantes[] }`; celda = `estudiantes[].asistencia[ofertaCursoId] = { matriculaMateriaId, sesiones, faltas, ausencias, tardanzas, licencias, pctAsistencia }` + `promedioPct`; sin `bimestre` = acumulado anual |
+| `GET /api/v1/asistencia/consolidado/export` (mismos query) | ídem · EXPORTAR | descarga .xlsx (1 hoja, planilla verde) |
+| `GET /api/v1/avance-academico[?carreraId=<id>]` | `academico.avance` · LISTAR | **dataKey `avance`**: filas `{ estudianteId, codigo, nombreCompleto, carreraId/Codigo/Nombre/ColorHex, planEstudioId, planNombre, planDuracionAnios, totalAsignaturasPlan, materiasAprobadas, materiasConvalidadas, materiasAvanzadas, materiasRegistradas, pctAvance, primeraGestionAnio, ultimaGestionAnio, promedioHistorial }` + `resumen { totalEstudiantes, promedioPctAvance }` + `alcance` (`GLOBAL`\|`PROPIO`; EST se acota en servidor) |
+| `GET /api/v1/avance-academico/export[?carreraId]` | `academico.avance` · EXPORTAR | descarga .xlsx |
+| `GET /api/v1/desercion[?gestionId=<id>][&carreraId=<id>]` | `academico.desercion` · LISTAR | **dataKeys `carreras`** (agregado: `{ gestionId, gestionAnio, gestionNombre, carrera*, totalMatriculasMateria, matriculasDesercion, matriculasAbandono, matriculasRetiro, totalEstudiantes, estudiantesDesercion, pctEstudiantesDesercion }`), **`desertores`** (detalle: `{ gestion*, carrera*, estudianteId, codigo, nombreCompleto, matriculaMateriaId, asignaturaSigla/Nombre, periodoNumero/Nombre, estado }`) y **`resumen`** (totales globales) |
+| `GET /api/v1/desercion/export[?gestionId][&carreraId]` | `academico.desercion` · EXPORTAR | descarga .xlsx |
+
+Pantallas previstas: `modules/academico/avance/` (página con tabs
+**Avance** [`academico.avance`] / **Deserción** [`academico.desercion`],
+`PermisoGuard` por pestaña, `ActionButton` EXPORTAR) y página **Consolidado %**
+en `modules/academico/asistencia/` (ruta ya declarada
+`/academico/asistencia/consolidado`; picker paralelo + selector bimestre/anual,
+matriz gemela del centralizador). Limpieza REP: borrar
+`modules/reportes/routes.jsx`, su registro en `presentation/modules/index.js` e
+iconos `REP-*` de `menuIcons.js`. Nombres siempre APELLIDO_PATERNO
+APELLIDO_MATERNO NOMBRES (ya resuelto en vistas/Excel).
+
+### Pendiente BD (gated — requiere aprobación explícita)
+
+1. Recrear vistas **138, 139, 141** (columnas aditivas) y crear **169–173**
+   (orden: 138/139 → 141 → 169, 170 → 171, 172 → 173).
+2. Resembrar seeds **59** (avance rehabilitado + desercion) y **63**
+   (tombstone: limpia filas REP residuales).
+
+### Verificación iteración 1
+
+- ESLint: 0 errores en archivos nuevos; los errores restantes en archivos
+  compartidos editados son preexistentes (líneas largas/trailing spaces
+  anteriores al cambio).
+- Arranque en seco sin BD: container DI resuelve los 3 routers; rutas
+  montadas `GET /avance-academico(/export)`, `GET /desercion(/export)`,
+  `GET /asistencia/consolidado(/export)`.
+- Coherencia seed ↔ router verificada (mismos códigos y acciones
+  LISTAR/EXPORTAR en 59 y en `verificarPermiso`).

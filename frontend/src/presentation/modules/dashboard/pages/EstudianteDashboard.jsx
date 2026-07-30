@@ -21,6 +21,7 @@ import {
   IdcardOutlined,
   FileTextOutlined,
   BookOutlined,
+  ShopOutlined,
 } from '@ant-design/icons';
 import { allColors, allSpacing, typography } from '@theme/tokens';
 import { MainContent, InfoSidebar } from '@templates';
@@ -47,6 +48,7 @@ const PATH_PERFIL = '/perfil';
 const PATH_BOLETIN = '/academico/mi-boletin';
 const PATH_MIS_DATOS = '/estudiantes/listar';
 const PATH_MI_PROYECTO = '/tutorias/mi-proyecto';
+const PATH_MI_PASANTIA = '/tutorias/mi-pasantia';
 
 const EstudianteDashboard = () => {
   const navigate = useNavigate();
@@ -134,6 +136,15 @@ const EstudianteDashboard = () => {
                   description="Consulte su proyecto, la bitácora de tutoría y suba sus avances."
                   actionLabel="Ver mi proyecto"
                   onClick={() => navegarSeguro(PATH_MI_PROYECTO)}
+                />
+                <DashboardAccesoHubCard
+                  icon={<ShopOutlined />}
+                  accent={allColors.colorInfo}
+                  accentBg={allColors.colorInfoBg}
+                  title="Mi pasantía"
+                  description="Consulte su trámite de práctica laboral, informes y seguimientos."
+                  actionLabel="Ver mi pasantía"
+                  onClick={() => navegarSeguro(PATH_MI_PASANTIA)}
                 />
               </div>
             </Flex>

@@ -26,11 +26,12 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('docentes.licencia.ver', 'Licencias docentes: listar y ver', NULL, 'DOCENTES', 'DOC', 'doc_licencias', '/docentes/licencias/listar', 1, NOW(), NOW()),
 ('docentes.licencia.crear', 'Licencias docentes: solicitar', NULL, 'DOCENTES', 'DOC', 'doc_licencias', '/docentes/licencias/listar', 1, NOW(), NOW()),
 ('docentes.licencia.aprobar', 'Licencias docentes: aprobar', NULL, 'DOCENTES', 'DOC', 'doc_licencias', '/docentes/licencias/listar', 1, NOW(), NOW()),
-('docentes.supervision.evaluar', 'Supervisión: evaluar docente', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
-('docentes.supervision.reporte', 'Supervisión: ver reportes', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
-('docentes.supervision.programar', 'Supervisión: programar sesión', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
-('docentes.supervision.ficha.crear', 'Supervisión: crear ficha de evaluación', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
-('docentes.supervision.ficha.editar', 'Supervisión: editar ficha de evaluación', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/supervision', 1, NOW(), NOW()),
+-- Supervisión docente (2026-07-30, Fase 3): rediseño contra el schema 27
+-- fichas_seguimiento_clase. Los 5 códigos legacy (evaluar/reporte/programar/
+-- ficha.crear/ficha.editar) se ELIMINAN — nunca tuvieron pantalla ni backend.
+-- Permiso ÚNICO por ítem de menú: docentes.supervision.ficha. Sin ELIMINAR ni
+-- APROBAR: la ficha realizada no se borra (soft-delete solo por vía técnica).
+('docentes.supervision.ficha', 'Supervisión: fichas de seguimiento en clase', NULL, 'DOCENTES', 'DOC', 'doc_supervision', '/docentes/supervision', 1, NOW(), NOW()),
 ('docentes.editar', 'Docentes: editar ficha y eliminar o desactivar registro', NULL, 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo DOC
@@ -49,14 +50,11 @@ JOIN (
   UNION ALL SELECT 'docentes.licencia.ver', 'DETALLE'
   UNION ALL SELECT 'docentes.licencia.crear', 'CREAR'
   UNION ALL SELECT 'docentes.licencia.aprobar', 'APROBAR'
-  UNION ALL SELECT 'docentes.supervision.evaluar', 'LISTAR'
-  UNION ALL SELECT 'docentes.supervision.evaluar', 'DETALLE'
-  UNION ALL SELECT 'docentes.supervision.evaluar', 'EDITAR'
-  UNION ALL SELECT 'docentes.supervision.reporte', 'LISTAR'
-  UNION ALL SELECT 'docentes.supervision.reporte', 'EXPORTAR'
-  UNION ALL SELECT 'docentes.supervision.programar', 'CREAR'
-  UNION ALL SELECT 'docentes.supervision.ficha.crear', 'CREAR'
-  UNION ALL SELECT 'docentes.supervision.ficha.editar', 'EDITAR'
+  UNION ALL SELECT 'docentes.supervision.ficha', 'LISTAR'
+  UNION ALL SELECT 'docentes.supervision.ficha', 'DETALLE'
+  UNION ALL SELECT 'docentes.supervision.ficha', 'CREAR'
+  UNION ALL SELECT 'docentes.supervision.ficha', 'EDITAR'
+  UNION ALL SELECT 'docentes.supervision.ficha', 'EXPORTAR'
   UNION ALL SELECT 'docentes.editar', 'EDITAR'
   UNION ALL SELECT 'docentes.editar', 'ELIMINAR'
 ) AS x ON x.codigo = p.codigo;
@@ -101,22 +99,20 @@ FROM (
   UNION ALL SELECT 'DOCENTE', 'docentes.licencia.crear', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'docentes.licencia.aprobar', 'APROBAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.licencia.aprobar', 'APROBAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.evaluar', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.evaluar', 'DETALLE'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.evaluar', 'EDITAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.evaluar', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.evaluar', 'DETALLE'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.evaluar', 'EDITAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.reporte', 'LISTAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.reporte', 'EXPORTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.reporte', 'LISTAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.reporte', 'EXPORTAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.programar', 'CREAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.programar', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha.crear', 'CREAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha.crear', 'CREAR'
-  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha.editar', 'EDITAR'
-  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha.editar', 'EDITAR'
+  -- Supervisión docente: operan Dirección Académica y Rectorado (la ficha real
+  -- lleva firma/sello de la Dirección Académica). ADMIN_SISTEMA hereda por
+  -- vista. DOCENTE: SIN filas — ve solo SUS fichas por el wrapper self
+  -- GET /supervision-docente/mis-fichas (resolveDocenteIdForUsuario, anti-IDOR).
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.supervision.ficha', 'EXPORTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'docentes.supervision.ficha', 'EXPORTAR'
   UNION ALL SELECT 'RECTOR', 'docentes.editar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'docentes.editar', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'docentes.editar', 'EDITAR'
@@ -127,11 +123,12 @@ JOIN permisos p ON p.codigo = g.codigo;
 
 -- ============================================================
 -- DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)
--- Licencias docentes y Supervisión: se ocultan hasta que las pantallas
--- existan. (El listado/ficha de Docentes SÍ está construido y permanece
--- activo. Pasantías docentes eliminadas del seed 2026-07-29 — el dominio
--- pasantías vive en Titulación/TUT; la supervisión se rediseñará contra el
--- schema 27 fichas_seguimiento_clase en su fase.)
+-- Licencias docentes: se ocultan hasta que la pantalla exista. (El listado/
+-- ficha de Docentes SÍ está construido y permanece activo. Pasantías docentes
+-- eliminadas del seed 2026-07-29 — el dominio pasantías vive en Titulación/
+-- TUT. Supervisión REACTIVADA 2026-07-30, Fase 3: permiso único
+-- docentes.supervision.ficha contra el schema 27 fichas_seguimiento_clase;
+-- ya NO entra en este bloque.)
 -- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
 -- (permiso_acciones), sus asignaciones a roles (roles_permisos) y los grupos
 -- de UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que
@@ -147,13 +144,7 @@ WHERE codigo IN (
   -- Licencias docentes
   'docentes.licencia.ver',
   'docentes.licencia.crear',
-  'docentes.licencia.aprobar',
-  -- Supervisión
-  'docentes.supervision.evaluar',
-  'docentes.supervision.reporte',
-  'docentes.supervision.programar',
-  'docentes.supervision.ficha.crear',
-  'docentes.supervision.ficha.editar'
+  'docentes.licencia.aprobar'
 );
 
 -- 2) Cascada: acciones de esos permisos
@@ -169,8 +160,10 @@ SET rp.activo = 0, rp.deleted_at = @fecha_baja
 WHERE p.modulo = 'DOC' AND p.deleted_at IS NOT NULL;
 
 -- 4) Grupos de UI cuyas páginas quedan completamente ocultas
+-- (doc_supervision queda ACTIVO desde 2026-07-30: la pantalla de Supervisión
+-- docente existe — solo se apaga doc_licencias.)
 UPDATE grupos_ui
 SET activo = 0, deleted_at = @fecha_baja
-WHERE codigo IN ('doc_licencias', 'doc_supervision');
+WHERE codigo IN ('doc_licencias');
 
 SET FOREIGN_KEY_CHECKS = 1;

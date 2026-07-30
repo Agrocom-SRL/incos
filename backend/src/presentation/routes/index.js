@@ -53,6 +53,9 @@ router.get('/', (req, res) => {
             paralelosGestion: '/api/v1/paralelos-gestion',
             ofertaCursos: '/api/v1/oferta-cursos',
             calificaciones: '/api/v1/calificaciones',
+            asistencia: '/api/v1/asistencia',
+            avanceAcademico: '/api/v1/avance-academico',
+            desercion: '/api/v1/desercion',
             // Módulo: Geográficos
             paises: '/api/v1/paises',
             departamentos: '/api/v1/departamentos',
@@ -81,6 +84,7 @@ router.get('/', (req, res) => {
             docentesCursosPorParalelo: '/api/v1/docentes/cursos-por-paralelo?paraleloId=',
             docentesCursosDisponibles: '/api/v1/docentes/cursos-disponibles?gestionPlanId=',
             docentesCursoHorarios: '/api/v1/docentes/cursos/:cursoId/horarios',
+            supervisionDocente: '/api/v1/supervision-docente',
             aulasCatalogo: '/api/v1/aulas/catalogo',
             aulasHorarios: '/api/v1/aulas/horarios',
             // Módulo: Capacitación (CAP)
@@ -147,6 +151,9 @@ router.use('/oferta-cursos', container.resolve(ACADEMICO_TOKENS.ofertaCursosRout
 router.use('/calificaciones', container.resolve(ACADEMICO_TOKENS.calificacionesRouter));
 router.use('/asistencia', container.resolve(ACADEMICO_TOKENS.asistenciaRouter));
 router.use('/asistencia/licencias', container.resolve(ACADEMICO_TOKENS.licenciasRouter));
+// Avance académico + Deserción (nacen con la disolución del módulo REP, 2026-07-29)
+router.use('/avance-academico', container.resolve(ACADEMICO_TOKENS.avanceAcademicoRouter));
+router.use('/desercion', container.resolve(ACADEMICO_TOKENS.desercionRouter));
 router.use('/asignacion-horarios', container.resolve(ACADEMICO_TOKENS.asignacionHorariosRouter));
 router.use('/conflictos', container.resolve(ACADEMICO_TOKENS.conflictosRouter));
 router.use('/horarios/docentes', container.resolve(ACADEMICO_TOKENS.horariosDocenteRouter));
@@ -191,6 +198,9 @@ router.use('/dashboard', container.resolve(DASHBOARD_TOKENS.dashboardRouter));
 // 9. MÓDULO: DOCENTES
 // ============================================
 router.use('/docentes', container.resolve(DOCENTES_TOKENS.docentesRouter));
+// Supervisión docente (fichas de seguimiento en clase, schema 27): permiso
+// único docentes.supervision.ficha; /mis-fichas es autoservicio del docente.
+router.use('/supervision-docente', container.resolve(DOCENTES_TOKENS.supervisionDocenteRouter));
 router.use(
   '/asignaciones-docentes',
   container.resolve(ASIGNACIONES_DOCENTES_TOKENS.asignacionesDocentesRouter)
