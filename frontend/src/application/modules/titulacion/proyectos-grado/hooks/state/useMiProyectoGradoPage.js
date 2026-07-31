@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: "Mi proyecto de grado" — portal del estudiante (TUT).
+ * Hook de pantalla: "Mi proyecto de grado" — portal del estudiante (TIT).
  *
  * Rama estudiante del connector (patrón Mi boletín): SIN provider admin —
  * consume T4 (el backend resuelve el estudiante por token) y los satélites

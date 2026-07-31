@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: ficha de una sesión de refuerzo (TUT · DETALLE).
+ * Hook de pantalla: ficha de una sesión de refuerzo (ACA · DETALLE).
  *
  * Registro RÁPIDO de asistencia y progreso: la tabla de estudiantes se
  * edita en memoria (asistió / progreso / observaciones) y se persiste en un
@@ -14,7 +14,7 @@ import { useSesionRefuerzoDetailContext } from '@application-academico/acompanam
 import { mapFormValuesToSesionPayload } from '@application-academico/acompanamiento/sesiones/mappers/sesionRefuerzoMapper';
 import {
   SESIONES_LIST_PATH,
-  TUT_SESIONES_MENU_KEY,
+  ACA_SESIONES_MENU_KEY,
   sesionEditarPath,
 } from '@application-academico/acompanamiento/config/paths';
 
@@ -35,7 +35,7 @@ export const useSesionRefuerzoDetailPage = () => {
   } = useSesionRefuerzoDetailContext();
 
   const returnListPath = location.state?.returnListPath || SESIONES_LIST_PATH;
-  const menuSidebarKey = location.state?.menuSidebarKey ?? TUT_SESIONES_MENU_KEY;
+  const menuSidebarKey = location.state?.menuSidebarKey ?? ACA_SESIONES_MENU_KEY;
 
   const breadcrumbItems = useMemo(
     () => [

@@ -1,7 +1,7 @@
 /**
- * Hook de API: lista de trámites de pasantía (módulo TUT · P1).
+ * Hook de API: lista de trámites de pasantía (módulo TIT · P1).
  *
- * Patrón `useProyectosGradoApi` (TUT · Titulación): consume directamente la
+ * Patrón `useProyectosGradoApi` (TIT · Titulación): consume directamente la
  * INFRAESTRUCTURA (`PasantiaRepository.obtenerTodos`) y expone un
  * `fetch(options)` compatible con `useServerPaginatedList`, con la data ya
  * normalizada.

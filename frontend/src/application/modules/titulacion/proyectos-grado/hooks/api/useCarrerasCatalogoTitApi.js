@@ -1,5 +1,5 @@
 /**
- * Hook de API: catálogo de carreras para el formulario de proyecto (módulo TUT).
+ * Hook de API: catálogo de carreras para el formulario de proyecto (módulo TIT).
  *
  * REUTILIZA el listado existente `GET /carreras` (no se crean catálogos
  * nuevos). Degrada con gracia si el rol no tiene el permiso del catálogo
@@ -19,7 +19,7 @@ const mapCarreraOption = (raw) => {
   };
 };
 
-export const useCarrerasCatalogoTutApi = () => {
+export const useCarrerasCatalogoTitApi = () => {
   const [carreras, setCarreras] = useState([]);
   const [loading, setLoading] = useState(true);
   const [disponible, setDisponible] = useState(true);

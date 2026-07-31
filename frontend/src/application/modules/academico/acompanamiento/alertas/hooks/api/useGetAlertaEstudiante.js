@@ -1,5 +1,5 @@
 /**
- * Hook de API: detalle de riesgo de un estudiante (módulo TUT · A3).
+ * Hook de API: detalle de riesgo de un estudiante (módulo ACA · A3).
  *
  * Alimenta el drawer de detalle de la lista de alertas: todas las materias del
  * estudiante en la gestión (filas de la vista 156). `dataKey`

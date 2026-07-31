@@ -1,5 +1,5 @@
 /**
- * Hook de API: mutaciones de trámites de pasantía (módulo TUT).
+ * Hook de API: mutaciones de trámites de pasantía (módulo TIT).
  *
  * Crear/actualizar (P3/P4), eliminar soft (P5) y transición de estado por
  * camino (P6, APROBAR). Solo HTTP + estado de guardado; el feedback vive en

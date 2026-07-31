@@ -1,6 +1,6 @@
 /**
  * Hook de API: alumnos en riesgo de los cursos del docente autenticado
- * (módulo TUT · A2).
+ * (módulo ACA · A2).
  *
  * El backend resuelve el docente por token (resolveDocenteIdForUsuario);
  * NUNCA se envía docenteId. `dataKey` ('misAlumnosEnRiesgo') coincide con el

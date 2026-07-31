@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: panel de acompañamiento (TUT · panel·LISTAR).
+ * Hook de pantalla: panel de acompañamiento (ACA · panel·LISTAR).
  *
  * Consume el contexto del provider (A10), deriva las stat-cards y gobierna la
  * exportación a PDF (A11) con feedback. Sin librería de gráficos: stat-cards

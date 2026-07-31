@@ -1,5 +1,5 @@
 /**
- * Provider: alta/edición de un proyecto de grado (TUT · Titulación).
+ * Provider: alta/edición de un proyecto de grado (TIT · Titulación).
  *
  * Provider DELGADO (espejo de `CursoCapacitacionFormProvider`): ensambla la
  * ficha (solo edición, para precargar titular/integrantes), las mutaciones y
@@ -12,16 +12,16 @@ import { useEffect, useMemo } from 'react';
 import { useGetProyectoGrado } from '@application-titulacion/proyectos-grado/hooks/api/useGetProyectoGrado';
 import { useProyectoGradoMutations } from '@application-titulacion/proyectos-grado/hooks/api/useProyectoGradoMutations';
 import { useModalidadesGradoApi } from '@application-titulacion/proyectos-grado/hooks/api/useModalidadesGradoApi';
-import { useCarrerasCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useCarrerasCatalogoTutApi';
-import { useDocentesCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTutApi';
+import { useCarrerasCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useCarrerasCatalogoTitApi';
+import { useDocentesCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTitApi';
 import { ProyectoGradoFormContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoFormContext';
 
 export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
   const { proyecto, loading: loadingProyecto, error: errorProyecto, cargar } = useGetProyectoGrado();
   const { saving, guardarProyecto, asignarTutor } = useProyectoGradoMutations();
   const modalidades = useModalidadesGradoApi();
-  const carrerasCatalogo = useCarrerasCatalogoTutApi();
-  const docentesCatalogo = useDocentesCatalogoTutApi();
+  const carrerasCatalogo = useCarrerasCatalogoTitApi();
+  const docentesCatalogo = useDocentesCatalogoTitApi();
 
   const id = proyectoId != null ? Number(proyectoId) : null;
   const idValido = id != null && Number.isFinite(id) && id > 0;

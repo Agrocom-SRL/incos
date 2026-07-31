@@ -1,7 +1,7 @@
 /**
- * Hook de pantalla: listado de trámites de pasantía (TUT · LISTAR).
+ * Hook de pantalla: listado de trámites de pasantía (TIT · LISTAR).
  *
- * Espejo de `useProyectosGradoListPage` (TUT · Titulación): consume el
+ * Espejo de `useProyectosGradoListPage` (TIT · Titulación): consume el
  * contexto del provider, aplica los filtros gestión/carrera/camino/estado en
  * cliente (modo loadAll — la vista 167 expone gestion_id/carrera_id/estado/
  * tipo), genera columnas, breadcrumb y handlers, y devuelve props listas para
@@ -19,7 +19,7 @@ import {
 import {
   PASANTIAS_LIST_PATH,
   PASANTIAS_EMPRESAS_PATH,
-  TUT_PASANTIAS_MENU_KEY,
+  TIT_PASANTIAS_MENU_KEY,
   pasantiaRegistrarPath,
 } from '@application-titulacion/config/paths';
 
@@ -91,7 +91,7 @@ export const usePasantiasListPage = () => {
 
   const listNavState = useMemo(
     () => ({
-      menuSidebarKey: TUT_PASANTIAS_MENU_KEY,
+      menuSidebarKey: TIT_PASANTIAS_MENU_KEY,
       returnListPath: pathname || PASANTIAS_LIST_PATH,
     }),
     [pathname],

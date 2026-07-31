@@ -1,6 +1,6 @@
 /**
  * Hook de API: catálogo de cursos (asignaciones docentes, vista 130) para el
- * selector del formulario de sesión de refuerzo (módulo TUT).
+ * selector del formulario de sesión de refuerzo (módulo ACA).
  *
  * REUTILIZA `GET /asignaciones-docentes` (catálogo del plan: no se crean
  * catálogos nuevos). Degrada con gracia si el rol no tiene el permiso del
@@ -27,7 +27,7 @@ const mapAsignacion = (raw) => {
   };
 };
 
-export const useAsignacionesCatalogoTutApi = () => {
+export const useAsignacionesCatalogoAcaApi = () => {
   const [asignaciones, setAsignaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [disponible, setDisponible] = useState(true);

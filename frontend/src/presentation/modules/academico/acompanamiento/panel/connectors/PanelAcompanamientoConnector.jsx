@@ -1,6 +1,6 @@
 /**
- * Conector: panel de acompañamiento (TUT) — provider + página.
- * Punto de entrada lazy de la ruta TUT-PANEL (/tutorias/acompanamiento/panel).
+ * Conector: panel de acompañamiento (ACA) — provider + página.
+ * Punto de entrada lazy de la ruta ACA-PANEL (/academico/acompanamiento/panel).
  */
 
 import { PanelAcompanamientoProvider } from '@application-academico/acompanamiento/panel/providers/PanelAcompanamientoProvider';

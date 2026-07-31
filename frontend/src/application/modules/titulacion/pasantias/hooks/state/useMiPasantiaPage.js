@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: "Mi pasantía" — portal del estudiante (TUT).
+ * Hook de pantalla: "Mi pasantía" — portal del estudiante (TIT).
  *
  * Rama estudiante (patrón `useMiProyectoGradoPage`): SIN provider admin —
  * consume P19 (objeto compuesto `{ pasantia, informes, seguimientos }`; el

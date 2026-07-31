@@ -1,5 +1,5 @@
 /**
- * Columnas de los informes de un trámite de pasantía (módulo TUT · P11-P14).
+ * Columnas de los informes de un trámite de pasantía (módulo TIT · P11-P14).
  *
  * El PDF institucional lo GENERA el backend al emitir/editar el informe
  * (P12/P13); aquí edición (informe·EDITAR) y descarga del PDF por endpoint
@@ -10,7 +10,7 @@
 import { CalendarOutlined, DownloadOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatResultadoInforme,
   formatTipoInforme,
@@ -113,14 +113,14 @@ export const createInformesPasantiaTableColumns = ({
               tooltip: record.tienePdf
                 ? 'Descargar informe (PDF)'
                 : 'El informe no tiene archivo generado',
-              permiso: TUTORIAS_PERMISOS.pasantia,
+              permiso: TITULACION_PERMISOS.pasantia,
               accion: 'EXPORTAR',
               disabled: !record.tienePdf || descargandoId === record.id,
               onClick: () => onDescargar(record),
             },
           ]}
           permisos={{
-            editar: { codigo: TUTORIAS_PERMISOS.pasantiaInforme, accion: 'EDITAR' },
+            editar: { codigo: TITULACION_PERMISOS.pasantiaInforme, accion: 'EDITAR' },
           }}
         />
       ),

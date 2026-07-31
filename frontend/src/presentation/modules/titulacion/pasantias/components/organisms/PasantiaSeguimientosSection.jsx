@@ -1,6 +1,6 @@
 /**
  * Organismo: tab "Seguimientos" de la ficha-hub del trámite de pasantía
- * (TUT · P15-P17).
+ * (TIT · P15-P17).
  *
  * DetailInfoCard + tabla de la hoja de seguimiento (escala ALTO/MEDIO/BAJO).
  * "Registrar seguimiento" gated por seguimiento·CREAR; editar por
@@ -12,7 +12,7 @@ import { Alert, Empty, Table } from 'antd';
 import { FileAddOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { createSeguimientosPasantiaTableColumns } from '@titulacion/pasantias/config/seguimientosPasantiaTableColumns';
 
 const PasantiaSeguimientosSection = ({
@@ -37,7 +37,7 @@ const PasantiaSeguimientosSection = ({
         extra={
           !readOnly ? (
             <ActionButton
-              permiso={TUTORIAS_PERMISOS.pasantiaSeguimiento}
+              permiso={TITULACION_PERMISOS.pasantiaSeguimiento}
               accion="CREAR"
               variant="primary"
               icon={<FileAddOutlined />}

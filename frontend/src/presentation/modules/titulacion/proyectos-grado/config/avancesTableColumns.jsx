@@ -1,5 +1,5 @@
 /**
- * Columnas de los avances de un proyecto de grado (módulo TUT · T18-T21).
+ * Columnas de los avances de un proyecto de grado (módulo TIT · T18-T21).
  *
  * Se usa en DOS pantallas:
  *  - Ficha-hub (tutor/admin): descargar (avance·DETALLE, T21) + revisar →
@@ -11,7 +11,7 @@
 import { AuditOutlined, CalendarOutlined, DownloadOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoAvance,
   getEstadoAvancePillClass,
@@ -113,7 +113,7 @@ export const createAvancesTableColumns = ({
               icon: <DownloadOutlined />,
               variant: 'info',
               tooltip: 'Descargar archivo',
-              permiso: TUTORIAS_PERMISOS.avance,
+              permiso: TITULACION_PERMISOS.avance,
               accion: 'DETALLE',
               disabled: descargandoId === record.id,
               onClick: () => onDescargar(record),
@@ -125,7 +125,7 @@ export const createAvancesTableColumns = ({
                     icon: <AuditOutlined />,
                     variant: 'warning',
                     tooltip: 'Revisar avance (entrada de bitácora)',
-                    permiso: TUTORIAS_PERMISOS.bitacora,
+                    permiso: TITULACION_PERMISOS.bitacora,
                     accion: 'CREAR',
                     onClick: () => onRevisar(record),
                   },

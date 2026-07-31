@@ -1,6 +1,6 @@
 /**
- * Conector: ficha-hub de trámite de pasantía (TUT) — provider + página.
- * Punto de entrada lazy de la ruta /tutorias/pasantias/:id.
+ * Conector: ficha-hub de trámite de pasantía (TIT) — provider + página.
+ * Punto de entrada lazy de la ruta /titulacion/pasantias/:id.
  */
 
 import { useParams } from 'react-router-dom';

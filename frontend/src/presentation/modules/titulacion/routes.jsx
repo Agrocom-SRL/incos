@@ -1,41 +1,37 @@
+// src/presentation/modules/titulacion/routes.jsx
 /**
- * Rutas del módulo Titulación (TUT) — cada ítem de menú tiene su directorio y
+ * Rutas del módulo Titulación (TIT) — cada ítem de menú tiene su directorio y
  * routes.jsx (patrón configuracion/routes.jsx). Raíz de menú: dominios/routes.jsx
- * → key TUT, label "Titulación" (order 9).
+ * → key TIT, label "Titulación" (order 9).
  *
- * Submódulos: Titulación (proyectos de grado, bitácora, avances, dictámenes;
- * menú TUT), Pasantías (trámites de práctica laboral + catálogo de empresas;
- * menú TUT, order 2) y Acompañamiento (alertas de riesgo, sesiones de
- * refuerzo, panel; sus ítems cuelgan del menú ACADÉMICO — decisión 2026-07-29,
- * ver docs/plan/titulacion-y-dominios-pendientes.md). Permisos del seed TUT
- * (`tutorias.*`, identificadores estables).
+ * Submódulos: Proyectos de grado (bitácora, avances, dictámenes; menú TIT) y
+ * Pasantías (trámites de práctica laboral + catálogo de empresas; menú TIT,
+ * order 2). Acompañamiento (alertas de riesgo, sesiones de refuerzo, panel)
+ * se reclasificó por completo al dominio ACADÉMICO — decisión 2026-07-29,
+ * ver docs/plan/titulacion-y-dominios-pendientes.md; sus rutas ahora viven en
+ * `academico/acompanamiento/routes.jsx` y se sirven vía `academicoRoutes`.
+ * Rename `tutorias` → `titulacion` 2026-07-31: identificadores estables
+ * `titulacion.*` (proyecto/bitácora/avance/pasantia).
  */
 
 import { UnderConstruction } from '@components/pages';
-import { titulacionRoutes } from './titulacion/routes.jsx';
+import { proyectosGradoRoutes } from './proyectos-grado/routes.jsx';
 import { pasantiasRoutes } from './pasantias/routes.jsx';
-import { acompanamientoRoutes } from './acompanamiento/routes.jsx';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 
-export const tutoriasRoutes = [
+export const titulacionRoutes = [
   {
-    path: '/tutorias',
+    path: '/titulacion',
     element: <UnderConstruction />,
-    key: 'TUT-ROOT',
+    key: 'TIT-ROOT',
     // Sin permiso único de menú (agrupa submódulos): exige al menos uno de sus
     // permisos de entrada, igual que el resto de rutas protegidas del sistema.
-    permisoAny: [
-      'tutorias.titulacion.proyecto',
-      'tutorias.pasantia',
-      'tutorias.acompanamiento.alerta',
-      'tutorias.acompanamiento.sesion',
-      'tutorias.acompanamiento.panel',
-    ],
+    permisoAny: [TITULACION_PERMISOS.proyecto, TITULACION_PERMISOS.pasantia],
     accion: 'LISTAR',
     menu: null,
   },
-  ...titulacionRoutes,
+  ...proyectosGradoRoutes,
   ...pasantiasRoutes,
-  ...acompanamientoRoutes,
 ];
 
-export default tutoriasRoutes;
+export default titulacionRoutes;

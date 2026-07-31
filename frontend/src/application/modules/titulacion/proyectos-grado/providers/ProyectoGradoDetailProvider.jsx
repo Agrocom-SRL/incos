@@ -1,5 +1,5 @@
 /**
- * Provider: ficha-hub de un proyecto de grado (TUT · Titulación).
+ * Provider: ficha-hub de un proyecto de grado (TIT · Titulación).
  *
  * Ensambla los CUATRO datasets de la ficha (T6 proyecto, T14 bitácora, T18
  * avances, T22 dictámenes) con carga en paralelo al montar, más las
@@ -14,7 +14,7 @@ import { useProyectoGradoMutations } from '@application-titulacion/proyectos-gra
 import { useBitacoraProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useBitacoraProyectoApi';
 import { useAvancesProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useAvancesProyectoApi';
 import { useDictamenesProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useDictamenesProyectoApi';
-import { useDocentesCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTutApi';
+import { useDocentesCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTitApi';
 import { ProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoDetailContext';
 
 export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
@@ -23,7 +23,7 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
   const bitacora = useBitacoraProyectoApi();
   const avances = useAvancesProyectoApi();
   const dictamenes = useDictamenesProyectoApi();
-  const docentesCatalogo = useDocentesCatalogoTutApi();
+  const docentesCatalogo = useDocentesCatalogoTitApi();
 
   const id = Number(proyectoId);
   const idValido = Number.isFinite(id) && id > 0;

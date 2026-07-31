@@ -1,5 +1,5 @@
 /**
- * Provider: ficha-hub de un trámite de pasantía (TUT · Pasantías).
+ * Provider: ficha-hub de un trámite de pasantía (TIT · Pasantías).
  *
  * Ensambla los TRES datasets de la ficha (P2 trámite, P11 informes, P15
  * seguimientos) con carga en paralelo al montar, más las mutaciones de

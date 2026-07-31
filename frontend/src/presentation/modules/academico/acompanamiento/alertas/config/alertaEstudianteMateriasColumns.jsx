@@ -1,6 +1,6 @@
 /**
  * Columnas de la tabla de materias del drawer de detalle por estudiante
- * (módulo TUT · `alertaEstudiante`, A3: todas las materias de la gestión del
+ * (módulo ACA · `alertaEstudiante`, A3: todas las materias de la gestión del
  * estudiante — filas de la vista 156, no solo las que están en riesgo).
  *
  * Tabla compacta (size small, sin paginación): materia + docente, los cuatro

@@ -1,6 +1,6 @@
 /**
  * Columnas de la tabla de reprobación por materia del panel de acompañamiento
- * (módulo TUT · A10, sección `reprobacionPorMateria`: vista 158 por
+ * (módulo ACA · A10, sección `reprobacionPorMateria`: vista 158 por
  * gestión+carrera+oferta de curso).
  *
  * Tabla de LECTURA (sin acciones): materias ordenadas por % de riesgo, con

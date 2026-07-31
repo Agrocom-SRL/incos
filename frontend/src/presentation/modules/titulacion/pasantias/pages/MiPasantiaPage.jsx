@@ -1,5 +1,5 @@
 /**
- * MiPasantiaPage — portal del estudiante (TUT-MI-PASANTIA, patrón Mi
+ * MiPasantiaPage — portal del estudiante (TIT-MI-PASANTIA, patrón Mi
  * proyecto). Presenta SU trámite compuesto (P19: pasantía + informes +
  * seguimientos) como ficha de detalle de SOLO LECTURA: cabecera de perfil
  * (sd-profile) + datos + informes + seguimientos sin acciones (el rol

@@ -1,5 +1,5 @@
 /**
- * MiProyectoGradoPage — portal del estudiante (TUT-MI-PROYECTO, patrón Mi
+ * MiProyectoGradoPage — portal del estudiante (TIT-MI-PROYECTO, patrón Mi
  * boletín). Presenta SU proyecto como ficha de detalle: cabecera de perfil
  * (sd-profile) + datos + bitácora (con confirmación de entradas — firma de la
  * planilla, T17) + avances (subida PDF/Word T20 y descarga T21).
@@ -15,7 +15,7 @@ import { PageHeader, DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
 import { DetailPageShell } from '@organisms';
 import { useMiProyectoGradoPage } from '@application-titulacion/proyectos-grado/hooks/state/useMiProyectoGradoPage';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { createBitacoraTableColumns } from '@titulacion/proyectos-grado/config/bitacoraTableColumns';
 import ProyectoGradoFichaHeader from '@titulacion/proyectos-grado/components/organisms/ProyectoGradoFichaHeader';
 import ProyectoDatosSection from '@titulacion/proyectos-grado/components/organisms/ProyectoDatosSection';
@@ -54,7 +54,7 @@ const MiProyectoGradoPage = () => {
 
   const subirAvanceAction = proyecto ? (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.avance}
+      permiso={TITULACION_PERMISOS.avance}
       accion="CREAR"
       variant="primary"
       icon={<UploadOutlined />}

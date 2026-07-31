@@ -1,6 +1,6 @@
 /**
  * Columnas de la tabla de casos críticos del panel de acompañamiento
- * (módulo TUT · A10, sección `casosCriticos`: top de filas de la vista 156).
+ * (módulo ACA · A10, sección `casosCriticos`: top de filas de la vista 156).
  *
  * Tabla de LECTURA (sin acciones): mismo lenguaje visual que la lista de
  * alertas — IdentidadCelda, CarreraDotCell, InfoLinesCell y notas con rojo

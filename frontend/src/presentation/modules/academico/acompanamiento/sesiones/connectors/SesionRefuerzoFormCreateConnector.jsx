@@ -1,7 +1,7 @@
 /**
- * Conector: programar sesión de refuerzo (TUT) — provider + página en
- * modo create. Punto de entrada lazy de la ruta TUT-SESIONES-PROGRAMAR
- * (/tutorias/acompanamiento/sesiones/programar).
+ * Conector: programar sesión de refuerzo (ACA) — provider + página en
+ * modo create. Punto de entrada lazy de la ruta ACA-SESIONES-PROGRAMAR
+ * (/academico/acompanamiento/sesiones/programar).
  */
 
 import { SesionRefuerzoFormProvider } from '@application-academico/acompanamiento/sesiones/providers/SesionRefuerzoFormProvider';

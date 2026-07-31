@@ -1,5 +1,5 @@
 /**
- * Hook de API: ficha de un proyecto de grado (módulo TUT · T6).
+ * Hook de API: ficha de un proyecto de grado (módulo TIT · T6).
  *
  * GET /proyectos-grado/:id — ficha con integrantes[] y resúmenes.
  * `dataKey` ('proyectoGrado') coincide con el `dataFieldName` del backend.

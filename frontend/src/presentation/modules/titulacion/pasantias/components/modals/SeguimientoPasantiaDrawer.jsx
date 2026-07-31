@@ -1,5 +1,5 @@
 /**
- * Drawer: hoja de seguimiento de un trámite de pasantía (TUT · P16/P17).
+ * Drawer: hoja de seguimiento de un trámite de pasantía (TIT · P16/P17).
  *
  * Dos modos según props (mismo formulario, payloads del contrato):
  *  - Registro (sin `seguimiento`): nueva visita de supervisión.

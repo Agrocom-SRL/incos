@@ -1,5 +1,5 @@
 /**
- * Provider: lista de proyectos de grado (TUT · Titulación).
+ * Provider: lista de proyectos de grado (TIT · Titulación).
  *
  * Espejo de `CursosCapacitacionListProvider` (CAP): ensambla el hook de API
  * con `useServerPaginatedList` en modo `loadAll` (universo pequeño: orden,

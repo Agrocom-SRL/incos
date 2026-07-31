@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: ficha-hub de un trámite de pasantía (TUT · DETALLE).
+ * Hook de pantalla: ficha-hub de un trámite de pasantía (TIT · DETALLE).
  *
  * Orquesta la ficha sobre el contexto del provider (breadcrumbs, volver,
  * editar) y las acciones de las pestañas:
@@ -17,7 +17,7 @@ import { usePasantiaDetailContext } from '@application-titulacion/pasantias/hook
 import { TRANSICIONES_PASANTIA } from '@application-titulacion/utils/pasantiasPills';
 import {
   PASANTIAS_LIST_PATH,
-  TUT_PASANTIAS_MENU_KEY,
+  TIT_PASANTIAS_MENU_KEY,
   pasantiaEditarPath,
 } from '@application-titulacion/config/paths';
 
@@ -38,7 +38,7 @@ export const usePasantiaDetailPage = () => {
   } = usePasantiaDetailContext();
 
   const returnListPath = location.state?.returnListPath || PASANTIAS_LIST_PATH;
-  const menuSidebarKey = location.state?.menuSidebarKey ?? TUT_PASANTIAS_MENU_KEY;
+  const menuSidebarKey = location.state?.menuSidebarKey ?? TIT_PASANTIAS_MENU_KEY;
 
   const breadcrumbItems = useMemo(
     () => [

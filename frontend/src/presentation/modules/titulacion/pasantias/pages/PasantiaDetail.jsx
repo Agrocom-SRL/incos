@@ -1,5 +1,5 @@
 /**
- * Ficha-hub de trámite de pasantía (Titulación · TUT · DETALLE) — cabecera de
+ * Ficha-hub de trámite de pasantía (Titulación · TIT · DETALLE) — cabecera de
  * perfil + tabs datos / informes / seguimientos.
  *
  * Patrón ficha-hub de `ProyectoGradoDetail` (DetailPageShell +
@@ -23,7 +23,7 @@ import { ActionButton, BackButton } from '@atoms';
 import { DetailPageShell, DetailTabsPanel } from '@organisms';
 import { usePermiso } from '@application-auth';
 import { usePasantiaDetailPage } from '@application-titulacion/pasantias/hooks/state/usePasantiaDetailPage';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import PasantiaFichaHeader from '@titulacion/pasantias/components/organisms/PasantiaFichaHeader';
 import PasantiaDatosSection from '@titulacion/pasantias/components/organisms/PasantiaDatosSection';
 import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/PasantiaInformesSection';
@@ -46,14 +46,14 @@ const PasantiaDetail = () => {
     informes,
     seguimientos,
   } = usePasantiaDetailPage();
-  const puedeEditar = usePermiso(TUTORIAS_PERMISOS.pasantia, 'EDITAR');
+  const puedeEditar = usePermiso(TITULACION_PERMISOS.pasantia, 'EDITAR');
 
   const [activeKey, setActiveKey] = useState('datos');
 
   const headerActions = (
     <Flex gap="small" wrap>
       <ActionButton
-        permiso={TUTORIAS_PERMISOS.pasantia}
+        permiso={TITULACION_PERMISOS.pasantia}
         accion="APROBAR"
         variant="success"
         icon={<CheckCircleOutlined />}

@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: bandeja del docente tutor (TUT · "Mis tutorados").
+ * Hook de pantalla: bandeja del docente tutor (TIT · "Mis tutorados").
  *
  * Rama docente self del connector (patrón MisEstudiantesDocentePage de
  * Matrícula): SIN provider admin — consume directamente T3 (el backend
@@ -19,7 +19,7 @@ import { useProyectoGradoMutations } from '@application-titulacion/proyectos-gra
 import { createMisTutoradosTableColumns } from '@titulacion/proyectos-grado/config/misTutoradosTableColumns';
 import {
   PROYECTOS_GRADO_LIST_PATH,
-  TUT_TITULACION_MENU_KEY,
+  TIT_PROYECTOS_MENU_KEY,
   proyectoGradoDetallePath,
 } from '@application-titulacion/config/paths';
 
@@ -47,7 +47,7 @@ export const useMisTutoradosPage = () => {
 
   const listNavState = useMemo(
     () => ({
-      menuSidebarKey: TUT_TITULACION_MENU_KEY,
+      menuSidebarKey: TIT_PROYECTOS_MENU_KEY,
       returnListPath: pathname || PROYECTOS_GRADO_LIST_PATH,
     }),
     [pathname],

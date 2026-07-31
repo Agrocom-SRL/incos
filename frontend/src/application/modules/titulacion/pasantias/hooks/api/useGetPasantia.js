@@ -1,5 +1,5 @@
 /**
- * Hook de API: ficha de un trámite de pasantía (módulo TUT · P2).
+ * Hook de API: ficha de un trámite de pasantía (módulo TIT · P2).
  *
  * GET /pasantias/:id — ficha de la vista 168 (identidad + puesto + contrato +
  * contacto de la empresa + agregados de satélites).

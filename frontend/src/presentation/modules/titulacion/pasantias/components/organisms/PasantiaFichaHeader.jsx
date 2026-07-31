@@ -1,5 +1,5 @@
 /**
- * Organismo: cabecera de la ficha de un trámite de pasantía (TUT · Pasantías).
+ * Organismo: cabecera de la ficha de un trámite de pasantía (TIT · Pasantías).
  *
  * Reusa el shell compartido `sd-profile` vía `DetailProfileCard` (gemelo de
  * `ProyectoGradoFichaHeader`). Camino y estado con StatusPill del kit y

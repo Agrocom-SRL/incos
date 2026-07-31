@@ -1,6 +1,6 @@
 /**
  * Hook de pantalla: alertas de riesgo pedagógico — vista institucional
- * (TUT · alerta·LISTAR).
+ * (ACA · alerta·LISTAR).
  *
  * Consume el contexto del provider (A1), aplica los filtros carrera/materia
  * en cliente (loadAll), gobierna el drawer de detalle por estudiante (A3) y

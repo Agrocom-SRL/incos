@@ -1,6 +1,6 @@
 /**
  * Hook de API: búsqueda de estudiantes para titular/integrantes del proyecto
- * (módulo TUT · Titulación).
+ * (módulo TIT · Titulación).
  *
  * REUTILIZA la búsqueda de estudiantes ya expuesta
  * (`EstudianteRepository.buscar` → `GET /estudiantes/search`, catálogo del
@@ -35,7 +35,7 @@ const mapEstudianteOption = (row) => {
   };
 };
 
-export const useBuscarEstudiantesTut = () => {
+export const useBuscarEstudiantesTit = () => {
   const [estudiantes, setEstudiantes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -110,4 +110,4 @@ export const useBuscarEstudiantesTut = () => {
   return { estudiantes, loading, error, buscar, limpiar };
 };
 
-export default useBuscarEstudiantesTut;
+export default useBuscarEstudiantesTit;

@@ -1,5 +1,5 @@
 /**
- * Organismo: cabecera de la ficha de proyecto de grado (TUT · Titulación).
+ * Organismo: cabecera de la ficha de proyecto de grado (TIT · Titulación).
  *
  * Reusa el shell compartido `sd-profile` vía `DetailProfileCard` (gemelo de
  * `CursoCapacitacionFichaHeader` de CAP). Estado del proyecto con StatusPill

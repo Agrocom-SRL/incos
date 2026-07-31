@@ -1,6 +1,6 @@
 /**
  * Columnas de "Mis alumnos en riesgo" — rama DOCENTE del ítem Alumnos en
- * riesgo (módulo TUT · `misAlumnosEnRiesgo`, A2: el backend resuelve al
+ * riesgo (módulo ACA · `misAlumnosEnRiesgo`, A2: el backend resuelve al
  * docente por token, la lista solo trae SUS cursos).
  *
  * Mismo lenguaje visual que la lista institucional, sin la columna de carrera
@@ -11,7 +11,7 @@
 import { BookOutlined, CalendarOutlined, TeamOutlined } from '@ant-design/icons';
 import { IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
 import NotaRiesgoText from '@academico/acompanamiento/components/atoms/NotaRiesgoText';
 
@@ -111,7 +111,7 @@ export const createMisAlumnosEnRiesgoTableColumns = ({ onProgramarSesion }) => [
             icon: <CalendarOutlined />,
             variant: 'view',
             tooltip: 'Programar sesión de refuerzo',
-            permiso: TUTORIAS_PERMISOS.sesion,
+            permiso: ACOMPANAMIENTO_PERMISOS.sesion,
             accion: 'CREAR',
             onClick: () => onProgramarSesion(record),
           },

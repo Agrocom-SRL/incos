@@ -1,5 +1,5 @@
 /**
- * Columnas del listado de sesiones de refuerzo (módulo TUT ·
+ * Columnas del listado de sesiones de refuerzo (módulo ACA ·
  * `sesionesRefuerzo`, vista 161).
  *
  * Lenguaje visual de CursosCapacitacionList (CAP): numeración +
@@ -19,7 +19,7 @@ import {
 } from '@ant-design/icons';
 import { IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import {
   formatEstadoSesion,
   getEstadoSesionPillClass,
@@ -159,9 +159,9 @@ export const createSesionesTableColumns = ({ navigate, listNavState, refetch, de
           editDisabled={record.estado !== 'PROGRAMADA'}
           editDisabledTitle="Solo se editan sesiones programadas"
           permisos={{
-            ver: { codigo: TUTORIAS_PERMISOS.sesion, accion: 'DETALLE' },
-            editar: { codigo: TUTORIAS_PERMISOS.sesion, accion: 'EDITAR' },
-            eliminar: { codigo: TUTORIAS_PERMISOS.sesion, accion: 'ELIMINAR' },
+            ver: { codigo: ACOMPANAMIENTO_PERMISOS.sesion, accion: 'DETALLE' },
+            editar: { codigo: ACOMPANAMIENTO_PERMISOS.sesion, accion: 'EDITAR' },
+            eliminar: { codigo: ACOMPANAMIENTO_PERMISOS.sesion, accion: 'ELIMINAR' },
           }}
         />
       );

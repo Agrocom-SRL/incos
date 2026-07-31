@@ -1,5 +1,5 @@
 /**
- * Columnas de los dictámenes de un proyecto de grado (módulo TUT · T22-T23).
+ * Columnas de los dictámenes de un proyecto de grado (módulo TIT · T22-T23).
  *
  * Los dictámenes los GENERA el backend (designación de tutor T10 y
  * transiciones T11); aquí solo lectura + descarga del PDF por endpoint
@@ -9,7 +9,7 @@
 import { CalendarOutlined, DownloadOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatResultadoDictamen,
   formatTipoDictamen,
@@ -97,7 +97,7 @@ export const createDictamenesTableColumns = ({ onDescargar, descargandoId = null
               tooltip: record.tieneArchivo
                 ? 'Descargar dictamen (PDF)'
                 : 'El dictamen no tiene archivo generado',
-              permiso: TUTORIAS_PERMISOS.proyecto,
+              permiso: TITULACION_PERMISOS.proyecto,
               accion: 'EXPORTAR',
               disabled: !record.tieneArchivo || descargandoId === record.id,
               onClick: () => onDescargar(record),

@@ -1,5 +1,5 @@
 /**
- * Columnas del listado de proyectos de grado (módulo TUT).
+ * Columnas del listado de proyectos de grado (módulo TIT).
  *
  * Lenguaje visual de CursosCapacitacionList (CAP): numeración +
  * IdentidadCelda + celdas multi-línea (InfoLinesCell) + StatusPill +
@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoProyecto,
   getEstadoProyectoPillClass,
@@ -176,9 +176,9 @@ export const createProyectosGradoTableColumns = ({
             }
             editTitle="Editar proyecto"
             permisos={{
-              ver: { codigo: TUTORIAS_PERMISOS.proyecto, accion: 'DETALLE' },
-              editar: { codigo: TUTORIAS_PERMISOS.proyecto, accion: 'EDITAR' },
-              eliminar: { codigo: TUTORIAS_PERMISOS.proyecto, accion: 'ELIMINAR' },
+              ver: { codigo: TITULACION_PERMISOS.proyecto, accion: 'DETALLE' },
+              editar: { codigo: TITULACION_PERMISOS.proyecto, accion: 'EDITAR' },
+              eliminar: { codigo: TITULACION_PERMISOS.proyecto, accion: 'ELIMINAR' },
             }}
           />
         );

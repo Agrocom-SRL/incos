@@ -1,6 +1,6 @@
 /**
  * ABM de trámite de pasantía (alta y edición) — workspace alineado a CFG
- * Académico. Gemelo de `ProyectoGradoFormPage` (TUT · Titulación): UNA
+ * Académico. Gemelo de `ProyectoGradoFormPage` (TIT · Titulación): UNA
  * tarjeta con secciones internas (`PasantiaFormSections`, prop `sections` de
  * `CfgFormWorkspace`), botón guardar en el footer de la tarjeta.
  *
@@ -15,7 +15,7 @@ import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { usePasantiaFormPage } from '@application-titulacion/pasantias/hooks/state/usePasantiaFormPage';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import PasantiaFormSections from '@titulacion/pasantias/components/organisms/PasantiaFormSections';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
@@ -40,7 +40,7 @@ const PasantiaFormPage = ({ mode = 'create' }) => {
 
   const saveButton = (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.pasantia}
+      permiso={TITULACION_PERMISOS.pasantia}
       accion={permisoAccion}
       variant="primary"
       size="large"

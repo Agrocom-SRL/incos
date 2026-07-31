@@ -1,5 +1,5 @@
 /**
- * Hook de API: lista de sesiones de refuerzo (módulo TUT · A4).
+ * Hook de API: lista de sesiones de refuerzo (módulo ACA · A4).
  *
  * Vista 161. Expone `fetch(options)` compatible con `useServerPaginatedList`
  * en modo loadAll. `dataKey` ('sesionesRefuerzo') coincide con el

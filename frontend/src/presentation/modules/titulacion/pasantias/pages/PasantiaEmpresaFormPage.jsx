@@ -15,7 +15,7 @@ import { ActionButton, BackButton } from '@atoms';
 import { CfgFormWorkspace } from '@organisms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { usePasantiaEmpresaFormPage } from '@application-titulacion/pasantias/hooks/state/usePasantiaEmpresaFormPage';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
@@ -36,7 +36,7 @@ const PasantiaEmpresaFormPage = ({ mode = 'create' }) => {
 
   const saveButton = (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.pasantiaEmpresa}
+      permiso={TITULACION_PERMISOS.pasantiaEmpresa}
       accion={permisoAccion}
       variant="primary"
       size="large"

@@ -14,10 +14,11 @@ export const DOMINIOS_V2 = [
   { value: 'FINANZAS', label: 'Finanzas', module: 'FIN' },
   { value: 'INSTITUCIONAL', label: 'Institucional', module: 'INST' },
   { value: 'CAPACITACION', label: 'Capacitación', module: 'CAP' },
-  // TUTORIAS agrupa los permisos de titulación (tutorias.titulacion.*); los de
-  // acompañamiento (tutorias.acompanamiento.*) se siembran con dominio
-  // ACADEMICO y aparecen en esa pestaña (seed 66, decisión 2026-07-29).
-  { value: 'TUTORIAS', label: 'Titulación', module: 'TUT' },
+  // TITULACION agrupa los permisos de proyectos de grado y pasantías
+  // (titulacion.*, rename 2026-07-31 desde TUTORIAS/tutorias.titulacion.*).
+  // Acompañamiento (academico.acompanamiento.*) se siembra con dominio
+  // ACADEMICO y aparece en esa pestaña (seed 59, decisión 2026-07-29).
+  { value: 'TITULACION', label: 'Titulación', module: 'TIT' },
   { value: 'CONFIGURACION', label: 'Configuración', module: 'CFG' },
   { value: 'SEGURIDAD', label: 'Seguridad', module: 'SEG' },
 ];

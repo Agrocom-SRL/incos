@@ -1,5 +1,5 @@
 /**
- * Hook de API: seguimientos de un trámite de pasantía (módulo TUT · P15-P17).
+ * Hook de API: seguimientos de un trámite de pasantía (módulo TIT · P15-P17).
  *
  * Lectura en orden cronológico (P15), registro (P16) y edición (P17) de la
  * hoja de seguimiento (FORMULARIO DE SEGUIMIENTO DE PASANTÍA, escala

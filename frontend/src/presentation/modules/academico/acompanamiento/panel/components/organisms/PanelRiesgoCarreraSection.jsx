@@ -1,5 +1,5 @@
 /**
- * Organismo: riesgo por carrera del panel de acompañamiento (TUT · vista 157).
+ * Organismo: riesgo por carrera del panel de acompañamiento (ACA · vista 157).
  *
  * Una fila por carrera con `Progress` AntD (SIN librería de gráficos nueva):
  * el porcentaje de estudiantes en riesgo se pinta con el rojo SEMÁNTICO del

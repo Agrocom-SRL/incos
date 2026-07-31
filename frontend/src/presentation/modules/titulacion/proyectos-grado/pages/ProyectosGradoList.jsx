@@ -1,5 +1,5 @@
 /**
- * Listado de proyectos de grado (Tutorías · TUT-TITULACION · LISTAR).
+ * Listado de proyectos de grado (Titulación · TIT-PROYECTOS · LISTAR).
  *
  * Lenguaje visual de CursosCapacitacionList (CAP): shell
  * Flex.page-container → PageHeaderArea(PageHeader) → DashboardPageShell → MainContent
@@ -19,7 +19,7 @@ import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useProyectosGradoListPage } from '@application-titulacion/proyectos-grado/hooks/state/useProyectosGradoListPage';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
@@ -47,7 +47,7 @@ const ProyectosGradoList = () => {
 
   const registrarAction = (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.proyecto}
+      permiso={TITULACION_PERMISOS.proyecto}
       accion="CREAR"
       variant="primary"
       icon={<PlusOutlined />}

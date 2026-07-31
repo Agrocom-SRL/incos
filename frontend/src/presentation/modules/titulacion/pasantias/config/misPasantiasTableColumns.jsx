@@ -1,6 +1,6 @@
 /**
  * Columnas de la bandeja del docente supervisor "Mis pasantías supervisadas"
- * (módulo TUT).
+ * (módulo TIT).
  *
  * Mismo lenguaje visual que el listado admin (patrón misTutoradosTableColumns),
  * con las acciones propias del supervisor: abrir ficha (pasantia·DETALLE) y
@@ -17,7 +17,7 @@ import {
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoPasantia,
   formatTipoPasantia,
@@ -129,7 +129,7 @@ export const createMisPasantiasTableColumns = ({ onVerPasantia, onRegistrarSegui
                     icon: <FileAddOutlined />,
                     variant: 'info',
                     tooltip: 'Registrar seguimiento',
-                    permiso: TUTORIAS_PERMISOS.pasantiaSeguimiento,
+                    permiso: TITULACION_PERMISOS.pasantiaSeguimiento,
                     accion: 'CREAR',
                     onClick: () => onRegistrarSeguimiento(record),
                   },
@@ -137,7 +137,7 @@ export const createMisPasantiasTableColumns = ({ onVerPasantia, onRegistrarSegui
               : []),
           ]}
           permisos={{
-            ver: { codigo: TUTORIAS_PERMISOS.pasantia, accion: 'DETALLE' },
+            ver: { codigo: TITULACION_PERMISOS.pasantia, accion: 'DETALLE' },
           }}
         />
       ),

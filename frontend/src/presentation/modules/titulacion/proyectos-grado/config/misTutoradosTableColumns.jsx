@@ -1,5 +1,5 @@
 /**
- * Columnas de la bandeja del docente tutor "Mis tutorados" (módulo TUT).
+ * Columnas de la bandeja del docente tutor "Mis tutorados" (módulo TIT).
  *
  * Mismo lenguaje visual que el listado admin, con las acciones propias del
  * tutor: abrir ficha (DETALLE), registrar entrada de bitácora (bitacora ·
@@ -17,7 +17,7 @@ import {
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoProyecto,
   getEstadoProyectoPillClass,
@@ -138,7 +138,7 @@ export const createMisTutoradosTableColumns = ({
               icon: <FileAddOutlined />,
               variant: 'info',
               tooltip: 'Registrar entrada de bitácora',
-              permiso: TUTORIAS_PERMISOS.bitacora,
+              permiso: TITULACION_PERMISOS.bitacora,
               accion: 'CREAR',
               onClick: () => onRegistrarBitacora(record),
             },
@@ -149,7 +149,7 @@ export const createMisTutoradosTableColumns = ({
                     icon: <CheckCircleOutlined />,
                     variant: 'success',
                     tooltip: 'Aprobación final (informe de viabilidad técnica)',
-                    permiso: TUTORIAS_PERMISOS.proyecto,
+                    permiso: TITULACION_PERMISOS.proyecto,
                     accion: 'APROBAR',
                     disabled: aprobandoId === record.id,
                     onClick: () => onAprobacionFinal(record),
@@ -158,7 +158,7 @@ export const createMisTutoradosTableColumns = ({
               : []),
           ]}
           permisos={{
-            ver: { codigo: TUTORIAS_PERMISOS.proyecto, accion: 'DETALLE' },
+            ver: { codigo: TITULACION_PERMISOS.proyecto, accion: 'DETALLE' },
           }}
         />
       ),

@@ -1,5 +1,5 @@
 /**
- * Provider: alta/edición de un trámite de pasantía (TUT · Pasantías).
+ * Provider: alta/edición de un trámite de pasantía (TIT · Pasantías).
  *
  * Provider DELGADO (espejo de `ProyectoGradoFormProvider`): ensambla la ficha
  * (solo edición, para precargar el formulario), las mutaciones (P3/P4) y los
@@ -12,16 +12,16 @@ import { useEffect, useMemo } from 'react';
 import { useGetPasantia } from '@application-titulacion/pasantias/hooks/api/useGetPasantia';
 import { usePasantiaMutations } from '@application-titulacion/pasantias/hooks/api/usePasantiaMutations';
 import { usePasantiasEmpresasApi } from '@application-titulacion/pasantias/hooks/api/usePasantiasEmpresasApi';
-import { useCarrerasCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useCarrerasCatalogoTutApi';
-import { useDocentesCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTutApi';
+import { useCarrerasCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useCarrerasCatalogoTitApi';
+import { useDocentesCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTitApi';
 import { PasantiaFormContext } from '@application-titulacion/pasantias/context/PasantiaFormContext';
 
 export const PasantiaFormProvider = ({ children, pasantiaId = null }) => {
   const { pasantia, loading: loadingPasantia, error: errorPasantia, cargar } = useGetPasantia();
   const { saving, guardarPasantia } = usePasantiaMutations();
   const empresasCatalogo = usePasantiasEmpresasApi();
-  const carrerasCatalogo = useCarrerasCatalogoTutApi();
-  const docentesCatalogo = useDocentesCatalogoTutApi();
+  const carrerasCatalogo = useCarrerasCatalogoTitApi();
+  const docentesCatalogo = useDocentesCatalogoTitApi();
 
   const id = pasantiaId != null ? Number(pasantiaId) : null;
   const idValido = id != null && Number.isFinite(id) && id > 0;

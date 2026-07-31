@@ -1,9 +1,13 @@
-# Tutorías — avance de titulación y modalidad de graduación (extensión del módulo TUT) — plan de desarrollo
+# Titulación — avance y modalidad de graduación (extensión del módulo TIT) — plan de desarrollo
 
+> NOTA (2026-07-31): este plan se escribió antes del rename `tutorias` →
+> `titulacion`; las rutas/códigos ya están actualizados a la nomenclatura
+> nueva.
+>
 > Plan del `planificador` (2026-07-31), persistido para ejecutar por iteraciones.
 > **Entrega por partes:** Iteración 1 = datos + RBAC + backend + documentación
 > (bloques A–L). Iteración 2 = frontend + verificación completa (bloques M–Q).
-> El módulo TUT (backend `tutorias/`, schema 22/23, seed RBAC 65, vistas 156-163)
+> El módulo TIT (backend `titulacion/`, schema 22/23, seed RBAC 65, vistas 156-163)
 > ya está completo en código y BD — este documento planifica 3 **extensiones**,
 > no un módulo nuevo. Nada se ejecuta en BD sin aprobación explícita, salvo lo
 > pre-autorizado para este frente (ver §0.6).
@@ -14,7 +18,7 @@
 > usa nombres de tabla VIEJOS (`tutoria_integrantes`, `tutoria_avances`, etc.)
 > que NO existen en el schema/código real — no usarlo como referencia de
 > nombres, solo como historia. El código/schema actual (22-modalidades-grado.sql,
-> 23-tutorias-acompanamiento.sql, `application/use-cases/tutorias/`) es la
+> 23-tutorias-acompanamiento.sql, `application/use-cases/titulacion/`) es la
 > única fuente de verdad.
 
 ## 0. Hallazgos de la investigación (leer antes de implementar)
@@ -40,10 +44,10 @@ resolver "es de 3er año" en vez de escribir el JOIN de nuevo. "Tercer año" =
 ### 0.2 Quién crea hoy el proyecto de grado
 
 **Ya es Dirección Académica**, no el estudiante: `POST /proyectos-grado` está
-gated por `verificarPermiso('tutorias.titulacion.proyecto', 'CREAR')`
+gated por `verificarPermiso('titulacion.proyecto', 'CREAR')`
 (`backend/src/presentation/routes/proyectos-grado.routes.js`, ruta T7) y el
-seed `65-seed-permisos-tut.sql` **solo** concede la acción `CREAR` de
-`tutorias.titulacion.proyecto` a `DIR_ACADEMICO`, `RECTOR` y `SEC_ACADEMICA`
+seed `65-seed-permisos-tit.sql` **solo** concede la acción `CREAR` de
+`titulacion.proyecto` a `DIR_ACADEMICO`, `RECTOR` y `SEC_ACADEMICA`
 (`ADMIN_SISTEMA` hereda). `ESTUDIANTE` solo tiene `DETALLE` (ve su proyecto,
 no lo crea). `CreateProyectoGradoUseCase.js` NO valida hoy el año del
 estudiante ni deriva `carreraId`/`gestionId` de su inscripción — ese es
@@ -67,10 +71,10 @@ Académica ya registra al crear el proyecto; el estudiante firma en papel.
 
 | Generador existente | Patrón que aporta |
 |---|---|
-| `infrastructure/external/pdf/tutorias/DesignacionTutorPdfGenerator.js` | PDF con datos de UN proyecto (label/value) desde `Plantilla.pdf` + `IncosPDFLibBase` — plantilla directa para el FMDG-1 (Requisito 1). |
-| `infrastructure/external/pdf/tutorias/PanelAcompanamientoPdfGenerator.js` | PDF con tabla agregada POR CARRERA (`_addTable`) desde varias vistas — plantilla directa para el reporte por carrera (Requisito 2). |
-| `application/use-cases/tutorias/ExportBitacoraMensualTutorPdfUseCase.js` + vista **163** | PDF de reporte "export" que NO persiste nada (no crea fila en `dictamenes_proyecto`) — patrón a seguir en los 3 requisitos: ninguno de los 3 PDF/Excel nuevos se guarda como dictamen. |
-| `application/use-cases/tutorias/helpers/dictamenPdfHelpers.js` | Solo aplica a los 2 dictámenes YA existentes (`VIABILIDAD_TECNICA`, `DESIGNACION_OFICIAL`); **no se usa** para el FMDG-1 (ver §0.5.1: decisión de NO tratarlo como dictamen). |
+| `infrastructure/external/pdf/titulacion/DesignacionTutorPdfGenerator.js` | PDF con datos de UN proyecto (label/value) desde `Plantilla.pdf` + `IncosPDFLibBase` — plantilla directa para el FMDG-1 (Requisito 1). |
+| `infrastructure/external/pdf/academico/PanelAcompanamientoPdfGenerator.js` | PDF con tabla agregada POR CARRERA (`_addTable`) desde varias vistas — plantilla directa para el reporte por carrera (Requisito 2). |
+| `application/use-cases/titulacion/ExportBitacoraMensualTutorPdfUseCase.js` + vista **163** | PDF de reporte "export" que NO persiste nada (no crea fila en `dictamenes_proyecto`) — patrón a seguir en los 3 requisitos: ninguno de los 3 PDF/Excel nuevos se guarda como dictamen. |
+| `application/use-cases/titulacion/helpers/dictamenPdfHelpers.js` | Solo aplica a los 2 dictámenes YA existentes (`VIABILIDAD_TECNICA`, `DESIGNACION_OFICIAL`); **no se usa** para el FMDG-1 (ver §0.5.1: decisión de NO tratarlo como dictamen). |
 | `infrastructure/external/excel/libro-registro/` (`LibroRegistroExcelBuilder.js` + `LibroRegistroSheetBuilder.js` + `sheet/*`) y `docs/plan/libros-registro-plan-desarrollo.md` | Patrón de **paginación en folios de 10 + hoja de firmas final que NO incrementa folio + cuadro de %** — se REPLICA la estructura para el Requisito 3, en archivos y carpeta propios; **no se importa ni se edita nada de `libro-registro/`** (dominio distinto: calificaciones finales por materia vs. avance de tutoría por bimestre). Ese módulo lo está implementando otro agente en paralelo esta misma sesión (frontend) — no tocar. |
 | `infrastructure/external/excel/shared/` (`ExcelSheetComposer.js`, `ExcelTheme.js`) | Toolkit compartido (SÍ se reutiliza, es shared/, no es de un dominio) para el nuevo builder del Requisito 3. |
 
@@ -111,12 +115,12 @@ ese caso, sí pausar para aprobación de DDL — pero no está pedido hoy.
 
 Los 3 endpoints de solo-lectura/exportación nuevos son variaciones de
 **listar/exportar sobre el mismo recurso** (`proyectos_grado` y sus satélites)
-que ya gobierna el permiso `tutorias.titulacion.proyecto` (acciones LISTAR,
+que ya gobierna el permiso `titulacion.proyecto` (acciones LISTAR,
 CREAR, EXPORTAR ya sembradas para DIR_ACADEMICO/RECTOR/SEC_ACADEMICA en el
 seed 65). **No se necesita ningún permiso ni acción nueva.** El único cambio
-sugerido a `65-seed-permisos-tut.sql` es **cosmético** (texto, no lógica):
+sugerido a `65-seed-permisos-tit.sql` es **cosmético** (texto, no lógica):
 ampliar el `nombre`/descripción de la fila del permiso
-`tutorias.titulacion.proyecto` (línea ~37) para que mencione también
+`titulacion.proyecto` (línea ~37) para que mencione también
 "formulario de elección de modalidad, reporte de avance por carrera y
 planilla de seguimiento por bimestre", de modo que el seed se siga
 autodocumentando con precisión. Esto se describe en el Bloque C/F/J de cada
@@ -147,17 +151,17 @@ igual bajo la misma disciplina de aprobación que el resto de RBAC).
 | Capa | Referencia (copiar patrón, no inventar) |
 |---|---|
 | Router/permisos backend | `backend/src/presentation/routes/proyectos-grado.routes.js` (estáticas antes de `/:id`; extender este mismo router, no crear otro) |
-| Guard de negocio | `application/use-cases/tutorias/helpers/proyectoTutoriaGuards.js` (patrón `assertEstudianteSinProyectoVigente`) |
+| Guard de negocio | `application/use-cases/titulacion/helpers/proyectoTutoriaGuards.js` (patrón `assertEstudianteSinProyectoVigente`) |
 | Repositorio cross-módulo (matrícula) | `infrastructure/repositories/EnrollmentRepository.js` (token `REPOSITORIOS_TOKENS.enrollmentRepository`, método `obtenerListadoMatriculas`) |
 | Repositorio de vista (arquetipo B) | `infrastructure/repositories/views/ProyectoGradoListadoViewRepository.js` + `domain/interfaces/repositories/IProyectoGradoListadoViewRepository.js` |
 | Vista final delgada agregando por carrera | `backend/database/03-views/157-vista-acompanamiento-riesgo-carrera.sql` (agrega 1 sola base, `GROUP BY carrera`) |
 | Vista con bimestre resuelto por rango de fecha | `backend/database/03-views/169-vista-asistencia-consolidado-bimestre-fila.sql` (JOIN `periodos_academicos` `division='BIMESTRE'`) |
-| PDF label/value de un proyecto | `infrastructure/external/pdf/tutorias/DesignacionTutorPdfGenerator.js` |
-| PDF de tabla agregada por carrera | `infrastructure/external/pdf/tutorias/PanelAcompanamientoPdfGenerator.js` |
+| PDF label/value de un proyecto | `infrastructure/external/pdf/titulacion/DesignacionTutorPdfGenerator.js` |
+| PDF de tabla agregada por carrera | `infrastructure/external/pdf/academico/PanelAcompanamientoPdfGenerator.js` |
 | Excel paginado en folios (SOLO patrón, no tocar) | `infrastructure/external/excel/libro-registro/*` + `docs/plan/libros-registro-plan-desarrollo.md` |
 | Toolkit Excel compartido | `infrastructure/external/excel/shared/` (`ExcelSheetComposer.js`, `ExcelTheme.js`) |
-| Container/DI del recurso | `infrastructure/container/modules/tutorias/proyectos-grado.container.js` + `infrastructure/container/tokens/tutorias.tokens.js` |
-| Frontend módulo existente (patrón a extender) | `frontend/src/application/modules/tutorias/titulacion/` + `frontend/src/presentation/modules/tutorias/titulacion/` (hooks `api/`, `state/`, `context/`, `providers/`, componentes `organisms/`, `config/*TableColumns.jsx`) |
+| Container/DI del recurso | `infrastructure/container/modules/titulacion/proyectos-grado.container.js` + `infrastructure/container/tokens/titulacion.tokens.js` |
+| Frontend módulo existente (patrón a extender) | `frontend/src/application/modules/titulacion/proyectos-grado/` + `frontend/src/presentation/modules/titulacion/proyectos-grado/` (hooks `api/`, `state/`, `context/`, `providers/`, componentes `organisms/`, `config/*TableColumns.jsx`) |
 
 ---
 
@@ -167,7 +171,7 @@ igual bajo la misma disciplina de aprobación que el resto de RBAC).
 
 #### Bloque A — Datos: restricción "solo 3er año" y derivación de carrera/gestión
 
-- **A1.** Nuevo guard en `application/use-cases/tutorias/helpers/proyectoTutoriaGuards.js`:
+- **A1.** Nuevo guard en `application/use-cases/titulacion/helpers/proyectoTutoriaGuards.js`:
   `assertEstudianteEsTercerAnio({ enrollmentRepository, estudianteId, gestionId })`
   — llama `enrollmentRepository.obtenerListadoMatriculas({}, 1, 1, { estudiante_id: estudianteId, gestion_id: gestionId })`,
   lee `rows[0]` y lanza `ValidationError` si no existe o `periodo_numero !== 3`;
@@ -201,12 +205,12 @@ igual bajo la misma disciplina de aprobación que el resto de RBAC).
 #### Bloque B — RBAC
 
 Ver §0.6: **no se agregan permisos ni acciones**. `GET /proyectos-grado/estudiantes-elegibles`
-se gatea con la acción **LISTAR** de `tutorias.titulacion.proyecto` (mismo
+se gatea con la acción **LISTAR** de `titulacion.proyecto` (mismo
 criterio que `GET /modalidades`, ruta T2, que también es un catálogo de apoyo
 a la creación). `GET /:id/formulario-modalidad/pdf` se gatea con **EXPORTAR**
-de `tutorias.titulacion.proyecto` (mismo criterio que
+de `titulacion.proyecto` (mismo criterio que
 `GET /reportes/bitacora-mensual` y `GET /:id/dictamenes/:dictamenId/archivo`).
-Actualizar solo el texto descriptivo del permiso en `65-seed-permisos-tut.sql`
+Actualizar solo el texto descriptivo del permiso en `65-seed-permisos-tit.sql`
 (línea ~37) si se re-siembra por otro motivo — no amerita una resiembra por sí
 solo.
 
@@ -214,7 +218,7 @@ solo.
 
 Contrato de respuesta:
 
-| Endpoint | Acción (`tutorias.titulacion.proyecto`) | `dataFieldName` | Forma |
+| Endpoint | Acción (`titulacion.proyecto`) | `dataFieldName` | Forma |
 |---|---|---|---|
 | `GET /proyectos-grado/estudiantes-elegibles?search=&carreraId=&gestionId=` | LISTAR | `estudiantesElegibles` | lista |
 | `POST /proyectos-grado` (sin cambio de contrato, solo validación server-side) | CREAR | `proyectoGrado` | objeto |
@@ -222,18 +226,18 @@ Contrato de respuesta:
 
 Archivos:
 
-1. **Use case** `application/use-cases/tutorias/ListEstudiantesElegiblesModalidadGradoUseCase.js`
+1. **Use case** `application/use-cases/titulacion/ListEstudiantesElegiblesModalidadGradoUseCase.js`
    — lee la vista 178 filtrando `proyecto_grado_id IS NULL`, por `carreraId`
    opcional (si no llega, usa la gestión vigente vía
    `calificacionContextoRepository`) y `search` (nombre/CI, `LIKE`).
-2. **Use case** `application/use-cases/tutorias/ExportFormularioModalidadGradoPdfUseCase.js`
+2. **Use case** `application/use-cases/titulacion/ExportFormularioModalidadGradoPdfUseCase.js`
    — reutiliza `GetProyectoGradoByIdUseCase` (o la fila cruda de la vista 160)
    + `studentRepository.findById` (del titular) para armar el contexto
    (nombres/apellidos/CI/expedición/celular/carrera/modalidad/título/objetivos)
    y llama al generador. **No escribe en `dictamenes_proyecto`** (patrón
    "export", §0.4).
 3. **Interfaz + generador PDF**: `domain/interfaces/services/IFormularioModalidadGradoPdfGenerator.js`
-   + `infrastructure/external/pdf/tutorias/FormularioModalidadGradoPdfGenerator.js`
+   + `infrastructure/external/pdf/titulacion/FormularioModalidadGradoPdfGenerator.js`
    (extiende `IncosPDFLibBase`, `_loadTemplate('Plantilla.pdf')`,
    `_addDocumentTitle('FORMULARIO DE MODALIDAD DE GRADUACIÓN (FMDG-1)')`,
    `_addBoxedFieldGrid` para NOMBRES/APELLIDOS/CI/CELULAR/INSTITUTO/CARRERA/
@@ -251,24 +255,24 @@ Archivos:
    interfaz `ITutoriaAvanceViewRepository.js` — este mismo repo se reutiliza en
    los Requisitos 2 y 3, ver Bloques E y I; se recomienda esta segunda opción
    para no sobrecargar el repo existente con 3 responsabilidades nuevas).
-6. **Mapper**: `application/mappers/tutorias/TutoriaAvanceMapper.js` (nuevo,
+6. **Mapper**: `application/mappers/titulacion/TutoriaAvanceMapper.js` (nuevo,
    compartido por los 3 requisitos) — `estudianteElegibleRowToPresentation`
    (nombre en orden institucional `buildFullName`).
-7. **Controllers**: `presentation/controllers/tutorias/ListEstudiantesElegiblesModalidadGradoController.js`,
+7. **Controllers**: `presentation/controllers/titulacion/ListEstudiantesElegiblesModalidadGradoController.js`,
    `ExportFormularioModalidadGradoPdfController.js` (descarga binaria
    `formulario-modalidad-{apellidos}-{id}.pdf`).
 8. **Validators**: `listEstudiantesElegiblesValidator` (query opcional
-   `search`, `carreraId`, `gestionId`) en `presentation/validators/tutorias/proyectos-grado.validator.js`;
+   `search`, `carreraId`, `gestionId`) en `presentation/validators/titulacion/proyectos-grado.validator.js`;
    `GET /:id/formulario-modalidad/pdf` reutiliza `idValidator`.
 9. **Router**: extender `proyectos-grado.routes.js` — `GET /estudiantes-elegibles`
    como ruta ESTÁTICA (junto a `/modalidades`, ANTES de `/:id`);
    `GET /:id/formulario-modalidad/pdf` junto a las demás rutas `/:id/...`.
-10. **DI**: registrar en `container/modules/tutorias/proyectos-grado.container.js`
+10. **DI**: registrar en `container/modules/titulacion/proyectos-grado.container.js`
     (mismo archivo, no uno nuevo); ampliar el factory de
     `createProyectoGradoUseCase` con
     `enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository)`
     y `calificacionContextoRepository: c.resolve(REPOSITORIOS_TOKENS.calificacionContextoRepository)`.
-11. Nuevos tokens en `container/tokens/tutorias.tokens.js`:
+11. Nuevos tokens en `container/tokens/titulacion.tokens.js`:
     `listEstudiantesElegiblesModalidadGradoUseCase`,
     `exportFormularioModalidadGradoPdfUseCase`, + controllers correspondientes,
     + (si se opta por repo aislado) `tutoriaAvanceViewRepository`.
@@ -298,7 +302,7 @@ Archivos:
 
 #### Bloque E — RBAC
 
-Reutiliza `tutorias.titulacion.proyecto` LISTAR (datos) y EXPORTAR (PDF) —
+Reutiliza `titulacion.proyecto` LISTAR (datos) y EXPORTAR (PDF) —
 sin cambios funcionales, igual que Bloque B (ver §0.6).
 
 #### Bloque F — Backend
@@ -312,18 +316,18 @@ Contrato de respuesta:
 
 Archivos:
 
-1. **Use case** `application/use-cases/tutorias/GetAvanceTutoriaCarreraUseCase.js`
+1. **Use case** `application/use-cases/titulacion/GetAvanceTutoriaCarreraUseCase.js`
    — resuelve gestión vigente si no llega `gestionId` (mismo patrón
    `resolverGestion` de `GetPanelAcompanamientoUseCase`); lee
    `findAvancePorCarrera` (vista 179, resumen) y `findListado` (vista 160, ya
    con `ultimaObservacion`, filtrado por `carreraId` si llega) para el
    `detalle` por proyecto — **reutiliza `proyectoGradoListadoViewRepository.findListado`
    existente**, no duplica esa lectura.
-2. **Use case** `application/use-cases/tutorias/ExportAvanceTutoriaCarreraPdfUseCase.js`
+2. **Use case** `application/use-cases/titulacion/ExportAvanceTutoriaCarreraPdfUseCase.js`
    — reutiliza `GetAvanceTutoriaCarreraUseCase.execute` (no relee la BD dos
    veces, patrón `ExportPanelAcompanamientoPdfUseCase`).
 3. **Interfaz + generador**: `IAvanceTutoriaCarreraPdfGenerator.js` +
-   `infrastructure/external/pdf/tutorias/AvanceTutoriaCarreraPdfGenerator.js`
+   `infrastructure/external/pdf/titulacion/AvanceTutoriaCarreraPdfGenerator.js`
    (extiende `IncosPDFLibBase`; título "REPORTE DE AVANCE DE TUTORÍAS POR
    CARRERA"; `_addTable` con el resumen por carrera —Carrera/Proyectos/%
    promedio/Con observaciones pendientes— igual que
@@ -378,10 +382,10 @@ escribir el `CREATE TABLE`**.
 
 #### Bloque I — RBAC
 
-Reutiliza `tutorias.titulacion.proyecto` LISTAR (preview en pantalla) y
+Reutiliza `titulacion.proyecto` LISTAR (preview en pantalla) y
 EXPORTAR (descarga xlsx) — sin cambios funcionales (ver §0.6). El
 "docente sube las tutorías" del enunciado ya está cubierto por
-`tutorias.titulacion.bitacora` CREAR/EDITAR (sembrado para DOCENTE) — sin
+`titulacion.bitacora` CREAR/EDITAR (sembrado para DOCENTE) — sin
 cambios.
 
 #### Bloque J — Backend
@@ -395,12 +399,12 @@ Contrato de respuesta:
 
 Archivos:
 
-1. **Constantes**: ampliar `domain/constants/tutorias.constants.js` con
+1. **Constantes**: ampliar `domain/constants/titulacion.constants.js` con
    `ESTUDIANTES_POR_FOLIO_TUTORIA = 10` y
    `RESULTADOS_TUTORIA_TERCER_ANIO = { APROBADO, REPROBADO, ABANDONO,
    EN_PROCESO }` (constante propia, NO importar nada de
    `domain/constants/libros.constants.js`).
-2. **Use case** `application/use-cases/tutorias/GetPlanillaAvanceTercerAnioUseCase.js`
+2. **Use case** `application/use-cases/titulacion/GetPlanillaAvanceTercerAnioUseCase.js`
    — lee la vista 181 filtrada, ordena por apellido (mismo criterio
    institucional `buildFullName`/`ORDER BY apellido_paterno, apellido_materno,
    nombres`), pagina en folios de 10 (`Array.from({length:
@@ -409,12 +413,12 @@ Archivos:
    algoritmo, sin importar ese archivo), arma `resumenTutores` (docentes
    tutores distintos del roster, para la hoja de firmas) y `tally` contando
    `resultado_tutoria`.
-3. **Use case** `application/use-cases/tutorias/ExportPlanillaAvanceTercerAnioExcelUseCase.js`
+3. **Use case** `application/use-cases/titulacion/ExportPlanillaAvanceTercerAnioExcelUseCase.js`
    — reutiliza `GetPlanillaAvanceTercerAnioUseCase.execute` y delega el
    pintado al builder.
 4. **Interfaz + builder Excel** (carpeta propia, no depende de `libro-registro/`):
    `domain/interfaces/services/IPlanillaAvanceTutoriaExcelGenerator.js` +
-   `infrastructure/external/excel/tutorias-planilla-avance/PlanillaAvanceTutoriaExcelBuilder.js`
+   `infrastructure/external/excel/titulacion-planilla-avance/PlanillaAvanceTutoriaExcelBuilder.js`
    + `PlanillaAvanceTutoriaSheetBuilder.js` + `sheet/planillaAvanceTutoriaSheetConfig.js`
    — usa el toolkit compartido `excel/shared/` (`ExcelSheetComposer`,
    `ExcelTheme`). Estructura por hoja (una por carrera+bimestre exportado):
@@ -442,10 +446,10 @@ Archivos:
 ### Bloque L — Documentación
 
 1. `docs/referencia/matriz-permisos-sistema.md`: nueva entrada de changelog
-   ("## Changelog 2026-07-31 — TUT: formulario de modalidad, reporte de
+   ("## Changelog 2026-07-31 — TIT: formulario de modalidad, reporte de
    avance por carrera y planilla 10-en-10 (extensión, sin permisos nuevos)")
    describiendo los 6 endpoints nuevos y que reutilizan
-   `tutorias.titulacion.proyecto` LISTAR/EXPORTAR — sin tabla `###` nueva (TUT
+   `titulacion.proyecto` LISTAR/EXPORTAR — sin tabla `###` nueva (TIT
    se documenta por changelog en este archivo, no tiene sección `###` fija;
    verificado, ver §0 de la investigación).
 2. `docs/plan/titulacion-y-dominios-pendientes.md`: nota corta bajo "Fase 2 —
@@ -462,16 +466,16 @@ Archivos:
 ## ITERACIÓN 2 — frontend + verificación completa
 
 > Outline (menor detalle que Iteración 1 por acuerdo de entrega
-> backend-first). Base: extender `frontend/src/application/modules/tutorias/titulacion/`
-> y `frontend/src/presentation/modules/tutorias/titulacion/` — NO crear un
+> backend-first). Base: extender `frontend/src/application/modules/titulacion/proyectos-grado/`
+> y `frontend/src/presentation/modules/titulacion/proyectos-grado/` — NO crear un
 > módulo de menú nuevo, estos 3 requisitos son acciones/pantallas dentro del
-> ítem de menú `TUT-TITULACION` ya existente (`/tutorias/titulacion`).
+> ítem de menú `TIT-PROYECTOS` ya existente (`/titulacion/proyectos-grado`).
 
 ### Bloque M — Requisito 1 (frontend)
 
 - Modal/paso "Elegir estudiante de 3er año" en el flujo de creación de
   proyecto (`ProyectoGradoFormSections.jsx` o un nuevo
-  `ElegirEstudianteTercerAnioModal.jsx`): reemplaza el `useBuscarEstudiantesTut`
+  `ElegirEstudianteTercerAnioModal.jsx`): reemplaza el `useBuscarEstudiantesTit`
   genérico por un nuevo hook `useEstudiantesElegiblesModalidadApi` que
   consume `GET /estudiantes-elegibles`, **`dataKey: 'estudiantesElegibles'`**
   (== `dataFieldName` de C1).
@@ -485,8 +489,8 @@ Archivos:
 ### Bloque N — Requisito 2 (frontend)
 
 - Nueva página `ReporteAvanceTutoriaCarreraPage.jsx` (bajo
-  `tutorias/titulacion/pages/`, ruta `/tutorias/titulacion/reportes/avance-carrera`,
-  `menu: null`, breadcrumbParent `TUT-TITULACION`), hook state
+  `titulacion/proyectos-grado/pages/`, ruta `/titulacion/proyectos-grado/reportes/avance-carrera`,
+  `menu: null`, breadcrumbParent `TIT-PROYECTOS`), hook state
   `useAvanceTutoriaCarreraPage` + hook api `useAvanceTutoriaCarreraApi`
   (**`dataKey: 'avanceTutoriaCarrera'`**), tarjetas de resumen por carrera +
   tabla de detalle (organismo compartido de tabla, config
@@ -497,7 +501,7 @@ Archivos:
 ### Bloque O — Requisito 3 (frontend)
 
 - Nueva página `PlanillaAvanceTercerAnioPage.jsx` (misma ruta base, p. ej.
-  `/tutorias/titulacion/reportes/planilla-tercer-anio`), filtros
+  `/titulacion/proyectos-grado/reportes/planilla-tercer-anio`), filtros
   carrera/gestión/bimestre, vista previa en pantalla replicando el folio de
   10 (componente `PlanillaAvanceFolioPreview.jsx`, CSS propio, NO reutilizar
   `styles/libros.css`), botón "Exportar Excel" (EXPORTAR).
@@ -524,7 +528,7 @@ Archivos:
 3. RBAC 3 capas con `DIR_ACADEMICO`/`SEC_ACADEMICA`: los 6 endpoints
    responden 200; menú/botones visibles.
 4. Rol SIN el permiso (`DOCENTE`, que no tiene LISTAR/CREAR de
-   `tutorias.titulacion.proyecto` — solo LISTAR/DETALLE): los 6 endpoints
+   `titulacion.proyecto` — solo LISTAR/DETALLE): los 6 endpoints
    nuevos → 403; botones/rutas ausentes en UI.
 5. Guard de negocio: `POST /proyectos-grado` con un estudiante de 1er/2do año
    → 400 claro ("El estudiante debe estar cursando el 3er año..."); con
@@ -565,6 +569,6 @@ Backend R1 (A-C) ⟶ Backend R2 (D-F) ⟶ Backend R3 (G-J) ⟶ Documentación (L
   proyecto ya restringida a Dirección Académica por RBAC (sin cambios ahí),
   FMDG-1 verificado campo a campo contra el `.docx` fuente, decisión razonada
   de NO tabla nueva para el Requisito 3, y hallazgo de que los 3 requisitos
-  se resuelven reutilizando el permiso `tutorias.titulacion.proyecto`
+  se resuelven reutilizando el permiso `titulacion.proyecto`
   existente (sin RBAC nuevo). Vistas asignadas: 178-181 (verificar máximo
   real antes de crear archivos, ver §0.7.2).

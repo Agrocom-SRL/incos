@@ -1,7 +1,7 @@
 /**
- * Columnas del listado de trámites de pasantía (módulo TUT).
+ * Columnas del listado de trámites de pasantía (módulo TIT).
  *
- * Lenguaje visual de ProyectosGradoList (TUT): numeración + IdentidadCelda
+ * Lenguaje visual de ProyectosGradoList (TIT): numeración + IdentidadCelda
  * (estudiante en orden APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES — la vista
  * 167 ya lo arma) + celdas multi-línea (InfoLinesCell) + StatusPill +
  * TableActions. Horas con Progress AntD (tokens del theme, sin hex).
@@ -17,7 +17,7 @@ import {
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoPasantia,
   formatTipoPasantia,
@@ -167,9 +167,9 @@ export const createPasantiasTableColumns = ({ navigate, listNavState, refetch, d
             }
             editTitle="Editar trámite"
             permisos={{
-              ver: { codigo: TUTORIAS_PERMISOS.pasantia, accion: 'DETALLE' },
-              editar: { codigo: TUTORIAS_PERMISOS.pasantia, accion: 'EDITAR' },
-              eliminar: { codigo: TUTORIAS_PERMISOS.pasantia, accion: 'ELIMINAR' },
+              ver: { codigo: TITULACION_PERMISOS.pasantia, accion: 'DETALLE' },
+              editar: { codigo: TITULACION_PERMISOS.pasantia, accion: 'EDITAR' },
+              eliminar: { codigo: TITULACION_PERMISOS.pasantia, accion: 'ELIMINAR' },
             }}
           />
         );

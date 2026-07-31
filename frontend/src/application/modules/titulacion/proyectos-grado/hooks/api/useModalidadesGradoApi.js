@@ -1,5 +1,5 @@
 /**
- * Hook de API: catálogo de modalidades de grado (módulo TUT · T2).
+ * Hook de API: catálogo de modalidades de grado (módulo TIT · T2).
  *
  * Carga una sola vez al montar (catálogo pequeño y estable). `dataKey`
  * ('modalidadesGrado') coincide con el `dataFieldName` del backend

@@ -1,5 +1,5 @@
 /**
- * Organismo: tab "Informes" de la ficha-hub del trámite de pasantía (TUT ·
+ * Organismo: tab "Informes" de la ficha-hub del trámite de pasantía (TIT ·
  * P11-P14).
  *
  * DetailInfoCard + tabla de informes institucionales (verificación de empresa
@@ -13,7 +13,7 @@ import { Alert, Empty, Table } from 'antd';
 import { FileAddOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { createInformesPasantiaTableColumns } from '@titulacion/pasantias/config/informesPasantiaTableColumns';
 
 const PasantiaInformesSection = ({
@@ -42,7 +42,7 @@ const PasantiaInformesSection = ({
         extra={
           !readOnly ? (
             <ActionButton
-              permiso={TUTORIAS_PERMISOS.pasantiaInforme}
+              permiso={TITULACION_PERMISOS.pasantiaInforme}
               accion="CREAR"
               variant="primary"
               icon={<FileAddOutlined />}

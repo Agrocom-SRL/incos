@@ -1,5 +1,5 @@
 /**
- * Hook de API: alertas de riesgo pedagógico (módulo TUT · A1).
+ * Hook de API: alertas de riesgo pedagógico (módulo ACA · A1).
  *
  * Vista 156 (riesgo calculado con umbral ACOMPANAMIENTO_PEDAGOGICO). Expone
  * `fetch(options)` compatible con `useServerPaginatedList` en modo loadAll.

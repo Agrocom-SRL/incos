@@ -1,5 +1,5 @@
 /**
- * Provider: lista institucional de alertas de riesgo (TUT · Acompañamiento).
+ * Provider: lista institucional de alertas de riesgo (ACA · Acompañamiento).
  *
  * Ensambla el hook de API (A1, vista 156) con `useServerPaginatedList` en
  * modo `loadAll` (filtros carrera/materia en cliente) y el hook del drawer de

@@ -1,6 +1,6 @@
 /**
- * Conector: edición de proyecto de grado (TUT) — provider + página en modo edit.
- * Punto de entrada lazy de la ruta /tutorias/titulacion/:id/editar.
+ * Conector: edición de proyecto de grado (TIT) — provider + página en modo edit.
+ * Punto de entrada lazy de la ruta /titulacion/proyectos-grado/:id/editar.
  */
 
 import { useParams } from 'react-router-dom';

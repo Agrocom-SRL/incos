@@ -1,7 +1,7 @@
 /**
- * Conector: alta de empresa del catálogo de pasantías (TUT) — provider +
+ * Conector: alta de empresa del catálogo de pasantías (TIT) — provider +
  * página en modo create. Punto de entrada lazy de la ruta
- * /tutorias/pasantias/empresas/registrar.
+ * /titulacion/pasantias/empresas/registrar.
  */
 
 import { PasantiaEmpresaFormProvider } from '@application-titulacion/pasantias/providers/PasantiaEmpresaFormProvider';

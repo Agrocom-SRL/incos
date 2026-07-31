@@ -1,20 +1,20 @@
 /**
- * Modal: agregar integrante al proyecto de grado (TUT · T12, proyecto·EDITAR).
+ * Modal: agregar integrante al proyecto de grado (TIT · T12, proyecto·EDITAR).
  *
  * Búsqueda de estudiantes en servidor (debounce) reutilizando el hook de API
- * del módulo (`useBuscarEstudiantesTut`, catálogo del plan). Excluye a los
+ * del módulo (`useBuscarEstudiantesTit`, catálogo del plan). Excluye a los
  * integrantes ya ACTIVOS del proyecto. El backend valida duplicados igual.
  */
 
 import { useEffect, useMemo } from 'react';
 import { Form, Modal, Select, Spin, Typography } from 'antd';
-import { useBuscarEstudiantesTut } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTut';
+import { useBuscarEstudiantesTit } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTit';
 
 const { Text } = Typography;
 
 const AgregarIntegranteModal = ({ open, onCancel, onSubmit, saving = false, integrantes = [] }) => {
   const [form] = Form.useForm();
-  const busqueda = useBuscarEstudiantesTut();
+  const busqueda = useBuscarEstudiantesTit();
   const { limpiar } = busqueda;
 
   useEffect(() => {

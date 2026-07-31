@@ -1,5 +1,5 @@
 /**
- * Mapper: pasantías (API → DTO de UI, módulo TUT · Pasantías).
+ * Mapper: pasantías (API → DTO de UI, módulo TIT · Pasantías).
  *
  * El backend entrega camelCase (PasantiaMapper sobre las vistas 167/168 y
  * entidades toEntity de los satélites); aquí solo se normaliza defensivamente

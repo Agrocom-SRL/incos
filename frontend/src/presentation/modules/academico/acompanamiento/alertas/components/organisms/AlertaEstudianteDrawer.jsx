@@ -1,5 +1,5 @@
 /**
- * Organismo: drawer de detalle de riesgo por estudiante (módulo TUT · A3,
+ * Organismo: drawer de detalle de riesgo por estudiante (módulo ACA · A3,
  * dataKey `alertaEstudiante`). Se abre desde la fila de la lista institucional
  * de alertas; el estado (open/cargar/limpiar) lo gobierna
  * `useAlertasRiesgoListPage` — este componente solo pinta.

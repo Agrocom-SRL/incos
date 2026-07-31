@@ -1,5 +1,5 @@
 /**
- * Hook de API: mutaciones de sesiones de refuerzo (módulo TUT).
+ * Hook de API: mutaciones de sesiones de refuerzo (módulo ACA).
  *
  * Programar/actualizar (A6/A7), eliminar soft (A8) y registro batch de
  * asistencia/progreso (A9, dataFieldName `estudiantes`). Solo HTTP +

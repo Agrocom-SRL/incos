@@ -1,5 +1,5 @@
 /**
- * Átomo: nota numérica con semántica de riesgo (módulo TUT · Acompañamiento).
+ * Átomo: nota numérica con semántica de riesgo (módulo ACA · Acompañamiento).
  *
  * Pinta la nota en el ROJO SEMÁNTICO del theme (`Text type="danger"`, nunca
  * hex) cuando está por debajo del umbral de riesgo de la vista 156; guion

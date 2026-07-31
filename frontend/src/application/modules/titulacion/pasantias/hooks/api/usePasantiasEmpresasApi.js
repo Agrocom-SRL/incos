@@ -1,5 +1,5 @@
 /**
- * Hook de API: catálogo de empresas de pasantía (módulo TUT · P7).
+ * Hook de API: catálogo de empresas de pasantía (módulo TIT · P7).
  *
  * Dos consumidores con el mismo endpoint:
  *  - ABM del catálogo (`incluirInactivos: true` — administra el toggle de

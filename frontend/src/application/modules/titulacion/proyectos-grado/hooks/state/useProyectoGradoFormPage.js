@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: alta/edición de un proyecto de grado (TUT · CREAR/EDITAR).
+ * Hook de pantalla: alta/edición de un proyecto de grado (TIT · CREAR/EDITAR).
  *
  * Gemelo de `useCursoCapacitacionFormPage` (CAP): secciones declarativas para
  * `CfgFormWorkspace`, precarga en modo edición (titular + integrantes),
@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useProyectoGradoFormContext } from '@application-titulacion/proyectos-grado/hooks/context/useProyectoGradoFormContext';
-import { useBuscarEstudiantesTut } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTut';
+import { useBuscarEstudiantesTit } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTit';
 import { esModalidadGrupal } from '@application-titulacion/utils/titulacionPills';
 import {
   mapFormValuesToProyectoPayload,
@@ -22,7 +22,7 @@ import {
 } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 import {
   PROYECTOS_GRADO_LIST_PATH,
-  TUT_TITULACION_MENU_KEY,
+  TIT_PROYECTOS_MENU_KEY,
   proyectoGradoDetallePath,
 } from '@application-titulacion/config/paths';
 
@@ -139,7 +139,7 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
   } = useProyectoGradoFormContext();
 
   const [error, setError] = useState(null);
-  const busquedaEstudiantes = useBuscarEstudiantesTut();
+  const busquedaEstudiantes = useBuscarEstudiantesTit();
 
   // La modalidad elegida decide si se muestran integrantes múltiples (PSP).
   const modalidadId = Form.useWatch('modalidadId', form);
@@ -151,7 +151,7 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
   const isInvalidEditId = isEditMode && proyectoId == null;
 
   const returnListPath = location.state?.returnListPath || PROYECTOS_GRADO_LIST_PATH;
-  const menuSidebarKey = location.state?.menuSidebarKey ?? TUT_TITULACION_MENU_KEY;
+  const menuSidebarKey = location.state?.menuSidebarKey ?? TIT_PROYECTOS_MENU_KEY;
 
   const breadcrumbItems = useMemo(
     () => [

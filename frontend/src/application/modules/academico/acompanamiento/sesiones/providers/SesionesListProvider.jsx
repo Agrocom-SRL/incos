@@ -1,5 +1,5 @@
 /**
- * Provider: lista de sesiones de refuerzo (TUT · Acompañamiento).
+ * Provider: lista de sesiones de refuerzo (ACA · Acompañamiento).
  *
  * Ensambla el hook de API (A4, vista 161) con `useServerPaginatedList` en
  * modo `loadAll` y la mutación de eliminación (A8). Provider DELGADO.

@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: catálogo de empresas de pasantía (TUT · empresa·LISTAR).
+ * Hook de pantalla: catálogo de empresas de pasantía (TIT · empresa·LISTAR).
  *
  * ABM de catálogo (patrón catálogos de Configuración): búsqueda en cliente,
  * columnas con toggle de estado (P10, `EstadoTogglePill` — feedback con
@@ -15,7 +15,7 @@ import { createPasantiasEmpresasTableColumns } from '@titulacion/pasantias/confi
 import {
   PASANTIAS_EMPRESAS_PATH,
   PASANTIAS_LIST_PATH,
-  TUT_PASANTIAS_MENU_KEY,
+  TIT_PASANTIAS_MENU_KEY,
   pasantiaEmpresaEditarPath,
   pasantiaEmpresaRegistrarPath,
 } from '@application-titulacion/config/paths';
@@ -50,7 +50,7 @@ export const usePasantiasEmpresasListPage = () => {
 
   const listNavState = useMemo(
     () => ({
-      menuSidebarKey: TUT_PASANTIAS_MENU_KEY,
+      menuSidebarKey: TIT_PASANTIAS_MENU_KEY,
       returnListPath: PASANTIAS_EMPRESAS_PATH,
     }),
     [],
@@ -94,7 +94,7 @@ export const usePasantiasEmpresasListPage = () => {
   }, [navigate, listNavState]);
 
   const handleVolver = useCallback(() => {
-    navigate(returnListPath, { state: { menuSidebarKey: TUT_PASANTIAS_MENU_KEY } });
+    navigate(returnListPath, { state: { menuSidebarKey: TIT_PASANTIAS_MENU_KEY } });
   }, [navigate, returnListPath]);
 
   const handleSearchChange = useCallback((event) => {

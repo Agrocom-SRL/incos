@@ -1,7 +1,7 @@
 /**
- * Conector: ficha de sesión de refuerzo (TUT) — provider (id de la URL)
- * + página. Punto de entrada lazy de la ruta TUT-SESIONES-DETALLE
- * (/tutorias/acompanamiento/sesiones/:id).
+ * Conector: ficha de sesión de refuerzo (ACA) — provider (id de la URL)
+ * + página. Punto de entrada lazy de la ruta ACA-SESIONES-DETALLE
+ * (/academico/acompanamiento/sesiones/:id).
  */
 
 import { useParams } from 'react-router-dom';

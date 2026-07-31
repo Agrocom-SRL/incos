@@ -16,6 +16,7 @@ import { traspasosRoutes } from './traspasos/routes.jsx';
 import { transitabilidadRoutes } from './transitabilidad/routes.jsx';
 import { historialRoutes } from './historial/routes.jsx';
 import { avanceRoutes } from './avance/routes.jsx';
+import { acompanamientoRoutes } from './acompanamiento/routes.jsx';
 
 export const academicoRoutes = [
   {
@@ -33,6 +34,7 @@ export const academicoRoutes = [
   ...transitabilidadRoutes,
   ...historialRoutes,
   ...avanceRoutes,
+  ...acompanamientoRoutes,
 ];
 
 export default academicoRoutes;

@@ -1,11 +1,11 @@
 /**
  * Formulario ABM de trámite de pasantía — workspace alineado a CFG Académico.
- * Gemelo de `ProyectoGradoFormSections` (TUT · Titulación): UNA tarjeta
+ * Gemelo de `ProyectoGradoFormSections` (TIT · Titulación): UNA tarjeta
  * (`CfgFormWorkspace`, prop `sections`) con "Datos del trámite" como primer
  * nivel y "Estudiante" como sección interna.
  *
  * La sección de estudiante usa un select con BÚSQUEDA EN SERVIDOR (debounce
- * en `useBuscarEstudiantesTut`, orquestada por el hook de pantalla) — el
+ * en `useBuscarEstudiantesTit`, orquestada por el hook de pantalla) — el
  * `FormField` genérico no cubre `onSearch`, por eso el `Form.Item` vive aquí
  * como JSX del organismo (mismo criterio que titulación). Las secciones de
  * puesto/contrato/responsable llegan declarativas desde el hook (el camino

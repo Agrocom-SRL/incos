@@ -1,5 +1,5 @@
 /**
- * Ficha de sesión de refuerzo (TUT · TUT-SESIONES-DETALLE · sesion·DETALLE)
+ * Ficha de sesión de refuerzo (ACA · ACA-SESIONES-DETALLE · sesion·DETALLE)
  * — cabecera `sd-profile` + sección de asistencia/progreso en lote (A9) y
  * transiciones REALIZADA/CANCELADA (A7) con confirmación.
  *
@@ -15,7 +15,7 @@ import { ActionButton, BackButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { usePermiso } from '@application-auth';
 import { useSesionRefuerzoDetailPage } from '@application-academico/acompanamiento/sesiones/hooks/state/useSesionRefuerzoDetailPage';
-import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import SesionFichaHeader from '@academico/acompanamiento/sesiones/components/organisms/SesionFichaHeader';
 import SesionEstudiantesSection from '@academico/acompanamiento/sesiones/components/organisms/SesionEstudiantesSection';
 import { allSpacing } from '@theme/tokens';
@@ -41,7 +41,7 @@ const SesionRefuerzoDetail = () => {
     cambiarEstadoSesion,
   } = useSesionRefuerzoDetailPage();
 
-  const puedeEditar = usePermiso(TUTORIAS_PERMISOS.sesion, 'EDITAR');
+  const puedeEditar = usePermiso(ACOMPANAMIENTO_PERMISOS.sesion, 'EDITAR');
   // El registro se bloquea en sesiones canceladas (o sin permiso de edición).
   const registroReadOnly = !puedeEditar || sesion?.estado === 'CANCELADA';
 
@@ -49,7 +49,7 @@ const SesionRefuerzoDetail = () => {
     <Flex gap="small" wrap>
       {puedeMarcarRealizada && (
         <ActionButton
-          permiso={TUTORIAS_PERMISOS.sesion}
+          permiso={ACOMPANAMIENTO_PERMISOS.sesion}
           accion="EDITAR"
           variant="success"
           icon={<CheckCircleOutlined />}
@@ -61,7 +61,7 @@ const SesionRefuerzoDetail = () => {
       )}
       {puedeCancelar && (
         <ActionButton
-          permiso={TUTORIAS_PERMISOS.sesion}
+          permiso={ACOMPANAMIENTO_PERMISOS.sesion}
           accion="EDITAR"
           variant="danger"
           icon={<StopOutlined />}

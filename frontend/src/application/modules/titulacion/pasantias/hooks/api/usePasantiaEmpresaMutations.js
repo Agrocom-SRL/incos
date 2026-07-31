@@ -1,5 +1,5 @@
 /**
- * Hook de API: mutaciones del catálogo de empresas de pasantía (módulo TUT).
+ * Hook de API: mutaciones del catálogo de empresas de pasantía (módulo TIT).
  *
  * Alta/edición (P8/P9, `pasantiaEmpresa`) y toggle de estado (P10, ACTIVAR —
  * PATCH /empresas/:empresaId/estado, patrón EstadoTogglePill de los catálogos

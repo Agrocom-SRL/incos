@@ -1,5 +1,5 @@
 /**
- * Columnas de la tabla de estudiantes de la ficha de sesión (módulo TUT ·
+ * Columnas de la tabla de estudiantes de la ficha de sesión (módulo ACA ·
  * A9, dataKey `estudiantes`). Registro RÁPIDO en lote: asistencia (radio
  * botón), valoración de progreso (select del kit) y observación por alumno se
  * editan en memoria (`setEstudianteCampo`) y se guardan con un solo batch.

@@ -1,5 +1,5 @@
 /**
- * Organismo: tab "Dictámenes" de la ficha-hub del proyecto (TUT · T22-T23).
+ * Organismo: tab "Dictámenes" de la ficha-hub del proyecto (TIT · T22-T23).
  *
  * Solo lectura: los dictámenes (designación oficial de tutor y viabilidad
  * técnica) los genera el backend al asignar tutor (T10) y aprobar etapas

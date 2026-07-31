@@ -33,6 +33,10 @@ import DashboardActividadesRecientesCard from '@dashboard/components/molecules/D
 import DashboardAccesoHubCard from '@dashboard/components/molecules/DashboardAccesoHubCard';
 import DashboardDocentesListCard from '@dashboard/components/molecules/DashboardDocentesListCard';
 import DashboardMiSaldoCard from '@dashboard/components/molecules/DashboardMiSaldoCard';
+import {
+  MI_PROYECTO_GRADO_PATH,
+  MI_PASANTIA_PATH,
+} from '@application-titulacion/config/paths';
 import '@dashboard/styles/estudiante-home.css';
 
 const { Title } = Typography;
@@ -47,8 +51,8 @@ const PATH_APORTES = '/matricula/aportes/listar';
 const PATH_PERFIL = '/perfil';
 const PATH_BOLETIN = '/academico/mi-boletin';
 const PATH_MIS_DATOS = '/estudiantes/listar';
-const PATH_MI_PROYECTO = '/tutorias/mi-proyecto';
-const PATH_MI_PASANTIA = '/tutorias/mi-pasantia';
+const PATH_MI_PROYECTO = MI_PROYECTO_GRADO_PATH;
+const PATH_MI_PASANTIA = MI_PASANTIA_PATH;
 
 const EstudianteDashboard = () => {
   const navigate = useNavigate();

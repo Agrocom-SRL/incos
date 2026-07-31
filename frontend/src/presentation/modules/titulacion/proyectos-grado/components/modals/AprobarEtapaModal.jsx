@@ -1,5 +1,5 @@
 /**
- * Modal: transición de etapa del proyecto de grado (TUT · T11, proyecto·APROBAR).
+ * Modal: transición de etapa del proyecto de grado (TIT · T11, proyecto·APROBAR).
  *
  * El select solo ofrece los estados destino válidos desde el estado actual
  * (TRANSICIONES_PROYECTO — el backend valida igual). Cuando corresponde

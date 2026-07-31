@@ -1,5 +1,9 @@
 # Módulo Tutorías y Acompañamiento Académico (TUT) — plan de desarrollo
 
+> **Nota (2026-07-31):** el módulo se renombró `tutorias` → `titulacion` y el
+> sub-grupo Acompañamiento se reclasificó al dominio Académico (`ACA`);
+> documento histórico, no refleja la nomenclatura actual.
+
 > Documento maestro consolidado por el orquestador (2026-07-24) a partir de los
 > informes de `datos`, `arquitecto` y `planificador`. Es el CONTRATO entre los
 > agentes backend y frontend: rutas y `dataFieldName` son literales.

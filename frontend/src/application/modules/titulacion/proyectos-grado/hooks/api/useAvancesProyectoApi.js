@@ -1,5 +1,5 @@
 /**
- * Hook de API: avances de un proyecto de grado (módulo TUT · T18-T21).
+ * Hook de API: avances de un proyecto de grado (módulo TIT · T18-T21).
  *
  * Lectura (T18), subida multipart PDF/Word (T20, avance·CREAR — el guard de
  * integrante lo aplica el servidor) y descarga por endpoint AUTENTICADO con

@@ -1,5 +1,5 @@
 /**
- * Columnas de los seguimientos de un trámite de pasantía (módulo TUT ·
+ * Columnas de los seguimientos de un trámite de pasantía (módulo TIT ·
  * P15-P17).
  *
  * Hoja de seguimiento (FORMULARIO DE SEGUIMIENTO DE PASANTÍA): fecha,
@@ -11,7 +11,7 @@
 import { CalendarOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { StatusPill, InfoLinesCell, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatNivelDesempeno,
   getNivelDesempenoPillClass,
@@ -99,7 +99,7 @@ export const createSeguimientosPasantiaTableColumns = ({ onEditar, readOnly = fa
           onEdit={() => onEditar(record)}
           editTitle="Editar seguimiento"
           permisos={{
-            editar: { codigo: TUTORIAS_PERMISOS.pasantiaSeguimiento, accion: 'EDITAR' },
+            editar: { codigo: TITULACION_PERMISOS.pasantiaSeguimiento, accion: 'EDITAR' },
           }}
         />
       ),

@@ -1,5 +1,5 @@
 /**
- * Conector: "Mi proyecto de grado" — portal del estudiante (TUT-MI-PROYECTO).
+ * Conector: "Mi proyecto de grado" — portal del estudiante (TIT-MI-PROYECTO).
  *
  * Sin provider: la página consume directamente su hook de pantalla
  * (`useMiProyectoGradoPage`, T4 self — el backend resuelve el estudiante por

@@ -1,5 +1,5 @@
 /**
- * Hook de API: lista de proyectos de grado (módulo TUT · T1).
+ * Hook de API: lista de proyectos de grado (módulo TIT · T1).
  *
  * Patrón `useCursosCapacitacionApi` (CAP): consume directamente la
  * INFRAESTRUCTURA (`ProyectoGradoRepository.obtenerTodos`) y expone un

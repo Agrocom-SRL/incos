@@ -1,5 +1,5 @@
 /**
- * Listado de sesiones de refuerzo (TUT · TUT-SESIONES · sesion·LISTAR).
+ * Listado de sesiones de refuerzo (ACA · ACA-SESIONES · sesion·LISTAR).
  *
  * Lenguaje visual de CursosCapacitacionList / LicenciasListPage: shell
  * Flex.page-container → PageHeaderArea(PageHeader) → DashboardPageShell →
@@ -19,7 +19,7 @@ import { TableListView } from '@organisms';
 import { ActionButton, Text } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useSesionesListPage } from '@application-academico/acompanamiento/sesiones/hooks/state/useSesionesListPage';
-import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
@@ -56,7 +56,7 @@ const SesionesList = () => {
         />
       </Flex>
       <ActionButton
-        permiso={TUTORIAS_PERMISOS.sesion}
+        permiso={ACOMPANAMIENTO_PERMISOS.sesion}
         accion="CREAR"
         variant="primary"
         icon={<PlusOutlined />}

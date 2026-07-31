@@ -1,6 +1,6 @@
 /**
- * Conector: registro de trámite de pasantía (TUT) — provider + página en
- * modo create. Punto de entrada lazy de la ruta /tutorias/pasantias/registrar.
+ * Conector: registro de trámite de pasantía (TIT) — provider + página en
+ * modo create. Punto de entrada lazy de la ruta /titulacion/pasantias/registrar.
  */
 
 import { PasantiaFormProvider } from '@application-titulacion/pasantias/providers/PasantiaFormProvider';

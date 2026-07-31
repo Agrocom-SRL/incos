@@ -1,5 +1,5 @@
 /**
- * Organismo: stat-cards del panel de acompañamiento (TUT · A10).
+ * Organismo: stat-cards del panel de acompañamiento (ACA · A10).
  *
  * Reusa el `KpiCard` compartido de Institucional (mismo patrón que
  * `GestionActualKpiStrip`): SIN librería de gráficos nueva (decisión cerrada

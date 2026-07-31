@@ -1,7 +1,7 @@
 /**
- * MisPasantiasSupervisadasPage — rama DOCENTE del ítem de menú Pasantías (TUT).
+ * MisPasantiasSupervisadasPage — rama DOCENTE del ítem de menú Pasantías (TIT).
  *
- * Página GEMELA de `MisTutoradosPage` (TUT · Titulación): bandeja del docente
+ * Página GEMELA de `MisTutoradosPage` (TIT · Titulación): bandeja del docente
  * supervisor autenticado (P18, identidad resuelta en servidor). Acciones por
  * fila: abrir ficha y registrar seguimiento (drawer P16, gated por
  * seguimiento·CREAR). Orquestación en `useMisPasantiasSupervisadasPage`.

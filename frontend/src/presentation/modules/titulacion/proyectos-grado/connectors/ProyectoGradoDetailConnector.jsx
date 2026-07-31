@@ -1,6 +1,6 @@
 /**
- * Conector: ficha-hub de proyecto de grado (TUT) — provider + página.
- * Punto de entrada lazy de la ruta /tutorias/titulacion/:id.
+ * Conector: ficha-hub de proyecto de grado (TIT) — provider + página.
+ * Punto de entrada lazy de la ruta /titulacion/proyectos-grado/:id.
  */
 
 import { useParams } from 'react-router-dom';

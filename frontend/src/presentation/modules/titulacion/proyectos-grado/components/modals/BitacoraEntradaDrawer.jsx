@@ -1,5 +1,5 @@
 /**
- * Drawer: entrada de bitácora de tutoría (TUT · T15/T16).
+ * Drawer: entrada de bitácora de tutoría (TIT · T15/T16).
  *
  * Tres modos según props (mismo formulario, payloads del contrato):
  *  - Nueva REUNION (sin `entrada` ni `avance`): tipo REUNION.

@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: ficha-hub de un proyecto de grado (TUT · DETALLE).
+ * Hook de pantalla: ficha-hub de un proyecto de grado (TIT · DETALLE).
  *
  * Orquesta la ficha sobre el contexto del provider (breadcrumbs, volver,
  * editar) y las acciones de las pestañas:
@@ -18,7 +18,7 @@ import { useProyectoGradoDetailContext } from '@application-titulacion/proyectos
 import { TRANSICIONES_PROYECTO } from '@application-titulacion/utils/titulacionPills';
 import {
   PROYECTOS_GRADO_LIST_PATH,
-  TUT_TITULACION_MENU_KEY,
+  TIT_PROYECTOS_MENU_KEY,
   proyectoGradoEditarPath,
 } from '@application-titulacion/config/paths';
 
@@ -41,7 +41,7 @@ export const useProyectoGradoDetailPage = () => {
   } = useProyectoGradoDetailContext();
 
   const returnListPath = location.state?.returnListPath || PROYECTOS_GRADO_LIST_PATH;
-  const menuSidebarKey = location.state?.menuSidebarKey ?? TUT_TITULACION_MENU_KEY;
+  const menuSidebarKey = location.state?.menuSidebarKey ?? TIT_PROYECTOS_MENU_KEY;
 
   const breadcrumbItems = useMemo(
     () => [

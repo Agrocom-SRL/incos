@@ -1,7 +1,7 @@
 /**
- * Conector: edición de empresa del catálogo de pasantías (TUT) — provider +
+ * Conector: edición de empresa del catálogo de pasantías (TIT) — provider +
  * página en modo edit. Punto de entrada lazy de la ruta
- * /tutorias/pasantias/empresas/:empresaId/editar.
+ * /titulacion/pasantias/empresas/:empresaId/editar.
  */
 
 import { useParams } from 'react-router-dom';

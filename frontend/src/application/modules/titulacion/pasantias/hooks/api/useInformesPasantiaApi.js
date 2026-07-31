@@ -1,5 +1,5 @@
 /**
- * Hook de API: informes de un trámite de pasantía (módulo TUT · P11-P14).
+ * Hook de API: informes de un trámite de pasantía (módulo TIT · P11-P14).
  *
  * Lectura (P11), emisión (P12 — el backend genera el PDF institucional),
  * edición (P13 — regenera el PDF) y descarga del PDF por endpoint AUTENTICADO

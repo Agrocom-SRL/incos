@@ -1,5 +1,5 @@
 /**
- * Modal: subir avance del proyecto (TUT · T20, avance·CREAR — portal del
+ * Modal: subir avance del proyecto (TIT · T20, avance·CREAR — portal del
  * estudiante). Upload PDF/Word por multipart (`uploadAvanceProyecto`); el
  * archivo NO se sube solo: se adjunta al enviar el formulario
  * (`beforeUpload: false`). El guard de integrante lo aplica el servidor.

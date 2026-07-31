@@ -1,5 +1,5 @@
 /**
- * Catálogo de empresas de pasantía (Titulación · TUT · empresa·LISTAR).
+ * Catálogo de empresas de pasantía (Titulación · TIT · empresa·LISTAR).
  *
  * ABM de catálogo con el shell de listado del sistema (workspace +
  * TableListView embedded) y toggle rápido de estado (`EstadoTogglePill` en
@@ -21,7 +21,7 @@ import { ActionButton, BackButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { catalogoEstadoRowClassName } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import { usePasantiasEmpresasListPage } from '@application-titulacion/pasantias/hooks/state/usePasantiasEmpresasListPage';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
@@ -43,7 +43,7 @@ const PasantiasEmpresasList = () => {
 
   const registrarAction = (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.pasantiaEmpresa}
+      permiso={TITULACION_PERMISOS.pasantiaEmpresa}
       accion="CREAR"
       variant="primary"
       icon={<PlusOutlined />}

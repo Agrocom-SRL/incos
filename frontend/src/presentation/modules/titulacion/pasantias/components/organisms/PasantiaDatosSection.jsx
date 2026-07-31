@@ -1,5 +1,5 @@
 /**
- * Organismo: tab "Datos" de la ficha-hub del trámite de pasantía (TUT).
+ * Organismo: tab "Datos" de la ficha-hub del trámite de pasantía (TIT).
  *
  * DetailInfoCard + DetailField (patrón ProyectoDatosSection). Recibe el
  * trámite ya mapeado (vista 168); no llama hooks. La sección de contrato

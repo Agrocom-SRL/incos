@@ -1,8 +1,8 @@
 /**
- * Vocabularios del dominio Pasantías (TUT) → etiqueta legible + clase de
+ * Vocabularios del dominio Pasantías (TIT) → etiqueta legible + clase de
  * StatusPill.
  *
- * Mismo enfoque que `tutoriasPills` (titulación): clases GLOBALES
+ * Mismo enfoque que `titulacionPills` (proyectos de grado): clases GLOBALES
  * `cfg-materia-pill--*` (styles/components/atoms/table-cells.css), sin CSS
  * propio del módulo. Espejo de `pasantias.constants.js` del backend
  * (schema 24, R.M. 487/2023). Vocabularios:

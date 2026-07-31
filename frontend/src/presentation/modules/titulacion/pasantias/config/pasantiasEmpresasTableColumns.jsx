@@ -1,5 +1,5 @@
 /**
- * Columnas del catálogo de empresas de pasantía (módulo TUT).
+ * Columnas del catálogo de empresas de pasantía (módulo TIT).
  *
  * Patrón catálogos de Configuración: IdentidadCelda + InfoLinesCell +
  * columna "Estado" con toggle rápido (`createCatalogoEstadoColumn`,
@@ -12,7 +12,7 @@ import { EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { formatTipoSocietario } from '@application-titulacion/utils/pasantiasPills';
 
 export const createPasantiasEmpresasTableColumns = ({ onEditar, onToggleEstado }) => {
@@ -82,7 +82,7 @@ export const createPasantiasEmpresasTableColumns = ({ onEditar, onToggleEstado }
         }),
     },
     createCatalogoEstadoColumn({
-      permisoCodigo: TUTORIAS_PERMISOS.pasantiaEmpresa,
+      permisoCodigo: TITULACION_PERMISOS.pasantiaEmpresa,
       onToggle: onToggleEstado,
     }),
     {
@@ -96,7 +96,7 @@ export const createPasantiasEmpresasTableColumns = ({ onEditar, onToggleEstado }
           onEdit={() => onEditar(record)}
           editTitle="Editar empresa"
           permisos={{
-            editar: { codigo: TUTORIAS_PERMISOS.pasantiaEmpresa, accion: 'EDITAR' },
+            editar: { codigo: TITULACION_PERMISOS.pasantiaEmpresa, accion: 'EDITAR' },
           }}
         />
       ),

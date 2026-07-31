@@ -1,15 +1,15 @@
-// src/presentation/modules/tutorias/pasantias/routes.jsx
+// src/presentation/modules/titulacion/pasantias/routes.jsx
 /**
- * Titulación → Pasantías (ítem de menú TUT, order 2).
+ * Titulación → Pasantías (ítem de menú TIT, order 2).
  *
- * Permisos del seed TUT (`tutorias.pasantia[.empresa]`). Rutas estáticas
+ * Permisos del seed 65 (`titulacion.pasantia[.empresa]`). Rutas estáticas
  * ANTES de `/:id` (React Router interceptaría /registrar y /empresas como
- * id). La ruta con menú va al final del array (patrón titulacion/routes.jsx).
+ * id). La ruta con menú va al final del array (patrón proyectos-grado/routes.jsx).
  *
- * Portal del estudiante: `/tutorias/mi-pasantia` (TUT-MI-PASANTIA, sin ítem
- * de menú, patrón TUT-MI-PROYECTO) — ESTUDIANTE solo tiene pasantia·DETALLE,
+ * Portal del estudiante: `/titulacion/mi-pasantia` (TIT-MI-PASANTIA, sin ítem
+ * de menú, patrón TIT-MI-PROYECTO) — ESTUDIANTE solo tiene pasantia·DETALLE,
  * por lo que no ve el ítem "Pasantías". Portal del docente: mismo ítem
- * TUT-PASANTIAS con `labelByRole` ("Mis pasantías supervisadas", P18 vía
+ * TIT-PASANTIAS con `labelByRole` ("Mis pasantías supervisadas", P18 vía
  * bifurcación del connector).
  */
 
@@ -34,86 +34,86 @@ const MiPasantiaConnector = lazy(() => import('./connectors/MiPasantiaConnector.
 
 export const pasantiasRoutes = [
   {
-    /** Portal del estudiante: su propio trámite (rama ESTUDIANTE de TUT). Sin ítem de menú. */
-    path: '/tutorias/mi-pasantia',
+    /** Portal del estudiante: su propio trámite (rama ESTUDIANTE de TIT). Sin ítem de menú. */
+    path: '/titulacion/mi-pasantia',
     element: <MiPasantiaConnector />,
-    key: 'TUT-MI-PASANTIA',
+    key: 'TIT-MI-PASANTIA',
     breadcrumbLabel: 'Mi pasantía',
-    permiso: 'tutorias.pasantia',
+    permiso: 'titulacion.pasantia',
     accion: 'DETALLE',
     menu: null,
-    breadcrumbParent: 'TUT-PASANTIAS',
+    breadcrumbParent: 'TIT-PASANTIAS',
   },
   {
-    path: '/tutorias/pasantias/empresas/registrar',
+    path: '/titulacion/pasantias/empresas/registrar',
     element: <PasantiaEmpresaFormCreateConnector />,
-    key: 'TUT-PASANTIAS-EMPRESA-REGISTRAR',
+    key: 'TIT-PASANTIAS-EMPRESA-REGISTRAR',
     breadcrumbLabel: 'Nueva empresa',
-    permiso: 'tutorias.pasantia.empresa',
+    permiso: 'titulacion.pasantia.empresa',
     accion: 'CREAR',
     menu: null,
-    breadcrumbParent: 'TUT-PASANTIAS',
+    breadcrumbParent: 'TIT-PASANTIAS',
   },
   {
-    path: '/tutorias/pasantias/empresas/:empresaId/editar',
+    path: '/titulacion/pasantias/empresas/:empresaId/editar',
     element: <PasantiaEmpresaFormEditConnector />,
-    key: 'TUT-PASANTIAS-EMPRESA-EDITAR',
+    key: 'TIT-PASANTIAS-EMPRESA-EDITAR',
     breadcrumbLabel: 'Editar empresa',
-    permiso: 'tutorias.pasantia.empresa',
+    permiso: 'titulacion.pasantia.empresa',
     accion: 'EDITAR',
     menu: null,
-    breadcrumbParent: 'TUT-PASANTIAS',
+    breadcrumbParent: 'TIT-PASANTIAS',
   },
   {
-    path: '/tutorias/pasantias/empresas',
+    path: '/titulacion/pasantias/empresas',
     element: <PasantiasEmpresasListConnector />,
-    key: 'TUT-PASANTIAS-EMPRESAS',
+    key: 'TIT-PASANTIAS-EMPRESAS',
     breadcrumbLabel: 'Empresas de pasantía',
-    permiso: 'tutorias.pasantia.empresa',
+    permiso: 'titulacion.pasantia.empresa',
     accion: 'LISTAR',
     menu: null,
-    breadcrumbParent: 'TUT-PASANTIAS',
+    breadcrumbParent: 'TIT-PASANTIAS',
   },
   {
-    path: '/tutorias/pasantias/registrar',
+    path: '/titulacion/pasantias/registrar',
     element: <PasantiaFormCreateConnector />,
-    key: 'TUT-PASANTIAS-REGISTRAR',
+    key: 'TIT-PASANTIAS-REGISTRAR',
     breadcrumbLabel: 'Nuevo trámite',
-    permiso: 'tutorias.pasantia',
+    permiso: 'titulacion.pasantia',
     accion: 'CREAR',
     menu: null,
-    breadcrumbParent: 'TUT-PASANTIAS',
+    breadcrumbParent: 'TIT-PASANTIAS',
   },
   {
-    path: '/tutorias/pasantias/:id/editar',
+    path: '/titulacion/pasantias/:id/editar',
     element: <PasantiaFormEditConnector />,
-    key: 'TUT-PASANTIAS-EDITAR',
+    key: 'TIT-PASANTIAS-EDITAR',
     breadcrumbLabel: 'Editar trámite',
-    permiso: 'tutorias.pasantia',
+    permiso: 'titulacion.pasantia',
     accion: 'EDITAR',
     menu: null,
-    breadcrumbParent: 'TUT-PASANTIAS',
+    breadcrumbParent: 'TIT-PASANTIAS',
   },
   {
-    path: '/tutorias/pasantias/:id',
+    path: '/titulacion/pasantias/:id',
     element: <PasantiaDetailConnector />,
-    key: 'TUT-PASANTIAS-DETALLE',
+    key: 'TIT-PASANTIAS-DETALLE',
     breadcrumbLabel: 'Detalle del trámite',
-    permiso: 'tutorias.pasantia',
+    permiso: 'titulacion.pasantia',
     accion: 'DETALLE',
     menu: null,
-    breadcrumbParent: 'TUT-PASANTIAS',
+    breadcrumbParent: 'TIT-PASANTIAS',
   },
   {
-    path: '/tutorias/pasantias',
+    path: '/titulacion/pasantias',
     element: <PasantiasListConnector />,
-    key: 'TUT-PASANTIAS',
-    permiso: 'tutorias.pasantia',
+    key: 'TIT-PASANTIAS',
+    permiso: 'titulacion.pasantia',
     accion: 'LISTAR',
     menu: {
       label: 'Pasantías',
-      module: 'TUT',
-      parent: 'TUT',
+      module: 'TIT',
+      parent: 'TIT',
       order: 2,
       labelByRole: { DOCENTE: 'Mis pasantías supervisadas' },
     },

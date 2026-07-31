@@ -1,7 +1,7 @@
 /**
- * Conector: edición de sesión de refuerzo (TUT) — provider (id de la URL)
- * + página en modo edit. Ruta TUT-SESIONES-EDITAR
- * (/tutorias/acompanamiento/sesiones/:id/editar).
+ * Conector: edición de sesión de refuerzo (ACA) — provider (id de la URL)
+ * + página en modo edit. Ruta ACA-SESIONES-EDITAR
+ * (/academico/acompanamiento/sesiones/:id/editar).
  */
 
 import { useParams } from 'react-router-dom';

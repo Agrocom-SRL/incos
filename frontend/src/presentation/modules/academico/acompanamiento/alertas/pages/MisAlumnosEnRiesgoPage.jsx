@@ -1,6 +1,6 @@
 /**
  * MisAlumnosEnRiesgoPage — rama DOCENTE del ítem "Alumnos en riesgo"
- * (TUT · A2). Página GEMELA del listado institucional, con los alumnos en
+ * (ACA · A2). Página GEMELA del listado institucional, con los alumnos en
  * riesgo de SUS cursos (identidad resuelta en servidor) y la acción propia
  * del rol: programar una sesión de refuerzo con el alumno preseleccionado.
  *

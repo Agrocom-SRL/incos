@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: bandeja del docente supervisor (TUT · "Mis pasantías
+ * Hook de pantalla: bandeja del docente supervisor (TIT · "Mis pasantías
  * supervisadas").
  *
  * Rama docente self del connector (patrón `useMisTutoradosPage`): SIN provider
@@ -17,7 +17,7 @@ import { useSeguimientosPasantiaApi } from '@application-titulacion/pasantias/ho
 import { createMisPasantiasTableColumns } from '@titulacion/pasantias/config/misPasantiasTableColumns';
 import {
   PASANTIAS_LIST_PATH,
-  TUT_PASANTIAS_MENU_KEY,
+  TIT_PASANTIAS_MENU_KEY,
   pasantiaDetallePath,
 } from '@application-titulacion/config/paths';
 
@@ -44,7 +44,7 @@ export const useMisPasantiasSupervisadasPage = () => {
 
   const listNavState = useMemo(
     () => ({
-      menuSidebarKey: TUT_PASANTIAS_MENU_KEY,
+      menuSidebarKey: TIT_PASANTIAS_MENU_KEY,
       returnListPath: pathname || PASANTIAS_LIST_PATH,
     }),
     [pathname],

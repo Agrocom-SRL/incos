@@ -1,5 +1,5 @@
 /**
- * MisTutoradosPage — rama DOCENTE del ítem de menú Proyectos de grado (TUT).
+ * MisTutoradosPage — rama DOCENTE del ítem de menú Proyectos de grado (TIT).
  *
  * Página GEMELA de `MisEstudiantesDocentePage` (Matrícula): bandeja del tutor
  * autenticado (T3, identidad resuelta en servidor). Acciones por fila: abrir

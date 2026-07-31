@@ -1,6 +1,6 @@
 /**
- * Conector: edición de trámite de pasantía (TUT) — provider + página en modo
- * edit. Punto de entrada lazy de la ruta /tutorias/pasantias/:id/editar.
+ * Conector: edición de trámite de pasantía (TIT) — provider + página en modo
+ * edit. Punto de entrada lazy de la ruta /titulacion/pasantias/:id/editar.
  */
 
 import { useParams } from 'react-router-dom';

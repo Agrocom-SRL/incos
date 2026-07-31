@@ -1,5 +1,5 @@
 /**
- * Hook de API: ficha de una sesión de refuerzo (módulo TUT · A5).
+ * Hook de API: ficha de una sesión de refuerzo (módulo ACA · A5).
  *
  * GET /acompanamiento/sesiones/:id — sesión + estudiantes[]. `dataKey`
  * ('sesionRefuerzo') coincide con el `dataFieldName` del backend.

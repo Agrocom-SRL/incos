@@ -1,6 +1,6 @@
 /**
- * Conector: alta de proyecto de grado (TUT) — provider + página en modo create.
- * Punto de entrada lazy de la ruta /tutorias/titulacion/registrar.
+ * Conector: alta de proyecto de grado (TIT) — provider + página en modo create.
+ * Punto de entrada lazy de la ruta /titulacion/proyectos-grado/registrar.
  */
 
 import { ProyectoGradoFormProvider } from '@application-titulacion/proyectos-grado/providers/ProyectoGradoFormProvider';

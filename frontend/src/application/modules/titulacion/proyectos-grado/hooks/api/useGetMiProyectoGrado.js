@@ -1,5 +1,5 @@
 /**
- * Hook de API: proyecto del estudiante autenticado (módulo TUT · T4).
+ * Hook de API: proyecto del estudiante autenticado (módulo TIT · T4).
  *
  * GET /proyectos-grado/mi-proyecto — el backend resuelve el estudiante por
  * token (resolveEstudianteIdForUsuario). Un 404 NO es error de pantalla: el

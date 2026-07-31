@@ -1,7 +1,7 @@
 /**
- * Provider: lista de trámites de pasantía (TUT · Pasantías).
+ * Provider: lista de trámites de pasantía (TIT · Pasantías).
  *
- * Espejo de `ProyectosGradoListProvider` (TUT · Titulación): ensambla el hook
+ * Espejo de `ProyectosGradoListProvider` (TIT · Titulación): ensambla el hook
  * de API con `useServerPaginatedList` en modo `loadAll` (universo pequeño:
  * orden, filtros y paginación en cliente; búsqueda server-side con debounce)
  * y publica la mutación de la tabla (eliminar). Provider DELGADO: solo

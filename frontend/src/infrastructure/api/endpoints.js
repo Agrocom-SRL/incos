@@ -656,11 +656,14 @@ export const INSCRIPCIONES_CAPACITACION_ENDPOINTS = {
 };
 
 // ============================================
-// MÓDULO: TUTORÍAS Y ACOMPAÑAMIENTO ACADÉMICO (TUT)
+// MÓDULO: TITULACIÓN (TIT) Y ACOMPAÑAMIENTO ACADÉMICO (ACA)
 // ============================================
-// Contrato T1-T23 / A1-A11 (docs/plan/tutorias-plan-desarrollo.md). Rutas
-// estáticas SIEMPRE antes de `/:id` en el backend; aquí solo construimos URLs.
-// Permisos `tutorias.*` (seed 66).
+// Rename 2026-07-31 (`tutorias` → `titulacion`; Acompañamiento reclasificado
+// al dominio ACADÉMICO). Contrato T1-T23 / A1-A11, histórico en
+// docs/plan/tutorias-plan-desarrollo.md (nomenclatura vieja, ver nota de
+// rename al inicio del documento). Rutas estáticas SIEMPRE antes de `/:id`
+// en el backend; aquí solo construimos URLs. Permisos `titulacion.*`
+// (proyectos/pasantías, seed 65) y `academico.acompanamiento.*` (seed 59).
 
 export const PROYECTOS_GRADO_ENDPOINTS = {
   ...createCRUDEndpoints('/proyectos-grado'),
@@ -734,7 +737,7 @@ export const ACOMPANAMIENTO_ENDPOINTS = {
 // Contrato P1-P19 (docs/plan/titulacion-y-dominios-pendientes.md §Fase 2).
 // Pasantías / práctica laboral (schema 24, vistas 166-168). Rutas estáticas
 // (empresas, mis-pasantias, mi-pasantia) SIEMPRE antes de `/:id` en el
-// backend; aquí solo construimos URLs. Permisos `tutorias.pasantia.*` (seed 65).
+// backend; aquí solo construimos URLs. Permisos `titulacion.pasantia.*` (seed 65).
 export const PASANTIAS_ENDPOINTS = {
   ...createCRUDEndpoints('/pasantias'),
   /** GET/POST — catálogo de empresas (P7 `pasantiasEmpresas` / P8 `pasantiaEmpresa`) */

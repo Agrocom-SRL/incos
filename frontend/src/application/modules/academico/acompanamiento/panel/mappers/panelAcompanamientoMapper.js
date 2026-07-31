@@ -1,5 +1,5 @@
 /**
- * Mapper: panel de acompañamiento (API → DTO de UI, módulo TUT).
+ * Mapper: panel de acompañamiento (API → DTO de UI, módulo ACA).
  *
  * Fuente A10: agregados de las vistas 157 (riesgo por carrera), 158
  * (reprobación por materia), 162 (resumen de sesiones) + top de casos

@@ -1,5 +1,5 @@
 /**
- * Organismo: tab "Bitácora" de la ficha-hub del proyecto (TUT · T14-T16).
+ * Organismo: tab "Bitácora" de la ficha-hub del proyecto (TIT · T14-T16).
  *
  * DetailInfoCard + tabla de entradas (fuente de la planilla de seguimiento
  * DDE). "Nueva entrada" gated por bitacora·CREAR; editar por bitacora·EDITAR
@@ -10,7 +10,7 @@ import { Alert, Empty, Table } from 'antd';
 import { FileAddOutlined, FileTextOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { createBitacoraTableColumns } from '@titulacion/proyectos-grado/config/bitacoraTableColumns';
 
 const ProyectoBitacoraSection = ({ entradas, loading, error, onNuevaEntrada, onEditarEntrada }) => {
@@ -24,7 +24,7 @@ const ProyectoBitacoraSection = ({ entradas, loading, error, onNuevaEntrada, onE
         cols={1}
         extra={
           <ActionButton
-            permiso={TUTORIAS_PERMISOS.bitacora}
+            permiso={TITULACION_PERMISOS.bitacora}
             accion="CREAR"
             variant="primary"
             icon={<FileAddOutlined />}

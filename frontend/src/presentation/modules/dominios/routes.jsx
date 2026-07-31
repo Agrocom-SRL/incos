@@ -43,13 +43,10 @@ export const dominiosRoutes = [
         menu: { label: 'Capacitación', module: 'CAP', order: 8 },
     },
     {
-        // Dominio Titulación (module code TUT y paths /tutorias/* se mantienen
-        // como identificadores estables; decisión 2026-07-29 en
-        // docs/plan/titulacion-y-dominios-pendientes.md).
-        path: '/tutorias',
+        path: '/titulacion',
         element: null,
-        key: 'TUT',
-        menu: { label: 'Titulación', module: 'TUT', order: 9 },
+        key: 'TIT',
+        menu: { label: 'Titulación', module: 'TIT', order: 9 },
     },
     {
         path: '/configuracion-sistema',

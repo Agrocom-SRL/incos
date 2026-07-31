@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: programar/editar sesión de refuerzo (TUT ·
+ * Hook de pantalla: programar/editar sesión de refuerzo (ACA ·
  * sesion·CREAR/EDITAR).
  *
  * Gemelo de `useCursoCapacitacionFormPage`: secciones declarativas para
@@ -24,7 +24,7 @@ import {
 } from '@application-academico/acompanamiento/sesiones/mappers/sesionRefuerzoMapper';
 import {
   SESIONES_LIST_PATH,
-  TUT_SESIONES_MENU_KEY,
+  ACA_SESIONES_MENU_KEY,
   sesionDetallePath,
 } from '@application-academico/acompanamiento/config/paths';
 
@@ -196,7 +196,7 @@ export const useSesionRefuerzoFormPage = (mode = 'create') => {
   const isInvalidEditId = isEditMode && sesionId == null;
 
   const returnListPath = location.state?.returnListPath || SESIONES_LIST_PATH;
-  const menuSidebarKey = location.state?.menuSidebarKey ?? TUT_SESIONES_MENU_KEY;
+  const menuSidebarKey = location.state?.menuSidebarKey ?? ACA_SESIONES_MENU_KEY;
   const alertaPreseleccionada = location.state?.alertaPreseleccionada ?? null;
 
   const breadcrumbItems = useMemo(

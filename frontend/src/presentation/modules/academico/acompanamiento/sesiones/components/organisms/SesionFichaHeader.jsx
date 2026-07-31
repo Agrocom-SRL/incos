@@ -1,5 +1,5 @@
 /**
- * Organismo: cabecera de la ficha de sesión de refuerzo (TUT).
+ * Organismo: cabecera de la ficha de sesión de refuerzo (ACA).
  *
  * Reusa el shell compartido `sd-profile` (detail-page.css, prefijos sd-* solo
  * para layout), gemelo de `CursoCapacitacionFichaHeader`. Estado de la sesión

@@ -27,7 +27,7 @@ import { configuracionRoutes } from './configuracion/routes.jsx';
 import { seguridadRoutes } from './seguridad/routes.jsx';
 import { perfilRoutes } from './perfil/routes.jsx';
 import { capacitacionRoutes } from '@capacitacion/routes';
-import { tutoriasRoutes } from '@tutorias/routes';
+import { titulacionRoutes } from '@titulacion/routes';
 
 /**
  * Obtiene todas las rutas de todos los módulos
@@ -49,7 +49,7 @@ export const getAllRoutes = () => {
         ...seguridadRoutes,
         ...perfilRoutes,
         ...capacitacionRoutes,
-        ...tutoriasRoutes,
+        ...titulacionRoutes,
     ];
 };
 

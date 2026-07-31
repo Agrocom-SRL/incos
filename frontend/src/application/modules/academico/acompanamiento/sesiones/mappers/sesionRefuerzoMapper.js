@@ -1,5 +1,5 @@
 /**
- * Mapper: sesiones de refuerzo (API → DTO de UI, módulo TUT).
+ * Mapper: sesiones de refuerzo (API → DTO de UI, módulo ACA).
  *
  * Fuente: vista 161 (sesión + curso de la 130 + aula + resumen de
  * participantes). El backend entrega camelCase; se normaliza defensivamente.

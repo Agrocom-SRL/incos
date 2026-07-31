@@ -1,5 +1,5 @@
 /**
- * Hook de API: trámite de pasantía del estudiante autenticado (módulo TUT · P19).
+ * Hook de API: trámite de pasantía del estudiante autenticado (módulo TIT · P19).
  *
  * GET /pasantias/mi-pasantia — objeto COMPUESTO `{ pasantia, informes,
  * seguimientos }` (el backend resuelve el estudiante por token,

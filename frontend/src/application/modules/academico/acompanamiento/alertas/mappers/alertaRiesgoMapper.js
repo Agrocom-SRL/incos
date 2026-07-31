@@ -1,5 +1,5 @@
 /**
- * Mapper: alertas de riesgo pedagógico (API → DTO de UI, módulo TUT).
+ * Mapper: alertas de riesgo pedagógico (API → DTO de UI, módulo ACA).
  *
  * Fuente: vista 156 `vista_base_acompanamiento_riesgo_fila` (grano
  * estudiante×materia). El backend entrega camelCase; se normaliza

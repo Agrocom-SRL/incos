@@ -1,5 +1,5 @@
 /**
- * Provider: alta/edición de una empresa del catálogo de pasantías (TUT).
+ * Provider: alta/edición de una empresa del catálogo de pasantías (TIT).
  *
  * Provider DELGADO: el catálogo no expone `GET /empresas/:id`, así que en
  * edición la empresa se resuelve del LISTADO completo (P7,

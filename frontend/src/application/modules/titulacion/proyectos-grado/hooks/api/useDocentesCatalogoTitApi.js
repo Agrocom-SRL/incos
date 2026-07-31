@@ -1,9 +1,9 @@
 /**
- * Hook de API: catálogo de docentes para el select de tutor (módulo TUT).
+ * Hook de API: catálogo de docentes para el select de tutor (módulo TIT).
  *
  * REUTILIZA el listado existente `GET /docentes` (catálogo del plan: no se
  * crean catálogos nuevos). Ese endpoint está protegido por permisos del
- * dominio DOC que no todos los roles TUT tienen: la carga DEGRADA con gracia
+ * dominio DOC que no todos los roles TIT tienen: la carga DEGRADA con gracia
  * (`disponible=false`) sin bloquear la pantalla — mismo criterio que
  * `useAulasCatalogoCapApi` (CAP).
  *
@@ -24,7 +24,7 @@ const mapDocenteOption = (raw) => {
   return { value: raw.id, label: nombre };
 };
 
-export const useDocentesCatalogoTutApi = () => {
+export const useDocentesCatalogoTitApi = () => {
   const [docentes, setDocentes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [disponible, setDisponible] = useState(true);

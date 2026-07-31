@@ -1,5 +1,5 @@
 /**
- * Organismo: tab "Datos" de la ficha-hub del proyecto de grado (TUT).
+ * Organismo: tab "Datos" de la ficha-hub del proyecto de grado (TIT).
  *
  * DetailInfoCard + DetailField (patrón UsuarioDetailPage / InscripcionPagosSection).
  * Recibe el proyecto ya mapeado; no llama hooks.

@@ -1,5 +1,5 @@
 /**
- * Hook de API: mutaciones de proyectos de grado (módulo TUT).
+ * Hook de API: mutaciones de proyectos de grado (módulo TIT).
  *
  * Crear/actualizar (T7/T8), eliminar soft (T9), asignar tutor (T10, APROBAR —
  * genera el PDF de designación oficial en el backend), transición de estado

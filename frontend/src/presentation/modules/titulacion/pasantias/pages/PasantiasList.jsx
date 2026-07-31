@@ -1,7 +1,7 @@
 /**
- * Listado de trámites de pasantía (Titulación · TUT-PASANTIAS · LISTAR).
+ * Listado de trámites de pasantía (Titulación · TIT-PASANTIAS · LISTAR).
  *
- * Lenguaje visual de ProyectosGradoList (TUT): shell
+ * Lenguaje visual de ProyectosGradoList (TIT): shell
  * Flex.page-container → PageHeaderArea(PageHeader) → DashboardPageShell → MainContent
  * → section.cfg-academico-workspace (ListPanelHeader + lede) → TableListView embedded.
  * Filtros gestión/carrera/camino/estado en cliente (dataset completo, modo
@@ -20,7 +20,7 @@ import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { usePasantiasListPage } from '@application-titulacion/pasantias/hooks/state/usePasantiasListPage';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
@@ -49,7 +49,7 @@ const PasantiasList = () => {
 
   const registrarAction = (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.pasantia}
+      permiso={TITULACION_PERMISOS.pasantia}
       accion="CREAR"
       variant="primary"
       icon={<PlusOutlined />}
@@ -61,7 +61,7 @@ const PasantiasList = () => {
 
   const empresasAction = (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.pasantiaEmpresa}
+      permiso={TITULACION_PERMISOS.pasantiaEmpresa}
       accion="LISTAR"
       variant="info"
       icon={<ShopOutlined />}

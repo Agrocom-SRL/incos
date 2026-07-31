@@ -1,6 +1,6 @@
 /**
- * Conector: listado de sesiones de refuerzo (TUT) — provider + página.
- * Punto de entrada lazy de la ruta TUT-SESIONES (/tutorias/acompanamiento/sesiones).
+ * Conector: listado de sesiones de refuerzo (ACA) — provider + página.
+ * Punto de entrada lazy de la ruta ACA-SESIONES (/academico/acompanamiento/sesiones).
  */
 
 import { SesionesListProvider } from '@application-academico/acompanamiento/sesiones/providers/SesionesListProvider';

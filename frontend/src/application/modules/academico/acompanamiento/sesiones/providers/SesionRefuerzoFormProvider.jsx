@@ -1,5 +1,5 @@
 /**
- * Provider: programar/editar una sesión de refuerzo (TUT · Acompañamiento).
+ * Provider: programar/editar una sesión de refuerzo (ACA · Acompañamiento).
  *
  * Provider DELGADO: ensambla la ficha (solo edición A7), las mutaciones, los
  * catálogos reutilizados (cursos = asignaciones docentes vista 130; aulas del
@@ -15,8 +15,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth, esDocente } from '@application-auth';
 import { useGetSesionRefuerzo } from '@application-academico/acompanamiento/sesiones/hooks/api/useGetSesionRefuerzo';
 import { useSesionRefuerzoMutations } from '@application-academico/acompanamiento/sesiones/hooks/api/useSesionRefuerzoMutations';
-import { useAsignacionesCatalogoTutApi } from '@application-academico/acompanamiento/sesiones/hooks/api/useAsignacionesCatalogoTutApi';
-import { useAulasCatalogoTutApi } from '@application-academico/acompanamiento/sesiones/hooks/api/useAulasCatalogoTutApi';
+import { useAsignacionesCatalogoAcaApi } from '@application-academico/acompanamiento/sesiones/hooks/api/useAsignacionesCatalogoAcaApi';
+import { useAulasCatalogoAcaApi } from '@application-academico/acompanamiento/sesiones/hooks/api/useAulasCatalogoAcaApi';
 import { useAlertasRiesgoApi } from '@application-academico/acompanamiento/alertas/hooks/api/useAlertasRiesgoApi';
 import { useMisAlumnosEnRiesgoApi } from '@application-academico/acompanamiento/alertas/hooks/api/useMisAlumnosEnRiesgoApi';
 import { SesionRefuerzoFormContext } from '@application-academico/acompanamiento/sesiones/context/SesionRefuerzoFormContext';
@@ -27,8 +27,8 @@ export const SesionRefuerzoFormProvider = ({ children, sesionId = null }) => {
 
   const { sesion, loading: loadingSesion, error: errorSesion, cargar } = useGetSesionRefuerzo();
   const { saving, guardarSesion } = useSesionRefuerzoMutations();
-  const asignacionesCatalogo = useAsignacionesCatalogoTutApi();
-  const aulasCatalogo = useAulasCatalogoTutApi();
+  const asignacionesCatalogo = useAsignacionesCatalogoAcaApi();
+  const aulasCatalogo = useAulasCatalogoAcaApi();
 
   // Candidatos a estudiantes: rama docente (A2, auto-fetch) o admin (A1).
   const misAlumnos = useMisAlumnosEnRiesgoApi({ autoFetch: docente });

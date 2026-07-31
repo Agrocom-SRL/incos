@@ -1,5 +1,5 @@
 /**
- * Listado institucional de alumnos en riesgo pedagógico (TUT · TUT-ALERTAS ·
+ * Listado institucional de alumnos en riesgo pedagógico (ACA · ACA-ALERTAS ·
  * alerta·LISTAR). Vista 156: un registro por estudiante×materia bajo el umbral.
  *
  * Lenguaje visual de CursosCapacitacionList / LicenciasListPage: shell

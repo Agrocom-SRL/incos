@@ -16,7 +16,7 @@ import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useSesionRefuerzoFormPage } from '@application-academico/acompanamiento/sesiones/hooks/state/useSesionRefuerzoFormPage';
-import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import SesionRefuerzoFormSections from '../components/organisms/SesionRefuerzoFormSections';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
@@ -38,7 +38,7 @@ const SesionRefuerzoFormPage = ({ mode = 'create' }) => {
 
   const saveButton = (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.sesion}
+      permiso={ACOMPANAMIENTO_PERMISOS.sesion}
       accion={permisoAccion}
       variant="primary"
       size="large"

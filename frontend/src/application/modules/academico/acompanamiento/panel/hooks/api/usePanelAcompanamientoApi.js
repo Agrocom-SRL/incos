@@ -1,5 +1,5 @@
 /**
- * Hook de API: panel de acompañamiento (módulo TUT · A10).
+ * Hook de API: panel de acompañamiento (módulo ACA · A10).
  *
  * GET /acompanamiento/panel?gestionId= — sin gestionId el backend usa la
  * gestión vigente. `dataKey` ('panelAcompanamiento') coincide con el

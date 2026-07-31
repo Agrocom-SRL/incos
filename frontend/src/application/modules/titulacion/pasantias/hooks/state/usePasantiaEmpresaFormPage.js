@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: alta/edición de una empresa del catálogo (TUT ·
+ * Hook de pantalla: alta/edición de una empresa del catálogo (TIT ·
  * empresa·CREAR/EDITAR).
  *
  * Gemelo de `usePasantiaFormPage` en versión catálogo: secciones declarativas
@@ -18,7 +18,7 @@ import {
 } from '@application-titulacion/pasantias/mappers/pasantiaMapper';
 import {
   PASANTIAS_EMPRESAS_PATH,
-  TUT_PASANTIAS_MENU_KEY,
+  TIT_PASANTIAS_MENU_KEY,
 } from '@application-titulacion/config/paths';
 
 /** Secciones declarativas del formulario (CfgFormWorkspace). */
@@ -115,7 +115,7 @@ export const usePasantiaEmpresaFormPage = (mode = 'create') => {
   const isInvalidEditId = isEditMode && empresaId == null;
 
   const returnListPath = location.state?.returnListPath || PASANTIAS_EMPRESAS_PATH;
-  const menuSidebarKey = location.state?.menuSidebarKey ?? TUT_PASANTIAS_MENU_KEY;
+  const menuSidebarKey = location.state?.menuSidebarKey ?? TIT_PASANTIAS_MENU_KEY;
 
   const breadcrumbItems = useMemo(
     () => [

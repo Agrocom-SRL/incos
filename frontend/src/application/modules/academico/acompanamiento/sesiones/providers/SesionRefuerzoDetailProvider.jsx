@@ -1,5 +1,5 @@
 /**
- * Provider: ficha de una sesión de refuerzo (TUT · Acompañamiento).
+ * Provider: ficha de una sesión de refuerzo (ACA · Acompañamiento).
  *
  * Espejo de `CursoCapacitacionDetailProvider`: ensambla el hook de API
  * (A5, auto-fetch por id) y las mutaciones (A7 editar, A9 registro batch de

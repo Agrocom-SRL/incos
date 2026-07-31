@@ -1,5 +1,5 @@
 /**
- * Provider: catálogo de empresas de pasantía (TUT · Pasantías).
+ * Provider: catálogo de empresas de pasantía (TIT · Pasantías).
  *
  * ABM de catálogo (patrón catálogos de Configuración): lista con
  * `incluirInactivos: true` (administra el toggle de estado P10) + mutación de

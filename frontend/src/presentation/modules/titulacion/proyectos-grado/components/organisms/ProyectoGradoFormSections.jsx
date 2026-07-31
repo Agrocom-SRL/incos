@@ -5,7 +5,7 @@
  * nivel y "Estudiantes del proyecto" como sección interna.
  *
  * La sección de estudiantes usa selects con BÚSQUEDA EN SERVIDOR (debounce en
- * `useBuscarEstudiantesTut`, orquestada por el hook de pantalla) — el
+ * `useBuscarEstudiantesTit`, orquestada por el hook de pantalla) — el
  * `FormField` genérico no cubre `onSearch`, por eso los `Form.Item` viven
  * aquí como JSX del organismo (mismo criterio que el `tagRender` de CAP).
  * Solo la modalidad PSP (grupal) muestra el multi-select de integrantes.

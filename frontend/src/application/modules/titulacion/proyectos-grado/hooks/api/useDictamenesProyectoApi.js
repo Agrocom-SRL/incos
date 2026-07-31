@@ -1,5 +1,5 @@
 /**
- * Hook de API: dictámenes de un proyecto de grado (módulo TUT · T22-T23).
+ * Hook de API: dictámenes de un proyecto de grado (módulo TIT · T22-T23).
  *
  * Lectura (T22, proyecto·DETALLE) y descarga del PDF por endpoint autenticado
  * (T23, proyecto·EXPORTAR, blob). Los dictámenes los GENERA el backend

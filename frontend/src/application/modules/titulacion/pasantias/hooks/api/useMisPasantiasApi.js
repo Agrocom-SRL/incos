@@ -1,5 +1,5 @@
 /**
- * Hook de API: bandeja del docente supervisor autenticado (módulo TUT · P18).
+ * Hook de API: bandeja del docente supervisor autenticado (módulo TIT · P18).
  *
  * El backend resuelve el docente por token (resolveDocenteIdForUsuario);
  * NUNCA se envía docenteId desde el cliente. `dataKey` ('misPasantias')

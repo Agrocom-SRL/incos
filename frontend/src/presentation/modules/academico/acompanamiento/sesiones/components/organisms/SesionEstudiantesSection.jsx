@@ -1,5 +1,5 @@
 /**
- * Organismo: sección de estudiantes de la ficha de sesión (TUT · A9).
+ * Organismo: sección de estudiantes de la ficha de sesión (ACA · A9).
  *
  * Tabla de registro rápido de asistencia/progreso en LOTE: los editores
  * escriben en memoria (`setEstudianteCampo`) y el botón "Guardar registro"
@@ -14,7 +14,7 @@ import { LinkOutlined, SaveOutlined } from '@ant-design/icons';
 import { DataTable } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton, Text } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import { createSesionEstudiantesColumns } from '@academico/acompanamiento/sesiones/config/sesionEstudiantesTableColumns';
 import { allSpacing } from '@theme/tokens';
 
@@ -38,7 +38,7 @@ const SesionEstudiantesSection = ({
     <Flex gap={allSpacing.marginSM} align="center">
       {dirty ? <Text type="warning">Cambios sin guardar</Text> : null}
       <ActionButton
-        permiso={TUTORIAS_PERMISOS.sesion}
+        permiso={ACOMPANAMIENTO_PERMISOS.sesion}
         accion="EDITAR"
         variant="primary"
         icon={<SaveOutlined />}

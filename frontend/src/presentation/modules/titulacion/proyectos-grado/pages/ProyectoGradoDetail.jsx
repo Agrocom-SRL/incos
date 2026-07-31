@@ -1,5 +1,5 @@
 /**
- * Ficha-hub de proyecto de grado (Tutorías · TUT · DETALLE) — cabecera de
+ * Ficha-hub de proyecto de grado (Titulación · TIT · DETALLE) — cabecera de
  * perfil + tabs datos / integrantes / bitácora / avances / dictámenes.
  *
  * Patrón ficha-hub de `UsuarioDetailPage` (DetailPageShell + DetailProfileCard
@@ -26,7 +26,7 @@ import { ActionButton, BackButton } from '@atoms';
 import { DetailPageShell, DetailTabsPanel } from '@organisms';
 import { usePermiso } from '@application-auth';
 import { useProyectoGradoDetailPage } from '@application-titulacion/proyectos-grado/hooks/state/useProyectoGradoDetailPage';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import ProyectoGradoFichaHeader from '@titulacion/proyectos-grado/components/organisms/ProyectoGradoFichaHeader';
 import ProyectoDatosSection from '@titulacion/proyectos-grado/components/organisms/ProyectoDatosSection';
 import ProyectoIntegrantesSection from '@titulacion/proyectos-grado/components/organisms/ProyectoIntegrantesSection';
@@ -55,14 +55,14 @@ const ProyectoGradoDetail = () => {
     avances,
     dictamenes,
   } = useProyectoGradoDetailPage();
-  const puedeEditar = usePermiso(TUTORIAS_PERMISOS.proyecto, 'EDITAR');
+  const puedeEditar = usePermiso(TITULACION_PERMISOS.proyecto, 'EDITAR');
 
   const [activeKey, setActiveKey] = useState('datos');
 
   const headerActions = (
     <Flex gap="small" wrap>
       <ActionButton
-        permiso={TUTORIAS_PERMISOS.proyecto}
+        permiso={TITULACION_PERMISOS.proyecto}
         accion="APROBAR"
         variant="info"
         icon={<UserSwitchOutlined />}
@@ -71,7 +71,7 @@ const ProyectoGradoDetail = () => {
         {proyecto?.tutorId ? 'Cambiar tutor' : 'Asignar tutor'}
       </ActionButton>
       <ActionButton
-        permiso={TUTORIAS_PERMISOS.proyecto}
+        permiso={TITULACION_PERMISOS.proyecto}
         accion="APROBAR"
         variant="success"
         icon={<CheckCircleOutlined />}

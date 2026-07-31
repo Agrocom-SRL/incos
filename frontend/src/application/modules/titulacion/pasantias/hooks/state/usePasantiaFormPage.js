@@ -1,7 +1,7 @@
 /**
- * Hook de pantalla: alta/edición de un trámite de pasantía (TUT · CREAR/EDITAR).
+ * Hook de pantalla: alta/edición de un trámite de pasantía (TIT · CREAR/EDITAR).
  *
- * Gemelo de `useProyectoGradoFormPage` (TUT · Titulación): secciones
+ * Gemelo de `useProyectoGradoFormPage` (TIT · Titulación): secciones
  * declarativas para `CfgFormWorkspace`, precarga en modo edición, submit con
  * el payload del contrato (P3/P4) y navegación a la ficha.
  *
@@ -9,14 +9,14 @@
  *  - PASANTIA: práctica nueva en una empresa del catálogo (verificación previa).
  *  - CONVALIDACION: el estudiante ya trabaja — se agrega la sección de
  *    contrato (tipoContrato/tipoContratoDetalle, solo este camino).
- * El estudiante se elige con búsqueda debounced (catálogo reutilizado de TUT).
+ * El estudiante se elige con búsqueda debounced (catálogo reutilizado de TIT).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { usePasantiaFormContext } from '@application-titulacion/pasantias/hooks/context/usePasantiaFormContext';
-import { useBuscarEstudiantesTut } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTut';
+import { useBuscarEstudiantesTit } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTit';
 import {
   HORAS_PASANTIA_MAX,
   HORAS_PASANTIA_MIN,
@@ -29,7 +29,7 @@ import {
 } from '@application-titulacion/pasantias/mappers/pasantiaMapper';
 import {
   PASANTIAS_LIST_PATH,
-  TUT_PASANTIAS_MENU_KEY,
+  TIT_PASANTIAS_MENU_KEY,
   pasantiaDetallePath,
 } from '@application-titulacion/config/paths';
 
@@ -248,7 +248,7 @@ export const usePasantiaFormPage = (mode = 'create') => {
   } = usePasantiaFormContext();
 
   const [error, setError] = useState(null);
-  const busquedaEstudiantes = useBuscarEstudiantesTut();
+  const busquedaEstudiantes = useBuscarEstudiantesTit();
 
   // El camino elegido decide la sección de contrato (solo CONVALIDACION).
   const tipo = Form.useWatch('tipo', form);
@@ -259,7 +259,7 @@ export const usePasantiaFormPage = (mode = 'create') => {
   const isInvalidEditId = isEditMode && pasantiaId == null;
 
   const returnListPath = location.state?.returnListPath || PASANTIAS_LIST_PATH;
-  const menuSidebarKey = location.state?.menuSidebarKey ?? TUT_PASANTIAS_MENU_KEY;
+  const menuSidebarKey = location.state?.menuSidebarKey ?? TIT_PASANTIAS_MENU_KEY;
 
   const breadcrumbItems = useMemo(
     () => [

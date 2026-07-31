@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: listado de sesiones de refuerzo (TUT · sesion·LISTAR).
+ * Hook de pantalla: listado de sesiones de refuerzo (ACA · sesion·LISTAR).
  *
  * Consume el contexto del provider (A4), aplica el filtro de estado en
  * cliente, genera columnas, breadcrumb y handlers (programar, eliminar).
@@ -12,7 +12,7 @@ import { createSesionesTableColumns } from '@academico/acompanamiento/sesiones/c
 import { ESTADOS_SESION, formatEstadoSesion } from '@application-academico/acompanamiento/utils/acompanamientoPills';
 import {
   SESIONES_LIST_PATH,
-  TUT_SESIONES_MENU_KEY,
+  ACA_SESIONES_MENU_KEY,
   sesionProgramarPath,
 } from '@application-academico/acompanamiento/config/paths';
 
@@ -45,7 +45,7 @@ export const useSesionesListPage = () => {
 
   const listNavState = useMemo(
     () => ({
-      menuSidebarKey: TUT_SESIONES_MENU_KEY,
+      menuSidebarKey: ACA_SESIONES_MENU_KEY,
       returnListPath: pathname || SESIONES_LIST_PATH,
     }),
     [pathname],

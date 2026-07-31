@@ -1,5 +1,5 @@
 /**
- * Panel de acompañamiento pedagógico (TUT · TUT-PANEL · panel·LISTAR).
+ * Panel de acompañamiento pedagógico (ACA · ACA-PANEL · panel·LISTAR).
  *
  * Decisión cerrada del plan: SIN librería de gráficos nueva — stat-cards
  * (`PanelKpiStrip`), `Progress` AntD por carrera y tablas de lectura (casos
@@ -20,7 +20,7 @@ import { TableListView } from '@organisms';
 import { ActionButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { usePanelAcompanamientoPage } from '@application-academico/acompanamiento/panel/hooks/state/usePanelAcompanamientoPage';
-import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import PanelKpiStrip from '@academico/acompanamiento/panel/components/organisms/PanelKpiStrip';
 import PanelRiesgoCarreraSection from '@academico/acompanamiento/panel/components/organisms/PanelRiesgoCarreraSection';
 import { createPanelCasosCriticosColumns } from '@academico/acompanamiento/panel/config/panelCasosCriticosTableColumns';
@@ -40,7 +40,7 @@ const PanelAcompanamientoPage = () => {
 
   const exportarAction = (
     <ActionButton
-      permiso={TUTORIAS_PERMISOS.panel}
+      permiso={ACOMPANAMIENTO_PERMISOS.panel}
       accion="EXPORTAR"
       variant="primary"
       icon={<FilePdfOutlined />}

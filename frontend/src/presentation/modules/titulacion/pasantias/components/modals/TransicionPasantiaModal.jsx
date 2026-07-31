@@ -1,11 +1,11 @@
 /**
- * Modal: transición de estado del trámite de pasantía (TUT · P6,
+ * Modal: transición de estado del trámite de pasantía (TIT · P6,
  * pasantia·APROBAR).
  *
  * El select solo ofrece los estados destino válidos desde el estado actual
  * SEGÚN EL CAMINO (TRANSICIONES_PASANTIA — el backend valida igual): una
  * CONVALIDACION nunca pasa a EN_CURSO/FINALIZADA y una PASANTIA nunca a
- * CONVALIDADA. Patrón `AprobarEtapaModal` (TUT · Titulación).
+ * CONVALIDADA. Patrón `AprobarEtapaModal` (TIT · Titulación).
  */
 
 import { useEffect, useMemo } from 'react';

@@ -1,5 +1,5 @@
 /**
- * Organismo: tab "Integrantes" de la ficha-hub del proyecto (TUT · T12/T13).
+ * Organismo: tab "Integrantes" de la ficha-hub del proyecto (TIT · T12/T13).
  *
  * DetailInfoCard + tabla (patrón `InscripcionPagosSection` de CAP). El botón
  * "Agregar integrante" solo aparece en modalidades grupales (PSP) y está
@@ -10,7 +10,7 @@ import { Empty, Table } from 'antd';
 import { TeamOutlined, UserAddOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { esModalidadGrupal } from '@application-titulacion/utils/titulacionPills';
 import { createIntegrantesTableColumns } from '@titulacion/proyectos-grado/config/integrantesTableColumns';
 
@@ -28,7 +28,7 @@ const ProyectoIntegrantesSection = ({ proyecto, onAgregar, onToggleEstado }) => 
         extra={
           grupal ? (
             <ActionButton
-              permiso={TUTORIAS_PERMISOS.proyecto}
+              permiso={TITULACION_PERMISOS.proyecto}
               accion="EDITAR"
               variant="primary"
               icon={<UserAddOutlined />}

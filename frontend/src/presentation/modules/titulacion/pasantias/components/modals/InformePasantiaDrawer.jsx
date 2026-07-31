@@ -1,5 +1,5 @@
 /**
- * Drawer: informe de un trámite de pasantía (TUT · P12/P13).
+ * Drawer: informe de un trámite de pasantía (TIT · P12/P13).
  *
  * Dos modos según props (mismo formulario, payloads del contrato):
  *  - Emisión (sin `informe`): el TIPO lo fija el camino del trámite

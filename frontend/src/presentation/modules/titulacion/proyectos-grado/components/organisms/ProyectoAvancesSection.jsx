@@ -1,5 +1,5 @@
 /**
- * Organismo: tab "Avances" de la ficha-hub del proyecto (TUT · T18-T21).
+ * Organismo: tab "Avances" de la ficha-hub del proyecto (TIT · T18-T21).
  *
  * Tabla de archivos subidos por los estudiantes. La descarga (avance·DETALLE)
  * y la revisión (bitacora·CREAR → entrada REVISION_AVANCE) van gated en las

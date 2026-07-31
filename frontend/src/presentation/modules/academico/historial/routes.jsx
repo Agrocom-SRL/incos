@@ -14,7 +14,7 @@
  * junto con sus permisos `academico.historial.folio`/`academico.historial.validar`
  * (seed 59): el concepto de folio pasó a `academico.libro` (módulo Libros de
  * registro, `ACA-LIBROS`) y la validación de egreso queda planificada para la
- * Fase 5 (`tutorias.titulo.*`).
+ * Fase 5 (`titulacion.titulo.*`).
  */
 
 import { lazy } from 'react';

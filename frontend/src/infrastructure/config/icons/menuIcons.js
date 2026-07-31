@@ -77,8 +77,8 @@ export const menuIconMap = {
     'CFG': SettingOutlined,
     'SEG': SafetyOutlined,
     'CAP': ScheduleOutlined,
-    // Titulación (label del dominio TUT desde 2026-07-29)
-    'TUT': SafetyCertificateOutlined,
+    // Titulación (rename 2026-07-31 desde TUT; label del dominio desde 2026-07-29)
+    'TIT': SafetyCertificateOutlined,
     'PERFIL': UserOutlined,
 
     // Matrícula (MAT)
@@ -98,6 +98,10 @@ export const menuIconMap = {
     'ACA-TRANSIT': ReloadOutlined,
     'ACA-HIS': HistoryOutlined,
     'ACA-AVANCE': LineChartOutlined,
+    // Acompañamiento pedagógico (reclasificado desde TUT el 2026-07-31)
+    'ACA-ALERTAS': AlertOutlined,
+    'ACA-SESIONES': ScheduleOutlined,
+    'ACA-PANEL': FundOutlined,
 
     // Docentes (DOC)
     'DOC-LIST': UnorderedListOutlined,
@@ -133,10 +137,8 @@ export const menuIconMap = {
     'CAP-PARTICIPANTES': TeamOutlined,
     'CAP-INSCRIPCIONES': SolutionOutlined,
 
-    // Tutorías (TUT)
-    'TUT-TITULACION': FileDoneOutlined,
-    'TUT-PASANTIAS': ShopOutlined,
-    'TUT-ALERTAS': AlertOutlined,
-    'TUT-SESIONES': ScheduleOutlined,
-    'TUT-PANEL': FundOutlined,
+    // Titulación (TIT) — rename 2026-07-31 desde TUT; Acompañamiento se
+    // reclasificó al bloque Académico (ver arriba).
+    'TIT-PROYECTOS': FileDoneOutlined,
+    'TIT-PASANTIAS': ShopOutlined,
 };

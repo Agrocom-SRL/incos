@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: "Mis alumnos en riesgo" — rama docente (TUT · A2).
+ * Hook de pantalla: "Mis alumnos en riesgo" — rama docente (ACA · A2).
  *
  * Rama docente self del connector (SIN provider admin): consume A2 (el
  * backend resuelve el docente por token), filtra por materia en cliente y
@@ -13,7 +13,7 @@ import { useMisAlumnosEnRiesgoApi } from '@application-academico/acompanamiento/
 import { createMisAlumnosEnRiesgoTableColumns } from '@academico/acompanamiento/alertas/config/misAlumnosEnRiesgoTableColumns';
 import {
   ALERTAS_RIESGO_LIST_PATH,
-  TUT_ALERTAS_MENU_KEY,
+  ACA_ALERTAS_MENU_KEY,
   sesionProgramarPath,
 } from '@application-academico/acompanamiento/config/paths';
 
@@ -50,7 +50,7 @@ export const useMisAlumnosEnRiesgoPage = () => {
     (alerta) => {
       navigate(sesionProgramarPath, {
         state: {
-          menuSidebarKey: TUT_ALERTAS_MENU_KEY,
+          menuSidebarKey: ACA_ALERTAS_MENU_KEY,
           returnListPath: pathname || ALERTAS_RIESGO_LIST_PATH,
           alertaPreseleccionada: {
             matriculaMateriaId: alerta.matriculaMateriaId,

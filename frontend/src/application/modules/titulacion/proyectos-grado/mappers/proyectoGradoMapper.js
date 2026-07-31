@@ -1,7 +1,7 @@
 /**
- * Mapper: proyectos de grado (API → DTO de UI, módulo TUT · Titulación).
+ * Mapper: proyectos de grado (API → DTO de UI, módulo TIT · Titulación).
  *
- * El backend entrega camelCase (mappers TUT sobre las vistas 159/160); aquí
+ * El backend entrega camelCase (mappers TIT sobre las vistas 159/160); aquí
  * solo se normaliza defensivamente y se derivan etiquetas de presentación
  * (fechas DD/MM/YYYY, nombre completo APELLIDO_PATERNO APELLIDO_MATERNO
  * NOMBRES vía buildFullName cuando llegan campos sueltos).

@@ -1,5 +1,5 @@
 /**
- * Hook de API: catálogo de aulas para la sesión PRESENCIAL (módulo TUT).
+ * Hook de API: catálogo de aulas para la sesión PRESENCIAL (módulo ACA).
  *
  * REUTILIZA el catálogo read-only `GET /aulas/catalogo` (el mismo picker de
  * Institucional → Oferta y de CAP → Cursos; NO el CRUD de CFG → Recursos).
@@ -23,7 +23,7 @@ const mapAulaOption = (raw) => {
   };
 };
 
-export const useAulasCatalogoTutApi = () => {
+export const useAulasCatalogoAcaApi = () => {
   const [aulas, setAulas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [disponible, setDisponible] = useState(true);

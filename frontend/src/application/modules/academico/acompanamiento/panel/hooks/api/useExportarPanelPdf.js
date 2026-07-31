@@ -1,7 +1,7 @@
 /**
- * Hook de API: exportación del panel de acompañamiento a PDF (módulo TUT · A11).
+ * Hook de API: exportación del panel de acompañamiento a PDF (módulo ACA · A11).
  *
- * Descarga por blob AUTENTICADO (permiso tutorias.acompanamiento.panel ·
+ * Descarga por blob AUTENTICADO (permiso academico.acompanamiento.panel ·
  * EXPORTAR); nunca por URL estática.
  */
 

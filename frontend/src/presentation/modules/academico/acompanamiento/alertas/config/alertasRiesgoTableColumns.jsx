@@ -1,6 +1,6 @@
 /**
  * Columnas del listado institucional de alertas de riesgo pedagógico
- * (módulo TUT · `alertasRiesgo`, vista 156 con grano estudiante×materia).
+ * (módulo ACA · `alertasRiesgo`, vista 156 con grano estudiante×materia).
  *
  * Lenguaje visual del prototipo de listado (incos-ui-system §4): numeración +
  * IdentidadCelda (C.I. + APELLIDOS NOMBRES vía buildFullName en el mapper) +
@@ -12,7 +12,7 @@
 import { BookOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { CarreraDotCell, IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
 import NotaRiesgoText from '@academico/acompanamiento/components/atoms/NotaRiesgoText';
 
@@ -119,7 +119,7 @@ export const createAlertasRiesgoTableColumns = ({ onVerEstudiante }) => [
         record={record}
         onView={() => onVerEstudiante(record)}
         permisos={{
-          ver: { codigo: TUTORIAS_PERMISOS.alerta, accion: 'DETALLE' },
+          ver: { codigo: ACOMPANAMIENTO_PERMISOS.alerta, accion: 'DETALLE' },
         }}
       />
     ),

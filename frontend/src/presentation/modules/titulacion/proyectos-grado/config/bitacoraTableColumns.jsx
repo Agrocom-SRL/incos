@@ -1,5 +1,5 @@
 /**
- * Columnas de la bitácora de tutoría de un proyecto (módulo TUT · T14-T17).
+ * Columnas de la bitácora de tutoría de un proyecto (módulo TIT · T14-T17).
  *
  * Se usa en DOS pantallas (mismo lenguaje visual, acciones distintas):
  *  - Ficha-hub (tutor/admin): editar entrada — bitacora·EDITAR (T16).
@@ -12,7 +12,7 @@ import { Popconfirm, Progress } from 'antd';
 import { CalendarOutlined, CheckOutlined, EditOutlined, FileTextOutlined } from '@ant-design/icons';
 import { ActionButton, StatusPill, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoBitacora,
   formatTipoBitacora,
@@ -48,7 +48,7 @@ const renderConfirmacion = (record, { modoEstudiante, onConfirmar, confirmandoId
       onConfirm={() => onConfirmar(record)}
     >
       <ActionButton
-        permiso={TUTORIAS_PERMISOS.bitacora}
+        permiso={TITULACION_PERMISOS.bitacora}
         accion="LISTAR"
         variant="primary"
         size="small"
@@ -153,7 +153,7 @@ export const createBitacoraTableColumns = ({
                     icon: <EditOutlined />,
                     variant: 'warning',
                     tooltip: 'Editar entrada',
-                    permiso: TUTORIAS_PERMISOS.bitacora,
+                    permiso: TITULACION_PERMISOS.bitacora,
                     accion: 'EDITAR',
                     onClick: () => onEditar(record),
                   },

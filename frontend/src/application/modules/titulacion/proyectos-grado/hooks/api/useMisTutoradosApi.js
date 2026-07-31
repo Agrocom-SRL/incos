@@ -1,5 +1,5 @@
 /**
- * Hook de API: bandeja del docente tutor autenticado (módulo TUT · T3).
+ * Hook de API: bandeja del docente tutor autenticado (módulo TIT · T3).
  *
  * El backend resuelve el docente por token (resolveDocenteIdForUsuario);
  * NUNCA se envía docenteId desde el cliente. `dataKey` ('misTutorados')
@@ -12,7 +12,7 @@ import proyectoGradoRepository from '@implementations/ProyectoGradoRepository';
 import { mapProyectosGradoList } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato T3). */
-export const MIS_TUTORADOS_DATA_KEY = 'misTutorados';
+export const MIS_TITORADOS_DATA_KEY = 'misTutorados';
 
 export const useMisTutoradosApi = () => {
   const [proyectos, setProyectos] = useState([]);
@@ -24,7 +24,7 @@ export const useMisTutoradosApi = () => {
     setError(null);
     const result = await proyectoGradoRepository.obtenerMisTutorados();
     if (result?.success) {
-      const raw = result.data?.[MIS_TUTORADOS_DATA_KEY] ?? result.data;
+      const raw = result.data?.[MIS_TITORADOS_DATA_KEY] ?? result.data;
       setProyectos(mapProyectosGradoList(raw));
     } else {
       setProyectos([]);

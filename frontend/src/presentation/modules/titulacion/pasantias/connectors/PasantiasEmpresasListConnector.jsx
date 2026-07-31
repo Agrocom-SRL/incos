@@ -1,6 +1,6 @@
 /**
- * Conector: catálogo de empresas de pasantía (TUT) — provider + página.
- * Punto de entrada lazy de la ruta /tutorias/pasantias/empresas.
+ * Conector: catálogo de empresas de pasantía (TIT) — provider + página.
+ * Punto de entrada lazy de la ruta /titulacion/pasantias/empresas.
  */
 
 import { PasantiasEmpresasListProvider } from '@application-titulacion/pasantias/providers/PasantiasEmpresasListProvider';

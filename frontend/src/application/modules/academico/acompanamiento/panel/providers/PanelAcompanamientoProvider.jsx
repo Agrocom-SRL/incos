@@ -1,5 +1,5 @@
 /**
- * Provider: panel de acompañamiento (TUT · Acompañamiento).
+ * Provider: panel de acompañamiento (ACA · Acompañamiento).
  *
  * Provider DELGADO: ensambla la lectura agregada (A10, gestión vigente por
  * defecto) y la exportación a PDF (A11). La orquestación (feedback del

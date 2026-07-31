@@ -1,5 +1,5 @@
 /**
- * Hook de pantalla: listado de proyectos de grado (TUT · LISTAR).
+ * Hook de pantalla: listado de proyectos de grado (TIT · LISTAR).
  *
  * Espejo de `useCursosCapacitacionListPage` (CAP): consume el contexto del
  * provider, aplica los filtros carrera/modalidad/estado en cliente (modo
@@ -14,7 +14,7 @@ import { createProyectosGradoTableColumns } from '@titulacion/proyectos-grado/co
 import { ESTADOS_PROYECTO_GRADO, formatEstadoProyecto } from '@application-titulacion/utils/titulacionPills';
 import {
   PROYECTOS_GRADO_LIST_PATH,
-  TUT_TITULACION_MENU_KEY,
+  TIT_PROYECTOS_MENU_KEY,
   proyectoGradoRegistrarPath,
 } from '@application-titulacion/config/paths';
 
@@ -74,7 +74,7 @@ export const useProyectosGradoListPage = () => {
 
   const listNavState = useMemo(
     () => ({
-      menuSidebarKey: TUT_TITULACION_MENU_KEY,
+      menuSidebarKey: TIT_PROYECTOS_MENU_KEY,
       returnListPath: pathname || PROYECTOS_GRADO_LIST_PATH,
     }),
     [pathname],
