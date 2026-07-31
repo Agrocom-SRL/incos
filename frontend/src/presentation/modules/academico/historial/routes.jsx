@@ -6,13 +6,18 @@
  *   historial (rama en el connector). Etiqueta de menú "Mi historial" para ESTUDIANTE.
  * - Detalle (DETALLE): transcript FORM-SIE-ITT-04 del estudiante `:id`; incluye
  *   Exportar (EXPORTAR). Sin ítem de menú; cuelga de ACA-HIS en breadcrumbs.
- * - Folio / Validar: fuera de alcance (UnderConstruction).
  *
- * Permiso `academico.historial.academico` (seed 58, en BD). No se tocan permisos.
+ * Permiso `academico.historial.academico` (seed 59, en BD). No se tocan permisos.
+ *
+ * Nota (2026-07-31, Fase 4 Libros de registro): las rutas `ACA-HIS-FOLIO` y
+ * `ACA-HIS-VALIDAR` (folio del egresado / validación de egreso) se retiraron
+ * junto con sus permisos `academico.historial.folio`/`academico.historial.validar`
+ * (seed 59): el concepto de folio pasó a `academico.libro` (módulo Libros de
+ * registro, `ACA-LIBROS`) y la validación de egreso queda planificada para la
+ * Fase 5 (`tutorias.titulo.*`).
  */
 
 import { lazy } from 'react';
-import { UnderConstruction } from '@components/pages';
 
 const HistorialSelectorConnector = lazy(
   () => import('./connectors/HistorialSelectorConnector.jsx'),
@@ -47,24 +52,6 @@ export const historialRoutes = [
       order: 6,
       labelByRole: { ESTUDIANTE: 'Mi historial' },
     },
-  },
-  {
-    path: '/academico/historial/folio',
-    element: <UnderConstruction />,
-    key: 'ACA-HIS-FOLIO',
-    permiso: 'academico.historial.folio',
-    accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'ACA-HIS',
-  },
-  {
-    path: '/academico/historial/validar',
-    element: <UnderConstruction />,
-    key: 'ACA-HIS-VALIDAR',
-    permiso: 'academico.historial.validar',
-    accion: 'APROBAR',
-    menu: null,
-    breadcrumbParent: 'ACA-HIS',
   },
 ];
 

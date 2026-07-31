@@ -39,6 +39,17 @@ import {
   GetDesercionUseCase,
 } from '@useCases/academico/avance';
 import {
+  ListarLibrosUseCase,
+  AbrirLibroUseCase,
+  ObtenerLibroPorIdUseCase,
+  EditarLibroUseCase,
+  ListarParalelosLibroUseCase,
+  GenerarFoliosParaleloUseCase,
+  ObtenerFolioPorIdUseCase,
+  CambiarEstadoFolioUseCase,
+  EditarFolioEstudianteUseCase,
+} from '@useCases/academico/libros';
+import {
   ListCoordinacionAsistenciaDocentesUseCase,
   ListMisCursosAsistenciaUseCase,
   GetCalendarioAsistenciaUseCase,
@@ -64,6 +75,7 @@ import AsistenciaRepository from '@infrastructure/repositories/AsistenciaReposit
 import AvanceAcademicoRepository from '@infrastructure/repositories/AvanceAcademicoRepository';
 import DesercionRepository from '@infrastructure/repositories/DesercionRepository';
 import TipoEvaluacionRepository from '@infrastructure/repositories/TipoEvaluacionRepository';
+import LibroRegistroRepository from '@infrastructure/repositories/LibroRegistroRepository';
 
 /**
  * Registra los Use Cases del módulo académico
@@ -226,6 +238,43 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerPoliticaCatalogo = () => {
     return new GetPoliticaCatalogoUseCase(CalificacionRepository);
+  };
+
+  // Libros de registro del centralizador (ítem ACA-LIBROS; permiso academico.libro)
+  factory.listarLibros = () => {
+    return new ListarLibrosUseCase(LibroRegistroRepository);
+  };
+
+  factory.abrirLibro = () => {
+    return new AbrirLibroUseCase(LibroRegistroRepository);
+  };
+
+  factory.obtenerLibroPorId = () => {
+    return new ObtenerLibroPorIdUseCase(LibroRegistroRepository);
+  };
+
+  factory.editarLibro = () => {
+    return new EditarLibroUseCase(LibroRegistroRepository);
+  };
+
+  factory.listarParalelosLibro = () => {
+    return new ListarParalelosLibroUseCase(LibroRegistroRepository);
+  };
+
+  factory.generarFoliosParalelo = () => {
+    return new GenerarFoliosParaleloUseCase(LibroRegistroRepository);
+  };
+
+  factory.obtenerFolioPorId = () => {
+    return new ObtenerFolioPorIdUseCase(LibroRegistroRepository);
+  };
+
+  factory.cambiarEstadoFolio = () => {
+    return new CambiarEstadoFolioUseCase(LibroRegistroRepository);
+  };
+
+  factory.editarFolioEstudiante = () => {
+    return new EditarFolioEstudianteUseCase(LibroRegistroRepository);
   };
 
   return factory;

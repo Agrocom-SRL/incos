@@ -22,6 +22,7 @@ export { IBaseRepository } from './IBaseRepository';
 // MÓDULO: DOCENTES
 // ============================================
 export { IDocenteRepository } from './IDocenteRepository';
+export { IFichaSeguimientoRepository } from './IFichaSeguimientoRepository';
 
 // ============================================
 // MÓDULO: ESTUDIANTES

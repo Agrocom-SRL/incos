@@ -152,7 +152,25 @@
 
 ---
 
-## ITERACIÓN 2 — frontend + portal + verificación completa
+## ITERACIÓN 2 — frontend + portal + verificación completa ✅ HECHA (2026-07-31)
+
+> **Estado:** D1-D5 completos (endpoints, capa `application/modules/docentes/supervision/`
+> espejo de sesiones, capa `presentation/modules/docentes/supervision/` con
+> List/Form/Detail + `FichaSeguimientoFichaView` compartida, rutas
+> `/docentes/supervision*` insertadas ANTES de `/docentes/:id`, tab
+> "Supervisión" lazy en `DocentesDetail.jsx`). F1: 3 fichas de prueba creadas
+> vía API con un usuario DIR_ACADEMICO (`dir_academico_qa`), 2 de ellas
+> vinculadas al docente demo (`docente`/`12345678`, docente_id=1 Camacho
+> Ybeth). G: build + lint limpios, `dataKey`==`dataFieldName` verificado contra
+> la API real (ambos formatos, aplanado y anidado), RBAC verificado en 3 capas
+> (permiso, `PrivateRoute`+menú, backend 403), PDF exportado y comparado contra
+> la foto real. **Hallazgo a escalar:** `GET /mis-fichas` reutiliza la vista
+> 174 (listado) y NO trae los 9 TEXT de observaciones ni los 4 SI/NO de
+> documentación (solo existen en la entidad raíz, expuesta por `GET /:id`
+> DETALLE, sin permiso para DOCENTE) — la tab del portal degrada mostrando
+> solo cabecera + cantidad de estudiantes; el docente no puede leer el
+> feedback textual de su propia supervisión. Requiere decisión de producto
+> (¿nuevo permiso de solo lectura para DOCENTE, o ampliar `/mis-fichas`?).
 
 ### Bloque D — Frontend (React + AntD 6, módulo DOC + portal docente)
 

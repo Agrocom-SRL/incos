@@ -17,7 +17,16 @@ import {
   DocentesCreateConnector,
   DocentesEditConnector,
   MiHorarioConnector,
+  FichasSeguimientoListConnector,
+  FichaSeguimientoFormCreateConnector,
+  FichaSeguimientoFormEditConnector,
+  FichaSeguimientoDetailConnector,
 } from '@docentes/connectors';
+import {
+  SUPERVISION_LIST_PATH,
+  fichaSeguimientoRegistrarPath,
+  SUPERVISION_FICHA_PERMISO,
+} from '@application-docentes/supervision/config/paths';
 
 const DocenteAsignacionesLegacyRedirect = () => {
   const { id } = useParams();
@@ -94,6 +103,48 @@ export const docentesRoutes = [
     permiso: 'docentes.ver',
     accion: 'LISTAR',
     menu: null,
+  },
+  {
+    // Supervisión docente: rutas literales ANTES de `/docentes/:id` (crítico,
+    // si no `/docentes/supervision` matchea como si fuera un `:id`).
+    path: fichaSeguimientoRegistrarPath,
+    element: <FichaSeguimientoFormCreateConnector />,
+    key: 'DOC-SUPERVISION-REGISTRAR',
+    permiso: SUPERVISION_FICHA_PERMISO,
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'DOC-SUPERVISION',
+  },
+  {
+    path: `${SUPERVISION_LIST_PATH}/:id/editar`,
+    element: <FichaSeguimientoFormEditConnector />,
+    key: 'DOC-SUPERVISION-EDITAR',
+    permiso: SUPERVISION_FICHA_PERMISO,
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'DOC-SUPERVISION',
+  },
+  {
+    path: `${SUPERVISION_LIST_PATH}/:id`,
+    element: <FichaSeguimientoDetailConnector />,
+    key: 'DOC-SUPERVISION-DETALLE',
+    permiso: SUPERVISION_FICHA_PERMISO,
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'DOC-SUPERVISION',
+  },
+  {
+    path: SUPERVISION_LIST_PATH,
+    element: <FichasSeguimientoListConnector />,
+    key: 'DOC-SUPERVISION',
+    permiso: SUPERVISION_FICHA_PERMISO,
+    accion: 'LISTAR',
+    menu: {
+      label: 'Supervisión docente',
+      module: 'DOC',
+      parent: 'DOC',
+      order: 3,
+    },
   },
   {
     path: '/docentes/:id/asignaciones',

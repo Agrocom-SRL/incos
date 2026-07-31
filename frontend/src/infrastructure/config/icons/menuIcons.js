@@ -57,6 +57,8 @@ import {
     AlertOutlined,
     FundOutlined,
     ShopOutlined,
+    ProfileOutlined,
+    AuditOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -90,6 +92,7 @@ export const menuIconMap = {
     'ACA-ASI': SolutionOutlined,
     'ACA-CAL': CheckCircleOutlined,
     'ACA-CENTRALIZADOR': TableOutlined,
+    'ACA-LIBROS': ProfileOutlined,
     'ACA-NIV': SyncOutlined,
     'ACA-TRASPASOS': TransactionOutlined,
     'ACA-TRANSIT': ReloadOutlined,
@@ -99,6 +102,7 @@ export const menuIconMap = {
     // Docentes (DOC)
     'DOC-LIST': UnorderedListOutlined,
     'DOC-LIC': FileTextOutlined,
+    'DOC-SUPERVISION': AuditOutlined,
 
     // Finanzas (FIN)
     'FIN-PAG': CreditCardOutlined,

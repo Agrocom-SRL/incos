@@ -115,6 +115,20 @@ export const ASIGNACIONES_DOCENTES_ENDPOINTS = {
 };
 
 // ============================================
+// MÓDULO: SUPERVISIÓN DOCENTE (DOC · fichas de seguimiento en clase)
+// ============================================
+export const SUPERVISION_DOCENTE_ENDPOINTS = {
+  /** GET — listado de fichas (S1, vista 174, `fichasSeguimiento`) / POST — registrar (S3, `fichaSeguimiento`) */
+  BASE: `${API_BASE}/supervision-docente`,
+  /** GET — fichas de los cursos del docente AUTENTICADO (S5, `fichasSeguimiento`, anti-IDOR) */
+  MIS_FICHAS: `${API_BASE}/supervision-docente/mis-fichas`,
+  /** GET — ficha completa (S2) / PUT — actualizar (S4), ambas `fichaSeguimiento` */
+  BY_ID: (id) => `${API_BASE}/supervision-docente/${id}`,
+  /** GET — descarga binaria del PDF de la ficha (S6) */
+  PDF: (id) => `${API_BASE}/supervision-docente/${id}/pdf`,
+};
+
+// ============================================
 // MÓDULO: ESTUDIANTES
 // ============================================
 export const ESTUDIANTES_ENDPOINTS = {
@@ -418,6 +432,29 @@ export const CALIFICACIONES_ENDPOINTS = {
   MI_BOLETIN: `${API_BASE}/calificaciones/mi-boletin`,
   /** GET — Boletín del estudiante autenticado en PDF (descarga binaria). */
   MI_BOLETIN_PDF: `${API_BASE}/calificaciones/mi-boletin/pdf`,
+};
+
+/**
+ * Libros de registro del centralizador (Académico · schema 25 · /academico/libros).
+ * Permiso `academico.libro` (LISTAR/DETALLE/CREAR/EDITAR/APROBAR/EXPORTAR).
+ * Un LIBRO es por carrera+gestión; un FOLIO es una página del centralizador de
+ * un paralelo (hasta 10 estudiantes). Un folio no se elimina: se ANULA.
+ */
+export const LIBROS_ENDPOINTS = {
+  ...createCRUDEndpoints('/libros'),
+  /** GET — paralelos candidatos del generador de folios de este libro. */
+  PARALELOS: (id) => `${API_BASE}/libros/${id}/paralelos`,
+  /** GET (listado) / POST (generar; body paraleloGestionId) — folios del libro. */
+  FOLIOS: (id) => `${API_BASE}/libros/${id}/folios`,
+  /** GET — detalle del folio (nómina + celdas de nota final por materia). */
+  FOLIO_BY_ID: (id, folioId) => `${API_BASE}/libros/${id}/folios/${folioId}`,
+  /** PATCH — transición de estado (BORRADOR→IMPRESO→FIRMADO / ANULADO). */
+  FOLIO_ESTADO: (id, folioId) => `${API_BASE}/libros/${id}/folios/${folioId}/estado`,
+  /** PATCH — fila de un estudiante del folio (ESTADO/OBSERVACIONES; solo si no FIRMADO). */
+  FOLIO_ESTUDIANTE: (id, folioId, filaId) =>
+    `${API_BASE}/libros/${id}/folios/${folioId}/estudiantes/${filaId}`,
+  /** GET — descarga el libro completo en Excel (binario). */
+  EXPORT: (id) => `${API_BASE}/libros/${id}/export`,
 };
 
 // ============================================
