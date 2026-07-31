@@ -8,7 +8,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import alertaRiesgoRepository from '@implementations/AlertaRiesgoRepository';
-import { mapAlertaEstudiante } from '@application-tutorias/acompanamiento/alertas/mappers/alertaRiesgoMapper';
+import { mapAlertaEstudiante } from '@application-academico/acompanamiento/alertas/mappers/alertaRiesgoMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato A3). */
 export const ALERTA_ESTUDIANTE_DATA_KEY = 'alertaEstudiante';

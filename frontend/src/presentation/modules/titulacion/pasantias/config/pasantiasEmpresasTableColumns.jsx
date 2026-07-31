@@ -12,8 +12,8 @@ import { EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import { formatTipoSocietario } from '@application-tutorias/utils/pasantiasPills';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { formatTipoSocietario } from '@application-titulacion/utils/pasantiasPills';
 
 export const createPasantiasEmpresasTableColumns = ({ onEditar, onToggleEstado }) => {
   return [

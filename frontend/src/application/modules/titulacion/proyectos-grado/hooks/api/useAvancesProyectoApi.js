@@ -12,7 +12,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import proyectoGradoRepository from '@implementations/ProyectoGradoRepository';
 import { downloadBlob } from '@application/utils';
-import { mapAvancesList } from '@application-tutorias/titulacion/mappers/proyectoGradoMapper';
+import { mapAvancesList } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 
 /** Claves de datos = dataFieldName del backend (contrato T18/T19-T20). */
 export const AVANCES_DATA_KEY = 'avances';

@@ -9,7 +9,7 @@
  */
 
 import { useMemo } from 'react';
-import { useGetMiPasantia } from '@application-tutorias/pasantias/hooks/api/useGetMiPasantia';
+import { useGetMiPasantia } from '@application-titulacion/pasantias/hooks/api/useGetMiPasantia';
 
 export const useMiPasantiaPage = () => {
   const { pasantia, informes, seguimientos, sinPasantia, loading, error, refetch } =

@@ -10,15 +10,15 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { usePasantiasEmpresasListContext } from '@application-tutorias/pasantias/hooks/context/usePasantiasEmpresasListContext';
-import { createPasantiasEmpresasTableColumns } from '@tutorias/pasantias/config/pasantiasEmpresasTableColumns';
+import { usePasantiasEmpresasListContext } from '@application-titulacion/pasantias/hooks/context/usePasantiasEmpresasListContext';
+import { createPasantiasEmpresasTableColumns } from '@titulacion/pasantias/config/pasantiasEmpresasTableColumns';
 import {
   PASANTIAS_EMPRESAS_PATH,
   PASANTIAS_LIST_PATH,
   TUT_PASANTIAS_MENU_KEY,
   pasantiaEmpresaEditarPath,
   pasantiaEmpresaRegistrarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 export const usePasantiasEmpresasListPage = () => {
   const navigate = useNavigate();

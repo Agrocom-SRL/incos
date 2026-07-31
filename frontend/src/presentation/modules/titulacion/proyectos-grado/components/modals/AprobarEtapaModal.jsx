@@ -10,7 +10,7 @@ import { useEffect, useMemo } from 'react';
 import { Empty, Form, Input, Modal, Select } from 'antd';
 import {
   formatEstadoProyecto,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-titulacion/utils/titulacionPills';
 
 const AprobarEtapaModal = ({
   open,

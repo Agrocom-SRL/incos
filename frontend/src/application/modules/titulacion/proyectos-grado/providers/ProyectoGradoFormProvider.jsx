@@ -9,12 +9,12 @@
  */
 
 import { useEffect, useMemo } from 'react';
-import { useGetProyectoGrado } from '@application-tutorias/titulacion/hooks/api/useGetProyectoGrado';
-import { useProyectoGradoMutations } from '@application-tutorias/titulacion/hooks/api/useProyectoGradoMutations';
-import { useModalidadesGradoApi } from '@application-tutorias/titulacion/hooks/api/useModalidadesGradoApi';
-import { useCarrerasCatalogoTutApi } from '@application-tutorias/titulacion/hooks/api/useCarrerasCatalogoTutApi';
-import { useDocentesCatalogoTutApi } from '@application-tutorias/titulacion/hooks/api/useDocentesCatalogoTutApi';
-import { ProyectoGradoFormContext } from '@application-tutorias/titulacion/context/ProyectoGradoFormContext';
+import { useGetProyectoGrado } from '@application-titulacion/proyectos-grado/hooks/api/useGetProyectoGrado';
+import { useProyectoGradoMutations } from '@application-titulacion/proyectos-grado/hooks/api/useProyectoGradoMutations';
+import { useModalidadesGradoApi } from '@application-titulacion/proyectos-grado/hooks/api/useModalidadesGradoApi';
+import { useCarrerasCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useCarrerasCatalogoTutApi';
+import { useDocentesCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTutApi';
+import { ProyectoGradoFormContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoFormContext';
 
 export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
   const { proyecto, loading: loadingProyecto, error: errorProyecto, cargar } = useGetProyectoGrado();

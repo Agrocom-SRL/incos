@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { PasantiasListContext } from '@application-tutorias/pasantias/context/PasantiasListContext';
+import { PasantiasListContext } from '@application-titulacion/pasantias/context/PasantiasListContext';
 
 export const usePasantiasListContext = () => {
   const context = useContext(PasantiasListContext);

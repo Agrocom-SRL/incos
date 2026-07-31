@@ -16,7 +16,7 @@ import {
   formatTipoPasantia,
   getEstadoPasantiaPillClass,
   getTipoPasantiaPillClass,
-} from '@application-tutorias/utils/pasantiasPills';
+} from '@application-titulacion/utils/pasantiasPills';
 
 const PasantiaFichaHeader = ({ pasantia, puedeEditar = false, onEditar }) => {
   // El camino ya se muestra como pill en metaExtra; el subtítulo lleva el contexto académico.

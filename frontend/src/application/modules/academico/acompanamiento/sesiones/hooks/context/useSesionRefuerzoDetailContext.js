@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { SesionRefuerzoDetailContext } from '@application-tutorias/acompanamiento/sesiones/context/SesionRefuerzoDetailContext';
+import { SesionRefuerzoDetailContext } from '@application-academico/acompanamiento/sesiones/context/SesionRefuerzoDetailContext';
 
 export const useSesionRefuerzoDetailContext = () => {
   const context = useContext(SesionRefuerzoDetailContext);

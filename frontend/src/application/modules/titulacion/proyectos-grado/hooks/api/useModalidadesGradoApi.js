@@ -9,7 +9,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import proyectoGradoRepository from '@implementations/ProyectoGradoRepository';
-import { mapModalidadesGradoList } from '@application-tutorias/titulacion/mappers/proyectoGradoMapper';
+import { mapModalidadesGradoList } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato T2). */
 export const MODALIDADES_GRADO_DATA_KEY = 'modalidadesGrado';

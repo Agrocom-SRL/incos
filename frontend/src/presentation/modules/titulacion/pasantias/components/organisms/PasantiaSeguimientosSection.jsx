@@ -12,8 +12,8 @@ import { Alert, Empty, Table } from 'antd';
 import { FileAddOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import { createSeguimientosPasantiaTableColumns } from '@tutorias/pasantias/config/seguimientosPasantiaTableColumns';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { createSeguimientosPasantiaTableColumns } from '@titulacion/pasantias/config/seguimientosPasantiaTableColumns';
 
 const PasantiaSeguimientosSection = ({
   seguimientos,

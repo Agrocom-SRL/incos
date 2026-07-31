@@ -8,8 +8,8 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { useAlertasRiesgoListContext } from '@application-tutorias/acompanamiento/alertas/hooks/context/useAlertasRiesgoListContext';
-import { createAlertasRiesgoTableColumns } from '@tutorias/acompanamiento/alertas/config/alertasRiesgoTableColumns';
+import { useAlertasRiesgoListContext } from '@application-academico/acompanamiento/alertas/hooks/context/useAlertasRiesgoListContext';
+import { createAlertasRiesgoTableColumns } from '@academico/acompanamiento/alertas/config/alertasRiesgoTableColumns';
 
 export const useAlertasRiesgoListPage = () => {
   const {

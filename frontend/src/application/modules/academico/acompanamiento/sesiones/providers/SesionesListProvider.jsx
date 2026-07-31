@@ -6,10 +6,10 @@
  */
 
 import { useMemo } from 'react';
-import { useSesionesRefuerzoApi } from '@application-tutorias/acompanamiento/sesiones/hooks/api/useSesionesRefuerzoApi';
-import { useSesionRefuerzoMutations } from '@application-tutorias/acompanamiento/sesiones/hooks/api/useSesionRefuerzoMutations';
+import { useSesionesRefuerzoApi } from '@application-academico/acompanamiento/sesiones/hooks/api/useSesionesRefuerzoApi';
+import { useSesionRefuerzoMutations } from '@application-academico/acompanamiento/sesiones/hooks/api/useSesionRefuerzoMutations';
 import { useServerPaginatedList } from '@application/utils';
-import { SesionesListContext } from '@application-tutorias/acompanamiento/sesiones/context/SesionesListContext';
+import { SesionesListContext } from '@application-academico/acompanamiento/sesiones/context/SesionesListContext';
 
 export const SesionesListProvider = ({ children }) => {
   const { fetch: fetchSesiones } = useSesionesRefuerzoApi();

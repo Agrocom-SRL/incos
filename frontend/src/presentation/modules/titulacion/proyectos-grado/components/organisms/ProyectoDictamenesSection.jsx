@@ -9,7 +9,7 @@
 import { Alert, Empty, Table } from 'antd';
 import { AuditOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
-import { createDictamenesTableColumns } from '@tutorias/titulacion/config/dictamenesTableColumns';
+import { createDictamenesTableColumns } from '@titulacion/proyectos-grado/config/dictamenesTableColumns';
 
 const ProyectoDictamenesSection = ({ dictamenes, loading, error, descargandoId, onDescargar }) => {
   const columns = createDictamenesTableColumns({ onDescargar, descargandoId });

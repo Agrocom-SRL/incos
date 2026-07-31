@@ -9,14 +9,14 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useProyectosGradoListContext } from '@application-tutorias/titulacion/hooks/context/useProyectosGradoListContext';
-import { createProyectosGradoTableColumns } from '@tutorias/titulacion/config/proyectosGradoTableColumns';
-import { ESTADOS_PROYECTO_GRADO, formatEstadoProyecto } from '@application-tutorias/utils/tutoriasPills';
+import { useProyectosGradoListContext } from '@application-titulacion/proyectos-grado/hooks/context/useProyectosGradoListContext';
+import { createProyectosGradoTableColumns } from '@titulacion/proyectos-grado/config/proyectosGradoTableColumns';
+import { ESTADOS_PROYECTO_GRADO, formatEstadoProyecto } from '@application-titulacion/utils/titulacionPills';
 import {
   PROYECTOS_GRADO_LIST_PATH,
   TUT_TITULACION_MENU_KEY,
   proyectoGradoRegistrarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 export const useProyectosGradoListPage = () => {
   const navigate = useNavigate();

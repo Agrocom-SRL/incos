@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { PasantiaFormContext } from '@application-tutorias/pasantias/context/PasantiaFormContext';
+import { PasantiaFormContext } from '@application-titulacion/pasantias/context/PasantiaFormContext';
 
 export const usePasantiaFormContext = () => {
   const context = useContext(PasantiaFormContext);

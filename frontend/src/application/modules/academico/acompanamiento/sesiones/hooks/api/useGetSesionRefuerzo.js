@@ -7,7 +7,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import sesionRefuerzoRepository from '@implementations/SesionRefuerzoRepository';
-import { mapSesionRefuerzoDetail } from '@application-tutorias/acompanamiento/sesiones/mappers/sesionRefuerzoMapper';
+import { mapSesionRefuerzoDetail } from '@application-academico/acompanamiento/sesiones/mappers/sesionRefuerzoMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato A5-A8). */
 export const SESION_REFUERZO_DATA_KEY = 'sesionRefuerzo';

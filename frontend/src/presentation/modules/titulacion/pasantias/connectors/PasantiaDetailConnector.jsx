@@ -4,8 +4,8 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { PasantiaDetailProvider } from '@application-tutorias/pasantias/providers/PasantiaDetailProvider';
-import PasantiaDetail from '@tutorias/pasantias/pages/PasantiaDetail';
+import { PasantiaDetailProvider } from '@application-titulacion/pasantias/providers/PasantiaDetailProvider';
+import PasantiaDetail from '@titulacion/pasantias/pages/PasantiaDetail';
 
 const PasantiaDetailConnector = () => {
   const { id } = useParams();

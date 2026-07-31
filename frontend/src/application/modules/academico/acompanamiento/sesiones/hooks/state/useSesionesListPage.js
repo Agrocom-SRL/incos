@@ -7,14 +7,14 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSesionesListContext } from '@application-tutorias/acompanamiento/sesiones/hooks/context/useSesionesListContext';
-import { createSesionesTableColumns } from '@tutorias/acompanamiento/sesiones/config/sesionesTableColumns';
-import { ESTADOS_SESION, formatEstadoSesion } from '@application-tutorias/utils/tutoriasPills';
+import { useSesionesListContext } from '@application-academico/acompanamiento/sesiones/hooks/context/useSesionesListContext';
+import { createSesionesTableColumns } from '@academico/acompanamiento/sesiones/config/sesionesTableColumns';
+import { ESTADOS_SESION, formatEstadoSesion } from '@application-academico/acompanamiento/utils/acompanamientoPills';
 import {
   SESIONES_LIST_PATH,
   TUT_SESIONES_MENU_KEY,
   sesionProgramarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-academico/acompanamiento/config/paths';
 
 export const useSesionesListPage = () => {
   const navigate = useNavigate();

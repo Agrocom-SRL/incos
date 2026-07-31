@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import pasantiaRepository from '@implementations/PasantiaRepository';
-import { mapEmpresasList } from '@application-tutorias/pasantias/mappers/pasantiaMapper';
+import { mapEmpresasList } from '@application-titulacion/pasantias/mappers/pasantiaMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato P7). */
 export const PASANTIAS_EMPRESAS_DATA_KEY = 'pasantiasEmpresas';

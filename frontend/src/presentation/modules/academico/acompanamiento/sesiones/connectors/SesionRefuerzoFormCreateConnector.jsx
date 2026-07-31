@@ -4,8 +4,8 @@
  * (/tutorias/acompanamiento/sesiones/programar).
  */
 
-import { SesionRefuerzoFormProvider } from '@application-tutorias/acompanamiento/sesiones/providers/SesionRefuerzoFormProvider';
-import SesionRefuerzoFormPage from '@tutorias/acompanamiento/sesiones/pages/SesionRefuerzoFormPage';
+import { SesionRefuerzoFormProvider } from '@application-academico/acompanamiento/sesiones/providers/SesionRefuerzoFormProvider';
+import SesionRefuerzoFormPage from '@academico/acompanamiento/sesiones/pages/SesionRefuerzoFormPage';
 
 const SesionRefuerzoFormCreateConnector = () => (
   <SesionRefuerzoFormProvider>

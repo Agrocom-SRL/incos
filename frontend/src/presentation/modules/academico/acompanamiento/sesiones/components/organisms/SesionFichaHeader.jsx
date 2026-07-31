@@ -15,7 +15,7 @@ import { StatusPill } from '@atoms';
 import {
   formatEstadoSesion,
   getEstadoSesionPillClass,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-academico/acompanamiento/utils/acompanamientoPills';
 
 const SesionFichaHeader = ({ sesion, puedeEditar = false, onEditar }) => {
   const subtitleParts = [sesion.cursoLabel, sesion.docenteNombre].filter(Boolean);

@@ -10,7 +10,7 @@
 
 import dayjs from 'dayjs';
 import { buildFullName } from '@application/utils/formatters';
-import { HORAS_PASANTIA_MIN } from '@application-tutorias/utils/pasantiasPills';
+import { HORAS_PASANTIA_MIN } from '@application-titulacion/utils/pasantiasPills';
 
 const toNumber = (value, fallback = 0) => {
   const n = Number(value);

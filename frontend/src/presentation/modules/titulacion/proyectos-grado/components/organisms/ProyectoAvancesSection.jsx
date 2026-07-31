@@ -9,7 +9,7 @@
 import { Alert, Empty, Table } from 'antd';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
-import { createAvancesTableColumns } from '@tutorias/titulacion/config/avancesTableColumns';
+import { createAvancesTableColumns } from '@titulacion/proyectos-grado/config/avancesTableColumns';
 
 const ProyectoAvancesSection = ({
   avances,

@@ -8,7 +8,7 @@
 import { useEffect } from 'react';
 import { Form, Input, Modal, Upload, Typography } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
-import { AVANCE_ACCEPT } from '@application-tutorias/titulacion/hooks/state/useMiProyectoGradoPage';
+import { AVANCE_ACCEPT } from '@application-titulacion/proyectos-grado/hooks/state/useMiProyectoGradoPage';
 
 const { Text } = Typography;
 

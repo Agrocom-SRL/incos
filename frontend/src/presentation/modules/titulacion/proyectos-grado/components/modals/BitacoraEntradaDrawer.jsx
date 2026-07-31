@@ -19,7 +19,7 @@ import {
   ESTADOS_BITACORA,
   formatEstadoAvance,
   formatEstadoBitacora,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-titulacion/utils/titulacionPills';
 
 const { Text } = Typography;
 

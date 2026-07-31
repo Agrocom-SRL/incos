@@ -10,7 +10,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { Empty, Form, Input, Modal, Select } from 'antd';
-import { formatEstadoPasantia } from '@application-tutorias/utils/pasantiasPills';
+import { formatEstadoPasantia } from '@application-titulacion/utils/pasantiasPills';
 
 const TransicionPasantiaModal = ({
   open,

@@ -10,13 +10,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { useSesionRefuerzoDetailContext } from '@application-tutorias/acompanamiento/sesiones/hooks/context/useSesionRefuerzoDetailContext';
-import { mapFormValuesToSesionPayload } from '@application-tutorias/acompanamiento/sesiones/mappers/sesionRefuerzoMapper';
+import { useSesionRefuerzoDetailContext } from '@application-academico/acompanamiento/sesiones/hooks/context/useSesionRefuerzoDetailContext';
+import { mapFormValuesToSesionPayload } from '@application-academico/acompanamiento/sesiones/mappers/sesionRefuerzoMapper';
 import {
   SESIONES_LIST_PATH,
   TUT_SESIONES_MENU_KEY,
   sesionEditarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-academico/acompanamiento/config/paths';
 
 export const useSesionRefuerzoDetailPage = () => {
   const navigate = useNavigate();

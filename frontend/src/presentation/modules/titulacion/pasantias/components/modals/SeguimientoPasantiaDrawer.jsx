@@ -14,7 +14,7 @@ import { useEffect } from 'react';
 import dayjs from 'dayjs';
 import { Button, DatePicker, Drawer, Flex, Form, Input, Select, Switch, Typography } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
-import { NIVEL_DESEMPENO_OPTIONS } from '@application-tutorias/utils/pasantiasPills';
+import { NIVEL_DESEMPENO_OPTIONS } from '@application-titulacion/utils/pasantiasPills';
 
 const { Text } = Typography;
 

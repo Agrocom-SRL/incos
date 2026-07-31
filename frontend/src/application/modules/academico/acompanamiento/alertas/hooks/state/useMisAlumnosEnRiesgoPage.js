@@ -9,13 +9,13 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useMisAlumnosEnRiesgoApi } from '@application-tutorias/acompanamiento/alertas/hooks/api/useMisAlumnosEnRiesgoApi';
-import { createMisAlumnosEnRiesgoTableColumns } from '@tutorias/acompanamiento/alertas/config/misAlumnosEnRiesgoTableColumns';
+import { useMisAlumnosEnRiesgoApi } from '@application-academico/acompanamiento/alertas/hooks/api/useMisAlumnosEnRiesgoApi';
+import { createMisAlumnosEnRiesgoTableColumns } from '@academico/acompanamiento/alertas/config/misAlumnosEnRiesgoTableColumns';
 import {
   ALERTAS_RIESGO_LIST_PATH,
   TUT_ALERTAS_MENU_KEY,
   sesionProgramarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-academico/acompanamiento/config/paths';
 
 export const useMisAlumnosEnRiesgoPage = () => {
   const navigate = useNavigate();

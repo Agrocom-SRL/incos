@@ -3,8 +3,8 @@
  * modo create. Punto de entrada lazy de la ruta /tutorias/pasantias/registrar.
  */
 
-import { PasantiaFormProvider } from '@application-tutorias/pasantias/providers/PasantiaFormProvider';
-import PasantiaFormPage from '@tutorias/pasantias/pages/PasantiaFormPage';
+import { PasantiaFormProvider } from '@application-titulacion/pasantias/providers/PasantiaFormProvider';
+import PasantiaFormPage from '@titulacion/pasantias/pages/PasantiaFormPage';
 
 const PasantiaFormCreateConnector = () => (
   <PasantiaFormProvider>

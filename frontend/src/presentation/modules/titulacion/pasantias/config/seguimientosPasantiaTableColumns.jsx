@@ -11,11 +11,11 @@
 import { CalendarOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { StatusPill, InfoLinesCell, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatNivelDesempeno,
   getNivelDesempenoPillClass,
-} from '@application-tutorias/utils/pasantiasPills';
+} from '@application-titulacion/utils/pasantiasPills';
 
 export const createSeguimientosPasantiaTableColumns = ({ onEditar, readOnly = false } = {}) => {
   const columns = [

@@ -14,13 +14,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { useProyectoGradoDetailContext } from '@application-tutorias/titulacion/hooks/context/useProyectoGradoDetailContext';
-import { TRANSICIONES_PROYECTO } from '@application-tutorias/utils/tutoriasPills';
+import { useProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/hooks/context/useProyectoGradoDetailContext';
+import { TRANSICIONES_PROYECTO } from '@application-titulacion/utils/titulacionPills';
 import {
   PROYECTOS_GRADO_LIST_PATH,
   TUT_TITULACION_MENU_KEY,
   proyectoGradoEditarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 export const useProyectoGradoDetailPage = () => {
   const navigate = useNavigate();

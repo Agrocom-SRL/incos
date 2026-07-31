@@ -11,11 +11,11 @@
 import { AuditOutlined, CalendarOutlined, DownloadOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoAvance,
   getEstadoAvancePillClass,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-titulacion/utils/titulacionPills';
 
 export const createAvancesTableColumns = ({
   onDescargar,

@@ -11,8 +11,8 @@ import { lazy } from 'react';
 import {
   SESIONES_LIST_PATH,
   sesionProgramarPath,
-} from '@application-tutorias/config/paths';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+} from '@application-academico/acompanamiento/config/paths';
+import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 
 const SesionesListConnector = lazy(() => import('./connectors/SesionesListConnector.jsx'));
 const SesionRefuerzoFormCreateConnector = lazy(

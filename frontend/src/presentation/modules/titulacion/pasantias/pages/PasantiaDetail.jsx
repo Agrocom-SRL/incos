@@ -22,15 +22,15 @@ import { PageHeader, DetailTabLabel } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import { DetailPageShell, DetailTabsPanel } from '@organisms';
 import { usePermiso } from '@application-auth';
-import { usePasantiaDetailPage } from '@application-tutorias/pasantias/hooks/state/usePasantiaDetailPage';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import PasantiaFichaHeader from '@tutorias/pasantias/components/organisms/PasantiaFichaHeader';
-import PasantiaDatosSection from '@tutorias/pasantias/components/organisms/PasantiaDatosSection';
-import PasantiaInformesSection from '@tutorias/pasantias/components/organisms/PasantiaInformesSection';
-import PasantiaSeguimientosSection from '@tutorias/pasantias/components/organisms/PasantiaSeguimientosSection';
-import TransicionPasantiaModal from '@tutorias/pasantias/components/modals/TransicionPasantiaModal';
-import InformePasantiaDrawer from '@tutorias/pasantias/components/modals/InformePasantiaDrawer';
-import SeguimientoPasantiaDrawer from '@tutorias/pasantias/components/modals/SeguimientoPasantiaDrawer';
+import { usePasantiaDetailPage } from '@application-titulacion/pasantias/hooks/state/usePasantiaDetailPage';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import PasantiaFichaHeader from '@titulacion/pasantias/components/organisms/PasantiaFichaHeader';
+import PasantiaDatosSection from '@titulacion/pasantias/components/organisms/PasantiaDatosSection';
+import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/PasantiaInformesSection';
+import PasantiaSeguimientosSection from '@titulacion/pasantias/components/organisms/PasantiaSeguimientosSection';
+import TransicionPasantiaModal from '@titulacion/pasantias/components/modals/TransicionPasantiaModal';
+import InformePasantiaDrawer from '@titulacion/pasantias/components/modals/InformePasantiaDrawer';
+import SeguimientoPasantiaDrawer from '@titulacion/pasantias/components/modals/SeguimientoPasantiaDrawer';
 import '@presentation/styles/pages/detail-page.css';
 
 const PasantiaDetail = () => {

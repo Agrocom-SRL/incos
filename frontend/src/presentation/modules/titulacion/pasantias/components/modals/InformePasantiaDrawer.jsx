@@ -20,7 +20,7 @@ import {
   RESULTADO_INFORME_OPTIONS,
   TIPO_INFORME_POR_TIPO_PASANTIA,
   formatTipoInforme,
-} from '@application-tutorias/utils/pasantiasPills';
+} from '@application-titulacion/utils/pasantiasPills';
 
 const { Text } = Typography;
 

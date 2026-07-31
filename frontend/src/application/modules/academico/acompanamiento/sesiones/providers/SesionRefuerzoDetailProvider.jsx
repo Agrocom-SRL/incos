@@ -8,9 +8,9 @@
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { useGetSesionRefuerzo } from '@application-tutorias/acompanamiento/sesiones/hooks/api/useGetSesionRefuerzo';
-import { useSesionRefuerzoMutations } from '@application-tutorias/acompanamiento/sesiones/hooks/api/useSesionRefuerzoMutations';
-import { SesionRefuerzoDetailContext } from '@application-tutorias/acompanamiento/sesiones/context/SesionRefuerzoDetailContext';
+import { useGetSesionRefuerzo } from '@application-academico/acompanamiento/sesiones/hooks/api/useGetSesionRefuerzo';
+import { useSesionRefuerzoMutations } from '@application-academico/acompanamiento/sesiones/hooks/api/useSesionRefuerzoMutations';
+import { SesionRefuerzoDetailContext } from '@application-academico/acompanamiento/sesiones/context/SesionRefuerzoDetailContext';
 
 export const SesionRefuerzoDetailProvider = ({ children, sesionId }) => {
   const { sesion, loading, error, cargar } = useGetSesionRefuerzo();

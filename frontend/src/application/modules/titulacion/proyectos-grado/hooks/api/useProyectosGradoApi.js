@@ -12,7 +12,7 @@
 
 import { useCallback, useMemo } from 'react';
 import proyectoGradoRepository from '@implementations/ProyectoGradoRepository';
-import { mapProyectosGradoList } from '@application-tutorias/titulacion/mappers/proyectoGradoMapper';
+import { mapProyectosGradoList } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato T1). */
 export const PROYECTOS_GRADO_DATA_KEY = 'proyectosGrado';

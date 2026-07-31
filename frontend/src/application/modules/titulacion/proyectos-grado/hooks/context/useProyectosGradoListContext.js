@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { ProyectosGradoListContext } from '@application-tutorias/titulacion/context/ProyectosGradoListContext';
+import { ProyectosGradoListContext } from '@application-titulacion/proyectos-grado/context/ProyectosGradoListContext';
 
 export const useProyectosGradoListContext = () => {
   const context = useContext(ProyectosGradoListContext);

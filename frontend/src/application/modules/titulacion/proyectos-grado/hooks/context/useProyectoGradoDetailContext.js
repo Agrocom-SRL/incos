@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { ProyectoGradoDetailContext } from '@application-tutorias/titulacion/context/ProyectoGradoDetailContext';
+import { ProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoDetailContext';
 
 export const useProyectoGradoDetailContext = () => {
   const context = useContext(ProyectoGradoDetailContext);

@@ -4,8 +4,8 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { ProyectoGradoFormProvider } from '@application-tutorias/titulacion/providers/ProyectoGradoFormProvider';
-import ProyectoGradoFormPage from '@tutorias/titulacion/pages/ProyectoGradoFormPage';
+import { ProyectoGradoFormProvider } from '@application-titulacion/proyectos-grado/providers/ProyectoGradoFormProvider';
+import ProyectoGradoFormPage from '@titulacion/proyectos-grado/pages/ProyectoGradoFormPage';
 
 const ProyectoGradoFormEditConnector = () => {
   const { id } = useParams();

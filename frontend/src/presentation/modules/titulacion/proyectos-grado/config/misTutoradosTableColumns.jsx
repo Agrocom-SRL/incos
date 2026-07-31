@@ -17,11 +17,11 @@ import {
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoProyecto,
   getEstadoProyectoPillClass,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-titulacion/utils/titulacionPills';
 
 /** Estados desde los que el tutor puede emitir la aprobación final (T11). */
 const ESTADOS_APROBACION_FINAL = ['DEFENSA', 'PREDEFENSA', 'APROBADO_PREDEFENSA', 'DESARROLLO'];

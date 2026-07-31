@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import proyectoGradoRepository from '@implementations/ProyectoGradoRepository';
-import { mapProyectosGradoList } from '@application-tutorias/titulacion/mappers/proyectoGradoMapper';
+import { mapProyectosGradoList } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato T3). */
 export const MIS_TUTORADOS_DATA_KEY = 'misTutorados';

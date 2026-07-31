@@ -15,7 +15,7 @@ import {
   formatOrigenEstudiante,
   formatProgresoEstudiante,
   getProgresoEstudiantePillClass,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-academico/acompanamiento/utils/acompanamientoPills';
 
 /** Clave estable del estudiante (id en filas persistidas; matrícula en nuevas). */
 const estudianteKey = (record) => record.id ?? record.matriculaMateriaId;

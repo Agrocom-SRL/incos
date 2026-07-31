@@ -3,8 +3,8 @@
  * Punto de entrada lazy de la ruta /tutorias/pasantias/empresas.
  */
 
-import { PasantiasEmpresasListProvider } from '@application-tutorias/pasantias/providers/PasantiasEmpresasListProvider';
-import PasantiasEmpresasList from '@tutorias/pasantias/pages/PasantiasEmpresasList';
+import { PasantiasEmpresasListProvider } from '@application-titulacion/pasantias/providers/PasantiasEmpresasListProvider';
+import PasantiasEmpresasList from '@titulacion/pasantias/pages/PasantiasEmpresasList';
 
 const PasantiasEmpresasListConnector = () => (
   <PasantiasEmpresasListProvider>

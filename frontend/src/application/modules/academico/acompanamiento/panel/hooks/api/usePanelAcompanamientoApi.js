@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import panelAcompanamientoRepository from '@implementations/PanelAcompanamientoRepository';
-import { mapPanelAcompanamiento } from '@application-tutorias/acompanamiento/panel/mappers/panelAcompanamientoMapper';
+import { mapPanelAcompanamiento } from '@application-academico/acompanamiento/panel/mappers/panelAcompanamientoMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato A10). */
 export const PANEL_ACOMPANAMIENTO_DATA_KEY = 'panelAcompanamiento';

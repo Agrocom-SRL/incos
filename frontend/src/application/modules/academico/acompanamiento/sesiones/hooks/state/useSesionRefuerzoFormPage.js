@@ -17,16 +17,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
-import { useSesionRefuerzoFormContext } from '@application-tutorias/acompanamiento/sesiones/hooks/context/useSesionRefuerzoFormContext';
+import { useSesionRefuerzoFormContext } from '@application-academico/acompanamiento/sesiones/hooks/context/useSesionRefuerzoFormContext';
 import {
   mapFormValuesToSesionPayload,
   mapSesionToFormValues,
-} from '@application-tutorias/acompanamiento/sesiones/mappers/sesionRefuerzoMapper';
+} from '@application-academico/acompanamiento/sesiones/mappers/sesionRefuerzoMapper';
 import {
   SESIONES_LIST_PATH,
   TUT_SESIONES_MENU_KEY,
   sesionDetallePath,
-} from '@application-tutorias/config/paths';
+} from '@application-academico/acompanamiento/config/paths';
 
 const MODALIDAD_OPTIONS = [
   { value: 'PRESENCIAL', label: 'Presencial' },

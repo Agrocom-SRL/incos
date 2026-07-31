@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { PasantiasEmpresasListContext } from '@application-tutorias/pasantias/context/PasantiasEmpresasListContext';
+import { PasantiasEmpresasListContext } from '@application-titulacion/pasantias/context/PasantiasEmpresasListContext';
 
 export const usePasantiasEmpresasListContext = () => {
   const context = useContext(PasantiasEmpresasListContext);

@@ -8,7 +8,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import pasantiaRepository from '@implementations/PasantiaRepository';
-import { mapPasantiaDetail } from '@application-tutorias/pasantias/mappers/pasantiaMapper';
+import { mapPasantiaDetail } from '@application-titulacion/pasantias/mappers/pasantiaMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato P2/P3/P4/P6). */
 export const PASANTIA_DATA_KEY = 'pasantia';

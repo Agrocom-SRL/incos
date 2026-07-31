@@ -15,7 +15,7 @@ import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
 import { Text } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import { useMisAlumnosEnRiesgoPage } from '@application-tutorias/acompanamiento/alertas/hooks/state/useMisAlumnosEnRiesgoPage';
+import { useMisAlumnosEnRiesgoPage } from '@application-academico/acompanamiento/alertas/hooks/state/useMisAlumnosEnRiesgoPage';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';

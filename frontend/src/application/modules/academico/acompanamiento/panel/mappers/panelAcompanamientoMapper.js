@@ -7,7 +7,7 @@
  * lista vacía si el backend aún no la entrega.
  */
 
-import { mapAlertasRiesgoList } from '@application-tutorias/acompanamiento/alertas/mappers/alertaRiesgoMapper';
+import { mapAlertasRiesgoList } from '@application-academico/acompanamiento/alertas/mappers/alertaRiesgoMapper';
 
 const toNumber = (value, fallback = 0) => {
   const n = Number(value);

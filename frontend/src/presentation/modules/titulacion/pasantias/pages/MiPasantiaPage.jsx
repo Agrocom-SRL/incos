@@ -13,11 +13,11 @@
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { DetailPageShell } from '@organisms';
-import { useMiPasantiaPage } from '@application-tutorias/pasantias/hooks/state/useMiPasantiaPage';
-import PasantiaFichaHeader from '@tutorias/pasantias/components/organisms/PasantiaFichaHeader';
-import PasantiaDatosSection from '@tutorias/pasantias/components/organisms/PasantiaDatosSection';
-import PasantiaInformesSection from '@tutorias/pasantias/components/organisms/PasantiaInformesSection';
-import PasantiaSeguimientosSection from '@tutorias/pasantias/components/organisms/PasantiaSeguimientosSection';
+import { useMiPasantiaPage } from '@application-titulacion/pasantias/hooks/state/useMiPasantiaPage';
+import PasantiaFichaHeader from '@titulacion/pasantias/components/organisms/PasantiaFichaHeader';
+import PasantiaDatosSection from '@titulacion/pasantias/components/organisms/PasantiaDatosSection';
+import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/PasantiaInformesSection';
+import PasantiaSeguimientosSection from '@titulacion/pasantias/components/organisms/PasantiaSeguimientosSection';
 import '@presentation/styles/pages/detail-page.css';
 
 const MiPasantiaPage = () => {

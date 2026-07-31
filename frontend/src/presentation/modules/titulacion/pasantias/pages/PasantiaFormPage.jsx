@@ -14,9 +14,9 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import { usePasantiaFormPage } from '@application-tutorias/pasantias/hooks/state/usePasantiaFormPage';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import PasantiaFormSections from '@tutorias/pasantias/components/organisms/PasantiaFormSections';
+import { usePasantiaFormPage } from '@application-titulacion/pasantias/hooks/state/usePasantiaFormPage';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import PasantiaFormSections from '@titulacion/pasantias/components/organisms/PasantiaFormSections';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 

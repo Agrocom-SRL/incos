@@ -8,9 +8,9 @@
  */
 
 import { useAuth, esDocente } from '@application-auth';
-import { AlertasRiesgoListProvider } from '@application-tutorias/acompanamiento/alertas/providers/AlertasRiesgoListProvider';
-import AlertasRiesgoList from '@tutorias/acompanamiento/alertas/pages/AlertasRiesgoList';
-import MisAlumnosEnRiesgoPage from '@tutorias/acompanamiento/alertas/pages/MisAlumnosEnRiesgoPage';
+import { AlertasRiesgoListProvider } from '@application-academico/acompanamiento/alertas/providers/AlertasRiesgoListProvider';
+import AlertasRiesgoList from '@academico/acompanamiento/alertas/pages/AlertasRiesgoList';
+import MisAlumnosEnRiesgoPage from '@academico/acompanamiento/alertas/pages/MisAlumnosEnRiesgoPage';
 
 const AlertasRiesgoListConnector = () => {
   const { usuario } = useAuth();

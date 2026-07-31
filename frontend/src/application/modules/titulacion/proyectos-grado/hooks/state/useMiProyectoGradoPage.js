@@ -11,9 +11,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { App } from 'antd';
-import { useGetMiProyectoGrado } from '@application-tutorias/titulacion/hooks/api/useGetMiProyectoGrado';
-import { useAvancesProyectoApi } from '@application-tutorias/titulacion/hooks/api/useAvancesProyectoApi';
-import { useBitacoraProyectoApi } from '@application-tutorias/titulacion/hooks/api/useBitacoraProyectoApi';
+import { useGetMiProyectoGrado } from '@application-titulacion/proyectos-grado/hooks/api/useGetMiProyectoGrado';
+import { useAvancesProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useAvancesProyectoApi';
+import { useBitacoraProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useBitacoraProyectoApi';
 
 /** Extensiones permitidas por el contrato (uploadAvanceProyecto: PDF/Word). */
 export const AVANCE_ACCEPT = '.pdf,.doc,.docx';

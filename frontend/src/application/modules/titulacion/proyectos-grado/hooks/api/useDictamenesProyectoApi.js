@@ -11,7 +11,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import proyectoGradoRepository from '@implementations/ProyectoGradoRepository';
 import { downloadBlob } from '@application/utils';
-import { mapDictamenesList } from '@application-tutorias/titulacion/mappers/proyectoGradoMapper';
+import { mapDictamenesList } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 
 /** Clave de datos = dataFieldName del backend (contrato T22). */
 export const DICTAMENES_DATA_KEY = 'dictamenes';

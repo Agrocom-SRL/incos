@@ -10,12 +10,12 @@
 import { CalendarOutlined, DownloadOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatResultadoInforme,
   formatTipoInforme,
   getResultadoInformePillClass,
-} from '@application-tutorias/utils/pasantiasPills';
+} from '@application-titulacion/utils/pasantiasPills';
 
 export const createInformesPasantiaTableColumns = ({
   onEditar,

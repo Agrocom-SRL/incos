@@ -19,12 +19,12 @@ import {
 } from '@ant-design/icons';
 import { IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 import {
   formatEstadoSesion,
   getEstadoSesionPillClass,
-} from '@application-tutorias/utils/tutoriasPills';
-import { sesionDetallePath, sesionEditarPath } from '@application-tutorias/config/paths';
+} from '@application-academico/acompanamiento/utils/acompanamientoPills';
+import { sesionDetallePath, sesionEditarPath } from '@application-academico/acompanamiento/config/paths';
 
 export const createSesionesTableColumns = ({ navigate, listNavState, refetch, deleteFn }) => [
   {

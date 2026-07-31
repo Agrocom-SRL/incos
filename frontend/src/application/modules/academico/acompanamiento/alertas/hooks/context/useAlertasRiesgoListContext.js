@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AlertasRiesgoListContext } from '@application-tutorias/acompanamiento/alertas/context/AlertasRiesgoListContext';
+import { AlertasRiesgoListContext } from '@application-academico/acompanamiento/alertas/context/AlertasRiesgoListContext';
 
 export const useAlertasRiesgoListContext = () => {
   const context = useContext(AlertasRiesgoListContext);

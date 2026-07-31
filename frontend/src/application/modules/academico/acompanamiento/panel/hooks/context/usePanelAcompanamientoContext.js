@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { PanelAcompanamientoContext } from '@application-tutorias/acompanamiento/panel/context/PanelAcompanamientoContext';
+import { PanelAcompanamientoContext } from '@application-academico/acompanamiento/panel/context/PanelAcompanamientoContext';
 
 export const usePanelAcompanamientoContext = () => {
   const context = useContext(PanelAcompanamientoContext);

@@ -12,9 +12,9 @@
 import { BookOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { CarreraDotCell, IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-tutorias/utils/tutoriasPills';
-import NotaRiesgoText from '@tutorias/acompanamiento/components/atoms/NotaRiesgoText';
+import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
+import NotaRiesgoText from '@academico/acompanamiento/components/atoms/NotaRiesgoText';
 
 /** Etiqueta del curso: año + paralelo (grano anual del instituto). */
 const cursoLabel = (record) =>

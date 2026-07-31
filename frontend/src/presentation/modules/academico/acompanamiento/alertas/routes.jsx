@@ -9,8 +9,8 @@
  */
 
 import { lazy } from 'react';
-import { ALERTAS_RIESGO_LIST_PATH } from '@application-tutorias/config/paths';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { ALERTAS_RIESGO_LIST_PATH } from '@application-academico/acompanamiento/config/paths';
+import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
 
 const AlertasRiesgoListConnector = lazy(
   () => import('./connectors/AlertasRiesgoListConnector.jsx'),

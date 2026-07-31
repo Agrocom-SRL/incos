@@ -14,13 +14,13 @@ import { PageTemplate } from '@templates';
 import { PageHeader, DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
 import { DetailPageShell } from '@organisms';
-import { useMiProyectoGradoPage } from '@application-tutorias/titulacion/hooks/state/useMiProyectoGradoPage';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import { createBitacoraTableColumns } from '@tutorias/titulacion/config/bitacoraTableColumns';
-import ProyectoGradoFichaHeader from '@tutorias/titulacion/components/organisms/ProyectoGradoFichaHeader';
-import ProyectoDatosSection from '@tutorias/titulacion/components/organisms/ProyectoDatosSection';
-import ProyectoAvancesSection from '@tutorias/titulacion/components/organisms/ProyectoAvancesSection';
-import SubirAvanceModal from '@tutorias/titulacion/components/modals/SubirAvanceModal';
+import { useMiProyectoGradoPage } from '@application-titulacion/proyectos-grado/hooks/state/useMiProyectoGradoPage';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { createBitacoraTableColumns } from '@titulacion/proyectos-grado/config/bitacoraTableColumns';
+import ProyectoGradoFichaHeader from '@titulacion/proyectos-grado/components/organisms/ProyectoGradoFichaHeader';
+import ProyectoDatosSection from '@titulacion/proyectos-grado/components/organisms/ProyectoDatosSection';
+import ProyectoAvancesSection from '@titulacion/proyectos-grado/components/organisms/ProyectoAvancesSection';
+import SubirAvanceModal from '@titulacion/proyectos-grado/components/modals/SubirAvanceModal';
 import '@presentation/styles/pages/detail-page.css';
 
 const MiProyectoGradoPage = () => {

@@ -9,7 +9,7 @@
 import { CalendarOutlined, UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 
 /** Rol del integrante → etiqueta + clase de StatusPill (ENUM integrantes_proyecto.rol). */
 const ROL_INTEGRANTE_META = {

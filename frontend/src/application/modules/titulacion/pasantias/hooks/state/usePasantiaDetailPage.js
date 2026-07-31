@@ -13,13 +13,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { usePasantiaDetailContext } from '@application-tutorias/pasantias/hooks/context/usePasantiaDetailContext';
-import { TRANSICIONES_PASANTIA } from '@application-tutorias/utils/pasantiasPills';
+import { usePasantiaDetailContext } from '@application-titulacion/pasantias/hooks/context/usePasantiaDetailContext';
+import { TRANSICIONES_PASANTIA } from '@application-titulacion/utils/pasantiasPills';
 import {
   PASANTIAS_LIST_PATH,
   TUT_PASANTIAS_MENU_KEY,
   pasantiaEditarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 export const usePasantiaDetailPage = () => {
   const navigate = useNavigate();

@@ -9,12 +9,12 @@
  */
 
 import { useEffect, useMemo } from 'react';
-import { useGetPasantia } from '@application-tutorias/pasantias/hooks/api/useGetPasantia';
-import { usePasantiaMutations } from '@application-tutorias/pasantias/hooks/api/usePasantiaMutations';
-import { usePasantiasEmpresasApi } from '@application-tutorias/pasantias/hooks/api/usePasantiasEmpresasApi';
-import { useCarrerasCatalogoTutApi } from '@application-tutorias/titulacion/hooks/api/useCarrerasCatalogoTutApi';
-import { useDocentesCatalogoTutApi } from '@application-tutorias/titulacion/hooks/api/useDocentesCatalogoTutApi';
-import { PasantiaFormContext } from '@application-tutorias/pasantias/context/PasantiaFormContext';
+import { useGetPasantia } from '@application-titulacion/pasantias/hooks/api/useGetPasantia';
+import { usePasantiaMutations } from '@application-titulacion/pasantias/hooks/api/usePasantiaMutations';
+import { usePasantiasEmpresasApi } from '@application-titulacion/pasantias/hooks/api/usePasantiasEmpresasApi';
+import { useCarrerasCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useCarrerasCatalogoTutApi';
+import { useDocentesCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTutApi';
+import { PasantiaFormContext } from '@application-titulacion/pasantias/context/PasantiaFormContext';
 
 export const PasantiaFormProvider = ({ children, pasantiaId = null }) => {
   const { pasantia, loading: loadingPasantia, error: errorPasantia, cargar } = useGetPasantia();

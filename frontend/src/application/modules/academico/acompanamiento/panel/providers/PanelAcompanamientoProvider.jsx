@@ -7,9 +7,9 @@
  */
 
 import { useMemo } from 'react';
-import { usePanelAcompanamientoApi } from '@application-tutorias/acompanamiento/panel/hooks/api/usePanelAcompanamientoApi';
-import { useExportarPanelPdf } from '@application-tutorias/acompanamiento/panel/hooks/api/useExportarPanelPdf';
-import { PanelAcompanamientoContext } from '@application-tutorias/acompanamiento/panel/context/PanelAcompanamientoContext';
+import { usePanelAcompanamientoApi } from '@application-academico/acompanamiento/panel/hooks/api/usePanelAcompanamientoApi';
+import { useExportarPanelPdf } from '@application-academico/acompanamiento/panel/hooks/api/useExportarPanelPdf';
+import { PanelAcompanamientoContext } from '@application-academico/acompanamiento/panel/context/PanelAcompanamientoContext';
 
 export const PanelAcompanamientoProvider = ({ children }) => {
   const { panel, loading, error, refetch } = usePanelAcompanamientoApi();

@@ -9,13 +9,13 @@
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { useGetProyectoGrado } from '@application-tutorias/titulacion/hooks/api/useGetProyectoGrado';
-import { useProyectoGradoMutations } from '@application-tutorias/titulacion/hooks/api/useProyectoGradoMutations';
-import { useBitacoraProyectoApi } from '@application-tutorias/titulacion/hooks/api/useBitacoraProyectoApi';
-import { useAvancesProyectoApi } from '@application-tutorias/titulacion/hooks/api/useAvancesProyectoApi';
-import { useDictamenesProyectoApi } from '@application-tutorias/titulacion/hooks/api/useDictamenesProyectoApi';
-import { useDocentesCatalogoTutApi } from '@application-tutorias/titulacion/hooks/api/useDocentesCatalogoTutApi';
-import { ProyectoGradoDetailContext } from '@application-tutorias/titulacion/context/ProyectoGradoDetailContext';
+import { useGetProyectoGrado } from '@application-titulacion/proyectos-grado/hooks/api/useGetProyectoGrado';
+import { useProyectoGradoMutations } from '@application-titulacion/proyectos-grado/hooks/api/useProyectoGradoMutations';
+import { useBitacoraProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useBitacoraProyectoApi';
+import { useAvancesProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useAvancesProyectoApi';
+import { useDictamenesProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useDictamenesProyectoApi';
+import { useDocentesCatalogoTutApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTutApi';
+import { ProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoDetailContext';
 
 export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
   const { proyecto, loading, error, cargar } = useGetProyectoGrado();

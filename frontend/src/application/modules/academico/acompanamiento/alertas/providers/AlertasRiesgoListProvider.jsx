@@ -7,10 +7,10 @@
  */
 
 import { useMemo } from 'react';
-import { useAlertasRiesgoApi } from '@application-tutorias/acompanamiento/alertas/hooks/api/useAlertasRiesgoApi';
-import { useGetAlertaEstudiante } from '@application-tutorias/acompanamiento/alertas/hooks/api/useGetAlertaEstudiante';
+import { useAlertasRiesgoApi } from '@application-academico/acompanamiento/alertas/hooks/api/useAlertasRiesgoApi';
+import { useGetAlertaEstudiante } from '@application-academico/acompanamiento/alertas/hooks/api/useGetAlertaEstudiante';
 import { useServerPaginatedList } from '@application/utils';
-import { AlertasRiesgoListContext } from '@application-tutorias/acompanamiento/alertas/context/AlertasRiesgoListContext';
+import { AlertasRiesgoListContext } from '@application-academico/acompanamiento/alertas/context/AlertasRiesgoListContext';
 
 export const AlertasRiesgoListProvider = ({ children }) => {
   const { fetch: fetchAlertas } = useAlertasRiesgoApi();

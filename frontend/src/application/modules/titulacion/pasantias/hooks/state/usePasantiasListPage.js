@@ -10,18 +10,18 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { usePasantiasListContext } from '@application-tutorias/pasantias/hooks/context/usePasantiasListContext';
-import { createPasantiasTableColumns } from '@tutorias/pasantias/config/pasantiasTableColumns';
+import { usePasantiasListContext } from '@application-titulacion/pasantias/hooks/context/usePasantiasListContext';
+import { createPasantiasTableColumns } from '@titulacion/pasantias/config/pasantiasTableColumns';
 import {
   ESTADO_PASANTIA_OPTIONS,
   TIPO_PASANTIA_OPTIONS,
-} from '@application-tutorias/utils/pasantiasPills';
+} from '@application-titulacion/utils/pasantiasPills';
 import {
   PASANTIAS_LIST_PATH,
   PASANTIAS_EMPRESAS_PATH,
   TUT_PASANTIAS_MENU_KEY,
   pasantiaRegistrarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 export const usePasantiasListPage = () => {
   const navigate = useNavigate();

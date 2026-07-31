@@ -9,11 +9,11 @@
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { useGetPasantia } from '@application-tutorias/pasantias/hooks/api/useGetPasantia';
-import { usePasantiaMutations } from '@application-tutorias/pasantias/hooks/api/usePasantiaMutations';
-import { useInformesPasantiaApi } from '@application-tutorias/pasantias/hooks/api/useInformesPasantiaApi';
-import { useSeguimientosPasantiaApi } from '@application-tutorias/pasantias/hooks/api/useSeguimientosPasantiaApi';
-import { PasantiaDetailContext } from '@application-tutorias/pasantias/context/PasantiaDetailContext';
+import { useGetPasantia } from '@application-titulacion/pasantias/hooks/api/useGetPasantia';
+import { usePasantiaMutations } from '@application-titulacion/pasantias/hooks/api/usePasantiaMutations';
+import { useInformesPasantiaApi } from '@application-titulacion/pasantias/hooks/api/useInformesPasantiaApi';
+import { useSeguimientosPasantiaApi } from '@application-titulacion/pasantias/hooks/api/useSeguimientosPasantiaApi';
+import { PasantiaDetailContext } from '@application-titulacion/pasantias/context/PasantiaDetailContext';
 
 export const PasantiaDetailProvider = ({ children, pasantiaId }) => {
   const { pasantia, loading, error, cargar } = useGetPasantia();

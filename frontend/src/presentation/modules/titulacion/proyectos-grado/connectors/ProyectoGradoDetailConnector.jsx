@@ -4,8 +4,8 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { ProyectoGradoDetailProvider } from '@application-tutorias/titulacion/providers/ProyectoGradoDetailProvider';
-import ProyectoGradoDetail from '@tutorias/titulacion/pages/ProyectoGradoDetail';
+import { ProyectoGradoDetailProvider } from '@application-titulacion/proyectos-grado/providers/ProyectoGradoDetailProvider';
+import ProyectoGradoDetail from '@titulacion/proyectos-grado/pages/ProyectoGradoDetail';
 
 const ProyectoGradoDetailConnector = () => {
   const { id } = useParams();

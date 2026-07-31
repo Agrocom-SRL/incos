@@ -5,8 +5,8 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { SesionRefuerzoDetailProvider } from '@application-tutorias/acompanamiento/sesiones/providers/SesionRefuerzoDetailProvider';
-import SesionRefuerzoDetail from '@tutorias/acompanamiento/sesiones/pages/SesionRefuerzoDetail';
+import { SesionRefuerzoDetailProvider } from '@application-academico/acompanamiento/sesiones/providers/SesionRefuerzoDetailProvider';
+import SesionRefuerzoDetail from '@academico/acompanamiento/sesiones/pages/SesionRefuerzoDetail';
 
 const SesionRefuerzoDetailConnector = () => {
   const { id } = useParams();

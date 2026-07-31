@@ -8,7 +8,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { App } from 'antd';
-import { usePanelAcompanamientoContext } from '@application-tutorias/acompanamiento/panel/hooks/context/usePanelAcompanamientoContext';
+import { usePanelAcompanamientoContext } from '@application-academico/acompanamiento/panel/hooks/context/usePanelAcompanamientoContext';
 
 export const usePanelAcompanamientoPage = () => {
   const { message } = App.useApp();

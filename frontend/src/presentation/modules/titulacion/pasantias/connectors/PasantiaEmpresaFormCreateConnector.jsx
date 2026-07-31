@@ -4,8 +4,8 @@
  * /tutorias/pasantias/empresas/registrar.
  */
 
-import { PasantiaEmpresaFormProvider } from '@application-tutorias/pasantias/providers/PasantiaEmpresaFormProvider';
-import PasantiaEmpresaFormPage from '@tutorias/pasantias/pages/PasantiaEmpresaFormPage';
+import { PasantiaEmpresaFormProvider } from '@application-titulacion/pasantias/providers/PasantiaEmpresaFormProvider';
+import PasantiaEmpresaFormPage from '@titulacion/pasantias/pages/PasantiaEmpresaFormPage';
 
 const PasantiaEmpresaFormCreateConnector = () => (
   <PasantiaEmpresaFormProvider>

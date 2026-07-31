@@ -12,12 +12,12 @@ import { Popconfirm, Progress } from 'antd';
 import { CalendarOutlined, CheckOutlined, EditOutlined, FileTextOutlined } from '@ant-design/icons';
 import { ActionButton, StatusPill, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoBitacora,
   formatTipoBitacora,
   getEstadoBitacoraPillClass,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-titulacion/utils/titulacionPills';
 
 /** Celda de confirmación: pill firmada o botón "Confirmar" (solo estudiante). */
 const renderConfirmacion = (record, { modoEstudiante, onConfirmar, confirmandoId }) => {

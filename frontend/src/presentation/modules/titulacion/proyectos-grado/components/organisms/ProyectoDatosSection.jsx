@@ -11,7 +11,7 @@ import { DetailField, StatusPill } from '@atoms';
 import {
   formatEstadoProyecto,
   getEstadoProyectoPillClass,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-titulacion/utils/titulacionPills';
 
 const ProyectoDatosSection = ({ proyecto }) => (
   <div className="sd-tab-body">

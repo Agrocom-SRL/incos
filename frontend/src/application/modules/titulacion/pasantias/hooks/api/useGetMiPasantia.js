@@ -13,7 +13,7 @@ import {
   mapInformesList,
   mapPasantiaDetail,
   mapSeguimientosList,
-} from '@application-tutorias/pasantias/mappers/pasantiaMapper';
+} from '@application-titulacion/pasantias/mappers/pasantiaMapper';
 
 export const useGetMiPasantia = () => {
   const [pasantia, setPasantia] = useState(null);

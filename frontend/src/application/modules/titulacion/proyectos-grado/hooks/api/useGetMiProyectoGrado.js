@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import proyectoGradoRepository from '@implementations/ProyectoGradoRepository';
-import { mapProyectoGradoDetail } from '@application-tutorias/titulacion/mappers/proyectoGradoMapper';
+import { mapProyectoGradoDetail } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 import { PROYECTO_GRADO_DATA_KEY } from './useGetProyectoGrado';
 
 export const useGetMiProyectoGrado = () => {

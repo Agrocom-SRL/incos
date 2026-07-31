@@ -8,9 +8,9 @@
  */
 
 import { useMemo } from 'react';
-import { usePasantiasEmpresasApi } from '@application-tutorias/pasantias/hooks/api/usePasantiasEmpresasApi';
-import { usePasantiaEmpresaMutations } from '@application-tutorias/pasantias/hooks/api/usePasantiaEmpresaMutations';
-import { PasantiaEmpresaFormContext } from '@application-tutorias/pasantias/context/PasantiaEmpresaFormContext';
+import { usePasantiasEmpresasApi } from '@application-titulacion/pasantias/hooks/api/usePasantiasEmpresasApi';
+import { usePasantiaEmpresaMutations } from '@application-titulacion/pasantias/hooks/api/usePasantiaEmpresaMutations';
+import { PasantiaEmpresaFormContext } from '@application-titulacion/pasantias/context/PasantiaEmpresaFormContext';
 
 export const PasantiaEmpresaFormProvider = ({ children, empresaId = null }) => {
   const id = empresaId != null ? Number(empresaId) : null;

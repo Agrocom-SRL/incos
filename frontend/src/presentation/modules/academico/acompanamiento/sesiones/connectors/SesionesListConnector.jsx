@@ -3,8 +3,8 @@
  * Punto de entrada lazy de la ruta TUT-SESIONES (/tutorias/acompanamiento/sesiones).
  */
 
-import { SesionesListProvider } from '@application-tutorias/acompanamiento/sesiones/providers/SesionesListProvider';
-import SesionesList from '@tutorias/acompanamiento/sesiones/pages/SesionesList';
+import { SesionesListProvider } from '@application-academico/acompanamiento/sesiones/providers/SesionesListProvider';
+import SesionesList from '@academico/acompanamiento/sesiones/pages/SesionesList';
 
 const SesionesListConnector = () => (
   <SesionesListProvider>

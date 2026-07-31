@@ -10,9 +10,9 @@ import { Empty, Table } from 'antd';
 import { TeamOutlined, UserAddOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import { esModalidadGrupal } from '@application-tutorias/utils/tutoriasPills';
-import { createIntegrantesTableColumns } from '@tutorias/titulacion/config/integrantesTableColumns';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { esModalidadGrupal } from '@application-titulacion/utils/titulacionPills';
+import { createIntegrantesTableColumns } from '@titulacion/proyectos-grado/config/integrantesTableColumns';
 
 const ProyectoIntegrantesSection = ({ proyecto, onAgregar, onToggleEstado }) => {
   const integrantes = proyecto.integrantes ?? [];

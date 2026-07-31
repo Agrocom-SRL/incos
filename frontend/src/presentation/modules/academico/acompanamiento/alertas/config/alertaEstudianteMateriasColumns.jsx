@@ -11,8 +11,8 @@
 import { Typography } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { InfoLinesCell, StatusPill } from '@atoms';
-import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-tutorias/utils/tutoriasPills';
-import NotaRiesgoText from '@tutorias/acompanamiento/components/atoms/NotaRiesgoText';
+import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
+import NotaRiesgoText from '@academico/acompanamiento/components/atoms/NotaRiesgoText';
 
 const { Text } = Typography;
 

@@ -10,8 +10,8 @@
 
 import { BookOutlined, UserOutlined } from '@ant-design/icons';
 import { CarreraDotCell, IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
-import { RIESGO_PILL_CLASS } from '@application-tutorias/utils/tutoriasPills';
-import NotaRiesgoText from '@tutorias/acompanamiento/components/atoms/NotaRiesgoText';
+import { RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
+import NotaRiesgoText from '@academico/acompanamiento/components/atoms/NotaRiesgoText';
 
 export const createPanelCasosCriticosColumns = () => [
   {

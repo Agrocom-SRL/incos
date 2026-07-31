@@ -13,8 +13,8 @@ import { useMemo } from 'react';
 import { Alert, Drawer, Empty, Flex, Spin, Table, Typography } from 'antd';
 import { IdcardOutlined, ReadOutlined } from '@ant-design/icons';
 import { StatusPill } from '@atoms';
-import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-tutorias/utils/tutoriasPills';
-import { createAlertaEstudianteMateriasColumns } from '@tutorias/acompanamiento/alertas/config/alertaEstudianteMateriasColumns';
+import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
+import { createAlertaEstudianteMateriasColumns } from '@academico/acompanamiento/alertas/config/alertaEstudianteMateriasColumns';
 import { allSpacing } from '@theme/tokens';
 
 const { Text, Title } = Typography;

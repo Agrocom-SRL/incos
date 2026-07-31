@@ -8,7 +8,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { Form, Modal, Select, Spin, Typography } from 'antd';
-import { useBuscarEstudiantesTut } from '@application-tutorias/titulacion/hooks/api/useBuscarEstudiantesTut';
+import { useBuscarEstudiantesTut } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTut';
 
 const { Text } = Typography;
 

@@ -17,13 +17,13 @@ import {
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoPasantia,
   formatTipoPasantia,
   getEstadoPasantiaPillClass,
   getTipoPasantiaPillClass,
-} from '@application-tutorias/utils/pasantiasPills';
+} from '@application-titulacion/utils/pasantiasPills';
 
 /** Estados en los que registrar seguimiento tiene sentido (trámite vigente). */
 const ESTADOS_CON_SEGUIMIENTO = ['SOLICITADA', 'EN_CURSO'];

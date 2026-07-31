@@ -9,10 +9,10 @@
  */
 
 import { useMemo } from 'react';
-import { usePasantiasApi } from '@application-tutorias/pasantias/hooks/api/usePasantiasApi';
-import { usePasantiaMutations } from '@application-tutorias/pasantias/hooks/api/usePasantiaMutations';
+import { usePasantiasApi } from '@application-titulacion/pasantias/hooks/api/usePasantiasApi';
+import { usePasantiaMutations } from '@application-titulacion/pasantias/hooks/api/usePasantiaMutations';
 import { useServerPaginatedList } from '@application/utils';
-import { PasantiasListContext } from '@application-tutorias/pasantias/context/PasantiasListContext';
+import { PasantiasListContext } from '@application-titulacion/pasantias/context/PasantiasListContext';
 
 export const PasantiasListProvider = ({ children }) => {
   const { fetch: fetchPasantias } = usePasantiasApi();

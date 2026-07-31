@@ -3,8 +3,8 @@
  * Punto de entrada lazy de la ruta /tutorias/titulacion/registrar.
  */
 
-import { ProyectoGradoFormProvider } from '@application-tutorias/titulacion/providers/ProyectoGradoFormProvider';
-import ProyectoGradoFormPage from '@tutorias/titulacion/pages/ProyectoGradoFormPage';
+import { ProyectoGradoFormProvider } from '@application-titulacion/proyectos-grado/providers/ProyectoGradoFormProvider';
+import ProyectoGradoFormPage from '@titulacion/proyectos-grado/pages/ProyectoGradoFormPage';
 
 const ProyectoGradoFormCreateConnector = () => (
   <ProyectoGradoFormProvider>

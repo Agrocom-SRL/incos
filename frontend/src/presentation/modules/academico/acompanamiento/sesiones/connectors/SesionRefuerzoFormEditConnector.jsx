@@ -5,8 +5,8 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { SesionRefuerzoFormProvider } from '@application-tutorias/acompanamiento/sesiones/providers/SesionRefuerzoFormProvider';
-import SesionRefuerzoFormPage from '@tutorias/acompanamiento/sesiones/pages/SesionRefuerzoFormPage';
+import { SesionRefuerzoFormProvider } from '@application-academico/acompanamiento/sesiones/providers/SesionRefuerzoFormProvider';
+import SesionRefuerzoFormPage from '@academico/acompanamiento/sesiones/pages/SesionRefuerzoFormPage';
 
 const SesionRefuerzoFormEditConnector = () => {
   const { id } = useParams();

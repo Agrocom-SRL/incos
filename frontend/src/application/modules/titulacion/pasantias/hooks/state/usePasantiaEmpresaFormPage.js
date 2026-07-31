@@ -10,16 +10,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
-import { usePasantiaEmpresaFormContext } from '@application-tutorias/pasantias/hooks/context/usePasantiaEmpresaFormContext';
-import { TIPO_SOCIETARIO_OPTIONS } from '@application-tutorias/utils/pasantiasPills';
+import { usePasantiaEmpresaFormContext } from '@application-titulacion/pasantias/hooks/context/usePasantiaEmpresaFormContext';
+import { TIPO_SOCIETARIO_OPTIONS } from '@application-titulacion/utils/pasantiasPills';
 import {
   mapEmpresaToFormValues,
   mapFormValuesToEmpresaPayload,
-} from '@application-tutorias/pasantias/mappers/pasantiaMapper';
+} from '@application-titulacion/pasantias/mappers/pasantiaMapper';
 import {
   PASANTIAS_EMPRESAS_PATH,
   TUT_PASANTIAS_MENU_KEY,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 /** Secciones declarativas del formulario (CfgFormWorkspace). */
 const EMPRESA_FORM_SECTIONS = {

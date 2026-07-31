@@ -13,13 +13,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth, esDocente } from '@application-auth';
-import { useGetSesionRefuerzo } from '@application-tutorias/acompanamiento/sesiones/hooks/api/useGetSesionRefuerzo';
-import { useSesionRefuerzoMutations } from '@application-tutorias/acompanamiento/sesiones/hooks/api/useSesionRefuerzoMutations';
-import { useAsignacionesCatalogoTutApi } from '@application-tutorias/acompanamiento/sesiones/hooks/api/useAsignacionesCatalogoTutApi';
-import { useAulasCatalogoTutApi } from '@application-tutorias/acompanamiento/sesiones/hooks/api/useAulasCatalogoTutApi';
-import { useAlertasRiesgoApi } from '@application-tutorias/acompanamiento/alertas/hooks/api/useAlertasRiesgoApi';
-import { useMisAlumnosEnRiesgoApi } from '@application-tutorias/acompanamiento/alertas/hooks/api/useMisAlumnosEnRiesgoApi';
-import { SesionRefuerzoFormContext } from '@application-tutorias/acompanamiento/sesiones/context/SesionRefuerzoFormContext';
+import { useGetSesionRefuerzo } from '@application-academico/acompanamiento/sesiones/hooks/api/useGetSesionRefuerzo';
+import { useSesionRefuerzoMutations } from '@application-academico/acompanamiento/sesiones/hooks/api/useSesionRefuerzoMutations';
+import { useAsignacionesCatalogoTutApi } from '@application-academico/acompanamiento/sesiones/hooks/api/useAsignacionesCatalogoTutApi';
+import { useAulasCatalogoTutApi } from '@application-academico/acompanamiento/sesiones/hooks/api/useAulasCatalogoTutApi';
+import { useAlertasRiesgoApi } from '@application-academico/acompanamiento/alertas/hooks/api/useAlertasRiesgoApi';
+import { useMisAlumnosEnRiesgoApi } from '@application-academico/acompanamiento/alertas/hooks/api/useMisAlumnosEnRiesgoApi';
+import { SesionRefuerzoFormContext } from '@application-academico/acompanamiento/sesiones/context/SesionRefuerzoFormContext';
 
 export const SesionRefuerzoFormProvider = ({ children, sesionId = null }) => {
   const { usuario } = useAuth();

@@ -13,18 +13,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
-import { useProyectoGradoFormContext } from '@application-tutorias/titulacion/hooks/context/useProyectoGradoFormContext';
-import { useBuscarEstudiantesTut } from '@application-tutorias/titulacion/hooks/api/useBuscarEstudiantesTut';
-import { esModalidadGrupal } from '@application-tutorias/utils/tutoriasPills';
+import { useProyectoGradoFormContext } from '@application-titulacion/proyectos-grado/hooks/context/useProyectoGradoFormContext';
+import { useBuscarEstudiantesTut } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTut';
+import { esModalidadGrupal } from '@application-titulacion/utils/titulacionPills';
 import {
   mapFormValuesToProyectoPayload,
   mapProyectoToFormValues,
-} from '@application-tutorias/titulacion/mappers/proyectoGradoMapper';
+} from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 import {
   PROYECTOS_GRADO_LIST_PATH,
   TUT_TITULACION_MENU_KEY,
   proyectoGradoDetallePath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 /** Secciones declarativas del formulario (CfgFormWorkspace). */
 const createProyectoFormSections = ({

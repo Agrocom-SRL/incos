@@ -14,8 +14,8 @@ import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import { CfgFormWorkspace } from '@organisms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import { usePasantiaEmpresaFormPage } from '@application-tutorias/pasantias/hooks/state/usePasantiaEmpresaFormPage';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { usePasantiaEmpresaFormPage } from '@application-titulacion/pasantias/hooks/state/usePasantiaEmpresaFormPage';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 

@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { SesionRefuerzoFormContext } from '@application-tutorias/acompanamiento/sesiones/context/SesionRefuerzoFormContext';
+import { SesionRefuerzoFormContext } from '@application-academico/acompanamiento/sesiones/context/SesionRefuerzoFormContext';
 
 export const useSesionRefuerzoFormContext = () => {
   const context = useContext(SesionRefuerzoFormContext);

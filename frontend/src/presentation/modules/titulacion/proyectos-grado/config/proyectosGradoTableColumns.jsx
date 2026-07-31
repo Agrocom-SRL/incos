@@ -16,16 +16,16 @@ import {
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   formatEstadoProyecto,
   getEstadoProyectoPillClass,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-titulacion/utils/titulacionPills';
 import {
   PROYECTOS_GRADO_LIST_PATH,
   proyectoGradoDetallePath,
   proyectoGradoEditarPath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 export const createProyectosGradoTableColumns = ({
   navigate,

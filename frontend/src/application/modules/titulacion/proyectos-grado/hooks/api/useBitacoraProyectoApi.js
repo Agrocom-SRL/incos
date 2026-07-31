@@ -12,7 +12,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import proyectoGradoRepository from '@implementations/ProyectoGradoRepository';
-import { mapBitacoraList } from '@application-tutorias/titulacion/mappers/proyectoGradoMapper';
+import { mapBitacoraList } from '@application-titulacion/proyectos-grado/mappers/proyectoGradoMapper';
 
 /** Claves de datos = dataFieldName del backend (contrato T14/T15-T17). */
 export const BITACORA_ENTRADAS_DATA_KEY = 'bitacoraEntradas';

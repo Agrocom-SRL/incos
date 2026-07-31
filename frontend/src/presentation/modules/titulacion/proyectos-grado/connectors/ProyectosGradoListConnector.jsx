@@ -9,9 +9,9 @@
  */
 
 import { useAuth, esDocente } from '@application-auth';
-import { ProyectosGradoListProvider } from '@application-tutorias/titulacion/providers/ProyectosGradoListProvider';
-import ProyectosGradoList from '@tutorias/titulacion/pages/ProyectosGradoList';
-import MisTutoradosPage from '@tutorias/titulacion/pages/MisTutoradosPage';
+import { ProyectosGradoListProvider } from '@application-titulacion/proyectos-grado/providers/ProyectosGradoListProvider';
+import ProyectosGradoList from '@titulacion/proyectos-grado/pages/ProyectosGradoList';
+import MisTutoradosPage from '@titulacion/proyectos-grado/pages/MisTutoradosPage';
 
 const ProyectosGradoListConnector = () => {
   const { usuario } = useAuth();

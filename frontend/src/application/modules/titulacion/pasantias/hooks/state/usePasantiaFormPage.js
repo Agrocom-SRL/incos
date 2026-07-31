@@ -15,23 +15,23 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
-import { usePasantiaFormContext } from '@application-tutorias/pasantias/hooks/context/usePasantiaFormContext';
-import { useBuscarEstudiantesTut } from '@application-tutorias/titulacion/hooks/api/useBuscarEstudiantesTut';
+import { usePasantiaFormContext } from '@application-titulacion/pasantias/hooks/context/usePasantiaFormContext';
+import { useBuscarEstudiantesTut } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTut';
 import {
   HORAS_PASANTIA_MAX,
   HORAS_PASANTIA_MIN,
   TIPO_CONTRATO_OPTIONS,
   TIPO_PASANTIA_OPTIONS,
-} from '@application-tutorias/utils/pasantiasPills';
+} from '@application-titulacion/utils/pasantiasPills';
 import {
   mapFormValuesToPasantiaPayload,
   mapPasantiaToFormValues,
-} from '@application-tutorias/pasantias/mappers/pasantiaMapper';
+} from '@application-titulacion/pasantias/mappers/pasantiaMapper';
 import {
   PASANTIAS_LIST_PATH,
   TUT_PASANTIAS_MENU_KEY,
   pasantiaDetallePath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 /** Secciones declarativas del formulario (CfgFormWorkspace). */
 const createPasantiaFormSections = ({

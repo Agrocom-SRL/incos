@@ -9,9 +9,9 @@
  */
 
 import { useAuth, esDocente } from '@application-auth';
-import { PasantiasListProvider } from '@application-tutorias/pasantias/providers/PasantiasListProvider';
-import PasantiasList from '@tutorias/pasantias/pages/PasantiasList';
-import MisPasantiasSupervisadasPage from '@tutorias/pasantias/pages/MisPasantiasSupervisadasPage';
+import { PasantiasListProvider } from '@application-titulacion/pasantias/providers/PasantiasListProvider';
+import PasantiasList from '@titulacion/pasantias/pages/PasantiasList';
+import MisPasantiasSupervisadasPage from '@titulacion/pasantias/pages/MisPasantiasSupervisadasPage';
 
 const PasantiasListConnector = () => {
   const { usuario } = useAuth();

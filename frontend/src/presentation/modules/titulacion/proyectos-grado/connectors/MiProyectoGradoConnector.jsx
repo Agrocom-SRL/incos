@@ -6,7 +6,7 @@
  * token). Patrón MiBoletinConnector (ACA-MI-BOLETIN).
  */
 
-import MiProyectoGradoPage from '@tutorias/titulacion/pages/MiProyectoGradoPage';
+import MiProyectoGradoPage from '@titulacion/proyectos-grado/pages/MiProyectoGradoPage';
 
 const MiProyectoGradoConnector = () => <MiProyectoGradoPage />;
 

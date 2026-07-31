@@ -9,11 +9,11 @@
  */
 
 import { useMemo } from 'react';
-import { useProyectosGradoApi } from '@application-tutorias/titulacion/hooks/api/useProyectosGradoApi';
-import { useProyectoGradoMutations } from '@application-tutorias/titulacion/hooks/api/useProyectoGradoMutations';
-import { useModalidadesGradoApi } from '@application-tutorias/titulacion/hooks/api/useModalidadesGradoApi';
+import { useProyectosGradoApi } from '@application-titulacion/proyectos-grado/hooks/api/useProyectosGradoApi';
+import { useProyectoGradoMutations } from '@application-titulacion/proyectos-grado/hooks/api/useProyectoGradoMutations';
+import { useModalidadesGradoApi } from '@application-titulacion/proyectos-grado/hooks/api/useModalidadesGradoApi';
 import { useServerPaginatedList } from '@application/utils';
-import { ProyectosGradoListContext } from '@application-tutorias/titulacion/context/ProyectosGradoListContext';
+import { ProyectosGradoListContext } from '@application-titulacion/proyectos-grado/context/ProyectosGradoListContext';
 
 export const ProyectosGradoListProvider = ({ children }) => {
   const { fetch: fetchProyectos } = useProyectosGradoApi();

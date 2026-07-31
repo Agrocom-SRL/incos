@@ -6,7 +6,7 @@
  * token). Patrón MiProyectoGradoConnector (TUT-MI-PROYECTO).
  */
 
-import MiPasantiaPage from '@tutorias/pasantias/pages/MiPasantiaPage';
+import MiPasantiaPage from '@titulacion/pasantias/pages/MiPasantiaPage';
 
 const MiPasantiaConnector = () => <MiPasantiaPage />;
 

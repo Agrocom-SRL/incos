@@ -1,14 +1,14 @@
-// src/presentation/modules/tutorias/titulacion/routes.jsx
+// src/presentation/modules/titulacion/proyectos-grado/routes.jsx
 /**
- * Tutorías → Titulación (ítem de menú TUT, order 1).
+ * Titulación → Proyectos de grado (ítem de menú TIT, order 1).
  *
- * Permisos del seed 66 (`tutorias.titulacion.proyecto`). Rutas estáticas
- * ANTES de `/:id` (React Router interceptaría /registrar como id). La ruta
- * con menú va al final del array (patrón capacitacion/cursos).
+ * Permisos del seed 65 (`titulacion.proyecto`). Rutas estáticas ANTES de
+ * `/:id` (React Router interceptaría /registrar como id). La ruta con menú
+ * va al final del array (patrón capacitacion/cursos).
  *
- * Portal del estudiante: `/tutorias/mi-proyecto` (TUT-MI-PROYECTO, sin ítem
- * de menú, patrón ACA-MI-BOLETIN) — ESTUDIANTE solo tiene proyecto·DETALLE,
- * por lo que no ve el ítem "Proyectos de grado".
+ * Portal del estudiante: `/titulacion/mi-proyecto` (TIT-MI-PROYECTO, sin
+ * ítem de menú, patrón ACA-MI-BOLETIN) — ESTUDIANTE solo tiene
+ * proyecto·DETALLE, por lo que no ve el ítem "Proyectos de grado".
  */
 
 import { lazy } from 'react';
@@ -27,62 +27,62 @@ const ProyectoGradoFormEditConnector = lazy(
 );
 const MiProyectoGradoConnector = lazy(() => import('./connectors/MiProyectoGradoConnector.jsx'));
 
-export const titulacionRoutes = [
+export const proyectosGradoRoutes = [
   {
-    /** Portal del estudiante: su propio proyecto (rama ESTUDIANTE de TUT). Sin ítem de menú. */
-    path: '/tutorias/mi-proyecto',
+    /** Portal del estudiante: su propio proyecto (rama ESTUDIANTE de TIT). Sin ítem de menú. */
+    path: '/titulacion/mi-proyecto',
     element: <MiProyectoGradoConnector />,
-    key: 'TUT-MI-PROYECTO',
+    key: 'TIT-MI-PROYECTO',
     breadcrumbLabel: 'Mi proyecto de grado',
-    permiso: 'tutorias.titulacion.proyecto',
+    permiso: 'titulacion.proyecto',
     accion: 'DETALLE',
     menu: null,
-    breadcrumbParent: 'TUT-TITULACION',
+    breadcrumbParent: 'TIT-PROYECTOS',
   },
   {
-    path: '/tutorias/titulacion/registrar',
+    path: '/titulacion/proyectos-grado/registrar',
     element: <ProyectoGradoFormCreateConnector />,
-    key: 'TUT-TITULACION-REGISTRAR',
+    key: 'TIT-PROYECTOS-REGISTRAR',
     breadcrumbLabel: 'Nuevo proyecto',
-    permiso: 'tutorias.titulacion.proyecto',
+    permiso: 'titulacion.proyecto',
     accion: 'CREAR',
     menu: null,
-    breadcrumbParent: 'TUT-TITULACION',
+    breadcrumbParent: 'TIT-PROYECTOS',
   },
   {
-    path: '/tutorias/titulacion/:id/editar',
+    path: '/titulacion/proyectos-grado/:id/editar',
     element: <ProyectoGradoFormEditConnector />,
-    key: 'TUT-TITULACION-EDITAR',
+    key: 'TIT-PROYECTOS-EDITAR',
     breadcrumbLabel: 'Editar proyecto',
-    permiso: 'tutorias.titulacion.proyecto',
+    permiso: 'titulacion.proyecto',
     accion: 'EDITAR',
     menu: null,
-    breadcrumbParent: 'TUT-TITULACION',
+    breadcrumbParent: 'TIT-PROYECTOS',
   },
   {
-    path: '/tutorias/titulacion/:id',
+    path: '/titulacion/proyectos-grado/:id',
     element: <ProyectoGradoDetailConnector />,
-    key: 'TUT-TITULACION-DETALLE',
+    key: 'TIT-PROYECTOS-DETALLE',
     breadcrumbLabel: 'Detalle de proyecto',
-    permiso: 'tutorias.titulacion.proyecto',
+    permiso: 'titulacion.proyecto',
     accion: 'DETALLE',
     menu: null,
-    breadcrumbParent: 'TUT-TITULACION',
+    breadcrumbParent: 'TIT-PROYECTOS',
   },
   {
-    path: '/tutorias/titulacion',
+    path: '/titulacion/proyectos-grado',
     element: <ProyectosGradoListConnector />,
-    key: 'TUT-TITULACION',
-    permiso: 'tutorias.titulacion.proyecto',
+    key: 'TIT-PROYECTOS',
+    permiso: 'titulacion.proyecto',
     accion: 'LISTAR',
     menu: {
       label: 'Proyectos de grado',
-      module: 'TUT',
-      parent: 'TUT',
+      module: 'TIT',
+      parent: 'TIT',
       order: 1,
       labelByRole: { DOCENTE: 'Mis tutorados' },
     },
   },
 ];
 
-export default titulacionRoutes;
+export default proyectosGradoRoutes;

@@ -14,7 +14,7 @@ import { DetailProfileCard } from '@organisms';
 import {
   formatEstadoProyecto,
   getEstadoProyectoPillClass,
-} from '@application-tutorias/utils/tutoriasPills';
+} from '@application-titulacion/utils/titulacionPills';
 
 const ProyectoGradoFichaHeader = ({ proyecto, puedeEditar = false, onEditar }) => {
   const subtitle =

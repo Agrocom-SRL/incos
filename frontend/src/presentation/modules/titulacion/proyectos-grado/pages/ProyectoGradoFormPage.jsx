@@ -14,9 +14,9 @@ import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import { useProyectoGradoFormPage } from '@application-tutorias/titulacion/hooks/state/useProyectoGradoFormPage';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import ProyectoGradoFormSections from '@tutorias/titulacion/components/organisms/ProyectoGradoFormSections';
+import { useProyectoGradoFormPage } from '@application-titulacion/proyectos-grado/hooks/state/useProyectoGradoFormPage';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import ProyectoGradoFormSections from '@titulacion/proyectos-grado/components/organisms/ProyectoGradoFormSections';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 

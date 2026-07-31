@@ -12,14 +12,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { useMisPasantiasApi } from '@application-tutorias/pasantias/hooks/api/useMisPasantiasApi';
-import { useSeguimientosPasantiaApi } from '@application-tutorias/pasantias/hooks/api/useSeguimientosPasantiaApi';
-import { createMisPasantiasTableColumns } from '@tutorias/pasantias/config/misPasantiasTableColumns';
+import { useMisPasantiasApi } from '@application-titulacion/pasantias/hooks/api/useMisPasantiasApi';
+import { useSeguimientosPasantiaApi } from '@application-titulacion/pasantias/hooks/api/useSeguimientosPasantiaApi';
+import { createMisPasantiasTableColumns } from '@titulacion/pasantias/config/misPasantiasTableColumns';
 import {
   PASANTIAS_LIST_PATH,
   TUT_PASANTIAS_MENU_KEY,
   pasantiaDetallePath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 export const useMisPasantiasSupervisadasPage = () => {
   const navigate = useNavigate();

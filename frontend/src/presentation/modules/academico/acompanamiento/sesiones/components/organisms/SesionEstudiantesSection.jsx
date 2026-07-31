@@ -14,8 +14,8 @@ import { LinkOutlined, SaveOutlined } from '@ant-design/icons';
 import { DataTable } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton, Text } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import { createSesionEstudiantesColumns } from '@tutorias/acompanamiento/sesiones/config/sesionEstudiantesTableColumns';
+import { TUTORIAS_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { createSesionEstudiantesColumns } from '@academico/acompanamiento/sesiones/config/sesionEstudiantesTableColumns';
 import { allSpacing } from '@theme/tokens';
 
 const { Paragraph } = Typography;

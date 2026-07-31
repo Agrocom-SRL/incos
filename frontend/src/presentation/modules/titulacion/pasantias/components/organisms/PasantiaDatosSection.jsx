@@ -15,7 +15,7 @@ import {
   formatTipoPasantia,
   formatTipoSocietario,
   getEstadoPasantiaPillClass,
-} from '@application-tutorias/utils/pasantiasPills';
+} from '@application-titulacion/utils/pasantiasPills';
 
 const PasantiaDatosSection = ({ pasantia }) => (
   <div className="sd-tab-body">

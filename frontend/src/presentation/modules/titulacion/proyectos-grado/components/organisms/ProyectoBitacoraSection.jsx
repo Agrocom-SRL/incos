@@ -10,8 +10,8 @@ import { Alert, Empty, Table } from 'antd';
 import { FileAddOutlined, FileTextOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { ActionButton } from '@atoms';
-import { TUTORIAS_PERMISOS } from '@application-tutorias/utils/tutoriasPermisos';
-import { createBitacoraTableColumns } from '@tutorias/titulacion/config/bitacoraTableColumns';
+import { TUTORIAS_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
+import { createBitacoraTableColumns } from '@titulacion/proyectos-grado/config/bitacoraTableColumns';
 
 const ProyectoBitacoraSection = ({ entradas, loading, error, onNuevaEntrada, onEditarEntrada }) => {
   const columns = createBitacoraTableColumns({ onEditar: onEditarEntrada });

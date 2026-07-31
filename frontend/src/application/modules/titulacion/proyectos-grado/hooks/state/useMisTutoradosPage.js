@@ -13,15 +13,15 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { useMisTutoradosApi } from '@application-tutorias/titulacion/hooks/api/useMisTutoradosApi';
-import { useBitacoraProyectoApi } from '@application-tutorias/titulacion/hooks/api/useBitacoraProyectoApi';
-import { useProyectoGradoMutations } from '@application-tutorias/titulacion/hooks/api/useProyectoGradoMutations';
-import { createMisTutoradosTableColumns } from '@tutorias/titulacion/config/misTutoradosTableColumns';
+import { useMisTutoradosApi } from '@application-titulacion/proyectos-grado/hooks/api/useMisTutoradosApi';
+import { useBitacoraProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useBitacoraProyectoApi';
+import { useProyectoGradoMutations } from '@application-titulacion/proyectos-grado/hooks/api/useProyectoGradoMutations';
+import { createMisTutoradosTableColumns } from '@titulacion/proyectos-grado/config/misTutoradosTableColumns';
 import {
   PROYECTOS_GRADO_LIST_PATH,
   TUT_TITULACION_MENU_KEY,
   proyectoGradoDetallePath,
-} from '@application-tutorias/config/paths';
+} from '@application-titulacion/config/paths';
 
 export const useMisTutoradosPage = () => {
   const navigate = useNavigate();
