@@ -270,3 +270,39 @@ export const createAvanceValidator = [
     .withMessage('titulo no debe superar los 255 caracteres'),
   body('descripcion').optional({ nullable: true }).isString(),
 ];
+
+// ============================================
+// Extensión 2026-07-31 (formulario de modalidad de graduación, reporte de
+// avance por carrera, planilla de avance "10 en 10")
+// ============================================
+
+/** GET /estudiantes-elegibles?search=&carreraId=&gestionId= (Requisito 1) */
+export const listEstudiantesElegiblesValidator = [
+  ...listValidator,
+  query('carreraId').optional().isInt({ min: 1 }).withMessage('carreraId debe ser un entero positivo'),
+  query('gestionId').optional().isInt({ min: 1 }).withMessage('gestionId debe ser un entero positivo'),
+];
+
+/** GET /reportes/avance-carrera[/pdf]?gestionId=&carreraId= (Requisito 2) */
+export const avanceTutoriaCarreraValidator = [
+  query('gestionId').optional().isInt({ min: 1 }).withMessage('gestionId debe ser un entero positivo'),
+  query('carreraId').optional().isInt({ min: 1 }).withMessage('carreraId debe ser un entero positivo'),
+];
+
+/**
+ * GET /reportes/planilla-avance-tercer-anio[/export]?carreraId=&gestionId=&bimestre=
+ * (Requisito 3). carreraId y bimestre son requeridos.
+ */
+export const planillaAvanceTercerAnioValidator = [
+  query('carreraId')
+    .notEmpty()
+    .withMessage('carreraId es requerido')
+    .isInt({ min: 1 })
+    .withMessage('carreraId debe ser un entero positivo'),
+  query('gestionId').optional().isInt({ min: 1 }).withMessage('gestionId debe ser un entero positivo'),
+  query('bimestre')
+    .notEmpty()
+    .withMessage('bimestre es requerido')
+    .isInt({ min: 1, max: 4 })
+    .withMessage('bimestre debe ser un entero entre 1 y 4'),
+];

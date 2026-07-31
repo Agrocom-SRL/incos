@@ -238,6 +238,14 @@ ejecutada). Resta, en orden:
    PENDIENTE: prueba en vivo con rol sin permiso (requiere BD con vistas
    166-168 + seed 65 resembrado) y pasada del `verificador`.
 
+> **Extensión 2026-07-31 (Iteración 1 backend):** 3 requisitos nuevos sobre
+> esta misma Fase 2 (no es una fase propia) — formulario de elección de
+> modalidad de graduación (FMDG-1), reporte de avance de tutorías por carrera
+> y planilla de seguimiento "10 en 10" (bimestral, 3er año). Plan completo:
+> `docs/plan/titulacion-avance-y-modalidad-plan-desarrollo.md`. Sin permisos
+> nuevos (reutiliza `titulacion.proyecto` LISTAR/EXPORTAR); vistas 178-181 +
+> ajuste aditivo a la 160. Iteración 2 (frontend) pendiente.
+
 ### Fase 3 — Supervisión docente (schema 27; ítem de DOC)
 
 - Seed 59: rediseñar el bloque `docentes.supervision.*` contra

@@ -162,3 +162,28 @@ export const RESULTADOS_DICTAMEN_TUTORIA = {
 };
 
 export const RESULTADOS_DICTAMEN_TUTORIA_VALUES = Object.values(RESULTADOS_DICTAMEN_TUTORIA);
+
+// ============================================
+// PLANILLA DE AVANCE "10 EN 10" (Requisito 3 — extensión 2026-07-31)
+// Artefacto de impresión/monitoreo bimestral de 3er año. NO es un documento
+// legal con folio persistido (a diferencia del Libro de registro, schema 25):
+// se deriva en tiempo de lectura de bitacora_proyecto + integrantes_proyecto
+// + proyectos_grado + periodos_academicos (vista 181). Constante propia, NO
+// se importa nada de `domain/constants/libros.constants.js`.
+// ============================================
+
+/** Estudiantes por folio impreso de la planilla de seguimiento de tutoría. */
+export const ESTUDIANTES_POR_FOLIO_TUTORIA = 10;
+
+/**
+ * Clasificación de cada estudiante de 3er año en la planilla bimestral
+ * (columna `resultado_tutoria` de la vista 181).
+ */
+export const RESULTADOS_TUTORIA_TERCER_ANIO = {
+  APROBADO: 'APROBADO',
+  REPROBADO: 'REPROBADO',
+  ABANDONO: 'ABANDONO',
+  EN_PROCESO: 'EN_PROCESO',
+};
+
+export const RESULTADOS_TUTORIA_TERCER_ANIO_VALUES = Object.values(RESULTADOS_TUTORIA_TERCER_ANIO);

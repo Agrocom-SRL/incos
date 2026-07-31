@@ -30,3 +30,12 @@ export { CreateAvanceProyectoController } from './create-avance-proyecto.control
 export { DownloadAvanceArchivoController } from './download-avance-archivo.controller.js';
 export { ListDictamenesProyectoController } from './list-dictamenes-proyecto.controller.js';
 export { ExportDictamenPdfController } from './export-dictamen-pdf.controller.js';
+
+// Extensión 2026-07-31 (formulario de modalidad de graduación, reporte de
+// avance por carrera, planilla de avance "10 en 10")
+export { ListEstudiantesElegiblesModalidadGradoController } from './list-estudiantes-elegibles-modalidad-grado.controller.js';
+export { ExportFormularioModalidadGradoPdfController } from './export-formulario-modalidad-grado-pdf.controller.js';
+export { GetAvanceTutoriaCarreraController } from './get-avance-tutoria-carrera.controller.js';
+export { ExportAvanceTutoriaCarreraPdfController } from './export-avance-tutoria-carrera-pdf.controller.js';
+export { GetPlanillaAvanceTercerAnioController } from './get-planilla-avance-tercer-anio.controller.js';
+export { ExportPlanillaAvanceTercerAnioExcelController } from './export-planilla-avance-tercer-anio-excel.controller.js';

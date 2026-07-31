@@ -51,6 +51,9 @@ import { ViabilidadProyectoPdfGenerator } from '../../external/pdf/titulacion/Vi
 import { BitacoraMensualTutorPdfGenerator } from '../../external/pdf/titulacion/BitacoraMensualTutorPdfGenerator.js';
 import { PanelAcompanamientoPdfGenerator } from '../../external/pdf/academico/PanelAcompanamientoPdfGenerator.js';
 import { FichaSeguimientoClasePdfGenerator } from '../../external/pdf/docentes/FichaSeguimientoClasePdfGenerator.js';
+import { FormularioModalidadGradoPdfGenerator } from '../../external/pdf/titulacion/FormularioModalidadGradoPdfGenerator.js';
+import { AvanceTutoriaCarreraPdfGenerator } from '../../external/pdf/titulacion/AvanceTutoriaCarreraPdfGenerator.js';
+import { PlanillaAvanceTutoriaExcelBuilder } from '../../external/excel/titulacion-planilla-avance/PlanillaAvanceTutoriaExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
 export function registerServicesModule(container) {
@@ -217,6 +220,28 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.bitacoraMensualTutorPdfGenerator,
         (c) => new BitacoraMensualTutorPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+
+    // ============================================
+    // GENERADORES DEL MÓDULO TITULACIÓN (TIT) · extensión 2026-07-31
+    // (formulario de modalidad de graduación, reporte de avance por carrera,
+    // planilla de avance "10 en 10")
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.formularioModalidadGradoPdfGenerator,
+        (c) =>
+            new FormularioModalidadGradoPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.avanceTutoriaCarreraPdfGenerator,
+        (c) => new AvanceTutoriaCarreraPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.planillaAvanceTutoriaExcelGenerator,
+        () => new PlanillaAvanceTutoriaExcelBuilder()
     );
 
     // ============================================

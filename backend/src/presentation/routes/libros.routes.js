@@ -12,6 +12,7 @@ import {
   cambiarEstadoFolioValidator,
   editarFolioEstudianteValidator,
   exportLibroExcelValidator,
+  generarFoliosGestionValidator,
 } from '../validators/academico/index.js';
 
 /**
@@ -43,6 +44,20 @@ export function buildLibrosRouter({ controllers, middlewares }) {
   /** POST / — abrir un libro para una carrera y gestión. */
   router.post('/', ...libroCrear, abrirLibroValidator, validateRequest, (req, res, next) =>
     controllers.abrirLibroController.handle(req, res, next),
+  );
+
+  /**
+   * POST /gestiones/:gestionId/folios — genera los folios de TODOS los
+   * paralelos de la gestión, en el orden canónico de carrera (Contaduría →
+   * Administración → Informática). Ruta estática (prefijo /gestiones), antes
+   * de las rutas dinámicas /:id.
+   */
+  router.post(
+    '/gestiones/:gestionId/folios',
+    ...libroCrear,
+    generarFoliosGestionValidator,
+    validateRequest,
+    (req, res, next) => controllers.generarFoliosGestionController.handle(req, res, next),
   );
 
   /** GET /:id/export — descarga Excel del libro completo (antes de GET /:id). */

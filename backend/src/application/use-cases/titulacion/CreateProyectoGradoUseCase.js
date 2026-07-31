@@ -6,7 +6,10 @@ import {
   ESTADOS_INTEGRANTE_TUTORIA,
 } from '../../../domain/constants/titulacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
-import { assertEstudianteSinProyectoVigente } from './helpers/proyectoTutoriaGuards.js';
+import {
+  assertEstudianteSinProyectoVigente,
+  assertEstudianteEsTercerAnio,
+} from './helpers/proyectoTutoriaGuards.js';
 
 /**
  * Use Case: CreateProyectoGradoUseCase (T7)
@@ -18,8 +21,13 @@ import { assertEstudianteSinProyectoVigente } from './helpers/proyectoTutoriaGua
  *   individuales; los consumidores nuevos leen la satélite, no la raíz).
  * - Solo la modalidad PSP (MODALIDAD_GRUPAL_CODIGO) admite varios integrantes.
  * - Regla: un estudiante solo puede tener UN proyecto vigente.
+ * - Regla (extensión 2026-07-31, Requisito 1): TODOS los estudiantes
+ *   (titular e integrantes PSP) deben estar cursando el 3er año en la
+ *   gestión de creación — ver `assertEstudianteEsTercerAnio`.
  * - `estudiante_id` legacy de la raíz: titular en individuales, NULL en grupales.
  * - `estado` SIEMPRE nace en PERFIL (transiciones vía T11).
+ * - `carreraId`/`gestionId`: si no llegan en el body, se derivan de la
+ *   inscripción vigente del titular (misma fuente que el guard de 3er año).
  */
 export class CreateProyectoGradoUseCase {
   /**
@@ -28,6 +36,9 @@ export class CreateProyectoGradoUseCase {
    * @param {Object} params.integranteProyectoRepository
    * @param {Object} params.modalidadGradoRepository
    * @param {Object} params.studentRepository - Validación de estudiantes
+   * @param {Object} params.enrollmentRepository - Guard de 3er año (vista 101)
+   * @param {Object} params.calificacionContextoRepository - Gestión vigente
+   *   (fallback cuando el body no manda gestionId)
    * @param {ILogger} params.logger
    */
   constructor({
@@ -35,12 +46,16 @@ export class CreateProyectoGradoUseCase {
     integranteProyectoRepository,
     modalidadGradoRepository,
     studentRepository,
+    enrollmentRepository,
+    calificacionContextoRepository,
     logger,
   }) {
     this.proyectoGradoRepository = proyectoGradoRepository;
     this.integranteProyectoRepository = integranteProyectoRepository;
     this.modalidadGradoRepository = modalidadGradoRepository;
     this.studentRepository = studentRepository;
+    this.enrollmentRepository = enrollmentRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
     this.logger = logger;
   }
 
@@ -53,7 +68,13 @@ export class CreateProyectoGradoUseCase {
     const estudianteIds = this._normalizeEstudianteIds(body.estudianteIds);
     const titularEstudianteId = this._resolveTitular(body, estudianteIds);
     const modalidad = await this._validateModalidad(body.modalidadId, estudianteIds);
-    await this._validateEstudiantes(estudianteIds);
+
+    const gestionIdVigente = await this._resolveGestionIdVigente(body.gestionId);
+    const titularInscripcion = await this._validateEstudiantes(
+      estudianteIds,
+      titularEstudianteId,
+      gestionIdVigente
+    );
 
     const esGrupal = modalidad.codigo === MODALIDAD_GRUPAL_CODIGO;
 
@@ -62,8 +83,8 @@ export class CreateProyectoGradoUseCase {
       estudianteId: esGrupal ? null : titularEstudianteId,
       modalidadId: modalidad.id,
       tutorId: null,
-      carreraId: body.carreraId ?? null,
-      gestionId: body.gestionId ?? null,
+      carreraId: body.carreraId ?? titularInscripcion?.carrera_id ?? null,
+      gestionId: body.gestionId ?? titularInscripcion?.gestion_id ?? gestionIdVigente ?? null,
       titulo: String(body.titulo).trim(),
       descripcion: body.descripcion ?? null,
       objetivos: body.objetivos ?? null,
@@ -148,8 +169,15 @@ export class CreateProyectoGradoUseCase {
     return modalidad;
   }
 
-  /** @private */
-  async _validateEstudiantes(estudianteIds) {
+  /**
+   * Valida existencia, ausencia de proyecto vigente y 3er año de CADA
+   * estudiante (titular e integrantes PSP grupales).
+   * @private
+   * @returns {Promise<Object|null>} Fila de inscripción (vista 101) del
+   *   titular, para derivar carreraId/gestionId si el body no los manda.
+   */
+  async _validateEstudiantes(estudianteIds, titularEstudianteId, gestionId) {
+    let titularInscripcion = null;
     for (const estudianteId of estudianteIds) {
       // eslint-disable-next-line no-await-in-loop
       const estudiante = await this.studentRepository.findById(estudianteId);
@@ -162,6 +190,30 @@ export class CreateProyectoGradoUseCase {
         proyectoGradoRepository: this.proyectoGradoRepository,
         estudianteId,
       });
+      // eslint-disable-next-line no-await-in-loop
+      const inscripcion = await assertEstudianteEsTercerAnio({
+        enrollmentRepository: this.enrollmentRepository,
+        estudianteId,
+        gestionId,
+      });
+      if (estudianteId === titularEstudianteId) {
+        titularInscripcion = inscripcion;
+      }
     }
+    return titularInscripcion;
+  }
+
+  /**
+   * Resuelve la gestión efectiva para el guard de 3er año: la del body si
+   * llega, o la vigente (mismo patrón `resolverGestion` de
+   * GetPanelAcompanamientoUseCase).
+   * @private
+   */
+  async _resolveGestionIdVigente(gestionIdBody) {
+    if (gestionIdBody) {
+      return Number(gestionIdBody);
+    }
+    const ctx = await this.calificacionContextoRepository.obtenerContextoVigente();
+    return ctx?.gestion_id != null ? Number(ctx.gestion_id) : null;
   }
 }

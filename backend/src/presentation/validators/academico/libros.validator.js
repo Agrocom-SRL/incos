@@ -8,6 +8,7 @@ import {
 const libroIdParam = param('id').isInt({ min: 1 }).withMessage('Libro inválido');
 const folioIdParam = param('folioId').isInt({ min: 1 }).withMessage('Folio inválido');
 const filaIdParam = param('filaId').isInt({ min: 1 }).withMessage('Fila de folio inválida');
+const gestionIdParam = param('gestionId').isInt({ min: 1 }).withMessage('Gestión inválida');
 
 export const listLibrosValidator = [
   query('carreraId').optional().isInt({ min: 1 }).withMessage('Carrera inválida'),
@@ -77,3 +78,9 @@ export const editarFolioEstudianteValidator = [
 ];
 
 export const exportLibroExcelValidator = [libroIdParam];
+
+/** POST /libros/gestiones/:gestionId/folios — generación masiva por gestión. */
+export const generarFoliosGestionValidator = [
+  gestionIdParam,
+  body('fechaRegistro').optional({ nullable: true }).isISO8601().withMessage('Fecha de registro inválida'),
+];

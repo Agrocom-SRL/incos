@@ -1,14 +1,8 @@
 import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
 import { ESTADOS_FOLIO } from '../../../../domain/constants/libros.constants.js';
 import { sanitizarFilePart } from '../../../utils/centralizadorExcelDatos.js';
-import {
-  toFolioEstudianteDTO,
-} from '../../../mappers/academico/LibroRegistroPresentationMapper.js';
-import {
-  construirAsignaturasDesdeFilas135,
-  agruparFilas135PorEstudiante,
-  construirCeldasEstudiante,
-} from './helpers/folioCeldasHelper.js';
+import { construirHojaParalelo } from '../../../utils/libroFolioExcelDatos.js';
+import { calcularEstadisticasParalelo } from './helpers/estadisticasParaleloHelper.js';
 
 /**
  * Exporta el libro de registro COMPLETO a Excel (GET /libros/:id/export):
@@ -78,41 +72,26 @@ export class ExportLibroExcelUseCase {
       // eslint-disable-next-line no-await-in-loop
       const filas135 = await this.calificacionCentralizadorRepository
         .listarFilasCentralizadorPorParaleloGestion(primero.paralelo_gestion_id);
-      const asignaturas = construirAsignaturasDesdeFilas135(filas135);
-      const filasPorEstudiante = agruparFilas135PorEstudiante(filas135);
 
-      const folios = [];
+      const estudiantesPorFolio = new Map();
       for (const folioRow of foliosParalelo) {
         // eslint-disable-next-line no-await-in-loop
         const estudiantesRows = await this.libroRegistroRepository.listarEstudiantesFolio(
           folioRow.id,
         );
         totalEstudiantes += estudiantesRows.length;
-        folios.push({
-          cabecera: {
-            codigoRegistro: libroRow.codigo_registro ?? '',
-            numeroLibro: libroRow.numero_libro,
-            numeroFolio: folioRow.numero_folio,
-            turno: folioRow.turno ?? '',
-            gestionAnio: folioRow.gestion_anio ?? libroRow.gestion_anio ?? '',
-            carrera: folioRow.carrera_nombre ?? libroRow.carrera_nombre ?? '',
-            curso: `${String(folioRow.periodo_nombre ?? '').toUpperCase()} - PARALELO ${
-              folioRow.paralelo_nombre ?? ''
-            }`.trim(),
-            estado: folioRow.estado,
-          },
-          asignaturas,
-          estudiantes: estudiantesRows.map((fila) => ({
-            ...toFolioEstudianteDTO(fila),
-            celdas: construirCeldasEstudiante(filasPorEstudiante.get(fila.estudiante_id)),
-          })),
-        });
+        estudiantesPorFolio.set(folioRow.id, estudiantesRows);
       }
 
-      hojas.push({
-        nombreHoja: `${primero.periodo_nombre ?? ''} ${primero.paralelo_nombre ?? ''}`.trim(),
-        folios,
-      });
+      hojas.push(
+        construirHojaParalelo({
+          libroRow,
+          foliosParalelo,
+          filas135,
+          estudiantesPorFolio,
+          estadisticas: calcularEstadisticasParalelo(foliosParalelo),
+        }),
+      );
     }
 
     const buffer = await this.libroRegistroExcelGenerator.generarLibroRegistro({

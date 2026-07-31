@@ -22,6 +22,10 @@ export const TITULACION_TOKENS = {
   bitacoraProyectoRepository: 'titulacion.bitacoraProyectoRepository',
   dictamenProyectoRepository: 'titulacion.dictamenProyectoRepository',
   proyectoGradoListadoViewRepository: 'titulacion.proyectoGradoListadoViewRepository',
+  // Vistas 178/179/181 — extensión 2026-07-31 (formulario de modalidad,
+  // reporte de avance por carrera, planilla "10 en 10"). Aislado del repo de
+  // arriba (SRP): ver ITutoriaAvanceViewRepository.
+  tutoriaAvanceViewRepository: 'titulacion.tutoriaAvanceViewRepository',
 
   // Use Cases — Titulación (proyectos de grado)
   listProyectosGradoUseCase: 'titulacion.listProyectosGradoUseCase',
@@ -48,6 +52,17 @@ export const TITULACION_TOKENS = {
   listDictamenesProyectoUseCase: 'titulacion.listDictamenesProyectoUseCase',
   exportDictamenPdfUseCase: 'titulacion.exportDictamenPdfUseCase',
 
+  // Use Cases — extensión 2026-07-31 (formulario de modalidad de graduación,
+  // reporte de avance por carrera, planilla de avance "10 en 10")
+  listEstudiantesElegiblesModalidadGradoUseCase:
+    'titulacion.listEstudiantesElegiblesModalidadGradoUseCase',
+  exportFormularioModalidadGradoPdfUseCase: 'titulacion.exportFormularioModalidadGradoPdfUseCase',
+  getAvanceTutoriaCarreraUseCase: 'titulacion.getAvanceTutoriaCarreraUseCase',
+  exportAvanceTutoriaCarreraPdfUseCase: 'titulacion.exportAvanceTutoriaCarreraPdfUseCase',
+  getPlanillaAvanceTercerAnioUseCase: 'titulacion.getPlanillaAvanceTercerAnioUseCase',
+  exportPlanillaAvanceTercerAnioExcelUseCase:
+    'titulacion.exportPlanillaAvanceTercerAnioExcelUseCase',
+
   // Controllers — Titulación
   listProyectosGradoController: 'titulacion.listProyectosGradoController',
   listModalidadesGradoController: 'titulacion.listModalidadesGradoController',
@@ -72,6 +87,17 @@ export const TITULACION_TOKENS = {
   downloadAvanceArchivoController: 'titulacion.downloadAvanceArchivoController',
   listDictamenesProyectoController: 'titulacion.listDictamenesProyectoController',
   exportDictamenPdfController: 'titulacion.exportDictamenPdfController',
+
+  // Controllers — extensión 2026-07-31
+  listEstudiantesElegiblesModalidadGradoController:
+    'titulacion.listEstudiantesElegiblesModalidadGradoController',
+  exportFormularioModalidadGradoPdfController:
+    'titulacion.exportFormularioModalidadGradoPdfController',
+  getAvanceTutoriaCarreraController: 'titulacion.getAvanceTutoriaCarreraController',
+  exportAvanceTutoriaCarreraPdfController: 'titulacion.exportAvanceTutoriaCarreraPdfController',
+  getPlanillaAvanceTercerAnioController: 'titulacion.getPlanillaAvanceTercerAnioController',
+  exportPlanillaAvanceTercerAnioExcelController:
+    'titulacion.exportPlanillaAvanceTercerAnioExcelController',
 
   // Router
   proyectosGradoRouter: 'titulacion.proyectosGradoRouter',

@@ -17,6 +17,7 @@ import { GetLibroByIdUseCase } from '../../../../application/use-cases/academico
 import { EditarLibroUseCase } from '../../../../application/use-cases/academico/libros/EditarLibroUseCase.js';
 import { ListParalelosLibroUseCase } from '../../../../application/use-cases/academico/libros/ListParalelosLibroUseCase.js';
 import { GenerarFoliosParaleloUseCase } from '../../../../application/use-cases/academico/libros/GenerarFoliosParaleloUseCase.js';
+import { GenerarFoliosGestionUseCase } from '../../../../application/use-cases/academico/libros/GenerarFoliosGestionUseCase.js';
 import { GetFolioByIdUseCase } from '../../../../application/use-cases/academico/libros/GetFolioByIdUseCase.js';
 import { CambiarEstadoFolioUseCase } from '../../../../application/use-cases/academico/libros/CambiarEstadoFolioUseCase.js';
 import { EditarFolioEstudianteUseCase } from '../../../../application/use-cases/academico/libros/EditarFolioEstudianteUseCase.js';
@@ -27,6 +28,7 @@ import { GetLibroByIdController } from '../../../../presentation/controllers/aca
 import { EditarLibroController } from '../../../../presentation/controllers/academico/libros/editar-libro.controller.js';
 import { ListParalelosLibroController } from '../../../../presentation/controllers/academico/libros/list-paralelos-libro.controller.js';
 import { GenerarFoliosParaleloController } from '../../../../presentation/controllers/academico/libros/generar-folios-paralelo.controller.js';
+import { GenerarFoliosGestionController } from '../../../../presentation/controllers/academico/libros/generar-folios-gestion.controller.js';
 import { GetFolioByIdController } from '../../../../presentation/controllers/academico/libros/get-folio-by-id.controller.js';
 import { CambiarEstadoFolioController } from '../../../../presentation/controllers/academico/libros/cambiar-estado-folio.controller.js';
 import { EditarFolioEstudianteController } from '../../../../presentation/controllers/academico/libros/editar-folio-estudiante.controller.js';
@@ -94,6 +96,20 @@ export function registerLibrosResource(container) {
     ACADEMICO_TOKENS.generarFoliosParaleloUseCase,
     (c) =>
       new GenerarFoliosParaleloUseCase({
+        libroRegistroRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroRepository),
+        libroRegistroViewRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroViewRepository),
+        calificacionCentralizadorRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCentralizadorRepository,
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.generarFoliosGestionUseCase,
+    (c) =>
+      new GenerarFoliosGestionUseCase({
         libroRegistroRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroRepository),
         libroRegistroViewRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroViewRepository),
         calificacionCentralizadorRepository: c.resolve(
@@ -224,6 +240,17 @@ export function registerLibrosResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.generarFoliosGestionController,
+    (c) =>
+      new GenerarFoliosGestionController({
+        generarFoliosGestionUseCase: c.resolve(ACADEMICO_TOKENS.generarFoliosGestionUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.getFolioByIdController,
     (c) =>
       new GetFolioByIdController({
@@ -279,6 +306,7 @@ export function registerLibrosResource(container) {
         generarFoliosParaleloController: c.resolve(
           ACADEMICO_TOKENS.generarFoliosParaleloController,
         ),
+        generarFoliosGestionController: c.resolve(ACADEMICO_TOKENS.generarFoliosGestionController),
         getFolioByIdController: c.resolve(ACADEMICO_TOKENS.getFolioByIdController),
         cambiarEstadoFolioController: c.resolve(ACADEMICO_TOKENS.cambiarEstadoFolioController),
         editarFolioEstudianteController: c.resolve(

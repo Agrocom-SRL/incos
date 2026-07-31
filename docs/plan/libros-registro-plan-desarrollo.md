@@ -308,3 +308,64 @@ Excel) puede mostrar LIBRO/FOLIO reales consultando `folios_libro` por
      margen izquierdo de encuadernado (0.9" vs 0.3", landscape, page break por
      folio). Smoke test con exceljs OK (folios apilados en bloques de 34 filas).
   - ⛔ Pendiente BD (aprobación): ejecutar vistas 175-177 + resembrar seed 59.
+- **2026-07-31 (backend, integración Libros ↔ Centralizador + bug fix):**
+  1. **Bug fix** `GetCentralizadorParaleloUseCase`: `notaAnual` ahora se gatea
+     por `gestionCompleta` igual que `observacion` (antes exponía un número con
+     bimestres sin cargar). No toca `calcularNotaFinalGestion` ni `nota_final`
+     de `matriculas_materia`.
+  2. **Centralizador lee LIBRO/FOLIO real** (read-only, sin vista nueva):
+     `LibroRegistroViewRepository.listarFoliosPorParaleloGestion` (176 + JOIN
+     `libros_registro` por `libro_estado`) y
+     `listarUbicacionEstudiantesPorParaleloGestion` (176 + JOIN
+     `folio_estudiantes`); `GetCentralizadorParaleloUseCase` las consume como
+     dependencia OPCIONAL (`libroRegistroViewRepository`) y agrega `libro` +
+     `folioNumero`/`numeroOrdenFolio` por estudiante al DTO.
+  3. **Generación masiva por gestión**: `ORDEN_CARRERAS_LIBRO`/`ordenCarreraLibro`
+     (CON-GEN→ADM-EMP→SIS-INF) en `libros.constants.js`;
+     `listarParalelosPorGestion` (127, orden en memoria); CORE de
+     `GenerarFoliosParaleloUseCase` extraído a
+     `helpers/generarFoliosParaleloHelper.js#generarParaUnParalelo` (mismo
+     comportamiento, smoke test OK); `GenerarFoliosGestionUseCase` nuevo
+     (precondición: libro ABIERTO por carrera con paralelos en la gestión;
+     idempotente — folios vigentes u otros `ValidationError` del helper se
+     OMITEN y van al array `omitidos`, sin frenar el resto); endpoint
+     `POST /api/v1/libros/gestiones/:gestionId/folios` (permiso
+     `academico.libro` CREAR), `dataFieldName` = **`resumenGeneracion`**
+     (`{ paralelosGenerados, foliosCreados, folioDesde, folioHasta, omitidos }`).
+  4. **Firmas de docentes + estadísticas** (documento oficial completo):
+     `_firmasDocentes` reestructurado a grilla de 3 columnas (nombre + materia,
+     espacio en blanco arriba, sin línea de firma); `_estadisticasParalelo`
+     nuevo (tabla DETALLE/CANTIDAD/% con banda #196B45); leyenda
+     "NP = No se Presentó / AP = Aprobado / PRE = Prerrequisito" bajo la
+     nómina de cada folio; helper puro
+     `helpers/estadisticasParaleloHelper.js#calcularEstadisticasParalelo`.
+     Corregido de paso el CURSO del documento ("TERCERO - PARALELO A", no
+     "PRIMER AÑO - PARALELO PRIMERO A") vía
+     `application/utils/libroFolioExcelDatos.js` (nuevo, espejo de
+     `centralizadorExcelDatos.js` para el grano anual;
+     `construirHojaParalelo` reutilizado por `ExportLibroExcelUseCase` y el
+     export nuevo). **Pendiente de iteración 2 (frontend):**
+     `librosMapper.js` (`mapFolio`/`mapParaleloLibro`) tiene el MISMO defecto
+     de formato de CURSO — no se tocó (fuera de alcance backend); igual el
+     comentario obsoleto en `centralizadorDoc.js` ("LIBRO N°/FOLIO N° no
+     existen en el sistema", línea 9) que ya no es cierto.
+  5. **Export "Centralizador anual"** (grano nuevo, no existía):
+     `ExportCentralizadorAnualParaleloExcelUseCase` — exige folios YA
+     generados (4xx claro si no; NUNCA genera folios como efecto colateral),
+     delega en `construirHojaParalelo` + `ILibroRegistroExcelGenerator`
+     (mismo generador del Libro, una sola hoja). Endpoint
+     `GET /api/v1/calificaciones/centralizador/:paraleloGestionId/anual/export`
+     (permiso `academico.calificacion.centralizador` EXPORTAR).
+  - Sin vistas SQL nuevas, sin DDL, sin resiembra de RBAC (reutiliza 127/135/176
+    y los permisos ya sembrados de `academico.libro`/
+    `academico.calificacion.centralizador`). Verificación: lint limpio en
+    archivos tocados (2 violaciones `max-len`/`no-continue` preexistentes en
+    `GetCentralizadorParaleloUseCase.js`, ajenas a este cambio, no tocadas);
+    dry-run del container (routers + use cases nuevos resuelven); smoke tests
+    de `generarParaUnParalelo` (paginación/numeración intactas),
+    `construirHojaParalelo`/formateadores de CURSO y render real con
+    `exceljs` (leyenda, grilla de firmas, bloque ESTADÍSTICAS) — todo con
+    datos mock, sin tocar BD real. Pendiente iteración 2 (frontend): badge
+    LIBRO/FOLIO en el grid del Centralizador, botón "Exportar centralizador
+    anual", botón "Generar folios de la gestión", fix de `librosMapper.js` y
+    del comentario de `centralizadorDoc.js`.

@@ -18,4 +18,7 @@ export {
   createBitacoraEntradaValidator,
   updateBitacoraEntradaValidator,
   createAvanceValidator,
+  listEstudiantesElegiblesValidator,
+  avanceTutoriaCarreraValidator,
+  planillaAvanceTercerAnioValidator,
 } from './proyectos-grado.validator.js';

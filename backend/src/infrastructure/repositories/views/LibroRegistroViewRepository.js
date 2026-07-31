@@ -1,6 +1,6 @@
 import { sequelize } from '../../database/sequelize.js';
 import { ILibroRegistroViewRepository } from '../../../domain/interfaces/repositories/ILibroRegistroViewRepository.js';
-import { ESTADOS_FOLIO } from '../../../domain/constants/libros.constants.js';
+import { ESTADOS_FOLIO, ordenCarreraLibro } from '../../../domain/constants/libros.constants.js';
 
 /**
  * Lectura del módulo Libros de registro (schema 25) sobre vistas.
@@ -170,6 +170,115 @@ export class LibroRegistroViewRepository extends ILibroRegistroViewRepository {
       `,
       {
         replacements: [libroId, ESTADOS_FOLIO.ANULADO, carreraId, gestionId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+  }
+
+  /**
+   * TODOS los paralelos de una gestión (todas las carreras; vista 127) —
+   * apoyo del generador MASIVO de folios (POST /libros/gestiones/:gestionId/folios).
+   * Orden en MEMORIA (no en SQL) por `ordenCarreraLibro` (Contaduría →
+   * Administración → Informática, NUNCA por id de carrera) → periodoNumero →
+   * paraleloNombre (alfabético A, B, C, D).
+   *
+   * @param {number} gestionId
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarParalelosPorGestion(gestionId) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        v127.id             AS paralelo_gestion_id,
+        v127.paraleloNombre AS paralelo_nombre,
+        v127.turno          AS turno,
+        v127.estado         AS paralelo_estado,
+        v127.periodoId      AS periodo_id,
+        v127.periodoNumero  AS periodo_numero,
+        v127.periodoNombre  AS periodo_nombre,
+        v127.carreraId      AS carrera_id,
+        v127.carreraNombre  AS carrera_nombre,
+        v127.carreraCodigo  AS carrera_codigo,
+        v127.gestionId      AS gestion_id,
+        v127.gestionAnio    AS gestion_anio
+      FROM vista_base_paralelo_gestion_ficha v127
+      WHERE v127.gestionId = ?
+        AND v127.deletedAt IS NULL
+        AND v127.activo = TRUE
+      `,
+      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+    );
+
+    return rows.sort((a, b) => {
+      const ordenCarrera =
+        ordenCarreraLibro(a.carrera_codigo) - ordenCarreraLibro(b.carrera_codigo);
+      if (ordenCarrera !== 0) return ordenCarrera;
+      const ordenPeriodo = (a.periodo_numero ?? 0) - (b.periodo_numero ?? 0);
+      if (ordenPeriodo !== 0) return ordenPeriodo;
+      return String(a.paralelo_nombre ?? '').localeCompare(String(b.paralelo_nombre ?? ''));
+    });
+  }
+
+  /**
+   * Folios VIGENTES (estado <> ANULADO) de UN paralelo (vista 176), + el
+   * estado propio del LIBRO (`libros_registro.estado`, ABIERTO/CERRADO — no
+   * viene en la 176, que solo trae el estado del FOLIO). Sin vista nueva: JOIN
+   * directo a la tabla base `libros_registro` por `libro_id`.
+   * Consumidor: Centralizador (badge LIBRO/FOLIO real) y export "Centralizador
+   * anual" (Bloque D).
+   *
+   * @param {number} paraleloGestionId
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarFoliosPorParaleloGestion(paraleloGestionId) {
+    return sequelize.query(
+      `
+      SELECT
+        vf.*,
+        lr.estado AS libro_estado
+      FROM vista_base_libro_folio_fila vf
+      INNER JOIN libros_registro lr
+        ON lr.id = vf.libro_id
+        AND lr.deleted_at IS NULL
+      WHERE vf.paralelo_gestion_id = ?
+        AND vf.estado <> ?
+      ORDER BY vf.numero_folio ASC
+      `,
+      {
+        replacements: [paraleloGestionId, ESTADOS_FOLIO.ANULADO],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+  }
+
+  /**
+   * Ubicación de cada estudiante del paralelo dentro del libro: JOIN
+   * `folio_estudiantes` × vista 176, filtrado a folios VIGENTES. Consumidor:
+   * Centralizador (columna FOLIO N° / orden por estudiante).
+   *
+   * @param {number} paraleloGestionId
+   * @returns {Promise<Array<Object>>} filas: estudiante_id, numero_folio,
+   *   numero_orden, estado_academico.
+   */
+  async listarUbicacionEstudiantesPorParaleloGestion(paraleloGestionId) {
+    return sequelize.query(
+      `
+      SELECT
+        fe.estudiante_id    AS estudiante_id,
+        vf.numero_folio     AS numero_folio,
+        fe.numero_orden     AS numero_orden,
+        fe.estado_academico AS estado_academico
+      FROM folio_estudiantes fe
+      INNER JOIN vista_base_libro_folio_fila vf
+        ON vf.id = fe.folio_id
+      WHERE vf.paralelo_gestion_id = ?
+        AND vf.estado <> ?
+        AND fe.deleted_at IS NULL
+        AND fe.activo = TRUE
+      ORDER BY vf.numero_folio ASC, fe.numero_orden ASC
+      `,
+      {
+        replacements: [paraleloGestionId, ESTADOS_FOLIO.ANULADO],
         type: sequelize.QueryTypes.SELECT,
       },
     );

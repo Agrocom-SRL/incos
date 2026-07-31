@@ -28,6 +28,13 @@
 -- MISMAS acciones y roles que tenía aquí (ver ese archivo). No se borra el
 -- historial de este comentario: la fecha 2026-07-29 documenta la decisión
 -- original; esta nota documenta su reversión.
+--
+-- NOTA (2026-07-31) — extensión sin RBAC nuevo: los 3 requisitos de
+-- `docs/plan/titulacion-avance-y-modalidad-plan-desarrollo.md` (formulario de
+-- elección de modalidad, reporte de avance por carrera, planilla "10 en 10")
+-- reutilizan `titulacion.proyecto` LISTAR/EXPORTAR — solo se amplió el texto
+-- `nombre` de ese permiso (línea ~46), sin tocar `permiso_acciones` ni
+-- `roles_permisos`.
 -- ============================================
 
 USE instituto_incos;
@@ -43,7 +50,7 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 
 -- 1) Permisos del módulo TIT
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
-('titulacion.proyecto', 'Proyectos de grado: listar, ver detalle, crear, editar, eliminar, aprobar etapas/tutor y exportar reportes', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
+('titulacion.proyecto', 'Proyectos de grado: listar, detalle, crear, editar, eliminar, aprobar etapas/tutor y exportar reportes (modalidad, avance por carrera, planilla)', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.bitacora', 'Bitácora de tutoría: listar, crear y editar entradas', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.avance', 'Avances del proyecto: listar, ver detalle/descargar y subir archivos', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.pasantia', 'Pasantías (práctica laboral): listar, ver detalle, registrar, editar, eliminar, transicionar estados y exportar PDF de informes', NULL, 'TITULACION', 'TIT', 'tit_pasantias', '/titulacion/pasantias', 1, NOW(), NOW()),

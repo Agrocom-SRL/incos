@@ -34,4 +34,9 @@ export const SERVICIOS_TOKENS = {
     bitacoraMensualTutorPdfGenerator: 'bitacoraMensualTutorPdfGenerator', // IBitacoraMensualTutorPdfGenerator (.pdf, módulo TIT)
     panelAcompanamientoPdfGenerator: 'panelAcompanamientoPdfGenerator', // IPanelAcompanamientoPdfGenerator (.pdf, módulo ACA · acompañamiento)
     fichaSeguimientoClasePdfGenerator: 'fichaSeguimientoClasePdfGenerator', // IFichaSeguimientoClasePdfGenerator (.pdf, módulo DOC · supervisión)
+    // Extensión 2026-07-31 (módulo TIT · titulación): formulario de modalidad
+    // de graduación, reporte de avance por carrera y planilla "10 en 10".
+    formularioModalidadGradoPdfGenerator: 'formularioModalidadGradoPdfGenerator', // IFormularioModalidadGradoPdfGenerator (.pdf, módulo TIT)
+    avanceTutoriaCarreraPdfGenerator: 'avanceTutoriaCarreraPdfGenerator', // IAvanceTutoriaCarreraPdfGenerator (.pdf, módulo TIT)
+    planillaAvanceTutoriaExcelGenerator: 'planillaAvanceTutoriaExcelGenerator', // IPlanillaAvanceTutoriaExcelGenerator (.xlsx, módulo TIT)
 };

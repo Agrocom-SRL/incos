@@ -97,10 +97,13 @@ export const ACADEMICO_TOKENS = {
   editarLibroUseCase: 'academico.editarLibroUseCase',
   listParalelosLibroUseCase: 'academico.listParalelosLibroUseCase',
   generarFoliosParaleloUseCase: 'academico.generarFoliosParaleloUseCase',
+  generarFoliosGestionUseCase: 'academico.generarFoliosGestionUseCase',
   getFolioByIdUseCase: 'academico.getFolioByIdUseCase',
   cambiarEstadoFolioUseCase: 'academico.cambiarEstadoFolioUseCase',
   editarFolioEstudianteUseCase: 'academico.editarFolioEstudianteUseCase',
   exportLibroExcelUseCase: 'academico.exportLibroExcelUseCase',
+  exportCentralizadorAnualParaleloExcelUseCase:
+    'academico.exportCentralizadorAnualParaleloExcelUseCase',
 
   // Acompañamiento pedagógico (schema 23, reclasificado desde TUT 2026-07-31)
   // — Repositorios (arquetipo A + arquetipo B de vistas)
@@ -212,10 +215,13 @@ export const ACADEMICO_TOKENS = {
   editarLibroController: 'academico.editarLibroController',
   listParalelosLibroController: 'academico.listParalelosLibroController',
   generarFoliosParaleloController: 'academico.generarFoliosParaleloController',
+  generarFoliosGestionController: 'academico.generarFoliosGestionController',
   getFolioByIdController: 'academico.getFolioByIdController',
   cambiarEstadoFolioController: 'academico.cambiarEstadoFolioController',
   editarFolioEstudianteController: 'academico.editarFolioEstudianteController',
   exportLibroExcelController: 'academico.exportLibroExcelController',
+  exportCentralizadorAnualParaleloController:
+    'academico.exportCentralizadorAnualParaleloController',
 
   // Acompañamiento pedagógico — Controllers
   listAlertasRiesgoController: 'academico.listAlertasRiesgoController',

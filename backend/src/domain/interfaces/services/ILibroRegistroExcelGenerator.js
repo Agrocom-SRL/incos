@@ -20,14 +20,20 @@ export class ILibroRegistroExcelGenerator {
    * @param {Object} params
    * @param {Object} params.libro - Metadatos del libro para archivo/log:
    *        { numeroLibro, codigoRegistro, carreraNombre, gestionAnio }.
-   * @param {Array<{ nombreHoja: string, folios: Array<Object> }>} params.hojas -
-   *        Una entrada por paralelo. Cada folio es autocontenido:
-   *        - cabecera: { codigoRegistro, numeroLibro, numeroFolio, turno,
-   *          gestionAnio, carrera, curso, estado?, anulado? } (+ metadatos fijos
-   *          de LIBRO_REGISTRO_DOC: institución, R.M., nivel, régimen, carácter).
-   *        - asignaturas: [{ ofertaCursoId, sigla, nombre, orden }] (columnas).
-   *        - estudiantes: [{ numeroOrden, nombreCompleto, ci, expedicion,
-   *          estadoAcademico, observaciones, celdas: { [ofertaCursoId]: nota|'NP' } }].
+   * @param {Array<{ nombreHoja: string, folios: Array<Object>, estadisticas?: Object|null }>} params.hojas -
+   *        Una entrada por paralelo (típicamente armada con
+   *        `application/utils/libroFolioExcelDatos.js#construirHojaParalelo`).
+   *        - folios[]: cada folio es autocontenido:
+   *          - cabecera: { codigoRegistro, numeroLibro, numeroFolio, turno,
+   *            gestionAnio, carrera, curso, estado?, anulado? } (+ metadatos fijos
+   *            de LIBRO_REGISTRO_DOC: institución, R.M., nivel, régimen, carácter).
+   *          - asignaturas: [{ ofertaCursoId, sigla, nombre, orden }] (columnas).
+   *          - estudiantes: [{ numeroOrden, nombreCompleto, ci, expedicion,
+   *            estadoAcademico, observaciones, celdas: { [ofertaCursoId]: nota|'NP' } }].
+   *        - estadisticas (opcional): salida de
+   *          `use-cases/academico/libros/helpers/estadisticasParaleloHelper.js#calcularEstadisticasParalelo`
+   *          — pinta el bloque "ESTADÍSTICAS" al pie de la hoja; si es `null`/
+   *          `undefined` esa sección simplemente no se pinta.
    * @returns {Promise<Buffer>} Buffer del archivo .xlsx multi-hoja.
    */
   // eslint-disable-next-line no-unused-vars

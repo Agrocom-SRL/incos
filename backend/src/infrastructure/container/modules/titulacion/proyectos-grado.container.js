@@ -40,6 +40,12 @@ import { CreateAvanceProyectoUseCase } from '../../../../application/use-cases/t
 import { DownloadAvanceArchivoUseCase } from '../../../../application/use-cases/titulacion/DownloadAvanceArchivoUseCase.js';
 import { ListDictamenesProyectoUseCase } from '../../../../application/use-cases/titulacion/ListDictamenesProyectoUseCase.js';
 import { ExportDictamenPdfUseCase } from '../../../../application/use-cases/titulacion/ExportDictamenPdfUseCase.js';
+import { ListEstudiantesElegiblesModalidadGradoUseCase } from '../../../../application/use-cases/titulacion/ListEstudiantesElegiblesModalidadGradoUseCase.js';
+import { ExportFormularioModalidadGradoPdfUseCase } from '../../../../application/use-cases/titulacion/ExportFormularioModalidadGradoPdfUseCase.js';
+import { GetAvanceTutoriaCarreraUseCase } from '../../../../application/use-cases/titulacion/GetAvanceTutoriaCarreraUseCase.js';
+import { ExportAvanceTutoriaCarreraPdfUseCase } from '../../../../application/use-cases/titulacion/ExportAvanceTutoriaCarreraPdfUseCase.js';
+import { GetPlanillaAvanceTercerAnioUseCase } from '../../../../application/use-cases/titulacion/GetPlanillaAvanceTercerAnioUseCase.js';
+import { ExportPlanillaAvanceTercerAnioExcelUseCase } from '../../../../application/use-cases/titulacion/ExportPlanillaAvanceTercerAnioExcelUseCase.js';
 import {
   ListProyectosGradoController,
   ListModalidadesGradoController,
@@ -64,6 +70,12 @@ import {
   DownloadAvanceArchivoController,
   ListDictamenesProyectoController,
   ExportDictamenPdfController,
+  ListEstudiantesElegiblesModalidadGradoController,
+  ExportFormularioModalidadGradoPdfController,
+  GetAvanceTutoriaCarreraController,
+  ExportAvanceTutoriaCarreraPdfController,
+  GetPlanillaAvanceTercerAnioController,
+  ExportPlanillaAvanceTercerAnioExcelController,
 } from '../../../../presentation/controllers/titulacion/index.js';
 import { buildProyectosGradoRouter } from '../../../../presentation/routes/proyectos-grado.routes.js';
 
@@ -160,6 +172,10 @@ export function registerProyectosGradoResource(container) {
         integranteProyectoRepository: c.resolve(TITULACION_TOKENS.integranteProyectoRepository),
         modalidadGradoRepository: c.resolve(TITULACION_TOKENS.modalidadGradoRepository),
         studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+        enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -361,6 +377,97 @@ export function registerProyectosGradoResource(container) {
       new ExportDictamenPdfUseCase({
         proyectoGradoRepository: c.resolve(TITULACION_TOKENS.proyectoGradoRepository),
         dictamenProyectoRepository: c.resolve(TITULACION_TOKENS.dictamenProyectoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  // ============================================
+  // USE CASES — extensión 2026-07-31 (formulario de modalidad de graduación,
+  // reporte de avance por carrera, planilla de avance "10 en 10")
+  // ============================================
+  registerComponent(
+    container,
+    TITULACION_TOKENS.listEstudiantesElegiblesModalidadGradoUseCase,
+    (c) =>
+      new ListEstudiantesElegiblesModalidadGradoUseCase({
+        tutoriaAvanceViewRepository: c.resolve(TITULACION_TOKENS.tutoriaAvanceViewRepository),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    TITULACION_TOKENS.exportFormularioModalidadGradoPdfUseCase,
+    (c) =>
+      new ExportFormularioModalidadGradoPdfUseCase({
+        getProyectoGradoByIdUseCase: c.resolve(TITULACION_TOKENS.getProyectoGradoByIdUseCase),
+        studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+        managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+        formularioModalidadGradoPdfGenerator: c.resolve(
+          SERVICIOS_TOKENS.formularioModalidadGradoPdfGenerator
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    TITULACION_TOKENS.getAvanceTutoriaCarreraUseCase,
+    (c) =>
+      new GetAvanceTutoriaCarreraUseCase({
+        tutoriaAvanceViewRepository: c.resolve(TITULACION_TOKENS.tutoriaAvanceViewRepository),
+        proyectoGradoListadoViewRepository: c.resolve(
+          TITULACION_TOKENS.proyectoGradoListadoViewRepository
+        ),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    TITULACION_TOKENS.exportAvanceTutoriaCarreraPdfUseCase,
+    (c) =>
+      new ExportAvanceTutoriaCarreraPdfUseCase({
+        getAvanceTutoriaCarreraUseCase: c.resolve(TITULACION_TOKENS.getAvanceTutoriaCarreraUseCase),
+        managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+        avanceTutoriaCarreraPdfGenerator: c.resolve(
+          SERVICIOS_TOKENS.avanceTutoriaCarreraPdfGenerator
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    TITULACION_TOKENS.getPlanillaAvanceTercerAnioUseCase,
+    (c) =>
+      new GetPlanillaAvanceTercerAnioUseCase({
+        tutoriaAvanceViewRepository: c.resolve(TITULACION_TOKENS.tutoriaAvanceViewRepository),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
+        ),
+        managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    TITULACION_TOKENS.exportPlanillaAvanceTercerAnioExcelUseCase,
+    (c) =>
+      new ExportPlanillaAvanceTercerAnioExcelUseCase({
+        getPlanillaAvanceTercerAnioUseCase: c.resolve(
+          TITULACION_TOKENS.getPlanillaAvanceTercerAnioUseCase
+        ),
+        planillaAvanceTutoriaExcelGenerator: c.resolve(
+          SERVICIOS_TOKENS.planillaAvanceTutoriaExcelGenerator
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -579,6 +686,71 @@ export function registerProyectosGradoResource(container) {
           logger: c.resolve(SERVICIOS_TOKENS.logger),
         }),
     ],
+    // Extensión 2026-07-31 (formulario de modalidad de graduación, reporte de
+    // avance por carrera, planilla de avance "10 en 10")
+    [
+      TITULACION_TOKENS.listEstudiantesElegiblesModalidadGradoController,
+      (c) =>
+        new ListEstudiantesElegiblesModalidadGradoController({
+          listEstudiantesElegiblesModalidadGradoUseCase: c.resolve(
+            TITULACION_TOKENS.listEstudiantesElegiblesModalidadGradoUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
+    [
+      TITULACION_TOKENS.exportFormularioModalidadGradoPdfController,
+      (c) =>
+        new ExportFormularioModalidadGradoPdfController({
+          exportFormularioModalidadGradoPdfUseCase: c.resolve(
+            TITULACION_TOKENS.exportFormularioModalidadGradoPdfUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+        }),
+    ],
+    [
+      TITULACION_TOKENS.getAvanceTutoriaCarreraController,
+      (c) =>
+        new GetAvanceTutoriaCarreraController({
+          getAvanceTutoriaCarreraUseCase: c.resolve(
+            TITULACION_TOKENS.getAvanceTutoriaCarreraUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
+    [
+      TITULACION_TOKENS.exportAvanceTutoriaCarreraPdfController,
+      (c) =>
+        new ExportAvanceTutoriaCarreraPdfController({
+          exportAvanceTutoriaCarreraPdfUseCase: c.resolve(
+            TITULACION_TOKENS.exportAvanceTutoriaCarreraPdfUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+        }),
+    ],
+    [
+      TITULACION_TOKENS.getPlanillaAvanceTercerAnioController,
+      (c) =>
+        new GetPlanillaAvanceTercerAnioController({
+          getPlanillaAvanceTercerAnioUseCase: c.resolve(
+            TITULACION_TOKENS.getPlanillaAvanceTercerAnioUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
+    [
+      TITULACION_TOKENS.exportPlanillaAvanceTercerAnioExcelController,
+      (c) =>
+        new ExportPlanillaAvanceTercerAnioExcelController({
+          exportPlanillaAvanceTercerAnioExcelUseCase: c.resolve(
+            TITULACION_TOKENS.exportPlanillaAvanceTercerAnioExcelUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+        }),
+    ],
   ];
 
   for (const [token, factory] of controllerFactories) {
@@ -621,6 +793,25 @@ export function registerProyectosGradoResource(container) {
         TITULACION_TOKENS.listDictamenesProyectoController
       ),
       exportDictamenPdfController: c.resolve(TITULACION_TOKENS.exportDictamenPdfController),
+      // Extensión 2026-07-31
+      listEstudiantesElegiblesModalidadGradoController: c.resolve(
+        TITULACION_TOKENS.listEstudiantesElegiblesModalidadGradoController
+      ),
+      exportFormularioModalidadGradoPdfController: c.resolve(
+        TITULACION_TOKENS.exportFormularioModalidadGradoPdfController
+      ),
+      getAvanceTutoriaCarreraController: c.resolve(
+        TITULACION_TOKENS.getAvanceTutoriaCarreraController
+      ),
+      exportAvanceTutoriaCarreraPdfController: c.resolve(
+        TITULACION_TOKENS.exportAvanceTutoriaCarreraPdfController
+      ),
+      getPlanillaAvanceTercerAnioController: c.resolve(
+        TITULACION_TOKENS.getPlanillaAvanceTercerAnioController
+      ),
+      exportPlanillaAvanceTercerAnioExcelController: c.resolve(
+        TITULACION_TOKENS.exportPlanillaAvanceTercerAnioExcelController
+      ),
     };
 
     const middlewares = {

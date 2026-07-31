@@ -78,6 +78,44 @@ export class ILibroRegistroViewRepository {
   async listarParalelosParaLibro({ carreraId, gestionId, libroId }) {
     throw new Error('Method listarParalelosParaLibro() must be implemented');
   }
+
+  /**
+   * TODOS los paralelos de una gestión (todas las carreras; vista 127), en el
+   * orden canónico del documento oficial (ver `ordenCarreraLibro` del dominio)
+   * → periodo → paralelo alfabético — apoyo del generador MASIVO de folios de
+   * la gestión (POST /libros/gestiones/:gestionId/folios).
+   * @param {number} gestionId
+   * @returns {Promise<Array<Object>>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async listarParalelosPorGestion(gestionId) {
+    throw new Error('Method listarParalelosPorGestion() must be implemented');
+  }
+
+  /**
+   * Folios VIGENTES (estado <> ANULADO) de UN paralelo (vista 176), ordenados
+   * por numero_folio — consumidor: Centralizador (badge LIBRO/FOLIO real) y
+   * export "Centralizador anual" (Bloque D).
+   * @param {number} paraleloGestionId
+   * @returns {Promise<Array<Object>>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async listarFoliosPorParaleloGestion(paraleloGestionId) {
+    throw new Error('Method listarFoliosPorParaleloGestion() must be implemented');
+  }
+
+  /**
+   * Ubicación (folio/orden/estado académico) de cada estudiante del paralelo
+   * dentro del libro — JOIN folio_estudiantes × vista 176, filtrado a folios
+   * VIGENTES. Consumidor: Centralizador (columna FOLIO N° por estudiante).
+   * @param {number} paraleloGestionId
+   * @returns {Promise<Array<Object>>} filas: estudiante_id, numero_folio,
+   *   numero_orden, estado_academico.
+   */
+  // eslint-disable-next-line no-unused-vars
+  async listarUbicacionEstudiantesPorParaleloGestion(paraleloGestionId) {
+    throw new Error('Method listarUbicacionEstudiantesPorParaleloGestion() must be implemented');
+  }
 }
 
 export default ILibroRegistroViewRepository;

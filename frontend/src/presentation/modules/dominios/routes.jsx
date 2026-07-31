@@ -52,7 +52,6 @@ export const dominiosRoutes = [
         path: '/configuracion',
         key: 'CFG',
         element: null,
-        permiso: null,
         accion: null,
         menu: { label: 'Configuración', module: 'CFG', order: 10 },
     },

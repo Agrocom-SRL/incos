@@ -572,3 +572,60 @@ Backend R1 (A-C) ⟶ Backend R2 (D-F) ⟶ Backend R3 (G-J) ⟶ Documentación (L
   se resuelven reutilizando el permiso `titulacion.proyecto`
   existente (sin RBAC nuevo). Vistas asignadas: 178-181 (verificar máximo
   real antes de crear archivos, ver §0.7.2).
+- **2026-07-31 (backend) — ITERACIÓN 1 COMPLETA (bloques A-L):** verificado el
+  máximo real de vistas antes de crear archivos (177, sin cambios respecto a
+  lo asignado por el planificador) — las 4 vistas nuevas se crearon con la
+  numeración prevista (178-181) y se ejecutaron en BD (MAMP dev), junto con el
+  ajuste aditivo D1 a la 160 (`ultima_observacion`). Sin desviaciones de
+  numeración.
+  - **Requisito 1:** guard `assertEstudianteEsTercerAnio` en
+    `proyectoTutoriaGuards.js` (reutiliza `EnrollmentRepository.obtenerListadoMatriculas`,
+    vista 101) + `CreateProyectoGradoUseCase` ahora valida 3er año de TODOS
+    los estudiantes y deriva `carreraId`/`gestionId` del titular si el body no
+    los manda. `GET /estudiantes-elegibles` (LISTAR, `dataFieldName:
+    estudiantesElegibles`, paginado vía `BaseListController`) y `GET
+    /:id/formulario-modalidad/pdf` (EXPORTAR) — `FormularioModalidadGradoPdfGenerator`
+    con firma en 2 columnas (declarante + Dirección Académica) porque
+    `_addSignatureBlock` de la base solo soporta una firma centrada por
+    llamada (se replicó el patrón `_addSignatureBlockTwoColumns` de
+    `FormularioInscripcionPdfGenerator`, sin tocar la base).
+  - **Requisito 2:** D1 en 160 con subconsulta correlacionada `LIMIT 1` (no
+    `GROUP_CONCAT`, evita el riesgo de separador con comas en el texto libre).
+    `GET /reportes/avance-carrera` y `/pdf` (`dataFieldName:
+    avanceTutoriaCarrera`) reutilizan `proyectoGradoListadoViewRepository.findListado`
+    para el detalle, sin duplicar esa lectura.
+  - **Requisito 3:** confirmado en implementación — **NO hizo falta tabla
+    nueva** (según lo previsto en §0.5): vista 181 roster-driven vía `INNER
+    JOIN periodos_academicos` (4 bimestres de la gestión) + `LEFT JOIN`
+    agregado de la 180, para no perder estudiantes sin tutorías en el
+    bimestre. `GET /reportes/planilla-avance-tercer-anio` y `/export`
+    (`dataFieldName: planillaAvanceTercerAnio`) con builder Excel propio
+    (`excel/titulacion-planilla-avance/`, patrón de `libro-registro/` sin
+    importarlo) — folios de 10 apilados + hoja de firmas de docentes (sin
+    incrementar folio) + cuadro de % sobre el roster.
+  - **Repo/mapper compartidos:** `TutoriaAvanceViewRepository` +
+    `ITutoriaAvanceViewRepository` (arquetipo B, aislado del repo existente
+    por SRP, opción recomendada del Bloque C.5) + `TutoriaAvanceMapper`
+    (compartido por los 3 requisitos).
+  - **RBAC:** sin permisos ni acciones nuevos (confirmado §0.6). Único cambio:
+    texto (`nombre`) del permiso `titulacion.proyecto` ampliado en
+    `65-seed-permisos-tit.sql` y aplicado en BD dev vía `UPDATE` directo (no
+    altera `permiso_acciones`/`roles_permisos`, no requirió resiembra
+    completa); recortado a 144 caracteres por el límite `VARCHAR(150)` de
+    `permisos.nombre` (el texto propuesto en el Bloque B/E/I del plan excedía
+    ese límite).
+  - **Documentación:** changelog en `matriz-permisos-sistema.md`, nota en
+    `titulacion-y-dominios-pendientes.md` (bajo Fase 2), comentario corregido
+    en `22-modalidades-grado.sql` ("seeder 67" → `57-seed-titulacion-modalidades.sql`),
+    cabeceras `-- Consumidor:`/`-- Modelo de negocio:` en las 4 vistas nuevas.
+  - **Verificación:** lint limpio en todos los archivos backend tocados
+    (2 líneas de `max-len` en `services.container.js` son preexistentes, no
+    parte de este diff); contenedor DI resuelto en seco (15 tokens nuevos +
+    router con las 29 rutas esperadas, estáticas antes de `/:id`); las 6
+    lecturas SQL, los 3 use cases de lectura y los 3 use cases de exportación
+    (PDF/PDF/Excel) se probaron end-to-end contra la BD dev real, incluyendo
+    un caso no vacío sintético (2 folios/13 estudiantes) para el Excel de la
+    planilla; guard `assertEstudianteEsTercerAnio` verificado en ambos
+    sentidos (estudiante de 1er año rechazado, de 3er año aceptado con
+    `carreraId`/`gestionId` derivados). Iteración 2 (frontend, bloques M-Q)
+    queda pendiente para una sesión aparte.

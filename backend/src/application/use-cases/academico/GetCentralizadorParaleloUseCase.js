@@ -9,6 +9,12 @@
  * `gestionCompleta` y la `observacion` (APROBADO/REPROBADO) calculadas con los
  * pesos de bimestre de la política — el mismo cálculo que el Registro académico
  * por curso, para que el número coincida en ambas pantallas.
+ *
+ * Integración con Libros de registro (opcional, no rompe si no está inyectada):
+ * si `libroRegistroViewRepository` está presente, agrega `libro` (cabecera del
+ * libro/folios del paralelo) y, por estudiante, `folioNumero`/`numeroOrdenFolio`
+ * cuando el paralelo YA tiene folios generados. Sin folios generados, `libro`
+ * queda en `null` (nunca un placeholder inventado).
  */
 
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
@@ -22,6 +28,7 @@ export class GetCentralizadorParaleloUseCase {
     calificacionContextoRepository,
     evaluationConfigurationRepository,
     subjectEnrollmentBimesterRepository,
+    libroRegistroViewRepository,
     logger,
   }) {
     if (!calificacionCentralizadorRepository) {
@@ -32,6 +39,9 @@ export class GetCentralizadorParaleloUseCase {
     this.calificacionContextoRepository = calificacionContextoRepository;
     this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    // Cruce de dominio con Libros de registro (mismo dominio ACA), opcional:
+    // si no está inyectada, el use case sigue funcionando sin el bloque `libro`.
+    this.libroRegistroViewRepository = libroRegistroViewRepository;
     this.logger = logger;
   }
 
@@ -70,6 +80,7 @@ export class GetCentralizadorParaleloUseCase {
         gestionAnio,
         gestionNombre,
         notaMinimaAprobacion,
+        libro: null,
         asignaturas: [],
         estudiantes: [],
       };
@@ -97,6 +108,10 @@ export class GetCentralizadorParaleloUseCase {
           codigoEstudiante: row.codigo_estudiante ?? null,
           ci: row.ci ?? null,
           nombreCompleto: row.nombre_completo ?? '',
+          // Ubicación en el Libro de registro (folio/orden), solo si el
+          // paralelo ya tiene folios generados — ver bloque `libro` más abajo.
+          folioNumero: null,
+          numeroOrdenFolio: null,
           notas: {},
         });
       }
@@ -123,6 +138,11 @@ export class GetCentralizadorParaleloUseCase {
         observacion = notaAnual >= notaMinimaAprobacion ? 'APROBADO' : 'REPROBADO';
       }
 
+      // La nota anual solo es un dato real cuando la gestión está completa (4
+      // bimestres cargados). Con gestión incompleta se expone null, igual que
+      // la observación — mostrar un número aquí induciría a leerlo como
+      // definitivo cuando en realidad es un cálculo parcial sobre bimestres
+      // sin cargar (bug reportado: antes solo se gateaba 'observacion').
       estudiante.notas[ofertaCursoId] = {
         bim1: bimes[0],
         bim2: bimes[1],
@@ -130,7 +150,7 @@ export class GetCentralizadorParaleloUseCase {
         bim4: bimes[3],
         promedioAnual: toNumberOrNull(row.promedio_anual),
         notaFinal: toNumberOrNull(row.nota_final),
-        notaAnual,
+        notaAnual: gestionCompleta ? notaAnual : null,
         gestionCompleta,
         observacion,
         estado: row.estado ?? null,
@@ -174,12 +194,57 @@ export class GetCentralizadorParaleloUseCase {
       }
     }
 
+    // Bloque LIBRO/FOLIO real (Libros de registro, schema 25) — opcional y
+    // read-only: no falla si no está inyectada o el paralelo aún no tiene
+    // folios generados (`libro` queda en null, nunca un placeholder inventado).
+    let libro = null;
+    if (this.libroRegistroViewRepository) {
+      const foliosDelParalelo =
+        await this.libroRegistroViewRepository.listarFoliosPorParaleloGestion(pgId);
+      if (Array.isArray(foliosDelParalelo) && foliosDelParalelo.length > 0) {
+        const numerosFolio = foliosDelParalelo
+          .map((f) => Number(f.numero_folio))
+          .filter((n) => Number.isFinite(n));
+        const primerFolio = foliosDelParalelo[0];
+        libro = {
+          numeroLibro: primerFolio.numero_libro ?? null,
+          codigoRegistro: primerFolio.codigo_registro ?? null,
+          folioDesde: numerosFolio.length > 0 ? Math.min(...numerosFolio) : null,
+          folioHasta: numerosFolio.length > 0 ? Math.max(...numerosFolio) : null,
+          estadoLibro: primerFolio.libro_estado ?? null,
+        };
+
+        const ubicaciones =
+          await this.libroRegistroViewRepository.listarUbicacionEstudiantesPorParaleloGestion(
+            pgId,
+          );
+        const ubicacionPorEstudiante = new Map();
+        for (const row of ubicaciones ?? []) {
+          const estId = Number(row.estudiante_id);
+          if (Number.isFinite(estId)) {
+            ubicacionPorEstudiante.set(estId, {
+              folioNumero: row.numero_folio ?? null,
+              numeroOrdenFolio: row.numero_orden ?? null,
+            });
+          }
+        }
+        for (const est of estudiantes) {
+          const ubicacion = ubicacionPorEstudiante.get(est.estudianteId);
+          if (ubicacion) {
+            est.folioNumero = ubicacion.folioNumero;
+            est.numeroOrdenFolio = ubicacion.numeroOrdenFolio;
+          }
+        }
+      }
+    }
+
     return {
       paraleloGestionId: pgId,
       gestionId,
       gestionAnio,
       gestionNombre,
       notaMinimaAprobacion,
+      libro,
       asignaturas,
       estudiantes,
     };

@@ -37,6 +37,10 @@ export function listadoRowToPresentation(row) {
       row.porcentaje_avance !== null && row.porcentaje_avance !== undefined
         ? Number(row.porcentaje_avance)
         : null,
+    // Extensión 2026-07-31 (Requisito 2 — reporte de avance por carrera):
+    // última observación de la bitácora del proyecto (columna aditiva de la
+    // vista 160, ver D1).
+    ultimaObservacion: row.ultima_observacion ?? null,
     avancesPendientes: Number(row.avances_pendientes ?? 0),
   };
 }

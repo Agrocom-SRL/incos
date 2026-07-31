@@ -66,7 +66,52 @@ export const LIBRO_REGISTRO_DOC = {
   caracter: 'FISCAL',
   resolucionMinisterial: '0426/2016',
   firmas: ['JEFE(A) DE CARRERA', 'DIRECTOR(A) ACADÉMICO(A)', 'RECTOR(A)'],
+  /** Leyenda de abreviaturas bajo la nómina de cada folio (documento oficial). */
+  leyendaNotas: 'NP = No se Presentó / AP = Aprobado / PRE = Prerrequisito',
+  /** Bloque "ESTADÍSTICAS" al pie de la hoja del paralelo (junto a firmas de docentes). */
+  estadisticas: {
+    titulo: 'ESTADÍSTICAS',
+    columnas: ['DETALLE', 'CANTIDAD', '%'],
+    filas: [
+      {
+        campo: 'estudiantesInscritos',
+        pctCampo: 'porcentajeInscritos',
+        etiqueta: 'ESTUDIANTES INSCRITOS',
+      },
+      {
+        campo: 'estudiantesAprobados',
+        pctCampo: 'porcentajeAprobados',
+        etiqueta: 'ESTUDIANTES APROBADOS',
+      },
+      {
+        campo: 'estudiantesReprobados',
+        pctCampo: 'porcentajeReprobados',
+        etiqueta: 'ESTUDIANTES REPROBADOS',
+      },
+      { campo: 'abandono', pctCampo: 'porcentajeAbandono', etiqueta: 'ABANDONO' },
+    ],
+  },
 };
+
+/**
+ * Orden canónico de carreras del documento oficial para la generación MASIVA
+ * de folios de una gestión: Contaduría → Administración → Informática.
+ * OJO: los ids de `carreras` en BD están en el orden CONTRARIO (1=SIS-INF,
+ * 2=ADM-EMP, 3=CON-GEN) — nunca ordenar por id, usar siempre esta constante.
+ */
+export const ORDEN_CARRERAS_LIBRO = ['CON-GEN', 'ADM-EMP', 'SIS-INF'];
+
+/**
+ * Índice de orden canónico de una carrera (0-based) para ordenar paralelos de
+ * la generación masiva. Códigos desconocidos/ausentes van al final (mismo
+ * índice, se desempatan alfabéticamente por el llamador).
+ * @param {string|null|undefined} codigo
+ * @returns {number}
+ */
+export function ordenCarreraLibro(codigo) {
+  const idx = ORDEN_CARRERAS_LIBRO.indexOf(String(codigo ?? '').toUpperCase());
+  return idx === -1 ? ORDEN_CARRERAS_LIBRO.length : idx;
+}
 
 export default {
   CODIGO_REGISTRO_INSTITUCIONAL,
@@ -79,4 +124,6 @@ export default {
   ESTADOS_ACADEMICOS_FOLIO,
   ESTADOS_ACADEMICOS_FOLIO_VALUES,
   LIBRO_REGISTRO_DOC,
+  ORDEN_CARRERAS_LIBRO,
+  ordenCarreraLibro,
 };

@@ -11,6 +11,7 @@ import {
   searchCoordinacionDocentesValidator,
   getCentralizadorParaleloValidator,
   exportCentralizadorParaleloBimestreValidator,
+  exportCentralizadorAnualParaleloValidator,
   exportBoletinEstudianteValidator,
   saveObservacionCentralizadorBimestreValidator,
   getCuadernoBimestreValidator,
@@ -134,6 +135,22 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
     validateRequest,
     (req, res, next) =>
       controllers.exportCentralizadorCarreraBimestreController.handle(req, res, next)
+  );
+
+  /**
+   * GET /api/v1/calificaciones/centralizador/:paraleloGestionId/anual/export
+   * Descarga Excel del Centralizador ANUAL de un paralelo (grano nuevo: una
+   * sola hoja, sobre los folios YA generados del Libro de registro). El
+   * segmento literal `anual` evita ambigüedad con `/bimestre/...` y
+   * `/carrera-de/...`. Mismo permiso de exportación del centralizador.
+   */
+  router.get(
+    '/centralizador/:paraleloGestionId/anual/export',
+    ...centralizadorExportar,
+    exportCentralizadorAnualParaleloValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.exportCentralizadorAnualParaleloController.handle(req, res, next)
   );
 
   /**

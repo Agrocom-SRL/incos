@@ -12,6 +12,13 @@ import { EXCEL_COLOR } from '../../shared/index.js';
 /** Alto del bloque de un folio (filas), como en el libro real (folio 56 = filas 1-34). */
 export const FILAS_POR_FOLIO = 34;
 
+/**
+ * Filas por celda de la grilla de FIRMAS DE DOCENTES (página final de la
+ * hoja): 3 filas de espacio en blanco (firma física, sin línea) + 1 fila de
+ * nombre del docente + 1 fila de materia.
+ */
+export const FILAS_POR_FIRMA = 5;
+
 /** Anchos de columna (unidades Excel) por rol semántico. */
 export const COL_WIDTHS = {
   nro: 5, // A — N°
@@ -31,6 +38,7 @@ export const ROW_HEIGHTS = {
   nombresMateria: 64, // fila (fusionada 5 filas) de nombres de materia
   dataRow: 18, // fila de estudiante
   firmas: 16,
+  firmaEspacio: 20, // cada una de las filas en blanco sobre la firma física (docentes)
 };
 
 /**
@@ -39,7 +47,7 @@ export const ROW_HEIGHTS = {
  * (2-6), título+LIBRO/FOLIO (4-5), ciudad/turno (7), institución/R.M./carácter
  * (8), gestión+siglas (9), nivel+nombres de materia (10-13 fusionados hasta
  * 14), carrera (11), régimen (12), curso (13), cabecera de nómina (14),
- * estudiantes (15-24), firmas de autoridades (32).
+ * estudiantes (15-24), leyenda NP/AP/PRE (26), firmas de autoridades (32).
  */
 export const FILA = {
   codigoRegistro: 1,
@@ -59,6 +67,7 @@ export const FILA = {
   nomina: 14, // N° / NÓMINA DE ESTUDIANTES
   dataInicio: 15,
   dataFin: 24, // 10 estudiantes por página
+  leyenda: 26, // NP = No se Presentó / AP = Aprobado / PRE = Prerrequisito
   firmasAutoridades: 32,
 };
 

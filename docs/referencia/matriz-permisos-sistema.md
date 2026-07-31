@@ -3,6 +3,37 @@
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
+## Changelog 2026-07-31 — TIT: formulario de modalidad, reporte de avance por carrera y planilla 10-en-10 (extensión, sin permisos nuevos)
+
+Iteración 1 (backend) de 3 extensiones sobre el módulo TIT ya integrado
+(`docs/plan/titulacion-avance-y-modalidad-plan-desarrollo.md`): Requisito 1
+(formulario de elección de modalidad de graduación FMDG-1), Requisito 2
+(reporte de avance de tutorías por carrera) y Requisito 3 (planilla de
+seguimiento de tutoría "10 en 10", bimestral, 3er año). **No se agregan
+permisos ni acciones**: los 6 endpoints nuevos reutilizan `titulacion.proyecto`
+LISTAR (datos en pantalla) y EXPORTAR (descarga PDF/Excel) — mismo criterio
+que `GET /modalidades` (LISTAR, catálogo de apoyo) y `GET /reportes/bitacora-mensual`
+(EXPORTAR, PDF ya existente).
+
+| Endpoint | Acción | `dataFieldName` |
+|---|---|---|
+| `GET /proyectos-grado/estudiantes-elegibles` | LISTAR | `estudiantesElegibles` |
+| `GET /proyectos-grado/:id/formulario-modalidad/pdf` | EXPORTAR | binario (PDF) |
+| `GET /proyectos-grado/reportes/avance-carrera` | LISTAR | `avanceTutoriaCarrera` |
+| `GET /proyectos-grado/reportes/avance-carrera/pdf` | EXPORTAR | binario (PDF) |
+| `GET /proyectos-grado/reportes/planilla-avance-tercer-anio` | LISTAR | `planillaAvanceTercerAnio` |
+| `GET /proyectos-grado/reportes/planilla-avance-tercer-anio/export` | EXPORTAR | binario (.xlsx) |
+
+Vistas SQL nuevas: `178-vista-base-tutoria-estudiante-tercer-anio`,
+`179-vista-tutoria-avance-carrera`, `180-vista-base-tutoria-bitacora-bimestre-fila`,
+`181-vista-tutoria-planilla-avance-tercer-anio`; ajuste aditivo (columna
+`ultima_observacion`) a la vista 160 ya existente. Guard nuevo
+`assertEstudianteEsTercerAnio` en `CreateProyectoGradoUseCase` (restringe la
+creación de proyecto a estudiantes de 3er año, para titular e integrantes PSP).
+Requisito 3 **no requirió tabla nueva**: se deriva en tiempo de lectura de
+`bitacora_proyecto` + `integrantes_proyecto` + `proyectos_grado` +
+`periodos_academicos`. Iteración 2 (frontend) queda pendiente.
+
 ## Changelog 2026-07-31 — rename backend TUT→TIT (Titulación) + Acompañamiento reclasificado a ACADEMICO
 
 Ejecución del rename backend aprobado por el usuario (código en carpetas/tokens/DI;

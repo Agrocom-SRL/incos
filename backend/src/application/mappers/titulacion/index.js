@@ -3,3 +3,4 @@
  */
 
 export { ProyectoGradoMapper } from './ProyectoGradoMapper.js';
+export { TutoriaAvanceMapper } from './TutoriaAvanceMapper.js';

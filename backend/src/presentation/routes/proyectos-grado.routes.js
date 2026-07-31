@@ -19,6 +19,9 @@ import {
   createBitacoraEntradaValidator,
   updateBitacoraEntradaValidator,
   createAvanceValidator,
+  listEstudiantesElegiblesValidator,
+  avanceTutoriaCarreraValidator,
+  planillaAvanceTercerAnioValidator,
 } from '../validators/titulacion/index.js';
 
 /**
@@ -91,6 +94,68 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.exportBitacoraMensualTutorController.handle(req, res, next)
   );
 
+  // ============================================
+  // Extensión 2026-07-31 — Requisito 1: estudiantes elegibles de 3er año
+  // (formulario de elección de modalidad de graduación)
+  // ============================================
+
+  // GET /estudiantes-elegibles?search=&carreraId=&gestionId= - vista 178
+  router.get(
+    '/estudiantes-elegibles',
+    ...proyectoListar,
+    listEstudiantesElegiblesValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.listEstudiantesElegiblesModalidadGradoController.handle(req, res, next)
+  );
+
+  // ============================================
+  // Extensión 2026-07-31 — Requisito 2: reporte de avance de tutorías por
+  // carrera (vistas 179/160)
+  // ============================================
+
+  // GET /reportes/avance-carrera?gestionId=&carreraId=
+  router.get(
+    '/reportes/avance-carrera',
+    ...proyectoListar,
+    avanceTutoriaCarreraValidator,
+    validateRequest,
+    (req, res, next) => controllers.getAvanceTutoriaCarreraController.handle(req, res, next)
+  );
+
+  // GET /reportes/avance-carrera/pdf?gestionId=&carreraId=
+  router.get(
+    '/reportes/avance-carrera/pdf',
+    ...proyectoExportar,
+    avanceTutoriaCarreraValidator,
+    validateRequest,
+    (req, res, next) => controllers.exportAvanceTutoriaCarreraPdfController.handle(req, res, next)
+  );
+
+  // ============================================
+  // Extensión 2026-07-31 — Requisito 3: planilla de avance de tutorías
+  // "10 en 10" (bimestral, 3er año) (vista 181)
+  // ============================================
+
+  // GET /reportes/planilla-avance-tercer-anio?carreraId=&gestionId=&bimestre=
+  router.get(
+    '/reportes/planilla-avance-tercer-anio',
+    ...proyectoListar,
+    planillaAvanceTercerAnioValidator,
+    validateRequest,
+    (req, res, next) => controllers.getPlanillaAvanceTercerAnioController.handle(req, res, next)
+  );
+
+  // GET /reportes/planilla-avance-tercer-anio/export?carreraId=&gestionId=&bimestre=
+  router.get(
+    '/reportes/planilla-avance-tercer-anio/export',
+    ...proyectoExportar,
+    planillaAvanceTercerAnioValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.exportPlanillaAvanceTercerAnioExcelController.handle(req, res, next)
+  );
+
   // T7 POST / - Crear proyecto (+ TITULAR e integrantes si PSP)
   router.post(
     '/',
@@ -107,6 +172,16 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
   // T6 GET /:id - Ficha del proyecto
   router.get('/:id', ...proyectoDetalle, idValidator, validateRequest, (req, res, next) =>
     controllers.getProyectoGradoByIdController.handle(req, res, next)
+  );
+
+  // GET /:id/formulario-modalidad/pdf - PDF del FMDG-1 (Requisito 1, extensión 2026-07-31)
+  router.get(
+    '/:id/formulario-modalidad/pdf',
+    ...proyectoExportar,
+    idValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.exportFormularioModalidadGradoPdfController.handle(req, res, next)
   );
 
   // T8 PUT /:id - Actualizar proyecto
