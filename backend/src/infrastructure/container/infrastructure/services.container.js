@@ -46,10 +46,10 @@ import { AsistenciaConsolidadoExcelBuilder } from '../../external/excel/asistenc
 import { LibroRegistroExcelBuilder } from '../../external/excel/libro-registro/LibroRegistroExcelBuilder.js';
 import { AvanceAcademicoExcelBuilder } from '../../external/excel/avance-academico/AvanceAcademicoExcelBuilder.js';
 import { DesercionExcelBuilder } from '../../external/excel/desercion/DesercionExcelBuilder.js';
-import { DesignacionTutorPdfGenerator } from '../../external/pdf/tutorias/DesignacionTutorPdfGenerator.js';
-import { ViabilidadProyectoPdfGenerator } from '../../external/pdf/tutorias/ViabilidadProyectoPdfGenerator.js';
-import { BitacoraMensualTutorPdfGenerator } from '../../external/pdf/tutorias/BitacoraMensualTutorPdfGenerator.js';
-import { PanelAcompanamientoPdfGenerator } from '../../external/pdf/tutorias/PanelAcompanamientoPdfGenerator.js';
+import { DesignacionTutorPdfGenerator } from '../../external/pdf/titulacion/DesignacionTutorPdfGenerator.js';
+import { ViabilidadProyectoPdfGenerator } from '../../external/pdf/titulacion/ViabilidadProyectoPdfGenerator.js';
+import { BitacoraMensualTutorPdfGenerator } from '../../external/pdf/titulacion/BitacoraMensualTutorPdfGenerator.js';
+import { PanelAcompanamientoPdfGenerator } from '../../external/pdf/academico/PanelAcompanamientoPdfGenerator.js';
 import { FichaSeguimientoClasePdfGenerator } from '../../external/pdf/docentes/FichaSeguimientoClasePdfGenerator.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
@@ -201,7 +201,7 @@ export function registerServicesModule(container) {
     );
 
     // ============================================
-    // PDF GENERATORS DEL MÓDULO TUTORÍAS (TUT)
+    // PDF GENERATORS DEL MÓDULO TITULACIÓN (TIT)
     // ============================================
     registerService(
         container,
@@ -218,6 +218,10 @@ export function registerServicesModule(container) {
         SERVICIOS_TOKENS.bitacoraMensualTutorPdfGenerator,
         (c) => new BitacoraMensualTutorPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
     );
+
+    // ============================================
+    // PDF GENERATOR DEL MÓDULO ACADÉMICO (ACA) · ACOMPAÑAMIENTO
+    // ============================================
     registerService(
         container,
         SERVICIOS_TOKENS.panelAcompanamientoPdfGenerator,

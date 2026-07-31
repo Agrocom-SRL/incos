@@ -14,7 +14,7 @@ export class RegisterAsistenciaSesionController {
     try {
       const sesionId = parseInt(req.params.id, 10);
       const userId = req.usuario?.id ?? null;
-      this.logger.info('[Tutorías] Request de registro batch de estudiantes', {
+      this.logger.info('[Acompañamiento] Request de registro batch de estudiantes', {
         sesionId,
         estudiantes: Array.isArray(req.body?.estudiantes) ? req.body.estudiantes.length : 0,
       });
@@ -33,7 +33,7 @@ export class RegisterAsistenciaSesionController {
         req
       );
     } catch (error) {
-      this.logger.error('[Tutorías] Error al registrar estudiantes de la sesión', {
+      this.logger.error('[Acompañamiento] Error al registrar estudiantes de la sesión', {
         error: error.message,
         stack: error.stack,
         id: req.params?.id,

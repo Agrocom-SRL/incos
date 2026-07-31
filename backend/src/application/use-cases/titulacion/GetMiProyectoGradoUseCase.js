@@ -1,5 +1,5 @@
 import { resolveEstudianteIdForUsuario } from '../../utils/resolveEstudianteIdForUsuario.js';
-import { ESTADOS_PROYECTO_GRADO_VIGENTES } from '../../../domain/constants/tutorias.constants.js';
+import { ESTADOS_PROYECTO_GRADO_VIGENTES } from '../../../domain/constants/titulacion.constants.js';
 
 /**
  * Use Case: GetMiProyectoGradoUseCase (T4)

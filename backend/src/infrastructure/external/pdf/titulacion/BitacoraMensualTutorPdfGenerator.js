@@ -1,5 +1,5 @@
 /**
- * BitacoraMensualTutorPdfGenerator (módulo TUT · titulación)
+ * BitacoraMensualTutorPdfGenerator (módulo TIT · titulación)
  *
  * Genera el REPORTE MENSUAL DE TUTORÍAS por tutor (planilla DDE: tutorías
  * programadas/desarrolladas en el mes) a partir de la plantilla institucional

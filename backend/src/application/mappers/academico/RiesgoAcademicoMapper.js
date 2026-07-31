@@ -1,5 +1,5 @@
 /**
- * Mapper de aplicación: RiesgoAcademico (módulo TUT · acompañamiento)
+ * Mapper de aplicación: RiesgoAcademico (módulo ACA · acompañamiento)
  *
  * Convierte filas crudas (snake_case) de las vistas 156/157/158 al formato
  * de presentación camelCase.

@@ -4,7 +4,7 @@ import {
   MODALIDAD_GRUPAL_CODIGO,
   ROLES_INTEGRANTE_TUTORIA,
   ESTADOS_INTEGRANTE_TUTORIA,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { assertEstudianteSinProyectoVigente } from './helpers/proyectoTutoriaGuards.js';
 

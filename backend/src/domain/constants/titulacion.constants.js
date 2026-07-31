@@ -1,10 +1,17 @@
 /**
- * Constantes del dominio Tutorías y Acompañamiento Académico (módulo TUT)
+ * Constantes del dominio Titulación (módulo TIT)
  *
- * Dos sub-módulos:
- * - Titulación: proyectos_grado (raíz legacy) + satélites tutoria_* (schema 23).
- * - Acompañamiento: riesgo pedagógico (vista 156, sin tabla) + sesiones de
- *   refuerzo ancladas en asignaciones_docentes.
+ * Proyectos de grado: proyectos_grado (raíz legacy) + satélites tutoria_*
+ * (schema 23). "Tutoría"/"tutor" aquí es vocabulario de negocio legítimo (el
+ * rol de acompañamiento académico dentro de UN proyecto de grado), no el
+ * nombre del módulo.
+ *
+ * Nota (2026-07-31): este archivo se llamó `tutorias.constants.js` y el
+ * módulo era TUT. Ese rename (titulación) estuvo documentado como "código no
+ * cambia" — decisión REVERTIDA en esta fecha: el módulo pasa a TIT y el
+ * sub-grupo Acompañamiento (antes aquí mismo) se reclasificó al dominio
+ * ACADEMICO; sus constantes de sesión de refuerzo viven ahora en
+ * `academico.acompanamiento.constants.js`.
  */
 
 // ============================================
@@ -155,43 +162,3 @@ export const RESULTADOS_DICTAMEN_TUTORIA = {
 };
 
 export const RESULTADOS_DICTAMEN_TUTORIA_VALUES = Object.values(RESULTADOS_DICTAMEN_TUTORIA);
-
-// ============================================
-// SESIONES DE REFUERZO (tabla `sesiones_refuerzo`)
-// ============================================
-
-export const MODALIDADES_SESION_REFUERZO = {
-  PRESENCIAL: 'PRESENCIAL',
-  VIRTUAL: 'VIRTUAL',
-};
-
-export const MODALIDADES_SESION_REFUERZO_VALUES = Object.values(MODALIDADES_SESION_REFUERZO);
-
-export const ESTADOS_SESION_REFUERZO = {
-  PROGRAMADA: 'PROGRAMADA',
-  REALIZADA: 'REALIZADA',
-  CANCELADA: 'CANCELADA',
-};
-
-export const ESTADOS_SESION_REFUERZO_VALUES = Object.values(ESTADOS_SESION_REFUERZO);
-
-// ============================================
-// ESTUDIANTES DE SESIÓN (tabla `sesion_refuerzo_estudiantes`)
-// ============================================
-
-export const ORIGENES_ESTUDIANTE_SESION = {
-  RIESGO: 'RIESGO',
-  DOCENTE: 'DOCENTE',
-  VOLUNTARIO: 'VOLUNTARIO',
-};
-
-export const ORIGENES_ESTUDIANTE_SESION_VALUES = Object.values(ORIGENES_ESTUDIANTE_SESION);
-
-export const PROGRESOS_ESTUDIANTE_SESION = {
-  SIN_EVALUAR: 'SIN_EVALUAR',
-  EN_PROGRESO: 'EN_PROGRESO',
-  MEJORADO: 'MEJORADO',
-  SIN_MEJORA: 'SIN_MEJORA',
-};
-
-export const PROGRESOS_ESTUDIANTE_SESION_VALUES = Object.values(PROGRESOS_ESTUDIANTE_SESION);

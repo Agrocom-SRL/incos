@@ -1,5 +1,5 @@
 import { resolveDocenteIdForUsuario } from '../../utils/resolveDocenteIdForUsuario.js';
-import { ProyectoGradoMapper } from '../../mappers/tutorias/index.js';
+import { ProyectoGradoMapper } from '../../mappers/titulacion/index.js';
 
 /**
  * Use Case: ListMisTutoradosUseCase (T3)

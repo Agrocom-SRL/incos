@@ -4,7 +4,7 @@ import {
   TRANSICIONES_PROYECTO_GRADO,
   TIPOS_DICTAMEN_TUTORIA,
   RESULTADOS_DICTAMEN_TUTORIA,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 import { getProyectoOrFail } from './helpers/proyectoTutoriaGuards.js';
 import {
   buildContextoDictamenPdf,

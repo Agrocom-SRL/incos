@@ -5,10 +5,10 @@ import {
   ESTADOS_SESION_REFUERZO_VALUES,
   ORIGENES_ESTUDIANTE_SESION_VALUES,
   PROGRESOS_ESTUDIANTE_SESION_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/academico.acompanamiento.constants.js';
 
 /**
- * Validators del sub-módulo Acompañamiento (módulo TUT):
+ * Validators del sub-módulo Acompañamiento (módulo ACA):
  * alertas de riesgo (vista 156, sin tabla), sesiones de refuerzo y panel.
  */
 

@@ -1,5 +1,5 @@
 /**
- * DesignacionTutorPdfGenerator (módulo TUT · titulación)
+ * DesignacionTutorPdfGenerator (módulo TIT · titulación)
  *
  * Genera el INFORME DE DESIGNACIÓN OFICIAL DE TUTOR a partir de la plantilla
  * institucional (Plantilla.pdf) con pdf-lib. Patrón ActaCompromisoPdfGenerator:

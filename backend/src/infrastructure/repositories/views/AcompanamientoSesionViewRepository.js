@@ -2,7 +2,7 @@ import { sequelize } from '../../database/sequelize.js';
 import { IAcompanamientoSesionViewRepository } from '../../../domain/interfaces/repositories/IAcompanamientoSesionViewRepository.js';
 
 /**
- * Lecturas de sesiones de refuerzo (módulo TUT · acompañamiento).
+ * Lecturas de sesiones de refuerzo (módulo ACA · acompañamiento).
  *
  * Consume las vistas SQL:
  * - `vista_base_acompanamiento_sesion_fila` (161): 1 fila por sesión con

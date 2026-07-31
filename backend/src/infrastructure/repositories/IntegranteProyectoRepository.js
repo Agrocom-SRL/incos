@@ -1,9 +1,9 @@
 import { BaseRepository } from './BaseRepository.js';
 import { IntegranteProyecto as IntegranteProyectoModel } from '../database/models/integrante_proyecto.js';
-import { ESTADOS_INTEGRANTE_TUTORIA } from '../../domain/constants/tutorias.constants.js';
+import { ESTADOS_INTEGRANTE_TUTORIA } from '../../domain/constants/titulacion.constants.js';
 
 /**
- * Repositorio CRUD de integrantes de proyectos de grado (módulo TUT).
+ * Repositorio CRUD de integrantes de proyectos de grado (módulo TIT · titulación).
  *
  * Arquetipo A: hereda de BaseRepository (Template Method).
  *

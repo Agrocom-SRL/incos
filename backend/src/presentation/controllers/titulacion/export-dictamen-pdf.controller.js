@@ -1,7 +1,7 @@
 /**
  * GET /api/v1/proyectos-grado/:id/dictamenes/:dictamenId/archivo (T23)
  * Descarga autenticada del PDF del dictamen (res.download).
- * Permiso: tutorias.titulacion.proyecto EXPORTAR.
+ * Permiso: titulacion.proyecto EXPORTAR.
  */
 export class ExportDictamenPdfController {
   constructor({ exportDictamenPdfUseCase, logger }) {

@@ -6,7 +6,7 @@ import {
   MODALIDADES_SESION_REFUERZO_VALUES,
   ESTADOS_SESION_REFUERZO,
   ESTADOS_SESION_REFUERZO_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/academico.acompanamiento.constants.js';
 
 /**
  * Sesión de refuerzo pedagógico (módulo TUT) — tabla

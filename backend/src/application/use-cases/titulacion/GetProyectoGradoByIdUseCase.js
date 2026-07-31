@@ -1,5 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
-import { ProyectoGradoMapper } from '../../mappers/tutorias/index.js';
+import { ProyectoGradoMapper } from '../../mappers/titulacion/index.js';
 
 /**
  * Use Case: GetProyectoGradoByIdUseCase (T6)

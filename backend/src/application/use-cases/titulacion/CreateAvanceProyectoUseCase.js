@@ -1,6 +1,6 @@
 import path from 'path';
 import { ValidationError } from '../../../domain/errors/AppError.js';
-import { ESTADOS_REVISION_AVANCE } from '../../../domain/constants/tutorias.constants.js';
+import { ESTADOS_REVISION_AVANCE } from '../../../domain/constants/titulacion.constants.js';
 import { tryResolveEstudianteIdForUsuario } from '../../utils/resolveEstudianteIdForUsuario.js';
 import { getProyectoOrFail, assertIntegranteActivo } from './helpers/proyectoTutoriaGuards.js';
 

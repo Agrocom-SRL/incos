@@ -44,3 +44,13 @@ export {
   editarFolioEstudianteValidator,
   exportLibroExcelValidator,
 } from './libros.validator.js';
+export {
+  estudianteIdParamValidator,
+  listAlertasRiesgoValidator,
+  alertaEstudianteValidator,
+  listSesionesRefuerzoValidator,
+  createSesionRefuerzoValidator,
+  updateSesionRefuerzoValidator,
+  registerAsistenciaSesionValidator,
+  panelAcompanamientoValidator,
+} from './acompanamiento.validator.js';

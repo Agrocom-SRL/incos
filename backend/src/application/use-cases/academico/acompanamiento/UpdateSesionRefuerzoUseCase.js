@@ -1,4 +1,4 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../../domain/errors/AppError.js';
 
 /** Campos editables de la sesión (estudiantes vía A9). */
 const CAMPOS_EDITABLES = [
@@ -15,7 +15,7 @@ const CAMPOS_EDITABLES = [
 
 /**
  * Use Case: UpdateSesionRefuerzoUseCase (A7)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Actualiza una sesión de refuerzo (incluida la transición de estado
  * PROGRAMADA → REALIZADA/CANCELADA). La asignación docente NO cambia:
@@ -62,7 +62,7 @@ export class UpdateSesionRefuerzoUseCase {
 
     const updated = await this.sesionRefuerzoRepository.update(id, data, userId);
 
-    this.logger.info('[Tutorías] Sesión de refuerzo actualizada', {
+    this.logger.info('[Acompañamiento] Sesión de refuerzo actualizada', {
       id,
       campos: Object.keys(data),
     });

@@ -1,5 +1,5 @@
 /**
- * PanelAcompanamientoPdfGenerator (módulo TUT · acompañamiento)
+ * PanelAcompanamientoPdfGenerator (módulo ACA · acompañamiento)
  *
  * Genera el PDF del PANEL DE ACOMPAÑAMIENTO PEDAGÓGICO (riesgo por carrera,
  * materias críticas y resumen de sesiones de refuerzo) a partir de la

@@ -1,7 +1,7 @@
 /**
  * GET /api/v1/acompanamiento/panel/exportar?gestionId= (A11)
  * PDF del panel de acompañamiento (vistas 157/158/162). Respuesta binaria.
- * Permiso: tutorias.acompanamiento.panel EXPORTAR.
+ * Permiso: academico.acompanamiento.panel EXPORTAR.
  */
 export class ExportPanelAcompanamientoController {
   constructor({ exportPanelAcompanamientoPdfUseCase, logger }) {
@@ -17,7 +17,7 @@ export class ExportPanelAcompanamientoController {
 
   async handle(req, res, next) {
     try {
-      this.logger.info('[Tutorías] Request de exportación PDF del panel', {
+      this.logger.info('[Acompañamiento] Request de exportación PDF del panel', {
         gestionId: req.query?.gestionId,
       });
 
@@ -28,7 +28,7 @@ export class ExportPanelAcompanamientoController {
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
       return res.send(buffer);
     } catch (error) {
-      this.logger.error('[Tutorías] Error al exportar panel de acompañamiento', {
+      this.logger.error('[Acompañamiento] Error al exportar panel de acompañamiento', {
         error: error.message,
         stack: error.stack,
       });

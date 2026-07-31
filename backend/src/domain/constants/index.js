@@ -47,5 +47,8 @@ export * from './pagos.constants.js';
 // Re-exportar constantes del sistema
 export * from './sistema.constants.js';
 
-// Re-exportar constantes de tutorías y acompañamiento (módulo TUT)
-export * from './tutorias.constants.js';
+// Re-exportar constantes de titulación (módulo TIT)
+export * from './titulacion.constants.js';
+
+// Re-exportar constantes de acompañamiento pedagógico (módulo ACA)
+export * from './academico.acompanamiento.constants.js';

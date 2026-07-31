@@ -6,7 +6,7 @@ import {
   TIPOS_BITACORA_TUTORIA_VALUES,
   ESTADOS_BITACORA_TUTORIA,
   ESTADOS_BITACORA_TUTORIA_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 
 /**
  * Entrada de bitácora de tutoría (módulo TUT) — tabla `bitacora_proyecto`.

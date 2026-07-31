@@ -29,9 +29,9 @@ export const SERVICIOS_TOKENS = {
     avanceAcademicoExcelGenerator: 'avanceAcademicoExcelGenerator', // IAvanceAcademicoExcelGenerator (.xlsx)
     desercionExcelGenerator: 'desercionExcelGenerator', // IDesercionExcelGenerator (.xlsx)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
-    designacionTutorPdfGenerator: 'designacionTutorPdfGenerator', // IDesignacionTutorPdfGenerator (.pdf, módulo TUT)
-    viabilidadProyectoPdfGenerator: 'viabilidadProyectoPdfGenerator', // IViabilidadProyectoPdfGenerator (.pdf, módulo TUT)
-    bitacoraMensualTutorPdfGenerator: 'bitacoraMensualTutorPdfGenerator', // IBitacoraMensualTutorPdfGenerator (.pdf, módulo TUT)
-    panelAcompanamientoPdfGenerator: 'panelAcompanamientoPdfGenerator', // IPanelAcompanamientoPdfGenerator (.pdf, módulo TUT)
+    designacionTutorPdfGenerator: 'designacionTutorPdfGenerator', // IDesignacionTutorPdfGenerator (.pdf, módulo TIT)
+    viabilidadProyectoPdfGenerator: 'viabilidadProyectoPdfGenerator', // IViabilidadProyectoPdfGenerator (.pdf, módulo TIT)
+    bitacoraMensualTutorPdfGenerator: 'bitacoraMensualTutorPdfGenerator', // IBitacoraMensualTutorPdfGenerator (.pdf, módulo TIT)
+    panelAcompanamientoPdfGenerator: 'panelAcompanamientoPdfGenerator', // IPanelAcompanamientoPdfGenerator (.pdf, módulo ACA · acompañamiento)
     fichaSeguimientoClasePdfGenerator: 'fichaSeguimientoClasePdfGenerator', // IFichaSeguimientoClasePdfGenerator (.pdf, módulo DOC · supervisión)
 };

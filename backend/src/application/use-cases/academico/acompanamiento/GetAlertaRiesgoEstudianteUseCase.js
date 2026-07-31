@@ -1,9 +1,9 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
-import { RiesgoAcademicoMapper } from '../../mappers/tutorias/index.js';
+import { NotFoundError } from '../../../../domain/errors/AppError.js';
+import { RiesgoAcademicoMapper } from '../../../mappers/academico/index.js';
 
 /**
  * Use Case: GetAlertaRiesgoEstudianteUseCase (A3)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Detalle de riesgo de UN estudiante: todas sus materias (vista 156, en
  * riesgo o no) + resumen (materias en riesgo / promedio).
@@ -55,7 +55,7 @@ export class GetAlertaRiesgoEstudianteUseCase {
       materias,
     };
 
-    this.logger.info('[Tutorías] Detalle de riesgo de estudiante obtenido', {
+    this.logger.info('[Acompañamiento] Detalle de riesgo de estudiante obtenido', {
       estudianteId,
       materias: materias.length,
       enRiesgo: materiasEnRiesgo.length,

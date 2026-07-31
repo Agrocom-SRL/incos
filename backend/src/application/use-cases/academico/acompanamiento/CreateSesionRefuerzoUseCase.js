@@ -1,15 +1,15 @@
-import { NotFoundError, ValidationError, ConflictError } from '../../../domain/errors/AppError.js';
+import { NotFoundError, ValidationError, ConflictError } from '../../../../domain/errors/AppError.js';
 import {
   MODALIDADES_SESION_REFUERZO,
   ESTADOS_SESION_REFUERZO,
   ORIGENES_ESTUDIANTE_SESION,
   PROGRESOS_ESTUDIANTE_SESION,
-} from '../../../domain/constants/tutorias.constants.js';
-import { sequelize } from '../../../infrastructure/database/sequelize.js';
+} from '../../../../domain/constants/academico.acompanamiento.constants.js';
+import { sequelize } from '../../../../infrastructure/database/sequelize.js';
 
 /**
  * Use Case: CreateSesionRefuerzoUseCase (A6)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Crea una sesión de refuerzo anclada a una asignación docente vigente
  * y sus estudiantes iniciales en UNA transacción. Validaciones:
@@ -89,7 +89,7 @@ export class CreateSesionRefuerzoUseCase {
       }
     });
 
-    this.logger.info('[Tutorías] Sesión de refuerzo creada', {
+    this.logger.info('[Acompañamiento] Sesión de refuerzo creada', {
       id: created.id,
       asignacionDocenteId: data.asignacionDocenteId,
       estudiantes: estudiantes.length,

@@ -1,9 +1,9 @@
-import { resolveDocenteIdForUsuario } from '../../utils/resolveDocenteIdForUsuario.js';
-import { RiesgoAcademicoMapper } from '../../mappers/tutorias/index.js';
+import { resolveDocenteIdForUsuario } from '../../../utils/resolveDocenteIdForUsuario.js';
+import { RiesgoAcademicoMapper } from '../../../mappers/academico/index.js';
 
 /**
  * Use Case: ListMisAlertasRiesgoDocenteUseCase (A2)
- * Módulo: Tutorías (TUT · acompañamiento · portal del docente)
+ * Módulo: Académico (ACA · acompañamiento · portal del docente)
  *
  * "Mis alumnos en riesgo": alertas de la vista 156 acotadas a los cursos
  * VIGENTES del docente de la SESIÓN (subselect por asignaciones_docentes).
@@ -48,7 +48,7 @@ export class ListMisAlertasRiesgoDocenteUseCase {
       10000
     );
 
-    this.logger.info('[Tutorías] Mis alumnos en riesgo listados', {
+    this.logger.info('[Acompañamiento] Mis alumnos en riesgo listados', {
       usuarioId,
       docenteId,
       total,

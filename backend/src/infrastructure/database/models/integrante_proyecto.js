@@ -6,7 +6,7 @@ import {
   ROLES_INTEGRANTE_TUTORIA_VALUES,
   ESTADOS_INTEGRANTE_TUTORIA,
   ESTADOS_INTEGRANTE_TUTORIA_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 
 /**
  * Integrante de proyecto de grado (módulo TUT) — tabla `integrantes_proyecto`.

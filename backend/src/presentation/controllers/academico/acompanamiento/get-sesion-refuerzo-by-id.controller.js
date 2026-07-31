@@ -1,4 +1,4 @@
-import { BaseGetController } from '../base/BaseGetController.js';
+import { BaseGetController } from '../../base/BaseGetController.js';
 
 /**
  * GET /api/v1/acompanamiento/sesiones/:id (A5)

@@ -1,8 +1,8 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../../domain/errors/AppError.js';
 
 /**
  * Use Case: DeleteSesionRefuerzoUseCase (A8)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Elimina (soft delete) una sesión de refuerzo.
  */
@@ -28,7 +28,7 @@ export class DeleteSesionRefuerzoUseCase {
       throw new NotFoundError(`sesión de refuerzo con ID ${id}`);
     }
     const deleted = await this.sesionRefuerzoRepository.delete(id, userId);
-    this.logger.info('[Tutorías] Sesión de refuerzo eliminada (soft)', { id });
+    this.logger.info('[Acompañamiento] Sesión de refuerzo eliminada (soft)', { id });
     return deleted;
   }
 }

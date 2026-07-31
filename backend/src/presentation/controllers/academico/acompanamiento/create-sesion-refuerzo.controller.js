@@ -1,4 +1,4 @@
-import { BaseCreateController } from '../base/BaseCreateController.js';
+import { BaseCreateController } from '../../base/BaseCreateController.js';
 
 /**
  * POST /api/v1/acompanamiento/sesiones (A6)

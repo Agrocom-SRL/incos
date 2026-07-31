@@ -4,7 +4,7 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 import {
   TIPOS_DICTAMEN_TUTORIA_VALUES,
   RESULTADOS_DICTAMEN_TUTORIA_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 
 /**
  * Dictamen de tutoría (módulo TUT) — tabla `dictamenes_proyecto`.

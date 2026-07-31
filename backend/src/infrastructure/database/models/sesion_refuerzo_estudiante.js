@@ -6,7 +6,7 @@ import {
   ORIGENES_ESTUDIANTE_SESION_VALUES,
   PROGRESOS_ESTUDIANTE_SESION,
   PROGRESOS_ESTUDIANTE_SESION_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/academico.acompanamiento.constants.js';
 
 /**
  * Estudiante (por matrícula) de una sesión de refuerzo (módulo TUT) — tabla

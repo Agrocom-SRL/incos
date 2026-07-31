@@ -1,11 +1,11 @@
-import { RiesgoAcademicoMapper, SesionRefuerzoMapper } from '../../mappers/tutorias/index.js';
+import { RiesgoAcademicoMapper, SesionRefuerzoMapper } from '../../../mappers/academico/index.js';
 
 /** Tamaño del top de casos críticos (filas de la vista 156 en riesgo). */
 const TOP_CASOS_CRITICOS = 20;
 
 /**
  * Use Case: GetPanelAcompanamientoUseCase (A10)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Panel de acompañamiento pedagógico: agregados de riesgo por carrera (157),
  * materias críticas (158), resumen mensual de sesiones (162) y top de casos
@@ -97,7 +97,7 @@ export class GetPanelAcompanamientoUseCase {
       casosCriticos: RiesgoAcademicoMapper.alertaRowsToPresentation(criticosResult.rows),
     };
 
-    this.logger.info('[Tutorías] Panel de acompañamiento generado', {
+    this.logger.info('[Acompañamiento] Panel de acompañamiento generado', {
       gestionId: gestion.gestionId,
       carreras: panelAcompanamiento.riesgoPorCarrera.length,
       materias: panelAcompanamiento.materiasCriticas.length,

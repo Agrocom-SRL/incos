@@ -3,7 +3,7 @@ import { SesionRefuerzoEstudiante as SesionRefuerzoEstudianteModel } from '../da
 
 /**
  * Repositorio CRUD de estudiantes (por matrícula) de sesiones de refuerzo
- * (módulo TUT).
+ * (módulo ACA · acompañamiento).
  *
  * Arquetipo A: hereda de BaseRepository (Template Method). El detalle
  * enriquecido (datos del estudiante + notas) vive en

@@ -13,13 +13,13 @@ export class DeleteSesionRefuerzoController {
     try {
       const id = parseInt(req.params.id, 10);
       const userId = req.usuario?.id ?? null;
-      this.logger.info('[Tutorías] Request de eliminación de sesión de refuerzo', { id });
+      this.logger.info('[Acompañamiento] Request de eliminación de sesión de refuerzo', { id });
 
       await this.deleteSesionRefuerzoUseCase.execute(id, userId);
 
       return this.responseFormatter.deleted(res, 'sesión de refuerzo', id, req);
     } catch (error) {
-      this.logger.error('[Tutorías] Error al eliminar sesión de refuerzo', {
+      this.logger.error('[Acompañamiento] Error al eliminar sesión de refuerzo', {
         error: error.message,
         stack: error.stack,
         id: req.params?.id,

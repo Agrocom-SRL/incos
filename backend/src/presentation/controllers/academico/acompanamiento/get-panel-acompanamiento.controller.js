@@ -12,7 +12,7 @@ export class GetPanelAcompanamientoController {
 
   async handle(req, res, next) {
     try {
-      this.logger.info('[Tutorías] Request de panel de acompañamiento', {
+      this.logger.info('[Acompañamiento] Request de panel de acompañamiento', {
         gestionId: req.query?.gestionId,
       });
 
@@ -25,7 +25,7 @@ export class GetPanelAcompanamientoController {
         req
       );
     } catch (error) {
-      this.logger.error('[Tutorías] Error al obtener panel de acompañamiento', {
+      this.logger.error('[Acompañamiento] Error al obtener panel de acompañamiento', {
         error: error.message,
         stack: error.stack,
       });

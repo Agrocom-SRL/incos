@@ -1,7 +1,7 @@
 /**
  * GET /api/v1/proyectos-grado/reportes/bitacora-mensual?mes=&gestionId= (T5)
  * PDF del reporte mensual de tutorías por tutor (vista 163).
- * Permiso: tutorias.titulacion.proyecto EXPORTAR. Respuesta binaria (PDF).
+ * Permiso: titulacion.proyecto EXPORTAR. Respuesta binaria (PDF).
  */
 export class ExportBitacoraMensualTutorController {
   constructor({ exportBitacoraMensualTutorPdfUseCase, logger }) {

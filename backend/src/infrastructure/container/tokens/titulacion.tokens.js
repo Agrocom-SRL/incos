@@ -1,102 +1,78 @@
 /**
- * Tokens de DI del módulo Tutorías y Acompañamiento Académico (TUT)
+ * Tokens de DI del módulo Titulación (TIT)
  *
  * Los repositorios del módulo se registran con tokens propios (scoped
- * 'tutorias.*') dentro de registerTutoriasModule — diff mínimo en los índices
- * compartidos (patrón del módulo Capacitación): solo se toca tokens/index.js,
- * modules/index.js y presentation/routes/index.js.
+ * 'titulacion.*') dentro de registerTitulacionModule — diff mínimo en los
+ * índices compartidos (patrón del módulo Capacitación): solo se toca
+ * tokens/index.js, modules/index.js y presentation/routes/index.js.
+ *
+ * Nota (2026-07-31): este archivo se llamó `tutorias.tokens.js`
+ * (TUTORIAS_TOKENS, prefijo 'tutorias.') y también incluía el sub-grupo
+ * Acompañamiento. Ese rename estuvo documentado como "el código no cambia" —
+ * decisión REVERTIDA en esta fecha: el módulo pasa a TIT/'titulacion.' y las
+ * claves de Acompañamiento (repos + use cases + controllers + router) se
+ * fusionaron en ACADEMICO_TOKENS (`academico.tokens.js`).
  */
-export const TUTORIAS_TOKENS = {
+export const TITULACION_TOKENS = {
   // Repositorios (arquetipo A + arquetipo B de vistas)
-  modalidadGradoRepository: 'tutorias.modalidadGradoRepository',
-  proyectoGradoRepository: 'tutorias.proyectoGradoRepository',
-  integranteProyectoRepository: 'tutorias.integranteProyectoRepository',
-  avanceProyectoRepository: 'tutorias.avanceProyectoRepository',
-  bitacoraProyectoRepository: 'tutorias.bitacoraProyectoRepository',
-  dictamenProyectoRepository: 'tutorias.dictamenProyectoRepository',
-  sesionRefuerzoRepository: 'tutorias.sesionRefuerzoRepository',
-  sesionRefuerzoEstudianteRepository: 'tutorias.sesionRefuerzoEstudianteRepository',
-  proyectoGradoListadoViewRepository: 'tutorias.proyectoGradoListadoViewRepository',
-  riesgoAcademicoViewRepository: 'tutorias.riesgoAcademicoViewRepository',
-  acompanamientoSesionViewRepository: 'tutorias.acompanamientoSesionViewRepository',
+  modalidadGradoRepository: 'titulacion.modalidadGradoRepository',
+  proyectoGradoRepository: 'titulacion.proyectoGradoRepository',
+  integranteProyectoRepository: 'titulacion.integranteProyectoRepository',
+  avanceProyectoRepository: 'titulacion.avanceProyectoRepository',
+  bitacoraProyectoRepository: 'titulacion.bitacoraProyectoRepository',
+  dictamenProyectoRepository: 'titulacion.dictamenProyectoRepository',
+  proyectoGradoListadoViewRepository: 'titulacion.proyectoGradoListadoViewRepository',
 
   // Use Cases — Titulación (proyectos de grado)
-  listProyectosGradoUseCase: 'tutorias.listProyectosGradoUseCase',
-  listModalidadesGradoUseCase: 'tutorias.listModalidadesGradoUseCase',
-  listMisTutoradosUseCase: 'tutorias.listMisTutoradosUseCase',
-  getMiProyectoGradoUseCase: 'tutorias.getMiProyectoGradoUseCase',
-  exportBitacoraMensualTutorPdfUseCase: 'tutorias.exportBitacoraMensualTutorPdfUseCase',
-  getProyectoGradoByIdUseCase: 'tutorias.getProyectoGradoByIdUseCase',
-  createProyectoGradoUseCase: 'tutorias.createProyectoGradoUseCase',
-  updateProyectoGradoUseCase: 'tutorias.updateProyectoGradoUseCase',
-  deleteProyectoGradoUseCase: 'tutorias.deleteProyectoGradoUseCase',
-  asignarTutorProyectoUseCase: 'tutorias.asignarTutorProyectoUseCase',
-  aprobarEtapaProyectoUseCase: 'tutorias.aprobarEtapaProyectoUseCase',
-  addIntegranteProyectoUseCase: 'tutorias.addIntegranteProyectoUseCase',
-  updateIntegranteProyectoUseCase: 'tutorias.updateIntegranteProyectoUseCase',
-  listBitacoraProyectoUseCase: 'tutorias.listBitacoraProyectoUseCase',
-  createBitacoraEntradaUseCase: 'tutorias.createBitacoraEntradaUseCase',
-  updateBitacoraEntradaUseCase: 'tutorias.updateBitacoraEntradaUseCase',
-  confirmarBitacoraEstudianteUseCase: 'tutorias.confirmarBitacoraEstudianteUseCase',
-  listAvancesProyectoUseCase: 'tutorias.listAvancesProyectoUseCase',
-  getAvanceByIdUseCase: 'tutorias.getAvanceByIdUseCase',
-  createAvanceProyectoUseCase: 'tutorias.createAvanceProyectoUseCase',
-  downloadAvanceArchivoUseCase: 'tutorias.downloadAvanceArchivoUseCase',
-  listDictamenesProyectoUseCase: 'tutorias.listDictamenesProyectoUseCase',
-  exportDictamenPdfUseCase: 'tutorias.exportDictamenPdfUseCase',
-
-  // Use Cases — Acompañamiento
-  listAlertasRiesgoUseCase: 'tutorias.listAlertasRiesgoUseCase',
-  listMisAlertasRiesgoDocenteUseCase: 'tutorias.listMisAlertasRiesgoDocenteUseCase',
-  getAlertaRiesgoEstudianteUseCase: 'tutorias.getAlertaRiesgoEstudianteUseCase',
-  listSesionesRefuerzoUseCase: 'tutorias.listSesionesRefuerzoUseCase',
-  getSesionRefuerzoByIdUseCase: 'tutorias.getSesionRefuerzoByIdUseCase',
-  createSesionRefuerzoUseCase: 'tutorias.createSesionRefuerzoUseCase',
-  updateSesionRefuerzoUseCase: 'tutorias.updateSesionRefuerzoUseCase',
-  deleteSesionRefuerzoUseCase: 'tutorias.deleteSesionRefuerzoUseCase',
-  registerAsistenciaSesionUseCase: 'tutorias.registerAsistenciaSesionUseCase',
-  getPanelAcompanamientoUseCase: 'tutorias.getPanelAcompanamientoUseCase',
-  exportPanelAcompanamientoPdfUseCase: 'tutorias.exportPanelAcompanamientoPdfUseCase',
+  listProyectosGradoUseCase: 'titulacion.listProyectosGradoUseCase',
+  listModalidadesGradoUseCase: 'titulacion.listModalidadesGradoUseCase',
+  listMisTutoradosUseCase: 'titulacion.listMisTutoradosUseCase',
+  getMiProyectoGradoUseCase: 'titulacion.getMiProyectoGradoUseCase',
+  exportBitacoraMensualTutorPdfUseCase: 'titulacion.exportBitacoraMensualTutorPdfUseCase',
+  getProyectoGradoByIdUseCase: 'titulacion.getProyectoGradoByIdUseCase',
+  createProyectoGradoUseCase: 'titulacion.createProyectoGradoUseCase',
+  updateProyectoGradoUseCase: 'titulacion.updateProyectoGradoUseCase',
+  deleteProyectoGradoUseCase: 'titulacion.deleteProyectoGradoUseCase',
+  asignarTutorProyectoUseCase: 'titulacion.asignarTutorProyectoUseCase',
+  aprobarEtapaProyectoUseCase: 'titulacion.aprobarEtapaProyectoUseCase',
+  addIntegranteProyectoUseCase: 'titulacion.addIntegranteProyectoUseCase',
+  updateIntegranteProyectoUseCase: 'titulacion.updateIntegranteProyectoUseCase',
+  listBitacoraProyectoUseCase: 'titulacion.listBitacoraProyectoUseCase',
+  createBitacoraEntradaUseCase: 'titulacion.createBitacoraEntradaUseCase',
+  updateBitacoraEntradaUseCase: 'titulacion.updateBitacoraEntradaUseCase',
+  confirmarBitacoraEstudianteUseCase: 'titulacion.confirmarBitacoraEstudianteUseCase',
+  listAvancesProyectoUseCase: 'titulacion.listAvancesProyectoUseCase',
+  getAvanceByIdUseCase: 'titulacion.getAvanceByIdUseCase',
+  createAvanceProyectoUseCase: 'titulacion.createAvanceProyectoUseCase',
+  downloadAvanceArchivoUseCase: 'titulacion.downloadAvanceArchivoUseCase',
+  listDictamenesProyectoUseCase: 'titulacion.listDictamenesProyectoUseCase',
+  exportDictamenPdfUseCase: 'titulacion.exportDictamenPdfUseCase',
 
   // Controllers — Titulación
-  listProyectosGradoController: 'tutorias.listProyectosGradoController',
-  listModalidadesGradoController: 'tutorias.listModalidadesGradoController',
-  listMisTutoradosController: 'tutorias.listMisTutoradosController',
-  getMiProyectoGradoController: 'tutorias.getMiProyectoGradoController',
-  exportBitacoraMensualTutorController: 'tutorias.exportBitacoraMensualTutorController',
-  getProyectoGradoByIdController: 'tutorias.getProyectoGradoByIdController',
-  createProyectoGradoController: 'tutorias.createProyectoGradoController',
-  updateProyectoGradoController: 'tutorias.updateProyectoGradoController',
-  deleteProyectoGradoController: 'tutorias.deleteProyectoGradoController',
-  asignarTutorProyectoController: 'tutorias.asignarTutorProyectoController',
-  aprobarEtapaProyectoController: 'tutorias.aprobarEtapaProyectoController',
-  addIntegranteProyectoController: 'tutorias.addIntegranteProyectoController',
-  updateIntegranteProyectoController: 'tutorias.updateIntegranteProyectoController',
-  listBitacoraProyectoController: 'tutorias.listBitacoraProyectoController',
-  createBitacoraEntradaController: 'tutorias.createBitacoraEntradaController',
-  updateBitacoraEntradaController: 'tutorias.updateBitacoraEntradaController',
-  confirmarBitacoraEstudianteController: 'tutorias.confirmarBitacoraEstudianteController',
-  listAvancesProyectoController: 'tutorias.listAvancesProyectoController',
-  getAvanceByIdController: 'tutorias.getAvanceByIdController',
-  createAvanceProyectoController: 'tutorias.createAvanceProyectoController',
-  downloadAvanceArchivoController: 'tutorias.downloadAvanceArchivoController',
-  listDictamenesProyectoController: 'tutorias.listDictamenesProyectoController',
-  exportDictamenPdfController: 'tutorias.exportDictamenPdfController',
+  listProyectosGradoController: 'titulacion.listProyectosGradoController',
+  listModalidadesGradoController: 'titulacion.listModalidadesGradoController',
+  listMisTutoradosController: 'titulacion.listMisTutoradosController',
+  getMiProyectoGradoController: 'titulacion.getMiProyectoGradoController',
+  exportBitacoraMensualTutorController: 'titulacion.exportBitacoraMensualTutorController',
+  getProyectoGradoByIdController: 'titulacion.getProyectoGradoByIdController',
+  createProyectoGradoController: 'titulacion.createProyectoGradoController',
+  updateProyectoGradoController: 'titulacion.updateProyectoGradoController',
+  deleteProyectoGradoController: 'titulacion.deleteProyectoGradoController',
+  asignarTutorProyectoController: 'titulacion.asignarTutorProyectoController',
+  aprobarEtapaProyectoController: 'titulacion.aprobarEtapaProyectoController',
+  addIntegranteProyectoController: 'titulacion.addIntegranteProyectoController',
+  updateIntegranteProyectoController: 'titulacion.updateIntegranteProyectoController',
+  listBitacoraProyectoController: 'titulacion.listBitacoraProyectoController',
+  createBitacoraEntradaController: 'titulacion.createBitacoraEntradaController',
+  updateBitacoraEntradaController: 'titulacion.updateBitacoraEntradaController',
+  confirmarBitacoraEstudianteController: 'titulacion.confirmarBitacoraEstudianteController',
+  listAvancesProyectoController: 'titulacion.listAvancesProyectoController',
+  getAvanceByIdController: 'titulacion.getAvanceByIdController',
+  createAvanceProyectoController: 'titulacion.createAvanceProyectoController',
+  downloadAvanceArchivoController: 'titulacion.downloadAvanceArchivoController',
+  listDictamenesProyectoController: 'titulacion.listDictamenesProyectoController',
+  exportDictamenPdfController: 'titulacion.exportDictamenPdfController',
 
-  // Controllers — Acompañamiento
-  listAlertasRiesgoController: 'tutorias.listAlertasRiesgoController',
-  listMisAlertasRiesgoDocenteController: 'tutorias.listMisAlertasRiesgoDocenteController',
-  getAlertaRiesgoEstudianteController: 'tutorias.getAlertaRiesgoEstudianteController',
-  listSesionesRefuerzoController: 'tutorias.listSesionesRefuerzoController',
-  getSesionRefuerzoByIdController: 'tutorias.getSesionRefuerzoByIdController',
-  createSesionRefuerzoController: 'tutorias.createSesionRefuerzoController',
-  updateSesionRefuerzoController: 'tutorias.updateSesionRefuerzoController',
-  deleteSesionRefuerzoController: 'tutorias.deleteSesionRefuerzoController',
-  registerAsistenciaSesionController: 'tutorias.registerAsistenciaSesionController',
-  getPanelAcompanamientoController: 'tutorias.getPanelAcompanamientoController',
-  exportPanelAcompanamientoController: 'tutorias.exportPanelAcompanamientoController',
-
-  // Routers
-  proyectosGradoRouter: 'tutorias.proyectosGradoRouter',
-  acompanamientoRouter: 'tutorias.acompanamientoRouter',
+  // Router
+  proyectosGradoRouter: 'titulacion.proyectosGradoRouter',
 };

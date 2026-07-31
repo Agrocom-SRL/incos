@@ -1,5 +1,5 @@
 /**
- * Mapper de aplicación: SesionRefuerzo (módulo TUT · acompañamiento)
+ * Mapper de aplicación: SesionRefuerzo (módulo ACA · acompañamiento)
  *
  * Convierte filas crudas (snake_case) de la vista 161, del join de
  * estudiantes (⋈ vista 156) y de la vista 162 al formato camelCase.

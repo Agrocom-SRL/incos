@@ -1,5 +1,5 @@
 /**
- * Validators del módulo Tutorías y Acompañamiento (TUT)
+ * Validators del módulo Titulación (TIT · proyectos de grado)
  */
 
 export {
@@ -19,14 +19,3 @@ export {
   updateBitacoraEntradaValidator,
   createAvanceValidator,
 } from './proyectos-grado.validator.js';
-
-export {
-  estudianteIdParamValidator,
-  listAlertasRiesgoValidator,
-  alertaEstudianteValidator,
-  listSesionesRefuerzoValidator,
-  createSesionRefuerzoValidator,
-  updateSesionRefuerzoValidator,
-  registerAsistenciaSesionValidator,
-  panelAcompanamientoValidator,
-} from './acompanamiento.validator.js';

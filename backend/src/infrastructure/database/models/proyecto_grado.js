@@ -4,7 +4,7 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 import {
   ESTADOS_PROYECTO_GRADO,
   ESTADOS_PROYECTO_GRADO_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 
 /**
  * Proyecto de grado (módulo TUT · titulación) — tabla raíz `proyectos_grado`

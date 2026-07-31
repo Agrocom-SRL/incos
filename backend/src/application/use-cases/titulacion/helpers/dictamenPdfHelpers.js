@@ -1,11 +1,11 @@
 /**
- * Helpers compartidos para la emisión de dictámenes con PDF (módulo TUT).
+ * Helpers compartidos para la emisión de dictámenes con PDF (módulo TIT · titulación).
  * Usados por AsignarTutorProyectoUseCase (DESIGNACION_OFICIAL) y
  * AprobarEtapaProyectoUseCase (VIABILIDAD_TECNICA).
  */
 
 import { UPLOAD } from '../../../../infrastructure/config/uploads.config.js';
-import { ProyectoGradoMapper } from '../../../mappers/tutorias/index.js';
+import { ProyectoGradoMapper } from '../../../mappers/titulacion/index.js';
 
 /** Fecha actual en formato YYYY-MM-DD. */
 export function hoyISO() {

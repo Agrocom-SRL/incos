@@ -13,7 +13,7 @@ export class UpdateSesionRefuerzoController {
     try {
       const id = parseInt(req.params.id, 10);
       const userId = req.usuario?.id ?? null;
-      this.logger.info('[Tutorías] Request de actualización de sesión de refuerzo', { id });
+      this.logger.info('[Acompañamiento] Request de actualización de sesión de refuerzo', { id });
 
       const result = await this.updateSesionRefuerzoUseCase.execute(
         id,
@@ -29,7 +29,7 @@ export class UpdateSesionRefuerzoController {
         req
       );
     } catch (error) {
-      this.logger.error('[Tutorías] Error al actualizar sesión de refuerzo', {
+      this.logger.error('[Acompañamiento] Error al actualizar sesión de refuerzo', {
         error: error.message,
         stack: error.stack,
         id: req.params?.id,

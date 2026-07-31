@@ -1,8 +1,8 @@
-import { RiesgoAcademicoMapper } from '../../mappers/tutorias/index.js';
+import { RiesgoAcademicoMapper } from '../../../mappers/academico/index.js';
 
 /**
  * Use Case: ListAlertasRiesgoUseCase (A1)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Lista alertas de riesgo pedagógico (vista 156, en_riesgo = 1) con filtros
  * y paginación. Contrato compatible con BaseListController:
@@ -49,7 +49,7 @@ export class ListAlertasRiesgoUseCase {
       limitNum
     );
 
-    this.logger.info('[Tutorías] Alertas de riesgo listadas', { total, count: rows.length });
+    this.logger.info('[Acompañamiento] Alertas de riesgo listadas', { total, count: rows.length });
 
     return {
       alertasRiesgo: RiesgoAcademicoMapper.alertaRowsToPresentation(rows),

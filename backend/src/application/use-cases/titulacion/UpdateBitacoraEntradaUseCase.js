@@ -2,7 +2,7 @@ import { NotFoundError } from '../../../domain/errors/AppError.js';
 import {
   ESTADOS_BITACORA_TUTORIA,
   ESTADOS_REVISION_AVANCE,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { getProyectoOrFail } from './helpers/proyectoTutoriaGuards.js';
 import { hoyISO } from './helpers/dictamenPdfHelpers.js';

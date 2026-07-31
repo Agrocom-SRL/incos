@@ -1,5 +1,5 @@
 /**
- * ViabilidadProyectoPdfGenerator (módulo TUT · titulación)
+ * ViabilidadProyectoPdfGenerator (módulo TIT · titulación)
  *
  * Genera el INFORME DE VIABILIDAD TÉCNICA del proyecto de grado a partir de
  * la plantilla institucional (Plantilla.pdf) con pdf-lib. Patrón

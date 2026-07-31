@@ -2,7 +2,7 @@ import { sequelize } from '../../database/sequelize.js';
 import { IRiesgoAcademicoViewRepository } from '../../../domain/interfaces/repositories/IRiesgoAcademicoViewRepository.js';
 
 /**
- * Lecturas de riesgo pedagógico (módulo TUT · acompañamiento).
+ * Lecturas de riesgo pedagógico (módulo ACA · acompañamiento).
  *
  * Consume las vistas SQL calculadas (el riesgo NO es tabla):
  * - `vista_base_acompanamiento_riesgo_fila` (156): estudiante × materia con

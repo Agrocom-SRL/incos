@@ -1,5 +1,5 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
-import { TIPOS_DICTAMEN_TUTORIA } from '../../../domain/constants/tutorias.constants.js';
+import { TIPOS_DICTAMEN_TUTORIA } from '../../../domain/constants/titulacion.constants.js';
 import { getProyectoOrFail } from './helpers/proyectoTutoriaGuards.js';
 import {
   buildContextoDictamenPdf,

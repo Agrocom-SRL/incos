@@ -1,5 +1,5 @@
 /**
- * Guards compartidos del sub-módulo de titulación (módulo TUT).
+ * Guards compartidos del sub-módulo de titulación (módulo TIT · titulación).
  *
  * Reglas de pertenencia y vigencia que comparten varios use cases:
  * - existencia del proyecto raíz,
@@ -8,7 +8,7 @@
  */
 
 import { ForbiddenError, NotFoundError, ConflictError } from '../../../../domain/errors/AppError.js';
-import { ESTADOS_PROYECTO_GRADO_VIGENTES } from '../../../../domain/constants/tutorias.constants.js';
+import { ESTADOS_PROYECTO_GRADO_VIGENTES } from '../../../../domain/constants/titulacion.constants.js';
 
 /**
  * Obtiene el proyecto de grado o lanza NotFoundError.

@@ -7,10 +7,10 @@ import {
   TIPOS_BITACORA_TUTORIA_VALUES,
   ESTADOS_BITACORA_TUTORIA_VALUES,
   ESTADOS_REVISION_AVANCE_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 
 /**
- * Validators del sub-módulo Titulación (proyectos de grado, módulo TUT)
+ * Validators del módulo Titulación (proyectos de grado, módulo TIT)
  *
  * Shape raíz: proyectos_grado (22-modalidades-grado.sql); satélites del
  * schema 23 (integrantes, bitácora, avances, dictámenes).

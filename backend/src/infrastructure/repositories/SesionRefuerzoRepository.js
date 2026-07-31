@@ -2,7 +2,7 @@ import { BaseRepository } from './BaseRepository.js';
 import { SesionRefuerzo as SesionRefuerzoModel } from '../database/models/sesion_refuerzo.js';
 
 /**
- * Repositorio CRUD de sesiones de refuerzo (módulo TUT).
+ * Repositorio CRUD de sesiones de refuerzo (módulo ACA · acompañamiento).
  *
  * Arquetipo A: hereda de BaseRepository (Template Method). Las lecturas ricas
  * (curso/docente/materia/estudiantes) viven en

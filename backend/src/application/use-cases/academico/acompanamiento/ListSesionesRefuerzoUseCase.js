@@ -1,8 +1,8 @@
-import { SesionRefuerzoMapper } from '../../mappers/tutorias/index.js';
+import { SesionRefuerzoMapper } from '../../../mappers/academico/index.js';
 
 /**
  * Use Case: ListSesionesRefuerzoUseCase (A4)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Lista sesiones de refuerzo (vista 161) con filtros y paginación.
  * Contrato compatible con BaseListController:
@@ -48,7 +48,7 @@ export class ListSesionesRefuerzoUseCase {
       limitNum
     );
 
-    this.logger.info('[Tutorías] Sesiones de refuerzo listadas', {
+    this.logger.info('[Acompañamiento] Sesiones de refuerzo listadas', {
       total,
       count: rows.length,
     });

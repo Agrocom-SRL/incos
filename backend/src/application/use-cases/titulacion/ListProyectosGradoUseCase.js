@@ -1,4 +1,4 @@
-import { ProyectoGradoMapper } from '../../mappers/tutorias/index.js';
+import { ProyectoGradoMapper } from '../../mappers/titulacion/index.js';
 
 /**
  * Use Case: ListProyectosGradoUseCase (T1)

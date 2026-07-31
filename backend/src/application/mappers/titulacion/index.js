@@ -1,7 +1,5 @@
 /**
- * Mappers de aplicación del módulo Tutorías y Acompañamiento (TUT)
+ * Mappers de aplicación del módulo Titulación (TIT)
  */
 
 export { ProyectoGradoMapper } from './ProyectoGradoMapper.js';
-export { RiesgoAcademicoMapper } from './RiesgoAcademicoMapper.js';
-export { SesionRefuerzoMapper } from './SesionRefuerzoMapper.js';

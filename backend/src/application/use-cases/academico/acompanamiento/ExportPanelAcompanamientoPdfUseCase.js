@@ -1,6 +1,6 @@
 /**
  * Use Case: ExportPanelAcompanamientoPdfUseCase (A11)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Exporta el panel de acompañamiento a PDF (vistas 157/158/162). Reutiliza
  * GetPanelAcompanamientoUseCase para armar los datos (no duplica lecturas).
@@ -34,7 +34,7 @@ export class ExportPanelAcompanamientoPdfUseCase {
 
     const sufijo = panelAcompanamiento.gestion?.gestionAnio ?? 'general';
 
-    this.logger.info('[Tutorías] Panel de acompañamiento exportado a PDF', {
+    this.logger.info('[Acompañamiento] Panel de acompañamiento exportado a PDF', {
       gestionId: panelAcompanamiento.gestion?.gestionId ?? null,
     });
 

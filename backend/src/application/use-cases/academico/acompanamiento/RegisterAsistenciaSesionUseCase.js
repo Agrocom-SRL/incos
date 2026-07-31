@@ -1,14 +1,14 @@
-import { NotFoundError, ValidationError, ConflictError } from '../../../domain/errors/AppError.js';
+import { NotFoundError, ValidationError, ConflictError } from '../../../../domain/errors/AppError.js';
 import {
   ORIGENES_ESTUDIANTE_SESION,
   PROGRESOS_ESTUDIANTE_SESION,
-} from '../../../domain/constants/tutorias.constants.js';
-import { sequelize } from '../../../infrastructure/database/sequelize.js';
-import { SesionRefuerzoMapper } from '../../mappers/tutorias/index.js';
+} from '../../../../domain/constants/academico.acompanamiento.constants.js';
+import { sequelize } from '../../../../infrastructure/database/sequelize.js';
+import { SesionRefuerzoMapper } from '../../../mappers/academico/index.js';
 
 /**
  * Use Case: RegisterAsistenciaSesionUseCase (A9)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Registro BATCH de estudiantes de la sesión (PUT reemplazo lógico):
  * - actualiza asistencia/progreso/observaciones de estudiantes existentes;
@@ -110,7 +110,7 @@ export class RegisterAsistenciaSesionUseCase {
       await this.acompanamientoSesionViewRepository.findEstudiantesBySesionId(sesionId);
 
     const conservados = [...batchMatriculas].filter((id) => vigentesPorMatricula.has(id)).length;
-    this.logger.info('[Tutorías] Asistencia de sesión registrada (batch)', {
+    this.logger.info('[Acompañamiento] Asistencia de sesión registrada (batch)', {
       sesionId,
       estudiantes: batch.length,
       retirados: vigentes.length - conservados,

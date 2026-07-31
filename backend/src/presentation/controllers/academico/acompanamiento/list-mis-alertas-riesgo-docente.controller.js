@@ -14,7 +14,7 @@ export class ListMisAlertasRiesgoDocenteController {
   async handle(req, res, next) {
     try {
       const usuarioId = req.usuario?.id;
-      this.logger.info('[Tutorías] Mis alumnos en riesgo solicitado', { usuarioId });
+      this.logger.info('[Acompañamiento] Mis alumnos en riesgo solicitado', { usuarioId });
 
       const data = await this.listMisAlertasRiesgoDocenteUseCase.execute({
         usuarioId,
@@ -28,7 +28,7 @@ export class ListMisAlertasRiesgoDocenteController {
         req
       );
     } catch (error) {
-      this.logger.error('[Tutorías] Error al obtener mis alumnos en riesgo', {
+      this.logger.error('[Acompañamiento] Error al obtener mis alumnos en riesgo', {
         error: error.message,
         stack: error.stack,
       });

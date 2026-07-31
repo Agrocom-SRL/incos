@@ -1,5 +1,5 @@
 /**
- * Mapper de aplicación: ProyectoGrado (módulo TUT · titulación)
+ * Mapper de aplicación: ProyectoGrado (módulo TIT · titulación)
  *
  * Convierte filas crudas (snake_case) de las vistas 160/159/163 al formato de
  * presentación camelCase. Los nombres de personas ya vienen armados desde las

@@ -1,5 +1,5 @@
 import { ValidationError } from '../../../domain/errors/AppError.js';
-import { ProyectoGradoMapper } from '../../mappers/tutorias/index.js';
+import { ProyectoGradoMapper } from '../../mappers/titulacion/index.js';
 
 /**
  * Use Case: ExportBitacoraMensualTutorPdfUseCase (T5)

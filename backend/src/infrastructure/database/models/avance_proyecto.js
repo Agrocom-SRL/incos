@@ -4,7 +4,7 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 import {
   ESTADOS_REVISION_AVANCE,
   ESTADOS_REVISION_AVANCE_VALUES,
-} from '../../../domain/constants/tutorias.constants.js';
+} from '../../../domain/constants/titulacion.constants.js';
 
 /**
  * Avance del proyecto de grado (módulo TUT) — tabla `avances_proyecto`.

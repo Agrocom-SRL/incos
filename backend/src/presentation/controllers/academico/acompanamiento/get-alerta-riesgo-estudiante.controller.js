@@ -13,7 +13,7 @@ export class GetAlertaRiesgoEstudianteController {
   async handle(req, res, next) {
     try {
       const estudianteId = parseInt(req.params.estudianteId, 10);
-      this.logger.info('[Tutorías] Request de detalle de alerta de estudiante', { estudianteId });
+      this.logger.info('[Acompañamiento] Request de detalle de alerta de estudiante', { estudianteId });
 
       const result = await this.getAlertaRiesgoEstudianteUseCase.execute(estudianteId, req.query);
 
@@ -25,7 +25,7 @@ export class GetAlertaRiesgoEstudianteController {
         req
       );
     } catch (error) {
-      this.logger.error('[Tutorías] Error al obtener detalle de alerta', {
+      this.logger.error('[Acompañamiento] Error al obtener detalle de alerta', {
         error: error.message,
         stack: error.stack,
         estudianteId: req.params?.estudianteId,

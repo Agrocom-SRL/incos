@@ -1,9 +1,9 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
-import { SesionRefuerzoMapper } from '../../mappers/tutorias/index.js';
+import { NotFoundError } from '../../../../domain/errors/AppError.js';
+import { SesionRefuerzoMapper } from '../../../mappers/academico/index.js';
 
 /**
  * Use Case: GetSesionRefuerzoByIdUseCase (A5)
- * Módulo: Tutorías (TUT · acompañamiento)
+ * Módulo: Académico (ACA · acompañamiento)
  *
  * Ficha de la sesión (vista 161) + estudiantes enriquecidos con sus datos
  * y sus notas en la materia reforzada (join a la vista 156).
@@ -35,7 +35,7 @@ export class GetSesionRefuerzoByIdUseCase {
     presentation.estudiantes =
       SesionRefuerzoMapper.estudianteRowsToPresentation(estudianteRows);
 
-    this.logger.info('[Tutorías] Ficha de sesión de refuerzo obtenida', {
+    this.logger.info('[Acompañamiento] Ficha de sesión de refuerzo obtenida', {
       id,
       estudiantes: presentation.estudiantes.length,
     });

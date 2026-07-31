@@ -1,4 +1,4 @@
-import { BaseListController } from '../base/BaseListController.js';
+import { BaseListController } from '../../base/BaseListController.js';
 
 /**
  * GET /api/v1/acompanamiento/alertas (A1)
