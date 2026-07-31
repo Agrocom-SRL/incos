@@ -49,7 +49,7 @@ export const dominiosRoutes = [
         menu: { label: 'Titulación', module: 'TIT', order: 9 },
     },
     {
-        path: '/configuracion-sistema',
+        path: '/configuracion',
         key: 'CFG',
         element: null,
         permiso: null,

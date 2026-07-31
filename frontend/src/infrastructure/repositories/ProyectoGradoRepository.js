@@ -326,7 +326,7 @@ export class ProyectoGradoRepository extends IProyectoGradoRepository {
       return {
         success: true,
         blob: response.data,
-        fileName: parseFileName(response, 'bitacora_mensual_tutorias.pdf'),
+        fileName: parseFileName(response, 'bitacora_mensual_titulacion.pdf'),
       };
     } catch (error) {
       return parseBlobError(error, 'Error al exportar la bitácora mensual');
