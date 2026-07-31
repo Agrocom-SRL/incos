@@ -16,8 +16,9 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('mat_becas', 'Becas', 'MATRICULA', 4, 1, NOW(), NOW()),
 ('mat_documentos', 'Documentos', 'MATRICULA', 5, 1, NOW(), NOW());
 -- Pasantías estudiantiles: retiradas de MAT 2026-07-29. El dominio pasa al
--- módulo Titulación (TUT) con códigos tutorias.pasantia.* sobre el schema 24
--- (ver docs/plan/titulacion-y-dominios-pendientes.md, Fase 2).
+-- módulo Titulación (TIT) con códigos titulacion.pasantia.* sobre el schema 24
+-- (ver docs/plan/titulacion-y-dominios-pendientes.md, Fase 2; rename TUT→TIT
+-- el 2026-07-31, ver 65-seed-permisos-tit.sql).
 
 -- 1) Permisos del módulo MAT
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES

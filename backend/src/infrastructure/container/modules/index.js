@@ -21,7 +21,7 @@ import { registerDashboardModule } from './dashboard/index.js';
 import { registerDocentesModule } from './docentes/index.js';
 import { registerAulasHorariosModule } from './aulas-horarios/index.js';
 import { registerCapacitacionModule } from './capacitacion/index.js';
-import { registerTutoriasModule } from './tutorias/index.js';
+import { registerTitulacionModule } from './titulacion/index.js';
 import { registerPasantiasModule } from './pasantias/index.js';
 
 /**
@@ -48,7 +48,7 @@ export function registerAllModules(container) {
     registerDocentesModule(container);
     registerAulasHorariosModule(container);
     registerCapacitacionModule(container);
-    registerTutoriasModule(container);
+    registerTitulacionModule(container);
     registerPasantiasModule(container);
 
     return container;

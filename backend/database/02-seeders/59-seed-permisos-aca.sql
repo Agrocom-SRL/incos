@@ -35,7 +35,12 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('aca_desercion', 'Deserción estudiantil', 'ACADEMICO', 21, 1, NOW(), NOW()),
 -- 2026-07-30 (Fase 4, schema 25): libros físicos del centralizador (LIBRO N° /
 -- FOLIO N°), un libro por carrera y gestión con folios por paralelo.
-('aca_libros', 'Libros de registro', 'ACADEMICO', 22, 1, NOW(), NOW());
+('aca_libros', 'Libros de registro', 'ACADEMICO', 22, 1, NOW(), NOW()),
+-- 2026-07-31: acompañamiento pedagógico (alertas de riesgo + sesiones de
+-- refuerzo + panel) reclasificado desde el módulo Titulación/TUT — sus datos
+-- se derivan de asignaciones_docentes/vistas del centralizador, sin FK a
+-- proyectos_grado/modalidades_grado. Ver 65-seed-permisos-tit.sql (nota).
+('aca_acompanamiento', 'Acompañamiento pedagógico', 'ACADEMICO', 23, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo ACA
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -83,7 +88,13 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('academico.asistencia.registro.coordinacion', 'Asistencia · Registro diario: coordinación (elegir docente)', NULL, 'ACADEMICO', 'ACA', 'aca_asi_registro', '/academico/asistencia', 1, NOW(), NOW()),
 ('academico.asistencia.registro.cuaderno', 'Asistencia · Planilla diaria del curso', NULL, 'ACADEMICO', 'ACA', 'aca_asi_registro', '/academico/asistencia/mis-cursos', 1, NOW(), NOW()),
 ('academico.asistencia.clase_no_dictada.ver', 'Asistencia · Clases no dictadas', NULL, 'ACADEMICO', 'ACA', 'aca_asi_cnd', '/academico/asistencia/clases-no-dictadas', 1, NOW(), NOW()),
-('academico.asistencia.consolidado.ver', 'Asistencia · Consolidado %', NULL, 'ACADEMICO', 'ACA', 'aca_asi_consolidado', '/academico/asistencia/consolidado', 1, NOW(), NOW());
+('academico.asistencia.consolidado.ver', 'Asistencia · Consolidado %', NULL, 'ACADEMICO', 'ACA', 'aca_asi_consolidado', '/academico/asistencia/consolidado', 1, NOW(), NOW()),
+-- Acompañamiento pedagógico (2026-07-31, reclasificado desde TUT): riesgo
+-- pedagógico (vista 156, sin tabla), sesiones de refuerzo (schema 23,
+-- ancladas en asignaciones_docentes) y panel de indicadores.
+('academico.acompanamiento.alerta', 'Alertas de riesgo pedagógico: listar y ver detalle por estudiante', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/acompanamiento/alertas', 1, NOW(), NOW()),
+('academico.acompanamiento.sesion', 'Sesiones de refuerzo: listar, ver detalle, crear, editar y eliminar', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/acompanamiento/sesiones', 1, NOW(), NOW()),
+('academico.acompanamiento.panel', 'Panel de acompañamiento: ver indicadores y exportar PDF', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/acompanamiento/panel', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo ACA
 INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)
@@ -155,6 +166,15 @@ JOIN (
   UNION ALL SELECT 'academico.asistencia.clase_no_dictada.ver', 'EDITAR'
   UNION ALL SELECT 'academico.asistencia.consolidado.ver', 'LISTAR'
   UNION ALL SELECT 'academico.asistencia.consolidado.ver', 'EXPORTAR'
+  UNION ALL SELECT 'academico.acompanamiento.alerta', 'LISTAR'
+  UNION ALL SELECT 'academico.acompanamiento.alerta', 'DETALLE'
+  UNION ALL SELECT 'academico.acompanamiento.sesion', 'LISTAR'
+  UNION ALL SELECT 'academico.acompanamiento.sesion', 'DETALLE'
+  UNION ALL SELECT 'academico.acompanamiento.sesion', 'CREAR'
+  UNION ALL SELECT 'academico.acompanamiento.sesion', 'EDITAR'
+  UNION ALL SELECT 'academico.acompanamiento.sesion', 'ELIMINAR'
+  UNION ALL SELECT 'academico.acompanamiento.panel', 'LISTAR'
+  UNION ALL SELECT 'academico.acompanamiento.panel', 'EXPORTAR'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo ACA (roles 2-8; ADMIN_SISTEMA hereda por vista)
@@ -344,6 +364,41 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'academico.asistencia.consolidado.ver', 'EXPORTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.consolidado.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'academico.asistencia.consolidado.ver', 'EXPORTAR'
+  -- Acompañamiento pedagógico (2026-07-31, reclasificado desde TUT). Réplica
+  -- EXACTA del acceso que tenía en 65-seed-permisos-tut.sql: allí DIR_ACADEMICO
+  -- y RECTOR llegaban por el catch-all `p.modulo = 'TUT'` (control total de
+  -- TODAS las acciones sembradas); aquí ACA no tiene catch-all de módulo, así
+  -- que se replican como filas explícitas para no perder acceso en silencio.
+  -- DIR_ACADEMICO y RECTOR: control total de los 3 permisos.
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.alerta', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.alerta', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.alerta', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.alerta', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.sesion', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.sesion', 'DETALLE'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.sesion', 'CREAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.sesion', 'EDITAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.sesion', 'ELIMINAR'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.sesion', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.sesion', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.sesion', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.sesion', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.sesion', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.panel', 'LISTAR'
+  UNION ALL SELECT 'DIR_ACADEMICO', 'academico.acompanamiento.panel', 'EXPORTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.panel', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'academico.acompanamiento.panel', 'EXPORTAR'
+  -- SEC_ACADEMICA: solo lectura de alertas (sin sesiones ni panel, igual que en TUT).
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.acompanamiento.alerta', 'LISTAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'academico.acompanamiento.alerta', 'DETALLE'
+  -- DOCENTE: docente de materia — alertas de sus cursos + gestión de sesiones
+  -- de refuerzo (sin ELIMINAR, sin panel, igual que en TUT).
+  UNION ALL SELECT 'DOCENTE', 'academico.acompanamiento.alerta', 'LISTAR'
+  UNION ALL SELECT 'DOCENTE', 'academico.acompanamiento.alerta', 'DETALLE'
+  UNION ALL SELECT 'DOCENTE', 'academico.acompanamiento.sesion', 'LISTAR'
+  UNION ALL SELECT 'DOCENTE', 'academico.acompanamiento.sesion', 'DETALLE'
+  UNION ALL SELECT 'DOCENTE', 'academico.acompanamiento.sesion', 'CREAR'
+  UNION ALL SELECT 'DOCENTE', 'academico.acompanamiento.sesion', 'EDITAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

@@ -21,11 +21,11 @@ import {
 } from '../validators/pasantias/index.js';
 
 /**
- * Construye el router de Pasantías (módulo TUT · práctica laboral).
+ * Construye el router de Pasantías (módulo TIT · práctica laboral).
  *
  * Raíz: pasantias (24-pasantias.sql) + satélites pasantias_informes y
  * pasantias_seguimientos + catálogo pasantias_empresas. Permisos:
- * tutorias.pasantia / .empresa / .informe / .seguimiento con vocabulario de
+ * titulacion.pasantia / .empresa / .informe / .seguimiento con vocabulario de
  * acciones v2 (APROBAR = transiciones de estado; EXPORTAR = PDF de informes).
  *
  * Rutas estáticas SIEMPRE antes de /:id (empresas, mis-pasantias,
@@ -40,31 +40,31 @@ export function buildPasantiasRouter({ controllers, middlewares }) {
   const router = express.Router();
   const { validateRequest } = middlewares;
 
-  const pasantiaListar = [authenticate, verificarPermiso('tutorias.pasantia', 'LISTAR')];
-  const pasantiaDetalle = [authenticate, verificarPermiso('tutorias.pasantia', 'DETALLE')];
-  const pasantiaCrear = [authenticate, verificarPermiso('tutorias.pasantia', 'CREAR')];
-  const pasantiaEditar = [authenticate, verificarPermiso('tutorias.pasantia', 'EDITAR')];
-  const pasantiaEliminar = [authenticate, verificarPermiso('tutorias.pasantia', 'ELIMINAR')];
-  const pasantiaAprobar = [authenticate, verificarPermiso('tutorias.pasantia', 'APROBAR')];
-  const pasantiaExportar = [authenticate, verificarPermiso('tutorias.pasantia', 'EXPORTAR')];
-  const empresaListar = [authenticate, verificarPermiso('tutorias.pasantia.empresa', 'LISTAR')];
-  const empresaCrear = [authenticate, verificarPermiso('tutorias.pasantia.empresa', 'CREAR')];
-  const empresaEditar = [authenticate, verificarPermiso('tutorias.pasantia.empresa', 'EDITAR')];
-  const empresaActivar = [authenticate, verificarPermiso('tutorias.pasantia.empresa', 'ACTIVAR')];
-  const informeListar = [authenticate, verificarPermiso('tutorias.pasantia.informe', 'LISTAR')];
-  const informeCrear = [authenticate, verificarPermiso('tutorias.pasantia.informe', 'CREAR')];
-  const informeEditar = [authenticate, verificarPermiso('tutorias.pasantia.informe', 'EDITAR')];
+  const pasantiaListar = [authenticate, verificarPermiso('titulacion.pasantia', 'LISTAR')];
+  const pasantiaDetalle = [authenticate, verificarPermiso('titulacion.pasantia', 'DETALLE')];
+  const pasantiaCrear = [authenticate, verificarPermiso('titulacion.pasantia', 'CREAR')];
+  const pasantiaEditar = [authenticate, verificarPermiso('titulacion.pasantia', 'EDITAR')];
+  const pasantiaEliminar = [authenticate, verificarPermiso('titulacion.pasantia', 'ELIMINAR')];
+  const pasantiaAprobar = [authenticate, verificarPermiso('titulacion.pasantia', 'APROBAR')];
+  const pasantiaExportar = [authenticate, verificarPermiso('titulacion.pasantia', 'EXPORTAR')];
+  const empresaListar = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'LISTAR')];
+  const empresaCrear = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'CREAR')];
+  const empresaEditar = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'EDITAR')];
+  const empresaActivar = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'ACTIVAR')];
+  const informeListar = [authenticate, verificarPermiso('titulacion.pasantia.informe', 'LISTAR')];
+  const informeCrear = [authenticate, verificarPermiso('titulacion.pasantia.informe', 'CREAR')];
+  const informeEditar = [authenticate, verificarPermiso('titulacion.pasantia.informe', 'EDITAR')];
   const seguimientoListar = [
     authenticate,
-    verificarPermiso('tutorias.pasantia.seguimiento', 'LISTAR'),
+    verificarPermiso('titulacion.pasantia.seguimiento', 'LISTAR'),
   ];
   const seguimientoCrear = [
     authenticate,
-    verificarPermiso('tutorias.pasantia.seguimiento', 'CREAR'),
+    verificarPermiso('titulacion.pasantia.seguimiento', 'CREAR'),
   ];
   const seguimientoEditar = [
     authenticate,
-    verificarPermiso('tutorias.pasantia.seguimiento', 'EDITAR'),
+    verificarPermiso('titulacion.pasantia.seguimiento', 'EDITAR'),
   ];
 
   // ============================================

@@ -617,7 +617,9 @@ export function registerProyectosGradoResource(container) {
       getAvanceByIdController: c.resolve(TITULACION_TOKENS.getAvanceByIdController),
       createAvanceProyectoController: c.resolve(TITULACION_TOKENS.createAvanceProyectoController),
       downloadAvanceArchivoController: c.resolve(TITULACION_TOKENS.downloadAvanceArchivoController),
-      listDictamenesProyectoController: c.resolve(TITULACION_TOKENS.listDictamenesProyectoController),
+      listDictamenesProyectoController: c.resolve(
+        TITULACION_TOKENS.listDictamenesProyectoController
+      ),
       exportDictamenPdfController: c.resolve(TITULACION_TOKENS.exportDictamenPdfController),
     };
 

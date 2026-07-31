@@ -11,14 +11,14 @@ import {
   updateSesionRefuerzoValidator,
   registerAsistenciaSesionValidator,
   panelAcompanamientoValidator,
-} from '../validators/tutorias/index.js';
+} from '../validators/academico/index.js';
 
 /**
- * Construye el router de Acompañamiento Pedagógico (módulo TUT).
+ * Construye el router de Acompañamiento Pedagógico (módulo ACA).
  *
  * Sub-recursos: alertas de riesgo (vista 156, calculada — sin tabla),
  * sesiones de refuerzo (ancladas en asignaciones_docentes) y panel.
- * Permisos: tutorias.acompanamiento.alerta / .sesion / .panel (acciones v2).
+ * Permisos: academico.acompanamiento.alerta / .sesion / .panel (acciones v2).
  *
  * Rutas estáticas SIEMPRE antes de /:id (alertas/mis-alumnos,
  * alertas/estudiante/:estudianteId, panel/exportar).
@@ -32,15 +32,15 @@ export function buildAcompanamientoRouter({ controllers, middlewares }) {
   const router = express.Router();
   const { validateRequest } = middlewares;
 
-  const alertaListar = [authenticate, verificarPermiso('tutorias.acompanamiento.alerta', 'LISTAR')];
-  const alertaDetalle = [authenticate, verificarPermiso('tutorias.acompanamiento.alerta', 'DETALLE')];
-  const sesionListar = [authenticate, verificarPermiso('tutorias.acompanamiento.sesion', 'LISTAR')];
-  const sesionDetalle = [authenticate, verificarPermiso('tutorias.acompanamiento.sesion', 'DETALLE')];
-  const sesionCrear = [authenticate, verificarPermiso('tutorias.acompanamiento.sesion', 'CREAR')];
-  const sesionEditar = [authenticate, verificarPermiso('tutorias.acompanamiento.sesion', 'EDITAR')];
-  const sesionEliminar = [authenticate, verificarPermiso('tutorias.acompanamiento.sesion', 'ELIMINAR')];
-  const panelListar = [authenticate, verificarPermiso('tutorias.acompanamiento.panel', 'LISTAR')];
-  const panelExportar = [authenticate, verificarPermiso('tutorias.acompanamiento.panel', 'EXPORTAR')];
+  const alertaListar = [authenticate, verificarPermiso('academico.acompanamiento.alerta', 'LISTAR')];
+  const alertaDetalle = [authenticate, verificarPermiso('academico.acompanamiento.alerta', 'DETALLE')];
+  const sesionListar = [authenticate, verificarPermiso('academico.acompanamiento.sesion', 'LISTAR')];
+  const sesionDetalle = [authenticate, verificarPermiso('academico.acompanamiento.sesion', 'DETALLE')];
+  const sesionCrear = [authenticate, verificarPermiso('academico.acompanamiento.sesion', 'CREAR')];
+  const sesionEditar = [authenticate, verificarPermiso('academico.acompanamiento.sesion', 'EDITAR')];
+  const sesionEliminar = [authenticate, verificarPermiso('academico.acompanamiento.sesion', 'ELIMINAR')];
+  const panelListar = [authenticate, verificarPermiso('academico.acompanamiento.panel', 'LISTAR')];
+  const panelExportar = [authenticate, verificarPermiso('academico.acompanamiento.panel', 'EXPORTAR')];
 
   // ============================================
   // ALERTAS DE RIESGO (vista 156)

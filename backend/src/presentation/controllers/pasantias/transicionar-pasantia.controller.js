@@ -1,7 +1,7 @@
 /**
  * POST /api/v1/pasantias/:id/transiciones (P6)
  * Transición de estado del trámite (máquina de estados por camino).
- * Permiso: tutorias.pasantia APROBAR. dataFieldName: 'pasantia'.
+ * Permiso: titulacion.pasantia APROBAR. dataFieldName: 'pasantia'.
  */
 export class TransicionarPasantiaController {
   constructor({ transicionarPasantiaUseCase, logger, responseFormatter }) {

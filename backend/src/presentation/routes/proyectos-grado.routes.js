@@ -19,13 +19,13 @@ import {
   createBitacoraEntradaValidator,
   updateBitacoraEntradaValidator,
   createAvanceValidator,
-} from '../validators/tutorias/index.js';
+} from '../validators/titulacion/index.js';
 
 /**
- * Construye el router de Proyectos de Grado (módulo TUT · titulación).
+ * Construye el router de Proyectos de Grado (módulo TIT · titulación).
  *
  * Raíz: proyectos_grado (22-modalidades-grado.sql) + satélites tutoria_*
- * (schema 23). Permisos: tutorias.titulacion.proyecto / .bitacora / .avance
+ * (schema 23). Permisos: titulacion.proyecto / .bitacora / .avance
  * con vocabulario de acciones v2.
  *
  * Rutas estáticas SIEMPRE antes de /:id (modalidades, mis-tutorados,
@@ -40,19 +40,19 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
   const router = express.Router();
   const { validateRequest } = middlewares;
 
-  const proyectoListar = [authenticate, verificarPermiso('tutorias.titulacion.proyecto', 'LISTAR')];
-  const proyectoDetalle = [authenticate, verificarPermiso('tutorias.titulacion.proyecto', 'DETALLE')];
-  const proyectoCrear = [authenticate, verificarPermiso('tutorias.titulacion.proyecto', 'CREAR')];
-  const proyectoEditar = [authenticate, verificarPermiso('tutorias.titulacion.proyecto', 'EDITAR')];
-  const proyectoEliminar = [authenticate, verificarPermiso('tutorias.titulacion.proyecto', 'ELIMINAR')];
-  const proyectoAprobar = [authenticate, verificarPermiso('tutorias.titulacion.proyecto', 'APROBAR')];
-  const proyectoExportar = [authenticate, verificarPermiso('tutorias.titulacion.proyecto', 'EXPORTAR')];
-  const bitacoraListar = [authenticate, verificarPermiso('tutorias.titulacion.bitacora', 'LISTAR')];
-  const bitacoraCrear = [authenticate, verificarPermiso('tutorias.titulacion.bitacora', 'CREAR')];
-  const bitacoraEditar = [authenticate, verificarPermiso('tutorias.titulacion.bitacora', 'EDITAR')];
-  const avanceListar = [authenticate, verificarPermiso('tutorias.titulacion.avance', 'LISTAR')];
-  const avanceDetalle = [authenticate, verificarPermiso('tutorias.titulacion.avance', 'DETALLE')];
-  const avanceCrear = [authenticate, verificarPermiso('tutorias.titulacion.avance', 'CREAR')];
+  const proyectoListar = [authenticate, verificarPermiso('titulacion.proyecto', 'LISTAR')];
+  const proyectoDetalle = [authenticate, verificarPermiso('titulacion.proyecto', 'DETALLE')];
+  const proyectoCrear = [authenticate, verificarPermiso('titulacion.proyecto', 'CREAR')];
+  const proyectoEditar = [authenticate, verificarPermiso('titulacion.proyecto', 'EDITAR')];
+  const proyectoEliminar = [authenticate, verificarPermiso('titulacion.proyecto', 'ELIMINAR')];
+  const proyectoAprobar = [authenticate, verificarPermiso('titulacion.proyecto', 'APROBAR')];
+  const proyectoExportar = [authenticate, verificarPermiso('titulacion.proyecto', 'EXPORTAR')];
+  const bitacoraListar = [authenticate, verificarPermiso('titulacion.bitacora', 'LISTAR')];
+  const bitacoraCrear = [authenticate, verificarPermiso('titulacion.bitacora', 'CREAR')];
+  const bitacoraEditar = [authenticate, verificarPermiso('titulacion.bitacora', 'EDITAR')];
+  const avanceListar = [authenticate, verificarPermiso('titulacion.avance', 'LISTAR')];
+  const avanceDetalle = [authenticate, verificarPermiso('titulacion.avance', 'DETALLE')];
+  const avanceCrear = [authenticate, verificarPermiso('titulacion.avance', 'CREAR')];
 
   // ============================================
   // RUTAS ESTÁTICAS (antes de /:id)

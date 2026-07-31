@@ -1,7 +1,7 @@
 /**
  * GET /api/v1/pasantias/:id/informes/:informeId/pdf (P14)
  * Descarga autenticada del PDF del informe (res.download).
- * Permiso: tutorias.pasantia EXPORTAR.
+ * Permiso: titulacion.pasantia EXPORTAR.
  */
 export class ExportInformePasantiaPdfController {
   constructor({ exportInformePasantiaPdfUseCase, logger }) {

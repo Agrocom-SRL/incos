@@ -32,7 +32,23 @@ todo un módulo recién construido sin ganar funcionalidad.
 | Pasantías (schema 24) entra como ítem de Titulación | módulo nuevo (Fase 2) |
 | Títulos y certificados (schema 26) entra como ítem de Titulación | módulo futuro (Fase 5, gated) |
 | Acompañamiento pedagógico se re-cuelga del menú **Académico** | 3 `menu.parent` + ajuste seed 66 (pre-siembra: gratis) |
-| Códigos de permiso `tutorias.*`, module code `TUT`, paths `/tutorias/*` | **NO cambian** (identificadores estables) |
+| Códigos de permiso `tutorias.*`, module code `TUT`, paths `/tutorias/*` | **NO cambian** (identificadores estables) — ⚠️ **REVERTIDO 2026-07-31**, ver nota abajo |
+
+> **REVERTIDO (2026-07-31):** la fila anterior ("los códigos NO cambian") fue
+> revisada y **revertida** a pedido del usuario. Rename backend completo:
+> módulo `TUT` → `TIT`; códigos `tutorias.titulacion.*` → `titulacion.*`
+> (pierden el segmento medio) y `tutorias.pasantia*` → `titulacion.pasantia*`
+> (solo cambio de prefijo). Además, el sub-grupo Acompañamiento (que este plan
+> ya asignaba a `dominio='ACADEMICO'` con `parent: 'ACA'` en el menú, ver fila
+> de arriba) se reclasificó también en **código y carpetas** de backend:
+> `tutorias.acompanamiento.*` → `academico.acompanamiento.*` (`modulo='ACA'`).
+> Detalle completo (tabla de códigos, carpetas movidas, seeders) en
+> `docs/referencia/matriz-permisos-sistema.md` (Changelog 2026-07-31) y en el
+> historial de `docs/plan/REVAMP.md`. Las URLs de API (`/proyectos-grado`,
+> `/acompanamiento`, `/pasantias`) no cambiaron. Pendiente: rename equivalente
+> del frontend (rutas `/tutorias/*`, ítems de sidebar) antes de resembrar BD.
+> El texto original de esta sección se conserva sin editar como registro
+> histórico de la decisión inicial.
 
 Precedentes de "identificador ≠ etiqueta" ya asumidos en el sistema:
 `cursoId` = `oferta_curso_id` en payloads legacy, path `/docentes-dominio` con

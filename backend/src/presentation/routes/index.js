@@ -15,7 +15,7 @@ import {
     ASIGNACIONES_DOCENTES_TOKENS,
     AULAS_HORARIOS_TOKENS,
     CAPACITACION_TOKENS,
-    TUTORIAS_TOKENS,
+    TITULACION_TOKENS,
     PASANTIAS_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
@@ -92,7 +92,7 @@ router.get('/', (req, res) => {
             cursosCapacitacion: '/api/v1/cursos-capacitacion',
             participantes: '/api/v1/participantes',
             inscripcionesCapacitacion: '/api/v1/inscripciones-capacitacion',
-            // Módulo: Tutorías y Acompañamiento (TUT)
+            // Módulo: Titulación (TIT) — acompañamiento vive en Académico (ACA)
             proyectosGrado: '/api/v1/proyectos-grado',
             acompanamiento: '/api/v1/acompanamiento',
             pasantias: '/api/v1/pasantias',
@@ -226,10 +226,10 @@ router.use(
 );
 
 // ============================================
-// 11. MÓDULO: TUTORÍAS Y ACOMPAÑAMIENTO (TUT)
+// 11. MÓDULO: TITULACIÓN (TIT) — acompañamiento se resuelve vía ACADEMICO_TOKENS
 // ============================================
-router.use('/proyectos-grado', container.resolve(TUTORIAS_TOKENS.proyectosGradoRouter));
-router.use('/acompanamiento', container.resolve(TUTORIAS_TOKENS.acompanamientoRouter));
+router.use('/proyectos-grado', container.resolve(TITULACION_TOKENS.proyectosGradoRouter));
+router.use('/acompanamiento', container.resolve(ACADEMICO_TOKENS.acompanamientoRouter));
 router.use('/pasantias', container.resolve(PASANTIAS_TOKENS.pasantiasRouter));
 
 // Para agregar un nuevo módulo:

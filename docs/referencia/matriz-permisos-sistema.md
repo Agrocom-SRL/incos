@@ -1,7 +1,61 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-07-30
+## Ultima actualizacion: 2026-07-31
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Changelog 2026-07-31 — rename backend TUT→TIT (Titulación) + Acompañamiento reclasificado a ACADEMICO
+
+Ejecución del rename backend aprobado por el usuario (código en carpetas/tokens/DI;
+BD sigue con los códigos VIEJOS hasta coordinar la resiembra junto con el rename
+de frontend, todavía pendiente). Revierte la decisión del changelog 2026-07-29
+("los CÓDIGOS tutorias.\* y el modulo TUT no cambian"): el módulo pasa de TUT a
+**TIT** y los 7 códigos de proyectos de grado/pasantías pierden el prefijo
+`tutorias.`. Además, los 3 códigos de Acompañamiento (que ya vivían con
+`dominio='ACADEMICO'` en la tabla `permisos`, aunque bajo `modulo='TUT'` y
+código `tutorias.acompanamiento.*`) se reclasifican por completo — código,
+`modulo` y carpetas de código — al dominio Académico, porque sus datos (alertas
+de riesgo, sesiones de refuerzo, panel) se derivan de `asignaciones_docentes` y
+de las vistas del centralizador, sin ninguna FK a `proyectos_grado`/
+`modalidades_grado`.
+
+**Tabla completa de códigos — old → new** (fuente: `65-seed-permisos-tit.sql`,
+antes `65-seed-permisos-tut.sql`):
+
+| Código anterior | Código nuevo | `dominio` | `modulo` | `grupo_ui` | `ruta_sidebar` |
+|---|---|---|---|---|---|
+| `tutorias.titulacion.proyecto` | `titulacion.proyecto` | TITULACION | TIT | `tit_proyectos` | `/titulacion/proyectos-grado` |
+| `tutorias.titulacion.bitacora` | `titulacion.bitacora` | TITULACION | TIT | `tit_proyectos` | `/titulacion/proyectos-grado` |
+| `tutorias.titulacion.avance` | `titulacion.avance` | TITULACION | TIT | `tit_proyectos` | `/titulacion/proyectos-grado` |
+| `tutorias.pasantia` | `titulacion.pasantia` | TITULACION | TIT | `tit_pasantias` | `/titulacion/pasantias` |
+| `tutorias.pasantia.empresa` | `titulacion.pasantia.empresa` | TITULACION | TIT | `tit_pasantias` | `/titulacion/pasantias` |
+| `tutorias.pasantia.informe` | `titulacion.pasantia.informe` | TITULACION | TIT | `tit_pasantias` | `/titulacion/pasantias` |
+| `tutorias.pasantia.seguimiento` | `titulacion.pasantia.seguimiento` | TITULACION | TIT | `tit_pasantias` | `/titulacion/pasantias` |
+| `tutorias.acompanamiento.alerta` | **`academico.acompanamiento.alerta`** | ACADEMICO | **ACA** | `aca_acompanamiento` | `/academico/acompanamiento/alertas` |
+| `tutorias.acompanamiento.sesion` | **`academico.acompanamiento.sesion`** | ACADEMICO | **ACA** | `aca_acompanamiento` | `/academico/acompanamiento/sesiones` |
+| `tutorias.acompanamiento.panel` | **`academico.acompanamiento.panel`** | ACADEMICO | **ACA** | `aca_acompanamiento` | `/academico/acompanamiento/panel` |
+
+- **Acciones y roles: SIN cambios de comportamiento**, solo de código/ubicación.
+  Los 3 permisos de Acompañamiento se movieron de `65-seed-permisos-tut.sql` a
+  `59-seed-permisos-aca.sql` con filas EXPLÍCITAS de `roles_permisos` (DIR_ACADEMICO
+  y RECTOR control total; SEC_ACADEMICA solo `alerta` LISTAR/DETALLE; DOCENTE
+  `alerta` LISTAR/DETALLE + `sesion` LISTAR/DETALLE/CREAR/EDITAR) — antes
+  DIR_ACADEMICO/RECTOR llegaban por un catch-all `p.modulo = 'TUT'` que ya no
+  los cubre (ACA no tiene catch-all de módulo), por eso las filas explícitas.
+- **URLs de API sin cambios:** `/api/v1/proyectos-grado`, `/api/v1/acompanamiento`,
+  `/api/v1/pasantias` — ninguna contenía la palabra "tutorias".
+- **Carpetas de código:** `use-cases/tutorias/` → `use-cases/titulacion/` +
+  `use-cases/academico/acompanamiento/`; `controllers/tutorias/` →
+  `controllers/titulacion/` + `controllers/academico/acompanamiento/`;
+  `mappers/tutorias/` → `mappers/titulacion/` (proyecto) + 2 archivos a
+  `mappers/academico/`; `container/modules/tutorias/` → `container/modules/titulacion/`
+  + `acompanamiento.container.js` a `container/modules/academico/`; tokens
+  `TUTORIAS_TOKENS` → `TITULACION_TOKENS` (+ claves de acompañamiento
+  fusionadas en `ACADEMICO_TOKENS`); constantes `tutorias.constants.js` →
+  `titulacion.constants.js` + `academico.acompanamiento.constants.js`.
+  `pasantias/` (carpetas y naming) NO se tocó — ya vivía separado.
+- **Pendiente:** resiembra de `65-seed-permisos-tit.sql` + `59-seed-permisos-aca.sql`
+  en BD, coordinada con el rename de frontend (rutas `/tutorias/*` →
+  `/titulacion/*`, ítems de sidebar, `permiso` en `routes.jsx`).
 
 ## Changelog 2026-07-30 — Libros de registro (Fase 4, iteración 1 backend): permiso único en seed 59
 
@@ -98,6 +152,10 @@ vistas 169–173 (+ recrear 138/139/141 por columnas aditivas) y resembrar seeds
 
 ## Changelog 2026-07-29 (tarde) — Pasantías: backend completo (seed 65, `/api/v1/pasantias`)
 
+> **Nota (2026-07-31):** el seed se renombró a `65-seed-permisos-tit.sql` y los
+> códigos `tutorias.pasantia*` de esta entrada pasaron a `titulacion.pasantia*`
+> — ver Changelog 2026-07-31 al inicio del documento. Texto original sin editar.
+
 Iteración backend de la Fase 2 de Titulación (frontend pendiente; contrato de
 handoff en `docs/plan/titulacion-y-dominios-pendientes.md` §Fase 2). Grupo UI
 nuevo `tut_pasantias` en dominio TUTORIAS. 19 endpoints montados en
@@ -121,6 +179,13 @@ nuevo `tut_pasantias` en dominio TUTORIAS. 19 endpoints montados en
   `{ pasantia, informes, seguimientos }`).
 
 ## Changelog 2026-07-29 — dominio TUT re-etiquetado "Titulación" + dueños de menú
+
+> **Nota (2026-07-31):** la afirmación "los CÓDIGOS `tutorias.*` y el module
+> code `TUT` NO cambian" de esta entrada quedó **REVERTIDA** — ver el
+> Changelog 2026-07-31 al inicio del documento para la tabla completa de
+> códigos nuevos (`titulacion.*` / módulo `TIT`; Acompañamiento reclasificado
+> a `academico.acompanamiento.*` / módulo `ACA`). El texto original se
+> conserva abajo sin editar, como registro histórico de la decisión original.
 
 Decisión de diseño aprobada (cierra §6.7 de `docs/plan/auditoria-modelo-datos.md`;
 detalle y plan por fases en `docs/plan/titulacion-y-dominios-pendientes.md`).
@@ -152,6 +217,11 @@ Los CÓDIGOS de permiso `tutorias.*`, el module code `TUT` y los paths
   `67-seed-titulacion-modalidades-grado.sql`.
 
 ## Changelog 2026-07-25 — módulo nuevo Tutorías y Acompañamiento (TUT, seed 66)
+
+> **Nota (2026-07-31):** los códigos `tutorias.titulacion.*`/`tutorias.acompanamiento.*`
+> de esta entrada fueron renombrados — ver Changelog 2026-07-31 al inicio del
+> documento. El texto original se conserva abajo sin editar, como registro
+> histórico.
 
 Dominio propio `TUT` (menú "Tutorías", order 9; CFG→10, SEG→11), decisión cerrada del
 plan `docs/plan/tutorias-plan-desarrollo.md`. No estaba contemplado en esta matriz

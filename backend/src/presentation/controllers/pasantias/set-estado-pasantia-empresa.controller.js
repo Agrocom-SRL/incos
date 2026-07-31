@@ -1,7 +1,7 @@
 /**
  * PATCH /api/v1/pasantias/empresas/:empresaId/estado (P10)
  * Activa/desactiva una empresa del catálogo (body: { activo: boolean }).
- * Permiso: tutorias.pasantia.empresa ACTIVAR. dataFieldName: 'pasantiaEmpresa'.
+ * Permiso: titulacion.pasantia.empresa ACTIVAR. dataFieldName: 'pasantiaEmpresa'.
  */
 export class SetEstadoPasantiaEmpresaController {
   constructor({ setEstadoPasantiaEmpresaUseCase, logger, responseFormatter }) {

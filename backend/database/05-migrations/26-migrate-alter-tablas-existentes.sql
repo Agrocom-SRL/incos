@@ -4,7 +4,8 @@
 -- Fecha de redacción: 2026-07-29
 --
 -- Fuente de verdad (schemas ya corregidos en el repo):
---   01-schemas/04-sistema-seguridad.sql   (permisos: dominios CAP y TUT en comentarios)
+--   01-schemas/04-sistema-seguridad.sql   (permisos: dominios CAP y TIT en comentarios;
+--                                          TUT renombrado a TIT el 2026-07-31)
 --   01-schemas/16-nivelaciones.sql        (historial_matricula: ancla alternativa,
 --                                          REINCORPORACION, ARTICULO_18 reclasificado)
 --   01-schemas/18-transitabilidades.sql   (transitabilidades: codigo_rude)
@@ -47,12 +48,15 @@ USE instituto_incos;
 
 -- ============================================
 -- 1) permisos — documentar los nuevos dominios CAPACITACION (CAP) y
---    TUTORIAS (TUT) en los comentarios de dominio/modulo (solo metadatos)
+--    TITULACION (TIT) en los comentarios de dominio/modulo (solo metadatos).
+--    Nota (2026-07-31): el dominio/módulo se llamaba TUTORIAS/TUT — el rename
+--    a TITULACION/TIT es solo texto de documentación (COMMENT), no afecta
+--    datos existentes.
 -- ============================================
 
 ALTER TABLE permisos
-    MODIFY COLUMN dominio VARCHAR(50) NOT NULL COMMENT 'Dominio de negocio estable. Valores: MATRICULA, ACADEMICO, DOCENTES, FINANZAS, INSTITUCIONAL, CAPACITACION, TUTORIAS, CONFIGURACION, REPORTES, SEGURIDAD.',
-    MODIFY COLUMN modulo VARCHAR(50) NOT NULL COMMENT 'Subdominio técnico. Coincide con menu.module del frontend: MAT, ACA, DOC, FIN, INST, CAP, TUT, CFG, REP, SEG.';
+    MODIFY COLUMN dominio VARCHAR(50) NOT NULL COMMENT 'Dominio de negocio estable. Valores: MATRICULA, ACADEMICO, DOCENTES, FINANZAS, INSTITUCIONAL, CAPACITACION, TITULACION, CONFIGURACION, REPORTES, SEGURIDAD.',
+    MODIFY COLUMN modulo VARCHAR(50) NOT NULL COMMENT 'Subdominio técnico. Coincide con menu.module del frontend: MAT, ACA, DOC, FIN, INST, CAP, TIT, CFG, REP, SEG.';
 
 -- ============================================
 -- 2) historial_matricula — ancla alternativa para eventos SIN matrícula

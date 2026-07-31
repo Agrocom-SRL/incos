@@ -29,7 +29,7 @@
 -- |                                 | Becas) + `matricula.becas.*` (BecasList, vista 137)        |
 -- | reportes.solicitudes.traspaso   | Nacerá con el ítem ACA Traspasos                           |
 -- |                                 | (`academico.trazabilidad.traspaso.*`, bloque off seed 59)  |
--- | reportes.solicitudes.pasantia   | Dueño: módulo Pasantías (`tutorias.pasantia.*`, seed 65)   |
+-- | reportes.solicitudes.pasantia   | Dueño: módulo Titulación (`titulacion.pasantia.*`, seed 65)|
 --
 -- Deuda anotada (NO se toca aquí; ver diagnóstico §2): EXPORTAR huérfanos sin
 -- endpoint en `docentes.ver`, `docentes.supervision.reporte` y
