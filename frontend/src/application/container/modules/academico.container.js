@@ -45,6 +45,7 @@ import {
   EditarLibroUseCase,
   ListarParalelosLibroUseCase,
   GenerarFoliosParaleloUseCase,
+  GenerarFoliosGestionUseCase,
   ObtenerFolioPorIdUseCase,
   CambiarEstadoFolioUseCase,
   EditarFolioEstudianteUseCase,
@@ -263,6 +264,10 @@ export function registerAcademicoModule(factory) {
 
   factory.generarFoliosParalelo = () => {
     return new GenerarFoliosParaleloUseCase(LibroRegistroRepository);
+  };
+
+  factory.generarFoliosGestion = () => {
+    return new GenerarFoliosGestionUseCase(LibroRegistroRepository);
   };
 
   factory.obtenerFolioPorId = () => {

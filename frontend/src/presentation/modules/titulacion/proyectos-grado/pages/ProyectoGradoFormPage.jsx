@@ -33,7 +33,7 @@ const ProyectoGradoFormPage = ({ mode = 'create' }) => {
     modalidadGrupal,
     estudianteOptions,
     buscandoEstudiantes,
-    onBuscarEstudiantes,
+    carreraSeleccionada,
     handleVolver,
     handleSubmit,
     isInvalidEditId,
@@ -100,7 +100,7 @@ const ProyectoGradoFormPage = ({ mode = 'create' }) => {
                   modalidadGrupal={modalidadGrupal}
                   estudianteOptions={estudianteOptions}
                   buscandoEstudiantes={buscandoEstudiantes}
-                  onBuscarEstudiantes={onBuscarEstudiantes}
+                  carreraSeleccionada={carreraSeleccionada}
                   footer={saveButton}
                 />
               </Form>

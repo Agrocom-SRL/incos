@@ -6,8 +6,11 @@
  * incrustarlos en el JSX para que sean parametrizables el día que el instituto
  * los gestione desde Configuración.
  *
- * LIBRO N° / FOLIO N° del documento oficial NO existen en el sistema: se omiten
- * deliberadamente (no se inventan valores).
+ * LIBRO N° / FOLIO N° SÍ existen en el sistema (módulo Libros de registro,
+ * schema 25 · `academico.libro`): el Centralizador anual (P2) los muestra vía
+ * el bloque `libro` de `GET /calificaciones/centralizador` cuando el paralelo
+ * ya tiene folios generados — `null` mientras no los tenga (nunca un
+ * placeholder inventado aquí). Ver `CentralizadorLibroBadge`.
  */
 
 export const CENTRALIZADOR_DOC = {

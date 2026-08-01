@@ -58,6 +58,9 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-ANUAL') =
   const [gestionAnio, setGestionAnio] = useState(null);
   const [gestionNombre, setGestionNombre] = useState(null);
   const [notaMinimaAprobacion, setNotaMinimaAprobacion] = useState(NOTA_MINIMA_FALLBACK);
+  // Cabecera del Libro de registro del paralelo (schema 25): null si el
+  // paralelo aún no tiene folios generados en la gestión.
+  const [libro, setLibro] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -69,6 +72,7 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-ANUAL') =
       setGestionAnio(null);
       setGestionNombre(null);
       setNotaMinimaAprobacion(NOTA_MINIMA_FALLBACK);
+      setLibro(null);
       setError(null);
       return;
     }
@@ -89,6 +93,7 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-ANUAL') =
       setNotaMinimaAprobacion(
         data.notaMinimaAprobacion != null ? Number(data.notaMinimaAprobacion) : NOTA_MINIMA_FALLBACK,
       );
+      setLibro(data.libro ?? null);
     } catch (err) {
       setError(err?.message || String(err));
       setAsignaturas([]);
@@ -97,6 +102,7 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-ANUAL') =
       setGestionAnio(null);
       setGestionNombre(null);
       setNotaMinimaAprobacion(NOTA_MINIMA_FALLBACK);
+      setLibro(null);
     } finally {
       setIsLoading(false);
     }
@@ -141,6 +147,7 @@ export const useCentralizadorParalelo = (routeKey = 'ACA-CENTRALIZADOR-ANUAL') =
     gestionAnio,
     gestionNombre,
     notaMinimaAprobacion,
+    libro,
     isLoading,
     error,
     refetch,

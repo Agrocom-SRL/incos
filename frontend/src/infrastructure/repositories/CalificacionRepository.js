@@ -83,6 +83,10 @@ class CalificacionRepository {
           gestionAnio: payload.gestionAnio ?? null,
           gestionNombre: payload.gestionNombre ?? null,
           notaMinimaAprobacion: payload.notaMinimaAprobacion ?? null,
+          // Cabecera del Libro de registro del paralelo (schema 25): null si el
+          // paralelo aún no tiene folios generados en la gestión — nunca un
+          // placeholder inventado.
+          libro: payload.libro ?? null,
           asignaturas: Array.isArray(payload.asignaturas) ? payload.asignaturas : [],
           estudiantes: Array.isArray(payload.estudiantes) ? payload.estudiantes : [],
         },
@@ -823,6 +827,67 @@ class CalificacionRepository {
         }
       }
       return handleErrorResponse(error, 'Error al exportar centralizador de la carrera');
+    }
+  }
+
+  /**
+   * GET export del Centralizador ANUAL de un paralelo (.xlsx, una sola hoja —
+   * reutiliza los folios ya generados del Libro de registro). Si el paralelo
+   * aún no tiene folios generados, el backend responde 400 con un mensaje
+   * claro (se propaga tal cual, sin reemplazarlo).
+   *
+   * Mecánica idéntica a `descargarCentralizadorExcel` (blob + filename del
+   * header `Content-Disposition`).
+   * @param {Object} params
+   * @param {string|number} params.paraleloGestionId
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarCentralizadorAnualExcel({ paraleloGestionId } = {}) {
+    try {
+      const response = await apiClient.get(
+        CALIFICACIONES_ENDPOINTS.EXPORT_CENTRALIZADOR_ANUAL(paraleloGestionId),
+        { responseType: 'blob' },
+      );
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'centralizador_anual.xlsx';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName,
+      };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar el centralizador anual';
+          return { success: false, error: msg };
+        } catch {
+          /* fall through */
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar el centralizador anual');
     }
   }
 

@@ -299,6 +299,19 @@
   color: var(--cuaderno-texto-medio);
 }
 
+/* —— P2: badge LIBRO/FOLIO (cruce con Libros de registro, schema 25) —— */
+.cal-centralizador-libro-pill {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-centralizador-libro-vacio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 13px;
+  color: var(--cuaderno-texto-medio);
+}
+
 .cal-centralizador-grid-wrap
   .ant-table-wrapper.cal-centralizador-grid
   .ant-table-thead

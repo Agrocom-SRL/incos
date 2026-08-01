@@ -142,3 +142,27 @@ export const getResultadoDictamenPillClass = (resultado) =>
  * Productivo) admite integrantes múltiples.
  */
 export const esModalidadGrupal = (codigo) => codigo === 'PSP';
+
+/**
+ * Resultado de tutoría de 3er año (planilla "10 en 10", extensión
+ * 2026-07-31): derivado en la vista 181 a partir de `proyectos_grado.estado`
+ * e `integrantes_proyecto.estado` (espejo de
+ * `domain/constants/titulacion.constants.js` · `RESULTADOS_TUTORIA_TERCER_ANIO`
+ * del backend).
+ */
+export const RESULTADOS_TUTORIA_TERCER_ANIO = ['APROBADO', 'REPROBADO', 'ABANDONO', 'EN_PROCESO'];
+
+const RESULTADO_TUTORIA_META = {
+  APROBADO: { label: 'Aprobado', pill: 'cfg-materia-pill--success' },
+  REPROBADO: { label: 'Reprobado', pill: 'cfg-materia-pill--danger' },
+  ABANDONO: { label: 'Abandono', pill: 'cfg-materia-pill--inactiva' },
+  EN_PROCESO: { label: 'En proceso', pill: 'cfg-materia-pill--warning' },
+};
+
+/** Etiqueta legible del resultado de tutoría (planilla de 3er año). */
+export const formatResultadoTutoria = (resultado) =>
+  RESULTADO_TUTORIA_META[resultado]?.label ?? resultado ?? '—';
+
+/** Clase completa del StatusPill para el resultado de tutoría. */
+export const getResultadoTutoriaPillClass = (resultado) =>
+  `cfg-materia-pill ${RESULTADO_TUTORIA_META[resultado]?.pill ?? 'cfg-materia-pill--default'}`;

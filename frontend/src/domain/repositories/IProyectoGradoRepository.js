@@ -177,4 +177,70 @@ export class IProyectoGradoRepository extends IBaseRepository {
   async exportarBitacoraMensual(_params) {
     throw new Error('Método exportarBitacoraMensual debe ser implementado');
   }
+
+  // ==========================================================
+  // Extensión 2026-07-31 — Requisitos 1-3 (formulario de modalidad de
+  // graduación, reporte de avance por carrera, planilla "10 en 10").
+  // ==========================================================
+
+  /**
+   * Estudiantes de 3er año elegibles para elegir modalidad de graduación
+   * (Requisito 1, proyecto·LISTAR, `estudiantesElegibles`).
+   * @param {{params?: {search?: string, carreraId?: number, gestionId?: number}}} [_options]
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerEstudiantesElegibles(_options) {
+    throw new Error('Método obtenerEstudiantesElegibles debe ser implementado');
+  }
+
+  /**
+   * Descarga el PDF del formulario de modalidad de graduación FMDG-1 de un
+   * proyecto ya creado (Requisito 1, proyecto·EXPORTAR, blob).
+   * @param {string|number} _id
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async exportarFormularioModalidadPdf(_id) {
+    throw new Error('Método exportarFormularioModalidadPdf debe ser implementado');
+  }
+
+  /**
+   * Reporte de avance de tutorías por carrera: resumen agregado + detalle
+   * por proyecto (Requisito 2, proyecto·LISTAR, `avanceTutoriaCarrera`).
+   * @param {{gestionId?: number, carreraId?: number}} [_params]
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerAvanceTutoriaCarrera(_params) {
+    throw new Error('Método obtenerAvanceTutoriaCarrera debe ser implementado');
+  }
+
+  /**
+   * Descarga el PDF del reporte de avance de tutorías por carrera
+   * (Requisito 2, proyecto·EXPORTAR, blob).
+   * @param {{gestionId?: number, carreraId?: number}} [_params]
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async exportarAvanceTutoriaCarreraPdf(_params) {
+    throw new Error('Método exportarAvanceTutoriaCarreraPdf debe ser implementado');
+  }
+
+  /**
+   * Planilla de avance de tutorías "10 en 10" (bimestral, 3er año): preview
+   * en pantalla (Requisito 3, proyecto·LISTAR, `planillaAvanceTercerAnio`).
+   * `carreraId` y `bimestre` son requeridos por el backend.
+   * @param {{carreraId: number, gestionId?: number, bimestre: number}} _params
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerPlanillaAvanceTercerAnio(_params) {
+    throw new Error('Método obtenerPlanillaAvanceTercerAnio debe ser implementado');
+  }
+
+  /**
+   * Descarga el Excel de la planilla de avance de tutorías (Requisito 3,
+   * proyecto·EXPORTAR, blob).
+   * @param {{carreraId: number, gestionId?: number, bimestre: number}} _params
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async exportarPlanillaAvanceTercerAnioExcel(_params) {
+    throw new Error('Método exportarPlanillaAvanceTercerAnioExcel debe ser implementado');
+  }
 }

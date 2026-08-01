@@ -73,6 +73,8 @@ export const mapProyectoGrado = (raw) => {
     porcentajeAvance: Math.max(0, Math.min(100, porcentajeAvance)),
     bitacoraTotal: toNumber(raw.bitacoraTotal ?? raw.totalBitacora, 0),
     observacionesPendientes: toNumber(raw.bitacoraPendientes ?? raw.observacionesPendientes, 0),
+    /** Última observación de bitácora (columna aditiva de la vista 160, extensión 2026-07-31). */
+    ultimaObservacion: cleanText(raw.ultimaObservacion),
     avancesPendientes: toNumber(raw.avancesPendientes, 0),
     ultimaTutoriaFecha: raw.ultimaBitacoraFecha ?? raw.ultimaFecha ?? null,
     ultimaTutoriaLabel: formatFecha(raw.ultimaBitacoraFecha ?? raw.ultimaFecha),

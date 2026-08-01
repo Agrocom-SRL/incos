@@ -16,6 +16,7 @@ import {
   BookOutlined,
   CheckCircleOutlined,
   CloudUploadOutlined,
+  FilePdfOutlined,
   FileTextOutlined,
   TeamOutlined,
   UserSwitchOutlined,
@@ -54,6 +55,7 @@ const ProyectoGradoDetail = () => {
     bitacora,
     avances,
     dictamenes,
+    formularioModalidad,
   } = useProyectoGradoDetailPage();
   const puedeEditar = usePermiso(TITULACION_PERMISOS.proyecto, 'EDITAR');
 
@@ -79,6 +81,16 @@ const ProyectoGradoDetail = () => {
         onClick={etapaModal.abrir}
       >
         Aprobar etapa
+      </ActionButton>
+      <ActionButton
+        permiso={TITULACION_PERMISOS.proyecto}
+        accion="EXPORTAR"
+        variant="info"
+        icon={<FilePdfOutlined />}
+        loading={formularioModalidad.descargando}
+        onClick={formularioModalidad.exportar}
+      >
+        Exportar formulario FMDG-1
       </ActionButton>
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
         Volver

@@ -332,6 +332,124 @@ export class ProyectoGradoRepository extends IProyectoGradoRepository {
       return parseBlobError(error, 'Error al exportar la bitácora mensual');
     }
   }
+
+  // ==========================================================
+  // Extensión 2026-07-31 — Requisitos 1-3 (formulario de modalidad de
+  // graduación, reporte de avance por carrera, planilla "10 en 10").
+  // ==========================================================
+
+  /**
+   * Estudiantes de 3er año elegibles para elegir modalidad de graduación
+   * (Requisito 1, `estudiantesElegibles`).
+   * GET /v1/proyectos-grado/estudiantes-elegibles?search=&carreraId=&gestionId=
+   */
+  async obtenerEstudiantesElegibles(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PROYECTOS_GRADO_ENDPOINTS.ESTUDIANTES_ELEGIBLES, {
+        params,
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener los estudiantes elegibles');
+    }
+  }
+
+  /**
+   * Descarga el PDF del formulario de modalidad de graduación FMDG-1
+   * (Requisito 1, proyecto·EXPORTAR; blob autenticado).
+   * GET /v1/proyectos-grado/:id/formulario-modalidad/pdf
+   */
+  async exportarFormularioModalidadPdf(id) {
+    try {
+      const response = await apiClient.get(
+        PROYECTOS_GRADO_ENDPOINTS.FORMULARIO_MODALIDAD_PDF(id),
+        { responseType: 'blob' },
+      );
+      return {
+        success: true,
+        blob: response.data,
+        fileName: parseFileName(response, 'formulario_modalidad_graduacion.pdf'),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al exportar el formulario de modalidad de graduación');
+    }
+  }
+
+  /**
+   * Reporte de avance de tutorías por carrera (Requisito 2, `avanceTutoriaCarrera`).
+   * GET /v1/proyectos-grado/reportes/avance-carrera?gestionId=&carreraId=
+   */
+  async obtenerAvanceTutoriaCarrera(params = {}) {
+    try {
+      const response = await apiClient.get(PROYECTOS_GRADO_ENDPOINTS.REPORTE_AVANCE_CARRERA, {
+        params,
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el reporte de avance de tutorías por carrera');
+    }
+  }
+
+  /**
+   * Descarga el PDF del reporte de avance de tutorías por carrera
+   * (Requisito 2, proyecto·EXPORTAR; blob autenticado).
+   * GET /v1/proyectos-grado/reportes/avance-carrera/pdf?gestionId=&carreraId=
+   */
+  async exportarAvanceTutoriaCarreraPdf(params = {}) {
+    try {
+      const response = await apiClient.get(
+        PROYECTOS_GRADO_ENDPOINTS.REPORTE_AVANCE_CARRERA_PDF(params),
+        { responseType: 'blob' },
+      );
+      return {
+        success: true,
+        blob: response.data,
+        fileName: parseFileName(response, 'reporte_avance_tutorias_carrera.pdf'),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al exportar el reporte de avance de tutorías por carrera');
+    }
+  }
+
+  /**
+   * Planilla de avance de tutorías "10 en 10" (bimestral, 3er año) — preview
+   * en pantalla (Requisito 3, `planillaAvanceTercerAnio`). `carreraId` y
+   * `bimestre` son requeridos por el backend.
+   * GET /v1/proyectos-grado/reportes/planilla-avance-tercer-anio?carreraId=&gestionId=&bimestre=
+   */
+  async obtenerPlanillaAvanceTercerAnio(params = {}) {
+    try {
+      const response = await apiClient.get(
+        PROYECTOS_GRADO_ENDPOINTS.REPORTE_PLANILLA_AVANCE_TERCER_ANIO,
+        { params },
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener la planilla de avance de tutorías');
+    }
+  }
+
+  /**
+   * Descarga el Excel de la planilla de avance de tutorías (Requisito 3,
+   * proyecto·EXPORTAR; blob autenticado).
+   * GET /v1/proyectos-grado/reportes/planilla-avance-tercer-anio/export?carreraId=&gestionId=&bimestre=
+   */
+  async exportarPlanillaAvanceTercerAnioExcel(params = {}) {
+    try {
+      const response = await apiClient.get(
+        PROYECTOS_GRADO_ENDPOINTS.REPORTE_PLANILLA_AVANCE_TERCER_ANIO_EXPORT(params),
+        { responseType: 'blob' },
+      );
+      return {
+        success: true,
+        blob: response.data,
+        fileName: parseFileName(response, 'planilla_avance_tutoria.xlsx'),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al exportar la planilla de avance de tutorías');
+    }
+  }
 }
 
 export default new ProyectoGradoRepository();

@@ -16,6 +16,7 @@ import { createLibrosTableColumns } from '@academico/libros/config/librosTableCo
 import { libroDetallePath } from '../../utils/librosPaths';
 import { useLibrosApi } from '../api/useLibrosApi';
 import { useAbrirLibroApi } from '../api/useAbrirLibroApi';
+import { useGenerarFoliosGestion } from '../api/useGenerarFoliosGestion';
 
 /** Normaliza para comparar sin acentos ni mayúsculas. */
 const normalizar = (valor) =>
@@ -33,9 +34,12 @@ export const useLibrosList = () => {
   const { carreras, loading: loadingCarreras } = useCarrerasCatalogApi();
   const { gestiones, loading: loadingGestiones } = useGestionesCatalogApi();
   const { abrirLibro, loading: abriendo } = useAbrirLibroApi();
+  const { generarFoliosGestion, loading: generandoGestion } = useGenerarFoliosGestion();
 
   const [searchText, setSearchText] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalGenerarGestionOpen, setModalGenerarGestionOpen] = useState(false);
+  const [resumenGeneracionFolios, setResumenGeneracionFolios] = useState(null);
 
   const librosFiltrados = useMemo(() => {
     const termino = normalizar(searchText);
@@ -82,6 +86,44 @@ export const useLibrosList = () => {
     [abrirLibro, refetch, navigate, notification],
   );
 
+  const abrirModalGenerarGestion = useCallback(() => {
+    setResumenGeneracionFolios(null);
+    setModalGenerarGestionOpen(true);
+  }, []);
+
+  const cerrarModalGenerarGestion = useCallback(() => {
+    setModalGenerarGestionOpen(false);
+    setResumenGeneracionFolios(null);
+  }, []);
+
+  const handleGenerarFoliosGestion = useCallback(
+    async (gestionId) => {
+      if (!gestionId) {
+        notification.warning({
+          title: 'Seleccione una gestión',
+          description: 'Elija la gestión para la que desea generar los folios.',
+        });
+        return { success: false };
+      }
+      const result = await generarFoliosGestion(gestionId);
+      if (result.success) {
+        setResumenGeneracionFolios(result.data);
+        notification.success({
+          title: 'Folios de la gestión generados',
+          description: `Se crearon ${result.data?.foliosCreados ?? 0} folio(s) en ${result.data?.paralelosGenerados ?? 0} paralelo(s).`,
+        });
+        await refetch();
+      } else {
+        notification.error({
+          title: 'No se pudieron generar los folios de la gestión',
+          description: result.error,
+        });
+      }
+      return result;
+    },
+    [generarFoliosGestion, notification, refetch],
+  );
+
   const tableColumns = useMemo(() => createLibrosTableColumns({ navigate }), [navigate]);
 
   const breadcrumbItems = useMemo(() => createBreadcrumbItems('ACA-LIBROS', 'ACA-LIBROS'), []);
@@ -103,6 +145,13 @@ export const useLibrosList = () => {
     loadingCarreras,
     gestiones,
     loadingGestiones,
+
+    modalGenerarGestionOpen,
+    abrirModalGenerarGestion,
+    cerrarModalGenerarGestion,
+    handleGenerarFoliosGestion,
+    generandoGestion,
+    resumenGeneracionFolios,
   };
 };
 

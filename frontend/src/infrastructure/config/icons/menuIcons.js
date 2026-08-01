@@ -141,4 +141,7 @@ export const menuIconMap = {
     // reclasificó al bloque Académico (ver arriba).
     'TIT-PROYECTOS': FileDoneOutlined,
     'TIT-PASANTIAS': ShopOutlined,
+    // Reportes de avance de tutoría (Requisitos 2/3 — extensión 2026-07-31)
+    'TIT-PROYECTOS-AVANCE-CARRERA': BarChartOutlined,
+    'TIT-PROYECTOS-PLANILLA-TERCER-ANIO': TableOutlined,
 };

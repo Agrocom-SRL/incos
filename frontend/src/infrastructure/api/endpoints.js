@@ -424,6 +424,12 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/bimestre/${bimestre}/export`,
   EXPORT_CENTRALIZADOR_CARRERA: (paraleloGestionId, bimestre) =>
     `${API_BASE}/calificaciones/centralizador/carrera-de/${paraleloGestionId}/bimestre/${bimestre}/export`,
+  /**
+   * GET — Excel del Centralizador ANUAL de un paralelo (una sola hoja, sobre
+   * los folios YA generados del Libro de registro de la gestión).
+   */
+  EXPORT_CENTRALIZADOR_ANUAL: (paraleloGestionId) =>
+    `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/anual/export`,
   CENTRALIZADOR_OBSERVACION: (paraleloGestionId, bimestre, estudianteId) =>
     `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/bimestre/${bimestre}/observaciones/${estudianteId}`,
   EXPORT_BOLETIN_ESTUDIANTE: (paraleloGestionId, estudianteId) =>
@@ -442,6 +448,12 @@ export const CALIFICACIONES_ENDPOINTS = {
  */
 export const LIBROS_ENDPOINTS = {
   ...createCRUDEndpoints('/libros'),
+  /**
+   * POST — genera los folios de TODOS los paralelos de una gestión, en el
+   * orden canónico de carrera. Idempotente: paralelos con folios vigentes se
+   * omiten. Ruta estática (no depende de un libro puntual).
+   */
+  GENERAR_FOLIOS_GESTION: (gestionId) => `${API_BASE}/libros/gestiones/${gestionId}/folios`,
   /** GET — paralelos candidatos del generador de folios de este libro. */
   PARALELOS: (id) => `${API_BASE}/libros/${id}/paralelos`,
   /** GET (listado) / POST (generar; body paraleloGestionId) — folios del libro. */
@@ -710,6 +722,48 @@ export const PROYECTOS_GRADO_ENDPOINTS = {
   /** GET — PDF del dictamen (T23, proyecto·EXPORTAR; blob autenticado) */
   DICTAMEN_ARCHIVO: (id, dictamenId) =>
     `${API_BASE}/proyectos-grado/${id}/dictamenes/${dictamenId}/archivo`,
+
+  // ==========================================================
+  // Extensión 2026-07-31 — Requisitos 1-3 (formulario de modalidad de
+  // graduación, reporte de avance por carrera, planilla "10 en 10").
+  // Rutas estáticas ANTES de `/:id` en el backend (proyectos-grado.routes.js).
+  // ==========================================================
+
+  /**
+   * GET — estudiantes de 3er año elegibles para elegir modalidad de
+   * graduación (Requisito 1, dataFieldName `estudiantesElegibles`). Query
+   * (`search`/`carreraId`/`gestionId`) se envía vía `params`, no en la URL.
+   */
+  ESTUDIANTES_ELEGIBLES: `${API_BASE}/proyectos-grado/estudiantes-elegibles`,
+  /** GET — PDF del formulario de modalidad de graduación FMDG-1 (Requisito 1, res.download) */
+  FORMULARIO_MODALIDAD_PDF: (id) => `${API_BASE}/proyectos-grado/${id}/formulario-modalidad/pdf`,
+  /**
+   * GET — reporte de avance de tutorías por carrera (Requisito 2,
+   * dataFieldName `avanceTutoriaCarrera`). Query vía `params`.
+   */
+  REPORTE_AVANCE_CARRERA: `${API_BASE}/proyectos-grado/reportes/avance-carrera`,
+  /** GET — PDF del reporte de avance de tutorías por carrera (Requisito 2, res.download) */
+  REPORTE_AVANCE_CARRERA_PDF: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.gestionId != null) q.set('gestionId', String(params.gestionId));
+    if (params.carreraId != null) q.set('carreraId', String(params.carreraId));
+    const qs = q.toString();
+    return `${API_BASE}/proyectos-grado/reportes/avance-carrera/pdf${qs ? `?${qs}` : ''}`;
+  },
+  /**
+   * GET — planilla de avance de tutorías "10 en 10" bimestral, 3er año
+   * (Requisito 3, dataFieldName `planillaAvanceTercerAnio`). Query vía `params`.
+   */
+  REPORTE_PLANILLA_AVANCE_TERCER_ANIO: `${API_BASE}/proyectos-grado/reportes/planilla-avance-tercer-anio`,
+  /** GET — Excel de la planilla de avance de tutorías (Requisito 3, res.download) */
+  REPORTE_PLANILLA_AVANCE_TERCER_ANIO_EXPORT: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.carreraId != null) q.set('carreraId', String(params.carreraId));
+    if (params.gestionId != null) q.set('gestionId', String(params.gestionId));
+    if (params.bimestre != null) q.set('bimestre', String(params.bimestre));
+    const qs = q.toString();
+    return `${API_BASE}/proyectos-grado/reportes/planilla-avance-tercer-anio/export${qs ? `?${qs}` : ''}`;
+  },
 };
 
 export const ACOMPANAMIENTO_ENDPOINTS = {

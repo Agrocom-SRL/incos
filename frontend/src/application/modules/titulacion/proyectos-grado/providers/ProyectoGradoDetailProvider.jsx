@@ -3,9 +3,11 @@
  *
  * Ensambla los CUATRO datasets de la ficha (T6 proyecto, T14 bitácora, T18
  * avances, T22 dictámenes) con carga en paralelo al montar, más las
- * mutaciones de cabecera (tutor/transiciones/integrantes) y de bitácora.
- * La orquestación de pantalla (tabs, modales, feedback) vive en
- * `useProyectoGradoDetailPage`. Provider DELGADO: solo ensambla.
+ * mutaciones de cabecera (tutor/transiciones/integrantes), de bitácora y la
+ * exportación del formulario de modalidad de graduación FMDG-1 (Requisito 1,
+ * extensión 2026-07-31). La orquestación de pantalla (tabs, modales,
+ * feedback) vive en `useProyectoGradoDetailPage`. Provider DELGADO: solo
+ * ensambla.
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
@@ -15,6 +17,7 @@ import { useBitacoraProyectoApi } from '@application-titulacion/proyectos-grado/
 import { useAvancesProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useAvancesProyectoApi';
 import { useDictamenesProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useDictamenesProyectoApi';
 import { useDocentesCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTitApi';
+import { useExportFormularioModalidadPdf } from '@application-titulacion/proyectos-grado/hooks/api/useExportFormularioModalidadPdf';
 import { ProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoDetailContext';
 
 export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
@@ -24,6 +27,7 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
   const avances = useAvancesProyectoApi();
   const dictamenes = useDictamenesProyectoApi();
   const docentesCatalogo = useDocentesCatalogoTitApi();
+  const formularioModalidad = useExportFormularioModalidadPdf();
 
   const id = Number(proyectoId);
   const idValido = Number.isFinite(id) && id > 0;
@@ -64,8 +68,22 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
       avances,
       dictamenes,
       docentesCatalogo,
+      formularioModalidad,
     }),
-    [idValido, id, proyecto, loading, error, refetch, mutations, bitacora, avances, dictamenes, docentesCatalogo],
+    [
+      idValido,
+      id,
+      proyecto,
+      loading,
+      error,
+      refetch,
+      mutations,
+      bitacora,
+      avances,
+      dictamenes,
+      docentesCatalogo,
+      formularioModalidad,
+    ],
   );
 
   return (

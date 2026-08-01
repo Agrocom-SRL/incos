@@ -7,14 +7,16 @@
  *
  * La modalidad gobierna la grupalidad: solo PSP (esModalidadGrupal) muestra
  * el multi-select de integrantes adicionales. El titular y los integrantes se
- * eligen con búsqueda de estudiantes debounced (catálogo reutilizado).
+ * eligen de entre los estudiantes de 3er año ELEGIBLES para la carrera
+ * seleccionada (Requisito 1, extensión 2026-07-31, `GET
+ * /estudiantes-elegibles`) — ya no de un buscador genérico.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useProyectoGradoFormContext } from '@application-titulacion/proyectos-grado/hooks/context/useProyectoGradoFormContext';
-import { useBuscarEstudiantesTit } from '@application-titulacion/proyectos-grado/hooks/api/useBuscarEstudiantesTit';
+import { useEstudiantesElegiblesModalidadApi } from '@application-titulacion/proyectos-grado/hooks/api/useEstudiantesElegiblesModalidadApi';
 import { esModalidadGrupal } from '@application-titulacion/utils/titulacionPills';
 import {
   mapFormValuesToProyectoPayload,
@@ -139,12 +141,15 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
   } = useProyectoGradoFormContext();
 
   const [error, setError] = useState(null);
-  const busquedaEstudiantes = useBuscarEstudiantesTit();
 
   // La modalidad elegida decide si se muestran integrantes múltiples (PSP).
   const modalidadId = Form.useWatch('modalidadId', form);
   const modalidadSeleccionada = modalidadId != null ? modalidadById[modalidadId] : null;
   const modalidadGrupal = esModalidadGrupal(modalidadSeleccionada?.codigo);
+
+  // Estudiantes elegibles (3er año, sin proyecto vigente) de la carrera elegida.
+  const carreraId = Form.useWatch('carreraId', form);
+  const elegibles = useEstudiantesElegiblesModalidadApi({ carreraId });
 
   const pageTitle = isEditMode ? 'Editar proyecto de grado' : 'Nuevo proyecto de grado';
   const permisoAccion = isEditMode ? 'EDITAR' : 'CREAR';
@@ -164,13 +169,17 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
   );
 
   /**
-   * Opciones del select de estudiantes: resultados de la búsqueda + los ya
-   * elegidos en edición (para que el Select muestre su etiqueta).
+   * Opciones del select de estudiantes: catálogo de elegibles de la carrera +
+   * los ya elegidos en edición (para que el Select muestre su etiqueta aunque
+   * ya no figuren como elegibles, por tener este mismo proyecto vigente).
    */
   const estudianteOptions = useMemo(() => {
     const porId = new Map();
-    for (const e of busquedaEstudiantes.estudiantes) {
-      porId.set(e.id, { value: e.id, label: e.ci ? `${e.nombreCompleto} · CI ${e.ci}` : e.nombreCompleto });
+    for (const e of elegibles.estudiantes) {
+      porId.set(e.estudianteId, {
+        value: e.estudianteId,
+        label: e.ci ? `${e.nombreCompleto} · CI ${e.ci}` : e.nombreCompleto,
+      });
     }
     for (const i of proyecto?.integrantes ?? []) {
       if (i.estudianteId != null && !porId.has(i.estudianteId)) {
@@ -178,7 +187,7 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
       }
     }
     return Array.from(porId.values());
-  }, [busquedaEstudiantes.estudiantes, proyecto?.integrantes]);
+  }, [elegibles.estudiantes, proyecto?.integrantes]);
 
   // Precarga: alta → defaults; edición → ficha (titular + integrantes).
   useEffect(() => {
@@ -291,8 +300,8 @@ export const useProyectoGradoFormPage = (mode = 'create') => {
     formSections,
     modalidadGrupal,
     estudianteOptions,
-    buscandoEstudiantes: busquedaEstudiantes.loading,
-    onBuscarEstudiantes: busquedaEstudiantes.buscar,
+    buscandoEstudiantes: elegibles.loading,
+    carreraSeleccionada: carreraId != null,
     handleVolver,
     handleSubmit,
     isInvalidEditId,

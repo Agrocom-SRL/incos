@@ -6,7 +6,55 @@
  * campos derivados de presentación (`libroLabel`, `folioLabel`, `cursoLabel`).
  * No transforma nombres de estudiante (ya llegan en orden APELLIDO_PATERNO
  * APELLIDO_MATERNO NOMBRES desde `buildFullName` del backend).
+ *
+ * `cursoLabel` replica EXACTAMENTE el criterio de formato del documento
+ * oficial ya resuelto en el backend
+ * (`backend/src/application/utils/libroFolioExcelDatos.js`): "TERCERO -
+ * PARALELO A" (ordinal del periodo + solo la letra del paralelo), NO "PRIMER
+ * AÑO - PARALELO PRIMERO A" (defecto detectado contra el libro físico real —
+ * `periodoNombre` trae "Primer Año" y `paraleloNombre` ya trae el ordinal
+ * repetido, p. ej. "TERCERO A").
  */
+
+/** Ordinal institucional del periodo (1..N → PRIMERO/SEGUNDO/TERCERO/...). */
+const ORDINAL_PERIODO = ['', 'PRIMERO', 'SEGUNDO', 'TERCERO', 'CUARTO', 'QUINTO', 'SEXTO'];
+
+/**
+ * Ordinal del periodo del CURSO oficial. Con `periodoNumero` fuera del
+ * catálogo (o ausente), deriva del nombre quitando el sufijo " Año"/" AÑO"
+ * (compatibilidad; no debería ocurrir con datos reales).
+ * @param {number|string|null} periodoNumero
+ * @param {string|null} [periodoNombre]
+ * @returns {string}
+ */
+export function formatOrdinalPeriodo(periodoNumero, periodoNombre = null) {
+  const n = Number(periodoNumero);
+  if (Number.isFinite(n) && n >= 1 && n < ORDINAL_PERIODO.length) return ORDINAL_PERIODO[n];
+  return String(periodoNombre ?? '')
+    .toUpperCase()
+    .replace(/\s+A[ÑN]O$/, '')
+    .trim();
+}
+
+/** Solo la LETRA del paralelo ("TERCERO A" → "A"): último token del nombre. */
+export function formatLetraParalelo(paraleloNombre) {
+  const partes = String(paraleloNombre ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  return partes.length > 0 ? partes[partes.length - 1].toUpperCase() : '';
+}
+
+/**
+ * CURSO del documento oficial: "TERCERO - PARALELO A".
+ * @param {{periodoNumero, periodoNombre, paraleloNombre}} params
+ * @returns {string}
+ */
+export function formatCursoLibro({ periodoNumero, periodoNombre, paraleloNombre }) {
+  const ordinal = formatOrdinalPeriodo(periodoNumero, periodoNombre);
+  const letra = formatLetraParalelo(paraleloNombre);
+  return `${ordinal} - PARALELO ${letra}`.trim();
+}
 
 /** @param {Object} libro - DTO de `toLibroDTO` (vista 175). */
 export const mapLibro = (libro) => {
@@ -24,9 +72,11 @@ export const mapLibrosList = (libros) => (Array.isArray(libros) ? libros.map(map
 /** @param {Object} folio - DTO de `toFolioDTO` (vista 176). */
 export function mapFolio(folio) {
   if (!folio) return null;
-  const curso = [folio.periodoNombre, folio.paraleloNombre ? `PARALELO ${folio.paraleloNombre}` : null]
-    .filter(Boolean)
-    .join(' - ');
+  const curso = formatCursoLibro({
+    periodoNumero: folio.periodoNumero,
+    periodoNombre: folio.periodoNombre,
+    paraleloNombre: folio.paraleloNombre,
+  });
   return {
     ...folio,
     folioLabel: folio.numeroFolio != null ? `FOLIO N° ${folio.numeroFolio}` : 'Folio',
@@ -42,9 +92,11 @@ export const mapFoliosList = (folios) => (Array.isArray(folios) ? folios.map(map
 /** @param {Object} paralelo - DTO de `toParaleloLibroDTO`. */
 export const mapParaleloLibro = (paralelo) => {
   if (!paralelo) return null;
-  const curso = [paralelo.periodoNombre, paralelo.paraleloNombre ? `Paralelo ${paralelo.paraleloNombre}` : null]
-    .filter(Boolean)
-    .join(' - ');
+  const curso = formatCursoLibro({
+    periodoNumero: paralelo.periodoNumero,
+    periodoNombre: paralelo.periodoNombre,
+    paraleloNombre: paralelo.paraleloNombre,
+  });
   return { ...paralelo, cursoLabel: curso || '—' };
 };
 
@@ -62,6 +114,9 @@ export function mapFolioEstudiante(fila) {
 }
 
 export default {
+  formatOrdinalPeriodo,
+  formatLetraParalelo,
+  formatCursoLibro,
   mapLibro,
   mapLibrosList,
   mapFolio,

@@ -3,7 +3,7 @@
  */
 
 import { Flex, Typography } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { FileAddOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
@@ -13,6 +13,7 @@ import { useLibrosList } from '@application-academico/libros/hooks';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import { allSpacing } from '@theme/tokens';
 import AbrirLibroModal from '../components/organisms/AbrirLibroModal.jsx';
+import GenerarFoliosGestionModal from '../components/organisms/GenerarFoliosGestionModal.jsx';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
@@ -35,18 +36,36 @@ const LibrosListPage = () => {
     loadingCarreras,
     gestiones,
     loadingGestiones,
+
+    modalGenerarGestionOpen,
+    abrirModalGenerarGestion,
+    cerrarModalGenerarGestion,
+    handleGenerarFoliosGestion,
+    generandoGestion,
+    resumenGeneracionFolios,
   } = useLibrosList();
 
-  const abrirLibroAction = (
-    <ActionButton
-      permiso={LIBROS_PERMISOS.libro}
-      accion="CREAR"
-      variant="primary"
-      icon={<PlusOutlined />}
-      onClick={abrirModal}
-    >
-      Abrir libro
-    </ActionButton>
+  const listaAcciones = (
+    <Flex gap={allSpacing.marginSM} wrap="wrap">
+      <ActionButton
+        permiso={LIBROS_PERMISOS.libro}
+        accion="CREAR"
+        variant="alternative"
+        icon={<FileAddOutlined />}
+        onClick={abrirModalGenerarGestion}
+      >
+        Generar folios de la gestión
+      </ActionButton>
+      <ActionButton
+        permiso={LIBROS_PERMISOS.libro}
+        accion="CREAR"
+        variant="primary"
+        icon={<PlusOutlined />}
+        onClick={abrirModal}
+      >
+        Abrir libro
+      </ActionButton>
+    </Flex>
   );
 
   return (
@@ -54,7 +73,7 @@ const LibrosListPage = () => {
       <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
         <section className="cfg-academico-workspace">
           <header className="cfg-academico-workspace__header">
-            <ListPanelHeader title="Libros de registro" actions={abrirLibroAction} />
+            <ListPanelHeader title="Libros de registro" actions={listaAcciones} />
             <Paragraph type="secondary" className="cfg-academico-workspace__desc">
               Libros físicos del centralizador de calificaciones: uno por carrera y gestión,
               con sus folios (páginas de hasta 10 estudiantes) generados por paralelo.
@@ -89,6 +108,16 @@ const LibrosListPage = () => {
         guardando={abriendo}
         onGuardar={handleAbrirLibro}
         onCancelar={cerrarModal}
+      />
+
+      <GenerarFoliosGestionModal
+        open={modalGenerarGestionOpen}
+        gestiones={gestiones}
+        loadingGestiones={loadingGestiones}
+        generando={generandoGestion}
+        resumen={resumenGeneracionFolios}
+        onGenerar={handleGenerarFoliosGestion}
+        onCancelar={cerrarModalGenerarGestion}
       />
     </PageTemplate>
   );

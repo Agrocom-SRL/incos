@@ -10,6 +10,7 @@ export { ObtenerLibroPorIdUseCase } from './ObtenerLibroPorIdUseCase';
 export { EditarLibroUseCase } from './EditarLibroUseCase';
 export { ListarParalelosLibroUseCase } from './ListarParalelosLibroUseCase';
 export { GenerarFoliosParaleloUseCase } from './GenerarFoliosParaleloUseCase';
+export { GenerarFoliosGestionUseCase } from './GenerarFoliosGestionUseCase';
 export { ObtenerFolioPorIdUseCase } from './ObtenerFolioPorIdUseCase';
 export { CambiarEstadoFolioUseCase } from './CambiarEstadoFolioUseCase';
 export { EditarFolioEstudianteUseCase } from './EditarFolioEstudianteUseCase';

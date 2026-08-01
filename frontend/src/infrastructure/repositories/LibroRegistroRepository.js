@@ -89,6 +89,31 @@ class LibroRegistroRepository {
   }
 
   /**
+   * POST /v1/libros/gestiones/:gestionId/folios — genera los folios de TODOS
+   * los paralelos de la gestión (orden canónico de carrera), en una sola
+   * llamada. Idempotente: paralelos con folios vigentes se omiten (no es
+   * error) y quedan reportados en `resumenGeneracion.omitidos`.
+   * @param {number} gestionId
+   * @param {{ fechaRegistro?: string }} [payload]
+   * @returns {Promise<{success:boolean,data?:Object,error?:string}>} `data` =
+   *   `resumenGeneracion` ({ paralelosGenerados, foliosCreados, folioDesde,
+   *   folioHasta, omitidos }).
+   */
+  async generarFoliosGestion(gestionId, payload = {}) {
+    try {
+      const response = await apiClient.post(
+        LIBROS_ENDPOINTS.GENERAR_FOLIOS_GESTION(gestionId),
+        payload,
+      );
+      const result = unwrap(response);
+      if (!result.success) return result;
+      return { success: true, data: result.data.resumenGeneracion ?? null };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al generar los folios de la gestión');
+    }
+  }
+
+  /**
    * GET /v1/libros/:id/paralelos — candidatos del generador de folios.
    * @param {number} id
    */

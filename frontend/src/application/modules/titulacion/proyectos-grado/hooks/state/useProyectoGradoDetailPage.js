@@ -8,6 +8,8 @@
  *  - bitácora: nueva entrada / editar (T15/T16) — permiso bitacora
  *  - avances: descargar (T21) y revisar → entrada REVISION_AVANCE (T15)
  *  - dictámenes: descargar PDF (T23) — gated por EXPORTAR
+ *  - formulario de modalidad de graduación FMDG-1 (Requisito 1, extensión
+ *    2026-07-31): exportar PDF — gated por EXPORTAR
  * La página es "dumb"; los modales/drawers reciben estas props.
  */
 
@@ -38,6 +40,7 @@ export const useProyectoGradoDetailPage = () => {
     avances,
     dictamenes,
     docentesCatalogo,
+    formularioModalidad,
   } = useProyectoGradoDetailContext();
 
   const returnListPath = location.state?.returnListPath || PROYECTOS_GRADO_LIST_PATH;
@@ -274,6 +277,17 @@ export const useProyectoGradoDetailPage = () => {
     [proyectoId, dictamenes, notification],
   );
 
+  // ————— Formulario de modalidad de graduación FMDG-1 (Requisito 1) —————
+  const handleExportarFormularioModalidad = useCallback(async () => {
+    const result = await formularioModalidad.exportarPdf(proyectoId);
+    if (!result?.success) {
+      notification.error({
+        title: 'No se pudo exportar el formulario de modalidad de graduación',
+        description: result?.error || 'Intente nuevamente en unos instantes.',
+      });
+    }
+  }, [proyectoId, formularioModalidad, notification]);
+
   return {
     proyectoId,
     proyecto,
@@ -340,6 +354,11 @@ export const useProyectoGradoDetailPage = () => {
       error: dictamenes.error,
       descargandoId: dictamenes.descargandoId,
       descargar: handleDescargarDictamen,
+    },
+    // Formulario de modalidad de graduación FMDG-1 (Requisito 1)
+    formularioModalidad: {
+      descargando: formularioModalidad.descargando,
+      exportar: handleExportarFormularioModalidad,
     },
   };
 };

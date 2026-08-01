@@ -32,9 +32,19 @@ export const pasantiaEmpresaEditarPath = (empresaId) =>
 /** Portal del estudiante: su trámite de pasantía (wrapper TIT-MI-PASANTIA, patrón TIT-MI-PROYECTO). */
 export const MI_PASANTIA_PATH = `${TITULACION_BASE}/mi-pasantia`;
 
+/**
+ * Reportes de avance de tutoría (Requisitos 2 y 3 — extensión 2026-07-31).
+ * Ítems de menú propios del dominio Titulación (ver routes.jsx de
+ * proyectos-grado); no son sub-rutas de `/proyectos-grado/:id`.
+ */
+export const REPORTE_AVANCE_CARRERA_PATH = `${TITULACION_BASE}/proyectos-grado/reportes/avance-carrera`;
+export const PLANILLA_AVANCE_TERCER_ANIO_PATH = `${TITULACION_BASE}/proyectos-grado/reportes/planilla-tercer-anio`;
+
 /** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */
 export const TIT_PROYECTOS_MENU_KEY = 'TIT-PROYECTOS';
 export const TIT_PASANTIAS_MENU_KEY = 'TIT-PASANTIAS';
+export const TIT_REPORTE_AVANCE_CARRERA_MENU_KEY = 'TIT-PROYECTOS-AVANCE-CARRERA';
+export const TIT_PLANILLA_TERCER_ANIO_MENU_KEY = 'TIT-PROYECTOS-PLANILLA-TERCER-ANIO';
 /** Rutas sin ítem de menú (portal del estudiante). */
 export const TIT_MI_PROYECTO_KEY = 'TIT-MI-PROYECTO';
 export const TIT_MI_PASANTIA_KEY = 'TIT-MI-PASANTIA';
