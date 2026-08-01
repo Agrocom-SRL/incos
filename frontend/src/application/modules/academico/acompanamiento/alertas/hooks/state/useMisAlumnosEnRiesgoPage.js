@@ -19,7 +19,7 @@ import {
 
 export const useMisAlumnosEnRiesgoPage = () => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   const { alertas, loading, error, refetch } = useMisAlumnosEnRiesgoApi();
 
@@ -45,13 +45,17 @@ export const useMisAlumnosEnRiesgoPage = () => {
     return Array.from(porId.values()).sort((a, b) => (a.label || '').localeCompare(b.label, 'es'));
   }, [alertas]);
 
-  /** Programar sesión con el alumno (y su curso) preseleccionados. */
+  /**
+   * Programar sesión con el alumno (y su curso) preseleccionados. `search`
+   * conserva `?tab=alertas` cuando la lista vive como pestaña del contenedor
+   * Seguimiento académico: al volver del formulario se reabre esa pestaña.
+   */
   const handleProgramarSesion = useCallback(
     (alerta) => {
       navigate(sesionProgramarPath, {
         state: {
           menuSidebarKey: ACA_ALERTAS_MENU_KEY,
-          returnListPath: pathname || ALERTAS_RIESGO_LIST_PATH,
+          returnListPath: pathname ? `${pathname}${search || ''}` : ALERTAS_RIESGO_LIST_PATH,
           alertaPreseleccionada: {
             matriculaMateriaId: alerta.matriculaMateriaId,
             asignacionDocenteId: alerta.asignacionDocenteId,
@@ -60,7 +64,7 @@ export const useMisAlumnosEnRiesgoPage = () => {
         },
       });
     },
-    [navigate, pathname],
+    [navigate, pathname, search],
   );
 
   const tableColumns = useMemo(

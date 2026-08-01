@@ -28,11 +28,17 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 ('aca_traspasos', 'Traspasos', 'ACADEMICO', 16, 1, NOW(), NOW()),
 ('aca_transitabilidad', 'Transitabilidad', 'ACADEMICO', 17, 1, NOW(), NOW()),
 ('aca_historial', 'Historial', 'ACADEMICO', 18, 1, NOW(), NOW()),
-('aca_avance', 'Avance académico', 'ACADEMICO', 19, 1, NOW(), NOW()),
+-- 2026-08-01 (agrupación de menú «Seguimiento académico», ítem ACA-SEGUIMIENTO):
+-- avance, deserción y acompañamiento dejaron de ser ítems de sidebar y viven
+-- como pestañas de /academico/seguimiento (las URLs viejas quedan como rutas
+-- gemelas). Grupos, códigos, acciones y roles se conservan TAL CUAL — cero
+-- cambios funcionales de RBAC; solo se renombran los grupos para leerse como
+-- pestañas del ítem en la grilla de Seguridad y se alinea su ruta_sidebar.
+('aca_avance', 'Seguimiento académico · avance', 'ACADEMICO', 19, 1, NOW(), NOW()),
 ('aca_cal_centralizador', 'Centralizador de notas', 'ACADEMICO', 20, 1, NOW(), NOW()),
 -- 2026-07-29 (disolución REP): la deserción vive en ACA (pestaña de la página
 -- Avance académico) con permiso propio — roles más restringidos que el avance.
-('aca_desercion', 'Deserción estudiantil', 'ACADEMICO', 21, 1, NOW(), NOW()),
+('aca_desercion', 'Seguimiento académico · deserción', 'ACADEMICO', 21, 1, NOW(), NOW()),
 -- 2026-07-30 (Fase 4, schema 25): libros físicos del centralizador (LIBRO N° /
 -- FOLIO N°), un libro por carrera y gestión con folios por paralelo.
 ('aca_libros', 'Libros de registro', 'ACADEMICO', 22, 1, NOW(), NOW()),
@@ -40,7 +46,7 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 -- refuerzo + panel) reclasificado desde el módulo Titulación/TUT — sus datos
 -- se derivan de asignaciones_docentes/vistas del centralizador, sin FK a
 -- proyectos_grado/modalidades_grado. Ver 65-seed-permisos-tit.sql (nota).
-('aca_acompanamiento', 'Acompañamiento pedagógico', 'ACADEMICO', 23, 1, NOW(), NOW());
+('aca_acompanamiento', 'Seguimiento académico · acompañamiento', 'ACADEMICO', 23, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo ACA
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
@@ -76,11 +82,14 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 -- Libros de registro del centralizador (Fase 4, schema 25): sin ELIMINAR — un
 -- folio no se borra, se ANULA (transición de estado con EDITAR/APROBAR).
 ('academico.libro', 'Libros de registro del centralizador', NULL, 'ACADEMICO', 'ACA', 'aca_libros', '/academico/libros', 1, NOW(), NOW()),
-('academico.avance', 'Avance académico: ver progreso del estudiante en su carrera', NULL, 'ACADEMICO', 'ACA', 'aca_avance', '/academico/avance', 1, NOW(), NOW()),
+-- 2026-08-01 (agrupación «Seguimiento académico»): ruta_sidebar apunta al
+-- contenedor /academico/seguimiento (pestañas gateadas por permiso); la URL
+-- gemela /academico/avance sigue viva con ?tab=avance|desercion.
+('academico.avance', 'Avance académico: ver progreso del estudiante en su carrera', NULL, 'ACADEMICO', 'ACA', 'aca_avance', '/academico/seguimiento', 1, NOW(), NOW()),
 -- 2026-07-29 (disolución REP): reemplaza a reportes.desercion. Pestaña "Deserción"
--- de la página /academico/avance (PermisoGuard por pestaña); métrica ANUAL por
--- estados ABANDONO/RETIRADO de matriculas_materia (vistas 172/173).
-('academico.desercion', 'Deserción estudiantil: métrica anual de abandono por carrera', NULL, 'ACADEMICO', 'ACA', 'aca_desercion', '/academico/avance', 1, NOW(), NOW()),
+-- (PermisoGuard por pestaña); métrica ANUAL por estados ABANDONO/RETIRADO de
+-- matriculas_materia (vistas 172/173).
+('academico.desercion', 'Deserción estudiantil: métrica anual de abandono por carrera', NULL, 'ACADEMICO', 'ACA', 'aca_desercion', '/academico/seguimiento', 1, NOW(), NOW()),
 ('academico.asistencia.licencia.ver', 'Asistencia · Licencias estudiantiles: listar y ver', NULL, 'ACADEMICO', 'ACA', 'aca_asi_licencias', '/academico/asistencia/licencias/listar', 1, NOW(), NOW()),
 ('academico.asistencia.licencia.crear', 'Asistencia · Licencias estudiantiles: solicitar', NULL, 'ACADEMICO', 'ACA', 'aca_asi_licencias', '/academico/asistencia/licencias/listar', 1, NOW(), NOW()),
 ('academico.asistencia.licencia.aprobar', 'Asistencia · Licencias estudiantiles: aprobar', NULL, 'ACADEMICO', 'ACA', 'aca_asi_licencias', '/academico/asistencia/licencias/listar', 1, NOW(), NOW()),
@@ -91,10 +100,12 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('academico.asistencia.consolidado.ver', 'Asistencia · Consolidado %', NULL, 'ACADEMICO', 'ACA', 'aca_asi_consolidado', '/academico/asistencia/consolidado', 1, NOW(), NOW()),
 -- Acompañamiento pedagógico (2026-07-31, reclasificado desde TUT): riesgo
 -- pedagógico (vista 156, sin tabla), sesiones de refuerzo (schema 23,
--- ancladas en asignaciones_docentes) y panel de indicadores.
-('academico.acompanamiento.alerta', 'Alertas de riesgo pedagógico: listar y ver detalle por estudiante', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/acompanamiento/alertas', 1, NOW(), NOW()),
-('academico.acompanamiento.sesion', 'Sesiones de refuerzo: listar, ver detalle, crear, editar y eliminar', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/acompanamiento/sesiones', 1, NOW(), NOW()),
-('academico.acompanamiento.panel', 'Panel de acompañamiento: ver indicadores y exportar PDF', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/acompanamiento/panel', 1, NOW(), NOW());
+-- ancladas en asignaciones_docentes) y panel de indicadores. Desde el
+-- 2026-08-01 son pestañas del contenedor /academico/seguimiento (las URLs
+-- gemelas /academico/acompanamiento/* siguen vivas, incluido el ABM de sesiones).
+('academico.acompanamiento.alerta', 'Alertas de riesgo pedagógico: listar y ver detalle por estudiante', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/seguimiento', 1, NOW(), NOW()),
+('academico.acompanamiento.sesion', 'Sesiones de refuerzo: listar, ver detalle, crear, editar y eliminar', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/seguimiento', 1, NOW(), NOW()),
+('academico.acompanamiento.panel', 'Panel de acompañamiento: ver indicadores y exportar PDF', NULL, 'ACADEMICO', 'ACA', 'aca_acompanamiento', '/academico/seguimiento', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo ACA
 INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)

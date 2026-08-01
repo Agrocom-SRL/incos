@@ -15,7 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import { Descriptions, Form, List, Modal, Select, Space, Typography } from 'antd';
+import { Descriptions, Flex, Form, Modal, Select, Space, Typography } from 'antd';
 import { Button } from '@atoms';
 import { modalWidths } from '@theme/tokens/spacing';
 import { allSpacing } from '@theme/tokens';
@@ -75,7 +75,7 @@ const GenerarFoliosGestionModal = ({
       confirmLoading={generando}
     >
       {mostrarResumen ? (
-        <Space direction="vertical" size={allSpacing.marginMD} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={allSpacing.marginMD} style={{ width: '100%' }}>
           <Paragraph>
             Se generaron los folios correlativos de la gestión, en el orden canónico de carrera
             (Contaduría → Administración → Informática).
@@ -88,21 +88,14 @@ const GenerarFoliosGestionModal = ({
             <Descriptions.Item label="Rango de folios">{rangoFolio}</Descriptions.Item>
           </Descriptions>
           {resumen.omitidos?.length > 0 ? (
-            <div>
+            <Flex vertical gap={allSpacing.marginXS}>
               <Text strong>Paralelos omitidos ({resumen.omitidos.length})</Text>
-              <List
-                size="small"
-                bordered
-                dataSource={resumen.omitidos}
-                renderItem={(item) => (
-                  <List.Item>
-                    <Text type="secondary">
-                      Paralelo en gestión N° {item.paraleloGestionId}: {item.motivo}
-                    </Text>
-                  </List.Item>
-                )}
-              />
-            </div>
+              {resumen.omitidos.map((item) => (
+                <Text key={item.paraleloGestionId} type="secondary">
+                  Paralelo en gestión N° {item.paraleloGestionId}: {item.motivo}
+                </Text>
+              ))}
+            </Flex>
           ) : null}
         </Space>
       ) : (

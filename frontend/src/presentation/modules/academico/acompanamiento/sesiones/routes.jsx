@@ -1,9 +1,16 @@
 /**
- * Acompañamiento → Sesiones de refuerzo (ítem del menú Académico, order 9).
+ * Acompañamiento → Sesiones de refuerzo (ACA · rutas legadas
+ * /academico/acompanamiento/sesiones*).
  *
- * Permiso `academico.acompanamiento.sesion` (seed 59). Rutas estáticas ANTES
- * de `/:id` (React Router interceptaría /programar como id). La ruta con menú
- * va al final del array (patrón capacitacion/cursos).
+ * Agrupación 2026-08-01 («Seguimiento académico», ítem ACA-SEGUIMIENTO): el
+ * listado dejó de ser entrada de sidebar (era order 9); su URL queda como
+ * GEMELA del contenedor con la pestaña «Sesiones de refuerzo» por defecto.
+ * Las subrutas del ABM (programar / :id / :id/editar) conservan sus páginas
+ * propias y encadenan breadcrumbParent → ACA-SESIONES → ACA-SEGUIMIENTO para
+ * resaltar el nuevo ítem en el sidebar.
+ *
+ * Permiso `academico.acompanamiento.sesion` (seed 59, sin cambios). Rutas
+ * estáticas ANTES de `/:id` (React Router interceptaría /programar como id).
  */
 
 import { lazy } from 'react';
@@ -12,8 +19,11 @@ import {
   sesionProgramarPath,
 } from '@application-academico/acompanamiento/config/paths';
 import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
+import { TAB_SESIONES } from '@academico/seguimiento/config/seguimientoTabs';
 
-const SesionesListConnector = lazy(() => import('./connectors/SesionesListConnector.jsx'));
+const SeguimientoAcademicoConnector = lazy(
+  () => import('@academico/seguimiento/connectors/SeguimientoAcademicoConnector.jsx'),
+);
 const SesionRefuerzoFormCreateConnector = lazy(
   () => import('./connectors/SesionRefuerzoFormCreateConnector.jsx'),
 );
@@ -57,16 +67,13 @@ export const sesionesRoutes = [
   },
   {
     path: SESIONES_LIST_PATH,
-    element: <SesionesListConnector />,
+    element: <SeguimientoAcademicoConnector defaultTab={TAB_SESIONES} />,
     key: 'ACA-SESIONES',
+    breadcrumbLabel: 'Sesiones de refuerzo',
     permiso: ACOMPANAMIENTO_PERMISOS.sesion,
     accion: 'LISTAR',
-    menu: {
-      label: 'Sesiones de refuerzo',
-      module: 'ACA',
-      parent: 'ACA',
-      order: 9,
-    },
+    menu: null,
+    breadcrumbParent: 'ACA-SEGUIMIENTO',
   },
 ];
 

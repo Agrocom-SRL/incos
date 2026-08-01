@@ -54,8 +54,6 @@ import {
     AppstoreOutlined,
     ScheduleOutlined,
     SafetyCertificateOutlined,
-    AlertOutlined,
-    FundOutlined,
     ShopOutlined,
     ProfileOutlined,
     AuditOutlined,
@@ -97,11 +95,7 @@ export const menuIconMap = {
     'ACA-TRASPASOS': TransactionOutlined,
     'ACA-TRANSIT': ReloadOutlined,
     'ACA-HIS': HistoryOutlined,
-    'ACA-AVANCE': LineChartOutlined,
-    // Acompañamiento pedagógico (reclasificado desde TUT el 2026-07-31)
-    'ACA-ALERTAS': AlertOutlined,
-    'ACA-SESIONES': ScheduleOutlined,
-    'ACA-PANEL': FundOutlined,
+    'ACA-SEGUIMIENTO': LineChartOutlined,
 
     // Docentes (DOC)
     'DOC-LIST': UnorderedListOutlined,
@@ -141,7 +135,4 @@ export const menuIconMap = {
     // reclasificó al bloque Académico (ver arriba).
     'TIT-PROYECTOS': FileDoneOutlined,
     'TIT-PASANTIAS': ShopOutlined,
-    // Reportes de avance de tutoría (Requisitos 2/3 — extensión 2026-07-31)
-    'TIT-PROYECTOS-AVANCE-CARRERA': BarChartOutlined,
-    'TIT-PROYECTOS-PLANILLA-TERCER-ANIO': TableOutlined,
 };

@@ -1,27 +1,40 @@
 /**
- * Avance académico (ítem ACA-AVANCE · /academico/avance?tab=avance|desercion).
+ * Seguimiento académico (ítem ACA-SEGUIMIENTO · /academico/seguimiento?tab=…).
  *
- * Página con dos pestañas gateadas por permiso (disolución del módulo REP):
- *   - «Avance» (`academico.avance` LISTAR): estudiante × plan con % de avance.
- *   - «Deserción» (`academico.desercion` LISTAR): agregado carrera × gestión +
- *     detalle de desertores. El rol ESTUDIANTE no la ve (sin permiso).
+ * Agrupación 2026-08-01: los ítems de sidebar ACA-AVANCE y los 3 de
+ * Acompañamiento se funden en UNA página contenedora con pestañas gateadas
+ * por permiso (extensión del patrón Avance/Deserción de la disolución REP;
+ * CERO cambios de RBAC — cada pestaña usa el permiso de su pantalla original):
  *
- * Rol ESTUDIANTE: el backend responde `alcance: 'PROPIO'` y la página degrada
- * a la ficha «Mi avance» (sin tabs ni filtros; labelByRole ya renombra el menú).
+ *   - avance    (`academico.avance` LISTAR)                — export Excel en cabecera.
+ *   - desercion (`academico.desercion` LISTAR)             — export Excel en cabecera.
+ *   - alertas   (`academico.acompanamiento.alerta` LISTAR) — connector role-aware
+ *                (DOCENTE → «Mis alumnos en riesgo»); filtros dentro de la pestaña.
+ *   - sesiones  (`academico.acompanamiento.sesion` LISTAR) — el ABM navega a las
+ *                rutas existentes (/academico/acompanamiento/sesiones/…).
+ *   - panel     (`academico.acompanamiento.panel` LISTAR)  — export PDF dentro del panel.
+ *
+ * Rol ESTUDIANTE: solo tiene `academico.avance` y el backend responde
+ * `alcance: 'PROPIO'` → la página degrada a la ficha «Mi avance» (sin tabs;
+ * el labelByRole del menú ya renombra el ítem).
+ *
+ * Las pestañas de acompañamiento embeben sus connectors existentes en modo
+ * `embedded` (provider + contenido, sin shell de página): el fetch de cada una
+ * ocurre recién al activarla (Tabs monta el children en su primera activación).
  *
  * Shell del prototipo CFG Académico (workspace + tabs); la orquestación de
- * datos vive en los hooks de estado (useAvanceAcademicoPage / useDesercionPage).
+ * datos vive en los hooks de estado y providers de cada submódulo.
  */
 
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Alert, App, Flex, Tabs, Typography } from 'antd';
-import { FallOutlined, FileExcelOutlined, LineChartOutlined } from '@ant-design/icons';
+import { FileExcelOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton } from '@atoms';
-import { useAuthContext } from '@application-auth';
+import { esDocente, useAuthContext } from '@application-auth';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrumbUtils';
 import { AVANCE_PERMISOS } from '@application-academico/avance/utils/avancePermisos.js';
@@ -29,56 +42,57 @@ import { useAvanceAcademicoPage } from '@application-academico/avance/hooks/stat
 import { useDesercionPage } from '@application-academico/avance/hooks/state/useDesercionPage.js';
 import { useExportAvanceAcademicoExcel } from '@application-academico/avance/hooks/api/useExportAvanceAcademicoExcel.js';
 import { useExportDesercionExcel } from '@application-academico/avance/hooks/api/useExportDesercionExcel.js';
+import { ACA_SEGUIMIENTO_MENU_KEY } from '@application-academico/seguimiento/config/paths';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import AvanceTabPanel from '../components/AvanceTabPanel.jsx';
-import DesercionTabPanel from '../components/DesercionTabPanel.jsx';
-import MiAvancePanel from '../components/MiAvancePanel.jsx';
+import AvanceTabPanel from '@academico/avance/components/AvanceTabPanel.jsx';
+import DesercionTabPanel from '@academico/avance/components/DesercionTabPanel.jsx';
+import MiAvancePanel from '@academico/avance/components/MiAvancePanel.jsx';
+import AlertasRiesgoListConnector from '@academico/acompanamiento/alertas/connectors/AlertasRiesgoListConnector.jsx';
+import SesionesListConnector from '@academico/acompanamiento/sesiones/connectors/SesionesListConnector.jsx';
+import PanelAcompanamientoConnector from '@academico/acompanamiento/panel/connectors/PanelAcompanamientoConnector.jsx';
+import {
+  SEGUIMIENTO_TAB_META,
+  SEGUIMIENTO_TAB_ORDER,
+  TAB_ALERTAS,
+  TAB_AVANCE,
+  TAB_DESERCION,
+  TAB_PANEL,
+  TAB_SESIONES,
+  getSeguimientoTabMeta,
+} from '../config/seguimientoTabs.js';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
 
-const TAB_AVANCE = 'avance';
-const TAB_DESERCION = 'desercion';
-
-/** Metadatos de cada pestaña (título del workspace + lede). */
-const TAB_META = {
-  [TAB_AVANCE]: {
-    title: 'Avance académico por estudiante',
-    shortLabel: 'Avance',
-    icon: LineChartOutlined,
-    description:
-      'Materias avanzadas (aprobadas + convalidadas) sobre el total del plan de estudios de cada estudiante, con su promedio histórico. Reporte de solo lectura.',
-  },
-  [TAB_DESERCION]: {
-    title: 'Deserción estudiantil',
-    shortLabel: 'Deserción',
-    icon: FallOutlined,
-    description:
-      'Métrica anual de abandono por estados consolidados de matrícula (abandono y retiro), agregada por carrera y gestión, con el detalle de desertores. Reporte de solo lectura.',
-  },
-};
-
 const wrapTabPanel = (node) => <div className="cfg-academico-tab-panel">{node}</div>;
 
-const AvanceAcademicoPage = () => {
+const SeguimientoAcademicoPage = ({ defaultTab = TAB_AVANCE }) => {
   const { notification } = App.useApp();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { hasPermiso } = useAuthContext();
+  const { hasPermiso, usuario } = useAuthContext();
 
-  const puedeAvance = hasPermiso(AVANCE_PERMISOS.avance, 'LISTAR');
-  const puedeDesercion = hasPermiso(AVANCE_PERMISOS.desercion, 'LISTAR');
+  const docente = esDocente(usuario);
+  const puedeTab = useCallback(
+    (tabKey) => hasPermiso(SEGUIMIENTO_TAB_META[tabKey].permiso, 'LISTAR'),
+    [hasPermiso],
+  );
 
-  const avanceState = useAvanceAcademicoPage();
+  const puedeAvance = puedeTab(TAB_AVANCE);
+  const puedeDesercion = puedeTab(TAB_DESERCION);
+
+  // Hooks de Avance/Deserción a nivel de página (sin provider, patrón original);
+  // `enabled` evita el fetch cuando el rol no tiene la pestaña (p. ej. SEC_ACADEMICA).
+  const avanceState = useAvanceAcademicoPage({ enabled: puedeAvance });
   const desercionState = useDesercionPage({ enabled: puedeDesercion });
 
-  const esPropio = avanceState.alcance === 'PROPIO';
+  const esPropio = puedeAvance && avanceState.alcance === 'PROPIO';
 
   const { exportar: exportarAvance, loading: exportandoAvance } = useExportAvanceAcademicoExcel();
   const { exportar: exportarDesercion, loading: exportandoDesercion } = useExportDesercionExcel();
 
   const breadcrumbItems = useMemo(
-    () => createBreadcrumbItems('ACA-AVANCE', 'ACA', esPropio ? 'Mi avance' : null),
+    () => createBreadcrumbItems(ACA_SEGUIMIENTO_MENU_KEY, 'ACA', esPropio ? 'Mi avance' : null),
     [esPropio],
   );
 
@@ -116,50 +130,44 @@ const AvanceAcademicoPage = () => {
   }, [exportarDesercion, desercionState.gestionId, desercionState.carreraId, notification]);
 
   const tabItems = useMemo(() => {
-    const items = [];
-    if (puedeAvance) {
-      const meta = TAB_META[TAB_AVANCE];
+    /**
+     * Contenido por pestaña. Avance/Deserción embeben sus paneles "dumb" con el
+     * estado de esta página; las 3 de acompañamiento embeben su connector
+     * existente (provider + contenido) en modo `embedded` — sin duplicar pantallas.
+     */
+    const tabContent = {
+      [TAB_AVANCE]: () => <AvanceTabPanel {...avanceState} />,
+      [TAB_DESERCION]: () => <DesercionTabPanel {...desercionState} />,
+      [TAB_ALERTAS]: () => <AlertasRiesgoListConnector embedded />,
+      [TAB_SESIONES]: () => <SesionesListConnector embedded />,
+      [TAB_PANEL]: () => <PanelAcompanamientoConnector embedded />,
+    };
+
+    return SEGUIMIENTO_TAB_ORDER.filter(puedeTab).map((tabKey) => {
+      const meta = getSeguimientoTabMeta(tabKey, { docente });
       const Icon = meta.icon;
-      items.push({
-        key: TAB_AVANCE,
+      return {
+        key: tabKey,
         label: (
           <span className="sd-tab-label">
             <Icon /> {meta.shortLabel}
           </span>
         ),
         children: wrapTabPanel(
-          <PermisoGuard codigo={AVANCE_PERMISOS.avance} accion="LISTAR">
-            <AvanceTabPanel {...avanceState} />
+          <PermisoGuard codigo={meta.permiso} accion="LISTAR">
+            {tabContent[tabKey]()}
           </PermisoGuard>,
         ),
-      });
-    }
-    if (puedeDesercion) {
-      const meta = TAB_META[TAB_DESERCION];
-      const Icon = meta.icon;
-      items.push({
-        key: TAB_DESERCION,
-        label: (
-          <span className="sd-tab-label">
-            <Icon /> {meta.shortLabel}
-          </span>
-        ),
-        children: wrapTabPanel(
-          <PermisoGuard codigo={AVANCE_PERMISOS.desercion} accion="LISTAR">
-            <DesercionTabPanel {...desercionState} />
-          </PermisoGuard>,
-        ),
-      });
-    }
-    return items;
-  }, [puedeAvance, puedeDesercion, avanceState, desercionState]);
+      };
+    });
+  }, [puedeTab, docente, avanceState, desercionState]);
 
   const activeKey = useMemo(() => {
-    const requested = searchParams.get('tab');
+    const requested = searchParams.get('tab') ?? defaultTab;
     const keys = tabItems.map((t) => t.key);
     if (requested && keys.includes(requested)) return requested;
     return keys[0] ?? TAB_AVANCE;
-  }, [searchParams, tabItems]);
+  }, [searchParams, tabItems, defaultTab]);
 
   const onTabChange = useCallback(
     (key) => {
@@ -168,8 +176,14 @@ const AvanceAcademicoPage = () => {
     [setSearchParams],
   );
 
-  const activeMeta = TAB_META[activeKey];
+  const activeMeta = getSeguimientoTabMeta(activeKey, { docente });
 
+  /**
+   * Acciones de la cabecera del workspace: solo Avance/Deserción exportan desde
+   * aquí (su estado vive en esta página). Las pestañas de acompañamiento llevan
+   * sus filtros/acciones dentro del contenido embebido (su estado vive en el
+   * provider de cada pestaña).
+   */
   const panelActions = useMemo(() => {
     if (esPropio) return null;
     if (activeKey === TAB_AVANCE) {
@@ -254,18 +268,20 @@ const AvanceAcademicoPage = () => {
     );
   }
 
+  // Defensivo: la ruta ya exige `permisoAny`, pero si el usuario llega sin
+  // ninguna pestaña visible se le informa en vez de renderizar tabs vacías.
   if (!tabItems.length) {
     return (
       <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
         <PageHeaderArea>
-          <PageHeader title="Avance académico" breadcrumbItems={breadcrumbItems} />
+          <PageHeader title="Seguimiento académico" breadcrumbItems={breadcrumbItems} />
         </PageHeaderArea>
         <DashboardPageShell>
           <MainContent>
             <Alert
               type="warning"
               showIcon
-              title="No tiene permisos para consultar el avance académico."
+              title="No tiene permisos para consultar el seguimiento académico."
             />
           </MainContent>
         </DashboardPageShell>
@@ -276,14 +292,14 @@ const AvanceAcademicoPage = () => {
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
-        <PageHeader title="Avance académico" breadcrumbItems={breadcrumbItems} />
+        <PageHeader title="Seguimiento académico" breadcrumbItems={breadcrumbItems} />
       </PageHeaderArea>
       <DashboardPageShell>
         <MainContent>
           <section className="cfg-academico-workspace">
             <header className="cfg-academico-workspace__header">
               <ListPanelHeader
-                title={activeMeta?.title ?? 'Avance académico'}
+                title={activeMeta?.title ?? 'Seguimiento académico'}
                 actions={panelActions}
               />
               {activeMeta?.description ? (
@@ -309,4 +325,4 @@ const AvanceAcademicoPage = () => {
   );
 };
 
-export default AvanceAcademicoPage;
+export default SeguimientoAcademicoPage;

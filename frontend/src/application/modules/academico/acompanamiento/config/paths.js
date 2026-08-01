@@ -23,7 +23,13 @@ export const sesionEditarPath = (id) => `${ACOMPANAMIENTO_BASE}/sesiones/${id}/e
 /** Panel de acompañamiento */
 export const PANEL_ACOMPANAMIENTO_PATH = `${ACOMPANAMIENTO_BASE}/panel`;
 
-/** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */
+/**
+ * Keys de ruta — deben coincidir con los routes.jsx de cada submódulo. Desde
+ * la agrupación 2026-08-01 ya no son ítems de sidebar (el ítem visible es
+ * ACA-SEGUIMIENTO, ver `seguimiento/config/paths.js`): las listas quedaron
+ * como rutas gemelas del contenedor y estas keys resaltan el nuevo ítem vía
+ * su cadena breadcrumbParent.
+ */
 export const ACA_ALERTAS_MENU_KEY = 'ACA-ALERTAS';
 export const ACA_SESIONES_MENU_KEY = 'ACA-SESIONES';
 export const ACA_PANEL_MENU_KEY = 'ACA-PANEL';

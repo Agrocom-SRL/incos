@@ -1,10 +1,14 @@
 /**
- * Listado de sesiones de refuerzo (ACA · ACA-SESIONES · sesion·LISTAR).
+ * Listado de sesiones de refuerzo (ACA · sesion·LISTAR).
  *
- * Lenguaje visual de CursosCapacitacionList / LicenciasListPage: shell
- * Flex.page-container → PageHeaderArea(PageHeader) → DashboardPageShell →
- * MainContent → section.cfg-academico-workspace (ListPanelHeader con filtro de
- * estado + botón programar + lede) → TableListView embedded.
+ * Modo `embedded` (pestaña «Sesiones de refuerzo» de Seguimiento académico,
+ * patrón CarrerasList de CFG): filtro de estado + botón programar + tabla,
+ * sin shell — el título y el lede los pone la cabecera del workspace
+ * contenedor (`seguimientoTabs`). Modo página completa (legado, hoy sin ruta
+ * propia): shell Flex.page-container → PageHeaderArea(PageHeader) →
+ * DashboardPageShell → MainContent → section.cfg-academico-workspace
+ * (ListPanelHeader con filtro de estado + botón programar + lede) →
+ * TableListView embedded.
  *
  * Página "dumb": solo compone template + organismos y consume el hook de
  * pantalla (`useSesionesListPage`).
@@ -26,7 +30,7 @@ import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
 
-const SesionesList = () => {
+const SesionesList = ({ embedded = false }) => {
   const {
     sesiones,
     loading,
@@ -67,6 +71,40 @@ const SesionesList = () => {
     </Flex>
   );
 
+  const tabla = (
+    <TableListView
+      embedded
+      data={sesiones}
+      loading={loading}
+      error={error}
+      searchText={searchText}
+      onSearchChange={handleSearchChange}
+      searchPlaceholder="Buscar por tema, materia o docente…"
+      columns={tableColumns}
+      rowKey={(record) => record.id}
+      searchColSpan={10}
+      searchStyle={{ maxWidth: 520 }}
+      pagination={tablePagination}
+      loadingTip="Cargando sesiones…"
+      emptyText="Aún no hay sesiones de refuerzo programadas."
+    />
+  );
+
+  // Pestaña de Seguimiento académico: filtro + programar + tabla, sin shell.
+  if (embedded) {
+    return (
+      <Flex
+        vertical
+        gap={allSpacing.marginLG}
+        className="cfg-academico-tab-content"
+        style={{ width: '100%', minWidth: 0 }}
+      >
+        {headerActions}
+        {tabla}
+      </Flex>
+    );
+  }
+
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
@@ -85,24 +123,7 @@ const SesionesList = () => {
                   se registra en la ficha de cada sesión.
                 </Paragraph>
               </header>
-              <div className="cfg-academico-tab-panel">
-                <TableListView
-                  embedded
-                  data={sesiones}
-                  loading={loading}
-                  error={error}
-                  searchText={searchText}
-                  onSearchChange={handleSearchChange}
-                  searchPlaceholder="Buscar por tema, materia o docente…"
-                  columns={tableColumns}
-                  rowKey={(record) => record.id}
-                  searchColSpan={10}
-                  searchStyle={{ maxWidth: 520 }}
-                  pagination={tablePagination}
-                  loadingTip="Cargando sesiones…"
-                  emptyText="Aún no hay sesiones de refuerzo programadas."
-                />
-              </div>
+              <div className="cfg-academico-tab-panel">{tabla}</div>
             </section>
           </Flex>
         </MainContent>

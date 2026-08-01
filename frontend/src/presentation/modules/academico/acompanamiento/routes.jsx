@@ -9,15 +9,19 @@
  * `asignaciones_docentes`/centralizador, sin relación con proyectos de grado
  * — decisión 2026-07-29, ver docs/plan/titulacion-y-dominios-pendientes.md.
  *
- * Los 3 ítems cuelgan del menú ACADÉMICO (parent 'ACA'):
+ * Agrupación 2026-08-01: los 3 dejaron de ser ítems de sidebar (eran orders
+ * 8-10 del menú ACA) y viven como pestañas del ítem «Seguimiento académico»
+ * (ACA-SEGUIMIENTO, ver `academico/seguimiento/routes.jsx`). Sus URLs NO se
+ * eliminan — los listados quedan como rutas gemelas del contenedor y las
+ * subrutas del ABM de sesiones conservan sus páginas:
  *
- *   alertas/  → Alumnos en riesgo (order 8, connector role-aware docente)
- *   sesiones/ → Sesiones de refuerzo (order 9, ABM + ficha)
- *   panel/    → Panel de acompañamiento (order 10, indicadores + export PDF)
+ *   alertas/  → pestaña Alumnos en riesgo (connector role-aware docente)
+ *   sesiones/ → pestaña Sesiones de refuerzo + subrutas ABM/ficha propias
+ *   panel/    → pestaña Panel de acompañamiento (indicadores + export PDF)
  *
- * Paths `/academico/acompanamiento/*` y permisos `academico.acompanamiento.*`.
- * El `academico/routes.jsx` raíz del dominio compone `acompanamientoRoutes`
- * junto al resto de ítems del menú Académico.
+ * Paths `/academico/acompanamiento/*` y permisos `academico.acompanamiento.*`
+ * (seed 59, sin cambios). El `academico/routes.jsx` raíz del dominio compone
+ * `acompanamientoRoutes` junto al resto de ítems del menú Académico.
  */
 
 import { alertasRoutes } from './alertas/routes.jsx';

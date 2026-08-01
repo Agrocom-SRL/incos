@@ -8,6 +8,10 @@
  *
  * Página "dumb": compone template + organismos y consume el hook de pantalla
  * (`usePanelAcompanamientoPage`).
+ *
+ * Modo `embedded` (pestaña «Panel» de Seguimiento académico): export PDF +
+ * indicadores sin shell de página — el título y el lede los pone la cabecera
+ * del workspace contenedor (`seguimientoTabs`).
  */
 
 import { useMemo } from 'react';
@@ -31,7 +35,7 @@ import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
 
-const PanelAcompanamientoPage = () => {
+const PanelAcompanamientoPage = ({ embedded = false }) => {
   const { panel, totales, loading, error, refetch, breadcrumbItems, handleExportar, exportando } =
     usePanelAcompanamientoPage();
 
@@ -52,6 +56,112 @@ const PanelAcompanamientoPage = () => {
     </ActionButton>
   );
 
+  const cuerpo = (
+    <Spin spinning={loading} size="large" tip="Cargando indicadores…">
+      <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
+        {!loading && error ? (
+          <Alert
+            type="error"
+            showIcon
+            title="No se pudo cargar el panel de acompañamiento"
+            description={error}
+            action={
+              <Button size="small" onClick={refetch}>
+                Reintentar
+              </Button>
+            }
+          />
+        ) : null}
+
+        {!loading && !error && !panel ? (
+          <Empty
+            style={{ marginTop: allSpacing.marginXL }}
+            description="Aún no hay datos de acompañamiento para la gestión vigente."
+          />
+        ) : null}
+
+        {panel ? (
+          <>
+            <PanelKpiStrip totales={totales} />
+
+            <PanelRiesgoCarreraSection porCarrera={panel.porCarrera} />
+
+            <section className="cfg-academico-workspace">
+              <header className="cfg-academico-workspace__header">
+                <ListPanelHeader title="Casos críticos" />
+                <Paragraph type="secondary" className="cfg-academico-workspace__desc">
+                  Estudiantes con las notas más bajas de la gestión. El seguimiento y la
+                  convocatoria a sesiones se realizan desde «Alumnos en riesgo».
+                </Paragraph>
+              </header>
+              <div className="cfg-academico-tab-panel">
+                <TableListView
+                  embedded
+                  showSearch={false}
+                  data={panel.casosCriticos}
+                  loading={false}
+                  columns={casosCriticosColumns}
+                  rowKey={(record) =>
+                    record.matriculaMateriaId ?? `${record.estudianteId}-${record.materiaId}`
+                  }
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: false,
+                    showTotal: (total) => `Total: ${total} casos`,
+                  }}
+                  emptyText="No hay casos críticos en la gestión vigente."
+                />
+              </div>
+            </section>
+
+            <section className="cfg-academico-workspace">
+              <header className="cfg-academico-workspace__header">
+                <ListPanelHeader title="Reprobación por materia" />
+                <Paragraph type="secondary" className="cfg-academico-workspace__desc">
+                  Cursos con mayor porcentaje de riesgo y reprobación, insumo para priorizar
+                  las sesiones de refuerzo.
+                </Paragraph>
+              </header>
+              <div className="cfg-academico-tab-panel">
+                <TableListView
+                  embedded
+                  showSearch={false}
+                  data={panel.porMateria}
+                  loading={false}
+                  columns={reprobacionColumns}
+                  rowKey={(record) =>
+                    record.ofertaCursoId ?? `${record.carreraCodigo}-${record.materiaNombre}`
+                  }
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: false,
+                    showTotal: (total) => `Total: ${total} cursos`,
+                  }}
+                  emptyText="Aún no hay indicadores de reprobación por materia."
+                />
+              </div>
+            </section>
+          </>
+        ) : null}
+      </Flex>
+    </Spin>
+  );
+
+  // Pestaña de Seguimiento académico: export + indicadores, sin shell.
+  if (embedded) {
+    return (
+      <Flex
+        vertical
+        gap={allSpacing.marginLG}
+        className="cfg-academico-tab-content"
+        style={{ width: '100%', minWidth: 0 }}
+      >
+        <Flex justify="flex-end">{exportarAction}</Flex>
+        {cuerpo}
+      </Flex>
+    );
+  }
+
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
@@ -63,96 +173,7 @@ const PanelAcompanamientoPage = () => {
       </PageHeaderArea>
 
       <DashboardPageShell>
-        <MainContent>
-          <Spin spinning={loading} size="large" tip="Cargando indicadores…">
-            <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-              {!loading && error ? (
-                <Alert
-                  type="error"
-                  showIcon
-                  title="No se pudo cargar el panel de acompañamiento"
-                  description={error}
-                  action={
-                    <Button size="small" onClick={refetch}>
-                      Reintentar
-                    </Button>
-                  }
-                />
-              ) : null}
-
-              {!loading && !error && !panel ? (
-                <Empty
-                  style={{ marginTop: allSpacing.marginXL }}
-                  description="Aún no hay datos de acompañamiento para la gestión vigente."
-                />
-              ) : null}
-
-              {panel ? (
-                <>
-                  <PanelKpiStrip totales={totales} />
-
-                  <PanelRiesgoCarreraSection porCarrera={panel.porCarrera} />
-
-                  <section className="cfg-academico-workspace">
-                    <header className="cfg-academico-workspace__header">
-                      <ListPanelHeader title="Casos críticos" />
-                      <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                        Estudiantes con las notas más bajas de la gestión. El seguimiento y la
-                        convocatoria a sesiones se realizan desde «Alumnos en riesgo».
-                      </Paragraph>
-                    </header>
-                    <div className="cfg-academico-tab-panel">
-                      <TableListView
-                        embedded
-                        showSearch={false}
-                        data={panel.casosCriticos}
-                        loading={false}
-                        columns={casosCriticosColumns}
-                        rowKey={(record) =>
-                          record.matriculaMateriaId ?? `${record.estudianteId}-${record.materiaId}`
-                        }
-                        pagination={{
-                          pageSize: 10,
-                          showSizeChanger: false,
-                          showTotal: (total) => `Total: ${total} casos`,
-                        }}
-                        emptyText="No hay casos críticos en la gestión vigente."
-                      />
-                    </div>
-                  </section>
-
-                  <section className="cfg-academico-workspace">
-                    <header className="cfg-academico-workspace__header">
-                      <ListPanelHeader title="Reprobación por materia" />
-                      <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                        Cursos con mayor porcentaje de riesgo y reprobación, insumo para priorizar
-                        las sesiones de refuerzo.
-                      </Paragraph>
-                    </header>
-                    <div className="cfg-academico-tab-panel">
-                      <TableListView
-                        embedded
-                        showSearch={false}
-                        data={panel.porMateria}
-                        loading={false}
-                        columns={reprobacionColumns}
-                        rowKey={(record) =>
-                          record.ofertaCursoId ?? `${record.carreraCodigo}-${record.materiaNombre}`
-                        }
-                        pagination={{
-                          pageSize: 10,
-                          showSizeChanger: false,
-                          showTotal: (total) => `Total: ${total} cursos`,
-                        }}
-                        emptyText="Aún no hay indicadores de reprobación por materia."
-                      />
-                    </div>
-                  </section>
-                </>
-              ) : null}
-            </Flex>
-          </Spin>
-        </MainContent>
+        <MainContent>{cuerpo}</MainContent>
       </DashboardPageShell>
     </Flex>
   );

@@ -15,6 +15,7 @@ import { nivelacionesRoutes } from './nivelaciones/routes.jsx';
 import { traspasosRoutes } from './traspasos/routes.jsx';
 import { transitabilidadRoutes } from './transitabilidad/routes.jsx';
 import { historialRoutes } from './historial/routes.jsx';
+import { seguimientoRoutes } from './seguimiento/routes.jsx';
 import { avanceRoutes } from './avance/routes.jsx';
 import { acompanamientoRoutes } from './acompanamiento/routes.jsx';
 
@@ -33,6 +34,9 @@ export const academicoRoutes = [
   ...traspasosRoutes,
   ...transitabilidadRoutes,
   ...historialRoutes,
+  // Seguimiento académico (ítem ACA-SEGUIMIENTO): agrupa Avance + Acompañamiento
+  // en tabs por permiso; avance/acompanamiento conservan sus URLs como gemelas.
+  ...seguimientoRoutes,
   ...avanceRoutes,
   ...acompanamientoRoutes,
 ];

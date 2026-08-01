@@ -23,11 +23,11 @@ const normalizar = (texto) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-export const useAvanceAcademicoPage = () => {
+export const useAvanceAcademicoPage = ({ enabled = true } = {}) => {
   const [filas, setFilas] = useState([]);
   const [resumen, setResumen] = useState(null);
   const [alcance, setAlcance] = useState('GLOBAL');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState(null);
 
   // Filtros de la tabla (solo cliente; ver cabecera del archivo).
@@ -56,9 +56,12 @@ export const useAvanceAcademicoPage = () => {
     }
   }, []);
 
+  // `enabled` evita el fetch cuando el usuario no tiene la pestaña Avance
+  // (p. ej. SEC_ACADEMICA en el contenedor de Seguimiento académico) — mismo
+  // patrón que useDesercionPage.
   useEffect(() => {
-    cargar();
-  }, [cargar]);
+    if (enabled) cargar();
+  }, [enabled, cargar]);
 
   /** Opciones del Select de carrera, derivadas del propio listado (sin fetch extra). */
   const carreraOptions = useMemo(() => {

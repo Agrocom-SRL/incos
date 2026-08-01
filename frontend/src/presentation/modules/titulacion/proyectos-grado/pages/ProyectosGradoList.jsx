@@ -11,7 +11,7 @@
  */
 
 import { Flex, Select, Typography } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { BarChartOutlined, PlusOutlined, TableOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
@@ -41,20 +41,45 @@ const ProyectosGradoList = () => {
     tableColumns,
     breadcrumbItems,
     handleRegistrar,
+    handleIrAvanceCarrera,
+    handleIrPlanillaTercerAnio,
     handleSearchChange,
     tablePagination,
   } = useProyectosGradoListPage();
 
-  const registrarAction = (
-    <ActionButton
-      permiso={TITULACION_PERMISOS.proyecto}
-      accion="CREAR"
-      variant="primary"
-      icon={<PlusOutlined />}
-      onClick={handleRegistrar}
-    >
-      Nuevo proyecto
-    </ActionButton>
+  /**
+   * Reportes de avance (Requisitos 2/3): acciones de cabecera, sin ítem de
+   * menú propio — los docentes-tutores no llegan a esta página (el connector
+   * los desvía a "Mis tutorados"), así que no ven reportes institucionales.
+   */
+  const headerActions = (
+    <Flex wrap gap="small" justify="flex-end" align="center">
+      <ActionButton
+        permiso={TITULACION_PERMISOS.proyecto}
+        accion="LISTAR"
+        icon={<BarChartOutlined />}
+        onClick={handleIrAvanceCarrera}
+      >
+        Avance por carrera
+      </ActionButton>
+      <ActionButton
+        permiso={TITULACION_PERMISOS.proyecto}
+        accion="LISTAR"
+        icon={<TableOutlined />}
+        onClick={handleIrPlanillaTercerAnio}
+      >
+        Planilla 3er año
+      </ActionButton>
+      <ActionButton
+        permiso={TITULACION_PERMISOS.proyecto}
+        accion="CREAR"
+        variant="primary"
+        icon={<PlusOutlined />}
+        onClick={handleRegistrar}
+      >
+        Nuevo proyecto
+      </ActionButton>
+    </Flex>
   );
 
   const filtrosActions = (
@@ -101,7 +126,7 @@ const ProyectosGradoList = () => {
           <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
             <section className="cfg-academico-workspace">
               <header className="cfg-academico-workspace__header">
-                <ListPanelHeader title="Lista de proyectos" actions={registrarAction} />
+                <ListPanelHeader title="Lista de proyectos" actions={headerActions} />
                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                   Proyectos de titulación por modalidad de grado, con su tutor, integrantes y
                   avance de tutoría. Desde la ficha de cada proyecto se gestionan integrantes,

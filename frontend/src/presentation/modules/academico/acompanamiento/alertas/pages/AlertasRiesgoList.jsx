@@ -1,8 +1,11 @@
 /**
- * Listado institucional de alumnos en riesgo pedagógico (ACA · ACA-ALERTAS ·
- * alerta·LISTAR). Vista 156: un registro por estudiante×materia bajo el umbral.
+ * Listado institucional de alumnos en riesgo pedagógico (ACA · alerta·LISTAR).
+ * Vista 156: un registro por estudiante×materia bajo el umbral.
  *
- * Lenguaje visual de CursosCapacitacionList / LicenciasListPage: shell
+ * Modo `embedded` (pestaña «Alumnos en riesgo» de Seguimiento académico,
+ * patrón CarrerasList de CFG): solo filtros + tabla + drawer — el título y el
+ * lede los pone la cabecera del workspace contenedor (`seguimientoTabs`).
+ * Modo página completa (legado, hoy sin ruta propia): shell
  * Flex.page-container → PageHeaderArea(PageHeader) → DashboardPageShell →
  * MainContent → section.cfg-academico-workspace (ListPanelHeader con filtros
  * carrera/materia + lede) → TableListView embedded + drawer de detalle (A3).
@@ -26,7 +29,7 @@ import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
 
-const AlertasRiesgoList = () => {
+const AlertasRiesgoList = ({ embedded = false }) => {
   const {
     alertas,
     loading,
@@ -74,6 +77,51 @@ const AlertasRiesgoList = () => {
     </Flex>
   );
 
+  const tabla = (
+    <TableListView
+      embedded
+      data={alertas}
+      loading={loading}
+      error={error}
+      searchText={searchText}
+      onSearchChange={handleSearchChange}
+      searchPlaceholder="Buscar por estudiante, C.I. o materia…"
+      columns={tableColumns}
+      rowKey={(record) => record.matriculaMateriaId ?? `${record.estudianteId}-${record.materiaId}`}
+      searchColSpan={10}
+      searchStyle={{ maxWidth: 520 }}
+      pagination={tablePagination}
+      loadingTip="Cargando alertas de riesgo…"
+      emptyText="No hay alumnos en riesgo con los filtros aplicados."
+    />
+  );
+
+  const drawerDetalle = (
+    <AlertaEstudianteDrawer
+      open={drawer.open}
+      onCerrar={drawer.cerrar}
+      detalle={drawer.detalle}
+      loading={drawer.loading}
+      error={drawer.error}
+    />
+  );
+
+  // Pestaña de Seguimiento académico: filtros + tabla + drawer, sin shell.
+  if (embedded) {
+    return (
+      <Flex
+        vertical
+        gap={allSpacing.marginLG}
+        className="cfg-academico-tab-content"
+        style={{ width: '100%', minWidth: 0 }}
+      >
+        {filtrosHeader}
+        {tabla}
+        {drawerDetalle}
+      </Flex>
+    );
+  }
+
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
@@ -92,36 +140,13 @@ const AlertasRiesgoList = () => {
                   para revisar el cuadro completo del estudiante.
                 </Paragraph>
               </header>
-              <div className="cfg-academico-tab-panel">
-                <TableListView
-                  embedded
-                  data={alertas}
-                  loading={loading}
-                  error={error}
-                  searchText={searchText}
-                  onSearchChange={handleSearchChange}
-                  searchPlaceholder="Buscar por estudiante, C.I. o materia…"
-                  columns={tableColumns}
-                  rowKey={(record) => record.matriculaMateriaId ?? `${record.estudianteId}-${record.materiaId}`}
-                  searchColSpan={10}
-                  searchStyle={{ maxWidth: 520 }}
-                  pagination={tablePagination}
-                  loadingTip="Cargando alertas de riesgo…"
-                  emptyText="No hay alumnos en riesgo con los filtros aplicados."
-                />
-              </div>
+              <div className="cfg-academico-tab-panel">{tabla}</div>
             </section>
           </Flex>
         </MainContent>
       </DashboardPageShell>
 
-      <AlertaEstudianteDrawer
-        open={drawer.open}
-        onCerrar={drawer.cerrar}
-        detalle={drawer.detalle}
-        loading={drawer.loading}
-        error={drawer.error}
-      />
+      {drawerDetalle}
     </Flex>
   );
 };

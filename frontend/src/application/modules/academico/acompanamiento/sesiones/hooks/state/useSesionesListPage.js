@@ -18,7 +18,7 @@ import {
 
 export const useSesionesListPage = () => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   const {
     sesiones = [],
@@ -43,12 +43,14 @@ export const useSesionesListPage = () => {
     [],
   );
 
+  // `search` conserva `?tab=sesiones` cuando el listado vive como pestaña del
+  // contenedor Seguimiento académico: al volver del ABM se reabre esa pestaña.
   const listNavState = useMemo(
     () => ({
       menuSidebarKey: ACA_SESIONES_MENU_KEY,
-      returnListPath: pathname || SESIONES_LIST_PATH,
+      returnListPath: pathname ? `${pathname}${search || ''}` : SESIONES_LIST_PATH,
     }),
-    [pathname],
+    [pathname, search],
   );
 
   /** deleteFn de TableActions (la confirmación/feedback los pone TableActions). */

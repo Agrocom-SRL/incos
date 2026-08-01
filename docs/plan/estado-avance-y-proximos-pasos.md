@@ -1,10 +1,14 @@
 # Estado de avance y próximos pasos — retomar en sesión nueva
 
-> **Fecha de corte:** 2026-07-30. **Propósito:** este documento es el punto de
-> entrada para CONTINUAR el trabajo en una conversación nueva sin re-derivar
-> contexto. Léelo completo antes de tocar código. Todo lo descrito como
-> "HECHO" está commiteado (`git log`: `21dea281` es el último commit) y
-> verificado; nada queda en el working tree sin confirmar.
+> **Fecha de corte:** 2026-08-01 (actualizado; corte anterior 2026-07-30).
+> **Propósito:** este documento es el punto de entrada para CONTINUAR el
+> trabajo en una conversación nueva sin re-derivar contexto. Léelo completo
+> antes de tocar código. Último commit al corte: `035ed101` (frontend de las
+> 3 extensiones TUT + integración Libros↔Centralizador). En el working tree
+> quedan las correcciones post-verificación del 2026-08-01 (menu:null de los
+> reportes TUT + botones en ProyectosGradoList + fixes AntD6 del modal de
+> folios) y el frente "Seguimiento académico", ya TERMINADO y verificado
+> (lint + build OK), pendiente solo de commit (ver §3.1).
 
 ## 0. Autorización vigente (no volver a preguntar)
 
@@ -77,10 +81,11 @@ host `127.0.0.1`, puerto `8889`, usuario `root`, password en `backend/.env`
 |---|---|---|---|---|---|
 | 2 | Pasantías (TUT) | ✅ | ✅ | ✅ | `titulacion-y-dominios-pendientes.md` §Fase 2 |
 | — | Disolución REP (avance/deserción/consolidado → ACA) | ✅ | ✅ | ✅ | `reportes-rep-diagnostico.md` |
-| 3 | Supervisión docente (DOC) | ✅ | ✅ | ⬜ **PENDIENTE** | `supervision-docente-plan-desarrollo.md` (bloques D/F/G) |
-| 4 | Libros de registro (ACA) | ✅ | ✅ | ⬜ **PENDIENTE** | `libros-registro-plan-desarrollo.md` (bloque D/F) |
+| 3 | Supervisión docente (DOC) | ✅ | ✅ | ✅ (commit `088ebe02`) | `supervision-docente-plan-desarrollo.md` |
+| 4 | Libros de registro (ACA) | ✅ | ✅ | ✅ (+integración Centralizador, `035ed101`) | `libros-registro-plan-desarrollo.md` |
 | 5 | Títulos y certificados (TUT) | ⛔ GATED | — | — | `titulacion-y-dominios-pendientes.md` §Fase 5 |
-| — | 3 funcionalidades nuevas TUT (ver §4) | ⬜ **SIN PLANIFICAR** | — | — | no existe aún — crear en esta sesión |
+| — | 3 funcionalidades nuevas TUT (ver §4) | ✅ | ✅ (vistas 178-181) | ✅ (`035ed101` + corrección menú 2026-08-01) | `titulacion-avance-y-modalidad-plan-desarrollo.md` |
+| — | Seguimiento académico (ACA, reorganización de menú) | n/a (solo frontend) | n/a | ✅ verificado 2026-08-01 (pendiente de commit) | ver nota §3.1 |
 
 ### Números de referencia (para no colisionar)
 
@@ -104,6 +109,43 @@ host `127.0.0.1`, puerto `8889`, usuario `root`, password en `backend/.env`
   Usa siempre el código/schema actual como fuente de verdad, no ese doc.
 
 ## 3. Próximas acciones — orden de ejecución recomendado
+
+### 3.1 Estado 2026-08-01 (lo vigente)
+
+Los puntos 1-3 originales de esta sección ya están TERMINADOS (ver tabla §2).
+Lo único activo:
+
+- **Seguimiento académico (frontend): TERMINADO Y VERIFICADO 2026-08-01**
+  (lint limpio en los módulos tocados + build de producción OK; solo persiste
+  la deuda transversal `set-state-in-effect` preexistente, ver abajo). Por
+  decisión del usuario, los ítems de menú "Avance académico" (ACA-AVANCE) y
+  los 3 de Acompañamiento (Panel, Alumnos en riesgo, Sesiones de refuerzo) se
+  agruparon bajo UN ítem único "Seguimiento académico"
+  (`/academico/seguimiento`, key ACA-SEGUIMIENTO, `permisoAny`) con tabs
+  gateadas por permiso (patrón AvanceAcademico/disolución REP). Sidebar
+  SIEMPRE 2 niveles (dominio→ítem, sin submenús). Rutas viejas viven como
+  gemelas del contenedor con `menu: null` + `breadcrumbParent` y abren su
+  pestaña original (`defaultTab`). `labelByRole ESTUDIANTE: 'Mi avance'`
+  (página degrada a ficha propia con alcance PROPIO). Sin cambios
+  FUNCIONALES de RBAC (códigos/acciones/roles intactos); en el seed 59 solo
+  se alinearon `ruta_sidebar` (5 permisos → `/academico/seguimiento`) y los
+  nombres de los 3 `grupos_ui` («Seguimiento académico · avance/deserción/
+  acompañamiento») para la grilla de Seguridad — **PENDIENTE: aplicar en la
+  BD existente** (resembrar RBAC o correr los UPDATEs equivalentes; lo
+  ejecuta el usuario). Connectors de acompañamiento con prop `embedded`;
+  hooks de Avance/Deserción con `enabled`. Decisiones cerradas:
+  Traspasos/Transitabilidad NO se fusionan; Libros de registro conserva su
+  ítem; la bitácora de tutoría NO registra modalidad presencial/virtual
+  (ver bitácoras de los planes y memoria `criterio-menu-item-proceso`).
+- **Pendiente de commit (todo staged, verificado):** el frente Seguimiento
+  académico + correcciones post-verificación 2026-08-01 (reportes TUT a
+  `menu: null` + botones de cabecera en `ProyectosGradoList`, fixes AntD6 en
+  `GenerarFoliosGestionModal`).
+- **Deuda transversal detectada (no urgente):** 30 ocurrencias de
+  `react-hooks/set-state-in-effect` en hooks api de todo `src/` (patrón
+  replicado; limpieza en tanda propia, no por módulo).
+
+### 3.2 Histórico (ya ejecutado, conservado como referencia)
 
 1. **Frontend de Supervisión docente** (tarea más simple, backend+BD ya
    listos). Contrato: `dataFieldName: 'fichasSeguimiento'` (listas) /

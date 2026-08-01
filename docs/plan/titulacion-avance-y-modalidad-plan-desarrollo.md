@@ -564,6 +564,25 @@ Backend R1 (A-C) ⟶ Backend R2 (D-F) ⟶ Backend R3 (G-J) ⟶ Documentación (L
 
 ## Bitácora de cambios
 
+- **2026-08-01 (decisión de alcance):** la bitácora de tutoría NO registrará
+  si la sesión fue presencial o virtual — el usuario lo descartó explícitamente
+  ("como no lo especificaron, se deja sin implementar"). No agregar el campo a
+  `bitacora_proyecto` ni reabrir esta decisión sin pedido nuevo del instituto.
+- **2026-08-01 (corrección post-verificación, Iteración 2):** el `verificador`
+  detectó que `routes.jsx` había creado 2 ítems de menú de nivel superior para
+  los Requisitos 2/3 (desviación de los Bloques N/O, que pedían `menu: null` +
+  enlace desde la lista). Corregido según decisión del usuario (volver al plan
+  original): ambas rutas ahora con `menu: null` + `breadcrumbLabel` +
+  `breadcrumbParent: 'TIT-PROYECTOS'`; acceso por 2 botones de cabecera en
+  `ProyectosGradoList.jsx` («Avance por carrera», «Planilla 3er año»,
+  `ActionButton` con `titulacion.proyecto` LISTAR) — los docentes-tutores no
+  los ven porque el connector los desvía a «Mis tutorados». Retiradas las 2
+  entradas de `menuIconMap` y las 2 constantes `*_MENU_KEY` sin uso de
+  `paths.js`. Con esto, la observación RBAC del verificador (docente viendo
+  reportes institucionales en su sidebar) queda cerrada. Lint y build verdes.
+  El resto del veredicto de verificación fue apto: contratos
+  `dataKey`==`dataFieldName` correctos, RBAC 3 capas coherente, guard de 3er
+  año cableado, estados vacío/carga/error cubiertos.
 - **2026-07-31 (planificador):** documento creado. Investigación de campo
   completa: año académico vía `periodos.numero`/vista 100-101, creación de
   proyecto ya restringida a Dirección Académica por RBAC (sin cambios ahí),

@@ -1,7 +1,10 @@
 // src/presentation/modules/titulacion/proyectos-grado/routes.jsx
 /**
  * Titulación → Proyectos de grado (ítem de menú TIT, order 1) + reportes de
- * avance de tutoría (Requisitos 2/3, extensión 2026-07-31, order 3/4).
+ * avance de tutoría (Requisitos 2/3, extensión 2026-07-31, sin ítem de menú:
+ * se accede por botones de cabecera de ProyectosGradoList — plan Bloque N/O).
+ * Sin ítem propio, los docentes-tutores (que comparten proyecto·LISTAR para
+ * "Mis tutorados") no ven estos reportes institucionales en su sidebar.
  *
  * Permisos del seed 65 (`titulacion.proyecto`), acciones LISTAR (datos en
  * pantalla) / EXPORTAR (descarga) — mismo permiso que el resto del recurso
@@ -67,28 +70,22 @@ export const proyectosGradoRoutes = [
     path: REPORTE_AVANCE_CARRERA_PATH,
     element: <ReporteAvanceTutoriaCarreraConnector />,
     key: 'TIT-PROYECTOS-AVANCE-CARRERA',
+    breadcrumbLabel: 'Avance de tutorías por carrera',
     permiso: 'titulacion.proyecto',
     accion: 'LISTAR',
-    menu: {
-      label: 'Avance de tutorías por carrera',
-      module: 'TIT',
-      parent: 'TIT',
-      order: 3,
-    },
+    menu: null,
+    breadcrumbParent: 'TIT-PROYECTOS',
   },
   {
     /** Requisito 3 (extensión 2026-07-31): planilla "10 en 10" bimestral. Ruta ESTÁTICA. */
     path: PLANILLA_AVANCE_TERCER_ANIO_PATH,
     element: <PlanillaAvanceTercerAnioConnector />,
     key: 'TIT-PROYECTOS-PLANILLA-TERCER-ANIO',
+    breadcrumbLabel: 'Planilla de avance (3er año)',
     permiso: 'titulacion.proyecto',
     accion: 'LISTAR',
-    menu: {
-      label: 'Planilla de avance (3er año)',
-      module: 'TIT',
-      parent: 'TIT',
-      order: 4,
-    },
+    menu: null,
+    breadcrumbParent: 'TIT-PROYECTOS',
   },
   {
     path: '/titulacion/proyectos-grado/:id/editar',

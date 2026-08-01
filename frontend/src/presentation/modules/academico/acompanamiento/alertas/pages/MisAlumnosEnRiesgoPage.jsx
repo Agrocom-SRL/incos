@@ -6,6 +6,10 @@
  *
  * Rama self SIN provider admin (patrón `MisEstudiantesDocentePage`): el hook
  * de pantalla consume A2 directamente. Página "dumb".
+ *
+ * Modo `embedded` (pestaña «Mis alumnos en riesgo» de Seguimiento académico):
+ * filtro de materia + tabla, sin shell — el título y el lede los pone la
+ * cabecera del workspace contenedor (`seguimientoTabs`, variante docente).
  */
 
 import { Alert, Button, Flex, Select, Typography } from 'antd';
@@ -22,7 +26,7 @@ import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
 
-const MisAlumnosEnRiesgoPage = () => {
+const MisAlumnosEnRiesgoPage = ({ embedded = false }) => {
   const {
     alertas,
     loading,
@@ -53,6 +57,58 @@ const MisAlumnosEnRiesgoPage = () => {
     </Flex>
   );
 
+  const cuerpo = error ? (
+    <Alert
+      type="warning"
+      showIcon
+      title="No se pudo cargar su lista de alumnos en riesgo"
+      description={error}
+      action={
+        <Button size="small" onClick={refetch}>
+          Reintentar
+        </Button>
+      }
+    />
+  ) : (
+    <TableListView
+      embedded
+      data={alertas}
+      loading={loading}
+      searchText={searchText}
+      onSearchChange={handleSearchChange}
+      searchPlaceholder="Buscar por estudiante…"
+      columns={tableColumns}
+      rowKey={(record) =>
+        record.matriculaMateriaId ?? `${record.estudianteId}-${record.materiaId}`
+      }
+      searchColSpan={10}
+      searchStyle={{ maxWidth: 520 }}
+      pagination={{
+        pageSize: 10,
+        showSizeChanger: true,
+        showTotal: (total) => `Total: ${total} alumnos en riesgo`,
+        pageSizeOptions: ['10', '20', '50', '100'],
+      }}
+      loadingTip="Cargando alumnos en riesgo…"
+      emptyText="No tiene alumnos en riesgo en sus cursos de la gestión vigente."
+    />
+  );
+
+  // Pestaña de Seguimiento académico: filtro + tabla, sin shell.
+  if (embedded) {
+    return (
+      <Flex
+        vertical
+        gap={allSpacing.marginLG}
+        className="cfg-academico-tab-content"
+        style={{ width: '100%', minWidth: 0 }}
+      >
+        <Flex justify="flex-end">{filtroMateria}</Flex>
+        {cuerpo}
+      </Flex>
+    );
+  }
+
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
@@ -71,44 +127,7 @@ const MisAlumnosEnRiesgoPage = () => {
                   sesión de refuerzo con el alumno ya convocado.
                 </Paragraph>
               </header>
-              {error ? (
-                <Alert
-                  type="warning"
-                  showIcon
-                  title="No se pudo cargar su lista de alumnos en riesgo"
-                  description={error}
-                  action={
-                    <Button size="small" onClick={refetch}>
-                      Reintentar
-                    </Button>
-                  }
-                />
-              ) : (
-                <div className="cfg-academico-tab-panel">
-                  <TableListView
-                    embedded
-                    data={alertas}
-                    loading={loading}
-                    searchText={searchText}
-                    onSearchChange={handleSearchChange}
-                    searchPlaceholder="Buscar por estudiante…"
-                    columns={tableColumns}
-                    rowKey={(record) =>
-                      record.matriculaMateriaId ?? `${record.estudianteId}-${record.materiaId}`
-                    }
-                    searchColSpan={10}
-                    searchStyle={{ maxWidth: 520 }}
-                    pagination={{
-                      pageSize: 10,
-                      showSizeChanger: true,
-                      showTotal: (total) => `Total: ${total} alumnos en riesgo`,
-                      pageSizeOptions: ['10', '20', '50', '100'],
-                    }}
-                    loadingTip="Cargando alumnos en riesgo…"
-                    emptyText="No tiene alumnos en riesgo en sus cursos de la gestión vigente."
-                  />
-                </div>
-              )}
+              {error ? cuerpo : <div className="cfg-academico-tab-panel">{cuerpo}</div>}
             </section>
           </Flex>
         </MainContent>

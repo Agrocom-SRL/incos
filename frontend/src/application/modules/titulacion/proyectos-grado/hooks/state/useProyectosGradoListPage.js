@@ -14,6 +14,8 @@ import { createProyectosGradoTableColumns } from '@titulacion/proyectos-grado/co
 import { ESTADOS_PROYECTO_GRADO, formatEstadoProyecto } from '@application-titulacion/utils/titulacionPills';
 import {
   PROYECTOS_GRADO_LIST_PATH,
+  REPORTE_AVANCE_CARRERA_PATH,
+  PLANILLA_AVANCE_TERCER_ANIO_PATH,
   TIT_PROYECTOS_MENU_KEY,
   proyectoGradoRegistrarPath,
 } from '@application-titulacion/config/paths';
@@ -110,6 +112,15 @@ export const useProyectosGradoListPage = () => {
     navigate(proyectoGradoRegistrarPath, { state: listNavState });
   }, [navigate, listNavState]);
 
+  /** Reportes de avance de tutoría (Requisitos 2/3) — sin ítem de menú propio. */
+  const handleIrAvanceCarrera = useCallback(() => {
+    navigate(REPORTE_AVANCE_CARRERA_PATH, { state: listNavState });
+  }, [navigate, listNavState]);
+
+  const handleIrPlanillaTercerAnio = useCallback(() => {
+    navigate(PLANILLA_AVANCE_TERCER_ANIO_PATH, { state: listNavState });
+  }, [navigate, listNavState]);
+
   const handleSearchChange = useCallback(
     (event) => {
       setSearchText(event.target.value);
@@ -131,6 +142,8 @@ export const useProyectosGradoListPage = () => {
     tableColumns,
     breadcrumbItems,
     handleRegistrar,
+    handleIrAvanceCarrera,
+    handleIrPlanillaTercerAnio,
     handleSearchChange,
     tablePagination,
   };
