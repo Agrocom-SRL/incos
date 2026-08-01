@@ -35,6 +35,14 @@
 -- reutilizan `titulacion.proyecto` LISTAR/EXPORTAR — solo se amplió el texto
 -- `nombre` de ese permiso (línea ~46), sin tocar `permiso_acciones` ni
 -- `roles_permisos`.
+--
+-- NOTA (2026-08-01) — extensión sin RBAC nuevo (acta de defensa): el acta de
+-- defensa de grado (`docs/plan/acta-defensa-grado-plan-desarrollo.md`, Bloque
+-- B, P6 resuelta = Opción A) reutiliza `titulacion.proyecto` — POST
+-- `/:id/acta-defensa` = APROBAR, GET = DETALLE, GET .../pdf = EXPORTAR. Mismo
+-- criterio que la extensión 2026-07-31: solo se amplió el texto `nombre` del
+-- permiso, sin filas nuevas en `permisos`, `permiso_acciones` ni
+-- `roles_permisos`.
 -- ============================================
 
 USE instituto_incos;
@@ -50,7 +58,7 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 
 -- 1) Permisos del módulo TIT
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
-('titulacion.proyecto', 'Proyectos de grado: listar, detalle, crear, editar, eliminar, aprobar etapas/tutor y exportar reportes (modalidad, avance por carrera, planilla)', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
+('titulacion.proyecto', 'Proyectos de grado: listar, detalle, crear, editar, eliminar, aprobar etapas/tutor, registrar acta de defensa y exportar reportes (modalidad, avance por carrera, planilla, acta de defensa)', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.bitacora', 'Bitácora de tutoría: listar, crear y editar entradas', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.avance', 'Avances del proyecto: listar, ver detalle/descargar y subir archivos', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.pasantia', 'Pasantías (práctica laboral): listar, ver detalle, registrar, editar, eliminar, transicionar estados y exportar PDF de informes', NULL, 'TITULACION', 'TIT', 'tit_pasantias', '/titulacion/pasantias', 1, NOW(), NOW()),

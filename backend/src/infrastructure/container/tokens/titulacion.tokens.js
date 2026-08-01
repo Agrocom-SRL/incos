@@ -21,6 +21,8 @@ export const TITULACION_TOKENS = {
   avanceProyectoRepository: 'titulacion.avanceProyectoRepository',
   bitacoraProyectoRepository: 'titulacion.bitacoraProyectoRepository',
   dictamenProyectoRepository: 'titulacion.dictamenProyectoRepository',
+  // Acta de defensa de grado (extensión 2026-08-01)
+  actaDefensaRepository: 'titulacion.actaDefensaRepository',
   proyectoGradoListadoViewRepository: 'titulacion.proyectoGradoListadoViewRepository',
   // Vistas 178/179/181 — extensión 2026-07-31 (formulario de modalidad,
   // reporte de avance por carrera, planilla "10 en 10"). Aislado del repo de
@@ -51,6 +53,11 @@ export const TITULACION_TOKENS = {
   downloadAvanceArchivoUseCase: 'titulacion.downloadAvanceArchivoUseCase',
   listDictamenesProyectoUseCase: 'titulacion.listDictamenesProyectoUseCase',
   exportDictamenPdfUseCase: 'titulacion.exportDictamenPdfUseCase',
+
+  // Use Cases — acta de defensa de grado (extensión 2026-08-01)
+  registrarActaDefensaUseCase: 'titulacion.registrarActaDefensaUseCase',
+  listActasDefensaProyectoUseCase: 'titulacion.listActasDefensaProyectoUseCase',
+  exportActaDefensaPdfUseCase: 'titulacion.exportActaDefensaPdfUseCase',
 
   // Use Cases — extensión 2026-07-31 (formulario de modalidad de graduación,
   // reporte de avance por carrera, planilla de avance "10 en 10")
@@ -87,6 +94,11 @@ export const TITULACION_TOKENS = {
   downloadAvanceArchivoController: 'titulacion.downloadAvanceArchivoController',
   listDictamenesProyectoController: 'titulacion.listDictamenesProyectoController',
   exportDictamenPdfController: 'titulacion.exportDictamenPdfController',
+
+  // Controllers — acta de defensa de grado (extensión 2026-08-01)
+  registrarActaDefensaController: 'titulacion.registrarActaDefensaController',
+  listActasDefensaController: 'titulacion.listActasDefensaController',
+  exportActaDefensaPdfController: 'titulacion.exportActaDefensaPdfController',
 
   // Controllers — extensión 2026-07-31
   listEstudiantesElegiblesModalidadGradoController:

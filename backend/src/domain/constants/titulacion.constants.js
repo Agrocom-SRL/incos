@@ -187,3 +187,40 @@ export const RESULTADOS_TUTORIA_TERCER_ANIO = {
 };
 
 export const RESULTADOS_TUTORIA_TERCER_ANIO_VALUES = Object.values(RESULTADOS_TUTORIA_TERCER_ANIO);
+
+// ============================================
+// ACTA DE DEFENSA (tablas `actas_defensa` / `tribunal_acta_defensa`,
+// 22-modalidades-grado.sql — extensión 2026-08-01)
+// Acto administrativo por estudiante: en PSP grupal hay N actas por
+// proyecto (una por integrante ACTIVO, P3 resuelta). El umbral de
+// aprobación NO vive aquí: se reutiliza `notaMinimaAprobacion` de
+// `configuracion_evaluacion` (seed 54) vía
+// `application/utils/obtenerCuotasDesdePolitica.js` — misma fuente que el
+// centralizador/boletín (P2 resuelta, ver plan de desarrollo).
+// ============================================
+
+/** Resultado formal del acta (acto administrativo del tribunal). */
+export const RESULTADOS_ACTA_DEFENSA = {
+  APRUEBA: 'APRUEBA',
+  REPRUEBA: 'REPRUEBA',
+};
+
+export const RESULTADOS_ACTA_DEFENSA_VALUES = Object.values(RESULTADOS_ACTA_DEFENSA);
+
+/**
+ * Ciclo de vida del acta. ANULADA queda modelada desde el DDL inicial (P8
+ * resuelta) pero el flujo de anular NO se implementa en esta iteración: no
+ * hay endpoint ni use case de anulación todavía.
+ */
+export const ESTADOS_ACTA_DEFENSA = {
+  EMITIDA: 'EMITIDA',
+  ANULADA: 'ANULADA',
+};
+
+export const ESTADOS_ACTA_DEFENSA_VALUES = Object.values(ESTADOS_ACTA_DEFENSA);
+
+/** Miembros exigidos en el Tribunal Evaluador de cada acta (P5: siempre docentes del instituto). */
+export const TRIBUNAL_ACTA_DEFENSA_MIEMBROS = 3;
+
+/** Rótulo impreso por defecto entre paréntesis junto a cada miembro del tribunal. */
+export const CARGO_TRIBUNAL_ACTA_DEFENSA_DEFAULT = 'TRIBUNAL EVALUADOR';

@@ -39,4 +39,6 @@ export const SERVICIOS_TOKENS = {
     formularioModalidadGradoPdfGenerator: 'formularioModalidadGradoPdfGenerator', // IFormularioModalidadGradoPdfGenerator (.pdf, módulo TIT)
     avanceTutoriaCarreraPdfGenerator: 'avanceTutoriaCarreraPdfGenerator', // IAvanceTutoriaCarreraPdfGenerator (.pdf, módulo TIT)
     planillaAvanceTutoriaExcelGenerator: 'planillaAvanceTutoriaExcelGenerator', // IPlanillaAvanceTutoriaExcelGenerator (.xlsx, módulo TIT)
+    // Extensión 2026-08-01 (módulo TIT · titulación): acta de defensa de grado.
+    actaDefensaPdfGenerator: 'actaDefensaPdfGenerator', // IActaDefensaPdfGenerator (.pdf, módulo TIT)
 };

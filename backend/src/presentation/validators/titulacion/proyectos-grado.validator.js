@@ -7,6 +7,7 @@ import {
   TIPOS_BITACORA_TUTORIA_VALUES,
   ESTADOS_BITACORA_TUTORIA_VALUES,
   ESTADOS_REVISION_AVANCE_VALUES,
+  TRIBUNAL_ACTA_DEFENSA_MIEMBROS,
 } from '../../../domain/constants/titulacion.constants.js';
 
 /**
@@ -53,6 +54,16 @@ export const dictamenIdValidator = [
     .withMessage('El ID del dictamen es requerido')
     .isInt({ min: 1 })
     .withMessage('El ID del dictamen debe ser un número entero mayor a 0')
+    .toInt(),
+];
+
+/** Param :actaId (rutas anidadas de acta de defensa). */
+export const actaIdValidator = [
+  param('actaId')
+    .notEmpty()
+    .withMessage('El ID del acta es requerido')
+    .isInt({ min: 1 })
+    .withMessage('El ID del acta debe ser un número entero mayor a 0')
     .toInt(),
 ];
 
@@ -305,4 +316,58 @@ export const planillaAvanceTercerAnioValidator = [
     .withMessage('bimestre es requerido')
     .isInt({ min: 1, max: 4 })
     .withMessage('bimestre debe ser un entero entre 1 y 4'),
+];
+
+// ============================================
+// Extensión 2026-08-01 — Acta de defensa de grado
+// ============================================
+
+/** POST /:id/acta-defensa — registra el/los acta(s) de defensa del proyecto. */
+export const registrarActaDefensaValidator = [
+  body('fechaDefensa')
+    .notEmpty()
+    .withMessage('fechaDefensa es requerida')
+    .isISO8601()
+    .withMessage('fechaDefensa debe ser una fecha válida (YYYY-MM-DD)'),
+  body('horaInicio')
+    .notEmpty()
+    .withMessage('horaInicio es requerida')
+    .matches(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/)
+    .withMessage('horaInicio debe tener formato HH:mm'),
+  body('horaConclusion')
+    .optional({ nullable: true })
+    .matches(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/)
+    .withMessage('horaConclusion debe tener formato HH:mm'),
+  body('tribunal')
+    .isArray({ min: TRIBUNAL_ACTA_DEFENSA_MIEMBROS, max: TRIBUNAL_ACTA_DEFENSA_MIEMBROS })
+    .withMessage(`tribunal debe tener exactamente ${TRIBUNAL_ACTA_DEFENSA_MIEMBROS} miembros`),
+  body('tribunal.*.docenteId')
+    .notEmpty()
+    .withMessage('tribunal[].docenteId es requerido (siempre docentes del instituto, P5)')
+    .isInt({ min: 1 })
+    .withMessage('tribunal[].docenteId debe ser un entero positivo'),
+  body('tribunal.*.cargo')
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 80 })
+    .withMessage('tribunal[].cargo no debe superar los 80 caracteres'),
+  body('calificaciones')
+    .isArray({ min: 1 })
+    .withMessage('calificaciones debe ser un array con al menos un elemento'),
+  body('calificaciones.*.estudianteId')
+    .notEmpty()
+    .withMessage('calificaciones[].estudianteId es requerido')
+    .isInt({ min: 1 })
+    .withMessage('calificaciones[].estudianteId debe ser un entero positivo'),
+  body('calificaciones.*.calificacionFinal')
+    .notEmpty()
+    .withMessage('calificaciones[].calificacionFinal es requerida')
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('calificaciones[].calificacionFinal debe estar entre 0 y 100'),
+  body('numeroActa')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('numeroActa debe ser un entero positivo (ayuda: se asigna automáticamente si no se envía)'),
+  body('observaciones').optional({ nullable: true }).isString(),
 ];

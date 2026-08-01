@@ -1,7 +1,29 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-07-31
+## Ultima actualizacion: 2026-08-01
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Changelog 2026-08-01 — TIT: acta de defensa de grado (Iteración 1 backend, sin permisos nuevos)
+
+`docs/plan/acta-defensa-grado-plan-desarrollo.md` (P1-P8 resueltas). Tablas
+nuevas `actas_defensa` + `tribunal_acta_defensa` (DDL en
+`22-modalidades-grado.sql`, pendiente de aprobación/ejecución del usuario en
+BD — sin migración incremental: el módulo TIT aún no está desplegado en
+servidor). **No se agregan permisos ni acciones**: los 3 endpoints nuevos
+reutilizan `titulacion.proyecto` — mismo criterio que la extensión
+2026-07-31 (solo se amplió el texto `nombre` del permiso).
+
+| Endpoint | Acción | `dataFieldName` |
+|---|---|---|
+| `GET /proyectos-grado/:id/acta-defensa` | DETALLE | `actasDefensa` |
+| `POST /proyectos-grado/:id/acta-defensa` | APROBAR | `actasDefensa` |
+| `GET /proyectos-grado/:id/acta-defensa/:actaId/pdf` | EXPORTAR | binario (PDF) |
+
+`POST` delega la transición `DEFENSA → APROBADO|REPROBADO` en
+`AprobarEtapaProyectoUseCase` (T11) tras registrar el/los acta(s) — misma
+máquina de estados, sin duplicarla. Anulación de acta (P8) diferida: sin
+endpoint en esta iteración. Iteración 2 (frontend, tab «Acta de defensa» en
+`ProyectoGradoDetail.jsx`) queda pendiente.
 
 ## Changelog 2026-07-31 — TIT: formulario de modalidad, reporte de avance por carrera y planilla 10-en-10 (extensión, sin permisos nuevos)
 

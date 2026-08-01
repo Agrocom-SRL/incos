@@ -23,6 +23,9 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+-- Hijas antes que la raíz: tribunal_acta_defensa → actas_defensa → proyectos_grado
+DROP TABLE IF EXISTS tribunal_acta_defensa;
+DROP TABLE IF EXISTS actas_defensa;
 DROP TABLE IF EXISTS proyectos_grado;
 DROP TABLE IF EXISTS modalidades_grado;
 
@@ -174,6 +177,104 @@ CREATE TABLE proyectos_grado (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Proyectos/trabajos/tesis de estudiantes de tercer año. Maneja todas las modalidades que requieren desarrollo de proyecto (PROYECTO_GRADO, TRABAJO_DIRIGIDO, TESIS).';
+
+-- ============================================
+-- TABLA: actas_defensa
+-- Acta de defensa de grado (modalidad de graduación). UNA por estudiante
+-- integrante: en PSP grupal hay N actas del mismo proyecto. El resumen
+-- académico (fecha_defensa, nota_defensa, nota_final, estado) sigue viviendo
+-- en proyectos_grado y lo sincroniza el use case vía la transición T11
+-- (AprobarEtapaProyectoUseCase). Ver plan de desarrollo:
+-- docs/plan/acta-defensa-grado-plan-desarrollo.md (Bloque A, P1-P8 resueltas).
+-- ============================================
+
+CREATE TABLE actas_defensa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Relaciones
+    proyecto_grado_id INT NULL COMMENT 'Proyecto de grado defendido (referencia a proyectos_grado)',
+    estudiante_id INT NULL COMMENT 'Estudiante que defiende — integrante ACTIVO del proyecto (referencia a estudiantes)',
+    gestion_id INT NULL COMMENT 'Gestión del acta, copiada del proyecto al registrar (ancla de la serie correlativa)',
+
+    -- Identidad del acta
+    numero_acta INT NOT NULL COMMENT 'Número correlativo del acta dentro de la gestión (foliado rojo del talonario, ej: 12 → se imprime 012). Autoasignado MAX+1, con override manual para empatar el libro físico',
+
+    -- Acto de defensa
+    fecha_defensa DATE NOT NULL COMMENT 'Fecha del acto de defensa',
+    hora_inicio TIME NOT NULL COMMENT 'Hora de instalación del acto (cabecera "a horas HH:MM")',
+    hora_conclusion TIME NULL COMMENT 'Hora de conclusión del acto ("concluyó a horas HH:MM")',
+
+    -- Resolución del tribunal
+    calificacion_final DECIMAL(5,2) NOT NULL COMMENT 'Calificación final en puntos (0-100); el PDF la imprime en número y letras',
+    resultado ENUM('APRUEBA', 'REPRUEBA') NOT NULL COMMENT 'Resultado del acta; derivado de la calificación contra la nota mínima de configuracion_evaluacion (seed 54, misma fuente que usa el boletín/centralizador) y validado en servidor — sin constante nueva',
+    observaciones TEXT NULL COMMENT 'Observaciones del acto (no se imprimen en el acta estándar)',
+
+    -- Ciclo de vida del acta
+    estado ENUM('EMITIDA', 'ANULADA') DEFAULT 'EMITIDA' COMMENT 'EMITIDA: acta vigente | ANULADA: dejada sin efecto (conserva su número; la sustituta toma número nuevo)',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    FOREIGN KEY (proyecto_grado_id) REFERENCES proyectos_grado(id) ON DELETE SET NULL,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
+    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
+
+    UNIQUE INDEX uk_gestion_numero (gestion_id, numero_acta) COMMENT 'Serie correlativa única por gestión (alcance provisional, P1: podría recalcularse si la confirmación institucional final cambia el criterio)',
+    INDEX idx_proyecto_grado_id (proyecto_grado_id) COMMENT 'Actas de un proyecto',
+    INDEX idx_estudiante_id (estudiante_id) COMMENT 'Acta(s) de un estudiante',
+    INDEX idx_proyecto_estudiante (proyecto_grado_id, estudiante_id, estado, activo, deleted_at) COMMENT 'Acta EMITIDA vigente por proyecto+estudiante (unicidad validada en use case, no en BD, por convivir con ANULADA)',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Acta de defensa de grado por estudiante (modalidad de graduación): tribunal, horas del acto, calificación final en puntos y resultado. Espejo del acta física foliada del instituto.';
+
+-- ============================================
+-- TABLA: tribunal_acta_defensa
+-- Los 3 miembros del Tribunal Evaluador de UN acta. Siempre docentes del
+-- instituto (P5: sin profesionales externos) — exigido en el use case/
+-- validador (CREAR/EDITAR), NO como NOT NULL de BD: docente_id es NULLable
+-- con ON DELETE SET NULL, igual que el resto de FKs de este repo (100% de
+-- las FKs en 01-schemas usan SET NULL; RESTRICT está prohibido). nombre_completo
+-- queda como snapshot para fidelidad con el documento firmado, sobrevive
+-- aunque el docente_id se anule por baja física.
+-- ============================================
+
+CREATE TABLE tribunal_acta_defensa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    acta_defensa_id INT NULL COMMENT 'Acta a la que pertenece el miembro (referencia a actas_defensa)',
+    orden TINYINT NOT NULL COMMENT 'Posición 1..3 en la lista y en las firmas',
+    docente_id INT NULL COMMENT 'Docente del instituto (referencia a docentes). P5: siempre debe venir poblado — exigido por el validador/use case en CREAR, no por NOT NULL (se deja NULLable solo para sobrevivir a ON DELETE SET NULL, patrón único de FKs en este repo)',
+    nombre_completo VARCHAR(200) NOT NULL COMMENT 'Nombre como se imprime en el acta (snapshot del docente al momento de registrar, con grado académico: "Lic. …")',
+    cargo VARCHAR(80) NULL DEFAULT 'TRIBUNAL EVALUADOR' COMMENT 'Rótulo impreso entre paréntesis (el acta real usa "Tribunal Evaluador" para los 3)',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    FOREIGN KEY (acta_defensa_id) REFERENCES actas_defensa(id) ON DELETE SET NULL,
+    FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
+
+    UNIQUE INDEX uk_acta_orden (acta_defensa_id, orden) COMMENT 'Una posición por acta',
+    INDEX idx_acta_defensa_id (acta_defensa_id) COMMENT 'Tribunal de un acta',
+    INDEX idx_docente_id (docente_id) COMMENT 'Actas donde participó un docente',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Miembros (3) del Tribunal Evaluador de un acta de defensa. Snapshot de nombres para fidelidad con el documento firmado.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

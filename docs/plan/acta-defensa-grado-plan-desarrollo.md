@@ -14,6 +14,73 @@
 
 ---
 
+## Estado de la Iteración 1 (backend) — COMPLETADA 2026-08-01
+
+Ejecutada por el agente `backend`. Bloques A, B, C, E cerrados; nada se
+ejecutó contra la BD real.
+
+- [x] **Bloque A** — DDL de `actas_defensa` + `tribunal_acta_defensa` añadido
+  al final de `backend/database/01-schemas/22-modalidades-grado.sql` (con sus
+  DROPs hijas-antes-que-raíz al inicio del archivo). **Corrección del
+  usuario (2026-08-01) sobre el plan original:** NO se crea archivo en
+  `backend/database/05-migrations/` — el módulo Titulación (y esta
+  extensión) todavía no está implantado en ninguna BD real/servidor, así
+  que no aplica una migración incremental; `05-migrations/` es solo para
+  tablas YA desplegadas con datos que no se pueden resembrar. El usuario
+  aplicará el schema completo directo cuando apruebe. Verificado por
+  lectura: 0 FKs con `RESTRICT` en el archivo (100% `ON DELETE SET NULL`).
+- [x] **Bloque B** — `65-seed-permisos-tit.sql`: texto `nombre` de
+  `titulacion.proyecto` ampliado + nota fechada 2026-08-01 en el
+  comentario de cabecera. Cero filas nuevas en `permisos`/`permiso_acciones`/
+  `roles_permisos`. Resiembra (B2) pendiente de aprobación del usuario.
+- [x] **Bloque C** — Backend completo por capas: constantes, modelos
+  Sequelize, `IActaDefensaRepository`/`ActaDefensaRepository` (arquetipo A,
+  con `createConTribunal` transaccional), `ActaDefensaMapper`,
+  `RegistrarActaDefensaUseCase`/`ListActasDefensaProyectoUseCase`/
+  `ExportActaDefensaPdfUseCase`, controllers, validators, 3 rutas nuevas bajo
+  `/api/v1/proyectos-grado/:id/acta-defensa`, `ActaDefensaPdfGenerator`
+  (pdf-lib, patrón FMDG-1) + helper compartido `numberToWords.js`, DI
+  registrada y verificada por resolución real del contenedor (sin BD).
+  `AnularActaDefensaUseCase` (P8, opcional) **NO se implementó** — diferido
+  según lo resuelto.
+- [x] **Bloque E** — Este documento actualizado; changelog en
+  `docs/referencia/matriz-permisos-sistema.md` y registro en
+  `docs/plan/estado-avance-y-proximos-pasos.md`.
+
+**Hallazgos/discrepancias encontrados al implementar (no estaban en las
+preguntas P1-P8, se reportan en vez de improvisar silenciosamente):**
+
+1. **§0.7 es incorrecta sobre la tabla `instituciones`**: esa tabla es el
+   catálogo de instituciones **DE ORIGEN** para traspasos/transitabilidad
+   (UETHP/CEA/otros ITT) — `18-transitabilidades.sql` la documenta así
+   explícitamente. NO contiene la identidad propia de INCOS. La cabecera del
+   acta (INSTITUTO/CARÁCTER/CIUDAD/DEPARTAMENTO) se implementó con
+   constantes locales en `ActaDefensaPdfGenerator.js`, el mismo patrón que
+   ya usa `FormularioModalidadGradoPdfGenerator` (hardcodea
+   `'INSTITUTO TÉCNICO INCOS SANTA CRUZ'`) — no se inventó una consulta a
+   `instituciones`.
+2. **C9 asume un "guard de pertenencia" que hoy NO existe** en ningún
+   satélite de la ficha (`GET /:id` T6, bitácora T14, dictámenes T22): todos
+   solo validan existencia del proyecto (`getProyectoOrFail`), sin
+   anti-IDOR por fila; el acceso de ESTUDIANTE se limita al permiso
+   `titulacion.proyecto`·DETALLE. `ListActasDefensaProyectoUseCase` sigue
+   el MISMO patrón exacto (sin guard nuevo) por consistencia con el resto
+   del módulo — no se inventó un guard que no tiene precedente en el
+   código real.
+3. **Tribunal sin "grado académico" abreviado**: el modelo `docentes` no
+   tiene un campo de abreviatura tipo "Lic./Ing." (solo `nivelAcademico`
+   ENUM y `tituloProfesional` libre); el snapshot `nombreCompleto` del
+   tribunal usa el orden institucional (APELLIDO_PATERNO APELLIDO_MATERNO
+   NOMBRES) sin prefijo de grado — el ejemplo "Lic. …" del DDL es
+   ilustrativo, no se inventó un mapeo ENUM→abreviatura no especificado.
+4. **C10 (PDF) SÍ se implementó en esta iteración** (`ActaDefensaPdfGenerator.js`
+   + `ExportActaDefensaPdfUseCase`), confirmando la duda que dejaba abierta
+   la instrucción de la tarea ("puede que el PDF también quede para la
+   Iteración 2") — el propio Bloque C del plan ya lo incluía como parte de
+   esta entrega, así que se construyó junto con el resto del backend.
+
+---
+
 ## §0 — Contexto verificado (leído en el repo, no asumir de memoria)
 
 1. **`proyectos_grado` (22-modalidades-grado.sql) ya tiene** `fecha_defensa`,
@@ -270,11 +337,18 @@ COMMENT='Miembros (3) del Tribunal Evaluador de un acta de defensa. Snapshot de 
   - **Sin vista SQL**: el acta se consume solo desde la ficha del proyecto
     (repositorio + include). Si mañana se pide «libro de actas» transversal,
     vista 182+.
-- **A2.** Tras aprobación: editar `22-modalidades-grado.sql` (DROPs de
-  `tribunal_acta_defensa` y `actas_defensa` antes de `proyectos_grado`) y
-  crear la migración en `05-migrations/` para la BD del servidor.
+- **A2.** ✅ Hecho (2026-08-01): `22-modalidades-grado.sql` editado (DROPs de
+  `tribunal_acta_defensa` y `actas_defensa` antes de `proyectos_grado`, al
+  inicio del archivo; CREATE TABLE de ambas al final). **Corrección del
+  usuario sobre este ítem:** NO se crea migración en `05-migrations/` — el
+  módulo Titulación aún no está implantado en ninguna BD real/servidor, así
+  que no hay tabla con datos que preservar; `05-migrations/` no aplica aquí
+  (solo para deltas sobre tablas YA desplegadas). Ver "Estado de la
+  Iteración 1" al inicio del documento.
 - **A3.** Ejecutar en BD — **siempre a cargo del usuario** (regla del repo:
   los agentes preparan y verifican .sql, jamás ejecutan contra la BD real).
+  Pendiente: el usuario aplica `22-modalidades-grado.sql` completo cuando
+  apruebe.
 
 ### Bloque B — RBAC (sin permisos nuevos — opción recomendada) ⛔ resiembra requiere aprobación
 

@@ -40,6 +40,9 @@ import { CreateAvanceProyectoUseCase } from '../../../../application/use-cases/t
 import { DownloadAvanceArchivoUseCase } from '../../../../application/use-cases/titulacion/DownloadAvanceArchivoUseCase.js';
 import { ListDictamenesProyectoUseCase } from '../../../../application/use-cases/titulacion/ListDictamenesProyectoUseCase.js';
 import { ExportDictamenPdfUseCase } from '../../../../application/use-cases/titulacion/ExportDictamenPdfUseCase.js';
+import { RegistrarActaDefensaUseCase } from '../../../../application/use-cases/titulacion/RegistrarActaDefensaUseCase.js';
+import { ListActasDefensaProyectoUseCase } from '../../../../application/use-cases/titulacion/ListActasDefensaProyectoUseCase.js';
+import { ExportActaDefensaPdfUseCase } from '../../../../application/use-cases/titulacion/ExportActaDefensaPdfUseCase.js';
 import { ListEstudiantesElegiblesModalidadGradoUseCase } from '../../../../application/use-cases/titulacion/ListEstudiantesElegiblesModalidadGradoUseCase.js';
 import { ExportFormularioModalidadGradoPdfUseCase } from '../../../../application/use-cases/titulacion/ExportFormularioModalidadGradoPdfUseCase.js';
 import { GetAvanceTutoriaCarreraUseCase } from '../../../../application/use-cases/titulacion/GetAvanceTutoriaCarreraUseCase.js';
@@ -70,6 +73,9 @@ import {
   DownloadAvanceArchivoController,
   ListDictamenesProyectoController,
   ExportDictamenPdfController,
+  RegistrarActaDefensaController,
+  ListActasDefensaController,
+  ExportActaDefensaPdfController,
   ListEstudiantesElegiblesModalidadGradoController,
   ExportFormularioModalidadGradoPdfController,
   GetAvanceTutoriaCarreraController,
@@ -382,6 +388,56 @@ export function registerProyectosGradoResource(container) {
   );
 
   // ============================================
+  // USE CASES — acta de defensa de grado (extensión 2026-08-01)
+  // ============================================
+  registerComponent(
+    container,
+    TITULACION_TOKENS.registrarActaDefensaUseCase,
+    (c) =>
+      new RegistrarActaDefensaUseCase({
+        actaDefensaRepository: c.resolve(TITULACION_TOKENS.actaDefensaRepository),
+        proyectoGradoRepository: c.resolve(TITULACION_TOKENS.proyectoGradoRepository),
+        integranteProyectoRepository: c.resolve(TITULACION_TOKENS.integranteProyectoRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository
+        ),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository
+        ),
+        aprobarEtapaProyectoUseCase: c.resolve(TITULACION_TOKENS.aprobarEtapaProyectoUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    TITULACION_TOKENS.listActasDefensaProyectoUseCase,
+    (c) =>
+      new ListActasDefensaProyectoUseCase({
+        proyectoGradoRepository: c.resolve(TITULACION_TOKENS.proyectoGradoRepository),
+        actaDefensaRepository: c.resolve(TITULACION_TOKENS.actaDefensaRepository),
+        integranteProyectoRepository: c.resolve(TITULACION_TOKENS.integranteProyectoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    TITULACION_TOKENS.exportActaDefensaPdfUseCase,
+    (c) =>
+      new ExportActaDefensaPdfUseCase({
+        actaDefensaRepository: c.resolve(TITULACION_TOKENS.actaDefensaRepository),
+        getProyectoGradoByIdUseCase: c.resolve(TITULACION_TOKENS.getProyectoGradoByIdUseCase),
+        studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+        careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+        managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+        actaDefensaPdfGenerator: c.resolve(SERVICIOS_TOKENS.actaDefensaPdfGenerator),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  // ============================================
   // USE CASES — extensión 2026-07-31 (formulario de modalidad de graduación,
   // reporte de avance por carrera, planilla de avance "10 en 10")
   // ============================================
@@ -686,6 +742,35 @@ export function registerProyectosGradoResource(container) {
           logger: c.resolve(SERVICIOS_TOKENS.logger),
         }),
     ],
+    // Acta de defensa de grado (extensión 2026-08-01)
+    [
+      TITULACION_TOKENS.registrarActaDefensaController,
+      (c) =>
+        new RegistrarActaDefensaController({
+          registrarActaDefensaUseCase: c.resolve(TITULACION_TOKENS.registrarActaDefensaUseCase),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
+    [
+      TITULACION_TOKENS.listActasDefensaController,
+      (c) =>
+        new ListActasDefensaController({
+          listActasDefensaProyectoUseCase: c.resolve(
+            TITULACION_TOKENS.listActasDefensaProyectoUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
+    [
+      TITULACION_TOKENS.exportActaDefensaPdfController,
+      (c) =>
+        new ExportActaDefensaPdfController({
+          exportActaDefensaPdfUseCase: c.resolve(TITULACION_TOKENS.exportActaDefensaPdfUseCase),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+        }),
+    ],
     // Extensión 2026-07-31 (formulario de modalidad de graduación, reporte de
     // avance por carrera, planilla de avance "10 en 10")
     [
@@ -793,6 +878,10 @@ export function registerProyectosGradoResource(container) {
         TITULACION_TOKENS.listDictamenesProyectoController
       ),
       exportDictamenPdfController: c.resolve(TITULACION_TOKENS.exportDictamenPdfController),
+      // Acta de defensa de grado (extensión 2026-08-01)
+      registrarActaDefensaController: c.resolve(TITULACION_TOKENS.registrarActaDefensaController),
+      listActasDefensaController: c.resolve(TITULACION_TOKENS.listActasDefensaController),
+      exportActaDefensaPdfController: c.resolve(TITULACION_TOKENS.exportActaDefensaPdfController),
       // Extensión 2026-07-31
       listEstudiantesElegiblesModalidadGradoController: c.resolve(
         TITULACION_TOKENS.listEstudiantesElegiblesModalidadGradoController

@@ -53,6 +53,7 @@ import { PanelAcompanamientoPdfGenerator } from '../../external/pdf/academico/Pa
 import { FichaSeguimientoClasePdfGenerator } from '../../external/pdf/docentes/FichaSeguimientoClasePdfGenerator.js';
 import { FormularioModalidadGradoPdfGenerator } from '../../external/pdf/titulacion/FormularioModalidadGradoPdfGenerator.js';
 import { AvanceTutoriaCarreraPdfGenerator } from '../../external/pdf/titulacion/AvanceTutoriaCarreraPdfGenerator.js';
+import { ActaDefensaPdfGenerator } from '../../external/pdf/titulacion/ActaDefensaPdfGenerator.js';
 import { PlanillaAvanceTutoriaExcelBuilder } from '../../external/excel/titulacion-planilla-avance/PlanillaAvanceTutoriaExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
@@ -242,6 +243,16 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.planillaAvanceTutoriaExcelGenerator,
         () => new PlanillaAvanceTutoriaExcelBuilder()
+    );
+
+    // ============================================
+    // GENERADOR DEL MÓDULO TITULACIÓN (TIT) · extensión 2026-08-01
+    // (acta de defensa de grado)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.actaDefensaPdfGenerator,
+        (c) => new ActaDefensaPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
     );
 
     // ============================================

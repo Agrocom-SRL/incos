@@ -25,6 +25,7 @@ import { IntegranteProyectoRepository } from '../../../repositories/IntegrantePr
 import { AvanceProyectoRepository } from '../../../repositories/AvanceProyectoRepository.js';
 import { BitacoraProyectoRepository } from '../../../repositories/BitacoraProyectoRepository.js';
 import { DictamenProyectoRepository } from '../../../repositories/DictamenProyectoRepository.js';
+import { ActaDefensaRepository } from '../../../repositories/ActaDefensaRepository.js';
 import { ProyectoGradoListadoViewRepository } from '../../../repositories/views/ProyectoGradoListadoViewRepository.js';
 import { TutoriaAvanceViewRepository } from '../../../repositories/views/TutoriaAvanceViewRepository.js';
 import { registerProyectosGradoResource } from './proyectos-grado.container.js';
@@ -58,6 +59,11 @@ export function registerTitulacionModule(container) {
     container,
     TITULACION_TOKENS.dictamenProyectoRepository,
     DictamenProyectoRepository
+  );
+  registerRepository(
+    container,
+    TITULACION_TOKENS.actaDefensaRepository,
+    ActaDefensaRepository
   );
   registerRepository(
     container,

@@ -86,6 +86,7 @@ host `127.0.0.1`, puerto `8889`, usuario `root`, password en `backend/.env`
 | 5 | Títulos y certificados (TUT) | ⛔ GATED | — | — | `titulacion-y-dominios-pendientes.md` §Fase 5 |
 | — | 3 funcionalidades nuevas TUT (ver §4) | ✅ | ✅ (vistas 178-181) | ✅ (`035ed101` + corrección menú 2026-08-01) | `titulacion-avance-y-modalidad-plan-desarrollo.md` |
 | — | Seguimiento académico (ACA, reorganización de menú) | n/a (solo frontend) | n/a | ✅ verificado 2026-08-01 (pendiente de commit) | ver nota §3.1 |
+| — | Acta de defensa de grado (TIT) — Iteración 1 | ✅ | ⛔ DDL listo, sin aplicar | ⛔ pendiente (Iteración 2) | `acta-defensa-grado-plan-desarrollo.md` |
 
 ### Números de referencia (para no colisionar)
 
@@ -144,6 +145,22 @@ Lo único activo:
 - **Deuda transversal detectada (no urgente):** 30 ocurrencias de
   `react-hooks/set-state-in-effect` en hooks api de todo `src/` (patrón
   replicado; limpieza en tanda propia, no por módulo).
+
+- **Acta de defensa de grado (TIT): backend Iteración 1 TERMINADO 2026-08-01**
+  (`docs/plan/acta-defensa-grado-plan-desarrollo.md`, P1-P8 resueltas).
+  Tablas nuevas `actas_defensa` + `tribunal_acta_defensa` (DDL ya en
+  `22-modalidades-grado.sql`, **sin aplicar en BD** — pendiente de
+  aprobación/ejecución del usuario; sin migración incremental porque el
+  módulo TIT no tiene datos en servidor todavía). Backend completo por
+  capas: use cases (`RegistrarActaDefensaUseCase` delega la transición T11,
+  `ListActasDefensaProyectoUseCase`, `ExportActaDefensaPdfUseCase`),
+  `ActaDefensaPdfGenerator` (pdf-lib, espejo del acta física), RBAC sin
+  permisos nuevos (reutiliza `titulacion.proyecto`), DI verificada por
+  resolución real del contenedor (lint limpio, sin BD). Contrato:
+  `dataFieldName: 'actasDefensa'` en `GET/POST /:id/acta-defensa`, PDF en
+  `GET /:id/acta-defensa/:actaId/pdf`. Pendiente: Iteración 2 (frontend, tab
+  «Acta de defensa» en `ProyectoGradoDetail.jsx`) — ver bloques D/F/G del
+  plan.
 
 ### 3.2 Histórico (ya ejecutado, conservado como referencia)
 

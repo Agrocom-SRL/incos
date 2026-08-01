@@ -154,6 +154,8 @@ export { IntegranteProyecto } from './integrante_proyecto.js';
 export { AvanceProyecto } from './avance_proyecto.js';
 export { BitacoraProyecto } from './bitacora_proyecto.js';
 export { DictamenProyecto } from './dictamen_proyecto.js';
+export { ActaDefensa } from './acta_defensa.js';
+export { TribunalActaDefensa } from './tribunal_acta_defensa.js';
 export { SesionRefuerzo } from './sesion_refuerzo.js';
 export { SesionRefuerzoEstudiante } from './sesion_refuerzo_estudiante.js';
 

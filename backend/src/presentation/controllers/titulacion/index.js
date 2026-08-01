@@ -31,6 +31,11 @@ export { DownloadAvanceArchivoController } from './download-avance-archivo.contr
 export { ListDictamenesProyectoController } from './list-dictamenes-proyecto.controller.js';
 export { ExportDictamenPdfController } from './export-dictamen-pdf.controller.js';
 
+// Acta de defensa (extensión 2026-08-01)
+export { RegistrarActaDefensaController } from './registrar-acta-defensa.controller.js';
+export { ListActasDefensaController } from './list-actas-defensa.controller.js';
+export { ExportActaDefensaPdfController } from './export-acta-defensa-pdf.controller.js';
+
 // Extensión 2026-07-31 (formulario de modalidad de graduación, reporte de
 // avance por carrera, planilla de avance "10 en 10")
 export { ListEstudiantesElegiblesModalidadGradoController } from './list-estudiantes-elegibles-modalidad-grado.controller.js';

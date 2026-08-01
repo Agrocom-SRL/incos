@@ -8,6 +8,7 @@ import {
   entradaIdValidator,
   avanceIdValidator,
   dictamenIdValidator,
+  actaIdValidator,
   listProyectosGradoValidator,
   exportBitacoraMensualValidator,
   createProyectoGradoValidator,
@@ -22,6 +23,7 @@ import {
   listEstudiantesElegiblesValidator,
   avanceTutoriaCarreraValidator,
   planillaAvanceTercerAnioValidator,
+  registrarActaDefensaValidator,
 } from '../validators/titulacion/index.js';
 
 /**
@@ -327,6 +329,39 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
     dictamenIdValidator,
     validateRequest,
     (req, res, next) => controllers.exportDictamenPdfController.handle(req, res, next)
+  );
+
+  // ============================================
+  // Extensión 2026-08-01 — Acta de defensa de grado
+  // ============================================
+
+  // GET /:id/acta-defensa - Actas del proyecto (N si PSP), con tribunal anidado
+  router.get(
+    '/:id/acta-defensa',
+    ...proyectoDetalle,
+    idValidator,
+    validateRequest,
+    (req, res, next) => controllers.listActasDefensaController.handle(req, res, next)
+  );
+
+  // POST /:id/acta-defensa - Registra el/los acta(s) (delega T11 DEFENSA→APROBADO|REPROBADO)
+  router.post(
+    '/:id/acta-defensa',
+    ...proyectoAprobar,
+    idValidator,
+    registrarActaDefensaValidator,
+    validateRequest,
+    (req, res, next) => controllers.registrarActaDefensaController.handle(req, res, next)
+  );
+
+  // GET /:id/acta-defensa/:actaId/pdf - PDF del acta (espejo §1 del plan)
+  router.get(
+    '/:id/acta-defensa/:actaId/pdf',
+    ...proyectoExportar,
+    idValidator,
+    actaIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.exportActaDefensaPdfController.handle(req, res, next)
   );
 
   return router;

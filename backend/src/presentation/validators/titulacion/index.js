@@ -7,6 +7,7 @@ export {
   entradaIdValidator,
   avanceIdValidator,
   dictamenIdValidator,
+  actaIdValidator,
   listProyectosGradoValidator,
   exportBitacoraMensualValidator,
   createProyectoGradoValidator,
@@ -21,4 +22,5 @@ export {
   listEstudiantesElegiblesValidator,
   avanceTutoriaCarreraValidator,
   planillaAvanceTercerAnioValidator,
+  registrarActaDefensaValidator,
 } from './proyectos-grado.validator.js';
