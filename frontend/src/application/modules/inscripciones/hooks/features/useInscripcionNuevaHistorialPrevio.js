@@ -53,6 +53,24 @@ export const useInscripcionNuevaHistorialPrevio = ({
     [concludedPeriods, materiasByPeriod, gradesByKey, statusByKey]
   );
 
+  const selectedPeriodsKey = selectedPeriodIds?.join(',');
+
+  // Reinicio del registro de filas ya inicializadas al cambiar el contexto del
+  // historial. Va ANTES del effect de siembra de notas para que este consuma el
+  // registro ya reseteado dentro del mismo commit (los refs no pueden mutarse
+  // durante render; el estado asociado se resiembra más abajo durante render).
+  useEffect(() => {
+    if (isEditMode && initialPriorHistories?.length) {
+      initializedRef.current = new Set(
+        initialPriorHistories.map((h) =>
+          historialPrevioRowKey(h.periodoId ?? h.periodId, h.materiaId ?? h.materia_id)
+        )
+      );
+      return;
+    }
+    initializedRef.current.clear();
+  }, [tipoAdmision, selectedPeriodsKey, isEditMode, initialPriorHistories]);
+
   useEffect(() => {
     if (!needsHistorial || materiasLoading || concludedPeriods.length === 0) return;
 
@@ -93,48 +111,61 @@ export const useInscripcionNuevaHistorialPrevio = ({
     });
   }, [needsHistorial, materiasLoading, concludedPeriods, materiasByPeriod, statusByKey]);
 
-  useEffect(() => {
-    if (!needsHistorial || concludedPeriods.length === 0) return;
-
-    setStatusByKey((prev) => {
-      let next = prev;
-      let changed = false;
-      for (const period of concludedPeriods) {
-        const materias =
-          materiasByPeriod?.[period.periodId] ??
-          materiasByPeriod?.[String(period.periodId)] ??
-          [];
-        for (const materia of materias) {
-          if (!materia?.id) continue;
-          const key = historialPrevioRowKey(period.periodId, materia.id);
-          if (prev[key] != null) continue;
-          if (!changed) {
-            next = { ...prev };
-            changed = true;
+  // Estado por defecto de cada fila nueva (ajuste durante render con
+  // comparación de prev, sin setState en effect).
+  const [prevStatusSeed, setPrevStatusSeed] = useState(null);
+  if (
+    prevStatusSeed?.needsHistorial !== needsHistorial ||
+    prevStatusSeed?.concludedPeriods !== concludedPeriods ||
+    prevStatusSeed?.materiasByPeriod !== materiasByPeriod
+  ) {
+    setPrevStatusSeed({ needsHistorial, concludedPeriods, materiasByPeriod });
+    if (needsHistorial && concludedPeriods.length > 0) {
+      setStatusByKey((prev) => {
+        let next = prev;
+        let changed = false;
+        for (const period of concludedPeriods) {
+          const materias =
+            materiasByPeriod?.[period.periodId] ??
+            materiasByPeriod?.[String(period.periodId)] ??
+            [];
+          for (const materia of materias) {
+            if (!materia?.id) continue;
+            const key = historialPrevioRowKey(period.periodId, materia.id);
+            if (prev[key] != null) continue;
+            if (!changed) {
+              next = { ...prev };
+              changed = true;
+            }
+            next[key] = resolveRowStatus(prev, key, period.status);
           }
-          next[key] = resolveRowStatus(prev, key, period.status);
         }
-      }
-      return changed ? next : prev;
-    });
-  }, [needsHistorial, concludedPeriods, materiasByPeriod]);
+        return changed ? next : prev;
+      });
+    }
+  }
 
-  useEffect(() => {
+  // Resiembra/limpieza del historial al cambiar el contexto (ajuste durante
+  // render; el registro de filas inicializadas —ref— se resetea en el effect
+  // declarado más arriba con las mismas dependencias).
+  const [prevHistorialSeed, setPrevHistorialSeed] = useState(null);
+  if (
+    !prevHistorialSeed ||
+    prevHistorialSeed.tipoAdmision !== tipoAdmision ||
+    prevHistorialSeed.selectedPeriodsKey !== selectedPeriodsKey ||
+    prevHistorialSeed.isEditMode !== isEditMode ||
+    prevHistorialSeed.initialPriorHistories !== initialPriorHistories
+  ) {
+    setPrevHistorialSeed({ tipoAdmision, selectedPeriodsKey, isEditMode, initialPriorHistories });
     if (isEditMode && initialPriorHistories?.length) {
       const seed = seedHistorialFromPriorEnrollmentHistories(initialPriorHistories);
       setGradesByKey(seed.gradesByKey);
       setStatusByKey(seed.statusByKey);
-      initializedRef.current = new Set(
-        initialPriorHistories.map((h) =>
-          historialPrevioRowKey(h.periodoId ?? h.periodId, h.materiaId ?? h.materia_id)
-        )
-      );
-      return;
+    } else {
+      setGradesByKey({});
+      setStatusByKey({});
     }
-    initializedRef.current.clear();
-    setGradesByKey({});
-    setStatusByKey({});
-  }, [tipoAdmision, selectedPeriodIds?.join(','), isEditMode, initialPriorHistories]);
+  }
 
   const setGrade = useCallback((key, value) => {
     setInvalidGradeKeys((prev) => (prev.length ? prev.filter((k) => k !== key) : prev));
