@@ -18,13 +18,18 @@ export function useArmadoOfertaLectura(paraleloGestionId) {
         }
 
         setLoading(true);
-        const res = await fetchOfertaCursosSilent(pgId);
-        if (!res.success) {
+        try {
+            const res = await fetchOfertaCursosSilent(pgId);
+            if (!res.success) {
+                setOfertaCursos([]);
+            } else {
+                setOfertaCursos(res.data?.ofertaCursos ?? []);
+            }
+        } catch {
             setOfertaCursos([]);
-        } else {
-            setOfertaCursos(res.data?.ofertaCursos ?? []);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [fetchOfertaCursosSilent, paraleloGestionId]);
 
     useEffect(() => {

@@ -28,15 +28,23 @@ export class IBoletinPdfGenerator {
    * @param {string} datos.cabecera.paralelo - Nombre del paralelo (p. ej. "A").
    * @param {string} datos.cabecera.regimen - Régimen (p. ej. "ANUALIZADO").
    * @param {number|string} datos.cabecera.gestion - Año de gestión.
+   * @param {string} [datos.cabecera.bimestre] - Etiqueta del bimestre (boletín
+   *        bimestral, p. ej. "1º BIMESTRE"); ausente en el boletín anual.
+   * @param {number} [datos.bimestre] - Bimestre (1..4) del boletín BIMESTRAL: la
+   *        tabla usa el set de columnas bimestral (TEÓRICA + PRÁCTICA = TOTAL +
+   *        ESTADO). Ausente → boletín anual.
+   * @param {string} [datos.footerRowLabel] - Etiqueta de la fila de pie (bimestral);
+   *        por defecto la de configuración ("PROMEDIO ANUAL").
    * @param {number} [datos.notaMinimaAprobacion] - Nota mínima de aprobación.
-   * @param {Array<{ codigo:string, asignatura:string, par1:(number|null),
-   *                  par2:(number|null), par3:(number|null), par4:(number|null),
-   *                  prom:(number|null), hab:(number|null), final:(number|null),
-   *                  obs:string }>} datos.filas - Filas de la tabla de notas, una por
-   *        asignatura, en orden.
-   * @param {{ par1:(number|null), par2:(number|null), par3:(number|null),
-   *           par4:(number|null) }} datos.promedioClasePorParcial - Promedio de la
-   *        clase por parcial (fila "Promedio Anual" del pie de tabla).
+   * @param {Array<Object>} datos.filas - Filas de la tabla de notas, una por
+   *        asignatura, en orden. Anual: { codigo, asignatura, par1..par4, prom,
+   *        hab, final, obs } (obs = estado APROBADO/REPROBADO por asignatura).
+   *        Bimestral: { codigo, asignatura, teo, pra, total, estado }.
+   * @param {Object} datos.promedioClasePorParcial - Promedio de la clase para la
+   *        fila de pie, con claves que calzan con las columnas: { par1..par4 }
+   *        (anual) o { total } (bimestral).
+   * @param {string[]} [datos.observaciones] - Observaciones del estudiante (una
+   *        línea por bimestre con texto), listadas debajo de la tabla.
    * @returns {Promise<Buffer>} Buffer del archivo .pdf.
    */
   generarBoletinEstudiante(_datos) {

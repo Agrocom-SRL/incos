@@ -15,42 +15,41 @@
  * Uso: Solo dentro del componente WizardForm
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 
 /**
  * Hook para manejar la navegación de un wizard/stepper
- * 
+ *
  * @param {number} initialStep - Paso inicial (default: 0)
  * @param {number} totalSteps - Total de pasos del wizard
  * @returns {Object} Objeto con estado y handlers de navegación
  */
 export const useWizard = (initialStep = 0, totalSteps = 0) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
-  const prevTotalStepsRef = useRef(totalSteps);
-  const prevInitialStepRef = useRef(undefined);
+  const [prevInitialStep, setPrevInitialStep] = useState(initialStep);
+  const [prevTotalSteps, setPrevTotalSteps] = useState(totalSteps);
 
   // Sincronizar currentStep con initialStep solo cuando initialStep cambia (p. ej. al cargar edición en paso 2).
   // NO sincronizar cuando solo cambia totalSteps: al elegir TRASPASO/TRANSITABILIDAD el wizard pasa de 4 a 5 pasos;
   // el paso inicial (Tipo de admisión) sigue siendo índice 0 en la nueva vista. Si sincronizáramos con initialStep
   // (ej. 1 en edición), el usuario saltaría al paso 1 de la nueva vista en lugar de quedarse en el paso 0.
-  useEffect(() => {
-    const inRange = initialStep >= 0 && initialStep < totalSteps && initialStep !== currentStep;
-    const initialStepChanged = prevInitialStepRef.current !== initialStep; // true en primer run (undefined !== initialStep)
-    if (inRange && initialStepChanged) {
+  // (ajuste durante render con comparación de prev, sin setState en effect)
+  if (prevInitialStep !== initialStep) {
+    setPrevInitialStep(initialStep);
+    if (initialStep >= 0 && initialStep < totalSteps && initialStep !== currentStep) {
       setCurrentStep(initialStep);
     }
-    prevInitialStepRef.current = initialStep;
-  }, [initialStep, totalSteps]);
+  }
 
   // Si el número de pasos disminuye: solo ajustar currentStep si queda fuera de rango (clamp).
   // No resetear siempre a 0, porque con steps dinámicos el padre puede re-renderizar y totalSteps
   // puede bajar temporalmente (ej. tipoAdmision leído en otro tick) y luego volver a subir.
-  useEffect(() => {
-    if (totalSteps < prevTotalStepsRef.current) {
+  if (prevTotalSteps !== totalSteps) {
+    setPrevTotalSteps(totalSteps);
+    if (totalSteps < prevTotalSteps) {
       setCurrentStep((prev) => Math.min(prev, Math.max(0, totalSteps - 1)));
     }
-    prevTotalStepsRef.current = totalSteps;
-  }, [totalSteps]);
+  }
 
   // Avanzar al siguiente paso
   const next = useCallback(() => {

@@ -67,9 +67,17 @@ const PoliticaInstitucionalPage = () => {
     [form],
   );
 
+  // Al llegar una política fresca se limpia el error de guardado (ajuste durante
+  // render, sin setState en effect); el volcado al formulario sí es un effect
+  // porque sincroniza un sistema externo (la instancia de Form).
+  const [prevPolitica, setPrevPolitica] = useState(null);
+  if (politica !== prevPolitica) {
+    setPrevPolitica(politica);
+    if (politica) setErrorGuardado(null);
+  }
+
   useEffect(() => {
     if (!politica) return;
-    setErrorGuardado(null);
     aplicarPoliticaAlFormulario(politica);
   }, [politica, aplicarPoliticaAlFormulario]);
 

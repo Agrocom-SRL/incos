@@ -13,6 +13,7 @@ import {
   exportCentralizadorParaleloBimestreValidator,
   exportCentralizadorAnualParaleloValidator,
   exportBoletinEstudianteValidator,
+  exportMiBoletinPdfValidator,
   saveObservacionCentralizadorBimestreValidator,
   getCuadernoBimestreValidator,
   createEvaluacionCuadernoValidator,
@@ -191,11 +192,16 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   );
 
   /**
-   * GET /api/v1/calificaciones/mi-boletin/pdf
-   * Descarga el PDF del boletín del estudiante de la sesión.
+   * GET /api/v1/calificaciones/mi-boletin/pdf?bimestre=<1..4 opcional>
+   * Descarga el PDF del boletín del estudiante de la sesión. Sin `bimestre` el
+   * boletín es ANUAL; con él, BIMESTRAL de ese parcial. Mismo permiso.
    */
-  router.get('/mi-boletin/pdf', ...miBoletinExportar, (req, res, next) =>
-    controllers.exportMiBoletinEstudianteController.handle(req, res, next)
+  router.get(
+    '/mi-boletin/pdf',
+    ...miBoletinExportar,
+    exportMiBoletinPdfValidator,
+    validateRequest,
+    (req, res, next) => controllers.exportMiBoletinEstudianteController.handle(req, res, next)
   );
 
   /**

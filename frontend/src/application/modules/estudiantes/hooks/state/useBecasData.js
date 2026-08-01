@@ -16,7 +16,7 @@
  * Usado por: BecasProvider (para exponer el estado global vía Context)
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useBecasAsignadasApi, becasAsignadasListFetchParams } from '@application-estudiantes/hooks/api/useBecasAsignadasApi';
 import { useDeleteBecaAsignada } from '@application-estudiantes/hooks/api/useDeleteBecaAsignada';
 
@@ -31,7 +31,10 @@ export const useBecasData = () => {
     const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, totalPages: 0 });
 
     // Sincronizar estado local con datos de API cuando cambien
-    useEffect(() => {
+    // (ajuste durante render con comparación de prev, sin setState en effect)
+    const [prevBecasDataFromApi, setPrevBecasDataFromApi] = useState(becasDataFromApi);
+    if (becasDataFromApi !== prevBecasDataFromApi) {
+        setPrevBecasDataFromApi(becasDataFromApi);
         // Actualizar cuando hay datos de la API (carga inicial o refetch)
         // becasDataFromApi es un objeto con { becas: [...], total, page, limit, totalPages }
         if (becasDataFromApi) {
@@ -48,7 +51,7 @@ export const useBecasData = () => {
                 setBecas(becasDataFromApi);
             }
         }
-    }, [becasDataFromApi]);
+    }
 
     /**
      * Agrega una nueva beca al estado en memoria

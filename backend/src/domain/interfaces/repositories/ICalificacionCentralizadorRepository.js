@@ -31,4 +31,21 @@ export class ICalificacionCentralizadorRepository {
   async listarFilasCentralizadorPorEstudiante(estudianteId) {
     throw new Error('Method listarFilasCentralizadorPorEstudiante() must be implemented');
   }
+
+  /**
+   * Desglose TEÓRICO/PRÁCTICO de UN bimestre para las asignaturas de UN
+   * estudiante del paralelo (boletín bimestral). Reutiliza la vista 119
+   * (vista_base_calificacion_resumen_curso_bimestre_fila) unida a la 135 por
+   * matricula_materia_id — sin vistas nuevas. Una fila por oferta_curso con
+   * nota_teorico/nota_practico (consolidadas), cuaderno_teorico/cuaderno_practico
+   * (bimestre abierto), nota_efectiva, estado_bimestre y tiene_registro.
+   * @param {number} paraleloGestionId
+   * @param {number} estudianteId
+   * @param {number} bimestre - 1..4
+   * @returns {Promise<Array<Object>>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async listarDesgloseBimestrePorEstudiante(paraleloGestionId, estudianteId, bimestre) {
+    throw new Error('Method listarDesgloseBimestrePorEstudiante() must be implemented');
+  }
 }

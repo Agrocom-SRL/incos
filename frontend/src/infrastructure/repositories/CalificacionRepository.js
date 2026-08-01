@@ -978,17 +978,20 @@ class CalificacionRepository {
 
   /**
    * Portal del estudiante: boletín del estudiante AUTENTICADO en PDF.
-   * GET /v1/calificaciones/mi-boletin/pdf
+   * GET /v1/calificaciones/mi-boletin/pdf?bimestre=<1..4 opcional>
    *
-   * Mecánica idéntica a `descargarBoletinEstudiante` (descarga blob, respeta el
-   * filename del header `Content-Disposition`).
+   * Sin `bimestre` descarga el boletín ANUAL; con él, el boletín BIMESTRAL de
+   * ese parcial. Mecánica idéntica a `descargarBoletinEstudiante` (descarga
+   * blob, respeta el filename del header `Content-Disposition`).
    *
+   * @param {{ bimestre?: number|null }} [opciones]
    * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
    */
-  async descargarMiBoletin() {
+  async descargarMiBoletin({ bimestre = null } = {}) {
     try {
       const response = await apiClient.get(CALIFICACIONES_ENDPOINTS.MI_BOLETIN_PDF, {
         responseType: 'blob',
+        params: bimestre != null ? { bimestre } : undefined,
       });
 
       const disposition = response.headers['content-disposition'] || '';

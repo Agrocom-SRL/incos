@@ -16,7 +16,7 @@
  * Usado por: PagosProvider (para exponer el estado global vía Context)
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { usePagosApi, pagosListFetchParams } from '@application-pagos/hooks/api/usePagosApi';
 import { useDeletePagoAporte } from '@application-pagos/hooks/api/useDeletePagoAporte';
 
@@ -26,11 +26,14 @@ export const usePagosData = () => {
 
     const [pagos, setPagos] = useState([]);
 
-    useEffect(() => {
+    // Sincronizar estado local con datos de API (ajuste durante render, sin setState en effect)
+    const [prevPagosFromApi, setPrevPagosFromApi] = useState(pagosFromApi);
+    if (pagosFromApi !== prevPagosFromApi) {
+        setPrevPagosFromApi(pagosFromApi);
         if (pagosFromApi.length > 0) {
             setPagos(pagosFromApi);
         }
-    }, [pagosFromApi]);
+    }
 
     const addPago = useCallback((newPago) => {
         setPagos((prev) => {

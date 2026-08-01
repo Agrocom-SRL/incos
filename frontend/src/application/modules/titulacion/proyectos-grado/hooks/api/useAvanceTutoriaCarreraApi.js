@@ -24,18 +24,25 @@ export const useAvanceTutoriaCarreraApi = ({ gestionId, carreraId } = {}) => {
   const cargar = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const result = await proyectoGradoRepository.obtenerAvanceTutoriaCarrera({
-      gestionId: gestionId ?? undefined,
-      carreraId: carreraId ?? undefined,
-    });
-    if (result?.success) {
-      const raw = result.data?.[AVANCE_TUTORIA_CARRERA_DATA_KEY] ?? result.data;
-      setAvance(mapAvanceTutoriaCarrera(raw));
-    } else {
+    let result = null;
+    try {
+      result = await proyectoGradoRepository.obtenerAvanceTutoriaCarrera({
+        gestionId: gestionId ?? undefined,
+        carreraId: carreraId ?? undefined,
+      });
+      if (result?.success) {
+        const raw = result.data?.[AVANCE_TUTORIA_CARRERA_DATA_KEY] ?? result.data;
+        setAvance(mapAvanceTutoriaCarrera(raw));
+      } else {
+        setAvance(null);
+        setError(result?.error || 'No se pudo cargar el reporte de avance de tutorías por carrera');
+      }
+    } catch (err) {
       setAvance(null);
-      setError(result?.error || 'No se pudo cargar el reporte de avance de tutorías por carrera');
+      setError(err?.message || String(err));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
     return result;
   }, [gestionId, carreraId]);
 

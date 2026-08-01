@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGestionesCatalogApi, useParalelosEstadoApi } from '@application-shared/hooks';
 import { useHorariosPendientesSidebarApi } from '../api/useHorariosPendientesSidebarApi';
@@ -113,13 +113,20 @@ export const useGestionHorariosDashboardState = () => {
         return { total, sinDocentes, sinAulas, sinHorarios, completos };
     }, [filteredParallels]);
 
-    /** Tablero si hay trabajo pendiente; tabla si todos los paralelos visibles están completos. */
-    useEffect(() => {
-        if (estadoLoading) return;
-        const requiereAtencion =
-            kpis.sinDocentes > 0 || kpis.sinAulas > 0 || kpis.sinHorarios > 0;
-        setViewMode(requiereAtencion ? 'board' : 'table');
-    }, [estadoLoading, kpis.sinDocentes, kpis.sinAulas, kpis.sinHorarios]);
+    /**
+     * Tablero si hay trabajo pendiente; tabla si todos los paralelos visibles están
+     * completos (ajuste durante render con firma de KPIs, sin setState en effect).
+     */
+    const kpisViewSignature = `${estadoLoading}|${kpis.sinDocentes}|${kpis.sinAulas}|${kpis.sinHorarios}`;
+    const [prevKpisViewSignature, setPrevKpisViewSignature] = useState(null);
+    if (kpisViewSignature !== prevKpisViewSignature) {
+        setPrevKpisViewSignature(kpisViewSignature);
+        if (!estadoLoading) {
+            const requiereAtencion =
+                kpis.sinDocentes > 0 || kpis.sinAulas > 0 || kpis.sinHorarios > 0;
+            setViewMode(requiereAtencion ? 'board' : 'table');
+        }
+    }
 
     const boardByStatus = useMemo(() => {
         return BOARD_COLUMNS.map((bucketKey) => ({

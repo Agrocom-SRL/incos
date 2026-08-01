@@ -275,6 +275,10 @@ export function registerCalificacionesResource(container) {
         ),
         parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
         boletinPdfGenerator: c.resolve(SERVICIOS_TOKENS.boletinPdfGenerator),
+        // Desglose teórico/práctico del bimestre (boletín bimestral, vistas 135+119).
+        calificacionCentralizadorRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCentralizadorRepository
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger)
       })
   );

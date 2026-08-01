@@ -31,8 +31,8 @@ export const BOLETIN_PDF_CONFIG = {
     borderWidth: 0.8
   },
   /**
-   * Columnas de la tabla de notas, en orden. `width` es proporción (suman 1.0).
-   * `tinted` marca columnas de resumen con leve fondo gris.
+   * Columnas de la tabla de notas del boletín ANUAL, en orden. `width` es
+   * proporción (suman 1.0). `tinted` marca columnas de resumen con leve fondo gris.
    */
   columns: [
     { key: 'codigo', label: 'CÓDIGO', width: 0.08, align: 'center' },
@@ -45,6 +45,19 @@ export const BOLETIN_PDF_CONFIG = {
     { key: 'hab', label: 'HAB.', width: 0.06, align: 'center', tinted: true },
     { key: 'final', label: 'FINAL', width: 0.07, align: 'center', tinted: true },
     { key: 'obs', label: 'OBSERVACIONES', width: 0.22, align: 'left' }
+  ],
+  /**
+   * Columnas de la tabla del boletín BIMESTRAL: desglose del bimestre por
+   * asignatura (nota TEÓRICA + PRÁCTICA = TOTAL, regla institucional
+   * nota_bimestre = teórico + práctico) y ESTADO según la escala vigente.
+   */
+  columnsBimestre: [
+    { key: 'codigo', label: 'CÓDIGO', width: 0.1, align: 'center' },
+    { key: 'asignatura', label: 'ASIGNATURA', width: 0.4, align: 'left' },
+    { key: 'teo', label: 'TEÓRICA', width: 0.12, align: 'center' },
+    { key: 'pra', label: 'PRÁCTICA', width: 0.12, align: 'center' },
+    { key: 'total', label: 'TOTAL', width: 0.12, align: 'center', tinted: true },
+    { key: 'estado', label: 'ESTADO', width: 0.14, align: 'center', tinted: true }
   ],
   /** Etiqueta de la fila de pie con los promedios de clase por parcial. */
   footerRowLabel: 'PROMEDIO ANUAL',

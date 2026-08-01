@@ -12,6 +12,7 @@ export { exportCentralizadorParaleloBimestreValidator } from './export-centraliz
 export { exportCentralizadorAnualParaleloValidator } from './export-centralizador-anual-paralelo.validator.js';
 export { saveObservacionCentralizadorBimestreValidator } from './save-observacion-centralizador-bimestre.validator.js';
 export { exportBoletinEstudianteValidator } from './export-boletin-estudiante.validator.js';
+export { exportMiBoletinPdfValidator } from './export-mi-boletin.validator.js';
 export { savePoliticaInstitucionalValidator } from './save-politica-institucional.validator.js';
 export { listTiposEvaluacionValidator } from './list-tipos-evaluacion.validator.js';
 export {

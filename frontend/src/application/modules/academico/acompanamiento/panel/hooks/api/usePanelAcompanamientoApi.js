@@ -21,15 +21,22 @@ export const usePanelAcompanamientoApi = ({ gestionId } = {}) => {
   const cargar = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const result = await panelAcompanamientoRepository.obtenerPanel({ gestionId });
-    if (result?.success) {
-      const raw = result.data?.[PANEL_ACOMPANAMIENTO_DATA_KEY] ?? result.data;
-      setPanel(mapPanelAcompanamiento(raw));
-    } else {
+    let result = null;
+    try {
+      result = await panelAcompanamientoRepository.obtenerPanel({ gestionId });
+      if (result?.success) {
+        const raw = result.data?.[PANEL_ACOMPANAMIENTO_DATA_KEY] ?? result.data;
+        setPanel(mapPanelAcompanamiento(raw));
+      } else {
+        setPanel(null);
+        setError(result?.error || 'No se pudo cargar el panel de acompañamiento');
+      }
+    } catch (err) {
       setPanel(null);
-      setError(result?.error || 'No se pudo cargar el panel de acompañamiento');
+      setError(err?.message || String(err));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
     return result;
   }, [gestionId]);
 

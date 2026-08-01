@@ -22,23 +22,30 @@ export const useGetMiProyectoGrado = () => {
     setLoading(true);
     setError(null);
     setSinProyecto(false);
-    const result = await proyectoGradoRepository.obtenerMiProyecto();
-    if (result?.success) {
-      const raw = result.data?.[PROYECTO_GRADO_DATA_KEY] ?? result.data;
-      const mapped = mapProyectoGradoDetail(raw);
-      setProyecto(mapped);
-      setSinProyecto(mapped == null);
-    } else {
-      setProyecto(null);
-      // Sin proyecto registrado (404/NOT_FOUND) → estado vacío, no error.
-      const code = result?.errorDetails?.code;
-      if (code === 'NOT_FOUND' || /no.*(tiene|existe|encontr)/i.test(result?.error || '')) {
-        setSinProyecto(true);
+    let result = null;
+    try {
+      result = await proyectoGradoRepository.obtenerMiProyecto();
+      if (result?.success) {
+        const raw = result.data?.[PROYECTO_GRADO_DATA_KEY] ?? result.data;
+        const mapped = mapProyectoGradoDetail(raw);
+        setProyecto(mapped);
+        setSinProyecto(mapped == null);
       } else {
-        setError(result?.error || 'No se pudo cargar su proyecto de grado');
+        setProyecto(null);
+        // Sin proyecto registrado (404/NOT_FOUND) → estado vacío, no error.
+        const code = result?.errorDetails?.code;
+        if (code === 'NOT_FOUND' || /no.*(tiene|existe|encontr)/i.test(result?.error || '')) {
+          setSinProyecto(true);
+        } else {
+          setError(result?.error || 'No se pudo cargar su proyecto de grado');
+        }
       }
+    } catch (err) {
+      setProyecto(null);
+      setError(err?.message || String(err));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
     return result;
   }, []);
 

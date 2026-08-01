@@ -22,15 +22,22 @@ export const useMisAlumnosEnRiesgoApi = ({ autoFetch = true } = {}) => {
   const cargar = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const result = await alertaRiesgoRepository.obtenerMisAlumnos();
-    if (result?.success) {
-      const raw = result.data?.[MIS_ALUMNOS_EN_RIESGO_DATA_KEY] ?? result.data;
-      setAlertas(mapAlertasRiesgoList(raw));
-    } else {
+    let result = null;
+    try {
+      result = await alertaRiesgoRepository.obtenerMisAlumnos();
+      if (result?.success) {
+        const raw = result.data?.[MIS_ALUMNOS_EN_RIESGO_DATA_KEY] ?? result.data;
+        setAlertas(mapAlertasRiesgoList(raw));
+      } else {
+        setAlertas([]);
+        setError(result?.error || 'No se pudieron cargar sus alumnos en riesgo');
+      }
+    } catch (err) {
       setAlertas([]);
-      setError(result?.error || 'No se pudieron cargar sus alumnos en riesgo');
+      setError(err?.message || String(err));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
     return result;
   }, []);
 

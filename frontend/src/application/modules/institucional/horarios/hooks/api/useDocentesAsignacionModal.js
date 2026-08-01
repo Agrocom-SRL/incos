@@ -13,23 +13,24 @@ export function useDocentesAsignacionModal({ enabled }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!enabled) {
-      setDocentes([]);
-      setLoading(false);
-      return undefined;
-    }
-
     let cancelled = false;
-    setLoading(true);
 
-    DocenteRepository.obtenerTodos({
-      params: {
-        page: 1,
-        limit: PAGE_LIMIT,
-        incluir_estadisticas: 'false',
-      },
-    })
-      .then((res) => {
+    const cargar = async () => {
+      if (!enabled) {
+        setDocentes([]);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await DocenteRepository.obtenerTodos({
+          params: {
+            page: 1,
+            limit: PAGE_LIMIT,
+            incluir_estadisticas: 'false',
+          },
+        });
         if (cancelled) return;
         const payload = res?.success ? res.data : null;
         const rows = Array.isArray(payload)
@@ -38,13 +39,14 @@ export function useDocentesAsignacionModal({ enabled }) {
             ? payload.docentes
             : [];
         setDocentes(mapDocentesList(rows));
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setDocentes([]);
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    };
+
+    cargar();
 
     return () => {
       cancelled = true;

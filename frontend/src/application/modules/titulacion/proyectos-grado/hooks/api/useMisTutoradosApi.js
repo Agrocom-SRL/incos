@@ -22,15 +22,22 @@ export const useMisTutoradosApi = () => {
   const cargar = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const result = await proyectoGradoRepository.obtenerMisTutorados();
-    if (result?.success) {
-      const raw = result.data?.[MIS_TITORADOS_DATA_KEY] ?? result.data;
-      setProyectos(mapProyectosGradoList(raw));
-    } else {
+    let result = null;
+    try {
+      result = await proyectoGradoRepository.obtenerMisTutorados();
+      if (result?.success) {
+        const raw = result.data?.[MIS_TITORADOS_DATA_KEY] ?? result.data;
+        setProyectos(mapProyectosGradoList(raw));
+      } else {
+        setProyectos([]);
+        setError(result?.error || 'No se pudieron cargar sus proyectos tutorados');
+      }
+    } catch (err) {
       setProyectos([]);
-      setError(result?.error || 'No se pudieron cargar sus proyectos tutorados');
+      setError(err?.message || String(err));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
     return result;
   }, []);
 

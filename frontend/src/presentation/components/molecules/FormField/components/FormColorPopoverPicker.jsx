@@ -1,7 +1,7 @@
 /**
  * Selector de color en popover (mismo patrón que DatePicker — sin modal).
  */
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Flex, Popover, Typography } from 'antd';
 import { BgColorsOutlined } from '@ant-design/icons';
 import { HexColorPicker } from 'react-colorful';
@@ -36,11 +36,17 @@ const FormColorPopoverPicker = ({ value, onChange, disabled, readOnly, field }) 
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(safe);
 
-  useEffect(() => {
+  // Con el popover cerrado, el borrador sigue al valor externo
+  // (ajuste durante render con comparación de prev, sin setState en effect).
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevSafe, setPrevSafe] = useState(safe);
+  if (open !== prevOpen || safe !== prevSafe) {
+    setPrevOpen(open);
+    setPrevSafe(safe);
     if (!open) {
       setDraft(safe);
     }
-  }, [safe, open]);
+  }
 
   const handleOpenChange = (next) => {
     if (d) return;

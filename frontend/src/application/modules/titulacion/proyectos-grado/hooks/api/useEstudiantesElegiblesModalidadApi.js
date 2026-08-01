@@ -28,29 +28,39 @@ export const useEstudiantesElegiblesModalidadApi = ({ carreraId, gestionId } = {
   useEffect(() => {
     let activo = true;
 
-    if (carreraId == null) {
-      setEstudiantes([]);
-      setError(null);
-      setLoading(false);
-      return undefined;
-    }
-
-    setLoading(true);
-    setError(null);
-    (async () => {
-      const result = await proyectoGradoRepository.obtenerEstudiantesElegibles({
-        params: { carreraId, gestionId: gestionId ?? undefined, limit: CATALOG_LIST_LIMIT },
-      });
-      if (!activo) return;
-      if (result?.success) {
-        const raw = result.data?.[ESTUDIANTES_ELEGIBLES_DATA_KEY] ?? result.data;
-        setEstudiantes(mapEstudiantesElegiblesList(raw));
-      } else {
+    const cargar = async () => {
+      if (carreraId == null) {
         setEstudiantes([]);
-        setError(result?.error || 'No se pudieron cargar los estudiantes elegibles');
+        setError(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    })();
+
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await proyectoGradoRepository.obtenerEstudiantesElegibles({
+          params: { carreraId, gestionId: gestionId ?? undefined, limit: CATALOG_LIST_LIMIT },
+        });
+        if (!activo) return;
+        if (result?.success) {
+          const raw = result.data?.[ESTUDIANTES_ELEGIBLES_DATA_KEY] ?? result.data;
+          setEstudiantes(mapEstudiantesElegiblesList(raw));
+        } else {
+          setEstudiantes([]);
+          setError(result?.error || 'No se pudieron cargar los estudiantes elegibles');
+        }
+      } catch (err) {
+        if (activo) {
+          setEstudiantes([]);
+          setError(err?.message || String(err));
+        }
+      } finally {
+        if (activo) setLoading(false);
+      }
+    };
+
+    cargar();
 
     return () => {
       activo = false;

@@ -25,31 +25,41 @@ export const usePlanillaAvanceTercerAnioApi = ({ carreraId, gestionId, bimestre 
   useEffect(() => {
     let activo = true;
 
-    if (carreraId == null || bimestre == null) {
-      setPlanilla(null);
-      setError(null);
-      setLoading(false);
-      return undefined;
-    }
-
-    setLoading(true);
-    setError(null);
-    (async () => {
-      const result = await proyectoGradoRepository.obtenerPlanillaAvanceTercerAnio({
-        carreraId,
-        gestionId: gestionId ?? undefined,
-        bimestre,
-      });
-      if (!activo) return;
-      if (result?.success) {
-        const raw = result.data?.[PLANILLA_AVANCE_TERCER_ANIO_DATA_KEY] ?? result.data;
-        setPlanilla(mapPlanillaAvanceTercerAnio(raw));
-      } else {
+    const cargar = async () => {
+      if (carreraId == null || bimestre == null) {
         setPlanilla(null);
-        setError(result?.error || 'No se pudo cargar la planilla de avance de tutorías');
+        setError(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    })();
+
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await proyectoGradoRepository.obtenerPlanillaAvanceTercerAnio({
+          carreraId,
+          gestionId: gestionId ?? undefined,
+          bimestre,
+        });
+        if (!activo) return;
+        if (result?.success) {
+          const raw = result.data?.[PLANILLA_AVANCE_TERCER_ANIO_DATA_KEY] ?? result.data;
+          setPlanilla(mapPlanillaAvanceTercerAnio(raw));
+        } else {
+          setPlanilla(null);
+          setError(result?.error || 'No se pudo cargar la planilla de avance de tutorías');
+        }
+      } catch (err) {
+        if (activo) {
+          setPlanilla(null);
+          setError(err?.message || String(err));
+        }
+      } finally {
+        if (activo) setLoading(false);
+      }
+    };
+
+    cargar();
 
     return () => {
       activo = false;
