@@ -86,7 +86,7 @@ host `127.0.0.1`, puerto `8889`, usuario `root`, password en `backend/.env`
 | 5 | Títulos y certificados (TUT) | ⛔ GATED | — | — | `titulacion-y-dominios-pendientes.md` §Fase 5 |
 | — | 3 funcionalidades nuevas TUT (ver §4) | ✅ | ✅ (vistas 178-181) | ✅ (`035ed101` + corrección menú 2026-08-01) | `titulacion-avance-y-modalidad-plan-desarrollo.md` |
 | — | Seguimiento académico (ACA, reorganización de menú) | n/a (solo frontend) | n/a | ✅ verificado 2026-08-01 (pendiente de commit) | ver nota §3.1 |
-| — | Acta de defensa de grado (TIT) — Iteración 1+2 | ✅ | ⛔ DDL listo, sin aplicar | ✅ (pendiente de commit) | `acta-defensa-grado-plan-desarrollo.md` |
+| — | Acta de defensa de grado (TIT) — Iteración 1+2, F/G verificado | ✅ | ✅ aplicado | ✅ (pendiente de commit) | `acta-defensa-grado-plan-desarrollo.md` |
 
 ### Números de referencia (para no colisionar)
 
@@ -164,11 +164,26 @@ Lo único activo:
   plan). Tab «Acta de defensa» en `ProyectoGradoDetail.jsx` + modal de
   registro + sección de solo lectura en el portal del estudiante
   (`MiProyectoGradoPage.jsx`). Lint limpio y build de producción OK; **no
-  commiteado**. **Bloqueado hasta aquí:** Bloques F (datos de prueba) y G
-  (verificación con roles) requieren las tablas `actas_defensa`/
-  `tribunal_acta_defensa` aplicadas en BD real (A3) — sin eso no hay forma
-  de registrar un acta real para probar. Próximo paso: el usuario aprueba y
-  aplica el DDL de `22-modalidades-grado.sql`, luego se corre F/G.
+  commiteado**.
+- **Acta de defensa de grado (TIT): Bloques F+G TERMINADOS 2026-08-02.**
+  Usuario aplicó el DDL del Bloque A y el seeder `57-seed-titulacion-modalidades.sql`
+  (bloqueador previo no relacionado: catálogo `modalidades_grado` vacío).
+  Datos de prueba reales creados vía API y **persistidos como demo**
+  (proyectos 1-5, actas 001-005, casos APRUEBA/REPRUEBA/PSP grupal). RBAC en
+  vivo con `admin`/`docente`/estudiante confirmado (403 correctos); RBAC de
+  `DIR_ACADEMICO`/`SEC_ACADEMICA` solo confirmado por lectura del seed 65,
+  sin credenciales para probarlo en vivo. Máquina de estados (409 fuera de
+  DEFENSA), numeración correlativa por gestión (409 en duplicado) y PSP
+  grupal (2 actas, mismo tribunal) confirmados en vivo. **Bug real encontrado
+  y corregido**: `ActaDefensaPdfGenerator._buildFirmas` no descontaba
+  `signatureTemplateFooterHeight`, las firmas se dibujaban sobre el pie de
+  página institucional — alineado al patrón de `FormularioModalidadGradoPdfGenerator`.
+  **Hallazgo abierto, pendiente de decisión del usuario**: ESTUDIANTE puede
+  leer (`GET`) el acta de un proyecto ajeno vía API directa (200, no 403) —
+  no explotable desde la UI real (usa `/mi-proyecto`, sin ID libre), pero es
+  un guard anti-IDOR ausente por precedente de todo el módulo (`GET /:id`,
+  bitácora, dictámenes tampoco lo tienen), no una regresión de esta
+  extensión. Detalle completo en el plan, sección "Estado de los Bloques F y G".
 
 ### 3.2 Histórico (ya ejecutado, conservado como referencia)
 

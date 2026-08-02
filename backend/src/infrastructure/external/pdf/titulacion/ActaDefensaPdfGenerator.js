@@ -264,6 +264,7 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
     const { margins } = cfg;
     const lineWidth = (cfg.signatureLineWidth ?? 150) * 0.8;
     const lineThickness = cfg.signatureLineThickness ?? 1;
+    const templateFooterHeight = cfg.signatureTemplateFooterHeight ?? 0;
     const spaceLineToFirst = cfg.signatureSpacingLineToFirstText ?? 8;
     const spaceBetweenLines = cfg.signatureSpacingBetweenTextLines ?? 4;
 
@@ -288,7 +289,11 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
     const filaAltura = lineThickness + spaceLineToFirst + 2 * fontSize + spaceBetweenLines;
 
     // Fila inferior primero (más cerca del pie) para calcular Y hacia arriba.
-    const yFilaInferior = margins.bottom + (cfg.signatureFooterPadding ?? 10) + filaAltura;
+    // templateFooterHeight: altura de la franja verde/contacto pre-impresa de
+    // Plantilla.pdf — sin sumarla, las firmas se dibujan encima del pie de
+    // página (mismo cómputo que FormularioModalidadGradoPdfGenerator._buildFirmas).
+    const yFilaInferior =
+      margins.bottom + templateFooterHeight + (cfg.signatureFooterPadding ?? 10) + filaAltura;
     const yFilaSuperior = yFilaInferior + filaAltura + (cfg.spacing.section ?? 16);
 
     const filas = [

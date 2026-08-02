@@ -107,7 +107,11 @@ commiteó; el working tree queda listo para revisión del usuario.
 - [x] **D5** (opcional) — `MiProyectoGradoPage.jsx`/`useMiProyectoGradoPage.js`:
   reusa `ProyectoActaDefensaSection` en modo lectura (`puedeRegistrar={false}`,
   sin export — ESTUDIANTE no tiene EXPORTAR).
-- [ ] **F/G** — bloqueados por A3 (DDL sin aplicar en BD real).
+- [x] **F/G** — desbloqueados 2026-08-02: el usuario aplicó el DDL del
+  Bloque A (`actas_defensa`/`tribunal_acta_defensa`) y el seeder
+  `57-seed-titulacion-modalidades.sql` (catálogo `modalidades_grado`, que
+  estaba vacío — bloqueador previo no relacionado con el acta, ver abajo).
+  Detalle en "Estado de los Bloques F y G" más abajo.
 
 **Discrepancias/decisiones reportadas por el agente `frontend` (no
 resueltas en silencio):**
@@ -140,6 +144,115 @@ Verificación técnica: lint limpio (`--max-warnings 0`) en los 11 archivos
 tocados y en todo `titulacion/**`; build de producción (`vite build`) OK.
 Los 438 errores de lint del repo completo son preexistentes y ajenos a este
 módulo (`pagos`, `breadcrumbUtils`, etc.).
+
+---
+
+## Estado de los Bloques F y G — COMPLETADOS 2026-08-02
+
+Ejecutados con backend + frontend levantados en local contra la BD real del
+usuario (tablas del Bloque A ya aplicadas). Datos de prueba **persistidos a
+propósito** (decisión del usuario: "los datos que uses de prueba lo puedes
+persistir para que también los uses como presentación, como es local no
+importa esos datos") — sirven como demo funcional del módulo.
+
+**Bloqueador previo no relacionado con el acta**: `modalidades_grado` estaba
+vacía (el seeder `57-seed-titulacion-modalidades.sql` — PSP/PG/PE/TD — nunca
+se había corrido), lo que impedía crear cualquier proyecto de grado. El
+usuario lo aplicó 2026-08-02.
+
+**Datos de prueba creados (vía API, usuario `admin`)**:
+
+| Proyecto | Modalidad | Estudiante(s) | Acta(s) | Resultado |
+|---|---|---|---|---|
+| 2 | PG (individual) | CHOLIMA ANTELO DIEGO | 001 | REPRUEBA (45 < 61) |
+| 3 | PSP (grupal, 2 integrantes) | CUÑANCHIRO PEDRO LUIS (titular) + DREW OSHADY ELKIN | 002 / 003 | APRUEBA (70) / REPRUEBA (55) |
+| 4 | PG (individual) | ALARCON RAMIREZ NOEMI | 004 | APRUEBA (85) |
+| 5 | PG (individual, prueba de duplicado) | ACAPA PACO BISMARK YAMIL | 005 | APRUEBA (65) |
+| 1 | PG (individual) | TAPIA ANA MELIXA | — (bloqueado a propósito, ver hallazgo) | queda en `DEFENSA` sin acta |
+
+**Hallazgo — dato preexistente sucio, no causado por esta extensión**: el
+proyecto 1 heredó un `integrantes_proyecto` huérfano (`estudiante_id=21`,
+`created_at` 2026-07-29, anterior a esta sesión) ya marcado
+ACTIVO/TITULAR, a pesar de que `proyectos_grado` estaba vacía al iniciar.
+El AUTO_INCREMENT de `proyectos_grado` reusó el id `1`, y
+`RegistrarActaDefensaUseCase._validarCalificaciones` correctamente rechazó
+el registro (400: "calificaciones debe incluir exactamente una calificación
+por cada integrante ACTIVO") porque no se envió calificación para el
+integrante huérfano — el use case funcionó como debía frente a datos sucios.
+No se tocó ese registro (fuera del alcance de esta tarea); queda como
+evidencia de una inconsistencia de datos preexistente en `integrantes_proyecto`
+a limpiar en otra sesión si el usuario lo desea.
+
+### G — checklist de verificación (1-9 del plan)
+
+1. **Lint backend + lint/build frontend**: limpio (backend: `npx eslint` sobre
+   los archivos tocados, 0 errores; frontend: confirmado en el cierre del
+   Bloque D).
+2. **`dataKey == dataFieldName`**: confirmado contra la API real — `actasDefensa`
+   en `GET` y `POST /:id/acta-defensa`.
+3. **RBAC 3 capas (control total)**: confirmado con `admin` (mismas filas de
+   `roles_permisos` que DIR_ACADEMICO/RECTOR — "control total" del seed 65,
+   línea 112-121). **No se probó en vivo con una cuenta `DIR_ACADEMICO`
+   real** (existe `dir_academico_qa` en la BD pero su contraseña no se
+   pudo determinar); la cobertura de permisos es equivalente por fila de
+   RBAC, no por identidad de rol.
+4. **Rol sin permiso → 403**: confirmado en vivo:
+   - DOCENTE (`docente`/`12345678`): `POST /acta-defensa` → 403, `GET .../pdf` → 403.
+   - ESTUDIANTE (`13081716`/`13081716`): `POST /acta-defensa` → 403, `GET .../pdf` → 403.
+   - Sin token: 401.
+   - **SEC_ACADEMICA no se probó en vivo** (contraseña de `sec_academica_qa`
+     desconocida); confirmado solo por lectura del seed 65 (tiene EXPORTAR,
+     no tiene APROBAR) — mismo mecanismo `verificarPermiso` ya ejercitado
+     con DOCENTE/ESTUDIANTE.
+5. **ESTUDIANTE — guard anti-IDOR: NO SE CUMPLE, y es un hallazgo real, no
+   una regresión.** Prueba en vivo: el estudiante `13081716` (estudiante_id=1,
+   sin relación con el proyecto 4) hizo `GET /proyectos-grado/4/acta-defensa`
+   y obtuvo **200** (no 403). Esto coincide exactamente con el Hallazgo 2 ya
+   documentado al cerrar la Iteración 1 (backend): ningún satélite de la
+   ficha (`GET /:id`, bitácora, dictámenes, y ahora acta) valida pertenencia
+   por fila — el acceso de ESTUDIANTE se apoya solo en el permiso grueso
+   DETALLE, por precedente del resto del módulo. **Vía la UI real esto no es
+   explotable** (el frontend de estudiante usa `/mi-proyecto`, que resuelve
+   el ID en servidor desde la sesión — nunca deja que el estudiante elija un
+   ID arbitrario), pero un ESTUDIANTE que arme la llamada HTTP a mano SÍ
+   puede leer el acta de un proyecto ajeno. **Decisión pendiente del
+   usuario**: aceptar el riesgo (consistente con el resto del módulo, cambio
+   de alcance amplio si se corrige) o añadir `assertIntegranteActivo` en
+   `ListActasDefensaProyectoUseCase` (y por coherencia en los demás
+   satélites) en una iteración aparte.
+6. **Máquina de estados**: confirmado. `POST /acta-defensa` sobre un proyecto
+   que ya no está en `DEFENSA` (proyecto 4, ya `APROBADO`) → **409**. Tras
+   registrar el acta, `proyectos_grado` queda sincronizado
+   (`estado`/`fecha_defensa`/`nota_defensa`/`nota_final`) y se emite el
+   dictamen `VIABILIDAD_TECNICA` en la rama APROBADO (verificado en BD:
+   proyecto 3, dictamen id 5, `resultado='APROBADO'`); la rama REPROBADO
+   (proyecto 2) correctamente **no** emite ese dictamen.
+7. **Numeración**: confirmado correlativo **por gestión** (no por proyecto):
+   001, 002, 003, 004, 005 consecutivos entre 4 proyectos distintos de la
+   misma gestión. `numeroActa` manual duplicado (`2`, ya usado) → **409**.
+8. **PDF vs. imagen real**: generado y revisado campo a campo contra §1 —
+   folio rojo `004`, membrete, grilla, párrafo de apertura con fecha en
+   letras, título del proyecto, tribunal numerado, resolución con
+   calificación en número y letras, hora de conclusión, firmas. **Bug real
+   encontrado y corregido**: `ActaDefensaPdfGenerator._buildFirmas` no sumaba
+   `signatureTemplateFooterHeight` (45pt, la franja verde de contacto
+   pre-impresa de `Plantilla.pdf`) al calcular la fila inferior de firmas —
+   a diferencia de `FormularioModalidadGradoPdfGenerator._buildFirmas`, que sí
+   lo hace. Efecto: las firmas del tribunal/postulante se dibujaban encima
+   del pie de página institucional. Corregido replicando el patrón exacto
+   del generador de referencia (una línea); PDF regenerado y verificado sin
+   solape. Lint limpio tras el cambio.
+9. **PSP grupal**: confirmado — proyecto 3 (2 integrantes) generó 2 actas
+   (002/003) con el **mismo tribunal** (3 docentes) y números consecutivos,
+   una por integrante ACTIVO, con calificación/resultado independientes
+   (APRUEBA/REPRUEBA) mientras la transición del proyecto sigue la nota del
+   TITULAR.
+
+**Pendiente de decisión del usuario** (no bloquea el cierre del módulo):
+(a) punto 5 — añadir guard anti-IDOR en acta/satélites o aceptar el riesgo
+por ahora; (b) si quiere profundizar RBAC en vivo con `DIR_ACADEMICO`/
+`SEC_ACADEMICA` reales, indicar su contraseña o autorizar un reseteo puntual
+de esas 2 cuentas QA.
 
 ---
 
