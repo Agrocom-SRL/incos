@@ -243,4 +243,41 @@ export class IProyectoGradoRepository extends IBaseRepository {
   async exportarPlanillaAvanceTercerAnioExcel(_params) {
     throw new Error('Método exportarPlanillaAvanceTercerAnioExcel debe ser implementado');
   }
+
+  // ==========================================================
+  // Extensión 2026-08-01 — Acta de defensa de grado
+  // ==========================================================
+
+  /**
+   * Actas de defensa del proyecto (N si PSP grupal, tribunal anidado,
+   * proyecto·DETALLE, `actasDefensa`).
+   * @param {string|number} _id
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerActasDefensa(_id) {
+    throw new Error('Método obtenerActasDefensa debe ser implementado');
+  }
+
+  /**
+   * Registra el/los acta(s) de defensa del proyecto (proyecto·APROBAR,
+   * `actasDefensa`). Delega en el backend la transición
+   * DEFENSA → APROBADO|REPROBADO.
+   * @param {string|number} _id
+   * @param {Object} _data - { fechaDefensa, horaInicio, horaConclusion?, tribunal[3],
+   *   calificaciones[{estudianteId, calificacionFinal}], numeroActa?, observaciones? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async registrarActaDefensa(_id, _data) {
+    throw new Error('Método registrarActaDefensa debe ser implementado');
+  }
+
+  /**
+   * Descarga el PDF de un acta de defensa (proyecto·EXPORTAR, blob).
+   * @param {string|number} _id
+   * @param {string|number} _actaId
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async exportarActaDefensaPdf(_id, _actaId) {
+    throw new Error('Método exportarActaDefensaPdf debe ser implementado');
+  }
 }

@@ -20,6 +20,7 @@ import { createBitacoraTableColumns } from '@titulacion/proyectos-grado/config/b
 import ProyectoGradoFichaHeader from '@titulacion/proyectos-grado/components/organisms/ProyectoGradoFichaHeader';
 import ProyectoDatosSection from '@titulacion/proyectos-grado/components/organisms/ProyectoDatosSection';
 import ProyectoAvancesSection from '@titulacion/proyectos-grado/components/organisms/ProyectoAvancesSection';
+import ProyectoActaDefensaSection from '@titulacion/proyectos-grado/components/organisms/ProyectoActaDefensaSection';
 import SubirAvanceModal from '@titulacion/proyectos-grado/components/modals/SubirAvanceModal';
 import '@presentation/styles/pages/detail-page.css';
 
@@ -43,6 +44,7 @@ const MiProyectoGradoPage = () => {
     loadingBitacora,
     confirmandoId,
     handleConfirmarEntrada,
+    actaDefensa,
   } = useMiProyectoGradoPage();
 
   // Bitácora en modo estudiante: sin edición, con acción "Confirmar" (firma).
@@ -117,6 +119,15 @@ const MiProyectoGradoPage = () => {
               descargandoId={descargandoId}
               onDescargar={handleDescargarAvance}
               emptyText="Aún no subió avances. Use el botón «Subir avance» para enviar su primer archivo."
+            />
+
+            {/* Acta de defensa (D5): solo lectura — sin registrar ni exportar PDF (P7). */}
+            <ProyectoActaDefensaSection
+              proyecto={proyecto}
+              actas={actaDefensa.items}
+              loading={actaDefensa.loading}
+              error={actaDefensa.error}
+              puedeRegistrar={false}
             />
           </>
         ) : null}

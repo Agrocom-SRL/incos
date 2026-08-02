@@ -450,6 +450,57 @@ export class ProyectoGradoRepository extends IProyectoGradoRepository {
       return parseBlobError(error, 'Error al exportar la planilla de avance de tutorías');
     }
   }
+
+  // ==========================================================
+  // Extensión 2026-08-01 — Acta de defensa de grado
+  // ==========================================================
+
+  /**
+   * Actas de defensa del proyecto (N si PSP grupal, `actasDefensa`).
+   * GET /v1/proyectos-grado/:id/acta-defensa
+   */
+  async obtenerActasDefensa(id) {
+    try {
+      const response = await apiClient.get(PROYECTOS_GRADO_ENDPOINTS.ACTA_DEFENSA(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el acta de defensa del proyecto');
+    }
+  }
+
+  /**
+   * Registra el/los acta(s) de defensa (proyecto·APROBAR, `actasDefensa`);
+   * el backend delega la transición DEFENSA→APROBADO|REPROBADO.
+   * POST /v1/proyectos-grado/:id/acta-defensa
+   */
+  async registrarActaDefensa(id, data) {
+    try {
+      const response = await apiClient.post(PROYECTOS_GRADO_ENDPOINTS.ACTA_DEFENSA(id), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al registrar el acta de defensa');
+    }
+  }
+
+  /**
+   * Descarga el PDF de un acta de defensa (proyecto·EXPORTAR, blob autenticado).
+   * GET /v1/proyectos-grado/:id/acta-defensa/:actaId/pdf
+   */
+  async exportarActaDefensaPdf(id, actaId) {
+    try {
+      const response = await apiClient.get(
+        PROYECTOS_GRADO_ENDPOINTS.ACTA_DEFENSA_PDF(id, actaId),
+        { responseType: 'blob' },
+      );
+      return {
+        success: true,
+        blob: response.data,
+        fileName: parseFileName(response, 'acta_defensa.pdf'),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al exportar el acta de defensa');
+    }
+  }
 }
 
 export default new ProyectoGradoRepository();

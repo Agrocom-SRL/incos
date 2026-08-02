@@ -54,13 +54,21 @@ export const getEstadoProyectoPillClass = (estado) =>
  * Transiciones "hacia adelante" de la máquina de estados (T11). El backend es
  * la autoridad; esta tabla solo puebla el select del modal de aprobación.
  */
+/**
+ * Extensión 2026-08-01 (acta de defensa, D4 del plan): en `DEFENSA` las
+ * transiciones `APROBADO`/`REPROBADO` ya NO se ofrecen en el modal genérico
+ * de transición — las dispara el registro del acta de defensa (que delega
+ * en el backend la misma transición T11 con la nota del titular). El modal
+ * genérico sigue permitiendo `CANCELADO` desde `DEFENSA` (el backend sigue
+ * aceptando las 3 transiciones vía `/transiciones`, P4: solo se guía por UI).
+ */
 export const TRANSICIONES_PROYECTO = {
   PERFIL: ['APROBADO_PERFIL', 'CANCELADO'],
   APROBADO_PERFIL: ['DESARROLLO', 'CANCELADO'],
   DESARROLLO: ['PREDEFENSA', 'CANCELADO'],
   PREDEFENSA: ['APROBADO_PREDEFENSA', 'CANCELADO'],
   APROBADO_PREDEFENSA: ['DEFENSA', 'CANCELADO'],
-  DEFENSA: ['APROBADO', 'REPROBADO'],
+  DEFENSA: ['CANCELADO'],
   APROBADO: [],
   REPROBADO: [],
   CANCELADO: [],
@@ -135,6 +143,40 @@ export const formatResultadoDictamen = (resultado) =>
 /** Clase completa del StatusPill para el resultado de un dictamen. */
 export const getResultadoDictamenPillClass = (resultado) =>
   `cfg-materia-pill ${DICTAMEN_RESULTADO_META[resultado]?.pill ?? 'cfg-materia-pill--default'}`;
+
+/**
+ * ENUM del backend (actas_defensa.resultado, extensión 2026-08-01 — acta de
+ * defensa de grado). Semántica de color deliberadamente distinta de
+ * `REPROBADO` en `PROYECTO_ESTADO_META` (que usa `--danger`): el resultado
+ * negativo de UN acto de evaluación puntual se muestra en ámbar/warning, no
+ * en rojo puro (mismo criterio que `EstadoTogglePill`: los estados negativos
+ * no se pintan de rojo salvo errores bloqueantes del sistema).
+ */
+const RESULTADO_ACTA_DEFENSA_META = {
+  APRUEBA: { label: 'Aprueba', pill: 'cfg-materia-pill--success' },
+  REPRUEBA: { label: 'Reprueba', pill: 'cfg-materia-pill--warning' },
+};
+
+/** Etiqueta legible del resultado del acta de defensa. */
+export const formatResultadoActaDefensa = (resultado) =>
+  RESULTADO_ACTA_DEFENSA_META[resultado]?.label ?? resultado ?? '—';
+
+/** Clase completa del StatusPill para el resultado del acta de defensa. */
+export const getResultadoActaDefensaPillClass = (resultado) =>
+  `cfg-materia-pill ${RESULTADO_ACTA_DEFENSA_META[resultado]?.pill ?? 'cfg-materia-pill--default'}`;
+
+/**
+ * Umbral de aprobación usado ÚNICAMENTE como preview visual en el modal de
+ * registro (`RegistrarActaDefensaModal`, D3): el resultado real (APRUEBA/
+ * REPRUEBA) lo deriva siempre el backend contra `notaMinimaAprobacion` de
+ * `configuracion_evaluacion` de la gestión (P2 del plan de acta de defensa;
+ * el mismo criterio que consume el centralizador/boletín). Se duplica el
+ * NÚMERO de fallback institucional (61, `NOTA_MINIMA_APROBACION_DEFAULT` de
+ * `academico/calificaciones/utils/notaMinimaAprobacion.js`) en vez de
+ * importar ese util de otro dominio, para no acoplar Titulación a Académico
+ * por una constante cosmética que no es la fuente de verdad.
+ */
+export const NOTA_MINIMA_APROBACION_ACTA_PREVIEW = 61;
 
 /**
  * Grupalidad de la modalidad: `modalidades_grado` no tiene flag grupal —

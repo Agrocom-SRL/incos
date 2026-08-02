@@ -8,6 +8,11 @@
  * extensión 2026-07-31). La orquestación de pantalla (tabs, modales,
  * feedback) vive en `useProyectoGradoDetailPage`. Provider DELGADO: solo
  * ensambla.
+ *
+ * El acta de defensa (extensión 2026-08-01) se instancia aquí pero NO se
+ * carga en el efecto de montaje: es la única tab de carga LAZY de la ficha
+ * (se dispara desde `useProyectoGradoDetailPage` al abrir la tab por primera
+ * vez), por eso queda fuera del `Promise.all` de `cargar`/`refetch`.
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
@@ -18,6 +23,9 @@ import { useAvancesProyectoApi } from '@application-titulacion/proyectos-grado/h
 import { useDictamenesProyectoApi } from '@application-titulacion/proyectos-grado/hooks/api/useDictamenesProyectoApi';
 import { useDocentesCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTitApi';
 import { useExportFormularioModalidadPdf } from '@application-titulacion/proyectos-grado/hooks/api/useExportFormularioModalidadPdf';
+import { useActaDefensaApi } from '@application-titulacion/proyectos-grado/hooks/api/useActaDefensaApi';
+import { useRegistrarActaDefensa } from '@application-titulacion/proyectos-grado/hooks/api/useRegistrarActaDefensa';
+import { useExportActaDefensaPdf } from '@application-titulacion/proyectos-grado/hooks/api/useExportActaDefensaPdf';
 import { ProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoDetailContext';
 
 export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
@@ -28,6 +36,9 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
   const dictamenes = useDictamenesProyectoApi();
   const docentesCatalogo = useDocentesCatalogoTitApi();
   const formularioModalidad = useExportFormularioModalidadPdf();
+  const actaDefensa = useActaDefensaApi();
+  const registrarActaDefensa = useRegistrarActaDefensa();
+  const exportActaDefensaPdf = useExportActaDefensaPdf();
 
   const id = Number(proyectoId);
   const idValido = Number.isFinite(id) && id > 0;
@@ -69,6 +80,9 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
       dictamenes,
       docentesCatalogo,
       formularioModalidad,
+      actaDefensa,
+      registrarActaDefensa,
+      exportActaDefensaPdf,
     }),
     [
       idValido,
@@ -83,6 +97,9 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
       dictamenes,
       docentesCatalogo,
       formularioModalidad,
+      actaDefensa,
+      registrarActaDefensa,
+      exportActaDefensaPdf,
     ],
   );
 

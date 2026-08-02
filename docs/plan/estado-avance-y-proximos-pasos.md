@@ -86,7 +86,7 @@ host `127.0.0.1`, puerto `8889`, usuario `root`, password en `backend/.env`
 | 5 | Títulos y certificados (TUT) | ⛔ GATED | — | — | `titulacion-y-dominios-pendientes.md` §Fase 5 |
 | — | 3 funcionalidades nuevas TUT (ver §4) | ✅ | ✅ (vistas 178-181) | ✅ (`035ed101` + corrección menú 2026-08-01) | `titulacion-avance-y-modalidad-plan-desarrollo.md` |
 | — | Seguimiento académico (ACA, reorganización de menú) | n/a (solo frontend) | n/a | ✅ verificado 2026-08-01 (pendiente de commit) | ver nota §3.1 |
-| — | Acta de defensa de grado (TIT) — Iteración 1 | ✅ | ⛔ DDL listo, sin aplicar | ⛔ pendiente (Iteración 2) | `acta-defensa-grado-plan-desarrollo.md` |
+| — | Acta de defensa de grado (TIT) — Iteración 1+2 | ✅ | ⛔ DDL listo, sin aplicar | ✅ (pendiente de commit) | `acta-defensa-grado-plan-desarrollo.md` |
 
 ### Números de referencia (para no colisionar)
 
@@ -158,9 +158,17 @@ Lo único activo:
   permisos nuevos (reutiliza `titulacion.proyecto`), DI verificada por
   resolución real del contenedor (lint limpio, sin BD). Contrato:
   `dataFieldName: 'actasDefensa'` en `GET/POST /:id/acta-defensa`, PDF en
-  `GET /:id/acta-defensa/:actaId/pdf`. Pendiente: Iteración 2 (frontend, tab
-  «Acta de defensa» en `ProyectoGradoDetail.jsx`) — ver bloques D/F/G del
-  plan.
+  `GET /:id/acta-defensa/:actaId/pdf`.
+- **Acta de defensa de grado (TIT): frontend Iteración 2 TERMINADO
+  2026-08-02** (Bloques D y D5 opcional; ver notas y discrepancias en el
+  plan). Tab «Acta de defensa» en `ProyectoGradoDetail.jsx` + modal de
+  registro + sección de solo lectura en el portal del estudiante
+  (`MiProyectoGradoPage.jsx`). Lint limpio y build de producción OK; **no
+  commiteado**. **Bloqueado hasta aquí:** Bloques F (datos de prueba) y G
+  (verificación con roles) requieren las tablas `actas_defensa`/
+  `tribunal_acta_defensa` aplicadas en BD real (A3) — sin eso no hay forma
+  de registrar un acta real para probar. Próximo paso: el usuario aprueba y
+  aplica el DDL de `22-modalidades-grado.sql`, luego se corre F/G.
 
 ### 3.2 Histórico (ya ejecutado, conservado como referencia)
 

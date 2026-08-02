@@ -179,6 +179,69 @@ export const mapDictamen = (raw) => {
 export const mapDictamenesList = (rawList) =>
   Array.isArray(rawList) ? rawList.map(mapDictamen).filter(Boolean) : [];
 
+/** HH:mm:ss (TIME de MySQL) → HH:mm; null si no llega. */
+const formatHora = (value) => {
+  const text = cleanText(value);
+  return text ? text.slice(0, 5) : null;
+};
+
+/**
+ * Miembro del Tribunal Evaluador de un acta (tribunal_acta_defensa, anidado
+ * en `actasDefensa[].tribunal`, extensión 2026-08-01). El backend
+ * (`ActaDefensaMapper`) ya lo entrega ordenado por `orden` y en camelCase.
+ */
+export const mapTribunalMiembro = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+  return {
+    id: raw.id,
+    orden: raw.orden,
+    docenteId: raw.docenteId ?? null,
+    nombreCompleto: cleanText(raw.nombreCompleto) || `Miembro ${raw.orden ?? ''}`.trim(),
+    cargo: cleanText(raw.cargo) || 'Tribunal Evaluador',
+  };
+};
+
+/**
+ * Acta de defensa de grado (actas_defensa, dataKey `actasDefensa`, extensión
+ * 2026-08-01). Una por estudiante integrante ACTIVO (P3: en PSP grupal, N
+ * actas con el mismo tribunal). `numeroActaFormateado` ya llega con padding a
+ * 3 dígitos desde el backend (`ActaDefensaMapper.formatNumeroActa`); se
+ * recalcula aquí solo como fallback defensivo, sin duplicar la fuente de
+ * verdad.
+ */
+export const mapActaDefensa = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+  const tribunal = Array.isArray(raw.tribunal)
+    ? [...raw.tribunal]
+        .sort((a, b) => (a?.orden ?? 0) - (b?.orden ?? 0))
+        .map(mapTribunalMiembro)
+        .filter(Boolean)
+    : [];
+  return {
+    id: raw.id,
+    proyectoGradoId: raw.proyectoGradoId ?? null,
+    estudianteId: raw.estudianteId ?? null,
+    gestionId: raw.gestionId ?? null,
+    numeroActa: raw.numeroActa ?? null,
+    numeroActaFormateado:
+      cleanText(raw.numeroActaFormateado) ||
+      (raw.numeroActa != null ? String(raw.numeroActa).padStart(3, '0') : '—'),
+    fechaDefensa: raw.fechaDefensa ?? null,
+    fechaDefensaLabel: formatFecha(raw.fechaDefensa),
+    horaInicio: formatHora(raw.horaInicio),
+    horaConclusion: formatHora(raw.horaConclusion),
+    calificacionFinal: raw.calificacionFinal != null ? toNumber(raw.calificacionFinal) : null,
+    resultado: raw.resultado ?? null,
+    observaciones: cleanText(raw.observaciones),
+    estado: raw.estado ?? 'EMITIDA',
+    tribunal,
+  };
+};
+
+/** Mapea el array de actas de defensa (dataKey `actasDefensa`). */
+export const mapActasDefensaList = (rawList) =>
+  Array.isArray(rawList) ? rawList.map(mapActaDefensa).filter(Boolean) : [];
+
 /**
  * Ficha completa (T4/T6, dataKey `proyectoGrado`): base + integrantes[] y
  * datos de contacto del tutor si el backend los incluye.

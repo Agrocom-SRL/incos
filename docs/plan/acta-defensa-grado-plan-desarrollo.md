@@ -81,6 +81,68 @@ preguntas P1-P8, se reportan en vez de improvisar silenciosamente):**
 
 ---
 
+## Estado de la Iteración 2 (frontend) — COMPLETADA 2026-08-02
+
+Ejecutada por el agente `frontend`. Bloques D y D5 (opcional) cerrados;
+Bloques F y G quedan **bloqueados** hasta que el usuario apruebe y aplique el
+DDL del Bloque A (A3) — sin las tablas en BD real no hay forma de registrar
+un acta de prueba ni de correr la compuerta de verificación. Nada se
+commiteó; el working tree queda listo para revisión del usuario.
+
+- [x] **D1** — `endpoints.js`: `ACTA_DEFENSA(id)` y `ACTA_DEFENSA_PDF(id, actaId)`.
+- [x] **D2** — Capa application: `useActaDefensaApi` (GET, carga lazy),
+  `useRegistrarActaDefensa` (POST), `useExportActaDefensaPdf` (blob, patrón
+  `useExportFormularioModalidadPdf`); `useProyectoGradoDetailPage` extendido
+  con carga lazy de actas, estado del modal y `puedeRegistrarActa`.
+- [x] **D3** — `ProyectoActaDefensaSection.jsx` (una `DetailInfoCard` por
+  acta, pill de foliado, resultado APRUEBA verde/REPRUEBA ámbar —nunca
+  rojo—, tribunal numerado, export gateado EXPORTAR, `Empty` sin `Alert`) +
+  `RegistrarActaDefensaModal.jsx` (patrón `AprobarEtapaModal`, tribunal con
+  `Select` sobre `useDocentesCatalogoTitApi`, calificación por integrante,
+  `numeroActa` opcional) + tab «Acta de defensa» y CTA condicional en
+  `ProyectoGradoDetail.jsx`.
+- [x] **D4** — Ya resuelto antes de esta iteración: `TRANSICIONES_PROYECTO.DEFENSA`
+  reducido a `['CANCELADO']` en `titulacionPills.js` (el registro del acta
+  dispara la transición T11, no el modal genérico).
+- [x] **D5** (opcional) — `MiProyectoGradoPage.jsx`/`useMiProyectoGradoPage.js`:
+  reusa `ProyectoActaDefensaSection` en modo lectura (`puedeRegistrar={false}`,
+  sin export — ESTUDIANTE no tiene EXPORTAR).
+- [ ] **F/G** — bloqueados por A3 (DDL sin aplicar en BD real).
+
+**Discrepancias/decisiones reportadas por el agente `frontend` (no
+resueltas en silencio):**
+
+1. El campo **cargo** del tribunal se implementó como valor inicial
+   editable (no placeholder puro) — lectura más útil de "default".
+2. **`observaciones`** del acta: el backend lo acepta (C8/C12) pero D3 no lo
+   listaba entre los campos del modal — se omitió a propósito por apego
+   literal al plan; trivial de añadir si se pide.
+3. **Umbral de aprobación (preview cliente)**: no existe hoy ningún fetch de
+   la política de evaluación por gestión desde el dominio Titulación; en vez
+   de acoplar Titulación→Académico importando el helper de
+   `academico/calificaciones`, se duplicó solo el número de fallback (61)
+   como `NOTA_MINIMA_APROBACION_ACTA_PREVIEW` en `titulacionPills.js`,
+   documentado como preview no autoritativo — el backend sigue siendo la
+   única fuente de verdad del `resultado`.
+4. **Nombre/C.I. del estudiante en el acta**: `ActaDefensaMapper` (backend)
+   no los devuelve, solo `estudianteId`; se resuelven en
+   `ProyectoActaDefensaSection` cruzando contra `proyecto.integrantes` (ya
+   cargados por la ficha), igual que `ProyectoIntegrantesSection`.
+5. **Duplicados en el tribunal**: sin validación cliente contra elegir el
+   mismo docente en dos posiciones (el backend tampoco lo valida en
+   `RegistrarActaDefensaUseCase._resolverTribunal`) — posible mejora de UX
+   futura, fuera del alcance literal de D3.
+6. **Validación cruzada de horas** (`horaConclusion > horaInicio`): no
+   duplicada en cliente; el backend la valida y el error fluye por la
+   notificación genérica de error.
+
+Verificación técnica: lint limpio (`--max-warnings 0`) en los 11 archivos
+tocados y en todo `titulacion/**`; build de producción (`vite build`) OK.
+Los 438 errores de lint del repo completo son preexistentes y ajenos a este
+módulo (`pagos`, `breadcrumbUtils`, etc.).
+
+---
+
 ## §0 — Contexto verificado (leído en el repo, no asumir de memoria)
 
 1. **`proyectos_grado` (22-modalidades-grado.sql) ya tiene** `fecha_defensa`,
@@ -548,8 +610,9 @@ la ficha (criterio «ítem de menú = proceso completo»; satélites con
 
 - **F1.** Sin seeder transaccional. Datos de prueba vía UI/API con un usuario
   DIR_ACADEMICO: llevar un proyecto demo hasta DEFENSA (transiciones T11) y
-  registrar su acta (tribunal mixto: 2 docentes del catálogo + 1 externo);
-  un segundo caso REPRUEBA para validar la rama.
+  registrar su acta (tribunal con 3 docentes del catálogo — P5 resuelta:
+  siempre internos, sin externos); un segundo caso REPRUEBA para validar la
+  rama.
 - **F2.** Resiembra/UPDATE del seed 65 = paso B2 (gated).
 
 ### Bloque G — Verificación final (compuerta `verificador`)

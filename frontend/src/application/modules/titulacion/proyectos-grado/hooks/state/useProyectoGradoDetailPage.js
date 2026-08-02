@@ -10,19 +10,27 @@
  *  - dictámenes: descargar PDF (T23) — gated por EXPORTAR
  *  - formulario de modalidad de graduación FMDG-1 (Requisito 1, extensión
  *    2026-07-31): exportar PDF — gated por EXPORTAR
+ *  - acta de defensa (extensión 2026-08-01): carga LAZY al abrir la tab,
+ *    registro (T·APROBAR, delega la transición DEFENSA→APROBADO|REPROBADO
+ *    en el backend) y exportación de PDF por acta (T·EXPORTAR)
  * La página es "dumb"; los modales/drawers reciben estas props.
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
+import { usePermiso } from '@application-auth';
 import { useProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/hooks/context/useProyectoGradoDetailContext';
 import { TRANSICIONES_PROYECTO } from '@application-titulacion/utils/titulacionPills';
+import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   PROYECTOS_GRADO_LIST_PATH,
   TIT_PROYECTOS_MENU_KEY,
   proyectoGradoEditarPath,
 } from '@application-titulacion/config/paths';
+
+/** Estado del proyecto en el que se habilita el registro del acta (C6/D2). */
+const ESTADO_PROYECTO_DEFENSA = 'DEFENSA';
 
 export const useProyectoGradoDetailPage = () => {
   const navigate = useNavigate();
@@ -41,7 +49,12 @@ export const useProyectoGradoDetailPage = () => {
     dictamenes,
     docentesCatalogo,
     formularioModalidad,
+    actaDefensa,
+    registrarActaDefensa,
+    exportActaDefensaPdf,
   } = useProyectoGradoDetailContext();
+
+  const puedeAprobarProyecto = usePermiso(TITULACION_PERMISOS.proyecto, 'APROBAR');
 
   const returnListPath = location.state?.returnListPath || PROYECTOS_GRADO_LIST_PATH;
   const menuSidebarKey = location.state?.menuSidebarKey ?? TIT_PROYECTOS_MENU_KEY;
@@ -288,6 +301,54 @@ export const useProyectoGradoDetailPage = () => {
     }
   }, [proyectoId, formularioModalidad, notification]);
 
+  // ————— Acta de defensa (extensión 2026-08-01) —————
+  /** Solo se registra con el proyecto en DEFENSA y permiso APROBAR (mismo permiso de "Aprobar etapa"). */
+  const puedeRegistrarActa =
+    proyecto?.estado === ESTADO_PROYECTO_DEFENSA && puedeAprobarProyecto;
+
+  const [actaModalOpen, setActaModalOpen] = useState(false);
+
+  /** Carga LAZY: la dispara la tab al abrirse por primera vez, no el montaje de la ficha. */
+  const handleAbrirTabActaDefensa = useCallback(() => {
+    if (!proyectoId || actaDefensa.cargado || actaDefensa.loading) return;
+    actaDefensa.cargar(proyectoId);
+  }, [proyectoId, actaDefensa]);
+
+  const handleRegistrarActaDefensa = useCallback(
+    async (payload) => {
+      if (!proyectoId) return;
+      const result = await registrarActaDefensa.registrar(proyectoId, payload);
+      if (result?.success) {
+        notification.success({
+          title: 'Acta de defensa registrada',
+          description:
+            'Se registró el acta de defensa y el proyecto quedó actualizado con el resultado del tribunal.',
+        });
+        setActaModalOpen(false);
+        await Promise.all([refetch(), actaDefensa.cargar(proyectoId)]);
+      } else {
+        notification.error({
+          title: 'No se pudo registrar el acta de defensa',
+          description: result?.error || 'Intente nuevamente en unos instantes.',
+        });
+      }
+    },
+    [proyectoId, registrarActaDefensa, notification, refetch, actaDefensa],
+  );
+
+  const handleExportarActaPdf = useCallback(
+    async (acta) => {
+      const result = await exportActaDefensaPdf.exportarPdf(proyectoId, acta);
+      if (!result?.success) {
+        notification.error({
+          title: 'No se pudo exportar el acta de defensa',
+          description: result?.error || 'Intente nuevamente en unos instantes.',
+        });
+      }
+    },
+    [proyectoId, exportActaDefensaPdf, notification],
+  );
+
   return {
     proyectoId,
     proyecto,
@@ -359,6 +420,26 @@ export const useProyectoGradoDetailPage = () => {
     formularioModalidad: {
       descargando: formularioModalidad.descargando,
       exportar: handleExportarFormularioModalidad,
+    },
+    // Acta de defensa (extensión 2026-08-01, tab de carga lazy)
+    actaDefensa: {
+      items: actaDefensa.actas,
+      loading: actaDefensa.loading,
+      error: actaDefensa.error,
+      abrirTab: handleAbrirTabActaDefensa,
+      puedeRegistrar: puedeRegistrarActa,
+      descargandoId: exportActaDefensaPdf.descargandoId,
+      exportarPdf: handleExportarActaPdf,
+      modal: {
+        open: actaModalOpen,
+        abrir: () => setActaModalOpen(true),
+        cerrar: () => setActaModalOpen(false),
+        submit: handleRegistrarActaDefensa,
+        saving: registrarActaDefensa.saving,
+        docentes: docentesCatalogo.docentes,
+        loadingDocentes: docentesCatalogo.loading,
+        docentesDisponible: docentesCatalogo.disponible,
+      },
     },
   };
 };

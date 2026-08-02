@@ -1,11 +1,18 @@
 /**
  * Ficha-hub de proyecto de grado (Titulación · TIT · DETALLE) — cabecera de
- * perfil + tabs datos / integrantes / bitácora / avances / dictámenes.
+ * perfil + tabs datos / integrantes / bitácora / avances / dictámenes / acta
+ * de defensa.
  *
  * Patrón ficha-hub de `UsuarioDetailPage` (DetailPageShell + DetailProfileCard
  * + DetailTabsPanel). Acciones de cabecera gated por permiso (ActionButton
  * fail-closed): asignar tutor y aprobar etapa (proyecto·APROBAR). Página
  * "dumb": la orquestación vive en `useProyectoGradoDetailPage`.
+ *
+ * Acta de defensa (extensión 2026-08-01, D3): tab de carga LAZY (se dispara
+ * recién al abrirla, no al montar la ficha) y, con el proyecto en `DEFENSA`,
+ * el CTA principal de cabecera cambia de "Aprobar etapa" a "Registrar acta de
+ * defensa" — es ese registro el que delega en el backend la transición
+ * DEFENSA→APROBADO|REPROBADO, no el modal genérico de transición.
  */
 
 import { useState } from 'react';
@@ -16,6 +23,7 @@ import {
   BookOutlined,
   CheckCircleOutlined,
   CloudUploadOutlined,
+  FileDoneOutlined,
   FilePdfOutlined,
   FileTextOutlined,
   TeamOutlined,
@@ -34,11 +42,16 @@ import ProyectoIntegrantesSection from '@titulacion/proyectos-grado/components/o
 import ProyectoBitacoraSection from '@titulacion/proyectos-grado/components/organisms/ProyectoBitacoraSection';
 import ProyectoAvancesSection from '@titulacion/proyectos-grado/components/organisms/ProyectoAvancesSection';
 import ProyectoDictamenesSection from '@titulacion/proyectos-grado/components/organisms/ProyectoDictamenesSection';
+import ProyectoActaDefensaSection from '@titulacion/proyectos-grado/components/organisms/ProyectoActaDefensaSection';
 import AsignarTutorModal from '@titulacion/proyectos-grado/components/modals/AsignarTutorModal';
 import AprobarEtapaModal from '@titulacion/proyectos-grado/components/modals/AprobarEtapaModal';
 import AgregarIntegranteModal from '@titulacion/proyectos-grado/components/modals/AgregarIntegranteModal';
 import BitacoraEntradaDrawer from '@titulacion/proyectos-grado/components/modals/BitacoraEntradaDrawer';
+import RegistrarActaDefensaModal from '@titulacion/proyectos-grado/components/modals/RegistrarActaDefensaModal';
 import '@presentation/styles/pages/detail-page.css';
+
+/** Estado del proyecto en el que el CTA principal apunta a registrar el acta (D3). */
+const ESTADO_PROYECTO_DEFENSA = 'DEFENSA';
 
 const ProyectoGradoDetail = () => {
   const {
@@ -56,10 +69,21 @@ const ProyectoGradoDetail = () => {
     avances,
     dictamenes,
     formularioModalidad,
+    actaDefensa,
   } = useProyectoGradoDetailPage();
   const puedeEditar = usePermiso(TITULACION_PERMISOS.proyecto, 'EDITAR');
 
   const [activeKey, setActiveKey] = useState('datos');
+
+  const handleTabChange = (key) => {
+    setActiveKey(key);
+    if (key === 'acta-defensa') {
+      actaDefensa.abrirTab();
+    }
+  };
+
+  /** En DEFENSA, el CTA principal guía a registrar el acta en vez de la transición genérica (D3). */
+  const enDefensa = proyecto?.estado === ESTADO_PROYECTO_DEFENSA;
 
   const headerActions = (
     <Flex gap="small" wrap>
@@ -72,16 +96,28 @@ const ProyectoGradoDetail = () => {
       >
         {proyecto?.tutorId ? 'Cambiar tutor' : 'Asignar tutor'}
       </ActionButton>
-      <ActionButton
-        permiso={TITULACION_PERMISOS.proyecto}
-        accion="APROBAR"
-        variant="success"
-        icon={<CheckCircleOutlined />}
-        disabled={etapaModal.transiciones.length === 0}
-        onClick={etapaModal.abrir}
-      >
-        Aprobar etapa
-      </ActionButton>
+      {enDefensa ? (
+        <ActionButton
+          permiso={TITULACION_PERMISOS.proyecto}
+          accion="APROBAR"
+          variant="success"
+          icon={<FileDoneOutlined />}
+          onClick={actaDefensa.modal.abrir}
+        >
+          Registrar acta de defensa
+        </ActionButton>
+      ) : (
+        <ActionButton
+          permiso={TITULACION_PERMISOS.proyecto}
+          accion="APROBAR"
+          variant="success"
+          icon={<CheckCircleOutlined />}
+          disabled={etapaModal.transiciones.length === 0}
+          onClick={etapaModal.abrir}
+        >
+          Aprobar etapa
+        </ActionButton>
+      )}
       <ActionButton
         permiso={TITULACION_PERMISOS.proyecto}
         accion="EXPORTAR"
@@ -172,6 +208,26 @@ const ProyectoGradoDetail = () => {
             />
           ),
         },
+        {
+          key: 'acta-defensa',
+          label: (
+            <DetailTabLabel icon={<FileDoneOutlined />}>
+              Acta de defensa ({actaDefensa.items.length})
+            </DetailTabLabel>
+          ),
+          children: (
+            <ProyectoActaDefensaSection
+              proyecto={proyecto}
+              actas={actaDefensa.items}
+              loading={actaDefensa.loading}
+              error={actaDefensa.error}
+              puedeRegistrar={actaDefensa.puedeRegistrar}
+              descargandoId={actaDefensa.descargandoId}
+              onRegistrar={actaDefensa.modal.abrir}
+              onExportarPdf={actaDefensa.exportarPdf}
+            />
+          ),
+        },
       ]
     : [];
 
@@ -200,7 +256,7 @@ const ProyectoGradoDetail = () => {
               puedeEditar={puedeEditar}
               onEditar={handleEditar}
             />
-            <DetailTabsPanel items={tabItems} activeKey={activeKey} onChange={setActiveKey} />
+            <DetailTabsPanel items={tabItems} activeKey={activeKey} onChange={handleTabChange} />
           </>
         ) : null}
       </DetailPageShell>
@@ -238,6 +294,16 @@ const ProyectoGradoDetail = () => {
         onClose={bitacora.cerrarDrawer}
         onSubmit={bitacora.guardar}
         saving={bitacora.guardando}
+      />
+      <RegistrarActaDefensaModal
+        open={actaDefensa.modal.open}
+        onCancel={actaDefensa.modal.cerrar}
+        onSubmit={actaDefensa.modal.submit}
+        saving={actaDefensa.modal.saving}
+        integrantes={proyecto?.integrantes ?? []}
+        docentes={actaDefensa.modal.docentes}
+        loadingDocentes={actaDefensa.modal.loadingDocentes}
+        docentesDisponible={actaDefensa.modal.docentesDisponible}
       />
     </PageTemplate>
   );

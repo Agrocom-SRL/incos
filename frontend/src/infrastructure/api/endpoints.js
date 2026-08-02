@@ -764,6 +764,21 @@ export const PROYECTOS_GRADO_ENDPOINTS = {
     const qs = q.toString();
     return `${API_BASE}/proyectos-grado/reportes/planilla-avance-tercer-anio/export${qs ? `?${qs}` : ''}`;
   },
+
+  // ==========================================================
+  // Extensión 2026-08-01 — Acta de defensa de grado (P1-P8 del plan
+  // `acta-defensa-grado-plan-desarrollo.md`). Rutas anidadas bajo `/:id`.
+  // ==========================================================
+
+  /**
+   * GET — actas de defensa del proyecto (N si PSP grupal, tribunal anidado,
+   * `actasDefensa`, proyecto·DETALLE).
+   * POST — registra el/los acta(s); delega la transición DEFENSA→APROBADO|
+   * REPROBADO (`actasDefensa`, proyecto·APROBAR).
+   */
+  ACTA_DEFENSA: (id) => `${API_BASE}/proyectos-grado/${id}/acta-defensa`,
+  /** GET — PDF del acta de defensa, espejo §1 del plan (proyecto·EXPORTAR, blob autenticado) */
+  ACTA_DEFENSA_PDF: (id, actaId) => `${API_BASE}/proyectos-grado/${id}/acta-defensa/${actaId}/pdf`,
 };
 
 export const ACOMPANAMIENTO_ENDPOINTS = {
