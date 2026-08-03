@@ -63,6 +63,7 @@ SELECT
   v127.carreraId         AS carrera_id,
   v127.carreraNombre     AS carrera_nombre,
   v127.carreraCodigo     AS carrera_codigo,
+  v127.carreraColorHex   AS carrera_color_hex,
   v127.gestionId         AS gestion_id,
   v127.gestionAnio       AS gestion_anio,
   v127.gestionNombre     AS gestion_nombre,

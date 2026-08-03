@@ -76,6 +76,7 @@ export function toFolioDTO(row) {
     carreraId: row.carrera_id ?? null,
     carreraNombre: row.carrera_nombre ?? null,
     carreraCodigo: row.carrera_codigo ?? null,
+    carreraColorHex: row.carrera_color_hex ?? null,
     gestionId: row.gestion_id ?? null,
     gestionAnio: row.gestion_anio ?? null,
     gestionNombre: row.gestion_nombre ?? null,
