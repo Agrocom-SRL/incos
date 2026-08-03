@@ -16,7 +16,7 @@
  * Usado por: StudentProvider (para exponer el estado global vía Context)
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useEstudiantesApi, estudiantesListFetchParams } from '@application-estudiantes/hooks/api/useEstudiantesApi';
 import { useDeleteStudent } from '@application-estudiantes/hooks/api/useDeleteStudent';
 
@@ -33,11 +33,14 @@ export const useStudentData = () => {
 
     // Sincronizar estado local con datos de API cuando cambien
     // Esto cubre: carga inicial y refetch explícito
-    useEffect(() => {
+    // (ajuste durante render con comparación de prev, sin setState en effect)
+    const [prevEstudiantesFromApi, setPrevEstudiantesFromApi] = useState(estudiantesFromApi);
+    if (estudiantesFromApi !== prevEstudiantesFromApi) {
+        setPrevEstudiantesFromApi(estudiantesFromApi);
         if (estudiantesFromApi.length > 0) {
             setEstudiantes(estudiantesFromApi);
         }
-    }, [estudiantesFromApi]);
+    }
 
     /**
      * Agrega un nuevo estudiante al estado en memoria

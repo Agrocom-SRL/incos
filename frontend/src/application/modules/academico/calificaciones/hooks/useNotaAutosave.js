@@ -22,12 +22,24 @@ export const useNotaAutosave = ({
   const lastSavedRef = useRef(valorInicial ?? null);
   const valorRef = useRef(valorInicial ?? null);
 
+  // Reinicio al cambiar de celda o de valor persistido: el estado se ajusta
+  // durante render (comparación de prev, sin setState en effect)…
+  const [prevCelda, setPrevCelda] = useState({ valorInicial, estudianteId, evaluacionId });
+  if (
+    prevCelda.valorInicial !== valorInicial ||
+    prevCelda.estudianteId !== estudianteId ||
+    prevCelda.evaluacionId !== evaluacionId
+  ) {
+    setPrevCelda({ valorInicial, estudianteId, evaluacionId });
+    setValorState(valorInicial ?? null);
+    setEstado('idle');
+  }
+
+  // …y los refs (mutables, prohibidos durante render) se sincronizan tras el commit.
   useEffect(() => {
     const inicial = valorInicial ?? null;
-    setValorState(inicial);
     valorRef.current = inicial;
     lastSavedRef.current = inicial;
-    setEstado('idle');
   }, [valorInicial, estudianteId, evaluacionId]);
 
   useEffect(() => {

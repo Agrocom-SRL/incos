@@ -18,7 +18,7 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useInscripcionesApi, inscripcionesListFetchParams } from '@application-inscripciones/hooks/api/useInscripcionesApi';
 import { useDeleteInscripcion } from '@application-inscripciones/hooks/api/useDeleteInscripcion';
 
@@ -33,7 +33,10 @@ export const useInscripcionesData = () => {
     const [inscripciones, setInscripciones] = useState([]);
 
     // Sincronizar estado local con datos de API cuando cambien
-    useEffect(() => {
+    // (ajuste durante render con comparación de prev, sin setState en effect)
+    const [prevInscripcionesFromApi, setPrevInscripcionesFromApi] = useState(inscripcionesFromApi);
+    if (inscripcionesFromApi !== prevInscripcionesFromApi) {
+        setPrevInscripcionesFromApi(inscripcionesFromApi);
         setInscripciones((prev) => {
             if (prev === inscripcionesFromApi) return prev;
             if (
@@ -44,7 +47,7 @@ export const useInscripcionesData = () => {
             }
             return inscripcionesFromApi;
         });
-    }, [inscripcionesFromApi]);
+    }
 
     /**
      * Agrega una nueva inscripción al estado en memoria

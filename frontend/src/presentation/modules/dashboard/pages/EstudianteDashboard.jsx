@@ -16,7 +16,13 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Alert, Flex, Spin, Typography } from 'antd';
-import { UserOutlined, IdcardOutlined, FileTextOutlined } from '@ant-design/icons';
+import {
+  UserOutlined,
+  IdcardOutlined,
+  FileTextOutlined,
+  BookOutlined,
+  ShopOutlined,
+} from '@ant-design/icons';
 import { allColors, allSpacing, typography } from '@theme/tokens';
 import { MainContent, InfoSidebar } from '@templates';
 import { useEstudianteHome } from '@application-dashboard/hooks/useEstudianteHome.js';
@@ -27,6 +33,10 @@ import DashboardActividadesRecientesCard from '@dashboard/components/molecules/D
 import DashboardAccesoHubCard from '@dashboard/components/molecules/DashboardAccesoHubCard';
 import DashboardDocentesListCard from '@dashboard/components/molecules/DashboardDocentesListCard';
 import DashboardMiSaldoCard from '@dashboard/components/molecules/DashboardMiSaldoCard';
+import {
+  MI_PROYECTO_GRADO_PATH,
+  MI_PASANTIA_PATH,
+} from '@application-titulacion/config/paths';
 import '@dashboard/styles/estudiante-home.css';
 
 const { Title } = Typography;
@@ -41,6 +51,8 @@ const PATH_APORTES = '/matricula/aportes/listar';
 const PATH_PERFIL = '/perfil';
 const PATH_BOLETIN = '/academico/mi-boletin';
 const PATH_MIS_DATOS = '/estudiantes/listar';
+const PATH_MI_PROYECTO = MI_PROYECTO_GRADO_PATH;
+const PATH_MI_PASANTIA = MI_PASANTIA_PATH;
 
 const EstudianteDashboard = () => {
   const navigate = useNavigate();
@@ -119,6 +131,24 @@ const EstudianteDashboard = () => {
                   description="Consulte sus calificaciones por bimestre y materia."
                   actionLabel="Ver mi boletín"
                   onClick={() => navegarSeguro(PATH_BOLETIN)}
+                />
+                <DashboardAccesoHubCard
+                  icon={<BookOutlined />}
+                  accent={allColors.colorSuccess}
+                  accentBg={allColors.colorSuccessBg}
+                  title="Mi proyecto de grado"
+                  description="Consulte su proyecto, la bitácora de tutoría y suba sus avances."
+                  actionLabel="Ver mi proyecto"
+                  onClick={() => navegarSeguro(PATH_MI_PROYECTO)}
+                />
+                <DashboardAccesoHubCard
+                  icon={<ShopOutlined />}
+                  accent={allColors.colorInfo}
+                  accentBg={allColors.colorInfoBg}
+                  title="Mi pasantía"
+                  description="Consulte su trámite de práctica laboral, informes y seguimientos."
+                  actionLabel="Ver mi pasantía"
+                  onClick={() => navegarSeguro(PATH_MI_PASANTIA)}
                 />
               </div>
             </Flex>

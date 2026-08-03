@@ -1,0 +1,176 @@
+/* ============================================================================
+   Titulación — planilla de avance de tutorías "10 en 10" (Requisito 3,
+   extensión 2026-07-31). Réplica en pantalla del folio impreso: banda de
+   color institucional, cabecera con carrera/gestión/bimestre, tabla de
+   nómina con nº de tutorías/porcentaje de avance/resultado y hoja final de
+   firmas de docentes tutores + cuadro de %.
+
+   Inspirado en el lenguaje visual de la vista de folio del Libro de registro
+   (`academico/libros/styles/libros.css`, `.folio-sheet`), pero con clases
+   PROPIAS (`tit-planilla-*`, dominio distinto: avance de tutoría bimestral,
+   no notas finales) — no se importa ni se reutiliza ese archivo. Tokens
+   únicamente (var(--...) inyectadas por injectCSSVariables); ningún valor de
+   spacing/tipografía/color se hardcodea aquí.
+   ============================================================================ */
+
+.tit-planilla-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.tit-planilla-sheet {
+  background: var(--color-bg-container, #ffffff);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-elevation-1);
+  overflow: hidden;
+}
+
+.tit-planilla-sheet + .tit-planilla-sheet {
+  margin-top: var(--spacing-lg);
+}
+
+.tit-planilla-sheet__band {
+  background: var(--color-primary);
+  color: var(--color-white, #ffffff);
+  text-align: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-weight: var(--font-weight-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: var(--font-size-base);
+}
+
+.tit-planilla-sheet__meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tit-planilla-sheet__meta-col {
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.tit-planilla-sheet__meta-col + .tit-planilla-sheet__meta-col {
+  border-left: 1px solid var(--color-border);
+}
+
+.tit-planilla-sheet__meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.tit-planilla-sheet__meta-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary);
+}
+
+.tit-planilla-sheet__meta-value {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: right;
+}
+
+.tit-planilla-sheet__table-wrap {
+  overflow-x: auto;
+  padding: var(--spacing-md);
+}
+
+.tit-planilla-sheet__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.tit-planilla-sheet__table th,
+.tit-planilla-sheet__table td {
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tit-planilla-sheet__table th {
+  background: var(--color-bg-layout, #f7faf8);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary);
+}
+
+.tit-planilla-sheet__nomina {
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tit-planilla-sheet__observaciones {
+  text-align: left;
+  max-width: 260px;
+}
+
+.tit-planilla-firmas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xxl) var(--spacing-lg) var(--spacing-lg);
+}
+
+.tit-planilla-firma {
+  text-align: center;
+}
+
+.tit-planilla-firma__line {
+  border-top: 1px solid var(--color-text);
+  margin: 0 var(--spacing-md);
+  padding-top: var(--spacing-xs);
+}
+
+.tit-planilla-firma__label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.tit-planilla-tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  justify-content: center;
+  padding: 0 var(--spacing-lg) var(--spacing-xl);
+}
+
+.tit-planilla-tally__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 96px;
+}
+
+.tit-planilla-tally__value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
+}
+
+.tit-planilla-tally__label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary);
+}

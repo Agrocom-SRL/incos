@@ -16,6 +16,8 @@ import { CerrarRegistroAsistenciaUseCase } from '../../../../application/use-cas
 import { ReabrirRegistroAsistenciaUseCase } from '../../../../application/use-cases/academico/asistencia/ReabrirRegistroAsistenciaUseCase.js';
 import { CrearSesionEspecialUseCase } from '../../../../application/use-cases/academico/asistencia/CrearSesionEspecialUseCase.js';
 import { EliminarSesionEspecialUseCase } from '../../../../application/use-cases/academico/asistencia/EliminarSesionEspecialUseCase.js';
+import { GetConsolidadoAsistenciaUseCase } from '../../../../application/use-cases/academico/asistencia/GetConsolidadoAsistenciaUseCase.js';
+import { ExportConsolidadoAsistenciaExcelUseCase } from '../../../../application/use-cases/academico/asistencia/ExportConsolidadoAsistenciaExcelUseCase.js';
 import { GetMisCursosAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/get-mis-cursos-asistencia.controller.js';
 import { GetCalendarioAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/get-calendario-asistencia.controller.js';
 import { GetPlanillaAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/get-planilla-asistencia.controller.js';
@@ -24,6 +26,8 @@ import { CerrarRegistroAsistenciaController } from '../../../../presentation/con
 import { ReabrirRegistroAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/reabrir-registro-asistencia.controller.js';
 import { CrearSesionEspecialController } from '../../../../presentation/controllers/academico/asistencia/crear-sesion-especial.controller.js';
 import { EliminarSesionEspecialController } from '../../../../presentation/controllers/academico/asistencia/eliminar-sesion-especial.controller.js';
+import { GetConsolidadoAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/get-consolidado-asistencia.controller.js';
+import { ExportConsolidadoAsistenciaController } from '../../../../presentation/controllers/academico/asistencia/export-consolidado-asistencia.controller.js';
 import { buildAsistenciaRouter } from '../../../../presentation/routes/asistencia.routes.js';
 
 export function registerAsistenciaResource(container) {
@@ -218,6 +222,34 @@ export function registerAsistenciaResource(container) {
       })
   );
 
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getConsolidadoAsistenciaUseCase,
+    (c) =>
+      new GetConsolidadoAsistenciaUseCase({
+        asistenciaConsolidadoViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.asistenciaConsolidadoViewRepository
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportConsolidadoAsistenciaExcelUseCase,
+    (c) =>
+      new ExportConsolidadoAsistenciaExcelUseCase({
+        getConsolidadoAsistenciaUseCase: c.resolve(
+          ACADEMICO_TOKENS.getConsolidadoAsistenciaUseCase
+        ),
+        parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+        asistenciaConsolidadoExcelGenerator: c.resolve(
+          SERVICIOS_TOKENS.asistenciaConsolidadoExcelGenerator
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
   // ============================================
   // CONTROLLERS
   // ============================================
@@ -315,6 +347,31 @@ export function registerAsistenciaResource(container) {
       })
   );
 
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.getConsolidadoAsistenciaController,
+    (c) =>
+      new GetConsolidadoAsistenciaController({
+        getConsolidadoAsistenciaUseCase: c.resolve(
+          ACADEMICO_TOKENS.getConsolidadoAsistenciaUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportConsolidadoAsistenciaController,
+    (c) =>
+      new ExportConsolidadoAsistenciaController({
+        exportConsolidadoAsistenciaExcelUseCase: c.resolve(
+          ACADEMICO_TOKENS.exportConsolidadoAsistenciaExcelUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
   // ============================================
   // ROUTER — reutiliza el controller de coordinación-docentes de Calificaciones
   // ============================================
@@ -345,6 +402,12 @@ export function registerAsistenciaResource(container) {
         crearSesionEspecialController: c.resolve(ACADEMICO_TOKENS.crearSesionEspecialController),
         eliminarSesionEspecialController: c.resolve(
           ACADEMICO_TOKENS.eliminarSesionEspecialController
+        ),
+        getConsolidadoAsistenciaController: c.resolve(
+          ACADEMICO_TOKENS.getConsolidadoAsistenciaController
+        ),
+        exportConsolidadoAsistenciaController: c.resolve(
+          ACADEMICO_TOKENS.exportConsolidadoAsistenciaController
         )
       },
       middlewares: { validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest) }

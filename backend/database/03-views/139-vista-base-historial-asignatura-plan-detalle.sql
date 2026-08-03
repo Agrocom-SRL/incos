@@ -16,6 +16,10 @@
 --   prerrequisito_sigla por subconsulta: prerrequisitos → asignaturas_plan →
 --   materias.sigla (primer prerrequisito por orden de sigla).
 --
+-- 2026-07-29 (ajuste aditivo, disolución REP): se expone plan_estudio_id para
+-- que el Avance académico (vistas 170/171) agrupe por plan sin reescribir esta
+-- cadena. Consumidores previos (141) no se ven afectados.
+--
 -- Uso:
 --   SELECT * FROM vista_base_historial_asignatura_plan_detalle
 --   WHERE asignatura_plan_id = ?;
@@ -28,6 +32,7 @@ DROP VIEW IF EXISTS vista_base_historial_asignatura_plan_detalle;
 CREATE VIEW vista_base_historial_asignatura_plan_detalle AS
 SELECT
   ap.id                                    AS asignatura_plan_id,
+  ap.plan_estudio_id                       AS plan_estudio_id,
   ap.horas_semanales                       AS carga_horaria,
   ap.orden_visualizacion                   AS asignatura_orden,
   per.numero                               AS periodo_numero,

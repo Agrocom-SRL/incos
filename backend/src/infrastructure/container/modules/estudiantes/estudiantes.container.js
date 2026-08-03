@@ -548,6 +548,8 @@ export function registerEstudiantesResource(container) {
         (c) =>
             new ListStudentScholarshipsController({
                 listStudentScholarshipsUseCase: c.resolve(ESTUDIANTES_TOKENS.listStudentScholarshipsUseCase),
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })

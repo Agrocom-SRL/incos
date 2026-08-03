@@ -1,6 +1,7 @@
 /**
- * GET /api/v1/calificaciones/mi-boletin/pdf
- * Descarga el PDF del Boletín del estudiante de la sesión.
+ * GET /api/v1/calificaciones/mi-boletin/pdf?bimestre=<1..4 opcional>
+ * Descarga el PDF del Boletín del estudiante de la sesión. Con `bimestre` el
+ * boletín es BIMESTRAL (solo ese parcial); sin él, ANUAL.
  * El estudiante y su paralelo se resuelven en servidor (lo hace el use case).
  */
 export class ExportMiBoletinEstudianteController {
@@ -21,11 +22,12 @@ export class ExportMiBoletinEstudianteController {
   async handle(req, res, next) {
     try {
       const usuarioId = req.usuario?.id;
+      const bimestre = req.query?.bimestre ?? null;
 
-      this.logger.info('[Calificaciones] Mi boletín PDF solicitado', { usuarioId });
+      this.logger.info('[Calificaciones] Mi boletín PDF solicitado', { usuarioId, bimestre });
 
       const { buffer, fileName, mimeType } =
-        await this.exportMiBoletinEstudiantePdfUseCase.execute({ usuarioId });
+        await this.exportMiBoletinEstudiantePdfUseCase.execute({ usuarioId, bimestre });
 
       res.setHeader('Content-Type', mimeType);
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);

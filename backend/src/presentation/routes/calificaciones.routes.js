@@ -11,7 +11,9 @@ import {
   searchCoordinacionDocentesValidator,
   getCentralizadorParaleloValidator,
   exportCentralizadorParaleloBimestreValidator,
+  exportCentralizadorAnualParaleloValidator,
   exportBoletinEstudianteValidator,
+  exportMiBoletinPdfValidator,
   saveObservacionCentralizadorBimestreValidator,
   getCuadernoBimestreValidator,
   createEvaluacionCuadernoValidator,
@@ -137,6 +139,22 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   );
 
   /**
+   * GET /api/v1/calificaciones/centralizador/:paraleloGestionId/anual/export
+   * Descarga Excel del Centralizador ANUAL de un paralelo (grano nuevo: una
+   * sola hoja, sobre los folios YA generados del Libro de registro). El
+   * segmento literal `anual` evita ambigüedad con `/bimestre/...` y
+   * `/carrera-de/...`. Mismo permiso de exportación del centralizador.
+   */
+  router.get(
+    '/centralizador/:paraleloGestionId/anual/export',
+    ...centralizadorExportar,
+    exportCentralizadorAnualParaleloValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.exportCentralizadorAnualParaleloController.handle(req, res, next)
+  );
+
+  /**
    * GET /api/v1/calificaciones/centralizador/:paraleloGestionId/estudiante/:estudianteId/boletin
    * Descarga el PDF del Boletín de Calificaciones de un estudiante. El segmento
    * literal `estudiante` evita ambigüedad con las rutas `/bimestre/...` y
@@ -174,11 +192,16 @@ export function buildCalificacionesRouter({ controllers, middlewares }) {
   );
 
   /**
-   * GET /api/v1/calificaciones/mi-boletin/pdf
-   * Descarga el PDF del boletín del estudiante de la sesión.
+   * GET /api/v1/calificaciones/mi-boletin/pdf?bimestre=<1..4 opcional>
+   * Descarga el PDF del boletín del estudiante de la sesión. Sin `bimestre` el
+   * boletín es ANUAL; con él, BIMESTRAL de ese parcial. Mismo permiso.
    */
-  router.get('/mi-boletin/pdf', ...miBoletinExportar, (req, res, next) =>
-    controllers.exportMiBoletinEstudianteController.handle(req, res, next)
+  router.get(
+    '/mi-boletin/pdf',
+    ...miBoletinExportar,
+    exportMiBoletinPdfValidator,
+    validateRequest,
+    (req, res, next) => controllers.exportMiBoletinEstudianteController.handle(req, res, next)
   );
 
   /**

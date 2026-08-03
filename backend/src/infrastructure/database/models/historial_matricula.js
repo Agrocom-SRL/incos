@@ -14,7 +14,24 @@ export const HistorialMatricula = sequelize.define(
             type: DataTypes.INTEGER,
             field: 'matricula_materia_id',
             allowNull: true,
-            comment: 'Matrícula a la que pertenece este estado. Referencia a matriculas_materia.',
+            comment:
+                'Matrícula a la que pertenece este estado. Referencia a matriculas_materia. NULL cuando el evento describe una materia no cursada (ancla en inscripcion_id + asignatura_plan_id).',
+        },
+
+        inscripcionId: {
+            type: DataTypes.INTEGER,
+            field: 'inscripcion_id',
+            allowNull: true,
+            comment:
+                'Ancla alternativa para eventos sin matrícula (materia no cursada). Referencia a inscripciones.',
+        },
+
+        asignaturaPlanId: {
+            type: DataTypes.INTEGER,
+            field: 'asignatura_plan_id',
+            allowNull: true,
+            comment:
+                'Materia del plan del evento sin matrícula. Referencia a asignaturas_plan. Se usa junto a inscripcion_id.',
         },
 
         tipoEstado: {
@@ -30,7 +47,7 @@ export const HistorialMatricula = sequelize.define(
             field: 'nota_resultante',
             allowNull: true,
             comment:
-                'Nota fijada por decisión administrativa. Aplica solo para ABANDONO, RETIRADO o ARTICULO_18.',
+                'Nota fijada por decisión administrativa. Aplica solo para ABANDONO o RETIRADO (ARTICULO_18 es examen: su nota vive en nivelaciones).',
         },
 
         notaForzada: {

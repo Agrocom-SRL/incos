@@ -119,6 +119,15 @@ export const REPOSITORIOS_TOKENS = {
     asistenciaSesionViewRepository: 'asistenciaSesionViewRepository',
     asistenciaPlanillaViewRepository: 'asistenciaPlanillaViewRepository',
     asistenciaRegistroEstadoViewRepository: 'asistenciaRegistroEstadoViewRepository',
+    asistenciaConsolidadoViewRepository: 'asistenciaConsolidadoViewRepository',
+
+    // AVANCE ACADÉMICO / DESERCIÓN (ACA, disolución REP 2026-07-29)
+    avanceAcademicoViewRepository: 'avanceAcademicoViewRepository',
+    desercionViewRepository: 'desercionViewRepository',
+
+    // LIBROS DE REGISTRO (ACA, schema 25 — Fase 4)
+    libroRegistroRepository: 'libroRegistroRepository',
+    libroRegistroViewRepository: 'libroRegistroViewRepository',
 
     // PAGOS ACADÉMICOS
     contributionConfigurationRepository: 'contributionConfigurationRepository',

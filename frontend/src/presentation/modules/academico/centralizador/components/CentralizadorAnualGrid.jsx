@@ -100,7 +100,20 @@ const CentralizadorAnualGrid = ({
 }) => {
   const dataSource = estudiantes.map((est, i) => {
     const { promedio, estado } = resumenAnualEstudiante(est, asignaturas);
-    return { ...est, key: est.estudianteId ?? i, nro: i + 1, promedioGeneral: promedio, estadoGeneral: estado };
+    // Separador visual por folio (10 estudiantes por hoja, espejo del Libro de
+    // registro físico): marca la primera fila de cada folio nuevo. Solo aplica
+    // cuando el paralelo YA tiene folios generados (`folioNumero` viene del
+    // backend, nunca se inventa un agrupado de "10 en 10" a ciegas).
+    const folioAnterior = i > 0 ? estudiantes[i - 1].folioNumero : null;
+    const esInicioFolio = est.folioNumero != null && est.folioNumero !== folioAnterior;
+    return {
+      ...est,
+      key: est.estudianteId ?? i,
+      nro: i + 1,
+      promedioGeneral: promedio,
+      estadoGeneral: estado,
+      esInicioFolio,
+    };
   });
 
   const columnasAsignatura = asignaturas.map((asig) => ({
@@ -149,7 +162,12 @@ const CentralizadorAnualGrid = ({
       onHeaderCell: () => ({ className: 'cal-centralizador-grid__th-est' }),
       onCell: () => ({ className: 'cal-centralizador-grid__col-estudiante' }),
       render: (nombreCompleto, row) => (
-        <CeldaEstudiante nombre={nombreCompleto} codigo={row.codigoEstudiante} />
+        <>
+          {row.esInicioFolio ? (
+            <span className="cal-centralizador-grid__folio-tag">FOLIO {row.folioNumero}</span>
+          ) : null}
+          <CeldaEstudiante nombre={nombreCompleto} codigo={row.codigoEstudiante} />
+        </>
       ),
     },
     {
@@ -235,6 +253,9 @@ const CentralizadorAnualGrid = ({
         bordered
         scroll={{ x: 'max-content' }}
         locale={{ emptyText: 'Sin estudiantes matriculados en el paralelo' }}
+        onRow={(row) => ({
+          className: row.esInicioFolio ? 'cal-centralizador-grid__row--inicio-folio' : '',
+        })}
       />
       <div className="cal-centralizador-grid__leyenda" role="note" aria-label="Leyenda del centralizador">
         <span className="cal-centralizador-grid__leyenda-item">

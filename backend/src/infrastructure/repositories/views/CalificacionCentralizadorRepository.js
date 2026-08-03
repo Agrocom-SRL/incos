@@ -42,4 +42,45 @@ export class CalificacionCentralizadorRepository extends ICalificacionCentraliza
       { replacements: [estudianteId], type: sequelize.QueryTypes.SELECT },
     );
   }
+
+  /**
+   * Desglose TEÓRICO/PRÁCTICO de un bimestre para las asignaturas de un
+   * estudiante (boletín bimestral). Reutiliza las vistas existentes: 135 aporta
+   * el universo estudiante × oferta_curso del paralelo (con matricula_materia_id)
+   * y 119 el detalle del bimestre (nota_teorico/practico consolidadas, sumas del
+   * cuaderno si sigue abierto, nota_efectiva y estado_bimestre). LEFT JOIN para
+   * no perder asignaturas sin registro en ese bimestre (quedan en NULL → '—').
+   * @param {number} paraleloGestionId
+   * @param {number} estudianteId
+   * @param {number} bimestre - 1..4
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarDesgloseBimestrePorEstudiante(paraleloGestionId, estudianteId, bimestre) {
+    return sequelize.query(
+      `
+      SELECT
+        f.oferta_curso_id,
+        f.matricula_materia_id,
+        r.nota_teorico,
+        r.nota_practico,
+        r.nota_bimestre,
+        r.cuaderno_teorico,
+        r.cuaderno_practico,
+        r.estado_bimestre,
+        r.tiene_registro,
+        r.nota_efectiva
+      FROM vista_base_calificacion_centralizador_paralelo_fila f
+      LEFT JOIN vista_base_calificacion_resumen_curso_bimestre_fila r
+        ON r.matricula_materia_id = f.matricula_materia_id
+        AND r.bimestre = ?
+      WHERE f.paralelo_gestion_id = ?
+        AND f.estudiante_id = ?
+      ORDER BY f.asignatura_orden ASC
+      `,
+      {
+        replacements: [bimestre, paraleloGestionId, estudianteId],
+        type: sequelize.QueryTypes.SELECT,
+      },
+    );
+  }
 }

@@ -159,3 +159,18 @@ export { IStudentEnrollmentStudentListExcelReportRepository } from './IStudentEn
 // DASHBOARD
 // ============================================
 export { IDashboardRepository } from './IDashboardRepository.js';
+
+// ============================================
+// TUTORÍAS Y ACOMPAÑAMIENTO (módulo TUT)
+// ============================================
+export { IModalidadGradoRepository } from './IModalidadGradoRepository.js';
+export { IProyectoGradoRepository } from './IProyectoGradoRepository.js';
+export { IIntegranteProyectoRepository } from './IIntegranteProyectoRepository.js';
+export { IAvanceProyectoRepository } from './IAvanceProyectoRepository.js';
+export { IBitacoraProyectoRepository } from './IBitacoraProyectoRepository.js';
+export { IDictamenProyectoRepository } from './IDictamenProyectoRepository.js';
+export { ISesionRefuerzoRepository } from './ISesionRefuerzoRepository.js';
+export { ISesionRefuerzoEstudianteRepository } from './ISesionRefuerzoEstudianteRepository.js';
+export { IProyectoGradoListadoViewRepository } from './IProyectoGradoListadoViewRepository.js';
+export { IRiesgoAcademicoViewRepository } from './IRiesgoAcademicoViewRepository.js';
+export { IAcompanamientoSesionViewRepository } from './IAcompanamientoSesionViewRepository.js';

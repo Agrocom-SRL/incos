@@ -22,6 +22,7 @@ export { IBaseRepository } from './IBaseRepository';
 // MÓDULO: DOCENTES
 // ============================================
 export { IDocenteRepository } from './IDocenteRepository';
+export { IFichaSeguimientoRepository } from './IFichaSeguimientoRepository';
 
 // ============================================
 // MÓDULO: ESTUDIANTES
@@ -92,3 +93,11 @@ export { IInscripcionCapacitacionRepository } from './IInscripcionCapacitacionRe
 export { IUsuarioAdminRepository } from './IUsuarioAdminRepository';
 export { IRolAdminRepository } from './IRolAdminRepository';
 export { IPermisoRepository } from './IPermisoRepository';
+// ============================================
+// MÓDULO: TUTORÍAS Y ACOMPAÑAMIENTO (TUT)
+// ============================================
+export { IProyectoGradoRepository } from './IProyectoGradoRepository';
+export { IPasantiaRepository } from './IPasantiaRepository';
+export { IAlertaRiesgoRepository } from './IAlertaRiesgoRepository';
+export { ISesionRefuerzoRepository } from './ISesionRefuerzoRepository';
+export { IPanelAcompanamientoRepository } from './IPanelAcompanamientoRepository';

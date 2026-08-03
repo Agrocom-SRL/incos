@@ -37,30 +37,28 @@ export const dominiosRoutes = [
         menu: { label: 'Institucional', module: 'INST', order: 6 },
     },
     {
-        path: '/reportes-dominio',
-        element: null,
-        key: 'REP',
-        menu: { label: 'Reportes', module: 'REP', order: 7 },
-    },
-    {
         path: '/capacitacion',
         element: null,
         key: 'CAP',
         menu: { label: 'Capacitación', module: 'CAP', order: 8 },
     },
     {
-        path: '/configuracion-sistema',
+        path: '/titulacion',
+        element: null,
+        key: 'TIT',
+        menu: { label: 'Titulación', module: 'TIT', order: 9 },
+    },
+    {
+        path: '/configuracion',
         key: 'CFG',
         element: null,
-        permiso: null,
-        accion: null,
-        menu: { label: 'Configuración', module: 'CFG', order: 9 },
+        menu: { label: 'Configuración', module: 'CFG', order: 10 },
     },
     {
         path: '/seguridad',
         element: null,
         key: 'SEG',
-        menu: { label: 'Seguridad', module: 'SEG', order: 10 },
+        menu: { label: 'Seguridad', module: 'SEG', order: 11 },
     },
 ];
 

@@ -23,11 +23,11 @@ import { docentesRoutes } from './docentes/routes.jsx';
 import { institucionalRoutes } from './institucional/routes.jsx';
 import { pagosRoutes } from './pagos/routes.jsx';
 import { finanzasRoutes } from './finanzas/routes.jsx';
-import { reportesRoutes } from './reportes/routes.jsx';
 import { configuracionRoutes } from './configuracion/routes.jsx';
 import { seguridadRoutes } from './seguridad/routes.jsx';
 import { perfilRoutes } from './perfil/routes.jsx';
 import { capacitacionRoutes } from '@capacitacion/routes';
+import { titulacionRoutes } from '@titulacion/routes';
 
 /**
  * Obtiene todas las rutas de todos los módulos
@@ -45,11 +45,11 @@ export const getAllRoutes = () => {
         ...institucionalRoutes,
         ...pagosRoutes,
         ...finanzasRoutes,
-        ...reportesRoutes,
         ...configuracionRoutes,
         ...seguridadRoutes,
         ...perfilRoutes,
         ...capacitacionRoutes,
+        ...titulacionRoutes,
     ];
 };
 

@@ -18,7 +18,10 @@
 --
 -- RELACIÓN CON ESTUDIANTES:
 -- Los datos personales (CI, nombres, fecha nacimiento, domicilio, teléfono,
--- correo, código RUDE/RUDEAL) ya se almacenan en la tabla estudiantes.
+-- correo) ya se almacenan en la tabla estudiantes. El código RUDE/RUDEAL NO
+-- tiene columna en estudiantes: el ANEXO 2 lo solicita igual que el formulario
+-- de traspaso, por lo que se guarda aquí (codigo_rude, espejo de
+-- traspasos.codigo_rude).
 -- La carrera en INCOS una vez admitido está en estudiantes_datos_academicos.carrera_id.
 -- Esta tabla solo almacena lo específico del proceso de transitabilidad.
 --
@@ -119,7 +122,10 @@ COMMENT='Catálogo de instituciones educativas de origen para transitabilidades 
 
 CREATE TABLE transitabilidades (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NULL COMMENT 'Estudiante postulante (referencia a estudiantes). Sus datos personales, CI, domicilio, teléfono, correo y código RUDE/RUDEAL están en la tabla estudiantes.',
+    estudiante_id INT NULL COMMENT 'Estudiante postulante (referencia a estudiantes). Sus datos personales, CI, domicilio, teléfono y correo están en la tabla estudiantes; el código RUDE/RUDEAL se guarda aquí (codigo_rude).',
+
+    -- Código RUDE/RUDEAL (sección 1 del ANEXO 2; sin columna en estudiantes, espejo de traspasos.codigo_rude)
+    codigo_rude VARCHAR(50) NULL COMMENT 'Código RUDE o RUDEAL del postulante (registro único en el sistema educativo boliviano). El ANEXO 2 de transitabilidad lo solicita igual que el formulario de traspaso.',
 
     -- ------------------------------------------------
     -- A) SECCIÓN 2: FORMACIÓN ACADÉMICA (origen UETHP/CEA)
@@ -171,7 +177,7 @@ CREATE TABLE transitabilidades (
     INDEX idx_estudiante_estado (estudiante_id, estado, activo, deleted_at) COMMENT 'Búsqueda por estudiante y estado'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Solicitudes de transitabilidad: postulantes con Técnico Medio (UETHP/CEA) que solicitan ingresar a un ITT. Cubre los 5 puntos del Formulario Anexo 2 de Transitabilidad. Los datos personales del postulante están en la tabla estudiantes (incluyendo código RUDE/RUDEAL).';
+COMMENT='Solicitudes de transitabilidad: postulantes con Técnico Medio (UETHP/CEA) que solicitan ingresar a un ITT. Cubre los 5 puntos del Formulario Anexo 2 de Transitabilidad. Los datos personales del postulante están en la tabla estudiantes; el código RUDE/RUDEAL se guarda aquí (codigo_rude).';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

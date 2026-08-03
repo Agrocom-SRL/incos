@@ -42,6 +42,19 @@ import { HistorialAcademicoPdfGenerator } from '../../external/pdf/historial-aca
 import { BecasReporteExcelBuilder } from '../../external/excel/finanzas-reportes/BecasReporteExcelBuilder.js';
 import { CuentasPorCobrarExcelBuilder } from '../../external/excel/finanzas-reportes/CuentasPorCobrarExcelBuilder.js';
 import { ListadoInscritosCapacitacionExcelBuilder } from '../../external/excel/capacitacion/ListadoInscritosCapacitacionExcelBuilder.js';
+import { AsistenciaConsolidadoExcelBuilder } from '../../external/excel/asistencia-consolidado/AsistenciaConsolidadoExcelBuilder.js';
+import { LibroRegistroExcelBuilder } from '../../external/excel/libro-registro/LibroRegistroExcelBuilder.js';
+import { AvanceAcademicoExcelBuilder } from '../../external/excel/avance-academico/AvanceAcademicoExcelBuilder.js';
+import { DesercionExcelBuilder } from '../../external/excel/desercion/DesercionExcelBuilder.js';
+import { DesignacionTutorPdfGenerator } from '../../external/pdf/titulacion/DesignacionTutorPdfGenerator.js';
+import { ViabilidadProyectoPdfGenerator } from '../../external/pdf/titulacion/ViabilidadProyectoPdfGenerator.js';
+import { BitacoraMensualTutorPdfGenerator } from '../../external/pdf/titulacion/BitacoraMensualTutorPdfGenerator.js';
+import { PanelAcompanamientoPdfGenerator } from '../../external/pdf/academico/PanelAcompanamientoPdfGenerator.js';
+import { FichaSeguimientoClasePdfGenerator } from '../../external/pdf/docentes/FichaSeguimientoClasePdfGenerator.js';
+import { FormularioModalidadGradoPdfGenerator } from '../../external/pdf/titulacion/FormularioModalidadGradoPdfGenerator.js';
+import { AvanceTutoriaCarreraPdfGenerator } from '../../external/pdf/titulacion/AvanceTutoriaCarreraPdfGenerator.js';
+import { ActaDefensaPdfGenerator } from '../../external/pdf/titulacion/ActaDefensaPdfGenerator.js';
+import { PlanillaAvanceTutoriaExcelBuilder } from '../../external/excel/titulacion-planilla-avance/PlanillaAvanceTutoriaExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
 export function registerServicesModule(container) {
@@ -167,6 +180,97 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.listadoInscritosCapacitacionExcelGenerator,
         () => new ListadoInscritosCapacitacionExcelBuilder()
+    );
+    // Consolidado asistencia / Avance / Deserción (ACA, disolución REP 2026-07-29)
+    registerService(
+        container,
+        SERVICIOS_TOKENS.asistenciaConsolidadoExcelGenerator,
+        () => new AsistenciaConsolidadoExcelBuilder()
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.avanceAcademicoExcelGenerator,
+        () => new AvanceAcademicoExcelBuilder()
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.desercionExcelGenerator,
+        () => new DesercionExcelBuilder()
+    );
+    // Libro de registro del centralizador (ACA, schema 25 — Fase 4)
+    registerService(
+        container,
+        SERVICIOS_TOKENS.libroRegistroExcelGenerator,
+        () => new LibroRegistroExcelBuilder()
+    );
+
+    // ============================================
+    // PDF GENERATORS DEL MÓDULO TITULACIÓN (TIT)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.designacionTutorPdfGenerator,
+        (c) => new DesignacionTutorPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.viabilidadProyectoPdfGenerator,
+        (c) => new ViabilidadProyectoPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.bitacoraMensualTutorPdfGenerator,
+        (c) => new BitacoraMensualTutorPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+
+    // ============================================
+    // GENERADORES DEL MÓDULO TITULACIÓN (TIT) · extensión 2026-07-31
+    // (formulario de modalidad de graduación, reporte de avance por carrera,
+    // planilla de avance "10 en 10")
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.formularioModalidadGradoPdfGenerator,
+        (c) =>
+            new FormularioModalidadGradoPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.avanceTutoriaCarreraPdfGenerator,
+        (c) => new AvanceTutoriaCarreraPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+    registerService(
+        container,
+        SERVICIOS_TOKENS.planillaAvanceTutoriaExcelGenerator,
+        () => new PlanillaAvanceTutoriaExcelBuilder()
+    );
+
+    // ============================================
+    // GENERADOR DEL MÓDULO TITULACIÓN (TIT) · extensión 2026-08-01
+    // (acta de defensa de grado)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.actaDefensaPdfGenerator,
+        (c) => new ActaDefensaPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+
+    // ============================================
+    // PDF GENERATOR DEL MÓDULO ACADÉMICO (ACA) · ACOMPAÑAMIENTO
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.panelAcompanamientoPdfGenerator,
+        (c) => new PanelAcompanamientoPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+
+    // ============================================
+    // PDF GENERATORS DEL MÓDULO DOCENTES (DOC)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.fichaSeguimientoClasePdfGenerator,
+        (c) => new FichaSeguimientoClasePdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
     );
 
     // ============================================

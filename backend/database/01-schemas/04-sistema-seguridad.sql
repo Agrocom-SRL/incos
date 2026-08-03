@@ -65,8 +65,8 @@ CREATE TABLE permisos (
     codigo VARCHAR(250) NOT NULL COMMENT 'Código de dominio: matricula.admision.ver, academico.calificacion.registrar. Coincide con el campo permiso en routes.jsx del frontend.',
     nombre VARCHAR(150) NOT NULL COMMENT 'Nombre legible para el panel de administración. Ejemplo: Ver Admisiones, Registrar Calificaciones',
     descripcion TEXT NULL COMMENT 'Descripción detallada de qué permite este permiso',
-    dominio VARCHAR(50) NOT NULL COMMENT 'Dominio de negocio estable. Valores: MATRICULA, ACADEMICO, DOCENTES, FINANZAS, INSTITUCIONAL, CONFIGURACION, REPORTES, SEGURIDAD.',
-    modulo VARCHAR(50) NOT NULL COMMENT 'Subdominio técnico. Coincide con menu.module del frontend: MAT, ACA, DOC, FIN, INST, CFG, REP, SEG.',
+    dominio VARCHAR(50) NOT NULL COMMENT 'Dominio de negocio estable. Valores: MATRICULA, ACADEMICO, DOCENTES, FINANZAS, INSTITUCIONAL, CAPACITACION, TITULACION, CONFIGURACION, REPORTES, SEGURIDAD.',
+    modulo VARCHAR(50) NOT NULL COMMENT 'Subdominio técnico. Coincide con menu.module del frontend: MAT, ACA, DOC, FIN, INST, CAP, TIT, CFG, REP, SEG.',
     grupo_ui VARCHAR(100) NULL COMMENT 'Agrupa permisos relacionados en una sola fila de la grilla de seguridad',
     ruta_sidebar VARCHAR(150) NULL COMMENT 'Path del sidebar que controla este permiso',
     -- Campos de auditoría y control (ESTÁNDAR)

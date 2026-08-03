@@ -115,6 +115,20 @@ export const ASIGNACIONES_DOCENTES_ENDPOINTS = {
 };
 
 // ============================================
+// MÓDULO: SUPERVISIÓN DOCENTE (DOC · fichas de seguimiento en clase)
+// ============================================
+export const SUPERVISION_DOCENTE_ENDPOINTS = {
+  /** GET — listado de fichas (S1, vista 174, `fichasSeguimiento`) / POST — registrar (S3, `fichaSeguimiento`) */
+  BASE: `${API_BASE}/supervision-docente`,
+  /** GET — fichas de los cursos del docente AUTENTICADO (S5, `fichasSeguimiento`, anti-IDOR) */
+  MIS_FICHAS: `${API_BASE}/supervision-docente/mis-fichas`,
+  /** GET — ficha completa (S2) / PUT — actualizar (S4), ambas `fichaSeguimiento` */
+  BY_ID: (id) => `${API_BASE}/supervision-docente/${id}`,
+  /** GET — descarga binaria del PDF de la ficha (S6) */
+  PDF: (id) => `${API_BASE}/supervision-docente/${id}/pdf`,
+};
+
+// ============================================
 // MÓDULO: ESTUDIANTES
 // ============================================
 export const ESTUDIANTES_ENDPOINTS = {
@@ -336,6 +350,28 @@ export const ASISTENCIA_ENDPOINTS = {
   /** Inscripción vigente del estudiante (resuelve estudiante → inscripcionId para la solicitud). */
   LICENCIA_INSCRIPCION_VIGENTE: (estudianteId) =>
     `${API_BASE}/asistencia/licencias/inscripcion-vigente?estudianteId=${estudianteId}`,
+  /** Consolidado % por paralelo (query: paraleloGestionId, bimestre opcional = anual). */
+  CONSOLIDADO: `${API_BASE}/asistencia/consolidado`,
+  CONSOLIDADO_EXPORT: `${API_BASE}/asistencia/consolidado/export`,
+};
+
+/**
+ * Avance académico por estudiante × plan (Académico · /academico/avance).
+ * Reemplaza al retirado módulo REP (`reportes.avance_academico`); el permiso
+ * dueño es `academico.avance` (LISTAR/EXPORTAR).
+ */
+export const AVANCE_ACADEMICO_ENDPOINTS = {
+  BASE: `${API_BASE}/avance-academico`,
+  EXPORT: `${API_BASE}/avance-academico/export`,
+};
+
+/**
+ * Deserción estudiantil ANUAL (pestaña Deserción de /academico/avance).
+ * Reemplaza al retirado `reportes.desercion`; permiso dueño `academico.desercion`.
+ */
+export const DESERCION_ENDPOINTS = {
+  BASE: `${API_BASE}/desercion`,
+  EXPORT: `${API_BASE}/desercion/export`,
 };
 
 export const CALIFICACIONES_ENDPOINTS = {
@@ -388,6 +424,12 @@ export const CALIFICACIONES_ENDPOINTS = {
     `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/bimestre/${bimestre}/export`,
   EXPORT_CENTRALIZADOR_CARRERA: (paraleloGestionId, bimestre) =>
     `${API_BASE}/calificaciones/centralizador/carrera-de/${paraleloGestionId}/bimestre/${bimestre}/export`,
+  /**
+   * GET — Excel del Centralizador ANUAL de un paralelo (una sola hoja, sobre
+   * los folios YA generados del Libro de registro de la gestión).
+   */
+  EXPORT_CENTRALIZADOR_ANUAL: (paraleloGestionId) =>
+    `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/anual/export`,
   CENTRALIZADOR_OBSERVACION: (paraleloGestionId, bimestre, estudianteId) =>
     `${API_BASE}/calificaciones/centralizador/${paraleloGestionId}/bimestre/${bimestre}/observaciones/${estudianteId}`,
   EXPORT_BOLETIN_ESTUDIANTE: (paraleloGestionId, estudianteId) =>
@@ -396,6 +438,35 @@ export const CALIFICACIONES_ENDPOINTS = {
   MI_BOLETIN: `${API_BASE}/calificaciones/mi-boletin`,
   /** GET — Boletín del estudiante autenticado en PDF (descarga binaria). */
   MI_BOLETIN_PDF: `${API_BASE}/calificaciones/mi-boletin/pdf`,
+};
+
+/**
+ * Libros de registro del centralizador (Académico · schema 25 · /academico/libros).
+ * Permiso `academico.libro` (LISTAR/DETALLE/CREAR/EDITAR/APROBAR/EXPORTAR).
+ * Un LIBRO es por carrera+gestión; un FOLIO es una página del centralizador de
+ * un paralelo (hasta 10 estudiantes). Un folio no se elimina: se ANULA.
+ */
+export const LIBROS_ENDPOINTS = {
+  ...createCRUDEndpoints('/libros'),
+  /**
+   * POST — genera los folios de TODOS los paralelos de una gestión, en el
+   * orden canónico de carrera. Idempotente: paralelos con folios vigentes se
+   * omiten. Ruta estática (no depende de un libro puntual).
+   */
+  GENERAR_FOLIOS_GESTION: (gestionId) => `${API_BASE}/libros/gestiones/${gestionId}/folios`,
+  /** GET — paralelos candidatos del generador de folios de este libro. */
+  PARALELOS: (id) => `${API_BASE}/libros/${id}/paralelos`,
+  /** GET (listado) / POST (generar; body paraleloGestionId) — folios del libro. */
+  FOLIOS: (id) => `${API_BASE}/libros/${id}/folios`,
+  /** GET — detalle del folio (nómina + celdas de nota final por materia). */
+  FOLIO_BY_ID: (id, folioId) => `${API_BASE}/libros/${id}/folios/${folioId}`,
+  /** PATCH — transición de estado (BORRADOR→IMPRESO→FIRMADO / ANULADO). */
+  FOLIO_ESTADO: (id, folioId) => `${API_BASE}/libros/${id}/folios/${folioId}/estado`,
+  /** PATCH — fila de un estudiante del folio (ESTADO/OBSERVACIONES; solo si no FIRMADO). */
+  FOLIO_ESTUDIANTE: (id, folioId, filaId) =>
+    `${API_BASE}/libros/${id}/folios/${folioId}/estudiantes/${filaId}`,
+  /** GET — descarga el libro completo en Excel (binario). */
+  EXPORT: (id) => `${API_BASE}/libros/${id}/export`,
 };
 
 // ============================================
@@ -594,6 +665,177 @@ export const INSCRIPCIONES_CAPACITACION_ENDPOINTS = {
   PAGOS: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/pagos`,
   /** POST — anular inscripción, decisión administrativa manual (permiso capacitacion.inscripcion EDITAR — no existe acción ANULAR en el vocabulario cerrado de permisos) */
   ANULAR: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/anular`,
+};
+
+// ============================================
+// MÓDULO: TITULACIÓN (TIT) Y ACOMPAÑAMIENTO ACADÉMICO (ACA)
+// ============================================
+// Rename 2026-07-31 (`tutorias` → `titulacion`; Acompañamiento reclasificado
+// al dominio ACADÉMICO). Contrato T1-T23 / A1-A11, histórico en
+// docs/plan/tutorias-plan-desarrollo.md (nomenclatura vieja, ver nota de
+// rename al inicio del documento). Rutas estáticas SIEMPRE antes de `/:id`
+// en el backend; aquí solo construimos URLs. Permisos `titulacion.*`
+// (proyectos/pasantías, seed 65) y `academico.acompanamiento.*` (seed 59).
+
+export const PROYECTOS_GRADO_ENDPOINTS = {
+  ...createCRUDEndpoints('/proyectos-grado'),
+  /** GET — catálogo de modalidades de grado (T2, dataFieldName `modalidadesGrado`) */
+  MODALIDADES: `${API_BASE}/proyectos-grado/modalidades`,
+  /** GET — bandeja del docente tutor autenticado (T3, `misTutorados`) */
+  MIS_TUTORADOS: `${API_BASE}/proyectos-grado/mis-tutorados`,
+  /** GET — proyecto del estudiante autenticado (T4, `proyectoGrado`) */
+  MI_PROYECTO: `${API_BASE}/proyectos-grado/mi-proyecto`,
+  /** GET — PDF de bitácora mensual del tutor (T5, res.download) */
+  REPORTE_BITACORA_MENSUAL: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.mes != null) q.set('mes', String(params.mes));
+    if (params.gestionId != null) q.set('gestionId', String(params.gestionId));
+    const qs = q.toString();
+    return `${API_BASE}/proyectos-grado/reportes/bitacora-mensual${qs ? `?${qs}` : ''}`;
+  },
+  /** POST — asignar tutor; genera PDF de designación oficial (T10, proyecto·APROBAR) */
+  TUTOR: (id) => `${API_BASE}/proyectos-grado/${id}/tutor`,
+  /** POST — transición de estado del proyecto (T11, proyecto·APROBAR) */
+  TRANSICIONES: (id) => `${API_BASE}/proyectos-grado/${id}/transiciones`,
+  /** POST — agregar integrante (T12, proyecto·EDITAR) */
+  INTEGRANTES: (id) => `${API_BASE}/proyectos-grado/${id}/integrantes`,
+  /** PATCH — actualizar integrante (rol/estado, T13, proyecto·EDITAR) */
+  INTEGRANTE: (id, integranteId) =>
+    `${API_BASE}/proyectos-grado/${id}/integrantes/${integranteId}`,
+  /** GET/POST — bitácora del proyecto (T14 `bitacoraEntradas` / T15 `bitacoraEntrada`) */
+  BITACORA: (id) => `${API_BASE}/proyectos-grado/${id}/bitacora`,
+  /** PUT — editar entrada de bitácora (T16, bitacora·EDITAR) */
+  BITACORA_ENTRADA: (id, entradaId) =>
+    `${API_BASE}/proyectos-grado/${id}/bitacora/${entradaId}`,
+  /** POST — confirmación del estudiante (firma digital, T17, guard de pertenencia) */
+  BITACORA_CONFIRMAR: (id, entradaId) =>
+    `${API_BASE}/proyectos-grado/${id}/bitacora/${entradaId}/confirmar`,
+  /** GET/POST(multipart) — avances del proyecto (T18 `avances` / T20 `avance`) */
+  AVANCES: (id) => `${API_BASE}/proyectos-grado/${id}/avances`,
+  /** GET — detalle de un avance (T19, `avance`) */
+  AVANCE: (id, avanceId) => `${API_BASE}/proyectos-grado/${id}/avances/${avanceId}`,
+  /** GET — descarga del archivo del avance (T21, res.download; blob autenticado) */
+  AVANCE_ARCHIVO: (id, avanceId) =>
+    `${API_BASE}/proyectos-grado/${id}/avances/${avanceId}/archivo`,
+  /** GET — dictámenes del proyecto (T22, `dictamenes`) */
+  DICTAMENES: (id) => `${API_BASE}/proyectos-grado/${id}/dictamenes`,
+  /** GET — PDF del dictamen (T23, proyecto·EXPORTAR; blob autenticado) */
+  DICTAMEN_ARCHIVO: (id, dictamenId) =>
+    `${API_BASE}/proyectos-grado/${id}/dictamenes/${dictamenId}/archivo`,
+
+  // ==========================================================
+  // Extensión 2026-07-31 — Requisitos 1-3 (formulario de modalidad de
+  // graduación, reporte de avance por carrera, planilla "10 en 10").
+  // Rutas estáticas ANTES de `/:id` en el backend (proyectos-grado.routes.js).
+  // ==========================================================
+
+  /**
+   * GET — estudiantes de 3er año elegibles para elegir modalidad de
+   * graduación (Requisito 1, dataFieldName `estudiantesElegibles`). Query
+   * (`search`/`carreraId`/`gestionId`) se envía vía `params`, no en la URL.
+   */
+  ESTUDIANTES_ELEGIBLES: `${API_BASE}/proyectos-grado/estudiantes-elegibles`,
+  /** GET — PDF del formulario de modalidad de graduación FMDG-1 (Requisito 1, res.download) */
+  FORMULARIO_MODALIDAD_PDF: (id) => `${API_BASE}/proyectos-grado/${id}/formulario-modalidad/pdf`,
+  /**
+   * GET — reporte de avance de tutorías por carrera (Requisito 2,
+   * dataFieldName `avanceTutoriaCarrera`). Query vía `params`.
+   */
+  REPORTE_AVANCE_CARRERA: `${API_BASE}/proyectos-grado/reportes/avance-carrera`,
+  /** GET — PDF del reporte de avance de tutorías por carrera (Requisito 2, res.download) */
+  REPORTE_AVANCE_CARRERA_PDF: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.gestionId != null) q.set('gestionId', String(params.gestionId));
+    if (params.carreraId != null) q.set('carreraId', String(params.carreraId));
+    const qs = q.toString();
+    return `${API_BASE}/proyectos-grado/reportes/avance-carrera/pdf${qs ? `?${qs}` : ''}`;
+  },
+  /**
+   * GET — planilla de avance de tutorías "10 en 10" bimestral, 3er año
+   * (Requisito 3, dataFieldName `planillaAvanceTercerAnio`). Query vía `params`.
+   */
+  REPORTE_PLANILLA_AVANCE_TERCER_ANIO: `${API_BASE}/proyectos-grado/reportes/planilla-avance-tercer-anio`,
+  /** GET — Excel de la planilla de avance de tutorías (Requisito 3, res.download) */
+  REPORTE_PLANILLA_AVANCE_TERCER_ANIO_EXPORT: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.carreraId != null) q.set('carreraId', String(params.carreraId));
+    if (params.gestionId != null) q.set('gestionId', String(params.gestionId));
+    if (params.bimestre != null) q.set('bimestre', String(params.bimestre));
+    const qs = q.toString();
+    return `${API_BASE}/proyectos-grado/reportes/planilla-avance-tercer-anio/export${qs ? `?${qs}` : ''}`;
+  },
+
+  // ==========================================================
+  // Extensión 2026-08-01 — Acta de defensa de grado (P1-P8 del plan
+  // `acta-defensa-grado-plan-desarrollo.md`). Rutas anidadas bajo `/:id`.
+  // ==========================================================
+
+  /**
+   * GET — actas de defensa del proyecto (N si PSP grupal, tribunal anidado,
+   * `actasDefensa`, proyecto·DETALLE).
+   * POST — registra el/los acta(s); delega la transición DEFENSA→APROBADO|
+   * REPROBADO (`actasDefensa`, proyecto·APROBAR).
+   */
+  ACTA_DEFENSA: (id) => `${API_BASE}/proyectos-grado/${id}/acta-defensa`,
+  /** GET — PDF del acta de defensa, espejo §1 del plan (proyecto·EXPORTAR, blob autenticado) */
+  ACTA_DEFENSA_PDF: (id, actaId) => `${API_BASE}/proyectos-grado/${id}/acta-defensa/${actaId}/pdf`,
+  /**
+   * PATCH — anula un acta EMITIDA (P8, proyecto·APROBAR, mismo permiso que
+   * registrar). Body `{ motivo }`; NO revierte la transición del proyecto.
+   */
+  ACTA_DEFENSA_ANULAR: (id, actaId) => `${API_BASE}/proyectos-grado/${id}/acta-defensa/${actaId}/anular`,
+};
+
+export const ACOMPANAMIENTO_ENDPOINTS = {
+  /** GET — alertas de riesgo pedagógico, vista 156 (A1, `alertasRiesgo`) */
+  ALERTAS: `${API_BASE}/acompanamiento/alertas`,
+  /** GET — alumnos en riesgo de los cursos del docente autenticado (A2, `misAlumnosEnRiesgo`) */
+  ALERTAS_MIS_ALUMNOS: `${API_BASE}/acompanamiento/alertas/mis-alumnos`,
+  /** GET — detalle de riesgo de un estudiante (A3, `alertaEstudiante`) */
+  ALERTA_ESTUDIANTE: (estudianteId) =>
+    `${API_BASE}/acompanamiento/alertas/estudiante/${estudianteId}`,
+  /** GET/POST — sesiones de refuerzo (A4 `sesionesRefuerzo` / A6 `sesionRefuerzo`) */
+  SESIONES: `${API_BASE}/acompanamiento/sesiones`,
+  /** GET/PUT/DELETE — una sesión (A5/A7/A8, `sesionRefuerzo`) */
+  SESION: (id) => `${API_BASE}/acompanamiento/sesiones/${id}`,
+  /** PUT — registro batch de asistencia/progreso (A9, `estudiantes`) */
+  SESION_ESTUDIANTES: (id) => `${API_BASE}/acompanamiento/sesiones/${id}/participantes`,
+  /** GET — panel de acompañamiento (A10, `panelAcompanamiento`) */
+  PANEL: (gestionId) =>
+    `${API_BASE}/acompanamiento/panel${gestionId != null ? `?gestionId=${gestionId}` : ''}`,
+  /** GET — PDF del panel (A11, panel·EXPORTAR; blob autenticado) */
+  PANEL_EXPORTAR: (gestionId) =>
+    `${API_BASE}/acompanamiento/panel/exportar${gestionId != null ? `?gestionId=${gestionId}` : ''}`,
+};
+
+// Contrato P1-P19 (docs/plan/titulacion-y-dominios-pendientes.md §Fase 2).
+// Pasantías / práctica laboral (schema 24, vistas 166-168). Rutas estáticas
+// (empresas, mis-pasantias, mi-pasantia) SIEMPRE antes de `/:id` en el
+// backend; aquí solo construimos URLs. Permisos `titulacion.pasantia.*` (seed 65).
+export const PASANTIAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/pasantias'),
+  /** GET/POST — catálogo de empresas (P7 `pasantiasEmpresas` / P8 `pasantiaEmpresa`) */
+  EMPRESAS: `${API_BASE}/pasantias/empresas`,
+  /** PUT — edición de una empresa (P9, `pasantiaEmpresa`) */
+  EMPRESA: (empresaId) => `${API_BASE}/pasantias/empresas/${empresaId}`,
+  /** PATCH — activar/desactivar empresa, body { activo } (P10, empresa·ACTIVAR) */
+  EMPRESA_ESTADO: (empresaId) => `${API_BASE}/pasantias/empresas/${empresaId}/estado`,
+  /** GET — bandeja del docente supervisor autenticado (P18, `misPasantias`) */
+  MIS_PASANTIAS: `${API_BASE}/pasantias/mis-pasantias`,
+  /** GET — trámite compuesto del estudiante autenticado (P19, `{ pasantia, informes, seguimientos }`) */
+  MI_PASANTIA: `${API_BASE}/pasantias/mi-pasantia`,
+  /** POST — transición de estado del trámite (P6, pasantia·APROBAR) */
+  TRANSICIONES: (id) => `${API_BASE}/pasantias/${id}/transiciones`,
+  /** GET/POST — informes del trámite (P11 `informes` / P12 `informe`, genera PDF) */
+  INFORMES: (id) => `${API_BASE}/pasantias/${id}/informes`,
+  /** PUT — editar informe; regenera su PDF (P13, `informe`) */
+  INFORME: (id, informeId) => `${API_BASE}/pasantias/${id}/informes/${informeId}`,
+  /** GET — descarga del PDF del informe (P14, pasantia·EXPORTAR; blob autenticado) */
+  INFORME_PDF: (id, informeId) => `${API_BASE}/pasantias/${id}/informes/${informeId}/pdf`,
+  /** GET/POST — seguimientos del trámite (P15 `seguimientos` / P16 `seguimiento`) */
+  SEGUIMIENTOS: (id) => `${API_BASE}/pasantias/${id}/seguimientos`,
+  /** PUT — editar seguimiento (P17, `seguimiento`) */
+  SEGUIMIENTO: (id, seguimientoId) => `${API_BASE}/pasantias/${id}/seguimientos/${seguimientoId}`,
 };
 
 /**

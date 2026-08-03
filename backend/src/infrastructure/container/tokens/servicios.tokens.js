@@ -24,5 +24,21 @@ export const SERVICIOS_TOKENS = {
     becasReporteExcelGenerator: 'becasReporteExcelGenerator', // IBecasReporteExcelGenerator (.xlsx)
     cuentasPorCobrarReporteExcelGenerator: 'cuentasPorCobrarReporteExcelGenerator', // ICuentasPorCobrarReporteExcelGenerator (.xlsx)
     listadoInscritosCapacitacionExcelGenerator: 'listadoInscritosCapacitacionExcelGenerator', // IListadoInscritosCapacitacionExcelGenerator (.xlsx)
+    asistenciaConsolidadoExcelGenerator: 'asistenciaConsolidadoExcelGenerator', // IAsistenciaConsolidadoExcelGenerator (.xlsx)
+    libroRegistroExcelGenerator: 'libroRegistroExcelGenerator', // ILibroRegistroExcelGenerator (.xlsx, libros de registro ACA)
+    avanceAcademicoExcelGenerator: 'avanceAcademicoExcelGenerator', // IAvanceAcademicoExcelGenerator (.xlsx)
+    desercionExcelGenerator: 'desercionExcelGenerator', // IDesercionExcelGenerator (.xlsx)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
+    designacionTutorPdfGenerator: 'designacionTutorPdfGenerator', // IDesignacionTutorPdfGenerator (.pdf, módulo TIT)
+    viabilidadProyectoPdfGenerator: 'viabilidadProyectoPdfGenerator', // IViabilidadProyectoPdfGenerator (.pdf, módulo TIT)
+    bitacoraMensualTutorPdfGenerator: 'bitacoraMensualTutorPdfGenerator', // IBitacoraMensualTutorPdfGenerator (.pdf, módulo TIT)
+    panelAcompanamientoPdfGenerator: 'panelAcompanamientoPdfGenerator', // IPanelAcompanamientoPdfGenerator (.pdf, módulo ACA · acompañamiento)
+    fichaSeguimientoClasePdfGenerator: 'fichaSeguimientoClasePdfGenerator', // IFichaSeguimientoClasePdfGenerator (.pdf, módulo DOC · supervisión)
+    // Extensión 2026-07-31 (módulo TIT · titulación): formulario de modalidad
+    // de graduación, reporte de avance por carrera y planilla "10 en 10".
+    formularioModalidadGradoPdfGenerator: 'formularioModalidadGradoPdfGenerator', // IFormularioModalidadGradoPdfGenerator (.pdf, módulo TIT)
+    avanceTutoriaCarreraPdfGenerator: 'avanceTutoriaCarreraPdfGenerator', // IAvanceTutoriaCarreraPdfGenerator (.pdf, módulo TIT)
+    planillaAvanceTutoriaExcelGenerator: 'planillaAvanceTutoriaExcelGenerator', // IPlanillaAvanceTutoriaExcelGenerator (.xlsx, módulo TIT)
+    // Extensión 2026-08-01 (módulo TIT · titulación): acta de defensa de grado.
+    actaDefensaPdfGenerator: 'actaDefensaPdfGenerator', // IActaDefensaPdfGenerator (.pdf, módulo TIT)
 };

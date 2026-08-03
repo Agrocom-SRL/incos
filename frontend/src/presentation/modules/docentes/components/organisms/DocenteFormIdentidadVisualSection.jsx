@@ -19,23 +19,27 @@ const DocenteFormIdentidadVisualSection = ({ form, initialColorHex = '' }) => {
   const [selectedHex, setSelectedHex] = useState('');
   const [manualHex, setManualHex] = useState('');
 
-  const loadPaleta = useCallback(async () => {
-    setLoading(true);
-    const res = await fetchColoresSugeridos();
-    if (res.success) {
-      setPaleta(res.data?.colores_sugeridos ?? []);
-    } else {
-      message.error(typeof res.error === 'string' ? res.error : 'No se pudo cargar la paleta');
-    }
-    setLoading(false);
-  }, [fetchColoresSugeridos]);
-
-  useEffect(() => {
+  /** Siembra la selección con el color actual del formulario y carga la paleta. */
+  const iniciarSeleccion = useCallback(async () => {
     const seed = sanitizeDocenteColorHex(initialColorHex) || sanitizeDocenteColorHex(form?.getFieldValue?.('colorHex')) || '';
     setSelectedHex(seed);
     setManualHex('');
-    loadPaleta();
-  }, [initialColorHex, form, loadPaleta]);
+    setLoading(true);
+    try {
+      const res = await fetchColoresSugeridos();
+      if (res.success) {
+        setPaleta(res.data?.colores_sugeridos ?? []);
+      } else {
+        message.error(typeof res.error === 'string' ? res.error : 'No se pudo cargar la paleta');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [initialColorHex, form, fetchColoresSugeridos]);
+
+  useEffect(() => {
+    iniciarSeleccion();
+  }, [iniciarSeleccion]);
 
   const effectiveHex = useMemo(() => {
     const manual = sanitizeDocenteColorHex(manualHex);

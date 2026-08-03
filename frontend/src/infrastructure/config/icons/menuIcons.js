@@ -46,7 +46,6 @@ import {
     FileAddOutlined,
     CalendarOutlined,
     BookOutlined,
-    FallOutlined,
     FileDoneOutlined,
     FolderOpenOutlined,
     InfoCircleOutlined,
@@ -54,6 +53,10 @@ import {
     TableOutlined,
     AppstoreOutlined,
     ScheduleOutlined,
+    SafetyCertificateOutlined,
+    ShopOutlined,
+    ProfileOutlined,
+    AuditOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -69,10 +72,11 @@ export const menuIconMap = {
     'DOC': UsergroupAddOutlined,
     'FIN': DollarOutlined,
     'INST': HomeOutlined,
-    'REP': BarChartOutlined,
     'CFG': SettingOutlined,
     'SEG': SafetyOutlined,
     'CAP': ScheduleOutlined,
+    // Titulación (rename 2026-07-31 desde TUT; label del dominio desde 2026-07-29)
+    'TIT': SafetyCertificateOutlined,
     'PERFIL': UserOutlined,
 
     // Matrícula (MAT)
@@ -81,21 +85,22 @@ export const menuIconMap = {
     'MAT-LISTA': UnorderedListOutlined,
     'MAT-APO-LISTA': DollarOutlined,
     'MAT-BEC-LISTAR': GiftOutlined,
-    'MAT-PAS-LISTA': SolutionOutlined,
 
     // Académico (ACA)
     'ACA-ASI': SolutionOutlined,
     'ACA-CAL': CheckCircleOutlined,
     'ACA-CENTRALIZADOR': TableOutlined,
+    'ACA-LIBROS': ProfileOutlined,
     'ACA-NIV': SyncOutlined,
     'ACA-TRASPASOS': TransactionOutlined,
     'ACA-TRANSIT': ReloadOutlined,
     'ACA-HIS': HistoryOutlined,
-    'ACA-AVANCE': LineChartOutlined,
+    'ACA-SEGUIMIENTO': LineChartOutlined,
 
     // Docentes (DOC)
     'DOC-LIST': UnorderedListOutlined,
     'DOC-LIC': FileTextOutlined,
+    'DOC-SUPERVISION': AuditOutlined,
 
     // Finanzas (FIN)
     'FIN-PAG': CreditCardOutlined,
@@ -108,12 +113,6 @@ export const menuIconMap = {
     'INST-OFERTA-ACADEMICA': BookOutlined,
     'INST-HORARIOS': CalendarOutlined,
     'INST-GESTIONES-PASADAS': UnorderedListOutlined,
-
-    // Reportes (REP)
-    'REP-AVANCE-ACADEMICO': LineChartOutlined,
-    'REP-ASISTENCIA': UserOutlined,
-    'REP-DESERCION': FallOutlined,
-    'REP-SOLICITUDES': FileDoneOutlined,
 
     // Configuración (CFG)
     'CFG-ACADEMICO': BookOutlined,
@@ -131,4 +130,9 @@ export const menuIconMap = {
     'CAP-CURSOS': BookOutlined,
     'CAP-PARTICIPANTES': TeamOutlined,
     'CAP-INSCRIPCIONES': SolutionOutlined,
+
+    // Titulación (TIT) — rename 2026-07-31 desde TUT; Acompañamiento se
+    // reclasificó al bloque Académico (ver arriba).
+    'TIT-PROYECTOS': FileDoneOutlined,
+    'TIT-PASANTIAS': ShopOutlined,
 };

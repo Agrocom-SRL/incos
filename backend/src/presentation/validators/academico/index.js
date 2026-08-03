@@ -9,8 +9,10 @@ export { listMateriasValidator } from './list-materias.validator.js';
 export { searchCoordinacionDocentesValidator } from './search-coordinacion-docentes.validator.js';
 export { getCentralizadorParaleloValidator } from './get-centralizador-paralelo.validator.js';
 export { exportCentralizadorParaleloBimestreValidator } from './export-centralizador-paralelo-bimestre.validator.js';
+export { exportCentralizadorAnualParaleloValidator } from './export-centralizador-anual-paralelo.validator.js';
 export { saveObservacionCentralizadorBimestreValidator } from './save-observacion-centralizador-bimestre.validator.js';
 export { exportBoletinEstudianteValidator } from './export-boletin-estudiante.validator.js';
+export { exportMiBoletinPdfValidator } from './export-mi-boletin.validator.js';
 export { savePoliticaInstitucionalValidator } from './save-politica-institucional.validator.js';
 export { listTiposEvaluacionValidator } from './list-tipos-evaluacion.validator.js';
 export {
@@ -32,3 +34,26 @@ export {
   postPeriodoEtapaValidator,
   periodoIdValidator,
 } from './periodos-gestion.validator.js';
+export {
+  listLibrosValidator,
+  abrirLibroValidator,
+  getLibroByIdValidator,
+  editarLibroValidator,
+  listParalelosLibroValidator,
+  generarFoliosParaleloValidator,
+  getFolioByIdValidator,
+  cambiarEstadoFolioValidator,
+  editarFolioEstudianteValidator,
+  exportLibroExcelValidator,
+  generarFoliosGestionValidator,
+} from './libros.validator.js';
+export {
+  estudianteIdParamValidator,
+  listAlertasRiesgoValidator,
+  alertaEstudianteValidator,
+  listSesionesRefuerzoValidator,
+  createSesionRefuerzoValidator,
+  updateSesionRefuerzoValidator,
+  registerAsistenciaSesionValidator,
+  panelAcompanamientoValidator,
+} from './acompanamiento.validator.js';

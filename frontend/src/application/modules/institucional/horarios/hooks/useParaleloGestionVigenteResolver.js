@@ -37,87 +37,88 @@ export function useParaleloGestionVigenteResolver(paraleloMaestroId, options = {
     setLoading(true);
     setError(null);
 
-    let vigenteId =
-      gestionVigenteIdOpt != null && Number.isFinite(Number(gestionVigenteIdOpt)) && Number(gestionVigenteIdOpt) > 0
-        ? Number(gestionVigenteIdOpt)
-        : null;
-    let vigenteNombre = null;
+    try {
+      let vigenteId =
+        gestionVigenteIdOpt != null && Number.isFinite(Number(gestionVigenteIdOpt)) && Number(gestionVigenteIdOpt) > 0
+          ? Number(gestionVigenteIdOpt)
+          : null;
+      let vigenteNombre = null;
 
-    if (!vigenteId) {
-      const gestRes = await fetchGestionesSilent();
-      if (!gestRes.success) {
-        setError(gestRes.error || 'No se pudieron cargar las gestiones');
-        setLoading(false);
+      if (!vigenteId) {
+        const gestRes = await fetchGestionesSilent();
+        if (!gestRes.success) {
+          setError(gestRes.error || 'No se pudieron cargar las gestiones');
+          return;
+        }
+
+        const gestiones = gestRes.data?.gestiones ?? gestRes.data?.managements ?? [];
+        const listG = Array.isArray(gestiones) ? gestiones : [];
+        const vigente = listG.find((g) => g.vigente) ?? listG[0];
+        if (!vigente?.id) {
+          setError('No hay gestión académica vigente. Configure la oferta en Institucional → Oferta académica.');
+          return;
+        }
+        vigenteId = Number(vigente.id);
+        vigenteNombre = vigente.nombre ?? vigente.codigo ?? null;
+      }
+
+      const planesRes = await fetchPlanesHabilitadosSilent(vigenteId);
+      if (!planesRes.success) {
+        setError(planesRes.error || 'No se pudieron cargar los planes habilitados');
         return;
       }
 
-      const gestiones = gestRes.data?.gestiones ?? gestRes.data?.managements ?? [];
-      const listG = Array.isArray(gestiones) ? gestiones : [];
-      const vigente = listG.find((g) => g.vigente) ?? listG[0];
-      if (!vigente?.id) {
-        setError('No hay gestión académica vigente. Configure la oferta en Institucional → Oferta académica.');
-        setLoading(false);
+      const planes = planesRes.data?.planesHabilitados ?? [];
+      const pgResults = await Promise.all(
+        planes.map(async (plan) => {
+          const pgRes = await fetchParalelosGestionSilent(plan.id);
+          return { plan, pgRes };
+        }),
+      );
+
+      for (const { plan, pgRes } of pgResults) {
+        if (!pgRes.success) continue;
+        const paralelos = pgRes.data?.paralelosGestion ?? [];
+        const match = paralelos.find((pg) => pickParaleloId(pg) === pid);
+        if (!match?.id) continue;
+
+        const detRes = await fetchParaleloGestionDetalleSilent(match.id);
+        const det = detRes.success
+          ? detRes.data?.paralelo_gestion ?? detRes.data?.paraleloGestion ?? match
+          : match;
+
+        setParaleloGestionId(Number(match.id));
+        setGestionPlanId(Number(plan.id));
+        setMeta({
+          paraleloMaestroId: pid,
+          nombre: det.paraleloNombre ?? det.paralelo_nombre ?? match.paraleloNombre ?? null,
+          turno: det.turno ?? match.turno ?? null,
+          estado: det.estado ?? det.state ?? match.estado ?? match.state ?? null,
+          aulaCodigo: det.aulaCodigo ?? det.aula_codigo ?? match.aulaCodigo ?? null,
+          carreraNombre: det.carreraNombre ?? det.carrera_nombre ?? null,
+          carreraCodigo: det.carreraCodigo ?? det.carrera_codigo ?? null,
+          carreraImagenRuta: det.carreraImagenRuta ?? det.carrera_imagen_ruta ?? null,
+          periodoNombre: det.periodoNombre ?? det.periodo_nombre ?? null,
+          periodoNumero: det.periodoNumero ?? det.periodo_numero ?? null,
+          descripcion: det.paraleloDescripcion ?? det.paralelo_descripcion ?? null,
+          gestionNombre: vigenteNombre,
+          planNombre: plan.nombre ?? plan.planNombre ?? null,
+        });
+        setError(null);
         return;
       }
-      vigenteId = Number(vigente.id);
-      vigenteNombre = vigente.nombre ?? vigente.codigo ?? null;
-    }
 
-    const planesRes = await fetchPlanesHabilitadosSilent(vigenteId);
-    if (!planesRes.success) {
-      setError(planesRes.error || 'No se pudieron cargar los planes habilitados');
+      setParaleloGestionId(null);
+      setGestionPlanId(null);
+      setMeta(null);
+      setError(
+        'Este paralelo no está habilitado en la gestión vigente. Agregue el paralelo en Institucional → Oferta académica.'
+      );
+    } catch (err) {
+      setError(err?.message || String(err));
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const planes = planesRes.data?.planesHabilitados ?? [];
-    const pgResults = await Promise.all(
-      plans.map(async (plan) => {
-        const pgRes = await fetchParalelosGestionSilent(plan.id);
-        return { plan, pgRes };
-      }),
-    );
-
-    for (const { plan, pgRes } of pgResults) {
-      if (!pgRes.success) continue;
-      const paralelos = pgRes.data?.paralelosGestion ?? [];
-      const match = paralelos.find((pg) => pickParaleloId(pg) === pid);
-      if (!match?.id) continue;
-
-      const detRes = await fetchParaleloGestionDetalleSilent(match.id);
-      const det = detRes.success
-        ? detRes.data?.paralelo_gestion ?? detRes.data?.paraleloGestion ?? match
-        : match;
-
-      setParaleloGestionId(Number(match.id));
-      setGestionPlanId(Number(plan.id));
-      setMeta({
-        paraleloMaestroId: pid,
-        nombre: det.paraleloNombre ?? det.paralelo_nombre ?? match.paraleloNombre ?? null,
-        turno: det.turno ?? match.turno ?? null,
-        estado: det.estado ?? det.state ?? match.estado ?? match.state ?? null,
-        aulaCodigo: det.aulaCodigo ?? det.aula_codigo ?? match.aulaCodigo ?? null,
-        carreraNombre: det.carreraNombre ?? det.carrera_nombre ?? null,
-        carreraCodigo: det.carreraCodigo ?? det.carrera_codigo ?? null,
-        carreraImagenRuta: det.carreraImagenRuta ?? det.carrera_imagen_ruta ?? null,
-        periodoNombre: det.periodoNombre ?? det.periodo_nombre ?? null,
-        periodoNumero: det.periodoNumero ?? det.periodo_numero ?? null,
-        descripcion: det.paraleloDescripcion ?? det.paralelo_descripcion ?? null,
-        gestionNombre: vigenteNombre,
-        planNombre: plan.nombre ?? plan.planNombre ?? null,
-      });
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
-    setParaleloGestionId(null);
-    setGestionPlanId(null);
-    setMeta(null);
-    setError(
-      'Este paralelo no está habilitado en la gestión vigente. Agregue el paralelo en Institucional → Oferta académica.'
-    );
-    setLoading(false);
   }, [
     fetchGestionesSilent,
     fetchPlanesHabilitadosSilent,

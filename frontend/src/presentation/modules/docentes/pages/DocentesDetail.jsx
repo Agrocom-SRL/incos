@@ -3,7 +3,7 @@
  * El color del docente se edita en Materias asignadas; el armado de horarios vive en Institucional.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Spin, Alert, Tabs } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -13,6 +13,7 @@ import {
   SolutionOutlined,
   IdcardOutlined,
   CarryOutOutlined,
+  AuditOutlined,
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -29,6 +30,7 @@ import {
 import DocenteProfileSummary from '@docentes/components/organisms/DocenteProfileSummary';
 import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAssignmentsSection';
 import DocenteAccessSection from '@docentes/components/organisms/DocenteAccessSection';
+import MisFichasSeguimientoTab from '@docentes/supervision/components/organisms/MisFichasSeguimientoTab';
 import '@docentes/styles/docentes-detail-page.css';
 
 const fmtDate = (v) => {
@@ -76,6 +78,10 @@ const DocentesDetail = () => {
   // un destino de navegación con sentido en ese flujo (no es una decisión de
   // autorización: editar/eliminar ya se ocultan solos por permiso, fail-closed).
   const esMiFicha = esDocente(usuario);
+
+  // Tab activa controlada: gobierna la carga lazy de "Supervisión" (solo se
+  // pide `/mis-fichas` la primera vez que el docente abre esa tab).
+  const [activeTabKey, setActiveTabKey] = useState('resumen');
 
   const headerActions = esMiFicha ? null : (
     <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
@@ -192,6 +198,22 @@ const DocentesDetail = () => {
           </div>
         ),
       },
+      // Portal del docente: solo su propia ficha (esMiFicha) ve sus fichas de
+      // seguimiento (S5, wrapper self sin permiso nuevo). Carga lazy: solo
+      // dispara la petición cuando esta tab está activa.
+      ...(esMiFicha
+        ? [
+            {
+              key: 'supervision',
+              label: (
+                <span className="sd-tab-label">
+                  <AuditOutlined /> Supervisión
+                </span>
+              ),
+              children: <MisFichasSeguimientoTab enabled={activeTabKey === 'supervision'} />,
+            },
+          ]
+        : []),
     ],
     [
       profile,
@@ -204,6 +226,8 @@ const DocentesDetail = () => {
       puedeAsignarMaterias,
       puedeGestionarAsignaciones,
       handleAsignacionAcademica,
+      esMiFicha,
+      activeTabKey,
     ],
   );
 
@@ -237,7 +261,12 @@ const DocentesDetail = () => {
                 puedeEditar={puedeEditar}
               />
               <div className="sd-tabs-shell">
-                <Tabs defaultActiveKey="resumen" items={tabItems} className="sd-tabs" />
+                <Tabs
+                  activeKey={activeTabKey}
+                  onChange={setActiveTabKey}
+                  items={tabItems}
+                  className="sd-tabs"
+                />
               </div>
             </>
           )}

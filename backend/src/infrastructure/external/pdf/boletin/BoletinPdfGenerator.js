@@ -14,6 +14,15 @@
  * el agrupado/tinte de las columnas de resumen (PROM/HAB/FINAL) y la fila de pie
  * "Promedio Anual".
  *
+ * El MISMO generador arma los dos tipos de boletín:
+ * - ANUAL: columnas de los 4 parciales + PROM/HAB/FINAL + OBSERVACIONES (estado
+ *   por asignatura según la escala vigente).
+ * - BIMESTRAL (payload con `bimestre` 1..4): desglose del bimestre por
+ *   asignatura — TEÓRICA + PRÁCTICA = TOTAL — y columna ESTADO; la cabecera
+ *   añade la fila BIMESTRE y el pie usa `footerRowLabel` del payload.
+ * En ambos, si el payload trae `observaciones` (texto del bimestre a nivel
+ * estudiante) se listan debajo de la tabla, antes de las firmas.
+ *
  * Principios SOLID:
  * - Single Responsibility: solo arma el boletín; los datos llegan ya formados.
  * - Open/Closed: extiende IncosPDFLibBase sin modificarla.
@@ -59,6 +68,7 @@ export class BoletinPdfGenerator extends IncosPDFLibBase {
     this._titulo(page, fonts, datos);
     this._datosEstudiante(page, fonts, datos);
     this._tablaNotas(page, fonts, datos);
+    this._observaciones(page, fonts, datos);
     this._firmas(page, fonts);
 
     const buffer = await this._saveDocument(pdfDoc);
@@ -131,6 +141,11 @@ export class BoletinPdfGenerator extends IncosPDFLibBase {
       ['RÉGIMEN: ', cabecera.regimen ?? '', 'GESTIÓN: ', String(cabecera.gestion ?? '')]
     ];
 
+    // Boletín bimestral: fila extra que indica el bimestre exportado.
+    if (cabecera.bimestre) {
+      rows.push(['BIMESTRE: ', String(cabecera.bimestre), '', '']);
+    }
+
     for (const [leftLabel, leftValue, rightLabel, rightValue] of rows) {
       this._drawLabelValue(
         page,
@@ -142,16 +157,18 @@ export class BoletinPdfGenerator extends IncosPDFLibBase {
         colMaxWidth,
         size
       );
-      this._drawLabelValue(
-        page,
-        fonts,
-        rightX,
-        this._currentY,
-        rightLabel,
-        rightValue,
-        colMaxWidth,
-        size
-      );
+      if (rightLabel) {
+        this._drawLabelValue(
+          page,
+          fonts,
+          rightX,
+          this._currentY,
+          rightLabel,
+          rightValue,
+          colMaxWidth,
+          size
+        );
+      }
       this._currentY -= lineGap;
     }
 
@@ -170,7 +187,7 @@ export class BoletinPdfGenerator extends IncosPDFLibBase {
     const cfg = BOLETIN_PDF_CONFIG;
     const contentWidth = pageWidth - margins.left - margins.right;
     const cols = computeColumnGeometry({
-      columns: cfg.columns,
+      columns: this._columnasVisibles(datos),
       contentWidth,
       startX: margins.left
     });
@@ -245,7 +262,8 @@ export class BoletinPdfGenerator extends IncosPDFLibBase {
       rowTopY = rowBottomY;
     }
 
-    // Fila de pie: Promedio Anual (promedios de clase por parcial)
+    // Fila de pie: promedios de clase (por parcial en el anual; del bimestre,
+    // bajo TOTAL, en el bimestral — las claves calzan con las columnas).
     const footerBottomY = rowTopY - rowHeight;
     page.drawRectangle({
       x: margins.left,
@@ -259,9 +277,9 @@ export class BoletinPdfGenerator extends IncosPDFLibBase {
       let value = '';
       let { align } = col;
       if (col.key === 'asignatura') {
-        value = cfg.footerRowLabel;
+        value = datos?.footerRowLabel || cfg.footerRowLabel;
         align = 'left';
-      } else if (['par1', 'par2', 'par3', 'par4'].includes(col.key)) {
+      } else if (Object.prototype.hasOwnProperty.call(promedios, col.key)) {
         value = this._formatCellValue(promedios[col.key], col.key);
       }
       if (value !== '') {
@@ -351,6 +369,66 @@ export class BoletinPdfGenerator extends IncosPDFLibBase {
   // ============================================
 
   /**
+   * Columnas efectivas de la tabla según el tipo de boletín: las del ANUAL
+   * (`columns`) o, cuando el payload trae `bimestre` (1..4), el set BIMESTRAL
+   * (`columnsBimestre`: TEÓRICA + PRÁCTICA = TOTAL + ESTADO). Ambos sets viven
+   * en la configuración declarativa (`boletinPdfConfig.js`).
+   * @private
+   */
+  _columnasVisibles(datos) {
+    const bim = Number(datos?.bimestre);
+    if (Number.isInteger(bim) && bim >= 1 && bim <= 4) {
+      return BOLETIN_PDF_CONFIG.columnsBimestre;
+    }
+    return BOLETIN_PDF_CONFIG.columns;
+  }
+
+  /**
+   * Bloque de observaciones del estudiante (texto del bimestre, a nivel
+   * estudiante) debajo de la tabla: etiqueta en negrita + una línea por
+   * observación, recortadas al ancho de contenido. Solo si el payload trae
+   * `observaciones` con contenido.
+   * @private
+   */
+  _observaciones(page, fonts, datos) {
+    const lineas = Array.isArray(datos?.observaciones)
+      ? datos.observaciones.filter((l) => String(l ?? '').trim() !== '')
+      : [];
+    if (lineas.length === 0) return;
+
+    const { width: pageWidth } = page.getSize();
+    const { margins } = IncosPDFBase.LAYOUT;
+    const cfg = BOLETIN_PDF_CONFIG;
+    const text = this._hexToRgb(cfg.colors.text);
+    const contentWidth = pageWidth - margins.left - margins.right;
+    const size = cfg.fonts.datosSize;
+    const lineGap = 14;
+
+    page.drawText('OBSERVACIONES:', {
+      x: margins.left,
+      y: this._currentY,
+      size,
+      font: fonts.bold,
+      color: text
+    });
+    this._currentY -= lineGap;
+
+    for (const linea of lineas) {
+      const str = this._fitText(fonts.normal, size, String(linea), contentWidth);
+      page.drawText(str, {
+        x: margins.left,
+        y: this._currentY,
+        size,
+        font: fonts.normal,
+        color: text
+      });
+      this._currentY -= lineGap;
+    }
+
+    this._currentY -= 4;
+  }
+
+  /**
    * Dibuja "label" (bold) + "value" (normal) en la misma línea, recortando el valor
    * al ancho disponible. No usa fuentes async: recibe las ya embebidas.
    * @private
@@ -370,11 +448,11 @@ export class BoletinPdfGenerator extends IncosPDFLibBase {
 
   /**
    * Formatea el valor de una celda. Las columnas numéricas sin nota muestran el
-   * placeholder; HAB. y OBSERVACIONES vacías quedan en blanco.
+   * placeholder; HAB., OBSERVACIONES y ESTADO vacías quedan en blanco.
    * @private
    */
   _formatCellValue(value, key) {
-    if (key === 'hab' || key === 'obs') {
+    if (key === 'hab' || key === 'obs' || key === 'estado') {
       return value == null ? '' : String(value);
     }
     if (value == null || value === '') {

@@ -181,6 +181,8 @@ const CarreraTabsListView = ({
   pagination,
   defaultSort,
   loadingTip = 'Cargando...',
+  /** Texto de estado vacío (sin resultados), contextual al dominio (ver `TableListView`). */
+  emptyText,
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -216,6 +218,7 @@ const CarreraTabsListView = ({
       pagination={pagination}
       defaultSort={defaultSort}
       loadingTip={loadingTip}
+      emptyText={emptyText}
     />
   );
 
@@ -248,6 +251,7 @@ const CarreraTabsListView = ({
       pagination,
       defaultSort,
       tableClassName,
+      emptyText,
     ],
   );
 

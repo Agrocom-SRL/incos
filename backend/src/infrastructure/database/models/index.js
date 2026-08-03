@@ -144,3 +144,37 @@ export { BloqueCapacitacion } from './bloque_capacitacion.js';
 export { InscripcionCapacitacion } from './inscripcion_capacitacion.js';
 export { CapacitacionCompromiso } from './capacitacion_compromiso.js';
 export { PagoCapacitacion } from './pago_capacitacion.js';
+
+// ============================================
+// TUTORÍAS Y ACOMPAÑAMIENTO (módulo TUT)
+// ============================================
+export { ModalidadGrado } from './modalidad_grado.js';
+export { ProyectoGrado } from './proyecto_grado.js';
+export { IntegranteProyecto } from './integrante_proyecto.js';
+export { AvanceProyecto } from './avance_proyecto.js';
+export { BitacoraProyecto } from './bitacora_proyecto.js';
+export { DictamenProyecto } from './dictamen_proyecto.js';
+export { ActaDefensa } from './acta_defensa.js';
+export { TribunalActaDefensa } from './tribunal_acta_defensa.js';
+export { SesionRefuerzo } from './sesion_refuerzo.js';
+export { SesionRefuerzoEstudiante } from './sesion_refuerzo_estudiante.js';
+
+// ============================================
+// PASANTÍAS (módulo TUT)
+// ============================================
+export { PasantiaEmpresa } from './pasantia_empresa.js';
+export { Pasantia } from './pasantia.js';
+export { PasantiaInforme } from './pasantia_informe.js';
+export { PasantiaSeguimiento } from './pasantia_seguimiento.js';
+
+// ============================================
+// SUPERVISIÓN DOCENTE (módulo DOC)
+// ============================================
+export { FichaSeguimientoClase } from './ficha_seguimiento_clase.js';
+
+// ============================================
+// LIBROS DE REGISTRO (módulo ACA, schema 25)
+// ============================================
+export { LibroRegistro } from './libro_registro.js';
+export { FolioLibro } from './folio_libro.js';
+export { FolioEstudiante } from './folio_estudiante.js';

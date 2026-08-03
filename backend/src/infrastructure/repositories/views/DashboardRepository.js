@@ -442,7 +442,7 @@ export class DashboardRepository extends IDashboardRepository {
   }
 
   /**
-   * Saldo de aportes pendiente del estudiante de la sesión (vista 37, agregado por
+   * Saldo de aportes pendiente del estudiante de la sesión (vista 164, agregado por
    * estudiante). Si el estudiante no tiene fila en la vista, devuelve 0.
    *
    * @param {number} estudianteId

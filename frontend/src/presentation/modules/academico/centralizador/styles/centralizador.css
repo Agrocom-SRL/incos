@@ -272,6 +272,31 @@
   border-color: var(--cuaderno-borde);
 }
 
+/* —— Separador visual por folio (10 estudiantes por hoja del Libro de
+   registro): borde superior más marcado en la primera fila de cada folio +
+   etiqueta "FOLIO N°" sobre el nombre del estudiante. Solo aparece cuando el
+   paralelo ya tiene folios generados (folioNumero real del backend). —— */
+.cal-centralizador-grid-wrap
+  .ant-table-wrapper.cal-centralizador-grid
+  .ant-table-tbody
+  > tr.cal-centralizador-grid__row--inicio-folio
+  > td {
+  border-top: 2px solid var(--cuaderno-verde-medio) !important;
+}
+
+.cal-centralizador-grid__folio-tag {
+  display: block;
+  width: fit-content;
+  margin-bottom: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--cuaderno-verde-acento);
+  background: var(--cuaderno-verde-tenue);
+}
+
 /* —— Leyenda al pie (espejo del documento oficial) —— */
 .cal-centralizador-grid__leyenda {
   display: flex;
@@ -296,6 +321,19 @@
 .cal-centralizador-bim__selector-label {
   font-size: 13px;
   font-weight: 600;
+  color: var(--cuaderno-texto-medio);
+}
+
+/* —— P2: badge LIBRO/FOLIO (cruce con Libros de registro, schema 25) —— */
+.cal-centralizador-libro-pill {
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-centralizador-libro-vacio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 13px;
   color: var(--cuaderno-texto-medio);
 }
 

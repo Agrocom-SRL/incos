@@ -12,3 +12,8 @@ export { listCursosParaleloDocenteValidator } from './list-cursos-paralelo-docen
 export { cursoIdParamValidator } from './curso-id-param.validator.js';
 export { getDocenteCargaGestionValidator } from './get-carga-gestion.validator.js';
 export { putDocenteColorValidator } from './put-docente-color.validator.js';
+export {
+  listFichasSeguimientoValidator,
+  createFichaSeguimientoValidator,
+  updateFichaSeguimientoValidator,
+} from './fichas-seguimiento.validator.js';

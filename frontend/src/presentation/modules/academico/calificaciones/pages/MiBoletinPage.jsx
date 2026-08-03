@@ -5,11 +5,12 @@
  * estudiante + una tarjeta con sus calificaciones por asignatura, replicando el
  * look de las grillas del módulo (notas centradas, nota final destacada, Tag de
  * estado). SOLO LECTURA salvo la descarga del PDF del boletín (única descarga
- * permitida al estudiante). La lógica vive en `useMiBoletin`.
+ * permitida al estudiante): el botón «Descargar PDF» abre un menú para elegir
+ * el boletín ANUAL o el de un bimestre (1º–4º). La lógica vive en `useMiBoletin`.
  */
 
-import { DownloadOutlined } from '@ant-design/icons';
-import { App, Empty, Tag } from 'antd';
+import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
+import { App, Dropdown, Empty, Tag } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader, DataTable } from '@molecules';
 import { Button } from '@atoms';
@@ -39,11 +40,25 @@ const MiBoletinPage = () => {
     breadcrumbItems,
   } = useMiBoletin();
 
-  const handleDescargar = async () => {
-    const result = await descargarPdf();
+  const handleDescargar = async (bimestre = null) => {
+    const result = await descargarPdf(bimestre != null ? { bimestre } : undefined);
     if (!result?.success) {
-      message.error(result?.error || 'No se pudo descargar el boletín');
+      message.error(result?.error || 'No se pudo descargar su boletín');
     }
+  };
+
+  // Menú de descarga: boletín ANUAL (4 bimestres, como siempre) o boletín de un
+  // BIMESTRE (desglose teórica/práctica/total de ese bimestre).
+  const menuDescarga = {
+    items: [
+      { key: 'anual', label: 'Boletín anual' },
+      { type: 'divider' },
+      { key: '1', label: 'Boletín del 1º bimestre' },
+      { key: '2', label: 'Boletín del 2º bimestre' },
+      { key: '3', label: 'Boletín del 3º bimestre' },
+      { key: '4', label: 'Boletín del 4º bimestre' },
+    ],
+    onClick: ({ key }) => handleDescargar(key === 'anual' ? null : Number(key)),
   };
 
   const estudiante = boletin?.estudiante;
@@ -65,14 +80,21 @@ const MiBoletinPage = () => {
           breadcrumbItems={breadcrumbItems}
           actions={
             boletin ? (
-              <Button
-                variant="primary"
-                icon={<DownloadOutlined />}
-                loading={descargando}
-                onClick={handleDescargar}
+              <Dropdown
+                menu={menuDescarga}
+                trigger={['click']}
+                placement="bottomRight"
+                disabled={descargando}
               >
-                Descargar PDF
-              </Button>
+                <Button
+                  variant="primary"
+                  icon={<DownloadOutlined />}
+                  loading={descargando}
+                  title="Descargue su boletín anual o el de un bimestre"
+                >
+                  Descargar PDF <DownOutlined />
+                </Button>
+              </Dropdown>
             ) : null
           }
         />

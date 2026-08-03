@@ -168,6 +168,7 @@ const renderSelect = (field, disabled, readOnly, selectOptions, form) => {
       loading={field.loading}
       allowClear={field.allowClear}
       showSearch={field.showSearch}
+      optionFilterProp={field.optionFilterProp}
       mode={field.mode}
       maxCount={field.maxCount}
       tagRender={field.tagRender}

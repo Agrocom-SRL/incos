@@ -5,12 +5,13 @@
 -- ============================================
 --
 -- Requiere ejecutarse DESPUÉS de:
---   12-inscripciones.sql      (inscripciones, historial_previo, matriculas_materia)
---   13-evaluaciones.sql       (orden lógico del módulo académico)
+--   05-estructura-academica-parte1.sql (asignaturas_plan — ancla alternativa)
+--   13-inscripciones.sql      (inscripciones, historial_previo, matriculas_materia)
+--   15-evaluaciones.sql       (orden lógico del módulo académico)
 --
--- historial_previo vive en 12-inscripciones.sql (anclado a inscripcion_id).
+-- historial_previo vive en 13-inscripciones.sql (anclado a inscripcion_id).
 --
--- ORDEN DE EJECUCIÓN (ecosistema): 05/06 → 07 → 08 → 12 → 13 → 16 → 18
+-- ORDEN DE EJECUCIÓN (ecosistema): 05/06 → 07 → 08 → 13 → 15 → 16 → 18
 --
 -- Dentro de este script: historial_matricula → nivelaciones
 -- (nivelaciones.historial_matricula_id referencia historial_matricula)
@@ -57,16 +58,29 @@ DROP TABLE IF EXISTS historial_matricula;
 --
 -- 1. INTENTOS ACADÉMICOS
 --    tipo_estado en: RECUPERATORIO_ANUAL, NIVELACION_1RA, NIVELACION_2DA,
---                    PRUEBA_EXCEPCIONAL
+--                    PRUEBA_EXCEPCIONAL, ARTICULO_18
+--    (ARTICULO_18 reclasificado 2026-07-28: los libros reales de nivelación
+--    registran «NIVELA ART. 18» como EXAMEN de nivelación, no como decisión
+--    administrativa con nota forzada.)
 --    NO hay FK a nivelaciones. El vínculo es INVERSO:
 --    nivelaciones.historial_matricula_id apunta a esta fila.
 --    nota_resultante y nota_forzada quedan NULL.
 --
--- 2. DECISIONES ADMINISTRATIVAS (ABANDONO, RETIRADO, ARTICULO_18)
+-- 2. DECISIONES ADMINISTRATIVAS (ABANDONO, RETIRADO)
 --    nota_resultante + nota_forzada=TRUE. Sin fila en nivelaciones.
 --
--- 3. TRANSICIONES SIN NOTA (VENCIDA, CHOQUE_HORARIO, PRE_REQUISITO, etc.)
+-- 3. TRANSICIONES SIN NOTA (VENCIDA, CHOQUE_HORARIO, PRE_REQUISITO,
+--    NO_LLEVA_POR_VOLUNTAD, HOMOLOGACION, REINCORPORACION, etc.)
 --    Solo cronología.
+--
+-- ANCLAJE DEL EVENTO (convención 2026-07-28, evidencia: libros reales de
+-- nivelación con materias que el estudiante NO cursa):
+--   - Evento sobre una materia CURSADA → matricula_materia_id.
+--   - Evento sobre una materia NO cursada (VENCIDA, CHOQUE_HORARIO,
+--     PRE_REQUISITO, NO_LLEVA_POR_VOLUNTAD, HOMOLOGACION, REINCORPORACION)
+--     → matricula_materia_id NULL + ancla alternativa
+--     inscripcion_id (estudiante-gestión) + asignatura_plan_id (materia del plan).
+--   La exclusión mutua se valida en aplicación (sin CHECK, por diseño).
 --
 -- CÁLCULO DE NOTA EFECTIVA (lógica de aplicación):
 --   1. ¿historial_matricula vigente con nota_forzada=TRUE? → nota_resultante
@@ -77,7 +91,11 @@ DROP TABLE IF EXISTS historial_matricula;
 CREATE TABLE historial_matricula (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    matricula_materia_id INT NULL COMMENT 'Matrícula a la que pertenece este evento (referencia a matriculas_materia). Estudiante y gestión derivables vía matricula → inscripcion.',
+    matricula_materia_id INT NULL COMMENT 'Matrícula a la que pertenece este evento (referencia a matriculas_materia). Estudiante y gestión derivables vía matricula → inscripcion. NULL cuando el evento describe una materia NO cursada: en ese caso el ancla es inscripcion_id + asignatura_plan_id.',
+
+    -- Ancla alternativa para eventos SIN matrícula (materia no cursada):
+    inscripcion_id INT NULL COMMENT 'Inscripción del estudiante en la gestión (referencia a inscripciones). Se usa junto a asignatura_plan_id cuando el evento describe una materia que el estudiante NO cursa (VENCIDA, CHOQUE_HORARIO, PRE_REQUISITO, NO_LLEVA_POR_VOLUNTAD, HOMOLOGACION, REINCORPORACION) y no existe matricula_materia_id.',
+    asignatura_plan_id INT NULL COMMENT 'Materia del plan a la que se refiere el evento sin matrícula (referencia a asignaturas_plan). Junto a inscripcion_id identifica estudiante-gestión-materia cuando matricula_materia_id es NULL.',
 
     -- NOTA DE DISEÑO: NO existe nivelacion_id. El vínculo es INVERSO:
     -- nivelaciones.historial_matricula_id apunta a esta tabla.
@@ -92,15 +110,16 @@ CREATE TABLE historial_matricula (
         'PRE_REQUISITO',
         'NO_LLEVA_POR_VOLUNTAD',
         'HOMOLOGACION',
+        'REINCORPORACION',
         'LLEVA_EN_GESTION',
         'ARTICULO_18',
         'ABANDONO',
         'RETIRADO',
         'OTRO'
-    ) NOT NULL COMMENT 'Naturaleza del proceso según reglamento INCOS. Para intentos académicos distingue RECUPERATORIO_ANUAL (preventivo, misma gestión) de NIVELACION_1RA/2DA/PRUEBA_EXCEPCIONAL (recuperación posterior). La nota del examen vive en nivelaciones.',
+    ) NOT NULL COMMENT 'Naturaleza del proceso según reglamento INCOS. Para intentos académicos distingue RECUPERATORIO_ANUAL (preventivo, misma gestión) de NIVELACION_1RA/2DA/PRUEBA_EXCEPCIONAL/ARTICULO_18 (recuperación posterior; ARTICULO_18 es examen, libros reales «NIVELA ART. 18»). REINCORPORACION: retorno del estudiante, aparece junto a HOMOLOGACION en los libros reales. La nota del examen vive en nivelaciones.',
 
     nota_resultante DECIMAL(5,2) NULL
-        COMMENT 'Nota fijada por decisión administrativa (0-100). Solo ABANDONO, RETIRADO o ARTICULO_18.',
+        COMMENT 'Nota fijada por decisión administrativa (0-100). Solo ABANDONO o RETIRADO.',
 
     nota_forzada BOOLEAN DEFAULT FALSE
         COMMENT 'TRUE si nota_resultante sobrescribe matriculas_materia.nota_final.',
@@ -119,8 +138,13 @@ CREATE TABLE historial_matricula (
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
     FOREIGN KEY (matricula_materia_id) REFERENCES matriculas_materia(id) ON DELETE SET NULL,
+    FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id) ON DELETE SET NULL,
+    FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
 
     INDEX idx_matricula_materia_id (matricula_materia_id) COMMENT 'Búsqueda por matrícula',
+    INDEX idx_inscripcion_id (inscripcion_id) COMMENT 'Eventos sin matrícula de una inscripción',
+    INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Eventos sin matrícula de una materia del plan',
+    INDEX idx_inscripcion_asignatura (inscripcion_id, asignatura_plan_id, vigente, activo, deleted_at) COMMENT 'Evento vigente de una materia no cursada del estudiante',
     INDEX idx_tipo_estado (tipo_estado) COMMENT 'Filtrado por tipo de estado',
     INDEX idx_vigente (vigente) COMMENT 'Filtrado por estados vigentes',
     INDEX idx_nota_forzada (nota_forzada) COMMENT 'Búsqueda de transiciones con nota forzada',
@@ -131,7 +155,7 @@ CREATE TABLE historial_matricula (
     INDEX idx_matricula_forzada (matricula_materia_id, nota_forzada, vigente, activo, deleted_at) COMMENT 'Nota forzada vigente para cálculo de nota efectiva'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Bitácora operativa de matrículas. Intentos académicos: tipo_estado aquí, hecho del examen en nivelaciones vía historial_matricula_id. Administrativos: nota_resultante + nota_forzada.';
+COMMENT='Bitácora operativa de matrículas. Intentos académicos (incluye ARTICULO_18): tipo_estado aquí, hecho del examen en nivelaciones vía historial_matricula_id. Administrativos (ABANDONO/RETIRADO): nota_resultante + nota_forzada. Eventos de materia NO cursada: ancla inscripcion_id + asignatura_plan_id con matricula_materia_id NULL.';
 
 -- ============================================
 -- TABLA: nivelaciones
@@ -150,9 +174,11 @@ COMMENT='Bitácora operativa de matrículas. Intentos académicos: tipo_estado a
 --   - gestion_id SE MANTIENE: el examen puede ser en la gestión de la matrícula
 --     o en una posterior; no es derivable solo de la matrícula.
 --
--- Cubre dos procesos con el mismo esquema:
+-- Cubre los procesos de examen con el mismo esquema:
 --   - Preventivo: RECUPERATORIO_ANUAL al cierre de la misma gestión
 --   - Recuperación: NIVELACION_1RA/2DA, PRUEBA_EXCEPCIONAL en gestiones posteriores
+--   - Art. 18: ARTICULO_18, examen de nivelación del reglamento
+--     (libros reales «NIVELA ART. 18»; reclasificado 2026-07-28)
 
 CREATE TABLE nivelaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,

@@ -26,26 +26,28 @@ const DocenteColorPickerModal = ({
   const [selectedHex, setSelectedHex] = useState('');
   const [manualHex, setManualHex] = useState('');
 
-  const loadPaleta = useCallback(async () => {
+  /** Siembra la selección con el color actual y carga la paleta al abrir el modal. */
+  const iniciarSeleccion = useCallback(async () => {
+    const seed = sanitizeDocenteColorHex(initialHex) || '';
+    setSelectedHex(seed);
+    setManualHex('');
     if (!fetchColoresSugeridos) return;
     setLoading(true);
-    const res = await fetchColoresSugeridos();
-    if (res.success) {
-      setPaleta(res.data?.colores_sugeridos ?? []);
-    } else {
-      message.error(typeof res.error === 'string' ? res.error : 'No se pudo cargar la paleta');
+    try {
+      const res = await fetchColoresSugeridos();
+      if (res.success) {
+        setPaleta(res.data?.colores_sugeridos ?? []);
+      } else {
+        message.error(typeof res.error === 'string' ? res.error : 'No se pudo cargar la paleta');
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [fetchColoresSugeridos]);
+  }, [initialHex, fetchColoresSugeridos]);
 
   useEffect(() => {
-    if (open) {
-      const seed = sanitizeDocenteColorHex(initialHex) || '';
-      setSelectedHex(seed);
-      setManualHex('');
-      loadPaleta();
-    }
-  }, [open, initialHex, loadPaleta]);
+    if (open) iniciarSeleccion();
+  }, [open, iniciarSeleccion]);
 
   const effectiveHex = useMemo(() => {
     const manual = sanitizeDocenteColorHex(manualHex);

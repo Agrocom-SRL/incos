@@ -1,7 +1,7 @@
 /**
  * URL de vista previa: archivo local (blob, instantáneo) o ruta guardada en servidor.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
 const resolveLocalFile = (fileList) => {
   const item = fileList?.[0];
@@ -12,18 +12,19 @@ const resolveLocalFile = (fileList) => {
 };
 
 export const useImageUploadPreviewUrl = (fileList, resolveStoredUrl) => {
-  const [blobUrl, setBlobUrl] = useState(null);
   const localFile = resolveLocalFile(fileList);
 
+  // URL derivada del archivo local (sin estado propio); el effect solo revoca
+  // el recurso externo al cambiar de archivo o desmontar.
+  const blobUrl = useMemo(
+    () => (localFile instanceof File ? URL.createObjectURL(localFile) : null),
+    [localFile],
+  );
+
   useEffect(() => {
-    if (!(localFile instanceof File)) {
-      setBlobUrl(null);
-      return undefined;
-    }
-    const url = URL.createObjectURL(localFile);
-    setBlobUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [localFile]);
+    if (!blobUrl) return undefined;
+    return () => URL.revokeObjectURL(blobUrl);
+  }, [blobUrl]);
 
   if (blobUrl) {
     return blobUrl;

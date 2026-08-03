@@ -85,6 +85,36 @@ export const UPLOAD = {
   /** Ruta pública relativa para respuesta API */
   carreraImagePublicPath: (filename) => `/uploads/carreras/${filename}`,
 
+  /**
+   * Ruta base para documentos de un proyecto de grado (módulo TUT)
+   * @param {number|string} proyectoId - ID del proyecto de grado
+   * @returns {string} Ruta relativa (ej: 'documentos/proyectos-grado/1')
+   */
+  proyectosGrado: (proyectoId) => `documentos/proyectos-grado/${proyectoId}`,
+
+  /** Extensiones permitidas para archivos de avance de proyecto (solo PDF/Word) */
+  avanceProyectoExtensions: ['.pdf', '.doc', '.docx'],
+
+  /**
+   * Genera un nombre de archivo único para avances de proyecto de grado
+   * @param {string} originalName - Nombre original del archivo
+   * @returns {string} Nombre generado (ej: 'avance_1234567890_capitulo2.pdf')
+   */
+  generateAvanceProyectoFileName: (originalName) => {
+    const ts = Date.now();
+    const sanitizedName = String(originalName || 'archivo').replace(/[^a-zA-Z0-9.-]/g, '_');
+    const ext = path.extname(sanitizedName).toLowerCase();
+    const nameWithoutExt = path.basename(sanitizedName, ext);
+    return `avance_${ts}_${nameWithoutExt}${ext}`;
+  },
+
+  /**
+   * Ruta base para documentos de un trámite de pasantía (módulo TUT)
+   * @param {number|string} pasantiaId - ID del trámite de pasantía
+   * @returns {string} Ruta relativa (ej: 'documentos/pasantias/1')
+   */
+  pasantias: (pasantiaId) => `documentos/pasantias/${pasantiaId}`,
+
   /** Ruta relativa para imágenes QR de cuentas de pago (backend/uploads/cuentas-pago/qr/) */
   cuentasPagoQr: () => 'cuentas-pago/qr',
 

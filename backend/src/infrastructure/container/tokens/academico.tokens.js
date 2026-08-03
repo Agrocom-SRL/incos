@@ -46,6 +46,12 @@ export const ACADEMICO_TOKENS = {
   reabrirRegistroAsistenciaUseCase: 'academico.reabrirRegistroAsistenciaUseCase',
   crearSesionEspecialUseCase: 'academico.crearSesionEspecialUseCase',
   eliminarSesionEspecialUseCase: 'academico.eliminarSesionEspecialUseCase',
+  getConsolidadoAsistenciaUseCase: 'academico.getConsolidadoAsistenciaUseCase',
+  exportConsolidadoAsistenciaExcelUseCase: 'academico.exportConsolidadoAsistenciaExcelUseCase',
+  getAvanceAcademicoUseCase: 'academico.getAvanceAcademicoUseCase',
+  exportAvanceAcademicoExcelUseCase: 'academico.exportAvanceAcademicoExcelUseCase',
+  getDesercionUseCase: 'academico.getDesercionUseCase',
+  exportDesercionExcelUseCase: 'academico.exportDesercionExcelUseCase',
   listarLicenciasUseCase: 'academico.listarLicenciasUseCase',
   getLicenciaByIdUseCase: 'academico.getLicenciaByIdUseCase',
   getInscripcionVigenteUseCase: 'academico.getInscripcionVigenteUseCase',
@@ -84,6 +90,39 @@ export const ACADEMICO_TOKENS = {
   reabrirBimestreCursoUseCase: 'academico.reabrirBimestreCursoUseCase',
   cerrarBimestreCursoUseCase: 'academico.cerrarBimestreCursoUseCase',
   exportRegistroPedagogicoBimestreUseCase: 'academico.exportRegistroPedagogicoBimestreUseCase',
+  // Libros de registro (schema 25 — Fase 4)
+  listLibrosUseCase: 'academico.listLibrosUseCase',
+  abrirLibroUseCase: 'academico.abrirLibroUseCase',
+  getLibroByIdUseCase: 'academico.getLibroByIdUseCase',
+  editarLibroUseCase: 'academico.editarLibroUseCase',
+  listParalelosLibroUseCase: 'academico.listParalelosLibroUseCase',
+  generarFoliosParaleloUseCase: 'academico.generarFoliosParaleloUseCase',
+  generarFoliosGestionUseCase: 'academico.generarFoliosGestionUseCase',
+  getFolioByIdUseCase: 'academico.getFolioByIdUseCase',
+  cambiarEstadoFolioUseCase: 'academico.cambiarEstadoFolioUseCase',
+  editarFolioEstudianteUseCase: 'academico.editarFolioEstudianteUseCase',
+  exportLibroExcelUseCase: 'academico.exportLibroExcelUseCase',
+  exportCentralizadorAnualParaleloExcelUseCase:
+    'academico.exportCentralizadorAnualParaleloExcelUseCase',
+
+  // Acompañamiento pedagógico (schema 23, reclasificado desde TUT 2026-07-31)
+  // — Repositorios (arquetipo A + arquetipo B de vistas)
+  sesionRefuerzoRepository: 'academico.sesionRefuerzoRepository',
+  sesionRefuerzoEstudianteRepository: 'academico.sesionRefuerzoEstudianteRepository',
+  riesgoAcademicoViewRepository: 'academico.riesgoAcademicoViewRepository',
+  acompanamientoSesionViewRepository: 'academico.acompanamientoSesionViewRepository',
+  // — Use Cases
+  listAlertasRiesgoUseCase: 'academico.listAlertasRiesgoUseCase',
+  listMisAlertasRiesgoDocenteUseCase: 'academico.listMisAlertasRiesgoDocenteUseCase',
+  getAlertaRiesgoEstudianteUseCase: 'academico.getAlertaRiesgoEstudianteUseCase',
+  listSesionesRefuerzoUseCase: 'academico.listSesionesRefuerzoUseCase',
+  getSesionRefuerzoByIdUseCase: 'academico.getSesionRefuerzoByIdUseCase',
+  createSesionRefuerzoUseCase: 'academico.createSesionRefuerzoUseCase',
+  updateSesionRefuerzoUseCase: 'academico.updateSesionRefuerzoUseCase',
+  deleteSesionRefuerzoUseCase: 'academico.deleteSesionRefuerzoUseCase',
+  registerAsistenciaSesionUseCase: 'academico.registerAsistenciaSesionUseCase',
+  getPanelAcompanamientoUseCase: 'academico.getPanelAcompanamientoUseCase',
+  exportPanelAcompanamientoPdfUseCase: 'academico.exportPanelAcompanamientoPdfUseCase',
 
   // CONTROLLERS
   listParalelosController: 'academico.listParalelosController',
@@ -124,6 +163,12 @@ export const ACADEMICO_TOKENS = {
   reabrirRegistroAsistenciaController: 'academico.reabrirRegistroAsistenciaController',
   crearSesionEspecialController: 'academico.crearSesionEspecialController',
   eliminarSesionEspecialController: 'academico.eliminarSesionEspecialController',
+  getConsolidadoAsistenciaController: 'academico.getConsolidadoAsistenciaController',
+  exportConsolidadoAsistenciaController: 'academico.exportConsolidadoAsistenciaController',
+  getAvanceAcademicoController: 'academico.getAvanceAcademicoController',
+  exportAvanceAcademicoController: 'academico.exportAvanceAcademicoController',
+  getDesercionController: 'academico.getDesercionController',
+  exportDesercionController: 'academico.exportDesercionController',
   listarLicenciasController: 'academico.listarLicenciasController',
   getLicenciaByIdController: 'academico.getLicenciaByIdController',
   getInscripcionVigenteController: 'academico.getInscripcionVigenteController',
@@ -163,6 +208,33 @@ export const ACADEMICO_TOKENS = {
   cerrarBimestreCursoController: 'academico.cerrarBimestreCursoController',
   exportRegistroPedagogicoBimestreController:
     'academico.exportRegistroPedagogicoBimestreController',
+  // Libros de registro (schema 25 — Fase 4)
+  listLibrosController: 'academico.listLibrosController',
+  abrirLibroController: 'academico.abrirLibroController',
+  getLibroByIdController: 'academico.getLibroByIdController',
+  editarLibroController: 'academico.editarLibroController',
+  listParalelosLibroController: 'academico.listParalelosLibroController',
+  generarFoliosParaleloController: 'academico.generarFoliosParaleloController',
+  generarFoliosGestionController: 'academico.generarFoliosGestionController',
+  getFolioByIdController: 'academico.getFolioByIdController',
+  cambiarEstadoFolioController: 'academico.cambiarEstadoFolioController',
+  editarFolioEstudianteController: 'academico.editarFolioEstudianteController',
+  exportLibroExcelController: 'academico.exportLibroExcelController',
+  exportCentralizadorAnualParaleloController:
+    'academico.exportCentralizadorAnualParaleloController',
+
+  // Acompañamiento pedagógico — Controllers
+  listAlertasRiesgoController: 'academico.listAlertasRiesgoController',
+  listMisAlertasRiesgoDocenteController: 'academico.listMisAlertasRiesgoDocenteController',
+  getAlertaRiesgoEstudianteController: 'academico.getAlertaRiesgoEstudianteController',
+  listSesionesRefuerzoController: 'academico.listSesionesRefuerzoController',
+  getSesionRefuerzoByIdController: 'academico.getSesionRefuerzoByIdController',
+  createSesionRefuerzoController: 'academico.createSesionRefuerzoController',
+  updateSesionRefuerzoController: 'academico.updateSesionRefuerzoController',
+  deleteSesionRefuerzoController: 'academico.deleteSesionRefuerzoController',
+  registerAsistenciaSesionController: 'academico.registerAsistenciaSesionController',
+  getPanelAcompanamientoController: 'academico.getPanelAcompanamientoController',
+  exportPanelAcompanamientoController: 'academico.exportPanelAcompanamientoController',
 
   marcarGestionVigenteUseCase: 'academico.marcarGestionVigenteUseCase',
   renovarOfertaGestionUseCase: 'academico.renovarOfertaGestionUseCase',
@@ -245,5 +317,9 @@ export const ACADEMICO_TOKENS = {
   licenciasRouter: 'academico.licenciasRouter',
   asignacionHorariosRouter: 'academico.asignacionHorariosRouter',
   conflictosRouter: 'academico.conflictosRouter',
-  horariosDocenteRouter: 'academico.horariosDocenteRouter'
+  horariosDocenteRouter: 'academico.horariosDocenteRouter',
+  avanceAcademicoRouter: 'academico.avanceAcademicoRouter',
+  desercionRouter: 'academico.desercionRouter',
+  librosRouter: 'academico.librosRouter',
+  acompanamientoRouter: 'academico.acompanamientoRouter'
 };

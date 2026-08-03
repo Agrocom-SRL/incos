@@ -121,6 +121,12 @@
             "@application-capacitacion/*": [
                 "./src/application/modules/capacitacion/*"
             ],
+            "@application-titulacion": [
+                "./src/application/modules/titulacion"
+            ],
+            "@application-titulacion/*": [
+                "./src/application/modules/titulacion/*"
+            ],
             "@application-academico": [
                 "./src/application/modules/academico"
             ],
@@ -315,11 +321,11 @@
             "@capacitacion/*": [
                 "./src/presentation/modules/capacitacion/*"
             ],
-            "@reportes": [
-                "./src/presentation/modules/reportes"
+            "@titulacion": [
+                "./src/presentation/modules/titulacion"
             ],
-            "@reportes/*": [
-                "./src/presentation/modules/reportes/*"
+            "@titulacion/*": [
+                "./src/presentation/modules/titulacion/*"
             ],
             "@supervision": [
                 "./src/presentation/modules/supervision"

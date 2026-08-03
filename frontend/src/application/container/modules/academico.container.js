@@ -35,6 +35,22 @@ import {
   GuardarObservacionCentralizadorBimestreUseCase,
 } from '@useCases/academico/centralizador';
 import {
+  GetAvanceAcademicoUseCase,
+  GetDesercionUseCase,
+} from '@useCases/academico/avance';
+import {
+  ListarLibrosUseCase,
+  AbrirLibroUseCase,
+  ObtenerLibroPorIdUseCase,
+  EditarLibroUseCase,
+  ListarParalelosLibroUseCase,
+  GenerarFoliosParaleloUseCase,
+  GenerarFoliosGestionUseCase,
+  ObtenerFolioPorIdUseCase,
+  CambiarEstadoFolioUseCase,
+  EditarFolioEstudianteUseCase,
+} from '@useCases/academico/libros';
+import {
   ListCoordinacionAsistenciaDocentesUseCase,
   ListMisCursosAsistenciaUseCase,
   GetCalendarioAsistenciaUseCase,
@@ -51,12 +67,16 @@ import {
   EditarLicenciaUseCase,
   CancelarLicenciaUseCase,
   GetInscripcionVigenteUseCase,
+  GetConsolidadoAsistenciaUseCase,
 } from '@useCases/academico/asistencia';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
 import CalificacionRepository from '@infrastructure/repositories/CalificacionRepository';
 import AsistenciaRepository from '@infrastructure/repositories/AsistenciaRepository';
+import AvanceAcademicoRepository from '@infrastructure/repositories/AvanceAcademicoRepository';
+import DesercionRepository from '@infrastructure/repositories/DesercionRepository';
 import TipoEvaluacionRepository from '@infrastructure/repositories/TipoEvaluacionRepository';
+import LibroRegistroRepository from '@infrastructure/repositories/LibroRegistroRepository';
 
 /**
  * Registra los Use Cases del módulo académico
@@ -187,6 +207,20 @@ export function registerAcademicoModule(factory) {
     return new ObtenerCentralizadorParaleloUseCase(CalificacionRepository);
   };
 
+  // Consolidado % de asistencia por paralelo (ACA-ASI-CONS)
+  factory.obtenerConsolidadoAsistencia = () => {
+    return new GetConsolidadoAsistenciaUseCase(AsistenciaRepository);
+  };
+
+  // Avance académico + Deserción (ítem ACA-AVANCE; reemplazo del módulo REP disuelto)
+  factory.obtenerAvanceAcademico = () => {
+    return new GetAvanceAcademicoUseCase(AvanceAcademicoRepository);
+  };
+
+  factory.obtenerDesercion = () => {
+    return new GetDesercionUseCase(DesercionRepository);
+  };
+
   factory.guardarObservacionCentralizadorBimestre = () => {
     return new GuardarObservacionCentralizadorBimestreUseCase(CalificacionRepository);
   };
@@ -205,6 +239,47 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerPoliticaCatalogo = () => {
     return new GetPoliticaCatalogoUseCase(CalificacionRepository);
+  };
+
+  // Libros de registro del centralizador (ítem ACA-LIBROS; permiso academico.libro)
+  factory.listarLibros = () => {
+    return new ListarLibrosUseCase(LibroRegistroRepository);
+  };
+
+  factory.abrirLibro = () => {
+    return new AbrirLibroUseCase(LibroRegistroRepository);
+  };
+
+  factory.obtenerLibroPorId = () => {
+    return new ObtenerLibroPorIdUseCase(LibroRegistroRepository);
+  };
+
+  factory.editarLibro = () => {
+    return new EditarLibroUseCase(LibroRegistroRepository);
+  };
+
+  factory.listarParalelosLibro = () => {
+    return new ListarParalelosLibroUseCase(LibroRegistroRepository);
+  };
+
+  factory.generarFoliosParalelo = () => {
+    return new GenerarFoliosParaleloUseCase(LibroRegistroRepository);
+  };
+
+  factory.generarFoliosGestion = () => {
+    return new GenerarFoliosGestionUseCase(LibroRegistroRepository);
+  };
+
+  factory.obtenerFolioPorId = () => {
+    return new ObtenerFolioPorIdUseCase(LibroRegistroRepository);
+  };
+
+  factory.cambiarEstadoFolio = () => {
+    return new CambiarEstadoFolioUseCase(LibroRegistroRepository);
+  };
+
+  factory.editarFolioEstudiante = () => {
+    return new EditarFolioEstudianteUseCase(LibroRegistroRepository);
   };
 
   return factory;

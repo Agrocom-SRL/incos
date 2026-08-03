@@ -1,7 +1,335 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-07-14
+## Ultima actualizacion: 2026-08-02
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Changelog 2026-08-02 — TIT: anulación de acta de defensa (P8) + guard anti-IDOR en satélites del proyecto (sin permisos nuevos)
+
+`docs/plan/acta-defensa-grado-plan-desarrollo.md` (P8 re-resuelta: se
+implementa; hallazgo G5 cerrado). Dos cambios independientes sobre el mismo
+módulo:
+
+1. **Anulación de acta** — `AnularActaDefensaUseCase` +
+   `PATCH /proyectos-grado/:id/acta-defensa/:actaId/anular`. **No se agregan
+   permisos ni acciones**: reutiliza `titulacion.proyecto`·APROBAR, mismo
+   criterio que `POST /acta-defensa`.
+
+   | Endpoint | Acción | `dataFieldName` |
+   |---|---|---|
+   | `PATCH /proyectos-grado/:id/acta-defensa/:actaId/anular` | APROBAR | `actaDefensa` |
+
+   Body `{ motivo }` (3-500 caracteres). 404 si el acta no pertenece al
+   proyecto; 409 si ya estaba `ANULADA`. NO revierte la transición del
+   proyecto (`proyectos_grado.estado` queda igual) — decisión manual
+   documentada.
+
+2. **Guard anti-IDOR** (`proyectoGradoIntegranteGuard`, sin cambios de
+   RBAC): hallazgo verificado en vivo — ESTUDIANTE podía leer por API
+   directa el proyecto/satélites de OTRO estudiante (permiso grueso
+   DETALLE/LISTAR, sin validación de fila). Se agregó middleware DESPUÉS de
+   `verificarPermiso` en `GET /:id`, `GET /:id/bitacora`, `GET /:id/dictamenes`
+   y `GET /:id/acta-defensa` (reusa `assertIntegranteActivo`, sin permisos
+   nuevos). No explotable vía la UI real (usa `/mi-proyecto`, ID resuelto en
+   servidor).
+
+## Changelog 2026-08-01 — TIT: acta de defensa de grado (Iteración 1 backend, sin permisos nuevos)
+
+`docs/plan/acta-defensa-grado-plan-desarrollo.md` (P1-P8 resueltas). Tablas
+nuevas `actas_defensa` + `tribunal_acta_defensa` (DDL en
+`22-modalidades-grado.sql`, pendiente de aprobación/ejecución del usuario en
+BD — sin migración incremental: el módulo TIT aún no está desplegado en
+servidor). **No se agregan permisos ni acciones**: los 3 endpoints nuevos
+reutilizan `titulacion.proyecto` — mismo criterio que la extensión
+2026-07-31 (solo se amplió el texto `nombre` del permiso).
+
+| Endpoint | Acción | `dataFieldName` |
+|---|---|---|
+| `GET /proyectos-grado/:id/acta-defensa` | DETALLE | `actasDefensa` |
+| `POST /proyectos-grado/:id/acta-defensa` | APROBAR | `actasDefensa` |
+| `GET /proyectos-grado/:id/acta-defensa/:actaId/pdf` | EXPORTAR | binario (PDF) |
+
+`POST` delega la transición `DEFENSA → APROBADO|REPROBADO` en
+`AprobarEtapaProyectoUseCase` (T11) tras registrar el/los acta(s) — misma
+máquina de estados, sin duplicarla. Anulación de acta (P8) diferida en esta
+fecha, **implementada 2026-08-02** (ver changelog arriba). Iteración 2
+(frontend, tab «Acta de defensa» en `ProyectoGradoDetail.jsx`) queda
+pendiente.
+
+## Changelog 2026-07-31 — TIT: formulario de modalidad, reporte de avance por carrera y planilla 10-en-10 (extensión, sin permisos nuevos)
+
+Iteración 1 (backend) de 3 extensiones sobre el módulo TIT ya integrado
+(`docs/plan/titulacion-avance-y-modalidad-plan-desarrollo.md`): Requisito 1
+(formulario de elección de modalidad de graduación FMDG-1), Requisito 2
+(reporte de avance de tutorías por carrera) y Requisito 3 (planilla de
+seguimiento de tutoría "10 en 10", bimestral, 3er año). **No se agregan
+permisos ni acciones**: los 6 endpoints nuevos reutilizan `titulacion.proyecto`
+LISTAR (datos en pantalla) y EXPORTAR (descarga PDF/Excel) — mismo criterio
+que `GET /modalidades` (LISTAR, catálogo de apoyo) y `GET /reportes/bitacora-mensual`
+(EXPORTAR, PDF ya existente).
+
+| Endpoint | Acción | `dataFieldName` |
+|---|---|---|
+| `GET /proyectos-grado/estudiantes-elegibles` | LISTAR | `estudiantesElegibles` |
+| `GET /proyectos-grado/:id/formulario-modalidad/pdf` | EXPORTAR | binario (PDF) |
+| `GET /proyectos-grado/reportes/avance-carrera` | LISTAR | `avanceTutoriaCarrera` |
+| `GET /proyectos-grado/reportes/avance-carrera/pdf` | EXPORTAR | binario (PDF) |
+| `GET /proyectos-grado/reportes/planilla-avance-tercer-anio` | LISTAR | `planillaAvanceTercerAnio` |
+| `GET /proyectos-grado/reportes/planilla-avance-tercer-anio/export` | EXPORTAR | binario (.xlsx) |
+
+Vistas SQL nuevas: `178-vista-base-tutoria-estudiante-tercer-anio`,
+`179-vista-tutoria-avance-carrera`, `180-vista-base-tutoria-bitacora-bimestre-fila`,
+`181-vista-tutoria-planilla-avance-tercer-anio`; ajuste aditivo (columna
+`ultima_observacion`) a la vista 160 ya existente. Guard nuevo
+`assertEstudianteEsTercerAnio` en `CreateProyectoGradoUseCase` (restringe la
+creación de proyecto a estudiantes de 3er año, para titular e integrantes PSP).
+Requisito 3 **no requirió tabla nueva**: se deriva en tiempo de lectura de
+`bitacora_proyecto` + `integrantes_proyecto` + `proyectos_grado` +
+`periodos_academicos`. Iteración 2 (frontend) queda pendiente.
+
+## Changelog 2026-07-31 — rename backend TUT→TIT (Titulación) + Acompañamiento reclasificado a ACADEMICO
+
+Ejecución del rename backend aprobado por el usuario (código en carpetas/tokens/DI;
+BD sigue con los códigos VIEJOS hasta coordinar la resiembra junto con el rename
+de frontend, todavía pendiente). Revierte la decisión del changelog 2026-07-29
+("los CÓDIGOS tutorias.\* y el modulo TUT no cambian"): el módulo pasa de TUT a
+**TIT** y los 7 códigos de proyectos de grado/pasantías pierden el prefijo
+`tutorias.`. Además, los 3 códigos de Acompañamiento (que ya vivían con
+`dominio='ACADEMICO'` en la tabla `permisos`, aunque bajo `modulo='TUT'` y
+código `tutorias.acompanamiento.*`) se reclasifican por completo — código,
+`modulo` y carpetas de código — al dominio Académico, porque sus datos (alertas
+de riesgo, sesiones de refuerzo, panel) se derivan de `asignaciones_docentes` y
+de las vistas del centralizador, sin ninguna FK a `proyectos_grado`/
+`modalidades_grado`.
+
+**Tabla completa de códigos — old → new** (fuente: `65-seed-permisos-tit.sql`,
+antes `65-seed-permisos-tut.sql`):
+
+| Código anterior | Código nuevo | `dominio` | `modulo` | `grupo_ui` | `ruta_sidebar` |
+|---|---|---|---|---|---|
+| `tutorias.titulacion.proyecto` | `titulacion.proyecto` | TITULACION | TIT | `tit_proyectos` | `/titulacion/proyectos-grado` |
+| `tutorias.titulacion.bitacora` | `titulacion.bitacora` | TITULACION | TIT | `tit_proyectos` | `/titulacion/proyectos-grado` |
+| `tutorias.titulacion.avance` | `titulacion.avance` | TITULACION | TIT | `tit_proyectos` | `/titulacion/proyectos-grado` |
+| `tutorias.pasantia` | `titulacion.pasantia` | TITULACION | TIT | `tit_pasantias` | `/titulacion/pasantias` |
+| `tutorias.pasantia.empresa` | `titulacion.pasantia.empresa` | TITULACION | TIT | `tit_pasantias` | `/titulacion/pasantias` |
+| `tutorias.pasantia.informe` | `titulacion.pasantia.informe` | TITULACION | TIT | `tit_pasantias` | `/titulacion/pasantias` |
+| `tutorias.pasantia.seguimiento` | `titulacion.pasantia.seguimiento` | TITULACION | TIT | `tit_pasantias` | `/titulacion/pasantias` |
+| `tutorias.acompanamiento.alerta` | **`academico.acompanamiento.alerta`** | ACADEMICO | **ACA** | `aca_acompanamiento` | `/academico/acompanamiento/alertas` |
+| `tutorias.acompanamiento.sesion` | **`academico.acompanamiento.sesion`** | ACADEMICO | **ACA** | `aca_acompanamiento` | `/academico/acompanamiento/sesiones` |
+| `tutorias.acompanamiento.panel` | **`academico.acompanamiento.panel`** | ACADEMICO | **ACA** | `aca_acompanamiento` | `/academico/acompanamiento/panel` |
+
+- **Acciones y roles: SIN cambios de comportamiento**, solo de código/ubicación.
+  Los 3 permisos de Acompañamiento se movieron de `65-seed-permisos-tut.sql` a
+  `59-seed-permisos-aca.sql` con filas EXPLÍCITAS de `roles_permisos` (DIR_ACADEMICO
+  y RECTOR control total; SEC_ACADEMICA solo `alerta` LISTAR/DETALLE; DOCENTE
+  `alerta` LISTAR/DETALLE + `sesion` LISTAR/DETALLE/CREAR/EDITAR) — antes
+  DIR_ACADEMICO/RECTOR llegaban por un catch-all `p.modulo = 'TUT'` que ya no
+  los cubre (ACA no tiene catch-all de módulo), por eso las filas explícitas.
+- **URLs de API sin cambios:** `/api/v1/proyectos-grado`, `/api/v1/acompanamiento`,
+  `/api/v1/pasantias` — ninguna contenía la palabra "tutorias".
+- **Carpetas de código:** `use-cases/tutorias/` → `use-cases/titulacion/` +
+  `use-cases/academico/acompanamiento/`; `controllers/tutorias/` →
+  `controllers/titulacion/` + `controllers/academico/acompanamiento/`;
+  `mappers/tutorias/` → `mappers/titulacion/` (proyecto) + 2 archivos a
+  `mappers/academico/`; `container/modules/tutorias/` → `container/modules/titulacion/`
+  + `acompanamiento.container.js` a `container/modules/academico/`; tokens
+  `TUTORIAS_TOKENS` → `TITULACION_TOKENS` (+ claves de acompañamiento
+  fusionadas en `ACADEMICO_TOKENS`); constantes `tutorias.constants.js` →
+  `titulacion.constants.js` + `academico.acompanamiento.constants.js`.
+  `pasantias/` (carpetas y naming) NO se tocó — ya vivía separado.
+- **Pendiente:** resiembra de `65-seed-permisos-tit.sql` + `59-seed-permisos-aca.sql`
+  en BD, coordinada con el rename de frontend (rutas `/tutorias/*` →
+  `/titulacion/*`, ítems de sidebar, `permiso` en `routes.jsx`).
+
+## Changelog 2026-07-30 — Libros de registro (Fase 4, iteración 1 backend): permiso único en seed 59
+
+Módulo nuevo contra el schema 25 (`libros_registro` + `folios_libro` +
+`folio_estudiantes`; libro físico real «LIBRO LLENADO SISTEMAS 11 dic 2025»).
+Backend completo montado en `/api/v1/libros` (vistas **175**
+`vista_libros_registro_listado`, **176** `vista_base_libro_folio_fila`
+reutilizando la 127, **177** `vista_base_libro_paralelo_estudiante` sobre las
+bases 03/04; notas por materia SIN vista nueva: se leen de la **135** vía
+`calificacionCentralizadorRepository`). **Pendiente BD:** ejecutar vistas
+175-177 + resembrar `59-seed-permisos-aca.sql`.
+
+- **Seed 59 (ACA):** permiso ÚNICO por ítem `academico.libro`
+  («Libros de registro del centralizador»), grupo `aca_libros` (orden 22),
+  ruta `/academico/libros`. Acciones: LISTAR, DETALLE, CREAR, EDITAR, APROBAR,
+  EXPORTAR — **sin ELIMINAR** (un folio no se borra: se ANULA con motivo).
+- **Roles:** RECTOR y DIR_ACADEMICO las 6 (firman); SEC_ACADEMICA todas menos
+  APROBAR (prepara el libro, no firma). DOCENTE/ESTUDIANTE: sin filas.
+- **Retirados del seed 59** (nota de reemplazo): `academico.historial.folio`
+  (folio del egresado, concepto anterior al schema 25 → **reemplazado por
+  `academico.libro`**) y `academico.historial.validar` (la validación de
+  egreso **pasa a la Fase 5**, `tutorias.titulo.*`). La limpieza de sus rutas
+  frontend (`ACA-HIS-FOLIO`/`ACA-HIS-VALIDAR` en `historial/routes.jsx`) va en
+  la iteración 2, junto con la resiembra.
+- **Regla de numeración (corrección 2026-07-30):** `numero_folio` es
+  correlativo POR GESTIÓN cruzando TODAS las carreras (contador compartido
+  1..N, asignado en transacción con FOR UPDATE); `numero_libro` se INGRESA
+  cada gestión (mismo número para todas las carreras de la gestión; sin
+  auto-sugerencia por carrera).
+
+## Changelog 2026-07-30 — Supervisión docente (Fase 3, iteración 1 backend): permiso único en seed 60
+
+Rediseño del bloque supervisión del módulo DOC contra el schema 27
+(`fichas_seguimiento_clase`, «FICHA DE SEGUIMIENTO EN LA CLASE PRESENCIAL»).
+Backend completo montado en `/api/v1/supervision-docente` (vista **174**
+`vista_supervision_fichas_listado`, reutiliza la base 51 + evaluador desde
+`usuarios`). **Pendiente BD:** ejecutar vista 174 + resembrar
+`60-seed-permisos-doc.sql`.
+
+- **Seed 60 (DOC) — el archivo es hoy `60-seed-permisos-doc.sql`** (la
+  numeración corrió con `57-seed-titulacion-modalidades.sql`; referencias
+  antiguas a «seed 59-DOC» quedan históricas):
+  - Se ELIMINAN los 5 códigos legacy sin pantalla ni backend
+    (`docentes.supervision.evaluar`, `.reporte`, `.programar`, `.ficha.crear`,
+    `.ficha.editar`) y su bloque de deshabilitación. Esto cierra la deuda del
+    EXPORTAR huérfano de `docentes.supervision.reporte` (changelog 2026-07-29).
+  - **Permiso ÚNICO por ítem de menú:** `docentes.supervision.ficha`
+    («Supervisión: fichas de seguimiento en clase»), grupo `doc_supervision`
+    REACTIVADO (orden 3, sale del UPDATE de deshabilitación; `doc_licencias`
+    sigue apagado), ruta `/docentes/supervision`.
+  - Acciones: LISTAR, DETALLE, CREAR, EDITAR, EXPORTAR — sin ELIMINAR ni
+    APROBAR (la ficha realizada no se borra).
+  - Roles: DIR_ACADEMICO y RECTOR con las 5 acciones; ADMIN_SISTEMA hereda por
+    vista. **DOCENTE: SIN filas** — ve sus fichas por wrapper self.
+- **Endpoints (permiso `docentes.supervision.ficha`):** `GET /` LISTAR ·
+  `GET /:id` DETALLE · `POST /` CREAR (supervisor = usuario de la SESIÓN,
+  jamás del body) · `PUT /:id` EDITAR · `GET /:id/pdf` EXPORTAR (réplica del
+  formulario físico, `IncosPDFLibBase`).
+- **Portal del docente (anti-IDOR):** `GET /supervision-docente/mis-fichas`
+  con gate solo `authenticate` (patrón `/docentes/mis-datos`); docente resuelto
+  en servidor con `resolveDocenteIdForUsuario` (403 si no es docente).
+
+## Changelog 2026-07-29 (noche) — módulo REP disuelto; Avance/Deserción/Consolidado bajo ACA
+
+Decisión de usuario (2026-07-29, `docs/plan/reportes-rep-diagnostico.md`): los
+reportes viven con su módulo DUEÑO. Iteración 1 (backend) implementada; el
+frontend (página tabs Avance/Deserción, Consolidado %, borrado de
+`modules/reportes/`) es la iteración siguiente. **Pendiente BD:** ejecutar
+vistas 169–173 (+ recrear 138/139/141 por columnas aditivas) y resembrar seeds
+59 y 63.
+
+- **Seed 63 (REP) = tombstone:** los 7 códigos `reportes.*` (deshabilitados
+  desde 2026-06-24, nunca con backend) se retiran DEFINITIVAMENTE; el archivo
+  solo conserva los DELETE de limpieza y la tabla de reemplazos (ver sección
+  "REP - Reportes" abajo).
+- **Seed 59 (ACA):**
+  - `academico.avance` REHABILITADO (activo=1) + grupo `aca_avance`; acciones
+    LISTAR/EXPORTAR. Roles: REC/DIRA (L+E), DOC/EST (L; alcance self de EST
+    resuelto en servidor).
+  - `academico.desercion` NUEVO (grupo `aca_desercion`, ruta `/academico/avance`
+    — pestaña Deserción): LISTAR/EXPORTAR para RECTOR/DIR_ACADEMICO. Métrica
+    ANUAL por estados ABANDONO/RETIRADO de `matriculas_materia`.
+- **Endpoints nuevos (montados, backend completo por capas):**
+  - `GET /asistencia/consolidado(+/export)` — `academico.asistencia.consolidado.ver`
+    LISTAR/EXPORTAR (vista 169, patrón centralizador; % = misma regla que la
+    actividad ASISTENCIA).
+  - `GET /avance-academico(+/export)` — `academico.avance` (vistas 170/171
+    sobre el universo del transcript 141; dataKey `avance`).
+  - `GET /desercion(+/export)` — `academico.desercion` (vistas 172/173, espejo
+    estructural de 156/157 con consumidor distinto; dataKeys `carreras`/
+    `desertores`/`resumen`).
+- **Deuda anotada (sin tocar):** EXPORTAR huérfanos sin endpoint en
+  `docentes.ver`, `docentes.supervision.reporte` y `capacitacion.pago`.
+
+## Changelog 2026-07-29 (tarde) — Pasantías: backend completo (seed 65, `/api/v1/pasantias`)
+
+> **Nota (2026-07-31):** el seed se renombró a `65-seed-permisos-tit.sql` y los
+> códigos `tutorias.pasantia*` de esta entrada pasaron a `titulacion.pasantia*`
+> — ver Changelog 2026-07-31 al inicio del documento. Texto original sin editar.
+
+Iteración backend de la Fase 2 de Titulación (frontend pendiente; contrato de
+handoff en `docs/plan/titulacion-y-dominios-pendientes.md` §Fase 2). Grupo UI
+nuevo `tut_pasantias` en dominio TUTORIAS. 19 endpoints montados en
+`/api/v1/pasantias` (vistas 166–168; PDF de informes `IncosPDFLibBase`).
+**Pendiente BD:** ejecutar vistas 166–168 + resembrar seed
+`65-seed-permisos-tut.sql`.
+
+- **Permisos (modulo TUT, seed 65):**
+  - `tutorias.pasantia` (`/tutorias/pasantias`): LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/APROBAR/EXPORTAR — trámite con dos caminos PASANTIA/CONVALIDACION (R.M. 487/2023, 300–360 h); transiciones de estado = APROBAR; descarga de PDF de informe = EXPORTAR.
+  - `tutorias.pasantia.empresa`: LISTAR/CREAR/EDITAR/ACTIVAR — catálogo de empresas (ABM propio en `/pasantias/empresas`, arranca vacío, toggle estado patrón EstadoTogglePill).
+  - `tutorias.pasantia.informe`: LISTAR/CREAR/EDITAR — informes institucionales (emitir genera PDF; editar lo regenera).
+  - `tutorias.pasantia.seguimiento`: LISTAR/CREAR/EDITAR — hoja de seguimiento (escala ALTO/MEDIO/BAJO).
+- **Roles:** DIR_ACADEMICO y RECTOR control total (cross-join de todas las
+  acciones); SEC_ACADEMICA: pasantia L/D/C/E/EXPORTAR + empresa completa +
+  informe/seguimiento LISTAR; DOCENTE: pasantia L/D/EXPORTAR + informe y
+  seguimiento L/C/E (sus supervisados); ESTUDIANTE: pasantia DETALLE (solo
+  su trámite). ADMIN_SISTEMA hereda por vista.
+- **Portales (anti-IDOR, identidad resuelta en servidor):** docente
+  `GET /pasantias/mis-pasantias` (LISTAR); estudiante
+  `GET /pasantias/mi-pasantia` (DETALLE, compuesto
+  `{ pasantia, informes, seguimientos }`).
+
+## Changelog 2026-07-29 — dominio TUT re-etiquetado "Titulación" + dueños de menú
+
+> **Nota (2026-07-31):** la afirmación "los CÓDIGOS `tutorias.*` y el module
+> code `TUT` NO cambian" de esta entrada quedó **REVERTIDA** — ver el
+> Changelog 2026-07-31 al inicio del documento para la tabla completa de
+> códigos nuevos (`titulacion.*` / módulo `TIT`; Acompañamiento reclasificado
+> a `academico.acompanamiento.*` / módulo `ACA`). El texto original se
+> conserva abajo sin editar, como registro histórico de la decisión original.
+
+Decisión de diseño aprobada (cierra §6.7 de `docs/plan/auditoria-modelo-datos.md`;
+detalle y plan por fases en `docs/plan/titulacion-y-dominios-pendientes.md`).
+Los CÓDIGOS de permiso `tutorias.*`, el module code `TUT` y los paths
+`/tutorias/*` NO cambian (identificadores estables); cambia lo visible:
+
+- **Label del dominio TUT:** "Tutorías" → **"Titulación"** (`dominios/routes.jsx`,
+  icono `SafetyCertificateOutlined`). Agrupará: Proyectos de grado (existente),
+  Pasantías (Fase 2, schema 24, códigos `tutorias.pasantia.*`) y Títulos y
+  certificados (Fase 5, schema 26, gated por documentación real).
+- **Acompañamiento pedagógico → menú Académico:** los 3 ítems (Alumnos en
+  riesgo order 8, Sesiones de refuerzo order 9, Panel order 10) cuelgan de
+  `parent: 'ACA'`; en el seed 66 el grupo `tut_acompanamiento` y sus 3 permisos
+  pasan a `dominio='ACADEMICO'` (pestaña Académico de la grilla; `modulo` sigue
+  `TUT`). Paths y códigos intactos.
+- **Grilla de Seguridad:** `DOMINIOS_V2` (`usePermisosCatalogo.js`) incorpora
+  las pestañas CAPACITACION ("Capacitación") y TUTORIAS ("Titulación").
+- **Pasantías legacy eliminadas:** seed 57 ya no siembra `matricula.pasantia.*`
+  ni `mat_pasantias` (y desaparece su bloque de deshabilitación); rutas
+  placeholder `MAT-PAS-*` retiradas de `estudiantes/routes.jsx`. Seed 59 ya no
+  siembra `docentes.supervision.pasantia.*` ni `doc_pasantias`. Lo docente
+  entrará por wrappers del portal (sin permisos nuevos).
+- **Dueños de menú restantes:** Libros de registro (25) → ACA
+  (`academico.libro.*`, ampliar seed 58); Supervisión docente (27) → DOC —
+  ✅ HECHO 2026-07-30: bloque rediseñado en `60-seed-permisos-doc.sql`
+  (el seed DOC ya no es el 59) contra `fichas_seguimiento_clase`
+  (ver changelog 2026-07-30).
+- Seeder `67-seed-modalidades-grado.sql` renombrado a
+  `67-seed-titulacion-modalidades-grado.sql`.
+
+## Changelog 2026-07-25 — módulo nuevo Tutorías y Acompañamiento (TUT, seed 66)
+
+> **Nota (2026-07-31):** los códigos `tutorias.titulacion.*`/`tutorias.acompanamiento.*`
+> de esta entrada fueron renombrados — ver Changelog 2026-07-31 al inicio del
+> documento. El texto original se conserva abajo sin editar, como registro
+> histórico.
+
+Dominio propio `TUT` (menú "Tutorías", order 9; CFG→10, SEG→11), decisión cerrada del
+plan `docs/plan/tutorias-plan-desarrollo.md`. No estaba contemplado en esta matriz
+(anterior al diseño del módulo): agrupa 4 ítems de menú en 2 grupos_ui
+(`tut_titulacion`, `tut_acompanamiento`) y no cabía como un solo ítem de otro módulo.
+
+- **Permisos (modulo TUT, seed `66-seed-permisos-tut.sql`):**
+  - `tutorias.titulacion.proyecto` (`/tutorias/titulacion`): LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR/APROBAR/EXPORTAR
+  - `tutorias.titulacion.bitacora`: LISTAR/CREAR/EDITAR
+  - `tutorias.titulacion.avance`: LISTAR/DETALLE/CREAR
+  - `tutorias.acompanamiento.alerta` (`/tutorias/acompanamiento/alertas`): LISTAR/DETALLE
+  - `tutorias.acompanamiento.sesion` (`/tutorias/acompanamiento/sesiones`): LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR
+  - `tutorias.acompanamiento.panel` (`/tutorias/acompanamiento/panel`): LISTAR/EXPORTAR
+- **Roles:** DIR_ACADEMICO y RECTOR = todo; SEC_ACADEMICA = proyecto L/D/C/E/EXPORTAR +
+  bitacora L + avance L/D + alerta L/D; DOCENTE = proyecto L/D + bitacora L/C/E +
+  avance L/D + alerta L/D + sesion L/D/C/E; ESTUDIANTE = proyecto DETALLE + bitacora
+  LISTAR + avance L/D/CREAR. ADMIN_SISTEMA hereda por vista (no se siembra).
+- **Portal por rol (patrón historial/asistencia, mismos ítems y permisos, sin permisos nuevos):**
+  DOCENTE ve los mismos ítems con connector que bifurca (`esDocente`) → Mis tutorados /
+  Mis alumnos en riesgo, con `labelByRole` en el menú. ESTUDIANTE no tiene LISTAR de
+  nada → no ve el menú TUT; su página es `/tutorias/mi-proyecto` (`TUT-MI-PROYECTO`,
+  `menu: null`, DETALLE, guard de pertenencia en servidor vía
+  `resolveEstudianteIdForUsuario`) con acceso desde tarjeta en `EstudianteDashboard`
+  (patrón ACA-MI-BOLETIN). T17 (confirmar bitácora) = bitacora·LISTAR + guard
+  integrante ACTIVO en servidor.
 
 ## Changelog 2026-07-14 — auditoría RBAC de los 8 módulos (57-64) + correcciones
 
@@ -41,14 +369,18 @@ nuevas funciones. Cambios aplicados:
   `finanzas.configuracion.pago DETALLE`. Es **intencional** (igual que el patrón de
   `configuracion.documentacion`/complementarios): otros combos del sistema (registro de
   pagos, matrícula) dependen de ese catálogo abierto. No se restringe.
-- **Pendiente real (NO implementado, requiere feature propia):** self-service "Mi beca"
-  para ESTUDIANTE (`labelByRole` en `MAT-BEC-LISTAR`, `estudiantes/routes.jsx`) está
-  declarado en frontend pero sin permiso de rol, sin auto-filtrado por estudiante en
-  `GET /estudiantes/becas` y sin guard anti-IDOR en `/becas/:id` ni `/:id/scholarships`
-  (a diferencia de "Mis aportes", que sí tiene guard `aporteSelfOnlyGuard`). No se
-  otorgó el permiso: hacerlo hoy expondría el listado completo de becas de todos los
-  estudiantes. Construir junto con el resto (permiso + self-scope + guards) como una
-  sola iteración futura.
+- ~~**Pendiente real (NO implementado, requiere feature propia):** self-service "Mi beca"
+  para ESTUDIANTE...~~ **Implementado 2026-08-02.** `58-seed-permisos-mat.sql` otorga
+  a ESTUDIANTE `matricula.beca.ver` LISTAR/DETALLE (sin CREAR/EDITAR/ELIMINAR/APROBAR,
+  siguen staff-only). Mismo mecanismo que "Mis aportes": `GET /estudiantes/becas`
+  (`ListStudentScholarshipsController`) resuelve el `estudianteId` de la sesión vía
+  `resolveEstudianteIdForUsuario` cuando `rolCodigo === 'ESTUDIANTE'` y sobrescribe
+  cualquier `studentId` de query params antes de delegar al listado admin (no hay
+  endpoint `/mis-becas` separado: se reutiliza la misma ruta con `labelByRole`).
+  Guards anti-IDOR: `becaSelfOnlyGuard` (nuevo, `presentation/middleware/becaSelfOnly.middleware.js`,
+  mismo patrón que `aporteSelfOnlyGuard`) en `GET /estudiantes/becas/:id`; y
+  `estudianteSelfOnlyGuard` (reutilizado, no duplicado — en esa ruta `:id` ya es el id
+  del estudiante) en `GET /estudiantes/:id/scholarships`.
 - **Hallazgo descartado (falso positivo):** un agente reportó que `SEC_ACADEMICA` no
   tenía `matricula.admision.ver LISTAR` (bloqueando la búsqueda en Historial académico).
   Verificado directamente en `57-seed-permisos-mat.sql` bloque "3b": SEC_ACADEMICA SÍ
@@ -307,6 +639,22 @@ Fuente: `55-seed-roles.sql` (ids de rol fijos 1-8).
 | `docentes.routes.js` | GET | `/api/v1/docentes/:id` | DETALLE ficha (anti-IDOR `docenteSelfOnlyGuard`) |
 | `docentes.routes.js` | GET | `/api/v1/docentes/mis-datos` | Portal docente: id + nombre propio (solo `authenticate`) |
 | `docentes.routes.js` | GET | `/api/v1/docentes/mis-estudiantes` | Portal docente: roster de SUS cursos vigentes (solo `authenticate`; vista 150) |
+| `supervision-docente.routes.js` | GET | `/api/v1/supervision-docente` | LISTAR fichas de seguimiento (`docentes.supervision.ficha`; vista 174) |
+| `supervision-docente.routes.js` | GET | `/api/v1/supervision-docente/mis-fichas` | Portal docente: fichas de SUS cursos (solo `authenticate`, anti-IDOR) |
+| `supervision-docente.routes.js` | POST | `/api/v1/supervision-docente` | CREAR ficha (supervisor = sesión) |
+| `supervision-docente.routes.js` | GET | `/api/v1/supervision-docente/:id` | DETALLE ficha |
+| `supervision-docente.routes.js` | PUT | `/api/v1/supervision-docente/:id` | EDITAR ficha |
+| `supervision-docente.routes.js` | GET | `/api/v1/supervision-docente/:id/pdf` | EXPORTAR PDF (réplica del formulario) |
+| `libros.routes.js` | GET | `/api/v1/libros` | LISTAR libros de registro (`academico.libro`; vista 175) |
+| `libros.routes.js` | POST | `/api/v1/libros` | CREAR (abrir libro; `numeroLibro` requerido) |
+| `libros.routes.js` | GET | `/api/v1/libros/:id` | DETALLE ficha (cabecera + folios, vista 176) |
+| `libros.routes.js` | PATCH | `/api/v1/libros/:id` | EDITAR / cerrar libro |
+| `libros.routes.js` | GET | `/api/v1/libros/:id/paralelos` | CREAR (apoyo generador: paralelos candidatos) |
+| `libros.routes.js` | POST | `/api/v1/libros/:id/folios` | CREAR (generar folios del paralelo, numeración por gestión) |
+| `libros.routes.js` | GET | `/api/v1/libros/:id/folios/:folioId` | DETALLE folio (nómina + celdas 135) |
+| `libros.routes.js` | PATCH | `/api/v1/libros/:id/folios/:folioId/estado` | APROBAR (BORRADOR→IMPRESO→FIRMADO/ANULADO) |
+| `libros.routes.js` | PATCH | `/api/v1/libros/:id/folios/:folioId/estudiantes/:filaId` | EDITAR fila (si NO FIRMADO) |
+| `libros.routes.js` | GET | `/api/v1/libros/:id/export` | EXPORTAR Excel del libro completo |
 | `dashboard.routes.js` | GET | `/api/v1/dashboard/mi-resumen-docente` | Portal docente: panel de inicio (solo `authenticate`; incluye `stats` + `actividades` desde vista 149) |
 | `horarios-docente.routes.js` | GET | `/api/v1/horarios/docentes/:docenteId/grilla-conflictos` | Grilla semanal del docente (`institucional.horario.conflictos` LISTAR; DOCENTE solo la propia vía `docenteSelfOnlyGuard('docenteId')`) |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes` | VER listado |
@@ -387,7 +735,7 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 | DOCENTES | `docentes.*` | docentes, licencias, supervision, pasantias |
 | FINANZAS | `finanzas.*` | pagos, cuotas, reportes, recibos |
 | INSTITUCIONAL | `institucional.*` | gestiones, oferta, horarios, configuraciones |
-| REPORTES | `reportes.*` | reportes de avance/asistencia/desercion/solicitudes |
+| ~~REPORTES~~ | ~~`reportes.*`~~ | **disuelto 2026-07-29** — avance/deserción/consolidado bajo `academico.*`; solicitudes con sus dueños (FIN/ACA/Pasantías) |
 | SEGURIDAD | `seguridad.*` | usuarios, roles, permisos, overrides |
 
 ### Inventario frontend de permisos en rutas (single source UI)
@@ -459,10 +807,15 @@ Endpoint(s): `GET /estudiantes/becas`, `POST/DELETE /estudiantes/:id/scholarship
 
 | Accion | Descripcion | Endpoint | Roles |
 |---|---|---|---|
-| VER | Ver becas asignadas | GET | ADM, REC, DIRA, SECA |
+| VER | Ver becas asignadas. EST: "Mi beca", alcance self en servidor (anti-IDOR) | GET | ADM, REC, DIRA, SECA, EST |
 | CREAR | Asignar beca | POST | ADM, REC, DIRA, SECA |
 | ELIMINAR | Eliminar beca asignada | DELETE | ADM, REC (segun politica) |
 | APROBAR | Aprobar beca (flujo UI) | proceso | ADM, REC, DIRA |
+
+> ESTUDIANTE (2026-08-02): solo LISTAR/DETALLE, self-scope. `GET /estudiantes/becas`
+> fuerza `studentId` = estudiante de la sesión (ignora query del cliente);
+> `becaSelfOnlyGuard` en `GET /estudiantes/becas/:id` y `estudianteSelfOnlyGuard`
+> (reutilizado) en `GET /estudiantes/:id/scholarships`. Mismo patrón que "Mis aportes".
 
 ### MAT/FIN - Aportes/Pagos (`/matricula/aportes/listar`, `/pagos/listar`, `/pagos/:id`)
 Permisos: `matricula.pago.aporte.ver`, `finanzas.pago.ver`, `finanzas.pago.registrar`, `finanzas.pago.editar`
@@ -544,7 +897,8 @@ Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 | Traspasos | `/academico/traspasos/listar` | `academico.trazabilidad.traspaso.*` |
 | Transitabilidad | `/academico/transitabilidad/listar` | `academico.trazabilidad.transitabilidad.*` |
 | Historial | `/academico/historial/academico` | `academico.historial.*` |
-| Avance académico | `/academico/avance` | `academico.avance` |
+| Avance académico | `/academico/avance` | `academico.avance` + `academico.desercion` (pestaña Deserción) |
+| Libros de registro | `/academico/libros` | `academico.libro` (frontend en iteración 2) |
 
 > **Licencias estudiantiles** ya **no** es un ítem propio: pasó a ser una **página dentro de
 > Asistencia** (`/academico/asistencia/licencias/listar`), permisos renombrados
@@ -581,7 +935,7 @@ Permisos: `academico.asistencia.*` — ítem `/academico/asistencia` (gemelo de 
 | `academico.asistencia.registro.ver` | LISTAR, DETALLE | Ítem menú + mis cursos (registro diario); gobierna visibilidad | REC, DIRA, SECA, DOC |
 | `academico.asistencia.registro.cuaderno` | LISTAR, EDITAR | Planilla diaria del curso (toma P/R/F/L) | REC, DIRA, SECA (LISTAR), DOC (LISTAR+EDITAR) |
 | `academico.asistencia.clase_no_dictada.ver` | LISTAR, CREAR, EDITAR | Clases no dictadas (cancelaciones por asignación docente) | REC, DIRA, SECA, DOC |
-| `academico.asistencia.consolidado.ver` | LISTAR, EXPORTAR | Consolidado % por estudiante/curso | REC, DIRA, SECA (LISTAR+EXPORTAR), DOC (LISTAR) |
+| `academico.asistencia.consolidado.ver` | LISTAR, EXPORTAR | Consolidado % por estudiante/curso — backend construido 2026-07-29: `GET /asistencia/consolidado?paraleloGestionId[&bimestre]` (matriz patrón centralizador, vista 169) + `GET /asistencia/consolidado/export` (Excel planilla verde) | REC, DIRA, SECA (LISTAR+EXPORTAR), DOC (LISTAR) |
 | `academico.asistencia.licencia.ver` | LISTAR, DETALLE | Licencias estudiantiles (página dentro de Asistencia) | REC, DIRA, SECA, DOC |
 | `academico.asistencia.licencia.crear` | CREAR, EDITAR, ELIMINAR | Solicitar / editar (PENDIENTE) / cancelar licencia estudiantil | REC, DIRA, SECA, DOC |
 | `academico.asistencia.licencia.aprobar` | APROBAR | Aprobar licencia estudiantil | REC, DIRA, SECA |
@@ -598,16 +952,20 @@ Permisos: `academico.asistencia.*` — ítem `/academico/asistencia` (gemelo de 
 
 ### ACA - Historial académico (kardex FORM-SIE-ITT-04) — construido 2026-07-02
 Permiso: `academico.historial.academico` — menú `/academico/historial/academico` (**reactivado**
-en el bloque de deshabilitación temporal del seed 58; `folio`/`validar` y `academico.avance`
-siguen desactivados hasta construirse).
+en el bloque de deshabilitación temporal del seed 59; `academico.avance` fue
+rehabilitado el 2026-07-29 — ver sección Avance).
 
 | Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
 |---|---|---|---|
 | `academico.historial.academico` | LISTAR | Ítem menú Historial → lista de estudiantes + buscador ("Mi historial" para EST: redirige a su transcript) | REC, DIRA, SECA, EST |
 | `academico.historial.academico` | DETALLE | Transcript `/academico/historial/academico/:id` (`GET /estudiantes/:id/historial-academico`) | REC, DIRA, SECA, EST (solo propio) |
 | `academico.historial.academico` | EXPORTAR | Excel kit planilla verde (`GET .../export`) + PDF FORM-SIE-ITT-04 (`GET .../export-pdf`, plantilla boletín). La UI del portal EST solo ofrece PDF | REC, DIRA, SECA, EST (solo propio) |
-| `academico.historial.folio` | CREAR, EDITAR, GENERAR_PDF | Folio del egresado (**desactivado**, en construcción) | REC, DIRA |
-| `academico.historial.validar` | APROBAR | Validación para egreso (**desactivado**, en construcción) | REC, DIRA |
+
+> **Retirados 2026-07-30 (Fase 4):** `academico.historial.folio` (folio del
+> egresado, concepto anterior al schema 25) fue **reemplazado por
+> `academico.libro`** (sección ACA - Libros de registro); la validación de
+> egreso de `academico.historial.validar` **pasa a la Fase 5**
+> (`tutorias.titulo.*`). Ya no se siembran en el seed 59.
 
 > **Anti-IDOR:** ambas rutas llevan `estudianteSelfOnlyGuard` tras `verificarPermiso`: un usuario
 > con vínculo estudiante solo accede a su propio `:id` (resuelto en servidor); staff sin restricción.
@@ -616,6 +974,45 @@ siguen desactivados hasta construirse).
 > **Datos:** vista final delgada `141-vista-historial-academico-estudiante-fila` (une bases
 > `138` nota efectiva, `139` detalle asignatura del plan, `140` historial previo). Plan:
 > `docs/plan/HISTORIAL-ACADEMICO.md`.
+
+### ACA - Avance académico y Deserción (`/academico/avance`) — backend 2026-07-29 (REP disuelto)
+Una página, dos pestañas con `PermisoGuard` por pestaña (frontend en la
+iteración siguiente; hoy la ruta sigue en `UnderConstruction`). Grupos UI:
+`aca_avance` (rehabilitado) y `aca_desercion` (nuevo). Seeds en
+`59-seed-permisos-aca.sql`.
+
+| Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
+|---|---|---|---|
+| `academico.avance` | LISTAR | Pestaña Avance: `GET /avance-academico[?carreraId]` — % de materias aprobadas/convalidadas vs total del plan (vistas 170/171, universo del transcript 141). EST: alcance self en servidor ("Mi avance", anti-IDOR) | REC, DIRA, DOC, EST |
+| `academico.avance` | EXPORTAR | `GET /avance-academico/export` — Excel 1 hoja planilla verde | REC, DIRA |
+| `academico.desercion` | LISTAR | Pestaña Deserción: `GET /desercion[?gestionId][&carreraId]` — agregado carrera × gestión + detalle de desertores (vistas 172/173, grano ANUAL por ABANDONO/RETIRADO) | REC, DIRA |
+| `academico.desercion` | EXPORTAR | `GET /desercion/export` — Excel 1 hoja (resumen + detalle) | REC, DIRA |
+
+> **Deserción ≠ riesgo:** la métrica ACA mide abandono CONSUMADO (estados de
+> matrícula, histórico anual); el riesgo pedagógico por notas es del módulo TUT
+> (vistas 156/157, gestión vigente). Consumidores distintos, sin duplicar vistas.
+
+### ACA - Libros de registro (`/academico/libros`) — backend 2026-07-30 (Fase 4, schema 25)
+Permiso ÚNICO por ítem: `academico.libro` (grupo `aca_libros`, seed 59). Libro
+físico del centralizador: uno por carrera+gestión; folio = página de un
+paralelo con hasta 10 estudiantes; `numero_folio` correlativo POR GESTIÓN
+cruzando todas las carreras. Frontend en la iteración 2 (hoy sin ruta en menú).
+
+| Permiso (codigo) | Acciones | Pantalla / endpoint | Roles |
+|---|---|---|---|
+| `academico.libro` | LISTAR | Listado de libros — `GET /libros[?carreraId][&gestionId]` (vista 175) | REC, DIRA, SECA |
+| `academico.libro` | DETALLE | Ficha del libro (`GET /libros/:id`, cabecera + folios vista 176) y folio (`GET /libros/:id/folios/:folioId`, nómina congelada + celdas de la 135) | REC, DIRA, SECA |
+| `academico.libro` | CREAR | Abrir libro (`POST /libros`; `numeroLibro` se INGRESA, mismo número para todas las carreras de la gestión) · paralelos candidatos (`GET /libros/:id/paralelos`) · generar folios (`POST /libros/:id/folios`, páginas de 10, numeración transaccional por gestión) | REC, DIRA, SECA |
+| `academico.libro` | EDITAR | Editar/cerrar libro (`PATCH /libros/:id`) · editar fila ESTADO/OBSERVACIONES (`PATCH /libros/:id/folios/:folioId/estudiantes/:filaId`, solo si el folio NO está FIRMADO/ANULADO) | REC, DIRA, SECA |
+| `academico.libro` | APROBAR | Transición de estado del folio (`PATCH /libros/:id/folios/:folioId/estado`): BORRADOR→IMPRESO→FIRMADO / ANULADO (con motivo); FIRMADO inmutable | REC, DIRA |
+| `academico.libro` | EXPORTAR | Excel del libro completo (`GET /libros/:id/export`): una hoja por paralelo, folios apilados + página de firmas de docentes, logo MINEDU, margen de encuadernado | REC, DIRA, SECA |
+
+> **Sin ELIMINAR:** un folio no se borra — se ANULA (motivo obligatorio) y el
+> paralelo se regenera con numeración nueva (los números anulados no se
+> reutilizan). **Notas por materia:** sin vista propia — se derivan de la 135
+> (asignación docente VIGENTE): el libro se genera al cierre de la gestión
+> mientras es vigente; el folio solo congela ESTADO y OBSERVACIONES.
+> Reimpresión de gestiones pasadas = evolución futura (parametrizar la 135).
 
 ### ACA - Nivelaciones, Trazabilidad, Historial
 Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.historial.*`
@@ -627,8 +1024,9 @@ Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.histo
 | EDITAR | Convalidacion/ajustes | ADM, REC, DIRA |
 | APROBAR | Aprobaciones formales | ADM, REC, DIRA |
 
-### DOC - Docentes y supervision (`/docentes/*`, `/supervision/*`)
-Permisos: `docentes.*`, `docentes.supervision.*`
+### DOC - Docentes y supervision (`/docentes/*`)
+Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corrió
+2026-07-29; referencias antiguas a «seed 59» para DOC son históricas)
 
 | Codigo (seed) | Acciones v2 (`permiso_acciones`) | Uso principal (UI) |
 |---|---|---|
@@ -636,13 +1034,27 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 | `docentes.crear` | CREAR | Alta `/docentes/registrar` |
 | `docentes.editar` | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
 | `docentes.asignar` | CREAR, EDITAR, ELIMINAR | Asignacion docente-curso (`/docentes/asignar`, API `POST /docentes/asignaciones/curso`, modal en armado paralelo) |
+| `docentes.supervision.ficha` | LISTAR, DETALLE, CREAR, EDITAR, EXPORTAR | **Supervisión docente** (`/docentes/supervision`, grupo `doc_supervision` orden 3): fichas de seguimiento en la clase presencial (schema 27, API `/api/v1/supervision-docente`, vista 174). Sin ELIMINAR ni APROBAR: la ficha realizada no se borra. EXPORTAR = `GET /:id/pdf` (réplica del formulario físico) |
 
 | Accion | Descripcion | Roles |
 |---|---|---|
-| VER | Ver docentes/supervision | ADM, REC, DIRA, DIRM, DOC (solo ficha propia) |
-| CREAR | Nuevo docente/licencias/fichas | ADM, REC, DIRA |
-| EDITAR | Ajustes supervision | ADM, REC, DIRA |
-| APROBAR | Licencias docentes | ADM, REC, DIRA |
+| VER | Ver docentes / fichas de supervisión | ADM, REC, DIRA, DIRM (solo docentes), DOC (solo ficha propia) |
+| CREAR | Nuevo docente / nueva ficha de seguimiento | ADM, REC, DIRA |
+| EDITAR | Ficha docente / ficha de seguimiento | ADM, REC, DIRA |
+| EXPORTAR | PDF de la ficha de seguimiento | ADM, REC, DIRA |
+| APROBAR | Licencias docentes (deshabilitado: página en construcción) | ADM, REC, DIRA |
+
+> **Supervisión docente (2026-07-30, permiso único):** operan **REC** y **DIRA**
+> (+ADM por herencia de vista) — la ficha real lleva firma y sello de la
+> Dirección Académica. El evaluador (`supervisor_id`) se fija en servidor desde
+> la sesión (`req.usuario.id`), jamás del cliente. Los 5 códigos legacy
+> `docentes.supervision.evaluar/.reporte/.programar/.ficha.crear/.ficha.editar`
+> fueron RETIRADOS del seed 60 (nunca tuvieron pantalla ni backend).
+> **Wrapper self del DOCENTE (sin filas RBAC):**
+> `GET /supervision-docente/mis-fichas` con gate solo `authenticate` (patrón
+> `/docentes/mis-datos`); el docente se resuelve con `resolveDocenteIdForUsuario`
+> (403 si el usuario no tiene vínculo docente, anti-IDOR) y ve únicamente las
+> fichas de SUS cursos (vista 174 WHERE `docente_id`).
 
 **Rol DOCENTE (7) — alcance propio (portal del rol docente, 2026-07-03):**
 - `docentes.ver` LISTAR + DETALLE: el ítem Docentes salta a **SU propia ficha** `/docentes/:id` vía wrapper
@@ -664,9 +1076,11 @@ Permisos: `docentes.*`, `docentes.supervision.*`
   `institucional.horario.conflictos` LISTAR + `docenteSelfOnlyGuard('docenteId')` (solo su propia grilla).
 - Licencias estudiantiles: `academico.asistencia.licencia.crear` EDITAR + ELIMINAR con guard
   created_by + estado PENDIENTE en servidor (ver ACA-Asistencia).
-- `docentes.licencia.ver` LISTAR + `docentes.licencia.crear` CREAR (menú Licencias docentes). Pasantías
-  docentes: `docentes.supervision.pasantia` LISTAR + CREAR + EDITAR (menú `/supervision/pasantias`; sin
-  supervisión ni listado de plantilla). (Deshabilitados temporalmente: páginas en construcción.)
+- `docentes.licencia.ver` LISTAR + `docentes.licencia.crear` CREAR (menú Licencias docentes;
+  deshabilitados temporalmente: página en construcción). Pasantías docentes: retiradas del seed
+  2026-07-29 (el dominio vive en Titulación/TUT; lo docente entra por wrappers del portal).
+- Supervisión docente: **sin permisos** — tab/wrapper self `GET /supervision-docente/mis-fichas`
+  (gate solo `authenticate` + `resolveDocenteIdForUsuario`; solo fichas de SUS cursos).
 
 > **Anti-IDOR (docentes):** `GET /docentes/:id` y `GET /docentes/:id/carga-gestion` llevan
 > `docenteSelfOnlyGuard` tras `verificarPermiso` (espejo de `estudianteSelfOnlyGuard`): un usuario
@@ -920,12 +1334,22 @@ Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
 
 Codigos legacy `cfg.academico.*` **no** deben usarse en codigo nuevo; fueron reemplazados por `configuracion.*`.
 
-### REP - Reportes (`/reportes/*`)
-Permisos: `reportes.*`
+### REP - Reportes — MÓDULO DISUELTO (2026-07-29)
+Los 7 códigos `reportes.*` fueron retirados definitivamente (seed 63 =
+tombstone con los DELETE de limpieza). Los reportes viven con su módulo dueño:
 
-| Accion | Descripcion | Roles |
-|---|---|---|
-| VER | Ver reportes y solicitudes | ADM, REC, DIRA, DIRM |
+| Código REP retirado | Dueño / reemplazo |
+|---|---|
+| `reportes.avance_academico` | ACA `academico.avance` (rehabilitado; `GET /avance-academico`) |
+| `reportes.asistencia` | ACA `academico.asistencia.consolidado.ver` (`GET /asistencia/consolidado`) |
+| `reportes.desercion` | ACA `academico.desercion` (nuevo; `GET /desercion`) |
+| `reportes.solicitudes.general` | Retirado sin reemplazo (bandeja transversal prematura) |
+| `reportes.solicitudes.becas` | FIN `finanzas.beca.reporte` + MAT BecasList (ya construidos) |
+| `reportes.solicitudes.traspaso` | Nacerá con ACA `academico.trazabilidad.traspaso.*` |
+| `reportes.solicitudes.pasantia` | Módulo Pasantías `tutorias.pasantia.*` (seed 65) |
+
+El esqueleto frontend (`modules/reportes/`, iconos `REP-*`) se borra en la
+iteración frontend de la disolución.
 
 ### CAP - Capacitación (`/capacitacion/*`) — módulo nuevo 2026-07-16
 Dominio `CAPACITACION`, módulo `CAP` (cursos cortos a público externo, sin login). Seed: `65-seed-permisos-cap.sql` (**pendiente de siembra en BD**, junto al schema `25-cursos-capacitacion.sql`, el seeder `66-seed-horarios-capacitacion.sql` y las vistas 154/155). Grupos UI: `cap_cursos`, `cap_participantes`, `cap_inscripciones`. Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN; ADMIN_SISTEMA hereda por vista.

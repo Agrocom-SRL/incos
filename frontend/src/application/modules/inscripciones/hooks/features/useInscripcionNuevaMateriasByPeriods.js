@@ -20,41 +20,43 @@ export const useInscripcionNuevaMateriasByPeriods = (selectedPeriodIds = [], car
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const ids = Array.isArray(selectedPeriodIds) ? selectedPeriodIds : [];
-    if (ids.length === 0) {
-      setMateriasByPeriod({});
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
-    const useCaseInstance = useCasesFactory.obtenerTodasMaterias?.();
-    if (!useCaseInstance) {
-      setError('No disponible');
-      setLoading(false);
-      return;
-    }
+    const cargar = async () => {
+      const ids = Array.isArray(selectedPeriodIds) ? selectedPeriodIds : [];
+      if (ids.length === 0) {
+        setMateriasByPeriod({});
+        setLoading(false);
+        setError(null);
+        return;
+      }
 
-    const paramsForPeriod = (periodId) => {
-      const params = { periodo_id: periodId };
-      if (carreraId != null) params.carrera_id = carreraId;
-      return params;
-    };
+      setLoading(true);
+      setError(null);
 
-    Promise.all(
-      ids.map((periodId) =>
-        useCaseInstance.ejecutar({ params: paramsForPeriod(periodId) }).then((result) => ({
-          periodId,
-          success: result?.success,
-          data: result?.data,
-        }))
-      )
-    )
-      .then((results) => {
+      const useCaseInstance = useCasesFactory.obtenerTodasMaterias?.();
+      if (!useCaseInstance) {
+        setError('No disponible');
+        setLoading(false);
+        return;
+      }
+
+      const paramsForPeriod = (periodId) => {
+        const params = { periodo_id: periodId };
+        if (carreraId != null) params.carrera_id = carreraId;
+        return params;
+      };
+
+      try {
+        const results = await Promise.all(
+          ids.map((periodId) =>
+            useCaseInstance.ejecutar({ params: paramsForPeriod(periodId) }).then((result) => ({
+              periodId,
+              success: result?.success,
+              data: result?.data,
+            }))
+          )
+        );
         if (cancelled) return;
         const byPeriod = {};
         results.forEach(({ periodId, success, data }) => {
@@ -63,16 +65,17 @@ export const useInscripcionNuevaMateriasByPeriods = (selectedPeriodIds = [], car
         });
         setMateriasByPeriod(byPeriod);
         setError(null);
-      })
-      .catch((err) => {
+      } catch (err) {
         if (!cancelled) {
           setError(err?.message || 'Error al cargar materias por periodo');
           setMateriasByPeriod({});
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    };
+
+    cargar();
 
     return () => {
       cancelled = true;

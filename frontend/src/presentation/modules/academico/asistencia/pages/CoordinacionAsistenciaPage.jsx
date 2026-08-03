@@ -5,33 +5,48 @@
  */
 
 import { useLocation, useNavigate } from 'react-router-dom';
-import { MedicineBoxOutlined } from '@ant-design/icons';
+import { MedicineBoxOutlined, TableOutlined } from '@ant-design/icons';
+import { Flex } from 'antd';
 import { CoordinacionDocentesView } from '@organisms';
 import { ActionButton } from '@atoms';
 import { useVistaAdminAsistenciaDocentes } from '@application-academico/asistencia/hooks/useVistaAdminAsistenciaDocentes.js';
 import {
   MIS_CURSOS_PATH,
   LICENCIAS_PATH,
+  CONSOLIDADO_PATH,
 } from '@application-academico/asistencia/utils/asistenciaPaths.js';
 import { ASISTENCIA_PERMISOS } from '@application-academico/asistencia/utils/asistenciaPermisos.js';
+import { allSpacing } from '@theme/tokens';
 
 const CoordinacionAsistenciaPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const vista = useVistaAdminAsistenciaDocentes();
 
-  // Acceso administrativo al listado de licencias estudiantiles; se auto-oculta sin
-  // permiso licencia.ver. Vive en la pantalla previa del admin (no en el calendario del curso).
+  // Accesos administrativos hermanos del registro (se auto-ocultan sin permiso):
+  // Consolidado % por paralelo y listado de licencias estudiantiles. Viven en la
+  // pantalla previa del admin (no en el calendario del curso).
   const headerActions = (
-    <ActionButton
-      permiso={ASISTENCIA_PERMISOS.licenciaVer}
-      accion="LISTAR"
-      variant="info"
-      icon={<MedicineBoxOutlined />}
-      onClick={() => navigate(LICENCIAS_PATH, { state: { returnPath: location.pathname } })}
-    >
-      Licencias
-    </ActionButton>
+    <Flex gap={allSpacing.marginSM} wrap="wrap">
+      <ActionButton
+        permiso={ASISTENCIA_PERMISOS.consolidadoVer}
+        accion="LISTAR"
+        variant="info"
+        icon={<TableOutlined />}
+        onClick={() => navigate(CONSOLIDADO_PATH)}
+      >
+        Consolidado %
+      </ActionButton>
+      <ActionButton
+        permiso={ASISTENCIA_PERMISOS.licenciaVer}
+        accion="LISTAR"
+        variant="info"
+        icon={<MedicineBoxOutlined />}
+        onClick={() => navigate(LICENCIAS_PATH, { state: { returnPath: location.pathname } })}
+      >
+        Licencias
+      </ActionButton>
+    </Flex>
   );
 
   return (

@@ -23,6 +23,12 @@
 -- No se filtra por activo para conservar el historial completo
 -- (reprobadas/abandonos incluidos); solo deleted_at IS NULL.
 --
+-- 2026-07-29 (ajuste aditivo, disolución REP): se exponen matricula_materia_id
+-- y carrera_id (eda ya estaba en el JOIN) para que la vista de deserción (172)
+-- reutilice ESTE universo (historial completo, sin filtro de activo) sin
+-- reescribir la cadena matriculas_materia → inscripciones → datos académicos.
+-- Consumidores previos (141) no se ven afectados.
+--
 -- Uso:
 --   SELECT * FROM vista_base_historial_nota_efectiva_fila WHERE estudiante_id = ?;
 -- ============================================
@@ -34,6 +40,8 @@ DROP VIEW IF EXISTS vista_base_historial_nota_efectiva_fila;
 CREATE VIEW vista_base_historial_nota_efectiva_fila AS
 SELECT
   eda.estudiante_id                        AS estudiante_id,
+  eda.carrera_id                           AS carrera_id,
+  mm.id                                    AS matricula_materia_id,
   i.gestion_id                             AS gestion_id,
   g.anio                                   AS gestion_anio,
   COALESCE(oc.asignatura_plan_id, mm.asignatura_plan_id) AS asignatura_plan_id,

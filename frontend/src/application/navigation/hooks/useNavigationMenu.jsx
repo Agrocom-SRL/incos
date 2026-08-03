@@ -22,7 +22,7 @@
  * un hook puede retornar JSX estructurado para la UI.
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as menuGenerator from '@navigation-services/menuGenerator';
 import { getEffectiveRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
@@ -69,9 +69,10 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     const { hasPermiso, isAuthenticated, usuario } = useAuthContext();
     const [selectedKeys, setSelectedKeys] = useState([defaultSelectedKey]);
     const [openKeys, setOpenKeys] = useState([]);
-    
-    // Ref para detectar si es el mount inicial (refresh de página)
-    const isInitialMount = useRef(true);
+
+    // Estado para detectar si es el mount inicial (refresh de página):
+    // se consume durante render (ajuste de estado), por eso no puede ser un ref.
+    const [initialMountPending, setInitialMountPending] = useState(true);
 
     const hasPermisoStable = useCallback(
         (codigo, accion) => hasPermiso(codigo, accion),
@@ -132,22 +133,6 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     };
 
     /**
-     * Expande todos los padres de un item cuando es el mount inicial (refresh de página)
-     * 
-     * @param {string} menuKey - Key del item seleccionado
-     */
-    const expandParentKeysOnInitialMount = (menuKey) => {
-        if (!isInitialMount.current) return;
-        
-        const parentKeys = menuGenerator.findParentKeys(navigationMenuItems, menuKey);
-        if (parentKeys && parentKeys.length > 0) {
-            setOpenKeys(parentKeys);
-        }
-        
-        isInitialMount.current = false;
-    };
-
-    /**
      * Maneja el click en el Dashboard (caso especial)
      * 
      * @param {string} clickedKey - Key del item clickeado
@@ -197,25 +182,28 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     /**
      * Sincroniza el item seleccionado con la ruta actual
      * Cuando el usuario navega directamente (URL, botón atrás, etc.), actualiza el menú
-     * 
+     * (ajuste de estado durante render con guardas convergentes, sin setState en effect)
+     *
      * Comportamiento especial en refresh de página:
      * - Si es el mount inicial (refresh), expande todos los padres del item seleccionado
      * - Esto permite ver la jerarquía completa cuando se refresca con una ruta específica
      */
-    const menuSidebarKeyFromState = location.state?.menuSidebarKey;
+    const menuKeyFromRoute = getMenuKeyFromRoute(location.pathname, location.state);
 
-    useEffect(() => {
-        const menuKey = getMenuKeyFromRoute(location.pathname, location.state);
-
-        if (menuKey && menuKey !== selectedKeys[0]) {
-            setSelectedKeys([menuKey]);
-            expandParentKeysOnInitialMount(menuKey);
-        } else if (isInitialMount.current) {
-            // Si no hay menuKey pero es el mount inicial, marcar como completado
-            isInitialMount.current = false;
+    if (menuKeyFromRoute && menuKeyFromRoute !== selectedKeys[0]) {
+        setSelectedKeys([menuKeyFromRoute]);
+        if (initialMountPending) {
+            const parentKeys = menuGenerator.findParentKeys(navigationMenuItems, menuKeyFromRoute);
+            if (parentKeys && parentKeys.length > 0) {
+                setOpenKeys(parentKeys);
+            }
+            setInitialMountPending(false);
         }
-        // Si no hay key, no hacer nada - el createAppRouter maneja las redirecciones
-    }, [location.pathname, menuSidebarKeyFromState, selectedKeys, navigationMenuItems]);
+    } else if (initialMountPending) {
+        // Si no hay menuKey pero es el primer render, marcar el mount inicial como completado
+        setInitialMountPending(false);
+    }
+    // Si no hay key, no hacer nada - el createAppRouter maneja las redirecciones
 
     /**
      * Maneja el click en un item del menú

@@ -18,26 +18,34 @@ export const HorariosArmadoProvider = ({ children }) => {
 
     useEffect(() => {
         const pgId = armadoState.paraleloGestionId;
-        if (!pgId) {
-            setAsignacionesPorOferta(null);
-            return;
-        }
         let cancelled = false;
-        (async () => {
-            const res = await fetchAsignacionesSilent({
-                paralelo_gestion_id: pgId,
-                vigente: true,
-                page: 1,
-                limit: 200,
-            });
-            if (cancelled) return;
-            if (res.success) {
-                const rows = res.data?.asignaciones ?? [];
-                setAsignacionesPorOferta(indexAsignacionesPorOferta(rows));
-            } else {
+
+        const cargar = async () => {
+            if (!pgId) {
                 setAsignacionesPorOferta(null);
+                return;
             }
-        })();
+            try {
+                const res = await fetchAsignacionesSilent({
+                    paralelo_gestion_id: pgId,
+                    vigente: true,
+                    page: 1,
+                    limit: 200,
+                });
+                if (cancelled) return;
+                if (res.success) {
+                    const rows = res.data?.asignaciones ?? [];
+                    setAsignacionesPorOferta(indexAsignacionesPorOferta(rows));
+                } else {
+                    setAsignacionesPorOferta(null);
+                }
+            } catch {
+                if (!cancelled) setAsignacionesPorOferta(null);
+            }
+        };
+
+        cargar();
+
         return () => {
             cancelled = true;
         };

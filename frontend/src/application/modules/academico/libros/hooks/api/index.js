@@ -1,0 +1,11 @@
+export { useLibrosApi } from './useLibrosApi';
+export { useAbrirLibroApi } from './useAbrirLibroApi';
+export { useLibroDetalleApi } from './useLibroDetalleApi';
+export { useEditarLibroApi } from './useEditarLibroApi';
+export { useParalelosLibroApi } from './useParalelosLibroApi';
+export { useGenerarFolios } from './useGenerarFolios';
+export { useGenerarFoliosGestion } from './useGenerarFoliosGestion';
+export { useFolioDetalleApi } from './useFolioDetalleApi';
+export { useCambiarEstadoFolioApi } from './useCambiarEstadoFolioApi';
+export { useEditarFolioEstudianteApi } from './useEditarFolioEstudianteApi';
+export { useExportLibroExcel } from './useExportLibroExcel';

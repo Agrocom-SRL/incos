@@ -3,7 +3,8 @@
  *
  * Carga el boletín del estudiante autenticado (cabecera + asignaturas con notas
  * por bimestre) y expone la descarga del PDF (única descarga permitida al
- * estudiante). La página solo orquesta; el fetch vive aquí.
+ * estudiante): boletín ANUAL o, con `{ bimestre: 1..4 }`, el boletín de un
+ * bimestre. La página solo orquesta; el fetch vive aquí.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -13,13 +14,13 @@ import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs/breadcrum
 
 export const useMiBoletin = () => {
   const [boletin, setBoletin] = useState(null);
+  // `loading` nace en true: el effect inicial SOLO dispara la carga (sin
+  // setState síncrono dentro del effect); `refetch` sí reactiva el spinner.
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [descargando, setDescargando] = useState(false);
 
-  const cargar = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchBoletin = useCallback(async () => {
     try {
       const result = await CalificacionRepository.obtenerMiBoletin();
       if (!result?.success) {
@@ -28,6 +29,7 @@ export const useMiBoletin = () => {
         return;
       }
       setBoletin(result.data ?? null);
+      setError(null);
     } catch (err) {
       setBoletin(null);
       setError(err?.message || 'No se pudo cargar su boletín');
@@ -37,17 +39,31 @@ export const useMiBoletin = () => {
   }, []);
 
   useEffect(() => {
-    cargar();
-  }, [cargar]);
+    fetchBoletin();
+  }, [fetchBoletin]);
 
-  const descargarPdf = useCallback(async () => {
+  /** Recarga bajo demanda (reactiva el spinner antes de volver a pedir datos). */
+  const refetch = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    return fetchBoletin();
+  }, [fetchBoletin]);
+
+  /**
+   * Descarga el PDF del boletín. Sin argumentos descarga el boletín ANUAL
+   * (comportamiento de siempre); con `{ bimestre: 1..4 }` descarga el boletín
+   * de ese bimestre. El nombre del archivo lo fija el servidor (incluye el
+   * bimestre); el fallback local replica esa convención.
+   */
+  const descargarPdf = useCallback(async ({ bimestre = null } = {}) => {
     setDescargando(true);
     try {
-      const result = await CalificacionRepository.descargarMiBoletin();
+      const result = await CalificacionRepository.descargarMiBoletin({ bimestre });
       if (!result?.success || !result.blob) {
         return { success: false, error: result?.error || 'No se pudo generar el boletín' };
       }
-      downloadBlob(result.blob, result.fileName || 'Boletin.pdf');
+      const fallbackName = bimestre != null ? `Boletin_Bimestre${bimestre}.pdf` : 'Boletin.pdf';
+      downloadBlob(result.blob, result.fileName || fallbackName);
       return { success: true };
     } catch (err) {
       return { success: false, error: err?.message || 'Error al descargar el boletín' };
@@ -74,7 +90,7 @@ export const useMiBoletin = () => {
     descargando,
     descargarPdf,
     breadcrumbItems,
-    refetch: cargar,
+    refetch,
   };
 };
 

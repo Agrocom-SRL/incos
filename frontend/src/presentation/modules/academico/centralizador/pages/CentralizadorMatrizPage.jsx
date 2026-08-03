@@ -61,17 +61,34 @@ const CentralizadorMatrizPage = () => {
     bimestre: bimestreActivo,
   });
 
-  useEffect(() => {
-    if (bimestreActivo == null) return;
+  /** Observaciones del bimestre activo tal como llegan del servidor (por estudiante). */
+  const observacionesSeed = useMemo(() => {
+    if (bimestreActivo == null) return null;
     const next = {};
     estudiantes.forEach((est) => {
       const obs = est.observacionesBimestre;
       const texto = obs?.[bimestreActivo] ?? obs?.[String(bimestreActivo)] ?? '';
       next[est.estudianteId] = texto;
-      registrarValorInicial(est.estudianteId, texto);
     });
-    setObservacionesLocal(next);
-  }, [estudiantes, bimestreActivo, paraleloGestionId, registrarValorInicial]);
+    return next;
+  }, [estudiantes, bimestreActivo]);
+
+  // El estado editable se resiembra al cambiar el seed (ajuste durante render,
+  // sin setState en effect)…
+  const [prevObservacionesSeed, setPrevObservacionesSeed] = useState(null);
+  if (observacionesSeed !== prevObservacionesSeed) {
+    setPrevObservacionesSeed(observacionesSeed);
+    if (observacionesSeed) setObservacionesLocal(observacionesSeed);
+  }
+
+  // …y el registro del "último guardado" (refs del hook de autoguardado) se
+  // sincroniza tras el commit.
+  useEffect(() => {
+    if (!observacionesSeed) return;
+    Object.entries(observacionesSeed).forEach(([estudianteId, texto]) => {
+      registrarValorInicial(estudianteId, texto);
+    });
+  }, [observacionesSeed, registrarValorInicial]);
 
   const estudiantesConObs = useMemo(
     () =>

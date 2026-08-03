@@ -6,9 +6,15 @@
  * cabecera del paralelo desde la vista 87 (carrera, periodo/curso, paralelo). El armado
  * del payload `datos` se delega al helper `construirDatosBoletinEstudiante` y el render
  * al generador inyectado (IBoletinPdfGenerator).
+ *
+ * Acepta `bimestre` (1..4) opcional: con él el boletín es BIMESTRAL — desglose
+ * TEÓRICA + PRÁCTICA = TOTAL y ESTADO por asignatura, con el desglose leído de
+ * las vistas existentes (119 unida a la 135) vía
+ * `calificacionCentralizadorRepository.listarDesgloseBimestrePorEstudiante` —;
+ * sin él, ANUAL (4 parciales + resumen + estado en OBSERVACIONES).
  */
 
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { sanitizarFilePart } from '../../utils/centralizadorExcelDatos.js';
 import { construirDatosBoletinEstudiante } from '../../utils/boletinPdfDatos.js';
 
@@ -17,6 +23,7 @@ export class ExportBoletinEstudiantePdfUseCase {
     getCentralizadorParaleloUseCase,
     parallelRepository,
     boletinPdfGenerator,
+    calificacionCentralizadorRepository,
     logger
   }) {
     if (!getCentralizadorParaleloUseCase) {
@@ -28,14 +35,19 @@ export class ExportBoletinEstudiantePdfUseCase {
     this.getCentralizadorParaleloUseCase = getCentralizadorParaleloUseCase;
     this.parallelRepository = parallelRepository;
     this.boletinPdfGenerator = boletinPdfGenerator;
+    // Desglose teórico/práctico del bimestre (vista 119 unida a la 135); solo lo
+    // usa el boletín BIMESTRAL, por eso se valida recién en esa rama.
+    this.calificacionCentralizadorRepository = calificacionCentralizadorRepository;
     this.logger = logger;
   }
 
   /**
-   * @param {{ paraleloGestionId: number|string, estudianteId: number|string }} input
+   * @param {{ paraleloGestionId: number|string, estudianteId: number|string,
+   *           bimestre?: number|string|null }} input - `bimestre` (1..4) opcional:
+   *   boletín BIMESTRAL (solo ese parcial); ausente → boletín ANUAL (sin cambios).
    * @returns {Promise<{ buffer: Buffer, fileName: string, mimeType: string }>}
    */
-  async execute({ paraleloGestionId, estudianteId }) {
+  async execute({ paraleloGestionId, estudianteId, bimestre = null }) {
     const pgId = Number(paraleloGestionId);
     const estId = Number(estudianteId);
     if (!Number.isFinite(pgId) || pgId < 1) {
@@ -45,16 +57,41 @@ export class ExportBoletinEstudiantePdfUseCase {
       throw new NotFoundError('Estudiante');
     }
 
+    // Bimestre opcional: mismo rango 1..4 que el resto del módulo (validado
+    // también en el router; aquí se blinda el use case ante llamadas internas).
+    let bim = null;
+    if (bimestre != null && bimestre !== '') {
+      bim = Number(bimestre);
+      if (!Number.isInteger(bim) || bim < 1 || bim > 4) {
+        throw new ValidationError('bimestre debe ser un entero entre 1 y 4');
+      }
+    }
+
     // Matriz (misma fuente que la pantalla) + cabecera del paralelo (vista 87).
-    const [matriz, cabeceraRow] = await Promise.all([
+    // Boletín BIMESTRAL: además, desglose teórico/práctico del bimestre pedido.
+    if (bim != null && !this.calificacionCentralizadorRepository) {
+      throw new Error(
+        'calificacionCentralizadorRepository es requerido para el boletín bimestral'
+      );
+    }
+    const [matriz, cabeceraRow, desgloseBimestre] = await Promise.all([
       this.getCentralizadorParaleloUseCase.execute({ paraleloGestionId: pgId }),
-      this.parallelRepository.obtenerCabeceraParaleloGestion(pgId)
+      this.parallelRepository.obtenerCabeceraParaleloGestion(pgId),
+      bim != null
+        ? this.calificacionCentralizadorRepository.listarDesgloseBimestrePorEstudiante(
+            pgId,
+            estId,
+            bim
+          )
+        : Promise.resolve(null)
     ]);
 
     const resultado = construirDatosBoletinEstudiante({
       matriz,
       cabeceraRow,
-      estudianteId: estId
+      estudianteId: estId,
+      bimestre: bim,
+      desgloseBimestre
     });
     if (!resultado) {
       throw new NotFoundError('Estudiante');
@@ -63,15 +100,17 @@ export class ExportBoletinEstudiantePdfUseCase {
     const { datos, fileNameParts } = resultado;
     const buffer = await this.boletinPdfGenerator.generarBoletinEstudiante(datos);
 
+    const sufijoBimestre = bim != null ? `_Bimestre${bim}` : '';
     const fileName = `Boletin_${sanitizarFilePart(fileNameParts.estudiante)}_${sanitizarFilePart(
       fileNameParts.carrera
     )}_${sanitizarFilePart(fileNameParts.paralelo)}_${sanitizarFilePart(
       fileNameParts.gestion
-    )}.pdf`;
+    )}${sufijoBimestre}.pdf`;
 
     this.logger.info('[Calificaciones] Boletín de estudiante exportado a PDF', {
       paraleloGestionId: pgId,
       estudianteId: estId,
+      bimestre: bim,
       asignaturas: datos.filas.length,
       fileName
     });

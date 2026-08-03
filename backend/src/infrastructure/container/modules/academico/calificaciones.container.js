@@ -10,6 +10,7 @@ import { GetCentralizadorParaleloUseCase } from '../../../../application/use-cas
 import { SaveObservacionCentralizadorBimestreUseCase } from '../../../../application/use-cases/academico/SaveObservacionCentralizadorBimestreUseCase.js';
 import { ExportCentralizadorParaleloBimestreExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorParaleloBimestreExcelUseCase.js';
 import { ExportCentralizadorCarreraBimestreExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorCarreraBimestreExcelUseCase.js';
+import { ExportCentralizadorAnualParaleloExcelUseCase } from '../../../../application/use-cases/academico/ExportCentralizadorAnualParaleloExcelUseCase.js';
 import { ExportBoletinEstudiantePdfUseCase } from '../../../../application/use-cases/academico/ExportBoletinEstudiantePdfUseCase.js';
 import { GetMiBoletinEstudianteUseCase } from '../../../../application/use-cases/academico/GetMiBoletinEstudianteUseCase.js';
 import { ExportMiBoletinEstudiantePdfUseCase } from '../../../../application/use-cases/academico/ExportMiBoletinEstudiantePdfUseCase.js';
@@ -38,6 +39,7 @@ import { GetCentralizadorParaleloController } from '../../../../presentation/con
 import { SaveObservacionCentralizadorBimestreController } from '../../../../presentation/controllers/academico/calificaciones/save-observacion-centralizador-bimestre.controller.js';
 import { ExportCentralizadorParaleloBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-paralelo-bimestre.controller.js';
 import { ExportCentralizadorCarreraBimestreController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-carrera-bimestre.controller.js';
+import { ExportCentralizadorAnualParaleloController } from '../../../../presentation/controllers/academico/calificaciones/export-centralizador-anual-paralelo.controller.js';
 import { ExportBoletinEstudianteController } from '../../../../presentation/controllers/academico/calificaciones/export-boletin-estudiante.controller.js';
 import { GetMiBoletinEstudianteController } from '../../../../presentation/controllers/academico/calificaciones/get-mi-boletin.controller.js';
 import { ExportMiBoletinEstudianteController } from '../../../../presentation/controllers/academico/calificaciones/export-mi-boletin.controller.js';
@@ -139,6 +141,9 @@ export function registerCalificacionesResource(container) {
         subjectEnrollmentBimesterRepository: c.resolve(
           REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository
         ),
+        // Cruce de dominio con Libros de registro (mismo dominio ACA, schema 25):
+        // solo lectura, opcional (agrega el bloque `libro`/folioNumero al DTO).
+        libroRegistroViewRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroViewRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger)
       })
   );
@@ -235,6 +240,33 @@ export function registerCalificacionesResource(container) {
 
   registerComponent(
     container,
+    ACADEMICO_TOKENS.exportCentralizadorAnualParaleloExcelUseCase,
+    (c) =>
+      new ExportCentralizadorAnualParaleloExcelUseCase({
+        libroRegistroViewRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroViewRepository),
+        libroRegistroRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroRepository),
+        calificacionCentralizadorRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCentralizadorRepository
+        ),
+        libroRegistroExcelGenerator: c.resolve(SERVICIOS_TOKENS.libroRegistroExcelGenerator),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.exportCentralizadorAnualParaleloController,
+    (c) =>
+      new ExportCentralizadorAnualParaleloController({
+        exportCentralizadorAnualParaleloExcelUseCase: c.resolve(
+          ACADEMICO_TOKENS.exportCentralizadorAnualParaleloExcelUseCase
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger)
+      })
+  );
+
+  registerComponent(
+    container,
     ACADEMICO_TOKENS.exportBoletinEstudiantePdfUseCase,
     (c) =>
       new ExportBoletinEstudiantePdfUseCase({
@@ -243,6 +275,10 @@ export function registerCalificacionesResource(container) {
         ),
         parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
         boletinPdfGenerator: c.resolve(SERVICIOS_TOKENS.boletinPdfGenerator),
+        // Desglose teórico/práctico del bimestre (boletín bimestral, vistas 135+119).
+        calificacionCentralizadorRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCentralizadorRepository
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger)
       })
   );
@@ -1274,6 +1310,9 @@ export function registerCalificacionesResource(container) {
       ),
       exportCentralizadorCarreraBimestreController: c.resolve(
         ACADEMICO_TOKENS.exportCentralizadorCarreraBimestreController
+      ),
+      exportCentralizadorAnualParaleloController: c.resolve(
+        ACADEMICO_TOKENS.exportCentralizadorAnualParaleloController
       ),
       exportBoletinEstudianteController: c.resolve(
         ACADEMICO_TOKENS.exportBoletinEstudianteController

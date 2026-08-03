@@ -8,17 +8,25 @@
  * El Nº y las filas de grupo/total (banda de paralelo, banda de totales de
  * carrera) los arma `BecasCarreraSection` envolviendo estas columnas; aquí
  * solo se define el render por defecto para filas de estudiante.
+ *
+ * En vez de una única columna "% Beca" + "Descuento (Bs)", se abre UNA
+ * columna POR TRAMO (25%/50%/75%/100%, derivados de `porcentajes`, sin
+ * hardcodear): la celda del tramo que corresponde al estudiante muestra su
+ * descuento en Bs; las demás quedan con un guion. Así la matriz deja ver de
+ * un vistazo cuántos estudiantes hay (y cuánto Bs) por tramo.
  */
 
 import { Tooltip } from 'antd';
 import StatusPill from '@atoms/StatusPill';
 import { buildFullName } from '@application/utils/formatters';
 import { formatBs } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
+import { becaPorcentajeKey } from '@application-finanzas/mappers/becasReporteMapper';
 
 /**
+ * @param {number[]} [porcentajes] - tramos de beca presentes en la gestión (p. ej. [25,50,75,100]).
  * @returns {Array} Columnas de AntD Table (grano estudiante).
  */
-export const createBecasEstudianteColumns = () => [
+export const createBecasEstudianteColumns = (porcentajes = []) => [
   {
     title: 'Nº',
     key: 'nro',
@@ -55,26 +63,25 @@ export const createBecasEstudianteColumns = () => [
       );
     },
   },
-  {
-    title: '% Beca',
-    key: 'becaPorcentaje',
-    width: 84,
-    className: 'fin-num--center',
-    render: (_, record) => `${record.becaPorcentaje}%`,
-  },
-  {
-    title: 'Descuento (Bs)',
-    key: 'montoDescuento',
-    width: 130,
+  ...porcentajes.map((porcentaje) => ({
+    title: `${porcentaje}%`,
+    key: becaPorcentajeKey(porcentaje),
+    width: 96,
     className: 'fin-num',
-    render: (_, record) => `${formatBs(record.montoDescuento)} Bs`,
-  },
+    render: (_, record) =>
+      Number(record.becaPorcentaje) === Number(porcentaje)
+        ? `${formatBs(record.montoDescuento)} Bs`
+        : '—',
+  })),
   {
-    title: 'Monto base (Bs)',
+    // Neto a pagar: base − descuento de la beca (no el monto base bruto), para
+    // que se vea de un vistazo cuánto le queda al estudiante tras el %.
+    title: 'Aporte base (Bs)',
     key: 'montoBase',
     width: 130,
     className: 'fin-num',
-    render: (_, record) => `${formatBs(record.montoBase)} Bs`,
+    render: (_, record) =>
+      `${formatBs((record.montoBase || 0) - (record.montoDescuento || 0))} Bs`,
   },
 ];
 

@@ -37,8 +37,10 @@
 --
 -- RELACIÓN CON ESTUDIANTES:
 -- Los datos personales (CI, nombres, fecha nacimiento, domicilio, teléfono,
--- correo) ya se almacenan en la tabla estudiantes. El código RUDE/RUDEAL es
--- exclusivo del formulario de traspaso y se almacena en esta tabla (traspasos).
+-- correo) ya se almacenan en la tabla estudiantes. El código RUDE/RUDEAL NO
+-- tiene columna en estudiantes: se almacena por proceso de admisión — aquí
+-- (traspasos.codigo_rude) y en transitabilidades.codigo_rude (el ANEXO 2 de
+-- transitabilidad también lo solicita).
 -- La carrera, plan y periodo en INCOS ya están en estudiantes_datos_academicos/inscripciones;
 -- no se duplican aquí (carrera_destino_id, plan_estudio_destino_id, periodo_destino_id eliminados).
 -- La entrega de documentos se gestiona en estudiantes_documentos_entrega.
@@ -83,8 +85,8 @@ CREATE TABLE traspasos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     estudiante_id INT NULL COMMENT 'Estudiante postulante (referencia a estudiantes). Sus datos personales, CI, domicilio, teléfono y correo están en la tabla estudiantes.',
 
-    -- Código RUDE/RUDEAL (exclusivo de traspaso; ningún otro tipo de admisión lo usa)
-    codigo_rude VARCHAR(50) NULL COMMENT 'Código RUDE o RUDEAL del postulante (registro único en el sistema educativo boliviano). Solo aplica a traspasos.',
+    -- Código RUDE/RUDEAL (también lo pide el ANEXO 2 de transitabilidad → transitabilidades.codigo_rude)
+    codigo_rude VARCHAR(50) NULL COMMENT 'Código RUDE o RUDEAL del postulante (registro único en el sistema educativo boliviano).',
 
     -- ------------------------------------------------
     -- SECCIÓN 2: FORMACIÓN ACADÉMICA (institución de origen)

@@ -15,3 +15,5 @@ export { DecidirLicenciaUseCase } from './DecidirLicenciaUseCase.js';
 export { EditarLicenciaUseCase } from './EditarLicenciaUseCase.js';
 export { CancelarLicenciaUseCase } from './CancelarLicenciaUseCase.js';
 export { GetInscripcionVigenteUseCase } from './GetInscripcionVigenteUseCase.js';
+// Consolidado % por paralelo (página dentro de Asistencia · ACA-ASI-CONS)
+export { GetConsolidadoAsistenciaUseCase } from './GetConsolidadoAsistenciaUseCase.js';

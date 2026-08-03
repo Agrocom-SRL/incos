@@ -17,24 +17,68 @@
  * envolviendo el `render` de las columnas para que las filas de grupo/total
  * ocupen el ancho completo (mismo patrón `colSpan` que Cuentas por Cobrar).
  * Solo presentación: recibe props ya mapeadas, sin fetch.
+ *
+ * La fila de TOTALES es la única excepción al full-width: las columnas de
+ * TRAMO (`beca_25`, `beca_50`, ...) y "Aporte base" NO se fusionan — muestran
+ * la sumatoria en Bs de esa columna para la carrera, mientras que las
+ * columnas de identificación (Nº/Estudiante/CI/Tipo de beca) sí se fusionan
+ * en una sola banda con el resumen textual (matriculados, % cobertura, etc.).
  */
 
 import { Card, Flex, Table, Tag, Typography } from 'antd';
 import StatusPill from '@atoms/StatusPill';
 import { formatPorcentaje } from '@finanzas/reportes/config/becasTableColumns';
+import { formatBs } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
 import { getCoberturaPillClass } from '@application-finanzas/utils/becasReportePills';
 import { allSpacing } from '@theme/tokens';
 import '@finanzas/reportes/styles/finanzas-planilla.css';
 
 const { Title } = Typography;
 
+/** Columna "sumable" en la fila de totales: tramo de beca o aporte base. */
+const TRAMO_KEY_RE = /^beca_(\d+(?:\.\d+)?)$/;
+const isSummableColumn = (col) => TRAMO_KEY_RE.test(col.key) || col.key === 'montoBase';
+
+/**
+ * Sumatoria en Bs por columna sumable para TODOS los estudiantes de la
+ * carrera (recorre periodos → paralelos → estudiantes): por cada columna de
+ * tramo, suma el descuento de quienes caen en ese % de beca; para "Aporte
+ * base", suma el NETO (base − descuento) de todos, no el monto base bruto.
+ */
+const calcularTotalesColumnas = (carrera, columns) => {
+  const estudiantes = [];
+  (carrera.children || []).forEach((periodo) => {
+    (periodo.children || []).forEach((paralelo) => {
+      (paralelo.estudiantes || []).forEach((estudiante) => estudiantes.push(estudiante));
+    });
+  });
+
+  const totales = {};
+  columns.forEach((col) => {
+    const match = TRAMO_KEY_RE.exec(col.key);
+    if (match) {
+      const porcentaje = Number(match[1]);
+      totales[col.key] = estudiantes
+        .filter((est) => Number(est.becaPorcentaje) === porcentaje)
+        .reduce((acc, est) => acc + (Number(est.montoDescuento) || 0), 0);
+    } else if (col.key === 'montoBase') {
+      totales[col.key] = estudiantes.reduce(
+        (acc, est) => acc + ((Number(est.montoBase) || 0) - (Number(est.montoDescuento) || 0)),
+        0,
+      );
+    }
+  });
+  return totales;
+};
+
 /**
  * Aplana periodos → paralelos → estudiantes en filas con `__tipo`. La primera
  * fila de cada paralelo es su cabecera de grupo; al final, la fila de totales
- * de la carrera. El nivel PERIODO no se pinta (el nombre del paralelo ya
- * distingue el año, p. ej. "PRIMERO A").
+ * de la carrera (con la sumatoria por columna sumable ya calculada). El nivel
+ * PERIODO no se pinta (el nombre del paralelo ya distingue el año, p. ej.
+ * "PRIMERO A").
  */
-const buildRows = (carrera) => {
+const buildRows = (carrera, columns) => {
   const periodos = Array.isArray(carrera.children) ? carrera.children : [];
   const rows = [];
 
@@ -54,7 +98,12 @@ const buildRows = (carrera) => {
     });
   });
 
-  rows.push({ __tipo: 'total', __key: `total-${carrera.carreraId ?? carrera.carreraNombre}`, carrera });
+  rows.push({
+    __tipo: 'total',
+    __key: `total-${carrera.carreraId ?? carrera.carreraNombre}`,
+    carrera,
+    totalesColumnas: calcularTotalesColumnas(carrera, columns),
+  });
   return rows;
 };
 
@@ -91,9 +140,6 @@ const renderTotal = (carrera) => (
         Con beca: <strong>{carrera.totalConBeca || 0}</strong>
       </span>
       <span>
-        % con beca: <strong>{formatPorcentaje(carrera.porcentajeConBeca)}</strong>
-      </span>
-      <span>
         % cobertura: <strong>{formatPorcentaje(carrera.porcentajeCobertura)}</strong>
       </span>
     </span>
@@ -101,21 +147,32 @@ const renderTotal = (carrera) => (
 );
 
 /**
- * Envuelve cada columna base para que las filas de grupo/total ocupen el
- * ancho completo (primera columna) y se oculten en el resto. El colSpan se
- * fija por `onCell` (no devolviendo `props` desde `render`, deprecado en AntD
- * por el bug de render que produce celdas superpuestas). Las filas de
- * estudiante usan el `render` original; la columna Nº usa el contador por
- * paralelo (`__nro`), no el índice global de la tabla aplanada.
+ * Envuelve cada columna base para que las filas de grupo ocupen el ancho
+ * completo (primera columna) y se oculten en el resto. El colSpan se fija por
+ * `onCell` (no devolviendo `props` desde `render`, deprecado en AntD por el
+ * bug de render que produce celdas superpuestas). Las filas de estudiante
+ * usan el `render` original; la columna Nº usa el contador por paralelo
+ * (`__nro`), no el índice global de la tabla aplanada.
+ *
+ * La fila de TOTALES fusiona solo las columnas de identificación (hasta antes
+ * del primer tramo/aporte base, `labelColsCount`); las columnas sumables
+ * (tramo/aporte base) no se fusionan: muestran su propia sumatoria en Bs.
  */
-const withGroupRows = (columns, totalLeafCols) =>
-  columns.map((col, colIdx) => {
+const withGroupRows = (columns, totalLeafCols) => {
+  const firstSummableIdx = columns.findIndex(isSummableColumn);
+  const labelColsCount = firstSummableIdx === -1 ? columns.length : firstSummableIdx;
+
+  return columns.map((col, colIdx) => {
     const isFirst = colIdx === 0;
+    const summable = isSummableColumn(col);
     return {
       ...col,
       onCell: (record) => {
-        if (record.__tipo === 'grupo' || record.__tipo === 'total') {
+        if (record.__tipo === 'grupo') {
           return { colSpan: isFirst ? totalLeafCols : 0 };
+        }
+        if (record.__tipo === 'total' && !summable) {
+          return { colSpan: isFirst ? labelColsCount : 0 };
         }
         return col.onCell ? col.onCell(record) : {};
       },
@@ -124,6 +181,7 @@ const withGroupRows = (columns, totalLeafCols) =>
           return isFirst ? renderGrupo(record.paralelo) : null;
         }
         if (record.__tipo === 'total') {
+          if (summable) return `${formatBs(record.totalesColumnas?.[col.key])} Bs`;
           return isFirst ? renderTotal(record.carrera) : null;
         }
         if (col.key === 'nro') return record.__nro;
@@ -131,12 +189,13 @@ const withGroupRows = (columns, totalLeafCols) =>
       },
     };
   });
+};
 
 const BecasCarreraSection = ({ carrera, columns }) => {
   if (!carrera) return null;
 
-  const rows = buildRows(carrera);
   const totalLeafCols = columns.length;
+  const rows = buildRows(carrera, columns);
   const wrappedColumns = withGroupRows(columns, totalLeafCols);
 
   return (

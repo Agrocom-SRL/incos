@@ -10,7 +10,9 @@ import {
  * Representa la bitácora del ciclo de vida operativo de una matrícula de materia.
  *
  * Mapeo principal:
- * - subjectEnrollmentId → matricula_materia_id
+ * - subjectEnrollmentId → matricula_materia_id (NULL si la materia no se cursa)
+ * - enrollmentId        → inscripcion_id (ancla alternativa sin matrícula)
+ * - planSubjectId       → asignatura_plan_id (ancla alternativa sin matrícula)
  * - stateType           → tipo_estado
  * (Los intentos académicos enlazan vía nivelaciones.historial_matricula_id → esta fila)
  * - resultingGrade      → nota_resultante
@@ -30,6 +32,20 @@ export class SubjectEnrollmentHistory extends BaseEntity {
                 data.subjectEnrollmentId ??
                 data.enrollmentSubjectId ??
                 data.matriculaMateriaId ??
+                null;
+        }
+
+        if (has('enrollmentId') || has('inscripcionId')) {
+            this.enrollmentId =
+                data.enrollmentId ??
+                data.inscripcionId ??
+                null;
+        }
+
+        if (has('planSubjectId') || has('asignaturaPlanId')) {
+            this.planSubjectId =
+                data.planSubjectId ??
+                data.asignaturaPlanId ??
                 null;
         }
 
@@ -141,6 +157,10 @@ export class SubjectEnrollmentHistory extends BaseEntity {
         return this.stateType === TIPOS_ESTADO_HISTORIAL_MATRICULA.HOMOLOGACION;
     }
 
+    isReincorporation() {
+        return this.stateType === TIPOS_ESTADO_HISTORIAL_MATRICULA.REINCORPORACION;
+    }
+
     isArticle18() {
         return this.stateType === TIPOS_ESTADO_HISTORIAL_MATRICULA.ARTICULO_18;
     }
@@ -154,15 +174,19 @@ export class SubjectEnrollmentHistory extends BaseEntity {
     }
 
     isAdministrativeGradeState() {
-        return this.isAbandonment() || this.isWithdrawn() || this.isArticle18();
-    }
-
-    isAcademicAttempt() {
-        return this.isLeveling() || this.isAnnualRecovery();
+        return this.isAbandonment() || this.isWithdrawn();
     }
 
     /**
-     * nota_resultante solo aplica para ABANDONO, RETIRADO o ARTICULO_18.
+     * ARTICULO_18 es un intento académico (examen de nivelación en los libros
+     * reales, «NIVELA ART. 18»), no una decisión administrativa con nota forzada.
+     */
+    isAcademicAttempt() {
+        return this.isLeveling() || this.isAnnualRecovery() || this.isArticle18();
+    }
+
+    /**
+     * nota_resultante solo aplica para ABANDONO o RETIRADO.
      */
     canUseDirectResultingGrade() {
         return this.isAdministrativeGradeState();
@@ -184,7 +208,7 @@ export class SubjectEnrollmentHistory extends BaseEntity {
 
         if (this.hasResultingGrade() && !this.canUseDirectResultingGrade()) {
             errors.push(
-                'notaResultante solo debe usarse para ABANDONO, RETIRADO o ARTICULO_18.'
+                'notaResultante solo debe usarse para ABANDONO o RETIRADO.'
             );
         }
 
@@ -210,31 +234,39 @@ export class SubjectEnrollmentHistory extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('subjectEnrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'subjectEnrollmentId')) {
             plainObject.subjectEnrollmentId = this.subjectEnrollmentId;
         }
 
-        if (this.hasOwnProperty('stateType')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'enrollmentId')) {
+            plainObject.enrollmentId = this.enrollmentId;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this, 'planSubjectId')) {
+            plainObject.planSubjectId = this.planSubjectId;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this, 'stateType')) {
             plainObject.stateType = this.stateType;
         }
 
-        if (this.hasOwnProperty('transitionDate')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'transitionDate')) {
             plainObject.transitionDate = this.transitionDate;
         }
 
-        if (this.hasOwnProperty('resultingGrade')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'resultingGrade')) {
             plainObject.resultingGrade = this.resultingGrade;
         }
 
-        if (this.hasOwnProperty('forcedGrade')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'forcedGrade')) {
             plainObject.forcedGrade = this.forcedGrade;
         }
 
-        if (this.hasOwnProperty('observations')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'observations')) {
             plainObject.observations = this.observations;
         }
 
-        if (this.hasOwnProperty('current')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'current')) {
             plainObject.current = this.current;
         }
 

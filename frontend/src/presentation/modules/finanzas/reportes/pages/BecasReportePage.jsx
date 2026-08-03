@@ -91,7 +91,18 @@ const BecasReportePage = () => {
     catalogoResumen,
   } = useBecasReportePage();
 
-  const estudianteColumns = useMemo(() => createBecasEstudianteColumns(), []);
+  // Las columnas de tramo del detalle usan el CATÁLOGO COMPLETO (25/50/75/100,
+  // usados o no), no `porcentajes` (solo los tramos con becados en esta
+  // gestión) — así una columna no "desaparece" si nadie la tiene asignada.
+  const catalogoPorcentajes = useMemo(
+    () => [...new Set((catalogo || []).map((item) => Number(item.porcentaje)))].sort((a, b) => a - b),
+    [catalogo],
+  );
+
+  const estudianteColumns = useMemo(
+    () => createBecasEstudianteColumns(catalogoPorcentajes),
+    [catalogoPorcentajes],
+  );
 
   const tabItems = useMemo(
     () =>

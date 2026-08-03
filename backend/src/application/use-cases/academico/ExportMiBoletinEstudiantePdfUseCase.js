@@ -44,10 +44,11 @@ export class ExportMiBoletinEstudiantePdfUseCase {
   }
 
   /**
-   * @param {{ usuarioId: number }} input
+   * @param {{ usuarioId: number, bimestre?: number|string|null }} input - `bimestre`
+   *   (1..4) opcional: boletín BIMESTRAL; ausente → boletín ANUAL (sin cambios).
    * @returns {Promise<{ buffer: Buffer, fileName: string, mimeType: string }>}
    */
-  async execute({ usuarioId }) {
+  async execute({ usuarioId, bimestre = null }) {
     const estudianteId = await resolveEstudianteIdForUsuario({
       studentRepository: this.studentRepository,
       userRepository: this.userRepository,
@@ -69,9 +70,14 @@ export class ExportMiBoletinEstudiantePdfUseCase {
       usuarioId,
       estudianteId,
       paraleloGestionId,
+      bimestre: bimestre ?? null,
     });
 
-    return this.exportBoletinEstudiantePdfUseCase.execute({ paraleloGestionId, estudianteId });
+    return this.exportBoletinEstudiantePdfUseCase.execute({
+      paraleloGestionId,
+      estudianteId,
+      bimestre,
+    });
   }
 }
 
