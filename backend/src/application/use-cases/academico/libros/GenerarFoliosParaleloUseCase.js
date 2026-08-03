@@ -13,8 +13,8 @@ import { generarParaUnParalelo } from './helpers/generarFoliosParaleloHelper.js'
  * (generación masiva de toda la gestión). Ver ese helper para el detalle del
  * algoritmo — comportamiento idéntico al de antes de la extracción.
  *
- * Rechazos: libro CERRADO, paralelo de otra carrera/gestión, paralelo sin
- * estudiantes y paralelo con folios vigentes (se anulan antes de regenerar).
+ * Rechazos: libro CERRADO, paralelo de otra gestión, paralelo sin estudiantes
+ * y paralelo con folios vigentes (se anulan antes de regenerar).
  */
 export class GenerarFoliosParaleloUseCase {
   constructor({
@@ -51,19 +51,16 @@ export class GenerarFoliosParaleloUseCase {
       throw new ValidationError('El libro está cerrado: no admite nuevos folios');
     }
 
-    // El paralelo debe pertenecer a la carrera+gestión del libro.
-    const paralelos = await this.libroRegistroViewRepository.listarParalelosParaLibro({
-      carreraId: libro.carreraId,
-      gestionId: libro.gestionId,
-      libroId,
-    });
+    // El paralelo debe pertenecer a la GESTIÓN del libro.
+    const paralelos = await this.libroRegistroViewRepository.listarParalelosPorGestion(
+      libro.gestionId,
+      { libroId },
+    );
     const paralelo = paralelos.find(
       (p) => Number(p.paralelo_gestion_id) === paraleloGestionId,
     );
     if (!paralelo) {
-      throw new ValidationError(
-        'El paralelo no pertenece a la carrera y gestión de este libro',
-      );
+      throw new ValidationError('El paralelo no pertenece a la gestión de este libro');
     }
 
     const foliosVigentes = await this.libroRegistroRepository.countFoliosVigentesByParalelo(

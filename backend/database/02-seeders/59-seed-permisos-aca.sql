@@ -40,7 +40,8 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 -- Avance académico) con permiso propio — roles más restringidos que el avance.
 ('aca_desercion', 'Seguimiento académico · deserción', 'ACADEMICO', 21, 1, NOW(), NOW()),
 -- 2026-07-30 (Fase 4, schema 25): libros físicos del centralizador (LIBRO N° /
--- FOLIO N°), un libro por carrera y gestión con folios por paralelo.
+-- FOLIO N°), un libro por gestión (compartido por las 3 carreras) con folios
+-- por paralelo.
 ('aca_libros', 'Libros de registro', 'ACADEMICO', 22, 1, NOW(), NOW()),
 -- 2026-07-31: acompañamiento pedagógico (alertas de riesgo + sesiones de
 -- refuerzo + panel) reclasificado desde el módulo Titulación/TUT — sus datos

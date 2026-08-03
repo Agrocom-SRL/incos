@@ -11,7 +11,6 @@ export class ListLibrosController {
   async handle(req, res, next) {
     try {
       const resultado = await this.listLibrosUseCase.execute({
-        carreraId: req.query.carreraId,
         gestionId: req.query.gestionId,
       });
       return this.responseFormatter._success(

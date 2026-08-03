@@ -32,8 +32,6 @@ const LibrosListPage = () => {
     cerrarModal,
     handleAbrirLibro,
     abriendo,
-    carreras,
-    loadingCarreras,
     gestiones,
     loadingGestiones,
 
@@ -75,8 +73,9 @@ const LibrosListPage = () => {
           <header className="cfg-academico-workspace__header">
             <ListPanelHeader title="Libros de registro" actions={listaAcciones} />
             <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-              Libros físicos del centralizador de calificaciones: uno por carrera y gestión,
-              con sus folios (páginas de hasta 10 estudiantes) generados por paralelo.
+              Libros físicos del centralizador de calificaciones: uno por gestión, compartido
+              por las 3 carreras del instituto, con sus folios (páginas de hasta 10 estudiantes)
+              generados por paralelo.
             </Paragraph>
           </header>
           <div className="cfg-academico-tab-panel">
@@ -87,7 +86,7 @@ const LibrosListPage = () => {
               error={error}
               searchText={searchText}
               onSearchChange={handleSearchChange}
-              searchPlaceholder="Buscar por carrera, gestión o código de registro..."
+              searchPlaceholder="Buscar por número de libro, gestión o código de registro..."
               columns={tableColumns}
               rowKey="id"
               searchColSpan={10}
@@ -102,9 +101,8 @@ const LibrosListPage = () => {
 
       <AbrirLibroModal
         open={modalOpen}
-        carreras={carreras}
         gestiones={gestiones}
-        loadingCatalogos={loadingCarreras || loadingGestiones}
+        loadingCatalogos={loadingGestiones}
         guardando={abriendo}
         onGuardar={handleAbrirLibro}
         onCancelar={cerrarModal}

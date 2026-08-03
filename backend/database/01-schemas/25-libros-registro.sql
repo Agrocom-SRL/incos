@@ -2,22 +2,30 @@
 -- MÓDULO DE LIBROS DE REGISTRO ACADÉMICO (CENTRALIZADOR DE CALIFICACIONES)
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 3 Tablas: libros_registro, folios_libro, folio_estudiantes
--- Base documental: "LIBRO LLENADO SISTEMAS 11 dic 2025" (libro físico real
--- de la carrera de Sistemas, formato oficial del Ministerio de Educación),
--- fotos del centralizador impreso y el "HISTORIAL ACADÉMICO" de estudiantes
--- (OtraDocumentacion INCOS.pdf). Un LIBRO es por CARRERA y por GESTIÓN: se
--- abre un número de libro nuevo cada gestión (evidencia cruzada: el
--- historial de una estudiante de Sistemas muestra "1° AÑO N° LIBRO 12" y
--- "2° AÑO N° LIBRO 13"; un folio de muestra de TERCERO-PARALELO A Sistemas
--- gestión 2024 usa exactamente el LIBRO N° 13; y el libro 14 corresponde a
--- gestión 2025 — la secuencia 12→13→14 avanza un número por gestión). Cada
--- libro agrupa TODOS los años/paralelos de la carrera en esa gestión (el
--- libro 14/2025 trae folios de 1ro, 2do y 3ro de Sistemas). El folio inicial
--- de un libro puede no ser 1 (el libro 14 arranca en folio 56 para los
--- paralelos revisados: hay turnos/paralelos u otros lotes de esa misma
--- gestión, fuera del recorte de datos revisado, que ocupan folios previos).
+-- Base documental: "LIBRO LLENADO SISTEMAS 11 dic 2025" (libro físico real,
+-- formato oficial del Ministerio de Educación), fotos del centralizador
+-- impreso y el "HISTORIAL ACADÉMICO" de estudiantes (OtraDocumentacion
+-- INCOS.pdf). Un LIBRO es por GESTIÓN, COMPARTIDO por las 3 carreras del
+-- instituto (Contaduría General, Administración de Empresas, Sistemas
+-- Informáticos): se abre un número de libro nuevo cada gestión (evidencia
+-- cruzada: el historial de una estudiante de Sistemas muestra "1° AÑO N°
+-- LIBRO 12" y "2° AÑO N° LIBRO 13"; un folio de muestra de TERCERO-PARALELO A
+-- Sistemas gestión 2024 usa exactamente el LIBRO N° 13; y el libro 14
+-- corresponde a gestión 2025 — la secuencia 12→13→14 avanza un número por
+-- gestión, no por carrera). Los folios son CORRELATIVOS dentro del libro y
+-- CRUZAN de una carrera a la siguiente en el orden canónico institucional
+-- (Contaduría → Administración → Informática, `ordenCarreraLibro`): por eso
+-- el libro 14/2025 arranca sus folios de Sistemas (última carrera del orden)
+-- en el folio 56 — los folios 1-55 los consumieron Contaduría y
+-- Administración en ESE MISMO libro físico, no en libros aparte. Corregido
+-- 2026-08-03: el schema anterior modelaba una fila por carrera+gestión (3
+-- filas fingiendo ser 1 libro); la numeración correlativa cruzada ya se
+-- había parcheado a nivel de query (docs/plan/libros-registro-plan-desarrollo.md
+-- §0.0) pero el libro seguía partido en 3 entidades sin una ficha única.
 -- Un FOLIO = una página del CENTRALIZADOR DE CALIFICACIONES de un paralelo
--- (curso-paralelo-gestión), con hasta 10 estudiantes por página.
+-- (curso-paralelo-gestión) de CUALQUIERA de las 3 carreras, con hasta 10
+-- estudiantes por página; la carrera del folio se deriva de su
+-- `paralelo_gestion_id`, no del libro.
 -- Las notas por materia NO se duplican aquí: las provee el dominio
 -- calificaciones (vista 135, centralizador por paralelo, long-format) — el
 -- folio solo congela ESTADO y OBSERVACIONES por estudiante, tal como en el
@@ -49,8 +57,7 @@ CREATE TABLE libros_registro (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     numero_libro INT NOT NULL COMMENT 'Número del libro físico (cabecera LIBRO N° del centralizador). Correlativo institucional: avanza un número cada gestión (ej: Libro 12→gestión 2023, 13→2024, 14→2025)',
-    carrera_id INT NULL COMMENT 'Carrera del libro (referencia a carreras). El libro real es por carrera (ej: Sistemas Informáticos)',
-    gestion_id INT NULL COMMENT 'Gestión académica del libro (referencia a gestiones). Un libro nuevo se abre cada gestión para la carrera, agrupando todos sus años/paralelos',
+    gestion_id INT NULL COMMENT 'Gestión académica del libro (referencia a gestiones). Un libro nuevo se abre cada gestión, compartido por las 3 carreras del instituto',
     codigo_registro VARCHAR(20) NULL COMMENT 'Código de Registro institucional impreso en cada página (ej: 81981609)',
 
     folio_inicial INT NOT NULL DEFAULT 1 COMMENT 'Primer folio del libro. No siempre es 1: puede continuar la numeración de turnos/lotes previos de la misma gestión (ej: libro 14/2025 arranca en folio 56 para los paralelos revisados)',
@@ -70,19 +77,16 @@ CREATE TABLE libros_registro (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
-    FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
 
-    UNIQUE INDEX uk_numero_carrera (numero_libro, carrera_id) COMMENT 'Un número de libro por carrera',
-    UNIQUE INDEX uk_carrera_gestion (carrera_id, gestion_id) COMMENT 'Un solo libro por carrera y gestión',
-    INDEX idx_carrera_id (carrera_id) COMMENT 'Libros de una carrera',
-    INDEX idx_gestion_id (gestion_id) COMMENT 'Libro de una carrera en una gestión',
+    UNIQUE INDEX uk_numero_libro (numero_libro) COMMENT 'Un número de libro físico no se repite en el instituto',
+    UNIQUE INDEX uk_gestion (gestion_id) COMMENT 'Un solo libro por gestión, compartido por las 3 carreras',
     INDEX idx_estado (estado) COMMENT 'Filtrado por libros abiertos',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Libros físicos del centralizador de calificaciones: uno por carrera y por gestión (cabecera real: LIBRO N° 14, gestión 2025, Código de Registro 81981609; secuencia 12→13→14 confirmada contra el historial académico de estudiantes).';
+COMMENT='Libros físicos del centralizador de calificaciones: uno por gestión, compartido por las 3 carreras del instituto (cabecera real: LIBRO N° 14, gestión 2025, Código de Registro 81981609; secuencia 12→13→14 confirmada contra el historial académico de estudiantes).';
 
 -- ============================================
 -- TABLA: folios_libro

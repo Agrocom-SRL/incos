@@ -1,12 +1,12 @@
 /**
  * Organismo: modal "Abrir libro" (alta del libro de registro — P1 · LibrosListPage).
  *
- * Modal AntD6 (`open`) con un Form: carrera + gestión (selects), número de
- * libro (obligatorio, SIN auto-sugerencia — se ingresa cada gestión y en la
- * práctica es el mismo número para todas las carreras), código de registro
- * (opcional, prellenado con la sugerencia institucional 81981609), folio
- * inicial (arranque histórico del libro) y observaciones. `numeroFolio` NO se
- * pide aquí: lo asigna el backend por gestión al generar folios.
+ * Modal AntD6 (`open`) con un Form: gestión (select), número de libro
+ * (obligatorio, SIN auto-sugerencia — un único libro por gestión, compartido
+ * por las 3 carreras del instituto), código de registro (opcional, prellenado
+ * con la sugerencia institucional 81981609), folio inicial (arranque
+ * histórico del libro) y observaciones. `numeroFolio` NO se pide aquí: lo
+ * asigna el backend por gestión al generar folios.
  */
 
 import { useEffect } from 'react';
@@ -19,7 +19,6 @@ const { TextArea } = Input;
 
 const AbrirLibroModal = ({
   open,
-  carreras = [],
   gestiones = [],
   loadingCatalogos = false,
   guardando = false,
@@ -31,7 +30,6 @@ const AbrirLibroModal = ({
   useEffect(() => {
     if (!open) return;
     form.setFieldsValue({
-      carreraId: undefined,
       gestionId: undefined,
       numeroLibro: undefined,
       codigoRegistro: CODIGO_REGISTRO_SUGERIDO,
@@ -41,10 +39,6 @@ const AbrirLibroModal = ({
     });
   }, [open, form]);
 
-  const carreraOptions = carreras.map((carrera) => ({
-    value: carrera.id,
-    label: carrera.nombre,
-  }));
   const gestionOptions = gestiones.map((gestion) => ({
     value: gestion.id,
     label: gestion.nombre || (gestion.anio != null ? `Gestión ${gestion.anio}` : `Gestión ${gestion.id}`),
@@ -54,7 +48,6 @@ const AbrirLibroModal = ({
 
   const handleFinish = (values) => {
     onGuardar?.({
-      carreraId: values.carreraId,
       gestionId: values.gestionId,
       numeroLibro: values.numeroLibro,
       codigoRegistro: values.codigoRegistro?.trim() || undefined,
@@ -81,23 +74,6 @@ const AbrirLibroModal = ({
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <Form.Item
-              name="carreraId"
-              label="Carrera"
-              rules={[{ required: true, message: 'Seleccione la carrera' }]}
-            >
-              <Select
-                size="large"
-                loading={loadingCatalogos}
-                placeholder="Seleccione una carrera"
-                options={carreraOptions}
-                showSearch
-                optionFilterProp="label"
-              />
-            </Form.Item>
-          </Col>
-
-          <Col xs={24} sm={12}>
-            <Form.Item
               name="gestionId"
               label="Gestión"
               rules={[{ required: true, message: 'Seleccione la gestión' }]}
@@ -117,7 +93,7 @@ const AbrirLibroModal = ({
             <Form.Item
               name="numeroLibro"
               label="Número de libro"
-              tooltip="Se ingresa cada gestión: en la práctica es el mismo número para todas las carreras."
+              tooltip="Número del libro físico de esta gestión, compartido por las 3 carreras del instituto."
               rules={[{ required: true, message: 'Ingrese el número de libro' }]}
             >
               <InputNumber size="large" min={1} style={{ width: '100%' }} placeholder="Ej. 14" />

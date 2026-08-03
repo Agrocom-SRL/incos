@@ -1,5 +1,5 @@
 import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
-import { ESTADOS_FOLIO } from '../../../../domain/constants/libros.constants.js';
+import { ESTADOS_FOLIO, ordenCarreraLibro } from '../../../../domain/constants/libros.constants.js';
 import { sanitizarFilePart } from '../../../utils/centralizadorExcelDatos.js';
 import { construirHojaParalelo } from '../../../utils/libroFolioExcelDatos.js';
 import { calcularEstadisticasParalelo } from './helpers/estadisticasParaleloHelper.js';
@@ -7,7 +7,10 @@ import { calcularEstadisticasParalelo } from './helpers/estadisticasParaleloHelp
 /**
  * Exporta el libro de registro COMPLETO a Excel (GET /libros/:id/export):
  * una hoja por paralelo con sus folios apilados verticalmente — réplica del
- * libro físico "LIBRO LLENADO SISTEMAS 11 dic 2025".
+ * libro físico "LIBRO LLENADO SISTEMAS 11 dic 2025". El libro es de la
+ * gestión completa (3 carreras): las hojas se ordenan primero por carrera en
+ * el orden canónico institucional (`ordenCarreraLibro`), luego periodo, luego
+ * paralelo.
  * Permiso: academico.libro · EXPORTAR.
  *
  * Los folios ANULADOS no se exportan: su numeración queda como hueco (como en
@@ -47,7 +50,8 @@ export class ExportLibroExcelUseCase {
       throw new ValidationError('El libro aún no tiene folios generados para exportar');
     }
 
-    // Una hoja por paralelo (orden: curso/periodo, luego paralelo).
+    // Una hoja por paralelo (orden: carrera canónica, luego curso/periodo,
+    // luego paralelo — el libro trae hojas de las 3 carreras).
     const porParalelo = new Map();
     for (const folio of exportables) {
       const lista = porParalelo.get(folio.paralelo_gestion_id) ?? [];
@@ -58,6 +62,7 @@ export class ExportLibroExcelUseCase {
       const pa = a[0];
       const pb = b[0];
       return (
+        ordenCarreraLibro(pa.carrera_codigo) - ordenCarreraLibro(pb.carrera_codigo) ||
         (pa.periodo_numero ?? 0) - (pb.periodo_numero ?? 0) ||
         String(pa.paralelo_nombre ?? '').localeCompare(String(pb.paralelo_nombre ?? ''))
       );
@@ -98,15 +103,14 @@ export class ExportLibroExcelUseCase {
       libro: {
         numeroLibro: libroRow.numero_libro,
         codigoRegistro: libroRow.codigo_registro ?? '',
-        carreraNombre: libroRow.carrera_nombre ?? '',
         gestionAnio: libroRow.gestion_anio ?? '',
       },
       hojas,
     });
 
     const fileName = `Libro_${libroRow.numero_libro}_${sanitizarFilePart(
-      libroRow.carrera_codigo || libroRow.carrera_nombre || '',
-    )}_${sanitizarFilePart(String(libroRow.gestion_anio ?? ''))}.xlsx`;
+      String(libroRow.gestion_anio ?? ''),
+    )}.xlsx`;
 
     this.logger?.info('[Libros] Libro exportado a Excel', {
       libroId,

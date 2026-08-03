@@ -10,23 +10,19 @@ import { ESTADOS_FOLIO, ordenCarreraLibro } from '../../../domain/constants/libr
  * - 175 vista_libros_registro_listado        → grano libro (+agregados de folios)
  * - 176 vista_base_libro_folio_fila          → grano folio (+contexto vista 127)
  * - 177 vista_base_libro_paralelo_estudiante → nómina estudiante × paralelo_gestion
- * - 127 vista_base_paralelo_gestion_ficha    → paralelos de la carrera+gestión
+ * - 127 vista_base_paralelo_gestion_ficha    → paralelos de la gestión (3 carreras)
  *   (reutilizada tal cual para el apoyo del generador; sin vista nueva).
  */
 export class LibroRegistroViewRepository extends ILibroRegistroViewRepository {
   /**
    * Libros de registro (vista 175).
-   * @param {Object} [filtros] - { carreraId?, gestionId? }
+   * @param {Object} [filtros] - { gestionId? }
    * @returns {Promise<Array<Object>>}
    */
   async listarLibros(filtros = {}) {
     const whereConditions = [];
     const replacements = [];
 
-    if (filtros.carreraId) {
-      whereConditions.push('carrera_id = ?');
-      replacements.push(filtros.carreraId);
-    }
     if (filtros.gestionId) {
       whereConditions.push('gestion_id = ?');
       replacements.push(filtros.gestionId);
@@ -38,7 +34,7 @@ export class LibroRegistroViewRepository extends ILibroRegistroViewRepository {
       SELECT *
       FROM vista_libros_registro_listado
       ${whereClause}
-      ORDER BY gestion_anio DESC, carrera_nombre ASC, numero_libro DESC
+      ORDER BY gestion_anio DESC, numero_libro DESC
       `,
       { replacements, type: sequelize.QueryTypes.SELECT },
     );
@@ -124,35 +120,27 @@ export class LibroRegistroViewRepository extends ILibroRegistroViewRepository {
   }
 
   /**
-   * Paralelos de la carrera+gestión de un libro (vista 127) con el conteo de
-   * estudiantes de la nómina (vista 177) y de folios vigentes ya generados —
-   * apoyo del generador (GET /libros/:id/paralelos). Reutiliza la 127 tal cual
-   * en vez de crear una vista nueva (consumidor único y acotado).
+   * TODOS los paralelos de una gestión (las 3 carreras; vista 127), con el
+   * conteo de estudiantes de la nómina (vista 177) y, si se pasa `libroId`, el
+   * conteo de folios vigentes ya generados en ESE libro. Único método para las
+   * dos formas de consumo (antes eran dos SELECTs casi idénticos sobre la
+   * misma vista base, fusionados 2026-08-03): generación MASIVA de folios de
+   * la gestión (POST /libros/gestiones/:gestionId/folios, sin `libroId`) y
+   * paralelos candidatos / generación de UN paralelo de un libro puntual
+   * (GET /libros/:id/paralelos, POST /libros/:id/folios — con `libroId`).
+   * Reutiliza la 127 tal cual en vez de crear una vista nueva.
    *
-   * @param {Object} params - { carreraId, gestionId, libroId }
+   * Orden en MEMORIA (no en SQL) por `ordenCarreraLibro` (Contaduría →
+   * Administración → Informática, NUNCA por id de carrera) → periodoNumero →
+   * paraleloNombre (alfabético A, B, C, D).
+   *
+   * @param {number} gestionId
+   * @param {Object} [opts] - { libroId? }
    * @returns {Promise<Array<Object>>}
    */
-  async listarParalelosParaLibro({ carreraId, gestionId, libroId }) {
-    return sequelize.query(
-      `
-      SELECT
-        v127.id            AS paralelo_gestion_id,
-        v127.paraleloNombre AS paralelo_nombre,
-        v127.turno          AS turno,
-        v127.estado         AS paralelo_estado,
-        v127.periodoId      AS periodo_id,
-        v127.periodoNumero  AS periodo_numero,
-        v127.periodoNombre  AS periodo_nombre,
-        v127.carreraId      AS carrera_id,
-        v127.carreraNombre  AS carrera_nombre,
-        v127.gestionId      AS gestion_id,
-        v127.gestionAnio    AS gestion_anio,
-        (
-          SELECT COUNT(*)
-          FROM vista_base_libro_paralelo_estudiante n
-          WHERE n.paralelo_gestion_id = v127.id
-        ) AS total_estudiantes,
-        (
+  async listarParalelosPorGestion(gestionId, { libroId } = {}) {
+    const foliosVigentesSelect = libroId
+      ? `,(
           SELECT COUNT(*)
           FROM folios_libro fl
           WHERE fl.libro_id = ?
@@ -160,32 +148,12 @@ export class LibroRegistroViewRepository extends ILibroRegistroViewRepository {
             AND fl.deleted_at IS NULL
             AND fl.activo = TRUE
             AND fl.estado <> ?
-        ) AS folios_vigentes
-      FROM vista_base_paralelo_gestion_ficha v127
-      WHERE v127.carreraId = ?
-        AND v127.gestionId = ?
-        AND v127.deletedAt IS NULL
-        AND v127.activo = TRUE
-      ORDER BY v127.periodoNumero ASC, v127.paraleloNombre ASC
-      `,
-      {
-        replacements: [libroId, ESTADOS_FOLIO.ANULADO, carreraId, gestionId],
-        type: sequelize.QueryTypes.SELECT,
-      },
-    );
-  }
+        ) AS folios_vigentes`
+      : '';
+    const replacements = libroId
+      ? [libroId, ESTADOS_FOLIO.ANULADO, gestionId]
+      : [gestionId];
 
-  /**
-   * TODOS los paralelos de una gestión (todas las carreras; vista 127) —
-   * apoyo del generador MASIVO de folios (POST /libros/gestiones/:gestionId/folios).
-   * Orden en MEMORIA (no en SQL) por `ordenCarreraLibro` (Contaduría →
-   * Administración → Informática, NUNCA por id de carrera) → periodoNumero →
-   * paraleloNombre (alfabético A, B, C, D).
-   *
-   * @param {number} gestionId
-   * @returns {Promise<Array<Object>>}
-   */
-  async listarParalelosPorGestion(gestionId) {
     const rows = await sequelize.query(
       `
       SELECT
@@ -200,13 +168,19 @@ export class LibroRegistroViewRepository extends ILibroRegistroViewRepository {
         v127.carreraNombre  AS carrera_nombre,
         v127.carreraCodigo  AS carrera_codigo,
         v127.gestionId      AS gestion_id,
-        v127.gestionAnio    AS gestion_anio
+        v127.gestionAnio    AS gestion_anio,
+        (
+          SELECT COUNT(*)
+          FROM vista_base_libro_paralelo_estudiante n
+          WHERE n.paralelo_gestion_id = v127.id
+        ) AS total_estudiantes
+        ${foliosVigentesSelect}
       FROM vista_base_paralelo_gestion_ficha v127
       WHERE v127.gestionId = ?
         AND v127.deletedAt IS NULL
         AND v127.activo = TRUE
       `,
-      { replacements: [gestionId], type: sequelize.QueryTypes.SELECT },
+      { replacements, type: sequelize.QueryTypes.SELECT },
     );
 
     return rows.sort((a, b) => {

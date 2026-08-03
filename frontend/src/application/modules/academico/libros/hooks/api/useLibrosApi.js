@@ -1,6 +1,6 @@
 /**
  * Carga el listado de libros de registro desde el API (vía caso de uso).
- * GET /v1/libros?carreraId&gestionId
+ * GET /v1/libros?gestionId
  */
 
 import { createApiHook } from '@application/utils';

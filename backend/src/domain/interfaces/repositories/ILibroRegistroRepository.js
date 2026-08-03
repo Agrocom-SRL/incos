@@ -10,10 +10,11 @@ import { IRepository } from './IRepository.js';
  * viven en ILibroRegistroViewRepository (vistas 175/176/177).
  *
  * Métodos adicionales al contrato base:
- * - findByCarreraGestion(carreraId, gestionId): UNIQUE un libro por carrera+gestión.
- * - getMaxNumeroFolioByGestion(gestionId, options?): máximo numero_folio de la
- *   GESTIÓN completa cruzando todas las carreras (el contador de folios es
- *   compartido por gestión: 1..N de corrido entre libros).
+ * - findByGestion(gestionId): UNIQUE un libro por gestión (uk_gestion),
+ *   compartido por las 3 carreras del instituto.
+ * - getMaxNumeroFolioByGestion(gestionId, options?): máximo numero_folio del
+ *   libro de la gestión (folios de las 3 carreras comparten el mismo libro,
+ *   por eso comparten también el contador correlativo 1..N).
  * - countFoliosVigentesByParalelo(libroId, paraleloGestionId): folios no ANULADOS
  *   de un paralelo (rechazo de doble generación).
  * - crearFoliosConEstudiantes({ libroId, gestionId, folioInicial, folios }, userId):

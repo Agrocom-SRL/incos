@@ -63,11 +63,22 @@ export function formatCursoLibro({ periodoNumero, periodoNombre, paraleloNombre 
   return `${ordinal} - PARALELO ${letra}`.trim();
 }
 
-/** Nombre de hoja corto por paralelo ("TERCERO A"), saneado/único por el generador. */
-export function formatNombreHojaParalelo({ periodoNumero, periodoNombre, paraleloNombre }) {
+/**
+ * Nombre de hoja corto por paralelo, saneado/único por el generador. El libro
+ * es de la gestión completa (3 carreras): se prefija con el código de carrera
+ * ("SIS-INF TERCERO A") para no confundir paralelos homónimos de carreras
+ * distintas (ej. "TERCERO A" existe en Sistemas y en Contaduría).
+ */
+export function formatNombreHojaParalelo({
+  periodoNumero,
+  periodoNombre,
+  paraleloNombre,
+  carreraCodigo = null,
+}) {
   const ordinal = formatOrdinalPeriodo(periodoNumero, periodoNombre);
   const letra = formatLetraParalelo(paraleloNombre);
-  return `${ordinal} ${letra}`.trim();
+  const prefijo = carreraCodigo ? `${String(carreraCodigo).toUpperCase()} ` : '';
+  return `${prefijo}${ordinal} ${letra}`.trim();
 }
 
 /**
@@ -77,8 +88,9 @@ export function formatNombreHojaParalelo({ periodoNumero, periodoNombre, paralel
  *
  * @param {Object} params
  * @param {Object} [params.libroRow] - Cabecera del libro (vista 175) o
- *        equivalente mínimo: { numero_libro, codigo_registro, carrera_nombre,
- *        gestion_anio }. Si falta, se completa con el primer folio del grupo.
+ *        equivalente mínimo: { numero_libro, codigo_registro, gestion_anio }.
+ *        Si falta, se completa con el primer folio del grupo (la carrera
+ *        siempre sale del folio: `folioRow.carrera_nombre`, vía vista 176).
  * @param {Array<Object>} params.foliosParalelo - Filas de folio (vista 176)
  *        de UN MISMO paralelo, ya ordenadas por numero_folio.
  * @param {Array<Object>} params.filas135 - Filas de la vista 135 del paralelo
@@ -110,7 +122,7 @@ export function construirHojaParalelo({
         numeroFolio: folioRow.numero_folio,
         turno: folioRow.turno ?? '',
         gestionAnio: folioRow.gestion_anio ?? libroRow?.gestion_anio ?? '',
-        carrera: folioRow.carrera_nombre ?? libroRow?.carrera_nombre ?? '',
+        carrera: folioRow.carrera_nombre ?? '',
         curso: formatCursoLibro({
           periodoNumero: folioRow.periodo_numero,
           periodoNombre: folioRow.periodo_nombre,
@@ -131,6 +143,7 @@ export function construirHojaParalelo({
       periodoNumero: primero.periodo_numero,
       periodoNombre: primero.periodo_nombre,
       paraleloNombre: primero.paralelo_nombre,
+      carreraCodigo: primero.carrera_codigo,
     }),
     folios,
     estadisticas,

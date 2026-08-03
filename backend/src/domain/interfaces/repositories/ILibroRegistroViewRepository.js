@@ -17,8 +17,8 @@
  */
 export class ILibroRegistroViewRepository {
   /**
-   * Libros de registro (vista 175), filtrables por carrera/gestión.
-   * @param {Object} [filtros] - { carreraId?, gestionId? }
+   * Libros de registro (vista 175), filtrables por gestión.
+   * @param {Object} [filtros] - { gestionId? }
    * @returns {Promise<Array<Object>>}
    */
   // eslint-disable-next-line no-unused-vars
@@ -69,26 +69,20 @@ export class ILibroRegistroViewRepository {
   }
 
   /**
-   * Paralelos de la carrera+gestión de un libro (vista 127 + conteos de nómina
-   * 177 y de folios vigentes) — apoyo del generador de folios.
-   * @param {Object} params - { carreraId, gestionId, libroId }
-   * @returns {Promise<Array<Object>>}
-   */
-  // eslint-disable-next-line no-unused-vars
-  async listarParalelosParaLibro({ carreraId, gestionId, libroId }) {
-    throw new Error('Method listarParalelosParaLibro() must be implemented');
-  }
-
-  /**
-   * TODOS los paralelos de una gestión (todas las carreras; vista 127), en el
-   * orden canónico del documento oficial (ver `ordenCarreraLibro` del dominio)
-   * → periodo → paralelo alfabético — apoyo del generador MASIVO de folios de
-   * la gestión (POST /libros/gestiones/:gestionId/folios).
+   * TODOS los paralelos de una gestión (todas las carreras; vista 127), con el
+   * conteo de estudiantes de la nómina (vista 177), en el orden canónico del
+   * documento oficial (ver `ordenCarreraLibro` del dominio) → periodo →
+   * paralelo alfabético. Apoya tanto el generador MASIVO de folios de la
+   * gestión (POST /libros/gestiones/:gestionId/folios, sin `libroId`) como el
+   * generador de UN paralelo/listado de candidatos de un libro puntual
+   * (GET /libros/:id/paralelos, POST /libros/:id/folios — con `libroId`: suma
+   * el conteo de folios vigentes ya generados en ESE libro).
    * @param {number} gestionId
+   * @param {Object} [opts] - { libroId? }
    * @returns {Promise<Array<Object>>}
    */
   // eslint-disable-next-line no-unused-vars
-  async listarParalelosPorGestion(gestionId) {
+  async listarParalelosPorGestion(gestionId, opts = {}) {
     throw new Error('Method listarParalelosPorGestion() must be implemented');
   }
 

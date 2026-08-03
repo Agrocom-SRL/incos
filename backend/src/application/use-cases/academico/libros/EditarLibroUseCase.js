@@ -10,8 +10,8 @@ import { toLibroDTO } from '../../../mappers/academico/LibroRegistroPresentation
  * (estado CERRADO + fecha_cierre) y la reapertura administrativa.
  * Permiso: academico.libro · EDITAR.
  *
- * numero_libro / carrera / gestión NO se editan: identifican el libro físico
- * (UNIQUE carrera+gestión); un error de identidad se resuelve anulando folios
+ * numero_libro / gestión NO se editan: identifican el libro físico
+ * (UNIQUE gestión); un error de identidad se resuelve anulando folios
  * y abriendo el libro correcto.
  */
 export class EditarLibroUseCase {

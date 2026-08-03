@@ -6,15 +6,13 @@ import {
 import { toLibroDTO } from '../../../mappers/academico/LibroRegistroPresentationMapper.js';
 
 /**
- * Abre un libro de registro para una carrera y gestión (POST /libros).
- * Permiso: academico.libro · CREAR.
+ * Abre un libro de registro para una gestión (POST /libros), compartido por
+ * las 3 carreras del instituto. Permiso: academico.libro · CREAR.
  *
  * Reglas:
- * - UNIQUE un libro por carrera+gestión (uk_carrera_gestion).
- * - numero_libro es OBLIGATORIO y se ingresa cada gestión: en la práctica es el
- *   MISMO número para los libros de todas las carreras de esa gestión (ej.
- *   todas abren la gestión 2026 con el libro 15). No se auto-sugiere MAX+1 por
- *   carrera (daría números distintos por carrera).
+ * - UNIQUE un libro por gestión (uk_gestion).
+ * - numero_libro es OBLIGATORIO y se ingresa cada gestión (ej. la gestión 2026
+ *   abre con el libro 15). No se auto-sugiere MAX+1 en servidor.
  * - codigo_registro: el front lo prellena con 81981609 como sugerencia; si no
  *   llega, el backend usa ese default institucional.
  * - folio_inicial editable (default 1): arranque histórico (el libro 14 real
@@ -30,32 +28,24 @@ export class AbrirLibroUseCase {
   /**
    * @param {Object} params
    * @param {number} params.usuarioId
-   * @param {Object} params.body - { carreraId, gestionId, numeroLibro?,
+   * @param {Object} params.body - { gestionId, numeroLibro?,
    *   codigoRegistro?, folioInicial?, folioFinal?, fechaApertura?, observaciones? }
    * @returns {Promise<{libro: Object}>}
    */
   async execute({ usuarioId, body = {} }) {
-    const carreraId = Number(body.carreraId);
     const gestionId = Number(body.gestionId);
-    if (!Number.isFinite(carreraId) || carreraId < 1) {
-      throw new ValidationError('La carrera es obligatoria');
-    }
     if (!Number.isFinite(gestionId) || gestionId < 1) {
       throw new ValidationError('La gestión es obligatoria');
     }
 
-    const existente = await this.libroRegistroRepository.findByCarreraGestion(
-      carreraId,
-      gestionId,
-    );
+    const existente = await this.libroRegistroRepository.findByGestion(gestionId);
     if (existente) {
       throw new ValidationError(
-        `La carrera ya tiene el libro N° ${existente.numeroLibro} abierto para esta gestión`,
+        `La gestión ya tiene el libro N° ${existente.numeroLibro} abierto`,
       );
     }
 
-    // numero_libro se ingresa cada gestión (mismo número para todas las
-    // carreras de la gestión); no se auto-sugiere en servidor.
+    // numero_libro se ingresa cada gestión; no se auto-sugiere en servidor.
     const numeroLibro = Number(body.numeroLibro);
     if (!Number.isFinite(numeroLibro) || numeroLibro < 1) {
       throw new ValidationError('El número de libro es obligatorio');
@@ -78,7 +68,6 @@ export class AbrirLibroUseCase {
     const creado = await this.libroRegistroRepository.create(
       {
         numeroLibro,
-        carreraId,
         gestionId,
         codigoRegistro,
         folioInicial,
@@ -94,7 +83,6 @@ export class AbrirLibroUseCase {
     this.logger?.info('[Libros] Libro abierto', {
       id: creado.id,
       numeroLibro,
-      carreraId,
       gestionId,
       folioInicial,
     });

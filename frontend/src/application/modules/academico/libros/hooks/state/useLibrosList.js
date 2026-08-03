@@ -1,16 +1,16 @@
 /**
  * Estado de pantalla — Listado de libros de registro (P1 · LibrosListPage).
  *
- * Orquesta el listado (`useLibrosApi`), el filtro local por texto, los
- * catálogos de carreras/gestiones para el modal "Abrir libro" y la mutación de
- * alta (`useAbrirLibroApi`). Toda la orquestación vive aquí; la página solo
- * compone (incos-frontend-module §2).
+ * Orquesta el listado (`useLibrosApi`), el filtro local por texto, el catálogo
+ * de gestiones para el modal "Abrir libro" y la mutación de alta
+ * (`useAbrirLibroApi`). Toda la orquestación vive aquí; la página solo compone
+ * (incos-frontend-module §2).
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { useCarrerasCatalogApi, useGestionesCatalogApi } from '@application-shared/hooks';
+import { useGestionesCatalogApi } from '@application-shared/hooks';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs';
 import { createLibrosTableColumns } from '@academico/libros/config/librosTableColumns';
 import { libroDetallePath } from '../../utils/librosPaths';
@@ -31,7 +31,6 @@ export const useLibrosList = () => {
   const { notification } = App.useApp();
 
   const { libros, loading, error, refetch } = useLibrosApi();
-  const { carreras, loading: loadingCarreras } = useCarrerasCatalogApi();
   const { gestiones, loading: loadingGestiones } = useGestionesCatalogApi();
   const { abrirLibro, loading: abriendo } = useAbrirLibroApi();
   const { generarFoliosGestion, loading: generandoGestion } = useGenerarFoliosGestion();
@@ -46,11 +45,11 @@ export const useLibrosList = () => {
     if (!termino) return libros;
     return libros.filter((libro) =>
       [
-        libro.carreraNombre,
+        libro.numeroLibro,
         libro.gestionNombre,
         libro.gestionAnio,
         libro.codigoRegistro,
-        libro.numeroLibro,
+        libro.carrerasConFolio,
       ]
         .map(normalizar)
         .some((campo) => campo.includes(termino)),
@@ -68,7 +67,7 @@ export const useLibrosList = () => {
       if (result.success) {
         notification.success({
           title: 'Libro abierto',
-          description: `Se abrió el LIBRO N° ${result.data?.numeroLibro} de ${result.data?.carreraNombre || 'la carrera elegida'} correctamente.`,
+          description: `Se abrió el LIBRO N° ${result.data?.numeroLibro} para la gestión ${result.data?.gestionNombre || result.data?.gestionAnio || 'seleccionada'}.`,
         });
         setModalOpen(false);
         await refetch();
@@ -141,8 +140,6 @@ export const useLibrosList = () => {
     cerrarModal,
     handleAbrirLibro,
     abriendo,
-    carreras,
-    loadingCarreras,
     gestiones,
     loadingGestiones,
 

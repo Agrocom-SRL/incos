@@ -30,8 +30,19 @@ reglas que el plan original interpretó distinto:
    — no reinicia en 1 por cada libro/carrera. Ejemplo real: una gestión con
    3 carreras numera sus folios de corrido 1..68 (no 1..20 por carrera). Cada
    10 estudiantes = 1 folio nuevo sobre ese contador COMPARTIDO de la gestión.
-   Sin cambio de schema: `libros_registro` sigue UNIQUE(carrera_id,
-   gestion_id) y `folios_libro` sigue UNIQUE(libro_id, numero_folio); el
+   ⚠️ **SUPERADO 2026-08-03** — la frase "sin cambio de schema" de este punto
+   quedó incorrecta: el parche por query (MAX cross-carrera) mitigaba el
+   síntoma pero dejaba el LIBRO partido en 3 filas (una por carrera) sin
+   ninguna ficha que lo mostrara completo, y el arranque de numeración cuando
+   la gestión no tenía folios dependía de qué carrera generaba primero (frágil
+   — reproducido en BD de desarrollo: Sistemas generó primero con
+   `folio_inicial=56` tecleado a mano, Contaduría/Administración quedaron en
+   0). Se aplicó el cambio de schema real: `libros_registro` ya NO tiene
+   `carrera_id`, pasa a `UNIQUE(gestion_id)` + `UNIQUE(numero_libro)` — un
+   libro por gestión, compartido por las 3 carreras. La carrera vive a nivel
+   de FOLIO (`paralelo_gestion_id`), nunca a nivel de libro. Ver bitácora al
+   pie. Texto original de este punto, para contexto histórico:
+   `folios_libro` sigue UNIQUE(libro_id, numero_folio); el
    siguiente `numero_folio` se calcula como
    `MAX(fl.numero_folio) FROM folios_libro fl JOIN libros_registro lr ON
    lr.id=fl.libro_id WHERE lr.gestion_id=? AND activo=1 AND deleted_at IS
@@ -369,3 +380,30 @@ Excel) puede mostrar LIBRO/FOLIO reales consultando `folios_libro` por
     LIBRO/FOLIO en el grid del Centralizador, botón "Exportar centralizador
     anual", botón "Generar folios de la gestión", fix de `librosMapper.js` y
     del comentario de `centralizadorDoc.js`.
+- **2026-08-03 (cambio de schema — libro = 1 fila por GESTIÓN, no por
+  carrera+gestión):** el usuario detectó, usando el listado real de la BD de
+  desarrollo, que el parche §0.0/2026-07-30 (numeración por query) no
+  resolvía el problema de fondo: `libros_registro` seguía con 3 filas por
+  gestión (una por carrera), sin ficha que mostrara el libro completo y con
+  un arranque de numeración frágil (dependía de qué carrera generaba folios
+  primero). Confirmado con datos reales de BD dev: Sistemas (carrera_id=1)
+  tenía `libro_id=1`, `folio_inicial=56` tecleado a mano; Contaduría
+  (carrera_id=3) tenía `libro_id=2` con `folio_actual=0`; Administración
+  (carrera_id=2) no tenía fila. Cambios aplicados (sin datos reales que
+  migrar — BD de desarrollo, confirmado con el usuario):
+  1. **Schema** (`01-schemas/25-libros-registro.sql`): `libros_registro`
+     pierde `carrera_id` (columna, FK e índices); `UNIQUE(numero_libro,
+     carrera_id)` → `UNIQUE(numero_libro)`; `UNIQUE(carrera_id, gestion_id)`
+     → `UNIQUE(gestion_id)`. `folios_libro`/`folio_estudiantes` sin cambios.
+  2. **Vista 175**: quita el JOIN a `carreras` y sus 4 columnas a nivel de
+     libro; agrega `carreras_con_folio` (GROUP_CONCAT DISTINCT de códigos de
+     carrera con folios en el libro, orden canónico CON-GEN·ADM-EMP·SIS-INF).
+     Vistas 176/177 sin cambios (la carrera ya vivía a nivel de folio, vía
+     `paralelo_gestion_id` → vista 127).
+  3. **Backend/Frontend**: refactor delegado a agentes `backend`/`frontend`
+     en paralelo contra este contrato — ver resultado en el reporte de
+     ejecución (no repetido aquí para no duplicar la fuente de verdad, que es
+     el código).
+  - ⛔ Pendiente BD (aprobación del usuario, igual que siempre): recrear
+    `libros_registro`/`folios_libro`/`folio_estudiantes` (DROP+CREATE, sin
+    datos reales que preservar) y la vista 175 en la BD de desarrollo.

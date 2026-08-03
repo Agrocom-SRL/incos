@@ -11,15 +11,12 @@ const filaIdParam = param('filaId').isInt({ min: 1 }).withMessage('Fila de folio
 const gestionIdParam = param('gestionId').isInt({ min: 1 }).withMessage('Gestión inválida');
 
 export const listLibrosValidator = [
-  query('carreraId').optional().isInt({ min: 1 }).withMessage('Carrera inválida'),
   query('gestionId').optional().isInt({ min: 1 }).withMessage('Gestión inválida'),
 ];
 
 export const abrirLibroValidator = [
-  body('carreraId').isInt({ min: 1 }).withMessage('La carrera es obligatoria'),
   body('gestionId').isInt({ min: 1 }).withMessage('La gestión es obligatoria'),
-  // El número de libro se ingresa cada gestión (mismo número para todas las
-  // carreras de la gestión); no se auto-sugiere en servidor.
+  // El número de libro se ingresa cada gestión; no se auto-sugiere en servidor.
   body('numeroLibro').isInt({ min: 1 }).withMessage('El número de libro es obligatorio'),
   body('codigoRegistro')
     .optional({ nullable: true })

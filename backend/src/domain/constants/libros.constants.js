@@ -2,8 +2,9 @@
  * Constantes del dominio Libros de registro (schema 25, módulo ACA).
  *
  * Base documental: "LIBRO LLENADO SISTEMAS 11 dic 2025" (libro físico real del
- * centralizador de calificaciones). Un LIBRO es por carrera y gestión; un
- * FOLIO = una página del centralizador de un paralelo (hasta 10 estudiantes).
+ * centralizador de calificaciones). Un LIBRO es por GESTIÓN, compartido por
+ * las 3 carreras del instituto; un FOLIO = una página del centralizador de un
+ * paralelo (hasta 10 estudiantes) de cualquiera de las 3 carreras.
  */
 
 /**

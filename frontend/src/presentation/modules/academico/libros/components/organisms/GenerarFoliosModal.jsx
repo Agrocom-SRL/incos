@@ -97,7 +97,7 @@ const GenerarFoliosModal = ({ open, paralelos = [], loading = false, generando =
         pagination={false}
         locale={{
           emptyText: (
-            <Empty description="No hay paralelos disponibles para la carrera y gestión de este libro." />
+            <Empty description="No hay paralelos disponibles para la gestión de este libro." />
           ),
         }}
       />

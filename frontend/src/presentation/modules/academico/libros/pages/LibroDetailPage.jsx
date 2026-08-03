@@ -150,10 +150,11 @@ const LibroDetailPage = () => {
           <>
             <DetailProfileCard
               avatarInitials={<ProfileOutlined />}
-              avatarStyle={libro.carreraColorHex ? { backgroundColor: libro.carreraColorHex } : undefined}
               active={estaAbierto}
               title={libro.libroLabel}
-              subtitle={`${libro.carreraNombre || '—'} · ${libro.gestionNombre || libro.gestionAnio || '—'} · Código ${libro.codigoRegistro || '—'}`}
+              subtitle={`${libro.gestionNombre || libro.gestionAnio || '—'} · Código ${libro.codigoRegistro || '—'}${
+                libro.carrerasConFolio ? ` · ${libro.carrerasConFolio}` : ''
+              }`}
               metaExtra={
                 <StatusPill label={formatLibroEstado(libro.estado)} className={getLibroEstadoPillClass(libro.estado)} />
               }

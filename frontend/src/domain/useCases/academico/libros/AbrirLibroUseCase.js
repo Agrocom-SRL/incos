@@ -1,5 +1,6 @@
 /**
- * Abre un libro de registro para una carrera y gestión (POST /libros).
+ * Abre el libro de registro de una gestión (POST /libros) — un único libro
+ * por gestión, compartido por las 3 carreras del instituto.
  * `numeroLibro` es obligatorio (se ingresa cada gestión, sin auto-sugerencia);
  * `codigoRegistro` es opcional (el front puede prellenar 81981609 como sugerencia).
  */
@@ -13,7 +14,7 @@ export class AbrirLibroUseCase {
   }
 
   /**
-   * @param {Object} payload - { carreraId, gestionId, numeroLibro, codigoRegistro?,
+   * @param {Object} payload - { gestionId, numeroLibro, codigoRegistro?,
    *   folioInicial?, folioFinal?, fechaApertura?, observaciones? }
    */
   async ejecutar(payload) {

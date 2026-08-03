@@ -26,8 +26,8 @@ const unwrap = (response) => {
 
 class LibroRegistroRepository {
   /**
-   * GET /v1/libros?carreraId&gestionId
-   * @param {{ carreraId?: number, gestionId?: number }} [params]
+   * GET /v1/libros?gestionId
+   * @param {{ gestionId?: number }} [params]
    * @returns {Promise<{success:boolean,data?:Array,error?:string}>}
    */
   async listar(params = {}) {
@@ -42,7 +42,8 @@ class LibroRegistroRepository {
   }
 
   /**
-   * POST /v1/libros — abre un libro (carrera + gestión + numeroLibro obligatorios).
+   * POST /v1/libros — abre el libro de una gestión (gestión + numeroLibro
+   * obligatorios; un único libro por gestión, compartido por las 3 carreras).
    * @param {Object} payload
    * @returns {Promise<{success:boolean,data?:Object,error?:string}>}
    */

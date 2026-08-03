@@ -11,12 +11,11 @@ export class ListLibrosUseCase {
   }
 
   /**
-   * @param {Object} [params] - { carreraId?, gestionId? }
+   * @param {Object} [params] - { gestionId? }
    * @returns {Promise<{libros: Object[]}>}
    */
-  async execute({ carreraId, gestionId } = {}) {
+  async execute({ gestionId } = {}) {
     const rows = await this.libroRegistroViewRepository.listarLibros({
-      carreraId: carreraId ? Number(carreraId) : undefined,
       gestionId: gestionId ? Number(gestionId) : undefined,
     });
     const libros = rows.map(toLibroDTO);

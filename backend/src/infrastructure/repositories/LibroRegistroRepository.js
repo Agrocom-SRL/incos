@@ -33,7 +33,6 @@ export class LibroRegistroRepository extends BaseRepository {
     return {
       id: v.id,
       numeroLibro: v.numeroLibro ?? null,
-      carreraId: v.carreraId ?? null,
       gestionId: v.gestionId ?? null,
       codigoRegistro: v.codigoRegistro ?? null,
       folioInicial: v.folioInicial ?? null,
@@ -51,7 +50,6 @@ export class LibroRegistroRepository extends BaseRepository {
 
   buildWhereClause(filters = {}) {
     const where = {};
-    if (filters.carreraId !== undefined) where.carreraId = filters.carreraId;
     if (filters.gestionId !== undefined) where.gestionId = filters.gestionId;
     if (filters.estado !== undefined) where.estado = filters.estado;
     if (filters.numeroLibro !== undefined) where.numeroLibro = filters.numeroLibro;
@@ -69,7 +67,6 @@ export class LibroRegistroRepository extends BaseRepository {
   mapDataToModel(data) {
     const model = {};
     if ('numeroLibro' in data) model.numeroLibro = data.numeroLibro;
-    if ('carreraId' in data) model.carreraId = data.carreraId ?? null;
     if ('gestionId' in data) model.gestionId = data.gestionId ?? null;
     if ('codigoRegistro' in data) model.codigoRegistro = data.codigoRegistro ?? null;
     if ('folioInicial' in data) model.folioInicial = data.folioInicial;
@@ -91,23 +88,27 @@ export class LibroRegistroRepository extends BaseRepository {
   }
 
   /**
-   * Libro de una carrera en una gestión (UNIQUE uk_carrera_gestion) o null.
-   * @param {number} carreraId
+   * Libro de una gestión (UNIQUE uk_gestion), compartido por las 3 carreras
+   * del instituto, o null.
    * @param {number} gestionId
    * @returns {Promise<Object|null>}
    */
-  async findByCarreraGestion(carreraId, gestionId) {
+  async findByGestion(gestionId) {
     const model = await LibroRegistroModel.findOne({
-      where: { carreraId, gestionId },
+      where: { gestionId },
     });
     return this.toEntity(model);
   }
 
   /**
-   * Máximo numero_folio de la GESTIÓN completa, cruzando TODAS las carreras
-   * (los folios de la gestión se numeran de corrido entre libros: SIS-INF,
-   * ADM-EMP y CON-GEN comparten el contador 1..N). Incluye ANULADOS: un número
-   * de folio nunca se reutiliza. 0 si la gestión no tiene folios.
+   * Máximo numero_folio del libro de la GESTIÓN (folios de las 3 carreras
+   * comparten el mismo libro_id, por eso comparten también este contador
+   * correlativo). Incluye ANULADOS: un número de folio nunca se reutiliza.
+   * 0 si la gestión no tiene folios.
+   *
+   * Filtra directo por `libro_id` (sin JOIN a `libros_registro`): desde que
+   * `gestion_id` es UNIQUE en `libros_registro`, los folios de una gestión son
+   * exactamente los folios de SU libro — ya no hace falta cruzar por gestión.
    *
    * @param {number} gestionId
    * @param {Object} [options] - { transaction?, lock? } (lectura FOR UPDATE
@@ -120,10 +121,11 @@ export class LibroRegistroRepository extends BaseRepository {
       `
       SELECT MAX(fl.numero_folio) AS max_folio
       FROM folios_libro fl
-      INNER JOIN libros_registro lr
-        ON lr.id = fl.libro_id
-        AND lr.deleted_at IS NULL
-      WHERE lr.gestion_id = ?
+      WHERE fl.libro_id = (
+        SELECT lr.id FROM libros_registro lr
+        WHERE lr.gestion_id = ? AND lr.deleted_at IS NULL
+        LIMIT 1
+      )
         AND fl.deleted_at IS NULL
         AND fl.activo = TRUE
       ${lockClause}

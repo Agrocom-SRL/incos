@@ -36,12 +36,12 @@ export function buildLibrosRouter({ controllers, middlewares }) {
   const libroAprobar = [authenticate, verificarPermiso('academico.libro', 'APROBAR')];
   const libroExportar = [authenticate, verificarPermiso('academico.libro', 'EXPORTAR')];
 
-  /** GET / — listado de libros (filtros opcionales carreraId/gestionId). */
+  /** GET / — listado de libros (filtro opcional gestionId). */
   router.get('/', ...libroListar, listLibrosValidator, validateRequest, (req, res, next) =>
     controllers.listLibrosController.handle(req, res, next),
   );
 
-  /** POST / — abrir un libro para una carrera y gestión. */
+  /** POST / — abrir el libro de una gestión (compartido por las 3 carreras). */
   router.post('/', ...libroCrear, abrirLibroValidator, validateRequest, (req, res, next) =>
     controllers.abrirLibroController.handle(req, res, next),
   );

@@ -1,6 +1,6 @@
 /**
  * Edita la cabecera del libro, incluido el cierre/reapertura (PATCH /libros/:id).
- * `carreraId`/`gestionId`/`numeroLibro` NO se editan (identifican el libro físico).
+ * `gestionId`/`numeroLibro` NO se editan (identifican el libro físico).
  */
 
 export class EditarLibroUseCase {

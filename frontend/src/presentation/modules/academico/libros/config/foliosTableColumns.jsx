@@ -1,14 +1,18 @@
 /**
  * Columnas de la tabla de folios de un libro (ficha — `LibroDetailPage`).
  *
- * Fila = 1 folio (página del centralizador de un paralelo). Ver navega al
- * preview del folio (`ACA-LIBROS-FOLIO`, permiso DETALLE); Firmar/Anular viven
- * en el preview, no en esta fila (TableActions fail-closed: sin permiso
- * explícito, la acción no se pinta).
+ * Fila = 1 folio (página del centralizador de un paralelo). Como un mismo
+ * libro es compartido por las 3 carreras, los folios llegan entremezclados
+ * por número de folio: la columna "Carrera" (dato del paralelo del folio,
+ * `CarreraDotCell` — mismo patrón que `EstudiantesList`) es indispensable
+ * para la legibilidad. Ver navega al preview del folio (`ACA-LIBROS-FOLIO`,
+ * permiso DETALLE); Firmar/Anular viven en el preview, no en esta fila
+ * (TableActions fail-closed: sin permiso explícito, la acción no se pinta).
  */
 
-import { IdentidadCelda, StatusPill } from '@atoms';
+import { CarreraDotCell, IdentidadCelda, StatusPill } from '@atoms';
 import { TableActions, TableCell } from '@molecules';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import {
   formatFolioEstado,
@@ -38,6 +42,18 @@ export const createFoliosTableColumns = ({ onView }) => [
       />
     ),
     sorter: (a, b) => (Number(a.numeroFolio) || 0) - (Number(b.numeroFolio) || 0),
+  },
+  {
+    title: 'Carrera',
+    key: 'carrera',
+    width: 170,
+    render: (_, record) => (
+      <CarreraDotCell
+        nombre={record.carreraCodigo || record.carreraNombre}
+        colorHex={sanitizeDocenteColorHex(record.carreraColorHex)}
+      />
+    ),
+    sorter: (a, b) => (a.carreraNombre || '').localeCompare(b.carreraNombre || ''),
   },
   {
     title: 'Turno',

@@ -5,9 +5,10 @@ import { ESTADOS_LIBRO, ESTADOS_LIBRO_VALUES } from '../../../domain/constants/l
 
 /**
  * Libro físico del centralizador de calificaciones (schema 25).
- * Un libro por CARRERA y GESTIÓN (UNIQUE carrera+gestión; secuencia real
- * 12→2023, 13→2024, 14→2025). Cada libro agrupa todos los años/paralelos de la
- * carrera en esa gestión.
+ * Un libro por GESTIÓN (UNIQUE gestión), compartido por las 3 carreras del
+ * instituto (secuencia real 12→2023, 13→2024, 14→2025). Cada libro agrupa
+ * todos los años/paralelos/carreras de esa gestión, con folios correlativos
+ * que cruzan de una carrera a la siguiente (orden canónico `ordenCarreraLibro`).
  */
 export const LibroRegistro = sequelize.define(
     'LibroRegistro',
@@ -18,14 +19,7 @@ export const LibroRegistro = sequelize.define(
             type: DataTypes.INTEGER,
             field: 'numero_libro',
             allowNull: false,
-            comment: 'Número del libro físico (cabecera LIBRO N°). Correlativo institucional por carrera',
-        },
-
-        carreraId: {
-            type: DataTypes.INTEGER,
-            field: 'carrera_id',
-            allowNull: true,
-            comment: 'Carrera del libro (referencia a carreras)',
+            comment: 'Número del libro físico (cabecera LIBRO N°). Correlativo institucional: avanza uno por gestión',
         },
 
         gestionId: {

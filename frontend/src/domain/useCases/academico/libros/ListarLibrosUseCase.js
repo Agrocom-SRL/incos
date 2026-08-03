@@ -11,7 +11,7 @@ export class ListarLibrosUseCase {
   }
 
   /**
-   * @param {{ carreraId?: number, gestionId?: number }} [params]
+   * @param {{ gestionId?: number }} [params]
    */
   async ejecutar(params = {}) {
     return this.libroRegistroRepository.listar(params);

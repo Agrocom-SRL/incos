@@ -27,10 +27,6 @@ export function toLibroDTO(row) {
   return {
     id: row.id,
     numeroLibro: row.numero_libro ?? null,
-    carreraId: row.carrera_id ?? null,
-    carreraNombre: row.carrera_nombre ?? null,
-    carreraCodigo: row.carrera_codigo ?? null,
-    carreraColorHex: row.carrera_color_hex ?? null,
     gestionId: row.gestion_id ?? null,
     gestionAnio: row.gestion_anio ?? null,
     gestionNombre: row.gestion_nombre ?? null,
@@ -43,12 +39,14 @@ export function toLibroDTO(row) {
     fechaApertura: row.fecha_apertura ?? null,
     fechaCierre: row.fecha_cierre ?? null,
     observaciones: row.observaciones ?? null,
+    activo: row.activo != null ? Boolean(row.activo) : null,
     totalFolios: Number(row.total_folios ?? 0),
     foliosFirmados: Number(row.folios_firmados ?? 0),
     foliosAnulados: Number(row.folios_anulados ?? 0),
     maxNumeroFolio: row.max_numero_folio ?? null,
     paralelosConFolio: Number(row.paralelos_con_folio ?? 0),
     totalEstudiantes: Number(row.total_estudiantes ?? 0),
+    carrerasConFolio: row.carreras_con_folio ?? null,
   };
 }
 
@@ -89,7 +87,7 @@ export function toFolioDTO(row) {
 }
 
 /**
- * Fila de listarParalelosParaLibro (vista 127 + conteos) → DTO de paralelo
+ * Fila de listarParalelosPorGestion (vista 127 + conteos) → DTO de paralelo
  * candidato del generador de folios.
  * @param {Object} row
  * @returns {Object|null}

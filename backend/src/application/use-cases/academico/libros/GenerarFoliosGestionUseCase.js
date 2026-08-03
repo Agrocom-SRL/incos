@@ -10,9 +10,8 @@ import { generarParaUnParalelo } from './helpers/generarFoliosParaleloHelper.js'
  * `GenerarFoliosParaleloUseCase` (`generarParaUnParalelo`) paralelo por
  * paralelo. Permiso: academico.libro · CREAR.
  *
- * Precondición: debe existir un libro ABIERTO por cada carrera con paralelos
- * en la gestión — si falta alguno, rechaza nombrando la carrera faltante
- * (evita numerar de corrido omitiendo una carrera completa por error).
+ * Precondición: debe existir un libro ABIERTO de la gestión (compartido por
+ * las 3 carreras) — si falta o está cerrado, rechaza antes de generar folios.
  *
  * Idempotente: un paralelo con folios vigentes se OMITE (no es error) y queda
  * en el resumen — a diferencia de `GenerarFoliosParaleloUseCase`, que rechaza
@@ -58,26 +57,13 @@ export class GenerarFoliosGestionUseCase {
       throw new ValidationError('La gestión no tiene paralelos en oferta');
     }
 
-    // Precondición: un libro ABIERTO por cada carrera con paralelos en la gestión.
-    const carrerasEnGestion = [
-      ...new Map(paralelos.map((p) => [Number(p.carrera_id), p.carrera_nombre])).entries(),
-    ];
-    const librosPorCarrera = new Map();
-    for (const [carreraId, carreraNombre] of carrerasEnGestion) {
-      // Secuencial a propósito: son 3 carreras como máximo (no fan-out real).
-      // eslint-disable-next-line no-await-in-loop
-      const libro = await this.libroRegistroRepository.findByCarreraGestion(carreraId, gid);
-      if (!libro) {
-        throw new ValidationError(
-          `Falta abrir el libro de "${carreraNombre}" para esta gestión antes de generar folios`,
-        );
-      }
-      if (libro.estado !== ESTADOS_LIBRO.ABIERTO) {
-        throw new ValidationError(
-          `El libro de "${carreraNombre}" está cerrado: no admite nuevos folios`,
-        );
-      }
-      librosPorCarrera.set(carreraId, libro);
+    // Precondición: un libro ABIERTO de la gestión (compartido por las 3 carreras).
+    const libro = await this.libroRegistroRepository.findByGestion(gid);
+    if (!libro) {
+      throw new ValidationError('Falta abrir el libro de esta gestión antes de generar folios');
+    }
+    if (libro.estado !== ESTADOS_LIBRO.ABIERTO) {
+      throw new ValidationError('El libro de esta gestión está cerrado: no admite nuevos folios');
     }
 
     const omitidos = [];
@@ -86,7 +72,6 @@ export class GenerarFoliosGestionUseCase {
     const numerosFolio = [];
 
     for (const paralelo of paralelos) {
-      const libro = librosPorCarrera.get(Number(paralelo.carrera_id));
       const paraleloGestionId = Number(paralelo.paralelo_gestion_id);
 
       // Idempotente: un paralelo con folios vigentes se OMITE (no es error).

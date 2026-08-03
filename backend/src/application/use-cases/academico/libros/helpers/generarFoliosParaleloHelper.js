@@ -32,8 +32,7 @@ import { agruparFilas135PorEstudiante, derivarEstadoAcademico } from './folioCel
  * @param {Object} params.libro - Entidad de libro (`LibroRegistroRepository.toEntity`):
  *        { id, gestionId, folioInicial, ... }.
  * @param {Object} params.paralelo - Fila de paralelo candidato (vista 127 +
- *        conteos, de `listarParalelosParaLibro`/`listarParalelosPorGestion`):
- *        requiere `paralelo_gestion_id`.
+ *        conteos, de `listarParalelosPorGestion`): requiere `paralelo_gestion_id`.
  * @param {string|null} [params.fechaRegistro] - ISO date; hoy si se omite.
  * @param {number|null} [params.usuarioId]
  * @returns {Promise<{ creados: Array<Object>, folios: Array<Object>, totalEstudiantes: number }>}

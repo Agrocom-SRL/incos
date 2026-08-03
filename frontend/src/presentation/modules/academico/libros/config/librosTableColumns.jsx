@@ -1,9 +1,10 @@
 /**
  * Columnas del listado de libros de registro (patrón Docentes/CFG carreras).
  *
- * Fila = 1 libro (carrera + gestión). Ver navega a la ficha (`ACA-LIBROS-DETALLE`,
- * permiso DETALLE); no hay editar/eliminar de fila (la cabecera se edita/cierra
- * desde la propia ficha; un libro no se elimina).
+ * Fila = 1 libro (por gestión, compartido por las 3 carreras del instituto).
+ * Ver navega a la ficha (`ACA-LIBROS-DETALLE`, permiso DETALLE); no hay
+ * editar/eliminar de fila (la cabecera se edita/cierra desde la propia ficha;
+ * un libro no se elimina).
  */
 
 import { IdentidadCelda, StatusPill } from '@atoms';
@@ -34,11 +35,10 @@ export const createLibrosTableColumns = ({ navigate }) => [
     render: (_numero, record) => (
       <IdentidadCelda
         codigo={record.numeroLibro != null ? `LIBRO N° ${record.numeroLibro}` : null}
-        nombre={record.carreraNombre}
-        accentColor={record.carreraColorHex}
+        nombre={record.carrerasConFolio || 'Sin folios generados'}
       />
     ),
-    sorter: (a, b) => (a.carreraNombre || '').localeCompare(b.carreraNombre || ''),
+    sorter: (a, b) => (Number(a.numeroLibro) || 0) - (Number(b.numeroLibro) || 0),
   },
   {
     title: 'Gestión',
