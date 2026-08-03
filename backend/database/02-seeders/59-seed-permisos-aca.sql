@@ -484,4 +484,56 @@ WHERE codigo IN (
   -- 'aca_avance' reactivado (2026-07-29): backend Avance/Deserción construido.
 );
 
+-- ============================================================
+-- OCULTAMIENTO · "Seguimiento académico" (2026-08-03)
+-- A pedido: se retira el ítem del menú de Académico. A diferencia del bloque
+-- anterior, NO es por pantalla sin construir (avance/deserción/acompañamiento
+-- ya existen) — se apaga el RBAC completo (permisos + acciones + roles +
+-- grupo de UI), así que también deja de ser accesible por URL directa para
+-- TODOS los roles, incluido ADMIN_SISTEMA (hereda por vista_*_activas, que
+-- filtra activo=TRUE y deleted_at IS NULL).
+-- Para REHABILITAR: poner activo=1 y deleted_at=NULL en estas mismas filas.
+-- ============================================================
+SET @fecha_baja_seguimiento := '2026-08-03 00:00:00';
+
+-- 1) Permisos de "Seguimiento académico" (avance, deserción, acompañamiento)
+UPDATE permisos
+SET activo = 0, deleted_at = @fecha_baja_seguimiento
+WHERE codigo IN (
+  'academico.avance',
+  'academico.desercion',
+  'academico.acompanamiento.alerta',
+  'academico.acompanamiento.sesion',
+  'academico.acompanamiento.panel'
+);
+
+-- 2) Cascada: acciones de esos permisos
+UPDATE permiso_acciones pa
+JOIN permisos p ON p.id = pa.permiso_id
+SET pa.activo = 0, pa.deleted_at = @fecha_baja_seguimiento
+WHERE p.codigo IN (
+  'academico.avance',
+  'academico.desercion',
+  'academico.acompanamiento.alerta',
+  'academico.acompanamiento.sesion',
+  'academico.acompanamiento.panel'
+);
+
+-- 3) Cascada: asignaciones a roles de esos permisos
+UPDATE roles_permisos rp
+JOIN permisos p ON p.id = rp.permiso_id
+SET rp.activo = 0, rp.deleted_at = @fecha_baja_seguimiento
+WHERE p.codigo IN (
+  'academico.avance',
+  'academico.desercion',
+  'academico.acompanamiento.alerta',
+  'academico.acompanamiento.sesion',
+  'academico.acompanamiento.panel'
+);
+
+-- 4) Grupo de UI de la página completa
+UPDATE grupos_ui
+SET activo = 0, deleted_at = @fecha_baja_seguimiento
+WHERE codigo IN ('aca_avance', 'aca_desercion', 'aca_acompanamiento');
+
 SET FOREIGN_KEY_CHECKS = 1;

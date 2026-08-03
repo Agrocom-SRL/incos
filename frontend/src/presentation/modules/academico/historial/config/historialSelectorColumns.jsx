@@ -21,8 +21,9 @@
  *
  * Responsive: las columnas académicas declaran `minWidth` (ancho mínimo del
  * colgroup, AntD 6) y colapsan por breakpoint (`responsive`) de menor a mayor
- * prioridad — ingreso primero, luego paralelo, año en curso y promedio;
- * identidad, C.I. y acciones no colapsan nunca.
+ * prioridad — ingreso primero, luego año en curso/paralelo (unificados en una
+ * sola celda de dos líneas) y promedio; identidad, C.I. y acciones no colapsan
+ * nunca.
  */
 
 import {
@@ -94,22 +95,22 @@ export const createHistorialSelectorColumns = ({ onVerHistorial }) => [
     ),
   },
   {
-    title: 'Año en curso',
-    key: 'periodoActual',
+    title: 'Año - Paralelo',
+    key: 'periodoParalelo',
     minWidth: 132,
+    // Año en curso + paralelo unificados en una sola celda de dos líneas
+    // (InfoLinesCell ya omite la línea que venga null/vacía). Breakpoint del
+    // más persistente de los dos originales ("Año en curso"): la celda ya no
+    // necesita el ancho extra de una columna aparte para "Paralelo".
     responsive: ['md', 'lg', 'xl', 'xxl'],
     sorter: (a, b) => Number(a.periodoActualNumero || 0) - Number(b.periodoActualNumero || 0),
     render: (_, record) => (
-      <InfoLinesCell lines={[{ icon: <ReadOutlined />, label: periodoActualLabel(record) }]} />
-    ),
-  },
-  {
-    title: 'Paralelo',
-    key: 'paraleloActual',
-    minWidth: 104,
-    responsive: ['lg', 'xl', 'xxl'],
-    render: (_, record) => (
-      <InfoLinesCell lines={[{ icon: <ApartmentOutlined />, label: record.paraleloActual }]} />
+      <InfoLinesCell
+        lines={[
+          { icon: <ReadOutlined />, label: periodoActualLabel(record) },
+          { icon: <ApartmentOutlined />, label: record.paraleloActual },
+        ]}
+      />
     ),
   },
   {

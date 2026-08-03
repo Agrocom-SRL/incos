@@ -9,14 +9,26 @@
  */
 
 import { useState } from 'react';
-import { Empty, Modal, Popconfirm, Table } from 'antd';
+import { Empty, Flex, Modal, Popconfirm, Table } from 'antd';
 import { FileAddOutlined } from '@ant-design/icons';
 import { ActionButton, StatusPill } from '@atoms';
 import { TableCell } from '@molecules';
 import { modalWidths } from '@theme/tokens/spacing';
+import { allSpacing } from '@theme/tokens';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
+import GenerarFoliosResumen from '../molecules/GenerarFoliosResumen.jsx';
 
-const GenerarFoliosModal = ({ open, paralelos = [], loading = false, generando = false, onGenerar, onCancelar }) => {
+const GenerarFoliosModal = ({
+  open,
+  paralelos = [],
+  loading = false,
+  generando = false,
+  onGenerar,
+  onGenerarTodos,
+  generandoTodos = false,
+  resumenTodos = null,
+  onCancelar,
+}) => {
   const [procesandoId, setProcesandoId] = useState(null);
 
   const handleGenerar = async (paraleloGestionId) => {
@@ -24,6 +36,8 @@ const GenerarFoliosModal = ({ open, paralelos = [], loading = false, generando =
     await onGenerar?.(paraleloGestionId);
     setProcesandoId(null);
   };
+
+  const hayPendientes = paralelos.some((p) => !p.generado);
 
   const columns = [
     {
@@ -60,7 +74,7 @@ const GenerarFoliosModal = ({ open, paralelos = [], loading = false, generando =
           okText="Generar"
           cancelText="Cancelar"
           onConfirm={() => handleGenerar(record.paraleloGestionId)}
-          disabled={record.generado}
+          disabled={record.generado || generandoTodos}
         >
           <ActionButton
             permiso={LIBROS_PERMISOS.libro}
@@ -68,7 +82,7 @@ const GenerarFoliosModal = ({ open, paralelos = [], loading = false, generando =
             variant="primary"
             size="small"
             icon={<FileAddOutlined />}
-            disabled={record.generado}
+            disabled={record.generado || generandoTodos}
             loading={generando && procesandoId === record.paraleloGestionId}
             title={record.generado ? 'Anule los folios vigentes para regenerar' : 'Generar folios'}
           >
@@ -88,6 +102,35 @@ const GenerarFoliosModal = ({ open, paralelos = [], loading = false, generando =
       destroyOnHidden
       width={modalWidths.modalWidthLG}
     >
+      {resumenTodos ? (
+        <div style={{ marginBottom: allSpacing.marginMD }}>
+          <GenerarFoliosResumen resumen={resumenTodos} />
+        </div>
+      ) : null}
+
+      <Flex justify="flex-end" style={{ marginBottom: allSpacing.marginSM }}>
+        <Popconfirm
+          title="Generar folios de todos los paralelos"
+          description="Se generarán los folios de los paralelos pendientes de esta gestión. Los que ya tengan folios vigentes se omiten."
+          okText="Generar todos"
+          cancelText="Cancelar"
+          onConfirm={onGenerarTodos}
+          disabled={!hayPendientes || generando}
+        >
+          <ActionButton
+            permiso={LIBROS_PERMISOS.libro}
+            accion="CREAR"
+            variant="primary"
+            icon={<FileAddOutlined />}
+            disabled={!hayPendientes || generando}
+            loading={generandoTodos}
+            title={!hayPendientes ? 'Todos los paralelos ya tienen folios vigentes' : undefined}
+          >
+            Generar todos
+          </ActionButton>
+        </Popconfirm>
+      </Flex>
+
       <Table
         dataSource={paralelos}
         columns={columns}

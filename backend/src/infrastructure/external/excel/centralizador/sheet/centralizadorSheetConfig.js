@@ -32,7 +32,7 @@ export const ROW_HEIGHTS = {
   sigla: 24, // cabecera: sigla de asignatura (fila 8)
   nombre: 54, // cabecera: nombre de asignatura (fila 9)
   docente: 34, // cabecera: docente de asignatura (fila 10)
-  dataRow: 20 // fila de estudiante
+  dataRow: 22 // fila de estudiante (mismo alto que PlanillaCalificaciones/Consolidado con fuente small)
 };
 
 /** Índices (1-based) de las filas de cabecera y de la primera fila de datos. */

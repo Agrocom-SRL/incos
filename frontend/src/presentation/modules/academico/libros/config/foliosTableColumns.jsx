@@ -46,7 +46,7 @@ export const createFoliosTableColumns = ({ onView }) => [
   {
     title: 'Carrera',
     key: 'carrera',
-    width: 170,
+    width: 200,
     render: (_, record) => (
       <CarreraDotCell
         nombre={record.carreraCodigo || record.carreraNombre}
@@ -58,13 +58,13 @@ export const createFoliosTableColumns = ({ onView }) => [
   {
     title: 'Turno',
     dataIndex: 'turno',
-    width: 120,
+    width: 130,
     render: (turno) => <TableCell>{turno || '—'}</TableCell>,
   },
   {
     title: 'Estudiantes',
     key: 'estudiantes',
-    width: 220,
+    width: 280,
     render: (_, record) => (
       <TableCell
         subtext={`Aprobados ${record.totalAprobados ?? 0} · Reprobados ${record.totalReprobados ?? 0} · Abandonos ${record.totalAbandonos ?? 0}`}
@@ -76,7 +76,7 @@ export const createFoliosTableColumns = ({ onView }) => [
   {
     title: 'Estado',
     dataIndex: 'estado',
-    width: 130,
+    width: 140,
     render: (estado) => (
       <StatusPill label={formatFolioEstado(estado)} className={getFolioEstadoPillClass(estado)} />
     ),
@@ -84,7 +84,7 @@ export const createFoliosTableColumns = ({ onView }) => [
   {
     title: 'Acciones',
     key: 'acciones',
-    width: 90,
+    width: 100,
     align: 'right',
     render: (_, record) => (
       <TableActions

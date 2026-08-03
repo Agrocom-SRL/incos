@@ -15,12 +15,12 @@
  */
 
 import { useEffect } from 'react';
-import { Descriptions, Flex, Form, Modal, Select, Space, Typography } from 'antd';
+import { Form, Modal, Select, Typography } from 'antd';
 import { Button } from '@atoms';
 import { modalWidths } from '@theme/tokens/spacing';
-import { allSpacing } from '@theme/tokens';
+import GenerarFoliosResumen from '../molecules/GenerarFoliosResumen.jsx';
 
-const { Paragraph, Text } = Typography;
+const { Paragraph } = Typography;
 
 const GenerarFoliosGestionModal = ({
   open,
@@ -44,11 +44,6 @@ const GenerarFoliosGestionModal = ({
   }));
 
   const mostrarResumen = Boolean(resumen);
-
-  const rangoFolio =
-    resumen?.folioDesde != null && resumen?.folioHasta != null
-      ? `FOLIO N° ${resumen.folioDesde} — ${resumen.folioHasta}`
-      : 'Sin folios nuevos';
 
   const handleOk = () => form.submit();
   const handleFinish = (values) => onGenerar?.(values.gestionId);
@@ -75,29 +70,7 @@ const GenerarFoliosGestionModal = ({
       confirmLoading={generando}
     >
       {mostrarResumen ? (
-        <Space orientation="vertical" size={allSpacing.marginMD} style={{ width: '100%' }}>
-          <Paragraph>
-            Se generaron los folios correlativos de la gestión, en el orden canónico de carrera
-            (Contaduría → Administración → Informática).
-          </Paragraph>
-          <Descriptions column={1} size="small" bordered>
-            <Descriptions.Item label="Paralelos generados">
-              {resumen.paralelosGenerados}
-            </Descriptions.Item>
-            <Descriptions.Item label="Folios creados">{resumen.foliosCreados}</Descriptions.Item>
-            <Descriptions.Item label="Rango de folios">{rangoFolio}</Descriptions.Item>
-          </Descriptions>
-          {resumen.omitidos?.length > 0 ? (
-            <Flex vertical gap={allSpacing.marginXS}>
-              <Text strong>Paralelos omitidos ({resumen.omitidos.length})</Text>
-              {resumen.omitidos.map((item) => (
-                <Text key={item.paraleloGestionId} type="secondary">
-                  Paralelo en gestión N° {item.paraleloGestionId}: {item.motivo}
-                </Text>
-              ))}
-            </Flex>
-          ) : null}
-        </Space>
+        <GenerarFoliosResumen resumen={resumen} />
       ) : (
         <Form form={form} layout="vertical" onFinish={handleFinish}>
           <Paragraph type="secondary">
