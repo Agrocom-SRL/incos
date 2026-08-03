@@ -779,6 +779,11 @@ export const PROYECTOS_GRADO_ENDPOINTS = {
   ACTA_DEFENSA: (id) => `${API_BASE}/proyectos-grado/${id}/acta-defensa`,
   /** GET — PDF del acta de defensa, espejo §1 del plan (proyecto·EXPORTAR, blob autenticado) */
   ACTA_DEFENSA_PDF: (id, actaId) => `${API_BASE}/proyectos-grado/${id}/acta-defensa/${actaId}/pdf`,
+  /**
+   * PATCH — anula un acta EMITIDA (P8, proyecto·APROBAR, mismo permiso que
+   * registrar). Body `{ motivo }`; NO revierte la transición del proyecto.
+   */
+  ACTA_DEFENSA_ANULAR: (id, actaId) => `${API_BASE}/proyectos-grado/${id}/acta-defensa/${actaId}/anular`,
 };
 
 export const ACOMPANAMIENTO_ENDPOINTS = {

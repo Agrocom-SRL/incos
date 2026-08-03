@@ -208,9 +208,11 @@ export const RESULTADOS_ACTA_DEFENSA = {
 export const RESULTADOS_ACTA_DEFENSA_VALUES = Object.values(RESULTADOS_ACTA_DEFENSA);
 
 /**
- * Ciclo de vida del acta. ANULADA queda modelada desde el DDL inicial (P8
- * resuelta) pero el flujo de anular NO se implementa en esta iteración: no
- * hay endpoint ni use case de anulación todavía.
+ * Ciclo de vida del acta. ANULADA quedó modelada desde el DDL inicial (P8) y
+ * el flujo de anular se implementó 2026-08-02: `AnularActaDefensaUseCase` +
+ * `PATCH /:id/acta-defensa/:actaId/anular` (permiso APROBAR, mismo criterio
+ * que registrar). Anular NO revierte la transición del proyecto — decisión
+ * manual documentada.
  */
 export const ESTADOS_ACTA_DEFENSA = {
   EMITIDA: 'EMITIDA',

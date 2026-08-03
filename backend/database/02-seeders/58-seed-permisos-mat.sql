@@ -117,6 +117,13 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.beca.ver', 'DETALLE'
+  -- ESTUDIANTE (2026-08-02): ve SU propia beca ("Mi beca", misma opción de menú
+  -- reutilizada vía labelByRole). Auto-filtrado server-side por estudianteId de la
+  -- sesión (ListStudentScholarshipsController ignora cualquier studentId de query) +
+  -- guards anti-IDOR (becaSelfOnlyGuard en /becas/:id, estudianteSelfOnlyGuard en
+  -- /:id/scholarships). Sin CREAR/EDITAR/ELIMINAR/APROBAR: eso sigue siendo staff-only.
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.beca.ver', 'LISTAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'matricula.beca.ver', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'EDITAR'
   UNION ALL SELECT 'RECTOR', 'matricula.beca.asignar', 'ELIMINAR'

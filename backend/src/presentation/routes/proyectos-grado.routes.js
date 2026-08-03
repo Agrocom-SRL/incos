@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { uploadAvanceProyecto } from '../middleware/upload.middleware.js';
+import { proyectoGradoIntegranteGuard } from '../middleware/proyectoGradoSelfOnly.middleware.js';
 import { idValidator } from '../validators/common/index.js';
 import {
   integranteIdValidator,
@@ -24,6 +25,7 @@ import {
   avanceTutoriaCarreraValidator,
   planillaAvanceTercerAnioValidator,
   registrarActaDefensaValidator,
+  anularActaDefensaValidator,
 } from '../validators/titulacion/index.js';
 
 /**
@@ -35,6 +37,17 @@ import {
  *
  * Rutas estáticas SIEMPRE antes de /:id (modalidades, mis-tutorados,
  * mi-proyecto, reportes/bitacora-mensual).
+ *
+ * Guard anti-IDOR (`proyectoGradoIntegranteGuard`, 2026-08-02): hallazgo
+ * verificado en vivo (plan de desarrollo del acta de defensa, sección
+ * "Estado de los Bloques F y G", G5) — ningún satélite de la ficha validaba
+ * pertenencia por fila, solo el permiso grueso DETALLE/LISTAR; un
+ * ESTUDIANTE podía leer el proyecto de OTRO estudiante por API directa. Se
+ * agrega DESPUÉS de verificarPermiso+idValidator+validateRequest en los GET
+ * de satélites que reciben `:id` del cliente (T6, T14, T22, acta-defensa).
+ * NO se agrega en `/mi-proyecto`/`/mis-tutorados` (ya resuelven el ID en
+ * servidor) ni en rutas de escritura (ya cerradas a ESTUDIANTE por
+ * APROBAR/EDITAR/CREAR, que ESTUDIANTE no tiene — seed 65).
  *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
@@ -171,9 +184,14 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
   // RUTAS CON /:id
   // ============================================
 
-  // T6 GET /:id - Ficha del proyecto
-  router.get('/:id', ...proyectoDetalle, idValidator, validateRequest, (req, res, next) =>
-    controllers.getProyectoGradoByIdController.handle(req, res, next)
+  // T6 GET /:id - Ficha del proyecto (guard anti-IDOR: ver nota de cabecera)
+  router.get(
+    '/:id',
+    ...proyectoDetalle,
+    idValidator,
+    validateRequest,
+    proyectoGradoIntegranteGuard,
+    (req, res, next) => controllers.getProyectoGradoByIdController.handle(req, res, next)
   );
 
   // GET /:id/formulario-modalidad/pdf - PDF del FMDG-1 (Requisito 1, extensión 2026-07-31)
@@ -242,9 +260,14 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.updateIntegranteProyectoController.handle(req, res, next)
   );
 
-  // T14 GET /:id/bitacora - Bitácora del proyecto
-  router.get('/:id/bitacora', ...bitacoraListar, idValidator, validateRequest, (req, res, next) =>
-    controllers.listBitacoraProyectoController.handle(req, res, next)
+  // T14 GET /:id/bitacora - Bitácora del proyecto (guard anti-IDOR: ver nota de cabecera)
+  router.get(
+    '/:id/bitacora',
+    ...bitacoraListar,
+    idValidator,
+    validateRequest,
+    proyectoGradoIntegranteGuard,
+    (req, res, next) => controllers.listBitacoraProyectoController.handle(req, res, next)
   );
 
   // T15 POST /:id/bitacora - Crear entrada (REVISION_AVANCE actualiza el avance)
@@ -316,9 +339,14 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.getAvanceByIdController.handle(req, res, next)
   );
 
-  // T22 GET /:id/dictamenes - Dictámenes del proyecto
-  router.get('/:id/dictamenes', ...proyectoDetalle, idValidator, validateRequest, (req, res, next) =>
-    controllers.listDictamenesProyectoController.handle(req, res, next)
+  // T22 GET /:id/dictamenes - Dictámenes del proyecto (guard anti-IDOR: ver nota de cabecera)
+  router.get(
+    '/:id/dictamenes',
+    ...proyectoDetalle,
+    idValidator,
+    validateRequest,
+    proyectoGradoIntegranteGuard,
+    (req, res, next) => controllers.listDictamenesProyectoController.handle(req, res, next)
   );
 
   // T23 GET /:id/dictamenes/:dictamenId/archivo - Descarga del PDF (res.download)
@@ -333,14 +361,17 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
 
   // ============================================
   // Extensión 2026-08-01 — Acta de defensa de grado
+  // (anulación P8 agregada 2026-08-02)
   // ============================================
 
   // GET /:id/acta-defensa - Actas del proyecto (N si PSP), con tribunal anidado
+  // (guard anti-IDOR: ver nota de cabecera)
   router.get(
     '/:id/acta-defensa',
     ...proyectoDetalle,
     idValidator,
     validateRequest,
+    proyectoGradoIntegranteGuard,
     (req, res, next) => controllers.listActasDefensaController.handle(req, res, next)
   );
 
@@ -362,6 +393,18 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
     actaIdValidator,
     validateRequest,
     (req, res, next) => controllers.exportActaDefensaPdfController.handle(req, res, next)
+  );
+
+  // PATCH /:id/acta-defensa/:actaId/anular - Anula un acta EMITIDA (P8, decisión
+  // manual; NO revierte la transición del proyecto)
+  router.patch(
+    '/:id/acta-defensa/:actaId/anular',
+    ...proyectoAprobar,
+    idValidator,
+    actaIdValidator,
+    anularActaDefensaValidator,
+    validateRequest,
+    (req, res, next) => controllers.anularActaDefensaController.handle(req, res, next)
   );
 
   return router;

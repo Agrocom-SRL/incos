@@ -54,10 +54,11 @@ export const TITULACION_TOKENS = {
   listDictamenesProyectoUseCase: 'titulacion.listDictamenesProyectoUseCase',
   exportDictamenPdfUseCase: 'titulacion.exportDictamenPdfUseCase',
 
-  // Use Cases — acta de defensa de grado (extensión 2026-08-01)
+  // Use Cases — acta de defensa de grado (extensión 2026-08-01; anulación P8 agregada 2026-08-02)
   registrarActaDefensaUseCase: 'titulacion.registrarActaDefensaUseCase',
   listActasDefensaProyectoUseCase: 'titulacion.listActasDefensaProyectoUseCase',
   exportActaDefensaPdfUseCase: 'titulacion.exportActaDefensaPdfUseCase',
+  anularActaDefensaUseCase: 'titulacion.anularActaDefensaUseCase',
 
   // Use Cases — extensión 2026-07-31 (formulario de modalidad de graduación,
   // reporte de avance por carrera, planilla de avance "10 en 10")
@@ -95,10 +96,11 @@ export const TITULACION_TOKENS = {
   listDictamenesProyectoController: 'titulacion.listDictamenesProyectoController',
   exportDictamenPdfController: 'titulacion.exportDictamenPdfController',
 
-  // Controllers — acta de defensa de grado (extensión 2026-08-01)
+  // Controllers — acta de defensa de grado (extensión 2026-08-01; anulación P8 agregada 2026-08-02)
   registrarActaDefensaController: 'titulacion.registrarActaDefensaController',
   listActasDefensaController: 'titulacion.listActasDefensaController',
   exportActaDefensaPdfController: 'titulacion.exportActaDefensaPdfController',
+  anularActaDefensaController: 'titulacion.anularActaDefensaController',
 
   // Controllers — extensión 2026-07-31
   listEstudiantesElegiblesModalidadGradoController:

@@ -1,7 +1,36 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-08-01
+## Ultima actualizacion: 2026-08-02
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Changelog 2026-08-02 — TIT: anulación de acta de defensa (P8) + guard anti-IDOR en satélites del proyecto (sin permisos nuevos)
+
+`docs/plan/acta-defensa-grado-plan-desarrollo.md` (P8 re-resuelta: se
+implementa; hallazgo G5 cerrado). Dos cambios independientes sobre el mismo
+módulo:
+
+1. **Anulación de acta** — `AnularActaDefensaUseCase` +
+   `PATCH /proyectos-grado/:id/acta-defensa/:actaId/anular`. **No se agregan
+   permisos ni acciones**: reutiliza `titulacion.proyecto`·APROBAR, mismo
+   criterio que `POST /acta-defensa`.
+
+   | Endpoint | Acción | `dataFieldName` |
+   |---|---|---|
+   | `PATCH /proyectos-grado/:id/acta-defensa/:actaId/anular` | APROBAR | `actaDefensa` |
+
+   Body `{ motivo }` (3-500 caracteres). 404 si el acta no pertenece al
+   proyecto; 409 si ya estaba `ANULADA`. NO revierte la transición del
+   proyecto (`proyectos_grado.estado` queda igual) — decisión manual
+   documentada.
+
+2. **Guard anti-IDOR** (`proyectoGradoIntegranteGuard`, sin cambios de
+   RBAC): hallazgo verificado en vivo — ESTUDIANTE podía leer por API
+   directa el proyecto/satélites de OTRO estudiante (permiso grueso
+   DETALLE/LISTAR, sin validación de fila). Se agregó middleware DESPUÉS de
+   `verificarPermiso` en `GET /:id`, `GET /:id/bitacora`, `GET /:id/dictamenes`
+   y `GET /:id/acta-defensa` (reusa `assertIntegranteActivo`, sin permisos
+   nuevos). No explotable vía la UI real (usa `/mi-proyecto`, ID resuelto en
+   servidor).
 
 ## Changelog 2026-08-01 — TIT: acta de defensa de grado (Iteración 1 backend, sin permisos nuevos)
 
@@ -21,9 +50,10 @@ reutilizan `titulacion.proyecto` — mismo criterio que la extensión
 
 `POST` delega la transición `DEFENSA → APROBADO|REPROBADO` en
 `AprobarEtapaProyectoUseCase` (T11) tras registrar el/los acta(s) — misma
-máquina de estados, sin duplicarla. Anulación de acta (P8) diferida: sin
-endpoint en esta iteración. Iteración 2 (frontend, tab «Acta de defensa» en
-`ProyectoGradoDetail.jsx`) queda pendiente.
+máquina de estados, sin duplicarla. Anulación de acta (P8) diferida en esta
+fecha, **implementada 2026-08-02** (ver changelog arriba). Iteración 2
+(frontend, tab «Acta de defensa» en `ProyectoGradoDetail.jsx`) queda
+pendiente.
 
 ## Changelog 2026-07-31 — TIT: formulario de modalidad, reporte de avance por carrera y planilla 10-en-10 (extensión, sin permisos nuevos)
 
@@ -339,14 +369,18 @@ nuevas funciones. Cambios aplicados:
   `finanzas.configuracion.pago DETALLE`. Es **intencional** (igual que el patrón de
   `configuracion.documentacion`/complementarios): otros combos del sistema (registro de
   pagos, matrícula) dependen de ese catálogo abierto. No se restringe.
-- **Pendiente real (NO implementado, requiere feature propia):** self-service "Mi beca"
-  para ESTUDIANTE (`labelByRole` en `MAT-BEC-LISTAR`, `estudiantes/routes.jsx`) está
-  declarado en frontend pero sin permiso de rol, sin auto-filtrado por estudiante en
-  `GET /estudiantes/becas` y sin guard anti-IDOR en `/becas/:id` ni `/:id/scholarships`
-  (a diferencia de "Mis aportes", que sí tiene guard `aporteSelfOnlyGuard`). No se
-  otorgó el permiso: hacerlo hoy expondría el listado completo de becas de todos los
-  estudiantes. Construir junto con el resto (permiso + self-scope + guards) como una
-  sola iteración futura.
+- ~~**Pendiente real (NO implementado, requiere feature propia):** self-service "Mi beca"
+  para ESTUDIANTE...~~ **Implementado 2026-08-02.** `58-seed-permisos-mat.sql` otorga
+  a ESTUDIANTE `matricula.beca.ver` LISTAR/DETALLE (sin CREAR/EDITAR/ELIMINAR/APROBAR,
+  siguen staff-only). Mismo mecanismo que "Mis aportes": `GET /estudiantes/becas`
+  (`ListStudentScholarshipsController`) resuelve el `estudianteId` de la sesión vía
+  `resolveEstudianteIdForUsuario` cuando `rolCodigo === 'ESTUDIANTE'` y sobrescribe
+  cualquier `studentId` de query params antes de delegar al listado admin (no hay
+  endpoint `/mis-becas` separado: se reutiliza la misma ruta con `labelByRole`).
+  Guards anti-IDOR: `becaSelfOnlyGuard` (nuevo, `presentation/middleware/becaSelfOnly.middleware.js`,
+  mismo patrón que `aporteSelfOnlyGuard`) en `GET /estudiantes/becas/:id`; y
+  `estudianteSelfOnlyGuard` (reutilizado, no duplicado — en esa ruta `:id` ya es el id
+  del estudiante) en `GET /estudiantes/:id/scholarships`.
 - **Hallazgo descartado (falso positivo):** un agente reportó que `SEC_ACADEMICA` no
   tenía `matricula.admision.ver LISTAR` (bloqueando la búsqueda en Historial académico).
   Verificado directamente en `57-seed-permisos-mat.sql` bloque "3b": SEC_ACADEMICA SÍ
@@ -773,10 +807,15 @@ Endpoint(s): `GET /estudiantes/becas`, `POST/DELETE /estudiantes/:id/scholarship
 
 | Accion | Descripcion | Endpoint | Roles |
 |---|---|---|---|
-| VER | Ver becas asignadas | GET | ADM, REC, DIRA, SECA |
+| VER | Ver becas asignadas. EST: "Mi beca", alcance self en servidor (anti-IDOR) | GET | ADM, REC, DIRA, SECA, EST |
 | CREAR | Asignar beca | POST | ADM, REC, DIRA, SECA |
 | ELIMINAR | Eliminar beca asignada | DELETE | ADM, REC (segun politica) |
 | APROBAR | Aprobar beca (flujo UI) | proceso | ADM, REC, DIRA |
+
+> ESTUDIANTE (2026-08-02): solo LISTAR/DETALLE, self-scope. `GET /estudiantes/becas`
+> fuerza `studentId` = estudiante de la sesión (ignora query del cliente);
+> `becaSelfOnlyGuard` en `GET /estudiantes/becas/:id` y `estudianteSelfOnlyGuard`
+> (reutilizado) en `GET /estudiantes/:id/scholarships`. Mismo patrón que "Mis aportes".
 
 ### MAT/FIN - Aportes/Pagos (`/matricula/aportes/listar`, `/pagos/listar`, `/pagos/:id`)
 Permisos: `matricula.pago.aporte.ver`, `finanzas.pago.ver`, `finanzas.pago.registrar`, `finanzas.pago.editar`

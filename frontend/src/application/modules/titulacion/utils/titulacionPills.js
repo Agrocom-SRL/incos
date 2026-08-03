@@ -166,6 +166,25 @@ export const getResultadoActaDefensaPillClass = (resultado) =>
   `cfg-materia-pill ${RESULTADO_ACTA_DEFENSA_META[resultado]?.pill ?? 'cfg-materia-pill--default'}`;
 
 /**
+ * ENUM del backend (actas_defensa.estado, extensión 2026-08-02 — anulación de
+ * acta, P8). `ANULADA` usa `--inactiva` (gris), NUNCA `--danger` (rojo): mismo
+ * criterio que `EstadoTogglePill` y `CANCELADO` en `PROYECTO_ESTADO_META` —
+ * los estados inactivos/negativos del sistema no se pintan de rojo puro.
+ */
+const ESTADO_ACTA_DEFENSA_META = {
+  EMITIDA: { label: 'Emitida', pill: 'cfg-materia-pill--success' },
+  ANULADA: { label: 'Anulada', pill: 'cfg-materia-pill--inactiva' },
+};
+
+/** Etiqueta legible del estado del acta de defensa. */
+export const formatEstadoActaDefensa = (estado) =>
+  ESTADO_ACTA_DEFENSA_META[estado]?.label ?? estado ?? '—';
+
+/** Clase completa del StatusPill para el estado del acta de defensa. */
+export const getEstadoActaDefensaPillClass = (estado) =>
+  `cfg-materia-pill ${ESTADO_ACTA_DEFENSA_META[estado]?.pill ?? 'cfg-materia-pill--default'}`;
+
+/**
  * Umbral de aprobación usado ÚNICAMENTE como preview visual en el modal de
  * registro (`RegistrarActaDefensaModal`, D3): el resultado real (APRUEBA/
  * REPRUEBA) lo deriva siempre el backend contra `notaMinimaAprobacion` de

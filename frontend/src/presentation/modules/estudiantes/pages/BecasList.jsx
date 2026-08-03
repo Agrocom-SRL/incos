@@ -19,6 +19,7 @@ import { CarreraTabsListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { ActionButton } from '@atoms';
+import { useAuthContext, esEstudiante } from '@application-auth';
 import { useBecasListContext } from '@application-estudiantes/hooks';
 import { createBecasTableColumns } from '@estudiantes/config';
 import { allSpacing } from '@theme/tokens';
@@ -48,6 +49,11 @@ const subGroupParalelo = {
 const BecasList = () => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
+    const { usuario } = useAuthContext();
+    /** Vista propia del estudiante (reusa esta MISMA pantalla como "Mi beca", listado
+     * ya auto-filtrado server-side; mismo patrón que EstudiantesDetail/PagosDetail). */
+    const esVistaPropiaEstudiante = esEstudiante(usuario);
+    const pageTitle = esVistaPropiaEstudiante ? 'Mi beca' : 'Lista de becas';
 
     // Obtener datos del contexto (toda la lógica está en el Provider)
     const {
@@ -103,16 +109,18 @@ const BecasList = () => {
 
     return (
         <PageTemplate
-            header={<PageHeader title="Lista de becas" breadcrumbItems={breadcrumbItems} />}
+            header={<PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} />}
             sidebar={null}
         >
             <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
                 <section className="cfg-academico-workspace">
                     <header className="cfg-academico-workspace__header">
-                        <ListPanelHeader title="Lista de becas" actions={nuevaBecaAction} />
+                        <ListPanelHeader title={pageTitle} actions={nuevaBecaAction} />
                         <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                            Becas asignadas a los estudiantes: tipo, porcentaje de descuento,
-                            vigencia y estado. Desde aquí puede registrar nuevas asignaciones de beca.
+                            {esVistaPropiaEstudiante
+                                ? 'Su beca asignada: tipo, porcentaje de descuento, vigencia y estado.'
+                                : 'Becas asignadas a los estudiantes: tipo, porcentaje de descuento, ' +
+                                  'vigencia y estado. Desde aquí puede registrar nuevas asignaciones de beca.'}
                         </Paragraph>
                     </header>
                     <CarreraTabsListView
@@ -134,6 +142,11 @@ const BecasList = () => {
                             order: 'ascend',
                         }}
                         loadingTip="Cargando becas..."
+                        emptyText={
+                            esVistaPropiaEstudiante
+                                ? 'Aún no tiene una beca asignada.'
+                                : 'Aún no hay becas asignadas a estudiantes.'
+                        }
                     />
                 </section>
             </Flex>

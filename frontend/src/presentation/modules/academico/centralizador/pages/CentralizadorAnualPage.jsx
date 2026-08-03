@@ -113,9 +113,13 @@ const CentralizadorAnualPage = () => {
             variant="info"
             icon={<FileExcelOutlined />}
             loading={exportandoAnual}
-            disabled={isLoading || estudiantes.length === 0}
+            disabled={isLoading || estudiantes.length === 0 || !libro}
             onClick={handleExportarAnual}
-            title="Exporta el centralizador anual del paralelo a Excel (una sola hoja, sobre el folio del libro de la gestión)"
+            title={
+              libro
+                ? 'Exporta el centralizador anual del paralelo a Excel (una sola hoja, sobre el folio del libro de la gestión)'
+                : 'Genere primero los folios de este paralelo en Libros de registro para habilitar la exportación'
+            }
           >
             Exportar centralizador anual
           </ActionButton>

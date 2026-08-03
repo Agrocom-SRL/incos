@@ -280,4 +280,17 @@ export class IProyectoGradoRepository extends IBaseRepository {
   async exportarActaDefensaPdf(_id, _actaId) {
     throw new Error('Método exportarActaDefensaPdf debe ser implementado');
   }
+
+  /**
+   * Anula un acta de defensa EMITIDA (P8, proyecto·APROBAR — mismo permiso
+   * que registrar). El backend antepone el motivo a `observaciones`
+   * (`"ANULADA: {motivo}"`) y NO revierte la transición del proyecto.
+   * @param {string|number} _id
+   * @param {string|number} _actaId
+   * @param {string} _motivo - 3-500 caracteres
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async anularActaDefensa(_id, _actaId, _motivo) {
+    throw new Error('Método anularActaDefensa debe ser implementado');
+  }
 }

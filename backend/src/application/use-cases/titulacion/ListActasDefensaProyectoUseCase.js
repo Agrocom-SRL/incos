@@ -9,13 +9,15 @@ import { ActaDefensaMapper } from '../../mappers/titulacion/index.js';
  * Lista las actas de defensa de un proyecto (N actas si PSP grupal), con el
  * tribunal anidado, ordenadas por estudiante TITULAR primero.
  *
- * Sin guard de pertenencia adicional para ESTUDIANTE: se sigue el MISMO
- * patrón que el resto de satélites de la ficha del proyecto
- * (`ListBitacoraProyectoUseCase`, `ListDictamenesProyectoUseCase`, y el
- * propio `GetProyectoGradoByIdUseCase` de T6) — solo existencia del proyecto
- * (`getProyectoOrFail`); la restricción de acceso vive en el permiso
- * `titulacion.proyecto`·DETALLE (ESTUDIANTE lo tiene con el mismo alcance
- * que el resto de la ficha, sin guard de fila hoy en ningún satélite).
+ * Sin guard de pertenencia DENTRO del use case: se sigue el MISMO patrón que
+ * el resto de satélites de la ficha del proyecto (`ListBitacoraProyectoUseCase`,
+ * `ListDictamenesProyectoUseCase`, y el propio `GetProyectoGradoByIdUseCase`
+ * de T6) — solo existencia del proyecto (`getProyectoOrFail`). El guard de
+ * pertenencia para ESTUDIANTE (anti-IDOR) se agregó 2026-08-02 a nivel de
+ * ROUTER (`proyectoGradoIntegranteGuard` en `proyectos-grado.routes.js`,
+ * DESPUÉS de `verificarPermiso`), no aquí — mismo criterio para los 4
+ * satélites afectados (T6, T14, T22, acta-defensa), sin duplicar la regla
+ * de pertenencia en cada use case.
  */
 export class ListActasDefensaProyectoUseCase {
   /**

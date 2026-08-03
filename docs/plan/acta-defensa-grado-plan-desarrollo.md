@@ -42,7 +42,9 @@ ejecutó contra la BD real.
   (pdf-lib, patrón FMDG-1) + helper compartido `numberToWords.js`, DI
   registrada y verificada por resolución real del contenedor (sin BD).
   `AnularActaDefensaUseCase` (P8, opcional) **NO se implementó** — diferido
-  según lo resuelto.
+  según lo resuelto. **Actualización 2026-08-02: sí se implementó** (ver
+  contrato C12 y P8 más abajo) — `PATCH /:id/acta-defensa/:actaId/anular`,
+  cero permisos RBAC nuevos.
 - [x] **Bloque E** — Este documento actualizado; changelog en
   `docs/referencia/matriz-permisos-sistema.md` y registro en
   `docs/plan/estado-avance-y-proximos-pasos.md`.
@@ -66,7 +68,11 @@ preguntas P1-P8, se reportan en vez de improvisar silenciosamente):**
    `titulacion.proyecto`·DETALLE. `ListActasDefensaProyectoUseCase` sigue
    el MISMO patrón exacto (sin guard nuevo) por consistencia con el resto
    del módulo — no se inventó un guard que no tiene precedente en el
-   código real.
+   código real. **Actualización 2026-08-02: cerrado.** Se agregó
+   `proyectoGradoIntegranteGuard` a nivel de router (middleware, DESPUÉS de
+   `verificarPermiso`) en los 4 GET afectados (T6, T14, T22, acta-defensa),
+   reusando `assertIntegranteActivo` — ver sección "Estado de los Bloques F
+   y G", punto G5.
 3. **Tribunal sin "grado académico" abreviado**: el modelo `docentes` no
    tiene un campo de abreviatura tipo "Lic./Ing." (solo `nivelAcademico`
    ENUM y `tituloProfesional` libre); el snapshot `nombreCompleto` del
@@ -204,22 +210,33 @@ a limpiar en otra sesión si el usuario lo desea.
      desconocida); confirmado solo por lectura del seed 65 (tiene EXPORTAR,
      no tiene APROBAR) — mismo mecanismo `verificarPermiso` ya ejercitado
      con DOCENTE/ESTUDIANTE.
-5. **ESTUDIANTE — guard anti-IDOR: NO SE CUMPLE, y es un hallazgo real, no
-   una regresión.** Prueba en vivo: el estudiante `13081716` (estudiante_id=1,
-   sin relación con el proyecto 4) hizo `GET /proyectos-grado/4/acta-defensa`
-   y obtuvo **200** (no 403). Esto coincide exactamente con el Hallazgo 2 ya
-   documentado al cerrar la Iteración 1 (backend): ningún satélite de la
-   ficha (`GET /:id`, bitácora, dictámenes, y ahora acta) valida pertenencia
-   por fila — el acceso de ESTUDIANTE se apoya solo en el permiso grueso
-   DETALLE, por precedente del resto del módulo. **Vía la UI real esto no es
-   explotable** (el frontend de estudiante usa `/mi-proyecto`, que resuelve
-   el ID en servidor desde la sesión — nunca deja que el estudiante elija un
-   ID arbitrario), pero un ESTUDIANTE que arme la llamada HTTP a mano SÍ
-   puede leer el acta de un proyecto ajeno. **Decisión pendiente del
-   usuario**: aceptar el riesgo (consistente con el resto del módulo, cambio
-   de alcance amplio si se corrige) o añadir `assertIntegranteActivo` en
-   `ListActasDefensaProyectoUseCase` (y por coherencia en los demás
-   satélites) en una iteración aparte.
+5. **ESTUDIANTE — guard anti-IDOR: NO SE CUMPLÍA (hallazgo real, no
+   regresión). IMPLEMENTADO 2026-08-02.** Prueba en vivo original: el
+   estudiante `13081716` (estudiante_id=1, sin relación con el proyecto 4)
+   hizo `GET /proyectos-grado/4/acta-defensa` y obtuvo **200** (no 403). Esto
+   coincidía exactamente con el Hallazgo 2 ya documentado al cerrar la
+   Iteración 1 (backend): ningún satélite de la ficha (`GET /:id`, bitácora,
+   dictámenes, y el acta) validaba pertenencia por fila — el acceso de
+   ESTUDIANTE se apoyaba solo en el permiso grueso DETALLE/LISTAR, por
+   precedente del resto del módulo. **Vía la UI real esto no era explotable**
+   (el frontend de estudiante usa `/mi-proyecto`, que resuelve el ID en
+   servidor desde la sesión — nunca deja que el estudiante elija un ID
+   arbitrario), pero un ESTUDIANTE que armara la llamada HTTP a mano sí podía
+   leer el acta de un proyecto ajeno. **Corregido el mismo día (agente
+   `backend`)**: nuevo middleware `proyectoGradoIntegranteGuard`
+   (`presentation/middleware/proyectoGradoSelfOnly.middleware.js`), mismo
+   patrón que `aporteSelfOnlyGuard`/`inscripcionSelfOnlyGuard` — resuelve el
+   `estudianteId` de la sesión (`tryResolveEstudianteIdForUsuario`) y, si el
+   usuario es estudiante, reusa `assertIntegranteActivo` (el mismo helper
+   que ya validan los use cases de escritura del módulo) contra el
+   `proyectoGradoId` de la ruta; si no es integrante ACTIVO, `ForbiddenError`
+   (403); si el proyecto no existe, deja pasar para que el controller
+   responda 404 (no se filtra existencia vía 403). Cableado DESPUÉS de
+   `verificarPermiso`+`idValidator`+`validateRequest` en los 4 GET
+   afectados: `GET /:id` (T6), `GET /:id/bitacora` (T14), `GET /:id/dictamenes`
+   (T22) y `GET /:id/acta-defensa`. NO se tocaron rutas de escritura (ya
+   cerradas a ESTUDIANTE por APROBAR/EDITAR/CREAR) ni `/mi-proyecto`/
+   `/mis-tutorados` (ya resuelven el ID en servidor).
 6. **Máquina de estados**: confirmado. `POST /acta-defensa` sobre un proyecto
    que ya no está en `DEFENSA` (proyecto 4, ya `APROBADO`) → **409**. Tras
    registrar el acta, `proyectos_grado` queda sincronizado
@@ -249,8 +266,8 @@ a limpiar en otra sesión si el usuario lo desea.
    TITULAR.
 
 **Pendiente de decisión del usuario** (no bloquea el cierre del módulo):
-(a) punto 5 — añadir guard anti-IDOR en acta/satélites o aceptar el riesgo
-por ahora; (b) si quiere profundizar RBAC en vivo con `DIR_ACADEMICO`/
+(a) punto 5 — **resuelto 2026-08-02** (guard anti-IDOR implementado, ver
+arriba); (b) si quiere profundizar RBAC en vivo con `DIR_ACADEMICO`/
 `SEC_ACADEMICA` reales, indicar su contraseña o autorizar un reseteo puntual
 de esas 2 cuentas QA.
 
@@ -602,9 +619,10 @@ que la extensión 2026-07-31 (FMDG-1/reportes: cero permisos nuevos).
     tribunal → `actaDefensaPdfGenerator.generate(...)`. Documento **export**
     (Buffer; NO escribe en uploads ni `dictamenes_proyecto` — el acta ya está
     persistida en su tabla y el PDF es reproducible).
-  - `AnularActaDefensaUseCase` (opcional v1 — pregunta P8): pasa a ANULADA
-    con motivo en observaciones; NO revierte la transición del proyecto
-    (corrección de estado = decisión manual documentada).
+  - `AnularActaDefensaUseCase` — **implementado 2026-08-02** (pregunta P8):
+    pasa a ANULADA con motivo antepuesto a `observaciones`; NO revierte la
+    transición del proyecto (corrección de estado = decisión manual
+    documentada).
 - **C7. Controllers** en `presentation/controllers/titulacion/`:
   - `registrar-acta-defensa.controller.js` → `dataFieldName: 'actasDefensa'`
   - `list-actas-defensa.controller.js` → `dataFieldName: 'actasDefensa'`
@@ -615,16 +633,19 @@ que la extensión 2026-07-31 (FMDG-1/reportes: cero permisos nuevos).
   array exacto de 3 con `nombreCompleto` requerido; `calificaciones` array
   1..N de `{ estudianteId, calificacionFinal 0-100 }`; `numeroActa` entero ≥1
   opcional) + `actaIdValidator`.
-- **C9. Router** — 3 rutas nuevas en `proyectos-grado.routes.js` (bajo `/:id`,
+- **C9. Router** — 4 rutas en `proyectos-grado.routes.js` (bajo `/:id`,
   el PDF antes que la genérica `/:id/acta-defensa/:actaId` si se agrega):
   - `GET /:id/acta-defensa` → `verificarPermiso('titulacion.proyecto','DETALLE')`
   - `POST /:id/acta-defensa` → APROBAR
   - `GET /:id/acta-defensa/:actaId/pdf` → EXPORTAR
-  - (opcional) `PATCH /:id/acta-defensa/:actaId/anular` → APROBAR
+  - `PATCH /:id/acta-defensa/:actaId/anular` → APROBAR — **implementada 2026-08-02**
   ⚠️ El GET de acta debe aplicar el **mismo guard de pertenencia** que los
   satélites existentes cuando el usuario es ESTUDIANTE (helpers
   `proyectoTutoriaGuards`) — verificar en implementación cómo lo hace hoy
-  `GET /:id` y replicar.
+  `GET /:id` y replicar. **Actualización 2026-08-02**: ese guard NO existía
+  en ningún satélite (hallazgo G5, confirmado en vivo); se agregó recién en
+  esta fecha vía `proyectoGradoIntegranteGuard` a nivel de router — ver
+  sección "Estado de los Bloques F y G" más abajo.
 - **C10. PDF**: `infrastructure/external/pdf/titulacion/ActaDefensaPdfGenerator.js`
   extendiendo `IncosPDFLibBase` sobre `Plantilla.pdf` — réplica del §1
   (foliado rojo sup. der., título con modalidad, grilla de cabecera, párrafos
@@ -647,7 +668,7 @@ que la extensión 2026-07-31 (FMDG-1/reportes: cero permisos nuevos).
 | `GET /api/v1/proyectos-grado/:id/acta-defensa` | titulacion.proyecto·DETALLE | `actasDefensa` | Array (N actas si PSP); tribunal anidado `tribunal: [{orden, docenteId, nombreCompleto, cargo}]`; guard de pertenencia para ESTUDIANTE |
 | `POST /api/v1/proyectos-grado/:id/acta-defensa` | titulacion.proyecto·APROBAR | `actasDefensa` | Body: `{ fechaDefensa, horaInicio, horaConclusion, tribunal[3], calificaciones[{estudianteId, calificacionFinal}], numeroActa?, observaciones? }`. Efecto: crea actas + aplica transición DEFENSA→APROBADO\|REPROBADO |
 | `GET /api/v1/proyectos-grado/:id/acta-defensa/:actaId/pdf` | titulacion.proyecto·EXPORTAR | — (binario) | `acta-defensa-{apellidos}-{numeroActa}.pdf`, espejo §1 |
-| `PATCH /api/v1/proyectos-grado/:id/acta-defensa/:actaId/anular` (opcional) | titulacion.proyecto·APROBAR | `actaDefensa` | Solo si P8 = sí |
+| `PATCH /api/v1/proyectos-grado/:id/acta-defensa/:actaId/anular` — **implementada 2026-08-02** | titulacion.proyecto·APROBAR | `actaDefensa` | Body `{ motivo }` (3-500 caracteres); 404 si el acta no pertenece al proyecto; 409 si ya está ANULADA; NO revierte la transición del proyecto (decisión manual documentada, P8) |
 
 ### Bloque E — Documentación
 
@@ -805,10 +826,20 @@ la ficha (criterio «ítem de menú = proceso completo»; satélites con
 - **P7 · Portal del estudiante — RESUELTO:** el estudiante ve calificación y
   resultado del acta en «Mi proyecto», **solo lectura, sin descarga de PDF**
   (el PDF oficial queda para uso administrativo/archivo).
-- **P8 · Anulación — RESUELTO:** **se difiere.** El estado `ANULADA` queda
-  modelado en el ENUM del DDL (para no migrar el schema después), pero el
-  flujo de anular + emitir acta sustituta NO se construye en esta versión —
-  un acta emitida queda fija en v1.
+- **P8 · Anulación — RESUELTO originalmente como "se difiere"; IMPLEMENTADO
+  2026-08-02.** El estado `ANULADA` ya vivía en el ENUM del DDL (sin cambio
+  de schema). Se agregó `AnularActaDefensaUseCase` + `PATCH
+  /:id/acta-defensa/:actaId/anular` (permiso `titulacion.proyecto`·APROBAR,
+  mismo criterio que registrar — cero permisos RBAC nuevos): valida que el
+  acta pertenezca al proyecto (404 si no) y que esté `EMITIDA` (409 si ya
+  `ANULADA`), antepone el motivo a `observaciones`
+  (`"ANULADA: {motivo}"`, preservando cualquier observación previa) y
+  **NO revierte** la transición del proyecto (`proyectos_grado.estado`
+  queda igual) — la corrección de estado, si hiciera falta, sigue siendo
+  una decisión manual documentada aparte. Emitir un acta sustituta (nueva
+  numeración) sigue fuera de alcance: sigue siendo el flujo normal de
+  `POST /:id/acta-defensa` una vez que el estudiante vuelve a estar en
+  condiciones de defender.
 
 **Las 8 preguntas están resueltas — el plan queda listo para implementar en
 cuanto el usuario apruebe el DDL del Bloque A** (tablas `actas_defensa` +

@@ -9,10 +9,11 @@
  * feedback) vive en `useProyectoGradoDetailPage`. Provider DELGADO: solo
  * ensambla.
  *
- * El acta de defensa (extensión 2026-08-01) se instancia aquí pero NO se
- * carga en el efecto de montaje: es la única tab de carga LAZY de la ficha
- * (se dispara desde `useProyectoGradoDetailPage` al abrir la tab por primera
- * vez), por eso queda fuera del `Promise.all` de `cargar`/`refetch`.
+ * El acta de defensa (extensión 2026-08-01, más anulación P8 del 2026-08-02)
+ * se instancia aquí pero NO se carga en el efecto de montaje: es la única tab
+ * de carga LAZY de la ficha (se dispara desde `useProyectoGradoDetailPage` al
+ * abrir la tab por primera vez), por eso queda fuera del `Promise.all` de
+ * `cargar`/`refetch`.
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
@@ -26,6 +27,7 @@ import { useExportFormularioModalidadPdf } from '@application-titulacion/proyect
 import { useActaDefensaApi } from '@application-titulacion/proyectos-grado/hooks/api/useActaDefensaApi';
 import { useRegistrarActaDefensa } from '@application-titulacion/proyectos-grado/hooks/api/useRegistrarActaDefensa';
 import { useExportActaDefensaPdf } from '@application-titulacion/proyectos-grado/hooks/api/useExportActaDefensaPdf';
+import { useAnularActaDefensa } from '@application-titulacion/proyectos-grado/hooks/api/useAnularActaDefensa';
 import { ProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoDetailContext';
 
 export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
@@ -39,6 +41,7 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
   const actaDefensa = useActaDefensaApi();
   const registrarActaDefensa = useRegistrarActaDefensa();
   const exportActaDefensaPdf = useExportActaDefensaPdf();
+  const anularActaDefensa = useAnularActaDefensa();
 
   const id = Number(proyectoId);
   const idValido = Number.isFinite(id) && id > 0;
@@ -83,6 +86,7 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
       actaDefensa,
       registrarActaDefensa,
       exportActaDefensaPdf,
+      anularActaDefensa,
     }),
     [
       idValido,
@@ -100,6 +104,7 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
       actaDefensa,
       registrarActaDefensa,
       exportActaDefensaPdf,
+      anularActaDefensa,
     ],
   );
 

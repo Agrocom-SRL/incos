@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { estudianteSelfOnlyGuard } from '../middleware/estudianteSelfOnly.middleware.js';
 import { estudianteAlcanceDocenteGuard } from '../middleware/estudianteAlcanceDocente.middleware.js';
+import { becaSelfOnlyGuard } from '../middleware/becaSelfOnly.middleware.js';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
 import {
     registerStudentValidator,
@@ -276,12 +277,14 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/becas/:id
      * Detalle de una asignación de beca (enriquecido + pago de aporte vinculado si existe).
      * Debe declararse después de GET /becas y antes de DELETE /becas/:id (mismo path, otro método).
+     * :id = id de la asignación (estudiantes_becas.id). Anti-IDOR: becaSelfOnlyGuard.
      */
     router.get(
         '/becas/:id',
         ...becaDetalle,
         idValidator,
         validateRequest,
+        becaSelfOnlyGuard, // Anti-IDOR: un estudiante solo ve SU propia beca ("Mi beca")
         (req, res, next) => controllers.getStudentScholarshipByIdController.handle(req, res, next)
     );
 
@@ -289,18 +292,23 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/:id/scholarships
      * Obtener todas las becas de un estudiante con datos enriquecidos
      * Path: id (ID del estudiante)
-     * 
+     *
      * Retorna las becas del estudiante con información de tipo de beca y gestión.
      * Útil para el módulo de pagos para calcular descuentos.
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de /:id para evitar conflictos
+     *
+     * Anti-IDOR: reutiliza estudianteSelfOnlyGuard (mismo guard que GET /:id): aquí
+     * :id también es el id del ESTUDIANTE (no de una beca), así que el criterio de
+     * "solo su propio :id" ya aplica sin necesidad de un guard específico.
      */
     router.get(
         '/:id/scholarships',
         ...becaDetalle,
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.getStudentScholarshipsController.handle(req, res, next)  // 3. Controller al final
+        estudianteSelfOnlyGuard, // 3. Anti-IDOR: un estudiante solo ve SUS propias becas
+        (req, res, next) => controllers.getStudentScholarshipsController.handle(req, res, next)  // 4. Controller al final
     );
 
     /**

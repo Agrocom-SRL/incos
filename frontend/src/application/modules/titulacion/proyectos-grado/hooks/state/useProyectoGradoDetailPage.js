@@ -12,7 +12,9 @@
  *    2026-07-31): exportar PDF — gated por EXPORTAR
  *  - acta de defensa (extensión 2026-08-01): carga LAZY al abrir la tab,
  *    registro (T·APROBAR, delega la transición DEFENSA→APROBADO|REPROBADO
- *    en el backend) y exportación de PDF por acta (T·EXPORTAR)
+ *    en el backend), exportación de PDF por acta (T·EXPORTAR) y anulación de
+ *    un acta EMITIDA (P8, extensión 2026-08-02, mismo permiso APROBAR — NO
+ *    revierte la transición del proyecto)
  * La página es "dumb"; los modales/drawers reciben estas props.
  */
 
@@ -52,6 +54,7 @@ export const useProyectoGradoDetailPage = () => {
     actaDefensa,
     registrarActaDefensa,
     exportActaDefensaPdf,
+    anularActaDefensa,
   } = useProyectoGradoDetailContext();
 
   const puedeAprobarProyecto = usePermiso(TITULACION_PERMISOS.proyecto, 'APROBAR');
@@ -349,6 +352,34 @@ export const useProyectoGradoDetailPage = () => {
     [proyectoId, exportActaDefensaPdf, notification],
   );
 
+  // ————— Anular acta de defensa (P8, extensión 2026-08-02) —————
+  /** Acta seleccionada para el modal de anulación (null = cerrado). */
+  const [actaAAnular, setActaAAnular] = useState(null);
+
+  const abrirAnularActaModal = useCallback((acta) => setActaAAnular(acta ?? null), []);
+  const cerrarAnularActaModal = useCallback(() => setActaAAnular(null), []);
+
+  const handleAnularActaDefensa = useCallback(
+    async (motivo) => {
+      if (!proyectoId || !actaAAnular?.id) return;
+      const result = await anularActaDefensa.anular(proyectoId, actaAAnular.id, motivo);
+      if (result?.success) {
+        notification.success({
+          title: 'Acta de defensa anulada',
+          description: 'El acta quedó ANULADA. La transición del proyecto no se modificó.',
+        });
+        setActaAAnular(null);
+        await actaDefensa.cargar(proyectoId);
+      } else {
+        notification.error({
+          title: 'No se pudo anular el acta de defensa',
+          description: result?.error || 'Intente nuevamente en unos instantes.',
+        });
+      }
+    },
+    [proyectoId, actaAAnular, anularActaDefensa, notification, actaDefensa],
+  );
+
   return {
     proyectoId,
     proyecto,
@@ -421,7 +452,7 @@ export const useProyectoGradoDetailPage = () => {
       descargando: formularioModalidad.descargando,
       exportar: handleExportarFormularioModalidad,
     },
-    // Acta de defensa (extensión 2026-08-01, tab de carga lazy)
+    // Acta de defensa (extensión 2026-08-01, tab de carga lazy; anulación P8 del 2026-08-02)
     actaDefensa: {
       items: actaDefensa.actas,
       loading: actaDefensa.loading,
@@ -430,6 +461,7 @@ export const useProyectoGradoDetailPage = () => {
       puedeRegistrar: puedeRegistrarActa,
       descargandoId: exportActaDefensaPdf.descargandoId,
       exportarPdf: handleExportarActaPdf,
+      anular: abrirAnularActaModal,
       modal: {
         open: actaModalOpen,
         abrir: () => setActaModalOpen(true),
@@ -439,6 +471,13 @@ export const useProyectoGradoDetailPage = () => {
         docentes: docentesCatalogo.docentes,
         loadingDocentes: docentesCatalogo.loading,
         docentesDisponible: docentesCatalogo.disponible,
+      },
+      anularModal: {
+        open: Boolean(actaAAnular),
+        acta: actaAAnular,
+        anulando: anularActaDefensa.anulando,
+        submit: handleAnularActaDefensa,
+        cerrar: cerrarAnularActaModal,
       },
     },
   };

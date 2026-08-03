@@ -12,7 +12,9 @@
  * recién al abrirla, no al montar la ficha) y, con el proyecto en `DEFENSA`,
  * el CTA principal de cabecera cambia de "Aprobar etapa" a "Registrar acta de
  * defensa" — es ese registro el que delega en el backend la transición
- * DEFENSA→APROBADO|REPROBADO, no el modal genérico de transición.
+ * DEFENSA→APROBADO|REPROBADO, no el modal genérico de transición. Un acta
+ * `EMITIDA` admite anulación (P8, extensión 2026-08-02, `AnularActaDefensaModal`,
+ * mismo permiso APROBAR) sin revertir esa transición.
  */
 
 import { useState } from 'react';
@@ -48,6 +50,7 @@ import AprobarEtapaModal from '@titulacion/proyectos-grado/components/modals/Apr
 import AgregarIntegranteModal from '@titulacion/proyectos-grado/components/modals/AgregarIntegranteModal';
 import BitacoraEntradaDrawer from '@titulacion/proyectos-grado/components/modals/BitacoraEntradaDrawer';
 import RegistrarActaDefensaModal from '@titulacion/proyectos-grado/components/modals/RegistrarActaDefensaModal';
+import AnularActaDefensaModal from '@titulacion/proyectos-grado/components/modals/AnularActaDefensaModal';
 import '@presentation/styles/pages/detail-page.css';
 
 /** Estado del proyecto en el que el CTA principal apunta a registrar el acta (D3). */
@@ -225,6 +228,7 @@ const ProyectoGradoDetail = () => {
               descargandoId={actaDefensa.descargandoId}
               onRegistrar={actaDefensa.modal.abrir}
               onExportarPdf={actaDefensa.exportarPdf}
+              onAnular={actaDefensa.anular}
             />
           ),
         },
@@ -304,6 +308,13 @@ const ProyectoGradoDetail = () => {
         docentes={actaDefensa.modal.docentes}
         loadingDocentes={actaDefensa.modal.loadingDocentes}
         docentesDisponible={actaDefensa.modal.docentesDisponible}
+      />
+      <AnularActaDefensaModal
+        open={actaDefensa.anularModal.open}
+        acta={actaDefensa.anularModal.acta}
+        anulando={actaDefensa.anularModal.anulando}
+        onAnular={actaDefensa.anularModal.submit}
+        onCancelar={actaDefensa.anularModal.cerrar}
       />
     </PageTemplate>
   );

@@ -501,6 +501,22 @@ export class ProyectoGradoRepository extends IProyectoGradoRepository {
       return parseBlobError(error, 'Error al exportar el acta de defensa');
     }
   }
+
+  /**
+   * Anula un acta de defensa EMITIDA (P8, proyecto·APROBAR).
+   * PATCH /v1/proyectos-grado/:id/acta-defensa/:actaId/anular
+   */
+  async anularActaDefensa(id, actaId, motivo) {
+    try {
+      const response = await apiClient.patch(
+        PROYECTOS_GRADO_ENDPOINTS.ACTA_DEFENSA_ANULAR(id, actaId),
+        { motivo },
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al anular el acta de defensa');
+    }
+  }
 }
 
 export default new ProyectoGradoRepository();

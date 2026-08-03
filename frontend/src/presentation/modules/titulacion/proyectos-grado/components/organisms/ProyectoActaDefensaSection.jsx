@@ -1,6 +1,6 @@
 /**
  * Organismo: tab "Acta de defensa" de la ficha-hub del proyecto (TIT ·
- * extensión 2026-08-01).
+ * extensión 2026-08-01, más anulación P8 del 2026-08-02).
  *
  * Vista de campo a campo, espejo del acta física (§1 del plan): una
  * `DetailInfoCard` POR ACTA (N si el proyecto es PSP grupal — una por
@@ -14,19 +14,26 @@
  * `estudianteId`, contrato C12): se cruzan aquí contra `proyecto.integrantes`
  * (ya cargados por la ficha), igual que hace `ProyectoIntegrantesSection`.
  *
- * Solo lectura: el acta la registra `RegistrarActaDefensaModal` (proyecto·
- * APROBAR) desde la cabecera de la ficha o desde el estado vacío de esta tab.
+ * El acta la registra `RegistrarActaDefensaModal` (proyecto·APROBAR) desde la
+ * cabecera de la ficha o desde el estado vacío de esta tab. Un acta `EMITIDA`
+ * admite anulación (`AnularActaDefensaModal`, mismo permiso APROBAR); un acta
+ * `ANULADA` es terminal: se muestra con pill gris (`--inactiva`, nunca rojo)
+ * y pierde tanto el botón "Anular acta" (ya no aplica) como "Exportar acta
+ * (PDF)" — un acta anulada no debe imprimirse como si fuera válida (criterio
+ * propio del frontend; el backend no lo bloquea explícitamente en el PDF).
  */
 
 import { useMemo } from 'react';
 import { Alert, Empty, Flex, Typography } from 'antd';
-import { DownloadOutlined, FileDoneOutlined } from '@ant-design/icons';
+import { DownloadOutlined, FileDoneOutlined, StopOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { ActionButton, DetailField, StatusPill } from '@atoms';
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   ESTADOS_PROYECTO_GRADO,
+  formatEstadoActaDefensa,
   formatResultadoActaDefensa,
+  getEstadoActaDefensaPillClass,
   getResultadoActaDefensaPillClass,
 } from '@application-titulacion/utils/titulacionPills';
 import { allSpacing } from '@theme/tokens';
@@ -40,71 +47,94 @@ const esEstadoPrevioDefensa = (estado) => {
   return indice >= 0 && indice < INDICE_DEFENSA;
 };
 
-const ActaCard = ({ acta, descargando, onExportarPdf }) => (
-  <DetailInfoCard
-    title={`Acta de defensa · ${acta.estudianteNombre || 'Estudiante'}`}
-    icon={<FileDoneOutlined />}
-    cols={3}
-    extra={
-      <Flex align="center" gap={allSpacing.marginSM}>
-        <StatusPill
-          label={acta.numeroActaFormateado}
-          className="cfg-materia-pill cfg-materia-pill--accent"
-        />
-        <ActionButton
-          permiso={TITULACION_PERMISOS.proyecto}
-          accion="EXPORTAR"
-          variant="info"
-          icon={<DownloadOutlined />}
-          loading={descargando}
-          onClick={() => onExportarPdf(acta)}
-        >
-          Exportar acta (PDF)
-        </ActionButton>
-      </Flex>
-    }
-  >
-    <DetailField label="Estudiante">{acta.estudianteNombre || '—'}</DetailField>
-    <DetailField label="C.I.">{acta.estudianteCi || '—'}</DetailField>
-    <DetailField label="Fecha de defensa">{acta.fechaDefensaLabel || '—'}</DetailField>
-    <DetailField label="Horario">
-      {acta.horaInicio
-        ? `${acta.horaInicio}${acta.horaConclusion ? ` – ${acta.horaConclusion}` : ''}`
-        : '—'}
-    </DetailField>
-    <DetailField label="Calificación final" span={2}>
-      <Flex align="center" gap={allSpacing.marginXS}>
-        <Text strong>
-          {acta.calificacionFinal != null ? `${acta.calificacionFinal} / 100` : '—'}
-        </Text>
-        <StatusPill
-          label={formatResultadoActaDefensa(acta.resultado)}
-          className={getResultadoActaDefensaPillClass(acta.resultado)}
-        />
-      </Flex>
-    </DetailField>
-    <DetailField label="Tribunal Evaluador" span={3}>
-      {acta.tribunal.length === 0 ? (
-        '—'
-      ) : (
-        <Flex vertical gap={allSpacing.marginXS}>
-          {acta.tribunal.map((miembro, index) => (
-            <Flex key={miembro.id ?? index} gap={allSpacing.marginXS} align="baseline" wrap>
-              <Text strong>{index + 1}.-</Text>
-              <Text>{miembro.nombreCompleto}</Text>
-              <Text type="secondary">({miembro.cargo})</Text>
-            </Flex>
-          ))}
+const ActaCard = ({ acta, descargando, onExportarPdf, onAnular }) => {
+  const esAnulada = acta.estado === 'ANULADA';
+
+  return (
+    <DetailInfoCard
+      title={`Acta de defensa · ${acta.estudianteNombre || 'Estudiante'}`}
+      icon={<FileDoneOutlined />}
+      cols={3}
+      extra={
+        <Flex align="center" gap={allSpacing.marginSM} wrap>
+          <StatusPill
+            label={acta.numeroActaFormateado}
+            className="cfg-materia-pill cfg-materia-pill--accent"
+          />
+          {esAnulada ? (
+            <StatusPill
+              label={formatEstadoActaDefensa(acta.estado)}
+              className={getEstadoActaDefensaPillClass(acta.estado)}
+            />
+          ) : null}
+          {!esAnulada ? (
+            <ActionButton
+              permiso={TITULACION_PERMISOS.proyecto}
+              accion="EXPORTAR"
+              variant="info"
+              icon={<DownloadOutlined />}
+              loading={descargando}
+              onClick={() => onExportarPdf(acta)}
+            >
+              Exportar acta (PDF)
+            </ActionButton>
+          ) : null}
+          {!esAnulada ? (
+            <ActionButton
+              permiso={TITULACION_PERMISOS.proyecto}
+              accion="APROBAR"
+              variant="danger"
+              icon={<StopOutlined />}
+              onClick={() => onAnular?.(acta)}
+            >
+              Anular acta
+            </ActionButton>
+          ) : null}
         </Flex>
-      )}
-    </DetailField>
-    {acta.observaciones ? (
-      <DetailField label="Observaciones" span={3}>
-        {acta.observaciones}
+      }
+    >
+      <DetailField label="Estudiante">{acta.estudianteNombre || '—'}</DetailField>
+      <DetailField label="C.I.">{acta.estudianteCi || '—'}</DetailField>
+      <DetailField label="Fecha de defensa">{acta.fechaDefensaLabel || '—'}</DetailField>
+      <DetailField label="Horario">
+        {acta.horaInicio
+          ? `${acta.horaInicio}${acta.horaConclusion ? ` – ${acta.horaConclusion}` : ''}`
+          : '—'}
       </DetailField>
-    ) : null}
-  </DetailInfoCard>
-);
+      <DetailField label="Calificación final" span={2}>
+        <Flex align="center" gap={allSpacing.marginXS}>
+          <Text strong>
+            {acta.calificacionFinal != null ? `${acta.calificacionFinal} / 100` : '—'}
+          </Text>
+          <StatusPill
+            label={formatResultadoActaDefensa(acta.resultado)}
+            className={getResultadoActaDefensaPillClass(acta.resultado)}
+          />
+        </Flex>
+      </DetailField>
+      <DetailField label="Tribunal Evaluador" span={3}>
+        {acta.tribunal.length === 0 ? (
+          '—'
+        ) : (
+          <Flex vertical gap={allSpacing.marginXS}>
+            {acta.tribunal.map((miembro, index) => (
+              <Flex key={miembro.id ?? index} gap={allSpacing.marginXS} align="baseline" wrap>
+                <Text strong>{index + 1}.-</Text>
+                <Text>{miembro.nombreCompleto}</Text>
+                <Text type="secondary">({miembro.cargo})</Text>
+              </Flex>
+            ))}
+          </Flex>
+        )}
+      </DetailField>
+      {acta.observaciones ? (
+        <DetailField label="Observaciones" span={3}>
+          {acta.observaciones}
+        </DetailField>
+      ) : null}
+    </DetailInfoCard>
+  );
+};
 
 const ProyectoActaDefensaSection = ({
   proyecto,
@@ -115,6 +145,7 @@ const ProyectoActaDefensaSection = ({
   descargandoId = null,
   onRegistrar,
   onExportarPdf,
+  onAnular,
 }) => {
   const estadoProyecto = proyecto?.estado ?? null;
 
@@ -184,6 +215,7 @@ const ProyectoActaDefensaSection = ({
           acta={acta}
           descargando={descargandoId === acta.id}
           onExportarPdf={onExportarPdf}
+          onAnular={onAnular}
         />
       ))}
     </div>

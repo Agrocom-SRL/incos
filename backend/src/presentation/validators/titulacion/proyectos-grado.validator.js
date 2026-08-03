@@ -371,3 +371,17 @@ export const registrarActaDefensaValidator = [
     .withMessage('numeroActa debe ser un entero positivo (ayuda: se asigna automáticamente si no se envía)'),
   body('observaciones').optional({ nullable: true }).isString(),
 ];
+
+/**
+ * PATCH /:id/acta-defensa/:actaId/anular — anula un acta EMITIDA (P8, extensión
+ * 2026-08-02). El motivo se antepone a `observaciones` en el use case.
+ */
+export const anularActaDefensaValidator = [
+  body('motivo')
+    .notEmpty()
+    .withMessage('motivo es requerido')
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 500 })
+    .withMessage('motivo debe tener entre 3 y 500 caracteres'),
+];

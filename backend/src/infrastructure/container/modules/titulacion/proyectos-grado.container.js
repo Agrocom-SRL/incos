@@ -43,6 +43,7 @@ import { ExportDictamenPdfUseCase } from '../../../../application/use-cases/titu
 import { RegistrarActaDefensaUseCase } from '../../../../application/use-cases/titulacion/RegistrarActaDefensaUseCase.js';
 import { ListActasDefensaProyectoUseCase } from '../../../../application/use-cases/titulacion/ListActasDefensaProyectoUseCase.js';
 import { ExportActaDefensaPdfUseCase } from '../../../../application/use-cases/titulacion/ExportActaDefensaPdfUseCase.js';
+import { AnularActaDefensaUseCase } from '../../../../application/use-cases/titulacion/AnularActaDefensaUseCase.js';
 import { ListEstudiantesElegiblesModalidadGradoUseCase } from '../../../../application/use-cases/titulacion/ListEstudiantesElegiblesModalidadGradoUseCase.js';
 import { ExportFormularioModalidadGradoPdfUseCase } from '../../../../application/use-cases/titulacion/ExportFormularioModalidadGradoPdfUseCase.js';
 import { GetAvanceTutoriaCarreraUseCase } from '../../../../application/use-cases/titulacion/GetAvanceTutoriaCarreraUseCase.js';
@@ -76,6 +77,7 @@ import {
   RegistrarActaDefensaController,
   ListActasDefensaController,
   ExportActaDefensaPdfController,
+  AnularActaDefensaController,
   ListEstudiantesElegiblesModalidadGradoController,
   ExportFormularioModalidadGradoPdfController,
   GetAvanceTutoriaCarreraController,
@@ -437,6 +439,16 @@ export function registerProyectosGradoResource(container) {
       })
   );
 
+  registerComponent(
+    container,
+    TITULACION_TOKENS.anularActaDefensaUseCase,
+    (c) =>
+      new AnularActaDefensaUseCase({
+        actaDefensaRepository: c.resolve(TITULACION_TOKENS.actaDefensaRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
   // ============================================
   // USE CASES — extensión 2026-07-31 (formulario de modalidad de graduación,
   // reporte de avance por carrera, planilla de avance "10 en 10")
@@ -771,6 +783,15 @@ export function registerProyectosGradoResource(container) {
           logger: c.resolve(SERVICIOS_TOKENS.logger),
         }),
     ],
+    [
+      TITULACION_TOKENS.anularActaDefensaController,
+      (c) =>
+        new AnularActaDefensaController({
+          anularActaDefensaUseCase: c.resolve(TITULACION_TOKENS.anularActaDefensaUseCase),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
     // Extensión 2026-07-31 (formulario de modalidad de graduación, reporte de
     // avance por carrera, planilla de avance "10 en 10")
     [
@@ -882,6 +903,7 @@ export function registerProyectosGradoResource(container) {
       registrarActaDefensaController: c.resolve(TITULACION_TOKENS.registrarActaDefensaController),
       listActasDefensaController: c.resolve(TITULACION_TOKENS.listActasDefensaController),
       exportActaDefensaPdfController: c.resolve(TITULACION_TOKENS.exportActaDefensaPdfController),
+      anularActaDefensaController: c.resolve(TITULACION_TOKENS.anularActaDefensaController),
       // Extensión 2026-07-31
       listEstudiantesElegiblesModalidadGradoController: c.resolve(
         TITULACION_TOKENS.listEstudiantesElegiblesModalidadGradoController

@@ -23,4 +23,5 @@ export {
   avanceTutoriaCarreraValidator,
   planillaAvanceTercerAnioValidator,
   registrarActaDefensaValidator,
+  anularActaDefensaValidator,
 } from './proyectos-grado.validator.js';
