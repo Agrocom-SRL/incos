@@ -24,10 +24,35 @@
   display: grid;
   /* Tope de ancho fijo (no 1fr): evita que 1-2 tarjetas se estiren a todo el
      contenedor en pantallas grandes. En viewports angostos (móvil) el mínimo
-     de 250px ya ocupa el ancho disponible, sin necesidad de media query. */
+     de 250px ya ocupa el ancho disponible, sin necesidad de media query.
+     Uso: cantidad de tarjetas VARIABLE (p. ej. cursos de capacitación) donde
+     no conviene forzar columnas fijas. Para cantidad FIJA de opciones usar
+     el modificador `--fixed-4` (ver abajo). */
   grid-template-columns: repeat(auto-fit, minmax(250px, 380px));
   gap: var(--spacing-md);
   width: 100%;
+}
+
+/* Variante para wizards con una cantidad FIJA de 4 opciones (tipo de admisión,
+   tipo de alta de usuario): columnas explícitas 4→2→1 en vez del auto-fit
+   genérico de arriba, así las 4 quedan siempre en una sola fila cuando hay
+   espacio, sin depender de que el ancho real del contenedor caiga justo en
+   el rango donde auto-fit solo alcanza a acomodar 3. Breakpoints iguales a
+   los ya usados en layout/sider.css y layout/content.css (575px / 991px). */
+.wizard-selection-cards__grid--fixed-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 991px) {
+  .wizard-selection-cards__grid--fixed-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575px) {
+  .wizard-selection-cards__grid--fixed-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
 }
 
 /* Radio.Button como tarjeta */

@@ -16,6 +16,7 @@ import { createFoliosTableColumns } from '@academico/libros/config/foliosTableCo
 import { useLibroDetalleApi } from '../api/useLibroDetalleApi';
 import { useParalelosLibroApi } from '../api/useParalelosLibroApi';
 import { useGenerarFolios } from '../api/useGenerarFolios';
+import { useGenerarFoliosGestion } from '../api/useGenerarFoliosGestion';
 import { useEditarLibroApi } from '../api/useEditarLibroApi';
 import { useExportLibroExcel } from '../api/useExportLibroExcel';
 
@@ -33,10 +34,12 @@ export const useLibroDetail = () => {
     fetch: fetchParalelos,
   } = useParalelosLibroApi();
   const { generarFolios, loading: generando } = useGenerarFolios();
+  const { generarFoliosGestion, loading: generandoTodos } = useGenerarFoliosGestion();
   const { editarLibro, loading: actualizando } = useEditarLibroApi();
   const { exportar, loading: exportando } = useExportLibroExcel();
 
   const [modalGenerarOpen, setModalGenerarOpen] = useState(false);
+  const [resumenTodos, setResumenTodos] = useState(null);
 
   const load = useCallback(async () => {
     if (isInvalidId) return;
@@ -50,11 +53,15 @@ export const useLibroDetail = () => {
   const handleVolver = useCallback(() => navigate(LIBROS_LIST_PATH), [navigate]);
 
   const abrirModalGenerar = useCallback(async () => {
+    setResumenTodos(null);
     setModalGenerarOpen(true);
     await fetchParalelos(libroId);
   }, [fetchParalelos, libroId]);
 
-  const cerrarModalGenerar = useCallback(() => setModalGenerarOpen(false), []);
+  const cerrarModalGenerar = useCallback(() => {
+    setModalGenerarOpen(false);
+    setResumenTodos(null);
+  }, []);
 
   const handleGenerarFolios = useCallback(
     async (paraleloGestionId) => {
@@ -75,6 +82,25 @@ export const useLibroDetail = () => {
     },
     [generarFolios, libroId, notification, load, fetchParalelos],
   );
+
+  const handleGenerarTodos = useCallback(async () => {
+    if (!libro?.gestionId) return { success: false };
+    const result = await generarFoliosGestion(libro.gestionId);
+    if (result.success) {
+      setResumenTodos(result.data);
+      notification.success({
+        title: 'Folios de la gestión generados',
+        description: `Se crearon ${result.data?.foliosCreados ?? 0} folio(s) en ${result.data?.paralelosGenerados ?? 0} paralelo(s).`,
+      });
+      await Promise.all([load(), fetchParalelos(libroId)]);
+    } else {
+      notification.error({
+        title: 'No se pudieron generar los folios de la gestión',
+        description: result.error,
+      });
+    }
+    return result;
+  }, [generarFoliosGestion, libro, libroId, notification, load, fetchParalelos]);
 
   const handleCerrarLibro = useCallback(async () => {
     const result = await editarLibro(libroId, { estado: 'CERRADO' });
@@ -144,6 +170,9 @@ export const useLibroDetail = () => {
     loadingParalelos,
     handleGenerarFolios,
     generando,
+    handleGenerarTodos,
+    generandoTodos,
+    resumenTodos,
 
     handleCerrarLibro,
     handleReabrirLibro,

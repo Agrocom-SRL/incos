@@ -44,6 +44,9 @@ const LibroDetailPage = () => {
     loadingParalelos,
     handleGenerarFolios,
     generando,
+    handleGenerarTodos,
+    generandoTodos,
+    resumenTodos,
 
     handleCerrarLibro,
     handleReabrirLibro,
@@ -178,6 +181,9 @@ const LibroDetailPage = () => {
         loading={loadingParalelos}
         generando={generando}
         onGenerar={handleGenerarFolios}
+        onGenerarTodos={handleGenerarTodos}
+        generandoTodos={generandoTodos}
+        resumenTodos={resumenTodos}
         onCancelar={cerrarModalGenerar}
       />
     </PageTemplate>

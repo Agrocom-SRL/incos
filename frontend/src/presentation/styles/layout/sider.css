@@ -30,7 +30,7 @@
 
 /* Móviles Portrait (< 576px) - Ocultar sidebar solo cuando está colapsado */
 @media (max-width: 575px) {
-    
+
     /* Cuando el sidebar está colapsado: ocultar completamente */
     .ant-layout-sider-collapsed.sider,
     .ant-layout .ant-layout-sider-collapsed.sider {

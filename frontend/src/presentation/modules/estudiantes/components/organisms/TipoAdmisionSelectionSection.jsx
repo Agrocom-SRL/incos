@@ -101,7 +101,7 @@ const TipoAdmisionSelectionSection = ({
         rules={[{ required: true, message: 'Por favor seleccione un tipo de admisión' }]}
       >
         <Radio.Group onChange={handleRadioChange} style={{ width: '100%' }}>
-          <div className="wizard-selection-cards__grid">
+          <div className="wizard-selection-cards__grid wizard-selection-cards__grid--fixed-4">
             {TIPOS_ADMISION.map((tipo) => {
               const isSelected = selectedValue === tipo.value;
               const IconComponent = tipo.icon;

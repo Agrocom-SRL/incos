@@ -214,8 +214,12 @@ export function injectCSSVariables() {
   // ========================================
   // Z-INDEX
   // ========================================
-  root.style.setProperty('--z-fixed', '1030');
+  // El chrome fijo (header/sider) SIEMPRE debe quedar por debajo de cualquier
+  // overlay de Ant Design (Modal/Drawer/Dropdown/Tooltip/Popover), que arrancan
+  // en zIndexPopupBase. Se deriva de ese token (no un número suelto) para que
+  // nunca puedan desincronizarse si zIndexPopupBase cambia.
   root.style.setProperty('--z-popup-base', `${allThemeTokens.zIndexPopupBase}`);
+  root.style.setProperty('--z-fixed', `${allThemeTokens.zIndexPopupBase - 900}`);
 
   // ========================================
   // BORDER RADIUS (solo las usadas)

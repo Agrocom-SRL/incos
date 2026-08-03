@@ -398,8 +398,9 @@ export class LibroRegistroSheetBuilder {
    * Página de FIRMAS DE DOCENTES del paralelo (al final de la hoja, tras el
    * último folio). Artefacto de impresión: NO es un folio del libro y NO
    * incrementa numero_folio. Grilla de 3 columnas (nombre del docente + su
-   * materia debajo, espacio en blanco ARRIBA para la firma física — sin línea
-   * de firma explícita), réplica del libro real (fuente: asignaciones
+   * materia debajo, espacio en blanco ARRIBA para la firma física con línea
+   * de firma explícita sobre el nombre — mismo criterio que
+   * `_firmasAutoridades`), réplica del libro real (fuente: asignaciones
    * vigentes del paralelo vía vista 135).
    *
    * @returns {number} Total de filas usadas por esta sección (relativas a
@@ -457,6 +458,13 @@ export class LibroRegistroSheetBuilder {
         align: 'center',
         border: false,
       });
+      // Línea de firma (borde superior del rótulo) — mismo criterio que
+      // _firmasAutoridades: el docente firma sobre esta línea, encima de su nombre.
+      for (let col = start; col <= end; col += 1) {
+        c.ws.getCell(rowNombre, col).border = {
+          top: { style: 'thin', color: { argb: EXCEL_COLOR.ink } },
+        };
+      }
 
       c.rowHeight(rowMateria, ROW_HEIGHTS.dataRow);
       c.mergeBox(rowMateria, start, rowMateria, end, asig.nombre ?? '', {

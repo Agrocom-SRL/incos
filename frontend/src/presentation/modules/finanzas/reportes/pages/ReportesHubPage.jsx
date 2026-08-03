@@ -12,13 +12,7 @@
 
 import { useMemo } from 'react';
 import { Flex, Typography } from 'antd';
-import {
-  BankOutlined,
-  IdcardOutlined,
-  CalendarOutlined,
-  WalletOutlined,
-  TrophyOutlined,
-} from '@ant-design/icons';
+import { WalletOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -52,33 +46,6 @@ const REPORTES = [
     path: '/finanzas/reportes/becas',
     permiso: FINANZAS_PERMISOS.becaReporte,
     disponible: true,
-  },
-  {
-    key: 'carrera',
-    title: 'Reporte por carrera',
-    description: 'Recaudación y estado de aportes agregados por carrera.',
-    icon: <BankOutlined />,
-    path: '/finanzas/reportes/carrera',
-    permiso: FINANZAS_PERMISOS.reporteCarrera,
-    disponible: false,
-  },
-  {
-    key: 'estudiante',
-    title: 'Reporte por estudiante',
-    description: 'Detalle de aportes, descuentos y saldo por estudiante.',
-    icon: <IdcardOutlined />,
-    path: '/finanzas/reportes/estudiante',
-    permiso: FINANZAS_PERMISOS.reporteEstudiante,
-    disponible: false,
-  },
-  {
-    key: 'gestion',
-    title: 'Reporte por gestión',
-    description: 'Consolidado de recaudación de aportes por gestión académica.',
-    icon: <CalendarOutlined />,
-    path: '/finanzas/reportes/gestion',
-    permiso: FINANZAS_PERMISOS.reporteGestion,
-    disponible: false,
   },
 ];
 

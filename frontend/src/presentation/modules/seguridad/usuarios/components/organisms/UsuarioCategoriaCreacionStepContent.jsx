@@ -73,7 +73,7 @@ export default function UsuarioCategoriaCreacionStepContent({ form, isEditMode =
         rules={[{ required: true, message: 'Seleccione un tipo de alta' }]}
       >
         <Radio.Group onChange={handleRadioChange} disabled={isEditMode} style={{ width: '100%' }}>
-          <div className="wizard-selection-cards__grid">
+          <div className="wizard-selection-cards__grid wizard-selection-cards__grid--fixed-4">
             {OPCIONES.map((opt) => {
               const isSelected = selectedValue === opt.value;
               const Icon = opt.icon;
