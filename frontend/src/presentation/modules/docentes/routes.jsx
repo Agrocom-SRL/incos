@@ -41,7 +41,7 @@ export const docentesRoutes = [
     permiso: 'docentes.ver',
     accion: 'LISTAR',
     menu: {
-      label: 'Docentes',
+      label: 'Plantel docente',
       module: 'DOC',
       parent: 'DOC',
       order: 1,

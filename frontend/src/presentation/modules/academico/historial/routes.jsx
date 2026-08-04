@@ -46,7 +46,7 @@ export const historialRoutes = [
     permiso: 'academico.historial.academico',
     accion: 'LISTAR',
     menu: {
-      label: 'Historial',
+      label: 'Historial académico',
       module: 'ACA',
       parent: 'ACA',
       order: 6,

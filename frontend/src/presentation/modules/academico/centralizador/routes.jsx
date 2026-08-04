@@ -46,11 +46,11 @@ export const centralizadorRoutes = [
     path: '/academico/centralizador',
     element: <CentralizadorConnector />,
     key: 'ACA-CENTRALIZADOR',
-    breadcrumbLabel: 'Centralizador',
+    breadcrumbLabel: 'Centralizador de notas',
     permiso: 'academico.calificacion.centralizador',
     accion: 'LISTAR',
     menu: {
-      label: 'Centralizador',
+      label: 'Centralizador de notas',
       module: 'ACA',
       parent: 'ACA',
       order: 2.5,

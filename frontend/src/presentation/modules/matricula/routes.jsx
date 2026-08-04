@@ -24,7 +24,7 @@ export const matriculaRoutes = [
     permisoAny: ['matricula.inscribir', 'docentes.ver'],
     accion: 'LISTAR',
     menu: {
-      label: 'Matrículas',
+      label: 'Registro de matrículas',
       module: 'MAT',
       parent: 'MAT',
       order: 3,
