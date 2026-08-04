@@ -32,9 +32,6 @@ export class CreateGestionPlanUseCase {
     if (!planRow?.activo) {
       throw new ValidationError('El plan de estudios no está activo');
     }
-    if (!planRow?.vigente) {
-      throw new ValidationError('Solo se pueden habilitar planes marcados como vigentes en el catálogo');
-    }
 
     const existing = await this.managementPlanRepository.findBy({
       managementId: gestionId,

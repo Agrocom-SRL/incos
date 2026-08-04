@@ -10,7 +10,10 @@
 
 import { useMemo } from 'react';
 import { TableListView } from '@organisms';
-import { createPlanesTableColumns } from '@configuracion/academico/config/planesTableColumns';
+import {
+  createPlanesTableColumns,
+  planesRowClassName,
+} from '@configuracion/academico/config/planesTableColumns';
 
 const PlanesTabPanel = ({
   embedded = false,
@@ -22,6 +25,7 @@ const PlanesTabPanel = ({
   refetch,
   searchText = '',
   setSearchText,
+  toggleEstadoPlan,
 }) => {
   const tableColumns = useMemo(
     () =>
@@ -29,8 +33,9 @@ const PlanesTabPanel = ({
         navigate,
         listNavState,
         refetch,
+        onToggleEstado: toggleEstadoPlan,
       }),
-    [navigate, listNavState, refetch],
+    [navigate, listNavState, refetch, toggleEstadoPlan],
   );
 
   return (
@@ -44,6 +49,7 @@ const PlanesTabPanel = ({
       searchPlaceholder="Buscar por código, nombre de carrera o RM..."
       columns={tableColumns}
       rowKey={(record) => record.id || record.codigo}
+      rowClassName={planesRowClassName}
       searchColSpan={10}
       searchStyle={{ maxWidth: 520 }}
       pagination={{

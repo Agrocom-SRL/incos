@@ -188,6 +188,7 @@ export const PLANES_ESTUDIOS_ENDPOINTS = {
   VALIDAR: (id) => `${API_BASE}/planes-estudios/${id}/validar`,
   MARCAR_VIGENTE: (id) => `${API_BASE}/planes-estudios/${id}/marcar-vigente`,
   CLONAR: (id) => `${API_BASE}/planes-estudios/${id}/clonar`,
+  ESTADO: (id) => `${API_BASE}/planes-estudios/${id}/estado`,
   PERIODOS: (planId) => `${API_BASE}/planes-estudios/${planId}/periodos`,
   ASIGNATURAS: (planId) => `${API_BASE}/planes-estudios/${planId}/asignaturas`,
 };

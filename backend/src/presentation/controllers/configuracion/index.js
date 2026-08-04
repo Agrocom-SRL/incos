@@ -28,6 +28,7 @@ export { CreatePlanEstudiosController } from './planes-estudios/create.controlle
 export { UpdatePlanEstudiosController } from './planes-estudios/update.controller.js';
 export { MarcarPlanEstudiosVigenteController } from './planes-estudios/marcar-vigente.controller.js';
 export { ClonarPlanEstudiosController } from './planes-estudios/clonar.controller.js';
+export { SetEstadoPlanEstudiosController } from './planes-estudios/set-estado.controller.js';
 export {
     ListPeriodosByPlanController,
     CreatePeriodoController,

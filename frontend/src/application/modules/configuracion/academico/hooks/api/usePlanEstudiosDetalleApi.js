@@ -102,6 +102,20 @@ export const usePlanEstudiosDetalleApi = () => {
     }
   }, []);
 
+  const cambiarEstado = useCallback(async (planId, activo) => {
+    try {
+      const response = await apiClient.patch(PLANES_ESTUDIOS_ENDPOINTS.ESTADO(planId), { activo });
+      const result = handleSuccessResponse(response);
+      if (!result.success) {
+        return { success: false, error: result.error || 'No se pudo cambiar el estado del plan' };
+      }
+      return { success: true, data: result.data?.plan_estudio ?? result.data };
+    } catch (error) {
+      const fail = handleErrorResponse(error, 'Error al cambiar el estado del plan de estudios');
+      return { success: false, error: fail.error };
+    }
+  }, []);
+
   const actualizarAsignatura = useCallback(async (asignaturaId, payload) => {
     try {
       const response = await apiClient.put(ASIGNATURAS_PLAN_ENDPOINTS.BY_ID(asignaturaId), payload);
@@ -264,6 +278,7 @@ export const usePlanEstudiosDetalleApi = () => {
       crearPlan,
       clonarPlan,
       marcarVigente,
+      cambiarEstado,
       actualizarPlan,
       actualizarAsignatura,
       crearAsignaturaPlan,
@@ -283,6 +298,7 @@ export const usePlanEstudiosDetalleApi = () => {
       crearPlan,
       clonarPlan,
       marcarVigente,
+      cambiarEstado,
       actualizarPlan,
       actualizarAsignatura,
       crearAsignaturaPlan,

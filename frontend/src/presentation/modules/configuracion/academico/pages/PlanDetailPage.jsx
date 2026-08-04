@@ -13,7 +13,7 @@
  */
 
 import { useMemo } from 'react';
-import { Alert, Popconfirm } from 'antd';
+import { Alert } from 'antd';
 import { BookOutlined, CopyOutlined, EditOutlined, RocketOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -89,25 +89,17 @@ const PlanDetailPage = () => {
         Editar
       </ActionButton>
 
-      {!plan.vigente ? (
-        <Popconfirm
-          title="Publicar como vigente"
-          description="El plan vigente actual de esta carrera pasará a borrador (histórico). Los estudiantes ya inscritos no se migran. ¿Continuar?"
-          okText="Publicar"
-          okButtonProps={{ loading: publicando }}
-          cancelText="Cancelar"
-          onConfirm={handlePublicar}
+      {!plan.vigente && plan.activo !== false ? (
+        <ActionButton
+          permiso={PLAN_ESTUDIO_PERMISO}
+          accion="ACTIVAR"
+          variant="primary"
+          icon={<RocketOutlined />}
+          loading={publicando}
+          onClick={handlePublicar}
         >
-          <ActionButton
-            permiso={PLAN_ESTUDIO_PERMISO}
-            accion="ACTIVAR"
-            variant="primary"
-            icon={<RocketOutlined />}
-            loading={publicando}
-          >
-            Publicar como vigente
-          </ActionButton>
-        </Popconfirm>
+          Publicar como vigente
+        </ActionButton>
       ) : null}
 
       {plan.vigente ? (

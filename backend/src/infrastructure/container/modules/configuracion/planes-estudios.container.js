@@ -13,6 +13,7 @@ import { CreatePlanEstudiosUseCase } from '../../../../application/use-cases/con
 import { UpdatePlanEstudiosUseCase } from '../../../../application/use-cases/configuracion/UpdatePlanEstudiosUseCase.js';
 import { MarcarPlanEstudiosVigenteUseCase } from '../../../../application/use-cases/configuracion/MarcarPlanEstudiosVigenteUseCase.js';
 import { ClonarPlanEstudiosUseCase } from '../../../../application/use-cases/configuracion/ClonarPlanEstudiosUseCase.js';
+import { SetEstadoPlanEstudiosUseCase } from '../../../../application/use-cases/configuracion/SetEstadoPlanEstudiosUseCase.js';
 import { ListPeriodosByPlanUseCase } from '../../../../application/use-cases/configuracion/ListPeriodosByPlanUseCase.js';
 import { CreatePeriodoUseCase } from '../../../../application/use-cases/configuracion/CreatePeriodoUseCase.js';
 import { UpdatePeriodoUseCase } from '../../../../application/use-cases/configuracion/UpdatePeriodoUseCase.js';
@@ -36,6 +37,7 @@ import {
   UpdatePlanEstudiosController,
   MarcarPlanEstudiosVigenteController,
   ClonarPlanEstudiosController,
+  SetEstadoPlanEstudiosController,
   ListPeriodosByPlanController,
   CreatePeriodoController,
   UpdatePeriodoController,
@@ -102,6 +104,11 @@ export function registerPlanesEstudiosResource(container) {
     periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
+    logger: c.resolve(SERVICIOS_TOKENS.logger),
+  }));
+
+  registerComponent(container, CONFIGURACION_TOKENS.setEstadoPlanEstudiosUseCase, (c) => new SetEstadoPlanEstudiosUseCase({
+    studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }));
 
@@ -219,6 +226,12 @@ export function registerPlanesEstudiosResource(container) {
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
   }));
 
+  registerComponent(container, CONFIGURACION_TOKENS.setEstadoPlanEstudiosController, (c) => new SetEstadoPlanEstudiosController({
+    setEstadoPlanEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.setEstadoPlanEstudiosUseCase),
+    logger: c.resolve(SERVICIOS_TOKENS.logger),
+    responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+  }));
+
   registerComponent(container, CONFIGURACION_TOKENS.listPeriodosByPlanController, (c) => new ListPeriodosByPlanController({
     listPeriodosByPlanUseCase: c.resolve(CONFIGURACION_TOKENS.listPeriodosByPlanUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -298,6 +311,7 @@ export function registerPlanesEstudiosResource(container) {
       updatePlanEstudiosController: c.resolve(CONFIGURACION_TOKENS.updatePlanEstudiosController),
       marcarPlanEstudiosVigenteController: c.resolve(CONFIGURACION_TOKENS.marcarPlanEstudiosVigenteController),
       clonarPlanEstudiosController: c.resolve(CONFIGURACION_TOKENS.clonarPlanEstudiosController),
+      setEstadoPlanEstudiosController: c.resolve(CONFIGURACION_TOKENS.setEstadoPlanEstudiosController),
       listPeriodosByPlanController: c.resolve(CONFIGURACION_TOKENS.listPeriodosByPlanController),
       createPeriodoController: c.resolve(CONFIGURACION_TOKENS.createPeriodoController),
       updatePeriodoController: c.resolve(CONFIGURACION_TOKENS.updatePeriodoController),
