@@ -39,6 +39,10 @@ SELECT
   gp.nombre AS nombre,
   gp.estado AS estado,
 
+  pe.nombre_plan AS planNombre,
+  pe.resolucion_ministerial AS planResolucion,
+  pe.vigente AS planVigente,
+
   car.id AS carreraId,
   car.nombre AS carreraNombre,
   car.codigo AS carreraCodigo,

@@ -147,6 +147,19 @@ export function useOfertaAcademicaApi() {
     [run]
   );
 
+  /** Sin loading global: para calcular en segundo plano si quedan planes por habilitar. */
+  const fetchPlanesVigentesCatalogoSilent = useCallback(
+    () =>
+      runSilent(
+        () =>
+          apiClient.get(PLANES_ESTUDIOS_ENDPOINTS.BASE, {
+            params: { page: 1, limit: 500, vigente: 1 },
+          }),
+        'No se pudieron cargar los planes vigentes'
+      ),
+    [runSilent]
+  );
+
   const habilitarPlan = useCallback(
     (body) =>
       run(
@@ -372,6 +385,7 @@ export function useOfertaAcademicaApi() {
     fetchPlanesHabilitados,
     fetchPlanesHabilitadosSilent,
     fetchPlanesVigentesCatalogo,
+    fetchPlanesVigentesCatalogoSilent,
     habilitarPlan,
     fetchParalelosGestion,
     fetchParalelosGestionSilent,

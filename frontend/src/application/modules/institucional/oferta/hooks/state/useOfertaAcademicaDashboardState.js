@@ -8,6 +8,7 @@ import {
   buildSetupKpis,
   gestionLabel,
   habilitarTodosPlanesPendientesEnGestion,
+  planesCatalogoPendientesHabilitar,
   refreshValidacionesParalelos,
 } from './ofertaStateShared.js';
 import { useOfertaAcademicaApi } from '../api/useOfertaAcademicaApi.js';
@@ -22,6 +23,7 @@ export function useOfertaAcademicaDashboardState() {
     fetchPlanesHabilitados,
     fetchPlanesHabilitadosSilent,
     fetchPlanesVigentesCatalogo,
+    fetchPlanesVigentesCatalogoSilent,
     fetchParalelosGestionSilent,
     habilitarPlan,
     validarOferta,
@@ -98,9 +100,30 @@ export function useOfertaAcademicaDashboardState() {
     }
   }, [gestionVigenteId, fetchPlanesHabilitadosSilent, fetchParalelosGestionSilent, validarOferta]);
 
+  /**
+   * Catálogo de planes activos en segundo plano (sin loading global) — solo
+   * para saber si queda alguno por habilitar y avisarlo junto al botón
+   * "Habilitar planes vigentes"; no bloquea el resto del panel.
+   */
+  const loadPlanesVigentesCatalogo = useCallback(async () => {
+    if (!gestionVigenteId) {
+      setPlanesVigentes([]);
+      return;
+    }
+    const res = await fetchPlanesVigentesCatalogoSilent();
+    if (res.success) {
+      const raw = res.data?.planes_estudios ?? res.data;
+      setPlanesVigentes(Array.isArray(raw) ? raw : []);
+    }
+  }, [gestionVigenteId, fetchPlanesVigentesCatalogoSilent]);
+
   useEffect(() => {
     loadGestiones();
   }, [loadGestiones]);
+
+  useEffect(() => {
+    loadPlanesVigentesCatalogo();
+  }, [loadPlanesVigentesCatalogo]);
 
   useEffect(() => {
     loadPlanesYParalelos();
@@ -168,6 +191,12 @@ export function useOfertaAcademicaDashboardState() {
     planesHabilitadosLoaded &&
     planesHabilitados.length === 0;
 
+  /** Cuántos planes activos del catálogo todavía no están habilitados en la gestión vigente. */
+  const planesPendientesCount = useMemo(
+    () => planesCatalogoPendientesHabilitar(planesVigentes, planesHabilitados).length,
+    [planesVigentes, planesHabilitados]
+  );
+
   const onHabilitarTodosPlanes = useCallback(async () => {
     if (!gestionVigenteId || !gestionVigente?.vigente) {
       messageApi.info('Solo la gestión vigente admite habilitar planes desde el panel de oferta.');
@@ -189,7 +218,7 @@ export function useOfertaAcademicaDashboardState() {
       }
 
       if (result.yaCompletos) {
-        messageApi.info('Todos los planes vigentes del catálogo ya están habilitados en esta gestión.');
+        messageApi.info('Todos los planes activos del catálogo ya están habilitados en esta gestión.');
         return;
       }
 
@@ -222,6 +251,15 @@ export function useOfertaAcademicaDashboardState() {
     loadPlanesYParalelos,
   ]);
 
+  // Botón único del panel una vez que ya hay planes habilitados: habilita
+  // cualquier plan activo pendiente (históricos con estudiantes en curso
+  // incluidos) y de una vez navega a "Planes vigentes" — antes eran dos
+  // acciones separadas y la de habilitar quedaba perdida/mal ubicada.
+  const onHabilitarPlanesVigentes = useCallback(async () => {
+    await onHabilitarTodosPlanes();
+    navigatePlanesVigente();
+  }, [onHabilitarTodosPlanes, navigatePlanesVigente]);
+
   return {
     apiLoading: mutationLoading,
     loadingParalelos,
@@ -239,7 +277,9 @@ export function useOfertaAcademicaDashboardState() {
     navigateHorarios,
     navigateRenovarOferta,
     sinPlanesHabilitados,
+    planesPendientesCount,
     habilitandoPlanes,
     onHabilitarTodosPlanes,
+    onHabilitarPlanesVigentes,
   };
 }
