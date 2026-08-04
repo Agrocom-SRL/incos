@@ -1,17 +1,19 @@
 /**
- * Config. de pagos (Finanzas) — métodos, bancos, cuentas y becas/descuentos,
- * en un sistema de TABS.
+ * Config. de pagos (Finanzas) — métodos, bancos y cuentas, en un sistema de
+ * TABS.
  *
  * Página "dumb" (espejo de `ComplementariosPage` / `AcademicoPage`): compone
  * `PageHeaderArea` + `DashboardPageShell` + workspace con tabs siempre visibles.
  * El loading vive en cada `TableListView` del tab (no spinner de página completa),
  * igual que Complementarios — el toggle de estado recarga en background sin
- * desmontar tabs.
- * (`BecasDescuentosTabPanel` monta su propio `BecaDescuentoProvider`, catálogo
- * independiente — permiso `finanzas.beca-descuento`). Alta/edición/ver/activar
- * de bancos/cuentas/métodos son páginas completas de navegación
- * (`/finanzas/configuracion/{bancos,cuentas,metodos}/...`, ver
- * `BancoFormPage`/`CuentaFormPage`/`MetodoFormPage`), ya no drawers/modales.
+ * desmontar tabs. Alta/edición/ver/activar de bancos/cuentas/métodos son
+ * páginas completas de navegación (`/finanzas/configuracion/{bancos,cuentas,
+ * metodos}/...`, ver `BancoFormPage`/`CuentaFormPage`/`MetodoFormPage`), ya
+ * no drawers/modales.
+ *
+ * "Becas y descuentos" (catálogo maestro) ya NO vive aquí — es su propio
+ * ítem de menú "Configuración de becas" (`finanzas/becas/`, permiso
+ * `finanzas.beca-descuento`), separado del concepto de parámetros de pago.
  *
  * El aporte de la gestión vigente vive como página HIJA sin ítem de menú
  * propio, `/finanzas/configuracion/aportes` (permiso `finanzas.aporte`, ver
@@ -21,9 +23,7 @@
  * RBAC: la ruta FIN-CFG es `finanzas.configuracion.pago` LISTAR. El alta
  * (bancos/cuentas) usa CREAR (`ActionButton` en la cabecera del workspace);
  * ver/editar/activar/eliminar viven en la ficha/página de edición
- * (`finanzas.configuracion.pago` DETALLE/EDITAR/ELIMINAR). Becas y descuentos
- * usa su propio permiso `finanzas.beca-descuento` (LISTAR/CREAR/EDITAR/
- * DETALLE/ELIMINAR).
+ * (`finanzas.configuracion.pago` DETALLE/EDITAR/ELIMINAR).
  */
 
 import { useCallback, useMemo } from 'react';
@@ -38,24 +38,17 @@ import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useConfigPagosPage } from '@application-finanzas/hooks/state/useConfigPagosPage';
 import { CONFIG_PAGOS_PERMISO } from '@finanzas/configuracion/config/configPagosPermisos';
-import { BECA_DESCUENTO_PERMISO } from '@finanzas/configuracion/config/becaDescuentoPermisos';
-import {
-  becaDescuentoNuevaPath,
-  bancoNuevoPath,
-  cuentaNuevoPath,
-} from '@application-finanzas/config/paths';
+import { bancoNuevoPath, cuentaNuevoPath } from '@application-finanzas/config/paths';
 import {
   CONFIG_PAGOS_TAB_KEYS,
   CONFIG_PAGOS_TAB_META,
   TAB_BANCOS,
-  TAB_BECAS_DESCUENTOS,
   TAB_CUENTAS,
   TAB_METODOS,
 } from '@finanzas/configuracion/config/configPagosTabs';
 import MetodosTabPanel from '@finanzas/configuracion/components/MetodosTabPanel.jsx';
 import BancosTabPanel from '@finanzas/configuracion/components/BancosTabPanel.jsx';
 import CuentasTabPanel from '@finanzas/configuracion/components/CuentasTabPanel.jsx';
-import BecasDescuentosTabPanel from '@finanzas/configuracion/components/BecasDescuentosTabPanel.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '@finanzas/configuracion/styles/config-pagos.css';
@@ -120,11 +113,6 @@ const ConfigPagosPage = () => {
           />,
         ),
       },
-      {
-        key: TAB_BECAS_DESCUENTOS,
-        label: renderTabLabel(CONFIG_PAGOS_TAB_META[TAB_BECAS_DESCUENTOS]),
-        children: wrapTabPanel(<BecasDescuentosTabPanel />),
-      },
     ],
     [loading, error, saving, metodos, bancos, metodoNombrePorId, cuentas],
   );
@@ -171,19 +159,6 @@ const ConfigPagosPage = () => {
           onClick={() => navigate(cuentaNuevoPath)}
         >
           Agregar cuenta
-        </ActionButton>
-      );
-    }
-    if (activeKey === TAB_BECAS_DESCUENTOS) {
-      return (
-        <ActionButton
-          permiso={BECA_DESCUENTO_PERMISO}
-          accion="CREAR"
-          variant="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate(becaDescuentoNuevaPath)}
-        >
-          Nueva beca o descuento
         </ActionButton>
       );
     }

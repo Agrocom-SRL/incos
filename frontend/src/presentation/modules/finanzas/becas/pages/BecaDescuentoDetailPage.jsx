@@ -20,7 +20,7 @@ import { Button } from '@atoms';
 import { PermisoGuard } from '@presentation/guards/PermisoGuard.jsx';
 import { useAuthContext } from '@application-auth';
 import { useBecaDescuentoDetallePage } from '@application-finanzas/becas-descuentos/hooks/state/useBecaDescuentoDetallePage';
-import { BECA_DESCUENTO_PERMISO } from '@finanzas/configuracion/config/becaDescuentoPermisos';
+import { BECA_DESCUENTO_PERMISO } from '@finanzas/becas/config/becaDescuentoPermisos';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 

@@ -1,6 +1,6 @@
 /**
- * Columnas de la tabla del catálogo maestro Becas y descuentos (Config. de
- * pagos · Finanzas, tab "Becas y descuentos"). NOTA: nombre de archivo
+ * Columnas de la tabla del catálogo maestro Becas y descuentos (ítem de menú
+ * propio "Configuración de becas" · Finanzas). NOTA: nombre de archivo
  * distinto a `becasTableColumns.jsx` (a propósito, ya existen dos archivos con
  * ese nombre en el proyecto — `estudiantes/config/` y `finanzas/reportes/config/`
  * — para las becas ASIGNADAS a estudiantes; este es el CATÁLOGO maestro).
@@ -21,8 +21,8 @@ import { IdentidadCelda, StatusPill, TruncatedTextCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';
 import ConcurrenciaCell from '@finanzas/configuracion/components/atoms/ConcurrenciaCell';
-import BecaReglasCell from '@finanzas/configuracion/components/atoms/BecaReglasCell';
-import { getPorcentajePill } from './configPagosPills';
+import BecaReglasCell from '@finanzas/becas/components/atoms/BecaReglasCell';
+import { getPorcentajePill } from './becaPorcentajePill';
 import { BECA_DESCUENTO_PERMISO } from './becaDescuentoPermisos';
 
 /**

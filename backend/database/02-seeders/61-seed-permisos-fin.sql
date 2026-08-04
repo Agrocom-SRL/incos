@@ -31,7 +31,7 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('finanzas.cuenta-cobrar.reporte', 'Reportes de pagos: cuentas por cobrar', NULL, 'FINANZAS', 'FIN', 'fin_reportes', '/pagos/reportes', 1, NOW(), NOW()),
 ('finanzas.aporte', 'Aportes: monto y vigencia por gestión', NULL, 'FINANZAS', 'FIN', 'fin_aportes', '/finanzas/configuracion/aportes', 1, NOW(), NOW()),
 ('finanzas.configuracion.pago', 'Config. de pagos: bancos, cuentas y métodos', NULL, 'FINANZAS', 'FIN', 'fin_config_pagos', '/finanzas/configuracion', 1, NOW(), NOW()),
-('finanzas.beca-descuento', 'Becas y descuentos: catálogo maestro (alta, edición, baja de variantes)', NULL, 'FINANZAS', 'FIN', 'fin_becas_descuentos', '/finanzas/configuracion/becas-descuentos', 1, NOW(), NOW());
+('finanzas.beca-descuento', 'Becas y descuentos: catálogo maestro (alta, edición, baja de variantes)', NULL, 'FINANZAS', 'FIN', 'fin_becas_descuentos', '/finanzas/becas', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo FIN
 INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)

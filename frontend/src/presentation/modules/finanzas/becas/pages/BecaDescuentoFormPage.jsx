@@ -13,7 +13,7 @@ import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import { CfgFormWorkspace } from '@organisms';
 import { useBecaDescuentoForm } from '@application-finanzas/becas-descuentos/hooks/state/useBecaDescuentoForm';
-import { BECA_DESCUENTO_PERMISO } from '@finanzas/configuracion/config/becaDescuentoPermisos';
+import { BECA_DESCUENTO_PERMISO } from '@finanzas/becas/config/becaDescuentoPermisos';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';

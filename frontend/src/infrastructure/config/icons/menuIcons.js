@@ -43,7 +43,6 @@ import {
     FileTextOutlined,
     BankOutlined,
     CreditCardOutlined,
-    FileAddOutlined,
     CalendarOutlined,
     BookOutlined,
     FileDoneOutlined,
@@ -104,8 +103,8 @@ export const menuIconMap = {
 
     // Finanzas (FIN)
     'FIN-PAG': CreditCardOutlined,
-    'FIN-ADI': FileAddOutlined,
     'FIN-REP': BarChartOutlined,
+    'FIN-BECAS': GiftOutlined,
     'FIN-CFG': SettingOutlined,
 
     // Institucional (INST)

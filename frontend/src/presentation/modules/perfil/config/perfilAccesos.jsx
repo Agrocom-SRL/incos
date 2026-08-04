@@ -374,10 +374,10 @@ const accesosDireccionAdministrativa = () => [
     key: 'becas-descuentos-catalogo',
     icon: <FileProtectOutlined />,
     ...ACCENT.info,
-    title: 'Becas y descuentos (catálogo)',
+    title: 'Configuración de becas',
     description: 'Catálogo maestro: porcentaje, reglas de aplicación y asignación automática.',
     actionLabel: 'Ver catálogo',
-    path: '/finanzas/configuracion?tab=becas-descuentos',
+    path: '/finanzas/becas',
     permiso: { codigo: 'finanzas.beca-descuento', accion: 'LISTAR' },
   },
 ];

@@ -20,12 +20,9 @@ import {
   mapFormValuesToBecaDescuentoPayload,
 } from '@application-finanzas/becas-descuentos/mappers/becaDescuentoFormMapper';
 import {
-  CONFIGURACION_PATH,
+  BECAS_LIST_PATH,
   becaDescuentoDetallePath,
 } from '@application-finanzas/config/paths';
-
-/** Tab de origen en "Config. de pagos" (ver `configPagosTabs.js`, TAB_BECAS_DESCUENTOS). */
-const BECAS_TAB_PATH = `${CONFIGURACION_PATH}?tab=becas-descuentos`;
 
 const MIN_TEXT = { min: 2, message: 'Mínimo 2 caracteres' };
 
@@ -149,7 +146,7 @@ export const useBecaDescuentoForm = (mode = 'create') => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Finanzas', href: '/finanzas' },
-      { title: 'Config. de pagos', href: BECAS_TAB_PATH },
+      { title: 'Config. de becas', href: BECAS_LIST_PATH },
       { title: pageTitle },
     ],
     [pageTitle],
@@ -170,7 +167,7 @@ export const useBecaDescuentoForm = (mode = 'create') => {
     }
   }, [isEditMode, isInvalidEditId, catalogLoading, becasDescuentos, becaId, form]);
 
-  const handleVolver = useCallback(() => navigate(BECAS_TAB_PATH), [navigate]);
+  const handleVolver = useCallback(() => navigate(BECAS_LIST_PATH), [navigate]);
 
   const handleSubmit = useCallback(async () => {
     setError(null);

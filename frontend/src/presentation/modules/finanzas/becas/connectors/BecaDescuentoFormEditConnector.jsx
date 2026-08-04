@@ -1,5 +1,5 @@
 import { BecaDescuentoProvider } from '@application-finanzas/becas-descuentos/providers/BecaDescuentoProvider';
-import BecaDescuentoFormPage from '@finanzas/configuracion/pages/BecaDescuentoFormPage.jsx';
+import BecaDescuentoFormPage from '@finanzas/becas/pages/BecaDescuentoFormPage.jsx';
 
 const BecaDescuentoFormEditConnector = () => (
   <BecaDescuentoProvider>
