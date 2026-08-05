@@ -3,23 +3,24 @@
  * LibroDetailPage). El libro es compartido por las 3 carreras del instituto,
  * así que los folios se reparten en un tab por carrera (patrón
  * `sd-tabs-shell`/`sd-tab-label` de las fichas de detalle, p. ej.
- * `DocentesDetail`). Cada tab trae su propio botón "Exportar libro", que
- * exporta SOLO las hojas de esa carrera (no el libro completo — para eso
- * está "Generar todos los folios" en la cabecera).
+ * `DocentesDetail`). "Exportar libro" vive en `tabBarExtraContent` (mismo
+ * patrón que `GestionHorariosArmadoPage`: acción alineada a la barra de
+ * tabs, no flotando sobre la tabla) y exporta SOLO las hojas de la carrera
+ * activa (no el libro completo — para eso está "Generar todos los folios"
+ * en la cabecera).
  *
  * Orden de tabs: canónico institucional (Contaduría → Administración →
  * Informática, `ORDEN_CARRERAS_LIBRO`), NO alfabético — mismo criterio que
  * `ordenCarreraLibro` en el backend (generación y export del libro).
  */
 
-import { useMemo } from 'react';
-import { Empty, Flex, Table, Tabs } from 'antd';
+import { useMemo, useState } from 'react';
+import { Empty, Table, Tabs } from 'antd';
 import { FileExcelOutlined, FileTextOutlined } from '@ant-design/icons';
 import { ActionButton, CarreraDotCell } from '@atoms';
 import { DetailInfoCard } from '@molecules';
 import { groupByCarrera } from '@application/utils';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
-import { allSpacing } from '@theme/tokens';
 
 /** Orden canónico institucional del libro físico — espejo de `ORDEN_CARRERAS_LIBRO` (backend). */
 const ORDEN_CARRERAS_LIBRO = ['CON-GEN', 'ADM-EMP', 'SIS-INF'];
@@ -44,6 +45,9 @@ const LibroFoliosSection = ({ folios = [], columns = [], onExportar, exportando 
     });
   }, [folios]);
 
+  const [activeKey, setActiveKey] = useState(grupos[0]?.key);
+  const grupoActivo = grupos.find((g) => g.key === activeKey) ?? grupos[0];
+
   const tabItems = useMemo(
     () =>
       grupos.map((grupo) => ({
@@ -54,21 +58,7 @@ const LibroFoliosSection = ({ folios = [], columns = [], onExportar, exportando 
           </span>
         ),
         children: (
-          <>
-            {!grupo.esSinCarrera ? (
-              <Flex justify="flex-end" style={{ marginBottom: allSpacing.marginSM }}>
-                <ActionButton
-                  permiso={LIBROS_PERMISOS.libro}
-                  accion="EXPORTAR"
-                  variant="info"
-                  icon={<FileExcelOutlined />}
-                  loading={exportando}
-                  onClick={() => onExportar?.(grupo.id)}
-                >
-                  Exportar libro
-                </ActionButton>
-              </Flex>
-            ) : null}
+          <div className="sd-tab-body-no-bg">
             <Table
               dataSource={grupo.rows}
               columns={columns}
@@ -76,17 +66,36 @@ const LibroFoliosSection = ({ folios = [], columns = [], onExportar, exportando 
               size="small"
               pagination={false}
             />
-          </>
+          </div>
         ),
       })),
-    [grupos, columns, exportando, onExportar],
+    [grupos, columns],
   );
 
   return (
     <DetailInfoCard title={`Folios registrados (${folios.length})`} icon={<FileTextOutlined />} cols={1}>
       {folios.length > 0 ? (
         <div className="sd-tabs-shell">
-          <Tabs className="sd-tabs" items={tabItems} />
+          <Tabs
+            className="sd-tabs"
+            items={tabItems}
+            activeKey={grupoActivo?.key}
+            onChange={setActiveKey}
+            tabBarExtraContent={
+              grupoActivo && !grupoActivo.esSinCarrera ? (
+                <ActionButton
+                  permiso={LIBROS_PERMISOS.libro}
+                  accion="EXPORTAR"
+                  variant="info"
+                  icon={<FileExcelOutlined />}
+                  loading={exportando}
+                  onClick={() => onExportar?.(grupoActivo.id)}
+                >
+                  Exportar libro
+                </ActionButton>
+              ) : null
+            }
+          />
         </div>
       ) : (
         <Empty description="Este libro aún no tiene folios generados. Use «Generar todos los folios»." />

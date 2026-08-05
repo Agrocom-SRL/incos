@@ -247,6 +247,123 @@ export class LibroRegistroRepository extends BaseRepository {
   }
 
   /**
+   * ¿Existe algún folio FIRMADO (inmutable, página con firmas de las
+   * autoridades) en el libro? Bloquea el reajuste masivo de numeración de la
+   * gestión (`GenerarFoliosGestionUseCase.reajustarFoliosGestion`): una vez
+   * firmada, una página no puede cambiar de número.
+   * @param {number} libroId
+   * @returns {Promise<boolean>}
+   */
+  async existenFoliosFirmados(libroId) {
+    const total = await FolioLibroModel.count({
+      where: { libroId, estado: ESTADOS_FOLIO.FIRMADO, activo: true },
+    });
+    return total > 0;
+  }
+
+  /**
+   * TRANSACCIONAL, todo o nada: reajuste masivo de folios de la GESTIÓN
+   * completa (las 3 carreras comparten libro). Anula TODOS los folios
+   * vigentes (BORRADOR/IMPRESO) del libro con `motivoAnulacion` y los
+   * reemplaza por una numeración FRESCA y correlativa (`folioInicial..`)
+   * calculada de la nómina actual de cada paralelo.
+   *
+   * A diferencia de `crearFoliosConEstudiantes` (numeración MAX+1 que NUNCA
+   * reutiliza números — pensada para la anulación PUNTUAL de una página
+   * suelta, donde el resto del libro no cambia), este reajuste sustituye la
+   * EDICIÓN COMPLETA de la gestión: los folios superados por el reajuste no
+   * dejan hueco permanente, es una renumeración limpia 1..N. Precondición
+   * (folios FIRMADOS bloquean la operación) la valida el use case ANTES de
+   * llamar aquí — este método asume que ya no hay folios FIRMADO en el libro.
+   *
+   * numero_folio NUNCA se reutiliza (`uk_libro_folio` es UNIQUE sobre
+   * libro_id+numero_folio, y anular no borra la fila): los nuevos folios NO
+   * arrancan en `folioInicial` si el libro ya tuvo folios antes — arrancan en
+   * MAX(numero_folio del libro) + 1, igual que `crearFoliosConEstudiantes`.
+   * `folioInicial` solo aplica en el arranque histórico (libro sin folios
+   * todavía). Los nuevos SÍ quedan correlativos entre sí (sin huecos), pero
+   * el rango crece en cada reajuste sucesivo — es la única forma de reajustar
+   * sin violar la restricción única ni borrar folios.
+   *
+   * @param {Object} params
+   * @param {number} params.libroId
+   * @param {number} params.gestionId
+   * @param {number} params.folioInicial - Arranque si el libro no tenía folios.
+   * @param {string} params.motivoAnulacion
+   * @param {Array<Object>} params.folios - Mismo shape que `crearFoliosConEstudiantes`
+   *        (sin `numeroFolio`; en el orden correlativo final deseado).
+   * @param {number} [userId]
+   * @returns {Promise<{ anulados: number, creados: Array<Object> }>}
+   */
+  async reajustarFoliosGestion(
+    { libroId, gestionId, folioInicial, motivoAnulacion, folios },
+    userId = null,
+  ) {
+    return sequelize.transaction(async (t) => {
+      const vigentes = await FolioLibroModel.findAll({
+        where: { libroId, activo: true, estado: [ESTADOS_FOLIO.BORRADOR, ESTADOS_FOLIO.IMPRESO] },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+
+      if (vigentes.length > 0) {
+        await FolioLibroModel.update(
+          { estado: ESTADOS_FOLIO.ANULADO, observaciones: motivoAnulacion, updatedBy: userId },
+          { where: { id: vigentes.map((v) => v.id) }, transaction: t },
+        );
+      }
+
+      const maxGestion = await this.getMaxNumeroFolioByGestion(gestionId, {
+        transaction: t,
+        lock: true,
+      });
+      const primerFolio = maxGestion > 0 ? maxGestion + 1 : Number(folioInicial ?? 1);
+
+      const creados = [];
+      for (let i = 0; i < folios.length; i += 1) {
+        const folio = folios[i];
+        // Secuencial a propósito: numeración correlativa y volumen acotado.
+        // eslint-disable-next-line no-await-in-loop
+        const folioModel = await FolioLibroModel.create(
+          {
+            libroId,
+            numeroFolio: primerFolio + i,
+            paraleloGestionId: folio.paraleloGestionId,
+            ordenEnParalelo: folio.ordenEnParalelo,
+            estado: folio.estado,
+            fechaRegistro: folio.fechaRegistro ?? null,
+            activo: true,
+            createdBy: userId,
+          },
+          { transaction: t },
+        );
+
+        const filas = (folio.estudiantes ?? []).map((est) => ({
+          folioId: folioModel.id,
+          numeroOrden: est.numeroOrden,
+          estudianteId: est.estudianteId ?? null,
+          inscripcionId: est.inscripcionId ?? null,
+          estadoAcademico: est.estadoAcademico ?? null,
+          observaciones: est.observaciones ?? null,
+          activo: true,
+          createdBy: userId,
+        }));
+        // eslint-disable-next-line no-await-in-loop
+        await FolioEstudianteModel.bulkCreate(filas, { transaction: t });
+
+        creados.push({ ...toPlain(folioModel), totalEstudiantes: filas.length });
+      }
+
+      await LibroRegistroModel.update(
+        { folioActual: primerFolio + folios.length - 1, updatedBy: userId },
+        { where: { id: libroId }, transaction: t },
+      );
+
+      return { anulados: vigentes.length, creados };
+    });
+  }
+
+  /**
    * Un folio por id (fila plana de folios_libro) o null.
    * @param {number} folioId
    * @returns {Promise<Object|null>}

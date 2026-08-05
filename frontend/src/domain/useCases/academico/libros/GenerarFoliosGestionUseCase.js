@@ -1,8 +1,9 @@
 /**
- * Genera los folios de TODOS los paralelos de una gestión, en el orden
- * canónico de carrera (POST /libros/gestiones/:gestionId/folios).
- * Idempotente: los paralelos con folios vigentes se omiten y quedan
- * reportados en el resumen.
+ * Reajusta los folios de TODOS los paralelos de una gestión, en el orden
+ * canónico de carrera (POST /libros/gestiones/:gestionId/folios): anula los
+ * folios vigentes del libro y los regenera con numeración fresca y
+ * correlativa a partir de la nómina actual. Los paralelos sin nómina se
+ * omiten y quedan reportados en el resumen.
  */
 
 export class GenerarFoliosGestionUseCase {

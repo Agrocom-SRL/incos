@@ -66,7 +66,7 @@ const LibroDetailPage = () => {
           icon={<FileAddOutlined />}
           loading={generandoTodosFolios}
           onClick={handleGenerarTodosFolios}
-          disabled={!estaAbierto}
+          disabled={!estaAbierto || generandoTodosFolios}
           title={!estaAbierto ? 'El libro está cerrado: no admite nuevos folios' : undefined}
         >
           Generar todos los folios

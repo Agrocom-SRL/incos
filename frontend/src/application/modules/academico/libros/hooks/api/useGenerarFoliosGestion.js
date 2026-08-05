@@ -1,8 +1,11 @@
 /**
- * Genera los folios de TODOS los paralelos de una gestión, en una sola
- * llamada (POST /v1/libros/gestiones/:gestionId/folios). Idempotente:
- * paralelos con folios vigentes se omiten (no es error) y quedan en
- * `resumen.omitidos`, no se descartan silenciosamente.
+ * Reajusta los folios de TODOS los paralelos de una gestión, en una sola
+ * llamada (POST /v1/libros/gestiones/:gestionId/folios): anula los folios
+ * vigentes del libro y los regenera con numeración fresca y correlativa a
+ * partir de la nómina actual (botón "Generar todos los folios"). Rechaza
+ * entero si el libro tiene folios FIRMADOS (inmutables). Paralelos sin
+ * nómina se omiten y quedan en `resumen.omitidos`, no se descartan
+ * silenciosamente.
  */
 
 import { useCallback, useState } from 'react';

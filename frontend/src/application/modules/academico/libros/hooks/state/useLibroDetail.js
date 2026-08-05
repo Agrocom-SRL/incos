@@ -47,10 +47,19 @@ export const useLibroDetail = () => {
     if (!libro?.gestionId) return { success: false };
     const result = await generarFoliosGestion(libro.gestionId);
     if (result.success) {
-      notification.success({
-        title: 'Folios de la gestión generados',
-        description: `Se crearon ${result.data?.foliosCreados ?? 0} folio(s) en ${result.data?.paralelosGenerados ?? 0} paralelo(s).`,
-      });
+      const anulados = result.data?.foliosAnulados ?? 0;
+      const omitidos = result.data?.omitidos?.length ?? 0;
+      const detalle = [
+        anulados > 0
+          ? `Se reajustó la numeración: ${anulados} folio(s) anterior(es) se anularon.`
+          : null,
+        `Se generaron ${result.data?.foliosCreados ?? 0} folio(s) en ${result.data?.paralelosGenerados ?? 0} paralelo(s).`,
+        omitidos > 0 ? `${omitidos} paralelo(s) sin estudiantes matriculados se omitieron.` : null,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      notification.success({ title: 'Folios de la gestión generados', description: detalle });
       await load();
     } else {
       notification.error({
