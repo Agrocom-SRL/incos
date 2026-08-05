@@ -43,8 +43,6 @@ import {
   AbrirLibroUseCase,
   ObtenerLibroPorIdUseCase,
   EditarLibroUseCase,
-  ListarParalelosLibroUseCase,
-  GenerarFoliosParaleloUseCase,
   GenerarFoliosGestionUseCase,
   ObtenerFolioPorIdUseCase,
   CambiarEstadoFolioUseCase,
@@ -256,14 +254,6 @@ export function registerAcademicoModule(factory) {
 
   factory.editarLibro = () => {
     return new EditarLibroUseCase(LibroRegistroRepository);
-  };
-
-  factory.listarParalelosLibro = () => {
-    return new ListarParalelosLibroUseCase(LibroRegistroRepository);
-  };
-
-  factory.generarFoliosParalelo = () => {
-    return new GenerarFoliosParaleloUseCase(LibroRegistroRepository);
   };
 
   factory.generarFoliosGestion = () => {

@@ -5,12 +5,13 @@ import { construirHojaParalelo } from '../../../utils/libroFolioExcelDatos.js';
 import { calcularEstadisticasParalelo } from './helpers/estadisticasParaleloHelper.js';
 
 /**
- * Exporta el libro de registro COMPLETO a Excel (GET /libros/:id/export):
- * una hoja por paralelo con sus folios apilados verticalmente — réplica del
- * libro físico "LIBRO LLENADO SISTEMAS 11 dic 2025". El libro es de la
- * gestión completa (3 carreras): las hojas se ordenan primero por carrera en
- * el orden canónico institucional (`ordenCarreraLibro`), luego periodo, luego
- * paralelo.
+ * Exporta el libro de registro a Excel (GET /libros/:id/export): una hoja
+ * por paralelo con sus folios apilados verticalmente — réplica del libro
+ * físico "LIBRO LLENADO SISTEMAS 11 dic 2025". El libro es de la gestión
+ * completa (3 carreras); sin `carreraId` exporta las 3, con `carreraId`
+ * exporta solo las hojas de esa carrera (ficha del libro, tab por carrera).
+ * Las hojas se ordenan primero por carrera en el orden canónico institucional
+ * (`ordenCarreraLibro`), luego periodo, luego paralelo.
  * Permiso: academico.libro · EXPORTAR.
  *
  * Los folios ANULADOS no se exportan: su numeración queda como hueco (como en
@@ -34,10 +35,10 @@ export class ExportLibroExcelUseCase {
   }
 
   /**
-   * @param {Object} params - { id }
+   * @param {Object} params - { id, carreraId? }
    * @returns {Promise<{ buffer: Buffer, fileName: string, mimeType: string }>}
    */
-  async execute({ id }) {
+  async execute({ id, carreraId = null }) {
     const libroId = Number(id);
     const libroRow = await this.libroRegistroViewRepository.obtenerLibroPorId(libroId);
     if (!libroRow) {
@@ -45,9 +46,16 @@ export class ExportLibroExcelUseCase {
     }
 
     const foliosRows = await this.libroRegistroViewRepository.listarFoliosPorLibro(libroId);
-    const exportables = foliosRows.filter((f) => f.estado !== ESTADOS_FOLIO.ANULADO);
+    let exportables = foliosRows.filter((f) => f.estado !== ESTADOS_FOLIO.ANULADO);
+    if (carreraId != null) {
+      exportables = exportables.filter((f) => Number(f.carrera_id) === Number(carreraId));
+    }
     if (exportables.length === 0) {
-      throw new ValidationError('El libro aún no tiene folios generados para exportar');
+      throw new ValidationError(
+        carreraId != null
+          ? 'Esta carrera aún no tiene folios generados para exportar'
+          : 'El libro aún no tiene folios generados para exportar',
+      );
     }
 
     // Una hoja por paralelo (orden: carrera canónica, luego curso/periodo,
@@ -108,12 +116,14 @@ export class ExportLibroExcelUseCase {
       hojas,
     });
 
+    const sufijoCarrera = carreraId != null ? `_${sanitizarFilePart(String(exportables[0].carrera_codigo ?? ''))}` : '';
     const fileName = `Libro_${libroRow.numero_libro}_${sanitizarFilePart(
       String(libroRow.gestion_anio ?? ''),
-    )}.xlsx`;
+    )}${sufijoCarrera}.xlsx`;
 
     this.logger?.info('[Libros] Libro exportado a Excel', {
       libroId,
+      carreraId,
       hojas: hojas.length,
       folios: exportables.length,
       estudiantes: totalEstudiantes,

@@ -3,7 +3,7 @@
  */
 
 import { Flex, Typography } from 'antd';
-import { FileAddOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
@@ -13,7 +13,6 @@ import { useLibrosList } from '@application-academico/libros/hooks';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import { allSpacing } from '@theme/tokens';
 import AbrirLibroModal from '../components/organisms/AbrirLibroModal.jsx';
-import GenerarFoliosGestionModal from '../components/organisms/GenerarFoliosGestionModal.jsx';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
@@ -34,26 +33,10 @@ const LibrosListPage = () => {
     abriendo,
     gestiones,
     loadingGestiones,
-
-    modalGenerarGestionOpen,
-    abrirModalGenerarGestion,
-    cerrarModalGenerarGestion,
-    handleGenerarFoliosGestion,
-    generandoGestion,
-    resumenGeneracionFolios,
   } = useLibrosList();
 
   const listaAcciones = (
     <Flex gap={allSpacing.marginSM} wrap="wrap">
-      <ActionButton
-        permiso={LIBROS_PERMISOS.libro}
-        accion="CREAR"
-        variant="alternative"
-        icon={<FileAddOutlined />}
-        onClick={abrirModalGenerarGestion}
-      >
-        Generar folios de la gestión
-      </ActionButton>
       <ActionButton
         permiso={LIBROS_PERMISOS.libro}
         accion="CREAR"
@@ -106,16 +89,6 @@ const LibrosListPage = () => {
         guardando={abriendo}
         onGuardar={handleAbrirLibro}
         onCancelar={cerrarModal}
-      />
-
-      <GenerarFoliosGestionModal
-        open={modalGenerarGestionOpen}
-        gestiones={gestiones}
-        loadingGestiones={loadingGestiones}
-        generando={generandoGestion}
-        resumen={resumenGeneracionFolios}
-        onGenerar={handleGenerarFoliosGestion}
-        onCancelar={cerrarModalGenerarGestion}
       />
     </PageTemplate>
   );

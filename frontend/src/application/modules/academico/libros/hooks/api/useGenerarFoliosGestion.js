@@ -1,9 +1,8 @@
 /**
  * Genera los folios de TODOS los paralelos de una gestión, en una sola
- * llamada (POST /v1/libros/gestiones/:gestionId/folios). Hermano de
- * `useGenerarFolios` (por paralelo). Idempotente: paralelos con folios
- * vigentes se omiten (no es error) y quedan en `resumen.omitidos`, no se
- * descartan silenciosamente.
+ * llamada (POST /v1/libros/gestiones/:gestionId/folios). Idempotente:
+ * paralelos con folios vigentes se omiten (no es error) y quedan en
+ * `resumen.omitidos`, no se descartan silenciosamente.
  */
 
 import { useCallback, useState } from 'react';

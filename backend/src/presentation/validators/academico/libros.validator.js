@@ -74,7 +74,10 @@ export const editarFolioEstudianteValidator = [
   body('observaciones').optional({ nullable: true }).isString().isLength({ max: 255 }),
 ];
 
-export const exportLibroExcelValidator = [libroIdParam];
+export const exportLibroExcelValidator = [
+  libroIdParam,
+  query('carreraId').optional().isInt({ min: 1 }).withMessage('Carrera inválida'),
+];
 
 /** POST /libros/gestiones/:gestionId/folios — generación masiva por gestión. */
 export const generarFoliosGestionValidator = [

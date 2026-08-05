@@ -4,13 +4,7 @@
  */
 
 import { Alert, Popconfirm } from 'antd';
-import {
-  FileAddOutlined,
-  FileExcelOutlined,
-  LockOutlined,
-  ProfileOutlined,
-  UnlockOutlined,
-} from '@ant-design/icons';
+import { FileAddOutlined, LockOutlined, ProfileOutlined, UnlockOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, StatusPill } from '@atoms';
@@ -22,7 +16,6 @@ import { useLibroDetail } from '@application-academico/libros/hooks';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import { formatLibroEstado, getLibroEstadoPillClass } from '@application-academico/libros/utils/librosEstados';
 import LibroFoliosSection from '../components/organisms/LibroFoliosSection.jsx';
-import GenerarFoliosModal from '../components/organisms/GenerarFoliosModal.jsx';
 import '@presentation/styles/pages/detail-page.css';
 
 const LibroDetailPage = () => {
@@ -37,16 +30,8 @@ const LibroDetailPage = () => {
     handleVolver,
     refetch,
 
-    modalGenerarOpen,
-    abrirModalGenerar,
-    cerrarModalGenerar,
-    paralelos,
-    loadingParalelos,
-    handleGenerarFolios,
-    generando,
-    handleGenerarTodos,
-    generandoTodos,
-    resumenTodos,
+    handleGenerarTodosFolios,
+    generandoTodosFolios,
 
     handleCerrarLibro,
     handleReabrirLibro,
@@ -57,7 +42,6 @@ const LibroDetailPage = () => {
   } = useLibroDetail();
 
   const puedeGenerar = hasPermiso(LIBROS_PERMISOS.libro, 'CREAR');
-  const puedeExportar = hasPermiso(LIBROS_PERMISOS.libro, 'EXPORTAR');
   const puedeEditar = hasPermiso(LIBROS_PERMISOS.libro, 'EDITAR');
 
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
@@ -78,26 +62,14 @@ const LibroDetailPage = () => {
         <ActionButton
           permiso={LIBROS_PERMISOS.libro}
           accion="CREAR"
-          variant="primary"
+          variant="alternative"
           icon={<FileAddOutlined />}
-          onClick={abrirModalGenerar}
+          loading={generandoTodosFolios}
+          onClick={handleGenerarTodosFolios}
           disabled={!estaAbierto}
           title={!estaAbierto ? 'El libro está cerrado: no admite nuevos folios' : undefined}
         >
-          Generar folios de paralelo
-        </ActionButton>
-      ) : null}
-
-      {puedeExportar ? (
-        <ActionButton
-          permiso={LIBROS_PERMISOS.libro}
-          accion="EXPORTAR"
-          variant="info"
-          icon={<FileExcelOutlined />}
-          loading={exportando}
-          onClick={handleExportar}
-        >
-          Exportar libro
+          Generar todos los folios
         </ActionButton>
       ) : null}
 
@@ -170,22 +142,15 @@ const LibroDetailPage = () => {
               actions={acciones}
             />
 
-            <LibroFoliosSection folios={libro.folios ?? []} columns={tableColumns} />
+            <LibroFoliosSection
+              folios={libro.folios ?? []}
+              columns={tableColumns}
+              onExportar={handleExportar}
+              exportando={exportando}
+            />
           </>
         ) : null}
       </DetailPageShell>
-
-      <GenerarFoliosModal
-        open={modalGenerarOpen}
-        paralelos={paralelos}
-        loading={loadingParalelos}
-        generando={generando}
-        onGenerar={handleGenerarFolios}
-        onGenerarTodos={handleGenerarTodos}
-        generandoTodos={generandoTodos}
-        resumenTodos={resumenTodos}
-        onCancelar={cerrarModalGenerar}
-      />
     </PageTemplate>
   );
 };

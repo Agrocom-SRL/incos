@@ -1,8 +1,8 @@
 /**
  * Genera los folios de TODOS los paralelos de una gestión, en el orden
- * canónico de carrera (POST /libros/gestiones/:gestionId/folios). Hermano de
- * `GenerarFoliosParaleloUseCase` (que genera por paralelo); idempotente: los
- * paralelos con folios vigentes se omiten y quedan reportados en el resumen.
+ * canónico de carrera (POST /libros/gestiones/:gestionId/folios).
+ * Idempotente: los paralelos con folios vigentes se omiten y quedan
+ * reportados en el resumen.
  */
 
 export class GenerarFoliosGestionUseCase {
