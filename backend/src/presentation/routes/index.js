@@ -17,6 +17,7 @@ import {
     CAPACITACION_TOKENS,
     TITULACION_TOKENS,
     PASANTIAS_TOKENS,
+    INGRESOS_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
 const router = express.Router();
@@ -76,6 +77,7 @@ router.get('/', (req, res) => {
             cuentasPago: '/api/v1/cuentas-pago',
             configuracionAportes: '/api/v1/configuracion-aportes',
             pagosAportes: '/api/v1/pagos-aportes',
+            ingresos: '/api/v1/ingresos',
             dashboard: '/api/v1/dashboard',
             docentes: '/api/v1/docentes',
             docentesAsignaciones: '/api/v1/docentes/asignaciones',
@@ -191,6 +193,9 @@ router.use('/bancos-autorizados', container.resolve(PAGOS_TOKENS.bancosAutorizad
 router.use('/cuentas-pago', container.resolve(PAGOS_TOKENS.cuentasPagoRouter));
 router.use('/configuracion-aportes', container.resolve(PAGOS_TOKENS.configuracionAportesRouter));
 router.use('/pagos-aportes', container.resolve(PAGOS_TOKENS.pagosAportesRouter));
+// Registro de ingresos (Finanzas): listado transaccional unificado de aportes
+// académicos + pagos de capacitación (vista 184). NO reemplaza /pagos-aportes.
+router.use('/ingresos', container.resolve(INGRESOS_TOKENS.ingresosRouter));
 
 // ============================================
 // 8. MÓDULO: DASHBOARD
