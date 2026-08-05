@@ -24,24 +24,27 @@ export const ESTADOS_LIBRO = {
 };
 export const ESTADOS_LIBRO_VALUES = Object.values(ESTADOS_LIBRO);
 
-/** Estados del folio (folios_libro.estado). */
+/**
+ * Estados del folio (folios_libro.estado). Sin IMPRESO/FIRMADO: el sistema no
+ * tiene forma de verificar que una página se imprimió o firmó físicamente, así
+ * que solo trackea lo que SÍ controla — el folio existe (BORRADOR) o quedó sin
+ * efecto (ANULADO). El "cierre" oficial del documento se controla por
+ * `libros_registro.estado` (CERRADO) — ver `ExportLibroExcelUseCase` (bloque de
+ * firmas solo en el export del libro CERRADO; mientras está ABIERTO se exporta
+ * en borrador, sin firmas).
+ */
 export const ESTADOS_FOLIO = {
   BORRADOR: 'BORRADOR',
-  IMPRESO: 'IMPRESO',
-  FIRMADO: 'FIRMADO',
   ANULADO: 'ANULADO',
 };
 export const ESTADOS_FOLIO_VALUES = Object.values(ESTADOS_FOLIO);
 
 /**
- * Máquina de estados del folio: BORRADOR → IMPRESO → FIRMADO / ANULADO.
- * FIRMADO es inmutable (página con firmas de autoridades); ANULADO es terminal
- * y exige motivo. Un folio NO se elimina: se anula.
+ * Máquina de estados del folio: BORRADOR → ANULADO. ANULADO es terminal y
+ * exige motivo. Un folio NO se elimina: se anula.
  */
 export const TRANSICIONES_FOLIO = {
-  [ESTADOS_FOLIO.BORRADOR]: [ESTADOS_FOLIO.IMPRESO, ESTADOS_FOLIO.ANULADO],
-  [ESTADOS_FOLIO.IMPRESO]: [ESTADOS_FOLIO.FIRMADO, ESTADOS_FOLIO.ANULADO],
-  [ESTADOS_FOLIO.FIRMADO]: [],
+  [ESTADOS_FOLIO.BORRADOR]: [ESTADOS_FOLIO.ANULADO],
   [ESTADOS_FOLIO.ANULADO]: [],
 };
 

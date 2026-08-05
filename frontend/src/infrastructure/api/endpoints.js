@@ -461,9 +461,9 @@ export const LIBROS_ENDPOINTS = {
   FOLIOS: (id) => `${API_BASE}/libros/${id}/folios`,
   /** GET — detalle del folio (nómina + celdas de nota final por materia). */
   FOLIO_BY_ID: (id, folioId) => `${API_BASE}/libros/${id}/folios/${folioId}`,
-  /** PATCH — transición de estado (BORRADOR→IMPRESO→FIRMADO / ANULADO). */
+  /** PATCH — transición de estado (BORRADOR→ANULADO). */
   FOLIO_ESTADO: (id, folioId) => `${API_BASE}/libros/${id}/folios/${folioId}/estado`,
-  /** PATCH — fila de un estudiante del folio (ESTADO/OBSERVACIONES; solo si no FIRMADO). */
+  /** PATCH — observación de fila de un estudiante del folio (solo si no ANULADO). */
   FOLIO_ESTUDIANTE: (id, folioId, filaId) =>
     `${API_BASE}/libros/${id}/folios/${folioId}/estudiantes/${filaId}`,
   /** GET — descarga el libro completo en Excel (binario). */

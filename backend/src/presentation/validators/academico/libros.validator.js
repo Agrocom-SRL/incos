@@ -2,7 +2,6 @@ import { body, param, query } from 'express-validator';
 import {
   ESTADOS_LIBRO_VALUES,
   ESTADOS_FOLIO_VALUES,
-  ESTADOS_ACADEMICOS_FOLIO_VALUES,
 } from '../../../domain/constants/libros.constants.js';
 
 const libroIdParam = param('id').isInt({ min: 1 }).withMessage('Libro inválido');
@@ -67,10 +66,6 @@ export const editarFolioEstudianteValidator = [
   libroIdParam,
   folioIdParam,
   filaIdParam,
-  body('estadoAcademico')
-    .optional({ nullable: true })
-    .isIn(ESTADOS_ACADEMICOS_FOLIO_VALUES)
-    .withMessage('Estado académico inválido'),
   body('observaciones').optional({ nullable: true }).isString().isLength({ max: 255 }),
 ];
 

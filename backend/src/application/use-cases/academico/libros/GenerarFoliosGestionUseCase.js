@@ -14,20 +14,17 @@ import { calcularPaginasParalelo } from './helpers/generarFoliosParaleloHelper.j
  * Permiso: academico.libro · CREAR.
  *
  * Todo o nada (decisión de negocio explícita, no per-paralelo): se anulan TODOS
- * los folios vigentes (BORRADOR/IMPRESO) del libro y se regeneran de una sola
- * vez con numeración correlativa ENTRE SÍ. numero_folio nunca se reutiliza
- * (restricción única `uk_libro_folio`, anular no borra la fila) — los nuevos
- * arrancan en MAX(numero_folio del libro) + 1, no en 1: el rango del libro
- * crece en cada reajuste sucesivo (p. ej. 1–44, luego 45–88), pero dentro del
- * reajuste no quedan huecos entre los folios vigentes.
- *
- * Bloqueo: si el libro tiene algún folio FIRMADO (inmutable — página con
- * firmas de las autoridades), el reajuste se rechaza ENTERO: no se toca nada.
- * No hay reajuste parcial "menos los firmados" — eso dejaría la numeración a
- * medias, que es justamente lo que este reajuste existe para evitar.
+ * los folios vigentes (BORRADOR) del libro y se regeneran de una sola vez con
+ * numeración correlativa ENTRE SÍ. numero_folio nunca se reutiliza (restricción
+ * única `uk_libro_folio`, anular no borra la fila) — los nuevos arrancan en
+ * MAX(numero_folio del libro) + 1, no en 1: el rango del libro crece en cada
+ * reajuste sucesivo (p. ej. 1–44, luego 45–88), pero dentro del reajuste no
+ * quedan huecos entre los folios vigentes.
  *
  * Precondición: debe existir un libro ABIERTO de la gestión — si falta o está
- * cerrado, rechaza antes de tocar folios.
+ * CERRADO, rechaza antes de tocar folios. Un libro CERRADO es precisamente lo
+ * que protege el reajuste: el folio no tiene un estado "inmutable" propio, el
+ * cierre oficial del documento vive en `libros_registro.estado`.
  *
  * Paralelos sin nómina (helper lanza ValidationError) se OMITEN y quedan
  * reportados en el resumen: es una condición de datos recuperable, no debe
@@ -77,14 +74,6 @@ export class GenerarFoliosGestionUseCase {
     }
     if (libro.estado !== ESTADOS_LIBRO.ABIERTO) {
       throw new ValidationError('El libro de esta gestión está cerrado: no admite nuevos folios');
-    }
-
-    // Bloqueo: folios FIRMADOS (inmutables) impiden reajustar la numeración.
-    const hayFirmados = await this.libroRegistroRepository.existenFoliosFirmados(libro.id);
-    if (hayFirmados) {
-      throw new ValidationError(
-        'El libro tiene folios FIRMADOS: no se puede reajustar la numeración mientras existan folios firmados (son inmutables).',
-      );
     }
 
     // Recalcula las páginas de CADA paralelo con nómina, en orden canónico —

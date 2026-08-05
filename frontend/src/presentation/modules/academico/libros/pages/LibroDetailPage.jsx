@@ -4,7 +4,14 @@
  */
 
 import { Alert, Popconfirm } from 'antd';
-import { FileAddOutlined, LockOutlined, ProfileOutlined, UnlockOutlined } from '@ant-design/icons';
+import {
+  FileAddOutlined,
+  LockOutlined,
+  ProfileOutlined,
+  StopOutlined,
+  UnlockOutlined,
+} from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, StatusPill } from '@atoms';
@@ -15,11 +22,13 @@ import { useAuthContext } from '@application-auth';
 import { useLibroDetail } from '@application-academico/libros/hooks';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import { formatLibroEstado, getLibroEstadoPillClass } from '@application-academico/libros/utils/librosEstados';
+import { libroAnuladosPath } from '@application-academico/libros/utils/librosPaths';
 import LibroFoliosSection from '../components/organisms/LibroFoliosSection.jsx';
 import '@presentation/styles/pages/detail-page.css';
 
 const LibroDetailPage = () => {
   const { hasPermiso } = useAuthContext();
+  const navigate = useNavigate();
   const {
     libro,
     loading,
@@ -84,7 +93,7 @@ const LibroDetailPage = () => {
           <ActionButton
             permiso={LIBROS_PERMISOS.libro}
             accion="EDITAR"
-            variant="warning"
+            variant="success"
             icon={<LockOutlined />}
             loading={actualizando}
           >
@@ -97,7 +106,7 @@ const LibroDetailPage = () => {
         <ActionButton
           permiso={LIBROS_PERMISOS.libro}
           accion="EDITAR"
-          variant="alternative"
+          variant="warning"
           icon={<UnlockOutlined />}
           loading={actualizando}
           onClick={handleReabrirLibro}
@@ -105,6 +114,16 @@ const LibroDetailPage = () => {
           Reabrir libro
         </ActionButton>
       ) : null}
+
+      <ActionButton
+        permiso={LIBROS_PERMISOS.libro}
+        accion="DETALLE"
+        variant="danger"
+        icon={<StopOutlined />}
+        onClick={() => navigate(libroAnuladosPath(libro.id))}
+      >
+        Folios anulados
+      </ActionButton>
     </>
   ) : null;
 
@@ -135,7 +154,6 @@ const LibroDetailPage = () => {
               }
               stats={[
                 { label: 'Folios', value: libro.totalFolios ?? 0, primary: true },
-                { label: 'Firmados', value: libro.foliosFirmados ?? 0 },
                 { label: 'Anulados', value: libro.foliosAnulados ?? 0 },
                 { label: 'Estudiantes', value: libro.totalEstudiantes ?? 0 },
               ]}

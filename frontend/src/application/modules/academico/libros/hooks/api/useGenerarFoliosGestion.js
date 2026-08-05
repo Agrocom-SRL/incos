@@ -3,9 +3,9 @@
  * llamada (POST /v1/libros/gestiones/:gestionId/folios): anula los folios
  * vigentes del libro y los regenera con numeración fresca y correlativa a
  * partir de la nómina actual (botón "Generar todos los folios"). Rechaza
- * entero si el libro tiene folios FIRMADOS (inmutables). Paralelos sin
- * nómina se omiten y quedan en `resumen.omitidos`, no se descartan
- * silenciosamente.
+ * entero si el libro está CERRADO (ahí protege el reajuste: el folio no
+ * tiene un estado "inmutable" propio). Paralelos sin nómina se omiten y
+ * quedan en `resumen.omitidos`, no se descartan silenciosamente.
  */
 
 import { useCallback, useState } from 'react';

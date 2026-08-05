@@ -1,13 +1,15 @@
 /**
  * Organismo: sección "Folios registrados" de la ficha del libro (P2 ·
- * LibroDetailPage). El libro es compartido por las 3 carreras del instituto,
- * así que los folios se reparten en un tab por carrera (patrón
- * `sd-tabs-shell`/`sd-tab-label` de las fichas de detalle, p. ej.
- * `DocentesDetail`). "Exportar libro" vive en `tabBarExtraContent` (mismo
- * patrón que `GestionHorariosArmadoPage`: acción alineada a la barra de
- * tabs, no flotando sobre la tabla) y exporta SOLO las hojas de la carrera
- * activa (no el libro completo — para eso está "Generar todos los folios"
- * en la cabecera).
+ * LibroDetailPage). Muestra solo los folios VIGENTES (BORRADOR) — los
+ * ANULADOS (p. ej. superados por un reajuste de "Generar todos los folios")
+ * tienen su propia página, sin mezclar. El libro es
+ * compartido por las 3 carreras del instituto, así que los folios vigentes
+ * se reparten en un tab por carrera (patrón `sd-tabs-shell`/`sd-tab-label`
+ * de las fichas de detalle, p. ej. `DocentesDetail`). "Exportar libro" vive
+ * en `tabBarExtraContent` (mismo patrón que `GestionHorariosArmadoPage`:
+ * acción alineada a la barra de tabs, no flotando sobre la tabla) y exporta
+ * SOLO las hojas de la carrera activa (no el libro completo — para eso está
+ * "Generar todos los folios" en la cabecera).
  *
  * Orden de tabs: canónico institucional (Contaduría → Administración →
  * Informática, `ORDEN_CARRERAS_LIBRO`), NO alfabético — mismo criterio que
@@ -37,13 +39,15 @@ const getCarreraFolio = (folio) => ({
 });
 
 const LibroFoliosSection = ({ folios = [], columns = [], onExportar, exportando = false }) => {
+  const vigentes = useMemo(() => folios.filter((f) => f.estado !== 'ANULADO'), [folios]);
+
   const grupos = useMemo(() => {
-    const base = groupByCarrera(folios, getCarreraFolio);
+    const base = groupByCarrera(vigentes, getCarreraFolio);
     return [...base].sort((a, b) => {
       if (a.esSinCarrera !== b.esSinCarrera) return a.esSinCarrera ? 1 : -1;
       return ordenCarreraLibro(a.codigo) - ordenCarreraLibro(b.codigo);
     });
-  }, [folios]);
+  }, [vigentes]);
 
   const [activeKey, setActiveKey] = useState(grupos[0]?.key);
   const grupoActivo = grupos.find((g) => g.key === activeKey) ?? grupos[0];
@@ -73,8 +77,8 @@ const LibroFoliosSection = ({ folios = [], columns = [], onExportar, exportando 
   );
 
   return (
-    <DetailInfoCard title={`Folios registrados (${folios.length})`} icon={<FileTextOutlined />} cols={1}>
-      {folios.length > 0 ? (
+    <DetailInfoCard title={`Folios registrados (${vigentes.length})`} icon={<FileTextOutlined />} cols={1}>
+      {vigentes.length > 0 ? (
         <div className="sd-tabs-shell">
           <Tabs
             className="sd-tabs"

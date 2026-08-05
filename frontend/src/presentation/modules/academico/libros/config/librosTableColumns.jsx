@@ -60,9 +60,7 @@ export const createLibrosTableColumns = ({ navigate }) => [
     key: 'folios',
     width: 190,
     render: (_, record) => (
-      <TableCell
-        subtext={`Firmados ${record.foliosFirmados ?? 0} · Anulados ${record.foliosAnulados ?? 0}`}
-      >
+      <TableCell subtext={`Anulados ${record.foliosAnulados ?? 0}`}>
         {record.totalFolios ?? 0}
       </TableCell>
     ),

@@ -20,9 +20,10 @@
 -- una columna 1:1 como antes del 2026-08-03.
 --
 -- Agregados (subqueries correlacionadas, patrón de la vista 127 — mantienen el
--- grano sin GROUP BY): folios totales/firmados/anulados, MAX(numero_folio),
--- paralelos con folio, estudiantes asentados (via folio_estudiantes) y el
--- resumen de carreras con folio en el libro.
+-- grano sin GROUP BY): folios totales/anulados, MAX(numero_folio), paralelos
+-- con folio, estudiantes asentados (via folio_estudiantes) y el resumen de
+-- carreras con folio en el libro. El folio no tiene un estado "firmado"/
+-- "cerrado" propio: el cierre oficial del documento es `lr.estado` (CERRADO).
 --
 -- Consumidor:
 -- - LibroRegistroViewRepository.listarLibros() / obtenerLibroPorId()
@@ -63,14 +64,6 @@ SELECT
       AND fl.activo = TRUE
       AND fl.estado <> 'ANULADO'
   ) AS total_folios,
-  (
-    SELECT COUNT(*)
-    FROM folios_libro fl
-    WHERE fl.libro_id = lr.id
-      AND fl.deleted_at IS NULL
-      AND fl.activo = TRUE
-      AND fl.estado = 'FIRMADO'
-  ) AS folios_firmados,
   (
     SELECT COUNT(*)
     FROM folios_libro fl

@@ -165,7 +165,7 @@ class LibroRegistroRepository {
   }
 
   /**
-   * PATCH /v1/libros/:id/folios/:folioId/estado — BORRADOR→IMPRESO→FIRMADO / ANULADO.
+   * PATCH /v1/libros/:id/folios/:folioId/estado — BORRADOR→ANULADO.
    * @param {number} id
    * @param {number} folioId
    * @param {{ estado: string, motivo?: string }} payload

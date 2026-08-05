@@ -20,6 +20,9 @@ export class ILibroRegistroExcelGenerator {
    * @param {Object} params
    * @param {Object} params.libro - Metadatos del libro para archivo/log:
    *        { numeroLibro, codigoRegistro, carreraNombre, gestionAnio }.
+   * @param {boolean} [params.incluirFirmas] - false → export BORRADOR (sin
+   *        bloque de firmas de autoridades/docentes); true → documento final
+   *        (libro CERRADO). Ver `ExportLibroExcelUseCase`.
    * @param {Array<{ nombreHoja: string, folios: Array<Object>, estadisticas?: Object|null }>} params.hojas -
    *        Una entrada por paralelo (típicamente armada con
    *        `application/utils/libroFolioExcelDatos.js#construirHojaParalelo`).

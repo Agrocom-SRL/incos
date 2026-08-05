@@ -1,16 +1,21 @@
 /**
- * Columnas de la tabla de folios de un libro (ficha — `LibroDetailPage`).
+ * Columnas de la tabla de folios de un libro (ficha `LibroDetailPage` y
+ * página de anulados `LibroAnuladosPage`).
  *
- * Fila = 1 folio (página del centralizador de un paralelo). La tabla vive
- * dentro de un tab de carrera (`LibroFoliosSection`), así que no repite la
- * columna "Carrera" (redundante: toda la pestaña es de una sola carrera).
+ * En la ficha (tabs por carrera, `LibroFoliosSection`) NO se repite la
+ * columna "Carrera": es redundante, toda la pestaña es de una sola carrera.
+ * En la página de anulados (lista plana, sin tabs) SÍ hace falta —
+ * `showCarrera`— y además se agrega el motivo de anulación —`showMotivo`—
+ * (queda guardado en `observaciones` al anular).
+ *
  * Ver navega al preview del folio (`ACA-LIBROS-FOLIO`, permiso DETALLE);
- * Firmar/Anular viven en el preview, no en esta fila (TableActions
- * fail-closed: sin permiso explícito, la acción no se pinta).
+ * Anular vive en el preview, no en esta fila (TableActions fail-closed: sin
+ * permiso explícito, la acción no se pinta).
  */
 
-import { IdentidadCelda, StatusPill } from '@atoms';
+import { CarreraDotCell, IdentidadCelda, StatusPill } from '@atoms';
 import { TableActions, TableCell } from '@molecules';
+import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import {
   formatFolioEstado,
@@ -20,8 +25,10 @@ import {
 /**
  * @param {Object} params
  * @param {(record: Object) => void} params.onView
+ * @param {boolean} [params.showCarrera] - Columna "Carrera" (lista plana sin tabs).
+ * @param {boolean} [params.showMotivo] - Columna "Motivo" (observaciones del folio anulado).
  */
-export const createFoliosTableColumns = ({ onView }) => [
+export const createFoliosTableColumns = ({ onView, showCarrera = false, showMotivo = false }) => [
   {
     title: '#',
     key: 'nro',
@@ -41,6 +48,22 @@ export const createFoliosTableColumns = ({ onView }) => [
     ),
     sorter: (a, b) => (Number(a.numeroFolio) || 0) - (Number(b.numeroFolio) || 0),
   },
+  ...(showCarrera
+    ? [
+        {
+          title: 'Carrera',
+          key: 'carrera',
+          width: 200,
+          render: (_, record) => (
+            <CarreraDotCell
+              nombre={record.carreraCodigo || record.carreraNombre}
+              colorHex={sanitizeDocenteColorHex(record.carreraColorHex)}
+            />
+          ),
+          sorter: (a, b) => (a.carreraNombre || '').localeCompare(b.carreraNombre || ''),
+        },
+      ]
+    : []),
   {
     title: 'Turno',
     dataIndex: 'turno',
@@ -67,6 +90,15 @@ export const createFoliosTableColumns = ({ onView }) => [
       <StatusPill label={formatFolioEstado(estado)} className={getFolioEstadoPillClass(estado)} />
     ),
   },
+  ...(showMotivo
+    ? [
+        {
+          title: 'Motivo',
+          dataIndex: 'observaciones',
+          render: (motivo) => <TableCell>{motivo || '—'}</TableCell>,
+        },
+      ]
+    : []),
   {
     title: 'Acciones',
     key: 'acciones',

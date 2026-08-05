@@ -1,5 +1,9 @@
 import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
-import { ESTADOS_FOLIO, ordenCarreraLibro } from '../../../../domain/constants/libros.constants.js';
+import {
+  ESTADOS_FOLIO,
+  ESTADOS_LIBRO,
+  ordenCarreraLibro,
+} from '../../../../domain/constants/libros.constants.js';
 import { sanitizarFilePart } from '../../../utils/centralizadorExcelDatos.js';
 import { construirHojaParalelo } from '../../../utils/libroFolioExcelDatos.js';
 import { calcularEstadisticasParalelo } from './helpers/estadisticasParaleloHelper.js';
@@ -13,6 +17,12 @@ import { calcularEstadisticasParalelo } from './helpers/estadisticasParaleloHelp
  * Las hojas se ordenan primero por carrera en el orden canónico institucional
  * (`ordenCarreraLibro`), luego periodo, luego paralelo.
  * Permiso: academico.libro · EXPORTAR.
+ *
+ * Bloque de firmas condicionado al estado del LIBRO (no del folio: el folio
+ * no tiene un estado "firmado"/"cerrado" propio): con el libro ABIERTO el
+ * export es un BORRADOR (cabecera + tabla, sin firmas — la numeración puede
+ * seguir reajustándose); con el libro CERRADO el export es el documento
+ * final, con el bloque de firmas de autoridades y docentes.
  *
  * Los folios ANULADOS no se exportan: su numeración queda como hueco (como en
  * el libro físico, donde el número de una página anulada no se reutiliza).
@@ -107,6 +117,13 @@ export class ExportLibroExcelUseCase {
       );
     }
 
+    // El bloque de firmas solo tiene sentido con el libro CERRADO: mientras
+    // está ABIERTO la numeración puede reajustarse ("Generar todos los
+    // folios"), así que el export es un borrador (cabecera + tabla, sin
+    // firmas) — evita que alguien firme sobre un folio que después cambia
+    // de número.
+    const incluirFirmas = libroRow.estado === ESTADOS_LIBRO.CERRADO;
+
     const buffer = await this.libroRegistroExcelGenerator.generarLibroRegistro({
       libro: {
         numeroLibro: libroRow.numero_libro,
@@ -114,16 +131,19 @@ export class ExportLibroExcelUseCase {
         gestionAnio: libroRow.gestion_anio ?? '',
       },
       hojas,
+      incluirFirmas,
     });
 
     const sufijoCarrera = carreraId != null ? `_${sanitizarFilePart(String(exportables[0].carrera_codigo ?? ''))}` : '';
+    const sufijoBorrador = incluirFirmas ? '' : '_BORRADOR';
     const fileName = `Libro_${libroRow.numero_libro}_${sanitizarFilePart(
       String(libroRow.gestion_anio ?? ''),
-    )}${sufijoCarrera}.xlsx`;
+    )}${sufijoCarrera}${sufijoBorrador}.xlsx`;
 
     this.logger?.info('[Libros] Libro exportado a Excel', {
       libroId,
       carreraId,
+      incluirFirmas,
       hojas: hojas.length,
       folios: exportables.length,
       estudiantes: totalEstudiantes,

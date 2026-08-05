@@ -19,15 +19,11 @@ const LIBRO_ESTADO_PILL = {
 
 const FOLIO_ESTADO_LABELS = {
   BORRADOR: 'Borrador',
-  IMPRESO: 'Impreso',
-  FIRMADO: 'Firmado',
   ANULADO: 'Anulado',
 };
 
 const FOLIO_ESTADO_PILL = {
   BORRADOR: 'cfg-materia-pill cfg-materia-pill--default',
-  IMPRESO: 'cfg-materia-pill cfg-materia-pill--info',
-  FIRMADO: 'cfg-materia-pill cfg-materia-pill--success',
   ANULADO: 'cfg-materia-pill cfg-materia-pill--danger',
 };
 
@@ -49,7 +45,7 @@ export const formatLibroEstado = (estado) => LIBRO_ESTADO_LABELS[estado] ?? esta
 export const getLibroEstadoPillClass = (estado) =>
   LIBRO_ESTADO_PILL[estado] ?? 'cfg-materia-pill cfg-materia-pill--default';
 
-/** Etiqueta legible del estado del folio (BORRADOR/IMPRESO/FIRMADO/ANULADO). */
+/** Etiqueta legible del estado del folio (BORRADOR/ANULADO). */
 export const formatFolioEstado = (estado) => FOLIO_ESTADO_LABELS[estado] ?? estado ?? '—';
 /** Clase de pill del estado del folio. */
 export const getFolioEstadoPillClass = (estado) =>
@@ -60,10 +56,3 @@ export const formatEstadoAcademico = (estado) => ACADEMICO_ESTADO_LABELS[estado]
 /** Clase de pill del estado académico de la fila. */
 export const getEstadoAcademicoPillClass = (estado) =>
   ACADEMICO_ESTADO_PILL[estado] ?? 'cfg-materia-pill cfg-materia-pill--default';
-
-/** Opciones de estado académico para el Select de edición de fila. */
-export const ESTADO_ACADEMICO_OPTIONS = [
-  { value: 'APROBADO', label: 'Aprobado' },
-  { value: 'REPROBADO', label: 'Reprobado' },
-  { value: 'ABANDONO', label: 'Abandono' },
-];

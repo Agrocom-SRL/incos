@@ -45,7 +45,7 @@ export const FolioLibro = sequelize.define(
             type: DataTypes.ENUM(...ESTADOS_FOLIO_VALUES),
             allowNull: true,
             defaultValue: ESTADOS_FOLIO.BORRADOR,
-            comment: 'BORRADOR | IMPRESO | FIRMADO (inmutable) | ANULADO (exige motivo)',
+            comment: 'BORRADOR | ANULADO (exige motivo)',
         },
 
         fechaRegistro: {

@@ -13,6 +13,7 @@ import { lazy } from 'react';
 
 const LibrosListConnector = lazy(() => import('./connectors/LibrosListConnector.jsx'));
 const LibroDetailConnector = lazy(() => import('./connectors/LibroDetailConnector.jsx'));
+const LibroAnuladosConnector = lazy(() => import('./connectors/LibroAnuladosConnector.jsx'));
 const FolioPreviewConnector = lazy(() => import('./connectors/FolioPreviewConnector.jsx'));
 
 export const librosRoutes = [
@@ -22,6 +23,17 @@ export const librosRoutes = [
     element: <FolioPreviewConnector />,
     key: 'ACA-LIBROS-FOLIO',
     breadcrumbLabel: 'Folio',
+    permiso: 'academico.libro',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'ACA-LIBROS-DETALLE',
+  },
+  {
+    // P2.5 — lista plana de folios ANULADOS del libro (sin tabs de carrera).
+    path: '/academico/libros/:id/anulados',
+    element: <LibroAnuladosConnector />,
+    key: 'ACA-LIBROS-ANULADOS',
+    breadcrumbLabel: 'Folios anulados',
     permiso: 'academico.libro',
     accion: 'DETALLE',
     menu: null,

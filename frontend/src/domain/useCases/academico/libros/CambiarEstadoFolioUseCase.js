@@ -1,7 +1,7 @@
 /**
- * Cambia el estado de un folio: BORRADOR → IMPRESO → FIRMADO / ANULADO
- * (PATCH /libros/:id/folios/:folioId/estado). FIRMADO es inmutable; ANULADO
- * exige motivo. Permiso `academico.libro` · APROBAR.
+ * Cambia el estado de un folio: BORRADOR → ANULADO (PATCH
+ * /libros/:id/folios/:folioId/estado). ANULADO exige motivo y es terminal.
+ * Permiso `academico.libro` · APROBAR.
  */
 
 export class CambiarEstadoFolioUseCase {

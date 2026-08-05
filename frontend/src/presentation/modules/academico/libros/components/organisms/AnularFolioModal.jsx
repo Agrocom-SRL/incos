@@ -1,7 +1,7 @@
 /**
  * Organismo: modal "Anular folio" — exige motivo (queda en las observaciones
- * del folio). Terminal: un folio ANULADO no vuelve a BORRADOR/IMPRESO/FIRMADO;
- * para reimprimir el paralelo hay que generar folios nuevos (numeración nueva).
+ * del folio). Terminal: un folio ANULADO no vuelve a BORRADOR; para
+ * regenerar el paralelo hay que generar folios nuevos (numeración nueva).
  */
 
 import { Form, Input, Modal } from 'antd';

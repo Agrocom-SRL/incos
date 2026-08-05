@@ -14,9 +14,12 @@
 -- Un FOLIO = una página del CENTRALIZADOR DE CALIFICACIONES de un paralelo
 -- (curso-paralelo-gestión), hasta 10 estudiantes. numero_folio es correlativo
 -- del libro y cruza paralelos y años/cursos de la misma gestión.
--- Estados: BORRADOR → IMPRESO → FIRMADO (inmutable) / ANULADO (exige motivo).
+-- Estados: BORRADOR → ANULADO (exige motivo). El folio NO tiene un estado
+-- "firmado"/"cerrado" propio: `libro_estado` (libros_registro.estado,
+-- ABIERTO/CERRADO) es lo que gatea el bloque de firmas en el export/preview
+-- (ver ExportLibroExcelUseCase) — de ahí que esta vista lo traiga también.
 -- Estadísticas del paralelo (aprobados/reprobados/abandonos) derivan del conteo
--- de estados congelados en folio_estudiantes, tal como en el papel firmado.
+-- de estados congelados en folio_estudiantes.
 --
 -- Limitación documentada (A5, notas por materia):
 -- las NOTAS del folio NO viven aquí — se leen de la vista 135
@@ -47,6 +50,7 @@ SELECT
   fl.libro_id            AS libro_id,
   lr.numero_libro        AS numero_libro,
   lr.codigo_registro     AS codigo_registro,
+  lr.estado              AS libro_estado,
   fl.numero_folio        AS numero_folio,
   fl.paralelo_gestion_id AS paralelo_gestion_id,
   fl.orden_en_paralelo   AS orden_en_paralelo,

@@ -41,8 +41,11 @@ export class LibroRegistroSheetBuilder {
    * @param {Object} params.doc - Metadatos institucionales (LIBRO_REGISTRO_DOC).
    * @param {number|null} [params.logoId] - Id de imagen del logo MINEDU en el
    *        workbook (null si el asset no está disponible; se omite sin fallar).
+   * @param {boolean} [params.incluirFirmas] - false → BORRADOR: se omiten las
+   *        firmas de autoridades (por folio) y la página de firmas de
+   *        docentes (por paralelo). Ver `ExportLibroExcelUseCase`.
    */
-  static build({ composer: c, hoja, doc, logoId = null }) {
+  static build({ composer: c, hoja, doc, logoId = null, incluirFirmas = false }) {
     const folios = Array.isArray(hoja?.folios) ? hoja.folios : [];
     if (folios.length === 0) return;
 
@@ -58,18 +61,19 @@ export class LibroRegistroSheetBuilder {
       this._cabeceraTabla(c, ctx);
       this._filasEstudiantes(c, ctx);
       this._leyendaNotas(c, ctx);
-      this._firmasAutoridades(c, ctx);
+      if (incluirFirmas) {
+        this._firmasAutoridades(c, ctx);
+      } else {
+        this._notaBorrador(c, ctx);
+      }
       // Cada folio imprime en su propia página del libro.
       c.ws.getRow(base + FILAS_POR_FOLIO).addPageBreak();
     });
 
     const baseFirmas = folios.length * FILAS_POR_FOLIO;
-    const filasFirmasDocentes = this._firmasDocentes(c, {
-      base: baseFirmas,
-      folio: folios[0],
-      layout,
-      doc,
-    });
+    const filasFirmasDocentes = incluirFirmas
+      ? this._firmasDocentes(c, { base: baseFirmas, folio: folios[0], layout, doc })
+      : 0;
 
     this._estadisticasParalelo(c, {
       base: baseFirmas + filasFirmasDocentes + 2,
@@ -364,6 +368,29 @@ export class LibroRegistroSheetBuilder {
       border: false,
       fontColor: EXCEL_COLOR.inkSoft,
     });
+  }
+
+  /**
+   * Nota "DOCUMENTO BORRADOR" al pie del folio, en el mismo renglón que
+   * ocuparían las firmas de autoridades — reemplaza ese bloque mientras el
+   * libro está ABIERTO (la numeración todavía puede reajustarse).
+   */
+  static _notaBorrador(c, { base, layout }) {
+    const row = base + FILA.firmasAutoridades;
+    c.mergeBox(
+      row,
+      2,
+      row,
+      layout.lastCol,
+      'DOCUMENTO BORRADOR — sin firmas; el libro aún está ABIERTO y la numeración puede reajustarse',
+      {
+        size: EXCEL_FONT_SIZE.small,
+        bold: true,
+        align: 'center',
+        border: false,
+        fontColor: EXCEL_COLOR.danger,
+      },
+    );
   }
 
   /** Firmas de autoridades al pie del folio (JEFE DE CARRERA / DIRECTOR / RECTOR). */

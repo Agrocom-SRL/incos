@@ -21,8 +21,6 @@ import { IRepository } from './IRepository.js';
  *   TRANSACCIONAL — asigna numero_folio (MAX de la gestión + 1, FOR UPDATE),
  *   inserta folios_libro + folio_estudiantes y actualiza el informativo
  *   libros_registro.folio_actual en una sola transacción.
- * - existenFoliosFirmados(libroId): boolean — algún folio FIRMADO (inmutable)
- *   en el libro; bloquea el reajuste masivo de numeración.
  * - reajustarFoliosGestion({ libroId, gestionId, folioInicial, motivoAnulacion, folios }, userId):
  *   TRANSACCIONAL — anula TODOS los folios vigentes del libro y los reemplaza
  *   por una numeración correlativa ENTRE SÍ, arrancando en MAX(numero_folio

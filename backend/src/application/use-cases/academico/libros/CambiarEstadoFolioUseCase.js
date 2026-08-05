@@ -10,10 +10,11 @@ import { toFolioDTO } from '../../../mappers/academico/LibroRegistroPresentation
  * Cambia el estado de un folio (PATCH /libros/:id/folios/:folioId/estado).
  * Permiso: academico.libro · APROBAR.
  *
- * Máquina de estados: BORRADOR → IMPRESO → FIRMADO / ANULADO.
- * - FIRMADO es inmutable (página con firmas de las autoridades).
- * - ANULADO exige motivo (queda en observaciones del folio) y es terminal:
- *   regenerar el paralelo crea folios nuevos con numeración nueva.
+ * Máquina de estados: BORRADOR → ANULADO. ANULADO exige motivo (queda en
+ * observaciones del folio) y es terminal: regenerar el paralelo crea folios
+ * nuevos con numeración nueva. El "cierre" oficial del documento (con bloque
+ * de firmas en el export) se controla por `libros_registro.estado` (CERRADO),
+ * no por folio.
  */
 export class CambiarEstadoFolioUseCase {
   constructor({ libroRegistroRepository, libroRegistroViewRepository, logger }) {
@@ -41,9 +42,6 @@ export class CambiarEstadoFolioUseCase {
       throw new NotFoundError('Folio');
     }
 
-    if (folio.estado === ESTADOS_FOLIO.FIRMADO) {
-      throw new ValidationError('Un folio FIRMADO es inmutable');
-    }
     const permitidos = TRANSICIONES_FOLIO[folio.estado] ?? [];
     if (!permitidos.includes(estado)) {
       throw new ValidationError(
@@ -56,14 +54,7 @@ export class CambiarEstadoFolioUseCase {
       throw new ValidationError('El motivo de anulación es obligatorio');
     }
 
-    const cambios = { estado };
-    if (estado === ESTADOS_FOLIO.ANULADO) {
-      cambios.observaciones = motivoLimpio;
-    }
-    // La fecha de registro del folio se fija al imprimirlo (página generada).
-    if (estado === ESTADOS_FOLIO.IMPRESO) {
-      cambios.fechaRegistro = new Date().toISOString().slice(0, 10);
-    }
+    const cambios = { estado, observaciones: motivoLimpio };
 
     await this.libroRegistroRepository.updateFolio(folio.id, cambios, usuarioId);
 

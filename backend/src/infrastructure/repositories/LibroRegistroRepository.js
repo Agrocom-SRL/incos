@@ -247,34 +247,18 @@ export class LibroRegistroRepository extends BaseRepository {
   }
 
   /**
-   * ¿Existe algún folio FIRMADO (inmutable, página con firmas de las
-   * autoridades) en el libro? Bloquea el reajuste masivo de numeración de la
-   * gestión (`GenerarFoliosGestionUseCase.reajustarFoliosGestion`): una vez
-   * firmada, una página no puede cambiar de número.
-   * @param {number} libroId
-   * @returns {Promise<boolean>}
-   */
-  async existenFoliosFirmados(libroId) {
-    const total = await FolioLibroModel.count({
-      where: { libroId, estado: ESTADOS_FOLIO.FIRMADO, activo: true },
-    });
-    return total > 0;
-  }
-
-  /**
    * TRANSACCIONAL, todo o nada: reajuste masivo de folios de la GESTIÓN
    * completa (las 3 carreras comparten libro). Anula TODOS los folios
-   * vigentes (BORRADOR/IMPRESO) del libro con `motivoAnulacion` y los
-   * reemplaza por una numeración FRESCA y correlativa (`folioInicial..`)
-   * calculada de la nómina actual de cada paralelo.
+   * vigentes (BORRADOR) del libro con `motivoAnulacion` y los reemplaza por
+   * una numeración FRESCA y correlativa (`folioInicial..`) calculada de la
+   * nómina actual de cada paralelo.
    *
    * A diferencia de `crearFoliosConEstudiantes` (numeración MAX+1 que NUNCA
    * reutiliza números — pensada para la anulación PUNTUAL de una página
    * suelta, donde el resto del libro no cambia), este reajuste sustituye la
    * EDICIÓN COMPLETA de la gestión: los folios superados por el reajuste no
    * dejan hueco permanente, es una renumeración limpia 1..N. Precondición
-   * (folios FIRMADOS bloquean la operación) la valida el use case ANTES de
-   * llamar aquí — este método asume que ya no hay folios FIRMADO en el libro.
+   * (libro ABIERTO) la valida el use case ANTES de llamar aquí.
    *
    * numero_folio NUNCA se reutiliza (`uk_libro_folio` es UNIQUE sobre
    * libro_id+numero_folio, y anular no borra la fila): los nuevos folios NO
@@ -301,7 +285,7 @@ export class LibroRegistroRepository extends BaseRepository {
   ) {
     return sequelize.transaction(async (t) => {
       const vigentes = await FolioLibroModel.findAll({
-        where: { libroId, activo: true, estado: [ESTADOS_FOLIO.BORRADOR, ESTADOS_FOLIO.IMPRESO] },
+        where: { libroId, activo: true, estado: ESTADOS_FOLIO.BORRADOR },
         transaction: t,
         lock: t.LOCK.UPDATE,
       });

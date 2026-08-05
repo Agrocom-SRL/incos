@@ -1,5 +1,5 @@
 /**
- * Cambia el estado de un folio: BORRADOR → IMPRESO → FIRMADO / ANULADO.
+ * Cambia el estado de un folio: BORRADOR → ANULADO.
  * PATCH /v1/libros/:id/folios/:folioId/estado. Permiso `academico.libro` · APROBAR.
  */
 

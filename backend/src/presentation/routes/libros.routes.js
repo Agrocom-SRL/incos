@@ -87,7 +87,7 @@ export function buildLibrosRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.generarFoliosParaleloController.handle(req, res, next),
   );
 
-  /** PATCH /:id/folios/:folioId/estado — BORRADOR→IMPRESO→FIRMADO / ANULADO. */
+  /** PATCH /:id/folios/:folioId/estado — BORRADOR→ANULADO. */
   router.patch(
     '/:id/folios/:folioId/estado',
     ...libroAprobar,
@@ -96,7 +96,7 @@ export function buildLibrosRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.cambiarEstadoFolioController.handle(req, res, next),
   );
 
-  /** PATCH /:id/folios/:folioId/estudiantes/:filaId — fila (si NO FIRMADO). */
+  /** PATCH /:id/folios/:folioId/estudiantes/:filaId — observación de fila (si NO ANULADO). */
   router.patch(
     '/:id/folios/:folioId/estudiantes/:filaId',
     ...libroEditar,
