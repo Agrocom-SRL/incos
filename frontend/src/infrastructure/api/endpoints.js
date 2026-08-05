@@ -559,6 +559,17 @@ export const PAGOS_APORTES_ENDPOINTS = {
     `${API_BASE}/pagos-aportes/compromiso/${encodeURIComponent(String(id))}`,
 };
 
+/**
+ * Registro de ingresos (Finanzas · listado unificado transaccional, vista 184
+ * vista_ingresos_listado): une aportes académicos (pago_cuotas) y pagos de
+ * capacitación (capacitacion_pagos) bajo un mismo contrato. Solo lectura
+ * (GET), gateado por `finanzas.pago.ver` (LISTAR). Independiente de
+ * `PAGOS_APORTES_ENDPOINTS` (cabeceras agregadas por estudiante).
+ */
+export const INGRESOS_ENDPOINTS = {
+  BASE: `${API_BASE}/ingresos`,
+};
+
 // ============================================
 // MÓDULO: DASHBOARD
 // ============================================

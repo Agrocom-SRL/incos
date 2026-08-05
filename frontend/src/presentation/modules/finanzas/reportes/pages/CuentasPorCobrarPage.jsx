@@ -24,6 +24,7 @@ import DashboardPageShell from '@presentation/modules/dashboard/components/organ
 import { useCuentasPorCobrarPage } from '@application-finanzas/hooks/state/useCuentasPorCobrarPage';
 import { useExportCuentasPorCobrarExcel } from '@application-finanzas/hooks/api/useExportCuentasPorCobrarExcel';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
+import { pagoDetallePath } from '@application-finanzas/config/paths';
 import { createCuentasPorCobrarColumns, formatBs, formatFecha } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
 import CuentasPorCobrarCarreraSection from '@finanzas/reportes/components/organisms/CuentasPorCobrarCarreraSection';
 import CuentasPorCobrarResumen from '@finanzas/reportes/components/organisms/CuentasPorCobrarResumen';
@@ -127,9 +128,20 @@ const CuentasPorCobrarPage = () => {
     [navigate, location.pathname, location.search],
   );
 
+  // Ir a la ficha de la cabecera de aporte (pago_aporte_id), read-only, sin saldar nada.
+  const handleVerFicha = useCallback(
+    (pagoAporteId) => {
+      if (!pagoAporteId) return;
+      navigate(pagoDetallePath(pagoAporteId), {
+        state: { returnListPath: `${location.pathname}${location.search}` },
+      });
+    },
+    [navigate, location.pathname, location.search],
+  );
+
   const columns = useMemo(
-    () => createCuentasPorCobrarColumns(handleRegistrarPago),
-    [handleRegistrarPago],
+    () => createCuentasPorCobrarColumns(handleRegistrarPago, handleVerFicha),
+    [handleRegistrarPago, handleVerFicha],
   );
 
   const carrerasDeudoras = useMemo(() => filtrarDeudores(carreras), [carreras]);

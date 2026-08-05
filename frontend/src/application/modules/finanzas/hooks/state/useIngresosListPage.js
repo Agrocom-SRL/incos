@@ -1,31 +1,31 @@
 /**
- * Hook de pantalla: listado de pagos de aporte (Finanzas).
+ * Hook de pantalla: Registro de ingresos unificado (Finanzas · FIN-PAG · LISTAR).
  *
- * Espejo de `useDocentesListPage`: consume el contexto del provider, genera las
- * columnas, breadcrumb y handlers; devuelve props listas para la página "dumb".
+ * Espejo de `usePagosListPage` (histórico, cabeceras por estudiante): consume
+ * el contexto del provider, genera columnas, breadcrumb y handlers; devuelve
+ * props listas para la página "dumb".
  */
 
 import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { usePagosListContext } from '@application-finanzas/hooks/context/usePagosListContext';
-import { createPagosTableColumns } from '@finanzas/pagos/config/tableColumns';
+import { useIngresosListContext } from '@application-finanzas/hooks/context/useIngresosListContext';
+import { createIngresosTableColumns } from '@finanzas/pagos/config/ingresosTableColumns';
 import { PAGOS_LIST_PATH, pagoRegistrarPath } from '@application-finanzas/config/paths';
 
 const FIN_PAG_MENU_KEY = 'FIN-PAG';
 
-export const usePagosListPage = () => {
+export const useIngresosListPage = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const {
-    pagos = [],
+    ingresos = [],
     loading = false,
     error = null,
     searchText = '',
     setSearchText,
-    refetch,
     tablePagination,
-  } = usePagosListContext();
+  } = useIngresosListContext();
 
   const listNavState = useMemo(
     () => ({
@@ -36,17 +36,12 @@ export const usePagosListPage = () => {
   );
 
   const tableColumns = useMemo(
-    () =>
-      createPagosTableColumns({
-        navigate,
-        listNavState,
-        refetch,
-      }),
-    [navigate, listNavState, refetch],
+    () => createIngresosTableColumns({ navigate, listNavState }),
+    [navigate, listNavState],
   );
 
   const breadcrumbItems = useMemo(
-    () => [{ title: 'Inicio', href: '/' }, { title: 'Finanzas' }, { title: 'Pagos' }],
+    () => [{ title: 'Inicio', href: '/' }, { title: 'Finanzas' }, { title: 'Registro de ingresos' }],
     [],
   );
 
@@ -62,7 +57,7 @@ export const usePagosListPage = () => {
   );
 
   return {
-    pagos,
+    ingresos,
     loading,
     error,
     searchText,
@@ -73,3 +68,5 @@ export const usePagosListPage = () => {
     tablePagination,
   };
 };
+
+export default useIngresosListPage;

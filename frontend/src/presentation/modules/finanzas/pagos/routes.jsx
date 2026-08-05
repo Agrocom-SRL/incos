@@ -1,11 +1,13 @@
 // src/presentation/modules/finanzas/pagos/routes.jsx
 /**
- * Finanzas → Pagos (ítem de menú FIN, order 1).
+ * Finanzas → Registro de ingresos (ítem de menú FIN, order 1, key FIN-PAG).
  *
  * Módulo NUEVO e independiente: NO importa connectors del legacy `@pagos`.
- * El LISTADO (FIN-PAG) ya está implementado con páginas/arquitectura propias
- * (espejo de Docentes) sobre la infraestructura compartida /api/v1/pagos-aportes.
- * Registro, compromiso y detalle siguen como placeholders hasta sus fases.
+ * El LISTADO (FIN-PAG) muestra el registro UNIFICADO de transacciones de
+ * ingreso (GET /api/v1/ingresos: aportes académicos + pagos de capacitación).
+ * La ficha de cabecera de aporte (`/finanzas/pagos/:id`), el registro y el
+ * compromiso de pago mantienen sus rutas/paths históricos (`FIN-PAG-*`); solo
+ * cambió la etiqueta de menú y el contenido del listado principal.
  *
  * Permisos del seed 60-FIN:
  *   - finanzas.pago.{ver,registrar,editar} → listado, ficha, registro y cuotas.
@@ -60,7 +62,7 @@ export const finanzasPagosRoutes = [
     permiso: 'finanzas.pago.ver',
     accion: 'LISTAR',
     menu: {
-      label: 'Pagos',
+      label: 'Registro de ingresos',
       module: 'FIN',
       parent: 'FIN',
       order: 1,
