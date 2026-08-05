@@ -6,7 +6,11 @@
  * (pago_cuotas) o pago de capacitación (capacitacion_pagos).
  *
  * Set de columnas: # · Fecha · Persona · Concepto · Monto · Método de pago ·
- * N° recibo · Acciones.
+ * N° recibo · Acciones. Mismo GRANO transaccional que `cuotasTableColumns.jsx`
+ * (ficha de un pago), con el lenguaje visual "rico" del listado legacy de
+ * pagos (`pagos/config/tableColumns.jsx`): pills `cfg-materia-pill` para los
+ * valores con jerarquía (monto, método) y texto plano para los datos de
+ * referencia (fecha, concepto, N° recibo).
  *
  * Ordenamiento SERVER-SIDE: cada columna ordenable declara `sortField` = una
  * de las columnas permitidas por el backend (contrato): fecha_pago, monto,
@@ -25,6 +29,7 @@
  */
 
 import { TableActions } from '@molecules';
+import { StatusPill } from '@atoms';
 import IngresoPersonaCell from '@finanzas/pagos/components/atoms/IngresoPersonaCell';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import { pagoDetallePath } from '@application-finanzas/config/paths';
@@ -82,17 +87,24 @@ export const createIngresosTableColumns = ({ navigate, listNavState }) => {
     {
       title: 'Monto (Bs)',
       key: 'monto',
-      width: 120,
-      className: 'fin-num',
-      render: (_, record) => formatBs(record.monto),
+      width: 130,
+      align: 'right',
+      render: (_, record) => (
+        <StatusPill label={formatBs(record.monto)} className="cfg-materia-pill cfg-materia-pill--info" />
+      ),
       sorter: true,
       sortField: 'monto',
     },
     {
       title: 'Método de pago',
       key: 'metodoPago',
-      width: 160,
-      render: (_, record) => record.metodoPagoNombre || '—',
+      width: 170,
+      render: (_, record) =>
+        record.metodoPagoNombre ? (
+          <StatusPill label={record.metodoPagoNombre} className="cfg-materia-pill cfg-materia-pill--default" />
+        ) : (
+          '—'
+        ),
     },
     {
       title: 'N° recibo',

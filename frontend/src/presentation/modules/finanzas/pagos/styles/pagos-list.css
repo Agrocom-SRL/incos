@@ -76,20 +76,6 @@
   border-color: rgba(34, 133, 79, 0.28);
 }
 
-/* ── Origen del ingreso (Registro de ingresos): Aporte académico / Capacitación ── */
-/* Aporte académico (pago_cuotas) → azul (info), mismo tono que los tokens de estado "info". */
-.pago-pill--origen-aporte {
-  background: var(--ant-color-info-bg, #e3f2fd);
-  color: var(--ant-color-info-text, #7d9bdc);
-  border-color: var(--ant-color-info-border, #99b1e8);
-}
-/* Pago de capacitación (capacitacion_pagos) → ámbar (warning), tokens de estado "warning". */
-.pago-pill--origen-capacitacion {
-  background: var(--ant-color-warning-bg, #fef3c7);
-  color: var(--ant-color-warning-text, #f59e0b);
-  border-color: var(--ant-color-warning-border, #fbbf24);
-}
-
 /* ── Celda "Descuento" (pill de % arriba + sublíneas con icono) ── */
 .pago-descuento-cell {
   display: flex;

@@ -17,19 +17,15 @@
  */
 
 import { Flex, Typography } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
-import { ActionButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useIngresosListPage } from '@application-finanzas/hooks/state/useIngresosListPage';
-import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@finanzas/reportes/styles/finanzas-planilla.css';
 import '@finanzas/pagos/styles/pagos-list.css';
 
 const { Paragraph } = Typography;
@@ -42,22 +38,9 @@ const PagosList = () => {
     searchText,
     tableColumns,
     breadcrumbItems,
-    handleRegistrar,
     handleSearchChange,
     tablePagination,
   } = useIngresosListPage();
-
-  const registrarAction = (
-    <ActionButton
-      permiso={FINANZAS_PERMISOS.pagoRegistrar}
-      accion="CREAR"
-      variant="primary"
-      icon={<PlusOutlined />}
-      onClick={handleRegistrar}
-    >
-      Registrar pago
-    </ActionButton>
-  );
 
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
@@ -70,7 +53,7 @@ const PagosList = () => {
           <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
             <section className="cfg-academico-workspace">
               <header className="cfg-academico-workspace__header">
-                <ListPanelHeader title="Ingresos registrados" actions={registrarAction} />
+                <ListPanelHeader title="Ingresos registrados" />
                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                   Transacciones de ingreso del instituto: aportes académicos y pagos de
                   capacitación en un mismo registro cronológico, con fecha, monto, método de
@@ -81,7 +64,6 @@ const PagosList = () => {
               <div className="cfg-academico-tab-panel">
                 <TableListView
                   embedded
-                  tableClassName="fin-planilla"
                   data={ingresos}
                   loading={loading}
                   error={error}

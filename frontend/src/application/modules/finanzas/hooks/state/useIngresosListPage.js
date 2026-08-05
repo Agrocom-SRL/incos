@@ -4,13 +4,17 @@
  * Espejo de `usePagosListPage` (histórico, cabeceras por estudiante): consume
  * el contexto del provider, genera columnas, breadcrumb y handlers; devuelve
  * props listas para la página "dumb".
+ *
+ * Solo lectura: Finanzas NO registra pagos (cada módulo de origen —
+ * Matrícula/Capacitación— conserva su propia alta), por eso este hook no
+ * expone ningún handler de creación.
  */
 
 import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIngresosListContext } from '@application-finanzas/hooks/context/useIngresosListContext';
 import { createIngresosTableColumns } from '@finanzas/pagos/config/ingresosTableColumns';
-import { PAGOS_LIST_PATH, pagoRegistrarPath } from '@application-finanzas/config/paths';
+import { PAGOS_LIST_PATH } from '@application-finanzas/config/paths';
 
 const FIN_PAG_MENU_KEY = 'FIN-PAG';
 
@@ -45,10 +49,6 @@ export const useIngresosListPage = () => {
     [],
   );
 
-  const handleRegistrar = useCallback(() => {
-    navigate(pagoRegistrarPath, { state: listNavState });
-  }, [navigate, listNavState]);
-
   const handleSearchChange = useCallback(
     (event) => {
       setSearchText(event.target.value);
@@ -63,7 +63,6 @@ export const useIngresosListPage = () => {
     searchText,
     tableColumns,
     breadcrumbItems,
-    handleRegistrar,
     handleSearchChange,
     tablePagination,
   };

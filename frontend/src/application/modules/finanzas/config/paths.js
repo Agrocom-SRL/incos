@@ -2,9 +2,8 @@
 
 export const FINANZAS_BASE = '/finanzas';
 
-/** Pagos */
+/** Pagos (solo lectura: Finanzas no registra pagos, ver `finanzasPagosRoutes`) */
 export const PAGOS_LIST_PATH = `${FINANZAS_BASE}/pagos`;
-export const pagoRegistrarPath = `${FINANZAS_BASE}/pagos/registrar`;
 export const pagoCompromisoPath = `${FINANZAS_BASE}/pagos/compromiso`;
 export const pagoDetallePath = (id) => `${FINANZAS_BASE}/pagos/${id}`;
 

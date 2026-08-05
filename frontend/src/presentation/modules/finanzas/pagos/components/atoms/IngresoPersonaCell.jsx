@@ -1,8 +1,11 @@
 /**
  * Celda Persona del listado de Registro de ingresos (gemela de
  * `PagoEstudianteCell`): IdentidadCelda (código/CI + nombre) y, debajo, un pill
- * chico con el ORIGEN de la transacción (Aporte académico / Capacitación) —
- * distingue de qué proceso viene el ingreso sin necesitar columna propia.
+ * chico (`cfg-materia-pill`) con el ORIGEN de la transacción (Aporte académico /
+ * Capacitación) — distingue de qué proceso viene el ingreso sin necesitar
+ * columna propia. Es una CATEGORÍA, no un estado, por eso va como pill
+ * compacto (no como dot + etiqueta de `cfg-identidad-substate`, reservado a
+ * estados de severidad).
  *
  * El nombre ya viene resuelto por el backend en orden APELLIDO_PATERNO
  * APELLIDO_MATERNO NOMBRES (`personaNombreCompleto`); aquí no se reordena.
