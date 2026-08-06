@@ -159,3 +159,11 @@
   border: 1px dashed var(--color-warning);
   border-radius: var(--border-radius-md, 8px);
 }
+
+/* Leyenda de abreviaturas de la nómina (NP/AP/PRE), espejo de la leyenda del
+   export Excel — debajo de las firmas / la nota de borrador. */
+.folio-sheet__leyenda {
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}

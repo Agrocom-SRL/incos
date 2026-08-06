@@ -108,15 +108,17 @@ const LibroDetailPage = () => {
         </ActionButton>
       ) : null}
 
-      <ActionButton
-        permiso={LIBROS_PERMISOS.libro}
-        accion="DETALLE"
-        variant="danger"
-        icon={<StopOutlined />}
-        onClick={() => navigate(libroAnuladosPath(libro.id))}
-      >
-        Folios anulados
-      </ActionButton>
+      {(libro.foliosAnulados ?? 0) > 0 ? (
+        <ActionButton
+          permiso={LIBROS_PERMISOS.libro}
+          accion="DETALLE"
+          variant="danger"
+          icon={<StopOutlined />}
+          onClick={() => navigate(libroAnuladosPath(libro.id))}
+        >
+          Folios anulados
+        </ActionButton>
+      ) : null}
     </>
   ) : null;
 

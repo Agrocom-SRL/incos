@@ -24,9 +24,9 @@ import { useFolioPreview } from '@application-academico/libros/hooks';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import { LIBRO_DOC } from '@application-academico/libros/utils/libroDoc';
 import {
-  formatFolioEstado,
+  formatFolioEstadoDisplay,
   formatEstadoAcademico,
-  getFolioEstadoPillClass,
+  getFolioEstadoDisplayPillClass,
   getEstadoAcademicoPillClass,
 } from '@application-academico/libros/utils/librosEstados';
 import EditarFilaFolioModal from '../components/organisms/EditarFilaFolioModal.jsx';
@@ -73,7 +73,10 @@ const FolioPreviewPage = () => {
 
   const esAnulado = folio?.estado === 'ANULADO';
   const esLibroCerrado = folio?.libroEstado === 'CERRADO';
-  const filaEditable = puedeEditarFila && !esAnulado;
+  // Las observaciones se cargan mientras el libro está ABIERTO; al cerrarlo
+  // quedan congeladas (igual criterio que las firmas / el bloque ESTADÍSTICAS
+  // del export Excel).
+  const filaEditable = puedeEditarFila && !esAnulado && !esLibroCerrado;
   const puedeAnular = puedeAprobar && folio?.estado === 'BORRADOR';
 
   const handleAnularConfirmado = async (motivo) => {
@@ -104,7 +107,10 @@ const FolioPreviewPage = () => {
                 title={folio.folioLabel}
                 subtitle={`${folio.cursoLabel} · ${folio.turno || '—'}`}
                 metaExtra={
-                  <StatusPill label={formatFolioEstado(folio.estado)} className={getFolioEstadoPillClass(folio.estado)} />
+                  <StatusPill
+                    label={formatFolioEstadoDisplay(folio.estado, folio.libroEstado)}
+                    className={getFolioEstadoDisplayPillClass(folio.estado, folio.libroEstado)}
+                  />
                 }
                 actions={
                   puedeAnular ? (
@@ -235,6 +241,8 @@ const FolioPreviewPage = () => {
                     DOCUMENTO BORRADOR — sin firmas; el libro aún está ABIERTO y la numeración puede reajustarse
                   </div>
                 )}
+
+                <div className="folio-sheet__leyenda">{LIBRO_DOC.leyendaNotas}</div>
               </article>
             </>
           ) : null}

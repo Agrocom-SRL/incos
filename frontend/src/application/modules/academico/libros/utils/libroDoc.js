@@ -18,6 +18,8 @@ export const LIBRO_DOC = {
   caracter: 'FISCAL',
   resolucionMinisterial: '0426/2016',
   firmas: ['JEFE(A) DE CARRERA', 'DIRECTOR(A) ACADÉMICO(A)', 'RECTOR(A)'],
+  /** Leyenda de abreviaturas de la nómina (misma leyenda del export Excel). */
+  leyendaNotas: 'NP = No se Presentó / AP = Aprobado / PRE = Prerrequisito',
 };
 
 /**

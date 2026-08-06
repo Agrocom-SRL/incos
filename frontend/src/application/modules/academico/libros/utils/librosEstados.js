@@ -53,6 +53,25 @@ export const formatFolioEstado = (estado) => FOLIO_ESTADO_LABELS[estado] ?? esta
 export const getFolioEstadoPillClass = (estado) =>
   FOLIO_ESTADO_PILL[estado] ?? 'cfg-materia-pill cfg-materia-pill--default';
 
+/**
+ * Etiqueta del folio para pantalla — a diferencia de `formatFolioEstado`
+ * (estado crudo BORRADOR/ANULADO), reconcilia "BORRADOR" con el estado del
+ * LIBRO: el folio no tiene su propio estado de cierre (ver ESTADOS_FOLIO en
+ * `libros.constants.js` del backend), así que uno no anulado en un libro ya
+ * CERRADO se muestra como "Cerrado" en vez del confuso "Borrador".
+ */
+export const formatFolioEstadoDisplay = (folioEstado, libroEstado) => {
+  if (folioEstado === 'ANULADO') return formatFolioEstado(folioEstado);
+  if (libroEstado === 'CERRADO') return formatLibroEstado(libroEstado);
+  return formatFolioEstado(folioEstado);
+};
+/** Clase de pill del estado del folio para pantalla (ver `formatFolioEstadoDisplay`). */
+export const getFolioEstadoDisplayPillClass = (folioEstado, libroEstado) => {
+  if (folioEstado === 'ANULADO') return getFolioEstadoPillClass(folioEstado);
+  if (libroEstado === 'CERRADO') return getLibroEstadoPillClass(libroEstado);
+  return getFolioEstadoPillClass(folioEstado);
+};
+
 /** Etiqueta legible del estado académico de la fila (APROBADO/REPROBADO/ABANDONO). */
 export const formatEstadoAcademico = (estado) => ACADEMICO_ESTADO_LABELS[estado] ?? estado ?? '—';
 /** Clase de pill del estado académico de la fila. */

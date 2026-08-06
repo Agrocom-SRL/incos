@@ -112,8 +112,9 @@ export const useLibroDetail = () => {
     () =>
       createFoliosTableColumns({
         onView: (record) => navigate(folioPreviewPath(libroId, record.id)),
+        libroEstado: libro?.estado,
       }),
-    [navigate, libroId],
+    [navigate, libroId, libro?.estado],
   );
 
   const breadcrumbItems = useMemo(

@@ -18,8 +18,8 @@ import { TableActions, TableCell } from '@molecules';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import {
-  formatFolioEstado,
-  getFolioEstadoPillClass,
+  formatFolioEstadoDisplay,
+  getFolioEstadoDisplayPillClass,
 } from '@application-academico/libros/utils/librosEstados';
 
 /**
@@ -27,8 +27,15 @@ import {
  * @param {(record: Object) => void} params.onView
  * @param {boolean} [params.showCarrera] - Columna "Carrera" (lista plana sin tabs).
  * @param {boolean} [params.showMotivo] - Columna "Motivo" (observaciones del folio anulado).
+ * @param {string} [params.libroEstado] - Estado del LIBRO (ABIERTO/CERRADO), para
+ *        reconciliar la columna "Estado" — ver `formatFolioEstadoDisplay`.
  */
-export const createFoliosTableColumns = ({ onView, showCarrera = false, showMotivo = false }) => [
+export const createFoliosTableColumns = ({
+  onView,
+  showCarrera = false,
+  showMotivo = false,
+  libroEstado = null,
+}) => [
   {
     title: '#',
     key: 'nro',
@@ -87,7 +94,10 @@ export const createFoliosTableColumns = ({ onView, showCarrera = false, showMoti
     dataIndex: 'estado',
     width: 140,
     render: (estado) => (
-      <StatusPill label={formatFolioEstado(estado)} className={getFolioEstadoPillClass(estado)} />
+      <StatusPill
+        label={formatFolioEstadoDisplay(estado, libroEstado)}
+        className={getFolioEstadoDisplayPillClass(estado, libroEstado)}
+      />
     ),
   },
   ...(showMotivo

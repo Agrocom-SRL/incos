@@ -46,8 +46,9 @@ export const useLibroAnulados = () => {
         onView: (record) => navigate(folioPreviewPath(libroId, record.id)),
         showCarrera: true,
         showMotivo: true,
+        libroEstado: libro?.estado,
       }),
-    [navigate, libroId],
+    [navigate, libroId, libro?.estado],
   );
 
   const breadcrumbItems = useMemo(
