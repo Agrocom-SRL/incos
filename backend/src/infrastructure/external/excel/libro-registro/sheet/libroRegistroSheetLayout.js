@@ -79,4 +79,25 @@ export function colFractionAtWidth(startCol0, widths, targetWidth) {
   return col;
 }
 
+/**
+ * 3 zonas horizontales [colInicio, colFin] (1-based) para bloques de 3
+ * firmas: JEFE(A) DE CARRERA / DIRECTOR(A) ACADÉMICO(A) / RECTOR(A) en
+ * `_firmasAutoridades` y la grilla de 3 columnas de `_firmasDocentes`.
+ *
+ * Columnas fijas (C:E / G:J / L:Q), con aire entre ellas — no relativas al n°
+ * de materias: se recortan a `lastCol` solo como resguardo para paralelos con
+ * muy pocas materias (fuera del rango real de INCOS).
+ *
+ * @param {ReturnType<typeof computeLibroColumnMap>} layout
+ * @returns {[number, number][]} 3 pares [colInicio, colFin].
+ */
+export function computeTresZonasFirmas(layout) {
+  const clamp = (col) => Math.min(col, layout.lastCol);
+  return [
+    [clamp(3), clamp(5)], // C:E
+    [clamp(7), clamp(10)], // G:J
+    [clamp(12), clamp(17)], // L:Q
+  ];
+}
+
 export default computeLibroColumnMap;

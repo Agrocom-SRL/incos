@@ -3,7 +3,7 @@
  * Página "dumb": solo compone template + organismos y consume `useLibroDetail`.
  */
 
-import { Alert, Popconfirm } from 'antd';
+import { Alert } from 'antd';
 import {
   FileAddOutlined,
   LockOutlined,
@@ -83,23 +83,16 @@ const LibroDetailPage = () => {
       ) : null}
 
       {puedeEditar && estaAbierto ? (
-        <Popconfirm
-          title="Cerrar libro de registro"
-          description="El libro dejará de admitir nuevos folios. Puede reabrirlo después si es necesario."
-          okText="Cerrar libro"
-          cancelText="Cancelar"
-          onConfirm={handleCerrarLibro}
+        <ActionButton
+          permiso={LIBROS_PERMISOS.libro}
+          accion="EDITAR"
+          variant="success"
+          icon={<LockOutlined />}
+          loading={actualizando}
+          onClick={handleCerrarLibro}
         >
-          <ActionButton
-            permiso={LIBROS_PERMISOS.libro}
-            accion="EDITAR"
-            variant="success"
-            icon={<LockOutlined />}
-            loading={actualizando}
-          >
-            Cerrar libro
-          </ActionButton>
-        </Popconfirm>
+          Cerrar libro
+        </ActionButton>
       ) : null}
 
       {puedeEditar && !estaAbierto ? (

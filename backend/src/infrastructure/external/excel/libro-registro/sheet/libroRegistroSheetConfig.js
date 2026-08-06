@@ -61,7 +61,7 @@ export const ROW_HEIGHTS = {
 export const FILA = {
   codigoRegistro: 3, // fila libre entre el escudo y la banda de título
   logoInicio: 2,
-  logoFin: 6,
+  logoFin: 5,
   tituloInicio: 4,
   tituloFin: 5,
   libroNro: 4,
@@ -108,7 +108,7 @@ export const PAGE_SETUP = {
  * 100%) sin forzar el ancho de forma independiente — forzarlo lo deformaba.
  * Actualizar si se reemplaza el asset por uno con proporciones distintas.
  */
-export const LOGO_ASPECT_RATIO = 366 / 106;
+export const LOGO_ASPECT_RATIO = 366 / 68;
 
 /** Color de texto de la columna ESTADO por valor. */
 export const ESTADO_COLOR = {

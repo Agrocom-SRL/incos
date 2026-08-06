@@ -27,7 +27,11 @@ import {
   LOGO_ASPECT_RATIO,
   ESTADO_COLOR,
 } from './sheet/libroRegistroSheetConfig.js';
-import { computeLibroColumnMap, colFractionAtWidth } from './sheet/libroRegistroSheetLayout.js';
+import {
+  computeLibroColumnMap,
+  colFractionAtWidth,
+  computeTresZonasFirmas,
+} from './sheet/libroRegistroSheetLayout.js';
 import { formatNotaFolio, esNotaNP } from './sheet/libroRegistroSheetFormatters.js';
 
 /** Columnas de la grilla de FIRMAS DE DOCENTES (3 firmas por fila, como el papel real). */
@@ -431,13 +435,7 @@ export class LibroRegistroSheetBuilder {
   static _firmasAutoridades(c, { base, layout, doc }) {
     const row = base + FILA.firmasAutoridades;
     const firmas = doc.firmas ?? [];
-    // Tres zonas equiespaciadas (cols 2..lastCol) con un col de aire entre
-    // ellas — sin solapes de merge con cualquier número de materias.
-    const zona = Math.floor((layout.lastCol - 1) / 3);
-    const anchors = firmas.map((_, i) => {
-      const start = 2 + i * zona;
-      return [start, Math.max(start, start + zona - 2)];
-    });
+    const anchors = computeTresZonasFirmas(layout);
     firmas.forEach((firma, i) => {
       const [start, end] = anchors[i];
       c.mergeBox(row, start, row, end, firma, {
@@ -489,13 +487,10 @@ export class LibroRegistroSheetBuilder {
       { size: small, fontColor: EXCEL_COLOR.inkSoft, border: false },
     );
 
-    // Grilla de 3 columnas equiespaciadas (con aire entre ellas, igual criterio
-    // que _firmasAutoridades) — sin cabecera de tabla, cada celda es autoexplicativa.
-    const zona = Math.floor((lastCol - 1) / COLUMNAS_FIRMAS_DOCENTES);
-    const anchors = Array.from({ length: COLUMNAS_FIRMAS_DOCENTES }, (_, i) => {
-      const start = 2 + i * zona;
-      return [start, Math.max(start, start + zona - 2)];
-    });
+    // Grilla de 3 columnas (mismas zonas que _firmasAutoridades: primer
+    // bloque C:E, último ..:Q) — sin cabecera de tabla, cada celda es
+    // autoexplicativa.
+    const anchors = computeTresZonasFirmas(layout);
 
     const grillaInicio = base + 6;
     asignaturas.forEach((asig, i) => {
@@ -553,9 +548,11 @@ export class LibroRegistroSheetBuilder {
     const { small } = EXCEL_FONT_SIZE;
 
     // Tabla angosta, alineada a la izquierda (independiente del número de
-    // materias): DETALLE (6 columnas) + CANTIDAD (1) + % (1).
-    const colDetalleStart = layout.COL_NRO;
-    const colDetalleEnd = layout.COL_CI + 2;
+    // materias): arranca en C (no en A) para alinear con el resto de bloques
+    // del pie de hoja (firmas de autoridades/docentes) — DETALLE (6 columnas)
+    // + CANTIDAD (1) + % (1).
+    const colDetalleStart = layout.COL_NOMBRE_END;
+    const colDetalleEnd = layout.COL_CI + 1;
     const colCantidad = colDetalleEnd + 1;
     const colPorcentaje = colCantidad + 1;
 
