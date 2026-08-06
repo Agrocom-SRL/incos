@@ -102,11 +102,13 @@ export const PAGE_SETUP = {
 };
 
 /**
- * Escala del logo del Ministerio dentro de su caja (A2:C6 del bloque, 3
- * columnas x 5 filas): 1 = llena la caja por completo; <1 se reduce
- * proporcionalmente y queda centrado dentro de la caja.
+ * Relación de aspecto (ancho/alto) real de `external/templates/ministerio.png`:
+ * el logo es más ancho que alto ("largo"). Se usa para calcular el ancho del
+ * logo a partir del alto disponible en su caja (A2:C6 del bloque, 5 filas al
+ * 100%) sin forzar el ancho de forma independiente — forzarlo lo deformaba.
+ * Actualizar si se reemplaza el asset por uno con proporciones distintas.
  */
-export const LOGO_SCALE = 0.7;
+export const LOGO_ASPECT_RATIO = 366 / 106;
 
 /** Color de texto de la columna ESTADO por valor. */
 export const ESTADO_COLOR = {
@@ -122,6 +124,6 @@ export default {
   ROW_HEIGHTS,
   FILA,
   PAGE_SETUP,
-  LOGO_SCALE,
+  LOGO_ASPECT_RATIO,
   ESTADO_COLOR,
 };

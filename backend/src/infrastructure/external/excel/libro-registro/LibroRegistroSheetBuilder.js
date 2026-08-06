@@ -24,10 +24,10 @@ import {
   COL_WIDTHS,
   ROW_HEIGHTS,
   FILA,
-  LOGO_SCALE,
+  LOGO_ASPECT_RATIO,
   ESTADO_COLOR,
 } from './sheet/libroRegistroSheetConfig.js';
-import { computeLibroColumnMap } from './sheet/libroRegistroSheetLayout.js';
+import { computeLibroColumnMap, colFractionAtWidth } from './sheet/libroRegistroSheetLayout.js';
 import { formatNotaFolio, esNotaNP } from './sheet/libroRegistroSheetFormatters.js';
 
 /** Columnas de la grilla de FIRMAS DE DOCENTES (3 firmas por fila, como el papel real). */
@@ -129,20 +129,35 @@ export class LibroRegistroSheetBuilder {
     );
 
     // Caja del escudo (A2:C6 del bloque) + logo del Ministerio si está cargado,
-    // escalado a LOGO_SCALE dentro de esa caja (ancla de 2 celdas) y centrado.
+    // al 100% del alto de la caja (sin recorte vertical) y con el ancho
+    // DERIVADO de su relación de aspecto real (no se fuerza un ancho
+    // independiente: el logo es más ancho que alto y forzarlo lo deformaba).
     c.mergeBox(base + FILA.logoInicio, layout.COL_NRO, base + FILA.logoFin, layout.COL_NOMBRE_END, '', {
       border: true,
     });
     if (logoId != null) {
-      const cajaColInicio = layout.COL_NRO - 1;
-      const cajaColFin = layout.COL_NOMBRE_END;
       const cajaRowInicio = base + FILA.logoInicio - 1;
       const cajaRowFin = base + FILA.logoFin;
-      const insetCol = ((cajaColFin - cajaColInicio) * (1 - LOGO_SCALE)) / 2;
-      const insetRow = ((cajaRowFin - cajaRowInicio) * (1 - LOGO_SCALE)) / 2;
+
+      // Conversión aproximada punto->px / unidad de ancho Excel->px, solo
+      // para estimar cuánto ancho ocupa el logo al 100% del alto y poder
+      // centrarlo — no afecta el alto real, que usa bordes de fila exactos.
+      const PX_POR_PUNTO = 96 / 72;
+      const PX_POR_UNIDAD_EXCEL = 7;
+      const altoCajaPx = (cajaRowFin - cajaRowInicio) * ROW_HEIGHTS.cabecera * PX_POR_PUNTO;
+      const anchoLogoUnidades = (altoCajaPx * LOGO_ASPECT_RATIO) / PX_POR_UNIDAD_EXCEL;
+
+      const anchoColumnas = [COL_WIDTHS.nro, COL_WIDTHS.nombreIzq, COL_WIDTHS.nombreDer];
+      const anchoTotal = anchoColumnas.reduce((sum, w) => sum + w, 0);
+      const margenAncho = Math.max(0, (anchoTotal - anchoLogoUnidades) / 2);
+      const cajaColInicio = layout.COL_NRO - 1;
+
       c.ws.addImage(logoId, {
-        tl: { col: cajaColInicio + insetCol, row: cajaRowInicio + insetRow },
-        br: { col: cajaColFin - insetCol, row: cajaRowFin - insetRow },
+        tl: { col: colFractionAtWidth(cajaColInicio, anchoColumnas, margenAncho), row: cajaRowInicio },
+        br: {
+          col: colFractionAtWidth(cajaColInicio, anchoColumnas, anchoTotal - margenAncho),
+          row: cajaRowFin,
+        },
       });
     }
 
