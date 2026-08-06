@@ -19,15 +19,23 @@ export const FILAS_POR_FOLIO = 34;
  */
 export const FILAS_POR_FIRMA = 5;
 
-/** Anchos de columna (unidades Excel) por rol semántico. */
+/**
+ * Anchos de columna (unidades Excel) por rol semántico.
+ *
+ * OJO ExcelJS: un ancho de EXACTAMENTE `9` no se serializa como `customWidth`
+ * (coincide con el default interno de la librería) y la columna vuelve al
+ * ancho por defecto de Excel (~8.43, más angosto de lo pedido) — nunca usar
+ * `9` aquí. Valores calibrados contra siglas/códigos de materia (hasta 7-8
+ * caracteres, p. ej. "DCM-107") y R.M. ("0426/2016") en una sola línea.
+ */
 export const COL_WIDTHS = {
   nro: 5, // A — N°
   nombreIzq: 12, // B — 1ra columna de NÓMINA (par B:C)
   nombreDer: 34, // C — 2da columna de NÓMINA (valores de cabecera también van en C)
   ci: 16, // D — CÉDULA DE IDENTIDAD
-  asignatura: 10, // una columna por materia
-  estado: 9, // cada una de las 2 columnas de ESTADO
-  obs: 9, // cada una de las 4 columnas de OBSERVACIONES
+  asignatura: 15, // una columna por materia (cabe la sigla en una línea)
+  estado: 12, // cada una de las 2 columnas de ESTADO
+  obs: 10, // cada una de las 4 columnas de OBSERVACIONES
 };
 
 /** Alturas de fila (puntos) por rol semántico. */
@@ -35,22 +43,23 @@ export const ROW_HEIGHTS = {
   titulo: 22, // filas de la banda CENTRALIZADOR DE CALIFICACIONES
   cabecera: 18, // filas de campos (INSTITUCIÓN/GESTIÓN/...)
   siglas: 20, // fila de siglas de materia
-  nombresMateria: 64, // fila (fusionada 5 filas) de nombres de materia
-  dataRow: 18, // fila de estudiante
+  nombresMateria: 57.6, // fila (fusionada 5 filas) de nombres de materia (-10%)
+  dataRow: 22, // fila de estudiante (2 líneas de observación sin recorte)
   firmas: 16,
   firmaEspacio: 20, // cada una de las filas en blanco sobre la firma física (docentes)
 };
 
 /**
  * Offsets de fila DENTRO del bloque de un folio (1-based, relativos al inicio
- * del bloque). Espejo del libro real: código de registro (1), escudo/logo
- * (2-6), título+LIBRO/FOLIO (4-5), ciudad/turno (7), institución/R.M./carácter
- * (8), gestión+siglas (9), nivel+nombres de materia (10-13 fusionados hasta
- * 14), carrera (11), régimen (12), curso (13), cabecera de nómina (14),
- * estudiantes (15-24), leyenda NP/AP/PRE (26), firmas de autoridades (32).
+ * del bloque). Espejo del libro real: escudo/logo (2-6, columnas A:C) con
+ * código de registro (3, sobre columnas OBSERVACIONES P:S), título+LIBRO/FOLIO
+ * (4-5), ciudad/turno (7), institución/R.M./carácter (8), gestión+siglas (9),
+ * nivel+nombres de materia (10-13 fusionados hasta 14), carrera (11), régimen
+ * (12), curso (13), cabecera de nómina (14), estudiantes (15-24), leyenda
+ * NP/AP/PRE (26), firmas de autoridades (32).
  */
 export const FILA = {
-  codigoRegistro: 1,
+  codigoRegistro: 3, // fila libre entre el escudo y la banda de título
   logoInicio: 2,
   logoFin: 6,
   tituloInicio: 4,
@@ -92,14 +101,19 @@ export const PAGE_SETUP = {
   },
 };
 
-/** Tamaño del logo del Ministerio en la cabecera de cada folio (px). */
-export const LOGO_EXT = { width: 120, height: 78 };
+/**
+ * Escala del logo del Ministerio dentro de su caja (A2:C6 del bloque, 3
+ * columnas x 5 filas): 1 = llena la caja por completo; <1 se reduce
+ * proporcionalmente y queda centrado dentro de la caja.
+ */
+export const LOGO_SCALE = 0.7;
 
 /** Color de texto de la columna ESTADO por valor. */
 export const ESTADO_COLOR = {
   APROBADO: EXCEL_COLOR.finalHeader,
   REPROBADO: EXCEL_COLOR.danger,
   ABANDONO: EXCEL_COLOR.inkSoft,
+  CURSANDO: EXCEL_COLOR.info,
 };
 
 export default {
@@ -108,6 +122,6 @@ export default {
   ROW_HEIGHTS,
   FILA,
   PAGE_SETUP,
-  LOGO_EXT,
+  LOGO_SCALE,
   ESTADO_COLOR,
 };

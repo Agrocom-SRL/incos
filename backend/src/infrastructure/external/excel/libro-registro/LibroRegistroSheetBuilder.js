@@ -24,7 +24,7 @@ import {
   COL_WIDTHS,
   ROW_HEIGHTS,
   FILA,
-  LOGO_EXT,
+  LOGO_SCALE,
   ESTADO_COLOR,
 } from './sheet/libroRegistroSheetConfig.js';
 import { computeLibroColumnMap } from './sheet/libroRegistroSheetLayout.js';
@@ -75,12 +75,17 @@ export class LibroRegistroSheetBuilder {
       ? this._firmasDocentes(c, { base: baseFirmas, folio: folios[0], layout, doc })
       : 0;
 
-    this._estadisticasParalelo(c, {
-      base: baseFirmas + filasFirmasDocentes + 2,
-      layout,
-      doc,
-      estadisticas: hoja.estadisticas ?? null,
-    });
+    // Bloque de ESTADÍSTICAS solo con el libro CERRADO (mismo gate que las
+    // firmas): en BORRADOR las notas todavía pueden cambiar y el conteo
+    // aprobados/reprobados/abandono no es definitivo.
+    if (incluirFirmas) {
+      this._estadisticasParalelo(c, {
+        base: baseFirmas + filasFirmasDocentes + 2,
+        layout,
+        doc,
+        estadisticas: hoja.estadisticas ?? null,
+      });
+    }
   }
 
   /** Anchos de columna: identificación + una col por materia + estado/obs. */
@@ -105,25 +110,39 @@ export class LibroRegistroSheetBuilder {
   /** Código de registro, escudo/logo, banda de título y LIBRO/FOLIO N°. */
   static _cabeceraFolio(c, { base, folio, layout, doc, logoId }) {
     const cab = folio.cabecera ?? {};
-    const { lastCol, tituloStartCol, tituloEndCol, libroLabelStart, libroLabelEnd, libroValueCol } =
-      layout;
+    const {
+      lastCol,
+      tituloStartCol,
+      tituloEndCol,
+      libroLabelStart,
+      libroLabelEnd,
+      libroValueCol,
+      COL_OBS_START,
+      COL_OBS_END,
+    } = layout;
 
-    // Fila 1 del bloque: Código de Registro (esquina superior derecha).
+    // Fila 3 del bloque: Código de Registro, sobre la columna de OBSERVACIONES (P:S).
     c.merge(
-      `${L(libroLabelStart - 1)}${base + FILA.codigoRegistro}:${L(lastCol)}${base + FILA.codigoRegistro}`,
+      `${L(COL_OBS_START)}${base + FILA.codigoRegistro}:${L(COL_OBS_END)}${base + FILA.codigoRegistro}`,
       `Código de Registro: ${cab.codigoRegistro ?? ''}`,
       { size: EXCEL_FONT_SIZE.small, bold: true, align: 'right', border: false },
     );
 
-    // Caja del escudo (A2:C6 del bloque) + logo del Ministerio si está cargado.
+    // Caja del escudo (A2:C6 del bloque) + logo del Ministerio si está cargado,
+    // escalado a LOGO_SCALE dentro de esa caja (ancla de 2 celdas) y centrado.
     c.mergeBox(base + FILA.logoInicio, layout.COL_NRO, base + FILA.logoFin, layout.COL_NOMBRE_END, '', {
       border: true,
     });
     if (logoId != null) {
+      const cajaColInicio = layout.COL_NRO - 1;
+      const cajaColFin = layout.COL_NOMBRE_END;
+      const cajaRowInicio = base + FILA.logoInicio - 1;
+      const cajaRowFin = base + FILA.logoFin;
+      const insetCol = ((cajaColFin - cajaColInicio) * (1 - LOGO_SCALE)) / 2;
+      const insetRow = ((cajaRowFin - cajaRowInicio) * (1 - LOGO_SCALE)) / 2;
       c.ws.addImage(logoId, {
-        tl: { col: 0.35, row: base + FILA.logoInicio - 0.8 },
-        ext: LOGO_EXT,
-        editAs: 'oneCell',
+        tl: { col: cajaColInicio + insetCol, row: cajaRowInicio + insetRow },
+        br: { col: cajaColFin - insetCol, row: cajaRowFin - insetRow },
       });
     }
 

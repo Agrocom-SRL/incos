@@ -137,8 +137,8 @@ CREATE TABLE folio_estudiantes (
     estudiante_id INT NULL COMMENT 'Estudiante de la fila (referencia a estudiantes). Nombre y CI+expedido salen de su ficha',
     inscripcion_id INT NULL COMMENT 'Inscripción que liga estudiante y paralelo_gestion en la gestión del folio (referencia a inscripciones)',
 
-    estado_academico ENUM('APROBADO', 'REPROBADO', 'ABANDONO') NULL
-        COMMENT 'Columna ESTADO del centralizador, congelada al firmar el folio (snapshot del resultado de la gestión). Las notas por materia se leen de la vista 135 (centralizador), no se copian aquí',
+    estado_academico ENUM('APROBADO', 'REPROBADO', 'ABANDONO', 'CURSANDO') NULL
+        COMMENT 'Columna ESTADO del centralizador, agregada desde el estado real de matriculas_materia (vista 135). CURSANDO: gestión abierta, aún sin nota (no es abandono). Congelada al firmar el folio (snapshot del resultado de la gestión). Las notas por materia se leen de la vista 135 (centralizador), no se copian aquí',
     observaciones VARCHAR(255) NULL COMMENT 'Columna OBSERVACIONES del centralizador (ej: REPROBADO 2DA VEZ-ARTICULO 18, NO LLEVA LAS ASIG. POR CHOQUE DE HORARIO, HOMOLOGACIÓN GESTIÓN 2025)',
 
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',

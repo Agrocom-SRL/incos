@@ -42,6 +42,7 @@ export const EXCEL_COLOR = {
   gridBorder: 'FFCBD5E1',
   danger: 'FFB91C1C', // texto de nota reprobada (rojo-700) — paridad con la pantalla
   dangerSoft: 'FFFCE8E8', // relleno muy tenue para celda reprobada (opcional)
+  info: 'FF0369A1', // texto de estado "en curso" (sky-700) — paridad con cfg-materia-pill--info
   subtitleBand: 'FF0F5132' // banda secundaria (verde oscuro) bajo el título
 };
 

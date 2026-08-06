@@ -31,12 +31,14 @@ const ACADEMICO_ESTADO_LABELS = {
   APROBADO: 'Aprobado',
   REPROBADO: 'Reprobado',
   ABANDONO: 'Abandono',
+  CURSANDO: 'Cursando',
 };
 
 const ACADEMICO_ESTADO_PILL = {
   APROBADO: 'cfg-materia-pill cfg-materia-pill--success',
   REPROBADO: 'cfg-materia-pill cfg-materia-pill--danger',
   ABANDONO: 'cfg-materia-pill cfg-materia-pill--warning',
+  CURSANDO: 'cfg-materia-pill cfg-materia-pill--info',
 };
 
 /** Etiqueta legible del estado del libro (ABIERTO/CERRADO). */

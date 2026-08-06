@@ -83,12 +83,19 @@ export function construirCeldasEstudiante(filasEstudiante) {
 }
 
 /**
- * Columna ESTADO sugerida para la fila del folio, desde las filas 135 del
- * estudiante (caché autoritativo matriculas_materia.estado):
- * - alguna materia REPROBADO                     → REPROBADO
- * - todas ABANDONO/RETIRADO o sin nota (NP)      → ABANDONO
- * - en otro caso                                 → APROBADO
+ * Columna ESTADO sugerida para la fila del folio, desde el estado REAL de
+ * matrícula de cada materia (matriculas_materia.estado, vía filas 135) — el
+ * folio no decide nada por su cuenta, solo lo agrega:
+ * - alguna materia REPROBADO                          → REPROBADO
+ * - alguna materia CURSANDO/INSCRITO (aún sin nota)    → CURSANDO
+ * - todas ABANDONO/RETIRADO (retiro real registrado)   → ABANDONO
+ * - en otro caso (con nota, ninguna reprobada)         → APROBADO
  * Sin filas (sin matrícula visible en la 135) → ABANDONO (todo NP en el papel).
+ *
+ * El paso CURSANDO→REPROBADO cuando cierra la gestión sin nota es
+ * responsabilidad del centralizador de notas (matriculas_materia.estado), no
+ * de este helper: al cerrar, esa capa marca la materia y esta función ya la
+ * lee como REPROBADO de forma natural.
  *
  * @param {Array<Object>} filasEstudiante
  * @returns {string} ESTADOS_ACADEMICOS_FOLIO.*
@@ -100,8 +107,13 @@ export function derivarEstadoAcademico(filasEstudiante) {
   const algunaReprobada = filas.some((fila) => fila.estado === 'REPROBADO');
   if (algunaReprobada) return ESTADOS_ACADEMICOS_FOLIO.REPROBADO;
 
-  const todasNP = filas.every((fila) => notaCeldaFolio(fila) === NOTA_NP);
-  if (todasNP) return ESTADOS_ACADEMICOS_FOLIO.ABANDONO;
+  const algunaCursando = filas.some(
+    (fila) => ['CURSANDO', 'INSCRITO'].includes(fila.estado) && notaCeldaFolio(fila) === NOTA_NP,
+  );
+  if (algunaCursando) return ESTADOS_ACADEMICOS_FOLIO.CURSANDO;
+
+  const todasAbandonoORetirado = filas.every((fila) => ESTADOS_MATERIA_NP.includes(fila.estado));
+  if (todasAbandonoORetirado) return ESTADOS_ACADEMICOS_FOLIO.ABANDONO;
 
   return ESTADOS_ACADEMICOS_FOLIO.APROBADO;
 }

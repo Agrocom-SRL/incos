@@ -48,11 +48,17 @@ export const TRANSICIONES_FOLIO = {
   [ESTADOS_FOLIO.ANULADO]: [],
 };
 
-/** Columna ESTADO de la nómina del folio (folio_estudiantes.estado_academico). */
+/**
+ * Columna ESTADO de la nómina del folio (folio_estudiantes.estado_academico).
+ * CURSANDO: la gestión sigue abierta y al estudiante aún le faltan notas —
+ * distinto de ABANDONO (retiro real registrado en matriculas_materia). Ver
+ * `derivarEstadoAcademico` (folioCeldasHelper.js).
+ */
 export const ESTADOS_ACADEMICOS_FOLIO = {
   APROBADO: 'APROBADO',
   REPROBADO: 'REPROBADO',
   ABANDONO: 'ABANDONO',
+  CURSANDO: 'CURSANDO',
 };
 export const ESTADOS_ACADEMICOS_FOLIO_VALUES = Object.values(ESTADOS_ACADEMICOS_FOLIO);
 
