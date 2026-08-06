@@ -1,6 +1,7 @@
 import { ValidationError } from '../../../../domain/errors/AppError.js';
 import { ESTADOS_LIBRO } from '../../../../domain/constants/libros.constants.js';
 import { calcularPaginasParalelo } from './helpers/generarFoliosParaleloHelper.js';
+import { cargarCuotasPoliticaGestion } from '../../../utils/obtenerCuotasDesdePolitica.js';
 
 /**
  * Reajusta los folios de TODOS los paralelos de una gestión: recalcula la
@@ -39,11 +40,15 @@ export class GenerarFoliosGestionUseCase {
     libroRegistroRepository,
     libroRegistroViewRepository,
     calificacionCentralizadorRepository,
+    calificacionContextoRepository,
+    evaluationConfigurationRepository,
     logger,
   }) {
     this.libroRegistroRepository = libroRegistroRepository;
     this.libroRegistroViewRepository = libroRegistroViewRepository;
     this.calificacionCentralizadorRepository = calificacionCentralizadorRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
+    this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.logger = logger;
   }
 
@@ -76,6 +81,14 @@ export class GenerarFoliosGestionUseCase {
       throw new ValidationError('El libro de esta gestión está cerrado: no admite nuevos folios');
     }
 
+    // Nota mínima institucional (política vigente de la gestión), cargada UNA
+    // sola vez para todo el reajuste — no por paralelo.
+    const { notaMinimaAprobacion } = await cargarCuotasPoliticaGestion({
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+      gestionId: gid,
+    });
+
     // Recalcula las páginas de CADA paralelo con nómina, en orden canónico —
     // el resultado es el libro completo tal como debería quedar HOY.
     const omitidos = [];
@@ -90,6 +103,7 @@ export class GenerarFoliosGestionUseCase {
           libroRegistroViewRepository: this.libroRegistroViewRepository,
           calificacionCentralizadorRepository: this.calificacionCentralizadorRepository,
           paraleloGestionId,
+          notaMinimaAprobacion,
           fechaRegistro: body.fechaRegistro,
         });
         paralelosConNomina += 1;

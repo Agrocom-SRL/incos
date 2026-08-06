@@ -18,9 +18,11 @@ import { useCentralizadorObservacionesBimestre } from '@application-academico/ce
 import { useExportCentralizadorExcel } from '@application-academico/centralizador/hooks/api/useExportCentralizadorExcel.js';
 import { CENTRALIZADOR_PERMISOS } from '@application-academico/centralizador/utils/centralizadorPermisos.js';
 import { centralizadorParaleloPath } from '@application-academico/centralizador/utils/centralizadorPaths.js';
+import { LIBROS_LIST_PATH } from '@application-academico/libros/utils/librosPaths.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import CentralizadorContextoHeader from '../components/CentralizadorContextoHeader.jsx';
 import CentralizadorGrid from '../components/CentralizadorGrid.jsx';
+import CentralizadorLibroBadge from '../components/CentralizadorLibroBadge.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/centralizador.css';
 
@@ -41,6 +43,7 @@ const CentralizadorMatrizPage = () => {
     gestionAnio,
     gestionNombre,
     notaMinimaAprobacion,
+    libro,
     isLoading,
     error,
     refetch,
@@ -50,6 +53,8 @@ const CentralizadorMatrizPage = () => {
   const [observacionesLocal, setObservacionesLocal] = useState({});
 
   const { exportar, loading: exportando } = useExportCentralizadorExcel();
+
+  const abrirLibrosDeRegistro = () => navigate(LIBROS_LIST_PATH);
 
   const {
     puedeEditar: puedeEditarObservaciones,
@@ -224,6 +229,12 @@ const CentralizadorMatrizPage = () => {
           gestionNombre={gestionNombre}
           bimestre={bimestreActivo}
         />
+
+        <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">
+          <span className="cal-centralizador-bim__selector-label">Libro de registro:</span>
+          <CentralizadorLibroBadge libro={libro} onAbrirLibros={abrirLibrosDeRegistro} />
+        </Flex>
+
         <Card className="cal-centralizador-hoja-card" {...hojaCardProps}>
           <CentralizadorGrid
             asignaturas={asignaturas}

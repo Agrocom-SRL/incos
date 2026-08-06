@@ -83,38 +83,56 @@ export function construirCeldasEstudiante(filasEstudiante) {
 }
 
 /**
- * Columna ESTADO sugerida para la fila del folio, desde el estado REAL de
- * matrícula de cada materia (matriculas_materia.estado, vía filas 135) — el
- * folio no decide nada por su cuenta, solo lo agrega:
+ * Veredicto de UNA materia contra la nota mínima institucional — fuente ÚNICA
+ * de "aprobado/reprobado", compartida por el folio del Libro
+ * (`derivarEstadoAcademico`) y por Centralizador
+ * (`GetCentralizadorParaleloUseCase`), para que ambas pantallas emitan
+ * siempre el mismo veredicto sobre el mismo dato (`nota_final` cacheada en
+ * `matriculas_materia`, vía filas 135). NO compara `fila.estado ===
+ * 'REPROBADO'`: ningún caso de uso del sistema escribe ese valor hoy (el
+ * campo solo llega hasta CURSANDO) — decide directamente por umbral.
+ * @param {Object} fila135
+ * @param {number} notaMinimaAprobacion
+ * @returns {string} ESTADOS_ACADEMICOS_FOLIO.*
+ */
+export function calcularVeredictoMateria(fila135, notaMinimaAprobacion) {
+  const estadoMateria = fila135?.estado ?? null;
+  if (ESTADOS_MATERIA_NP.includes(estadoMateria)) return ESTADOS_ACADEMICOS_FOLIO.ABANDONO;
+  const notaFinal = fila135?.nota_final;
+  if (notaFinal == null) return ESTADOS_ACADEMICOS_FOLIO.CURSANDO;
+  return Number(notaFinal) >= Number(notaMinimaAprobacion)
+    ? ESTADOS_ACADEMICOS_FOLIO.APROBADO
+    : ESTADOS_ACADEMICOS_FOLIO.REPROBADO;
+}
+
+/**
+ * Columna ESTADO sugerida para la fila del folio, agregando el veredicto por
+ * materia (`calcularVeredictoMateria`) de cada una de sus filas 135:
  * - alguna materia REPROBADO                          → REPROBADO
- * - alguna materia CURSANDO/INSCRITO (aún sin nota)    → CURSANDO
+ * - alguna materia CURSANDO (aún sin nota_final)       → CURSANDO
  * - todas ABANDONO/RETIRADO (retiro real registrado)   → ABANDONO
  * - en otro caso (con nota, ninguna reprobada)         → APROBADO
  * Sin filas (sin matrícula visible en la 135) → ABANDONO (todo NP en el papel).
  *
- * El paso CURSANDO→REPROBADO cuando cierra la gestión sin nota es
- * responsabilidad del centralizador de notas (matriculas_materia.estado), no
- * de este helper: al cerrar, esa capa marca la materia y esta función ya la
- * lee como REPROBADO de forma natural.
- *
  * @param {Array<Object>} filasEstudiante
+ * @param {number} notaMinimaAprobacion
  * @returns {string} ESTADOS_ACADEMICOS_FOLIO.*
  */
-export function derivarEstadoAcademico(filasEstudiante) {
+export function derivarEstadoAcademico(filasEstudiante, notaMinimaAprobacion) {
   const filas = filasEstudiante ?? [];
   if (filas.length === 0) return ESTADOS_ACADEMICOS_FOLIO.ABANDONO;
 
-  const algunaReprobada = filas.some((fila) => fila.estado === 'REPROBADO');
-  if (algunaReprobada) return ESTADOS_ACADEMICOS_FOLIO.REPROBADO;
+  const veredictos = filas.map((fila) => calcularVeredictoMateria(fila, notaMinimaAprobacion));
 
-  const algunaCursando = filas.some(
-    (fila) => ['CURSANDO', 'INSCRITO'].includes(fila.estado) && notaCeldaFolio(fila) === NOTA_NP,
-  );
-  if (algunaCursando) return ESTADOS_ACADEMICOS_FOLIO.CURSANDO;
-
-  const todasAbandonoORetirado = filas.every((fila) => ESTADOS_MATERIA_NP.includes(fila.estado));
-  if (todasAbandonoORetirado) return ESTADOS_ACADEMICOS_FOLIO.ABANDONO;
-
+  if (veredictos.some((v) => v === ESTADOS_ACADEMICOS_FOLIO.REPROBADO)) {
+    return ESTADOS_ACADEMICOS_FOLIO.REPROBADO;
+  }
+  if (veredictos.some((v) => v === ESTADOS_ACADEMICOS_FOLIO.CURSANDO)) {
+    return ESTADOS_ACADEMICOS_FOLIO.CURSANDO;
+  }
+  if (veredictos.every((v) => v === ESTADOS_ACADEMICOS_FOLIO.ABANDONO)) {
+    return ESTADOS_ACADEMICOS_FOLIO.ABANDONO;
+  }
   return ESTADOS_ACADEMICOS_FOLIO.APROBADO;
 }
 
@@ -124,5 +142,6 @@ export default {
   notaCeldaFolio,
   agruparFilas135PorEstudiante,
   construirCeldasEstudiante,
+  calcularVeredictoMateria,
   derivarEstadoAcademico,
 };

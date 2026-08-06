@@ -650,10 +650,11 @@ Fuente: `55-seed-roles.sql` (ids de rol fijos 1-8).
 | `libros.routes.js` | GET | `/api/v1/libros/:id` | DETALLE ficha (cabecera + folios, vista 176) |
 | `libros.routes.js` | PATCH | `/api/v1/libros/:id` | EDITAR / cerrar libro |
 | `libros.routes.js` | GET | `/api/v1/libros/:id/paralelos` | CREAR (apoyo generador: paralelos candidatos) |
-| `libros.routes.js` | POST | `/api/v1/libros/:id/folios` | CREAR (generar folios del paralelo, numeración por gestión) |
+| `libros.routes.js` | POST | `/api/v1/libros/:id/folios` | CREAR (generar folios de UN paralelo, numeración por gestión) |
+| `libros.routes.js` | POST | `/api/v1/libros/gestiones/:gestionId/folios` | CREAR (generar/reajustar TODOS los folios de la gestión, todo-o-nada) |
 | `libros.routes.js` | GET | `/api/v1/libros/:id/folios/:folioId` | DETALLE folio (nómina + celdas 135) |
-| `libros.routes.js` | PATCH | `/api/v1/libros/:id/folios/:folioId/estado` | APROBAR (BORRADOR→IMPRESO→FIRMADO/ANULADO) |
-| `libros.routes.js` | PATCH | `/api/v1/libros/:id/folios/:folioId/estudiantes/:filaId` | EDITAR fila (si NO FIRMADO) |
+| `libros.routes.js` | PATCH | `/api/v1/libros/:id/folios/:folioId/estado` | APROBAR (BORRADOR→ANULADO, con motivo; sin IMPRESO/FIRMADO) |
+| `libros.routes.js` | PATCH | `/api/v1/libros/:id/folios/:folioId/estudiantes/:filaId` | EDITAR observación de fila (si folio NO ANULADO) |
 | `libros.routes.js` | GET | `/api/v1/libros/:id/export` | EXPORTAR Excel del libro completo |
 | `dashboard.routes.js` | GET | `/api/v1/dashboard/mi-resumen-docente` | Portal docente: panel de inicio (solo `authenticate`; incluye `stats` + `actividades` desde vista 149) |
 | `horarios-docente.routes.js` | GET | `/api/v1/horarios/docentes/:docenteId/grilla-conflictos` | Grilla semanal del docente (`institucional.horario.conflictos` LISTAR; DOCENTE solo la propia vía `docenteSelfOnlyGuard('docenteId')`) |
@@ -992,27 +993,35 @@ iteración siguiente; hoy la ruta sigue en `UnderConstruction`). Grupos UI:
 > matrícula, histórico anual); el riesgo pedagógico por notas es del módulo TUT
 > (vistas 156/157, gestión vigente). Consumidores distintos, sin duplicar vistas.
 
-### ACA - Libros de registro (`/academico/libros`) — backend 2026-07-30 (Fase 4, schema 25)
+### ACA - Libros de registro (`/academico/libros`) — schema 25, backend + frontend completos
 Permiso ÚNICO por ítem: `academico.libro` (grupo `aca_libros`, seed 59). Libro
-físico del centralizador: uno por carrera+gestión; folio = página de un
-paralelo con hasta 10 estudiantes; `numero_folio` correlativo POR GESTIÓN
-cruzando todas las carreras. Frontend en la iteración 2 (hoy sin ruta en menú).
+físico del centralizador: **uno por GESTIÓN, compartido por las 3 carreras**
+(`libros_registro` es `UNIQUE(gestion_id)`, sin `carrera_id` — corrección de
+schema 2026-08-03); folio = página de un paralelo (de cualquier carrera) con
+hasta 10 estudiantes; `numero_folio` correlativo POR GESTIÓN cruzando todas
+las carreras. Frontend completo: `LibrosListPage` → `LibroDetailPage` (tabs
+por carrera) → `FolioPreviewPage`, más `LibroAnuladosPage`; ítem de menú
+propio (`order: 2.7`).
 
 | Permiso (codigo) | Acciones | Pantalla / endpoint | Roles |
 |---|---|---|---|
-| `academico.libro` | LISTAR | Listado de libros — `GET /libros[?carreraId][&gestionId]` (vista 175) | REC, DIRA, SECA |
+| `academico.libro` | LISTAR | Listado de libros — `GET /libros[?gestionId]` (vista 175, incluye `carreras_con_folio`) | REC, DIRA, SECA |
 | `academico.libro` | DETALLE | Ficha del libro (`GET /libros/:id`, cabecera + folios vista 176) y folio (`GET /libros/:id/folios/:folioId`, nómina congelada + celdas de la 135) | REC, DIRA, SECA |
-| `academico.libro` | CREAR | Abrir libro (`POST /libros`; `numeroLibro` se INGRESA, mismo número para todas las carreras de la gestión) · paralelos candidatos (`GET /libros/:id/paralelos`) · generar folios (`POST /libros/:id/folios`, páginas de 10, numeración transaccional por gestión) | REC, DIRA, SECA |
-| `academico.libro` | EDITAR | Editar/cerrar libro (`PATCH /libros/:id`) · editar fila ESTADO/OBSERVACIONES (`PATCH /libros/:id/folios/:folioId/estudiantes/:filaId`, solo si el folio NO está FIRMADO/ANULADO) | REC, DIRA, SECA |
-| `academico.libro` | APROBAR | Transición de estado del folio (`PATCH /libros/:id/folios/:folioId/estado`): BORRADOR→IMPRESO→FIRMADO / ANULADO (con motivo); FIRMADO inmutable | REC, DIRA |
-| `academico.libro` | EXPORTAR | Excel del libro completo (`GET /libros/:id/export`): una hoja por paralelo, folios apilados + página de firmas de docentes, logo MINEDU, margen de encuadernado | REC, DIRA, SECA |
+| `academico.libro` | CREAR | Abrir libro (`POST /libros`; `numeroLibro` se INGRESA, uno solo para toda la gestión) · paralelos candidatos (`GET /libros/:id/paralelos`) · generar folios de un paralelo (`POST /libros/:id/folios`) · generar/reajustar TODOS los folios de la gestión (`POST /libros/gestiones/:gestionId/folios`, páginas de 10, numeración transaccional cross-carrera, todo-o-nada) | REC, DIRA, SECA |
+| `academico.libro` | EDITAR | Editar/cerrar/reabrir libro (`PATCH /libros/:id`, `estado` ABIERTO↔CERRADO) · editar SOLO la observación de la fila (`PATCH /libros/:id/folios/:folioId/estudiantes/:filaId`, `{ observaciones }`; el ESTADO académico de la fila NUNCA es editable a mano, siempre deriva de la vista 135 al generar/reajustar el folio) — bloqueado si el folio está ANULADO | REC, DIRA, SECA |
+| `academico.libro` | APROBAR | Anular folio (`PATCH /libros/:id/folios/:folioId/estado`): BORRADOR→ANULADO (con motivo obligatorio); ANULADO es terminal — **sin IMPRESO/FIRMADO**, el sistema no verifica impresión/firma física. El cierre OFICIAL del documento es `libros_registro.estado` (acción EDITAR, no APROBAR) | REC, DIRA |
+| `academico.libro` | EXPORTAR | Excel del libro completo (`GET /libros/:id/export`): una hoja por paralelo, folios apilados + página de firmas de docentes + bloque ESTADÍSTICAS, logo MINEDU, margen de encuadernado; bloque de firmas solo si el libro está CERRADO (si ABIERTO exporta como borrador, sin firmas) | REC, DIRA, SECA |
 
 > **Sin ELIMINAR:** un folio no se borra — se ANULA (motivo obligatorio) y el
 > paralelo se regenera con numeración nueva (los números anulados no se
 > reutilizan). **Notas por materia:** sin vista propia — se derivan de la 135
 > (asignación docente VIGENTE): el libro se genera al cierre de la gestión
-> mientras es vigente; el folio solo congela ESTADO y OBSERVACIONES.
-> Reimpresión de gestiones pasadas = evolución futura (parametrizar la 135).
+> mientras es vigente; el folio solo congela ESTADO y OBSERVACIONES. El
+> veredicto APROBADO/REPROBADO del ESTADO congelado usa la MISMA función
+> (`calcularVeredictoMateria`, `folioCeldasHelper.js`) que usa Centralizador
+> para `observacion` en `GetCentralizadorParaleloUseCase` — una sola fuente de
+> verdad entre ambas pantallas (alineación 2026-08-06). Reimpresión de
+> gestiones pasadas = evolución futura (parametrizar la 135).
 
 ### ACA - Nivelaciones, Trazabilidad, Historial
 Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.historial.*`

@@ -74,15 +74,6 @@ const CeldaObservacionBimestre = ({
 const LeyendaCentralizador = () => (
   <div className="cal-centralizador-grid__leyenda" role="note" aria-label="Leyenda del centralizador">
     <span className="cal-centralizador-grid__leyenda-item">
-      <strong>NP</strong> = No se presenta
-    </span>
-    <span className="cal-centralizador-grid__leyenda-item">
-      <strong>AP</strong> = Aprobado
-    </span>
-    <span className="cal-centralizador-grid__leyenda-item">
-      <strong>PRE</strong> = Prerequisito
-    </span>
-    <span className="cal-centralizador-grid__leyenda-item">
       Cada nota es el puntaje acumulado del bimestre (teórico + práctico) sobre 100.
     </span>
   </div>
@@ -173,7 +164,7 @@ const CentralizadorGrid = ({
     },
     ...columnasAsignatura,
     {
-      title: 'Observaciones',
+      title: 'Observación del bimestre',
       key: 'observaciones',
       width: 220,
       className: 'cal-centralizador-grid__col-obs',

@@ -1,6 +1,7 @@
 import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
 import { ESTADOS_LIBRO } from '../../../../domain/constants/libros.constants.js';
 import { generarParaUnParalelo } from './helpers/generarFoliosParaleloHelper.js';
+import { cargarCuotasPoliticaGestion } from '../../../utils/obtenerCuotasDesdePolitica.js';
 
 /**
  * Genera los folios (páginas del centralizador) de UN paralelo del libro
@@ -21,11 +22,15 @@ export class GenerarFoliosParaleloUseCase {
     libroRegistroRepository,
     libroRegistroViewRepository,
     calificacionCentralizadorRepository,
+    calificacionContextoRepository,
+    evaluationConfigurationRepository,
     logger,
   }) {
     this.libroRegistroRepository = libroRegistroRepository;
     this.libroRegistroViewRepository = libroRegistroViewRepository;
     this.calificacionCentralizadorRepository = calificacionCentralizadorRepository;
+    this.calificacionContextoRepository = calificacionContextoRepository;
+    this.evaluationConfigurationRepository = evaluationConfigurationRepository;
     this.logger = logger;
   }
 
@@ -73,6 +78,14 @@ export class GenerarFoliosParaleloUseCase {
       );
     }
 
+    // Nota mínima institucional (política vigente de la gestión del libro),
+    // para el veredicto aprobado/reprobado del estado_academico sugerido.
+    const { notaMinimaAprobacion } = await cargarCuotasPoliticaGestion({
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      evaluationConfigurationRepository: this.evaluationConfigurationRepository,
+      gestionId: libro.gestionId,
+    });
+
     // CORE de la generación (nómina → páginas de 10 → numeración transaccional
     // cross-carrera), delegado al helper compartido con GenerarFoliosGestionUseCase.
     const { creados, folios, totalEstudiantes } = await generarParaUnParalelo({
@@ -81,6 +94,7 @@ export class GenerarFoliosParaleloUseCase {
       calificacionCentralizadorRepository: this.calificacionCentralizadorRepository,
       libro,
       paralelo,
+      notaMinimaAprobacion,
       fechaRegistro: body.fechaRegistro,
       usuarioId,
     });

@@ -77,7 +77,7 @@ export const LIBRO_REGISTRO_DOC = {
   resolucionMinisterial: '0426/2016',
   firmas: ['JEFE(A) DE CARRERA', 'DIRECTOR(A) ACADÉMICO(A)', 'RECTOR(A)'],
   /** Leyenda de abreviaturas bajo la nómina de cada folio (documento oficial). */
-  leyendaNotas: 'NP = No se Presentó / AP = Aprobado / PRE = Prerrequisito',
+  leyendaNotas: 'NP = No se Presentó',
   /** Bloque "ESTADÍSTICAS" al pie de la hoja del paralelo (junto a firmas de docentes). */
   estadisticas: {
     titulo: 'ESTADÍSTICAS',

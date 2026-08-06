@@ -325,6 +325,11 @@ Documentos fuente reales a revisar:
   iteraciones hechas.
 - `docs/plan/capacitacion-plan-desarrollo.md` — módulo CAP, ya completo
   (código + BD), sin relación con el trabajo pendiente de arriba.
+- `docs/plan/centralizador-nivelacion-plan-desarrollo.md` — alineación
+  Centralizador↔Libros HECHA (bug de veredicto aprobado/reprobado en el
+  Libro corregido, badge P3, leyenda NP); más el hallazgo "Nivelación"
+  (schema 16 ya diseñado, sin application/presentation) documentado como
+  iniciativa separada pendiente, sin relación con el trabajo pendiente de arriba.
 - `docs/referencia/matriz-permisos-sistema.md` — changelog acumulado de
   todos los permisos tocados esta sesión.
 

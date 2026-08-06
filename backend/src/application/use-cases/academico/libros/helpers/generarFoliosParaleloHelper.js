@@ -31,6 +31,8 @@ import { agruparFilas135PorEstudiante, derivarEstadoAcademico } from './folioCel
  * @param {Object} params.libroRegistroViewRepository
  * @param {Object} params.calificacionCentralizadorRepository
  * @param {number} params.paraleloGestionId
+ * @param {number} params.notaMinimaAprobacion - Umbral institucional para el
+ *        veredicto aprobado/reprobado (ver `calcularVeredictoMateria`).
  * @param {string|null} [params.fechaRegistro] - ISO date; hoy si se omite.
  * @returns {Promise<{ paginas: Array<Object>, totalEstudiantes: number }>}
  *   `paginas` = [{ paraleloGestionId, ordenEnParalelo, estado, fechaRegistro,
@@ -42,6 +44,7 @@ export async function calcularPaginasParalelo({
   libroRegistroViewRepository,
   calificacionCentralizadorRepository,
   paraleloGestionId,
+  notaMinimaAprobacion,
   fechaRegistro = null,
 }) {
   // 1) Nómina ordenada por apellido (vista 177).
@@ -71,7 +74,10 @@ export async function calcularPaginasParalelo({
         numeroOrden: inicio + idx + 1,
         estudianteId: est.estudiante_id,
         inscripcionId: est.inscripcion_id,
-        estadoAcademico: derivarEstadoAcademico(filasPorEstudiante.get(est.estudiante_id)),
+        estadoAcademico: derivarEstadoAcademico(
+          filasPorEstudiante.get(est.estudiante_id),
+          notaMinimaAprobacion,
+        ),
         observaciones: null,
       })),
     });
@@ -89,6 +95,8 @@ export async function calcularPaginasParalelo({
  *        { id, gestionId, folioInicial, ... }.
  * @param {Object} params.paralelo - Fila de paralelo candidato (vista 127 +
  *        conteos, de `listarParalelosPorGestion`): requiere `paralelo_gestion_id`.
+ * @param {number} params.notaMinimaAprobacion - Umbral institucional para el
+ *        veredicto aprobado/reprobado (ver `calcularVeredictoMateria`).
  * @param {string|null} [params.fechaRegistro] - ISO date; hoy si se omite.
  * @param {number|null} [params.usuarioId]
  * @returns {Promise<{ creados: Array<Object>, folios: Array<Object>, totalEstudiantes: number }>}
@@ -101,6 +109,7 @@ export async function generarParaUnParalelo({
   calificacionCentralizadorRepository,
   libro,
   paralelo,
+  notaMinimaAprobacion,
   fechaRegistro = null,
   usuarioId = null,
 }) {
@@ -110,6 +119,7 @@ export async function generarParaUnParalelo({
     libroRegistroViewRepository,
     calificacionCentralizadorRepository,
     paraleloGestionId,
+    notaMinimaAprobacion,
     fechaRegistro,
   });
 
